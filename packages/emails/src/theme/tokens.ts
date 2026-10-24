@@ -29,3 +29,6 @@ export const emailFont = {
 
 export const EMAIL_CONTACT = "tallabycommerce@gmail.com";
 export const EMAIL_SITE_URL = "https://www.tallaby.com";
+
+/** Tallaby's WhatsApp, offered beside the support email in seller mail. */
+export const EMAIL_WHATSAPP_URL = "https://wa.me/@tallaby";

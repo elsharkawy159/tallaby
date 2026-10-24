@@ -1,4 +1,9 @@
 import type { EmailLocale } from "./locale.js";
+import {
+  transactionalAr,
+  transactionalEn,
+  type TransactionalCopy,
+} from "./transactional.js";
 
 export interface EmailCommonCopy {
   copyright: string;
@@ -80,7 +85,7 @@ export interface FeeTrialReminderCopy {
   cta: string;
 }
 
-export interface EmailMessages {
+export interface EmailMessages extends TransactionalCopy {
   common: EmailCommonCopy;
   orderConfirmation: OrderConfirmationCopy;
   welcome: WelcomeCopy;
@@ -90,6 +95,7 @@ export interface EmailMessages {
 }
 
 const en: EmailMessages = {
+  ...transactionalEn,
   common: {
     copyright: "© {year} Tallaby. All rights reserved.",
     privacy: "Privacy",
@@ -184,6 +190,7 @@ const en: EmailMessages = {
 };
 
 const ar: EmailMessages = {
+  ...transactionalAr,
   common: {
     copyright: "© {year} طلبي. جميع الحقوق محفوظة.",
     privacy: "الخصوصية",

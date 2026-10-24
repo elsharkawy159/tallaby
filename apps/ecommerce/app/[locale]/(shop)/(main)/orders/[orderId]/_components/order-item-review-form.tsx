@@ -6,6 +6,7 @@ import { Button } from "@workspace/ui/components/button";
 import { Textarea, Input, Checkbox } from "@workspace/ui/components";
 import { createReview, updateReview } from "@/actions/reviews";
 import { useRouter } from "@/i18n/navigation";
+import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { createClient } from "@/supabase/client";
 import Image from "next/image";
@@ -36,7 +37,14 @@ export function OrderItemReviewForm({
   const t = useTranslations("orders");
   const tCommon = useTranslations("common");
   const tToast = useTranslations("toast");
-  const [rating, setRating] = useState<number>(existingReview?.rating ?? 0);
+  const searchParams = useSearchParams();
+  // The delivered email's stars link to `?review=<item>&rating=<n>`: start the form on that star.
+  const emailRating =
+    searchParams.get("review") === orderItemId ? Number(searchParams.get("rating")) : 0;
+  const [rating, setRating] = useState<number>(
+    existingReview?.rating ??
+      (Number.isInteger(emailRating) && emailRating >= 1 && emailRating <= 5 ? emailRating : 0)
+  );
   const [hoverRating, setHoverRating] = useState<number>(0);
   const [title, setTitle] = useState(existingReview?.title ?? "");
   const [comment, setComment] = useState(existingReview?.comment ?? "");

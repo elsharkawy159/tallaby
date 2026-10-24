@@ -9,7 +9,21 @@ import {
   interpolate,
   resolveEmailLocale,
 } from "@workspace/emails";
-import { buildOrderConfirmationEmailData } from "../lib/order-confirmation";
+import {
+  buildOrderConfirmation,
+  sendAbandonedCart,
+  sendOrderCancelled,
+  sendOrderDelivered,
+  sendOrderShipped,
+  sendRefundIssued,
+} from "../lib/emails/customer-emails";
+import {
+  sendSellerLowStock,
+  sendSellerNewOrders,
+  sendSellerOrderCancelled,
+  sendSellerStoreCreated,
+  sendSellerWalletTopUp,
+} from "../lib/emails/seller-emails";
 import { sendFeeTrialReminder } from "../lib/fee-trial-reminder";
 import {
   claimEmailDelivery,
@@ -122,9 +136,9 @@ app.post("/order-confirmation", async (c) => {
     }
 
     const { orderId } = parsed.data;
-    const built = await buildOrderConfirmationEmailData(orderId);
+    const built = await buildOrderConfirmation(orderId);
 
-    if (!built.success) {
+    if (!built.ok) {
       // A customer with no email on file is not an error worth retrying.
       const status = built.status === 422 ? 200 : built.status;
       return c.json({ success: false, skipped: true, reason: built.error }, status);
@@ -134,7 +148,7 @@ app.post("/order-confirmation", async (c) => {
       emailType: EMAIL_TYPES.orderConfirmation,
       referenceId: orderId,
       recipient: built.recipient,
-      metadata: { orderNumber: built.data.order.orderNumber },
+      metadata: { orderNumber: built.ctx.order.orderNumber },
     });
 
     if (!claim.claimed) {
@@ -149,13 +163,10 @@ app.post("/order-confirmation", async (c) => {
 
     const { id } = await sendEmail({
       to: built.recipient,
-      subject: interpolate(
-        getEmailMessages(built.data.locale ?? "en").orderConfirmation.subject,
-        { orderNumber: built.data.order.orderNumber }
-      ),
-      content: OrderConfirmationEmail(built.data),
-      from: ORDERS_FROM_ADDRESS,
-      replyTo: ORDERS_FROM_ADDRESS,
+      subject: built.subject,
+      content: built.content,
+      // A storefront order is sent under the store's name (replies go to its support address).
+      ...built.sender,
       // Second layer of protection: even if the claim row were lost, Resend
       // collapses repeated sends carrying the same key.
       idempotencyKey: `order-confirmation:${orderId}`,
@@ -198,6 +209,125 @@ app.post("/fee-trial-reminder", async (c) => {
   } catch (error) {
     console.error("Error sending fee trial reminder:", error);
     return c.json({ error: "Failed to send fee trial reminder" }, 500);
+  }
+});
+
+/*
+ * Lifecycle mail (Claude Design email library). Callers post an id after
+ * their transaction commits; everything is re-read here and each email goes
+ * out once (email_deliveries claim + Resend idempotency key), so retries and
+ * duplicate calls are harmless.
+ */
+
+const orderEventSchema = z.object({
+  orderId: z.string().uuid(),
+  event: z.enum(["placed", "shipped", "delivered", "cancelled"]),
+  cancelledBy: z.enum(["customer", "seller", "system"]).optional(),
+});
+
+/**
+ * One order lifecycle step. `placed` covers the seller "new order" and
+ * low-stock mail; call it again when an online payment confirms the order
+ * (orders still in `payment_processing` are skipped until then).
+ */
+app.post("/order-event", async (c) => {
+  const parsed = orderEventSchema.safeParse(await c.req.json().catch(() => null));
+  if (!parsed.success) {
+    return c.json({ error: "Invalid request", details: parsed.error.flatten() }, 400);
+  }
+  const { orderId, event, cancelledBy = "system" } = parsed.data;
+  try {
+    switch (event) {
+      case "placed": {
+        const sellers = await sendSellerNewOrders(orderId);
+        const lowStock = await sendSellerLowStock(orderId);
+        return c.json({ success: true, sellers, lowStock });
+      }
+      case "shipped":
+        return c.json({ success: true, customer: await sendOrderShipped(orderId) });
+      case "delivered":
+        return c.json({ success: true, customer: await sendOrderDelivered(orderId) });
+      case "cancelled": {
+        const customer = await sendOrderCancelled(orderId, cancelledBy);
+        const sellers = await sendSellerOrderCancelled(orderId, cancelledBy);
+        return c.json({ success: true, customer, sellers });
+      }
+    }
+  } catch (error) {
+    console.error(`Error sending order ${event} email:`, error);
+    return c.json({ error: `Failed to send order ${event} email` }, 500);
+  }
+});
+
+const refundSchema = z.object({
+  orderId: z.string().uuid(),
+  method: z.enum(["wallet", "original", "manual"]),
+  amount: z.union([z.string(), z.number()]).optional(),
+});
+
+app.post("/refund-issued", async (c) => {
+  const parsed = refundSchema.safeParse(await c.req.json().catch(() => null));
+  if (!parsed.success) {
+    return c.json({ error: "Invalid request", details: parsed.error.flatten() }, 400);
+  }
+  try {
+    const result = await sendRefundIssued(parsed.data.orderId, {
+      method: parsed.data.method,
+      amount: parsed.data.amount ?? null,
+    });
+    return c.json({ success: true, result });
+  } catch (error) {
+    console.error("Error sending refund email:", error);
+    return c.json({ error: "Failed to send refund email" }, 500);
+  }
+});
+
+const topUpSchema = z.object({
+  topUpId: z.string().uuid(),
+  balanceAfter: z.union([z.string(), z.number()]).optional(),
+});
+
+app.post("/store-wallet-top-up", async (c) => {
+  const parsed = topUpSchema.safeParse(await c.req.json().catch(() => null));
+  if (!parsed.success) {
+    return c.json({ error: "Invalid request", details: parsed.error.flatten() }, 400);
+  }
+  try {
+    const result = await sendSellerWalletTopUp(parsed.data.topUpId, parsed.data.balanceAfter ?? null);
+    return c.json({ success: true, result });
+  } catch (error) {
+    console.error("Error sending wallet top-up email:", error);
+    return c.json({ error: "Failed to send wallet top-up email" }, 500);
+  }
+});
+
+const storeSchema = z.object({ storeId: z.string().uuid() });
+
+app.post("/store-created", async (c) => {
+  const parsed = storeSchema.safeParse(await c.req.json().catch(() => null));
+  if (!parsed.success) {
+    return c.json({ error: "Invalid request", details: parsed.error.flatten() }, 400);
+  }
+  try {
+    return c.json({ success: true, result: await sendSellerStoreCreated(parsed.data.storeId) });
+  } catch (error) {
+    console.error("Error sending store created email:", error);
+    return c.json({ error: "Failed to send store created email" }, 500);
+  }
+});
+
+const cartSchema = z.object({ cartId: z.string().uuid() });
+
+app.post("/abandoned-cart", async (c) => {
+  const parsed = cartSchema.safeParse(await c.req.json().catch(() => null));
+  if (!parsed.success) {
+    return c.json({ error: "Invalid request", details: parsed.error.flatten() }, 400);
+  }
+  try {
+    return c.json({ success: true, result: await sendAbandonedCart(parsed.data.cartId) });
+  } catch (error) {
+    console.error("Error sending abandoned cart email:", error);
+    return c.json({ error: "Failed to send abandoned cart email" }, 500);
   }
 });
 

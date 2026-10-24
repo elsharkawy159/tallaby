@@ -30,6 +30,11 @@ export function emailDateLocale(locale: EmailLocale): string {
   return locale === "ar" ? "ar-EG" : "en-US";
 }
 
+/**
+ * Locale prefix for storefront links. The site's default locale is Arabic
+ * (`localePrefix: "as-needed"`), so Arabic links carry no prefix and English
+ * ones need `/en` — independent of the email fallback locale above.
+ */
 export function emailPathPrefix(locale: EmailLocale): string {
-  return locale === DEFAULT_EMAIL_LOCALE ? "" : `/${locale}`;
+  return locale === "ar" ? "" : `/${locale}`;
 }

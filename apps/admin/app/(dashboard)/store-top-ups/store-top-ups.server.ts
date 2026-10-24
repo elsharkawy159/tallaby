@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { logServerError } from "@workspace/db/log";
 import { reviewManualStoreTopUp } from "@workspace/lib/admin/server";
 import { validateAdminAccess } from "@/lib/auth/admin-auth";
+import { sendStoreWalletTopUpEmail } from "@workspace/lib/orders";
 
 /**
  * Store top-ups (owner request 2026-10-18): manual Vodafone Cash / InstaPay
@@ -42,6 +43,10 @@ export async function reviewStoreTopUpAction(input: {
     if (!result.success) return { success: false, error: ERRORS[result.error] ?? "Something went wrong." };
     revalidatePath("/store-top-ups");
     revalidatePath("/wallets", "layout");
+    if (result.data.status === "approved") {
+      // Seller top-up receipt (best-effort; sent once per top-up).
+      await sendStoreWalletTopUpEmail({ topUpId: input.topUpId, balanceAfter: result.data.balanceAfter });
+    }
     return {
       success: true,
       message:

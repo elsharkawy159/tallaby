@@ -8,6 +8,16 @@ import type { KashierWebhookBody } from '@workspace/lib/kashier'
 import { fulfillDigitalOrderItems } from '@workspace/lib/digital'
 import { parseStoreTopUpReference } from '@workspace/lib/store-wallet'
 import { applyStoreTopUpWebhook } from '@workspace/lib/store-wallet/server'
+import { sendRefundIssued } from '../lib/emails/customer-emails'
+import { sendSellerLowStock, sendSellerNewOrders, sendSellerWalletTopUp } from '../lib/emails/seller-emails'
+
+/** Lifecycle mail after a committed webhook: best-effort, never fails the webhook. */
+function emailAfterCommit(label: string, send: () => Promise<unknown>): Promise<void> {
+  return send().then(
+    () => undefined,
+    (error) => console.error(`Kashier: ${label} email failed:`, error)
+  )
+}
 
 /**
  * Kashier accepts 200 (processed) or 409 (already processed) as an ack; any
@@ -58,6 +68,9 @@ app.post('/webhook', async (c) => {
       })
       if (outcome === 'duplicate') {
         return c.json({ received: true, duplicate: true }, 409)
+      }
+      if (outcome === 'credited') {
+        await emailAfterCommit('store top-up', () => sendSellerWalletTopUp(topUpId))
       }
       return c.json({ received: true, outcome })
     }
@@ -231,6 +244,9 @@ async function processKashierEvent(
     await fulfillDigitalOrderItems(orderId).catch((error) => {
       console.error('Digital fulfillment after Kashier payment failed:', error)
     })
+    // The order left payment_processing: now the sellers hear about it.
+    await emailAfterCommit('seller new order', () => sendSellerNewOrders(orderId))
+    await emailAfterCommit('low stock', () => sendSellerLowStock(orderId))
   }
 
   return outcome
@@ -263,7 +279,12 @@ async function processRefund(
     )
     .returning({ id: orders.id })
 
-  return updated.length > 0 ? 'processed' : 'duplicate'
+  if (updated.length === 0) return 'duplicate'
+
+  await emailAfterCommit('refund', () =>
+    sendRefundIssued(orderId, { method: 'original', amount: body.data.amount ?? null })
+  )
+  return 'processed'
 }
 
 export default app

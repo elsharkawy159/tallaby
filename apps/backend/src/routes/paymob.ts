@@ -18,6 +18,7 @@ import {
   verifyPaymobTransactionHmac,
 } from '@workspace/lib/paymob'
 import { fulfillDigitalOrderItems } from '@workspace/lib/digital'
+import { sendSellerLowStock, sendSellerNewOrders } from '../lib/emails/seller-emails'
 import type { PaymobWebhookBody } from '@workspace/lib/paymob'
 import {
   handleWalletTopUpWebhook,
@@ -250,6 +251,11 @@ app.post('/webhook', async (c) => {
       await fulfillDigitalOrderItems(orderId).catch((error) => {
         console.error('Digital fulfillment after Paymob payment failed:', error)
       })
+      // The order left payment_processing: now the sellers hear about it
+      // (once per order and seller, so a redelivered webhook sends nothing).
+      await sendSellerNewOrders(orderId)
+        .then(() => sendSellerLowStock(orderId))
+        .catch((error) => console.error('Seller emails after Paymob payment failed:', error))
     } else {
       const duplicateFailed = await db.query.payments.findFirst({
         where: eq(payments.transactionId, transactionId),

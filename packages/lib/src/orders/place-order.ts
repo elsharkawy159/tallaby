@@ -52,7 +52,7 @@ import {
   buildOrderDiscountLines,
   type OrderDiscountLine,
 } from './order-discounts'
-import { sendOrderConfirmationEmail } from './notify'
+import { sendOrderConfirmationEmail, sendOrderEventEmail } from './notify'
 import { computeOrderLineFees, type PlatformFeeSnapshot } from './platform-fee.lib'
 import { isCodEligibleForShipping, parseWalletPartialPaymentMethod } from './payment.lib'
 import {
@@ -918,6 +918,9 @@ export async function placeOrderFromCart(
         emailResult.error,
       )
     }
+    // Seller "new order" + low-stock mail. Orders awaiting an online payment
+    // are skipped by the backend; the payment webhook sends them on confirm.
+    await sendOrderEventEmail(newOrder!.id, 'placed')
   }
 
   const inventoryItems: PlaceOrderInventoryItem[] = stockResults.map((r) => {

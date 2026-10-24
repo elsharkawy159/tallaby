@@ -1,5 +1,6 @@
 import { and, db, deliveries, eq, orderItems, orders, payments, shipments } from "@workspace/db";
 import { creditSellerOnDelivery } from "@workspace/db/wallet";
+import { sendOrderEventEmail, type OrderEmailEvent } from "@workspace/lib/orders";
 import {
   scheduleAffiliateCommissionRelease,
   reverseAffiliateCommission,
@@ -212,4 +213,16 @@ export async function applyShipmentStatus({
       await cancelPendingAffiliateCommission(tx, orderId);
     }
   });
+
+  // Customer (and, on cancel, seller) mail once the status is committed.
+  // Best-effort; the backend sends each email at most once per order.
+  const emailEvent = SHIPMENT_EMAIL_EVENTS[status];
+  if (emailEvent) await sendOrderEventEmail(orderId, emailEvent, "system");
 }
+
+/** "Out for delivery" is when the parcel actually leaves with the courier. */
+const SHIPMENT_EMAIL_EVENTS: Partial<Record<ShippingStatus, OrderEmailEvent>> = {
+  out_for_delivery: "shipped",
+  delivered: "delivered",
+  cancelled: "cancelled",
+};

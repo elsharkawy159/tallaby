@@ -83,7 +83,7 @@ export default function AddProduct ({
   const isEdit = Boolean(edit)
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
-  const [activeLocale, setActiveLocale] = useState<SupportedLocale>("en")
+  const [activeLocale, setActiveLocale] = useState<SupportedLocale>("ar")
   const [mode, setMode] = useState<"single" | "bulk">("single")
   const [bulkUrls, setBulkUrls] = useState<string[]>([])
   const [importOpen, setImportOpen] = useState(false)
@@ -207,7 +207,7 @@ export default function AddProduct ({
       const en = errors.localized?.en
       const ar = errors.localized?.ar
       if (first === "sec-basic" && !(activeLocale === "en" ? en : ar) && (en || ar)) {
-        setActiveLocale(en ? "en" : "ar")
+        setActiveLocale(ar ? "ar" : "en")
       }
       scrollToSection(first)
     }

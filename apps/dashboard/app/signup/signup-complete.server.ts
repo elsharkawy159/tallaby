@@ -1,5 +1,6 @@
 import type { User } from "@supabase/supabase-js";
 import { ensureSellerAccount, type EnsureSellerAccountResult } from "@workspace/lib/sellers/server";
+import { sendStoreCreatedEmail } from "@workspace/lib/orders";
 import { storeUrl } from "@workspace/lib/storefront";
 import { createClient } from "@/supabase/server";
 import type { SignupIntent } from "./signup-intent.lib";
@@ -23,6 +24,9 @@ export async function completeSignup(
   if (!result.success) return result;
 
   await clearSignupIntentCookie();
+
+  // Seller onboarding mail for the new primary store (best-effort, once per store).
+  if (result.data.created && result.data.storeId) await sendStoreCreatedEmail(result.data.storeId);
 
   // user_metadata is a cache for the storefront proxy (is_seller) and the
   // source the handle_user_update trigger copies users.phone from. Nothing

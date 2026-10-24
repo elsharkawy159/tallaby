@@ -171,7 +171,7 @@ export function BulkUrlImport ({
   const errorText = (message: string | undefined) =>
     message && t.has(`errors.${message}`) ? t(`errors.${message}`) : message
   const [isPending, startTransition] = useTransition()
-  const [activeLocale, setActiveLocale] = useState<SupportedLocale>("en")
+  const [activeLocale, setActiveLocale] = useState<SupportedLocale>("ar")
   const [items, setItems] = useState<BulkProductItem[]>([])
   const [openIds, setOpenIds] = useState<string[]>([])
   const [isFetching, setIsFetching] = useState(true)

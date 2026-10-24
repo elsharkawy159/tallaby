@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { sendStoreCreatedEmail } from "@workspace/lib/orders";
 import { cookies, headers } from "next/headers";
 import { applyInvalidation, invalidateStorefront } from "@workspace/cache";
 import {
@@ -78,6 +79,9 @@ export async function createStoreAction(input: {
       const error = map[result.error as keyof typeof map] ?? (result.error === "no_seller" ? "forbidden" : "invalidSubdomain");
       return { success: false, error };
     }
+
+    // Seller onboarding mail for the new store (best-effort, once per store).
+    await sendStoreCreatedEmail(result.data.id);
 
     // Open the new store in the sidebar (navigation preference only).
     (await cookies()).set(SELECTED_STORE_COOKIE, result.data.id, {

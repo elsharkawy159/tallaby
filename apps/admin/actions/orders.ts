@@ -5,6 +5,7 @@ import { orders, orderItems, users, products, sellers } from "@workspace/db";
 import { eq, and, desc, sql, gte, lte, like, or, inArray, notInArray } from "drizzle-orm";
 import { creditSellerOnDelivery } from "@workspace/db/wallet";
 import { fulfillDigitalOrderItems } from "@workspace/lib/digital";
+import { sendOrderEventEmail } from "@workspace/lib/orders";
 import {
   scheduleAffiliateCommissionRelease,
   reverseAffiliateCommission,
@@ -235,6 +236,15 @@ export async function updateOrderStatus(
 
       return row;
     });
+
+    // Customer (and, on cancel, seller) mail after commit; best-effort, once per order.
+    const emailEvent =
+      status === "shipped" || status === "out_for_delivery"
+        ? "shipped"
+        : status === "delivered" || status === "cancelled"
+          ? status
+          : null;
+    if (emailEvent) await sendOrderEventEmail(orderId, emailEvent, "system");
 
     return { success: true, data: updatedOrder };
   } catch (error) {

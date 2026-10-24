@@ -27,5 +27,9 @@ Design matches Tallaby transactional mail: primary `#145163`, accent `#fdad28`, 
 node packages/emails/supabase/generate-ar.mjs
 ```
 
-`confirm-signup.ar.html` is maintained separately (same visual system).  
+`confirm-signup.ar.html` and `reset-password.ar.html` are **generated** from the
+Claude Design email kit (`src/AuthEmails.tsx`) — edit the component, then run
+`pnpm --filter @workspace/emails supabase:auth` and re-paste both into Supabase.
+Suggested subjects: Confirm signup → «أهلًا بك في طلبي · أكّد بريدك الإلكتروني»,
+Reset Password → «إعادة تعيين كلمة المرور».  
 `confirm-signup.en.html` is optional English reference only — production Auth emails use Arabic.

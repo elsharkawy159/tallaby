@@ -5,6 +5,24 @@ export const EMAIL_TYPES = {
   /** reference_id = seller id; the trial never restarts, so once per seller. */
   feeTrialReminderT7: "fee_trial_reminder_t7",
   feeTrialReminderT1: "fee_trial_reminder_t1",
+  /** reference_id = order id (one per order). */
+  orderShipped: "order_shipped",
+  orderDelivered: "order_delivered",
+  orderCancelled: "order_cancelled",
+  refundIssued: "refund_issued",
+  /** reference_id = cart id. */
+  abandonedCart: "abandoned_cart",
+  /**
+   * Seller mail per (order, seller): reference_id = the seller's first
+   * order_items.id in that order, a stable uuid unique to the pair.
+   */
+  sellerNewOrder: "seller_new_order",
+  sellerOrderCancelled: "seller_order_cancelled",
+  sellerLowStock: "seller_low_stock",
+  /** reference_id = seller_wallet_top_ups.id. */
+  sellerWalletTopUp: "seller_wallet_top_up",
+  /** reference_id = stores.id. */
+  sellerStoreCreated: "seller_store_created",
 } as const;
 
 export type EmailType = (typeof EMAIL_TYPES)[keyof typeof EMAIL_TYPES];

@@ -29,7 +29,7 @@ import {
   postWalletTransaction,
   WALLET_REFERENCE_TYPES,
 } from "@workspace/db/wallet";
-import { placeOrderFromCart } from "@workspace/lib/orders";
+import { placeOrderFromCart, sendOrderEventEmail, sendRefundIssuedEmail } from "@workspace/lib/orders";
 import { cartProductsOutsideStoreCatalog } from "@workspace/lib/stores/server";
 import {
   applyInvalidation,
@@ -491,6 +491,7 @@ export async function cancelOrder(orderId: string, reason?: string, accessToken?
 
     let updatedOrder: typeof orders.$inferSelect | undefined;
     let stockResults: Awaited<ReturnType<typeof restoreStock>> = [];
+    let walletRefundAmount = 0;
 
     try {
       await db.transaction(async (tx) => {
@@ -563,6 +564,7 @@ export async function cancelOrder(orderId: string, reason?: string, accessToken?
                 referenceId: orderId,
                 description: `Refund for cancelled order`,
               });
+              walletRefundAmount = refundAmount;
             } catch (err) {
               if (!(err instanceof DuplicateWalletTransactionError)) {
                 throw err;
@@ -610,6 +612,15 @@ export async function cancelOrder(orderId: string, reason?: string, accessToken?
     await applyInvalidation(invalidateProductInventory(inventoryItems), {
       from: "ecommerce",
       mode: "action",
+    });
+
+    // Cancellation mail to the customer and sellers, plus the wallet refund
+    // receipt, after the response (best-effort; the backend sends each once).
+    after(async () => {
+      await sendOrderEventEmail(orderId, "cancelled", "customer");
+      if (walletRefundAmount > 0) {
+        await sendRefundIssuedEmail({ orderId, method: "wallet", amount: walletRefundAmount });
+      }
     });
 
     return { success: true, data: updatedOrder };
