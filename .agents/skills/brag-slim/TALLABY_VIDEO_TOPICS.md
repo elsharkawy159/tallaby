@@ -486,4 +486,4 @@ Add one row after every video (newest at the top). The daily automated run also 
 
 | Date | Topic ID | Format | Hook used | Channels | Notes |
 |---|---|---|---|---|---|
-| | | | | | |
+| 2026-10-24 | N-01 | Before/after + feature build-up (28s) | "صفحة المنتج بتاعتك… شكلها زي كل الناس؟" | Instagram Reel, Facebook Reel, TikTok (18:00 Cairo) | First reel. Voice Tamer (eleven_v4). Real UI from tallaby.com template previews (Atelier, Glow, TechHub). File: `social-videos/2026/10/24-reel-01-product-page-builder.mp4` |
