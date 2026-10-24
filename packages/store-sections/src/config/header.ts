@@ -177,19 +177,22 @@ function appendFooterTools(tree: Node[], row: Node): Node[] {
 /**
  * The header or footer as it is drawn: its logo, store name and tools as the
  * seller set them (see above). `translated`: the store has more than one
- * language. `hasLogo`: the store uploaded a logo. Never mutates its input,
- * and returns it unchanged when nothing applies.
+ * language. `hasLogo`: the store uploaded a logo. `logoPlaceholder` (editor
+ * only): without a logo, the logo node still goes in, beside the store name,
+ * so the canvas can show its uploader there. Never mutates its input, and
+ * returns it unchanged when nothing applies.
  */
 export function drawChrome(
   instance: SectionInstance | null | undefined,
   part: ChromePart,
-  opts: { translated: boolean; hasLogo: boolean },
+  opts: { translated: boolean; hasLogo: boolean; logoPlaceholder?: boolean },
 ): SectionInstance | null | undefined {
   const tree = instance?.componentTree;
   if (!instance || !tree?.length) return instance;
   const on = (option: ChromeOption) => chromeOptionOn(instance, part, option);
   let nodes = tree;
   if (opts.hasLogo && on("logo")) nodes = withStoreLogo(nodes, instance.id, part, on("storeName"));
+  else if (opts.logoPlaceholder && on("logo")) nodes = withStoreLogo(nodes, instance.id, part, true);
   const tools: Node[] = [];
   const tool = (type: Node["type"], suffix: string) => {
     if (!contains(nodes, (node) => node.type === type)) tools.push({ id: `${instance.id}-${suffix}`, type, props: {}, children: [] });

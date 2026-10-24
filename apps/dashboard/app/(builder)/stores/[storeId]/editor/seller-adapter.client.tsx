@@ -5,6 +5,7 @@ import type { EditorAdapter, EditorCapabilities } from "@workspace/store-editor"
 import { sellerMediaAdapter } from "@/components/media/media-adapter.client";
 import { createFormFromTemplate } from "@/app/(main)/stores/[storeId]/website/forms/forms.server";
 import { applyTemplate, templatePreview, undoTemplate } from "@/app/(main)/stores/[storeId]/website/templates/templates.server";
+import { saveStoreGeneral } from "@/app/(main)/stores/[storeId]/settings/store-settings.server";
 import {
   createPage,
   deletePage,
@@ -64,6 +65,11 @@ export function useSellerEditorAdapter(storeId: string, capabilities?: Partial<E
       refreshData: () => refreshEditorData(storeId),
       previewProduct: (productId, locale) => previewProduct(storeId, productId, locale),
       publish: () => publish(storeId),
+      // Same save as Website › Design's logo field (store data, so the live site shows it too).
+      saveLogo: async (logoUrl) => {
+        const result = await saveStoreGeneral(storeId, { logoUrl });
+        return result.success ? { success: true, data: null } : result;
+      },
       pages: {
         create: (input) => createPage(storeId, input),
         update: (pageId, input) => updatePage(storeId, pageId, input),

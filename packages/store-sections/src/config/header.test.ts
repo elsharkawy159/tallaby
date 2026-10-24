@@ -141,6 +141,15 @@ describe("header and footer options (drawChrome)", () => {
     expect(drawChrome(hidden, "header", { translated: false, hasLogo: true })).toBe(hidden);
   });
 
+  it("keeps the logo's place for the editor's uploader without a logo, and never hides the store name for it", () => {
+    const input = chrome([classicLogo()], { storeName: false });
+    const placeholder = { translated: false, hasLogo: false, logoPlaceholder: true };
+    const row = findNode(drawChrome(input, "header", placeholder)!.componentTree!, "row")!;
+    expect(row.children.map((c) => c.type)).toEqual(["storeLogo", "text"]);
+    const hidden = chrome([classicLogo()], { logo: false });
+    expect(drawChrome(hidden, "header", placeholder)).toBe(hidden);
+  });
+
   it("goes before a footer's store name heading when there is no logo link", () => {
     const out = drawChrome(chrome([n("col", "vFlex", {}, [n("name", "heading", { role: "storeName" })])]), "footer", { translated: false, hasLogo: true })!;
     expect(findNode(out.componentTree!, "col")!.children.map((c) => c.type)).toEqual(["storeLogo", "heading"]);

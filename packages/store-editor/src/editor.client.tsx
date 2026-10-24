@@ -28,6 +28,8 @@ import { PreviewProductPicker } from "./canvas/preview-product-picker.client";
 import { offersProductParts } from "./lib/editor-pages.lib";
 import { usePreviewProduct } from "./state/use-preview-product.client";
 import { EditorCanvas } from "./canvas/editor-canvas.client";
+import { LogoUploader } from "./canvas/logo-uploader.client";
+import { useLogoUpload } from "./media/use-logo-upload.client";
 import { createEditorCommands } from "./lib/editor-commands.lib";
 import { QuickInsertDialog, ShortcutsDialog } from "./shell/editor-dialogs.client";
 import { EditorRail } from "./shell/editor-rail.client";
@@ -289,6 +291,10 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
   };
   const dataStore = { id: initial.storeId, catalogMode: initial.catalogMode };
   const libraryWide = useStore(store, (s) => s.libraryWide && s.rail === "add" && s.addTab === "sections");
+  // The store logo: uploaded from the canvas header/footer while there is none, then drawn there at once.
+  const logo = useLogoUpload(initial.store.logoUrl);
+  const profile = useMemo(() => ({ ...initial.store, logoUrl: logo.logoUrl }), [initial.store, logo.logoUrl]);
+  const canUploadLogo = logo.enabled && !initial.readOnly;
 
   // What does not change with page edits (also used by the Add panel's section previews).
   const baseCtx = useMemo<Omit<RenderContext, "pages" | "catalog">>(
@@ -296,7 +302,7 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
       mode: "edit",
       locale,
       dir: locale === "ar" ? "rtl" : "ltr",
-      store: initial.store,
+      store: profile,
       Link: ({ href, className, children, ...rest }) => (
         <a href={href} className={className} data-part={rest["data-part"]}>
           {children}
@@ -315,8 +321,13 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
       forms: Object.fromEntries(forms.map((f) => [f.id, f.form])),
       ...(slotIndustry && { industry: slotIndustry }),
       ...(product && { product }),
+      ...(canUploadLogo && {
+        renderLogoUploader: (size: "md" | "lg") => (
+          <LogoUploader size={size} label={t(logo.uploading ? "logo.uploading" : "logo.upload")} uploading={logo.uploading} onFile={(file) => void logo.upload(file)} />
+        ),
+      }),
     }),
-    [locale, forms, initial.store, t, slotIndustry, product],
+    [locale, forms, profile, t, slotIndustry, product, canUploadLogo, logo.uploading, logo.upload],
   );
 
   const ctx = useMemo<RenderContext>(() => {
@@ -404,7 +415,7 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
           templates={initial.templates}
           templateHost={{
             storeId: initial.storeId,
-            store: initial.store,
+            store: profile,
             catalog,
             fontClassName: initial.fontClassName,
             defaultLocale,
@@ -446,7 +457,7 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
       catalog={catalog}
       uiLocale={uiLocale}
       translated={new Set(initial.locales).size > 1}
-      hasLogo={Boolean(initial.store.logoUrl)}
+      hasLogo={Boolean(logo.logoUrl)}
     />
   );
   const hasSelection = selection !== null;

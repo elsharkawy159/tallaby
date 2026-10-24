@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { roundPriceUpToNearestFive } from "@/lib/utils/product-pricing.lib";
+import { META_KEYWORD_MAX_LENGTH, META_KEYWORDS_MAX } from "./meta-keywords.lib";
 
 export const SUPPORTED_LOCALES = ["en", "ar"] as const
 export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number]
@@ -27,7 +28,7 @@ const localizedFieldsSchema = z.object({
   bulletPoints: z.array(z.string()).max(10).optional(),
   metaTitle: z.string().max(60).optional(),
   metaDescription: z.string().max(160).optional(),
-  metaKeywords: z.string().optional(),
+  metaKeywords: z.array(z.string().max(META_KEYWORD_MAX_LENGTH)).max(META_KEYWORDS_MAX).optional(),
 })
 
 export type LocalizedFields = z.infer<typeof localizedFieldsSchema>
@@ -251,6 +252,7 @@ export const defaultLocalizedFields = (): LocalizedFields => ({
   bulletPoints: [],
   metaTitle: "",
   metaDescription: "",
+  metaKeywords: [],
 })
 
 export const defaultValues = {

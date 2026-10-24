@@ -218,9 +218,12 @@ export function EditorCanvas({
   const { setNodeRef: setDropRef } = useDroppable({ id: CANVAS_DROP_ID });
   const [editing, setEditing] = useState(false);
   // What the storefront draws: flush on phones, plus the logo and tools the seller turned on (never saved).
+  // Without a logo, the host's uploader takes the logo's place (when it can save one).
   const hasLogo = Boolean(ctx.store.logoUrl);
-  const drawnHeader = useMemo(() => drawChrome(flushHeaderOnMobile(header), "header", { translated, hasLogo }), [header, translated, hasLogo]);
-  const drawnFooter = useMemo(() => drawChrome(footer, "footer", { translated, hasLogo }), [footer, translated, hasLogo]);
+  const logoPlaceholder = Boolean(ctx.renderLogoUploader);
+  const chromeOpts = useMemo(() => ({ translated, hasLogo, logoPlaceholder }), [translated, hasLogo, logoPlaceholder]);
+  const drawnHeader = useMemo(() => drawChrome(flushHeaderOnMobile(header), "header", chromeOpts), [header, chromeOpts]);
+  const drawnFooter = useMemo(() => drawChrome(footer, "footer", chromeOpts), [footer, chromeOpts]);
   // Remount a section after in-place editing so React owns clean DOM again.
   const [nonce, setNonce] = useState<Record<string, number>>({});
   const latest = useRef({ sections, header, footer, onRequestImage, onFrameKeyDown, commands });

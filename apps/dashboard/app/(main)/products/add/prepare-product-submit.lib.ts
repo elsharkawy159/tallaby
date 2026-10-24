@@ -1,4 +1,5 @@
 import type { AddProductFormData, LocalizedFields } from "./add-product.schema"
+import { cleanKeywords } from "./meta-keywords.lib"
 
 const META_TITLE_MAX = 60
 const META_DESCRIPTION_MAX = 160
@@ -27,6 +28,7 @@ function cleanLocale (fields: LocalizedFields): LocalizedFields {
     description,
     content: isEmptyHtml(fields.content) ? "" : fields.content,
     bulletPoints: (fields.bulletPoints ?? []).map((point) => point.trim()).filter(Boolean),
+    metaKeywords: cleanKeywords(fields.metaKeywords),
     // The form promises to fill SEO from the name and short description.
     metaTitle: fields.metaTitle?.trim() || (title ? clip(title, META_TITLE_MAX) : ""),
     metaDescription:

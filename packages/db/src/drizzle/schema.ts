@@ -1650,6 +1650,7 @@ export const productTranslations = pgTable("product_translations", {
 	slug: text(),
 	metaTitle: text("meta_title"),
 	metaDescription: text("meta_description"),
+	metaKeywords: text("meta_keywords").array().default([]).notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 }, (table) => [
 	index("product_translations_locale_idx").using("btree", table.locale.asc().nullsLast().op("text_ops")),

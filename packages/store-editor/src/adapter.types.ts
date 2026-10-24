@@ -76,6 +76,12 @@ export type EditorAdapter = {
    */
   previewProduct?(productId: string | undefined, locale: SiteLocale): Promise<EditorResult<ProductDetail | null>>;
   publish(): Promise<EditorResult<{ revisionId: string; revisionNumber: number }>>;
+  /**
+   * Saves an uploaded media URL as the store's logo (the one every header and
+   * footer shows). Hosts without a store profile (template and section editing)
+   * leave it out, and the canvas then shows no logo uploader.
+   */
+  saveLogo?(logoUrl: string): Promise<EditorResult<null>>;
 
   // Optional groups; present iff the matching capability is true.
   pages?: {

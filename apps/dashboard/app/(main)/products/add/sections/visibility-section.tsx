@@ -7,7 +7,9 @@ import { Input } from "@workspace/ui/components/input";
 import { Textarea } from "@workspace/ui/components/textarea";
 import { cn } from "@/lib/utils";
 import { contentDirClass } from "@/lib/i18n/content-dir";
+import { TagsInput } from "@/components/form/tags-input.client";
 import { useProductLinkHost } from "../product-link-host.client";
+import { META_KEYWORD_MAX_LENGTH, META_KEYWORDS_MAX } from "../meta-keywords.lib";
 import {
   FIELD_CLASS,
   FieldHint,
@@ -128,6 +130,36 @@ export function VisibilitySection({
                 />
                 <LengthMeter length={field.value?.length ?? 0} {...META_DESCRIPTION} />
                 <FieldHint className="text-faint">{t("metaDescriptionHint")}</FieldHint>
+              </div>
+            )}
+          />
+
+          <Controller
+            control={form.control}
+            name={`localized.${loc}.metaKeywords`}
+            render={({ field }) => (
+              <div className="flex flex-col gap-1.5">
+                <FieldLabel
+                  htmlFor={`meta-keywords-${loc}`}
+                  locale={loc}
+                  note={`${field.value?.length ?? 0}/${META_KEYWORDS_MAX}`}
+                >
+                  {t("metaKeywords")}
+                </FieldLabel>
+                <TagsInput
+                  id={`meta-keywords-${loc}`}
+                  value={field.value ?? []}
+                  onChange={field.onChange}
+                  max={META_KEYWORDS_MAX}
+                  maxLength={META_KEYWORD_MAX_LENGTH}
+                  placeholder={t("metaKeywordsPlaceholder")}
+                  removeLabel={(tag) => t("metaKeywordsRemove", { tag })}
+                  aria-describedby={`meta-keywords-${loc}-hint`}
+                  inputClassName={contentDirClass(loc)}
+                />
+                <FieldHint id={`meta-keywords-${loc}-hint`} className="text-faint">
+                  {t("metaKeywordsHint")}
+                </FieldHint>
               </div>
             )}
           />

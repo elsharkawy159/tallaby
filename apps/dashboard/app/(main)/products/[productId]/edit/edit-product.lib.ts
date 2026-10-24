@@ -232,6 +232,7 @@ export function buildEditDefaultValues(
               : [],
             metaTitle: product.localized.en.metaTitle ?? "",
             metaDescription: product.localized.en.metaDescription ?? "",
+            metaKeywords: Array.isArray(product.localized.en.metaKeywords) ? product.localized.en.metaKeywords : [],
           }
         : defaultLocalizedFields(),
       ar: product.localized?.ar
@@ -245,6 +246,7 @@ export function buildEditDefaultValues(
               : [],
             metaTitle: product.localized.ar.metaTitle ?? "",
             metaDescription: product.localized.ar.metaDescription ?? "",
+            metaKeywords: Array.isArray(product.localized.ar.metaKeywords) ? product.localized.ar.metaKeywords : [],
           }
         : defaultLocalizedFields(),
     },

@@ -214,7 +214,12 @@ export async function countMediaUsage(
   const out: Record<string, number> = Object.fromEntries(paths.map((p) => [p, 0]));
   if (!paths.length || !isUuid(storeId)) return out;
   const [store] = await q
-    .select({ header: sql<string | null>`${stores.sharedHeader}::text`, footer: sql<string | null>`${stores.sharedFooter}::text` })
+    .select({
+      header: sql<string | null>`${stores.sharedHeader}::text`,
+      footer: sql<string | null>`${stores.sharedFooter}::text`,
+      // The store logo (uploaded from the editor canvas) uses the image too.
+      logo: stores.logoUrl,
+    })
     .from(stores)
     .where(and(eq(stores.id, storeId), eq(stores.sellerId, sellerId), isNull(stores.deletedAt)))
     .limit(1);
@@ -223,7 +228,7 @@ export async function countMediaUsage(
     .select({ content: sql<string | null>`${storePages.draftContent}::text` })
     .from(storePages)
     .where(eq(storePages.storeId, storeId));
-  const texts = [store.header, store.footer, ...pages.map((p) => p.content)].filter((t): t is string => Boolean(t));
+  const texts = [store.header, store.footer, store.logo, ...pages.map((p) => p.content)].filter((t): t is string => Boolean(t));
   for (const path of paths) out[path] = texts.filter((t) => t.includes(path)).length;
   return out;
 }

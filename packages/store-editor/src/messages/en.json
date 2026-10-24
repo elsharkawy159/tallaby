@@ -772,6 +772,12 @@
       "label": "Preview photos for",
       "general": "General",
       "hint": "Only changes the photos on this canvas. The section keeps its photo slots and each store gets photos for its own industry."
+    },
+    "logo": {
+      "upload": "Upload logo",
+      "uploading": "Uploading…",
+      "saved": "Logo saved. It now shows in your header and footer.",
+      "failed": "The logo couldn't be saved. Try again."
     }
   },
   "mediaLibrary": {

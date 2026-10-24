@@ -57,10 +57,14 @@ export async function generateMetadata({
   if (await isSubdomainOfflineForRequest(subdomain)) return STORE_OFFLINE_METADATA;
   const { product } = await resolveStoreProduct(locale, subdomain, slug);
   const firstImage = (product.images as string[] | undefined)?.find((i) => i?.trim());
+  // Seller-entered SEO (dashboard product form) wins over the name and short description.
+  const seo = (product as { seo?: { metaTitle?: string; metaDescription?: string; metaKeywords?: string[] } }).seo;
+  const keywords = seo?.metaKeywords?.filter((k) => typeof k === "string" && k.trim());
 
   return {
-    title: product.title,
-    description: product.description ?? undefined,
+    title: seo?.metaTitle?.trim() || product.title,
+    description: seo?.metaDescription?.trim() || product.description || undefined,
+    ...(keywords?.length ? { keywords } : {}),
     // The marketplace page is the canonical copy of a product.
     alternates: { canonical: marketplaceProductUrl(locale, slug) },
     ...(firstImage && {

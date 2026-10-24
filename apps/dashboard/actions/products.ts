@@ -12,6 +12,7 @@ import { eq, and, desc, asc, sql, inArray } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { getUser } from "./auth";
 import slugify from "slugify";
+import { cleanKeywords } from "@/app/(main)/products/add/meta-keywords.lib";
 import {
   isRichTextEmpty,
   sanitizeRichTextHtml,
@@ -1036,6 +1037,7 @@ export async function getProduct(productId: string) {
             bulletPoints: unknown;
             metaTitle: string | null;
             metaDescription: string | null;
+            metaKeywords: string[] | null;
           }>;
         }
       ).productTranslations ?? [];
@@ -1054,6 +1056,7 @@ export async function getProduct(productId: string) {
           : [],
         metaTitle: enRow?.metaTitle ?? undefined,
         metaDescription: enRow?.metaDescription ?? undefined,
+        metaKeywords: enRow?.metaKeywords ?? [],
       },
       ar: arRow
         ? {
@@ -1066,6 +1069,7 @@ export async function getProduct(productId: string) {
               : [],
             metaTitle: arRow.metaTitle ?? undefined,
             metaDescription: arRow.metaDescription ?? undefined,
+            metaKeywords: arRow.metaKeywords ?? [],
           }
         : {
             title: "",
@@ -1148,6 +1152,7 @@ type CreateProductNew = Omit<
       bulletPoints?: string[];
       metaTitle?: string;
       metaDescription?: string;
+      metaKeywords?: string[];
     };
     ar: {
       title?: string;
@@ -1157,6 +1162,7 @@ type CreateProductNew = Omit<
       bulletPoints?: string[];
       metaTitle?: string;
       metaDescription?: string;
+      metaKeywords?: string[];
     };
   };
 };
@@ -1298,6 +1304,7 @@ export async function createProduct(
           slug: enSlug,
           metaTitle: localizedData.en.metaTitle?.trim() || null,
           metaDescription: localizedData.en.metaDescription?.trim() || null,
+          metaKeywords: cleanKeywords(localizedData.en.metaKeywords),
         };
         await tx.insert(productTranslations).values(enRow);
         slugsForSnapshot.push({ locale: "en", slug: enSlug });
@@ -1309,7 +1316,8 @@ export async function createProduct(
           (localizedData.ar?.slug ?? "").trim() !== "" ||
           (localizedData.ar?.bulletPoints ?? []).length > 0 ||
           (localizedData.ar?.metaTitle ?? "").trim() !== "" ||
-          (localizedData.ar?.metaDescription ?? "").trim() !== "";
+          (localizedData.ar?.metaDescription ?? "").trim() !== "" ||
+          (localizedData.ar?.metaKeywords ?? []).length > 0;
 
         if (arHasContent) {
           // One slug per product: the English one, in both languages.
@@ -1324,6 +1332,7 @@ export async function createProduct(
             slug: arSlug,
             metaTitle: localizedData.ar?.metaTitle?.trim() || null,
             metaDescription: localizedData.ar?.metaDescription?.trim() || null,
+            metaKeywords: cleanKeywords(localizedData.ar?.metaKeywords),
           };
           await tx.insert(productTranslations).values(arRow);
           slugsForSnapshot.push({ locale: "ar", slug: arSlug });
@@ -1419,6 +1428,7 @@ export async function updateProduct(
         bulletPoints?: string[];
         metaTitle?: string;
         metaDescription?: string;
+        metaKeywords?: string[];
       };
       ar: {
         title?: string;
@@ -1428,6 +1438,7 @@ export async function updateProduct(
         bulletPoints?: string[];
         metaTitle?: string;
         metaDescription?: string;
+        metaKeywords?: string[];
       };
     };
   }
@@ -1529,6 +1540,7 @@ export async function updateProduct(
             bulletPoints: localizedData.en?.bulletPoints ?? [],
             metaTitle: localizedData.en?.metaTitle?.trim() || null,
             metaDescription: localizedData.en?.metaDescription?.trim() || null,
+            metaKeywords: cleanKeywords(localizedData.en?.metaKeywords),
           })
           .where(
             and(
@@ -1544,7 +1556,8 @@ export async function updateProduct(
           (localizedData.ar?.slug ?? "").trim() !== "" ||
           (localizedData.ar?.bulletPoints ?? []).length > 0 ||
           (localizedData.ar?.metaTitle ?? "").trim() !== "" ||
-          (localizedData.ar?.metaDescription ?? "").trim() !== "";
+          (localizedData.ar?.metaDescription ?? "").trim() !== "" ||
+          (localizedData.ar?.metaKeywords ?? []).length > 0;
 
         if (arHasContent && localizedData.ar) {
           const arRow = await tx.query.productTranslations.findFirst({
@@ -1562,6 +1575,7 @@ export async function updateProduct(
             bulletPoints: localizedData.ar.bulletPoints ?? [],
             metaTitle: localizedData.ar.metaTitle?.trim() || null,
             metaDescription: localizedData.ar.metaDescription?.trim() || null,
+            metaKeywords: cleanKeywords(localizedData.ar.metaKeywords),
           };
           if (arRow) {
             await tx

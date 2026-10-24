@@ -417,6 +417,8 @@ export interface RenderContext {
   renderAccountButton?: () => ReactNode;
   /** The site's light/dark switch (`themeToggle` node); see `siteDarkCss`. */
   renderThemeToggle?: () => ReactNode;
+  /** Editor only: the uploader a `storeLogo` node shows while the store has no logo (`drawChrome` `logoPlaceholder`). */
+  renderLogoUploader?: (size: "md" | "lg") => ReactNode;
   /** A live countdown to `endsAt` (ISO). Without it, sections print the end date. */
   renderCountdown?: (endsAt: string, instanceId: string) => ReactNode;
   /** Forms of this store by id, resolved server-side by the host (P4-10). Foreign ids are never present. */

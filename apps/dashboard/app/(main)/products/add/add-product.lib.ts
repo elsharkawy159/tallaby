@@ -168,6 +168,8 @@ export function getSectionProgress(
       filled(en?.metaDescription) ||
       filled(ar?.metaTitle) ||
       filled(ar?.metaDescription) ||
+      (en?.metaKeywords?.length ?? 0) > 0 ||
+      (ar?.metaKeywords?.length ?? 0) > 0 ||
       !!values.isTrending ||
       !!values.isSeasonal,
   };

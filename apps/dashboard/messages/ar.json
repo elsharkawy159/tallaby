@@ -1281,7 +1281,11 @@
         "metaTitleHint": "المقترح: 50–60 حرفًا",
         "metaDescription": "وصف الميتا",
         "metaDescriptionPlaceholder": "يُملأ تلقائيًا من الوصف المختصر",
-        "metaDescriptionHint": "المقترح: 150–160 حرفًا"
+        "metaDescriptionHint": "المقترح: 150–160 حرفًا",
+        "metaKeywords": "الكلمات المفتاحية",
+        "metaKeywordsPlaceholder": "اكتب كلمة واضغط Enter",
+        "metaKeywordsHint": "كلمات يبحث بها العملاء، مثل \"فستان قطن\". اضغط Enter أو اكتب فاصلة بعد كل كلمة.",
+        "metaKeywordsRemove": "إزالة {tag}"
       }
     },
     "import": {

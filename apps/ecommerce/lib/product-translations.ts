@@ -14,6 +14,7 @@ export interface ProductTranslationFromRelation {
   slug?: string | null
   metaTitle?: string | null
   metaDescription?: string | null
+  metaKeywords?: string[] | null
 }
 
 /**
@@ -40,6 +41,7 @@ export interface ProductTranslationRow {
   slug: string | null;
   metaTitle: string | null;
   metaDescription: string | null;
+  metaKeywords: string[] | null;
   locale: string;
 }
 
@@ -142,6 +144,7 @@ const TRANSLATION_COLUMNS = {
   slug: productTranslations.slug,
   metaTitle: productTranslations.metaTitle,
   metaDescription: productTranslations.metaDescription,
+  metaKeywords: productTranslations.metaKeywords,
   locale: productTranslations.locale,
 } as const;
 
@@ -240,7 +243,7 @@ export type MergedProduct<T> = T & {
   content: string | null;
   bulletPoints: unknown;
   slug: string;
-  seo?: { metaTitle?: string; metaDescription?: string };
+  seo?: { metaTitle?: string; metaDescription?: string; metaKeywords?: string[] };
 };
 
 function resolveLocalizedSlug(
@@ -307,6 +310,7 @@ export function mergeProductWithTranslation<T extends Record<string, unknown>>(
     seo: {
       metaTitle: translation.metaTitle ?? undefined,
       metaDescription: translation.metaDescription ?? undefined,
+      metaKeywords: translation.metaKeywords ?? undefined,
       ...(typeof product.seo === "object" && product.seo !== null
         ? (product.seo as Record<string, unknown>)
         : {}),

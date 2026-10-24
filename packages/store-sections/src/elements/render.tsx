@@ -567,7 +567,15 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
     case "storeLogo": {
       // The logo uploaded in Website › Design, wherever the header/footer options put it.
       const url = ctx.store.logoUrl ? ctx.imageUrl(ctx.store.logoUrl) : null;
-      if (!url) return null;
+      if (!url) {
+        // No logo yet: the editor shows its uploader in the logo's place.
+        const uploader = ctx.mode === "edit" ? ctx.renderLogoUploader?.(props.size === "lg" ? "lg" : "md") : null;
+        return uploader ? (
+          <div {...attrs} className="flex shrink-0">
+            {uploader}
+          </div>
+        ) : null;
+      }
       return (
         // eslint-disable-next-line @next/next/no-img-element -- shared by both apps; a logo is small
         <img

@@ -1281,7 +1281,11 @@
         "metaTitleHint": "Recommended: 50–60 characters",
         "metaDescription": "Meta description",
         "metaDescriptionPlaceholder": "Filled from the short description",
-        "metaDescriptionHint": "Recommended: 150–160 characters"
+        "metaDescriptionHint": "Recommended: 150–160 characters",
+        "metaKeywords": "Keywords",
+        "metaKeywordsPlaceholder": "Type a keyword and press Enter",
+        "metaKeywordsHint": "Words shoppers search for, like \"cotton dress\". Press Enter or type a comma after each one.",
+        "metaKeywordsRemove": "Remove {tag}"
       }
     },
     "import": {
