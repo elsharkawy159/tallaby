@@ -973,7 +973,14 @@
     },
     "discountExpiry": {
       "label": "انتهاء الخصم",
-      "placeholder": "اختر تاريخ ووقت الانتهاء"
+      "placeholder": "اختر تاريخ ووقت الانتهاء",
+      "quickPicks": "اختيارات سريعة",
+      "inDays": "{count, plural, =1 {غدًا} =2 {يومان} few {# أيام} other {# يومًا}}",
+      "date": "تاريخ الانتهاء",
+      "time": "وقت الانتهاء",
+      "inPast": "هذا الوقت مضى بالفعل. اختر تاريخًا أو وقتًا لاحقًا.",
+      "endsToday": "ينتهي الخصم اليوم الساعة {time}.",
+      "endsIn": "ينتهي الخصم بعد {count, plural, =1 {يوم واحد} =2 {يومين} few {# أيام} other {# يومًا}}."
     },
     "variantPricing": {
       "usesMainPrice": "يستخدم سعر المنتج الرئيسي",
@@ -1223,6 +1230,8 @@
         "discount": "الخصم",
         "currency": "EGP",
         "discountType": "نوع الخصم",
+        "discountPercent": "نسبة مئوية",
+        "discountAmount": "مبلغ ثابت (جنيه)",
         "finalForCustomer": "السعر النهائي للعميل",
         "save": "وفّر {amount}",
         "percentOff": "خصم {percent}%",
@@ -3792,7 +3801,15 @@
       "hint": "من قوائمك الخاصة، لتجميع المنتجات في متجرك.",
       "linkFailed": "تم حفظ المنتج، لكن لم يُحفظ التصنيف أو الماركة. عدّل المنتج لتعيينهما مرة أخرى.",
       "manageCategories": "إدارة التصنيفات",
-      "manageBrands": "إدارة الماركات"
+      "manageBrands": "إدارة الماركات",
+      "pickOrType": "اختر من قائمتك أو اكتب اسمًا جديدًا",
+      "typeToAdd": "اكتب اسمًا لإضافته",
+      "clear": "مسح",
+      "addNew": "إضافة «{name}»",
+      "noMatches": "لا توجد نتائج",
+      "emptyListHint": "قائمتك فارغة. اكتب اسمًا لإضافته.",
+      "categoryAdded": "تمت إضافة «{name}» إلى تصنيفاتك.",
+      "brandAdded": "تمت إضافة «{name}» إلى ماركاتك."
     }
   },
   "notifications": {

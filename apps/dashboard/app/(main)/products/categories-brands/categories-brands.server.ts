@@ -22,11 +22,13 @@ import { isAccessError, requireSeller } from "@/lib/auth/require-seller.server";
 import {
   SELLER_TAXONOMY_MAX_ITEMS,
   addTaxonomyItemSchema,
+  ensureTaxonomyItemSchema,
   productTaxonomySchema,
   reorderTaxonomySchema,
   updateTaxonomyItemSchema,
   type PackSuggestion,
   type SellerTaxonomyItem,
+  type SellerTaxonomyOption,
   type TaxonomyErrorKey,
   type TaxonomyKind,
   type TaxonomyResult,
@@ -37,6 +39,7 @@ import {
   escapeLike,
   isSellerTaxonomyImage,
   isUniqueViolation,
+  taxonomyNameKey,
 } from "./categories-brands.lib";
 
 /**
@@ -151,6 +154,50 @@ export async function addTaxonomyItem(kind: TaxonomyKind, input: unknown): Promi
     return { success: true, data: { id: row!.id, ...values, productCount: 0 } };
   } catch (error) {
     return failure(error, "add");
+  }
+}
+
+/**
+ * The product form's typed-in category / brand: the seller's item with that
+ * name (English or Arabic, case-insensitive), added to their list when it
+ * isn't there yet.
+ */
+export async function ensureTaxonomyItem(kind: TaxonomyKind, input: unknown): Promise<TaxonomyResult<SellerTaxonomyOption>> {
+  try {
+    const seller = await requireSeller({ forWrite: true });
+    const parsed = ensureTaxonomyItemSchema.safeParse(input);
+    if (!isKind(kind) || !parsed.success) return { success: false, error: "invalidInput" };
+    const name = cleanTaxonomyName(parsed.data.name);
+    const { table } = tableFor(kind);
+
+    const findExisting = async () => {
+      const key = taxonomyNameKey(name);
+      const [row] = await db
+        .select({ id: table.id, name: table.name, nameAr: table.nameAr })
+        .from(table)
+        .where(
+          and(
+            eq(table.sellerId, seller.sellerId),
+            or(sql`lower(btrim(${table.name})) = ${key}`, sql`lower(btrim(${table.nameAr})) = ${key}`),
+          ),
+        )
+        .limit(1);
+      return row;
+    };
+
+    const existing = await findExisting();
+    if (existing) return { success: true, data: existing };
+
+    const added = await addTaxonomyItem(kind, { name });
+    if (added.success) return { success: true, data: { id: added.data.id, name: added.data.name, nameAr: added.data.nameAr } };
+    // Added at the same moment (another tab, a double submit): use that one.
+    if (added.error === "duplicate") {
+      const raced = await findExisting();
+      if (raced) return { success: true, data: raced };
+    }
+    return added;
+  } catch (error) {
+    return failure(error, "ensure");
   }
 }
 

@@ -973,7 +973,14 @@
     },
     "discountExpiry": {
       "label": "Discount expiry",
-      "placeholder": "Select expiry date & time"
+      "placeholder": "Select expiry date & time",
+      "quickPicks": "Quick picks",
+      "inDays": "{count, plural, =1 {Tomorrow} other {# days}}",
+      "date": "End date",
+      "time": "End time",
+      "inPast": "This time has already passed. Pick a later date or time.",
+      "endsToday": "The discount ends today at {time}.",
+      "endsIn": "The discount ends in {count, plural, =1 {1 day} other {# days}}."
     },
     "variantPricing": {
       "usesMainPrice": "Uses main product price",
@@ -1223,6 +1230,8 @@
         "discount": "Discount",
         "currency": "EGP",
         "discountType": "Discount type",
+        "discountPercent": "Percentage off",
+        "discountAmount": "Fixed amount off (EGP)",
         "finalForCustomer": "Final price for customers",
         "save": "Save {amount}",
         "percentOff": "{percent}% off",
@@ -3792,7 +3801,15 @@
       "hint": "From your own lists, for grouping products in your store.",
       "linkFailed": "The product was saved, but your category or brand wasn't. Edit the product to set it again.",
       "manageCategories": "Manage categories",
-      "manageBrands": "Manage brands"
+      "manageBrands": "Manage brands",
+      "pickOrType": "Pick from your list or type a new one",
+      "typeToAdd": "Type a name to add it",
+      "clear": "Clear",
+      "addNew": "Add “{name}”",
+      "noMatches": "No matches",
+      "emptyListHint": "Your list is empty. Type a name to add one.",
+      "categoryAdded": "“{name}” was added to your categories.",
+      "brandAdded": "“{name}” was added to your brands."
     }
   },
   "notifications": {

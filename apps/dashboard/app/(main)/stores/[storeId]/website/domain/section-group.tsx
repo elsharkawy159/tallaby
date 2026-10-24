@@ -22,7 +22,7 @@ export function InPageNav({ label, items }: { label: string; items: { id: string
 /** A titled group of cards on a single settings page (icon, title, short description). */
 export function SectionGroup({
   id,
-  icon,
+  icon: Icon,
   title,
   description,
   children,
@@ -36,7 +36,8 @@ export function SectionGroup({
   return (
     <section id={id} aria-labelledby={`${id}-title`} className="scroll-mt-[136px] space-y-4 md:scroll-mt-[88px]">
       <div className="flex items-start gap-3 border-b pb-3">
-        <SectionIcon icon={icon} />
+        {/* Rendered here: SectionIcon is a client component and can't take a component prop from the server. */}
+        <SectionIcon icon={<Icon />} />
         <div className="min-w-0">
           <h2 id={`${id}-title`} className="text-lg font-bold">
             {title}

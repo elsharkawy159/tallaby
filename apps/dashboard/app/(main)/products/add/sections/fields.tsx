@@ -4,13 +4,9 @@ import { useEffect, useState } from "react";
 import { Controller, useFormContext, useFormState } from "react-hook-form";
 import { useTranslations } from "next-intl";
 import { roundPriceUpToNearestFive } from "@/lib/utils/product-pricing.lib";
-import {
-  GROUP_SELECT_CLASS,
-  GroupInput,
-  InputAddon,
-  InputGroup,
-} from "@/components/form/form-ui";
+import { GroupInput, InputGroup } from "@/components/form/form-ui";
 import { CURRENCY_CODE, CurrencyAddon } from "@/components/form/currency-input";
+import { cn } from "@/lib/utils";
 import { getErrorAtPath } from "../add-product.lib";
 import type { AddProductFormData } from "../add-product.schema";
 
@@ -150,7 +146,9 @@ export function MoneyField({
   );
 }
 
-/** Discount amount with a %/EGP switch at the end of the group. */
+const DISCOUNT_TYPES = ["percent", "amount"] as const;
+
+/** Discount amount with a %/EGP segmented switch at the end of the group. */
 export function DiscountField({
   id,
   valueName,
@@ -168,17 +166,39 @@ export function DiscountField({
       <Controller
         control={control}
         name={typeName as never}
-        render={({ field }) => (
-          <select
-            aria-label={t("discountType")}
-            className={GROUP_SELECT_CLASS}
-            value={(field.value as unknown as string) || "percent"}
-            onChange={(e) => field.onChange(e.target.value)}
-          >
-            <option value="percent">%</option>
-            <option value="amount">{CURRENCY_CODE}</option>
-          </select>
-        )}
+        render={({ field }) => {
+          const current = (field.value as unknown as string) || "percent";
+          return (
+            <div
+              role="radiogroup"
+              aria-label={t("discountType")}
+              dir="ltr"
+              className="m-1.5 flex shrink-0 items-center rounded-lg bg-muted p-0.5"
+            >
+              {DISCOUNT_TYPES.map((type) => {
+                const checked = current === type;
+                return (
+                  <button
+                    key={type}
+                    type="button"
+                    role="radio"
+                    aria-checked={checked}
+                    title={type === "percent" ? t("discountPercent") : t("discountAmount")}
+                    onClick={() => field.onChange(type)}
+                    className={cn(
+                      "h-full min-w-10 cursor-pointer rounded-md px-2.5 text-xs font-semibold transition-[color,background-color,box-shadow] outline-none focus-visible:ring-[3px] focus-visible:ring-primary/30",
+                      checked
+                        ? "bg-card text-primary-ink shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {type === "percent" ? "%" : CURRENCY_CODE}
+                  </button>
+                );
+              })}
+            </div>
+          );
+        }}
       />
     </InputGroup>
   );

@@ -36,7 +36,7 @@ export default async function PlanPage() {
 
       <SectionCard
         id="plan"
-        icon={Gem}
+        icon={<Gem />}
         title={t("currentPlan")}
         description={t("currentPlanDescription")}
         tag={<Badge variant="secondary">{t(`plans.${planId}`)}</Badge>}
@@ -81,7 +81,7 @@ export default async function PlanPage() {
       </SectionCard>
 
       {/* The seller's real cost today (PLAN.md §13): the per-order fee and the free trial. */}
-      <SectionCard id="fees" icon={Receipt} title={t("fees")} description={t("feesDescription")}>
+      <SectionCard id="fees" icon={<Receipt />} title={t("fees")} description={t("feesDescription")}>
         <ul className="divide-y rounded-xl border text-sm">
           <li className="flex items-center justify-between gap-3 px-4 py-3">
             <span>{t("feeLine")}</span>

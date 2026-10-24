@@ -54,7 +54,10 @@ export const addTaxonomyItemSchema = z.union([
   z.object({ name, nameAr: optionalName, image }).strict(),
 ]);
 
-export const updateTaxonomyItemSchema = z.object({ name, nameAr: optionalName, image }).strict();
+/** The product form's typed-in name: find it in the seller's list, or add it. */
+export const ensureTaxonomyItemSchema = z.object({ name }).strict();
+
+export const updateTaxonomyItemSchema =z.object({ name, nameAr: optionalName, image }).strict();
 
 /** The full list of the seller's item ids, in the new order. */
 export const reorderTaxonomySchema = z

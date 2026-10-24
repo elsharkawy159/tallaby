@@ -337,7 +337,7 @@
         "hints": {
           "logo": "Shows the logo you uploaded in",
           "noLogo": "Upload your logo once and it shows in every header and footer:",
-          "storeName": "Turn off when your logo already has the name in it.",
+          "storeName": "Your logo replaces the name. Turn on to show the name beside it too.",
           "languageSwitcher": "Lets visitors switch your website between Arabic and English.",
           "themeToggle": "A button that switches your website between light and dark. Visitors' choice is remembered.",
           "account": "Lets customers sign in, or open their account when they're signed in."

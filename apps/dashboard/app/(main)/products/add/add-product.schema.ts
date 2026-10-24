@@ -261,7 +261,7 @@ export const defaultValues = {
   brandId: undefined,
   // sellerCategoryId / sellerBrandId stay unset: bulk import sends these values straight to createProduct.
   sku: "",
-  quantity: 0,
+  quantity: 12,
   maxOrderQuantity: undefined,
   dimensions: {
     length: undefined,

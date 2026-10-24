@@ -94,8 +94,10 @@ export function withLanguageSwitcher(header: SectionInstance | null | undefined,
  * - Logo: the store logo uploaded in Website › Design (`storeLogo` node, drawn
  *   from the store profile). In the header's logo link it takes the place of
  *   the design's mark (the first non-text piece before the store name), else
- *   it goes before the store name. Without an uploaded logo nothing changes.
- * - Store name: hidden only next to an uploaded logo (never leaves the link empty).
+ *   it goes before the store name. Without a drawn logo the mark is dropped,
+ *   so the brand is the store name alone (owner, 2026-10-24).
+ * - Store name: beside an uploaded logo only when turned on (off by default:
+ *   the logo replaces the name; owner, 2026-10-24). Never leaves the link empty.
  * - Language switcher, theme toggle, sign-in: in the header beside the cart
  *   (as `withLanguageSwitcher` places the switcher); in the footer as one row
  *   after the social links, else at the end of the footer's container.
@@ -105,8 +107,8 @@ export const CHROME_OPTIONS = ["logo", "storeName", "languageSwitcher", "themeTo
 export type ChromeOption = (typeof CHROME_OPTIONS)[number];
 
 const CHROME_DEFAULTS: Record<ChromePart, Record<ChromeOption, boolean>> = {
-  header: { logo: true, storeName: true, languageSwitcher: true, themeToggle: false, account: false },
-  footer: { logo: true, storeName: true, languageSwitcher: false, themeToggle: false, account: false },
+  header: { logo: true, storeName: false, languageSwitcher: true, themeToggle: false, account: false },
+  footer: { logo: true, storeName: false, languageSwitcher: false, themeToggle: false, account: false },
 };
 
 /** Whether an option is on for this header or footer (its default when the seller never changed it). */
@@ -127,13 +129,21 @@ function contains(nodes: readonly Node[], match: (node: Node) => boolean): boole
   return nodes.some((node) => match(node) || contains(node.children, match));
 }
 
-/** Puts the logo before the store name inside `nodes`, in place of a mark beside it; null when there is no store name. */
-function placeLogo(nodes: Node[], logo: Node, showName: boolean): Node[] | null {
+/**
+ * Puts the logo before the store name inside `nodes`, in place of a mark
+ * beside it; with no logo, drops the mark. Null when there is no store name.
+ */
+function placeLogo(nodes: Node[], logo: Node | null, showName: boolean): Node[] | null {
   const index = nodes.findIndex(hasRole("storeName"));
   if (index >= 0) {
     const before = nodes.slice(0, index);
     const markAt = before.findIndex((node) => !TEXT_TYPES.has(node.type));
-    const kept = markAt >= 0 ? before.map((node, i) => (i === markAt ? logo : node)) : [...before, logo];
+    const kept =
+      markAt >= 0
+        ? before.flatMap((node, i) => (i !== markAt ? [node] : logo ? [logo] : []))
+        : logo
+          ? [...before, logo]
+          : before;
     return [...kept, ...(showName ? [nodes[index]!] : []), ...nodes.slice(index + 1)];
   }
   for (const [i, node] of nodes.entries()) {
@@ -162,6 +172,20 @@ function withStoreLogo(tree: Node[], id: string, part: ChromePart, showName: boo
     placeLogo(tree, logo, showName) ??
     tree
   );
+}
+
+/** The store name alone: the design's mark beside it is dropped (header logo link first, else the first store name). */
+function withoutMark(tree: Node[]): Node[] {
+  const out =
+    replaceFirst(tree, hasRole("logo"), (link) => ({ ...link, children: placeLogo(link.children, null, true) ?? link.children })) ??
+    placeLogo(tree, null, true) ??
+    tree;
+  // It only removes: the same count means there was no mark, so keep the input as is.
+  return countNodes(out) === countNodes(tree) ? tree : out;
+}
+
+function countNodes(nodes: readonly Node[]): number {
+  return nodes.reduce((sum, node) => sum + 1 + countNodes(node.children), 0);
 }
 
 /** The footer's tools row: after the social links, else at the end of its first container, else of the root section. */
@@ -193,6 +217,7 @@ export function drawChrome(
   let nodes = tree;
   if (opts.hasLogo && on("logo")) nodes = withStoreLogo(nodes, instance.id, part, on("storeName"));
   else if (opts.logoPlaceholder && on("logo")) nodes = withStoreLogo(nodes, instance.id, part, true);
+  else nodes = withoutMark(nodes);
   const tools: Node[] = [];
   const tool = (type: Node["type"], suffix: string) => {
     if (!contains(nodes, (node) => node.type === type)) tools.push({ id: `${instance.id}-${suffix}`, type, props: {}, children: [] });

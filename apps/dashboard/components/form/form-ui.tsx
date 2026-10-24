@@ -1,5 +1,6 @@
 'use client'
 
+import { cloneElement, isValidElement, type ReactElement } from 'react'
 import type { LucideIcon } from 'lucide-react'
 import { Minus, Plus } from 'lucide-react'
 
@@ -63,7 +64,8 @@ export function SectionCard ({
   className,
 }: {
   id: string
-  icon: LucideIcon
+  /** From a server component pass a rendered icon (`<Gem />`): a component can't cross into this client file. */
+  icon: SectionIconProp
   title: React.ReactNode
   description: React.ReactNode
   /** Small badge in the header; hidden on phones. */
@@ -119,7 +121,10 @@ export function SectionCard ({
   )
 }
 
-export function SectionIcon ({ icon: Icon, compact = false }: { icon: LucideIcon; compact?: boolean }) {
+export type SectionIconProp = LucideIcon | ReactElement<{ className?: string }>
+
+export function SectionIcon ({ icon: Icon, compact = false }: { icon: SectionIconProp; compact?: boolean }) {
+  const className = compact ? 'size-[17px]' : 'size-[18px]'
   return (
     <div
       className={cn(
@@ -127,7 +132,7 @@ export function SectionIcon ({ icon: Icon, compact = false }: { icon: LucideIcon
         compact ? 'size-9' : 'size-9.5'
       )}
     >
-      <Icon className={compact ? 'size-[17px]' : 'size-[18px]'} />
+      {isValidElement(Icon) ? cloneElement(Icon, { className }) : <Icon className={className} />}
     </div>
   )
 }

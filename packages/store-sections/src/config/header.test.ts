@@ -125,20 +125,42 @@ describe("header and footer options (drawChrome)", () => {
   };
   const off = { translated: false, hasLogo: false };
 
-  it("puts the uploaded logo in place of the header's mark, beside the store name", () => {
+  it("puts the uploaded logo in place of the header's mark and the store name", () => {
     const out = drawChrome(chrome([classicLogo()]), "header", { translated: false, hasLogo: true })!;
     const row = findNode(out.componentTree!, "row")!;
-    expect(row.children.map((c) => c.type)).toEqual(["storeLogo", "text"]);
+    expect(row.children.map((c) => c.type)).toEqual(["storeLogo"]);
     expect(findNode(out.componentTree!, "mark")).toBeNull();
   });
 
-  it("can hide the store name next to the logo, and leaves everything as authored without a logo", () => {
-    const input = chrome([classicLogo()], { storeName: false });
+  it("can show the store name next to the logo too", () => {
+    const input = chrome([classicLogo()], { storeName: true });
     const row = findNode(drawChrome(input, "header", { translated: false, hasLogo: true })!.componentTree!, "row")!;
-    expect(row.children.map((c) => c.type)).toEqual(["storeLogo"]);
-    expect(drawChrome(input, "header", off)).toBe(input);
-    const hidden = chrome([classicLogo()], { logo: false });
-    expect(drawChrome(hidden, "header", { translated: false, hasLogo: true })).toBe(hidden);
+    expect(row.children.map((c) => c.type)).toEqual(["storeLogo", "text"]);
+  });
+
+  it("shows only the store name, without the mark, when no logo is drawn", () => {
+    for (const [input, opts] of [
+      [chrome([classicLogo()]), off],
+      [chrome([classicLogo()], { logo: false }), { translated: false, hasLogo: true }],
+    ] as const) {
+      const out = drawChrome(input, "header", opts)!;
+      expect(findNode(out.componentTree!, "row")!.children.map((c) => c.id)).toEqual(["name"]);
+      expect(findNode(input.componentTree!, "mark")).not.toBeNull();
+    }
+    const plain = chrome([n("logo", "linkBlock", { role: "logo" }, [n("name", "text", { role: "storeName" })])]);
+    expect(drawChrome(plain, "header", off)).toBe(plain);
+  });
+
+  it.each(CODE_TEMPLATES.map((t) => [t.key, t] as const))("%s: without a logo the brand is the store name alone", (_key, template) => {
+    const config = template.config();
+    for (const [part, instance] of [["header", config.header], ["footer", config.footer]] as const) {
+      const out = drawChrome(instance, part, off);
+      const roles: unknown[] = [];
+      const walk = (list: Tree) => list.forEach((node) => (roles.push(node.props.role), walk(node.children)));
+      walk(out?.componentTree ?? []);
+      expect(roles).not.toContain("storeInitial");
+      if (instance?.componentTree && JSON.stringify(instance.componentTree).includes('"storeName"')) expect(roles).toContain("storeName");
+    }
   });
 
   it("keeps the logo's place for the editor's uploader without a logo, and never hides the store name for it", () => {
@@ -147,12 +169,15 @@ describe("header and footer options (drawChrome)", () => {
     const row = findNode(drawChrome(input, "header", placeholder)!.componentTree!, "row")!;
     expect(row.children.map((c) => c.type)).toEqual(["storeLogo", "text"]);
     const hidden = chrome([classicLogo()], { logo: false });
-    expect(drawChrome(hidden, "header", placeholder)).toBe(hidden);
+    expect(findNode(drawChrome(hidden, "header", placeholder)!.componentTree!, "row")!.children.map((c) => c.id)).toEqual(["name"]);
   });
 
   it("goes before a footer's store name heading when there is no logo link", () => {
-    const out = drawChrome(chrome([n("col", "vFlex", {}, [n("name", "heading", { role: "storeName" })])]), "footer", { translated: false, hasLogo: true })!;
-    expect(findNode(out.componentTree!, "col")!.children.map((c) => c.type)).toEqual(["storeLogo", "heading"]);
+    const col = (props: Record<string, unknown>) => chrome([n("col", "vFlex", {}, [n("name", "heading", { role: "storeName" })])], props);
+    const types = (props: Record<string, unknown>) =>
+      findNode(drawChrome(col(props), "footer", { translated: false, hasLogo: true })!.componentTree!, "col")!.children.map((c) => c.type);
+    expect(types({})).toEqual(["storeLogo"]);
+    expect(types({ storeName: true })).toEqual(["storeLogo", "heading"]);
   });
 
   it("adds the theme toggle and sign-in before the header's cart, in order", () => {
