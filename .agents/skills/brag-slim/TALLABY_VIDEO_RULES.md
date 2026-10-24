@@ -13,7 +13,7 @@ Goal: every video should look like it came from a serious, well-funded Egyptian 
 - **No slogan in videos:** never say or show **"متجرك الشامل"** in a video (voiceover, captions, end card) (owner, 2026-10-24). Don't invent other slogans either.
 - **Never** invent numbers, stats, testimonials, awards, customer names or quotes. Never promise card payment or "free shipping over 500 EGP" (both are switched off). Delivery times are estimates, never guarantees.
 - **No real data on screen:** no real seller, customer, phone number (except the official support number), email or order. Use fictional Egyptian stand-ins (store names like "متجر نور", "بيت الكروشيه", "Koko Kids"; prices like `299 ج.م`).
-- **Seller CTA link:** `tallaby.com/sell`.
+- **Link shown everywhere:** **`tallaby.com`** (never `tallaby.com/sell`) on the end card and in post text (owner, 2026-10-25).
 - **Colors:** primary teal `#145163`, accent gold `#fdad28` (CTA buttons, badges, price tags, with dark text), off-white `#fafaf8`, white. Nothing off-palette that clashes.
 - **Fonts:** Arabic **Noto Kufi Arabic** (400–700), Latin **Montserrat** (400–700). No decorative script fonts.
 - **Logo:** the real files from the repo (`apps/*/public/logo*`, see `MARKETING_PROJECT.md` §8). White logo on teal or dark, primary logo on light. Never redraw or stretch it.
@@ -61,7 +61,7 @@ One master file works for Instagram Reels, Facebook Reels and TikTok:
 | 2–6 s | **The pain** | The seller's real problem, shown (a messy WhatsApp chat, a notebook full of orders). Keep it fast. |
 | 6–22 s | **The solution, in use** | The real طلبي UI doing the job: entry → key action → result (for example: pick a template → add a product → store live at `nour.tallaby.com`). 2–3 beats, each with one clear benefit. |
 | 22–26 s | **The payoff** | The result the seller cares about: an order arriving, a beautiful store on a phone, a delivered order. |
-| last 3–4 s | **CTA + brand** | Logo and one CTA: **"ابدأ متجرك دلوقتي — tallaby.com/sell"**, with a gold button. No slogan. Hold it for at least 2.5 s. |
+| last 3–4 s | **CTA + brand** | Logo, one gold CTA button and **`tallaby.com`** under it. No slogan. The spoken and written CTA changes every video (see "Closing lines" below). Hold it for at least 2.5 s. |
 
 **Hooks that work** (write new ones in this spirit, in Egyptian Arabic, at most about 7 words):
 - "لسه بتاخد الأوردرات على الواتساب؟"
@@ -70,6 +70,16 @@ One master file works for Instagram Reels, Facebook Reels and TikTok:
 - "بطّل تقول: ابعتلي رسالة على الخاص."
 - "3 حاجات محدش قالك عليها عن البيع أونلاين."
 - Before/after split: a messy DM thread on the left morphs into a clean store on the right.
+
+**Closing lines (owner, 2026-10-25):** the last spoken line and the button text must **change from video to video**; never reuse the closing line of the previous 5 videos (check the Used topics log). Pick or adapt one of these, or write a new one in the same spirit (always ending on the website, said as "طلبي دوت كوم"):
+- "إفتح متجرك دلوقتي على طلبي دوت كوم."
+- "متجرك مستنيك على طلبي دوت كوم."
+- "جرّبها بنفسك على طلبي دوت كوم."
+- "ابدأ النهارده من طلبي دوت كوم."
+- "خلّي لينكك يبيع… من طلبي دوت كوم."
+- "صمّم متجرك على طلبي دوت كوم."
+- "خطوة واحدة: طلبي دوت كوم."
+The gold button carries a short version of the same line (for example "إفتح متجرك دلوقتي", "جرّبها بنفسك", "ابدأ النهارده").
 
 **Rules for the flow:**
 - **One video = one idea.** One feature, one pain, one CTA.
@@ -103,7 +113,7 @@ One master file works for Instagram Reels, Facebook Reels and TikTok:
   - The hook line is spoken in the first second.
   - Write numbers and prices as words the way an Egyptian says them ("تلاتمية جنيه", not "300").
   - Add diacritics (تشكيل) only where a word could be misread, and write the brand as **طَلَبي** in the voiceover text so it is pronounced correctly.
-  - Never read the URL aloud (the Latin "tallaby" would sound like the wrong name, تالابي). Say "اللينك في البايو" or "ادخل على اللينك" instead; `tallaby.com/sell` is on screen anyway.
+  - **Never say "اللينك في البايو"** (owner, 2026-10-25). To say the website, say **"طلبي دوت كوم"** (write it as "طَلَبي دوت كوم" in the script so the brand is pronounced right); never read the Latin "tallaby" aloud.
 - **Quality check:** the connector makes two takes. Transcribe each with `creative_transcribe_audio`, and keep the take whose words match the script exactly, with "طلبي" pronounced correctly and no robotic or MSA-sounding delivery. If both are bad, fix the script (spelling, diacritics, punctuation) rather than shipping a bad take. Use the transcript's timings to sync the captions and the scene cuts.
 - **If ElevenLabs is not available** in the session: make the video without a voiceover (music plus captions only), and say so in the delivery notes. Never use a generic non-Egyptian text-to-speech voice.
 
@@ -117,7 +127,7 @@ One master file works for Instagram Reels, Facebook Reels and TikTok:
 ## 8. Post text (`share-copy.txt`)
 
 - In Egyptian Arabic. First line = the hook (it shows before "more").
-- 2–4 short lines: the pain, the solution, the CTA **"ابدأ متجرك دلوقتي: tallaby.com/sell"** (on Instagram say "اللينك في البايو", since links in captions aren't clickable).
+- 2–4 short lines: the pain, the solution, and the same closing line as the video, ending with **tallaby.com** (Facebook: `https://tallaby.com`). Never "اللينك في البايو".
 - 3–6 relevant hashtags, Arabic and English mixed: `#طلبي #Tallaby #بيع_أونلاين #تجارة_إلكترونية #مصر`.
 - If the music is a `/brag` bundled track, add the credit line last: "Music: Sascha Ende, ende.app (CC BY 4.0)".
 - Emoji sparingly (at most 2–3). No ALL CAPS, no false urgency, no "excited to share".
@@ -131,7 +141,7 @@ The topic comes from [`TALLABY_VIDEO_TOPICS.md`](TALLABY_VIDEO_TOPICS.md): how t
 - [ ] `ffprobe`: 1080×1920, 30 fps, H.264 `yuv420p`, AAC 48 kHz, duration 20–35 s, size under 45 MB, `faststart` on.
 - [ ] Loudness about -14 LUFS, true peak at most -1 dBTP; voice clear over the music on phone speakers.
 - [ ] Stills from every scene and mid-transition: no text outside the safe box, no overflow, no broken Arabic shaping, Latin digits only, and the layout centred on x = 540 (equal left/right margins).
-- [ ] No "متجرك الشامل" anywhere in the video; the voiceover keeps one steady tone (no emotion tags in the script).
+- [ ] No "متجرك الشامل" and no "اللينك في البايو" anywhere in the video or post; the link shown is `tallaby.com`; the closing line differs from the last 5 videos; the voiceover keeps one steady tone (no emotion tags in the script).
 - [ ] Hook visible and spoken within the first second; CTA held at least 2.5 s at the end.
 - [ ] Captions match the voiceover word for word, and طلبي is pronounced correctly.
 - [ ] No invented stats, no Planned features, no real personal data, no promises the brand guide marks Avoid.

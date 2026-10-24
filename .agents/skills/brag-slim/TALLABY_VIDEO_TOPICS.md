@@ -21,7 +21,7 @@ Use it together with [`TALLABY_VIDEO_RULES.md`](TALLABY_VIDEO_RULES.md) (format,
 5. **Re-check facts every time.** Features change. If a topic's facts no longer match the code or `MARKETING_PROJECT.md`, fix the topic here before making the video.
 6. **After the video,** add a row to §15 and commit the change.
 
-**Each topic gives you:** the seller's pain, 2–3 hooks (Egyptian Arabic, ready to use or adapt), what to show (real screens), and the status. The CTA is always the one in the rules: **"ابدأ متجرك دلوقتي — tallaby.com/sell"**.
+**Each topic gives you:** the seller's pain, 2–3 hooks (Egyptian Arabic, ready to use or adapt), what to show (real screens), and the status. The closing line follows the rules ("Closing lines"): it changes every video and ends on **tallaby.com** ("طلبي دوت كوم").
 
 ## 2. Keeping this file up to date (new features)
 
