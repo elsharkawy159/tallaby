@@ -18,9 +18,9 @@ const values: StoreGeneralFormValues = {
 };
 
 describe("toGeneralPatch", () => {
-  it("always sends the logo; the banner only when Settings owns it", () => {
+  it("sends the logo and banner only when Settings owns them (Website › Design does for builder sellers)", () => {
     const builder = toGeneralPatch(values, { brand: false });
-    expect(builder.logoUrl).toBe("stores/logo.png");
+    expect(builder).not.toHaveProperty("logoUrl");
     expect(builder).not.toHaveProperty("bannerUrl");
 
     const classic = toGeneralPatch(values, { brand: true });
@@ -29,6 +29,6 @@ describe("toGeneralPatch", () => {
   });
 
   it("clears a removed logo", () => {
-    expect(toGeneralPatch({ ...values, logoUrl: "" }, { brand: false }).logoUrl).toBeNull();
+    expect(toGeneralPatch({ ...values, logoUrl: "" }, { brand: true }).logoUrl).toBeNull();
   });
 });

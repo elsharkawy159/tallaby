@@ -25,10 +25,13 @@ export function SectionShellControls({
   value,
   onChange,
   readOnly,
+  defaultWidth = "contained",
 }: {
   value: SectionShellStyle;
   onChange: (patch: Partial<SectionShellStyle>) => void;
   readOnly: boolean;
+  /** The width with nothing chosen: full for a section with a carousel, else contained. */
+  defaultWidth?: (typeof SHELL_WIDTHS)[number];
 }) {
   const t = useTranslations("storeEditor.style.shell");
   const anchor = value.anchor ?? "";
@@ -69,8 +72,8 @@ export function SectionShellControls({
       <ControlRow label={t("width")}>
         <Segmented
           label={t("width")}
-          value={value.width ?? "contained"}
-          onChange={(width) => onChange({ width: width === "contained" ? undefined : width })}
+          value={value.width ?? defaultWidth}
+          onChange={(width) => onChange({ width: width === defaultWidth ? undefined : width })}
           options={SHELL_WIDTHS.map((w) => ({ value: w, label: t(`widths.${w}`), title: t(`widths.${w}`) }))}
         />
       </ControlRow>

@@ -1,5 +1,5 @@
 import { cn } from "@workspace/ui/lib/utils";
-import { SITE_ROOT_CLASS, SiteTheme } from "@workspace/store-sections/render";
+import { SITE_ROOT_CLASS, SiteTheme, chromeHasThemeToggle } from "@workspace/store-sections/render";
 import { CarouselRuntime } from "@workspace/store-sections/client";
 import { AuthDialogProvider } from "@/components/auth/auth-dialog-provider";
 import { CurrencyLabelProvider } from "@/lib/currency-label.client";
@@ -60,9 +60,10 @@ export async function StorefrontShell({
 
   return (
     <CurrencyLabelProvider label={store.currencyLabel}>
-      <div className={cn(storefrontFont.variable, s.root, site && [SITE_ROOT_CLASS, storeFontVariables])}>
+      {/* The theme toggle's init script may set `data-sf-theme` before hydration. */}
+      <div className={cn(storefrontFont.variable, s.root, site && [SITE_ROOT_CLASS, storeFontVariables])} suppressHydrationWarning>
+        {site && <SiteTheme designSystem={site.designSystem} dark={chromeHasThemeToggle(site.header, site.footer)} />}
         {preview && <StorePreviewBanner state={preview} />}
-        {site && <SiteTheme designSystem={site.designSystem} />}
         {site ? <StoreSiteChrome store={store} site={site} locale={locale} part="header" /> : <StorefrontHeader store={store} />}
         <main className="flex-1">{children}</main>
         {site ? <StoreSiteChrome store={store} site={site} locale={locale} part="footer" /> : <StorefrontFooter store={store} />}

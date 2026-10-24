@@ -32,14 +32,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const description = post.seo?.description || post.excerpt;
   const image = post.seo?.ogImage || post.image;
   const languages = post.langs?.length
-    ? Object.fromEntries(post.langs.map((l) => [l, localizedUrl(l, `/blog/${slug}`)]))
+    ? {
+        ...Object.fromEntries(post.langs.map((l) => [l, localizedUrl(l, `/blog/${slug}`)])),
+        "x-default": localizedUrl(post.langs.includes(routing.defaultLocale) ? routing.defaultLocale : post.langs[0]!, `/blog/${slug}`),
+      }
     : base.alternates?.languages;
   return {
     ...base,
     title,
     description,
     alternates: { canonical: base.alternates?.canonical, languages },
-    robots: post.seo?.noindex ? { index: false, follow: true } : undefined,
+    // A post without a body is only its excerpt: keep it out of search results.
+    robots: post.seo?.noindex || !post.hasArticle ? { index: false, follow: true } : undefined,
     openGraph: {
       ...base.openGraph,
       type: "article",
@@ -89,12 +93,12 @@ export default async function BlogPostPage({ params }: Props) {
 
       <div className="bg-teal-900 pt-14 text-white">
         <Container>
-          <nav className="mb-[26px] flex items-center gap-2 text-[13px] text-haze">
+          <nav aria-label={t("post.breadcrumb")} className="mb-[26px] flex items-center gap-2 text-[13px] text-haze">
             <Link href="/blog" className="text-[#c9d9dd]">
               {t("index.eyebrow")}
             </Link>
             <ForwardChevron />
-            <span>{t(`categories.${post.category}`)}</span>
+            <span aria-current="page">{t(`categories.${post.category}`)}</span>
           </nav>
           <h1 className="display-tight max-w-[900px] text-[clamp(32px,4.6vw,56px)] leading-[1.3] font-extrabold en:leading-[1.08]">{title}</h1>
           {post.excerpt ? <p className="mt-[18px] max-w-[700px] text-[19px] text-mist">{post.excerpt}</p> : null}

@@ -54,12 +54,14 @@ export default async function FaqPage() {
                 <p className="mt-1 text-mist">{t("stillBody")}</p>
               </div>
               <div className="flex flex-wrap gap-2.5">
-                <CtaButton asChild>
-                  <a href={CONTACT.whatsapp} target="_blank" rel="noopener noreferrer">
-                    {t("whatsapp")}
-                  </a>
-                </CtaButton>
-                <CtaButton asChild tone="ghost">
+                {CONTACT.whatsapp ? (
+                  <CtaButton asChild>
+                    <a href={CONTACT.whatsapp} target="_blank" rel="noopener noreferrer">
+                      {t("whatsapp")}
+                    </a>
+                  </CtaButton>
+                ) : null}
+                <CtaButton asChild tone={CONTACT.whatsapp ? "ghost" : undefined}>
                   <Link href="/contact">{t("contactPage")}</Link>
                 </CtaButton>
               </div>

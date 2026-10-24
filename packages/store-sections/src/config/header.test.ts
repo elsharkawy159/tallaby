@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { findNode, findParent } from "../elements/tree";
-import { flushHeaderOnMobile, withLanguageSwitcher } from "./header";
+import { chromeHasThemeToggle, chromeOptionOn, drawChrome, flushHeaderOnMobile, setChromeOption, withLanguageSwitcher } from "./header";
 import { sanitizeSiteConfig } from "./sanitize";
 import type { SectionInstance, SiteConfig } from "./schema";
 import { CODE_TEMPLATES } from "../templates/catalog";
@@ -99,5 +99,83 @@ describe("withLanguageSwitcher", () => {
     const place = findParent(out.componentTree!, `${h.id}-language`)!;
     const parent = findNode(out.componentTree!, place.parentId!)!;
     expect(parent.children[place.index + 1]?.props.href).toBe("/cart");
+  });
+});
+
+describe("header and footer options (drawChrome)", () => {
+  type Tree = NonNullable<SectionInstance["componentTree"]>;
+  const n = (id: string, type: string, props: Record<string, unknown> = {}, children: Tree = []): Tree[number] =>
+    ({ id, type, props, children }) as Tree[number];
+  const chrome = (children: Tree, props: Record<string, unknown> = {}): SectionInstance => ({
+    id: "c",
+    sectionId: "custom-section",
+    version: 1,
+    props,
+    componentTree: [n("root", "section", {}, children)],
+  });
+  const classicLogo = () =>
+    n("logo", "linkBlock", { role: "logo", href: "/" }, [
+      n("row", "hFlex", {}, [n("mark", "div", {}, [n("initial", "text", { role: "storeInitial" })]), n("name", "text", { role: "storeName" })]),
+    ]);
+  const typesIn = (h: SectionInstance | null | undefined) => {
+    const out: string[] = [];
+    const walk = (list: Tree) => list.forEach((node) => (out.push(node.type), walk(node.children)));
+    walk(h?.componentTree ?? []);
+    return out;
+  };
+  const off = { translated: false, hasLogo: false };
+
+  it("puts the uploaded logo in place of the header's mark, beside the store name", () => {
+    const out = drawChrome(chrome([classicLogo()]), "header", { translated: false, hasLogo: true })!;
+    const row = findNode(out.componentTree!, "row")!;
+    expect(row.children.map((c) => c.type)).toEqual(["storeLogo", "text"]);
+    expect(findNode(out.componentTree!, "mark")).toBeNull();
+  });
+
+  it("can hide the store name next to the logo, and leaves everything as authored without a logo", () => {
+    const input = chrome([classicLogo()], { storeName: false });
+    const row = findNode(drawChrome(input, "header", { translated: false, hasLogo: true })!.componentTree!, "row")!;
+    expect(row.children.map((c) => c.type)).toEqual(["storeLogo"]);
+    expect(drawChrome(input, "header", off)).toBe(input);
+    const hidden = chrome([classicLogo()], { logo: false });
+    expect(drawChrome(hidden, "header", { translated: false, hasLogo: true })).toBe(hidden);
+  });
+
+  it("goes before a footer's store name heading when there is no logo link", () => {
+    const out = drawChrome(chrome([n("col", "vFlex", {}, [n("name", "heading", { role: "storeName" })])]), "footer", { translated: false, hasLogo: true })!;
+    expect(findNode(out.componentTree!, "col")!.children.map((c) => c.type)).toEqual(["storeLogo", "heading"]);
+  });
+
+  it("adds the theme toggle and sign-in before the header's cart, in order", () => {
+    const input = chrome([n("actions", "hFlex", {}, [n("cart", "linkBlock", { href: "/cart" })])], { themeToggle: true, account: true });
+    const out = drawChrome(input, "header", { translated: true, hasLogo: false })!;
+    expect(findNode(out.componentTree!, "actions")!.children.map((c) => c.type)).toEqual(["languageSwitcher", "themeToggle", "accountLink", "linkBlock"]);
+  });
+
+  it("puts the footer's tools in one row after its social links", () => {
+    const input = chrome([n("box", "container", {}, [n("social", "hFlex", { role: "social" }), n("copy", "text")])], { themeToggle: true });
+    const out = drawChrome(input, "footer", { translated: true, hasLogo: false })!;
+    const box = findNode(out.componentTree!, "box")!;
+    expect(box.children.map((c) => c.id)).toEqual(["social", "c-tools", "copy"]);
+    // The footer's language switcher is off by default.
+    expect(box.children[1]!.children.map((c) => c.type)).toEqual(["themeToggle"]);
+  });
+
+  it("stores only changes from the defaults", () => {
+    const h = chrome([]);
+    expect(setChromeOption(h, "header", "languageSwitcher", true).props).toEqual({});
+    expect(setChromeOption(h, "header", "themeToggle", true).props).toEqual({ themeToggle: true });
+    expect(chromeOptionOn(setChromeOption(h, "footer", "languageSwitcher", true), "footer", "languageSwitcher")).toBe(true);
+    expect(chromeHasThemeToggle(h, chrome([], { themeToggle: true }))).toBe(true);
+    expect(chromeHasThemeToggle(h, null)).toBe(false);
+  });
+
+  it.each(CODE_TEMPLATES.map((t) => [t.key, t] as const))("%s: the logo and every tool find a place", (_key, template) => {
+    const config = template.config();
+    const all = { translated: true, hasLogo: true };
+    const header = drawChrome({ ...config.header!, props: { themeToggle: true, account: true } }, "header", all);
+    expect(typesIn(header)).toEqual(expect.arrayContaining(["storeLogo", "languageSwitcher", "themeToggle", "accountLink"]));
+    const footer = drawChrome({ ...config.footer!, props: { themeToggle: true } }, "footer", all);
+    expect(typesIn(footer)).toEqual(expect.arrayContaining(["themeToggle"]));
   });
 });

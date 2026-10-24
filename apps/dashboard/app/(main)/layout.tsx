@@ -59,7 +59,8 @@ export default async function DashboardLayout({
       </MainContentWrapper>
       <SupportWhatsAppButton />
       <NegativeWalletDialog balance={walletBalance} />
-      <HeardAboutUsDialog show={askHeardAboutUs} />
+      {/* One pop-up at a time: a negative wallet is the more urgent one. */}
+      <HeardAboutUsDialog show={askHeardAboutUs && !(walletBalance != null && walletBalance < 0)} />
     </div>
   );
 }

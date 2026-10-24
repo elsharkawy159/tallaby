@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useTransition } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
+import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import {
@@ -30,6 +31,8 @@ import type { SellerRider, ShippingOrderRow } from "@/lib/shipping/shipping.type
 import { AssignRiderDialog } from "./assign-rider-dialog.client";
 import { RiderFormDialog } from "./rider-form-dialog.client";
 import { StatusActions } from "./status-actions.client";
+import { ConfirmActionDialog } from "@/components/layout/confirm-action-dialog.client";
+import { useTableSectionLabels } from "@/lib/i18n/table-labels";
 
 type OrderTab = "all" | "ready" | "assigned" | "out_for_delivery" | "delivered" | "issues";
 
@@ -91,11 +94,17 @@ export function ShippingWorkspace({
   const [view, setView] = useState<"orders" | "riders">(initialView);
   const [bulkPending, startBulk] = useTransition();
 
-  const runBulk = (orderIds: string[], status: "out_for_delivery" | "delivered") =>
+  const tableLabels = useTableSectionLabels();
+  // Bulk "Mark delivered" asks first: it closes the orders and settles cash on delivery.
+  const [deliverIds, setDeliverIds] = useState<string[]>([]);
+
+  const runBulk = (orderIds: string[], status: "out_for_delivery" | "delivered", onDone?: () => void) =>
     startBulk(async () => {
       const res = await bulkUpdateShipmentStatus({ orderIds, status });
-      if (res.success) toast.success(res.message);
-      else toast.error(res.error);
+      if (res.success) {
+        toast.success(res.message);
+        onDone?.();
+      } else toast.error(res.error);
     });
   const [tab, setTab] = useState<OrderTab>("all");
   const [assignIds, setAssignIds] = useState<string[]>([]);
@@ -339,10 +348,19 @@ export function ShippingWorkspace({
             </TabsList>
           </Tabs>
 
+          {orders.length === 0 ? (
+            <div className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
+              <p>{t("emptyDeliveries")}</p>
+              <Button asChild variant="outline" size="sm" className="mt-4">
+                <Link href="/orders">{t("goToOrders")}</Link>
+              </Button>
+            </div>
+          ) : (
           <TableSection<ShippingOrderRow>
             rows={visibleOrders}
             columns={columns}
             searchColumnId="order"
+            labels={tableLabels}
             hideViewOptions
             buttons={(table) => {
               const picked = table.getSelectedRowModel().rows.map((r) => r.original);
@@ -375,7 +393,7 @@ export function ShippingWorkspace({
                     <Button
                       variant="outline"
                       disabled={bulkPending}
-                      onClick={() => runBulk(toDelivered.map((r) => r.id), "delivered")}
+                      onClick={() => setDeliverIds(toDelivered.map((r) => r.id))}
                     >
                       {t("bulkDelivered", { count: toDelivered.length })}
                     </Button>
@@ -384,11 +402,6 @@ export function ShippingWorkspace({
               );
             }}
           />
-
-          {orders.length === 0 && (
-            <p className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
-              {t("emptyDeliveries")}
-            </p>
           )}
         </div>
       ) : (
@@ -399,6 +412,15 @@ export function ShippingWorkspace({
         />
       )}
 
+      <ConfirmActionDialog
+        open={deliverIds.length > 0}
+        onOpenChange={(open) => !open && setDeliverIds([])}
+        title={t("bulkDeliveredConfirm.title", { count: deliverIds.length })}
+        description={t("bulkDeliveredConfirm.description")}
+        confirmLabel={t("bulkDelivered", { count: deliverIds.length })}
+        pending={bulkPending}
+        onConfirm={() => runBulk(deliverIds, "delivered", () => setDeliverIds([]))}
+      />
       <AssignRiderDialog
         orderIds={assignIds}
         currentRiderId={assignCurrent}

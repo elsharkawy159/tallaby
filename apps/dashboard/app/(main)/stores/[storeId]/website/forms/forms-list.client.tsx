@@ -115,7 +115,7 @@ export function FormsList({ storeId, forms, readOnly }: { storeId: string; forms
                 </div>
                 <div className="flex gap-1.5">
                   <Button asChild variant="outline" size="sm" className={SMALL_BUTTON_CLASS}>
-                    <Link href={`${base}/submissions?form=${form.id}`}>
+                    <Link href={`${base}?form=${form.id}#submissions`}>
                       <Inbox />
                       {t("list.submissions")}
                     </Link>

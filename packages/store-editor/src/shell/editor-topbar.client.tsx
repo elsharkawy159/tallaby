@@ -107,7 +107,7 @@ export function EditorTopbar({
 
   return (
     <header className="flex h-12 shrink-0 items-center gap-1.5 border-b bg-background px-2">
-      <div className="flex min-w-0 flex-1 items-center gap-1.5">
+      <div className="flex min-w-0 flex-1 items-center gap-3">
         {links.back && (
           <IconAction label={t("back")} asChild>
             <Link href={links.back}>

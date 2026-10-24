@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { DollarSign, TrendingUp, CreditCard, Wallet } from "lucide-react";
 import {
   Card,
@@ -102,16 +103,19 @@ export function FinancialDashboardContent({
                 <p className="text-2xl font-bold text-foreground">
                   {formatCurrency(thisMonth)}
                 </p>
-                <p
-                  className={`text-sm ${growth >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}
-                >
-                  {t("vsLastMonth", {
-                    value: `${growth >= 0 ? "+" : ""}${formatNumber(growth, locale, {
-                      minimumFractionDigits: 1,
-                      maximumFractionDigits: 1,
-                    })}%`,
-                  })}
-                </p>
+                {/* No sales last month: a percentage would read "+0.0%", so say nothing. */}
+                {lastMonth > 0 && (
+                  <p
+                    className={`text-sm ${growth >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}
+                  >
+                    {t("vsLastMonth", {
+                      value: `${growth >= 0 ? "+" : ""}${formatNumber(growth, locale, {
+                        minimumFractionDigits: 1,
+                        maximumFractionDigits: 1,
+                      })}%`,
+                    })}
+                  </p>
+                )}
               </div>
               <div className="bg-green-100 dark:bg-green-900/30 p-3 rounded-full">
                 <DollarSign className="h-6 w-6 text-green-600 dark:text-green-400" />
@@ -166,7 +170,9 @@ export function FinancialDashboardContent({
                 <p className="text-2xl font-bold text-foreground">
                   {formatCurrency(walletBalance)}
                 </p>
-                <p className="text-sm text-muted-foreground">{t("availableBalance")}</p>
+                <Link href="/wallet" className="text-sm text-primary-ink hover:underline">
+                  {t("viewStoreWallet")}
+                </Link>
               </div>
               <div className="bg-purple-100 dark:bg-purple-900/30 p-3 rounded-full">
                 <Wallet className="h-6 w-6 text-purple-600 dark:text-purple-400" />
@@ -210,8 +216,18 @@ export function FinancialDashboardContent({
                         {translateStatus(tStatus, "transaction", tx.type)}
                       </TableCell>
                       <TableCell className="max-sm:hidden">{tx.order?.orderNumber ?? "—"}</TableCell>
-                      <TableCell className="font-semibold text-green-600 dark:text-green-400" dir="ltr">
-                        {formatCurrency(tx.amount)}
+                      {/* Fees and refunds are negative: colour by sign, not always green. */}
+                      <TableCell
+                        className={
+                          Number(tx.amount) < 0
+                            ? "font-semibold text-destructive"
+                            : "font-semibold text-green-600 dark:text-green-400"
+                        }
+                      >
+                        <bdi dir="ltr">
+                          {Number(tx.amount) > 0 ? "+" : ""}
+                          {formatCurrency(tx.amount)}
+                        </bdi>
                       </TableCell>
                       <TableCell>
                         {formatDate(tx.createdAt, locale)}

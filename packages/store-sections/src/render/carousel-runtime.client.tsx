@@ -3,8 +3,9 @@
 /**
  * Behaviour for every `carousel` element on the page (mount once, in the
  * storefront layout or a preview): autoplay with a progress dot, pause on
- * mouse hover, keyboard focus, the pause button, a hidden tab or when the
- * carousel is off-screen, and paused from the start with reduced motion. The
+ * keyboard focus, the pause button, a hidden tab or when the carousel is
+ * off-screen, and paused from the start with reduced motion. It keeps
+ * playing under the mouse (owner, 2026-10-24). The
  * server markup (`elements/render-carousel.tsx`) works without it: the track
  * scrolls and snaps. Listeners are delegated, so carousels that mount later
  * (client navigation) are picked up too. `doc`: a preview frame's document
@@ -13,7 +14,7 @@
 import { useEffect } from "react";
 import { SECTION_COPY } from "../core/copy";
 
-type State = { index: number; elapsed: number; user: boolean; hover: boolean; focus: boolean; moving: boolean; timer?: ReturnType<typeof setTimeout> };
+type State = { index: number; elapsed: number; user: boolean; focus: boolean; moving: boolean; timer?: ReturnType<typeof setTimeout> };
 
 const copy = (key: keyof typeof SECTION_COPY, el: Element) => {
   const text = SECTION_COPY[key];
@@ -33,7 +34,7 @@ export function CarouselRuntime({ doc }: { doc?: Document | null } = {}) {
     const state = (root: HTMLElement): State => {
       let s = states.get(root);
       if (!s) {
-        s = { index: 0, elapsed: 0, user: reduce || root.dataset.autoplay === "0", hover: false, focus: false, moving: false };
+        s = { index: 0, elapsed: 0, user: reduce || root.dataset.autoplay === "0", focus: false, moving: false };
         states.set(root, s);
         const all = slides(root);
         all.forEach((slide, i) => {
@@ -120,14 +121,6 @@ export function CarouselRuntime({ doc }: { doc?: Document | null } = {}) {
       }
     };
 
-    const hover = (event: PointerEvent, on: boolean) => {
-      if (event.pointerType !== "mouse" || !(event.target instanceof window.Element)) return;
-      const root = event.target.closest<HTMLElement>("[data-carousel]");
-      if (!root || (event.relatedTarget instanceof window.Node && root.contains(event.relatedTarget))) return;
-      state(root).hover = on;
-    };
-    const onOver = (event: PointerEvent) => hover(event, true);
-    const onOut = (event: PointerEvent) => hover(event, false);
     const onFocusIn = (event: FocusEvent) => {
       const root = event.target instanceof window.Element ? event.target.closest<HTMLElement>("[data-carousel]") : null;
       if (root) state(root).focus = (event.target as Element).matches(":focus-visible");
@@ -150,7 +143,7 @@ export function CarouselRuntime({ doc }: { doc?: Document | null } = {}) {
           const box = root.getBoundingClientRect();
           const visible = box.bottom > 0 && box.top < window.innerHeight;
           const ms = Number(root.dataset.interval) || 5000;
-          const paused = s.user || s.hover || s.focus || s.moving || !visible;
+          const paused = s.user || s.focus || s.moving || !visible;
           if (!paused) s.elapsed += dt;
           root.querySelector<HTMLElement>(`[data-carousel-dot="${s.index}"]`)?.style.setProperty("--p", String(Math.min(s.elapsed / ms, 1)));
           if (s.elapsed >= ms) go(root, s.index + 1);
@@ -162,8 +155,6 @@ export function CarouselRuntime({ doc }: { doc?: Document | null } = {}) {
     document.addEventListener("scroll", onScroll, true);
     document.addEventListener("scrollend", onScroll, true);
     document.addEventListener("click", onClick);
-    document.addEventListener("pointerover", onOver);
-    document.addEventListener("pointerout", onOut);
     document.addEventListener("focusin", onFocusIn);
     document.addEventListener("focusout", onFocusOut);
     window.addEventListener("resize", onResize);
@@ -173,8 +164,6 @@ export function CarouselRuntime({ doc }: { doc?: Document | null } = {}) {
       document.removeEventListener("scroll", onScroll, true);
       document.removeEventListener("scrollend", onScroll, true);
       document.removeEventListener("click", onClick);
-      document.removeEventListener("pointerover", onOver);
-      document.removeEventListener("pointerout", onOut);
       document.removeEventListener("focusin", onFocusIn);
       document.removeEventListener("focusout", onFocusOut);
       window.removeEventListener("resize", onResize);

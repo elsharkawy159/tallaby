@@ -45,6 +45,8 @@ export const ALLOWED_NODE_TYPES = [
   "carousel", "slide",
   // Header language switch of translated stores (owner, 2026-10-23); additive.
   "languageSwitcher",
+  // Header/footer options: store logo, theme toggle, sign-in (owner, 2026-10-24); drawn, never saved by hand; additive.
+  "storeLogo", "themeToggle", "accountLink",
   // Product page elements (template product page, 2026-10-23); additive.
   "productGallery", "productPrice", "productStock", "productRating", "productVariants",
   "productBuyBox", "productDetails", "productContent", "productSeller", "productReviews",

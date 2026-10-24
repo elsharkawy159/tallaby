@@ -79,6 +79,36 @@ export function designSystemToTokens(ds: ThemeInput | null | undefined): Record<
   return out;
 }
 
+/**
+ * Dark mode of a site whose header or footer has the theme toggle (owner,
+ * 2026-10-24). The toggle sets `data-sf-theme="dark"` on the site root and
+ * remembers it in localStorage (`SITE_THEME_KEY`); the surface and text
+ * tokens turn dark, the brand and accent colours stay the seller's.
+ */
+export const SITE_THEME_KEY = "sf-theme";
+
+const DARK_TOKENS: Readonly<Record<string, string>> = {
+  "--sf-paper": "#0f1517",
+  "--sf-shelf": "#182125",
+  "--sf-line": "#2a363b",
+  "--sf-ink": "#edf2f3",
+  "--sf-muted": "#9fb0b4",
+  "--background": "#0f1517",
+  "--foreground": "#edf2f3",
+  "--border": "#2a363b",
+  "--muted-foreground": "#9fb0b4",
+};
+
+export function siteDarkCss(scope = `.${SITE_ROOT_CLASS}`): string {
+  const decl = Object.entries(DARK_TOKENS)
+    .map(([key, value]) => `${key}: ${value};`)
+    .join(" ");
+  return `${scope}[data-sf-theme="dark"] { ${decl} color-scheme: dark; background: var(--sf-paper); color: var(--sf-ink); }`;
+}
+
+/** Runs inside the site root before it paints: applies the visitor's saved dark mode (no flash of the light theme). */
+export const SITE_THEME_INIT_SCRIPT = `(function(){try{var r=document.currentScript&&document.currentScript.parentElement;if(r&&localStorage.getItem(${JSON.stringify(SITE_THEME_KEY)})==="dark")r.setAttribute("data-sf-theme","dark")}catch(e){}})()`;
+
 /** A `<style>` body scoping the tokens to the site root; empty when nothing is set. */
 export function designSystemToCss(ds: ThemeInput | null | undefined, scope = `.${SITE_ROOT_CLASS}`): string {
   const tokens = designSystemToTokens(ds);

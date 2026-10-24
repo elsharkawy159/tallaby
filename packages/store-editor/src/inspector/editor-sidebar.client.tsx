@@ -5,10 +5,9 @@ import { useTranslations } from "next-intl";
 import { MousePointerClick, Paintbrush, PenLine } from "lucide-react";
 import { useStore } from "zustand";
 import type { ComponentNode } from "@workspace/store-sections";
-import { LANGUAGE_SWITCHER_PROP, getElementDefinition, languageSwitcherOn, storeSectionRegistry, updateNode } from "@workspace/store-sections/render";
-import { Label } from "@workspace/ui/components/label";
-import { Switch } from "@workspace/ui/components/switch";
+import { getElementDefinition, storeSectionRegistry, updateNode } from "@workspace/store-sections/render";
 import { cn } from "@workspace/ui/lib/utils";
+import { ChromeOptions } from "./chrome-options.client";
 import { styleTargetOf, type EditorCommands } from "../lib/editor-commands.lib";
 import { AgentDock } from "./agent-dock.client";
 import { SidebarHeader } from "./sidebar-header.client";
@@ -20,6 +19,7 @@ import type { EditorCategory, EditorForm, EditorProduct } from "../editor.dto";
 import type { EditorStore } from "../state/editor.store";
 import { StylePanel } from "./style-panel.client";
 import { readShell, setShell } from "../lib/editor-library.lib";
+import { hasCarousel } from "../lib/section-settings.lib";
 
 type Catalog = { products: EditorProduct[]; categories: EditorCategory[]; forms: EditorForm[] };
 
@@ -37,6 +37,7 @@ export function EditorSidebar({
   uiLocale,
   commands,
   translated = false,
+  hasLogo = false,
 }: {
   store: EditorStore;
   commands: EditorCommands;
@@ -46,6 +47,8 @@ export function EditorSidebar({
   uiLocale: string;
   /** The store has more than one language: the navbar offers its language switcher. */
   translated?: boolean;
+  /** The store uploaded a logo: header and footer show it (unless hidden). */
+  hasLogo?: boolean;
 }) {
   const t = useTranslations("storeEditor.sidebar");
   const selection = useStore(store, (s) => s.selection);
@@ -144,25 +147,18 @@ export function EditorSidebar({
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto p-4">
-        {tab === "content" && ref.target === "header" && translated && (
-          // Shown by default on a translated store; hiding it stores `languageSwitcher: false` on the header.
-          <fieldset disabled={readOnly} className="mb-4 space-y-2 rounded-md border p-3">
-            <legend className="px-1 text-xs font-medium text-muted-foreground">{t("navbar")}</legend>
-            <div className="flex items-center justify-between gap-3">
-              <Label htmlFor="navbar-language-switcher">{t("languageSwitcher")}</Label>
-              <Switch
-                id="navbar-language-switcher"
-                checked={languageSwitcherOn(instance)}
-                onCheckedChange={(on) =>
-                  state.editSection(ref, (i) => {
-                    const { [LANGUAGE_SWITCHER_PROP]: _, ...props } = i.props;
-                    return { ...i, props: on ? props : { ...props, [LANGUAGE_SWITCHER_PROP]: false } };
-                  })
-                }
-              />
-            </div>
-            <p className="text-xs text-muted-foreground">{t("languageSwitcherHint")}</p>
-          </fieldset>
+        {tab === "content" && ref.target !== "page" && !selection.part && (!node || node.type === "section") && (
+          // The whole header or footer is selected: its logo and tools (drawn, never saved into the tree).
+          <ChromeOptions
+            key={instance.id}
+            instance={instance}
+            part={ref.target}
+            onChange={(update) => state.editSection(ref, update)}
+            storeId={storeId}
+            readOnly={readOnly}
+            translated={translated}
+            hasLogo={hasLogo}
+          />
         )}
         {tab === "content" ? (
           node?.type === "carousel" ? (
@@ -249,6 +245,7 @@ export function EditorSidebar({
                     value: readShell(instance),
                     onChange: (patch) => state.editSection(ref, (i) => setShell(i, patch), `shell:${selectionKey}:${Object.keys(patch).join(",")}`),
                     readOnly,
+                    defaultWidth: hasCarousel(instance.componentTree ?? []) ? "full" : "contained",
                   }
                 : undefined
             }

@@ -44,7 +44,8 @@ export default async function WebsiteDesignPage({ params }: { params: Promise<{ 
   const contact = (store.contact ?? {}) as { phone?: string; email?: string };
 
   return (
-    <section className="mx-auto w-full max-w-6xl space-y-5 p-4 sm:p-6">
+    // Full width: the settings and a tall live preview side by side on one screen.
+    <section className="mx-auto w-full max-w-screen-2xl space-y-5 p-4 sm:p-6">
       <StorePageHeader store={store} />
       <DesignSystemEditor
         storeId={store.id}
@@ -72,6 +73,7 @@ export default async function WebsiteDesignPage({ params }: { params: Promise<{ 
           footer: footer.success ? footer.data : null,
         }}
         fontClassName={storeFontVariables}
+        translated={new Set(store.supportedLocales).size > 1}
       />
     </section>
   );

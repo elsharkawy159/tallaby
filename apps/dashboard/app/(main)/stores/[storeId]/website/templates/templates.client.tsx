@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
+import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, ChevronLeft, ChevronRight, Eye, LayoutTemplate, LoaderCircle, Lock, Pencil, RotateCcw, Sparkles } from "lucide-react";
 import {
   AlertDialog,
@@ -18,35 +19,41 @@ import {
 } from "@workspace/ui/components/alert-dialog";
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
+import { Skeleton } from "@workspace/ui/components/skeleton";
 import { BUTTON_CLASS, SMALL_BUTTON_CLASS } from "@/components/form/form-ui";
 import { cn } from "@/lib/utils";
 import { TemplateLiveThumbnail, TemplatePreview } from "./template-preview.client";
-import { applyTemplate, undoTemplate } from "./templates.server";
-import type { TemplateCardView, TemplateInstallView } from "./templates.dto";
+import { applyTemplate, listTemplatesPage, undoTemplate } from "./templates.server";
+import type { TemplateCardView, TemplatesPageView } from "./templates.dto";
+import { parseTemplatesCategory, parseTemplatesPage, TEMPLATES_PAGE_SIZE } from "./templates.lib";
 import { RemoteImage } from "@/components/media/remote-image";
 
 type Localized = { ar?: string; en?: string };
 
-/** Cards per page: fills whole rows of the 2, 3 and 4-column grids. */
-const PAGE_SIZE = 12;
+/** Query key of one gallery page; `["store-templates", storeId]` matches every page of the store. */
+const templatesKey = (storeId: string, page?: number, category?: string) =>
+  page === undefined ? ["store-templates", storeId] : ["store-templates", storeId, page, { category }];
+
+async function fetchTemplatesPage(storeId: string, page: number, category: string): Promise<TemplatesPageView> {
+  const result = await listTemplatesPage(storeId, { page, category });
+  if (!result.success) throw new Error(result.error);
+  return result.data;
+}
 
 /**
  * Website › Templates gallery (PLAN.md §8.1, P4-05). Works with a single
  * template too. Each card shows the template's home page live, and Preview
  * opens every page with the template's demo store (storefront templates).
+ * Templates load one page at a time (`listTemplatesPage`, React Query); the
+ * page and category live in the URL (`?page=2&category=fashion`), and the
+ * next page is prefetched (owner request 2026-10-24).
  */
 export function TemplateGallery({
   storeId,
-  currentKey,
-  templates,
-  lastInstall,
   readOnly,
   fontClassName,
 }: {
   storeId: string;
-  currentKey: string;
-  templates: TemplateCardView[];
-  lastInstall: TemplateInstallView | null;
   readOnly: boolean;
   /** Class names defining the store font variables (store-fonts.ts). */
   fontClassName: string;
@@ -55,26 +62,82 @@ export function TemplateGallery({
   const locale = useLocale() === "en" ? "en" : "ar";
   const format = useFormatter();
   const router = useRouter();
-  const [category, setCategory] = useState<string>("all");
-  const [page, setPage] = useState(1);
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const queryClient = useQueryClient();
+  const page = parseTemplatesPage(searchParams.get("page"));
+  const category = parseTemplatesCategory(searchParams.get("category"));
   const listRef = useRef<HTMLDivElement>(null);
   const [confirming, setConfirming] = useState<TemplateCardView | null>(null);
   const [previewing, setPreviewing] = useState<TemplateCardView | null>(null);
   const [confirmUndo, setConfirmUndo] = useState(false);
   const [isPending, startTransition] = useTransition();
 
-  const text = (value: Localized) => value[locale] || value.ar || value.en || "";
-  const categories = useMemo(() => [...new Set(templates.map((tpl) => tpl.category))], [templates]);
-  const filtered = category === "all" ? templates : templates.filter((tpl) => tpl.category === category);
-  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  // Clamped: a refresh can shrink the list under the current page.
-  const currentPage = Math.min(page, pageCount);
-  const shown = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  const query = useQuery({
+    queryKey: templatesKey(storeId, page, category),
+    queryFn: () => fetchTemplatesPage(storeId, page, category),
+    placeholderData: keepPreviousData,
+    // One retry, then the error state with its own retry button.
+    retry: 1,
+  });
+  const data = query.data;
+  const currentKey = data?.currentKey ?? "";
+  const lastInstall = data?.lastInstall ?? null;
+  const categories = data?.categories ?? [];
+  const shown = data?.items ?? [];
+  // The requested page while it loads (placeholder data), else the page the server served (clamped).
+  const currentPage = query.isPlaceholderData ? page : (data?.page ?? page);
+  const pageCount = data?.pageCount ?? 1;
+  // Placeholder data (the previous page) is shown dimmed while the new page loads.
+  const switching = query.isPlaceholderData && query.isFetching;
+
+  // Prefetch the next page once this one is in (not while showing the previous page's data).
+  useEffect(() => {
+    if (!data || query.isPlaceholderData || data.page >= data.pageCount) return;
+    const next = data.page + 1;
+    void queryClient.prefetchQuery({
+      queryKey: templatesKey(storeId, next, category),
+      queryFn: () => fetchTemplatesPage(storeId, next, category),
+    });
+  }, [data, query.isPlaceholderData, queryClient, storeId, category]);
+
+  /** Writes the filters to the URL (client-side only: no server round trip, the back button works). */
+  const setFilters = (next: { page: number; category: string }) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (next.page > 1) params.set("page", String(next.page));
+    else params.delete("page");
+    if (next.category !== "all") params.set("category", next.category);
+    else params.delete("category");
+    const qs = params.toString();
+    window.history.pushState(null, "", qs ? `${pathname}?${qs}` : pathname);
+  };
+
+  // The server clamps the page (a template change can shrink the list): keep the URL in step.
+  useEffect(() => {
+    if (data && !query.isPlaceholderData && data.page !== page) {
+      // Seed the clamped page's key so the URL change doesn't fetch it again.
+      queryClient.setQueryData(templatesKey(storeId, data.page, category), data);
+      const params = new URLSearchParams(searchParams.toString());
+      if (data.page > 1) params.set("page", String(data.page));
+      else params.delete("page");
+      const qs = params.toString();
+      window.history.replaceState(null, "", qs ? `${pathname}?${qs}` : pathname);
+    }
+  }, [data, query.isPlaceholderData, page, pathname, searchParams, queryClient, storeId, category]);
+
   const goToPage = (next: number) => {
-    setPage(next);
+    setFilters({ page: next, category });
     listRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
-  const nameOf = (key: string) => text(templates.find((tpl) => tpl.key === key)?.name ?? {}) || key;
+
+  const text = (value: Localized) => value[locale] || value.ar || value.en || "";
+  const nameOf = (key: string, name: Localized | null) => (name ? text(name) : "") || key;
+
+  /** After apply/undo: every cached page of this store is stale (current badge, last install). */
+  const refreshGallery = () => {
+    void queryClient.invalidateQueries({ queryKey: templatesKey(storeId) });
+    router.refresh();
+  };
 
   const onApply = (template: TemplateCardView) =>
     startTransition(async () => {
@@ -85,7 +148,7 @@ export function TemplateGallery({
         return;
       }
       toast.success(t("applied", { name: text(template.name) }));
-      router.refresh();
+      refreshGallery();
     });
 
   const onUndo = () =>
@@ -97,7 +160,7 @@ export function TemplateGallery({
         return;
       }
       toast.success(t("undone"));
-      router.refresh();
+      refreshGallery();
     });
 
   return (
@@ -121,7 +184,7 @@ export function TemplateGallery({
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-muted/40 px-4 py-3 text-sm">
           <span>
             {t("lastApplied", {
-              name: nameOf(lastInstall.templateKey),
+              name: nameOf(lastInstall.templateKey, lastInstall.name),
               date: format.dateTime(new Date(lastInstall.installedAt), { dateStyle: "medium", timeStyle: "short" }),
             })}
           </span>
@@ -140,10 +203,7 @@ export function TemplateGallery({
               type="button"
               role="tab"
               aria-selected={category === value}
-              onClick={() => {
-                setCategory(value);
-                setPage(1);
-              }}
+              onClick={() => setFilters({ page: 1, category: value })}
               className={cn(
                 "shrink-0 whitespace-nowrap rounded-full border px-3 py-1.5 text-sm transition-colors",
                 category === value ? "border-primary bg-primary text-primary-foreground" : "hover:bg-muted",
@@ -155,11 +215,32 @@ export function TemplateGallery({
         </div>
       )}
 
-      {shown.length === 0 ? (
+      {!data && query.isPending && (
+        <>
+          <div className="flex gap-2 overflow-hidden pb-1" aria-hidden>
+            {Array.from({ length: 6 }, (_, index) => (
+              <Skeleton key={index} className="h-8 w-20 shrink-0 rounded-full" />
+            ))}
+          </div>
+          <TemplateGridSkeleton label={t("loading")} />
+        </>
+      )}
+
+      {!data && query.isError && (
+        <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed p-10 text-center text-sm text-muted-foreground">
+          <p>{t("loadFailed")}</p>
+          <Button type="button" variant="outline" className={SMALL_BUTTON_CLASS} onClick={() => void query.refetch()}>
+            <RotateCcw />
+            {t("retry")}
+          </Button>
+        </div>
+      )}
+
+      {!data ? null : shown.length === 0 ? (
         <p className="rounded-2xl border border-dashed p-10 text-center text-sm text-muted-foreground">{t("empty")}</p>
       ) : (
-        <div ref={listRef} className="scroll-mt-4 space-y-4">
-        <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div ref={listRef} className="scroll-mt-4 space-y-4" aria-busy={switching}>
+        <ul className={cn("grid grid-cols-1 gap-4 transition-opacity sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4", switching && "pointer-events-none opacity-60")}>
           {shown.map((template) => {
             const current = template.key === currentKey;
             return (
@@ -243,6 +324,7 @@ export function TemplateGallery({
               {t("pagination.previous")}
             </Button>
             <span className="text-sm text-muted-foreground" aria-live="polite">
+              {switching && <LoaderCircle className="me-1.5 inline size-3.5 animate-spin" />}
               {t("pagination.page", { page: currentPage, pageCount })}
             </span>
             <Button
@@ -355,6 +437,32 @@ function TemplateThumbnail({ template, text }: { template: TemplateCardView; tex
           {text(section)}
         </span>
       ))}
+    </div>
+  );
+}
+
+/** Placeholder cards while the first page loads: same grid, card shape and thumbnail ratio as the real cards. */
+function TemplateGridSkeleton({ label }: { label: string }) {
+  return (
+    <div role="status" aria-label={label}>
+      <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" aria-hidden>
+        {Array.from({ length: TEMPLATES_PAGE_SIZE }, (_, index) => (
+          <li key={index} className="flex flex-col overflow-hidden rounded-2xl border bg-card">
+            <Skeleton className="aspect-[16/10] w-full rounded-none border-b" />
+            <div className="flex flex-1 flex-col gap-2 p-3">
+              <Skeleton className="h-5 w-2/3" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-4/5" />
+              <Skeleton className="h-5 w-28 rounded-md" />
+              <Skeleton className="h-3 w-1/2" />
+              <div className="mt-auto grid grid-cols-2 gap-2 pt-1">
+                <Skeleton className="h-[34px] w-full rounded-[10px]" />
+                <Skeleton className="h-[34px] w-full rounded-[10px]" />
+              </div>
+            </div>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

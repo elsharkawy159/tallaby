@@ -23,6 +23,18 @@ export function carouselInterval(value: unknown): number {
   return Math.min(CAROUSEL_INTERVAL.max, Math.max(CAROUSEL_INTERVAL.min, n));
 }
 
+/**
+ * The section's Width (Style tab, `data-shell-width` on the section): full
+ * screen by default and with Full; Contained lines it up with the page
+ * container and Wide with the wider one (the shell sets `--sf-max-width` to
+ * 1440px), rounded like the theme's cards.
+ */
+const boxedClass = cn(
+  "in-data-[shell-width=contained]:mx-auto in-data-[shell-width=contained]:max-w-(--sf-max-width,1200px) in-data-[shell-width=contained]:px-4 md:in-data-[shell-width=contained]:px-8",
+  "in-data-[shell-width=wide]:mx-auto in-data-[shell-width=wide]:max-w-(--sf-max-width,1200px) in-data-[shell-width=wide]:px-4 md:in-data-[shell-width=wide]:px-8",
+  "in-data-[shell-width=contained]:[&>[data-carousel-track]]:rounded-(--sf-radius,12px) in-data-[shell-width=wide]:[&>[data-carousel-track]]:rounded-(--sf-radius,12px)",
+);
+
 // The design's bar: white on a dark glass, so it reads on photos and on light slides.
 const controlClass =
   "pointer-events-auto inline-grid size-11 place-items-center rounded-full border border-white/50 bg-black/25 text-white backdrop-blur-sm transition-colors hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white";
@@ -50,7 +62,7 @@ export function CarouselElement({
       role="region"
       aria-roledescription="carousel"
       aria-label={sectionText("carousel", ctx.locale)}
-      className="group/carousel relative min-w-0 overflow-hidden"
+      className={cn("group/carousel relative min-w-0 overflow-hidden", boxedClass)}
     >
       <div data-carousel-track className="flex snap-x snap-mandatory overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {children}

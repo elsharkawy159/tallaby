@@ -1,7 +1,8 @@
 /**
  * Blog index. Titles and excerpts live in messages (`blog.posts.<id>`). Only
- * `pricing-products` has a full article so far; the other posts render their
- * excerpt until their articles are written.
+ * `pricing-products` has a full article so far; posts without `hasArticle` are
+ * not listed, linked or put in the sitemap (`getStaticPosts`) until their
+ * articles are written. Images must be product-only photos (no people).
  */
 
 export const BLOG_CATEGORIES = ["all", "guides", "growth", "stories", "payments", "product"] as const;
@@ -19,12 +20,12 @@ export type BlogPost = {
 
 /** Newest first; the first post is featured on the index. */
 export const BLOG_POSTS: BlogPost[] = [
-  { id: "pricing-products", category: "guides", image: "/banner3.jpg", date: "2026-10-12", minutes: 7, hasArticle: true },
-  { id: "first-100-orders", category: "growth", image: "/banner5.jpg", date: "2026-10-05", minutes: 6 },
-  { id: "phone-photos", category: "guides", image: "/banner2.jpg", date: "2026-09-28", minutes: 5 },
-  { id: "dms-to-store", category: "stories", image: "/banner4.jpg", date: "2026-09-20", minutes: 4 },
-  { id: "cod-vs-online", category: "payments", image: "/banner6.jpg", date: "2026-09-14", minutes: 5 },
-  { id: "seo-basics", category: "growth", image: "/banner.jpg", date: "2026-09-06", minutes: 6 },
+  { id: "pricing-products", category: "guides", image: "/accessories.jpg", date: "2026-10-12", minutes: 7, hasArticle: true },
+  { id: "first-100-orders", category: "growth", image: "/og-image.jpg", date: "2026-10-05", minutes: 6 },
+  { id: "phone-photos", category: "guides", image: "/og-image.jpg", date: "2026-09-28", minutes: 5 },
+  { id: "dms-to-store", category: "stories", image: "/og-image.jpg", date: "2026-09-20", minutes: 4 },
+  { id: "cod-vs-online", category: "payments", image: "/og-image.jpg", date: "2026-09-14", minutes: 5 },
+  { id: "seo-basics", category: "growth", image: "/og-image.jpg", date: "2026-09-06", minutes: 6 },
   { id: "discount-codes", category: "product", image: "/cosmetics.jpg", date: "2026-08-30", minutes: 2 },
 ];
 

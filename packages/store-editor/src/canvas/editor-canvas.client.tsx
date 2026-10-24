@@ -15,7 +15,7 @@ import {
   SiteTheme,
   designSystemToTokens,
   flushHeaderOnMobile,
-  withLanguageSwitcher,
+  drawChrome,
   storeSectionRegistry,
   type RenderContext,
 } from "@workspace/store-sections/render";
@@ -217,8 +217,10 @@ export function EditorCanvas({
   const instanceIdOf = (ref: SectionRef) => (ref.target === "page" ? ref.sectionId : (ref.target === "header" ? header?.id : footer?.id) ?? "");
   const { setNodeRef: setDropRef } = useDroppable({ id: CANVAS_DROP_ID });
   const [editing, setEditing] = useState(false);
-  // What the storefront draws: flush on phones, plus the language switcher of a translated store (never saved).
-  const drawnHeader = useMemo(() => withLanguageSwitcher(flushHeaderOnMobile(header), translated), [header, translated]);
+  // What the storefront draws: flush on phones, plus the logo and tools the seller turned on (never saved).
+  const hasLogo = Boolean(ctx.store.logoUrl);
+  const drawnHeader = useMemo(() => drawChrome(flushHeaderOnMobile(header), "header", { translated, hasLogo }), [header, translated, hasLogo]);
+  const drawnFooter = useMemo(() => drawChrome(footer, "footer", { translated, hasLogo }), [footer, translated, hasLogo]);
   // Remount a section after in-place editing so React owns clean DOM again.
   const [nonce, setNonce] = useState<Record<string, number>>({});
   const latest = useRef({ sections, header, footer, onRequestImage, onFrameKeyDown, commands });
@@ -549,7 +551,7 @@ export function EditorCanvas({
             <SiteTheme designSystem={designSystem} />
             {/* Heading font like the storefront (and SitePreview). */}
             <style>{`.${SITE_ROOT_CLASS} :where(h1,h2,h3,h4){font-family:var(--sf-font-heading,var(--sf-font-body,var(--font-storefront))),system-ui,sans-serif}`}</style>
-            <PageStyles sections={[drawnHeader, ...sections, footer]} mode="edit" />
+            <PageStyles sections={[drawnHeader, ...sections, drawnFooter]} mode="edit" />
             <style>{`[data-section-id],[data-part],[data-node-id]{cursor:default}[contenteditable]{cursor:text;caret-color:var(--sf-brand)}`}</style>
             {/* The section or element being moved stays in place, faded, until it is dropped. */}
             {canvasDrag?.kind === "move-section" && <style>{`main [data-section-id="${esc(canvasDrag.instanceId)}"]{opacity:.35}`}</style>}
@@ -570,9 +572,9 @@ export function EditorCanvas({
                 <SectionRenderer key={sectionKey(instance)} instance={instance} registry={storeSectionRegistry} ctx={ctx} defaultLocale={defaultLocale} />
               ))}
             </main>
-            {footer && (
+            {drawnFooter && (
               <div data-editor-chrome="footer">
-                <SectionRenderer key={`ftr:${nonce.footer ?? 0}`} instance={footer} registry={storeSectionRegistry} ctx={ctx} defaultLocale={defaultLocale} />
+                <SectionRenderer key={`ftr:${nonce.footer ?? 0}`} instance={drawnFooter} registry={storeSectionRegistry} ctx={ctx} defaultLocale={defaultLocale} />
               </div>
             )}
           </div>,

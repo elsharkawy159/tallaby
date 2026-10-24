@@ -1,7 +1,11 @@
 import Link from "next/link";
-import { getTranslations } from "next-intl/server";
-import { Check, Gem, Minus, Store } from "lucide-react";
+import { getLocale, getTranslations } from "next-intl/server";
+import { Check, Gem, Minus, Receipt, Store } from "lucide-react";
+import { db, eq, sellers } from "@workspace/db";
+import { FEE_TRIAL_DAYS, STANDARD_FEE_MIN_PIASTRES } from "@workspace/lib/orders";
 import { getPlanLimits, resolvePlanId, type PlanFeatures } from "@workspace/lib/plans";
+import { getFeeTrialStatus, type FeeTrialStatus } from "@workspace/lib/sellers";
+import { formatDate, formatMoney } from "@/lib/i18n/format";
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
 import { Progress } from "@workspace/ui/components/progress";
@@ -21,6 +25,7 @@ export default async function PlanPage() {
     getSellerStores(),
     getTranslations("planUsage"),
   ]);
+  const [trial, locale] = await Promise.all([loadFeeTrial(seller.sellerId), getLocale()]);
   const planId = resolvePlanId(seller.plan);
   const limits = getPlanLimits(planId);
   const used = stores.length;
@@ -74,6 +79,45 @@ export default async function PlanPage() {
           </Button>
         </div>
       </SectionCard>
+
+      {/* The seller's real cost today (PLAN.md §13): the per-order fee and the free trial. */}
+      <SectionCard id="fees" icon={Receipt} title={t("fees")} description={t("feesDescription")}>
+        <ul className="divide-y rounded-xl border text-sm">
+          <li className="flex items-center justify-between gap-3 px-4 py-3">
+            <span>{t("feeLine")}</span>
+            <span className="font-semibold tabular-nums">
+              <bdi dir="ltr">{formatMoney(STANDARD_FEE_MIN_PIASTRES / 100, locale)}</bdi>
+            </span>
+          </li>
+          {trial.state !== "none" && (
+            <li className="px-4 py-3 text-muted-foreground">
+              {trial.state === "active"
+                ? t("trialActive", { days: trial.daysLeft, date: formatDate(trial.endsAt, locale) })
+                : trial.state === "ended"
+                  ? t("trialEnded", { date: formatDate(trial.endsAt, locale) })
+                  : t("trialNotStarted", { days: FEE_TRIAL_DAYS })}
+            </li>
+          )}
+        </ul>
+        <div className="flex justify-end">
+          <Button asChild variant="outline" size="sm">
+            <Link href="/wallet">{t("viewWallet")}</Link>
+          </Button>
+        </div>
+      </SectionCard>
     </section>
   );
+}
+
+async function loadFeeTrial(sellerId: string): Promise<FeeTrialStatus> {
+  const [row] = await db
+    .select({
+      feeTrialEligible: sellers.feeTrialEligible,
+      feeTrialStartedAt: sellers.feeTrialStartedAt,
+      feeTrialEndsAt: sellers.feeTrialEndsAt,
+    })
+    .from(sellers)
+    .where(eq(sellers.id, sellerId))
+    .limit(1);
+  return row ? getFeeTrialStatus(row) : { state: "none" };
 }

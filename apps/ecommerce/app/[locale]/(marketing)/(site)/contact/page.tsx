@@ -4,7 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { cn } from "@workspace/ui/lib/utils";
 import { Link } from "@/i18n/navigation";
 import { ContactForm } from "@/components/marketing/contact/contact-form.client";
-import { Container, Ltr, PhotoPlaceholder, Section } from "@/components/marketing/site/layout-primitives";
+import { Container, Ltr, Section } from "@/components/marketing/site/layout-primitives";
 import { PageHero } from "@/components/marketing/site/page-hero";
 import { Reveal } from "@/components/marketing/site/reveal.client";
 import { richTags } from "@/components/marketing/site/rich-text";
@@ -19,8 +19,10 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 export default async function ContactPage() {
   const t = await getTranslations("contact");
   const channels = [
-    { href: CONTACT.whatsapp, icon: MessageCircle, title: t("whatsapp"), body: t("whatsappBody"), value: CONTACT.whatsappHandle, highlight: true, ltr: true },
-    { href: `mailto:${CONTACT.email}`, icon: Mail, title: t("email"), body: t("emailBody"), value: CONTACT.email },
+    ...(CONTACT.whatsapp && CONTACT.whatsappHandle
+      ? [{ href: CONTACT.whatsapp, icon: MessageCircle, title: t("whatsapp"), body: t("whatsappBody"), value: CONTACT.whatsappHandle, highlight: true, ltr: true }]
+      : []),
+    { href: `mailto:${CONTACT.email}`, icon: Mail, title: t("email"), body: t("emailBody"), value: CONTACT.email, highlight: !CONTACT.whatsapp, ltr: false },
   ];
 
   return (
@@ -33,7 +35,7 @@ export default async function ContactPage() {
       </PageHero>
 
       <Container>
-        <div className="relative -mt-[130px] grid gap-4 lg:grid-cols-[1.3fr_1fr]">
+        <div className={cn("relative -mt-[130px] grid gap-4", channels.length > 1 && "lg:grid-cols-[1.3fr_1fr]")}>
           {channels.map((c) => (
             <a
               key={c.title}
@@ -69,7 +71,6 @@ export default async function ContactPage() {
           </Reveal>
           <aside className="grid gap-4 lg:sticky lg:top-24">
             <Reveal className="overflow-hidden rounded-[22px] border border-neutral-200 bg-white">
-              <PhotoPlaceholder className="h-[180px] border-0 border-b">{t("map")}</PhotoPlaceholder>
               <div className="p-[22px]">
                 <h3 className="mb-2.5 text-[17px] font-bold text-teal-900">{t("office")}</h3>
                 <ul className="m-0 list-none p-0">

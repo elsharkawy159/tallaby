@@ -2025,6 +2025,14 @@
     "backHome": "Back to the store"
   },
   "storefront": {
+    "theme": {
+      "dark": "Switch to dark mode",
+      "light": "Switch to light mode"
+    },
+    "account": {
+      "signIn": "Sign in",
+      "myAccount": "My account"
+    },
     "consent": {
       "label": "Cookie choice",
       "text": "This store uses cookies to measure visits and ads. You can accept or decline.",
@@ -2115,7 +2123,7 @@
     "titleTemplate": "%s | Tallaby",
     "home": {
       "title": "Tallaby | Get your store link in minutes, free",
-      "description": "Create a professional online store under your own brand with no code. Free plan, just 5 EGP per successful order, and no percentage."
+      "description": "Create a professional online store under your own brand with no code. Free plan, just 5 EGP per delivered order, and no percentage."
     },
     "templates": {
       "title": "Store templates",
@@ -2127,7 +2135,7 @@
     },
     "pricing": {
       "title": "Pricing",
-      "description": "Free plan. A flat 5 EGP per successful order, with no percentage and no monthly subscription."
+      "description": "Free plan. A flat 5 EGP per delivered order, with no percentage and no monthly subscription. Orders in your first 7 days are free."
     },
     "blog": {
       "title": "Blog",
@@ -2143,7 +2151,7 @@
     },
     "contact": {
       "title": "Contact us",
-      "description": "Talk to a person, not a bot. WhatsApp, email or phone."
+      "description": "Talk to a person, not a bot. WhatsApp or email."
     },
     "faq": {
       "title": "FAQ and help center",
@@ -2238,7 +2246,12 @@
     "addProduct": "Add your first product",
     "goDashboard": "Go to dashboard",
     "confirmTitle": "Check your email",
-    "confirmBody": "We sent a confirmation link to {email}. Open it to finish creating your store.",
+    "confirmBody": "We sent a confirmation link to <b>{email}</b>. Open it to finish creating your store.",
+    "confirmSpam": "Can't find it? Check your spam or promotions folder.",
+    "resend": "Resend email",
+    "resendIn": "Resend in {seconds}s",
+    "resendSent": "Sent. Check your inbox.",
+    "changeEmail": "Use a different email",
     "errEmail": "Enter a valid email",
     "errors": {
       "invalidInput": "Check the details and try again.",
@@ -2283,7 +2296,7 @@
       "s2Body": "Choose a template, add your logo, colors and products, and arrange sections with the visual editor.",
       "s2Tag": "No code",
       "s3Title": "Start selling",
-      "s3Body": "Publish with one click, share your link, and manage orders from your dashboard. You only pay 5 EGP when an order succeeds.",
+      "s3Body": "Publish with one click, share your link, and manage orders from your dashboard. You only pay 5 EGP when an order is delivered.",
       "s3Tag": "One-click publish",
       "note": "Store setup comes later, from your dashboard."
     },
@@ -2292,7 +2305,7 @@
       "title": "Start from a design made for what you sell",
       "desc": "Every template is fully editable and works on mobile out of the box.",
       "filter": "Filter templates",
-      "use": "Use this template",
+      "use": "Create your store",
       "preview": "Preview",
       "seeAll": "See all templates"
     },
@@ -2430,7 +2443,7 @@
         "month": "This month: 46 sales, 230 EGP in fees",
         "topUp": "Top up wallet",
         "howTitle": "How platform fees work",
-        "howBody": "For every delivered order, Tallaby deducts a flat 5 EGP from your wallet, whatever the order value. If your balance is zero or less, it goes negative. The first 7 days are free. No fees on cancelled or undelivered orders.",
+        "howBody": "For every delivered order, Tallaby deducts a flat 5 EGP from your store wallet, whatever the order value. If your balance is zero or less, it goes negative. Orders placed in the first 7 days after you create your first store are free. No fees on cancelled or undelivered orders.",
         "activity": "Wallet activity",
         "all": "All",
         "sales": "Sales",
@@ -2556,15 +2569,15 @@
       "title": "One free plan. Pay only when you sell.",
       "tag": "Free plan",
       "perOrder": "/ order",
-      "desc": "No monthly fee and no percentage of your sales. You're only charged for successful orders.",
+      "desc": "No monthly fee and no percentage of your sales. You're only charged for delivered orders.",
       "i1": "Unlimited visitors",
       "i2": "Unlimited products",
       "i3": "Unlimited orders",
       "i4": "Website builder editor",
       "i5": "Free themes and sections",
-      "i6": "Fast 24/7 support",
+      "i6": "Fast support from real people",
       "i7": "Up to 3 stores",
-      "i8": "First 7 days with no fees",
+      "i8": "Orders in your first 7 days are free",
       "note": "Payment processing and shipping are charged separately. <link>Full pricing details</link>"
     },
     "faq": {
@@ -2575,11 +2588,11 @@
     "final": {
       "kicker": "Start now",
       "title": "Your store link is waiting. Claim it before someone else does.",
-      "desc": "Signup takes under a minute. Design and publish whenever you're ready. You only pay 5 EGP per successful order.",
+      "desc": "Signup takes under a minute. Design and publish whenever you're ready. You only pay 5 EGP per delivered order.",
       "boxTitle": "Choose your link",
       "b1": "Free. No card needed.",
       "b2": "Unlimited products, orders and visitors.",
-      "b3": "Support around the clock."
+      "b3": "Support from real people, not bots."
     }
   },
   "templates": {
@@ -2601,10 +2614,11 @@
       "statMobile": "Mobile-ready"
     },
     "count": "{count, plural, one {# template} other {# templates}}",
+    "showMore": "Show more ({count} left)",
     "previewTemplate": "Preview template",
-    "blankTitle": "Start from blank",
-    "blankBody": "An empty page. Arrange sections yourself.",
-    "blankCta": "Start blank",
+    "blankTitle": "Not sure which one yet?",
+    "blankBody": "Start with Tallaby Classic and switch templates any time from your dashboard.",
+    "blankCta": "Create my store",
     "why": {
       "switchTitle": "Switch anytime",
       "switchBody": "Change templates later. Products, orders and settings stay put.",
@@ -2617,7 +2631,10 @@
     },
     "band": "Not sure which one? Start with any. You can switch later.",
     "detail": {
-      "use": "Use This Template",
+      "use": "Create your free store",
+      "useHint": "Your store starts with Tallaby Classic. Apply {name} any time from the Templates page in your dashboard.",
+      "breadcrumb": "Breadcrumb",
+      "metaFallback": "{name}, a store template by Tallaby",
       "demo": "Live demo",
       "device": "Device",
       "desktop": "Desktop",
@@ -2637,7 +2654,7 @@
     "hero": {
       "eyebrow": "Pricing",
       "title": "Free plan. <em>5 EGP per order.</em> No percentage.",
-      "lead": "A flat 5 EGP for each successful order, whatever its value. No monthly subscription, no commission on your sales. Unlimited products, orders and visitors.",
+      "lead": "A flat 5 EGP for each delivered order, whatever its value. No monthly subscription, no commission on your sales. Unlimited products, orders and visitors.",
       "estimate": "Estimate my fees",
       "orderValue": "Order value",
       "onOrder": "On a {value} EGP order",
@@ -2647,12 +2664,14 @@
       "kicker": "How it works",
       "title": "One free plan for every store",
       "freePlan": "Free plan",
-      "perOrder": "EGP per successful order",
-      "flat": "Flat fee, no percentage. Cancelled and returned orders aren't charged.",
+      "perOrder": "EGP per delivered order",
+      "flat": "Flat fee, no percentage, taken from your store wallet when an order is delivered. Cancelled orders and orders refused at delivery aren't charged.",
       "i1": "Unlimited products",
       "i2": "Unlimited orders",
       "i3": "Unlimited visitors",
       "i4": "Every feature unlocked",
+      "i5": "Up to 3 stores per account",
+      "i6": "Orders in your first 7 days are free",
       "wontPay": "What you won't pay",
       "commission": "commission on sales",
       "monthly": "EGP monthly subscription",
@@ -2689,7 +2708,7 @@
       "domainBody": "Connect a domain you already own.",
       "codes": "Discount codes",
       "codesBody": "Create codes and share links.",
-      "support": "24/7 support",
+      "support": "Human support",
       "supportBody": "Real people on WhatsApp and email.",
       "processing": "Payment processing",
       "processingBody": "Depends on the method your customer uses. Shown before you enable it.",
@@ -2701,20 +2720,20 @@
       "title": "The fine print, in plain words",
       "items": [
         {
-          "q": "What counts as a successful order?",
-          "a": "An order that's delivered and not cancelled or returned. If a customer returns an order, the fee is not charged."
+          "q": "When is the 5 EGP charged?",
+          "a": "When an order is delivered. Cancelled orders and orders the customer refuses at delivery aren't charged, and orders placed in your first 7 days are free."
         },
         {
           "q": "Does the fee change with order value?",
-          "a": "No. Every successful order costs a flat 5 EGP, whether it's 100 EGP or 10,000 EGP. We never take a percentage of your sales."
+          "a": "No. Every delivered order costs a flat 5 EGP, whether it's 100 EGP or 10,000 EGP. We never take a percentage of your sales."
         },
         {
           "q": "How do I pay the fee?",
-          "a": "Fees are deducted from your payouts automatically. You'll see every deduction in the Finance page of your dashboard."
+          "a": "Each store has a wallet. When an order is delivered, 5 EGP is deducted from it, and every deduction is listed on the Wallet page of your dashboard. The balance can go negative; top it up any time from the dashboard."
         },
         {
           "q": "Are there limits on the free plan?",
-          "a": "No. Products, orders and visitors are unlimited, and every feature is included."
+          "a": "You can run up to 3 stores per account. Products, orders and visitors are unlimited, and every feature is included."
         }
       ]
     },
@@ -2838,7 +2857,7 @@
     "f1": "Store builder launched",
     "f2Value": "Cairo",
     "f2": "Where we're based",
-    "f3": "Support for every store",
+    "f3": "EGP per delivered order",
     "f4": "Languages, Arabic and English",
     "hiring": "We're hiring",
     "hiringBody": "Help us put more Egyptian brands online.",
@@ -2913,7 +2932,7 @@
     "eyebrow": "Contact us",
     "title": "Talk to a person, <em>not a bot.</em>",
     "lead": "Questions about setting up, payments, shipping or a partnership. Pick the channel that suits you.",
-    "live": "Support team online around the clock",
+    "live": "Real people reply, not bots",
     "whatsapp": "WhatsApp",
     "whatsappBody": "Fastest for store and order questions. Send screenshots, voice notes, anything.",
     "email": "Email",
@@ -2975,7 +2994,7 @@
     "map": "map · Cairo office",
     "officeAddress": "Cairo, Egypt. Visits by appointment.",
     "officeHours": "Office: Sun to Thu, 10am to 6pm",
-    "supportHours": "Support: every day, 24/7",
+    "supportHours": "Support: WhatsApp and email",
     "quick": "Looking for a quick answer?",
     "browse": "Browse the help center"
   },
@@ -2996,7 +3015,7 @@
     "noResults": "No results",
     "noResultsBody": "Try another word, or contact us directly.",
     "stillTitle": "Still stuck?",
-    "stillBody": "Our support team is online 24/7.",
+    "stillBody": "Message our team and a real person will reply.",
     "whatsapp": "WhatsApp Us",
     "contactPage": "Contact page",
     "groups": {
@@ -3024,15 +3043,15 @@
         "items": [
           {
             "q": "How much does Tallaby cost?",
-            "a": "The plan is free. We charge a flat 5 EGP per successful order, with no percentage of the order value and no monthly fee."
+            "a": "The plan is free. We charge a flat 5 EGP per delivered order, with no percentage of the order value and no monthly fee."
           },
           {
             "q": "Does the fee change with order value?",
-            "a": "No. A 150 EGP order and a 5,000 EGP order both cost 5 EGP. Cancelled and returned orders aren't charged."
+            "a": "No. A 150 EGP order and a 5,000 EGP order both cost 5 EGP. Cancelled orders and orders refused at delivery aren't charged."
           },
           {
             "q": "Is there a limit on products or orders?",
-            "a": "No. The free plan includes unlimited products, orders and visitors."
+            "a": "Products, orders and visitors are unlimited. Each account can run up to 3 stores."
           }
         ]
       },
@@ -3046,7 +3065,7 @@
           },
           {
             "q": "When do I get paid?",
-            "a": "Payouts go to your bank account or wallet on the schedule you choose in Finance, after fees are deducted."
+            "a": "When you collect the money yourself (your own courier's cash on delivery, or your InstaPay and wallet numbers), it's yours straight away. When Tallaby collects it, the order value is added to your store wallet once the order is delivered."
           },
           {
             "q": "Are payment fees part of the 5 EGP?",
@@ -3068,7 +3087,7 @@
           },
           {
             "q": "How do returns work?",
-            "a": "You set your return policy in Settings and customers request returns from the order page. Returned orders aren't charged commission."
+            "a": "You set your return policy in Settings and customers request returns from the order page. Orders refused at delivery aren't charged the 5 EGP fee."
           }
         ]
       },
@@ -3108,15 +3127,15 @@
       },
       {
         "q": "How much does Tallaby cost?",
-        "a": "The plan is free. Tallaby charges a flat 5 EGP for each successful order, with no percentage of the order value and no monthly fee. Payment and shipping charges are separate."
+        "a": "The plan is free. Tallaby charges a flat 5 EGP for each delivered order, with no percentage of the order value and no monthly fee. Payment and shipping charges are separate."
       },
       {
         "q": "Does the fee change with the order value?",
-        "a": "No. A 150 EGP order and a 5,000 EGP order both cost 5 EGP. Cancelled and returned orders aren't charged."
+        "a": "No. A 150 EGP order and a 5,000 EGP order both cost 5 EGP. Cancelled orders and orders refused at delivery aren't charged."
       },
       {
         "q": "How is the fee collected?",
-        "a": "Each store has a wallet. When an order is delivered, 5 EGP is deducted from it. If the balance reaches zero it can go negative, and you can top it up any time from the dashboard. The first 7 days are free."
+        "a": "Each store has a wallet. When an order is delivered, 5 EGP is deducted from it. If the balance reaches zero it can go negative, and you can top it up any time from the dashboard. Orders placed in the first 7 days after you create your first store are free."
       },
       {
         "q": "Can I use my own couriers?",
@@ -3128,7 +3147,7 @@
       },
       {
         "q": "Is there a limit on products or orders?",
-        "a": "No. The free plan includes unlimited products, orders and visitors."
+        "a": "Products, orders and visitors are unlimited. Each account can run up to 3 stores."
       },
       {
         "q": "Can I use my own domain?",
@@ -3160,7 +3179,7 @@
         },
         {
           "title": "Fees are simple",
-          "body": "Free plan. A flat 5 EGP per successful order, no percentage."
+          "body": "Free plan. A flat 5 EGP per delivered order, no percentage, taken from your store wallet."
         },
         {
           "title": "Leave anytime",
@@ -3211,8 +3230,8 @@
           "id": "fees",
           "title": "Fees and payouts",
           "paragraphs": [
-            "Tallaby is free to use. We charge a flat 5 EGP for each successful order, regardless of the order value. We don't take a percentage of your sales and there is no monthly subscription. Products, orders and visitors are unlimited.",
-            "Payment processing and shipping are charged separately and shown before you enable or confirm them. Fees are deducted from your payouts, and every deduction is listed in your dashboard."
+            "Tallaby is free to use. We charge a flat 5 EGP for each delivered order, regardless of the order value. We don't take a percentage of your sales and there is no monthly subscription. Orders placed in the first 7 days after you create your first store are not charged. Products, orders and visitors are unlimited, and each account can have up to 3 stores.",
+            "Each store has a wallet. The fee is deducted from the store wallet when an order is delivered, and every deduction is listed in your dashboard. Cancelled orders and orders refused at delivery are not charged. The wallet balance can go negative; a negative balance is an amount you owe Tallaby, and you settle it by topping up the wallet from your dashboard. Payment processing and shipping are charged separately and shown before you enable or confirm them."
           ]
         },
         {
@@ -3226,7 +3245,7 @@
           "id": "ending",
           "title": "Closing or suspending a store",
           "paragraphs": [
-            "You can close your store at any time from Settings. We may suspend a store that breaks these terms, after notifying you where possible. Outstanding payouts are settled after any open orders are completed."
+            "You can close your store at any time from Settings. We may suspend a store that breaks these terms, after notifying you where possible. Your store wallet balance, positive or negative, is settled after any open orders are completed."
           ]
         },
         {

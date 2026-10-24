@@ -19,13 +19,16 @@ export function FeeDial() {
   const [value, setValue] = React.useState(400);
 
   return (
-    <div aria-live="polite" className="rounded-[28px] border border-white/10 bg-white/5 p-6 sm:p-9">
+    <div className="rounded-[28px] border border-white/10 bg-white/5 p-6 sm:p-9">
       <div className="text-[clamp(96px,13vw,168px)] leading-[0.9] font-extrabold tracking-[-0.05em] text-amber-600">
         <span className="font-latin">{FLAT_FEE_EGP}</span>
         <small className="ms-2.5 text-[0.3em] tracking-normal">{tc("egp")}</small>
       </div>
-      <div className="mt-2.5 min-h-[30px] text-lg font-bold">{t("onOrder", { value: formatNumber(value) })}</div>
-      <div className="min-h-6 text-sm text-haze">{t("share", { pct: feeShareOfOrder(value) })}</div>
+      {/* Only the result is announced, not the whole card, on each slider step. */}
+      <div aria-live="polite" aria-atomic>
+        <div className="mt-2.5 min-h-[30px] text-lg font-bold">{t("onOrder", { value: formatNumber(value) })}</div>
+        <div className="min-h-6 text-sm text-haze">{t("share", { pct: feeShareOfOrder(value) })}</div>
+      </div>
       <div className="mt-[30px]">
         <Slider
           dir="ltr"
@@ -76,9 +79,9 @@ export function FeeEstimator() {
           ))}
         </div>
       </div>
-      <div aria-live="polite" className="flex flex-col gap-[18px] bg-amber-50 p-6 sm:p-9">
+      <div className="flex flex-col gap-[18px] bg-amber-50 p-6 sm:p-9">
         <span className="text-sm font-semibold text-[#6b5a3a]">{t("monthlyFee")}</span>
-        <div className="font-latin text-[clamp(44px,5vw,60px)] leading-none font-extrabold tracking-[-0.03em] text-teal-900">
+        <div aria-live="polite" aria-atomic className="font-latin text-[clamp(44px,5vw,60px)] leading-none font-extrabold tracking-[-0.03em] text-teal-900">
           {formatNumber(est.fee)}
           <small className="ms-1.5 text-lg font-semibold tracking-normal">{tc("egp")}</small>
         </div>

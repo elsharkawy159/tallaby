@@ -33,10 +33,9 @@ export function toGeneralPatch(v: StoreGeneralFormValues, opts: { brand: boolean
     description: v.description.trim() || null,
     storeCategory: v.storeCategory.trim() || null,
     storeCategoryAr: v.storeCategoryAr.trim() || null,
-    // The logo is always edited here (and in Website › Design system); the
-    // banner only when the seller has no builder (Design system owns it then).
-    logoUrl: v.logoUrl || null,
-    ...(opts.brand && { bannerUrl: v.bannerUrl || null }),
+    // Logo and banner are edited here only when the seller has no builder;
+    // Website › Design owns them otherwise (the logo shows in every header and footer).
+    ...(opts.brand && { logoUrl: v.logoUrl || null, bannerUrl: v.bannerUrl || null }),
     contact,
     defaultLocale: v.defaultLocale,
     supportedLocales: v.supportedLocales,

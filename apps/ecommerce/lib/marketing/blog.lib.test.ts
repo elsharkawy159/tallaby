@@ -73,7 +73,7 @@ describe("marketing blog helpers", () => {
 
   it("falls back for a bare post", () => {
     const bare = { ...post, coverImage: null, bodyEn: "", excerptEn: "", seo: {}, authorName: null, readingMinutes: 4 };
-    expect(platformPostToMarketing(bare, "en", () => null)).toMatchObject({ image: "/banner.jpg", hasArticle: false, minutes: 4, excerpt: "", authorName: null });
+    expect(platformPostToMarketing(bare, "en", () => null)).toMatchObject({ image: "/og-image.jpg", hasArticle: false, minutes: 4, excerpt: "", authorName: null });
   });
 
   it("only optimizes local and Supabase images", () => {

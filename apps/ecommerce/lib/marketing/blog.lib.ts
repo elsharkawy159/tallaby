@@ -9,7 +9,8 @@ import { BLOG_CATEGORIES, type BlogCategory, type MarketingPost } from "./blog.d
 
 const CATEGORIES = BLOG_CATEGORIES.filter((c): c is Exclude<BlogCategory, "all"> => c !== "all");
 const DEFAULT_CATEGORY: Exclude<BlogCategory, "all"> = "guides";
-const FALLBACK_IMAGE = "/banner.jpg";
+/** Brand card for posts without a cover (product-only imagery, no people). */
+const FALLBACK_IMAGE = "/og-image.jpg";
 
 export function isPostForLocale(post: Pick<MarketingPost, "langs">, locale: string): boolean {
   return !post.langs?.length || post.langs.includes(locale);

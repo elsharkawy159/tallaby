@@ -12,7 +12,7 @@ import { useTranslations } from "next-intl";
 import { Button } from "@workspace/ui/components/button";
 import { Form } from "@workspace/ui/components/form";
 
-import { login, resetPassword } from "@/actions/auth";
+import { login, resendConfirmation, resetPassword } from "@/actions/auth";
 import {
   createSignInSchema,
   createResetPasswordSchema,
@@ -28,6 +28,9 @@ export default function AuthPage() {
   const [showResetForm, setShowResetForm] = useState(false);
   const [resetSuccess, setResetSuccess] = useState(false);
   const [isPending, startTransition] = useTransition();
+  // Email of an account that tried to sign in before confirming: offers "Resend confirmation".
+  const [unconfirmedEmail, setUnconfirmedEmail] = useState<string | null>(null);
+  const [isResending, startResending] = useTransition();
   const router = useRouter();
   const searchParams = useSearchParams();
   const tToast = useTranslations("toast");
@@ -66,30 +69,36 @@ export default function AuthPage() {
 
   const handleSignIn = (data: SignInFormData) => {
     startTransition(async () => {
-      try {
-        await login(data.email, data.password);
-        toast.success(tToast("redirectingToDashboard"));
-        router.push("/");
-      } catch (error) {
-        toast.error(
-          error instanceof Error ? error.message : tToast("failedToSignIn")
-        );
+      const result = await login(data.email, data.password);
+      if (result.error) {
+        setUnconfirmedEmail(result.code === "emailNotConfirmed" ? data.email : null);
+        toast.error(result.error);
+        return;
       }
+      toast.success(tToast("redirectingToDashboard"));
+      router.push("/");
+    });
+  };
+
+  const handleResend = () => {
+    if (!unconfirmedEmail) return;
+    startResending(async () => {
+      const result = await resendConfirmation(unconfirmedEmail);
+      if (result.error) toast.error(result.error);
+      else toast.success(t("resendSent", { email: unconfirmedEmail }));
     });
   };
 
   const handleResetPassword = (data: ResetPasswordFormData) => {
     startTransition(async () => {
-      try {
-        await resetPassword(data.resetEmail);
-        setResetSuccess(true);
-        toast.success(tToast("passwordResetLinkSent"));
-        resetForm.reset();
-      } catch (error) {
-        toast.error(
-          error instanceof Error ? error.message : tToast("failedToSendResetEmail")
-        );
+      const result = await resetPassword(data.resetEmail);
+      if (result.error) {
+        toast.error(result.error);
+        return;
       }
+      setResetSuccess(true);
+      toast.success(tToast("passwordResetLinkSent"));
+      resetForm.reset();
     });
   };
 
@@ -221,6 +230,21 @@ export default function AuthPage() {
             {t("signIn")}
             {!isPending && <ArrowRight className="size-[18px] rtl:rotate-180" />}
           </Button>
+          {unconfirmedEmail && (
+            <div className="flex flex-col gap-3 rounded-xl bg-primary-soft p-4 text-sm text-foreground">
+              <p className="m-0">{t("unconfirmedHint", { email: unconfirmedEmail })}</p>
+              <Button
+                type="button"
+                variant="outline"
+                className={OUTLINE_BUTTON}
+                onClick={handleResend}
+                disabled={isResending}
+              >
+                {isResending ? <Loader2 className="size-[18px] animate-spin" /> : <MailCheck className="size-[18px]" />}
+                {t("resendConfirmation")}
+              </Button>
+            </div>
+          )}
         </form>
       </Form>
 

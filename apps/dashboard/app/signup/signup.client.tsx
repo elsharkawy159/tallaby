@@ -14,6 +14,7 @@ import { Button } from "@workspace/ui/components/button";
 import { Form } from "@workspace/ui/components/form";
 
 import { SubdomainField } from "@/components/stores/subdomain-field.client";
+import { resendConfirmation } from "@/actions/auth";
 import { createClient } from "@/supabase/client";
 import { AuthField } from "../login/auth-field.client";
 import { AuthShell, AuthTabs } from "../login/auth-shell.client";
@@ -128,6 +129,28 @@ export function SignupForm({
 
   const busy = isPending || isGooglePending;
 
+  // "Check your email": resend, at most once a minute (the server also rate limits).
+  const [isResending, startResending] = useTransition();
+  const [resendCooldown, setResendCooldown] = useState(0);
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = setTimeout(() => setResendCooldown((s) => s - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [resendCooldown]);
+
+  const onResend = () => {
+    if (!confirmEmail) return;
+    startResending(async () => {
+      const result = await resendConfirmation(confirmEmail);
+      if (result.error) {
+        toast.error(result.error);
+        return;
+      }
+      toast.success(tAuth("resendSent", { email: confirmEmail }));
+      setResendCooldown(60);
+    });
+  };
+
   if (confirmEmail !== null) {
     return (
       <AuthShell>
@@ -139,9 +162,24 @@ export function SignupForm({
           title={t("confirmTitle")}
           subtitle={t("confirmDescription", { email: confirmEmail })}
         />
-        <Button asChild variant="outline" className={OUTLINE_BUTTON}>
-          <Link href="/login">{t("signIn")}</Link>
-        </Button>
+        <p className="m-0 text-sm text-muted-foreground">{t("confirmSpamHint")}</p>
+        <div className="flex flex-col gap-3">
+          <Button
+            type="button"
+            className={PRIMARY_BUTTON}
+            onClick={onResend}
+            disabled={isResending || resendCooldown > 0}
+          >
+            {isResending && <Loader2 className="size-[18px] animate-spin" />}
+            {resendCooldown > 0 ? t("resendIn", { seconds: resendCooldown }) : t("resend")}
+          </Button>
+          <Button type="button" variant="outline" className={OUTLINE_BUTTON} onClick={() => setConfirmEmail(null)}>
+            {t("useDifferentEmail")}
+          </Button>
+          <Link href="/login" className="text-center text-sm font-semibold text-primary hover:underline">
+            {t("signIn")}
+          </Link>
+        </div>
       </AuthShell>
     );
   }

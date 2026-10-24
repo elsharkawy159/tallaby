@@ -2,6 +2,8 @@
 import {
   Heart,
   Languages,
+  SunMoon,
+  UserRound,
   BadgeCheck,
   BookOpen,
   ChartNoAxesColumn,
@@ -106,6 +108,9 @@ export const ELEMENT_ICONS: Record<ElementType, LucideIcon> = {
   addToCart: ShoppingCart,
   wishlistButton: Heart,
   languageSwitcher: Languages,
+  storeLogo: BadgeCheck,
+  themeToggle: SunMoon,
+  accountLink: UserRound,
   productGallery: Images,
   productPrice: TicketPercent,
   productStock: Boxes,

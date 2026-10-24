@@ -70,7 +70,12 @@ export function StylePanel({
   /** Drops this tablet/phone's overrides in the whole section (its parts and elements too). */
   onResetDevice?: () => void;
   /** The shared section frame (page sections only; one value for every device). */
-  shell?: { value: SectionShellStyle; onChange: (patch: Partial<SectionShellStyle>) => void; readOnly: boolean };
+  shell?: {
+    value: SectionShellStyle;
+    onChange: (patch: Partial<SectionShellStyle>) => void;
+    readOnly: boolean;
+    defaultWidth?: SectionShellStyle["width"];
+  };
 }) {
   const t = useTranslations("storeEditor.style");
   const style = readEffectiveStyle(instance, target, device);
@@ -106,7 +111,7 @@ export function StylePanel({
 
       {shell && (
         <Group title={t("groups.section")}>
-          <SectionShellControls value={shell.value} onChange={shell.onChange} readOnly={shell.readOnly} />
+          <SectionShellControls value={shell.value} onChange={shell.onChange} readOnly={shell.readOnly} defaultWidth={shell.defaultWidth} />
           {device !== "desktop" && <p className="mt-2 text-xs text-muted-foreground">{t("shell.allDevices")}</p>}
         </Group>
       )}

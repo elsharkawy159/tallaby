@@ -35,6 +35,7 @@ import { StoreLogo } from "@/components/stores/store-logo.client";
 import { StoreSiteStatusNote } from "@/components/stores/store-site-status-note";
 import { APP_BRANDS, groupOf, kindLabelOf, type AppGroup } from "./apps-brand.lib";
 import { connectStoreApp, disconnectStoreApp } from "./apps.server";
+import { DisconnectAppButton } from "./disconnect-button.client";
 import type { AppCategoryOption } from "./apps.types";
 import { GoogleSheetsPanel } from "./google-sheets.client";
 import { MetaCapiPanel } from "./meta-capi.client";
@@ -620,15 +621,11 @@ function IdentifierPanel({
       </div>
       <SheetFooter className="flex-row justify-end gap-2.5 border-t px-[22px] py-4">
         {current ? (
-          <Button
-            type="button"
-            variant="outline"
+          <DisconnectAppButton
             className={cn(BUTTON_CLASS, "border-destructive/35 text-destructive hover:text-destructive")}
-            disabled={isPending}
-            onClick={remove}
-          >
-            {t("disconnect")}
-          </Button>
+            pending={isPending}
+            onConfirm={remove}
+          />
         ) : (
           <Button type="button" variant="ghost" className={BUTTON_CLASS} disabled={isPending} onClick={onClose}>
             {t("cancel")}

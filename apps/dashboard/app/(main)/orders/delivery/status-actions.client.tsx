@@ -25,8 +25,13 @@ import { Textarea } from "@workspace/ui/components/textarea";
 import { updateShipmentStatus } from "@/actions/shipping";
 import { nextStatuses, type ShippingStatus } from "@/lib/shipping/shipping-status";
 import type { ShippingOrderRow } from "@/lib/shipping/shipping.types";
+import { ConfirmActionDialog } from "@/components/layout/confirm-action-dialog.client";
 
 const DESTRUCTIVE: ShippingStatus[] = ["cancelled", "returned", "failed"];
+/** Final moves that can't be taken back ask first; "failed" has its own reason dialog. */
+type ConfirmedMove = "cancelled" | "returned";
+const isConfirmedMove = (status: ShippingStatus): status is ConfirmedMove =>
+  status === "cancelled" || status === "returned";
 
 interface Props {
   row: ShippingOrderRow;
@@ -38,6 +43,7 @@ export function StatusActions({ row, onAssign }: Props) {
   const t = useTranslations("shipping.actions");
   const [failing, setFailing] = useState(false);
   const [reason, setReason] = useState("");
+  const [confirming, setConfirming] = useState<ConfirmedMove | null>(null);
   const [isPending, startTransition] = useTransition();
 
   if (!row.editable) {
@@ -65,6 +71,7 @@ export function StatusActions({ row, onAssign }: Props) {
       }
       toast.success(t(`marked.${status}`));
       setFailing(false);
+      setConfirming(null);
       setReason("");
     });
   };
@@ -102,7 +109,13 @@ export function StatusActions({ row, onAssign }: Props) {
                 <DropdownMenuItem
                   key={status}
                   className={DESTRUCTIVE.includes(status) ? "text-destructive focus:text-destructive" : undefined}
-                  onSelect={() => (status === "failed" ? setFailing(true) : apply(status))}
+                  onSelect={() =>
+                    status === "failed"
+                      ? setFailing(true)
+                      : isConfirmedMove(status)
+                        ? setConfirming(status)
+                        : apply(status)
+                  }
                 >
                   {t(`move.${status}`)}
                 </DropdownMenuItem>
@@ -117,6 +130,18 @@ export function StatusActions({ row, onAssign }: Props) {
           </DropdownMenu>
         )}
       </div>
+
+      <ConfirmActionDialog
+        open={confirming !== null}
+        onOpenChange={(open) => !open && setConfirming(null)}
+        title={confirming ? t(`confirm.${confirming}Title`, { number: row.orderNumber }) : ""}
+        description={t("confirm.description")}
+        confirmLabel={confirming ? t(`move.${confirming}`) : ""}
+        cancelLabel={t("confirm.keep")}
+        destructive
+        pending={isPending}
+        onConfirm={() => confirming && apply(confirming)}
+      />
 
       <Dialog open={failing} onOpenChange={(o) => !o && !isPending && setFailing(false)}>
         <DialogContent className="sm:max-w-md">

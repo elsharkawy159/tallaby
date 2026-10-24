@@ -11,7 +11,7 @@ import { DASHBOARD_URL, LOGIN_URL, ROOT_DOMAIN, hasArabic, slugify } from "@/lib
 import { CtaButton } from "@/components/marketing/site/cta-button";
 import { createClient } from "@/supabase/client";
 import { useSlugCheck, type SlugState } from "./slug-check.client";
-import { signUpWithEmail, startGoogleSignup } from "./signup.server";
+import { resendSignupConfirmation, signUpWithEmail, startGoogleSignup } from "./signup.server";
 import { EGYPT_MOBILE, type SignupErrorKey, type SignupResult } from "./signup.dto";
 
 type SignupContextValue = { openSignup: (slug?: string) => void };
@@ -32,6 +32,7 @@ const KNOWN_ERRORS: SignupErrorKey[] = ["subdomainTaken", "generic"];
  * `ensureSellerAccount` flow as the dashboard signup (PLAN.md §6).
  */
 export function SignupProvider({ children }: { children: React.ReactNode }) {
+  const t = useTranslations("signup");
   const [open, setOpen] = React.useState(false);
   const [initialSlug, setInitialSlug] = React.useState("");
   const [initialError, setInitialError] = React.useState<SignupErrorKey | null>(null);
@@ -69,7 +70,7 @@ export function SignupProvider({ children }: { children: React.ReactNode }) {
     <SignupContext.Provider value={value}>
       {children}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-h-[calc(100vh-32px)] overflow-auto rounded-[20px] p-[26px] sm:max-w-[440px] sm:p-8">
+        <DialogContent closeLabel={t("close")} className="max-h-[calc(100vh-32px)] overflow-auto rounded-[20px] p-[26px] sm:max-w-[440px] sm:p-8">
           {open ? <SignupForm key={session} initialSlug={initialSlug} initialError={initialError} /> : null}
         </DialogContent>
       </Dialog>
@@ -97,6 +98,9 @@ function SignupForm({ initialSlug, initialError }: { initialSlug: string; initia
   const [googlePending, setGooglePending] = React.useState(false);
   const [slugState, setSlugState] = useSlugCheck(slug, initialSlug);
   const slugRef = React.useRef<HTMLInputElement>(null);
+  const emailRef = React.useRef<HTMLInputElement>(null);
+  const passwordRef = React.useRef<HTMLInputElement>(null);
+  const phoneRef = React.useRef<HTMLInputElement>(null);
 
   const slugStatus = slugState.kind === "result" ? slugState.result.status : null;
   const slugOk = slugStatus === "available" || slugStatus === "unknown";
@@ -111,12 +115,17 @@ function SignupForm({ initialSlug, initialError }: { initialSlug: string; initia
     if (next !== raw && hasArabic(raw)) setSlugState({ kind: "local", message: "arabic" });
   };
 
-  /** Store link + phone for the email signup. */
-  const storeChoiceValid = () => {
+  /** Validates the whole form and focuses the first field that is wrong, in form order. */
+  const formValid = () => {
     if (!slug) setSlugState({ kind: "local", message: "required" });
-    const ok = Boolean(slug) && slugOk && phoneOk;
-    if (!ok) slugRef.current?.focus();
-    return ok;
+    const firstBad = [
+      [Boolean(slug) && slugOk, slugRef],
+      [emailOk, emailRef],
+      [password.length >= 8, passwordRef],
+      [phoneOk, phoneRef],
+    ].find(([ok]) => !ok) as [boolean, React.RefObject<HTMLInputElement | null>] | undefined;
+    firstBad?.[1].current?.focus();
+    return !firstBad;
   };
 
   const handleResult = (result: SignupResult) => {
@@ -129,7 +138,7 @@ function SignupForm({ initialSlug, initialError }: { initialSlug: string; initia
     event.preventDefault();
     setTouched(true);
     setFormError(null);
-    if (!storeChoiceValid() || !emailOk || password.length < 8) return;
+    if (!formValid()) return;
     startTransition(async () => {
       handleResult(await signUpWithEmail({ subdomain: slug, phone, email: email.trim(), password }));
     });
@@ -183,17 +192,7 @@ function SignupForm({ initialSlug, initialError }: { initialSlug: string; initia
   }
 
   if (step.kind === "confirm") {
-    return (
-      <div className="text-center">
-        <span className="mx-auto mt-1 mb-[18px] grid size-16 place-items-center rounded-full bg-teal-50 text-teal-700">
-          <MailCheck className="size-[30px]" aria-hidden />
-        </span>
-        <DialogTitle className="text-2xl font-extrabold text-teal-900">{t("confirmTitle")}</DialogTitle>
-        <DialogDescription className="mt-2.5 text-sm text-neutral-600">
-          {t.rich("confirmBody", { email: step.email, b: (c) => <b>{c}</b> })}
-        </DialogDescription>
-      </div>
-    );
+    return <ConfirmEmailStep email={step.email} onChangeEmail={() => setStep({ kind: "form" })} />;
   }
 
   return (
@@ -244,6 +243,7 @@ function SignupForm({ initialSlug, initialError }: { initialSlug: string; initia
       </FieldLabel>
       <div className={cn(inputBox, touched && !emailOk ? "border-destructive" : "border-neutral-200")}>
         <input
+          ref={emailRef}
           id="signup-email"
           type="email"
           dir="ltr"
@@ -252,17 +252,19 @@ function SignupForm({ initialSlug, initialError }: { initialSlug: string; initia
           placeholder="you@example.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          aria-describedby="signup-email-hint"
           aria-invalid={(touched && !emailOk) || undefined}
           className={inputEl}
         />
       </div>
-      <Hint tone={touched && !emailOk ? "bad" : "muted"}>{touched && !emailOk ? t("errEmail") : null}</Hint>
+      <Hint id="signup-email-hint" tone={touched && !emailOk ? "bad" : "muted"}>{touched && !emailOk ? t("errEmail") : null}</Hint>
 
       <FieldLabel htmlFor="signup-password" className="mt-1.5">
         {t("password")}
       </FieldLabel>
       <div className={cn(inputBox, touched && password.length < 8 ? "border-destructive" : "border-neutral-200")}>
         <input
+          ref={passwordRef}
           id="signup-password"
           type={showPassword ? "text" : "password"}
           dir="ltr"
@@ -291,6 +293,7 @@ function SignupForm({ initialSlug, initialError }: { initialSlug: string; initia
       </FieldLabel>
       <div className={cn(inputBox, touched && !phoneOk ? "border-destructive" : "border-neutral-200")}>
         <input
+          ref={phoneRef}
           id="signup-phone"
           type="tel"
           dir="ltr"
@@ -348,6 +351,60 @@ function SignupForm({ initialSlug, initialError }: { initialSlug: string; initia
         })}
       </p>
     </form>
+  );
+}
+
+const RESEND_COOLDOWN_S = 60;
+
+/** "Check your email", with a resend (at most once a minute; the server also rate limits) and a way back to fix a typo. */
+function ConfirmEmailStep({ email, onChangeEmail }: { email: string; onChangeEmail: () => void }) {
+  const t = useTranslations("signup");
+  const [cooldown, setCooldown] = React.useState(RESEND_COOLDOWN_S);
+  const [status, setStatus] = React.useState<{ tone: "ok" | "bad"; text: string } | null>(null);
+  const [pending, startTransition] = React.useTransition();
+
+  React.useEffect(() => {
+    if (cooldown <= 0) return;
+    const timer = window.setTimeout(() => setCooldown((s) => s - 1), 1000);
+    return () => window.clearTimeout(timer);
+  }, [cooldown]);
+
+  const resend = () => {
+    setStatus(null);
+    startTransition(async () => {
+      const { error } = await resendSignupConfirmation(email);
+      if (error) {
+        setStatus({ tone: "bad", text: t(`errors.${error}`) });
+        return;
+      }
+      setStatus({ tone: "ok", text: t("resendSent") });
+      setCooldown(RESEND_COOLDOWN_S);
+    });
+  };
+
+  return (
+    <div className="text-center">
+      <span className="mx-auto mt-1 mb-[18px] grid size-16 place-items-center rounded-full bg-teal-50 text-teal-700">
+        <MailCheck className="size-[30px]" aria-hidden />
+      </span>
+      <DialogTitle className="text-2xl font-extrabold text-teal-900">{t("confirmTitle")}</DialogTitle>
+      <DialogDescription className="mt-2.5 text-sm text-neutral-600">
+        {t.rich("confirmBody", { email, b: (c) => <b dir="ltr">{c}</b> })}
+      </DialogDescription>
+      <p className="mt-4 text-[13px] text-neutral-600">{t("confirmSpam")}</p>
+      <div className="mt-5 grid gap-2">
+        <CtaButton type="button" tone="outline" disabled={pending || cooldown > 0} onClick={resend} className="w-full rounded-xl">
+          {pending ? <Loader2 className="animate-spin" aria-hidden /> : null}
+          {cooldown > 0 ? t("resendIn", { seconds: cooldown }) : t("resend")}
+        </CtaButton>
+        <button type="button" onClick={onChangeEmail} className="text-sm font-semibold text-teal-700 underline-offset-2 hover:underline">
+          {t("changeEmail")}
+        </button>
+      </div>
+      <p role="status" className={cn("mt-3 min-h-5 text-[13px]", status?.tone === "bad" ? "text-destructive" : "text-success")}>
+        {status?.text}
+      </p>
+    </div>
   );
 }
 

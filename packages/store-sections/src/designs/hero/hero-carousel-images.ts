@@ -1,7 +1,7 @@
 /**
  * Photo-only banner carousel (owner, 2026-10-23): full-width photos, one at a
  * time, with no text or button on them. Same `carousel` element as
- * `hero-carousel`: autoplays every 5 seconds, pauses on hover, focus, the
+ * `hero-carousel`: autoplays every 5 seconds, pauses on focus, the
  * pause button, a hidden tab or off-screen, and starts paused with reduced
  * motion. Phones swipe; the arrows are desktop only.
  */

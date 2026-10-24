@@ -13,6 +13,7 @@ import {
   SiteTheme,
   collectCatalogQueries,
   designSystemToTokens,
+  drawChrome,
   flushHeaderOnMobile,
   storeSectionRegistry,
   type ProductDetail,
@@ -103,7 +104,10 @@ export function SitePreview({
   fontClassName,
   className,
   product,
+  translated = false,
 }: {
+  /** The store has more than one language: the header shows its language switcher (unless hidden). */
+  translated?: boolean;
   store: StoreProfile;
   catalog: PreviewCatalog;
   sections: SectionInstance[];
@@ -165,6 +169,10 @@ export function SitePreview({
       }),
     [sections, header, footer, catalog, locale, store, t, product],
   );
+  // The header and footer as the storefront draws them: the store's logo and the tools the seller turned on.
+  const hasLogo = Boolean(store.logoUrl);
+  const drawnHeader = useMemo(() => drawChrome(flushHeaderOnMobile(header), "header", { translated, hasLogo }), [header, translated, hasLogo]);
+  const drawnFooter = useMemo(() => drawChrome(footer, "footer", { translated, hasLogo }), [footer, translated, hasLogo]);
 
   return (
     <div className={className}>
@@ -190,15 +198,15 @@ export function SitePreview({
           >
             <SiteTheme designSystem={designSystem} />
             {/* Element styles of tree sections, as on the storefront. */}
-            <PageStyles sections={[flushHeaderOnMobile(header), ...sections, footer]} mode="public" />
+            <PageStyles sections={[drawnHeader, ...sections, drawnFooter]} mode="public" />
             <style>{`.${SITE_ROOT_CLASS} :where(h1,h2,h3,h4){font-family:var(--sf-font-heading,var(--sf-font-body,var(--font-storefront))),system-ui,sans-serif}`}</style>
-            {header && <SectionRenderer instance={flushHeaderOnMobile(header)} registry={storeSectionRegistry} ctx={ctx} defaultLocale={defaultLocale} />}
+            {drawnHeader && <SectionRenderer instance={drawnHeader} registry={storeSectionRegistry} ctx={ctx} defaultLocale={defaultLocale} />}
             <main className="flex-1">
               {sections.map((section) => (
                 <SectionRenderer key={section.id} instance={section} registry={storeSectionRegistry} ctx={ctx} defaultLocale={defaultLocale} />
               ))}
             </main>
-            {footer && <SectionRenderer instance={footer} registry={storeSectionRegistry} ctx={ctx} defaultLocale={defaultLocale} />}
+            {drawnFooter && <SectionRenderer instance={drawnFooter} registry={storeSectionRegistry} ctx={ctx} defaultLocale={defaultLocale} />}
           </div>,
           body,
         )}

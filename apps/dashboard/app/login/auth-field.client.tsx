@@ -3,6 +3,7 @@
 import { useState, type ReactNode } from "react";
 import type { FieldValues, Path, UseFormReturn } from "react-hook-form";
 import { Eye, EyeOff, Lock, Mail, Phone } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import {
   FormControl,
@@ -43,6 +44,7 @@ export function AuthField<T extends FieldValues>({
   description?: string;
   autoFocus?: boolean;
 }) {
+  const t = useTranslations("auth");
   const [visible, setVisible] = useState(false);
   const Icon = ICONS[type];
   // Phone numbers are always typed left-to-right, even on the Arabic (RTL)
@@ -88,7 +90,7 @@ export function AuthField<T extends FieldValues>({
               <button
                 type="button"
                 onClick={() => setVisible((v) => !v)}
-                aria-label={visible ? "Hide password" : "Show password"}
+                aria-label={visible ? t("hidePassword") : t("showPassword")}
                 aria-pressed={visible}
                 className="absolute end-1.5 grid size-9 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-3 focus-visible:outline-primary/30"
               >

@@ -18,6 +18,7 @@ import {
   AvatarImage,
 } from "@workspace/ui/components/avatar";
 import { getPublicUrl } from "@/lib/utils";
+import { useTableSectionLabels } from "@/lib/i18n/table-labels";
 import { formatDateTime, formatNumber } from "@/lib/i18n/format";
 import { Star } from "lucide-react";
 import { Button } from "@workspace/ui/components/button";
@@ -90,6 +91,7 @@ export function VendorReviewsTable({
 }) {
   const t = useTranslations("reviews");
   const locale = useLocale();
+  const tableLabels = useTableSectionLabels();
   const columns = useMemo<ColumnDef<VendorReviewRow, any>[]>(
     () => [
       {
@@ -210,6 +212,8 @@ export function VendorReviewsTable({
       },
       {
         id: "review",
+        // The search box filters on this text: the review, its author and the product.
+        accessorFn: (r) => [r.title, r.content, r.customerName, r.productTitle].filter(Boolean).join(" "),
         header: t("columns.review"),
         size: 420,
         cell: ({ row }) => (
@@ -266,6 +270,7 @@ export function VendorReviewsTable({
           rows={rows}
           columns={columns}
           searchColumnId="review"
+          labels={tableLabels}
         />
       </CardContent>
     </Card>

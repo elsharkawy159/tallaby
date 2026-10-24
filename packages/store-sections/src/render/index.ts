@@ -23,4 +23,16 @@ export * from "../core/catalog-resolve";
 export * from "../designs";
 export * from "../elements/data";
 export * from "../elements/video";
-export { LANGUAGE_SWITCHER_PROP, flushHeaderOnMobile, languageSwitcherOn, withLanguageSwitcher } from "../config/header";
+export {
+  CHROME_OPTIONS,
+  LANGUAGE_SWITCHER_PROP,
+  chromeHasThemeToggle,
+  chromeOptionOn,
+  drawChrome,
+  flushHeaderOnMobile,
+  languageSwitcherOn,
+  setChromeOption,
+  withLanguageSwitcher,
+  type ChromeOption,
+  type ChromePart,
+} from "../config/header";

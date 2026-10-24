@@ -68,7 +68,7 @@ export function SubmissionsInbox({
     if (status !== "all") params.set("status", status);
     if (next.page && next.page > 1) params.set("page", String(next.page));
     setSelected([]);
-    router.push(params.size ? `${pathname}?${params}` : pathname);
+    router.push(`${params.size ? `${pathname}?${params}` : pathname}#submissions`, { scroll: false });
   };
 
   const setStatus = (ids: string[], status: InboxStatus, quiet = false) =>

@@ -6,6 +6,7 @@ import { formatNumber } from "@/lib/i18n/format";
 import { getHomeSnapshot, getSalesOverview } from "./home.queries";
 import type { HomeChannel, HomeRange } from "./home.shared";
 import { DeltaBadge, HomeCard, IconTile, StarRating, percentChange } from "./home-ui";
+import { walletKpiState } from "./wallet-kpi.lib";
 
 export async function HomeKpisData({ range, channel = "all" }: { range: HomeRange; channel?: HomeChannel }) {
   const [snapshot, sales, t, locale] = await Promise.all([
@@ -45,18 +46,25 @@ export async function HomeKpisData({ range, channel = "all" }: { range: HomeRang
         delta={hasSales ? percentChange(sales.orders, sales.previousOrders) : null}
       />
       <KpiCard
-        label={t("wallet")}
+        label={t("storeWallet")}
         icon={Wallet}
         value={num(snapshot?.walletBalance ?? 0, 2)}
         unit={currency}
         footer={
-          (snapshot?.walletBalance ?? 0) > 0 ? (
-            <Link href="/financial" className="text-primary-ink hover:underline">
-              {t("withdraw")}
-            </Link>
-          ) : (
-            t("walletEmpty")
-          )
+          // sellers.wallet_balance mirrors the store wallet, which pays platform fees (no withdrawals).
+          {
+            negative: (
+              <Link href="/wallet?topup=1" className="font-medium text-destructive hover:underline">
+                {t("walletNegative")}
+              </Link>
+            ),
+            positive: (
+              <Link href="/wallet" className="text-primary-ink hover:underline">
+                {t("walletView")}
+              </Link>
+            ),
+            zero: t("walletZero"),
+          }[walletKpiState(snapshot?.walletBalance ?? 0)]
         }
       />
       <KpiCard

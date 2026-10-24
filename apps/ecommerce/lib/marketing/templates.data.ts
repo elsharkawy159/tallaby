@@ -18,7 +18,7 @@ export const IMG = {
   fashion: "/fashion.png",
   cosmetics: "/cosmetics.jpg",
   accessories: "/accessories.jpg",
-  banner: "/banner.jpg",
+  banner: "/accessories.jpg",
 } as const;
 
 export type BannerLayout = "split" | "full" | "center";

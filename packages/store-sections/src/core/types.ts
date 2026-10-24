@@ -413,8 +413,10 @@ export interface RenderContext {
   renderWishlistButton?: (product: ProductSummary) => ReactNode;
   /** The header's switch to the store's other language (`languageSwitcher` node). */
   renderLanguageSwitcher?: () => ReactNode;
-  /** Customer account link or menu, when the host supports it. */
+  /** Customer account link or menu, when the host supports it (`accountLink` node: sign-in for guests). */
   renderAccountButton?: () => ReactNode;
+  /** The site's light/dark switch (`themeToggle` node); see `siteDarkCss`. */
+  renderThemeToggle?: () => ReactNode;
   /** A live countdown to `endsAt` (ISO). Without it, sections print the end date. */
   renderCountdown?: (endsAt: string, instanceId: string) => ReactNode;
   /** Forms of this store by id, resolved server-side by the host (P4-10). Foreign ids are never present. */

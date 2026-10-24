@@ -13,7 +13,8 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return pageMetadata({ locale, page: "about", path: "/about" });
 }
 
-const MOSAIC = ["/banner2.jpg", "/banner3.jpg", "/banner4.jpg"];
+/** Product-only photos (no people), decorative. */
+const MOSAIC = ["/accessories.jpg", "/cosmetics.jpg", "/fashion.png"];
 
 export default async function AboutPage() {
   const t = await getTranslations("about");
@@ -21,7 +22,7 @@ export default async function AboutPage() {
   const facts = [
     { value: "2026", label: t("f1"), latin: true },
     { value: t("f2Value"), label: t("f2") },
-    { value: "24/7", label: t("f3"), latin: true },
+    { value: "5", label: t("f3"), latin: true },
     { value: "2", label: t("f4"), latin: true },
   ];
 
@@ -41,10 +42,10 @@ export default async function AboutPage() {
               <span className="border-s border-white/20 ps-4 leading-normal">{t.rich("word", richTags)}</span>
             </div>
           </div>
-          <div className="relative z-[1] -mb-[120px] grid grid-cols-2 gap-3.5 sm:h-60 sm:grid-cols-[2fr_1fr_1.3fr] lg:h-[340px]">
+          <div aria-hidden className="relative z-[1] -mb-[120px] grid grid-cols-2 gap-3.5 sm:h-60 sm:grid-cols-[2fr_1fr_1.3fr] lg:h-[340px]">
             {MOSAIC.map((src, i) => (
-              <div key={src} className={`relative h-40 overflow-hidden rounded-[20px] sm:h-auto ${i === 0 ? "col-span-2 sm:col-span-1" : ""}`}>
-                <Image src={src} alt={t("photo")} fill sizes="(min-width: 640px) 40vw, 100vw" className="object-cover" priority={i === 0} />
+              <div key={src} className={`relative h-40 overflow-hidden rounded-[20px] bg-[#f4efe6] sm:h-auto ${i === 0 ? "col-span-2 sm:col-span-1" : ""}`}>
+                <Image src={src} alt="" fill sizes="(min-width: 640px) 40vw, 100vw" className="object-cover" priority={i === 0} />
               </div>
             ))}
           </div>

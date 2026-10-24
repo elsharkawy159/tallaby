@@ -19,20 +19,27 @@ import { TemplateFrame } from "./template-card";
  * getTemplateGallery: the active templates, default first. A card shows the
  * template's thumbnail, or its real home page live when it has none.
  */
+const PAGE_SIZE = 12;
+
 export function TemplateGallery({ entries, variant, heading }: { entries: GalleryEntry[]; variant: "home" | "page"; heading?: React.ReactNode }) {
   const t = useTranslations("templates");
   const locale = useLocale();
   const th = useTranslations("home.templates");
   const [category, setCategory] = React.useState<TemplateCategory>("all");
+  const [shown, setShown] = React.useState(PAGE_SIZE);
 
   const matching = entries.filter((tpl) => category === "all" || tpl.category === category);
-  // Two rows of three on the home page; the templates page shows them all.
-  const visible = variant === "home" ? matching.slice(0, 6) : matching;
+  // Two rows of three on the home page; the templates page shows a page at a
+  // time (over 100 templates made the phone page tens of thousands of px tall).
+  const visible = matching.slice(0, variant === "home" ? 6 : shown);
   const used = new Set(entries.map((e) => e.category));
   const chips = (
     <ChoiceGroup
       value={category}
-      onChange={setCategory}
+      onChange={(next) => {
+        setCategory(next);
+        setShown(PAGE_SIZE);
+      }}
       label={th("filter")}
       options={TEMPLATE_CATEGORIES.filter((c) => c === "all" || used.has(c)).map((c) => ({ value: c, label: t(`categories.${c}`) }))}
     />
@@ -42,13 +49,14 @@ export function TemplateGallery({ entries, variant, heading }: { entries: Galler
     <>
       {variant === "home" ? (
         <div className="mb-7 flex flex-wrap items-end justify-between gap-6">
-          {heading}
+          {/* Own wrapper: a server-rendered `heading` beside `chips` in one children list trips React's key check in dev. */}
+          <div>{heading}</div>
           {chips}
         </div>
       ) : (
         <div className="mb-8 flex flex-wrap items-center justify-between gap-5">
           {chips}
-          <span className="text-sm text-neutral-600">{t("count", { count: visible.length })}</span>
+          <span className="text-sm text-neutral-600">{t("count", { count: matching.length })}</span>
         </div>
       )}
 
@@ -99,8 +107,8 @@ export function TemplateGallery({ entries, variant, heading }: { entries: Galler
                   <small className="text-[13px] text-neutral-600">{desc}</small>
                 </div>
                 <div className="flex gap-1">
-                  {tpl.palette.slice(0, 4).map((color) => (
-                    <i key={color} className="block size-4 rounded-full shadow-[inset_0_0_0_1px_rgba(0,0,0,0.12)]" style={{ background: color }} />
+                  {tpl.palette.slice(0, 4).map((color, i) => (
+                    <i key={`${i}-${color}`} className="block size-4 rounded-full shadow-[inset_0_0_0_1px_rgba(0,0,0,0.12)]" style={{ background: color }} />
                   ))}
                 </div>
               </div>
@@ -123,6 +131,14 @@ export function TemplateGallery({ entries, variant, heading }: { entries: Galler
           </div>
         ) : null}
       </div>
+
+      {variant === "page" && matching.length > visible.length ? (
+        <div className="mt-10 text-center">
+          <CtaButton type="button" tone="outline" onClick={() => setShown((n) => n + PAGE_SIZE)}>
+            {t("showMore", { count: matching.length - visible.length })}
+          </CtaButton>
+        </div>
+      ) : null}
 
       {variant === "home" ? (
         <div className="mt-10 text-center">

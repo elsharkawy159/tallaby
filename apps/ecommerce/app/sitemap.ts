@@ -31,7 +31,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const posts = new Map<string, { locales: string[]; lastModified?: string }>();
   routing.locales.forEach((locale, i) => {
     for (const post of postsByLocale[i] ?? []) {
-      if (post.seo?.noindex) continue;
+      if (post.seo?.noindex || !post.hasArticle) continue;
       const seen = posts.get(post.id) ?? { locales: [], lastModified: post.updatedAt ?? post.date };
       seen.locales.push(locale);
       posts.set(post.id, seen);

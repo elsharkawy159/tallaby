@@ -17,6 +17,7 @@ import {
   Trash2,
 } from 'lucide-react'
 
+import { ConfirmActionDialog } from '@/components/layout/confirm-action-dialog.client'
 import { Badge } from '@workspace/ui/components/badge'
 import { Button } from '@workspace/ui/components/button'
 import {
@@ -91,7 +92,9 @@ export function CustomDomainSection ({
   const [error, setError] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
   const [action, setAction] = useState<'add' | 'verify' | 'remove' | null>(null)
-  const [open, setOpen] = useState(false)
+  // Open while a domain is waiting for DNS, so its records are on screen.
+  const [open, setOpen] = useState(Boolean(initial && initial.status !== 'active'))
+  const [confirmRemove, setConfirmRemove] = useState(false)
 
   const normalizedDraft = normalizeCustomDomain(draft)
   const draftProblem = normalizedDraft ? validateCustomDomain(normalizedDraft) : null
@@ -129,15 +132,20 @@ export function CustomDomainSection ({
       else toast.info(t('notYet'))
     })
 
+  // The confirm closes at once; the Remove button then shows progress and any error shows inline.
   const remove = () => {
     if (!view) return
-    if (!window.confirm(t('removeConfirm', { host: view.domain }))) return
+    setConfirmRemove(false)
     run('remove', () => removeCustomDomain(storeId), () => toast.success(t('removed')))
   }
 
   const copy = async (value: string) => {
-    await navigator.clipboard.writeText(value)
-    toast.success(t('copied'))
+    try {
+      await navigator.clipboard.writeText(value)
+      toast.success(t('copied'))
+    } catch {
+      toast.error(t('copyFailed'))
+    }
   }
 
   const canAdd = Boolean(normalizedDraft) && !draftProblem && !pending
@@ -260,12 +268,20 @@ export function CustomDomainSection ({
                 type='button'
                 variant='soft'
                 className={cn(BUTTON_CLASS, 'flex-1 text-destructive hover:bg-destructive-soft hover:text-destructive sm:flex-none')}
-                onClick={remove}
+                onClick={() => setConfirmRemove(true)}
                 disabled={pending}
               >
                 {action === 'remove' ? <LoaderCircle className='animate-spin' /> : <Trash2 />}
                 {t('remove')}
               </Button>
+              <ConfirmActionDialog
+                open={confirmRemove}
+                onOpenChange={setConfirmRemove}
+                title={t('removeConfirm', { host: view.domain })}
+                confirmLabel={t('remove')}
+                destructive
+                onConfirm={remove}
+              />
             </div>
 
             {error && <FieldHint className='text-destructive'>{error}</FieldHint>}

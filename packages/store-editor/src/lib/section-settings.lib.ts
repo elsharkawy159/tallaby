@@ -24,6 +24,11 @@ export function settingsNodes(nodes: readonly ComponentNode[]): ComponentNode[] 
   return found;
 }
 
+/** Whether the tree holds a carousel (its section is full width until the seller picks a width). */
+export function hasCarousel(nodes: readonly ComponentNode[]): boolean {
+  return nodes.some((node) => node.type === "carousel" || hasCarousel(node.children));
+}
+
 /** The images of a slide (usually one), in reading order. */
 export function slideImages(slide: ComponentNode): ComponentNode[] {
   const found: ComponentNode[] = [];

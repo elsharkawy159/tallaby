@@ -17,6 +17,7 @@ import {
   Facebook,
   Gift,
   Globe,
+  Moon,
   Headphones,
   Heart,
   Image,
@@ -197,9 +198,14 @@ function renderSocialRow(node: ComponentNode, ctx: RenderContext, attrs: Record<
   if (!links.length) return ctx.mode === "edit" ? undefined : null;
   return (
     <div {...attrs} className="flex min-w-0 flex-row flex-wrap">
+      {/* Always round and never squeezed (owner, 2026-10-24): a soft tint keeps the circle visible on any footer. */}
       {links.map((link) => (
-        <SmartLink key={link.platform} ctx={ctx} href={link.url} label={link.label} className="block min-w-0">
-          <span data-node-id={stencil.id} data-node-type="linkBlock" className="block">
+        <SmartLink key={link.platform} ctx={ctx} href={link.url} label={link.label} className="block shrink-0 rounded-full">
+          <span
+            data-node-id={stencil.id}
+            data-node-type="linkBlock"
+            className="grid aspect-square min-w-9 shrink-0 place-items-center rounded-full bg-current/8 transition-[transform,background-color] duration-200 hover:-translate-y-0.5 hover:bg-current/15 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+          >
             <span {...(icon && { "data-node-id": icon.id, "data-node-type": "icon" })} className="inline-flex">
               <SocialIcon platform={link.platform} className="size-[1em]" />
             </span>
@@ -554,6 +560,57 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
           <span className="inline-flex h-10 items-center gap-1.5 rounded-full px-2.5 text-sm font-medium">
             <Globe className="size-4" aria-hidden />
             <span className="max-sm:sr-only">{sectionText("otherLanguage", ctx.locale)}</span>
+          </span>
+        </div>
+      ) : null;
+    }
+    case "storeLogo": {
+      // The logo uploaded in Website › Design, wherever the header/footer options put it.
+      const url = ctx.store.logoUrl ? ctx.imageUrl(ctx.store.logoUrl) : null;
+      if (!url) return null;
+      return (
+        // eslint-disable-next-line @next/next/no-img-element -- shared by both apps; a logo is small
+        <img
+          {...attrs}
+          src={url}
+          alt={ctx.store.name}
+          className={cn("block w-auto max-w-40 shrink-0 object-contain", props.size === "lg" ? "h-12" : "h-9 md:h-10")}
+          decoding="async"
+        />
+      );
+    }
+    case "themeToggle": {
+      const button = ctx.renderThemeToggle?.();
+      if (button) {
+        return (
+          <div {...attrs} className="flex">
+            {button}
+          </div>
+        );
+      }
+      return ctx.mode === "edit" ? (
+        <div {...attrs} className="flex">
+          <span className="inline-grid size-10 place-items-center rounded-full">
+            <Moon className="size-4.5" aria-hidden />
+            <span className="sr-only">{sectionText("themeToggle", ctx.locale)}</span>
+          </span>
+        </div>
+      ) : null;
+    }
+    case "accountLink": {
+      const button = ctx.renderAccountButton?.();
+      if (button) {
+        return (
+          <div {...attrs} className="flex">
+            {button}
+          </div>
+        );
+      }
+      return ctx.mode === "edit" ? (
+        <div {...attrs} className="flex">
+          <span className="inline-flex h-10 items-center gap-1.5 rounded-full px-2.5 text-sm font-medium">
+            <User className="size-4.5" aria-hidden />
+            <span className="max-sm:sr-only">{sectionText("signIn", ctx.locale)}</span>
           </span>
         </div>
       ) : null;

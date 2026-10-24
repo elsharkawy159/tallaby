@@ -323,9 +323,26 @@
         "removeSlide": "Remove slide {number}",
         "noImage": "This slide has no photo. Select it on the page to add one."
       },
-      "navbar": "Navbar",
-      "languageSwitcher": "Language switcher",
-      "languageSwitcherHint": "Lets visitors switch your website between Arabic and English.",
+      "chrome": {
+        "header": "Header options",
+        "footer": "Footer options",
+        "openDesign": "Website › Design",
+        "options": {
+          "logo": "Store logo",
+          "storeName": "Store name next to the logo",
+          "languageSwitcher": "Language switcher",
+          "themeToggle": "Light / dark mode",
+          "account": "Sign in"
+        },
+        "hints": {
+          "logo": "Shows the logo you uploaded in",
+          "noLogo": "Upload your logo once and it shows in every header and footer:",
+          "storeName": "Turn off when your logo already has the name in it.",
+          "languageSwitcher": "Lets visitors switch your website between Arabic and English.",
+          "themeToggle": "A button that switches your website between light and dark. Visitors' choice is remembered.",
+          "account": "Lets customers sign in, or open their account when they're signed in."
+        }
+      },
       "emptyTitle": "Nothing selected",
       "edit": "Edit",
       "path": "Where it sits",
@@ -866,6 +883,18 @@
       "typography": "Typography",
       "brand": "Brand",
       "buttons": "Buttons & layout"
+    },
+    "jumpTo": "Jump to",
+    "sections": {
+      "brand": { "title": "Brand", "description": "Your logo shows in every header and footer of your website, and in browser tabs as the favicon." },
+      "colors": { "title": "Colors", "description": "Pick a ready palette, then fine-tune any color." },
+      "typography": { "title": "Fonts", "description": "One pair for headings and text, in Arabic and English." },
+      "buttons": { "title": "Buttons & corners", "description": "How round buttons, cards and images are." },
+      "layout": { "title": "Page layout", "description": "How wide pages are and how much space sits between sections." }
+    },
+    "colorGroups": {
+      "brand": "Brand colors",
+      "surfaces": "Backgrounds & text"
     },
     "colors": {
       "presets": "Color palettes",

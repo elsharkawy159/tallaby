@@ -10,6 +10,7 @@ import { getSiteData } from "@/actions/site-data";
 import { SiteDataProvider } from "@/providers/site-data";
 import { ZodLocale } from "@/lib/i18n/zod-locale.client";
 import { ThemeProvider } from "@/providers/theme";
+import QueryProvider from "@/providers/use-query";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -77,7 +78,7 @@ export default async function RootLayout({
                 defaultTheme="light"
                 disableTransitionOnChange
               >
-                {children}
+                <QueryProvider>{children}</QueryProvider>
                 <Toaster position="top-center" />
               </ThemeProvider>
             </NextIntlClientProvider>

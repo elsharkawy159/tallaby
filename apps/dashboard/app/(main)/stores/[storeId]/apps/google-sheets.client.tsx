@@ -12,6 +12,7 @@ import { Button } from "@workspace/ui/components/button";
 import { SheetFooter } from "@workspace/ui/components/sheet";
 import { BUTTON_CLASS } from "@/components/form/form-ui";
 import { disconnectStoreApp } from "./apps.server";
+import { DisconnectAppButton } from "./disconnect-button.client";
 import { createGoogleSheet, exportOrdersToGoogleSheet } from "./google-sheets.server";
 
 /**
@@ -132,9 +133,12 @@ export function GoogleSheetsPanel({
           </Button>
         )}
         {current && (
-          <Button type="button" variant="outline" className={BUTTON_CLASS} disabled={isPending} onClick={remove}>
-            {t("disconnect")}
-          </Button>
+          <DisconnectAppButton
+            className={BUTTON_CLASS}
+            pending={isPending}
+            description={t("disconnectConfirm.googleSheets")}
+            onConfirm={remove}
+          />
         )}
       </SheetFooter>
     </>

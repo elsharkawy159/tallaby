@@ -3,11 +3,21 @@
 import { revalidatePath } from "next/cache";
 import { getTranslations } from "next-intl/server";
 import { buildTemplateForm, getFormTemplate } from "@workspace/lib/store-forms";
-import { applyStoreTemplate, getStoreTemplateConfig, getTemplateMeta, undoStoreTemplate } from "@workspace/lib/store-sites/server";
+import { applyStoreTemplate, getStoreTemplateConfig, getTemplateMeta, listStoreTemplates, undoStoreTemplate } from "@workspace/lib/store-sites/server";
+import { getStore } from "@workspace/lib/stores/server";
 import { contentOverrideKeys, storeSectionRegistry } from "@workspace/store-sections/render";
+import { storeBuilderEnabled } from "@/components/dashboard/sidebar.config";
 import { isAccessError, requireStore } from "@/lib/auth/require-seller.server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
-import { TEMPLATE_ERRORS, type TemplateActionResult, type TemplatePreviewView } from "./templates.dto";
+import { findIndustry } from "@/lib/stores/industries.lib";
+import {
+  TEMPLATE_ERRORS,
+  type TemplateActionResult,
+  type TemplatePreviewView,
+  type TemplatesPageQuery,
+  type TemplatesPageView,
+} from "./templates.dto";
+import { pageTemplates, parseTemplatesCategory, parseTemplatesPage, TEMPLATES_PAGE_SIZE, toTemplateCardView } from "./templates.lib";
 
 /**
  * Website › Templates actions (PLAN.md §8.1, P4-05). Applying also creates the
@@ -59,6 +69,54 @@ export async function applyTemplate(storeId: string, templateKey: string) {
     if (!result.success) return { success: false, error: TEMPLATE_ERRORS[result.error] ?? "generic" };
     return { success: true, data: { pagesUpdated: result.data.pagesUpdated, pagesCreated: result.data.pagesCreated } };
   });
+}
+
+/**
+ * Read-only: one page of the gallery for the client (owner request 2026-10-24,
+ * React Query). The store is re-checked with requireStore; the store's
+ * industry comes from the database, never from the client. Filtering and
+ * paging happen here, before the cards' section names are resolved, so only
+ * one page of cards is built and sent.
+ */
+export async function listTemplatesPage(storeId: string, query: Partial<TemplatesPageQuery> = {}): Promise<TemplateActionResult<TemplatesPageView>> {
+  try {
+    const { seller, store } = await requireStore(String(storeId));
+    if (!storeBuilderEnabled(seller.sellerId)) return { success: false, error: "notFound" };
+    const [row, gallery] = await Promise.all([getStore(seller.sellerId, store.id), listStoreTemplates(seller.sellerId, store.id)]);
+    if (!row || !gallery) return { success: false, error: "notFound" };
+
+    const industry = findIndustry({ en: row.storeCategory, ar: row.storeCategoryAr });
+    const paged = pageTemplates(gallery.templates, {
+      page: parseTemplatesPage(query?.page),
+      category: parseTemplatesCategory(query?.category),
+      industryId: industry?.id,
+    });
+    const install = gallery.lastInstall;
+    return {
+      success: true,
+      data: {
+        items: paged.items.map(toTemplateCardView),
+        page: paged.page,
+        pageCount: paged.pageCount,
+        pageSize: TEMPLATES_PAGE_SIZE,
+        total: paged.total,
+        categories: paged.categories,
+        currentKey: gallery.currentKey,
+        lastInstall: install
+          ? {
+              templateKey: install.templateKey,
+              installedAt: install.installedAt,
+              canUndo: install.canUndo,
+              name: gallery.templates.find((tpl) => tpl.key === install.templateKey)?.name ?? null,
+            }
+          : null,
+      },
+    };
+  } catch (error) {
+    if (isAccessError(error)) return { success: false, error: "notFound" };
+    console.error("[website-templates] list failed", (error as Error)?.message);
+    return { success: false, error: "generic" };
+  }
 }
 
 /** Read-only: the template's pages and look for the preview dialog (not rate-limited, no write access needed). */

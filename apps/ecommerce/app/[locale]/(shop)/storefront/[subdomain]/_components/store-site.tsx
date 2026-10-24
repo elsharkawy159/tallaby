@@ -10,8 +10,8 @@ import {
   collectCatalogQueries,
   collectFormIds,
   collectContentQueries,
+  drawChrome,
   flushHeaderOnMobile,
-  withLanguageSwitcher,
   storeSectionRegistry,
   type ProductDetail,
   type RenderContext,
@@ -30,6 +30,8 @@ import { StoreCartBadge } from "./store-cart-badge.client";
 import { StoreSearchBox, StoreSearchButton } from "./store-search.client";
 import { StoreForm } from "./store-form.client";
 import { StorefrontLanguageSwitcher } from "./storefront-language.client";
+import { StorefrontThemeToggle } from "./storefront-theme-toggle.client";
+import { StoreAccountButton } from "./store-account-button.client";
 import { StoreWishlistButton } from "./store-wishlist-button.client";
 import { storefrontFont } from "./storefront-font";
 import {
@@ -150,6 +152,8 @@ async function buildContext(
         <StoreSearchButton icon={icon} fontClassName={storefrontFont.variable} />
       ),
     renderLanguageSwitcher: () => <StorefrontLanguageSwitcher variant="site" />,
+    renderThemeToggle: () => <StorefrontThemeToggle />,
+    renderAccountButton: () => <StoreAccountButton />,
     renderAddToCart: (product) => (
       <StoreCardAddToCart productId={product.id} href={product.href} inStock={!!product.inStock} hasVariants={catalog.withVariants.has(product.id)} />
     ),
@@ -172,7 +176,9 @@ export async function StoreSiteChrome({
   locale: string;
   part: "header" | "footer";
 }): Promise<ReactNode> {
-  const instance = part === "header" ? withLanguageSwitcher(flushHeaderOnMobile(site.header), new Set(store.supportedLocales).size > 1) : site.footer;
+  // The logo and tools the seller turned on (Content › Header/Footer options), drawn and never saved.
+  const opts = { translated: new Set(store.supportedLocales).size > 1, hasLogo: Boolean(store.logoUrl) };
+  const instance = part === "header" ? drawChrome(flushHeaderOnMobile(site.header), "header", opts) : drawChrome(site.footer, "footer", opts);
   if (!instance) return null;
   const ctx = await buildContext(store, site, locale, [instance]);
   const chrome = (

@@ -23,13 +23,12 @@ export function TemplateStage({ templateKey, pages }: { templateKey: string; pag
     <div className="overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-lift">
       <BrowserBar url={`${templateKey}.tallaby.com`} />
       <div className="flex flex-wrap items-center gap-2 border-b border-neutral-200 px-3 py-2">
-        <div role="tablist" aria-label={t("pages")} className="flex min-w-0 flex-1 gap-1 overflow-x-auto">
+        <div role="group" aria-label={t("pages")} className="flex min-w-0 flex-1 gap-1 overflow-x-auto">
           {pages.map((page) => (
             <button
               key={page.slug}
               type="button"
-              role="tab"
-              aria-selected={page.slug === slug}
+              aria-pressed={page.slug === slug}
               onClick={() => setSlug(page.slug)}
               className={cn(
                 "shrink-0 rounded-full px-3 py-1.5 text-[13px] transition-colors",

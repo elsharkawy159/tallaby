@@ -24,7 +24,7 @@ export default async function AuthPage() {
 
   return (
     <div className="flex min-h-screen relative">
-      <div className="absolute rtl:right-4 ltr:left-4 top-4 z-10 flex items-center gap-2">
+      <div className="absolute start-4 top-4 z-10 flex items-center gap-2">
         <LanguageSwitcher variant="default" />
       </div>
       <div className="absolute top-16 left-1/2 md:hidden -translate-x-1/2">
@@ -46,7 +46,7 @@ export default async function AuthPage() {
       <div className="relative hidden w-0 flex-1 lg:block">
         <div className="absolute inset-0 m-6">
           <Image
-            alt="auth background"
+            alt=""
             src="/auth-bg.jpg"
             fill
             className="rounded-2xl object-cover"

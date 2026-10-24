@@ -30,11 +30,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, id } = await params;
   const entry = await findGalleryEntry(locale, id);
   if (!entry) return {};
+  const t = await getTranslations({ locale, namespace: "templates" });
   const meta = await pageMetadata({
     locale,
     page: "template",
     path: `/templates/${id}`,
-    values: { name: entry.name, desc: entry.description ?? "" },
+    // An empty description would render ". Free, …".
+    values: { name: entry.name, desc: entry.description?.trim() || t("detail.metaFallback", { name: entry.name }) },
   });
   return entry.thumbnailUrl ? { ...meta, openGraph: { ...meta.openGraph, images: [{ url: entry.thumbnailUrl }] } } : meta;
 }
@@ -55,7 +57,7 @@ export default async function TemplatePage({ params }: Props) {
     <>
       <div className="relative bg-teal-900 pt-7 pb-[120px] text-white">
         <Container>
-          <nav className="mb-[22px] flex items-center gap-2 text-[13px] text-haze">
+          <nav aria-label={t("detail.breadcrumb")} className="mb-[22px] flex items-center gap-2 text-[13px] text-haze">
             <Link href="/templates" className="text-[#c9d9dd]">
               {t("hero.eyebrow")}
             </Link>
@@ -68,13 +70,17 @@ export default async function TemplatePage({ params }: Props) {
               <h1 className="font-latin text-[clamp(40px,6vw,72px)] leading-none font-extrabold tracking-[-0.03em]">{entry.name}</h1>
               {entry.description ? <p className="mt-3.5 max-w-[560px] text-[17px] text-mist">{entry.description}</p> : null}
             </div>
-            <div className="flex flex-wrap items-center gap-2.5">
-              <SignupTrigger>{t("detail.use")}</SignupTrigger>
-              <CtaButton asChild tone="ghost">
-                <a href={entry.previewUrl ?? templateFrameSrc(locale, entry.id)} target="_blank" rel="noopener noreferrer">
-                  {t("detail.demo")}
-                </a>
-              </CtaButton>
+            <div className="grid gap-2">
+              <div className="flex flex-wrap items-center gap-2.5">
+                <SignupTrigger>{t("detail.use")}</SignupTrigger>
+                <CtaButton asChild tone="ghost">
+                  <a href={entry.previewUrl ?? templateFrameSrc(locale, entry.id)} target="_blank" rel="noopener noreferrer">
+                    {t("detail.demo")}
+                  </a>
+                </CtaButton>
+              </div>
+              {/* Signup doesn't carry the template yet: say where to apply it. */}
+              <small className="text-[13px] text-mist">{t("detail.useHint", { name: entry.name })}</small>
             </div>
           </div>
         </Container>

@@ -446,6 +446,7 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
       catalog={catalog}
       uiLocale={uiLocale}
       translated={new Set(initial.locales).size > 1}
+      hasLogo={Boolean(initial.store.logoUrl)}
     />
   );
   const hasSelection = selection !== null;

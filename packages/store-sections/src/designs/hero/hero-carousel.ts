@@ -2,7 +2,7 @@
  * Banner carousel hero (Claude Design "Storefront Templates" seventh batch,
  * `bannerCarousel`): full-width photo banners, one at a time, each with its
  * eyebrow, headline, line and button on a dark fade at the bottom. The
- * `carousel` element autoplays every 5 seconds and pauses on hover, focus,
+ * `carousel` element autoplays every 5 seconds (it keeps playing under the mouse) and pauses on focus,
  * the pause button, a hidden tab or off-screen; with reduced motion it
  * starts paused. Phones swipe; the arrows are desktop only.
  */

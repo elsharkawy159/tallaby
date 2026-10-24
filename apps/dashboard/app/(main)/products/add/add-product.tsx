@@ -12,6 +12,7 @@ import { Form } from "@workspace/ui/components/form"
 import { createProduct, updateProduct } from "@/actions/products"
 import { cn } from "@/lib/utils"
 import { useLocalizedResolver } from "@/lib/i18n/localized-resolver"
+import { useUnsavedChangesGuard } from "@/hooks/use-unsaved-changes-guard"
 import type { SellerPricingSettings } from "@/lib/utils/product-pricing.lib"
 import { BUTTON_CLASS, SMALL_BUTTON_CLASS } from "@/components/form/form-ui"
 import {
@@ -92,6 +93,7 @@ export default function AddProduct ({
   const tForm = useTranslations("productForm")
   const tBasic = useTranslations("productForm.sections.basic")
   const tTaxonomy = useTranslations("categoriesBrands.productForm")
+  const tCommon = useTranslations("common")
   const resolver = useLocalizedResolver(zodResolver(addProductFormSchema) as any)
 
   const form = useForm<AddProductFormData>({
@@ -100,6 +102,14 @@ export default function AddProduct ({
     mode: "onChange",
     shouldUnregister: false,
   })
+
+  // New products autosave a draft; edits only save on "Save changes", so guard those.
+  // `isDirty` alone isn't enough: the pricing section syncs `price.base` on mount with
+  // shouldDirty, so an untouched form can be dirty. Also require a real input/change event.
+  const { isDirty } = useFormState({ control: form.control })
+  const [userEdited, setUserEdited] = useState(false)
+  const markUserEdited = () => setUserEdited(true)
+  useUnsavedChangesGuard(isEdit && userEdited && isDirty && !isPending, tCommon("unsavedChanges"))
 
   const draft = useProductDraft(form, {
     enabled: mode === "single" && !isEdit,
@@ -306,6 +316,8 @@ export default function AddProduct ({
 
         <form
           id={isEdit ? "edit-product-form" : "add-product-form"}
+          onInputCapture={markUserEdited}
+          onChangeCapture={markUserEdited}
           onSubmit={(e) => {
             e.preventDefault()
             void publish()

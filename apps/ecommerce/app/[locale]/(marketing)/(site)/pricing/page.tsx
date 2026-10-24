@@ -68,7 +68,7 @@ export default async function PricingPage() {
               </div>
               <p className="mt-3.5 text-[15px] text-mist">{t("plan.flat")}</p>
               <ul className="m-0 mt-6 grid list-none gap-2.5 p-0 text-[15px]">
-                {[t("plan.i1"), t("plan.i2"), t("plan.i3"), t("plan.i4")].map((item) => (
+                {[t("plan.i1"), t("plan.i2"), t("plan.i3"), t("plan.i4"), t("plan.i5"), t("plan.i6")].map((item) => (
                   <li key={item} className="flex items-center gap-2.5">
                     <Check className="size-[17px] text-amber-600" aria-hidden />
                     {item}

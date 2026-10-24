@@ -6,7 +6,7 @@ import type { PageContent, SectionInstance, SiteLocale } from "../config/schema"
 import { flushHeaderOnMobile } from "../config/header";
 import { resolveSectionForLocale } from "../core/locale";
 import { applyMigrations, resolveSectionProps, type SectionRegistry } from "../core/registry";
-import { SITE_ROOT_CLASS, designSystemToCss, type ThemeInput } from "../core/theme";
+import { SITE_ROOT_CLASS, SITE_THEME_INIT_SCRIPT, designSystemToCss, siteDarkCss, type ThemeInput } from "../core/theme";
 import { IMAGE_SIZES, imageSource, type RenderContext } from "../core/types";
 import { shellLayout } from "../elements/shell";
 import { collectPageCss, escapeStyleBlock, normalizeSectionStyle, type StyleCssMode } from "../elements/style";
@@ -81,11 +81,20 @@ export function PageRenderer({
   );
 }
 
-/** Scoped theme tokens for a site root carrying `SITE_ROOT_CLASS`. */
-export function SiteTheme({ designSystem }: { designSystem: ThemeInput | null | undefined }) {
-  const css = designSystemToCss(designSystem);
+/**
+ * Scoped theme tokens for a site root carrying `SITE_ROOT_CLASS`. `dark`: the
+ * site offers the theme toggle, so the dark tokens and the script that
+ * restores a visitor's choice come too (render it as a direct child of the root).
+ */
+export function SiteTheme({ designSystem, dark = false }: { designSystem: ThemeInput | null | undefined; dark?: boolean }) {
+  const css = [designSystemToCss(designSystem), dark ? siteDarkCss() : ""].filter(Boolean).join("\n");
   if (!css) return null;
-  return <style data-site-theme dangerouslySetInnerHTML={{ __html: css.replace(/</g, "\\3c ") }} />;
+  return (
+    <>
+      <style data-site-theme dangerouslySetInnerHTML={{ __html: css.replace(/</g, "\\3c ") }} />
+      {dark && <script dangerouslySetInnerHTML={{ __html: SITE_THEME_INIT_SCRIPT }} />}
+    </>
+  );
 }
 
 /**

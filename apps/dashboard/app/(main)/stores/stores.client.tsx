@@ -161,6 +161,13 @@ function StoreCard({ store, isSelected }: { store: StoreCardData; isSelected: bo
       }
     });
 
+  // Selecting only steers the sidebar; every store page still takes its storeId from the URL.
+  const manage = () =>
+    startTransition(async () => {
+      await selectStore(store.id);
+      router.push(`/stores/${store.id}/website`);
+    });
+
   return (
     <div
       className={cn(
@@ -181,7 +188,7 @@ function StoreCard({ store, isSelected }: { store: StoreCardData; isSelected: bo
             href={url}
             target="_blank"
             rel="noopener noreferrer"
-            className="absolute end-3 top-3 flex size-8 items-center justify-center rounded-lg bg-background/80 opacity-0 shadow-sm transition-opacity focus-visible:opacity-100 group-hover:opacity-100"
+            className="absolute end-3 top-3 flex size-9 items-center justify-center rounded-lg bg-background/80 shadow-sm transition-opacity focus-visible:opacity-100 group-hover:opacity-100 sm:opacity-0"
             aria-label={tNav("viewStore")}
           >
             <ExternalLink className="size-4" />
@@ -243,6 +250,13 @@ function StoreCard({ store, isSelected }: { store: StoreCardData; isSelected: bo
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+      {!archived && (
+        <div className="px-4 pb-4">
+          <Button type="button" variant="outline" className="w-full" disabled={isPending} onClick={manage}>
+            {t("manage")}
+          </Button>
+        </div>
+      )}
 
       <AlertDialog open={confirmArchive} onOpenChange={setConfirmArchive}>
         <AlertDialogContent>
@@ -303,8 +317,9 @@ function CreateStoreDialog({ open, onOpenChange }: { open: boolean; onOpenChange
       }
       toast.success(t("createdToast", { name: values.name }));
       onOpenChange(false);
-      router.replace("/stores");
-      router.refresh();
+      // Open the new store so the seller lands on its next step, not back on the list.
+      await selectStore(result.data.id);
+      router.push(`/stores/${result.data.id}/website`);
     });
   };
 

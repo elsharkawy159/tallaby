@@ -100,7 +100,8 @@
     "price": "Price",
     "quantity": "Quantity",
     "submit": "Submit",
-    "close": "Close"
+    "close": "Close",
+    "unsavedChanges": "You have unsaved changes. Leave this page anyway?"
   },
   "dashboard": {
     "title": "Analytics Dashboard",
@@ -493,17 +494,17 @@
     "emailPlaceholder": "Enter your email",
     "password": "Password",
     "passwordPlaceholder": "Enter your password",
-    "signIn": "Sign In",
+    "signIn": "Sign in",
     "forgotPassword": "Forgot your password?",
     "legal": "By continuing, you agree to our <terms>Terms of Service</terms> and <privacy>Privacy Policy</privacy>",
-    "checkEmailTitle": "Check Your Email",
-    "resetPasswordTitle": "Reset Password",
+    "checkEmailTitle": "Check your email",
+    "resetPasswordTitle": "Reset password",
     "checkEmailDescription": "We've sent a password reset link to your email address. Please check your inbox and follow the instructions to reset your password.",
     "resetPasswordDescription": "Enter your email address and we'll send you a link to reset your password",
     "didntReceiveEmail": "Didn't receive the email? Check your spam folder or try again.",
-    "backToSignIn": "Back to Sign In",
-    "tryAnotherEmail": "Try Another Email",
-    "sendResetLink": "Send Reset Link",
+    "backToSignIn": "Back to sign in",
+    "tryAnotherEmail": "Try another email",
+    "sendResetLink": "Send reset link",
     "continueWithGoogle": "Continue with Google",
     "welcomeBack": "Welcome back",
     "signInSubtitle": "Sign in to manage your products, orders and store.",
@@ -537,8 +538,14 @@
       "noSellerAccount": "Access denied: no seller account is linked to this email. Please complete seller registration first.",
       "invalidEmail": "Please enter a valid email address",
       "rateLimited": "Too many requests. Please wait a moment before trying again",
-      "accountNotFound": "No account found with this email address"
-    }
+      "accountNotFound": "No account found with this email address",
+      "generic": "Something went wrong. Please try again."
+    },
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "unconfirmedHint": "{email} isn't confirmed yet. Open the link we emailed you, or get a new one.",
+    "resendConfirmation": "Resend confirmation email",
+    "resendSent": "We sent a new confirmation link to {email}."
   },
   "validation": {
     "invalidEmail": "Please enter a valid email address",
@@ -704,7 +711,11 @@
       "walletEmpty": "Added after your first delivered order",
       "ratingLabel": "Rated {rating} out of 5",
       "positive": "{percent} positive",
-      "noRatings": "No ratings yet"
+      "noRatings": "No ratings yet",
+      "storeWallet": "Store wallet",
+      "walletNegative": "Below zero — top up now",
+      "walletView": "View wallet",
+      "walletZero": "Platform fees are paid from this wallet"
     },
     "chart": {
       "title": "Sales",
@@ -780,6 +791,11 @@
       "label": "Sales channel",
       "all": "All sales",
       "marketplace": "Tallaby marketplace"
+    },
+    "welcome": {
+      "title": "Welcome to Tallaby! Your store is ready",
+      "description": "Your website stays offline until you publish it. Follow the steps below to add a product, pick a design and go live.",
+      "close": "Close"
     }
   },
   "table": {
@@ -828,7 +844,13 @@
       "view": "View",
       "edit": "Edit",
       "delete": "Delete",
-      "addNew": "Add new product"
+      "addNew": "Add new product",
+      "deleteTitle": "Delete \"{title}\"?",
+      "deleteDescription": "The product is removed from your stores and the marketplace. This can't be undone.",
+      "deleted": "\"{title}\" deleted",
+      "deleteFailed": "Couldn't delete the product. Try again.",
+      "bulkDeleted": "{count, plural, one {# product deleted} other {# products deleted}}",
+      "bulkDeleteFailed": "{count, plural, one {# product couldn't be deleted} other {# products couldn't be deleted}}"
     },
     "columnsDialog": {
       "trigger": "Manage Columns",
@@ -1381,7 +1403,8 @@
           "title": "Update DNS records",
           "body": "We’ll show you the values to copy."
         }
-      }
+      },
+      "copyFailed": "Couldn't copy. Select the text and copy it yourself."
     },
     "title": "Store settings",
     "subtitle": "Your store as customers see it, its links, and verification documents.",
@@ -1698,7 +1721,13 @@
       "reasonPlaceholder": "e.g. Customer unavailable, wrong address…",
       "cancel": "Cancel",
       "saving": "Saving…",
-      "markFailed": "Mark failed"
+      "markFailed": "Mark failed",
+      "confirm": {
+        "cancelledTitle": "Cancel the shipment for order #{number}?",
+        "returnedTitle": "Mark order #{number} as returned?",
+        "description": "This is a final status. You can't move the order back afterwards.",
+        "keep": "Keep as is"
+      }
     },
     "assign": {
       "failed": "Could not assign the rider",
@@ -1754,7 +1783,12 @@
       "bulkUpdated": "{updated} updated, {skipped} skipped"
     },
     "bulkOutForDelivery": "Mark {count} out for delivery",
-    "bulkDelivered": "Mark {count} delivered"
+    "bulkDelivered": "Mark {count} delivered",
+    "goToOrders": "Go to orders",
+    "bulkDeliveredConfirm": {
+      "title": "Mark {count, plural, one {# order} other {# orders}} as delivered?",
+      "description": "Delivered orders are closed and their cash on delivery counts as collected. This can't be undone."
+    }
   },
   "reviews": {
     "title": "Reviews",
@@ -1799,7 +1833,7 @@
     "payoutCount": "{count, plural, one {# payout} other {# payouts}}",
     "pendingEarnings": "Pending Earnings",
     "deliveredItems": "{count, plural, one {# delivered item} other {# delivered items}}",
-    "walletBalance": "Wallet Balance",
+    "walletBalance": "Store wallet",
     "availableBalance": "Available balance",
     "recentActivity": "Recent Wallet Activity",
     "recentPayouts": "Recent Payouts",
@@ -1851,7 +1885,8 @@
         "we_pay": "WE Pay",
         "bank_transfer": "Bank transfer"
       }
-    }
+    },
+    "viewStoreWallet": "View wallet and top up"
   },
   "coupons": {
     "title": "Coupons",
@@ -2303,7 +2338,7 @@
     "signIn": "Sign in",
     "confirmTitle": "Check your email",
     "confirmDescription": "We sent a confirmation link to {email}. Open it to finish creating your store.",
-    "created": "Your store is live at {url}",
+    "created": "Your store {url} is ready. It goes live when you publish it.",
     "errors": {
       "invalidInput": "Please check the highlighted fields.",
       "invalidSubdomain": "Choose a valid store address.",
@@ -2317,7 +2352,11 @@
       "invalidEmail": "Enter a valid email address.",
       "passwordTooShort": "Use at least 8 characters.",
       "passwordTooLong": "Use at most 72 characters."
-    }
+    },
+    "confirmSpamHint": "Can't find it? Check your spam or promotions folder.",
+    "resend": "Resend email",
+    "resendIn": "Resend in {seconds}s",
+    "useDifferentEmail": "Use a different email"
   },
   "stores": {
     "description": "Each store has its own address, design and settings. Your products, wallet and plan are shared.",
@@ -2353,7 +2392,8 @@
       "generic": "Something went wrong. Please try again.",
       "nameTooShort": "Use at least 2 characters.",
       "nameTooLong": "Use at most 80 characters."
-    }
+    },
+    "manage": "Manage store"
   },
   "storeSiteStatus": {
     "offline": "Your store is offline: visitors see the \"store unavailable\" page and can't order. Turn on the website status switch on the Website page.",
@@ -2369,7 +2409,7 @@
     "identity": {
       "title": "Store identity",
       "description": "How your store appears to customers: name, logo, description and banner.",
-      "designLink": "Customize colors, fonts and your brand in Design system"
+      "designLink": "Your logo, favicon, colors and fonts are managed in Website › Design"
     },
     "contact": {
       "title": "Contact",
@@ -2483,7 +2523,14 @@
     "included": "Included",
     "notOnPlan": "Not on your plan",
     "upgradesSoon": "Upgrades will be available soon.",
-    "manageStores": "Manage stores"
+    "manageStores": "Manage stores",
+    "fees": "Fees",
+    "feesDescription": "What Tallaby charges. There's no monthly subscription.",
+    "feeLine": "Platform fee per delivered order, paid from your store wallet",
+    "trialActive": "Free trial: {days, plural, one {# day} other {# days}} left, no fee on orders placed until {date}.",
+    "trialEnded": "Your free trial ended on {date}.",
+    "trialNotStarted": "Your {days}-day free trial starts when you create your first store.",
+    "viewWallet": "View store wallet"
   },
   "storePayments": {
     "saved": "Payment methods updated.",
@@ -2986,6 +3033,12 @@
       "title": "Missing an app?",
       "body": "Tell us what you use and we'll prioritise it.",
       "cta": "Request an app"
+    },
+    "disconnectConfirm": {
+      "title": "Disconnect this app?",
+      "description": "Its saved settings are removed from this store. You can connect it again later.",
+      "googleSheets": "Tallaby loses access to your Google account and stops exporting orders. Your existing spreadsheet stays in Google Drive.",
+      "metaCapi": "Your saved access token is deleted and purchase events stop reaching Meta. You'll need a new token to reconnect."
     }
   },
   "storeWallet": {
@@ -3301,11 +3354,20 @@
   },
   "domainSeo": {
     "settingsLink": "Store address and domain moved to Website › Domain & SEO",
-    "tabs": {
-      "label": "Domain & SEO sections",
-      "domain": "Domain",
-      "seo": "SEO",
-      "sitemap": "Sitemap & robots"
+    "sections": {
+      "label": "On this page",
+      "domain": {
+        "title": "Domain",
+        "description": "Your store's Tallaby address, your own custom domain and the old addresses that still redirect here."
+      },
+      "seo": {
+        "title": "Search engine (SEO)",
+        "description": "How your store looks in Google results and when its links are shared."
+      },
+      "sitemap": {
+        "title": "Sitemap & indexing",
+        "description": "Whether search engines can index your store, plus its sitemap and robots files."
+      }
     },
     "domain": {
       "readOnly": "This store is archived or suspended, so its address can't be changed.",
@@ -3416,8 +3478,8 @@
   "storeForms": {
     "readOnly": "This store is archived. You can read and export messages, but forms can't be changed.",
     "cancel": "Cancel",
-    "tabs": {
-      "label": "Forms",
+    "sections": {
+      "label": "On this page",
       "forms": "Forms",
       "submissions": "Leads"
     },
@@ -3777,5 +3839,16 @@
     "later": "Later",
     "saved": "Thanks! Your answer is saved.",
     "error": "Your answer could not be saved. Try again."
+  },
+  "websiteTemplates": {
+    "loading": "Loading templates…",
+    "loadFailed": "The templates couldn't be loaded.",
+    "retry": "Try again"
+  },
+  "websiteDesign": {
+    "publishConfirm": {
+      "title": "Publish your website?",
+      "description": "This puts every draft change live, including pages and template changes made in the builder, not only the design."
+    }
   }
 }

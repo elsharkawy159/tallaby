@@ -1,9 +1,17 @@
 /** Contact details and outbound links shared by the header, footer and pages. */
 
+/**
+ * Support WhatsApp in international digits without "+" (e.g. 2010XXXXXXXX),
+ * from NEXT_PUBLIC_SUPPORT_WHATSAPP. wa.me only accepts a phone number, so
+ * while it is unset every WhatsApp link and button is hidden instead of broken.
+ */
+const SUPPORT_WHATSAPP = (process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP ?? "").replace(/\D/g, "");
+const hasWhatsApp = SUPPORT_WHATSAPP.length >= 10;
+
 export const CONTACT = {
   email: "tallabycommerce@gmail.com",
-  whatsapp: "https://wa.me/@tallaby",
-  whatsappHandle: "@tallaby",
+  whatsapp: hasWhatsApp ? `https://wa.me/${SUPPORT_WHATSAPP}` : null,
+  whatsappHandle: hasWhatsApp ? `+${SUPPORT_WHATSAPP}` : null,
 } as const;
 
 export const ROOT_DOMAIN = "tallaby.com";

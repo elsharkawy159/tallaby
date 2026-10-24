@@ -74,11 +74,15 @@ export default async function BlogPage() {
         </Container>
       </section>
 
-      <Section>
-        <Container>
-          <BlogIndex posts={posts.slice(1)} />
-        </Container>
-      </Section>
+      {posts.length > 1 ? (
+        <Section>
+          <Container>
+            <BlogIndex posts={posts.slice(1)} />
+          </Container>
+        </Section>
+      ) : (
+        <div className="h-24" />
+      )}
 
       <section id="news" className="pb-24">
         <Container>

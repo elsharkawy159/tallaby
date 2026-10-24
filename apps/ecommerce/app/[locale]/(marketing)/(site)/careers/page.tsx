@@ -4,7 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { RolesList, RotatingWord } from "@/components/marketing/careers/careers.client";
 import { CtaBand } from "@/components/marketing/site/cta-band";
 import { CtaButton } from "@/components/marketing/site/cta-button";
-import { Container, PhotoPlaceholder, Section, SectionHeading } from "@/components/marketing/site/layout-primitives";
+import { Container, Section, SectionHeading } from "@/components/marketing/site/layout-primitives";
 import { PageHero } from "@/components/marketing/site/page-hero";
 import { Reveal } from "@/components/marketing/site/reveal.client";
 import { CONTACT } from "@/lib/marketing/site.lib";
@@ -51,9 +51,6 @@ export default async function CareersPage() {
               </span>
               <b className="text-2xl leading-[1.3] text-teal-900">{t("perkBig")}</b>
               <span className="text-[15px] text-amber-ink">{t("perkBigBody")}</span>
-              <PhotoPlaceholder className="mt-4 min-h-40 rounded-[14px] border-teal-900/15 bg-[repeating-linear-gradient(135deg,rgba(255,255,255,0.35)_0_10px,rgba(255,255,255,0.15)_10px_20px)] text-teal-900">
-                {t("perkBigPhoto")}
-              </PhotoPlaceholder>
             </Reveal>
             {perks.map((p) => (
               <Reveal key={p.title} className="grid content-start gap-2 rounded-[20px] border border-neutral-200 bg-white p-[26px]">

@@ -18,6 +18,7 @@ import { Label } from "@workspace/ui/components/label";
 import { SheetFooter } from "@workspace/ui/components/sheet";
 import { BUTTON_CLASS, FIELD_CLASS } from "@/components/form/form-ui";
 import { disconnectStoreApp } from "./apps.server";
+import { DisconnectAppButton } from "./disconnect-button.client";
 import type { AppCategoryOption } from "./apps.types";
 import { connectShopifyStore, importShopifyBatch, previewShopifyStore } from "./shopify-import.server";
 
@@ -302,9 +303,7 @@ export function ShopifyImportPanel({
           </Button>
         )}
         {current && !running && (
-          <Button type="button" variant="outline" className={BUTTON_CLASS} disabled={isPending} onClick={remove}>
-            {t("disconnect")}
-          </Button>
+          <DisconnectAppButton className={BUTTON_CLASS} pending={isPending} onConfirm={remove} />
         )}
       </SheetFooter>
     </>

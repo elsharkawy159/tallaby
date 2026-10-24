@@ -218,19 +218,22 @@ export async function StoreWalletSection({
                       <TableCell className="max-sm:hidden">{entry.storeName ?? t("accountLevel")}</TableCell>
                       <TableCell className="max-sm:hidden">
                         {entry.orderId && entry.orderNumber ? (
-                          <Link href={`/orders/${entry.orderId}`} className="underline-offset-2 hover:underline">
+                          <Link href={`/orders?order=${entry.orderId}`} className="underline-offset-2 hover:underline">
                             {entry.orderNumber}
                           </Link>
                         ) : (
                           "—"
                         )}
                       </TableCell>
-                      <TableCell dir="ltr" className={cn("text-end font-semibold tabular-nums", signedClass(amount))}>
-                        {amount > 0 ? "+" : ""}
-                        {formatMoney(amount, locale)}
+                      {/* bdi keeps the number's own direction while the cell aligns with its RTL/LTR header. */}
+                      <TableCell className={cn("text-end font-semibold tabular-nums", signedClass(amount))}>
+                        <bdi dir="ltr">
+                          {amount > 0 ? "+" : ""}
+                          {formatMoney(amount, locale)}
+                        </bdi>
                       </TableCell>
-                      <TableCell dir="ltr" className="text-end tabular-nums text-muted-foreground">
-                        {entry.balanceAfter == null ? "—" : formatMoney(Number(entry.balanceAfter), locale)}
+                      <TableCell className="text-end tabular-nums text-muted-foreground">
+                        {entry.balanceAfter == null ? "—" : <bdi dir="ltr">{formatMoney(Number(entry.balanceAfter), locale)}</bdi>}
                       </TableCell>
                     </TableRow>
                   );

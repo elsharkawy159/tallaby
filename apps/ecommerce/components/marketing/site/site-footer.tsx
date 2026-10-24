@@ -51,7 +51,7 @@ export async function SiteFooter() {
 
   const socials: { id: BrandIconName; href: string; label: string }[] = [
     ...(["instagram", "tiktok", "youtube", "x"] as const).map((id) => ({ id, href: SOCIAL_LINKS[id].href, label: SOCIAL_LINKS[id].label })),
-    { id: "whatsapp", href: CONTACT.whatsapp, label: "WhatsApp" },
+    ...(CONTACT.whatsapp ? [{ id: "whatsapp" as const, href: CONTACT.whatsapp, label: "WhatsApp" }] : []),
   ];
 
   const link = "text-mist transition-colors hover:text-white hover:no-underline";

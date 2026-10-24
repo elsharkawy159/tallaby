@@ -57,8 +57,9 @@ export function normalizeShell(input: unknown): SectionShellStyle | undefined {
   if (scheme && scheme !== "default") out.scheme = scheme;
   const paddingY = oneOf(SHELL_PADDINGS, raw.paddingY);
   if (paddingY) out.paddingY = paddingY;
+  // "contained" is kept when chosen: a carousel is full width unless the seller contains it.
   const width = oneOf(SHELL_WIDTHS, raw.width);
-  if (width && width !== "contained") out.width = width;
+  if (width) out.width = width;
   const bgImage = safeImage(raw.bgImage);
   if (bgImage) out.bgImage = bgImage;
   if (bgImage && typeof raw.overlay === "number" && Number.isFinite(raw.overlay)) {
@@ -73,7 +74,8 @@ export function normalizeShell(input: unknown): SectionShellStyle | undefined {
 type CssVars = CSSProperties & Record<`--${string}`, string>;
 
 export type ShellLayout = {
-  outer: { className?: string; style?: CssVars; id?: string };
+  /** `data-shell-width`: the chosen width, for elements that size themselves (the carousel). */
+  outer: { className?: string; style?: CssVars; id?: string; "data-shell-width"?: (typeof SHELL_WIDTHS)[number] };
   /** Token re-map for primary/dark schemes; `null` when no inner wrapper is needed. */
   inner: CssVars | null;
   bgImage: string | null;
@@ -110,6 +112,7 @@ export function shellLayout(shell: SectionShellStyle | undefined, imageUrl: (src
       className: bgImage ? "relative isolate overflow-hidden" : undefined,
       style: Object.keys(style).length ? style : undefined,
       id: shell.anchor,
+      ...(shell.width && { "data-shell-width": shell.width }),
     },
     inner,
     bgImage,

@@ -35,6 +35,12 @@ export function ContactForm() {
   const [sent, setSent] = React.useState(false);
   const [pending, startTransition] = React.useTransition();
   const formRef = React.useRef<HTMLFormElement>(null);
+  const sentRef = React.useRef<HTMLHeadingElement>(null);
+
+  // The form is replaced by the "sent" panel: move focus there so keyboard and screen-reader users don't lose their place.
+  React.useEffect(() => {
+    if (sent) sentRef.current?.focus();
+  }, [sent]);
 
   const topics = t.raw(`topics.${role}`) as string[];
 
@@ -76,7 +82,9 @@ export function ContactForm() {
         <span className="mx-auto mb-[18px] grid size-[72px] place-items-center rounded-full bg-success-soft text-success">
           <Check className="size-[34px]" aria-hidden />
         </span>
-        <h2 className="text-[26px] font-bold text-teal-900">{t("sent")}</h2>
+        <h2 ref={sentRef} tabIndex={-1} className="text-[26px] font-bold text-teal-900 outline-none">
+          {t("sent")}
+        </h2>
         <p className="mt-2 mb-6 text-slate-ink">{t("sentBody")}</p>
         <CtaButton
           tone="outline"
@@ -125,7 +133,7 @@ export function ContactForm() {
 
       <div className="grid gap-4 sm:grid-cols-2">
         <Field id="contact-name" label={t("name")} error={errors.name}>
-          <Input id="contact-name" name="name" autoComplete="name" aria-invalid={Boolean(errors.name)} className={fieldClass} />
+          <Input id="contact-name" name="name" autoComplete="name" aria-invalid={Boolean(errors.name)} aria-describedby={errors.name ? "contact-name-error" : undefined} className={fieldClass} />
         </Field>
         <Field id="contact-email" label={t("emailLabel")} error={errors.email}>
           <Input
@@ -136,6 +144,7 @@ export function ContactForm() {
             autoComplete="email"
             placeholder="you@example.com"
             aria-invalid={Boolean(errors.email)}
+            aria-describedby={errors.email ? "contact-email-error" : undefined}
             className={fieldClass}
           />
         </Field>
@@ -167,6 +176,7 @@ export function ContactForm() {
           name="message"
           placeholder={t("messagePlaceholder")}
           aria-invalid={Boolean(errors.message)}
+          aria-describedby={errors.message ? "contact-message-error" : undefined}
           className={cn(fieldClass, "h-auto min-h-[130px] py-3 leading-[1.6]")}
         />
       </Field>
@@ -191,7 +201,7 @@ function Field({ id, label, error, children }: { id: string; label: string; erro
         {label}
       </Label>
       {children}
-      <div role={error ? "alert" : undefined} className="mt-1 min-h-[18px] text-[12.5px] text-destructive">
+      <div id={`${id}-error`} role={error ? "alert" : undefined} className="mt-1 min-h-[18px] text-[12.5px] text-destructive">
         {error}
       </div>
     </div>

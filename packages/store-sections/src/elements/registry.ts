@@ -96,6 +96,9 @@ export type ElementType =
   | "addToCart"
   | "wishlistButton"
   | "languageSwitcher"
+  | "storeLogo"
+  | "themeToggle"
+  | "accountLink"
   | "productGallery"
   | "productPrice"
   | "productStock"
@@ -798,6 +801,34 @@ export const ELEMENT_DEFINITIONS: readonly ElementDefinition[] = [
     defaultProps: {},
     fields: [],
   },
+  // Header/footer options (config/header.ts `drawChrome`): drawn where the chrome renders, never placed by hand.
+  {
+    type: "storeLogo",
+    group: "data",
+    label: L("شعار المتجر", "Store logo"),
+    keywords: ["logo", "brand", "شعار"],
+    container: false,
+    defaultProps: { size: "md" },
+    fields: [],
+  },
+  {
+    type: "themeToggle",
+    group: "data",
+    label: L("الوضع الفاتح والداكن", "Theme toggle"),
+    keywords: ["theme", "dark", "light", "mode", "داكن", "فاتح", "وضع"],
+    container: false,
+    defaultProps: {},
+    fields: [],
+  },
+  {
+    type: "accountLink",
+    group: "data",
+    label: L("تسجيل الدخول", "Sign in"),
+    keywords: ["login", "sign in", "account", "دخول", "حساب"],
+    container: false,
+    defaultProps: {},
+    fields: [],
+  },
   // Product page (template product page spec §5.3): parts of the page's product. The storefront
   // swaps the interactive ones for the host's components; the editor draws still renderings.
   {
@@ -943,9 +974,10 @@ export function getElementDefinition(type: string): ElementDefinition | undefine
 /**
  * List and playlist items come with their list; a section is only a tree's root. Accordion
  * items stay in the palette so an emptied accordion can be refilled. The language switcher
- * is added to the header for translated stores (`withLanguageSwitcher`), never by hand.
+ * is added to the header for translated stores (`withLanguageSwitcher`), never by hand, and so
+ * are the store logo, theme toggle and sign-in (the header/footer options, `drawChrome`).
  */
-const NOT_IN_PALETTE: readonly ElementType[] = ["listItem", "videoItem", "section", "languageSwitcher"];
+const NOT_IN_PALETTE: readonly ElementType[] = ["listItem", "videoItem", "section", "languageSwitcher", "storeLogo", "themeToggle", "accountLink"];
 
 /** Types shown in the palette. */
 export const PALETTE_TYPES: readonly ElementType[] = ELEMENT_DEFINITIONS.filter((d) => !NOT_IN_PALETTE.includes(d.type)).map((d) => d.type);

@@ -20,6 +20,7 @@ import { SetupChecklistData } from "./_components/setup-checklist.data";
 import { TopProductsData } from "./_components/top-products.data";
 import { TrialBannerData } from "./_components/trial-banner.data";
 import { UnansweredQuestionsData } from "./_components/unanswered-questions.data";
+import { WelcomeBanner } from "./_components/welcome-banner.client";
 
 // Per-seller data read from the session cookie.
 export const dynamic = "force-dynamic";
@@ -31,9 +32,9 @@ export const dynamic = "force-dynamic";
 export default async function VendorDashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ range?: string | string[]; channel?: string | string[] }>;
+  searchParams: Promise<{ range?: string | string[]; channel?: string | string[]; welcome?: string | string[] }>;
 }) {
-  const [{ range: rawRange, channel: rawChannel }, t, { stores }] = await Promise.all([
+  const [{ range: rawRange, channel: rawChannel, welcome }, t, { stores }] = await Promise.all([
     searchParams,
     getTranslations("home.header"),
     getSellerStores(),
@@ -71,6 +72,7 @@ export default async function VendorDashboardPage({
         }
         setup={
           <>
+            {welcome === "1" && <WelcomeBanner />}
             <Suspense fallback={null}>
               <TrialBannerData />
             </Suspense>

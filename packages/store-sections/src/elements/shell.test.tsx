@@ -32,7 +32,10 @@ const rich: SectionInstance = {
 describe("normalizeShell", () => {
   it("keeps valid values and drops defaults and junk", () => {
     expect(normalizeShell(undefined)).toBeUndefined();
-    expect(normalizeShell({ scheme: "default", width: "contained", animation: "none" })).toBeUndefined();
+    expect(normalizeShell({ scheme: "default", animation: "none" })).toBeUndefined();
+    // A chosen "contained" is kept: it contains a carousel, which is full width by default.
+    expect(normalizeShell({ width: "contained" })).toEqual({ width: "contained" });
+    expect(shellLayout({ width: "contained" }, () => null)?.outer).toEqual({ className: undefined, style: undefined, id: undefined, "data-shell-width": "contained" });
     expect(
       normalizeShell({ scheme: "dark", paddingY: "lg", width: "full", anchor: "about-us", animation: "rise", bgImage: "media/a.jpg", overlay: 55.4 }),
     ).toEqual({ scheme: "dark", paddingY: "lg", width: "full", anchor: "about-us", animation: "rise", bgImage: "media/a.jpg", overlay: 55 });

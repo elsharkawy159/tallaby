@@ -12,12 +12,12 @@ import type { CrawlStatus, NoindexReason } from "../domain-seo.data";
 
 /** Where the seller fixes each reason. */
 function reasonHref(storeId: string, reason: NoindexReason): string {
-  if (reason === "indexingOff") return `/stores/${storeId}/website/domain/seo`;
+  if (reason === "indexingOff") return `/stores/${storeId}/website/domain#seo`;
   if (reason === "noProducts") return `/stores/${storeId}/settings#catalog-mode`;
   return "/stores";
 }
 
-/** Website › Domain & SEO › Sitemap & robots (P4-14): read-only URLs and status. */
+/** Website › Domain & SEO › Sitemap & indexing section (P4-14): read-only URLs and status. */
 export function CrawlStatusView({ storeId, status }: { storeId: string; status: CrawlStatus }) {
   const t = useTranslations("domainSeo.sitemap");
   const indexed = status.reasons.length === 0;
@@ -86,7 +86,7 @@ export function CrawlStatusView({ storeId, status }: { storeId: string; status: 
         )}
       </SectionCard>
 
-      <SectionCard id="sitemap" icon={MapIcon} title={t("files.title")} description={t("files.description")}>
+      <SectionCard id="sitemap-files" icon={MapIcon} title={t("files.title")} description={t("files.description")}>
         {urlRow(t("files.sitemap"), status.sitemapUrl)}
         {urlRow(t("files.robots"), status.robotsUrl)}
         <FieldHint>{t("files.contents")}</FieldHint>

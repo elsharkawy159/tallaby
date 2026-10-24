@@ -1,7 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState, useTransition } from "react";
+import { toast } from "sonner";
+import { ConfirmActionDialog } from "@/components/layout/confirm-action-dialog.client";
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
@@ -98,6 +101,24 @@ export function VendorProductsSection({
   const t = useTranslations("products.list");
   const locale = useLocale();
   const tableLabels = useTableSectionLabels();
+  const router = useRouter();
+  const [deleting, setDeleting] = useState<VendorProduct | null>(null);
+  const [isDeleting, startDeleting] = useTransition();
+
+  const confirmDelete = () => {
+    if (!deleting) return;
+    startDeleting(async () => {
+      const result = await deleteProduct(deleting.id);
+      if (!result.success) {
+        toast.error(t("deleteFailed"));
+        return;
+      }
+      toast.success(t("deleted", { title: deleting.title }));
+      setDeleting(null);
+      router.refresh();
+    });
+  };
+
   const formatCurrency = (amount?: string | number | null) =>
     formatMoney(amount, locale);
 
@@ -284,10 +305,7 @@ export function VendorProductsSection({
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 className="text-destructive"
-                onClick={() => {
-                  // Example: delete action
-                  // alert(`Delete ${row.original.id}`);
-                }}
+                onSelect={() => setDeleting(row.original)}
               >
                 {t("delete")}
               </DropdownMenuItem>
@@ -312,6 +330,7 @@ export function VendorProductsSection({
   );
 
   return (
+    <>
     <TableSection<VendorProduct>
       rows={products}
       columns={columns}
@@ -337,10 +356,25 @@ export function VendorProductsSection({
         </div>
       )}
       onDeleteSelected={async (ids) => {
-        await Promise.all(ids.map((id) => deleteProduct(id)));
+        const results = await Promise.all(ids.map((id) => deleteProduct(id)));
+        const failed = results.filter((result) => !result.success).length;
+        if (failed > 0) toast.error(t("bulkDeleteFailed", { count: failed }));
+        if (failed < ids.length) toast.success(t("bulkDeleted", { count: ids.length - failed }));
+        router.refresh();
       }}
       searchColumnId="title"
       labels={tableLabels}
     />
+    <ConfirmActionDialog
+      open={deleting !== null}
+      onOpenChange={(open) => !open && setDeleting(null)}
+      title={t("deleteTitle", { title: deleting?.title ?? "" })}
+      description={t("deleteDescription")}
+      confirmLabel={t("delete")}
+      destructive
+      pending={isDeleting}
+      onConfirm={confirmDelete}
+    />
+    </>
   );
 }

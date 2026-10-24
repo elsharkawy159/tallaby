@@ -80,6 +80,28 @@ export async function signUpWithEmail(input: EmailSignupInput): Promise<SignupRe
   return { status: "done", storeUrl: done.storeUrl!, subdomain: done.data.subdomain };
 }
 
+// Resends are cheap to abuse (each one is an email): 3 per 10 minutes per IP.
+const resendLimiter = createRateLimiter({ limit: 3, windowMs: 10 * 60_000 });
+
+/**
+ * "Check your email" › Resend. Same redirect as `signUpWithEmail`, so the link
+ * still lands on this site's callback, which holds the intent cookie.
+ */
+export async function resendSignupConfirmation(email: string): Promise<{ error: SignupErrorKey | null }> {
+  if (!resendLimiter.check(await clientKey())) return { error: "rateLimited" };
+  const parsed = emailSignupSchema.shape.email.safeParse(String(email ?? "").trim());
+  if (!parsed.success) return { error: "invalidInput" };
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.resend({
+    type: "signup",
+    email: parsed.data,
+    options: { emailRedirectTo: `${(await headers()).get("origin") ?? SITE_URL}/api/auth/signup-callback` },
+  });
+  if (error) return { error: /rate limit/i.test(error.message) ? "rateLimited" : "generic" };
+  return { error: null };
+}
+
 /**
  * Google only signs the user in; the store is chosen afterwards in the
  * dashboard signup (the callback finds no intent and sends the user there).

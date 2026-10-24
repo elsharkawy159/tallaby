@@ -9,6 +9,7 @@ import { getPublicUrl } from "@/lib/utils";
 import Image from "next/image";
 import { formatDateTime, formatMoney } from "@/lib/i18n/format";
 import { translateStatus } from "@/lib/i18n/status";
+import { useTableSectionLabels } from "@/lib/i18n/table-labels";
 import { orderStatusVariant } from "./orders.lib";
 import { OrderDetailsDialog } from "./order-details-dialog.client";
 
@@ -76,6 +77,7 @@ export function VendorOrdersTable({
   ];
   const t = useTranslations("orders.table");
   const tStatus = useTranslations("status");
+  const tableLabels = useTableSectionLabels();
   const locale = useLocale();
   const [openOrderId, setOpenOrderId] = useState<string | null>(
     initialOrderId
@@ -204,6 +206,7 @@ export function VendorOrdersTable({
         rows={visibleRows}
         columns={columns}
         searchColumnId="order"
+        labels={tableLabels}
       />
       <OrderDetailsDialog
         orderId={openOrderId}

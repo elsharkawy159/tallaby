@@ -17,7 +17,7 @@ async function getSupportHref(): Promise<string | null> {
   const store = await getStorefrontBySubdomain(subdomain);
   const whatsapp = store?.supportWhatsapp ? whatsappNumber(store.supportWhatsapp) : null;
   if (whatsapp) return `https://wa.me/${whatsapp}`;
-  return store?.supportPhone ? `tel:${store.supportPhone.replace(/[^d+]/g, "")}` : null;
+  return store?.supportPhone ? `tel:${store.supportPhone.replace(/[^\d+]/g, "")}` : null;
 }
 
 interface OrderConfirmationDataProps {

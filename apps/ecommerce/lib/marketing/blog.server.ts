@@ -45,7 +45,8 @@ const getPlatformPosts = cache(async (locale: string): Promise<MarketingPost[]> 
 
 async function getStaticPosts(locale: string): Promise<MarketingPost[]> {
   const t = await getTranslations({ locale, namespace: "blog" });
-  return BLOG_POSTS.map((post) => ({
+  // An excerpt-only page is a dead end for readers and thin content for search.
+  return BLOG_POSTS.filter((post) => post.hasArticle).map((post) => ({
     ...post,
     source: "static" as const,
     title: t(`posts.${post.id}.title`),

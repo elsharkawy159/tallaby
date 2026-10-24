@@ -2,9 +2,8 @@ import { notFound } from "next/navigation";
 import { storeBuilderEnabled } from "@/components/dashboard/sidebar.config";
 import { StorePageHeader } from "@/components/stores/store-page-header";
 import { loadStorePage } from "@/lib/stores/store-page.server";
-import { FormsTabs } from "./forms-tabs.client";
 
-/** Website › Forms (PLAN.md §8.4, P4-10): forms list / editor and the submissions inbox. */
+/** Website › Forms (PLAN.md §8.4, P4-10): one page with the forms list and the submissions inbox, plus the form editor. */
 export default async function StoreFormsLayout({
   children,
   params,
@@ -20,7 +19,6 @@ export default async function StoreFormsLayout({
   return (
     <section className="mx-auto w-full max-w-5xl space-y-5 p-4 sm:p-6">
       <StorePageHeader store={store} />
-      <FormsTabs storeId={store.id} />
       {children}
     </section>
   );

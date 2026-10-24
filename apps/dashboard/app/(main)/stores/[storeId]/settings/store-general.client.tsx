@@ -39,6 +39,7 @@ import { Separator } from "@workspace/ui/components/separator";
 import { Textarea } from "@workspace/ui/components/textarea";
 import { BUTTON_CLASS, FIELD_CLASS, FieldHint, LabelNote, SectionCard, TEXTAREA_CLASS } from "@/components/form/form-ui";
 import { PageActionBar } from "@/components/layout/page-action-bar";
+import { useUnsavedChangesGuard } from "@/hooks/use-unsaved-changes-guard";
 import { BannerField, LogoField } from "@/components/stores/brand-image-fields.client";
 import { STORE_INDUSTRIES, findIndustry } from "@/lib/stores/industries.lib";
 import { cn } from "@/lib/utils";
@@ -65,6 +66,7 @@ export function StoreGeneralForm({
   catalog: StoreCatalogProps;
 }) {
   const t = useTranslations("storeSettings");
+  const tCommon = useTranslations("common");
   const uiLocale = useLocale();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -100,6 +102,7 @@ export function StoreGeneralForm({
   const catalog = useStoreCatalog(storeId, catalogProps);
   const disabled = readOnly || isPending;
   const dirty = form.formState.isDirty || catalog.dirty;
+  useUnsavedChangesGuard(dirty && !readOnly, tCommon("unsavedChanges"));
 
   const onSubmit = (values: StoreGeneralFormValues) =>
     startTransition(async () => {
@@ -160,22 +163,22 @@ export function StoreGeneralForm({
         {/* Two columns on desktop: the store's identity, then contact, languages and currency. */}
         <div className="grid items-start gap-5 lg:grid-cols-2">
         <SectionCard id="identity" icon={Store} title={t("identity.title")} description={t("identity.description")}>
-          <div className="space-y-2">
+          {/* Builder sellers manage the logo in Website › Design (it shows in every header and footer). */}
+          {brandInSettings ? (
             <Controller
               control={form.control}
               name="logoUrl"
               render={({ field }) => <LogoField value={field.value} onChange={field.onChange} name={name} disabled={disabled} />}
             />
-            {!brandInSettings && (
-              <Link
-                href={`/stores/${storeId}/website/design`}
-                className="inline-flex items-center gap-1.5 text-xs font-medium text-primary underline-offset-2 hover:underline"
-              >
-                <Palette className="size-3.5 shrink-0" aria-hidden />
-                {t("identity.designLink")}
-              </Link>
-            )}
-          </div>
+          ) : (
+            <Link
+              href={`/stores/${storeId}/website/design#brand`}
+              className="flex items-center gap-3 rounded-lg border border-dashed px-3 py-2.5 text-sm font-medium text-primary transition-colors hover:border-primary/50 hover:bg-primary/5"
+            >
+              <Palette className="size-4 shrink-0" aria-hidden />
+              {t("identity.designLink")}
+            </Link>
+          )}
           <Separator className="my-1" />
           {text("name", t("fields.name"), { placeholder: t("fields.namePlaceholder") })}
           <FormField
