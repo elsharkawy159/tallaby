@@ -45,7 +45,11 @@ export const OrdersClientWrapper = ({
   }, [router]);
 
   useEffect(() => {
-    const interval = setInterval(refresh, AUTO_REFRESH_MS);
+    // A refresh re-runs every query on the page, so a hidden tab skips it and
+    // refreshes on the next tick once it is visible again.
+    const interval = setInterval(() => {
+      if (document.visibilityState === "visible") refresh();
+    }, AUTO_REFRESH_MS);
     return () => clearInterval(interval);
   }, [refresh]);
 

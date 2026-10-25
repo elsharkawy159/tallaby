@@ -25,7 +25,9 @@ import { describeAdminNotification, relativeTime } from './notification-bell.lib
 
 type Feed = NotificationFeed<AdminNotificationType>
 
-// Realtime nudges are the main signal; polling only covers a dropped socket.
+// Realtime nudges are the main signal; polling only runs while the channel is
+// not subscribed (a dropped or refused socket). Each poll is a server action that
+// also pays the proxy's auth lookups (docs/egress-audit.md §10).
 const POLL_MS = 60_000
 
 /**
@@ -49,7 +51,10 @@ function useAdminNotificationFeed() {
     const onVisible = () => {
       if (document.visibilityState === 'visible') void refresh()
     }
-    const timer = window.setInterval(onVisible, POLL_MS)
+    let live = false
+    const timer = window.setInterval(() => {
+      if (!live) onVisible()
+    }, POLL_MS)
     document.addEventListener('visibilitychange', onVisible)
 
     const supabase = createClient()
@@ -62,7 +67,9 @@ function useAdminNotificationFeed() {
         channel = supabase
           .channel('admin:notifications', { config: { private: true } })
           .on('broadcast', { event: 'admin_notification' }, () => void refresh())
-          .subscribe()
+          .subscribe((status) => {
+            live = status === 'SUBSCRIBED'
+          })
       } catch {
         // Polling still keeps the bell current.
       }

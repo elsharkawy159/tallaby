@@ -19,7 +19,9 @@ import { createClient } from "@/supabase/client";
 
 type Feed = NotificationFeed<SellerNotificationType>;
 
-// Realtime nudges are the main signal; polling only covers a dropped socket.
+// Realtime nudges are the main signal; polling only runs while the channel is
+// not subscribed (a dropped or refused socket, or no browser session). Each
+// poll is a server action that also pays the proxy auth (docs/egress-audit.md §10).
 const POLL_MS = 60_000;
 
 /**
@@ -44,7 +46,10 @@ function useSellerNotificationFeed() {
     const onVisible = () => {
       if (document.visibilityState === "visible") void refresh();
     };
-    const timer = window.setInterval(onVisible, POLL_MS);
+    let live = false;
+    const timer = window.setInterval(() => {
+      if (!live) onVisible();
+    }, POLL_MS);
     document.addEventListener("visibilitychange", onVisible);
 
     const supabase = createClient();
@@ -59,7 +64,9 @@ function useSellerNotificationFeed() {
         channel = supabase
           .channel(`user:${data.user.id}`, { config: { private: true } })
           .on("broadcast", { event: "seller_notification" }, () => void refresh())
-          .subscribe();
+          .subscribe((status) => {
+            live = status === "SUBSCRIBED";
+          });
       } catch {
         // Polling still keeps the bell current.
       }

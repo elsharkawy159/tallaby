@@ -60,7 +60,10 @@ export function useDraftWatch(store: EditorStore, adapter: Pick<EditorAdapter, "
     const onFocus = () => void check();
 
     void check();
-    const timer = setInterval(() => void check(), DRAFT_WATCH_INTERVAL_MS);
+    // Hidden tabs skip the poll; coming back (focus / visible) checks at once.
+    const timer = setInterval(() => {
+      if (document.visibilityState === "visible") void check();
+    }, DRAFT_WATCH_INTERVAL_MS);
     window.addEventListener("focus", onFocus);
     document.addEventListener("visibilitychange", onVisible);
     return () => {
