@@ -2565,6 +2565,16 @@ Tick each box when its acceptance is met, and add the date and commit.
 - [ ] P10-02 `MARKETING_PROJECT.md` facts
 - [ ] P10-03 Domain repositioning (separate plan)
 
+**Supabase egress (2026-10-25, branch `perf/supabase-egress`, `docs/egress-audit.md`)**
+- [x] EG-01 Template gallery cards and configs cached globally (`templateTags.catalog()`, 24 h backstop) in dashboard and admin; tallaby.com gallery TTL 15 min → 24 h — 2026-10-25
+- [x] EG-02 No `revalidatePath("/", "layout")` in the ecommerce auth callback/handoff or the dashboard auth callback — 2026-10-25
+- [x] EG-03 Guest order page polls every 60 s and never once final; order items and cart load only title/slug of translations — 2026-10-25
+- [x] EG-04 Seller-scoped product listings tagged by seller, not `productTags.listing()`; stock-boundary invalidation bumps the seller tag — 2026-10-25
+- [x] EG-05 `images.minimumCacheTTL` 30 days; new uploads `cacheControl: "31536000"` — 2026-10-25
+- [x] EG-06 Notification bells poll only without realtime; draft watch and admin orders skip hidden tabs; one `QueryClient` per mount — 2026-10-25
+- [x] EG-07 Admin categories counts in two grouped queries; bulk import loads categories once; `countMediaUsage` counts in SQL — 2026-10-25
+- [ ] EG-08 Owner decisions: robots.txt rules for store hosts and the admin proxy, `pg_stat_statements_reset()` then one clean week of stats, `getClaims()` for auth reads, `updated_at` triggers for a cheap editor "unpublished changes" check (migration), Supabase MCP logs (bots, storage paths)
+
 **Global confirmations (from the planning brief)**
 - [x] The existing default storefront template is kept (§3.6, §8.1, P4-03). No new default template is designed.
 - [x] Signup is minimal and asks for no fulfillment choice (§6).
@@ -3972,3 +3982,13 @@ After P1-08 and P1-01 (`3289639`), typecheck and test match the baseline. `@work
 - **Where the code differs from the designs:** welcome/verify shows a confirm button, not a 6-digit code (signup confirms by link; no code-entry screen). Low stock uses the dashboard's fixed threshold 10 and alerts only when an order crosses it (no per-product threshold exists). **Payout sent is template-only** — seller payouts are not built (docs/wallet.md §8). Shipment tracking numbers are empty today (provider adapters return null), so the shipped email hides that cell. The delivered email's stars open the order page's review form with that rating preselected (`?review=<item>&rating=<n>`, read in `order-item-review-form.tsx`). `emailPathPrefix` fixed: Arabic (site default, `as-needed`) has no prefix, English gets `/en`.
 - **Supabase auth templates:** `confirm-signup.ar.html` and `reset-password.ar.html` are now generated from `src/AuthEmails.tsx` (`pnpm --filter @workspace/emails supabase:auth`); **not yet pasted into the Supabase dashboard** (staging or production).
 - **Checks:** `tsc` passes in emails, lib, db, backend, shipping, admin, dashboard; ecommerce `tsc` fails only in the untouched `profile.chunks.tsx` (pre-existing). emails vitest (9) and lib vitest (533) pass; `eslint` still crashes before linting (baseline tooling issue). All 14 previews rendered and checked in a browser (Arabic, Tallaby + sample store brand). Not yet sent through Resend end to end.
+
+### 2026-10-25 — Supabase egress audit and fixes (branch `perf/supabase-egress`)
+
+Free Plan (5 GB uncached egress per month, staging + production) used 12 GB this cycle. Findings, method and per-item estimates are in `docs/egress-audit.md`.
+
+- **Measured** (read-only `pg_stat_statements` + `octet_length` of the heavy columns on both projects): the template gallery queries returned ~102 rows × (95 KB `template_versions.config` + 5.6 KB `meta`) ≈ 10 MB per call. tallaby.com gallery 877 calls ≈ 9 GB, dashboard/admin `listStoreTemplates` (uncached) ≈ 1.6 GB, staging ≈ 0.4 GB: about 11 of the 12 GB, nearly all since templates 49–110 were seeded (0090, 0095). The cached gallery refilled ~440 times a day because every ecommerce sign-in ran `revalidatePath("/", "layout")`, which purges the whole Data Cache (Next 16 docs, `revalidatePath.md`). Production stats were last reset 2025-09-05, so call counts span 13 months.
+- **Fixed** (one commit each): EG-01 … EG-07 in §22. Expected effect: the template gallery drops from ~10 MB × hundreds of refills a day to ~10 MB × (deploys + admin template publishes), which alone brings usage back under the 5 GB quota; the other fixes are each well under 1 GB a month (estimates in the audit).
+- **Where the code differed from the plan:** `getStoreSiteStatus` (editor "unpublished changes") still reads the snapshot and drafts. A timestamp shortcut is unsafe because `updated_at` is set by hand and not by every writer; it needs triggers (migration, owner approval). Product-page reviews are not limited (the page lists them all). `pending-carts.client.tsx` and the store logo `<img>` in `render.tsx` were left alone because another session has uncommitted edits in them.
+- **Not done (owner approval):** robots.txt changes, `pg_stat_statements_reset()`, `getClaims()`, the API/edge/storage logs (Supabase MCP not authorized in the session).
+- **Checks:** `tsc` passes for lib, cache, store-editor, dashboard and admin; ecommerce only the existing `profile.chunks.tsx` errors. vitest: lib 533, cache 40, store-editor 138, dashboard 178, admin 108, ecommerce 183, all pass. `eslint` still crashes before linting in every app (baseline tooling issue). The grouped admin category counts and the SQL `countMediaUsage` were compared with the old logic on staging and production data (read-only): no differences. Not yet checked by hand in a browser.

@@ -221,6 +221,29 @@ the apps.
 - After the fixes ship, reset `pg_stat_statements` on both projects (with owner
   approval) and re-rank by calls for one week.
 
+## Status (2026-10-25, branch `perf/supabase-egress`)
+
+| # | Change | Commit | Est. saving |
+|---|---|---|---|
+| 1 | Template cards and configs cached globally (dashboard, admin); gallery TTL 24 h | `perf(templates)` | most of the ≈ 11 GB |
+| 2 | No whole-cache `revalidatePath` on sign-in (ecommerce, dashboard) | `perf(auth)` | multiplies #1 and every storefront miss |
+| 4 | Guest order polling 60 s, never once final; lean order translations | `perf(orders)` | < 0.5 GB |
+| 5 | Cart translations title/slug only; listing cards without `content` | `perf(cart)`, `perf(cache)` | < 0.5 GB |
+| 6 | Seller-scoped listings tagged by seller; stock boundary bumps seller tag | `perf(cache)` | fewer storefront refills |
+| 9 | `minimumCacheTTL` 30 days; new uploads `cacheControl: "31536000"` | `perf(images)`, `perf(storage)` | storage share not yet measured |
+| 10 | Bells poll only without realtime; hidden tabs skip draft watch and orders refresh; one `QueryClient` | `perf(polling)`, `fix(ecommerce)` | small, constant |
+| 7, 8, 12 | Admin category counts grouped; import loads categories once; `countMediaUsage` in SQL | `perf(admin)`, `perf(import)`, `perf(media)` | per use, up to ~300 MB per import |
+
+Not changed:
+
+- **#3, editor status still reads the snapshot and drafts.** A timestamp shortcut
+  is unsafe: `updated_at` is set by hand and not by every writer. It needs
+  triggers, which is a migration and needs approval.
+- **Product reviews are not limited**, because the page lists them all.
+- **`pending-carts.client.tsx` and the logo `<img>` in `render.tsx` are untouched**,
+  because another session has uncommitted edits there.
+- **Robots, `getClaims()`, the stats reset and the logs** wait for the owner.
+
 ## Fix order (Phase 2)
 
 1. Template cards: global cache plus long TTL (finding 1).
