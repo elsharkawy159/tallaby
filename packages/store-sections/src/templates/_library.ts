@@ -19,9 +19,11 @@
  * No React here.
  */
 import type { Localized } from "../core/types";
-import { createTreeBuilder, defineDesign, type Design, type DesignPhotos, type DesignText } from "../designs/builder";
+import type { LibraryPatchData } from "../config/schema";
+import { defineDesign, type Design, type DesignPhotos, type DesignText } from "../designs/builder";
+import { designSlotTree } from "../designs/photo-slots";
 import type { StyleValues } from "../elements/style";
-import type { NodeTemplate } from "../elements/tree";
+import { applyLibraryPatch } from "./library-ref";
 
 /**
  * Props and styles merged into the nodes with one layer label: `style` into
@@ -69,168 +71,28 @@ export type LibraryPatch = DesignPhotos & {
   corners?: number;
 };
 
-const PLACEHOLDER_NAME = "اسم متجرك";
-const PLACEHOLDER_INITIAL = "م";
-/** Prop keys that never hold copy. */
-const NOT_COPY = new Set(["role", "bind", "translations", "href", "src", "variant", "level", "url", "thumbnail", "poster", "source", "sort", "formTemplate"]);
-
-type Props = Record<string, unknown> & { translations?: { en?: Record<string, unknown> } };
-
-const localized = (value: DesignText): Localized => (typeof value === "string" ? { ar: value, en: value } : value);
-
-function defaultForm(design: Design): string | undefined {
-  if (design.category === "contact") return "contact";
-  if (design.category === "newsletter" || design.category === "footers") return "newsletter";
-  return undefined;
+/** A code patch as stored JSON (`libraryRef.patch`): a missing photo becomes `null`, the editor-only fields are dropped. */
+export function libraryPatchData(patch: LibraryPatch): LibraryPatchData {
+  const { name: _name, as: _as, ...data } = patch;
+  return JSON.parse(JSON.stringify(data)) as LibraryPatchData;
 }
 
 /**
- * The template's photos for a design's `photo(i)` / `person(i)` slots. Every
- * slot the design uses must have one: a library stock photo never slips into
- * a template (template photos are checked by eye: no people or bodies).
+ * The library design with the template's content, as the template's own
+ * design. Its tree is the library's slot tree with the patch applied
+ * (`applyLibraryPatch`, strict), and it carries `libraryRef` so a template
+ * can store the section as a ref (`library-ref.ts`).
  */
-function strict(photos: readonly (string | undefined)[] | undefined, kind: string): readonly (string | undefined)[] {
-  return new Proxy(photos ?? [], {
-    get(target, key, receiver) {
-      if (typeof key === "string" && /^\d+$/.test(key) && target[Number(key)] === undefined) {
-        throw new Error(`No template photo for ${kind}(${key})`);
-      }
-      return Reflect.get(target, key, receiver);
-    },
-  });
-}
-
-/**
- * Library designs treat `accent` as a light "sun" colour and put muted text
- * and accent marks on accent blocks. A template's accent can be strong
- * (orange, red, green), so inside an accent block muted text and accent
- * marks use the foreground colour, which reads on light accents too.
- */
-function onAccent(node: NodeTemplate, inside: boolean): NodeTemplate {
-  const style = node.style as Record<string, unknown> | undefined;
-  const here = inside || style?.background === "accent";
-  let next = node;
-  if (inside && style) {
-    const swapped = { ...style };
-    if (swapped.color === "muted" || swapped.color === "accent") swapped.color = "foreground";
-    if (swapped.background === "accent") swapped.background = "foreground";
-    next = { ...node, style: swapped as NodeTemplate["style"] };
-  }
-  return { ...next, children: node.children?.map((child) => onAccent(child, here)) };
-}
-
-/** A node with `patch` merged into its props and styles. */
-function patchNode(node: NodeTemplate, patch: NodePatch): NodeTemplate {
-  const breakpoints = { ...(node.breakpointStyles as Record<string, StyleValues> | undefined) };
-  for (const bp of ["tablet", "mobile"] as const) {
-    if (patch[bp]) breakpoints[bp] = { ...breakpoints[bp], ...patch[bp] };
-  }
-  return {
-    ...node,
-    ...(patch.props && { props: { ...node.props, ...patch.props } as NodeTemplate["props"] }),
-    ...(patch.style && { style: { ...(node.style as StyleValues | undefined), ...patch.style } as NodeTemplate["style"] }),
-    ...(Object.keys(breakpoints).length && { breakpointStyles: breakpoints as NodeTemplate["breakpointStyles"] }),
-  };
-}
-
-const FULL_ROUND = 999;
-
-function clampCorners(node: NodeTemplate, max: number): NodeTemplate {
-  const clamp = (style: Record<string, unknown> | undefined) =>
-    style && typeof style.radius === "number" && style.radius < FULL_ROUND && style.radius > max ? { ...style, radius: max } : style;
-  const breakpoints = node.breakpointStyles as Record<string, Record<string, unknown>> | undefined;
-  return {
-    ...node,
-    ...(node.style && { style: clamp(node.style as Record<string, unknown>) as NodeTemplate["style"] }),
-    ...(breakpoints && {
-      breakpointStyles: Object.fromEntries(Object.entries(breakpoints).map(([bp, style]) => [bp, clamp(style)])) as NodeTemplate["breakpointStyles"],
-    }),
-    children: node.children?.map((child) => clampCorners(child, max)),
-  };
-}
-
-/** The library design with the template's content, as the template's own design. */
 export function fromLibrary(templateKey: string, design: Design, patch: LibraryPatch = {}): Design {
-  const form = patch.form ?? defaultForm(design);
-  const chrome = design.category === "headers" || design.category === "footers";
+  const libraryId = design.libraryId ?? design.id;
+  const data = libraryPatchData(patch);
+  const id = `${templateKey}-${patch.as ?? design.id}`;
   return defineDesign({
     ...design,
-    id: `${templateKey}-${patch.as ?? design.id}`,
-    libraryId: design.libraryId ?? design.id,
+    id,
+    libraryId,
+    libraryRef: { key: libraryId, patch: data },
     ...(patch.name && { name: patch.name }),
-    tree: () => {
-      const tree = design.tree(createTreeBuilder(undefined, { photo: strict(patch.photo, "photo"), person: strict(patch.person, "person") }));
-      const text = new Map(Object.entries(patch.text ?? {}).map(([ar, value]) => [ar, localized(value)]));
-      const links = new Map(Object.entries(patch.links ?? {}));
-      const linkSeen = new Map<string, number>();
-      const used = new Set<string>();
-      let listIndex = 0;
-
-      const visit = (node: NodeTemplate): NodeTemplate => {
-        const props = { ...(node.props as Props) };
-        const en = { ...(props.translations?.en ?? {}) };
-        for (const [key, value] of Object.entries(props)) {
-          if (NOT_COPY.has(key) || typeof value !== "string") continue;
-          const next = text.get(value);
-          if (next) {
-            used.add(`text:${value}`);
-            props[key] = next.ar;
-            if (next.en !== next.ar) en[key] = next.en;
-            else delete en[key];
-          }
-        }
-        if (Object.keys(en).length) props.translations = { ...props.translations, en };
-        else if (props.translations) {
-          const { en: _drop, ...rest } = props.translations;
-          props.translations = Object.keys(rest).length ? rest : undefined;
-          if (!props.translations) delete props.translations;
-        }
-        if (typeof props.href === "string" && props.bind !== "href" && links.has(props.href)) {
-          const href = props.href;
-          const swap = links.get(href)!;
-          const seen = linkSeen.get(href) ?? 0;
-          linkSeen.set(href, seen + 1);
-          used.add(`link:${href}`);
-          const next = typeof swap === "string" ? swap : swap[seen];
-          if (next !== undefined) props.href = next;
-        }
-        if (node.type === "productList" || node.type === "categoryList" || node.type === "postList") {
-          const list = patch.lists?.[listIndex++];
-          for (const [key, value] of Object.entries(list ?? {})) {
-            if (value === null) delete props[key];
-            else if (value !== undefined) props[key] = value;
-          }
-        }
-        if (node.type === "storeForm" && form) props.formTemplate = form;
-        const label = (node.props as Props).label;
-        const nodePatch = typeof label === "string" ? patch.nodes?.[label] : undefined;
-        if (nodePatch) used.add(`node:${label}`);
-        // The library's placeholder name (original copy) → the store's name on "Use template".
-        const original = (node.props as Props).text;
-        if (!props.role || props.role === "title") {
-          if (original === PLACEHOLDER_NAME) props.role = "storeName";
-          else if (chrome && original === PLACEHOLDER_INITIAL) props.role = "storeInitial";
-          else if (typeof original === "string" && original.startsWith("©") && original.includes(PLACEHOLDER_NAME)) props.role = "copyright";
-        }
-        const next = { ...node, props: props as NodeTemplate["props"], children: node.children?.map(visit) };
-        return nodePatch ? patchNode(next, nodePatch) : next;
-      };
-
-      const built = onAccent(visit(tree), false);
-      const result = patch.corners === undefined ? built : clampCorners(built, patch.corners);
-      const missing = [
-        ...[...text.keys()].filter((ar) => !used.has(`text:${ar}`)).map((ar) => `text "${ar}"`),
-        ...[...links.keys()].filter((href) => !used.has(`link:${href}`)).map((href) => `link "${href}"`),
-        ...Object.keys(patch.nodes ?? {})
-          .filter((label) => !used.has(`node:${label}`))
-          .map((label) => `node "${label}"`),
-        ...[...links.entries()]
-          .filter(([href, swap]) => typeof swap !== "string" && swap.length !== (linkSeen.get(href) ?? 0))
-          .map(([href, swap]) => `${swap.length} swaps for ${linkSeen.get(href) ?? 0} "${href}" links`),
-        ...(patch.lists && patch.lists.length > listIndex ? [`${patch.lists.length} list patches for ${listIndex} lists`] : []),
-      ];
-      if (missing.length) throw new Error(`${templateKey}: ${design.id} has no ${missing.join(", ")}`);
-      return result;
-    },
+    tree: () => applyLibraryPatch(designSlotTree(design), data, { category: design.category, strict: true, label: `${templateKey}: ${design.id}` }).tree,
   });
 }

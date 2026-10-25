@@ -300,9 +300,14 @@ export function invalidateTemplateCatalog(): CacheInvalidation {
   return inv([templateTags.catalog()]);
 }
 
-/** A library section was published, hidden, shown, reordered or deleted (admin): every editor's Add › Sections list. */
+/**
+ * A library section was published, hidden, shown, reordered or deleted
+ * (admin): every editor's Add › Sections list, and the template gallery and
+ * previews (templates store library sections as refs built from the
+ * library's current tree).
+ */
 export function invalidateLibrarySections(): CacheInvalidation {
-  return inv([librarySectionTags.catalog()]);
+  return inv([librarySectionTags.catalog(), templateTags.catalog()]);
 }
 
 /** A tallaby.com blog post was created, edited, published or deleted in admin. */

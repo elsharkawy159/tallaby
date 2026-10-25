@@ -120,6 +120,49 @@ const slotLayoutSchema = z.object({
   hidden: z.array(z.string().max(128)).max(MAX_NODES_PER_LIST).optional(),
 });
 
+/** Text in both languages, or one string for both (a template's copy swap). */
+const patchTextSchema = z.union([z.string().max(2000), z.object({ ar: z.string().max(2000), en: z.string().max(2000) })]);
+const patchUrlSchema = z.string().max(2048);
+const patchScalar = z.union([z.string().max(2000), z.number(), z.boolean()]);
+
+/**
+ * What a template changes in a section-library design (`templates/library-ref.ts`):
+ * its photos, copy, links, list settings, per-layer props and styles, the
+ * ready-made form and the corner cap. Plain JSON (a missing photo is `null`).
+ */
+export const libraryPatchSchema = z.object({
+  photo: z.array(patchUrlSchema.nullable()).max(100).optional(),
+  person: z.array(patchUrlSchema.nullable()).max(100).optional(),
+  text: z.record(z.string().max(2000), patchTextSchema).optional(),
+  links: z.record(z.string().max(2048), z.union([patchUrlSchema, z.array(patchUrlSchema.nullable()).max(100)])).optional(),
+  lists: z
+    .array(z.object({ source: z.string().max(100).nullable().optional(), sort: z.string().max(100).nullable().optional(), limit: z.number().int().min(0).max(1000).nullable().optional() }).nullable())
+    .max(50)
+    .optional(),
+  nodes: z
+    .record(
+      z.string().max(200),
+      z.object({ props: z.record(z.string(), patchScalar).optional(), style: styleSchema.optional(), tablet: styleSchema.optional(), mobile: styleSchema.optional() }),
+    )
+    .optional(),
+  form: z.string().max(64).optional(),
+  corners: z.number().min(0).max(999).optional(),
+});
+export type LibraryPatchData = z.output<typeof libraryPatchSchema>;
+
+/**
+ * A template section that points at a `library_sections` row instead of
+ * holding its element tree: the tree is built from the library's current
+ * tree plus this patch whenever the template is read, so a library edit
+ * reaches every template that uses the section. Only template configs hold
+ * refs; a store's drafts always get the built tree.
+ */
+export const libraryRefSchema = z.object({
+  key: z.string().min(1).max(100).regex(/^[a-z0-9-]+$/),
+  patch: libraryPatchSchema.default({}),
+});
+export type LibraryRef = z.output<typeof libraryRefSchema>;
+
 export const sectionInstanceSchema = z.object({
   id: idSchema,
   sectionId: z.string().min(1).max(100).regex(/^[A-Za-z0-9][A-Za-z0-9_.-]*$/),
@@ -134,6 +177,8 @@ export const sectionInstanceSchema = z.object({
   savedBlockRef: z.string().max(64).optional(),
   /** The design a tree section started from (`<design-id>@<version>`); never affects rendering. */
   source: z.string().max(100).regex(/^[a-z0-9-]+@\d{1,4}$/).optional(),
+  /** Template configs only: the library section this one is built from (`componentTree` then comes from the library). */
+  libraryRef: libraryRefSchema.optional(),
 });
 export type SectionInstance = z.output<typeof sectionInstanceSchema>;
 

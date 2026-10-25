@@ -823,3 +823,4 @@ export async function getStoreDraftVersions(sellerId: string, storeId: string, q
 
 // Templates gallery and apply (P4-05).
 export * from "./templates.server";
+export { compactTemplateForStorage, expandTemplateConfig, expandTemplateConfigs, loadLibraryTrees } from "./template-refs.server";

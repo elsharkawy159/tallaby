@@ -23,6 +23,7 @@
  */
 import { randomUUID } from "node:crypto";
 import { and, asc, db, eq, isNull, max, storePages, storeSiteRevisions, stores, templateVersions, templates } from "@workspace/db";
+import { expandTemplateConfig } from "./template-refs.server";
 import { productPageOf, validateSiteConfig, PRODUCT_PAGE_SLUG, type SiteConfig } from "@workspace/store-sections";
 import { DEFAULT_TEMPLATE, prepareTemplateForStore, resolveTemplateMeta, templateEssentials, templateMeta, type TemplateMeta } from "@workspace/store-sections/templates";
 import { loadDefaultTemplate } from "./template-rows.server";
@@ -60,13 +61,13 @@ const skipped = (reason: string, extra: Partial<BackfillOutcome> = {}): Backfill
 /** The store's own template's current config, when it exists, is not soft-deleted and has a product page. */
 async function ownTemplate(q: Queryable, key: string): Promise<Source | null> {
   const [row] = await q
-    .select({ meta: templates.meta, config: templateVersions.config })
+    .select({ meta: templates.meta, category: templates.category, config: templateVersions.config })
     .from(templates)
     .innerJoin(templateVersions, eq(templateVersions.id, templates.currentVersionId))
     .where(and(eq(templates.key, key), isNull(templates.deletedAt)))
     .limit(1);
   if (!row) return null;
-  const config = validateSiteConfig(row.config);
+  const config = validateSiteConfig(await expandTemplateConfig(row.config, row.category, q));
   if (!config.success || !productPageOf(config.data)) return null;
   return { key, config: config.data, meta: resolveTemplateMeta(row.meta, key) };
 }

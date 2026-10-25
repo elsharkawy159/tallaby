@@ -8,7 +8,7 @@
  * `props`, the other into `props.translations` (the overlay `core/locale.ts`
  * reads). Pure and React-free.
  */
-import type { ComponentNode, SectionInstance, SiteLocale } from "../config/schema";
+import type { ComponentNode, LibraryRef, SectionInstance, SiteLocale } from "../config/schema";
 import type { Localized } from "../core/types";
 import type { LibraryCategoryId } from "../library/types";
 import { getElementDefinition, type ElementIconName, type ElementType, type PatternVariant } from "../elements/registry";
@@ -55,6 +55,8 @@ export type Design = {
   tree: (t: TreeBuilder) => NodeTemplate;
   /** A template's copy of a library design (`templates/_library.ts`): the library design's id. */
   libraryId?: string;
+  /** A template's copy of a library design: the library key and the template's patch, as a template stores it (`templates/library-ref.ts`). */
+  libraryRef?: LibraryRef;
 };
 
 const DESIGN_ID_RE = /^[a-z0-9-]+$/;

@@ -7,6 +7,7 @@
  * what the database does not hold: the preview catalog and page names.
  * No React here.
  */
+import { sanitizeSiteConfig } from "../config/sanitize";
 import { validateSiteConfig } from "../config/validate";
 import type { Localized } from "../core/types";
 import type { Design } from "../designs/builder";
@@ -121,6 +122,7 @@ import { KHOLKHAL } from "./kholkhal";
 import { FARHA } from "./farha";
 import { NASHAT } from "./nashat";
 import { TARIK } from "./tarik";
+import { templateRefConfig } from "./ref-config";
 import type { TemplateDefinition, TemplateDemo } from "./types";
 
 /** Templates 02–110, built from section-library designs (`library-template.ts`), in registry order. */
@@ -151,11 +153,15 @@ export function getTemplateDesign(id: string): Design | undefined {
 export const TEMPLATE_JSON_START = "-- template-config:start";
 export const TEMPLATE_JSON_END = "-- template-config:end";
 
-/** The validated config as stored in `template_versions.config`. */
+/**
+ * The validated config as stored in `template_versions.config`: its library
+ * sections as refs (`templateRefConfig`), built from the library's current
+ * trees when read, so later library edits reach the template.
+ */
 export function templateConfigJson(template: TemplateDefinition): string {
   const result = validateSiteConfig(template.config());
   if (!result.success) throw new Error(`Template ${template.key} is invalid: ${JSON.stringify(result.issues)}`);
-  return JSON.stringify(result.data);
+  return JSON.stringify(templateRefConfig(template, result.data, { normalize: sanitizeSiteConfig }));
 }
 
 const sqlText = (value: string) => `'${value.replace(/'/g, "''")}'`;
