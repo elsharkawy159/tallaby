@@ -56,46 +56,56 @@ export async function getAllCategories(params?: {
       offset: params?.offset || 0,
     });
 
-    // Get total product count (including descendants) and children count for each category
-    const categoriesWithCounts = await Promise.all(
-      categoriesList.map(async (category) => {
-        const [totalProductCountResult, childrenCountResult] =
-          await Promise.all([
-            db.execute(sql`
-            WITH RECURSIVE category_tree AS (
-              SELECT id FROM categories WHERE id = ${category.id}
-              UNION ALL
-              SELECT c.id FROM categories c
-              INNER JOIN category_tree ct ON c.parent_id = ct.id
-            )
-            SELECT count(*)::text as count
-            FROM products
-            WHERE category_id IN (SELECT id FROM category_tree)
-          `),
-            db
-              .select({ count: sql<number>`count(*)` })
-              .from(categories)
-              .where(eq(categories.parentId, category.id)),
-          ]);
+    // Total product count (including descendants) and children count for the
+    // whole page in two grouped queries, not two per row (docs/egress-audit.md §7).
+    const ids = categoriesList.map((category) => category.id);
+    const productCountByRoot = new Map<string, number>();
+    const childrenCountByParent = new Map<string, number>();
+    if (ids.length > 0) {
+      const idList = sql.join(
+        ids.map((id) => sql`${id}`),
+        sql`, `,
+      );
+      const [productCountsResult, childrenCounts] = await Promise.all([
+        db.execute(sql`
+          WITH RECURSIVE category_tree AS (
+            SELECT id AS root_id, id FROM categories WHERE id IN (${idList})
+            UNION ALL
+            SELECT ct.root_id, c.id FROM categories c
+            INNER JOIN category_tree ct ON c.parent_id = ct.id
+          )
+          SELECT ct.root_id::text AS root_id, count(*)::text AS count
+          FROM category_tree ct
+          INNER JOIN products p ON p.category_id = ct.id
+          GROUP BY ct.root_id
+        `),
+        db
+          .select({ parentId: categories.parentId, count: sql<number>`count(*)` })
+          .from(categories)
+          .where(inArray(categories.parentId, ids))
+          .groupBy(categories.parentId),
+      ]);
 
-        const countRow = Array.isArray(totalProductCountResult)
-          ? totalProductCountResult[0]
-          : (totalProductCountResult as { rows?: { count: string }[] })
-              ?.rows?.[0];
-        const totalProductCount = Number(
-          (countRow as { count?: string })?.count ?? 0,
-        );
-        const childrenCount = Number(childrenCountResult[0]?.count || 0);
+      const countRows = (
+        Array.isArray(productCountsResult)
+          ? productCountsResult
+          : ((productCountsResult as { rows?: unknown[] })?.rows ?? [])
+      ) as { root_id?: string; count?: string }[];
+      for (const row of countRows) {
+        if (row.root_id) productCountByRoot.set(row.root_id, Number(row.count ?? 0));
+      }
+      for (const row of childrenCounts) {
+        if (row.parentId) childrenCountByParent.set(row.parentId, Number(row.count || 0));
+      }
+    }
 
-        return {
-          ...category,
-          productCount: totalProductCount,
-          childrenCount,
-          imageUrl: (category as { imageUrl?: string | null }).imageUrl ?? null,
-          locale: (category as { locale?: string }).locale || "en",
-        };
-      }),
-    );
+    const categoriesWithCounts = categoriesList.map((category) => ({
+      ...category,
+      productCount: productCountByRoot.get(category.id) ?? 0,
+      childrenCount: childrenCountByParent.get(category.id) ?? 0,
+      imageUrl: (category as { imageUrl?: string | null }).imageUrl ?? null,
+      locale: (category as { locale?: string }).locale || "en",
+    }));
 
     const totalCount = await db
       .select({ count: sql`count(*)` })
