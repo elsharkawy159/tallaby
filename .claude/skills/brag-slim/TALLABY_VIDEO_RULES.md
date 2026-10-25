@@ -19,6 +19,17 @@ Goal: every video should look like it came from a serious, well-funded Egyptian 
 - **Logo:** the real files from the repo (`apps/*/public/logo*`, see `MARKETING_PROJECT.md` §8). White logo on teal or dark, primary logo on light. Never redraw or stretch it.
 - **Numbers:** Latin digits (0–9), never Arabic-Indic (٠١٢). Prices as `299 ج.م`.
 
+- **Professional ideas only** (owner, 2026-10-25): every idea is framed as a business outcome for a serious seller (more orders, less time in DMs, a store that looks like a big brand, delivery handled). No slapstick, no puns, no double meanings, no playful commands aimed at the viewer.
+- **Banned words and phrases (owner, 2026-10-25):** in Egypt these read as sexual innuendo, so they are **never** said, shown, captioned or written in the post, in any form (any pronoun, tense or spelling):
+  - "خليها تتحرك", "خلّيه يتحرك", "حرّكها", "حرّكه"
+  - "كبّرها", "كبّره", "طوّلها", "تخنها"
+  - "تحطها فين؟", "هتحطه فين؟", "حطه", "حطها", "حطّه في البايو"
+  - "تاخد فين؟", "خدها", "خده", "اديك فين؟", "اديها"
+  - "دخّله", "دخّلها", "طلّعه", "نزّله", "ركّبه", "ركّبها"
+  - any question built on "فين؟" about putting, taking or giving, and any imperative verb with a "-ها/-ه" object aimed at the viewer.
+  - Use neutral business verbs instead: "اعرض", "ضيف", "غيّر", "اختار", "رتّب", "شوف", "انشر", "ابدأ", "جرّب". Example: not "حطه في البايو" but "شاركه مع زباينك"; not "خلّيه يتحرك" but "بانر بيتقلب لوحده".
+  - Before generating the voiceover and before posting, read the script, captions, on-screen text and caption once more only for this list, and rewrite any line that comes close.
+
 ## 2. Who the video is for
 
 Small and medium Egyptian sellers who sell today through Facebook, Instagram and WhatsApp. They take orders in DMs and want a real store link without any technical work. Talk to their real pains:
@@ -90,6 +101,8 @@ The gold button carries a short version of the same line (for example "إفتح 
 ## 5. Look and motion (what makes it professional)
 
 - **Show the real product.** Render the real Tallaby components, templates and pages from the repo, filled with Arabic demo data. Present them inside a clean, modern phone frame (or a laptop for the dashboard), never as flat full-screen screenshots.
+- **Phone mockups must look like a real modern phone** (owner, 2026-10-25): the screen keeps the exact aspect of the capture (390×844, about 9:19.5; never stretch, squash or crop the screenshot to fit), the phone body is about **520–600 px wide and 1130–1300 px tall** on the 1080×1920 frame, thin even bezels (12–18 px), corner radius about 12–13% of the width, a small dynamic-island notch, and a soft shadow. Never a wide, squat or tablet-like phone. Check one still of the phone at its largest before rendering: width ÷ height must be about 0.46–0.49.
+- **Use Canva where it helps** (owner, 2026-10-25): the Canva connector is attached to the daily run. Use it for polished assets the HTML build can't make well: a realistic phone mockup frame, branded backgrounds, product-style images, icons and illustration cards (`generate-design`, `create-design`, `upload-asset-from-url`, `export-design` as PNG with transparency where possible), then place the exported PNGs in the Hyperframes composition. Keep the brand colours and fonts, never use Canva templates with other brands' logos or stock people, and log which Canva designs were used.
 - **Arabic must be perfect:** right-to-left layout, connected letters (render the text in a real browser with the real font; never draw Arabic letter by letter), correct punctuation (؟ ،), no cut-off diacritics. Check every still for broken shaping before rendering.
 - **Typography:** headlines 72–110 px Bold, captions 48–60 px SemiBold, at most 2 lines and about 7 words per line. Text always has strong contrast (white on teal, dark on gold or off-white). Never put text over a busy image without a solid or blurred band behind it.
 - **Motion:** smooth ease-in-out curves (no linear moves), small subtle overshoot on pop-ins, a gentle camera push-in on the UI, simulated taps with a soft ripple, typing animations for inputs. One consistent transition style per video (for example slide plus blur, or a mask wipe in brand teal). No cheap effects: no star wipes, no spinning 3D, no glitch effects, no rainbow gradients.
@@ -146,3 +159,6 @@ The topic comes from [`TALLABY_VIDEO_TOPICS.md`](TALLABY_VIDEO_TOPICS.md): how t
 - [ ] Captions match the voiceover word for word, and طلبي is pronounced correctly.
 - [ ] No invented stats, no Planned features, no real personal data, no promises the brand guide marks Avoid.
 - [ ] Brand colors, fonts and logo correct; frame 0 is a strong cover.
+- [ ] None of the banned innuendo words or phrases (§1) appear in the voiceover, captions, on-screen text or post; the idea reads as professional.
+- [ ] Every phone mockup has a real phone shape (width ÷ height about 0.46–0.49) and the screenshot is not stretched.
+- [ ] The video was made with the full `/brag` skill in `.claude/skills/brag/` (its `brag-plan.md` and `composition-brief.md` exist and the `hyperframes check` gate passed), not improvised.
