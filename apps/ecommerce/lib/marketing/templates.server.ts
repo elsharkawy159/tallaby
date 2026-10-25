@@ -11,11 +11,12 @@ import { buildGallery, type CatalogTemplate, type GalleryEntry } from "./templat
  * current version only (the dashboard gallery hides the others too). Swatches
  * and page names come from `templates.meta` (code fallback per field). Admin template edits
  * purge `templateTags.catalog()` (invalidateTemplateCatalog), so the gallery
- * and the preview frames follow without a deploy.
+ * and the preview frames follow without a deploy, so the TTL is only a 24 h
+ * backstop: each refill reads every ~95 KB config (docs/egress-audit.md §1).
  */
 const getCachedCatalog = createCachedQuery({
   name: "marketing:template-catalog:v2",
-  ttl: cacheProfiles.listing,
+  ttl: cacheProfiles.taxonomy,
   tags: () => [templateTags.catalog()],
   query: async (): Promise<CatalogTemplate[]> => {
     const rows = await db
@@ -75,7 +76,7 @@ export async function findGalleryEntry(locale: string, id: string): Promise<Gall
 
 const getCachedTemplatePreview = createCachedQuery({
   name: "marketing:template-preview:v2",
-  ttl: cacheProfiles.listing,
+  ttl: cacheProfiles.taxonomy,
   tags: (_key: string) => [templateTags.catalog()],
   query: (key: string) => getPublicTemplate(key),
 });

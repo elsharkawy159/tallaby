@@ -158,11 +158,18 @@ export type StoreTemplateGallery = {
   lastInstall: StoreTemplateInstall | null;
 };
 
-/** Active templates with their current version, plus this store's last install. Null for a foreign store. */
-export async function listStoreTemplates(sellerId: string, storeId: string, q: Queryable = db): Promise<StoreTemplateGallery | null> {
-  const store = await ownStore(q, sellerId, storeId);
-  if (!store) return null;
+/** Loads the offered template cards; apps pass a cached one (`templateTags.catalog()`). */
+export type TemplateCardsLoader = () => Promise<StoreTemplateCard[]>;
+/** Loads an offered template's current config by key; apps pass a cached one (`templateTags.catalog()`). */
+export type TemplateConfigLoader = (templateKey: string) => Promise<SiteConfig | null>;
 
+/**
+ * Every offered template as a gallery card. Global admin-authored data with
+ * nothing from a store, so apps cache it: each card is parsed from a ~95 KB
+ * config, and reading all of them on every gallery view was most of the
+ * database egress (docs/egress-audit.md §1).
+ */
+export async function listTemplateCards(q: Queryable = db): Promise<StoreTemplateCard[]> {
   const rows = await q
     .select({
       id: templates.id,
@@ -203,7 +210,20 @@ export async function listStoreTemplates(sellerId: string, storeId: string, q: Q
       outline: templateOutline(config.data),
     });
   }
+  return cards;
+}
 
+/** Active templates with their current version, plus this store's last install. Null for a foreign store. */
+export async function listStoreTemplates(
+  sellerId: string,
+  storeId: string,
+  q: Queryable = db,
+  loadCards: TemplateCardsLoader = () => listTemplateCards(q),
+): Promise<StoreTemplateGallery | null> {
+  const store = await ownStore(q, sellerId, storeId);
+  if (!store) return null;
+
+  const cards = await loadCards();
   const [install] = await q
     .select({
       id: templateInstalls.id,
@@ -232,10 +252,24 @@ export async function listStoreTemplates(sellerId: string, storeId: string, q: Q
  * (owner request 2026-10-18). Null for a foreign store, an unknown or
  * inactive key, or a broken version (the gallery hides those too).
  */
-export async function getStoreTemplateConfig(sellerId: string, storeId: string, templateKey: string, q: Queryable = db): Promise<SiteConfig | null> {
+export async function getStoreTemplateConfig(
+  sellerId: string,
+  storeId: string,
+  templateKey: string,
+  q: Queryable = db,
+  loadConfig: TemplateConfigLoader = (key) => loadOfferedTemplateConfig(key, q),
+): Promise<SiteConfig | null> {
   if (!TEMPLATE_KEY_RE.test(templateKey)) return null;
   const store = await ownStore(q, sellerId, storeId);
   if (!store) return null;
+  // Re-parsed: a cached loader hands back plain JSON.
+  const config = siteConfigSchema.safeParse(await loadConfig(templateKey));
+  return config.success ? config.data : null;
+}
+
+/** An offered template's current config by key, with no store involved. Null for an unknown, hidden or deleted key, or a broken version. */
+export async function loadOfferedTemplateConfig(templateKey: string, q: Queryable = db): Promise<SiteConfig | null> {
+  if (!TEMPLATE_KEY_RE.test(templateKey)) return null;
   const [row] = await q
     .select({ config: templateVersions.config })
     .from(templates)
@@ -252,9 +286,15 @@ export async function getStoreTemplateConfig(sellerId: string, storeId: string, 
  * 2026-10-23; `preferTemplatePresets`). Empty for a foreign store, a store
  * with no offered template or a broken version.
  */
-export async function getStoreTemplateLibraryKeys(sellerId: string, storeId: string, templateKey: string, q: Queryable = db): Promise<string[]> {
+export async function getStoreTemplateLibraryKeys(
+  sellerId: string,
+  storeId: string,
+  templateKey: string,
+  q: Queryable = db,
+  loadConfig?: TemplateConfigLoader,
+): Promise<string[]> {
   if (!templateKey) return [];
-  const config = await getStoreTemplateConfig(sellerId, storeId, templateKey, q);
+  const config = await getStoreTemplateConfig(sellerId, storeId, templateKey, q, loadConfig);
   return config ? templateLibraryKeys(config, templateKey) : [];
 }
 

@@ -8,6 +8,7 @@ vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 vi.mock("next-intl", () => ({ createTranslator: vi.fn(() => (key: string) => key) }));
 vi.mock("@workspace/cache", () => ({ applyInvalidation: vi.fn(async () => {}), invalidateStoreSite: vi.fn(() => ({ tags: [] })) }));
 vi.mock("@/app/(dashboard)/_lib/saas-admin.server", () => ({ adminActorId: vi.fn() }));
+vi.mock("@/lib/store-templates.data", () => ({ loadCachedTemplateConfig: vi.fn() }));
 vi.mock("@workspace/lib/admin/server", () => ({
   resolveStoreForAdmin: vi.fn(),
   markSiteEditedByAdmin: vi.fn(async () => {}),

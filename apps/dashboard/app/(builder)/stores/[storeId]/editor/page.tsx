@@ -9,6 +9,7 @@ import { findActiveCustomDomainForSubdomain } from "@workspace/lib/storefront/se
 import { publicStoreSocialLinks } from "@workspace/lib/stores";
 import { designSystemSchema, preferTemplatePresets, sectionInstanceSchema, type SiteLocale } from "@workspace/store-sections";
 import { storeBuilderEnabled } from "@/components/dashboard/sidebar.config";
+import { loadCachedTemplateCards, loadCachedTemplateConfig } from "@/lib/store-templates.data";
 import { loadStorePage } from "@/lib/stores/store-page.server";
 import { storeFontVariables } from "@/app/(main)/stores/[storeId]/website/_components/store-fonts";
 import { toTemplateCardViews } from "@/app/(main)/stores/[storeId]/website/templates/templates.lib";
@@ -40,7 +41,7 @@ export default async function StoreEditorPage({ params }: { params: Promise<{ st
     getStoreForEditor(store.sellerId, store.id),
     getStoreSiteStatus(store.sellerId, store.id),
     loadEditorSnapshot(store.sellerId, store.id, store.catalogMode),
-    listStoreTemplates(store.sellerId, store.id),
+    listStoreTemplates(store.sellerId, store.id, undefined, loadCachedTemplateCards),
     loadLibraryPresets(),
     findActiveCustomDomainForSubdomain(store.subdomain),
     // The product page canvas's product: the newest the store shows (uncached, store-checked).
@@ -50,7 +51,7 @@ export default async function StoreEditorPage({ params }: { params: Promise<{ st
   const liveUrl = storeUrl(store.subdomain, customDomain);
   if (!editor) notFound();
   // Add › Sections lists the designs of the store's template first in each category.
-  const templateKeys = await getStoreTemplateLibraryKeys(store.sellerId, store.id, gallery?.currentKey ?? "").catch(() => []);
+  const templateKeys = await getStoreTemplateLibraryKeys(store.sellerId, store.id, gallery?.currentKey ?? "", undefined, loadCachedTemplateConfig).catch(() => []);
 
   const header = sectionInstanceSchema.safeParse(editor.store.sharedHeader);
   const footer = sectionInstanceSchema.safeParse(editor.store.sharedFooter);

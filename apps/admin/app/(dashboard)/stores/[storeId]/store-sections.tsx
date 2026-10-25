@@ -33,6 +33,7 @@ import { domainAdminAction } from "../../domains/domains.server";
 import { AssignDomainButton } from "./assign-domain.client";
 import { logServerError } from "@workspace/db/log";
 import { listStoreTemplates } from "@workspace/lib/store-sites/server";
+import { loadCachedTemplateCards } from "@/lib/store-templates.data";
 import { RemoteImage } from "@/components/media/remote-image";
 import { ChangeThemeButton, PaletteBand, type ThemeOption } from "./store-theme.client";
 import {
@@ -263,7 +264,7 @@ const MEDIA_COLUMNS: AdminTableColumn[] = [
 export async function StoreWebsiteSection({ store, canWrite }: SectionProps & { canWrite: boolean }) {
   const [site, gallery] = await Promise.all([
     getStoreWebsiteForAdmin(store.id),
-    listStoreTemplates(store.sellerId, store.id).catch((error) => {
+    listStoreTemplates(store.sellerId, store.id, undefined, loadCachedTemplateCards).catch((error) => {
       logServerError("admin", "store page theme gallery failed", { storeId: store.id }, error);
       return null;
     }),

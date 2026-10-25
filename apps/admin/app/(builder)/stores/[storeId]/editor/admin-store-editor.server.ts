@@ -52,6 +52,7 @@ import editorAr from "@workspace/store-editor/messages/ar.json";
 import editorEn from "@workspace/store-editor/messages/en.json";
 import { adminActorId } from "@/app/(dashboard)/_lib/saas-admin.server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
+import { loadCachedTemplateConfig } from "@/lib/store-templates.data";
 import { loadEditorForms, loadEditorSnapshot, storePageSlug, storeSiteMeta, type Queryable } from "./admin-store-editor.data";
 
 /**
@@ -508,7 +509,7 @@ export async function templatePreview(storeId: string, templateKey: string): Pro
     storeId,
     "template preview",
     async ({ ref }) => {
-      const config = await getStoreTemplateConfig(ref.sellerId, ref.storeId, String(templateKey));
+      const config = await getStoreTemplateConfig(ref.sellerId, ref.storeId, String(templateKey), undefined, loadCachedTemplateConfig);
       if (!config) return { success: false, error: "templateNotFound" };
       return {
         success: true,

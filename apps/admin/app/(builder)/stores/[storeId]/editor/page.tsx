@@ -9,6 +9,7 @@ import { publicStoreSocialLinks } from "@workspace/lib/stores";
 import { getStore } from "@workspace/lib/stores/server";
 import { designSystemSchema, preferTemplatePresets, sectionInstanceSchema, type SiteLocale } from "@workspace/store-sections";
 import type { EditorInitial } from "@workspace/store-editor/editor.client";
+import { loadCachedTemplateCards, loadCachedTemplateConfig } from "@/lib/store-templates.data";
 import { adminActorId } from "@/app/(dashboard)/_lib/saas-admin.server";
 import { loadEditorSnapshot } from "./admin-store-editor.data";
 import { loadLibraryPresets } from "./library.data";
@@ -41,7 +42,7 @@ export default async function AdminStoreEditorPage({ params }: { params: Promise
     getStoreForEditor(ref.sellerId, store.id),
     getStoreSiteStatus(ref.sellerId, store.id),
     loadEditorSnapshot(ref.sellerId, store.id, store.catalogMode),
-    listStoreTemplates(ref.sellerId, store.id),
+    listStoreTemplates(ref.sellerId, store.id, undefined, loadCachedTemplateCards),
     loadLibraryPresets(),
     findActiveCustomDomainForSubdomain(store.subdomain),
   ]);
@@ -49,7 +50,7 @@ export default async function AdminStoreEditorPage({ params }: { params: Promise
   const liveUrl = storeUrl(store.subdomain, customDomain);
   if (!editor) notFound();
   // Add › Sections lists the designs of the store's template first in each category.
-  const templateKeys = await getStoreTemplateLibraryKeys(ref.sellerId, store.id, gallery?.currentKey ?? "").catch(() => []);
+  const templateKeys = await getStoreTemplateLibraryKeys(ref.sellerId, store.id, gallery?.currentKey ?? "", undefined, loadCachedTemplateConfig).catch(() => []);
 
   const header = sectionInstanceSchema.safeParse(editor.store.sharedHeader);
   const footer = sectionInstanceSchema.safeParse(editor.store.sharedFooter);

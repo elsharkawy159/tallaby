@@ -9,6 +9,7 @@ import { contentOverrideKeys, storeSectionRegistry } from "@workspace/store-sect
 import { storeBuilderEnabled } from "@/components/dashboard/sidebar.config";
 import { isAccessError, requireStore } from "@/lib/auth/require-seller.server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
+import { loadCachedTemplateCards, loadCachedTemplateConfig } from "@/lib/store-templates.data";
 import { findIndustry } from "@/lib/stores/industries.lib";
 import {
   TEMPLATE_ERRORS,
@@ -82,7 +83,7 @@ export async function listTemplatesPage(storeId: string, query: Partial<Template
   try {
     const { seller, store } = await requireStore(String(storeId));
     if (!storeBuilderEnabled(seller.sellerId)) return { success: false, error: "notFound" };
-    const [row, gallery] = await Promise.all([getStore(seller.sellerId, store.id), listStoreTemplates(seller.sellerId, store.id)]);
+    const [row, gallery] = await Promise.all([getStore(seller.sellerId, store.id), listStoreTemplates(seller.sellerId, store.id, undefined, loadCachedTemplateCards)]);
     if (!row || !gallery) return { success: false, error: "notFound" };
 
     const industry = findIndustry({ en: row.storeCategory, ar: row.storeCategoryAr });
@@ -123,7 +124,7 @@ export async function listTemplatesPage(storeId: string, query: Partial<Template
 export async function templatePreview(storeId: string, templateKey: string): Promise<TemplateActionResult<TemplatePreviewView>> {
   try {
     const { seller, store } = await requireStore(String(storeId));
-    const config = await getStoreTemplateConfig(seller.sellerId, store.id, String(templateKey));
+    const config = await getStoreTemplateConfig(seller.sellerId, store.id, String(templateKey), undefined, loadCachedTemplateConfig);
     if (!config) return { success: false, error: "templateNotFound" };
     return {
       success: true,
