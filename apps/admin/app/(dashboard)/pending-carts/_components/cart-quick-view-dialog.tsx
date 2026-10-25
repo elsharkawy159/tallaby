@@ -44,6 +44,7 @@ import { toast } from "sonner";
 import { markCartReminded } from "@/actions/pending-carts";
 import { getPublicUrl } from "@/lib/utils";
 import { getStorefrontProductUrl } from "../../products/products.lib";
+import { StoreSiteLink } from "../../_components/entity/store-site-link";
 import type { PendingCart, PendingCartItem } from "../pending-carts.types";
 import {
   buildCartReminderMessage,
@@ -117,6 +118,14 @@ export function CartQuickViewDialog({
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+            <div className="col-span-full">
+              <p className="text-muted-foreground">Store</p>
+              {cart.store ? (
+                <StoreSiteLink store={cart.store} domain={cart.store.domain} />
+              ) : (
+                <p className="font-medium">Marketplace (tallaby.com)</p>
+              )}
+            </div>
             <div>
               <p className="text-muted-foreground">Items</p>
               <p className="font-medium">{cart.itemCount}</p>

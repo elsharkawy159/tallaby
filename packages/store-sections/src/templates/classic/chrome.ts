@@ -88,7 +88,7 @@ function iconLink(t: TreeBuilder, icon: ElementIconName, href: string, label: De
 
 export const classicHeader = defineDesign({
   id: "tallaby-header",
-  version: 1,
+  version: 2,
   category: "headers",
   subcategory: "commerce",
   name: L("كلاسيك: الهيدر", "Classic: header"),
@@ -101,7 +101,7 @@ export const classicHeader = defineDesign({
     t.section({ label: L("الهيدر", "Header"), style: { paddingTop: 0, paddingBottom: 0, background: "white" }, mobile: { paddingTop: 0, paddingBottom: 0 } }, [
       t.box(
         [
-          t.text(L("توصيل لكل المحافظات · الدفع عند الاستلام", "Delivery to every governorate · Cash on delivery"), {
+          t.text(L("توصيل لكل المحافظات، والدفع عند الاستلام", "Delivery to every governorate, with cash on delivery"), {
             role: "announcement",
             style: { color: "background", fontSize: "sm", fontWeight: "medium", textAlign: "center" },
           }),
@@ -158,25 +158,27 @@ export const classicHeader = defineDesign({
     ]),
 });
 
+// The three link columns of template rules §4.3.
 const SHOP_LINKS = [
   { text: L("كل المنتجات", "All products"), href: LINKS.shop },
   { text: L("وصل حديثًا", "New arrivals"), href: LINKS.newest },
+  { text: L("الأكثر مبيعًا", "Best sellers"), href: LINKS.bestSellers },
   { text: L("المدونة", "Blog"), href: LINKS.blog },
-  { text: L("السلة", "Cart"), href: LINKS.cart },
 ];
 const HELP_LINKS = [
-  { text: L("طلباتي", "My orders"), href: LINKS.orders },
+  { text: L("تواصل معنا", "Contact us"), href: LINKS.contact },
+  { text: L("الأسئلة الشائعة", "FAQs"), href: LINKS.faq },
   { text: L("الشحن والتوصيل", "Shipping & delivery"), href: LINKS.shipping },
   { text: L("الاسترجاع والاستبدال", "Returns & refunds"), href: LINKS.returns },
-  { text: L("الأسئلة الشائعة", "FAQs"), href: LINKS.faq },
+  { text: L("تتبّع طلبي", "Track my order"), href: LINKS.orders },
+];
+const POLICY_LINKS = [
   { text: L("من نحن", "About us"), href: LINKS.about },
+  { text: L("سياسة الخصوصية", "Privacy policy"), href: LINKS.privacy },
+  { text: L("الشروط والأحكام", "Terms & conditions"), href: LINKS.terms },
 ];
-const CONTACT_LINES: { icon: ElementIconName; text: DesignText }[] = [
-  { icon: "phone", text: "+20 100 000 0000" },
-  { icon: "mail", text: "hello@example.com" },
-  { icon: "map-pin", text: L("١٢ شارع النيل، الزمالك، القاهرة", "12 Nile St, Zamalek, Cairo") },
-  { icon: "clock", text: L("السبت للخميس، ١٠ ص لـ ١٠ م", "Sat to Thu, 10am to 10pm") },
-];
+/** The platform credit (template rules §4.3); with it in the footer the floating "By Tallaby" badge is not shown. */
+export const TALLABY_URL = "https://tallaby.com";
 const SOCIAL: { icon: ElementIconName; href: string; label: DesignText }[] = [
   { icon: "facebook", href: "https://www.facebook.com/", label: L("فيسبوك", "Facebook") },
   { icon: "instagram", href: "https://www.instagram.com/", label: L("إنستجرام", "Instagram") },
@@ -201,13 +203,13 @@ function column(t: TreeBuilder, title: DesignText, links: { text: DesignText; hr
 
 export const classicFooter = defineDesign({
   id: "tallaby-footer",
-  version: 1,
+  version: 2,
   category: "footers",
   subcategory: "payment-trust",
   name: L("كلاسيك: الفوتر", "Classic: footer"),
   description: L(
-    "الشعار والنبذة والسوشيال، وأعمدة التسوق والمساعدة والتواصل، وطرق الدفع.",
-    "Logo, tagline and social links, Shop, Help and Contact columns, and payment methods.",
+    "الشعار والنبذة والسوشيال، وأعمدة التسوق والمساعدة والسياسات، وطرق الدفع وسطر «مدعوم من طلبي».",
+    "Logo, tagline and social links, Shop, Help and Policies columns, payment methods and a Powered by Tallaby line.",
   ),
   keywords: ["footer", "classic", "tallaby", "فوتر", "كلاسيك"],
   tree: (t) =>
@@ -235,20 +237,9 @@ export const classicFooter = defineDesign({
                 ],
                 { label: L("المتجر", "Brand"), style: { gap: 14, alignItems: "start" } },
               ),
-              column(t, L("تسوق", "Shop"), SHOP_LINKS),
+              column(t, L("تسوّق", "Shop"), SHOP_LINKS),
               column(t, L("المساعدة", "Help"), HELP_LINKS),
-              t.stack(
-                [
-                  t.heading(L("تواصل معنا", "Contact"), "h4", { style: { fontSize: "md", fontWeight: "bold" } }),
-                  ...CONTACT_LINES.map((line) =>
-                    t.row([t.icon(line.icon, { style: { color: "primary", fontSize: "md" } }), t.text(line.text, { style: { fontSize: "sm", color: "muted" } })], {
-                      label: L("وسيلة تواصل", "Contact line"),
-                      style: { gap: 10, wrap: false, alignItems: "center" },
-                    }),
-                  ),
-                ],
-                { label: L("التواصل", "Contact"), role: "contact", style: { gap: 10 } },
-              ),
+              column(t, L("السياسات", "Policies"), POLICY_LINKS),
             ],
             {
               label: L("الأعمدة", "Columns"),
@@ -266,12 +257,9 @@ export const classicFooter = defineDesign({
                     role: "copyright",
                     style: { color: "muted", fontSize: "xs" },
                   }),
-                  t.link(LINKS.terms, [t.text(L("الشروط والأحكام", "Terms"), { style: { fontSize: "xs" } })], {
-                    label: L("الشروط", "Terms"),
-                    style: { ...FLUSH, color: "muted", hover: { color: "primary" } },
-                  }),
-                  t.link(LINKS.privacy, [t.text(L("الخصوصية", "Privacy"), { style: { fontSize: "xs" } })], {
-                    label: L("الخصوصية", "Privacy"),
+                  t.link(TALLABY_URL, [t.text(L("مدعوم من طلبي", "Powered by Tallaby"), { style: { fontSize: "xs", fontWeight: "semibold" } })], {
+                    label: L("مدعوم من طلبي", "Powered by Tallaby"),
+                    role: "poweredBy",
                     style: { ...FLUSH, color: "muted", hover: { color: "primary" } },
                   }),
                 ],

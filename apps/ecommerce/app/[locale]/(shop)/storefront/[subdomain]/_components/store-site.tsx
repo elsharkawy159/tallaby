@@ -119,6 +119,7 @@ async function buildContext(
       url: storeUrl(store.subdomain, store.customDomain),
       contact: { phone: store.supportPhone, email: store.supportEmail, whatsapp: store.supportWhatsapp ?? null },
       social: store.social ?? [],
+      paymentMethods: store.paymentMethods.map((key) => ({ key })),
       policies: [],
     },
     pages: siteNavPages(site, locale),

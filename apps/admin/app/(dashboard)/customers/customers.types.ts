@@ -28,6 +28,8 @@ export interface CustomerOriginStore {
   /** draft | published | unpublished */
   siteStatus: string;
   sellerId: string;
+  /** Active custom domain, if any. */
+  domain?: string | null;
 }
 
 export interface Customer {

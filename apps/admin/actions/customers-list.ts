@@ -1,7 +1,15 @@
 "use server";
 
 import { db } from "@workspace/db";
-import { orders, sellers, stores, userAddresses, users } from "@workspace/db";
+import {
+  carts,
+  orders,
+  sellerCustomDomains,
+  sellers,
+  stores,
+  userAddresses,
+  users,
+} from "@workspace/db";
 import {
   and,
   asc,
@@ -42,9 +50,9 @@ export interface AdminCustomersQuery {
   offset?: number;
   view?: CustomersView;
   search?: string;
-  /** "store" (first order on a storefront) | "marketplace" | "none" (no orders) */
+  /** "store" (first order, or with no orders first cart, on a storefront) | "marketplace" | "none" (no orders) */
   origin?: string[];
-  /** Only customers whose first order was on this store. */
+  /** Only customers who came from this store (see originStoreId). */
   storeId?: string;
   /** "verified" | "unverified" */
   verification?: string[];
@@ -70,10 +78,29 @@ function daysAgoIso(days: number) {
  */
 const isCustomer = sql`${users.role} = 'customer' AND NOT EXISTS (SELECT 1 FROM ${sellers} WHERE ${sellers.id} = ${users.id})`;
 
-/** The store of the customer's first order: where they came from. NULL = marketplace or no orders. */
+/**
+ * Where the customer came from: the store of their first order, or, with no
+ * orders yet (guests and sign-ups who only filled a cart), the store of their
+ * first cart. NULL = marketplace, or no orders and no store cart.
+ */
 const originStoreId = sql<string | null>`(
-  SELECT o.store_id FROM ${orders} o WHERE o.user_id = ${users.id}
-  ORDER BY o.created_at ASC, o.id ASC LIMIT 1
+  SELECT CASE
+    WHEN EXISTS (SELECT 1 FROM ${orders} o WHERE o.user_id = ${users.id}) THEN (
+      SELECT o.store_id FROM ${orders} o WHERE o.user_id = ${users.id}
+      ORDER BY o.created_at ASC, o.id ASC LIMIT 1
+    )
+    ELSE (
+      SELECT c.store_id FROM ${carts} c WHERE c.user_id = ${users.id}
+      ORDER BY c.created_at ASC, c.id ASC LIMIT 1
+    )
+  END
+)`;
+
+/** The store's active custom domain, if any (for its storefront link). */
+const storeActiveDomain = sql<string | null>`(
+  SELECT ${sellerCustomDomains.domain} FROM ${sellerCustomDomains}
+  WHERE ${sellerCustomDomains.storeId} = ${stores.id} AND ${sellerCustomDomains.status} = 'active'
+  ORDER BY ${sellerCustomDomains.verifiedAt} DESC NULLS LAST LIMIT 1
 )`;
 
 /** One set-based aggregate instead of 2 queries per customer. */
@@ -230,6 +257,7 @@ export async function getAdminCustomers(query: AdminCustomersQuery = {}) {
             subdomain: stores.subdomain,
             siteStatus: stores.siteStatus,
             sellerId: stores.sellerId,
+            domain: storeActiveDomain,
           })
           .from(stores)
           .where(inArray(stores.id, storeIds))
@@ -301,8 +329,10 @@ export async function getCustomerListStats() {
         (select count(*)::int from customers
           where created_at >= (date_trunc('day', now() AT TIME ZONE 'Africa/Cairo') AT TIME ZONE 'Africa/Cairo')) as new_today,
         (select count(*)::int from customers where created_at >= ${daysAgoIso(NEW_CUSTOMER_DAYS)}) as new_recent,
-        (select count(*)::int from customers where origin_store_id is not null) as from_stores,
-        (select count(distinct origin_store_id)::int from customers) as origin_store_count,
+        (select count(*)::int from customers c join spend s on s.user_id = c.id
+          where c.origin_store_id is not null) as from_stores,
+        (select count(distinct c.origin_store_id)::int from customers c
+          join spend s on s.user_id = c.id) as origin_store_count,
         (select count(*)::int from spend where spent > ${HIGH_VALUE_THRESHOLD}) as high_value,
         (select coalesce(sum(spent), 0)::float from spend) as revenue,
         (select coalesce(sum(order_count), 0)::int from spend) as order_count,

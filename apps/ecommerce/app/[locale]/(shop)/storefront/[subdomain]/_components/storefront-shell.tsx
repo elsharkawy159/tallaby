@@ -1,5 +1,5 @@
 import { cn } from "@workspace/ui/lib/utils";
-import { SITE_ROOT_CLASS, SiteTheme, chromeHasThemeToggle } from "@workspace/store-sections/render";
+import { SITE_ROOT_CLASS, SiteTheme, chromeHasThemeToggle, footerCreditsTallaby } from "@workspace/store-sections/render";
 import { CarouselRuntime } from "@workspace/store-sections/client";
 import { AuthDialogProvider } from "@/components/auth/auth-dialog-provider";
 import { CurrencyLabelProvider } from "@/lib/currency-label.client";
@@ -68,7 +68,8 @@ export async function StorefrontShell({
         <main className="flex-1">{children}</main>
         {site ? <StoreSiteChrome store={store} site={site} locale={locale} part="footer" /> : <StorefrontFooter store={store} />}
         {!shared && <MobileCartBar />}
-        <ByTallabyBadge />
+        {/* A footer with "Powered by Tallaby" credits the platform itself (template rules §4.3). */}
+        {!footerCreditsTallaby(site?.footer) && <ByTallabyBadge />}
         <AuthDialogProvider />
         {site && <CarouselRuntime />}
         {!shared && <StorefrontTracking store={store} />}

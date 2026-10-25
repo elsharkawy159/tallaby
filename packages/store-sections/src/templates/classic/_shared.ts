@@ -13,10 +13,10 @@ import { L } from "../../designs/_kit";
 /** No padding (link blocks carry 12px by default). */
 export const FLUSH: StyleValues = { paddingTop: 0, paddingBottom: 0, paddingStart: 0, paddingEnd: 0 };
 
-/** Section rhythm: 72px on desktop, 48px on phones. */
+/** Section rhythm (docs/template-rules.md §6): 64px on desktop, 40px on phones, the same gap above every section. */
 export const SECTION: { style: StyleValues; mobile: StyleValues } = {
-  style: { paddingTop: 72, paddingBottom: 0 },
-  mobile: { paddingTop: 48, paddingBottom: 0 },
+  style: { paddingTop: 64, paddingBottom: 0 },
+  mobile: { paddingTop: 40, paddingBottom: 0 },
 };
 
 /** The design's sale red (not a design-system colour). */
@@ -27,6 +27,7 @@ export const LINKS = {
   home: "/",
   shop: "/products",
   newest: "/products?sort=newest",
+  bestSellers: "/products?sort=popularity",
   blog: "/blog",
   about: "/about",
   contact: "/contact",
@@ -41,14 +42,14 @@ export const LINKS = {
   orders: "/profile/orders",
 } as const;
 
-/** A small amber dot and a tracked label in the brand colour. */
+/** A small amber dot and a short label in the brand colour. */
 export function eyebrow(t: TreeBuilder, text: DesignText, opts: NodeOptions = {}): NodeTemplate {
   return t.row(
     [
       t.box([], { label: L("نقطة", "Dot"), style: { background: "accent", width: "8px", minHeight: 8, radius: 999 } }),
       t.text(text, {
         role: "eyebrow",
-        style: { fontSize: "xs", fontWeight: "bold", letterSpacing: "wide", textTransform: "uppercase", color: "primary" },
+        style: { fontSize: "sm", fontWeight: "semibold", color: "primary" },
       }),
     ],
     { label: L("العنوان الصغير", "Eyebrow"), ...opts, style: { gap: 8, alignItems: "center", wrap: false, ...opts.style } },

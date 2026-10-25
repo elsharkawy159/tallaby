@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { applyInvalidation, invalidateStorefront } from "@workspace/cache";
 import type { StorePayments } from "@workspace/lib/payments/store-methods";
 import { updateStorePaymentMethod } from "@workspace/lib/stores/server";
 import { isAccessError, requireStore } from "@/lib/auth/require-seller.server";
@@ -42,6 +43,8 @@ export async function saveStorePaymentMethod(
     });
     if (!result.success) return { success: false, error: ERRORS[result.error] ?? "generic" };
     revalidatePath(`/stores/${store.id}/settings/payments`);
+    // Website footers list the store's payment methods (cached storefront profile).
+    await applyInvalidation(invalidateStorefront([store.subdomain]), { from: "dashboard", mode: "action" });
     return { success: true, data: result.data };
   } catch (error) {
     if (isAccessError(error)) {

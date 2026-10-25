@@ -4,6 +4,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@workspace/ui/components/badge";
 import { CheckCheck, Package } from "lucide-react";
 import { DataTableColumnHeader } from "../../_components/data-table/data-table-column-header";
+import { StoreSiteLink } from "../../_components/entity/store-site-link";
 import type { DataTableFilter } from "../../_components/data-table/data-table.types";
 import type { PendingCart } from "../pending-carts.types";
 import {
@@ -16,6 +17,14 @@ import {
 
 /** Server-side filters (URL params) for the pending carts table. */
 export const pendingCartsFilters: DataTableFilter[] = [
+  {
+    id: "source",
+    title: "Store",
+    options: [
+      { value: "store", label: "A seller's store" },
+      { value: "marketplace", label: "Marketplace" },
+    ],
+  },
   {
     id: "reminder",
     title: "Reminder",
@@ -85,6 +94,20 @@ export function getPendingCartsColumns(
               {getCustomerEmail(cart)}
             </span>
           </button>
+        );
+      },
+    },
+    {
+      id: "store",
+      accessorFn: (cart) => cart.store?.name ?? "Marketplace",
+      header: "Store",
+      enableSorting: false,
+      meta: { label: "Store" },
+      cell: ({ row }) => {
+        const { store } = row.original;
+        if (store) return <StoreSiteLink store={store} domain={store.domain} />;
+        return (
+          <span className="text-sm text-muted-foreground">Marketplace</span>
         );
       },
     },

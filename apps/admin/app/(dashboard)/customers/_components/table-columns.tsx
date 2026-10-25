@@ -147,7 +147,18 @@ export function getCustomersColumns({
       meta: { label: "Came from" },
       cell: ({ row }) => {
         const { originStore, totalOrders } = row.original;
-        if (originStore) return <StoreSiteLink store={originStore} />;
+        if (originStore) {
+          return (
+            <div className="space-y-0.5">
+              <StoreSiteLink store={originStore} domain={originStore.domain} />
+              {(totalOrders ?? 0) === 0 && (
+                <p className="ms-4 text-xs text-muted-foreground">
+                  Cart only, no orders yet
+                </p>
+              )}
+            </div>
+          );
+        }
         return (
           <span className="text-sm text-muted-foreground">
             {(totalOrders ?? 0) > 0 ? "Marketplace" : "No orders yet"}

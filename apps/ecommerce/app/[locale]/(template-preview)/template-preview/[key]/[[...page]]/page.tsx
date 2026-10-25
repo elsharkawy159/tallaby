@@ -102,6 +102,8 @@ function buildContext(
       name: demo.store.name[locale] || demo.store.name.ar || key,
       description: demo.store.description[locale] || null,
       url: "https://example.tallaby.com",
+      // What a new store offers: cash on delivery only (defaultStorePayments).
+      paymentMethods: [{ key: "cash_on_delivery" }],
     },
     pages: site.pages
       .filter((p) => !isProductPage(p) && (p.isHome || p.showInNav !== false))

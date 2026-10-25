@@ -2,7 +2,14 @@
 
 import { revalidatePath } from "next/cache";
 import { db } from "@workspace/db";
-import { carts, cartItems, userAddresses, users } from "@workspace/db";
+import {
+  carts,
+  cartItems,
+  sellerCustomDomains,
+  stores,
+  userAddresses,
+  users,
+} from "@workspace/db";
 import {
   and,
   asc,
@@ -31,6 +38,8 @@ export interface PendingCartsQuery {
   offset?: number;
   view?: PendingCartsView;
   search?: string;
+  /** "store" (a seller's storefront) | "marketplace" (tallaby.com) */
+  source?: string[];
   /** "reminded" | "not-reminded" */
   reminder?: string[];
   /** "guest" | "registered" */
@@ -38,6 +47,42 @@ export interface PendingCartsQuery {
   /** "opted-in" | "opted-out" */
   marketing?: string[];
   sort?: { id: PendingCartsSortId; desc: boolean } | null;
+}
+
+/** The store's active custom domain, if any (for its storefront link). */
+const storeActiveDomain = sql<string | null>`(
+  SELECT ${sellerCustomDomains.domain} FROM ${sellerCustomDomains}
+  WHERE ${sellerCustomDomains.storeId} = ${stores.id} AND ${sellerCustomDomains.status} = 'active'
+  ORDER BY ${sellerCustomDomains.verifiedAt} DESC NULLS LAST LIMIT 1
+)`;
+
+const cartStoreColumns = {
+  id: stores.id,
+  name: stores.name,
+  subdomain: stores.subdomain,
+  siteStatus: stores.siteStatus,
+  sellerId: stores.sellerId,
+  domain: storeActiveDomain,
+};
+
+/** The store a cart was filled on. No store = a tallaby.com marketplace cart. */
+function mapStore(store: {
+  id: string | null;
+  name: string | null;
+  subdomain: string | null;
+  siteStatus: string | null;
+  sellerId: string | null;
+  domain: string | null;
+} | null | undefined) {
+  if (!store?.id) return null;
+  return {
+    id: store.id,
+    name: store.name ?? "",
+    subdomain: store.subdomain ?? "",
+    siteStatus: store.siteStatus ?? "draft",
+    sellerId: store.sellerId ?? "",
+    domain: store.domain ?? null,
+  };
 }
 
 function abandonedCutoffIso(): string {
@@ -275,6 +320,13 @@ export async function getPendingCarts(params: PendingCartsQuery = {}) {
       conditions.push(sql`${lastActivity} < ${abandonedCutoffIso()}`);
     }
 
+    const source = new Set(params.source ?? []);
+    if (source.size === 1) {
+      conditions.push(
+        source.has("store") ? isNotNull(carts.storeId) : isNull(carts.storeId)
+      );
+    }
+
     const reminder = new Set(params.reminder ?? []);
     if (reminder.size === 1) {
       conditions.push(
@@ -306,6 +358,8 @@ export async function getPendingCarts(params: PendingCartsQuery = {}) {
           ilike(users.fullName, pattern),
           ilike(users.email, pattern),
           ilike(users.phone, pattern),
+          ilike(stores.name, pattern),
+          ilike(stores.subdomain, pattern),
           sql`${carts.id}::text ilike ${pattern}`
         )!
       );
@@ -344,9 +398,11 @@ export async function getPendingCarts(params: PendingCartsQuery = {}) {
           receiveMarketingEmails: users.receiveMarketingEmails,
           preferredLanguage: users.preferredLanguage,
         },
+        store: cartStoreColumns,
       })
       .from(carts)
       .leftJoin(users, eq(users.id, carts.userId))
+      .leftJoin(stores, eq(stores.id, carts.storeId))
       .leftJoin(agg, eq(agg.cartId, carts.id))
       .where(where)
       .orderBy(sql`${direction(sortColumn)} nulls last`, desc(carts.id))
@@ -357,6 +413,7 @@ export async function getPendingCarts(params: PendingCartsQuery = {}) {
       .select({ count: sql<number>`count(*)::int` })
       .from(carts)
       .leftJoin(users, eq(users.id, carts.userId))
+      .leftJoin(stores, eq(stores.id, carts.storeId))
       .leftJoin(agg, eq(agg.cartId, carts.id))
       .where(where);
 
@@ -376,6 +433,7 @@ export async function getPendingCarts(params: PendingCartsQuery = {}) {
         totalValue: Number(row.totalValue ?? 0),
         isAbandoned: isAbandonedCart(count, row.lastActivity),
         user: row.user?.id ? mapUser(row.user) : null,
+        store: mapStore(row.store),
         fallbackPhone: null as string | null,
         items: [] as ReturnType<typeof mapCartItems>,
       };
@@ -409,6 +467,14 @@ export async function getPendingCartById(cartId: string) {
       return { success: false, error: "Cart not found" };
     }
 
+    const [store] = cart.storeId
+      ? await db
+          .select(cartStoreColumns)
+          .from(stores)
+          .where(eq(stores.id, cart.storeId))
+          .limit(1)
+      : [];
+
     // WhatsApp fallback when the account itself has no phone on file.
     const [address] = cart.user?.phone
       ? []
@@ -441,6 +507,7 @@ export async function getPendingCartById(cartId: string) {
         totalValue,
         isAbandoned: isAbandonedCart(itemCount, lastActivity),
         user: mapUser(cart.user),
+        store: mapStore(store),
         fallbackPhone: address?.phone ?? null,
         items,
       },

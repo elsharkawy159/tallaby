@@ -252,7 +252,8 @@ export type CouponSummary = {
   endsAt: string | null;
 };
 
-export type PaymentMethodSummary = { key: string; label: string };
+/** A checkout method key (`cash_on_delivery`, `instapay`…); `label` only for keys the package has no name for. */
+export type PaymentMethodSummary = { key: string; label?: string };
 
 export type StoreProfile = {
   name: string;
@@ -265,7 +266,7 @@ export type StoreProfile = {
   social?: { platform: string; url: string }[];
   /** Which policy pages exist (links are built by the host). */
   policies?: { key: "return" | "shipping" | "privacy" | "terms"; href: string }[];
-  /** Payment methods this store accepts, from its settings. */
+  /** Payment methods this store's checkout offers (footer `role: "payments"` rows); omitted, those rows stay as authored. */
   paymentMethods?: PaymentMethodSummary[];
 };
 

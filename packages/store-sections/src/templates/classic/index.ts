@@ -44,13 +44,16 @@ export const CLASSIC_KEY = "tallaby-classic";
 /** A design as a template section: its id doubles as the instance id, so a re-apply keeps matching sections. */
 const section = (design: Design) => instantiateDesign(design, { id: design.id, defaultLocale: "ar" });
 
+/** Home sections rise in on scroll (template rules §6a), all but the hero, which shows at once. */
+const rising = (design: Design) => (design.category === "hero" ? section(design) : { ...section(design), style: { shell: { animation: "rise" } } });
+
 const page = (slug: string, name: string, designs: readonly Design[], seo: SitePage["seo"] = {}, o: { isHome?: boolean; showInNav?: boolean } = {}): SitePage => ({
   slug,
   isHome: o.isHome ?? false,
   name,
   showInNav: o.showInNav ?? true,
   seo,
-  content: { sections: designs.map(section) },
+  content: { sections: designs.map(o.isHome ? rising : section) },
 });
 
 export function classicConfig(): SiteConfig {
@@ -116,7 +119,7 @@ export const CLASSIC_DESIGNS: readonly Design[] = [
 
 export const CLASSIC: TemplateDefinition = {
   key: CLASSIC_KEY,
-  version: 5,
+  version: 6,
   isDefault: true,
   folder: "classic",
   name: { ar: "طلبي الكلاسيكي", en: "Tallaby Classic" },
@@ -126,7 +129,7 @@ export const CLASSIC: TemplateDefinition = {
   },
   category: "general",
   sortOrder: 0,
-  changelog: "Tallaby Classic v5: product page",
+  changelog: "Tallaby Classic v6: template rules (hero carousel, standard home order, rise on scroll, Powered by in the footer)",
   palette: ["#f7f6f2", "#eef3f3", "#fdad28", "#145163"],
   config: classicConfig,
   pageNames: {

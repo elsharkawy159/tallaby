@@ -33,6 +33,17 @@ export interface PendingCartItem {
   sellerName: string;
 }
 
+export interface PendingCartStore {
+  id: string;
+  name: string;
+  subdomain: string;
+  /** draft | published | unpublished */
+  siteStatus: string;
+  sellerId: string;
+  /** Active custom domain, if any. */
+  domain: string | null;
+}
+
 export interface PendingCart {
   id: string;
   userId: string;
@@ -48,6 +59,8 @@ export interface PendingCart {
   totalValue: number;
   isAbandoned: boolean;
   user: PendingCartUser | null;
+  /** The storefront the cart was filled on; null = tallaby.com marketplace. */
+  store: PendingCartStore | null;
   /** Default address phone, used when the account has no phone (detail only). */
   fallbackPhone: string | null;
   items: PendingCartItem[];

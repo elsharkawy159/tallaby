@@ -1,3 +1,4 @@
+import { storeProfilePaymentMethods } from "@workspace/lib/payments/store-methods";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
@@ -72,6 +73,7 @@ export default async function StoreEditorPage({ params }: { params: Promise<{ st
       // WhatsApp is its own store setting; sections fall back to the phone number themselves.
       contact: { phone: contact.phone ?? null, email: contact.email ?? null, whatsapp: contact.whatsapp ?? null },
       social: publicStoreSocialLinks(store.contact),
+      paymentMethods: storeProfilePaymentMethods(store.settings),
       policies: [],
     },
     pages: editor.pages.map((page) => ({

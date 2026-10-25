@@ -285,3 +285,13 @@ export function maskPaymentDetails(details: unknown): Record<string, unknown> | 
   }
   return out;
 }
+
+/**
+ * The store's checkout methods for website footers (`StoreProfile.paymentMethods`
+ * in @workspace/store-sections), from a stores.settings value: the same list
+ * storefront checkout offers, cash on delivery alone by default.
+ */
+export function storeProfilePaymentMethods(settings: unknown): { key: StorefrontCheckoutMethod }[] {
+  const payments = settings && typeof settings === "object" ? (settings as Record<string, unknown>).payments : undefined;
+  return storefrontCheckoutMethods(parseStorePayments(payments)).methods.map((key) => ({ key }));
+}

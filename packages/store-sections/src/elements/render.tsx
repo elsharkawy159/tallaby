@@ -64,6 +64,7 @@ import { VideoElement, VideoPlaylist } from "./render-video";
 import { productSectionEmpty, renderProductElement } from "./product-elements";
 import { SocialIcon } from "../social/icon";
 import { contactRowGone, storeSocialLinks, withStoreContact } from "./store-contact";
+import { storePaymentLabels } from "./store-payments";
 
 const ICONS: Record<ElementIconName, LucideIcon> = {
   star: Star,
@@ -216,6 +217,27 @@ function renderSocialRow(node: ComponentNode, ctx: RenderContext, attrs: Record<
   );
 }
 
+/**
+ * A `role: "payments"` row draws the methods the store's checkout offers
+ * (store-payments.ts), each as a copy of the row's first chip: the copies keep
+ * its node id, so the scoped CSS applies to every one. `undefined`: draw the
+ * row as authored (no chip, no data from the host, or the editor and no
+ * methods). Publicly a store with no methods gets no row.
+ */
+function renderPaymentsRow(node: ComponentNode, ctx: RenderContext, depth: number, attrs: Record<string, string>): ReactNode | undefined {
+  const stencil = node.children.find((child) => child.type === "badge" || child.type === "text");
+  const labels = storePaymentLabels(ctx);
+  if (!stencil || !labels) return undefined;
+  if (!labels.length) return ctx.mode === "edit" ? undefined : null;
+  return (
+    <div {...attrs} className="flex min-w-0 flex-row flex-wrap">
+      {labels.map((label) => (
+        <ElementFragment key={label} node={{ ...stencil, props: { ...stencil.props, text: label, translations: undefined } }} ctx={ctx} depth={depth + 1} />
+      ))}
+    </div>
+  );
+}
+
 /** Nodes a header's search link draws its look with; anything else keeps it a plain link. */
 const SEARCH_LINK_PARTS = new Set(["hFlex", "vFlex", "div", "icon", "text"]);
 
@@ -256,6 +278,10 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
   const attrs = { "data-node-id": node.id, "data-node-type": node.type };
   if (props.role === "social") {
     const row = renderSocialRow(node, ctx, attrs);
+    if (row !== undefined) return row;
+  }
+  if (props.role === "payments") {
+    const row = renderPaymentsRow(node, ctx, depth, attrs);
     if (row !== undefined) return row;
   }
   const kids = () => {

@@ -29,7 +29,7 @@ export function parsePendingCartsParams(
   searchParams: RawSearchParams
 ): PendingCartsQuery {
   const query = parseTableSearchParams(searchParams, {
-    filters: ["reminder", "customer", "marketing"] as const,
+    filters: ["source", "reminder", "customer", "marketing"] as const,
     sortable: SORTABLE,
     defaultSort: PENDING_CARTS_DEFAULT_SORT,
   });
@@ -44,6 +44,7 @@ export function parsePendingCartsParams(
     sort: query.sort,
     search: query.search || undefined,
     view: view ?? "all",
+    source: query.filters.source,
     reminder: query.filters.reminder,
     customer: query.filters.customer,
     marketing: query.filters.marketing,

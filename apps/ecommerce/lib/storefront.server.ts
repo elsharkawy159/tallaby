@@ -198,6 +198,8 @@ export function getStorefrontBySubdomain(subdomain: string) {
         customDomain: domain?.domain ?? null,
         /** Enabled social links (Website › Social media, P4-15), read live from the store row. */
         social: publicStoreSocialLinks(row.contact),
+        /** Checkout methods (Store settings › Payment methods; cash on delivery by default), for footer payment rows. */
+        paymentMethods: storefrontCheckoutMethods(parseStorePayments((row.settings as Record<string, unknown> | null)?.payments)).methods,
         /**
          * Builder site state: "draft" (never published), "published", or
          * "unpublished" (the seller took the website offline). Both "draft"
@@ -208,8 +210,8 @@ export function getStorefrontBySubdomain(subdomain: string) {
         supportedLocales: row.supportedLocales,
       };
     },
-    // v10: + supportedLocales (header language switcher). v9: + siteStatus (offline stores). v6: + seo (P4-14) and social links (P4-15). v4: resolves through stores (P5-00).
-    [`storefront-v10-${subdomain}`],
+    // v11: + paymentMethods (footer payment rows). v10: + supportedLocales (header language switcher). v9: + siteStatus (offline stores). v6: + seo (P4-14) and social links (P4-15). v4: resolves through stores (P5-00).
+    [`storefront-v11-${subdomain}`],
     { tags: ["sellers", sellerTags.subdomain(subdomain)], revalidate: 3600 },
   )();
 }

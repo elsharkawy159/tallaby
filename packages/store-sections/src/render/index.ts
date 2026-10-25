@@ -27,6 +27,7 @@ export {
   CHROME_OPTIONS,
   LANGUAGE_SWITCHER_PROP,
   chromeHasThemeToggle,
+  footerCreditsTallaby,
   chromeOptionOn,
   drawChrome,
   flushHeaderOnMobile,

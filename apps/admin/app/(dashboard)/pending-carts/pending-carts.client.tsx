@@ -123,7 +123,7 @@ export function PendingCartsClientWrapper({
         serverSide={{
           rowCount: totalCount,
           defaultSort: PENDING_CARTS_DEFAULT_SORT,
-          searchPlaceholder: "Search name, email, phone or cart ID…",
+          searchPlaceholder: "Search name, email, phone, store or cart ID…",
         }}
       />
 

@@ -252,3 +252,19 @@ export function chromeHasThemeToggle(header: SectionInstance | null | undefined,
     Boolean(footer?.componentTree?.length && chromeOptionOn(footer, "footer", "themeToggle"))
   );
 }
+
+const TALLABY_HREF_RE = /^https:\/\/(www\.)?tallaby\.com\/?$/i;
+
+/**
+ * Whether the footer links to tallaby.com (the "Powered by Tallaby" line of
+ * docs/template-rules.md §4.3). The storefront then skips its floating
+ * "By Tallaby" badge; footers without the link keep it.
+ */
+export function footerCreditsTallaby(footer: SectionInstance | null | undefined): boolean {
+  const walk = (nodes: readonly { props: Record<string, unknown>; children: readonly unknown[] }[] | undefined): boolean =>
+    (nodes ?? []).some((n) => {
+      const href = n.props.href;
+      return (typeof href === "string" && TALLABY_HREF_RE.test(href.trim())) || walk(n.children as typeof nodes);
+    });
+  return walk(footer?.componentTree);
+}
