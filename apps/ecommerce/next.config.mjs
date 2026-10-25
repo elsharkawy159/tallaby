@@ -43,6 +43,9 @@ const nextConfig = {
     ];
   },
   images: {
+    // Storage paths are unique (uploads never overwrite), so optimized sizes
+    // stay cached 30 days instead of the 4 h default (docs/egress-audit.md §9).
+    minimumCacheTTL: 2_592_000,
     // Vercel Image Optimization returns 402 once the included quota is used.
     // unoptimized: true,
     remotePatterns: [
