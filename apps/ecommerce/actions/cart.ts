@@ -151,7 +151,8 @@ export const getCartItems = async () => {
               freeDelivery: true,
             },
           },
-          productTranslations: true,
+          // Title and slug only: the cart never shows descriptions (docs/egress-audit.md §5).
+          productTranslations: { columns: { locale: true, title: true, slug: true } },
         },
       },
     },
