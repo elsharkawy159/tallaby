@@ -214,22 +214,32 @@ export async function countMediaUsage(
   const out: Record<string, number> = Object.fromEntries(paths.map((p) => [p, 0]));
   if (!paths.length || !isUuid(storeId)) return out;
   const [store] = await q
-    .select({
-      header: sql<string | null>`${stores.sharedHeader}::text`,
-      footer: sql<string | null>`${stores.sharedFooter}::text`,
-      // The store logo (uploaded from the editor canvas) uses the image too.
-      logo: stores.logoUrl,
-    })
+    .select({ id: stores.id })
     .from(stores)
     .where(and(eq(stores.id, storeId), eq(stores.sellerId, sellerId), isNull(stores.deletedAt)))
     .limit(1);
   if (!store) return out;
-  const pages = await q
-    .select({ content: sql<string | null>`${storePages.draftContent}::text` })
-    .from(storePages)
-    .where(eq(storePages.storeId, storeId));
-  const texts = [store.header, store.footer, store.logo, ...pages.map((p) => p.content)].filter((t): t is string => Boolean(t));
-  for (const path of paths) out[path] = texts.filter((t) => t.includes(path)).length;
+  // Counted in SQL: shipping every page draft (~15 KB each) to count
+  // mentions was most of this call's egress (docs/egress-audit.md §12).
+  // Each text (header, footer, logo, each page draft) counts once per path;
+  // the store logo (uploaded from the editor canvas) uses the image too.
+  const pathValues = sql.join(
+    [...new Set(paths)].map((path) => sql`(${path})`),
+    sql`, `,
+  );
+  const result = await q.execute(sql`
+    WITH texts AS (
+      SELECT ${stores.sharedHeader}::text AS t FROM ${stores} WHERE ${stores.id} = ${storeId}
+      UNION ALL SELECT ${stores.sharedFooter}::text FROM ${stores} WHERE ${stores.id} = ${storeId}
+      UNION ALL SELECT ${stores.logoUrl} FROM ${stores} WHERE ${stores.id} = ${storeId}
+      UNION ALL SELECT ${storePages.draftContent}::text FROM ${storePages} WHERE ${storePages.storeId} = ${storeId}
+    )
+    SELECT p.path, count(texts.t) FILTER (WHERE strpos(texts.t, p.path) > 0)::int AS uses
+    FROM (VALUES ${pathValues}) AS p(path) CROSS JOIN texts
+    GROUP BY p.path
+  `);
+  const rows = (Array.isArray(result) ? result : ((result as { rows?: unknown[] }).rows ?? [])) as { path: string; uses: number }[];
+  for (const row of rows) out[row.path] = Number(row.uses);
   return out;
 }
 
