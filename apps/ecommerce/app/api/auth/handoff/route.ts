@@ -1,4 +1,3 @@
-import { revalidatePath } from "next/cache";
 import { type NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/supabase/server";
 import { mergeGuestAccount } from "@/actions/merge-guest-account";
@@ -36,6 +35,5 @@ export async function GET(request: NextRequest) {
     console.error("Failed to merge guest account:", mergeError);
   }
 
-  revalidatePath("/", "layout");
   return NextResponse.redirect(`${origin}${next}`);
 }

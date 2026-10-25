@@ -1,4 +1,3 @@
-import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
@@ -68,9 +67,12 @@ export async function GET(request: NextRequest) {
     // password sign-in path does.
     await mergeGuestAccountSafely();
 
-    revalidatePath("/", "layout");
     return NextResponse.redirect(`${origin}${next}`);
   }
+
+  // No revalidatePath("/", "layout") after a sign-in here or in the handoff:
+  // it purges the whole Data Cache (every store, product and the template
+  // gallery), and nothing cached depends on the user (docs/egress-audit.md §2).
 
   // Handle email verification
   if (type && (token || tokenHash)) {
@@ -103,14 +105,12 @@ export async function GET(request: NextRequest) {
       if (session) {
         await mergeGuestAccountSafely();
       }
-      revalidatePath("/", "layout");
       return NextResponse.redirect(`${origin}${next}`);
     }
 
     // If no explicit error and token parameters are present,
     // Supabase SSR has processed the token. Even without a session,
     // the email is verified. Redirect to login with success message.
-    revalidatePath("/", "layout");
     return NextResponse.redirect(`${origin}/auth?verified=true`);
   }
 

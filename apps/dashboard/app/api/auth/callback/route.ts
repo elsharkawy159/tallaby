@@ -1,4 +1,3 @@
-import { revalidatePath } from "next/cache";
 import { type NextRequest, NextResponse } from "next/server";
 import type { User } from "@supabase/supabase-js";
 import { db, eq, sellers } from "@workspace/db";
@@ -12,9 +11,11 @@ import { readSignupIntentCookie } from "@/app/signup/signup-intent.server";
  * pending signup (signed intent cookie, or the choices saved in user_metadata
  * at email signup) becomes the seller account + primary store (PLAN.md P2-03).
  * A signed-in user with no seller row and no pending signup goes to /signup.
+ * No revalidatePath("/", "layout") here: in a route handler it only purges
+ * the Data Cache (the template gallery, library sections…), and nothing
+ * cached depends on the user (docs/egress-audit.md §2).
  */
 async function finish(origin: string, next: string, user: User | null) {
-  revalidatePath("/", "layout");
   if (!user) return NextResponse.redirect(`${origin}${next}`);
 
   const [seller] = await db.select({ id: sellers.id }).from(sellers).where(eq(sellers.id, user.id)).limit(1);
@@ -64,7 +65,6 @@ export async function GET(request: NextRequest) {
     if (user) return finish(origin, next, user);
 
     // Verified, but no session in this browser: sign in to continue.
-    revalidatePath("/", "layout");
     return NextResponse.redirect(`${origin}/login?verified=true`);
   }
 
