@@ -202,6 +202,8 @@ export function invalidateProductInventory(
     tags.add(productTags.detail(snapshot.id));
     if (stockBoundaryCrossed) {
       tags.add(productTags.listing());
+      // Storefront listings are tagged by seller, not listing() (docs/egress-audit.md §6).
+      tags.add(productTags.seller(snapshot.sellerId));
       if (snapshot.categoryId) tags.add(productTags.category(snapshot.categoryId));
       if (snapshot.brandId) tags.add(productTags.brand(snapshot.brandId));
     }

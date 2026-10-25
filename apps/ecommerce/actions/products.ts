@@ -75,8 +75,12 @@ export const getProducts = createCachedQuery({
   // it still gets purged by any structural product change (see
   // invalidateProduct in packages/cache/src/invalidate.ts), just not by a
   // change scoped to a single OTHER category/brand.
+  // A seller-scoped call (every storefront grid) is tagged by seller only:
+  // every product write and stock-boundary change bumps productTags.seller,
+  // and listing() would refill every store whenever any seller changed a
+  // product (docs/egress-audit.md §6).
   tags: (filters: ProductFilters) => {
-    const tags = [productTags.listing()];
+    const tags = filters.sellerId ? [] : [productTags.listing()];
     if (filters.categoryId) tags.push(productTags.category(filters.categoryId));
     if (filters.brandId) tags.push(productTags.brand(filters.brandId));
     if (filters.sellerId) tags.push(productTags.seller(filters.sellerId));
@@ -230,7 +234,8 @@ export const getProducts = createCachedQuery({
         with: {
           brand: true,
           category: true,
-          productTranslations: true,
+          // Cards never show the long product page content.
+          productTranslations: { columns: { content: false } },
           productVariants: {
             columns: {
               id: true,
@@ -715,7 +720,7 @@ export async function getProductsBySeller(sellerId: string, limit: number) {
     },
     [`seller-products-${sellerId}-${limit}`],
     {
-      tags: [productTags.listing(), productTags.seller(sellerId)],
+      tags: [productTags.seller(sellerId)],
       revalidate: 180,
     }
   )();

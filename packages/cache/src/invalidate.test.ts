@@ -274,7 +274,7 @@ describe("invalidateProductInventory", () => {
     expect(tags).not.toContain(productTags.brand("brand-1"));
   });
 
-  it("with a stock-boundary crossing: also bumps listing + category + brand", () => {
+  it("with a stock-boundary crossing: also bumps listing + seller + category + brand", () => {
     const { tags } = invalidateProductInventory([
       { snapshot: { id: "prod-1", sellerId: "seller-1", categoryId: "cat-1", brandId: "brand-1" }, stockBoundaryCrossed: true },
     ]);
@@ -282,6 +282,8 @@ describe("invalidateProductInventory", () => {
       expect.arrayContaining([
         productTags.inventory("prod-1"),
         productTags.listing(),
+        // Seller-scoped storefront listings carry the seller tag, not listing().
+        productTags.seller("seller-1"),
         productTags.category("cat-1"),
         productTags.brand("brand-1"),
       ])
