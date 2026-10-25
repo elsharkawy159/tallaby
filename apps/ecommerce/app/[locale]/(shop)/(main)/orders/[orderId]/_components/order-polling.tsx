@@ -3,7 +3,8 @@
 import { useEffect } from "react";
 import { useRouter } from "@/i18n/navigation";
 
-const POLL_INTERVAL_MS = 15_000;
+// Each refresh re-runs the whole order page on the server (docs/egress-audit.md §4).
+const POLL_INTERVAL_MS = 60_000;
 
 interface OrderPollingProps {
   enabled: boolean;

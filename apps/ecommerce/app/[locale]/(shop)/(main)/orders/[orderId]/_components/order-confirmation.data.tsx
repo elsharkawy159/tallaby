@@ -10,6 +10,8 @@ import { getRequestStoreSubdomain, getStorefrontBySubdomain } from "@/lib/storef
 import { CONTACT } from "@/lib/marketing/site.lib";
 import { whatsappNumber } from "@/app/[locale]/(shop)/storefront/[subdomain]/_components/storefront-footer";
 
+const FINAL_ORDER_STATUSES = new Set(["delivered", "cancelled", "refunded", "returned"]);
+
 /** "Need help?" goes to the store on its own website, to Tallaby elsewhere. */
 async function getSupportHref(): Promise<string | null> {
   const subdomain = await getRequestStoreSubdomain();
@@ -39,7 +41,9 @@ export async function OrderConfirmationData({
   // (cookie or access-token) poll instead.
   const authUser = await getAuthUser();
   const canSubscribe = Boolean(authUser?.id);
-  const shouldPoll = !canSubscribe && Boolean(result.success && result.data);
+  // A delivered, cancelled or refunded order does not change any more: no polling.
+  const shouldPoll =
+    !canSubscribe && Boolean(result.success && result.data) && !FINAL_ORDER_STATUSES.has(result.data?.order.status ?? "");
 
   if (!result.success || !result.data) {
     if (result.error === "Order not found" && authUser?.id) {

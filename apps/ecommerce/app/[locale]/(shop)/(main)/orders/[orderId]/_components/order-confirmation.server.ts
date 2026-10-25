@@ -48,7 +48,7 @@ export async function getOrderConfirmationData(
                 images: true,
               },
               with: {
-                productTranslations: true,
+                productTranslations: { columns: { locale: true, title: true, slug: true } },
               },
             },
             seller: {
