@@ -8,7 +8,8 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "backfill:product-pages": "tsx scripts/backfill-product-pages.ts",
-    "backfill:template-refs": "tsx scripts/backfill-template-refs.ts"
+    "backfill:template-refs": "tsx scripts/backfill-template-refs.ts",
+    "backfill:library-fields": "tsx scripts/backfill-library-fields.ts"
   },
   "keywords": [],
   "author": "",

@@ -2575,7 +2575,12 @@ Tick each box when its acceptance is met, and add the date and commit.
 - [x] EG-07 Admin categories counts in two grouped queries; bulk import loads categories once; `countMediaUsage` counts in SQL — 2026-10-25
 - [ ] EG-08 Owner decisions: robots.txt rules for store hosts and the admin proxy, `pg_stat_statements_reset()` then one clean week of stats, `getClaims()` for auth reads, `updated_at` triggers for a cheap editor "unpublished changes" check (migration), Supabase MCP logs (bots, storage paths)
 - [x] TR-01 Templates store library sections as refs (`libraryRef: { key, patch }`), built from the library's current tree when read (gallery, previews, Studio, new-store default, "Use template"), so a library edit reaches every template using it; the store gets plain trees on apply — 2026-10-25
-- [ ] TR-02 Run `backfill:template-refs` on staging, then production with owner approval (AFTER deploying TR-01)
+- [ ] TR-02 Run `backfill:template-refs` on staging, then production with owner approval (AFTER deploying TR-01). **Superseded by TR-04's run** (it now writes named-field refs; never run in the TR-01 patch form)
+- [x] TR-03 Library sections name every node (`props.field`, `templates/library-fields.ts`): seeded trees, library save (`prepareLibraryTree`), the section editor and read-time alignment with the code design; `backfill:library-fields` stores the names in existing rows — 2026-10-26
+- [x] TR-04 Template refs are `libraryRef: { key, props, styles?, form?, corners?, plain? }`: values per named field (`applyLibraryProps`, `libraryValuesFromTree`); every code template (all 2139 sections) is stored this way and rebuilds exactly; the earlier `patch` form still builds — 2026-10-26
+- [x] TR-05 Classic and Atelier designs are library sections (0105, hidden) and their templates are `plain` refs, no visual change — 2026-10-26
+- [x] TR-06 Admin template screen is section by section (`apps/admin/app/(builder)/templates/[id]/editor/`): section list per page with header/footer, live preview, a values form per section (copy ar/en, photos, links, lists), add/move/remove/replace, colours & fonts, pages; the full builder stays at `editor/advanced` for one release — 2026-10-26
+- [ ] TR-07 Rollout: deploy → apply 0105 (staging, then production) → `backfill:library-fields` (staging, then production) → `backfill:template-refs` (staging, then production, owner approval); then remove `editor/advanced`
 
 **Global confirmations (from the planning brief)**
 - [x] The existing default storefront template is kept (§3.6, §8.1, P4-03). No new default template is designed.
@@ -4033,3 +4038,46 @@ Owner asked that templates be "just section ids with data" until a seller applie
 - **Seeds**: `templateConfigJson` (the `template:sql` generator) writes refs. Stored size of all 111 code templates: ~9.8 MB → ~1.4 MB (Zaki ~95 KB → 13 KB), which also helps the egress audit above.
 - **Existing DB templates** are converted by `pnpm --filter @workspace/lib backfill:template-refs` (dry run by default, `--apply` writes): a new current version per template where only sections that are exact copies of their seed become refs; sections an admin edited stay as they are; templates with an admin draft are skipped; verified before each write. No SQL migration. **Deploy the code first** (an older app renders a ref section as empty). Rollback: make the previous version current. **Not run anywhere yet.** After it runs, templates pick up any library edits admins have already published.
 - **Checks:** `tsc` passes for store-sections, lib, admin and dashboard; ecommerce only the existing `profile.chunks.tsx` errors. vitest: store-sections 4754 pass, with 1 failure that also fails on the base commit (`render/boundaries.test.ts`, `carousel-runtime.client.tsx`); lib 533, cache 40, admin 108 pass. New `templates/library-ref.test.ts` (every code template round-trips; a library edit reaches the template; lenient misses; Studio compaction; seed conversion). `eslint` still crashes before linting (baseline). Not checked by hand in the UI.
+
+### 2026-10-26 — Templates as a library key plus named-field props; admin edits templates section by section (owner request)
+
+Owner asked that templates take "the section id and data as props only, not full JSON of the sections", and that opening a template in Admin show its sections one by one so the admin edits each section (not the template as a whole). Owner decisions: named fields; a section edit changes this template's values only (structure stays in Admin › Sections); the screen also keeps add/remove/reorder sections, colours/fonts/radius and pages; Classic and Atelier move into the library with no visual change.
+
+- **Field names (TR-03)** (`packages/store-sections/src/templates/library-fields.ts`): every library tree node carries `props.field` (`heading`, `text-2`, `image`, `cta`…), from its role or type, in tree order. `assignFieldNames` is idempotent: it keeps unique names and renames the later copy of a duplicate. `alignFieldNames` copies the code design's names onto a DB tree where type and place still match. Names are inert (`field` is in `NOT_COPY`, nothing renders it) and built template sections drop them. They are assigned in: the seed (`section-seed.ts`, `codeLibraryTree`), library save (`prepareLibraryTree`), the section editor loader and `loadLibraryTrees`. `backfill:library-fields` (`packages/lib/src/admin/backfill-library-fields.server.ts`, dry run by default) stores them in existing rows, with no version bump. A snapshot test (`library-fields.test.ts`) guards code designs against renamed fields.
+- **Ref format (TR-04)** (`config/schema.ts` `libraryRefSchema`): `{ key, props?, styles?, form?, corners?, plain?, patch? }`.
+  - `props["<field>"]` sets the node's main prop (`PRIMARY_PROP`: a heading's text, an image's src, a button's label). `props["<field>.<prop>"]` sets another prop (`cta.href`, `image.alt`, `products.limit`).
+  - Copy values are `{ ar, en }` or one string; `null` removes a prop. `role`/`bind`/`translations`/`field`/`formTemplate` are refused.
+  - `styles` per field replaces `patch.nodes`. `patch` (TR-01) is read-only and is never mixed with `props`.
+  - `applyLibraryProps` follows the same steps, in the same order, as `applyLibraryPatch`. `applyLibraryRef` dispatches between the two, so `resolveTemplateRefs`/`compactTemplateConfig`/`expandTemplateConfig` read both forms.
+  - **Code templates keep their authoring code** (`fromLibrary` Arabic-keyed patches, strict). `libraryValuesFromTree` turns each built section into values and checks they rebuild exactly; `designRef` (memoized) feeds `templateRefConfig`/`storedTemplateRefConfig`.
+  - Result: all 2139 sections of the 111 code templates are props refs, none stays a tree, and none uses `patch`. Total config size is ~1.2 MB (Ahlam's hero, for example, is the key plus 9 values).
+- **Classic and Atelier (TR-05)**: `TEMPLATE_OWN_DESIGNS` (47 designs) are library sections keyed by their design ids. `0105_template_library_sections.sql` (generated with `section:sql --new-only`, which now also writes them `is_hidden`, sort order 10000+) is insert-only. Their refs are `{ key, plain: true }` (no accent or role adaptation). The round-trip test shows no visual change.
+- **Backfill**: `backfill:template-refs` now writes named-field refs (patch refs are rebuilt and converted too, via `resolveTemplateRefs(..., { patchOnly: true })`). Changelog: "library sections as named-field refs". TR-02 (patch form) never ran and is superseded.
+- **Admin screen (TR-06)** (`apps/admin/app/(builder)/templates/[id]/editor/`):
+  - `page.tsx` loads `getTemplateForSections` (`packages/lib/src/admin/templates-sections-admin.server.ts`): the stored form, with exact seed copies converted to refs in memory, plus the named library rows. It also loads `listTemplateLibraryEntries`.
+  - `template-sections.client.tsx` lays out the screen:
+    - **Left:** page select, then header, the page's sections and footer. Each row offers select, move up/down, remove and replace (header/footer); "Add section" opens a library picker filtered by category.
+    - **Centre:** `SitePreview` built client-side with `resolveTemplateRefs` (new lean exports `@workspace/store-sections/library-ref` and `/library-fields`), with AR/EN and desktop/phone switches.
+    - **Right:** `section-props-form.client.tsx`, with copy fields in ar and en, photo upload to `library-media`, links, product lists, videos and a reset per field. Fields inside data cards are hidden. Saved values the library section no longer has show as a warning with "Drop them".
+    - **Panels:** colours & fonts and pages (`template-settings.client.tsx`).
+  - Changes are pure (`template-sections.lib.ts`: `applySectionChange` plus the existing `applyEditorChange`). Autosave (800 ms debounce, one at a time) goes through the existing `saveTemplateDraftAction` (optimistic `draft_version`; ref-only sections pass compaction unchanged). Publish and Versions/Restore reuse the existing actions. `templateLibraryRowAction` loads a row on add.
+  - Sections that are not refs (admin-edited trees) are labelled "custom" and can be moved, removed or replaced.
+  - The old full builder is at `editor/advanced` (unlinked, one release).
+- **Where the code differed from the plan:**
+  - Design and Pages are small admin panels, not store-editor's `BrandPanel`/`PagesPanel` (those need the editor store and context).
+  - The screen works on the stored form and builds previews client-side instead of sending built trees.
+  - `designSlotTree` itself stays unnamed. Names are added by `codeLibraryTree` and the seed, so the code templates' own trees are unchanged.
+  - Admin strings are English like the rest of the admin app.
+- **Checks:**
+  - `tsc` passes for store-sections, lib, admin and dashboard. ecommerce has only the existing `profile.chunks.tsx` errors.
+  - vitest: all 10 packages pass (store-sections 46 files, lib 46 plus 33 skipped (DB), admin 19, dashboard 27, store-editor 25, ecommerce 22).
+  - `eslint` still crashes on load (`@typescript-eslint` against ESLint 10), as before.
+  - No manual E2E yet.
+- **Rollout (TR-07, not done):**
+  1. Deploy.
+  2. Apply 0105 on staging, then production.
+  3. Run `pnpm --filter @workspace/lib backfill:library-fields --apply` on staging, then production.
+  4. Run `backfill:template-refs` (dry run first) on staging, then on production with owner approval.
+  5. Remove `editor/advanced`.
+
+  After step 4, every reader builds templates from the DB library rows, so library edits that admins already published reach the templates.

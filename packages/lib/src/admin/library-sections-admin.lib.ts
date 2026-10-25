@@ -13,6 +13,7 @@ import {
   type NodeTemplate,
 } from "@workspace/store-sections/render";
 import { validatePageContent } from "@workspace/store-sections";
+import { assignFieldNames } from "@workspace/store-sections/templates";
 import { ADMIN_REASON_MAX, ADMIN_REASON_MIN } from "./admin.lib";
 
 /** `library_sections.key`: the DB check is `^[a-z0-9-]+$`; 2–48 characters so node ids stay under 64. */
@@ -63,7 +64,9 @@ const ALLOWED = storeSectionRegistry.allowedSections();
  * must be one `section` root; it is checked as a `custom-section` with the
  * page-content validator (schema, size and depth limits, known elements,
  * sanitizing), and the sanitized tree comes back without ids. Photo slots
- * (`stock:photo:N`) pass through unchanged.
+ * (`stock:photo:N`) pass through unchanged. Every node gets its field name
+ * (`props.field`, kept when it has one; a duplicated node gets a new one),
+ * which templates store their values by.
  */
 export function prepareLibraryTree(tree: unknown): { ok: true; tree: NodeTemplate } | { ok: false } {
   if (typeof tree !== "object" || tree === null || Array.isArray(tree)) return { ok: false };
@@ -82,5 +85,5 @@ export function prepareLibraryTree(tree: unknown): { ok: true; tree: NodeTemplat
   if (!validated.success) return { ok: false };
   const nodes = validated.data.sections[0]?.componentTree;
   if (!nodes || nodes.length !== 1 || nodes[0]!.type !== "section") return { ok: false };
-  return { ok: true, tree: toTemplate(nodes[0]!) };
+  return { ok: true, tree: assignFieldNames(toTemplate(nodes[0]!)) };
 }

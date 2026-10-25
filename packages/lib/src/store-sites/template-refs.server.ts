@@ -12,6 +12,7 @@
 import { and, db, gt, inArray, librarySections } from "@workspace/db";
 import { sanitizeSiteConfig, siteConfigSchema, type SiteConfig } from "@workspace/store-sections";
 import {
+  alignFieldNames,
   codeLibraryTree,
   compactTemplateConfig,
   resolveTemplateRefs,
@@ -25,7 +26,11 @@ type Queryable = Tx | typeof db;
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
 
-/** The published trees of these library keys (one query; empty keys → no query). */
+/**
+ * The published trees of these library keys (one query; empty keys → no
+ * query), with their field names lined up with the code design (rows saved
+ * before names existed get them here; `backfill:library-fields` stores them).
+ */
 export async function loadLibraryTrees(keys: readonly string[], q: Queryable = db): Promise<LibraryTrees> {
   const trees = new Map<string, LibraryTreeRow>();
   if (!keys.length) return trees;
@@ -34,7 +39,9 @@ export async function loadLibraryTrees(keys: readonly string[], q: Queryable = d
     .from(librarySections)
     .where(and(inArray(librarySections.key, [...new Set(keys)]), gt(librarySections.version, 0)));
   for (const row of rows) {
-    if (isRecord(row.tree) && row.tree.type === "section") trees.set(row.key, { tree: row.tree as LibraryTreeRow["tree"], category: row.category });
+    if (isRecord(row.tree) && row.tree.type === "section") {
+      trees.set(row.key, { tree: alignFieldNames(row.tree as LibraryTreeRow["tree"], codeLibraryTree(row.key)?.tree), category: row.category });
+    }
   }
   return trees;
 }

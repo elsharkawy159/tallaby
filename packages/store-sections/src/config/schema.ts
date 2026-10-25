@@ -150,17 +150,47 @@ export const libraryPatchSchema = z.object({
 });
 export type LibraryPatchData = z.output<typeof libraryPatchSchema>;
 
+/** A field of a library section (`templates/library-fields.ts`), optionally one of its props: `heading`, `cta.href`. */
+const fieldNameSchema = z.string().min(1).max(80).regex(/^[a-z][a-z0-9-]*$/);
+const fieldKeySchema = z.string().min(1).max(120).regex(/^[a-z][a-z0-9-]*(?:\.[a-zA-Z][a-zA-Z0-9]*)?$/);
+/** Props a template value can never set (computed, data bindings, or the name itself). */
+export const LIBRARY_LOCKED_PROPS = ["role", "bind", "translations", "field", "formTemplate"] as const;
+const fieldValueSchema = z.union([patchTextSchema, z.number(), z.boolean(), z.null()]);
+
 /**
  * A template section that points at a `library_sections` row instead of
  * holding its element tree: the tree is built from the library's current
- * tree plus this patch whenever the template is read, so a library edit
- * reaches every template that uses the section. Only template configs hold
- * refs; a store's drafts always get the built tree.
+ * tree plus the template's values whenever the template is read, so a
+ * library edit reaches every template that uses the section. Only template
+ * configs hold refs; a store's drafts always get the built tree.
+ *
+ * - `props`: values per named field (`templates/library-fields.ts`). The bare
+ *   field sets the node's main prop (a heading's text, an image's src); a
+ *   `field.prop` key sets another (`cta.href`, `image.alt`, `products.limit`).
+ *   Copy is `{ ar, en }` or one string for both; `null` removes the prop.
+ * - `styles`: the template's style changes per field (design, not content).
+ * - `form` / `corners`: the ready-made form of its `storeForm` nodes and the
+ *   template's corner cap.
+ * - `plain`: the library tree is the template's own design (Classic,
+ *   Atelier), built as it is (no accent or role adaptation).
+ * - `patch`: the earlier form (TR-01), read only; never with `props`/`styles`.
  */
-export const libraryRefSchema = z.object({
-  key: z.string().min(1).max(100).regex(/^[a-z0-9-]+$/),
-  patch: libraryPatchSchema.default({}),
-});
+export const libraryRefSchema = z
+  .object({
+    key: z.string().min(1).max(100).regex(/^[a-z0-9-]+$/),
+    props: z
+      .record(fieldKeySchema, fieldValueSchema)
+      .refine((props) => Object.keys(props).every((key) => !(LIBRARY_LOCKED_PROPS as readonly string[]).includes(key.split(".")[1] ?? "")), "locked_prop")
+      .optional(),
+    styles: z
+      .record(fieldNameSchema, z.object({ style: styleSchema.optional(), tablet: styleSchema.optional(), mobile: styleSchema.optional() }))
+      .optional(),
+    form: z.string().max(64).optional(),
+    corners: z.number().min(0).max(999).optional(),
+    plain: z.boolean().optional(),
+    patch: libraryPatchSchema.optional(),
+  })
+  .refine((ref) => !(ref.patch && (ref.props || ref.styles)), "patch_with_props");
 export type LibraryRef = z.output<typeof libraryRefSchema>;
 
 export const sectionInstanceSchema = z.object({

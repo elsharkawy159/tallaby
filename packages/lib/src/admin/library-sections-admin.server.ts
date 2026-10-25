@@ -16,6 +16,7 @@
  */
 import { and, asc, db, eq, ilike, isNull, librarySections, or, sql } from "@workspace/db";
 import type { NodeTemplate } from "@workspace/store-sections/render";
+import { alignFieldNames, codeLibraryTree } from "@workspace/store-sections/templates";
 import { assertAdminActor, AdminActorError, writeAdminAudit, type Queryable } from "./guard.server";
 import type { AdminAuditAction } from "./admin.lib";
 import {
@@ -199,7 +200,8 @@ export async function getLibrarySectionForEditor(id: string, q: Queryable = db):
     key: row.key,
     category: row.category,
     name: row.name,
-    tree: (row.draftTree ?? row.tree) as NodeTemplate,
+    // Named like its code design until a save stores the names (`backfill:library-fields`).
+    tree: alignFieldNames((row.draftTree ?? row.tree) as NodeTemplate, codeLibraryTree(row.key)?.tree),
     draftVersion: row.draftVersion,
     version: row.version,
     hasDraft: row.draftTree !== null,

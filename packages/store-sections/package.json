@@ -31,6 +31,14 @@
       "types": "./src/templates/index.ts",
       "default": "./src/templates/index.ts"
     },
+    "./library-ref": {
+      "types": "./src/templates/library-ref.ts",
+      "default": "./src/templates/library-ref.ts"
+    },
+    "./library-fields": {
+      "types": "./src/templates/library-fields.ts",
+      "default": "./src/templates/library-fields.ts"
+    },
     "./demo-product": {
       "types": "./src/templates/demo-product.ts",
       "default": "./src/templates/demo-product.ts"

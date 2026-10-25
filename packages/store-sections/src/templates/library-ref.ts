@@ -1,16 +1,17 @@
 /**
- * Templates as section refs (owner, 2026-10-25): a template section built
- * from a section-library design is stored as `libraryRef: { key, patch }`
- * (the library key plus the template's photos, copy, links, list settings,
- * layer patches, form and corner cap) instead of a full element tree. The
- * tree is built from the library's CURRENT tree whenever the template is
- * read, so an admin edit of a library section reaches every template that
- * uses it, until a seller applies the template (the store's drafts always
- * get the built tree, never a ref).
+ * Templates as section refs (owner, 2026-10-25; named fields 2026-10-26): a
+ * template section built from a library section is stored as
+ * `libraryRef: { key, props, styles?, form?, corners? }`, the library key
+ * plus the template's values per named field (`library-fields.ts`), instead
+ * of a full element tree. The tree is built from the library's CURRENT tree
+ * whenever the template is read, so an admin edit of a library section
+ * reaches every template that uses it, until a seller applies the template
+ * (the store's drafts always get the built tree, never a ref).
  *
- * `applyLibraryPatch` is the one patch implementation: the code templates
- * (`fromLibrary`, strict) and stored refs (lenient) both go through it, so a
- * ref built from the code library gives exactly the code template's tree.
+ * Code templates are still written as Arabic-keyed patches (`fromLibrary`,
+ * `applyLibraryPatch`, strict); `libraryValuesFromTree` turns each built
+ * section into values, checked to rebuild exactly the same tree
+ * (`applyLibraryProps`). Refs in the earlier `patch` form still build.
  *
  * Lenient mode never throws: a copy, link or layer the library tree no longer
  * has is skipped (the section shows the library's own copy there) and
@@ -19,15 +20,16 @@
  */
 import type { LibraryPatchData, LibraryRef, SectionInstance, SiteConfig } from "../config/schema";
 import type { Localized } from "../core/types";
-import { PHOTO_SLOT_RE, resolvePhotoSlot } from "../designs/photo-slots";
+import { PHOTO_SLOT_RE, resolvePhotoSlot, resolvePhotoSlots } from "../designs/photo-slots";
 import { instantiateTemplate } from "../designs/builder";
 import type { StyleValues } from "../elements/style";
 import type { NodeTemplate } from "../elements/tree";
+import { assignFieldNames, PRIMARY_PROP, stripFieldNames } from "./library-fields";
 
 const PLACEHOLDER_NAME = "اسم متجرك";
 const PLACEHOLDER_INITIAL = "م";
 /** Prop keys that never hold copy. */
-const NOT_COPY = new Set(["role", "bind", "translations", "href", "src", "variant", "level", "url", "thumbnail", "poster", "source", "sort", "formTemplate"]);
+const NOT_COPY = new Set(["role", "bind", "translations", "href", "src", "variant", "level", "url", "thumbnail", "poster", "source", "sort", "formTemplate", "field"]);
 const FULL_ROUND = 999;
 
 type Props = Record<string, unknown> & { translations?: { en?: Record<string, unknown> } };
@@ -102,6 +104,14 @@ export type ApplyLibraryPatchOptions = {
 
 export type ApplyLibraryPatchResult = { tree: NodeTemplate; missing: string[] };
 
+/** The library's placeholder name (its original copy) → the store's name on "Use template". */
+function assignStoreRoles(props: Props, original: unknown, chrome: boolean): void {
+  if (props.role && props.role !== "title") return;
+  if (original === PLACEHOLDER_NAME) props.role = "storeName";
+  else if (chrome && original === PLACEHOLDER_INITIAL) props.role = "storeInitial";
+  else if (typeof original === "string" && original.startsWith("©") && original.includes(PLACEHOLDER_NAME)) props.role = "copyright";
+}
+
 /**
  * A library slot tree (`stock:photo:N` placeholders, `library_sections.tree`)
  * with a template's patch applied: the template's photos in the slots, its
@@ -174,13 +184,7 @@ export function applyLibraryPatch(slotTree: NodeTemplate, patch: LibraryPatchDat
     const label = (node.props as Props).label;
     const nodePatch = typeof label === "string" ? patch.nodes?.[label] : undefined;
     if (nodePatch) used.add(`node:${label}`);
-    // The library's placeholder name (original copy) → the store's name on "Use template".
-    const original = (node.props as Props).text;
-    if (!props.role || props.role === "title") {
-      if (original === PLACEHOLDER_NAME) props.role = "storeName";
-      else if (chrome && original === PLACEHOLDER_INITIAL) props.role = "storeInitial";
-      else if (typeof original === "string" && original.startsWith("©") && original.includes(PLACEHOLDER_NAME)) props.role = "copyright";
-    }
+    assignStoreRoles(props, (node.props as Props).text, chrome);
     const next = { ...node, props: props as NodeTemplate["props"], children: node.children?.map(visit) };
     return nodePatch ? patchNode(next, nodePatch) : next;
   };
@@ -204,6 +208,229 @@ export function applyLibraryPatch(slotTree: NodeTemplate, patch: LibraryPatchDat
 }
 
 // ---------------------------------------------------------------------------
+// Named field values (`libraryRef.props`, owner 2026-10-26)
+// ---------------------------------------------------------------------------
+
+/** What a template stores beside the key: values per named field (`config/schema.ts` `libraryRefSchema`). */
+export type LibraryValues = Pick<LibraryRef, "props" | "styles" | "form" | "corners" | "plain">;
+type FieldValue = NonNullable<LibraryValues["props"]>[string];
+
+const nameOf = (node: NodeTemplate): string | undefined => {
+  const field = (node.props as Props).field;
+  return typeof field === "string" && field ? field : undefined;
+};
+
+/** `heading` → the node's main prop; `cta.href` → `href`. */
+function propOfKey(key: string, type: string): string | undefined {
+  const dot = key.indexOf(".");
+  return dot < 0 ? PRIMARY_PROP[type] : key.slice(dot + 1);
+}
+
+/** One value into the props (`en` is the English overlay): copy is both languages, a plain string both alike, `null` removes. */
+function setValue(props: Props, en: Record<string, unknown>, prop: string, value: FieldValue): void {
+  if (value === null) {
+    delete props[prop];
+    delete en[prop];
+  } else if (typeof value === "object") {
+    props[prop] = value.ar;
+    en[prop] = value.en;
+  } else {
+    props[prop] = value;
+    delete en[prop];
+  }
+}
+
+export type ApplyLibraryValuesOptions = {
+  category: string;
+  /** Keep `props.field` on the built nodes (the converter compares named trees). Default false. */
+  keepFields?: boolean;
+};
+
+/**
+ * A named library slot tree with a template's values: each field's props
+ * set, its styles merged, the ready-made form on `storeForm` nodes, the
+ * store-name roles, accent blocks made safe and the corners capped (the same
+ * steps, in the same order, as `applyLibraryPatch`; `plain` skips the
+ * accent, role and default-form steps). Photo slots with no value stay
+ * slots, for `instantiateTemplate` to fill for the industry. A value for a
+ * field the tree no longer has is skipped and reported in `missing`.
+ */
+export function applyLibraryProps(slotTree: NodeTemplate, values: LibraryValues, opts: ApplyLibraryValuesOptions): ApplyLibraryPatchResult {
+  const plain = values.plain ?? false;
+  const form = values.form ?? (plain ? undefined : defaultForm(opts.category));
+  const chrome = opts.category === "headers" || opts.category === "footers";
+  const byField = new Map<string, [string, FieldValue][]>();
+  for (const [key, value] of Object.entries(values.props ?? {})) {
+    const field = key.split(".")[0]!;
+    byField.set(field, [...(byField.get(field) ?? []), [key, value]]);
+  }
+  const used = new Set<string>();
+
+  const visit = (node: NodeTemplate): NodeTemplate => {
+    const props = { ...(node.props as Props) };
+    const field = nameOf(node);
+    const entries = field ? byField.get(field) : undefined;
+    if (field && entries) {
+      const en = { ...(props.translations?.en ?? {}) };
+      const sets = entries.flatMap(([key, value]) => {
+        const prop = propOfKey(key, node.type);
+        if (prop) used.add(`prop:${key}`);
+        return prop ? [[prop, value] as const] : [];
+      });
+      // Props the node has first, in its own order, then new ones (as a patch adds them).
+      const order = new Map(Object.keys(props).map((key, i) => [key, i]));
+      sets.sort(([a], [b]) => (order.get(a) ?? Infinity) - (order.get(b) ?? Infinity));
+      for (const [prop, value] of sets.filter(([prop]) => order.has(prop))) setValue(props, en, prop, value);
+      if (Object.keys(en).length) props.translations = { ...props.translations, en };
+      else if (props.translations) {
+        const { en: _drop, ...rest } = props.translations;
+        props.translations = Object.keys(rest).length ? rest : undefined;
+        if (!props.translations) delete props.translations;
+      }
+      const added = sets.filter(([prop]) => !order.has(prop));
+      if (added.length) {
+        const more = { ...(props.translations?.en ?? {}) };
+        for (const [prop, value] of added) setValue(props, more, prop, value);
+        if (Object.keys(more).length) props.translations = { ...props.translations, en: more };
+      }
+    }
+    if (node.type === "storeForm" && form) props.formTemplate = form;
+    if (!plain) assignStoreRoles(props, (node.props as Props).text, chrome);
+    if (!opts.keepFields) delete props.field;
+    const next = { ...node, props: props as NodeTemplate["props"], children: node.children?.map(visit) };
+    const style = field ? values.styles?.[field] : undefined;
+    if (style) used.add(`style:${field}`);
+    return style ? patchNode(next, style) : next;
+  };
+
+  const built = visit(assignFieldNames(slotTree));
+  const safe = plain ? built : onAccent(built, false);
+  const tree = values.corners === undefined ? safe : clampCorners(safe, values.corners);
+  const missing = [
+    ...Object.keys(values.props ?? {})
+      .filter((key) => !used.has(`prop:${key}`))
+      .map((key) => `field "${key}"`),
+    ...Object.keys(values.styles ?? {})
+      .filter((field) => !used.has(`style:${field}`))
+      .map((field) => `style "${field}"`),
+  ];
+  return { tree, missing };
+}
+
+/** A ref's tree from the library slot tree: its values (`props`), or the earlier `patch` form. Never holds field names. */
+export function applyLibraryRef(slotTree: NodeTemplate, ref: LibraryRef, opts: { category: string; industry?: string }): ApplyLibraryPatchResult {
+  if (ref.patch) {
+    const { tree, missing } = applyLibraryPatch(slotTree, ref.patch, opts);
+    return { tree: stripFieldNames(tree), missing };
+  }
+  return applyLibraryProps(slotTree, ref, { category: opts.category });
+}
+
+const STYLE_BREAKPOINTS = new Set(["tablet", "mobile"]);
+const LOCKED = new Set(["role", "bind", "formTemplate", "field"]);
+const PROP_KEY_RE = /^[a-zA-Z][a-zA-Z0-9]*$/;
+type Styles = Record<string, unknown>;
+type StylePatch = NonNullable<LibraryValues["styles"]>[string];
+
+/** The changed keys of `after` over `before`, or null when `after` dropped one (a style patch only adds and replaces). */
+function styleDiff(before: Styles | undefined, after: Styles | undefined): Styles | null {
+  const out: Styles = {};
+  for (const key of Object.keys(before ?? {})) if (!after || !(key in after)) return null;
+  for (const [key, value] of Object.entries(after ?? {})) if (!sameJson(before?.[key], value)) out[key] = value;
+  return out;
+}
+
+const firstFormTemplate = (node: NodeTemplate): unknown =>
+  node.type === "storeForm" ? (node.props as Props).formTemplate : (node.children ?? []).map(firstFormTemplate).find((form) => form !== undefined);
+
+export type LibraryValuesFromTreeOptions = {
+  category: string;
+  /** The template's industry: a photo that is only the slot's stock photo is not stored. */
+  industry?: string;
+  corners?: number;
+  plain?: boolean;
+};
+
+/**
+ * The values that make a library slot tree into `built` (a template's
+ * section tree, slots filled or not), or null when `built` is not the
+ * library tree with values (its structure, a data binding or a role
+ * differs). The result is checked: applying it gives exactly `built`.
+ */
+export function libraryValuesFromTree(slotTree: NodeTemplate, built: NodeTemplate, opts: LibraryValuesFromTreeOptions): LibraryValues | null {
+  const named = assignFieldNames(slotTree);
+  const target = stripFieldNames(built);
+  const base: LibraryValues = {
+    ...(opts.corners !== undefined && { corners: opts.corners }),
+    ...(opts.plain && { plain: true }),
+  };
+  const builtForm = firstFormTemplate(target);
+  const defaultFormOf = opts.plain ? undefined : defaultForm(opts.category);
+  if (typeof builtForm === "string" && builtForm !== defaultFormOf) base.form = builtForm;
+  const baseline = applyLibraryProps(named, base, { category: opts.category, keepFields: true }).tree;
+  const props: Record<string, FieldValue> = {};
+  const styles: Record<string, StylePatch> = {};
+
+  const walk = (before: NodeTemplate, after: NodeTemplate): boolean => {
+    if (before.type !== after.type || (before.children?.length ?? 0) !== (after.children?.length ?? 0)) return false;
+    const field = nameOf(before);
+    if (!field) return false;
+    const { props: p0, children: _c0, style: s0, breakpointStyles: b0, ...rest0 } = before;
+    const { props: p1, children: _c1, style: s1, breakpointStyles: b1, ...rest1 } = after;
+    if (!sameJson(rest0, rest1)) return false;
+    const a = p0 as Props;
+    const b = p1 as Props;
+    const { en: en0 = {}, ...other0 } = (a.translations ?? {}) as { en?: Props };
+    const { en: en1 = {}, ...other1 } = (b.translations ?? {}) as { en?: Props };
+    if (!sameJson(other0, other1)) return false;
+    const keys = new Set([...Object.keys(a), ...Object.keys(b), ...Object.keys(en0), ...Object.keys(en1)]);
+    keys.delete("translations");
+    keys.delete("field");
+    for (const key of keys) {
+      const v0 = a[key];
+      const v1 = b[key];
+      if (sameJson(v0, v1) && en0[key] === en1[key]) continue;
+      if (LOCKED.has(key) || !PROP_KEY_RE.test(key)) return false;
+      const name = PRIMARY_PROP[before.type] === key ? field : `${field}.${key}`;
+      if (v1 === undefined) {
+        if (en1[key] !== undefined) return false;
+        props[name] = null;
+      } else if (typeof v1 === "string") {
+        if (typeof en1[key] !== "string" && en1[key] !== undefined) return false;
+        if (typeof v0 === "string" && PHOTO_SLOT_RE.test(v0) && v1 === resolvePhotoSlot(v0, opts.industry) && en1[key] === undefined) continue;
+        props[name] = typeof en1[key] === "string" ? { ar: v1, en: en1[key] as string } : v1;
+      } else if (typeof v1 === "number" || typeof v1 === "boolean") {
+        if (en1[key] !== undefined) return false;
+        props[name] = v1;
+      } else return false;
+    }
+    const style = styleDiff(s0 as Styles | undefined, s1 as Styles | undefined);
+    if (!style) return false;
+    const patch: Record<string, Styles> = Object.keys(style).length ? { style } : {};
+    const bp0 = (b0 ?? {}) as Record<string, Styles>;
+    const bp1 = (b1 ?? {}) as Record<string, Styles>;
+    for (const bp of new Set([...Object.keys(bp0), ...Object.keys(bp1)])) {
+      const diff = styleDiff(bp0[bp], bp1[bp]);
+      if (!diff) return false;
+      if (!Object.keys(diff).length) continue;
+      if (!STYLE_BREAKPOINTS.has(bp)) return false;
+      patch[bp] = diff;
+    }
+    if (Object.keys(patch).length) styles[field] = patch as StylePatch;
+    return (before.children ?? []).every((child, i) => walk(child, after.children![i]!));
+  };
+
+  if (!walk(baseline, target)) return null;
+  const values: LibraryValues = {
+    ...(Object.keys(props).length && { props }),
+    ...(Object.keys(styles).length && { styles }),
+    ...base,
+  };
+  const rebuilt = applyLibraryProps(named, values, { category: opts.category }).tree;
+  return sameJson(resolvePhotoSlots(rebuilt, opts.industry), resolvePhotoSlots(target, opts.industry)) ? values : null;
+}
+
+// ---------------------------------------------------------------------------
 // Template configs with refs
 // ---------------------------------------------------------------------------
 
@@ -221,6 +448,8 @@ export type ResolveTemplateOptions = {
    * Default false: the result holds plain tree sections only.
    */
   keepRefs?: boolean;
+  /** Build only refs in the earlier `patch` form (their conversion to named fields); other refs stay as they are. */
+  patchOnly?: boolean;
   /** A tree for a key the database has no row for (the code library design). */
   fallback?: (key: string) => LibraryTreeRow | undefined;
 };
@@ -253,7 +482,7 @@ export function hasLibraryRefs(config: SiteConfig): boolean {
 
 /** The built tree section of a ref (deterministic node ids `<section id>-nN`, like the code templates). */
 function buildRefSection(section: AnySection, ref: LibraryRef, row: LibraryTreeRow, opts: ResolveTemplateOptions) {
-  const { tree, missing } = applyLibraryPatch(row.tree, ref.patch, { category: row.category, industry: opts.industry });
+  const { tree, missing } = applyLibraryRef(row.tree, ref, { category: row.category, industry: opts.industry });
   const built = instantiateTemplate(tree, { id: section.id, industry: opts.industry });
   const { libraryRef: _ref, componentTree: _tree, ...rest } = section;
   return { section: { ...rest, componentTree: built.componentTree, ...(opts.keepRefs && { libraryRef: ref }) } as AnySection, missing };
@@ -269,7 +498,7 @@ export function resolveTemplateRefs(config: SiteConfig, trees: LibraryTrees, opt
   const unknownKeys = new Set<string>();
   const misses: Record<string, string[]> = {};
   const resolve = (section: AnySection | null): AnySection | null => {
-    if (!section?.libraryRef) return section;
+    if (!section?.libraryRef || (opts.patchOnly && !section.libraryRef.patch)) return section;
     const ref = section.libraryRef;
     const row = trees.get(ref.key) ?? opts.fallback?.(ref.key);
     if (!row) {

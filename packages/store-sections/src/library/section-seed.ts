@@ -8,6 +8,7 @@
  */
 import { designSlotTree } from "../designs/photo-slots";
 import type { Design } from "../designs/builder";
+import { assignFieldNames } from "../templates/library-fields";
 
 const sqlText = (value: string) => `'${value.replace(/'/g, "''")}'`;
 
@@ -24,8 +25,16 @@ const sqlJson = (value: unknown) => `${sqlText(stableJson(value))}::jsonb`;
 
 const sqlTextArray = (values: readonly string[]) => (values.length === 0 ? "'{}'::text[]" : `ARRAY[${values.map(sqlText).join(", ")}]::text[]`);
 
-export function librarySectionSeedSql(design: Design, index: number): string {
-  return `INSERT INTO library_sections (key, category, subcategory, name, description, keywords, tree, sort_order)
+export type SectionSeedOptions = {
+  /** Kept out of the sellers' Add palette (Classic / Atelier designs, 0105). */
+  hidden?: boolean;
+  /** sort_order of the first design (default 0; each next one +10). */
+  sortFrom?: number;
+};
+
+/** One insert-only row. The tree is the named slot tree (`templates/library-fields.ts`). */
+export function librarySectionSeedSql(design: Design, index: number, opts: SectionSeedOptions = {}): string {
+  return `INSERT INTO library_sections (key, category, subcategory, name, description, keywords, tree, sort_order${opts.hidden ? ", is_hidden" : ""})
 VALUES (
   ${sqlText(design.id)},
   ${sqlText(design.category)},
@@ -33,8 +42,8 @@ VALUES (
   ${sqlJson(design.name)},
   ${sqlJson(design.description)},
   ${sqlTextArray(design.keywords)},
-  ${sqlJson(designSlotTree(design))},
-  ${index * 10}
+  ${sqlJson(assignFieldNames(designSlotTree(design)))},
+  ${(opts.sortFrom ?? 0) + index * 10}${opts.hidden ? ",\n  true" : ""}
 )
 ON CONFLICT (key) DO NOTHING;
 `;
@@ -58,9 +67,9 @@ export function seededSectionKeys(sqlTexts: readonly string[]): Set<string> {
  * Insert-only rows for the designs whose keys are not seeded yet, keeping each
  * design's sort_order from its place in `designs`. Empty when nothing is new.
  */
-export function newLibrarySectionsSeedSql(designs: readonly Design[], seeded: ReadonlySet<string>): string {
+export function newLibrarySectionsSeedSql(designs: readonly Design[], seeded: ReadonlySet<string>, opts: SectionSeedOptions = {}): string {
   return designs
-    .map((design, index) => (seeded.has(design.id) ? "" : librarySectionSeedSql(design, index)))
+    .map((design, index) => (seeded.has(design.id) ? "" : librarySectionSeedSql(design, index, opts)))
     .filter(Boolean)
     .join("\n");
 }

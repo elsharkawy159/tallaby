@@ -1,10 +1,13 @@
 /**
  * One-off conversion of stored templates to library refs (owner,
- * 2026-10-25; `scripts/backfill-template-refs.ts`): each template's current
- * version gets a new version in which every section that is still an exact
- * copy of its seed (what its `libraryRef` builds from the code library, after
- * the sanitizer) is a ref, so it follows later library edits. Sections an
- * admin edited, and the template's own designs, keep their trees.
+ * 2026-10-25; named fields 2026-10-26; `scripts/backfill-template-refs.ts`):
+ * each template's current version gets a new version in which every section
+ * that is still an exact copy of its seed (what its ref builds from the code
+ * library, after the sanitizer) is a ref: the library key plus the
+ * template's values per named field, so it follows later library edits.
+ * Classic and Atelier designs become refs to their own hidden library rows
+ * (0105). Sections an admin edited keep their trees. A ref in the earlier
+ * `patch` form is rebuilt and converted too.
  *
  * Skips a template with an admin draft (the Studio would publish over it),
  * a soft-deleted one, one whose current version does not parse, and one
@@ -15,12 +18,12 @@
  */
 import { and, asc, db, eq, isNull, max, templateVersions, templates } from "@workspace/db";
 import { CURRENT_SITE_CONFIG_VERSION, sanitizeSiteConfig, siteConfigSchema, type SiteConfig } from "@workspace/store-sections";
-import { codeLibraryTree, resolveTemplateRefs, sameJson, storedTemplateRefConfig } from "@workspace/store-sections/templates";
+import { codeLibraryTree, hasPatchRefs, resolveTemplateRefs, sameJson, storedTemplateRefConfig } from "@workspace/store-sections/templates";
 
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 type Queryable = Tx | typeof db;
 
-export const TEMPLATE_REFS_CHANGELOG = "library sections as refs";
+export const TEMPLATE_REFS_CHANGELOG = "library sections as named-field refs";
 
 export type TemplateRefsBackfill = {
   key: string;
@@ -60,7 +63,7 @@ export async function backfillTemplateRefs(q: Queryable, key: string, opts: { dr
     const before = parsed.data;
     const after = storedTemplateRefConfig(before, { industry: row.category, normalize: sanitizeSiteConfig });
     const refs = countRefs(after);
-    if (refs === countRefs(before)) return { key, result: "skipped", reason: "nothing to convert" };
+    if (refs === countRefs(before) && !hasPatchRefs(before)) return { key, result: "skipped", reason: "nothing to convert" };
 
     // Built from the code library (what the seeds were made from), the new version must give the old one exactly.
     const built = (config: SiteConfig) => sanitizeSiteConfig(resolveTemplateRefs(config, new Map(), { industry: row.category, fallback: codeLibraryTree }).config);
