@@ -1,9 +1,13 @@
 # Storefront template rules
 
-**Status: DRAFT v0.1 (2026-10-25), for owner review. Nothing here is built yet.**
-Once approved, `CLAUDE.md` will point here and every template change (new template, new template version, template review) must follow it. It adds to, and never replaces, `CLAUDE.md` rule 17 and the section authoring rules in `docs/superpowers/specs/2026-10-19-tree-sections-design.md` §6.
+**Status: DRAFT v0.2 (2026-10-25), for owner review. Nothing here is built yet.**
+Once approved, `CLAUDE.md` will point here and every template change (new template, new template version, template review) must follow it. It adds to, and never replaces, `CLAUDE.md` rule 17 and the section authoring rules in `docs/superpowers/specs/2026-10-19-tree-sections-design.md` §6. **How each section is made (anatomy, design language, motion) is in [`docs/section-rules.md`](section-rules.md)**; this file says how sections are put together into a template.
+
+v0.2: adds what we learned from Shopify's paid themes (section rhythm, optional visual sections, a richer but still simple scroll motion system). Changed: §2 (up to 10 sections, visual breaks, rhythm), §6 (design language points to the section rules), §6a (motion), §7, §9, §10.
 
 Reference studied: EasyOrders themes (`easyorders.eg/themes`, 8 live demos checked 2026-10-25). Their "+100 themes" are about 4 base layouts reused with different photos per trade. Each demo is simple: a hero, category tiles, 2 to 4 product rails, 1 or 2 offer banners, reviews and a newsletter, plus a strong product page (big Buy now, free-shipping progress bar, a buy bar that stays on screen, reviews, related products). We copy that simplicity, not their designs.
+
+Second reference: Shopify paid themes (`themes.shopify.com`, 7 live demos checked 2026-10-25; details in `docs/section-rules.md` §1). They use more sections (11 to 16), alternate photo-led "visual" sections with product sections, and animate everything gently on scroll. We take their rhythm and motion, and keep EasyOrders' short, sales-first page.
 
 ---
 
@@ -33,11 +37,14 @@ Every template's home page uses this order. "Required" sections must be present;
 | 8 | **Reviews or newsletter** | Optional, at most one | | Newsletter uses the existing store form. |
 | 9 | **Footer** (chrome) | Yes | See §4.3 | |
 
+**Visual breaks (optional, Shopify-style).** A template may add up to **two** of these between the standard sections, so the page alternates photos and products: a **banner grid** (2 to 4 photo cards linking to catalog URLs), **image with text** (the brand story), a **marquee band** (3 to 6 short phrases), **shop the look** (one photo + 2 to 4 products), **numbers** (3 or 4 counters). Each is defined in `docs/section-rules.md` §4.
+
 Limits:
 
-- **At most 8 sections** between header and footer. Most templates should use 6 or 7.
+- **At most 10 sections** between header and footer (the standard ones plus at most two visual breaks). Most templates should use 7 to 9.
+- **Rhythm**: two product sections never sit next to each other without a visual break or a change of section scheme between them; the section schemes alternate (`default`, `muted`, `default`…) and never three `dark` sections in a row.
 - Product rails show **4 products on desktop, 2 on mobile** (a grid or a swipeable rail), never more than 8.
-- Do **not** add these to a template home page: before/after sliders, video playlists, bento collages, popups, loyalty, product finders, tabbed product lists, long text blocks, counters and stats. They stay in the section library so a seller can add them.
+- Do **not** add these to a template home page: before/after sliders, video playlists, popups, loyalty, product finders, long text blocks. They stay in the section library so a seller can add them. (Tabbed product lists may replace the best-sellers or new-arrivals rail; bento layouts are allowed inside a banner grid or hero.)
 - A template can change the **look** of each standard section (layout, cards, colours, corners, fonts), but not the order or the purpose.
 
 ## 3. Other pages
@@ -101,9 +108,12 @@ Rules:
 
 ## 6. Design quality
 
+The full design language (type scale, eyebrows, accent words, surfaces, product cards, images) is `docs/section-rules.md` §5. In short:
+
+- **Creative and current**: big display headings with an eyebrow, one accent word at most, full-bleed photos for visual sections, contained product sections, soft surfaces, one radius per template.
 - **Simple and consistent**: one font pair (heading and body), one corner radius, one accent colour, all as design-system tokens so the seller can restyle everything from Theme.
-- **Spacing**: section padding about 64 px desktop / 40 px mobile; the same gap between all sections.
-- **Product card (same across the template)**: image at a fixed ratio (1:1 or 4:5), title on at most 2 lines, price + compare-at price, discount badge, Add to cart. No extra clutter.
+- **Spacing**: section padding about 80 px desktop / 48 px mobile (shell `lg` / `md`), tighter only for marquee and trust strips; the same rhythm across the page.
+- **Product card (same across the template)**: image at a fixed ratio (1:1 or 3:4), title on at most 2 lines, price + compare-at price, discount badge, Add to cart. No extra clutter.
 - **Photos**: real, sharp photos that match the trade, the same style and crop across the template, checked by eye; no watermarks, no logos.
 - **Copy**: short, warm Arabic (Egyptian-friendly) with a matching English version; buttons are verbs ("تسوّق الآن", "شوف العروض").
 - **Accessibility**: text contrast at least 4.5:1, alt text on every image, visible focus.
@@ -112,31 +122,32 @@ Rules:
 
 ## 6a. Scroll animations
 
-Simple entrance animations, like EasyOrders: as the visitor scrolls, sections and their elements **fade in while moving up a little** (about 24 px, 0.5 s, ease-out). Nothing else: no bounce, spin, parallax or zoom on whole sections.
+Simple, calm and the same everywhere, as on Shopify's paid themes. The full system (tokens, presets, budgets, builder controls, how it is built) is `docs/section-rules.md` §6. For templates:
 
-**In templates**
+**What a Tier A template turns on**
 
-- Every Tier A template turns on **Rise** (fade + move up) for every home section **except the hero**, which shows at once.
-- Inside a section, the title comes in first, then cards one after the other with a short stagger (60 to 80 ms each, at most 6 steps, so a long grid never waits).
-- Each element animates **once**, the first time it comes into view. It does not replay when scrolling back up.
-- The header, the bottom navigation, the footer, the product buy box and the cart never animate.
+- Section heads and cards: **Rise** (fade + move up 24 px, 600 ms), cards **one by one** (70 ms stagger, at most 6 steps).
+- Photos in banner grids, image with text and shop the look: **Reveal image** (zoom out from 110 % to 100 % inside the frame).
+- At most **one** signature effect per page, chosen by the template: a **words** reveal on one statement heading, a **wipe** on one large photo, or a moving **marquee** band.
+- Numbers sections count up once. Product cards use the template's hover effect (lift or zoom).
+- The hero shows at once: only a transform-only settle on its photo (104 % → 100 %), never a fade from 0, because it is the largest content on screen.
 
 **Always**
 
-- Content is **visible without animation**: if scripts fail, the browser is old, or the visitor has *reduce motion* on, everything just shows. Nothing is ever hidden until an animation runs.
-- No animation in the editor canvas (selection outlines must not move). The builder's preview mode shows it.
-- It animates only `opacity` and `transform`, so the layout never jumps (no layout shift).
+- Each element animates **once**, the first time it comes into view.
+- Content is **visible without the script**, and with *reduce motion* on nothing moves.
+- Only `opacity`, `transform` and `clip-path` animate, so the layout never jumps.
+- Never animated: header, bottom navigation, footer, announcement bar, product buy box, cart, checkout, forms.
+- No entrance motion in the editor canvas; the builder's preview mode and the live site show it.
+- No bounce, spin, shake or page-long effects. Parallax only on a full-bleed background photo, at most 2 per page, never on phones.
 
 **In the website builder**
 
-- **Site switch**: Theme › "Animations" on/off. Off turns every animation on the site off with one click.
-- **Section**: the existing section setting Animation (None / Fade / Rise), plus a "Animate items one by one" switch (the stagger).
-- **Element**: a new **Animation** group in the element's style panel: None / Fade / Rise, and an optional delay (0 to 600 ms). "None" on an element overrides its section.
-- Every control has an Arabic and an English label, and the default for a new element is "inherit from section".
+- **Theme › Animations**: on/off for the whole site, and **Hover effect** (none, lift, zoom).
+- **Section**: Animation (None / Fade / Rise) as today, plus "Animate items one by one".
+- **Element**: an Animation group (Inherit / None / Fade / Rise / Reveal image / Wipe, plus a 0 to 600 ms delay).
 
-**How (the simplest way that works on every browser)**
-
-Today's section animation is CSS-only (`animation-timeline: view()`), which Firefox does not support. Proposal: keep the CSS keyframes, and add one tiny client script (the same idea as `CarouselRuntime`) that uses `IntersectionObserver` to add an `is-in` class when an element enters the screen. Elements are hidden before that only when the root has the `sf-anim` class, which the script sets, so without the script nothing is hidden. One observer for the whole page, about 1 KB, no library.
+**How**: today's section animation is CSS-only (`animation-timeline: view()`, `elements/shell.ts`), which Firefox does not support. It is replaced by one small platform script using `IntersectionObserver` (`docs/section-rules.md` §6.7).
 
 ## 7. Checks (to be automated)
 
@@ -148,8 +159,10 @@ A `template-rules.test.ts` in `packages/store-sections` will check every templat
 4. Bottom navigation is set as decided for that template (§8).
 5. Every `href` in the tree is in the allowed list (§5).
 6. The template has a product page with Add to cart and Buy now.
-7. Tier A: every home section except the hero has Rise; header and footer have none.
-8. The existing rules still pass: node limits, snapshots, sanitize test.
+7. Tier A: every home section except the hero has an entrance (Rise or Reveal image); header and footer have none; the motion budget of `docs/section-rules.md` §6.4 is respected (one signature effect, at most two parallax images).
+8. At most 10 home sections, at most two visual breaks, and no two product sections next to each other without a break or a scheme change (§2).
+9. Every section in the template passes the section definition of done (`docs/section-rules.md` §10).
+10. The existing rules still pass: node limits, snapshots, sanitize test.
 
 Manual checks (logged in `PLAN.md` §23): the template applied to an empty store and a full store, on a phone and a desktop.
 
@@ -171,7 +184,8 @@ Changing Tallaby Classic's design needs the owner's approval (`CLAUDE.md` rule 1
 | **G3** | Brands section | A `brandList` data node from the seller's brands (`seller_product_brands`, 0068) and a `?brand=` filter on the store catalog. Brand designs are static wordmarks today. |
 | **G4** | Offers link | A `?sale=1` (discounted only) filter on the store catalog so offer buttons and "View all" have a real target. The `discounted` product list source already exists. |
 | **G5** | Rules test | §7. |
-| **G7** | Animations | Site on/off switch in Theme; "one by one" switch on the section setting; new element Animation group (None / Fade / Rise + delay) in the style schema and inspector; the small `IntersectionObserver` runtime so it works on every browser (§6a). The section-level None / Fade / Rise setting already exists (`elements/shell.ts`, `section-shell.client.tsx`). |
+| **G7** | Animations | Site on/off switch and Hover effect in Theme; "one by one" switch on the section setting; new element Animation group in the style schema and inspector; the small `IntersectionObserver` runtime so it works on every browser (§6a, `docs/section-rules.md` §6.7). The section-level None / Fade / Rise setting already exists (`elements/shell.ts`, `section-shell.client.tsx`). |
+| **G8–G12** | Richer motion and visual sections | Reveal image and wipe presets, words heading reveal, moving marquee, second-photo hover on product cards, hotspot pins for shop the look. Defined in `docs/section-rules.md` §11; a template can ship without them and add them in a later version. |
 | **G6** | Template updates | New template versions through insert-only migrations (staging first, then production with owner approval). Existing stores keep their site; only new picks and "Use template" get the new version. |
 
 ## 10. Open questions for the owner
@@ -181,5 +195,7 @@ Changing Tallaby Classic's design needs the owner's approval (`CLAUDE.md` rule 1
 3. Five bottom navigation items (Home, Shop, Search, Cart, Account), or four (drop Home or Search)?
 4. Brands: required in the standard home (hidden when empty), or optional?
 5. Tier A list: which templates per trade?
-6. Animations: Rise on by default for Tier A templates and for a new store's starting site, or off until the seller turns it on?
+6. Animations: on by default for Tier A templates and for a new store's starting site, or off until the seller turns it on?
 7. Should existing published stores get the site-wide animation switch turned on? (Proposal: no; it only changes on their next template change or by their own choice.)
+8. Up to 10 home sections with two visual breaks (Shopify-style), or stay at 8 (EasyOrders-style)?
+9. The signature effect per template (words, wipe or marquee): our choice per template, or always marquee?
