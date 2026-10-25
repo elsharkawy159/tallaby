@@ -103,17 +103,15 @@ async function generateRandomSKU(): Promise<string> {
   return sku;
 }
 
-async function findBestCategoryMatch(
-  productText: string
-): Promise<{ id: string; name: string } | null> {
+function findBestCategoryMatch(
+  productText: string,
+  // Loaded once per import: re-reading all ~10k categories for every row was
+  // ~2.5 MB of egress per row (docs/egress-audit.md §8).
+  allCategories: readonly { id: string; name: string | null }[]
+): { id: string; name: string } | null {
   if (!productText || productText.trim().length < 3) return null;
 
   const normalizedText = productText.toLowerCase().trim();
-
-  // Get all categories from database
-  const allCategories = await db.query.categories.findMany({
-    where: (categories, { isNotNull }) => isNotNull(categories.name),
-  });
 
   if (allCategories.length === 0) return null;
 
@@ -496,13 +494,14 @@ export async function bulkUploadProductsAction(formData: FormData) {
     }> = [];
 
     // Preload brands/categories maps to reduce queries
-    const allBrands = await db.query.brands.findMany({});
+    const allBrands = await db.query.brands.findMany({ columns: { id: true, name: true } });
     const brandByName = new Map<string, string>();
     for (const b of allBrands)
       brandByName.set((b.name || "").toLowerCase().trim(), b.id);
 
     // Get all categories for name resolution
     const allCategories = await db.query.categories.findMany({
+      columns: { id: true, name: true },
       where: (categories, { isNotNull }) => isNotNull(categories.name),
     });
     const categoryByName = new Map<string, string>();
@@ -566,7 +565,7 @@ export async function bulkUploadProductsAction(formData: FormData) {
       // Auto-categorization: if category is missing or not found, automatically try to categorize
       if (!categoryId) {
         const productText = `${title} ${String(record.description || "").trim()}`;
-        const bestMatch = await findBestCategoryMatch(productText);
+        const bestMatch = findBestCategoryMatch(productText, allCategories);
 
         if (bestMatch) {
           categoryId = bestMatch.id;
