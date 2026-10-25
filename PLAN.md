@@ -4018,3 +4018,17 @@ Free Plan (5 GB uncached egress per month, staging + production) used 12 GB this
 - **Where the code differed from the plan:** `getStoreSiteStatus` (editor "unpublished changes") still reads the snapshot and drafts. A timestamp shortcut is unsafe because `updated_at` is set by hand and not by every writer; it needs triggers (migration, owner approval). Product-page reviews are not limited (the page lists them all). `pending-carts.client.tsx` and the store logo `<img>` in `render.tsx` were left alone because another session has uncommitted edits in them.
 - **Not done (owner approval):** robots.txt changes, `pg_stat_statements_reset()`, `getClaims()`, the API/edge/storage logs (Supabase MCP not authorized in the session).
 - **Checks:** `tsc` passes for lib, cache, store-editor, dashboard and admin; ecommerce only the existing `profile.chunks.tsx` errors. vitest: lib 533, cache 40, store-editor 138, dashboard 178, admin 108, ecommerce 183, all pass. `eslint` still crashes before linting in every app (baseline tooling issue). The grouped admin category counts and the SQL `countMediaUsage` were compared with the old logic on staging and production data (read-only): no differences. Not yet checked by hand in a browser.
+
+### 2026-10-25 — Migration status check, `0103` applied on staging
+
+Owner asked to apply `0104` and any missing migrations to staging and production. There is no tracking table for the hand-written migrations, so each was checked by its effect (read-only):
+
+| Migration | Staging | Production |
+|---|---|---|
+| `0093` `store_shipping_zones.places` (old governorates check dropped) | applied | applied (docs said staging only) |
+| `0094`–`0102` (library sections, 111 templates, notifications, `heard_about_us`, `store_pages.kind`, product-page sections, product pages) | applied | applied |
+| `0103` `product_translations.meta_keywords` | **was missing, applied 2026-10-25** (192 rows, all `'{}'`) | already applied (docs said not applied) |
+| `0104` Tallaby Classic v6 | applied (current version v6) | applied (current version v6) |
+
+- `0104` was not re-run: its guard (current version `product page`) no longer matches on either project, so a re-run would be a no-op. Production's Classic now has an admin draft (`draft_config` set); staging's does not.
+- Column definitions of `meta_keywords` match on both (`text[] NOT NULL DEFAULT '{}'`). CLAUDE.md rule 6 updated.
