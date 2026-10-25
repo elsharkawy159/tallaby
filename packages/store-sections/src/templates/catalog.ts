@@ -7,6 +7,7 @@
  * what the database does not hold: the preview catalog and page names.
  * No React here.
  */
+import { sanitizeSiteConfig } from "../config/sanitize";
 import { validateSiteConfig } from "../config/validate";
 import type { Localized } from "../core/types";
 import type { Design } from "../designs/builder";
@@ -121,6 +122,7 @@ import { KHOLKHAL } from "./kholkhal";
 import { FARHA } from "./farha";
 import { NASHAT } from "./nashat";
 import { TARIK } from "./tarik";
+import { templateRefConfig } from "./ref-config";
 import type { TemplateDefinition, TemplateDemo } from "./types";
 
 /** Templates 02–110, built from section-library designs (`library-template.ts`), in registry order. */
@@ -148,14 +150,33 @@ export function getTemplateDesign(id: string): Design | undefined {
   return DESIGNS.get(id);
 }
 
+/**
+ * The hand-built templates' own designs (Classic, Atelier), which are library
+ * sections too (owner, 2026-10-26; hidden from the sellers' Add palette, 0105),
+ * so these templates are stored as refs like the others. Their library key is
+ * the design id.
+ */
+export const TEMPLATE_OWN_DESIGNS: readonly Design[] = [...CLASSIC.designs, ...ATELIER.designs];
+
+const OWN = new Map(TEMPLATE_OWN_DESIGNS.map((design) => [design.id, design]));
+
+/** A Classic / Atelier design by its library key. */
+export function getTemplateOwnDesign(key: string): Design | undefined {
+  return OWN.get(key);
+}
+
 export const TEMPLATE_JSON_START = "-- template-config:start";
 export const TEMPLATE_JSON_END = "-- template-config:end";
 
-/** The validated config as stored in `template_versions.config`. */
+/**
+ * The validated config as stored in `template_versions.config`: its library
+ * sections as refs (`templateRefConfig`), built from the library's current
+ * trees when read, so later library edits reach the template.
+ */
 export function templateConfigJson(template: TemplateDefinition): string {
   const result = validateSiteConfig(template.config());
   if (!result.success) throw new Error(`Template ${template.key} is invalid: ${JSON.stringify(result.issues)}`);
-  return JSON.stringify(result.data);
+  return JSON.stringify(templateRefConfig(template, result.data, { normalize: sanitizeSiteConfig }));
 }
 
 const sqlText = (value: string) => `'${value.replace(/'/g, "''")}'`;

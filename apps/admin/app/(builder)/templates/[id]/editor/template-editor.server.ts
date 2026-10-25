@@ -5,6 +5,8 @@ import { ADMIN_REASON_MAX, ADMIN_REASON_MIN } from "@workspace/lib/admin";
 import {
   getTemplateForStudio,
   listTemplateVersionsForStudio,
+  loadTemplateLibraryRows,
+  type TemplateLibraryRow,
   publishTemplateVersion,
   restoreTemplateVersionToDraft,
   saveTemplateDraft,
@@ -62,6 +64,20 @@ export async function saveTemplateDraftAction(
     return result.success ? result : fail(result.error);
   } catch (error) {
     logServerError("admin", "template editor save failed", { templateId: String(id) }, error);
+    return fail("generic");
+  }
+}
+
+/** The library section an "Add section" puts in (its named published tree), for the screen's preview and form. */
+export async function templateLibraryRowAction(key: string): Promise<EditorResult<TemplateLibraryRow>> {
+  const actorId = await adminActorId("canManageUsers");
+  if (!actorId) return fail("notFound");
+  try {
+    const rows = await loadTemplateLibraryRows([String(key)]);
+    const row = rows[String(key)];
+    return row ? { success: true, data: row } : fail("notFound");
+  } catch (error) {
+    logServerError("admin", "template library row failed to load", { key: String(key) }, error);
     return fail("generic");
   }
 }

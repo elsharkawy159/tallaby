@@ -377,7 +377,7 @@ describe("admin invalidations (docs/admin-saas.md §4.3)", () => {
 
   it("library sections are one platform catalog tag with no seller data", () => {
     expect(librarySectionTags.catalog()).toBe("library:sections");
-    expect(invalidateLibrarySections()).toEqual({ tags: ["library:sections"], paths: [] });
+    expect(invalidateLibrarySections()).toEqual({ tags: ["library:sections", "template:catalog"], paths: [] });
   });
 
   it("the tallaby.com blog is one platform tag", () => {

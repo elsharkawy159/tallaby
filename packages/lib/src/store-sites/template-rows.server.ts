@@ -3,7 +3,8 @@
  * the default template a new store starts from, and a template's `meta`
  * (page names, demo catalog, swatches). The database is the master copy; the
  * code templates are only the seed and the per-field fallback
- * (`resolveTemplateMeta`). Soft-deleted (`deleted_at`) and hidden
+ * (`resolveTemplateMeta`). Library sections stored as refs are built from
+ * the library's current tree (`template-refs.server.ts`). Soft-deleted (`deleted_at`) and hidden
  * (`is_active = false`) templates are never returned.
  *
  * Kept apart from templates.server.ts so the store scaffold
@@ -14,6 +15,7 @@
 import { and, db, eq, isNull, templateVersions, templates } from "@workspace/db";
 import { siteConfigSchema, validateSiteConfig, type SiteConfig } from "@workspace/store-sections";
 import { resolveTemplateMeta, type TemplateMeta } from "@workspace/store-sections/templates";
+import { expandTemplateConfig } from "./template-refs.server";
 
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 type Queryable = Tx | typeof db;
@@ -33,13 +35,13 @@ export const offeredTemplate = () => and(eq(templates.isActive, true), isNull(te
  */
 export async function loadDefaultTemplate(q: Queryable = db): Promise<DbTemplate | null> {
   const [row] = await q
-    .select({ key: templates.key, meta: templates.meta, config: templateVersions.config })
+    .select({ key: templates.key, category: templates.category, meta: templates.meta, config: templateVersions.config })
     .from(templates)
     .innerJoin(templateVersions, eq(templateVersions.id, templates.currentVersionId))
     .where(and(eq(templates.isDefault, true), offeredTemplate()))
     .limit(1);
   if (!row) return null;
-  const config = validateSiteConfig(row.config);
+  const config = validateSiteConfig(await expandTemplateConfig(row.config, row.category, q));
   return config.success ? { key: row.key, config: config.data, meta: resolveTemplateMeta(row.meta, row.key) } : null;
 }
 
@@ -62,11 +64,11 @@ export async function getTemplateMeta(key: string, q: Queryable = db): Promise<T
 export async function getPublicTemplate(key: string, q: Queryable = db): Promise<{ config: SiteConfig; meta: TemplateMeta } | null> {
   if (typeof key !== "string" || !TEMPLATE_KEY_RE.test(key)) return null;
   const [row] = await q
-    .select({ meta: templates.meta, config: templateVersions.config })
+    .select({ category: templates.category, meta: templates.meta, config: templateVersions.config })
     .from(templates)
     .innerJoin(templateVersions, eq(templateVersions.id, templates.currentVersionId))
     .where(and(eq(templates.key, key), offeredTemplate()))
     .limit(1);
-  const config = siteConfigSchema.safeParse(row?.config);
+  const config = siteConfigSchema.safeParse(row && (await expandTemplateConfig(row.config, row.category, q)));
   return row && config.success ? { config: config.data, meta: resolveTemplateMeta(row.meta, key) } : null;
 }

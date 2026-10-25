@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DESIGNS, designSlotTree, type NodeTemplate } from "@workspace/store-sections/render";
+import { assignFieldNames } from "@workspace/store-sections/templates";
 import {
   blankSectionTree,
   libraryReason,
@@ -14,7 +15,8 @@ describe("prepareLibraryTree", () => {
   it("accepts every seeded design tree, keeps its photo slots and is stable", () => {
     const slotsOf = (tree: NodeTemplate) => JSON.stringify(tree).match(/stock:(photo|person):\d+/g) ?? [];
     for (const design of DESIGNS) {
-      const tree = designSlotTree(design);
+      // As seeded: the slot tree with its field names (the sanitizer keeps them).
+      const tree = assignFieldNames(designSlotTree(design));
       const prepared = prepareLibraryTree(tree);
       expect(prepared.ok, design.id).toBe(true);
       if (!prepared.ok) continue;
@@ -24,6 +26,18 @@ describe("prepareLibraryTree", () => {
       // Saving the stored form again changes nothing (the sanitizer already ran).
       expect(prepareLibraryTree(prepared.tree), design.id).toEqual(prepared);
     }
+  });
+
+  it("names new nodes and renames a duplicated one", () => {
+    const tree = assignFieldNames(designSlotTree(DESIGNS[1]!));
+    const first = tree.children![0]!;
+    const prepared = prepareLibraryTree({ ...tree, children: [...tree.children!, first, { type: "heading", props: { text: "x", level: "h2" }, children: [] }] });
+    expect(prepared.ok).toBe(true);
+    if (!prepared.ok) return;
+    const fields = prepared.tree.children!.map((child) => (child.props as { field?: string }).field);
+    expect(fields[0]).toBe((first.props as { field?: string }).field);
+    expect(new Set(fields).size).toBe(fields.length);
+    expect(fields.at(-1)).toMatch(/^heading/);
   });
 
   it("keeps a slot src (stock:photo:N) and a fixed uploaded URL", () => {

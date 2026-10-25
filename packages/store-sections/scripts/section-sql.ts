@@ -3,6 +3,10 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { DESIGNS } from "../src/designs";
 import { librarySectionsSeedSql, newLibrarySectionsSeedSql, seededSectionKeys } from "../src/library/section-seed";
+import { TEMPLATE_OWN_DESIGNS } from "../src/templates/catalog";
+
+/** Classic / Atelier designs: library sections hidden from the sellers' Add palette, after every library design. */
+const OWN = { hidden: true, sortFrom: 10_000 } as const;
 
 // `section:sql`: the full library_sections seed (one insert-only row per design) on stdout.
 // `section:sql --new-only NNNN_name.sql`: writes packages/db/migrations/NNNN_name.sql with
@@ -26,7 +30,8 @@ if (args[0] !== "--new-only") {
   const existing = readdirSync(MIGRATIONS)
     .filter((name) => name.endsWith(".sql"))
     .map((name) => readFileSync(join(MIGRATIONS, name), "utf8"));
-  const seed = newLibrarySectionsSeedSql(DESIGNS, seededSectionKeys(existing));
+  const seeded = seededSectionKeys(existing);
+  const seed = [newLibrarySectionsSeedSql(DESIGNS, seeded), newLibrarySectionsSeedSql(TEMPLATE_OWN_DESIGNS, seeded, OWN)].filter(Boolean).join("\n");
   if (!seed) {
     process.stderr.write("Every design is already seeded; no migration written.\n");
   } else {

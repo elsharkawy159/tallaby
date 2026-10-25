@@ -11,3 +11,6 @@ export * from "./demo-catalog";
 export * from "./demo-product";
 export { ATELIER_KEY, ATELIER_DESIGNS, atelierConfig } from "./atelier";
 export { CLASSIC_KEY, CLASSIC_DESIGNS, classicConfig } from "./classic";
+export * from "./library-ref";
+export * from "./library-fields";
+export { codeLibraryDesign, codeLibraryTree, designRef, hasPatchRefs, storedTemplateRefConfig, templateRefConfig, toLibraryRefs, type ToRefsOptions } from "./ref-config";

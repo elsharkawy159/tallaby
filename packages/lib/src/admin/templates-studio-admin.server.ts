@@ -23,6 +23,7 @@
 import { and, db, desc, eq, isNull, max, sql, templateVersions, templates } from "@workspace/db";
 import { CURRENT_SITE_CONFIG_VERSION, type SiteConfig } from "@workspace/store-sections";
 import { DEFAULT_TEMPLATE, resolveTemplateMeta, templateMeta, type TemplateMeta } from "@workspace/store-sections/templates";
+import { compactTemplateForStorage, expandTemplateConfig } from "../store-sites/template-refs.server";
 import { assertAdminActor, AdminActorError, writeAdminAudit, type Queryable } from "./guard.server";
 import type { AdminAuditAction } from "./admin.lib";
 import { libraryReason } from "./library-sections-admin.lib";
@@ -188,7 +189,9 @@ export async function getTemplateForStudio(id: string, q: Queryable = db): Promi
     .limit(1);
   if (!row) return null;
   const t = row.template;
-  const raw = t.draftConfig ?? row.config;
+  const stored = t.draftConfig ?? row.config;
+  // Library refs are built for the editor and kept on each section, so a save can store unchanged ones as refs again.
+  const raw = stored ? await expandTemplateConfig(stored, t.category, q, { keepRefs: true }) : null;
   const prepared = raw ? prepareTemplateConfig(raw) : null;
   const meta = resolveTemplateMeta(t.meta, t.key);
   const config = prepared?.ok ? prepared.config : null;
@@ -280,6 +283,9 @@ export async function duplicateTemplate(
 
 /**
  * Autosave of the studio: validated config, optimistic on `draft_version`.
+ * Library sections the admin left exactly as their `libraryRef` builds them
+ * are stored as refs again (they keep following the library); edited ones
+ * keep their tree and stop following it (`compactTemplateForStorage`).
  * Not audited; sellers see nothing. `pageNames` (both languages, keyed by
  * slug) are the working draft's page names, kept in `meta.draftPageNames`
  * until Publish; omitted, the stored draft names stay.
@@ -298,10 +304,11 @@ export async function saveTemplateDraft(
   return adminWrite(q, actorId, async (tx) => {
     const row = await lockTemplate(tx, id);
     if (row.draftVersion !== clientVersion) throw new Outcome("version_conflict");
+    const draftConfig = await compactTemplateForStorage(prepared.config, row.category, tx);
     const [updated] = await tx
       .update(templates)
       .set({
-        draftConfig: prepared.config,
+        draftConfig,
         draftVersion: sql`${templates.draftVersion} + 1`,
         draftUpdatedAt: sql`now()`,
         ...(pageNames !== undefined && { meta: withDraftPageNames(row.meta, templatePageNamesFor(pageNames, prepared.config.pages)) }),

@@ -1,7 +1,7 @@
 import { cache } from "react";
 import { cacheProfiles, createCachedQuery, templateTags } from "@workspace/cache";
 import { and, asc, db, desc, eq, isNull, templateVersions, templates } from "@workspace/db";
-import { getPublicTemplate } from "@workspace/lib/store-sites/server";
+import { expandTemplateConfigs, getPublicTemplate } from "@workspace/lib/store-sites/server";
 import { siteConfigSchema, type SiteConfig } from "@workspace/store-sections";
 import { resolveTemplateMeta, templateOutline, type TemplateMeta } from "@workspace/store-sections/templates";
 import { buildGallery, type CatalogTemplate, type GalleryEntry } from "./templates.lib";
@@ -12,7 +12,9 @@ import { buildGallery, type CatalogTemplate, type GalleryEntry } from "./templat
  * and page names come from `templates.meta` (code fallback per field). Admin template edits
  * purge `templateTags.catalog()` (invalidateTemplateCatalog), so the gallery
  * and the preview frames follow without a deploy, so the TTL is only a 24 h
- * backstop: each refill reads every ~95 KB config (docs/egress-audit.md §1).
+ * backstop: each refill reads every config (docs/egress-audit.md §1; library
+ * sections are stored as refs since 0105, so a config is a few KB, plus one
+ * read of the library trees they use). Library publishes purge the same tag.
  */
 const getCachedCatalog = createCachedQuery({
   name: "marketing:template-catalog:v2",
@@ -39,8 +41,10 @@ const getCachedCatalog = createCachedQuery({
       .where(and(eq(templates.isActive, true), isNull(templates.deletedAt)))
       .orderBy(desc(templates.isDefault), asc(templates.sortOrder), asc(templates.createdAt));
 
-    return rows.flatMap(({ config, meta: rawMeta, ...row }) => {
-      const parsed = siteConfigSchema.safeParse(config);
+    // Library sections stored as refs are built from the library's current trees.
+    const expanded = await expandTemplateConfigs(rows);
+    return rows.flatMap(({ config: _stored, meta: rawMeta, ...row }, index) => {
+      const parsed = siteConfigSchema.safeParse(expanded[index]);
       if (!parsed.success) return []; // A broken template version is never offered.
       const meta = resolveTemplateMeta(rawMeta, row.key);
       return [

@@ -9,6 +9,10 @@
  * before go into `template_installs.previous_draft` (0064), so
  * `undoStoreTemplate` puts back exactly that.
  *
+ * The template's library sections are stored as refs and built here from the
+ * library's current trees (`template-refs.server.ts`), so the store gets
+ * plain tree sections and later library edits never change its site.
+ *
  * Before the merge the template is fitted to the store (`prepareTemplateForStore`):
  * its ready-made forms (newsletter, contact…) are found by name or created in
  * the store and bound, the store's name goes into the header and footer, and
@@ -60,6 +64,7 @@ import { createStoreForm } from "../store-forms/server";
 import type { FormInput } from "../store-forms/store-forms.lib";
 import { ensureStoreSiteScaffold } from "../stores/server";
 import { getPublicTemplate, offeredTemplate } from "./template-rows.server";
+import { expandTemplateConfig, expandTemplateConfigs } from "./template-refs.server";
 
 export { getPublicTemplate, getTemplateMeta, loadDefaultTemplate, type DbTemplate } from "./template-rows.server";
 
@@ -189,9 +194,10 @@ export async function listTemplateCards(q: Queryable = db): Promise<StoreTemplat
     .where(offeredTemplate())
     .orderBy(desc(templates.isDefault), asc(templates.sortOrder), asc(templates.createdAt));
 
+  const expanded = await expandTemplateConfigs(rows, q);
   const cards: StoreTemplateCard[] = [];
-  for (const row of rows) {
-    const config = siteConfigSchema.safeParse(row.config);
+  for (const [index, row] of rows.entries()) {
+    const config = siteConfigSchema.safeParse(expanded[index]);
     if (!config.success) continue; // A broken template version is never offered.
     const meta = resolveTemplateMeta(row.meta, row.key);
     cards.push({
@@ -271,12 +277,12 @@ export async function getStoreTemplateConfig(
 export async function loadOfferedTemplateConfig(templateKey: string, q: Queryable = db): Promise<SiteConfig | null> {
   if (!TEMPLATE_KEY_RE.test(templateKey)) return null;
   const [row] = await q
-    .select({ config: templateVersions.config })
+    .select({ config: templateVersions.config, category: templates.category })
     .from(templates)
     .innerJoin(templateVersions, eq(templateVersions.id, templates.currentVersionId))
     .where(and(eq(templates.key, templateKey), offeredTemplate()))
     .limit(1);
-  const config = siteConfigSchema.safeParse(row?.config);
+  const config = siteConfigSchema.safeParse(row && (await expandTemplateConfig(row.config, row.category, q)));
   return config.success ? config.data : null;
 }
 
@@ -353,7 +359,15 @@ export async function applyStoreTemplate(
       if (store.status !== "active") throw new TemplateError("store_read_only");
 
       const [template] = await tx
-        .select({ id: templates.id, key: templates.key, isPremium: templates.isPremium, versionId: templateVersions.id, config: templateVersions.config, meta: templates.meta })
+        .select({
+          id: templates.id,
+          key: templates.key,
+          category: templates.category,
+          isPremium: templates.isPremium,
+          versionId: templateVersions.id,
+          config: templateVersions.config,
+          meta: templates.meta,
+        })
         .from(templates)
         .innerJoin(templateVersions, eq(templateVersions.id, templates.currentVersionId))
         .where(and(eq(templates.key, templateKey), offeredTemplate()))
@@ -361,7 +375,8 @@ export async function applyStoreTemplate(
       if (!template) throw new TemplateError("template_not_found");
       // The theme store (paid templates from the store wallet) is not built yet (§8.1).
       if (template.isPremium) throw new TemplateError("premium_template");
-      const config = validateSiteConfig(template.config, { allowedSections: options.allowedSections });
+      // Library refs are built from the library's current trees: the store's drafts get plain tree sections.
+      const config = validateSiteConfig(await expandTemplateConfig(template.config, template.category, tx), { allowedSections: options.allowedSections });
       if (!config.success) throw new TemplateError("invalid_template");
 
       await ensureStoreSiteScaffold(tx, storeId);
