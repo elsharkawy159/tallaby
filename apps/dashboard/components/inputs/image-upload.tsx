@@ -94,7 +94,7 @@ export function ImageUpload({
       try {
         const { data, error } = await supabase.storage
           .from(bucket)
-          .upload(generateImageName(file), file, { upsert: false });
+          .upload(generateImageName(file), file, { cacheControl: "31536000", upsert: false });
         if (error) throw error;
         setFiles((prev) =>
           prev.map((item) =>

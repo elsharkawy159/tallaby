@@ -25,7 +25,7 @@ export async function uploadSellerImage(file: File, kind: "logo" | "banner") {
 
   const { error } = await supabase.storage
     .from("sellers")
-    .upload(path, file, { cacheControl: "3600", upsert: false });
+    .upload(path, file, { cacheControl: "31536000", upsert: false });
   if (error) throw error;
 
   return supabase.storage.from("sellers").getPublicUrl(path).data.publicUrl;

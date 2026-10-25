@@ -73,7 +73,7 @@ export async function importStockPhoto(storeId: string, photoId: string): Promis
     // The seller's own session uploads, so the bucket policy limits it to their folder.
     const path = buildMediaPath(seller.sellerId, store.id, type);
     const supabase = await createClient();
-    const { error: uploadError } = await supabase.storage.from(MEDIA_BUCKET).upload(path, bytes, { contentType: type, upsert: false });
+    const { error: uploadError } = await supabase.storage.from(MEDIA_BUCKET).upload(path, bytes, { contentType: type, cacheControl: "31536000", upsert: false });
     if (uploadError) throw new Error(`storage upload failed: ${uploadError.message}`);
 
     const result = await recordMediaAsset(seller.sellerId, store.id, {

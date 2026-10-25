@@ -97,6 +97,7 @@ export async function POST(request: NextRequest) {
           .from("products")
           .upload(fileName, blob, {
             contentType: contentType || "image/jpeg",
+            cacheControl: "31536000",
             upsert: false,
           });
 

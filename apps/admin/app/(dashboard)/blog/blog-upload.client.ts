@@ -17,7 +17,7 @@ export async function uploadBlogImage(file: File): Promise<string> {
   if (!TYPES.includes(file.type)) throw new Error("Use a JPG, PNG, WebP or AVIF image.");
   if (file.size > MAX_BYTES) throw new Error("Images must be 2 MB or smaller.");
   const path = generateImageName(file);
-  const { error } = await createClient().storage.from(PLATFORM_BLOG_BUCKET).upload(path, file, { upsert: false, contentType: file.type });
+  const { error } = await createClient().storage.from(PLATFORM_BLOG_BUCKET).upload(path, file, { cacheControl: "31536000", upsert: false, contentType: file.type });
   if (error) throw new Error(error.message || "Upload failed.");
   return path;
 }

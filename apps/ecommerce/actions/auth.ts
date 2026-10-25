@@ -355,7 +355,7 @@ export async function uploadAvatar(file: File) {
     const { data, error } = await supabase.storage
       .from("avatars")
       .upload(filePath, file, {
-        cacheControl: "3600",
+        cacheControl: "31536000",
         upsert: false,
       });
 

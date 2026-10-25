@@ -114,7 +114,7 @@ export function OrderItemReviewForm({
         const { data, error } = await supabase.storage
           .from("products")
           .upload(fileName, file, {
-            cacheControl: "3600",
+            cacheControl: "31536000",
             upsert: false,
           });
 

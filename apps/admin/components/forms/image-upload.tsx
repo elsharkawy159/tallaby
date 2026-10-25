@@ -109,7 +109,7 @@ export function ImageUpload({
       try {
         const { data, error } = await supabase.storage
           .from(bucket)
-          .upload(uniqueFileName, file, { upsert: false });
+          .upload(uniqueFileName, file, { cacheControl: "31536000", upsert: false });
 
         if (error) throw error;
 

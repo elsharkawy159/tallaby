@@ -51,7 +51,7 @@ export function ContentSection({
 
       const { data, error } = await supabase.storage
         .from("products")
-        .upload(generateImageName(file), file, { upsert: false });
+        .upload(generateImageName(file), file, { cacheControl: "31536000", upsert: false });
 
       if (error) {
         toast.error(tToast("uploadError", { fileName: file.name }));

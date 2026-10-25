@@ -120,7 +120,7 @@ export async function importShopifyBatch(
           const path = `${todayFolder()}/${crypto.randomUUID()}.${ext}`;
           const { data, error } = await supabase.storage
             .from("products")
-            .upload(path, new Blob([bytes], { type: contentType }), { contentType, upsert: false });
+            .upload(path, new Blob([bytes], { type: contentType }), { contentType, cacheControl: "31536000", upsert: false });
           return error || !data?.path ? null : data.path;
         },
       },

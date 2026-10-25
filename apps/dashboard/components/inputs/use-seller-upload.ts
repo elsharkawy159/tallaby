@@ -25,7 +25,7 @@ export const SELLER_IMAGE_ACCEPT_ATTR = 'image/png,image/jpeg,image/webp'
  */
 export async function uploadSellerFile (
   file: File,
-  { bucket, path, cacheControl = '3600' }: { bucket: string; path: string; cacheControl?: string }
+  { bucket, path, cacheControl = '31536000' }: { bucket: string; path: string; cacheControl?: string }
 ): Promise<string> {
   const { data, error } = await createClient()
     .storage.from(bucket)
@@ -43,7 +43,7 @@ export async function uploadSellerFile (
  */
 export async function uploadOwnFolderFile (
   file: File,
-  { bucket, path, cacheControl = '3600' }: { bucket: string; path: string; cacheControl?: string }
+  { bucket, path, cacheControl = '31536000' }: { bucket: string; path: string; cacheControl?: string }
 ): Promise<string> {
   const signed = await createSellerUploadUrl(bucket, path)
   if (!signed.success) throw new Error(`upload not signed: ${signed.error}`)
