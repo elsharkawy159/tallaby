@@ -2580,7 +2580,8 @@ Tick each box when its acceptance is met, and add the date and commit.
 - [x] TR-04 Template refs are `libraryRef: { key, props, styles?, form?, corners?, plain? }`: values per named field (`applyLibraryProps`, `libraryValuesFromTree`); every code template (all 2139 sections) is stored this way and rebuilds exactly; the earlier `patch` form still builds — 2026-10-26
 - [x] TR-05 Classic and Atelier designs are library sections (0105, hidden) and their templates are `plain` refs, no visual change — 2026-10-26
 - [x] TR-06 Admin template screen is section by section (`apps/admin/app/(builder)/templates/[id]/editor/`): section list per page with header/footer, live preview, a values form per section (copy ar/en, photos, links, lists), add/move/remove/replace, colours & fonts, pages; the full builder stays at `editor/advanced` for one release — 2026-10-26
-- [ ] TR-07 Rollout: deploy → apply 0105 (staging, then production) → `backfill:library-fields` (staging, then production) → `backfill:template-refs` (staging, then production, owner approval); then remove `editor/advanced`
+- [x] TR-07 Rollout: merged to `main` (`9b666a11`) and deployed → 0105 on staging and production → `backfill:library-fields` on both → `backfill:template-refs` on staging (111) and production (109; Classic and Souq skipped, they have admin drafts) — 2026-10-26
+- [ ] TR-08 Convert Classic and Souq on production once their admin drafts are published or discarded (re-run `backfill:template-refs`, or open and save them in the new screen); manual E2E of the new screen; then remove `editor/advanced`
 
 **Global confirmations (from the planning brief)**
 - [x] The existing default storefront template is kept (§3.6, §8.1, P4-03). No new default template is designed.
@@ -4086,11 +4087,14 @@ Owner asked that templates take "the section id and data as props only, not full
   - vitest: all 10 packages pass (store-sections 46 files, lib 46 plus 33 skipped (DB), admin 19, dashboard 27, store-editor 25, ecommerce 22).
   - `eslint` still crashes on load (`@typescript-eslint` against ESLint 10), as before.
   - No manual E2E yet.
-- **Rollout (TR-07, not done):**
-  1. Deploy.
-  2. Apply 0105 on staging, then production.
-  3. Run `pnpm --filter @workspace/lib backfill:library-fields --apply` on staging, then production.
-  4. Run `backfill:template-refs` (dry run first) on staging, then on production with owner approval.
-  5. Remove `editor/advanced`.
-
-  After step 4, every reader builds templates from the DB library rows, so library edits that admins already published reach the templates.
+- **Rollout (TR-07, done 2026-10-26, owner request "merge all edits to supabase staging and production, and merge with main"):**
+  1. Merged into `main` (`9b666a11`, together with TR-01 `c2cff511`) and pushed. The five Vercel production deployments of `9b666a11` completed before any template was converted.
+  2. `0105` on staging; on production a dry run in a rolled-back transaction, then applied. Both have 47 hidden rows at version 1.
+  3. `backfill:library-fields --apply`: staging and production each named 272 rows (the 47 from 0105 were already named). A re-run names 0.
+  4. `backfill:template-refs`:
+     - Staging converted 111 templates (10.2 MB → 1.7 MB of config; 2049 of 2139 sections as refs; the other 90 no longer match their seed and stay trees).
+     - Production converted 109 (10.0 MB → 1.7 MB). **Tallaby Classic and Souq were skipped: they have admin drafts** (TR-08).
+     - A re-run converts 0.
+  5. Check, on both: each converted template's new version, built the way readers build it (`expandTemplateConfig`, DB library rows), equals its previous version, for 111 of 111 (staging) and 109 of 109 (production). The only difference is that the `product-main` library rows (seeded 0101) lack the buy box's `variant: "solid"`, which is the renderer's default, so nothing changes visually.
+  6. The template catalog cache was not broadcast (no `REVALIDATE_SECRET`/`ECOMMERCE_URL` in the shell); it clears by TTL, and the content is the same.
+  7. Not done yet: a manual E2E of the new screen, and removing `editor/advanced` (TR-08).
