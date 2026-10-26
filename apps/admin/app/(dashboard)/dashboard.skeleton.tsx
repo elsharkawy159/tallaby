@@ -74,3 +74,50 @@ export function CategoryAndActivitySkeleton () {
     </div>
   )
 }
+
+/* Platform overview (admin home) skeletons, one per streamed section. */
+
+const panel = 'rounded-[14px] border bg-card'
+
+export function OverviewKpisSkeleton () {
+  return (
+    <div className="grid grid-cols-2 gap-5 lg:grid-cols-3 xl:grid-cols-5">
+      {Array.from({ length: 5 }, (_, i) => (
+        <div key={i} className={`${panel} space-y-2.5 px-[18px] py-4`}>
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="h-7 w-32" />
+          <Skeleton className="h-4 w-full" />
+        </div>
+      ))}
+    </div>
+  )
+}
+
+export function OverviewPanelSkeleton ({ height = 'h-[360px]', className = '' }: { height?: string, className?: string }) {
+  return (
+    <div className={`${panel} space-y-4 p-5 ${className}`}>
+      <Skeleton className="h-5 w-40" />
+      <Skeleton className="h-3 w-56" />
+      <Skeleton className={`${height} w-full`} />
+    </div>
+  )
+}
+
+export function OverviewMixSkeleton () {
+  return (
+    <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 xl:grid-cols-3">
+      <OverviewPanelSkeleton height="h-44" />
+      <OverviewPanelSkeleton height="h-44" />
+      <OverviewPanelSkeleton height="h-44" className="lg:col-span-2 xl:col-span-1" />
+    </div>
+  )
+}
+
+export function OverviewStoresSkeleton () {
+  return (
+    <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+      <OverviewPanelSkeleton height="h-72" />
+      <OverviewPanelSkeleton height="h-72" />
+    </div>
+  )
+}
