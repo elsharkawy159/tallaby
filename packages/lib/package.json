@@ -9,7 +9,8 @@
     "typecheck": "tsc --noEmit",
     "backfill:product-pages": "tsx scripts/backfill-product-pages.ts",
     "backfill:template-refs": "tsx scripts/backfill-template-refs.ts",
-    "backfill:library-fields": "tsx scripts/backfill-library-fields.ts"
+    "backfill:library-fields": "tsx scripts/backfill-library-fields.ts",
+    "bosta:geo": "tsx scripts/bosta-geo-snapshot.ts"
   },
   "keywords": [],
   "author": "",
@@ -54,6 +55,10 @@
     "./shipping/bosta": {
       "types": "./src/shipping/bosta/index.ts",
       "default": "./src/shipping/bosta/index.ts"
+    },
+    "./shipping/bosta/geo": {
+      "types": "./src/shipping/bosta/bosta-geo.lib.ts",
+      "default": "./src/shipping/bosta/bosta-geo.lib.ts"
     },
     "./shipping/bosta/server": {
       "types": "./src/shipping/bosta/server.ts",

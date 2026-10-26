@@ -177,7 +177,7 @@ packages/lib/src/shipping/bosta/
   bosta-payload.lib.ts    order + address + settings → create-delivery body (pure, unit-tested)
   bosta-geo.data.ts       snapshot of GET /cities + /cities/getAllDistricts (generated)
   bosta-geo.lib.ts        place key / free-text city → { city, cityId, districtId, zoneId } (pure)
-  bosta-phone.lib.ts      Egyptian phone normalisation (pure)
+  (phone: reuses normalizeEgyptianMobile from shipping/egypt-post.lib.ts)
 packages/lib/src/integrations/
   bosta.server.ts         saveBostaCredentials / getStoreBostaCredentials / testStoreBosta /
                           saveBostaSettings / recordBostaResult (copy of meta-capi.server.ts)
@@ -187,7 +187,7 @@ packages/lib/src/shipping/
   bosta-ship.server.ts    shipOrderWithBosta(storeId, orderId, trigger): claim → call → record
   bosta-sync.server.ts    applyBostaState(shipment, state, occurredAt, payload): event insert +
                           walk the allowed transitions through applySellerShipmentStatus
-packages/db/scripts/bosta-geo-snapshot.ts   pnpm bosta:geo → regenerates bosta-geo.data.ts
+packages/lib/scripts/bosta-geo-snapshot.ts  pnpm --filter @workspace/lib bosta:geo → regenerates bosta-geo.data.ts
 apps/dashboard/app/(main)/stores/[storeId]/apps/bosta/
   page.tsx · bosta-wizard.client.tsx · bosta-settings.client.tsx · bosta.server.ts (actions) ·
   bosta.dto.ts (zod) · bosta.types.ts
@@ -305,3 +305,13 @@ All new strings go in `apps/dashboard/messages/ar.json` + `en.json` (namespace `
 - **Undocumented webhook retries and no signature:** mitigated by the secret header, the re-fetch and the polling cron.
 - **The Bosta API changes:** the client is isolated in one module; `pnpm bosta:geo` refreshes the geography.
 - **Money path:** `delivered` reuses the existing primitive; any carrier branching in wallet code is a stop-and-ask (BS-04).
+
+---
+
+## 8. Progress log
+
+- **2026-10-26: BS-01 done** (`0e77e4a2`). `packages/lib/src/shipping/bosta/`: `bosta.types.ts`, `bosta.client.server.ts` (pickup locations, create, get, search by reference, terminate, mass AWB; fixed host, 15 s timeout, key redacted from errors), `bosta-states.lib.ts` (state → status, shortest legal status path that never goes backwards), `bosta-errors.lib.ts`, `bosta-payload.lib.ts` (COD from integer piastres, 30 000 EGP cap, `uniqueBusinessReference = tallaby:<orderId>`, escrow excluded, product photos when the package may be opened). Phone normalisation reuses `normalizeEgyptianMobile`. Exports: `@workspace/lib/shipping/bosta` (pure) and `@workspace/lib/shipping/bosta/server`. 41 unit tests.
+- **2026-10-26: BS-02 done.** `pnpm --filter @workspace/lib bosta:geo` (script in `packages/lib/scripts/`) writes `bosta-geo.data.ts` (28 Bosta cities, 3 580 districts, ~420 KB, server-only, exported as `@workspace/lib/shipping/bosta/geo`). `bosta-geo.lib.ts` resolves a place key or free-text address: zone match (then the district named in the address line), district match, and "split" districts such as Sidi Beshr Bahri/Qebli. **Where the code differs from the plan:**
+  - Bosta files Giza's urban areas (Mohandessin, Agouza) and Obour under its "Cairo" city, and Esna under "Qena". Neighbouring Bosta cities are therefore searched after the governorate's own (`NEIGHBOUR_CODES`).
+  - When nothing matches, we do **not** send `districtName` (Format 2) to Bosta. The seller picks the district instead (`district_needed`), which avoids a failed API call.
+  - **Coverage of our 323 Egyptian areas:** 297 match (92%); 18 are outside Bosta's drop-off coverage; 8 need a manual pick: Hadayek El Kobba (EN only), King Mariout, Itay El Barud, Sers El Layan, Port Said City, Nasr El Nuba, El Zeiniya, Balat, Nuweiba.
