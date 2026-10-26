@@ -13,6 +13,7 @@ import { Info, LayoutTemplate, LoaderCircle, MapPinned, Pencil, Plus, Save, Sett
 // import { CurrencyInput } from "@/components/form/currency-input";
 import type { StoreShippingSettings as Settings } from "@workspace/lib/shipping/store-zones";
 import type { StoreShippingZone } from "@workspace/lib/stores/server";
+import type { BostaOverview } from "@workspace/lib/integrations/server";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,6 +33,7 @@ import { BUTTON_CLASS, FIELD_CLASS, LabelNote, SectionCard, SMALL_BUTTON_CLASS }
 import { PageActionBar } from "@/components/layout/page-action-bar";
 import { cn } from "@/lib/utils";
 import { CheckPrice } from "./check-price.client";
+import { DeliveryPartnerCard } from "./delivery-partner.client";
 import { deleteShippingZone, saveShippingSettings } from "./shipping.server";
 import type { TemplateOption, ZoneView } from "./shipping.dto";
 import { ShippingTemplates, TemplatesSheet } from "./templates.client";
@@ -46,6 +48,7 @@ export function StoreShippingSettings({
   zones,
   uncovered,
   templates,
+  bosta,
   readOnly,
 }: {
   storeId: string;
@@ -55,6 +58,8 @@ export function StoreShippingSettings({
   /** Labels of Egypt's governorates no enabled zone covers (empty while no zone is on). */
   uncovered: string[];
   templates: TemplateOption[];
+  /** The store's Bosta integration (BS-07), or null when it has none. */
+  bosta: BostaOverview | null;
   readOnly: boolean;
 }) {
   const t = useTranslations("storeShipping");
@@ -107,6 +112,8 @@ export function StoreShippingSettings({
           <p className="text-muted-foreground">{t("checkoutNotice")}</p>
         </div>
       </div>
+
+      <DeliveryPartnerCard storeId={storeId} bosta={bosta} readOnly={readOnly} />
 
       {zones.length === 0 && (
         <SectionCard id="shipping-templates" icon={LayoutTemplate} title={t("templates.startTitle")} description={t("templates.description")}>

@@ -3025,7 +3025,27 @@
     "governorate": "Governorate",
     "soon": "Soon",
     "tallabyLegacy": "Your store still uses Tallaby's rates. Tallaby delivery is coming soon, so add your own zones and switch to own delivery.",
-    "tallabySoonDescription": "Tallaby's couriers will deliver your orders. Coming soon."
+    "tallabySoonDescription": "Tallaby's couriers will deliver your orders. Coming soon.",
+    "partner": {
+      "title": "Delivery partner",
+      "description": "Send orders to a shipping company instead of delivering them yourself.",
+      "connectTitle": "Ship your orders with Bosta",
+      "connectBody": "Link your Bosta account once. Then send any order to Bosta in one click, or automatically when you confirm it.",
+      "connect": "Connect Bosta",
+      "finishSetup": "Finish Bosta setup",
+      "bosta": "Bosta",
+      "connected": "Connected",
+      "error": "Key error",
+      "manage": "Bosta settings",
+      "autoShipTitle": "Create Bosta shipments",
+      "manualTitle": "Manually",
+      "manualBody": "Press \"Ship with Bosta\" on the orders you choose.",
+      "autoTitle": "Automatically when I confirm an order",
+      "autoBody": "Confirmed orders go to Bosta right away. Unpaid online orders wait until they are paid.",
+      "savedManual": "Bosta shipments will be created when you press \"Ship with Bosta\".",
+      "savedAuto": "Confirmed orders will be sent to Bosta automatically.",
+      "feesNote": "Customers still pay the shipping prices of your zones below. What Bosta charges you is between you and Bosta."
+    }
   },
   "storeApps": {
     "title": "Apps",

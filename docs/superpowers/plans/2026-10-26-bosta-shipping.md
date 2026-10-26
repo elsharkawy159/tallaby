@@ -336,3 +336,8 @@ All new strings go in `apps/dashboard/messages/ar.json` + `en.json` (namespace `
   - **Where the code differs from the plan:**
     - Bosta's docs give no direct settings URL, so the guide links `https://bosta.co/dashboard` and spells out Settings › API Integration.
     - The "needs own delivery" state is dropped, because `parseStoreShipping` turns every method into `own` (every store delivers itself).
+- **2026-10-26: BS-07 done.** `shipping/delivery-partner.client.tsx` sits on the Shipping page above the zones.
+  - Not connected (or the wizard was left before a pickup location): "Ship your orders with Bosta" with **Connect Bosta** / **Finish Bosta setup**.
+  - Connected: logo, status, pickup location, **Bosta settings**, and the Manually (default) / Automatically-on-confirm choice. It saves `config.autoShip` right away through `updateBostaSettings` with the page's explicit `storeId`, and rolls back on error.
+  - **Where the code differs from the plan:** Disconnect lives only on the Bosta settings page, to keep one place for it.
+  - Strings: `storeShipping.partner.*` (en, ar). Typecheck clean.
