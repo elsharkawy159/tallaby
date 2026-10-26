@@ -51,9 +51,13 @@ const ORDER: IntegrationProvider[] = [
   "snapchat_pixel",
   "google_sheets",
   "shopify_import",
+  "bosta",
 ];
 
-const GROUPS: AppGroup[] = ["tracking", "data"];
+const GROUPS: AppGroup[] = ["tracking", "shipping", "data"];
+
+/** Apps with their own page instead of a side sheet. */
+const APP_PAGES: Partial<Record<IntegrationProvider, string>> = { bosta: "bosta" };
 
 type Tab = "all" | AppGroup | "connected";
 
@@ -113,7 +117,7 @@ export function StoreApps({
   const q = query.trim().toLowerCase();
   const matches = sorted.filter((provider) => {
     if (tab === "connected" && !isConnected(provider)) return false;
-    if ((tab === "tracking" || tab === "data") && groupOf(INTEGRATIONS[provider].category) !== tab) return false;
+    if (tab !== "all" && tab !== "connected" && groupOf(INTEGRATIONS[provider].category) !== tab) return false;
     if (!q) return true;
     const text = `${t(`providers.${provider}.name`)} ${t(`providers.${provider}.vendor`)} ${t(`providers.${provider}.description`)}`;
     return text.toLowerCase().includes(q);
@@ -136,7 +140,11 @@ export function StoreApps({
       current={byProvider.get(provider)}
       available={isAvailable(provider)}
       disabled={readOnly && !byProvider.has(provider)}
-      onOpen={() => setEditing(provider)}
+      onOpen={() => {
+        const page = APP_PAGES[provider];
+        if (page) router.push(`/stores/${storeId}/apps/${page}`);
+        else setEditing(provider);
+      }}
     />
   );
 
@@ -370,6 +378,11 @@ function AppCard({
           {connected && (current?.identifier || current?.details.shopDomain) && (
             <p dir="ltr" className="mt-1 truncate text-start font-mono text-xs text-faint rtl:text-end">
               {current?.identifier ?? current?.details.shopDomain}
+            </p>
+          )}
+          {connected && current?.details.pickupLocationName && (
+            <p dir="auto" className="mt-1 truncate text-xs text-faint">
+              {current.details.pickupLocationName}
             </p>
           )}
         </div>

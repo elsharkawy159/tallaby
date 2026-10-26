@@ -21,7 +21,14 @@ export type StoreAppsErrorKey =
   | "invalidCategory"
   // Google Sheets (P7-06)
   | "googleFailed"
-  | "noSheet";
+  | "noSheet"
+  // Bosta (BS-06)
+  | "bostaInvalidKey"
+  | "bostaKeyRequired"
+  | "bostaKeyRejected"
+  | "bostaUnreachable"
+  | "bostaUnknownLocation"
+  | "invalidSettings";
 
 export type StoreAppsResult<T> =
   | { success: true; data: T }

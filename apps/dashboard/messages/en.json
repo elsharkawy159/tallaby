@@ -3059,7 +3059,13 @@
       "shopifyUnreachable": "Couldn't reach Shopify. Try again in a moment.",
       "invalidCategory": "Choose a valid category.",
       "googleFailed": "Google Sheets didn't respond as expected. If it keeps failing, disconnect and connect again.",
-      "noSheet": "Create a spreadsheet first."
+      "noSheet": "Create a spreadsheet first.",
+      "bostaInvalidKey": "That doesn't look like a Bosta API key. Copy the whole key and paste it again.",
+      "bostaKeyRequired": "Paste your Bosta API key.",
+      "bostaKeyRejected": "Bosta didn't accept this key. It may be wrong, or disabled in your Bosta settings.",
+      "bostaUnreachable": "Couldn't reach Bosta. Try again in a moment.",
+      "bostaUnknownLocation": "That pickup location isn't in your Bosta account anymore. Pick another one.",
+      "invalidSettings": "Check the settings and try again."
     },
     "error": "Error",
     "lastError": "Last error",
@@ -3201,6 +3207,11 @@
         "name": "Shopify import",
         "description": "Copy your products from a Shopify store.",
         "vendor": "Shopify"
+      },
+      "bosta": {
+        "name": "Bosta",
+        "vendor": "Bosta",
+        "description": "Send your store's orders to Bosta in one click, or automatically when you confirm them. Tracking updates come back by themselves."
       }
     },
     "heroTitle": "Connect your tools",
@@ -3212,7 +3223,8 @@
     },
     "groups": {
       "tracking": "Tracking & ads",
-      "data": "Import & export"
+      "data": "Import & export",
+      "shipping": "Shipping"
     },
     "groupCount": "{count, plural, one {# app} other {# apps}}",
     "find": "Find an app",
@@ -3220,7 +3232,8 @@
       "script": "Storefront script",
       "server": "Server-side",
       "import": "One-time import",
-      "account": "Google account"
+      "account": "Google account",
+      "carrier": "Shipping company"
     },
     "comingSoon": "Coming soon",
     "imported": "Imported",
@@ -3247,6 +3260,123 @@
       "description": "Its saved settings are removed from this store. You can connect it again later.",
       "googleSheets": "Tallaby loses access to your Google account and stops exporting orders. Your existing spreadsheet stays in Google Drive.",
       "metaCapi": "Your saved access token is deleted and purchase events stop reaching Meta. You'll need a new token to reconnect."
+    },
+    "bosta": {
+      "back": "Apps",
+      "title": "Bosta",
+      "titleConnect": "Connect Bosta",
+      "subtitle": "Ship {store}'s orders with your own Bosta account.",
+      "readOnly": "This store is archived, so its Bosta settings can't be changed.",
+      "wizard": {
+        "progress": "Connection steps",
+        "steps": {
+          "account": "Account",
+          "key": "API key",
+          "verify": "Verify",
+          "prefs": "Preferences"
+        },
+        "next": "Next",
+        "back": "Back",
+        "finish": "Finish",
+        "help": "Stuck? Read <link>Bosta's guide to API keys</link>."
+      },
+      "account": {
+        "title": "Do you have a Bosta business account?",
+        "body": "Bosta picks up your orders and delivers them. You pay Bosta directly, and the cash it collects goes to your Bosta account.",
+        "yes": "Yes, I have one",
+        "yesBody": "I can sign in to my Bosta dashboard.",
+        "no": "Not yet",
+        "noBody": "Create one first. It takes a few minutes.",
+        "checklist": {
+          "signup": "<b>Create your account</b> on Bosta's website.",
+          "phone": "<b>Verify your phone number</b> with the code Bosta sends you.",
+          "pickup": "<b>Add a pickup location</b>: the address Bosta collects your orders from."
+        },
+        "openSignup": "Open Bosta",
+        "doneContinue": "Done, continue"
+      },
+      "key": {
+        "title": "Create an API key in Bosta",
+        "body": "The key lets Tallaby create shipments in your Bosta account. Keep this page open while you do it.",
+        "steps": {
+          "open": "Open your Bosta dashboard, go to <b>Settings</b>, then the <b>API Integration</b> tab.",
+          "otp": "Click <b>Request OTP</b> and enter the code sent to your phone.",
+          "create": "Click <b>Create API key</b> and name it <b>Tallaby</b>.",
+          "scope": "Choose the permission <b>Read / Write</b>, then click <b>Create</b>.",
+          "copy": "<b>Copy the key</b> before you click Done."
+        },
+        "scopeNote": "<b>Read / Write</b> is enough to create and track shipments. Choose <b>Full access</b> only if you also want to cancel Bosta shipments from Tallaby.",
+        "copyWarning": "Bosta shows the key only once. If you lose it, create a new one.",
+        "openDashboard": "Open Bosta dashboard",
+        "haveKey": "I have my key"
+      },
+      "verify": {
+        "title": "Paste your key",
+        "body": "We check it with Bosta before saving it. It's stored encrypted and never shown again.",
+        "label": "Bosta API key",
+        "placeholder": "Paste the key here",
+        "savedPlaceholder": "Saved key ••••{hint}. Paste a new one, or verify the saved one.",
+        "hint": "Only this store uses this key.",
+        "paste": "Paste",
+        "pasteBlocked": "Your browser blocked pasting. Press Ctrl+V (or long-press) in the field instead.",
+        "show": "Show key",
+        "hide": "Hide key",
+        "action": "Verify key",
+        "checking": "Checking…",
+        "ok": "{count, plural, one {Connected. We found # pickup location.} other {Connected. We found # pickup locations.}}",
+        "noLocations": "The key works, but your Bosta account has no pickup location. Add one in Bosta, then verify again."
+      },
+      "prefs": {
+        "title": "Shipping preferences",
+        "body": "Every option has a good default, so you can just press Finish. You can change them any time.",
+        "pickupTitle": "Pickup location",
+        "pickupHint": "Where Bosta collects your orders from.",
+        "pickupDefault": "Bosta default",
+        "pickupNone": "Your Bosta account has no pickup location. Add one in Bosta first.",
+        "pickupFailed": "Couldn't load your pickup locations from Bosta.",
+        "pickupSaved": "Current: {name}. Couldn't load the list from Bosta right now.",
+        "pickupRequired": "Choose a pickup location.",
+        "autoShipTitle": "When should we create the Bosta shipment?",
+        "recommended": "Default",
+        "manualTitle": "When I press \"Ship with Bosta\"",
+        "manualBody": "You choose which orders go to Bosta, one by one or several at once.",
+        "autoTitle": "Automatically when I confirm an order",
+        "autoBody": "Every order you confirm is sent to Bosta right away. Unpaid online orders wait until they're paid.",
+        "sizeTitle": "Usual package size",
+        "sizes": {
+          "SMALL": "Small",
+          "MEDIUM": "Medium",
+          "LARGE": "Large"
+        },
+        "sizeHint": "Bosta prices shipments by size. You can change it for a single order when you ship it.",
+        "openTitle": "Let customers open the package",
+        "openBody": "Customers can check the items before paying. We send Bosta the order's product photos, which it needs for this.",
+        "noteTitle": "Note on every shipment (optional)",
+        "notePlaceholder": "For example: fragile, handle with care",
+        "noteHint": "The customer's order note is added after it.",
+        "cancelTitle": "My key has Full access",
+        "cancelBody": "Turn on only if you chose Full access in Bosta. Then you can cancel a shipment from Tallaby before Bosta picks it up."
+      },
+      "done": {
+        "title": "Bosta is connected",
+        "bodyManual": "Press \"Ship with Bosta\" on any order to send it to Bosta.",
+        "bodyAuto": "Orders you confirm are sent to Bosta automatically. You can still ship any order by hand.",
+        "orders": "Go to orders",
+        "shipping": "Shipping settings",
+        "settings": "Bosta settings"
+      },
+      "settings": {
+        "since": "Since {date}",
+        "key": "API key",
+        "test": "Test connection",
+        "testOk": "Connected. Bosta accepted the key.",
+        "replaceKey": "Replace key",
+        "keyReplaced": "Key replaced",
+        "errorHelp": "Bosta stopped accepting the saved key. Create a new key in Bosta and replace it here.",
+        "dangerTitle": "Disconnect Bosta",
+        "dangerBody": "Tallaby stops creating Bosta shipments for this store.",
+        "disconnectConfirm": "Shipments already sent to Bosta stay in Bosta, but Tallaby will stop updating their status. Your key is deleted from Tallaby."
+      }
     }
   },
   "storeWallet": {

@@ -328,3 +328,11 @@ All new strings go in `apps/dashboard/messages/ar.json` + `en.json` (namespace `
   - Registry: `bosta` with the new `shipping` category. Its public details are `keyHint`, `pickupLocationName` and `autoShip`.
   - **Where the code differs from the plan:** `canCancel` is the seller's own "my key has Full access" switch, because Bosta has no read-only call that tells a key's permission. A cancel with a Read/Write key gets Bosta's 403 and a hint.
   - Tests: `bosta.lib.test.ts` (9) and `bosta.integration.test.ts` (7, run with `TEST_DATABASE_URL` = staging, against a faked Bosta) cover the encrypted round trip, the key never stored in plain text, an empty key keeping the old one, the webhook token surviving a key change, store B unable to read, test, change or use store A's key, a revoked key recorded as an error with the key redacted, and disconnect. lib: 590 tests pass, typecheck clean.
+- **2026-10-26: BS-06 done (UI; manual E2E with a real Bosta key still to do).**
+  - Apps catalog: a new **Shipping** group with the Bosta card. The mark is a parcel on Bosta red, because Simple Icons has no Bosta logo. The card opens `/stores/[storeId]/apps/bosta` instead of a side sheet.
+  - The page (`apps/bosta/`: `page.tsx`, `bosta.client.tsx`, `bosta-wizard.client.tsx`, `bosta-preferences.client.tsx`, `bosta.server.ts`) shows the 4-step wizard (account, create key, paste and verify, preferences) and then a done screen. Once connected it shows the settings view (status, key ••••hint, Test connection, Replace key, preferences, Disconnect). A saved key without a pickup location reopens the wizard.
+  - Pickup locations load after the page renders, so a slow Bosta never blocks it. "Verify key" is limited to 5 a minute per store.
+  - Strings: `storeApps.bosta.*`, `storeApps.providers.bosta`, `groups.shipping`, `kinds.carrier` and 6 `storeApps.errors` keys, in en and ar (MSA, like the rest of the dashboard).
+  - **Where the code differs from the plan:**
+    - Bosta's docs give no direct settings URL, so the guide links `https://bosta.co/dashboard` and spells out Settings › API Integration.
+    - The "needs own delivery" state is dropped, because `parseStoreShipping` turns every method into `own` (every store delivers itself).
