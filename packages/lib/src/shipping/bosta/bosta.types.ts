@@ -5,15 +5,10 @@
  * the fields Tallaby sends or reads are typed.
  */
 
-/** Same values as the `shipment_status` DB enum. */
-export type BostaShipmentStatus =
-  | "pending"
-  | "assigned"
-  | "out_for_delivery"
-  | "delivered"
-  | "failed"
-  | "returned"
-  | "cancelled";
+import type { ShippingStatus } from "../shipment-status.lib";
+
+/** The seller shipment status (`shipment_status` DB enum). */
+export type BostaShipmentStatus = ShippingStatus;
 
 export type BostaPackageSize = "SMALL" | "MEDIUM" | "LARGE";
 

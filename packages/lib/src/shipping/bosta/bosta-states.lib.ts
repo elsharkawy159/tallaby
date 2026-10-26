@@ -1,3 +1,4 @@
+import { SHIPPING_TRANSITIONS } from "../shipment-status.lib";
 import type { BostaShipmentStatus } from "./bosta.types";
 
 /**
@@ -59,20 +60,6 @@ export function canCancelBostaState(code: number): boolean {
   return code === 10 || code === 11 || code === 20;
 }
 
-/**
- * The seller shipment transition graph. Mirrors TRANSITIONS in
- * apps/dashboard/lib/shipping/shipping-status.ts; keep the two in sync.
- */
-const TRANSITIONS: Record<BostaShipmentStatus, BostaShipmentStatus[]> = {
-  pending: ["assigned", "out_for_delivery", "cancelled"],
-  assigned: ["pending", "out_for_delivery", "failed", "cancelled"],
-  out_for_delivery: ["delivered", "failed", "returned", "assigned"],
-  delivered: [],
-  failed: ["assigned", "out_for_delivery", "returned", "cancelled"],
-  returned: [],
-  cancelled: [],
-};
-
 /** How far along a shipment is; Bosta updates never move it backwards. */
 const RANK: Record<BostaShipmentStatus, number> = {
   pending: 0,
@@ -99,7 +86,7 @@ export function bostaStatusPath(current: BostaShipmentStatus, target: BostaShipm
   while (queue.length > 0) {
     const status = queue.shift()!;
     if (status === target) break;
-    for (const next of TRANSITIONS[status]) {
+    for (const next of SHIPPING_TRANSITIONS[status]) {
       // Never step backwards on the way, e.g. out_for_delivery → assigned.
       if (seen.has(next) || RANK[next] < RANK[status]) continue;
       seen.add(next);

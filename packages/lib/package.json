@@ -64,6 +64,14 @@
       "types": "./src/shipping/bosta/server.ts",
       "default": "./src/shipping/bosta/server.ts"
     },
+    "./shipping/shipment-status": {
+      "types": "./src/shipping/shipment-status.lib.ts",
+      "default": "./src/shipping/shipment-status.lib.ts"
+    },
+    "./shipping/seller-shipment": {
+      "types": "./src/shipping/apply-seller-shipment.server.ts",
+      "default": "./src/shipping/apply-seller-shipment.server.ts"
+    },
     "./places": {
       "types": "./src/places/index.ts",
       "default": "./src/places/index.ts"
