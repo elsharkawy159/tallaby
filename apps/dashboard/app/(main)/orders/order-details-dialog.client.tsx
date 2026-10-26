@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
 import Image from "next/image";
-import { ExternalLink } from "lucide-react";
+import Link from "next/link";
+import { Check, ExternalLink, Info } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
+import { CallButton, WhatsAppButton } from "@workspace/ui/components/contact-buttons";
 import {
   Dialog,
   DialogContent,
@@ -11,296 +12,322 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@workspace/ui/components/dialog";
-import { Badge } from "@workspace/ui/components/badge";
-import { Separator } from "@workspace/ui/components/separator";
-import { Skeleton } from "@workspace/ui/components/skeleton";
-import { getOrderDetails } from "@/actions/orders";
-import { getPublicUrl } from "@/lib/utils";
-import { getStorefrontProductUrl } from "@/lib/constants";
+import { MapsLinkButton } from "@workspace/ui/components/maps-link-button";
+import { getPublicUrl, cn } from "@/lib/utils";
 import { formatDateTime, formatMoney } from "@/lib/i18n/format";
 import { humanizeStatus, translateStatus } from "@/lib/i18n/status";
-import {
-  orderStatusVariant,
-  pickProductSlug,
-  resolveCustomerEmail,
-  resolveCustomerName,
-  resolveCustomerPhone,
-} from "./orders.lib";
-
-type OrderDetailsResult = Awaited<ReturnType<typeof getOrderDetails>>;
-type OrderDetails = NonNullable<
-  Extract<OrderDetailsResult, { data: unknown }>["data"]
->;
+import { PROGRESS_STEPS, progressIndex } from "./order-flow.lib";
+import { OrderActions } from "./order-actions.client";
+import { OrderStageBadge } from "./order-stage-badge";
+import type { SellerOrderRow } from "./orders.types";
 
 function Row({ label, value }: { label: string; value?: string | null }) {
   return (
     <div className="flex items-start justify-between gap-4 text-sm">
-      <span className="text-muted-foreground shrink-0">{label}</span>
-      <span className="text-end font-medium break-words">{value || "—"}</span>
+      <span className="shrink-0 text-muted-foreground">{label}</span>
+      <span className="break-words text-end font-medium">{value || "—"}</span>
     </div>
   );
 }
 
-function Section({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-md border p-4 space-y-2">
-      <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-        {title}
-      </h3>
+    <section className="space-y-3">
+      <h3 className="text-sm font-semibold">{title}</h3>
       {children}
     </section>
   );
 }
 
+/**
+ * Where the order is on placed → confirmed → out for delivery → delivered.
+ * Orders that left that path (cancelled, returned, refunds) show a note instead.
+ */
+function ProgressTrack({ order }: { order: SellerOrderRow }) {
+  const t = useTranslations("orders.progress");
+  const locale = useLocale();
+  const { stage } = order.flow;
+  const current = progressIndex(stage);
+
+  if (current < 0) {
+    const at = stage === "cancelled" ? order.cancelledAt : null;
+    return (
+      <div className="rounded-lg border border-dashed bg-muted/40 px-4 py-3 text-sm">
+        <p className="font-medium">{t(`ended.${stage}`)}</p>
+        {at && <p className="text-muted-foreground">{formatDateTime(at, locale)}</p>}
+      </div>
+    );
+  }
+
+  const failed = stage === "failed";
+  const delivered = stage === "delivered";
+
+  return (
+    <ol className="grid grid-cols-4" aria-label={t("label")}>
+      {PROGRESS_STEPS.map((step, i) => {
+        const done = i < current || (delivered && i === current);
+        const active = i === current && !delivered;
+        const isFailedStep = failed && i === current;
+        const label = isFailedStep ? t("failed") : t(step);
+        return (
+          <li
+            key={step}
+            aria-current={active ? "step" : undefined}
+            className="relative flex flex-col items-center gap-2 text-center"
+          >
+            {i > 0 && (
+              <span
+                aria-hidden
+                className={cn(
+                  "absolute top-3.5 h-0.5 -translate-y-1/2 end-1/2 w-full -z-0",
+                  i <= current ? "bg-primary" : "bg-border",
+                )}
+              />
+            )}
+            <span
+              className={cn(
+                "relative z-10 flex size-7 items-center justify-center rounded-full border-2 bg-background text-xs font-semibold transition-colors",
+                done && "border-primary bg-primary text-primary-foreground",
+                active && !isFailedStep && "border-primary text-primary ring-4 ring-primary/15",
+                isFailedStep && "border-destructive text-destructive ring-4 ring-destructive/15",
+                !done && !active && "border-border text-muted-foreground",
+              )}
+            >
+              {done ? <Check className="size-3.5" strokeWidth={3} /> : i + 1}
+            </span>
+            <span
+              className={cn(
+                "text-xs leading-tight",
+                active ? "font-semibold text-foreground" : "text-muted-foreground",
+                isFailedStep && "text-destructive",
+              )}
+            >
+              {label}
+            </span>
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
+function FlowNote({ order }: { order: SellerOrderRow }) {
+  const t = useTranslations("orders.notes");
+  const { flow } = order;
+  const note = flow.readOnly
+    ? t(`readOnly.${flow.readOnly}`)
+    : flow.stage === "awaiting_payment"
+      ? t("awaitingPayment")
+      : flow.prepaid && (flow.stage === "new" || flow.stage === "to_ship")
+        ? t("prepaid")
+        : null;
+  if (!note) return null;
+  return (
+    <p className="flex items-start gap-2 text-xs text-muted-foreground">
+      <Info className="mt-0.5 size-3.5 shrink-0" />
+      {note}
+    </p>
+  );
+}
+
 export function OrderDetailsDialog({
-  orderId,
+  order,
   onClose,
 }: {
-  orderId: string | null;
+  order: SellerOrderRow | null;
   onClose: () => void;
 }) {
   const t = useTranslations("orders.details");
+  const tChannel = useTranslations("orders.channel");
   const tStatus = useTranslations("status");
   const locale = useLocale();
-  const money = (value: string | number | null | undefined) =>
-    formatMoney(value, locale);
-  const [order, setOrder] = useState<OrderDetails | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
-
-  useEffect(() => {
-    if (!orderId) return;
-
-    setOrder(null);
-    setError(null);
-
-    startTransition(async () => {
-      const res = await getOrderDetails(orderId);
-      if (!res.success) {
-        setError(t("loadFailed"));
-        return;
-      }
-      if (!res.data) {
-        setError(t("unavailable"));
-        return;
-      }
-      setOrder(res.data);
-    });
-  }, [orderId, t]);
-
-  const address = order?.userAddress_shippingAddressId;
+  const money = (value: string | number | null | undefined) => formatMoney(value, locale);
 
   return (
-    <Dialog open={Boolean(orderId)} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex flex-wrap items-center gap-2">
-            <span>{t("title", { number: order?.orderNumber ?? "…" })}</span>
-            {order?.status && (
-              <Badge variant={orderStatusVariant(order.status)}>
-                {translateStatus(tStatus, "order", order.status)}
-              </Badge>
-            )}
-          </DialogTitle>
-          <DialogDescription>
-            {order?.createdAt
-              ? t("placed", { date: formatDateTime(order.createdAt, locale) })
-              : t("loading")}
-          </DialogDescription>
-        </DialogHeader>
-
-        {isPending && !order && (
-          <div className="space-y-3">
-            <Skeleton className="h-24 w-full" />
-            <Skeleton className="h-32 w-full" />
-            <Skeleton className="h-24 w-full" />
-          </div>
-        )}
-
-        {error && (
-          <p className="text-sm text-destructive py-6 text-center">{error}</p>
-        )}
-
+    <Dialog open={Boolean(order)} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
         {order && (
-          <div className="space-y-4">
-            <Section title={t("customer")}>
-              <div className="space-y-1.5">
-                <div className="flex items-center gap-2">
-                  <span className="font-medium">
-                    {resolveCustomerName(order, t("guest"))}
-                  </span>
-                  {order.user?.isGuest && <Badge variant="outline">{t("guest")}</Badge>}
-                </div>
-                <Row label={t("phone")} value={resolveCustomerPhone(order)} />
-                <Row label={t("email")} value={resolveCustomerEmail(order)} />
-              </div>
-            </Section>
+          <>
+            <DialogHeader>
+              <DialogTitle className="flex flex-wrap items-center gap-2">
+                <span>{t("title", { number: order.orderNumber })}</span>
+                <OrderStageBadge stage={order.flow.stage} />
+              </DialogTitle>
+              <DialogDescription>
+                {t("placedOn", {
+                  date: formatDateTime(order.createdAt, locale),
+                  channel: order.storeName ?? tChannel("marketplace"),
+                })}
+              </DialogDescription>
+            </DialogHeader>
 
-            <Section title={t("shippingAddress")}>
-              {address ? (
-                <div className="space-y-1.5">
-                  <Row label={t("name")} value={address.fullName} />
-                  <Row label={t("phone")} value={address.phone} />
-                  <Row
-                    label={t("address")}
-                    value={[address.addressLine1, address.addressLine2]
-                      .filter(Boolean)
-                      .join(", ")}
-                  />
-                  <Row
-                    label={t("city")}
-                    value={[address.city, address.state, address.postalCode]
-                      .filter(Boolean)
-                      .join(", ")}
-                  />
-                  <Row label={t("country")} value={address.country} />
-                  {address.deliveryInstructions && (
-                    <Row
-                      label={t("instructions")}
-                      value={address.deliveryInstructions}
-                    />
-                  )}
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  {t("noAddress")}
+            <div className="space-y-4 rounded-xl border bg-muted/30 p-4">
+              <ProgressTrack order={order} />
+              {order.flow.stage === "failed" && order.failureReason && (
+                <p className="text-center text-sm text-destructive">
+                  {t("lastAttempt", { reason: order.failureReason })}
                 </p>
               )}
-            </Section>
+              {order.flow.primary && (
+                <div className="flex flex-col gap-2 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
+                  <OrderActions order={order} className="flex-wrap" />
+                  {order.flow.stage === "to_ship" && (
+                    <Link
+                      href="/orders/delivery"
+                      className="text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                    >
+                      {order.riderName
+                        ? t("riderAssigned", { name: order.riderName })
+                        : t("useRider")}
+                    </Link>
+                  )}
+                </div>
+              )}
+              <FlowNote order={order} />
+            </div>
 
-            {(order.notes || (order.isGift && order.giftMessage)) && (
-              <Section title={t("orderNote")}>
-                {order.notes && (
-                  <p className="text-sm whitespace-pre-wrap">{order.notes}</p>
-                )}
-                {order.isGift && order.giftMessage && (
-                  <p className="text-sm whitespace-pre-wrap">
-                    <span className="text-muted-foreground">
-                      {t("giftMessage")}{" "}
-                    </span>
-                    {order.giftMessage}
-                  </p>
-                )}
-              </Section>
-            )}
-
-            <Section title={t("items", { count: order.orderItems.length })}>
-              <ul className="divide-y">
-                {order.orderItems.map((item) => {
-                  const image = (item.product?.images as string[] | null)?.[0];
-                  const slug = pickProductSlug(
-                    item.product?.productTranslations
-                  );
-                  return (
-                    <li key={item.id} className="flex gap-3 py-3 first:pt-0">
-                      {image ? (
-                        <Image
-                          src={getPublicUrl(image, "products")}
-                          alt={item.productName}
-                          width={48}
-                          height={48}
-                          className="h-12 w-12 shrink-0 rounded border object-cover"
-                        />
-                      ) : (
-                        <div className="h-12 w-12 shrink-0 rounded border bg-muted" />
-                      )}
-
-                      <div className="min-w-0 flex-1 space-y-1">
-                        {slug ? (
-                          <a
-                            href={getStorefrontProductUrl(slug)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="font-medium hover:underline inline-flex items-center gap-1"
-                          >
-                            {item.productName}
-                            <ExternalLink className="size-3.5 shrink-0 opacity-60" />
-                          </a>
+            <div className="grid gap-6 md:grid-cols-5">
+              <div className="space-y-6 md:col-span-3">
+                <Section title={t("items", { count: order.itemCount })}>
+                  <ul className="divide-y rounded-lg border">
+                    {order.lines.map((line) => (
+                      <li key={line.id} className="flex gap-3 p-3">
+                        {line.image ? (
+                          <Image
+                            src={getPublicUrl(line.image, "products")}
+                            alt={line.productName}
+                            width={56}
+                            height={56}
+                            className="size-14 shrink-0 rounded-md border object-cover"
+                          />
                         ) : (
-                          <span className="font-medium">
-                            {item.productName}
-                          </span>
+                          <div className="size-14 shrink-0 rounded-md border bg-muted" />
                         )}
-                        {item.variantName && (
-                          <div className="text-xs text-muted-foreground">
-                            {item.variantName}
+                        <div className="min-w-0 flex-1 space-y-0.5">
+                          {line.productUrl ? (
+                            <a
+                              href={line.productUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 font-medium hover:underline"
+                            >
+                              <span className="line-clamp-2">{line.productName}</span>
+                              <ExternalLink className="size-3.5 shrink-0 opacity-60" />
+                            </a>
+                          ) : (
+                            <span className="line-clamp-2 font-medium">{line.productName}</span>
+                          )}
+                          {line.variantName && (
+                            <div className="text-xs text-muted-foreground">{line.variantName}</div>
+                          )}
+                          <div className="text-xs text-muted-foreground" dir="auto">
+                            {t("itemLine", {
+                              quantity: line.quantity,
+                              price: money(line.price),
+                            })}
+                            {line.sku && <span> · {t("sku", { sku: line.sku })}</span>}
                           </div>
-                        )}
-                        <div className="text-xs text-muted-foreground">
-                          {t("itemLine", {
-                            sku: item.sku,
-                            quantity: item.quantity,
-                            price: money(item.price),
-                          })}
                         </div>
-                        {item.status && (
-                          <Badge
-                            variant={orderStatusVariant(item.status)}
-                            className="text-[10px]"
-                          >
-                            {translateStatus(tStatus, "order", item.status)}
-                          </Badge>
-                        )}
-                      </div>
+                        <div className="shrink-0 text-end text-sm font-medium tabular-nums" dir="ltr">
+                          {money(line.total)}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </Section>
 
-                      <div className="text-end text-sm font-medium shrink-0">
-                        {money(item.total)}
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
-            </Section>
+                <Section title={t("payment")}>
+                  <div className="space-y-2 rounded-lg border p-3">
+                    <Row
+                      label={t("paymentMethod")}
+                      value={
+                        order.paymentMethod
+                          ? t.has(`paymentMethods.${order.paymentMethod}`)
+                            ? t(`paymentMethods.${order.paymentMethod}`)
+                            : humanizeStatus(order.paymentMethod)
+                          : null
+                      }
+                    />
+                    <Row
+                      label={t("paymentStatus")}
+                      value={order.paymentStatus ? translateStatus(tStatus, "payment", order.paymentStatus) : null}
+                    />
+                    <div className="flex items-baseline justify-between gap-4 border-t pt-2">
+                      <span className="text-sm font-semibold">{t("orderTotal")}</span>
+                      <span className="text-lg font-bold tabular-nums" dir="ltr">
+                        {money(order.totalAmount)}
+                      </span>
+                    </div>
+                  </div>
+                </Section>
 
-            <Section title={t("summary")}>
-              <div className="space-y-1.5">
-                <Row
-                  label={t("paymentMethod")}
-                  value={
-                    order.paymentMethod
-                      ? t.has(`paymentMethods.${order.paymentMethod}`)
-                        ? t(`paymentMethods.${order.paymentMethod}`)
-                        : humanizeStatus(order.paymentMethod)
-                      : null
-                  }
-                />
-                <Row
-                  label={t("paymentStatus")}
-                  value={
-                    order.paymentStatus
-                      ? translateStatus(tStatus, "payment", order.paymentStatus)
-                      : null
-                  }
-                />
-                <Separator className="my-2" />
-                <Row label={t("orderTotal")} value={money(order.totalAmount)} />
-                <Row
-                  label={t("yourItemsTotal")}
-                  value={money(
-                    order.orderItems.reduce(
-                      (sum, item) => sum + (parseFloat(item.total) || 0),
-                      0
-                    )
-                  )}
-                />
-                <Row
-                  label={t("yourEarnings")}
-                  value={money(
-                    order.orderItems.reduce(
-                      (sum, item) => sum + (parseFloat(item.sellerEarning) || 0),
-                      0
-                    )
-                  )}
-                />
+                {(order.notes || order.giftMessage) && (
+                  <Section title={t("orderNote")}>
+                    <div className="space-y-2 rounded-lg border p-3 text-sm">
+                      {order.notes && <p className="whitespace-pre-wrap">{order.notes}</p>}
+                      {order.giftMessage && (
+                        <p className="whitespace-pre-wrap">
+                          <span className="text-muted-foreground">{t("giftMessage")} </span>
+                          {order.giftMessage}
+                        </p>
+                      )}
+                    </div>
+                  </Section>
+                )}
               </div>
-            </Section>
-          </div>
+
+              <div className="space-y-6 md:col-span-2">
+                <Section title={t("customer")}>
+                  <div className="space-y-3 rounded-lg border p-3">
+                    <div>
+                      <p className="font-medium">{order.customerName || t("guest")}</p>
+                      {order.customerPhone && (
+                        <p className="text-sm text-muted-foreground" dir="ltr">
+                          {order.customerPhone}
+                        </p>
+                      )}
+                      {order.customerEmail && (
+                        <p className="break-all text-sm text-muted-foreground">{order.customerEmail}</p>
+                      )}
+                    </div>
+                    {order.customerPhone && (
+                      <div className="flex flex-wrap gap-2">
+                        <CallButton phone={order.customerPhone} label={t("call")} />
+                        <WhatsAppButton
+                          phone={order.customerPhone}
+                          label={t("whatsapp")}
+                          text={t("whatsappText", { number: order.orderNumber })}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </Section>
+
+                <Section title={t("shippingAddress")}>
+                  {order.address ? (
+                    <div className="space-y-2 rounded-lg border p-3 text-sm">
+                      {order.address.fullName && <p className="font-medium">{order.address.fullName}</p>}
+                      {order.address.line && <p>{order.address.line}</p>}
+                      {order.address.area && <p className="text-muted-foreground">{order.address.area}</p>}
+                      {order.address.instructions && (
+                        <p className="rounded-md bg-muted px-2 py-1.5 text-xs">
+                          {t("instructions")}: {order.address.instructions}
+                        </p>
+                      )}
+                      <MapsLinkButton
+                        latitude={order.address.latitude}
+                        longitude={order.address.longitude}
+                        type="navigation"
+                        label={t("openMap")}
+                      />
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">{t("noAddress")}</p>
+                  )}
+                </Section>
+              </div>
+            </div>
+          </>
         )}
       </DialogContent>
     </Dialog>

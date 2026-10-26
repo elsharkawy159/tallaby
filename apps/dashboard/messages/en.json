@@ -1685,21 +1685,116 @@
     }
   },
   "orders": {
-    "guest": "Guest",
+    "subtitle": "Confirm new orders, send them out and mark them delivered. You handle the delivery.",
+    "tabs": {
+      "all": "All",
+      "new": "To confirm",
+      "to_ship": "To ship",
+      "out_for_delivery": "Out for delivery",
+      "delivered": "Delivered",
+      "closed": "Cancelled & returned"
+    },
+    "stage": {
+      "awaiting_payment": "Awaiting payment",
+      "new": "New",
+      "to_ship": "Ready to ship",
+      "out_for_delivery": "Out for delivery",
+      "failed": "Delivery failed",
+      "delivered": "Delivered",
+      "returned": "Returned",
+      "cancelled": "Cancelled",
+      "refund": "Refund"
+    },
     "table": {
       "order": "Order",
       "customer": "Customer",
       "item": "Item",
-      "qty": "Qty",
+      "qty": "Qty {count}",
       "total": "Total",
-      "status": "Status"
+      "status": "Status",
+      "items": "Items",
+      "next": "Next step",
+      "moreItems": "{count} items"
     },
+    "empty": {
+      "title": "No orders yet",
+      "description": "Orders show up here as soon as a customer buys from you.",
+      "tab": "No orders here."
+    },
+    "progress": {
+      "label": "Order progress",
+      "new": "Placed",
+      "to_ship": "Confirmed",
+      "out_for_delivery": "Out for delivery",
+      "delivered": "Delivered",
+      "failed": "Delivery failed",
+      "ended": {
+        "cancelled": "This order was cancelled.",
+        "returned": "This order came back to you.",
+        "refund": "This order has a refund."
+      }
+    },
+    "actions": {
+      "confirm": "Confirm order",
+      "ship": "Mark out for delivery",
+      "retry": "Send out again",
+      "deliver": "Mark delivered",
+      "fail": "Delivery failed",
+      "return": "Mark returned",
+      "cancel": "Cancel order",
+      "more": "More actions",
+      "done": {
+        "confirm": "Order #{number} confirmed",
+        "ship": "Order #{number} is out for delivery",
+        "retry": "Order #{number} is out for delivery",
+        "deliver": "Order #{number} delivered",
+        "fail": "Failed attempt saved for #{number}",
+        "return": "Order #{number} marked returned",
+        "cancel": "Order #{number} cancelled"
+      },
+      "dialog": {
+        "back": "Go back",
+        "deliverTitle": "Mark order #{number} delivered?",
+        "deliverDescription": "Do this once the customer has the order. It closes the order and can't be undone.",
+        "returnTitle": "Mark order #{number} returned?",
+        "returnDescription": "Use this when the parcel came back to you. It can't be undone.",
+        "cancelTitle": "Cancel order #{number}?",
+        "cancelDescription": "The items go back into stock and the customer gets an email. This can't be undone."
+      },
+      "failDialog": {
+        "title": "Delivery failed for #{number}",
+        "description": "Say what happened. You can send it out again later.",
+        "reason": "What happened",
+        "placeholder": "The customer didn't answer the phone",
+        "save": "Save"
+      }
+    },
+    "notes": {
+      "readOnly": {
+        "multi_seller": "This order has items from other sellers too, so Tallaby handles its delivery.",
+        "tallaby": "Tallaby delivers this order.",
+        "digital": "Digital order. There's nothing to ship."
+      },
+      "awaitingPayment": "Waiting for the customer's online payment.",
+      "prepaid": "Paid in advance. To cancel it, contact Tallaby support."
+    },
+    "errors": {
+      "notFound": "This order isn't available.",
+      "alreadyUpdated": "This order changed in the meantime. Refresh the page and try again.",
+      "reasonRequired": "Say what happened with the delivery.",
+      "notAllowed": "This step isn't available for this order right now.",
+      "readOnly": {
+        "multi_seller": "This order has items from other sellers, so Tallaby handles it.",
+        "tallaby": "Tallaby delivers this order, so you can't change its status.",
+        "digital": "Digital orders have no delivery to update."
+      },
+      "unauthorized": "Sign in again to update orders.",
+      "invalid": "Something in the request isn't valid. Refresh and try again.",
+      "generic": "Couldn't update the order. Try again."
+    },
+    "guest": "Guest",
     "details": {
       "title": "Order #{number}",
-      "placed": "Placed {date}",
-      "loading": "Loading order details…",
-      "loadFailed": "Could not load this order.",
-      "unavailable": "This order is no longer available.",
       "customer": "Customer",
       "guest": "Guest",
       "phone": "Phone",
@@ -1714,7 +1809,7 @@
       "orderNote": "Order note",
       "giftMessage": "Gift message:",
       "items": "Items ({count})",
-      "itemLine": "SKU: {sku} · {quantity} × {price}",
+      "itemLine": "{quantity} × {price}",
       "summary": "Summary",
       "paymentMethod": "Payment method",
       "paymentMethods": {
@@ -1729,8 +1824,16 @@
       },
       "paymentStatus": "Payment status",
       "orderTotal": "Order total",
-      "yourItemsTotal": "Your items total",
-      "yourEarnings": "Your earnings"
+      "placedOn": "Placed {date} on {channel}",
+      "lastAttempt": "Last attempt: {reason}",
+      "useRider": "Assign one of your riders instead",
+      "riderAssigned": "Rider: {name}",
+      "sku": "SKU {sku}",
+      "payment": "Payment",
+      "call": "Call",
+      "whatsapp": "WhatsApp",
+      "whatsappText": "Hi, about your order #{number}",
+      "openMap": "Open in Maps"
     },
     "channel": {
       "label": "Sales channel",

@@ -22,7 +22,12 @@ const ORDER_ITEM_STATUS: Partial<
 interface Input {
   orderId: string;
   sellerId: string;
-  shipmentId: string;
+  /**
+   * null when the seller ships without a rider and no shipment exists yet: a
+   * `carrier: "seller"` shipment is created at `pending` inside the same
+   * transaction, so it never sits half-made at `pending` on its own.
+   */
+  shipmentId: string | null;
   status: ShippingStatus;
   /** Status the caller observed; guards against a double-submit re-applying. */
   expectedFromStatus: ShippingStatus;
@@ -46,6 +51,22 @@ export async function applySellerShipmentStatus({
   const now = new Date().toISOString();
 
   await db.transaction(async (tx) => {
+    let id = shipmentId;
+    if (!id) {
+      if (expectedFromStatus !== "pending") {
+        throw new Error("Shipment was already updated. Refresh and try again.");
+      }
+      const [created] = await tx
+        .insert(shipments)
+        .values({ orderId, sellerId, carrier: "seller", status: "pending", updatedAt: now })
+        .onConflictDoNothing({ target: shipments.orderId })
+        .returning({ id: shipments.id });
+      if (!created) {
+        throw new Error("Shipment was already updated. Refresh and try again.");
+      }
+      id = created.id;
+    }
+
     const updated = await tx
       .update(shipments)
       .set({
@@ -57,7 +78,7 @@ export async function applySellerShipmentStatus({
       })
       .where(
         and(
-          eq(shipments.id, shipmentId),
+          eq(shipments.id, id),
           eq(shipments.sellerId, sellerId),
           eq(shipments.status, expectedFromStatus)
         )

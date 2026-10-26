@@ -1,55 +1,22 @@
-import { getTranslations } from "next-intl/server";
-import { getSellerOrders } from "@/actions/orders";
+import { requireSeller } from "@/lib/auth/require-seller.server";
 import { getSellerStores } from "@/lib/stores/current-store.server";
-import {
-  getOrderDisplayNumber,
-  pickProductSlug,
-  resolveCustomerName,
-  resolveVendorOrderStatus,
-} from "./orders.lib";
-import { VendorOrdersTable, type VendorOrderRow } from "./orders-chunks";
-
-type SellerOrdersResult = Awaited<ReturnType<typeof getSellerOrders>>;
-type SellerOrderItem = Extract<
-  SellerOrdersResult,
-  { data: unknown }
->["data"][number];
+import { loadSellerOrders } from "./orders.query";
+import { VendorOrdersTable } from "./orders-chunks";
 
 export async function VendorOrdersData({
   initialOrderId = null,
 }: {
   initialOrderId?: string | null;
 }) {
-  const [res, t, { stores }] = await Promise.all([
-    getSellerOrders({ limit: 100, offset: 0 }),
-    getTranslations("orders"),
-    getSellerStores(),
-  ]);
+  const [{ sellerId }, { stores }] = await Promise.all([requireSeller(), getSellerStores()]);
+  const rows = await loadSellerOrders(sellerId, stores);
 
-  const items: SellerOrderItem[] = res?.success ? (res.data ?? []) : [];
-
-  const rows: VendorOrderRow[] = items.map((item) => ({
-    id: item.id,
-    orderId: item.orderId,
-    orderNumber: getOrderDisplayNumber(item),
-    createdAt: item.createdAt ?? new Date().toISOString(),
-    customerName: resolveCustomerName(item.order, t("guest")),
-    // order_items denormalizes the product name and variant at purchase time.
-    productTitle: item.productName ?? "",
-    productImage:
-      (item.product?.images as string[] | null | undefined)?.[0] ?? null,
-    productSlug: pickProductSlug(item.product?.productTranslations),
-    variant: item.variantName ?? null,
-    quantity: item.quantity ?? 1,
-    total: item.total ?? "0",
-    storeId: item.order?.storeId ?? null,
-    status: resolveVendorOrderStatus(item),
-  }));
-
-  return <VendorOrdersTable
+  return (
+    <VendorOrdersTable
       key={initialOrderId ?? "all"}
       rows={rows}
       initialOrderId={initialOrderId}
       stores={stores.map(({ id, name }) => ({ id, name }))}
-    />;
+    />
+  );
 }
