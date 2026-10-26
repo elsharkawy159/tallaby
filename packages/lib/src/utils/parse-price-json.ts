@@ -1,6 +1,6 @@
 import {
-  roundNullablePriceUpToNearestFive,
-  roundPriceUpToNearestFive,
+  normalizeNullablePrice,
+  normalizePrice,
 } from './round-price'
 
 export type PriceDiscountType = 'amount' | 'percent' | null
@@ -47,14 +47,14 @@ function normalizeDiscountType (value: unknown): PriceDiscountType {
  * Normalize product / variant price jsonb (or legacy scalar) into a consistent shape.
  * Matches products.price: { base, list, final, discountType, discountValue }.
  *
- * `base`, `list` and `final` are rounded up to the nearest 5 EGP here so every
- * surface that reads a price (storefront, cart snapshot, dashboard, admin)
- * agrees on the same number, including rows written before the rounding rule
- * existed. `discountValue` is left exactly as the seller entered it.
+ * `base`, `list` and `final` are kept as the seller entered them (to the
+ * piastre, normalizePrice) so every surface that reads a price (storefront,
+ * cart snapshot, dashboard, admin) agrees on the same number. Prices are not
+ * rounded to a 5 EGP step any more (owner, 2026-10-26).
  */
 export function parsePriceJson (price: unknown): ParsedPriceJson {
   if (typeof price === 'number') {
-    const amount = roundPriceUpToNearestFive(Number.isFinite(price) ? price : 0)
+    const amount = normalizePrice(Number.isFinite(price) ? price : 0)
     return {
       base: amount,
       list: null,
@@ -65,7 +65,7 @@ export function parsePriceJson (price: unknown): ParsedPriceJson {
   }
 
   if (typeof price === 'string') {
-    const amount = roundPriceUpToNearestFive(toFiniteNumber(price, 0))
+    const amount = normalizePrice(toFiniteNumber(price, 0))
     return {
       base: amount,
       list: null,
@@ -86,12 +86,12 @@ export function parsePriceJson (price: unknown): ParsedPriceJson {
   }
 
   const obj = price as PriceJsonObject
-  const list = roundNullablePriceUpToNearestFive(toNullableNumber(obj.list))
+  const list = normalizeNullablePrice(toNullableNumber(obj.list))
   const base =
-    roundNullablePriceUpToNearestFive(toNullableNumber(obj.base)) ?? list ?? 0
+    normalizeNullablePrice(toNullableNumber(obj.base)) ?? list ?? 0
   const final =
-    roundNullablePriceUpToNearestFive(toNullableNumber(obj.final)) ??
-    roundNullablePriceUpToNearestFive(toNullableNumber(obj.current)) ??
+    normalizeNullablePrice(toNullableNumber(obj.final)) ??
+    normalizeNullablePrice(toNullableNumber(obj.current)) ??
     list ??
     base
 

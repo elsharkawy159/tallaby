@@ -18,7 +18,7 @@ import {
 import { Button } from "@workspace/ui/components/button";
 import type { Product, Review, ProductQuestion } from "./product-page.types";
 import Image from "next/image";
-import { getPublicUrl } from "@workspace/ui/lib/utils";
+import { cn, getPublicUrl } from "@workspace/ui/lib/utils";
 import { Input, Textarea, Checkbox } from "@workspace/ui/components";
 import type { User } from "@supabase/supabase-js";
 import { submitProductQuestion } from "@/actions/products";
@@ -73,15 +73,15 @@ export const ProductTabs = ({ product, user }: ProductTabsProps) => {
   const tCommon = useTranslations("common");
   const tToast = useTranslations("toast");
   const [expandedQuestions, setExpandedQuestions] = useState<Set<string>>(
-    new Set()
+    new Set(),
   );
   const [expandedComments, setExpandedComments] = useState<Set<string>>(
-    new Set()
+    new Set(),
   );
   const [commentForms, setCommentForms] = useState<Set<string>>(new Set());
   const [votingReviews, setVotingReviews] = useState<Set<string>>(new Set());
   const [commentingReviews, setCommentingReviews] = useState<Set<string>>(
-    new Set()
+    new Set(),
   );
   const [isPending, startTransition] = useTransition();
   const { open: openAuthDialog } = useAuthDialog();
@@ -180,7 +180,7 @@ export const ProductTabs = ({ product, user }: ProductTabsProps) => {
       try {
         const result = await submitProductQuestion(
           product.id,
-          data.question.trim()
+          data.question.trim(),
         );
 
         if (result.success) {
@@ -290,7 +290,7 @@ export const ProductTabs = ({ product, user }: ProductTabsProps) => {
 
   const updateCommentFormData = (
     reviewId: string,
-    data: Partial<{ comment: string; isAnonymous: boolean }>
+    data: Partial<{ comment: string; isAnonymous: boolean }>,
   ) => {
     setCommentFormsData((prev) => ({
       ...prev,
@@ -361,7 +361,7 @@ export const ProductTabs = ({ product, user }: ProductTabsProps) => {
   const isImageFile = (filePath: string): boolean => {
     const extension = filePath.split(".").pop()?.toLowerCase();
     return ["jpg", "jpeg", "png", "gif", "webp", "svg"].includes(
-      extension || ""
+      extension || "",
     );
   };
 
@@ -371,47 +371,54 @@ export const ProductTabs = ({ product, user }: ProductTabsProps) => {
         <div className="container space-y-12 lg:space-y-16">
           {/* FAQ Section */}
           <div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
-              <div className="space-y-4 lg:space-y-6">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <h3 className="text-lg lg:text-xl font-bold text-gray-900">
-                    {t("frequentlyAskedQuestions")}
-                  </h3>
-                  <Button variant="outline" size="sm" className="w-fit">
-                    {t("viewMore")}
-                  </Button>
-                </div>
+            <div
+              className={cn(
+                "grid grid-cols-1 gap-6 lg:gap-8",
+                hasQuestions && "lg:grid-cols-2",
+              )}
+            >
+              {/* No questions yet: only the ask box. */}
+              {hasQuestions && (
+                <div className="space-y-4 lg:space-y-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <h3 className="text-lg lg:text-xl font-bold text-gray-900">
+                      {t("frequentlyAskedQuestions")}
+                    </h3>
+                    <Button variant="outline" size="sm" className="w-fit">
+                      {t("viewMore")}
+                    </Button>
+                  </div>
 
-                <div className="space-y-3 lg:space-y-4">
-                  {hasQuestions ? (
-                    product.productQuestions!.map(
-                      (question: ProductQuestion) => {
-                        const bestAnswer = question.productAnswers?.[0];
-                        return (
-                          <div
-                            key={question.id}
-                            className="border border-gray-200 rounded-lg"
-                          >
-                            <button
-                              onClick={() => toggleQuestion(question.id)}
-                              className="w-full px-4 lg:px-6 py-3 lg:py-4 text-left flex items-center justify-between hover:bg-gray-50 transition-colors"
+                  <div className="space-y-3 lg:space-y-4">
+                    {hasQuestions ? (
+                      product.productQuestions!.map(
+                        (question: ProductQuestion) => {
+                          const bestAnswer = question.productAnswers?.[0];
+                          return (
+                            <div
+                              key={question.id}
+                              className="border border-gray-200 rounded-lg"
                             >
-                              <span className="font-medium text-gray-900 text-sm lg:text-base">
-                                {question.question}
-                              </span>
-                              {expandedQuestions.has(question.id) ? (
-                                <ChevronUp className="h-4 w-4 lg:h-5 lg:w-5 text-gray-500" />
-                              ) : (
-                                <ChevronDown className="h-4 w-4 lg:h-5 lg:w-5 text-gray-500" />
-                              )}
-                            </button>
-                            {expandedQuestions.has(question.id) &&
-                              bestAnswer && (
-                                <div className="px-4 lg:px-6 pb-3 lg:pb-4">
-                                  <p className="text-gray-700 text-sm lg:text-base">
-                                    {bestAnswer.answer}
-                                  </p>
-                                  {/* {bestAnswer.isVerified && (
+                              <button
+                                onClick={() => toggleQuestion(question.id)}
+                                className="w-full px-4 lg:px-6 py-3 lg:py-4 text-left flex items-center justify-between hover:bg-gray-50 transition-colors"
+                              >
+                                <span className="font-medium text-gray-900 text-sm lg:text-base">
+                                  {question.question}
+                                </span>
+                                {expandedQuestions.has(question.id) ? (
+                                  <ChevronUp className="h-4 w-4 lg:h-5 lg:w-5 text-gray-500" />
+                                ) : (
+                                  <ChevronDown className="h-4 w-4 lg:h-5 lg:w-5 text-gray-500" />
+                                )}
+                              </button>
+                              {expandedQuestions.has(question.id) &&
+                                bestAnswer && (
+                                  <div className="px-4 lg:px-6 pb-3 lg:pb-4">
+                                    <p className="text-gray-700 text-sm lg:text-base">
+                                      {bestAnswer.answer}
+                                    </p>
+                                    {/* {bestAnswer.isVerified && (
                                     <Badge
                                       variant="secondary"
                                       className="mt-2 text-xs"
@@ -419,22 +426,23 @@ export const ProductTabs = ({ product, user }: ProductTabsProps) => {
                                       Verified Answer
                                     </Badge>
                                   )} */}
-                                </div>
-                              )}
-                          </div>
-                        );
-                      }
-                    )
-                  ) : (
-                    <div className="text-center py-8 text-gray-500">
-                      <HelpCircle className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                      <p className="text-sm lg:text-base">
-                        {t("noQuestions")} {t("beFirstToAsk")}
-                      </p>
-                    </div>
-                  )}
+                                  </div>
+                                )}
+                            </div>
+                          );
+                        },
+                      )
+                    ) : (
+                      <div className="text-center py-8 text-gray-500">
+                        <HelpCircle className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                        <p className="text-sm lg:text-base">
+                          {t("noQuestions")} {t("beFirstToAsk")}
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
 
               <div className="space-y-4 lg:space-y-6">
                 <div className="border border-gray-200 rounded-lg p-4 lg:p-6">
@@ -494,344 +502,351 @@ export const ProductTabs = ({ product, user }: ProductTabsProps) => {
             </div>
           </div>
 
-          {/* Reviews Section */}
-          <div className="border-t border-gray-200 pt-8 lg:pt-12">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
-              {/* Reviews List */}
-              <div className="lg:col-span-2 space-y-4 lg:space-y-6">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <h3 className="text-lg lg:text-xl font-bold text-gray-900">
-                    {t("customerReviews")}
-                  </h3>
-                  {/* <Button variant="outline" size="sm" className="w-fit">
+          {/* Reviews Section: only when the product has reviews */}
+          {hasReviews && (
+            <div className="border-t border-gray-200 pt-8 lg:pt-12">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+                {/* Reviews List */}
+                <div className="lg:col-span-2 space-y-4 lg:space-y-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <h3 className="text-lg lg:text-xl font-bold text-gray-900">
+                      {t("customerReviews")}
+                    </h3>
+                    {/* <Button variant="outline" size="sm" className="w-fit">
                     Write a Review
                   </Button> */}
-                </div>
+                  </div>
 
-                {hasReviews ? (
-                  product.reviews!.map((review: Review) => (
-                    <div
-                      key={review.id}
-                      className="border border-gray-200 rounded-lg p-4 lg:p-6"
-                    >
-                      <div className="flex items-start gap-3 lg:gap-4 mb-3 lg:mb-4">
-                        <div className="w-10 h-10 lg:w-12 lg:h-12 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
-                          {review.user?.avatarUrl ? (
-                            <Image
-                              src={getPublicUrl(
-                                review.user.avatarUrl,
-                                "avatars"
-                              )}
-                              alt={review.user.fullName || "User"}
-                              title={review.user.fullName || "User"}
-                              width={48}
-                              height={48}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <span className="text-base lg:text-lg font-semibold text-gray-600">
-                              {review.user?.fullName
-                                ?.charAt(0)
-                                ?.toUpperCase() || "U"}
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-2">
-                            <span className="font-semibold text-gray-900 text-sm lg:text-base">
-                              {review.user?.fullName || t("anonymous")}
-                            </span>
-                            <span className="text-xs lg:text-sm text-gray-500">
-                              {formatDate(review.createdAt)}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-1 mb-2">
-                            {renderStars(review.rating)}
-                          </div>
-                        </div>
-                      </div>
-                      {review.comment && (
-                        <p className="text-gray-700 mb-3 lg:mb-4 text-sm lg:text-base">
-                          {review.comment}
-                        </p>
-                      )}
-                      {review.title && (
-                        <h4 className="font-semibold text-gray-900 mb-2 text-sm lg:text-base">
-                          {review.title}
-                        </h4>
-                      )}
-                      <div className="flex flex-col gap-3">
-                        {Array.isArray(review.images) &&
-                          review.images.length > 0 && (
-                            <div className="flex gap-2 flex-wrap">
-                              {(review.images as string[])
-                                .slice(0, 5)
-                                .map((filePath, i) => {
-                                  const fileUrl = getPublicUrl(
-                                    filePath,
-                                    "products"
-                                  );
-                                  const isVideo = isVideoFile(filePath);
-                                  const isImage = isImageFile(filePath);
-
-                                  return (
-                                    <div
-                                      key={i}
-                                      className="relative w-16 h-16 lg:w-36 lg:h-36 rounded-lg border border-gray-200 overflow-hidden bg-gray-100 group cursor-pointer"
-                                      onClick={() => {
-                                        setMediaPreview({
-                                          isOpen: true,
-                                          mediaItems: review.images as string[],
-                                          currentIndex: i,
-                                        });
-                                      }}
-                                    >
-                                      {isVideo ? (
-                                        <div className="relative w-full h-full">
-                                          <video
-                                            src={fileUrl}
-                                            className="w-full h-full object-cover"
-                                            controls={false}
-                                            preload="metadata"
-                                          >
-                                            {t("videoNotSupported")}
-                                          </video>
-                                        </div>
-                                      ) : isImage ? (
-                                        <Image
-                                          src={fileUrl}
-                                          alt={`Review ${isImage ? "image" : "media"} ${i + 1}`}
-                                          title={`Review ${isImage ? "image" : "media"} ${i + 1}`}
-                                          width={150}
-                                          height={150}
-                                          className="w-full h-full object-cover"
-                                        />
-                                      ) : (
-                                        <div className="w-full h-full flex items-center justify-center bg-gray-200">
-                                          <ImageIcon className="h-6 w-6 text-gray-400" />
-                                        </div>
-                                      )}
-                                    </div>
-                                  );
-                                })}
-                            </div>
-                          )}
-
-                        {/* Voting Section */}
-                        {user && (
-                          <div className="flex items-center gap-4">
-                            <div className="flex items-center gap-2">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-8 gap-1.5"
-                                onClick={() =>
-                                  handleVoteReview(review.id, true)
-                                }
-                                disabled={votingReviews.has(review.id)}
-                              >
-                                <ThumbsUp
-                                  className={`h-4 w-4 ${
-                                    getUserVote(review)?.isHelpful === true
-                                      ? "fill-current text-blue-600"
-                                      : ""
-                                  }`}
-                                />
-                                <span>{review.helpfulCount || 0}</span>
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-8 gap-1.5"
-                                onClick={() =>
-                                  handleVoteReview(review.id, false)
-                                }
-                                disabled={votingReviews.has(review.id)}
-                              >
-                                <ThumbsDown
-                                  className={`h-4 w-4 ${
-                                    getUserVote(review)?.isHelpful === false
-                                      ? "fill-current text-red-600"
-                                      : ""
-                                  }`}
-                                />
-                                <span>{review.unhelpfulCount || 0}</span>
-                              </Button>
-                            </div>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleToggleCommentForm(review.id)}
-                            >
-                              <MessageCircle className="h-4 w-4 mr-1.5" />
-                              {t("comment")}
-                            </Button>
-                          </div>
-                        )}
-
-                        {/* Comments Section */}
-                        {review.reviewComments &&
-                          review.reviewComments.length > 0 && (
-                            <div className="border-t pt-3 mt-3">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => toggleComments(review.id)}
-                                className="mb-2"
-                              >
-                                {expandedComments.has(review.id) ? (
-                                  <ChevronUp className="h-4 w-4 mr-1.5" />
-                                ) : (
-                                  <ChevronDown className="h-4 w-4 mr-1.5" />
+                  {hasReviews ? (
+                    product.reviews!.map((review: Review) => (
+                      <div
+                        key={review.id}
+                        className="border border-gray-200 rounded-lg p-4 lg:p-6"
+                      >
+                        <div className="flex items-start gap-3 lg:gap-4 mb-3 lg:mb-4">
+                          <div className="w-10 h-10 lg:w-12 lg:h-12 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
+                            {review.user?.avatarUrl ? (
+                              <Image
+                                src={getPublicUrl(
+                                  review.user.avatarUrl,
+                                  "avatars",
                                 )}
-                                {review.reviewComments.length}{" "}
-                                {review.reviewComments.length === 1
-                                  ? t("comment")
-                                  : t("comments")}
-                              </Button>
-                              {expandedComments.has(review.id) && (
-                                <div className="space-y-3 mt-2">
-                                  {review.reviewComments.map((comment) => (
-                                    <div
-                                      key={comment.id}
-                                      className="bg-gray-50 rounded-lg p-3"
-                                    >
-                                      <div className="flex items-center gap-2 mb-1">
-                                        <span className="font-medium text-sm text-gray-900">
-                                          {comment.isAnonymous
-                                            ? t("anonymous")
-                                            : comment.user?.fullName ||
-                                              t("user")}
-                                        </span>
-                                        <span className="text-xs text-gray-500">
-                                          {formatDate(comment.createdAt)}
-                                        </span>
-                                      </div>
-                                      <p className="text-sm text-gray-700">
-                                        {comment.comment}
-                                      </p>
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          )}
-
-                        {/* Comment Form */}
-                        {commentForms.has(review.id) && user && (
-                          <div className="border-t pt-4 mt-4 space-y-3">
-                            <div className="space-y-2">
-                              <Textarea
-                                placeholder={t("writeComment")}
-                                value={
-                                  commentFormsData[review.id]?.comment || ""
-                                }
-                                onChange={(e) =>
-                                  updateCommentFormData(review.id, {
-                                    comment: e.target.value,
-                                  })
-                                }
-                                className="min-h-20"
+                                alt={review.user.fullName || "User"}
+                                title={review.user.fullName || "User"}
+                                width={48}
+                                height={48}
+                                className="w-full h-full object-cover"
                               />
-                              <div className="flex items-center gap-2">
-                                <Checkbox
-                                  id={`anonymous-${review.id}`}
-                                  checked={
-                                    commentFormsData[review.id]?.isAnonymous ||
-                                    false
-                                  }
-                                  onCheckedChange={(checked) =>
-                                    updateCommentFormData(review.id, {
-                                      isAnonymous: checked === true,
-                                    })
-                                  }
-                                />
-                                <label
-                                  htmlFor={`anonymous-${review.id}`}
-                                  className="text-sm text-gray-600 cursor-pointer"
-                                >
-                                  {t("postAsAnonymous")}
-                                </label>
-                              </div>
+                            ) : (
+                              <span className="text-base lg:text-lg font-semibold text-gray-600">
+                                {review.user?.fullName
+                                  ?.charAt(0)
+                                  ?.toUpperCase() || "U"}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-2">
+                              <span className="font-semibold text-gray-900 text-sm lg:text-base">
+                                {review.user?.fullName || t("anonymous")}
+                              </span>
+                              <span className="text-xs lg:text-sm text-gray-500">
+                                {formatDate(review.createdAt)}
+                              </span>
                             </div>
-                            <div className="flex gap-2">
+                            <div className="flex items-center gap-1 mb-2">
+                              {renderStars(review.rating)}
+                            </div>
+                          </div>
+                        </div>
+                        {review.comment && (
+                          <p className="text-gray-700 mb-3 lg:mb-4 text-sm lg:text-base">
+                            {review.comment}
+                          </p>
+                        )}
+                        {review.title && (
+                          <h4 className="font-semibold text-gray-900 mb-2 text-sm lg:text-base">
+                            {review.title}
+                          </h4>
+                        )}
+                        <div className="flex flex-col gap-3">
+                          {Array.isArray(review.images) &&
+                            review.images.length > 0 && (
+                              <div className="flex gap-2 flex-wrap">
+                                {(review.images as string[])
+                                  .slice(0, 5)
+                                  .map((filePath, i) => {
+                                    const fileUrl = getPublicUrl(
+                                      filePath,
+                                      "products",
+                                    );
+                                    const isVideo = isVideoFile(filePath);
+                                    const isImage = isImageFile(filePath);
+
+                                    return (
+                                      <div
+                                        key={i}
+                                        className="relative w-16 h-16 lg:w-36 lg:h-36 rounded-lg border border-gray-200 overflow-hidden bg-gray-100 group cursor-pointer"
+                                        onClick={() => {
+                                          setMediaPreview({
+                                            isOpen: true,
+                                            mediaItems:
+                                              review.images as string[],
+                                            currentIndex: i,
+                                          });
+                                        }}
+                                      >
+                                        {isVideo ? (
+                                          <div className="relative w-full h-full">
+                                            <video
+                                              src={fileUrl}
+                                              className="w-full h-full object-cover"
+                                              controls={false}
+                                              preload="metadata"
+                                            >
+                                              {t("videoNotSupported")}
+                                            </video>
+                                          </div>
+                                        ) : isImage ? (
+                                          <Image
+                                            src={fileUrl}
+                                            alt={`Review ${isImage ? "image" : "media"} ${i + 1}`}
+                                            title={`Review ${isImage ? "image" : "media"} ${i + 1}`}
+                                            width={150}
+                                            height={150}
+                                            className="w-full h-full object-cover"
+                                          />
+                                        ) : (
+                                          <div className="w-full h-full flex items-center justify-center bg-gray-200">
+                                            <ImageIcon className="h-6 w-6 text-gray-400" />
+                                          </div>
+                                        )}
+                                      </div>
+                                    );
+                                  })}
+                              </div>
+                            )}
+
+                          {/* Voting Section */}
+                          {user && (
+                            <div className="flex items-center gap-4">
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-8 gap-1.5"
+                                  onClick={() =>
+                                    handleVoteReview(review.id, true)
+                                  }
+                                  disabled={votingReviews.has(review.id)}
+                                >
+                                  <ThumbsUp
+                                    className={`h-4 w-4 ${
+                                      getUserVote(review)?.isHelpful === true
+                                        ? "fill-current text-blue-600"
+                                        : ""
+                                    }`}
+                                  />
+                                  <span>{review.helpfulCount || 0}</span>
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-8 gap-1.5"
+                                  onClick={() =>
+                                    handleVoteReview(review.id, false)
+                                  }
+                                  disabled={votingReviews.has(review.id)}
+                                >
+                                  <ThumbsDown
+                                    className={`h-4 w-4 ${
+                                      getUserVote(review)?.isHelpful === false
+                                        ? "fill-current text-red-600"
+                                        : ""
+                                    }`}
+                                  />
+                                  <span>{review.unhelpfulCount || 0}</span>
+                                </Button>
+                              </div>
                               <Button
-                                size="sm"
-                                onClick={() => handleSubmitComment(review.id)}
-                                disabled={commentingReviews.has(review.id)}
-                              >
-                                {commentingReviews.has(review.id) && (
-                                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                )}
-                                {tCommon("submit")}
-                              </Button>
-                              <Button
-                                variant="outline"
+                                variant="ghost"
                                 size="sm"
                                 onClick={() =>
                                   handleToggleCommentForm(review.id)
                                 }
                               >
-                                {tCommon("cancel")}
+                                <MessageCircle className="h-4 w-4 mr-1.5" />
+                                {t("comment")}
                               </Button>
                             </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    <MessageCircle className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                    <p className="text-sm lg:text-base">
-                      {t("noReviews")} {t("beTheFirst")}
-                    </p>
-                  </div>
-                )}
+                          )}
 
-                {/* <div className="text-center">
+                          {/* Comments Section */}
+                          {review.reviewComments &&
+                            review.reviewComments.length > 0 && (
+                              <div className="border-t pt-3 mt-3">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => toggleComments(review.id)}
+                                  className="mb-2"
+                                >
+                                  {expandedComments.has(review.id) ? (
+                                    <ChevronUp className="h-4 w-4 mr-1.5" />
+                                  ) : (
+                                    <ChevronDown className="h-4 w-4 mr-1.5" />
+                                  )}
+                                  {review.reviewComments.length}{" "}
+                                  {review.reviewComments.length === 1
+                                    ? t("comment")
+                                    : t("comments")}
+                                </Button>
+                                {expandedComments.has(review.id) && (
+                                  <div className="space-y-3 mt-2">
+                                    {review.reviewComments.map((comment) => (
+                                      <div
+                                        key={comment.id}
+                                        className="bg-gray-50 rounded-lg p-3"
+                                      >
+                                        <div className="flex items-center gap-2 mb-1">
+                                          <span className="font-medium text-sm text-gray-900">
+                                            {comment.isAnonymous
+                                              ? t("anonymous")
+                                              : comment.user?.fullName ||
+                                                t("user")}
+                                          </span>
+                                          <span className="text-xs text-gray-500">
+                                            {formatDate(comment.createdAt)}
+                                          </span>
+                                        </div>
+                                        <p className="text-sm text-gray-700">
+                                          {comment.comment}
+                                        </p>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+
+                          {/* Comment Form */}
+                          {commentForms.has(review.id) && user && (
+                            <div className="border-t pt-4 mt-4 space-y-3">
+                              <div className="space-y-2">
+                                <Textarea
+                                  placeholder={t("writeComment")}
+                                  value={
+                                    commentFormsData[review.id]?.comment || ""
+                                  }
+                                  onChange={(e) =>
+                                    updateCommentFormData(review.id, {
+                                      comment: e.target.value,
+                                    })
+                                  }
+                                  className="min-h-20"
+                                />
+                                <div className="flex items-center gap-2">
+                                  <Checkbox
+                                    id={`anonymous-${review.id}`}
+                                    checked={
+                                      commentFormsData[review.id]
+                                        ?.isAnonymous || false
+                                    }
+                                    onCheckedChange={(checked) =>
+                                      updateCommentFormData(review.id, {
+                                        isAnonymous: checked === true,
+                                      })
+                                    }
+                                  />
+                                  <label
+                                    htmlFor={`anonymous-${review.id}`}
+                                    className="text-sm text-gray-600 cursor-pointer"
+                                  >
+                                    {t("postAsAnonymous")}
+                                  </label>
+                                </div>
+                              </div>
+                              <div className="flex gap-2">
+                                <Button
+                                  size="sm"
+                                  onClick={() => handleSubmitComment(review.id)}
+                                  disabled={commentingReviews.has(review.id)}
+                                >
+                                  {commentingReviews.has(review.id) && (
+                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                  )}
+                                  {tCommon("submit")}
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() =>
+                                    handleToggleCommentForm(review.id)
+                                  }
+                                >
+                                  {tCommon("cancel")}
+                                </Button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      <MessageCircle className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                      <p className="text-sm lg:text-base">
+                        {t("noReviews")} {t("beTheFirst")}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* <div className="text-center">
                   <Button variant="outline">View More Reviews</Button>
                 </div> */}
-              </div>
-
-              {/* Rating Summary */}
-              <div className="space-y-4 lg:space-y-6">
-                <div className="border border-gray-200 rounded-lg p-4 lg:p-6">
-                  <div className="text-center mb-3 lg:mb-4">
-                    <div className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
-                      {product.averageRating}
-                    </div>
-                    <div className="flex justify-center mb-2">
-                      {renderStars(Math.round(product.averageRating ?? 0))}
-                    </div>
-                    <p className="text-xs lg:text-sm text-gray-600">
-                      {t("basedOnRatings", { count: product.reviewCount ?? 0 })}
-                    </p>
-                  </div>
-
-                  <div className="space-y-2 lg:space-y-3">
-                    {renderRatingBar(5, ratingDistribution[5])}
-                    {renderRatingBar(4, ratingDistribution[4])}
-                    {renderRatingBar(3, ratingDistribution[3])}
-                    {renderRatingBar(2, ratingDistribution[2])}
-                    {renderRatingBar(1, ratingDistribution[1])}
-                  </div>
                 </div>
 
-                <div className="border border-gray-200 rounded-lg p-4 lg:p-6">
-                  <h4 className="font-semibold text-gray-900 mb-3 lg:mb-4 text-sm lg:text-base">
-                    {t("leaveReview")}
-                  </h4>
-                  <p className="text-xs lg:text-sm text-gray-600 mb-3 lg:mb-4">
-                    {t("leaveReviewDescription")}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    {t("leaveReviewNote")}
-                  </p>
+                {/* Rating Summary */}
+                <div className="space-y-4 lg:space-y-6">
+                  <div className="border border-gray-200 rounded-lg p-4 lg:p-6">
+                    <div className="text-center mb-3 lg:mb-4">
+                      <div className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
+                        {product.averageRating}
+                      </div>
+                      <div className="flex justify-center mb-2">
+                        {renderStars(Math.round(product.averageRating ?? 0))}
+                      </div>
+                      <p className="text-xs lg:text-sm text-gray-600">
+                        {t("basedOnRatings", {
+                          count: product.reviewCount ?? 0,
+                        })}
+                      </p>
+                    </div>
+
+                    <div className="space-y-2 lg:space-y-3">
+                      {renderRatingBar(5, ratingDistribution[5])}
+                      {renderRatingBar(4, ratingDistribution[4])}
+                      {renderRatingBar(3, ratingDistribution[3])}
+                      {renderRatingBar(2, ratingDistribution[2])}
+                      {renderRatingBar(1, ratingDistribution[1])}
+                    </div>
+                  </div>
+
+                  <div className="border border-gray-200 rounded-lg p-4 lg:p-6">
+                    <h4 className="font-semibold text-gray-900 mb-3 lg:mb-4 text-sm lg:text-base">
+                      {t("leaveReview")}
+                    </h4>
+                    <p className="text-xs lg:text-sm text-gray-600 mb-3 lg:mb-4">
+                      {t("leaveReviewDescription")}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {t("leaveReviewNote")}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          )}
 
           {/* Gallery Section */}
           {/* <div className="border-t border-gray-200 pt-8 lg:pt-12">
@@ -992,4 +1007,3 @@ export const ProductTabs = ({ product, user }: ProductTabsProps) => {
     </>
   );
 };
-

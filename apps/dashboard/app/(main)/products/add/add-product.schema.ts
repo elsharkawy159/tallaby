@@ -1,18 +1,17 @@
 import { z } from "zod";
-import { roundPriceUpToNearestFive } from "@/lib/utils/product-pricing.lib";
+import { normalizePrice } from "@/lib/utils/product-pricing.lib";
 import { META_KEYWORD_MAX_LENGTH, META_KEYWORDS_MAX } from "./meta-keywords.lib";
 
 export const SUPPORTED_LOCALES = ["en", "ar"] as const
 export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number]
 
 /**
- * Quantises any positive price the seller typed to the next multiple of 5 EGP
- * before validation, so what is persisted always matches what the storefront
- * shows. Non-numeric / non-positive input falls through untouched so the
- * "must be greater than 0" messages still fire.
+ * Keeps a positive price the seller typed to the piastre (no 5 EGP rounding
+ * since 2026-10-26). Non-numeric / non-positive input falls through untouched
+ * so the "must be greater than 0" messages still fire.
  */
 const roundPositivePriceInput = (val: unknown) =>
-  typeof val === "number" && val > 0 ? roundPriceUpToNearestFive(val) : val
+  typeof val === "number" && val > 0 ? normalizePrice(val) : val
 
 /** Editor HTML with actual text or media — an emptied editor leaves "<p></p>". */
 const hasRichText = (html: string | undefined) =>
@@ -96,6 +95,8 @@ export const addProductFormSchema = z
     // The seller's own category / brand ("" = none); saved by setProductSellerTaxonomy, not createProduct.
     sellerCategoryId: z.string().optional(),
     sellerBrandId: z.string().optional(),
+    // A new store category the seller typed; added to their list on save (then it becomes sellerCategoryId).
+    sellerCategoryName: z.string().max(80).optional(),
     sku: z.string().optional(),
     quantity: z.number().int().min(0).default(0),
     maxOrderQuantity: z.number().int().optional(),
@@ -195,19 +196,34 @@ export const addProductFormSchema = z
     }),
   })
   .superRefine((data, ctx) => {
-    // EN title is always required
+    // A name and a short description in at least one language (owner, 2026-10-26:
+    // Arabic alone is enough). prepareProductForSubmit fills a missing English
+    // version from the Arabic one. The error goes on both languages so the
+    // visible field shows it.
     const enTitle = (data.localized?.en?.title ?? "").trim()
-    if (!enTitle) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "product.enTitleRequired",
-        path: ["localized", "en", "title"],
-      })
+    const anyTitle = enTitle || (data.localized?.ar?.title ?? "").trim()
+    if (!anyTitle) {
+      for (const locale of ["en", "ar"] as const) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "product.titleRequired",
+          path: ["localized", locale, "title"],
+        })
+      }
+    }
+    if (!hasRichText(data.localized?.en?.description) && !hasRichText(data.localized?.ar?.description)) {
+      for (const locale of ["en", "ar"] as const) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "product.descriptionRequired",
+          path: ["localized", locale, "description"],
+        })
+      }
     }
 
-    // EN slug is required if EN title exists
+    // One link per product (the English slug), made from the English name, else the Arabic one.
     const enSlug = (data.localized?.en?.slug ?? "").trim()
-    if (enTitle && !enSlug) {
+    if (anyTitle && !enSlug) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "product.enSlugRequired",
@@ -219,7 +235,7 @@ export const addProductFormSchema = z
     const ar = data.localized?.ar ?? {}
     const arHasContent =
       (ar.title ?? "").trim() !== "" ||
-      (ar.description ?? "").trim() !== "" ||
+      hasRichText(ar.description) ||
       hasRichText(ar.content) ||
       (ar.slug ?? "").trim() !== "" ||
       (ar.bulletPoints ?? []).some((point) => point.trim() !== "") ||
@@ -234,14 +250,17 @@ export const addProductFormSchema = z
       })
     }
 
-    const weight = data.dimensions?.weight
-    if (weight === undefined || weight === null || weight <= 0) {
+    // A sale price above the price would show a negative discount.
+    const list = data.price?.list
+    const final = data.price?.final
+    if (typeof list === "number" && typeof final === "number" && final > list) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "product.weightRequired",
-        path: ["dimensions", "weight"],
+        message: "product.salePriceBelowPrice",
+        path: ["price", "final"],
       })
     }
+    // The packed weight is optional (owner, 2026-10-26): shipping counts a missing weight as no extra weight.
   })
 
 export const defaultLocalizedFields = (): LocalizedFields => ({
@@ -382,7 +401,7 @@ export function isLocaleMissingRequiredFields(
   if (locale === "ar") {
     const hasAnyArContent =
       title !== "" ||
-      (data?.description ?? "").trim() !== "" ||
+      hasRichText(data?.description) ||
       hasRichText(data?.content) ||
       (data?.slug ?? "").trim() !== "" ||
       (data?.bulletPoints ?? []).some((point) => point.trim() !== "") ||

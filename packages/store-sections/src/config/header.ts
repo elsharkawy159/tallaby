@@ -190,12 +190,91 @@ function countNodes(nodes: readonly Node[]): number {
 
 /** The footer's tools row: after the social links, else at the end of its first container, else of the root section. */
 function appendFooterTools(tree: Node[], row: Node): Node[] {
-  const social = insertBeside(tree, hasRole("social"), row, true);
-  if (social) return social;
+  return insertBeside(tree, hasRole("social"), row, true) ?? appendToFooter(tree, row);
+}
+
+/** Appends `row` at the end of the footer's first container, else of its root section. */
+function appendToFooter(tree: Node[], row: Node): Node[] {
   const container = replaceFirst(tree, (node) => node.type === "container", (node) => ({ ...node, children: [...node.children, row] }));
   if (container) return container;
   const [root, ...rest] = tree;
   return root!.type === "section" ? [{ ...root!, children: [...root!.children, row] }, ...rest] : [...tree, row];
+}
+
+/** Where the platform credit links. */
+export const TALLABY_HOME = "https://tallaby.com";
+const TALLABY_HREF_RE = /^https?:\/\/(www\.)?tallaby\.com\/?$/i;
+const POWERED_BY: Record<string, readonly [string, string]> = { ar: ["مدعوم من", "طلبي"], en: ["Powered by", "Tallaby"] };
+const COPYRIGHT_RE = /©|حقوق|rights reserved/i;
+
+/** A credit the tree carries itself (older templates): a tallaby.com link or the `poweredBy` role. */
+const isTallabyCredit = (node: Node) =>
+  node.props.role === "poweredBy" || (typeof node.props.href === "string" && TALLABY_HREF_RE.test(node.props.href.trim()));
+const isCopyright = (node: Node) =>
+  node.props.role === "copyright" ||
+  ((node.type === "text" || node.type === "paragraph") && typeof node.props.text === "string" && COPYRIGHT_RE.test(node.props.text));
+
+function withoutNodes(nodes: Node[], match: (node: Node) => boolean): Node[] {
+  return nodes.filter((node) => !match(node)).map((node) => ({ ...node, children: withoutNodes(node.children, match) }));
+}
+
+function findFirst(nodes: readonly Node[], match: (node: Node) => boolean): Node | null {
+  for (const node of nodes) {
+    if (match(node)) return node;
+    const found = findFirst(node.children, match);
+    if (found) return found;
+  }
+  return null;
+}
+
+/**
+ * "Powered by Tallaby" («مدعوم من طلبي») in every footer (owner, 2026-10-26):
+ * "Tallaby" underlined and linking to tallaby.com, beside the copyright line
+ * (else in its own row at the end of the footer). It is drawn here and never
+ * saved, so a seller cannot remove or edit it in the builder; a credit the
+ * tree carries itself is dropped so it never shows twice. Its text is in
+ * `locale`, the language shown.
+ */
+function withTallabyCredit(tree: Node[], id: string, locale: string): Node[] {
+  const [lead, brand] = POWERED_BY[locale] ?? POWERED_BY.en!;
+  const nodes = withoutNodes(tree, isTallabyCredit);
+  const copyright = findFirst(nodes, isCopyright);
+  const from = copyright?.style ?? {};
+  const textStyle = {
+    fontSize: from.fontSize ?? "xs",
+    ...(from.color !== undefined && { color: from.color }),
+    ...(from.opacity !== undefined && { opacity: from.opacity }),
+  };
+  const credit: Node = {
+    id: `${id}-powered-by`,
+    type: "hFlex",
+    props: {},
+    style: { gap: 4, alignItems: "center" },
+    children: [
+      { id: `${id}-powered-by-text`, type: "text", props: { text: lead }, style: textStyle, children: [] },
+      {
+        id: `${id}-powered-by-link`,
+        type: "linkBlock",
+        props: { href: TALLABY_HOME, label: brand },
+        style: { paddingTop: 0, paddingBottom: 0, paddingStart: 0, paddingEnd: 0 },
+        children: [
+          { id: `${id}-powered-by-brand`, type: "text", props: { text: brand }, style: { ...textStyle, fontWeight: "semibold", underline: true }, children: [] },
+        ],
+      },
+    ],
+  };
+  if (copyright) {
+    const align = from.textAlign === "center" ? "center" : from.textAlign === "end" ? "end" : undefined;
+    const legal: Node = {
+      id: `${id}-legal`,
+      type: "hFlex",
+      props: {},
+      style: { gap: 8, alignItems: "center", wrap: true, ...(align && { justifyContent: align }) },
+      children: [copyright, credit],
+    };
+    return replaceFirst(nodes, (node) => node === copyright, () => legal)!;
+  }
+  return appendToFooter(nodes, { id: `${id}-legal`, type: "hFlex", props: {}, style: { justifyContent: "center", marginTop: 16 }, children: [credit] });
 }
 
 /**
@@ -203,13 +282,14 @@ function appendFooterTools(tree: Node[], row: Node): Node[] {
  * seller set them (see above). `translated`: the store has more than one
  * language. `hasLogo`: the store uploaded a logo. `logoPlaceholder` (editor
  * only): without a logo, the logo node still goes in, beside the store name,
- * so the canvas can show its uploader there. Never mutates its input, and
- * returns it unchanged when nothing applies.
+ * so the canvas can show its uploader there. `locale`: the language shown
+ * (the footer's Powered by Tallaby line; Arabic when not given). Never
+ * mutates its input, and returns a header unchanged when nothing applies.
  */
 export function drawChrome(
   instance: SectionInstance | null | undefined,
   part: ChromePart,
-  opts: { translated: boolean; hasLogo: boolean; logoPlaceholder?: boolean },
+  opts: { translated: boolean; hasLogo: boolean; logoPlaceholder?: boolean; locale?: string },
 ): SectionInstance | null | undefined {
   const tree = instance?.componentTree;
   if (!instance || !tree?.length) return instance;
@@ -242,6 +322,7 @@ export function drawChrome(
     const row: Node = { id: `${instance.id}-tools`, type: "hFlex", props: {}, style: { gap: 8, alignItems: "center", marginTop: 16 }, children: tools };
     nodes = appendFooterTools(nodes, row);
   }
+  if (part === "footer") nodes = withTallabyCredit(nodes, instance.id, opts.locale ?? "ar");
   return nodes === tree ? instance : { ...instance, componentTree: nodes };
 }
 
@@ -253,12 +334,9 @@ export function chromeHasThemeToggle(header: SectionInstance | null | undefined,
   );
 }
 
-const TALLABY_HREF_RE = /^https:\/\/(www\.)?tallaby\.com\/?$/i;
-
 /**
- * Whether the footer links to tallaby.com (the "Powered by Tallaby" line of
- * docs/template-rules.md §4.3). The storefront then skips its floating
- * "By Tallaby" badge; footers without the link keep it.
+ * Whether the stored footer itself links to tallaby.com (docs/template-rules.md
+ * §4.3). Every footer is drawn with the credit anyway (`drawChrome`).
  */
 export function footerCreditsTallaby(footer: SectionInstance | null | undefined): boolean {
   const walk = (nodes: readonly { props: Record<string, unknown>; children: readonly unknown[] }[] | undefined): boolean =>

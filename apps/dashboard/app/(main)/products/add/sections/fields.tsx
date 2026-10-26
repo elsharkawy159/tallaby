@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Controller, useFormContext, useFormState } from "react-hook-form";
 import { useTranslations } from "next-intl";
-import { roundPriceUpToNearestFive } from "@/lib/utils/product-pricing.lib";
+import { normalizePrice } from "@/lib/utils/product-pricing.lib";
 import { GroupInput, InputGroup } from "@/components/form/form-ui";
 import { CURRENCY_CODE, CurrencyAddon } from "@/components/form/currency-input";
 import { cn } from "@/lib/utils";
@@ -47,7 +47,7 @@ export function NumberInput({
   id?: string;
   name: string;
   placeholder?: string;
-  /** Round up to the nearest 5 EGP on blur — matches what the storefront shows. */
+  /** Tidy the price to the piastre on blur (normalizePrice), as it is stored. */
   roundOnBlur?: boolean;
   className?: string;
   disabled?: boolean;
@@ -64,7 +64,7 @@ export function NumberInput({
           onChange={field.onChange}
           onBlur={(value) => {
             if (roundOnBlur && typeof value === "number" && value > 0) {
-              const rounded = roundPriceUpToNearestFive(value);
+              const rounded = normalizePrice(value);
               if (rounded !== value) field.onChange(rounded);
             }
             field.onBlur();

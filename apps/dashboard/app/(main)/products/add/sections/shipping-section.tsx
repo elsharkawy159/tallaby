@@ -1,13 +1,11 @@
 "use client";
 
-import { Controller, useFormContext } from "react-hook-form";
+import { Controller, useFormContext, useFormState, useWatch } from "react-hook-form";
 import { useTranslations } from "next-intl";
-import { Info, Store, Truck, Warehouse } from "lucide-react";
-import { TALLABY_SERVICES_ENABLED } from "@workspace/lib/fulfillment";
+import { Info, Truck } from "lucide-react";
 import type { SellerPricingSettings } from "@/lib/utils/product-pricing.lib";
 import { cn } from "@/lib/utils";
 import {
-  ChoiceCard,
   FIELD_CLASS,
   FieldError,
   FieldHint,
@@ -16,10 +14,10 @@ import {
   InputAddon,
   InputGroup,
   NumberStepper,
-  SectionCard,
   ToggleRow,
 } from "@/components/form/form-ui";
 import { NumberInput, useFieldError } from "./fields";
+import { CollapsibleSection } from "./collapsible-section";
 import type { AddProductFormData } from "../add-product.schema";
 
 export function ShippingSection({
@@ -35,16 +33,39 @@ export function ShippingSection({
   const form = useFormContext<AddProductFormData>();
   const weightError = useFieldError("dimensions.weight");
   const handlingError = useFieldError("handlingTime");
+  const { submitCount } = useFormState({ control: form.control });
+  const [weight, weightUnit, freeDelivery, handlingTime] = useWatch({
+    control: form.control,
+    name: ["dimensions.weight", "dimensions.weightUnit", "freeDelivery", "handlingTime"],
+  });
+  const hasWeight = typeof weight === "number" && weight > 0;
+  const hasHandling = typeof handlingTime === "number" && handlingTime > 0;
+  const summary =
+    [
+      hasHandling ? t("summaryHandling", { days: handlingTime }) : "",
+      hasWeight ? `${weight} ${tUnits(weightUnit ?? "g")}` : "",
+      freeDelivery || sellerPricing.sellerFreeDelivery ? t("summaryFree") : "",
+    ]
+      .filter(Boolean)
+      .join(" · ") || t("summaryNeedHandling");
 
   return (
-    <SectionCard
+    <CollapsibleSection
       id={id}
       icon={Truck}
       title={t("title")}
       description={t("description")}
-      divided={false}
+      summary={summary}
+      summaryTone={hasHandling ? "ok" : submitCount > 0 ? "bad" : "need"}
       invalid={Boolean(weightError || handlingError)}
     >
+      {/*
+        Fulfillment method is hidden for now (owner, 2026-10-26): every seller
+        handles their own delivery, so products keep the default
+        `fulfillmentType: "seller_fulfilled"`. Bring this back (and its
+        imports: ChoiceCard, Store, Warehouse, TALLABY_SERVICES_ENABLED) when
+        Tallaby fulfillment opens.
+
       <div className="flex flex-col gap-1.5">
         <FieldLabel required>{t("method")}</FieldLabel>
         <Controller
@@ -72,6 +93,7 @@ export function ShippingSection({
           )}
         />
       </div>
+      */}
 
       <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
         <div className="flex flex-col gap-1.5">
@@ -99,7 +121,7 @@ export function ShippingSection({
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <FieldLabel htmlFor="weight" required>
+          <FieldLabel htmlFor="weight" note={t("optional")}>
             {t("weight")}
           </FieldLabel>
           <InputGroup invalid={Boolean(weightError)}>
@@ -179,6 +201,6 @@ export function ShippingSection({
           )}
         />
       )}
-    </SectionCard>
+    </CollapsibleSection>
   );
 }

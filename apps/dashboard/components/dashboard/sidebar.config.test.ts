@@ -56,7 +56,7 @@ describe("SIDEBAR_CONFIG", () => {
 
   it("keeps every existing page reachable", () => {
     const hrefs = allLinks(resolveSidebar(SIDEBAR_CONFIG, { storeId: STORE, features: {} })).map((l) => l.href);
-    for (const href of ["/", "/orders", "/orders/delivery", "/orders/riders", "/products", "/products/add", "/products/categories", "/products/brands", "/reviews", "/coupons", "/marketing", "/wallet", "/financial", "/stores", "/settings", "/settings/plan", "/settings/fulfillment", "/help"]) {
+    for (const href of ["/", "/orders", "/orders/delivery", "/orders/riders", "/products", "/products/add", "/products/categories", "/reviews", "/coupons", "/marketing", "/wallet", "/financial", "/stores", "/settings", "/settings/plan", "/settings/fulfillment", "/help"]) {
       expect(hrefs, href).toContain(href);
     }
   });
@@ -238,9 +238,8 @@ describe("findActiveHref", () => {
     expect(active("/products/abc/edit")).toBeNull();
   });
 
-  it("lights only Categories or Brands on its page, not Manage products", () => {
+  it("lights only Categories on its page, not Manage products", () => {
     expect(active("/products/categories")).toBe("/products/categories");
-    expect(active("/products/brands")).toBe("/products/brands");
     expect(active("/products")).toBe("/products");
   });
 });

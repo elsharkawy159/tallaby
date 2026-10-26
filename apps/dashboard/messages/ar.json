@@ -76,7 +76,7 @@
     "walletBalance": "الرصيد وشحن المحفظة",
     "campaigns": "الحملات التسويقية",
     "accountHelp": "الحساب والمساعدة",
-    "sellerCategories": "التصنيفات",
+    "sellerCategories": "الفئات",
     "sellerBrands": "الماركات"
   },
   "common": {
@@ -558,10 +558,11 @@
       "finalPricePositive": "يجب أن يكون السعر النهائي أكبر من 0",
       "variantTitleRequired": "اسم المتغير مطلوب",
       "variantSkuRequired": "رمز SKU للمتغير مطلوب",
-      "enTitleRequired": "اسم المنتج (بالإنجليزية) مطلوب",
       "enSlugRequired": "الرابط المختصر للمنتج (بالإنجليزية) مطلوب",
       "arTitleRequired": "العنوان العربي مطلوب عند إضافة محتوى عربي",
-      "weightRequired": "وزن المنتج مطلوب"
+      "salePriceBelowPrice": "يجب أن يكون السعر بعد الخصم أقل من سعر المنتج",
+      "titleRequired": "اكتب اسم المنتج (بالعربية أو بالإنجليزية)",
+      "descriptionRequired": "اكتب وصفًا مختصرًا للمنتج (بالعربية أو بالإنجليزية)"
     },
     "seller": {
       "businessNameRequired": "اسم النشاط التجاري مطلوب",
@@ -850,7 +851,55 @@
       "deleted": "تم حذف \"{title}\"",
       "deleteFailed": "تعذّر حذف المنتج. حاول مرة أخرى.",
       "bulkDeleted": "{count, plural, one {تم حذف منتج واحد} two {تم حذف منتجين} few {تم حذف # منتجات} many {تم حذف # منتجًا} other {تم حذف # منتج}}",
-      "bulkDeleteFailed": "{count, plural, one {تعذّر حذف منتج واحد} two {تعذّر حذف منتجين} few {تعذّر حذف # منتجات} many {تعذّر حذف # منتجًا} other {تعذّر حذف # منتج}}"
+      "bulkDeleteFailed": "{count, plural, one {تعذّر حذف منتج واحد} two {تعذّر حذف منتجين} few {تعذّر حذف # منتجات} many {تعذّر حذف # منتجًا} other {تعذّر حذف # منتج}}",
+      "discount": "الخصم",
+      "tabs": {
+        "all": "الكل",
+        "published": "منشور",
+        "draft": "مسودة",
+        "lowStock": "مخزون منخفض",
+        "outOfStock": "نفد المخزون"
+      },
+      "searchPlaceholder": "ابحث بالاسم أو رمز المنتج…",
+      "searchLabel": "البحث في المنتجات",
+      "category": "الفئة",
+      "allCategories": "كل الفئات",
+      "sortLabel": "الترتيب",
+      "sort": {
+        "newest": "الأحدث أولًا",
+        "priceAsc": "السعر: من الأقل",
+        "priceDesc": "السعر: من الأعلى",
+        "stockAsc": "المخزون: الأقل أولًا",
+        "name": "الاسم"
+      },
+      "viewLabel": "طريقة العرض",
+      "gridView": "عرض البطاقات",
+      "tableView": "عرض الجدول",
+      "stock": {
+        "out": "نفد المخزون",
+        "low": "متبقي {count}",
+        "in": "متوفر · {count}"
+      },
+      "select": "تحديد {title}",
+      "selected": "{count, plural, one {تم تحديد منتج واحد} two {تم تحديد منتجين} few {تم تحديد # منتجات} other {تم تحديد # منتج}}",
+      "bulkPublish": "نشر",
+      "bulkDraft": "تحويل لمسودة",
+      "clearSelection": "إلغاء التحديد",
+      "bulkPublished": "{count, plural, one {تم نشر منتج واحد} two {تم نشر منتجين} few {تم نشر # منتجات} other {تم نشر # منتج}}",
+      "bulkDrafted": "{count, plural, one {تم تحويل منتج واحد إلى مسودة} two {تم تحويل منتجين إلى مسودة} few {تم تحويل # منتجات إلى مسودة} other {تم تحويل # منتج إلى مسودة}}",
+      "bulkPublishFailed": "{count, plural, one {تعذّر تحديث منتج واحد} two {تعذّر تحديث منتجين} few {تعذّر تحديث # منتجات} other {تعذّر تحديث # منتج}}",
+      "bulkDeleteTitle": "{count, plural, one {حذف منتج واحد؟} two {حذف منتجين؟} few {حذف # منتجات؟} other {حذف # منتج؟}}",
+      "emptyTitle": "لا توجد منتجات مطابقة",
+      "emptyDescription": "جرّب تغيير الفلاتر أو كلمة البحث.",
+      "noProductsTitle": "لا توجد منتجات بعد",
+      "noProductsDescription": "أضف أول منتج لتبدأ البيع.",
+      "clearFilters": "مسح الفلاتر",
+      "range": "عرض {from}–{to} من {total} منتج",
+      "previousPage": "الصفحة السابقة",
+      "nextPage": "الصفحة التالية",
+      "pageN": "صفحة {page}",
+      "moreActions": "المزيد",
+      "noImage": "بدون صورة"
     },
     "columnsDialog": {
       "trigger": "إدارة الأعمدة",
@@ -865,7 +914,9 @@
       "unpublishProduct": "إلغاء نشر المنتج",
       "publish": "نشر",
       "unpublish": "إلغاء النشر",
-      "onlyToggleable": "لا يمكن نشر المنتجات التي أزالتها طلبي"
+      "onlyToggleable": "لا يمكن نشر المنتجات التي أزالتها طلبي",
+      "published": "منشور",
+      "draft": "مسودة"
     },
     "imageUpload": {
       "dropHere": "اسحب الصور وأفلتها هنا",
@@ -1171,9 +1222,6 @@
       "remaining": "{count, plural, one {حقل مطلوب متبقٍ} two {حقلان مطلوبان متبقيان} few {# حقول مطلوبة متبقية} many {# حقلًا مطلوبًا متبقيًا} other {# حقل مطلوب متبقٍ}}",
       "allDone": "كل الحقول المطلوبة مكتملة",
       "optional": "اختياري",
-      "preview": "معاينة كما يراها العميل",
-      "previewName": "اسم المنتج",
-      "previewCategory": "يظهر في {category}",
       "contentLanguageHint": "الحقول المميزة بـ AR/EN تُكتب بكل لغة",
       "previewOnStore": "معاينة",
       "previewOnStoreHint": "افتح المنتج على متجرك في تبويب جديد",
@@ -1192,19 +1240,25 @@
     "sections": {
       "basic": {
         "title": "المعلومات الأساسية",
-        "description": "الاسم والفئة هما أول ما يراه العميل ويُستخدمان في البحث.",
+        "description": "الاسم والوصف المختصر والصور والفئة هي كل ما تحتاجه للنشر.",
         "importFromLink": "استيراد من رابط",
         "name": "اسم المنتج",
         "namePlaceholderEn": "e.g. Short sleeve cotton t-shirt",
         "namePlaceholderAr": "مثال: تيشيرت قطن بأكمام قصيرة",
-        "link": "الرابط:",
         "editSlug": "تعديل",
-        "doneSlug": "تم",
+        "doneSlug": "حفظ الرابط",
         "category": "الفئة",
         "brand": "العلامة التجارية",
         "optional": "اختياري",
-        "shortDescription": "وصف مختصر",
-        "shortDescriptionPlaceholder": "جملة أو جملتان تلخّص المنتج — تظهر بجانب السعر في صفحة المنتج"
+        "shortDescription": "الوصف المختصر",
+        "shortDescriptionPlaceholder": "جملة أو فقرة قصيرة تلخّص المنتج: الخامة، المقاسات، أهم ما يميّزه…",
+        "photos": "الصور",
+        "shortDescriptionHint": "يظهر في قسم «الوصف» في صفحة المنتج.",
+        "slugLabel": "رابط المنتج",
+        "cancelSlug": "إلغاء",
+        "slugRule": "حروف إنجليزية صغيرة وأرقام وشرطات (-) فقط.",
+        "slugFromName": "من اسم المنتج",
+        "slugFromNameHint": "أنشئ الرابط من اسم المنتج مرة أخرى"
       },
       "media": {
         "title": "الصور والوسائط",
@@ -1213,21 +1267,24 @@
       },
       "content": {
         "title": "الوصف التفصيلي والمميزات",
-        "description": "اشرح الخامة والمقاسات وطريقة الاستخدام. المميزات تظهر كنقاط مختصرة أعلى الصفحة.",
+        "description": "المميزات تظهر كنقاط مختصرة، والوصف التفصيلي يظهر أسفل صفحة المنتج.",
         "highlights": "المميزات الرئيسية",
         "addHighlight": "إضافة ميزة",
         "removeHighlight": "حذف الميزة",
         "highlightPlaceholderEn": "e.g. 100% Egyptian cotton",
         "highlightPlaceholderAr": "مثال: قطن مصري 100%",
         "pasteTip": "نصيحة: الصق قائمة كاملة في أول حقل وسنقسّمها تلقائيًا.",
-        "body": "محتوى المنتج",
-        "bodyPlaceholder": "اكتب وصفًا تفصيليًا للمنتج…"
+        "body": "الوصف التفصيلي",
+        "bodyPlaceholder": "اكتب وصفًا تفصيليًا للمنتج، ويمكنك إضافة عناوين وصور…",
+        "summaryHighlights": "{count, plural, one {ميزة واحدة} two {ميزتان} few {# مميزات} many {# ميزة} other {# ميزة}}",
+        "bodyHint": "يظهر في صفحة المنتج أسفل تفاصيل الشراء.",
+        "summaryDetailed": "وصف تفصيلي"
       },
       "pricing": {
-        "title": "السعر والخصم",
-        "description": "نحسب السعر النهائي تلقائيًا بعد الخصم.",
+        "title": "السعر",
+        "description": "فعّل الخصم لعرض سعر مخفّض مع شطب السعر الأصلي.",
         "productPrice": "سعر المنتج",
-        "discount": "الخصم",
+        "discount": "خصم",
         "currency": "EGP",
         "discountType": "نوع الخصم",
         "discountPercent": "نسبة مئوية",
@@ -1237,10 +1294,13 @@
         "percentOff": "خصم {percent}%",
         "noDiscount": "بدون خصم",
         "youReceive": "ستحصل على {amount}",
-        "roundingHint": "تُقرَّب الأسعار لأقرب 5 EGP.",
         "expiryTitle": "تحديد موعد انتهاء الخصم",
         "expiryDescription": "يعود السعر الأصلي تلقائيًا بعد الموعد",
-        "endsAt": "ينتهي في"
+        "endsAt": "ينتهي في",
+        "salePrice": "السعر بعد الخصم",
+        "percentOffEmpty": "خصم —",
+        "customerSaves": "يوفّر العميل {amount}",
+        "salePriceHint": "أقل من سعر المنتج"
       },
       "stock": {
         "title": "المخزون والأنواع",
@@ -1251,7 +1311,10 @@
         "decrease": "إنقاص",
         "increase": "زيادة",
         "defaultVariantStock": "هذه كمية النوع الافتراضي",
-        "variantsHeading": "الأنواع والخيارات"
+        "variantsHeading": "الأنواع والخيارات",
+        "summaryVariants": "{count, plural, one {نوع واحد} two {نوعان} few {# أنواع} many {# نوعًا} other {# نوع}} · {stock} قطعة",
+        "summaryStock": "{stock} قطعة متاحة",
+        "summaryNeedQuantity": "مطلوب: الكمية"
       },
       "shipping": {
         "title": "الشحن والتجهيز",
@@ -1273,11 +1336,15 @@
         "freeTitle": "توصيل مجاني لهذا المنتج",
         "freeDescription": "تتحمّل أنت تكلفة الشحن، ويظهر وسم «توصيل مجاني» للعميل",
         "storeFreeDelivery": "متجرك يقدّم توصيلًا مجانيًا على كل المنتجات.",
-        "soon": "قريبًا"
+        "soon": "قريبًا",
+        "summaryFree": "توصيل مجاني",
+        "summaryHandling": "تجهيز {days, plural, one {يوم واحد} two {يومان} few {# أيام} many {# يومًا} other {# يوم}}",
+        "summaryNeedHandling": "مطلوب: مدة التجهيز",
+        "optional": "اختياري"
       },
       "visibility": {
         "title": "الترويج والظهور في البحث",
-        "description": "اختياري. نملأ هذه الحقول من الاسم والوصف إن تركتها فارغة.",
+        "description": "نملأ العنوان والوصف تلقائيًا من اسم المنتج ووصفه، ويمكنك تعديلهما.",
         "trending": "رائج الآن",
         "trendingDescription": "يظهر في قسم الأكثر رواجًا",
         "seasonal": "موسمي",
@@ -1286,15 +1353,19 @@
         "serpTitle": "عنوان المنتج",
         "serpDescription": "وصف المنتج كما سيظهر في نتائج البحث.",
         "metaTitle": "عنوان الميتا",
-        "metaTitlePlaceholder": "يُملأ تلقائيًا من اسم المنتج",
-        "metaTitleHint": "المقترح: 50–60 حرفًا",
+        "metaTitlePlaceholder": "يُملأ من اسم المنتج",
+        "metaTitleHint": "الحد الأقصى 60 حرفًا · المقترح 50–60",
         "metaDescription": "وصف الميتا",
-        "metaDescriptionPlaceholder": "يُملأ تلقائيًا من الوصف المختصر",
-        "metaDescriptionHint": "المقترح: 150–160 حرفًا",
+        "metaDescriptionPlaceholder": "يُملأ من الوصف المختصر",
+        "metaDescriptionHint": "الحد الأقصى 160 حرفًا · المقترح 150–160",
         "metaKeywords": "الكلمات المفتاحية",
         "metaKeywordsPlaceholder": "اكتب كلمة واضغط Enter",
         "metaKeywordsHint": "كلمات يبحث بها العملاء، مثل \"فستان قطن\". اضغط Enter أو اكتب فاصلة بعد كل كلمة.",
-        "metaKeywordsRemove": "إزالة {tag}"
+        "metaKeywordsRemove": "إزالة {tag}",
+        "summaryAuto": "تلقائي من الاسم والوصف",
+        "summaryEdited": "معدّل يدويًا",
+        "auto": "تلقائي",
+        "restoreAuto": "استعادة التلقائي"
       }
     },
     "import": {
@@ -1318,6 +1389,25 @@
       "cancel": "إلغاء",
       "submit": "استيراد",
       "close": "إغلاق"
+    },
+    "categoryField": {
+      "label": "الفئة",
+      "placeholder": "ابحث أو اكتب فئة جديدة",
+      "placeholderTallaby": "ابحث في فئات طلبي",
+      "sheetTitle": "اختر الفئة",
+      "close": "إغلاق",
+      "clear": "مسح",
+      "storeGroup": "فئات متجرك",
+      "tallabyGroup": "فئات طلبي",
+      "suggestedGroup": "مقترحة لمنتجك",
+      "addNew": "إضافة «{name}»",
+      "addNewHint": "فئة جديدة تُضاف إلى فئات متجرك",
+      "empty": "لا توجد فئات",
+      "hint": "ابحث في فئات متجرك وفئات طلبي، أو اكتب فئة جديدة.",
+      "hintTallaby": "ابحث في فئات طلبي واختر الأقرب لمنتجك.",
+      "fromStore": "من فئات متجرك",
+      "fromTallaby": "فئة طلبي · {path}",
+      "newCategory": "فئة جديدة · تُضاف إلى فئات متجرك عند الحفظ"
     }
   },
   "settings": {
@@ -2074,8 +2164,8 @@
         "answer": "افتح إضافة منتجات، وأدخل الاسم والسعر والمخزون والصور، ثم احفظ. يظهر المنتج في متجرك فورًا دون مراجعة."
       },
       "categories": {
-        "question": "هل يمكنني استخدام تصنيفاتي وماركاتي الخاصة؟",
-        "answer": "نعم. في المنتجات › التصنيفات والمنتجات › الماركات قوائمك الخاصة. واختر المنتجات التي يعرضها كل متجر من إعدادات المتجر › عام."
+        "question": "هل يمكنني استخدام فئاتي الخاصة؟",
+        "answer": "نعم. في المنتجات › الفئات قائمتك الخاصة، وتظهر أولًا عند اختيار فئة المنتج. واختر المنتجات التي يعرضها كل متجر من إعدادات المتجر › عام."
       },
       "manageOrders": {
         "question": "أين أرى الطلبات وأتابعها؟",
@@ -3089,6 +3179,8 @@
       }
     },
     "title": "محفظة المتجر",
+    "pageDescription": "يُخصم من رصيدك {fee} جنيهات عن كل طلب يتم توصيله. اشحن مسبقًا ليستمر استقبال الطلبات دون توقف.",
+    "runway": "يكفي لنحو {count} طلب",
     "thisMonth": "هذا الشهر: {sales} مبيعات، {fees} رسوم",
     "negative": "رصيدك أقل من صفر. ستسدده المبيعات الجديدة تلقائيًا، ويمكنك شحن المحفظة في أي وقت.",
     "negativeStrong": "رصيدك أقل من الصفر بكثير. اشحن المحفظة قريبًا: حتى يتعافى الرصيد لا يمكن دفع الإعلانات والخدمات المدفوعة الأخرى من المحفظة.",
@@ -3135,25 +3227,56 @@
       "button": "شحن المحفظة",
       "title": "شحن المحفظة",
       "description": "حوّل المبلغ من محفظتك أو حسابك، ثم ارفع صورة إيصال التحويل.",
+      "panel": {
+        "title": "شحن المحفظة",
+        "subtitle": "اختر المبلغ، ثم اختر طريقة التحويل في الخطوة التالية.",
+        "presets": "اختر المبلغ",
+        "popular": "الأكثر شحنًا",
+        "approxOrders": "≈ {count} طلب",
+        "custom": "أو اكتب مبلغًا آخر",
+        "decrease": "إنقاص",
+        "increase": "زيادة",
+        "methods": "طرق التحويل المتاحة:",
+        "summary": {
+          "amount": "مبلغ الشحن",
+          "fee": "رسوم الشحن",
+          "free": "مجانًا",
+          "total": "ستحوّل",
+          "after": "رصيدك بعد الشحن:"
+        },
+        "cta": "اشحن الآن",
+        "trust": {
+          "review": "يُضاف الرصيد بعد مراجعة الإيصال",
+          "noExpiry": "الرصيد لا تنتهي صلاحيته"
+        }
+      },
+      "changeAmount": "تغيير المبلغ",
+      "cancel": "إلغاء",
+      "recap": {
+        "amount": "المبلغ",
+        "method": "الطريقة",
+        "from": "من"
+      },
       "progress": "خطوات الشحن",
       "steps": {
-        "amount": "المبلغ",
+        "method": "الطريقة",
         "transfer": "التحويل",
         "receipt": "الإيصال"
       },
-      "amountLabel": "كم تريد أن تشحن؟",
       "limits": "من 100 إلى 20,000 EGP.",
       "methodLabel": "طريقة التحويل",
       "methods": {
         "vodafone_cash": {
           "name": "فودافون كاش",
           "hint": "من أي محفظة فودافون كاش",
-          "to": "إلى رقم فودافون كاش"
+          "to": "إلى رقم فودافون كاش",
+          "sender": "رقم المحفظة التي حوّلت منها"
         },
         "instapay": {
           "name": "إنستاباي",
           "hint": "من تطبيق إنستاباي",
-          "to": "إلى رقم إنستاباي"
+          "to": "إلى رقم إنستاباي",
+          "sender": "رقم الهاتف المرتبط بإنستاباي"
         }
       },
       "slip": {
@@ -3167,7 +3290,6 @@
           "screenshot": "التقط صورة لشاشة تأكيد التحويل."
         }
       },
-      "senderLabel": "الرقم الذي حوّلت منه",
       "optional": "اختياري",
       "senderHint": "يساعدنا على مطابقة التحويل بسرعة.",
       "receipt": {
@@ -3180,7 +3302,7 @@
         "wrongType": "اختر صورة بصيغة JPG أو PNG أو WEBP.",
         "tooLarge": "الصورة أكبر من 5 ميجابايت.",
         "uploadFailed": "تعذّر رفع الصورة. حاول مرة أخرى.",
-        "reviewNote": "سيُضاف {amount} إلى رصيدك بعد أن نراجع التحويل. يظهر الطلب في محفظتك كـ«قيد المراجعة» حتى ذلك الحين."
+        "clarity": "تأكد أن الصورة تُظهر المبلغ وتاريخ التحويل بوضوح."
       },
       "back": "رجوع",
       "next": "التالي",
@@ -3728,15 +3850,15 @@
   },
   "categoriesBrands": {
     "categories": {
-      "title": "تصنيفاتك",
+      "title": "فئاتك",
       "description": "رتّب منتجاتك بالطريقة التي يتسوق بها عملاؤك.",
-      "add": "إضافة تصنيف",
-      "addHint": "اكتب للبحث في تصنيفات طلبي، أو أنشئ تصنيفك الخاص.",
-      "searchPlaceholder": "ابحث في التصنيفات، مثل: أحذية",
-      "filter": "تصفية تصنيفاتك",
-      "empty": "لا توجد تصنيفات بعد. أضف من قائمة طلبي أو أنشئ تصنيفك الخاص.",
-      "pageTitle": "التصنيفات",
-      "pageSubtitle": "تصنيفاتك الخاصة لتنظيم منتجاتك. ابحث في قائمة طلبي الجاهزة لتضيف بضغطة، أو أضف ما يخصك. لا يرى البائعون الآخرون قائمتك."
+      "add": "إضافة فئة",
+      "addHint": "اكتب للبحث في فئات طلبي، أو أنشئ فئتك الخاصة.",
+      "searchPlaceholder": "ابحث في الفئات، مثل: أحذية",
+      "filter": "تصفية فئاتك",
+      "empty": "لا توجد فئات بعد. أضف من قائمة طلبي أو أنشئ فئتك الخاصة.",
+      "pageTitle": "الفئات",
+      "pageSubtitle": "فئاتك الخاصة لتنظيم منتجاتك. ابحث في قائمة طلبي الجاهزة لتضيف بضغطة، أو أضف ما يخصك. لا يرى البائعون الآخرون قائمتك."
     },
     "brands": {
       "title": "ماركاتك",
@@ -3793,14 +3915,14 @@
       "invalidImage": "لا يمكن استخدام هذه الصورة. ارفعها مرة أخرى."
     },
     "productForm": {
-      "category": "تصنيفي",
+      "category": "فئتي",
       "brand": "ماركتي",
       "optional": "اختياري",
       "none": "بدون",
       "emptyList": "قائمتك فارغة",
       "hint": "من قوائمك الخاصة، لتجميع المنتجات في متجرك.",
-      "linkFailed": "تم حفظ المنتج، لكن لم يُحفظ التصنيف أو الماركة. عدّل المنتج لتعيينهما مرة أخرى.",
-      "manageCategories": "إدارة التصنيفات",
+      "linkFailed": "تم حفظ المنتج، لكن لم تُحفظ فئته في فئات متجرك. عدّل المنتج لتعيينها مرة أخرى.",
+      "manageCategories": "إدارة الفئات",
       "manageBrands": "إدارة الماركات",
       "pickOrType": "اختر من قائمتك أو اكتب اسمًا جديدًا",
       "typeToAdd": "اكتب اسمًا لإضافته",
@@ -3808,7 +3930,7 @@
       "addNew": "إضافة «{name}»",
       "noMatches": "لا توجد نتائج",
       "emptyListHint": "قائمتك فارغة. اكتب اسمًا لإضافته.",
-      "categoryAdded": "تمت إضافة «{name}» إلى تصنيفاتك.",
+      "categoryAdded": "تمت إضافة «{name}» إلى فئاتك.",
       "brandAdded": "تمت إضافة «{name}» إلى ماركاتك."
     }
   },

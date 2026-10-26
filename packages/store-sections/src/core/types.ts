@@ -190,7 +190,13 @@ export type ProductVariantDetail = {
 /** Everything the product page draws for one product (`ctx.product`). */
 export type ProductDetail = ProductSummary & {
   slug: string;
+  /** The short description as plain text. */
   description: string | null;
+  /**
+   * The short description as HTML, sanitised by the host (server) like
+   * `contentHtml`; the details element prints it as is. Missing or null: show `description`.
+   */
+  descriptionHtml?: string | null;
   /**
    * HTML already sanitised by the host (server) when the ProductDetail is
    * built; never seller- or client-supplied raw HTML. `productContent` prints it as is.

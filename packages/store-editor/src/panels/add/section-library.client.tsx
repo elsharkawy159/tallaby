@@ -61,7 +61,7 @@ export function SectionLibrary({
   const t = useTranslations("storeEditor.add.library");
   const tAdd = useTranslations("storeEditor.add");
   // One category open at a time (Hero first), so the list stays short.
-  const [open, setOpen] = useState<LibraryCategoryId | null>("hero");
+  const [open, setOpen] = useState<LibraryCategoryId | null>(null);
   const [query, setQuery] = useState("");
   const [zoom, setZoom] = useState<SectionPreset | null>(null);
   const setWide = useStore(store, (s) => s.setLibraryWide);

@@ -221,7 +221,7 @@ export function EditorCanvas({
   // Without a logo, the host's uploader takes the logo's place (when it can save one).
   const hasLogo = Boolean(ctx.store.logoUrl);
   const logoPlaceholder = Boolean(ctx.renderLogoUploader);
-  const chromeOpts = useMemo(() => ({ translated, hasLogo, logoPlaceholder }), [translated, hasLogo, logoPlaceholder]);
+  const chromeOpts = useMemo(() => ({ translated, hasLogo, logoPlaceholder, locale: ctx.locale }), [translated, hasLogo, logoPlaceholder, ctx.locale]);
   const drawnHeader = useMemo(() => drawChrome(flushHeaderOnMobile(header), "header", chromeOpts), [header, chromeOpts]);
   const drawnFooter = useMemo(() => drawChrome(footer, "footer", chromeOpts), [footer, chromeOpts]);
   // Remount a section after in-place editing so React owns clean DOM again.

@@ -65,9 +65,8 @@ export const SIDEBAR_CONFIG: NavEntry[] = [
     items: [
       { key: "manageProducts", href: "/products", countKey: "products", status: "live", exact: true },
       { key: "addProducts", href: "/products/add", status: "live" },
-      // The seller's own category and brand lists (0068). Which products a store shows is in Store settings › General.
+      // The seller's own category list (0068). Which products a store shows is in Store settings › General.
       { key: "sellerCategories", href: "/products/categories", status: "live" },
-      { key: "sellerBrands", href: "/products/brands", status: "live" },
       { key: "reviews", href: "/reviews", countKey: "reviews", status: "live" },
     ],
   },

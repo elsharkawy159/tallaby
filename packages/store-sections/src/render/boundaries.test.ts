@@ -26,13 +26,16 @@ describe("package boundaries", () => {
   });
 
   it("never uses dangerouslySetInnerHTML except for the theme <style> and host-sanitised product content", () => {
-    // The product content element prints `ProductDetail.contentHtml`, which the host sanitises on the
-    // server when it builds the product (core/types.ts); exactly one use, of that field only.
+    // The product content and details elements print `ProductDetail.contentHtml` and
+    // `descriptionHtml`, which the host sanitises on the server when it builds the product
+    // (core/types.ts); exactly one use of each field, and nothing else.
     const sanitisedProductContent = (path: string, code: string) =>
       /elements[\\/]product-elements\.tsx$/.test(path) &&
-      code.split("dangerouslySetInnerHTML").length === 2 &&
+      code.split("dangerouslySetInnerHTML").length === 3 &&
       code.includes('const html = product.contentHtml?.trim() ?? "";') &&
-      code.includes("dangerouslySetInnerHTML={{ __html: html }}");
+      code.includes("dangerouslySetInnerHTML={{ __html: html }}") &&
+      code.includes('const descriptionHtml = description ? (product.descriptionHtml?.trim() ?? "") : "";') &&
+      code.includes("dangerouslySetInnerHTML={{ __html: descriptionHtml }}");
     const offenders = sources.filter(
       ({ path, code }) => code.includes("dangerouslySetInnerHTML") && !/render[\\/]render\.tsx$/.test(path) && !sanitisedProductContent(path, code),
     );

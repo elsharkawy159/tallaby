@@ -1,6 +1,7 @@
 import { SidebarData } from "@/components/dashboard/sidebar.data";
 import { SupportWhatsAppButton } from "@/components/dashboard/support-chat-link.client";
 import { DashboardHeader } from "@/components/layout/dashboard-header.client";
+import { DashboardMain } from "@/components/layout/dashboard-main.client";
 import { MainContentWrapper } from "@/components/layout/main-content-wrapper";
 import { NegativeWalletDialog } from "@/components/layout/negative-wallet-dialog.client";
 import { HeardAboutUsDialog } from "@/components/layout/heard-about-us-dialog.client";
@@ -55,7 +56,7 @@ export default async function DashboardLayout({
             {t("sellerStatus.restricted.message")}
           </div>
         )}
-        <main className="min-w-0">{children}</main>
+        <DashboardMain>{children}</DashboardMain>
       </MainContentWrapper>
       <SupportWhatsAppButton />
       <NegativeWalletDialog balance={walletBalance} />

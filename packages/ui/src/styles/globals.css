@@ -27,8 +27,8 @@
   --accent-foreground: #171717;
   --destructive: #dc2626;
   --destructive-foreground: #dc2626;
-  --border: #e2cbcb;
-  --input: #e5e5e5;
+  --border: #e7e9e8;
+  --input: #d9dddc;
   --ring: #a3a3a3;
 
   --chart-1: #f59e0b;
@@ -43,7 +43,7 @@
   --sidebar-primary-foreground: #fafafa;
   --sidebar-accent: #f7f7f7;
   --sidebar-accent-foreground: #171717;
-  --sidebar-border: #e5e5e5;
+  --sidebar-border: #e7e9e8;
   --sidebar-ring: #a3a3a3;
 
   /* Soft tints + ink for tinted surfaces (badges, active nav, status pills). */
@@ -74,8 +74,8 @@
   --accent-foreground: #0f0f0f;
   --destructive: #b91c1c;
   --destructive-foreground: #ef4444;
-  --border: #2e2e2e;
-  --input: #2e2e2e;
+  --border: #22343b;
+  --input: #2c434b;
   --ring: #737373;
   --chart-1: #8b5cf6;
   --chart-2: #14b8a6;
@@ -88,7 +88,7 @@
   --sidebar-primary-foreground: #0f0f0f;
   --sidebar-accent: #262626;
   --sidebar-accent-foreground: #fafafa;
-  --sidebar-border: #2e2e2e;
+  --sidebar-border: #22343b;
   --sidebar-ring: #525252;
   --faint: #6f8389;
   --primary-soft: #1a3038;

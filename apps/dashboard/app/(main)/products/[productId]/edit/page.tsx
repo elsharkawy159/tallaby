@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { getProduct } from "@/actions/products";
 import { getAllCategories } from "@/actions/categories";
-import { getAllBrands } from "@/actions/brands";
 import { EditProduct } from "./edit-product";
 import { buildEditDefaultValues } from "./edit-product.lib";
 import { getSellerProfile } from "@/actions/seller";
@@ -13,7 +12,7 @@ import { loadSellerTaxonomyOptions } from "../../categories-brands/categories-br
 import { loadProductLinkHost } from "../../add/product-link-host.data";
 import { loadProductStoreLinks } from "../../_components/product-store-links.data";
 import type { EditProductStatus } from "./edit-product-actions.client";
-import type { CategoryOption, BrandOption } from "../../add/add-product.schema";
+import type { CategoryOption } from "../../add/add-product.schema";
 
 export const dynamic = "force-dynamic";
 
@@ -31,11 +30,10 @@ export default async function EditProductPage({
 }: EditProductPageProps) {
   const { productId } = await params;
   const { sellerId } = await requireSeller();
-  const [productResult, categoriesRes, brandsRes, sellerProfile, sellerTaxonomy, linkHost] =
+  const [productResult, categoriesRes, sellerProfile, sellerTaxonomy, linkHost] =
     await Promise.all([
       getProduct(productId),
       getAllCategories(),
-      getAllBrands(),
       getSellerProfile(),
       loadSellerTaxonomyOptions(sellerId),
       loadProductLinkHost(sellerId),
@@ -47,7 +45,6 @@ export default async function EditProductPage({
 
   const product = productResult.data;
   const categories = (categoriesRes.data || []) as CategoryOption[];
-  const brands = (brandsRes.data || []) as BrandOption[];
   const seller = sellerProfile.success ? sellerProfile.data : null;
   const sellerPricing = {
     commissionRate: seller?.commissionRate ?? DEFAULT_COMMISSION_RATE,
@@ -71,7 +68,6 @@ export default async function EditProductPage({
       previewUrl={storeLinks.get(productId) ?? null}
       defaultValues={defaultValues}
       categories={categories}
-      brands={brands}
       sellerPricing={sellerPricing}
       sellerTaxonomy={sellerTaxonomy}
       linkHost={linkHost}

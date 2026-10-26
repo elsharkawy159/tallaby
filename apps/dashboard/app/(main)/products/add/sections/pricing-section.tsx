@@ -1,81 +1,25 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useFormContext, useWatch } from "react-hook-form";
 import { useLocale, useTranslations } from "next-intl";
 import { Banknote } from "lucide-react";
+import { Switch } from "@workspace/ui/components/switch";
 import { formatMoney } from "@/lib/i18n/format";
-import {
-  calculateDiscountFromFinalPrice,
-  calculateProductFinalPrice,
-  calculateSellerEarning,
-  type SellerPricingSettings,
-} from "@/lib/utils/product-pricing.lib";
+import type { SellerPricingSettings } from "@/lib/utils/product-pricing.lib";
+import { cn } from "@/lib/utils";
 import { FieldError, FieldHint, FieldLabel, SectionCard } from "@/components/form/form-ui";
 import { DiscountExpiryField } from "../steps/discount-expiry-field";
-import { DiscountField, MoneyField, useFieldError } from "./fields";
+import { MoneyField, useFieldError } from "./fields";
 import type { AddProductFormData } from "../add-product.schema";
 
+const positive = (value: unknown): value is number => typeof value === "number" && value > 0;
+
 /**
- * Keeps `price.final` (and `price.base`) in step with the list price and
- * discount; when only the final price changes (import, edit) it back-fills the
- * discount instead.
+ * Price, and a Discount switch that adds the sale price. The sale price is
+ * `price.final`; the discount is kept as the amount off, so the sale price
+ * stays put if the seller changes the price afterwards.
  */
-export function useMainPriceSync(sellerPricing: SellerPricingSettings) {
-  const form = useFormContext<AddProductFormData>();
-  const [listPrice, discountValue, discountType, finalPrice] = useWatch({
-    control: form.control,
-    name: ["price.list", "price.discountValue", "price.discountType", "price.final"],
-  });
-  const prev = useRef({ listPrice, discountValue, discountType, finalPrice });
-
-  useEffect(() => {
-    const numericList = typeof listPrice === "number" ? listPrice : 0;
-    const before = prev.current;
-    const listChanged = listPrice !== before.listPrice;
-    const discountChanged =
-      discountValue !== before.discountValue || discountType !== before.discountType;
-    const finalChanged = finalPrice !== before.finalPrice;
-    prev.current = { listPrice, discountValue, discountType, finalPrice };
-
-    if (numericList <= 0) return;
-
-    form.setValue("price.base", numericList, { shouldDirty: true, shouldValidate: false });
-
-    if (listChanged || discountChanged || !finalPrice) {
-      const calculatedFinal = calculateProductFinalPrice(
-        numericList,
-        discountValue,
-        discountType,
-        sellerPricing
-      );
-      if (calculatedFinal !== finalPrice) {
-        form.setValue("price.final", calculatedFinal, {
-          shouldDirty: true,
-          shouldValidate: form.formState.submitCount > 0,
-        });
-      }
-      prev.current.finalPrice = calculatedFinal;
-      return;
-    }
-
-    if (finalChanged) {
-      const calculatedDiscount = calculateDiscountFromFinalPrice(
-        numericList,
-        finalPrice,
-        discountType,
-        sellerPricing
-      );
-      form.setValue("price.discountValue", calculatedDiscount, {
-        shouldDirty: true,
-        shouldValidate: false,
-      });
-      prev.current.discountValue = calculatedDiscount;
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [listPrice, discountValue, discountType, finalPrice, sellerPricing]);
-}
-
 export function PricingSection({
   id = "sec-price",
   sellerPricing,
@@ -84,23 +28,63 @@ export function PricingSection({
   sellerPricing: SellerPricingSettings;
 }) {
   const t = useTranslations("productForm.sections.pricing");
-  const tPage = useTranslations("productForm.page");
   const locale = useLocale();
   const form = useFormContext<AddProductFormData>();
-  useMainPriceSync(sellerPricing);
-
-  const [listPrice, finalPrice] = useWatch({
+  const [listPrice, finalPrice, discountValue, discountEndsAt] = useWatch({
     control: form.control,
-    name: ["price.list", "price.final"],
+    name: ["price.list", "price.final", "price.discountValue", "price.discountEndsAt"],
   });
   const listError = useFieldError("price.list");
   const finalError = useFieldError("price.final");
 
-  const list = typeof listPrice === "number" ? listPrice : 0;
-  const final = typeof finalPrice === "number" && finalPrice > 0 ? finalPrice : list;
-  const saving = list > final ? list - final : 0;
-  const percent = list > 0 && saving > 0 ? Math.round((saving / list) * 100) : 0;
-  const earning = calculateSellerEarning(final, sellerPricing);
+  const [discountOn, setDiscountOn] = useState(
+    () => positive(listPrice) && positive(finalPrice) && finalPrice < listPrice
+  );
+  // An end date set before (edit, import) stays visible; new discounts don't ask for one.
+  const [showExpiry] = useState(() => Boolean(discountEndsAt));
+
+  // Restored drafts and imports can arrive after the first render.
+  const seenOutside = useRef(false);
+  useEffect(() => {
+    if (seenOutside.current) return;
+    if (positive(listPrice) && positive(finalPrice) && finalPrice < listPrice) {
+      seenOutside.current = true;
+      setDiscountOn(true);
+    }
+  }, [listPrice, finalPrice]);
+
+  useEffect(() => {
+    const quiet = { shouldDirty: false, shouldValidate: false };
+    if (!positive(listPrice)) return;
+    if (form.getValues("price.base") !== listPrice) form.setValue("price.base", listPrice, quiet);
+
+    if (!discountOn) {
+      if (finalPrice !== listPrice) {
+        form.setValue("price.final", listPrice, { shouldValidate: form.formState.submitCount > 0 });
+      }
+      if (discountValue !== undefined) form.setValue("price.discountValue", undefined, quiet);
+      if (form.getValues("price.discountEndsAt")) form.setValue("price.discountEndsAt", null, quiet);
+      return;
+    }
+
+    const amountOff = positive(finalPrice) && finalPrice < listPrice ? listPrice - finalPrice : undefined;
+    if (form.getValues("price.discountType") !== "amount") form.setValue("price.discountType", "amount", quiet);
+    if (amountOff !== discountValue) form.setValue("price.discountValue", amountOff, quiet);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [listPrice, finalPrice, discountOn]);
+
+  const toggleDiscount = (on: boolean) => {
+    seenOutside.current = true;
+    setDiscountOn(on);
+    if (on) {
+      // Start empty so the seller types the sale price, not a copy of the price.
+      if (finalPrice === listPrice) form.setValue("price.final", undefined as unknown as number);
+      requestAnimationFrame(() => document.getElementById("price-sale")?.focus());
+    }
+  };
+
+  const hasSale = discountOn && positive(listPrice) && positive(finalPrice) && finalPrice < listPrice;
+  const percent = hasSale ? Math.round((1 - finalPrice / listPrice) * 100) : 0;
 
   return (
     <SectionCard
@@ -111,7 +95,7 @@ export function PricingSection({
       divided={false}
       invalid={Boolean(listError || finalError)}
     >
-      <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
+      <div className="grid grid-cols-1 items-start gap-3.5 sm:grid-cols-2">
         <div className="flex flex-col gap-1.5">
           <FieldLabel htmlFor="price-list" required>
             {t("productPrice")}
@@ -120,65 +104,56 @@ export function PricingSection({
           <FieldError>{listError}</FieldError>
         </div>
         <div className="flex flex-col gap-1.5">
-          <FieldLabel htmlFor="price-discount" note={tPage("optional")}>
-            {t("discount")}
+          {/* Lines the switch up with the input beside it. */}
+          <span className="hidden text-[13px] leading-normal select-none sm:block" aria-hidden>
+            &nbsp;
+          </span>
+          <label
+            htmlFor="price-discount-on"
+            className="flex h-11 cursor-pointer items-center gap-3 rounded-[10px] border border-input bg-muted px-3.5"
+          >
+            <Switch id="price-discount-on" checked={discountOn} onCheckedChange={toggleDiscount} />
+            <span className="text-[13px] font-semibold">{t("discount")}</span>
+          </label>
+        </div>
+      </div>
+
+      {discountOn && (
+        <div className="flex flex-col gap-1.5">
+          <FieldLabel htmlFor="price-sale" required>
+            {t("salePrice")}
           </FieldLabel>
-          <DiscountField
-            id="price-discount"
-            valueName="price.discountValue"
-            typeName="price.discountType"
-          />
-        </div>
-      </div>
-
-      <div className="flex flex-wrap items-center gap-4 rounded-xl bg-primary-soft px-4 py-3.5">
-        <div>
-          <span className="block text-xs text-muted-foreground">{t("finalForCustomer")}</span>
-          <div className="flex items-baseline gap-2">
-            <span className="font-sans text-2xl leading-tight font-extrabold text-primary-ink tabular-nums">
-              {formatMoney(final, locale)}
+          <div className="flex items-center gap-2.5">
+            <div className="min-w-0 flex-1">
+              <MoneyField id="price-sale" name="price.final" invalid={Boolean(finalError)} />
+            </div>
+            <span
+              className={cn(
+                "inline-flex h-11 shrink-0 items-center rounded-[10px] border px-3.5 text-[13px] font-bold whitespace-nowrap",
+                hasSale ? "border-transparent bg-success-soft text-success" : "bg-muted text-faint"
+              )}
+            >
+              {hasSale ? t("percentOff", { percent }) : t("percentOffEmpty")}
             </span>
-            {saving > 0 && (
-              <s className="font-sans text-[13px] text-faint tabular-nums">
-                {formatMoney(list, locale)}
-              </s>
-            )}
           </div>
-        </div>
-        <div className="ms-auto flex flex-wrap gap-2">
-          {saving > 0 ? (
-            <>
-              <Pill tone="success">{t("save", { amount: formatMoney(saving, locale) })}</Pill>
-              <Pill>{t("percentOff", { percent })}</Pill>
-            </>
+          {finalError ? (
+            <FieldError>{finalError}</FieldError>
           ) : (
-            <Pill>{t("noDiscount")}</Pill>
+            <FieldHint className="text-faint">
+              {hasSale
+                ? t("customerSaves", { amount: formatMoney(listPrice - finalPrice, locale) })
+                : t("salePriceHint")}
+            </FieldHint>
           )}
-          {earning > 0 && <Pill>{t("youReceive", { amount: formatMoney(earning, locale) })}</Pill>}
+          {showExpiry && (
+            <DiscountExpiryField
+              name="price.discountEndsAt"
+              title={t("expiryTitle")}
+              description={t("expiryDescription")}
+            />
+          )}
         </div>
-      </div>
-      <FieldError>{finalError}</FieldError>
-      <FieldHint className="-mt-2 text-faint">{t("roundingHint")}</FieldHint>
-
-      <DiscountExpiryField
-        name="price.discountEndsAt"
-        title={t("expiryTitle")}
-        description={t("expiryDescription")}
-      />
+      )}
     </SectionCard>
-  );
-}
-
-function Pill({ tone, children }: { tone?: "success"; children: React.ReactNode }) {
-  return (
-    <span
-      className={
-        tone === "success"
-          ? "inline-flex h-[26px] items-center rounded-full bg-success-soft px-2.5 text-xs font-semibold whitespace-nowrap text-success"
-          : "inline-flex h-[26px] items-center rounded-full bg-card px-2.5 text-xs whitespace-nowrap"
-      }
-    >
-      {children}
-    </span>
   );
 }

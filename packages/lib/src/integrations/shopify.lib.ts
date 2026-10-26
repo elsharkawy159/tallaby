@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { roundPriceUpToNearestFive } from "../utils/round-price";
+import { normalizePrice } from "../utils/round-price";
 
 /**
  * Shopify product import (PLAN.md §9.2, P7-07). Pure: validators, the Admin
@@ -222,16 +222,16 @@ export function toPiastres(value: string | null | undefined): number | null {
 }
 
 /**
- * Shopify price + compare-at → the Tallaby price object, rounded up to the
- * nearest 5 like every price the dashboard stores (normalizeProductPricePayload).
+ * Shopify price + compare-at → the Tallaby price object, kept to the piastre
+ * like every price the dashboard stores (normalizeProductPricePayload).
  */
 export function mapShopifyPrice(price: string | null, compareAtPrice: string | null): TallabyPrice {
   const finalP = toPiastres(price) ?? 0;
   const compareP = toPiastres(compareAtPrice);
   const listP = compareP != null && compareP > finalP ? compareP : finalP;
-  const final = finalP > 0 ? roundPriceUpToNearestFive(finalP / 100) : 0;
-  const list = listP > 0 ? roundPriceUpToNearestFive(listP / 100) : 0;
-  const discount = list > final ? list - final : 0;
+  const final = finalP > 0 ? normalizePrice(finalP / 100) : 0;
+  const list = listP > 0 ? normalizePrice(listP / 100) : 0;
+  const discount = list > final ? normalizePrice(list - final) : 0;
   return {
     base: list,
     list,

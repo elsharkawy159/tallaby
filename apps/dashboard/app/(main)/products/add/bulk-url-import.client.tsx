@@ -25,7 +25,6 @@ import {
   addProductFormSchema,
   defaultValues,
   type AddProductFormData,
-  type BrandOption,
   type CategoryOption,
   type SupportedLocale,
 } from "./add-product.schema"
@@ -43,7 +42,6 @@ import { RemoteImage } from "@/components/media/remote-image";
 interface BulkUrlImportProps {
   urls: string[]
   categories: CategoryOption[]
-  brands: BrandOption[]
   sellerPricing: SellerPricingSettings
   onExit: () => void
 }
@@ -86,7 +84,6 @@ function thumbnailSrc (pathOrUrl: string | undefined): string | undefined {
 interface BulkItemFormProps {
   item: BulkProductItem
   categories: CategoryOption[]
-  brands: BrandOption[]
   sellerPricing: SellerPricingSettings
   activeLocale: SupportedLocale
   onValuesChange: (id: string, values: AddProductFormData) => void
@@ -100,7 +97,6 @@ interface BulkItemFormProps {
 function BulkItemForm ({
   item,
   categories,
-  brands,
   sellerPricing,
   activeLocale,
   onValuesChange,
@@ -141,7 +137,6 @@ function BulkItemForm ({
       <div className="space-y-6 pt-2">
         <BasicInformationStep
           categories={categories}
-          brands={brands}
           sellerPricing={sellerPricing}
           activeLocale={activeLocale}
           hideImport
@@ -161,7 +156,6 @@ function BulkItemForm ({
 export function BulkUrlImport ({
   urls,
   categories,
-  brands,
   sellerPricing,
   onExit,
 }: BulkUrlImportProps) {
@@ -507,8 +501,7 @@ export function BulkUrlImport ({
                         <BulkItemForm
                           item={item}
                           categories={categories}
-                          brands={brands}
-                          sellerPricing={sellerPricing}
+                                          sellerPricing={sellerPricing}
                           activeLocale={activeLocale}
                           onValuesChange={handleValuesChange}
                           registerForm={registerForm}

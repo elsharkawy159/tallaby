@@ -26,8 +26,8 @@ import {
 } from "@workspace/db/categories";
 import { syncProductVariants } from "@workspace/db/products";
 import {
-  roundNullablePriceUpToNearestFive,
-  roundPriceUpToNearestFive,
+  normalizeNullablePrice,
+  normalizePrice,
 } from "@workspace/lib";
 
 /** Builds the cache-invalidation snapshot for a product from its current DB state. */
@@ -479,13 +479,13 @@ export async function updateProduct(productId: string, data: UpdateProductInput)
       // rule the seller dashboard and the storefront apply.
       productUpdate.price = {
         ...currentPrice,
-        base: roundPriceUpToNearestFive(
+        base: normalizePrice(
           data.basePrice ?? currentPrice.base ?? 0
         ),
-        list: roundNullablePriceUpToNearestFive(
+        list: normalizeNullablePrice(
           data.listPrice ?? currentPrice.list ?? null
         ),
-        final: roundPriceUpToNearestFive(
+        final: normalizePrice(
           data.finalPrice ??
             data.basePrice ??
             currentPrice.final ??
@@ -563,7 +563,7 @@ export async function updateProduct(productId: string, data: UpdateProductInput)
           tx,
           productId,
           data.variants.map((variant, index) => {
-            const finalPrice = roundPriceUpToNearestFive(
+            const finalPrice = normalizePrice(
               Number(variant.price ?? 0)
             );
             return {

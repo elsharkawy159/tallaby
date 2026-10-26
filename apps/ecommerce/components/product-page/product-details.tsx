@@ -252,8 +252,16 @@ export const ProductDetails = ({
             <AccordionTrigger className="py-4 text-base font-semibold text-gray-900 hover:no-underline">
               {t("description")}
             </AccordionTrigger>
-            <AccordionContent className="whitespace-pre-wrap pb-5 text-sm leading-relaxed text-gray-700">
-              {product.description}
+            {/* Sanitised on the server (mergeProductWithTranslation). */}
+            <AccordionContent className="pb-5 text-sm leading-relaxed text-gray-700">
+              {product.descriptionHtml ? (
+                <div
+                  className="rich-text-content"
+                  dangerouslySetInnerHTML={{ __html: product.descriptionHtml }}
+                />
+              ) : (
+                <p className="whitespace-pre-wrap">{product.description}</p>
+              )}
             </AccordionContent>
           </AccordionItem>
 

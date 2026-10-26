@@ -1,6 +1,6 @@
 "use client";
 
-import { Controller, useFormContext, useWatch } from "react-hook-form";
+import { Controller, useFormContext, useFormState, useWatch } from "react-hook-form";
 import { useTranslations } from "next-intl";
 import { Boxes, Wand2 } from "lucide-react";
 import type { SellerPricingSettings } from "@/lib/utils/product-pricing.lib";
@@ -11,12 +11,12 @@ import {
   GroupInput,
   InputGroup,
   NumberStepper,
-  SectionCard,
   SubHeading,
 } from "@/components/form/form-ui";
 import { generateSku } from "../add-product.lib";
 import { useFieldError } from "./fields";
 import { VariantsEditor } from "./variants-editor";
+import { CollapsibleSection } from "./collapsible-section";
 import type { AddProductFormData, SupportedLocale } from "../add-product.schema";
 
 export function InventorySection({
@@ -33,15 +33,29 @@ export function InventorySection({
   const form = useFormContext<AddProductFormData>();
   const quantityError = useFieldError("quantity");
   const variantsError = useFieldError("variants");
-  const hasVariants = (useWatch({ control: form.control, name: "variants" }) ?? []).length > 0;
+  const [variants, quantity] = useWatch({ control: form.control, name: ["variants", "quantity"] });
+  const variantCount = (variants ?? []).length;
+  const hasVariants = variantCount > 0;
+  const { submitCount } = useFormState({ control: form.control });
+  const stock = hasVariants
+    ? (variants ?? []).reduce((sum, v) => sum + (typeof v?.stock === "number" ? v.stock : 0), 0)
+    : typeof quantity === "number"
+      ? quantity
+      : 0;
+  const summary = hasVariants
+    ? t("summaryVariants", { count: variantCount, stock })
+    : stock > 0
+      ? t("summaryStock", { stock })
+      : t("summaryNeedQuantity");
 
   return (
-    <SectionCard
+    <CollapsibleSection
       id={id}
       icon={Boxes}
       title={t("title")}
       description={t("description")}
-      divided={false}
+      summary={summary}
+      summaryTone={stock > 0 ? "ok" : submitCount > 0 ? "bad" : "need"}
       invalid={Boolean(quantityError || variantsError)}
     >
       <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
@@ -104,6 +118,6 @@ export function InventorySection({
       <SubHeading>{t("variantsHeading")}</SubHeading>
       <VariantsEditor sellerPricing={sellerPricing} activeLocale={activeLocale} />
       <FieldError>{variantsError}</FieldError>
-    </SectionCard>
+    </CollapsibleSection>
   );
 }

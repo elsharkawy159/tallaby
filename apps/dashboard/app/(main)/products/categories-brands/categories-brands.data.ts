@@ -35,21 +35,17 @@ export async function loadSellerTaxonomyList(sellerId: string, kind: TaxonomyKin
     .orderBy(asc(sellerProductBrands.position), asc(sellerProductBrands.createdAt));
 }
 
-/** Slim lists for the product form's "My category" / "My brand" pickers. */
-export async function loadSellerTaxonomyOptions(
-  sellerId: string,
-): Promise<{ categories: SellerTaxonomyOption[]; brands: SellerTaxonomyOption[] }> {
-  const [categories, brands] = await Promise.all([
-    db
-      .select({ id: sellerProductCategories.id, name: sellerProductCategories.name, nameAr: sellerProductCategories.nameAr })
-      .from(sellerProductCategories)
-      .where(eq(sellerProductCategories.sellerId, sellerId))
-      .orderBy(asc(sellerProductCategories.position), asc(sellerProductCategories.createdAt)),
-    db
-      .select({ id: sellerProductBrands.id, name: sellerProductBrands.name, nameAr: sellerProductBrands.nameAr })
-      .from(sellerProductBrands)
-      .where(eq(sellerProductBrands.sellerId, sellerId))
-      .orderBy(asc(sellerProductBrands.position), asc(sellerProductBrands.createdAt)),
-  ]);
-  return { categories, brands };
+/** The seller's category list, slim, for the product form's category picker. */
+export async function loadSellerTaxonomyOptions(sellerId: string): Promise<{ categories: SellerTaxonomyOption[] }> {
+  const categories = await db
+    .select({
+      id: sellerProductCategories.id,
+      name: sellerProductCategories.name,
+      nameAr: sellerProductCategories.nameAr,
+      sourceId: sellerProductCategories.sourceCategoryId,
+    })
+    .from(sellerProductCategories)
+    .where(eq(sellerProductCategories.sellerId, sellerId))
+    .orderBy(asc(sellerProductCategories.position), asc(sellerProductCategories.createdAt));
+  return { categories };
 }

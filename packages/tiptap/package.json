@@ -48,6 +48,10 @@
       "types": "./src/rich-text-content.tsx",
       "default": "./src/rich-text-content.tsx"
     },
+    "./plain-text": {
+      "types": "./src/plain-text.ts",
+      "default": "./src/plain-text.ts"
+    },
     "./sanitize": {
       "types": "./src/sanitize-html.ts",
       "default": "./src/sanitize-html.ts"

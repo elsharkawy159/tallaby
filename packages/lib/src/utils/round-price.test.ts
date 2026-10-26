@@ -1,51 +1,37 @@
 import { describe, expect, it } from 'vitest'
-import {
-  roundNullablePriceUpToNearestFive,
-  roundPriceUpToNearestFive,
-} from './round-price'
+import { normalizeNullablePrice, normalizePrice } from './round-price'
 
-describe('roundPriceUpToNearestFive', () => {
-  it('rounds up to the next multiple of 5', () => {
-    expect(roundPriceUpToNearestFive(199)).toBe(200)
-    expect(roundPriceUpToNearestFive(248)).toBe(250)
-    expect(roundPriceUpToNearestFive(344)).toBe(345)
-    expect(roundPriceUpToNearestFive(1)).toBe(5)
+describe('normalizePrice', () => {
+  it('keeps the price the seller entered', () => {
+    expect(normalizePrice(199)).toBe(199)
+    expect(normalizePrice(248)).toBe(248)
+    expect(normalizePrice(1)).toBe(1)
+    expect(normalizePrice(150.5)).toBe(150.5)
   })
 
-  it('leaves prices already on the step untouched', () => {
-    expect(roundPriceUpToNearestFive(5)).toBe(5)
-    expect(roundPriceUpToNearestFive(150)).toBe(150)
-    expect(roundPriceUpToNearestFive(1000)).toBe(1000)
+  it('keeps two decimals and drops float noise', () => {
+    expect(normalizePrice(0.1 + 0.2)).toBe(0.3)
+    expect(normalizePrice(199.999)).toBe(200)
+    expect(normalizePrice(149.99999999999997)).toBe(150)
   })
 
-  it('never rounds down, including fractional prices', () => {
-    expect(roundPriceUpToNearestFive(150.01)).toBe(155)
-    expect(roundPriceUpToNearestFive(199.99)).toBe(200)
-    expect(roundPriceUpToNearestFive(0.5)).toBe(5)
-  })
-
-  it('absorbs binary float noise instead of jumping a whole step', () => {
-    // 0.1 + 0.2 = 0.30000000000000004; 149.99999999999997 is one ULP under 150
-    expect(roundPriceUpToNearestFive(149.99999999999997)).toBe(150)
-  })
-
-  it('returns 0 for non-positive and non-finite input', () => {
-    expect(roundPriceUpToNearestFive(0)).toBe(0)
-    expect(roundPriceUpToNearestFive(-10)).toBe(0)
-    expect(roundPriceUpToNearestFive(Number.NaN)).toBe(0)
-    expect(roundPriceUpToNearestFive(Number.POSITIVE_INFINITY)).toBe(0)
+  it('treats zero, negatives and non-finite values as 0', () => {
+    expect(normalizePrice(0)).toBe(0)
+    expect(normalizePrice(-10)).toBe(0)
+    expect(normalizePrice(Number.NaN)).toBe(0)
+    expect(normalizePrice(Number.POSITIVE_INFINITY)).toBe(0)
   })
 })
 
-describe('roundNullablePriceUpToNearestFive', () => {
-  it('passes null and undefined straight through', () => {
-    expect(roundNullablePriceUpToNearestFive(null)).toBeNull()
-    expect(roundNullablePriceUpToNearestFive(undefined)).toBeNull()
-    expect(roundNullablePriceUpToNearestFive(Number.NaN)).toBeNull()
+describe('normalizeNullablePrice', () => {
+  it('passes null and non-finite through as null', () => {
+    expect(normalizeNullablePrice(null)).toBeNull()
+    expect(normalizeNullablePrice(undefined)).toBeNull()
+    expect(normalizeNullablePrice(Number.NaN)).toBeNull()
   })
 
-  it('rounds real numbers', () => {
-    expect(roundNullablePriceUpToNearestFive(248)).toBe(250)
-    expect(roundNullablePriceUpToNearestFive(0)).toBe(0)
+  it('normalises finite values', () => {
+    expect(normalizeNullablePrice(248)).toBe(248)
+    expect(normalizeNullablePrice(0)).toBe(0)
   })
 })

@@ -2,7 +2,6 @@
 
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import type { Table } from "@tanstack/react-table";
 import { Button } from "@workspace/ui/components/button";
 import {
   Download,
@@ -39,9 +38,10 @@ import {
 import type { VendorProduct } from "./vendor-products.section";
 
 export function ImportExportButton({
-  table,
+  products: exportable,
 }: {
-  table: Table<VendorProduct>;
+  /** What the page currently shows (tab, search and category applied). */
+  products: VendorProduct[];
 }) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -119,12 +119,10 @@ export function ImportExportButton({
     });
   };
 
-  /** Exports what the table currently represents — search filter applied, all pages. */
+  /** Exports what the page currently shows: filters applied, all pages. */
   const handleExport = async () => {
     setMenuOpen(false);
-    const products = table
-      .getFilteredRowModel()
-      .rows.map((row) => row.original);
+    const products = exportable;
 
     if (products.length === 0) {
       toast.error(t("nothingToExport"));
@@ -168,7 +166,7 @@ export function ImportExportButton({
 
       <Popover open={menuOpen} onOpenChange={setMenuOpen}>
         <PopoverTrigger asChild>
-          <Button variant="default" disabled={isPending}>
+          <Button variant="outline" disabled={isPending}>
             {isPending ? (
               <LoaderIcon className="-ms-1 animate-spin" size={16} />
             ) : (

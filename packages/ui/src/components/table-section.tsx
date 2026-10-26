@@ -169,6 +169,8 @@ export type TableSectionProps<TData extends { id: string }> = {
   onColumnOrderChange?: (order: string[]) => void;
   /** Hide the built-in "View" popover when the page provides its own column UI. */
   hideViewOptions?: boolean;
+  /** Hide the built-in search box when the page filters the rows itself. */
+  hideSearch?: boolean;
   /** Localized UI copy; any label left out keeps its English default. */
   labels?: Partial<TableSectionLabels>;
 };
@@ -188,6 +190,7 @@ export function TableSection<TData extends { id: string }>(
     columnOrder: controlledOrder,
     onColumnOrderChange,
     hideViewOptions = false,
+    hideSearch = false,
   } = props;
   const labels = { ...defaultTableSectionLabels, ...props.labels };
 
@@ -321,6 +324,7 @@ export function TableSection<TData extends { id: string }>(
     <div className="min-w-0 space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto">
+          {!hideSearch && (
           <div className="relative w-full sm:w-auto">
             <Input
               id={`${id}-input`}
@@ -363,6 +367,7 @@ export function TableSection<TData extends { id: string }>(
               </button>
             )}
           </div>
+          )}
 
           {!hideViewOptions && (
             <Popover>

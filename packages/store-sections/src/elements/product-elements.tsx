@@ -322,6 +322,8 @@ function BuyBox({ product, props, attrs, ctx }: StillProps) {
 /** Description and key features as collapsible rows, drawn like the accordion element. */
 function Details({ product, props, attrs, ctx }: StillProps) {
   const description = props.showDescription !== false ? decodeTextEntities(product.description?.trim() ?? "") : "";
+  // `descriptionHtml` is sanitised by the host on the server, like `contentHtml` (core/types.ts).
+  const descriptionHtml = description ? (product.descriptionHtml?.trim() ?? "") : "";
   const bullets = props.showBullets !== false ? product.bulletPoints.filter((point) => point.trim()).map(decodeTextEntities) : [];
   if (!description && !bullets.length) return ctx.mode === "edit" ? <EditorNote attrs={attrs}>{sectionText("productNoDetails", ctx.locale)}</EditorNote> : null;
   const row = (title: string, open: boolean, body: ReactNode) => (
@@ -335,7 +337,16 @@ function Details({ product, props, attrs, ctx }: StillProps) {
   );
   return (
     <div {...attrs} className="flex min-w-0 flex-col border-t border-(--sf-line)">
-      {description && row(sectionText("productDescription", ctx.locale), true, <p className="whitespace-pre-line text-pretty leading-relaxed text-(--sf-muted)">{description}</p>)}
+      {description &&
+        row(
+          sectionText("productDescription", ctx.locale),
+          true,
+          descriptionHtml ? (
+            <div className={cn(CONTENT_CLASS, "text-(--sf-muted) [&>:first-child]:mt-0 [&>:last-child]:mb-0")} dangerouslySetInnerHTML={{ __html: descriptionHtml }} />
+          ) : (
+            <p className="whitespace-pre-line text-pretty leading-relaxed text-(--sf-muted)">{description}</p>
+          ),
+        )}
       {bullets.length > 0 &&
         row(
           sectionText("productFeatures", ctx.locale),

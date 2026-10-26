@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest"
-import { normalizeSearchText, suggestCategories } from "./add-product.lib"
+import { isRichTextHtml, plainTextToRichText, richTextToPlainText } from "@workspace/tiptap/plain-text"
+import { getSectionProgress, normalizeSearchText, suggestCategories } from "./add-product.lib"
 import { isEmptyHtml, prepareProductForSubmit } from "./prepare-product-submit.lib"
-import { defaultValues, type AddProductFormData, type CategoryOption } from "./add-product.schema"
+import { addProductFormSchema, defaultValues, type AddProductFormData, type CategoryOption } from "./add-product.schema"
 
 type Node = CategoryOption & { categories?: Node[] }
 
@@ -94,6 +95,33 @@ describe("prepareProductForSubmit", () => {
     expect(out.localized.ar.metaTitle).toBe("")
   })
 
+  it("falls back to the description text when there is no short description", () => {
+    const data = base()
+    data.localized.en.description = ""
+    data.localized.en.content = "<h2>Soft</h2><p>Egyptian&nbsp;cotton &amp; linen</p>"
+    expect(prepareProductForSubmit(data).localized.en.metaDescription).toBe("Soft Egyptian cotton & linen")
+  })
+
+  it("clips the automatic meta title at a word break", () => {
+    const data = base()
+    data.localized.en.title = "word ".repeat(20)
+    const title = prepareProductForSubmit(data).localized.en.metaTitle ?? ""
+    expect(title.length).toBeLessThanOrEqual(60)
+    expect(title.endsWith("word…")).toBe(true)
+  })
+
+  it("uses the rich short description as plain text for SEO", () => {
+    const data = base()
+    data.localized.en.description = "<p><strong>Soft</strong> cotton</p><ul><li>Machine wash</li></ul>"
+    expect(prepareProductForSubmit(data).localized.en.metaDescription).toBe("Soft cotton • Machine wash")
+  })
+
+  it("stores an emptied short description editor as empty", () => {
+    const data = base()
+    data.localized.en.description = "<p></p>"
+    expect(prepareProductForSubmit(data).localized.en.description).toBe("")
+  })
+
   it("keeps SEO fields the seller wrote", () => {
     const data = base()
     data.localized.en.metaTitle = "Custom"
@@ -105,5 +133,64 @@ describe("isEmptyHtml", () => {
   it("treats media as content", () => {
     expect(isEmptyHtml('<p><img src="x.png"></p>')).toBe(false)
     expect(isEmptyHtml("<p>&nbsp;</p>")).toBe(true)
+  })
+})
+
+describe("short description text", () => {
+  it("tells rich text from plain text", () => {
+    expect(isRichTextHtml("<p>Hi</p>")).toBe(true)
+    expect(isRichTextHtml("Latency <5ms & ANC")).toBe(false)
+  })
+
+  it("turns rich text into lines of plain text", () => {
+    expect(richTextToPlainText("<p>One&nbsp;&amp; two</p><p>Three<br>four</p>")).toBe("One & two\nThree\nfour")
+    expect(richTextToPlainText("Plain\ntext ")).toBe("Plain\ntext")
+    expect(richTextToPlainText(null)).toBe("")
+  })
+
+  it("turns older plain text into escaped paragraphs", () => {
+    expect(plainTextToRichText("First line\nlatency < 5ms & more\n\nNext")).toBe("<p>First line<br>latency &lt; 5ms &amp; more</p><p>Next</p>")
+    expect(plainTextToRichText("<p>Kept</p>")).toBe("<p>Kept</p>")
+    expect(plainTextToRichText("  ")).toBe("")
+  })
+})
+
+describe("Arabic-only products", () => {
+  const arabicOnly = (): AddProductFormData =>
+    structuredClone({
+      ...defaultValues,
+      categoryId: "cat-1",
+      images: ["a.jpg"],
+      price: { list: 100, final: 100, discountType: "amount" },
+      localized: {
+        en: { ...defaultValues.localized.en, slug: "tyshyrt-qtn" },
+        ar: { ...defaultValues.localized.ar, title: "تيشيرت قطن", description: "<p>قطن مصري</p>" },
+      },
+    }) as unknown as AddProductFormData
+
+  it("passes validation with only an Arabic name and short description", () => {
+    expect(addProductFormSchema.safeParse(arabicOnly()).success).toBe(true)
+  })
+
+  it("needs a name and a short description in one language", () => {
+    const data = arabicOnly()
+    data.localized.ar.title = ""
+    data.localized.ar.description = "<p></p>"
+    const issues = addProductFormSchema.safeParse(data).error?.issues.map((i) => i.path.join(".")) ?? []
+    expect(issues).toEqual(
+      expect.arrayContaining(["localized.en.title", "localized.ar.title", "localized.en.description", "localized.ar.description"])
+    )
+  })
+
+  it("fills the English version from the Arabic one on submit", () => {
+    const out = prepareProductForSubmit(arabicOnly())
+    expect(out.localized.en.title).toBe("تيشيرت قطن")
+    expect(out.localized.en.description).toBe("<p>قطن مصري</p>")
+    expect(out.localized.en.slug).toBe("tyshyrt-qtn")
+  })
+
+  it("counts four basics in either language", () => {
+    const basics = getSectionProgress(arabicOnly(), {}, false).find((s) => s.id === "sec-basic")!
+    expect(basics).toMatchObject({ total: 4, done: 4, complete: true })
   })
 })

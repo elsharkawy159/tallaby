@@ -1,6 +1,7 @@
 import { and, asc, db, eq } from "@workspace/db";
 import { products, productTranslations } from "@workspace/db/schema";
-import { isRichTextEmpty, hasRichTextMedia, mergeRichTextMediaFallback } from "@workspace/tiptap";
+import { isRichTextEmpty, hasRichTextMedia, mergeRichTextMediaFallback, sanitizeRichTextHtml } from "@workspace/tiptap";
+import { plainTextToRichText, richTextToPlainText } from "@workspace/tiptap/plain-text";
 
 export type ProductLocale = "en" | "ar";
 
@@ -239,7 +240,10 @@ export async function getProductTranslationWithFallback(
 
 export type MergedProduct<T> = T & {
   title: string;
+  /** The short description as plain text (meta tags, structured data, share text). */
   description: string | null;
+  /** The short description as sanitised HTML, for display (older plain-text ones become paragraphs). */
+  descriptionHtml: string | null;
   content: string | null;
   bulletPoints: unknown;
   slug: string;
@@ -267,6 +271,12 @@ function resolveLocalizedSlug(
   return (product.slug as string | undefined) ?? "";
 }
 
+/** Short description, stored as rich text (or plain text from older products), in both forms. */
+function describe(raw: string | null | undefined): { description: string | null; descriptionHtml: string | null } {
+  const text = richTextToPlainText(raw);
+  return { description: text || null, descriptionHtml: text ? sanitizeRichTextHtml(plainTextToRichText(raw)) : null };
+}
+
 /**
  * Merges product row with localized translation fields.
  * Use products table for shared fields; translation for localized.
@@ -291,8 +301,7 @@ export function mergeProductWithTranslation<T extends Record<string, unknown>>(
     return {
       ...base,
       title: ((product.title as string | undefined) ?? "") as string,
-      description: ((product.description as string | null | undefined) ??
-        null) as string | null,
+      ...describe(product.description as string | null | undefined),
       content: ((product.content as string | null | undefined) ??
         null) as string | null,
       bulletPoints: product.bulletPoints ?? null,
@@ -303,7 +312,7 @@ export function mergeProductWithTranslation<T extends Record<string, unknown>>(
   return {
     ...product,
     title: translation.title,
-    description: translation.description,
+    ...describe(translation.description),
     content: translation.content ?? null,
     bulletPoints: translation.bulletPoints,
     slug: resolveLocalizedSlug(product, translation),

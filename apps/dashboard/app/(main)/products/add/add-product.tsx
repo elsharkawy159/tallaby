@@ -19,7 +19,6 @@ import {
   addProductFormSchema,
   defaultValues,
   type AddProductFormData,
-  type BrandOption,
   type CategoryOption,
   type SupportedLocale,
 } from "./add-product.schema"
@@ -31,30 +30,27 @@ import {
   scrollToSection,
 } from "./add-product.lib"
 import { BasicSection } from "./sections/basic-section"
-import { MediaSection } from "./sections/media-section"
 import { ContentSection } from "./sections/content-section"
 import { PricingSection } from "./sections/pricing-section"
 import { InventorySection } from "./sections/inventory-section"
 import { ShippingSection } from "./sections/shipping-section"
 import { VisibilitySection } from "./sections/visibility-section"
-import { ProductPreview } from "./product-preview"
 import { MobilePublishBar, PublishChecklist, SectionChips } from "./publish-progress"
 import { ImportDialog } from "./import-dialog"
 import { BulkUrlImport } from "./bulk-url-import.client"
 import { useProductDraft, type DraftStatus } from "./use-product-draft"
 import { prepareProductForSubmit } from "./prepare-product-submit.lib"
-import { setProductSellerTaxonomy } from "../categories-brands/categories-brands.server"
+import { ensureTaxonomyItem, setProductSellerTaxonomy } from "../categories-brands/categories-brands.server"
 import { splitSellerTaxonomy } from "../categories-brands/categories-brands.lib"
-import { SellerTaxonomyProvider } from "../categories-brands/seller-taxonomy-fields.client"
+import { SellerTaxonomyProvider, WithoutSellerTaxonomy, useSellerTaxonomy } from "../categories-brands/seller-taxonomy-fields.client"
 import { ProductLinkHostProvider } from "./product-link-host.client"
 import type { SellerTaxonomyOption } from "../categories-brands/categories-brands.dto"
 
 interface AddProductProps {
   categories: CategoryOption[]
-  brands: BrandOption[]
   sellerPricing: SellerPricingSettings
-  /** The seller's own lists for "My category" / "My brand". */
-  sellerTaxonomy: { categories: SellerTaxonomyOption[]; brands: SellerTaxonomyOption[] }
+  /** The seller's own category list, offered first in the category box. */
+  sellerTaxonomy: { categories: SellerTaxonomyOption[] }
   /** The seller's live custom domain, shown in the product link preview. */
   linkHost?: string | null
   /**
@@ -71,11 +67,18 @@ const LOCALE_LABELS: Record<SupportedLocale, string> = {
   en: "English",
 }
 
-export default function AddProduct ({
+/** The seller's category list lives in a provider, so the form itself sits inside it. */
+export default function AddProduct (props: AddProductProps) {
+  return (
+    <SellerTaxonomyProvider value={props.sellerTaxonomy}>
+      <AddProductForm {...props} />
+    </SellerTaxonomyProvider>
+  )
+}
+
+function AddProductForm ({
   categories,
-  brands,
   sellerPricing,
-  sellerTaxonomy,
   linkHost = null,
   edit,
   headerActions,
@@ -95,6 +98,7 @@ export default function AddProduct ({
   const tTaxonomy = useTranslations("categoriesBrands.productForm")
   const tCommon = useTranslations("common")
   const resolver = useLocalizedResolver(zodResolver(addProductFormSchema) as any)
+  const taxonomyContext = useSellerTaxonomy()
 
   const form = useForm<AddProductFormData>({
     resolver: resolver as any,
@@ -143,18 +147,49 @@ export default function AddProduct ({
     return () => observer.disconnect()
   }, [mode])
 
+  /**
+   * The store category to link: a typed-in name or a Tallaby pick is found in
+   * (or added to) the seller's list. null when there's none or it failed.
+   */
+  const resolveStoreCategory = async (data: AddProductFormData): Promise<string | null> => {
+    const name = data.sellerCategoryName?.trim()
+    if (!name && data.sellerCategoryId) return data.sellerCategoryId
+    if (!name && !data.categoryId) return null
+    const result = await ensureTaxonomyItem("category", name ? { name } : { sourceId: data.categoryId })
+    if (!result.success) return null
+    taxonomyContext?.addCategory(result.data)
+    form.setValue("sellerCategoryId", result.data.id)
+    form.setValue("sellerCategoryName", "")
+    return result.data.id
+  }
+
+  /** Product fields for createProduct / updateProduct: the store category is linked separately. */
+  const toPayload = (data: AddProductFormData) => {
+    const { rest, taxonomy } = splitSellerTaxonomy(prepareProductForSubmit(data))
+    const { sellerCategoryName: _typedCategory, ...payload } = rest
+    return { payload, taxonomy }
+  }
+
+  const linkStoreCategory = async (
+    productId: string,
+    data: AddProductFormData,
+    taxonomy: { sellerCategoryId: string | null; sellerBrandId: string | null }
+  ) => {
+    const sellerCategoryId = await resolveStoreCategory(data)
+    const linked = await setProductSellerTaxonomy(productId, { ...taxonomy, sellerCategoryId })
+    const wanted = Boolean(data.sellerCategoryName?.trim() || data.sellerCategoryId)
+    if (!linked.success || (wanted && !sellerCategoryId)) toast.warning(tTaxonomy("linkFailed"))
+  }
+
   const handleSubmit = (data: AddProductFormData) => {
     if (edit) return handleUpdate(edit.productId, data)
     startTransition(async () => {
       try {
-        const { rest, taxonomy } = splitSellerTaxonomy(prepareProductForSubmit(data))
-        const result = await createProduct(rest as Parameters<typeof createProduct>[0])
+        const { payload, taxonomy } = toPayload(data)
+        const result = await createProduct(payload as Parameters<typeof createProduct>[0])
 
         if (result.success) {
-          if (result.data?.id && (taxonomy.sellerCategoryId || taxonomy.sellerBrandId)) {
-            const linked = await setProductSellerTaxonomy(result.data.id, taxonomy)
-            if (!linked.success) toast.warning(tTaxonomy("linkFailed"))
-          }
+          if (result.data?.id) await linkStoreCategory(result.data.id, data, taxonomy)
           draft.pause()
           draft.clear()
           if (result.data?.status === "draft") toast.info(tToast("productSavedAsDraft"))
@@ -174,17 +209,16 @@ export default function AddProduct ({
   const handleUpdate = (productId: string, data: AddProductFormData) => {
     startTransition(async () => {
       try {
-        const { rest, taxonomy } = splitSellerTaxonomy(prepareProductForSubmit(data))
+        const { payload, taxonomy } = toPayload(data)
         const result = await updateProduct(productId, {
-          ...rest,
+          ...payload,
           quantity: String(data.quantity),
           handlingTime: String(data.handlingTime),
         } as unknown as Parameters<typeof updateProduct>[1])
 
         if (result.success) {
-          // Always sent on edit, so clearing "My category" / "My brand" sticks.
-          const linked = await setProductSellerTaxonomy(productId, taxonomy)
-          if (!linked.success) toast.warning(tTaxonomy("linkFailed"))
+          // Always sent on edit, so a changed category replaces the old link.
+          await linkStoreCategory(productId, data, taxonomy)
           toast.success(tToast("productUpdatedSuccessfully"))
           router.push("/products")
         } else {
@@ -232,16 +266,17 @@ export default function AddProduct ({
 
   if (mode === "bulk") {
     return (
-      <BulkUrlImport
-        urls={bulkUrls}
-        categories={categories}
-        brands={brands}
-        sellerPricing={sellerPricing}
-        onExit={() => {
-          setMode("single")
-          setBulkUrls([])
-        }}
-      />
+      <WithoutSellerTaxonomy>
+        <BulkUrlImport
+          urls={bulkUrls}
+          categories={categories}
+          sellerPricing={sellerPricing}
+          onExit={() => {
+            setMode("single")
+            setBulkUrls([])
+          }}
+        />
+      </WithoutSellerTaxonomy>
     )
   }
 
@@ -270,7 +305,6 @@ export default function AddProduct ({
   )
 
   return (
-    <SellerTaxonomyProvider value={sellerTaxonomy}>
     <ProductLinkHostProvider value={linkHost}>
     <Form {...form}>
       <div className="min-h-screen pb-32 lg:pb-24">
@@ -279,33 +313,22 @@ export default function AddProduct ({
           data-sticky-head
           className="sticky top-16 z-20 border-b bg-background/95 backdrop-blur-md"
         >
-          <div className="mx-auto flex max-w-[1240px] flex-wrap items-center gap-x-4 gap-y-2.5 px-4 py-3 sm:px-6 sm:py-3.5">
+          {/* Same side padding as the form below, so the header lines up with it at every width. */}
+          <div className="flex w-full flex-wrap items-center gap-x-4 gap-y-2.5 px-3 py-3 sm:px-6 sm:py-3.5">
             <h1 className="text-[17px] leading-snug font-bold sm:text-xl">{isEdit ? t("editTitle") : t("newTitle")}</h1>
             {!isEdit && <SaveStatus status={draft.status} />}
             <div className="flex w-full flex-wrap items-center gap-2 sm:ms-auto sm:w-auto">
               <LocaleSwitch value={activeLocale} onChange={setActiveLocale} />
+              {/* Import lives in the Basics card ("Import from link"), not here. */}
               {!isEdit && (
-                <>
-                  <Button
-                    type="button"
-                    variant="soft"
-                    size="icon"
-                    className="ms-auto size-10 rounded-[10px] sm:ms-0"
-                    onClick={() => setImportOpen(true)}
-                    title={t("importProduct")}
-                    aria-label={t("importProduct")}
-                  >
-                    <FileDown className="size-[18px]" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="neutral"
-                    className={cn(BUTTON_CLASS, "hidden rounded-xl lg:inline-flex")}
-                    onClick={saveDraft}
-                  >
-                    {t("saveDraft")}
-                  </Button>
-                </>
+                <Button
+                  type="button"
+                  variant="neutral"
+                  className={cn(BUTTON_CLASS, "hidden rounded-xl lg:inline-flex")}
+                  onClick={saveDraft}
+                >
+                  {t("saveDraft")}
+                </Button>
               )}
               {headerActions}
               <div className="hidden lg:block">{publishButton()}</div>
@@ -328,7 +351,6 @@ export default function AddProduct ({
             <div className="flex min-w-0 flex-col gap-4">
               <BasicSection
                 categories={categories}
-                brands={brands}
                 activeLocale={activeLocale}
                 action={
                   isEdit ? undefined : (
@@ -344,9 +366,8 @@ export default function AddProduct ({
                   )
                 }
               />
-              <MediaSection />
-              <ContentSection activeLocale={activeLocale} />
               <PricingSection sellerPricing={sellerPricing} />
+              <ContentSection activeLocale={activeLocale} />
               <InventorySection sellerPricing={sellerPricing} activeLocale={activeLocale} />
               <ShippingSection sellerPricing={sellerPricing} />
               <VisibilitySection activeLocale={activeLocale} />
@@ -356,7 +377,6 @@ export default function AddProduct ({
               className="sticky hidden flex-col gap-3.5 lg:flex"
               style={{ top: "var(--product-aside-top, 150px)" }}
             >
-              <ProductPreview activeLocale={activeLocale} categories={categories} />
               <ProgressAside activeSection={activeSection} />
             </aside>
           </div>
@@ -391,7 +411,6 @@ export default function AddProduct ({
       </div>
     </Form>
     </ProductLinkHostProvider>
-    </SellerTaxonomyProvider>
   )
 }
 

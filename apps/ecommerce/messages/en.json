@@ -2071,6 +2071,7 @@
     "email": "Email the store",
     "soldOn": "Sold through Tallaby",
     "moreStores": "Shop more stores on tallaby.com",
+    "poweredBy": "Powered by <link>Tallaby</link>",
     "notFoundTitle": "There's no store at this address",
     "notFoundBody": "Check the link you were sent, or find the store on Tallaby.",
     "notFoundCta": "Browse stores on Tallaby",

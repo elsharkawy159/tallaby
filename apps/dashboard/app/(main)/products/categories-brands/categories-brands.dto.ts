@@ -20,8 +20,14 @@ export type SellerTaxonomyItem = {
   productCount: number;
 };
 
-/** A slim item for the product form's "My category" / "My brand" pickers. */
-export type SellerTaxonomyOption = { id: string; name: string; nameAr: string | null };
+/** A slim item for the product form's category picker. */
+export type SellerTaxonomyOption = {
+  id: string;
+  name: string;
+  nameAr: string | null;
+  /** The Tallaby category it was picked from (categories only); null for the seller's own. */
+  sourceId?: string | null;
+};
 
 /** A Tallaby pack suggestion shown while the seller types. */
 export type PackSuggestion = {
@@ -54,8 +60,11 @@ export const addTaxonomyItemSchema = z.union([
   z.object({ name, nameAr: optionalName, image }).strict(),
 ]);
 
-/** The product form's typed-in name: find it in the seller's list, or add it. */
-export const ensureTaxonomyItemSchema = z.object({ name }).strict();
+/**
+ * The product form's category: a typed-in name, or a Tallaby category the
+ * seller picked. Found in the seller's list, or added to it.
+ */
+export const ensureTaxonomyItemSchema = z.union([z.object({ name }).strict(), z.object({ sourceId: z.uuid() }).strict()]);
 
 export const updateTaxonomyItemSchema =z.object({ name, nameAr: optionalName, image }).strict();
 

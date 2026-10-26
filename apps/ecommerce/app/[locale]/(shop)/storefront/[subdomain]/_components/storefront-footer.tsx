@@ -6,6 +6,7 @@ import { cn } from "@workspace/ui/lib/utils";
 import { BASE_URL } from "@/lib/constants";
 import { storeCategoryLabel, type Storefront } from "@/lib/storefront.server";
 import { StoreLogo } from "./store-logo";
+import { PoweredByTallaby } from "./powered-by-tallaby";
 import s from "../storefront.module.css";
 
 /** Egyptian numbers as wa.me expects them: country code, digits only. */
@@ -127,7 +128,9 @@ export async function StorefrontFooter({ store }: { store: Storefront }) {
 
       <div className={s.footerBase}>
         <div className={cn(s.wrap, "flex flex-col gap-2 py-5 text-sm sm:flex-row sm:justify-between")}>
-          <span>{t("copyright", { year: new Date().getFullYear(), store: store.displayName })}</span>
+          <span>
+            {t("copyright", { year: new Date().getFullYear(), store: store.displayName })} · <PoweredByTallaby />
+          </span>
           <a href={BASE_URL || "https://tallaby.com"} className="font-medium text-white hover:underline">
             {t("moreStores")}
           </a>

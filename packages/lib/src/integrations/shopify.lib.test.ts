@@ -128,16 +128,17 @@ describe("price mapping", () => {
     expect(toPiastres("1e5")).toBeNull();
   });
 
-  it("uses compare-at as the list price and rounds up to 5", () => {
+  it("uses compare-at as the list price and keeps prices as they are", () => {
     expect(mapShopifyPrice("199.00", "250.00")).toEqual({
       base: 250,
       list: 250,
-      final: 200,
+      final: 199,
       discountType: "amount",
-      discountValue: 50,
+      discountValue: 51,
       discountEndsAt: null,
     });
-    expect(mapShopifyPrice("99.99", null)).toMatchObject({ list: 100, final: 100, discountType: null, discountValue: null });
+    expect(mapShopifyPrice("99.99", null)).toMatchObject({ list: 99.99, final: 99.99, discountType: null, discountValue: null });
+    expect(mapShopifyPrice("199.99", "250.00")).toMatchObject({ final: 199.99, discountValue: 50.01 });
     expect(mapShopifyPrice("100", "90")).toMatchObject({ list: 100, final: 100, discountType: null });
   });
 });
@@ -161,7 +162,7 @@ describe("mapShopifyProduct", () => {
       expect.objectContaining({ sku: "LS-S-B", option1: "S", option2: "Blue", stock: 4, isDefault: true, imageUrl: "https://cdn.shopify.com/s/files/1/v.jpg" }),
       expect.objectContaining({ sku: "shopify-101-2", option1: "M", stock: 0, isDefault: false, position: 2 }),
     ]);
-    expect(mapped.price.final).toBe(200);
+    expect(mapped.price.final).toBe(199);
   });
 
   it("drops the single Default Title variant", () => {

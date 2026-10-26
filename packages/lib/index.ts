@@ -22,9 +22,8 @@ export {
 } from "./src/utils/parse-price-json";
 
 export {
-  PRICE_ROUNDING_STEP,
-  roundNullablePriceUpToNearestFive,
-  roundPriceUpToNearestFive,
+  normalizeNullablePrice,
+  normalizePrice,
 } from "./src/utils/round-price";
 
 export type {

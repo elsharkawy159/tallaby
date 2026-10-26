@@ -26,7 +26,6 @@ import {
   ShoppingBag,
   Star,
   Store,
-  Tag,
   TrendingUp,
   Truck,
   Wallet,
@@ -83,8 +82,7 @@ export type NavKey =
   | "coupons"
   | "campaigns"
   | "accountHelp"
-  | "sellerCategories"
-  | "sellerBrands";
+  | "sellerCategories";
 
 export interface DashboardRoute {
   /** A path, or a pattern with `[storeId]` for store-scoped pages. */
@@ -105,7 +103,6 @@ export const DASHBOARD_ROUTES: DashboardRoute[] = [
   { href: "/products", title: "manageProducts", parent: "products", parentHref: "/products", icon: Package },
   { href: "/products/add", title: "addProducts", parent: "products", parentHref: "/products", icon: PackagePlus },
   { href: "/products/categories", title: "sellerCategories", parent: "products", parentHref: "/products", icon: FolderTree },
-  { href: "/products/brands", title: "sellerBrands", parent: "products", parentHref: "/products", icon: Tag },
   { href: "/reviews", title: "reviews", parent: "products", icon: Star },
   { href: "/orders", title: "orders", parent: "ordersGroup", icon: ShoppingBag },
   { href: "/orders/delivery", title: "deliveryTracking", parent: "ordersGroup", icon: Truck },

@@ -1,28 +1,37 @@
+import { getLocale } from "next-intl/server";
 import { getSellerProducts } from "@/actions/products";
 import { parsePriceJson } from "@workspace/lib";
+import { richTextToPlainText } from "@workspace/tiptap/plain-text";
 import { loadProductStoreLinks } from "./product-store-links.data";
 import { VendorProductsSection, type VendorProduct } from "./vendor-products.section";
 
 export async function VendorProductsData() {
-  const { data, totalCount } = await getSellerProducts({
-    offset: 0,
-  });
+  const [{ data, totalCount }, locale] = await Promise.all([
+    getSellerProducts({ offset: 0 }),
+    getLocale(),
+  ]);
+  const isArabic = locale.startsWith("ar");
 
   const products: Omit<VendorProduct, "storeUrl">[] = (data || []).map((p) => {
     const translations = p.productTranslations ?? [];
     const enTranslation = translations.find((t) => t.locale === "en");
     const arTranslation = translations.find((t) => t.locale === "ar");
+    // Name, description and category follow the dashboard language, falling
+    // back to the other language when the product has only one.
+    const [preferred, fallback] = isArabic
+      ? [arTranslation, enTranslation]
+      : [enTranslation, arTranslation];
     const slug = (enTranslation?.slug ?? arTranslation?.slug ?? "").trim() || null;
     // Carried for the Excel export, not rendered as a column.
     const description =
-      enTranslation?.description ?? arTranslation?.description ?? null;
+      richTextToPlainText(preferred?.description ?? fallback?.description) || null;
     // `products.price` is a jsonb column, so it comes back as `unknown`;
-    // parsePriceJson also applies the nearest-5 rounding the storefront shows.
+    // parsePriceJson normalises it the way the storefront shows it.
     const price = parsePriceJson(p.price);
 
     return {
       id: p.id,
-      title: p.title,
+      title: preferred?.title || fallback?.title || p.title,
       slug: slug || null,
       sku: p.sku,
       description,
@@ -38,7 +47,12 @@ export async function VendorProductsData() {
       salePrice: price.final,
       brand: p.brand ? { name: p.brand.name } : null,
       category: p.category
-        ? { name: p.category.name ?? p.category.nameAr ?? null }
+        ? {
+            name:
+              (isArabic
+                ? p.category.nameAr || p.category.name
+                : p.category.name || p.category.nameAr) ?? null,
+          }
         : null,
       averageRating: p.averageRating ?? null,
       reviewCount: p.reviewCount ?? 0,

@@ -1,5 +1,6 @@
 import type { ProductDetail, ProductVariantDetail } from "@workspace/store-sections/render";
 import { isRichTextEmpty, sanitizeRichTextHtml } from "@workspace/tiptap/sanitize";
+import { plainTextToRichText } from "@workspace/tiptap/plain-text";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
 import { pricingDiscountPercent, productHasFreeDelivery, productPricing } from "@/components/product-page/product-page.lib";
 import type { Product } from "@/components/product-page/product-page.types";
@@ -58,7 +59,11 @@ export function toProductDetail(product: Product, locale: ProductLocale): Produc
     compareAtPrice: pricing.listPrice,
     rating: product.averageRating != null ? Number(product.averageRating) : null,
     inStock: product.status === "active" && quantity > 0,
+    // Plain text and sanitised HTML, as mergeProductWithTranslation builds them.
     description: product.description?.trim() ? product.description : null,
+    descriptionHtml: product.description?.trim()
+      ? (product.descriptionHtml ?? sanitizeRichTextHtml(plainTextToRichText(product.description)))
+      : null,
     contentHtml: isRichTextEmpty(content) ? null : sanitizeRichTextHtml(content),
     bulletPoints: strings(product.bulletPoints),
     images,

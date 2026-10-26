@@ -24,10 +24,12 @@ export const STEP_VALIDATION_FIELDS: Record<
     "localized.en.title",
     "localized.en.slug",
     "localized.ar.title",
+    "localized.en.description",
+    "localized.ar.description",
     "categoryId",
     "images",
   ],
-  2: ["price.list", "price.final", "quantity", "dimensions.weight"],
+  2: ["price.list", "price.final", "quantity"],
   3: [],
 };
 
@@ -89,9 +91,8 @@ export function scrollToStepSection(stepKey: string) {
 export const PRODUCT_SECTIONS = [
   // nav is a "productForm.page.nav" key
   { id: "sec-basic", nav: "basic" },
-  { id: "sec-media", nav: "media" },
-  { id: "sec-content", nav: "content" },
   { id: "sec-price", nav: "price" },
+  { id: "sec-content", nav: "content" },
   { id: "sec-stock", nav: "stock" },
   { id: "sec-shipping", nav: "shipping" },
   { id: "sec-visibility", nav: "visibility" },
@@ -105,11 +106,13 @@ export const SECTION_ERROR_FIELDS: Record<ProductSectionId, readonly string[]> =
     "localized.en.title",
     "localized.en.slug",
     "localized.ar.title",
+    "localized.en.description",
+    "localized.ar.description",
     "categoryId",
+    "images",
   ],
-  "sec-media": ["images"],
-  "sec-content": [],
   "sec-price": ["price"],
+  "sec-content": [],
   "sec-stock": ["quantity", "sku", "variants"],
   "sec-shipping": ["handlingTime", "dimensions"],
   "sec-visibility": ["localized.en.metaTitle", "localized.ar.metaTitle"],
@@ -126,11 +129,11 @@ export interface SectionProgress {
   hasError: boolean;
 }
 
-const filled = (value: unknown) =>
-  typeof value === "string" ? value.trim().length > 0 : value != null;
-
 const htmlHasText = (html: string | undefined) =>
   !!html && html.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim().length > 0;
+
+const filled = (value: unknown) =>
+  typeof value === "string" ? value.trim().length > 0 : value != null;
 
 /**
  * Publish readiness per section, mirroring the schema's required fields so the
@@ -146,15 +149,18 @@ export function getSectionProgress(
   const positive = (n: unknown) => typeof n === "number" && n > 0;
 
   const checks: Record<ProductSectionId, boolean[]> = {
-    "sec-basic": [filled(en?.title), filled(values.categoryId)],
-    "sec-media": [(values.images?.length ?? 0) > 0],
-    "sec-content": [],
-    "sec-price": [positive(values.price?.list)],
-    "sec-stock": [typeof values.quantity === "number" && values.quantity >= 0],
-    "sec-shipping": [
-      positive(values.handlingTime),
-      positive(values.dimensions?.weight),
+    // Name and short description count in either language (the schema needs one of each).
+    "sec-basic": [
+      filled(en?.title) || filled(ar?.title),
+      htmlHasText(en?.description) || htmlHasText(ar?.description),
+      (values.images?.length ?? 0) > 0,
+      filled(values.categoryId),
     ],
+    "sec-price": [positive(values.price?.list)],
+    "sec-content": [],
+    "sec-stock": [typeof values.quantity === "number" && values.quantity >= 0],
+    // The packed weight is optional.
+    "sec-shipping": [positive(values.handlingTime)],
     "sec-visibility": [],
   };
 
@@ -209,12 +215,20 @@ export function getStickyOffset() {
   return (head ? head.getBoundingClientRect().bottom : 64) + 16;
 }
 
+/** Fired on `document` (detail: section id) so a collapsed section opens before we scroll to it. */
+export const OPEN_SECTION_EVENT = "product-form:open-section";
+
+/** Opens the section if it is collapsed, then scrolls it under the sticky header. */
 export function scrollToSection(id: string) {
-  const section = document.getElementById(id);
-  if (!section) return;
-  window.scrollTo({
-    top: section.getBoundingClientRect().top + window.scrollY - getStickyOffset(),
-    behavior: "smooth",
+  document.dispatchEvent(new CustomEvent(OPEN_SECTION_EVENT, { detail: id }));
+  // Wait a frame so a section that just opened has its full height.
+  requestAnimationFrame(() => {
+    const section = document.getElementById(id);
+    if (!section) return;
+    window.scrollTo({
+      top: section.getBoundingClientRect().top + window.scrollY - getStickyOffset(),
+      behavior: "smooth",
+    });
   });
 }
 

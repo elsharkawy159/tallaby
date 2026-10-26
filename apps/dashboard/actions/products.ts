@@ -28,7 +28,7 @@ import {
   syncCategoryProductCountOnDelete,
 } from "@workspace/db/categories";
 import { syncProductVariants } from "@workspace/db/products";
-import { roundPriceUpToNearestFive } from "@workspace/lib";
+import { normalizePrice } from "@workspace/lib";
 import { getSellerAccess } from "@/lib/auth/seller-access";
 import {
   hasProductImage,
@@ -287,9 +287,9 @@ function applyDefaultVariantProductImages<
 
 /**
  * Server-side guard for the products.price jsonb: normalises the discount
- * expiry and re-applies the nearest-5 rounding, so a price that reached the
- * action from outside the seller form (imports, scripts, older clients) is
- * stored on the same step the storefront renders.
+ * expiry and keeps each price to the piastre (normalizePrice), so a price that
+ * reached the action from outside the seller form (imports, scripts, older
+ * clients) is stored the way the storefront renders it.
  */
 function normalizeProductPricePayload(price: unknown) {
   if (!price || typeof price !== "object" || Array.isArray(price)) {
@@ -299,7 +299,7 @@ function normalizeProductPricePayload(price: unknown) {
   const obj = price as Record<string, unknown>;
   const roundField = (value: unknown) =>
     typeof value === "number" && Number.isFinite(value) && value > 0
-      ? roundPriceUpToNearestFive(value)
+      ? normalizePrice(value)
       : value;
 
   return {
@@ -371,8 +371,8 @@ function buildPriceObject(input: {
   if (!Number.isFinite(base)) base = 0;
   if (!Number.isFinite(list)) list = 0;
 
-  base = roundPriceUpToNearestFive(base);
-  list = roundPriceUpToNearestFive(list);
+  base = normalizePrice(base);
+  list = normalizePrice(list);
 
   let discountType: "percent" | "amount" | null =
     (input.discountType as any) || null;
@@ -404,7 +404,7 @@ function buildPriceObject(input: {
   return {
     base,
     list,
-    final: roundPriceUpToNearestFive(finalPrice as number),
+    final: normalizePrice(finalPrice as number),
     discountType,
     discountValue,
   };

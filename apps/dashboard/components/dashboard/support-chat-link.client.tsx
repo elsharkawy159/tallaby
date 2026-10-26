@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { getSupportWhatsAppUrl } from "@/lib/constants";
 import { useSiteData } from "@/providers/site-data";
+import { fabOffsetFor } from "./support-fab.lib";
 
 interface SupportChatLinkProps {
   isCollapsed?: boolean;
@@ -61,20 +62,6 @@ export const SupportChatLink = ({ isCollapsed, className }: SupportChatLinkProps
       {!isCollapsed && <span className="truncate">{t("chatWithSupport")}</span>}
     </a>
   );
-};
-
-/**
- * Pages with a fixed bottom action bar (save / publish / pay). The button is
- * lifted above the bar there so it never covers the primary action, which in
- * RTL sits in the same bottom-left corner.
- */
-const fabOffsetFor = (pathname: string) => {
-  // Add product (incl. bulk import) and edit product: the bar shows on every
-  // breakpoint. On phones it wraps to full-width buttons, so the button hides.
-  if (/^\/products\/(add|[^/]+\/edit)(\/|$)/.test(pathname)) return "bottom-24 max-sm:hidden";
-  // Advertise products: the summary bar shows below lg only.
-  if (/^\/marketing(\/|$)/.test(pathname)) return "bottom-24 lg:bottom-5";
-  return "bottom-5";
 };
 
 /**

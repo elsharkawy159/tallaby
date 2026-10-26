@@ -34,6 +34,7 @@ import { StorefrontThemeToggle } from "./storefront-theme-toggle.client";
 import { StoreAccountButton } from "./store-account-button.client";
 import { StoreWishlistButton } from "./store-wishlist-button.client";
 import { storefrontFont } from "./storefront-font";
+import { PoweredByTallaby } from "./powered-by-tallaby";
 import {
   StoreProductBuyBox,
   StoreProductGallery,
@@ -178,14 +179,21 @@ export async function StoreSiteChrome({
   part: "header" | "footer";
 }): Promise<ReactNode> {
   // The logo and tools the seller turned on (Content › Header/Footer options), drawn and never saved.
-  const opts = { translated: new Set(store.supportedLocales).size > 1, hasLogo: Boolean(store.logoUrl) };
+  const opts = { translated: new Set(store.supportedLocales).size > 1, hasLogo: Boolean(store.logoUrl), locale };
   const instance = part === "header" ? drawChrome(flushHeaderOnMobile(site.header), "header", opts) : drawChrome(site.footer, "footer", opts);
-  if (!instance) return null;
+  // drawChrome credits the platform in every footer tree; a footer without one (or no footer) gets the line here.
+  const credit = part === "footer" && !instance?.componentTree?.length && (
+    <footer className="py-5 text-center text-xs opacity-80">
+      <PoweredByTallaby />
+    </footer>
+  );
+  if (!instance) return credit || null;
   const ctx = await buildContext(store, site, locale, [instance]);
   const chrome = (
     <>
       <PageStyles sections={[instance]} />
       <SectionRenderer instance={instance} registry={storeSectionRegistry} ctx={ctx} defaultLocale={site.settings.defaultLocale} />
+      {credit}
     </>
   );
   // Every section is its own stacking context (`relative isolate`), so the header's search

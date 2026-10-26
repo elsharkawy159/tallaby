@@ -12,6 +12,7 @@
  */
 import type { ProductDetail, ProductVariantDetail } from "@workspace/store-sections/render";
 import { isRichTextEmpty, sanitizeRichTextHtml } from "@workspace/tiptap/sanitize";
+import { plainTextToRichText, richTextToPlainText } from "@workspace/tiptap/plain-text";
 import { getPriceList, parsePriceJson } from "../utils/parse-price-json";
 
 export type PreviewLocale = "ar" | "en";
@@ -154,7 +155,9 @@ export function toPreviewProductDetail(product: PreviewProductRow, locale: Previ
     compareAtPrice: listPrice,
     rating: product.averageRating != null ? Number(product.averageRating) : null,
     inStock: product.status === "active" && quantity > 0,
-    description: t?.description?.trim() ? t.description : null,
+    // Rich text since 2026-10-26; older products hold plain text.
+    description: richTextToPlainText(t?.description) || null,
+    descriptionHtml: richTextToPlainText(t?.description) ? sanitizeRichTextHtml(plainTextToRichText(t?.description)) : null,
     contentHtml: isRichTextEmpty(content) ? null : sanitizeRichTextHtml(content),
     bulletPoints: strings(t?.bulletPoints),
     images,

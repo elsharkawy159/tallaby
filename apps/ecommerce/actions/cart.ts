@@ -316,8 +316,8 @@ export async function addToCart(
   }
 
   // Determine price - use variant price if available, otherwise product price
-  // getPriceFinal applies the nearest-5 rounding, so the snapshot written to
-  // cart_items always matches the price shown on the product page.
+  // getPriceFinal normalises the price as the product page does, so the
+  // snapshot written to cart_items always matches the price shown there.
   const price = variant
     ? getPriceFinal(variant.price)
     : getPriceFinal(product.price);

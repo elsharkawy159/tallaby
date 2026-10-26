@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { db, products, eq } from '@workspace/db'
 import { getPublicUrl } from '@workspace/ui/lib/utils'
+import { richTextToPlainText } from '@workspace/tiptap/plain-text'
 import { BASE_URL, DEFAULT_CURRENCY } from '@/lib/constants'
 import {
   escapeCsvField,
@@ -72,7 +73,7 @@ export async function GET () {
 
       const stock = Number(product.quantity ?? 0)
       const availability = stock > 0 ? 'in stock' : 'out of stock'
-      const description = (translation.description || translation.title)
+      const description = (richTextToPlainText(translation.description) || translation.title)
         .replace(/\s+/g, ' ')
         .trim()
       const brand = product.brand?.name?.trim() || 'Tallaby'

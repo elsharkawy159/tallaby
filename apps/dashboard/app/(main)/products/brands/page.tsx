@@ -1,11 +1,6 @@
-import { TaxonomyPage, taxonomyPageMetadata } from "../categories-brands/taxonomy-page.data";
+import { redirect } from "next/navigation";
 
-export const dynamic = "force-dynamic";
-
-export function generateMetadata() {
-  return taxonomyPageMetadata("brand");
-}
-
+/** The brands list is gone from the dashboard (products no longer have a brand field); old links land on Categories. */
 export default function SellerBrandsPage() {
-  return <TaxonomyPage kind="brand" />;
+  redirect("/products/categories");
 }

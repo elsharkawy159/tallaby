@@ -158,29 +158,35 @@ export async function addTaxonomyItem(kind: TaxonomyKind, input: unknown): Promi
 }
 
 /**
- * The product form's typed-in category / brand: the seller's item with that
- * name (English or Arabic, case-insensitive), added to their list when it
- * isn't there yet.
+ * The product form's category: the seller's item with that name (English or
+ * Arabic, case-insensitive) or picked from that Tallaby item, added to their
+ * list when it isn't there yet.
  */
 export async function ensureTaxonomyItem(kind: TaxonomyKind, input: unknown): Promise<TaxonomyResult<SellerTaxonomyOption>> {
   try {
     const seller = await requireSeller({ forWrite: true });
     const parsed = ensureTaxonomyItemSchema.safeParse(input);
     if (!isKind(kind) || !parsed.success) return { success: false, error: "invalidInput" };
-    const name = cleanTaxonomyName(parsed.data.name);
-    const { table } = tableFor(kind);
+    const sourceId = "sourceId" in parsed.data ? parsed.data.sourceId : null;
+    const source = sourceId ? await loadPackItem(kind, sourceId) : null;
+    if (sourceId && !source) return { success: false, error: "notFound" };
+    const names = source
+      ? [source.name, source.nameAr].filter((n): n is string => Boolean(n))
+      : [cleanTaxonomyName((parsed.data as { name: string }).name)];
+    const { table, source: sourceColumn } = tableFor(kind);
 
     const findExisting = async () => {
-      const key = taxonomyNameKey(name);
+      const keys = names.map(taxonomyNameKey);
+      const byName = keys.flatMap((key) => [
+        sql`lower(btrim(${table.name})) = ${key}`,
+        sql`lower(btrim(${table.nameAr})) = ${key}`,
+      ]);
       const [row] = await db
-        .select({ id: table.id, name: table.name, nameAr: table.nameAr })
+        .select({ id: table.id, name: table.name, nameAr: table.nameAr, sourceId: sourceColumn })
         .from(table)
-        .where(
-          and(
-            eq(table.sellerId, seller.sellerId),
-            or(sql`lower(btrim(${table.name})) = ${key}`, sql`lower(btrim(${table.nameAr})) = ${key}`),
-          ),
-        )
+        .where(and(eq(table.sellerId, seller.sellerId), or(...(sourceId ? [eq(sourceColumn, sourceId)] : []), ...byName)))
+        // The item copied from this Tallaby one first, then a same-named one.
+        .orderBy(sourceId ? sql`(${sourceColumn} IS NOT DISTINCT FROM ${sourceId}::uuid) DESC` : asc(table.position))
         .limit(1);
       return row;
     };
@@ -188,8 +194,13 @@ export async function ensureTaxonomyItem(kind: TaxonomyKind, input: unknown): Pr
     const existing = await findExisting();
     if (existing) return { success: true, data: existing };
 
-    const added = await addTaxonomyItem(kind, { name });
-    if (added.success) return { success: true, data: { id: added.data.id, name: added.data.name, nameAr: added.data.nameAr } };
+    const added = await addTaxonomyItem(kind, sourceId ? { sourceId } : { name: names[0] });
+    if (added.success) {
+      return {
+        success: true,
+        data: { id: added.data.id, name: added.data.name, nameAr: added.data.nameAr, sourceId: added.data.sourceId },
+      };
+    }
     // Added at the same moment (another tab, a double submit): use that one.
     if (added.error === "duplicate") {
       const raced = await findExisting();

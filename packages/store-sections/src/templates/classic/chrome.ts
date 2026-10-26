@@ -177,7 +177,7 @@ const POLICY_LINKS = [
   { text: L("سياسة الخصوصية", "Privacy policy"), href: LINKS.privacy },
   { text: L("الشروط والأحكام", "Terms & conditions"), href: LINKS.terms },
 ];
-/** The platform credit (template rules §4.3); with it in the footer the floating "By Tallaby" badge is not shown. */
+/** The platform credit (template rules §4.3); the storefront draws its own in every footer and drops this one. */
 export const TALLABY_URL = "https://tallaby.com";
 const SOCIAL: { icon: ElementIconName; href: string; label: DesignText }[] = [
   { icon: "facebook", href: "https://www.facebook.com/", label: L("فيسبوك", "Facebook") },

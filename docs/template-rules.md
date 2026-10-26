@@ -79,7 +79,7 @@ On by default for most templates (owner decides which, §8). Phones only (< 768 
 - 2 or 3 link columns: **Shop** (all products, new arrivals, offers, categories), **Help** (contact, FAQ, shipping, returns, track order), **Policies** (privacy, terms).
 - Social icons (from the store's contact data) and, optionally, payment icons.
 - Bottom line: `© <year> <store name>` and **"Powered by Tallaby" / «مدعوم من طلبي»** linking to tallaby.com.
-- When the published footer contains the Powered by link, the floating "By Tallaby" badge at the bottom of the screen is **not** shown. Stores whose footer lacks it (old sites, the default chrome) keep the badge.
+- The line is drawn at render time in **every** footer (`drawChrome`, owner 2026-10-26): «مدعوم من **طلبي**» / "Powered by **Tallaby**" beside the copyright line, "Tallaby" underlined and linking to tallaby.com. It is never saved, so a seller cannot remove it in the builder; a Powered by link a footer tree carries itself is dropped so it never shows twice. The floating "By Tallaby" badge is gone.
 
 ## 5. Links and functions
 
@@ -180,7 +180,7 @@ Changing Tallaby Classic's design needs the owner's approval (`CLAUDE.md` rule 1
 | Gap | What | Notes |
 |---|---|---|
 | **G1** | Mobile bottom navigation | A chrome setting (on/off, per template and per store) plus its renderer in the storefront shell; hides `MobileCartBar` when on; editor switch under the header settings. |
-| **G2** | Powered by Tallaby in the footer | A small locked footer element; `StorefrontShell` skips `ByTallabyBadge` when the published footer has it. |
+| **G2** | Powered by Tallaby in the footer | Done (2026-10-26): `drawChrome` adds it to every footer; the badge is removed. |
 | **G3** | Brands section | A `brandList` data node from the seller's brands (`seller_product_brands`, 0068) and a `?brand=` filter on the store catalog. Brand designs are static wordmarks today. |
 | **G4** | Offers link | A `?sale=1` (discounted only) filter on the store catalog so offer buttons and "View all" have a real target. The `discounted` product list source already exists. |
 | **G5** | Rules test | §7. |
@@ -191,7 +191,7 @@ Changing Tallaby Classic's design needs the owner's approval (`CLAUDE.md` rule 1
 ## 10. Open questions for the owner
 
 1. Bottom navigation: on for every Tier A template, or let the seller switch it on and off?
-2. Can a seller remove "Powered by Tallaby" (for example on a paid plan), or is it always there?
+2. ~~Can a seller remove "Powered by Tallaby"?~~ No, it is always there (owner, 2026-10-26).
 3. Five bottom navigation items (Home, Shop, Search, Cart, Account), or four (drop Home or Search)?
 4. Brands: required in the standard home (hidden when empty), or optional?
 5. Tier A list: which templates per trade?

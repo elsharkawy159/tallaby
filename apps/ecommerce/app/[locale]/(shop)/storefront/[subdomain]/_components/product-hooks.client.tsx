@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { useLocale } from "next-intl";
 import { HideBottomNavOnScroll } from "@/components/layout/hide-bottom-nav-on-scroll.client";
 import { ProductActions } from "@/components/product-page/ProductActions";
@@ -133,14 +134,31 @@ export function StoreProductBuyBox({
   if (!stickyMobile) return actions;
 
   // Phones: docked at the bottom edge (a store host has no bottom nav to clear).
+  // Larger screens keep the buttons in place.
   return (
     <>
       <HideBottomNavOnScroll />
-      <div className={stickyBuyBarClass(undefined, { bottomNav: false })}>
-        {actions}
-      </div>
+      <div className="hidden md:block">{actions}</div>
+      <SiteDock>
+        <div className={`${stickyBuyBarClass(undefined, { bottomNav: false })} md:hidden`}>{actions}</div>
+      </SiteDock>
     </>
   );
+}
+
+/**
+ * Renders a fixed bar at the site root once mounted. Every section is its own
+ * stacking context (`relative isolate`) and may animate with a transform, so
+ * a fixed bar left inside it would paint under the sections after it.
+ */
+function SiteDock({ children }: { children: ReactNode }) {
+  const anchor = useRef<HTMLSpanElement>(null);
+  const [target, setTarget] = useState<Element | null>(null);
+  useEffect(() => {
+    setTarget(anchor.current?.closest(".sf-site") ?? anchor.current?.ownerDocument.body ?? null);
+  }, []);
+  if (target) return createPortal(children, target);
+  return <span ref={anchor} className="contents">{children}</span>;
 }
 
 /** Reviews and questions (ProductTabs; it never repeats the description). */

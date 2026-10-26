@@ -1,28 +1,28 @@
 "use client";
 
-import { useCallback, useRef } from "react";
-import { Controller, useFormContext } from "react-hook-form";
+import { useRef } from "react";
+import { Controller, useFormContext, useWatch } from "react-hook-form";
 import { useTranslations } from "next-intl";
 import { AlignRight, Plus, X } from "lucide-react";
-import { toast } from "sonner";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import { RichTextEditor } from "@workspace/tiptap/editor";
-import { cn, generateImageName, getPublicUrl, validateImage } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { contentDirClass } from "@/lib/i18n/content-dir";
-import { createClient } from "@/supabase/client";
 import {
   FIELD_CLASS,
   FieldHint,
   FieldLabel,
   SMALL_BUTTON_CLASS,
-  SectionCard,
 } from "@/components/form/form-ui";
+import { CollapsibleSection } from "./collapsible-section";
+import { useContentImageUpload } from "./use-content-image-upload";
 import { isEmptyHtml } from "../prepare-product-submit.lib";
 import type { AddProductFormData, SupportedLocale } from "../add-product.schema";
 
 const MAX_HIGHLIGHTS = 10;
 
+/** Highlights and the detailed description: optional, folded until the seller opens it. */
 export function ContentSection({
   id = "sec-content",
   activeLocale,
@@ -32,44 +32,28 @@ export function ContentSection({
 }) {
   const t = useTranslations("productForm.sections.content");
   const tPage = useTranslations("productForm.page");
-  const tToast = useTranslations("toast");
   const form = useFormContext<AddProductFormData>();
-  const supabase = createClient();
-
-  const handleContentImageUpload = useCallback(
-    async (file: File) => {
-      try {
-        await validateImage(file);
-      } catch (error) {
-        toast.error(
-          error instanceof Error && tToast.has(error.message)
-            ? tToast(error.message)
-            : tToast("uploadError", { fileName: file.name })
-        );
-        return null;
-      }
-
-      const { data, error } = await supabase.storage
-        .from("products")
-        .upload(generateImageName(file), file, { cacheControl: "31536000", upsert: false });
-
-      if (error) {
-        toast.error(tToast("uploadError", { fileName: file.name }));
-        return null;
-      }
-
-      return getPublicUrl(data.path, "products");
-    },
-    [supabase, tToast]
-  );
+  const uploadContentImage = useContentImageUpload();
+  const [bulletPoints, content] = useWatch({
+    control: form.control,
+    name: [`localized.${activeLocale}.bulletPoints`, `localized.${activeLocale}.content`],
+  });
+  const highlightCount = (bulletPoints ?? []).filter((item) => item.trim()).length;
+  const summary = [
+    highlightCount ? t("summaryHighlights", { count: highlightCount }) : "",
+    !isEmptyHtml(content) ? t("summaryDetailed") : "",
+  ]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
-    <SectionCard
+    <CollapsibleSection
       id={id}
       icon={AlignRight}
       title={t("title")}
       description={t("description")}
-      divided={false}
+      summary={summary || tPage("optional")}
+      summaryTone={summary ? "ok" : "muted"}
     >
       {(["en", "ar"] as const).map((loc) => (
         <div key={loc} className={cn("flex flex-col gap-4", activeLocale !== loc && "hidden")} lang={loc}>
@@ -102,14 +86,15 @@ export function ContentSection({
                   onChange={(html: string) => field.onChange(isEmptyHtml(html) ? "" : html)}
                   placeholder={t("bodyPlaceholder")}
                   dir={loc === "ar" ? "rtl" : "ltr"}
-                  onImageUpload={handleContentImageUpload}
+                  onImageUpload={uploadContentImage}
                 />
               )}
             />
+            <FieldHint className="text-faint">{t("bodyHint")}</FieldHint>
           </div>
         </div>
       ))}
-    </SectionCard>
+    </CollapsibleSection>
   );
 }
 
@@ -181,7 +166,7 @@ function HighlightsInput({
                   add();
                 }
               }}
-              className={cn(FIELD_CLASS, "h-10", contentDirClass(locale))}
+              className={cn(FIELD_CLASS, "h-10 max-md:text-base", contentDirClass(locale))}
             />
             {rows.length > 1 && (
               <Button

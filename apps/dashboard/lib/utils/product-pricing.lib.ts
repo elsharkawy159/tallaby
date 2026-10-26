@@ -1,7 +1,7 @@
-import { roundPriceUpToNearestFive } from '@workspace/lib'
+import { normalizePrice } from '@workspace/lib'
 import { computeSellerPlatformFee } from '@workspace/lib/orders/platform-fee'
 
-export { roundPriceUpToNearestFive }
+export { normalizePrice }
 
 export interface SellerPricingSettings {
   /** Legacy percentage (sellers.commission_rate); no longer used for earnings. */
@@ -43,7 +43,7 @@ export function calculateProductFinalPrice(
     discountType
   )
 
-  return roundPriceUpToNearestFive(discountedPrice)
+  return normalizePrice(discountedPrice)
 }
 
 /**

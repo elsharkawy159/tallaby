@@ -24,6 +24,7 @@ import {
   type StockLine,
 } from "@workspace/db/inventory";
 import { cancelPendingAffiliateCommission } from "@workspace/db/affiliates";
+import { richTextToPlainText } from "@workspace/tiptap/plain-text";
 import {
   DuplicateWalletTransactionError,
   postWalletTransaction,
@@ -298,7 +299,7 @@ export async function getOrders(params?: {
                 title: enTranslation?.title ?? item.productName,
                 slug: enTranslation?.slug ?? "",
                 images: (item.product?.images as string[] | null) ?? null,
-                description: enTranslation?.description ?? null,
+                description: richTextToPlainText(enTranslation?.description) || null,
               },
             };
           })

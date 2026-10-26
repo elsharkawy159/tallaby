@@ -13,6 +13,7 @@ export const DEFAULT_PRODUCT_COLUMN_ORDER = [
   "category",
   "brand",
   "price",
+  "discount",
   "rating",
   "quantity",
   "status",

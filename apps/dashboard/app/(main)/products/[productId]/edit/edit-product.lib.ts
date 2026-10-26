@@ -71,8 +71,8 @@ export function buildEditDefaultValues(
     product.price && typeof product.price === "object"
       ? (product.price as Record<string, unknown>)
       : {};
-  // parsePriceJson also applies the nearest-5 rounding, so re-opening a legacy
-  // product in the editor shows the same price the storefront renders.
+  // parsePriceJson normalises the price the same way the storefront does, so
+  // the editor shows the price customers see.
   const parsedPrice = parsePriceJson(product.price);
   const list = parsedPrice.list ?? (parsedPrice.base > 0 ? parsedPrice.base : 1);
   const final = parsedPrice.final > 0 ? parsedPrice.final : list;

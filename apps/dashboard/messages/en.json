@@ -558,10 +558,11 @@
       "finalPricePositive": "Final price must be greater than 0",
       "variantTitleRequired": "Variant title is required",
       "variantSkuRequired": "Variant SKU is required",
-      "enTitleRequired": "Product name (EN) is required",
       "enSlugRequired": "Product slug (EN) is required",
       "arTitleRequired": "Arabic title is required when Arabic content is provided",
-      "weightRequired": "Product weight is required"
+      "salePriceBelowPrice": "The sale price must be lower than the product price",
+      "titleRequired": "Enter the product name (in Arabic or English)",
+      "descriptionRequired": "Enter a short description (in Arabic or English)"
     },
     "seller": {
       "businessNameRequired": "Business name is required",
@@ -850,7 +851,55 @@
       "deleted": "\"{title}\" deleted",
       "deleteFailed": "Couldn't delete the product. Try again.",
       "bulkDeleted": "{count, plural, one {# product deleted} other {# products deleted}}",
-      "bulkDeleteFailed": "{count, plural, one {# product couldn't be deleted} other {# products couldn't be deleted}}"
+      "bulkDeleteFailed": "{count, plural, one {# product couldn't be deleted} other {# products couldn't be deleted}}",
+      "discount": "Discount",
+      "tabs": {
+        "all": "All",
+        "published": "Published",
+        "draft": "Draft",
+        "lowStock": "Low stock",
+        "outOfStock": "Out of stock"
+      },
+      "searchPlaceholder": "Search by name or SKU…",
+      "searchLabel": "Search products",
+      "category": "Category",
+      "allCategories": "All categories",
+      "sortLabel": "Sort",
+      "sort": {
+        "newest": "Newest first",
+        "priceAsc": "Price: low to high",
+        "priceDesc": "Price: high to low",
+        "stockAsc": "Stock: lowest first",
+        "name": "Name"
+      },
+      "viewLabel": "View",
+      "gridView": "Card view",
+      "tableView": "Table view",
+      "stock": {
+        "out": "Out of stock",
+        "low": "{count} left",
+        "in": "In stock · {count}"
+      },
+      "select": "Select {title}",
+      "selected": "{count, plural, one {# product selected} other {# products selected}}",
+      "bulkPublish": "Publish",
+      "bulkDraft": "Move to draft",
+      "clearSelection": "Clear selection",
+      "bulkPublished": "{count, plural, one {# product published} other {# products published}}",
+      "bulkDrafted": "{count, plural, one {# product moved to draft} other {# products moved to draft}}",
+      "bulkPublishFailed": "{count, plural, one {# product couldn't be updated} other {# products couldn't be updated}}",
+      "bulkDeleteTitle": "{count, plural, one {Delete # product?} other {Delete # products?}}",
+      "emptyTitle": "No matching products",
+      "emptyDescription": "Try another filter or search term.",
+      "noProductsTitle": "No products yet",
+      "noProductsDescription": "Add your first product to start selling.",
+      "clearFilters": "Clear filters",
+      "range": "Showing {from}–{to} of {total}",
+      "previousPage": "Previous page",
+      "nextPage": "Next page",
+      "pageN": "Page {page}",
+      "moreActions": "More actions",
+      "noImage": "No image"
     },
     "columnsDialog": {
       "trigger": "Manage Columns",
@@ -865,7 +914,9 @@
       "unpublishProduct": "Unpublish product",
       "publish": "Publish",
       "unpublish": "Unpublish",
-      "onlyToggleable": "Products removed by Tallaby can't be published"
+      "onlyToggleable": "Products removed by Tallaby can't be published",
+      "published": "Published",
+      "draft": "Draft"
     },
     "imageUpload": {
       "dropHere": "Drag and drop images here",
@@ -1171,9 +1222,6 @@
       "remaining": "{count, plural, one {# required field left} other {# required fields left}}",
       "allDone": "All required fields are complete",
       "optional": "Optional",
-      "preview": "Preview as customers see it",
-      "previewName": "Product name",
-      "previewCategory": "Listed in {category}",
       "contentLanguageHint": "Fields marked AR/EN are written once per language",
       "previewOnStore": "Preview",
       "previewOnStoreHint": "Open this product on your store in a new tab",
@@ -1192,19 +1240,25 @@
     "sections": {
       "basic": {
         "title": "Basic information",
-        "description": "The name and category are the first things customers see, and they power search.",
+        "description": "A name, short description, photos and category are all you need to publish.",
         "importFromLink": "Import from link",
         "name": "Product name",
         "namePlaceholderEn": "e.g. Short sleeve cotton t-shirt",
         "namePlaceholderAr": "مثال: تيشيرت قطن بأكمام قصيرة",
-        "link": "Link:",
         "editSlug": "Edit",
-        "doneSlug": "Done",
+        "doneSlug": "Save link",
         "category": "Category",
         "brand": "Brand",
         "optional": "Optional",
         "shortDescription": "Short description",
-        "shortDescriptionPlaceholder": "One or two sentences that sum up the product — shown next to the price on the product page"
+        "shortDescriptionPlaceholder": "A sentence or short paragraph that sums up the product: material, sizes, what makes it stand out…",
+        "photos": "Photos",
+        "shortDescriptionHint": "Shows in the “Description” section of the product page.",
+        "slugLabel": "Product link",
+        "cancelSlug": "Cancel",
+        "slugRule": "Lowercase English letters, numbers and dashes only.",
+        "slugFromName": "Use product name",
+        "slugFromNameHint": "Make the link from the product name again"
       },
       "media": {
         "title": "Images & media",
@@ -1213,19 +1267,22 @@
       },
       "content": {
         "title": "Detailed description & highlights",
-        "description": "Explain the material, sizing and how to use it. Highlights show as short bullets at the top of the page.",
+        "description": "Highlights show as short bullet points; the detailed description shows lower on the product page.",
         "highlights": "Key highlights",
         "addHighlight": "Add highlight",
         "removeHighlight": "Remove highlight",
         "highlightPlaceholderEn": "e.g. 100% Egyptian cotton",
         "highlightPlaceholderAr": "مثال: قطن مصري 100%",
         "pasteTip": "Tip: paste a whole list into the first field and we'll split it for you.",
-        "body": "Product content",
-        "bodyPlaceholder": "Write a detailed product description…"
+        "body": "Detailed description",
+        "bodyPlaceholder": "Write a detailed product description. You can add headings and photos…",
+        "summaryHighlights": "{count, plural, one {# highlight} other {# highlights}}",
+        "bodyHint": "Shows on the product page below the buying details.",
+        "summaryDetailed": "Detailed description"
       },
       "pricing": {
-        "title": "Price & discount",
-        "description": "We calculate the final price after the discount automatically.",
+        "title": "Price",
+        "description": "Turn on a discount to show a sale price with the original price struck through.",
         "productPrice": "Product price",
         "discount": "Discount",
         "currency": "EGP",
@@ -1237,10 +1294,13 @@
         "percentOff": "{percent}% off",
         "noDiscount": "No discount",
         "youReceive": "You receive {amount}",
-        "roundingHint": "Prices round up to the nearest 5 EGP.",
         "expiryTitle": "Set a discount end date",
         "expiryDescription": "The original price comes back automatically afterwards",
-        "endsAt": "Ends on"
+        "endsAt": "Ends on",
+        "salePrice": "Sale price",
+        "percentOffEmpty": "— off",
+        "customerSaves": "Customers save {amount}",
+        "salePriceHint": "Lower than the product price"
       },
       "stock": {
         "title": "Inventory & variants",
@@ -1251,7 +1311,10 @@
         "decrease": "Decrease",
         "increase": "Increase",
         "defaultVariantStock": "This is the stock of the default variant",
-        "variantsHeading": "Variants & options"
+        "variantsHeading": "Variants & options",
+        "summaryVariants": "{count, plural, one {# variant} other {# variants}} · {stock} in stock",
+        "summaryStock": "{stock} in stock",
+        "summaryNeedQuantity": "Needed: quantity"
       },
       "shipping": {
         "title": "Shipping & handling",
@@ -1273,11 +1336,15 @@
         "freeTitle": "Free delivery on this product",
         "freeDescription": "You cover the shipping cost and customers see a “Free delivery” tag",
         "storeFreeDelivery": "Your store already offers free delivery on every product.",
-        "soon": "Soon"
+        "soon": "Soon",
+        "summaryFree": "Free delivery",
+        "summaryHandling": "Ships in {days, plural, one {# day} other {# days}}",
+        "summaryNeedHandling": "Needed: handling time",
+        "optional": "Optional"
       },
       "visibility": {
         "title": "Promotion & search visibility",
-        "description": "Optional. We fill these from the name and description if you leave them empty.",
+        "description": "We fill the title and description from the product name and description. You can edit them.",
         "trending": "Trending now",
         "trendingDescription": "Shows in the trending section",
         "seasonal": "Seasonal",
@@ -1287,14 +1354,18 @@
         "serpDescription": "Product description as it will appear in search results.",
         "metaTitle": "Meta title",
         "metaTitlePlaceholder": "Filled from the product name",
-        "metaTitleHint": "Recommended: 50–60 characters",
+        "metaTitleHint": "Up to 60 characters · 50–60 recommended",
         "metaDescription": "Meta description",
         "metaDescriptionPlaceholder": "Filled from the short description",
-        "metaDescriptionHint": "Recommended: 150–160 characters",
+        "metaDescriptionHint": "Up to 160 characters · 150–160 recommended",
         "metaKeywords": "Keywords",
         "metaKeywordsPlaceholder": "Type a keyword and press Enter",
         "metaKeywordsHint": "Words shoppers search for, like \"cotton dress\". Press Enter or type a comma after each one.",
-        "metaKeywordsRemove": "Remove {tag}"
+        "metaKeywordsRemove": "Remove {tag}",
+        "summaryAuto": "Automatic from name and description",
+        "summaryEdited": "Edited by you",
+        "auto": "Auto",
+        "restoreAuto": "Restore automatic"
       }
     },
     "import": {
@@ -1318,6 +1389,25 @@
       "cancel": "Cancel",
       "submit": "Import",
       "close": "Close"
+    },
+    "categoryField": {
+      "label": "Category",
+      "placeholder": "Search or type a new category",
+      "placeholderTallaby": "Search Tallaby categories",
+      "sheetTitle": "Choose a category",
+      "close": "Close",
+      "clear": "Clear",
+      "storeGroup": "Your store's categories",
+      "tallabyGroup": "Tallaby categories",
+      "suggestedGroup": "Suggested for your product",
+      "addNew": "Add “{name}”",
+      "addNewHint": "A new category, added to your store's categories",
+      "empty": "No categories found",
+      "hint": "Search your store's categories and Tallaby's, or type a new one.",
+      "hintTallaby": "Search Tallaby categories and pick the closest one.",
+      "fromStore": "From your store's categories",
+      "fromTallaby": "Tallaby category · {path}",
+      "newCategory": "New category · added to your store's categories when you save"
     }
   },
   "settings": {
@@ -2074,8 +2164,8 @@
         "answer": "Open Add products, enter the name, price, stock and photos, then save. Products go live on your store right away, with no review step."
       },
       "categories": {
-        "question": "Can I use my own categories and brands?",
-        "answer": "Yes. Products › Categories and Products › Brands hold your own lists. Choose which products each store shows in Store settings › General."
+        "question": "Can I use my own categories?",
+        "answer": "Yes. Products › Categories holds your own list, and it comes first when you pick a product's category. Choose which products each store shows in Store settings › General."
       },
       "manageOrders": {
         "question": "Where do I see and follow up on orders?",
@@ -3089,6 +3179,8 @@
       }
     },
     "title": "Store wallet",
+    "pageDescription": "EGP {fee} is taken from your balance for every delivered order. Top up ahead so orders keep coming in.",
+    "runway": "Covers about {count, plural, one {# order} other {# orders}}",
     "thisMonth": "This month: {sales} in sales, {fees} in fees",
     "negative": "Your balance is below zero. New sales pay it back automatically, or you can top up at any time.",
     "negativeStrong": "Your balance is well below zero. Top up soon: until it recovers, ads and other paid services can't be paid from the wallet.",
@@ -3135,25 +3227,56 @@
       "button": "Top up wallet",
       "title": "Top up wallet",
       "description": "Transfer the amount from your wallet or bank, then upload a picture of the receipt.",
+      "panel": {
+        "title": "Top up wallet",
+        "subtitle": "Pick the amount, then choose how to transfer it in the next step.",
+        "presets": "Pick an amount",
+        "popular": "Most chosen",
+        "approxOrders": "≈ {count, plural, one {# order} other {# orders}}",
+        "custom": "Or type another amount",
+        "decrease": "Decrease",
+        "increase": "Increase",
+        "methods": "Transfer with:",
+        "summary": {
+          "amount": "Top-up amount",
+          "fee": "Top-up fee",
+          "free": "Free",
+          "total": "You transfer",
+          "after": "Balance after top-up:"
+        },
+        "cta": "Top up now",
+        "trust": {
+          "review": "Added once we check the receipt",
+          "noExpiry": "Your balance never expires"
+        }
+      },
+      "changeAmount": "Change amount",
+      "cancel": "Cancel",
+      "recap": {
+        "amount": "Amount",
+        "method": "Method",
+        "from": "From"
+      },
       "progress": "Top-up steps",
       "steps": {
-        "amount": "Amount",
+        "method": "Method",
         "transfer": "Transfer",
         "receipt": "Receipt"
       },
-      "amountLabel": "How much do you want to add?",
       "limits": "From 100 to 20,000 EGP.",
       "methodLabel": "Transfer with",
       "methods": {
         "vodafone_cash": {
           "name": "Vodafone Cash",
           "hint": "From any Vodafone Cash wallet",
-          "to": "To Vodafone Cash number"
+          "to": "To Vodafone Cash number",
+          "sender": "Wallet number you sent from"
         },
         "instapay": {
           "name": "InstaPay",
           "hint": "From the InstaPay app",
-          "to": "To InstaPay number"
+          "to": "To InstaPay number",
+          "sender": "Phone number linked to InstaPay"
         }
       },
       "slip": {
@@ -3167,7 +3290,6 @@
           "screenshot": "Take a screenshot of the confirmation screen."
         }
       },
-      "senderLabel": "Number you sent from",
       "optional": "Optional",
       "senderHint": "Helps us match your transfer faster.",
       "receipt": {
@@ -3180,7 +3302,7 @@
         "wrongType": "Choose a JPG, PNG or WEBP picture.",
         "tooLarge": "The picture is larger than 5 MB.",
         "uploadFailed": "Couldn't upload the picture. Try again.",
-        "reviewNote": "{amount} is added to your balance once we check the transfer. Until then it shows in your wallet as under review."
+        "clarity": "Make sure the picture clearly shows the amount and the transfer date."
       },
       "back": "Back",
       "next": "Next",
@@ -3799,7 +3921,7 @@
       "none": "None",
       "emptyList": "Your list is empty",
       "hint": "From your own lists, for grouping products in your store.",
-      "linkFailed": "The product was saved, but your category or brand wasn't. Edit the product to set it again.",
+      "linkFailed": "The product was saved, but its category wasn't saved to your store's categories. Edit the product to set it again.",
       "manageCategories": "Manage categories",
       "manageBrands": "Manage brands",
       "pickOrType": "Pick from your list or type a new one",

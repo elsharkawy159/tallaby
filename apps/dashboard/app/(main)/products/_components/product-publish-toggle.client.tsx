@@ -13,6 +13,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@workspace/ui/components/tooltip";
+import { cn } from "@workspace/ui/lib/utils";
 import { setProductPublished } from "@/actions/products";
 
 type ProductStatus = "draft" | "pending" | "active" | "rejected";
@@ -29,14 +30,10 @@ interface ProductStatusCellProps {
   status: ProductStatus;
 }
 
-export function ProductStatusCell({
-  productId,
-  status,
-}: ProductStatusCellProps) {
+/** Optimistic publish/unpublish shared by the table cell and the card switch. */
+function useProductPublish(productId: string, status: ProductStatus) {
   const router = useRouter();
   const tToast = useTranslations("toast");
-  const t = useTranslations("products.publish");
-  const tStatus = useTranslations("status");
   const [isPending, startTransition] = useTransition();
   const [currentStatus, setCurrentStatus] = useState(status);
 
@@ -47,7 +44,7 @@ export function ProductStatusCell({
   const isPublished = currentStatus === "active";
   const canToggle = currentStatus !== "rejected";
 
-  const handleCheckedChange = (checked: boolean) => {
+  const setPublished = (checked: boolean) => {
     if (!canToggle || isPending) return;
 
     const previousStatus = currentStatus;
@@ -69,6 +66,18 @@ export function ProductStatusCell({
     });
   };
 
+  return { currentStatus, isPublished, canToggle, isPending, setPublished };
+}
+
+export function ProductStatusCell({
+  productId,
+  status,
+}: ProductStatusCellProps) {
+  const t = useTranslations("products.publish");
+  const tStatus = useTranslations("status");
+  const { currentStatus, isPublished, canToggle, isPending, setPublished } =
+    useProductPublish(productId, status);
+
   return (
     <div className="flex items-center gap-2">
       <TooltipProvider>
@@ -77,7 +86,7 @@ export function ProductStatusCell({
             <span className="inline-flex">
               <Switch
                 checked={isPublished}
-                onCheckedChange={handleCheckedChange}
+                onCheckedChange={setPublished}
                 disabled={!canToggle || isPending}
                 aria-label={isPublished ? t("unpublishProduct") : t("publishProduct")}
               />
@@ -96,5 +105,53 @@ export function ProductStatusCell({
         {translateStatus(tStatus, "product", currentStatus)}
       </Badge>
     </div>
+  );
+}
+
+/** Card footer switch: green when published, labelled Published / Draft. */
+export function ProductPublishSwitch({
+  productId,
+  status,
+}: ProductStatusCellProps) {
+  const t = useTranslations("products.publish");
+  const tStatus = useTranslations("status");
+  const { currentStatus, isPublished, canToggle, isPending, setPublished } =
+    useProductPublish(productId, status);
+
+  const label = canToggle
+    ? isPublished
+      ? t("published")
+      : t("draft")
+    : translateStatus(tStatus, "product", currentStatus);
+
+  const control = (
+    <label
+      className={cn(
+        "inline-flex cursor-pointer select-none items-center gap-2 text-xs font-semibold text-muted-foreground",
+        isPublished && "text-success",
+        !canToggle && "cursor-not-allowed text-destructive"
+      )}
+    >
+      <Switch
+        size="sm"
+        checked={isPublished}
+        onCheckedChange={setPublished}
+        disabled={!canToggle || isPending}
+        className="data-[state=checked]:bg-success disabled:opacity-60"
+        aria-label={isPublished ? t("unpublishProduct") : t("publishProduct")}
+      />
+      {label}
+    </label>
+  );
+
+  if (canToggle) return control;
+
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>{control}</TooltipTrigger>
+        <TooltipContent>{t("onlyToggleable")}</TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }

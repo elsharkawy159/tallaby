@@ -190,9 +190,37 @@ describe("header and footer options (drawChrome)", () => {
     const input = chrome([n("box", "container", {}, [n("social", "hFlex", { role: "social" }), n("copy", "text")])], { themeToggle: true });
     const out = drawChrome(input, "footer", { translated: true, hasLogo: false })!;
     const box = findNode(out.componentTree!, "box")!;
-    expect(box.children.map((c) => c.id)).toEqual(["social", "c-tools", "copy"]);
+    expect(box.children.map((c) => c.id)).toEqual(["social", "c-tools", "copy", "c-legal"]);
     // The footer's language switcher is off by default.
     expect(box.children[1]!.children.map((c) => c.type)).toEqual(["themeToggle"]);
+  });
+
+  it("puts Powered by Tallaby beside the copyright line, once, in the language shown", () => {
+    const input = chrome([
+      n("box", "container", {}, [
+        n("legal", "hFlex", {}, [
+          n("copy", "text", { text: "© 2026 Store. All rights reserved." }),
+          n("old", "linkBlock", { href: "https://tallaby.com", role: "poweredBy" }, [n("old-text", "text", { text: "Powered by Tallaby" })]),
+        ]),
+      ]),
+    ]);
+    const out = drawChrome(input, "footer", { translated: false, hasLogo: false, locale: "en" })!;
+    expect(findNode(out.componentTree!, "old")).toBeNull();
+    expect(findNode(out.componentTree!, "c-legal")!.children.map((c) => c.id)).toEqual(["copy", "c-powered-by"]);
+    expect(findNode(out.componentTree!, "c-powered-by-text")!.props.text).toBe("Powered by");
+    const link = findNode(out.componentTree!, "c-powered-by-link")!;
+    expect(link.props.href).toBe("https://tallaby.com");
+    expect(link.children[0]!.props.text).toBe("Tallaby");
+    expect(link.children[0]!.style?.underline).toBe(true);
+    expect(findNode(drawChrome(input, "footer", { translated: false, hasLogo: false })!.componentTree!, "c-powered-by-link")!.children[0]!.props.text).toBe("طلبي");
+  });
+
+  it.each(CODE_TEMPLATES.map((t) => [t.key, t] as const))("%s: the footer always credits Tallaby once", (_key, template) => {
+    const footer = drawChrome(template.config().footer, "footer", { translated: false, hasLogo: false, locale: "ar" });
+    const hrefs: unknown[] = [];
+    const walk = (list: Tree) => list.forEach((node) => (hrefs.push(node.props.href), walk(node.children)));
+    walk(footer?.componentTree ?? []);
+    expect(hrefs.filter((h) => h === "https://tallaby.com")).toHaveLength(1);
   });
 
   it("stores only changes from the defaults", () => {

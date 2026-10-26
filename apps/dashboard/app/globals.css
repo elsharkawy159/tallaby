@@ -1,7 +1,7 @@
 /*
  * Seller dashboard palette. Loaded after @workspace/ui/globals.css and
- * overrides its shared tokens for this app only: quieter neutral lines
- * instead of the storefront's rose borders, and a teal-tinted dark mode.
+ * overrides its shared tokens for this app only: a teal-tinted dark mode
+ * (the lines now match the shared tokens).
  *
  * Both blocks set the same variables. This file's :root comes after the
  * shared .dark block with equal specificity, so any variable set here only

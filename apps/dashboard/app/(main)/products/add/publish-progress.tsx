@@ -136,7 +136,7 @@ export function SectionChips({
   return (
     <nav
       ref={navRef}
-      className="mx-auto flex max-w-[1240px] gap-1.5 overflow-x-auto px-4 pb-3 [scrollbar-width:none] sm:px-6 lg:hidden"
+      className="flex gap-1.5 overflow-x-auto px-3 pb-3 [scrollbar-width:none] sm:px-6 lg:hidden"
     >
       {sections.map((section) => (
         <a
