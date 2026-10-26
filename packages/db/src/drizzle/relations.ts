@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { stores, storeProducts, storeDesignSystems, storePages, storeSiteRevisions, templates, templateVersions, templateInstalls, mediaFolders, mediaAssets, savedBlocks, storeForms, storeFormSubmissions, cmsCollections, cmsItems, cmsItemRevisions, storeIntegrations, storeShippingZones, storeSettingsAudit, sellerWalletTopUps, adminAuditLog, platformBlogPosts, sellerProductCategories, sellerProductBrands, librarySections, adminNotifications, sellerNotifications } from "./schema";
+import { stores, storeProducts, storeDesignSystems, storePages, storeSiteRevisions, templates, templateVersions, templateInstalls, mediaFolders, mediaAssets, savedBlocks, storeForms, storeFormSubmissions, cmsCollections, cmsItems, cmsItemRevisions, storeIntegrations, storeShippingZones, storeSettingsAudit, sellerWalletTopUps, adminAuditLog, platformBlogPosts, sellerProductCategories, sellerProductBrands, librarySections, adminNotifications, sellerNotifications, shipmentCarrierEvents } from "./schema";
 import { users, deliveries, shipments, orders, payments, paymentMethods, carts, categories, sellers, coupons, notifications, contacts, userAddresses, products, productVariants, refunds, returns, orderItems, shipmentItems, productQuestions, shippingAddresses, couponUsage, cartItems, reviews, returnItems, reviewVotes, searchLogs, sellerDocuments, sellerPayoutItems, sellerPayouts, reviewComments, userDevices, wishlistItems, wishlists, brands, productAnswers, userRewards, productTranslations, digitalProducts, digitalOrders, sellerCategories, sellerWallet, walletTransactions, digitalFiles, licenseKeys, digitalBundleItems, digitalAccessLogs, shippingProviders, shipmentBatches, shipmentBatchItems, userWallets, userWalletTransactions, walletTopUps, walletPayoutRequests, affiliates, affiliateCommissions } from "./schema";
 
 export const deliveriesRelations = relations(deliveries, ({one}) => ({
@@ -78,6 +78,11 @@ export const shipmentsRelations = relations(shipments, ({one, many}) => ({
 		fields: [shipments.riderId],
 		references: [users.id]
 	}),
+	storeIntegration: one(storeIntegrations, {
+		fields: [shipments.storeIntegrationId],
+		references: [storeIntegrations.id]
+	}),
+	carrierEvents: many(shipmentCarrierEvents),
 }));
 
 export const shippingProvidersRelations = relations(shippingProviders, ({many}) => ({
@@ -1022,7 +1027,7 @@ export const cmsItemRevisionsRelations = relations(cmsItemRevisions, ({one}) => 
 	}),
 }));
 
-export const storeIntegrationsRelations = relations(storeIntegrations, ({one}) => ({
+export const storeIntegrationsRelations = relations(storeIntegrations, ({one, many}) => ({
 	store: one(stores, {
 		fields: [storeIntegrations.storeId],
 		references: [stores.id]
@@ -1030,6 +1035,14 @@ export const storeIntegrationsRelations = relations(storeIntegrations, ({one}) =
 	seller: one(sellers, {
 		fields: [storeIntegrations.sellerId],
 		references: [sellers.id]
+	}),
+	shipments: many(shipments),
+}));
+
+export const shipmentCarrierEventsRelations = relations(shipmentCarrierEvents, ({one}) => ({
+	shipment: one(shipments, {
+		fields: [shipmentCarrierEvents.shipmentId],
+		references: [shipments.id]
 	}),
 }));
 

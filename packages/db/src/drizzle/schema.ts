@@ -813,7 +813,25 @@ export const shipments = pgTable("shipments", {
 	assignedAt: timestamp("assigned_at", { withTimezone: true, mode: 'string' }),
 	shippedAt: timestamp("shipped_at", { withTimezone: true, mode: 'string' }),
 	deliveredAt: timestamp("delivered_at", { withTimezone: true, mode: 'string' }),
+	/** Carrier fields (0106): the carrier's delivery id and last state, for Bosta shipments. */
+	externalId: text("external_id"),
+	externalStateCode: smallint("external_state_code"),
+	externalState: text("external_state"),
+	/** The seller's carrier integration that created this shipment. */
+	storeIntegrationId: uuid("store_integration_id"),
+	lastSyncedAt: timestamp("last_synced_at", { withTimezone: true, mode: 'string' }),
+	needsAttention: boolean("needs_attention").default(false).notNull(),
+	lastError: text("last_error"),
+	createAttempts: smallint("create_attempts").default(0).notNull(),
 }, (table) => [
+	uniqueIndex("shipments_carrier_external_id_key").using("btree", table.carrier, table.externalId).where(sql`external_id IS NOT NULL`),
+	index("shipments_carrier_open_idx").using("btree", table.storeIntegrationId, table.lastSyncedAt).where(sql`store_integration_id IS NOT NULL AND status NOT IN ('delivered', 'returned', 'cancelled')`),
+	index("shipments_needs_attention_idx").using("btree", table.sellerId).where(sql`needs_attention`),
+	foreignKey({
+			columns: [table.storeIntegrationId],
+			foreignColumns: [storeIntegrations.id],
+			name: "shipments_store_integration_id_fkey"
+		}).onDelete("set null"),
 	index("shipment_order_id_idx").using("btree", table.orderId.asc().nullsLast().op("uuid_ops")),
 	index("shipment_seller_id_idx").using("btree", table.sellerId.asc().nullsLast().op("uuid_ops")),
 	index("shipment_tracking_number_idx").using("btree", table.trackingNumber.asc().nullsLast().op("text_ops")),
@@ -3029,7 +3047,7 @@ export const storeIntegrations = pgTable("store_integrations", {
 			name: "store_integrations_connected_by_fkey"
 		}).onDelete("set null"),
 	check("store_integrations_status_check", sql`status IN ('connected', 'error', 'disconnected')`),
-	check("store_integrations_provider_check", sql`provider IN ('meta_pixel', 'meta_capi', 'google_analytics', 'google_tag_manager', 'tiktok_pixel', 'snapchat_pixel', 'google_sheets', 'shopify_import')`),
+	check("store_integrations_provider_check", sql`provider IN ('meta_pixel', 'meta_capi', 'google_analytics', 'google_tag_manager', 'tiktok_pixel', 'snapchat_pixel', 'google_sheets', 'shopify_import', 'bosta')`),
 ]);
 
 /** Append-only audit of sensitive store settings changes (0058). Details are masked. */
@@ -3333,7 +3351,7 @@ export const sellerNotifications = pgTable("seller_notifications", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	sellerId: uuid("seller_id").notNull(),
 	storeId: uuid("store_id"),
-	/** order_created | top_up_approved | top_up_rejected | question_received | review_received */
+	/** order_created | top_up_approved | top_up_rejected | question_received | review_received | carrier_shipment_failed | carrier_needs_attention */
 	type: text().notNull(),
 	data: jsonb().$type<Record<string, unknown>>().default({}).notNull(),
 	dedupeKey: text("dedupe_key").notNull(),
@@ -3353,5 +3371,27 @@ export const sellerNotifications = pgTable("seller_notifications", {
 			foreignColumns: [stores.id],
 			name: "seller_notifications_store_id_fkey"
 		}).onDelete("set null"),
-	check("seller_notifications_type_check", sql`type IN ('order_created', 'top_up_approved', 'top_up_rejected', 'question_received', 'review_received')`),
+	check("seller_notifications_type_check", sql`type IN ('order_created', 'top_up_approved', 'top_up_rejected', 'question_received', 'review_received', 'carrier_shipment_failed', 'carrier_needs_attention')`),
+]);
+
+/** A carrier's status history for a shipment (0106). One row per (shipment, state, time). Server-only. */
+export const shipmentCarrierEvents = pgTable("shipment_carrier_events", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	shipmentId: uuid("shipment_id").notNull(),
+	carrier: text().notNull(),
+	stateCode: smallint("state_code").notNull(),
+	stateText: text("state_text"),
+	exceptionCode: smallint("exception_code"),
+	exceptionReason: text("exception_reason"),
+	occurredAt: timestamp("occurred_at", { withTimezone: true, mode: 'string' }).notNull(),
+	payload: jsonb().$type<Record<string, unknown>>().default({}).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	unique("shipment_carrier_events_dedupe_key").on(table.shipmentId, table.stateCode, table.occurredAt),
+	index("shipment_carrier_events_shipment_idx").using("btree", table.shipmentId, table.occurredAt.desc()),
+	foreignKey({
+			columns: [table.shipmentId],
+			foreignColumns: [shipments.id],
+			name: "shipment_carrier_events_shipment_id_fkey"
+		}).onDelete("cascade"),
 ]);
