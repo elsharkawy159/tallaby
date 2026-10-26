@@ -80,6 +80,10 @@
       "types": "./src/shipping/bosta-sync.server.ts",
       "default": "./src/shipping/bosta-sync.server.ts"
     },
+    "./shipping/bosta-orders": {
+      "types": "./src/shipping/bosta-orders.server.ts",
+      "default": "./src/shipping/bosta-orders.server.ts"
+    },
     "./places": {
       "types": "./src/places/index.ts",
       "default": "./src/places/index.ts"

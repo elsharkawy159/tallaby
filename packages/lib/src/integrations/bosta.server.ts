@@ -415,7 +415,10 @@ export async function testStoreBosta(
  * The seller's stores whose Bosta is set up (key saved and a pickup location
  * chosen), with when they ship, for the orders page.
  */
-export async function listSellerBostaStores(sellerId: string, q: Queryable = db): Promise<Map<string, BostaSettings["autoShip"]>> {
+export async function listSellerBostaStores(
+  sellerId: string,
+  q: Queryable = db,
+): Promise<Map<string, Pick<BostaSettings, "autoShip" | "canCancel">>> {
   if (!UUID_RE.test(sellerId)) return new Map();
   const rows = await q
     .select({ storeId: storeIntegrations.storeId, config: storeIntegrations.config })
@@ -429,5 +432,10 @@ export async function listSellerBostaStores(sellerId: string, q: Queryable = db)
         sql`coalesce(${storeIntegrations.config}->>'pickupLocationId', '') <> ''`,
       ),
     );
-  return new Map(rows.map((row) => [row.storeId, readBostaSettings(row.config).autoShip]));
+  return new Map(
+    rows.map((row) => {
+      const { autoShip, canCancel } = readBostaSettings(row.config);
+      return [row.storeId, { autoShip, canCancel }];
+    }),
+  );
 }

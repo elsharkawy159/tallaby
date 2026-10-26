@@ -4,7 +4,22 @@ import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Check, CircleAlert, Copy, ExternalLink, LoaderCircle, MapPin, Package, RotateCw, Search, Truck } from "lucide-react";
+import {
+  Check,
+  ChevronDown,
+  CircleAlert,
+  Copy,
+  ExternalLink,
+  History,
+  LoaderCircle,
+  MapPin,
+  Package,
+  Printer,
+  RotateCw,
+  Search,
+  Truck,
+  XCircle,
+} from "lucide-react";
 
 import { bostaTrackingUrl } from "@workspace/lib/integrations";
 import type { BostaShipPreview } from "@workspace/lib/shipping/bosta-ship";
@@ -19,15 +34,69 @@ import {
 } from "@workspace/ui/components/dialog";
 import { SegmentedControl, SegmentedControlItem } from "@workspace/ui/components/segmented-control";
 import { Skeleton } from "@workspace/ui/components/skeleton";
-import { formatMoney } from "@/lib/i18n/format";
+import { ConfirmActionDialog } from "@/components/layout/confirm-action-dialog.client";
+import { formatDateTime, formatMoney } from "@/lib/i18n/format";
 import { cn } from "@/lib/utils";
-import { previewShipWithBosta, shipWithBosta, type BostaActionError } from "./bosta-ship.server";
+import type { BostaTimelineEvent } from "@workspace/lib/shipping/bosta-orders";
+import {
+  cancelShipmentWithBosta,
+  loadBostaTimeline,
+  previewShipWithBosta,
+  shipWithBosta,
+  type BostaActionError,
+} from "./bosta-ship.server";
 import type { SellerOrderRow } from "./orders.types";
 
 type Size = "SMALL" | "MEDIUM" | "LARGE";
 
 /** Bosta state codes with their own label (orders.bosta.states.<code>); others show Bosta's text. */
 const KNOWN_STATES = new Set([10, 11, 20, 21, 24, 30, 41, 45, 46, 47, 48, 49, 60, 100, 101, 102, 103, 104, 105]);
+
+/** Bosta state codes before pickup, the only ones a business can cancel. */
+const PRE_PICKUP = new Set([10, 11, 20]);
+
+/** The labels PDF for these orders of one store (opened in a new tab). */
+export function bostaLabelsUrl(storeId: string, orderIds: string[], type: "A6" | "A4", lang: string) {
+  const params = new URLSearchParams({ storeId, orders: orderIds.join(","), type, lang: lang.startsWith("ar") ? "ar" : "en" });
+  return `/api/bosta/labels?${params.toString()}`;
+}
+
+export function useBostaStateLabel() {
+  const t = useTranslations("orders.bosta");
+  return (code: number | null, text: string | null) =>
+    code != null && KNOWN_STATES.has(code) ? t(`states.${code}`) : (text ?? t("states.unknown"));
+}
+
+/** A small Bosta pill for order cards and table rows: the state, or that the seller is needed. */
+export function BostaChip({ order, className }: { order: SellerOrderRow; className?: string }) {
+  const t = useTranslations("orders.bosta");
+  const stateLabel = useBostaStateLabel();
+  const bosta = order.bosta;
+  if (!bosta) return null;
+  const label = bosta.needsAttention
+    ? t("chipAttention")
+    : bosta.creating
+      ? t("creating")
+      : bosta.trackingNumber
+        ? stateLabel(bosta.stateCode, bosta.state)
+        : t("chipNotSent");
+  return (
+    <span
+      className={cn(
+        "inline-flex max-w-full items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold",
+        bosta.needsAttention
+          ? "border-destructive/30 bg-destructive/10 text-destructive"
+          : "border-[#E30613]/25 bg-[#E30613]/5 text-[#b0040f] dark:text-[#ff6b73]",
+        className,
+      )}
+    >
+      <Truck className="size-3 shrink-0" aria-hidden />
+      <span className="truncate">
+        {t("chipPrefix")} · {label}
+      </span>
+    </span>
+  );
+}
 
 /** Stages in which an order can still go to Bosta. */
 export function canShipWithBosta(order: SellerOrderRow): boolean {
@@ -309,7 +378,13 @@ export function BostaDeliveryCard({ order }: { order: SellerOrderRow }) {
   const t = useTranslations("orders.bosta");
   const errorText = useBostaErrorText();
   const router = useRouter();
+  const locale = useLocale();
+  const stateLabelOf = useBostaStateLabel();
   const [copied, setCopied] = useState(false);
+  const [history, setHistory] = useState<BostaTimelineEvent[] | null>(null);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [confirmCancel, setConfirmCancel] = useState(false);
+  const [isCancelling, startCancel] = useTransition();
   const bosta = order.bosta;
   const creating = Boolean(bosta?.creating);
 
@@ -322,9 +397,30 @@ export function BostaDeliveryCard({ order }: { order: SellerOrderRow }) {
 
   if (!bosta) return null;
 
-  const stateLabel =
-    bosta.stateCode != null && KNOWN_STATES.has(bosta.stateCode) ? t(`states.${bosta.stateCode}`) : (bosta.state ?? t("states.unknown"));
+  const stateLabel = stateLabelOf(bosta.stateCode, bosta.state);
+  const prePickup = bosta.stateCode == null || PRE_PICKUP.has(bosta.stateCode);
   const [reason, ...rest] = (bosta.lastError ?? "").split(":");
+
+  const openHistory = () => {
+    const next = !historyOpen;
+    setHistoryOpen(next);
+    if (next && order.storeId) {
+      loadBostaTimeline(order.storeId, order.id).then((result) => setHistory(result.success ? result.data : []));
+    }
+  };
+
+  const cancelShipment = () =>
+    startCancel(async () => {
+      if (!order.storeId) return;
+      const result = await cancelShipmentWithBosta(order.storeId, order.id);
+      if (!result.success) {
+        toast.error(errorText(result.error, result.message));
+        return;
+      }
+      toast.success(t("cancelled", { number: order.orderNumber }));
+      setConfirmCancel(false);
+      router.refresh();
+    });
 
   const copy = async () => {
     if (!bosta.trackingNumber) return;
@@ -379,6 +475,79 @@ export function BostaDeliveryCard({ order }: { order: SellerOrderRow }) {
           {errorText(reason!, rest.join(":").trim() || undefined)}
         </p>
       )}
+      {bosta.trackingNumber && order.storeId && (
+        <div className="flex flex-wrap items-center gap-1.5 border-t pt-3">
+          <Button asChild size="sm" variant="outline" className="h-8">
+            <a href={bostaLabelsUrl(order.storeId, [order.id], "A6", locale)} target="_blank" rel="noopener noreferrer">
+              <Printer className="size-3.5" aria-hidden />
+              {t("printA6")}
+            </a>
+          </Button>
+          <Button asChild size="sm" variant="ghost" className="h-8">
+            <a href={bostaLabelsUrl(order.storeId, [order.id], "A4", locale)} target="_blank" rel="noopener noreferrer">
+              {t("printA4")}
+            </a>
+          </Button>
+          <Button type="button" size="sm" variant="ghost" className="h-8" aria-expanded={historyOpen} onClick={openHistory}>
+            <History className="size-3.5" aria-hidden />
+            {t("history")}
+            <ChevronDown className={cn("size-3.5 transition-transform", historyOpen && "rotate-180")} aria-hidden />
+          </Button>
+          {prePickup &&
+            (order.bostaCanCancel ? (
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                className="ms-auto h-8 text-destructive hover:text-destructive"
+                disabled={isCancelling}
+                onClick={() => setConfirmCancel(true)}
+              >
+                <XCircle className="size-3.5" aria-hidden />
+                {t("cancel")}
+              </Button>
+            ) : (
+              <span className="ms-auto text-[11px] text-muted-foreground">{t("cancelInBosta")}</span>
+            ))}
+        </div>
+      )}
+      {historyOpen && (
+        <ol className="space-y-2 border-t pt-3">
+          {history === null ? (
+            <li className="flex items-center gap-2 text-xs text-muted-foreground">
+              <LoaderCircle className="size-3.5 animate-spin" aria-hidden />
+            </li>
+          ) : history.length === 0 ? (
+            <li className="text-xs text-muted-foreground">{t("historyEmpty")}</li>
+          ) : (
+            [...history].reverse().map((event) => (
+              <li key={`${event.stateCode}-${event.occurredAt}`} className="flex gap-2.5 text-xs">
+                <span className="mt-1 size-2 shrink-0 rounded-full bg-[#E30613]" aria-hidden />
+                <div className="min-w-0">
+                  <p className="font-medium">{stateLabelOf(event.stateCode, event.stateText)}</p>
+                  {event.exceptionReason && (
+                    <p className="text-muted-foreground" dir="auto">
+                      {event.exceptionReason}
+                    </p>
+                  )}
+                  <p className="text-muted-foreground">{formatDateTime(event.occurredAt, locale)}</p>
+                </div>
+              </li>
+            ))
+          )}
+        </ol>
+      )}
+      <ConfirmActionDialog
+        open={confirmCancel}
+        onOpenChange={(open) => !open && !isCancelling && setConfirmCancel(false)}
+        title={t("cancelTitle", { number: order.orderNumber })}
+        description={t("cancelDescription")}
+        confirmLabel={t("cancel")}
+        cancelLabel={t("back")}
+        destructive
+        pending={isCancelling}
+        onConfirm={cancelShipment}
+      />
     </div>
   );
 }

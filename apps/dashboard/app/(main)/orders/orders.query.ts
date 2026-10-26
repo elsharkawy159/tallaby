@@ -39,7 +39,7 @@ export async function loadSellerOrders(
   sellerId: string,
   stores: { id: string; name: string; subdomain: string }[],
   /** Stores of this seller with Bosta connected, and when they ship (BS-08/09). */
-  bostaStores: ReadonlyMap<string, "manual" | "on_confirm"> = new Map(),
+  bostaStores: ReadonlyMap<string, { autoShip: "manual" | "on_confirm"; canCancel: boolean }> = new Map(),
 ): Promise<SellerOrderRow[]> {
   const list = await db.query.orders.findMany({
     where: inArray(
@@ -226,7 +226,8 @@ export async function loadSellerOrders(
       failureReason: shipment?.failureReason ?? null,
       riderName: shipment?.riderId ? (riderNames.get(shipment.riderId) ?? null) : null,
       bostaConnected: Boolean(o.storeId && bostaStores.has(o.storeId)),
-      bostaAutoShip: Boolean(o.storeId && bostaStores.get(o.storeId) === "on_confirm"),
+      bostaAutoShip: Boolean(o.storeId && bostaStores.get(o.storeId)?.autoShip === "on_confirm"),
+      bostaCanCancel: Boolean(o.storeId && bostaStores.get(o.storeId)?.canCancel),
       bosta:
         shipment?.carrier === "bosta" && shipment.sellerId === sellerId
           ? {

@@ -18,7 +18,7 @@ const TEST_DATABASE_URL = process.env.TEST_DATABASE_URL;
 const KEY = "bosta-test-key-sync-0001";
 
 function fakeBosta() {
-  const state = { creates: 0, codes: new Map<string, number>(), reads: 0 };
+  const state = { creates: 0, codes: new Map<string, number>(), reads: 0, terminated: [] as string[], labels: [] as string[] };
   const fetchImpl = (async (input: string | URL | Request, init?: RequestInit) => {
     const url = String(input);
     if (url.endsWith("/pickup-locations")) {
@@ -29,6 +29,16 @@ function fakeBosta() {
       const tn = `SY${Date.now()}${state.creates}`;
       state.codes.set(tn, 10);
       return Response.json({ success: true, data: { _id: `sync-${tn}`, trackingNumber: tn, state: { code: 10 } } });
+    }
+    const terminate = /\/deliveries\/business\/([^/?]+)\/terminate$/.exec(url);
+    if (terminate && init?.method === "DELETE") {
+      state.terminated.push(decodeURIComponent(terminate[1]!));
+      return Response.json({ success: true, data: null });
+    }
+    if (url.endsWith("/deliveries/mass-awb")) {
+      const body = JSON.parse(String(init?.body)) as { trackingNumbers: string };
+      state.labels.push(body.trackingNumbers);
+      return Response.json({ success: true, data: Buffer.from("%PDF-1.4 fake label ".repeat(10)).toString("base64") });
     }
     const match = /\/deliveries\/business\/([^/?]+)$/.exec(url);
     if (match) {
@@ -264,4 +274,59 @@ describe.skipIf(!TEST_DATABASE_URL)("Bosta status updates (integration)", { time
     expect(summary.checked).toBeGreaterThanOrEqual(1);
     expect(await shipmentOf(orderId)).toMatchObject({ status: "out_for_delivery", externalStateCode: 24 });
   });
+
+  it("cancel before pickup needs the Full access setting, then gives the order back", async () => {
+    const orders = await import("./bosta-orders.server");
+    const { saveBostaSettings } = await import("../integrations/bosta.server");
+    const { orderId, trackingNumber } = await shippedOrder();
+
+    expect(await orders.cancelBostaShipment(w.a.sellerId, w.a.a1, orderId, { fetchImpl: bosta.fetchImpl })).toEqual({
+      ok: false,
+      error: "full_access_required",
+    });
+    await saveBostaSettings(w.a.sellerId, w.a.a1, { canCancel: true }, { q: db, fetchImpl: bosta.fetchImpl });
+    try {
+      expect(await orders.cancelBostaShipment(w.b.sellerId, w.a.a1, orderId, { fetchImpl: bosta.fetchImpl })).toEqual({
+        ok: false,
+        error: "not_connected",
+      });
+      expect(await orders.cancelBostaShipment(w.a.sellerId, w.a.a1, orderId, { fetchImpl: bosta.fetchImpl })).toEqual({ ok: true });
+      expect(bosta.state.terminated).toContain(trackingNumber);
+      expect(await shipmentOf(orderId)).toMatchObject({ status: "pending", externalId: null, lastError: "bosta_cancelled" });
+
+      // After pickup Bosta can't terminate it.
+      const picked = await shippedOrder();
+      bosta.state.codes.set(picked.trackingNumber, 21);
+      await webhook(await shipmentOf(picked.orderId), 21);
+      expect(await orders.cancelBostaShipment(w.a.sellerId, w.a.a1, picked.orderId, { fetchImpl: bosta.fetchImpl })).toEqual({
+        ok: false,
+        error: "picked_up",
+      });
+    } finally {
+      await saveBostaSettings(w.a.sellerId, w.a.a1, { canCancel: false }, { q: db, fetchImpl: bosta.fetchImpl });
+    }
+  });
+
+  it("labels and the timeline only for this store's own shipments", async () => {
+    const orders = await import("./bosta-orders.server");
+    const a = await shippedOrder();
+    const b = await shippedOrder();
+
+    const labels = await orders.getBostaLabels(w.a.sellerId, w.a.a1, [a.orderId, b.orderId], { type: "A6", lang: "ar" }, { fetchImpl: bosta.fetchImpl });
+    expect(labels).toMatchObject({ ok: true, count: 2 });
+    expect(bosta.state.labels.at(-1)!.split(",").sort()).toEqual([a.trackingNumber, b.trackingNumber].sort());
+    expect(await orders.getBostaLabels(w.b.sellerId, w.a.a1, [a.orderId], { type: "A6", lang: "ar" }, { fetchImpl: bosta.fetchImpl })).toEqual({
+      ok: false,
+      error: "not_connected",
+    });
+    expect(await orders.getBostaLabels(w.a.sellerId, w.a.a2, [a.orderId], { type: "A6", lang: "ar" }, { fetchImpl: bosta.fetchImpl })).toEqual({
+      ok: false,
+      error: "not_connected",
+    });
+
+    const timeline = await orders.listBostaTimeline(w.a.sellerId, w.a.a1, a.orderId);
+    expect(timeline?.[0]).toMatchObject({ stateCode: 10 });
+    expect(await orders.listBostaTimeline(w.b.sellerId, w.a.a1, a.orderId)).toBeNull();
+  });
+
 });

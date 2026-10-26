@@ -69,6 +69,8 @@ export interface SellerOrderRow {
   bostaConnected: boolean;
   /** That store sends orders to Bosta when the seller confirms them (BS-09). */
   bostaAutoShip: boolean;
+  /** The seller says that store's Bosta key has Full access, so a shipment can be cancelled before pickup (BS-12). */
+  bostaCanCancel: boolean;
   /** The order's Bosta shipment, once one was attempted. */
   bosta: SellerOrderBosta | null;
   flow: SellerOrderFlow;

@@ -6,6 +6,7 @@ import { ImageIcon, MapPin, Phone } from "lucide-react";
 import { cn } from "@workspace/ui/lib/utils";
 import { getPublicUrl } from "@/lib/utils";
 import { formatDateTime, formatMoney } from "@/lib/i18n/format";
+import { BostaChip, canShipWithBosta, ShipWithBostaButton } from "./bosta-ship.client";
 import { OrderActions } from "./order-actions.client";
 import { OrderStageBadge } from "./order-stage-badge";
 import type { SellerOrderRow } from "./orders.types";
@@ -51,7 +52,10 @@ export function OrderCard({ order, onOpen }: { order: SellerOrderRow; onOpen: ()
               {order.storeName ?? t("channel.marketplace")}
             </p>
           </div>
-          <OrderStageBadge stage={order.flow.stage} className="shrink-0" />
+          <div className="flex shrink-0 flex-col items-end gap-1">
+            <OrderStageBadge stage={order.flow.stage} />
+            <BostaChip order={order} />
+          </div>
         </div>
 
         <div className="space-y-1 text-sm">
@@ -120,9 +124,10 @@ export function OrderCard({ order, onOpen }: { order: SellerOrderRow; onOpen: ()
         </div>
       </div>
 
-      {order.flow.primary && (
-        <div className="relative z-10 border-t p-3">
-          <OrderActions order={order} compact className="[&>button:first-child]:flex-1" />
+      {(order.flow.primary || canShipWithBosta(order)) && (
+        <div className="relative z-10 flex flex-wrap gap-1.5 border-t p-3">
+          <OrderActions order={order} compact className="flex-1 [&>button:first-child]:flex-1" />
+          <ShipWithBostaButton order={order} className="flex-1" />
         </div>
       )}
     </article>

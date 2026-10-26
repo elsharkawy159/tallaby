@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
 import type { ColumnDef } from "@tanstack/react-table";
-import { ChevronLeft, ChevronRight, LayoutGrid, List, PackageSearch, Search, Store } from "lucide-react";
+import { ChevronLeft, ChevronRight, CircleAlert, LayoutGrid, List, PackageSearch, Search, Store } from "lucide-react";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import {
@@ -19,6 +19,8 @@ import { cn, getPublicUrl } from "@/lib/utils";
 import { formatDateTime, formatMoney, formatNumber } from "@/lib/i18n/format";
 import { useTableSectionLabels } from "@/lib/i18n/table-labels";
 import { pageList } from "../products/_components/products-view.lib";
+import { BostaBulkBar } from "./bosta-bulk.client";
+import { BostaChip, ShipWithBostaButton } from "./bosta-ship.client";
 import { OrderActions } from "./order-actions.client";
 import { OrderCard } from "./order-card.client";
 import { OrderDetailsDialog } from "./order-details-dialog.client";
@@ -144,13 +146,23 @@ function OrdersTable({ orders, onOpen }: { orders: SellerOrderRow[]; onOpen: (id
         header: tTable("status"),
         size: 140,
         accessorFn: (row) => row.flow.stage,
-        cell: ({ row }) => <OrderStageBadge stage={row.original.flow.stage} />,
+        cell: ({ row }) => (
+          <div className="flex flex-col items-start gap-1">
+            <OrderStageBadge stage={row.original.flow.stage} />
+            <BostaChip order={row.original} />
+          </div>
+        ),
       },
       {
         id: "next",
         header: tTable("next"),
         size: 210,
-        cell: ({ row }) => <OrderActions order={row.original} compact />,
+        cell: ({ row }) => (
+          <div className="flex flex-wrap items-center gap-1.5">
+            <OrderActions order={row.original} compact />
+            <ShipWithBostaButton order={row.original} />
+          </div>
+        ),
       },
     ],
     [t, tTable, tPayment, locale, onOpen],
@@ -185,6 +197,7 @@ export function VendorOrdersTable({
   const [tab, setTab] = useState<OrdersTab>(() => initialTab(rows));
   const [channel, setChannel] = useState<OrdersChannel>("all");
   const [query, setQuery] = useState("");
+  const [bostaAttention, setBostaAttention] = useState(false);
   const [page, setPage] = useState(1);
   const [openOrderId, setOpenOrderId] = useState<string | null>(initialOrderId);
 
@@ -203,10 +216,15 @@ export function VendorOrdersTable({
     } catch {}
   };
 
+  const attentionCount = useMemo(() => rows.filter((r) => r.bosta?.needsAttention).length, [rows]);
   const scoped = useMemo(
-    () => rows.filter((r) => matchesChannel(r, channel) && matchesQuery(r, query)),
-    [rows, channel, query],
+    () =>
+      rows.filter(
+        (r) => matchesChannel(r, channel) && matchesQuery(r, query) && (!bostaAttention || Boolean(r.bosta?.needsAttention)),
+      ),
+    [rows, channel, query, bostaAttention],
   );
+  const bostaStore = channel !== "all" && channel !== "marketplace" && rows.some((r) => r.storeId === channel && r.bostaConnected);
   const counts = useMemo(() => countByTab(scoped), [scoped]);
   const visible = useMemo(() => scoped.filter((r) => matchesTab(r, tab)), [scoped, tab]);
 
@@ -307,6 +325,23 @@ export function VendorOrdersTable({
             </SelectContent>
           </Select>
         )}
+        {(attentionCount > 0 || bostaAttention) && (
+          <button
+            type="button"
+            aria-pressed={bostaAttention}
+            onClick={() => {
+              setBostaAttention((on) => !on);
+              setPage(1);
+            }}
+            className={cn(
+              "inline-flex h-10 items-center gap-1.5 rounded-[10px] border bg-card px-3 text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground",
+              bostaAttention && "border-destructive/40 bg-destructive/10 text-destructive hover:text-destructive",
+            )}
+          >
+            <CircleAlert className="size-4" aria-hidden="true" />
+            {t("bosta.attentionFilter", { count: attentionCount })}
+          </button>
+        )}
         <div
           className="ms-auto inline-flex gap-0.5 rounded-[11px] border bg-card p-[3px]"
           role="group"
@@ -335,6 +370,8 @@ export function VendorOrdersTable({
           ))}
         </div>
       </div>
+
+      {bostaStore && <BostaBulkBar storeId={channel} orders={visible} />}
 
       {visible.length === 0 ? (
         <div className="flex flex-col items-center gap-1.5 rounded-2xl border border-dashed border-input bg-card px-5 py-14 text-center text-[13px] text-muted-foreground">

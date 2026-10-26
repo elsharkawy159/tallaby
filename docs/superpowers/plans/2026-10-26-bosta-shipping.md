@@ -398,3 +398,21 @@ All new strings go in `apps/dashboard/messages/ar.json` + `en.json` (namespace `
 - **2026-10-26: BS-11 done.** `apps/dashboard/app/api/cron/bosta-sync/route.ts` (behind `CRON_SECRET`, like the other crons) runs `syncBostaShipments` (Bosta shipments that aren't final and weren't synced for 2 h; a rejected key stops that store's batch and marks the integration `error`; an unchanged state only touches `last_synced_at`) and then `runBostaRetrySweep`.
   - **Where the code differs from the plan (owner can change it):** `vercel.json` schedules it **daily (04:15 UTC), not every 30 min**. Every existing cron in the repo is daily, which suggests a Vercel Hobby plan, where a more frequent cron fails the deploy. Webhooks are the main path; on Pro, set `"*/30 * * * *"`. The route is safe to call at any rate.
   - The dropped-webhook case is covered by the BS-10 integration test ("the sync cron catches a dropped webhook").
+- **2026-10-26: BS-12 done (UI; manual E2E with a real key still to do).**
+  - **`packages/lib/src/shipping/bosta-orders.server.ts`** (`@workspace/lib/shipping/bosta-orders`), each scoped to that store's orders and that seller's Bosta shipments:
+    - `listBostaTimeline`.
+    - `cancelBostaShipment`: needs the seller's Full access setting and states 10/11/20; calls `terminate`, then `applyBostaState(49)`, so the shipment goes back to `pending` and the order stays open.
+    - `getBostaLabels`: up to 50, one PDF.
+  - **Dashboard:**
+    - `/api/bosta/labels?storeId&orders&type&lang` returns the PDF inline, after `requireStore` and a UUID check.
+    - Order panel Bosta card: Print label A6/A4, a History timeline, and Cancel shipment (Full access, before pickup; otherwise "use your Bosta dashboard").
+    - `BostaChip` on order cards and in the table status column: Bosta · state / needs you / not sent.
+    - A "Bosta: needs attention (n)" filter, shown only when such orders exist.
+    - Ship with Bosta on cards and table rows.
+    - **Bulk bar** when the channel filter is a Bosta store: "Ship N with Bosta" (one order at a time, each with its own claim; address problems stay for the seller) and "Print N labels" (to-ship orders with a tracking number, up to 50).
+  - Seller notifications (BS-08/BS-10) cover "shipment failed" and "Bosta needs your attention".
+  - **Where the code differs from the plan:** bulk actions follow the store channel filter, not row checkboxes, because the orders table has no selection model and labels go per Bosta account. A "delivered by Bosta" notification wasn't added: the existing delivered email and status already cover it.
+  - Tests: 2 more integration tests:
+    - Cancel: refused without Full access, refused for another seller and after pickup; otherwise it terminates and gives the order back.
+    - Labels and timeline: only this store's own shipments; another seller or another store of the same seller is refused.
+    - 9/9 on staging, cleanup verified. Dashboard 227 tests, typecheck clean.

@@ -1936,7 +1936,31 @@
         "exception": "Bosta reported a delivery problem.",
         "attention": "Bosta needs you to look at this shipment. Check it in your Bosta dashboard."
       },
-      "autoSending": "Sending order #{number} to Bosta…"
+      "autoSending": "Sending order #{number} to Bosta…",
+      "chipPrefix": "Bosta",
+      "chipAttention": "needs you",
+      "chipNotSent": "not sent",
+      "printA6": "Print label",
+      "printA4": "A4",
+      "history": "History",
+      "historyEmpty": "No updates from Bosta yet.",
+      "cancel": "Cancel shipment",
+      "cancelInBosta": "To cancel, use your Bosta dashboard.",
+      "cancelTitle": "Cancel the Bosta shipment for order #{number}?",
+      "cancelDescription": "Bosta stops this shipment. The order stays open, so you can cancel it, ship it again, or deliver it yourself.",
+      "cancelled": "Bosta shipment for order #{number} cancelled.",
+      "attentionFilter": "Bosta: needs attention ({count})",
+      "bulk": {
+        "title": "Bosta",
+        "ship": "Ship {count, plural, one {# order} other {# orders}} with Bosta",
+        "print": "Print {count, plural, one {# label} other {# labels}}",
+        "progress": "Sending {done} of {total}…",
+        "confirmTitle": "Send {count, plural, one {# order} other {# orders}} to Bosta?",
+        "confirmDescription": "Each order is sent with its matched area and your usual package size. Orders whose address needs a pick stay here for you to fix.",
+        "back": "Back",
+        "done": "{shipped, plural, one {# order} other {# orders}} sent to Bosta.",
+        "partial": "{shipped} sent to Bosta, {failed} need your attention."
+      }
     }
   },
   "shipping": {
