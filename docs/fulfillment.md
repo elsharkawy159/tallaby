@@ -88,7 +88,23 @@ lets a seller, with or without rows, request services. It calls
   Fulfillment billing must stay separate from the platform fee.
 - A `warehouses` table (one warehouse today, via `EGYPT_POST_WAREHOUSE_NAME`).
 
-## 6. Planned changes (seller SaaS, see `/PLAN.md`)
+## 6. Seller carriers: Bosta (2026-10-26)
+
+- A store may link the seller's **own** Bosta account (`store_integrations`
+  provider `bosta`). This is still **own delivery**: the seller's carrier
+  delivers and collects, so it doesn't touch `seller_fulfillment_services`
+  and never needs an admin activation.
+- Bosta shipments are `shipments` rows with `carrier = 'bosta'`,
+  `external_id` and `store_integration_id`. Bosta's updates (webhook + sync)
+  move them through `applySellerShipmentStatus`
+  (`packages/lib/src/shipping/apply-seller-shipment.server.ts`), the same
+  primitive as the seller's own riders, so "delivered" means the same thing.
+- A Bosta COD order is seller-collected (`resolveCollectionParty`): delivered
+  posts only the platform fee to the store wallet.
+- Only storefront orders of that store; marketplace orders are unchanged.
+  Details: `docs/superpowers/plans/2026-10-26-bosta-shipping.md`.
+
+## 7. Planned changes (seller SaaS, see `/PLAN.md`)
 
 - Seller signup will **stop collecting fulfillment choices** (`PLAN.md` §6). New
   sellers get no fulfillment rows; `resolveEffectiveFulfillment` already falls

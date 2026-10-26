@@ -74,6 +74,12 @@ providers/
 └── index.ts        getProviderAdapter(code), falls back to manual
 ```
 
+> **Not the seller's Bosta.** Sellers link their **own** Bosta account per
+> store in the dashboard (Store › Apps › Bosta, 2026-10-26); that code is in
+> `packages/lib/src/shipping/bosta*` and never goes through this app. The
+> adapter below is for shipments Tallaby itself sends with **Tallaby's**
+> Bosta account.
+
 To wire up Bosta, implement `providers/bosta.ts`. Nothing else changes —
 `assignProvider` already calls through `getProviderAdapter(code).createShipment()`
 and stores whatever tracking number and label come back.

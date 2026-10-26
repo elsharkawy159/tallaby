@@ -416,3 +416,12 @@ All new strings go in `apps/dashboard/messages/ar.json` + `en.json` (namespace `
     - Cancel: refused without Full access, refused for another seller and after pickup; otherwise it terminates and gives the order back.
     - Labels and timeline: only this store's own shipments; another seller or another store of the same seller is refused.
     - 9/9 on staging, cleanup verified. Dashboard 227 tests, typecheck clean.
+- **2026-10-26: BS-13 done.**
+  - `PLAN.md`: a §8.7 paragraph, a §9.2 Bosta row, a §22 BS-01…BS-14 checklist and a §23 log entry.
+  - `docs/fulfillment.md` §6: a seller carrier is still own delivery and needs no fulfillment row or admin activation.
+  - `apps/shipping/README.md`: the seller's Bosta is separate from Tallaby's provider adapter.
+  - `turbo.json`: `BOSTA_WEBHOOK_BASE_URL`.
+  - **Left for deploy (BS-14):**
+    - Set `INTEGRATIONS_ENCRYPTION_KEY` on the backend (same value as the dashboard). Without it the webhook answers 401 and the daily sync still updates shipments.
+    - Make sure the dashboard has an https `BACKEND_API_URL` (or `BOSTA_WEBHOOK_BASE_URL`), or Bosta gets no webhook URL.
+    - Manual E2E with a real Bosta key, cancelling the test shipment right away (owner decision 5).
