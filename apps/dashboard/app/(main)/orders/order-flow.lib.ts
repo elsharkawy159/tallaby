@@ -65,7 +65,12 @@ export interface SellerOrderFlowInput {
   allLinesOwned: boolean;
   /** At least one of this seller's lines is seller-fulfilled. */
   sellerFulfilled: boolean;
-  shipment: { status: string; ownedBySeller: boolean } | null;
+  shipment: {
+    status: string;
+    ownedBySeller: boolean;
+    /** A carrier delivery (Bosta) exists: the carrier moves the shipment, not the seller. */
+    carrierManaged?: boolean;
+  } | null;
   /** The customer already paid some of it from their Tallaby wallet. */
   walletPaid: boolean;
 }
@@ -79,6 +84,8 @@ export interface SellerOrderFlow {
   readOnly: ReadOnlyReason | null;
   /** Paid in advance, so it can't be cancelled here (refunds go through Tallaby). */
   prepaid: boolean;
+  /** The shipment is with a carrier (Bosta), whose updates move it; no manual moves. */
+  carrierManaged: boolean;
 }
 
 export function isPaymentSettled(paymentStatus: string | null | undefined): boolean {
@@ -136,7 +143,11 @@ export function resolveSellerOrderFlow(input: SellerOrderFlowInput): SellerOrder
   const prepaid = isPaymentSettled(input.paymentStatus) || input.walletPaid;
   const readOnly = readOnlyReason(input);
 
-  if (readOnly) return { stage, primary: null, actions: [], readOnly, prepaid };
+  const carrierManaged = Boolean(input.shipment?.carrierManaged);
+
+  if (readOnly) return { stage, primary: null, actions: [], readOnly, prepaid, carrierManaged };
+  // Bosta updates the status itself; cancelling goes through Bosta (order panel).
+  if (carrierManaged) return { stage, primary: null, actions: [], readOnly: null, prepaid, carrierManaged };
 
   const cancel: SellerOrderAction[] = prepaid ? [] : ["cancel"];
   let actions: SellerOrderAction[] = [];
@@ -155,7 +166,7 @@ export function resolveSellerOrderFlow(input: SellerOrderFlowInput): SellerOrder
       break;
   }
 
-  return { stage, primary: actions[0] ?? null, actions, readOnly: null, prepaid };
+  return { stage, primary: actions[0] ?? null, actions, readOnly: null, prepaid, carrierManaged };
 }
 
 /** Shipment status each shipment move lands on. */

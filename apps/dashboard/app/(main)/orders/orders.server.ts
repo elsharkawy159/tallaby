@@ -61,7 +61,7 @@ async function loadOrder(orderId: string, sellerId: string) {
     ),
     columns: { id: true, status: true, paymentStatus: true, isDigitalOnly: true },
     with: {
-      shipments: { columns: { id: true, status: true, sellerId: true } },
+      shipments: { columns: { id: true, status: true, sellerId: true, externalId: true } },
       orderItems: {
         columns: {
           id: true,
@@ -99,7 +99,9 @@ async function loadOrder(orderId: string, sellerId: string) {
     sellerFulfilled: order.orderItems.some(
       (i) => i.sellerId === sellerId && isSellerHandledLine(i.fulfillmentType),
     ),
-    shipment: shipment ? { status: shipment.status, ownedBySeller: shipment.sellerId === sellerId } : null,
+    shipment: shipment
+      ? { status: shipment.status, ownedBySeller: shipment.sellerId === sellerId, carrierManaged: Boolean(shipment.externalId) }
+      : null,
     walletPaid: Boolean(walletDebit),
   });
 

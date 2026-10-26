@@ -410,3 +410,21 @@ export async function testStoreBosta(
     ? { success: true, data: overview.summary }
     : { success: false, error: "failed", message: overview.summary.lastError ?? undefined };
 }
+
+/** The seller's stores whose Bosta is set up (key saved and a pickup location chosen), for the orders page. */
+export async function listSellerBostaStoreIds(sellerId: string, q: Queryable = db): Promise<Set<string>> {
+  if (!UUID_RE.test(sellerId)) return new Set();
+  const rows = await q
+    .select({ storeId: storeIntegrations.storeId })
+    .from(storeIntegrations)
+    .where(
+      and(
+        eq(storeIntegrations.sellerId, sellerId),
+        eq(storeIntegrations.provider, PROVIDER),
+        sql`${storeIntegrations.status} <> 'disconnected'`,
+        sql`${storeIntegrations.credentialsEncrypted} IS NOT NULL`,
+        sql`coalesce(${storeIntegrations.config}->>'pickupLocationId', '') <> ''`,
+      ),
+    );
+  return new Set(rows.map((row) => row.storeId));
+}

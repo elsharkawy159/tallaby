@@ -25,6 +25,19 @@ export interface SellerOrderAddress {
   longitude: number | null;
 }
 
+export interface SellerOrderBosta {
+  /** null until Bosta accepted the delivery. */
+  trackingNumber: string | null;
+  stateCode: number | null;
+  state: string | null;
+  /** A create call is in flight. */
+  creating: boolean;
+  needsAttention: boolean;
+  /** "<reason>: <Bosta message>" from the last failed attempt or exception. */
+  lastError: string | null;
+  lastSyncedAt: string | null;
+}
+
 /** One order on /orders, with only this seller's lines. */
 export interface SellerOrderRow {
   /** orders.id */
@@ -52,6 +65,10 @@ export interface SellerOrderRow {
   itemCount: number;
   failureReason: string | null;
   riderName: string | null;
+  /** The order was placed on a store with Bosta connected, so "Ship with Bosta" applies (BS-08). */
+  bostaConnected: boolean;
+  /** The order's Bosta shipment, once one was attempted. */
+  bosta: SellerOrderBosta | null;
   flow: SellerOrderFlow;
   shippedAt: string | null;
   deliveredAt: string | null;

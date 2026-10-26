@@ -341,3 +341,27 @@ All new strings go in `apps/dashboard/messages/ar.json` + `en.json` (namespace `
   - Connected: logo, status, pickup location, **Bosta settings**, and the Manually (default) / Automatically-on-confirm choice. It saves `config.autoShip` right away through `updateBostaSettings` with the page's explicit `storeId`, and rolls back on error.
   - **Where the code differs from the plan:** Disconnect lives only on the Bosta settings page, to keep one place for it.
   - Strings: `storeShipping.partner.*` (en, ar). Typecheck clean.
+- **2026-10-26: BS-08 done.**
+  - **`packages/lib/src/shipping/bosta-ship.server.ts`** (`@workspace/lib/shipping/bosta-ship`):
+    - `shipOrderWithBosta(storeId, orderId, { trigger, sellerId?, overrides? })` loads the order **only when it was placed on that store and every line is the store owner's**.
+    - Order: blocker check, claim, resolve address, build the payload, call Bosta, record the result.
+    - **Claim:** an `INSERT … ON CONFLICT (order_id) DO UPDATE … WHERE external_id IS NULL AND status = 'pending' AND carrier IN ('seller','bosta') AND rider_id IS NULL AND not already 'creating'`. A claim older than 2 min counts as crashed.
+    - **Success:** links `external_id`/`tracking_number`, inserts the first `shipment_carrier_events` row, then `applySellerShipmentStatus(pending → assigned)`, so items become `shipping_soon`.
+    - **Failure:** sets `needs_attention` and `last_error = "<reason>: <Bosta message>"`, sends a `carrier_shipment_failed` seller notification, and leaves the order as it was.
+    - **Duplicate reference:** looks the delivery up and links it.
+    - **Key errors:** recorded on the integration.
+    - `previewBostaShipment` returns the matched district (or the picker for the match's city or the candidate cities), the COD, items, size and the last error.
+    - `listBostaRetryCandidates` is for the BS-09 sweep. It skips address and data errors, which need the seller.
+  - **`bosta/bosta-ship.lib.ts`** (pure):
+    - `bostaCollection`: settled orders send COD 0; `cash_on_delivery`/`cash` collect the full total; any other unpaid method gets `awaiting_payment`. A wallet part-payment always pairs with an online remainder, never cash.
+    - `bostaShipBlocker`.
+    - `bostaWebhookUrl`: `BOSTA_WEBHOOK_BASE_URL` or `BACKEND_API_URL` + `/api/webhooks/bosta/<integrationId>`, https only, so local dev sends none.
+  - **Dashboard:**
+    - Order flow: `carrierManaged` (the shipment has an `external_id`) means no manual moves. `updateSellerOrder` enforces the same.
+    - Order rows carry `bostaConnected` and `bosta`, from `listSellerBostaStoreIds`.
+    - `orders/bosta-ship.server.ts` holds the preview and ship actions, each taking the order's `storeId` and checked with `requireStore`.
+    - `orders/bosta-ship.client.tsx`: the **Ship with Bosta** button opens a dialog with receiver, address, matched area (or a searchable district picker), COD, items, size and pickup location, plus a Bosta card (state, tracking number with copy, Track on Bosta, the attention reason).
+    - Notifications: `carrier_shipment_failed` / `carrier_needs_attention` added to the seller types, linking to the order.
+    - Strings: `orders.bosta.*` (every error reason and Bosta state) and `orders.notes.carrierManaged`, in en and ar.
+  - **Where the code differs from the plan:** the seller's district pick is per order and not yet saved as a store alias (phase 2).
+  - **Tests:** `bosta-ship.lib.test.ts` (7) and `bosta-ship.integration.test.ts` (6, staging + fake Bosta). They cover one delivery per order, a double click while in flight making a single request, COD 0 for prepaid orders, unpaid online orders waiting, an unmatched address giving needs_attention plus a notification and then shipping after a district pick, a lost response re-linked, and other seller / other store / marketplace orders refused. Dashboard 227 tests, flow tests for `carrierManaged`. Typecheck clean.

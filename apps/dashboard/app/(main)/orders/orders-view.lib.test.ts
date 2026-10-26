@@ -7,7 +7,7 @@ const order = (stage: SellerOrderStage, patch: Partial<{ storeId: string | null;
   customerName: "Mona Adel",
   customerPhone: "+20 100 123 4567",
   storeId: "store-1",
-  flow: { stage, primary: null, actions: [], readOnly: null, prepaid: false } as SellerOrderFlow,
+  flow: { stage, primary: null, actions: [], readOnly: null, prepaid: false, carrierManaged: false } as SellerOrderFlow,
   ...patch,
 });
 

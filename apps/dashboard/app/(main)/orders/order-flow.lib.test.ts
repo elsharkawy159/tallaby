@@ -84,6 +84,26 @@ describe("resolveSellerOrderFlow", () => {
   });
 });
 
+describe("carrier-managed shipments", () => {
+  it("a Bosta delivery offers no manual moves, at any stage", () => {
+    const bosta = (status: string) => ({ status, ownedBySeller: true, carrierManaged: true });
+    expect(flow({ orderStatus: "shipping_soon", shipment: bosta("assigned") })).toMatchObject({
+      stage: "to_ship",
+      primary: null,
+      actions: [],
+      carrierManaged: true,
+    });
+    expect(flow({ orderStatus: "out_for_delivery", shipment: bosta("out_for_delivery") }).actions).toEqual([]);
+  });
+
+  it("a seller shipment keeps its moves", () => {
+    expect(flow({ orderStatus: "shipped", shipment: { status: "assigned", ownedBySeller: true } })).toMatchObject({
+      actions: ["ship", "cancel"],
+      carrierManaged: false,
+    });
+  });
+});
+
 describe("isSellerHandledLine", () => {
   it("every line is the seller's while Tallaby services are off", () => {
     expect(isSellerHandledLine("platform_fulfilled", false)).toBe(true);

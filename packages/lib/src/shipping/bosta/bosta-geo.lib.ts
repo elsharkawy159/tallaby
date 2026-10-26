@@ -273,3 +273,8 @@ export function bostaDistrictOptions(cityIds: string[], locale: string): BostaDi
   }
   return options;
 }
+
+/** The Bosta city a district belongs to, so the picker can offer its siblings. */
+export function bostaCityIdOfDistrict(districtId: string): string | null {
+  return ENTRY_BY_DISTRICT_ID.get(districtId)?.city[0] ?? null;
+}

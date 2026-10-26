@@ -16,6 +16,7 @@ import { MapsLinkButton } from "@workspace/ui/components/maps-link-button";
 import { getPublicUrl, cn } from "@/lib/utils";
 import { formatDateTime, formatMoney } from "@/lib/i18n/format";
 import { humanizeStatus, translateStatus } from "@/lib/i18n/status";
+import { BostaDeliveryCard, canShipWithBosta, ShipWithBostaButton } from "./bosta-ship.client";
 import { PROGRESS_STEPS, progressIndex } from "./order-flow.lib";
 import { OrderActions } from "./order-actions.client";
 import { OrderStageBadge } from "./order-stage-badge";
@@ -116,7 +117,9 @@ function FlowNote({ order }: { order: SellerOrderRow }) {
   const { flow } = order;
   const note = flow.readOnly
     ? t(`readOnly.${flow.readOnly}`)
-    : flow.stage === "awaiting_payment"
+    : flow.carrierManaged
+      ? t("carrierManaged")
+      : flow.stage === "awaiting_payment"
       ? t("awaitingPayment")
       : flow.prepaid && (flow.stage === "new" || flow.stage === "to_ship")
         ? t("prepaid")
@@ -168,10 +171,13 @@ export function OrderDetailsDialog({
                   {t("lastAttempt", { reason: order.failureReason })}
                 </p>
               )}
-              {order.flow.primary && (
+              {(order.flow.primary || canShipWithBosta(order)) && (
                 <div className="flex flex-col gap-2 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
-                  <OrderActions order={order} className="flex-wrap" />
-                  {order.flow.stage === "to_ship" && (
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <OrderActions order={order} className="flex-wrap" />
+                    <ShipWithBostaButton order={order} className="flex-1 sm:flex-none" />
+                  </div>
+                  {order.flow.stage === "to_ship" && !order.bostaConnected && (
                     <Link
                       href="/orders/delivery"
                       className="text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
@@ -184,6 +190,7 @@ export function OrderDetailsDialog({
                 </div>
               )}
               <FlowNote order={order} />
+              <BostaDeliveryCard order={order} />
             </div>
 
             <div className="grid gap-6 md:grid-cols-5">

@@ -1776,7 +1776,8 @@
         "digital": "Digital order. There's nothing to ship."
       },
       "awaitingPayment": "Waiting for the customer's online payment.",
-      "prepaid": "Paid in advance. To cancel it, contact Tallaby support."
+      "prepaid": "Paid in advance. To cancel it, contact Tallaby support.",
+      "carrierManaged": "Bosta updates this order's status by itself. To cancel it, cancel the shipment with Bosta."
     },
     "errors": {
       "notFound": "This order isn't available.",
@@ -1841,7 +1842,98 @@
       "marketplace": "Tallaby marketplace"
     },
     "searchPlaceholder": "Search by order number, name or phone",
-    "searchLabel": "Search orders"
+    "searchLabel": "Search orders",
+    "bosta": {
+      "ship": "Ship with Bosta",
+      "retry": "Retry Bosta",
+      "dialogTitle": "Ship order #{number} with Bosta",
+      "dialogDescription": "Check what Bosta will get. Bosta picks it up from your pickup location.",
+      "lastAttempt": "Last attempt failed:",
+      "bostaArea": "Bosta delivery area",
+      "matched": "Matched: {area}",
+      "change": "Change",
+      "unmatched": {
+        "unknown_region": "We couldn't tell the governorate. Choose the area below.",
+        "no_coverage": "Bosta may not deliver to this area. Choose the closest area Bosta covers, or deliver it yourself.",
+        "district_needed": "Choose the Bosta area for this address."
+      },
+      "searchArea": "Search areas",
+      "noArea": "No area matches",
+      "cod": "Bosta collects",
+      "prepaid": "Nothing (paid online)",
+      "items": "Items",
+      "size": "Package size",
+      "sizes": {
+        "SMALL": "Small",
+        "MEDIUM": "Medium",
+        "LARGE": "Large"
+      },
+      "pickupFrom": "Bosta picks it up from {name}.",
+      "back": "Back",
+      "send": "Send to Bosta",
+      "sending": "Sending…",
+      "shipped": "Order #{number} sent to Bosta. Tracking number {tracking}.",
+      "cardTitle": "Bosta shipment",
+      "creating": "Creating the Bosta shipment…",
+      "tracking": "Tracking no.",
+      "copy": "Copy tracking number",
+      "track": "Track on Bosta",
+      "states": {
+        "10": "Created",
+        "11": "Waiting for pickup",
+        "20": "Pickup scheduled",
+        "21": "Picked up",
+        "24": "At Bosta's warehouse",
+        "30": "Moving between hubs",
+        "41": "Out for delivery",
+        "45": "Delivered",
+        "46": "Returned to you",
+        "47": "Delivery problem",
+        "48": "Terminated",
+        "49": "Cancelled",
+        "60": "Returned to stock",
+        "100": "Lost",
+        "101": "Damaged",
+        "102": "Under investigation",
+        "103": "Waiting for your action",
+        "104": "Archived",
+        "105": "On hold",
+        "unknown": "Updating…"
+      },
+      "errors": {
+        "not_connected": "Bosta isn't connected for this store. Connect it from Store › Apps › Bosta.",
+        "not_found": "Order not found.",
+        "not_shippable": "This order can't be shipped anymore.",
+        "awaiting_payment": "This order isn't paid yet. It can go to Bosta once the payment lands.",
+        "already_shipped": "This order already has a shipment.",
+        "other_carrier": "This order is already with another delivery method.",
+        "in_progress": "The Bosta shipment is being created. Wait a moment and refresh.",
+        "unknown_region": "We couldn't match the address to a Bosta area. Choose one and try again.",
+        "no_coverage": "Bosta doesn't deliver to this area.",
+        "district_needed": "Choose the Bosta area for this address.",
+        "name_required": "The address has no customer name.",
+        "invalid_phone": "The customer's phone isn't a valid Egyptian mobile number. Fix it with the customer, then try again.",
+        "address_required": "The address is missing. Bosta needs a street address.",
+        "no_items": "The order has no items to ship.",
+        "cod_too_high": "Bosta collects at most EGP 30,000 in cash per shipment.",
+        "images_required": "Bosta needs product photos to let customers open the package. Add photos or turn that option off.",
+        "invalid_key": "Bosta stopped accepting your key. Replace it in Store › Apps › Bosta.",
+        "forbidden": "Your Bosta key isn't allowed to do this. Check its permission in Bosta.",
+        "no_pickup_location": "Your Bosta account has no pickup location. Add one in Bosta.",
+        "city_not_found": "Bosta didn't recognise the city. Choose the area and try again.",
+        "zone_not_found": "Bosta didn't recognise the area. Choose another one and try again.",
+        "district_not_found": "Bosta didn't recognise the district. Choose another one and try again.",
+        "invalid_images": "Bosta rejected the product photos.",
+        "duplicate": "Bosta already has a shipment for this order.",
+        "timeout": "Bosta took too long to answer. Try again.",
+        "network": "Couldn't reach Bosta. Try again.",
+        "server": "Bosta had a problem. Try again in a moment.",
+        "rate_limited": "Too many shipments at once. Wait a minute.",
+        "read_only": "This store is archived.",
+        "generic": "Something went wrong. Try again.",
+        "unknown": "Bosta refused the shipment."
+      }
+    }
   },
   "shipping": {
     "title": "Shipping & Logistics",
@@ -4216,6 +4308,14 @@
       "review_received": {
         "title": "New review",
         "body": "A customer left a {rating}-star review."
+      },
+      "carrier_shipment_failed": {
+        "title": "Bosta shipment not created",
+        "body": "Order #{orderNumber} couldn't be sent to Bosta. Open it to fix it and try again."
+      },
+      "carrier_needs_attention": {
+        "title": "Bosta needs your attention",
+        "body": "Bosta flagged order #{orderNumber}. Open it to see why."
       }
     }
   },

@@ -7,3 +7,4 @@ export * from "./bosta.types";
 export * from "./bosta-states.lib";
 export * from "./bosta-errors.lib";
 export * from "./bosta-payload.lib";
+export * from "./bosta-ship.lib";

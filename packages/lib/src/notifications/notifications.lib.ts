@@ -18,6 +18,9 @@ export const SELLER_NOTIFICATION_TYPES = [
   "top_up_rejected",
   "question_received",
   "review_received",
+  // Bosta (0106, BS-08/BS-12)
+  "carrier_shipment_failed",
+  "carrier_needs_attention",
 ] as const;
 export type SellerNotificationType = (typeof SELLER_NOTIFICATION_TYPES)[number];
 
@@ -84,7 +87,9 @@ export function adminNotificationHref(n: Pick<NotificationItem, "type" | "seller
 /** Where a seller notification leads inside the seller dashboard, or null. */
 export function sellerNotificationHref(n: Pick<NotificationItem, "type" | "data">): string | null {
   switch (n.type) {
-    case "order_created": {
+    case "order_created":
+    case "carrier_shipment_failed":
+    case "carrier_needs_attention": {
       const orderId = dataString(n.data, "orderId");
       return orderId ? `/orders?order=${encodeURIComponent(orderId)}` : "/orders";
     }

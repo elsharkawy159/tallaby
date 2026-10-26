@@ -38,6 +38,8 @@ const toNumber = (value: string | number | null | undefined) => {
 export async function loadSellerOrders(
   sellerId: string,
   stores: { id: string; name: string; subdomain: string }[],
+  /** Stores of this seller with Bosta connected (BS-08). */
+  bostaStoreIds: ReadonlySet<string> = new Set(),
 ): Promise<SellerOrderRow[]> {
   const list = await db.query.orders.findMany({
     where: inArray(
@@ -70,7 +72,21 @@ export async function loadSellerOrders(
       user: { columns: { email: true, fullName: true, phone: true, isGuest: true } },
       userAddress_shippingAddressId: true,
       shipments: {
-        columns: { id: true, status: true, sellerId: true, riderId: true, failureReason: true },
+        columns: {
+          id: true,
+          status: true,
+          sellerId: true,
+          riderId: true,
+          failureReason: true,
+          carrier: true,
+          externalId: true,
+          trackingNumber: true,
+          externalStateCode: true,
+          externalState: true,
+          needsAttention: true,
+          lastError: true,
+          lastSyncedAt: true,
+        },
       },
       // Every line, so a multi-seller order is recognised; only ours are shown.
       orderItems: {
@@ -159,7 +175,9 @@ export async function loadSellerOrders(
       isDigitalOnly: o.isDigitalOnly,
       allLinesOwned: o.orderItems.every((i) => i.sellerId === sellerId),
       sellerFulfilled: mine.some((i) => isSellerHandledLine(i.fulfillmentType)),
-      shipment: shipment ? { status: shipment.status, ownedBySeller: shipment.sellerId === sellerId } : null,
+      shipment: shipment
+        ? { status: shipment.status, ownedBySeller: shipment.sellerId === sellerId, carrierManaged: Boolean(shipment.externalId) }
+        : null,
       walletPaid: walletPaidOrders.has(o.id),
     });
 
@@ -207,6 +225,19 @@ export async function loadSellerOrders(
       itemCount: mine.reduce((n, i) => n + (i.quantity ?? 1), 0),
       failureReason: shipment?.failureReason ?? null,
       riderName: shipment?.riderId ? (riderNames.get(shipment.riderId) ?? null) : null,
+      bostaConnected: Boolean(o.storeId && bostaStoreIds.has(o.storeId)),
+      bosta:
+        shipment?.carrier === "bosta" && shipment.sellerId === sellerId
+          ? {
+              trackingNumber: shipment.trackingNumber,
+              stateCode: shipment.externalStateCode,
+              state: shipment.externalState === "creating" ? null : shipment.externalState,
+              creating: shipment.externalState === "creating" && !shipment.externalId,
+              needsAttention: shipment.needsAttention,
+              lastError: shipment.lastError,
+              lastSyncedAt: shipment.lastSyncedAt,
+            }
+          : null,
       flow,
       shippedAt: o.shippedAt,
       deliveredAt: o.deliveredAt,
