@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowRight, Loader2, MailCheck, UserRound } from "lucide-react";
+import { ArrowRight, Loader2, LogOut, MailCheck, UserRound } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
@@ -14,7 +14,7 @@ import { Button } from "@workspace/ui/components/button";
 import { Form, FormField, FormItem, FormMessage } from "@workspace/ui/components/form";
 
 import { SubdomainField } from "@/components/stores/subdomain-field.client";
-import { resendConfirmation } from "@/actions/auth";
+import { logout, resendConfirmation } from "@/actions/auth";
 import { STORE_INDUSTRIES } from "@/lib/stores/industries.lib";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/supabase/client";
@@ -49,6 +49,7 @@ export function SignupForm({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [isGooglePending, setGooglePending] = useState(false);
+  const [isSigningOut, setSigningOut] = useState(false);
   const [available, setAvailable] = useState(false);
   const [confirmEmail, setConfirmEmail] = useState<string | null>(null);
   const signedIn = signedInEmail !== null;
@@ -195,7 +196,19 @@ export function SignupForm({
       {signedIn ? (
         <div className="flex items-center gap-2.5 rounded-xl bg-muted px-3.5 py-2.5 text-sm text-muted-foreground">
           <UserRound className="size-4 shrink-0" />
-          <span className="min-w-0 truncate">{t("signedInAs", { email: signedInEmail })}</span>
+          <span className="min-w-0 flex-1 truncate">{t("signedInAs", { email: signedInEmail })}</span>
+          <button
+            type="button"
+            className="inline-flex shrink-0 items-center gap-1.5 font-semibold text-primary hover:underline disabled:opacity-50"
+            onClick={() => {
+              setSigningOut(true);
+              void logout();
+            }}
+            disabled={busy || isSigningOut}
+          >
+            {isSigningOut ? <Loader2 className="size-4 animate-spin" /> : <LogOut className="size-4 rtl:rotate-180" />}
+            {t("signOut")}
+          </button>
         </div>
       ) : (
         <>

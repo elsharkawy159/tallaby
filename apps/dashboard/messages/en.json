@@ -2645,6 +2645,7 @@
     "industry": "Store industry",
     "orWithEmail": "or sign up with email",
     "signedInAs": "Signed in as {email}",
+    "signOut": "Sign out",
     "storeAddress": "Store address",
     "storeAddressHint": "Lowercase letters, numbers and dashes. You can change it later.",
     "checking": "Checking…",
