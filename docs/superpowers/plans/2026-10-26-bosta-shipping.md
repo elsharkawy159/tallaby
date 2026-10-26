@@ -395,3 +395,6 @@ All new strings go in `apps/dashboard/messages/ar.json` + `en.json` (namespace `
     - A Bosta cancel before pickup gives the order back, and it can ship again.
     - The sync catches a dropped webhook.
   - An earlier run left rows on staging, because the ledger is append-only. They were deleted (only the test seller tag `daaf8720` and its buyer), and the teardown now deletes the sellers before the orders.
+- **2026-10-26: BS-11 done.** `apps/dashboard/app/api/cron/bosta-sync/route.ts` (behind `CRON_SECRET`, like the other crons) runs `syncBostaShipments` (Bosta shipments that aren't final and weren't synced for 2 h; a rejected key stops that store's batch and marks the integration `error`; an unchanged state only touches `last_synced_at`) and then `runBostaRetrySweep`.
+  - **Where the code differs from the plan (owner can change it):** `vercel.json` schedules it **daily (04:15 UTC), not every 30 min**. Every existing cron in the repo is daily, which suggests a Vercel Hobby plan, where a more frequent cron fails the deploy. Webhooks are the main path; on Pro, set `"*/30 * * * *"`. The route is safe to call at any rate.
+  - The dropped-webhook case is covered by the BS-10 integration test ("the sync cron catches a dropped webhook").

@@ -2,6 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "ignoreCommand": "npx turbo-ignore",
   "crons": [
-    { "path": "/api/cron/google-sheets", "schedule": "30 2 * * *" }
+    { "path": "/api/cron/google-sheets", "schedule": "30 2 * * *" },
+    { "path": "/api/cron/bosta-sync", "schedule": "15 4 * * *" }
   ]
 }
