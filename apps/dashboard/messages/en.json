@@ -2638,8 +2638,12 @@
     }
   },
   "signup": {
-    "title": "Create your store",
-    "subtitle": "Choose your store address and start selling in a minute.",
+    "title": "Create your account",
+    "subtitle": "Sign up first, then set up your store in a minute.",
+    "stepOf": "Step {step} of {total}",
+    "confirmPassword": "Confirm password",
+    "confirmPasswordPlaceholder": "Type the password again",
+    "createAccount": "Create my account",
     "setupTitle": "Set up your store",
     "setupSubtitle": "Three quick details and your store is ready.",
     "industry": "Store industry",
@@ -2685,7 +2689,8 @@
       "generic": "Something went wrong. Please try again.",
       "invalidEmail": "Enter a valid email address.",
       "passwordTooShort": "Use at least 8 characters.",
-      "passwordTooLong": "Use at most 72 characters."
+      "passwordTooLong": "Use at most 72 characters.",
+      "passwordMismatch": "The passwords don't match."
     },
     "confirmSpamHint": "Can't find it? Check your spam or promotions folder.",
     "resend": "Resend email",

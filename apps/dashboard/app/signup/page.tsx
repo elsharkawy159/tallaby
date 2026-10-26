@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { db, eq, sellers } from "@workspace/db";
 import { createClient } from "@/supabase/server";
 import { SignupForm } from "./signup.client";
+import { cleanSubdomainPrefill, readSignupPrefillCookie } from "./signup-intent.server";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("signup");
@@ -13,9 +14,10 @@ export async function generateMetadata(): Promise<Metadata> {
 const KNOWN_ERRORS = new Set(["subdomainTaken", "generic"]);
 
 /**
- * Minimal seller signup (PLAN.md §6.1). Signed-out visitors create an account
- * and a store; signed-in users without a seller row (e.g. customers) only
- * choose their store. Existing sellers go straight to the dashboard.
+ * Two-step seller signup (PLAN.md §6.1). Step 1, signed out: the account
+ * (Google, or email + password). Step 2, signed in without a seller row
+ * (after step 1, or an existing customer): the store (address, industry,
+ * phone). Existing sellers go straight to the dashboard.
  */
 export default async function SignupPage({
   searchParams,
@@ -33,12 +35,18 @@ export default async function SignupPage({
   }
 
   const { error, subdomain } = await searchParams;
+  // Pre-filled from the marketing site's "claim your link" forms, carried over
+  // step 1 by a cookie or the email signup's user_metadata; still checked live and on submit.
+  const prefill =
+    cleanSubdomainPrefill(subdomain) ??
+    (user ? ((await readSignupPrefillCookie()) ?? cleanSubdomainPrefill(user.user_metadata?.signup_subdomain)) : null);
   return (
     <SignupForm
+      // Remounts (fresh form and schema) when step 1 signs the user in.
+      key={user ? "store" : "account"}
       signedInEmail={user ? (user.email ?? "") : null}
       initialError={error && KNOWN_ERRORS.has(error) ? (error as "subdomainTaken" | "generic") : null}
-      // Pre-filled from the marketing site's "claim your link" forms; still checked live and on submit.
-      initialSubdomain={typeof subdomain === "string" ? subdomain.trim().toLowerCase().slice(0, 32) : ""}
+      initialSubdomain={prefill ?? ""}
     />
   );
 }

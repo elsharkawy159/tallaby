@@ -3,7 +3,13 @@
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowRight, Loader2, LogOut, MailCheck, UserRound } from "lucide-react";
+import {
+  ArrowRight,
+  Loader2,
+  LogOut,
+  MailCheck,
+  UserRound,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
@@ -11,7 +17,12 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import { Button } from "@workspace/ui/components/button";
-import { Form, FormField, FormItem, FormMessage } from "@workspace/ui/components/form";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormMessage,
+} from "@workspace/ui/components/form";
 
 import { SubdomainField } from "@/components/stores/subdomain-field.client";
 import { logout, resendConfirmation } from "@/actions/auth";
@@ -20,7 +31,12 @@ import { cn } from "@/lib/utils";
 import { createClient } from "@/supabase/client";
 import { AuthField } from "../login/auth-field.client";
 import { AuthShell, AuthTabs } from "../login/auth-shell.client";
-import { AUTH_INPUT_BOX, AuthHeading, OUTLINE_BUTTON, PRIMARY_BUTTON } from "../login/auth-ui";
+import {
+  AUTH_INPUT_BOX,
+  AuthHeading,
+  OUTLINE_BUTTON,
+  PRIMARY_BUTTON,
+} from "../login/auth-ui";
 import {
   checkSignupSubdomain,
   createStoreForCurrentUser,
@@ -31,14 +47,26 @@ import type { SignupErrorKey, SignupResult } from "./signup.dto";
 
 const EGYPT_MOBILE = /^(?:\+20|0020|0)?1[0125]\d{8}$/;
 
-type FormValues = { subdomain: string; industry: string; phone: string; email: string; password: string };
+type FormValues = {
+  subdomain: string;
+  industry: string;
+  phone: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+};
 
+/**
+ * Two steps on one page. Signed out: step 1, the account (Google, or email +
+ * password + confirmation). Signed in without a store: step 2, the store
+ * (address, industry, phone).
+ */
 export function SignupForm({
   signedInEmail,
   initialError,
   initialSubdomain = "",
 }: {
-  /** Set when a user is already signed in (no seller row yet): the account step is skipped. */
+  /** Set when a user is already signed in (no seller row yet): step 2. */
   signedInEmail: string | null;
   initialError: SignupErrorKey | null;
   initialSubdomain?: string;
@@ -60,60 +88,105 @@ export function SignupForm({
 
   const schema = useMemo(
     () =>
-      z.object({
-        subdomain: z.string().trim().min(3, t("tooShort")).max(32, t("tooLong")),
-        // Asked in the signed-in setup step only (after Google); email signup sets it later in Store settings.
-        industry: signedIn ? z.string().min(1, t("errors.industryRequired")) : z.string(),
-        phone: z
-          .string()
-          .refine((v) => EGYPT_MOBILE.test(v.replace(/[\s-]/g, "")), t("errors.phoneInvalid")),
-        email: signedIn ? z.string() : z.email(t("errors.invalidEmail")),
-        password: signedIn
-          ? z.string()
-          : z.string().min(8, t("errors.passwordTooShort")).max(72, t("errors.passwordTooLong")),
-      }),
+      signedIn
+        ? z.object({
+            subdomain: z
+              .string()
+              .trim()
+              .min(3, t("tooShort"))
+              .max(32, t("tooLong")),
+            industry: z.string().min(1, t("errors.industryRequired")),
+            phone: z
+              .string()
+              .refine(
+                (v) => EGYPT_MOBILE.test(v.replace(/[\s-]/g, "")),
+                t("errors.phoneInvalid"),
+              ),
+            email: z.string(),
+            password: z.string(),
+            confirmPassword: z.string(),
+          })
+        : z
+            .object({
+              subdomain: z.string(),
+              industry: z.string(),
+              phone: z.string(),
+              email: z.email(t("errors.invalidEmail")),
+              password: z
+                .string()
+                .min(8, t("errors.passwordTooShort"))
+                .max(72, t("errors.passwordTooLong")),
+              confirmPassword: z.string(),
+            })
+            .refine((v) => v.password === v.confirmPassword, {
+              path: ["confirmPassword"],
+              message: t("errors.passwordMismatch"),
+            }),
     [signedIn, t],
   );
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { subdomain: initialSubdomain, industry: "", phone: "", email: "", password: "" },
+    defaultValues: {
+      subdomain: initialSubdomain,
+      industry: "",
+      phone: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
   });
 
   const handleResult = (result: SignupResult, email?: string) => {
     if (result.status === "done") {
-      toast.success(t("created", { url: result.storeUrl.replace(/^https?:\/\//, "") }));
+      toast.success(
+        t("created", { url: result.storeUrl.replace(/^https?:\/\//, "") }),
+      );
       router.replace("/?welcome=1");
+      router.refresh();
+    } else if (result.status === "account_created") {
+      // Signed in now: the server page renders step 2.
       router.refresh();
     } else if (result.status === "confirm_email") {
       setConfirmEmail(email ?? "");
     } else if (result.status === "error") {
-      if (result.error === "emailTaken") form.setError("email", { message: t("errors.emailTaken") });
-      if (result.error === "subdomainTaken") form.setError("subdomain", { message: t("errors.subdomainTaken") });
-      if (result.error === "phoneInvalid") form.setError("phone", { message: t("errors.phoneInvalid") });
-      if (result.error === "industryRequired") form.setError("industry", { message: t("errors.industryRequired") });
+      if (result.error === "emailTaken")
+        form.setError("email", { message: t("errors.emailTaken") });
+      if (result.error === "subdomainTaken")
+        form.setError("subdomain", { message: t("errors.subdomainTaken") });
+      if (result.error === "phoneInvalid")
+        form.setError("phone", { message: t("errors.phoneInvalid") });
+      if (result.error === "industryRequired")
+        form.setError("industry", { message: t("errors.industryRequired") });
       toast.error(t(`errors.${result.error}`));
     }
   };
 
   const onSubmit = (values: FormValues) => {
-    if (!available) {
+    if (signedIn && !available) {
       form.setError("subdomain", { message: t("errors.invalidSubdomain") });
       return;
     }
     startTransition(async () => {
-      const choice = { subdomain: values.subdomain, phone: values.phone };
       const result = signedIn
-        ? await createStoreForCurrentUser({ ...choice, industry: values.industry })
-        : await signUpWithEmail({ ...choice, email: values.email, password: values.password });
+        ? await createStoreForCurrentUser({
+            subdomain: values.subdomain,
+            phone: values.phone,
+            industry: values.industry,
+          })
+        : await signUpWithEmail({
+            subdomain: initialSubdomain,
+            email: values.email,
+            password: values.password,
+          });
       handleResult(result, values.email);
     });
   };
 
-  // One click: the store is set up after Google, on this page's signed-in step.
+  // One click: the store is set up after Google, in step 2.
   const onGoogle = async () => {
     setGooglePending(true);
-    const result = await startGoogleSignup();
+    const result = await startGoogleSignup(initialSubdomain);
     if (result.status !== "ok") {
       setGooglePending(false);
       handleResult(result);
@@ -121,7 +194,9 @@ export function SignupForm({
     }
     const { error } = await createClient().auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/api/auth/callback?next=/` },
+      options: {
+        redirectTo: `${window.location.origin}/api/auth/callback?next=/`,
+      },
     });
     if (error) {
       setGooglePending(false);
@@ -164,7 +239,9 @@ export function SignupForm({
           title={t("confirmTitle")}
           subtitle={t("confirmDescription", { email: confirmEmail })}
         />
-        <p className="m-0 text-sm text-muted-foreground">{t("confirmSpamHint")}</p>
+        <p className="m-0 text-sm text-muted-foreground">
+          {t("confirmSpamHint")}
+        </p>
         <div className="flex flex-col gap-3">
           <Button
             type="button"
@@ -173,12 +250,22 @@ export function SignupForm({
             disabled={isResending || resendCooldown > 0}
           >
             {isResending && <Loader2 className="size-[18px] animate-spin" />}
-            {resendCooldown > 0 ? t("resendIn", { seconds: resendCooldown }) : t("resend")}
+            {resendCooldown > 0
+              ? t("resendIn", { seconds: resendCooldown })
+              : t("resend")}
           </Button>
-          <Button type="button" variant="outline" className={OUTLINE_BUTTON} onClick={() => setConfirmEmail(null)}>
+          <Button
+            type="button"
+            variant="outline"
+            className={OUTLINE_BUTTON}
+            onClick={() => setConfirmEmail(null)}
+          >
             {t("useDifferentEmail")}
           </Button>
-          <Link href="/login" className="text-center text-sm font-semibold text-primary hover:underline">
+          <Link
+            href="/login"
+            className="text-center text-sm font-semibold text-primary hover:underline"
+          >
             {t("signIn")}
           </Link>
         </div>
@@ -189,14 +276,16 @@ export function SignupForm({
   return (
     <AuthShell>
       <AuthHeading
-        eyebrow={tAuth("title")}
+        eyebrow={t("stepOf", { step: signedIn ? 2 : 1, total: 2 })}
         title={signedIn ? t("setupTitle") : t("title")}
         subtitle={signedIn ? t("setupSubtitle") : t("subtitle")}
       />
       {signedIn ? (
         <div className="flex items-center gap-2.5 rounded-xl bg-muted px-3.5 py-2.5 text-sm text-muted-foreground">
           <UserRound className="size-4 shrink-0" />
-          <span className="min-w-0 flex-1 truncate">{t("signedInAs", { email: signedInEmail })}</span>
+          <span className="min-w-0 flex-1 truncate">
+            {t("signedInAs", { email: signedInEmail })}
+          </span>
           <button
             type="button"
             className="inline-flex shrink-0 items-center gap-1.5 font-semibold text-primary hover:underline disabled:opacity-50"
@@ -206,7 +295,11 @@ export function SignupForm({
             }}
             disabled={busy || isSigningOut}
           >
-            {isSigningOut ? <Loader2 className="size-4 animate-spin" /> : <LogOut className="size-4 rtl:rotate-180" />}
+            {isSigningOut ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <LogOut className="size-4 rtl:rotate-180" />
+            )}
             {t("signOut")}
           </button>
         </div>
@@ -220,7 +313,11 @@ export function SignupForm({
             onClick={onGoogle}
             disabled={busy}
           >
-            {isGooglePending ? <Loader2 className="size-[18px] animate-spin" /> : <GoogleIcon />}
+            {isGooglePending ? (
+              <Loader2 className="size-[18px] animate-spin" />
+            ) : (
+              <GoogleIcon />
+            )}
             {t("continueWithGoogle")}
           </Button>
           <div className="flex items-center gap-3.5 text-[13px] text-muted-foreground before:h-px before:flex-1 before:bg-border after:h-px after:flex-1 after:bg-border">
@@ -230,29 +327,40 @@ export function SignupForm({
       )}
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-[22px]" noValidate>
-          <div className="flex flex-col gap-4">
-            <SubdomainField
-              form={form}
-              name="subdomain"
-              check={checkSignupSubdomain}
-              onAvailabilityChange={setAvailable}
-              disabled={busy}
-              autoFocus
-              className={AUTH_INPUT_BOX}
-              inputClassName="px-3.5 text-[15px] md:text-[15px]"
-              labelClassName="text-sm font-semibold text-foreground"
-            />
-            {signedIn && (
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="flex flex-col gap-[22px]"
+          noValidate
+        >
+          {signedIn ? (
+            <div className="flex flex-col gap-4">
+              <SubdomainField
+                form={form}
+                name="subdomain"
+                check={checkSignupSubdomain}
+                onAvailabilityChange={setAvailable}
+                disabled={busy}
+                autoFocus
+                className={AUTH_INPUT_BOX}
+                inputClassName="px-3.5 text-[15px] md:text-[15px]"
+                labelClassName="text-sm font-semibold text-foreground"
+              />
               <FormField
                 control={form.control}
                 name="industry"
                 render={({ field }) => (
                   <FormItem className="flex flex-col gap-2">
-                    <p className="m-0 text-sm font-semibold text-foreground" id="signup-industry">
+                    <p
+                      className="m-0 text-sm font-semibold text-foreground"
+                      id="signup-industry"
+                    >
                       {t("industry")}
                     </p>
-                    <div className="flex flex-wrap gap-2" role="radiogroup" aria-labelledby="signup-industry">
+                    <div
+                      className="flex flex-wrap gap-2"
+                      role="radiogroup"
+                      aria-labelledby="signup-industry"
+                    >
                       {STORE_INDUSTRIES.map((option) => (
                         <button
                           key={option.id}
@@ -260,7 +368,11 @@ export function SignupForm({
                           role="radio"
                           aria-checked={field.value === option.id}
                           disabled={busy}
-                          onClick={() => form.setValue("industry", option.id, { shouldValidate: true })}
+                          onClick={() =>
+                            form.setValue("industry", option.id, {
+                              shouldValidate: true,
+                            })
+                          }
                           className={cn(
                             "rounded-full border px-3 py-1.5 text-[13px] transition-colors disabled:opacity-50",
                             field.value === option.id
@@ -276,44 +388,54 @@ export function SignupForm({
                   </FormItem>
                 )}
               />
-            )}
-            <AuthField
-              form={form}
-              name="phone"
-              type="tel"
-              label={t("phone")}
-              placeholder={t("phonePlaceholder")}
-              description={t("phoneHint")}
-              autoComplete="tel"
-              disabled={busy}
-            />
-            {!signedIn && (
-              <>
-                <AuthField
-                  form={form}
-                  name="email"
-                  type="email"
-                  label={t("email")}
-                  placeholder={t("emailPlaceholder")}
-                  autoComplete="email"
-                  disabled={busy}
-                />
-                <AuthField
-                  form={form}
-                  name="password"
-                  type="password"
-                  label={t("password")}
-                  placeholder={t("passwordPlaceholder")}
-                  autoComplete="new-password"
-                  disabled={busy}
-                />
-              </>
-            )}
-          </div>
+              <AuthField
+                form={form}
+                name="phone"
+                type="tel"
+                label={t("phone")}
+                placeholder={t("phonePlaceholder")}
+                description={t("phoneHint")}
+                autoComplete="tel"
+                disabled={busy}
+              />
+            </div>
+          ) : (
+            <div className="flex flex-col gap-4">
+              <AuthField
+                form={form}
+                name="email"
+                type="email"
+                label={t("email")}
+                placeholder={t("emailPlaceholder")}
+                autoComplete="email"
+                disabled={busy}
+              />
+              <AuthField
+                form={form}
+                name="password"
+                type="password"
+                label={t("password")}
+                placeholder={t("passwordPlaceholder")}
+                autoComplete="new-password"
+                disabled={busy}
+              />
+              <AuthField
+                form={form}
+                name="confirmPassword"
+                type="password"
+                label={t("confirmPassword")}
+                placeholder={t("confirmPasswordPlaceholder")}
+                autoComplete="new-password"
+                disabled={busy}
+              />
+            </div>
+          )}
           <Button type="submit" className={PRIMARY_BUTTON} disabled={busy}>
             {isPending && <Loader2 className="size-[18px] animate-spin" />}
-            {t("submit")}
-            {!isPending && <ArrowRight className="size-[18px] rtl:rotate-180" />}
+            {signedIn ? t("submit") : t("createAccount")}
+            {!isPending && (
+              <ArrowRight className="size-[18px] rtl:rotate-180" />
+            )}
           </Button>
         </form>
       </Form>
@@ -322,14 +444,21 @@ export function SignupForm({
         <>
           <p className="m-0 text-center text-sm text-muted-foreground">
             {t("haveAccount")}{" "}
-            <Link href="/login" className="font-semibold text-primary hover:underline">
+            <Link
+              href="/login"
+              className="font-semibold text-primary hover:underline"
+            >
               {t("signIn")}
             </Link>
           </p>
           <p className="m-0 text-[12.5px] leading-relaxed text-muted-foreground">
             {tAuth.rich("legal", {
-              terms: (chunks) => <span className="font-semibold text-primary">{chunks}</span>,
-              privacy: (chunks) => <span className="font-semibold text-primary">{chunks}</span>,
+              terms: (chunks) => (
+                <span className="font-semibold text-primary">{chunks}</span>
+              ),
+              privacy: (chunks) => (
+                <span className="font-semibold text-primary">{chunks}</span>
+              ),
             })}
           </p>
         </>

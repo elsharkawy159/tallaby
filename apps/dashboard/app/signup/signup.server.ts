@@ -7,7 +7,7 @@ import { createClient } from "@/supabase/server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
 import { STORE_INDUSTRIES } from "@/lib/stores/industries.lib";
 import { completeSignup } from "./signup-complete.server";
-import { clearSignupIntentCookie, setSignupIntentCookie } from "./signup-intent.server";
+import { clearSignupIntentCookie, cleanSubdomainPrefill, setSignupPrefillCookie } from "./signup-intent.server";
 import {
   emailSignupSchema,
   storeChoiceSchema,
@@ -74,14 +74,17 @@ export async function checkSignupSubdomain(input: string): Promise<SubdomainChec
   return checkStoreSubdomain(user?.id ?? NO_SELLER, String(input ?? "").slice(0, 64));
 }
 
-/** Email + password signup. Creates the store now if Supabase returns a session, else after confirmation. */
+/**
+ * Step 1, email: only the account (email + password). The store is set up in
+ * step 2 on /signup once signed in: right away when Supabase returns a
+ * session, else after the confirmation link (the callback finds no seller and
+ * no intent and sends the user there).
+ */
 export async function signUpWithEmail(input: EmailSignupInput): Promise<SignupResult> {
   if (!signupLimiter.check(await clientKey())) return fail("rateLimited");
   const parsed = emailSignupSchema.safeParse(input);
   if (!parsed.success) return fail("invalidInput");
-
-  const choice = await checkChoice(parsed.data, NO_SELLER);
-  if (!choice.ok) return fail(choice.error);
+  const prefill = cleanSubdomainPrefill(parsed.data.subdomain);
 
   const { supabase } = await sessionUser();
   const origin = (await headers()).get("origin");
@@ -90,8 +93,8 @@ export async function signUpWithEmail(input: EmailSignupInput): Promise<SignupRe
     password: parsed.data.password,
     options: {
       emailRedirectTo: `${siteUrl(origin)}/api/auth/callback?next=/`,
-      // Survives confirming the email in another browser; handle_user_update copies phone to users.phone.
-      data: { signup_subdomain: choice.intent.subdomain, phone: choice.intent.phone },
+      // Pre-fills step 2 even when the email is confirmed in another browser.
+      data: prefill ? { signup_subdomain: prefill } : undefined,
     },
   });
   if (error) {
@@ -103,23 +106,25 @@ export async function signUpWithEmail(input: EmailSignupInput): Promise<SignupRe
   // Supabase hides existing emails behind an empty identities list.
   if (data.user && data.user.identities?.length === 0) return fail("emailTaken");
 
-  await setSignupIntentCookie(choice.intent);
+  await startStoreStep(prefill);
+  return data.session ? { status: "account_created" } : { status: "confirm_email" };
+}
 
-  if (!data.session || !data.user) return { status: "confirm_email" };
-  const done = await completeSignup(data.user, choice.intent);
-  if (!done.success) return fail(done.error === "taken" ? "subdomainTaken" : "generic");
-  return { status: "done", storeUrl: done.storeUrl! };
+/** Step 1, Google: one click, no fields. The store is set up in step 2 after the callback. */
+export async function startGoogleSignup(subdomain?: string): Promise<SignupResult> {
+  if (!signupLimiter.check(await clientKey())) return fail("rateLimited");
+  await startStoreStep(cleanSubdomainPrefill(subdomain));
+  return { status: "ok" };
 }
 
 /**
- * Before the browser goes to Google: one click, no fields. A leftover email
- * signup cookie is cleared so the callback cannot create a store from it; the
- * callback then sends the new user to /signup to set up the store.
+ * A leftover intent cookie (older one-step signup) is cleared so the callback
+ * cannot create a store from it; the marketing-site address, if any, is kept
+ * to pre-fill step 2.
  */
-export async function startGoogleSignup(): Promise<SignupResult> {
-  if (!signupLimiter.check(await clientKey())) return fail("rateLimited");
+async function startStoreStep(prefill: string | null) {
   await clearSignupIntentCookie();
-  return { status: "ok" };
+  await setSignupPrefillCookie(prefill);
 }
 
 /**
@@ -138,6 +143,7 @@ export async function createStoreForCurrentUser(input: StoreSetupInput): Promise
   if (!choice.ok) return fail(choice.error);
   const done = await completeSignup(user, choice.intent);
   if (!done.success) return fail(done.error === "taken" ? "subdomainTaken" : "generic");
+  await setSignupPrefillCookie(null);
 
   // The same columns Store settings › General fills when an industry is picked.
   if (done.data.created && done.data.storeId) {
