@@ -51,6 +51,14 @@
       "types": "./src/shipping/store-quote.ts",
       "default": "./src/shipping/store-quote.ts"
     },
+    "./shipping/bosta": {
+      "types": "./src/shipping/bosta/index.ts",
+      "default": "./src/shipping/bosta/index.ts"
+    },
+    "./shipping/bosta/server": {
+      "types": "./src/shipping/bosta/server.ts",
+      "default": "./src/shipping/bosta/server.ts"
+    },
     "./places": {
       "types": "./src/places/index.ts",
       "default": "./src/places/index.ts"
