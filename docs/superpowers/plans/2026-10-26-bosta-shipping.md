@@ -371,3 +371,27 @@ All new strings go in `apps/dashboard/messages/ar.json` + `en.json` (namespace `
   - `runBostaRetrySweep` (called by the BS-11 cron) retries claims with no delivery that are older than 10 min, up to 3 attempts. It skips address and data errors.
   - **Where the code differs from the plan:** prepaid orders skip the seller's confirm (they arrive at "to ship"), so `on_confirm` never fires for them. They keep the **Ship with Bosta** button. Auto-shipping on payment would need a hook in the payment webhooks, which is left for phase 2.
   - Tests: 2 more integration tests (auto-ship only when `on_confirm`, never for unpaid or another seller; the sweep re-ships a Bosta 500 failure but not an address error), 8/8 on staging. Typecheck clean.
+- **2026-10-26: BS-10 done.**
+  - **`packages/lib/src/shipping/bosta-sync.server.ts`** (`@workspace/lib/shipping/bosta-sync`):
+    - `applyBostaState` inserts the event once per (shipment, state, time); a replay with the same code changes nothing.
+    - It maps the code with `bostaStateEffect` and updates `external_state_code`, `needs_attention` and `last_error`, sending a `carrier_needs_attention` notification for exceptions, investigations and holds.
+    - It walks `bostaStatusPath` one legal step at a time through `applySellerShipmentStatus` (guarded by `expectedFromStatus`), so it never moves backwards and `delivered` runs the existing wallet, fee, affiliate and email path.
+    - **Cancelled or terminated (49/48) before pickup** clears the Bosta link and returns the shipment to `pending`, with `last_error = bosta_cancelled`. The order stays confirmed, and the seller can ship again or deliver it.
+  - `handleBostaWebhook(integrationId, authorization, body)`:
+    - Checks the per-store token with `timingSafeEqual`; a bad token or unknown integration gets 401.
+    - Finds the shipment by (carrier, `external_id`, `store_integration_id`).
+    - **Re-reads the state from Bosta with the store's key.** The payload's state is never trusted.
+    - Every other outcome answers 200.
+  - `syncBostaShipments` is for BS-11.
+  - **Backend:** `apps/backend/src/routes/bosta.ts`, mounted at `/api/webhooks/bosta/:integrationId`, which is already public through the `/api/webhooks/` prefix. Errors are logged by name only, never the body. **The backend needs `INTEGRATIONS_ENCRYPTION_KEY`** (the same value as the dashboard) to decrypt the webhook token.
+  - Dashboard strings: `bosta_cancelled`, `exception`, `attention`.
+  - Tests: `bosta-sync.integration.test.ts` (7, staging + fake Bosta):
+    - A wrong token or unknown integration gets 401.
+    - The payload says delivered but Bosta says 41, so the shipment goes to out_for_delivery.
+    - A replayed event adds no row.
+    - An out-of-order state is ignored.
+    - Delivered walks assigned → out_for_delivery → delivered and posts **no sale and at most one fee row**, and replays post nothing.
+    - An exception sets needs_attention and sends a notification.
+    - A Bosta cancel before pickup gives the order back, and it can ship again.
+    - The sync catches a dropped webhook.
+  - An earlier run left rows on staging, because the ledger is append-only. They were deleted (only the test seller tag `daaf8720` and its buyer), and the teardown now deletes the sellers before the orders.

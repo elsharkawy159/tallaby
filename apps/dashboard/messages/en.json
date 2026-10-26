@@ -1931,7 +1931,10 @@
         "rate_limited": "Too many shipments at once. Wait a minute.",
         "read_only": "This store is archived.",
         "generic": "Something went wrong. Try again.",
-        "unknown": "Bosta refused the shipment."
+        "unknown": "Bosta refused the shipment.",
+        "bosta_cancelled": "Bosta cancelled this shipment. Ship it again or deliver it yourself.",
+        "exception": "Bosta reported a delivery problem.",
+        "attention": "Bosta needs you to look at this shipment. Check it in your Bosta dashboard."
       },
       "autoSending": "Sending order #{number} to Bosta…"
     }

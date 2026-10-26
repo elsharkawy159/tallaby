@@ -43,6 +43,9 @@ export function canShipWithBosta(order: SellerOrderRow): boolean {
 export function useBostaErrorText() {
   const t = useTranslations("orders.bosta.errors");
   return (error: BostaActionError | string, message?: string) => {
+    // Status flags from Bosta updates: "state_<code>" (investigation, on hold, …) and "exception: <reason>".
+    if (error.startsWith("state_")) return t("attention");
+    if (error === "exception") return message ? `${t("exception")} (${message})` : t("exception");
     const key = t.has(error) ? error : "unknown";
     return key === "unknown" && message ? `${t("unknown")} (${message})` : t(key);
   };
