@@ -411,11 +411,14 @@ export async function testStoreBosta(
     : { success: false, error: "failed", message: overview.summary.lastError ?? undefined };
 }
 
-/** The seller's stores whose Bosta is set up (key saved and a pickup location chosen), for the orders page. */
-export async function listSellerBostaStoreIds(sellerId: string, q: Queryable = db): Promise<Set<string>> {
-  if (!UUID_RE.test(sellerId)) return new Set();
+/**
+ * The seller's stores whose Bosta is set up (key saved and a pickup location
+ * chosen), with when they ship, for the orders page.
+ */
+export async function listSellerBostaStores(sellerId: string, q: Queryable = db): Promise<Map<string, BostaSettings["autoShip"]>> {
+  if (!UUID_RE.test(sellerId)) return new Map();
   const rows = await q
-    .select({ storeId: storeIntegrations.storeId })
+    .select({ storeId: storeIntegrations.storeId, config: storeIntegrations.config })
     .from(storeIntegrations)
     .where(
       and(
@@ -426,5 +429,5 @@ export async function listSellerBostaStoreIds(sellerId: string, q: Queryable = d
         sql`coalesce(${storeIntegrations.config}->>'pickupLocationId', '') <> ''`,
       ),
     );
-  return new Set(rows.map((row) => row.storeId));
+  return new Map(rows.map((row) => [row.storeId, readBostaSettings(row.config).autoShip]));
 }

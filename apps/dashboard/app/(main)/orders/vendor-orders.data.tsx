@@ -1,4 +1,4 @@
-import { listSellerBostaStoreIds } from "@workspace/lib/integrations/server";
+import { listSellerBostaStores } from "@workspace/lib/integrations/server";
 import { requireSeller } from "@/lib/auth/require-seller.server";
 import { getSellerStores } from "@/lib/stores/current-store.server";
 import { loadSellerOrders } from "./orders.query";
@@ -10,7 +10,7 @@ export async function VendorOrdersData({
   initialOrderId?: string | null;
 }) {
   const [{ sellerId }, { stores }] = await Promise.all([requireSeller(), getSellerStores()]);
-  const rows = await loadSellerOrders(sellerId, stores, await listSellerBostaStoreIds(sellerId));
+  const rows = await loadSellerOrders(sellerId, stores, await listSellerBostaStores(sellerId));
 
   return (
     <VendorOrdersTable

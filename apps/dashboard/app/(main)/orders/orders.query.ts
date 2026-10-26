@@ -38,8 +38,8 @@ const toNumber = (value: string | number | null | undefined) => {
 export async function loadSellerOrders(
   sellerId: string,
   stores: { id: string; name: string; subdomain: string }[],
-  /** Stores of this seller with Bosta connected (BS-08). */
-  bostaStoreIds: ReadonlySet<string> = new Set(),
+  /** Stores of this seller with Bosta connected, and when they ship (BS-08/09). */
+  bostaStores: ReadonlyMap<string, "manual" | "on_confirm"> = new Map(),
 ): Promise<SellerOrderRow[]> {
   const list = await db.query.orders.findMany({
     where: inArray(
@@ -225,7 +225,8 @@ export async function loadSellerOrders(
       itemCount: mine.reduce((n, i) => n + (i.quantity ?? 1), 0),
       failureReason: shipment?.failureReason ?? null,
       riderName: shipment?.riderId ? (riderNames.get(shipment.riderId) ?? null) : null,
-      bostaConnected: Boolean(o.storeId && bostaStoreIds.has(o.storeId)),
+      bostaConnected: Boolean(o.storeId && bostaStores.has(o.storeId)),
+      bostaAutoShip: Boolean(o.storeId && bostaStores.get(o.storeId) === "on_confirm"),
       bosta:
         shipment?.carrier === "bosta" && shipment.sellerId === sellerId
           ? {

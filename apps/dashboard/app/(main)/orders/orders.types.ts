@@ -67,6 +67,8 @@ export interface SellerOrderRow {
   riderName: string | null;
   /** The order was placed on a store with Bosta connected, so "Ship with Bosta" applies (BS-08). */
   bostaConnected: boolean;
+  /** That store sends orders to Bosta when the seller confirms them (BS-09). */
+  bostaAutoShip: boolean;
   /** The order's Bosta shipment, once one was attempted. */
   bosta: SellerOrderBosta | null;
   flow: SellerOrderFlow;

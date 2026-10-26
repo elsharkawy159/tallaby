@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { getTranslations } from "next-intl/server";
 import { z } from "zod";
 import { applyInvalidation, invalidateProductInventory } from "@workspace/cache";
@@ -19,6 +20,7 @@ import { cancelPendingAffiliateCommission } from "@workspace/db/affiliates";
 import { restoreStock, type StockLine } from "@workspace/db/inventory";
 import { WALLET_REFERENCE_TYPES } from "@workspace/db/wallet";
 import { sendOrderEventEmail } from "@workspace/lib/orders";
+import { autoShipOrderWithBosta } from "@workspace/lib/shipping/bosta-ship";
 import { AccessError, requireSeller } from "@/lib/auth/require-seller.server";
 import { applySellerShipmentStatus } from "@/lib/shipping/apply-seller-shipment";
 import { isShippingStatus, type ShippingStatus } from "@/lib/shipping/shipping-status";
@@ -59,7 +61,7 @@ async function loadOrder(orderId: string, sellerId: string) {
         db.select({ id: orderItems.orderId }).from(orderItems).where(eq(orderItems.sellerId, sellerId)),
       ),
     ),
-    columns: { id: true, status: true, paymentStatus: true, isDigitalOnly: true },
+    columns: { id: true, status: true, paymentStatus: true, isDigitalOnly: true, storeId: true },
     with: {
       shipments: { columns: { id: true, status: true, sellerId: true, externalId: true } },
       orderItems: {
@@ -249,7 +251,14 @@ export async function updateSellerOrder(input: unknown): Promise<ActionResult> {
     if (loaded.flow.readOnly) throw new OrderActionError(`readOnly.${loaded.flow.readOnly}`);
     if (!loaded.flow.actions.includes(action)) throw new OrderActionError("notAllowed");
 
-    if (action === "confirm") await confirmOrder(loaded, sellerId);
+    if (action === "confirm") {
+      await confirmOrder(loaded, sellerId);
+      // Stores set to "ship with Bosta when I confirm" (BS-09): after the response, so the seller never waits on Bosta.
+      const storeId = loaded.order.storeId;
+      if (storeId) {
+        after(() => autoShipOrderWithBosta(storeId, orderId, sellerId));
+      }
+    }
     else if (action === "cancel") await cancelOrder(loaded, sellerId);
     else await moveShipment(loaded, sellerId, action, reason);
 

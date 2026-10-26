@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Check, ChevronDown, PackageCheck, Truck } from "lucide-react";
@@ -56,6 +57,8 @@ export function OrderActions({
   className?: string;
 }) {
   const t = useTranslations("orders.actions");
+  const tBosta = useTranslations("orders.bosta");
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [confirming, setConfirming] = useState<ConfirmedAction | null>(null);
   const [failing, setFailing] = useState(false);
@@ -73,6 +76,11 @@ export function OrderActions({
         return;
       }
       toast.success(t(`done.${actionLabelKey(order, action)}`, { number: order.orderNumber }));
+      if (action === "confirm" && order.bostaAutoShip) {
+        // The Bosta shipment is created after the response (BS-09); show it once it exists.
+        toast.info(tBosta("autoSending", { number: order.orderNumber }));
+        setTimeout(() => router.refresh(), 4000);
+      }
       setConfirming(null);
       setFailing(false);
       setReason("");

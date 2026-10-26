@@ -1932,7 +1932,8 @@
         "read_only": "This store is archived.",
         "generic": "Something went wrong. Try again.",
         "unknown": "Bosta refused the shipment."
-      }
+      },
+      "autoSending": "Sending order #{number} to Bosta…"
     }
   },
   "shipping": {

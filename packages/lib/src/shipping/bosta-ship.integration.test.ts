@@ -20,7 +20,7 @@ const KEY = "bosta-test-key-ship-0001";
 
 /** A fake Bosta. `mode` switches what POST /deliveries answers. */
 function fakeBosta() {
-  const state = { creates: 0, bodies: [] as Array<Record<string, unknown>>, mode: "ok" as "ok" | "duplicate" | "slow", existing: null as null | Record<string, unknown> };
+  const state = { creates: 0, bodies: [] as Array<Record<string, unknown>>, mode: "ok" as "ok" | "duplicate" | "slow" | "down", existing: null as null | Record<string, unknown> };
   const fetchImpl = (async (input: string | URL | Request, init?: RequestInit) => {
     const url = String(input);
     if (url.endsWith("/pickup-locations")) {
@@ -34,6 +34,7 @@ function fakeBosta() {
       const body = JSON.parse(String(init?.body)) as Record<string, unknown>;
       state.bodies.push(body);
       if (state.mode === "slow") await new Promise((resolve) => setTimeout(resolve, 400));
+      if (state.mode === "down") return Response.json({ success: false, message: "Internal error", errorCode: 1000 }, { status: 500 });
       if (state.mode === "duplicate") {
         state.existing = { _id: `bosta-${state.creates}`, trackingNumber: `TN${state.creates}`, state: { code: 10 }, businessReference: body.businessReference };
         return Response.json({ success: false, message: "uniqueBusinessReference already exists", errorCode: 1077 }, { status: 400 });
@@ -273,5 +274,53 @@ describe.skipIf(!TEST_DATABASE_URL)("shipOrderWithBosta (integration)", { timeou
       error: "not_found",
     });
     expect(await ship.previewBostaShipment(w.b.sellerId, w.a.a1, orderId)).toEqual({ ok: false, error: "not_connected" });
+  });
+
+  it("auto-ship: ships on confirm only when the store chose it", async () => {
+    const { saveBostaSettings } = await import("../integrations/bosta.server");
+    const manual = await order();
+    expect(await ship.autoShipOrderWithBosta(w.a.a1, manual, w.a.sellerId, { fetchImpl: bosta.fetchImpl })).toEqual({ ok: false, error: "skipped" });
+    expect(await shipment(manual)).toBeUndefined();
+
+    await saveBostaSettings(w.a.sellerId, w.a.a1, { autoShip: "on_confirm" }, { q: db, fetchImpl: bosta.fetchImpl });
+    try {
+      const auto = await order();
+      expect(await ship.autoShipOrderWithBosta(w.a.a1, auto, w.a.sellerId, { fetchImpl: bosta.fetchImpl })).toMatchObject({ ok: true });
+      expect(await shipment(auto)).toMatchObject({ status: "assigned" });
+
+      const unpaid = await order({ paymentMethod: "instapay" });
+      expect(await ship.autoShipOrderWithBosta(w.a.a1, unpaid, w.a.sellerId, { fetchImpl: bosta.fetchImpl })).toEqual({
+        ok: false,
+        error: "awaiting_payment",
+      });
+      expect(await ship.autoShipOrderWithBosta(w.a.a1, auto, w.b.sellerId, { fetchImpl: bosta.fetchImpl })).toEqual({ ok: false, error: "skipped" });
+    } finally {
+      await saveBostaSettings(w.a.sellerId, w.a.a1, { autoShip: "manual" }, { q: db, fetchImpl: bosta.fetchImpl });
+    }
+  });
+
+  it("the retry sweep picks up a claim Bosta failed on, but not address errors", async () => {
+    const orderId = await order();
+    const badAddress = await order({ shippingAddressId: nowhere });
+    bosta.state.mode = "down";
+    try {
+      expect(await ship.shipOrderWithBosta(w.a.a1, orderId, { trigger: "on_confirm", fetchImpl: bosta.fetchImpl })).toMatchObject({ ok: false, error: "server" });
+    } finally {
+      bosta.state.mode = "ok";
+    }
+    await ship.shipOrderWithBosta(w.a.a1, badAddress, { trigger: "on_confirm", fetchImpl: bosta.fetchImpl });
+    // Age both claims past the 10-minute wait.
+    await db
+      .update(s.shipments)
+      .set({ updatedAt: new Date(Date.now() - 20 * 60_000).toISOString() })
+      .where(inArray(s.shipments.orderId, [orderId, badAddress]));
+
+    const candidates = await ship.listBostaRetryCandidates(500);
+    expect(candidates.some((c) => c.orderId === orderId)).toBe(true);
+    expect(candidates.some((c) => c.orderId === badAddress)).toBe(false);
+
+    await ship.runBostaRetrySweep({ fetchImpl: bosta.fetchImpl, limit: 500 });
+    expect(await shipment(orderId)).toMatchObject({ status: "assigned", createAttempts: 2 });
+    expect(await shipment(badAddress)).toMatchObject({ status: "pending", externalId: null });
   });
 });

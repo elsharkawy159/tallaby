@@ -476,3 +476,45 @@ export async function listBostaRetryCandidates(limit = 20): Promise<Array<{ stor
   return rows.flatMap((row) => (row.storeId ? [{ storeId: row.storeId, orderId: row.orderId }] : []));
 }
 
+
+/**
+ * The "Automatically when I confirm an order" setting (BS-09): ships the
+ * order only when the store's Bosta is set to `on_confirm`. Returns
+ * `skipped` otherwise. Unpaid online orders are refused by the blocker
+ * before anything is claimed. Never throws: it runs after the response.
+ */
+export async function autoShipOrderWithBosta(
+  storeId: string,
+  orderId: string,
+  sellerId: string,
+  options: BostaCallOptions = {},
+): Promise<BostaShipResult | { ok: false; error: "skipped" }> {
+  try {
+    const account = await getStoreBostaAccount(storeId);
+    if (!account || account.sellerId !== sellerId || account.settings.autoShip !== "on_confirm") {
+      return { ok: false, error: "skipped" };
+    }
+    return await shipOrderWithBosta(storeId, orderId, { trigger: "on_confirm", sellerId, ...options });
+  } catch (error) {
+    console.error("[bosta] auto-ship failed", (error as Error)?.name);
+    return { ok: false, error: "server" };
+  }
+}
+
+/**
+ * The safety net for auto-ship (BS-09): retries Bosta claims that never got
+ * a delivery (a crashed `after()`, a Bosta outage), at most 3 attempts each,
+ * from the sync cron. Address and data errors are left for the seller.
+ */
+export async function runBostaRetrySweep(
+  options: BostaCallOptions & { limit?: number } = {},
+): Promise<{ retried: number; shipped: number }> {
+  const { limit = 20, ...callOptions } = options;
+  const candidates = await listBostaRetryCandidates(limit);
+  let shipped = 0;
+  for (const { storeId, orderId } of candidates) {
+    const result = await shipOrderWithBosta(storeId, orderId, { trigger: "retry", ...callOptions });
+    if (result.ok) shipped += 1;
+  }
+  return { retried: candidates.length, shipped };
+}

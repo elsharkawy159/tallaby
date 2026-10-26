@@ -305,8 +305,18 @@ function DistrictPicker({
 export function BostaDeliveryCard({ order }: { order: SellerOrderRow }) {
   const t = useTranslations("orders.bosta");
   const errorText = useBostaErrorText();
+  const router = useRouter();
   const [copied, setCopied] = useState(false);
   const bosta = order.bosta;
+  const creating = Boolean(bosta?.creating);
+
+  // A create call is in flight (often the auto-ship after a confirm): look again shortly.
+  useEffect(() => {
+    if (!creating) return;
+    const timer = setTimeout(() => router.refresh(), 3000);
+    return () => clearTimeout(timer);
+  }, [creating, router]);
+
   if (!bosta) return null;
 
   const stateLabel =
