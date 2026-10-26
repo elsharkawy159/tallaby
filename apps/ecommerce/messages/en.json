@@ -2041,6 +2041,8 @@
     },
     "homeLabel": "{store} home",
     "openCart": "Cart, {count, plural, =0 {empty} one {# item} other {# items}}",
+    "openMenu": "Open menu",
+    "menuNote": "{store} store links",
     "categoriesLabel": "Shop by category",
     "allProducts": "Everything",
     "productsHeading": "Products",

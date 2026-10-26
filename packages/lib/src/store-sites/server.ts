@@ -823,4 +823,5 @@ export async function getStoreDraftVersions(sellerId: string, storeId: string, q
 
 // Templates gallery and apply (P4-05).
 export * from "./templates.server";
-export { compactTemplateForStorage, expandTemplateConfig, expandTemplateConfigs, loadLibraryTrees } from "./template-refs.server";
+// Templates are code-only since 2026-10-27 (0109): there are no stored template refs to expand.
+export { codeTemplateConfig, offeredTemplates } from "./template-rows.server";

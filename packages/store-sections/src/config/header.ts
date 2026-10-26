@@ -201,6 +201,87 @@ function appendToFooter(tree: Node[], row: Node): Node[] {
   return root!.type === "section" ? [{ ...root!, children: [...root!.children, row] }, ...rest] : [...tree, row];
 }
 
+/**
+ * The mobile burger menu (owner, 2026-10-27; docs/section-rules.md §5.6):
+ * every header gets a `mobileMenu` node, shown under 768px, holding a copy of
+ * the header's menu links (unstyled; the menu's look is drawn by the
+ * renderer). The header's own menus are marked `collapse: "mobile"` so they
+ * hide on phones. The burger goes first in the header's bar (the nearest row
+ * or grid around the logo); in a grid it shares the first cell, so the column
+ * count stays. Drawn, never saved.
+ */
+export const MOBILE_COLLAPSE = "mobile";
+
+const LINK_TYPES = new Set(["linkBlock", "textLink"]);
+
+/** Plain copies of the links inside the header's menus, deduped by href and text. */
+function menuLinks(nodes: readonly Node[], id: string): Node[] {
+  const out: Node[] = [];
+  const seen = new Set<string>();
+  const strip = (node: Node, prefix: string): Node => ({
+    id: `${prefix}-${node.id}`,
+    type: node.type,
+    props: node.props,
+    children: node.children.map((child) => strip(child, prefix)),
+  });
+  const collect = (list: readonly Node[], inMenu: boolean) => {
+    for (const node of list) {
+      const menu = inMenu || node.props.role === "menu";
+      if (menu && LINK_TYPES.has(node.type)) {
+        const key = `${String(node.props.href)}|${JSON.stringify(node.props.text ?? node.children.map((c) => c.props.text))}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          out.push(strip(node, `${id}-mm`));
+        }
+        continue;
+      }
+      collect(node.children, menu);
+    }
+  };
+  collect(nodes, false);
+  return out;
+}
+
+function collapseMenus(nodes: Node[]): Node[] {
+  return nodes.map((node) => ({
+    ...node,
+    ...(node.props.role === "menu" && { props: { ...node.props, collapse: MOBILE_COLLAPSE } }),
+    children: collapseMenus(node.children),
+  }));
+}
+
+/** The path (ancestors, outermost first) to the first node matching `match`. */
+function pathTo(nodes: readonly Node[], match: (node: Node) => boolean, trail: Node[] = []): Node[] | null {
+  for (const node of nodes) {
+    if (match(node)) return [...trail, node];
+    const found = pathTo(node.children, match, [...trail, node]);
+    if (found) return found;
+  }
+  return null;
+}
+
+function withMobileMenu(tree: Node[], id: string): Node[] {
+  if (contains(tree, (node) => node.type === "mobileMenu")) return tree;
+  const burger: Node = { id: `${id}-mobile-menu`, type: "mobileMenu", props: {}, children: menuLinks(tree, id) };
+  const nodes = collapseMenus(tree);
+  const path = pathTo(nodes, hasRole("logo"));
+  const bar = path
+    ?.slice(0, -1)
+    .reverse()
+    .find((node) => node.type === "hFlex" || node.type === "grid");
+  if (bar) {
+    const first = bar.children[0];
+    const cell: Node | null =
+      bar.type === "grid" && first
+        ? { id: `${id}-mobile-menu-cell`, type: "hFlex", props: {}, style: { gap: 8, alignItems: "center", wrap: false }, children: [burger, first] }
+        : null;
+    const children = cell ? [cell, ...bar.children.slice(1)] : [burger, ...bar.children];
+    return replaceFirst(nodes, (node) => node === bar, () => ({ ...bar, children }))!;
+  }
+  const [root, ...rest] = nodes;
+  return root!.type === "section" ? [{ ...root!, children: [burger, ...root!.children] }, ...rest] : [burger, ...nodes];
+}
+
 /** Where the platform credit links. */
 export const TALLABY_HOME = "https://tallaby.com";
 const TALLABY_HREF_RE = /^https?:\/\/(www\.)?tallaby\.com\/?$/i;
@@ -322,6 +403,7 @@ export function drawChrome(
     const row: Node = { id: `${instance.id}-tools`, type: "hFlex", props: {}, style: { gap: 8, alignItems: "center", marginTop: 16 }, children: tools };
     nodes = appendFooterTools(nodes, row);
   }
+  if (part === "header") nodes = withMobileMenu(nodes, instance.id);
   if (part === "footer") nodes = withTallabyCredit(nodes, instance.id, opts.locale ?? "ar");
   return nodes === tree ? instance : { ...instance, componentTree: nodes };
 }

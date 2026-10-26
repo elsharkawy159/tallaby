@@ -42,23 +42,7 @@ roots(source, ref, doc) AS (
   FROM stores s
   JOIN store_site_revisions r ON r.id = s.published_revision_id
   WHERE s.deleted_at IS NULL
-  UNION ALL
-  SELECT CASE WHEN l.category = 'product-page' THEN 'library_sections (product-page category)' ELSE 'library_sections' END,
-         l.key, jsonb_build_array(l.tree, l.draft_tree)
-  FROM library_sections l
-  WHERE l.deleted_at IS NULL
-  UNION ALL
-  SELECT 'templates (current version / draft_config)', t.key,
-         (SELECT jsonb_agg(jsonb_build_object(
-                   'header', c->'header',
-                   'footer', c->'footer',
-                   'pages', (SELECT coalesce(jsonb_agg(pg), '[]'::jsonb)
-                             FROM jsonb_array_elements(CASE WHEN jsonb_typeof(c->'pages') = 'array' THEN c->'pages' ELSE '[]'::jsonb END) pg
-                             WHERE coalesce(pg->>'kind', 'page') <> 'product')))
-          FROM (SELECT v.config AS c UNION ALL SELECT t.draft_config WHERE t.draft_config IS NOT NULL) configs)
-  FROM templates t
-  LEFT JOIN template_versions v ON v.id = t.current_version_id
-  WHERE t.deleted_at IS NULL
+  -- library_sections and templates were dropped (0109): templates and sections are code-only.
 ),
 -- Every object/array inside each document; `scoped` = some ancestor is a data list.
 walk(source, ref, v, scoped) AS (

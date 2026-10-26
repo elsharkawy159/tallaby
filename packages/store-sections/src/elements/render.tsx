@@ -50,6 +50,7 @@ import {
   Zap,
   type LucideIcon,
 } from "lucide-react";
+import { MOBILE_COLLAPSE } from "../config/header";
 import type { ComponentNode } from "../config/schema";
 import { sectionText } from "../core/copy";
 import { IMAGE_SIZES, imageSource, type RenderContext } from "../core/types";
@@ -238,6 +239,55 @@ function renderPaymentsRow(node: ComponentNode, ctx: RenderContext, depth: numbe
   );
 }
 
+/** The burger button's look, shared by the host's sheet trigger, the editor and the fallback. */
+export const MOBILE_MENU_BUTTON_CLASS =
+  "inline-grid size-11 cursor-pointer list-none place-items-center rounded-full text-(--sf-ink) hover:bg-(--sf-shelf) [&::-webkit-details-marker]:hidden";
+
+/**
+ * The header's burger menu (docs/section-rules.md §5.6). Its children are
+ * copies of the menu links (drawChrome), drawn as 48px rows; a header without
+ * a menu lists the site's pages. The host draws the sheet (`renderMobileMenu`);
+ * the editor shows the still button; without a host, a plain dropdown.
+ */
+function renderMobileMenu(node: ComponentNode, ctx: RenderContext, depth: number, scope?: DataRecord): ReactNode {
+  const label = sectionText("openMenu", ctx.locale);
+  if (ctx.mode === "edit") {
+    return (
+      <span className={MOBILE_MENU_BUTTON_CLASS} aria-label={label}>
+        <Menu className="size-6" aria-hidden />
+      </span>
+    );
+  }
+  const rows =
+    node.children.length > 0
+      ? renderElementTree(node.children, ctx, depth + 1, scope)
+      : ctx.pages.map((page) => (
+          <SmartLink key={page.href} ctx={ctx} href={page.href} className="block">
+            {page.name}
+          </SmartLink>
+        ));
+  const links = (
+    <nav
+      aria-label={sectionText("menu", ctx.locale)}
+      className="flex flex-col text-base font-medium text-(--sf-ink) [&_a]:flex [&_a]:min-h-12 [&_a]:items-center [&_a]:border-b [&_a]:border-(--sf-line) [&_a]:hover:text-(--sf-brand)"
+    >
+      {rows}
+    </nav>
+  );
+  const host = ctx.renderMobileMenu?.({ links, title: ctx.store.name });
+  if (host) return host;
+  return (
+    <details className="relative">
+      <summary className={MOBILE_MENU_BUTTON_CLASS} aria-label={label}>
+        <Menu className="size-6" aria-hidden />
+      </summary>
+      <div className="absolute start-0 top-full z-50 mt-2 w-72 max-w-[calc(100vw-2rem)] rounded-(--sf-radius,12px) border border-(--sf-line) bg-(--sf-paper) px-4 py-2 shadow-lg">
+        {links}
+      </div>
+    </details>
+  );
+}
+
 /** Nodes a header's search link draws its look with; anything else keeps it a plain link. */
 const SEARCH_LINK_PARTS = new Set(["hFlex", "vFlex", "div", "icon", "text"]);
 
@@ -346,14 +396,21 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
       );
     case "vFlex":
       return (
-        <div {...attrs} className="flex min-w-0 flex-col">
+        <div {...attrs} className={cn("flex min-w-0 flex-col", props.collapse === MOBILE_COLLAPSE && "max-md:hidden")}>
           {kids()}
         </div>
       );
     case "hFlex":
+      // A header menu (`collapse: "mobile"`, drawChrome) hides on phones: the burger menu holds it there.
       return (
-        <div {...attrs} className="flex min-w-0 flex-row flex-wrap">
+        <div {...attrs} className={cn("flex min-w-0 flex-row flex-wrap", props.collapse === MOBILE_COLLAPSE && "max-md:hidden")}>
           {kids()}
+        </div>
+      );
+    case "mobileMenu":
+      return (
+        <div {...attrs} className="flex shrink-0 md:hidden">
+          {renderMobileMenu(node, ctx, depth, scope)}
         </div>
       );
     case "grid":

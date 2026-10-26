@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { stores, storeProducts, storeDesignSystems, storePages, storeSiteRevisions, templates, templateVersions, templateInstalls, mediaFolders, mediaAssets, savedBlocks, storeForms, storeFormSubmissions, cmsCollections, cmsItems, cmsItemRevisions, storeIntegrations, storeShippingZones, storeSettingsAudit, sellerWalletTopUps, adminAuditLog, platformBlogPosts, sellerProductCategories, sellerProductBrands, librarySections, adminNotifications, sellerNotifications, shipmentCarrierEvents } from "./schema";
+import { stores, storeProducts, storeDesignSystems, storePages, storeSiteRevisions, templateInstalls, mediaFolders, mediaAssets, savedBlocks, storeForms, storeFormSubmissions, cmsCollections, cmsItems, cmsItemRevisions, storeIntegrations, storeShippingZones, storeSettingsAudit, sellerWalletTopUps, adminAuditLog, platformBlogPosts, sellerProductCategories, sellerProductBrands, adminNotifications, sellerNotifications, shipmentCarrierEvents } from "./schema";
 import { users, deliveries, shipments, orders, payments, paymentMethods, carts, categories, sellers, coupons, notifications, contacts, userAddresses, products, productVariants, refunds, returns, orderItems, shipmentItems, productQuestions, shippingAddresses, couponUsage, cartItems, reviews, returnItems, reviewVotes, searchLogs, sellerDocuments, sellerPayoutItems, sellerPayouts, reviewComments, userDevices, wishlistItems, wishlists, brands, productAnswers, userRewards, productTranslations, digitalProducts, digitalOrders, sellerCategories, sellerWallet, walletTransactions, digitalFiles, licenseKeys, digitalBundleItems, digitalAccessLogs, shippingProviders, shipmentBatches, shipmentBatchItems, userWallets, userWalletTransactions, walletTopUps, walletPayoutRequests, affiliates, affiliateCommissions } from "./schema";
 
 export const deliveriesRelations = relations(deliveries, ({one}) => ({
@@ -900,35 +900,7 @@ export const storeSiteRevisionsRelations = relations(storeSiteRevisions, ({one})
 	}),
 }));
 
-export const templatesRelations = relations(templates, ({one, many}) => ({
-	currentVersion: one(templateVersions, {
-		fields: [templates.currentVersionId],
-		references: [templateVersions.id],
-		relationName: "templates_currentVersionId_templateVersions_id"
-	}),
-	versions: many(templateVersions, {
-		relationName: "templateVersions_templateId_templates_id"
-	}),
-	installs: many(templateInstalls),
-}));
-
-export const templateVersionsRelations = relations(templateVersions, ({one}) => ({
-	template: one(templates, {
-		fields: [templateVersions.templateId],
-		references: [templates.id],
-		relationName: "templateVersions_templateId_templates_id"
-	}),
-}));
-
 export const templateInstallsRelations = relations(templateInstalls, ({one}) => ({
-	template: one(templates, {
-		fields: [templateInstalls.templateId],
-		references: [templates.id]
-	}),
-	templateVersion: one(templateVersions, {
-		fields: [templateInstalls.templateVersionId],
-		references: [templateVersions.id]
-	}),
 	store: one(stores, {
 		fields: [templateInstalls.storeId],
 		references: [stores.id]
@@ -1090,19 +1062,6 @@ export const platformBlogPostsRelations = relations(platformBlogPosts, ({one}) =
 	createdBy: one(users, {
 		fields: [platformBlogPosts.createdBy],
 		references: [users.id]
-	}),
-}));
-
-export const librarySectionsRelations = relations(librarySections, ({one}) => ({
-	createdBy: one(users, {
-		fields: [librarySections.createdBy],
-		references: [users.id],
-		relationName: "librarySectionsCreatedBy"
-	}),
-	updatedBy: one(users, {
-		fields: [librarySections.updatedBy],
-		references: [users.id],
-		relationName: "librarySectionsUpdatedBy"
 	}),
 }));
 

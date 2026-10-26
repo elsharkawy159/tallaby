@@ -6,7 +6,7 @@
  */
 import type { NodeTemplate } from "../../elements/tree";
 import type { TreeBuilder } from "../builder";
-import { defineDesign } from "../builder";
+import { aboutDesign } from "./_rules";
 import { L, ON_BRAND, ON_BRAND_BODY } from "../_kit";
 import { BIG_NUMBER } from "../_modular";
 
@@ -23,9 +23,9 @@ const rule = (t: TreeBuilder): NodeTemplate =>
     mobile: { width: "100%", minHeight: 1 },
   });
 
-export const teamNumbers = defineDesign({
+export const teamNumbers = aboutDesign({
   id: "team-numbers",
-  version: 1,
+  version: 2,
   category: "about",
   subcategory: "values",
   name: L("بالأرقام", "By the numbers"),

@@ -4,7 +4,7 @@
  * directions and call buttons. The hours are typed text: a tree cannot tell
  * whether a branch is open right now. Cards stack on mobile.
  */
-import { defineDesign } from "../builder";
+import { aboutDesign } from "./_rules";
 import { L } from "../_kit";
 import { modHead, pillButton } from "../_modular";
 
@@ -17,9 +17,9 @@ const BRANCHES = [
   { name: L("فرع المعادي", "Maadi"), address: L("شارع ٩، المعادي", "Road 9, Maadi"), hours: L("السبت – الخميس، ١٢ – ١٠ م", "Sat – Thu, 12 – 10 pm") },
 ];
 
-export const teamBranches = defineDesign({
+export const teamBranches = aboutDesign({
   id: "team-branches",
-  version: 1,
+  version: 2,
   category: "about",
   subcategory: "branches",
   name: L("فروعنا", "Our branches"),
@@ -48,10 +48,10 @@ export const teamBranches = defineDesign({
                           t.box([], { label: L("النقطة", "Dot"), style: { background: "accent", radius: 999, width: "8px", minHeight: 8 } }),
                           t.text(b.hours, { style: { fontSize: "sm", fontWeight: "medium" } }),
                         ],
-                        { label: L("المواعيد", "Hours"), style: { gap: 8, marginTop: 8 } },
+                        { label: L("المواعيد", "Hours"), style: { gap: 8 } },
                       ),
                     ],
-                    { label: L("البيانات", "Details"), style: { gap: 4, paddingTop: 20, paddingStart: 20, paddingEnd: 20 } },
+                    { label: L("البيانات", "Details"), style: { gap: 6, paddingTop: 20, paddingStart: 20, paddingEnd: 20 } },
                   ),
                   t.row(
                     [

@@ -1,21 +1,21 @@
 /**
- * Template rows read straight from the database (admin website builder §5.4):
- * the default template a new store starts from, and a template's `meta`
- * (page names, demo catalog, swatches). The database is the master copy; the
- * code templates are only the seed and the per-field fallback
- * (`resolveTemplateMeta`). Library sections stored as refs are built from
- * the library's current tree (`template-refs.server.ts`). Soft-deleted (`deleted_at`) and hidden
- * (`is_active = false`) templates are never returned.
+ * Storefront templates come from the codebase only (owner, 2026-10-27): the
+ * code catalog (`CODE_TEMPLATES` in @workspace/store-sections/templates) is
+ * the single source, so templates are edited and improved in code and ship
+ * with a deploy. The `templates`, `template_versions` and `library_sections`
+ * tables were dropped (0109). This module keeps the names the rest of the
+ * app calls (the default template a new store starts from, a template's
+ * meta, the public preview).
  *
  * Kept apart from templates.server.ts so the store scaffold
  * (stores/starter-site.server.ts) can use it without an import cycle;
  * templates.server.ts re-exports it. Server-only. Templates are global
- * admin-authored data, so nothing here is scoped to a seller.
+ * platform data, so nothing here is scoped to a seller. The `q` parameters
+ * stay for callers that pass a transaction; nothing here reads the database.
  */
-import { and, db, eq, isNull, templateVersions, templates } from "@workspace/db";
-import { siteConfigSchema, validateSiteConfig, type SiteConfig } from "@workspace/store-sections";
-import { resolveTemplateMeta, type TemplateMeta } from "@workspace/store-sections/templates";
-import { expandTemplateConfig } from "./template-refs.server";
+import type { db } from "@workspace/db";
+import { validateSiteConfig, type SiteConfig } from "@workspace/store-sections";
+import { CODE_TEMPLATES, DEFAULT_TEMPLATE, getCodeTemplate, templateMeta, type TemplateDefinition, type TemplateMeta } from "@workspace/store-sections/templates";
 
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 type Queryable = Tx | typeof db;
@@ -24,51 +24,45 @@ const TEMPLATE_KEY_RE = /^[a-z0-9][a-z0-9-]{0,62}$/;
 
 export type DbTemplate = { key: string; config: SiteConfig; meta: TemplateMeta };
 
-/** Offered templates: active and not soft-deleted. */
-export const offeredTemplate = () => and(eq(templates.isActive, true), isNull(templates.deletedAt));
+/** Validated configs by key (null: the code template does not validate). Built once per server instance. */
+const CONFIGS = new Map<string, SiteConfig | null>();
 
 /**
- * The default template (`is_default`) with its current version, in the
- * caller's transaction when given one. Null when there is none or its
- * current version does not pass `validateSiteConfig` (a new store must
- * never fail to be created over a broken default).
+ * A code template's validated config, as a fresh copy (callers may change
+ * it). Null for an unknown key or a config that does not validate: a broken
+ * template is never offered and a new store never fails over one.
  */
-export async function loadDefaultTemplate(q: Queryable = db): Promise<DbTemplate | null> {
-  const [row] = await q
-    .select({ key: templates.key, category: templates.category, meta: templates.meta, config: templateVersions.config })
-    .from(templates)
-    .innerJoin(templateVersions, eq(templateVersions.id, templates.currentVersionId))
-    .where(and(eq(templates.isDefault, true), offeredTemplate()))
-    .limit(1);
-  if (!row) return null;
-  const config = validateSiteConfig(await expandTemplateConfig(row.config, row.category, q));
-  return config.success ? { key: row.key, config: config.data, meta: resolveTemplateMeta(row.meta, row.key) } : null;
+export function codeTemplateConfig(key: string): SiteConfig | null {
+  if (typeof key !== "string" || !TEMPLATE_KEY_RE.test(key)) return null;
+  if (!CONFIGS.has(key)) {
+    const template = getCodeTemplate(key);
+    const parsed = template ? validateSiteConfig(template.config()) : null;
+    CONFIGS.set(key, parsed?.success ? parsed.data : null);
+  }
+  const config = CONFIGS.get(key);
+  return config ? structuredClone(config) : null;
 }
 
-/** An offered template's meta (database first, code fallback per field). Null for an unknown, hidden or deleted key. */
-export async function getTemplateMeta(key: string, q: Queryable = db): Promise<TemplateMeta | null> {
-  if (typeof key !== "string" || !TEMPLATE_KEY_RE.test(key)) return null;
-  const [row] = await q
-    .select({ meta: templates.meta })
-    .from(templates)
-    .where(and(eq(templates.key, key), offeredTemplate()))
-    .limit(1);
-  return row ? resolveTemplateMeta(row.meta, key) : null;
+/** Every offered template: the default first, then by `sortOrder`. */
+export function offeredTemplates(): TemplateDefinition[] {
+  return [...CODE_TEMPLATES].sort((a, b) => Number(!!b.isDefault) - Number(!!a.isDefault) || a.sortOrder - b.sortOrder);
 }
 
-/**
- * An offered template's current config and meta with no store involved (the
- * tallaby.com gallery preview). Null for an unknown, hidden or deleted key,
- * or a broken version.
- */
-export async function getPublicTemplate(key: string, q: Queryable = db): Promise<{ config: SiteConfig; meta: TemplateMeta } | null> {
-  if (typeof key !== "string" || !TEMPLATE_KEY_RE.test(key)) return null;
-  const [row] = await q
-    .select({ category: templates.category, meta: templates.meta, config: templateVersions.config })
-    .from(templates)
-    .innerJoin(templateVersions, eq(templateVersions.id, templates.currentVersionId))
-    .where(and(eq(templates.key, key), offeredTemplate()))
-    .limit(1);
-  const config = siteConfigSchema.safeParse(row && (await expandTemplateConfig(row.config, row.category, q)));
-  return row && config.success ? { config: config.data, meta: resolveTemplateMeta(row.meta, key) } : null;
+/** The default template (`DEFAULT_TEMPLATE`, Tallaby Classic) with its config and meta. Null when its config does not validate. */
+export async function loadDefaultTemplate(_q?: Queryable): Promise<DbTemplate | null> {
+  const config = codeTemplateConfig(DEFAULT_TEMPLATE.key);
+  return config ? { key: DEFAULT_TEMPLATE.key, config, meta: templateMeta(DEFAULT_TEMPLATE) } : null;
+}
+
+/** A template's meta (page names, demo catalog, swatches). Null for an unknown key. */
+export async function getTemplateMeta(key: string, _q?: Queryable): Promise<TemplateMeta | null> {
+  const template = typeof key === "string" && TEMPLATE_KEY_RE.test(key) ? getCodeTemplate(key) : undefined;
+  return template ? templateMeta(template) : null;
+}
+
+/** A template's config and meta with no store involved (the tallaby.com gallery preview). Null for an unknown key or a broken config. */
+export async function getPublicTemplate(key: string, _q?: Queryable): Promise<{ config: SiteConfig; meta: TemplateMeta } | null> {
+  const config = codeTemplateConfig(key);
+  const template = config ? getCodeTemplate(key) : undefined;
+  return config && template ? { config, meta: templateMeta(template) } : null;
 }

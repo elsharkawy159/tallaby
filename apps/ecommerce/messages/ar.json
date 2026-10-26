@@ -2170,6 +2170,8 @@
     },
     "homeLabel": "الصفحة الرئيسية لـ {store}",
     "openCart": "السلة، {count, plural, =0 {فارغة} one {منتج واحد} two {منتجان} few {# منتجات} many {# منتجًا} other {# منتج}}",
+    "openMenu": "افتح القائمة",
+    "menuNote": "روابط متجر {store}",
     "categoriesLabel": "تسوق حسب القسم",
     "allProducts": "كل المنتجات",
     "productsHeading": "المنتجات",

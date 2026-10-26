@@ -147,8 +147,55 @@ describe("header and footer options (drawChrome)", () => {
       expect(findNode(out.componentTree!, "row")!.children.map((c) => c.id)).toEqual(["name"]);
       expect(findNode(input.componentTree!, "mark")).not.toBeNull();
     }
+    // Nothing else changes: only the burger menu (always added) goes in.
     const plain = chrome([n("logo", "linkBlock", { role: "logo" }, [n("name", "text", { role: "storeName" })])]);
-    expect(drawChrome(plain, "header", off)).toBe(plain);
+    const drawn = drawChrome(plain, "header", off)!;
+    expect(drawn.componentTree![0]!.children.map((c) => c.type)).toEqual(["mobileMenu", "linkBlock"]);
+    expect(findNode(drawn.componentTree!, "logo")).toEqual(plain.componentTree![0]!.children[0]);
+  });
+
+  describe("mobile burger menu (docs/section-rules.md §5.6)", () => {
+    const link = (id: string, href: string, text: string) => n(id, "linkBlock", { href, label: "Menu link" }, [n(`${id}-t`, "text", { text })]);
+    const bar = () =>
+      chrome([
+        n("bar", "hFlex", {}, [
+          classicLogo(),
+          n("menu", "hFlex", { role: "menu" }, [link("home", "/", "Home"), link("shop", "/products", "Shop")]),
+          n("cart", "linkBlock", { href: "/cart" }, [n("bag", "icon", { name: "shopping-bag" })]),
+        ]),
+      ]);
+
+    it("goes first in the header's bar, holding plain copies of the menu links", () => {
+      const out = drawChrome(bar(), "header", off)!;
+      const row = findNode(out.componentTree!, "bar")!;
+      expect(row.children[0]!.type).toBe("mobileMenu");
+      const copies = row.children[0]!.children;
+      expect(copies.map((c) => c.props.href)).toEqual(["/", "/products"]);
+      expect(copies.every((c) => c.id.startsWith("c-mm-") && !c.style)).toBe(true);
+    });
+
+    it("marks the header's menus to hide on phones, without mutating the input", () => {
+      const input = bar();
+      const out = drawChrome(input, "header", off)!;
+      expect(findNode(out.componentTree!, "menu")!.props.collapse).toBe("mobile");
+      expect(findNode(input.componentTree!, "menu")!.props.collapse).toBeUndefined();
+    });
+
+    it("shares the first cell of a grid bar, so the column count stays", () => {
+      const input = chrome([n("grid", "grid", {}, [n("menu", "hFlex", { role: "menu" }, [link("home", "/", "Home")]), classicLogo(), n("end", "hFlex")])]);
+      const grid = findNode(drawChrome(input, "header", off)!.componentTree!, "grid")!;
+      expect(grid.children).toHaveLength(3);
+      expect(grid.children[0]!.children.map((c) => c.type)).toEqual(["mobileMenu", "hFlex"]);
+    });
+
+    it("is never added to a footer", () => {
+      expect(typesIn(drawChrome(bar(), "footer", off))).not.toContain("mobileMenu");
+    });
+
+    it.each(CODE_TEMPLATES.map((t) => [t.key, t] as const))("%s: the header has exactly one burger", (_key, template) => {
+      const out = drawChrome(template.config().header!, "header", off);
+      expect(typesIn(out).filter((type) => type === "mobileMenu")).toHaveLength(1);
+    });
   });
 
   it.each(CODE_TEMPLATES.map((t) => [t.key, t] as const))("%s: without a logo the brand is the store name alone", (_key, template) => {

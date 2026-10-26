@@ -18,8 +18,9 @@ import {
 } from "./templates.server";
 
 /**
- * Templates apply/undo (PLAN.md §8.1, P4-05) against the staging copy, which
- * has Tallaby Classic seeded (0052/0062, v3 tree sections in 0071) and 0064.
+ * Templates apply/undo (PLAN.md §8.1, P4-05) against the staging copy. The
+ * templates come from the code catalog (0109 dropped the template tables);
+ * installs are recorded in `template_installs` (0064, keyed by template since 0108).
  * Skipped without TEST_DATABASE_URL.
  */
 const TEST_DATABASE_URL = process.env.TEST_DATABASE_URL;
@@ -57,33 +58,18 @@ describe.skipIf(!TEST_DATABASE_URL)("store templates (integration)", { timeout: 
     expect(await getStoreTemplateConfig(w.a.sellerId, w.a.a2, "../bad", db)).toBeNull();
   });
 
-  it("gallery, previews and meta read the database meta and hide soft-deleted templates", async () => {
+  it("gallery, previews and meta come from the code catalog; unknown keys are refused", async () => {
     const card = (await listStoreTemplates(w.a.sellerId, w.a.a2, db))!.templates.find((t) => t.key === "atelier")!;
     expect(card.palette.length).toBeGreaterThan(0);
     expect(card.formKinds).toEqual(expect.any(Array));
     expect((await getTemplateMeta("atelier", db))?.demo.products.length).toBeGreaterThan(0);
     expect((await getPublicTemplate("atelier", db))?.meta.palette).toEqual(card.palette);
-
-    await db.update(s.templates).set({ deletedAt: new Date().toISOString() }).where(eq(s.templates.key, "atelier"));
-    try {
-      expect((await listStoreTemplates(w.a.sellerId, w.a.a2, db))!.templates.some((t) => t.key === "atelier")).toBe(false);
-      expect(await getPublicTemplateConfig("atelier", db)).toBeNull();
-      expect(await getStoreTemplateConfig(w.a.sellerId, w.a.a2, "atelier", db)).toBeNull();
-      expect(await getTemplateMeta("atelier", db)).toBeNull();
-    } finally {
-      await db.update(s.templates).set({ deletedAt: null }).where(eq(s.templates.key, "atelier"));
-    }
+    expect(await getPublicTemplateConfig("no-such-template", db)).toBeNull();
+    expect(await getTemplateMeta("no-such-template", db)).toBeNull();
   });
 
-  // Needs 0071 (Tallaby Classic v3, tree sections) on the test database; skipped until it is applied.
-  const classicV3 = async () => {
-    const [row] = await db
-      .select({ version: s.templateVersions.version })
-      .from(s.templates)
-      .innerJoin(s.templateVersions, eq(s.templateVersions.id, s.templates.currentVersionId))
-      .where(eq(s.templates.key, "tallaby-classic"));
-    return (row?.version ?? 0) >= 3;
-  };
+  // Code templates are always current (0109); kept as a hook so the cases below read as before.
+  const classicV3 = async () => true;
 
   it("applyStoreTemplate bumps chrome_version", async (t) => {
     if (!(await classicV3())) return t.skip();
@@ -168,8 +154,6 @@ describe.skipIf(!TEST_DATABASE_URL)("store templates (integration)", { timeout: 
 
   // Needs 0070 (Atelier seed) on the test database; skipped until it is applied.
   it("Atelier: creates and binds the forms of the sections it keeps, names the pages, fills in the store name; a re-apply reuses the forms", async (t) => {
-    const [row] = await db.select({ id: s.templates.id }).from(s.templates).where(eq(s.templates.key, "atelier"));
-    if (!row) return t.skip();
     const form = (name: string) => ({ name, fields: [{ id: "email", key: "email", type: "email" as const, label: "Email", required: true, width: "full" as const }], settings: { submitLabel: "Send", successMessage: "Thanks" } });
     const forms = { ...OPTIONS, formInput: (kind: string) => (kind === "newsletter" ? form("Atelier newsletter test") : kind === "contact" ? form("Atelier contact test") : undefined) };
 

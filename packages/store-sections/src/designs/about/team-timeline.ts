@@ -4,7 +4,7 @@
  * brand colour with a sun dot. Shows how the store grew. Two per row on
  * mobile.
  */
-import { defineDesign } from "../builder";
+import { aboutDesign } from "./_rules";
 import { L } from "../_kit";
 import { BIG_NUMBER, modHead } from "../_modular";
 
@@ -15,9 +15,9 @@ const MILESTONES = [
   { year: L("٢٠٢٦", "2026"), text: L("٥٠ ألف عميل وفرعين", "50,000 customers and two branches") },
 ];
 
-export const teamTimeline = defineDesign({
+export const teamTimeline = aboutDesign({
   id: "team-timeline",
-  version: 1,
+  version: 2,
   category: "about",
   subcategory: "story",
   name: L("رحلتنا", "Our journey"),
@@ -66,7 +66,7 @@ export const teamTimeline = defineDesign({
             {
               label: L("الخط الزمني", "Timeline"),
               role: "items",
-              columns: { desktop: 4, mobile: 2 },
+              columns: { desktop: 4, tablet: 2, mobile: 2 },
               style: { gap: 24 },
               mobile: { gap: 16 },
             },

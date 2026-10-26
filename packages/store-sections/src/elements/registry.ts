@@ -99,6 +99,7 @@ export type ElementType =
   | "storeLogo"
   | "themeToggle"
   | "accountLink"
+  | "mobileMenu"
   | "productGallery"
   | "productPrice"
   | "productStock"
@@ -829,6 +830,16 @@ export const ELEMENT_DEFINITIONS: readonly ElementDefinition[] = [
     defaultProps: {},
     fields: [],
   },
+  // The header's burger menu on phones (config/header.ts `drawChrome`): its children are copies of the menu links.
+  {
+    type: "mobileMenu",
+    group: "data",
+    label: L("قائمة الموبايل", "Mobile menu"),
+    keywords: ["menu", "burger", "mobile", "قائمة", "موبايل"],
+    container: true,
+    defaultProps: {},
+    fields: [],
+  },
   // Product page (template product page spec §5.3): parts of the page's product. The storefront
   // swaps the interactive ones for the host's components; the editor draws still renderings.
   {
@@ -977,7 +988,7 @@ export function getElementDefinition(type: string): ElementDefinition | undefine
  * is added to the header for translated stores (`withLanguageSwitcher`), never by hand, and so
  * are the store logo, theme toggle and sign-in (the header/footer options, `drawChrome`).
  */
-const NOT_IN_PALETTE: readonly ElementType[] = ["listItem", "videoItem", "section", "languageSwitcher", "storeLogo", "themeToggle", "accountLink"];
+const NOT_IN_PALETTE: readonly ElementType[] = ["listItem", "videoItem", "section", "languageSwitcher", "storeLogo", "themeToggle", "accountLink", "mobileMenu"];
 
 /** Types shown in the palette. */
 export const PALETTE_TYPES: readonly ElementType[] = ELEMENT_DEFINITIONS.filter((d) => !NOT_IN_PALETTE.includes(d.type)).map((d) => d.type);

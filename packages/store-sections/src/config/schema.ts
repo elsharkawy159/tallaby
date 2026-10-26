@@ -47,6 +47,8 @@ export const ALLOWED_NODE_TYPES = [
   "languageSwitcher",
   // Header/footer options: store logo, theme toggle, sign-in (owner, 2026-10-24); drawn, never saved by hand; additive.
   "storeLogo", "themeToggle", "accountLink",
+  // Mobile burger menu of every header (owner, 2026-10-27); drawn, never saved by hand; additive.
+  "mobileMenu",
   // Product page elements (template product page, 2026-10-23); additive.
   "productGallery", "productPrice", "productStock", "productRating", "productVariants",
   "productBuyBox", "productDetails", "productContent", "productSeller", "productReviews",

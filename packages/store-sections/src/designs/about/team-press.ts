@@ -4,7 +4,7 @@
  * names are placeholders for the seller to replace with the real outlets.
  * Everything is centred; names wrap to a second row on mobile.
  */
-import { defineDesign } from "../builder";
+import { aboutDesign } from "./_rules";
 import { L } from "../_kit";
 
 const OUTLETS = [
@@ -15,9 +15,9 @@ const OUTLETS = [
   L("بيزنس ناو", "Business Now"),
 ];
 
-export const teamPress = defineDesign({
+export const teamPress = aboutDesign({
   id: "team-press",
-  version: 1,
+  version: 2,
   category: "about",
   subcategory: "press",
   name: L("اتكلموا عننا", "In the press"),

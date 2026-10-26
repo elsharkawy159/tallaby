@@ -32,6 +32,8 @@ import { StoreForm } from "./store-form.client";
 import { StorefrontLanguageSwitcher } from "./storefront-language.client";
 import { StorefrontThemeToggle } from "./storefront-theme-toggle.client";
 import { StoreAccountButton } from "./store-account-button.client";
+import { StoreMobileMenu } from "./store-mobile-menu.client";
+import { StickyStoreHeader } from "./sticky-store-header.client";
 import { StoreWishlistButton } from "./store-wishlist-button.client";
 import { storefrontFont } from "./storefront-font";
 import { PoweredByTallaby } from "./powered-by-tallaby";
@@ -156,6 +158,7 @@ async function buildContext(
     renderLanguageSwitcher: () => <StorefrontLanguageSwitcher variant="site" />,
     renderThemeToggle: () => <StorefrontThemeToggle />,
     renderAccountButton: () => <StoreAccountButton />,
+    renderMobileMenu: ({ links, title }) => <StoreMobileMenu title={title} links={links} fontClassName={storefrontFont.variable} />,
     renderAddToCart: (product) => (
       <StoreCardAddToCart productId={product.id} href={product.href} inStock={!!product.inStock} hasVariants={catalog.withVariants.has(product.id)} />
     ),
@@ -196,9 +199,8 @@ export async function StoreSiteChrome({
       {credit}
     </>
   );
-  // Every section is its own stacking context (`relative isolate`), so the header's search
-  // results would paint under the sections after it; lift the whole header above the page.
-  return part === "header" ? <div className="relative z-40">{chrome}</div> : chrome;
+  // Sticky; hides on scroll down and shows on scroll up (docs/section-rules.md §5.6).
+  return part === "header" ? <StickyStoreHeader>{chrome}</StickyStoreHeader> : chrome;
 }
 
 /**

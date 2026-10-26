@@ -19,6 +19,7 @@ export * from "../social/icon";
 export * from "../elements/shell";
 export * from "../library";
 export { DATA_ACTION_CLASS, DataEmpty, EmptySection } from "../sections/_data";
+export { MOBILE_MENU_BUTTON_CLASS } from "../elements/render";
 export * from "../core/catalog-resolve";
 export * from "../designs";
 export * from "../elements/data";

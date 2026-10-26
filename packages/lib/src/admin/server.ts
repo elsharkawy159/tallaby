@@ -9,13 +9,14 @@ export * from "./stores-admin.server";
 export * from "./integrations-admin.server";
 export * from "./ads-admin.server";
 export * from "./domains-admin.server";
-export * from "./templates-admin.server";
+// Templates and the section library are code-only since 2026-10-27 (0109): their admin modules are commented out.
+// export * from "./templates-admin.server";
 export * from "./audit-view.server";
 export * from "./overview.server";
 export * from "./platform-blog-admin.server";
 export * from "./list-sort.server";
 export * from "./platform-admin.server";
 export * from "./store-site-admin.server";
-export * from "./library-sections-admin.server";
-export * from "./templates-studio-admin.server";
-export * from "./templates-sections-admin.server";
+// export * from "./library-sections-admin.server";
+// export * from "./templates-studio-admin.server";
+// export * from "./templates-sections-admin.server";

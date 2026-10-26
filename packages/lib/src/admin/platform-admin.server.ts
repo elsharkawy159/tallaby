@@ -3,6 +3,7 @@
  * Read-only. Never selects payment card data, gateway payloads or secrets.
  */
 import { db, sql } from "@workspace/db";
+import { CODE_TEMPLATES, DEFAULT_TEMPLATE } from "@workspace/store-sections/templates";
 import type { Queryable } from "./guard.server";
 
 type Row = Record<string, unknown>;
@@ -156,23 +157,20 @@ export type AdminShippingOverview = Awaited<ReturnType<typeof getShippingOvervie
 
 /** Users with admin access, the default template, and platform-wide counts. */
 export async function getPlatformSettingsForAdmin(q: Queryable = db) {
-  const [team, defaultTemplate, counts] = await Promise.all([
+  const [team, counts] = await Promise.all([
     q.execute(sql`
       SELECT id, email, full_name, is_verified, is_suspended, last_login_at, created_at
       FROM users
       WHERE role = 'admin'
       ORDER BY created_at
     `),
-    q.execute(sql`SELECT key, name FROM templates WHERE is_default LIMIT 1`),
     q.execute(sql`
       SELECT
         (SELECT count(*)::int FROM sellers) AS sellers,
-        (SELECT count(*)::int FROM stores WHERE deleted_at IS NULL) AS stores,
-        (SELECT count(*)::int FROM templates WHERE is_active) AS templates
+        (SELECT count(*)::int FROM stores WHERE deleted_at IS NULL) AS stores
     `),
   ]);
 
-  const template = ([...defaultTemplate] as Row[])[0];
   const count = ([...counts] as Row[])[0] ?? {};
   return {
     team: ([...team] as Row[]).map((row) => ({
@@ -184,11 +182,12 @@ export async function getPlatformSettingsForAdmin(q: Queryable = db) {
       lastLoginAt: iso(row.last_login_at),
       createdAt: iso(row.created_at),
     })),
-    defaultTemplate: template ? { key: String(template.key), name: template.name as unknown } : null,
+    // Templates are code-only since 2026-10-27 (0109).
+    defaultTemplate: { key: DEFAULT_TEMPLATE.key, name: DEFAULT_TEMPLATE.name as unknown },
     counts: {
       sellers: Number(count.sellers ?? 0),
       stores: Number(count.stores ?? 0),
-      templates: Number(count.templates ?? 0),
+      templates: CODE_TEMPLATES.length,
     },
   };
 }

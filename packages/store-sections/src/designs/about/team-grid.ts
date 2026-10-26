@@ -4,7 +4,7 @@
  * be swapped for a photo. Two per row on tablet and mobile.
  */
 import type { StyleValues } from "../../elements/style";
-import { defineDesign } from "../builder";
+import { aboutDesign } from "./_rules";
 import { L } from "../_kit";
 import { modHead } from "../_modular";
 
@@ -22,9 +22,9 @@ const TONES: { tile: StyleValues; ink: string }[] = [
   { tile: { background: "secondary" }, ink: "foreground" },
 ];
 
-export const teamGrid = defineDesign({
+export const teamGrid = aboutDesign({
   id: "team-grid",
-  version: 1,
+  version: 2,
   category: "about",
   subcategory: "team",
   name: L("الفريق", "Team grid"),
@@ -49,13 +49,13 @@ export const teamGrid = defineDesign({
                     ],
                     {
                       label: L("الصورة الرمزية", "Avatar"),
-                      style: { ...tone.tile, radius: 24, aspectRatio: "square", justifyContent: "center", marginBottom: 12 },
+                      style: { ...tone.tile, radius: 24, aspectRatio: "square", justifyContent: "center" },
                     },
                   ),
                   t.text(p.name, { role: "title", style: { fontFamily: "heading", fontWeight: "semibold", fontSize: "lg" }, mobile: { fontSize: "md" } }),
                   t.text(p.role, { style: { color: "muted", fontSize: "sm" } }),
                 ],
-                { label: L("الشخص", "Person"), style: { gap: 4 } },
+                { label: L("الشخص", "Person"), style: { gap: 8 } },
               );
             }),
             {

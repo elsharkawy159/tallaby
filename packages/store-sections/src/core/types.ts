@@ -422,6 +422,12 @@ export interface RenderContext {
   renderLanguageSwitcher?: () => ReactNode;
   /** Customer account link or menu, when the host supports it (`accountLink` node: sign-in for guests). */
   renderAccountButton?: () => ReactNode;
+  /**
+   * The header's burger menu on phones (`mobileMenu` node): a button that
+   * opens a sheet holding `links` (the menu, already drawn). Without it, a
+   * still burger is drawn in the editor and a plain dropdown publicly.
+   */
+  renderMobileMenu?: (menu: { links: ReactNode; title: string }) => ReactNode;
   /** The site's light/dark switch (`themeToggle` node); see `siteDarkCss`. */
   renderThemeToggle?: () => ReactNode;
   /** Editor only: the uploader a `storeLogo` node shows while the store has no logo (`drawChrome` `logoPlaceholder`). */

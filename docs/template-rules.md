@@ -58,9 +58,9 @@ Limits:
 ### 4.1 Header
 
 - Desktop: logo or store name (role `storeName` / `logo`), menu of at most 6 links, search, wishlist (optional), account, cart with a live count.
-- Mobile: menu button, logo, cart with count. Search and account move to the bottom navigation when it is on.
+- Mobile: **always a burger icon** that opens a sheet or dropdown with every menu link (owner, 2026-10-27; `docs/section-rules.md` §5.6), then logo and cart with count. Search and account may move to the bottom navigation when it is on, but the burger stays.
 - An announcement bar is optional: one line, for example free shipping or delivery time. No more than one message scrolling.
-- Sticky header on scroll: allowed, must be thin (≤ 64 px on mobile).
+- Sticky header on every store, thin (≤ 64 px on mobile). It slides up out of view on scroll down and back in on scroll up (owner, 2026-10-27; `docs/section-rules.md` §5.6). The burger opens a sheet by default.
 
 ### 4.2 Mobile bottom navigation
 
@@ -77,7 +77,8 @@ On by default for most templates (owner decides which, §8). Phones only (< 768 
 
 - Logo or store name and a one-line description.
 - 2 or 3 link columns: **Shop** (all products, new arrivals, offers, categories), **Help** (contact, FAQ, shipping, returns, track order), **Policies** (privacy, terms).
-- Social icons (from the store's contact data) and, optionally, payment icons.
+- Social icons (from the store's contact data) and payment method **logos** (only the methods the store's checkout offers).
+- **On mobile** (owner, 2026-10-27; `docs/section-rules.md` §5.7), top to bottom: the link columns as dropdowns, **collapsed by default**; then, each centred on its own line, social icons, `© <year> <store name>. All rights reserved.`, Powered by Tallaby, and the payment logos.
 - Bottom line: `© <year> <store name>` and **"Powered by Tallaby" / «مدعوم من طلبي»** linking to tallaby.com.
 - The line is drawn at render time in **every** footer (`drawChrome`, owner 2026-10-26): «مدعوم من **طلبي**» / "Powered by **Tallaby**" beside the copyright line, "Tallaby" underlined and linking to tallaby.com. It is never saved, so a seller cannot remove it in the builder; a Powered by link a footer tree carries itself is dropped so it never shows twice. The floating "By Tallaby" badge is gone.
 
@@ -108,46 +109,44 @@ Rules:
 
 ## 6. Design quality
 
-The full design language (type scale, eyebrows, accent words, surfaces, product cards, images) is `docs/section-rules.md` §5. In short:
+The full design language (direction, spacing and type, layout, responsive rules, surfaces, product cards, images) is `docs/section-rules.md` §5. In short:
 
-- **Creative and current**: big display headings with an eyebrow, one accent word at most, full-bleed photos for visual sections, contained product sections, soft surfaces, one radius per template.
-- **Simple and consistent**: one font pair (heading and body), one corner radius, one accent colour, all as design-system tokens so the seller can restyle everything from Theme.
-- **Spacing**: section padding about 80 px desktop / 48 px mobile (shell `lg` / `md`), tighter only for marquee and trust strips; the same rhythm across the page.
+- **Simple, Shopify-style**: large photos, generous white space, one heading, one subtext line and one or two buttons per section; no decorative clutter, nested cards or gradient backgrounds. The premium feel comes from spacing, type and photos, not effects.
+- **Width**: hero, banner, image with text, slideshow and video are full width; everything else is contained.
+- **Consistent**: one font pair (heading and body), one corner radius, one accent colour, all as design-system tokens so the seller can restyle everything from Theme.
+- **Spacing**: section padding about 96 px desktop / 48 px mobile (target `clamp(48px, 8vw, 112px)`), tighter only for trust strips; the same rhythm across the page.
 - **Product card (same across the template)**: image at a fixed ratio (1:1 or 3:4), title on at most 2 lines, price + compare-at price, discount badge, Add to cart. No extra clutter.
 - **Photos**: real, sharp photos that match the trade, the same style and crop across the template, checked by eye; no watermarks, no logos.
 - **Copy**: short, warm Arabic (Egyptian-friendly) with a matching English version; buttons are verbs ("تسوّق الآن", "شوف العروض").
 - **Accessibility**: text contrast at least 4.5:1, alt text on every image, visible focus.
 - **Speed**: hero images sized for mobile, at most 3 slides, no autoplaying video on the home page.
-- Checked at 375, 768 and 1280 px, in Arabic and English, before a template ships.
+- Checked at 390, 768, 1024, 1280 and 1440 px, in Arabic and English, before a template ships.
 
 ## 6a. Scroll animations
 
-Simple, calm and the same everywhere, as on Shopify's paid themes. The full system (tokens, presets, budgets, builder controls, how it is built) is `docs/section-rules.md` §6. For templates:
+Simple, calm, **on by default** and the same everywhere. The full system (tokens, variants, builder controls, how it is built) is `docs/section-rules.md` §6. For templates:
 
-**What a Tier A template turns on**
-
-- Section heads and cards: **Rise** (fade + move up 24 px, 600 ms), cards **one by one** (70 ms stagger, at most 6 steps).
-- Photos in banner grids, image with text and shop the look: **Reveal image** (zoom out from 110 % to 100 % inside the frame).
-- At most **one** signature effect per page, chosen by the template: a **words** reveal on one statement heading, a **wipe** on one large photo, or a moving **marquee** band.
-- Numbers sections count up once. Product cards use the template's hover effect (lift or zoom).
-- The hero shows at once: only a transform-only settle on its photo (104 % → 100 %), never a fade from 0, because it is the largest content on screen.
+- Every home section except the hero **fades up once** as it enters the screen (700 ms, 24 px), its cards **one by one** (80 ms stagger, at most 6 steps).
+- Photos in banners, image with text and galleries **zoom in** slightly (1.06 → 1) inside their frame.
+- The hero shows at once: its heading is never hidden and its photo may only use a transform-only zoom, because it is the largest content on screen.
+- Product card photos zoom to 104 % on hover; buttons change colour or lift 2 px.
+- No marquee, word reveal, wipe or parallax in v0.2 of the section rules.
 
 **Always**
 
 - Each element animates **once**, the first time it comes into view.
 - Content is **visible without the script**, and with *reduce motion* on nothing moves.
-- Only `opacity`, `transform` and `clip-path` animate, so the layout never jumps.
-- Never animated: header, bottom navigation, footer, announcement bar, product buy box, cart, checkout, forms.
+- Only `opacity` and `transform` animate, so the layout never jumps.
+- No reveal animation: header (it only hides and shows on scroll), bottom navigation, footer, announcement bar, product buy box, cart, checkout, forms.
 - No entrance motion in the editor canvas; the builder's preview mode and the live site show it.
-- No bounce, spin, shake or page-long effects. Parallax only on a full-bleed background photo, at most 2 per page, never on phones.
 
 **In the website builder**
 
-- **Theme › Animations**: on/off for the whole site, and **Hover effect** (none, lift, zoom).
-- **Section**: Animation (None / Fade / Rise) as today, plus "Animate items one by one".
-- **Element**: an Animation group (Inherit / None / Fade / Rise / Reveal image / Wipe, plus a 0 to 600 ms delay).
+- **Theme › Animations**: on (default) / off for the whole site, and **Hover effect** (zoom, none).
+- **Section**: an Animation switch, on (default) / off, replacing today's None / Fade / Rise.
+- **Element** (advanced): Reveal = Auto / Fade up / Fade / Zoom in / Slide in / None.
 
-**How**: today's section animation is CSS-only (`animation-timeline: view()`, `elements/shell.ts`), which Firefox does not support. It is replaced by one small platform script using `IntersectionObserver` (`docs/section-rules.md` §6.7).
+**How**: today's section animation is CSS-only (`animation-timeline: view()`, `elements/shell.ts`) and off unless chosen. It is replaced by one small platform script using `IntersectionObserver` (`docs/section-rules.md` §6.7).
 
 ## 7. Checks (to be automated)
 
@@ -159,9 +158,9 @@ A `template-rules.test.ts` in `packages/store-sections` will check every templat
 4. Bottom navigation is set as decided for that template (§8).
 5. Every `href` in the tree is in the allowed list (§5).
 6. The template has a product page with Add to cart and Buy now.
-7. Tier A: every home section except the hero has an entrance (Rise or Reveal image); header and footer have none; the motion budget of `docs/section-rules.md` §6.4 is respected (one signature effect, at most two parallax images).
+7. Tier A: every home section except the hero has its animation on; header and footer have none; the hero's heading is never hidden (`docs/section-rules.md` §6.4).
 8. At most 10 home sections, at most two visual breaks, and no two product sections next to each other without a break or a scheme change (§2).
-9. Every section in the template passes the section definition of done (`docs/section-rules.md` §10).
+9. Every section in the template passes the section checklist (`docs/section-rules.md` §10).
 10. The existing rules still pass: node limits, snapshots, sanitize test.
 
 Manual checks (logged in `PLAN.md` §23): the template applied to an empty store and a full store, on a phone and a desktop.
@@ -184,8 +183,8 @@ Changing Tallaby Classic's design needs the owner's approval (`CLAUDE.md` rule 1
 | **G3** | Brands section | A `brandList` data node from the seller's brands (`seller_product_brands`, 0068) and a `?brand=` filter on the store catalog. Brand designs are static wordmarks today. |
 | **G4** | Offers link | A `?sale=1` (discounted only) filter on the store catalog so offer buttons and "View all" have a real target. The `discounted` product list source already exists. |
 | **G5** | Rules test | §7. |
-| **G7** | Animations | Site on/off switch and Hover effect in Theme; "one by one" switch on the section setting; new element Animation group in the style schema and inspector; the small `IntersectionObserver` runtime so it works on every browser (§6a, `docs/section-rules.md` §6.7). The section-level None / Fade / Rise setting already exists (`elements/shell.ts`, `section-shell.client.tsx`). |
-| **G8–G12** | Richer motion and visual sections | Reveal image and wipe presets, words heading reveal, moving marquee, second-photo hover on product cards, hotspot pins for shop the look. Defined in `docs/section-rules.md` §11; a template can ship without them and add them in a later version. |
+| **G7** | Animations | Site on/off switch and Hover effect in Theme; the section Animation switch (on by default) replacing today's None / Fade / Rise (`elements/shell.ts`, `section-shell.client.tsx`); the `data-reveal` output and the small `IntersectionObserver` runtime so it works on every browser (§6a, `docs/section-rules.md` §6.7). |
+| **G8–G19** | Section gaps | Zoom-in and slide-in variants, moving marquee (later), second-photo hover (later), hotspot pins (later), layout tokens (padding, heading size, container), tablet columns, mobile swipe rows, theme radius, hover transitions, section head gap, no letter-spacing on Arabic. Defined in `docs/section-rules.md` §11; a template can ship without them and add them in a later version. |
 | **G6** | Template updates | New template versions through insert-only migrations (staging first, then production with owner approval). Existing stores keep their site; only new picks and "Use template" get the new version. |
 
 ## 10. Open questions for the owner

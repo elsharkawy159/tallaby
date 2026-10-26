@@ -4,7 +4,7 @@
  * and an arrow), closed by an email line. Roles open an email to the store
  * until the seller links each to its own page. Columns stack on mobile.
  */
-import { defineDesign } from "../builder";
+import { aboutDesign } from "./_rules";
 import { L } from "../_kit";
 import { FLUSH } from "../_modular";
 
@@ -16,9 +16,9 @@ const ROLES = [
   { title: L("مصور منتجات", "Product photographer"), meta: L("التسويق · الدقي", "Marketing · Dokki"), type: L("فريلانس", "Freelance") },
 ];
 
-export const teamCareers = defineDesign({
+export const teamCareers = aboutDesign({
   id: "team-careers",
-  version: 1,
+  version: 2,
   category: "about",
   subcategory: "careers",
   name: L("اشتغل معانا", "Join the team"),
@@ -41,7 +41,7 @@ export const teamCareers = defineDesign({
                     style: { fontSize: "lg", maxWidth: "32ch" },
                   }),
                 ],
-                { label: L("العنوان", "Heading"), role: "intro", style: { gap: 16, colSpan: 2 }, mobile: { colSpan: 1 } },
+                { label: L("العنوان", "Heading"), role: "intro", style: { gap: 16, colSpan: 2 }, tablet: { colSpan: 1 } },
               ),
               t.stack(
                 [
@@ -84,15 +84,15 @@ export const teamCareers = defineDesign({
                       t.text(L("مش لاقي دورك؟", "Don't see your role?"), { style: { color: "muted" } }),
                       t.textLink(L("ابعتلنا على jobs@store.com", "Write to jobs@store.com"), EMAIL, { style: { fontWeight: "semibold", underline: true, color: "foreground" } }),
                     ],
-                    { label: L("الإيميل", "Email"), style: { gap: 8, marginTop: 20 } },
+                    { label: L("الإيميل", "Email"), style: { gap: 8 } },
                   ),
                 ],
-                { label: L("القائمة", "List"), style: { gap: 0, colSpan: 3 }, mobile: { colSpan: 1 } },
+                { label: L("القائمة", "List"), style: { gap: 20, colSpan: 3 }, tablet: { colSpan: 1 } },
               ),
             ],
             {
               label: L("التخطيط", "Layout"),
-              columns: { desktop: 5, mobile: 1 },
+              columns: { desktop: 5, tablet: 1, mobile: 1 },
               style: { gap: 64, alignItems: "start" },
               tablet: { gap: 32 },
               mobile: { gap: 24 },

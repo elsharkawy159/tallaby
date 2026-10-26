@@ -3,7 +3,7 @@
  * like a manifesto: a small number, one bold word, and the sentence that
  * explains it. On mobile the sentence goes under the word.
  */
-import { defineDesign } from "../builder";
+import { aboutDesign } from "./_rules";
 import { L } from "../_kit";
 import { BIG_NUMBER } from "../_modular";
 
@@ -24,9 +24,9 @@ const VALUES = [
 
 const NUMBERS = [L("٠١", "01"), L("٠٢", "02"), L("٠٣", "03"), L("٠٤", "04"), L("٠٥", "05")];
 
-export const teamValues = defineDesign({
+export const teamValues = aboutDesign({
   id: "team-values",
-  version: 1,
+  version: 2,
   category: "about",
   subcategory: "values",
   name: L("قيمنا", "Values"),

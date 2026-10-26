@@ -2677,66 +2677,14 @@ export const storeSiteRevisions = pgTable("store_site_revisions", {
 	check("store_site_revisions_number_positive", sql`revision_number > 0`),
 ]);
 
-/** Global, admin-authored templates (0052). 'tallaby-classic' is the default. */
-export const templates = pgTable("templates", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	key: text().notNull(),
-	name: jsonb().notNull(),
-	description: jsonb().default({}).notNull(),
-	category: text().default('general').notNull(),
-	thumbnailUrl: text("thumbnail_url"),
-	previewUrl: text("preview_url"),
-	isDefault: boolean("is_default").default(false).notNull(),
-	isActive: boolean("is_active").default(true).notNull(),
-	isPremium: boolean("is_premium").default(false).notNull(),
-	price: numeric({ precision: 10, scale: 2 }),
-	sortOrder: integer("sort_order").default(0).notNull(),
-	currentVersionId: uuid("current_version_id"),
-	/** Admin's unpublished edit of the template (SiteConfig); null when there is none. */
-	draftConfig: jsonb("draft_config"),
-	draftVersion: integer("draft_version").default(1).notNull(),
-	draftUpdatedAt: timestamp("draft_updated_at", { withTimezone: true, mode: 'string' }),
-	/** Code-only data (TemplateMeta): pageNames, demo catalog, palette. */
-	meta: jsonb().default({}).notNull(),
-	deletedAt: timestamp("deleted_at", { withTimezone: true, mode: 'string' }),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
-	unique("templates_key_key").on(table.key),
-	uniqueIndex("templates_one_default").using("btree", table.isDefault.asc().nullsLast().op("bool_ops")).where(sql`is_default`),
-	// templates_current_version_id_fkey → template_versions(id) ON DELETE SET NULL exists
-	// in SQL (0052); not declared here because the circular reference breaks type inference.
-	check("templates_price_check", sql`price IS NULL OR price >= 0`),
-]);
-
-export const templateVersions = pgTable("template_versions", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	templateId: uuid("template_id").notNull(),
-	version: integer().notNull(),
-	schemaVersion: integer("schema_version").notNull(),
-	/** SiteConfig */
-	config: jsonb().notNull(),
-	changelog: text(),
-	publishedBy: uuid("published_by"),
-	publishedAt: timestamp("published_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
-	unique("template_versions_template_version_key").on(table.templateId, table.version),
-	foreignKey({
-			columns: [table.templateId],
-			foreignColumns: [templates.id],
-			name: "template_versions_template_id_fkey"
-		}).onDelete("cascade"),
-	foreignKey({
-			columns: [table.publishedBy],
-			foreignColumns: [users.id],
-			name: "template_versions_published_by_fkey"
-		}).onDelete("set null"),
-]);
+// templates, template_versions and library_sections were dropped (0109): storefront templates
+// and the section library come from the codebase only (@workspace/store-sections, owner 2026-10-27).
 
 export const templateInstalls = pgTable("template_installs", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
-	templateId: uuid("template_id").notNull(),
-	templateVersionId: uuid("template_version_id"),
+	/** The code template installed (`CODE_TEMPLATES` key) and its version (0108). */
+	templateKey: text("template_key").notNull(),
+	templateVersion: integer("template_version"),
 	storeId: uuid("store_id").notNull(),
 	installedBy: uuid("installed_by"),
 	installedAt: timestamp("installed_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
@@ -2745,16 +2693,6 @@ export const templateInstalls = pgTable("template_installs", {
 	undoneAt: timestamp("undone_at", { withTimezone: true, mode: 'string' }),
 }, (table) => [
 	index("template_installs_store_idx").using("btree", table.storeId.asc().nullsLast().op("uuid_ops"), table.installedAt.desc().nullsFirst().op("timestamptz_ops")),
-	foreignKey({
-			columns: [table.templateId],
-			foreignColumns: [templates.id],
-			name: "template_installs_template_id_fkey"
-		}).onDelete("cascade"),
-	foreignKey({
-			columns: [table.templateVersionId],
-			foreignColumns: [templateVersions.id],
-			name: "template_installs_template_version_id_fkey"
-		}).onDelete("set null"),
 	foreignKey({
 			columns: [table.storeId],
 			foreignColumns: [stores.id],
@@ -3268,48 +3206,6 @@ export const platformBlogPosts = pgTable("platform_blog_posts", {
 	pgPolicy("platform_blog_posts: admins manage", { as: "permissive", for: "all", to: ["authenticated"], using: sql`(SELECT public.is_platform_admin())`, withCheck: sql`(SELECT public.is_platform_admin())` }),
 ]);
 
-/** Admin-managed "Add section" library (0086): published `tree` plus an unpublished `draftTree`. */
-export const librarySections = pgTable("library_sections", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	key: text().notNull(),
-	category: text().notNull(),
-	subcategory: text().default('').notNull(),
-	name: jsonb().notNull(),
-	description: jsonb().default({}).notNull(),
-	keywords: text().array().default([]).notNull(),
-	tree: jsonb().notNull(),
-	draftTree: jsonb("draft_tree"),
-	version: integer().default(1).notNull(),
-	draftVersion: integer("draft_version").default(1).notNull(),
-	thumbnailUrl: text("thumbnail_url"),
-	isHidden: boolean("is_hidden").default(false).notNull(),
-	sortOrder: integer("sort_order").default(0).notNull(),
-	createdBy: uuid("created_by"),
-	updatedBy: uuid("updated_by"),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	deletedAt: timestamp("deleted_at", { withTimezone: true, mode: 'string' }),
-}, (table) => [
-	unique("library_sections_key_key").on(table.key),
-	index("library_sections_listing_idx").using("btree", table.category.asc().nullsLast().op("text_ops"), table.sortOrder.asc().nullsLast().op("int4_ops")).where(sql`(deleted_at IS NULL AND NOT is_hidden)`),
-	foreignKey({
-			columns: [table.createdBy],
-			foreignColumns: [users.id],
-			name: "library_sections_created_by_fkey"
-		}).onDelete("set null"),
-	foreignKey({
-			columns: [table.updatedBy],
-			foreignColumns: [users.id],
-			name: "library_sections_updated_by_fkey"
-		}).onDelete("set null"),
-	check("library_sections_key_check", sql`key ~ '^[a-z0-9-]+$'`),
-]);
-
-/**
- * The admin app's header bell (0098). One shared inbox for the admin team:
- * rows are written by triggers on the source tables, one per `dedupe_key`.
- * Server-only (RLS on, no policies).
- */
 export const adminNotifications = pgTable("admin_notifications", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	/** seller_created | store_created | store_published | top_up_requested */

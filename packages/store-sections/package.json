@@ -58,11 +58,7 @@
   },
   "scripts": {
     "test": "vitest run",
-    "typecheck": "tsc --noEmit",
-    "template:sql": "tsx scripts/template-sql.ts",
-    "template:meta-sql": "tsx scripts/template-meta-sql.ts",
-    "template:product-page-sql": "tsx scripts/template-product-page-sql.ts",
-    "section:sql": "tsx scripts/section-sql.ts"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "sanitize-html": "^2.17.0",

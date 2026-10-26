@@ -4,13 +4,13 @@
  * with a signature on the end side. The top of an About page. On mobile the
  * photo goes under the title and crops wider.
  */
-import { defineDesign } from "../builder";
+import { aboutDesign } from "./_rules";
 import { L } from "../_kit";
 import { dotLabel } from "../_modular";
 
-export const teamStory = defineDesign({
+export const teamStory = aboutDesign({
   id: "team-story",
-  version: 1,
+  version: 2,
   category: "about",
   subcategory: "story",
   name: L("قصتنا", "Our story"),
@@ -61,7 +61,7 @@ export const teamStory = defineDesign({
             ],
             {
               label: L("التخطيط", "Layout"),
-              columns: { desktop: 2, mobile: 1 },
+              columns: { desktop: 2, tablet: 2, mobile: 1 },
               style: { gap: 56, alignItems: "end" },
               tablet: { gap: 32 },
               mobile: { gap: 24 },

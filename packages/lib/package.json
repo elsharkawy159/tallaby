@@ -7,9 +7,6 @@
   "scripts": {
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "backfill:product-pages": "tsx scripts/backfill-product-pages.ts",
-    "backfill:template-refs": "tsx scripts/backfill-template-refs.ts",
-    "backfill:library-fields": "tsx scripts/backfill-library-fields.ts",
     "bosta:geo": "tsx scripts/bosta-geo-snapshot.ts"
   },
   "keywords": [],
@@ -139,10 +136,6 @@
     "./admin/server": {
       "types": "./src/admin/server.ts",
       "default": "./src/admin/server.ts"
-    },
-    "./library-sections/server": {
-      "types": "./src/library-sections/server.ts",
-      "default": "./src/library-sections/server.ts"
     },
     "./integrations": {
       "types": "./src/integrations/index.ts",

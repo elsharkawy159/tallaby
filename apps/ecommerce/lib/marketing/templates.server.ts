@@ -1,57 +1,38 @@
 import { cache } from "react";
 import { cacheProfiles, createCachedQuery, templateTags } from "@workspace/cache";
-import { and, asc, db, desc, eq, isNull, templateVersions, templates } from "@workspace/db";
-import { expandTemplateConfigs, getPublicTemplate } from "@workspace/lib/store-sites/server";
+import { codeTemplateConfig, getPublicTemplate, offeredTemplates } from "@workspace/lib/store-sites/server";
 import { siteConfigSchema, type SiteConfig } from "@workspace/store-sections";
-import { resolveTemplateMeta, templateOutline, type TemplateMeta } from "@workspace/store-sections/templates";
+import { resolveTemplateMeta, templateMeta, templateOutline, type TemplateMeta } from "@workspace/store-sections/templates";
 import { buildGallery, type CatalogTemplate, type GalleryEntry } from "./templates.lib";
 
 /**
- * Active, not deleted templates for the tallaby.com gallery, with a valid
- * current version only (the dashboard gallery hides the others too). Swatches
- * and page names come from `templates.meta` (code fallback per field). Admin template edits
- * purge `templateTags.catalog()` (invalidateTemplateCatalog), so the gallery
- * and the preview frames follow without a deploy, so the TTL is only a 24 h
- * backstop: each refill reads every config (docs/egress-audit.md §1; library
- * sections are stored as refs since 0105, so a config is a few KB, plus one
- * read of the library trees they use). Library publishes purge the same tag.
+ * The tallaby.com gallery: every code template (templates are code-only since
+ * 2026-10-27; 0109 dropped the template tables) with a valid config. Cached
+ * because each entry is built from a ~95 KB config; a deploy brings changes.
  */
 const getCachedCatalog = createCachedQuery({
-  name: "marketing:template-catalog:v2",
+  name: "marketing:template-catalog:v3",
   ttl: cacheProfiles.taxonomy,
   tags: () => [templateTags.catalog()],
-  query: async (): Promise<CatalogTemplate[]> => {
-    const rows = await db
-      .select({
-        key: templates.key,
-        name: templates.name,
-        description: templates.description,
-        category: templates.category,
-        thumbnailUrl: templates.thumbnailUrl,
-        previewUrl: templates.previewUrl,
-        isDefault: templates.isDefault,
-        isPremium: templates.isPremium,
-        price: templates.price,
-        sortOrder: templates.sortOrder,
-        config: templateVersions.config,
-        meta: templates.meta,
-      })
-      .from(templates)
-      .innerJoin(templateVersions, eq(templateVersions.id, templates.currentVersionId))
-      .where(and(eq(templates.isActive, true), isNull(templates.deletedAt)))
-      .orderBy(desc(templates.isDefault), asc(templates.sortOrder), asc(templates.createdAt));
-
-    // Library sections stored as refs are built from the library's current trees.
-    const expanded = await expandTemplateConfigs(rows);
-    return rows.flatMap(({ config: _stored, meta: rawMeta, ...row }, index) => {
-      const parsed = siteConfigSchema.safeParse(expanded[index]);
-      if (!parsed.success) return []; // A broken template version is never offered.
-      const meta = resolveTemplateMeta(rawMeta, row.key);
+  query: async (): Promise<CatalogTemplate[]> =>
+    offeredTemplates().flatMap((template) => {
+      const config = codeTemplateConfig(template.key);
+      if (!config) return []; // A broken template is never offered.
+      const meta = templateMeta(template);
       return [
         {
-          ...row,
+          key: template.key,
+          name: template.name,
+          description: template.description,
+          category: template.category,
+          thumbnailUrl: null,
+          previewUrl: null,
+          isDefault: !!template.isDefault,
+          isPremium: false,
+          price: null,
+          sortOrder: template.sortOrder,
           palette: meta.palette,
-          pages: templateOutline(parsed.data).map((page) => ({
+          pages: templateOutline(config).map((page) => ({
             slug: page.slug,
             isHome: page.isHome,
             name: page.name,
@@ -59,8 +40,7 @@ const getCachedCatalog = createCachedQuery({
           })),
         },
       ];
-    });
-  },
+    }),
 });
 
 /** The gallery for a locale. If the database is unreachable, the gallery is empty rather than failing the page. */
@@ -79,7 +59,7 @@ export async function findGalleryEntry(locale: string, id: string): Promise<Gall
 }
 
 const getCachedTemplatePreview = createCachedQuery({
-  name: "marketing:template-preview:v2",
+  name: "marketing:template-preview:v3",
   ttl: cacheProfiles.taxonomy,
   tags: (_key: string) => [templateTags.catalog()],
   query: (key: string) => getPublicTemplate(key),

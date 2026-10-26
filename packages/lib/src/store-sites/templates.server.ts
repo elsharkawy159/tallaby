@@ -9,9 +9,9 @@
  * before go into `template_installs.previous_draft` (0064), so
  * `undoStoreTemplate` puts back exactly that.
  *
- * The template's library sections are stored as refs and built here from the
- * library's current trees (`template-refs.server.ts`), so the store gets
- * plain tree sections and later library edits never change its site.
+ * Templates come from the code catalog only (owner, 2026-10-27;
+ * `template-rows.server.ts`): the store gets the template's plain tree
+ * sections, so later template edits never change its site.
  *
  * Before the merge the template is fitted to the store (`prepareTemplateForStore`):
  * its ready-made forms (newsletter, contact…) are found by name or created in
@@ -38,8 +38,6 @@ import {
   storePages,
   stores,
   templateInstalls,
-  templateVersions,
-  templates,
 } from "@workspace/db";
 import {
   MAX_PAGES,
@@ -59,12 +57,11 @@ import {
   type SectionInstance,
   type SiteConfig,
 } from "@workspace/store-sections";
-import { resolveTemplateMeta, type TemplateMeta } from "@workspace/store-sections/templates";
+import { getCodeTemplate, templateMeta, type TemplateMeta } from "@workspace/store-sections/templates";
 import { createStoreForm } from "../store-forms/server";
 import type { FormInput } from "../store-forms/store-forms.lib";
 import { ensureStoreSiteScaffold } from "../stores/server";
-import { getPublicTemplate, offeredTemplate } from "./template-rows.server";
-import { expandTemplateConfig, expandTemplateConfigs } from "./template-refs.server";
+import { codeTemplateConfig, getPublicTemplate, offeredTemplates } from "./template-rows.server";
 
 export { getPublicTemplate, getTemplateMeta, loadDefaultTemplate, type DbTemplate } from "./template-rows.server";
 
@@ -169,51 +166,29 @@ export type TemplateCardsLoader = () => Promise<StoreTemplateCard[]>;
 export type TemplateConfigLoader = (templateKey: string) => Promise<SiteConfig | null>;
 
 /**
- * Every offered template as a gallery card. Global admin-authored data with
- * nothing from a store, so apps cache it: each card is parsed from a ~95 KB
- * config, and reading all of them on every gallery view was most of the
- * database egress (docs/egress-audit.md §1).
+ * Every offered template as a gallery card, from the code catalog. Each card
+ * is built from a ~95 KB config, so apps still cache the list.
  */
-export async function listTemplateCards(q: Queryable = db): Promise<StoreTemplateCard[]> {
-  const rows = await q
-    .select({
-      id: templates.id,
-      key: templates.key,
-      name: templates.name,
-      description: templates.description,
-      category: templates.category,
-      thumbnailUrl: templates.thumbnailUrl,
-      isDefault: templates.isDefault,
-      isPremium: templates.isPremium,
-      version: templateVersions.version,
-      config: templateVersions.config,
-      meta: templates.meta,
-    })
-    .from(templates)
-    .innerJoin(templateVersions, eq(templateVersions.id, templates.currentVersionId))
-    .where(offeredTemplate())
-    .orderBy(desc(templates.isDefault), asc(templates.sortOrder), asc(templates.createdAt));
-
-  const expanded = await expandTemplateConfigs(rows, q);
+export async function listTemplateCards(_q?: Queryable): Promise<StoreTemplateCard[]> {
   const cards: StoreTemplateCard[] = [];
-  for (const [index, row] of rows.entries()) {
-    const config = siteConfigSchema.safeParse(expanded[index]);
-    if (!config.success) continue; // A broken template version is never offered.
-    const meta = resolveTemplateMeta(row.meta, row.key);
+  for (const template of offeredTemplates()) {
+    const config = codeTemplateConfig(template.key);
+    if (!config) continue; // A broken template is never offered.
+    const meta = templateMeta(template);
     cards.push({
-      id: row.id,
-      key: row.key,
-      name: localized(row.name),
-      description: localized(row.description),
-      category: row.category,
-      thumbnailUrl: row.thumbnailUrl,
-      isDefault: row.isDefault,
-      isPremium: row.isPremium,
-      version: row.version,
+      id: template.key,
+      key: template.key,
+      name: localized(template.name),
+      description: localized(template.description),
+      category: template.category,
+      thumbnailUrl: null,
+      isDefault: !!template.isDefault,
+      isPremium: false,
+      version: template.version,
       palette: meta.palette,
       pageNames: meta.pageNames,
-      formKinds: [...templateFormNeeds(config.data)],
-      outline: templateOutline(config.data),
+      formKinds: [...templateFormNeeds(config)],
+      outline: templateOutline(config),
     });
   }
   return cards;
@@ -233,13 +208,12 @@ export async function listStoreTemplates(
   const [install] = await q
     .select({
       id: templateInstalls.id,
-      templateKey: templates.key,
+      templateKey: templateInstalls.templateKey,
       installedAt: templateInstalls.installedAt,
       undoneAt: templateInstalls.undoneAt,
       hasDraft: sql<boolean>`${templateInstalls.previousDraft} IS NOT NULL`,
     })
     .from(templateInstalls)
-    .innerJoin(templates, eq(templates.id, templateInstalls.templateId))
     .where(eq(templateInstalls.storeId, storeId))
     .orderBy(desc(templateInstalls.installedAt))
     .limit(1);
@@ -273,17 +247,9 @@ export async function getStoreTemplateConfig(
   return config.success ? config.data : null;
 }
 
-/** An offered template's current config by key, with no store involved. Null for an unknown, hidden or deleted key, or a broken version. */
-export async function loadOfferedTemplateConfig(templateKey: string, q: Queryable = db): Promise<SiteConfig | null> {
-  if (!TEMPLATE_KEY_RE.test(templateKey)) return null;
-  const [row] = await q
-    .select({ config: templateVersions.config, category: templates.category })
-    .from(templates)
-    .innerJoin(templateVersions, eq(templateVersions.id, templates.currentVersionId))
-    .where(and(eq(templates.key, templateKey), offeredTemplate()))
-    .limit(1);
-  const config = siteConfigSchema.safeParse(row && (await expandTemplateConfig(row.config, row.category, q)));
-  return config.success ? config.data : null;
+/** An offered template's config by key (code catalog), with no store involved. Null for an unknown key or a broken config. */
+export async function loadOfferedTemplateConfig(templateKey: string, _q?: Queryable): Promise<SiteConfig | null> {
+  return codeTemplateConfig(templateKey);
 }
 
 /**
@@ -358,25 +324,12 @@ export async function applyStoreTemplate(
       if (!store) throw new TemplateError("not_found");
       if (store.status !== "active") throw new TemplateError("store_read_only");
 
-      const [template] = await tx
-        .select({
-          id: templates.id,
-          key: templates.key,
-          category: templates.category,
-          isPremium: templates.isPremium,
-          versionId: templateVersions.id,
-          config: templateVersions.config,
-          meta: templates.meta,
-        })
-        .from(templates)
-        .innerJoin(templateVersions, eq(templateVersions.id, templates.currentVersionId))
-        .where(and(eq(templates.key, templateKey), offeredTemplate()))
-        .limit(1);
+      // Templates come from the code catalog; the theme store (paid templates, §8.1) is not built yet.
+      const template = getCodeTemplate(templateKey);
+      const code = template && codeTemplateConfig(template.key);
       if (!template) throw new TemplateError("template_not_found");
-      // The theme store (paid templates from the store wallet) is not built yet (§8.1).
-      if (template.isPremium) throw new TemplateError("premium_template");
-      // Library refs are built from the library's current trees: the store's drafts get plain tree sections.
-      const config = validateSiteConfig(await expandTemplateConfig(template.config, template.category, tx), { allowedSections: options.allowedSections });
+      if (!code) throw new TemplateError("invalid_template");
+      const config = validateSiteConfig(code, { allowedSections: options.allowedSections });
       if (!config.success) throw new TemplateError("invalid_template");
 
       await ensureStoreSiteScaffold(tx, storeId);
@@ -385,7 +338,7 @@ export async function applyStoreTemplate(
       const essentials = templateEssentials(config.data);
       const formIds = await ensureTemplateForms(tx, sellerId, storeId, templateFormNeeds(essentials), (kind) => options.formInput?.(kind, locale));
       const fitted = prepareTemplateForStore(essentials, { defaultLocale: locale, storeName: store.name, formIds });
-      const pageNames = resolveTemplateMeta(template.meta, template.key).pageNames;
+      const pageNames = templateMeta(template).pageNames;
       const [ds] = await tx
         .select({ colors: storeDesignSystems.colors, typography: storeDesignSystems.typography, spacing: storeDesignSystems.spacing })
         .from(storeDesignSystems)
@@ -469,7 +422,7 @@ export async function applyStoreTemplate(
       };
       const [install] = await tx
         .insert(templateInstalls)
-        .values({ templateId: template.id, templateVersionId: template.versionId, storeId, installedBy, previousDraft: previous })
+        .values({ templateKey: template.key, templateVersion: template.version, storeId, installedBy, previousDraft: previous })
         .returning({ id: templateInstalls.id });
 
       return { installId: install!.id, templateKey: template.key, pagesUpdated: updated, pagesCreated: createdPageIds.length };

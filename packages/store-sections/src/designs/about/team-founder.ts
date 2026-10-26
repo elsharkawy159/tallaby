@@ -3,13 +3,13 @@
  * mark, the founder's words in big type, and an initial with the name and
  * role at the bottom. For a personal touch on the About or home page.
  */
-import { defineDesign } from "../builder";
+import { aboutDesign } from "./_rules";
 import { L, ON_BRAND } from "../_kit";
 import { BRAND_TILE, who } from "../_modular";
 
-export const teamFounder = defineDesign({
+export const teamFounder = aboutDesign({
   id: "team-founder",
-  version: 1,
+  version: 2,
   category: "about",
   subcategory: "story",
   name: L("كلمة المؤسس", "Founder note"),

@@ -1,11 +1,9 @@
 import {
   Banknote,
-  Blocks,
   Globe,
   // Handshake, // affiliates tab is commented out below
   History,
   Home,
-  LayoutTemplate,
   LineChart,
   Megaphone,
   Newspaper,
@@ -30,7 +28,7 @@ import type { SidebarCounts } from "./sidebar.types";
 /**
  * Admin sidebar map (docs/admin-saas.md §2.1). The order reads overview →
  * people → their stores → what they sell → sales → money → Tallaby services →
- * the design library → system. Every section but Overview renders as a
+ * system (the design library is code-only since 2026-10-27). Every section but Overview renders as a
  * collapsible group. `sidebar.tsx` and the mobile drawer only render this.
  */
 export interface SidebarLink {
@@ -192,14 +190,15 @@ export const sidebarSections: SidebarSection[] = [
       },
     ],
   },
-  {
-    key: "library",
-    title: "Design library",
-    links: [
-      { key: "templates", title: "Templates", href: "/templates", icon: LayoutTemplate },
-      { key: "sections", title: "Sections", href: "/sections", icon: Blocks },
-    ],
-  },
+  // Design library (Templates, Sections): code-only since 2026-10-27 (0109); its admin screens are disabled.
+  // {
+  //   key: "library",
+  //   title: "Design library",
+  //   links: [
+  //     { key: "templates", title: "Templates", href: "/templates", icon: LayoutTemplate },
+  //     { key: "sections", title: "Sections", href: "/sections", icon: Blocks },
+  //   ],
+  // },
   {
     key: "system",
     title: "Tallaby site & system",
