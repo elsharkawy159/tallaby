@@ -18,6 +18,7 @@ import {
   users,
 } from "@workspace/db";
 import { getServiceClient } from "@workspace/db/supabase/service";
+import { TALLABY_SERVICES_ENABLED } from "@workspace/lib/fulfillment";
 
 import { applySellerShipmentStatus } from "@/lib/shipping/apply-seller-shipment";
 import {
@@ -97,8 +98,13 @@ const ELIGIBLE_ORDER_STATUSES = [
  * one is seller-fulfilled. Physical orders only.
  */
 function ownedOrderCondition(orderIdColumn: unknown, sellerId: string) {
+  // While Tallaby runs no fulfillment services every line is the seller's,
+  // whatever stale fulfillment_type a product carries (orders/order-flow.lib.ts).
+  const fulfilled = TALLABY_SERVICES_ENABLED
+    ? sql` and oi.fulfillment_type = 'seller_fulfilled'`
+    : sql``;
   return and(
-    sql`exists (select 1 from order_items oi where oi.order_id = ${orderIdColumn} and oi.seller_id = ${sellerId} and oi.fulfillment_type = 'seller_fulfilled')`,
+    sql`exists (select 1 from order_items oi where oi.order_id = ${orderIdColumn} and oi.seller_id = ${sellerId}${fulfilled})`,
     sql`not exists (select 1 from order_items oi where oi.order_id = ${orderIdColumn} and oi.seller_id <> ${sellerId})`,
     sql`coalesce(${orders.isDigitalOnly}, false) = false`
   )!;

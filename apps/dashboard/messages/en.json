@@ -1839,7 +1839,9 @@
       "label": "Sales channel",
       "all": "All orders",
       "marketplace": "Tallaby marketplace"
-    }
+    },
+    "searchPlaceholder": "Search by order number, name or phone",
+    "searchLabel": "Search orders"
   },
   "shipping": {
     "title": "Shipping & Logistics",

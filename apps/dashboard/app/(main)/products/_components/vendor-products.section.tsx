@@ -42,6 +42,7 @@ import {
   categoryOptions,
   countByTab,
   filterProducts,
+  pageList,
   type ProductsSort,
   type ProductsTab,
   type ProductsViewMode,
@@ -76,18 +77,6 @@ const tabCountStyles: Partial<Record<ProductsTab, string>> = {
   lowStock: "bg-accent-soft text-accent-ink border-transparent",
   outOfStock: "bg-destructive-soft text-destructive border-transparent",
 };
-
-/** Page numbers with gaps: 1 … 4 5 6 … 12. */
-function pageList(current: number, pages: number): (number | "gap")[] {
-  if (pages <= 7) return Array.from({ length: pages }, (_, i) => i + 1);
-  const keep = new Set([1, pages, current - 1, current, current + 1]);
-  const out: (number | "gap")[] = [];
-  for (let p = 1; p <= pages; p++) {
-    if (keep.has(p)) out.push(p);
-    else if (out[out.length - 1] !== "gap") out.push("gap");
-  }
-  return out;
-}
 
 export function VendorProductsSection({
   products,

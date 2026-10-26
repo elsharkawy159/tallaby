@@ -14,7 +14,7 @@ import { WALLET_REFERENCE_TYPES } from "@workspace/db/wallet";
 import { storeUrl } from "@workspace/lib/storefront";
 import { getStorefrontProductUrl } from "@/lib/constants";
 import { loadProductStoreLinks } from "../products/_components/product-store-links.data";
-import { resolveSellerOrderFlow } from "./order-flow.lib";
+import { isSellerHandledLine, resolveSellerOrderFlow } from "./order-flow.lib";
 import {
   pickProductSlug,
   resolveCustomerEmail,
@@ -158,7 +158,7 @@ export async function loadSellerOrders(
       paymentStatus: o.paymentStatus,
       isDigitalOnly: o.isDigitalOnly,
       allLinesOwned: o.orderItems.every((i) => i.sellerId === sellerId),
-      sellerFulfilled: mine.some((i) => i.fulfillmentType === "seller_fulfilled"),
+      sellerFulfilled: mine.some((i) => isSellerHandledLine(i.fulfillmentType)),
       shipment: shipment ? { status: shipment.status, ownedBySeller: shipment.sellerId === sellerId } : null,
       walletPaid: walletPaidOrders.has(o.id),
     });

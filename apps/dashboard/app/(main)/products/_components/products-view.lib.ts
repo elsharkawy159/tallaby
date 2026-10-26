@@ -99,3 +99,15 @@ export function filterProducts<T extends ViewableProduct>(
   };
   return [...rows].sort(compare[opts.sort]);
 }
+
+/** Page numbers with gaps: 1 … 4 5 6 … 12. */
+export function pageList(current: number, pages: number): (number | "gap")[] {
+  if (pages <= 7) return Array.from({ length: pages }, (_, i) => i + 1);
+  const keep = new Set([1, pages, current - 1, current, current + 1]);
+  const out: (number | "gap")[] = [];
+  for (let p = 1; p <= pages; p++) {
+    if (keep.has(p)) out.push(p);
+    else if (out[out.length - 1] !== "gap") out.push("gap");
+  }
+  return out;
+}

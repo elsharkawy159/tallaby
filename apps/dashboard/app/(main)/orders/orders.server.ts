@@ -24,6 +24,7 @@ import { applySellerShipmentStatus } from "@/lib/shipping/apply-seller-shipment"
 import { isShippingStatus, type ShippingStatus } from "@/lib/shipping/shipping-status";
 import {
   ACTION_SHIPMENT_STATUS,
+  isSellerHandledLine,
   resolveSellerOrderFlow,
   SELLER_ORDER_ACTIONS,
   type SellerOrderAction,
@@ -96,7 +97,7 @@ async function loadOrder(orderId: string, sellerId: string) {
     isDigitalOnly: order.isDigitalOnly,
     allLinesOwned: order.orderItems.every((i) => i.sellerId === sellerId),
     sellerFulfilled: order.orderItems.some(
-      (i) => i.sellerId === sellerId && i.fulfillmentType === "seller_fulfilled",
+      (i) => i.sellerId === sellerId && isSellerHandledLine(i.fulfillmentType),
     ),
     shipment: shipment ? { status: shipment.status, ownedBySeller: shipment.sellerId === sellerId } : null,
     walletPaid: Boolean(walletDebit),

@@ -1,4 +1,19 @@
+import { TALLABY_SERVICES_ENABLED } from "@workspace/lib/fulfillment";
 import type { ShippingStatus } from "@/lib/shipping/shipping-status";
+
+/**
+ * Whether the seller ships this line. While Tallaby runs no fulfillment
+ * services (TALLABY_SERVICES_ENABLED off, owner 2026-10-21) every line is the
+ * seller's: a stale `platform_fulfilled` flag on a product (many live
+ * products still carry one) must not lock the seller out of their orders.
+ */
+export function isSellerHandledLine(
+  fulfillmentType: string | null | undefined,
+  servicesEnabled: boolean = TALLABY_SERVICES_ENABLED,
+): boolean {
+  if (!servicesEnabled) return true;
+  return fulfillmentType === "seller_fulfilled" || fulfillmentType == null;
+}
 
 /**
  * How a seller works an order from /orders, now that the seller ships their

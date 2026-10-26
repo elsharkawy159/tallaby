@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  isSellerHandledLine,
   progressIndex,
   resolveSellerOrderFlow,
   type SellerOrderFlowInput,
@@ -80,6 +81,19 @@ describe("resolveSellerOrderFlow", () => {
 
   it("waits on online payment", () => {
     expect(flow({ orderStatus: "payment_processing" })).toMatchObject({ stage: "awaiting_payment", actions: [] });
+  });
+});
+
+describe("isSellerHandledLine", () => {
+  it("every line is the seller's while Tallaby services are off", () => {
+    expect(isSellerHandledLine("platform_fulfilled", false)).toBe(true);
+    expect(isSellerHandledLine("seller_fulfilled", false)).toBe(true);
+  });
+
+  it("follows the product flag once Tallaby services are on", () => {
+    expect(isSellerHandledLine("platform_fulfilled", true)).toBe(false);
+    expect(isSellerHandledLine("seller_fulfilled", true)).toBe(true);
+    expect(isSellerHandledLine(null, true)).toBe(true);
   });
 });
 
