@@ -75,12 +75,17 @@ export type IntegrationPublicDetails = {
   spreadsheetTitle?: string;
   exportedOrders?: number;
   importedProducts?: number;
+  /** Bosta: the API key's last 4 characters, the pickup location and when shipments are created. */
+  keyHint?: string;
+  pickupLocationName?: string;
+  autoShip?: string;
 };
 
 const DETAIL_KEYS: Partial<Record<IntegrationProvider, Array<keyof IntegrationPublicDetails>>> = {
   meta_capi: ["testMode"],
   shopify_import: ["shopDomain", "shopName", "shopCurrency", "importedProducts"],
   google_sheets: ["spreadsheetId", "spreadsheetTitle", "exportedOrders"],
+  bosta: ["keyHint", "pickupLocationName", "autoShip"],
 };
 
 export function readPublicDetails(provider: IntegrationProvider, config: unknown): IntegrationPublicDetails {
