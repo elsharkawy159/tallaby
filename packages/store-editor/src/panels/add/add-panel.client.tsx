@@ -60,7 +60,7 @@ export function AddPanel({
   templateHost: TemplatePreviewHost;
 }) {
   const t = useTranslations("storeEditor.add");
-  const { capabilities } = useEditorAdapter();
+  const { capabilities, sectionsTab } = useEditorAdapter();
   const tab = useStore(store, (s) => s.addTab);
   const setTab = useStore(store, (s) => s.setAddTab);
   const tabs = addTabs(capabilities);
@@ -86,7 +86,7 @@ export function AddPanel({
         ))}
       </div>
       {tab === "elements" && <ElementsTab commands={commands} uiLocale={uiLocale} productParts={productParts} />}
-      {tab === "sections" && <SectionLibrary store={store} commands={commands} uiLocale={uiLocale} preview={preview} />}
+      {tab === "sections" && (sectionsTab ?? <SectionLibrary store={store} commands={commands} uiLocale={uiLocale} preview={preview} />)}
       {tab === "templates" && capabilities.templates && (
         <PageTemplatesTab store={store} commands={commands} uiLocale={uiLocale} templates={templates.items} currentKey={templates.currentKey} host={templateHost} />
       )}

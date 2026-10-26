@@ -1,18 +1,20 @@
 "use server";
 
 import { headers } from "next/headers";
-import { db, eq, sellers } from "@workspace/db";
+import { and, db, eq, sellers, stores } from "@workspace/db";
 import { checkStoreSubdomain } from "@workspace/lib/stores/server";
 import { createClient } from "@/supabase/server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
+import { STORE_INDUSTRIES } from "@/lib/stores/industries.lib";
 import { completeSignup } from "./signup-complete.server";
-import { setSignupIntentCookie } from "./signup-intent.server";
+import { clearSignupIntentCookie, setSignupIntentCookie } from "./signup-intent.server";
 import {
   emailSignupSchema,
   storeChoiceSchema,
   type SignupErrorKey,
   type SignupResult,
   type StoreChoiceInput,
+  type StoreSetupInput,
   type EmailSignupInput,
   type SubdomainCheckResult,
 } from "./signup.dto";
@@ -109,30 +111,40 @@ export async function signUpWithEmail(input: EmailSignupInput): Promise<SignupRe
   return { status: "done", storeUrl: done.storeUrl! };
 }
 
-/** Saves the choice in a signed cookie before the browser goes to Google. */
-export async function startGoogleSignup(input: StoreChoiceInput): Promise<SignupResult> {
+/**
+ * Before the browser goes to Google: one click, no fields. A leftover email
+ * signup cookie is cleared so the callback cannot create a store from it; the
+ * callback then sends the new user to /signup to set up the store.
+ */
+export async function startGoogleSignup(): Promise<SignupResult> {
   if (!signupLimiter.check(await clientKey())) return fail("rateLimited");
-  const choice = await checkChoice(input, NO_SELLER);
-  if (!choice.ok) return fail(choice.error);
-  try {
-    await setSignupIntentCookie(choice.intent);
-  } catch (error) {
-    console.error("[signup] cannot sign intent cookie (SIGNUP_INTENT_SECRET?)", error);
-    return fail("generic");
-  }
+  await clearSignupIntentCookie();
   return { status: "ok" };
 }
 
-/** Signed-in user without a seller row (e.g. an existing customer): only the store step. */
-export async function createStoreForCurrentUser(input: StoreChoiceInput): Promise<SignupResult> {
+/**
+ * Signed-in user without a seller row (after Google, or an existing customer):
+ * only the store setup step (address, industry, phone).
+ */
+export async function createStoreForCurrentUser(input: StoreSetupInput): Promise<SignupResult> {
   if (!signupLimiter.check(await clientKey())) return fail("rateLimited");
   const { user } = await sessionUser();
   if (!user) return fail("notSignedIn");
   if (await isSeller(user.id)) return fail("alreadySeller");
 
+  const industry = STORE_INDUSTRIES.find((i) => i.id === input.industry);
+  if (!industry) return fail("industryRequired");
   const choice = await checkChoice(input, user.id);
   if (!choice.ok) return fail(choice.error);
   const done = await completeSignup(user, choice.intent);
   if (!done.success) return fail(done.error === "taken" ? "subdomainTaken" : "generic");
+
+  // The same columns Store settings › General fills when an industry is picked.
+  if (done.data.created && done.data.storeId) {
+    await db
+      .update(stores)
+      .set({ storeCategory: industry.en, storeCategoryAr: industry.ar })
+      .where(and(eq(stores.id, done.data.storeId), eq(stores.sellerId, user.id)));
+  }
   return { status: "done", storeUrl: done.storeUrl! };
 }

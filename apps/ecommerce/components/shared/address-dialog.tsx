@@ -259,7 +259,7 @@ export const AddressDialog = ({
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>{trigger || defaultTrigger}</DialogTrigger>
 
-      <DialogContent className="flex max-h-[90vh] max-w-4xl flex-col gap-0 overflow-hidden p-0">
+      <DialogContent className="flex max-h-[90vh] sm:max-w-4xl flex-col gap-0 overflow-hidden p-0">
         <DialogHeader className="shrink-0 border-b px-6 py-4">
           <DialogTitle className="text-lg font-semibold">
             {getStepTitle()}

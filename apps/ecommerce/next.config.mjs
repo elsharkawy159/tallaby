@@ -1,4 +1,5 @@
 import createNextIntlPlugin from "next-intl/plugin";
+import { redirects } from "./redirects.mjs";
 const withNextIntl = createNextIntlPlugin();
 
 const nextConfig = {
@@ -27,20 +28,9 @@ const nextConfig = {
       },
     ];
   },
+  // The list lives in redirects.mjs.
   async redirects() {
-    return [
-      // The marketplace seller pages are gone: the marketing home has the signup.
-      {
-        source: "/become-seller",
-        destination: "/",
-        permanent: true,
-      },
-      {
-        source: "/sell",
-        destination: "/",
-        permanent: true,
-      },
-    ];
+    return redirects;
   },
   images: {
     // Storage paths are unique (uploads never overwrite), so optimized sizes

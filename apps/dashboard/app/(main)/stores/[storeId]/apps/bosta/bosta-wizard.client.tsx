@@ -312,12 +312,12 @@ export function BostaKeyField({
     <div className="flex flex-col gap-1.5">
       <Label htmlFor="bosta-key">{t("verify.label")}</Label>
       <div className="flex flex-col gap-2 sm:flex-row">
-        <div className="relative min-w-0 flex-1">
+        {/* The key is Latin text: the whole box is LTR, so the icon, the padding and the buttons line up in Arabic too. */}
+        <div dir="ltr" className="relative min-w-0 flex-1">
           <KeyRound className="pointer-events-none absolute start-3.5 top-1/2 size-4 -translate-y-1/2 text-faint" aria-hidden />
           <Input
             id="bosta-key"
             type={visible ? "text" : "password"}
-            dir="ltr"
             autoComplete="off"
             spellCheck={false}
             className={cn(FIELD_CLASS, "ps-10 pe-20 font-mono", error && "border-destructive")}

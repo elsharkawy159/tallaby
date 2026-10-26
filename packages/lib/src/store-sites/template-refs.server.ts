@@ -10,12 +10,13 @@
  * Platform data only (no seller data). Server-only.
  */
 import { and, db, gt, inArray, librarySections } from "@workspace/db";
-import { sanitizeSiteConfig, siteConfigSchema, type SiteConfig } from "@workspace/store-sections";
+import { sanitizeSiteConfig, validateSiteConfig, type SiteConfig } from "@workspace/store-sections";
 import {
   alignFieldNames,
   codeLibraryTree,
   compactTemplateConfig,
   resolveTemplateRefs,
+  storedTemplateRefConfig,
   templateRefKeys,
   type LibraryTreeRow,
   type LibraryTrees,
@@ -46,9 +47,19 @@ export async function loadLibraryTrees(keys: readonly string[], q: Queryable = d
   return trees;
 }
 
-const parseRefs = (raw: unknown): SiteConfig | null => {
-  const parsed = siteConfigSchema.safeParse(raw);
-  return parsed.success && templateRefKeys(parsed.data).length ? parsed.data : null;
+/**
+ * The stored config with its refs, or null when it has none or does not
+ * parse. Sections still exact copies of their seed become refs here too
+ * (`storedTemplateRefConfig`, as the admin template screen opens them), so a
+ * template the backfill did not convert follows library edits as the admin
+ * preview shows. Parsed with its migrations, as the admin screen parses it
+ * (a seed copy matches its seed only after them).
+ */
+const parseRefs = (raw: unknown, category?: string | null): SiteConfig | null => {
+  const parsed = validateSiteConfig(raw);
+  if (!parsed.success) return null;
+  const config = storedTemplateRefConfig(parsed.data, { industry: category ?? undefined, normalize: sanitizeSiteConfig });
+  return templateRefKeys(config).length ? config : null;
 };
 
 export type StoredTemplate = { config: unknown; /** `templates.category` (stock photos for slots with no template photo). */ category?: string | null };
@@ -59,7 +70,7 @@ export type StoredTemplate = { config: unknown; /** `templates.category` (stock 
  * exactly as stored, so the caller's own validation decides as before.
  */
 export async function expandTemplateConfigs(stored: readonly StoredTemplate[], q: Queryable = db, opts: { keepRefs?: boolean } = {}): Promise<unknown[]> {
-  const parsed = stored.map((s) => parseRefs(s.config));
+  const parsed = stored.map((s) => parseRefs(s.config, s.category));
   const keys = parsed.flatMap((config) => (config ? templateRefKeys(config) : []));
   const trees = await loadLibraryTrees(keys, q);
   return stored.map((s, i) => {

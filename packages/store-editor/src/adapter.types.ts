@@ -16,6 +16,7 @@ import type { SiteLocale } from "@workspace/store-sections";
 import type { ProductDetail } from "@workspace/store-sections/render";
 import type { TemplateActionResult, TemplatePreviewView } from "./templates.dto";
 import type { EditorLinkOverrides } from "./lib/editor-links.lib";
+import type { ReactNode } from "react";
 
 export type { EditorLinkOverrides, EditorLinks } from "./lib/editor-links.lib";
 
@@ -64,6 +65,8 @@ export type EditorAdapter = {
   capabilities: EditorCapabilities;
   /** Links to the host's own pages; absent = the seller dashboard's (editor-links.lib), null hides one. */
   links?: EditorLinkOverrides;
+  /** Replaces Add › Sections (the admin section editor lists every library section to switch to). */
+  sectionsTab?: ReactNode;
   saveDraft(pageId: string, content: unknown, clientVersion: number): Promise<EditorResult<{ draftVersion: number }>>;
   saveDesignSystem(designSystem: unknown, clientVersion: number): Promise<EditorResult<{ version: number }>>;
   saveChrome(part: "header" | "footer", instance: unknown, clientVersion: number): Promise<EditorResult<{ version: number }>>;

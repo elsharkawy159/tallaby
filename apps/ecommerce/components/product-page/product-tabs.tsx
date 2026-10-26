@@ -898,7 +898,7 @@ export const ProductTabs = ({ product, user }: ProductTabsProps) => {
         modal={false}
       >
         <DialogContent
-          className="max-w-[60vw] max-h-[60vh] w-full h-full p-0 gap-0 bg-black/70 border-black backdrop-blur-sm"
+          className="max-w-[60vw] sm:max-w-[60vw] max-h-[60vh] w-full h-full p-0 gap-0 bg-black/70 border-black backdrop-blur-sm"
           showCloseButton={true}
         >
           {mediaPreview.mediaItems.length > 0 && (

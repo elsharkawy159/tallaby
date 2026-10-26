@@ -2640,6 +2640,10 @@
   "signup": {
     "title": "Create your store",
     "subtitle": "Choose your store address and start selling in a minute.",
+    "setupTitle": "Set up your store",
+    "setupSubtitle": "Three quick details and your store is ready.",
+    "industry": "Store industry",
+    "orWithEmail": "or sign up with email",
     "signedInAs": "Signed in as {email}",
     "storeAddress": "Store address",
     "storeAddressHint": "Lowercase letters, numbers and dashes. You can change it later.",
@@ -2671,6 +2675,7 @@
       "invalidInput": "Please check the highlighted fields.",
       "invalidSubdomain": "Choose a valid store address.",
       "phoneInvalid": "Enter a valid Egyptian mobile number (01xxxxxxxxx).",
+      "industryRequired": "Choose your store's industry.",
       "subdomainTaken": "This store address was just taken. Choose another one.",
       "emailTaken": "This email already has an account. Sign in to continue.",
       "rateLimited": "Too many attempts. Please wait a few minutes and try again.",

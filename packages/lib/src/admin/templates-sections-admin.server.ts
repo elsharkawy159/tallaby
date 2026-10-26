@@ -35,7 +35,7 @@ type Localized = { ar: string; en: string };
 export type TemplateLibraryRow = { key: string; name: Localized; category: string; tree: NodeTemplate; hidden: boolean };
 
 /** One entry of the screen's "Add section" list (no tree). */
-export type TemplateLibraryEntry = { key: string; name: Localized; category: string; subcategory: string; thumbnailUrl: string | null; hidden: boolean };
+export type TemplateLibraryEntry = { /** `library_sections.id` (the section editor route). */ id: string; key: string; name: Localized; category: string; subcategory: string; thumbnailUrl: string | null; hidden: boolean };
 
 export type TemplateForSections = {
   id: string;
@@ -132,6 +132,7 @@ export async function getTemplateForSections(id: string, q: Queryable = db): Pro
 export async function listTemplateLibraryEntries(q: Queryable = db): Promise<TemplateLibraryEntry[]> {
   const rows = await q
     .select({
+      id: librarySections.id,
       key: librarySections.key,
       name: librarySections.name,
       category: librarySections.category,

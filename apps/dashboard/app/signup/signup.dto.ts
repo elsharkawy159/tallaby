@@ -8,6 +8,9 @@ import { signupInputSchema } from "@workspace/lib/sellers";
 export const storeChoiceSchema = signupInputSchema;
 export type StoreChoiceInput = z.input<typeof storeChoiceSchema>;
 
+/** The setup step for a signed-in user: the store choice plus an industry id (STORE_INDUSTRIES). */
+export type StoreSetupInput = StoreChoiceInput & { industry: string };
+
 export const emailSignupSchema = z.object({
   subdomain: z.string(),
   phone: z.string(),
@@ -20,6 +23,7 @@ export type SignupErrorKey =
   | "invalidInput"
   | "invalidSubdomain"
   | "phoneInvalid"
+  | "industryRequired"
   | "subdomainTaken"
   | "emailTaken"
   | "rateLimited"

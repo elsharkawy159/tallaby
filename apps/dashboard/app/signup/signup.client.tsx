@@ -6,15 +6,17 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRight, Loader2, MailCheck, UserRound } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { z } from "zod";
 
 import { Button } from "@workspace/ui/components/button";
-import { Form } from "@workspace/ui/components/form";
+import { Form, FormField, FormItem, FormMessage } from "@workspace/ui/components/form";
 
 import { SubdomainField } from "@/components/stores/subdomain-field.client";
 import { resendConfirmation } from "@/actions/auth";
+import { STORE_INDUSTRIES } from "@/lib/stores/industries.lib";
+import { cn } from "@/lib/utils";
 import { createClient } from "@/supabase/client";
 import { AuthField } from "../login/auth-field.client";
 import { AuthShell, AuthTabs } from "../login/auth-shell.client";
@@ -29,7 +31,7 @@ import type { SignupErrorKey, SignupResult } from "./signup.dto";
 
 const EGYPT_MOBILE = /^(?:\+20|0020|0)?1[0125]\d{8}$/;
 
-type FormValues = { subdomain: string; phone: string; email: string; password: string };
+type FormValues = { subdomain: string; industry: string; phone: string; email: string; password: string };
 
 export function SignupForm({
   signedInEmail,
@@ -43,6 +45,7 @@ export function SignupForm({
 }) {
   const t = useTranslations("signup");
   const tAuth = useTranslations("auth");
+  const locale = useLocale();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [isGooglePending, setGooglePending] = useState(false);
@@ -58,6 +61,8 @@ export function SignupForm({
     () =>
       z.object({
         subdomain: z.string().trim().min(3, t("tooShort")).max(32, t("tooLong")),
+        // Asked in the signed-in setup step only (after Google); email signup sets it later in Store settings.
+        industry: signedIn ? z.string().min(1, t("errors.industryRequired")) : z.string(),
         phone: z
           .string()
           .refine((v) => EGYPT_MOBILE.test(v.replace(/[\s-]/g, "")), t("errors.phoneInvalid")),
@@ -71,7 +76,7 @@ export function SignupForm({
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { subdomain: initialSubdomain, phone: "", email: "", password: "" },
+    defaultValues: { subdomain: initialSubdomain, industry: "", phone: "", email: "", password: "" },
   });
 
   const handleResult = (result: SignupResult, email?: string) => {
@@ -85,6 +90,7 @@ export function SignupForm({
       if (result.error === "emailTaken") form.setError("email", { message: t("errors.emailTaken") });
       if (result.error === "subdomainTaken") form.setError("subdomain", { message: t("errors.subdomainTaken") });
       if (result.error === "phoneInvalid") form.setError("phone", { message: t("errors.phoneInvalid") });
+      if (result.error === "industryRequired") form.setError("industry", { message: t("errors.industryRequired") });
       toast.error(t(`errors.${result.error}`));
     }
   };
@@ -97,21 +103,16 @@ export function SignupForm({
     startTransition(async () => {
       const choice = { subdomain: values.subdomain, phone: values.phone };
       const result = signedIn
-        ? await createStoreForCurrentUser(choice)
+        ? await createStoreForCurrentUser({ ...choice, industry: values.industry })
         : await signUpWithEmail({ ...choice, email: values.email, password: values.password });
       handleResult(result, values.email);
     });
   };
 
+  // One click: the store is set up after Google, on this page's signed-in step.
   const onGoogle = async () => {
-    const valid = await form.trigger(["subdomain", "phone"]);
-    if (!valid || !available) {
-      if (!available) form.setError("subdomain", { message: t("errors.invalidSubdomain") });
-      return;
-    }
     setGooglePending(true);
-    const { subdomain, phone } = form.getValues();
-    const result = await startGoogleSignup({ subdomain, phone });
+    const result = await startGoogleSignup();
     if (result.status !== "ok") {
       setGooglePending(false);
       handleResult(result);
@@ -186,14 +187,33 @@ export function SignupForm({
 
   return (
     <AuthShell>
-      <AuthHeading eyebrow={tAuth("title")} title={t("title")} subtitle={t("subtitle")} />
+      <AuthHeading
+        eyebrow={tAuth("title")}
+        title={signedIn ? t("setupTitle") : t("title")}
+        subtitle={signedIn ? t("setupSubtitle") : t("subtitle")}
+      />
       {signedIn ? (
         <div className="flex items-center gap-2.5 rounded-xl bg-muted px-3.5 py-2.5 text-sm text-muted-foreground">
           <UserRound className="size-4 shrink-0" />
           <span className="min-w-0 truncate">{t("signedInAs", { email: signedInEmail })}</span>
         </div>
       ) : (
-        <AuthTabs active="signup" />
+        <>
+          <AuthTabs active="signup" />
+          <Button
+            type="button"
+            variant="outline"
+            className="h-[50px] w-full gap-2 rounded-full border-input bg-white text-[15px] font-semibold text-foreground hover:bg-muted dark:bg-card"
+            onClick={onGoogle}
+            disabled={busy}
+          >
+            {isGooglePending ? <Loader2 className="size-[18px] animate-spin" /> : <GoogleIcon />}
+            {t("continueWithGoogle")}
+          </Button>
+          <div className="flex items-center gap-3.5 text-[13px] text-muted-foreground before:h-px before:flex-1 before:bg-border after:h-px after:flex-1 after:bg-border">
+            {t("orWithEmail")}
+          </div>
+        </>
       )}
 
       <Form {...form}>
@@ -210,6 +230,40 @@ export function SignupForm({
               inputClassName="px-3.5 text-[15px] md:text-[15px]"
               labelClassName="text-sm font-semibold text-foreground"
             />
+            {signedIn && (
+              <FormField
+                control={form.control}
+                name="industry"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col gap-2">
+                    <p className="m-0 text-sm font-semibold text-foreground" id="signup-industry">
+                      {t("industry")}
+                    </p>
+                    <div className="flex flex-wrap gap-2" role="radiogroup" aria-labelledby="signup-industry">
+                      {STORE_INDUSTRIES.map((option) => (
+                        <button
+                          key={option.id}
+                          type="button"
+                          role="radio"
+                          aria-checked={field.value === option.id}
+                          disabled={busy}
+                          onClick={() => form.setValue("industry", option.id, { shouldValidate: true })}
+                          className={cn(
+                            "rounded-full border px-3 py-1.5 text-[13px] transition-colors disabled:opacity-50",
+                            field.value === option.id
+                              ? "border-primary bg-primary/5 font-semibold text-primary"
+                              : "border-input hover:border-primary/40",
+                          )}
+                        >
+                          {locale === "en" ? option.en : option.ar}
+                        </button>
+                      ))}
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
             <AuthField
               form={form}
               name="phone"
@@ -248,24 +302,6 @@ export function SignupForm({
             {t("submit")}
             {!isPending && <ArrowRight className="size-[18px] rtl:rotate-180" />}
           </Button>
-
-          {!signedIn && (
-            <>
-              <div className="flex items-center gap-3.5 text-[13px] text-muted-foreground before:h-px before:flex-1 before:bg-border after:h-px after:flex-1 after:bg-border">
-                {t("or")}
-              </div>
-              <Button
-                type="button"
-                variant="outline"
-                className="h-[50px] w-full gap-2 rounded-full border-input bg-white text-[15px] font-semibold text-foreground hover:bg-muted dark:bg-card"
-                onClick={onGoogle}
-                disabled={busy}
-              >
-                {isGooglePending ? <Loader2 className="size-[18px] animate-spin" /> : <GoogleIcon />}
-                {t("continueWithGoogle")}
-              </Button>
-            </>
-          )}
         </form>
       </Form>
 

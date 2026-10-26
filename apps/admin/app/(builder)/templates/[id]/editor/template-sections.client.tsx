@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowDown, ArrowLeft, ArrowUp, History, LoaderCircle, Monitor, Palette, Plus, Rows3, Smartphone, Trash2, Replace, FileText } from "lucide-react";
+import { ArrowDown, ArrowLeft, ArrowUp, History, LoaderCircle, Monitor, Palette, Plus, Rows3, Smartphone, Trash2, Replace, FileText, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { ADMIN_DEFAULT_REASON } from "@workspace/lib/admin";
 import type { TemplateForSections, TemplateLibraryEntry, TemplateLibraryRow } from "@workspace/lib/admin/server";
@@ -102,6 +102,8 @@ export function TemplateSectionsScreen({
     "part" in slot ? (config[slot.part]?.id === id ? config[slot.part] : null) : (config.pages.find((p) => p.slug === slot.page)?.content.sections.find((s) => s.id === id) ?? null);
   const selected = selection ? sectionAt(selection.slot, selection.sectionId) : null;
   const selectedRow = selected?.libraryRef ? rows[selected.libraryRef.key] : undefined;
+  // The section editor of each library key (Admin › Sections), for the rows' edit links.
+  const editHrefs = useMemo(() => new Map(library.map((entry) => [entry.key, `/sections/${entry.id}/editor`])), [library]);
 
   const ensureRow = async (key: string): Promise<boolean> => {
     if (rows[key]) return true;
@@ -218,12 +220,13 @@ export function TemplateSectionsScreen({
             </select>
           </div>
           <ol className="min-h-0 flex-1 space-y-1 overflow-y-auto p-2">
-            <ChromeRow part="header" section={config.header} rows={rows} active={selection} onSelect={selectChrome} onReplace={() => setAdding({ part: "header" })} />
+            <ChromeRow part="header" section={config.header} rows={rows} editHrefs={editHrefs} active={selection} onSelect={selectChrome} onReplace={() => setAdding({ part: "header" })} />
             {(page?.content.sections ?? []).map((section, index, all) => (
               <li key={section.id}>
                 <SectionRow
                   section={section}
                   rows={rows}
+                  editHrefs={editHrefs}
                   missing={built.misses[section.id]}
                   active={selection?.sectionId === section.id && sameSlot(selection.slot, { page: page!.slug })}
                   onSelect={() => {
@@ -244,7 +247,7 @@ export function TemplateSectionsScreen({
                 <Plus className="size-3" /> Add section
               </Button>
             </li>
-            <ChromeRow part="footer" section={config.footer} rows={rows} active={selection} onSelect={selectChrome} onReplace={() => setAdding({ part: "footer" })} />
+            <ChromeRow part="footer" section={config.footer} rows={rows} editHrefs={editHrefs} active={selection} onSelect={selectChrome} onReplace={() => setAdding({ part: "footer" })} />
           </ol>
           <div className="flex gap-1 border-t p-2">
             <Button type="button" variant={panel === "design" ? "secondary" : "ghost"} size="sm" className="flex-1 text-xs" onClick={() => setPanel("design")}>
@@ -386,6 +389,7 @@ function sectionName(section: SectionInstance, rows: Record<string, TemplateLibr
 function SectionRow({
   section,
   rows,
+  editHrefs,
   missing,
   active,
   onSelect,
@@ -395,6 +399,7 @@ function SectionRow({
 }: {
   section: SectionInstance;
   rows: Record<string, TemplateLibraryRow>;
+  editHrefs: ReadonlyMap<string, string>;
   missing?: string[];
   active: boolean;
   onSelect: () => void;
@@ -402,6 +407,7 @@ function SectionRow({
   onDown?: () => void;
   onRemove?: () => void;
 }) {
+  const editHref = section.libraryRef ? editHrefs.get(section.libraryRef.key) : undefined;
   return (
     <div className={cn("group flex items-center gap-1 rounded-md border px-2 py-1.5 text-xs", active ? "border-primary bg-primary/5" : "hover:bg-muted")}>
       <button type="button" className="min-w-0 flex-1 text-start" onClick={onSelect}>
@@ -421,6 +427,13 @@ function SectionRow({
           ) : null}
         </span>
       </button>
+      {editHref && (
+        <Button asChild variant="ghost" size="icon" className="size-6">
+          <a href={editHref} target="_blank" rel="noopener" aria-label="Edit the library section" title="Edit the library section (new tab)">
+            <Pencil className="size-3" />
+          </a>
+        </Button>
+      )}
       {onUp !== undefined || onDown !== undefined ? (
         <>
           <Button type="button" variant="ghost" size="icon" className="size-6" disabled={!onUp} onClick={onUp} aria-label="Move up">
@@ -444,6 +457,7 @@ function ChromeRow({
   part,
   section,
   rows,
+  editHrefs,
   active,
   onSelect,
   onReplace,
@@ -451,6 +465,7 @@ function ChromeRow({
   part: "header" | "footer";
   section: SectionInstance | null;
   rows: Record<string, TemplateLibraryRow>;
+  editHrefs: ReadonlyMap<string, string>;
   active: Selection;
   onSelect: (selection: Selection) => void;
   onReplace: () => void;
@@ -467,6 +482,7 @@ function ChromeRow({
             <SectionRow
               section={section}
               rows={rows}
+              editHrefs={editHrefs}
               active={!!active && "part" in active.slot && active.slot.part === part}
               onSelect={() => onSelect({ slot: { part }, sectionId: section.id })}
             />
