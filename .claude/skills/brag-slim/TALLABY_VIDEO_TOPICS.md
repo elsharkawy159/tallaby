@@ -6,30 +6,72 @@ Use it together with [`TALLABY_VIDEO_RULES.md`](TALLABY_VIDEO_RULES.md) (format,
 
 ---
 
+## 0. Quick start: `/brag-slim` with only a count (owner, 2026-10-27)
+
+The owner runs **`/brag-slim`** and says only how many videos they want (`/brag-slim 3`, "اعمل 4 فيديوهات", "make 2 videos"), plus any options they care about. Everything else has a default, so never ask for the defaults below.
+
+**Defaults (apply without being told):**
+
+| Setting | Default |
+|---|---|
+| Count | **1** video |
+| Format | **Reel: 9:16 vertical, 1080×1920, 30 fps**, 25–30 s (tutorials up to 35 s) |
+| Screens | **Mobile screens**: the real dashboard and store in their mobile layout, inside the spec phone mockup (rules §5). No laptop unless asked. |
+| Voiceover | **Egyptian Arabic, smooth and calm**, exactly per rules §6 and §6.1 (Tamer, eleven_v4, default settings, no tags, chunked). Captions burned in. |
+| Music and sound | Original music and quiet SFX per rules §7 |
+| Topics | Picked by §1 below: **every new feature not yet covered gets a video**, the other slots come from the pillars |
+| Formats | A mix across the batch (§12): for example one "Feature in 20 seconds", one tutorial, one before/after. No two videos in a batch share a format when N ≥ 3. |
+| Workflow | The full `/brag` workflow for every video (rules §5.1): `brag-plan.md`, `composition-brief.md`, `hyperframes check`, `qa.md` |
+| Output | `Marketing Videos/brag-output-<timestamp>/01-<slug>/`, `02-<slug>/`, … each with `brag.mp4`, `brag.jpg`, `share-copy.txt`, `content.md` |
+| Posting | Files only; the daily Buffer job posts from `Marketing Videos/`. Schedule on Buffer only when asked. |
+
+**Options the owner may add (flags or plain words, Arabic or English):**
+
+| Option | Example | Effect |
+|---|---|---|
+| Count | `3`, "تلات فيديوهات" | number of videos |
+| Topic(s) | `F-01`, "about coupons", "عن الشحن" | use these topics (closest IDs below) instead of auto-picking; new features are still added unless the owner says "only" |
+| Type | "tutorials", "ads", "before/after", "شرح" | the format for all videos, or per video |
+| Duration | `--duration 20`, "قصير" | target length (still 20–35 s for Reels) |
+| Format | "landscape", "square" | overrides 9:16 for this run only |
+| Voice | "female voice", "no voice" | Fatima for female (rules §6); no voice only when the owner asks |
+| Season | "Ramadan", "White Friday" | seasonal angle from §13 |
+| Post | "post them", "schedule on Buffer" | schedule on Buffer after QA |
+
+**Run order for a batch of N:**
+
+1. Refresh §3 from the code and plan (§2). This is required on every run, not weekly.
+2. Pick the N topics (§1), then tell the owner the list in one short table (ID, title, format, hook) and start straight away; don't wait for approval unless something is unclear.
+3. Build each video with the full `/brag` workflow and the rules. Videos may be built in parallel subagents, each briefed with both files, but **generate the voiceovers one at a time** (ElevenLabs rate limits break parallel takes).
+4. Run the rules §10 QA on every video; fix or re-render failures before delivering.
+5. Add one row per video to §15 (and update §3 coverage), then give the owner the folder paths and one line per video.
+
 ## 1. How to pick today's topic
 
 1. **The user named a topic?** Use it. Find the closest topic below for its pains, hooks and screens.
-2. **Otherwise, pick in this order:**
-   1. A topic in **§3 New features** that has not been posted yet (newest first). New features always go first.
+2. **New features always get a video.** Every §3 topic that is **not yet covered** goes into the batch first, newest first, one video each. "Covered" means it has a §15 row for a delivered video that was not pulled or rejected. When N ≥ 2, keep at least one slot for a non-new topic so the batch stays varied; new features that don't fit go first in the next run. When N = 1 and an uncovered new feature exists, the video is about it.
+3. **Fill the other slots in this order:**
+   1. Any remaining uncovered topic in **§3 New features** (newest first).
    2. Otherwise, a ✅ topic from §4–§12 whose pillar was **not used in the last 3 videos** and whose ID was **not used in the last 30 days**.
    3. If a season in §13 starts within the next 14 days, prefer its seasonal angle.
-3. **Check what was used:** read §15 (Used topics log). On the daily automated run, also read the last 30 days of Buffer posts.
-4. **Check the status:**
+   4. Within one batch, never repeat a topic ID or a pillar unless N is larger than the number of pillars with usable topics.
+4. **Check what was used:** read §15 (Used topics log). On the daily automated run, also read the last 30 days of Buffer posts.
+5. **Check the status:**
    - ✅ **Live:** usable as is (still check the screen in the code before you show it).
    - 🟡 **Check first:** built, but launch or a part is not confirmed. Before using it, check `PLAN.md` §22/§23 and the code. If it's not confirmed live, skip it, or show only the confirmed part.
    - ⛔ **Planned:** never make a video about it.
-5. **Re-check facts every time.** Features change. If a topic's facts no longer match the code or `MARKETING_PROJECT.md`, fix the topic here before making the video.
-6. **After the video,** add a row to §15 and commit the change.
+6. **Re-check facts every time.** Features change. If a topic's facts no longer match the code or `MARKETING_PROJECT.md`, fix the topic here before making the video.
+7. **After the video,** add a row to §15, update the topic's **Covered** line in §3, and commit the change.
 
 **Each topic gives you:** the seller's pain, 2–3 hooks (Egyptian Arabic, ready to use or adapt), what to show (real screens), and the status. The closing line follows the rules ("Closing lines"): it changes every video and ends on **tallaby.com** ("طلبي دوت كوم").
 
 ## 2. Keeping this file up to date (new features)
 
-Whenever you are asked for a video, or once a week on the daily run:
+**At the start of every run** (every `/brag-slim` or `/brag` call and every daily run), before picking topics:
 
 1. Read `PLAN.md` §22 (checklist) and the newest entries in §23 (log), plus `git log origin/main --since="14 days ago" --oneline`.
-2. For each new **seller-facing** feature that is live on production, add a topic to **§3 New features** with today's date, in the same format.
-3. When a §3 topic has been posted, move it to its pillar section below.
+2. For each new **seller-facing** feature that is live on production and has no topic yet, add a topic to **§3 New features** with today's date, in the same format, with `**Covered:** not yet`. Tell the owner which new features you added.
+3. When a §3 topic has been covered and is older than 30 days, move it to its pillar section below.
 4. When a 🟡 topic is confirmed live, change it to ✅. When a feature is removed, delete its topic.
 5. Never add a topic for something that is only Planned.
 
@@ -37,29 +79,35 @@ Whenever you are asked for a video, or once a week on the daily run:
 
 ## 3. New features (post these first)
 
+Every live seller-facing feature added since the last run gets a topic here, and every batch makes a video for each topic marked `**Covered:** not yet` (§1). Newest at the top.
+
 ### N-04 · Ship your orders with your own Bosta account 🆕 (live 2026-10-26) ✅
 - **Pain:** copying every order's name, phone and address into the courier's site by hand, order after order.
 - **Hooks:** "لسه بتنقل عنوان كل أوردر لشركة الشحن بإيدك؟" / "أكّد الأوردر… والشحنة تتعمل لوحدها." / "أوردرات متجرك توصل لبوسطة بضغطة واحدة."
 - **Show:** Store › Apps › Bosta wizard (الحساب ← مفتاح API ← التحقق ← التفضيلات, key masked ••••1234, "تم الربط. وجدنا مكانَي استلام."); Shipping › "شريك التوصيل" with "تلقائيًا عند تأكيد الطلب"; order dialog "شحن الطلب #… مع بوسطة" (matched area, COD, package size); bulk "اشحن 12 طلبًا مع بوسطة" + "اطبع 12 بوليصة" (one PDF, up to 50); "شحنة بوسطة" card with tracking number and status (تم الاستلام → خرج للتوصيل → تم التوصيل). Needs the seller's own Bosta business account; customers pay the store's own shipping prices, Bosta's charges are between the seller and Bosta, طلبي's fee stays 5 EGP per successful order. Never: Bosta's logo or red, "شريك رسمي", discounts, pickup scheduling, customer tracking page, delivery-time promises.
 - **Status:** ✅ (BS-01…BS-13 merged 2026-10-26, `0106` on production).
+- **Covered:** 2026-10-27 (Bosta reel with voiceover, scheduled for 2026-10-28).
 
 ### N-01 · Build your product page yourself 🆕 (live 2026-10-24) ✅
 - **Pain:** every product page looks the same, a boring template the seller can't change.
 - **Hooks:** "صفحة المنتج بتاعتك… إنت اللي بتصممها." / "عايز صفحة منتج شكلها زي البراندات الكبيرة؟" / "غيّر شكل صفحة المنتج في دقيقة."
 - **Show:** website editor → product page → drag in the gallery, price, variants, buy box, reviews and related products; switch the preview product; publish. Before/after of the same product.
 - **Status:** ✅ (`0100`–`0102` applied on production 2026-10-24).
+- **Covered:** 2026-10-24 (reel 01).
 
 ### N-02 · Seller notifications ✅
 - **Pain:** missing a new order, a customer question or a review because you didn't check the dashboard.
 - **Hooks:** "أوردر جديد؟ هتعرف في ساعتها." / "متفوّتش سؤال زبون تاني."
 - **Show:** the notification bell lighting up with a new order, a product question and a new review (fictional data).
 - **Status:** ✅ (`0098` on production).
+- **Covered:** 2026-10-27 (batch video 01, files only).
 
 ### N-03 · Two new hero carousels (photo-only and with text) ✅
 - **Pain:** a static banner nobody looks at.
 - **Hooks:** "أول حاجة الزبون بيشوفها في متجرك… خليها تتحرك." / "بانر متحرك لمتجرك من غير مصمم."
 - **Show:** Add › Sections › Hero → insert the carousel → swap in your photos → it slides on mobile.
 - **Status:** ✅ (`0094`, `0096` on production).
+- **Covered:** 2026-10-25 (remake 2, scheduled for 2026-10-26).
 
 ---
 
@@ -492,6 +540,11 @@ Add one row after every video (newest at the top). The daily automated run also 
 
 | Date | Topic ID | Format | Hook used | Channels | Notes |
 |---|---|---|---|---|---|
+| 2026-10-27 | N-02 | Batch 2026-10-27 video 01 (parallel agents), Reel/ad "Feature in 20 seconds": bell swings with badge 1→2→3 → real popover "الإشعارات" (new order, product question, review; real ar.json strings) → tap opens the order (ORD7K2M9QX4, 450 ج.م) → end card (26.5s), full `/brag` + Hyperframes | "أوردر جديد؟ هتعرف في ساعتها." | Not posted yet (files only) | Closing line: "خطوة واحدة: طلبي دوت كوم" (button "خطوة واحدة"). VO says notifications appear live while the dashboard is open (realtime + 60s polling; no phone push). Voice Tamer (eleven_v4, ElevenLabs_2, one take: second rate limited); word timings from local faster-whisper. Original numpy music 108 BPM. File: `Marketing Videos/brag-output-2026-10-27-143027/01-seller-notifications/brag.mp4`. |
+| 2026-10-27 | C-02 | Batch video 02, Reel/ad "Before / after": DM inbox "متاح مقاس L؟ / فيه أسود؟" → product form "المخزون والأنواع" (اللون × المقاس = 6 combinations, own price/stock) → storefront "هودي قطن" 450 ج.م, one-tap "أسود / L", "متوفر (8 قطعة)", add to cart (29.0s) | "متاح مقاس L؟ السؤال ده خلص." | Not posted yet (files only) | Closing line: "جرّبها بنفسك على طلبي دوت كوم" (button "جرّبها بنفسك"). Voice Tamer (eleven_v4, one take: second rate limited); local faster-whisper timings. Fictional store "نور ستريت", Streetwear template photos (no people). File: `Marketing Videos/brag-output-2026-10-27-143027/02-sizes-colors-variants/brag.mp4`. |
+| 2026-10-27 | C-03 | Batch video 03, Tutorial (3 numbered steps): "استيراد / تصدير" → "تنزيل النموذج" → filled sheet to row 201 → "استيراد المنتجات" → "معاينة الرفع الجماعي" (صالحة 200) → "تمت إضافة 200 منتج" → grid fills (36.2s) | "عندك 200 منتج؟ شيت إكسل واحد… ومتجرك مليان." | Not posted yet (files only) | Closing line: "رتّب كتالوجك النهارده على طلبي دوت كوم" (button "رتّب كتالوجك"). Voice Tamer (eleven_v4, take A of two; B misheard words); local faster-whisper timings. Demo data from the Clay template catalog. File: `Marketing Videos/brag-output-2026-10-27-143027/03-tutorial-excel-import/brag.mp4`. |
+| 2026-10-27 | A-04 | Batch video 04, Ad "A seller's day" (fictional "سارة", no face): Stores page + create-store dialog → Zay at `sara.tallaby.com` and Kholkhal at `sara-accessories.tallaby.com` side by side → sidebar switcher → "الخطة المجانية: لحد 3 متاجر" (`maxStores: 3`) (28.6s) | "عندك أكتر من براند؟ اعمل لكل واحد متجر." | Not posted yet (files only) | Closing line: "ابني براندك التاني على طلبي دوت كوم" (button "ابني براندك التاني"). Voice Tamer (eleven_v4, one take: second rate limited); caption highlight spread evenly per phrase. Original Node synth 108 BPM. File: `Marketing Videos/brag-output-2026-10-27-143027/04-ad-three-stores/brag.mp4`. |
+| 2026-10-27 | F-01 | Batch video 05, Tutorial (4 numbered steps): العروض والخصومات › الكوبونات › إنشاء كوبون → `WEEKEND15`, 15%, 30–31/10/2026 → listed as "مجدول" → store "قهوة نور" checkout: products 600, shipping 60, discount 90, total 660 → 570 ج.م (36.0s) | "عرض نهاية الأسبوع؟ يلا نجهّز الكوبون في أربع خطوات." | Not posted yet (files only) | Closing line: "جهّز أول عرض ليك على طلبي دوت كوم" (button "جهّز أول عرض"). Seller coupons discount products only, not shipping (`place-order.ts`). "10 ثواني" hook dropped (form has more fields). Voice Tamer (eleven_v4, one take; script shortened to fit low credits, pain beat on screen only). Phone footer dips below y=1500 during push-ins. File: `Marketing Videos/brag-output-2026-10-27-143027/05-tutorial-coupons/brag.mp4`. |
 | 2026-10-27 | N-04 | Owner-requested Bosta video with voiceover: hand-typing an order into a grey "شحنة جديدة" form → order cards pile up → real dashboard screens rebuilt from the repo components in a spec phone (540×1136, ratio 0.475): Apps › Bosta wizard "تم الربط. وجدنا مكانَي استلام." → Shipping partner card "تلقائيًا عند تأكيد الطلب" → ship dialog "تمت المطابقة: مدينة نصر" → bulk "اشحن 12 طلبًا مع بوسطة" + "اطبع 12 بوليصة" with labels fanning out → "شحنة بوسطة" status chips → fee line → end card (30.0s), full `/brag` + Hyperframes; cover frame "أكّد الأوردر… والشحنة تتعمل لوحدها" | "لسه بتنقل عنوان كل أوردر لشركة الشحن بإيدك؟" (cover: "أكّد الأوردر… والشحنة تتعمل لوحدها") | Instagram Reel, Facebook Reel, TikTok (18:00 Cairo, scheduled for 2026-10-28; 2026-10-27 slot held by reel 06; no YouTube channel connected) | Closing line: "وفّر وقتك، من طلبي دوت كوم" (spoken and captioned; button "وفّر وقتك", link tallaby.com). **Voiceover (remake the same day, owner request):** voice Tamer (eleven_v4); one of two takes came through (the other hit "Free Tier access has been disabled"). Word timings came from local whisper (`hyperframes transcribe`) because ElevenLabs transcription was out of credits. Captions are synced word by word with a gold highlight, and the music is ducked about 11 dB under the voice. Original numpy music (maqsum doum-tak, 110 BPM) + synthesised SFX, Canva background plate (design DAHZLb6tB88). Bosta red and logo tile replaced with brand teal and a neutral truck icon. File: `social-videos/2026/10/27-reel-07-bosta-shipping-vo.mp4` (replaces the silent `27-reel-07-bosta-shipping.mp4` in the same Buffer posts). Buffer IDs: IG 6ae03e23e03df6c473fb7624, FB 6ae03e243db43338b8436c63, TikTok 6ae03e258049d85b6be642b3. |
 | 2026-10-26 | E-01 | Myth vs fact on the real pricing page: "monthly subscription" bills crossed out → real tallaby.com/pricing in a spec phone (540×1136, measured 0.473) → "اللي مش هتدفعه" zeros → live fee dial dragged 400 → 100 → 10,000 while the fee stays 5 EGP → plan card: cancelled/refused orders not charged, 7 free days → 4 real template stores → end card (28.7s), full `/brag` + Hyperframes | "ليه تدفع اشتراك كل شهر، قبل ما تبيع أصلاً؟" (cover: "مفيش اشتراك شهري.") | Instagram Reel, Facebook Reel, TikTok (18:00 Cairo, scheduled for 2026-10-27; 2026-10-26 slot held by reel 05; no YouTube channel connected) | Closing line: "متجرك مستنيك، على طلبي دوت كوم" (button "متجرك مستنيك", link tallaby.com). Voice Tamer (eleven_v4, one take: ElevenLabs returned 429 rate limits for ~1 h, the second take was rate limited too; word timings from ElevenLabs Scribe), original numpy music (maqsum doum-tak, 108 BPM), Canva background plate (design DAHZFfnghd0). Stores: Pure, Kholkhal, Zaki, Verdant (Mawsem, Atelier, Ward, Glow, Lumière, Karat, Oud, Zahra skipped: Arabic-Indic digits on screen; Loft skipped: "تركيب مجاني"). File: `social-videos/2026/10/26-reel-06-no-monthly-fee.mp4`. Buffer IDs: IG 6adef2ed45efd376cccca4bc, FB 6adef2eecacf63ab0ac25d74, TikTok 6adef2efebc709901afc4e69. |
 | 2026-10-25 | N-03 (remake 2) | Storefront "shop window": real carousels in a spec phone (540×1136, ratio 0.475) → hidden collections → banners rotate → anatomy callouts (photo/headline/button + tap) → 4-store montage → end card (27.0s), full `/brag` + Hyperframes | "واجهة متجرك، هي أول حاجة الزبون بيشوفها." | Instagram Reel, Facebook Reel, TikTok (18:00 Cairo, scheduled for 2026-10-26; no YouTube channel connected) | Closing line: "ابدأ النهارده من طلبي دوت كوم" (button "ابدأ النهارده", link tallaby.com). Voice Tamer (eleven_v4, one take: the second hit a rate limit; word timings from local whisper because ElevenLabs transcription was rate-limited), original numpy music (maqsum doum-tak, 110 BPM), Canva background plate (design DAHZAfOKcxY). Real carousels from template previews: Mawsem, Kholkhal, Ward, Tarik (Beity/Shasha skipped: free-shipping and instalment banners). File: `social-videos/2026/10/25-reel-05-storefront-banners.mp4`. Buffer IDs: IG 6addcb230b5343d070c4852c, FB 6addcb243d5b27036bc58a7f, TikTok 6addcb250b5343d070c48576. |

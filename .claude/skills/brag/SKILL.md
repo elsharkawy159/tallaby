@@ -7,7 +7,7 @@ description: Turn the current project website into a short, polished, shareable 
 
 You built it. Now let's brag about it.
 
-**Tallaby (طلبي):** before anything else, read [`../brag-slim/TALLABY_VIDEO_RULES.md`](../brag-slim/TALLABY_VIDEO_RULES.md) and [`../brag-slim/TALLABY_VIDEO_TOPICS.md`](../brag-slim/TALLABY_VIDEO_TOPICS.md) and follow them. The topics file decides what today's video is about (sellers only for now) and must be updated with the topic used. It sets the format (9:16 vertical), the Egyptian Arabic voiceover, the brand rules, the video flow and the QA checklist, and it wins wherever it conflicts with this file or its references. The voiceover is required, so treat every Tallaby run as `--voice`.
+**Tallaby (طلبي):** before anything else, read [`../brag-slim/TALLABY_VIDEO_RULES.md`](../brag-slim/TALLABY_VIDEO_RULES.md) and [`../brag-slim/TALLABY_VIDEO_TOPICS.md`](../brag-slim/TALLABY_VIDEO_TOPICS.md) and follow them. The topics file decides what today's video is about (sellers only for now) and must be updated with the topic used. It sets the format (9:16 vertical), the Egyptian Arabic voiceover, the brand rules, the video flow and the QA checklist, and it wins wherever it conflicts with this file or its references. The voiceover is required, so treat every Tallaby run as `--voice`, and make it with ElevenLabs as the rules' §6 says (never Kokoro). A Tallaby run never switches to brag-slim through the model check below; when `/brag-slim` sends you here, its count and options (topics file §0) still apply.
 
 ## Invocation dispatch (must happen first)
 
@@ -51,7 +51,7 @@ Parse these options:
 | `--title` | string | inferred from project |
 | `--voice` | flag | narration off |
 
-Voice is opt-in. If `--voice` is present, use Kokoro via Hyperframes and do
+Voice is opt-in (Tallaby: always on, with ElevenLabs per `TALLABY_VIDEO_RULES.md` §6, not Kokoro). If `--voice` is present, use Kokoro via Hyperframes and do
 not add any provider-selection logic. The voice workflow is intentionally
 single-provider.
 
@@ -71,17 +71,13 @@ separate narration track.
 
 ## Output directory
 
-By default, output goes to `brag-output/`. To avoid overwriting previous runs, use a timestamped directory:
+Every run writes to a new timestamped folder inside **`Marketing Videos/`** at the project root (create it if missing). Never write to the project root or reuse an earlier run's folder. The daily Buffer job reads videos from `Marketing Videos/`, so nothing else goes there.
 
 ```
-brag-output-2026-05-04-143022/
+Marketing Videos/brag-output-2026-05-04-143022/
 ```
 
-Use a timestamp when:
-- The user explicitly asks for a new run without overriding previous results
-- A `brag-output/` directory already exists in the project
-
-Generate the timestamp at the start of the run (`YYYY-MM-DD-HHmmss`) and use it consistently for all output paths in that run: plan, brief, composition, render, and share copy.
+Generate the timestamp at the start of the run (`YYYY-MM-DD-HHmmss`) and use it consistently for all output paths in that run: plan, brief, composition, render, and share copy. When one run makes several videos, give each its own numbered subfolder (`Marketing Videos/brag-output-<timestamp>/01-<slug>/`, `02-<slug>/`, …), each with its own `brag.mp4`, `brag.jpg`, `share-copy.txt` and `content.md`.
 
 ## Skill directory
 
@@ -103,7 +99,7 @@ Scan the project directory and extract the information needed to plan the brag v
 
 **Read:** [references/step-2-plan.md](references/step-2-plan.md)
 
-Write `<output-dir>/brag-plan.md` (where `<output-dir>` is `brag-output/` or the timestamped variant chosen above). Answer the planning rubric. Commit to a creative angle. Write the beat-by-beat storyboard including scenes, text, timing, transitions, and SFX cues.
+Write `<output-dir>/brag-plan.md` (where `<output-dir>` is the `Marketing Videos/brag-output-<timestamp>/` folder chosen above). Answer the planning rubric. Commit to a creative angle. Write the beat-by-beat storyboard including scenes, text, timing, transitions, and SFX cues.
 
 When music is selected, include a compact `Music cue guidance` section: read the bundled track's cue preset from `<skill-dir>/assets/music/cues/` if present, otherwise note cues will be detected at composition time (any track now supports beat sync — see `references/audio.md`). Cue metadata is optional timing guidance only: story, readability, pacing, and product clarity stay primary.
 

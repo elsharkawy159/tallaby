@@ -7,6 +7,8 @@ description: Turn a project directory or a website URL into a short, shareable l
 
 **Tallaby (طلبي):** before step 1, read [`TALLABY_VIDEO_RULES.md`](TALLABY_VIDEO_RULES.md) and [`TALLABY_VIDEO_TOPICS.md`](TALLABY_VIDEO_TOPICS.md) in this folder and follow them. The topics file decides what today's video is about (sellers only for now) and must be updated with the topic used. It sets the format (9:16 vertical), the Egyptian Arabic voiceover, the brand rules, the video flow and the QA checklist, and it wins wherever it conflicts with this file.
 
+**Tallaby usage:** `/brag-slim [count] [options]`. A bare number or "N videos" is the count. Use the defaults in the topics file's §0 (Reel 9:16, mobile screens in a phone mockup, Egyptian Arabic voiceover per the rules, auto-picked topics with a video for every uncovered new feature) without asking, and ignore the options table below for anything §0 sets. For each video, follow the full `/brag` workflow in [`../brag/SKILL.md`](../brag/SKILL.md) (plan, composition brief, Hyperframes, `hyperframes check`, QA) together with the rules; this file supplies only the creative laws.
+
 You built it. Now brag. You make the whole video yourself — story, visuals, audio, render — with whatever tools are on the machine.
 
 Whatever the tone, it should feel like a modern, slick, polished launch video: nothing on screen or in the soundtrack that doesn't earn its place.
@@ -19,7 +21,7 @@ Usage: `/brag-slim [input] [options]`. Options (flags or plain language):
 | `--format landscape\|vertical\|square` | landscape (1920×1080; vertical 1080×1920, square 1080×1080), 30fps |
 | `--duration <s>` | about 20s |
 
-Write the deliverables to `brag-output/` in the current directory (timestamped `brag-output-YYYY-MM-DD-HHmmss/` if it already exists). Keep every intermediate file (frames, downloads, scripts, stems) in a `work/` subfolder inside it.
+Write the deliverables to a new timestamped folder `Marketing Videos/brag-output-YYYY-MM-DD-HHmmss/` at the project root (create `Marketing Videos/` if missing; never write to the project root or reuse an earlier run's folder). The daily Buffer job reads videos from `Marketing Videos/`. When one run makes several videos, give each its own numbered subfolder (`01-<slug>/`, `02-<slug>/`, …). Keep every intermediate file (frames, downloads, scripts, stems) in a `work/` subfolder inside it.
 
 ## 1. Inspect
 
