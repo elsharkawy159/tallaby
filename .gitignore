@@ -40,3 +40,4 @@ npm-debug.log*
 .superpowers/
 
 brag-output*
+Marketing Videos/.supabase-s3.env
