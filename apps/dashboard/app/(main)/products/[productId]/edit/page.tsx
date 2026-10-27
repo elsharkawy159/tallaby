@@ -11,6 +11,7 @@ import { requireSeller } from "@/lib/auth/require-seller.server";
 import { loadSellerTaxonomyOptions } from "../../categories-brands/categories-brands.data";
 import { loadProductLinkHost } from "../../add/product-link-host.data";
 import { loadProductStoreLinks } from "../../_components/product-store-links.data";
+import { loadProductSocialProof } from "../../social-proof/social-proof.data";
 import type { EditProductStatus } from "./edit-product-actions.client";
 import type { CategoryOption } from "../../add/add-product.schema";
 
@@ -30,13 +31,14 @@ export default async function EditProductPage({
 }: EditProductPageProps) {
   const { productId } = await params;
   const { sellerId } = await requireSeller();
-  const [productResult, categoriesRes, sellerProfile, sellerTaxonomy, linkHost] =
+  const [productResult, categoriesRes, sellerProfile, sellerTaxonomy, linkHost, socialProof] =
     await Promise.all([
       getProduct(productId),
       getAllCategories(),
       getSellerProfile(),
       loadSellerTaxonomyOptions(sellerId),
       loadProductLinkHost(sellerId),
+      loadProductSocialProof(sellerId, productId),
     ]);
 
   if (!productResult.success || !productResult.data) {
@@ -53,10 +55,11 @@ export default async function EditProductPage({
     feeTrialStartedAt: seller?.feeTrialStartedAt ?? null,
     feeTrialEndsAt: seller?.feeTrialEndsAt ?? null,
   };
-  const defaultValues = buildEditDefaultValues(
-    product as Parameters<typeof buildEditDefaultValues>[0],
-    sellerPricing
-  );
+  const defaultValues = {
+    ...buildEditDefaultValues(product as Parameters<typeof buildEditDefaultValues>[0], sellerPricing),
+    showLiveViews: socialProof.showLiveViews,
+    sellerReviews: socialProof.reviews,
+  };
 
   const slug = defaultValues.localized?.en?.slug?.trim() || null;
   const storeLinks = await loadProductStoreLinks([{ id: productId, slug }]);

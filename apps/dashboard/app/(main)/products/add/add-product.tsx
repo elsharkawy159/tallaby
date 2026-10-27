@@ -35,6 +35,8 @@ import { PricingSection } from "./sections/pricing-section"
 import { InventorySection } from "./sections/inventory-section"
 import { ShippingSection } from "./sections/shipping-section"
 import { VisibilitySection } from "./sections/visibility-section"
+import { SocialProofSection } from "../social-proof/social-proof-section.client"
+import { saveProductSocialProof } from "../social-proof/social-proof.server"
 import { MobilePublishBar, PublishChecklist, SectionChips } from "./publish-progress"
 import { ImportDialog } from "./import-dialog"
 import { BulkUrlImport } from "./bulk-url-import.client"
@@ -96,6 +98,7 @@ function AddProductForm ({
   const tForm = useTranslations("productForm")
   const tBasic = useTranslations("productForm.sections.basic")
   const tTaxonomy = useTranslations("categoriesBrands.productForm")
+  const tSocialProof = useTranslations("productForm.sections.socialProof")
   const tCommon = useTranslations("common")
   const resolver = useLocalizedResolver(zodResolver(addProductFormSchema) as any)
   const taxonomyContext = useSellerTaxonomy()
@@ -163,11 +166,19 @@ function AddProductForm ({
     return result.data.id
   }
 
-  /** Product fields for createProduct / updateProduct: the store category is linked separately. */
+  /** Product fields for createProduct / updateProduct: the store category, reviews and live views are saved separately. */
   const toPayload = (data: AddProductFormData) => {
     const { rest, taxonomy } = splitSellerTaxonomy(prepareProductForSubmit(data))
-    const { sellerCategoryName: _typedCategory, ...payload } = rest
+    const { sellerCategoryName: _typedCategory, showLiveViews: _liveViews, sellerReviews: _reviews, ...payload } = rest
     return { payload, taxonomy }
+  }
+
+  const saveSocialProof = async (productId: string, data: AddProductFormData) => {
+    const saved = await saveProductSocialProof(productId, {
+      showLiveViews: data.showLiveViews ?? false,
+      reviews: data.sellerReviews ?? [],
+    })
+    if (!saved.success) toast.warning(tSocialProof("saveFailed"))
   }
 
   const linkStoreCategory = async (
@@ -189,7 +200,10 @@ function AddProductForm ({
         const result = await createProduct(payload as Parameters<typeof createProduct>[0])
 
         if (result.success) {
-          if (result.data?.id) await linkStoreCategory(result.data.id, data, taxonomy)
+          if (result.data?.id) {
+            await linkStoreCategory(result.data.id, data, taxonomy)
+            await saveSocialProof(result.data.id, data)
+          }
           draft.pause()
           draft.clear()
           if (result.data?.status === "draft") toast.info(tToast("productSavedAsDraft"))
@@ -219,6 +233,7 @@ function AddProductForm ({
         if (result.success) {
           // Always sent on edit, so a changed category replaces the old link.
           await linkStoreCategory(productId, data, taxonomy)
+          await saveSocialProof(productId, data)
           toast.success(tToast("productUpdatedSuccessfully"))
           router.push("/products")
         } else {
@@ -371,6 +386,7 @@ function AddProductForm ({
               <InventorySection sellerPricing={sellerPricing} activeLocale={activeLocale} />
               <ShippingSection sellerPricing={sellerPricing} />
               <VisibilitySection activeLocale={activeLocale} />
+              <SocialProofSection />
             </div>
 
             <aside

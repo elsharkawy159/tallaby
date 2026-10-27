@@ -86,7 +86,8 @@ export async function storeReviews(
       anonymous: reviews.isAnonymous,
       verified: reviews.isVerifiedPurchase,
       createdAt: reviews.createdAt,
-      fullName: users.fullName,
+      // Seller-added reviews (0111) have no user, only the reviewer's name.
+      fullName: sql<string | null>`coalesce(${users.fullName}, ${reviews.reviewerName})`,
       productId: products.id,
       titleAr: sql<string | null>`(SELECT t.title FROM ${productTranslations} t WHERE t.product_id = ${products.id} AND t.locale = 'ar' LIMIT 1)`,
       titleEn: sql<string | null>`(SELECT t.title FROM ${productTranslations} t WHERE t.product_id = ${products.id} AND t.locale = 'en' LIMIT 1)`,

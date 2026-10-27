@@ -539,7 +539,7 @@ export const ProductTabs = ({ product, user }: ProductTabsProps) => {
                               />
                             ) : (
                               <span className="text-base lg:text-lg font-semibold text-gray-600">
-                                {review.user?.fullName
+                                {(review.user?.fullName || review.reviewerName)
                                   ?.charAt(0)
                                   ?.toUpperCase() || "U"}
                               </span>
@@ -548,7 +548,7 @@ export const ProductTabs = ({ product, user }: ProductTabsProps) => {
                           <div className="flex-1">
                             <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-2">
                               <span className="font-semibold text-gray-900 text-sm lg:text-base">
-                                {review.user?.fullName || t("anonymous")}
+                                {review.user?.fullName || review.reviewerName || t("anonymous")}
                               </span>
                               <span className="text-xs lg:text-sm text-gray-500">
                                 {formatDate(review.createdAt)}

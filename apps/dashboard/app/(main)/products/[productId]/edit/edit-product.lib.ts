@@ -218,6 +218,9 @@ export function buildEditDefaultValues(
     taxClass:
       (product.taxClass as AddProductFormData["taxClass"]) ?? "standard",
     notes: "",
+    // Filled from loadProductSocialProof by the edit page.
+    showLiveViews: false,
+    sellerReviews: [],
     variantTypes,
     variants,
     localized: {

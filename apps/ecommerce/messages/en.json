@@ -322,6 +322,7 @@
     "productNotFound": "Product Not Found",
     "productNotFoundDescription": "The requested product could not be found on Tallaby.com",
     "reviewsCount": "{count} reviews",
+    "liveViews": "{count} people are viewing this now",
     "reviewsCountOne": "{count} review",
     "reviewsCountOther": "{count} reviews",
     "soldBy": "Sold by",

@@ -37,6 +37,7 @@ import { StickyStoreHeader } from "./sticky-store-header.client";
 import { StoreWishlistButton } from "./store-wishlist-button.client";
 import { storefrontFont } from "./storefront-font";
 import { PoweredByTallaby } from "./powered-by-tallaby";
+import { LiveViews } from "@/components/product-page/live-views.client";
 import {
   StoreProductBuyBox,
   StoreProductGallery,
@@ -60,8 +61,9 @@ const textProp = (value: unknown) => (typeof value === "string" && value.trim() 
  */
 const PRODUCT_HOOKS: Pick<
   RenderContext,
-  "renderProductGallery" | "renderProductPrice" | "renderProductStock" | "renderProductVariants" | "renderProductBuyBox" | "renderProductReviews"
+  "renderProductGallery" | "renderProductPrice" | "renderProductStock" | "renderProductVariants" | "renderProductBuyBox" | "renderProductReviews" | "renderLiveViews"
 > = {
+  renderLiveViews: (product) => <LiveViews productId={product.id} className="text-(--sf-ink)" />,
   renderProductGallery: (_product, props) => (
     <StoreProductGallery thumbs={props.thumbs === "bottom" || props.thumbs === "none" ? props.thumbs : "side"} zoom={props.zoom !== false} />
   ),

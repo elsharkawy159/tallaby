@@ -208,6 +208,8 @@ export type ProductDetail = ProductSummary & {
   discountEndsAt: string | null;
   quantity: number;
   directCheckout: boolean;
+  /** The seller ticked "show live views" (0111): the storefront draws `renderLiveViews` above the buy box. */
+  liveViews?: boolean;
   variants: ProductVariantDetail[];
   reviewCount: number;
   brand: string | null;
@@ -416,6 +418,8 @@ export interface RenderContext {
   renderProductVariants?: ProductElementHook;
   renderProductBuyBox?: ProductElementHook;
   renderProductReviews?: ProductElementHook;
+  /** The live "N people viewing now" line, drawn above the buy box when the product has `liveViews` (storefront only). */
+  renderLiveViews?: (product: ProductDetail) => ReactNode;
   /** Wishlist toggle, when the host supports it on this store. */
   renderWishlistButton?: (product: ProductSummary) => ReactNode;
   /** The header's switch to the store's other language (`languageSwitcher` node). */

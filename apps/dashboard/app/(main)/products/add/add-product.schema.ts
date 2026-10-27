@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { normalizePrice } from "@/lib/utils/product-pricing.lib";
 import { META_KEYWORD_MAX_LENGTH, META_KEYWORDS_MAX } from "./meta-keywords.lib";
+import { SELLER_REVIEWS_MAX, sellerReviewSchema } from "../social-proof/social-proof.dto";
 
 export const SUPPORTED_LOCALES = ["en", "ar"] as const
 export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number]
@@ -188,6 +189,9 @@ export const addProductFormSchema = z
       )
       .optional(),
     notes: z.string().optional(),
+    // Saved by saveProductSocialProof, not createProduct / updateProduct (social-proof.dto.ts).
+    showLiveViews: z.boolean().default(false),
+    sellerReviews: z.array(sellerReviewSchema).max(SELLER_REVIEWS_MAX).default([]),
 
     // localized: Record<locale, { title, description, bullet_points, slug, meta_title, meta_description }>
     localized: z.object({
@@ -310,6 +314,8 @@ export const defaultValues = {
   freeDelivery: false,
   taxClass: "standard" as const,
   notes: "",
+  showLiveViews: false,
+  sellerReviews: [],
   variantTypes: [],
   variants: [],
   localized: {

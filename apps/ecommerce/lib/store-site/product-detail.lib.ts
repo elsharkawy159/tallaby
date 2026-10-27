@@ -71,6 +71,7 @@ export function toProductDetail(product: Product, locale: ProductLocale): Produc
     discountEndsAt: pricing.listPrice != null ? pricing.discountEndsAt : null,
     quantity,
     directCheckout: product.directCheckout === true,
+    liveViews: product.showLiveViews === true,
     variants,
     reviewCount: Number(product.reviewCount ?? 0),
     brand: product.brand?.name ?? null,

@@ -504,6 +504,16 @@ export function renderProductElement(type: ProductElementType, props: Record<str
   const attrs = type === "productReviews" ? { ...nodeAttrs, id: "reviews" } : nodeAttrs;
   const hookKey = HOOKS[type];
   const hook: ProductElementHook | undefined = hookKey && ctx.mode === "public" ? ctx[hookKey] : undefined;
+  // The seller's live views line sits just above the buy box (public only: the number is illustrative, not data).
+  const liveViews = type === "productBuyBox" && product.liveViews && ctx.mode === "public" ? ctx.renderLiveViews?.(product) : null;
+  if (liveViews) {
+    return (
+      <div {...attrs} className="flex min-w-0 flex-col gap-3">
+        {liveViews}
+        {hook ? hook(product, props) : STILLS[type]({ product, props, attrs: {}, ctx })}
+      </div>
+    );
+  }
   if (hook) {
     return (
       <div {...attrs} className="min-w-0">

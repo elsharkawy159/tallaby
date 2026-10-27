@@ -27,6 +27,7 @@ import { MetaViewContent } from "@/components/meta/meta-view-content.client";
 import { LOW_STOCK_THRESHOLD, discountExpiryDate as offerExpiryDate, productPricing, stickyBuyBarClass } from "./product-page.lib";
 import { ProductStockBadge } from "./product-stock-badge";
 import { VariantPicker } from "./variant-picker";
+import { LiveViews } from "./live-views.client";
 
 
 interface ProductDetailsProps {
@@ -157,6 +158,8 @@ export const ProductDetails = ({
             locale={locale}
           />
         </div>
+
+        {product.showLiveViews && <LiveViews productId={product.id} className="mt-3 text-gray-700" />}
 
         {/* Variant Selection */}
         {hasVariants && (

@@ -322,6 +322,7 @@
     "productNotFound": "المنتج غير موجود",
     "productNotFoundDescription": "لم يتم العثور على المنتج المطلوب على Tallaby.com",
     "reviewsCount": "{count} تقييمات",
+    "liveViews": "{count} شخص يشاهدون هذا المنتج الآن",
     "reviewsCountOne": "{count} تقييم",
     "reviewsCountOther": "{count} تقييمات",
     "soldBy": "يباع بواسطة",

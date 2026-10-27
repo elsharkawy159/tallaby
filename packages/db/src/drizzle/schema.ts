@@ -920,11 +920,16 @@ export const returns = pgTable("returns", {
 
 export const reviews = pgTable("reviews", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
-	userId: uuid("user_id").notNull(),
+	/** Null only on seller-added reviews (0111, `source = 'seller'`). */
+	userId: uuid("user_id"),
 	productId: uuid("product_id"),
 	sellerId: uuid("seller_id"),
 	orderId: uuid("order_id"),
 	orderItemId: uuid("order_item_id"),
+	/** 'customer' (a buyer's review) or 'seller' (a real review the seller typed in from the product form, 0111). */
+	source: text().default('customer').notNull(),
+	/** The reviewer's name on seller-added reviews (they have no user). */
+	reviewerName: text("reviewer_name"),
 	rating: integer().notNull(),
 	title: text(),
 	comment: text(),
@@ -944,6 +949,8 @@ export const reviews = pgTable("reviews", {
 	index("review_user_id_idx").using("btree", table.userId.asc().nullsLast().op("uuid_ops")),
 	// Product detail page filters reviews by (productId, status='approved') — status was unindexed.
 	index("review_product_status_idx").using("btree", table.productId.asc().nullsLast().op("uuid_ops"), table.status.asc().nullsLast().op("text_ops")),
+	index("review_product_seller_source_idx").using("btree", table.productId).where(sql`source = 'seller'`),
+	check("reviews_source_check", sql`(source = 'customer' AND user_id IS NOT NULL) OR (source = 'seller' AND user_id IS NULL AND char_length(btrim(coalesce(reviewer_name, ''))) BETWEEN 1 AND 80)`),
 	foreignKey({
 			columns: [table.orderId],
 			foreignColumns: [orders.id],
@@ -1476,6 +1483,8 @@ export const products = pgTable("products", {
 	freeDelivery: boolean("free_delivery").default(false).notNull(),
 	/** Ad landing pages: product page shows "Buy Now" and goes straight to checkout. */
 	directCheckout: boolean("direct_checkout").default(false).notNull(),
+	/** Product page shows a live "N people viewing now" line (0111; off by default). */
+	showLiveViews: boolean("show_live_views").default(false).notNull(),
 	dimensions: jsonb(),
 	price: jsonb(),
 	productType: productType("product_type").default('physical'),

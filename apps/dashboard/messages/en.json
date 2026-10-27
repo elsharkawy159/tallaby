@@ -563,7 +563,8 @@
       "arTitleRequired": "Arabic title is required when Arabic content is provided",
       "salePriceBelowPrice": "The sale price must be lower than the product price",
       "titleRequired": "Enter the product name (in Arabic or English)",
-      "descriptionRequired": "Enter a short description (in Arabic or English)"
+      "descriptionRequired": "Enter a short description (in Arabic or English)",
+      "reviewerNameRequired": "Enter the customer's name"
     },
     "seller": {
       "businessNameRequired": "Business name is required",
@@ -1367,6 +1368,27 @@
         "summaryEdited": "Edited by you",
         "auto": "Auto",
         "restoreAuto": "Restore automatic"
+      },
+      "socialProof": {
+        "title": "Reviews and live views",
+        "description": "Add reviews you really received, and show how many people are viewing the product.",
+        "summaryNone": "Optional",
+        "summaryReviews": "{count, plural, one {# review} other {# reviews}}",
+        "summaryLiveViews": "Live views on",
+        "liveViews": "Show live views on the product page",
+        "liveViewsDescription": "Shows \"N people are viewing this now\" under the price, with a number that changes every few seconds. Off by default.",
+        "reviewsHeading": "Customer reviews",
+        "reviewsHint": "Add reviews customers sent you elsewhere (WhatsApp, Facebook, Instagram, your old store). They show on the product page and count toward its rating. Only add real reviews.",
+        "addReview": "Add a review",
+        "removeReview": "Remove review",
+        "reviewerName": "Customer name",
+        "reviewerNamePlaceholder": "e.g. Mona A.",
+        "rating": "Rating",
+        "stars": "{count, plural, one {# star} other {# stars}}",
+        "comment": "Review",
+        "commentPlaceholder": "What the customer said",
+        "optional": "Optional",
+        "saveFailed": "The product was saved, but its reviews or live views setting were not. Open the product and save again."
       }
     },
     "import": {
