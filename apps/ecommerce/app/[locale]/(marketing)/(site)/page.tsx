@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { MotionScope, SmoothScrollProvider } from "@workspace/motion";
 import {
   BuilderSection,
   FeaturesSection,
@@ -17,18 +18,21 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return pageMetadata({ locale, page: "home", path: "/", absoluteTitle: true });
 }
 
+/** Scroll motion (@workspace/motion) and smooth scrolling are a home page pilot; 90 = the sticky header plus a gap. */
 export default function HomePage() {
   return (
-    <>
-      <HomeHero />
-      <HowItWorks />
-      <TemplatesShowcase />
-      <BuilderSection />
-      <FeaturesSection />
-      <PricingTeaser />
-      <HomeFaq />
-      <FinalCta />
+    <SmoothScrollProvider offset={90}>
+      <MotionScope>
+        <HomeHero />
+        <HowItWorks />
+        <TemplatesShowcase />
+        <BuilderSection />
+        <FeaturesSection />
+        <PricingTeaser />
+        <HomeFaq />
+        <FinalCta />
+      </MotionScope>
       <StickyCta />
-    </>
+    </SmoothScrollProvider>
   );
 }

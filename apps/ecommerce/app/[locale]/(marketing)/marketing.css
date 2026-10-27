@@ -1,4 +1,6 @@
 @import "@workspace/ui/globals.css";
+/* Home page motion pilot: hero intro keyframes and Lenis rules. */
+@import "@workspace/motion/motion.css";
 
 /*
  * Marketing site tokens. The palette mirrors the Tallaby design system
