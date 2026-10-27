@@ -2,12 +2,13 @@ import Image from "next/image";
 import { Mail, MapPin } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
+import { type PaymentMethod, PaymentMethodIcons } from "@/components/layout/payment-method-icons";
 import { CONTACT, LOGIN_URL, SOCIAL_LINKS } from "@/lib/marketing/site.lib";
 import { BrandIcon, type BrandIconName } from "./brand-icon";
 import { FooterClaim } from "./footer-claim.client";
 import { Container, Ltr } from "./layout-primitives";
 
-const PAYMENT_BADGES = ["VISA", "Mastercard", "Meeza", "Apple Pay", "Google Pay"];
+const PAYMENT_METHODS: PaymentMethod[] = ["visa", "mastercard", "meeza", "apple-pay", "google-pay"];
 
 type FooterLink = { href: string; label: string; external?: boolean };
 
@@ -50,7 +51,7 @@ export async function SiteFooter() {
   ];
 
   const socials: { id: BrandIconName; href: string; label: string }[] = [
-    ...(["instagram", "tiktok", "youtube", "x"] as const).map((id) => ({ id, href: SOCIAL_LINKS[id].href, label: SOCIAL_LINKS[id].label })),
+    ...(["facebook", "instagram", "tiktok", "youtube", "x", "threads", "linkedin"] as const).map((id) => ({ id, href: SOCIAL_LINKS[id].href, label: SOCIAL_LINKS[id].label })),
     ...(CONTACT.whatsapp ? [{ id: "whatsapp" as const, href: CONTACT.whatsapp, label: "WhatsApp" }] : []),
   ];
 
@@ -133,12 +134,8 @@ export async function SiteFooter() {
                 </a>
               ))}
             </div>
-            <div className="flex flex-wrap gap-1.5" dir="ltr">
-              {PAYMENT_BADGES.map((badge) => (
-                <span key={badge} className="rounded-md border border-white/10 px-2 py-1 font-latin text-[10px] font-bold text-white/70">
-                  {badge}
-                </span>
-              ))}
+            <div dir="ltr" aria-label={t("paymentMethods")} role="group">
+              <PaymentMethodIcons methods={PAYMENT_METHODS} className="gap-1.5" iconClassName="h-7 ring-1 ring-white/10" />
             </div>
           </div>
         </Container>

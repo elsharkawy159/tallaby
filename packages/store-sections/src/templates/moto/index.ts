@@ -1,9 +1,9 @@
 /**
  * Moto (template 38, motorcycle riding gear; Claude Design "Storefront
  * Templates"): warm grey paper, near-black type and a racing red for
- * actions, Changa throughout and tight 4px corners. A riders' shop: 15% off
- * helmets, certified brands, riders' favourites, why certified only, ask a
- * rider, good to know and how to reach the garage. Built from section
+ * actions, Changa throughout and tight 4px corners. A riders' shop: a split hero
+ * on a helmet, the garage's categories, riders' favourites, why certified
+ * only, most ordered, certified brands and good to know. Built from section
  * library designs (`fromLibrary`).
  *
  * Photos: Pexels, each checked by eye (2026-10-20): helmets resting on
@@ -81,30 +81,22 @@ const QUESTIONS = {
 } as const;
 
 const home: Design[] = [
-  lib("promo-percent", {
+  lib("hero-split", {
+    photo: [PHOTOS.whiteHelmetWide],
     text: {
-      "٣٠٪": L("١٥٪", "15%"),
-      "على كل المنتجات": L("على كل الخوذ المعتمدة", "on every certified helmet"),
-      "لحد آخر الشهر أو لحد ما الكمية تخلص.": L("لحد آخر الشهر، ومعاها كيس خوذة ببلاش.", "Until the end of the month, with a free helmet bag."),
-      "تسوق العرض": L("تسوق الخوذ", "Shop helmets"),
+      "صورة الواجهة": L("خوذة بيضا على موتوسيكل في جراج", "A white helmet on a motorcycle in a garage"),
+      "المجموعة الجديدة": L("خوذ معتمدة ECE و DOT", "ECE and DOT certified"),
+      "معمول بكميات صغيرة": L("اركب وارجع بالسلامة", "Ride out, ride home safe"),
+      "قطع مختارة بعناية، بنعملها بكميات صغيرة عشان كل واحدة تفضل مميزة.": L(
+        "خوذ وجوانتيات وجواكت بحماية معتمدة، من رايدرز لرايدرز.",
+        "Helmets, gloves and jackets with certified protection, from riders to riders.",
+      ),
+      "تسوّق المجموعة": L("تسوق الخوذ", "Shop helmets"),
+      "حكايتنا": L("عن الجراج", "About the garage"),
     },
     links: { "/products": search("خوذة") },
   }),
-  lib("brands-cards", {
-    text: {
-      "الماركات": L("ماركات معتمدة", "Certified brands"),
-      "تسوق بالماركة": L("تسوق بالماركة", "Shop by brand"),
-      "فولتا": BRANDS[0]!,
-      "٤٢": L("٢٤", "24"),
-      "نورو": BRANDS[1]!,
-      "١٨": L("١٦", "16"),
-      "كيان": BRANDS[2]!,
-      "٢٧": L("٣١", "31"),
-      "ساحل": BRANDS[3]!,
-      "٩": L("١١", "11"),
-    },
-    links: { "/products": [undefined, ...BRANDS.map(search)] },
-  }),
+  lib("categories-ruled", { text: { "الأقسام": L("الجراج", "The garage"), "تسوق بالقسم": L("جهّز نفسك", "Gear up") } }),
   lib("products-feature", {
     text: { "اختيارنا ليك": L("اختيارات الرايدرز", "Riders’ favourites"), "اختيار الأسبوع": L("اختيار الشهر", "Pick of the month") },
   }),
@@ -124,13 +116,24 @@ const home: Design[] = [
       ),
     },
   }),
-  lib("faq-panel", {
+  lib("products-rail", {
+    text: { "بيحبوها": L("من الجراج", "From the garage"), "الأكثر مبيعًا": L("الأكثر طلباً", "Most ordered") },
+    links: { "/products": BEST },
+  }),
+  lib("brands-cards", {
     text: {
-      "محتاج مساعدة؟": L("محتاج رأي؟", "Need advice?"),
-      "إحنا هنا": L("اسأل رايدر", "Ask a rider"),
-      "بنرد في ١٢ دقيقة في المتوسط": L("فريقنا كله بيسوق موتوسيكلات", "Our whole team rides"),
-      ...QUESTIONS,
+      "الماركات": L("ماركات معتمدة", "Certified brands"),
+      "تسوق بالماركة": L("تسوق بالماركة", "Shop by brand"),
+      "فولتا": BRANDS[0]!,
+      "٤٢": L("٢٤", "24"),
+      "نورو": BRANDS[1]!,
+      "١٨": L("١٦", "16"),
+      "كيان": BRANDS[2]!,
+      "٢٧": L("٣١", "31"),
+      "ساحل": BRANDS[3]!,
+      "٩": L("١١", "11"),
     },
+    links: { "/products": [undefined, ...BRANDS.map(search)] },
   }),
   lib("faq-numbered", {
     text: {
@@ -139,15 +142,6 @@ const home: Design[] = [
       ...QUESTIONS,
     },
   }),
-  lib("contact-bento", {
-    text: {
-      "كلمنا دلوقتي": L("ابعتلنا موديل الموتوسيكل", "Send us your bike’s model"),
-      "بنرد في ١٢ دقيقة في المتوسط": L("بنرد في ١٥ دقيقة في المتوسط", "Average reply: 15 minutes"),
-      "العنوان": L("الجراج", "The garage"),
-      "٢٤ شارع التحرير، الدقي": L("١٨ شارع شهاب، المهندسين", "18 Shehab St, Mohandessin"),
-    },
-  }),
-  lib("contact-big", { text: { "قول أهلًا": L("عدّي علينا", "Drop by") } }),
 ];
 
 const about: Design[] = [
@@ -187,12 +181,12 @@ const DEMO = demoStore({
 
 export const MOTO = libraryTemplate({
   key: MOTO_KEY,
-  version: 3,
-  changelog: "Moto v3: product page",
+  version: 4,
+  changelog: "Moto v4: new hero, categories, section order",
   name: L("موتو", "Moto"),
   description: L(
-    "أدوات ركوب الموتوسيكل: خصم الخوذ، ماركات معتمدة، اسأل رايدر وعنوان الجراج. أربع صفحات جاهزة.",
-    "Motorcycle riding gear: helmet offer, certified brands, ask a rider and the garage address. Four ready pages.",
+    "أدوات ركوب الموتوسيكل: خوذ معتمدة، اختيارات الرايدرز وماركات موثوقة. أربع صفحات جاهزة.",
+    "Motorcycle riding gear: certified helmets, riders' picks and trusted brands. Four ready pages.",
   ),
   category: "auto",
   sortOrder: 380,

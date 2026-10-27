@@ -55,6 +55,10 @@ const ProductCard = ({
       discountLabel={
         discountPercent ? t("discountPercentOff", { percent: discountPercent }) : undefined
       }
+      flags={[
+        ...(product.isTrending ? [{ key: "trending", label: t("badgeTrending"), tone: "dark" as const }] : []),
+        ...(product.isSeasonal ? [{ key: "seasonal", label: t("badgeSeasonal"), tone: "light" as const }] : []),
+      ]}
       swatches={swatches.map((swatch) => ({
         key: swatch.value,
         hex: swatch.hex,

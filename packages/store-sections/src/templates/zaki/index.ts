@@ -2,8 +2,9 @@
  * Zaki (template 57, smart home and TV; Claude Design "Storefront
  * Templates"): pale green-grey paper, deep green ink, a teal for actions and
  * a warm yellow highlight, Noto Kufi Arabic throughout and 14px corners. An
- * installer's shop: smart TV in an afternoon, what our technicians do,
- * devices we install, book a technician, installation prices, extend your warranty and questions.
+ * installer's shop: smart TV in an afternoon, the categories, devices we
+ * install, installation prices, most installed, extend your warranty and
+ * questions.
  * Built from section library designs (`fromLibrary`).
  *
  * Photos: Pexels, each checked by eye (2026-10-21): wall-mounted TVs in empty
@@ -99,20 +100,8 @@ const home: Design[] = [
     },
     links: { "/products": ["/contact", SHOP] },
   }),
-  lib("service-cards", {
-    text: {
-      "خدمات بعد البيع": L("الفنيين بتوعنا بيعملوا إيه", "What our technicians do"),
-      "عشان جهازك يفضل شغال زي الجديد.": L("من أول الشاشة على الحيطة لحد آخر تطبيق.", "From the screen on the wall to the last app."),
-      "تركيب في البيت": L("تركيب شاشة حائط", "TV wall mounting"),
-      "نركّب الشاشة أو الرسيفر ونظبط القنوات.": L("أي حيطة والسلك مستخبي.", "Any wall, cables hidden."),
-      "من ٢٥٠ ج.م": L("من ٣٥٠ ج.م", "From EGP 350"),
-      "صيانة وإصلاح": L("ظبط الرسيفر", "Box setup"),
-      "تغيير بطارية أو شاشة في نفس اليوم.": L("تطبيقات وقنوات وحسابات.", "Apps, channels and accounts."),
-      "استبدل القديم": L("فحص الواي فاي", "Wi-Fi check"),
-      "جيب جهازك القديم وخد خصم على الجديد.": L("نلاقي الأماكن الضعيفة ونقويها.", "We find the dead spots and fix them."),
-      "مجانًا": L("من ٢٠٠ ج.م", "From EGP 200"),
-      "سنة أو سنتين زيادة على ضمان الوكيل.": L("سنة أو سنتين زيادة على ضمان الجهاز.", "One or two extra years on top of the device warranty."),
-    },
+  lib("categories-feature-list", {
+    text: { "الأقسام": L("البيت الذكي", "The smart home"), "كل الأقسام": L("كل الأقسام", "All categories") },
   }),
   lib("products-grid", {
     text: {
@@ -121,12 +110,6 @@ const home: Design[] = [
     },
     links: { "/products": SHOP },
     lists: [{ source: "featured", limit: 4 }],
-  }),
-  lib("service-booking", {
-    text: {
-      "احجز معاد الفني": L("احجز فني", "Book a technician"),
-      "تركيب شاشة · حوالي ساعة": L("تركيب وظبط الشاشة · حوالي ساعة", "TV mounting and setup · about one hour"),
-    },
   }),
   lib("service-price-menu", {
     text: {
@@ -150,6 +133,10 @@ const home: Design[] = [
       "تنظيف وفحص": L("فيشة أو لمبة ذكية", "Smart plug or bulb"),
       "٨٠ ج.م": L("٥٠ ج.م", "EGP 50"),
     },
+  }),
+  lib("products-rail", {
+    text: { "بيحبوها": L("الأكتر تركيباً", "Most installed"), "الأكثر مبيعًا": L("اختيارات البيوت", "Homes' favourites") },
+    links: { "/products": BEST },
   }),
   lib("service-plans", {
     text: {
@@ -213,13 +200,13 @@ const DEMO = demoStore({
 
 export const ZAKI = libraryTemplate({
   key: ZAKI_KEY,
-  version: 3,
-  changelog: "Zaki v3: product page",
+  version: 4,
+  changelog: "Zaki v4: categories, section order, trimmed service blocks",
   productPage: { thumbs: "bottom", band: "paper", extras: ["product-perks"], copy: { back: L("رجوع للأجهزة", "Back to the devices"), reviews: L("رأي اللي ركّبوا عندنا", "From homes we installed"), related: L("أجهزة تكمّل بيتك", "More for your smart home") } },
   name: L("زكي", "Zaki"),
   description: L(
-    "البيت الذكي والتلفزيون مع التركيب: خدمات الفنيين، احجز فني، أسعار التركيب ومد الضمان. أربع صفحات جاهزة.",
-    "Smart home and TV with installation: technician services, book a visit, installation prices and extended warranty. Four ready pages.",
+    "البيت الذكي والتلفزيون مع التركيب: أجهزة بنركبها، أسعار التركيب ومد الضمان. أربع صفحات جاهزة.",
+    "Smart home and TV with installation: devices we install, installation prices and extended warranty. Four ready pages.",
   ),
   category: "electronics",
   sortOrder: 570,

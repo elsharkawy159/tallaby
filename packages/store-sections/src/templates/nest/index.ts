@@ -3,7 +3,7 @@
  * Templates"): warm stone paper, terracotta actions and a sand highlight,
  * Reem Kufi headings over Noto Sans Arabic and small 6px corners. A
  * room-led store: department tabs, a bento opening with the lead piece,
- * departments, how it is made, new in, a client quote and the makers.
+ * departments, new in, how it is made and a client quote.
  * Built from section library designs (`fromLibrary`).
  *
  * Photos: Pexels, each checked by eye (2026-10-20): vases, linen, lamps,
@@ -92,6 +92,9 @@ const home: Design[] = [
   lib("categories-feature-list", {
     text: { "الأقسام": L("الأقسام", "Departments"), "كل الأقسام": L("كل الأقسام", "All departments") },
   }),
+  lib("products-feature", {
+    text: { "اختيارنا ليك": L("وصل جديد", "New in"), "اختيار الأسبوع": L("قطعة الشهر", "Piece of the month") },
+  }),
   lib("about-rows", {
     photo: [undefined, undefined, undefined, undefined, PHOTOS.pottery, PHOTOS.linen, PHOTOS.vaseCandles],
     text: {
@@ -106,9 +109,6 @@ const home: Design[] = [
       "تغليف محكم ومعه الفاتورة والضمان.": L("الخزف بيتشحن في عبوات ورق مضغوط. ولو حاجة اتكسرت بنبدّلها.", "Ceramics travel in moulded paper pulp. If anything breaks, we replace it."),
     },
   }),
-  lib("products-feature", {
-    text: { "اختيارنا ليك": L("وصل جديد", "New in"), "اختيار الأسبوع": L("قطعة الشهر", "Piece of the month") },
-  }),
   lib("testimonials-spotlight", {
     text: {
       "«من أفضل تجارب الشراء أونلاين. الطلب وصل بسرعة، والتغليف أنيق، والمنتج أفضل من الصور.»": L(
@@ -117,19 +117,6 @@ const home: Design[] = [
       ),
       "م": L("د", "D"),
       "مريم أ.": L("داليا ف.", "Dalia F."),
-    },
-  }),
-  lib("about-overlap", {
-    person: [undefined, undefined, undefined, undefined, PHOTOS.ringVase],
-    text: {
-      "صورة المتجر": L("فازة خزف بيضا بفتحة دائرية", "A white ring vase in ceramic"),
-      "من داخل المتجر": L("صنّاعنا", "Our makers"),
-      "بدأنا من محل صغير": L("ست ورش ومعيار واحد", "Six workshops, one standard"),
-      "نختار كل منتج بعناية ونغلّفه بأيدينا، ونعرف عملاءنا بالاسم.": L(
-        "بنشتغل مع ست ورش عائلية في مصر وبنزور كل واحدة كل موسم.",
-        "We work with six family workshops across Egypt and visit each one every season.",
-      ),
-      "اعرف أكثر": L("اتعرفي على الصنّاع", "Meet the makers"),
     },
   }),
 ];
@@ -175,12 +162,12 @@ const DEMO = demoStore({
 
 export const NEST = libraryTemplate({
   key: NEST_KEY,
-  version: 3,
-  changelog: "Nest v3: product page",
+  version: 4,
+  changelog: "Nest v4: section order",
   name: L("نِست", "Nest"),
   description: L(
-    "ديكور البيت: أقسام حسب الأوضة، بتتعمل إزاي، الجديد وحكاية الصنّاع. أربع صفحات جاهزة.",
-    "Modern home living: shop by room, how it is made, new in and the makers. Four ready pages.",
+    "ديكور البيت: أقسام حسب الأوضة، الجديد، بتتعمل إزاي ورأي العملاء. أربع صفحات جاهزة.",
+    "Modern home living: shop by room, new in, how it is made and a client quote. Four ready pages.",
   ),
   category: "home",
   sortOrder: 130,

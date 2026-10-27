@@ -79,6 +79,7 @@ const home: Design[] = [
     },
     links: { "/products": [SHOP, search("طقم")] },
   }),
+  lib("categories-big-type", {}),
   lib("products-list", {
     text: {
       "الكتالوج": L("الأكتر اختياراً", "Most chosen"),
@@ -102,30 +103,6 @@ const home: Design[] = [
       "— منى، المؤسسة": L("— حسن، الجيل التالت", "— Hassan, third generation"),
     },
   }),
-  lib("bundle-gifts", {
-    photo: [PHOTOS.royalOud, PHOTOS.amberRose, PHOTOS.weddingTrio, PHOTOS.discovery],
-    text: {
-      "هدايا": L("هدايا", "Gifts"),
-      "هدية لمين؟": L("لمين؟", "Who is it for?"),
-      "ليه": L("ليه", "For him"),
-      "ليها": L("ليها", "For her"),
-      "للطلبة": L("الأفراح", "Weddings"),
-      "للجيمرز": L("جرّب الأول", "Try first"),
-      "تسوّق": L("تسوّق", "Shop"),
-    },
-    links: { "/products": [search("عود"), search("مسك"), search("بوكس"), search("طقم تجربة")] },
-  }),
-  lib("promo-coupon", {
-    as: "gift-card",
-    name: L("كارت هدية", "Gift card"),
-    text: {
-      "٢٠٪": L("٥٠٠", "500"),
-      "خصم": L("ج.م", "EGP"),
-      "خصم على أول طلب لك": L("ابعت كارت هدية عطور", "Send a perfume gift card"),
-      "للطلبات فوق ٨٠٠ ج.م · حتى ٣٠ نوفمبر": L("بـ٥٠٠ أو ١٠٠٠ أو ٢٠٠٠ ج.م · بيوصل على واتساب في نفس اليوم", "EGP 500, 1,000 or 2,000 · delivered on WhatsApp the same day"),
-      "الكود: WELCOME20": L("اطلبه بكود: OUDGIFT", "Order with code: OUDGIFT"),
-    },
-  }),
   lib("team-branches", {
     text: {
       "الفروع": L("محلاتنا", "Our shops"),
@@ -141,6 +118,17 @@ const home: Design[] = [
       "السبت – الخميس، ١٢ – ١٠ م": L("السبت – الخميس، ١ – ١٠ م", "Sat – Thu, 1 – 10 pm"),
     },
     links: { "https://maps.google.com": MAPS },
+  }),
+  lib("testimonials-quote", {
+    text: {
+      "آراء العملاء": L("من عملاء البيت", "From our patrons"),
+      "«من أحسن تجارب الشراء أونلاين. الطلب وصل بسرعة، والتغليف شيك، والمنتج أحلى من الصور.»": L(
+        "«العود الملكي بيفضل على الهدوم لتاني يوم، وعلبة الهدية كانت تحفة.»",
+        "«The Royal Oud stays on my clothes until the next day, and the gift box was beautiful.»",
+      ),
+      "مريم أ.": L("هالة ف.", "Hala F."),
+      "القاهرة": L("مصر الجديدة", "Heliopolis"),
+    },
   }),
 ];
 
@@ -181,8 +169,8 @@ const DEMO = demoStore({
 
 export const OUD = libraryTemplate({
   key: OUD_KEY,
-  version: 2,
-  changelog: "Oud v2: product page",
+  version: 3,
+  changelog: "Oud v3: categories, a closing review, section order",
   productPage: { surface: "flat", thumbs: "side", gallery: "end", button: "outline", band: "shelf", extras: ["product-shipping"], copy: { back: L("رجوع للدار", "Back to the house"), reviews: L("رأي أهل العطر", "From those who wear it"), related: L("عطور من الدار", "More from the house") } },
   name: L("عود", "Oud"),
   description: L(

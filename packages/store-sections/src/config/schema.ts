@@ -52,6 +52,8 @@ export const ALLOWED_NODE_TYPES = [
   // Product page elements (template product page, 2026-10-23); additive.
   "productGallery", "productPrice", "productStock", "productRating", "productVariants",
   "productBuyBox", "productDetails", "productContent", "productSeller", "productReviews",
+  // Scrolling marquee and live countdown (Claude Design premium sections, 2026-10-27); additive.
+  "marquee", "countdown",
 ] as const;
 export type AllowedNodeType = (typeof ALLOWED_NODE_TYPES)[number];
 
@@ -277,6 +279,13 @@ export const designSystemSchema = z.object({
       borderRadius: z.number().min(0).max(64).optional(),
     })
     .default({}),
+  /** Theme › Animations (docs/section-rules.md §6.6): both on unless set to false. */
+  motion: z
+    .object({
+      reveal: z.boolean().optional(),
+      hoverZoom: z.boolean().optional(),
+    })
+    .optional(),
 });
 export type DesignSystem = z.output<typeof designSystemSchema>;
 

@@ -12,6 +12,7 @@ import {
   PageStyles,
   SITE_ROOT_CLASS,
   SectionRenderer,
+  SiteBottomNav,
   SiteTheme,
   designSystemToTokens,
   flushHeaderOnMobile,
@@ -578,6 +579,12 @@ export function EditorCanvas({
             {drawnFooter && (
               <div data-editor-chrome="footer">
                 <SectionRenderer key={`ftr:${nonce.footer ?? 0}`} instance={drawnFooter} registry={storeSectionRegistry} ctx={ctx} defaultLocale={defaultLocale} />
+              </div>
+            )}
+            {/* The phone bottom navigation; a click selects the header, whose options turn it off. */}
+            {header && (
+              <div data-editor-chrome="header">
+                <SiteBottomNav header={header} ctx={ctx} />
               </div>
             )}
           </div>,

@@ -129,18 +129,6 @@ const home: Design[] = [
       "تسوق الشريحة دي": L("تسوقي الهدايا دي", "Shop these gifts"),
     },
   }),
-  lib("popup-reward", {
-    name: L("ادّي وخدي", "Refer a friend"),
-    text: {
-      "جرّب حظك": L("ادّي ١٠٪ وخدي ١٠٪", "Give 10%, get 10%"),
-      "المرة دي كسبت، وده كودك.": L("صاحبتك توفر على أول طلب، وانتي على اللي بعده.", "Your friend saves on her first order, you save on your next."),
-      "كسبت": L("لصاحبتك", "For your friend"),
-      "شحن مجاني": L("خصم ١٠٪", "10% off"),
-      "الكود: FREESHIP": L("الكود: WELCOME10", "Code: WELCOME10"),
-      "استخدمه دلوقتي": L("تسوقي معاها", "Shop together"),
-    },
-    links: { "/products": NEW },
-  }),
   lib("testimonials-wall", {
     text: {
       "ماذا يقولون عنا": L("بيتلبس كل يوم", "Worn every day"),
@@ -212,8 +200,8 @@ export const ZAHRA = libraryTemplate({
   productPage: { surface: "shelf", thumbs: "bottom", band: "brand", extras: ["product-perks"], copy: { back: L("رجوع للإكسسوارات", "Back to the jewellery"), reviews: L("حائط التقييمات", "The review wall"), related: L("اكمّليها بقطعة", "Pair it with a piece") } },
   name: L("زهرة", "Zahra"),
   description: L(
-    "مجوهرات مطلية دهب يومية: هيرو بنتو، أقسام دائرية، هدايا حسب الميزانية، ادّي وخدي وآراء العميلات. أربع صفحات جاهزة.",
-    "Everyday gold-plated jewellery: a bento hero, story rings, gifts by budget, refer a friend and reviews. Four ready pages.",
+    "مجوهرات مطلية دهب يومية: هيرو بنتو، أقسام دائرية، هدايا حسب الميزانية وآراء العميلات. أربع صفحات جاهزة.",
+    "Everyday gold-plated jewellery: a bento hero, story rings, gifts by budget and reviews. Four ready pages.",
   ),
   category: "jewelry",
   sortOrder: 810,

@@ -80,17 +80,8 @@ const home: Design[] = [
     },
     links: { "/products": [NEW, SHOP] },
   }),
-  lib("features-ruled", {
-    text: {
-      "توصيل سريع": L("من غير عطر", "Fragrance free"),
-      "من يوم إلى ٤ أيام لكل المحافظات": L("كل التركيبات بدون استثناء.", "Every formula, no exceptions."),
-      "الدفع عند الاستلام": L("مختبر من أطباء جلدية", "Dermatologist tested"),
-      "أو ادفع بالبطاقة والمحفظة": L("اتجرب على ٥٠ شخص قبل النزول.", "Patch tested on 50 people before launch."),
-      "استرجاع سهل": L("عيّنة مجانية", "Free sample"),
-      "١٤ يومًا لتغيّر رأيك": L("جربي حاجة جديدة مع كل طلب.", "Try something new with every order."),
-      "دعم على واتساب": L("زجاج يتعاد تدويره", "Recyclable glass"),
-      "أشخاص حقيقيون طوال الأسبوع": L("رجّعي ٥ عبوات فاضية وخدي رصيد ١٠٠ ج.م.", "Return 5 empties for EGP 100 credit."),
-    },
+  lib("categories-photo-tiles", {
+    text: { "تسوّق حسب القسم": L("ابدئي من خطوة", "Start with a step") },
   }),
   lib("products-grid", {
     as: "best-sellers",
@@ -100,18 +91,6 @@ const home: Design[] = [
     },
     links: { "/products": BEST },
     lists: [{ source: "best-sellers", limit: 4 }],
-  }),
-  lib("about-list", {
-    photo: [undefined, undefined, undefined, undefined, undefined, PHOTOS.eucalyptusOil],
-    text: {
-      "صورة المتجر": L("زجاجة بقطّارة جنب فرع أوكالبتوس", "A dropper bottle beside a eucalyptus branch"),
-      "مع كل طلب": L("في كل عبوة", "In every bottle"),
-      "كل منتج بيتراجع قبل ما يوصلك": L("مكونات أقل، كل واحد ليه سبب", "Fewer ingredients, chosen for a reason"),
-      "فاتورة رسمية وضمان": L("من غير عطر ولا زيوت عطرية", "No fragrance, no essential oils"),
-      "تغليف محمي من الصدمات": L("pH متوازن للبشرة الحساسة", "pH balanced for sensitive skin"),
-      "رقم تتبع على واتساب": L("قائمة المكونات كاملة في صفحة كل منتج", "Full ingredient list on every page"),
-      "اعرف أكتر": L("اعرفي أكتر عن نبتة", "More about Nabta"),
-    },
   }),
   lib("features-steps", {
     text: {
@@ -124,6 +103,18 @@ const home: Design[] = [
       "نتواصل معك على واتساب للتأكيد": L("كريم بالليل ولوشن بالنهار.", "Cream at night, lotion by day."),
       "استلم": L("احمي", "Protect"),
       "وادفع عند الاستلام": L("واقي شمس كل صباح.", "Sunscreen every morning."),
+    },
+  }),
+  lib("about-list", {
+    photo: [undefined, undefined, undefined, undefined, undefined, PHOTOS.eucalyptusOil],
+    text: {
+      "صورة المتجر": L("زجاجة بقطّارة جنب فرع أوكالبتوس", "A dropper bottle beside a eucalyptus branch"),
+      "مع كل طلب": L("في كل عبوة", "In every bottle"),
+      "كل منتج بيتراجع قبل ما يوصلك": L("مكونات أقل، كل واحد ليه سبب", "Fewer ingredients, chosen for a reason"),
+      "فاتورة رسمية وضمان": L("من غير عطر ولا زيوت عطرية", "No fragrance, no essential oils"),
+      "تغليف محمي من الصدمات": L("مختبر من طبيبة جلدية، pH متوازن", "Dermatologist tested, pH balanced"),
+      "رقم تتبع على واتساب": L("قائمة المكونات كاملة في صفحة كل منتج", "Full ingredient list on every page"),
+      "اعرف أكتر": L("اعرفي أكتر عن نبتة", "More about Nabta"),
     },
   }),
   lib("testimonials-rating", {
@@ -184,8 +175,8 @@ const DEMO = demoStore({
 
 export const PURE = libraryTemplate({
   key: PURE_KEY,
-  version: 3,
-  changelog: "Pure v3: product page",
+  version: 4,
+  changelog: "Pure v4: categories, section order",
   name: L("بيور", "Pure"),
   description: L(
     "عناية بالبشرة بهدوء: مكونات واضحة، روتين من ٤ خطوات وتقييمات. أربع صفحات جاهزة.",

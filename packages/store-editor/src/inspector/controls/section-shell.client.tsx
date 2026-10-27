@@ -2,9 +2,11 @@
 
 import { useTranslations } from "next-intl";
 import { X } from "lucide-react";
-import { SHELL_ANIMATIONS, SHELL_PADDINGS, SHELL_SCHEMES, SHELL_WIDTHS, ANCHOR_RE, type SectionShellStyle } from "@workspace/store-sections/render";
+import { SHELL_PADDINGS, SHELL_SCHEMES, SHELL_WIDTHS, ANCHOR_RE, shellAnimates, type SectionShellStyle } from "@workspace/store-sections/render";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
+import { Label } from "@workspace/ui/components/label";
+import { Switch } from "@workspace/ui/components/switch";
 import { cn } from "@workspace/ui/lib/utils";
 import { MediaPicker } from "../../media/media-picker.client";
 import { ControlRow, NumberControl, Segmented } from "./style-controls.client";
@@ -101,14 +103,21 @@ export function SectionShellControls({
         <p className="text-xs text-muted-foreground">{t("backgroundHint")}</p>
       </div>
 
-      <ControlRow label={t("entrance")}>
-        <Segmented
-          label={t("entrance")}
-          value={value.animation ?? "none"}
-          onChange={(animation) => onChange({ animation: animation === "none" ? undefined : animation })}
-          options={SHELL_ANIMATIONS.map((a) => ({ value: a, label: t(`animations.${a}`), title: t(`animations.${a}`) }))}
-        />
-      </ControlRow>
+      {/* Motion is on by default (docs/section-rules.md §6.6); off stores "none". */}
+      <div className="space-y-1">
+        <div className="flex items-center justify-between gap-3">
+          <Label htmlFor="shell-animate" className="text-xs font-medium">
+            {t("animate")}
+          </Label>
+          <Switch
+            id="shell-animate"
+            checked={shellAnimates(value)}
+            disabled={readOnly}
+            onCheckedChange={(on) => onChange({ animation: on ? undefined : "none" })}
+          />
+        </div>
+        <p className="text-xs text-muted-foreground">{t("animateHint")}</p>
+      </div>
       <div className="space-y-1">
         <label htmlFor="shell-anchor" className="text-xs font-medium">
           {t("anchor")}

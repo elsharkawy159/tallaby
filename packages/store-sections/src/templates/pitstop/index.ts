@@ -2,8 +2,8 @@
  * Pitstop (template 47, mobile car care and fitting; Claude Design
  * "Storefront Templates"): cool paper, a service blue for actions and an
  * amber highlight, Cairo throughout and 8px corners. A wash team that comes
- * to you: services at your door, book a wash, service prices, a care kit
- * between visits, coverage areas and help before you book. Built from
+ * to you: a full-bleed hero, the accessory categories, service prices, a
+ * care kit between visits, coverage areas and drivers' WhatsApp reviews. Built from
  * section library designs (`fromLibrary`).
  *
  * Services are booked over WhatsApp; they are not products in the cart.
@@ -66,51 +66,23 @@ const footer = lib("footer-help", {
 });
 
 const home: Design[] = [
-  lib("hero-halves", {
-    photo: [undefined, PHOTOS.mirrorFoam],
+  lib("hero-fullbleed", {
+    photo: [PHOTOS.mirrorFoam],
     text: {
-      "كوليكشن الموسم": L("عناية متنقلة", "Mobile car care"),
-      "صوت أنقى، كل يوم": L("عربيتك تتنضف مكان ما ركنتها", "Your car, cleaned where you parked it"),
-      "منتجات أصلية بضمان محلي، توصلك خلال ٤٨ ساعة.": L(
+      "صورة الواجهة": L("رغوة غسيل على مراية عربية", "Wash foam on a car mirror"),
+      "المجموعة الجديدة": L("عناية متنقلة", "Mobile car care"),
+      "صُنعت لتدوم معك": L("عربيتك تتنضف مكان ما ركنتها", "Cleaned right where you parked"),
+      "خامات مختارة وتفاصيل هادئة، وتوصيل سريع لحد باب البيت.": L(
         "غسيل وتلميع وتركيب إكسسوارات في البيت أو الشغل. موفر للمية، ومواعيد كل ساعتين.",
         "Wash, detailing and accessory fitting at home or work. Water-saving, two-hour slots.",
       ),
-      "تسوق الآن": L("احجز غسيل", "Book a wash"),
-      "العروض": L("تسوق الإكسسوارات", "Shop accessories"),
-      "صورة الحملة": L("رغوة غسيل على مراية عربية", "Wash foam on a car mirror"),
+      "تسوّق الآن": L("احجز غسيل", "Book a wash"),
+      "شوف الجديد": L("تسوق الإكسسوارات", "Shop accessories"),
     },
-    links: { "/products": ["/contact", undefined] },
+    links: { "/products": "/contact", "/products?sort=newest": "/products" },
   }),
-  lib("service-cards", {
-    text: {
-      "خدمات بعد البيع": L("بنعمل إيه على بابك", "What we do at your door"),
-      "عشان جهازك يفضل شغال زي الجديد.": L("في البيت أو الشغل، بنفس السعر.", "At home or at work, for the same price."),
-      "تركيب في البيت": L("غسيل خارجي", "Exterior wash"),
-      "نركّب الشاشة أو الرسيفر ونظبط القنوات.": L("غسيل من غير مية وتلميع كاوتش في ٤٠ دقيقة.", "Waterless wash and tyre shine in 40 minutes."),
-      "صيانة وإصلاح": L("تنظيف كامل", "Full detail"),
-      "تغيير بطارية أو شاشة في نفس اليوم.": L("جوه وبره، والكراسي بالشامبو.", "Inside and out, seats shampooed."),
-      "من ١٥٠ ج.م": L("من ٩٥٠ ج.م", "From EGP 950"),
-      "استبدل القديم": L("سيراميك", "Ceramic coating"),
-      "جيب جهازك القديم وخد خصم على الجديد.": L("حماية للدهان سنتين.", "Two-year protection for the paint."),
-      "مجانًا": L("من ٤٥٠٠ ج.م", "From EGP 4,500"),
-      "مد الضمان": L("تركيب إكسسوارات", "Accessory fitting"),
-      "سنة أو سنتين زيادة على ضمان الوكيل.": L("تركيب مجاني لأي حاجة تشتريها مننا.", "Free fitting for anything you buy from us."),
-      "من ١٩٩ ج.م": L("مجاناً", "Free"),
-    },
-  }),
-  lib("service-booking", {
-    text: {
-      "احجز معاد الفني": L("احجز غسيل", "Book a wash"),
-      "تركيب شاشة · حوالي ساعة": L("غسيل خارجي على عنوانك · حوالي ٤٠ دقيقة", "Exterior wash at your address · about 40 minutes"),
-      "مواعيد الزيارات": L("المواعيد المتاحة", "Available times"),
-      "١٠ ص": L("٨ ص", "8 am"),
-      "١٢ الضهر": L("١٠ ص", "10 am"),
-      "٢ م": L("١٢ الضهر", "12 pm"),
-      "٤ م": L("٢ م", "2 pm"),
-      "٦ م": L("٤ م", "4 pm"),
-      "٨ م": L("٦ م", "6 pm"),
-      "من السبت للخميس": L("كل يوم، والتأكيد على واتساب", "Every day, confirmed on WhatsApp"),
-    },
+  lib("categories-captioned", {
+    text: { "اكتشف الأقسام": L("خليها نضيفة ومرتبة", "Keep it clean and tidy"), "كل الأقسام": L("كل الإكسسوارات", "All accessories") },
   }),
   lib("service-price-menu", {
     text: {
@@ -169,13 +141,20 @@ const home: Design[] = [
       "٩٥ ج.م": L("١٠٠ ج.م", "EGP 100"),
     },
   }),
-  lib("service-support", {
+  lib("testimonials-chat", {
     text: {
-      "محتاج مساعدة؟": L("عندك سؤال قبل الحجز؟", "Questions before you book?"),
-      "من ١٠ ص لـ ١٠ م": L("من ٨ ص لـ ٨ م", "8 am – 8 pm"),
-      "زور فرع": L("زورنا", "Visit us"),
-      "٣ فروع في القاهرة": L("القطامية، الطريق الدائري", "Katameya, Ring Road"),
-      "من غير معاد": L("بميعاد", "By appointment"),
+      "من الواتساب": L("من الواتساب", "From WhatsApp"),
+      "رسايل بتفرّحنا": L("بعد الزيارة", "After the visit"),
+      "مريم أ.": L("هبة س.", "Heba S."),
+      "طلبت يوم الأحد ووصل الثلاثاء. التغليف كان مرتبًا والمنتج كما في الصور تمامًا.": L(
+        "غسلوا العربية تحت الشغل في ٤٠ دقيقة ومن غير ما ينقطوا مية على الرصيف.",
+        "They washed the car outside my office in 40 minutes without a drop on the pavement.",
+      ),
+      "ده يسعدنا جدًا، شكرًا ليكي!": L("نورتينا، نشوفك الزيارة الجاية!", "Thank you, see you next visit!"),
+      "عمر ك.": L("طارق م.", "Tarek M."),
+      "بدّلت المقاس بدون أي تعب، والفريق رد علي في دقائق.": L("ركبوا حامل الموبايل مع التنضيف ببلاش.", "They fitted the phone mount during the detail, free."),
+      "يوسف م.": L("نادين ف.", "Nadine F."),
+      "ثاني مرة أطلب. كل شيء أصلي والفاتورة داخل العلبة.": L("الكراسي رجعت زي الجديدة بعد الشامبو.", "The seats look new again after the shampoo."),
     },
   }),
 ];
@@ -217,13 +196,13 @@ const DEMO = demoStore({
 
 export const PITSTOP = libraryTemplate({
   key: PITSTOP_KEY,
-  version: 2,
-  changelog: "Pitstop v2: product page",
+  version: 3,
+  changelog: "Pitstop v3: full-bleed hero, categories, section order",
   productPage: { surface: "card", thumbs: "bottom", band: "brand", extras: ["product-shipping"], copy: { back: L("رجوع لمستلزمات العربية", "Back to car care"), reviews: L("رأي اللي جرّبوا الغسيل", "What drivers say"), related: L("خليها لامعة بين الزيارات", "Keep it clean between visits") } },
   name: L("بيت ستوب", "Pitstop"),
   description: L(
-    "عناية عربيات متنقلة: الخدمات، حجز غسيل، الأسعار، طقم بين الزيارات، مناطق التغطية والدعم. أربع صفحات جاهزة.",
-    "Mobile car care: services, book a wash, prices, a kit between visits, coverage areas and support. Four ready pages.",
+    "عناية عربيات متنقلة: الأسعار، طقم بين الزيارات، مناطق التغطية وآراء السواقين. أربع صفحات جاهزة.",
+    "Mobile car care: prices, a kit between visits, coverage areas and drivers' reviews. Four ready pages.",
   ),
   category: "auto",
   sortOrder: 470,

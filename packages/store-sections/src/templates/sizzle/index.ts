@@ -120,21 +120,6 @@ const home: Design[] = [
     links: { "/products": BEST },
     lists: [{ source: "best-sellers", limit: 4 }],
   }),
-  lib("promo-deal", {
-    photo: [undefined, undefined, undefined, PHOTOS.burgerTray],
-    text: {
-      "صورة العرض": L("برجر وبطاطس في صينية", "Burgers and fries on a tray"),
-      "عرض اليوم": L("عرض الليلة", "Tonight’s deal"),
-      "اسم العرض أو المنتج هنا": L("بوكس العيلة", "The Family Box"),
-      "اكتب سبب العرض وما يحصل عليه العميل في سطر واحد.": L(
-        "٤ برجر و٢ شاورما وبيتزا كبيرة وبطاطس و٤ مشروبات.",
-        "Four burgers, two shawarma wraps, a large pizza, fries and four drinks.",
-      ),
-      "وفّر ٢٥٪": L("وفّر ١٦٪", "Save 16%"),
-      "الحق العرض": L("اطلب البوكس", "Order the box"),
-    },
-    links: { "/products": search("بوكس") },
-  }),
   lib("about-rows", {
     photo: [undefined, undefined, undefined, undefined, PHOTOS.burgerFries, PHOTOS.shawarmaWraps, PHOTOS.stonePizza],
     text: {
@@ -249,8 +234,8 @@ export const SIZZLE = libraryTemplate({
   changelog: "Sizzle v3: product page",
   name: L("سيزل", "Sizzle"),
   description: L(
-    "برجر وشاورما وبيتزا: الأكل في العنوان، عرض الليلة، بنطبخ إزاي وآراء الزباين. أربع صفحات جاهزة.",
-    "Burgers, shawarma and pizza: food in the headline, tonight’s deal, how we cook and regulars. Four ready pages.",
+    "برجر وشاورما وبيتزا: الأكل في العنوان، بنطبخ إزاي وآراء الزباين. أربع صفحات جاهزة.",
+    "Burgers, shawarma and pizza: food in the headline, how we cook and regulars. Four ready pages.",
   ),
   category: "food",
   sortOrder: 170,

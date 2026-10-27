@@ -144,7 +144,7 @@ describe("search and filters", () => {
 
   it("filters by category, subcategory and capability", () => {
     expect(filterPresets({ category: "hero" }).map((p) => p.id)).toEqual(HERO_DESIGNS.map((d) => d.id.replace("hero-", "hero.")));
-    expect(filterPresets({ category: "hero", subcategory: "split" }).map((p) => p.id)).toEqual(["hero.classic", "hero.halves"]);
+    expect(filterPresets({ category: "hero", subcategory: "split" }).map((p) => p.id)).toEqual(["hero.classic", "hero.halves", "hero.split"]);
     expect(filterPresets({ category: "product-page" }).map((p) => p.id)).toEqual([
       "product-page.main",
       "product-page.content",

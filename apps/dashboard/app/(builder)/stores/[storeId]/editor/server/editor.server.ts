@@ -195,7 +195,12 @@ export async function reorderPages(storeId: string, pageIds: string[]) {
 export async function publish(storeId: string) {
   return withStore<{ revisionId: string; revisionNumber: number }>(storeId, { forPublish: true, publishAction: "publish" }, async (access) => {
     if (!publishLimiter.check(`publish:${access.seller.sellerId}`)) return fail("rateLimited");
-    const result = await publishStoreSite(access.seller.sellerId, access.store.id, access.seller.userId, { allowedSections: ALLOWED });
+    // A store goes live only after its seller chose a template (owner 2026-10-27);
+    // checked in the publish transaction for this seller's store.
+    const result = await publishStoreSite(access.seller.sellerId, access.store.id, access.seller.userId, {
+      allowedSections: ALLOWED,
+      requireTemplateChoice: true,
+    });
     if (!result.success) return fail(result.error);
     await invalidateStore(access);
     revalidatePath(`/stores/${access.store.id}/website`);

@@ -2,8 +2,9 @@
 
 import * as React from "react";
 import Image from "next/image";
-import { Menu, X } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { Menu } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@workspace/ui/components/sheet";
 import { cn } from "@workspace/ui/lib/utils";
 import { Link, usePathname } from "@/i18n/navigation";
 import { LOGIN_URL } from "@/lib/marketing/site.lib";
@@ -12,16 +13,22 @@ import { Container } from "./layout-primitives";
 import { LocaleSwitch } from "./locale-switch.client";
 import { NAV_ITEMS, activeNavKey } from "./nav.lib";
 
-/** Sticky dark-teal header with the mobile menu below it. */
+/**
+ * Sticky dark-teal header; below xl the links move into a side sheet behind
+ * the burger. On the home page it overlays the hero and stays transparent
+ * until the page scrolls.
+ */
 export function SiteHeader() {
   const t = useTranslations("nav");
+  const locale = useLocale();
   const pathname = usePathname();
   const active = activeNavKey(pathname);
+  const isHome = pathname === "/";
   const [scrolled, setScrolled] = React.useState(false);
   const [menuOpen, setMenuOpen] = React.useState(false);
 
   React.useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
+    const onScroll = () => setScrolled(window.scrollY >= 5);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
@@ -46,7 +53,9 @@ export function SiteHeader() {
     <header
       data-print="hide"
       className={cn(
-        "sticky top-0 z-50 bg-teal-900 transition-shadow duration-200",
+        "sticky top-0 z-50 transition-[background-color,box-shadow] duration-200",
+        isHome && "-mb-[68px]",
+        isHome && !scrolled ? "bg-transparent" : "bg-teal-900",
         scrolled && "shadow-[0_1px_0_rgba(255,255,255,0.08),0_8px_24px_rgba(0,0,0,0.18)]",
       )}
     >
@@ -65,31 +74,40 @@ export function SiteHeader() {
           <SignupTrigger size="sm" className="hidden sm:inline-flex">
             {t("cta")}
           </SignupTrigger>
-          <button
-            type="button"
-            aria-expanded={menuOpen}
-            aria-controls="mobile-nav"
-            aria-label={t("menu")}
-            onClick={() => setMenuOpen((open) => !open)}
-            className="grid size-11 place-items-center rounded-[10px] text-white xl:hidden"
-          >
-            {menuOpen ? <X className="size-5" aria-hidden /> : <Menu className="size-5" aria-hidden />}
-          </button>
+          <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+            <SheetTrigger aria-label={t("menu")} className="grid size-11 place-items-center rounded-[10px] text-white xl:hidden">
+              <Menu className="size-5" aria-hidden />
+            </SheetTrigger>
+            {/* From the side the burger sits on: the end side of the header. */}
+            <SheetContent
+              side={locale === "ar" ? "left" : "right"}
+              aria-describedby={undefined}
+              className="w-[85%] gap-0 border-white/10 bg-teal-900 p-0 text-white sm:max-w-sm xl:hidden [&>button:last-child]:top-6 [&>button:last-child]:text-white [&>button:last-child_svg]:size-5"
+            >
+              <SheetHeader className="h-[68px] justify-center border-b border-white/10 px-6 py-0">
+                <SheetTitle className="text-white">
+                  <Image src="/logo-white.png" alt="طلبي" width={110} height={28} className="h-7 w-auto" />
+                  <span className="sr-only">{t("menu")}</span>
+                </SheetTitle>
+              </SheetHeader>
+              <nav
+                aria-label={t("menu")}
+                className="grid min-h-0 flex-1 content-start gap-1 overflow-y-auto px-6 pt-3 pb-5 [&>a]:border-b [&>a]:border-white/5 [&>a]:px-1 [&>a]:py-3 [&>a]:font-semibold [&>a]:text-[#dfe9ec]"
+              >
+                {links}
+                <a href={LOGIN_URL} className="text-sm">
+                  {t("login")}
+                </a>
+              </nav>
+              <div className="border-t border-white/10 p-6">
+                <SignupTrigger className="w-full" onClick={() => setMenuOpen(false)}>
+                  {t("cta")}
+                </SignupTrigger>
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </Container>
-      {menuOpen ? (
-        <nav
-          id="mobile-nav"
-          aria-label={t("menu")}
-          className="grid gap-1 border-t border-white/10 bg-teal-900 px-6 pt-3 pb-5 xl:hidden [&>a]:border-b [&>a]:border-white/5 [&>a]:px-1 [&>a]:py-3 [&>a]:font-semibold [&>a]:text-[#dfe9ec]"
-        >
-          {links}
-          <a href={LOGIN_URL}>{t("login")}</a>
-          <SignupTrigger className="mt-3" onClick={() => setMenuOpen(false)}>
-            {t("cta")}
-          </SignupTrigger>
-        </nav>
-      ) : null}
     </header>
   );
 }

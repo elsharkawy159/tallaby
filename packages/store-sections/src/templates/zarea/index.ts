@@ -83,6 +83,17 @@ const home: Design[] = [
       "من ١٢ ألف تقييم": L("من أكتر من ٤٠٠ تقييم", "from 400+ reviews"),
     },
   }),
+  lib("categories-circles", { text: { "بتدوّر على إيه؟": L("زرعتك الجاية", "Your next plant") } }),
+  lib("products-shelf", {
+    text: {
+      "تسوّق حسب مزاجك": L("المتجر", "Shop"),
+      "وصل جديد": L("وصل جديد", "New in"),
+      "الأكثر مبيعًا": L("الأكثر مبيعاً", "Best sellers"),
+      "عليه خصم": L("الأعلى تقييماً", "Top rated"),
+      "كل المنتجات": L("كل النباتات", "All plants"),
+    },
+    links: { "/products": [NEW, BEST, RATED, SHOP] },
+  }),
   lib("finder-use", {
     text: {
       "ساعدني أختار": L("ساعدني أختار", "Help me choose"),
@@ -95,16 +106,6 @@ const home: Design[] = [
       "الأكثر طلبًا دلوقتي": L("الأكثر طلباً دلوقتي", "Popular right now"),
     },
     links: { "/products": [search("صبار"), search("مونستيرا"), search("زاميا"), search("عصارية")] },
-  }),
-  lib("products-shelf", {
-    text: {
-      "تسوّق حسب مزاجك": L("المتجر", "Shop"),
-      "وصل جديد": L("وصل جديد", "New in"),
-      "الأكثر مبيعًا": L("الأكثر مبيعاً", "Best sellers"),
-      "عليه خصم": L("الأعلى تقييماً", "Top rated"),
-      "كل المنتجات": L("كل النباتات", "All plants"),
-    },
-    links: { "/products": [NEW, BEST, RATED, SHOP] },
   }),
   lib("text-steps", {
     text: {
@@ -194,8 +195,8 @@ const DEMO = demoStore({
 
 export const ZAREA = libraryTemplate({
   key: ZAREA_KEY,
-  version: 2,
-  changelog: "Zarea v2: product page",
+  version: 3,
+  changelog: "Zarea v3: categories, section order",
   productPage: { surface: "shelf", thumbs: "bottom", band: "paper", extras: ["product-perks"], copy: { back: L("رجوع للنباتات", "Back to the plants"), reviews: L("ركن أخضر عند عملائنا", "Customers' green corners"), related: L("نبات تاني يعيش معاه", "A plant to live beside it") } },
   name: L("زرعة", "Zarea"),
   description: L(

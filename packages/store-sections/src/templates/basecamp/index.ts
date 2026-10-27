@@ -2,8 +2,8 @@
  * Basecamp (template 35, camping and outdoor; Claude Design "Storefront
  * Templates"): sand paper, a deep pine for actions and a desert amber
  * highlight, Changa throughout and 6px corners. A desert outfitter: a
- * camp film, why campers come back, trail picks, what the press says,
- * the gear brands, how renting works and a big sign-up. Built from section
+ * camp poster, the aisles, trail picks, the gear brands, how renting
+ * works, why campers come back, what the press says and a big sign-up. Built from section
  * library designs (`fromLibrary`).
  *
  * Photos: Pexels, each checked by eye (2026-10-20): tents on sand and in a
@@ -77,32 +77,8 @@ const home: Design[] = [
     },
     links: { "/products": search("خيمة") },
   }),
-  lib("features-side-title", {
-    text: {
-      "ليه الناس بترجع لنا تاني": L("ليه المخيمين بيرجعولنا", "Why campers come back"),
-      "أربع حاجات بنلتزم بيها في كل طلب.": L("أربع حاجات بنلتزم بيها في كل رحلة.", "Four things we stand by on every trip."),
-      "توصيل سريع": L("اتجربت في الصحرا", "Desert tested"),
-      "من يوم إلى ٤ أيام لكل المحافظات": L("كل خيمة بتبات ليلة في الفرافرة قبل ما تتباع", "Every tent spends a night in Farafra before we sell it"),
-      "الدفع عند الاستلام": L("اشتري أو أجّر", "Buy or rent"),
-      "أو ادفع بالبطاقة والمحفظة": L("أجّر لعطلة نهاية الأسبوع وخصم الإيجار لو اشتريت", "Rent for a weekend; the fee comes off if you buy"),
-      "استرجاع سهل": L("صيانة مجانية", "Free repairs"),
-      "١٤ يومًا لتغيّر رأيك": L("سوست وخياطة أول سنة", "Zips and seams for the first year"),
-      "دعم على واتساب": L("مرشد على واتساب", "A guide on WhatsApp"),
-      "أشخاص حقيقيون طوال الأسبوع": L("نساعدك تخطط رحلتك قبل ما تشتري", "We help you plan the trip before you buy"),
-    },
-  }),
+  lib("categories-photo-tiles", { text: { "تسوّق حسب القسم": L("على حسب رحلتك", "Shop by trip") } }),
   lib("products-bento", { text: { "الكل بيسأل عليهم": L("اختيارات الرحلة", "Trail picks") }, links: { "/products": BEST } }),
-  lib("brands-quotes", {
-    text: {
-      "«واحد من أكتر المتاجر اللي ممكن تثق فيها لو بتدور على منتج أصلي.»": L(
-        "«المكان اللي بتروحله قبل أي رحلة صحرا: أدوات مجرّبة ونصيحة بجد.»",
-        "“The place to go before any desert trip: tested gear and honest advice.”",
-      ),
-      "ساحل": "Rahhala",
-      "أوربت": "Sahraa Mag",
-      "ميزان": "Trip Notes",
-    },
-  }),
   lib("brands-bubbles", {
     name: L("ماركات المعدات", "Gear brands"),
     text: {
@@ -130,9 +106,34 @@ const home: Design[] = [
       "بنفس طريقة الدفع خلال ٥ أيام.": L("خلال يومين، ومن غير غسيل؛ إحنا بننضفها.", "Within two days, unwashed; we clean it."),
     },
   }),
+  lib("features-side-title", {
+    text: {
+      "ليه الناس بترجع لنا تاني": L("ليه المخيمين بيرجعولنا", "Why campers come back"),
+      "أربع حاجات بنلتزم بيها في كل طلب.": L("أربع حاجات بنلتزم بيها في كل رحلة.", "Four things we stand by on every trip."),
+      "توصيل سريع": L("اتجربت في الصحرا", "Desert tested"),
+      "من يوم إلى ٤ أيام لكل المحافظات": L("كل خيمة بتبات ليلة في الفرافرة قبل ما تتباع", "Every tent spends a night in Farafra before we sell it"),
+      "الدفع عند الاستلام": L("اشتري أو أجّر", "Buy or rent"),
+      "أو ادفع بالبطاقة والمحفظة": L("أجّر لعطلة نهاية الأسبوع وجرّب قبل ما تشتري", "Rent for a weekend and try before you buy"),
+      "استرجاع سهل": L("صيانة مجانية", "Free repairs"),
+      "١٤ يومًا لتغيّر رأيك": L("سوست وخياطة أول سنة", "Zips and seams for the first year"),
+      "دعم على واتساب": L("مرشد على واتساب", "A guide on WhatsApp"),
+      "أشخاص حقيقيون طوال الأسبوع": L("نساعدك تخطط رحلتك قبل ما تشتري", "We help you plan the trip before you buy"),
+    },
+  }),
+  lib("brands-quotes", {
+    text: {
+      "«واحد من أكتر المتاجر اللي ممكن تثق فيها لو بتدور على منتج أصلي.»": L(
+        "«المكان اللي بتروحله قبل أي رحلة صحرا: أدوات مجرّبة ونصيحة بجد.»",
+        "“The place to go before any desert trip: tested gear and honest advice.”",
+      ),
+      "ساحل": "Rahhala",
+      "أوربت": "Sahraa Mag",
+      "ميزان": "Trip Notes",
+    },
+  }),
   lib("newsletter-big", {
     text: {
-      "خد ١٠٪ خصم على أول طلب": L("أول إيجار عليك خصم ٢٠٪", "20% off your first rental"),
+      "خد ١٠٪ خصم على أول طلب": L("أخبار الرحلات والمعدات الجديدة أول بأول", "Trip news and new gear, first"),
       "عروض للمشتركين بس، مرة في الأسبوع.": L("ومواعيد الرحلات الجماعية قبل ما تتقفل.", "Plus group trip dates before they fill up."),
     },
   }),
@@ -175,8 +176,8 @@ const DEMO = demoStore({
 
 export const BASECAMP = libraryTemplate({
   key: BASECAMP_KEY,
-  version: 3,
-  changelog: "Basecamp v3: product page",
+  version: 4,
+  changelog: "Basecamp v4: categories, section order",
   name: L("بيس كامب", "Basecamp"),
   description: L(
     "تخييم ورحلات: موسم الصحرا، ليه بيرجعولنا، الماركات وإزاي تأجّر. أربع صفحات جاهزة.",

@@ -1,9 +1,9 @@
 /**
  * Garage (template 36, car accessories; Claude Design "Storefront
  * Templates"): concrete paper, near-black type and a signal yellow, Changa
- * throughout and tight 4px corners. A bold accessories shop: a garage-sale
- * poster, four aisles, drivers' picks, why Torque, the weekend deal, small
- * upgrades and drivers on WhatsApp. Built from section library designs
+ * throughout and tight 4px corners. A bold accessories shop: a winter-kit
+ * poster, the aisles, drivers' picks, why Torque, new small upgrades and
+ * drivers on WhatsApp. Built from section library designs
  * (`fromLibrary`).
  *
  * Photos: Pexels, each checked by eye (2026-10-20): phone mounts, seats,
@@ -62,18 +62,18 @@ const home: Design[] = [
   lib("hero-poster", {
     photo: [undefined, undefined, PHOTOS.workshop],
     text: {
-      "مجموعة الموسم": L("أوكازيون الجراج", "Garage sale"),
-      "من ١ إلى ٣٠ نوفمبر": L("لحد آخر الشهر", "Until the end of the month"),
+      "مجموعة الموسم": L("مجموعة الشتا", "The winter kit"),
+      "من ١ إلى ٣٠ نوفمبر": L("من الورشة", "From the workshop"),
       "صورة الحملة": L("ورشة عربيات فيها عدة ورافعات", "A car workshop with tools and lifts"),
-      "خصم": L("خصم لحد", "Up to"),
-      "٣٠٪": L("٤٠٪", "40%"),
-      "لفترة محدودة": L("على العدة", "off tools"),
+      "خصم": L("جهّزها", "Ready"),
+      "٣٠٪": L("للشتا", "for winter"),
+      "لفترة محدودة": L("عدة وإكسسوارات", "Tools and accessories"),
       "الموسم الجديد وصل": L("جهّز عربيتك قبل الشتا", "Get your car ready for winter"),
       "قطع خفيفة بخامات طبيعية، مقاسات كاملة وتبديل مجاني خلال ١٤ يومًا.": L(
         "حوامل وفرش وعدة طوارئ، وتركيب مجاني في الفرع لأي طلب فوق ٨٠٠ ج.م.",
         "Mounts, covers and emergency kits, with free fitting at the shop on orders over EGP 800.",
       ),
-      "اكتشف المجموعة": L("تسوق الأوكازيون", "Shop the sale"),
+      "اكتشف المجموعة": L("تسوق المجموعة", "Shop the kit"),
     },
     links: { "/products": BEST },
   }),
@@ -89,25 +89,10 @@ const home: Design[] = [
       "رد على واتساب في دقايق": L("نتأكد إن القطعة تركب عربيتك", "We check the part fits your car"),
     },
   }),
-  lib("promo-deal", {
-    photo: [undefined, undefined, undefined, PHOTOS.jumperCables],
-    text: {
-      "صورة العرض": L("كابلات اشتراك بطارية متعلقة", "Jumper cables hanging up"),
-      "عرض اليوم": L("عرض الويك إند", "Weekend deal"),
-      "اسم العرض أو المنتج هنا": L("شنطة طوارئ العربية", "Car emergency kit"),
-      "اكتب سبب العرض وما يحصل عليه العميل في سطر واحد.": L(
-        "كابلات اشتراك ونفّاخ كاوتش ومثلث تحذير في شنطة واحدة.",
-        "Jumper cables, a tyre inflator and a warning triangle in one bag.",
-      ),
-      "وفّر ٢٥٪": L("وفّر ٣٠٪", "Save 30%"),
-      "الحق العرض": L("الحق العرض", "Grab the deal"),
-    },
-    links: { "/products": search("طوارئ") },
-  }),
   lib("products-rows", {
-    text: { "إكسسوارات بسعر حلو": L("ترقيات صغيرة بفرق كبير", "Small upgrades, big difference") },
-    links: { "/products": BEST },
-    lists: [{ source: "best-sellers" }],
+    text: { "إكسسوارات بسعر حلو": L("وصل جديد: ترقيات صغيرة بفرق كبير", "Just in: small upgrades, big difference") },
+    links: { "/products": NEW },
+    lists: [{ source: "newest" }],
   }),
   lib("testimonials-chat", {
     text: {
@@ -166,12 +151,12 @@ const DEMO = demoStore({
 
 export const GARAGE = libraryTemplate({
   key: GARAGE_KEY,
-  version: 3,
-  changelog: "Garage v3: product page",
+  version: 4,
+  changelog: "Garage v4: section order, newest upgrades rail, no sale wording",
   name: L("جراج", "Garage"),
   description: L(
-    "إكسسوارات عربيات: بوستر أوكازيون، اختيارات السواقين، مقارنة، عرض الويك إند ورسايل واتساب. أربع صفحات جاهزة.",
-    "Car accessories: a sale poster, drivers’ picks, a comparison, the weekend deal and WhatsApp messages. Four ready pages.",
+    "إكسسوارات عربيات: بوستر الموسم، اختيارات السواقين، مقارنة ورسايل واتساب. أربع صفحات جاهزة.",
+    "Car accessories: a season poster, drivers’ picks, a comparison and WhatsApp messages. Four ready pages.",
   ),
   category: "auto",
   sortOrder: 360,

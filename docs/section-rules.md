@@ -1,6 +1,6 @@
 # Storefront section rules
 
-**Status: DRAFT v0.2 (2026-10-27), for owner review.** v0.2 replaces the v0.1 direction (2026-10-25) with a simpler Shopify-style rulebook (Dawn, Sense, Prestige): simple structure, large photos, generous white space, one heading, one call to action, and motion on by default. §9 audits the 272 code designs against it, and §11 lists what has to be built.
+**Status: v0.3 (2026-10-27).** v0.3 builds the renderer side (owner, 2026-10-27, for every store, published ones included): reveal on scroll with the motion runtime (G7, G8), hover easing and photo zoom (G17), the layout tokens (G13), tablet columns (G14), mobile swipe rows (G15) and no letter-spacing on Arabic (G19), plus five new full-width designs and the §9 heading, shadow and width fixes; see §11 and §12. v0.2 replaced the v0.1 direction (2026-10-25) with a simpler Shopify-style rulebook (Dawn, Sense, Prestige): simple structure, large photos, generous white space, one heading, one call to action, and motion on by default. §9 audits the 272 code designs against it, and §11 lists what has to be built.
 
 These rules apply to every section design (`packages/store-sections/src/designs/<category>/<id>.ts`) and to every section a template uses. They add to, and never replace, `CLAUDE.md` rule 17 and the authoring rules in `docs/superpowers/specs/2026-10-19-tree-sections-design.md` §6. `docs/template-rules.md` says how sections are put together into a template; this file says how each section is made.
 
@@ -87,7 +87,7 @@ The other categories (bundles, finder, payment, services, about, contact, tracki
 
 | What | Target | Use today |
 |---|---|---|
-| Section vertical padding | `clamp(48px, 8vw, 112px)` | Root `paddingTop`/`paddingBottom` **96**, tablet **72**, mobile **48** (G13 moves this to the renderer). Trust strips and marquees may use 48 / 32. |
+| Section vertical padding | One fluid token, `--sf-section-y` = `clamp(56px, 4.5vw, 64px)` (`SECTION_FLUID_PADDING`, owner 2026-10-27: less gap between sections) | Root `paddingTop`/`paddingBottom` **64**, mobile **40** (no tablet value); the renderer scales them by the token (64 → about 58 px at 1280 px, 40 → 35 px on a phone) and counts at most **80** (1.25 ×). Trust strips and marquees may use 48 / 32. Never `margin` on the root or its first and last child. |
 | Section heading (h2) | `clamp(28px, 4vw, 56px)`, line-height 1.15 | `fontSize: "display-md"` with `3xl` on phones, `lineHeight: "tight"` (the closest today; the About designs use it). G13 then gives it one token |
 | Hero heading (h1) | `clamp(40px, 6vw, 60px)`, line-height 1.15 | `display-lg`, `lineHeight: "tight"` |
 | Body text | 16 to 18 px, line-height 1.7 | `fontSize` `md` or `lg`, `lineHeight: "relaxed"` (1.75), `maxWidth` 640 px |
@@ -208,7 +208,7 @@ Motion is **on by default**, calm, quick and the same everywhere. It is off when
 |---|---|---|
 | `fade-up` (default) | opacity 0 → 1, `translateY(24px)` → 0 | Section heads, cards, buttons, text |
 | `fade` | opacity 0 → 1 | Logos, small text, rows inside a strip |
-| `zoom-in` | the image scales 1.06 → 1 inside its frame, with a fade | Photos in banners, image with text, galleries |
+| `zoom-in` | the image scales 1.1 → 1 and unmasks from a 6% inset (`clip-path`) inside its frame, with a fade (2026-10-27, from the Claude Design premium motion) | Photos in banners, image with text, galleries |
 | `slide-start` | opacity 0 → 1, moves in 24 px from the start edge (RTL-aware) | The text column of a split section |
 | `none` | no motion | Chrome, buy box, forms, cart |
 
@@ -216,7 +216,9 @@ The renderer picks the variant from the node, so a seller doesn't have to: a sec
 
 ### 6.3 Continuous motion
 
-Not part of v0.2. A moving marquee (G10) and counting numbers stay out of templates until the reveal system ships. Today's tickers (`promo-ticker`, `features-ticker`) are static rows. No parallax, no sticky reveal.
+- **Marquee** (`marquee` element, built 2026-10-27, G10): its items loop sideways at `speed` seconds per loop (8–120, default 30), two copies of the row with the second `aria-hidden` and `inert`; it pauses on hover, runs the other way on RTL pages, and is a still wrapped row with reduced motion, with Theme › Animations off, and in the editor canvas. Used by `promo-marquee`. The older tickers (`promo-ticker`, `features-ticker`) stay static rows.
+- **Countdown** (`countdown` element, built 2026-10-27): days, hours, minutes and seconds left until `endsAt`, a date the seller sets. The server draws the time left and `MotionRuntime` ticks it every second (also with reduced motion). Publicly a countdown with no date or a passed date draws nothing, so a store never shows a fake or expired deadline; designs leave the date empty. Its boxes pop in one after another when revealed. Used by `hero-banner`, `promo-countdown` and `products-deal`.
+- No counting numbers, no parallax, no sticky reveal.
 
 ### 6.4 Rules that always apply
 
@@ -248,7 +250,8 @@ Not part of v0.2. A moving marquee (G10) and counting numbers stay out of templa
 
 - The renderer writes `data-reveal="<variant>"` and `data-reveal-delay="<step 0–5>"` on revealable elements of a section whose animation is on, plus fixed keyframes in the page CSS. Values come from enums, never CSS text.
 - One small platform script (about 1.5 KB, the same pattern as `CarouselRuntime`) adds `sf-motion` to the root and uses one `IntersectionObserver` (threshold 0.15) to add `is-inview` to each `[data-reveal]` as it enters, then stops watching it. It is platform code, not seller code (`CLAUDE.md` rule 9 is unaffected). It loads after the page is interactive.
-- The CSS-only animation in `elements/shell.ts` (`shellAnimationCss`, `animation-timeline: view()`) is removed. It only works in browsers that support view timelines, it is off unless a seller picks it, and only Tallaby Classic turns it on.
+- The CSS-only animation in `elements/shell.ts` (`shellAnimationCss`, `animation-timeline: view()`) is removed. It only works in browsers that support view timelines, it is off unless a seller picks it, and only Tallaby Classic turns it on. **Removed 2026-10-27**; Classic no longer sets `rise`.
+- **As built (2026-10-27):** `elements/motion.ts` (`MOTION_CSS`, written by `SiteTheme`; `siteMotionAttrs`), `revealOf` in `elements/render.tsx` (a list's or grid's items stagger, a `role: "intro"` head reveals whole, single text and buttons fade up, photos zoom in; never `h1`, carousels, forms, cart buttons or product page parts), `render/motion-runtime.client.tsx` (`MotionRuntime`, mounted beside `CarouselRuntime` on the storefront, the template preview and `SitePreview`; not in the editor canvas). Elements already on screen when it starts lose their `data-reveal` and are never hidden. The header and footer render with `reveal: false`. `ctx.reveal` is set by `StoreSitePage`, `StoreSiteProductGrid`, the template preview and `previewRenderContext`.
 
 ## 7. Arabic, English and RTL
 
@@ -327,19 +330,19 @@ IDs G7 to G12 are shared with `docs/template-rules.md` §9.
 
 | Gap | What |
 |---|---|
-| **G7** | Motion runtime and controls (§6.6, §6.7): `data-reveal` output, the `IntersectionObserver` script, the section on/off switch replacing None / Fade / Rise, Theme › Animations and Hover effect, removal of `shellAnimationCss`. |
-| **G8** | `zoom-in` and `slide-start` variants and the element Reveal override. Part of G7, listed so it can ship second. |
+| **G7** | **Built 2026-10-27.** Motion runtime and controls (§6.6, §6.7): `data-reveal` output, the `IntersectionObserver` script, the section on/off switch replacing None / Fade / Rise (`shellAnimates`; off stores `animation: "none"`, which `normalizeShell` now keeps), Theme › Animations and Hover effect (`designSystem.motion.reveal` / `hoverZoom`, only `false` is stored; Brand panel › Motion), removal of `shellAnimationCss`. |
+| **G8** | **Built 2026-10-27.** `zoom-in` and `slide-start` variants and the element Reveal override (`props.reveal`, an advanced field on content elements). |
 | **G9** | ~~`words` heading reveal~~. Dropped in v0.2 (simple over complex). |
-| **G10** | Moving marquee. Later (§6.3). |
+| **G10** | **Built 2026-10-27** (`marquee` element, §6.3). |
 | **G11** | Second-photo hover swap on product cards (a `product.image2` bind field). Later; v0.2 uses image zoom. |
 | **G12** | Hotspot pins for shop the look. Later. |
-| **G13** | Layout tokens: section padding as `clamp(48px, 8vw, 112px)` scaled by the Brand section spacing, `display-sm` retuned to `clamp(1.75rem, 4vw, 3.5rem)`, container `1280px` with `clamp(16px, 4vw, 48px)` gutters. One renderer and token change instead of editing 235 designs. It changes the look of every live store, so the owner approves it first. |
-| **G14** | Tablet columns on the 99 sections listed by the audit script, through a new design version and an insert-only migration. |
-| **G15** | Swipe rows on mobile: a `mobileRail` option on `productList` / `categoryList` (horizontal scroll snap, part of the next card visible). |
+| **G13** | **Built 2026-10-27 (owner: every store).** Layout tokens: the Brand section spacing default is `SECTION_FLUID_PADDING` = `clamp(64px, 7.5vw, 104px)`, so a design's 64 is about 96 px at 1280 and its mobile 40 stays 40; `display-sm` `clamp(1.75rem, 4vw, 3.5rem)`, `display-md` `clamp(2.25rem, 5vw, 4rem)`, `display-lg` `clamp(2.5rem, 6vw, 4.5rem)`; container `1280px` with `clamp(16px, 4vw, 48px)` gutters (the seller's Container width still wins). Buttons are 48 px high with a 2 px hover lift. |
+| **G14** | **Built 2026-10-27 at render time** (`fallbackTabletColumns` in `elements/style.ts`): a grid or data list with 4+ desktop columns and no tablet value gets 3 (lists, or grids of 6+) or 2 (other grids) on tablets, for every store. 3-column rows keep 3. |
+| **G15** | **Built 2026-10-27.** Swipe rows on mobile: a `mobileRail` option on `productList` / `categoryList` (horizontal scroll snap, part of the next card visible; never on a paginated list). On in `products-classic`, `products-grid`, `products-rail` and `products-showcase` (new copies only: stores keep their own). |
 | **G16** | Radius from the theme: a `radius: "theme"` style value (or radius tokens such as `card` and `pill`) mapped to `--sf-radius`. |
-| **G17** | Hover transitions: the renderer adds `transition` (200 ms for colour, 600 ms for scale) to nodes with a `hover` style, off with reduced motion. |
+| **G17** | **Built 2026-10-27.** Hover transitions: the renderer adds `transition` (200 ms for colour, 600 ms for scale) to nodes with a `hover` style, off with reduced motion. A clipped link (`overflow: hidden`) holding a photo gets `sf-zoom`: the photo scales to 1.04 on hover (every product card). |
 | **G18** | `sectionHead()` without `marginBottom`; head and body inside a `stack` with `gap`. |
-| **G19** | Drop `letterSpacing` and `textTransform` on Arabic text at render time. |
+| **G19** | **Built 2026-10-27** (`MOTION_CSS`): no letter-spacing or uppercase on any element of an Arabic page; English `h1`/`h2` get `-0.015em`. |
 | **G20** | **Built 2026-10-27** (`mobileMenu` node, `drawChrome`, storefront sheet). Mobile burger menu: a burger button shown under 768 px plus a sheet or dropdown (a header setting, `mobileMenu: "sheet" \| "dropdown"`, default `sheet`), drawn by the renderer from the header's `role: "menu"` links (plus account, language and contact), with focus trap, Esc, scroll lock and an RTL slide. Like the language switch, the renderer adds it to every header where the header is drawn, so existing sites get it at once. Then each header design gets a new version that hides its inline menu on mobile. |
 | **G21** | **Built 2026-10-27** (`sticky-store-header.client.tsx`; the whole header, announcement bar included, until the bar is split out). Sticky header that hides on scroll down and shows on scroll up (§5.6), for every store. The chrome wraps the header (not the announcement bar) in a sticky element. A small platform script (one passive scroll listener with `requestAnimationFrame`, part of the motion runtime in §6.7) toggles a `data-header-hidden` attribute, and fixed CSS slides it with `transform`. It stays visible at the top of the page, while the sheet is open, while focus is inside, and with reduced motion. |
 | **G22** | Footer link dropdowns on mobile: the renderer draws every footer link column (a `role: "linkColumn"` stack: title + links) as a `<details>`, closed by default, under 768 px, and as an open column above it. Like the burger, it is added where the footer is drawn, so every existing footer gets it. |
@@ -350,9 +353,11 @@ IDs G7 to G12 are shared with `docs/template-rules.md` §9.
 
 ## 12. Open questions for the owner
 
-1. G13 changes the spacing, heading size and container width of every live store at once. Ship it as one change, or only for new stores and new template versions?
-2. Motion on by default: also for stores that are already published, or only for new stores and when a seller next changes template? (`docs/template-rules.md` §10 Q6, Q7.)
-3. Full-width hero, image with text and video: redesign the 30 contained designs, or keep them as alternative "panel" styles and make only new designs full width?
-4. Should sellers see the element-level Reveal override, or only the section switch and the site switch?
+1. ~~G13 for every live store?~~ Yes, one change for every store (owner, 2026-10-27).
+2. ~~Motion for published stores?~~ Yes, on for every store; a seller can turn it off for the site or a section (owner, 2026-10-27).
+3. ~~Full width~~: keep the 30 panel designs as alternative styles and add new full-width designs (owner, 2026-10-27): `hero-fullbleed`, `about-fullbleed`, `promo-banner-fullbleed`, plus `products-showcase` and `categories-showcase`. Code-only, so no seed migration (`section-seed.test.ts` `CODE_ONLY`).
+4. ~~Element Reveal override~~: yes, as an advanced field, plus the section and site switches (owner, 2026-10-27).
+
+**Still open after v0.3:** G16 (theme radius), G18 (head and body `gap`; it changes node structure and the labels templates patch), the decorative shapes in §9 (removing nodes changes field names), `hero-big-word`'s missing `h1` (its big word is a `text` node), category tiles whose photo isn't inside a clipped link (no hover zoom), and a Lighthouse run on a template home page.
 5. ~~Burger menu default~~: a sheet (owner, 2026-10-27).
 6. ~~Sticky header~~: sticky for every store, hides on scroll down and shows on scroll up (owner, 2026-10-27).

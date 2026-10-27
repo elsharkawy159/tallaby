@@ -102,7 +102,7 @@ function SearchResults({ state, onNavigate, id }: { state: SearchState; onNaviga
 }
 
 const inputClass =
-  "min-w-0 flex-1 appearance-none bg-transparent text-inherit outline-none placeholder:text-(--sf-muted) [&::-webkit-search-cancel-button]:hidden";
+  "min-w-0 flex-1 appearance-none bg-transparent text-inherit [text-align:inherit] outline-none placeholder:text-(--sf-muted) [&::-webkit-search-cancel-button]:hidden";
 
 /**
  * A header search box (a builder search link with placeholder text): typing

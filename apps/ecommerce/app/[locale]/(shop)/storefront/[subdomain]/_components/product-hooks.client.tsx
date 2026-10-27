@@ -140,7 +140,8 @@ export function StoreProductBuyBox({
       <HideBottomNavOnScroll />
       <div className="hidden md:block">{actions}</div>
       <SiteDock>
-        <div className={`${stickyBuyBarClass(undefined, { bottomNav: false })} md:hidden`}>{actions}</div>
+        {/* data-sf-buy-bar: the site's phone bottom navigation steps aside for it (BottomNavRuntime). */}
+        <div data-sf-buy-bar="" className={`${stickyBuyBarClass(undefined, { bottomNav: false })} md:hidden`}>{actions}</div>
       </SiteDock>
     </>
   );

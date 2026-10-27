@@ -1,9 +1,10 @@
 /**
  * Arcade (template 07, gaming and audio in dark mode; Claude Design
  * "Storefront Templates"): near-black paper, violet actions and an acid lime
- * highlight, Changa throughout and 14px corners. A sale-led store: a big
- * percent, a feature strip, two offers, a numbered leaderboard and big
- * numbers. Built from section library designs (`fromLibrary`).
+ * highlight, Changa throughout and 14px corners. A bold three-slide hero,
+ * captioned categories, a numbered best-seller leaderboard, big numbers, new
+ * drops and players' reviews. Built from section library designs
+ * (`fromLibrary`).
  *
  * Photos: Pexels, each checked by eye (2026-10-20): headphones, earbuds,
  * controllers and gaming desks. No people and no visible brand logos.
@@ -36,6 +37,9 @@ const PHOTOS = {
   glowControllers: pexels(34592708, 900),
   headset: pexels(9742608, 900),
   rgbDesk: pexels(4317157),
+  heroDesk: pexels(4317157, 1600),
+  heroController: pexels(7773745, 1600),
+  heroBuds: pexels(8858287, 1600),
 };
 
 const NAME = L("بِت أركيد", "Bit Arcade");
@@ -53,39 +57,35 @@ const footer = lib("footer-centered", {
   },
 });
 
+/**
+ * Home (v4, template-rules §2a): a bold dark slideshow, the categories, then
+ * the gamer's journey: the weekly leaderboard first, the numbers that back it
+ * (delivery, warranty, rating), the new drops, and players' reviews to close.
+ */
 const home: Design[] = [
-  lib("promo-percent", {
+  lib("hero-thumbs", {
+    photo: [PHOTOS.heroDesk, PHOTOS.heroController, PHOTOS.heroBuds],
     text: {
-      "٣٠٪": L("٤٠٪", "40%"),
-      "على كل المنتجات": L("على السماعات لحد الجمعة", "off headphones and buds until Friday"),
-      "لحد آخر الشهر أو لحد ما الكمية تخلص.": L("ميجا ويك: منتجات أصلية بضمان محلي سنتين.", "Mega Week: genuine stock with a 2-year local warranty."),
-      "تسوق العرض": L("تسوق العروض", "Shop the sale"),
+      "درجات جديدة": L("السيت أب الكامل", "The full setup"),
+      "لون بيتكلم عنك": L("سيت أب يليق بيك", "A setup worth bragging about"),
+      "درجات هادية لكل يوم وألوان جريئة للمناسبات.": L("سماعات ودراعات وباور، كلها متجربة على الهوا.", "Headsets, controllers and power, all tested on stream."),
+      "تسوّق الآن": L("شوف الأكثر مبيعاً", "See the top sellers"),
+      "صورة الشريحة الأولى": L("مكتب جيمنج بإضاءة ملوّنة", "A gaming desk in coloured light"),
+      "المجموعة الجديدة": L("وصل حديثاً", "Just dropped"),
+      "جريء ومريح وليك": L("دراعك الجاي هنا", "Your next controller"),
+      "اختيارات جديدة وصلت للموسم ده.": L("لاسلكي، خفيف، ومن غير أي تأخير.", "Wireless, light and lag-free."),
+      "تسوّق الجديد": L("تسوّق الجديد", "Shop new drops"),
+      "صورة الشريحة الثانية": L("دراع لاسلكي في إضاءة نيون", "A wireless controller in neon light"),
+      "أطقم كاملة": L("صوت نضيف", "Clean audio"),
+      "قطعتين وعشر إطلالات": L("اسمع كل خطوة", "Hear every footstep"),
+      "قطع بتتنسّق مع بعض بسهولة.": L("سماعات بعزل ضوضاء ومايك واضح.", "Noise-cancelling buds and clear mics."),
+      "تسوّق الأطقم": L("تسوّق السماعات", "Shop audio"),
+      "صورة الشريحة الثالثة": L("سماعة لاسلكية سوداء في علبتها", "Black wireless earbuds in their case"),
     },
-    links: { "/products": BEST },
+    links: { "/products": [BEST, NEW, `/products?search=${encodeURIComponent("سماعة")}`] },
   }),
-  lib("features-classic", {
-    text: {
-      "توصيل سريع": L("توصيل تاني يوم", "Next-day delivery"),
-      "من يوم إلى ٤ أيام لكل المحافظات": L("القاهرة والجيزة", "Cairo and Giza"),
-      "الدفع عند الاستلام": L("ضمان سنتين", "2-year warranty"),
-      "أو ادفع بالبطاقة والمحفظة": L("على كل جهاز", "On every device"),
-      "استرجاع سهل": L("استرجاع ١٤ يوم", "14-day returns"),
-      "١٤ يومًا لتغيّر رأيك": L("من غير أسئلة", "No questions asked"),
-      "دعم على واتساب": L("دعم جيمرز", "Gamer support"),
-      "أشخاص حقيقيون طوال الأسبوع": L("ناس حقيقية على واتساب", "Real people on WhatsApp"),
-    },
-  }),
-  lib("promo-pair", {
-    photo: [undefined, undefined, undefined, undefined, PHOTOS.budsBlack, PHOTOS.neonController],
-    text: {
-      "اشترِ مجموعة ووفّر ١٥٪": L("ابني السيت أب ووفّر ١٥٪", "Build your setup and save 15%"),
-      "اختر أي منتجين معًا.": L("أي سماعة مع باور بانك.", "Any headphones plus a power bank."),
-      "كوّن مجموعتك": L("ابني باقة", "Build a bundle"),
-      "هدايا أقل من ٦٠٠ ج.م": L("هدايا تحت ١٬٠٠٠ ج.م", "Gifts under EGP 1,000"),
-      "أشياء صغيرة سيستخدمونها كل يوم.": L("حاجات صغيرة هيستخدموها كل يوم.", "Small gear they will use every day."),
-      "تسوّق الهدايا": L("شوف الهدايا", "See gifts"),
-    },
-    links: { "/products": [SHOP, BEST] },
+  lib("categories-captioned", {
+    text: { "اكتشف الأقسام": L("اختار عالمك", "Pick your world") },
   }),
   lib("products-list", {
     text: {
@@ -107,6 +107,15 @@ const home: Design[] = [
       "١٤": L("١٥ ألف", "15K"),
       "يومًا للاسترجاع": L("طلب اتشحن", "Orders shipped"),
     },
+  }),
+  lib("products-panel-rail", {
+    text: {
+      "هدايا": L("نزل جديد", "New drops"),
+      "هدايا تحت ١٠٠٠ جنيه": L("لسه واصلين", "Fresh off the truck"),
+      "اختيارات مضمونة لأي مناسبة.": L("أحدث السماعات والدراعات، متجربة قبل ما تنزل.", "The latest headsets and controllers, tested before they hit the shelf."),
+    },
+    links: { "/products": NEW },
+    lists: [{ source: "newest" }],
   }),
   lib("testimonials-classic", {
     text: {
@@ -167,12 +176,12 @@ const DEMO = demoStore({
 
 export const ARCADE = libraryTemplate({
   key: ARCADE_KEY,
-  version: 3,
-  changelog: "Arcade v3: product page",
+  version: 4,
+  changelog: "Arcade v4: hero, categories, section order",
   name: L("أركيد", "Arcade"),
   description: L(
-    "جيمنج وسماعات بالوضع الداكن: خصم كبير، عرضين، ترتيب الأكثر مبيعاً وأرقام. أربع صفحات جاهزة.",
-    "Gaming and audio in dark mode: a big percent, two offers, a best-seller leaderboard and numbers. Four ready pages.",
+    "جيمنج وسماعات بالوضع الداكن: شرائح جريئة، ترتيب الأكثر مبيعاً، أرقام والجديد. أربع صفحات جاهزة.",
+    "Gaming and audio in dark mode: a bold slideshow, a best-seller leaderboard, numbers and new drops. Four ready pages.",
   ),
   category: "electronics",
   sortOrder: 70,

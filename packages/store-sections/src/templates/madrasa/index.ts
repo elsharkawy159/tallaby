@@ -73,12 +73,13 @@ const home: Design[] = [
     text: {
       "بتدور على إيه النهارده؟": L("إيه اللي في اللستة؟", "What is on the list?"),
       "اكتب اسم المنتج": L("كتاب، شنطة، ألوان", "Book, bag, colours"),
-      "وصل حديثًا": L("كتب قراية", "Readers"),
-      "الأكثر مبيعًا": L("مكعبات", "Blocks"),
-      "هدايا": L("شنط", "Bags"),
-      "العروض": L("ألوان", "Colours"),
     },
-    links: { "/products": [undefined, search("قراية"), search("مكعبات"), search("شنطة"), search("ألوان")] },
+  }),
+  lib("categories-big-type", { text: { "الأقسام": L("في الشنطة", "In the bag") } }),
+  lib("products-rows", {
+    text: { "إكسسوارات بسعر حلو": L("في كل لستة", "On every list") },
+    links: { "/products": BEST },
+    lists: [{ source: "best-sellers", limit: 6 }],
   }),
   lib("text-steps", {
     text: {
@@ -93,33 +94,10 @@ const home: Design[] = [
       "بنفس طريقة الدفع خلال ٥ أيام.": L("في يومين، وادفع عند الاستلام.", "In two days, and pay at the door."),
     },
   }),
-  lib("products-rows", {
-    text: { "إكسسوارات بسعر حلو": L("في كل لستة", "On every list") },
-    links: { "/products": BEST },
-    lists: [{ source: "best-sellers", limit: 6 }],
-  }),
-  // The design's "Price drop band" (bundle-price-drop) lists its pieces without product links,
-  // which every template section with products must have; the "Plus row" bundle shows the same offer.
-  lib("bundle-plus", {
+  lib("newsletter-strip", {
     text: {
-      "باقة": L("باكدج البداية", "Starter pack"),
-      "اشتريهم مع بعض ووفّر": L("٣ قطع مع بعض بخصم ١٥٪", "Three pieces together, 15% off"),
-      "سعر الباقة": L("سعر الباكدج", "Pack price"),
-      "١٬٢٧٠ ج.م": L("١٬٢٦٥ ج.م", "EGP 1,265"),
-      "بدل ١٬٤٩٠ ج.م": L("بدل ١٬٤٩٠ ج.م", "Was EGP 1,490"),
-      "وفّر ٢٢٠ ج.م": L("وفّر ٢٢٥ ج.م", "Save EGP 225"),
-      "اطلب الباقة": L("خد باكدج البداية", "Get the starter pack"),
-    },
-    links: { "/products": NEW },
-  }),
-  lib("service-support", {
-    text: {
-      "الدعم": L("مساعدة اللستة", "List help"),
-      "محتاج مساعدة؟": L("ابعتلنا اللستة", "Send us your list"),
-      "بنرد في أقل من ساعة": L("ابعت الصورة وبنرد بالسعر في ساعة", "Send the photo; we quote within an hour"),
-      "زور فرع": L("زور المكتبة", "Visit the shop"),
-      "٣ فروع في القاهرة": L("الكوربة، مصر الجديدة", "Korba, Heliopolis"),
-      "من غير معاد": L("وهات اللستة معاك", "Bring your list along"),
+      "اعرف الجديد الأول": L("قوايم السنة الجديدة", "New school-year lists"),
+      "المجموعات الجديدة والعروض الخاصة، مرة في الأسبوع.": L("بنبعتلك أول ما كتب وأدوات الترم الجديد توصل.", "We let you know as soon as next term’s books and supplies arrive."),
     },
   }),
 ];
@@ -163,13 +141,13 @@ const DEMO = demoStore({
 
 export const MADRASA = libraryTemplate({
   key: MADRASA_KEY,
-  version: 2,
-  changelog: "Madrasa v2: product page",
+  version: 3,
+  changelog: "Madrasa v3: categories after the hero, one list service, newsletter close",
   productPage: { thumbs: "side", band: "shelf", extras: ["product-shipping"], copy: { back: L("رجوع للمستلزمات", "Back to the supplies"), reviews: L("رأي أولياء الأمور", "Parents say"), related: L("أضفه لقائمتك", "Add to your list") } },
   name: L("مدرسة", "Madrasa"),
   description: L(
-    "أدوات مدرسية: ابحث في اللستة، ابعت اللستة، في كل لستة وباكدج البداية. أربع صفحات جاهزة.",
-    "School supplies: search the list, send your list, on every list and the starter pack. Four ready pages.",
+    "أدوات مدرسية: ابحث في اللستة، ابعت اللستة وفي كل لستة. أربع صفحات جاهزة.",
+    "School supplies: search the list, send your list and on every list. Four ready pages.",
   ),
   category: "books",
   sortOrder: 880,

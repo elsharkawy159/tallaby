@@ -68,6 +68,8 @@ import {
   RectangleHorizontal,
   SwatchBook,
   ListCollapse,
+  MoveHorizontal,
+  Timer,
 } from "lucide-react";
 import type { ElementType, SectionCategory } from "@workspace/store-sections/render";
 import type { SectionGroupKey } from "./editor-palette.lib";
@@ -108,6 +110,8 @@ export const ELEMENT_ICONS: Record<ElementType, LucideIcon> = {
   storeForm: Mail,
   addToCart: ShoppingCart,
   wishlistButton: Heart,
+  marquee: MoveHorizontal,
+  countdown: Timer,
   languageSwitcher: Languages,
   storeLogo: BadgeCheck,
   themeToggle: SunMoon,

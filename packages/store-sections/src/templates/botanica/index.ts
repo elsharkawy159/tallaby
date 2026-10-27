@@ -2,9 +2,9 @@
  * Sage, formerly Botanica (template 12, natural hair and body care; Claude Design
  * "Storefront Templates"): cream paper, a deep olive for actions and a
  * honey highlight, Noto Naskh Arabic headings over IBM Plex Sans Arabic and
- * soft 24px corners. A farm-to-bottle store: the farm panel, the promise,
- * best sellers, seed to bottle, a refill offer, product reviews, the year in numbers and
- * the founder's letter. Built from section library designs (`fromLibrary`).
+ * soft 24px corners. A farm-to-bottle store: the farm as a split hero,
+ * categories, best sellers, seed to bottle, the promise, product reviews,
+ * the year in numbers and the founder's letter. Built from section library designs (`fromLibrary`).
  *
  * Photos: Pexels, each checked by eye (2026-10-20): rosemary, amber oil
  * bottles, handmade soaps and rose water. No people, hands or brand labels.
@@ -64,33 +64,29 @@ const footer = lib("footer-panel", {
   links: { "/products": [undefined, NEW, BEST, RATED] },
 });
 
+/**
+ * Home (v5, template-rules §2a): the farm as a split hero, the categories,
+ * then the care journey: best sellers, how it is made, the promise behind
+ * it, real results, the year in one line and the founder's letter.
+ */
 const home: Design[] = [
-  lib("about-inset", {
-    photo: [undefined, undefined, undefined, undefined, undefined, undefined, undefined, PHOTOS.rosemaryPots],
+  lib("hero-split", {
+    photo: [PHOTOS.rosemaryPots],
     text: {
-      "إزاي بنشتغل": L("من مزرعتنا", "From our farm"),
-      "كل منتج بيتراجع قبل ما يوصلك": L("زيوت بتتعصر في نفس أسبوع الشحن", "Oils pressed the week they ship"),
-      "فريقنا بيراجع كل منتج ويتأكد منه قبل التغليف.": L(
-        "روزماري وسمسم وتين شوكي من مزارعنا في الفيوم، معصورين على البارد بكميات صغيرة.",
-        "Rosemary, sesame and prickly pear from our partner farms in Fayoum, pressed cold in small batches.",
+      "المجموعة الجديدة": L("من مزرعتنا في الفيوم", "From our farm in Fayoum"),
+      "معمول بكميات صغيرة": L("معصور في أسبوع الشحن", "Pressed the week it ships"),
+      "قطع مختارة بعناية، بنعملها بكميات صغيرة عشان كل واحدة تفضل مميزة.": L(
+        "روزماري وسمسم وتين شوكي، معصورين على البارد بكميات صغيرة.",
+        "Rosemary, sesame and prickly pear, cold-pressed in small batches.",
       ),
-      "اعرف أكتر": L("تسوق زيوت الشعر", "Shop hair oils"),
-      "صورة المتجر": L("أصص روزماري على رف خشب", "Rosemary pots on a wooden stand"),
+      "تسوّق المجموعة": L("تسوق الأكثر طلباً", "Shop best sellers"),
+      "حكايتنا": L("مزرعتنا", "Our farm"),
+      "صورة الواجهة": L("أصص روزماري على رف خشب", "Rosemary pots on a wooden stand"),
     },
-    links: { "/about": SHOP },
+    links: { "/products": BEST },
   }),
-  lib("features-bento", {
-    text: {
-      "وعدنا ليك": L("وعدنا", "Our promise"),
-      "نشتري لك كأننا بنشتري لنفسنا": L("بس اللي بشرتك تفهمه", "Only what your skin can read"),
-      "اعرف أكتر": L("اقرا المكونات", "Read the ingredients"),
-      "توصيل سريع": L("من غير حشو", "No fillers"),
-      "من يوم إلى ٤ أيام لكل المحافظات": L("كل إزازة فيها ٥ مكونات أو أقل.", "Every bottle lists five ingredients or fewer."),
-      "الدفع عند الاستلام": L("عبوات ريفيل", "Refill pouches"),
-      "أو ادفع بالبطاقة والمحفظة": L("رجّع الإزازة ووفّر ٢٠٪.", "Send the bottle back, save 20%."),
-      "استرجاع سهل": L("من المزرعة للباب", "Farm to door"),
-      "١٤ يومًا لتغيّر رأيك": L("بيتعصر ويتشحن في نفس الأسبوع.", "Pressed and shipped the same week."),
-    },
+  lib("categories-circles", {
+    text: { "بتدوّر على إيه؟": L("روتينك يبدأ منين؟", "Where does your routine start?") },
   }),
   lib("products-grid", {
     text: {
@@ -113,14 +109,18 @@ const home: Design[] = [
       "لحد باب البيت خلال أيام.": L("في إزاز عسلي، متعلّم باليد.", "In amber glass, labelled by hand."),
     },
   }),
-  lib("promo-percent", {
+  lib("features-bento", {
     text: {
-      "٣٠٪": L("٢٠٪", "20%"),
-      "على كل المنتجات": L("خصم على كل ريفيل", "off every refill"),
-      "لحد آخر الشهر أو لحد ما الكمية تخلص.": L("رجّع أي إزازة فاضية مع طلبك الجاي.", "Return any empty bottle with your next order."),
-      "تسوق العرض": L("تسوق الزيوت", "Shop the oils"),
+      "وعدنا ليك": L("وعدنا", "Our promise"),
+      "نشتري لك كأننا بنشتري لنفسنا": L("بس اللي بشرتك تفهمه", "Only what your skin can read"),
+      "اعرف أكتر": L("اقرا المكونات", "Read the ingredients"),
+      "توصيل سريع": L("من غير حشو", "No fillers"),
+      "من يوم إلى ٤ أيام لكل المحافظات": L("كل إزازة فيها ٥ مكونات أو أقل.", "Every bottle lists five ingredients or fewer."),
+      "الدفع عند الاستلام": L("عبوات ريفيل", "Refill pouches"),
+      "أو ادفع بالبطاقة والمحفظة": L("رجّع الإزازة الفاضية مع المندوب.", "Hand the empty bottle back to the courier."),
+      "استرجاع سهل": L("من المزرعة للباب", "Farm to door"),
+      "١٤ يومًا لتغيّر رأيك": L("بيتعصر ويتشحن في نفس الأسبوع.", "Pressed and shipped the same week."),
     },
-    links: { "/products": SHOP },
   }),
   lib("testimonials-products", {
     photo: [PHOTOS.amberBottles, PHOTOS.dropper, PHOTOS.soapRow, PHOTOS.roseWater],
@@ -182,7 +182,7 @@ const about: Design[] = [
     eyebrow: L("من ٢٠١٥", "Since 2015"),
     title: L("زيوت من أرضنا", "Oils from our own land"),
     text: L("بنزرع الروزماري والسمسم بنفسنا، وبنعصر على البارد بكميات صغيرة عشان الزيت يوصلك طازة.", "We grow our own rosemary and sesame and press cold in small batches, so the oil reaches you fresh."),
-    more: L("وكل إزازة بترجعها بتوفرلك ٢٠٪.", "And every bottle you return saves you 20%."),
+    more: L("وكل إزازة بترجعها بنعيد ملاها.", "And every bottle you return gets refilled."),
     button: L("تسوق كل المنتجات", "Shop all"),
     href: SHOP,
   }),
@@ -211,8 +211,8 @@ const DEMO = demoStore({
 
 export const BOTANICA = libraryTemplate({
   key: BOTANICA_KEY,
-  version: 4,
-  changelog: "Sage v4: product page",
+  version: 5,
+  changelog: "Sage v5: hero, categories, section order",
   name: L("سيج", "Sage"),
   description: L(
     "عناية طبيعية بالشعر والجسم: من المزرعة للإزازة، ريفيل، تقييمات ورسالة المؤسسة. أربع صفحات جاهزة.",
@@ -255,8 +255,8 @@ export const BOTANICA = libraryTemplate({
         text: L("الريفيل والمكونات والتوصيل.", "Refills, ingredients and delivery."),
         question: L("الريفيل بيشتغل إزاي؟", "How do refills work?"),
         answer: L(
-          "رجّع أي إزازة فاضية مع طلبك الجاي للمندوب، وخد خصم ٢٠٪ على الريفيل.",
-          "Hand any empty bottle to the courier with your next order and get 20% off the refill.",
+          "رجّع أي إزازة فاضية مع طلبك الجاي للمندوب، وهنرجعهالك مليانة في الطلب اللي بعده.",
+          "Hand any empty bottle to the courier with your next order and it comes back full in the one after.",
         ),
       }),
     },

@@ -1,15 +1,13 @@
 /**
  * Rep (template 46, home training club; Claude Design "Storefront
  * Templates"): chalk paper, black for actions and a lime highlight, Changa
- * headings over Cairo and square corners. Gear picked by coaches: shop by
- * goal, a starter kit, band sets for friends, the four coaches, the club in
- * numbers, train with a friend and members' messages. Built from section
+ * headings over Cairo and square corners. Gear picked by coaches: a
+ * full-bleed opening, the gear aisles, coach picks, shop by goal, the four
+ * coaches, the club in numbers and members' messages. Built from section
  * library designs (`fromLibrary`).
  *
- * Rewards have no library designs yet: "Refer a friend" uses the reward
- * card (`popup-reward`) with the REP100 code as copy. Coach calls are booked
- * over WhatsApp; there is no booking in checkout. The kit total is typed
- * copy for the three newest products; the coaches show initials.
+ * Coach calls are booked over WhatsApp; there is no booking in checkout.
+ * The coaches show initials.
  *
  * Photos: Pexels, each checked by eye (2026-10-23): a training flat lay
  * (mat, dumbbells, bands, a top and trainers laid flat), hex dumbbells,
@@ -64,20 +62,25 @@ const footer = lib("footer-signoff", {
 });
 
 const home: Design[] = [
-  lib("hero-halves", {
-    photo: [undefined, PHOTOS.flatLay],
+  lib("hero-fullbleed", {
+    photo: [PHOTOS.flatLay],
     text: {
-      "كوليكشن الموسم": L("اتمرن في البيت", "Train at home"),
-      "صوت أنقى، كل يوم": L("الأدوات اللي الكوتش هيختارها", "Gear your coach would pick"),
-      "منتجات أصلية بضمان محلي، توصلك خلال ٤٨ ساعة.": L(
+      "صورة الواجهة": L("مات ودمبل وحبال مقاومة على الأرض", "A mat, dumbbells and bands on the floor"),
+      "المجموعة الجديدة": L("اتمرن في البيت", "Train at home"),
+      "صُنعت لتدوم معك": L("أدوات الكوتش، في بيتك", "Coach-picked gear, at home"),
+      "خامات مختارة وتفاصيل هادئة، وتوصيل سريع لحد باب البيت.": L(
         "قولنا هدفك، وخد باكدج ومكالمة ١٥ دقيقة ببلاش تخطط بيها أول شهر.",
         "Tell us your goal, get a kit and a free 15-minute call to plan your first month.",
       ),
-      "تسوق الآن": L("تسوق الباكدجات", "Shop kits"),
-      "العروض": L("اسأل كوتش", "Ask a coach"),
-      "صورة الحملة": L("مات ودمبل وحبال مقاومة على الأرض", "A mat, dumbbells and bands on the floor"),
+      "تسوّق الآن": L("تسوق الباكدجات", "Shop kits"),
+      "شوف الجديد": L("وصل جديد", "Just in"),
     },
-    links: { "/products": [KITS, "/contact"] },
+    links: { "/products": KITS },
+  }),
+  lib("categories-feature-list", { text: { "الأقسام": L("الأدوات", "The gear"), "كل الأقسام": L("كل الأدوات", "All gear") } }),
+  lib("products-carousel", {
+    text: { "الأكثر مبيعاً": L("اختيارات الكوتشات", "Coach picks") },
+    links: { "/products": BEST },
   }),
   lib("finder-use", {
     text: {
@@ -91,26 +94,6 @@ const home: Design[] = [
       "الأكثر طلبًا دلوقتي": L("الكوتشات بيرشحوا", "Coaches recommend"),
     },
     links: { "/products": [search("مات"), search("دمبل"), search("حبال"), KITS] },
-  }),
-  lib("bundle-poster", {
-    text: {
-      "طقم المشاوير": L("باكدج البداية", "Starter kit"),
-      "كل اللي تحتاجه في الطريق": L("كل اللي تحتاجه لأول شهر", "Everything for your first month"),
-      "١٬٢٧٠ ج.م": L("١٬٣٧٧ ج.م", "EGP 1,377"),
-      "بدل ١٬٤٩٠ ج.م": L("بدل ١٬٦٢٠ ج.م", "Was EGP 1,620"),
-      "اشتري الطقم": L("خد الباكدج", "Get the kit"),
-    },
-    links: { "/products": NEW },
-  }),
-  lib("bundle-quantity", {
-    text: {
-      "وفّر مع الكمية": L("اتمرنوا مع بعض", "Train together"),
-      "قطعة واحدة": L("طقم واحد", "1 set"),
-      "قطعتين": L("طقمين", "2 sets"),
-      "على القطعة التانية": L("على الطقم التاني", "On the second set"),
-      "٣ قطع": L("٣ أطقم", "3 sets"),
-      "اختار عدد القطع من السلة.": L("اختار عدد الأطقم من السلة، ليك ولصحابك.", "Choose how many sets in your cart, for you and your friends."),
-    },
   }),
   lib("team-grid", {
     text: {
@@ -139,21 +122,6 @@ const home: Design[] = [
       "محافظة بنوصلها": L("مكالمة كوتش السنة دي", "coach calls this year"),
     },
   }),
-  lib("popup-reward", {
-    name: L("اتمرن مع صاحبك", "Refer a friend"),
-    text: {
-      "جرّب حظك": L("اتمرن مع صاحبك", "Train with a friend"),
-      "المرة دي كسبت، وده كودك.": L(
-        "صاحبك ياخد خصم ١٠٠ ج.م على طلب فوق ٨٠٠، وانت تاخد ١٠٠ ج.م لما يطلب.",
-        "Your friend gets EGP 100 off an order over EGP 800, and you get EGP 100 when they order.",
-      ),
-      "كسبت": L("لصاحبك", "For your friend"),
-      "شحن مجاني": L("خصم ١٠٠ ج.م", "EGP 100 off"),
-      "الكود: FREESHIP": L("الكود: REP100", "Code: REP100"),
-      "استخدمه دلوقتي": L("تسوقوا سوا", "Shop together"),
-    },
-    links: { "/products": KITS },
-  }),
   lib("testimonials-chat", {
     text: {
       "من الواتساب": L("الآراء", "Reviews"),
@@ -166,8 +134,8 @@ const home: Design[] = [
       "ده يسعدنا جدًا، شكرًا ليكي!": L("عاش يا بطل، كمّل!", "Great work, keep going!"),
       "عمر ك.": L("منة س.", "Menna S."),
       "بدّلت المقاس بدون أي تعب، والفريق رد علي في دقائق.": L(
-        "اشتريت ٣ أطقم حبال ليا ولإخواتي ووفرت ١٨٪.",
-        "Bought three band sets for me and my sisters and saved 18%.",
+        "اشتريت ٣ أطقم حبال ليا ولإخواتي ووصلوا في يومين.",
+        "Bought three band sets for me and my sisters and they arrived in two days.",
       ),
       "يوسف م.": L("علي ح.", "Ali H."),
       "ثاني مرة أطلب. كل شيء أصلي والفاتورة داخل العلبة.": L("دمبل جامد. التوصيل لإسكندرية أخد ٣ أيام.", "Solid dumbbells. Delivery to Alex took three days."),
@@ -212,13 +180,13 @@ const DEMO = demoStore({
 
 export const REP = libraryTemplate({
   key: REP_KEY,
-  version: 2,
-  changelog: "Rep v2: product page",
+  version: 3,
+  changelog: "Rep v3: new hero, categories, products, section order",
   productPage: { surface: "flat", thumbs: "bottom", headingCase: "upper", band: "brand", extras: ["product-perks"], copy: { back: L("رجوع للمعدات", "Back to the gear"), reviews: L("رسايل الأعضاء", "Members' messages"), related: L("معدات تكمّل تمرينك", "Gear to complete your training") } },
   name: L("ريب", "Rep"),
   description: L(
-    "نادي تمرين البيت: حسب الهدف، باكدج البداية، أطقم للصحاب، الكوتشات، الأرقام، اتمرن مع صاحبك ورسايل الأعضاء. أربع صفحات جاهزة.",
-    "Home training club: shop by goal, a starter kit, sets for friends, the coaches, the numbers, train with a friend and members’ messages. Four ready pages.",
+    "نادي تمرين البيت: حسب الهدف، الكوتشات، الأرقام ورسايل الأعضاء. أربع صفحات جاهزة.",
+    "Home training club: shop by goal, the coaches, the numbers and members’ messages. Four ready pages.",
   ),
   category: "sports",
   sortOrder: 460,

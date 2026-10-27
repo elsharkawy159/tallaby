@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Copy, ExternalLink, LoaderCircle, PartyPopper } from "lucide-react";
 import { Button } from "@workspace/ui/components/button";
+import { cn } from "@workspace/ui/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -26,11 +27,14 @@ type Live = { url: string; hostname: string };
 export function SetupPublishButton({
   storeId,
   ready,
+  lockedLabel,
   variant,
 }: {
   storeId: string;
-  /** Profile, first product and legal details are done (publishReady). */
+  /** A product and a chosen template are in place (publishReady). */
   ready: boolean;
+  /** Why the button is locked (publishLockReason), shown as its tooltip. */
+  lockedLabel?: string;
   variant: "secondary" | "neutral";
 }) {
   const t = useTranslations("home.setup.publish");
@@ -44,6 +48,10 @@ export function SetupPublishButton({
       try {
         const result = await publishStoreFromHome(storeId);
         if (result.success) setLive({ url: result.url, hostname: result.hostname });
+        else if (result.error === "templateNotChosen")
+          toast.error(te("errors.templateNotChosen"), {
+            action: { label: t("chooseTemplate"), onClick: () => router.push(`/stores/${storeId}/website/templates`) },
+          });
         else toast.error(te(`errors.${result.error}` as "errors.generic"));
       } catch {
         toast.error(te("errors.generic"));
@@ -72,9 +80,9 @@ export function SetupPublishButton({
         type="button"
         size="sm"
         variant={variant}
-        className="rounded-[9px]"
+        className={cn("rounded-[9px]", ready && !pending && "publish-attention")}
         disabled={!ready || pending}
-        title={ready ? undefined : t("locked")}
+        title={ready ? undefined : (lockedLabel ?? t("locked"))}
         onClick={run}
       >
         {pending && <LoaderCircle className="animate-spin" aria-hidden />}

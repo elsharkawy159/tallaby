@@ -91,6 +91,7 @@ export async function listTemplatesPage(storeId: string, query: Partial<Template
       page: parseTemplatesPage(query?.page),
       category: parseTemplatesCategory(query?.category),
       industryId: industry?.id,
+      seed: store.id,
     });
     const install = gallery.lastInstall;
     return {
@@ -102,7 +103,9 @@ export async function listTemplatesPage(storeId: string, query: Partial<Template
         pageSize: TEMPLATES_PAGE_SIZE,
         total: paged.total,
         categories: paged.categories,
-        currentKey: gallery.currentKey,
+        // A new store's placeholder Tallaby Classic drafts are not the seller's
+        // choice (owner 2026-10-27): no "current" template until one is picked.
+        currentKey: gallery.templateChosen ? gallery.currentKey : "",
         lastInstall: install
           ? {
               templateKey: install.templateKey,

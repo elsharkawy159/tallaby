@@ -1,7 +1,9 @@
 /**
- * Big word (Modular set): one huge faint word behind a product photo, and
+ * Big word (Modular set): one huge faint word behind a wide product photo, and
  * under a hairline the product's name, price and cart button on one line.
- * The product is one of the store's own (featured by default).
+ * The product is one of the store's own (featured by default). The photo is
+ * wide (16:9, cover) across the container (owner, 2026-10-27), not a small
+ * square cut-out.
  */
 import { defineDesign } from "../builder";
 import { L } from "../_kit";
@@ -10,7 +12,7 @@ import { PRODUCT_NAME, SHOP_LINK, priceRow, productName } from "../products/_sha
 
 export const heroBigWord = defineDesign({
   id: "hero-big-word",
-  version: 1,
+  version: 2,
   category: "hero",
   subcategory: "product",
   name: L("كلمة كبيرة", "Big word"),
@@ -39,7 +41,7 @@ export const heroBigWord = defineDesign({
                           role: "word",
                           style: {
                             position: "absolute",
-                            insetTop: "8%",
+                            insetTop: "0px",
                             insetStart: "0px",
                             insetEnd: "0px",
                             textAlign: "center",
@@ -59,10 +61,14 @@ export const heroBigWord = defineDesign({
                                 t.image("", PRODUCT_NAME, {
                                   bind: "image",
                                   style: {
-                                    aspectRatio: "square",
-                                    objectFit: "contain",
+                                    aspectRatio: "wide",
+                                    objectFit: "cover",
                                     width: "100%",
+                                    radius: 24,
+                                    background: "background",
                                   },
+                                  // Still wide on phones, a little taller so the product keeps its size.
+                                  mobile: { aspectRatio: "landscape", radius: 16 },
                                 }),
                               ],
                               {
@@ -77,9 +83,13 @@ export const heroBigWord = defineDesign({
                             style: {
                               position: "relative",
                               zIndex: 1,
-                              width: "420px",
-                              maxWidth: "80%",
+                              width: "100%",
+                              maxWidth: "1080px",
+                              radius: 24,
+                              overflow: "hidden",
+                              shadow: "md",
                             },
+                            mobile: { radius: 16 },
                           },
                         ),
                       ],
@@ -89,8 +99,10 @@ export const heroBigWord = defineDesign({
                           position: "relative",
                           minHeight: 320,
                           alignItems: "center",
+                          paddingTop: 72,
                           paddingBottom: 24,
                         },
+                        mobile: { paddingTop: 40, minHeight: 0 },
                       },
                     ),
                     t.divider({ style: { marginTop: 0, marginBottom: 0 } }),

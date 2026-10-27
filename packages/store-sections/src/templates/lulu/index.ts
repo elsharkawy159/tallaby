@@ -77,6 +77,10 @@ const home: Design[] = [
     },
     links: { "/products": [SHOP, "/contact"] },
   }),
+  lib("categories-captioned", { text: { "اكتشف الأقسام": L("لولي لكل يوم", "Pearls for every day"), "كل الأقسام": L("كل القطع", "All pieces") } }),
+  lib("products-feature", {
+    text: { "اختيارنا ليك": L("قطع جديدة", "New pieces"), "اختيار الأسبوع": L("جديد", "New") },
+  }),
   lib("features-side-title", {
     text: {
       "ليه الناس بترجع لنا تاني": L("بنختار إزاي", "How we choose"),
@@ -91,17 +95,6 @@ const home: Design[] = [
       "أشخاص حقيقيون طوال الأسبوع": L("عقدة حرير بين كل لولية والتانية.", "A silk knot between every pearl."),
     },
   }),
-  lib("products-feature", {
-    text: { "اختيارنا ليك": L("قطع جديدة", "New pieces"), "اختيار الأسبوع": L("جديد", "New") },
-  }),
-  lib("service-booking", {
-    text: {
-      "احجز معاد الفني": L("احجزي معاينة", "Book a viewing"),
-      "تركيب شاشة · حوالي ساعة": L("معاينة خاصة في الزمالك · نص ساعة", "Private viewing in Zamalek · 30 minutes"),
-      "مواعيد الزيارات": L("المواعيد المتاحة", "Available times"),
-      "أو احجز على واتساب": L("أو احجزي على واتساب", "Or book on WhatsApp"),
-    },
-  }),
   lib("team-founder", {
     text: {
       "عايزين كل حد يشتري من عندنا مرة يرجع تاني من غير ما نفكره.": L(
@@ -110,6 +103,14 @@ const home: Design[] = [
       ),
       "م": L("ل", "L"),
       "منى عادل": L("لولوة سعد", "Lulwa Saad"),
+    },
+  }),
+  lib("service-booking", {
+    text: {
+      "احجز معاد الفني": L("احجزي معاينة", "Book a viewing"),
+      "تركيب شاشة · حوالي ساعة": L("معاينة خاصة في الزمالك · نص ساعة", "Private viewing in Zamalek · 30 minutes"),
+      "مواعيد الزيارات": L("المواعيد المتاحة", "Available times"),
+      "أو احجز على واتساب": L("أو احجزي على واتساب", "Or book on WhatsApp"),
     },
   }),
   lib("testimonials-ruled", {
@@ -169,8 +170,8 @@ const DEMO = demoStore({
 
 export const LULU = libraryTemplate({
   key: LULU_KEY,
-  version: 2,
-  changelog: "Lulu v2: product page",
+  version: 3,
+  changelog: "Lulu v3: categories, section order",
   productPage: { thumbs: "side", button: "outline", gallery: "end", band: "paper", copy: { back: L("رجوع للؤلؤ", "Back to the pearls"), reviews: L("رأي من لبسته", "From those who wear it"), related: L("لؤلؤ يليق معاه", "Pearls to wear with it") } },
   name: L("لولو", "Lulu"),
   description: L(

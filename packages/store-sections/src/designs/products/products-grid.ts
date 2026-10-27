@@ -29,6 +29,7 @@ export const productsGrid = defineDesign({
             source: "newest",
             limit: 8,
             columns: { desktop: 4, tablet: 3, mobile: 2 },
+            mobileRail: true,
             style: { gap: 24 },
             mobile: { gap: 14 },
           }),

@@ -6,6 +6,10 @@
  * default, and the DB copies of templates are the master copy, so this runs
  * on save (`sanitizeSiteConfig`) and wherever a header is drawn. Desktop and
  * tablet padding are kept. Never mutates its input.
+ *
+ * Header rows are centred on the cross axis (owner, 2026-10-27): a row that
+ * sets no `alignItems` stretched its children, so menu links, the logo and the
+ * cart or search icons sat at different heights. A row that sets one keeps it.
  */
 import type { SectionInstance } from "./schema";
 
@@ -24,8 +28,25 @@ export function flushHeaderOnMobile(header: SectionInstance | null | undefined):
   const [root, ...rest] = header.componentTree ?? [];
   if (root?.type !== "section") return header;
   const breakpointStyles = flushMobile(root.breakpointStyles);
-  if (breakpointStyles === root.breakpointStyles) return header;
-  return { ...header, componentTree: [{ ...root, breakpointStyles }, ...rest] };
+  const children = centerRows(root.children);
+  if (breakpointStyles === root.breakpointStyles && children === root.children) return header;
+  return { ...header, componentTree: [{ ...root, breakpointStyles, children }, ...rest] };
+}
+
+type TreeNode = NonNullable<SectionInstance["componentTree"]>[number];
+
+/** Rows (`hFlex`) with no `alignItems` get `center`; the same array back when nothing changes. */
+function centerRows(nodes: TreeNode[]): TreeNode[] {
+  let changed = false;
+  const next = nodes.map((node) => {
+    const children = centerRows(node.children ?? []);
+    const style = node.style as Record<string, unknown> | undefined;
+    const center = node.type === "hFlex" && style?.alignItems === undefined;
+    if (!center && children === node.children) return node;
+    changed = true;
+    return { ...node, children, ...(center && { style: { ...style, alignItems: "center" } }) };
+  });
+  return changed ? next : nodes;
 }
 
 /**
@@ -98,17 +119,20 @@ export function withLanguageSwitcher(header: SectionInstance | null | undefined,
  *   so the brand is the store name alone (owner, 2026-10-24).
  * - Store name: beside an uploaded logo only when turned on (off by default:
  *   the logo replaces the name; owner, 2026-10-24). Never leaves the link empty.
+ * - Bottom navigation (header only, on by default; owner, 2026-10-27): the
+ *   phone bar Home, Shop, Cart, Profile, drawn by the host after the footer
+ *   (ender/bottom-nav.tsx), never inside the header tree.
  * - Language switcher, theme toggle, sign-in: in the header beside the cart
  *   (as `withLanguageSwitcher` places the switcher); in the footer as one row
  *   after the social links, else at the end of the footer's container.
  */
 export type ChromePart = "header" | "footer";
-export const CHROME_OPTIONS = ["logo", "storeName", "languageSwitcher", "themeToggle", "account"] as const;
+export const CHROME_OPTIONS = ["logo", "storeName", "languageSwitcher", "themeToggle", "account", "bottomNav"] as const;
 export type ChromeOption = (typeof CHROME_OPTIONS)[number];
 
 const CHROME_DEFAULTS: Record<ChromePart, Record<ChromeOption, boolean>> = {
-  header: { logo: true, storeName: false, languageSwitcher: true, themeToggle: false, account: false },
-  footer: { logo: true, storeName: false, languageSwitcher: false, themeToggle: false, account: false },
+  header: { logo: true, storeName: false, languageSwitcher: true, themeToggle: false, account: false, bottomNav: true },
+  footer: { logo: true, storeName: false, languageSwitcher: false, themeToggle: false, account: false, bottomNav: false },
 };
 
 /** Whether an option is on for this header or footer (its default when the seller never changed it). */
@@ -260,23 +284,188 @@ function pathTo(nodes: readonly Node[], match: (node: Node) => boolean, trail: N
   return null;
 }
 
-function withMobileMenu(tree: Node[], id: string): Node[] {
+/**
+ * The header on phones is one row (docs/section-rules.md §5.6; owner,
+ * 2026-10-27 "fix navbars on templates mobile screen"): burger · logo ·
+ * search icon · cart. The bar is the outermost row or grid around the logo.
+ * Under 768px (breakpoint `hidden`, so desktop and tablet are untouched):
+ * - rows after the bar (category chips, department links, a second search or
+ *   menu row) are hidden; rows before it (announcement bars) stay;
+ * - in the bar, a wide search box is hidden and a search icon goes before the
+ *   cart; wishlist and account icons and a design's own menu icon are hidden
+ *   (the burger sheet holds the account; Tallaby Classic keeps its account icon);
+ * - a tagline beside the store name in the logo is hidden;
+ * - the bar's vertical padding is at most 10px (44px icons: a 64px header),
+ *   and a grid bar gets one column per item still shown, so nothing wraps.
+ */
+const MOBILE_BAR_PADDING = 10;
+
+/** The style a node has on phones (mobile, else tablet, else desktop: tablet and mobile are max-width overrides). */
+function mobileValue(node: Node, key: string): unknown {
+  const bps = node.breakpointStyles;
+  return bps?.mobile?.[key] ?? bps?.tablet?.[key] ?? (node.style as Record<string, unknown> | undefined)?.[key];
+}
+
+function withMobileStyle(node: Node, mobile: Record<string, unknown>): Node {
+  return { ...node, breakpointStyles: { ...node.breakpointStyles, mobile: { ...node.breakpointStyles?.mobile, ...mobile } } };
+}
+
+const hideOnMobile = (node: Node): Node => (node.breakpointStyles?.mobile?.hidden === true ? node : withMobileStyle(node, { hidden: true }));
+/** Shown on phones: not hidden there (`hidden` is per device) and not a collapsed menu. */
+const shownOnMobile = (node: Node) => node.breakpointStyles?.mobile?.hidden !== true && node.props.collapse !== MOBILE_COLLAPSE;
+
+function iconsIn(node: Node): string[] {
+  const out: string[] = [];
+  const walk = (n: Node) => {
+    if (n.type === "icon" && typeof n.props.name === "string") out.push(n.props.name);
+    n.children.forEach(walk);
+  };
+  walk(node);
+  return out;
+}
+function textsIn(node: Node): unknown[] {
+  return TEXT_TYPES.has(node.type) ? [node.props.text] : node.children.flatMap(textsIn);
+}
+const hasText = (node: Node): boolean => node.children.some((c) => TEXT_TYPES.has(c.type) || hasText(c));
+const isLink = (node: Node) => node.type === "linkBlock";
+/** A search box drawn wide (an icon and a placeholder), not a search icon. */
+const isWideSearch = (node: Node) => isLink(node) && iconsIn(node).includes("search") && hasText(node);
+const isSearchIcon = (node: Node) => isLink(node) && iconsIn(node).join() === "search" && !hasText(node);
+/** Icons that move into the burger sheet on phones: wishlist, account and a design's own (non-working) menu button. */
+const SHEET_ICONS = new Set(["heart", "user", "menu"]);
+const isSheetIcon = (node: Node) =>
+  node.type === "accountLink" || (isLink(node) && !hasText(node) && iconsIn(node).length === 1 && SHEET_ICONS.has(iconsIn(node)[0]!));
+/** Tallaby Classic's header (templates/classic/chrome.ts) keeps its account icon on phones (owner, 2026-10-27). */
+const KEEPS_ACCOUNT_ON_MOBILE = new Set(["tallaby-header"]);
+const isAccount = (node: Node) => node.type === "accountLink" || (isLink(node) && !hasText(node) && iconsIn(node).join() === "user");
+
+/** Rewrites the bar's subtree for phones (see above); `addSearch` is set when a wide search got hidden. */
+function compactBar(bar: Node, id: string, locale: string): Node {
+  const keepAccount = KEEPS_ACCOUNT_ON_MOBILE.has(id);
+  let hidSearch = false;
+  let mobileSearch = false;
+  const walk = (node: Node): Node => {
+    if (!shownOnMobile(node)) return node;
+    if (isWideSearch(node)) {
+      hidSearch = true;
+      return hideOnMobile(node);
+    }
+    if (isSearchIcon(node)) mobileSearch = true;
+    if (isSheetIcon(node) && !(keepAccount && isAccount(node))) return hideOnMobile(node);
+    // A box left with nothing shown (a wide search's sized wrapper) hides with it, so no empty slot or
+    // second line is left; not a grid bar's first cell, which the burger joins.
+    const children = node.children.map(walk);
+    const firstCell = bar.type === "grid" && bar.children[0] === node;
+    if (
+      node !== bar &&
+      !firstCell &&
+      children.some((c, i) => c !== node.children[i]) &&
+      children.every((c) => !shownOnMobile(c)) &&
+      !contains(children, hasRole("logo"))
+    ) {
+      return hideOnMobile({ ...node, children });
+    }
+    // A tagline beside the store name goes on phones.
+    if (node.children.some(hasRole("storeName"))) {
+      return { ...node, children: children.map((c) => (TEXT_TYPES.has(c.type) && c.props.role !== "storeName" ? hideOnMobile(c) : c)) };
+    }
+    return children.some((c, i) => c !== node.children[i]) ? { ...node, children } : node;
+  };
+  let out = walk(bar);
+  if (hidSearch && !mobileSearch) {
+    const search: Node = {
+      id: `${id}-mobile-search`,
+      type: "linkBlock",
+      props: { href: "/products", label: locale === "en" ? "Search" : "بحث" },
+      style: { hidden: true, width: "44px", paddingTop: 11, paddingBottom: 9, paddingStart: 0, paddingEnd: 0, radius: 999, textAlign: "center" },
+      breakpointStyles: { tablet: { hidden: true }, mobile: { hidden: false } },
+      children: [{ id: `${id}-mobile-search-icon`, type: "icon", props: { name: "search" }, style: { fontSize: "lg" }, children: [] }],
+    };
+    out = insertBeside([out], isCart, search, false)?.[0] ?? { ...out, children: [...out.children, search] };
+  }
+  const mobile: Record<string, unknown> = {};
+  for (const key of ["paddingTop", "paddingBottom"] as const) {
+    const value = mobileValue(out, key);
+    if (typeof value === "number" && value > MOBILE_BAR_PADDING) mobile[key] = MOBILE_BAR_PADDING;
+  }
+  if (out.type === "grid") {
+    // The first cell always shows: the burger joins it (withMobileMenu).
+    const shown = out.children.filter((c, i) => i === 0 || shownOnMobile(c)).length;
+    const columns = mobileValue(out, "columns");
+    if (shown > 0 && typeof columns === "number" && columns < shown) mobile.columns = shown;
+    // A centred logo between two cells gets the middle half (4 columns, the logo spans 2), so a
+    // longer store name stays on one line between the burger and the icons.
+    const logoAt = out.children.findIndex((c) => c.props.role === "logo" || contains(c.children, hasRole("logo")));
+    if (shown === 3 && out.children.length === 3 && logoAt === 1) {
+      mobile.columns = 4;
+      // A link is drawn inside an <a> (the grid item), so a link logo gets a centred cell around it.
+      const middle = out.children[1]!;
+      const cell: Node =
+        middle.type === "linkBlock"
+          ? { id: `${id}-logo-cell`, type: "hFlex", props: {}, style: { justifyContent: "center", alignItems: "center", wrap: false }, children: [middle] }
+          : middle;
+      const logoCell = withMobileStyle(cell, { colSpan: 2 });
+      out = { ...out, children: [out.children[0]!, logoCell, out.children[2]!] };
+    }
+  }
+  return Object.keys(mobile).length ? withMobileStyle(out, mobile) : out;
+}
+
+/** Hides, on phones, what follows the bar at every level up to the header's root (dividers stay). */
+function hideAfter(nodes: Node[], path: readonly Node[]): Node[] {
+  const [head, ...rest] = path;
+  if (!head) return nodes;
+  const at = nodes.indexOf(head);
+  if (at < 0) return nodes;
+  return nodes.map((node, i) => {
+    if (i < at) return node;
+    if (i === at) return rest.length ? { ...node, children: hideAfter(node.children, rest) } : node;
+    return node.type === "divider" || !shownOnMobile(node) ? node : hideOnMobile(node);
+  });
+}
+
+/** Links shown in the header only on larger screens (a row after the bar), for the burger sheet. */
+function hiddenRowLinks(nodes: readonly Node[], path: readonly Node[], id: string): Node[] {
+  const [head, ...rest] = path;
+  if (!head) return [];
+  const at = nodes.indexOf(head);
+  const after = nodes.slice(at + 1).filter((node) => node.type !== "divider");
+  const own = rest.length ? hiddenRowLinks(head.children, rest, id) : [];
+  // Bound links (category chips) render only inside their list: leave them to the shop page.
+  const plain = (node: Node): boolean => node.props.bind === undefined && node.children.every(plain);
+  const links = menuLinks(
+    after.map((node) => ({ ...node, props: { ...node.props, role: "menu" } })),
+    id,
+  ).filter((link) => plain(link) && hasText(link) && !isWideSearch(link) && !isCart(link));
+  return [...own, ...links];
+}
+
+function withMobileMenu(tree: Node[], id: string, locale: string): Node[] {
   if (contains(tree, (node) => node.type === "mobileMenu")) return tree;
-  const burger: Node = { id: `${id}-mobile-menu`, type: "mobileMenu", props: {}, children: menuLinks(tree, id) };
-  const nodes = collapseMenus(tree);
+  const own = menuLinks(tree, id);
+  let nodes = collapseMenus(tree);
   const path = pathTo(nodes, hasRole("logo"));
-  const bar = path
-    ?.slice(0, -1)
-    .reverse()
-    .find((node) => node.type === "hFlex" || node.type === "grid");
-  if (bar) {
+  const barAt = path?.findIndex((node) => node.type === "hFlex" || node.type === "grid") ?? -1;
+  const extra = path && barAt >= 0 ? hiddenRowLinks(nodes, path.slice(0, barAt + 1), `${id}-x`) : [];
+  const key = (link: Node) => `${String(link.props.href)}|${JSON.stringify(textsIn(link))}`;
+  const seen = new Set(own.map(key));
+  const links = [...own, ...extra.filter((link) => !seen.has(key(link)))];
+  const burger: Node = { id: `${id}-mobile-menu`, type: "mobileMenu", props: {}, children: links };
+  if (path && barAt >= 0) {
+    const old = path[barAt]!;
+    nodes = hideAfter(nodes, path.slice(0, barAt + 1));
+    const bar = compactBar(pathTo(nodes, (node) => node.id === old.id)!.at(-1)!, id, locale);
     const first = bar.children[0];
+    // In a grid the burger joins the first cell: at its start when that cell is a row shown on
+    // phones (it keeps the cell's look), else in a new cell beside it, so the column count stays.
     const cell: Node | null =
-      bar.type === "grid" && first
-        ? { id: `${id}-mobile-menu-cell`, type: "hFlex", props: {}, style: { gap: 8, alignItems: "center", wrap: false }, children: [burger, first] }
-        : null;
+      bar.type !== "grid" || !first
+        ? null
+        : first.type === "hFlex" && shownOnMobile(first)
+          ? { ...first, children: [burger, ...first.children] }
+          : { id: `${id}-mobile-menu-cell`, type: "hFlex", props: {}, style: { gap: 8, alignItems: "center", wrap: false }, children: [burger, first] };
     const children = cell ? [cell, ...bar.children.slice(1)] : [burger, ...bar.children];
-    return replaceFirst(nodes, (node) => node === bar, () => ({ ...bar, children }))!;
+    return replaceFirst(nodes, (node) => node.id === old.id, () => ({ ...bar, children }))!;
   }
   const [root, ...rest] = nodes;
   return root!.type === "section" ? [{ ...root!, children: [burger, ...root!.children] }, ...rest] : [burger, ...nodes];
@@ -403,7 +592,7 @@ export function drawChrome(
     const row: Node = { id: `${instance.id}-tools`, type: "hFlex", props: {}, style: { gap: 8, alignItems: "center", marginTop: 16 }, children: tools };
     nodes = appendFooterTools(nodes, row);
   }
-  if (part === "header") nodes = withMobileMenu(nodes, instance.id);
+  if (part === "header") nodes = withMobileMenu(nodes, instance.id, opts.locale ?? "ar");
   if (part === "footer") nodes = withTallabyCredit(nodes, instance.id, opts.locale ?? "ar");
   return nodes === tree ? instance : { ...instance, componentTree: nodes };
 }

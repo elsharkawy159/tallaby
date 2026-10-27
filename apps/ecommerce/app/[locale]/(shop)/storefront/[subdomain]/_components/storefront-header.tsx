@@ -4,7 +4,6 @@ import { Link } from "@/i18n/navigation";
 import type { Storefront } from "@/lib/storefront.server";
 import { StoreLogo } from "./store-logo";
 import { CartSheet } from "./cart-sheet.client";
-import { storefrontFont } from "./storefront-font";
 import { StorefrontLanguageSwitcher } from "./storefront-language.client";
 import s from "../storefront.module.css";
 
@@ -23,7 +22,7 @@ export async function StorefrontHeader({ store }: { store: Storefront }) {
           <span className="truncate">{store.displayName}</span>
         </Link>
         {new Set(store.supportedLocales).size > 1 && <StorefrontLanguageSwitcher />}
-        <CartSheet storeName={store.displayName} fontClassName={storefrontFont.variable} />
+        <CartSheet />
       </div>
     </header>
   );

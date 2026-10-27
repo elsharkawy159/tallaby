@@ -359,6 +359,8 @@
     "discountEndsIn": "ينتهي العرض خلال",
     "onlyLeft": "متبقي {count} فقط",
     "discountPercentOff": "خصم {percent}%",
+    "badgeTrending": "رائج",
+    "badgeSeasonal": "موسمي",
     "discountAvailableUntil": "الخصم متاح حتى:",
     "days": "أيام",
     "hours": "ساعات",

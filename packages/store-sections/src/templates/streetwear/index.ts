@@ -73,9 +73,8 @@ const home: Design[] = [
     },
     links: { "/products": NEW },
   }),
-  lib("products-bento", {
-    text: { "الكل بيسأل عليهم": L("بيخلص بسرعة", "Going fast") },
-    links: { "/products": BEST },
+  lib("categories-chips", {
+    text: { "إيه اللي في بالك؟": L("اختار ستايلك", "Pick your fit") },
   }),
   lib("products-rail", {
     as: "drop-rail",
@@ -92,6 +91,10 @@ const home: Design[] = [
       "اسم القسم": L("هوديز", "Hoodies"),
       "تشكيلة مختارة لهذا الموسم": L("قطن مشطوف ٤٥٠ جرام بقصّة واسعة.", "450 gsm brushed cotton, boxy cut."),
     },
+  }),
+  lib("products-bento", {
+    text: { "الكل بيسأل عليهم": L("بيخلص بسرعة", "Going fast") },
+    links: { "/products": BEST },
   }),
   lib("text-statement", {
     text: {
@@ -199,8 +202,8 @@ const DEMO = demoStore({
 
 export const STREETWEAR = libraryTemplate({
   key: STREETWEAR_KEY,
-  version: 3,
-  changelog: "Streetwear v3: product page",
+  version: 4,
+  changelog: "Streetwear v4: categories, section order",
   name: L("ستريت وير", "Streetwear"),
   description: L(
     "موضة شارع جريئة: أبيض وأسود وأخضر ليموني، زوايا حادة وخط عريض. أربع صفحات جاهزة.",

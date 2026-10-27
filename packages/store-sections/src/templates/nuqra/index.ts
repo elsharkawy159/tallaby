@@ -76,9 +76,21 @@ const home: Design[] = [
     },
     links: { "/products": search("خاتم") },
   }),
+  lib("categories-ruled", { text: { "الأقسام": L("القطع", "The pieces"), "تسوق بالقسم": L("اختار قطعتك", "Pick your piece") } }),
   lib("products-bento", {
     text: { "الأكثر طلبًا": L("الأكتر لبساً", "Most worn"), "الكل بيسأل عليهم": L("القطع الأساسية", "The core pieces") },
     links: { "/products": BEST },
+  }),
+  lib("features-compare", {
+    text: {
+      "إحنا ولا غيرنا؟": L("ليه نقرة", "Why Nuqra"),
+      "متجرنا": L("نقرة", "Nuqra"),
+      "منتجات أصلية بفاتورة": L("فضة ٩٢٥ صلبة بختم", "Solid, hallmarked 925 silver"),
+      "ضمان محلي": L("الدفع عند الاستلام", "Cash on delivery"),
+      "استرجاع خلال ١٤ يوم": L("حفر ببلاش", "Free engraving"),
+      "الدفع عند الاستلام": L("تبديل المقاس", "Size exchange"),
+      "رد على واتساب في دقايق": L("تلميع مدى الحياة", "Lifetime polishing"),
+    },
   }),
   lib("service-cards", {
     text: {
@@ -96,17 +108,6 @@ const home: Design[] = [
       "مد الضمان": L("تصليح السلاسل", "Chain repair"),
       "سنة أو سنتين زيادة على ضمان الوكيل.": L("لحام قفل أو حلقة مقطوعة في نفس اليوم.", "A broken clasp or link soldered the same day."),
       "من ١٩٩ ج.م": L("من ١٠٠ ج.م", "From EGP 100"),
-    },
-  }),
-  lib("features-compare", {
-    text: {
-      "إحنا ولا غيرنا؟": L("ليه نقرة", "Why Nuqra"),
-      "متجرنا": L("نقرة", "Nuqra"),
-      "منتجات أصلية بفاتورة": L("فضة ٩٢٥ صلبة بختم", "Solid, hallmarked 925 silver"),
-      "ضمان محلي": L("الدفع عند الاستلام", "Cash on delivery"),
-      "استرجاع خلال ١٤ يوم": L("حفر ببلاش", "Free engraving"),
-      "الدفع عند الاستلام": L("تبديل المقاس", "Size exchange"),
-      "رد على واتساب في دقايق": L("تلميع مدى الحياة", "Lifetime polishing"),
     },
   }),
   lib("testimonials-chat", {
@@ -164,8 +165,8 @@ const DEMO = demoStore({
 
 export const NUQRA = libraryTemplate({
   key: NUQRA_KEY,
-  version: 2,
-  changelog: "Nuqra v2: product page",
+  version: 3,
+  changelog: "Nuqra v3: categories, section order",
   productPage: { thumbs: "side", button: "outline", band: "brand", extras: ["product-perks"], copy: { back: L("رجوع للفضة", "Back to the silver"), reviews: L("من واتساب العملاء", "From customers on WhatsApp"), related: L("قطع تلبس معاه", "Pieces to wear with it") } },
   name: L("نقرة", "Nuqra"),
   description: L(

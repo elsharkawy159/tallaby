@@ -3,8 +3,8 @@
  * "Storefront Templates"): warm parchment, a deep plum for actions and an
  * antique gold highlight, Aref Ruqaa display type over Noto Kufi Arabic
  * and almost square corners. A house-of-fragrance store: the signature
- * scent with its tag, the most chosen, scent notes around the bottle, the
- * house story, collections in big type, a client quote and the perfumer.
+ * scent with its tag, collections in big type, the most chosen, scent notes
+ * around the bottle, the house story and a client quote.
  * Built from section library designs (`fromLibrary`).
  *
  * Photos: Pexels, each checked by eye (2026-10-20): unlabelled perfume
@@ -88,6 +88,7 @@ const home: Design[] = [
     },
     links: { "/products": [BEST, BEST] },
   }),
+  lib("categories-big-type", {}),
   lib("products-list", {
     text: {
       "الكتالوج": L("المجموعة", "The collection"),
@@ -126,7 +127,6 @@ const home: Design[] = [
       "«إن لم نستخدمه نحن، لن نبيعه.»": L("«العطر لازم يبقى ذكرى، مش إعلان.»", "“A scent should feel like a memory, not a statement.”"),
     },
   }),
-  lib("categories-big-type", {}),
   lib("testimonials-spotlight", {
     text: {
       "«من أفضل تجارب الشراء أونلاين. الطلب وصل بسرعة، والتغليف أنيق، والمنتج أفضل من الصور.»": L(
@@ -135,19 +135,6 @@ const home: Design[] = [
       ),
       "م": L("ن", "N"),
       "مريم أ.": L("نادين س.", "Nadine S."),
-    },
-  }),
-  lib("about-circle", {
-    person: [PHOTOS.rosesBottle],
-    text: {
-      "صورة الفريق": L("ورد وردي جنب زجاجة", "Pink roses beside a glass bottle"),
-      "إحنا مين": L("صانعة العطور", "The perfumer"),
-      "فريق صغير بيحب اللي بيعمله": L("ليلى فهمي، المؤسسة", "Laila Fahmy, founder"),
-      "بنرد على كل رسالة بنفسنا، وبنختار كل منتج كأننا هنستخدمه.": L(
-        "ليلى اتدربت في جراس ورجعت تبني دار حوالين الروايح اللي اتربت عليها.",
-        "Laila trained in Grasse and came home to build a house around the scents she grew up with.",
-      ),
-      "قابل الفريق": L("زوري الأتيليه", "Visit the atelier"),
     },
   }),
 ];
@@ -197,8 +184,8 @@ const DEMO = demoStore({
 
 export const ELIXIR = libraryTemplate({
   key: ELIXIR_KEY,
-  version: 3,
-  changelog: "Élixir v3: product page",
+  version: 4,
+  changelog: "Élixir v4: categories, section order",
   name: L("إليكسير", "Élixir"),
   description: L(
     "جمال وعطور فاخرة: العطر المميز، النوتات حول الزجاجة وحكاية الدار. أربع صفحات جاهزة.",
@@ -241,8 +228,8 @@ export const ELIXIR = libraryTemplate({
         text: L("العطور والتغليف والتوصيل.", "Fragrance, gift wrap and delivery."),
         question: L("أقدر أجرّب قبل ما أشتري حجم كامل؟", "Can I try before buying a full size?"),
         answer: L(
-          "أيوه. بوكس الاكتشاف فيه ٥ عطور ١٠ مل وقسيمة بقيمته على أول حجم كامل.",
-          "Yes. The Discovery Box has five 10 ml fragrances and a voucher for its value off your first full size.",
+          "أيوه. بوكس الاكتشاف فيه ٥ عطور ١٠ مل تجربها براحتك قبل ما تختار الحجم الكامل.",
+          "Yes. The Discovery Box has five 10 ml fragrances to try at your own pace before you choose a full size.",
         ),
       }),
     },

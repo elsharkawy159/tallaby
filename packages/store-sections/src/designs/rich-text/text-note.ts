@@ -59,7 +59,7 @@ export const textNote = defineDesign({
                   style: {
                     background: "accent",
                     radius: 6,
-                    shadow: "lg",
+                    shadow: "md",
                     gap: 12,
                     alignItems: "center",
                     width: "100%",

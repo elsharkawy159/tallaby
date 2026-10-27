@@ -2,7 +2,7 @@
 
 import { useState, type ReactNode } from "react";
 import type { FieldValues, Path, UseFormReturn } from "react-hook-form";
-import { Eye, EyeOff, Lock, Mail, Phone } from "lucide-react";
+import { Eye, EyeOff, Lock, Mail, Phone, Store } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import {
@@ -18,7 +18,7 @@ import { cn } from "@workspace/ui/lib/utils";
 
 import { AUTH_INPUT_BOX } from "./auth-ui";
 
-const ICONS = { email: Mail, password: Lock, tel: Phone } as const;
+const ICONS = { email: Mail, password: Lock, tel: Phone, text: Store } as const;
 
 /** Auth-page input: leading icon, 48px pill-ish box, optional action beside the label. */
 export function AuthField<T extends FieldValues>({
@@ -36,7 +36,7 @@ export function AuthField<T extends FieldValues>({
   form: UseFormReturn<T>;
   name: Path<T>;
   label: string;
-  type: "email" | "password" | "tel";
+  type: "email" | "password" | "tel" | "text";
   placeholder?: string;
   autoComplete?: string;
   disabled?: boolean;

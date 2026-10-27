@@ -39,7 +39,7 @@ const PHOTOS = {
 const header = lib("header-announcement", {
   text: {
     "توصيل مجاني للطلبات فوق ١٥٠٠ ج.م": L("توصيل مجاني فوق ٢٬٠٠٠ ج.م · مجموعة جديدة كل خميس", "Free delivery over EGP 2,000 · New drop every Thursday"),
-    "الكود: SAVE10": L("الكود: SAYRA15", "Code: SAYRA15"),
+    "الدفع عند الاستلام": L("تبديل خلال ١٤ يوم", "Exchange within 14 days"),
     "م": L("س", "S"),
     "اسم متجرك": L("سايرة ستوديو", "Sayra Studio"),
     "المتجر": L("الجديد", "New in"),
@@ -67,14 +67,6 @@ const footer = lib("footer-signup", {
 });
 
 const home: Design[] = [
-  lib("promo-ticker", {
-    text: {
-      "الكود: SAVE10": L("الكود: SAYRA15", "Code: SAYRA15"),
-      "توصيل مجاني فوق ١٥٠٠ ج.م": L("توصيل مجاني فوق ٢٬٠٠٠ ج.م", "Free delivery over EGP 2,000"),
-      "خصم ١٥٪ على المجموعات": L("خصم ١٥٪ على أول طلب", "15% off your first order"),
-      "استرجاع خلال ١٤ يومًا": L("استبدال مجاني خلال ١٤ يوم", "Free exchange within 14 days"),
-    },
-  }),
   lib("hero-ticket", {
     photo: [PHOTOS.colourRack, PHOTOS.wheeledRack, PHOTOS.saleHanger],
     text: {
@@ -83,7 +75,7 @@ const home: Design[] = [
       "ألوان هادئة لأيام أطول": L("ألوان بتتكلم عنك", "Colour that does the talking"),
       "تسوّق المجموعة": L("تسوقي الجديد", "Shop new in"),
       "عروض الأسبوع": L("بدل وأطقم: قطعتين وعشر لبسات", "Suits & sets: two pieces, ten outfits"),
-      "هدايا مختارة": L("خصم لحد ٢٠٪ على الموسم اللي فات", "Up to 20% off last season"),
+      "هدايا مختارة": L("القطع الأساسية اللي بتتلبس كل يوم", "The everyday essentials"),
     },
     links: { "/products": [NEW, SHOP, BEST] },
   }),
@@ -113,17 +105,6 @@ const home: Design[] = [
       "الأكثر مبيعًا": L("قطع بنرجعلها دايماً", "Pieces we keep reaching for"),
     },
     links: { "/products": BEST },
-  }),
-  lib("promo-twin", {
-    photo: [undefined, undefined, PHOTOS.peachDress, PHOTOS.tanTote],
-    text: {
-      "لحد ٣٠٪": L("لحد ٢٠٪", "Up to 20%"),
-      "تخفيضات الموسم": L("فساتين الموسم", "Dresses for the season"),
-      "باقة": L("جديد", "New"),
-      "اشتري ٢ والتالت هدية": L("شنط جلد مصنوعة في القاهرة", "Leather bags, made in Cairo"),
-      "تسوق": L("تسوقي", "Shop"),
-    },
-    links: { "/products": [BEST, NEW] },
   }),
   lib("testimonials-wall", {
     text: {

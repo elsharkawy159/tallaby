@@ -1,17 +1,18 @@
 /** Contact details and outbound links shared by the header, footer and pages. */
 
 /**
- * Support WhatsApp in international digits without "+" (e.g. 2010XXXXXXXX),
- * from NEXT_PUBLIC_SUPPORT_WHATSAPP. wa.me only accepts a phone number, so
- * while it is unset every WhatsApp link and button is hidden instead of broken.
+ * Support WhatsApp: the @tallaby username, or a phone number in international
+ * digits without "+" (e.g. 2010XXXXXXXX) from NEXT_PUBLIC_SUPPORT_WHATSAPP,
+ * which wins when set.
  */
 const SUPPORT_WHATSAPP = (process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP ?? "").replace(/\D/g, "");
-const hasWhatsApp = SUPPORT_WHATSAPP.length >= 10;
+const hasWhatsAppNumber = SUPPORT_WHATSAPP.length >= 10;
+const SUPPORT_WHATSAPP_USERNAME = "tallaby";
 
 export const CONTACT = {
   email: "tallabycommerce@gmail.com",
-  whatsapp: hasWhatsApp ? `https://wa.me/${SUPPORT_WHATSAPP}` : null,
-  whatsappHandle: hasWhatsApp ? `+${SUPPORT_WHATSAPP}` : null,
+  whatsapp: `https://wa.me/${hasWhatsAppNumber ? SUPPORT_WHATSAPP : SUPPORT_WHATSAPP_USERNAME}`,
+  whatsappHandle: hasWhatsAppNumber ? `+${SUPPORT_WHATSAPP}` : `@${SUPPORT_WHATSAPP_USERNAME}`,
 } as const;
 
 export const ROOT_DOMAIN = "tallaby.com";
@@ -32,17 +33,18 @@ export const SITE_URL = (
 
 export const LOGIN_URL = `${DASHBOARD_URL}login`;
 
-export type SocialId = "instagram" | "tiktok" | "youtube" | "x" | "pinterest" | "threads";
+export type SocialId = "facebook" | "instagram" | "tiktok" | "youtube" | "x" | "linkedin" | "pinterest" | "threads";
 
-// Handles from the "Follow Us" design. Facebook and LinkedIn are not listed:
-// the design had placeholder links for them.
+// Handles from the "Follow Us" design; Facebook, LinkedIn and Threads links from the owner (2026-10-27).
 export const SOCIAL_LINKS: Record<SocialId, { href: string; handle: string; label: string }> = {
+  facebook: { href: "https://www.facebook.com/usetallaby", handle: "usetallaby", label: "Facebook" },
   instagram: { href: "https://www.instagram.com/usetallaby", handle: "@usetallaby", label: "Instagram" },
   tiktok: { href: "https://www.tiktok.com/@tallaby_", handle: "@tallaby_", label: "TikTok" },
   youtube: { href: "https://www.youtube.com/@usetallaby", handle: "@usetallaby", label: "YouTube" },
   x: { href: "https://x.com/usetallaby", handle: "@usetallaby", label: "X" },
+  linkedin: { href: "https://www.linkedin.com/company/tallaby", handle: "tallaby", label: "LinkedIn" },
   pinterest: { href: "https://www.pinterest.com/tallabycommerce", handle: "tallabycommerce", label: "Pinterest" },
-  threads: { href: "https://www.threads.com/@usetallaby", handle: "@usetallaby", label: "Threads" },
+  threads: { href: "https://www.threads.net/@usetallaby", handle: "@usetallaby", label: "Threads" },
 };
 
 /**

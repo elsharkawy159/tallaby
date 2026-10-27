@@ -67,7 +67,7 @@ export const aboutInset = defineDesign({
                     radius: 20,
                     width: "100%",
                     marginTop: -72,
-                    shadow: "lg",
+                    shadow: "md",
                   },
                   mobile: { order: -1, aspectRatio: "landscape", marginTop: 0 },
                 }),

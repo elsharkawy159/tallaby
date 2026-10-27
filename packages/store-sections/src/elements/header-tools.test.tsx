@@ -65,10 +65,21 @@ describe("header cart and search", () => {
     expect(html.match(/href="\/products"/g)).toHaveLength(1);
   });
 
-  it("keeps plain links without host tools (the editor)", () => {
-    const html = render(section);
+  it("keeps plain links in the editor", () => {
+    const html = render(section, { mode: "edit" });
     expect(html).not.toContain("data-test");
     expect(html.match(/href="\/products"/g)).toHaveLength(3);
+  });
+
+  it("draws a plain search form in a preview with no host search", () => {
+    const html = render(section);
+    expect(html).not.toContain("data-test");
+    // The search bar opens the shop page's results; the icon button and the shop link stay links.
+    expect(html).toMatch(/<form role="search"[^>]*action="\/products" method="get">/);
+    expect(html).toContain('name="search"');
+    expect(html).toContain('placeholder="ابحث عن منتج"');
+    expect(html).toContain(`data-node-id="${bar.id}"`);
+    expect(html.match(/href="\/products"/g)).toHaveLength(2);
   });
 
   // Category lists need a category, else their header is hidden publicly.

@@ -90,6 +90,7 @@ const home: Design[] = [
       "من ١٢ ألف تقييم": L("من أكتر من ٢٠٠ تقييم", "from 200+ reviews"),
     },
   }),
+  lib("categories-photo-tiles", { text: { "تسوّق حسب القسم": L("من الفرن على طول", "Straight from the kiln") } }),
   lib("products-bento", {
     text: { "الأكثر طلبًا": L("من الفرن", "From the kiln"), "الكل بيسأل عليهم": L("حرقة الأسبوع", "This week’s firing") },
     links: { "/products": BEST },
@@ -105,24 +106,6 @@ const home: Design[] = [
       "كل منتج قبل ما يتغلّف.": L("بيتغطس في الألوان باليد.", "Dipped in glaze by hand."),
       "بنوصّل": L("حرق", "Fire"),
       "لحد باب البيت خلال أيام.": L("١٢ ساعة على ١٢٠٠ درجة.", "Twelve hours at 1,200°C."),
-    },
-  }),
-  lib("team-grid", {
-    text: {
-      "الفريق": L("الفخرانية", "Potters"),
-      "الناس اللي ورا المحل": L("الإيدين ورا كل قطعة", "The hands behind every piece"),
-      "م": L("ر", "R"),
-      "منى عادل": L("عم رجب", "Am Ragab"),
-      "المؤسسة": L("العجلة، ٤٠ سنة", "Wheel, 40 years"),
-      "ك": L("ن", "N"),
-      "كريم سامي": L("نجوى", "Nagwa"),
-      "المشتريات": L("الألوان", "Glazes"),
-      "ي": L("ه", "H"),
-      "ياسمين فؤاد": L("هاني", "Hany"),
-      "خدمة العملاء": L("الفرن", "Kiln"),
-      "ع": L("س", "S"),
-      "عمر حسن": L("سعاد", "Soad"),
-      "التوصيل": L("التغليف", "Packing"),
     },
   }),
   lib("pay-promise", {
@@ -192,8 +175,8 @@ const DEMO = demoStore({
 
 export const FOKHAR = libraryTemplate({
   key: FOKHAR_KEY,
-  version: 2,
-  changelog: "Fokhar v2: product page",
+  version: 3,
+  changelog: "Fokhar v3: categories, section order",
   productPage: { surface: "shelf", thumbs: "bottom", band: "paper", extras: ["product-shipping"], copy: { back: L("رجوع للفخار", "Back to the pottery"), reviews: L("سُفر زبايننا", "Customers' tables"), related: L("من نفس الفرن", "From the same firing") } },
   name: L("فخار", "Fokhar"),
   description: L(

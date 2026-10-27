@@ -19,7 +19,9 @@ import {
   AlertDialogTitle,
 } from "@workspace/ui/components/alert-dialog";
 import { Button } from "@workspace/ui/components/button";
+import { Label } from "@workspace/ui/components/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select";
+import { Switch } from "@workspace/ui/components/switch";
 import { cn } from "@workspace/ui/lib/utils";
 import {
   COLOR_FIELDS,
@@ -64,7 +66,15 @@ export function BrandPanel({ store, storeId, readOnly }: { store: EditorStore; s
   const edit = (update: (prev: DesignSystem) => DesignSystem, key?: string) => store.getState().editDesign(update, key && `brand:${key}`);
   const theme = matchThemePreset(ds);
   const palette = matchPreset(ds.colors);
-  const isEmpty = !Object.keys(ds.colors).length && !Object.keys(ds.typography).length && !Object.keys(ds.spacing).length;
+  const isEmpty =
+    !Object.keys(ds.colors).length && !Object.keys(ds.typography).length && !Object.keys(ds.spacing).length && !Object.keys(ds.motion ?? {}).length;
+  // Motion is on unless switched off (docs/section-rules.md §6.6): only `false` is stored.
+  const setMotion = (key: "reveal" | "hoverZoom", on: boolean) =>
+    edit((prev) => {
+      const { [key]: _old, ...rest } = prev.motion ?? {};
+      const motion = on ? rest : { ...rest, [key]: false };
+      return { ...prev, motion: Object.keys(motion).length ? motion : undefined };
+    });
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -247,7 +257,7 @@ export function BrandPanel({ store, storeId, readOnly }: { store: EditorStore; s
                   value={ds.spacing.containerMaxWidth}
                   min={320}
                   max={2560}
-                  placeholder="1200"
+                  placeholder="1280"
                   onChange={(value, typing) => edit((prev) => setToken(prev, "spacing", "containerMaxWidth", value), typing ? "width" : undefined)}
                 />
                 <PresetNumber
@@ -259,6 +269,24 @@ export function BrandPanel({ store, storeId, readOnly }: { store: EditorStore; s
                   placeholder="64"
                   onChange={(value, typing) => edit((prev) => setToken(prev, "spacing", "sectionPaddingY", value), typing ? "spacing" : undefined)}
                 />
+              </fieldset>
+            </AccordionContent>
+          </AccordionItem>
+
+          <AccordionItem value="motion">
+            <AccordionTrigger className={TRIGGER}>{t("motion")}</AccordionTrigger>
+            <AccordionContent>
+              <fieldset disabled={readOnly} className="flex flex-col gap-3">
+                <p className="text-xs text-muted-foreground">{t("motionHint")}</p>
+                {(["reveal", "hoverZoom"] as const).map((key) => (
+                  <div key={key} className="space-y-1">
+                    <div className="flex items-center justify-between gap-3">
+                      <Label htmlFor={`brand-motion-${key}`}>{t(key)}</Label>
+                      <Switch id={`brand-motion-${key}`} checked={ds.motion?.[key] !== false} onCheckedChange={(on) => setMotion(key, on)} />
+                    </div>
+                    <p className="text-xs text-muted-foreground">{t(`${key}Hint`)}</p>
+                  </div>
+                ))}
               </fieldset>
             </AccordionContent>
           </AccordionItem>

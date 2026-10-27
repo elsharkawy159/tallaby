@@ -46,6 +46,7 @@ import { ensureTaxonomyItem, setProductSellerTaxonomy } from "../categories-bran
 import { splitSellerTaxonomy } from "../categories-brands/categories-brands.lib"
 import { SellerTaxonomyProvider, WithoutSellerTaxonomy, useSellerTaxonomy } from "../categories-brands/seller-taxonomy-fields.client"
 import { ProductLinkHostProvider } from "./product-link-host.client"
+import { AiAutofillCard } from "./ai/ai-autofill.client"
 import type { SellerTaxonomyOption } from "../categories-brands/categories-brands.dto"
 
 interface AddProductProps {
@@ -62,6 +63,8 @@ interface AddProductProps {
   edit?: { productId: string; defaultValues: AddProductFormData }
   /** Extra header buttons shown before Save (edit mode's Publish and Preview). */
   headerActions?: React.ReactNode
+  /** Shows "Add your product with AI" (new products only; PLAN.md AI-1). */
+  aiEnabled?: boolean
 }
 
 const LOCALE_LABELS: Record<SupportedLocale, string> = {
@@ -84,6 +87,7 @@ function AddProductForm ({
   linkHost = null,
   edit,
   headerActions,
+  aiEnabled = false,
 }: AddProductProps) {
   const isEdit = Boolean(edit)
   const router = useRouter()
@@ -364,6 +368,9 @@ function AddProductForm ({
         >
           <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_280px] xl:grid-cols-[minmax(0,1fr)_320px]">
             <div className="flex min-w-0 flex-col gap-4">
+              {aiEnabled && !isEdit && (
+                <AiAutofillCard categories={categories} sellerPricing={sellerPricing} />
+              )}
               <BasicSection
                 categories={categories}
                 activeLocale={activeLocale}

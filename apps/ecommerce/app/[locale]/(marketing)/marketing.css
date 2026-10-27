@@ -1,4 +1,6 @@
 @import "@workspace/ui/globals.css";
+/* Home page motion pilot: hero intro keyframes and Lenis rules. */
+@import "@workspace/motion/motion.css";
 
 /*
  * Marketing site tokens. The palette mirrors the Tallaby design system
@@ -204,8 +206,29 @@
   body:has([data-sticky-cta]) footer {
     padding-bottom: 86px;
   }
+  /* WhatsApp rides in with the bar: hidden over the hero, then rises and fades in as the bar slides up. */
   body:has([data-sticky-cta]) [data-whatsapp-float] {
     bottom: 92px;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translate3d(0, 24px, 0) scale(0.85);
+    transition:
+      opacity 0.3s ease,
+      transform 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+      scale 0.15s ease,
+      visibility 0s linear 0.45s;
+  }
+  body:has([data-sticky-cta][data-shown="true"]) [data-whatsapp-float] {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: none;
+    transition:
+      opacity 0.4s ease 0.08s,
+      transform 0.55s cubic-bezier(0.16, 1, 0.3, 1) 0.08s,
+      scale 0.15s ease,
+      visibility 0s;
   }
 }
 /* The home page ends with its own claim box, right above the footer. */

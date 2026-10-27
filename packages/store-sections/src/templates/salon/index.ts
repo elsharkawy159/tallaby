@@ -124,17 +124,6 @@ const home: Design[] = [
       ),
     },
   }),
-  lib("pay-days", {
-    text: {
-      "١": L("٥", "5"),
-      "يوم": L("أيام", "days"),
-      "القاهرة، الجيزة": L("القطع الجاهزة في القاهرة", "In-stock pieces in Cairo"),
-      "٢–٣": L("٣", "3"),
-      "أيام": L("أسابيع", "weeks"),
-      "الإسكندرية، الدلتا، مدن القناة": L("القطع اللي بتتعمل بالطلب", "Made-to-order pieces"),
-      "الصعيد، البحر الأحمر، سيناء": L("مقاسات خاصة، والتركيب ببلاش", "Custom sizes, with free assembly"),
-    },
-  }),
   lib("faq-columns", {
     as: "faq-home",
     text: {
@@ -205,13 +194,13 @@ const DEMO = demoStore({
 
 export const SALON = libraryTemplate({
   key: SALON_KEY,
-  version: 2,
-  changelog: "Salon v2: product page",
+  version: 3,
+  changelog: "Salon v3: one payment block",
   productPage: { surface: "flat", thumbs: "side", gallery: "end", button: "outline", band: "paper", extras: ["product-perks"], copy: { back: L("رجوع للمعرض", "Back to the showroom"), reviews: L("آراء أصحاب البيوت", "From homeowners"), related: L("قطع تناسب الأوضة", "Pieces for the room") } },
   name: L("صالون", "Salon"),
   description: L(
-    "أثاث الصالة: بانرات متحركة، الأوض، الأكثر مبيعاً، التقسيط لحد ٢٤ شهر ومواعيد التوصيل. أربع صفحات جاهزة.",
-    "Living room furniture: banner carousel, rooms, best sellers, pay over 24 months and delivery times. Four ready pages.",
+    "أثاث الصالة: بانرات متحركة، الأوض، الأكثر مبيعاً، التقسيط لحد ٢٤ شهر وأسئلة. أربع صفحات جاهزة.",
+    "Living room furniture: banner carousel, rooms, best sellers, pay over 24 months and questions. Four ready pages.",
   ),
   category: "home",
   sortOrder: 1060,

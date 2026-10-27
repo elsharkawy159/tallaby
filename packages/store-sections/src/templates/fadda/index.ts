@@ -2,8 +2,8 @@
  * Fadda (template 27, sterling silver studio; Claude Design "Storefront
  * Templates"): cool grey paper, graphite actions and a silver highlight,
  * Readex Pro throughout and 12px corners. A small studio with a voice:
- * press quotes, new in, ruled reviews, materials and care, stacks by you,
- * a letter from the bench and a big-type contact. Built from section
+ * a split hero, categories, new in, press quotes, materials and care,
+ * ruled reviews and a letter from the bench. Built from section
  * library designs (`fromLibrary`).
  *
  * Photos: Pexels, each checked by eye (2026-10-20): silver rings, stacks
@@ -59,7 +59,31 @@ const footer = lib("footer-links", {
   links: { "/products": [undefined, NEW, BEST] },
 });
 
+/**
+ * Home (v4, template-rules §2a): one ring on a split hero, the categories,
+ * then the jewellery journey: new pieces first, what the press says, the
+ * metal and the care behind them, reviews, and the letter from the bench.
+ */
 const home: Design[] = [
+  lib("hero-split", {
+    photo: [PHOTOS.sculpted],
+    text: {
+      "المجموعة الجديدة": L("فضة استرليني ٩٢٥", "925 sterling silver"),
+      "معمول بكميات صغيرة": L("فضة متشطبة باليد", "Silver, finished by hand"),
+      "قطع مختارة بعناية، بنعملها بكميات صغيرة عشان كل واحدة تفضل مميزة.": L(
+        "خواتم وستاكات بتتصب في ستوديو وسط البلد، والحفر لحد ١٢ حرف مجاناً.",
+        "Rings and stacks cast in our Downtown studio, with free engraving up to 12 letters.",
+      ),
+      "تسوّق المجموعة": L("تسوق الجديد", "Shop new in"),
+      "حكايتنا": L("الاستوديو", "The studio"),
+      "صورة الواجهة": L("خاتم فضة منحوت على سطح غامق", "A sculpted silver ring on a dark surface"),
+    },
+    links: { "/products": NEW },
+  }),
+  lib("categories-photo-tiles", {
+    text: { "تسوّق حسب القسم": L("اختار قطعتك", "Find your piece") },
+  }),
+  lib("products-feature", { text: { "اختيارنا ليك": L("وصل حديثاً", "New in"), "اختيار الأسبوع": L("قطعة الشهر", "Piece of the month") } }),
   lib("brands-quotes", {
     text: {
       "«واحد من أكتر المتاجر اللي ممكن تثق فيها لو بتدور على منتج أصلي.»": L(
@@ -71,7 +95,19 @@ const home: Design[] = [
       "ميزان": "Scoop",
     },
   }),
-  lib("products-feature", { text: { "اختيارنا ليك": L("وصل حديثاً", "New in"), "اختيار الأسبوع": L("قطعة الشهر", "Piece of the month") } }),
+  lib("text-terms", {
+    text: {
+      "شروط الضمان": L("الخامات والعناية", "Materials & care"),
+      "المدة": L("المعدن", "Metal"),
+      "سنة من تاريخ الفاتورة.": L("فضة استرليني ٩٢٥ مدموغة.", "925 sterling silver, hallmarked."),
+      "بيغطي": L("التشطيب", "Finish"),
+      "عيوب الصناعة.": L("مطفي أو لامع باليد.", "Brushed or polished by hand."),
+      "مش بيغطي": L("المقاسات", "Sizing"),
+      "الكسر والمياه وسوء الاستخدام.": L("تظبيط مقاس مجاني خلال ٣٠ يوم.", "Free resizing within 30 days."),
+      "المطلوب": L("العناية", "Care"),
+      "الفاتورة والعلبة الأصلية.": L("امسح بالقماشة اللي في العلبة.", "Wipe with the cloth in your box."),
+    },
+  }),
   lib("testimonials-ruled", {
     text: {
       "آراء العملاء": L("التقييمات", "Reviews"),
@@ -89,27 +125,6 @@ const home: Design[] = [
       "الجيزة": L("الإسكندرية", "Alexandria"),
     },
   }),
-  lib("text-terms", {
-    text: {
-      "شروط الضمان": L("الخامات والعناية", "Materials & care"),
-      "المدة": L("المعدن", "Metal"),
-      "سنة من تاريخ الفاتورة.": L("فضة استرليني ٩٢٥ مدموغة.", "925 sterling silver, hallmarked."),
-      "بيغطي": L("التشطيب", "Finish"),
-      "عيوب الصناعة.": L("مطفي أو لامع باليد.", "Brushed or polished by hand."),
-      "مش بيغطي": L("المقاسات", "Sizing"),
-      "الكسر والمياه وسوء الاستخدام.": L("تظبيط مقاس مجاني خلال ٣٠ يوم.", "Free resizing within 30 days."),
-      "المطلوب": L("العناية", "Care"),
-      "الفاتورة والعلبة الأصلية.": L("امسح بالقماشة اللي في العلبة.", "Wipe with the cloth in your box."),
-    },
-  }),
-  lib("gallery-side", {
-    photo: [PHOTOS.stack, PHOTOS.sculpted, PHOTOS.leaf, PHOTOS.velvet, PHOTOS.tray, PHOTOS.bands],
-    text: {
-      "صوّر واعمل منشن": L("الستاكات بتاعتكم", "Stacked by you"),
-      "استخدم #اسم_متجرك وممكن صورتك تظهر هنا.": L("حط على صورتك ‎#faddastack وممكن تظهر هنا.", "Tag your stack with #faddastack to appear here."),
-      "صورة إنستجرام": L("ستاك فضة من إنستجرام", "A silver stack from Instagram"),
-    },
-  }),
   lib("newsletter-letter", {
     text: {
       "رسالة كل أسبوع": L("من على الترابيزة", "From the bench"),
@@ -123,7 +138,6 @@ const home: Design[] = [
       "صاحب المتجر": L("صايغة، فضة ستوديو", "Silversmith, Fadda Studio"),
     },
   }),
-  lib("contact-big", { text: { "قول أهلًا": L("احجز مقاس", "Book a fitting") } }),
 ];
 
 const about: Design[] = [
@@ -162,12 +176,12 @@ const DEMO = demoStore({
 
 export const FADDA = libraryTemplate({
   key: FADDA_KEY,
-  version: 3,
-  changelog: "Fadda v3: product page",
+  version: 4,
+  changelog: "Fadda v4: hero, categories, section order",
   name: L("فضة", "Fadda"),
   description: L(
-    "ستوديو فضة: آراء الصحافة، الخامات والعناية، ستاكات العملاء ورسالة الصايغة. أربع صفحات جاهزة.",
-    "Sterling silver studio: press quotes, materials and care, customer stacks and the silversmith’s letter. Four ready pages.",
+    "ستوديو فضة: واجهة بخاتم واحد، الجديد، آراء الصحافة، الخامات والعناية ورسالة الصايغة. أربع صفحات جاهزة.",
+    "Sterling silver studio: a one-ring hero, new in, press quotes, materials and care and the silversmith’s letter. Four ready pages.",
   ),
   category: "jewelry",
   sortOrder: 270,

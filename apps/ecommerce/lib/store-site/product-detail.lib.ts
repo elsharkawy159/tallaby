@@ -59,6 +59,8 @@ export function toProductDetail(product: Product, locale: ProductLocale): Produc
     compareAtPrice: pricing.listPrice,
     rating: product.averageRating != null ? Number(product.averageRating) : null,
     inStock: product.status === "active" && quantity > 0,
+    trending: product.isTrending === true,
+    seasonal: product.isSeasonal === true,
     // Plain text and sanitised HTML, as mergeProductWithTranslation builds them.
     description: product.description?.trim() ? product.description : null,
     descriptionHtml: product.description?.trim()

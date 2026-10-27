@@ -14,35 +14,35 @@ import { DESIGNS, STOCK_INDUSTRIES, getDesign, instantiateDesign, type Design } 
 
 /** Designs this test expects to exist; each later design adds its id here. */
 const EXPECTED = [
-  ...["header-classic", "header-line", "header-centered", "header-announcement", "header-search", "header-pill", "header-ruled", "header-chips", "header-brand-bar", "header-departments"],
-  ...["hero-carousel", "hero-carousel-images", "hero-classic", "hero-ticket", "hero-poster", "hero-inline", "hero-product", "hero-collage", "hero-bento", "hero-halves", "hero-big-word", "hero-search"],
-  ...["categories-classic", "categories-tiles", "categories-stories", "categories-rail", "categories-bento", "categories-index", "categories-ruled", "categories-chips", "categories-feature-list", "categories-big-type"],
-  ...["products-classic", "products-grid", "products-rail", "products-feature", "products-shelf", "products-list", "products-tabbed", "products-bento", "products-rows", "products-panel-rail"],
+  ...["header-classic", "header-line", "header-centered", "header-announcement", "header-search", "header-pill", "header-ruled", "header-chips", "header-brand-bar", "header-departments", "header-centered-ticker", "header-inline"],
+  ...["hero-carousel", "hero-carousel-images", "hero-classic", "hero-ticket", "hero-poster", "hero-inline", "hero-product", "hero-collage", "hero-bento", "hero-halves", "hero-big-word", "hero-search", "hero-fullbleed", "hero-split", "hero-thumbs", "hero-banner"],
+  ...["categories-classic", "categories-tiles", "categories-stories", "categories-rail", "categories-bento", "categories-index", "categories-ruled", "categories-chips", "categories-feature-list", "categories-big-type", "categories-showcase", "categories-photo-tiles", "categories-circles", "categories-captioned"],
+  ...["products-classic", "products-grid", "products-rail", "products-feature", "products-shelf", "products-list", "products-tabbed", "products-bento", "products-rows", "products-panel-rail", "products-tabs-grid", "products-carousel", "products-spotlight", "products-minimal", "products-boxed", "products-campaign", "products-deal"],
   ...["bundle-plus", "bundle-builder", "bundle-poster", "bundle-tabs", "bundle-list", "bundle-box", "bundle-quantity", "bundle-rail", "bundle-price-drop", "bundle-gifts", "bundle-together"],
   ...["finder-use", "finder-budget", "finder-quiz", "finder-versus", "finder-matrix", "finder-price-bands", "finder-sentence", "finder-pick", "finder-features", "finder-this-or-that", "finder-guides"],
-  ...["promo-pair", "promo-ticker", "promo-deal", "promo-coupon", "promo-bento", "promo-twin", "promo-shipping", "promo-percent", "promo-tiers", "promo-sticker"],
-  ...["features-classic", "features-icon-cards", "features-checklist", "features-steps", "features-ruled", "features-bento", "features-side-title", "features-ticker", "features-compare", "features-orbit"],
+  ...["promo-pair", "promo-ticker", "promo-deal", "promo-coupon", "promo-bento", "promo-twin", "promo-shipping", "promo-percent", "promo-tiers", "promo-sticker", "promo-banner-fullbleed", "promo-campaign-tiles", "promo-marquee", "promo-countdown"],
+  ...["features-classic", "features-icon-cards", "features-checklist", "features-steps", "features-ruled", "features-bento", "features-side-title", "features-ticker", "features-compare", "features-orbit", "features-trust-band"],
   ...["pay-methods", "pay-installments", "pay-zones", "pay-promise", "pay-open-box", "pay-pickup", "pay-secure", "pay-installment-table", "pay-days", "pay-receipt", "pay-faq"],
   ...["stats-classic", "stats-big-numbers", "stats-photo", "stats-progress", "stats-strip", "stats-ruled", "stats-band", "stats-sentence", "stats-rating", "stats-milestones"],
-  ...["about-classic", "about-panel", "about-overlap", "about-rows", "about-values", "about-list", "about-wide", "about-inset", "about-stories", "about-circle"],
+  ...["about-classic", "about-panel", "about-overlap", "about-rows", "about-values", "about-list", "about-wide", "about-inset", "about-stories", "about-circle", "about-fullbleed", "about-split-story", "about-before-after", "about-shop-look"],
   ...["video-wide", "video-split", "video-cinema", "video-playlist", "video-reels", "video-vertical", "video-grid", "video-chapters", "video-film", "video-shop"],
-  ...["gallery-feed", "gallery-mosaic", "gallery-polaroids", "gallery-shoppable", "gallery-strip", "gallery-captioned", "gallery-slider", "gallery-prints", "gallery-bento", "gallery-side"],
+  ...["gallery-feed", "gallery-mosaic", "gallery-polaroids", "gallery-shoppable", "gallery-strip", "gallery-captioned", "gallery-slider", "gallery-prints", "gallery-bento", "gallery-side", "gallery-social-strip"],
   ...["brands-row", "brands-wall", "brands-tiles", "brands-press", "brands-featured", "brands-ruled", "brands-cards", "brands-az", "brands-quotes", "brands-bubbles"],
-  ...["testimonials-classic", "testimonials-spotlight", "testimonials-rating", "testimonials-wall", "testimonials-photos", "testimonials-ruled", "testimonials-chat", "testimonials-bento", "testimonials-products", "testimonials-videos"],
+  ...["testimonials-classic", "testimonials-spotlight", "testimonials-rating", "testimonials-wall", "testimonials-photos", "testimonials-ruled", "testimonials-chat", "testimonials-bento", "testimonials-products", "testimonials-videos", "testimonials-carousel", "testimonials-photo-cards", "testimonials-quote", "testimonials-summary"],
   ...["faq-classic", "faq-simple", "faq-side", "faq-cards", "faq-help", "faq-columns", "faq-panel", "faq-numbered", "faq-chat", "faq-topics"],
   ...["blog-classic", "blog-lead", "blog-index", "blog-tiles", "blog-feature", "blog-dated", "blog-bento", "blog-rail", "blog-tabbed", "blog-headline"],
-  ...["newsletter-classic", "newsletter-centered", "newsletter-photo", "newsletter-channels", "newsletter-coupon", "newsletter-ruled", "newsletter-big", "newsletter-interests", "newsletter-sticker", "newsletter-letter"],
+  ...["newsletter-classic", "newsletter-centered", "newsletter-photo", "newsletter-channels", "newsletter-coupon", "newsletter-ruled", "newsletter-big", "newsletter-interests", "newsletter-sticker", "newsletter-letter", "newsletter-banner", "newsletter-strip", "newsletter-offer"],
   ...["popup-welcome", "popup-exit", "popup-app", "popup-whatsapp", "popup-restock", "popup-sale-end", "popup-reward"],
   ...["rewards-gift", "rewards-birthday"],
   ...["service-cards", "service-trade-in", "service-booking", "service-warranty", "service-price-menu", "service-plans", "service-journey", "service-areas", "service-repair-request", "service-fast-fix", "service-support"],
   ...["team-story", "team-timeline", "team-grid", "team-values", "team-founder", "team-branches", "team-press", "team-careers", "team-numbers", "team-scenes"],
   ...["contact-classic", "contact-form", "contact-visit", "contact-branches", "contact-whatsapp", "contact-strip", "contact-hours", "contact-bento", "contact-big", "contact-router", "contact-team"],
   ...["track-ask", "track-steps", "track-returns", "track-reschedule", "track-rate", "track-problem"],
-  ...["text-policy", "text-centered", "text-callout", "text-columns", "text-quote", "text-steps", "text-lead", "text-statement", "text-terms", "text-note"],
+  ...["text-policy", "text-centered", "text-callout", "text-columns", "text-quote", "text-steps", "text-lead", "text-statement", "text-terms", "text-note", "text-brand-statement"],
   ...["page-header", "page-banner", "page-image", "page-subcategories", "page-promo", "page-toolbar", "page-brand", "page-split", "page-centered", "page-count"],
   ...["product-main", "product-content", "product-reviews", "product-related", "product-perks", "product-shipping"],
   ...["cart-extras", "cart-empty", "cart-free-delivery", "cart-coupon"],
-  ...["footer-classic", "footer-line", "footer-wordmark", "footer-signup", "footer-centered", "footer-ruled", "footer-signoff", "footer-panel", "footer-help", "footer-links"],
+  ...["footer-classic", "footer-line", "footer-wordmark", "footer-signup", "footer-centered", "footer-ruled", "footer-signoff", "footer-panel", "footer-help", "footer-links", "footer-columns-signup", "footer-centered-light"],
 ];
 
 const ctx = (over: Partial<RenderContext> = {}): RenderContext => ({
@@ -173,7 +173,7 @@ describe("section designs", () => {
   const dataDesigns = DESIGNS.filter((d) => treeDataNeeds(instantiateDesign(d, { id: "d1" }).componentTree).length > 0);
 
   it("covers the store-data categories", () => {
-    expect(new Set(dataDesigns.map((d) => d.category))).toEqual(new Set(["headers", "hero", "categories", "products", "bundles", "finder", "promotions", "payment", "video", "gallery", "blog", "newsletter", "popups", "loyalty", "services", "contact", "tracking", "page-header", "product-page", "cart", "footers"]));
+    expect(new Set(dataDesigns.map((d) => d.category))).toEqual(new Set(["headers", "hero", "categories", "products", "bundles", "finder", "promotions", "payment", "image-text", "video", "gallery", "blog", "newsletter", "popups", "loyalty", "services", "contact", "tracking", "page-header", "product-page", "cart", "footers"]));
   });
 
   it.each(dataDesigns.map((d) => [d.id, d] as const))("%s draws real records, and nothing publicly without them", (_id, design) => {

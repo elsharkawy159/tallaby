@@ -18,6 +18,11 @@ describe("section settings", () => {
     expect(settingsNodes([n("s", "section", [n("h", "heading")])])).toEqual([]);
   });
 
+  it("lists a countdown inside a deal card, and a marquee", () => {
+    const tree = [n("s", "section", [n("m", "marquee"), n("p", "productList", [n("card", "vFlex", [n("cd", "countdown"), n("inner", "video")])])])];
+    expect(settingsNodes(tree).map((node) => node.id)).toEqual(["m", "p", "cd"]);
+  });
+
   it("finds the banner carousel's three slide photos", () => {
     const tree = instantiateDesign(getDesign("hero-carousel")!, { id: "d1" }).componentTree!;
     const [carousel] = settingsNodes(tree);

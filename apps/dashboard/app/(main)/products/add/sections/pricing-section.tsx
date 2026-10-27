@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useFormContext, useWatch } from "react-hook-form";
 import { useLocale, useTranslations } from "next-intl";
 import { Banknote } from "lucide-react";
@@ -14,6 +14,7 @@ import { MoneyField, useFieldError } from "./fields";
 import type { AddProductFormData } from "../add-product.schema";
 
 const positive = (value: unknown): value is number => typeof value === "number" && value > 0;
+const isSale = (list: unknown, final: unknown) => positive(list) && positive(final) && final < list;
 
 /**
  * Price, and a Discount switch that adds the sale price. The sale price is
@@ -37,21 +38,18 @@ export function PricingSection({
   const listError = useFieldError("price.list");
   const finalError = useFieldError("price.final");
 
-  const [discountOn, setDiscountOn] = useState(
-    () => positive(listPrice) && positive(finalPrice) && finalPrice < listPrice
-  );
+  const [discountOn, setDiscountOn] = useState(() => isSale(listPrice, finalPrice));
   // An end date set before (edit, import) stays visible; new discounts don't ask for one.
   const [showExpiry] = useState(() => Boolean(discountEndsAt));
 
-  // Restored drafts and imports can arrive after the first render.
-  const seenOutside = useRef(false);
+  // Only the switch turns the discount on. A whole-form reset (draft restore,
+  // import, start over) has no field name; typing always has one.
   useEffect(() => {
-    if (seenOutside.current) return;
-    if (positive(listPrice) && positive(finalPrice) && finalPrice < listPrice) {
-      seenOutside.current = true;
-      setDiscountOn(true);
-    }
-  }, [listPrice, finalPrice]);
+    const subscription = form.watch((values, { name }) => {
+      if (name === undefined) setDiscountOn(isSale(values.price?.list, values.price?.final));
+    });
+    return () => subscription.unsubscribe();
+  }, [form]);
 
   useEffect(() => {
     const quiet = { shouldDirty: false, shouldValidate: false };
@@ -74,7 +72,6 @@ export function PricingSection({
   }, [listPrice, finalPrice, discountOn]);
 
   const toggleDiscount = (on: boolean) => {
-    seenOutside.current = true;
     setDiscountOn(on);
     if (on) {
       // Start empty so the seller types the sale price, not a copy of the price.
@@ -122,6 +119,7 @@ export function PricingSection({
         <div className="flex flex-col gap-1.5">
           <FieldLabel htmlFor="price-sale" required>
             {t("salePrice")}
+            <span className="font-normal text-muted-foreground">({t("finalPrice")})</span>
           </FieldLabel>
           <div className="flex items-center gap-2.5">
             <div className="min-w-0 flex-1">

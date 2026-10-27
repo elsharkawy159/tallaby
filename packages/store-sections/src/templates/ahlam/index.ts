@@ -45,7 +45,7 @@ const NAME = L("أوض أحلام", "Ahlam Kids Rooms");
 const header = lib("header-announcement", {
   text: {
     "توصيل مجاني للطلبات فوق ١٥٠٠ ج.م": L("تصميم الأوضة ببلاش مع أي سرير · قسّط على ١٢ شهر", "Free room design with any bed · Pay over 12 months"),
-    "الكود: SAVE10": L("توصيل ببلاش فوق ٢٬٠٠٠ ج.م", "Free delivery over EGP 2,000"),
+    "الدفع عند الاستلام": L("توصيل ببلاش فوق ٢٬٠٠٠ ج.م", "Free delivery over EGP 2,000"),
     "م": L("أ", "A"),
     "اسم متجرك": NAME,
     "العروض": L("السراير", "Beds"),
@@ -79,6 +79,10 @@ const home: Design[] = [
     },
     links: { "/products": ["/contact", BEDS] },
   }),
+  lib("categories-feature-list"),
+  lib("products-feature", {
+    text: { "اختيارنا ليك": L("الأكتر اختياراً", "Most chosen"), "اختيار الأسبوع": L("الأكثر مبيعاً", "Best seller") },
+  }),
   lib("service-booking", {
     text: {
       "احجز معاد الفني": L("احجز زيارة تصميم", "Book a design visit"),
@@ -93,29 +97,14 @@ const home: Design[] = [
       "من غير فوايد ولا مقدم مع شركات التقسيط.": L("على السرير والأوضة كلها، من غير فوايد ولا مقدم.", "On the bed or the whole room, with no interest and no down payment."),
     },
   }),
-  lib("products-feature", {
-    text: { "اختيارنا ليك": L("الأكتر اختياراً", "Most chosen"), "اختيار الأسبوع": L("الأكثر مبيعاً", "Best seller") },
-  }),
-  lib("pay-days", {
-    text: {
-      "هيوصلك إمتى؟": L("هيوصل ويتركب إمتى؟", "When will it arrive and be set up?"),
-      "١": L("٣", "3"),
-      "يوم": L("أسابيع", "weeks"),
-      "القاهرة، الجيزة": L("الأوض بالمقاس", "Made-to-measure rooms"),
-      "٢–٣": L("٧", "7"),
-      "الإسكندرية، الدلتا، مدن القناة": L("السراير والدواليب الجاهزة", "Ready-made beds and wardrobes"),
-      "٤–٦": L("٣", "3"),
-      "الصعيد، البحر الأحمر، سيناء": L("التركيب في البيت بعد التوصيل", "Assembly at home after delivery"),
-    },
-  }),
   lib("faq-columns", {
     as: "faq-home",
     text: {
       "أسئلة شائعة": L("أسئلة", "Questions"),
       "كيف أعرف أن طلبي وصل إليكم؟": L("زيارة التصميم ببلاش؟", "Is the design visit free?"),
       "ستظهر لك صفحة تأكيد وتصلك رسالة، ونتصل بك لتأكيد طلبات الدفع عند الاستلام.": L(
-        "أيوه مع أي سرير، ومن غير سرير بـ٥٠٠ ج.م بتتخصم لو طلبت بعدين.",
-        "Yes with any bed; without one it is EGP 500, taken off if you order later.",
+        "أيوه، زيارة التصميم ببلاش في القاهرة والجيزة.",
+        "Yes, the design visit is free in Cairo and Giza.",
       ),
       "هل يمكنني تعديل طلبي أو إلغاؤه؟": L("بتيجوا تقيسوا الأوضة؟", "Do you measure the room?"),
       "نعم، حتى يتم شحنه. تواصل معنا بأسرع وقت.": L("أيوه، المصممة بتقيس وبتبعتلك التصميم في ٣ أيام.", "Yes, the designer measures and sends the plan within 3 days."),
@@ -170,13 +159,13 @@ const DEMO = demoStore({
 
 export const AHLAM = libraryTemplate({
   key: AHLAM_KEY,
-  version: 2,
-  changelog: "Ahlam v2: product page",
+  version: 3,
+  changelog: "Ahlam v3: categories after the hero, products before services, one payment block",
   productPage: { thumbs: "side", gallery: "end", band: "shelf", extras: ["product-shipping"], copy: { back: L("رجوع للغرف", "Back to the rooms"), reviews: L("رأي أصحاب الغرف", "From the families"), related: L("قطع تكمّل الغرفة", "Pieces to finish the room") } },
   name: L("أحلام", "Ahlam"),
   description: L(
-    "ديكور أوضة أطفال: احجز زيارة تصميم، قسّط على ١٢ شهر، الأكتر اختياراً ومواعيد التوصيل. أربع صفحات جاهزة.",
-    "Kids’ room decor: book a design visit, pay over 12 months, most chosen and delivery days. Four ready pages.",
+    "ديكور أوضة أطفال: الأكتر اختياراً، احجز زيارة تصميم، قسّط على ١٢ شهر وأسئلة. أربع صفحات جاهزة.",
+    "Kids’ room decor: most chosen, book a design visit, pay over 12 months and questions. Four ready pages.",
   ),
   category: "kids",
   sortOrder: 900,

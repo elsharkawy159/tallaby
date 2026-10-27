@@ -2,8 +2,8 @@
  * Sabon (template 63, handmade soap and bath; Claude Design "Storefront
  * Templates"): cream paper, an olive green for actions and a honey yellow
  * highlight, Noto Naskh Arabic headings over Almarai and 14px corners. An
- * Alexandria soap workshop: six weeks of curing, four bars for the price of
- * three, shop by use, from oil to bar, the free delivery goal and the
+ * Alexandria soap workshop: a collage of three cured bars, shop by use,
+ * this week's bars, from oil to bar and the
  * regulars. Built from section library designs (`fromLibrary`).
  *
  * Photos: Pexels, each checked by eye (2026-10-21): handmade soap bars in
@@ -49,8 +49,8 @@ const NAME = L("صابون بلدي", "Sabon Beladi");
 
 const header = lib("header-announcement", {
   text: {
-    "توصيل مجاني للطلبات فوق ١٥٠٠ ج.م": L("٤ قطع بسعر ٣ · توصيل مجاني فوق ٤٠٠ ج.م", "Buy 4 bars, pay for 3 · Free delivery over EGP 400"),
-    "الكود: SAVE10": L("الكود: SABON4", "Code: SABON4"),
+    "توصيل مجاني للطلبات فوق ١٥٠٠ ج.م": L("صابون طبيعي بيتعمل بإيدينا · توصيل لكل المحافظات", "Natural soap, made by hand · Delivery everywhere"),
+    "الدفع عند الاستلام": L("طبيعي من غير عطور صناعية", "No synthetic fragrance"),
     "م": L("ص", "S"),
     "اسم متجرك": NAME,
     "المتجر": L("الصابون", "Soap"),
@@ -74,32 +74,20 @@ const footer = lib("footer-signup", {
 });
 
 const home: Design[] = [
-  lib("about-inset", {
-    photo: [undefined, undefined, undefined, undefined, undefined, undefined, undefined, PHOTOS.cureStack],
+  lib("hero-collage", {
+    photo: [PHOTOS.oliveBar, PHOTOS.laurelBar, PHOTOS.goatMilk],
     text: {
-      "إزاي بنشتغل": L("شغل إيد", "Handmade"),
-      "كل منتج بيتراجع قبل ما يوصلك": L("٦ أسابيع على الرف قبل ما يوصلك", "Six weeks on the shelf before it reaches you"),
-      "فريقنا بيراجع كل منتج ويتأكد منه قبل التغليف.": L(
-        "صابون زيت زيتون وغار ولبن معيز، متقطع باليد في إسكندرية.",
-        "Olive oil, laurel and goat milk soap, cut by hand in Alexandria.",
+      "حكاية الموسم": L("شغل إيد من إسكندرية", "Handmade in Alexandria"),
+      "٣ قطع تكفي أسبوعًا كاملًا": L("صابون استنى ٦ أسابيع", "Soap cured for six weeks"),
+      "نسّقها معًا أو مع ما تملكه بالفعل، وكل قطعة متاحة بأكثر من لون.": L(
+        "زيت زيتون وغار ولبن معيز، متقطع باليد ومن غير عطور صناعية.",
+        "Olive oil, laurel and goat milk, cut by hand with no synthetic perfume.",
       ),
-      "اعرف أكتر": L("تسوق الصابون", "Shop soap"),
-      "صورة المتجر": L("قوالب صابون فوق بعض", "A stack of soap bars"),
+      "تسوّق اللوك": L("تسوق الصابون", "Shop soap"),
+      "القطعة الأولى": L("زيت زيتون", "Olive oil"),
+      "القطعة الثانية": L("غار", "Laurel"),
+      "القطعة الثالثة": L("لبن معيز", "Goat milk"),
     },
-    links: { "/about": SHOP },
-  }),
-  lib("bundle-quantity", {
-    text: {
-      "وفّر مع الكمية": L("كل ما تزود توفّر", "Buy more, save more"),
-      "على القطعة التانية": L("على القطعة التانية", "On the second bar"),
-      "٣ قطع": L("٤ قطع", "4 bars"),
-      "على الطلب كله": L("يعني ٤ بسعر ٣", "That is 4 for the price of 3"),
-      "وفّر ١٨٪": L("وفّر ٢٥٪", "Save 25%"),
-      "قطعة واحدة": L("قطعة واحدة", "1 bar"),
-      "قطعتين": L("قطعتين", "2 bars"),
-      "اختار عدد القطع من السلة.": L("اختار عدد القطع من السلة، والخصم بالكود SABON4.", "Choose how many in your cart; the saving comes with code SABON4."),
-    },
-    lists: [{ source: "best-sellers" }],
   }),
   lib("categories-tiles", {
     photo: [PHOTOS.faceBars, PHOTOS.bodyRow, PHOTOS.seaSalt, PHOTOS.giftRow],
@@ -114,6 +102,10 @@ const home: Design[] = [
     },
     links: { "/products": [SHOP, search("وش"), search("جسم"), search("ملح"), search("هدية")] },
   }),
+  lib("products-grid", {
+    text: { "وصل حديثًا": L("صابون الأسبوع", "This week’s bars"), "أحدث المنتجات اللي نزلت المتجر.": L("كل قطعة بتتقطع بالإيد وتستنى ٦ أسابيع قبل ما تتباع.", "Every bar is cut by hand and cured for six weeks before we sell it.") },
+    links: { "/products": NEW },
+  }),
   lib("about-stories", {
     photo: [undefined, PHOTOS.oliveOil, PHOTOS.cutBars, PHOTOS.coffeeStack],
     text: {
@@ -125,13 +117,6 @@ const home: Design[] = [
       "كل منتج قبل ما يتغلّف.": L("بيتصب في قوالب خشب ويتقطع باليد.", "Poured into wooden moulds, cut by hand."),
       "بنوصّل": L("تخزين", "Cure"),
       "لحد باب البيت خلال أيام.": L("٦ أسابيع على رفوف مفتوحة.", "Six weeks on open shelves."),
-    },
-  }),
-  lib("cart-free-delivery", {
-    text: {
-      "١٥٠٠ ج.م": L("٤٠٠ ج.م", "EGP 400"),
-      "والتوصيل عليك مجاني": L("والتوصيل علينا", "and delivery is on us"),
-      "كمّل تسوق": L("كمّل تسوق", "Keep shopping"),
     },
   }),
   lib("testimonials-ruled", {
@@ -147,7 +132,7 @@ const home: Design[] = [
       "بدّلت المقاس بدون أي تعب، والفريق رد علي في دقائق.": L("القالب بيعيش معايا أكتر من شهر لأنه متخزن كويس.", "A bar lasts me more than a month because it is cured properly."),
       "ع": L("ط", "T"),
       "عمر ك.": L("طارق ف.", "Tarek F."),
-      "أسعار معقولة وجودة أفضل مما توقعت.": L("بشتري ٤ بسعر ٣ كل شهر للبيت كله.", "I buy four for three every month for the whole house."),
+      "أسعار معقولة وجودة أفضل مما توقعت.": L("بقيت أشتري منه كل شهر للبيت كله.", "I buy it every month for the whole house now."),
       "ن": L("د", "D"),
       "نور ح.": L("دينا ح.", "Dina H."),
     },
@@ -192,8 +177,8 @@ const DEMO = demoStore({
 
 export const SABON = libraryTemplate({
   key: SABON_KEY,
-  version: 2,
-  changelog: "Sabon v2: product page",
+  version: 3,
+  changelog: "Sabon v3: hero, section order",
   productPage: { thumbs: "bottom", band: "shelf", extras: ["product-shipping"], copy: { back: L("رجوع للصابون", "Back to the soaps"), reviews: L("رأي زبايننا القدام", "From our regulars"), related: L("صابون يتحط جنبه", "Pairs well with") } },
   name: L("صابون", "Sabon"),
   description: L(
@@ -234,9 +219,9 @@ export const SABON = libraryTemplate({
       name: L("الأسئلة الشائعة", "FAQ"),
       seo: { title: L("الأسئلة الشائعة", "FAQ") },
       sections: faqPage(lib, {
-        text: L("الصابون والعروض والتوصيل.", "Soap, offers and delivery."),
-        question: L("عرض ٤ بسعر ٣ بيشتغل إزاي؟", "How does buy 4, pay for 3 work?"),
-        answer: L("حط ٤ قطع أو أكتر في السلة واكتب الكود SABON4، والقطعة الأرخص بتبقى ببلاش.", "Put four or more bars in your cart and enter code SABON4; the cheapest bar is free."),
+        text: L("الصابون والمكونات والتوصيل.", "Soap, ingredients and delivery."),
+        question: L("الصابون مناسب للبشرة الحساسة؟", "Is the soap OK for sensitive skin?"),
+        answer: L("أيوه، مفيش أي عطور صناعية في الصابون، وعندنا قطعة مخصوص للبشرة الحساسة.", "Yes. There is no synthetic fragrance in our soap, and one bar is made for sensitive skin."),
       }),
     },
   ],

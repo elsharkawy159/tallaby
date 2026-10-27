@@ -94,6 +94,7 @@ const home: Design[] = [
     },
     links: { "/products": [search("سماعة"), search("ساعة"), search("شاشة")] },
   }),
+  lib("categories-ruled", { text: { "تسوق بالقسم": L("اختار جهازك", "Pick your device") } }),
   lib("products-list", {
     text: {
       "الكتالوج": L("الأكتر طلباً", "Top picks"),
@@ -119,14 +120,6 @@ const home: Design[] = [
   lib("pay-open-box", {
     text: {
       "جرّب المنتج قدام المندوب.": L("شغّل الجهاز واتأكد إنه سليم قدام المندوب.", "Switch the device on and check it in front of the courier."),
-    },
-  }),
-  lib("pay-days", {
-    text: {
-      "القاهرة، الجيزة": L("القاهرة والجيزة", "Cairo and Giza"),
-      "الإسكندرية، الدلتا، مدن القناة": L("الدلتا والقناة", "Delta and Canal"),
-      "٤–٦": L("٤–٥", "4–5"),
-      "الصعيد، البحر الأحمر، سيناء": L("الصعيد", "Upper Egypt"),
     },
   }),
   lib("track-ask"),
@@ -169,13 +162,13 @@ const DEMO = demoStore({
 
 export const SHASHA = libraryTemplate({
   key: SHASHA_KEY,
-  version: 2,
-  changelog: "Shasha v2: product page",
+  version: 3,
+  changelog: "Shasha v3: categories after the hero, one delivery block",
   productPage: { thumbs: "side", band: "shelf", extras: ["product-perks"], copy: { back: L("رجوع للأجهزة", "Back to the devices"), reviews: L("تجارب مستخدمين", "Verified buyer reviews"), related: L("أجهزة تكمّل جهازك", "Pairs well with this") } },
   name: L("شاشة", "Shasha"),
   description: L(
-    "متجر إلكترونيات: بانرات متحركة، الأكثر مبيعاً، الضمان، افتح قبل ما تدفع، مواعيد التوصيل وتتبع طلبك. أربع صفحات جاهزة.",
-    "Electronics megastore: a banner carousel, best sellers, warranty, open before you pay, delivery days and order tracking. Four ready pages.",
+    "متجر إلكترونيات: بانرات متحركة، الأكثر مبيعاً، الضمان، افتح قبل ما تدفع وتتبع طلبك. أربع صفحات جاهزة.",
+    "Electronics megastore: a banner carousel, best sellers, warranty, open before you pay and order tracking. Four ready pages.",
   ),
   category: "electronics",
   sortOrder: 1020,

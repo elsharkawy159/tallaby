@@ -32,6 +32,7 @@ export const SECTION_COPY = {
   carouselSlideOf: { ar: "{n} من {total}", en: "{n} of {total}" },
   carouselPause: { ar: "إيقاف العرض", en: "Pause slideshow" },
   carouselPlay: { ar: "تشغيل العرض", en: "Play slideshow" },
+  searchSubmit: { ar: "ابحث", en: "Search" },
   carouselPrevious: { ar: "السابق", en: "Previous" },
   carouselNext: { ar: "التالي", en: "Next" },
   videoEmpty: { ar: "الصق رابط الفيديو في تبويب المحتوى", en: "Paste a video link in the Content tab" },
@@ -89,6 +90,13 @@ export const SECTION_COPY = {
   inStock: { ar: "متوفر", en: "In stock" },
   onlyLeft: { ar: "باقي {n} فقط", en: "Only {n} left" },
   freeDelivery: { ar: "توصيل مجاني", en: "Free delivery" },
+  trending: { ar: "رائج", en: "Trending" },
+  seasonal: { ar: "موسمي", en: "Seasonal" },
+  countdownLabel: { ar: "الوقت المتبقي", en: "Time left" },
+  countdownDays: { ar: "يوم", en: "Days" },
+  countdownHours: { ar: "ساعة", en: "Hrs" },
+  countdownMinutes: { ar: "دقيقة", en: "Min" },
+  countdownSeconds: { ar: "ثانية", en: "Sec" },
   offerEnds: { ar: "ينتهي العرض {date}", en: "Offer ends {date}" },
   quantity: { ar: "الكمية", en: "Quantity" },
   quantityLess: { ar: "تقليل الكمية", en: "Decrease quantity" },
@@ -108,9 +116,15 @@ export const SECTION_COPY = {
   otherLanguage: { ar: "English", en: "عربي" },
   signIn: { ar: "تسجيل الدخول", en: "Sign in" },
   openMenu: { ar: "افتح القائمة", en: "Open menu" },
+  closeMenu: { ar: "اقفل القائمة", en: "Close menu" },
   themeToggle: { ar: "تبديل الوضع الفاتح والداكن", en: "Switch light and dark mode" },
   verifiedBuyer: { ar: "مشترٍ موثّق", en: "Verified buyer" },
   whatsappChat: { ar: "راسلنا على واتساب", en: "Chat on WhatsApp" },
+  /** The phone bottom navigation (`render/bottom-nav.tsx`). */
+  navShop: { ar: "المتجر", en: "Shop" },
+  navCart: { ar: "السلة", en: "Cart" },
+  navProfile: { ar: "حسابي", en: "Profile" },
+  bottomNav: { ar: "التنقل السريع", en: "Quick navigation" },
 } as const satisfies Record<string, Localized>;
 
 export type SectionCopyKey = keyof typeof SECTION_COPY;

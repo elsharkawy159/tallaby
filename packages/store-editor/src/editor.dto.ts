@@ -37,6 +37,8 @@ export type EditorErrorKey =
   | "rateLimited"
   | "previewUnavailable"
   | "nothingToPublish"
+  /** Publishing needs a template chosen first (Website › Templates; owner 2026-10-27). */
+  | "templateNotChosen"
   /** The host cancelled the publish (e.g. its confirmation dialog); no message is shown. */
   | "cancelled"
   | "generic";
@@ -59,6 +61,7 @@ export const EDITOR_ERRORS: Record<string, EditorErrorKey> = {
   not_published: "notPublished",
   invalid_site: "invalidSite",
   invalid_input: "invalidInput",
+  template_not_chosen: "templateNotChosen",
 };
 
 /** Forms tab row: a store form with its counts. */
@@ -81,6 +84,9 @@ export type EditorProduct = {
   rating: number | null;
   sold90: number;
   sold14: number;
+  /** Product form › Visibility flags (badges on the card); optional for older snapshots. */
+  trending?: boolean;
+  seasonal?: boolean;
 };
 
 export type EditorBrand = { id: string; name: { ar: string; en: string }; logo: string | null };

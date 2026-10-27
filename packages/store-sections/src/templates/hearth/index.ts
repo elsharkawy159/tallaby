@@ -2,8 +2,8 @@
  * Hearth (template 15, cookware and tableware; Claude Design "Storefront
  * Templates"): warm linen paper, a brick red for actions and a honey
  * highlight, Readex Pro throughout and 10px corners. A slow-weekend store:
- * a wide opening photo, how we choose, kitchen favourites, a welcome
- * coupon, why wood and stoneware, and the rating summary. Built from
+ * an arched hero, categories, kitchen favourites, why wood and stoneware,
+ * how we choose, and the rating summary. Built from
  * section library designs (`fromLibrary`).
  *
  * Photos: Pexels, each checked by eye (2026-10-20): stoneware, boards,
@@ -41,8 +41,8 @@ const NAME = L("هيرث آند كو", "Hearth & Co.");
 
 const header = lib("header-announcement", {
   text: {
-    "توصيل مجاني للطلبات فوق ١٥٠٠ ج.م": L("كود الترحيب HEARTH15 لخصم ١٥٪ على أول طلب", "Welcome code HEARTH15 for 15% off your first order"),
-    "الكود: SAVE10": L("الكود: HEARTH15", "Code: HEARTH15"),
+    "توصيل مجاني للطلبات فوق ١٥٠٠ ج.م": L("توصيل لكل المحافظات والدفع عند الاستلام", "Delivery everywhere, cash on delivery"),
+    "الدفع عند الاستلام": L("الدفع عند الاستلام", "Cash on delivery"),
     "م": L("ه", "H"),
     "اسم متجرك": NAME,
     "المتجر": L("كل المنتجات", "Shop all"),
@@ -65,19 +65,46 @@ const footer = lib("footer-ruled", {
   links: { "/products": [undefined, NEW, BEST, RATED] },
 });
 
+/**
+ * Home (v4, template-rules §2a): a warm arched hero, the categories, then
+ * the kitchen journey: favourites first, why wood and stoneware, how we
+ * choose (with the two-year repair promise) and the rating summary.
+ */
 const home: Design[] = [
-  lib("about-wide", {
-    photo: [undefined, undefined, undefined, undefined, undefined, undefined, PHOTOS.potteryShelf],
+  lib("hero-classic", {
+    photo: [PHOTOS.potteryShelf],
     text: {
-      "كل منتج بيتراجع قبل ما يوصلك": L("اطبخ على مهل وظبّط السفرة", "Cook slowly, set the table well"),
-      "صورة المتجر": L("أطباق وبولات خزف على رف خشب", "Stoneware plates and bowls on a wooden shelf"),
-      "فريقنا بيراجع كل منتج ويتأكد منه قبل التغليف، عشان تفتح العلبة وانت مطمن.": L(
-        "خشب وحجري وزجاج بيحلوا مع الاستخدام. من ورش مصرية.",
-        "Wood, stoneware and glass that get better with use. Made by Egyptian workshops.",
+      "موسم جديد": L("لويك إند هادي", "For slow weekends"),
+      "كل ما تحتاجه، في مكان واحد": L("اطبخ على مهل، وظبّط السفرة", "Cook slowly, set the table"),
+      "منتجات مختارة بعناية بضمان وتوصيل لكل المحافظات والدفع عند الاستلام.": L(
+        "خشب وحجري وزجاج بيحلوا مع الاستخدام، من ورش مصرية.",
+        "Wood, stoneware and glass that get better with use, from Egyptian workshops.",
       ),
-      "شوف إزاي بنشتغل": L("تسوق المطبخ", "Shop the kitchen"),
+      "تسوّق الآن": L("تسوق المطبخ", "Shop the kitchen"),
+      "شوف العروض": L("الأكثر مبيعاً", "Best sellers"),
+      "صورة المنتج": L("أطباق وبولات خزف على رف خشب", "Stoneware plates and bowls on a wooden shelf"),
     },
-    links: { "/about": SHOP },
+    links: { "/products": [SHOP, BEST] },
+  }),
+  lib("categories-ruled", {
+    text: { "تسوق بالقسم": L("كل ركن في المطبخ", "Every corner of the kitchen") },
+  }),
+  lib("products-feature", {
+    text: { "اختيارنا ليك": L("المفضل في المطبخ", "Kitchen favourites"), "اختيار الأسبوع": L("اختيار الشهر", "Pick of the month") },
+    lists: [undefined, { source: "best-sellers" }],
+  }),
+  lib("text-columns", {
+    text: {
+      "عن متجرنا": L("ليه خشب وحجري؟", "Why wood and stoneware?"),
+      "بدأنا بهدف واحد: منتجات أصلية بسعر عادل، يختارها أشخاص يستخدمونها فعلًا.": L(
+        "الألواح البلاستيك بتتخدش وبتشيل بكتيريا. خشب الزيتون بيقفل على الخدوش ومحتاج زيت مرة في الشهر.",
+        "Plastic boards scratch and hold bacteria. Olive wood closes over small cuts and only needs oil once a month.",
+      ),
+      "اليوم نشحن لكل المحافظات ونجرّب كل منتج قبل أن يصل إليك.": L(
+        "الحجري بيحتفظ بالحرارة ويطلع من الفرن للسفرة ومش بيتكسر زي البورسلين الرفيع.",
+        "Stoneware holds heat, goes from oven to table and does not chip like thin porcelain.",
+      ),
+    },
   }),
   lib("features-checklist", {
     person: [undefined, undefined, undefined, undefined, undefined, PHOTOS.utensils],
@@ -94,31 +121,6 @@ const home: Design[] = [
       "فاتورة وضمان داخل العلبة": L("تصليح أو استبدال لمدة سنتين", "Repair or replace for 2 years"),
       "رقم تتبع على واتساب": L("صنع في مصر", "Made in Egypt"),
       "اعرف أكثر": L("حكايتنا", "Our story"),
-    },
-  }),
-  lib("products-feature", {
-    text: { "اختيارنا ليك": L("المفضل في المطبخ", "Kitchen favourites"), "اختيار الأسبوع": L("اختيار الشهر", "Pick of the month") },
-    lists: [undefined, { source: "best-sellers" }],
-  }),
-  lib("promo-coupon", {
-    text: {
-      "٢٠٪": L("١٥٪", "15%"),
-      "خصم على أول طلب لك": L("خصم على أول طلب", "Off your first order"),
-      "للطلبات فوق ٨٠٠ ج.م · حتى ٣٠ نوفمبر": L("للعملاء الجداد، على كل حاجة.", "For new customers, on everything."),
-      "الكود: WELCOME20": L("الكود: HEARTH15", "Code: HEARTH15"),
-    },
-  }),
-  lib("text-columns", {
-    text: {
-      "عن متجرنا": L("ليه خشب وحجري؟", "Why wood and stoneware?"),
-      "بدأنا بهدف واحد: منتجات أصلية بسعر عادل، يختارها أشخاص يستخدمونها فعلًا.": L(
-        "الألواح البلاستيك بتتخدش وبتشيل بكتيريا. خشب الزيتون بيقفل على الخدوش ومحتاج زيت مرة في الشهر.",
-        "Plastic boards scratch and hold bacteria. Olive wood closes over small cuts and only needs oil once a month.",
-      ),
-      "اليوم نشحن لكل المحافظات ونجرّب كل منتج قبل أن يصل إليك.": L(
-        "الحجري بيحتفظ بالحرارة ويطلع من الفرن للسفرة ومش بيتكسر زي البورسلين الرفيع.",
-        "Stoneware holds heat, goes from oven to table and does not chip like thin porcelain.",
-      ),
     },
   }),
   lib("testimonials-rating", {
@@ -177,12 +179,12 @@ const DEMO = demoStore({
 
 export const HEARTH = libraryTemplate({
   key: HEARTH_KEY,
-  version: 3,
-  changelog: "Hearth v3: product page",
+  version: 4,
+  changelog: "Hearth v4: hero, categories, section order",
   name: L("هيرث", "Hearth"),
   description: L(
-    "أدوات طبخ وتقديم: صورة عريضة، إزاي بنختار، كوبون ترحيب وتقييم العملاء. أربع صفحات جاهزة.",
-    "Cookware and tableware: a wide opening photo, how we choose, a welcome coupon and ratings. Four ready pages.",
+    "أدوات طبخ وتقديم: واجهة دافية بقوس، المفضل في المطبخ، إزاي بنختار وتقييم العملاء. أربع صفحات جاهزة.",
+    "Cookware and tableware: a warm arched hero, kitchen favourites, how we choose and ratings. Four ready pages.",
   ),
   category: "kitchen",
   sortOrder: 150,

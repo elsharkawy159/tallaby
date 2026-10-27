@@ -118,16 +118,6 @@ const home: Design[] = [
     text: { "اختيارنا ليك": L("الأكتر حباً", "Most loved"), "اختيار الأسبوع": L("الأكثر مبيعاً", "Best seller") },
     lists: [undefined, { source: "best-sellers" }],
   }),
-  lib("promo-coupon", {
-    name: L("كارت هدية", "Gift card"),
-    text: {
-      "٢٠٪": L("٥٠٠ ج.م", "EGP 500"),
-      "خصم": L("كارت هدية", "gift card"),
-      "خصم على أول طلب لك": L("ابعتي كارت هدية", "Send a gift card"),
-      "للطلبات فوق ٨٠٠ ج.م · حتى ٣٠ نوفمبر": L("من ٥٠٠ لـ ٥٠٠٠ ج.م · بيوصل برسالة في نفس اليوم", "From EGP 500 to 5,000 · delivered by message the same day"),
-      "الكود: WELCOME20": L("اطلبيه من صفحة التواصل", "Order it from the contact page"),
-    },
-  }),
   lib("pay-methods", {
     text: {
       "ادفع بالطريقة اللي تريحك": L("ادفعي بالطريقة اللي تريحك", "Pay the way that suits you"),

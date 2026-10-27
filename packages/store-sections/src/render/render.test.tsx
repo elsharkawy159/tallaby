@@ -110,7 +110,10 @@ describe("PageRenderer and theme", () => {
     );
     expect(designSystemToCss(null)).toBe("");
     expect(designSystemToCss({ colors: { primary: "red;}</style><script>" }, spacing: {} })).toBe("");
-    expect(html(<SiteTheme designSystem={{ colors: {}, spacing: {} }} />)).toBe("");
+    // With no tokens, the theme block still carries the fixed motion CSS, and nothing else.
+    const empty = html(<SiteTheme designSystem={{ colors: {}, spacing: {} }} />);
+    expect(empty).toContain(".sf-motion [data-reveal]");
+    expect(empty).not.toContain("--sf-brand");
   });
 
   it("uses dark text on a light brand color (P4-13)", () => {

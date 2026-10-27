@@ -23,12 +23,12 @@ import {
   Users,
 } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
+import { CountUp, Intro, IntroWords, ParallaxImage, PinnedProgress, PinnedStep, PinnedSteps, Reveal, StaggerChildren } from "@workspace/motion";
 import { Link } from "@/i18n/navigation";
 import { CtaButton } from "@/components/marketing/site/cta-button";
 import { ForwardArrow } from "@/components/marketing/site/direction-icons";
 import { FaqAccordion, type FaqEntry } from "@/components/marketing/site/faq-accordion";
 import { Container, Eyebrow, Section, SectionHeading } from "@/components/marketing/site/layout-primitives";
-import { Reveal } from "@/components/marketing/site/reveal.client";
 import { richTags } from "@/components/marketing/site/rich-text";
 import { SignupTrigger, SlugClaimForm } from "@/components/marketing/signup/signup-trigger.client";
 import { TemplateGallery } from "@/components/marketing/templates/template-gallery.client";
@@ -43,24 +43,30 @@ export async function HomeHero() {
   const points = [t("point1"), t("point2"), t("point3")];
 
   return (
-    <section id="top" aria-labelledby="hero-title" className="relative overflow-hidden bg-teal-900 pt-11 pb-[72px] text-white sm:pt-[76px]">
+    <section id="top" aria-labelledby="hero-title" className="relative overflow-hidden bg-teal-900 pt-[calc(44px+68px)] pb-[72px] text-white sm:pt-[calc(76px+68px)]">
+      {/* The top padding includes the 68px home header, which overlays the hero. */}
       <div aria-hidden className="hero-glow-center pointer-events-none absolute inset-0" />
+      {/* Intro: plain CSS from the first paint, so the headline (LCP) never waits for JavaScript. */}
       <Container className="relative flex flex-col items-center text-center">
-        <Eyebrow className="mb-5 after:h-0.5 after:w-[22px] after:rounded-sm after:bg-amber-600 after:content-['']">{t("eyebrow")}</Eyebrow>
+        <Eyebrow data-intro="fade" className="mb-5 after:h-0.5 after:w-[22px] after:rounded-sm after:bg-amber-600 after:content-['']">
+          {t("eyebrow")}
+        </Eyebrow>
         <h1
           id="hero-title"
           className="display-tight max-w-[900px] text-[clamp(36px,5vw,64px)] leading-[1.2] font-extrabold text-balance text-white en:leading-[1.02]"
         >
-          {t.rich("title", richTags)}
+          <IntroWords delay={0.05}>{t.rich("title", richTags)}</IntroWords>
         </h1>
-        <p className="mx-auto mt-5 mb-8 max-w-[600px] text-base text-pretty text-mist sm:text-lg">{t("lead")}</p>
+        <Intro as="p" delay={0.3} className="mx-auto mt-5 mb-8 max-w-[600px] text-base text-pretty text-mist sm:text-lg">
+          {t("lead")}
+        </Intro>
         <HeroStory>
           <div className="mt-5 flex flex-wrap justify-center gap-x-[22px] gap-y-2.5 text-[13.5px] text-haze">
-            {points.map((p) => (
-              <span key={p} className="flex items-center gap-[7px]">
+            {points.map((p, i) => (
+              <Intro as="span" key={p} delay={0.5 + i * 0.07} className="flex items-center gap-[7px]">
                 <Check className="size-[15px] text-amber-300" aria-hidden />
                 {p}
-              </span>
+              </Intro>
             ))}
           </div>
         </HeroStory>
@@ -79,34 +85,43 @@ export async function HowItWorks() {
 
   return (
     <Section id="how" aria-labelledby="how-title">
-      <Container>
+      {/* Desktop: pinned while the steps light up and the line fills; elsewhere the steps stagger in. */}
+      <PinnedSteps as={Container}>
         <Reveal>
           <SectionHeading id="how-title" kicker={t("kicker")} title={t("title")} />
         </Reveal>
-        <ol className="relative m-0 grid list-none gap-7 p-0 md:grid-cols-3 md:gap-10 md:before:absolute md:before:inset-x-14 md:before:top-[27px] md:before:h-0.5 md:before:bg-[repeating-linear-gradient(90deg,var(--color-teal-100)_0_8px,transparent_8px_14px)] md:before:content-['']">
-          {steps.map((step, i) => (
-            <Reveal as="li" key={step.title} className="relative">
-              <span
-                className={`relative mb-[22px] grid size-14 place-items-center rounded-2xl font-latin text-[22px] font-extrabold ${
-                  i === 0 ? "bg-amber-600 text-teal-900" : "bg-teal-900 text-white"
-                }`}
-              >
-                {i + 1}
-              </span>
-              <h3 className="mb-2 text-[21px] font-bold text-teal-900">{step.title}</h3>
-              <p className="text-[15px] text-slate-ink">{step.body}</p>
-              <span className="mt-3.5 inline-flex items-center gap-1.5 rounded-full bg-teal-50 px-3 py-1 text-[13px] font-semibold text-teal-700">
-                <step.icon className="size-3.5" aria-hidden />
-                {step.tag}
-              </span>
-            </Reveal>
-          ))}
-        </ol>
+        <div className="relative">
+          <ol className="relative m-0 grid list-none gap-7 p-0 md:grid-cols-3 md:gap-10 md:before:absolute md:before:inset-x-14 md:before:top-[27px] md:before:h-0.5 md:before:bg-[repeating-linear-gradient(90deg,var(--color-teal-100)_0_8px,transparent_8px_14px)] md:before:content-['']">
+            {steps.map((step, i) => (
+              <PinnedStep as="li" key={step.title} className="relative z-[2]">
+                {/* z-2 on the step itself: a moving step is its own stacking context, so a z-index inside it can't lift it over the bar. */}
+                <span
+                  className={`relative mb-[22px] grid size-14 place-items-center rounded-2xl font-latin text-[22px] font-extrabold ${
+                    i === 0 ? "bg-amber-600 text-teal-900" : "bg-teal-900 text-white"
+                  }`}
+                >
+                  {i + 1}
+                </span>
+                {/* Only the text dims while a step waits; the number box stays solid over the line. */}
+                <div data-pin-fade="">
+                  <h3 className="mb-2 text-[21px] font-bold text-teal-900">{step.title}</h3>
+                  <p className="text-[15px] text-slate-ink">{step.body}</p>
+                  <span className="mt-3.5 inline-flex items-center gap-1.5 rounded-full bg-teal-50 px-3 py-1 text-[13px] font-semibold text-teal-700">
+                    <step.icon className="size-3.5" aria-hidden />
+                    {step.tag}
+                  </span>
+                </div>
+              </PinnedStep>
+            ))}
+          </ol>
+          {/* Over the dashed line (z-1), under the steps and their number boxes (z-2). */}
+          <PinnedProgress className="pointer-events-none absolute inset-x-14 top-[27px] z-[1] hidden h-0.5 rounded-full bg-amber-600 md:block" />
+        </div>
         <Reveal className="mt-12 flex flex-wrap items-center gap-4">
           <SignupTrigger tone="teal" />
           <small className="text-sm text-neutral-600">{t("note")}</small>
         </Reveal>
-      </Container>
+      </PinnedSteps>
     </Section>
   );
 }
@@ -148,7 +163,7 @@ export async function BuilderSection() {
           <Reveal>
             <SectionHeading id="builder-title" kicker={t("kicker")} title={t("title")} description={t("desc")} className="mb-7" />
           </Reveal>
-          <Reveal as="ul" className="m-0 grid list-none gap-1 p-0">
+          <StaggerChildren as="ul" className="m-0 grid list-none gap-1 p-0">
             {features.map((f) => (
               <li key={f.title} className="grid grid-cols-[40px_1fr] gap-3.5 border-t border-neutral-200 py-4 last:border-b">
                 <span className="grid size-10 place-items-center rounded-xl bg-teal-50 text-teal-700">
@@ -160,10 +175,12 @@ export async function BuilderSection() {
                 </div>
               </li>
             ))}
-          </Reveal>
+          </StaggerChildren>
         </div>
-        <Reveal>
-          <BuilderStudio />
+        <Reveal variant="scale-in">
+          <ParallaxImage speed={0.08}>
+            <BuilderStudio />
+          </ParallaxImage>
         </Reveal>
       </Container>
     </Section>
@@ -193,20 +210,28 @@ export async function FeaturesSection() {
         <Reveal>
           <FeatureTour />
         </Reveal>
-        <Reveal className="mt-16">
-          <h3 className="mb-[18px] text-xl font-bold text-teal-900">{t("moreTitle")}</h3>
-          <ul className="m-0 grid list-none gap-3 p-0 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-16">
+          <Reveal as="h3" className="mb-[18px] text-xl font-bold text-teal-900">
+            {t("moreTitle")}
+          </Reveal>
+          {/* Two columns from phone width: icon over the text on phones, beside it from sm. */}
+          <StaggerChildren as="ul" stagger={0.06} className="m-0 grid list-none grid-cols-2 gap-2.5 p-0 sm:gap-3 lg:grid-cols-4">
             {MORE.map((m) => (
-              <li key={m.key} className="grid content-start gap-2 rounded-[18px] border border-neutral-200 bg-paper p-[18px]">
-                <span className="grid size-10 place-items-center rounded-xl bg-teal-50 text-teal-700">
-                  <m.icon className="size-[18px]" aria-hidden />
+              <li
+                key={m.key}
+                className="flex flex-col gap-2.5 rounded-2xl border border-neutral-200 bg-paper p-3.5 transition-[border-color,box-shadow] duration-300 hover:border-teal-100 hover:shadow-soft sm:flex-row sm:items-start sm:gap-3.5 sm:p-[18px]"
+              >
+                <span className="grid size-9 flex-none place-items-center rounded-xl bg-white text-teal-700 shadow-card ring-1 ring-teal-50 sm:size-10">
+                  <m.icon className="size-[17px] sm:size-[18px]" aria-hidden />
                 </span>
-                <b className="text-[15px] text-teal-900">{t(`more.${m.key}.title`)}</b>
-                <span className="text-[13.5px] text-slate-ink">{t(`more.${m.key}.body`)}</span>
+                <div className="min-w-0">
+                  <b className="block text-[14px] leading-snug text-teal-900 sm:text-[15px]">{t(`more.${m.key}.title`)}</b>
+                  <span className="mt-1 block text-[12.5px] leading-relaxed text-slate-ink sm:text-[13.5px]">{t(`more.${m.key}.body`)}</span>
+                </div>
               </li>
             ))}
-          </ul>
-        </Reveal>
+          </StaggerChildren>
+        </div>
       </Container>
     </Section>
   );
@@ -232,12 +257,12 @@ export async function PricingTeaser() {
         <Reveal>
           <SectionHeading id="pricing-title" centered kicker={t("kicker")} title={t("title")} />
         </Reveal>
-        <Reveal className="mx-auto max-w-[460px] overflow-hidden rounded-[28px] border border-neutral-200 bg-white text-center shadow-lift">
+        <Reveal variant="scale-in" className="mx-auto max-w-[460px] overflow-hidden rounded-[28px] border border-neutral-200 bg-white text-center shadow-lift">
           <div className="relative overflow-hidden bg-teal-900 px-[22px] pt-7 pb-8 text-white sm:px-8 sm:pt-9">
             <div aria-hidden className="absolute -top-[120px] size-[260px] rounded-full border-[40px] border-amber-600/10 ltr:-right-[110px] rtl:-left-[110px]" />
             <span className="relative inline-block rounded-full bg-amber-600/15 px-3.5 py-[5px] text-[13px] font-bold text-amber-300">{t("tag")}</span>
             <div dir="ltr" className="relative mt-[18px] mb-3 flex items-end justify-center gap-2.5">
-              <span className="font-latin text-[84px] leading-[0.85] font-extrabold tracking-[-0.05em] text-amber-600 sm:text-[104px]">5</span>
+              <CountUp className="font-latin text-[84px] leading-[0.85] font-extrabold tracking-[-0.05em] text-amber-600 sm:text-[104px]">5</CountUp>
               <span className="grid pb-1.5 text-left">
                 <b className="text-2xl leading-none font-extrabold text-white">{tc("egp")}</b>
                 <small className="mt-1 text-[15px] text-haze">{t("perOrder")}</small>
@@ -245,7 +270,7 @@ export async function PricingTeaser() {
             </div>
             <p className="relative mx-auto max-w-[340px] text-[15px] text-mist">{t("desc")}</p>
           </div>
-          <ul className="m-0 grid list-none px-[22px] pt-[18px] pb-1 text-start sm:px-8 sm:pt-6 sm:pb-2">
+          <StaggerChildren as="ul" stagger={0.06} className="m-0 grid list-none px-[22px] pt-[18px] pb-1 text-start sm:px-8 sm:pt-6 sm:pb-2">
             {items.map((item) => (
               <li key={item.label} className="flex items-center gap-2.5 border-b border-neutral-100 py-2 text-[13.5px] font-semibold text-[#2a3a3f] last:border-0">
                 <span className="grid size-[26px] flex-none place-items-center rounded-lg bg-teal-50 text-teal-700">
@@ -254,7 +279,7 @@ export async function PricingTeaser() {
                 {item.label}
               </li>
             ))}
-          </ul>
+          </StaggerChildren>
           <div className="px-[22px] pt-3.5 sm:px-8 sm:pt-4">
             <SignupTrigger size="lg" className="h-[54px] w-full rounded-[14px] text-base" />
           </div>
@@ -282,14 +307,14 @@ export async function HomeFaq() {
   return (
     <Section aria-labelledby="faq-title" className="pt-6 md:pt-6">
       <Container className="grid items-start gap-14 lg:grid-cols-[minmax(0,0.7fr)_minmax(0,1.3fr)]">
-        <Reveal className="lg:sticky lg:top-[100px]">
+        <Reveal variant="fade" className="lg:sticky lg:top-[100px]">
           <SectionHeading id="faq-title" kicker={t("kicker")} title={t("title")} description={t("desc", { email: CONTACT.email })} className="mb-0">
             <CtaButton asChild tone="outline" size="sm" className="mt-5">
               <Link href="/faq">{tc("allQuestions")}</Link>
             </CtaButton>
           </SectionHeading>
         </Reveal>
-        <Reveal>
+        <Reveal variant="fade" delay={0.1}>
           <FaqAccordion items={items} />
         </Reveal>
       </Container>
@@ -303,7 +328,7 @@ export async function FinalCta() {
   return (
     <section id="final" aria-labelledby="final-title" className="pb-24">
       <Container>
-        <Reveal className="relative grid items-center gap-12 overflow-hidden rounded-[22px] bg-amber-600 px-[22px] py-9 text-teal-900 sm:rounded-[28px] md:p-16 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+        <Reveal className="relative grid grid-cols-1 items-center gap-12 overflow-hidden rounded-[22px] bg-amber-600 px-[22px] py-9 text-teal-900 sm:rounded-[28px] md:p-16 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
           <div aria-hidden className="absolute -bottom-[280px] size-[520px] rounded-full bg-amber-500 ltr:-right-[200px] rtl:-left-[200px]" />
           <div aria-hidden className="absolute -top-[140px] size-[300px] rounded-full border-[48px] border-teal-900/10 ltr:-left-[120px] rtl:-right-[120px]" />
           <div className="relative">

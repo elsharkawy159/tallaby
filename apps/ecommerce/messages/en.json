@@ -359,6 +359,8 @@
     "discountEndsIn": "Offer ends in",
     "onlyLeft": "Only {count} left",
     "discountPercentOff": "{percent}% off",
+    "badgeTrending": "Trending",
+    "badgeSeasonal": "Seasonal",
     "discountAvailableUntil": "Discount available until:",
     "days": "Days",
     "hours": "Hours",

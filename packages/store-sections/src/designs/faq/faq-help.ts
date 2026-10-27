@@ -18,7 +18,7 @@ export const faqHelp = defineDesign({
     t.section({ label: L("مركز المساعدة", "Help centre"), style: { paddingTop: 0 } }, [
       t.stack(
         [
-          t.heading(L("كيف نقدر نساعدك؟", "How can we help?"), "h1", {
+          t.heading(L("كيف نقدر نساعدك؟", "How can we help?"), "h2", {
             role: "title",
             style: { fontSize: "display-md", fontWeight: "extrabold", textAlign: "center" },
           }),

@@ -121,18 +121,6 @@ const home: Design[] = [
       ),
     },
   }),
-  lib("pay-days", {
-    text: {
-      "هيوصلك إمتى؟": L("هيوصلك إمتى؟", "When will it arrive?"),
-      "١": L("٥", "5"),
-      "يوم": L("أيام", "days"),
-      "القاهرة، الجيزة": L("القطع الجاهزة في القاهرة والجيزة", "In-stock pieces in Cairo and Giza"),
-      "٢–٣": L("٣", "3"),
-      "أيام": L("أسابيع", "weeks"),
-      "الإسكندرية، الدلتا، مدن القناة": L("القطع اللي بتتعمل بالطلب", "Made-to-order pieces"),
-      "الصعيد، البحر الأحمر، سيناء": L("مقاسات خاصة على مقاس أوضتك، والتركيب ببلاش", "Custom sizes for your room, with free assembly"),
-    },
-  }),
   lib("faq-columns", {
     as: "faq-home",
     text: {
@@ -209,8 +197,8 @@ const DEMO = demoStore({
 
 export const MOBILIA = libraryTemplate({
   key: MOBILIA_KEY,
-  version: 2,
-  changelog: "Mobilia v2: product page",
+  version: 3,
+  changelog: "Mobilia v3: one payment block, section order",
   productPage: { surface: "flat", thumbs: "side", button: "outline", gallery: "end", band: "paper", extras: ["product-perks"], copy: { back: L("رجوع للمعرض", "Back to the showroom"), reviews: L("رأي أصحاب البيوت", "From our customers' homes"), related: L("يكمّل الغرفة", "Completes the room") } },
   name: L("موبيليا", "Mobilia"),
   description: L(

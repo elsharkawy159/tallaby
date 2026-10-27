@@ -108,7 +108,7 @@ export function SectionShell({
         className,
       )}
     >
-      <div className="mx-auto w-full max-w-(--sf-max-width,1200px) px-4 md:px-8">{children}</div>
+      <div className="mx-auto w-full max-w-(--sf-max-width,1280px) px-[clamp(16px,4vw,48px)]">{children}</div>
     </section>
   );
 }
@@ -204,11 +204,12 @@ export function ButtonLink({
       href={href}
       part={part}
       className={cn(
-        "inline-flex h-11 items-center justify-center rounded-(--sf-radius,12px) px-6 text-sm font-semibold transition-opacity hover:opacity-90",
-        variant === "solid" && "bg-(--sf-brand) text-(--sf-brand-ink,#fff)",
-        variant === "outline" && "border border-(--sf-line) bg-(--sf-paper) text-(--sf-ink)",
+        // Colour change and a 2px lift on hover, no scale (docs/section-rules.md §6.5).
+        "inline-flex h-12 items-center justify-center rounded-(--sf-radius,12px) px-7 text-sm font-semibold transition-[background-color,border-color,color,transform] duration-200 hover:-translate-y-0.5 motion-reduce:transition-none motion-reduce:hover:translate-y-0",
+        variant === "solid" && "bg-(--sf-brand) text-(--sf-brand-ink,#fff) hover:bg-[color-mix(in_srgb,var(--sf-brand)_86%,#000)]",
+        variant === "outline" && "border border-(--sf-line) bg-(--sf-paper) text-(--sf-ink) hover:border-(--sf-ink)",
         // A white button always needs dark text: the theme ink is light on dark themes.
-        variant === "light" && "bg-white text-neutral-900",
+        variant === "light" && "bg-white text-neutral-900 hover:bg-neutral-100",
       )}
     >
       {label}

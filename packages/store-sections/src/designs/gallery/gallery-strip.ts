@@ -45,7 +45,7 @@ export const galleryStrip = defineDesign({
             paddingBottom: 12,
             paddingStart: 20,
             paddingEnd: 20,
-            shadow: "lg",
+            shadow: "md",
             zIndex: 2,
           },
         },

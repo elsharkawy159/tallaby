@@ -77,26 +77,7 @@ const home: Design[] = [
     },
     links: { "/products": [search("برطمان"), BEST] },
   }),
-  lib("bundle-poster", {
-    text: {
-      "طقم المشاوير": L("طقم النملية", "Pantry kit"),
-      "كل اللي تحتاجه في الطريق": L("نملية كاملة في طقم واحد", "A whole pantry in one kit"),
-      "١٬٢٧٠ ج.م": L("١٬٢١٥ ج.م", "EGP 1,215"),
-      "بدل ١٬٤٩٠ ج.م": L("بدل ١٬٤٣٠ ج.م", "Instead of EGP 1,430"),
-      "اشتري الطقم": L("خد الطقم", "Get the kit"),
-    },
-    links: { "/products": search("طقم") },
-  }),
-  lib("bundle-quantity", {
-    text: {
-      "على القطعة التانية": L("على الطقم التاني", "On the second set"),
-      "قطعة واحدة": L("طقم واحد", "1 set"),
-      "قطعتين": L("طقمين", "2 sets"),
-      "٣ قطع": L("٣ أطقم", "3 sets"),
-      "وفّر ١٨٪": L("وفّر ١٥٪", "Save 15%"),
-      "اختار عدد القطع من السلة.": L("اختار عدد الأطقم من السلة.", "Choose how many sets in your cart."),
-    },
-  }),
+  lib("categories-chips", { text: { "إيه اللي في بالك؟": L("هتنظم إيه النهارده؟", "What are you organising today?") } }),
   lib("products-rows", {
     text: { "إكسسوارات بسعر حلو": L("الأكتر إعادة طلب", "Most reordered") },
     links: { "/products": BEST },
@@ -184,13 +165,13 @@ const DEMO = demoStore({
 
 export const TANZIM = libraryTemplate({
   key: TANZIM_KEY,
-  version: 2,
-  changelog: "Tanzim v2: product page",
+  version: 3,
+  changelog: "Tanzim v3: categories, section order",
   productPage: { thumbs: "side", band: "shelf", extras: ["product-shipping"], copy: { back: L("رجوع للتنظيم", "Back to organising"), reviews: L("رأي اللي نظّموا", "From tidy homes"), related: L("الأكتر إعادة طلب", "Most reordered") } },
   name: L("تنظيم", "Tanzim"),
   description: L(
-    "تنظيم البيت: طقم النملية، وفّر مع الكمية، الأكتر إعادة طلب ومواعيد التوصيل. أربع صفحات جاهزة.",
-    "Home organisation: the pantry kit, quantity savings, most reordered and delivery days. Four ready pages.",
+    "تنظيم البيت: الأكتر إعادة طلب ومواعيد التوصيل. أربع صفحات جاهزة.",
+    "Home organisation: most reordered and delivery days. Four ready pages.",
   ),
   category: "kitchen",
   sortOrder: 680,

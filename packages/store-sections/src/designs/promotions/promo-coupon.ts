@@ -22,7 +22,7 @@ export const promoCoupon = defineDesign({
             [
               t.stack(
                 [
-                  t.heading(L("٢٠٪", "20%"), "h2", {
+                  t.heading(L("٢٠٪", "20%"), "h3", {
                     role: "value",
                     style: { fontSize: "6xl", fontWeight: "extrabold", lineHeight: "tight", color: "primaryInk" },
                   }),

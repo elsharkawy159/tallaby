@@ -191,15 +191,15 @@ export const getInitials = (name: string): string => {
     .substring(0, 2);
 };
 
-/** Arabic WhatsApp greeting confirming we received the seller's request to join Tallaby. */
+/** Short Arabic WhatsApp greeting that thanks a new seller and offers help. */
 export const buildSellerWelcomeMessage = (
   seller: Pick<Seller, "businessName">,
   ownerName?: string | null
 ): string =>
   [
     `مرحباً ${ownerName?.trim() || seller.businessName}،`,
-    `لقد استلمنا طلبك للانضمام إلى طلبي كبائع باسم «${seller.businessName}».`,
-    "نتواصل معك الآن لاستكمال خطوات تفعيل متجرك، ويسعدنا الرد على أي استفسار لديك.",
+    `شكراً لفتح متجرك «${seller.businessName}» على طلبي (Tallaby.com).`,
+    "نحن هنا لمساعدتك في أي استفسار أو مشكلة تواجهك، ونرحب باقتراحاتك لتطوير المنصة.",
     "",
     "فريق طلبي",
   ].join("\n");

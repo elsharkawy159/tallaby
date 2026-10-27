@@ -96,7 +96,6 @@ const home: Design[] = [
     text: { "تسوّق حسب مزاجك": L("اختاري مزاجك", "Pick your mood"), "عليه خصم": L("الأعلى تقييماً", "Top rated") },
     links: { "/products": [NEW, BEST, RATED, SHOP] },
   }),
-  lib("promo-sticker", { text: { "عرض اليوم بس": L("عرض الأسبوع", "Deal of the week") } }),
   lib("testimonials-photos", {
     photo: [undefined, undefined, PHOTOS.hoops, PHOTOS.braided, PHOTOS.watch, PHOTOS.tote],
     text: {
@@ -174,8 +173,8 @@ export const KARAT = libraryTemplate({
   changelog: "Karat v3: product page",
   name: L("قيراط", "Karat"),
   description: L(
-    "إكسسوارات يومية: بوستر بستيكر، أقسام دائرية، عرض الأسبوع وصور العميلات. أربع صفحات جاهزة.",
-    "Everyday accessories: a poster with a sticker, story rings, the week’s deal and customer photos. Four ready pages.",
+    "إكسسوارات يومية: بوستر، أقسام دائرية وصور العميلات. أربع صفحات جاهزة.",
+    "Everyday accessories: a poster, story rings and customer photos. Four ready pages.",
   ),
   category: "jewelry",
   sortOrder: 260,

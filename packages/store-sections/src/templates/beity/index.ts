@@ -27,7 +27,6 @@ const SHOP = "/products";
 const NEW = "/products?sort=newest";
 const BEST = "/products?sort=popularity";
 const RATED = "/products?sort=rating";
-const LOW = "/products?sort=price-low";
 const search = (q: string) => `/products?search=${encodeURIComponent(q)}`;
 
 const PHOTOS = {
@@ -54,7 +53,7 @@ const NAME = L("بيتي", "Beity");
 const header = lib("header-announcement", {
   text: {
     "توصيل مجاني للطلبات فوق ١٥٠٠ ج.م": L("توصيل مجاني فوق ٩٠٠ ج.م", "Free delivery over EGP 900"),
-    "الكود: SAVE10": L("افتح قبل ما تدفع", "Open before you pay"),
+    "الدفع عند الاستلام": L("افتح قبل ما تدفع", "Open before you pay"),
     "م": L("ب", "B"),
     "اسم متجرك": NAME,
     "المتجر": L("كل المنتجات", "Shop all"),
@@ -119,34 +118,6 @@ const home: Design[] = [
     },
     links: { "/products": [NEW, BEST, RATED] },
   }),
-  lib("finder-budget", {
-    text: {
-      "ابدأ من الأوفر": L("على قد ميزانيتك", "On your budget"),
-      "رتبنالك المنتجات من الأقل سعرًا. عايز تشوف الأغلى الأول؟ اختار من الزراير.": L(
-        "من ٢٠٠ لـ ٢٥٠٠ ج.م: رتبنالك المنتجات من الأرخص. عايز الأطقم الكبيرة الأول؟ اختار من الزراير.",
-        "From EGP 200 to 2,500: products sorted from the lowest price. Want the big sets first? Use the buttons.",
-      ),
-    },
-  }),
-  lib("promo-bento", {
-    photo: [PHOTOS.jarRack, PHOTOS.utensils, PHOTOS.mugPair],
-    text: {
-      "عروض الموسم": L("عروض الأسبوع", "Offers of the week"),
-      "٤٠٪": L("٢٠٪", "20%"),
-      "تشكيلة الموسم": L("التخزين", "Storage"),
-      "٢٥٪": L("١٥٪", "15%"),
-      "الأكثر مبيعًا": L("الأدوات", "Utensils"),
-      "٣٠٪": L("١٠٪", "10%"),
-      "أساسيات": L("الكوبايات", "Mugs"),
-    },
-    links: { "/products": [LOW, search("برطمان"), search("معالق"), search("كوباية")] },
-  }),
-  lib("pay-open-box", {
-    text: {
-      "جرّب المنتج قدام المندوب.": L("افتح العلبة واتأكد إن مفيش حاجة مكسورة.", "Open the box and check nothing is broken."),
-      "لو فيه أي مشكلة رجّعه للمندوب ومتدفعش حاجة.": L("لو فيه طبق مشروخ رجّعه للمندوب ومتدفعش حاجة.", "If a plate is chipped, hand it back and pay nothing."),
-    },
-  }),
   lib("features-icon-cards", {
     text: {
       "لماذا تشتري منا": L("ليه إحنا", "Why us"),
@@ -159,6 +130,12 @@ const home: Design[] = [
       "١٤ يومًا لتغيّر رأيك": L("المقفول بيرجع من غير أسئلة.", "Unopened items, no questions."),
       "دعم على واتساب": L("تغليف بعناية", "Packed with care"),
       "أشخاص حقيقيون طوال الأسبوع": L("ببل وعلبة مقفولة.", "Bubble wrap and a sealed box."),
+    },
+  }),
+  lib("newsletter-strip", {
+    text: {
+      "اعرف الجديد الأول": L("جديد المطبخ", "New for the kitchen"),
+      "المجموعات الجديدة والعروض الخاصة، مرة في الأسبوع.": L("أطقم وأدوات جديدة، رسالة واحدة كل أسبوع.", "New sets and tools, one email a week."),
     },
   }),
 ];
@@ -201,13 +178,13 @@ const DEMO = demoStore({
 
 export const BEITY = libraryTemplate({
   key: BEITY_KEY,
-  version: 2,
-  changelog: "Beity v2: product page",
+  version: 3,
+  changelog: "Beity v3: one trust block, no budget finder, newsletter close",
   productPage: { thumbs: "side", band: "shelf", extras: ["product-shipping"], copy: { back: L("رجوع للمطبخ", "Back to the kitchen"), reviews: L("جربوه في بيوتهم", "Tried in their homes"), related: L("حاجات للمطبخ كمان", "More for your kitchen") } },
   name: L("بيتي", "Beity"),
   description: L(
-    "متجر البيت والمطبخ: بانرات متحركة، الأقسام، رف الأسبوع، على قد الميزانية، عروض الأسبوع وافتح قبل ما تدفع. أربع صفحات جاهزة.",
-    "Home and kitchen store: a banner carousel, departments, this week's shelf, a budget shelf, the week's offers and open before you pay. Four ready pages.",
+    "متجر البيت والمطبخ: بانرات متحركة، الأقسام، رف الأسبوع، وعدنا وجديد المطبخ. أربع صفحات جاهزة.",
+    "Home and kitchen store: a banner carousel, departments, this week's shelf, our promises and kitchen news. Four ready pages.",
   ),
   category: "kitchen",
   sortOrder: 1040,

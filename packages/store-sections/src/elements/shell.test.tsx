@@ -6,7 +6,7 @@ import type { RenderContext } from "../core/types";
 import { SectionRenderer } from "../render/render";
 import { DataEmpty } from "../sections/_data";
 import { storeSectionRegistry } from "../sections";
-import { normalizeShell, shellLayout } from "./shell";
+import { normalizeShell, shellAnimates, shellLayout } from "./shell";
 import { collectPageCss } from "./style";
 
 const ctx: RenderContext = {
@@ -32,7 +32,12 @@ const rich: SectionInstance = {
 describe("normalizeShell", () => {
   it("keeps valid values and drops defaults and junk", () => {
     expect(normalizeShell(undefined)).toBeUndefined();
-    expect(normalizeShell({ scheme: "default", animation: "none" })).toBeUndefined();
+    expect(normalizeShell({ scheme: "default" })).toBeUndefined();
+    // Motion is on by default, so "none" (the section's Animation switched off) is kept.
+    expect(normalizeShell({ animation: "none" })).toEqual({ animation: "none" });
+    expect(shellAnimates({ animation: "none" })).toBe(false);
+    expect(shellAnimates({ animation: "rise" })).toBe(true);
+    expect(shellAnimates(undefined)).toBe(true);
     // A chosen "contained" is kept: it contains a carousel, which is full width by default.
     expect(normalizeShell({ width: "contained" })).toEqual({ width: "contained" });
     expect(shellLayout({ width: "contained" }, () => null)?.outer).toEqual({ className: undefined, style: undefined, id: undefined, "data-shell-width": "contained" });
@@ -103,13 +108,9 @@ describe("shell rendering", () => {
     expect(out).not.toContain("url(");
   });
 
-  it("emits a reduced-motion-safe entrance on the storefront only", () => {
+  it("no longer writes the CSS-only scroll animation (the motion runtime reveals instead)", () => {
     const instance = { ...rich, style: { shell: { animation: "rise" } } };
-    const css = collectPageCss([instance], "public");
-    expect(css).toContain("prefers-reduced-motion:no-preference");
-    expect(css).toContain("animation-timeline:view()");
-    expect(css).toContain('[data-section-id="s1"]');
-    expect(collectPageCss([instance], "edit")).toBe("");
+    expect(collectPageCss([instance], "public")).not.toContain("animation-timeline");
   });
 
   it("maps the primary scheme so solid buttons invert", () => {

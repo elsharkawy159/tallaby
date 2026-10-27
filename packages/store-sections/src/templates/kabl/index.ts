@@ -3,8 +3,8 @@
  * Templates"): cool grey paper, navy ink, an electric blue for actions and a
  * soft yellow highlight, IBM Plex Sans Arabic throughout and 12px corners.
  * A search-led accessories shop: "what do you need to charge?", shop by
- * type, best sellers in compact rows, where you charge most, spend tiers
- * with KABL codes and support channels. Built from section library designs
+ * type, best sellers in compact rows, help choosing, where you charge most
+ * (newest) and buyer reviews. Built from section library designs
  * (`fromLibrary`).
  *
  * Photos: Pexels, each checked by eye (2026-10-21): wall chargers, power
@@ -21,7 +21,6 @@ export const KABL_KEY = "kabl";
 
 const lib = (id: string, patch: LibraryPatch = {}): Design => fromLibrary(KABL_KEY, getDesign(id)!, { corners: 12, ...patch });
 
-const SHOP = "/products";
 const NEW = "/products?sort=newest";
 const BEST = "/products?sort=popularity";
 const RATED = "/products?sort=rating";
@@ -72,29 +71,22 @@ const home: Design[] = [
     text: {
       "بتدور على إيه النهارده؟": L("عايز تشحن إيه؟", "What do you need to charge?"),
       "اكتب اسم المنتج": L("موديل الموبايل أو الوات أو نوع الكابل", "Phone model, watts or cable type"),
-      "وصل حديثًا": L("شاحن ٣٥ وات", "35W charger"),
-      "الأكثر مبيعًا": L("باور بانك", "Power bank"),
-      "هدايا": L("حامل عربية", "Car mount"),
-      "العروض": L("كابل USB-C", "USB-C cable"),
     },
-    links: { "/products": [undefined, search("٣٥ وات"), search("باور بانك"), search("حامل"), search("USB-C")] },
   }),
-  lib("categories-tiles", {
-    photo: [PHOTOS.dualCharger, PHOTOS.slimBank, PHOTOS.dashMount, PHOTOS.cableOrange],
-    text: {
-      "تسوّق حسب القسم": L("تسوق بالنوع", "Shop by type"),
-      "اختر القسم الذي يناسبك من كل ما نقدمه.": L("شواحن وباور بانك وحوامل وكابلات، كلها بضمان استبدال سنة.", "Chargers, power banks, mounts and cables, all with a 1-year replacement."),
-      "وصل حديثًا": L("شواحن", "Chargers"),
-      "الأكثر مبيعًا": L("باور بانك", "Power banks"),
-      "العروض": L("للعربية", "For the car"),
-      "هدايا": L("كابلات", "Cables"),
-    },
-    links: { "/products": [SHOP, search("شاحن"), search("باور بانك"), search("عربية"), search("كابل")] },
-  }),
+  lib("categories-photo-tiles", { text: { "تسوّق حسب القسم": L("تسوق بالنوع", "Shop by type") } }),
   lib("products-rows", {
     text: { "إكسسوارات بسعر حلو": L("الأكثر مبيعاً", "Best sellers") },
     links: { "/products": BEST },
     lists: [{ source: "best-sellers", limit: 6 }],
+  }),
+  lib("service-support", {
+    text: {
+      "محتاج مساعدة؟": L("مش متأكد أنهي يناسب؟", "Not sure which one fits?"),
+      "بنرد في أقل من ساعة": L("ابعت موديل موبايلك ونقولك", "Send your phone model and we tell you"),
+      "زور فرع": L("زور المحل", "Visit the shop"),
+      "٣ فروع في القاهرة": L("وسط البلد، القاهرة", "Downtown Cairo"),
+      "من غير معاد": L("جرّب الشاحن قبل ما تشتري", "Try a charger before you buy"),
+    },
   }),
   lib("finder-use", {
     text: {
@@ -104,29 +96,26 @@ const home: Design[] = [
       "الرياضة": L("في الشارع", "On the go"),
       "المكالمات": L("في العربية", "In the car"),
       "الشغل من البيت": L("على المكتب", "At the desk"),
+      "الأكثر طلبًا دلوقتي": L("وصل حديثاً", "Just in"),
     },
     links: { "/products": [search("شاحن"), search("باور بانك"), search("عربية"), search("كابل")] },
+    lists: [{ source: "newest" }],
   }),
-  lib("promo-tiers", {
+  lib("testimonials-classic", {
     text: {
-      "عرض الشهر": L("الشهر ده", "This month"),
-      "كل ما تزود، توفّر أكتر": L("كل ما تزود توفّر أكتر", "Spend more, save more"),
-      "١٠٠٠ ج.م": L("٦٠٠ ج.م", "EGP 600"),
-      "١٠٠ ج.م": L("٥٠ ج.م", "EGP 50"),
-      "٢٠٠٠ ج.م": L("١٢٠٠ ج.م", "EGP 1,200"),
-      "٢٥٠ ج.م": L("١٢٠ ج.م", "EGP 120"),
-      "٣٥٠٠ ج.م": L("٢٠٠٠ ج.م", "EGP 2,000"),
-      "٥٠٠ ج.م": L("٢٥٠ ج.م", "EGP 250"),
-      "خصم على الفاتورة": L("خصم بأكواد كابل", "off with KABL codes"),
-    },
-  }),
-  lib("service-support", {
-    text: {
-      "محتاج مساعدة؟": L("مش متأكد أنهي يناسب؟", "Not sure which one fits?"),
-      "بنرد في أقل من ساعة": L("ابعت موديل موبايلك ونقولك", "Send your phone model and we tell you"),
-      "زور فرع": L("زور المحل", "Visit the shop"),
-      "٣ فروع في القاهرة": L("وسط البلد، القاهرة", "Downtown Cairo"),
-      "من غير معاد": L("جرّب الشاحن قبل ما تشتري", "Try a charger before you buy"),
+      "آراء العملاء": L("قالوا عن كابل", "What buyers say"),
+      "طلبت يوم الأحد ووصل الثلاثاء. التغليف كان مرتبًا والمنتج كما في الصور تمامًا.": L(
+        "الشاحن ٦٥ وات بيشحن اللابتوب والموبايل مع بعض ومش بيسخن.",
+        "The 65 W charger runs my laptop and phone together and stays cool.",
+      ),
+      "م": L("ي", "Y"),
+      "مريم أ.": L("ياسمين ع.", "Yasmin A."),
+      "بدّلت المقاس بدون أي تعب، والفريق رد علي في دقائق.": L("بعتلهم موديل الموبايل وقالولي الكابل الصح في دقايق.", "I sent my phone model and they told me the right cable in minutes."),
+      "ع": L("ح", "H"),
+      "عمر ك.": L("حسام ر.", "Hossam R."),
+      "أسعار معقولة وجودة أفضل مما توقعت.": L("الباور بانك خفيف ويكفي يومين سفر.", "The power bank is light and lasts two travel days."),
+      "ن": L("د", "D"),
+      "نور ح.": L("دينا م.", "Dina M."),
     },
   }),
 ];
@@ -171,13 +160,13 @@ const DEMO = demoStore({
 
 export const KABL = libraryTemplate({
   key: KABL_KEY,
-  version: 2,
-  changelog: "Kabl v2: product page",
+  version: 3,
+  changelog: "Kabl v3: category data tiles, section order, reviews to close",
   productPage: { thumbs: "side", band: "shelf", extras: ["product-perks"], copy: { back: L("رجوع لكل الشواحن", "Back to all chargers"), reviews: L("رأي اللي شحنوا بيه", "From people who charge with it"), related: L("يشتغل معاه", "Works with") } },
   name: L("كابل", "Kabl"),
   description: L(
-    "شواحن وكابلات: بحث بالموديل أو الوات، الأكثر مبيعاً، اختيار حسب المكان وأكواد توفير. أربع صفحات جاهزة.",
-    "Chargers and cables: search by model or watts, best sellers, pick by place and saving codes. Four ready pages.",
+    "شواحن وكابلات: بحث بالموديل أو الوات، الأكثر مبيعاً واختيار حسب المكان. أربع صفحات جاهزة.",
+    "Chargers and cables: search by model or watts, best sellers and pick by place. Four ready pages.",
   ),
   category: "mobile-accessories",
   sortOrder: 550,

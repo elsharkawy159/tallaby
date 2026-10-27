@@ -16,6 +16,8 @@ export type WebsiteOverviewData = {
   /** A builder revision is what the store host shows (otherwise Tallaby Classic). */
   isLive: boolean;
   hasUnpublishedChanges: boolean;
+  /** The seller chose a template (or the site was ever live); going live needs it. */
+  templateChosen: boolean;
   lastPublishedAt: string | null;
   previewEnabled: boolean;
   pageCount: number;

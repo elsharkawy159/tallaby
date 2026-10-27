@@ -93,7 +93,7 @@ export const heroProduct = defineDesign({
                         paddingBottom: 16,
                         paddingStart: 20,
                         paddingEnd: 20,
-                        shadow: "lg",
+                        shadow: "md",
                       },
                       mobile: { insetStart: "12px", insetTop: "12px" },
                     },

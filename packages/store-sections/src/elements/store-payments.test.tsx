@@ -46,22 +46,37 @@ const paymentsRow = () =>
 const COD_INSTAPAY = { paymentMethods: [{ key: "cash_on_delivery" }, { key: "instapay" }] };
 
 describe("store payment methods in footers", () => {
-  it("shows the store's checkout methods instead of the demo chips, styled like the first chip", () => {
+  it("shows the store's checkout methods as logo cards instead of the demo chips", () => {
     const row = paymentsRow();
     const html = render([node("section", {}, [row])], ctx(COD_INSTAPAY));
-    expect(html).toContain("الدفع عند الاستلام");
-    expect(html).toContain("إنستاباي");
     expect(html).not.toContain("فيزا");
     expect(html).not.toContain("ميزة");
-    // Both chips are copies of the first one (same node id, so the same scoped CSS).
-    expect(html.split(`data-node-id="${row.children[0]!.id}"`)).toHaveLength(3);
+    // InstaPay is its logo (named by alt/title); cash on delivery has no brand, so an icon and its name.
+    expect(html).toMatch(/<img src="\/icons\/payments\/instapay\.png" alt="إنستاباي"/);
+    expect(html).toMatch(/data-payment="cash_on_delivery"[^>]*>.*الدفع عند الاستلام/);
+    expect(html.match(/data-payment="/g)).toHaveLength(2);
+    // The row keeps its node id, so its own scoped CSS (gap, alignment) still applies.
+    expect(html).toContain(`data-node-id="${row.id}"`);
+  });
+
+  it("draws every method a store can offer, with a logo for each wallet", () => {
+    const all = { paymentMethods: ["cash_on_delivery", "instapay", "vodafone_cash", "e_cash"].map((key) => ({ key })) };
+    const html = render([node("section", {}, [paymentsRow()])], ctx(all));
+    for (const file of ["instapay", "vodafone-cash", "e-cash"]) expect(html).toContain(`/icons/payments/${file}.png`);
+    expect(html.match(/data-payment="/g)).toHaveLength(4);
   });
 
   it("names the methods in the page's language", () => {
     const html = render([node("section", {}, [paymentsRow()])], ctx(COD_INSTAPAY, { locale: "en", dir: "ltr" }));
     expect(html).toContain("Cash on delivery");
-    expect(html).toContain("InstaPay");
+    expect(html).toContain('alt="InstaPay"');
     expect(html).not.toContain("VISA");
+  });
+
+  it("keeps a method the package has no logo for as its name", () => {
+    const html = render([node("section", {}, [paymentsRow()])], ctx({ paymentMethods: [{ key: "fawry", label: "Fawry" }] }));
+    expect(html).toMatch(/data-payment="fawry"[^>]*>.*Fawry/);
+    expect(html).not.toContain("<img");
   });
 
   it("keeps the row as authored when the host passes no payment data", () => {

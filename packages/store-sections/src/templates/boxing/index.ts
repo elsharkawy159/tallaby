@@ -59,32 +59,20 @@ const footer = lib("footer-signoff", {
 });
 
 const home: Design[] = [
-  lib("promo-percent", {
+  lib("hero-fullbleed", {
+    photo: [PHOTOS.ring],
     text: {
-      "٣٠٪": L("٢٠٪", "20%"),
-      "على كل المنتجات": L("على باكدجات التمرين", "off training kits"),
-      "لحد آخر الشهر أو لحد ما الكمية تخلص.": L(
-        "جوانتي وحبل وخوذة في بوكس واحد، ورباط إيد ببلاش مع أي جوانتي.",
-        "Gloves, a rope and headgear in one box, with free hand wraps with any gloves.",
-      ),
-      "تسوق العرض": L("تسوق الباكدجات", "Shop kits"),
+      "المجموعة الجديدة": L("لكمة", "Lakma"),
+      "صُنعت لتدوم معك": L("معدات بتستحمل كل جولة", "Gear built for every round"),
+      "خامات مختارة وتفاصيل هادئة، وتوصيل سريع لحد باب البيت.": L("جوانتي وخوذ وأكياس اتجربت في الصالة قبل ما تتباع.", "Gloves, headgear and bags tested in the gym before we sell them."),
+      "تسوّق الآن": L("تسوق المعدات", "Shop the gear"),
+      "صورة الواجهة": L("حلبة ملاكمة", "A boxing ring"),
     },
-    links: { "/products": search("باكدج") },
   }),
+  lib("categories-big-type", { text: { "الأقسام": L("جهّز نفسك", "Gear up") } }),
   lib("products-bento", {
     text: { "الأكثر طلبًا": L("اختيارات المقاتلين", "Fighters’ picks"), "الكل بيسأل عليهم": L("الأكتر استخداماً", "Most used") },
     links: { "/products": BEST },
-  }),
-  lib("bundle-poster", {
-    text: {
-      "طقم المشاوير": L("باكدج البداية", "Starter kit"),
-      "كل اللي تحتاجه في الطريق": L("كل اللي تحتاجه لأول أسبوع", "Everything for week one"),
-      "١٬٢٧٠ ج.م": L("٢٬٢٤٠ ج.م", "EGP 2,240"),
-      "بدل ١٬٤٩٠ ج.م": L("بدل ٢٬٨٠٠ ج.م", "Instead of EGP 2,800"),
-      "اشتري الطقم": L("خد الباكدج", "Get the kit"),
-      "خصم ١٥٪": L("وفّر ٢٠٪", "Save 20%"),
-    },
-    links: { "/products": search("باكدج") },
   }),
   lib("team-numbers", {
     text: {
@@ -161,13 +149,13 @@ const DEMO = demoStore({
 
 export const BOXING = libraryTemplate({
   key: BOXING_KEY,
-  version: 2,
-  changelog: "Lakma v2: product page",
+  version: 3,
+  changelog: "Boxing v3: categories after the hero",
   productPage: { surface: "flat", thumbs: "bottom", band: "brand", extras: ["product-perks"], copy: { back: L("رجوع للمعدات", "Back to the gear"), reviews: L("رسائل من الجيم", "Messages from the gym"), related: L("كمّل عدّتك", "Complete your kit") } },
   name: L("لكمة", "Lakma"),
   description: L(
-    "ملاكمة وقتال بصفحة رئيسية غامقة: خصم الباكدجات، الأكتر استخداماً، باكدج أول أسبوع ولكمة في أرقام. أربع صفحات جاهزة.",
-    "Boxing and combat with a dark homepage: kit offer, most used, the week-one kit and Lakma in numbers. Four ready pages.",
+    "ملاكمة وقتال بصفحة رئيسية غامقة: الأكتر استخداماً ولكمة في أرقام. أربع صفحات جاهزة.",
+    "Boxing and combat with a dark homepage: most used and Lakma in numbers. Four ready pages.",
   ),
   category: "sports",
   sortOrder: 950,

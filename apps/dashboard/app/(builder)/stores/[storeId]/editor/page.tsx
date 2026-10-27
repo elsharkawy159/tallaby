@@ -99,7 +99,8 @@ export default async function StoreEditorPage({ params }: { params: Promise<{ st
     isLive: Boolean(status?.isLive),
     hasUnpublishedChanges: status?.hasUnpublishedChanges ?? true,
     previewEnabled: storePreviewSecret() !== null,
-    templates: { currentKey: gallery?.currentKey ?? "", items: toTemplateCardViews(gallery?.templates ?? [], { en: store.storeCategory, ar: store.storeCategoryAr }) },
+    // No "current" template until the seller picks one (the new-store Classic drafts are a placeholder).
+    templates: { currentKey: gallery?.templateChosen ? gallery.currentKey : "", items: toTemplateCardViews(gallery?.templates ?? [], { en: store.storeCategory, ar: store.storeCategoryAr }, store.id) },
     fontClassName: storeFontVariables,
     category: { en: store.storeCategory ?? null, ar: store.storeCategoryAr ?? null },
     presets: presets && preferTemplatePresets(presets, templateKeys),

@@ -106,7 +106,7 @@ export const rewardsGift = defineDesign({
                     background: "primary",
                     color: "primaryInk",
                     radius: 28,
-                    shadow: "lg",
+                    shadow: "md",
                     paddingTop: 32,
                     paddingBottom: 36,
                     paddingStart: 36,

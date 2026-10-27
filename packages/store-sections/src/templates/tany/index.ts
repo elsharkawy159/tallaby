@@ -2,8 +2,8 @@
  * Tany (template 59, refurbished electronics; Claude Design "Storefront
  * Templates"): pale sage paper, deep green ink, a leaf green for actions and
  * a lime highlight, Cairo throughout and 10px corners. A renewed-devices
- * shop: up to 40% off, how we renew a device, renewed best sellers, more
- * warranty cover, open before you pay, delivery days and order tracking.
+ * shop: like new for less, shop by device, renewed best sellers, how we
+ * renew a device, more warranty cover, open before you pay and reviews.
  * Built from section library designs (`fromLibrary`).
  *
  * Photos: Pexels, each checked by eye (2026-10-21): earbuds in their cases,
@@ -60,15 +60,29 @@ const footer = lib("footer-help", {
 });
 
 const home: Design[] = [
-  lib("promo-percent", {
+  lib("hero-split", {
+    photo: [PHOTOS.bench],
     text: {
-      "٣٠٪": L("٤٠٪", "40%"),
-      "خصم": L("وفّر لحد", "Save up to"),
-      "على كل المنتجات": L("زي الجديد، متفحص مرتين", "Like new, checked twice"),
-      "لحد آخر الشهر أو لحد ما الكمية تخلص.": L("كل جهاز بيعدي فحص ٤٠ نقطة وبيتشحن بضمان ٦ شهور.", "Every device passes a 40-point check and ships with a 6-month warranty."),
-      "تسوق العرض": L("تسوق المجدد", "Shop renewed"),
+      "صورة الواجهة": L("باور بانك وشاحن وكابلات على رخام", "A power bank, a charger and cables on marble"),
+      "المجموعة الجديدة": L("٤٠ فحص قبل ما يوصلك", "40 checks before it ships"),
+      "معمول بكميات صغيرة": L("زي الجديد، بسعر أقل", "Like new, for less"),
+      "قطع مختارة بعناية، بنعملها بكميات صغيرة عشان كل واحدة تفضل مميزة.": L(
+        "سماعات وساعات وأجهزة بيت أصلية، متفحصة ومتنضفة وبضمان ٦ شهور.",
+        "Genuine audio, watches and home tech, checked, cleaned and covered for 6 months.",
+      ),
+      "تسوّق المجموعة": L("تسوق المجدد", "Shop renewed"),
+      "حكايتنا": L("بنجدد إزاي", "How we renew"),
     },
-    links: { "/products": SHOP },
+  }),
+  lib("categories-ruled", { text: { "الأقسام": L("الأقسام", "Departments"), "تسوق بالقسم": L("اختار جهازك", "Pick your device") } }),
+  lib("products-list", {
+    text: {
+      "الكتالوج": L("الأكتر طلباً", "Top picks"),
+      "كل الإكسسوارات": L("الأكثر مبيعاً من المجدد", "Renewed best sellers"),
+      "كل اللي تحتاجه في مكان واحد، أصلي وبضمان.": L("أجهزة أصلية متفحصة، بسعر أقل من الجديد بكتير.", "Genuine devices, checked, for much less than new."),
+    },
+    links: { "/products": BEST },
+    lists: [{ source: "best-sellers", limit: 5 }],
   }),
   lib("text-steps", {
     text: {
@@ -82,15 +96,6 @@ const home: Design[] = [
       "فلوسك ترجع": L("ضمان", "Warranty"),
       "بنفس طريقة الدفع خلال ٥ أيام.": L("بيتشحن بضمان ٦ شهور وتقدر تزوده.", "It ships with a 6-month warranty you can extend."),
     },
-  }),
-  lib("products-list", {
-    text: {
-      "الكتالوج": L("الأكتر طلباً", "Top picks"),
-      "كل الإكسسوارات": L("الأكثر مبيعاً من المجدد", "Renewed best sellers"),
-      "كل اللي تحتاجه في مكان واحد، أصلي وبضمان.": L("أجهزة أصلية متفحصة، بسعر أقل من الجديد بكتير.", "Genuine devices, checked, for much less than new."),
-    },
-    links: { "/products": BEST },
-    lists: [{ source: "best-sellers", limit: 5 }],
   }),
   lib("service-plans", {
     text: {
@@ -113,15 +118,27 @@ const home: Design[] = [
       "جرّب المنتج قدام المندوب.": L("شغّل الجهاز واتأكد من الفئة قدام المندوب.", "Switch the device on and check its grade in front of the courier."),
     },
   }),
-  lib("pay-days", {
+  lib("testimonials-ruled", {
     text: {
-      "القاهرة، الجيزة": L("القاهرة والجيزة", "Cairo and Giza"),
-      "الإسكندرية، الدلتا، مدن القناة": L("الدلتا والقناة", "Delta and Canal"),
-      "٤–٦": L("٤–٥", "4–5"),
-      "الصعيد، البحر الأحمر، سيناء": L("الصعيد", "Upper Egypt"),
+      "آراء العملاء": L("آراء العملاء", "Reviews"),
+      "قالوا عننا": L("جدّدوا معانا", "They went renewed"),
+      "طلبت يوم الأحد ووصل الثلاثاء. التغليف كان مرتبًا والمنتج كما في الصور تمامًا.": L(
+        "الساعة فئة A فعلاً، مفيهاش ولا خدش، وبطاريتها بتقعد يومين.",
+        "The watch really is grade A: not a scratch, and the battery lasts two days.",
+      ),
+      "م": L("ك", "K"),
+      "مريم أ.": L("كريم س.", "Karim S."),
+      "بدّلت المقاس بدون أي تعب، والفريق رد علي في دقائق.": L(
+        "فتحت السماعة قدام المندوب وجربتها قبل ما أدفع. وفرت نص التمن.",
+        "I tried the earbuds in front of the courier before paying. Saved half the price.",
+      ),
+      "ع": L("د", "D"),
+      "عمر ك.": L("دينا م.", "Dina M."),
+      "أسعار معقولة وجودة أفضل مما توقعت.": L("الشاشة فئة B وعلامتها صغيرة زي ما في الصور بالظبط.", "The grade B TV has one small mark, exactly as photographed."),
+      "ن": L("ه", "H"),
+      "نور ح.": L("هشام ع.", "Hesham A."),
     },
   }),
-  lib("track-ask"),
 ];
 
 const about: Design[] = [
@@ -161,13 +178,13 @@ const DEMO = demoStore({
 
 export const TANY = libraryTemplate({
   key: TANY_KEY,
-  version: 2,
-  changelog: "Tany v2: product page",
+  version: 3,
+  changelog: "Tany v3: hero, categories, section order",
   productPage: { thumbs: "side", band: "shelf", extras: ["product-perks"], copy: { back: L("رجوع للأجهزة المجدّدة", "Back to renewed devices"), reviews: L("رأي اللي جدّدوا معانا", "From renewed-device owners"), related: L("مجدّد كمان", "Also renewed") } },
   name: L("تاني", "Tany"),
   description: L(
-    "إلكترونيات مجددة: وفّر لحد ٤٠٪، بنجدد الجهاز إزاي، الضمان، افتح قبل ما تدفع وتتبع طلبك. أربع صفحات جاهزة.",
-    "Refurbished electronics: save up to 40%, how we renew a device, warranty, open before you pay and order tracking. Four ready pages.",
+    "إلكترونيات مجددة: بنجدد الجهاز إزاي، الضمان، افتح قبل ما تدفع وتتبع طلبك. أربع صفحات جاهزة.",
+    "Refurbished electronics: how we renew a device, warranty, open before you pay and order tracking. Four ready pages.",
   ),
   category: "electronics",
   sortOrder: 590,

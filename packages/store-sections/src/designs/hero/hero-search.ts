@@ -1,22 +1,21 @@
 /**
- * Search hero (Modular set): a centred headline over one large search field
- * and a row of popular searches underneath, on a soft shelf panel. For big
- * catalogues where visitors arrive knowing what they want. The field opens the
- * store's product page, where the search runs.
+ * Search hero (Modular set): a centred headline over one large, working
+ * search field (owner, 2026-10-27: no popular-search chips). The field is a
+ * search link holding one icon and its placeholder, so the storefront draws a
+ * live search there: typing lists the store's matching products, Enter opens
+ * the results page (`/products?search=…`). A preview with no live search gets
+ * a plain search form that opens the same page (`elements/render.tsx`).
  */
 import { defineDesign } from "../builder";
 import { L } from "../_kit";
-import { chip } from "../_modular";
-
-const POPULAR = [L("وصل حديثًا", "New in"), L("الأكثر مبيعًا", "Best sellers"), L("هدايا", "Gifts"), L("العروض", "Offers")];
 
 export const heroSearch = defineDesign({
   id: "hero-search",
-  version: 1,
+  version: 2,
   category: "hero",
   subcategory: "full-width",
   name: L("بحث أولاً", "Search hero"),
-  description: L("عنوان في المنتصف وخانة بحث كبيرة وتحتها الأكثر بحثًا.", "A centred headline over a large search field and popular searches."),
+  description: L("عنوان في المنتصف وتحته خانة بحث كبيرة شغالة.", "A centred headline over a large, working search field."),
   keywords: ["hero", "search", "catalogue", "practical", "واجهة", "بحث"],
   tree: (t) =>
     t.section(
@@ -45,39 +44,16 @@ export const heroSearch = defineDesign({
                       [
                         t.row(
                           [
-                            t.row(
-                              [
-                                t.icon("search", {
-                                  style: { fontSize: "xl", color: "muted" },
-                                }),
-                                t.text(L("اكتب اسم المنتج", "Type a product name"), { style: { color: "muted", fontSize: "lg" } }),
-                              ],
-                              {
-                                label: L("الخانة", "Field"),
-                                style: { gap: 12, wrap: false },
-                              },
-                            ),
-                            t.text(L("ابحث", "Search"), {
-                              role: "cta",
-                              style: {
-                                background: "primary",
-                                color: "primaryInk",
-                                fontWeight: "semibold",
-                                radius: 999,
-                                paddingTop: 12,
-                                paddingBottom: 12,
-                                paddingStart: 26,
-                                paddingEnd: 26,
-                              },
+                            t.text(L("اكتب اسم المنتج", "Type a product name"), {
+                              style: { color: "muted", fontSize: "lg", textAlign: "center" },
+                            }),
+                            t.icon("search", {
+                              style: { fontSize: "xl", color: "primary" },
                             }),
                           ],
                           {
-                            label: L("المحتوى", "Content"),
-                            style: {
-                              justifyContent: "between",
-                              gap: 12,
-                              wrap: false,
-                            },
+                            label: L("الخانة", "Field"),
+                            style: { gap: 12, wrap: false, justifyContent: "center" },
                           },
                         ),
                       ],
@@ -86,36 +62,28 @@ export const heroSearch = defineDesign({
                         role: "search",
                         style: {
                           background: "background",
+                          color: "foreground",
+                          textAlign: "center",
+                          fontSize: "lg",
                           radius: 999,
                           borderWidth: 1,
                           borderColor: "border",
                           shadow: "md",
-                          paddingTop: 8,
-                          paddingBottom: 8,
-                          paddingStart: 22,
-                          paddingEnd: 8,
+                          // The start padding is the end padding plus the icon and its gap, so the
+                          // placeholder sits in the true centre of the field (owner, 2026-10-27).
+                          paddingTop: 18,
+                          paddingBottom: 18,
+                          paddingStart: 56,
+                          paddingEnd: 24,
                           hover: { borderColor: "primary" },
                         },
+                        mobile: { paddingTop: 14, paddingBottom: 14, paddingStart: 48, paddingEnd: 18 },
                       },
                     ),
                   ],
                   {
                     label: L("البحث", "Search"),
                     style: { width: "100%", maxWidth: "680px" },
-                  },
-                ),
-                t.row(
-                  [
-                    t.text(L("الأكثر بحثًا", "Popular"), {
-                      style: { color: "muted", fontSize: "sm" },
-                      mobile: { hidden: true },
-                    }),
-                    ...POPULAR.map((p) => chip(t, p, "/products")),
-                  ],
-                  {
-                    label: L("الأكثر بحثًا", "Popular searches"),
-                    role: "items",
-                    style: { gap: 8, justifyContent: "center" },
                   },
                 ),
               ],

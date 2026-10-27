@@ -59,7 +59,8 @@ export default async function RootLayout({
   const direction = locale === "ar" ? "rtl" : "ltr";
 
   return (
-    <html lang={locale} dir={direction}>
+    // Smooth in-page scrolling on store sites (MOTION_CSS); Next turns it off during route changes.
+    <html lang={locale} dir={direction} data-scroll-behavior="smooth">
       {/* No Kufi variable in English: the shop's body font picks Kufi whenever it is set. */}
       <body
         className={`${

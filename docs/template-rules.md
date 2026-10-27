@@ -30,7 +30,7 @@ Every template's home page uses this order. "Required" sections must be present;
 | 1 | **Hero carousel** | Yes | 2 or 3 slides, directly under the header. Each slide: one photo, one short headline (≤ 6 words), one optional subline, **one** button. | `hero-carousel` or `hero-carousel-images`. Buttons go to real catalog URLs (§5). Autoplay on, 5 s, dots visible, swipe on mobile. |
 | 2 | **Categories** | Yes | Section title + category tiles or circles with name (and image when there is one). | `categoryList` data node. Each tile links to `/products?category=<key>`. "View all" goes to `/products`. |
 | 3 | **Products: best sellers** | Yes | Title + 4 to 8 products + "View all". | `productList` source `best-sellers`. "View all" goes to `/products?sort=popularity`. |
-| 4 | **Offers** | Yes | One promo banner (1 photo, 1 line, 1 button) **and** a product rail of discounted products. | `productList` source `discounted`. Button and "View all" go to the offers catalog link (gap G4). |
+| 4 | ~~**Offers**~~ | **No (owner, 2026-10-27)** | Templates carry no promotions or discounts: a seller may publish a template unedited, and the store must never promise a sale, coupon or amount off it doesn't give. No promotion or bundle section, no discount-only design (`newsletter-coupon`, `newsletter-sticker`, `popup-reward`), no coupon code or "% off" in template copy (`packages/store-sections/src/templates/no-discounts.ts`, checked by `no-discounts.test.ts`). The designs stay in the library for a seller to add on purpose. Product cards keep their discount badge, bound to the product's own compare-at price. | |
 | 5 | **Products: new arrivals** | Yes | Title + 4 to 8 products + "View all". | `productList` source `newest`. "View all" goes to `/products?sort=newest`. |
 | 6 | **Brands** | Yes (hides when the store has no brands) | Title + brand logos or names in one row or rail. | Brand data node (gap G3). Each brand links to its catalog filter. |
 | 7 | **Trust strip** | Optional | 3 or 4 icons with a short line: delivery, cash on delivery, returns, support. | Static text; the seller edits it. |
@@ -46,6 +46,18 @@ Limits:
 - Product rails show **4 products on desktop, 2 on mobile** (a grid or a swipeable rail), never more than 8.
 - Do **not** add these to a template home page: before/after sliders, video playlists, popups, loyalty, product finders, long text blocks. They stay in the section library so a seller can add them. (Tabbed product lists may replace the best-sellers or new-arrivals rail; bento layouts are allowed inside a banner grid or hero.)
 - A template can change the **look** of each standard section (layout, cards, colours, corners, fonts), but not the order or the purpose.
+
+## 2a. Section order (every template, owner 2026-10-27)
+
+One rule for all templates; the sequence after the categories is chosen per template, never copied from one universal list. Checked by `templates/section-order.test.ts`.
+
+1. **Hero first**, directly under the header, and only one hero. Nothing sits above it (no delivery bar, trust strip or coupon box; those go lower or into the announcement bar).
+2. **Categories second**, so a visitor can jump to what they came for.
+3. **Then the trade's own journey**: put what that buyer decides on first. Fashion and beauty lead with new arrivals and looks; electronics and auto with best sellers, specs or a comparison; food with what's fresh and delivery areas; jewelry and furniture with featured pieces, then craft or story; services lead with prices or booking.
+4. **Trust at the moment of doubt**: reviews, guarantees, payment and delivery info come after the products they support, not before them.
+5. **No repeats**: two sections that do the same job (two trust strips, two FAQs, two story blocks) become one; drop sections that add length without helping someone buy.
+6. **Short**: at most 9 sections between header and footer; end with a light closing section (reviews, FAQ or newsletter) and then the footer.
+7. Keep each template's identity (look, copy, photos, fonts), its links and its responsive behaviour; only the order and the weak or repeated sections change.
 
 ## 3. Other pages
 
@@ -64,12 +76,12 @@ Limits:
 
 ### 4.2 Mobile bottom navigation
 
-On by default for most templates (owner decides which, §8). Phones only (< 768 px), never tablet or desktop.
+**Built (owner, 2026-10-27):** on by default for every template and store; the seller turns it off in the builder (Header › options › "Bottom navigation on phones", stored as `bottomNav: false` on the header). `render/bottom-nav.tsx` (`SiteBottomNav`, `bottomNavOn`) and `render/bottom-nav-runtime.client.tsx`; drawn by the storefront shell, the template preview, the builder canvas and its preview, after the footer. Phones only (< 768 px), never tablet or desktop.
 
-- **5 items, in this order** (start to end, so it mirrors in RTL): Home `/`, Shop `/products`, Search (opens the store search), Cart `/cart` with a live count badge, Account `/profile` (opens sign in when signed out).
+- **4 items, in this order** (start to end, so it mirrors in RTL), each an icon with its name under it: Home `/`, Shop `/products`, Cart `/cart` with a live count badge, Profile `/profile`. (Search stays in the header.)
 - Icon plus a short label in both languages; the current page is highlighted in the brand colour.
 - Uses theme tokens (background, foreground, primary), a top border or soft shadow, height 56 to 64 px plus `env(safe-area-inset-bottom)`. Touch targets ≥ 44 px.
-- Hidden on checkout. On the product page it is replaced by the product buy bar (Add to cart / Buy now) so the two never stack.
+- Hidden on checkout and on every product page (the renderer marks product page parts with `data-sf-product-page`), where the product buy bar (Add to cart / Buy now) takes the bottom edge, so the two never stack.
 - When it is on, the floating cart bar (`MobileCartBar`) is not shown: the cart badge in the bottom navigation does that job.
 - The page gets bottom padding equal to the bar's height so nothing is covered.
 
@@ -178,13 +190,13 @@ Changing Tallaby Classic's design needs the owner's approval (`CLAUDE.md` rule 1
 
 | Gap | What | Notes |
 |---|---|---|
-| **G1** | Mobile bottom navigation | A chrome setting (on/off, per template and per store) plus its renderer in the storefront shell; hides `MobileCartBar` when on; editor switch under the header settings. |
+| **G1** | Mobile bottom navigation | **Built 2026-10-27** (§4.2). A chrome setting (on/off, per template and per store) plus its renderer in the storefront shell; hides `MobileCartBar` when on; editor switch under the header settings. |
 | **G2** | Powered by Tallaby in the footer | Done (2026-10-26): `drawChrome` adds it to every footer; the badge is removed. |
 | **G3** | Brands section | A `brandList` data node from the seller's brands (`seller_product_brands`, 0068) and a `?brand=` filter on the store catalog. Brand designs are static wordmarks today. |
 | **G4** | Offers link | A `?sale=1` (discounted only) filter on the store catalog so offer buttons and "View all" have a real target. The `discounted` product list source already exists. |
 | **G5** | Rules test | §7. |
-| **G7** | Animations | Site on/off switch and Hover effect in Theme; the section Animation switch (on by default) replacing today's None / Fade / Rise (`elements/shell.ts`, `section-shell.client.tsx`); the `data-reveal` output and the small `IntersectionObserver` runtime so it works on every browser (§6a, `docs/section-rules.md` §6.7). |
-| **G8–G19** | Section gaps | Zoom-in and slide-in variants, moving marquee (later), second-photo hover (later), hotspot pins (later), layout tokens (padding, heading size, container), tablet columns, mobile swipe rows, theme radius, hover transitions, section head gap, no letter-spacing on Arabic. Defined in `docs/section-rules.md` §11; a template can ship without them and add them in a later version. |
+| **G7** | Animations | **Built 2026-10-27** (`docs/section-rules.md` §6.7, §11). Site on/off switch and Hover effect in Theme; the section Animation switch (on by default) replacing today's None / Fade / Rise (`elements/shell.ts`, `section-shell.client.tsx`); the `data-reveal` output and the small `IntersectionObserver` runtime so it works on every browser (§6a, `docs/section-rules.md` §6.7). |
+| **G8–G19** | Section gaps | G8, G13, G14 (render-time fallback), G15, G17 and G19 **built 2026-10-27**; G16 and G18 still open. Zoom-in and slide-in variants, moving marquee (later), second-photo hover (later), hotspot pins (later), layout tokens (padding, heading size, container), tablet columns, mobile swipe rows, theme radius, hover transitions, section head gap, no letter-spacing on Arabic. Defined in `docs/section-rules.md` §11; a template can ship without them and add them in a later version. |
 | **G6** | Template updates | New template versions through insert-only migrations (staging first, then production with owner approval). Existing stores keep their site; only new picks and "Use template" get the new version. |
 
 ## 10. Open questions for the owner

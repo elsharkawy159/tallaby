@@ -1,6 +1,6 @@
 /**
  * Announcement stack (library H-c): a brand strip with one message and a
- * coupon code, then a quiet header with the menu gathered at the end beside
+ * highlight badge (never a coupon: templates promise no discounts), then a quiet header with the menu gathered at the end beside
  * the icons. On mobile the message wraps and the menu goes under the bar.
  */
 import { defineDesign } from "../builder";
@@ -13,8 +13,8 @@ export const headerAnnouncement = defineDesign({
   category: "headers",
   subcategory: "announcement",
   name: L("شريط إعلان وهيدر", "Announcement header"),
-  description: L("شريط ملون برسالة وكود خصم فوق هيدر هادئ.", "A coloured strip with a message and coupon over a quiet header."),
-  keywords: ["header", "announcement", "coupon", "free shipping", "إعلان", "كوبون", "هيدر"],
+  description: L("شريط ملون برسالة وشارة فوق هيدر هادئ.", "A coloured strip with a message and a badge over a quiet header."),
+  keywords: ["header", "announcement", "badge", "إعلان", "شارة", "هيدر"],
   tree: (t) =>
     t.section({ label: L("الهيدر", "Header"), style: { paddingTop: 0, paddingBottom: 0, background: "background" }, mobile: { paddingTop: 0, paddingBottom: 0 } }, [
       t.row(
@@ -24,9 +24,9 @@ export const headerAnnouncement = defineDesign({
             style: { ...ON_BRAND, fontWeight: "medium" },
           }),
           t.row(
-            [t.icon("copy", { style: { fontSize: "sm" } }), t.text(L("الكود: SAVE10", "Code: SAVE10"), { role: "coupon", style: { fontWeight: "bold" } })],
+            [t.icon("check", { style: { fontSize: "sm" } }), t.text(L("الدفع عند الاستلام", "Cash on delivery"), { role: "highlight", style: { fontWeight: "bold" } })],
             {
-              label: L("الكوبون", "Coupon"),
+              label: L("الشارة", "Badge"),
               style: {
                 gap: 6,
                 background: "accent",

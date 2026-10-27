@@ -10,7 +10,8 @@
  */
 import type { ComponentNode, SectionInstance } from "../config/schema";
 import { SITE_ROOT_CLASS } from "../core/theme";
-import { normalizeShell, shellAnimationCss, type SectionShellStyle } from "./shell";
+import { MOTION_EASE } from "./motion";
+import { normalizeShell, type SectionShellStyle } from "./shell";
 
 export const STYLE_BREAKPOINTS = ["tablet", "mobile"] as const;
 export type StyleBreakpoint = (typeof STYLE_BREAKPOINTS)[number];
@@ -25,6 +26,8 @@ export const COLOR_TOKEN_VARS = {
   muted: "var(--sf-muted)",
   background: "var(--sf-paper)",
   secondary: "var(--sf-shelf)",
+  /** Cards, header and footer above the page colour: white, a raised grey in dark mode. */
+  surface: "var(--sf-surface,#ffffff)",
   border: "var(--sf-line)",
   accent: "var(--sf-sun)",
   white: "#ffffff",
@@ -55,9 +58,9 @@ const OFFSET_RE = /^(?:auto|(-?\d{1,4}(?:\.\d{1,2})?)(px|%|rem))$/;
 
 /** Fluid heading sizes for designs (clamp between mobile and desktop). */
 export const DISPLAY_SIZES = {
-  "display-sm": "clamp(1.75rem,3vw,2.35rem)",
-  "display-md": "clamp(2.2rem,5vw,3.25rem)",
-  "display-lg": "clamp(2.5rem,6vw,3.75rem)",
+  "display-sm": "clamp(1.75rem,4vw,3.5rem)",
+  "display-md": "clamp(2.25rem,5vw,4rem)",
+  "display-lg": "clamp(2.5rem,6vw,4.5rem)",
 } as const;
 /** Design-system fonts by role (core/theme.ts sets the variables). */
 const FONT_FAMILIES = {
@@ -68,7 +71,8 @@ const LETTER_SPACINGS = { tight: "-0.02em", normal: "0", wide: "0.06em", wider: 
 /** Fixed gradients on theme tokens (`background-image`, over the background colour). */
 export const GRADIENTS = {
   "brand-soft": "linear-gradient(135deg,color-mix(in srgb,var(--sf-brand) 16%,transparent),color-mix(in srgb,var(--sf-brand) 4%,transparent))",
-  "ink-fade": "linear-gradient(to top,color-mix(in srgb,var(--sf-ink) 70%,transparent),transparent)",
+  // A photo scrim under white text: always dark, also when dark mode turns --sf-ink light (owner, 2026-10-27).
+  "ink-fade": "linear-gradient(to top,rgb(0 0 0 / 0.68),rgb(0 0 0 / 0.12) 60%,transparent)",
   shelf: "linear-gradient(180deg,var(--sf-shelf),var(--sf-paper))",
 } as const;
 
@@ -311,12 +315,28 @@ const px = (value: number) => `${value}px`;
 export const SECTION_BASE_PADDING = 64;
 
 /**
+ * What `--sf-section-y` stands for while the Brand section spacing is unset
+ * (docs/section-rules.md §5.2, G13): 56px on phones and tablets, growing to
+ * 64px on wide screens. Nearly every design pads its root 64 (desktop) and 40
+ * (phones), so a section opens about 58px at 1280px, 64px from 1440px and
+ * 35px on a phone: two sections sit about 115px / 70px apart. v0.3 grew it to
+ * 104px, which left about 200px between two sections on a laptop (owner,
+ * 2026-10-27: too much gap between sections).
+ */
+export const SECTION_FLUID_PADDING = "clamp(56px,4.5vw,64px)";
+/**
+ * A design's root padding counts at most this much (1.25 × the token), so a
+ * roomy section (a hero, the About set) never opens a hole in the rhythm.
+ */
+export const SECTION_MAX_PADDING = 80;
+
+/**
  * A section root's vertical padding, scaled by the Brand section spacing:
- * exactly `value`px while the token is unset, `value × token / 64` once it is
- * set, so each section keeps its own rhythm (0 stays 0).
+ * `value × token / 64`, the token being the seller's spacing or the fluid
+ * default above, so each section keeps its own rhythm (0 stays 0).
  */
 const sectionPadding = (value: number) =>
-  value === 0 ? "0px" : `calc(var(--sf-section-y,${SECTION_BASE_PADDING}px)*${value / SECTION_BASE_PADDING})`;
+  value === 0 ? "0px" : `calc(var(--sf-section-y,${SECTION_FLUID_PADDING})*${Math.min(value, SECTION_MAX_PADDING) / SECTION_BASE_PADDING})`;
 
 /**
  * CSS declarations for a normalized style (`hidden` is handled by the caller).
@@ -401,13 +421,17 @@ function ruleFor(selector: string, style: StyleValues, sectionRoot = false): str
   const declarations = styleDeclarations(style, sectionRoot);
   let css = declarations.length ? `${selector}{${declarations.join(";")}}` : "";
   const hover = style.hover ? hoverDeclarations(style.hover) : [];
-  if (hover.length) css += `${selector}:hover{${hover.join(";")}}`;
+  // Hover changes ease in (docs/section-rules.md §6.5): 200ms for colours, 600ms for zoom.
+  if (hover.length) css += `${selector}{transition:${HOVER_TRANSITION}}${selector}:hover{${hover.join(";")}}`;
   return css;
 }
 
-/** Hover zoom is motion: switched off for visitors who ask for reduced motion. */
+const HOVER_TRANSITION = `color .2s,background-color .2s,border-color .2s,box-shadow .2s,opacity .2s,transform .6s ${MOTION_EASE}`;
+
+/** Hover zoom and easing are motion: switched off for visitors who ask for reduced motion. */
 function reducedMotionRule(selectors: string[]): string {
-  return selectors.length ? `@media (prefers-reduced-motion:reduce){${selectors.map((s) => `${s}:hover`).join(",")}{transform:none}}` : "";
+  if (!selectors.length) return "";
+  return `@media (prefers-reduced-motion:reduce){${selectors.join(",")}{transition:none}${selectors.map((s) => `${s}:hover`).join(",")}{transform:none}}`;
 }
 
 function hiddenRule(selector: string, mode: StyleCssMode): string {
@@ -430,12 +454,28 @@ function nodeSelector(sectionId: string, node: ComponentNode) {
   return node.type === "button" ? `${selector}>*` : selector;
 }
 
+const LIST_TYPES = new Set(["productList", "categoryList", "postList"]);
+
+/**
+ * Tablet columns for a row that sets none (docs/section-rules.md §5.3, G14):
+ * a 4-to-6 column row would otherwise keep its desktop columns on an 820px
+ * tablet. Product, category and post lists get 3; other grids 2, or 3 from
+ * 6 columns (logos).
+ */
+export function fallbackTabletColumns(type: string, columns: number | undefined): number | undefined {
+  if (!columns || columns < 4 || (type !== "grid" && !LIST_TYPES.has(type))) return undefined;
+  return LIST_TYPES.has(type) || columns >= 6 ? 3 : 2;
+}
+
 function collectNodes(target: Map<string, Responsive>, sectionId: string, nodes: ComponentNode[] | undefined, depth = 0) {
   for (const node of nodes ?? []) {
     if (ID_RE.test(node.id)) {
       const selector = nodeSelector(sectionId, node);
-      collect(target, selector, "base", normalizeStyle(node.style));
+      const base = normalizeStyle(node.style);
+      collect(target, selector, "base", base);
       const bps = normalizeBreakpointStyles(node.breakpointStyles, normalizeStyle);
+      const tabletColumns = bps.tablet?.columns === undefined ? fallbackTabletColumns(node.type, base.columns) : undefined;
+      if (tabletColumns) bps.tablet = { ...bps.tablet, columns: tabletColumns };
       for (const bp of STYLE_BREAKPOINTS) collect(target, selector, bp, bps[bp]);
       const entry = target.get(selector);
       if (entry && depth === 0 && node.type === "section") entry.sectionRoot = true;
@@ -473,14 +513,13 @@ function collectSection(target: Map<string, Responsive>, instance: SectionInstan
 export function collectPageCss(sections: readonly (SectionInstance | null | undefined)[], mode: StyleCssMode = "public"): string {
   const target = new Map<string, Responsive>();
   for (const instance of sections) if (instance) collectSection(target, instance);
-  const animated = mode === "public" ? collectAnimations(sections) : [];
-  if (!target.size) return shellAnimationCss(animated);
+  if (!target.size) return "";
   const base: string[] = [];
   const media: Record<StyleBreakpoint, string[]> = { tablet: [], mobile: [] };
   const hidden: Record<"base" | StyleBreakpoint, string[]> = { base: [], tablet: [], mobile: [] };
-  const zoomed: string[] = [];
+  const hovered: string[] = [];
   for (const [selector, entry] of target) {
-    if ([entry.base, entry.tablet, entry.mobile].some((style) => (style?.hover?.scale ?? 100) !== 100)) zoomed.push(selector);
+    if ([entry.base, entry.tablet, entry.mobile].some((style) => style?.hover)) hovered.push(selector);
     if (entry.base) base.push(ruleFor(selector, entry.base, entry.sectionRoot));
     if (entry.base?.hidden) hidden.base.push(hiddenRule(selector, mode));
     for (const bp of STYLE_BREAKPOINTS) {
@@ -499,17 +538,7 @@ export function collectPageCss(sections: readonly (SectionInstance | null | unde
     const rules = hidden[device].join("");
     if (rules) css += `@media ${DEVICE_RANGE[device]}{${rules}}`;
   }
-  return css + reducedMotionRule(zoomed) + shellAnimationCss(animated);
-}
-
-function collectAnimations(sections: readonly (SectionInstance | null | undefined)[]) {
-  const out: { selector: string; animation: "fade" | "rise" }[] = [];
-  for (const instance of sections) {
-    if (!instance || !ID_RE.test(instance.id)) continue;
-    const animation = normalizeSectionStyle(instance.style).shell?.animation;
-    if (animation && animation !== "none") out.push({ selector: `.${SITE_ROOT_CLASS} [data-section-id="${instance.id}"]`, animation });
-  }
-  return out;
+  return css + reducedMotionRule(hovered);
 }
 
 /** Escapes a CSS block for a `<style>` element (same rule as `SiteTheme`). */

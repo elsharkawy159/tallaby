@@ -68,20 +68,11 @@ const footer = lib("footer-help", {
 });
 
 const home: Design[] = [
-  lib("promo-shipping", {
-    text: { "اطلب بـ ١٥٠٠ ج.م أو أكتر والتوصيل عليك ببلاش": L("اطلب بـ ٥٠٠ ج.م أو أكتر والتوصيل ببلاش", "Order EGP 500 or more and delivery is free") },
-    links: { "/products": BEST },
-  }),
   lib("hero-search", {
     text: {
       "بتدور على إيه النهارده؟": L("محتاج إيه النهارده؟", "What do you need today?"),
       "اكتب اسم المنتج": L("طماطم، رز، عيش…", "Tomatoes, rice, bread…"),
-      "وصل حديثًا": L("بوكس خضار", "Veg box"),
-      "الأكثر مبيعًا": L("رز", "Rice"),
-      "هدايا": L("عيش", "Bread"),
-      "العروض": L("بهارات", "Spices"),
     },
-    links: { "/products": [SHOP, search("بوكس"), search("رز"), search("عيش"), search("بهارات")] },
   }),
   lib("categories-tiles", {
     photo: [PHOTOS.pepperBox, PHOTOS.fruitBasket, PHOTOS.grains, PHOTOS.breads],
@@ -102,19 +93,6 @@ const home: Design[] = [
       "العروض": L("الأعلى تقييماً", "Top rated"),
     },
     links: { "/products": [NEW, BEST, RATED] },
-  }),
-  lib("promo-bento", {
-    photo: [PHOTOS.vegBox, PHOTOS.spices, PHOTOS.legumes],
-    text: {
-      "عروض الموسم": L("عروض الأسبوع", "Weekly offers"),
-      "٤٠٪": L("١٥٪", "15%"),
-      "تشكيلة الموسم": L("خضار وفاكهة", "Fruit & veg"),
-      "٢٥٪": L("٢٠٪", "20%"),
-      "الأكثر مبيعًا": L("بهارات", "Spices"),
-      "٣٠٪": L("١٠٪", "10%"),
-      "أساسيات": L("البقالة", "Pantry"),
-    },
-    links: { "/products": [BEST, search("خضار"), search("بهارات"), search("رز")] },
   }),
   lib("products-rows", {
     text: { "إكسسوارات بسعر حلو": L("أساسيات كل يوم", "Everyday essentials") },
@@ -180,8 +158,8 @@ export const HARVEST = libraryTemplate({
   changelog: "Harvest v3: product page",
   name: L("هارفست", "Harvest"),
   description: L(
-    "بقالة أونلاين: بحث سريع، أقسام، عروض الأسبوع وأساسيات كل يوم. أربع صفحات جاهزة.",
-    "Online grocery: quick search, aisles, weekly offers and everyday essentials. Four ready pages.",
+    "بقالة أونلاين: بحث سريع، أقسام وأساسيات كل يوم. أربع صفحات جاهزة.",
+    "Online grocery: quick search, aisles and everyday essentials. Four ready pages.",
   ),
   category: "food",
   sortOrder: 180,

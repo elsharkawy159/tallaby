@@ -30,7 +30,7 @@ const PHOTOS = {
   lipFan: pexels(7256145, 900),
   lipPeach: pexels(7256118, 900),
   lipPencilPink: pexels(7256137, 900),
-  lipTrio: pexels(7256096, 900),
+  lipTrio: pexels(7256082, 1600),
   lipDuo: pexels(7256136, 900),
   lipVelvet: pexels(7810564, 900),
   mascara: pexels(3373728, 900),
@@ -91,31 +91,6 @@ const home: Design[] = [
   lib("products-shelf", {
     text: { "تسوّق حسب مزاجك": L("اختاري مزاجك", "Pick your mood"), "الأكثر مبيعًا": L("الأكثر مبيعاً", "Best sellers"), "عليه خصم": L("الأعلى تقييماً", "Top rated") },
     links: { "/products": [NEW, BEST, RATED, SHOP] },
-  }),
-  lib("promo-sticker", { text: { "عرض اليوم بس": L("الأسبوع ده بس", "This week only") } }),
-  lib("promo-tiers", {
-    text: {
-      "عرض الشهر": L("الشهر ده", "This month"),
-      "كل ما تزود، توفّر أكتر": L("كل ما تزودي توفّري", "Spend more, save more"),
-      "لما تشتري بـ": L("لما تشتري بـ", "Spend"),
-      "١٠٠٠ ج.م": L("٨٠٠ ج.م", "EGP 800"),
-      "٢٠٠٠ ج.م": L("١٦٠٠ ج.م", "EGP 1,600"),
-      "٣٥٠٠ ج.م": L("٢٥٠٠ ج.م", "EGP 2,500"),
-      "٥٠٠ ج.م": L("٤٠٠ ج.م", "EGP 400"),
-      "خصم على الفاتورة": L("خصم بكود KOHL", "off with a KOHL code"),
-    },
-  }),
-  lib("popup-reward", {
-    as: "refer-friend",
-    name: L("ادعي صاحبتك", "Refer a friend"),
-    text: {
-      "جرّب حظك": L("ادّي ١٠٠ وخدي ١٠٠", "Give 100, get 100"),
-      "المرة دي كسبت، وده كودك.": L("شاركي كودك. صاحبتك توفر ١٠٠ على طلب ٨٠٠، وانتي كمان.", "Share your code. Your friend saves EGP 100 on EGP 800, and so do you."),
-      "كسبت": L("ليكي ولصاحبتك", "For you and a friend"),
-      "شحن مجاني": L("خصم ١٠٠ ج.م", "EGP 100 off"),
-      "الكود: FREESHIP": L("الكود: KOHL100", "Code: KOHL100"),
-      "استخدمه دلوقتي": L("تسوقي دلوقتي", "Shop now"),
-    },
   }),
   lib("testimonials-wall", {
     text: {
@@ -183,13 +158,13 @@ const DEMO = demoStore({
 
 export const KOHL = libraryTemplate({
   key: KOHL_KEY,
-  version: 2,
-  changelog: "Kohl v2: product page",
+  version: 3,
+  changelog: "Kohl v3: wide hero photo",
   productPage: { thumbs: "bottom", band: "brand", copy: { back: L("رجوع للألوان", "Back to the colours"), reviews: L("حيطة الآراء", "The review wall"), related: L("كمّلي المكياج", "Finish the look") } },
   name: L("كحل", "Kohl"),
   description: L(
-    "مكياج جريء: كلمة كبيرة، عرض الأسبوع، وفّري مع كل ما تزودي وادعي صاحبتك. أربع صفحات جاهزة.",
-    "Bold makeup: a big word hero, this week's deal, spend tiers and refer a friend. Four ready pages.",
+    "مكياج جريء: كلمة كبيرة، أقسام دائرية وآراء العميلات. أربع صفحات جاهزة.",
+    "Bold makeup: a big word hero, story rings and customer reviews. Four ready pages.",
   ),
   category: "beauty",
   sortOrder: 610,

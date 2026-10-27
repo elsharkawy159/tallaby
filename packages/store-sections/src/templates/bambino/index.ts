@@ -79,20 +79,6 @@ const home: Design[] = [
     links: { "/products": [search("مولود"), search("بوكس")] },
   }),
   lib("categories-chips", { text: { "إيه اللي في بالك؟": L("بتدوّر على إيه؟", "What are you looking for?") } }),
-  lib("categories-feature-list", { text: { "الأقسام": L("كل حاجة للبيبي", "Everything for baby"), "كل الأقسام": L("كل الأقسام", "All categories") } }),
-  lib("features-steps", {
-    text: {
-      "الطلب في ٤ خطوات": L("اعمل قائمة هدايا للبيبي في ٤ خطوات", "Build a baby registry in 4 steps"),
-      "اختر": L("اختار", "Pick"),
-      "أضف ما يعجبك إلى السلة": L("ضيف اللي محتاجه للمفضلة.", "Add what you need to your wishlist."),
-      "اطلب": L("شارك", "Share"),
-      "عنوانك ورقم موبايلك فقط": L("ابعت اللينك للعيلة والصحاب.", "Send the link to family and friends."),
-      "نؤكد": L("هدية", "Gift"),
-      "نتواصل معك على واتساب للتأكيد": L("هما يطلبوا وإحنا نغلّف.", "They order, we wrap."),
-      "استلم": L("استلم", "Receive"),
-      "وادفع عند الاستلام": L("يوصلوا مع بعض قبل ميعاد الولادة.", "Delivered together, before the due date."),
-    },
-  }),
   lib("products-grid", {
     as: "favourites",
     text: { "وصل حديثًا": L("المفضل عند الأهل", "Parents’ favourites"), "أحدث المنتجات اللي نزلت المتجر.": L("اللي الأهالي بيرجعوا يطلبوه.", "What parents come back for.") },
@@ -111,6 +97,19 @@ const home: Design[] = [
       "١٤ يومًا لتغيّر رأيك": L("من ٢ لـ ٤ أيام لكل مصر.", "2 to 4 days across Egypt."),
       "دعم على واتساب": L("استبدال سهل", "Easy exchange"),
       "أشخاص حقيقيون طوال الأسبوع": L("تبديل المقاس ببلاش خلال ١٤ يوم.", "Sizes swapped free within 14 days."),
+    },
+  }),
+  lib("features-steps", {
+    text: {
+      "الطلب في ٤ خطوات": L("اعمل قائمة هدايا للبيبي في ٤ خطوات", "Build a baby registry in 4 steps"),
+      "اختر": L("اختار", "Pick"),
+      "أضف ما يعجبك إلى السلة": L("ضيف اللي محتاجه للمفضلة.", "Add what you need to your wishlist."),
+      "اطلب": L("شارك", "Share"),
+      "عنوانك ورقم موبايلك فقط": L("ابعت اللينك للعيلة والصحاب.", "Send the link to family and friends."),
+      "نؤكد": L("هدية", "Gift"),
+      "نتواصل معك على واتساب للتأكيد": L("هما يطلبوا وإحنا نغلّف.", "They order, we wrap."),
+      "استلم": L("استلم", "Receive"),
+      "وادفع عند الاستلام": L("يوصلوا مع بعض قبل ميعاد الولادة.", "Delivered together, before the due date."),
     },
   }),
   lib("testimonials-bento", {
@@ -172,8 +171,8 @@ const DEMO = demoStore({
 
 export const BAMBINO = libraryTemplate({
   key: BAMBINO_KEY,
-  version: 3,
-  changelog: "Bambino v3: product page",
+  version: 4,
+  changelog: "Bambino v4: one categories section, section order",
   name: L("بامبينو", "Bambino"),
   description: L(
     "مستلزمات البيبي: افتتاحية ناعمة، قائمة هدايا في ٤ خطوات ووعود الأمان. أربع صفحات جاهزة.",

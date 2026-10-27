@@ -26,6 +26,7 @@ import {
   sql,
 } from "@workspace/db";
 import { categoryTags, productTags, sellerTags, storeTags } from "@workspace/cache";
+import { getPublicUrl } from "@workspace/ui/lib/utils";
 import {
   hostnameOf,
   isPlatformHost,
@@ -320,7 +321,10 @@ export type StorefrontCategory = {
   productCount: number;
   /** The seller's product categories under this root, for filtering. */
   categoryIds: string[];
-  /** First image of the seller's best-rated product in this category. */
+  /**
+   * Public URL of the category photo: the seller's own category image when
+   * they added one, else the first image of their best-rated product in it.
+   */
   coverImage: string | null;
 };
 
@@ -401,24 +405,25 @@ export function getStorefrontCategories(sellerId: string, storeId?: string) {
                  json_agg(DISTINCT p.category_id) AS "categoryIds",
                  (array_agg(p.images -> 0 ORDER BY p.average_rating DESC NULLS LAST, p.created_at DESC)
                     FILTER (WHERE jsonb_typeof(p.images) = 'array' AND jsonb_array_length(p.images) > 0))[1]
-                   AS "coverImage"
+                   AS "coverImage",
+                 (array_agg(spc.image_url ORDER BY spc.position, spc.created_at)
+                    FILTER (WHERE nullif(btrim(spc.image_url), '') IS NOT NULL))[1]
+                   AS "ownImage"
           FROM products p
           JOIN ancestry a ON a.id = p.category_id AND a.parent_id IS NULL
           JOIN categories r ON r.id = a.root_id
+          LEFT JOIN seller_product_categories spc ON spc.id = p.seller_category_id AND spc.seller_id = p.seller_id
           WHERE p.seller_id = ${sellerId} AND p.status = 'active' ${selected}
           GROUP BY 1
           ORDER BY "productCount" DESC, name
         `);
         return [...rows].map((row) => {
-          const cover = (row as { coverImage: unknown }).coverImage;
-          return {
-            ...(row as Omit<StorefrontCategory, "coverImage">),
-            // Image entries are either a storage path or { url }.
-            coverImage:
-              typeof cover === "string"
-                ? cover
-                : ((cover as { url?: string } | null)?.url ?? null),
-          };
+          const { coverImage: cover, ownImage, ...rest } = row as Omit<StorefrontCategory, "coverImage"> & { coverImage: unknown; ownImage: unknown };
+          // Image entries are either a storage path or { url }.
+          const productImage = typeof cover === "string" ? cover : ((cover as { url?: string } | null)?.url ?? null);
+          // The seller's own category photo first; without one, a photo of a product in it.
+          const own = typeof ownImage === "string" ? getPublicUrl(ownImage, "categories") : "";
+          return { ...rest, coverImage: own || (productImage ? getPublicUrl(productImage, "products") || null : null) };
         });
       } catch (error) {
         console.error("Error fetching storefront categories:", error);

@@ -46,7 +46,7 @@ export const faqClassic = defineDesign({
                   ...FAQ_GROUPS.map((g, i) =>
                     t.stack(
                       [
-                        t.heading(g.name, "h2", { style: { fontSize: "2xl" } }),
+                        t.heading(g.name, "h3", { style: { fontSize: "2xl" } }),
                         t.accordion(
                           g.items.map((item, j) => ({ ...item, open: i === 0 && j === 0 })),
                           { label: L("الأسئلة", "Questions"), role: "items" },
@@ -62,7 +62,7 @@ export const faqClassic = defineDesign({
                     [
                       t.stack(
                         [
-                          t.heading(L("ما زال لديك سؤال؟", "Still have a question?"), "h3", { style: { fontSize: "lg" } }),
+                          t.heading(L("ما زال لديك سؤال؟", "Still have a question?"), "h4", { style: { fontSize: "lg" } }),
                           t.paragraph(L("راسلنا وسيرد عليك شخص حقيقي.", "Message us and a real person will reply.")),
                         ],
                         {

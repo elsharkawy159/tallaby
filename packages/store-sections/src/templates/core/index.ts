@@ -2,8 +2,8 @@
  * Core (template 34, strength equipment; Claude Design "Storefront
  * Templates"): off-white paper, near-black type and a hot red for actions,
  * Cairo throughout and square corners. A gym supplier: one featured
- * product with a launch tag, the numbers, two offers, who we are, the most
- * ordered and reviews. Built from section library designs (`fromLibrary`).
+ * product, the equipment aisles, the most ordered, the numbers, who we are
+ * and reviews. Built from section library designs (`fromLibrary`).
  *
  * Photos: Pexels, each checked by eye (2026-10-20): kettlebell racks,
  * dumbbells, plates, ropes and mats. No people and no brand marks.
@@ -72,11 +72,16 @@ const home: Design[] = [
       "سنتين": L("٥ سنين", "5 years"),
       "١٤ يومًا": L("١٤ يوم", "14 days"),
       "صورة المنتج": L("حامل كيتل بيل بستة أوزان", "A kettlebell rack with six weights"),
-      "عرض الإطلاق": L("عرض الشهر", "This month"),
-      "خصم ٢٠٪": L("الحامل مجاناً", "Free rack"),
-      "لأول ١٠٠ طلب": L("مع الطقم الكامل", "With the full set"),
+      "عرض الإطلاق": L("على حامل واحد", "On one rack"),
+      "خصم ٢٠٪": L("٦ أوزان", "6 weights"),
+      "لأول ١٠٠ طلب": L("من ٤ لـ ٢٤ كجم", "4 to 24 kg"),
     },
     links: { "/products": [search("كيتل"), search("كيتل")] },
+  }),
+  lib("categories-ruled", { text: { "تسوق بالقسم": L("تسوق حسب التمرين", "Shop by training") } }),
+  lib("products-rail", {
+    text: { "بيحبوها": L("الجيمات بتطلب", "Gyms order"), "الأكثر مبيعًا": L("الأكثر طلباً", "Most ordered") },
+    links: { "/products": BEST },
   }),
   lib("stats-big-numbers", {
     text: {
@@ -90,18 +95,6 @@ const home: Design[] = [
       "يومًا للاسترجاع": L("سنين ضمان", "Years of warranty"),
     },
   }),
-  lib("promo-pair", {
-    photo: [undefined, undefined, undefined, undefined, PHOTOS.blueDumbbells, PHOTOS.grassKettlebells],
-    text: {
-      "اشترِ مجموعة ووفّر ١٥٪": L("جهّز جيم البيت ووفّر ١٥٪", "Equip a home gym, save 15%"),
-      "اختر أي منتجين معًا.": L("دمبل وكيتل بيل ومات في طلب واحد.", "Dumbbells, kettlebells and a mat in one order."),
-      "كوّن مجموعتك": L("كوّن جيمك", "Build your gym"),
-      "هدايا أقل من ٦٠٠ ج.م": L("حديد الحديقة", "Outdoor iron"),
-      "أشياء صغيرة سيستخدمونها كل يوم.": L("كيتل بيل مطلي يستحمل الشمس والمطر.", "Coated kettlebells that handle sun and rain."),
-      "تسوّق الهدايا": L("تسوق الكيتل بيل", "Shop kettlebells"),
-    },
-    links: { "/products": [search("دمبل"), search("كيتل")] },
-  }),
   lib("text-columns", {
     text: {
       "عن متجرنا": L("مين إحنا", "Who we are"),
@@ -114,10 +107,6 @@ const home: Design[] = [
         "And we deliver to homes too: the same iron in small quantities, with setup in Cairo and Giza.",
       ),
     },
-  }),
-  lib("products-rail", {
-    text: { "بيحبوها": L("الجيمات بتطلب", "Gyms order"), "الأكثر مبيعًا": L("الأكثر طلباً", "Most ordered") },
-    links: { "/products": BEST },
   }),
   lib("testimonials-classic", {
     text: {
@@ -177,12 +166,12 @@ const DEMO = demoStore({
 
 export const CORE = libraryTemplate({
   key: CORE_KEY,
-  version: 3,
-  changelog: "Core v3: product page",
+  version: 4,
+  changelog: "Core v4: categories, section order, no launch offer",
   name: L("كور", "Core"),
   description: L(
-    "معدات قوة: منتج مميز بتاج عرض، الأرقام، عرضين والأكثر طلباً. أربع صفحات جاهزة.",
-    "Strength equipment: a featured product with an offer tag, the numbers, two offers and the most ordered. Four ready pages.",
+    "معدات قوة: منتج مميز، الأرقام والأكثر طلباً. أربع صفحات جاهزة.",
+    "Strength equipment: a featured product, the numbers and the most ordered. Four ready pages.",
   ),
   category: "sports",
   sortOrder: 340,

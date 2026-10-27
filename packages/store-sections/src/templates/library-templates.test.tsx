@@ -23,7 +23,7 @@ const SEEDS: Record<string, readonly string[]> = {
   // 0074–0083 seeded v1 by category; 0084 (v2, mobile header padding) also seeds Classic and Atelier first.
   "0084_mobile_header_padding.sql": [
     ...["mode", "streetwear", "kasr", "techhub", "volt", "arcade", "arena", "pure", "glow", "elixir", "botanica"],
-    ...["nest", "daily", "hearth", "clay", "sizzle", "harvest", "loaf", "roast", "verdant", "loft", "oak", "sakan"],
+    ...["nest", "daily", "hearth", "sizzle", "harvest", "loaf", "roast", "verdant", "loft", "oak", "sakan"],
     ...["lumiere", "karat", "fadda", "playroom", "bambino", "doodle", "hekaya", "pace", "stride", "core", "basecamp"],
     ...["garage", "drive", "moto"],
   ],
@@ -37,7 +37,7 @@ const SEEDS: Record<string, readonly string[]> = {
   ],
   // Templates 39–48 and 101–110 (v1; 101–110 open with the carousel hero).
   "0095_library_templates_39_48_101_110.sql": [
-    ...["fixit", "bashra", "sufra", "sabaho", "dar", "shabka", "hadaya", "rep", "pitstop", "ghorza"],
+    ...["bashra", "sufra", "sabaho", "dar", "shabka", "hadaya", "rep", "pitstop", "ghorza"],
     ...["mawsem", "shasha", "ward", "beity", "souq", "salon", "kholkhal", "farha", "nashat", "tarik"],
   ],
 };

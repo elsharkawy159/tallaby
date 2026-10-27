@@ -51,7 +51,7 @@ const NAME = L("مفرش هوم", "Mafrash Home");
 const header = lib("header-announcement", {
   text: {
     "توصيل مجاني للطلبات فوق ١٥٠٠ ج.م": L("جرّب ٣٠ ليلة · استرجاع ببلاش على المفارش", "Try for 30 nights · Free returns on bedding"),
-    "الكود: SAVE10": L("الكود: WELCOME10", "Code: WELCOME10"),
+    "الدفع عند الاستلام": L("الدفع عند الاستلام", "Cash on delivery"),
     "م": L("م", "M"),
     "اسم متجرك": NAME,
     "المتجر": L("المفارش", "Bedding"),
@@ -90,16 +90,11 @@ const home: Design[] = [
     },
     links: { "/products": [search("طقم"), BEST] },
   }),
-  lib("bundle-plus", {
-    text: {
-      "باقة": L("طقم السرير", "Bed set"),
-      "اشتريهم مع بعض ووفّر": L("ملايات وبطانية ومخدات", "Sheets, throw and cushions"),
-      "سعر الباقة": L("سعر الطقم", "Set price"),
-      "١٬٢٧٠ ج.م": L("٢٬٦٣٠ ج.م", "EGP 2,630"),
-      "بدل ١٬٤٩٠ ج.م": L("بدل ٢٬٩٩٠ ج.م", "Instead of EGP 2,990"),
-      "وفّر ٢٢٠ ج.م": L("وفّر ١٢٪", "Save 12%"),
-      "اطلب الباقة": L("اطلب الطقم", "Get the set"),
-    },
+  lib("categories-captioned", { text: { "اكتشف الأقسام": L("جهّز سريرك", "Make your bed"), "كل الأقسام": L("كل المفروشات", "All bedding") } }),
+  lib("products-rail", {
+    text: { "بيحبوها": L("وصل جديد", "New in"), "الأكثر مبيعًا": L("ألوان جديدة", "New colours") },
+    links: { "/products": NEW },
+    lists: [{ source: "newest", limit: 6 }],
   }),
   lib("features-ruled", {
     text: {
@@ -111,21 +106,6 @@ const home: Design[] = [
       "١٤ يومًا لتغيّر رأيك": L("استرجاع ببلاش على المفارش", "Free returns on bedding"),
       "دعم على واتساب": L("الدفع عند الاستلام", "Cash on delivery"),
       "أشخاص حقيقيون طوال الأسبوع": L("أو بالبطاقة والمحفظة", "Or by card and wallet"),
-    },
-  }),
-  lib("products-rail", {
-    text: { "بيحبوها": L("وصل جديد", "New in"), "الأكثر مبيعًا": L("ألوان جديدة", "New colours") },
-    links: { "/products": NEW },
-    lists: [{ source: "newest", limit: 6 }],
-  }),
-  lib("popup-reward", {
-    text: {
-      "جرّب حظك": L("شارك نومة حلوة", "Share a good night"),
-      "المرة دي كسبت، وده كودك.": L("صاحبك ياخد خصم ١٠٠ ج.م على أول طلب بالكود ده، وانت تاخد ١٠٠ لما يطلب.", "Your friend gets EGP 100 off a first order with this code, and you get EGP 100 when they order."),
-      "كسبت": L("هدية لصاحبك", "A gift for a friend"),
-      "شحن مجاني": L("خصم ١٠٠ ج.م", "EGP 100 off"),
-      "الكود: FREESHIP": L("الكود: WELCOME10", "Code: WELCOME10"),
-      "استخدمه دلوقتي": L("تسوق المفارش", "Shop bedding"),
     },
   }),
   lib("testimonials-wall", {
@@ -188,8 +168,8 @@ const DEMO = demoStore({
 
 export const MAFRASH = libraryTemplate({
   key: MAFRASH_KEY,
-  version: 2,
-  changelog: "Mafrash v2: product page",
+  version: 3,
+  changelog: "Mafrash v3: categories, section order",
   productPage: { thumbs: "side", band: "paper", extras: ["product-perks"], copy: { back: L("رجوع للمفارش", "Back to the bedding"), reviews: L("رأي اللي نام عليها", "From people who slept on it"), related: L("يكمّل السرير", "Finish the bed") } },
   name: L("مفرش", "Mafrash"),
   description: L(

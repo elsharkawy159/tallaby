@@ -119,7 +119,7 @@ export const contactTeam = defineDesign({
                     ],
                     {
                       label: L("عضو", "Member"),
-                      style: { gap: 6, alignItems: "center", width: "140px" },
+                      style: { gap: 6, alignItems: "center", maxWidth: "140px" },
                       mobile: { width: "30%" },
                     },
                   ),

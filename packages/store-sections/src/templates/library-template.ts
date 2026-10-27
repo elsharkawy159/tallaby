@@ -13,6 +13,7 @@ import { instantiateDesign, type Design } from "../designs/builder";
 import { fromLibrary } from "./_library";
 import type { Lib } from "./_pages";
 import { PRODUCT_PAGE_NAME, productPage, productSitePage, type ProductPageSpec } from "./_product-page";
+import { isDiscountDesign } from "./no-discounts";
 import type { TemplateDefinition, TemplateDemo } from "./types";
 
 export type LibraryTemplatePage = {
@@ -54,7 +55,9 @@ export type LibraryTemplateSpec = {
 /** A design as a template section: its id doubles as the instance id, so a re-apply keeps matching sections. */
 const section = (design: Design) => instantiateDesign(design, { id: design.id, defaultLocale: "ar" });
 
-export function libraryTemplate(spec: LibraryTemplateSpec): TemplateDefinition {
+export function libraryTemplate(input: LibraryTemplateSpec): TemplateDefinition {
+  // No promotion, bundle or discount-only sections in a template (`./no-discounts.ts`).
+  const spec: LibraryTemplateSpec = { ...input, pages: input.pages.map((page) => ({ ...page, sections: page.sections.filter((d) => !isDiscountDesign(d)) })) };
   const lib: Lib = spec.lib ?? ((id, patch) => fromLibrary(spec.key, getDesign(id)!, { corners: spec.radius, ...patch }));
   // Square templates get a flat buy column, rounded ones a card.
   const productPageSpec: ProductPageSpec = { ...spec.productPage, surface: spec.productPage?.surface ?? (spec.radius === 0 ? "flat" : "card") };

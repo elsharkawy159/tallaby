@@ -62,6 +62,7 @@ import { createStoreForm } from "../store-forms/server";
 import type { FormInput } from "../store-forms/store-forms.lib";
 import { ensureStoreSiteScaffold } from "../stores/server";
 import { codeTemplateConfig, getPublicTemplate, offeredTemplates } from "./template-rows.server";
+import { storeTemplateChosen } from "./template-choice.server";
 
 export { getPublicTemplate, getTemplateMeta, loadDefaultTemplate, type DbTemplate } from "./template-rows.server";
 
@@ -155,7 +156,10 @@ export type StoreTemplateInstall = {
 };
 
 export type StoreTemplateGallery = {
+  /** The template the store's drafts started from or last applied (`stores.template_key`; Tallaby Classic for a new store's placeholder). */
   currentKey: string;
+  /** The seller picked a template (an install not undone) or the site was ever live (storeTemplateChosen). */
+  templateChosen: boolean;
   templates: StoreTemplateCard[];
   lastInstall: StoreTemplateInstall | null;
 };
@@ -220,6 +224,7 @@ export async function listStoreTemplates(
 
   return {
     currentKey: store.templateKey,
+    templateChosen: await storeTemplateChosen(q, store.id),
     templates: cards,
     lastInstall: install
       ? { id: install.id, templateKey: install.templateKey, installedAt: install.installedAt, canUndo: !install.undoneAt && install.hasDraft }

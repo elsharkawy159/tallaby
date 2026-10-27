@@ -1,7 +1,8 @@
 /**
  * Tallaby Classic home page, in the standard order of docs/template-rules.md
- * §2: a hero carousel, categories, best sellers, offers, new arrivals, the
- * trust strip and the newsletter. Categories and products come from data
+ * §2: a hero carousel, categories, best sellers, new arrivals, the trust
+ * strip and the newsletter. No offers section: templates promise no discounts
+ * (`../no-discounts.ts`; `classicOffers` stays a Classic design a seller can add). Categories and products come from data
  * nodes, so the page shows the store's own catalog; a list with nothing to
  * show hides its section.
  *
@@ -66,7 +67,7 @@ function heroSlide(
                 [
                   t.image(o.image, o.alt, {
                     role: "image",
-                    style: { aspectRatio: "portrait", objectFit: "cover", width: "100%", maxWidth: "340px", radius: 999, borderWidth: 10, borderColor: "white", background: "white" },
+                    style: { aspectRatio: "portrait", objectFit: "cover", width: "100%", maxWidth: "340px", radius: 999, borderWidth: 10, borderColor: "white", background: "surface" },
                     tablet: { maxWidth: "260px" },
                     mobile: { maxWidth: "150px", borderWidth: 6 },
                   }),
@@ -172,7 +173,7 @@ export const classicCategories = defineDesign({
                         ],
                         {
                           label: L("الإطار", "Frame"),
-                          style: { background: "white", radius: 999, borderWidth: 1, borderColor: "border", paddingTop: 6, paddingBottom: 6, paddingStart: 6, paddingEnd: 6 },
+                          style: { background: "surface", radius: 999, borderWidth: 1, borderColor: "border", paddingTop: 6, paddingBottom: 6, paddingStart: 6, paddingEnd: 6 },
                           mobile: { paddingTop: 4, paddingBottom: 4, paddingStart: 4, paddingEnd: 4 },
                         },
                       ),
@@ -393,11 +394,11 @@ export const classicNewsletter = defineDesign({
               }),
               t.stack(
                 [
-                  t.heading(L("خد ١٠٪ خصم على أول طلب", "Get 10% off your first order"), "h2", {
+                  t.heading(L("خليك أول من يعرف", "Be the first to know"), "h2", {
                     role: "title",
                     style: { ...ON_BRAND, fontSize: "display-sm", fontWeight: "extrabold", lineHeight: "tight" },
                   }),
-                  t.paragraph(L("اشترك وأول ما يوصل جديد أو عرض للمشتركين هتعرف.", "Join the list for new arrivals and members-only offers."), {
+                  t.paragraph(L("اشترك وأول ما يوصل منتج جديد هتعرف.", "Join the list and hear about new arrivals first."), {
                     role: "subtitle",
                     style: ON_BRAND_BODY,
                   }),
@@ -406,7 +407,7 @@ export const classicNewsletter = defineDesign({
               ),
               t.stack([t.storeForm({ formTemplate: "newsletter" })], {
                 label: L("النموذج", "Form"),
-                style: { background: "white", radius: 20, paddingTop: 20, paddingBottom: 20, paddingStart: 20, paddingEnd: 20, position: "relative", zIndex: 1 },
+                style: { background: "surface", radius: 20, paddingTop: 20, paddingBottom: 20, paddingStart: 20, paddingEnd: 20, position: "relative", zIndex: 1 },
               }),
             ],
             {
@@ -433,12 +434,11 @@ export const classicNewsletter = defineDesign({
     ]),
 });
 
-/** The standard home order (template rules §2); every section but the hero rises in on scroll (§6a, set in index.ts). */
+/** The standard home order (template rules §2); every section but the hero rises in on scroll (§6a, on by default). */
 export const CLASSIC_HOME = [
   classicHero,
   classicCategories,
   classicBestSellers,
-  classicOffers,
   classicNewArrivals,
   classicPerks,
   classicNewsletter,

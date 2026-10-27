@@ -57,7 +57,7 @@ export const heroPoster = defineDesign({
                     justifyContent: "center",
                     alignItems: "center",
                     gap: 0,
-                    shadow: "lg",
+                    shadow: "md",
                     zIndex: 2,
                   },
                   mobile: { width: "104px", minHeight: 104, insetEnd: "16px", insetBottom: "-28px" },

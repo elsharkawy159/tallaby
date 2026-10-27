@@ -90,6 +90,18 @@ const home: Design[] = [
     text: { "تسوّق حسب مزاجك": L("اختاري مزاجك", "Pick your mood"), "عليه خصم": L("الأعلى تقييماً", "Top rated") },
     links: { "/products": [NEW, BEST, RATED, SHOP] },
   }),
+  lib("gallery-polaroids", {
+    photo: [undefined, undefined, undefined, PHOTOS.lipRow, PHOTOS.highlighter, PHOTOS.pigments, PHOTOS.lashTools, PHOTOS.lipQuartet],
+    text: {
+      "عملاؤنا": L("اعملي لنا تاج تظهري هنا", "Tag us to be featured"),
+      "أرسل لنا صورتك": L("ابعتيلنا صورتك", "Send us your photo"),
+      "مريم": handle("@farah"),
+      "عمر": handle("@salma.k"),
+      "نور": handle("@habiba"),
+      "يوسف": handle("@nour.m"),
+      "سلمى": handle("@jana"),
+    },
+  }),
   lib("products-panel-rail", {
     text: {
       "هدايا تحت ١٠٠٠ جنيه": L("هدايا تحت ٥٠٠ ج.م", "Gifts under EGP 500"),
@@ -97,7 +109,6 @@ const home: Design[] = [
     },
     links: { "/products": SHOP },
   }),
-  lib("promo-sticker", { text: { "عرض اليوم بس": L("الأسبوع ده بس", "This week only") } }),
   lib("testimonials-photos", {
     photo: [undefined, undefined, PHOTOS.lipMarble, PHOTOS.gloss, PHOTOS.blushLip, PHOTOS.lipQuartet],
     text: {
@@ -122,18 +133,6 @@ const home: Design[] = [
       "ي": L("م", "M"),
       "يوسف م.": L("مايا س.", "Maya S."),
       "اشترى من المتجر": L("اشترت من المتجر", "Verified buyer"),
-    },
-  }),
-  lib("gallery-polaroids", {
-    photo: [undefined, undefined, undefined, PHOTOS.lipRow, PHOTOS.highlighter, PHOTOS.pigments, PHOTOS.lashTools, PHOTOS.lipQuartet],
-    text: {
-      "عملاؤنا": L("اعملي لنا تاج تظهري هنا", "Tag us to be featured"),
-      "أرسل لنا صورتك": L("ابعتيلنا صورتك", "Send us your photo"),
-      "مريم": handle("@farah"),
-      "عمر": handle("@salma.k"),
-      "نور": handle("@habiba"),
-      "يوسف": handle("@nour.m"),
-      "سلمى": handle("@jana"),
     },
   }),
 ];
@@ -177,12 +176,12 @@ const DEMO = demoStore({
 
 export const GLOW = libraryTemplate({
   key: GLOW_KEY,
-  version: 3,
-  changelog: "Glow v3: product page",
+  version: 4,
+  changelog: "Glow v4: section order",
   name: L("جلو", "Glow"),
   description: L(
-    "مستحضرات تجميل: كولاج للوك، أقسام دائرية، عرض الأسبوع وصور العميلات. أربع صفحات جاهزة.",
-    "Modern cosmetics: a look collage, story rings, a weekly deal and customer photos. Four ready pages.",
+    "مستحضرات تجميل: كولاج للوك، أقسام دائرية وصور العميلات. أربع صفحات جاهزة.",
+    "Modern cosmetics: a look collage, story rings and customer photos. Four ready pages.",
   ),
   category: "beauty",
   sortOrder: 100,

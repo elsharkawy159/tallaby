@@ -2,16 +2,10 @@
  * Sufra (template 41, tableware led by delivery and payment; Claude Design
  * "Storefront Templates"): warm cream paper, a sand-gold highlight and a
  * deep green for actions, Reem Kufi headings on Almarai and 10px corners.
- * A family tableware shop: order by 2 pm for tomorrow, feast season, the
- * Friday lunch set, shop by budget, ways to pay, open before you pay, a
- * kitchen kit and delivery and payment questions. Built from section
- * library designs (`fromLibrary`).
- *
- * "Price drop band" (`bundle-price-drop`) fails the render check, so the
- * kitchen kit is a second Plus row (`bundle-plus`, as Lahma and Madrasa).
- * Bundle savings are display only (typed totals; the cart adds items at
- * full price). The Friday set lists the three newest products and the
- * kitchen kit the three best sellers.
+ * A family tableware shop (v3, section order): a feast table edge to edge,
+ * the departments, the feast pick with the newest pieces, open before you
+ * pay, shop by budget and delivery and payment questions. Built from
+ * section library designs (`fromLibrary`).
  *
  * Photos: Pexels, each checked by eye (2026-10-23): a laid table of mixed
  * plates and bowls from above, stoneware on a wooden counter with boards,
@@ -56,7 +50,7 @@ const NAME = L("سفرة تيتا", "Sufret Teta");
 const header = lib("header-announcement", {
   text: {
     "توصيل مجاني للطلبات فوق ١٥٠٠ ج.م": L("افتح الطلب قبل ما تدفع", "Open your order before you pay"),
-    "الكود: SAVE10": L("التوصيل تاني يوم في القاهرة", "Next-day delivery in Cairo"),
+    "الدفع عند الاستلام": L("التوصيل تاني يوم في القاهرة", "Next-day delivery in Cairo"),
     "م": L("س", "S"),
     "اسم متجرك": NAME,
     "المتجر": L("كل المنتجات", "Shop all"),
@@ -79,50 +73,27 @@ const footer = lib("footer-signup", {
 });
 
 const home: Design[] = [
-  lib("pay-promise", {
+  lib("hero-fullbleed", {
+    photo: [PHOTOS.tableFlatLay],
     text: {
-      "اطلب قبل ٢ الضهر، يوصلك بكره": L("اطلب قبل ٢ الضهر، يوصل سفرتك بكره", "Order by 2 pm, on your table tomorrow"),
-      "بيتشحن": L("بنغلف ونشحن", "We pack and ship"),
-    },
-  }),
-  lib("about-inset", {
-    photo: [undefined, undefined, undefined, undefined, undefined, undefined, undefined, PHOTOS.tableFlatLay],
-    text: {
-      "إزاي بنشتغل": L("موسم العزايم", "Feast season"),
-      "كل منتج بيتراجع قبل ما يوصلك": L("جهّز السفرة لـ١٢", "Set the table for twelve"),
-      "فريقنا بيراجع كل منتج ويتأكد منه قبل التغليف.": L(
+      "صورة الواجهة": L("سفرة متجهزة بأطباق وسلطانيات", "A laid table of plates and bowls"),
+      "المجموعة الجديدة": L("موسم العزايم", "Feast season"),
+      "صُنعت لتدوم معك": L("جهّز السفرة لـ١٢", "Set the table for twelve"),
+      "خامات مختارة وتفاصيل هادئة، وتوصيل سريع لحد باب البيت.": L(
         "ستون وير بيدخل الفرن ويطلع على السفرة، وكتان بيستحمل الغسيل.",
         "Stoneware that goes from oven to table, and linen that survives the wash.",
       ),
-      "اعرف أكتر": L("تسوق أدوات السفرة", "Shop tableware"),
-      "صورة المتجر": L("سفرة متجهزة بأطباق وسلطانيات", "A laid table of plates and bowls"),
+      "تسوّق الآن": L("تسوق أدوات السفرة", "Shop tableware"),
+      "شوف الجديد": L("وصل جديد", "New in"),
     },
-    links: { "/about": TABLEWARE },
+    links: { "/products": TABLEWARE },
   }),
-  lib("bundle-plus", {
-    text: {
-      "اشتريهم مع بعض ووفّر": L("طقم غدا الجمعة", "The Friday lunch set"),
-      "١٬٢٧٠ ج.م": L("٢٬٩٢٠ ج.م", "EGP 2,920"),
-      "بدل ١٬٤٩٠ ج.م": L("بدل ٣٬٣٢٠ ج.م", "Instead of EGP 3,320"),
-      "وفّر ٢٢٠ ج.م": L("وفّر ٤٠٠ ج.م", "Save EGP 400"),
-    },
+  lib("categories-photo-tiles", { text: { "تسوّق حسب القسم": L("جهّز سفرتك", "Set your table") } }),
+  lib("products-feature", {
+    text: { "اختيارنا ليك": L("طقم العزومة", "The feast set"), "اختيار الأسبوع": L("اختيار تيتا", "Teta’s pick") },
   }),
-  lib("finder-budget"),
-  lib("pay-methods"),
   lib("pay-open-box"),
-  lib("bundle-plus", {
-    as: "kitchen-kit",
-    name: L("طقم المطبخ", "Kitchen kit"),
-    text: {
-      "باقة": L("وفّر ١٥٪", "Save 15%"),
-      "اشتريهم مع بعض ووفّر": L("طقم المطبخ", "The kitchen kit"),
-      "١٬٢٧٠ ج.م": L("١٬٣٥٠ ج.م", "EGP 1,350"),
-      "بدل ١٬٤٩٠ ج.م": L("بدل ١٬٥٩٠ ج.م", "Instead of EGP 1,590"),
-      "وفّر ٢٢٠ ج.م": L("وفّر ٢٤٠ ج.م", "Save EGP 240"),
-      "اطلب الباقة": L("اشتري طقم المطبخ", "Get the kitchen kit"),
-    },
-    lists: [{ source: "best-sellers" }],
-  }),
+  lib("finder-budget"),
   lib("faq-columns", { as: "faq-home", text: { "أسئلة شائعة": L("التوصيل والدفع", "Delivery and payment") } }),
 ];
 
@@ -164,8 +135,8 @@ const DEMO = demoStore({
 
 export const SUFRA = libraryTemplate({
   key: SUFRA_KEY,
-  version: 2,
-  changelog: "Sufra v2: product page",
+  version: 3,
+  changelog: "Sufra v3: full-bleed hero, categories, products high, section order",
   productPage: { surface: "card", thumbs: "side", band: "paper", extras: ["product-perks"], copy: { back: L("رجوع للسفرة", "Back to the table"), reviews: L("رأي اللي جرّبوا السفرة", "From tables like yours"), related: L("يكمّل السفرة", "Set the rest of the table") } },
   name: L("سفرة", "Sufra"),
   description: L(

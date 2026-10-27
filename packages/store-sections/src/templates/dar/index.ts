@@ -2,16 +2,15 @@
  * Dar (template 43, family furniture house; Claude Design "Storefront
  * Templates"): warm linen paper, a sand highlight and a walnut brown for
  * actions, Amiri headings on Noto Sans Arabic and 4px corners. A Damietta
- * workshop with showrooms: since 1982, the most ordered, an installment
- * calculator, a designer home visit, our story, four decades, how we work
- * and the showrooms. Built from section library designs (`fromLibrary`).
+ * workshop with showrooms (v3, section order): a three-room slideshow, the
+ * rooms of the house, the most ordered, an installment calculator, our
+ * story, the showrooms and customer reviews. Built from section library
+ * designs (`fromLibrary`).
  *
  * Installments are an estimate (the payment provider sets the real plan at
  * checkout). The calculator and the feature card show the featured sofa;
  * the four beside it are the best sellers. Showroom hours are copy (the
- * library design has no open/closed clock). The hero's "Book a home visit"
- * anchor goes to the contact page. The booking section keeps `booking`,
- * which "Use template" creates from `FORM_TEMPLATES`.
+ * library design has no open/closed clock).
  *
  * Photos: Pexels, each checked by eye (2026-10-23): a navy velvet sofa in
  * a living room, a cream sofa with a wooden coffee table, a green velvet
@@ -51,6 +50,7 @@ const PHOTOS = {
   diningChairs: pexels(29917912, 900),
   swivelChairs: pexels(8066334, 900),
   livingRoom: pexels(1648776, 1200),
+  bedroomWide: pexels(5152681),
   mirrorsCorner: pexels(5490341),
 };
 
@@ -79,21 +79,28 @@ const footer = lib("footer-centered", {
 });
 
 const home: Design[] = [
-  lib("hero-halves", {
-    photo: [undefined, PHOTOS.navySofaRoom],
+  lib("hero-thumbs", {
+    photo: [PHOTOS.navySofaRoom, PHOTOS.bedroomWide, PHOTOS.mirrorsCorner],
     text: {
-      "كوليكشن الموسم": L("من ١٩٨٢", "Since 1982"),
-      "صوت أنقى، كل يوم": L("أثاث هيقعد عليه أحفادك", "Furniture your grandchildren will sit on"),
-      "منتجات أصلية بضمان محلي، توصلك خلال ٤٨ ساعة.": L(
-        "بيتعمل بالطلب في ورشتنا في دمياط وبيوصل بتركيب مجاني في كل مصر.",
-        "Made to order in our Damietta workshop and delivered with free assembly across Egypt.",
-      ),
-      "تسوق الآن": L("تسوق الأثاث", "Shop furniture"),
-      "العروض": L("احجز زيارة", "Book a home visit"),
-      "صورة الحملة": L("كنبة قطيفة كحلي في صالة", "A navy velvet sofa in a living room"),
+      "درجات جديدة": L("من ١٩٨٢", "Since 1982"),
+      "لون بيتكلم عنك": L("أثاث هيقعد عليه أحفادك", "Furniture for your grandchildren"),
+      "درجات هادية لكل يوم وألوان جريئة للمناسبات.": L("كنب بهياكل زان صلب وقماش تختاره بنفسك.", "Sofas on solid beech frames, in the fabric you choose."),
+      "تسوّق الآن": L("تسوق الكنب", "Shop sofas"),
+      "صورة الشريحة الأولى": L("كنبة قطيفة كحلي في صالة", "A navy velvet sofa in a living room"),
+      "المجموعة الجديدة": L("أوض النوم", "Bedrooms"),
+      "جريء ومريح وليك": L("نوم هادي في خشب صلب", "Quiet sleep in solid wood"),
+      "اختيارات جديدة وصلت للموسم ده.": L("سراير ودواليب بمقاسات أوضتك.", "Beds and wardrobes sized to your room."),
+      "تسوّق الجديد": L("تسوق السراير", "Shop beds"),
+      "صورة الشريحة الثانية": L("أوضة نوم بغطا ورق شجر", "A bedroom with a leaf-print duvet"),
+      "أطقم كاملة": L("بالطلب من دمياط", "Made to order in Damietta"),
+      "قطعتين وعشر إطلالات": L("بيوصل بتركيب مجاني", "Delivered and assembled free"),
+      "قطع بتتنسّق مع بعض بسهولة.": L("ورشتنا بتعمل كل قطعة بعد ما تطلبها.", "Our workshop builds every piece after you order it."),
+      "تسوّق الأطقم": L("كل الأثاث", "All furniture"),
+      "صورة الشريحة الثالثة": L("ركنة قعدة تحت مرايات مدورة", "A sitting corner under round mirrors"),
     },
-    links: { "/products": [SHOP, "/contact"] },
+    links: { "/products": [SOFAS, search("سرير"), SHOP] },
   }),
+  lib("categories-feature-list", { text: { "الأقسام": L("أوض البيت", "Rooms of the house") } }),
   lib("products-feature", {
     text: {
       "اختيارنا ليك": L("الأكتر طلبًا", "Most ordered"),
@@ -108,18 +115,6 @@ const home: Design[] = [
       "١٢": L("١٨", "18"),
     },
     lists: [{ source: "featured" }],
-  }),
-  lib("service-booking", {
-    text: {
-      "احجز معاد الفني": L("احجز زيارة للبيت", "Book a home visit"),
-      "تركيب شاشة · حوالي ساعة": L("زيارة مصمم وقياس · حوالي ساعة", "Designer visit and measuring · about one hour"),
-      "١٠ ص": L("١١ ص", "11 am"),
-      "١٢ الضهر": L("١ الضهر", "1 pm"),
-      "٢ م": L("٣ م", "3 pm"),
-      "٤ م": L("٥ م", "5 pm"),
-      "٦ م": L("٧ م", "7 pm"),
-      "٨ م": L("٩ م", "9 pm"),
-    },
   }),
   lib("team-story", {
     photo: [PHOTOS.livingRoom],
@@ -140,28 +135,6 @@ const home: Design[] = [
       "— منى، المؤسسة": L("— حمدي، الجيل التالت", "— Hamdy, third generation"),
     },
   }),
-  lib("team-timeline", {
-    text: {
-      "من ٢٠١٩ لحد النهارده": L("٤٠ سنة في شارع واحد", "Four decades in one street"),
-      "٢٠١٩": L("١٩٨٢", "1982"),
-      "أول ١٠ طلبات على واتساب": L("الورشة بتفتح بـ٤ نجارين", "Workshop opens with four carpenters"),
-      "٢٠٢١": L("١٩٩٨", "1998"),
-      "أول مخزن في الجيزة": L("أول معرض في دمياط", "First showroom in Damietta"),
-      "٢٠٢٣": L("٢٠١٥", "2015"),
-      "التوصيل لكل المحافظات": L("معرض القاهرة في التجمع", "Cairo showroom in New Cairo"),
-      "٥٠ ألف عميل وفرعين": L("متجر أونلاين وتوصيل لكل المحافظات", "Online store and delivery to every governorate"),
-    },
-  }),
-  lib("team-values", {
-    text: {
-      "أصلي": L("خشب صلب", "Solid wood"),
-      "كل منتج من الوكيل أو المستورد الرسمي، ومعاه ضمان.": L("هياكل زان وأرو، مفيش كونتر في أي حاجة بتشيل وزن.", "Beech and oak frames, no chipboard in anything that carries weight."),
-      "واضح": L("بالطلب", "Made to order"),
-      "السعر اللي تشوفه هو اللي تدفعه، من غير مصاريف مخفية.": L("كل قطعة بتتعمل بعد ما تطلبها، بمقاسك وقماشتك.", "Every piece is built after you order it, in your size and fabric."),
-      "قريب": L("ضمان ١٠ سنين على الهيكل", "Ten-year frame warranty"),
-      "بنرد على واتساب في أقل من ساعة، حتى يوم الجمعة.": L("لو أي وصلة اتحركت، بنيجي نصلحها.", "If a joint moves, we come and fix it."),
-    },
-  }),
   lib("team-branches", {
     text: {
       "الفروع": L("المعارض", "Showrooms"),
@@ -177,6 +150,25 @@ const home: Design[] = [
       "السبت – الخميس، ١٢ – ١٠ م": L("يوميًا من ١٢ الضهر لـ ١٠ م", "Daily, 12 pm – 10 pm"),
     },
     links: { "https://maps.google.com": MAPS },
+  }),
+  lib("testimonials-classic", {
+    text: {
+      "آراء العملاء": L("من بيوت عملائنا", "From our customers’ homes"),
+      "طلبت يوم الأحد ووصل الثلاثاء. التغليف كان مرتبًا والمنتج كما في الصور تمامًا.": L(
+        "الكنبة اتعملت بالقماش اللي اخترته، ووصلت متركبة في أسبوعين.",
+        "The sofa was made in the fabric I chose and arrived assembled in two weeks.",
+      ),
+      "م": L("ه", "H"),
+      "مريم أ.": L("هالة م.", "Hala M."),
+      "بدّلت المقاس بدون أي تعب، والفريق رد علي في دقائق.": L("السرير تقيل وثابت، مفيش أي صوت بعد سنة.", "The bed is heavy and solid, not a creak after a year."),
+      "ع": L("ش", "S"),
+      "عمر ك.": L("شريف ع.", "Sherif A."),
+      "الإسكندرية": L("التجمع", "New Cairo"),
+      "أسعار معقولة وجودة أفضل مما توقعت.": L("قسطت السفرة على سنة. التسليم أخد وقت بس يستاهل.", "Paid for the dining set over a year. Delivery took time but it was worth it."),
+      "ن": L("د", "D"),
+      "نور ح.": L("دينا ف.", "Dina F."),
+      "الجيزة": L("الإسكندرية", "Alexandria"),
+    },
   }),
 ];
 
@@ -218,8 +210,8 @@ const DEMO = demoStore({
 
 export const DAR = libraryTemplate({
   key: DAR_KEY,
-  version: 2,
-  changelog: "Dar v2: product page",
+  version: 3,
+  changelog: "Dar v3: room slideshow hero, categories, reviews, section order",
   productPage: { surface: "shelf", thumbs: "side", band: "paper", extras: ["product-shipping"], copy: { back: L("رجوع للمعرض", "Back to the showroom"), reviews: L("رأي أصحاب البيوت", "From homes we furnished"), related: L("قطع تناسب نفس الغرفة", "Pieces for the same room") } },
   name: L("دار", "Dar"),
   description: L(

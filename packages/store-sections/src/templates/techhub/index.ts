@@ -74,12 +74,7 @@ const home: Design[] = [
     text: {
       "بتدور على إيه النهارده؟": L("بتدوّر على إيه النهارده؟", "What are you shopping for today?"),
       "اكتب اسم المنتج": L("اسم المنتج أو الماركة أو الموديل", "Product, brand or model number"),
-      "وصل حديثًا": L("سماعات عزل ضوضاء", "Noise-cancelling headphones"),
-      "الأكثر مبيعًا": L("موبايلات 5G", "5G phones"),
-      "هدايا": L("لابتوب", "Laptops"),
-      "العروض": L("ساعة ذكية", "Smartwatch"),
     },
-    links: { "/products": [SHOP, search("سماعة"), search("موبايل"), search("لابتوب"), search("ساعة")] },
   }),
   lib("categories-ruled", {
     text: { "الأقسام": L("الأقسام", "Departments"), "تسوق بالقسم": L("تسوّق حسب القسم", "Shop by category") },
@@ -91,19 +86,6 @@ const home: Design[] = [
       "العروض": L("الأعلى تقييماً", "Top rated"),
     },
     links: { "/products": [NEW, BEST, RATED] },
-  }),
-  lib("promo-deal", {
-    photo: [undefined, undefined, undefined, PHOTOS.headphones],
-    text: {
-      "صورة العرض": L("سماعة لاسلكية سوداء على خلفية بيضا", "Black wireless headphones on white"),
-      "اسم العرض أو المنتج هنا": L("سماعة عزل ضوضاء لاسلكية", "Wireless noise-cancelling headphones"),
-      "اكتب سبب العرض وما يحصل عليه العميل في سطر واحد.": L(
-        "عزل ضوضاء نشط وبطارية ٤٠ ساعة وضمان محلي سنتين، بسعر النهارده بس.",
-        "Active noise cancelling, a 40-hour battery and a 2-year local warranty, at today’s price only.",
-      ),
-      "وفّر ٢٥٪": L("وفّر ١٤٪", "Save 14%"),
-    },
-    links: { "/products": search("سماعة") },
   }),
   lib("products-rail", {
     as: "flagships",
@@ -193,8 +175,8 @@ export const TECHHUB = libraryTemplate({
   changelog: "TechHub v3: product page",
   name: L("تك هب", "TechHub"),
   description: L(
-    "إلكترونيات حديثة: بحث في الأول، أقسام، عرض اليوم وماركات. أربع صفحات جاهزة.",
-    "Modern electronics: search first, departments, a deal of the day and brands. Four ready pages.",
+    "إلكترونيات حديثة: بحث في الأول، أقسام، الأجهزة الرئيسية وماركات. أربع صفحات جاهزة.",
+    "Modern electronics: search first, departments, flagship devices and brands. Four ready pages.",
   ),
   category: "electronics",
   sortOrder: 50,

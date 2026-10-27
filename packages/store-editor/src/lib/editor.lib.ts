@@ -221,6 +221,8 @@ function toSummary(product: EditorProduct, locale: SiteLocale): ProductSummary {
     compareAtPrice: product.compareAtPrice,
     rating: product.rating ?? null,
     inStock: product.inStock,
+    trending: product.trending === true,
+    seasonal: product.seasonal === true,
   };
 }
 

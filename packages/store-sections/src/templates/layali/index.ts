@@ -2,9 +2,10 @@
  * Layali (template 54, evening wear; Claude Design "Storefront Templates"):
  * pale rose paper, near-black ink, a deep wine for actions and a champagne
  * highlight, Amiri headings over Noto Sans Arabic text and sharp 2px
- * corners. An evening boutique: dressed for the night, build the look, this
- * week's rail, installments, a styling booking and one spotlight review.
- * Built from section library designs (`fromLibrary`).
+ * corners. An evening boutique (v3): dressed for the night, the categories,
+ * this week's rail, build the look, installments and one spotlight review
+ * (styling is booked from the hero, the header and the contact page). Built
+ * from section library designs (`fromLibrary`).
  *
  * Photos: Pexels, each checked by eye (2026-10-21): gowns and slip dresses
  * on hangers, a rail of sequin dresses, stud earrings and a pearl set, and
@@ -48,7 +49,7 @@ const NAME = L("ليالي بوتيك", "Layali Boutique");
 const header = lib("header-announcement", {
   text: {
     "توصيل مجاني للطلبات فوق ١٥٠٠ ج.م": L("احجزي جلسة ستايلنج ببلاش · قسّطي لحد ١٢ شهر", "Book a free styling session · Pay in up to 12 months"),
-    "الكود: SAVE10": L("الكود: LAYALI10", "Code: LAYALI10"),
+    "الدفع عند الاستلام": L("الدفع عند الاستلام", "Cash on delivery"),
     "م": L("ل", "L"),
     "اسم متجرك": NAME,
     "المتجر": L("الجديد", "New in"),
@@ -85,6 +86,12 @@ const home: Design[] = [
     },
     links: { "/products": [search("فستان"), "/contact"] },
   }),
+  lib("categories-circles", { text: { "بتدوّر على إيه؟": L("بتدوّري على إيه الليلة؟", "What are you wearing tonight?") } }),
+  lib("products-rail", {
+    text: { "بيحبوها": L("وصل جديد", "New in"), "الأكثر مبيعًا": L("الأسبوع ده", "This week") },
+    links: { "/products": NEW },
+    lists: [{ source: "newest", limit: 6 }],
+  }),
   lib("gallery-captioned", {
     photo: [PHOTOS.chainDress, PHOTOS.haloStuds, PHOTOS.swirlClutch, PHOTOS.tulleDress, PHOTOS.gownRail, PHOTOS.pearlSet],
     text: {
@@ -103,11 +110,6 @@ const home: Design[] = [
     },
     links: { "/products": [search("فستان"), search("حلق"), search("كلاتش"), search("ترتر"), search("فستان سهرة"), search("لولي")] },
   }),
-  lib("products-rail", {
-    text: { "بيحبوها": L("وصل جديد", "New in"), "الأكثر مبيعًا": L("الأسبوع ده", "This week") },
-    links: { "/products": NEW },
-    lists: [{ source: "newest", limit: 6 }],
-  }),
   lib("pay-installments", {
     text: {
       "قسّطها": L("قسّطيها", "Split it"),
@@ -118,21 +120,6 @@ const home: Design[] = [
       "من غير فوايد ولا مقدم مع شركات التقسيط.": L("من غير مقدم مع شركات التقسيط، على أي فستان أو طقم.", "No down payment with our installment partners, on any dress or set."),
     },
     lists: [{ source: "featured" }],
-  }),
-  lib("service-booking", {
-    text: {
-      "احجز معاد الفني": L("احجزي جلسة ستايلنج", "Book a styling session"),
-      "تركيب شاشة · حوالي ساعة": L("ستايلنج في بوتيك الزمالك · ٤٥ دقيقة", "Styling at our Zamalek boutique · 45 minutes"),
-      "مواعيد الزيارات": L("المواعيد المتاحة", "Available times"),
-      "١٠ ص": L("١٢ الضهر", "12 pm"),
-      "١٢ الضهر": L("٢ م", "2 pm"),
-      "٢ م": L("٤ م", "4 pm"),
-      "٤ م": L("٦ م", "6 pm"),
-      "٦ م": L("٨ م", "8 pm"),
-      "٨ م": L("١٠ م", "10 pm"),
-      "أو احجز على واتساب": L("أو احجزي برسالة", "Or book by message"),
-    },
-    links: { "https://wa.me/201001234567": "/contact" },
   }),
   lib("testimonials-spotlight", {
     text: {
@@ -186,13 +173,13 @@ const DEMO = demoStore({
 
 export const LAYALI = libraryTemplate({
   key: LAYALI_KEY,
-  version: 2,
-  changelog: "Layali v2: product page",
+  version: 3,
+  changelog: "Layali v3: categories, new in before the look, section order",
   productPage: { surface: "flat", thumbs: "side", gallery: "end", button: "outline", band: "brand", extras: ["product-perks"], copy: { back: L("رجوع لتشكيلة السهرة", "Back to the evening rail"), reviews: L("رأي ضيفات الليلة", "Words from the evening"), related: L("كمّلي اللوك", "Complete the look") } },
   name: L("ليالي", "Layali"),
   description: L(
-    "لبس سهرة: جاهزة للسهرة، كمّلي اللوك، جديد الأسبوع، التقسيط، حجز ستايلنج ورأي مميز. أربع صفحات جاهزة.",
-    "Evening wear: dressed for the night, build the look, this week's rail, installments, styling bookings and a spotlight review. Four ready pages.",
+    "لبس سهرة: جاهزة للسهرة، الأقسام، جديد الأسبوع، كمّلي اللوك، التقسيط ورأي مميز. أربع صفحات جاهزة.",
+    "Evening wear: dressed for the night, categories, this week's rail, build the look, installments and a spotlight review. Four ready pages.",
   ),
   category: "fashion",
   sortOrder: 540,

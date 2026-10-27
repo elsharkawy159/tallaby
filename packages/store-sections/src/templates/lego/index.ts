@@ -58,7 +58,26 @@ const footer = lib("footer-signoff", {
 });
 
 const home: Design[] = [
-  lib("hero-big-word", { text: { "جديد": L("ابني", "BUILD") } }),
+  lib("hero-collage", {
+    photo: [PHOTOS.bricks, PHOTOS.dinosOrange, PHOTOS.toolKit],
+    text: {
+      "حكاية الموسم": L("ابني، العب، اتعلم", "Build, play, learn"),
+      "٣ قطع تكفي أسبوعًا كاملًا": L("ألعاب بتتبني بإيديهم", "Toys they build themselves"),
+      "نسّقها معًا أو مع ما تملكه بالفعل، وكل قطعة متاحة بأكثر من لون.": L(
+        "مكعبات وديناصورات وعدة خشب بألوان آمنة، والسن مكتوب على كل علبة.",
+        "Blocks, dinosaurs and wooden tool kits in safe colours, with the age on every box.",
+      ),
+      "تسوّق اللوك": L("تسوق الألعاب", "Shop the toys"),
+      "القطعة الأولى": L("مكعبات تركيب", "Building bricks"),
+      "القطعة الثانية": L("ديناصورات للتركيب", "Build-a-dino set"),
+      "القطعة الثالثة": L("شنطة عدة خشب", "Wooden tool kit"),
+    },
+  }),
+  lib("categories-circles", { text: { "بتدوّر على إيه؟": L("بيحب يلعب بإيه؟", "What do they love to play?") } }),
+  lib("products-bento", {
+    text: { "الأكثر طلبًا": L("الأكتر تركيباً", "Most built"), "الكل بيسأل عليهم": L("أحسن الأطقم", "Top kits") },
+    links: { "/products": BEST },
+  }),
   lib("finder-use", {
     text: {
       "ساعدني أختار": L("حسب السن", "By age"),
@@ -71,20 +90,6 @@ const home: Design[] = [
       "الأكثر طلبًا دلوقتي": L("الأكتر تركيباً دلوقتي", "Most built right now"),
     },
     links: { "/products": [search("مكعبات"), search("عدة"), search("ديناصورات"), search("بيبي")] },
-  }),
-  lib("products-bento", {
-    text: { "الأكثر طلبًا": L("الأكتر تركيباً", "Most built"), "الكل بيسأل عليهم": L("أحسن الأطقم", "Top kits") },
-    links: { "/products": BEST },
-  }),
-  lib("bundle-poster", {
-    text: {
-      "طقم المشاوير": L("باكدج البداية", "Starter pack"),
-      "كل اللي تحتاجه في الطريق": L("مكعبات وعدة وديناصورات", "Blocks, tools and dinosaurs"),
-      "١٬٢٧٠ ج.م": L("١٬٤٣٥ ج.م", "EGP 1,435"),
-      "بدل ١٬٤٩٠ ج.م": L("بدل ١٬٦٩٠ ج.م", "Was EGP 1,690"),
-      "اشتري الطقم": L("خد التلاتة", "Get all three"),
-    },
-    links: { "/products": NEW },
   }),
   lib("features-icon-cards", {
     text: {
@@ -175,13 +180,13 @@ const DEMO = demoStore({
 
 export const LEGO = libraryTemplate({
   key: LEGO_KEY,
-  version: 2,
-  changelog: "Tarkib v2: product page",
+  version: 3,
+  changelog: "Lego v3: collage hero, categories, section order",
   productPage: { thumbs: "bottom", band: "brand", extras: ["product-perks"], copy: { back: L("رجوع للألعاب", "Back to the toys"), reviews: L("رأي الأهالي", "Parents' reviews"), related: L("كمّل البناء", "Keep building") } },
   name: L("تركيب", "Tarkib"),
   description: L(
-    "لعب تركيب: كلمة كبيرة، اختار حسب السن، أحسن الأطقم، باكدج البداية وآراء الأهالي. أربع صفحات جاهزة.",
-    "Building toys: one big word, shop by age, top kits, a starter pack and parents’ reviews. Four ready pages.",
+    "لعب تركيب: كولاج ألعاب، الأقسام، أحسن الأطقم، اختار حسب السن وآراء الأهالي. أربع صفحات جاهزة.",
+    "Building toys: a toy collage, categories, top kits, shop by age and parents’ reviews. Four ready pages.",
   ),
   category: "kids",
   sortOrder: 860,

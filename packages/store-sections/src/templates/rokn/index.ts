@@ -88,18 +88,7 @@ const home: Design[] = [
     },
     links: { "/products": [SHOP, BEST] },
   }),
-  lib("bundle-gifts", {
-    photo: [PHOTOS.candleCorner, PHOTOS.pinkVase, PHOTOS.blackVaseTray, PHOTOS.giftBoxes],
-    text: {
-      "هدايا": L("هدايا", "Gifts"),
-      "هدية لمين؟": L("لمين؟", "Who is it for?"),
-      "ليه": L("بيت جديد", "New home"),
-      "ليها": L("ليها", "For her"),
-      "للطلبة": L("ليه", "For him"),
-      "للجيمرز": L("أفراح", "Weddings"),
-    },
-    links: { "/products": [search("فازة"), search("فازة"), search("برواز"), search("بطانية")] },
-  }),
+  lib("categories-circles", { text: { "بتدوّر على إيه؟": L("هتزيّن إيه؟", "What are you decorating?") } }),
   lib("finder-price-bands", {
     text: {
       "حسب السعر": L("حسب السعر", "By price"),
@@ -117,15 +106,6 @@ const home: Design[] = [
     },
     links: { "/products": BEST },
     lists: [{ source: "best-sellers", limit: 5 }],
-  }),
-  lib("promo-coupon", {
-    text: {
-      "٢٠٪": L("٥٠٠", "500"),
-      "خصم": L("ج.م", "EGP"),
-      "خصم على أول طلب لك": L("ابعت كارت هدية", "Send a gift card"),
-      "للطلبات فوق ٨٠٠ ج.م · حتى ٣٠ نوفمبر": L("من ٢٥٠ لـ ٢٬٠٠٠ ج.م، بيوصل برسالة باسمك وينفع على أي حاجة في المتجر.", "From EGP 250 to 2,000, sent with a message in your name and good for anything in the store."),
-      "الكود: WELCOME20": L("اطلبه من صفحة التواصل", "Order it from the contact page"),
-    },
   }),
   lib("testimonials-spotlight", {
     text: {
@@ -181,8 +161,8 @@ const DEMO = demoStore({
 
 export const ROKN = libraryTemplate({
   key: ROKN_KEY,
-  version: 2,
-  changelog: "Rokn v2: product page",
+  version: 3,
+  changelog: "Rokn v3: categories, section order",
   productPage: { thumbs: "bottom", gallery: "end", band: "shelf", extras: ["product-shipping"], copy: { back: L("رجوع للركن", "Back to the corner"), reviews: L("كلمات عملائنا", "Customers' words"), related: L("هدايا صغيرة معاه", "Small gifts to go with it") } },
   name: L("ركن", "Rokn"),
   description: L(

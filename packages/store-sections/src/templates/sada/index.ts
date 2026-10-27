@@ -2,8 +2,9 @@
  * Sada (template 56, audio store; Claude Design "Storefront Templates"): a
  * dark home, near-black paper and light type, a violet for actions and a
  * mint highlight, Alexandria throughout and 16px corners. An earbuds and
- * headphones shop: one big word over the pick of the month, which earbuds,
- * if you buy one, installments, reviews from listeners and ways to pay.
+ * headphones shop (v3): a headline with two small photos and quick links,
+ * the categories, most played, which earbuds, just in, installments and
+ * reviews from listeners.
  * Built from section library designs (`fromLibrary`).
  *
  * Photos: Pexels, each checked by eye (2026-10-21): earbuds in their cases,
@@ -66,8 +67,36 @@ const REVIEWS = {
   "خدمة العملاء محترمة جدًا وساعدوني أختار الصح.": L("سألتهم أنهي أحسن للجيم ورشحولي سماعة مريحة ومبتقعش.", "I asked which is best for the gym and they suggested a pair that never falls out."),
 };
 
+const BEST = "/products?sort=popularity";
+const NEW = "/products?sort=newest";
+
 const home: Design[] = [
-  lib("hero-big-word", { text: { "جديد": L("صوت", "SOUND") } }),
+  lib("hero-inline", {
+    photo: [PHOTOS.pulseBuds, PHOTOS.studio],
+    text: {
+      "تشكيلة ٢٠٢٦": L("مجرّبة قبل الشحن", "Tested before shipping"),
+      "منتجات مختارة بعناية": L("سماعات أذن ورأس وسبيكرات", "Earbuds, headphones, speakers"),
+      "كل ما تستخدمه": L("كل نغمة", "Every note"),
+      "كل يوم،": L("بوضوح،", "crystal clear,"),
+      "بجودة أفضل.": L("من غير دوشة.", "no noise."),
+      "صورة صغيرة": L("سماعة لاسلكي جنب علبتها", "Wireless earbuds beside their case"),
+      "نختار كل منتج بأنفسنا ونجرّبه قبل أن يصل إليك، بضمان وتوصيل سريع.": L(
+        "بنسمع كل سماعة قبل ما تتشحن، وعندك ٧ أيام تجربة لو مش مريحة.",
+        "We listen to every pair before it ships, and you get a 7-day trial if they do not fit.",
+      ),
+      "ابدأ التسوق": L("تسوق الأكثر مبيعاً", "Shop best sellers"),
+      "وصل حديثًا": L("سماعات أذن", "Earbuds"),
+      "الأكثر مبيعًا": L("سماعات رأس", "Headphones"),
+      "العروض": L("للرياضة", "For sport"),
+      "هدايا": L("سبيكرات", "Speakers"),
+    },
+    links: { "/products": [BEST, search("سماعة أذن"), search("سماعة رأس"), search("سبورت"), search("سبيكر")] },
+  }),
+  lib("categories-chips", { text: { "إيه اللي في بالك؟": L("بتسمع فين؟", "Where do you listen?") } }),
+  lib("products-carousel", {
+    text: { "الأكثر مبيعاً": L("الأكثر سماعاً", "Most played") },
+    links: { "/products": BEST },
+  }),
   lib("finder-versus", {
     text: {
       "تختار مين؟": L("أنهي سماعة؟", "Which earbuds?"),
@@ -78,13 +107,12 @@ const home: Design[] = [
     // Side B drops the library offset (a store with one best seller would hide the section) and shows the newest pair instead.
     lists: [undefined, { source: "newest", offset: null } as ListPatch],
   }),
-  lib("finder-pick", {
+  lib("products-grid", {
     text: {
-      "لو هتشتري واحدة بس": L("لو هتشتري واحدة", "If you buy one"),
-      "أحسن عزل ضوضاء في الفئة": L("أحسن عزل ضوضاء تحت ٢٠٠٠ ج.م", "Best noise cancelling under EGP 2,000"),
-      "بطارية ٣٠ ساعة": L("يوم كامل بشحنة واحدة", "A full day on one charge"),
-      "ضمان سنتين": L("تجربة ٧ أيام", "Seven-day trial"),
+      "وصل حديثًا": L("وصل جديد", "Just in"),
+      "أحدث المنتجات اللي نزلت المتجر.": L("أحدث السماعات اللي جربناها ونزلت المحل.", "The newest pairs we tested and put on the shelf."),
     },
+    links: { "/products": NEW },
   }),
   lib("pay-installments", {
     text: {
@@ -111,7 +139,6 @@ const home: Design[] = [
       "كريم ع.": L("أدهم ي.", "Adham Y."),
     },
   }),
-  lib("pay-methods", { text: { "ادفع بالطريقة اللي تريحك": L("ادفع بطريقتك", "Pay your way") } }),
 ];
 
 const about: Design[] = [
@@ -152,13 +179,13 @@ const DEMO = demoStore({
 
 export const SADA = libraryTemplate({
   key: SADA_KEY,
-  version: 2,
-  changelog: "Sada v2: product page",
+  version: 3,
+  changelog: "Sada v3: new hero, categories, section order",
   productPage: { thumbs: "bottom", band: "shelf", extras: ["product-perks"], copy: { back: L("رجوع للسماعات", "Back to the audio"), reviews: L("رأي المستمعين", "From listeners"), related: L("اسمع كمان", "Listen to more") } },
   name: L("صدى", "Sada"),
   description: L(
-    "محل صوتيات بواجهة داكنة: كلمة كبيرة، مقارنة سماعتين، اختيارنا، التقسيط وآراء المستمعين. أربع صفحات جاهزة.",
-    "A dark audio store: one big word, two earbuds head to head, our pick, installments and listener reviews. Four ready pages.",
+    "محل صوتيات بواجهة داكنة: عنوان بصور صغيرة، الأكثر سماعاً، مقارنة سماعتين، الجديد، التقسيط وآراء المستمعين. أربع صفحات جاهزة.",
+    "A dark audio store: a headline with small photos, most played, two earbuds head to head, just in, installments and listener reviews. Four ready pages.",
   ),
   category: "electronics",
   sortOrder: 560,

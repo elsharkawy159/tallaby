@@ -63,7 +63,7 @@ export const textPolicy = defineDesign({
                 [
                   t.text(L("آخر تحديث: ١ سبتمبر ٢٠٢٦", "Last updated: 1 Sep 2026"), { style: { color: "muted" } }),
                   ...PARTS.flatMap((p) => [
-                    t.heading(p.title, "h2", { style: { fontSize: "2xl", marginTop: 16 } }),
+                    t.heading(p.title, "h3", { style: { fontSize: "2xl", marginTop: 16 } }),
                     t.paragraph(p.text, { style: { fontSize: "md", color: "foreground" } }),
                   ]),
                 ],

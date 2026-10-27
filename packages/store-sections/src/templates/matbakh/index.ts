@@ -80,12 +80,7 @@ const home: Design[] = [
     text: {
       "بتدور على إيه النهارده؟": L("بتطبخ إيه؟", "What are you cooking?"),
       "اكتب اسم المنتج": L("لوح، برطمان، كوباية، طاسة", "Board, jar, mug, pan"),
-      "وصل حديثًا": L("ألواح", "Boards"),
-      "الأكثر مبيعًا": L("برطمانات", "Jars"),
-      "هدايا": L("كوبايات", "Mugs"),
-      "العروض": L("طاسات", "Pans"),
     },
-    links: { "/products": [SHOP, search("لوح"), search("برطمان"), search("كوباية"), search("طاسة")] },
   }),
   lib("categories-tiles", {
     photo: [PHOTOS.stackedPlates, PHOTOS.utensilPot, PHOTOS.pantry, PHOTOS.pans],
@@ -117,19 +112,6 @@ const home: Design[] = [
         "From EGP 200 to 2,500: tools sorted from the lowest price. Want the big sets first? Use the buttons.",
       ),
     },
-  }),
-  lib("promo-bento", {
-    photo: [PHOTOS.jarRack, PHOTOS.spoonJug, PHOTOS.blueMugs],
-    text: {
-      "عروض الموسم": L("عروض الأسبوع", "Offers of the week"),
-      "٤٠٪": L("٢٠٪", "20%"),
-      "تشكيلة الموسم": L("التخزين", "Storage"),
-      "٢٥٪": L("١٥٪", "15%"),
-      "الأكثر مبيعًا": L("الأدوات", "Utensils"),
-      "٣٠٪": L("١٠٪", "10%"),
-      "أساسيات": L("الكوبايات", "Mugs"),
-    },
-    links: { "/products": [LOW, search("برطمان"), search("معالق"), search("كوباية")] },
   }),
   lib("pay-open-box", {
     text: {

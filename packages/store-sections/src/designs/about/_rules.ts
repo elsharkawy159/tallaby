@@ -4,7 +4,7 @@
  * names templates store values by (`templates/library-fields.ts`) stay the
  * same.
  *
- * - Root padding 96 / 72 / 48 px (desktop / tablet / mobile).
+ * - Root padding 64 / 40 px (desktop / mobile), the library's one rhythm.
  * - Display-size `h2` headings: `display-md`, `3xl` on phones, tight lines.
  * - No letter-spacing anywhere (it breaks joined Arabic letters).
  * - No `lg` shadow.
@@ -13,10 +13,12 @@ import type { StyleValues } from "../../elements/style";
 import type { NodeTemplate } from "../../elements/tree";
 import { defineDesign, type Design } from "../builder";
 
+// The library's one section rhythm since 2026-10-27 (owner: too much gap between sections):
+// 64 / 40 like every other design; the renderer scales it by the fluid section token.
 export const ABOUT_PADDING = {
-  style: { paddingTop: 96, paddingBottom: 96 },
-  tablet: { paddingTop: 72, paddingBottom: 72 },
-  mobile: { paddingTop: 48, paddingBottom: 48 },
+  style: { paddingTop: 64, paddingBottom: 64 },
+  tablet: {},
+  mobile: { paddingTop: 40, paddingBottom: 40 },
 } as const;
 
 const isDisplay = (size: StyleValues["fontSize"]) => typeof size === "string" && size.startsWith("display-");

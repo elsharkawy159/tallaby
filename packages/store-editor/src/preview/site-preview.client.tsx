@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
-import { CarouselRuntime } from "@workspace/store-sections/client";
+import { CarouselRuntime, MotionRuntime } from "@workspace/store-sections/client";
 import { useTranslations } from "next-intl";
 import type { DesignSystem, SectionInstance, SiteLocale } from "@workspace/store-sections";
 import {
@@ -10,7 +10,9 @@ import {
   PageStyles,
   SITE_ROOT_CLASS,
   SectionRenderer,
+  SiteBottomNav,
   SiteTheme,
+  siteMotionAttrs,
   collectCatalogQueries,
   designSystemToTokens,
   drawChrome,
@@ -60,6 +62,8 @@ export function previewRenderContext({
   const resolved = resolveCanvasCatalog(collectCatalogQueries(sections, storeSectionRegistry, { product }), catalog, locale);
   return {
     mode: "edit",
+    // A preview shows the site as visitors see it, reveal on scroll included (the editor canvas doesn't).
+    reveal: true,
     ...(product ? { product } : {}),
     locale,
     dir: locale === "ar" ? "rtl" : "ltr",
@@ -169,6 +173,8 @@ export function SitePreview({
       }),
     [sections, header, footer, catalog, locale, store, t, product],
   );
+  // The header and footer never reveal on scroll.
+  const chromeCtx = useMemo(() => ({ ...ctx, reveal: false }), [ctx]);
   // The header and footer as the storefront draws them: the store's logo and the tools the seller turned on.
   const hasLogo = Boolean(store.logoUrl);
   const drawnHeader = useMemo(() => drawChrome(flushHeaderOnMobile(header), "header", { translated, hasLogo }), [header, translated, hasLogo]);
@@ -183,6 +189,7 @@ export function SitePreview({
         style={{ width: device === "mobile" ? "390px" : "100%", maxWidth: "100%" }}
       />
       {body && <CarouselRuntime doc={body.ownerDocument} />}
+      {body && <MotionRuntime doc={body.ownerDocument} />}
       {body &&
         createPortal(
           <div
@@ -195,18 +202,20 @@ export function SitePreview({
               fontFamily: "var(--sf-font-body, var(--font-storefront)), system-ui, sans-serif",
             }}
             dir={dir}
+            {...siteMotionAttrs(designSystem.motion)}
           >
             <SiteTheme designSystem={designSystem} />
             {/* Element styles of tree sections, as on the storefront. */}
             <PageStyles sections={[drawnHeader, ...sections, drawnFooter]} mode="public" />
             <style>{`.${SITE_ROOT_CLASS} :where(h1,h2,h3,h4){font-family:var(--sf-font-heading,var(--sf-font-body,var(--font-storefront))),system-ui,sans-serif}`}</style>
-            {drawnHeader && <SectionRenderer instance={drawnHeader} registry={storeSectionRegistry} ctx={ctx} defaultLocale={defaultLocale} />}
+            {drawnHeader && <SectionRenderer instance={drawnHeader} registry={storeSectionRegistry} ctx={chromeCtx} defaultLocale={defaultLocale} />}
             <main className="flex-1">
               {sections.map((section) => (
                 <SectionRenderer key={section.id} instance={section} registry={storeSectionRegistry} ctx={ctx} defaultLocale={defaultLocale} />
               ))}
             </main>
-            {drawnFooter && <SectionRenderer instance={drawnFooter} registry={storeSectionRegistry} ctx={ctx} defaultLocale={defaultLocale} />}
+            {drawnFooter && <SectionRenderer instance={drawnFooter} registry={storeSectionRegistry} ctx={chromeCtx} defaultLocale={defaultLocale} />}
+            <SiteBottomNav header={header} ctx={chromeCtx} />
           </div>,
           body,
         )}

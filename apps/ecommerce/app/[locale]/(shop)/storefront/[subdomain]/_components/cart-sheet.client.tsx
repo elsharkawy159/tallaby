@@ -4,19 +4,33 @@ import { useEffect, useState } from "react";
 import { ShoppingBag } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { cn } from "@workspace/ui/lib/utils";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@workspace/ui/components/sheet";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@workspace/ui/components/sheet";
 import { onCartItemAdded, useCart } from "@/providers/cart-provider";
 import { StorefrontCart } from "./storefront-cart.client";
 import s from "../storefront.module.css";
 
-export function CartSheet({
+const OPEN_EVENT = "sf:open-cart";
+
+/** Opens the store's cart sheet (mounted once per storefront page by StorefrontShell). */
+export function openStoreCart() {
+  window.dispatchEvent(new Event(OPEN_EVENT));
+}
+
+/** `/cart` or `/<locale>/cart` on this site: what the template headers, bottom nav and cart bar link to. */
+function isCartLink(a: HTMLAnchorElement): boolean {
+  if ((a.target && a.target !== "_self") || a.hasAttribute("download")) return false;
+  const url = new URL(a.href, window.location.href);
+  return url.origin === window.location.origin && /^\/(?:[a-z]{2}\/)?cart\/?$/.test(url.pathname);
+}
+
+/**
+ * The store's cart as a sheet from the side. Every cart link on the page
+ * (header icons of every template, the bottom navigation, the phone cart bar,
+ * "Go to cart" buttons) opens it instead of leaving the page, and so does
+ * adding a product. The `/cart` page stays for a new tab, a shared link or no
+ * JavaScript.
+ */
+export function StoreCartSheet({
   storeName,
   fontClassName,
 }: {
@@ -28,40 +42,58 @@ export function CartSheet({
   const t = useTranslations("storefront");
   const locale = useLocale();
   const [open, setOpen] = useState(false);
-  const { cartItems } = useCart();
-  // Show the shopper what they just added.
-  useEffect(() => onCartItemAdded(() => setOpen(true)), []);
-  const count = cartItems
-    .filter((item) => !item.savedForLater)
-    .reduce((sum, item) => sum + item.quantity, 0);
+
+  useEffect(() => {
+    const show = () => setOpen(true);
+    // Capture, before the links' own (client-side navigation) handlers.
+    const onClick = (e: MouseEvent) => {
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      const a = (e.target as Element | null)?.closest?.("a[href]");
+      if (!(a instanceof HTMLAnchorElement) || !isCartLink(a)) return;
+      e.preventDefault();
+      e.stopPropagation();
+      show();
+    };
+    // Show the shopper what they just added.
+    const offAdded = onCartItemAdded(show);
+    window.addEventListener(OPEN_EVENT, show);
+    document.addEventListener("click", onClick, true);
+    return () => {
+      offAdded();
+      window.removeEventListener(OPEN_EVENT, show);
+      document.removeEventListener("click", onClick, true);
+    };
+  }, []);
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger
-        className={cn(s.iconButton, count > 0 && s.iconButtonFilled)}
-        aria-label={t("openCart", { count })}
-      >
-        <ShoppingBag className="size-5" aria-hidden />
-        {count > 0 && (
-          <span className={s.badge} aria-hidden>
-            {count}
-          </span>
-        )}
-      </SheetTrigger>
-      <SheetContent
-        side={locale === "ar" ? "left" : "right"}
-        className={cn(fontClassName, s.tokens, "flex w-full flex-col gap-0 p-5 sm:max-w-md")}
-      >
+      <SheetContent side={locale === "ar" ? "left" : "right"} className={cn(fontClassName, s.tokens, "flex w-full flex-col gap-0 p-5 sm:max-w-md")}>
         <SheetHeader className="p-0 pb-2 text-start">
           <SheetTitle className="text-xl font-bold">{t("cartTitle")}</SheetTitle>
-          <SheetDescription className="sr-only">
-            {t("cartScopeNote", { store: storeName })}
-          </SheetDescription>
+          <SheetDescription className="sr-only">{t("cartScopeNote", { store: storeName })}</SheetDescription>
         </SheetHeader>
         <div className="min-h-0 flex-1">
           <StorefrontCart storeName={storeName} onNavigate={() => setOpen(false)} />
         </div>
       </SheetContent>
     </Sheet>
+  );
+}
+
+/** The default header's cart button: the live count, and it opens the store's cart sheet. */
+export function CartSheet() {
+  const t = useTranslations("storefront");
+  const { cartItems } = useCart();
+  const count = cartItems.filter((item) => !item.savedForLater).reduce((sum, item) => sum + item.quantity, 0);
+
+  return (
+    <button type="button" onClick={openStoreCart} className={cn(s.iconButton, count > 0 && s.iconButtonFilled)} aria-label={t("openCart", { count })} aria-haspopup="dialog">
+      <ShoppingBag className="size-5" aria-hidden />
+      {count > 0 && (
+        <span className={s.badge} aria-hidden>
+          {count}
+        </span>
+      )}
+    </button>
   );
 }

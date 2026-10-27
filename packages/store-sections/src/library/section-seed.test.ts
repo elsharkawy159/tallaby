@@ -48,12 +48,22 @@ describe("library sections seed", () => {
     expect(seededSectionKeys(["INSERT INTO library_sections (key, tree)\nVALUES (\n  'it''s', '{}'::jsonb\n)"])).toEqual(new Set(["it's"]));
   });
 
-  it("every code design is seeded by some migration (else run section:sql --new-only)", () => {
+  // 0109 dropped `library_sections` (templates and sections are code-only, CLAUDE.md rule 17), so
+  // designs added after it ship with a deploy and have no seed migration.
+  const CODE_ONLY = new Set([
+    ...["hero-fullbleed", "categories-showcase", "promo-banner-fullbleed", "about-fullbleed"],
+    // Claude Design premium section set (2026-10-27).
+    ...["header-centered-ticker", "header-inline", "hero-split", "hero-thumbs", "hero-banner", "categories-photo-tiles", "categories-circles", "categories-captioned", "products-tabs-grid", "products-carousel", "products-spotlight", "products-minimal", "products-boxed", "products-campaign", "products-deal", "promo-campaign-tiles", "promo-marquee", "promo-countdown", "features-trust-band", "about-split-story", "about-before-after", "about-shop-look", "gallery-social-strip", "testimonials-carousel", "testimonials-photo-cards", "testimonials-quote", "testimonials-summary", "newsletter-banner", "newsletter-strip", "newsletter-offer", "text-brand-statement", "footer-columns-signup", "footer-centered-light"],
+  ]);
+
+  it("every design from before 0109 was seeded by some migration", () => {
     const sql = readdirSync(MIGRATIONS)
       .filter((name) => name.endsWith(".sql"))
       .map((name) => readFileSync(join(MIGRATIONS, name), "utf8"));
     const seeded = seededSectionKeys(sql);
-    expect([...DESIGNS, ...TEMPLATE_OWN_DESIGNS].filter((design) => !seeded.has(design.id)).map((design) => design.id)).toEqual([]);
+    expect(
+      [...DESIGNS, ...TEMPLATE_OWN_DESIGNS].filter((design) => !seeded.has(design.id) && !CODE_ONLY.has(design.id)).map((design) => design.id),
+    ).toEqual([]);
   }, 60_000);
 
   it("0105 seeds the Classic and Atelier designs hidden, with named trees", () => {

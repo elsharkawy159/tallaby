@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildSetupTasks, isSetupDone, publishReady, type SetupFlags } from "./setup-checklist.lib";
+import { buildSetupTasks, isSetupDone, publishLockReason, publishReady, type SetupFlags } from "./setup-checklist.lib";
 
 const STORE = "33333333-3333-4333-8333-333333333333";
 const none: SetupFlags = { product: false, template: false, shipping: false, publish: false };
@@ -43,8 +43,27 @@ describe("isSetupDone", () => {
 });
 
 describe("publishReady", () => {
-  it("needs an active product", () => {
-    expect(publishReady({ ...none, product: true })).toBe(true);
+  it("needs an active product and a chosen template", () => {
+    expect(publishReady({ ...none, product: true, template: true })).toBe(true);
     expect(publishReady({ ...all, product: false })).toBe(false);
+  });
+
+  it("stays locked on the placeholder Classic drafts until a template is chosen (owner 2026-10-27)", () => {
+    expect(publishReady({ ...none, product: true })).toBe(false);
+  });
+});
+
+describe("publishLockReason", () => {
+  it("names the first missing step", () => {
+    expect(publishLockReason(none)).toBe("locked");
+    expect(publishLockReason({ ...none, product: true })).toBe("lockedTemplate");
+    expect(publishLockReason({ ...none, product: true, template: true })).toBeNull();
+  });
+});
+
+describe("step order", () => {
+  it("puts choosing a template before publishing", () => {
+    const keys = buildSetupTasks(none, STORE).map((t) => t.key);
+    expect(keys.indexOf("template")).toBeLessThan(keys.indexOf("publish"));
   });
 });

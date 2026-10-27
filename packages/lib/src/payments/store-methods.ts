@@ -21,7 +21,11 @@ export type StorePaymentMethod = {
   kind: PaymentMethodKind;
   status: PaymentMethodStatus;
   collector: PaymentCollector;
-  /** Public path (same in ecommerce and dashboard public/), or null → initials badge. */
+  /**
+   * Public path (same in ecommerce and dashboard public/), or null → initials badge.
+   * `/icons/payments/*.png` are 96px tall; storefront footers draw the same files
+   * (`PAYMENTS` in packages/store-sections/src/elements/store-payments.tsx).
+   */
   logo: string | null;
   /** Brand initials + colour for methods without a logo file yet. */
   badge?: { text: string; color: string };
@@ -29,12 +33,12 @@ export type StorePaymentMethod = {
 
 export const STORE_PAYMENT_METHODS = [
   { key: "cod", kind: "cod", status: "live", collector: "delivery", logo: null, badge: { text: "COD", color: "#0a5c4f" } },
-  { key: "vodafone_cash", kind: "wallet", status: "live", collector: "seller", logo: "/payment-method/Vodafone_logo.png" },
-  { key: "e_cash", kind: "wallet", status: "live", collector: "seller", logo: "/payment-method/Eand_logo.png" },
+  { key: "vodafone_cash", kind: "wallet", status: "live", collector: "seller", logo: "/icons/payments/vodafone-cash.png" },
+  { key: "e_cash", kind: "wallet", status: "live", collector: "seller", logo: "/icons/payments/e-cash.png" },
   // Official brand assets still needed for these two (owner action).
   { key: "we_pay", kind: "wallet", status: "live", collector: "seller", logo: null, badge: { text: "WE", color: "#5c2d91" } },
   { key: "orange_cash", kind: "wallet", status: "live", collector: "seller", logo: null, badge: { text: "OC", color: "#ff7900" } },
-  { key: "instapay", kind: "instapay", status: "live", collector: "seller", logo: "/payment-method/Instapay_logo.png" },
+  { key: "instapay", kind: "instapay", status: "live", collector: "seller", logo: "/icons/payments/instapay.png" },
   { key: "card", kind: "other", status: "soon", collector: "tallaby", logo: null, badge: { text: "VISA", color: "#1a1f71" } },
   { key: "fawry", kind: "other", status: "soon", collector: "tallaby", logo: null, badge: { text: "F", color: "#f7c600" } },
   { key: "installments", kind: "other", status: "soon", collector: "tallaby", logo: null, badge: { text: "÷", color: "#00a19a" } },

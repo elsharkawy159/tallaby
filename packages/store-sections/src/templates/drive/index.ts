@@ -72,12 +72,7 @@ const home: Design[] = [
     text: {
       "بتدور على إيه النهارده؟": L("عربيتك محتاجة إيه النهارده؟", "What does your car need today?"),
       "اكتب اسم المنتج": L("اسم القطعة أو موديل العربية", "Part name or car model"),
-      "وصل حديثًا": L("حامل مغناطيس", "Magnetic mount"),
-      "الأكثر مبيعًا": L("شاحن سريع", "Fast charger"),
-      "هدايا": L("فرش جلد", "Leather covers"),
-      "العروض": L("كابلات اشتراك", "Jumper cables"),
     },
-    links: { "/products": [SHOP, search("مغناطيس"), search("شاحن"), search("فرش"), search("كابلات")] },
   }),
   lib("categories-ruled", {
     text: { "الأقسام": L("الأقسام", "Departments"), "تسوق بالقسم": L("تسوّق حسب القسم", "Shop by department") },
@@ -90,12 +85,6 @@ const home: Design[] = [
       "العروض": L("الأعلى تقييماً", "Top rated"),
     },
     links: { "/products": [NEW, BEST, RATED] },
-  }),
-  lib("promo-tiers", {
-    text: {
-      "عرض الشهر": L("أكواد الشهر", "This month’s codes"),
-      "كل ما تزود، توفّر أكتر": L("كل ما تجهّز عربيتك أكتر، توفّر أكتر", "The more you kit out, the more you save"),
-    },
   }),
   lib("features-ruled", {
     text: {

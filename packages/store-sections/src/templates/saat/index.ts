@@ -3,7 +3,7 @@
  * Templates"): stone paper, a deep racing green for actions and a brass
  * highlight, Noto Naskh Arabic headings over Noto Sans Arabic and tight 6px
  * corners. A Downtown watch corner: watches with hands, analogue or smart,
- * instalments, the service desk price list and the shops. Built from
+ * best sellers, instalments, the shops and a regular's word. Built from
  * section library designs (`fromLibrary`).
  *
  * Photos: Pexels, each checked by eye (2026-10-21): watches on wood,
@@ -74,6 +74,15 @@ const home: Design[] = [
     },
     links: { "/products": [search("ساعة"), "/contact"] },
   }),
+  lib("categories-ruled", { text: { "الأقسام": L("الكورنر", "The corner"), "تسوق بالقسم": L("اختار ساعتك", "Choose your watch") } }),
+  lib("products-grid", {
+    text: {
+      "وصل حديثًا": L("الأكثر مبيعاً", "Best sellers"),
+      "أحدث المنتجات اللي نزلت المتجر.": L("الساعات اللي بتخرج من الكورنر كل أسبوع.", "The watches that leave the corner every week."),
+    },
+    links: { "/products": BEST },
+    lists: [{ source: "best-sellers", limit: 4 }],
+  }),
   lib("finder-versus", {
     text: {
       "تختار مين؟": L("عقارب ولا سمارت؟", "Analogue or smart?"),
@@ -99,29 +108,6 @@ const home: Design[] = [
       "من غير فوايد ولا مقدم مع شركات التقسيط.": L("من غير فوايد ولا مقدم، والضمان سنتين زي الكاش.", "No interest, no down payment, and the same two-year warranty."),
     },
   }),
-  lib("service-price-menu", {
-    text: {
-      "أسعار الخدمات": L("مكتب الصيانة", "Service desk"),
-      "الأسعار شاملة قطع الغيار الأصلية والضمان.": L("في المحل وبضمان ٦ شهور على الشغل.", "In store, with a six-month warranty on the work."),
-      "الموبايل": L("البطارية", "Battery"),
-      "تغيير بطارية": L("تغيير بطارية", "Battery change"),
-      "٦٥٠ ج.م": L("١٢٠ ج.م", "EGP 120"),
-      "تغيير شاشة": L("تغيير زجاج", "Glass replacement"),
-      "٢٤٠٠ ج.م": L("٣٥٠ ج.م", "EGP 350"),
-      "سوكت الشحن": L("اختبار ضد المية", "Water-resistance test"),
-      "٤٥٠ ج.م": L("٢٠٠ ج.م", "EGP 200"),
-      "الشاشات والبيت": L("الأساور", "Straps"),
-      "تركيب حائط": L("تركيب أسورة", "Fit a strap"),
-      "٣٥٠ ج.م": L("٥٠ ج.م", "EGP 50"),
-      "ضبط رسيفر": L("تقصير أسورة معدن", "Shorten a bracelet"),
-      "١٥٠ ج.م": L("٨٠ ج.م", "EGP 80"),
-      "السماعات": L("الصيانة", "Service"),
-      "تغيير وسايد": L("صيانة كاملة", "Full service"),
-      "١٢٠ ج.م": L("٩٠٠ ج.م", "EGP 900"),
-      "تنظيف وفحص": L("تلميع العلبة", "Case polishing"),
-      "٨٠ ج.م": L("٢٥٠ ج.م", "EGP 250"),
-    },
-  }),
   lib("team-branches", {
     text: {
       "الفروع": L("المحل", "Shop"),
@@ -135,6 +121,17 @@ const home: Design[] = [
       "شارع ٩، المعادي": L("شارع فؤاد، محطة الرمل", "Fouad St, Raml Station"),
     },
     links: { "https://maps.google.com": MAPS },
+  }),
+  lib("testimonials-quote", {
+    text: {
+      "آراء العملاء": L("من زباين الكورنر", "From the corner's regulars"),
+      "«من أحسن تجارب الشراء أونلاين. الطلب وصل بسرعة، والتغليف شيك، والمنتج أحلى من الصور.»": L(
+        "«اشتريت الكلاسيك بالتاريخ بالتقسيط، ولما احتاجت ظبط رجعتها المحل وخلصت في ربع ساعة.»",
+        "«I bought the Classic Date on instalments, and when it needed adjusting the shop sorted it in fifteen minutes.»",
+      ),
+      "مريم أ.": L("أحمد ن.", "Ahmed N."),
+      "القاهرة": L("وسط البلد", "Downtown"),
+    },
   }),
 ];
 
@@ -174,8 +171,8 @@ const DEMO = demoStore({
 
 export const SAAT = libraryTemplate({
   key: SAAT_KEY,
-  version: 2,
-  changelog: "Saat v2: product page",
+  version: 3,
+  changelog: "Saat v3: categories, best sellers, section order",
   productPage: { surface: "flat", thumbs: "side", button: "outline", band: "paper", extras: ["product-perks"], copy: { back: L("رجوع للساعات", "Back to the watches"), reviews: L("رأي أصحاب الساعات", "From watch owners"), related: L("ساعات تانية للمقارنة", "More watches to compare") } },
   name: L("ساعات", "Saat"),
   description: L(

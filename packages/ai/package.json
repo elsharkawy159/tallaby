@@ -1,0 +1,33 @@
+{
+  "name": "@workspace/ai",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Server-only AI foundation: model tiers, Gemini provider, structured generation, usage logging and caps",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "license": "ISC",
+  "packageManager": "pnpm@10.4.1",
+  "dependencies": {
+    "@ai-sdk/google": "4.0.94",
+    "@workspace/db": "workspace:*",
+    "ai": "7.0.138",
+    "drizzle-orm": "0.45.1",
+    "zod": "^4.2.1"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.3",
+    "@workspace/typescript-config": "workspace:*",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  }
+}

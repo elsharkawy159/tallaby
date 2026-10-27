@@ -101,7 +101,7 @@ export function pill(t: TreeBuilder, label: DesignText, href: string, variant: "
 }
 
 /** A rounded white card with a hairline border (white on the warm page colour, as in the design). */
-export const CARD: StyleValues = { background: "white", borderWidth: 1, borderColor: "border", radius: 16 };
+export const CARD: StyleValues = { background: "surface", borderWidth: 1, borderColor: "border", radius: 16 };
 
 const PRODUCT = L("اسم المنتج", "Product name");
 const PRICE = L("١٬٧٣٠ ج.م", "EGP 1,730");

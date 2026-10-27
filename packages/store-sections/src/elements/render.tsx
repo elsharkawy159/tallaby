@@ -46,6 +46,7 @@ import {
   User,
   Users,
   Wrench,
+  X,
   Youtube,
   Zap,
   type LucideIcon,
@@ -63,9 +64,13 @@ import { DATA_NODE_NEEDS, boundValue, isDataList, isPaginated, listRecords, node
 import { MAX_ELEMENT_DEPTH, PATTERN_VARIANTS, getElementDefinition, type ElementIconName, type PatternVariant } from "./registry";
 import { VideoElement, VideoPlaylist } from "./render-video";
 import { productSectionEmpty, renderProductElement } from "./product-elements";
+import { ProductFlags, hasProductFlags } from "./product-flags";
 import { SocialIcon } from "../social/icon";
 import { contactRowGone, storeSocialLinks, withStoreContact } from "./store-contact";
-import { storePaymentLabels } from "./store-payments";
+import { PaymentLogo, storePayments } from "./store-payments";
+import { normalizeStyle } from "./style";
+import { REVEAL_CHOICES, REVEAL_MAX_STEP, marqueeSeconds, type RevealChoice, type RevealVariant } from "./motion";
+import { CountdownElement } from "./countdown";
 
 const ICONS: Record<ElementIconName, LucideIcon> = {
   star: Star,
@@ -220,20 +225,19 @@ function renderSocialRow(node: ComponentNode, ctx: RenderContext, attrs: Record<
 
 /**
  * A `role: "payments"` row draws the methods the store's checkout offers
- * (store-payments.ts), each as a copy of the row's first chip: the copies keep
- * its node id, so the scoped CSS applies to every one. `undefined`: draw the
- * row as authored (no chip, no data from the host, or the editor and no
- * methods). Publicly a store with no methods gets no row.
+ * (store-payments.tsx) as logo cards; the row keeps its node id, so its
+ * scoped CSS (gap, alignment) still applies. `undefined`: draw the row as
+ * authored (no data from the host, or the editor and no methods). Publicly a
+ * store with no methods gets no row.
  */
-function renderPaymentsRow(node: ComponentNode, ctx: RenderContext, depth: number, attrs: Record<string, string>): ReactNode | undefined {
-  const stencil = node.children.find((child) => child.type === "badge" || child.type === "text");
-  const labels = storePaymentLabels(ctx);
-  if (!stencil || !labels) return undefined;
-  if (!labels.length) return ctx.mode === "edit" ? undefined : null;
+function renderPaymentsRow(ctx: RenderContext, attrs: Record<string, string>): ReactNode | undefined {
+  const payments = storePayments(ctx);
+  if (!payments) return undefined;
+  if (!payments.length) return ctx.mode === "edit" ? undefined : null;
   return (
-    <div {...attrs} className="flex min-w-0 flex-row flex-wrap">
-      {labels.map((label) => (
-        <ElementFragment key={label} node={{ ...stencil, props: { ...stencil.props, text: label, translations: undefined } }} ctx={ctx} depth={depth + 1} />
+    <div {...attrs} className="flex min-w-0 flex-row flex-wrap items-center">
+      {payments.map((payment) => (
+        <PaymentLogo key={payment.key} payment={payment} />
       ))}
     </div>
   );
@@ -241,7 +245,7 @@ function renderPaymentsRow(node: ComponentNode, ctx: RenderContext, depth: numbe
 
 /** The burger button's look, shared by the host's sheet trigger, the editor and the fallback. */
 export const MOBILE_MENU_BUTTON_CLASS =
-  "inline-grid size-11 cursor-pointer list-none place-items-center rounded-full text-(--sf-ink) hover:bg-(--sf-shelf) [&::-webkit-details-marker]:hidden";
+  "inline-grid size-11 shrink-0 cursor-pointer list-none place-items-center rounded-full text-current hover:bg-current/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current [&::-webkit-details-marker]:hidden";
 
 /**
  * The header's burger menu (docs/section-rules.md §5.6). Its children are
@@ -276,15 +280,53 @@ function renderMobileMenu(node: ComponentNode, ctx: RenderContext, depth: number
   );
   const host = ctx.renderMobileMenu?.({ links, title: ctx.store.name });
   if (host) return host;
+  // Without a host (template preview, builder preview): a native modal <dialog> as a sheet from the
+  // start side. It sits in the top layer (above a transformed sticky header), traps focus and closes
+  // with Esc by itself; the button opens it with an invoker command, and `MenuSheetRuntime` covers
+  // browsers without invokers plus closing on a link or backdrop tap and the page scroll lock.
+  const id = `sf-menu-${node.id.replace(/[^\w-]/g, "")}`;
+  const invoker = { commandfor: id, command: "show-modal" } as Record<string, string>;
   return (
-    <details className="relative">
-      <summary className={MOBILE_MENU_BUTTON_CLASS} aria-label={label}>
+    <>
+      <button
+        type="button"
+        className={MOBILE_MENU_BUTTON_CLASS}
+        aria-label={label}
+        aria-haspopup="dialog"
+        aria-controls={id}
+        aria-expanded={false}
+        data-sf-menu-open={id}
+        {...invoker}
+      >
         <Menu className="size-6" aria-hidden />
-      </summary>
-      <div className="absolute start-0 top-full z-50 mt-2 w-72 max-w-[calc(100vw-2rem)] rounded-(--sf-radius,12px) border border-(--sf-line) bg-(--sf-paper) px-4 py-2 shadow-lg">
+      </button>
+      <dialog
+        id={id}
+        data-sf-sheet
+        aria-label={sectionText("menu", ctx.locale)}
+        className="fixed inset-y-0 start-0 end-auto m-0 h-dvh max-h-none w-[85%] max-w-sm overflow-y-auto border-0 bg-(--sf-paper) p-5 text-(--sf-ink) shadow-xl backdrop:bg-black/45"
+      >
+        <div className="flex items-center justify-between gap-3 pb-3">
+          <p className="min-w-0 truncate text-lg font-bold">{ctx.store.name}</p>
+          <button
+            type="button"
+            className={MOBILE_MENU_BUTTON_CLASS}
+            aria-label={sectionText("closeMenu", ctx.locale)}
+            data-sf-menu-close
+            {...({ commandfor: id, command: "close" } as Record<string, string>)}
+          >
+            <X className="size-6" aria-hidden />
+          </button>
+        </div>
         {links}
-      </div>
-    </details>
+        <div className="mt-3 border-t border-(--sf-line) pt-3">
+          <SmartLink ctx={ctx} href="/profile" className="flex min-h-11 items-center gap-2 text-base font-medium hover:text-(--sf-brand)">
+            <User className="size-5" aria-hidden />
+            {sectionText("signIn", ctx.locale)}
+          </SmartLink>
+        </div>
+      </dialog>
+    </>
   );
 }
 
@@ -318,20 +360,103 @@ function isCartLink(node: ComponentNode, href: string): boolean {
   return icon;
 }
 
-function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scope?: DataRecord): ReactNode {
+/**
+ * Reveal on scroll (docs/section-rules.md §6.2). `auto`: the node may get a
+ * reveal of its own; `null`: an ancestor already reveals (or motion is off);
+ * a number: an item of a grid or list, revealed with that stagger step.
+ */
+type RevealIn = "auto" | number | null;
+/** What a node passes to its children: `items` staggers them. */
+type RevealOut = "auto" | "items" | null;
+
+/** Never revealed, nor anything inside: they move on their own, or must be there at once (forms, the buy box). */
+const REVEAL_SKIP = new Set([
+  "carousel",
+  "slide",
+  "storeForm",
+  "addToCart",
+  "wishlistButton",
+  "mobileMenu",
+  "productGallery",
+  "productPrice",
+  "productStock",
+  "productRating",
+  "productVariants",
+  "productBuyBox",
+  "productDetails",
+  "productContent",
+  "productSeller",
+  "productReviews",
+]);
+/** Revealed whole with `fade-up` (when not inside a revealed node). */
+const REVEAL_FADE_UP = new Set(["paragraph", "button", "badge", "blockQuote", "accordion", "linkBlock", "list", "countdown"]);
+/** Their children are items: each one fades up in turn. */
+const REVEAL_ITEMS = new Set(["grid", "productList", "categoryList", "postList"]);
+
+function revealOf(node: ComponentNode, props: Record<string, unknown>, ctx: RenderContext, input: RevealIn): { attrs: Record<string, string>; children: RevealOut } {
+  if (!ctx.reveal || input === null || REVEAL_SKIP.has(node.type)) return { attrs: {}, children: null };
+  const choice = REVEAL_CHOICES.find((c) => c === props.reveal) ?? "auto";
+  const step = typeof input === "number" ? Math.min(input, REVEAL_MAX_STEP) : 0;
+  let variant: RevealVariant | null = null;
+  if (choice !== "auto") variant = choice === "none" ? null : (choice as Exclude<RevealChoice, "auto" | "none">);
+  else if (typeof input === "number") variant = "fade-up";
+  // The hero heading is the page's largest text (LCP): never hidden.
+  else if (node.type === "heading") variant = props.level === "h1" ? null : "fade-up";
+  else if (REVEAL_FADE_UP.has(node.type) || (props.role === "intro" && (node.type === "vFlex" || node.type === "hFlex"))) variant = "fade-up";
+  else if (node.type === "image") variant = "zoom-in";
+  // A marquee fades in whole (its items move on their own).
+  else if (node.type === "marquee") variant = "fade";
+  if (variant) {
+    const attrs: Record<string, string> = { "data-reveal": variant };
+    if (step > 0) attrs["data-reveal-step"] = String(step);
+    return { attrs, children: null };
+  }
+  return { attrs: {}, children: REVEAL_ITEMS.has(node.type) ? "items" : "auto" };
+}
+
+/**
+ * A product or category list as one row that swipes sideways on phones
+ * (`mobileRail`, docs/section-rules.md §5.4, G15): it bleeds to the screen
+ * edges, snaps card by card and lets the next card peek in.
+ */
+const MOBILE_RAIL_CLASS = {
+  cards:
+    "max-md:-mx-4 max-md:flex max-md:snap-x max-md:snap-mandatory max-md:scroll-px-4 max-md:overflow-x-auto max-md:px-4 max-md:pb-1 max-md:[scrollbar-width:none] max-md:*:shrink-0 max-md:*:basis-[min(72%,280px)] max-md:*:snap-start max-md:[&::-webkit-scrollbar]:hidden",
+  categories:
+    "max-md:-mx-4 max-md:flex max-md:snap-x max-md:snap-mandatory max-md:scroll-px-4 max-md:overflow-x-auto max-md:px-4 max-md:pb-1 max-md:[scrollbar-width:none] max-md:*:shrink-0 max-md:*:basis-[44%] max-md:*:snap-start max-md:[&::-webkit-scrollbar]:hidden",
+} as const;
+
+/** A clipped link holding a photo (product and category cards): the photo zooms a little on hover (`MOTION_CSS`). */
+function zoomsPhoto(node: ComponentNode): boolean {
+  const overflow = normalizeStyle(node.style).overflow;
+  return (overflow === "hidden" || overflow === "clip") && node.children.some((child) => child.type === "image");
+}
+
+/** A link or box holding nothing but one icon (an icon button or icon tile): its icon sits dead centre. */
+function iconOnly(node: ComponentNode): boolean {
+  return node.children.length === 1 && node.children[0]!.type === "icon";
+}
+
+/** A link whose photo is the record's image (a product card's photo link). */
+function holdsBoundImage(node: ComponentNode): boolean {
+  return node.children.some((child) => child.type === "image" && child.props?.bind === "image");
+}
+
+function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scope?: DataRecord, revealIn: RevealIn = "auto"): ReactNode {
   const definition = getElementDefinition(node.type);
   if (!definition || depth > MAX_ELEMENT_DEPTH) return null;
   const bound = scopedProps(node, ctx, scope);
   // Demo phone / email / WhatsApp values become the store's own (store-contact.ts).
   const props = bound && withStoreContact(node, bound, ctx);
   if (!props || contactRowGone(node, ctx)) return null;
-  const attrs = { "data-node-id": node.id, "data-node-type": node.type };
+  const reveal = revealOf(node, props, ctx, revealIn);
+  const attrs = { "data-node-id": node.id, "data-node-type": node.type, ...reveal.attrs };
   if (props.role === "social") {
     const row = renderSocialRow(node, ctx, attrs);
     if (row !== undefined) return row;
   }
   if (props.role === "payments") {
-    const row = renderPaymentsRow(node, ctx, depth, attrs);
+    const row = renderPaymentsRow(ctx, attrs);
     if (row !== undefined) return row;
   }
   const kids = () => {
@@ -346,7 +471,7 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
         </span>
       );
     }
-    return renderElementTree(node.children, ctx, depth + 1, scope);
+    return renderElementTree(node.children, ctx, depth + 1, scope, reveal.children);
   };
 
   // An emptied section or card (decorations alone don't count) is a blank band publicly: draw nothing.
@@ -390,7 +515,7 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
       );
     case "container":
       return (
-        <div {...attrs} className="mx-auto w-full max-w-(--sf-max-width,1200px) px-4 md:px-8">
+        <div {...attrs} className="mx-auto w-full max-w-(--sf-max-width,1280px) px-[clamp(16px,4vw,48px)]">
           {kids()}
         </div>
       );
@@ -421,7 +546,7 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
       );
     case "div":
       return (
-        <div {...attrs} className="min-w-0">
+        <div {...attrs} className={cn("min-w-0", iconOnly(node) && "grid place-items-center")}>
           {kids()}
         </div>
       );
@@ -491,6 +616,35 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
       );
     case "slide":
       return <SlideElement attrs={attrs}>{kids()}</SlideElement>;
+    case "marquee": {
+      // The editor shows one still row (selection outlines must not move). Publicly two copies of the row
+      // loop (`MOTION_CSS`); the second is hidden from assistive tech and focus.
+      if (ctx.mode === "edit") {
+        return (
+          <div {...attrs} className="flex min-w-0 flex-row flex-wrap">
+            {kids()}
+          </div>
+        );
+      }
+      const row = kids();
+      const gap = normalizeStyle(node.style).gap;
+      const vars = { ["--sf-marquee" as string]: `${marqueeSeconds(props.speed)}s`, ["--sf-mg" as string]: `${typeof gap === "number" ? Math.min(160, Math.max(0, gap)) : 40}px` };
+      const rowClass = "flex min-w-[100vw] shrink-0 flex-row items-center justify-around gap-(--sf-mg)";
+      return (
+        <div {...attrs} className="min-w-0 overflow-x-clip py-[0.12em]" style={vars}>
+          <div data-marquee-track className="flex w-max gap-(--sf-mg)">
+            <div data-marquee-row className={rowClass}>
+              {row}
+            </div>
+            <div data-marquee-row data-marquee-copy aria-hidden="true" inert className={rowClass}>
+              {row}
+            </div>
+          </div>
+        </div>
+      );
+    }
+    case "countdown":
+      return <CountdownElement attrs={attrs} props={props} ctx={ctx} />;
     case "divider":
       return <hr {...attrs} className="border-(--sf-line)" />;
     case "spacer":
@@ -498,9 +652,10 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
     case "icon": {
       const Icon = ICONS[props.name as ElementIconName] ?? Star;
       return (
-        <span {...attrs} className="inline-flex">
+        <span {...attrs} className="inline-flex shrink-0 items-center justify-center align-middle leading-none">
           {/* The arrow points forward: left in Arabic, right in English. */}
-          <Icon className={cn("size-[1em]", props.name === "arrow" && "ltr:-scale-x-100")} aria-hidden />
+          {/* Rating stars are filled (an outline star reads as "not earned"); faded ones keep their opacity. */}
+          <Icon className={cn("size-[1em]", props.name === "arrow" && "ltr:-scale-x-100")} {...(props.name === "star" && { fill: "currentColor" })} aria-hidden />
         </span>
       );
     }
@@ -535,12 +690,54 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
           </div>
         );
       }
+      if (!ctx.renderSearch && ctx.mode !== "edit") {
+        // No host search (a template or library preview): a plain search form that opens the
+        // shop page's results (`/products?search=…`), so a search bar still works without script.
+        const parts = searchLinkParts(node, href);
+        const placeholder = parts?.text ? str(parts.text.props.text, 120) : "";
+        if (parts && placeholder) {
+          const submit = (
+            <button type="submit" className="inline-flex shrink-0 cursor-pointer" aria-label={sectionText("searchSubmit", ctx.locale)}>
+              {renderNode(parts.icon, ctx, depth + 1, scope)}
+            </button>
+          );
+          return (
+            <div {...attrs} className="relative block min-w-0">
+              <form action={href} method="get" role="search" className="flex items-center gap-3">
+                {parts.iconFirst && submit}
+                <input
+                  type="search"
+                  name="search"
+                  required
+                  maxLength={100}
+                  placeholder={placeholder}
+                  aria-label={placeholder}
+                  autoComplete="off"
+                  enterKeyHint="search"
+                  className="min-w-0 flex-1 appearance-none bg-transparent text-inherit [text-align:inherit] outline-none placeholder:text-(--sf-muted) [&::-webkit-search-cancel-button]:hidden"
+                />
+                {!parts.iconFirst && submit}
+              </form>
+            </div>
+          );
+        }
+      }
       const badge = isCartLink(node, href) ? ctx.renderCartBadge?.() : null;
+      // A product card's photo link carries the product's trending / seasonal badges (every card, no design change).
+      const flags =
+        scope?.kind === "productList" && props.bind === "href" && hasProductFlags(scope.record) && holdsBoundImage(node) ? (
+          <ProductFlags product={scope.record} ctx={ctx} className="pointer-events-none absolute bottom-2.5 start-2.5 z-1" />
+        ) : null;
       return (
-        <SmartLink ctx={ctx} href={href} className="block min-w-0">
-          <span {...attrs} className={cn("block", badge != null && "relative")}>
+        // An icon-only link (header search, cart) is named by its label (docs/section-rules.md §5.6).
+        <SmartLink ctx={ctx} href={href} className="block min-w-0" label={iconOnly(node) ? str(props.label, 60) || undefined : undefined}>
+          <span
+            {...attrs}
+            className={cn(iconOnly(node) ? "grid place-items-center" : "block", (badge != null || flags) && "relative", zoomsPhoto(node) && "sf-zoom")}
+          >
             {kids()}
             {badge}
+            {flags}
           </span>
         </SmartLink>
       );
@@ -566,10 +763,13 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
           </div>
         );
       }
+      const rail = props.mobileRail === true && !isPaginated(node) ? MOBILE_RAIL_CLASS[node.type === "categoryList" ? "categories" : "cards"] : undefined;
       const grid = (
-        <div {...attrs} className="grid min-w-0">
-          {records.map((record) =>
-            node.children.map((child) => <ElementFragment key={`${recordKey(record)}-${child.id}`} node={child} ctx={ctx} depth={depth + 1} scope={record} />),
+        <div {...attrs} className={cn("grid min-w-0", rail)}>
+          {records.map((record, index) =>
+            node.children.map((child) => (
+              <ElementFragment key={`${recordKey(record)}-${child.id}`} node={child} ctx={ctx} depth={depth + 1} scope={record} reveal={reveal.children === null ? null : index} />
+            )),
           )}
         </div>
       );
@@ -742,13 +942,21 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
   }
 }
 
-export function renderElementTree(nodes: readonly ComponentNode[] | undefined, ctx: RenderContext, depth = 1, scope?: DataRecord): ReactNode {
+export function renderElementTree(
+  nodes: readonly ComponentNode[] | undefined,
+  ctx: RenderContext,
+  depth = 1,
+  scope?: DataRecord,
+  reveal: RevealOut = "auto",
+): ReactNode {
   if (!nodes?.length) return null;
-  return nodes.map((node) => <ElementFragment key={node.id} node={node} ctx={ctx} depth={depth} scope={scope} />);
+  return nodes.map((node, index) => (
+    <ElementFragment key={node.id} node={node} ctx={ctx} depth={depth} scope={scope} reveal={reveal === "items" ? index : reveal} />
+  ));
 }
 
-function ElementFragment({ node, ctx, depth, scope }: { node: ComponentNode; ctx: RenderContext; depth: number; scope?: DataRecord }) {
-  return <>{renderNode(node, ctx, depth, scope)}</>;
+function ElementFragment({ node, ctx, depth, scope, reveal }: { node: ComponentNode; ctx: RenderContext; depth: number; scope?: DataRecord; reveal?: RevealIn }) {
+  return <>{renderNode(node, ctx, depth, scope, reveal)}</>;
 }
 
 /** Page numbers around the current one, with the first and last; `null` marks a gap. */

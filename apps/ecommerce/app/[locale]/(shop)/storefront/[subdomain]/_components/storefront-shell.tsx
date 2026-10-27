@@ -1,6 +1,6 @@
 import { cn } from "@workspace/ui/lib/utils";
-import { SITE_ROOT_CLASS, SiteTheme, chromeHasThemeToggle } from "@workspace/store-sections/render";
-import { CarouselRuntime } from "@workspace/store-sections/client";
+import { SITE_ROOT_CLASS, SiteTheme, bottomNavOn, chromeHasThemeToggle, siteMotionAttrs } from "@workspace/store-sections/render";
+import { CarouselRuntime, MotionRuntime } from "@workspace/store-sections/client";
 import { AuthDialogProvider } from "@/components/auth/auth-dialog-provider";
 import { CurrencyLabelProvider } from "@/lib/currency-label.client";
 import type { Storefront } from "@/lib/storefront.server";
@@ -9,11 +9,12 @@ import { isStoreOfflineForRequest } from "@/lib/store-site/offline.server";
 import { StorefrontHeader } from "./storefront-header";
 import { StorefrontFooter } from "./storefront-footer";
 import { MobileCartBar } from "./mobile-cart-bar.client";
+import { StoreCartSheet } from "./cart-sheet.client";
 import { storeFontVariables, storefrontFont } from "./storefront-font";
 import { StorefrontTracking } from "./seller-tracking";
 import { StoreViewsTag } from "@/components/storefront/store-views-tag.client";
 import { readStoreViewsGtmId } from "@/lib/store-views.server";
-import { StoreSiteChrome } from "./store-site";
+import { StoreSiteBottomNav, StoreSiteChrome } from "./store-site";
 import { StorePreviewBanner } from "./store-preview-banner";
 import { StoreOffline } from "./store-offline";
 import s from "../storefront.module.css";
@@ -64,15 +65,22 @@ export async function StorefrontShell({
   return (
     <CurrencyLabelProvider label={store.currencyLabel}>
       {/* The theme toggle's init script may set `data-sf-theme` before hydration. */}
-      <div className={cn(storefrontFont.variable, s.root, site && [SITE_ROOT_CLASS, storeFontVariables])} suppressHydrationWarning>
+      <div className={cn(storefrontFont.variable, s.root, site && [SITE_ROOT_CLASS, storeFontVariables])}
+        {...(site && siteMotionAttrs(site.designSystem.motion))}
+        suppressHydrationWarning
+      >
         {site && <SiteTheme designSystem={site.designSystem} dark={chromeHasThemeToggle(site.header, site.footer)} />}
         {preview && <StorePreviewBanner state={preview} />}
         {site ? <StoreSiteChrome store={store} site={site} locale={locale} part="header" /> : <StorefrontHeader store={store} />}
         <main className="flex-1">{children}</main>
         {site ? <StoreSiteChrome store={store} site={site} locale={locale} part="footer" /> : <StorefrontFooter store={store} />}
-        {!shared && <MobileCartBar />}
+        {/* Phones: the bottom navigation (on by default; its cart badge replaces the floating cart bar). */}
+        {site && bottomNavOn(site.header) ? <StoreSiteBottomNav site={site} locale={locale} /> : !shared && <MobileCartBar />}
+        {/* The cart opens as a sheet from every cart link and after add-to-cart (not on shared pages: orders, checkout). */}
+        {!shared && <StoreCartSheet storeName={store.displayName} fontClassName={storefrontFont.variable} />}
         <AuthDialogProvider />
         {site && <CarouselRuntime />}
+        {site && <MotionRuntime />}
         {!shared && <StorefrontTracking store={store} />}
         {/* Tallaby's store-views tag (SA-01): published pages only, never a draft preview. */}
         {!shared && !preview && storeViewsGtmId && <StoreViewsTag containerId={storeViewsGtmId} storeId={store.storeId} />}

@@ -81,27 +81,13 @@ const home: Design[] = [
     },
     links: { "/products": search("بوكس") },
   }),
+  lib("categories-circles", { text: { "بتدوّر على إيه؟": L("هتطبخ إيه النهارده؟", "What are you cooking today?") } }),
   lib("products-bento", {
     text: {
       "الأكثر طلبًا": L("الأكتر طلباً", "Most ordered"),
       "الكل بيسأل عليهم": L("الأسبوع ده", "This week"),
     },
     links: { "/products": BEST },
-  }),
-  // The design's "Price drop band" (bundle-price-drop) lists its pieces without product links,
-  // which every template section with products must have; the "Plus row" bundle shows the same offer.
-  lib("bundle-plus", {
-    text: {
-      "باقة": L("باكدج الشوي", "Grill pack"),
-      "اشتريهم مع بعض ووفّر": L("٣ قطع مع بعض بخصم ١٢٪", "Three pieces together, 12% off"),
-      "سعر الباقة": L("سعر الباكدج", "Pack price"),
-      "١٬٢٧٠ ج.م": L("١٬١١٠ ج.م", "EGP 1,110"),
-      "بدل ١٬٤٩٠ ج.م": L("بدل ١٬٢٦٠ ج.م", "Instead of EGP 1,260"),
-      "وفّر ٢٢٠ ج.م": L("وفّر ١٥٠ ج.م", "Save EGP 150"),
-      "اطلب الباقة": L("خد باكدج الشوي", "Get the grill pack"),
-    },
-    links: { "/products": search("شوي") },
-    lists: [{ source: "best-sellers" }],
   }),
   lib("pay-zones", {
     text: {
@@ -122,13 +108,6 @@ const home: Design[] = [
       "البحر الأحمر وسيناء": L("العاصمة الجديدة", "New Capital"),
       "٤–٦ أيام": L("تاني يوم", "Next day"),
       "٩٥ ج.م": L("٧٠ ج.م", "EGP 70"),
-    },
-  }),
-  lib("pay-open-box", {
-    text: {
-      "افتح الطلب قبل ما تدفع": L("شوف اللحمة قبل ما تدفع", "See the meat before you pay"),
-      "بنكلمك قبلها بساعة.": L("بنكلمك قبلها بساعة، والطلب في شنطة مبردة.", "We call an hour before; your order comes in a cold bag."),
-      "جرّب المنتج قدام المندوب.": L("شوف اللون والقطعية قدام المندوب.", "Check the colour and the cut in front of the courier."),
     },
   }),
   lib("testimonials-wall", {
@@ -194,13 +173,13 @@ const DEMO = demoStore({
 
 export const LAHMA = libraryTemplate({
   key: LAHMA_KEY,
-  version: 2,
-  changelog: "Lahma v2: product page",
+  version: 3,
+  changelog: "Lahma v3: categories, one delivery block, section order",
   productPage: { thumbs: "bottom", band: "brand", extras: ["product-shipping"], copy: { back: L("رجوع للقطعيات", "Back to the cuts"), reviews: L("زباين الجزارة بيقولوا", "The regulars say"), related: L("حاجة تكمّل الشوي", "Goes with the grill") } },
   name: L("لحمة", "Lahma"),
   description: L(
-    "جزارة وبوكسات لحوم: بوستر بوكسات العيد، قطعيات الأسبوع، باكدج الشوي، توصيل مبرد وافتح قبل ما تدفع. أربع صفحات جاهزة.",
-    "Butcher and meat boxes: Eid box poster, this week’s cuts, the grill pack, cold-chain delivery and open before you pay. Four ready pages.",
+    "جزارة وبوكسات لحوم: بوستر بوكسات العيد، قطعيات الأسبوع، توصيل مبرد وافتح قبل ما تدفع. أربع صفحات جاهزة.",
+    "Butcher and meat boxes: Eid box poster, this week’s cuts, cold-chain delivery and open before you pay. Four ready pages.",
   ),
   category: "food",
   sortOrder: 710,

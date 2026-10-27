@@ -103,17 +103,6 @@ const home: Design[] = [
     links: { "/products": BEST },
     lists: [{ source: "best-sellers", limit: 4 }],
   }),
-  lib("promo-twin", {
-    photo: [undefined, undefined, PHOTOS.roseDress, PHOTOS.foldedKnits],
-    text: {
-      "لحد ٣٠٪": L("جديد", "New"),
-      "تخفيضات الموسم": L("فساتين ميدي", "Midi dresses"),
-      "باقة": L("خصم لحد ٢٠٪", "Up to 20% off"),
-      "اشتري ٢ والتالت هدية": L("تريكو", "Knitwear"),
-      "تسوق": L("تسوق", "Shop"),
-    },
-    links: { "/products": [search("فستان"), search("تريكو")] },
-  }),
   lib("features-icon-cards", {
     text: {
       "لماذا تشتري منا": L("ليه موسم", "Why Mawsem"),
@@ -203,8 +192,8 @@ export const MAWSEM = libraryTemplate({
   productPage: { surface: "flat", thumbs: "side", band: "paper", extras: ["product-shipping"], copy: { back: L("رجوع للموسم", "Back to the season"), reviews: L("لبسوه وقالوا", "Worn and reviewed"), related: L("كمّل الإطلالة", "Complete the look") } },
   name: L("موسم", "Mawsem"),
   description: L(
-    "موضة كل يوم: بانرات متحركة، تسوق بالقطعة، الأكثر مبيعاً، عرضين وآراء العملاء. أربع صفحات جاهزة.",
-    "Everyday fashion: a banner carousel, shop by piece, best sellers, two offers and reviews. Four ready pages.",
+    "موضة كل يوم: بانرات متحركة، تسوق بالقطعة، الأكثر مبيعاً وآراء العملاء. أربع صفحات جاهزة.",
+    "Everyday fashion: a banner carousel, shop by piece, best sellers and reviews. Four ready pages.",
   ),
   category: "fashion",
   sortOrder: 1010,

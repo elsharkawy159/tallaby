@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Controller, useFormContext, useFormState } from "react-hook-form";
 import { useTranslations } from "next-intl";
 import { normalizePrice } from "@/lib/utils/product-pricing.lib";
-import { GroupInput, InputGroup } from "@/components/form/form-ui";
+import { GroupInput, InputGroup, toAsciiDigits } from "@/components/form/form-ui";
 import { CURRENCY_CODE, CurrencyAddon } from "@/components/form/currency-input";
 import { cn } from "@/lib/utils";
 import { getErrorAtPath } from "../add-product.lib";
@@ -114,7 +114,7 @@ function DecimalText({
       disabled={disabled}
       className={className ?? "text-start font-sans tabular-nums rtl:text-right"}
       onChange={(e) => {
-        const next = e.target.value.replace(/[^\d.]/g, "");
+        const next = toAsciiDigits(e.target.value).replace(/[^\d.]/g, "");
         setText(next);
         onChange(toNumber(next));
       }}

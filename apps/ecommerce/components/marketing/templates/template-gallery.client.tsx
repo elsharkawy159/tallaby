@@ -60,7 +60,8 @@ export function TemplateGallery({ entries, variant, heading }: { entries: Galler
         </div>
       )}
 
-      <div className="grid gap-x-7 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
+      {/* `data-stagger`: the cards rise in once under @workspace/motion (home page); inert elsewhere. */}
+      <div data-stagger="" className="grid gap-x-7 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
         {visible.map((tpl) => {
           const name = tpl.name;
           const desc = tpl.description ?? "";

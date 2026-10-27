@@ -13,6 +13,8 @@ import { listTemplateCards, loadOfferedTemplateConfig, type TemplateCardsLoader,
 export const loadCachedTemplateCards: TemplateCardsLoader = createCachedQuery({
   name: "templates:cards",
   ttl: cacheProfiles.taxonomy,
+  // Templates and sections are code: a deploy brings new trees.
+  perDeploy: true,
   tags: () => [templateTags.catalog()],
   query: () => listTemplateCards(),
 });
@@ -20,6 +22,8 @@ export const loadCachedTemplateCards: TemplateCardsLoader = createCachedQuery({
 export const loadCachedTemplateConfig: TemplateConfigLoader = createCachedQuery({
   name: "templates:config",
   ttl: cacheProfiles.taxonomy,
+  // Templates and sections are code: a deploy brings new trees.
+  perDeploy: true,
   tags: (_key: string) => [templateTags.catalog()],
   query: (key: string) => loadOfferedTemplateConfig(key),
 });

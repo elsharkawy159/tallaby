@@ -13,6 +13,8 @@ import { buildGallery, type CatalogTemplate, type GalleryEntry } from "./templat
 const getCachedCatalog = createCachedQuery({
   name: "marketing:template-catalog:v3",
   ttl: cacheProfiles.taxonomy,
+  // Templates and sections are code: a deploy brings new trees.
+  perDeploy: true,
   tags: () => [templateTags.catalog()],
   query: async (): Promise<CatalogTemplate[]> =>
     offeredTemplates().flatMap((template) => {
@@ -61,6 +63,8 @@ export async function findGalleryEntry(locale: string, id: string): Promise<Gall
 const getCachedTemplatePreview = createCachedQuery({
   name: "marketing:template-preview:v3",
   ttl: cacheProfiles.taxonomy,
+  // Templates and sections are code: a deploy brings new trees.
+  perDeploy: true,
   tags: (_key: string) => [templateTags.catalog()],
   query: (key: string) => getPublicTemplate(key),
 });

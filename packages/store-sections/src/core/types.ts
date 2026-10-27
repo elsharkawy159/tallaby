@@ -175,6 +175,9 @@ export type ProductSummary = {
   compareAtPrice?: number | null;
   rating?: number | null;
   inStock?: boolean;
+  /** The seller marked it trending / seasonal (product form › Visibility): a badge on its card and page. */
+  trending?: boolean;
+  seasonal?: boolean;
 };
 
 export type ProductVariantDetail = {
@@ -347,6 +350,12 @@ export function imageSource(ctx: Pick<RenderContext, "optimizeImage">, url: stri
 export interface RenderContext {
   /** `edit` in the dashboard canvas, `public` on the storefront. */
   mode: "edit" | "public";
+  /**
+   * Reveal on scroll (docs/section-rules.md §6): the renderer marks section
+   * content with `data-reveal` for the motion runtime. Set by the storefront
+   * and the previews, never by the editor canvas or for the header and footer.
+   */
+  reveal?: boolean;
   /** The product a product page shows; seeds the `product` scope of its element trees. */
   product?: ProductDetail;
   /** Store industry; picks the photos for library photo slots (`designs/photo-slots.ts`). Editor only. */

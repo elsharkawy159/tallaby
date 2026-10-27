@@ -1,10 +1,10 @@
 /**
  * Tasfya (template 53, fashion outlet; Claude Design "Storefront Templates"):
  * white paper, black ink, a loud red for actions and a yellow highlight,
- * Lalezar headings over Cairo text and 8px corners. An outlet that shouts:
- * offer ticker, 60% off last season, just dropped, tonight's deal, shop by
- * budget, spend more save more and open before you pay. Built from section
- * library designs (`fromLibrary`).
+ * Lalezar headings over Cairo text and 8px corners. An outlet (v3): the
+ * shop window, the rails (categories), just dropped, shop by budget, selling
+ * fast, open before you pay and shopper reviews. Built from section library
+ * designs (`fromLibrary`).
  *
  * Photos: Pexels, each checked by eye (2026-10-21): clothes on shop rails
  * and wooden hangers, a store window with sale signs, dresses on a wall
@@ -54,7 +54,7 @@ const header = lib("header-search", {
     "العروض": L("فساتين", "Dresses"),
     "هدايا": L("قمصان وجواكت", "Shirts & jackets"),
     "إكسسوارات": L("شنط", "Bags"),
-    "توصيل خلال ٤٨ ساعة": L("خصم لحد ٦٠٪", "Up to 60% off"),
+    "توصيل خلال ٤٨ ساعة": L("قطع حقيقية من محلات حقيقية", "Real pieces from real shops"),
   },
   links: { "/products": [undefined, NEW, BEST, search("فستان"), search("جاكيت"), search("شنطة")] },
 });
@@ -75,24 +75,17 @@ const footer = lib("footer-help", {
 });
 
 const home: Design[] = [
-  lib("promo-ticker", {
+  lib("hero-fullbleed", {
+    photo: [PHOTOS.saleWindow],
     text: {
-      "الكود: SAVE10": L("خصم إضافي ١٠٪: OUT10", "Extra 10% off: OUT10"),
-      "توصيل مجاني فوق ١٥٠٠ ج.م": L("خصم لحد ٦٠٪", "Up to 60% off"),
-      "خصم ١٥٪ على المجموعات": L("قطع جديدة كل خميس", "New drops every Thursday"),
-      "استرجاع خلال ١٤ يومًا": L("تبديل ببلاش خلال ٧ أيام", "Free exchange in 7 days"),
-      "الدفع عند الاستلام": L("توصيل مجاني فوق ٨٠٠ ج.م", "Free delivery over EGP 800"),
+      "المجموعة الجديدة": L("أوتلت", "Outlet"),
+      "صُنعت لتدوم معك": L("قطع حقيقية من محلات حقيقية", "Real pieces from real shops"),
+      "خامات مختارة وتفاصيل هادئة، وتوصيل سريع لحد باب البيت.": L("قطع جديدة كل خميس، وتبديل خلال ٧ أيام.", "New pieces every Thursday, and exchanges within 7 days."),
+      "تسوّق الآن": L("تسوق الأوتلت", "Shop the outlet"),
+      "صورة الواجهة": L("فترينة محل فيها رفوف لبس", "A shop window with clothing rails"),
     },
   }),
-  lib("promo-percent", {
-    text: {
-      "٣٠٪": L("٦٠٪", "60%"),
-      "خصم": L("لحد", "Up to"),
-      "على كل المنتجات": L("خصم على الموسم اللي فات", "off last season"),
-      "لحد آخر الشهر أو لحد ما الكمية تخلص.": L("قطع حقيقية من محلات حقيقية، بأسعار تصفية.", "Real pieces from real shops, priced to clear."),
-      "تسوق العرض": L("تسوق الأوتلت", "Shop the outlet"),
-    },
-  }),
+  lib("categories-photo-tiles", { text: { "تسوّق حسب القسم": L("لفّ على الرفوف", "Browse the rails") } }),
   lib("products-tabbed", {
     text: {
       "المتجر": L("الأوتلت", "Outlet"),
@@ -101,18 +94,6 @@ const home: Design[] = [
     },
     links: { "/products": [NEW, BEST, RATED] },
   }),
-  lib("promo-deal", {
-    photo: [undefined, undefined, undefined, PHOTOS.polkaDresses],
-    text: {
-      "صورة العرض": L("فستانين بولكا ميدي على شماعة خشب", "Two polka midi dresses on wooden hangers"),
-      "اسم العرض أو المنتج هنا": L("فستان بولكا ميدي بـ٩٩٠ ج.م", "Polka midi dress for EGP 990"),
-      "اكتب سبب العرض وما يحصل عليه العميل في سطر واحد.": L("كان في المحل بـ٢٤٠٠ ج.م، وفاضل منه مقاسات قليلة.", "It was EGP 2,400 in store, and only a few sizes are left."),
-      "وفّر ٢٥٪": L("وفّر ٥٩٪", "Save 59%"),
-      "ينتهي العرض": L("بينتهي النهارده", "Ends tonight"),
-      "الحق العرض": L("الحق العرض", "Grab the deal"),
-    },
-    links: { "/products": search("فستان") },
-  }),
   lib("finder-price-bands", {
     text: {
       "أقل من ٦٠٠": L("أقل من ٥٠٠", "Under 500"),
@@ -120,22 +101,33 @@ const home: Design[] = [
       "أكتر من ١٬٥٠٠": L("أكتر من ١٬٠٠٠", "Over 1,000"),
     },
   }),
-  lib("promo-tiers", {
-    text: {
-      "عرض الشهر": L("جمّع", "Stack it"),
-      "كل ما تزود، توفّر أكتر": L("كل ما تزود توفّر أكتر", "Spend more, save more"),
-      "١٠٠٠ ج.م": L("٨٠٠ ج.م", "EGP 800"),
-      "١٠٠ ج.م": L("٨٠ ج.م", "EGP 80"),
-      "٢٠٠٠ ج.م": L("١٥٠٠ ج.م", "EGP 1,500"),
-      "٢٥٠ ج.م": L("٢٠٠ ج.م", "EGP 200"),
-      "٣٥٠٠ ج.م": L("٢٥٠٠ ج.م", "EGP 2,500"),
-      "٥٠٠ ج.م": L("٤٠٠ ج.م", "EGP 400"),
-    },
+  lib("products-carousel", {
+    text: { "الأكثر مبيعاً": L("بيخلص بسرعة", "Selling fast") },
+    links: { "/products": BEST },
   }),
   lib("pay-open-box", {
     text: {
       "جرّب المنتج قدام المندوب.": L("قيس القطعة وشوفها قدام المندوب.", "Check the piece and try it on in front of the courier."),
       "لو فيه أي مشكلة رجّعه للمندوب ومتدفعش حاجة.": L("لو المقاس مش مظبوط رجّعه للمندوب ومتدفعش حاجة.", "If the size is wrong, hand it back and pay nothing."),
+    },
+  }),
+  lib("testimonials-classic", {
+    text: {
+      "آراء العملاء": L("اللي اشتروا قالوا", "Shoppers say"),
+      "طلبت يوم الأحد ووصل الثلاثاء. التغليف كان مرتبًا والمنتج كما في الصور تمامًا.": L(
+        "الجاكيت وصل جديد بالتيكت بتاعه، ونفس اللي في الصورة بالظبط.",
+        "The jacket arrived new with its tag, exactly like the photo.",
+      ),
+      "م": L("د", "D"),
+      "مريم أ.": L("دينا ف.", "Dina F."),
+      "بدّلت المقاس بدون أي تعب، والفريق رد علي في دقائق.": L("قست الفستان قدام المندوب وطلع واسع، رجعته من غير ما أدفع.", "Tried the dress at the door, it was loose, and I sent it back without paying."),
+      "ع": L("ه", "H"),
+      "عمر ك.": L("هشام ط.", "Hesham T."),
+      "الإسكندرية": L("الإسكندرية", "Alexandria"),
+      "أسعار معقولة وجودة أفضل مما توقعت.": L("بلحق كل خميس قبل المقاسات ما تخلص.", "I check every Thursday before the sizes run out."),
+      "ن": L("س", "S"),
+      "نور ح.": L("سارة م.", "Sara M."),
+      "الجيزة": L("الجيزة", "Giza"),
     },
   }),
 ];
@@ -144,7 +136,7 @@ const about: Design[] = [
   pageHeader(lib, "about-header", L("عن تصفية", "About Tasfya"), L("قطع الموسم اللي فات بأسعار أوتلت.", "Last season’s pieces at outlet prices.")),
   aboutStory(lib, {
     photo: PHOTOS.saleWindow,
-    alt: L("فترينة محل فيها رفوف لبس ولافتات تخفيضات", "A shop window with clothing rails and sale signs"),
+    alt: L("فترينة محل فيها رفوف لبس", "A shop window with clothing rails"),
     eyebrow: L("من ٢٠١٩", "Since 2019"),
     title: L("الموسم اللي فات، بنص التمن", "Last season, at half the price"),
     text: L("بنشتري الكميات اللي فضلت عند المحلات آخر الموسم، ونبيعها بأسعار تصفية.", "We buy what shops have left at the end of each season and sell it at clearance prices."),
@@ -178,13 +170,13 @@ const DEMO = demoStore({
 
 export const TASFYA = libraryTemplate({
   key: TASFYA_KEY,
-  version: 2,
-  changelog: "Tasfya v2: product page",
+  version: 3,
+  changelog: "Tasfya v3: categories, best sellers, reviews, section order",
   productPage: { thumbs: "bottom", band: "brand", extras: ["product-perks"], copy: { back: L("رجوع للأوتلت", "Back to the outlet"), reviews: L("اللي اشتروا قالوا", "Shoppers say"), related: L("لحّق العروض", "Grab more deals") } },
   name: L("تصفية", "Tasfya"),
   description: L(
-    "أوتلت موضة: شريط العروض، خصم ٦٠٪، لسه نازل، عرض النهارده، تسوق بالميزانية، كل ما تزود توفّر وافتح قبل ما تدفع. أربع صفحات جاهزة.",
-    "Fashion outlet: offer ticker, 60% off, just dropped, tonight's deal, shop by budget, spend tiers and open before you pay. Four ready pages.",
+    "أوتلت موضة: الرفوف، لسه نازل، تسوق بالميزانية، بيخلص بسرعة، افتح قبل ما تدفع وآراء المشترين. أربع صفحات جاهزة.",
+    "Fashion outlet: the rails, just dropped, shop by budget, selling fast, open before you pay and shopper reviews. Four ready pages.",
   ),
   category: "fashion",
   sortOrder: 530,
@@ -220,7 +212,7 @@ export const TASFYA = libraryTemplate({
       name: L("الأسئلة الشائعة", "FAQ"),
       seo: { title: L("الأسئلة الشائعة", "FAQ") },
       sections: faqPage(lib, {
-        text: L("الكود والتبديل والتوصيل.", "The code, exchanges and delivery."),
+        text: L("التبديل والتوصيل والمقاسات.", "Exchanges, delivery and sizes."),
         question: L("ينفع أبدّل قطعة من الأوتلت؟", "Can I exchange an outlet piece?"),
         answer: L("أيوه، خلال ٧ أيام لو بالتيكت بتاعها، ما عدا قطع العينة.", "Yes, within 7 days with its tags on, except sample pieces."),
       }),

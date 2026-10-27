@@ -112,7 +112,7 @@ export const classicProductReviews = defineDesign({
     t.section(
       {
         label: L("التقييمات", "Reviews"),
-        style: { background: "white", paddingTop: 64, paddingBottom: 64, marginTop: 72 },
+        style: { background: "surface", paddingTop: 64, paddingBottom: 64, marginTop: 72 },
         mobile: { paddingTop: 44, paddingBottom: 44, marginTop: 48 },
       },
       [

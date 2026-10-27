@@ -42,6 +42,8 @@ export type ListOptions = GridOptions & {
   offset?: number;
   /** The section still shows when this list is empty (another list carries it). */
   optional?: boolean;
+  /** On phones, one row that swipes sideways (product and category lists, docs/section-rules.md §5.4). */
+  mobileRail?: boolean;
 };
 
 export type Design = {
@@ -148,8 +150,8 @@ export function createTreeBuilder(industry?: string, photos?: DesignPhotos, opts
     );
   };
   const list = (type: "productList" | "categoryList" | "postList", children: NodeTemplate[], opts: ListOptions) => {
-    const { source, sort, limit, offset, optional, ...rest } = opts;
-    const node = columned(type, { source, sort, optional }, rest, children);
+    const { source, sort, limit, offset, optional, mobileRail, ...rest } = opts;
+    const node = columned(type, { source, sort, optional, ...(mobileRail && { mobileRail }) }, rest, children);
     return { ...node, props: { ...node.props, ...(limit !== undefined && { limit }), ...(offset && { offset }) } };
   };
   return {
@@ -248,6 +250,22 @@ export function createTreeBuilder(industry?: string, photos?: DesignPhotos, opts
     carousel: (slides: NodeTemplate[], opts?: NodeOptions & { autoplay?: boolean; interval?: number }) => {
       const { autoplay = true, interval = 5, ...rest } = opts ?? {};
       return make("carousel", { autoplay, interval }, rest, slides);
+    },
+    /**
+     * Items that loop sideways (words, badges, icons), `speed` seconds per
+     * loop. Still and wrapped with reduced motion or Animations off.
+     */
+    marquee: (items: NodeTemplate[], opts?: NodeOptions & { speed?: number }) => {
+      const { speed = 30, ...rest } = opts ?? {};
+      return make("marquee", { speed }, withDefaults("marquee", rest), items);
+    },
+    /**
+     * Days, hours, minutes and seconds left until the date the seller sets
+     * (empty in a design: the store shows nothing until it is set).
+     */
+    countdown: (opts?: NodeOptions & { caption?: DesignText }) => {
+      const { caption, ...rest } = opts ?? {};
+      return make("countdown", { endsAt: "", caption }, rest);
     },
     /** One carousel slide (a column: position its photo and copy inside). */
     slide: (children: NodeTemplate[], opts?: NodeOptions) => make("slide", {}, withDefaults("slide", opts), children),

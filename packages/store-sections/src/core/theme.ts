@@ -90,6 +90,7 @@ export const SITE_THEME_KEY = "sf-theme";
 const DARK_TOKENS: Readonly<Record<string, string>> = {
   "--sf-paper": "#0f1517",
   "--sf-shelf": "#182125",
+  "--sf-surface": "#151d20",
   "--sf-line": "#2a363b",
   "--sf-ink": "#edf2f3",
   "--sf-muted": "#9fb0b4",

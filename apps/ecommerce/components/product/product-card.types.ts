@@ -24,6 +24,9 @@ export interface ProductCardProps {
     | null;
   quantity?: number | string;
   maxOrderQuantity?: number | string;
+  /** Seller flags (product form › Visibility): a badge on the card. */
+  isTrending?: boolean | null;
+  isSeasonal?: boolean | null;
   productVariants?: Array<{
     id: string;
     localized?: unknown;

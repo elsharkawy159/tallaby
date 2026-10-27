@@ -2,9 +2,9 @@
  * Souq (template 105, online supermarket; Claude Design "Storefront
  * Templates"): pale green-white paper, a leaf green for actions and a
  * sunny yellow highlight, Lalezar headings on Changa and 16px corners.
- * Fresh groceries the same day: the free-delivery goal, banners for fruit
- * and veg, bakery and pantry, aisles, today's shelf, 45-minute zones, cash,
- * card or wallet, and help on WhatsApp. Built from section library designs
+ * Fresh groceries the same day: banners for fruit and veg, bakery and
+ * pantry, aisles, today's shelf, 45-minute zones and help on WhatsApp.
+ * Built from section library designs
  * (`fromLibrary`).
  *
  * Photos: Pexels, each checked by eye (2026-10-23): fruit bowls on a
@@ -75,13 +75,6 @@ const footer = lib("footer-ruled", {
 });
 
 const home: Design[] = [
-  lib("cart-free-delivery", {
-    text: {
-      "١٥٠٠ ج.م": L("٤٠٠ ج.م", "EGP 400"),
-      "والتوصيل عليك مجاني": L("والتوصيل في نفس اليوم ببلاش", "and same-day delivery is free"),
-    },
-    links: { "/products": BEST },
-  }),
   lib("hero-carousel", {
     photo: [PHOTOS.produceBanner, PHOTOS.bakeryBanner, PHOTOS.pantryBanner],
     text: {
@@ -144,19 +137,6 @@ const home: Design[] = [
       "٩٥ ج.م": L("٢٥ ج.م", "EGP 25"),
     },
   }),
-  lib("pay-methods", {
-    text: {
-      "ادفع بالطريقة اللي تريحك": L("كاش أو كارت أو محفظة", "Cash, card or wallet"),
-      "ادفع للمندوب بعد ما تفتح الطلب.": L("ادفع للمندوب لما الطلب يوصل.", "Pay the courier when your order arrives."),
-      "كارت بنكي": L("كارت على الباب", "Card at the door"),
-      "فيزا وماستركارد وميزة.": L("المندوب معاه ماكينة فيزا وميزة.", "The courier carries a Visa and Meeza card machine."),
-      "تقسيط": L("إنستاباي", "InstaPay"),
-      "لحد ٢٤ شهر من غير مقدم.": L("حوّل على حساب سوق وابعت الإيصال.", "Transfer to Souq's account and send the receipt."),
-      "فاليو · سيمبل · سهولة": L("من غير رسوم", "No fees"),
-      "حوّل من موبايلك في ثانية.": L("حوّل من موبايلك قبل ما المندوب يوصل.", "Transfer from your phone before the courier arrives."),
-      "فودافون كاش · إنستاباي": L("كل المحافظ الإلكترونية", "Every mobile wallet"),
-    },
-  }),
   lib("service-support", {
     text: {
       "الدعم": L("إحنا موجودين", "We are here"),
@@ -208,13 +188,13 @@ const DEMO = demoStore({
 
 export const SOUQ = libraryTemplate({
   key: SOUQ_KEY,
-  version: 2,
-  changelog: "Souq v2: product page",
+  version: 3,
+  changelog: "Souq v3: hero first, section order",
   productPage: { thumbs: "bottom", band: "brand", extras: ["product-shipping"], copy: { back: L("رجوع للسوق", "Back to the aisles"), reviews: L("آراء اللي اشتروا", "From shoppers like you"), related: L("ضيف على سلتك", "Add to your basket") } },
   name: L("سوق", "Souq"),
   description: L(
-    "سوبر ماركت أونلاين: هدف التوصيل المجاني، بانرات متحركة، الأقسام، رف النهارده، مناطق الـ٤٥ دقيقة، طرق الدفع والدعم. أربع صفحات جاهزة.",
-    "Online supermarket: free-delivery goal, a banner carousel, aisles, today's shelf, 45-minute zones, ways to pay and support. Four ready pages.",
+    "سوبر ماركت أونلاين: بانرات متحركة، الأقسام، رف النهارده، مناطق الـ٤٥ دقيقة والدعم. أربع صفحات جاهزة.",
+    "Online supermarket: a banner carousel, aisles, today's shelf, 45-minute zones and support. Four ready pages.",
   ),
   category: "food",
   sortOrder: 1050,

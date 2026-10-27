@@ -122,17 +122,6 @@ const home: Design[] = [
       "/products": [SHOP, search("بسبوسة"), search("كنافة"), search("قطايف"), search("كحك"), search("غريبة"), search("مشبك"), search("لقمة"), search("بلح")],
     },
   }),
-  lib("bundle-gifts", {
-    photo: [PHOTOS.qatayef, PHOTOS.cookies, PHOTOS.dates, PHOTOS.basbousa],
-    text: {
-      "هدية لمين؟": L("رايح لحد؟", "Visiting someone?"),
-      "ليه": L("زيارة عيلة", "Family visit"),
-      "ليها": L("الشغل", "Office"),
-      "للطلبة": L("رمضان", "Ramadan"),
-      "للجيمرز": L("لينا إحنا", "Just us"),
-    },
-    links: { "/products": [search("مشكل"), search("غريبة"), search("رمضان"), search("صينية")] },
-  }),
   lib("products-grid", {
     text: {
       "وصل حديثًا": L("الأكتر طلباً", "Most ordered"),

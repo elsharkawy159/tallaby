@@ -36,16 +36,16 @@ describe.each(RULED.map((template) => [template.key, template] as const))("templ
     for (const slide of slides) expect(walk(slide.children).filter((n) => n.props.role === "cta")).toHaveLength(1);
   });
 
-  it("§2: categories, best sellers, offers and new arrivals come in the standard order", () => {
+  it("§2: categories, best sellers and new arrivals come in the standard order, with no offers section", () => {
     const at = (test: (s: SectionInstance) => boolean) => home.findIndex(test);
     const categories = at((s) => nodesOf(s).some((n) => n.type === "categoryList"));
     const bestSellers = at((s) => listSource(s) === "best-sellers");
-    const offers = at((s) => listSource(s) === "discounted");
     const newest = at((s) => listSource(s) === "newest");
-    expect([categories, bestSellers, offers, newest].every((i) => i > 0)).toBe(true);
+    expect([categories, bestSellers, newest].every((i) => i > 0)).toBe(true);
     expect(categories).toBeLessThan(bestSellers);
-    expect(bestSellers).toBeLessThan(offers);
-    expect(offers).toBeLessThan(newest);
+    expect(bestSellers).toBeLessThan(newest);
+    // Templates promise no discounts (owner, 2026-10-27; no-discounts.ts).
+    expect(at((s) => listSource(s) === "discounted")).toBe(-1);
     // Product rails: 4 on desktop, 2 on phones, never more than 8.
     for (const list of home.flatMap(nodesOf).filter((n) => n.type === "productList")) {
       expect(Number(list.props.limit)).toBeLessThanOrEqual(8);
@@ -81,10 +81,7 @@ describe.each(RULED.map((template) => [template.key, template] as const))("templ
     expect(buyBox!.props.buyNow).not.toBe(false);
   });
 
-  it("§6a: every home section but the hero rises in; the hero, header and footer do not animate", () => {
-    expect(animation(home[0])).toBeUndefined();
-    for (const section of home.slice(1)) expect(animation(section), section.id).toBe("rise");
-    expect(animation(config.header)).toBeUndefined();
-    expect(animation(config.footer)).toBeUndefined();
+  it("§6a: motion is on by default, so no home section switches its reveal off", () => {
+    for (const section of home) expect(animation(section), section.id).not.toBe("none");
   });
 });

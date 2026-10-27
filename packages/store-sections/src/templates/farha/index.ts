@@ -91,6 +91,11 @@ const home: Design[] = [
     },
     links: { "/products": [search("مكعبات"), search("عدة"), search("حواديت")] },
   }),
+  lib("categories-captioned", { text: { "اكتشف الأقسام": L("بيحب يلعب بإيه؟", "What do they love to play?"), "كل الأقسام": L("كل اللعب", "All toys") } }),
+  lib("products-bento", {
+    text: { "الأكثر طلبًا": L("الأكتر تركيباً", "Most built"), "الكل بيسأل عليهم": L("أحسن الأطقم", "Top kits") },
+    links: { "/products": BEST },
+  }),
   lib("finder-use", {
     text: {
       "ساعدني أختار": L("حسب السن", "By age"),
@@ -103,20 +108,6 @@ const home: Design[] = [
       "الأكثر طلبًا دلوقتي": L("الأكتر طلباً دلوقتي", "Most wanted right now"),
     },
     links: { "/products": [search("مكعبات"), search("حيوانات"), search("ديناصورات"), search("بيبي")] },
-  }),
-  lib("products-bento", {
-    text: { "الأكثر طلبًا": L("الأكتر تركيباً", "Most built"), "الكل بيسأل عليهم": L("أحسن الأطقم", "Top kits") },
-    links: { "/products": BEST },
-  }),
-  lib("bundle-poster", {
-    text: {
-      "طقم المشاوير": L("باكدج البداية", "Starter pack"),
-      "كل اللي تحتاجه في الطريق": L("مكعبات وعدة وديناصورات", "Blocks, tools and dinosaurs"),
-      "١٬٢٧٠ ج.م": L("١٬٤٣٥ ج.م", "EGP 1,435"),
-      "بدل ١٬٤٩٠ ج.م": L("بدل ١٬٦٩٠ ج.م", "Was EGP 1,690"),
-      "اشتري الطقم": L("خد التلاتة", "Get all three"),
-    },
-    links: { "/products": NEW },
   }),
   lib("features-icon-cards", {
     text: {
@@ -198,13 +189,13 @@ const DEMO = demoStore({
 
 export const FARHA = libraryTemplate({
   key: FARHA_KEY,
-  version: 2,
-  changelog: "Farha v2: product page",
+  version: 3,
+  changelog: "Farha v3: categories after the hero, products before the age finder",
   productPage: { thumbs: "bottom", band: "brand", extras: ["product-perks"], copy: { back: L("رجوع للألعاب", "Back to the toys"), reviews: L("الأهالي قالوا", "What parents say"), related: L("ألعاب كمان للفرحة", "More toys to love") } },
   name: L("فرحة", "Farha"),
   description: L(
-    "محل ألعاب: بانرات متحركة، اختار حسب السن، أحسن الأطقم، باكدج البداية، آمن للعب وآراء الأهالي. أربع صفحات جاهزة.",
-    "Toy store: banner carousel, shop by age, top kits, a starter pack, safe to play and parents’ reviews. Four ready pages.",
+    "محل ألعاب: بانرات متحركة، اختار حسب السن، أحسن الأطقم، آمن للعب وآراء الأهالي. أربع صفحات جاهزة.",
+    "Toy store: banner carousel, shop by age, top kits, safe to play and parents’ reviews. Four ready pages.",
   ),
   category: "kids",
   sortOrder: 1080,

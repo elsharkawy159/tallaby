@@ -42,6 +42,7 @@ import { ensureStoreSiteScaffold } from "../stores/server";
 import { startFeeTrialIfNeeded } from "../sellers/fee-trial.server";
 import { updateTouchesLockedProductFields } from "./product-page-guard.lib";
 import { storeDraftKey } from "./preview-token";
+import { storeTemplateChosen } from "./template-choice.server";
 
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 type Queryable = Tx | typeof db;
@@ -219,7 +220,16 @@ async function buildDraftSiteConfig(
   };
 }
 
-export type PublishError = "not_found" | "store_read_only" | "publish_blocked" | "invalid_site";
+export type PublishError = "not_found" | "store_read_only" | "publish_blocked" | "invalid_site" | "template_not_chosen";
+
+export type PublishOptions = BuilderOptions & {
+  /**
+   * Refuse to publish until the seller has chosen a template for the store
+   * (storeTemplateChosen; owner 2026-10-27). The seller dashboard passes
+   * true; a store that was ever published always passes the check.
+   */
+  requireTemplateChoice?: boolean;
+};
 
 /**
  * Publish all drafts as one revision (PLAN.md §12 step 5). Locks the store row
@@ -232,7 +242,7 @@ export async function publishStoreSite(
   sellerId: string,
   storeId: string,
   publishedBy: string,
-  options: BuilderOptions = {},
+  options: PublishOptions = {},
   q: Queryable = db,
 ): Promise<SiteResult<{ revisionId: string; revisionNumber: number }, PublishError>> {
   try {
@@ -241,6 +251,7 @@ export async function publishStoreSite(
       if (!store) throw new SiteError("not_found");
       if (store.status !== "active") throw new SiteError("store_read_only");
       if (store.sellerStatus !== "approved") throw new SiteError("publish_blocked");
+      if (options.requireTemplateChoice && !(await storeTemplateChosen(tx, store.id))) throw new SiteError("template_not_chosen");
 
       const raw = await buildDraftSiteConfig(tx, store);
       const validated = validateSiteConfig(raw, { allowedSections: options.allowedSections });
@@ -797,6 +808,8 @@ export async function getStoreSiteStatus(sellerId: string, storeId: string, q: Q
     isLive: Boolean(row?.snapshot),
     lastPublishedAt: row!.lastPublishedAt,
     hasUnpublishedChanges,
+    /** The seller chose a template (or the site was ever live); the dashboard's publish needs it (storeTemplateChosen). */
+    templateChosen: await storeTemplateChosen(q, storeId),
   };
 }
 

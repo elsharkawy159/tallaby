@@ -1,10 +1,10 @@
 /**
  * Zay (template 50, men’s essentials; Claude Design "Storefront Templates"):
  * cool grey paper, near-black ink, a navy for actions and a periwinkle
- * highlight, Readex Pro throughout and sharp 4px corners. A basics shop: one
- * big word, this week’s shelf, a weekday kit, buy-more tiers on the tee, why
- * Zay and WhatsApp reviews. Built from section library designs
- * (`fromLibrary`).
+ * highlight, Readex Pro throughout and sharp 4px corners. A basics shop
+ * (v3): the weekday kit as a three-photo collage, the categories in big
+ * type, this week’s shelf, why Zay, the reorders and WhatsApp reviews. Built
+ * from section library designs (`fromLibrary`).
  *
  * Photos: Pexels, each checked by eye (2026-10-21): tees and shirts on rails
  * and hangers, folded knits, a suit jacket on a wall hook, a shirt shelf and
@@ -62,36 +62,29 @@ const footer = lib("footer-signoff", {
 });
 
 const home: Design[] = [
-  lib("hero-big-word", { text: { "جديد": L("أساسي", "BASICS") } }),
+  lib("hero-collage", {
+    photo: [pexels(18199559, 1200), PHOTOS.foldedKnits, pexels(5424909, 1400)],
+    text: {
+      "حكاية الموسم": L("طقم الأسبوع", "The weekday kit"),
+      "٣ قطع تكفي أسبوعًا كاملًا": L("٣ قطع تكفي أسبوعك", "Three pieces, your whole week"),
+      "نسّقها معًا أو مع ما تملكه بالفعل، وكل قطعة متاحة بأكثر من لون.": L(
+        "قطن مصري تقيل وقصّات مظبوطة، كل قطعة بتتلبس مع التانية.",
+        "Heavy Egyptian cotton and fits that work: every piece goes with the others.",
+      ),
+      "تسوّق اللوك": L("تسوق الأساسيات", "Shop the basics"),
+      "القطعة الأولى": L("تيشيرت تقيل", "Heavy tee"),
+      "القطعة الثانية": L("تريكو", "Knitwear"),
+      "القطعة الثالثة": L("أوفرشيرت", "Overshirt"),
+    },
+    links: { "/products": NEW },
+  }),
+  lib("categories-big-type"),
   lib("products-shelf", {
     text: {
       "تسوّق حسب مزاجك": L("الأسبوع ده", "This week"),
       "عليه خصم": L("الأعلى تقييماً", "Top rated"),
     },
     links: { "/products": [NEW, BEST, RATED, SHOP] },
-  }),
-  lib("bundle-poster", {
-    text: {
-      "طقم المشاوير": L("طقم أيام الشغل", "Weekday kit"),
-      "كل اللي تحتاجه في الطريق": L("٣ قطع، ٥ لبسات", "Three pieces, five outfits"),
-      "١٬٢٧٠ ج.م": L("٣٬١١٥ ج.م", "EGP 3,115"),
-      "بدل ١٬٤٩٠ ج.م": L("بدل ٣٬٥٤٠ ج.م", "Instead of EGP 3,540"),
-      "اشتري الطقم": L("خد الطقم", "Get the kit"),
-      "خصم ١٥٪": L("وفّر ١٢٪", "Save 12%"),
-    },
-    links: { "/products": NEW },
-  }),
-  lib("bundle-quantity", {
-    text: {
-      "وفّر مع الكمية": L("كل ما تاخد أكتر توفّر", "Buy more, save more"),
-      "قطعة واحدة": L("تيشيرت واحد", "1 tee"),
-      "قطعتين": L("٣ تيشيرتات", "3 tees"),
-      "على القطعة التانية": L("على التلاتة", "On all three"),
-      "وفّر ١٠٪": L("وفّر ١٢٪", "Save 12%"),
-      "٣ قطع": L("٥ تيشيرتات", "5 tees"),
-      "على الطلب كله": L("على الخمسة", "On all five"),
-      "اختار عدد القطع من السلة.": L("اختار العدد من السلة، والخصم بيتحسب لوحده.", "Pick the quantity in your cart; the saving applies itself."),
-    },
   }),
   lib("features-compare", {
     text: {
@@ -101,6 +94,10 @@ const home: Design[] = [
       "ضمان محلي": L("تبديل مقاس ببلاش", "Free size exchange"),
       "استرجاع خلال ١٤ يوم": L("٣ قصّات في كل مقاس", "Three fits in every size"),
     },
+  }),
+  lib("products-carousel", {
+    text: { "الأكثر مبيعاً": L("بيرجعوا يطلبوه", "The ones they reorder") },
+    links: { "/products": BEST },
   }),
   lib("testimonials-chat", {
     text: {
@@ -162,13 +159,13 @@ const DEMO = demoStore({
 
 export const ZAY = libraryTemplate({
   key: ZAY_KEY,
-  version: 2,
-  changelog: "Zay v2: product page",
+  version: 3,
+  changelog: "Zay v3: new hero, categories, section order",
   productPage: { thumbs: "side", band: "brand", extras: ["product-perks"], copy: { back: L("كل الأساسيات", "All the basics"), reviews: L("اللي جرّبوه على واتساب", "Tried and reviewed on WhatsApp"), related: L("كمّل أسبوعك", "Complete your week") } },
   name: L("زي", "Zay"),
   description: L(
-    "أساسيات رجالي: كلمة كبيرة، رف الأسبوع، طقم أيام الشغل، خصم الكمية، المقارنة وآراء واتساب. أربع صفحات جاهزة.",
-    "Men’s essentials: one big word, this week’s shelf, a weekday kit, quantity tiers, a comparison and WhatsApp reviews. Four ready pages.",
+    "أساسيات رجالي: طقم الأسبوع، الأقسام، رف الأسبوع، المقارنة، اللي بيرجعوا يطلبوه وآراء واتساب. أربع صفحات جاهزة.",
+    "Men’s essentials: the weekday kit, categories, this week’s shelf, a comparison, the reorders and WhatsApp reviews. Four ready pages.",
   ),
   category: "fashion",
   sortOrder: 500,

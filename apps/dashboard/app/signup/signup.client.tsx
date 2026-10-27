@@ -26,7 +26,7 @@ import {
 
 import { SubdomainField } from "@/components/stores/subdomain-field.client";
 import { logout, resendConfirmation } from "@/actions/auth";
-import { STORE_INDUSTRIES } from "@/lib/stores/industries.lib";
+import { OTHER_INDUSTRY_ID, SIGNUP_INDUSTRIES } from "@/lib/stores/industries.lib";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/supabase/client";
 import { AuthField } from "../login/auth-field.client";
@@ -50,6 +50,8 @@ const EGYPT_MOBILE = /^(?:\+20|0020|0)?1[0125]\d{8}$/;
 type FormValues = {
   subdomain: string;
   industry: string;
+  /** The seller's own words when the industry is "Other". */
+  industryOther: string;
   phone: string;
   email: string;
   password: string;
@@ -89,27 +91,39 @@ export function SignupForm({
   const schema = useMemo(
     () =>
       signedIn
-        ? z.object({
-            subdomain: z
-              .string()
-              .trim()
-              .min(3, t("tooShort"))
-              .max(32, t("tooLong")),
-            industry: z.string().min(1, t("errors.industryRequired")),
-            phone: z
-              .string()
-              .refine(
-                (v) => EGYPT_MOBILE.test(v.replace(/[\s-]/g, "")),
-                t("errors.phoneInvalid"),
-              ),
-            email: z.string(),
-            password: z.string(),
-            confirmPassword: z.string(),
-          })
+        ? z
+            .object({
+              subdomain: z
+                .string()
+                .trim()
+                .min(3, t("tooShort"))
+                .max(32, t("tooLong")),
+              industry: z.string().min(1, t("errors.industryRequired")),
+              industryOther: z.string().max(60),
+              phone: z
+                .string()
+                .refine(
+                  (v) => EGYPT_MOBILE.test(v.replace(/[\s-]/g, "")),
+                  t("errors.phoneInvalid"),
+                ),
+              email: z.string(),
+              password: z.string(),
+              confirmPassword: z.string(),
+            })
+            .refine(
+              (v) =>
+                v.industry !== OTHER_INDUSTRY_ID ||
+                v.industryOther.trim().length >= 2,
+              {
+                path: ["industryOther"],
+                message: t("errors.industryOtherRequired"),
+              },
+            )
         : z
             .object({
               subdomain: z.string(),
               industry: z.string(),
+              industryOther: z.string(),
               phone: z.string(),
               email: z.email(t("errors.invalidEmail")),
               password: z
@@ -130,12 +144,15 @@ export function SignupForm({
     defaultValues: {
       subdomain: initialSubdomain,
       industry: "",
+      industryOther: "",
       phone: "",
       email: "",
       password: "",
       confirmPassword: "",
     },
   });
+
+  const industry = form.watch("industry");
 
   const handleResult = (result: SignupResult, email?: string) => {
     if (result.status === "done") {
@@ -173,6 +190,7 @@ export function SignupForm({
             subdomain: values.subdomain,
             phone: values.phone,
             industry: values.industry,
+            industryOther: values.industryOther,
           })
         : await signUpWithEmail({
             subdomain: initialSubdomain,
@@ -281,14 +299,22 @@ export function SignupForm({
         subtitle={signedIn ? t("setupSubtitle") : t("subtitle")}
       />
       {signedIn ? (
-        <div className="flex items-center gap-2.5 rounded-xl bg-muted px-3.5 py-2.5 text-sm text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 rounded-xl bg-muted px-3.5 py-2.5 text-sm text-muted-foreground">
           <UserRound className="size-4 shrink-0" />
-          <span className="min-w-0 flex-1 truncate">
-            {t("signedInAs", { email: signedInEmail })}
+          {/* The whole email on one line: the LTR address inside Arabic text gets its own direction. */}
+          <span className="min-w-0 overflow-x-auto whitespace-nowrap">
+            {t.rich("signedInAs", {
+              email: signedInEmail,
+              b: (chunks) => (
+                <bdi dir="ltr" className="font-semibold text-foreground">
+                  {chunks}
+                </bdi>
+              ),
+            })}
           </span>
           <button
             type="button"
-            className="inline-flex shrink-0 items-center gap-1.5 font-semibold text-primary hover:underline disabled:opacity-50"
+            className="ms-auto inline-flex shrink-0 items-center gap-1.5 font-semibold text-primary hover:underline disabled:opacity-50"
             onClick={() => {
               setSigningOut(true);
               void logout();
@@ -361,7 +387,13 @@ export function SignupForm({
                       role="radiogroup"
                       aria-labelledby="signup-industry"
                     >
-                      {STORE_INDUSTRIES.map((option) => (
+                      {[
+                        ...SIGNUP_INDUSTRIES.map((option) => ({
+                          id: option.id,
+                          label: locale === "en" ? option.en : option.ar,
+                        })),
+                        { id: OTHER_INDUSTRY_ID, label: t("industryOther") },
+                      ].map((option) => (
                         <button
                           key={option.id}
                           type="button"
@@ -380,7 +412,7 @@ export function SignupForm({
                               : "border-input hover:border-primary/40",
                           )}
                         >
-                          {locale === "en" ? option.en : option.ar}
+                          {option.label}
                         </button>
                       ))}
                     </div>
@@ -388,6 +420,17 @@ export function SignupForm({
                   </FormItem>
                 )}
               />
+              {industry === OTHER_INDUSTRY_ID && (
+                <AuthField
+                  form={form}
+                  name="industryOther"
+                  type="text"
+                  label={t("industryOtherLabel")}
+                  placeholder={t("industryOtherPlaceholder")}
+                  disabled={busy}
+                  autoFocus
+                />
+              )}
               <AuthField
                 form={form}
                 name="phone"

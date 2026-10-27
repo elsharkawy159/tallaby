@@ -47,6 +47,8 @@ export interface ProductCardViewProps {
   listPriceHtml?: string | null;
   discountPercent?: number | null;
   discountLabel?: string;
+  /** Small labels under the discount badge (trending, seasonal). */
+  flags?: { key: string; label: string; tone?: "dark" | "light" }[];
   swatches?: ProductCardSwatch[];
   swatchOverflow?: number;
   swatchOverflowLabel?: string;
@@ -102,6 +104,7 @@ function ProductCardView({
   listPriceHtml,
   discountPercent,
   discountLabel,
+  flags = [],
   swatches = [],
   swatchOverflow = 0,
   swatchOverflowLabel,
@@ -163,10 +166,11 @@ function ProductCardView({
             </MaybeLink>
           </div>
 
+          {(showBadge || flags.length > 0) && (
+            <div className="pointer-events-none absolute top-1.5 start-1.5 z-20 flex flex-col items-start gap-1 md:top-2 md:start-2">
           {showBadge && (
             <span
               className={cn(
-                "pointer-events-none absolute top-1.5 start-1.5 z-20 md:top-2 md:start-2",
                 "inline-flex items-center justify-center",
                 "rounded-md px-1.5 py-0.5 md:px-2 md:py-1",
                 "bg-primary text-primary-foreground",
@@ -177,6 +181,20 @@ function ProductCardView({
             >
               −{discountPercent}%
             </span>
+          )}
+          {flags.map((flag) => (
+            <span
+              key={flag.key}
+              className={cn(
+                "inline-flex items-center justify-center rounded-md px-1.5 py-0.5 md:px-2 md:py-1",
+                "text-[10px] font-bold leading-none md:text-xs shadow-sm ring-1 ring-black/5",
+                flag.tone === "light" ? "bg-white text-gray-900" : "bg-gray-900 text-white"
+              )}
+            >
+              {flag.label}
+            </span>
+          ))}
+            </div>
           )}
 
           {topEndSlot && (

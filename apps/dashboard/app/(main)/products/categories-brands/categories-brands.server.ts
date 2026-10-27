@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { applyInvalidation, invalidateSellerProducts } from "@workspace/cache";
 import {
   and,
   asc,
@@ -254,6 +255,8 @@ export async function updateTaxonomyItem(kind: TaxonomyKind, id: string, input: 
             .returning({ id: sellerProductBrands.id });
     if (!updated.length) return { success: false, error: "notFound" };
     revalidatePath(TAXONOMY_PAGE_HREF[kind]);
+    // Storefront category tiles show this image (getStorefrontCategories is tagged by the seller products tag).
+    if (kind === "category") await applyInvalidation(invalidateSellerProducts(seller.sellerId), { from: "dashboard", mode: "action" });
     return { success: true };
   } catch (error) {
     return failure(error, "update");
@@ -272,6 +275,7 @@ export async function deleteTaxonomyItem(kind: TaxonomyKind, id: string): Promis
       .returning({ id: table.id });
     if (!deleted.length) return { success: false, error: "notFound" };
     revalidatePath(TAXONOMY_PAGE_HREF[kind]);
+    if (kind === "category") await applyInvalidation(invalidateSellerProducts(seller.sellerId), { from: "dashboard", mode: "action" });
     return { success: true };
   } catch (error) {
     return failure(error, "delete");
@@ -305,6 +309,8 @@ export async function reorderTaxonomyItems(kind: TaxonomyKind, ids: unknown): Pr
       .where(and(eq(table.sellerId, seller.sellerId), inArray(table.id, order)));
 
     revalidatePath(TAXONOMY_PAGE_HREF[kind]);
+    // The first category photo by position is the storefront tile photo.
+    if (kind === "category") await applyInvalidation(invalidateSellerProducts(seller.sellerId), { from: "dashboard", mode: "action" });
     return { success: true };
   } catch (error) {
     return failure(error, "reorder");
@@ -349,6 +355,8 @@ export async function setProductSellerTaxonomy(productId: string, input: unknown
     if (!updated.length) return { success: false, error: "notFound" };
     revalidatePath(TAXONOMY_PAGE_HREF.category);
     revalidatePath(TAXONOMY_PAGE_HREF.brand);
+    // The product's category can change which photo its storefront category tile shows.
+    await applyInvalidation(invalidateSellerProducts(seller.sellerId), { from: "dashboard", mode: "action" });
     return { success: true };
   } catch (error) {
     return failure(error, "set product");

@@ -12,7 +12,7 @@ import { SetupAccordion } from "./setup-accordion.client";
 import { SetupDismissible } from "./setup-dismiss.client";
 import { SetupPublishButton } from "./setup-publish.client";
 
-import { buildSetupTasks, isSetupDone, publishReady, type SetupKey } from "./setup-checklist.lib";
+import { buildSetupTasks, isSetupDone, publishLockReason, publishReady, type SetupKey } from "./setup-checklist.lib";
 
 const ICONS: Record<SetupKey, LucideIcon> = {
   product: Package,
@@ -45,6 +45,7 @@ export async function SetupChecklistData() {
   const ordered = [...TASKS.filter((task) => !task.done), ...TASKS.filter((task) => task.done)];
   const nextKey = ordered[0]?.key;
   const canPublish = publishReady(snapshot.setup);
+  const lockReason = publishLockReason(snapshot.setup);
 
   return (
     <SetupDismissible>
@@ -133,8 +134,8 @@ export async function SetupChecklistData() {
                     </b>
                     {!done && (
                       <small className="line-clamp-2 text-xs text-muted-foreground">
-                        {task.key === "publish" && !canPublish
-                          ? t("publish.locked")
+                        {task.key === "publish" && lockReason
+                          ? t(`publish.${lockReason}`)
                           : t(`tasks.${task.key}.description`)}
                       </small>
                     )}
@@ -143,6 +144,7 @@ export async function SetupChecklistData() {
                     <SetupPublishButton
                       storeId={snapshot.setupStoreId}
                       ready={canPublish}
+                      lockedLabel={lockReason ? t(`publish.${lockReason}`) : undefined}
                       variant={next ? "secondary" : "neutral"}
                     />
                   ) : !done && (

@@ -9,18 +9,22 @@ import type { ComponentNode } from "@workspace/store-sections";
 import { cloneWithNewIds, createNode, isDataList, type ElementType } from "@workspace/store-sections/render";
 
 /** Elements whose fields are settings rather than text typed on the page. */
-export const SETTINGS_TYPES: readonly ElementType[] = ["carousel", "video", "videoPlaylist", "productList", "categoryList", "postList", "storeForm"];
+export const SETTINGS_TYPES: readonly ElementType[] = ["carousel", "video", "videoPlaylist", "productList", "categoryList", "postList", "storeForm", "marquee", "countdown"];
 
-/** The elements with settings, in reading order. A data list's card template is not searched (its nodes repeat per record). */
+/**
+ * The elements with settings, in reading order. A data list's card template
+ * is searched only for countdowns (its other nodes repeat per record, but a
+ * deal card's countdown needs its end date set, and is hidden until then).
+ */
 export function settingsNodes(nodes: readonly ComponentNode[]): ComponentNode[] {
   const found: ComponentNode[] = [];
-  const walk = (list: readonly ComponentNode[]) => {
+  const walk = (list: readonly ComponentNode[], inCard: boolean) => {
     for (const node of list) {
-      if (SETTINGS_TYPES.includes(node.type as ElementType)) found.push(node);
-      if (!isDataList(node.type)) walk(node.children);
+      if (inCard ? node.type === "countdown" : SETTINGS_TYPES.includes(node.type as ElementType)) found.push(node);
+      walk(node.children, inCard || isDataList(node.type));
     }
   };
-  walk(nodes);
+  walk(nodes, false);
   return found;
 }
 

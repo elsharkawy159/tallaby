@@ -253,7 +253,7 @@ export function GroupInput ({ className, ...props }: React.ComponentProps<'input
 }
 
 /** Arabic-Indic and Persian digits typed on an Arabic keyboard count as digits. */
-const toAsciiDigits = (text: string) =>
+export const toAsciiDigits = (text: string) =>
   text.replace(/[\u0660-\u0669\u06F0-\u06F9]/g, (d) => String(d.charCodeAt(0) & 0xf))
 
 /**

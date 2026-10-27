@@ -159,7 +159,7 @@ describe("product elements", () => {
   it("productContent prints the host-sanitised html verbatim inside its box", () => {
     const contentHtml = '<h2>Specs</h2><p>Hi <a href="https://x.test">there</a></p>';
     const html = draw(node("productContent"), { ...product, contentHtml });
-    expect(html).toMatch(new RegExp(`^<div data-node-id="n-productContent" data-node-type="productContent" class="[^"]*">${contentHtml.replace(/[.?]/g, "\\$&")}</div>$`));
+    expect(html).toMatch(new RegExp(`^<div data-node-id="n-productContent" data-node-type="productContent" data-sf-product-page="" class="[^"]*">${contentHtml.replace(/[.?]/g, "\\$&")}</div>$`));
     expect(draw(node("productContent"), { ...product, contentHtml: null }, { mode: "public" })).toBe("");
   });
 

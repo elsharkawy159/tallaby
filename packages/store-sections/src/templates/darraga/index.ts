@@ -73,24 +73,11 @@ const home: Design[] = [
     },
     links: { "/products": [SHOP, search("عجلة")] },
   }),
-  lib("service-journey", {
-    text: {
-      "الصيانة": L("الورشة", "Workshop"),
-      "جهازك هيرجع إمتى؟": L("صيانة في يوم", "Service in a day"),
-      "استلام": L("استلام", "Drop-off"),
-      "في الفرع أو مع المندوب": L("هاتها الزمالك", "Bring it to Zamalek"),
-      "١٠ دقايق": L("٥ دقايق", "5 min"),
-      "فحص": L("فحص", "Check"),
-      "بنبعتلك السعر قبل أي تصليح": L("بنبعتلك السعر قبل الشغل", "Price sent before any work"),
-      "ساعتين": L("نص ساعة", "30 min"),
-      "تصليح": L("ظبط", "Tune-up"),
-      "قطع أصلية وضمان ٣ شهور": L("فرامل وتروس وجنزير", "Brakes, gears and chain"),
-      "٤ ساعات": L("٣ ساعات", "3 h"),
-      "تسليم": L("اركب", "Ride"),
-      "نكلمك يوم ما يخلص": L("استلمها نفس اليوم", "Collect the same day"),
-      "في المتوسط بيرجعلك خلال": L("عجلتك بترجعلك في", "Your bike is back in"),
-      "٢٤ ساعة": L("يوم واحد", "one day"),
-    },
+  lib("categories-circles", { text: { "بتدوّر على إيه؟": L("محتاج إيه للمشوار؟", "What does your ride need?") } }),
+  lib("products-rows", {
+    text: { "إكسسوارات بسعر حلو": L("قبل أول مشوار", "Before your first ride") },
+    links: { "/products": BEST },
+    lists: [{ source: "best-sellers", limit: 5 }],
   }),
   lib("service-price-menu", {
     text: {
@@ -114,11 +101,6 @@ const home: Design[] = [
       "تنظيف وفحص": L("تركيب حامل أو رف", "Mount or rack fitting"),
       "٨٠ ج.م": L("٥٠ ج.م", "EGP 50"),
     },
-  }),
-  lib("products-rows", {
-    text: { "إكسسوارات بسعر حلو": L("قبل أول مشوار", "Before your first ride") },
-    links: { "/products": BEST },
-    lists: [{ source: "best-sellers", limit: 5 }],
   }),
   lib("team-branches", {
     text: {
@@ -178,13 +160,13 @@ const DEMO = demoStore({
 
 export const DARRAGA = libraryTemplate({
   key: DARRAGA_KEY,
-  version: 2,
-  changelog: "Darraga v2: product page",
+  version: 3,
+  changelog: "Darraga v3: categories after the hero, gear before the workshop, one price list",
   productPage: { thumbs: "side", band: "shelf", extras: ["product-perks"], copy: { back: L("رجوع للدراجات", "Back to the bikes"), reviews: L("رأي الراكبين", "From the riders"), related: L("جهّز قبل أول مشوار", "Gear up for your first ride") } },
   name: L("عجلة", "Darraga"),
   description: L(
-    "عجل وورشة: صيانة في يوم، أسعار الورشة، أساسيات أول مشوار وعنوان الورشة. أربع صفحات جاهزة.",
-    "Bikes and a workshop: service in a day, workshop prices, first-ride essentials and where to find us. Four ready pages.",
+    "عجل وورشة: أساسيات أول مشوار، أسعار الورشة وعنوان الورشة. أربع صفحات جاهزة.",
+    "Bikes and a workshop: first-ride essentials, workshop prices and where to find us. Four ready pages.",
   ),
   category: "sports",
   sortOrder: 930,

@@ -8,8 +8,11 @@ import { signupInputSchema } from "@workspace/lib/sellers";
 export const storeChoiceSchema = signupInputSchema;
 export type StoreChoiceInput = z.input<typeof storeChoiceSchema>;
 
-/** The setup step for a signed-in user: the store choice plus an industry id (STORE_INDUSTRIES). */
-export type StoreSetupInput = StoreChoiceInput & { industry: string };
+/**
+ * The setup step for a signed-in user: the store choice plus an industry id
+ * (STORE_INDUSTRIES), or "other" with the seller's own words in `industryOther`.
+ */
+export type StoreSetupInput = StoreChoiceInput & { industry: string; industryOther?: string };
 
 /** Step 1 (account only). `subdomain` is the optional marketing-site pre-fill for step 2. */
 export const emailSignupSchema = z.object({

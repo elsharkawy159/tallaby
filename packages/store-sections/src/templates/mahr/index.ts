@@ -44,7 +44,7 @@ const NAME = L("مهر جولد", "Mahr Gold");
 const header = lib("header-announcement", {
   text: {
     "توصيل مجاني للطلبات فوق ١٥٠٠ ج.م": L("الدهب بسعر اليوم · توصيل مأمّن", "Gold priced daily · Insured delivery"),
-    "الكود: SAVE10": L("جرام ٢١ النهارده: ٣٨٢٠ ج.م", "21K today: EGP 3,820"),
+    "الدفع عند الاستلام": L("جرام ٢١ النهارده: ٣٨٢٠ ج.م", "21K today: EGP 3,820"),
     "م": L("م", "M"),
     "اسم متجرك": NAME,
     "العروض": L("الأكثر مبيعاً", "Best sellers"),
@@ -63,6 +63,24 @@ const footer = lib("footer-centered", {
 });
 
 const home: Design[] = [
+  lib("hero-split", {
+    photo: [PHOTOS.woodBox],
+    text: {
+      "صورة الواجهة": L("علبة خشب فيها حلقان وخواتم وسلاسل دهب", "A wooden box of gold earrings, rings and chains"),
+      "المجموعة الجديدة": L("دهب ٢١ و١٨ بالدمغة", "Hallmarked 21K and 18K"),
+      "معمول بكميات صغيرة": L("شبكتك بسعر جرام النهارده", "Your shabka at today’s rate"),
+      "قطع مختارة بعناية، بنعملها بكميات صغيرة عشان كل واحدة تفضل مميزة.": L(
+        "دبل وحلقان وغوايش وأطقم، والوزن والمصنعية مكتوبين على كل قطعة.",
+        "Bands, earrings, bangles and sets, with the weight and workmanship on every piece.",
+      ),
+      "تسوّق المجموعة": L("تسوقي الدهب", "Shop the gold"),
+    },
+  }),
+  lib("categories-captioned", { text: { "اكتشف الأقسام": L("تسوقي بالقطعة", "Shop by piece"), "كل الأقسام": L("كل القطع", "All pieces") } }),
+  lib("products-feature", {
+    text: { "اختيارنا ليك": L("الأكتر شراءً", "Most bought"), "اختيار الأسبوع": L("الأكثر مبيعاً", "Best seller") },
+    lists: [undefined, { source: "best-sellers" }],
+  }),
   lib("stats-band", {
     name: L("سعر النهارده", "Today’s rate"),
     text: {
@@ -76,10 +94,6 @@ const home: Design[] = [
       "يومًا للاسترجاع": L("أيام للاستبدال بالوزن", "days to exchange by weight"),
     },
   }),
-  lib("products-feature", {
-    text: { "اختيارنا ليك": L("الأكتر شراءً", "Most bought"), "اختيار الأسبوع": L("الأكثر مبيعاً", "Best seller") },
-    lists: [undefined, { source: "best-sellers" }],
-  }),
   lib("pay-installments", {
     text: {
       "قسّطها": L("قسّط الشبكة", "Spread the cost"),
@@ -89,17 +103,6 @@ const home: Design[] = [
       "من غير فوايد ولا مقدم مع شركات التقسيط.": L("بسعر جرام يوم الشراء، من غير فوايد مع شركات التقسيط.", "At the gram rate on the day you buy, interest-free with instalment partners."),
     },
     lists: [{ source: "featured" }],
-  }),
-  lib("pay-methods", {
-    text: {
-      "ادفع بالطريقة اللي تريحك": L("ادفع بأمان", "Pay safely"),
-      "كاش عند الاستلام": L("كاش في المحل", "Cash in store"),
-      "ادفع للمندوب بعد ما تفتح الطلب.": L("ادفع بعد ما توزن القطعة قدامك.", "Pay after the piece is weighed in front of you."),
-      "كارت بنكي": L("كارت بنكي", "Bank card"),
-      "فيزا وماستركارد وميزة.": L("فيزا وماستركارد وميزة، أونلاين أو في المحل.", "Visa, Mastercard and Meeza, online or in store."),
-      "لحد ٢٤ شهر من غير مقدم.": L("لحد ٢٤ شهر بسعر جرام يوم الشراء.", "Up to 24 months at the day’s gram rate."),
-      "حوّل من موبايلك في ثانية.": L("حوّل وإحنا نشحن بتوصيل مأمّن.", "Transfer and we ship with insured delivery."),
-    },
   }),
   lib("team-branches", {
     text: {
@@ -180,13 +183,13 @@ const DEMO = demoStore({
 
 export const MAHR = libraryTemplate({
   key: MAHR_KEY,
-  version: 2,
-  changelog: "Mahr v2: product page",
+  version: 3,
+  changelog: "Mahr v3: hero first, categories, section order",
   productPage: { surface: "flat", thumbs: "side", band: "shelf", extras: ["product-perks"], copy: { back: L("رجوع للدهب", "Back to the gold"), reviews: L("رأي اللي اشتروا", "From those who bought"), related: L("قطع تتشرى معاه", "Pieces often bought with it") } },
   name: L("مهر", "Mahr"),
   description: L(
-    "دهب بالجرام: سعر النهارده، الأكتر شراءً، التقسيط، طرق الدفع، المحلات والأسئلة. أربع صفحات جاهزة.",
-    "Gold by the gram: today’s rate, most bought, instalments, ways to pay, the shops and questions. Four ready pages.",
+    "دهب بالجرام: الأكتر شراءً، سعر النهارده، التقسيط، المحلات والأسئلة. أربع صفحات جاهزة.",
+    "Gold by the gram: most bought, today’s rate, instalments, the shops and questions. Four ready pages.",
   ),
   category: "jewelry",
   sortOrder: 850,

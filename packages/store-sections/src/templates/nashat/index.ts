@@ -93,6 +93,7 @@ const home: Design[] = [
     },
     links: { "/products": [search("دمبل"), search("باكدج"), search("مات")] },
   }),
+  lib("categories-feature-list"),
   lib("products-grid", {
     text: {
       "وصل حديثًا": L("الأكثر مبيعاً", "Best sellers"),
@@ -100,14 +101,6 @@ const home: Design[] = [
     },
     links: { "/products": BEST },
     lists: [{ source: "best-sellers", limit: 4 }],
-  }),
-  lib("promo-tiers", {
-    text: {
-      "عرض الشهر": L("الشهر ده", "This month"),
-      "كل ما تزود، توفّر أكتر": L("كل ما تزود توفّر", "Spend more, save more"),
-      "١٠٠٠ ج.م": L("٩٠٠ ج.م", "EGP 900"),
-      "١٠٠ ج.م": L("٩٠ ج.م", "EGP 90"),
-    },
   }),
   lib("testimonials-chat", {
     text: {
@@ -170,13 +163,13 @@ const DEMO = demoStore({
 
 export const NASHAT = libraryTemplate({
   key: NASHAT_KEY,
-  version: 2,
-  changelog: "Nashat v2: product page",
+  version: 3,
+  changelog: "Nashat v3: categories after the hero",
   productPage: { thumbs: "side", band: "brand", extras: ["product-perks"], copy: { back: L("رجوع للجيم", "Back to the gym"), reviews: L("كلام الكباتن", "Words from the captains"), related: L("كمّل تمرينتك", "Complete your workout") } },
   name: L("نشاط", "Nashat"),
   description: L(
-    "لياقة في البيت: بانرات متحركة، الأكثر مبيعاً، كل ما تزود توفّر ورسايل الكباتن. أربع صفحات جاهزة.",
-    "Home fitness: banner carousel, best sellers, spend more save more and messages from captains. Four ready pages.",
+    "لياقة في البيت: بانرات متحركة، الأكثر مبيعاً ورسايل الكباتن. أربع صفحات جاهزة.",
+    "Home fitness: banner carousel, best sellers and messages from captains. Four ready pages.",
   ),
   category: "sports",
   sortOrder: 1090,

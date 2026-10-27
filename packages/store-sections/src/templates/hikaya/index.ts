@@ -50,7 +50,7 @@ const header = lib("header-pill", {
 const footer = lib("footer-signup", {
   text: {
     "اشترك في النشرة": L("جواب نادي حكاية", "The Hikaya Club letter"),
-    "عروض ومنتجات جديدة، مرة في الأسبوع.": L("حواديت البوكس الجاي وكود خصم للمشتركين، مرة في الشهر.", "Next box’s stories and a members’ code, once a month."),
+    "عروض ومنتجات جديدة، مرة في الأسبوع.": L("حواديت البوكس الجاي قبل ما يوصل، مرة في الشهر.", "Next box’s stories before it arrives, once a month."),
     "م": L("ح", "H"),
     "اسم متجرك": NAME,
     "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": L("© ٢٠٢٦ نادي حكاية. كل الحقوق محفوظة.", "© 2026 Hikaya Club. All rights reserved."),
@@ -60,6 +60,22 @@ const footer = lib("footer-signup", {
 });
 
 const home: Design[] = [
+  lib("hero-classic", {
+    photo: [PHOTOS.storyShelf],
+    text: {
+      "موسم جديد": L("حواديت كل شهر", "Stories every month"),
+      "كل ما تحتاجه، في مكان واحد": L("حدوتة جديدة قبل كل نوم", "A new story every bedtime"),
+      "تسوّق الآن": L("تسوق الكتب", "Shop the books"),
+      "شوف العروض": L("الأعلى تقييماً", "Top rated"),
+      "صورة المنتج": L("كتب أطفال مرصوصة على رف خشب", "Children’s books stacked on a wooden shelf"),
+    },
+    links: { "/products": [SHOP, RATED] },
+  }),
+  lib("categories-chips", { text: { "إيه اللي في بالك؟": L("بيقروا إيه؟", "What do they read?") } }),
+  lib("products-shelf", {
+    text: { "تسوّق حسب مزاجك": L("الكتب", "Books"), "عليه خصم": L("الأعلى تقييماً", "Top rated") },
+    links: { "/products": [NEW, BEST, RATED, SHOP] },
+  }),
   lib("about-inset", {
     photo: [undefined, undefined, undefined, undefined, undefined, undefined, undefined, PHOTOS.storyShelfWide],
     text: {
@@ -70,47 +86,6 @@ const home: Design[] = [
       "صورة المتجر": L("كتب أطفال مرصوصة على رف خشب", "Children’s books stacked on a wooden shelf"),
     },
     links: { "/about": search("بوكس") },
-  }),
-  lib("newsletter-interests", {
-    text: {
-      "إيه اللي يهمك؟": L("بيحبوا إيه؟", "What do they love?"),
-      "هنبعتلك اللي يخصك بس، مرة في الأسبوع.": L("قولنا وبنظبط كل بوكس على ذوقهم.", "Tell us and we tailor every box to them."),
-      "وصل حديثًا": L("حيوانات", "Animals"),
-      "العروض": L("الفضاء", "Space"),
-      "هدايا": L("مضحك", "Funny"),
-      "نصايح": L("قبل النوم", "Bedtime"),
-    },
-  }),
-  lib("bundle-quantity", {
-    text: {
-      "وفّر مع الكمية": L("اشترك", "Subscribe"),
-      "قطعة واحدة": L("بوكس شهر", "1 month"),
-      "قطعتين": L("٣ شهور", "3 months"),
-      "على القطعة التانية": L("على كل بوكس", "on every box"),
-      "٣ قطع": L("٦ شهور", "6 months"),
-      "على الطلب كله": L("على كل بوكس", "on every box"),
-      "اختار عدد القطع من السلة.": L("اختار عدد البوكسات من السلة، وبنبعتلك بوكس كل شهر.", "Pick the number of boxes in the cart; we send one each month."),
-    },
-  }),
-  lib("promo-tiers", {
-    name: L("نقط القراية", "Reading points"),
-    text: {
-      "عرض الشهر": L("نقطة لكل ١٠ ج.م", "1 point per EGP 10"),
-      "كل ما تزود، توفّر أكتر": L("كل ما تقروا أكتر، تكسبوا أكتر", "The more you read, the more you earn"),
-      "لما تشتري بـ": L("لما تجمع", "Collect"),
-      "١٠٠٠ ج.م": L("٣٠٠ نقطة", "300 points"),
-      "١٠٠ ج.م": L("فواصل ببلاش", "Free bookmarks"),
-      "الأكثر استخدامًا": L("دودة كتب", "Bookworm"),
-      "٢٠٠٠ ج.م": L("١٠٠٠ نقطة", "1,000 points"),
-      "٢٥٠ ج.م": L("توصيل ببلاش", "Free delivery"),
-      "٣٥٠٠ ج.م": L("٣٠٠٠ نقطة", "3,000 points"),
-      "٥٠٠ ج.م": L("بوكس ببلاش", "A free box"),
-      "خصم على الفاتورة": L("هدية المستوى", "Level reward"),
-    },
-  }),
-  lib("products-shelf", {
-    text: { "تسوّق حسب مزاجك": L("الكتب", "Books"), "عليه خصم": L("الأعلى تقييماً", "Top rated") },
-    links: { "/products": [NEW, BEST, RATED, SHOP] },
   }),
   lib("testimonials-wall", {
     text: {
@@ -133,7 +108,7 @@ const home: Design[] = [
       "وصل إلى أسيوط في ٣ أيام، وهذا لم أكن أتوقعه.": L("أحسن من التابلت قبل النوم، بجد.", "Better than a tablet at bedtime, honestly."),
       "س": L("أ", "A"),
       "سلمى ر.": L("أمل ر.", "Amal R."),
-      "أسعار معقولة وجودة أفضل مما توقعت.": L("جمعنا نقط وخدنا البوكس السابع ببلاش.", "We collected points and got the seventh box free."),
+      "أسعار معقولة وجودة أفضل مما توقعت.": L("بنتي بتستنى البوكس كل شهر كأنه عيد.", "My daughter waits for the box every month like it’s a holiday."),
       "ن": L("ط", "T"),
       "نور ح.": L("طارق ح.", "Tarek H."),
       "خدمة العملاء محترمة جدًا وساعدوني أختار الصح.": L("الكتب الكرتون استحملت البيبي وعضّه.", "The board books survived the baby’s teething."),
@@ -141,6 +116,16 @@ const home: Design[] = [
       "كريم ع.": L("ندى ع.", "Nada A."),
     },
     links: { "/products": RATED },
+  }),
+  lib("newsletter-interests", {
+    text: {
+      "إيه اللي يهمك؟": L("بيحبوا إيه؟", "What do they love?"),
+      "هنبعتلك اللي يخصك بس، مرة في الأسبوع.": L("قولنا وبنظبط كل بوكس على ذوقهم.", "Tell us and we tailor every box to them."),
+      "وصل حديثًا": L("حيوانات", "Animals"),
+      "العروض": L("الفضاء", "Space"),
+      "هدايا": L("مضحك", "Funny"),
+      "نصايح": L("قبل النوم", "Bedtime"),
+    },
   }),
 ];
 
@@ -152,7 +137,7 @@ const about: Design[] = [
     eyebrow: L("التجمع الخامس", "New Cairo"),
     title: L("حدوتة كل ليلة", "A story every night"),
     text: L("إحنا مدرّسة وأمينة مكتبة، بنختار ٥ حواديت عربي كل شهر تناسب سن طفلك.", "We are a teacher and a librarian choosing five Arabic stories a month to fit your child’s age."),
-    more: L("وكل بوكس بيجمعلك نقط تتبدل بفواصل وتوصيل وبوكسات ببلاش.", "And every box earns points for bookmarks, free delivery and free boxes."),
+    more: L("وكل بوكس فيه فاصل كتاب وكارت أنشطة.", "And every box comes with a bookmark and an activity card."),
     button: L("اشترك في البوكس", "Subscribe to the box"),
     href: search("بوكس"),
   }),
@@ -180,13 +165,13 @@ const DEMO = demoStore({
 
 export const HIKAYA = libraryTemplate({
   key: HIKAYA_KEY,
-  version: 2,
-  changelog: "Hikaya v2: product page",
+  version: 3,
+  changelog: "Hikaya v3: hero first, categories, section order",
   productPage: { thumbs: "bottom", band: "brand", copy: { back: L("رجوع للحكايات", "Back to the stories"), reviews: L("آراء قبل النوم", "Bedtime reviews"), related: L("حكايات تانية للقراءة", "More stories to read") } },
   name: L("حكاية", "Hikaya"),
   description: L(
-    "نادي كتب أطفال: بوكس الشهر، بيحبوا إيه، الاشتراك، نقط القراية ورف الكتب. أربع صفحات جاهزة.",
-    "A kids’ book club: this month’s box, what they love, subscribe, reading points and the shelf. Four ready pages.",
+    "نادي كتب أطفال: بوكس الشهر، بيحبوا إيه، الاشتراك ورف الكتب. أربع صفحات جاهزة.",
+    "A kids’ book club: this month’s box, what they love, subscribe and the shelf. Four ready pages.",
   ),
   category: "books",
   sortOrder: 890,
@@ -222,7 +207,7 @@ export const HIKAYA = libraryTemplate({
       name: L("الأسئلة الشائعة", "FAQ"),
       seo: { title: L("الأسئلة الشائعة", "FAQ") },
       sections: faqPage(lib, {
-        text: L("البوكس والنقط والتوصيل.", "The box, points and delivery."),
+        text: L("البوكس والاشتراك والتوصيل.", "The box, subscription and delivery."),
         question: L("الاشتراك بيتجدد لوحده؟", "Does the subscription renew by itself?"),
         answer: L("لأ، بتدفع عدد البوكسات مقدماً وبنفكرك قبل آخر بوكس.", "No, you pay for the boxes up front and we remind you before the last one."),
       }),

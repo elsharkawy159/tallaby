@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { SectionInstance } from "../config/schema";
-import { collectPageCss, escapeStyleBlock, normalizeSectionStyle, normalizeStyle, styleDeclarations } from "./style";
+import { SECTION_FLUID_PADDING, collectPageCss, escapeStyleBlock, normalizeSectionStyle, normalizeStyle, styleDeclarations } from "./style";
 
 const section = (over: Partial<SectionInstance> = {}): SectionInstance => ({
   id: "s1",
@@ -123,9 +123,14 @@ describe("collectPageCss", () => {
       }),
     ]);
     expect(css).toContain(
-      '[data-node-id="n1"]{padding-block-start:calc(var(--sf-section-y,64px)*1);padding-block-end:0px;padding-inline-start:8px}',
+      `[data-node-id="n1"]{padding-block-start:calc(var(--sf-section-y,${SECTION_FLUID_PADDING})*1);padding-block-end:0px;padding-inline-start:8px}`,
     );
-    expect(css).toContain('[data-node-id="n1"]{padding-block-start:calc(var(--sf-section-y,64px)*0.625)}');
+    expect(css).toContain(`[data-node-id="n1"]{padding-block-start:calc(var(--sf-section-y,${SECTION_FLUID_PADDING})*0.625)}`);
+    // A roomy root (96) counts as 80 at most (1.25 × the token).
+    const roomy = collectPageCss([
+      section({ sectionId: "custom-section", componentTree: [{ id: "n3", type: "section", props: {}, style: { paddingTop: 96 }, children: [] }] }),
+    ]);
+    expect(roomy).toContain(`padding-block-start:calc(var(--sf-section-y,${SECTION_FLUID_PADDING})*1.25)`);
     // Only the section root follows the token; inner elements keep plain pixels.
     expect(css).toContain('[data-node-id="n2"]{padding-block-start:24px');
   });
@@ -183,7 +188,9 @@ describe("tree section styles", () => {
   });
 
   it("uses clamp for display font sizes", () => {
-    expect(styleDeclarations({ fontSize: "display-md" })).toContain("font-size:clamp(2.2rem,5vw,3.25rem)");
+    expect(styleDeclarations({ fontSize: "display-md" })).toContain("font-size:clamp(2.25rem,5vw,4rem)");
+    // Section headings (docs/section-rules.md §5.2, G13).
+    expect(styleDeclarations({ fontSize: "display-sm" })).toContain("font-size:clamp(1.75rem,4vw,3.5rem)");
   });
 
   it("emits a scoped hover rule, never nested", () => {

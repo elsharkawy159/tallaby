@@ -2,18 +2,14 @@
  * Ghorza (template 48, ready-to-wear with a tailoring studio; Claude Design
  * "Storefront Templates"): stone paper, an aubergine for actions and a
  * camel highlight, Noto Naskh Arabic headings over Noto Sans Arabic and
- * square corners. A label that alters before it ships: new in at the
- * studio, an Eid look in three pieces, alteration prices, a studio fitting,
- * the tailors, what we promise and a gift fitting. Built from section
+ * square corners. A label that alters before it ships (v3): a split hero
+ * with a fitting button, shop by piece, new in at the studio, alteration
+ * prices, most ordered, what we promise and reviews. Built from section
  * library designs (`fromLibrary`).
  *
- * Rewards have no library designs yet: "Gift card" uses the coupon card
- * (`promo-coupon`); gift cards are requested from the contact page (no
- * gift-card balance at checkout). Alterations are not a product option: the
- * customer books a fitting or writes measurements in the order note. The
- * look total is typed copy for the three newest products; the tailors show
- * initials. The price menu has a third trouser line (the library's first
- * group has three rows).
+ * Alterations are not a product option: the customer books a fitting from
+ * the contact page or writes measurements in the order note. The price menu
+ * has a third trouser line (the library's first group has three rows).
  *
  * Photos: Pexels, each checked by eye (2026-10-23): linen jackets and shirts
  * on a rail, a charcoal linen jacket on a hanger, a linen overshirt on a
@@ -77,36 +73,26 @@ const footer = lib("footer-links", {
 });
 
 const home: Design[] = [
-  lib("hero-halves", {
-    photo: [undefined, PHOTOS.linenRail],
+  lib("hero-split", {
+    photo: [PHOTOS.linenRail],
     text: {
-      "كوليكشن الموسم": L("خريف ٢٠٢٦", "Autumn 2026"),
-      "صوت أنقى، كل يوم": L("جاهز، ومتظبط على مقاسك", "Ready to wear, cut to fit"),
-      "منتجات أصلية بضمان محلي، توصلك خلال ٤٨ ساعة.": L(
+      "صورة الواجهة": L("جواكت وقمصان كتان على راك", "Linen jackets and shirts on a rail"),
+      "المجموعة الجديدة": L("خريف ٢٠٢٦", "Autumn 2026"),
+      "معمول بكميات صغيرة": L("جاهز، ومتظبط على مقاسك", "Ready to wear, cut to fit"),
+      "قطع مختارة بعناية، بنعملها بكميات صغيرة عشان كل واحدة تفضل مميزة.": L(
         "كل قطعة ممكن تتقصر أو تتضيق أو تتوسع عند الترزية قبل ما تتشحن.",
         "Every piece can be hemmed, taken in or let out by our tailors before it ships.",
       ),
-      "تسوق الآن": L("تسوق الكوليكشن", "Shop the collection"),
-      "العروض": L("احجز قياس", "Book a fitting"),
-      "صورة الحملة": L("جواكت وقمصان كتان على راك", "Linen jackets and shirts on a rail"),
+      "تسوّق المجموعة": L("تسوق الكوليكشن", "Shop the collection"),
+      "حكايتنا": L("احجز قياس", "Book a fitting"),
     },
-    links: { "/products": [SHOP, "/contact"] },
+    links: { "/products": NEW, "/about": "/contact" },
   }),
+  lib("categories-ruled", { text: { "تسوق بالقسم": L("تسوق بالقطعة", "Shop by piece") } }),
   lib("products-rail", {
     text: { "بيحبوها": L("وصل جديد", "New in"), "الأكثر مبيعًا": L("الأسبوع ده في الستوديو", "This week at the studio") },
     links: { "/products": NEW },
     lists: [{ source: "newest", limit: 7 }],
-  }),
-  lib("bundle-poster", {
-    text: {
-      "طقم المشاوير": L("لبس العيد", "Eid outfit"),
-      "كل اللي تحتاجه في الطريق": L("لوك واحد، ٣ قطع", "One look, three pieces"),
-      "١٬٢٧٠ ج.م": L("٤٬٠٤٨ ج.م", "EGP 4,048"),
-      "بدل ١٬٤٩٠ ج.م": L("بدل ٤٬٦٠٠ ج.م", "Was EGP 4,600"),
-      "اشتري الطقم": L("خد اللوك", "Get the look"),
-      "خصم ١٥٪": L("خصم ١٢٪", "12% off"),
-    },
-    links: { "/products": NEW },
   }),
   lib("service-price-menu", {
     text: {
@@ -130,36 +116,9 @@ const home: Design[] = [
       "٨٠ ج.م": L("٩٠ ج.م", "EGP 90"),
     },
   }),
-  lib("service-booking", {
-    text: {
-      "احجز معاد الفني": L("احجز قياس", "Book a fitting"),
-      "تركيب شاشة · حوالي ساعة": L("قياس في ستوديو الزمالك · حوالي نص ساعة", "Studio fitting in Zamalek · about 30 minutes"),
-      "مواعيد الزيارات": L("مواعيد الستوديو", "Studio times"),
-      "١٠ ص": L("١١ ص", "11 am"),
-      "١٢ الضهر": L("١ الضهر", "1 pm"),
-      "٢ م": L("٣ م", "3 pm"),
-      "٤ م": L("٥ م", "5 pm"),
-      "٦ م": L("٧ م", "7 pm"),
-      "٨ م": L("٩ م", "9 pm"),
-    },
-  }),
-  lib("team-grid", {
-    text: {
-      "الفريق": L("الستوديو", "The studio"),
-      "الناس اللي ورا المحل": L("الترزية ورا كل غرزة", "The tailors behind every hem"),
-      "م": L("س", "S"),
-      "منى عادل": L("عم سعيد", "Am Said"),
-      "المؤسسة": L("كبير الترزية، ٣٤ سنة", "Head tailor, 34 years"),
-      "ك": L("ر", "R"),
-      "كريم سامي": L("رشا نبيل", "Rasha Nabil"),
-      "المشتريات": L("باترونيست", "Pattern cutter"),
-      "ي": L("م", "M"),
-      "ياسمين فؤاد": L("مينا فوزي", "Mina Fawzy"),
-      "خدمة العملاء": L("القياس", "Fitting"),
-      "ع": L("ه", "H"),
-      "عمر حسن": L("هنا عزت", "Hana Ezzat"),
-      "التوصيل": L("المؤسسة", "Founder"),
-    },
+  lib("products-carousel", {
+    text: { "الأكثر مبيعاً": L("الأكثر طلباً في الستوديو", "Most ordered at the studio") },
+    links: { "/products": BEST },
   }),
   lib("team-values", {
     text: {
@@ -175,17 +134,23 @@ const home: Design[] = [
       "بنرد على واتساب في أقل من ساعة، حتى يوم الجمعة.": L("القطع المتظبطة بتتشحن خلال ٣ أيام.", "Altered pieces ship within three days."),
     },
   }),
-  lib("promo-coupon", {
-    name: L("اهدي قياس", "Gift a fitting"),
+  lib("testimonials-classic", {
     text: {
-      "٢٠٪": L("١٠٠٠", "1,000"),
-      "خصم": L("ج.م", "EGP"),
-      "خصم على أول طلب لك": L("اهدي قياس", "Gift a fitting"),
-      "للطلبات فوق ٨٠٠ ج.م · حتى ٣٠ نوفمبر": L(
-        "كارت هدية بـ ٥٠٠ أو ١٠٠٠ أو ٢٠٠٠ أو ٣٥٠٠ ج.م، على أي قطعة أو تظبيط في الستوديو.",
-        "A gift card for EGP 500, 1,000, 2,000 or 3,500, good for any piece or alteration at the studio.",
+      "آراء العملاء": L("اللي لبسوا غُرزة", "Worn and reviewed"),
+      "طلبت يوم الأحد ووصل الثلاثاء. التغليف كان مرتبًا والمنتج كما في الصور تمامًا.": L(
+        "كتبت مقاساتي في الملاحظات والبدلة وصلت مظبوطة من غير ولا تعديل.",
+        "I wrote my measurements in the note and the suit arrived fitting, no changes needed.",
       ),
-      "الكود: WELCOME20": L("اطلبه من صفحة التواصل", "Order it from the contact page"),
+      "م": L("ط", "T"),
+      "مريم أ.": L("طارق ع.", "Tarek A."),
+      "بدّلت المقاس بدون أي تعب، والفريق رد علي في دقائق.": L("رحت الستوديو للقياس، وعم سعيد قصّر الفستان في نص ساعة.", "I went to the studio for a fitting and the dress was hemmed in half an hour."),
+      "ع": L("ن", "N"),
+      "عمر ك.": L("ندى ح.", "Nada H."),
+      "الإسكندرية": L("الزمالك", "Zamalek"),
+      "أسعار معقولة وجودة أفضل مما توقعت.": L("القماش تقيل ونضيف، والتقصير كان ببلاش.", "The fabric is substantial and clean, and the hemming was free."),
+      "ن": L("ي", "Y"),
+      "نور ح.": L("يوسف ك.", "Youssef K."),
+      "الجيزة": L("مصر الجديدة", "Heliopolis"),
     },
   }),
 ];
@@ -229,13 +194,13 @@ const DEMO = demoStore({
 
 export const GHORZA = libraryTemplate({
   key: GHORZA_KEY,
-  version: 2,
-  changelog: "Ghorza v2: product page",
+  version: 3,
+  changelog: "Ghorza v3: new hero, categories, section order",
   productPage: { surface: "flat", thumbs: "side", button: "outline", band: "shelf", extras: ["product-perks"], copy: { back: L("رجوع للتشكيلة", "Back to the collection"), reviews: L("رأي اللي لبسوا غُرزة", "Worn and reviewed"), related: L("كمّل اللوك", "Complete the look") } },
   name: L("غُرزة", "Ghorza"),
   description: L(
-    "لبس جاهز وستوديو ترزية: الجديد، لوك العيد، أسعار التظبيط، حجز قياس، الترزية، وعودنا وكارت هدية. أربع صفحات جاهزة.",
-    "Ready-to-wear with a tailoring studio: new in, an Eid look, alteration prices, a fitting booking, the tailors, our promises and a gift card. Four ready pages.",
+    "لبس جاهز وستوديو ترزية: الأقسام، الجديد، أسعار التظبيط، الأكثر طلباً، وعودنا وآراء اللي لبسوا. أربع صفحات جاهزة.",
+    "Ready-to-wear with a tailoring studio: categories, new in, alteration prices, most ordered, our promises and reviews. Four ready pages.",
   ),
   category: "fashion",
   sortOrder: 480,

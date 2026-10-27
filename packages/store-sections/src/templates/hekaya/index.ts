@@ -2,9 +2,8 @@
  * Hekaya (template 31, children's books; Claude Design "Storefront
  * Templates"): warm paper, a deep navy for actions and a sunny yellow
  * highlight, Baloo Bhaijaan 2 throughout and round 22px corners. A
- * teacher-run bookshop: new this month, pick your reader's age, why
- * Hekaya, the shelf, the year in numbers, publishers and parents'
- * questions. Built from section library designs (`fromLibrary`).
+ * teacher-run bookshop: a split hero, the shelves, the shelf, why Hekaya,
+ * the year in numbers, publishers and parents' questions. Built from section library designs (`fromLibrary`).
  *
  * Photos: Pexels, each checked by eye (2026-10-20): books on shelves,
  * wooden letter and number blocks. No children, parents, hands or
@@ -57,29 +56,25 @@ const footer = lib("footer-signup", {
 });
 
 const home: Design[] = [
-  lib("about-inset", {
-    photo: [undefined, undefined, undefined, undefined, undefined, undefined, undefined, PHOTOS.animalsOnBooks],
+  lib("hero-split", {
+    photo: [PHOTOS.animalsOnBooks],
     text: {
-      "إزاي بنشتغل": L("جديد الشهر ده", "New this month"),
-      "كل منتج بيتراجع قبل ما يوصلك": L("حكايات هيطلبوها تاني", "Stories they will ask for again"),
-      "فريقنا بيراجع كل منتج ويتأكد منه قبل التغليف.": L(
+      "صورة الواجهة": L("حيوانات خشب فوق كومة كتب", "Wooden animals on a stack of books"),
+      "المجموعة الجديدة": L("جديد الشهر ده", "New this month"),
+      "معمول بكميات صغيرة": L("حكايات هيطلبوها تاني", "Stories they will ask for again"),
+      "قطع مختارة بعناية، بنعملها بكميات صغيرة عشان كل واحدة تفضل مميزة.": L(
         "كتب مصورة عربي وإنجليزي مختارة من مدرّستين، بتغليف هدية مجاني.",
         "Arabic and English picture books picked by two teachers, with free gift wrap.",
       ),
-      "اعرف أكتر": L("تسوق الكتب الجديدة", "Shop new books"),
-      "صورة المتجر": L("حيوانات خشب فوق كومة كتب", "Wooden animals on a stack of books"),
+      "تسوّق المجموعة": L("تسوق الكتب الجديدة", "Shop new books"),
+      "حكايتنا": L("مين إحنا", "Who we are"),
     },
-    links: { "/about": NEW },
+    links: { "/products": NEW },
   }),
-  lib("newsletter-interests", {
-    text: {
-      "إيه اللي يهمك؟": L("قارئك عنده كام سنة؟", "How old is your reader?"),
-      "هنبعتلك اللي يخصك بس، مرة في الأسبوع.": L("اختار السن وهنبعتلك الكتب المناسبة كل شهر.", "Pick ages and we will send the right books each month."),
-      "وصل حديثًا": L("٠–٢", "0–2"),
-      "العروض": L("٣–٥", "3–5"),
-      "هدايا": L("٦–٨", "6–8"),
-      "نصايح": L("٩+", "9+"),
-    },
+  lib("categories-captioned", { text: { "اكتشف الأقسام": L("رفوف حكاية", "Hekaya shelves"), "كل الأقسام": L("كل الكتب", "All books") } }),
+  lib("products-shelf", {
+    text: { "تسوّق حسب مزاجك": L("الرف", "The shelf"), "وصل جديد": L("جديد", "New"), "عليه خصم": L("الأعلى تقييماً", "Top rated") },
+    links: { "/products": [NEW, BEST, RATED, SHOP] },
   }),
   lib("features-bento", {
     text: {
@@ -93,10 +88,6 @@ const home: Design[] = [
       "استرجاع سهل": L("استبدال لو مقفول", "Swap unopened"),
       "١٤ يومًا لتغيّر رأيك": L("خلال ١٤ يوم.", "Within 14 days."),
     },
-  }),
-  lib("products-shelf", {
-    text: { "تسوّق حسب مزاجك": L("الرف", "The shelf"), "وصل جديد": L("جديد", "New"), "عليه خصم": L("الأعلى تقييماً", "Top rated") },
-    links: { "/products": [NEW, BEST, RATED, SHOP] },
   }),
   lib("stats-sentence", {
     text: {
@@ -161,8 +152,8 @@ const DEMO = demoStore({
 
 export const HEKAYA = libraryTemplate({
   key: HEKAYA_KEY,
-  version: 3,
-  changelog: "Hekaya v3: product page",
+  version: 4,
+  changelog: "Hekaya v4: new hero, categories, section order",
   name: L("حكاية", "Hekaya"),
   description: L(
     "كتب أطفال: جديد الشهر، اختار سن القارئ، ليه حكاية ودور النشر. أربع صفحات جاهزة.",
@@ -202,9 +193,9 @@ export const HEKAYA = libraryTemplate({
       name: L("الأسئلة الشائعة", "FAQ"),
       seo: { title: L("الأسئلة الشائعة", "FAQ") },
       sections: faqPage(lib, {
-        text: L("الكتب والعروض والتوصيل.", "Books, offers and delivery."),
-        question: L("عرض ٣ + ١ بيشتغل إزاي؟", "How does buy 3, get 1 work?"),
-        answer: L("ضيف ٤ كتب للسلة وإحنا بنخصم أرخص واحد عند التأكيد.", "Add four books to your cart and we take the cheapest one off when we confirm the order."),
+        text: L("الكتب والتغليف والتوصيل.", "Books, gift wrap and delivery."),
+        question: L("بتغلفوا الكتب هدية؟", "Do you gift-wrap books?"),
+        answer: L("أيوه، اكتبلنا في ملاحظات الطلب وبنغلفه ونحط كارت باسمك.", "Yes. Add a note to your order and we wrap it with a card in your name."),
       }),
     },
   ],

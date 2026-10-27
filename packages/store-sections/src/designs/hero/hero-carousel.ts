@@ -42,7 +42,7 @@ const slide = (t: TreeBuilder, index: number, copy: { eyebrow: DesignText; title
         },
       ),
     ],
-    { label: L("شريحة", "Slide"), style: { position: "relative", background: "foreground", minHeight: 0, gap: 0 } },
+    { label: L("شريحة", "Slide"), style: { position: "relative", background: "black", minHeight: 0, gap: 0 } },
   );
 
 export const heroCarousel = defineDesign({

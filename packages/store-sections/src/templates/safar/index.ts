@@ -79,16 +79,6 @@ const home: Design[] = [
       "اكتشف المجموعة": L("تسوق الباكدجات", "Shop kits"),
     },
   }),
-  lib("bundle-poster", {
-    text: {
-      "طقم المشاوير": L("باكدج الصحرا", "Desert kit"),
-      "كل اللي تحتاجه في الطريق": L("ليلة تحت النجوم", "A night under the stars"),
-      "١٬٢٧٠ ج.م": L("٦٬٨٦٠ ج.م", "EGP 6,860"),
-      "بدل ١٬٤٩٠ ج.م": L("بدل ٧٬٨٠٠ ج.م", "Instead of EGP 7,800"),
-      "اشتري الطقم": L("خد الباكدج", "Get the kit"),
-      "خصم ١٥٪": L("وفّر ١٢٪", "Save 12%"),
-    },
-  }),
   lib("categories-chips", { text: { "إيه اللي في بالك؟": L("تصفح", "Browse") } }),
   lib("products-rail", {
     text: { "بيحبوها": L("وصل جديد", "New in"), "الأكثر مبيعًا": L("أدوات جديدة", "Fresh gear") },
@@ -168,8 +158,8 @@ export const SAFAR = libraryTemplate({
   productPage: { thumbs: "bottom", band: "shelf", extras: ["product-shipping"], copy: { back: L("رجوع للعدة", "Back to the gear"), reviews: L("رسائل من الطريق", "Messages from the road"), related: L("جهّز رحلتك", "Pack for your trip") } },
   name: L("سفر", "Safar"),
   description: L(
-    "أدوات رحلات وتخييم: بوستر الرحلة، باكدج الصحرا، أدوات جديدة، أيام التوصيل وآراء من الطريق. أربع صفحات جاهزة.",
-    "Road trip and camping gear: a trip poster, the desert kit, fresh gear, delivery days and reviews from the road. Four ready pages.",
+    "أدوات رحلات وتخييم: بوستر الرحلة، أدوات جديدة، أيام التوصيل وآراء من الطريق. أربع صفحات جاهزة.",
+    "Road trip and camping gear: a trip poster, fresh gear, delivery days and reviews from the road. Four ready pages.",
   ),
   category: "auto",
   sortOrder: 990,

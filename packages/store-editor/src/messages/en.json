@@ -172,6 +172,7 @@
       "saveFirst": "Wait for your changes to be saved, then try again.",
       "previewUnavailable": "Preview on your store isn't available right now.",
       "nothingToPublish": "Nothing to publish: there are no unpublished changes.",
+      "templateNotChosen": "Choose your store's template first (Website › Templates), then publish.",
       "cancelled": "Publishing was cancelled."
     },
     "previewOnStore": "Preview on store",
@@ -332,7 +333,8 @@
           "storeName": "Store name next to the logo",
           "languageSwitcher": "Language switcher",
           "themeToggle": "Light / dark mode",
-          "account": "Sign in"
+          "account": "Sign in",
+        "bottomNav": "Bottom navigation on phones"
         },
         "hints": {
           "logo": "Shows the logo you uploaded in",
@@ -340,7 +342,8 @@
           "storeName": "Your logo replaces the name. Turn on to show the name beside it too.",
           "languageSwitcher": "Lets visitors switch your website between Arabic and English.",
           "themeToggle": "A button that switches your website between light and dark. Visitors' choice is remembered.",
-          "account": "Lets customers sign in, or open their account when they're signed in."
+          "account": "Lets customers sign in, or open their account when they're signed in.",
+        "bottomNav": "A bar at the bottom of phone screens with Home, Shop, Cart and Profile. It steps aside at checkout and for the product page's buy buttons."
         }
       },
       "emptyTitle": "Nothing selected",
@@ -398,6 +401,7 @@
         "accent": "Highlight",
         "background": "Background",
         "secondary": "Soft background",
+        "surface": "Card surface",
         "border": "Lines",
         "white": "White",
         "black": "Black",
@@ -508,12 +512,8 @@
         "removeImage": "Remove background image",
         "overlay": "Overlay",
         "backgroundHint": "Shows behind sections without their own background. The overlay darkens it so text stays readable.",
-        "entrance": "Entrance",
-        "animations": {
-          "none": "None",
-          "fade": "Fade",
-          "rise": "Rise"
-        },
+        "animate": "Animate on scroll",
+        "animateHint": "The section’s content fades in as visitors reach it.",
         "anchor": "Link name",
         "anchorHint": "Lowercase letters, numbers and dashes. Lets buttons link to this section.",
         "anchorLink": "Link to it with /#{anchor}",
@@ -596,7 +596,13 @@
       "resetTitle": "Go back to Tallaby Classic?",
       "resetDescription": "Colors, fonts, corners, page width and spacing go back to the Classic look. You can undo this.",
       "resetAction": "Reset",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "motion": "Motion",
+      "motionHint": "Calm motion that makes the store feel premium without slowing it down.",
+      "reveal": "Reveal sections on scroll",
+      "revealHint": "Sections fade in gently as visitors scroll to them.",
+      "hoverZoom": "Zoom photos on hover",
+      "hoverZoomHint": "Product and category photos zoom in a little under the mouse."
     },
     "templates": {
       "title": "Templates",
@@ -972,6 +978,7 @@
       "invalidInput": "Check the details and try again.",
       "versionConflict": "The design was changed in another tab. Reload before continuing.",
       "invalidSite": "The website has a problem and couldn't be published. Open the editor to check it.",
+      "templateNotChosen": "Choose your store's template first (Website › Templates), then publish.",
       "rateLimited": "Too many changes at once. Wait a moment and try again.",
       "generic": "Something went wrong. Try again."
     }

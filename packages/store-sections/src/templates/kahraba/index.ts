@@ -82,6 +82,12 @@ const home: Design[] = [
     },
     links: { "/products": [search("شاحن"), "/contact"] },
   }),
+  lib("categories-photo-tiles", { text: { "تسوّق حسب القسم": L("اشحن وجهّز عربيتك", "Charge and kit out your car") } }),
+  lib("products-rows", {
+    text: { "إكسسوارات بسعر حلو": L("للعربية", "For the car") },
+    links: { "/products": BEST },
+    lists: [{ source: "best-sellers", limit: 5 }],
+  }),
   lib("text-steps", {
     text: {
       "إزاي ترجّع منتج": L("التركيب بيمشي إزاي", "How installation works"),
@@ -101,27 +107,6 @@ const home: Design[] = [
       "تركيب شاشة · حوالي ساعة": L("معاينة شاحن البيت · نص ساعة", "Home charger survey · 30 minutes"),
       "مواعيد الزيارات": L("مواعيد المعاينة", "Survey times"),
     },
-  }),
-  lib("service-plans", {
-    text: {
-      "احمي جهازك أكتر": L("مد ضمان الشاحن", "Extend charger warranty"),
-      "سنة": L("سنتين", "2 years"),
-      "١٩٩ ج.م": L("مع الشاحن", "Included"),
-      "إصلاح الأعطال": L("قطع ومصنعية", "Parts and labour"),
-      "فني في البيت": L("فني في البيت", "Home visits"),
-      "سنتين": L("٤ سنين", "4 years"),
-      "٣٤٩ ج.م": L("١٢٠٠ ج.م", "EGP 1,200"),
-      "جهاز بديل وقت الصيانة": L("فحص سنوي", "Yearly check"),
-      "٣ سنين": L("٦ سنين", "6 years"),
-      "٤٧٩ ج.م": L("١٩٠٠ ج.م", "EGP 1,900"),
-      "كل مزايا السنتين": L("كل مزايا الـ٤ سنين", "Everything in 4 years"),
-      "كسر الشاشة مرة واحدة": L("جهاز بديل لو عطل", "A replacement unit if it fails"),
-    },
-  }),
-  lib("products-rows", {
-    text: { "إكسسوارات بسعر حلو": L("للعربية", "For the car") },
-    links: { "/products": BEST },
-    lists: [{ source: "best-sellers", limit: 5 }],
   }),
   lib("faq-columns", {
     as: "faq-home",
@@ -187,13 +172,13 @@ const DEMO = demoStore({
 
 export const KAHRABA = libraryTemplate({
   key: KAHRABA_KEY,
-  version: 2,
-  changelog: "Kahraba v2: product page",
+  version: 3,
+  changelog: "Kahraba v3: categories after the hero, chargers before the install, one service block",
   productPage: { thumbs: "side", band: "shelf", extras: ["product-perks"], copy: { back: L("رجوع للشواحن", "Back to the chargers"), reviews: L("رأي أصحاب الشواحن", "From charger owners"), related: L("إكسسوارات للعربية", "Accessories for the car") } },
   name: L("كهربا", "Kahraba"),
   description: L(
-    "شحن العربيات الكهربا: شاحن البيت، خطوات التركيب، احجز معاينة، مد الضمان وأسئلة. أربع صفحات جاهزة.",
-    "EV charging: home chargers, how installation works, survey booking, warranty plans and questions. Four ready pages.",
+    "شحن العربيات الكهربا: شاحن البيت، خطوات التركيب، احجز معاينة وأسئلة. أربع صفحات جاهزة.",
+    "EV charging: home chargers, how installation works, survey booking and questions. Four ready pages.",
   ),
   category: "auto",
   sortOrder: 980,

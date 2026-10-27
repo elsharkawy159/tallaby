@@ -2,8 +2,8 @@
  * Khodar (template 70, fresh produce; Claude Design "Storefront
  * Templates"): white paper, a market green for actions and a sunny yellow
  * highlight, Tajawal throughout and soft 16px corners. A same-day produce
- * shop: the free-delivery goal, a search hero, the most ordered, the weekly
- * box with quantity savings, the 3 pm cut-off and order tracking. Built
+ * shop: a search hero, the aisles, the most ordered, the 3 pm cut-off
+ * promise and a regular's word. Built
  * from section library designs (`fromLibrary`).
  *
  * Photos: Pexels, each checked by eye (2026-10-21): a market of vegetable
@@ -70,43 +70,17 @@ const footer = lib("footer-help", {
 });
 
 const home: Design[] = [
-  lib("cart-free-delivery", {
-    text: {
-      "١٥٠٠ ج.م": L("٤٠٠ ج.م", "EGP 400"),
-      "والتوصيل عليك مجاني": L("والتوصيل في نفس اليوم ببلاش", "and same-day delivery is free"),
-    },
-    links: { "/products": BEST },
-  }),
   lib("hero-search", {
     text: {
       "بتدور على إيه النهارده؟": L("محتاج إيه النهارده؟", "What do you need today?"),
       "اكتب اسم المنتج": L("طماطم، مانجا، ورقيات", "Tomatoes, mango, greens"),
-      "وصل حديثًا": L("بوكس خضار", "Veg box"),
-      "الأكثر مبيعًا": L("ورقيات", "Greens"),
-      "هدايا": L("مانجا", "Mango"),
-      "العروض": L("طماطم", "Tomatoes"),
     },
-    links: { "/products": [SHOP, search("بوكس"), search("ورقيات"), search("مانجا"), search("طماطم")] },
   }),
+  lib("categories-photo-tiles", { text: { "تسوّق حسب القسم": L("طازة النهارده", "Fresh today") } }),
   lib("products-rows", {
     text: { "إكسسوارات بسعر حلو": L("الأكتر طلباً كل يوم", "Most ordered, every day") },
     links: { "/products": BEST },
     lists: [{ source: "best-sellers", limit: 6 }],
-  }),
-  lib("bundle-quantity", {
-    text: {
-      "وفّر مع الكمية": L("كل أسبوع؟ وفّر أكتر", "Every week? Save more"),
-      "قطعة واحدة": L("بوكس واحد", "1 box"),
-      "السعر العادي": L("السعر العادي", "Regular price"),
-      "قطعتين": L("بوكسين", "2 boxes"),
-      "على القطعة التانية": L("على البوكسين", "On both boxes"),
-      "وفّر ١٠٪": L("وفّر ٨٪", "Save 8%"),
-      "٣ قطع": L("٤ بوكسات", "4 boxes"),
-      "على الطلب كله": L("بوكس كل أسبوع لمدة شهر", "A box a week for a month"),
-      "وفّر ١٨٪": L("وفّر ١٥٪", "Save 15%"),
-      "اختار عدد القطع من السلة.": L("اختار عدد البوكسات من السلة.", "Choose how many boxes in your cart."),
-    },
-    lists: [{ source: "featured" }],
   }),
   lib("pay-promise", {
     text: {
@@ -119,12 +93,15 @@ const home: Design[] = [
       "بيوصلك": L("على بابك", "At your door"),
     },
   }),
-  lib("track-ask", {
+  lib("testimonials-quote", {
     text: {
-      "رقم الطلب موجود في رسالة تأكيد الطلب.": L(
-        "رقم الطلب موجود في رسالة التأكيد، والمندوب بيكلمك قبل ما يوصل.",
-        "Your order number is in the confirmation message, and the courier calls before arriving.",
+      "آراء العملاء": L("من زباينّا", "From our regulars"),
+      "«من أحسن تجارب الشراء أونلاين. الطلب وصل بسرعة، والتغليف شيك، والمنتج أحلى من الصور.»": L(
+        "«طلبت قبل ٣ والخضار وصل نفس اليوم، والمانجا كانت مستوية بالظبط زي ما طلبت.»",
+        "«I ordered before 3 and it came the same day. The mangoes were exactly as ripe as I asked.»",
       ),
+      "مريم أ.": L("سارة ح.", "Sara H."),
+      "القاهرة": L("المعادي", "Maadi"),
     },
   }),
 ];
@@ -168,8 +145,8 @@ const DEMO = demoStore({
 
 export const KHODAR = libraryTemplate({
   key: KHODAR_KEY,
-  version: 2,
-  changelog: "Khodar v2: product page",
+  version: 3,
+  changelog: "Khodar v3: hero first, categories, section order",
   productPage: { thumbs: "bottom", band: "shelf", extras: ["product-shipping"], copy: { back: L("رجوع للسوق", "Back to the market"), reviews: L("اللي طلبوا قالوا", "From people who ordered"), related: L("كمّل سلتك", "Fill your basket") } },
   name: L("خضار", "Khodar"),
   description: L(

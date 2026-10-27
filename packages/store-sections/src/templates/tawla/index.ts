@@ -76,6 +76,12 @@ const home: Design[] = [
     },
     links: { "/products": [search("كتان"), NEW] },
   }),
+  lib("categories-photo-tiles", { text: { "تسوّق حسب القسم": L("لبّس السفرة حتة حتة", "Dress the table piece by piece") } }),
+  lib("products-rail", {
+    text: { "بيحبوها": L("وصل جديد", "New in"), "الأكثر مبيعًا": L("لسه من النول", "Fresh from the loom") },
+    links: { "/products": NEW },
+    lists: [{ source: "newest", limit: 6 }],
+  }),
   lib("features-side-title", {
     text: {
       "ليه الناس بترجع لنا تاني": L("ليه الكتان بتاعنا", "Why our linen"),
@@ -89,24 +95,6 @@ const home: Design[] = [
       "دعم على واتساب": L("توصيل في ٣ أيام", "Delivery in 3 days"),
       "أشخاص حقيقيون طوال الأسبوع": L("لكل المحافظات، وادفع عند الاستلام.", "To every governorate, pay on delivery."),
     },
-  }),
-  lib("bundle-plus", {
-    text: {
-      "باقة": L("طقم", "Set"),
-      "اشتريهم مع بعض ووفّر": L("السفرة كاملة", "The full table"),
-      "سعر الباقة": L("سعر الطقم", "Set price"),
-      "١٬٢٧٠ ج.م": L("١٬٠٠٨ ج.م", "EGP 1,008"),
-      "بدل ١٬٤٩٠ ج.م": L("بدل ١٬١٢٠ ج.م", "Instead of EGP 1,120"),
-      "وفّر ٢٢٠ ج.م": L("وفّر ١١٢ ج.م", "Save EGP 112"),
-      "اطلب الباقة": L("اطلب الطقم", "Get the set"),
-    },
-    links: { "/products": search("طقم") },
-    lists: [{ source: "featured", limit: 3 }],
-  }),
-  lib("products-rail", {
-    text: { "بيحبوها": L("وصل جديد", "New in"), "الأكثر مبيعًا": L("لسه من النول", "Fresh from the loom") },
-    links: { "/products": NEW },
-    lists: [{ source: "newest", limit: 6 }],
   }),
   lib("text-terms", {
     text: {
@@ -191,8 +179,8 @@ const DEMO = demoStore({
 
 export const TAWLA = libraryTemplate({
   key: TAWLA_KEY,
-  version: 2,
-  changelog: "Tawla v2: product page",
+  version: 3,
+  changelog: "Tawla v3: categories, section order",
   productPage: { gallery: "end", thumbs: "bottom", button: "outline", band: "paper", copy: { back: L("رجوع للسُفرة", "Back to the table"), reviews: L("رأي اللي جهّزوا سُفرتهم", "From laid tables"), related: L("كمّل السُفرة", "Dress the whole table") } },
   name: L("طاولة", "Tawla"),
   description: L(

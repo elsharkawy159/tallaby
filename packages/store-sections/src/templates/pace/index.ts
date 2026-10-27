@@ -90,17 +90,6 @@ const home: Design[] = [
       "مجانًا لو طلبت": L("مقاومة للسباحة", "Swim-proof"),
     },
   }),
-  lib("promo-tiers", {
-    text: {
-      "عرض الشهر": L("عرض الشهر", "This month"),
-      "كل ما تزود، توفّر أكتر": L("كمّل جيمك ووفّر أكتر", "Build your gym, save more"),
-      "١٠٠٠ ج.م": L("١٢٠٠ ج.م", "EGP 1,200"),
-      "٢٠٠٠ ج.م": L("٢٥٠٠ ج.م", "EGP 2,500"),
-      "٢٥٠ ج.م": L("٣٠٠ ج.م", "EGP 300"),
-      "٣٥٠٠ ج.م": L("٤٥٠٠ ج.م", "EGP 4,500"),
-      "٥٠٠ ج.م": L("٦٠٠ ج.م", "EGP 600"),
-    },
-  }),
   lib("products-rail", {
     as: "just-arrived",
     text: { "بيحبوها": L("جديد", "New"), "الأكثر مبيعًا": L("وصل حالاً", "Just arrived") },
@@ -170,8 +159,8 @@ export const PACE = libraryTemplate({
   changelog: "Pace v3: product page",
   name: L("بيس", "Pace"),
   description: L(
-    "أدوات رياضة: جيم البيت، اختيارات الكوتشات، مميزات الساعة وعروض بالمبلغ. أربع صفحات جاهزة.",
-    "Fitness gear: home gym, coach picks, the sport watch’s features and spend tiers. Four ready pages.",
+    "أدوات رياضة: جيم البيت، اختيارات الكوتشات ومميزات الساعة. أربع صفحات جاهزة.",
+    "Fitness gear: home gym, coach picks and the sport watch’s features. Four ready pages.",
   ),
   category: "sports",
   sortOrder: 320,

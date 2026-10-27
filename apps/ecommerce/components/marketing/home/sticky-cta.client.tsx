@@ -6,7 +6,8 @@ import { SignupTrigger } from "@/components/marketing/signup/signup-trigger.clie
 
 /**
  * Phone-only bottom CTA. Hidden while the hero (`#top`) or the closing CTA
- * (`#final`) is on screen, since both already have one.
+ * (`#final`) is on screen, since both already have one. `data-shown` lets the
+ * floating WhatsApp button come in and leave with it (marketing.css).
  */
 export function StickyCta() {
   const [show, setShow] = React.useState(false);
@@ -25,6 +26,7 @@ export function StickyCta() {
   return (
     <div
       data-sticky-cta
+      data-shown={show ? "true" : "false"}
       data-print="hide"
       className={cn(
         "fixed inset-x-0 bottom-0 z-[60] border-t border-neutral-200 bg-white px-4 pt-2.5 pb-[calc(10px+env(safe-area-inset-bottom))] transition-transform duration-300 md:hidden",

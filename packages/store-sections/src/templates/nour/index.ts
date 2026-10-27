@@ -2,7 +2,7 @@
  * Nour (template 78, lighting; Claude Design "Storefront Templates"): a dark
  * home page in warm charcoal, an amber brand colour and a soft gold
  * highlight, Readex Pro throughout and 16px corners. A lamp shop: one big
- * word, the most lit lamps, we hang it for you, pay in instalments and
+ * word, lamps by room, the most lit lamps, we hang it for you and
  * reviews from customers' homes. Built from section library designs
  * (`fromLibrary`).
  *
@@ -29,7 +29,7 @@ const PHOTOS = {
   wovenPendants: pexels(36265889, 900),
   vaseCandles: pexels(8217492, 900),
   swingFloor: pexels(26346242, 900),
-  pleatedFloor: pexels(1612726, 900),
+  pleatedFloor: pexels(1612726, 1600),
   ceramicTable: pexels(18280834, 900),
   brassTable: pexels(14540915, 900),
   deskLamps: pexels(7439756, 900),
@@ -57,6 +57,7 @@ const footer = lib("footer-centered", {
 
 const home: Design[] = [
   lib("hero-big-word", { text: { "جديد": L("نور", "LIGHT"), "اطلبها": L("نوّر بيتك", "Light your home") } }),
+  lib("categories-photo-tiles", { text: { "تسوّق حسب القسم": L("نوّر كل أوضة", "Light every room") } }),
   lib("products-feature", {
     text: { "اختيارنا ليك": L("الأكتر نوراً", "Most lit"), "اختيار الأسبوع": L("الأكثر مبيعاً", "Best seller") },
     lists: [undefined, { source: "best-sellers" }],
@@ -79,17 +80,6 @@ const home: Design[] = [
       "سنة أو سنتين زيادة على ضمان الوكيل.": L("نركّب مفتاح دِمر عشان تتحكم في النور.", "We fit a dimmer switch so you control the glow."),
       "من ١٩٩ ج.م": L("من ١٩٩ ج.م", "From EGP 199"),
     },
-  }),
-  lib("pay-installments", {
-    text: {
-      "قسّطها": L("قسّط الأباجورة", "Split the lamp"),
-      "١٢": L("٩", "9"),
-      "٢٤": L("١٢", "12"),
-      "قسّطها لحد": L("قسّطها لحد", "Split it over up to"),
-      "٢٤ شهر": L("١٢ شهر", "12 months"),
-      "من غير فوايد ولا مقدم مع شركات التقسيط.": L("من غير فوايد ولا مقدم على الأباجورات فوق ٢٬٠٠٠ ج.م.", "No interest and no down payment on lamps over EGP 2,000."),
-    },
-    lists: [{ source: "discounted" }],
   }),
   lib("testimonials-ruled", {
     text: {
@@ -132,8 +122,8 @@ const DEMO = demoStore({
     ["decor", "ديكور", "Decor", PHOTOS.vaseCandles],
   ],
   products: [
-    ["linen-floor-lamp", "floor", "أباجورة كتان أرضي", "Linen Floor Lamp", PHOTOS.swingFloor, 2600, { isFeatured: true, rating: 4.8, sold90: 96 }],
-    ["pleated-floor-lamp", "floor", "أباجورة أرضي بليسيه", "Pleated Floor Lamp", PHOTOS.pleatedFloor, 4800, { compareAtPrice: 5400, sold90: 21 }],
+    ["linen-floor-lamp", "floor", "أباجورة كتان أرضي", "Linen Floor Lamp", PHOTOS.swingFloor, 2600, { rating: 4.8, sold90: 96 }],
+    ["pleated-floor-lamp", "floor", "أباجورة أرضي بليسيه", "Pleated Floor Lamp", PHOTOS.pleatedFloor, 4800, { compareAtPrice: 5400, isFeatured: true, sold90: 21 }],
     ["ceramic-table-lamp", "table", "أباجورة قاعدة سيراميك", "Ceramic Table Lamp", PHOTOS.ceramicTable, 1900, { rating: 4.7, sold90: 44 }],
     ["brass-table-lamp", "table", "أباجورة نحاس", "Brass Table Lamp", PHOTOS.brassTable, 2200, { sold90: 33 }],
     ["desk-lamp", "table", "لمبة مكتب سودا", "Black Desk Lamp", PHOTOS.deskLamps, 950, { sold90: 58 }],
@@ -147,8 +137,8 @@ const DEMO = demoStore({
 
 export const NOUR = libraryTemplate({
   key: NOUR_KEY,
-  version: 2,
-  changelog: "Nour v2: product page",
+  version: 3,
+  changelog: "Nour v3: categories, wide hero photo, one service block",
   productPage: { thumbs: "bottom", band: "shelf", extras: ["product-perks"], copy: { back: L("رجوع للإضاءة", "Back to the lights"), reviews: L("من بيوت منوّرة", "From lit-up homes"), related: L("إضاءة تكمّل المكان", "Lighting to finish the room") } },
   name: L("نور", "Nour"),
   description: L(

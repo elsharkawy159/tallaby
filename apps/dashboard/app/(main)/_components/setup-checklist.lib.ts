@@ -4,13 +4,18 @@
  * a product, a website template, shipping, then publishing. Store steps
  * belong to the store selected in the sidebar. "Publish your store" runs the
  * builder's Publish from the home page and is offered once there is an
- * active product.
+ * active product and the seller has chosen a template for the store.
  */
 
 export type SetupFlags = {
   /** The seller has an active product. */
   product: boolean;
-  /** The selected store installed a template (not undone) or has published its site. */
+  /**
+   * The seller chose a template for the selected store: an install not
+   * undone, or the site was ever published (same rule as
+   * storeTemplateChosen in @workspace/lib). The new-store Classic
+   * placeholder drafts write no install, so they do not count.
+   */
   template: boolean;
   /** The selected store saved its shipping settings or has a delivery zone. */
   shipping: boolean;
@@ -43,7 +48,19 @@ export function isSetupDone(flags: SetupFlags, storeId: string | null): boolean 
   return buildSetupTasks(flags, storeId).every((task) => task.done);
 }
 
-/** The steps a store needs before the checklist offers to publish it. */
+/**
+ * The steps a store needs before the checklist offers to publish it: an
+ * active product and a template the seller chose (owner 2026-10-27; the
+ * placeholder Tallaby Classic drafts are not a choice). The publish action
+ * enforces the template rule again on the server (publishStoreSite).
+ */
 export function publishReady(flags: SetupFlags): boolean {
-  return flags.product;
+  return flags.product && flags.template;
+}
+
+/** Why "Publish now" is locked, as a `home.setup.publish` message key; null when it is not. */
+export function publishLockReason(flags: SetupFlags): "locked" | "lockedTemplate" | null {
+  if (!flags.product) return "locked";
+  if (!flags.template) return "lockedTemplate";
+  return null;
 }

@@ -5,14 +5,16 @@ import {
   PageStyles,
   SITE_ROOT_CLASS,
   SectionRenderer,
+  SiteBottomNav,
   SiteTheme,
   collectCatalogQueries,
+  drawChrome,
   flushHeaderOnMobile,
   storeSectionRegistry,
   type ProductDetail,
   type RenderContext,
 } from "@workspace/store-sections/render";
-import { CarouselRuntime } from "@workspace/store-sections/client";
+import { CarouselRuntime, MotionRuntime } from "@workspace/store-sections/client";
 import { prepareTemplateForStore, resolveDemoCatalog, templateDemoProduct, templateFormNeeds, type TemplateMeta } from "@workspace/store-sections/templates";
 import { starterPreviewForm } from "@workspace/lib/store-forms/starter";
 import { cn, getPublicUrl } from "@workspace/ui/lib/utils";
@@ -52,25 +54,32 @@ export default async function TemplatePreviewFrame({ params, searchParams }: Pro
   const locale = routeLocale === "en" ? "en" : "ar";
   const isThumb = thumb === "1";
   const sections = isThumb ? page.content.sections.slice(0, 3) : page.content.sections;
-  const header = flushHeaderOnMobile(site.header) ?? null;
-  const footer = isThumb ? null : (site.footer ?? null);
+  // Drawn like a live store (burger sheet on phones, Powered by in the footer), so the gallery shows what a store gets.
+  const chrome = { translated: false, hasLogo: false, locale };
+  const header = drawChrome(flushHeaderOnMobile(site.header), "header", chrome) ?? null;
+  const footer = isThumb ? null : (drawChrome(site.footer, "footer", chrome) ?? null);
   const all = [...(header ? [header] : []), ...sections, ...(footer ? [footer] : [])];
   // The product page is drawn with the demo product, as a store's product page shows a real one.
   const ctx = buildContext(site, meta, key, routeLocale, locale, all, formIds, isProductPage(page) ? templateDemoProduct(meta.demo, { locale }) : undefined);
+  // Page sections reveal on scroll like a live store; the header and footer don't.
+  const chromeCtx = { ...ctx, reveal: false };
 
   return (
     <div className={cn(storefrontFont.variable, s.root, SITE_ROOT_CLASS, storeFontVariables)} dir={ctx.dir} lang={locale}>
       <FrameGuard allowPrefix={templateFrameSrc(routeLocale, key)} />
       <CarouselRuntime />
+      <MotionRuntime />
       <SiteTheme designSystem={site.designSystem} />
       <PageStyles sections={all} />
-      {header && <SectionRenderer instance={header} registry={storeSectionRegistry} ctx={ctx} defaultLocale={site.settings.defaultLocale} />}
+      {header && <SectionRenderer instance={header} registry={storeSectionRegistry} ctx={chromeCtx} defaultLocale={site.settings.defaultLocale} />}
       <main className="flex-1">
         {sections.map((instance) => (
           <SectionRenderer key={instance.id} instance={instance} registry={storeSectionRegistry} ctx={ctx} defaultLocale={site.settings.defaultLocale} />
         ))}
       </main>
-      {footer && <SectionRenderer instance={footer} registry={storeSectionRegistry} ctx={ctx} defaultLocale={site.settings.defaultLocale} />}
+      {footer && <SectionRenderer instance={footer} registry={storeSectionRegistry} ctx={chromeCtx} defaultLocale={site.settings.defaultLocale} />}
+      {/* The phone bottom navigation, as a store shows it by default. */}
+      {!isThumb && <SiteBottomNav header={site.header} ctx={chromeCtx} />}
     </div>
   );
 }
@@ -96,6 +105,7 @@ function buildContext(
   };
   return {
     mode: "public",
+    reveal: true,
     locale,
     dir: locale === "en" ? "ltr" : "rtl",
     store: {

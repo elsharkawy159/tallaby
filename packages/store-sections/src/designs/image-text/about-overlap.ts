@@ -57,7 +57,7 @@ export const aboutOverlap = defineDesign({
                     paddingBottom: 32,
                     paddingStart: 32,
                     paddingEnd: 32,
-                    shadow: "lg",
+                    shadow: "md",
                     borderWidth: 0,
                   },
                   mobile: {

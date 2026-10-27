@@ -162,6 +162,8 @@ export async function loadEditorCatalog(
       images: products.images,
       price: products.price,
       isFeatured: products.isFeatured,
+      isTrending: products.isTrending,
+      isSeasonal: products.isSeasonal,
       categoryId: products.categoryId,
       quantity: products.quantity,
       createdAt: products.createdAt,
@@ -202,6 +204,8 @@ export async function loadEditorCatalog(
       rating: row.averageRating != null && Number(row.averageRating) > 0 ? Number(row.averageRating) : null,
       sold90: sales90?.get(row.id) ?? 0,
       sold14: sales14?.get(row.id) ?? 0,
+      trending: row.isTrending === true,
+      seasonal: row.isSeasonal === true,
     };
   });
 

@@ -46,7 +46,7 @@ const NAME = L("خطوة", "Khatwa");
 const header = lib("header-announcement", {
   text: {
     "توصيل مجاني للطلبات فوق ١٥٠٠ ج.م": L("توصيل مجاني فوق ١٢٠٠ ج.م لكل المحافظات", "Free delivery over EGP 1,200 nationwide"),
-    "الكود: SAVE10": L("الكود: STRIDE10", "Code: STRIDE10"),
+    "الدفع عند الاستلام": L("الدفع عند الاستلام", "Cash on delivery"),
     "م": L("خ", "K"),
     "اسم متجرك": NAME,
     "المتجر": L("كل المنتجات", "Shop all"),
@@ -69,14 +69,6 @@ const footer = lib("footer-signup", {
 });
 
 const home: Design[] = [
-  lib("promo-ticker", {
-    text: {
-      "الكود: SAVE10": L("الكود: STRIDE10", "Code: STRIDE10"),
-      "توصيل مجاني فوق ١٥٠٠ ج.م": L("توصيل مجاني فوق ١٢٠٠ ج.م", "Free delivery over EGP 1,200"),
-      "خصم ١٥٪ على المجموعات": L("خصم ١٥٪ على باقات الريكفري", "15% off recovery bundles"),
-      "استرجاع خلال ١٤ يومًا": L("استبدال المقاس مجاناً", "Free size swaps"),
-    },
-  }),
   lib("hero-ticket", {
     photo: [PHOTOS.trainers, PHOTOS.colourMats, PHOTOS.buds],
     text: {
@@ -117,16 +109,6 @@ const home: Design[] = [
       "رقم تتبع على واتساب": L("رقم تتبع على واتساب", "Tracking number on WhatsApp"),
       "اعرف أكتر": L("اعرف أكتر", "Learn more"),
     },
-  }),
-  lib("promo-twin", {
-    photo: [undefined, undefined, PHOTOS.matDumbbells, PHOTOS.bands],
-    text: {
-      "لحد ٣٠٪": L("لحد ٢٥٪", "Up to 25%"),
-      "تخفيضات الموسم": L("أساسيات تمرين البيت", "Home training basics"),
-      "باقة": L("باقة", "Bundle"),
-      "اشتري ٢ والتالت هدية": L("حبال المقاومة: ٢ والتالت هدية", "Resistance bands: buy 2, get the third free"),
-    },
-    links: { "/products": [search("مات"), search("حبال")] },
   }),
   lib("testimonials-chat", {
     text: {
@@ -187,8 +169,8 @@ export const STRIDE = libraryTemplate({
   changelog: "Stride v3: product page",
   name: L("سترايد", "Stride"),
   description: L(
-    "جري وريكفري: شريط عروض، شرائح تذاكر، أقسام بنتو ورسايل العملاء. أربع صفحات جاهزة.",
-    "Running and recovery: an offer ticker, ticket slides, bento aisles and customer messages. Four ready pages.",
+    "جري وريكفري: شرائح تذاكر، أقسام بنتو ورسايل العملاء. أربع صفحات جاهزة.",
+    "Running and recovery: ticket slides, bento aisles and customer messages. Four ready pages.",
   ),
   category: "sports",
   sortOrder: 330,

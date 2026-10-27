@@ -68,7 +68,7 @@ export const heroTicket = defineDesign({
                         paddingBottom: 24,
                         paddingStart: 24,
                         paddingEnd: 24,
-                        shadow: "lg",
+                        shadow: "md",
                       },
                       mobile: {
                         insetBottom: "12px",

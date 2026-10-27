@@ -2,8 +2,8 @@
  * Kettan (template 49, linen basics; Claude Design "Storefront Templates"):
  * warm off-white paper, near-black ink, a deep olive for actions and a sand
  * highlight, IBM Plex Sans Arabic throughout and tight 6px corners. A calm
- * linen shop: linen you live in, shop by piece, best sellers, two offers,
- * easy to order and return, and reviews. Built from section library designs
+ * linen shop (v3): linen you live in, shop by piece, just in, easy to order
+ * and return, best sellers and reviews. Built from section library designs
  * (`fromLibrary`).
  *
  * Photos: Pexels, each checked by eye (2026-10-21): linen shirts on wooden
@@ -88,22 +88,11 @@ const home: Design[] = [
   lib("categories-chips", { text: { "إيه اللي في بالك؟": L("تسوق بالقطعة", "Shop by piece") } }),
   lib("products-grid", {
     text: {
-      "وصل حديثًا": L("الأكثر مبيعاً", "Best sellers"),
-      "أحدث المنتجات اللي نزلت المتجر.": L("القطع اللي الناس بترجعلها كل صيف.", "The pieces people come back for every summer."),
+      "وصل حديثًا": L("وصل جديد", "Just in"),
+      "أحدث المنتجات اللي نزلت المتجر.": L("ألوان وقصّات الكتان اللي نزلت الأسبوع ده.", "The linen colours and cuts that landed this week."),
     },
-    links: { "/products": BEST },
-    lists: [{ source: "best-sellers", limit: 4 }],
-  }),
-  lib("promo-twin", {
-    photo: [undefined, undefined, PHOTOS.windowDress, PHOTOS.foldedKnits],
-    text: {
-      "لحد ٣٠٪": L("جديد", "New"),
-      "تخفيضات الموسم": L("فساتين ميدي", "Midi dresses"),
-      "باقة": L("خصم لحد ٢٠٪", "Up to 20% off"),
-      "اشتري ٢ والتالت هدية": L("تريكو", "Knitwear"),
-      "تسوق": L("تسوق", "Shop"),
-    },
-    links: { "/products": [search("فستان"), search("تريكو")] },
+    links: { "/products": NEW },
+    lists: [{ limit: 4 }],
   }),
   lib("features-icon-cards", {
     text: {
@@ -118,6 +107,10 @@ const home: Design[] = [
       "دعم على واتساب": L("بيتفحص قبل الشحن", "Checked before it ships"),
       "أشخاص حقيقيون طوال الأسبوع": L("كل طلب بيتراجع.", "Every order is inspected."),
     },
+  }),
+  lib("products-carousel", {
+    text: { "الأكثر مبيعاً": L("بيرجعولها كل صيف", "Back every summer") },
+    links: { "/products": BEST },
   }),
   lib("testimonials-wall", {
     text: {
@@ -188,13 +181,13 @@ const DEMO = demoStore({
 
 export const KETTAN = libraryTemplate({
   key: KETTAN_KEY,
-  version: 2,
-  changelog: "Kettan v2: product page",
+  version: 3,
+  changelog: "Kettan v3: new in first, best sellers after the promises",
   productPage: { surface: "flat", thumbs: "side", button: "outline", band: "paper", copy: { back: L("رجوع للكتان", "Back to the linen"), reviews: L("رأي اللي لبسوا الكتان", "Worn and reviewed"), related: L("كمّل القطعة", "Pair it with") } },
   name: L("كتان", "Kettan"),
   description: L(
-    "أساسيات كتان: صورة كبيرة، تسوق بالقطعة، الأكثر مبيعاً، عرضين وآراء العملاء. أربع صفحات جاهزة.",
-    "Linen basics: a split hero, shop by piece, best sellers, two offers and reviews. Four ready pages.",
+    "أساسيات كتان: صورة كبيرة، تسوق بالقطعة، الجديد، وعودنا، الأكثر مبيعاً وآراء العملاء. أربع صفحات جاهزة.",
+    "Linen basics: a split hero, shop by piece, just in, our promises, best sellers and reviews. Four ready pages.",
   ),
   category: "fashion",
   sortOrder: 490,

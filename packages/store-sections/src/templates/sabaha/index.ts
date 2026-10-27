@@ -57,8 +57,24 @@ const footer = lib("footer-wordmark", {
 });
 
 const home: Design[] = [
-  lib("hero-big-word", {
-    text: { "جديد": L("صيف", "SUMMER") },
+  lib("hero-fullbleed", {
+    photo: [PHOTOS.pool],
+    text: {
+      "المجموعة الجديدة": L("صيف ٢٠٢٦", "Summer 2026"),
+      "صُنعت لتدوم معك": L("جاهز للمية؟", "Ready for the water?"),
+      "خامات مختارة وتفاصيل هادئة، وتوصيل سريع لحد باب البيت.": L(
+        "مايوهات ونضارات وفوط وشنط بحر، توصل الشاليه أو البيت.",
+        "Swimwear, goggles, towels and beach bags, delivered to your chalet or home.",
+      ),
+      "تسوّق الآن": L("تسوق الصيف", "Shop summer"),
+      "شوف الجديد": L("وصل جديد", "New in"),
+      "صورة الواجهة": L("حمام سباحة أزرق في الشمس", "A blue swimming pool in the sun"),
+    },
+  }),
+  lib("categories-chips", { text: { "إيه اللي في بالك؟": L("رايح فين؟", "Where are you heading?") } }),
+  lib("products-shelf", {
+    text: { "تسوّق حسب مزاجك": L("المتجر", "Shop"), "عليه خصم": L("الأعلى تقييماً", "Top rated") },
+    links: { "/products": [NEW, BEST, RATED, SHOP] },
   }),
   lib("pay-zones", {
     text: {
@@ -79,29 +95,6 @@ const home: Design[] = [
       "البحر الأحمر وسيناء": L("الغردقة والجونة", "Hurghada & El Gouna"),
       "٤–٦ أيام": L("٢–٣ أيام", "2–3 days"),
       "٩٥ ج.م": L("٧٥ ج.م", "EGP 75"),
-    },
-  }),
-  lib("products-shelf", {
-    text: { "تسوّق حسب مزاجك": L("المتجر", "Shop"), "عليه خصم": L("الأعلى تقييماً", "Top rated") },
-    links: { "/products": [NEW, BEST, RATED, SHOP] },
-  }),
-  lib("bundle-plus", {
-    text: {
-      "باقة": L("شنطة البحر", "Beach bag"),
-      "اشتريهم مع بعض ووفّر": L("نضارة وسنوركل وفوطة", "Goggles, snorkel and towel"),
-      "سعر الباقة": L("سعر الشنطة", "Bag price"),
-      "١٬٢٧٠ ج.م": L("١٬٨٨٠ ج.م", "EGP 1,880"),
-      "بدل ١٬٤٩٠ ج.م": L("بدل ٢٬٠٩٠ ج.م", "Instead of EGP 2,090"),
-      "وفّر ٢٢٠ ج.م": L("وفّر ٢١٠ ج.م", "Save EGP 210"),
-      "اطلب الباقة": L("اطلب الشنطة", "Get the bag"),
-    },
-    links: { "/products": SHOP },
-  }),
-  lib("cart-coupon", {
-    text: {
-      "استخدمه في السلة": L("استخدمه في السلة قبل ما تنزل البحر", "Use it at checkout before you hit the beach"),
-      "الكود: WELCOME10": L("الكود: SUMMER10", "Code: SUMMER10"),
-      "صالح ٤٨ ساعة": L("صالح لحد آخر الصيف", "Valid until the end of summer"),
     },
   }),
   lib("testimonials-wall", {
@@ -180,13 +173,13 @@ const DEMO = demoStore({
 
 export const SABAHA = libraryTemplate({
   key: SABAHA_KEY,
-  version: 2,
-  changelog: "Sabaha v2: product page",
+  version: 3,
+  changelog: "Sabaha v3: wide pool hero, categories, no coupon, section order",
   productPage: { thumbs: "bottom", band: "brand", extras: ["product-shipping"], copy: { back: L("رجوع لعالم الصيف", "Back to the summer shop"), reviews: L("رأي الصيف", "Summer reviews"), related: L("خد معاه على البحر", "Take along to the beach") } },
   name: L("سباحة", "Sabaha"),
   description: L(
-    "سباحة وبحر: كلمة الصيف الكبيرة، بنوصل للبحر، شنطة البحر وكود أول طلب. أربع صفحات جاهزة.",
-    "Swim and beach: the big summer word, delivery to the beach, the beach bag and a first-order code. Four ready pages.",
+    "سباحة وبحر: حمام سباحة بعرض الشاشة، الأقسام، الرف، بنوصل للبحر وآراء الصيف. أربع صفحات جاهزة.",
+    "Swim and beach: a full-width pool, categories, the shelf, delivery to the beach and summer reviews. Four ready pages.",
   ),
   category: "sports",
   sortOrder: 940,

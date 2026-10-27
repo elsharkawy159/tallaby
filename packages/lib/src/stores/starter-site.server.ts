@@ -4,6 +4,11 @@
  * away, can change anything or use another template, and the live storefront
  * changes only when they publish.
  *
+ * These drafts are a PLACEHOLDER, not the seller's choice (owner, 2026-10-27):
+ * no `template_installs` row is written, so the store cannot go live until
+ * the seller picks a template in Website › Templates
+ * (store-sites/template-choice.server.ts, checked by the dashboard publish).
+ *
  * The default template is read from the database (`templates.is_default`
  * and its current version, owner 2026-10-20), in the caller's transaction,
  * so an admin's published edit reaches every store created afterwards and

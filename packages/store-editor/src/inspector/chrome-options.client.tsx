@@ -10,7 +10,7 @@ import { useEditorLinks } from "../adapter.client";
 /**
  * Header and footer options in Content (owner, 2026-10-24): the store logo,
  * the store name beside it, the language switcher (translated stores), the
- * light/dark toggle and sign-in. Stored on the header/footer instance and
+ * light/dark toggle and sign-in, plus the header's phone bottom navigation. Stored on the header/footer instance and
  * drawn by `drawChrome` wherever the site renders.
  */
 export function ChromeOptions({
@@ -41,6 +41,8 @@ export function ChromeOptions({
     ...(translated ? [{ option: "languageSwitcher" as const, hint: t("hints.languageSwitcher") }] : []),
     { option: "themeToggle", hint: t("hints.themeToggle") },
     { option: "account", hint: t("hints.account") },
+    // Phones only, drawn after the footer; on by default (render/bottom-nav.tsx).
+    ...(part === "header" ? [{ option: "bottomNav" as const, hint: t("hints.bottomNav") }] : []),
   ];
 
   return (

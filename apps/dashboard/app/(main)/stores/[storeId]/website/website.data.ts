@@ -57,6 +57,7 @@ export async function loadWebsiteOverview(store: StoreRow): Promise<WebsiteOverv
     siteStatus: status.siteStatus,
     isLive: status.isLive,
     hasUnpublishedChanges: status.hasUnpublishedChanges,
+    templateChosen: status.templateChosen,
     lastPublishedAt: toIso(status.lastPublishedAt),
     previewEnabled: storePreviewSecret() !== null,
     pageCount: pages.length,

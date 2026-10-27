@@ -28,6 +28,7 @@ const RATED = "/products?sort=rating";
 const PHOTOS = {
   powerBank: pexels(3921704, 900),
   powerBankSilver: pexels(4072683, 900),
+  powerBankWide: pexels(4072683, 1600),
   powerBankSmall: pexels(3921705, 900),
   cable: pexels(3921713, 900),
   charger: pexels(3921632, 900),
@@ -64,7 +65,6 @@ const home: Design[] = [
     links: { "/products": BEST },
     lists: [{ source: "best-sellers" }],
   }),
-  lib("promo-tiers", {}),
   lib("features-compare", {
     text: {
       "إحنا ولا غيرنا؟": L("ليه تشتري مننا؟", "Why buy from us?"),
@@ -126,8 +126,9 @@ const DEMO = demoStore({
     ["car", "إكسسوارات عربية", "Car accessories", PHOTOS.carMount],
   ],
   products: [
-    ["magsnap-10k", "power", "باور بانك ماج سناب 10K", "MagSnap 10K Power Bank", PHOTOS.powerBank, 1290, { compareAtPrice: 1490, isFeatured: true, rating: 4.8, sold90: 412 }],
-    ["slim-20k", "power", "باور بانك سليم 20K", "Slim 20K Power Bank", PHOTOS.powerBankSilver, 990, { rating: 4.7, sold90: 263 }],
+    // The first featured product fills hero-big-word: a wide landscape photo (template-rules, owner 2026-10-27).
+    ["magsnap-10k", "power", "باور بانك ماج سناب 10K", "MagSnap 10K Power Bank", PHOTOS.powerBankWide, 1290, { compareAtPrice: 1490, isFeatured: true, rating: 4.8, sold90: 412 }],
+    ["slim-20k", "power", "باور بانك سليم 20K", "Slim 20K Power Bank", PHOTOS.powerBank, 990, { rating: 4.7, sold90: 263 }],
     ["mini-power-stick", "power", "باور ستيك ميني", "Mini Power Stick", PHOTOS.powerBankSmall, 390, { sold90: 150 }],
     ["pulse-buds-pro", "audio", "سماعة بالس برو", "Pulse Buds Pro", PHOTOS.budsOpen, 1590, { compareAtPrice: 1890, rating: 4.6, sold90: 198 }],
     ["air-buds-4", "audio", "سماعة إير 4", "Air Buds 4", PHOTOS.buds, 1190, { sold90: 121 }],
@@ -142,12 +143,12 @@ const DEMO = demoStore({
 
 export const VOLT = libraryTemplate({
   key: VOLT_KEY,
-  version: 3,
-  changelog: "Volt v3: product page",
+  version: 4,
+  changelog: "Volt v4: wide hero photo",
   name: L("فولت", "Volt"),
   description: L(
-    "إكسسوارات موبايل: كلمة كبيرة للمنتج، صفوف شراء سريع، عروض بالمبلغ ومقارنة. أربع صفحات جاهزة.",
-    "Mobile accessories: a big-word launch, quick-buy rows, spend tiers and a comparison. Four ready pages.",
+    "إكسسوارات موبايل: كلمة كبيرة للمنتج، صفوف شراء سريع ومقارنة. أربع صفحات جاهزة.",
+    "Mobile accessories: a big-word launch, quick-buy rows and a comparison. Four ready pages.",
   ),
   category: "mobile-accessories",
   sortOrder: 60,

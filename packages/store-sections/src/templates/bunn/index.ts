@@ -27,7 +27,7 @@ const BEST = "/products?sort=popularity";
 const search = (q: string) => `/products?search=${encodeURIComponent(q)}`;
 
 const PHOTOS = {
-  beansClose: pexels(33015766, 900),
+  beansClose: pexels(33015766, 1600),
   beansPile: pexels(4157763, 900),
   espressoBeans: pexels(36343666, 900),
   turkishCup: pexels(38523136, 900),
@@ -63,23 +63,7 @@ const footer = lib("footer-links", {
 
 const home: Design[] = [
   lib("hero-big-word", { text: { "جديد": L("تحميص", "ROAST") }, lists: [{ source: "featured" }] }),
-  lib("bundle-quantity", {
-    text: {
-      "وفّر مع الكمية": L("اشترك ووفّر", "Subscribe and save"),
-      "قطعة واحدة": L("كيس واحد", "1 bag"),
-      "السعر العادي": L("كل أسبوعين", "Every two weeks"),
-      "قطعتين": L("كيسين", "2 bags"),
-      "على القطعة التانية": L("على الكيسين", "On both bags"),
-      "٣ قطع": L("٣ أكياس", "3 bags"),
-      "على الطلب كله": L("على الطلب كله", "On the whole order"),
-      "وفّر ١٨٪": L("وفّر ٢٠٪", "Save 20%"),
-      "اختار عدد القطع من السلة.": L(
-        "اختار عدد الأكياس من السلة، وابعتلنا على واتساب لو عايز نفس الطلب كل أسبوعين.",
-        "Choose how many bags in your cart, and message us on WhatsApp to repeat it every two weeks.",
-      ),
-    },
-    lists: [{ source: "featured" }],
-  }),
+  lib("categories-chips", { text: { "إيه اللي في بالك؟": L("هتشرب إيه بكرة الصبح؟", "What’s in your cup tomorrow?") } }),
   lib("finder-pick", {
     text: {
       "لو هتشتري واحدة بس": L("ابدأ من هنا", "Start here"),
@@ -88,6 +72,21 @@ const home: Design[] = [
       "ضمان سنتين": L("متحمصة الاتنين ده", "Roasted this Monday"),
       "أوفر اختيار": L("شوكولاتة", "Chocolatey"),
       "الأفخم": L("كلاسيك", "Classic"),
+    },
+  }),
+  lib("text-steps", {
+    as: "points",
+    name: L("القهوة بتوصلك إزاي", "How your coffee arrives"),
+    text: {
+      "إزاي ترجّع منتج": L("بنحمّص", "We roast"),
+      "ابعتلنا على واتساب": L("كل اتنين الصبح", "Every Monday morning"),
+      "خلال ١٤ يوم من الاستلام مع رقم الطلب.": L("بكميات صغيرة عشان توصلك طازة.", "In small batches so it reaches you fresh."),
+      "جهّز المنتج": L("بنشحن", "We ship"),
+      "في علبته الأصلية بكل الإكسسوارات.": L("يوم التلات، في أكياس بصمام.", "On Tuesday, in valve bags."),
+      "المندوب يستلم": L("بتوصلك", "It arrives"),
+      "خلال يومين شغل من عنوانك.": L("خلال يومين لأي محافظة.", "Within two days, anywhere in Egypt."),
+      "فلوسك ترجع": L("اسألنا", "Ask us"),
+      "بنفس طريقة الدفع خلال ٥ أيام.": L("ابعتلنا على واتساب ونساعدك تختار التحميصة.", "Message us on WhatsApp and we help you pick a roast."),
     },
   }),
   lib("text-terms", {
@@ -101,21 +100,6 @@ const home: Design[] = [
       "الكسر والمياه وسوء الاستخدام.": L("معلقة مليانة لكل فنجان.", "One heaped spoon per cup."),
       "المطلوب": L("فرنش برس", "French press"),
       "الفاتورة والعلبة الأصلية.": L("طحنة خشنة و٤ دقايق قبل ما تضغط.", "Coarse grind and four minutes before you press."),
-    },
-  }),
-  lib("text-steps", {
-    as: "points",
-    name: L("نقط بن", "Bunn points"),
-    text: {
-      "إزاي ترجّع منتج": L("كل كيس بيجيبلك فنجان", "Every bag earns a cup"),
-      "ابعتلنا على واتساب": L("١٠ نقط لكل كيس", "10 points per bag"),
-      "خلال ١٤ يوم من الاستلام مع رقم الطلب.": L("على كل طلب، من أول كيس.", "Earned on every order, from your first bag."),
-      "جهّز المنتج": L("١٠٠ نقطة = كيس ببلاش", "100 points = a free bag"),
-      "في علبته الأصلية بكل الإكسسوارات.": L("بدلها بأي كيس ٢٥٠ جم.", "Swap them for any 250 g bag."),
-      "المندوب يستلم": L("محاصيل جديدة بدري", "New lots early"),
-      "خلال يومين شغل من عنوانك.": L("الأعضاء بيدوقوا الأول.", "Members taste first."),
-      "فلوسك ترجع": L("اسأل عن نقطك", "Ask about your points"),
-      "بنفس طريقة الدفع خلال ٥ أيام.": L("ابعتلنا رقم موبايلك على واتساب ونقولك رصيدك.", "Send us your phone number on WhatsApp and we tell you your balance."),
     },
   }),
   lib("testimonials-chat", {
@@ -173,13 +157,13 @@ const DEMO = demoStore({
 
 export const BUNN = libraryTemplate({
   key: BUNN_KEY,
-  version: 2,
-  changelog: "Bunn v2: product page",
+  version: 3,
+  changelog: "Bunn v3: categories, wide hero photo, section order",
   productPage: { thumbs: "side", band: "brand", copy: { back: L("رجوع للمحمصة", "Back to the roastery"), reviews: L("رأي شاربي القهوة", "From coffee drinkers"), related: L("جرّب معاه كمان", "More to try") } },
   name: L("بُن", "Bunn"),
   description: L(
-    "اشتراك قهوة مختصة: كلمة تحميص الكبيرة، اشترك ووفّر، ابدأ من هنا، طريقة التحضير، نقط بن ورسايل الصبح. أربع صفحات جاهزة.",
-    "Specialty coffee subscription: the big ROAST word, subscribe and save, start here, a brewing guide, Bunn points and morning messages. Four ready pages.",
+    "اشتراك قهوة مختصة: كلمة تحميص الكبيرة، ابدأ من هنا، طريقة التحضير ورسايل الصبح. أربع صفحات جاهزة.",
+    "Specialty coffee subscription: the big ROAST word, start here, a brewing guide and morning messages. Four ready pages.",
   ),
   category: "sweets",
   sortOrder: 750,

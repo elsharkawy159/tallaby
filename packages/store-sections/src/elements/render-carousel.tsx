@@ -6,7 +6,7 @@
  * it runs the controls stay hidden. On the canvas there is no runtime: the
  * track scrolls, so every slide can be reached and edited.
  */
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { ArrowLeft, Pause, Play } from "lucide-react";
 import type { ComponentNode } from "../config/schema";
 import { sectionText } from "../core/copy";
@@ -30,8 +30,8 @@ export function carouselInterval(value: unknown): number {
  * 1440px), rounded like the theme's cards.
  */
 const boxedClass = cn(
-  "in-data-[shell-width=contained]:mx-auto in-data-[shell-width=contained]:max-w-(--sf-max-width,1200px) in-data-[shell-width=contained]:px-4 md:in-data-[shell-width=contained]:px-8",
-  "in-data-[shell-width=wide]:mx-auto in-data-[shell-width=wide]:max-w-(--sf-max-width,1200px) in-data-[shell-width=wide]:px-4 md:in-data-[shell-width=wide]:px-8",
+  "in-data-[shell-width=contained]:mx-auto in-data-[shell-width=contained]:max-w-(--sf-max-width,1280px) in-data-[shell-width=contained]:px-[clamp(16px,4vw,48px)]",
+  "in-data-[shell-width=wide]:mx-auto in-data-[shell-width=wide]:max-w-(--sf-max-width,1280px) in-data-[shell-width=wide]:px-[clamp(16px,4vw,48px)]",
   "in-data-[shell-width=contained]:[&>[data-carousel-track]]:rounded-(--sf-radius,12px) in-data-[shell-width=wide]:[&>[data-carousel-track]]:rounded-(--sf-radius,12px)",
 );
 
@@ -55,10 +55,13 @@ export function CarouselElement({
   const count = node.children.filter((child) => child.type === "slide").length;
   const live = ctx.mode !== "edit";
   const autoplay = props.autoplay !== false;
+  const seconds = carouselInterval(props.interval);
   return (
     <div
       {...attrs}
-      {...(live && { "data-carousel": "", "data-interval": String(carouselInterval(props.interval) * 1000), "data-autoplay": autoplay ? "1" : "0" })}
+      {...(live && { "data-carousel": "", "data-interval": String(seconds * 1000), "data-autoplay": autoplay ? "1" : "0" })}
+      // The active slide's photo zooms out over the slide's time plus its glide (`elements/motion.ts`).
+      {...(live && { style: { "--sf-slide": `${seconds + 1}s` } as CSSProperties })}
       role="region"
       aria-roledescription="carousel"
       aria-label={sectionText("carousel", ctx.locale)}

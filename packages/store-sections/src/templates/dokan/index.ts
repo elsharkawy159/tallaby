@@ -2,8 +2,8 @@
  * Dokan (template 74, neighbourhood minimarket; Claude Design "Storefront
  * Templates"): white paper, a corner-shop blue for actions and a bright
  * yellow highlight, Rubik throughout and 12px corners. The corner shop in
- * 45 minutes: the free-delivery goal, aisles, today's shelf, delivery
- * zones, cash, card or wallet, and Gamal on WhatsApp. Built from section
+ * 45 minutes: the inline hero, aisles, today's shelf, delivery zones
+ * and a neighbour's word. Built from section
  * library designs (`fromLibrary`).
  *
  * Photos: Pexels, each checked by eye (2026-10-21): fruit bowls on a
@@ -70,12 +70,26 @@ const footer = lib("footer-help", {
 });
 
 const home: Design[] = [
-  lib("cart-free-delivery", {
+  lib("hero-inline", {
+    photo: [PHOTOS.fruitBowls, PHOTOS.loaf],
     text: {
-      "١٥٠٠ ج.م": L("٣٠٠ ج.م", "EGP 300"),
-      "والتوصيل عليك مجاني": L("والتوصيل في ٤٥ دقيقة ببلاش", "and 45-minute delivery is free"),
+      "تشكيلة ٢٠٢٦": L("دكان الحتة", "Your corner shop"),
+      "منتجات مختارة بعناية": L("أونلاين ولحد البيت", "Online, to your door"),
+      "كل ما تستخدمه": L("طلباتك", "Your groceries"),
+      "صورة صغيرة": L("من رف الدكان", "From our shelves"),
+      "كل يوم،": L("في ٤٥ دقيقة،", "in 45 minutes,"),
+      "بجودة أفضل.": L("لحد بابك.", "at your door."),
+      "نختار كل منتج بأنفسنا ونجرّبه قبل أن يصل إليك، بضمان وتوصيل سريع.": L(
+        "خضار وعيش ولبن وبقالة من رف الدكان، وادفع كاش أو كارت أو محفظة وانت بتستلم.",
+        "Fruit, bread, dairy and pantry from our shelves. Pay cash, card or wallet when it arrives.",
+      ),
+      "ابدأ التسوق": L("اطلب دلوقتي", "Order now"),
+      "وصل حديثًا": L("وصل النهارده", "In today"),
+      "الأكثر مبيعًا": L("الأكثر طلباً", "Most ordered"),
+      "العروض": L("خضار وفاكهة", "Fruit & veg"),
+      "هدايا": L("ألبان وبيض", "Dairy & eggs"),
     },
-    links: { "/products": BEST },
+    links: { "/products": [SHOP, NEW, BEST, search("خضار"), search("لبن")] },
   }),
   lib("categories-tiles", {
     photo: [PHOTOS.fruitBowls, PHOTOS.loaf, PHOTOS.pantry, PHOTOS.milk],
@@ -119,29 +133,15 @@ const home: Design[] = [
       "٩٥ ج.م": L("٢٥ ج.م", "EGP 25"),
     },
   }),
-  lib("pay-methods", {
+  lib("testimonials-quote", {
     text: {
-      "ادفع بالطريقة اللي تريحك": L("كاش أو كارت أو محفظة", "Cash, card or wallet"),
-      "ادفع للمندوب بعد ما تفتح الطلب.": L("ادفع للمندوب لما الطلب يوصل.", "Pay the courier when your order arrives."),
-      "كارت بنكي": L("كارت على الباب", "Card at the door"),
-      "فيزا وماستركارد وميزة.": L("المندوب معاه ماكينة فيزا وميزة.", "The courier carries a Visa and Meeza card machine."),
-      "تقسيط": L("إنستاباي", "InstaPay"),
-      "لحد ٢٤ شهر من غير مقدم.": L("حوّل على حساب الدكان وابعت الإيصال.", "Transfer to the shop’s account and send the receipt."),
-      "فاليو · سيمبل · سهولة": L("من غير رسوم", "No fees"),
-      "حوّل من موبايلك في ثانية.": L("حوّل من موبايلك قبل ما المندوب يوصل.", "Transfer from your phone before the courier arrives."),
-      "فودافون كاش · إنستاباي": L("كل المحافظ الإلكترونية", "Every mobile wallet"),
-    },
-  }),
-  lib("service-support", {
-    text: {
-      "الدعم": L("جمال موجود", "Gamal is here"),
-      "محتاج مساعدة؟": L("نسيت حاجة؟", "Forgot something?"),
-      "بنرد في أقل من ساعة": L("ابعتها وهنضيفها لطلبك", "Message us and we add it to your order"),
-      "١٩١٢٣": L("٠١٠ ١٢٣٤ ٥٦٧٨", "010 1234 5678"),
-      "من ١٠ ص لـ ١٠ م": L("من ٨ الصبح لـ ٢ بالليل", "8 am – 2 am"),
-      "زور فرع": L("عدّي على الدكان", "Drop by the shop"),
-      "٣ فروع في القاهرة": L("١٢ شارع التحرير، الدقي", "12 Tahrir St, Dokki"),
-      "من غير معاد": L("مفتوح كل يوم", "Open every day"),
+      "آراء العملاء": L("من الجيران", "From the neighbours"),
+      "«من أحسن تجارب الشراء أونلاين. الطلب وصل بسرعة، والتغليف شيك، والمنتج أحلى من الصور.»": L(
+        "«طلبت الساعة ٨ الصبح والعيش وصل سخن قبل ٩، وجمال بيرد على الواتساب في ثانية.»",
+        "«I ordered at 8 am and the bread arrived warm before 9. Gamal answers on WhatsApp in seconds.»",
+      ),
+      "مريم أ.": L("منى ر.", "Mona R."),
+      "القاهرة": L("الدقي", "Dokki"),
     },
   }),
 ];
@@ -185,8 +185,8 @@ const DEMO = demoStore({
 
 export const DOKAN = libraryTemplate({
   key: DOKAN_KEY,
-  version: 2,
-  changelog: "Dokan v2: product page",
+  version: 3,
+  changelog: "Dokan v3: hero first, one payment block, section order",
   productPage: { thumbs: "side", band: "shelf", extras: ["product-shipping"], copy: { back: L("رجوع للدكان", "Back to the shop"), reviews: L("رأي أهل الحي", "The neighbourhood says"), related: L("هات معاه كمان", "Add to your basket") } },
   name: L("دكان", "Dokan"),
   description: L(

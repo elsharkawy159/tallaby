@@ -1,7 +1,9 @@
-import { siInstagram, siPinterest, siThreads, siTiktok, siWhatsapp, siX, siYoutube } from "simple-icons";
+import { siFacebook, siInstagram, siPinterest, siThreads, siTiktok, siWhatsapp, siX, siYoutube } from "simple-icons";
+import { getSocialPlatform } from "@workspace/store-sections/social";
 import { cn } from "@workspace/ui/lib/utils";
 
 const ICONS = {
+  facebook: siFacebook,
   instagram: siInstagram,
   tiktok: siTiktok,
   youtube: siYoutube,
@@ -9,6 +11,8 @@ const ICONS = {
   pinterest: siPinterest,
   threads: siThreads,
   whatsapp: siWhatsapp,
+  // Simple Icons removed LinkedIn; the store platforms list keeps its last version.
+  linkedin: { path: getSocialPlatform("linkedin")!.icon },
 } as const;
 
 export type BrandIconName = keyof typeof ICONS;

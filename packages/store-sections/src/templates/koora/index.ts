@@ -62,10 +62,10 @@ const home: Design[] = [
     photo: [undefined, undefined, PHOTOS.goal],
     text: {
       "مجموعة الموسم": L("طلبات الفرق", "Team orders"),
-      "من ١ إلى ٣٠ نوفمبر": L("١٠ أطقم وأكتر وفّر ١٥٪", "10+ kits save 15%"),
+      "من ١ إلى ٣٠ نوفمبر": L("أطقم بأسامي وأرقام اللعيبة", "Kits with players’ names and numbers"),
       "صورة الحملة": L("جول في ملعب فاضي", "A goal on an empty pitch"),
-      "خصم": L("وفّر", "Save"),
-      "٣٠٪": L("١٥٪", "15%"),
+      "خصم": L("أطقم", "Kits"),
+      "٣٠٪": L("كاملة", "complete"),
       "لفترة محدودة": L("للفرق", "for teams"),
       "الموسم الجديد وصل": L("جهّز الفريق كله", "Kit out the whole team"),
       "قطع خفيفة بخامات طبيعية، مقاسات كاملة وتبديل مجاني خلال ١٤ يومًا.": L(
@@ -76,33 +76,10 @@ const home: Design[] = [
     },
     links: { "/products": search("طقم") },
   }),
-  lib("bundle-quantity", {
-    text: {
-      "وفّر مع الكمية": L("سعر الفرق", "Team pricing"),
-      "قطعة واحدة": L("طقم واحد", "1 kit"),
-      "قطعتين": L("٥ أطقم", "5 kits"),
-      "على القطعة التانية": L("على كل طقم", "On every kit"),
-      "الأكتر طلبًا": L("الأكتر طلباً", "Most picked"),
-      "٣ قطع": L("١٠ أطقم وأكتر", "10+ kits"),
-      "وفّر ١٨٪": L("وفّر ١٥٪", "Save 15%"),
-      "اختار عدد القطع من السلة.": L(
-        "اختار عدد الأطقم من السلة، واكتب الأسامي والأرقام في ملاحظة الطلب.",
-        "Choose how many kits in your cart, and write the names and numbers in the order note.",
-      ),
-    },
-  }),
+  lib("categories-photo-tiles", { text: { "تسوّق حسب القسم": L("جهّز الفريق", "Kit out the team") } }),
   lib("products-bento", {
     text: { "الأكثر طلبًا": L("التمرين", "Training"), "الكل بيسأل عليهم": L("اختيارات الكوتش", "Coach picks") },
     links: { "/products": BEST },
-  }),
-  lib("promo-tiers", {
-    text: {
-      "عرض الشهر": L("الشهر ده", "This month"),
-      "كل ما تزود، توفّر أكتر": L("كل ما تزود توفّر", "Spend more, save more"),
-      "١٠٠٠ ج.م": L("٩٠٠ ج.م", "EGP 900"),
-      "١٠٠ ج.م": L("٩٠ ج.م", "EGP 90"),
-      "الأكثر استخدامًا": L("اختيار الفرق", "Teams’ pick"),
-    },
   }),
   lib("testimonials-chat", {
     text: {
@@ -170,8 +147,8 @@ const DEMO = demoStore({
 
 export const KOORA = libraryTemplate({
   key: KOORA_KEY,
-  version: 2,
-  changelog: "Koora v2: product page",
+  version: 3,
+  changelog: "Koora v3: categories after the hero",
   productPage: { thumbs: "bottom", band: "brand", extras: ["product-perks"], copy: { back: L("رجوع للملعب", "Back to the pitch"), reviews: L("رسائل الكباتن", "Messages from captains"), related: L("جهّز الفريق", "Kit out the team") } },
   name: L("كورة", "Koora"),
   description: L(

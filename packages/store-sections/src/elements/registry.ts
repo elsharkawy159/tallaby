@@ -5,6 +5,7 @@
  * accepted by the schema (old data) and draws nothing.
  */
 import { PRODUCT_SORTS, PRODUCT_SOURCES, type Localized, type PropDefinition } from "../core/types";
+import { MARQUEE_SPEED, REVEAL_CHOICES, type RevealChoice } from "./motion";
 import type { StyleBreakpoint, StyleValues } from "./style";
 import type { NodeTemplate } from "./tree";
 import { VIDEO_CAPABILITIES, parseVideoUrl } from "./video";
@@ -109,7 +110,9 @@ export type ElementType =
   | "productDetails"
   | "productContent"
   | "productSeller"
-  | "productReviews";
+  | "productReviews"
+  | "marquee"
+  | "countdown";
 
 export interface ElementDefinition {
   type: ElementType;
@@ -289,7 +292,7 @@ function postCardTemplate(): NodeTemplate {
   };
 }
 
-export const ELEMENT_DEFINITIONS: readonly ElementDefinition[] = [
+const DEFINITIONS: readonly ElementDefinition[] = [
   // Tree section root: the section itself (background, padding), one per tree.
   {
     type: "section",
@@ -613,6 +616,55 @@ export const ELEMENT_DEFINITIONS: readonly ElementDefinition[] = [
     defaultStyle: { minHeight: 360, gap: 12 },
     fields: [],
   },
+  // Scrolling marquee (Claude Design premium set, 2026-10-27; docs/section-rules.md §6.3): its items loop
+  // sideways with fixed CSS, pause on hover, and wrap into a still row with reduced motion or Animations off.
+  {
+    type: "marquee",
+    group: "layout",
+    label: L("شريط متحرك", "Marquee"),
+    keywords: ["marquee", "ticker", "scrolling text", "loop", "شريط متحرك", "نص متحرك"],
+    container: true,
+    // Light items only: the row is drawn twice, so no players, forms or data lists.
+    childTypes: ["text", "heading", "badge", "icon", "image", "linkBlock", "textLink", "hFlex", "vFlex", "div"],
+    defaultProps: { speed: 30 },
+    defaultStyle: { gap: 40, alignItems: "center" },
+    defaultChildren: () =>
+      [
+        ["توصيل لكل المحافظات", "Delivery to every governorate"],
+        ["الدفع عند الاستلام", "Cash on delivery"],
+        ["استبدال خلال ١٤ يوم", "Exchange within 14 days"],
+      ].map(([ar, en]) => ({ type: "text", props: { text: ar, translations: { en: { text: en } } }, children: [] })),
+    fields: [
+      {
+        key: "speed",
+        label: L("مدة الدورة (ثانية)", "Seconds per loop"),
+        type: "number",
+        min: MARQUEE_SPEED.min,
+        max: MARQUEE_SPEED.max,
+        hint: L("رقم أكبر = حركة أبطأ.", "A bigger number moves slower."),
+      },
+    ],
+  },
+  // Live countdown to a date the seller sets (Claude Design premium set, 2026-10-27). Drawn with the time
+  // left at render; the host's motion runtime ticks it. Publicly it hides once the date has passed or when unset.
+  {
+    type: "countdown",
+    group: "basic",
+    label: L("عداد تنازلي", "Countdown"),
+    keywords: ["countdown", "timer", "deadline", "sale ends", "عداد", "عد تنازلي", "مؤقت"],
+    container: false,
+    textProp: "caption",
+    defaultProps: { endsAt: "", caption: "" },
+    fields: [
+      textField("caption", L("نص فوق العداد", "Caption"), 80),
+      {
+        key: "endsAt",
+        label: L("ينتهي في", "Ends at"),
+        type: "datetime",
+        hint: L("يختفي العداد من المتجر بعد هذا الوقت أو لو فاضي.", "The countdown hides on the store after this time, or while it is empty."),
+      },
+    ],
+  },
   {
     type: "divider",
     group: "basic",
@@ -734,6 +786,7 @@ export const ELEMENT_DEFINITIONS: readonly ElementDefinition[] = [
       },
       { key: "limit", label: L("أقصى عدد", "Maximum"), type: "number", group: "data", min: 1, max: 24 },
       { key: "paginate", label: L("تقسيم على صفحات", "Split into pages"), type: "switch", group: "data" },
+      { key: "mobileRail", label: L("صف يُسحب على الجوال", "Swipe row on phones"), type: "switch", group: "layout", hint: L("على الجوال تصطف البطاقات في صف واحد يُسحب جانبيًا، ويظهر طرف البطاقة التالية.", "On phones the cards sit in one row that swipes sideways, with the next card peeking in.") },
     ],
   },
   {
@@ -749,6 +802,7 @@ export const ELEMENT_DEFINITIONS: readonly ElementDefinition[] = [
     fields: [
       { key: "categoryIds", label: L("أقسام مختارة (فارغة = كل الأقسام)", "Chosen categories (empty = all)"), type: "categories", group: "data" },
       { key: "limit", label: L("أقصى عدد", "Maximum"), type: "number", group: "data", min: 1, max: 24 },
+      { key: "mobileRail", label: L("صف يُسحب على الجوال", "Swipe row on phones"), type: "switch", group: "layout", hint: L("على الجوال تصطف البطاقات في صف واحد يُسحب جانبيًا، ويظهر طرف البطاقة التالية.", "On phones the cards sit in one row that swipes sideways, with the next card peeking in.") },
     ],
   },
   {
@@ -975,6 +1029,45 @@ export const ELEMENT_DEFINITIONS: readonly ElementDefinition[] = [
     fields: [],
   },
 ];
+
+const REVEAL_LABELS: Record<RevealChoice, Localized> = {
+  auto: L("تلقائي", "Auto"),
+  "fade-up": L("صعود مع ظهور", "Fade up"),
+  fade: L("ظهور", "Fade"),
+  "zoom-in": L("تقريب", "Zoom in"),
+  "slide-start": L("انزلاق من البداية", "Slide in"),
+  none: L("بدون", "None"),
+};
+
+/** An element's Reveal override (docs/section-rules.md §6.6, advanced); Auto lets the renderer pick. */
+const revealField: PropDefinition = {
+  key: "reveal",
+  label: L("الظهور عند التمرير", "Reveal on scroll"),
+  type: "select",
+  group: "advanced",
+  options: REVEAL_CHOICES.map((value) => ({ value, label: REVEAL_LABELS[value] })),
+};
+
+/** Elements a seller may give their own reveal (content, not chrome or interactive parts). */
+const REVEALABLE: ReadonlySet<ElementType> = new Set<ElementType>([
+  "heading",
+  "paragraph",
+  "text",
+  "blockQuote",
+  "badge",
+  "button",
+  "image",
+  "video",
+  "linkBlock",
+  "card",
+  "div",
+  "vFlex",
+  "hFlex",
+  "list",
+  "accordion",
+]);
+
+export const ELEMENT_DEFINITIONS: readonly ElementDefinition[] = DEFINITIONS.map((d) => (REVEALABLE.has(d.type) ? { ...d, fields: [...d.fields, revealField] } : d));
 
 const BY_TYPE = new Map(ELEMENT_DEFINITIONS.map((d) => [d.type, d]));
 

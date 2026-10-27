@@ -71,7 +71,7 @@ export const payReceipt = defineDesign({
                     maxWidth: "380px",
                     background: "secondary",
                     radius: 8,
-                    shadow: "lg",
+                    shadow: "md",
                     paddingTop: 32,
                     paddingBottom: 40,
                     paddingStart: 28,

@@ -13,7 +13,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return pageMetadata({ locale, page: "followUs", path: "/follow-us" });
 }
 
-const ORDER: SocialId[] = ["instagram", "tiktok", "youtube", "x", "pinterest", "threads"];
+const ORDER: SocialId[] = ["facebook", "instagram", "tiktok", "youtube", "x", "linkedin", "threads", "pinterest"];
 
 /** Link-in-bio page for social profiles. No site header or footer. */
 export default async function FollowUsPage() {
@@ -31,7 +31,8 @@ export default async function FollowUsPage() {
         <h1 className="display-tight text-2xl leading-[1.2] font-extrabold sm:text-[28px]">{t.rich("title", richTags)}</h1>
         <p className="mt-2.5 max-w-[340px] text-sm leading-[1.55] text-pretty text-teal-100 sm:mt-3 sm:text-[15px]">{t("sub")}</p>
 
-        <nav aria-label={t("social")} className="mt-7 grid w-full grid-cols-2 gap-2.5 min-[341px]:grid-cols-3 sm:mt-9 sm:gap-3">
+        {/* Rows of 3 (2 on the narrowest phones); a short last row sits in the middle. */}
+        <nav aria-label={t("social")} className="mt-7 flex w-full flex-wrap justify-center gap-2.5 sm:mt-9 sm:gap-3">
           {ORDER.map((id) => {
             const s = SOCIAL_LINKS[id];
             return (
@@ -40,7 +41,7 @@ export default async function FollowUsPage() {
                 href={s.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group flex flex-col items-center gap-2 rounded-[14px] border border-white/10 bg-white/5 px-1.5 pt-4 pb-3.5 transition-[transform,background-color,border-color] duration-200 hover:no-underline active:scale-[0.96] sm:gap-2.5 sm:rounded-2xl sm:px-2 sm:pt-5 sm:pb-4 [@media(hover:hover)]:hover:-translate-y-1 [@media(hover:hover)]:hover:border-amber-600 [@media(hover:hover)]:hover:bg-white/10"
+                className="group flex min-w-0 basis-[calc((100%-0.625rem)/2)] flex-col items-center gap-2 rounded-[14px] min-[341px]:basis-[calc((100%-1.25rem)/3)] sm:basis-[calc((100%-1.5rem)/3)] border border-white/10 bg-white/5 px-1.5 pt-4 pb-3.5 transition-[transform,background-color,border-color] duration-200 hover:no-underline active:scale-[0.96] sm:gap-2.5 sm:rounded-2xl sm:px-2 sm:pt-5 sm:pb-4 [@media(hover:hover)]:hover:-translate-y-1 [@media(hover:hover)]:hover:border-amber-600 [@media(hover:hover)]:hover:bg-white/10"
               >
                 <span className="grid size-11 place-items-center rounded-xl bg-white text-teal-700 transition-[transform,background-color] duration-200 sm:size-12 sm:rounded-[14px] [@media(hover:hover)]:group-hover:-rotate-6 [@media(hover:hover)]:group-hover:bg-amber-600">
                   <BrandIcon name={id} className="size-[22px]" />

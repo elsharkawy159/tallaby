@@ -21,7 +21,7 @@ import { PRODUCT_PAGE_NAME, productSitePage } from "../_product-page";
 import type { TemplateDefinition } from "../types";
 import { classicFooter, classicHeader } from "./chrome";
 import { CLASSIC_DEMO } from "./demo";
-import { CLASSIC_HOME } from "./home";
+import { CLASSIC_HOME, classicOffers } from "./home";
 import {
   classicAboutHeader,
   classicAboutStats,
@@ -44,16 +44,13 @@ export const CLASSIC_KEY = "tallaby-classic";
 /** A design as a template section: its id doubles as the instance id, so a re-apply keeps matching sections. */
 const section = (design: Design) => instantiateDesign(design, { id: design.id, defaultLocale: "ar" });
 
-/** Home sections rise in on scroll (template rules §6a), all but the hero, which shows at once. */
-const rising = (design: Design) => (design.category === "hero" ? section(design) : { ...section(design), style: { shell: { animation: "rise" } } });
-
 const page = (slug: string, name: string, designs: readonly Design[], seo: SitePage["seo"] = {}, o: { isHome?: boolean; showInNav?: boolean } = {}): SitePage => ({
   slug,
   isHome: o.isHome ?? false,
   name,
   showInNav: o.showInNav ?? true,
   seo,
-  content: { sections: designs.map(o.isHome ? rising : section) },
+  content: { sections: designs.map(section) },
 });
 
 export function classicConfig(): SiteConfig {
@@ -100,6 +97,7 @@ export function classicConfig(): SiteConfig {
 export const CLASSIC_DESIGNS: readonly Design[] = [
   classicHeader,
   ...CLASSIC_HOME,
+  classicOffers,
   classicAboutHeader,
   classicAboutStory,
   classicAboutStats,

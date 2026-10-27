@@ -84,7 +84,7 @@ export function ToggleButton({ pressed, onChange, label, children }: { pressed: 
 }
 
 const COLOR_RE = /^(?:#[0-9a-f]{3,4}|#[0-9a-f]{6}|#[0-9a-f]{8}|(?:rgba?|hsla?|oklch|oklab)\([0-9.,%\s/+-]+\))$/i;
-const SWATCHES: ColorToken[] = ["foreground", "muted", "primary", "accent", "background", "secondary", "border", "white", "black"];
+const SWATCHES: ColorToken[] = ["foreground", "muted", "primary", "accent", "background", "surface", "secondary", "border", "white", "black"];
 
 /** Theme token swatches plus a custom color (plain color syntax only). */
 export function ColorControl({

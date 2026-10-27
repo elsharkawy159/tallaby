@@ -2,13 +2,13 @@
  * Hadaya (template 45, kids' gift shop; Claude Design "Storefront
  * Templates"): peach paper, a toy blue for actions and a sunshine yellow
  * highlight, Baloo Bhaijaan 2 throughout and round 22px corners. A
- * birthday shop: the right gift in two minutes, gifts by age, shop by
- * budget, a party pack of three, a budget sort, a coupon and parents'
- * reviews. Built from section library designs (`fromLibrary`).
+ * birthday shop (v3, section order): a rainbow poster with the free-wrap
+ * sticker, what they love to play with, gifted most, our promises, gifts
+ * by budget and parents' reviews. Built from section library designs
+ * (`fromLibrary`).
  *
  * Gift wrap is free on every order; there is no wrap option or gift message
- * field in checkout. The party pack total is typed copy for the three
- * newest products.
+ * field in checkout.
  *
  * Photos: Pexels, each checked by eye (2026-10-23): wrapped gift boxes,
  * numbered wooden blocks, a wooden tool kit laid flat, toy dinosaurs on
@@ -71,50 +71,39 @@ const footer = lib("footer-signup", {
 });
 
 const home: Design[] = [
-  lib("hero-halves", {
-    photo: [undefined, PHOTOS.rainbowWide],
+  lib("hero-poster", {
+    photo: [undefined, undefined, PHOTOS.rainbowWide],
     text: {
-      "كوليكشن الموسم": L("محل أعياد الميلاد", "Birthday shop"),
-      "صوت أنقى، كل يوم": L("الهدية الصح في دقيقتين", "The right gift in two minutes"),
-      "منتجات أصلية بضمان محلي، توصلك خلال ٤٨ ساعة.": L(
-        "اختار السن والميزانية. بنغلفها ببلاش وبتوصل خلال ٢٤ ساعة في القاهرة.",
-        "Pick an age and a budget. We wrap it for free and deliver within 24 hours in Cairo.",
-      ),
-      "تسوق الآن": L("كل الهدايا", "All gifts"),
-      "العروض": L("بوكسات الهدايا", "Gift boxes"),
+      "مجموعة الموسم": L("محل أعياد الميلاد", "Birthday shop"),
+      "من ١ إلى ٣٠ نوفمبر": L("توصيل خلال ٢٤ ساعة في القاهرة", "Delivered within 24 hours in Cairo"),
       "صورة الحملة": L("قوس قزح خشب ولعبة أشكال على الأرض", "A wooden rainbow and a shape sorter on the floor"),
-    },
-    links: { "/products": [SHOP, search("بوكس")] },
-  }),
-  lib("bundle-gifts", {
-    photo: [PHOTOS.stacker, PHOTOS.toolKit, PHOTOS.dinos, PHOTOS.books],
-    text: {
-      "هدايا": L("حسب السن", "By age"),
-      "هدية لمين؟": L("عنده كام سنة؟", "How old are they?"),
-      "ليه": L("٠–٢ سنة", "0–2 years"),
-      "ليها": L("٣–٥ سنين", "3–5 years"),
-      "للطلبة": L("٦–٨ سنين", "6–8 years"),
-      "للجيمرز": L("للقُرّاء", "Readers"),
-    },
-    links: { "/products": [search("بوكس"), search("طقم"), search("تركيب"), search("حواديت")] },
-  }),
-  lib("finder-price-bands", {
-    text: {
-      "أقل من ٦٠٠": L("أقل من ٤٥٠", "Under 450"),
-      "٦٠٠ – ١٬٥٠٠": L("٤٥٠ – ٧٠٠", "450 – 700"),
-      "أكتر من ١٬٥٠٠": L("أكتر من ٧٠٠", "Over 700"),
-      "تسوق الشريحة دي": L("شوف الهدايا دي", "See these gifts"),
+      "خصم": L("تغليف", "Gift wrap"),
+      "٣٠٪": L("ببلاش", "Free"),
+      "لفترة محدودة": L("على كل هدية", "on every gift"),
+      "الموسم الجديد وصل": L("الهدية الصح في دقيقتين", "The right gift in two minutes"),
+      "قطع خفيفة بخامات طبيعية، مقاسات كاملة وتبديل مجاني خلال ١٤ يومًا.": L(
+        "اختار القسم والميزانية، وإحنا نغلفها ونكتب الكارت باسم صاحب العيد.",
+        "Pick a category and a budget; we wrap it and write the card with the birthday child’s name.",
+      ),
+      "اكتشف المجموعة": L("كل الهدايا", "All gifts"),
     },
   }),
-  lib("bundle-poster", {
+  lib("categories-chips", { text: { "إيه اللي في بالك؟": L("بيحب يلعب بإيه؟", "What do they love to play with?") } }),
+  lib("products-rail", {
+    text: { "بيحبوها": L("الأهالي بيختاروها", "Parents’ picks"), "الأكثر مبيعًا": L("الأكتر هدية", "Gifted most") },
+    links: { "/products": BEST },
+  }),
+  lib("features-classic", {
     text: {
-      "طقم المشاوير": L("باكدج الحفلة", "Party pack"),
-      "كل اللي تحتاجه في الطريق": L("٣ هدايا لـ٣ ولاد عم", "Three gifts for three cousins"),
-      "١٬٢٧٠ ج.م": L("١٬٠٢٩ ج.م", "EGP 1,029"),
-      "بدل ١٬٤٩٠ ج.م": L("بدل ١٬٢١٠ ج.م", "Was EGP 1,210"),
-      "اشتري الطقم": L("خد التلاتة", "Get all three"),
+      "توصيل سريع": L("توصيل في ٢٤ ساعة", "Delivery in 24 hours"),
+      "من يوم إلى ٤ أيام لكل المحافظات": L("في القاهرة والجيزة، قبل الحفلة", "In Cairo and Giza, before the party"),
+      "الدفع عند الاستلام": L("تغليف ببلاش", "Free gift wrap"),
+      "أو ادفع بالبطاقة والمحفظة": L("وكارت مكتوب بخط الإيد", "With a handwritten card"),
+      "استرجاع سهل": L("استبدال سهل", "Easy exchange"),
+      "١٤ يومًا لتغيّر رأيك": L("لو الهدية اتكررت، بدّلها خلال ١٤ يوم", "Got it twice? Swap it within 14 days"),
+      "دعم على واتساب": L("نساعدك تختار", "We help you choose"),
+      "أشخاص حقيقيون طوال الأسبوع": L("ابعتلنا السن على واتساب", "Send us the age on WhatsApp"),
     },
-    links: { "/products": NEW },
   }),
   lib("finder-budget", {
     text: {
@@ -123,14 +112,6 @@ const home: Design[] = [
         "من ٣٠٠ لـ ١٥٠٠ ج.م: رتبنالك الهدايا من الأرخص. عايز البوكسات الكبيرة الأول؟ اختار من الزراير.",
         "From EGP 300 to 1,500: gifts sorted from the lowest price. Want the big boxes first? Use the buttons.",
       ),
-    },
-  }),
-  lib("cart-coupon", {
-    text: {
-      "١٠٪": L("٥٠ ج.م", "EGP 50"),
-      "خصم على أول طلب": L("خصم على الطلبات فوق ٥٠٠", "Off orders over EGP 500"),
-      "الكود: WELCOME10": L("الكود: HADAYA50", "Code: HADAYA50"),
-      "صالح ٤٨ ساعة": L("على كل طلب، طول السنة", "Every order, all year"),
     },
   }),
   lib("testimonials-wall", {
@@ -205,13 +186,13 @@ const DEMO = demoStore({
 
 export const HADAYA = libraryTemplate({
   key: HADAYA_KEY,
-  version: 2,
-  changelog: "Hadaya v2: product page",
+  version: 3,
+  changelog: "Hadaya v3: poster hero, categories, no coupon, section order",
   productPage: { surface: "card", thumbs: "bottom", band: "brand", extras: ["product-perks"], copy: { back: L("رجوع للهدايا", "Back to gifts"), reviews: L("رأي الأهالي", "What parents say"), related: L("هدايا تانية حلوة", "More gifts they will love") } },
   name: L("هدايا", "Hadaya"),
   description: L(
-    "محل هدايا أطفال: الهدية الصح في دقيقتين، حسب السن، حسب الميزانية، باكدج الحفلة، كوبون وآراء الأهالي. أربع صفحات جاهزة.",
-    "Kids’ gift shop: the right gift in two minutes, by age, by budget, a party pack, a coupon and parents’ reviews. Four ready pages.",
+    "محل هدايا أطفال: الهدية الصح في دقيقتين، حسب السن، حسب الميزانية وآراء الأهالي. أربع صفحات جاهزة.",
+    "Kids’ gift shop: the right gift in two minutes, by age, by budget and parents’ reviews. Four ready pages.",
   ),
   category: "kids",
   sortOrder: 450,

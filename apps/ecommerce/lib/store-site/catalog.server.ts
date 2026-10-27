@@ -31,6 +31,8 @@ type RawProduct = Record<string, unknown> & {
   quantity?: unknown;
   averageRating?: number | null;
   productVariants?: unknown[];
+  isTrending?: boolean | null;
+  isSeasonal?: boolean | null;
 };
 
 export type ResolvedCatalog = {
@@ -65,6 +67,8 @@ function toSummary(product: RawProduct): ProductSummary {
     compareAtPrice: list != null && final != null && list > final ? list : null,
     rating: product.averageRating ?? null,
     inStock: Number(product.quantity ?? 0) > 0,
+    trending: product.isTrending === true,
+    seasonal: product.isSeasonal === true,
   };
 }
 
@@ -85,7 +89,7 @@ function categorySummary(category: StorefrontCategory, locale: string): Category
     name,
     // Builder sites list a category on the catalog page (/products).
     href: `/products?category=${encodeURIComponent(category.key)}`,
-    image: category.coverImage ? getPublicUrl(category.coverImage, "products") || null : null,
+    image: category.coverImage,
     productCount: category.productCount,
   };
 }

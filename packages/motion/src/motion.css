@@ -1,0 +1,69 @@
+/*
+ * @workspace/motion CSS. Import once in the app's stylesheet.
+ *
+ * Nothing here hides content for the scroll presets: the runtime sets their
+ * start state inline, after hydration, and only for elements still below the
+ * fold. The hero intro (`[data-intro]`) is the one CSS-driven animation; it
+ * runs from the first paint and always ends visible.
+ */
+
+[data-intro="word"] {
+  display: inline-block;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-intro] {
+    animation: motion-intro-rise 0.8s cubic-bezier(0.16, 1, 0.3, 1) var(--intro-delay, 0s) both;
+  }
+  [data-intro="word"] {
+    animation-name: motion-intro-word;
+    animation-duration: 0.7s;
+  }
+  [data-intro="fade"] {
+    animation-name: motion-intro-fade;
+  }
+  [data-intro="float"] {
+    animation-name: motion-intro-float;
+    animation-duration: 1.2s;
+  }
+}
+
+@keyframes motion-intro-word {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 0.35em, 0);
+  }
+}
+@keyframes motion-intro-rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 20px, 0);
+  }
+}
+@keyframes motion-intro-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes motion-intro-float {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 40px, 0) scale(0.98);
+  }
+}
+
+/* Lenis (from lenis/dist/lenis.css): native smooth scrolling would fight it. */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+html.lenis.lenis-smooth,
+.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: clip;
+}

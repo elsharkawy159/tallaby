@@ -26,6 +26,7 @@ const RATED = "/products?sort=rating";
 
 const PHOTOS = {
   sourdough: pexels(30890566, 900),
+  sourdoughWide: pexels(30890566, 1600),
   scored: pexels(27418961, 900),
   rustic: pexels(28354523, 900),
   loavesBuns: pexels(8633662, 900),
@@ -64,17 +65,7 @@ const footer = lib("footer-signup", {
 
 const home: Design[] = [
   lib("hero-big-word", { text: { "جديد": L("عيش", "BREAD"), "اطلبها": L("اطلب الرغيف", "Order the loaf") } }),
-  lib("text-centered", {
-    text: {
-      "ملاحظة": L("من ٢٠١٨", "Since 2018"),
-      "مواعيد شهر رمضان": L("دقيق ومية وملح ويومين", "Flour, water, salt and two days"),
-      "طوال الشهر نعمل من ٨ مساءً حتى ٢ صباحًا، والطلبات أونلاين مستمرة كالمعتاد.": L(
-        "من غير محسنات ولا اختصارات. كل رغيف بيتخمّر ٤٨ ساعة وبيتخبز قبل الشروق.",
-        "No improvers, no shortcuts. Every loaf ferments for 48 hours and is baked before sunrise.",
-      ),
-      "تسوّق الآن": L("اطلب دلوقتي", "Order now"),
-    },
-  }),
+  lib("categories-circles", { text: { "بتدوّر على إيه؟": L("طالع من الفرن", "Out of the oven") } }),
   lib("products-shelf", {
     text: {
       "تسوّق حسب مزاجك": L("طازة النهارده", "Fresh today"),
@@ -98,6 +89,17 @@ const home: Design[] = [
       "اعرف أكثر": L("اشترك", "Subscribe"),
     },
     links: { "/about": SHOP },
+  }),
+  lib("text-centered", {
+    text: {
+      "ملاحظة": L("من ٢٠١٨", "Since 2018"),
+      "مواعيد شهر رمضان": L("دقيق ومية وملح ويومين", "Flour, water, salt and two days"),
+      "طوال الشهر نعمل من ٨ مساءً حتى ٢ صباحًا، والطلبات أونلاين مستمرة كالمعتاد.": L(
+        "من غير محسنات ولا اختصارات. كل رغيف بيتخمّر ٤٨ ساعة وبيتخبز قبل الشروق.",
+        "No improvers, no shortcuts. Every loaf ferments for 48 hours and is baked before sunrise.",
+      ),
+      "تسوّق الآن": L("اطلب دلوقتي", "Order now"),
+    },
   }),
   lib("testimonials-wall", {
     text: {
@@ -171,7 +173,8 @@ const DEMO = demoStore({
     ["buns", "بريوش وعيش صغير", "Brioche & rolls", PHOTOS.sesameBuns],
   ],
   products: [
-    ["country-sourdough", "bread", "ساوردو بلدي", "Country Sourdough", PHOTOS.sourdough, 120, { isFeatured: true, rating: 4.9, sold90: 640 }],
+    // The first featured product fills hero-big-word: a wide landscape photo (template-rules, owner 2026-10-27).
+    ["country-sourdough", "bread", "ساوردو بلدي", "Country Sourdough", PHOTOS.sourdoughWide, 120, { isFeatured: true, rating: 4.9, sold90: 640 }],
     ["scored-wheat-loaf", "bread", "رغيف قمح منقوش", "Scored Wheat Loaf", PHOTOS.scored, 140, { sold90: 60 }],
     ["rustic-white", "bread", "رغيف أبيض ريفي", "Rustic White Loaf", PHOTOS.rustic, 110, { sold90: 150 }],
     ["weekly-loaf-subscription", "bread", "اشتراك رغيف أسبوعي", "Weekly Loaf Subscription", PHOTOS.loavesBuns, 380, { isFeatured: true, sold90: 110 }],
@@ -184,8 +187,8 @@ const DEMO = demoStore({
 
 export const LOAF = libraryTemplate({
   key: LOAF_KEY,
-  version: 3,
-  changelog: "Loaf v3: product page",
+  version: 4,
+  changelog: "Loaf v4: categories, section order, wide hero photo",
   name: L("لوف", "Loaf"),
   description: L(
     "مخبز واشتراكات ساوردو: كلمة كبيرة، رف طازة النهارده واشتراك أسبوعي. أربع صفحات جاهزة.",

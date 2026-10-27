@@ -1,9 +1,9 @@
 /**
  * Arena (template 08, gaming gear in dark mode; Claude Design "Storefront
  * Templates"): near-black paper, violet actions and a lime highlight,
- * Changa throughout and 10px corners. A trust-led store: a brand film,
- * brand cards, players' picks, numbers, shop-the-setup video, warranty
- * terms, help topics and an interests sign-up. Built from section library
+ * Changa throughout and 10px corners. A trust-led store: a full-bleed
+ * hero, categories, players' picks, brand cards, shop-the-setup video,
+ * numbers, help topics and an interests sign-up. Built from section library
  * designs (`fromLibrary`).
  *
  * Photos: Pexels, each checked by eye (2026-10-20): keyboards, mice,
@@ -34,6 +34,7 @@ const PHOTOS = {
   mouseTop: pexels(5861324, 900),
   headset: pexels(9742608, 900),
   pcDesk: pexels(30469973),
+  heroDesk: pexels(30469973, 1600),
   editDesk: pexels(8774458),
   neonController: pexels(7773745, 900),
   glowControllers: pexels(34592708, 900),
@@ -58,14 +59,38 @@ const footer = lib("footer-signoff", {
   links: { "/products": [undefined, NEW, BEST, RATED] },
 });
 
+/**
+ * Home (v4, template-rules §2a): a full-bleed desk photo as the hero, the
+ * categories, then players' picks, the brands they trust, the setup video,
+ * the numbers behind the warranty, help topics and the interests sign-up.
+ */
 const home: Design[] = [
-  lib("video-film", {
-    photo: [undefined, undefined, undefined, PHOTOS.pcDesk],
+  lib("hero-fullbleed", {
+    photo: [PHOTOS.heroDesk],
     text: {
-      "إزاي بنجهّز كل طلب قبل ما يخرج": L("إزاي بنجرّب كل كيبورد قبل ما يخرج", "How we test every keyboard before it ships"),
-      "عن المتجر": L("عن ليفل أب", "About Level Up"),
-      "فيلم المتجر": L("فيلم: إزاي بنجرّب الكيبوردات", "Film: how we test keyboards"),
+      "المجموعة الجديدة": L("متجرب من ١٠ لعيبة", "Tested by ten players"),
+      "صُنعت لتدوم معك": L("العب على مستوى تاني", "Play on another level"),
+      "خامات مختارة وتفاصيل هادئة، وتوصيل سريع لحد باب البيت.": L(
+        "كيبوردات وماوسات وسماعات بضمان محلي سنتين، وتوصيل القاهرة في يوم.",
+        "Keyboards, mice and headsets with a 2-year local warranty and next-day Cairo delivery.",
+      ),
+      "تسوّق الآن": L("تسوق الأدوات", "Shop the gear"),
+      "شوف الجديد": L("الأكثر مبيعاً", "Best sellers"),
+      "صورة الواجهة": L("مكتب جيمنج بإضاءة برتقالي", "A gaming desk in orange light"),
     },
+    links: { "/products?sort=newest": BEST },
+  }),
+  lib("categories-photo-tiles", {
+    text: { "تسوّق حسب القسم": L("اختار سلاحك", "Choose your gear") },
+  }),
+  lib("products-panel-rail", {
+    text: {
+      "هدايا": L("الأكثر مبيعاً", "Best sellers"),
+      "هدايا تحت ١٠٠٠ جنيه": L("اختيارات اللعيبة", "Players’ picks"),
+      "اختيارات مضمونة لأي مناسبة.": L("متجرب من فريقنا من ١٠ لعيبة.", "Tested by our team of ten players."),
+    },
+    links: { "/products": BEST },
+    lists: [{ source: "best-sellers" }],
   }),
   lib("brands-cards", {
     text: {
@@ -77,15 +102,6 @@ const home: Design[] = [
       "ساحل": "Vector",
     },
     links: { "/products": [undefined, search("Nova"), search("Kinetic"), search("Halo"), search("Vector")] },
-  }),
-  lib("products-panel-rail", {
-    text: {
-      "هدايا": L("الأكثر مبيعاً", "Best sellers"),
-      "هدايا تحت ١٠٠٠ جنيه": L("اختيارات اللعيبة", "Players’ picks"),
-      "اختيارات مضمونة لأي مناسبة.": L("متجرب من فريقنا من ١٠ لعيبة.", "Tested by our team of ten players."),
-    },
-    links: { "/products": BEST },
-    lists: [{ source: "best-sellers" }],
   }),
   lib("stats-band", {
     text: {
@@ -105,20 +121,13 @@ const home: Design[] = [
       "فيديو المنتجات": L("فيديو: مكتب الستريمر", "Video: the streamer’s desk"),
     },
   }),
-  lib("text-terms", {
-    text: {
-      "سنة من تاريخ الفاتورة.": L("سنتين من تاريخ الفاتورة.", "Two years from the invoice date."),
-      "عيوب الصناعة.": L("السويتشات والسنسور والبطاريات والكابلات.", "Switches, sensors, batteries and cables."),
-      "الكسر والمياه وسوء الاستخدام.": L("الوقعات والسوائل والأزرار المستهلكة.", "Drops, liquid damage and worn keycaps."),
-    },
-  }),
   lib("faq-topics", {
     text: { "بتسأل عن إيه؟": L("محتاج مساعدة في إيه؟", "What do you need help with?") },
   }),
   lib("newsletter-interests", {
     text: {
       "إيه اللي يهمك؟": L("بتلعب إيه؟", "What do you play?"),
-      "هنبعتلك اللي يخصك بس، مرة في الأسبوع.": L("اختار وهنبعتلك العروض اللي تخص السيت أب بتاعك بس.", "Pick and we will only send drops for your setup."),
+      "هنبعتلك اللي يخصك بس، مرة في الأسبوع.": L("اختار وهنبعتلك الجديد اللي يخص السيت أب بتاعك بس.", "Pick and we will only send drops for your setup."),
       "وصل حديثًا": L("كمبيوتر", "PC"),
       "العروض": L("كونسول", "Console"),
       "هدايا": L("موبايل", "Mobile"),
@@ -178,12 +187,12 @@ const DEMO = demoStore({
 
 export const ARENA = libraryTemplate({
   key: ARENA_KEY,
-  version: 3,
-  changelog: "Arena v3: product page",
+  version: 4,
+  changelog: "Arena v4: hero, categories, section order",
   name: L("أرينا", "Arena"),
   description: L(
-    "أدوات جيمنج بالوضع الداكن: فيلم للمتجر، ماركات، فيديو السيت أب وشروط الضمان. أربع صفحات جاهزة.",
-    "Gaming gear in dark mode: a brand film, brands, a shop-the-setup video and warranty terms. Four ready pages.",
+    "أدوات جيمنج بالوضع الداكن: صورة كبيرة، اختيارات اللعيبة، ماركات وفيديو السيت أب. أربع صفحات جاهزة.",
+    "Gaming gear in dark mode: a full-bleed hero, players' picks, brands and a shop-the-setup video. Four ready pages.",
   ),
   category: "electronics",
   sortOrder: 80,

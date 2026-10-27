@@ -66,8 +66,9 @@ export function normalizeShell(input: unknown): SectionShellStyle | undefined {
     out.overlay = Math.min(80, Math.max(0, Math.round(raw.overlay)));
   }
   if (typeof raw.anchor === "string" && ANCHOR_RE.test(raw.anchor)) out.anchor = raw.anchor;
+  // Motion is on by default (docs/section-rules.md §6.6): "none" switches it off; fade and rise mean on.
   const animation = oneOf(SHELL_ANIMATIONS, raw.animation);
-  if (animation && animation !== "none") out.animation = animation;
+  if (animation) out.animation = animation;
   return Object.keys(out).length ? out : undefined;
 }
 
@@ -120,22 +121,5 @@ export function shellLayout(shell: SectionShellStyle | undefined, imageUrl: (src
   };
 }
 
-const KEYFRAMES = {
-  fade: "@keyframes sf-shell-fade{from{opacity:0}to{opacity:1}}",
-  rise: "@keyframes sf-shell-rise{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}",
-} as const;
-
-/**
- * Scroll-driven entrance for sections with `animation`, CSS only and only
- * where the browser supports view timelines and the visitor allows motion.
- * Off in the editor so selection outlines never move.
- */
-export function shellAnimationCss(entries: { selector: string; animation: "fade" | "rise" }[]): string {
-  if (!entries.length) return "";
-  const used = new Set(entries.map((e) => e.animation));
-  const frames = [...used].map((a) => KEYFRAMES[a]).join("");
-  const rules = entries
-    .map((e) => `${e.selector}{animation:sf-shell-${e.animation} linear both;animation-timeline:view();animation-range:entry 0% cover 25%}`)
-    .join("");
-  return `@media (prefers-reduced-motion:no-preference){@supports (animation-timeline:view()){${frames}${rules}}}`;
-}
+/** False when the seller switched the section's Animation off (reveal on scroll, docs/section-rules.md §6). */
+export const shellAnimates = (shell: SectionShellStyle | undefined) => shell?.animation !== "none";

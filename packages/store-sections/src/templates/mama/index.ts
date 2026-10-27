@@ -78,29 +78,9 @@ const home: Design[] = [
     },
     links: { "/products": [SHOP, GIFTS] },
   }),
-  lib("bundle-gifts", {
-    photo: [PHOTOS.cottonSet, PHOTOS.stacker, PHOTOS.animals, PHOTOS.gifts],
-    text: {
-      "هدايا": L("حسب السن", "By age"),
-      "هدية لمين؟": L("البيبي عنده كام؟", "How old is the baby?"),
-      "ليه": L("حديث الولادة", "Newborn"),
-      "ليها": L("٦ شهور", "6 months"),
-      "للطلبة": L("سنة", "1 year"),
-      "للجيمرز": L("سبوع", "Baby shower"),
-      "تسوّق": L("تسوقي", "Shop"),
-    },
-    links: { "/products": [search("قطن"), search("حلقات"), search("الحيوانات"), GIFTS] },
-  }),
-  lib("bundle-plus", {
-    text: {
-      "باقة": L("شنطة الولادة", "Hospital bag"),
-      "اشتريهم مع بعض ووفّر": L("جاهزة لأول يوم", "Ready for day one"),
-      "سعر الباقة": L("سعر الشنطة", "Bag price"),
-      "١٬٢٧٠ ج.م": L("١٬٩٢٥ ج.م", "EGP 1,925"),
-      "بدل ١٬٤٩٠ ج.م": L("بدل ٢٬١٤٠ ج.م", "Was EGP 2,140"),
-      "وفّر ٢٢٠ ج.م": L("وفّري ٢١٥ ج.م", "Save EGP 215"),
-      "اطلب الباقة": L("اطلبي الشنطة", "Order the bag"),
-    },
+  lib("categories-photo-tiles", { text: { "تسوّق حسب القسم": L("كل اللي البيبي محتاجه", "Everything baby needs") } }),
+  lib("products-grid", {
+    text: { "وصل حديثًا": L("هدايا البيبي", "Baby gifts"), "أحدث المنتجات اللي نزلت المتجر.": L("أحدث الهدايا اللي وصلت المحل.", "The newest gifts in the shop.") },
     links: { "/products": NEW },
   }),
   lib("team-values", {
@@ -112,16 +92,6 @@ const home: Design[] = [
       "السعر اللي تشوفه هو اللي تدفعه، من غير مصاريف مخفية.": L("كل لعبة بتعدي اختبار EN71 للأمان.", "Every toy passes the EN71 safety test."),
       "قريب": L("صريح", "Honest"),
       "بنرد على واتساب في أقل من ساعة، حتى يوم الجمعة.": L("صور حقيقية ومقاسات حقيقية، من غير فلاتر.", "Real photos and real sizes, no filters."),
-    },
-  }),
-  lib("promo-coupon", {
-    name: L("كارت هدية", "Gift card"),
-    text: {
-      "٢٠٪": L("٥٠٠", "500"),
-      "خصم": L("ج.م", "EGP"),
-      "خصم على أول طلب لك": L("هدية لمامي جديدة", "Gift for a new mum"),
-      "للطلبات فوق ٨٠٠ ج.م · حتى ٣٠ نوفمبر": L("كارت هدية بـ٥٠٠ ج.م تختار بيه اللي محتاجاه، صالح سنة.", "An EGP 500 gift card she spends on what she needs, valid for a year."),
-      "الكود: WELCOME20": L("اطلبيه على واتساب", "Order it on WhatsApp"),
     },
   }),
   lib("testimonials-ruled", {
@@ -185,8 +155,8 @@ const DEMO = demoStore({
 
 export const MAMA = libraryTemplate({
   key: MAMA_KEY,
-  version: 2,
-  changelog: "Mama v2: product page",
+  version: 3,
+  changelog: "Mama v3: categories after the hero",
   productPage: { surface: "shelf", thumbs: "bottom", band: "paper", extras: ["product-shipping"], copy: { back: L("رجوع لأغراض البيبي", "Back to the baby shop"), reviews: L("رأي الماميز", "Mums' reviews"), related: L("حاجات تانية للبيبي", "More for the baby") } },
   name: L("ماما", "Mama"),
   description: L(

@@ -85,6 +85,10 @@ const home: Design[] = [
     },
   }),
   lib("categories-feature-list", { text: { "الأقسام": L("لاقي نبتتك", "Find your plant"), "كل الأقسام": L("كل النباتات", "All plants") } }),
+  lib("products-shelf", {
+    text: { "تسوّق حسب مزاجك": L("اختار نبتتك", "Pick your plant"), "عليه خصم": L("الأعلى تقييماً", "Top rated") },
+    links: { "/products": [NEW, BEST, RATED, SHOP] },
+  }),
   lib("about-list", {
     photo: [undefined, undefined, undefined, undefined, undefined, PHOTOS.monsteraWindow],
     text: {
@@ -97,10 +101,6 @@ const home: Design[] = [
       "اعرف أكتر": L("اقرا الأسئلة", "Plant questions"),
     },
     links: { "/about": "/faq" },
-  }),
-  lib("products-shelf", {
-    text: { "تسوّق حسب مزاجك": L("اختار نبتتك", "Pick your plant"), "عليه خصم": L("الأعلى تقييماً", "Top rated") },
-    links: { "/products": [NEW, BEST, RATED, SHOP] },
   }),
   lib("testimonials-spotlight", {
     text: {
@@ -167,8 +167,8 @@ const DEMO = demoStore({
 
 export const VERDANT = libraryTemplate({
   key: VERDANT_KEY,
-  version: 3,
-  changelog: "Verdant v3: product page",
+  version: 4,
+  changelog: "Verdant v4: section order",
   name: L("فيردانت", "Verdant"),
   description: L(
     "محل نباتات: افتتاحية بنتو، لاقي نبتتك، اللي بييجي مع كل نبتة وأسئلة العناية. أربع صفحات جاهزة.",

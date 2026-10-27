@@ -85,7 +85,8 @@ export const getHomeSnapshot = cache(async (): Promise<HomeSnapshot | null> => {
       s.fee_trial_ends_at,
       EXISTS (SELECT 1 FROM products p WHERE p.seller_id = s.id AND p.status = 'active') AS setup_product,
       -- st is already limited to this seller (join below), so st.id scopes the child rows.
-      coalesce(st.site_status IN ('published', 'unpublished')
+      -- Same rule as storeTemplateChosen (@workspace/lib): the Classic placeholder drafts are not a choice.
+      coalesce(st.first_published_at IS NOT NULL OR st.site_status IN ('published', 'unpublished')
         OR EXISTS (SELECT 1 FROM template_installs ti WHERE ti.store_id = st.id AND ti.undone_at IS NULL), false) AS setup_template,
       coalesce(st.settings ? 'shipping'
         OR EXISTS (SELECT 1 FROM store_shipping_zones z WHERE z.store_id = st.id), false) AS setup_shipping,

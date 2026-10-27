@@ -152,18 +152,6 @@ const home: Design[] = [
       "تسوق الشريحة دي": L("تسوقي الهدايا دي", "Shop these gifts"),
     },
   }),
-  lib("popup-reward", {
-    name: L("ادّي وخدي", "Refer a friend"),
-    text: {
-      "جرّب حظك": L("ادّي ١٠٪ وخدي ١٠٪", "Give 10%, get 10%"),
-      "المرة دي كسبت، وده كودك.": L("صاحبتك توفر على أول طلب، وانتي على اللي بعده.", "Your friend saves on her first order, you save on your next."),
-      "كسبت": L("لصاحبتك", "For your friend"),
-      "شحن مجاني": L("خصم ١٠٪", "10% off"),
-      "الكود: FREESHIP": L("الكود: WELCOME10", "Code: WELCOME10"),
-      "استخدمه دلوقتي": L("تسوقي معاها", "Shop together"),
-    },
-    links: { "/products": NEW },
-  }),
   lib("testimonials-wall", {
     text: {
       "ماذا يقولون عنا": L("بيتلبس كل يوم", "Worn every day"),
@@ -239,8 +227,8 @@ export const KHOLKHAL = libraryTemplate({
   productPage: { thumbs: "side", gallery: "end", button: "outline", band: "shelf", extras: ["product-perks"], copy: { back: L("رجوع للمجموعة", "Back to the collection"), reviews: L("كلام العميلات", "Words from our customers"), related: L("قطع تحلّي معاها", "Pieces to wear with it") } },
   name: L("خلخال", "Kholkhal"),
   description: L(
-    "إكسسوارات مطلية دهب: بانرات متحركة، أقسام دائرية، هدايا حسب الميزانية، ادّي وخدي وآراء العميلات. أربع صفحات جاهزة.",
-    "Gold-plated jewellery: banner carousel, story rings, gifts by budget, refer a friend and reviews. Four ready pages.",
+    "إكسسوارات مطلية دهب: بانرات متحركة، أقسام دائرية، هدايا حسب الميزانية وآراء العميلات. أربع صفحات جاهزة.",
+    "Gold-plated jewellery: banner carousel, story rings, gifts by budget and reviews. Four ready pages.",
   ),
   category: "jewelry",
   sortOrder: 1070,

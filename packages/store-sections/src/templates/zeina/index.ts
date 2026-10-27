@@ -123,32 +123,9 @@ const home: Design[] = [
       ],
     },
   }),
-  lib("bundle-plus", {
-    text: {
-      "باقة": L("طقم الراحة", "Comfort set"),
-      "اشتريهم مع بعض ووفّر": L("كفر وجلدة ونور", "Cover, wheel wrap and lights"),
-      "١٬٢٧٠ ج.م": L("٢٬٠٠٠ ج.م", "EGP 2,000"),
-      "بدل ١٬٤٩٠ ج.م": L("بدل ٢٬٢٨٠ ج.م", "Instead of EGP 2,280"),
-      "وفّر ٢٢٠ ج.م": L("وفّر ٢٨٠ ج.م", "Save EGP 280"),
-    },
-  }),
   lib("products-shelf", {
     text: { "تسوّق حسب مزاجك": L("المتجر", "Shop") },
     links: { "/products": [NEW, BEST, undefined, undefined] },
-  }),
-  lib("popup-reward", {
-    name: L("شارك ووفّر", "Refer a friend"),
-    text: {
-      "جرّب حظك": L("شارك ووفّر", "Share and save"),
-      "المرة دي كسبت، وده كودك.": L(
-        "صاحبك يوفر ١٠٪ على أول طلب، وانت كمان على اللي بعده.",
-        "Your friend saves 10% on the first order, and you save the same on your next.",
-      ),
-      "كسبت": L("ابعت لصاحبك", "Send to a friend"),
-      "شحن مجاني": L("خصم ١٠٪", "10% off"),
-      "الكود: FREESHIP": L("الكود: WELCOME10", "Code: WELCOME10"),
-      "استخدمه دلوقتي": L("تسوق دلوقتي", "Shop now"),
-    },
   }),
   lib("testimonials-wall", {
     text: {
@@ -219,8 +196,8 @@ export const ZEINA = libraryTemplate({
   productPage: { surface: "shelf", thumbs: "bottom", gallery: "end", band: "paper", extras: ["product-perks"], copy: { back: L("رجوع للمقصورة", "Back to the cabin"), reviews: L("من عربيات عملائنا", "From customers' cars"), related: L("حاجات تكمّل الداخلية", "More for the interior") } },
   name: L("زينة", "Zeina"),
   description: L(
-    "تزيين العربية من جوه: تسوق بالمكان، طقم الراحة، شارك ووفّر وآراء العملاء. أربع صفحات جاهزة.",
-    "Car interior styling: shop by area, a comfort set, refer a friend and reviews. Four ready pages.",
+    "تزيين العربية من جوه: تسوق بالمكان وآراء العملاء. أربع صفحات جاهزة.",
+    "Car interior styling: shop by area and reviews. Four ready pages.",
   ),
   category: "auto",
   sortOrder: 970,

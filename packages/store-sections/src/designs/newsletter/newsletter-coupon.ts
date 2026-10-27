@@ -23,7 +23,7 @@ export const newsletterCoupon = defineDesign({
             [
               t.stack(
                 [
-                  t.heading(N("10%"), "h2", { role: "value", style: { fontSize: "6xl", fontWeight: "extrabold", lineHeight: "tight", color: "primary" } }),
+                  t.heading(N("10%"), "h3", { role: "value", style: { fontSize: "6xl", fontWeight: "extrabold", lineHeight: "tight", color: "primary" } }),
                   t.text(L("خصم", "off"), { style: { fontWeight: "bold", fontSize: "xl" } }),
                 ],
                 {

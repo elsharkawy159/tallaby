@@ -3300,3 +3300,28 @@ export const shipmentCarrierEvents = pgTable("shipment_carrier_events", {
 			name: "shipment_carrier_events_shipment_id_fkey"
 		}).onDelete("cascade"),
 ]);
+
+/** One row per AI model call (0110): daily caps now, credits and cost views later. Server-only. */
+export const aiUsageLogs = pgTable("ai_usage_logs", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	sellerId: uuid("seller_id").notNull(),
+	feature: text().notNull(),
+	model: text().notNull(),
+	inputTokens: integer("input_tokens"),
+	cachedInputTokens: integer("cached_input_tokens"),
+	outputTokens: integer("output_tokens"),
+	costMicroUsd: bigint("cost_micro_usd", { mode: "number" }).default(0).notNull(),
+	latencyMs: integer("latency_ms"),
+	/** ok | error | blocked */
+	status: text().notNull(),
+	errorCode: text("error_code"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("ai_usage_logs_seller_feature_created_idx").using("btree", table.sellerId, table.feature, table.createdAt.desc()),
+	foreignKey({
+			columns: [table.sellerId],
+			foreignColumns: [sellers.id],
+			name: "ai_usage_logs_seller_id_fkey"
+		}).onDelete("cascade"),
+	check("ai_usage_logs_status_check", sql`status IN ('ok', 'error', 'blocked')`),
+]);

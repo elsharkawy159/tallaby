@@ -116,7 +116,19 @@ export const ProductDetails = ({
           ) : (
             <span />
           )}
-          <ProductStockBadge hasStock={hasStock} isLowStock={isLowStock} stock={stock} />
+          <div className="flex flex-wrap items-center gap-1.5">
+            {product.isTrending && (
+              <span className="inline-flex items-center rounded-full bg-gray-900 px-2.5 py-1 text-xs font-semibold text-white">
+                {t("badgeTrending")}
+              </span>
+            )}
+            {product.isSeasonal && (
+              <span className="inline-flex items-center rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-gray-900 ring-1 ring-gray-200">
+                {t("badgeSeasonal")}
+              </span>
+            )}
+            <ProductStockBadge hasStock={hasStock} isLowStock={isLowStock} stock={stock} />
+          </div>
         </div>
 
         <h1 className="mt-3 text-balance text-2xl font-bold leading-snug text-gray-900 lg:text-[2rem] lg:leading-tight">

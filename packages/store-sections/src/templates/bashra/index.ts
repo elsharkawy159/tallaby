@@ -2,17 +2,10 @@
  * Bashra (template 40, skincare by concern with rewards; Claude Design
  * "Storefront Templates"): warm blush paper, a peach highlight and a deep
  * rose for actions, Noto Naskh Arabic headings on Almarai and 18px corners.
- * A small skincare shop: a routine-finder hero, shop by skin need, our pick
- * with three reasons, a soap trio by quantity, how points work, the member
- * tiers, refer a friend and member reviews. Built from section library
- * designs (`fromLibrary`).
- *
- * Rewards have no library designs yet: "How points work" uses the numbered
- * steps (`text-steps`), "Tier ladder" the spend tiers (`promo-tiers`) with
- * the tiers' points as copy, and "Refer a friend" the reward popup
- * (`popup-reward`) with the BASHRA100 code. There is no points ledger, and
- * quantity savings are not applied at checkout (the cart charges the unit
- * price). The hero's "Find my routine" anchor goes to the contact page.
+ * A small skincare shop (v3, section order): the ritual set in an arch,
+ * shop by skin need, our pick with three reasons, how we help you choose,
+ * new on the shelf and member reviews. Built from section library designs
+ * (`fromLibrary`).
  *
  * Photos: Pexels, each checked by eye (2026-10-23): amber bottles on a
  * wooden tray, two dropper bottles, a white dropper bottle on marble, three
@@ -76,98 +69,53 @@ const footer = lib("footer-signup", {
 });
 
 const home: Design[] = [
-  lib("hero-halves", {
-    photo: [undefined, PHOTOS.ritualTray],
+  lib("hero-classic", {
+    photo: [PHOTOS.ritualSet],
     text: {
-      "كوليكشن الموسم": L("طقم الروتين الجديد", "New ritual set"),
-      "صوت أنقى، كل يوم": L("عناية متختارة لبشرتك", "Skincare picked for your skin"),
-      "منتجات أصلية بضمان محلي، توصلك خلال ٤٨ ساعة.": L(
-        "قولينا بشرتك محتاجة إيه وإحنا نرشحلك ٣ منتجات، مش ٣٠.",
+      "موسم جديد": L("طقم الروتين الجديد", "New ritual set"),
+      "كل ما تحتاجه، في مكان واحد": L("عناية متختارة لبشرتك", "Skincare picked for your skin"),
+      "منتجات مختارة بعناية بضمان وتوصيل لكل المحافظات والدفع عند الاستلام.": L(
+        "قوليلنا بشرتك محتاجة إيه وإحنا نرشحلك ٣ منتجات، مش ٣٠.",
         "Tell us what your skin needs and we will match you to three products, not thirty.",
       ),
-      "تسوق الآن": L("لاقي روتيني", "Find my routine"),
-      "العروض": L("كل المنتجات", "Shop all"),
-      "صورة الحملة": L("قزايز كهرمان على صينية خشب", "Amber bottles on a wooden tray"),
+      "تسوّق الآن": L("تسوقي الروتين", "Shop the ritual"),
+      "شوف العروض": L("الأعلى تقييمًا", "Top rated"),
+      "صورة المنتج": L("قزايز كهرمان على صينية خشب", "Amber bottles on a wooden tray"),
     },
-    links: { "/products": ["/contact", SHOP] },
+    links: { "/products": [SHOP, RATED] },
   }),
-  lib("finder-use", {
-    text: {
-      "هتستخدمها في إيه؟": L("بشرتك محتاجة إيه؟", "What does your skin need?"),
-      "اختار استخدامك ونوديك على المنتجات المناسبة ليه.": L("اختاري اللي بشرتك محتاجاه ونوديكي على المنتجات المناسبة.", "Pick what your skin needs and we will show you what suits it."),
-      "المشاوير": L("بشرة جافة", "Dry skin"),
-      "الرياضة": L("نضارة", "Glow"),
-      "المكالمات": L("حساسة", "Sensitive"),
-      "الشغل من البيت": L("الشعر", "Hair"),
-    },
-    links: { "/products": [search("زيت"), search("طقم"), search("تونر"), search("شعر")] },
-  }),
+  lib("categories-circles", { text: { "بتدوّر على إيه؟": L("بشرتك محتاجة إيه؟", "What does your skin need?") } }),
   lib("finder-pick", {
     text: {
       "لو هتشتري واحدة بس": L("لو هتشتري حاجة واحدة", "If you buy just one"),
       "أحسن عزل ضوضاء في الفئة": L("بيغطي الوش والجسم في ٤ خطوات", "Covers face and body in four steps"),
-      "بطارية ٣٠ ساعة": L("بيوفرلك ٢٣٠ ج.م عن القطع لوحدها", "Saves EGP 230 against single items"),
+      "بطارية ٣٠ ساعة": L("بيكفيكي حوالي ٣ شهور", "Lasts about three months"),
       "ضمان سنتين": L("جاي في علبة هدية", "Comes in a gift box"),
       "أوفر اختيار": L("ابدأي بده", "Start here"),
       "الأفخم": L("الألطف", "Gentlest"),
     },
     lists: [{ source: "featured" }],
   }),
-  lib("bundle-quantity", {
-    text: {
-      "وفّر مع الكمية": L("خزّني ووفّري", "Stock up and save"),
-      "قطعة واحدة": L("علبة واحدة", "One box"),
-      "قطعتين": L("علبتين", "Two boxes"),
-      "على القطعة التانية": L("على العلبتين", "On both boxes"),
-      "٣ قطع": L("٤ علب", "Four boxes"),
-      "وفّر ١٨٪": L("وفّر ٢٠٪", "Save 20%"),
-      "اختار عدد القطع من السلة.": L("اختاري عدد العلب من السلة.", "Choose how many boxes in the cart."),
-    },
-  }),
   lib("text-steps", {
-    name: L("النقط بتشتغل إزاي", "How points work"),
+    name: L("بنساعدك تختاري إزاي", "How we help you choose"),
     text: {
-      "إزاي ترجّع منتج": L("كل جنيه بيرجعلك", "Every pound comes back to you"),
-      "ابعتلنا على واتساب": L("اكسبي ١ نقطة", "Earn 1 point"),
-      "خلال ١٤ يوم من الاستلام مع رقم الطلب.": L("على كل ١٠ ج.م بتشتري بيها.", "For every EGP 10 you spend."),
-      "جهّز المنتج": L("استبدلي ١٠٠ نقطة", "Redeem 100 points"),
-      "في علبته الأصلية بكل الإكسسوارات.": L("بخصم ١٠ ج.م على أي طلب.", "For EGP 10 off any order."),
-      "المندوب يستلم": L("اطلعي لفوق", "Level up"),
-      "خلال يومين شغل من عنوانك.": L("٣ مستويات، كل مستوى بنقط أكتر وعينات مجانية.", "Three levels, each with more points and free samples."),
-      "فلوسك ترجع": L("هاتي صاحبتك", "Bring a friend"),
-      "بنفس طريقة الدفع خلال ٥ أيام.": L("١٠٠٠ نقطة ليكي لما تطلب أول مرة.", "1,000 points for you when she first orders."),
+      "إزاي ترجّع منتج": L("اختاري بثقة", "Choose with confidence"),
+      "ابعتلنا على واتساب": L("اسألي خبيرة", "Ask an expert"),
+      "خلال ١٤ يوم من الاستلام مع رقم الطلب.": L("على واتساب قبل ما تطلبي.", "On WhatsApp before you order."),
+      "جهّز المنتج": L("جرّبي عينة", "Try a sample"),
+      "في علبته الأصلية بكل الإكسسوارات.": L("مع طلبك، عشان تختاري لونك صح.", "With your order, so you pick the right shade."),
+      "المندوب يستلم": L("رجّعيها بسهولة", "Easy returns"),
+      "خلال يومين شغل من عنوانك.": L("لو المنتج ما ناسبكيش، بنبدّله خلال ١٤ يوم.", "If a product doesn’t suit you, we exchange it within 14 days."),
+      "فلوسك ترجع": L("استلمي بسهولة", "Easy delivery"),
+      "بنفس طريقة الدفع خلال ٥ أيام.": L("توصيل لكل المحافظات والدفع عند الاستلام.", "Delivery everywhere, cash on delivery."),
     },
   }),
-  lib("promo-tiers", {
-    name: L("مستويات العضوية", "Member tiers"),
+  lib("products-grid", {
     text: {
-      "عرض الشهر": L("مكافآت بشرة", "Bashra rewards"),
-      "كل ما تزود، توفّر أكتر": L("روز، عنبر، عود", "Rose, Amber, Oud"),
-      "لما تشتري بـ": L("من", "From"),
-      "١٠٠٠ ج.م": L("٠ نقطة", "0 pts"),
-      "١٠٠ ج.م": L("روز", "Rose"),
-      "خصم على الفاتورة": L("نقط أكتر وعينات كل ما تطلعي", "More points and samples as you go up"),
-      "الأكثر استخدامًا": L("انتي هنا: ١٢٤٠ نقطة", "You are here: 1,240 pts"),
-      "٢٠٠٠ ج.م": L("١٠٠٠ نقطة", "1,000 pts"),
-      "٢٥٠ ج.م": L("عنبر", "Amber"),
-      "٣٥٠٠ ج.م": L("٣٠٠٠ نقطة", "3,000 pts"),
-      "٥٠٠ ج.م": L("عود", "Oud"),
+      "وصل حديثًا": L("جديد على الرف", "New on the shelf"),
+      "أحدث المنتجات اللي نزلت المتجر.": L("زيوت وكريمات وصلت الموسم ده.", "Oils and creams that arrived this season."),
     },
-  }),
-  lib("popup-reward", {
-    as: "refer-friend",
-    name: L("ادعي صاحبتك", "Refer a friend"),
-    text: {
-      "جرّب حظك": L("ادّي ١٠٠ وخدي ١٠٠", "Give EGP 100, get EGP 100"),
-      "المرة دي كسبت، وده كودك.": L(
-        "صاحبتك تاخد خصم ١٠٠ ج.م على أول طلب فوق ٥٠٠، وانتي تاخدي ١٠٠٠ نقطة لما تطلب.",
-        "Your friend gets EGP 100 off a first order over EGP 500, and you get 1,000 points when she orders.",
-      ),
-      "كسبت": L("لصاحبتك", "For your friend"),
-      "شحن مجاني": L("خصم ١٠٠ ج.م", "EGP 100 off"),
-      "الكود: FREESHIP": L("الكود: BASHRA100", "Code: BASHRA100"),
-      "استخدمه دلوقتي": L("تسوقي دلوقتي", "Shop now"),
-    },
+    links: { "/products": NEW },
   }),
   lib("testimonials-ruled", {
     text: {
@@ -180,7 +128,7 @@ const home: Design[] = [
       "م": L("ن", "N"),
       "مريم أ.": L("نور ع.", "Nour A."),
       "القاهرة": L("المعادي", "Maadi"),
-      "بدّلت المقاس بدون أي تعب، والفريق رد علي في دقائق.": L("دفعت آخر طلب بالنقط بس.", "I paid for my last order with points alone."),
+      "بدّلت المقاس بدون أي تعب، والفريق رد علي في دقائق.": L("العينة خلتني أختار الدرجة الصح من أول مرة.", "The sample helped me pick the right shade first time."),
       "ع": L("ي", "Y"),
       "عمر ك.": L("ياسمين ك.", "Yasmine K."),
       "الإسكندرية": L("الزمالك", "Zamalek"),
@@ -200,7 +148,7 @@ const about: Design[] = [
     eyebrow: L("حكايتنا", "Our story"),
     title: L("٣ منتجات، مش ٣٠", "Three products, not thirty"),
     text: L("بدأنا عشان الرفوف مليانة وكل بشرة محتاجة حاجة مختلفة. بنسألك عن بشرتك الأول، وبعدين نرشح.", "We started because shelves are crowded and every skin needs something different. We ask about your skin first, then suggest."),
-    more: L("وكل طلب بيكسبك نقط تصرفيها على طلبك الجاي.", "And every order earns points you spend on the next one."),
+    more: L("وكل طلب بيوصلك متغلف بعناية ومعاه عينة.", "And every order arrives carefully packed, with a sample."),
     button: L("كل المنتجات", "Shop all"),
     href: SHOP,
   }),
@@ -230,13 +178,13 @@ const DEMO = demoStore({
 
 export const BASHRA = libraryTemplate({
   key: BASHRA_KEY,
-  version: 2,
-  changelog: "Bashra v2: product page",
+  version: 3,
+  changelog: "Bashra v3: classic hero, skin-need categories, section order",
   productPage: { surface: "shelf", thumbs: "bottom", band: "brand", copy: { back: L("رجوع للعناية بالبشرة", "Back to skincare"), reviews: L("رأي أعضاء بشرة", "Member reviews"), related: L("كمّلي روتينك", "Complete your routine") } },
   name: L("بشرة", "Bashra"),
   description: L(
-    "عناية حسب نوع البشرة ومكافآت: لاقي روتينك، اختيارنا، خزّني ووفّري، النقط والمستويات، ادعي صاحبتك وآراء الأعضاء. أربع صفحات جاهزة.",
-    "Skincare by concern, with rewards: find your routine, our pick, stock up and save, points and tiers, refer a friend and member reviews. Four ready pages.",
+    "عناية حسب نوع البشرة: لاقي روتينك، اختيارنا وآراء العميلات. أربع صفحات جاهزة.",
+    "Skincare by concern: find your routine, our pick and customer reviews. Four ready pages.",
   ),
   category: "beauty",
   sortOrder: 400,
@@ -272,9 +220,9 @@ export const BASHRA = libraryTemplate({
       name: L("الأسئلة الشائعة", "FAQ"),
       seo: { title: L("الأسئلة الشائعة", "FAQ") },
       sections: faqPage(lib, {
-        text: L("الطلبات والنقط والمستويات.", "Orders, points and tiers."),
-        question: L("أصرف نقطي إزاي؟", "How do I spend my points?"),
-        answer: L("كل ١٠٠ نقطة بخصم ١٠ ج.م. ابعتيلنا على واتساب قبل ما تطلبي ونضيف الخصم.", "Every 100 points take EGP 10 off. Message us on WhatsApp before you order and we add the discount."),
+        text: L("الطلبات والعينات والاستبدال.", "Orders, samples and exchanges."),
+        question: L("أختار درجة اللون إزاي؟", "How do I choose my shade?"),
+        answer: L("ابعتيلنا صورة لبشرتك في ضوء النهار على واتساب ونرشحلك الدرجة المناسبة.", "Send us a daylight photo of your skin on WhatsApp and we suggest the right shade."),
       }),
     },
   ],

@@ -45,11 +45,11 @@ const NAME = L("نادي جراجي", "Garagy Club");
 
 const header = lib("header-announcement", {
   text: {
-    "توصيل مجاني للطلبات فوق ١٥٠٠ ج.م": L("الأعضاء بياخدوا نقط على كل غسلة", "Members earn points on every wash"),
-    "الكود: SAVE10": L("أول غسلة ببلاش", "First wash free"),
+    "توصيل مجاني للطلبات فوق ١٥٠٠ ج.م": L("غسيل في البيت أو الشغل، بمواعيد تناسبك", "Washes at home or work, at times that suit you"),
+    "الدفع عند الاستلام": L("الدفع عند الاستلام", "Cash on delivery"),
     "م": L("ج", "G"),
     "اسم متجرك": NAME,
-    "العروض": L("اصرف نقطك", "Spend points"),
+    "العروض": L("الإكسسوارات", "Accessories"),
     "المدونة": L("الأسئلة", "FAQ"),
   },
   links: { "/products": [undefined, BEST, undefined, undefined, BEST], "/blog": "/faq" },
@@ -59,7 +59,7 @@ const footer = lib("footer-centered", {
   text: {
     "م": L("ج", "G"),
     "اسم متجرك": NAME,
-    "مختارات بعناية منذ ٢٠١٨، لكل بيت في مصر.": L("غسلة كل شهر، فحص كل سنة، ونقط على كل زيارة.", "A monthly wash, a yearly check, and points on every visit."),
+    "مختارات بعناية منذ ٢٠١٨، لكل بيت في مصر.": L("غسلة كل شهر، وفحص كل سنة.", "A monthly wash and a yearly check."),
     "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": L("© ٢٠٢٦ نادي جراجي. كل الحقوق محفوظة.", "© 2026 Garagy Club. All rights reserved."),
   },
 });
@@ -71,15 +71,16 @@ const home: Design[] = [
       "كوليكشن الموسم": L("نادي جراجي", "Garagy Club"),
       "صوت أنقى، كل يوم": L("عربيتك متشافة كل شهر", "Your car, looked after every month"),
       "منتجات أصلية بضمان محلي، توصلك خلال ٤٨ ساعة.": L(
-        "غسلة كل شهر على بابك، فحص كل سنة، ونقط تصرفها على الإكسسوارات.",
-        "A monthly wash at your door, a yearly check, and points you spend on accessories.",
+        "غسلة كل شهر على بابك، وفحص كل سنة.",
+        "A monthly wash at your door and a yearly check.",
       ),
       "تسوق الآن": L("اشترك دلوقتي", "Join now"),
-      "العروض": L("اصرف نقطك", "Spend your points"),
+      "العروض": L("الأكثر طلبًا", "Most ordered"),
       "صورة الحملة": L("رغوة غسيل على مراية عربية", "Wash foam on a car mirror"),
     },
     links: { "/products": ["/contact", BEST] },
   }),
+  lib("categories-chips", { text: { "إيه اللي في بالك؟": L("عربيتك محتاجة إيه؟", "What does your car need?") } }),
   lib("service-plans", {
     text: {
       "الضمان": L("الباقات", "Plans"),
@@ -87,10 +88,10 @@ const home: Design[] = [
       "سنة": L("أساسي", "Basic"),
       "١٩٩ ج.م": L("٢٥٠ ج.م في الشهر", "EGP 250 a month"),
       "إصلاح الأعطال": L("غسيل خارجي على بابك", "Exterior wash at your door"),
-      "فني في البيت": L("نقط على كل غسلة", "Points on every wash"),
+      "فني في البيت": L("شفط داخلي", "Interior vacuum"),
       "سنتين": L("بلس", "Plus"),
       "٣٤٩ ج.م": L("٤٥٠ ج.م في الشهر", "EGP 450 a month"),
-      "جهاز بديل وقت الصيانة": L("غسلتين وشفط داخلي ونقط مضاعفة", "Two washes, interior vacuum and double points"),
+      "جهاز بديل وقت الصيانة": L("غسلتين وشفط داخلي وتلميع", "Two washes, interior vacuum and a polish"),
       "٣ سنين": L("برو", "Pro"),
       "٤٧٩ ج.م": L("٧٥٠ ج.م في الشهر", "EGP 750 a month"),
       "كل مزايا السنتين": L("كل مزايا بلس", "Everything in Plus"),
@@ -98,39 +99,23 @@ const home: Design[] = [
     },
   }),
   lib("text-steps", {
-    name: L("النقط بتشتغل إزاي", "How points work"),
+    name: L("الغسلة بتمشي إزاي", "How a wash works"),
     text: {
-      "إزاي ترجّع منتج": L("كل غسلة بتكسّبك", "Every wash earns"),
-      "ابعتلنا على واتساب": L("٥٠ نقطة كل غسلة", "50 points a wash"),
-      "خلال ١٤ يوم من الاستلام مع رقم الطلب.": L("بتتضاف بعد كل زيارة.", "Added after each visit."),
-      "جهّز المنتج": L("٥٠٠ نقطة بـ ٥٠ جنيه", "500 points = EGP 50"),
-      "في علبته الأصلية بكل الإكسسوارات.": L("خصم على أي إكسسوار في المتجر.", "Off any accessory in the shop."),
-      "المندوب يستلم": L("هات صاحبك", "Bring a friend"),
-      "خلال يومين شغل من عنوانك.": L("٢٠٠ نقطة ليك و٢٠٠ ليه.", "200 points for each of you."),
-      "فلوسك ترجع": L("اطلع درجة", "Move up a tier"),
-      "بنفس طريقة الدفع خلال ٥ أيام.": L("كل ما نقطك تزيد، الغسلة بتكسّبك أكتر.", "The more points you hold, the more each wash earns."),
-    },
-  }),
-  lib("promo-tiers", {
-    name: L("درجات العضوية", "Member tiers"),
-    text: {
-      "عرض الشهر": L("درجات العضوية", "Member tiers"),
-      "كل ما تزود، توفّر أكتر": L("فضي، ذهبي، بلاك", "Silver, Gold, Black"),
-      "لما تشتري بـ": L("من", "From"),
-      "١٠٠٠ ج.م": L("٠ نقطة", "0 pts"),
-      "١٠٠ ج.م": L("فضي", "Silver"),
-      "خصم على الفاتورة": L("نقط أكتر على كل غسلة كل ما تطلع", "More points per wash as you go up"),
-      "الأكثر استخدامًا": L("إنت هنا: ١٨٠٠ نقطة", "You are here: 1,800 pts"),
-      "٢٠٠٠ ج.م": L("١٥٠٠ نقطة", "1,500 pts"),
-      "٢٥٠ ج.م": L("ذهبي", "Gold"),
-      "٣٥٠٠ ج.م": L("٤٠٠٠ نقطة", "4,000 pts"),
-      "٥٠٠ ج.م": L("بلاك", "Black"),
+      "إزاي ترجّع منتج": L("احجز", "Book"),
+      "ابعتلنا على واتساب": L("اختار ميعادك", "Pick your slot"),
+      "خلال ١٤ يوم من الاستلام مع رقم الطلب.": L("على واتساب أو من الموقع.", "On WhatsApp or online."),
+      "جهّز المنتج": L("بنغسل", "We wash"),
+      "في علبته الأصلية بكل الإكسسوارات.": L("غسيل يدوي من جوه وبره.", "A hand wash inside and out."),
+      "المندوب يستلم": L("استلم", "Collect"),
+      "خلال يومين شغل من عنوانك.": L("عربيتك جاهزة في ساعة.", "Your car is ready in an hour."),
+      "فلوسك ترجع": L("ادفع عند الاستلام", "Pay on collection"),
+      "بنفس طريقة الدفع خلال ٥ أيام.": L("كاش أو محفظة، وقت ما تستلم عربيتك.", "Cash or wallet, when you collect your car."),
     },
   }),
   lib("products-grid", {
     text: {
-      "وصل حديثًا": L("اصرف نقطك", "Spend your points"),
-      "أحدث المنتجات اللي نزلت المتجر.": L("كل ٥٠٠ نقطة بخصم ٥٠ جنيه على أي حاجة هنا.", "Every 500 points takes EGP 50 off anything here."),
+      "وصل حديثًا": L("الأكثر طلبًا", "Most ordered"),
+      "أحدث المنتجات اللي نزلت المتجر.": L("اللي بيطلبه السواقين أكتر من غيره.", "What drivers order most."),
     },
     links: { "/products": BEST },
     lists: [{ source: "best-sellers", limit: 4 }],
@@ -145,22 +130,22 @@ const home: Design[] = [
 ];
 
 const about: Design[] = [
-  pageHeader(lib, "about-header", L("عن نادي جراجي", "About Garagy Club"), L("غسلة كل شهر، فحص كل سنة، ونقط على كل زيارة.", "A monthly wash, a yearly check, and points on every visit.")),
+  pageHeader(lib, "about-header", L("عن نادي جراجي", "About Garagy Club"), L("غسلة كل شهر، وفحص كل سنة.", "A monthly wash and a yearly check.")),
   aboutStory(lib, {
     photo: PHOTOS.towelsWide,
     alt: L("فوط مايكروفايبر ملونة على ترولي الغسيل", "Colourful microfiber towels on a wash trolley"),
     eyebrow: L("على بابك", "At your door"),
     title: L("نادي لعربيتك", "A club for your car"),
     text: L("فريق غسيل بيجيلك في المعاد، بمية قليلة وفوط مايكروفايبر نضيفة لكل عربية.", "A wash team comes on time, with little water and clean microfiber towels for every car."),
-    more: L("وكل غسلة بتكسّبك نقط تصرفها على الإكسسوارات من المتجر.", "And every wash earns points you spend on accessories in the shop."),
-    button: L("اصرف نقطك", "Spend your points"),
+    more: L("وكل غسلة بمنتجات آمنة على الدهان.", "And every wash uses paint-safe products."),
+    button: L("الأكثر طلبًا", "Most ordered"),
     href: BEST,
   }),
 ];
 
 const DEMO = demoStore({
   name: NAME,
-  description: L("غسلة كل شهر، فحص كل سنة، ونقط على كل زيارة.", "A monthly wash, a yearly check, and points on every visit."),
+  description: L("غسلة كل شهر، وفحص كل سنة.", "A monthly wash and a yearly check."),
   categories: [
     ["care", "عناية", "Care", PHOTOS.towels],
     ["interior", "الصالون", "Interior", PHOTOS.organizer],
@@ -181,13 +166,13 @@ const DEMO = demoStore({
 
 export const GARAGY = libraryTemplate({
   key: GARAGY_KEY,
-  version: 2,
-  changelog: "Garagy v2: product page",
+  version: 3,
+  changelog: "Garagy v3: categories after the hero",
   productPage: { thumbs: "side", band: "paper", copy: { back: L("رجوع للخدمات", "Back to the services"), reviews: L("رأي أعضاء النادي", "From club members"), related: L("خدمة تانية للعربية", "More services for your car") } },
   name: L("جراجي", "Garagy"),
   description: L(
-    "اشتراك عناية العربية: باقات شهرية، النقط ودرجات العضوية، اصرف نقطك والدعم. أربع صفحات جاهزة.",
-    "Car care subscription: monthly plans, points and member tiers, spend your points and support. Four ready pages.",
+    "اشتراك عناية العربية: باقات شهرية، الغسلة بتمشي إزاي والدعم. أربع صفحات جاهزة.",
+    "Car care subscription: monthly plans, how a wash works and support. Four ready pages.",
   ),
   category: "auto",
   sortOrder: 1000,
@@ -223,7 +208,7 @@ export const GARAGY = libraryTemplate({
       name: L("الأسئلة الشائعة", "FAQ"),
       seo: { title: L("الأسئلة الشائعة", "FAQ") },
       sections: faqPage(lib, {
-        text: L("الباقات والنقط والمواعيد.", "Plans, points and booking."),
+        text: L("الباقات والمواعيد والدفع.", "Plans, booking and payment."),
         question: L("أقدر أوقف الاشتراك؟", "Can I pause my plan?"),
         answer: L("أيوه، ابعتلنا على واتساب قبل معاد الغسلة الجاية بيومين.", "Yes, message us on WhatsApp two days before your next wash."),
       }),

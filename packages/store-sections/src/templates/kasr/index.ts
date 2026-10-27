@@ -12,7 +12,7 @@
 import { getDesign, type Design } from "../../designs";
 import { L } from "../../designs/_kit";
 import { fromLibrary, type LibraryPatch } from "../_library";
-import { demoStore, handle, libraryTemplate, pexels } from "../library-template";
+import { demoStore, libraryTemplate, pexels } from "../library-template";
 
 export const KASR_KEY = "kasr";
 
@@ -47,6 +47,9 @@ const PHOTOS = {
   copperRail: pexels(5531711, 900),
   checkRack: pexels(12700580, 900),
   fabricRolls: pexels(4614236),
+  heroCoat: pexels(36180262, 1600),
+  heroRack: pexels(5706273, 1600),
+  heroCloset: pexels(6461398, 1600),
 };
 
 const NAME = L("قصر ستوديو", "Kasr Studio");
@@ -75,21 +78,42 @@ const footer = lib("footer-links", {
   links: { "/products": [undefined, NEW, BEST] },
 });
 
+/**
+ * Home (v4, template-rules §2a): the autumn campaign as a three-slide hero,
+ * the categories in big type, then the fashion journey: new in, the looks,
+ * the styling video, the studio's promises and worn-and-reviewed to close.
+ */
 const home: Design[] = [
-  lib("features-ticker", {
+  lib("hero-carousel", {
+    photo: [PHOTOS.heroCoat, PHOTOS.heroRack, PHOTOS.heroCloset],
     text: {
-      "توصيل سريع": L("توصيل مجاني فوق ١٬٥٠٠ ج.م", "Free delivery over EGP 1,500"),
-      "استرجاع سهل": L("تبديل مقاس ببلاش", "Free size exchange"),
-      "دعم على واتساب": L("متفصل في القاهرة", "Cut in Cairo"),
-      "الدفع عند الاستلام": L("ادفع عند الاستلام", "Pay on delivery"),
+      "وصل حديثًا": L("حملة الخريف", "The autumn campaign"),
+      "الموسم الجديد وصل": L("الخريف، متفصّل في القاهرة", "Autumn, cut in Cairo"),
+      "قطع مختارة بعناية، وتوصيل لحد باب البيت.": L("بالطو وكوفية صوف وطبقات هادية، ٥٠ قطعة من كل موديل.", "Coats, wool scarves and quiet layers, fifty pieces of each style."),
+      "تسوّق الجديد": L("تسوق الجديد", "Shop new in"),
+      "صورة الحملة الأولى": L("بالطو جملي وكوفية صوف من حملة الخريف", "Camel coat and wool scarf from the autumn campaign"),
+      "الأكثر مبيعًا": L("الأكثر طلباً", "Most wanted"),
+      "المفضّلة عند عملائنا": L("القطع اللي بترجعوا لها", "The pieces you come back for"),
+      "القطع اللي بترجع لها كل مرة.": L("بليزر رملي، فستان زيتي وسويت شيرت باستيل.", "A sand blazer, an olive dress and a pastel sweatshirt."),
+      "شوف الأكثر مبيعًا": L("شوف الأكثر طلباً", "See the favourites"),
+      "صورة الحملة الثانية": L("هدوم بألوان ترابية على راك", "Earth-toned clothes on a rail"),
+      "عروض الأسبوع": L("الأساسيات", "The basics"),
+      "خصومات لفترة محدودة": L("طبقات لكل يوم", "Layers for every day"),
+      "أسعار أقل على قطع مختارة، لحد ما الكمية تخلص.": L("قطع بتتنسّق مع بعض من الصبح لبالليل.", "Pieces that work together from morning to night."),
+      "تسوّق العروض": L("تسوق الأساسيات", "Shop the basics"),
+      "صورة الحملة الثالثة": L("جواكت وقمصان متعلقة في دولاب خشب", "Jackets and shirts hanging in a wooden closet"),
     },
+    links: { "/products": [NEW, BEST, SHOP] },
   }),
-  lib("gallery-slider", {
-    photo: [PHOTOS.camelCoat, PHOTOS.neutralRack, PHOTOS.linenCloset, PHOTOS.teddyCoat, PHOTOS.jackets, PHOTOS.garments],
+  lib("categories-big-type", {}),
+  lib("products-panel-rail", {
     text: {
-      "صورة الحملة": L("بالطو جملي وكوفية صوف من حملة الخريف", "Camel coat and wool scarf from the autumn campaign"),
-      "صورة مصغرة": L("صورة من لوك بوك الخريف", "Autumn lookbook photo"),
+      "هدايا": L("وصل جديد", "New in"),
+      "هدايا تحت ١٠٠٠ جنيه": L("وصل الأسبوع ده", "This week’s arrivals"),
+      "اختيارات مضمونة لأي مناسبة.": L("كميات صغيرة متفصلة في استوديو الزمالك.", "Small runs, cut in our Zamalek studio."),
     },
+    links: { "/products": NEW },
+    lists: [{ source: "newest" }],
   }),
   lib("gallery-captioned", {
     photo: [PHOTOS.shirts, PHOTOS.corduroy, PHOTOS.leatherJacket, PHOTOS.flatLay, PHOTOS.bagShelf, PHOTOS.cardigan],
@@ -116,14 +140,13 @@ const home: Design[] = [
       "فيديو المنتجات": L("فيديو: بدلة واحدة بخمس طرق", "Video: one suit, five ways"),
     },
   }),
-  lib("products-panel-rail", {
+  lib("features-ticker", {
     text: {
-      "هدايا": L("وصل جديد", "New in"),
-      "هدايا تحت ١٠٠٠ جنيه": L("وصل الأسبوع ده", "This week’s arrivals"),
-      "اختيارات مضمونة لأي مناسبة.": L("كميات صغيرة متفصلة في استوديو الزمالك.", "Small runs, cut in our Zamalek studio."),
+      "توصيل سريع": L("توصيل لكل المحافظات", "Delivery across Egypt"),
+      "استرجاع سهل": L("تبديل مقاس ببلاش", "Free size exchange"),
+      "دعم على واتساب": L("متفصل في القاهرة", "Cut in Cairo"),
+      "الدفع عند الاستلام": L("ادفع عند الاستلام", "Pay on delivery"),
     },
-    links: { "/products": NEW },
-    lists: [{ source: "newest" }],
   }),
   lib("testimonials-products", {
     photo: [PHOTOS.blazer, PHOTOS.floralDress, PHOTOS.shirts, PHOTOS.sweatshirts],
@@ -154,26 +177,6 @@ const home: Design[] = [
       "المنصورة": L("القاهرة", "Cairo"),
     },
     links: { "/products": [SHOP, SHOP, SHOP, SHOP, SHOP] },
-  }),
-  lib("gallery-polaroids", {
-    photo: [undefined, undefined, undefined, PHOTOS.darkCloset, PHOTOS.softRack, PHOTOS.copperRail, PHOTOS.checkRack, PHOTOS.fabricRolls],
-    text: {
-      "عملاؤنا": L("دواليبكم فيها قصر", "Kasr in your wardrobes"),
-      "أرسل لنا صورتك": L("ابعتلنا صورتك", "Send us your photo"),
-      "مريم": handle("@nour.a"),
-      "عمر": handle("@omar.f"),
-      "نور": handle("@hana.m"),
-      "يوسف": handle("@yara.s"),
-      "سلمى": handle("@karim"),
-    },
-  }),
-  lib("newsletter-sticker", {
-    photo: [undefined, undefined, undefined, PHOTOS.crocBags],
-    text: {
-      "خد ١٠٪ خصم على أول طلب": L("خصم ١٠٪ على أول طلب", "10% off your first order"),
-      "وكمان توصلك العروض قبل أي حد.": L("اشترك واعرف الجديد قبل الكل.", "Join the list and hear about new drops first."),
-      "صورة العرض": L("شنط جلد بملمس كروكو", "Croc-effect leather bags"),
-    },
   }),
 ];
 
@@ -243,12 +246,12 @@ const DEMO = demoStore({
 
 export const KASR = libraryTemplate({
   key: KASR_KEY,
-  version: 3,
-  changelog: "Kasr v3: product page",
+  version: 4,
+  changelog: "Kasr v4: hero, categories, section order",
   name: L("قصر", "Kasr"),
   description: L(
-    "موضة تحريرية: لوك بوك وفيديو وتقييمات على المنتجات، بخط كلاسيكي وزوايا حادة. أربع صفحات جاهزة.",
-    "Editorial fashion: a lookbook, a video and product reviews, with classic type and square corners. Four ready pages.",
+    "موضة تحريرية: حملة بالشرائح، لوك بوك وفيديو وتقييمات على المنتجات، بخط كلاسيكي وزوايا حادة. أربع صفحات جاهزة.",
+    "Editorial fashion: a campaign slideshow, a lookbook, a video and product reviews, with classic type and square corners. Four ready pages.",
   ),
   category: "fashion",
   sortOrder: 40,

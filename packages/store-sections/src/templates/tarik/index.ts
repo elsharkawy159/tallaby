@@ -130,32 +130,9 @@ const home: Design[] = [
       ],
     },
   }),
-  lib("bundle-plus", {
-    text: {
-      "باقة": L("طقم الراحة", "Comfort set"),
-      "اشتريهم مع بعض ووفّر": L("كفر وجلدة ونور", "Cover, wheel wrap and lights"),
-      "١٬٢٧٠ ج.م": L("١٬٩٢٠ ج.م", "EGP 1,920"),
-      "بدل ١٬٤٩٠ ج.م": L("بدل ٢٬١٨٠ ج.م", "Instead of EGP 2,180"),
-      "وفّر ٢٢٠ ج.م": L("وفّر ٢٦٠ ج.م", "Save EGP 260"),
-    },
-  }),
   lib("products-shelf", {
     text: { "تسوّق حسب مزاجك": L("المتجر", "Shop"), "عليه خصم": L("الأعلى تقييمًا", "Top rated") },
     links: { "/products": [NEW, BEST, RATED, SHOP] },
-  }),
-  lib("popup-reward", {
-    name: L("شارك ووفّر", "Refer a friend"),
-    text: {
-      "جرّب حظك": L("شارك ووفّر", "Share and save"),
-      "المرة دي كسبت، وده كودك.": L(
-        "صاحبك يوفر ١٠٪ على أول طلب، وانت كمان على اللي بعده.",
-        "Your friend saves 10% on the first order, and you get the same on your next.",
-      ),
-      "كسبت": L("ابعت لصاحبك", "Send to a friend"),
-      "شحن مجاني": L("خصم ١٠٪", "10% off"),
-      "الكود: FREESHIP": L("الكود: WELCOME10", "Code: WELCOME10"),
-      "استخدمه دلوقتي": L("تسوق دلوقتي", "Shop now"),
-    },
   }),
   lib("testimonials-wall", {
     text: {
@@ -226,8 +203,8 @@ export const TARIK = libraryTemplate({
   productPage: { thumbs: "side", band: "paper", extras: ["product-perks"], copy: { back: L("رجوع للعربية", "Back to the car"), reviews: L("من جوّا عربياتهم", "From inside their cars"), related: L("إكسسوارات تكمّل العربية", "More for your car") } },
   name: L("طريق", "Tarik"),
   description: L(
-    "إكسسوارات العربيات: بانرات متحركة، تسوق بالمكان، طقم الراحة، شارك ووفّر وآراء العملاء. أربع صفحات جاهزة.",
-    "Car accessories: banner carousel, shop by area, a comfort set, refer a friend and reviews. Four ready pages.",
+    "إكسسوارات العربيات: بانرات متحركة، تسوق بالمكان وآراء العملاء. أربع صفحات جاهزة.",
+    "Car accessories: banner carousel, shop by area and reviews. Four ready pages.",
   ),
   category: "auto",
   sortOrder: 1100,

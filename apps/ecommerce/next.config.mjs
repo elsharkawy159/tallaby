@@ -26,6 +26,11 @@ const nextConfig = {
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
         ],
       },
+      // The section and template library is open but never indexed (also a noindex meta).
+      ...["/dev-library", "/dev-library/:path*", "/:locale(ar|en)/dev-library", "/:locale(ar|en)/dev-library/:path*"].map((source) => ({
+        source,
+        headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" }],
+      })),
     ];
   },
   // The list lives in redirects.mjs.

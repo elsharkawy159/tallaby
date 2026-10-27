@@ -62,12 +62,6 @@ const footer = lib("footer-signup", {
 });
 
 const home: Design[] = [
-  lib("promo-shipping", {
-    text: {
-      "اطلب بـ ١٥٠٠ ج.م أو أكتر والتوصيل عليك ببلاش": L("اطلب بـ ٨٠٠ ج.م أو أكتر والتوصيل ببلاش", "Order EGP 800 or more and delivery is free"),
-    },
-    links: { "/products": BEST },
-  }),
   lib("hero-ticket", {
     photo: [PHOTOS.jarShelf, PHOTOS.utensilWall, PHOTOS.dishShelf],
     text: {
@@ -94,19 +88,6 @@ const home: Design[] = [
   lib("products-tabbed", {
     text: { "وصل جديد": L("جديد", "New"), "العروض": L("الأعلى تقييماً", "Top rated") },
     links: { "/products": [NEW, BEST, RATED] },
-  }),
-  lib("promo-bento", {
-    photo: [PHOTOS.basketJars, PHOTOS.spoons, PHOTOS.spiceRack],
-    text: {
-      "عروض الموسم": L("عروض الأسبوع", "Offers of the week"),
-      "٤٠٪": L("٢٠٪", "20%"),
-      "تشكيلة الموسم": L("التخزين", "Storage"),
-      "٢٥٪": L("١٥٪", "15%"),
-      "الأكثر مبيعًا": L("الأدوات", "Utensils"),
-      "٣٠٪": L("١٠٪", "10%"),
-      "أساسيات": L("البهارات", "Spices"),
-    },
-    links: { "/products": BEST },
   }),
   lib("features-icon-cards", {
     text: {
@@ -192,8 +173,8 @@ export const DAILY = libraryTemplate({
   changelog: "Daily v3: product page",
   name: L("ديلي", "Daily"),
   description: L(
-    "أدوات المطبخ والبيت: هدف التوصيل المجاني، عروض الأسبوع وأقسام واضحة. أربع صفحات جاهزة.",
-    "Kitchen and everyday essentials: a free-delivery goal, weekly offers and clear categories. Four ready pages.",
+    "أدوات المطبخ والبيت: أقسام واضحة وأساسيات كل يوم. أربع صفحات جاهزة.",
+    "Kitchen and everyday essentials: clear categories and daily basics. Four ready pages.",
   ),
   category: "kitchen",
   sortOrder: 140,

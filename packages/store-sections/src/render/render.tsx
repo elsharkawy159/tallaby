@@ -8,7 +8,8 @@ import { resolveSectionForLocale } from "../core/locale";
 import { applyMigrations, resolveSectionProps, type SectionRegistry } from "../core/registry";
 import { SITE_ROOT_CLASS, SITE_THEME_INIT_SCRIPT, designSystemToCss, siteDarkCss, type ThemeInput } from "../core/theme";
 import { IMAGE_SIZES, imageSource, type RenderContext } from "../core/types";
-import { shellLayout } from "../elements/shell";
+import { MOTION_CSS } from "../elements/motion";
+import { shellAnimates, shellLayout } from "../elements/shell";
 import { collectPageCss, escapeStyleBlock, normalizeSectionStyle, type StyleCssMode } from "../elements/style";
 
 export function SectionRenderer({
@@ -29,8 +30,11 @@ export function SectionRenderer({
   const localizedInstance = resolveSectionForLocale(migrated, ctx.locale, defaultLocale);
   const props = resolveSectionProps(definition, localizedInstance.props);
   const Component = definition.Component;
-  const content = <Component instance={localizedInstance} props={props} ctx={ctx} />;
-  const shell = shellLayout(normalizeSectionStyle(instance.style).shell, (src) => ctx.imageUrl(src));
+  const shellStyle = normalizeSectionStyle(instance.style).shell;
+  // The section's Animation switch (off: "none") turns its reveal off.
+  const sectionCtx = ctx.reveal && !shellAnimates(shellStyle) ? { ...ctx, reveal: false } : ctx;
+  const content = <Component instance={localizedInstance} props={props} ctx={sectionCtx} />;
+  const shell = shellLayout(shellStyle, (src) => ctx.imageUrl(src));
   // No shell: the wrapper renders exactly as before the shell existed (P4B-05).
   if (!shell) {
     return (
@@ -68,27 +72,29 @@ export function PageRenderer({
   ctx: RenderContext;
   defaultLocale?: SiteLocale;
 }) {
+  // The header and footer never reveal (docs/section-rules.md §6.4).
+  const chromeCtx = ctx.reveal ? { ...ctx, reveal: false } : ctx;
   return (
     <>
-      {header && <SectionRenderer instance={flushHeaderOnMobile(header)} registry={registry} ctx={ctx} defaultLocale={defaultLocale} />}
+      {header && <SectionRenderer instance={flushHeaderOnMobile(header)} registry={registry} ctx={chromeCtx} defaultLocale={defaultLocale} />}
       <main className="flex-1">
         {content.sections.map((instance) => (
           <SectionRenderer key={instance.id} instance={instance} registry={registry} ctx={ctx} defaultLocale={defaultLocale} />
         ))}
       </main>
-      {footer && <SectionRenderer instance={footer} registry={registry} ctx={ctx} defaultLocale={defaultLocale} />}
+      {footer && <SectionRenderer instance={footer} registry={registry} ctx={chromeCtx} defaultLocale={defaultLocale} />}
     </>
   );
 }
 
 /**
- * Scoped theme tokens for a site root carrying `SITE_ROOT_CLASS`. `dark`: the
- * site offers the theme toggle, so the dark tokens and the script that
- * restores a visitor's choice come too (render it as a direct child of the root).
+ * Scoped theme tokens for a site root carrying `SITE_ROOT_CLASS`, plus the
+ * fixed motion CSS (`elements/motion.ts`). `dark`: the site offers the theme
+ * toggle, so the dark tokens and the script that restores a visitor's choice
+ * come too (render it as a direct child of the root).
  */
 export function SiteTheme({ designSystem, dark = false }: { designSystem: ThemeInput | null | undefined; dark?: boolean }) {
-  const css = [designSystemToCss(designSystem), dark ? siteDarkCss() : ""].filter(Boolean).join("\n");
-  if (!css) return null;
+  const css = [designSystemToCss(designSystem), dark ? siteDarkCss() : "", MOTION_CSS].filter(Boolean).join("\n");
   return (
     <>
       <style data-site-theme dangerouslySetInnerHTML={{ __html: css.replace(/</g, "\\3c ") }} />

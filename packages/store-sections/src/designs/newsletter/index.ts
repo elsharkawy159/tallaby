@@ -9,6 +9,9 @@ import { newsletterLetter } from "./newsletter-letter";
 import { newsletterPhoto } from "./newsletter-photo";
 import { newsletterRuled } from "./newsletter-ruled";
 import { newsletterSticker } from "./newsletter-sticker";
+import { newsletterBanner } from "./newsletter-banner";
+import { newsletterOffer } from "./newsletter-offer";
+import { newsletterStrip } from "./newsletter-strip";
 
 /** First is the default for new stores (the Classic template's sign-up panel). */
-export const NEWSLETTER_DESIGNS: readonly Design[] = [newsletterClassic, newsletterCentered, newsletterPhoto, newsletterChannels, newsletterCoupon, newsletterRuled, newsletterBig, newsletterInterests, newsletterSticker, newsletterLetter];
+export const NEWSLETTER_DESIGNS: readonly Design[] = [newsletterClassic, newsletterCentered, newsletterPhoto, newsletterChannels, newsletterCoupon, newsletterRuled, newsletterBig, newsletterInterests, newsletterSticker, newsletterLetter, newsletterBanner, newsletterStrip, newsletterOffer];

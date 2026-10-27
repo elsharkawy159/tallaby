@@ -2,8 +2,8 @@
  * Roast (template 20, coffee roaster; Claude Design "Storefront
  * Templates"): warm paper, a dark roast brown for actions and a caramel
  * highlight, Lalezar display type over Tajawal and 14px corners. A roaster
- * with a story: roast-day promises, why we roast weekly, this week's roast,
- * milestones since 1987, bean to cup, a coffee feed, FAQs and a sign-up.
+ * with a story: a full-bleed roaster hero, categories, this week's roast,
+ * roast-day promises, bean to cup, a coffee feed, FAQs and a sign-up.
  * Built from section library designs (`fromLibrary`).
  *
  * Photos: Pexels, each checked by eye (2026-10-20): roasted and green
@@ -35,6 +35,7 @@ const PHOTOS = {
   roasterDrop: pexels(4820734, 900),
   roasterTop: pexels(4820812, 900),
   spices: pexels(458796, 900),
+  heroRoaster: pexels(894695, 1600),
 };
 
 const NAME = L("بيت البن", "Bunn House");
@@ -54,27 +55,30 @@ const footer = lib("footer-wordmark", {
   links: { "/products": [undefined, NEW, BEST, RATED] },
 });
 
+/**
+ * Home (v4, template-rules §2a): the roaster drum as a full-bleed hero, the
+ * categories, then the coffee journey: this week's roast first, the roast-day
+ * promises right under it, bean to cup, your morning cups, FAQs and the
+ * roast notes sign-up.
+ */
 const home: Design[] = [
-  lib("features-ticker", {
+  lib("hero-fullbleed", {
+    photo: [PHOTOS.heroRoaster],
     text: {
-      "توصيل سريع": L("بيتحمص كل اتنين", "Roasted every Monday"),
-      "الدفع عند الاستلام": L("يوصل قبل الأربع", "Delivered by Wednesday"),
-      "استرجاع سهل": L("تاريخ التحميص على كل كيس", "Roast date on every bag"),
-      "دعم على واتساب": L("ادفع عند الاستلام", "Pay on delivery"),
+      "المجموعة الجديدة": L("محمصة العيلة من ١٩٨٧", "A family roaster since 1987"),
+      "صُنعت لتدوم معك": L("بن طازة كل اتنين", "Fresh beans every Monday"),
+      "خامات مختارة وتفاصيل هادئة، وتوصيل سريع لحد باب البيت.": L(
+        "بنحمص كميات صغيرة من ٥ مزارع، وبيوصلك قبل الأربع.",
+        "Small batches from five farms, at your door by Wednesday.",
+      ),
+      "تسوّق الآن": L("تسوق تحميص الأسبوع", "Shop this week’s roast"),
+      "شوف الجديد": L("الأكثر طلباً", "Most ordered"),
+      "صورة الواجهة": L("بن بيتقلّب في المحمصة", "Beans turning in the roaster"),
     },
+    links: { "/products?sort=newest": BEST },
   }),
-  lib("text-lead", {
-    text: {
-      "بدأنا المتجر عشان نلاقي منتجات أصلية بسعر عادل، من غير لف على المحلات.": L(
-        "بنحمص كميات صغيرة كل اتنين عشان القهوة في فنجانك ما يعداش عليها أكتر من ١٠ أيام.",
-        "We roast small batches every Monday so the coffee in your cup is never more than ten days old.",
-      ),
-      "النهارده بنشحن لكل المحافظات، وكل منتج بيتراجع قبل ما يخرج.": L(
-        "البن بتاعنا من ٥ مزارع في إثيوبيا والبرازيل وكولومبيا، بنشتريه مباشرة من مستورد واحد في إسكندرية.",
-        "Our beans come from five farms in Ethiopia, Brazil and Colombia, bought through one importer in Alexandria.",
-      ),
-      "بنشتغل مع موردين معتمدين بس، وكل طلب معاه فاتورة رسمية.": L("كل كيس عليه تاريخ التحميص واسم المزرعة.", "Every bag is stamped with its roast date and the farm it came from."),
-    },
+  lib("categories-circles", {
+    text: { "بتدوّر على إيه؟": L("قهوتك إيه النهارده؟", "What are you brewing today?") },
   }),
   lib("products-panel-rail", {
     text: {
@@ -85,16 +89,12 @@ const home: Design[] = [
     links: { "/products": SHOP },
     lists: [{ source: "best-sellers" }],
   }),
-  lib("stats-milestones", {
+  lib("features-ticker", {
     text: {
-      "من محل صغير لكل مصر": L("من محمصة واحدة لكل مصر", "From one roaster to all of Egypt"),
-      "٢٠١٨": L("١٩٨٧", "1987"),
-      "أول محل صغير": L("جدّي فتح محل بن في طلعت حرب", "Grandfather opens a coffee shop on Talaat Harb"),
-      "٢٠٢٠": L("٢٠١٢", "2012"),
-      "بدأنا البيع أونلاين": L("أول بن مختص من مزرعة واحدة", "First specialty single-origin beans"),
-      "٢٠٢٣": L("٢٠٢١", "2021"),
-      "شحن لكل المحافظات": L("بدأنا نشحن أونلاين", "Started shipping online"),
-      "٢٥ ألف طلب": L("٤٠ ألف كيس في السنة", "40,000 bags a year"),
+      "توصيل سريع": L("بيتحمص كل اتنين", "Roasted every Monday"),
+      "الدفع عند الاستلام": L("يوصل قبل الأربع", "Delivered by Wednesday"),
+      "استرجاع سهل": L("تاريخ التحميص على كل كيس", "Roast date on every bag"),
+      "دعم على واتساب": L("ادفع عند الاستلام", "Pay on delivery"),
     },
   }),
   lib("about-stories", {
@@ -130,8 +130,8 @@ const home: Design[] = [
   }),
   lib("newsletter-big", {
     text: {
-      "خد ١٠٪ خصم على أول طلب": L("خصم ١٠٪ على أول كيس", "Get 10% off your first bag"),
-      "عروض للمشتركين بس، مرة في الأسبوع.": L("ملاحظات التحميص والعروض كل اتنين.", "Roast notes and offers every Monday."),
+      "خد ١٠٪ خصم على أول طلب": L("ملاحظات التحميص أول بأول", "Roast notes as they happen"),
+      "عروض للمشتركين بس، مرة في الأسبوع.": L("المحاصيل الجديدة وطرق التحضير كل اتنين.", "New harvests and brew guides every Monday."),
     },
   }),
 ];
@@ -173,12 +173,12 @@ const DEMO = demoStore({
 
 export const ROAST = libraryTemplate({
   key: ROAST_KEY,
-  version: 3,
-  changelog: "Roast v3: product page",
+  version: 4,
+  changelog: "Roast v4: hero, categories, section order",
   name: L("روست", "Roast"),
   description: L(
-    "محمصة بن: وعود يوم التحميص، تحميص الأسبوع، حكاية من ١٩٨٧ ومن الحباية للفنجان. أربع صفحات جاهزة.",
-    "Coffee roaster: roast-day promises, this week’s roast, a story since 1987 and bean to cup. Four ready pages.",
+    "محمصة بن: صورة المحمصة بعرض الشاشة، تحميص الأسبوع، وعود يوم التحميص ومن الحباية للفنجان. أربع صفحات جاهزة.",
+    "Coffee roaster: a full-bleed roaster hero, this week’s roast, roast-day promises and bean to cup. Four ready pages.",
   ),
   category: "food",
   sortOrder: 200,

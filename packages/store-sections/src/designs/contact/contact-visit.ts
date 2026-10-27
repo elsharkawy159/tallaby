@@ -72,7 +72,7 @@ export const contactVisit = defineDesign({
                     paddingBottom: 28,
                     paddingStart: 28,
                     paddingEnd: 28,
-                    shadow: "lg",
+                    shadow: "md",
                   },
                   mobile: {
                     position: "relative",

@@ -61,8 +61,8 @@ export const bundleList = defineDesign({
                               offset: i * 3,
                               optional: i > 0,
                               columns: { desktop: 3, mobile: 3 },
-                              style: { gap: 0, width: "150px" },
-                              mobile: { width: "110px" },
+                              style: { gap: 0, maxWidth: "150px" },
+                              mobile: { maxWidth: "110px" },
                             },
                           ),
                           t.stack(

@@ -47,7 +47,7 @@ const NAME = L("عطار الحي", "Attar El Hay");
 const header = lib("header-announcement", {
   text: {
     "توصيل مجاني للطلبات فوق ١٥٠٠ ج.م": L("بتتطحن طازة بالطلب · توصيل مجاني فوق ٣٥٠ ج.م", "Ground fresh on order · Free delivery over EGP 350"),
-    "الكود: SAVE10": L("الكود: WELCOME10", "Code: WELCOME10"),
+    "الدفع عند الاستلام": L("بيتطحن طازة", "Ground fresh"),
     "م": L("ع", "A"),
     "اسم متجرك": NAME,
     "المتجر": L("التوابل", "Spices"),
@@ -84,6 +84,16 @@ const home: Design[] = [
     },
     links: { "/products": [SHOP, search("طقم")] },
   }),
+  lib("categories-ruled", { text: { "الأقسام": L("الرفوف", "The shelves"), "تسوق بالقسم": L("تسوّق بالرف", "Shop by shelf") } }),
+  lib("products-list", {
+    text: {
+      "الكتالوج": L("أحسن ٤", "Top 4"),
+      "كل الإكسسوارات": L("الأكتر إعادة طلب", "Most reordered"),
+      "كل اللي تحتاجه في مكان واحد، أصلي وبضمان.": L("اللي الجيران بيرجعوا يطلبوه كل شهر.", "What the neighbours reorder every month."),
+    },
+    links: { "/products": BEST },
+    lists: [{ source: "best-sellers", limit: 4 }],
+  }),
   lib("text-lead", {
     text: {
       "بدأنا المتجر عشان نلاقي منتجات أصلية بسعر عادل، من غير لف على المحلات.": L(
@@ -98,34 +108,6 @@ const home: Design[] = [
         "وبنكتب على كل كيس يوم الطحن، عشان تعرف إمتى تجدد.",
         "And every bag carries its grinding date, so you know when to restock.",
       ),
-    },
-  }),
-  lib("bundle-plus", {
-    text: {
-      "باقة": L("طقم المطبخ", "Kitchen set"),
-      "اشتريهم مع بعض ووفّر": L("توابل وأساسيات وبرطمانات", "Spices, staples and jars"),
-      "سعر الباقة": L("سعر الطقم", "Set price"),
-      "١٬٢٧٠ ج.م": L("٥٨٥ ج.م", "EGP 585"),
-      "بدل ١٬٤٩٠ ج.م": L("بدل ٦٥٠ ج.م", "Instead of EGP 650"),
-      "وفّر ٢٢٠ ج.م": L("وفّر ٦٥ ج.م", "Save EGP 65"),
-      "اطلب الباقة": L("اطلب الطقم", "Get the set"),
-    },
-    links: { "/products": search("طقم") },
-    lists: [{ source: "featured" }],
-  }),
-  lib("products-list", {
-    text: {
-      "الكتالوج": L("أحسن ٤", "Top 4"),
-      "كل الإكسسوارات": L("الأكتر إعادة طلب", "Most reordered"),
-      "كل اللي تحتاجه في مكان واحد، أصلي وبضمان.": L("اللي الجيران بيرجعوا يطلبوه كل شهر.", "What the neighbours reorder every month."),
-    },
-    links: { "/products": BEST },
-    lists: [{ source: "best-sellers", limit: 4 }],
-  }),
-  lib("cart-coupon", {
-    text: {
-      "استخدمه في السلة": L("اكتبه في السلة", "Enter it in your cart"),
-      "صالح ٤٨ ساعة": L("لأول طلب بس", "First order only"),
     },
   }),
   lib("testimonials-ruled", {
@@ -186,13 +168,13 @@ const DEMO = demoStore({
 
 export const ATARA = libraryTemplate({
   key: ATARA_KEY,
-  version: 2,
-  changelog: "Atara v2: product page",
+  version: 3,
+  changelog: "Atara v3: categories, no coupon, section order",
   productPage: { thumbs: "bottom", band: "shelf", extras: ["product-shipping"], copy: { back: L("رجوع للعطارة", "Back to the spices"), reviews: L("رأي الجيران", "The neighbours say"), related: L("يتحط جنبه في المطبخ", "Pair it in your kitchen") } },
   name: L("عطارة", "Atara"),
   description: L(
-    "توابل وأعشاب: بيتطحن طازة، طقم المطبخ، الأكتر إعادة طلب، كوبون أول طلب وآراء الجيران. أربع صفحات جاهزة.",
-    "Spices and herbs: ground fresh, the kitchen set, the most reordered, a first-order coupon and the neighbours’ reviews. Four ready pages.",
+    "توابل وأعشاب: بيتطحن طازة، الأكتر إعادة طلب وآراء الجيران. أربع صفحات جاهزة.",
+    "Spices and herbs: ground fresh, the most reordered and the neighbours’ reviews. Four ready pages.",
   ),
   category: "food",
   sortOrder: 730,

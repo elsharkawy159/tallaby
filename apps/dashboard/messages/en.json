@@ -674,7 +674,7 @@
         },
         "template": {
           "title": "Choose your template",
-          "description": "Pick a design for your store's website",
+          "description": "Pick a design for your website. You need one to go live.",
           "cta": "Choose"
         },
         "shipping": {
@@ -691,6 +691,8 @@
       "publish": {
         "cta": "Publish now",
         "locked": "Add your first product first",
+        "lockedTemplate": "Choose your store's template first",
+        "chooseTemplate": "Choose template",
         "successTitle": "Your store is live! 🎉",
         "successBody": "Congratulations! Customers can now visit your store and place orders. Share your link:",
         "copy": "Copy link",
@@ -994,6 +996,49 @@
     }
   },
   "productForm": {
+    "ai": {
+      "title": "Add your product with AI",
+      "description": "Add photos, a spec sheet (PDF) or a short description, and AI fills in the form in Arabic and English. Review it before you publish.",
+      "placeholder": "Describe your product… (name, material, sizes or colors, and the price if you like)",
+      "attach": "Add photos or PDF",
+      "attachments": "Attached files",
+      "remove": "Remove",
+      "limits": "Up to {images} photos and one PDF ({pdfMb} MB)",
+      "dropHere": "Drop photos or a PDF here",
+      "replaceAll": "Replace what I wrote",
+      "fill": "Fill the form",
+      "running": "Analyzing…",
+      "thinking": "Reading your photos and writing the listing…",
+      "filledToast": "AI filled {count, plural, one {# field} other {# fields}}. Review them before publishing.",
+      "nothingFilled": "Nothing new to fill: your fields are already filled.",
+      "reviewTitle": "AI filled {count, plural, one {# field} other {# fields}}",
+      "reviewHint": "Check the name, description, category and price before you publish. AI never makes up prices or stock.",
+      "undo": "Undo",
+      "undone": "AI changes undone",
+      "dismiss": "Dismiss",
+      "remaining": "{count, plural, one {# AI fill} other {# AI fills}} left today",
+      "missing": {
+        "price": "Add the price",
+        "stock": "Add the stock quantity",
+        "category": "Choose the category",
+        "brand": "Add the brand if it has one",
+        "dimensions": "Add the dimensions",
+        "weight": "Add the weight"
+      },
+      "errors": {
+        "unauthorized": "Please sign in again.",
+        "disabled": "AI is not available right now.",
+        "empty": "Add a description, a photo or a PDF first.",
+        "tooLarge": "The files are too large. Use fewer or smaller photos.",
+        "badFile": "Only JPG, PNG or WebP photos and PDF files are supported.",
+        "rateLimited": "Too many requests. Wait a minute and try again.",
+        "dailyLimit": "You've used today's AI fills. Try again tomorrow.",
+        "failed": "AI couldn't read this product. Try again or add more details.",
+        "pdfTooLarge": "The PDF must be 4 MB or smaller.",
+        "tooManyImages": "You can add up to {max} photos.",
+        "photoUploadFailed": "Some photos couldn't be added to the product images."
+      }
+    },
     "addTitle": "Add Product",
     "contentLanguage": "Content language",
     "saving": "Saving...",
@@ -1300,6 +1345,7 @@
         "expiryDescription": "The original price comes back automatically afterwards",
         "endsAt": "Ends on",
         "salePrice": "Sale price",
+        "finalPrice": "Final price",
         "percentOffEmpty": "— off",
         "customerSaves": "Customers save {amount}",
         "salePriceHint": "Lower than the product price"
@@ -2671,7 +2717,10 @@
     "setupSubtitle": "Three quick details and your store is ready.",
     "industry": "Store industry",
     "orWithEmail": "or sign up with email",
-    "signedInAs": "Signed in as {email}",
+    "signedInAs": "Signed in as <b>{email}</b>",
+    "industryOther": "Other",
+    "industryOtherLabel": "Type your store industry",
+    "industryOtherPlaceholder": "e.g. Gardening tools",
     "signOut": "Sign out",
     "storeAddress": "Store address",
     "storeAddressHint": "Lowercase letters, numbers and dashes. You can change it later.",
@@ -2704,6 +2753,7 @@
       "invalidSubdomain": "Choose a valid store address.",
       "phoneInvalid": "Enter a valid Egyptian mobile number (01xxxxxxxxx).",
       "industryRequired": "Choose your store's industry.",
+      "industryOtherRequired": "Type your store's industry.",
       "subdomainTaken": "This store address was just taken. Choose another one.",
       "emailTaken": "This email already has an account. Sign in to continue.",
       "rateLimited": "Too many attempts. Please wait a few minutes and try again.",
@@ -3808,6 +3858,8 @@
     "liveSwitchOn": "Shoppers can visit your store and place orders.",
     "liveSwitchOff": "Your website is offline. Turn it on to publish it.",
     "liveSwitchDraft": "Not published yet. Turn it on to publish your website.",
+    "liveSwitchNeedsTemplate": "Choose your store's template before going live.",
+    "chooseTemplate": "Choose template",
     "thumbnail": "Your live store",
     "manage": "Manage your website",
     "links": {

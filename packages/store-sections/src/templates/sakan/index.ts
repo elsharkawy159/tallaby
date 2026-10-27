@@ -2,9 +2,8 @@
  * Sakan (template 24, living and bedroom furniture; Claude Design
  * "Storefront Templates"): stone paper, a deep green-grey for actions and a
  * warm sand highlight, Amiri headings over Noto Sans Arabic and almost
- * square corners. A showroom store: a lookbook, shop by room, pick the
- * fabric, best sellers, the delivery timeline, a designer on hand and every
- * way to reach us. Built from section library designs (`fromLibrary`).
+ * square corners. A showroom store: room slides, shop by room, best
+ * sellers, pick the fabric, the delivery timeline and a designer on hand. Built from section library designs (`fromLibrary`).
  *
  * Photos: Pexels, each checked by eye (2026-10-20): sofas, beds,
  * armchairs, lamps and dining rooms. No people.
@@ -22,7 +21,6 @@ const lib = (id: string, patch: LibraryPatch = {}): Design => fromLibrary(SAKAN_
 const SHOP = "/products";
 const NEW = "/products?sort=newest";
 const BEST = "/products?sort=popularity";
-const search = (q: string) => `/products?search=${encodeURIComponent(q)}`;
 
 const PHOTOS = {
   beigeLiving: pexels(39828916),
@@ -38,6 +36,9 @@ const PHOTOS = {
   cushionSofa: pexels(6758245),
   greenMarble: pexels(19991831, 900),
   greyBed: pexels(7445084, 900),
+  heroLiving: pexels(39828916, 1600),
+  heroBed: pexels(5644286, 1600),
+  heroArmchairs: pexels(13806257, 1600),
 };
 
 const NAME = L("سكن ليفنج", "Sakan Living");
@@ -57,31 +58,40 @@ const footer = lib("footer-centered", {
   },
 });
 
+/**
+ * Home (v4, template-rules §2a): three showroom rooms as a slideshow hero,
+ * shop by room, then the furniture journey: the best-loved pieces, made to
+ * order in your fabric, the five-week delivery timeline and a designer on
+ * hand to close.
+ */
 const home: Design[] = [
-  lib("gallery-slider", {
-    photo: [PHOTOS.beigeLiving, PHOTOS.woodBed, PHOTOS.greenSofa, PHOTOS.oliveArmchairs, PHOTOS.navySofa, PHOTOS.showroom],
+  lib("hero-thumbs", {
+    photo: [PHOTOS.heroLiving, PHOTOS.heroBed, PHOTOS.heroArmchairs],
     text: {
-      "صورة الحملة": L("أوضة معيشة متصورة في المعرض", "A living room photographed in our showroom"),
-      "صورة مصغرة": L("صورة من المعرض", "A showroom photo"),
+      "درجات جديدة": L("المعيشة", "Living room"),
+      "لون بيتكلم عنك": L("أوضة هادية ومعمولة تعيش", "A calm room, built to last"),
+      "درجات هادية لكل يوم وألوان جريئة للمناسبات.": L("كنب كتان واطي بالقماش اللي تختاره.", "Low linen sofas in the fabric you choose."),
+      "تسوّق الآن": L("تسوق الأكثر مبيعاً", "Shop best sellers"),
+      "صورة الشريحة الأولى": L("أوضة معيشة بكنبة بيج في المعرض", "A living room with a beige sofa in our showroom"),
+      "المجموعة الجديدة": L("النوم", "Bedroom"),
+      "جريء ومريح وليك": L("نوم أهدى من أول ليلة", "Calmer sleep from night one"),
+      "اختيارات جديدة وصلت للموسم ده.": L("سراير خشب ومفارش كتان من دمياط.", "Wooden beds and linen bedding from Damietta."),
+      "تسوّق الجديد": L("شوف الجديد", "See what’s new"),
+      "صورة الشريحة الثانية": L("سرير خشب بمفرش رمادي", "A wooden bed with grey bedding"),
+      "أطقم كاملة": L("ركن القراية", "Reading corner"),
+      "قطعتين وعشر إطلالات": L("فوتيه يستاهل الكتاب", "An armchair worth the book"),
+      "قطع بتتنسّق مع بعض بسهولة.": L("فوتيهات قطيفة وكتان على الطلب.", "Velvet and linen armchairs, made to order."),
+      "تسوّق الأطقم": L("تسوق كل الأثاث", "Shop all furniture"),
+      "صورة الشريحة الثالثة": L("فوتيهين زيتي في ركن هادي", "Two olive armchairs in a quiet corner"),
     },
+    links: { "/products": [BEST, NEW, SHOP] },
   }),
-  lib("gallery-captioned", {
-    photo: [PHOTOS.beigeLiving, PHOTOS.woodBed, PHOTOS.beigeArmchair, PHOTOS.floorLamps, PHOTOS.diningRoom, PHOTOS.readingCorner],
-    text: {
-      "لوك بوك": L("الأوض", "Rooms"),
-      "كل يوم بشكل": L("تسوق حسب الأوضة", "Shop by room"),
-      "إطلالة الشغل": L("المعيشة", "Living room"),
-      "٣ منتجات": L("كنب وترابيزات", "Sofas & tables"),
-      "المشوار": L("النوم", "Bedroom"),
-      "٤ منتجات": L("سراير ومفارش", "Beds & linen"),
-      "الويكند": L("ركن القراية", "Reading corner"),
-      "٢ منتج": L("فوتيهات", "Armchairs"),
-      "السفر": L("السهرة", "Evenings"),
-      "٥ منتجات": L("إضاءة", "Lighting"),
-      "الجيم": L("السفرة", "Dining"),
-      "السهرة": L("المكتب", "Study"),
-    },
-    links: { "/products": [search("كنبة"), search("سرير"), search("فوتيه"), search("أباجورة"), search("سفرة"), SHOP] },
+  lib("categories-captioned", {
+    text: { "اكتشف الأقسام": L("تسوق حسب الأوضة", "Shop by room") },
+  }),
+  lib("products-feature", {
+    text: { "اختيارنا ليك": L("الأكثر مبيعاً", "Best sellers"), "اختيار الأسبوع": L("الأكثر حباً", "Most loved") },
+    lists: [undefined, { source: "best-sellers" }],
   }),
   lib("about-inset", {
     photo: [undefined, undefined, undefined, undefined, undefined, undefined, undefined, PHOTOS.cushionSofa],
@@ -96,10 +106,6 @@ const home: Design[] = [
       "صورة المتجر": L("كنبة رمادي بمخدات", "A grey sofa with cushions"),
     },
     links: { "/about": "/contact" },
-  }),
-  lib("products-feature", {
-    text: { "اختيارنا ليك": L("الأكثر مبيعاً", "Best sellers"), "اختيار الأسبوع": L("الأكثر حباً", "Most loved") },
-    lists: [undefined, { source: "best-sellers" }],
   }),
   lib("stats-milestones", {
     text: {
@@ -122,13 +128,6 @@ const home: Design[] = [
       "بنرد في ١٢ دقيقة في المتوسط": L("متوسط الرد: ١٥ دقيقة", "Average reply: 15 minutes"),
     },
   }),
-  lib("contact-bento", {
-    text: {
-      "كلمنا دلوقتي": L("كلمنا دلوقتي", "Message us now"),
-      "بنرد في ١٢ دقيقة في المتوسط": L("المصممين متاحين من ١٠ الصبح لـ ١٠ بالليل", "Designers online 10am to 10pm"),
-      "٢٤ شارع التحرير، الدقي": L("مول العرب، ٦ أكتوبر", "Mall of Arabia, 6th of October"),
-    },
-  }),
 ];
 
 const about: Design[] = [
@@ -139,7 +138,7 @@ const about: Design[] = [
     eyebrow: L("مول العرب", "Mall of Arabia"),
     title: L("أوض هادية ومعمولة تعيش", "Calm rooms, built to last"),
     text: L("كل قطعة بتتعمل على الطلب في دمياط بالقماش اللي تختاره، وبتوصل في ٥ أسابيع.", "Every piece is built to order in Damietta in the fabric you choose, and arrives in five weeks."),
-    more: L("والتقسيط من غير فوايد.", "With 0% instalments."),
+    more: L("وكل قطعة عليها ضمان سنتين.", "And every piece has a two-year warranty."),
     button: L("تسوق كل الأثاث", "Shop all furniture"),
     href: SHOP,
   }),
@@ -169,12 +168,12 @@ const DEMO = demoStore({
 
 export const SAKAN = libraryTemplate({
   key: SAKAN_KEY,
-  version: 3,
-  changelog: "Sakan v3: product page",
+  version: 4,
+  changelog: "Sakan v4: hero, categories, section order",
   name: L("سكن", "Sakan"),
   description: L(
-    "أثاث المعيشة والنوم: لوك بوك، تسوق حسب الأوضة، اختار القماش ومواعيد التوصيل. أربع صفحات جاهزة.",
-    "Living and bedroom furniture: a lookbook, shop by room, pick the fabric and the delivery timeline. Four ready pages.",
+    "أثاث المعيشة والنوم: شرائح من المعرض، تسوق حسب الأوضة، اختار القماش ومواعيد التوصيل. أربع صفحات جاهزة.",
+    "Living and bedroom furniture: showroom slides, shop by room, pick the fabric and the delivery timeline. Four ready pages.",
   ),
   category: "home",
   sortOrder: 240,
@@ -210,9 +209,9 @@ export const SAKAN = libraryTemplate({
       name: L("الأسئلة الشائعة", "FAQ"),
       seo: { title: L("الأسئلة الشائعة", "FAQ") },
       sections: faqPage(lib, {
-        text: L("التوصيل والتركيب والتقسيط.", "Delivery, assembly and instalments."),
-        question: L("التقسيط إزاي؟", "How do instalments work?"),
-        answer: L("قسّط على ١٢ شهر من غير فوايد بكروت البنوك، تختار وقت الدفع.", "Pay over 12 months at 0% with bank cards, chosen at checkout."),
+        text: L("التوصيل والتركيب والضمان.", "Delivery, assembly and warranty."),
+        question: L("الضمان بيغطي إيه؟", "What does the warranty cover?"),
+        answer: L("سنتين على الهيكل والمكانيزم، وسنة على القماش.", "Two years on the frame and mechanism, one year on the fabric."),
       }),
     },
   ],

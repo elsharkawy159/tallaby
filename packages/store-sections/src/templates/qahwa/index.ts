@@ -3,7 +3,7 @@
  * Templates"): warm latte paper, a dark roast brown for actions and a
  * caramel highlight, Lalezar headings over Tajawal text and 12px corners. A
  * home coffee corner: the big word, browse, gifts for coffee people, the
- * morning set, a first-order coupon and regulars' reviews. Built from
+ * morning set and regulars' reviews. Built from
  * section library designs (`fromLibrary`).
  *
  * Photos: Pexels, each checked by eye (2026-10-21): beans in jars, moka
@@ -27,7 +27,7 @@ const RATED = "/products?sort=rating";
 
 const PHOTOS = {
   whiteMugs: pexels(39024946, 900),
-  sidamo: pexels(13427971, 900),
+  sidamo: pexels(13427971, 1600),
   woodTray: pexels(11212231, 900),
   turkishBlend: pexels(8056641, 900),
   cezve: pexels(20122594, 900),
@@ -70,19 +70,6 @@ const home: Design[] = [
     },
     links: { "/products": SHOP },
   }),
-  lib("bundle-plus", {
-    text: {
-      "باقة": L("طقم الصبح", "Morning set"),
-      "اشتريهم مع بعض ووفّر": L("كوبايات وبن وصينية", "Mugs, beans and a tray"),
-      "سعر الباقة": L("سعر الطقم", "Set price"),
-      "١٬٢٧٠ ج.م": L("١٬٦٠٠ ج.م", "EGP 1,600"),
-      "بدل ١٬٤٩٠ ج.م": L("بدل ١٬٧٩٠ ج.م", "Instead of EGP 1,790"),
-      "وفّر ٢٢٠ ج.م": L("وفّر ١٩٠ ج.م", "Save EGP 190"),
-      "اطلب الباقة": L("اطلب الطقم", "Get the set"),
-    },
-    links: { "/products": NEW },
-  }),
-  lib("cart-coupon", { text: { "صالح ٤٨ ساعة": L("أول طلب بس", "First order only") } }),
   lib("testimonials-bento", {
     text: {
       "٤٫٨": L("٤٫٩", "4.9"),
@@ -151,13 +138,13 @@ const DEMO = demoStore({
 
 export const QAHWA = libraryTemplate({
   key: QAHWA_KEY,
-  version: 2,
-  changelog: "Qahwa v2: product page",
+  version: 3,
+  changelog: "Qahwa v3: wide hero photo, no coupon",
   productPage: { thumbs: "bottom", band: "brand", copy: { back: L("رجوع للقهوة", "Back to the coffee"), reviews: L("رأي أهل القهوة", "From regulars"), related: L("جنب فنجانك", "Beside your cup") } },
   name: L("قهوة", "Qahwa"),
   description: L(
-    "أدوات القهوة في البيت: الكلمة الكبيرة، هدايا لعشاق القهوة، طقم الصبح وكوبون أول طلب. أربع صفحات جاهزة.",
-    "Coffee gear at home: the big word, gifts for coffee people, the morning set and a first-order coupon. Four ready pages.",
+    "أدوات القهوة في البيت: الكلمة الكبيرة وهدايا لعشاق القهوة. أربع صفحات جاهزة.",
+    "Coffee gear at home: the big word and gifts for coffee people. Four ready pages.",
   ),
   category: "kitchen",
   sortOrder: 690,

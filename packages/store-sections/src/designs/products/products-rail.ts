@@ -32,6 +32,7 @@ export const productsRail = defineDesign({
             source: "best-sellers",
             limit: 8,
             columns: { desktop: 4, tablet: 3, mobile: 2 },
+            mobileRail: true,
             style: { gap: 20 },
             mobile: { gap: 12 },
           }),

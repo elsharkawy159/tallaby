@@ -94,7 +94,11 @@ export function WebsiteOverview({ data }: { data: WebsiteOverviewData }) {
           router.refresh();
         } else {
           onFail?.();
-          toast.error(te(`errors.${result.error}` as "errors.generic"));
+          if (result.error === "templateNotChosen")
+            toast.error(te("errors.templateNotChosen"), {
+              action: { label: t("chooseTemplate"), onClick: () => router.push(`${base}/website/templates`) },
+            });
+          else toast.error(te(`errors.${result.error}` as "errors.generic"));
         }
       } catch {
         onFail?.();
@@ -129,7 +133,15 @@ export function WebsiteOverview({ data }: { data: WebsiteOverviewData }) {
     setOptimistic({ value: false, base: data.isLive });
     run("unpublish", () => unpublish(data.storeId), t("unpublishedToast"), () => setOptimistic(null));
   };
-  const switchHint = live ? "liveSwitchOn" : data.siteStatus === "unpublished" ? "liveSwitchOff" : "liveSwitchDraft";
+  // Going live needs a template the seller chose (the publish action checks it too).
+  const needsTemplate = !live && !data.templateChosen;
+  const switchHint = live
+    ? "liveSwitchOn"
+    : needsTemplate
+      ? "liveSwitchNeedsTemplate"
+      : data.siteStatus === "unpublished"
+        ? "liveSwitchOff"
+        : "liveSwitchDraft";
 
   return (
     <div className="space-y-5">
@@ -171,6 +183,14 @@ export function WebsiteOverview({ data }: { data: WebsiteOverviewData }) {
                 <p id="website-live-hint" className="text-xs text-muted-foreground">
                   {t(switchHint)}
                 </p>
+                {needsTemplate && !data.readOnly && (
+                  <Button asChild size="sm" className={cn(SMALL_BUTTON_CLASS, "mt-2")}>
+                    <Link href={`${base}/website/templates`}>
+                      <LayoutTemplate aria-hidden />
+                      {t("chooseTemplate")}
+                    </Link>
+                  </Button>
+                )}
               </div>
               <div className="flex items-center gap-2">
                 {(busy === "publish" || busy === "unpublish") && (
@@ -180,7 +200,7 @@ export function WebsiteOverview({ data }: { data: WebsiteOverviewData }) {
                   id="website-live"
                   aria-describedby="website-live-hint"
                   checked={live}
-                  disabled={data.readOnly || working}
+                  disabled={data.readOnly || working || needsTemplate}
                   onCheckedChange={(checked) => (checked ? goLive() : setConfirmOffline(true))}
                 />
               </div>

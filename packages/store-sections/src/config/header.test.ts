@@ -50,7 +50,34 @@ describe("flushHeaderOnMobile", () => {
 
   it.each(CODE_TEMPLATES.map((t) => [t.key, t] as const))("%s: the header is already flush on mobile", (_key, template) => {
     const h = template.config().header!;
-    expect(flushHeaderOnMobile(h)).toBe(h);
+    expect(flushHeaderOnMobile(h).componentTree![0]!.breakpointStyles).toBe(h.componentTree![0]!.breakpointStyles);
+  });
+
+  it("centres header rows that set no alignItems, and keeps a chosen one", () => {
+    const row = (id: string, style?: Record<string, unknown>) => ({ id, type: "hFlex" as const, props: {}, children: [], ...(style && { style }) });
+    const header: SectionInstance = {
+      id: "h",
+      sectionId: "custom-section",
+      version: 1,
+      props: {},
+      componentTree: [
+        {
+          id: "root",
+          type: "section",
+          props: {},
+          breakpointStyles: { mobile: { paddingTop: 0, paddingBottom: 0 } },
+          children: [row("a"), row("b", { alignItems: "end" }), { id: "s", type: "vFlex", props: {}, children: [row("c")] }],
+        },
+      ],
+    };
+    const [a, b, s] = flushHeaderOnMobile(header).componentTree![0]!.children;
+    expect(a!.style).toEqual({ alignItems: "center" });
+    expect(b!.style).toEqual({ alignItems: "end" });
+    expect(s!.style).toBeUndefined();
+    expect(s!.children[0]!.style).toEqual({ alignItems: "center" });
+    // Already centred: the same instance back.
+    const centred = flushHeaderOnMobile(header);
+    expect(flushHeaderOnMobile(centred)).toBe(centred);
   });
 });
 
@@ -186,6 +213,60 @@ describe("header and footer options (drawChrome)", () => {
       const grid = findNode(drawChrome(input, "header", off)!.componentTree!, "grid")!;
       expect(grid.children).toHaveLength(3);
       expect(grid.children[0]!.children.map((c) => c.type)).toEqual(["mobileMenu", "hFlex"]);
+    });
+
+    it("goes into the first cell of the outermost bar, not beside a logo in its own cell", () => {
+      const input = chrome([
+        n("grid", "grid", {}, [
+          n("start", "hFlex", {}, [n("fake", "linkBlock", { href: "/products" }, [n("fake-i", "icon", { name: "menu" })])]),
+          n("logo-cell", "hFlex", {}, [classicLogo()]),
+          n("end", "hFlex", {}, [n("cart", "linkBlock", { href: "/cart" }, [n("bag", "icon", { name: "shopping-bag" })])]),
+        ]),
+      ]);
+      const out = drawChrome(input, "header", off)!.componentTree!;
+      const grid = findNode(out, "grid")!;
+      // A first cell shown on phones takes the burger at its start (and keeps its look).
+      expect(grid.children[0]!.id).toBe("start");
+      expect(grid.children[0]!.children.map((c) => c.type)).toEqual(["mobileMenu", "linkBlock"]);
+      expect(findNode(out, "logo-cell")!.children.map((c) => c.type)).toEqual(["linkBlock"]);
+      // The design's own menu icon hides on phones (the burger replaces it).
+      expect(findNode(out, "fake")!.breakpointStyles?.mobile?.hidden).toBe(true);
+    });
+
+    it("keeps phones to one row: rows after the bar hide, a wide search becomes an icon, the bar is at most 10px padded", () => {
+      const input = chrome([
+        n("bar", "hFlex", {}, [
+          classicLogo(),
+          n("box", "vFlex", {}, [n("search", "linkBlock", { href: "/products", role: "search" }, [n("s-i", "icon", { name: "search" }), n("s-t", "text", { text: "Search…" })])]),
+          n("cart", "linkBlock", { href: "/cart" }, [n("bag", "icon", { name: "shopping-bag" })]),
+        ]),
+        n("cats", "hFlex", {}, [link("new", "/products", "New in")]),
+      ]);
+      input.componentTree![0]!.children[0]!.style = { paddingTop: 16, paddingBottom: 16 };
+      const out = drawChrome(input, "header", { ...off, locale: "en" })!.componentTree!;
+      const bar = findNode(out, "bar")!;
+      expect(bar.breakpointStyles?.mobile).toMatchObject({ paddingTop: 10, paddingBottom: 10 });
+      expect(findNode(out, "box")!.breakpointStyles?.mobile?.hidden).toBe(true);
+      expect(findNode(out, "cats")!.breakpointStyles?.mobile?.hidden).toBe(true);
+      expect(bar.style).toEqual(input.componentTree![0]!.children[0]!.style);
+      const types = bar.children.map((c) => c.id);
+      expect(types.indexOf("c-mobile-search")).toBe(types.indexOf("cart") - 1);
+      expect(findNode(out, "c-mobile-search")!.props.label).toBe("Search");
+      // The hidden row's links move into the burger sheet.
+      expect(bar.children[0]!.children.map((c) => c.props.href)).toEqual(["/products"]);
+    });
+
+    it("keeps Tallaby Classic's account icon on phones; other headers move it into the sheet", () => {
+      type Tree = NonNullable<SectionInstance["componentTree"]>;
+      const walkNodes = (nodes: Tree): Tree => nodes.flatMap((node) => [node, ...walkNodes(node.children)]);
+      const accountLinks = (key: string) =>
+        walkNodes(drawChrome(CODE_TEMPLATES.find((t) => t.key === key)!.config().header!, "header", off)!.componentTree!).filter(
+          (node) => node.type === "accountLink" || (node.type === "linkBlock" && node.props.href === "/profile"),
+        );
+      const classic = accountLinks("tallaby-classic");
+      expect(classic.length).toBeGreaterThan(0);
+      expect(classic.every((node) => node.breakpointStyles?.mobile?.hidden !== true)).toBe(true);
+      expect(accountLinks("glow").every((node) => node.breakpointStyles?.mobile?.hidden === true)).toBe(true);
     });
 
     it("is never added to a footer", () => {

@@ -7,6 +7,7 @@ import {
   CATALOG_LIST_ID,
   PageStyles,
   SectionRenderer,
+  SiteBottomNav,
   collectCatalogQueries,
   collectFormIds,
   collectContentQueries,
@@ -149,7 +150,7 @@ async function buildContext(
     imageUrl: (src) => (src ? getPublicUrl(src, "sellers") || null : null),
     optimizeImage: optimizeStoreImage,
     formatPrice: (amount) => formatPricePlain(amount, locale, store.currencyLabel),
-    renderCartButton: () => <CartSheet storeName={store.displayName} fontClassName={storefrontFont.variable} />,
+    renderCartButton: () => <CartSheet />,
     renderCartBadge: () => <StoreCartBadge />,
     renderSearch: ({ placeholder, icon, iconFirst }) =>
       placeholder ? (
@@ -205,6 +206,24 @@ export async function StoreSiteChrome({
   return part === "header" ? <StickyStoreHeader>{chrome}</StickyStoreHeader> : chrome;
 }
 
+/** The phone bottom navigation of a published site (Home, Shop, Cart, Profile), unless the seller turned it off. */
+export function StoreSiteBottomNav({ site, locale }: { site: SiteConfig; locale: string }) {
+  return (
+    <SiteBottomNav
+      header={site.header}
+      ctx={{
+        locale: locale === "en" ? "en" : "ar",
+        Link: ({ href, className, children, ...rest }) => (
+          <Link href={href} className={className} data-part={rest["data-part"]}>
+            {children}
+          </Link>
+        ),
+        renderCartBadge: () => <StoreCartBadge />,
+      }}
+    />
+  );
+}
+
 /**
  * A page of catalog products (`getProducts` rows) in the site's own product
  * card (`productCatalogSection`), for the /products page.
@@ -226,6 +245,7 @@ export async function StoreSiteProductGrid({
   const base = await buildContext(store, site, locale, []);
   const ctx: RenderContext = {
     ...base,
+    reveal: true,
     catalog: { ...base.catalog, products: { [CATALOG_LIST_ID]: products } },
     renderAddToCart: (product) => (
       <StoreCardAddToCart productId={product.id} href={product.href} inStock={!!product.inStock} hasVariants={withVariants.has(product.id)} />
@@ -261,7 +281,7 @@ export async function StoreSitePage({
   product?: ProductDetail;
 }) {
   const path = product ? product.href : page.isHome ? "/" : `/${page.slug}`;
-  const ctx = await buildContext(
+  const base = await buildContext(
     store,
     site,
     locale,
@@ -269,6 +289,8 @@ export async function StoreSitePage({
     { page: productPage, href: (n) => (n > 1 ? `${path}?page=${n}` : path) },
     product,
   );
+  // Page sections reveal on scroll (docs/section-rules.md §6); the header and footer don't.
+  const ctx: RenderContext = { ...base, reveal: true };
   // The storefront layout owns <main>, so the sections render directly.
   return (
     <>

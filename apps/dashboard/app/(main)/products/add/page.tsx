@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
+import { aiConfigured } from "@workspace/ai";
 import AddProduct from "./add-product";
 import { getAllCategories } from "@/actions/categories";
 import { getSellerProfile } from "@/actions/seller";
@@ -29,6 +30,7 @@ export default async function AddProductPage() {
       categories={(categories.data || []) as CategoryOption[]}
       sellerTaxonomy={sellerTaxonomy}
       linkHost={linkHost}
+      aiEnabled={aiConfigured()}
       sellerPricing={{
         commissionRate: profile?.commissionRate ?? DEFAULT_COMMISSION_RATE,
         isCommissionExempt: profile?.isCommissionExempt ?? false,

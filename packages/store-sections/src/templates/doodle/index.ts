@@ -2,8 +2,8 @@
  * Doodle (template 30, playful wooden toys; Claude Design "Storefront
  * Templates"): mint paper, a cherry red for actions and a sunny yellow
  * highlight, Lemonada display type over Tajawal and round 24px corners. A
- * bright toy shop: a bento opening, promises, kids' favourites, a coupon,
- * why wood and photo reviews. Built from section library designs
+ * bright toy shop: a bento opening, category circles, kids' favourites,
+ * why wood, new arrivals, promises and photo reviews. Built from section library designs
  * (`fromLibrary`).
  *
  * Photos: Pexels, each checked by eye (2026-10-20): wooden blocks,
@@ -66,28 +66,8 @@ const home: Design[] = [
       "من ١٢ ألف تقييم": L("من ٩٠٠ أب وأم", "from 900 parents"),
     },
   }),
-  lib("features-classic", {
-    text: {
-      "توصيل سريع": L("ألوان آمنة", "Safe paints"),
-      "من يوم إلى ٤ أيام لكل المحافظات": L("مية ومتختبرة", "Water-based, tested"),
-      "الدفع عند الاستلام": L("تغليف هدية", "Gift wrap"),
-      "أو ادفع بالبطاقة والمحفظة": L("مجاناً مع كل طلب", "Free with every order"),
-      "استرجاع سهل": L("٢–٤ أيام", "2–4 days"),
-      "١٤ يومًا لتغيّر رأيك": L("لكل مصر", "Across Egypt"),
-      "دعم على واتساب": L("استبدال سهل", "Easy exchange"),
-      "أشخاص حقيقيون طوال الأسبوع": L("خلال ١٤ يوم", "Within 14 days"),
-    },
-  }),
+  lib("categories-circles", { text: { "بتدوّر على إيه؟": L("هنلعب بإيه النهارده؟", "What shall we play today?") } }),
   lib("products-bento", { text: { "الأكثر طلبًا": L("أكثر اختيار", "Top picks"), "الكل بيسأل عليهم": L("المفضلة عند الأطفال", "Kids’ favourites") }, links: { "/products": BEST } }),
-  lib("promo-coupon", {
-    text: {
-      "٢٠٪": L("١٠٠", "100"),
-      "خصم": L("ج.م", "EGP"),
-      "خصم على أول طلب لك": L("خصم على الطلبات فوق ١٬٠٠٠", "Off orders over EGP 1,000"),
-      "للطلبات فوق ٨٠٠ ج.م · حتى ٣٠ نوفمبر": L("استخدمه عند الدفع.", "Use it at checkout."),
-      "الكود: WELCOME20": L("الكود: PLAY100", "Code: PLAY100"),
-    },
-  }),
   lib("about-panel", {
     text: {
       "لماذا بدأنا": L("ليه خشب؟", "Why wood?"),
@@ -100,6 +80,24 @@ const home: Design[] = [
         "They last for years and can be passed to the next child.",
       ),
       "«إن لم نستخدمه نحن، لن نبيعه.»": L("«أحسن لعبة ٩٠٪ طفل و١٠٪ لعبة.»", "“The best toy is 90% child and 10% toy.”"),
+    },
+  }),
+  lib("products-rail", {
+    as: "just-arrived",
+    text: { "بيحبوها": L("جديد", "New"), "الأكثر مبيعًا": L("وصل لعلبة اللعب", "New in the toy box") },
+    links: { "/products": NEW },
+    lists: [{ source: "newest" }],
+  }),
+  lib("features-classic", {
+    text: {
+      "توصيل سريع": L("ألوان آمنة", "Safe paints"),
+      "من يوم إلى ٤ أيام لكل المحافظات": L("مية ومتختبرة", "Water-based, tested"),
+      "الدفع عند الاستلام": L("تغليف هدية", "Gift wrap"),
+      "أو ادفع بالبطاقة والمحفظة": L("مجاناً مع كل طلب", "Free with every order"),
+      "استرجاع سهل": L("٢–٤ أيام", "2–4 days"),
+      "١٤ يومًا لتغيّر رأيك": L("لكل مصر", "Across Egypt"),
+      "دعم على واتساب": L("استبدال سهل", "Easy exchange"),
+      "أشخاص حقيقيون طوال الأسبوع": L("خلال ١٤ يوم", "Within 14 days"),
     },
   }),
   lib("testimonials-photos", {
@@ -136,7 +134,7 @@ const about: Design[] = [
     eyebrow: L("مول العرب", "Mall of Arabia"),
     title: L("ألعاب بتكبر مع طفلك", "Toys that grow with your child"),
     text: L("بنختار ألعاب خشب بسيطة تتلعب بأكتر من طريقة، من غير بطاريات.", "We choose simple wooden toys that can be played many ways, with no batteries."),
-    more: L("وكود PLAY100 بيخصم ١٠٠ ج.م من الطلبات فوق ١٬٠٠٠.", "And code PLAY100 takes EGP 100 off orders over 1,000."),
+    more: L("وكل لعبة متغلفة كهدية من غير أي تكلفة.", "And every toy comes gift-wrapped at no cost."),
     button: L("تسوق الألعاب", "Shop toys"),
     href: SHOP,
   }),
@@ -167,12 +165,12 @@ const DEMO = demoStore({
 
 export const DOODLE = libraryTemplate({
   key: DOODLE_KEY,
-  version: 3,
-  changelog: "Doodle v3: product page",
+  version: 4,
+  changelog: "Doodle v4: categories, new arrivals, section order",
   name: L("دودل", "Doodle"),
   description: L(
-    "ألعاب خشب مرحة: افتتاحية بنتو، المفضلة عند الأطفال، كوبون وليه خشب. أربع صفحات جاهزة.",
-    "Playful wooden toys: a bento opening, kids’ favourites, a coupon and why wood. Four ready pages.",
+    "ألعاب خشب مرحة: افتتاحية بنتو، المفضلة عند الأطفال وليه خشب. أربع صفحات جاهزة.",
+    "Playful wooden toys: a bento opening, kids’ favourites and why wood. Four ready pages.",
   ),
   category: "kids",
   sortOrder: 300,
@@ -208,9 +206,9 @@ export const DOODLE = libraryTemplate({
       name: L("الأسئلة الشائعة", "FAQ"),
       seo: { title: L("الأسئلة الشائعة", "FAQ") },
       sections: faqPage(lib, {
-        text: L("الأمان والتغليف والكوبونات.", "Safety, gift wrap and coupons."),
-        question: L("كود PLAY100 بيشتغل إزاي؟", "How does code PLAY100 work?"),
-        answer: L("اكتبه في صفحة الدفع على أي طلب فوق ١٬٠٠٠ ج.م وهيخصم ١٠٠ ج.م.", "Enter it at checkout on any order over EGP 1,000 to take EGP 100 off."),
+        text: L("الأمان والتغليف والتوصيل.", "Safety, gift wrap and delivery."),
+        question: L("الألعاب آمنة للأطفال الصغيرين؟", "Are the toys safe for little ones?"),
+        answer: L("أيوه، كل الألعاب خشب طبيعي ودهانات آمنة، ومكتوب على كل لعبة السن المناسب.", "Yes. Every toy is natural wood with safe paints, and each one shows the right age."),
       }),
     },
   ],

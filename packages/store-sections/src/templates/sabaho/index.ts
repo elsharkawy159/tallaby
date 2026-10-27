@@ -2,17 +2,15 @@
  * Sabaho (template 42, breakfast and pantry delivery; Claude Design
  * "Storefront Templates"): warm white paper, a sunny yellow highlight and a
  * leaf green for actions, Alexandria throughout and 16px corners. A morning
- * delivery shop: a free-delivery goal from the cart, order tonight for
- * breakfast by 9, the weekend breakfast set, the most reordered, the weekly
- * veg box by quantity, delivery areas, order cut-offs, the SABAH10 coupon
- * and order tracking. Built from section library designs (`fromLibrary`).
+ * delivery shop (v3, section order): order tonight for breakfast by 9 in a
+ * three-photo collage, the departments, fresh today, delivery areas, the
+ * most reordered and order tracking. Built from section library designs
+ * (`fromLibrary`).
  *
  * Delivery zone fees are section copy (checkout still uses governorate
  * fees) and there is no delivery-slot picker. The library zones table has
  * five rows where rows two and three share a time and fee, so the design's
- * three areas are split into five. Bundle and quantity savings are display
- * only (typed totals). The hero's "Delivery areas" anchor goes to the
- * shipping page.
+ * three areas are split into five.
  *
  * Photos: Pexels, each checked by eye (2026-10-23): market baskets of
  * vegetables, a straw bag of fruit and vegetables, fresh herbs on a board,
@@ -77,47 +75,28 @@ const footer = lib("footer-help", {
 });
 
 const home: Design[] = [
-  lib("cart-free-delivery", { text: { "١٥٠٠ ج.م": L("٦٠٠ ج.م", "EGP 600") } }),
-  lib("hero-halves", {
-    photo: [undefined, PHOTOS.marketWide],
+  lib("hero-collage", {
+    photo: [PHOTOS.sourdough, PHOTOS.eggs, PHOTOS.marketWide],
     text: {
-      "كوليكشن الموسم": L("توصيل الفطار", "Breakfast delivery"),
-      "صوت أنقى، كل يوم": L("اطلب بالليل، الفطار قبل ٩", "Order tonight, breakfast by 9"),
-      "منتجات أصلية بضمان محلي، توصلك خلال ٤٨ ساعة.": L(
+      "حكاية الموسم": L("توصيل الفطار", "Breakfast delivery"),
+      "٣ قطع تكفي أسبوعًا كاملًا": L("اطلب بالليل، الفطار قبل ٩", "Order tonight, breakfast by 9"),
+      "نسّقها معًا أو مع ما تملكه بالفعل، وكل قطعة متاحة بأكثر من لون.": L(
         "عيش متخبز ٥ الصبح، خضار متقطف امبارح، وبقالة البيت في نفس البوكس.",
         "Bread baked at 5 am, vegetables picked yesterday, and pantry staples in the same box.",
       ),
-      "تسوق الآن": L("ابدأ البوكس", "Start your box"),
-      "العروض": L("مناطق التوصيل", "Delivery areas"),
-      "صورة الحملة": L("سبت خضار في السوق", "Market baskets of vegetables"),
+      "تسوّق اللوك": L("ابدأ البوكس", "Start your box"),
+      "القطعة الأولى": L("عيش الصبح", "Morning bread"),
+      "القطعة الثانية": L("بيض بلدي", "Farm eggs"),
+      "القطعة الثالثة": L("خضار متقطف امبارح", "Picked yesterday"),
     },
-    links: { "/products": [SHOP, "/shipping"] },
   }),
-  lib("bundle-plus", {
+  lib("categories-captioned", { text: { "اكتشف الأقسام": L("فطار البيت كله", "Breakfast for the whole house") } }),
+  lib("products-grid", {
     text: {
-      "اشتريهم مع بعض ووفّر": L("فطار الويك إند", "The weekend breakfast"),
-      "١٬٢٧٠ ج.م": L("٥٠٠ ج.م", "EGP 500"),
-      "بدل ١٬٤٩٠ ج.م": L("بدل ٥٥٥ ج.م", "Instead of EGP 555"),
-      "وفّر ٢٢٠ ج.م": L("وفّر ٥٥ ج.م", "Save EGP 55"),
+      "وصل حديثًا": L("طازة النهارده", "Fresh today"),
+      "أحدث المنتجات اللي نزلت المتجر.": L("اللي وصل المخزن الصبح ده.", "What reached our kitchen this morning."),
     },
-  }),
-  lib("products-rows", {
-    text: { "إكسسوارات بسعر حلو": L("الأكتر إعادة طلب", "Most reordered") },
-    links: { "/products": BEST },
-    lists: [{ source: "best-sellers", limit: 6 }],
-  }),
-  lib("bundle-quantity", {
-    text: {
-      "وفّر مع الكمية": L("البوكس الأسبوعي", "Weekly box"),
-      "قطعة واحدة": L("بوكس واحد", "One box"),
-      "قطعتين": L("بوكسين", "Two boxes"),
-      "على القطعة التانية": L("على البوكسين", "On both boxes"),
-      "وفّر ١٠٪": L("وفّر ٨٪", "Save 8%"),
-      "٣ قطع": L("٤ بوكسات", "Four boxes"),
-      "وفّر ١٨٪": L("وفّر ١٥٪", "Save 15%"),
-      "اختار عدد القطع من السلة.": L("اختار عدد البوكسات من السلة.", "Choose how many boxes in the cart."),
-    },
-    lists: [{ source: "featured" }],
+    links: { "/products": NEW },
   }),
   lib("pay-zones", {
     text: {
@@ -140,25 +119,10 @@ const home: Design[] = [
       "٩٥ ج.م": L("٥٥ ج.م", "EGP 55"),
     },
   }),
-  lib("pay-days", {
-    text: {
-      "هيوصلك إمتى؟": L("آخر معاد للطلب", "Order cut-off"),
-      "١": L("١٢", "12"),
-      "يوم": L("نص الليل", "midnight"),
-      "القاهرة، الجيزة": L("اطلب قبل نص الليل لفطار الصبح", "Order by midnight for next-morning breakfast"),
-      "٢–٣": L("٩", "9"),
-      "أيام": L("الصبح", "in the morning"),
-      "الإسكندرية، الدلتا، مدن القناة": L("توصيل وسط القاهرة والجيزة", "Inner Cairo and Giza deliveries arrive"),
-      "٤–٦": L("كل يوم", "Every day"),
-      "الصعيد، البحر الأحمر، سيناء": L("بنوصل كل يوم حتى الجمعة", "We deliver every day, Fridays included"),
-    },
-  }),
-  lib("cart-coupon", {
-    text: {
-      "خصم على أول طلب": L("خصم على أول بوكس", "Off your first box"),
-      "الكود: WELCOME10": L("الكود: SABAH10", "Code: SABAH10"),
-      "صالح ٤٨ ساعة": L("صالح على أول طلب", "Valid on your first order"),
-    },
+  lib("products-rows", {
+    text: { "إكسسوارات بسعر حلو": L("الأكتر إعادة طلب", "Most reordered") },
+    links: { "/products": BEST },
+    lists: [{ source: "best-sellers", limit: 6 }],
   }),
   lib("track-ask"),
 ];
@@ -203,13 +167,13 @@ const DEMO = demoStore({
 
 export const SABAHO = libraryTemplate({
   key: SABAHO_KEY,
-  version: 2,
-  changelog: "Sabaho v2: product page",
+  version: 3,
+  changelog: "Sabaho v3: collage hero, categories, no coupon, section order",
   productPage: { surface: "card", thumbs: "bottom", band: "shelf", extras: ["product-shipping"], copy: { back: L("رجوع لفطار الصبح", "Back to breakfast"), reviews: L("رأي اللي بيطلبوا كل صباح", "What morning regulars say"), related: L("ضيفه على طلب الصبح", "Add to tomorrow's order") } },
   name: L("صباحو", "Sabaho"),
   description: L(
-    "توصيل فطار وبقالة: هدف التوصيل المجاني، فطار الويك إند، الأكتر إعادة طلب، البوكس الأسبوعي، مناطق ومواعيد التوصيل، كوبون أول طلب وتتبع الطلب. أربع صفحات جاهزة.",
-    "Breakfast and pantry delivery: free delivery goal, the weekend breakfast, most reordered, the weekly box, delivery areas and cut-offs, a first-order coupon and order tracking. Four ready pages.",
+    "توصيل فطار وبقالة: الأكتر إعادة طلب، مناطق ومواعيد التوصيل وتتبع الطلب. أربع صفحات جاهزة.",
+    "Breakfast and pantry delivery: most reordered, delivery areas and cut-offs, and order tracking. Four ready pages.",
   ),
   category: "food",
   sortOrder: 420,

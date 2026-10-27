@@ -2,16 +2,14 @@
  * Shabka (template 44, bridal and engagement gold; Claude Design
  * "Storefront Templates"): ivory paper, a garnet for actions and a gold
  * highlight, Aref Ruqaa headings over Noto Kufi Arabic and sharp 2px
- * corners. A family goldsmith for the shabka: a private fitting, gifts by
- * person, the most chosen pieces, booking a fitting, the founder's note, a
- * gift card, the two shops and questions before you visit. Built from
- * section library designs (`fromLibrary`).
+ * corners. A family goldsmith for the shabka (v3, section order): the
+ * bridal set beside a quiet panel, the collections in big type, the most
+ * chosen pieces, the founder's note, booking a private fitting and
+ * questions before you visit. Built from section library designs
+ * (`fromLibrary`).
  *
- * Rewards have no library designs yet: "Gift card" uses the coupon card
- * (`promo-coupon`) with the amounts as copy; gift cards are requested from
- * the contact page (no gift-card balance at checkout). Gold is priced per
- * product (no live gram rate) and there is no engraving field. The design
- * lists two shops; the library's third branch card is a third shop.
+ * Gold is priced per product (no live gram rate) and there is no engraving
+ * field.
  *
  * Photos: Pexels, each checked by eye (2026-10-23): a bridal set on a shop
  * display, rings on a plinth, diamond hoops on white, a braided bracelet on
@@ -32,7 +30,6 @@ const lib = (id: string, patch: LibraryPatch = {}): Design => fromLibrary(SHABKA
 
 const NEW = "/products?sort=newest";
 const BEST = "/products?sort=popularity";
-const MAPS = "https://maps.google.com/";
 const search = (q: string) => `/products?search=${encodeURIComponent(q)}`;
 const SETS = search("طقم");
 
@@ -55,7 +52,7 @@ const NAME = L("شبكة جولد", "Shabka Gold");
 const header = lib("header-announcement", {
   text: {
     "توصيل مجاني للطلبات فوق ١٥٠٠ ج.م": L("احجزي قياس خاص", "Book a private fitting"),
-    "الكود: SAVE10": L("كروت هدية من ٥٠٠ ج.م", "Gift cards from EGP 500"),
+    "الدفع عند الاستلام": L("كروت هدية من ٥٠٠ ج.م", "Gift cards from EGP 500"),
     "م": L("ش", "S"),
     "اسم متجرك": NAME,
     "المتجر": L("كل المجوهرات", "All jewellery"),
@@ -75,35 +72,36 @@ const footer = lib("footer-links", {
 });
 
 const home: Design[] = [
-  lib("hero-halves", {
-    photo: [undefined, PHOTOS.bridalSetWide],
+  lib("hero-split", {
+    photo: [PHOTOS.bridalSetWide],
     text: {
-      "كوليكشن الموسم": L("عرايس ٢٠٢٦", "Bridal 2026"),
-      "صوت أنقى، كل يوم": L("شبكتك، تختاريها في أوضة هادية", "Your shabka, chosen in a quiet room"),
-      "منتجات أصلية بضمان محلي، توصلك خلال ٤٨ ساعة.": L(
+      "صورة الواجهة": L("طقم شبكة دهب على ستاند عرض", "A bridal gold set on a display stand"),
+      "المجموعة الجديدة": L("عرايس ٢٠٢٦", "Bridal 2026"),
+      "معمول بكميات صغيرة": L("شبكتك، تختاريها في أوضة هادية", "Your shabka, chosen in a quiet room"),
+      "قطع مختارة بعناية، بنعملها بكميات صغيرة عشان كل واحدة تفضل مميزة.": L(
         "قياس خاص، والسعر مكتوب على كل قطعة، والحفر مجاناً.",
         "Private fittings, the price on every piece, and engraving included.",
       ),
-      "تسوق الآن": L("شوفي أطقم الفرح", "See bridal sets"),
-      "العروض": L("احجزي قياس", "Book a fitting"),
-      "صورة الحملة": L("طقم شبكة دهب على ستاند عرض", "A bridal gold set on a display stand"),
+      "تسوّق المجموعة": L("شوفي أطقم الفرح", "See bridal sets"),
+      "حكايتنا": L("احجزي قياس", "Book a fitting"),
     },
-    links: { "/products": [SETS, "/contact"] },
+    links: { "/products": SETS, "/about": "/contact" },
   }),
-  lib("bundle-gifts", {
-    photo: [PHOTOS.bridalSet, PHOTOS.shopBands, PHOTOS.hoops, PHOTOS.gemRing],
-    text: {
-      "هدية لمين؟": L("الهدية لمين؟", "Who is it for?"),
-      "ليه": L("للعروسة", "For the bride"),
-      "ليها": L("للعريس", "For the groom"),
-      "للطلبة": L("للماما", "For mum"),
-      "للجيمرز": L("الخطوبة", "Engagement"),
-    },
-    links: { "/products": [SETS, search("دبل"), search("حلق"), search("خاتم")] },
-  }),
+  lib("categories-big-type"),
   lib("products-feature", {
     text: { "اختيارنا ليك": L("الأكتر اختياراً الموسم ده", "Chosen most this season"), "اختيار الأسبوع": L("الأكثر مبيعاً", "Best seller") },
     lists: [undefined, { source: "best-sellers" }],
+  }),
+  lib("team-founder", {
+    text: {
+      "عايزين كل حد يشتري من عندنا مرة يرجع تاني من غير ما نفكره.": L(
+        "جدتي باعت أول خاتم من صينية في الشارع ده. لسه بنوزن كل قطعة قدامك.",
+        "My grandmother sold her first ring from a tray on this street. We still weigh every piece in front of you.",
+      ),
+      "م": L("س", "S"),
+      "منى عادل": L("سامية زكي", "Samia Zaki"),
+      "المؤسسة": L("صايغة من الجيل التالت", "Third-generation goldsmith"),
+    },
   }),
   lib("service-booking", {
     text: {
@@ -119,45 +117,6 @@ const home: Design[] = [
       "من السبت للخميس": L("كل يوم", "Every day"),
       "أو احجز على واتساب": L("أو احجزي على واتساب", "Or book on WhatsApp"),
     },
-  }),
-  lib("team-founder", {
-    text: {
-      "عايزين كل حد يشتري من عندنا مرة يرجع تاني من غير ما نفكره.": L(
-        "جدتي باعت أول خاتم من صينية في الشارع ده. لسه بنوزن كل قطعة قدامك.",
-        "My grandmother sold her first ring from a tray on this street. We still weigh every piece in front of you.",
-      ),
-      "م": L("س", "S"),
-      "منى عادل": L("سامية زكي", "Samia Zaki"),
-      "المؤسسة": L("صايغة من الجيل التالت", "Third-generation goldsmith"),
-    },
-  }),
-  lib("promo-coupon", {
-    name: L("كارت هدية", "Gift card"),
-    text: {
-      "٢٠٪": L("١٠٠٠", "1,000"),
-      "خصم": L("ج.م", "EGP"),
-      "خصم على أول طلب لك": L("ابعتي كارت هدية", "Send a gold gift card"),
-      "للطلبات فوق ٨٠٠ ج.م · حتى ٣٠ نوفمبر": L(
-        "٥٠٠ أو ١٠٠٠ أو ٢٥٠٠ أو ٥٠٠٠ ج.م، بيوصل برسالة باسمك وينفع على أي قطعة.",
-        "EGP 500, 1,000, 2,500 or 5,000, sent with a message in your name and good for any piece.",
-      ),
-      "الكود: WELCOME20": L("اطلبيه من صفحة التواصل", "Order it from the contact page"),
-    },
-  }),
-  lib("team-branches", {
-    text: {
-      "الفروع": L("محلاتنا", "Our shops"),
-      "زورنا": L("زورينا", "Visit us"),
-      "فرع الدقي": L("خان الخليلي", "Khan El Khalili"),
-      "٢٤ شارع التحرير، الدقي": L("شارع الصاغة، خان الخليلي", "El Sagha St, Khan El Khalili"),
-      "يوميًا من ١٢ الضهر لـ ١١ م": L("يوميًا من ١١ ص لـ ١٠ م", "Daily, 11 am to 10 pm"),
-      "فرع مدينة نصر": L("مصر الجديدة", "Heliopolis"),
-      "سيتي ستارز، الدور الأول": L("شارع بغداد، الكوربة", "Baghdad St, Korba"),
-      "يوميًا من ١٠ ص لـ ١٠ م": L("يوميًا من ١٢ الضهر لـ ١١ م", "Daily, noon to 11 pm"),
-      "فرع المعادي": L("مدينة نصر", "Nasr City"),
-      "شارع ٩، المعادي": L("شارع عباس العقاد", "Abbas El Akkad St"),
-    },
-    links: { "https://maps.google.com": MAPS },
   }),
   lib("faq-columns", {
     as: "faq-home",
@@ -223,8 +182,8 @@ const DEMO = demoStore({
 
 export const SHABKA = libraryTemplate({
   key: SHABKA_KEY,
-  version: 2,
-  changelog: "Shabka v2: product page",
+  version: 3,
+  changelog: "Shabka v3: split hero, categories, section order",
   productPage: { surface: "flat", gallery: "end", thumbs: "bottom", button: "outline", band: "brand", extras: ["product-shipping"], copy: { back: L("رجوع للمجوهرات", "Back to the jewellery"), reviews: L("كلمة العرايس والأهل", "Words from brides and families"), related: L("قطع تكمّل الشبكة", "Pieces to complete the set") } },
   name: L("شبكة", "Shabka"),
   description: L(

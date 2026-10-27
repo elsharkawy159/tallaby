@@ -2,9 +2,9 @@
  * Shanta (template 52, leather bags; Claude Design "Storefront Templates"):
  * warm parchment paper, espresso ink, a saddle brown for actions and an
  * apricot highlight, Readex Pro throughout and round 16px corners. A leather
- * workshop's shop: a bento hero, carried most, a bag-and-wallet set, the top
- * five gifts, the founder's note and questions. Built from section library
- * designs (`fromLibrary`).
+ * workshop's shop (v3, section order): a bento hero, the departments,
+ * fresh from the workshop, the founder's note, carried most and questions. Built
+ * from section library designs (`fromLibrary`).
  *
  * Photos: Pexels, each checked by eye (2026-10-21): leather handbags and
  * totes on plain backdrops, card holders and wallets, a market wall of bags
@@ -106,30 +106,13 @@ const home: Design[] = [
       "من ١٢ ألف تقييم": L("من أكتر من ٥٠٠ تقييم", "from 500+ reviews"),
     },
   }),
-  lib("products-bento", {
-    text: { "الأكثر طلبًا": L("الأكتر طلباً", "Most wanted"), "الكل بيسأل عليهم": L("الأكتر شيلاً", "Carried most") },
-    links: { "/products": BEST },
-  }),
-  lib("bundle-plus", {
+  lib("categories-ruled", { text: { "الأقسام": L("الورشة", "The workshop"), "تسوق بالقسم": L("شنطة لكل مشوار", "A bag for every errand") } }),
+  lib("products-grid", {
     text: {
-      "باقة": L("طقم", "Set"),
-      "اشتريهم مع بعض ووفّر": L("شنطة وحافظة وتوت", "Bag, card holder and tote"),
-      "سعر الباقة": L("سعر الطقم", "Set price"),
-      "١٬٢٧٠ ج.م": L("٤٬٢٢٤ ج.م", "EGP 4,224"),
-      "بدل ١٬٤٩٠ ج.م": L("بدل ٤٬٨٠٠ ج.م", "Instead of EGP 4,800"),
-      "وفّر ٢٢٠ ج.م": L("وفّر ٥٧٦ ج.م", "Save EGP 576"),
-      "اطلب الباقة": L("اطلب الطقم", "Get the set"),
+      "وصل حديثًا": L("طالع من الورشة", "Fresh from the workshop"),
+      "أحدث المنتجات اللي نزلت المتجر.": L("آخر شنط وجزادين اتخيطت الشهر ده.", "The latest bags and wallets stitched this month."),
     },
     links: { "/products": NEW },
-  }),
-  lib("products-list", {
-    text: {
-      "الكتالوج": L("أحسن ٥", "Top 5"),
-      "كل الإكسسوارات": L("بيتشتروا كهدايا", "Bought as gifts"),
-      "كل اللي تحتاجه في مكان واحد، أصلي وبضمان.": L("أكتر ٥ قطع بتتغلف هدية، وكلها ممكن نكتب عليها الحروف.", "The five pieces most often gift-wrapped, all with free initials."),
-    },
-    links: { "/products": BEST },
-    lists: [{ source: "best-sellers", limit: 5 }],
   }),
   lib("team-founder", {
     text: {
@@ -140,6 +123,10 @@ const home: Design[] = [
       "م": L("ر", "R"),
       "منى عادل": L("رنا فؤاد", "Rana Fouad"),
     },
+  }),
+  lib("products-bento", {
+    text: { "الأكثر طلبًا": L("الأكتر طلباً", "Most wanted"), "الكل بيسأل عليهم": L("الأكتر شيلاً", "Carried most") },
+    links: { "/products": BEST },
   }),
   lib("faq-columns", { as: "faq-home", text: { "أسئلة شائعة": L("أسئلة", "Questions"), ...QUESTIONS } }),
 ];
@@ -181,8 +168,8 @@ const DEMO = demoStore({
 
 export const SHANTA = libraryTemplate({
   key: SHANTA_KEY,
-  version: 2,
-  changelog: "Shanta v2: product page",
+  version: 3,
+  changelog: "Shanta v3: categories, new from the workshop, section order",
   productPage: { gallery: "end", thumbs: "side", band: "shelf", extras: ["product-shipping"], copy: { back: L("رجوع للشنط", "Back to the bags"), reviews: L("رأي اللي شالوها", "From those who carry it"), related: L("يمشي معاها", "Carried together") } },
   name: L("شنطة", "Shanta"),
   description: L(

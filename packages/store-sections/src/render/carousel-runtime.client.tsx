@@ -9,10 +9,15 @@
  * server markup (`elements/render-carousel.tsx`) works without it: the track
  * scrolls and snaps. Listeners are delegated, so carousels that mount later
  * (client navigation) are picked up too. `doc`: a preview frame's document
- * (default: this one). Renders nothing.
+ * (default: this one). Renders nothing itself; it also mounts the burger
+ * sheet's behaviour (`MenuSheetRuntime`) and the bottom navigation's
+ * (`BottomNavRuntime`), so every host that draws a site
+ * gets it.
  */
 import { useEffect } from "react";
 import { SECTION_COPY } from "../core/copy";
+import { MenuSheetRuntime } from "./menu-sheet-runtime.client";
+import { BottomNavRuntime } from "./bottom-nav-runtime.client";
 
 type State = { index: number; elapsed: number; user: boolean; focus: boolean; moving: boolean; timer?: ReturnType<typeof setTimeout> };
 
@@ -169,5 +174,10 @@ export function CarouselRuntime({ doc }: { doc?: Document | null } = {}) {
       window.removeEventListener("resize", onResize);
     };
   }, [doc]);
-  return null;
+  return (
+    <>
+      <MenuSheetRuntime doc={doc} />
+      <BottomNavRuntime doc={doc} />
+    </>
+  );
 }

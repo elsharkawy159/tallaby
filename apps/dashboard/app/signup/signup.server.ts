@@ -5,7 +5,7 @@ import { and, db, eq, sellers, stores } from "@workspace/db";
 import { checkStoreSubdomain } from "@workspace/lib/stores/server";
 import { createClient } from "@/supabase/server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
-import { STORE_INDUSTRIES } from "@/lib/stores/industries.lib";
+import { OTHER_INDUSTRY_ID, STORE_INDUSTRIES } from "@/lib/stores/industries.lib";
 import { completeSignup } from "./signup-complete.server";
 import { clearSignupIntentCookie, cleanSubdomainPrefill, setSignupPrefillCookie } from "./signup-intent.server";
 import {
@@ -128,6 +128,23 @@ async function startStoreStep(prefill: string | null) {
 }
 
 /**
+ * The store category columns for the chosen industry. "Other" stores the
+ * seller's own words: Arabic text in the Arabic column only, so the editor
+ * never runs stock-photo searches on it.
+ */
+function industryCategory(input: StoreSetupInput) {
+  if (input.industry === OTHER_INDUSTRY_ID) {
+    const text = String(input.industryOther ?? "").trim().slice(0, 60);
+    if (text.length < 2) return null;
+    return /[؀-ۿ]/.test(text)
+      ? { storeCategory: null, storeCategoryAr: text }
+      : { storeCategory: text, storeCategoryAr: null };
+  }
+  const industry = STORE_INDUSTRIES.find((i) => i.id === input.industry);
+  return industry ? { storeCategory: industry.en, storeCategoryAr: industry.ar } : null;
+}
+
+/**
  * Signed-in user without a seller row (after Google, or an existing customer):
  * only the store setup step (address, industry, phone).
  */
@@ -137,8 +154,8 @@ export async function createStoreForCurrentUser(input: StoreSetupInput): Promise
   if (!user) return fail("notSignedIn");
   if (await isSeller(user.id)) return fail("alreadySeller");
 
-  const industry = STORE_INDUSTRIES.find((i) => i.id === input.industry);
-  if (!industry) return fail("industryRequired");
+  const category = industryCategory(input);
+  if (!category) return fail("industryRequired");
   const choice = await checkChoice(input, user.id);
   if (!choice.ok) return fail(choice.error);
   const done = await completeSignup(user, choice.intent);
@@ -149,7 +166,7 @@ export async function createStoreForCurrentUser(input: StoreSetupInput): Promise
   if (done.data.created && done.data.storeId) {
     await db
       .update(stores)
-      .set({ storeCategory: industry.en, storeCategoryAr: industry.ar })
+      .set(category)
       .where(and(eq(stores.id, done.data.storeId), eq(stores.sellerId, user.id)));
   }
   return { status: "done", storeUrl: done.storeUrl! };

@@ -20,6 +20,7 @@ import { IMAGE_SIZES, imageSource, type ProductDetail, type ProductElementHook, 
 import { cn } from "../sections/_primitives";
 import type { ComponentNode } from "../config/schema";
 import { walkNodes, type DataRecord } from "./data";
+import { ProductFlags } from "./product-flags";
 import type { ElementType } from "./registry";
 
 export const PRODUCT_ELEMENT_TYPES = [
@@ -190,6 +191,7 @@ function Price({ product, props, attrs, ctx }: StillProps) {
   const endsAt = props.showCountdown !== false && list && product.discountEndsAt && Date.parse(product.discountEndsAt) > Date.now() ? product.discountEndsAt : null;
   return (
     <div {...attrs} className="flex min-w-0 flex-col gap-2">
+      <ProductFlags product={product} ctx={ctx} />
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
         {product.price != null && <span className="text-3xl font-bold tabular-nums text-(--sf-ink)">{ctx.formatPrice(product.price)}</span>}
         {list != null && <s className="text-lg tabular-nums text-(--sf-muted)">{ctx.formatPrice(list)}</s>}
@@ -500,8 +502,10 @@ const STILLS: Record<ProductElementType, (p: StillProps) => ReactNode> = {
 export function renderProductElement(type: ProductElementType, props: Record<string, unknown>, nodeAttrs: Attrs, ctx: RenderContext, scope?: DataRecord): ReactNode {
   const product = productOf(ctx, scope);
   if (!product) return null;
-  // The rating links to the reviews (one per page).
-  const attrs = type === "productReviews" ? { ...nodeAttrs, id: "reviews" } : nodeAttrs;
+  // The rating links to the reviews (one per page). A part of the page's own product (not a list
+  // card's) marks the product page, where the phone bottom navigation steps aside (BottomNavRuntime).
+  const ownProduct = scope?.kind !== "product" || scope.record.id === ctx.product?.id;
+  const attrs = { ...nodeAttrs, ...(type === "productReviews" && { id: "reviews" }), ...(ownProduct && { "data-sf-product-page": "" }) };
   const hookKey = HOOKS[type];
   const hook: ProductElementHook | undefined = hookKey && ctx.mode === "public" ? ctx[hookKey] : undefined;
   // The seller's live views line sits just above the buy box (public only: the number is illustrative, not data).
@@ -515,8 +519,10 @@ export function renderProductElement(type: ProductElementType, props: Record<str
     );
   }
   if (hook) {
+    // The host's live price has no badges of its own: the trending / seasonal chips sit above it.
     return (
-      <div {...attrs} className="min-w-0">
+      <div {...attrs} className={cn("min-w-0", type === "productPrice" && "flex flex-col gap-2")}>
+        {type === "productPrice" && <ProductFlags product={product} ctx={ctx} />}
         {hook(product, props)}
       </div>
     );

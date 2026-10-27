@@ -81,3 +81,68 @@
   --success-soft: #173226;
   --destructive-soft: #3a1d1d;
 }
+
+/*
+ * Home setup checklist: the "Publish now" button, once it can be pressed,
+ * sends out a soft accent ring and a light sheen every few seconds so a new
+ * seller spots it. Stops on hover and focus; off with reduced motion.
+ */
+@keyframes publish-ring {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 55%, transparent);
+  }
+  70%,
+  100% {
+    box-shadow: 0 0 0 10px color-mix(in srgb, var(--accent) 0%, transparent);
+  }
+}
+
+@keyframes publish-sheen {
+  0%,
+  55% {
+    transform: translateX(-120%) skewX(-20deg);
+  }
+  100% {
+    transform: translateX(320%) skewX(-20deg);
+  }
+}
+
+@keyframes publish-sheen-rtl {
+  0%,
+  55% {
+    transform: translateX(120%) skewX(20deg);
+  }
+  100% {
+    transform: translateX(-320%) skewX(20deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .publish-attention {
+    position: relative;
+    overflow: hidden;
+    animation: publish-ring 2.4s ease-out infinite;
+  }
+
+  .publish-attention::after {
+    content: "";
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    width: 40%;
+    pointer-events: none;
+    background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.45), transparent);
+    animation: publish-sheen 2.4s ease-in-out infinite;
+  }
+
+  [dir="rtl"] .publish-attention::after {
+    animation-name: publish-sheen-rtl;
+  }
+
+  .publish-attention:hover,
+  .publish-attention:focus-visible,
+  .publish-attention:hover::after,
+  .publish-attention:focus-visible::after {
+    animation: none;
+  }
+}

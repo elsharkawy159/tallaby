@@ -95,7 +95,6 @@ const home: Design[] = [
     text: { "المتجر": L("الألعاب", "Toys"), "منتجاتنا": L("الأطفال بيحبوها", "Loved by kids"), "وصل جديد": L("جديد", "New"), "العروض": L("الأعلى تقييماً", "Top rated") },
     links: { "/products": [NEW, BEST, RATED] },
   }),
-  lib("promo-sticker", { text: { "عرض اليوم بس": L("الأسبوع ده بس", "This week only") } }),
   lib("features-icon-cards", {
     text: {
       "لماذا تشتري منا": L("ليه الأهالي بيختارونا", "Why parents choose us"),

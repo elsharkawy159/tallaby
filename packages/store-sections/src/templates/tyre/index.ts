@@ -23,7 +23,6 @@ export const TYRE_KEY = "tyre";
 
 const lib = (id: string, patch: LibraryPatch = {}): Design => fromLibrary(TYRE_KEY, getDesign(id)!, { corners: 6, ...patch });
 
-const SHOP = "/products";
 const NEW = "/products?sort=newest";
 const BEST = "/products?sort=popularity";
 const RATED = "/products?sort=rating";
@@ -72,30 +71,13 @@ const home: Design[] = [
     text: {
       "بتدور على إيه النهارده؟": L("مقاس الكاوتش كام؟", "What size are your tyres?"),
       "اكتب اسم المنتج": L("مثلاً 205/55 R16", "e.g. 205/55 R16"),
-      "وصل حديثًا": "205/55 R16",
-      "الأكثر مبيعًا": "195/65 R15",
-      "هدايا": "265/70 R16",
-      "العروض": L("منفاخ", "Inflator"),
     },
-    links: { "/products": [SHOP, search("205/55 R16"), search("195/65 R15"), search("265/70 R16"), search("منفاخ")] },
   }),
-  lib("service-cards", {
-    text: {
-      "خدمات بعد البيع": L("في البيت أو في المركز", "At home or at the centre"),
-      "عشان جهازك يفضل شغال زي الجديد.": L("اختار تركّب فين، والترصيص علينا.", "Choose where to fit; balancing is on us."),
-      "تركيب في البيت": L("تركيب في البيت", "Home fitting"),
-      "نركّب الشاشة أو الرسيفر ونظبط القنوات.": L("عربيتنا بتيجي لحد عندك بكل العدة.", "Our van comes to you with all the kit."),
-      "من ٢٥٠ ج.م": L("ببلاش فوق ٣٠٠٠ ج.م", "Free over EGP 3,000"),
-      "صيانة وإصلاح": L("ترصيص", "Balancing"),
-      "تغيير بطارية أو شاشة في نفس اليوم.": L("ببلاش مع الكاوتش الجديد.", "Free with new tyres."),
-      "من ١٥٠ ج.م": L("مع كل طقم", "With every set"),
-      "استبدل القديم": L("ضبط زوايا", "Alignment"),
-      "جيب جهازك القديم وخد خصم على الجديد.": L("ضبط بالكمبيوتر في المركز.", "Computer alignment at the centre."),
-      "مجانًا": L("من ٣٠٠ ج.م", "From EGP 300"),
-      "مد الضمان": L("بدّل القديم", "Trade in old tyres"),
-      "سنة أو سنتين زيادة على ضمان الوكيل.": L("هات الكاوتش القديم وخد خصم على الجديد.", "Bring your old tyres and get money off new ones."),
-      "من ١٩٩ ج.م": L("خصم لحد ٤٠٠ ج.م", "Up to EGP 400 off"),
-    },
+  lib("categories-captioned", { text: { "اكتشف الأقسام": L("الكاوتش وعدته", "Tyres and kit"), "كل الأقسام": L("كل المنتجات", "All products") } }),
+  lib("products-rows", {
+    text: { "إكسسوارات بسعر حلو": L("الأكتر طلباً", "Most ordered") },
+    links: { "/products": BEST },
+    lists: [{ source: "best-sellers", limit: 5 }],
   }),
   lib("service-booking", {
     text: {
@@ -114,11 +96,6 @@ const home: Design[] = [
       ),
     },
     lists: [{ source: "featured" }],
-  }),
-  lib("products-rows", {
-    text: { "إكسسوارات بسعر حلو": L("وإحنا هناك", "While we are there") },
-    links: { "/products": BEST },
-    lists: [{ source: "best-sellers", limit: 5 }],
   }),
   lib("service-support", {
     text: {
@@ -168,8 +145,8 @@ const DEMO = demoStore({
 
 export const TYRE = libraryTemplate({
   key: TYRE_KEY,
-  version: 2,
-  changelog: "Kawetch v2: product page",
+  version: 3,
+  changelog: "Tyre v3: categories after the search, tyres before fitting, one service block",
   productPage: { thumbs: "side", band: "shelf", extras: ["product-perks"], copy: { back: L("رجوع للكاوتش", "Back to the tyres"), reviews: L("رأي اللي ركّبوا", "From those who fitted"), related: L("إضافات وقت التركيب", "Add-ons while we fit") } },
   name: L("كاوتش", "Kawetch"),
   description: L(

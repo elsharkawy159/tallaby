@@ -74,6 +74,11 @@ const home: Design[] = [
     },
     links: { "/products": [SHOP, "/contact"] },
   }),
+  lib("categories-chips", { text: { "إيه اللي في بالك؟": L("دقن ولا حلاقة؟", "Beard or shave?") } }),
+  lib("products-grid", {
+    text: { "وصل حديثًا": L("منتجات العناية", "Grooming products"), "أحدث المنتجات اللي نزلت المتجر.": L("اللي بنستعمله في المحل، تاخده معاك البيت.", "What we use in the shop, to take home.") },
+    links: { "/products": NEW },
+  }),
   lib("service-price-menu", {
     text: {
       "أسعار الخدمات": L("على الكرسي", "In the chair"),
@@ -95,47 +100,6 @@ const home: Design[] = [
       "١٢٠ ج.م": L("٣٥٠ ج.م", "EGP 350"),
       "تنظيف وفحص": L("باكدج العريس", "Groom's package"),
       "٨٠ ج.م": L("٩٥٠ ج.م", "EGP 950"),
-    },
-  }),
-  lib("service-booking", {
-    text: {
-      "احجز معاد الفني": L("احجز كرسيك", "Book your chair"),
-      "تركيب شاشة · حوالي ساعة": L("حلاقة في مكتب، الدقي · ٤٠ دقيقة", "Cut at Maktab, Dokki · 40 minutes"),
-      "مواعيد الزيارات": L("المواعيد", "Time slots"),
-      "١٠ ص": L("١٢ الضهر", "12 pm"),
-      "١٢ الضهر": L("٢ م", "2 pm"),
-      "٢ م": L("٤ م", "4 pm"),
-      "٤ م": L("٦ م", "6 pm"),
-      "٦ م": L("٨ م", "8 pm"),
-      "٨ م": L("١٠ م", "10 pm"),
-      "من السبت للخميس": L("كل يوم ما عدا الجمعة الصبح", "Every day except Friday morning"),
-    },
-  }),
-  lib("bundle-poster", {
-    text: {
-      "طقم المشاوير": L("طقم هدية", "Gift kit"),
-      "كل اللي تحتاجه في الطريق": L("كل اللي يلزم لدقن شيك", "Everything for a sharp beard"),
-      "١٬٢٧٠ ج.م": L("٦٥٥ ج.م", "EGP 655"),
-      "بدل ١٬٤٩٠ ج.م": L("بدل ٧٧٠ ج.م", "Instead of EGP 770"),
-      "اشتري الطقم": L("خد الطقم", "Get the kit"),
-    },
-  }),
-  lib("team-grid", {
-    text: {
-      "الفريق": L("الباربرز", "Barbers"),
-      "الناس اللي ورا المحل": L("مين بيقص", "Who is cutting"),
-      "م": L("ح", "H"),
-      "منى عادل": L("حمادة", "Hamada"),
-      "المؤسسة": L("كبير الباربرز", "Head barber"),
-      "ك": L("ش", "S"),
-      "كريم سامي": L("شريف", "Sherif"),
-      "المشتريات": L("الفيد", "Fades"),
-      "ي": L("م", "M"),
-      "ياسمين فؤاد": L("ميدو", "Mido"),
-      "خدمة العملاء": L("الدقون", "Beards"),
-      "ع": L("ع", "A"),
-      "عمر حسن": L("علي", "Aly"),
-      "التوصيل": L("الحلاقة بالموس", "Straight razor"),
     },
   }),
   lib("testimonials-chat", {
@@ -194,8 +158,8 @@ const DEMO = demoStore({
 
 export const BARBER = libraryTemplate({
   key: BARBER_KEY,
-  version: 2,
-  changelog: "Barber v2: product page",
+  version: 3,
+  changelog: "Barber v3: categories, one service block, section order",
   productPage: { surface: "flat", thumbs: "bottom", band: "brand", copy: { back: L("رجوع للمحل", "Back to the shop"), reviews: L("رأي زباين الكرسي", "From the chair"), related: L("كمّل العدّة", "Complete the kit") } },
   name: L("باربر", "Barber"),
   description: L(

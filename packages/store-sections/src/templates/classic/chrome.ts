@@ -98,7 +98,7 @@ export const classicHeader = defineDesign({
   ),
   keywords: ["header", "classic", "tallaby", "menu", "هيدر", "كلاسيك"],
   tree: (t) =>
-    t.section({ label: L("الهيدر", "Header"), style: { paddingTop: 0, paddingBottom: 0, background: "white" }, mobile: { paddingTop: 0, paddingBottom: 0 } }, [
+    t.section({ label: L("الهيدر", "Header"), style: { paddingTop: 0, paddingBottom: 0, background: "surface" }, mobile: { paddingTop: 0, paddingBottom: 0 } }, [
       t.box(
         [
           t.text(L("توصيل لكل المحافظات، والدفع عند الاستلام", "Delivery to every governorate, with cash on delivery"), {
@@ -213,7 +213,7 @@ export const classicFooter = defineDesign({
   ),
   keywords: ["footer", "classic", "tallaby", "فوتر", "كلاسيك"],
   tree: (t) =>
-    t.section({ label: L("الفوتر", "Footer"), style: { paddingTop: 56, paddingBottom: 28, background: "white", marginTop: 72 }, mobile: { paddingTop: 40, marginTop: 48 } }, [
+    t.section({ label: L("الفوتر", "Footer"), style: { paddingTop: 56, paddingBottom: 28, background: "surface", marginTop: 72 }, mobile: { paddingTop: 40, marginTop: 48 } }, [
       t.container(
         [
           t.grid(
