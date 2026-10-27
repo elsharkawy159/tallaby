@@ -74,6 +74,8 @@ export const storeTags = {
   catalog: (sellerId: string, storeId: string) => `store:catalog:${sellerId}:${storeId}`,
   /** Published blog posts and CMS items of the store (P4-16, P4-11). Never drafts. */
   cms: (sellerId: string, storeId: string) => `store:cms:${sellerId}:${storeId}`,
+  /** Store views read from Tallaby's GA4 property (SA-01). Dashboard only. */
+  views: (sellerId: string, storeId: string) => `store:views:${sellerId}:${storeId}`,
 } as const;
 
 export const reviewTags = {

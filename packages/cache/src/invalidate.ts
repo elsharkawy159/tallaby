@@ -285,6 +285,11 @@ export function invalidateStoreIntegrations(sellerId: string, storeId: string): 
   return inv([storeTags.integrations(sellerId, storeId)]);
 }
 
+/** The seller pressed Refresh on Store views (SA-01). */
+export function invalidateStoreViews(sellerId: string, storeId: string): CacheInvalidation {
+  return inv([storeTags.views(sellerId, storeId)]);
+}
+
 /** Platform-wide coupons (no seller) — the storefront's "available coupons". */
 export function invalidatePlatformCoupons(): CacheInvalidation {
   return inv([couponTags.available()]);

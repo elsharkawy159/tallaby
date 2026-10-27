@@ -2,6 +2,7 @@ import type { LucideIcon } from "lucide-react";
 import {
   AppWindow,
   BarChart3,
+  ChartLine,
   CircleUserRound,
   Globe,
   Megaphone,
@@ -134,6 +135,8 @@ export const SIDEBAR_CONFIG: NavEntry[] = [
       { key: "campaigns", href: "/marketing", countKey: "marketing", status: "live" },
     ],
   },
+  // Store views from Tallaby's GA4 (SA-01).
+  { kind: "link", key: "storeAnalytics", href: "/stores/[storeId]/analytics", icon: ChartLine, status: "live" },
   { kind: "link", key: "apps", href: "/stores/[storeId]/apps", icon: AppWindow, status: "live" },
   {
     kind: "group",

@@ -57,6 +57,7 @@
     "forms": "Forms",
     "mediaLibrary": "Media library",
     "apps": "Apps & integrations",
+    "storeAnalytics": "Store views",
     "finance": "Wallet",
     "fulfillmentShipping": "Shipping & Fulfillment",
     "storeSettings": "Store settings",
@@ -4386,6 +4387,33 @@
     "publishConfirm": {
       "title": "Publish your website?",
       "description": "This puts every draft change live, including pages and template changes made in the builder, not only the design."
+    }
+  },
+  "storeAnalytics": {
+    "title": "Store views",
+    "description": "How many people visit {store}'s website.",
+    "rangeLabel": "Period",
+    "range": "Last {days} days",
+    "refresh": "Refresh",
+    "updated": "Updated {time}",
+    "views": "Views",
+    "viewsHint": "Pages opened on your website",
+    "visitors": "Visitors",
+    "visitorsHint": "Different people who visited",
+    "chartTitle": "Views per day",
+    "chartDescription": "Views and visitors for each day",
+    "emptyTitle": "No views yet",
+    "emptyDescription": "Share your store link to bring your first visitors.",
+    "offline": "Your website isn't published, so visitors can't see it and no views are counted. Publish it from Website › Overview.",
+    "delayNote": "New visits can take a few hours to show up. The numbers refresh every hour, or when you press Refresh.",
+    "notConfiguredTitle": "Store views are coming soon",
+    "notConfiguredDescription": "Visitor counts for your website aren't switched on yet.",
+    "errorTitle": "Couldn't load your store views",
+    "errorDescription": "Please try again in a few minutes.",
+    "errors": {
+      "rateLimited": "You just refreshed. Wait a minute and try again.",
+      "notFound": "This store wasn't found.",
+      "generic": "Something went wrong. Try again."
     }
   }
 }

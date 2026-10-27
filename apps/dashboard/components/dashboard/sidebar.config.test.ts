@@ -86,6 +86,7 @@ describe("SIDEBAR_CONFIG", () => {
       "|",
       "websiteContent",
       "marketing",
+      "storeAnalytics",
       "apps",
       "settingsGroup",
       "|",

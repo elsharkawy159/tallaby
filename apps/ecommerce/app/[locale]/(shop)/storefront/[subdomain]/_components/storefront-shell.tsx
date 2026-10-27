@@ -11,6 +11,8 @@ import { StorefrontFooter } from "./storefront-footer";
 import { MobileCartBar } from "./mobile-cart-bar.client";
 import { storeFontVariables, storefrontFont } from "./storefront-font";
 import { StorefrontTracking } from "./seller-tracking";
+import { StoreViewsTag } from "@/components/storefront/store-views-tag.client";
+import { readStoreViewsGtmId } from "@/lib/store-views.server";
 import { StoreSiteChrome } from "./store-site";
 import { StorePreviewBanner } from "./store-preview-banner";
 import { StoreOffline } from "./store-offline";
@@ -57,6 +59,8 @@ export async function StorefrontShell({
     );
   }
 
+  const storeViewsGtmId = readStoreViewsGtmId();
+
   return (
     <CurrencyLabelProvider label={store.currencyLabel}>
       {/* The theme toggle's init script may set `data-sf-theme` before hydration. */}
@@ -70,6 +74,8 @@ export async function StorefrontShell({
         <AuthDialogProvider />
         {site && <CarouselRuntime />}
         {!shared && <StorefrontTracking store={store} />}
+        {/* Tallaby's store-views tag (SA-01): published pages only, never a draft preview. */}
+        {!shared && !preview && storeViewsGtmId && <StoreViewsTag containerId={storeViewsGtmId} storeId={store.storeId} />}
       </div>
     </CurrencyLabelProvider>
   );

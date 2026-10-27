@@ -7,6 +7,7 @@ import {
   LayoutTemplate,
   BarChart3,
   Bike,
+  ChartLine,
   CircleHelp,
   ClipboardList,
   CreditCard,
@@ -82,7 +83,8 @@ export type NavKey =
   | "coupons"
   | "campaigns"
   | "accountHelp"
-  | "sellerCategories";
+  | "sellerCategories"
+  | "storeAnalytics";
 
 export interface DashboardRoute {
   /** A path, or a pattern with `[storeId]` for store-scoped pages. */
@@ -124,6 +126,7 @@ export const DASHBOARD_ROUTES: DashboardRoute[] = [
   { href: "/stores/[storeId]/website/media", title: "mediaLibrary", parent: "websiteContent", icon: Images },
   { href: "/coupons", title: "coupons", parent: "marketing", icon: Gift },
   { href: "/marketing", title: "campaigns", parent: "marketing", icon: TrendingUp },
+  { href: "/stores/[storeId]/analytics", title: "storeAnalytics", icon: ChartLine },
   { href: "/stores/[storeId]/apps", title: "apps", icon: AppWindow },
   { href: "/stores/[storeId]/settings", title: "general", parent: "settingsGroup", icon: Store },
   { href: "/stores/[storeId]/settings/payments", title: "paymentMethods", parent: "settingsGroup", icon: CreditCard },
