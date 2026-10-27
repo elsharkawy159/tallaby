@@ -45,10 +45,13 @@ export function ParallaxImage<T extends React.ElementType = "div">({ as, speed =
   return <Comp data-parallax={String(speed)} {...props} />;
 }
 
-/** Counts up to the number already rendered inside, once it is visible. */
-export function CountUp<T extends React.ElementType = "span">({ as, from, ...props }: PolyProps<T, { from?: number }>) {
+/**
+ * Counts up to the number already rendered inside, once it is visible.
+ * Tabular figures keep every digit the same width, so counting never nudges the text around it.
+ */
+export function CountUp<T extends React.ElementType = "span">({ as, from, style, ...props }: PolyProps<T, { from?: number }>) {
   const Comp = (as ?? "span") as React.ElementType;
-  return <Comp data-count-up={attr(from) ?? ""} {...props} />;
+  return <Comp data-count-up={attr(from) ?? ""} style={{ fontVariantNumeric: "tabular-nums", ...(style as React.CSSProperties | undefined) }} {...props} />;
 }
 
 /**
