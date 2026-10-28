@@ -94,104 +94,104 @@ Sources: [Shopify pricing](https://www.shopify.com/pricing), [EasyOrders](https:
 
 ### 2.3 EasyOrders seller dashboard, item by item (owner pasted their sidebar, 2026-10-28)
 
-| EasyOrders menu item | What it is | Tallaby today | Roadmap |
-| --- | --- | --- | --- |
-| لوحة الإحصائيات (stats) | Sales dashboard | Live (home KPIs, reports) | F-15 |
-| كل الطلبات (all orders) | Order list | Live | — |
-| الطلبات المفقودة (missed orders) | Checkouts left after typing a phone | **Missing** | **F-03** |
-| الأرقام المحظورة من الطلب (blocked numbers) | Phone blocklist | **Missing** | **F-02** |
-| الأرقام المحظورة OTP | Numbers that must pass an OTP before ordering | **Missing** | **F-02f** |
-| NewsLetter | Subscriber list | Forms + submissions (no list view) | F-16 |
-| كل المنتجات / الأقسام / التقييمات | Products, categories, reviews | Live | — |
-| Product Feed | Meta/Google/TikTok catalog feed | **Missing** | **F-11** |
-| Easy Catalog | Shareable product catalog (link/PDF for WhatsApp) | **Missing** | F-11c |
-| A/B Tests | Test two versions of a product/landing page | **Missing** | F-27 |
-| الثيمات / تعديل الصفحة الرئيسية / الصفحات / UI Blocks / رفع ملفات التصاميم | Themes, home editor, pages, blocks, design uploads | Live (builder, 100+ templates, library sections, media library) | — |
-| نموذج الشراء (checkout form) | Choose and order checkout fields | **Missing** | **F-25** |
-| تعديل صفحة الشكر (thank-you page) | Edit the order-confirmation page | **Missing** | **F-25** |
-| Funnels | Landing page → upsell → thank-you flows | **Missing** | **F-08** |
-| إعدادات البيكسل / Conversion API / Google Tag | Tracking | Live (Meta Pixel + CAPI, GA4, GTM, TikTok, Snapchat) | — |
-| CROSS SELLING / Downsell | Extra offers in cart / lower offer when leaving | Exit coupon pop-up only (`coupons.popup_trigger`, 0114) | **F-07** |
-| الكوبونات (coupons) | Coupons | Live | — |
-| إعادة الاستهداف (retargeting) | Customer audiences for ads | **Missing** | F-16b |
-| Whatsapp Marketing | WhatsApp API broadcasts and order messages | **Missing** | F-14, F-16c |
-| وثق طلباتك مع Top MB | Third-party order confirmation (call/WhatsApp) | **Missing** | F-14a (confirm link) |
-| تتبع نتائج الحملات الإعلانية (UTM builder) | Campaign links and orders per campaign | **Missing** | F-26 |
-| Google Merchant | Google Shopping feed | **Missing** | F-11 |
-| Sales Popup | "Someone just ordered …" toasts | **Missing** | **F-22** |
-| إنشاء روابط الإحالة (referral links) | Marketer links with commission | Marketplace affiliates only | F-18 |
-| الحد الأدنى للشحن المجاني وللطلب | Store-wide minimum order and free-shipping threshold | Free-over per shipping zone only | F-13b |
-| محفظتك (wallet, transactions) | Prepaid balance | Live (store wallet) | — |
-| التطبيقات (plugins) | App store | Live (Apps page) | — |
+| EasyOrders menu item                                                       | What it is                                           | Tallaby today                                                   | Roadmap              |
+| -------------------------------------------------------------------------- | ---------------------------------------------------- | --------------------------------------------------------------- | -------------------- |
+| لوحة الإحصائيات (stats)                                                    | Sales dashboard                                      | Live (home KPIs, reports)                                       | F-15                 |
+| كل الطلبات (all orders)                                                    | Order list                                           | Live                                                            | —                    |
+| الطلبات المفقودة (missed orders)                                           | Checkouts left after typing a phone                  | **Missing**                                                     | **F-03**             |
+| الأرقام المحظورة من الطلب (blocked numbers)                                | Phone blocklist                                      | **Missing**                                                     | **F-02**             |
+| الأرقام المحظورة OTP                                                       | Numbers that must pass an OTP before ordering        | **Missing**                                                     | **F-02f**            |
+| NewsLetter                                                                 | Subscriber list                                      | Forms + submissions (no list view)                              | F-16                 |
+| كل المنتجات / الأقسام / التقييمات                                          | Products, categories, reviews                        | Live                                                            | —                    |
+| Product Feed                                                               | Meta/Google/TikTok catalog feed                      | **Missing**                                                     | **F-11**             |
+| Easy Catalog                                                               | Shareable product catalog (link/PDF for WhatsApp)    | **Missing**                                                     | F-11c                |
+| A/B Tests                                                                  | Test two versions of a product/landing page          | **Missing**                                                     | F-27                 |
+| الثيمات / تعديل الصفحة الرئيسية / الصفحات / UI Blocks / رفع ملفات التصاميم | Themes, home editor, pages, blocks, design uploads   | Live (builder, 100+ templates, library sections, media library) | —                    |
+| نموذج الشراء (checkout form)                                               | Choose and order checkout fields                     | **Missing**                                                     | **F-25**             |
+| تعديل صفحة الشكر (thank-you page)                                          | Edit the order-confirmation page                     | **Missing**                                                     | **F-25**             |
+| Funnels                                                                    | Landing page → upsell → thank-you flows              | **Missing**                                                     | **F-08**             |
+| إعدادات البيكسل / Conversion API / Google Tag                              | Tracking                                             | Live (Meta Pixel + CAPI, GA4, GTM, TikTok, Snapchat)            | —                    |
+| CROSS SELLING / Downsell                                                   | Extra offers in cart / lower offer when leaving      | Exit coupon pop-up only (`coupons.popup_trigger`, 0114)         | **F-07**             |
+| الكوبونات (coupons)                                                        | Coupons                                              | Live                                                            | —                    |
+| إعادة الاستهداف (retargeting)                                              | Customer audiences for ads                           | **Missing**                                                     | F-16b                |
+| Whatsapp Marketing                                                         | WhatsApp API broadcasts and order messages           | **Missing**                                                     | F-14, F-16c          |
+| وثق طلباتك مع Top MB                                                       | Third-party order confirmation (call/WhatsApp)       | **Missing**                                                     | F-14a (confirm link) |
+| تتبع نتائج الحملات الإعلانية (UTM builder)                                 | Campaign links and orders per campaign               | **Missing**                                                     | F-26                 |
+| Google Merchant                                                            | Google Shopping feed                                 | **Missing**                                                     | F-11                 |
+| Sales Popup                                                                | "Someone just ordered …" toasts                      | **Missing**                                                     | **F-22**             |
+| إنشاء روابط الإحالة (referral links)                                       | Marketer links with commission                       | Marketplace affiliates only                                     | F-18                 |
+| الحد الأدنى للشحن المجاني وللطلب                                           | Store-wide minimum order and free-shipping threshold | Free-over per shipping zone only                                | F-13b                |
+| محفظتك (wallet, transactions)                                              | Prepaid balance                                      | Live (store wallet)                                             | —                    |
+| التطبيقات (plugins)                                                        | App store                                            | Live (Apps page)                                                | —                    |
 
 ### 2.4 EasyOrders public roadmap — what their sellers ask for ([roadmap.easyorders.ai](https://roadmap.easyorders.ai/ar), read 2026-10-28)
 
 All 88 ideas read on 2026-10-28 (the 66 waitlist items expanded in the browser; 12 planned, 4 in progress, 6 done). Votes in brackets.
 
-| Their item (status) | Tallaby | Roadmap |
-| --- | --- | --- |
-| Deposit as a % of the order, e.g. 20 % (waitlist, **38**, top request) | **Missing** | **F-21** |
-| Per-product visit stats (in progress, 20) | Store-level views only | **F-15b** |
-| Customer login on the store (in progress, 19 + 13; "Customer account" 1) | Live: store account button (`storefront/[subdomain]/_components/store-account-button.client.tsx`) with the shared Tallaby account | — |
-| Print invoice (waitlist, 18) | **Missing** | **F-04a** |
-| Checkout form (planned, 17) | **Missing** | **F-25** |
-| Abandoned cart reminders (waitlist, 17) | Marketplace email only | **F-03e** |
-| Order of product properties (waitlist, 17) | Variant types are ordered in the form | check |
-| Official MCP for AI agents (planned, 14) | **Missing** | F-29 |
-| Bundles (planned, 13) | **Missing** | F-07f |
-| Meta description for store/category pages (planned, 13) | Store SEO live; category pages to check | check |
-| Export products to Excel (waitlist, 13) | Live (`products/_components/import-export-button.client.tsx`) | — |
-| Customer store credit / wallet (waitlist, 13) | Marketplace customer wallet only | F-19 |
-| Pre-order & waitlist (planned, 12) | **Missing** | F-23 |
-| Notify me when restocked (planned, 10) | Static `popup-restock` design only | F-23 |
-| Coupons in cart + free-gift choice (waitlist, 9) | Coupons at checkout | F-13c |
-| Payment by transfer-receipt image (planned, 9) | Per-store wallet payments with seller confirmation | check proof upload in F-21 |
-| Wholesale vs retail price (waitlist, 8) | **Missing** | F-28 |
-| Bulk price change for a category (waitlist, 7) | **Missing** | **F-24** |
-| Repeat customer order (planned, 7) | **Missing** | F-01e |
-| Variant out-of-stock indicators (planned, 7) | Stock line on product page | check |
-| Mobile + checkout preview, show/hide section in builder (planned, 5) | Mobile preview live; hide section to check | check |
-| Block customer phones (waitlist, 4) | **Missing** | F-02 |
-| Deleted orders visible (waitlist, 4) | Cancelled stage live | — |
-| Blog, two languages, offers page, send to carrier from order page (done or asked) | Live (blog, AR/EN, Bosta ship from order) | — |
+| Their item (status)                                                               | Tallaby                                                                                                                           | Roadmap                    |
+| --------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
+| Deposit as a % of the order, e.g. 20 % (waitlist, **38**, top request)            | **Missing**                                                                                                                       | **F-21**                   |
+| Per-product visit stats (in progress, 20)                                         | Store-level views only                                                                                                            | **F-15b**                  |
+| Customer login on the store (in progress, 19 + 13; "Customer account" 1)          | Live: store account button (`storefront/[subdomain]/_components/store-account-button.client.tsx`) with the shared Tallaby account | —                          |
+| Print invoice (waitlist, 18)                                                      | **Missing**                                                                                                                       | **F-04a**                  |
+| Checkout form (planned, 17)                                                       | **Missing**                                                                                                                       | **F-25**                   |
+| Abandoned cart reminders (waitlist, 17)                                           | Marketplace email only                                                                                                            | **F-03e**                  |
+| Order of product properties (waitlist, 17)                                        | Variant types are ordered in the form                                                                                             | check                      |
+| Official MCP for AI agents (planned, 14)                                          | **Missing**                                                                                                                       | F-29                       |
+| Bundles (planned, 13)                                                             | **Missing**                                                                                                                       | F-07f                      |
+| Meta description for store/category pages (planned, 13)                           | Store SEO live; category pages to check                                                                                           | check                      |
+| Export products to Excel (waitlist, 13)                                           | Live (`products/_components/import-export-button.client.tsx`)                                                                     | —                          |
+| Customer store credit / wallet (waitlist, 13)                                     | Marketplace customer wallet only                                                                                                  | F-19                       |
+| Pre-order & waitlist (planned, 12)                                                | **Missing**                                                                                                                       | F-23                       |
+| Notify me when restocked (planned, 10)                                            | Static `popup-restock` design only                                                                                                | F-23                       |
+| Coupons in cart + free-gift choice (waitlist, 9)                                  | Coupons at checkout                                                                                                               | F-13c                      |
+| Payment by transfer-receipt image (planned, 9)                                    | Per-store wallet payments with seller confirmation                                                                                | check proof upload in F-21 |
+| Wholesale vs retail price (waitlist, 8)                                           | **Missing**                                                                                                                       | F-28                       |
+| Bulk price change for a category (waitlist, 7)                                    | **Missing**                                                                                                                       | **F-24**                   |
+| Repeat customer order (planned, 7)                                                | **Missing**                                                                                                                       | F-01e                      |
+| Variant out-of-stock indicators (planned, 7)                                      | Stock line on product page                                                                                                        | check                      |
+| Mobile + checkout preview, show/hide section in builder (planned, 5)              | Mobile preview live; hide section to check                                                                                        | check                      |
+| Block customer phones (waitlist, 4)                                               | **Missing**                                                                                                                       | F-02                       |
+| Deleted orders visible (waitlist, 4)                                              | Cancelled stage live                                                                                                              | —                          |
+| Blog, two languages, offers page, send to carrier from order page (done or asked) | Live (blog, AR/EN, Bosta ship from order)                                                                                         | —                          |
 
 **The rest of the waitlist (1–3 votes each), grouped:**
 
-| Their items | Tallaby | Roadmap |
-| --- | --- | --- |
-| Deposit again: "take a deposit and calculate it", "الديبوزت", deposit for custom-made products (+3 more requests, so deposit is ~41 votes in total) | Missing | **F-21** (per-product deposit for custom items) |
-| Special price when bought with another product; cross-sell for big catalogs | Missing | F-07d |
-| Buy X get Y coupon | Coupons are % / amount only | F-13a |
-| Edit products by Excel sheet; variant prices in the upload sheet; select all products | Import creates products; updating existing rows to check | **F-24c**, F-24 |
-| Order of products inside each category | to check | F-24d |
-| Inventory settings | Stock per product/variant | F-10 |
-| Daily list of ordered products and colours on the stats page ("ضروري جدا") | Missing | **F-04d** (picking list) |
-| Barcode scanner to receive returns | Missing | F-04e |
-| Change order status, orders page, advanced fulfillment workflow | Order stages live | F-04c (bulk), F-02 (confirm step) |
-| Abandoned cart notifications; shipping cost on missed orders | Missing | F-03 |
-| Send Purchase to the pixel when the order is delivered; control pixel events | Pixel + CAPI live, purchase sent at order time | **F-30** |
-| Message customers who have not bought for 90 days; ask email/WhatsApp at checkout for retargeting | Missing | F-16e, F-25, F-16b |
-| WhatsApp; Telegram as a contact link | WhatsApp buttons live | F-14; Telegram link in social settings (small) |
-| Affiliate and influencer marketing | Marketplace affiliates only | F-18 |
-| Mobile app update | Install-as-app, no push | F-06 |
-| Auto order updates from the carrier; Egypt Post | Bosta webhooks live | F-12 |
-| Fawry gateway, more payment methods (VPAY) | Fawry shown as "Soon" | PLAN.md payments (not a roadmap item) |
-| Customer tracks the order | Live (store order page) | — |
-| Mark sold-out products | Live (stock line, buy box) | — |
-| Multi-country and currency | Egypt only | not planned |
-| Store as an installable app (PWA) | Missing | F-06c (P3) |
-| POS and cloud cashier | Missing | F-31 (P3) |
-| Advanced filters, product categorisation, smarter collections, brand per product, own domain, change link, extra language | Live (catalog filters, categories, brands, custom domain, subdomain change, AR/EN) | — |
-| AI to edit product looks | AI product entry live | PLAN.md AI-2 |
-| AI integration – ChatGPT & Gemini (11) | Gemini product autofill live (`packages/ai`) | PLAN.md AI-2 … AI-5 |
-| Newsletter pop-up designed per theme (9) | Pop-up designs in the builder (`packages/store-sections/src/designs/popups`); check that one collects newsletter sign-ups | check; F-16d lists the sign-ups |
-| Governorate areas as a dropdown (8) | Shipping zones store areas (`store_shipping_zones.places`) | F-25a (area dropdown at checkout) |
-| "تعديل المنتجات" (6), "المدفوعات" (6), "الكتابة" (1) | Titles too vague to map | — |
-| Date filters in freelancer showcase analytics (5) | Not a Tallaby product | — |
-| Done there: unified advanced settings for all products (6) | Missing | F-24 (bulk edit) |
-| Done there: upsell shown on a separate landing page (3) | Missing | F-07d, F-08c |
-| Done there: product comparisons (2); offers page (2) | Marketplace compare and deals live; no store offers page | check (store offers page could be a builder page with a discounted-products list) |
-| Done there: video in product feed, auto category mapping to Meta (1) | Missing | F-11b |
+| Their items                                                                                                                                         | Tallaby                                                                                                                   | Roadmap                                                                           |
+| --------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| Deposit again: "take a deposit and calculate it", "الديبوزت", deposit for custom-made products (+3 more requests, so deposit is ~41 votes in total) | Missing                                                                                                                   | **F-21** (per-product deposit for custom items)                                   |
+| Special price when bought with another product; cross-sell for big catalogs                                                                         | Missing                                                                                                                   | F-07d                                                                             |
+| Buy X get Y coupon                                                                                                                                  | Coupons are % / amount only                                                                                               | F-13a                                                                             |
+| Edit products by Excel sheet; variant prices in the upload sheet; select all products                                                               | Import creates products; updating existing rows to check                                                                  | **F-24c**, F-24                                                                   |
+| Order of products inside each category                                                                                                              | to check                                                                                                                  | F-24d                                                                             |
+| Inventory settings                                                                                                                                  | Stock per product/variant                                                                                                 | F-10                                                                              |
+| Daily list of ordered products and colours on the stats page ("ضروري جدا")                                                                          | Missing                                                                                                                   | **F-04d** (picking list)                                                          |
+| Barcode scanner to receive returns                                                                                                                  | Missing                                                                                                                   | F-04e                                                                             |
+| Change order status, orders page, advanced fulfillment workflow                                                                                     | Order stages live                                                                                                         | F-04c (bulk), F-02 (confirm step)                                                 |
+| Abandoned cart notifications; shipping cost on missed orders                                                                                        | Missing                                                                                                                   | F-03                                                                              |
+| Send Purchase to the pixel when the order is delivered; control pixel events                                                                        | Pixel + CAPI live, purchase sent at order time                                                                            | **F-30**                                                                          |
+| Message customers who have not bought for 90 days; ask email/WhatsApp at checkout for retargeting                                                   | Missing                                                                                                                   | F-16e, F-25, F-16b                                                                |
+| WhatsApp; Telegram as a contact link                                                                                                                | WhatsApp buttons live                                                                                                     | F-14; Telegram link in social settings (small)                                    |
+| Affiliate and influencer marketing                                                                                                                  | Marketplace affiliates only                                                                                               | F-18                                                                              |
+| Mobile app update                                                                                                                                   | Install-as-app, no push                                                                                                   | F-06                                                                              |
+| Auto order updates from the carrier; Egypt Post                                                                                                     | Bosta webhooks live                                                                                                       | F-12                                                                              |
+| Fawry gateway, more payment methods (VPAY)                                                                                                          | Fawry shown as "Soon"                                                                                                     | PLAN.md payments (not a roadmap item)                                             |
+| Customer tracks the order                                                                                                                           | Live (store order page)                                                                                                   | —                                                                                 |
+| Mark sold-out products                                                                                                                              | Live (stock line, buy box)                                                                                                | —                                                                                 |
+| Multi-country and currency                                                                                                                          | Egypt only                                                                                                                | not planned                                                                       |
+| Store as an installable app (PWA)                                                                                                                   | Missing                                                                                                                   | F-06c (P3)                                                                        |
+| POS and cloud cashier                                                                                                                               | Missing                                                                                                                   | F-31 (P3)                                                                         |
+| Advanced filters, product categorisation, smarter collections, brand per product, own domain, change link, extra language                           | Live (catalog filters, categories, brands, custom domain, subdomain change, AR/EN)                                        | —                                                                                 |
+| AI to edit product looks                                                                                                                            | AI product entry live                                                                                                     | PLAN.md AI-2                                                                      |
+| AI integration – ChatGPT & Gemini (11)                                                                                                              | Gemini product autofill live (`packages/ai`)                                                                              | PLAN.md AI-2 … AI-5                                                               |
+| Newsletter pop-up designed per theme (9)                                                                                                            | Pop-up designs in the builder (`packages/store-sections/src/designs/popups`); check that one collects newsletter sign-ups | check; F-16d lists the sign-ups                                                   |
+| Governorate areas as a dropdown (8)                                                                                                                 | Shipping zones store areas (`store_shipping_zones.places`)                                                                | F-25a (area dropdown at checkout)                                                 |
+| "تعديل المنتجات" (6), "المدفوعات" (6), "الكتابة" (1)                                                                                                | Titles too vague to map                                                                                                   | —                                                                                 |
+| Date filters in freelancer showcase analytics (5)                                                                                                   | Not a Tallaby product                                                                                                     | —                                                                                 |
+| Done there: unified advanced settings for all products (6)                                                                                          | Missing                                                                                                                   | F-24 (bulk edit)                                                                  |
+| Done there: upsell shown on a separate landing page (3)                                                                                             | Missing                                                                                                                   | F-07d, F-08c                                                                      |
+| Done there: product comparisons (2); offers page (2)                                                                                                | Marketplace compare and deals live; no store offers page                                                                  | check (store offers page could be a builder page with a discounted-products list) |
+| Done there: video in product feed, auto category mapping to Meta (1)                                                                                | Missing                                                                                                                   | F-11b                                                                             |
 
 **What this tells us:** EasyOrders sellers' biggest pains are COD risk (deposit, blocked numbers, OTP, confirmation), recovering lost orders (missed orders, cart reminders), selling more per order (bundles, upsell, downsell, quantity offers, checkout form, funnels) and day-to-day order work (invoices, bulk edits, per-product stats). Those lead the priority order in §3. Tallaby is already ahead on store design (builder, templates), tracking apps, blog, two languages, AI product entry and wallets.
 
@@ -201,39 +201,39 @@ All 88 ideas read on 2026-10-28 (the 66 waitlist items expanded in the browser; 
 
 Updated 2026-10-28 after the EasyOrders dashboard and roadmap review (§2.3, §2.4). IDs never change; only the order does.
 
-| #   | ID   | Feature                                                   | Priority | Migration          | Approval                                 |
-| --- | ---- | --------------------------------------------------------- | -------- | ------------------ | ---------------------------------------- |
-| 1   | F-02 | Fake-order protection (blocklist, OTP, risk)              | P0       | yes                | —                                        |
-| 2   | F-03 | Missed orders (abandoned checkouts) + reminders           | P0       | yes                | —                                        |
-| 3   | F-01 | Customers list (store CRM)                                | P0       | maybe (notes/tags) | —                                        |
-| 4   | F-04 | Invoices, packing slips & order export                    | P0       | no                 | —                                        |
-| 5   | F-05 | Manual orders (phone/WhatsApp sales)                      | P0       | maybe              | **Needs approval** (order creation path) |
-| 6   | F-21 | Deposit (عربون) before shipping a COD order               | P1       | yes                | **Needs approval** (money, checkout)     |
-| 7   | F-25 | Checkout form & thank-you page settings                   | P1       | yes                | —                                        |
-| 8   | F-08 | Funnels: quick-order landing pages                        | P1       | maybe              | **Needs approval** (checkout)            |
-| 9   | F-07 | Quantity offers, bundles, upsell, cross-sell, downsell    | P1       | yes                | **Needs approval** (checkout pricing)    |
-| 10  | F-22 | Sales pop-up (real recent orders)                         | P1       | no                 | —                                        |
-| 11  | F-24 | Bulk product editing (prices by category, stock, status) | P1       | no                 | —                                        |
-| 12  | F-15 | Reports upgrade + per-product views                       | P1       | no                 | —                                        |
-| 13  | F-06 | New-order push alerts (PWA)                               | P1       | yes                | —                                        |
-| 14  | F-11 | Product feeds (Meta, Google Merchant, TikTok) + catalog   | P1       | no                 | —                                        |
-| 15  | F-09 | Staff accounts & permissions                              | P1       | yes                | — (security review)                      |
-| 16  | F-10 | Inventory alerts & stock history                          | P1       | yes                | —                                        |
-| 17  | F-12 | More shipping carriers                                    | P1       | small              | —                                        |
-| 18  | F-13 | Automatic discounts, min order, free gift                 | P2       | yes                | **Needs approval** (checkout pricing)    |
-| 19  | F-14 | Customer order messages (WhatsApp/SMS, confirm link)      | P2       | yes                | Provider cost                            |
-| 20  | F-16 | Campaigns: email, WhatsApp, retargeting audiences         | P2       | yes                | Provider cost                            |
-| 21  | F-23 | Back-in-stock alerts & pre-orders                         | P2       | yes                | —                                        |
-| 22  | F-26 | Campaign tracking (UTM links, orders per campaign)        | P2       | yes                | —                                        |
-| 23  | F-17 | Public API & webhooks                                     | P2       | yes                | — (security review)                      |
-| 24  | F-18 | Store affiliates / referral links                         | P3       | yes                | **Needs approval** (payouts)             |
-| 25  | F-19 | Gift cards & customer store credit                        | P3       | yes                | **Needs approval** (ledger)              |
-| 26  | F-20 | Loyalty points                                            | P3       | yes                | **Needs approval**                       |
-| 27  | F-27 | A/B tests                                                 | P3       | yes                | —                                        |
-| 28  | F-28 | Wholesale pricing                                         | P3       | yes                | **Needs approval** (checkout pricing)    |
-| 29  | F-29 | AI agent connection (MCP)                                 | P3       | no                 | — (after F-17)                           |
+| #   | ID   | Feature                                                    | Priority | Migration          | Approval                                 |
+| --- | ---- | ---------------------------------------------------------- | -------- | ------------------ | ---------------------------------------- |
+| 1   | F-02 | Fake-order protection (blocklist, WhatsApp confirm, risk)  | P0       | yes                | —                                        |
+| 2   | F-03 | Missed orders (abandoned checkouts) + reminders            | P0       | yes                | —                                        |
+| 3   | F-01 | Customers list (store CRM)                                 | P0       | maybe (notes/tags) | —                                        |
+| 4   | F-04 | Invoices, packing slips & order export                     | P0       | no                 | —                                        |
+| 5   | F-05 | Manual orders (phone/WhatsApp sales)                       | P0       | maybe              | **Needs approval** (order creation path) |
+| 6   | F-21 | Deposit (عربون) before shipping a COD order                | P1       | yes                | **Needs approval** (money, checkout)     |
+| 7   | F-25 | Checkout form & thank-you page settings                    | P1       | yes                | —                                        |
+| 8   | F-08 | Funnels: quick-order landing pages                         | P1       | maybe              | **Needs approval** (checkout)            |
+| 9   | F-07 | Quantity offers, bundles, upsell, cross-sell, downsell     | P1       | yes                | **Needs approval** (checkout pricing)    |
+| 10  | F-22 | Sales pop-up (real recent orders)                          | P1       | no                 | —                                        |
+| 11  | F-24 | Bulk product editing (prices by category, stock, status)   | P1       | no                 | —                                        |
+| 12  | F-15 | Reports upgrade + per-product views                        | P1       | no                 | —                                        |
+| 13  | F-06 | New-order push alerts (PWA)                                | P1       | yes                | —                                        |
+| 14  | F-11 | Product feeds (Meta, Google Merchant, TikTok) + catalog    | P1       | no                 | —                                        |
+| 15  | F-09 | Staff accounts & permissions                               | P1       | yes                | — (security review)                      |
+| 16  | F-10 | Inventory alerts & stock history                           | P1       | yes                | —                                        |
+| 17  | F-12 | More shipping carriers                                     | P1       | small              | —                                        |
+| 18  | F-13 | Automatic discounts, min order, free gift                  | P2       | yes                | **Needs approval** (checkout pricing)    |
+| 19  | F-14 | Customer order messages (WhatsApp/SMS, confirm link)       | P2       | yes                | Provider cost                            |
+| 20  | F-16 | Campaigns: email, WhatsApp, retargeting audiences          | P2       | yes                | Provider cost                            |
+| 21  | F-23 | Back-in-stock alerts & pre-orders                          | P2       | yes                | —                                        |
+| 22  | F-26 | Campaign tracking (UTM links, orders per campaign)         | P2       | yes                | —                                        |
+| 23  | F-17 | Public API & webhooks                                      | P2       | yes                | — (security review)                      |
+| 24  | F-18 | Store affiliates / referral links                          | P3       | yes                | **Needs approval** (payouts)             |
+| 25  | F-19 | Gift cards & customer store credit                         | P3       | yes                | **Needs approval** (ledger)              |
+| 26  | F-20 | Loyalty points                                             | P3       | yes                | **Needs approval**                       |
+| 27  | F-27 | A/B tests                                                  | P3       | yes                | —                                        |
+| 28  | F-28 | Wholesale pricing                                          | P3       | yes                | **Needs approval** (checkout pricing)    |
+| 29  | F-29 | AI agent connection (MCP)                                  | P3       | no                 | — (after F-17)                           |
 | 30  | F-30 | Ad tracking upgrades (Purchase on delivery, event toggles) | P2       | maybe              | —                                        |
-| 31  | F-31 | POS and cashier                                           | P3       | yes                | **Needs approval** (order creation path) |
+| 31  | F-31 | POS and cashier                                            | P3       | yes                | **Needs approval** (order creation path) |
 
 AI features (field helpers, bulk products, credits, store-build agent) stay in `PLAN.md` §22 (AI-2 … AI-5) and are not repeated here.
 
@@ -259,15 +259,16 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 ### F-02 Fake-order protection — P0
 
 **Why:** Refused COD orders cost sellers shipping both ways. EasyOrders sells this as a core feature.
-**What:** Block a phone number or IP from ordering on a store; flag risky orders (many refusals across the store, same phone many orders in minutes); optional "confirm order" step where the seller marks an order confirmed before shipping.
+**What:** Block a phone number from ordering on a store (phone only for now, owner 2026-10-29; IP blocking later if needed); flag risky orders (many refusals across the store, same phone many orders in minutes); optional "confirm order" step where the seller marks an order confirmed before shipping.
 **Status:** [Planned]
 
-- **F-02a · P0 · deps: —** Migration `store_order_blocklist` (`store_id`, `kind` 'phone' | 'ip', `value`, `reason`, `created_at`; unique per store + kind + value; RLS on, no policies).
-- **F-02b · P0 · deps: F-02a** Storefront checkout check: refuse a blocked phone/IP with a neutral message before the order is created. Touches the store-website checkout path only, not money logic; re-read `packages/lib/src/orders/place-order.ts` and keep its behaviour.
+- **F-02a · P0 · deps: —** Migration `store_blocked_phones` (`store_id`, `phone` normalised to `+20…`, `reason`, `created_at`; unique per store + phone; RLS on, no policies). Phone only (owner, 2026-10-29).
+- **F-02b · P0 · deps: F-02a** Storefront checkout check: refuse a blocked phone (compared after normalising, so `010…`, `+2010…` and `2010…` all match) with a neutral message before the order is created. Touches the store-website checkout path only, not money logic; re-read `packages/lib/src/orders/place-order.ts` and keep its behaviour.
 - **F-02c · P0 · deps: F-02a** Dashboard: "Block customer" on an order and on a customer (F-01), and a blocklist page under store settings.
 - **F-02d · P1 · deps: F-01a** Risk badge on orders: refusal history for that phone in this store, duplicate orders within 10 minutes.
 - **F-02e · P2 · deps: F-02b** Rate limit per IP/phone on store checkout (Upstash).
-- **F-02f · P1 · deps: F-02a, owner decision (SMS/WhatsApp provider, who pays)** OTP check at store checkout: the seller lists phones (or turns on "all first-time phones" / "phones with a refusal") that must enter a code before the order is placed (EasyOrders "الأرقام المحظورة OTP"). Code sent by SMS or WhatsApp; attempts limited; table `store_checkout_otps` (hashed code, expiry; RLS on, no policies).
+- **F-02g · P0 · deps: —** Confirm by WhatsApp, **no API or provider needed**: the order page in the dashboard gets a "Ask to confirm" button that opens WhatsApp (`wa.me`) to the customer with a prefilled message (order number, items, total, address; editable template per store), and a "Confirmed" action that moves the order to the existing confirmed stage. Optional: the store's thank-you page shows "Confirm on WhatsApp", which opens a prefilled message to the seller's number. Orders not confirmed after N hours are highlighted.
+- **F-02f · P2 · Blocked: Tallaby has no OTP / WhatsApp API / SMS service yet (owner, 2026-10-29). deps: F-02a, owner decision (provider, who pays)** OTP check at store checkout: the seller lists phones (or turns on "all first-time phones" / "phones with a refusal") that must enter a code before the order is placed (EasyOrders "الأرقام المحظورة OTP"). Code sent by SMS or WhatsApp; attempts limited; table `store_checkout_otps` (hashed code, expiry; RLS on, no policies).
 
 ### F-03 Missed orders (abandoned checkouts) + reminders — P0
 
@@ -469,7 +470,7 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 - **F-24c · P2 · deps: —** Update existing products from the Excel sheet (match by SKU or product id), including variant prices and stock. Check what the import does today first.
 - **F-24d · P2 · deps: —** Manual product order inside a category (drag to sort), used by the store's category pages. Check what exists first.
 
-### F-25 Checkout form & thank-you page settings — P1
+### F-25 Checkout form & thank-you page settings — P1.
 
 **Why:** EasyOrders "نموذج الشراء" (planned, 17 votes) and "تعديل صفحة الشكر". COD sellers want a short form and a thank-you page that keeps the customer.
 **What:** Per store: which checkout fields show and are required (email, second phone, area, notes, custom question), field order, governorate/area as dropdowns; a thank-you page with the seller's message, WhatsApp button, suggested products and pixel events kept.
@@ -520,8 +521,8 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 
 Add each new request here first, with the date and the owner's words, then turn it into a §4 feature and place it in §3.
 
-| Date | Request (owner's words)          | Feature ID | Status |
-| ---- | -------------------------------- | ---------- | ------ |
+| Date       | Request (owner's words)                                                                                                                  | Feature ID                                                                                       | Status  |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ------- |
 | 2026-10-28 | "analyze the Easy orders features too … find the most important that we should have" (pasted EasyOrders sidebar + roadmap.easyorders.ai) | §2.3, §2.4; new F-21 … F-29; tasks added to F-01, F-02, F-03, F-07, F-08, F-11, F-13, F-15, F-16 | Planned |
 
 ---
@@ -550,7 +551,8 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [ ] F-01c Customer notes & tags
 - [ ] F-01d Customers export
 - [ ] F-02d Risk badge
-- [ ] F-02f Checkout OTP (provider decision)
+- [ ] F-02g Confirm by WhatsApp link (no API) — P0
+- [ ] F-02f Checkout OTP — **blocked: no OTP/WhatsApp API/SMS provider yet**
 - [ ] F-03e Missed-order reminders
 - [ ] F-04c Orders bulk actions
 - [ ] F-05c Send order link
@@ -627,6 +629,11 @@ Add each new request here first, with the date and the owner's words, then turn 
 ## 7. Log
 
 Newest first. One entry per finished task or decision: date, task, what changed, migrations (number, staging/production status), verification, notes.
+
+### 2026-10-29 — No OTP service (owner)
+
+- Owner: block by phone number only for now; F-02a is a `store_blocked_phones` table (no IP column).
+- Owner: Tallaby has no OTP / WhatsApp message service. F-02f (checkout OTP) is now P2 and blocked until a provider is chosen; F-14 and F-16c (automatic WhatsApp) wait for the same decision. Added F-02g (P0): confirm orders through a prefilled `wa.me` WhatsApp link, which needs no API.
 
 ### 2026-10-29 — EasyOrders list cross-check (owner pasted all 88 items)
 
