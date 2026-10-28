@@ -211,31 +211,32 @@ Updated 2026-10-28 after the EasyOrders dashboard and roadmap review (§2.3, §2
 | 6   | F-21 | Deposit (عربون) before shipping a COD order                | P1       | yes                | **Needs approval** (money, checkout)     |
 | 7   | F-32 | Cross-sell offers under the product (on by default)        | P1       | yes                | Owner asked; design note OK (checkout)   |
 | 8   | F-33 | Downsell pop-up when an item is removed from the cart      | P1       | yes (with F-32)    | Owner asked; design note OK (checkout)   |
-| 9   | F-25 | Checkout form & thank-you page settings                    | P1       | yes                | —                                        |
-| 10  | F-08 | Funnels: quick-order landing pages                         | P1       | maybe              | **Needs approval** (checkout)            |
-| 11  | F-07 | Quantity offers, bundles, upsell                           | P1       | yes                | **Needs approval** (checkout pricing)    |
-| 12  | F-22 | Sales pop-up (real recent orders)                          | P1       | no                 | —                                        |
-| 13  | F-24 | Bulk product editing (prices by category, stock, status)   | P1       | no                 | —                                        |
-| 14  | F-15 | Reports upgrade + per-product views                        | P1       | no                 | —                                        |
-| 15  | F-06 | New-order push alerts (PWA)                                | P1       | yes                | —                                        |
-| 16  | F-11 | Product feeds (Meta, Google Merchant, TikTok) + catalog    | P1       | no                 | —                                        |
-| 17  | F-09 | Staff accounts & permissions                               | P1       | yes                | — (security review)                      |
-| 18  | F-10 | Inventory alerts & stock history                           | P1       | yes                | —                                        |
-| 19  | F-12 | More shipping carriers                                     | P1       | small              | —                                        |
-| 20  | F-13 | Automatic discounts, min order, free gift                  | P2       | yes                | **Needs approval** (checkout pricing)    |
-| 21  | F-14 | Customer order messages (WhatsApp/SMS, confirm link)       | P2       | yes                | Provider cost                            |
-| 22  | F-16 | Campaigns: email, WhatsApp, retargeting audiences          | P2       | yes                | Provider cost                            |
-| 23  | F-23 | Back-in-stock alerts & pre-orders                          | P2       | yes                | —                                        |
-| 24  | F-26 | Campaign tracking (UTM links, orders per campaign)         | P2       | yes                | —                                        |
-| 25  | F-17 | Public API & webhooks                                      | P2       | yes                | — (security review)                      |
-| 26  | F-18 | Store affiliates / referral links                          | P3       | yes                | **Needs approval** (payouts)             |
-| 27  | F-19 | Gift cards & customer store credit                         | P3       | yes                | **Needs approval** (ledger)              |
-| 28  | F-20 | Loyalty points                                             | P3       | yes                | **Needs approval**                       |
-| 29  | F-27 | A/B tests                                                  | P3       | yes                | —                                        |
-| 30  | F-28 | Wholesale pricing                                          | P3       | yes                | **Needs approval** (checkout pricing)    |
-| 31  | F-29 | AI agent connection (MCP)                                  | P3       | no                 | — (after F-17)                           |
-| 32  | F-30 | Ad tracking upgrades (Purchase on delivery, event toggles) | P2       | maybe              | —                                        |
-| 33  | F-31 | POS and cashier                                            | P3       | yes                | **Needs approval** (order creation path) |
+| 9   | F-34 | Low-stock urgency badge (product checkbox)                 | P1       | yes (small)        | —                                        |
+| 10  | F-25 | Checkout form & thank-you page settings                    | P1       | yes                | —                                        |
+| 11  | F-08 | Funnels: quick-order landing pages                         | P1       | maybe              | **Needs approval** (checkout)            |
+| 12  | F-07 | Quantity offers, bundles, upsell                           | P1       | yes                | **Needs approval** (checkout pricing)    |
+| 13  | F-22 | Sales pop-up (real recent orders)                          | P1       | no                 | —                                        |
+| 14  | F-24 | Bulk product editing (prices by category, stock, status)   | P1       | no                 | —                                        |
+| 15  | F-15 | Reports upgrade + per-product views                        | P1       | no                 | —                                        |
+| 16  | F-06 | New-order push alerts (PWA)                                | P1       | yes                | —                                        |
+| 17  | F-11 | Product feeds (Meta, Google Merchant, TikTok) + catalog    | P1       | no                 | —                                        |
+| 18  | F-09 | Staff accounts & permissions                               | P1       | yes                | — (security review)                      |
+| 19  | F-10 | Inventory alerts & stock history                           | P1       | yes                | —                                        |
+| 20  | F-12 | More shipping carriers                                     | P1       | small              | —                                        |
+| 21  | F-13 | Automatic discounts, min order, free gift                  | P2       | yes                | **Needs approval** (checkout pricing)    |
+| 22  | F-14 | Customer order messages (WhatsApp/SMS, confirm link)       | P2       | yes                | Provider cost                            |
+| 23  | F-16 | Campaigns: email, WhatsApp, retargeting audiences          | P2       | yes                | Provider cost                            |
+| 24  | F-23 | Back-in-stock alerts & pre-orders                          | P2       | yes                | —                                        |
+| 25  | F-26 | Campaign tracking (UTM links, orders per campaign)         | P2       | yes                | —                                        |
+| 26  | F-17 | Public API & webhooks                                      | P2       | yes                | — (security review)                      |
+| 27  | F-18 | Store affiliates / referral links                          | P3       | yes                | **Needs approval** (payouts)             |
+| 28  | F-19 | Gift cards & customer store credit                         | P3       | yes                | **Needs approval** (ledger)              |
+| 29  | F-20 | Loyalty points                                             | P3       | yes                | **Needs approval**                       |
+| 30  | F-27 | A/B tests                                                  | P3       | yes                | —                                        |
+| 31  | F-28 | Wholesale pricing                                          | P3       | yes                | **Needs approval** (checkout pricing)    |
+| 32  | F-29 | AI agent connection (MCP)                                  | P3       | no                 | — (after F-17)                           |
+| 33  | F-30 | Ad tracking upgrades (Purchase on delivery, event toggles) | P2       | maybe              | —                                        |
+| 34  | F-31 | POS and cashier                                            | P3       | yes                | **Needs approval** (order creation path) |
 
 AI features (field helpers, bulk products, credits, store-build agent) stay in `PLAN.md` §22 (AI-2 … AI-5) and are not repeated here.
 
@@ -543,6 +544,21 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 - **F-33e · P1 · deps: F-33a, F-33d** Checkout applies the offer price server-side; tests: offer removed by seller, out of stock, quantity > 1, removing the offer item again (no second pop-up).
 - **F-33f · P2 · deps: F-33d** Report: pop-ups shown, accepted, ordered (with F-32f).
 
+### F-34 Low-stock urgency badge (product checkbox) — P1 · owner request
+
+**Why:** Owner, 2026-10-29: "لو في منتج قرب يخلص ممكن نحط تحته … فاضل قطعتين والوقت قرب يخلص، ده بيستعجل العميل وبيحسسه إن المنتج مطلوب."
+**What:** A checkbox in the product form (Add and Edit), next to "Show live views": **"Show a low-stock alert"** (off by default, like `show_live_views`), with a threshold "show when stock is at or below N" (default 5). When ticked and the stock of the chosen variant (or the product) is at or below N, the store's product page shows an urgency badge under the price, e.g. "🔥 فاضل قطعتين بس — اطلب قبل ما يخلص", and a small "باقي X" tag on product cards.
+- **Real stock only:** the number is the product's (or selected variant's) real stock, never a made-up number, in line with the owner's real-reviews rule (2026-10-27). Hidden at 0 (the sold-out state shows instead) and for products without stock tracking.
+- **"Time running out":** when the product has a discount with an end date, the existing deal countdown (`DealCountdown` in `store-product-info.client.tsx`) shows beside the badge. No fake timers.
+- Today every store already shows a small automatic pill "متبقٍ N فقط" at stock ≤ 5 (`LOW_STOCK_THRESHOLD` in `apps/ecommerce/components/product-page/product-page.lib.ts`, `StoreStockLine`). The new badge is the seller-controlled, more visible version; when it is on, it replaces that pill on the product so the message is not shown twice. The pill stays as it is for products without the checkbox.
+- Arabic number wording ("قطعة واحدة", "قطعتين", "3 قطع", "11 قطعة") through ICU plurals in both `ar.json` and `en.json`.
+**Status:** [Planned]
+
+- **F-34a · P1 · deps: —** Migration (additive): `products.show_low_stock_badge boolean NOT NULL DEFAULT false` and `products.low_stock_threshold integer` (1–99, null = 5; shared with F-10a, which later uses it for seller alerts). The product queries select every column, so apply on staging, then production, **before** deploying. Mirror in `schema.ts`.
+- **F-34b · P1 · deps: F-34a** Product form: checkbox + threshold in the same block as "Show live views" (`products/add`, edit, `add-product.schema.ts`), saved through the existing product save path (not `actions/products.ts`).
+- **F-34c · P1 · deps: F-34a** Storefront: badge on the product page (follows the selected variant's stock), tag on product cards, store theme colours, RTL/EN, reduced motion; tests for 0, 1, 2, threshold and above.
+- **F-34d · P2 · deps: F-34c** Builder: a `stock-badge` element in the product-page templates so sellers can move or style it (tree element rules).
+
 ### F-31 POS and cashier — P3
 
 **What:** Sell in a physical shop from a phone or tablet with the same products and stock; orders tagged `source = pos`. Needs F-05 (manual orders) first.
@@ -561,6 +577,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 | Date       | Request (owner's words)                                                                                                                  | Feature ID                                                                                       | Status  |
 | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ------- |
+| 2026-10-29 | "a checkbox on the product /add or edit page to show a badge for user on low stock … فاضل قطعتين والوقت قرب يخلص" | F-34 | Planned |
 | 2026-10-29 | "I need to add Downsell feature, which is when a user removes an item from cart, shows a similar item but with discount or lower price popup" (+ phone mockup) | F-33 | Planned |
 | 2026-10-29 | "We need to add Cross-selling feature too … العميل مثلا هيشتري باور بانك … هيلاقي تحت المنتج عرض وصلة شاحن بخصم 10٪ … enabled by default and store owner can disable it anytime" | F-32 | Planned |
 | 2026-10-28 | "analyze the Easy orders features too … find the most important that we should have" (pasted EasyOrders sidebar + roadmap.easyorders.ai) | §2.3, §2.4; new F-21 … F-29; tasks added to F-01, F-02, F-03, F-07, F-08, F-11, F-13, F-15, F-16 | Planned |
@@ -611,6 +628,9 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [ ] F-33c Downsell in product form + store switch
 - [ ] F-33d Downsell pop-up on remove from cart
 - [ ] F-33e Downsell price at checkout
+- [ ] F-34a Low-stock badge migration (`show_low_stock_badge`, `low_stock_threshold`)
+- [ ] F-34b Checkbox + threshold in the product form
+- [ ] F-34c Badge on the store product page and cards
 - [ ] F-13b Minimum order + store free-shipping threshold
 - [ ] F-22a Recent orders endpoint
 - [ ] F-22b Sales pop-up on the store
@@ -673,12 +693,18 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [ ] F-31 POS and cashier
 - [ ] F-32f Cross-sell report
 - [ ] F-33f Downsell report
+- [ ] F-34d Stock badge builder element
 
 ---
 
 ## 7. Log
 
 Newest first. One entry per finished task or decision: date, task, what changed, migrations (number, staging/production status), verification, notes.
+
+### 2026-10-29 — Low-stock badge request (owner)
+
+- New F-34 (P1, after F-33): a product-form checkbox (off by default) and threshold that show an urgency badge on the store when real stock is low, plus the existing deal countdown when a discount has an end date.
+- Found in code: stores already show an automatic "متبقٍ N فقط" pill at stock ≤ 5 (`LOW_STOCK_THRESHOLD = 5`, `StoreStockLine`); the badge replaces it when ticked. Migration planned (two `products` columns), not written; `low_stock_threshold` is shared with F-10a.
 
 ### 2026-10-29 — Downsell request (owner)
 
