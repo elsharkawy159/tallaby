@@ -53,7 +53,7 @@ Tallaby already gives Egyptian sellers a full store: products, orders, delivery 
 | Store catalog    | Choose which products each store shows                                                                                                                                               | `stores/[storeId]/catalog`                                      |
 | Orders           | Order list, stages, order details, WhatsApp/call buttons, Bosta ship + bulk ship                                                                                                     | `app/(main)/orders/**`                                          |
 | Delivery         | Delivery tracking, own riders, store shipping zones (places, free-over, COD per zone), Tallaby delivery, Bosta app                                                                   | `orders/delivery`, `orders/riders`, `stores/[storeId]/shipping` |
-| Payments         | COD + per-store wallet payments (Vodafone Cash, InstaPay …, seller confirms)                                                                                                         | `stores/[storeId]/settings/payments`                            |
+| Payments         | COD; the seller chooses which methods the store shows (InstaPay, Vodafone Cash, e& Cash), but those transfers still go to **Tallaby's** accounts. Paying the seller's own numbers with seller confirmation is PLAN.md P3-07 Part B, not built (corrected 2026-10-29) | `stores/[storeId]/settings/payments`                            |
 | Money            | Store wallet (can go negative), top-ups, account statements, reports, flat EGP 5 fee per delivered order, 7-day trial                                                                | `wallet`, `financial`, `reports`                                |
 | Marketing        | Coupons (marketplace/store, product picker, store pop-up with trigger + countdown), paid ad packages, reviews & Q&A                                                                  | `coupons`, `marketing`, `reviews`                               |
 | Website          | Builder (element trees), 100+ templates, design system, pages, product page template, blog, forms + submissions, media library, domain & SEO, sitemap, social links, offline/publish | `app/(builder)`, `stores/[storeId]/website/**`                  |
@@ -441,7 +441,9 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 **What:** Per store (and optionally per product): require X % (or a fixed amount) paid before the order ships. The customer pays the deposit with the store's wallet payments (Vodafone Cash, InstaPay … with a transfer-receipt upload) or a card when available; the rest is collected on delivery. The order waits in "awaiting deposit" until the seller confirms; the COD amount sent to the carrier is the remainder.
 **Status:** [Planned]
 
-- **F-21a · P1 · deps: owner approval** Design note: order fields (deposit amount, paid, proof), how the remainder flows to COD, Bosta COD amount, refunds when cancelled, the fee base (PLAN.md §13 unchanged). Money in integer piastres.
+- **Found in code (2026-10-29):** storefront InstaPay / Vodafone Cash / e& Cash payments are a filter on methods that still pay **Tallaby's** accounts (`storefrontCheckoutMethods` in `packages/lib/src/payments/store-methods.ts`); seller-collected payment with seller confirmation is PLAN.md **P3-07 Part B**, waiting for owner approval. Checkout already supports split payments (customer wallet + manual-transfer remainder, `payment.lib.ts`) and a COD-collector rule, which the deposit can reuse. **Decided (owner, 2026-10-29): the deposit goes to the seller's own number** (Vodafone Cash / e& Cash / WE Pay / Orange Cash / InstaPay set in Store settings › Payment methods), and the seller confirms it. So **PLAN.md P3-07 Part B is built first, as part of F-21** (task F-21p below); its design is PLAN.md §8.6 "Customer flow on the store host" and "Money flow".
+- **F-21p · P1 · deps: —** PLAN.md P3-07 Part B, as written in §8.6: storefront checkout shows the store's own payment details (snapshot in `orders.metadata`, `paymentCollector: 'seller'`), the customer taps "I've paid" with an optional reference and a transfer screenshot, the seller confirms in the dashboard (`confirmManualPayment(storeId, orderId)`, store-scoped, status-guarded, idempotent), unpaid orders auto-cancel after 48 h (D32), every change to payment details is audited, emailed and rate-limited. Money: seller-collected payments post only the EGP 5 `fee` on delivery, no `sale` (PLAN.md §13.4). Existing stores keep Tallaby-collected methods until the owner decides D30. Full-amount transfers work with this alone; the deposit builds on it.
+- **F-21a · P1 · deps: F-21p design, owner approval** Design note (seller-collected deposit; the remainder is COD collected by whoever delivers: Tallaby rider → Tallaby credits only the remainder as `sale`; seller's own delivery or Bosta → nothing credited, fee only): order fields (deposit amount, paid, proof), how the remainder flows to COD, Bosta COD amount, refunds when cancelled, the fee base (PLAN.md §13 unchanged). Money in integer piastres.
 - **F-21b · P1 · deps: F-21a** Migration (additive order/store columns, proof bucket reuse) + store setting + product override.
 - **F-21c · P1 · deps: F-21b** Checkout step with receipt upload, seller confirm/reject in the order page, carrier COD = remainder.
 
@@ -577,6 +579,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 | Date       | Request (owner's words)                                                                                                                  | Feature ID                                                                                       | Status  |
 | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ------- |
+| 2026-10-29 | Deposit: who receives it? → "Seller's own number" | F-21 (+ F-21p = PLAN.md P3-07 Part B) | Planned |
 | 2026-10-29 | "a checkbox on the product /add or edit page to show a badge for user on low stock … فاضل قطعتين والوقت قرب يخلص" | F-34 | Planned |
 | 2026-10-29 | "I need to add Downsell feature, which is when a user removes an item from cart, shows a similar item but with discount or lower price popup" (+ phone mockup) | F-33 | Planned |
 | 2026-10-29 | "We need to add Cross-selling feature too … العميل مثلا هيشتري باور بانك … هيلاقي تحت المنتج عرض وصلة شاحن بخصم 10٪ … enabled by default and store owner can disable it anytime" | F-32 | Planned |
@@ -613,6 +616,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [ ] F-03e Missed-order reminders
 - [ ] F-04c Orders bulk actions
 - [ ] F-05c Send order link
+- [ ] F-21p Seller-collected payments (PLAN.md P3-07 Part B) — needed by the deposit
 - [ ] F-21a Deposit design (owner approval)
 - [ ] F-21b Deposit migration + settings
 - [ ] F-21c Deposit checkout + seller confirm
@@ -700,6 +704,11 @@ Add each new request here first, with the date and the owner's words, then turn 
 ## 7. Log
 
 Newest first. One entry per finished task or decision: date, task, what changed, migrations (number, staging/production status), verification, notes.
+
+### 2026-10-29 — Deposit check (owner question)
+
+- Corrected §2.1: storefront wallet/InstaPay payments go to Tallaby's accounts today; seller-collected payment is PLAN.md P3-07 Part B (not built). F-21 now notes this dependency and the split-payment code it can reuse.
+- Owner decided: the deposit goes to the **seller's own number**. Added F-21p (= PLAN.md P3-07 Part B, built first inside F-21) and noted it in PLAN.md §22.
 
 ### 2026-10-29 — Low-stock badge request (owner)
 
