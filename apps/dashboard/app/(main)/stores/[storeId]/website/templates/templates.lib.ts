@@ -151,19 +151,50 @@ export function parseTemplatesCategory(value: unknown): string {
   return typeof value === "string" && /^[a-z0-9_-]{1,64}$/i.test(value) ? value : "all";
 }
 
+/** Newest first (owner request 2026-10-28): a higher `sortOrder` is a newer template; ties keep their order. */
+export function sortNewest<T extends { sortOrder?: number }>(templates: T[]): T[] {
+  return [...templates].sort((a, b) => (b.sortOrder ?? 0) - (a.sortOrder ?? 0));
+}
+
 /**
- * One page of the gallery (owner request 2026-10-24): the store's industry
- * first, then the category filter, then the page. The page is clamped to the
- * last one, since a template change can shrink the list. `categories` lists
- * every category of the whole gallery, in gallery order (for the tabs).
+ * The "All" tab (owner request 2026-10-28): most relevant first (the store's
+ * industry, then its related industries in their order, then the rest), and
+ * the newest first inside each of those groups.
  */
-export function pageTemplates<T extends { category: string }>(
+export function sortRelevantNewest<T extends { category: string; sortOrder?: number }>(templates: T[], industryId: string | null | undefined): T[] {
+  const related = industryId ? [industryId, ...(RELATED_INDUSTRIES[industryId] ?? [])] : [];
+  const rank = (category: string) => {
+    const index = related.indexOf(category);
+    return index < 0 ? related.length : index;
+  };
+  return [...templates].sort((a, b) => rank(a.category) - rank(b.category) || (b.sortOrder ?? 0) - (a.sortOrder ?? 0));
+}
+
+/**
+ * One page of the gallery (owner request 2026-10-24): the category filter,
+ * then the page. "All" is most relevant, then newest (`sortRelevantNewest`);
+ * a category tab is newest first (`sortNewest`) (owner request 2026-10-28;
+ * it replaces the per-store shuffle). The page is clamped to the
+ * last one, since a template change can shrink the list. `categories` lists
+ * every category of the whole gallery, in gallery order (for the tabs). With
+ * no category asked for (`null`), the store's industry is the default tab
+ * when it has templates, else `all` (owner request 2026-10-28); `category`
+ * is the tab served.
+ */
+export function pageTemplates<T extends { category: string; sortOrder?: number }>(
   templates: T[],
-  { page, category, industryId, seed, pageSize = TEMPLATES_PAGE_SIZE }: { page: number; category: string; industryId?: string | null; seed?: string; pageSize?: number },
-): { items: T[]; page: number; pageCount: number; total: number; categories: string[] } {
-  const sorted = sortByIndustry(templates, industryId, seed);
-  const categories = [...new Set(sorted.map((tpl) => tpl.category))];
-  const filtered = category === "all" ? sorted : sorted.filter((tpl) => tpl.category === category);
+  {
+    page,
+    category: requested,
+    industryId,
+    seed,
+    pageSize = TEMPLATES_PAGE_SIZE,
+  }: { page: number; category: string | null; industryId?: string | null; seed?: string; pageSize?: number },
+): { items: T[]; page: number; pageCount: number; total: number; categories: string[]; category: string } {
+  // The tabs keep the store's industry first; the cards in every tab are newest first.
+  const categories = [...new Set(sortByIndustry(templates, industryId, seed).map((tpl) => tpl.category))];
+  const category = requested ?? (industryId && categories.includes(industryId) ? industryId : "all");
+  const filtered = category === "all" ? sortRelevantNewest(templates, industryId) : sortNewest(templates.filter((tpl) => tpl.category === category));
   const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
   const current = Math.min(Math.max(1, page), pageCount);
   return {
@@ -172,5 +203,6 @@ export function pageTemplates<T extends { category: string }>(
     pageCount,
     total: filtered.length,
     categories,
+    category,
   };
 }

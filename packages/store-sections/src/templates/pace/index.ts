@@ -138,6 +138,10 @@ const DEMO = demoStore({
     ["yoga", "يوجا ومات", "Yoga & mats", PHOTOS.matRolls],
     ["kits", "باقات البداية", "Starter kits", PHOTOS.flatLaySmall],
     ["wearables", "ساعات وسماعات", "Watches & audio", PHOTOS.watch],
+    ["weights", "أوزان", "Weights", PHOTOS.kettlebells],
+    ["bands", "حبال مقاومة", "Resistance bands", PHOTOS.bands],
+    ["cardio", "كارديو", "Cardio", PHOTOS.rope],
+    ["accessories", "إكسسوارات التمرين", "Training accessories", PHOTOS.essentials],
   ],
   products: [
     ["home-gym-starter-kit", "kits", "باقة جيم البيت", "Home Gym Starter Kit", PHOTOS.flatLaySmall, 2450, { compareAtPrice: 2850, isFeatured: true, rating: 4.8, sold90: 214 }],
@@ -150,6 +154,10 @@ const DEMO = demoStore({
     ["rope-and-bottle", "yoga", "حبل نط وزمزمية", "Jump Rope & Bottle", PHOTOS.rope, 420, { sold90: 76 }],
     ["pulse-sport-watch", "wearables", "ساعة بالس الرياضية", "Pulse Sport Watch", PHOTOS.watch, 1450, { isFeatured: true, rating: 4.6, sold90: 98 }],
     ["run-buds", "wearables", "سماعة لاسلكية للجري", "Wireless Run Buds", PHOTOS.buds, 1190, { inStock: false, sold90: 57 }],
+    ["cast-kettlebell-12kg", "weights", "كيتل بيل حديد ١٢ كيلو", "Cast Kettlebell 12 kg", PHOTOS.kettlebells, 950, { sold90: 44 }],
+    ["heavy-band-set", "bands", "طقم حبال مقاومة تقيلة", "Heavy Band Set", PHOTOS.bands, 520, { sold90: 63 }],
+    ["speed-jump-rope", "cardio", "حبل نط سرعة", "Speed Jump Rope", PHOTOS.rope, 260, { sold90: 88 }],
+    ["gym-accessories-pack", "accessories", "باكدج إكسسوارات الجيم", "Gym Accessories Pack", PHOTOS.essentials, 780, { sold90: 39 }],
   ],
 });
 
@@ -203,5 +211,5 @@ export const PACE = libraryTemplate({
     },
   ],
   demo: DEMO,
-  productPage: { surface: "card", thumbs: "side", headingCase: "upper", band: "shelf", extras: ["product-perks"], copy: { back: L("رجوع للجيم", "Back to the gym"), reviews: L("آراء المتدرّبين", "Athlete reviews"), related: L("كمّل تجهيزك", "Complete your kit") } },
+  productPage: { surface: "card", thumbs: "side", headingCase: "upper", band: "shelf", extras: ["product-perks"], copy: { reviews: L("آراء المتدرّبين", "Athlete reviews"), related: L("كمّل تجهيزك", "Complete your kit") } },
 });

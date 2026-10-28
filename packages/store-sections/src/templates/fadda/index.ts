@@ -161,6 +161,8 @@ const DEMO = demoStore({
     ["rings", "خواتم", "Rings", PHOTOS.sculpted],
     ["stacks", "ستاكات", "Stacks", PHOTOS.stack],
     ["bridal", "زفاف", "Bridal", PHOTOS.engagement],
+    ["bands", "دبل", "Bands", PHOTOS.bands],
+    ["sets", "تشكيلات", "Selections", PHOTOS.tray],
   ],
   products: [
     ["sculpted-silver-ring", "rings", "خاتم فضة منحوت", "Sculpted Silver Ring", PHOTOS.sculpted, 950, { isFeatured: true, rating: 4.9, sold90: 180 }],
@@ -169,8 +171,8 @@ const DEMO = demoStore({
     ["eternity-stack", "stacks", "ستاك بأحجار", "Stone-set Stack", PHOTOS.velvet, 2100, { sold90: 40 }],
     ["promise-ring", "bridal", "خاتم وعد بحجر", "Gem-set Promise Ring", PHOTOS.promise, 2400, { isFeatured: true, sold90: 44 }],
     ["engagement-ring-box", "bridal", "خاتم خطوبة في علبة", "Engagement Ring in a Box", PHOTOS.engagement, 2900, { sold90: 30 }],
-    ["engraved-bands", "bridal", "دبلتين محفورتين", "Engraved Band Pair", PHOTOS.bands, 1250, { sold90: 71 }],
-    ["ring-tray-set", "rings", "تشكيلة خواتم", "Ring Selection", PHOTOS.tray, 1100, { compareAtPrice: 1290, inStock: false, sold90: 58 }],
+    ["engraved-bands", "bands", "دبلتين محفورتين", "Engraved Band Pair", PHOTOS.bands, 1250, { sold90: 71 }],
+    ["ring-tray-set", "sets", "تشكيلة خواتم", "Ring Selection", PHOTOS.tray, 1100, { compareAtPrice: 1290, inStock: false, sold90: 58 }],
   ],
 });
 
@@ -227,5 +229,5 @@ export const FADDA = libraryTemplate({
     },
   ],
   demo: DEMO,
-  productPage: { surface: "shelf", thumbs: "side", button: "outline", band: "paper", extras: ["product-perks"], copy: { back: L("رجوع للاستوديو", "Back to the studio"), reviews: L("كلمات من أصحابها", "Words from wearers"), related: L("قطع تتكدّس معها", "Pieces that stack with it") } },
+  productPage: { surface: "shelf", thumbs: "side", button: "outline", band: "paper", extras: ["product-perks"], copy: { reviews: L("كلمات من أصحابها", "Words from wearers"), related: L("قطع تتكدّس معها", "Pieces that stack with it") } },
 });

@@ -167,6 +167,8 @@ const DEMO = demoStore({
     ["body", "الجسم", "Body", PHOTOS.oliveSoap],
     ["hair", "الشعر", "Hair", PHOTOS.hairOil],
     ["sets", "أطقم", "Sets", PHOTOS.ritualSet],
+    ["cleansers", "غسول", "Cleansers", PHOTOS.faceWash],
+    ["shower", "الشاور", "Shower", PHOTOS.pumpTrio],
   ],
   products: [
     ["prickly-pear-face-oil", "face", "زيت التين الشوكي", "Prickly Pear Face Oil", PHOTOS.faceOil, 690, { isFeatured: true, rating: 4.8, sold90: 164 }],
@@ -175,8 +177,9 @@ const DEMO = demoStore({
     ["sesame-body-oil", "body", "زيت سمسم للجسم", "Sesame Body Oil", PHOTOS.bodyOil, 380, { sold90: 48 }],
     ["rosemary-hair-oil", "hair", "زيت روزماري", "Rosemary Hair Oil", PHOTOS.hairOil, 290, { compareAtPrice: 340, rating: 4.8, sold90: 188 }],
     ["full-ritual-set", "sets", "طقم الروتين الكامل", "Full Ritual Set", PHOTOS.ritualSet, 1290, { compareAtPrice: 1520, sold90: 62 }],
-    ["gentle-face-wash", "face", "غسول وش لطيف", "Gentle Face Wash", PHOTOS.faceWash, 280, { sold90: 90 }],
+    ["gentle-face-wash", "cleansers", "غسول وش لطيف", "Gentle Face Wash", PHOTOS.faceWash, 280, { sold90: 90 }],
     ["shea-body-butter", "body", "زبدة شيا للجسم", "Shea Body Butter", PHOTOS.sheaButter, 420, { inStock: false, sold90: 74 }],
+    ["shower-pump-trio", "shower", "طقم شاور جل وشامبو وبلسم", "Shower Gel, Shampoo & Conditioner Trio", PHOTOS.pumpTrio, 560, { sold90: 58 }],
   ],
 });
 
@@ -184,7 +187,7 @@ export const WARD = libraryTemplate({
   key: WARD_KEY,
   version: 3,
   changelog: "Ward v3: categories after the hero, products before the promises",
-  productPage: { surface: "shelf", thumbs: "bottom", band: "paper", copy: { back: L("رجوع لروتينك", "Back to your routine"), reviews: L("بشرتهم قالت", "What their skin says"), related: L("كمّلي الروتين", "Finish the routine") } },
+  productPage: { surface: "shelf", thumbs: "bottom", band: "paper", copy: { reviews: L("بشرتهم قالت", "What their skin says"), related: L("كمّلي الروتين", "Finish the routine") } },
   name: L("ورد", "Ward"),
   description: L(
     "جمال كل يوم: بانرات متحركة، الخمسة، الريفيل بيشتغل إزاي وأسئلة. أربع صفحات جاهزة.",

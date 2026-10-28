@@ -196,16 +196,19 @@ const DEMO = demoStore({
     ["body", "عناية الجسم", "Body care", PHOTOS.soapMix],
     ["face", "عناية الوش", "Face care", PHOTOS.eucalyptusOil],
     ["sets", "أطقم الروتين", "Ritual sets", PHOTOS.oilsDisplay],
+    ["soap", "صابون طبيعي", "Natural soap", PHOTOS.soapStack],
+    ["herbs", "أعشاب", "Dried herbs", PHOTOS.rosemaryTin],
   ],
   products: [
     ["rosemary-hair-oil", "hair", "زيت شعر روزماري", "Rosemary Hair Oil", PHOTOS.amberBottles, 420, { isFeatured: true, rating: 4.8, sold90: 520 }],
     ["black-seed-hair-oil", "hair", "زيت شعر حبة البركة", "Black Seed Hair Oil", PHOTOS.oilRow, 390, { sold90: 120 }],
     ["sesame-body-oil", "body", "زيت جسم سمسم", "Sesame Body Oil", PHOTOS.eucalyptusOil, 380, { sold90: 88 }],
-    ["olive-oil-soap-trio", "body", "٣ صابون زيت زيتون", "Olive Oil Soap Trio", PHOTOS.soapRow, 240, { compareAtPrice: 290, sold90: 206 }],
-    ["siwa-soap-selection", "body", "تشكيلة صابون سيوة", "Siwa Soap Selection", PHOTOS.soapStack, 320, { sold90: 74 }],
+    ["olive-oil-soap-trio", "soap", "٣ صابون زيت زيتون", "Olive Oil Soap Trio", PHOTOS.soapRow, 240, { compareAtPrice: 290, sold90: 206 }],
+    ["siwa-soap-selection", "soap", "تشكيلة صابون سيوة", "Siwa Soap Selection", PHOTOS.soapStack, 320, { sold90: 74 }],
     ["prickly-pear-face-oil", "face", "زيت وش تين شوكي", "Prickly Pear Face Oil", PHOTOS.dropper, 690, { rating: 4.8, sold90: 140 }],
     ["rose-water-toner", "face", "تونر ماء ورد", "Rose Water Toner", PHOTOS.roseWater, 260, { sold90: 173 }],
     ["full-ritual-set", "sets", "طقم الروتين الكامل", "Full Ritual Set", PHOTOS.oilsDisplay, 1350, { compareAtPrice: 1590, isFeatured: true, rating: 4.9, sold90: 64 }],
+    ["dried-rosemary-tin", "herbs", "علبة روزماري مجفف", "Dried Rosemary Tin", PHOTOS.rosemaryTin, 150, { sold90: 95 }],
   ],
 });
 
@@ -262,5 +265,5 @@ export const BOTANICA = libraryTemplate({
     },
   ],
   demo: DEMO,
-  productPage: { thumbs: "bottom", band: "shelf", extras: ["product-shipping"], copy: { back: L("رجوع للمزرعة", "Back to the farm"), reviews: L("آراء من جرّبوه", "From those who tried it"), related: L("من نفس المزرعة", "From the same farm") } },
+  productPage: { thumbs: "bottom", band: "shelf", extras: ["product-shipping"], copy: { reviews: L("آراء من جرّبوه", "From those who tried it"), related: L("من نفس المزرعة", "From the same farm") } },
 });

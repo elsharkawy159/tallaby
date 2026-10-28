@@ -1,5 +1,6 @@
 "use server";
 
+import { applyInvalidation, invalidateSellerCoupons } from "@workspace/cache";
 import { db, coupons, couponUsage, products, sellers } from "@workspace/db";
 import { uniqueViolationConstraint } from "@workspace/lib/fulfillment/server";
 import { parsePriceJson } from "@workspace/lib";
@@ -10,6 +11,12 @@ import {
   type CouponChannel,
   type SellerCouponDiscountType,
 } from "@workspace/lib/orders/coupon-scope";
+import {
+  COUPON_POPUP_MAX_MINUTES,
+  COUPON_POPUP_TRIGGERS,
+  isCouponPopupTrigger,
+  type CouponPopupTrigger,
+} from "@workspace/lib/orders/coupon-popup";
 import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { getLocale } from "next-intl/server";
@@ -29,6 +36,8 @@ export type SellerCouponRow = {
   perUserLimit: number | null;
   productIds: string[] | null;
   channels: CouponChannel[];
+  /** Store pop-up (0114): when it opens, and the visitor's minutes to use the code. */
+  popup: { trigger: CouponPopupTrigger; durationMinutes: number } | null;
   isActive: boolean;
   startsAt: string;
   expiresAt: string;
@@ -83,6 +92,12 @@ const couponInputSchema = z
     // Seller coupons work on the seller's own store(s) only (owner,
     // 2026-10-21): a marketplace channel is refused, not silently kept.
     channels: z.array(z.literal("storefront")).min(1),
+    popup: z
+      .object({
+        trigger: z.enum(COUPON_POPUP_TRIGGERS),
+        durationMinutes: z.number().int().min(1).max(COUPON_POPUP_MAX_MINUTES),
+      })
+      .nullable(),
     startsAt: z.string().datetime({ offset: true }),
     expiresAt: z.string().datetime({ offset: true }),
   })
@@ -95,6 +110,15 @@ const couponInputSchema = z
   );
 
 export type SellerCouponInput = z.input<typeof couponInputSchema>;
+
+/** Store pages read the seller's coupons through the cache (the pop-up, coupon sections). */
+async function invalidateStoreCoupons(sellerId: string) {
+  await applyInvalidation(invalidateSellerCoupons(sellerId), {
+    from: "dashboard",
+    mode: "action",
+  });
+  revalidatePath("/coupons");
+}
 
 async function getSellerId() {
   const session = await getUser().catch(() => null);
@@ -121,6 +145,10 @@ function toRow(
     perUserLimit: coupon.perUserLimit,
     productIds: getCouponProductIds(coupon.applicableTo),
     channels: getCouponChannels(coupon.applicableTo),
+    popup:
+      isCouponPopupTrigger(coupon.popupTrigger) && coupon.popupDurationMinutes
+        ? { trigger: coupon.popupTrigger, durationMinutes: coupon.popupDurationMinutes }
+        : null,
     isActive: coupon.isActive ?? false,
     startsAt: coupon.startsAt,
     expiresAt: coupon.expiresAt,
@@ -233,6 +261,8 @@ export async function saveSellerCoupon(
       ...(productIds ? { productIds } : {}),
       channels: [...new Set(v.channels)],
     },
+    popupTrigger: v.popup?.trigger ?? null,
+    popupDurationMinutes: v.popup?.durationMinutes ?? null,
     startsAt: new Date(v.startsAt).toISOString(),
     expiresAt: new Date(v.expiresAt).toISOString(),
   };
@@ -251,7 +281,7 @@ export async function saveSellerCoupon(
 
     if (!saved) return { success: false, error: "not_found" };
 
-    revalidatePath("/coupons");
+    await invalidateStoreCoupons(sellerId);
     return { success: true, data: toRow(saved, 0) };
   } catch (error) {
     if (uniqueViolationConstraint(error) !== null) {
@@ -275,7 +305,7 @@ export async function setSellerCouponActive(
     .where(and(eq(coupons.id, couponId), eq(coupons.sellerId, sellerId)))
     .returning({ id: coupons.id });
 
-  revalidatePath("/coupons");
+  await invalidateStoreCoupons(sellerId);
   return { success: updated.length > 0 };
 }
 
@@ -305,11 +335,11 @@ export async function deleteSellerCoupon(
       .update(coupons)
       .set({ isActive: false, updatedAt: new Date().toISOString() })
       .where(eq(coupons.id, couponId));
-    revalidatePath("/coupons");
+    await invalidateStoreCoupons(sellerId);
     return { success: true, archived: true };
   }
 
   await db.delete(coupons).where(eq(coupons.id, couponId));
-  revalidatePath("/coupons");
+  await invalidateStoreCoupons(sellerId);
   return { success: true };
 }

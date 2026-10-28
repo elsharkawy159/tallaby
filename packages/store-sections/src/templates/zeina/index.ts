@@ -193,7 +193,7 @@ export const ZEINA = libraryTemplate({
   key: ZEINA_KEY,
   version: 2,
   changelog: "Zeina v2: product page",
-  productPage: { surface: "shelf", thumbs: "bottom", gallery: "end", band: "paper", extras: ["product-perks"], copy: { back: L("رجوع للمقصورة", "Back to the cabin"), reviews: L("من عربيات عملائنا", "From customers' cars"), related: L("حاجات تكمّل الداخلية", "More for the interior") } },
+  productPage: { surface: "shelf", thumbs: "bottom", gallery: "end", band: "paper", extras: ["product-perks"], copy: { reviews: L("من عربيات عملائنا", "From customers' cars"), related: L("حاجات تكمّل الداخلية", "More for the interior") } },
   name: L("زينة", "Zeina"),
   description: L(
     "تزيين العربية من جوه: تسوق بالمكان وآراء العملاء. أربع صفحات جاهزة.",

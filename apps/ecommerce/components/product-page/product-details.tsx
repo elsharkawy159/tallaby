@@ -28,6 +28,7 @@ import { LOW_STOCK_THRESHOLD, discountExpiryDate as offerExpiryDate, productPric
 import { ProductStockBadge } from "./product-stock-badge";
 import { VariantPicker } from "./variant-picker";
 import { LiveViews } from "./live-views.client";
+import { OfferCountdown } from "@/components/storefront/store-offer.client";
 
 
 interface ProductDetailsProps {
@@ -171,6 +172,8 @@ export const ProductDetails = ({
           />
         </div>
 
+        {/* Store coupon pop-up countdown: only inside a store whose visitor saw the pop-up. */}
+        <OfferCountdown productId={product.id} className="mt-3 text-gray-700" />
         {product.showLiveViews && <LiveViews productId={product.id} className="mt-3 text-gray-700" />}
 
         {/* Variant Selection */}

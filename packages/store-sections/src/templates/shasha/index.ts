@@ -102,7 +102,7 @@ const home: Design[] = [
       "كل اللي تحتاجه في مكان واحد، أصلي وبضمان.": L("إلكترونيات أصلية بضمان محلي، وتقسيط لحد ١٢ شهر.", "Original electronics with local warranty, in up to 12 instalments."),
     },
     links: { "/products": BEST },
-    lists: [{ source: "best-sellers", limit: 5 }],
+    lists: [{ source: "best-sellers", limit: 6 }],
   }),
   lib("service-plans", {
     text: {
@@ -147,16 +147,21 @@ const DEMO = demoStore({
     ["watches", "ساعات", "Watches", PHOTOS.watch],
     ["tv", "التلفزيون والبيت", "TV & home", PHOTOS.tvRoom],
     ["power", "الطاقة", "Power", PHOTOS.powerBank],
+    ["headphones", "هيدفون", "Headphones", PHOTOS.headphones],
+    ["speakers", "سبيكرات", "Speakers", PHOTOS.speaker],
+    ["networking", "راوترات", "Routers", PHOTOS.router],
+    ["chargers", "شواحن وكابلات", "Chargers & cables", PHOTOS.chargers],
   ],
   products: [
     ["pulse-buds-pro", "audio", "بالس برو", "Pulse Buds Pro", PHOTOS.pulseBuds, 1090, { compareAtPrice: 1730, isFeatured: true, rating: 4.6, sold90: 140 }],
     ["sport-smartwatch", "watches", "ساعة ذكية سبورت", "Sport Smartwatch", PHOTOS.watch, 890, { compareAtPrice: 1450, sold90: 88 }],
     ["tv-box-4k", "tv", "رسيفر 4K", "4K TV Box", PHOTOS.tvRoom, 690, { compareAtPrice: 1250, sold90: 41 }],
     ["magnetic-power-bank-10k", "power", "باور بانك مغناطيسي 10K", "Magnetic Power Bank 10K", PHOTOS.powerBank, 1090, { compareAtPrice: 1835, sold90: 22 }],
-    ["studio-headphones", "audio", "سماعة ستوديو", "Studio Headphones", PHOTOS.headphones, 590, { compareAtPrice: 990, sold90: 30 }],
+    ["studio-headphones", "headphones", "سماعة ستوديو", "Studio Headphones", PHOTOS.headphones, 590, { compareAtPrice: 990, sold90: 30 }],
     ["air-buds-4", "audio", "إير 4", "Air Buds 4", PHOTOS.airBuds, 790, { rating: 4.7, sold90: 64 }],
-    ["wifi-router", "tv", "راوتر واي فاي", "Wi-Fi Router", PHOTOS.router, 1290, { sold90: 36 }],
-    ["mini-smart-speaker", "tv", "سبيكر ذكي ميني", "Mini Smart Speaker", PHOTOS.speaker, 990, { inStock: false, sold90: 18 }],
+    ["wifi-router", "networking", "راوتر واي فاي", "Wi-Fi Router", PHOTOS.router, 1290, { sold90: 36 }],
+    ["mini-smart-speaker", "speakers", "سبيكر ذكي ميني", "Mini Smart Speaker", PHOTOS.speaker, 990, { inStock: false, sold90: 18 }],
+    ["charger-and-cable-kit", "chargers", "شاحن سريع وكابلات", "Fast Charger & Cable Kit", PHOTOS.chargers, 450, { compareAtPrice: 690, sold90: 120 }],
   ],
 });
 
@@ -164,7 +169,7 @@ export const SHASHA = libraryTemplate({
   key: SHASHA_KEY,
   version: 3,
   changelog: "Shasha v3: categories after the hero, one delivery block",
-  productPage: { thumbs: "side", band: "shelf", extras: ["product-perks"], copy: { back: L("رجوع للأجهزة", "Back to the devices"), reviews: L("تجارب مستخدمين", "Verified buyer reviews"), related: L("أجهزة تكمّل جهازك", "Pairs well with this") } },
+  productPage: { thumbs: "side", band: "shelf", extras: ["product-perks"], copy: { reviews: L("تجارب مستخدمين", "Verified buyer reviews"), related: L("أجهزة تكمّل جهازك", "Pairs well with this") } },
   name: L("شاشة", "Shasha"),
   description: L(
     "متجر إلكترونيات: بانرات متحركة، الأكثر مبيعاً، الضمان، افتح قبل ما تدفع وتتبع طلبك. أربع صفحات جاهزة.",

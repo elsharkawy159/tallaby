@@ -89,7 +89,7 @@ export async function listTemplatesPage(storeId: string, query: Partial<Template
     const industry = findIndustry({ en: row.storeCategory, ar: row.storeCategoryAr });
     const paged = pageTemplates(gallery.templates, {
       page: parseTemplatesPage(query?.page),
-      category: parseTemplatesCategory(query?.category),
+      category: query?.category == null ? null : parseTemplatesCategory(query.category),
       industryId: industry?.id,
       seed: store.id,
     });
@@ -103,6 +103,7 @@ export async function listTemplatesPage(storeId: string, query: Partial<Template
         pageSize: TEMPLATES_PAGE_SIZE,
         total: paged.total,
         categories: paged.categories,
+        category: paged.category,
         // A new store's placeholder Tallaby Classic drafts are not the seller's
         // choice (owner 2026-10-27): no "current" template until one is picked.
         currentKey: gallery.templateChosen ? gallery.currentKey : "",

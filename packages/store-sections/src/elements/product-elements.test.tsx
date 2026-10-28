@@ -38,6 +38,7 @@ const draw = (n: ComponentNode, p: ProductDetail | null = product, over: Partial
   renderToStaticMarkup(<>{renderElementTree([n], ctx({ ...over, ...(p && { product: p }) }), 1, p ? { kind: "product", record: p } : undefined)}</>);
 
 const PRODUCT_TYPES = [
+  "productBreadcrumbs",
   "productGallery",
   "productPrice",
   "productStock",
@@ -64,7 +65,7 @@ describe("product elements", () => {
   it("interactive product parts never go inside a link", () => {
     const link = { ...node("linkBlock", { href: "/" }), id: "link" };
     const tree = [{ ...node("section"), id: "root", children: [link] }];
-    for (const type of ["productGallery", "productRating", "productVariants", "productBuyBox", "productDetails", "productContent", "productReviews"]) {
+    for (const type of ["productBreadcrumbs", "productGallery", "productRating", "productVariants", "productBuyBox", "productDetails", "productContent", "productReviews"]) {
       expect(canContain(tree, "link", node(type)), type).toBe(false);
       expect(canContain(tree, "root", node(type)), type).toBe(true);
     }
@@ -90,8 +91,10 @@ describe("product elements", () => {
     const html = draw(node("productPrice", { showDiscount: true }));
     expect(html).toContain("EGP 900");
     expect(html).toMatch(/<s[^>]*>EGP 1200<\/s>/);
-    expect(html).toContain("-25%");
-    expect(draw(node("productPrice", { showDiscount: false }))).not.toContain("-25%");
+    expect(html).toContain("Save EGP 300");
+    expect(draw(node("productPrice", { showDiscount: false }))).not.toContain("Save EGP");
+    // The percentage sits on the gallery's photo.
+    expect(draw(node("productGallery"))).toContain("-25%");
   });
 
   it("productStock all variants out of stock says out of stock", () => {
@@ -115,10 +118,10 @@ describe("product elements", () => {
   });
 
   it("productBuyBox outline variant draws the cart button in brand lines and fills buy now", () => {
-    const buttons = (html: string) => html.match(/<button[^>]*class="[^"]*h-12[^"]*"/g) ?? [];
+    const buttons = (html: string) => html.match(/<button[^>]*data-part="(?:add-to-cart|buy-now)"[^>]*>/g) ?? [];
     const [solidCart, solidBuy] = buttons(draw(node("productBuyBox", { buyNow: true })));
     expect(solidCart).toContain("bg-(--sf-brand)");
-    expect(solidBuy).toContain("border-(--sf-ink)");
+    expect(solidBuy).toContain("bg-(--sf-ink)");
     const [cart, buy] = buttons(draw(node("productBuyBox", { buyNow: true, variant: "outline" })));
     expect(cart).toContain("border-(--sf-brand)");
     expect(cart).toContain("bg-transparent");
@@ -178,28 +181,90 @@ describe("product elements", () => {
 
   it("productVariants strikes sold-out chips and productDetails lists bullets", () => {
     const variants = draw(node("productVariants"), { ...product, variants: [product.variants[0]!, { ...product.variants[1]!, quantity: 0 }] });
-    expect(variants).toContain("line-through");
+    // Colour options are round swatches (struck when sold out); the others are pill chips.
+    expect(variants).toContain('role="img"');
+    expect(variants).toContain("data-sold-out");
+    const chips = draw(node("productVariants"), { ...product, variants: product.variants.map((v, i) => ({ ...v, color: null, quantity: i === 1 ? 0 : v.quantity })) });
+    expect(chips).toContain("line-through");
+    expect(chips).not.toContain('role="img"');
     const withBullets = { ...product, bulletPoints: ["Fast charging"] };
     const details = draw(node("productDetails", { showDescription: true, showBullets: true }), withBullets);
-    expect(details).toContain("<li>Fast charging</li>");
+    expect(details).toContain('data-part="highlights"');
+    expect(details).toContain("Fast charging");
     expect(draw(node("productDetails", { showDescription: true, showBullets: false }), withBullets)).not.toContain("Fast charging");
+  });
+});
+
+describe("product page upgrade (breadcrumbs, meta row, perks, delivery)", () => {
+  const withCategory: ProductDetail = { ...product, category: { id: "c 1", name: "Audio" } };
+
+  it("productBreadcrumbs is a nav list: home, the linked category, the current product", () => {
+    const html = draw(node("productBreadcrumbs"), withCategory, { mode: "public" });
+    expect(html).toMatch(/^<nav [^>]*aria-label="Breadcrumb"/);
+    expect(html).toContain("<ol");
+    expect(html).toContain('href="/"');
+    expect(html).toContain('href="/products?category=c%201"');
+    expect(html).toMatch(/<li aria-current="page"[^>]*>Earbuds<\/li>/);
+    expect(html).toContain("rtl:rotate-180");
+    // The host's category link wins; no category, no middle step.
+    expect(draw(node("productBreadcrumbs"), { ...product, category: { id: "c", name: "Audio", href: "/c/audio" } }, { mode: "public" })).toContain('href="/c/audio"');
+    expect(draw(node("productBreadcrumbs"), { ...product, category: null }, { mode: "public" })).not.toContain("category");
+    expect(draw(node("productBreadcrumbs", { showCategory: false }), withCategory, { mode: "public" })).not.toContain("Audio");
+    // The editor draws the trail as plain text.
+    expect(draw(node("productBreadcrumbs"), withCategory)).not.toContain("href=");
+  });
+
+  it("productRating shows the category badge, also before any review", () => {
+    const reviewed = draw(node("productRating"), { ...withCategory, reviewCount: 12, rating: 4.8 }, { mode: "public" });
+    expect(reviewed).toContain('href="/products?category=c%201"');
+    expect(reviewed).toContain("4.8");
+    expect(reviewed).toContain('href="#reviews"');
+    const unreviewed = draw(node("productRating"), { ...withCategory, reviewCount: 0 }, { mode: "public" });
+    expect(unreviewed).toContain("Audio");
+    expect(unreviewed).not.toContain("#reviews");
+    expect(draw(node("productRating", { showCategory: false }), { ...withCategory, reviewCount: 0 }, { mode: "public" })).toBe("");
+  });
+
+  it("productBuyBox draws the perks box after the buy box, also beside the host's buy box", () => {
+    const still = draw(node("productBuyBox"));
+    expect(still).toContain('data-part="perks"');
+    expect(still.indexOf('data-part="perks"')).toBeGreaterThan(still.indexOf('data-part="add-to-cart"'));
+    expect(draw(node("productBuyBox", { perks: false }))).not.toContain('data-part="perks"');
+    const hooked = draw(node("productBuyBox"), product, { mode: "public", renderProductBuyBox: () => <i>live</i> });
+    expect(hooked).toMatch(/<i>live<\/i><div[^>]*><ul data-part="perks"/);
+    expect(hooked).toContain("Pay on delivery");
+    // A store without cash on delivery gets the secure payment perk instead.
+    const noCod = draw(node("productBuyBox"), product, { store: { name: "S", url: "/", paymentMethods: [{ key: "card" }] } });
+    expect(noCod).not.toContain("Pay on delivery");
+    expect(noCod).toContain("Secure payment");
+  });
+
+  it("productDetails has a delivery & returns row with the seller's text or the general note", () => {
+    expect(draw(node("productDetails"))).toContain("Delivery &amp; returns");
+    expect(draw(node("productDetails"))).toContain("The exact delivery fee shows at checkout");
+    expect(draw(node("productDetails", { deliveryText: "Ships in 2 days." }))).toContain("Ships in 2 days.");
+    expect(draw(node("productDetails", { showDelivery: false }))).not.toContain("Delivery &amp; returns");
+    const policy = draw(node("productDetails"), product, { mode: "public", store: { name: "S", url: "/", policies: [{ key: "return", href: "/policies/return" }] } });
+    expect(policy).toContain('href="/policies/return"');
   });
 });
 
 describe("product sections with nothing to show", () => {
   const section = (children: ComponentNode[]): ComponentNode => ({ id: "s-1", type: "section", props: {}, children }) as ComponentNode;
   const heading = { id: "h-1", type: "heading", props: { text: "About this product", level: "h2" }, children: [] } as unknown as ComponentNode;
-  const empty: ProductDetail = { ...product, contentHtml: null, reviewCount: 0, variants: [], description: null, bulletPoints: [] };
+  const empty: ProductDetail = { ...product, contentHtml: null, reviewCount: 0, variants: [], description: null, bulletPoints: [], category: null };
   const publicDraw = (n: ComponentNode, p: ProductDetail | null) => draw(n, p, { mode: "public" });
 
   it("draw no band publicly when every product part in them is empty for this product", () => {
     expect(publicDraw(section([heading, node("productContent")]), empty)).toBe("");
-    expect(publicDraw(section([node("productRating"), node("productVariants"), node("productDetails")]), empty)).toBe("");
-    // Details with only the description switched off and no bullets: nothing either.
-    expect(publicDraw(section([node("productDetails", { showDescription: false })]), { ...empty, description: "Soft." })).toBe("");
+    expect(publicDraw(section([node("productRating"), node("productVariants"), node("productDetails", { showDelivery: false })]), empty)).toBe("");
+    // Details with only the description switched off, no bullets and no delivery row: nothing either.
+    expect(publicDraw(section([node("productDetails", { showDescription: false, showDelivery: false })]), { ...empty, description: "Soft." })).toBe("");
   });
 
   it("keep the band when one product part draws something", () => {
+    // The delivery & returns row is on by default, so details always draw something.
+    expect(publicDraw(section([node("productDetails")]), empty)).toContain("<section");
     const withContent = { ...empty, contentHtml: "<p>Hi</p>" };
     expect(publicDraw(section([heading, node("productContent")]), withContent)).toContain("<section");
     expect(publicDraw(section([node("productContent"), node("productReviews")]), empty)).toContain("<section");

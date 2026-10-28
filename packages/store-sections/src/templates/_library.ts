@@ -37,7 +37,15 @@ export type NodePatch = {
 };
 
 /** A list setting: `null` removes it (e.g. a fixed `source`). */
-export type ListPatch = { source?: string | null; sort?: string | null; limit?: number | null };
+export type ListPatch = {
+  source?: string | null;
+  sort?: string | null;
+  limit?: number | null;
+  /** Records skipped first (a category row: its place in the store, minus one). */
+  offset?: number | null;
+  /** A `category` product list: the store's Nth category (1-based). */
+  categoryIndex?: number | null;
+};
 
 export type LibraryPatch = DesignPhotos & {
   /** The design's Arabic copy → the template's copy (both languages). Every key must be found. */

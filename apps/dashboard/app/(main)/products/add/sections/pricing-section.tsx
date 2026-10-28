@@ -39,14 +39,17 @@ export function PricingSection({
   const finalError = useFieldError("price.final");
 
   const [discountOn, setDiscountOn] = useState(() => isSale(listPrice, finalPrice));
-  // An end date set before (edit, import) stays visible; new discounts don't ask for one.
-  const [showExpiry] = useState(() => Boolean(discountEndsAt));
+  // An end date set before (edit, import, AI) stays visible; new discounts don't ask for one.
+  const [showExpiry, setShowExpiry] = useState(() => Boolean(discountEndsAt));
 
-  // Only the switch turns the discount on. A whole-form reset (draft restore,
-  // import, start over) has no field name; typing always has one.
+  // The switch turns the discount on, and so does a sale price written from
+  // outside the field (AI fill). A whole-form reset (draft restore, import,
+  // start over) has no field name and follows the prices either way.
   useEffect(() => {
     const subscription = form.watch((values, { name }) => {
       if (name === undefined) setDiscountOn(isSale(values.price?.list, values.price?.final));
+      else if (name === "price.final" && isSale(values.price?.list, values.price?.final)) setDiscountOn(true);
+      if (values.price?.discountEndsAt) setShowExpiry(true);
     });
     return () => subscription.unsubscribe();
   }, [form]);

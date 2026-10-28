@@ -151,17 +151,21 @@ const DEMO = demoStore({
     ["easy", "سهلة العناية", "Easy care", PHOTOS.succulents],
     ["pots", "أصص", "Pots", PHOTOS.pastelPots],
     ["dried", "ورد مجفف", "Dried stems", PHOTOS.driedPalm],
+    ["cacti", "صبار", "Cacti", PHOTOS.cacti],
+    ["large", "نباتات كبيرة", "Large plants", PHOTOS.monsteraWindow],
+    ["shelves", "رفوف نباتات", "Plant shelves", PHOTOS.shelves],
   ],
   products: [
-    ["monstera-deliciosa", "indoor", "مونستيرا", "Monstera Deliciosa", PHOTOS.monsteraPot, 650, { isFeatured: true, rating: 4.9, sold90: 240 }],
+    ["monstera-deliciosa", "large", "مونستيرا", "Monstera Deliciosa", PHOTOS.monsteraPot, 650, { isFeatured: true, rating: 4.9, sold90: 240 }],
     ["golden-pothos", "indoor", "بوتس ذهبي", "Golden Pothos", PHOTOS.pothosYellow, 380, { sold90: 88 }],
     ["silver-leaf-plant", "indoor", "نبتة ورق فضي", "Silver Leaf Plant", PHOTOS.whitePot, 420, { sold90: 52 }],
     ["succulent-dozen", "easy", "١٢ صبار صغير", "Succulent Dozen", PHOTOS.succulents, 520, { compareAtPrice: 620, rating: 4.8, sold90: 156 }],
-    ["cactus-garden", "easy", "جنينة صبار", "Cactus Garden", PHOTOS.cacti, 460, { sold90: 27 }],
+    ["cactus-garden", "cacti", "جنينة صبار", "Cactus Garden", PHOTOS.cacti, 460, { sold90: 27 }],
     ["terracotta-pot-set", "pots", "طقم أصص فخار", "Terracotta Pot Set", PHOTOS.terracottaPots, 420, { isFeatured: true, sold90: 64 }],
     ["pastel-pot-family", "pots", "عيلة أصص باستيل", "Pastel Pot Family", PHOTOS.pastelPots, 560, { sold90: 31 }],
     ["dried-palm-bouquet", "dried", "بوكيه نخيل مجفف", "Dried Palm Bouquet", PHOTOS.driedPalm, 290, { compareAtPrice: 340, sold90: 42 }],
     ["pastel-dried-stems", "dried", "ورد مجفف باستيل", "Pastel Dried Stems", PHOTOS.driedPastel, 380, { inStock: false, sold90: 19 }],
+    ["plant-shelf-unit", "shelves", "رف نباتات خشب", "Wooden Plant Shelf", PHOTOS.shelves, 1450, { sold90: 18 }],
   ],
 });
 
@@ -218,5 +222,5 @@ export const VERDANT = libraryTemplate({
     },
   ],
   demo: DEMO,
-  productPage: { surface: "card", thumbs: "bottom", band: "shelf", extras: ["product-shipping"], copy: { back: L("رجوع للمشتل", "Back to the nursery"), reviews: L("حكايات أصحاب النباتات", "Plant owners' stories"), related: L("نباتات ترافقها", "Plants that pair well") } },
+  productPage: { surface: "card", thumbs: "bottom", band: "shelf", extras: ["product-shipping"], copy: { reviews: L("حكايات أصحاب النباتات", "Plant owners' stories"), related: L("نباتات ترافقها", "Plants that pair well") } },
 });

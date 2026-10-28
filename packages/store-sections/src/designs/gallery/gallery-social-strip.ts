@@ -1,8 +1,8 @@
 /**
  * Social photo strip (Claude Design premium set, photoRail; 2026-10-27): a
  * centred heading and line with the Instagram handle under them, then square
- * photos edge to edge with thin gaps, six across on desktop. Customer photos
- * or the store's feed near the end of the page. Authored photos can't swipe
+ * photos with thin gaps, six across on desktop, inside the store container.
+ * Customer photos or the store's feed near the end of the page. Authored photos can't swipe
  * (only data lists have a phone rail), so phones show them three across in
  * two rows.
  */
@@ -21,13 +21,13 @@ function tile(t: TreeBuilder, i: number): NodeTemplate {
 
 export const gallerySocialStrip = defineDesign({
   id: "gallery-social-strip",
-  version: 1,
+  version: 2,
   category: "gallery",
   subcategory: "instagram",
   name: L("شريط صور السوشيال", "Social photo strip"),
   description: L(
-    "عنوان في النص وحساب إنستجرام، وتحته صور مربعة من طرف الشاشة للطرف.",
-    "A centred heading and your Instagram handle over square photos from edge to edge.",
+    "عنوان في النص وحساب إنستجرام، وتحته صف صور مربعة.",
+    "A centred heading and your Instagram handle over a row of square photos.",
   ),
   keywords: ["gallery", "instagram", "social", "customer photos", "strip", "premium", "معرض", "إنستجرام", "صور العملاء"],
   tree: (t) =>
@@ -69,9 +69,20 @@ export const gallerySocialStrip = defineDesign({
             ],
             { label: L("الحاوية", "Container") },
           ),
-          t.grid(
-            Array.from({ length: 6 }, (_, i) => tile(t, i)),
-            { label: L("الصور", "Photos"), role: "items", columns: { desktop: 6, tablet: 3, mobile: 3 }, style: { gap: 4 }, mobile: { gap: 2 } },
+          t.container(
+            [
+              t.grid(
+                Array.from({ length: 6 }, (_, i) => tile(t, i)),
+                {
+                  label: L("الصور", "Photos"),
+                  role: "items",
+                  columns: { desktop: 6, tablet: 3, mobile: 3 },
+                  style: { gap: 4, radius: 24, overflow: "hidden" },
+                  mobile: { gap: 2 },
+                },
+              ),
+            ],
+            { label: L("حاوية الصور", "Photos container"), role: "container" },
           ),
         ],
         { label: L("المحتوى", "Content"), style: { gap: 32 }, mobile: { gap: 20 } },

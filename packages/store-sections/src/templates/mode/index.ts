@@ -263,5 +263,5 @@ export const MODE = libraryTemplate({
     { slug: "faq", name: L("الأسئلة الشائعة", "FAQ"), seo: { title: L("الأسئلة الشائعة", "FAQ") }, sections: faq },
   ],
   demo: DEMO,
-  productPage: { thumbs: "bottom", band: "paper", copy: { back: L("رجوع للمجموعة", "Back to the drop"), reviews: L("عميلاتنا بيقولوا إيه", "What our customers say"), related: L("كمّلي اللوك", "Complete the look") } },
+  productPage: { thumbs: "bottom", band: "paper", copy: { reviews: L("عميلاتنا بيقولوا إيه", "What our customers say"), related: L("كمّلي اللوك", "Complete the look") } },
 });

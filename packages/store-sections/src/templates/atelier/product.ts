@@ -15,7 +15,7 @@ const TITLE = L("اسم القطعة", "Piece name");
 
 export const atelierProductMain = defineDesign({
   id: "atelier-product-main",
-  version: 1,
+  version: 2,
   category: "product-page",
   subcategory: "buy-box",
   name: L("أتيليه: المعرض وزر الشراء", "Atelier: gallery and buy box"),
@@ -23,17 +23,17 @@ export const atelierProductMain = defineDesign({
     "معرض صور كبير بصور مصغرة على الجانب، وعمود شراء هادئ بعنوان كلاسيكي وزر محدد والتفاصيل في صفوف بخطوط رفيعة.",
     "A large gallery with side thumbnails, and a quiet buy column with a serif title, an outlined button and the details as hairline rows.",
   ),
-  keywords: ["product page", "atelier", "gallery", "buy box", "صفحة المنتج", "أتيليه", "شراء"],
+  keywords: ["product page", "atelier", "gallery", "buy box", "breadcrumbs", "صفحة المنتج", "أتيليه", "شراء"],
   tree: (t) =>
     t.section(
-      { label: L("المنتج", "Product"), style: { paddingTop: 40, paddingBottom: 96 }, mobile: { paddingTop: 20, paddingBottom: 56 } },
+      { label: L("المنتج", "Product"), style: { paddingTop: 32, paddingBottom: 96 }, mobile: { paddingTop: 14, paddingBottom: 56 } },
       [
         t.container(
           [
-            t.textLink(L("العودة إلى الدار", "Back to the house"), "/", {
-              label: L("رابط الرجوع", "Back link"),
-              style: { fontSize: "xs", fontWeight: "medium", letterSpacing: "wider", color: "muted", marginBottom: 32 },
-              mobile: { marginBottom: 18 },
+            t.productBreadcrumbs({
+              label: L("مسار الصفحة", "Breadcrumbs"),
+              style: { letterSpacing: "wide", marginBottom: 32 },
+              mobile: { marginBottom: 14 },
             }),
             t.grid(
               [
@@ -45,8 +45,7 @@ export const atelierProductMain = defineDesign({
                 }),
                 t.stack(
                   [
-                    t.productSeller({ label: L("البائع", "Seller"), style: { color: "muted" } }),
-                    t.productStock({ label: L("المخزون", "Stock") }),
+                    t.productRating({ label: L("التقييم", "Rating") }),
                     t.heading(TITLE, "h1", {
                       label: L("اسم المنتج", "Product name"),
                       role: "title",
@@ -54,17 +53,17 @@ export const atelierProductMain = defineDesign({
                       style: { ...DISPLAY, fontSize: "display-md" },
                       mobile: { fontSize: "3xl", lineHeight: "snug" },
                     }),
-                    t.productRating({ label: L("التقييم", "Rating") }),
-                    t.productPrice({ label: L("السعر", "Price"), style: { marginTop: 4, fontSize: "xl" } }),
-                    t.productVariants({ label: L("الاختيارات", "Options"), style: { marginTop: 12 } }),
-                    t.productBuyBox({ label: L("زر الشراء", "Buy box"), variant: "outline", style: { marginTop: 8 } }),
-                    t.productDetails({ label: L("التفاصيل", "Details"), style: { marginTop: 24 } }),
+                    t.productPrice({ label: L("السعر", "Price"), style: { fontSize: "xl" } }),
+                    t.productStock({ label: L("المخزون", "Stock") }),
+                    t.productVariants({ label: L("الاختيارات", "Options"), style: { marginTop: 8 } }),
+                    t.productBuyBox({ label: L("زر الشراء", "Buy box"), variant: "outline", style: { marginTop: 4 } }),
+                    t.productDetails({ label: L("التفاصيل", "Details"), style: { marginTop: 16 } }),
                   ],
                   {
                     label: L("عمود الشراء", "Buy column"),
-                    style: { gap: 16, colSpan: 5, paddingTop: 8 },
+                    style: { gap: 20, colSpan: 5, paddingTop: 8 },
                     tablet: { colSpan: 1, paddingTop: 0 },
-                    mobile: { gap: 12 },
+                    mobile: { gap: 16 },
                   },
                 ),
               ],

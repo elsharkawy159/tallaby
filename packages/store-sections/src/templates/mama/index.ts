@@ -139,6 +139,7 @@ const DEMO = demoStore({
     ["toys", "أول لعب", "First toys", PHOTOS.stacker],
     ["gifts", "بوكسات هدايا", "Gift boxes", PHOTOS.elephantSmall],
     ["nursery", "أوضة البيبي", "Nursery", PHOTOS.cot],
+    ["bath", "حمّام البيبي", "Bath time", PHOTOS.towel],
   ],
   products: [
     ["newborn-cotton-set", "clothes", "طقم قطن لحديثي الولادة", "Newborn Cotton Set", PHOTOS.cottonSet, 590, { isFeatured: true, rating: 4.9, sold90: 210 }],
@@ -147,7 +148,7 @@ const DEMO = demoStore({
     ["animal-friends", "toys", "الحيوانات", "Animal Friends", PHOTOS.animals, 390, { compareAtPrice: 450, sold90: 44 }],
     ["pyjamas-and-booties", "clothes", "بيجامة وشبشب قطن", "Cotton Pyjamas & Booties", PHOTOS.pyjamas, 480, { rating: 4.8, sold90: 88 }],
     ["sleepsuit-and-vest", "clothes", "أوفرول وفيست فرو", "Sleepsuit & Fleece Vest", PHOTOS.onesie, 650, { sold90: 52 }],
-    ["soft-cotton-towel", "nursery", "فوطة قطن ناعمة", "Soft Cotton Towel", PHOTOS.towel, 240, { sold90: 74 }],
+    ["soft-cotton-towel", "bath", "فوطة قطن ناعمة", "Soft Cotton Towel", PHOTOS.towel, 240, { sold90: 74 }],
     ["white-cot", "nursery", "سرير بيبي أبيض", "White Cot", PHOTOS.cot, 5400, { compareAtPrice: 6200, sold90: 12 }],
     ["gift-wrap-set", "gifts", "طقم تغليف هدايا", "Gift Wrap Set", PHOTOS.gifts, 150, { inStock: false, sold90: 30 }],
   ],
@@ -157,7 +158,7 @@ export const MAMA = libraryTemplate({
   key: MAMA_KEY,
   version: 3,
   changelog: "Mama v3: categories after the hero",
-  productPage: { surface: "shelf", thumbs: "bottom", band: "paper", extras: ["product-shipping"], copy: { back: L("رجوع لأغراض البيبي", "Back to the baby shop"), reviews: L("رأي الماميز", "Mums' reviews"), related: L("حاجات تانية للبيبي", "More for the baby") } },
+  productPage: { surface: "shelf", thumbs: "bottom", band: "paper", extras: ["product-shipping"], copy: { reviews: L("رأي الماميز", "Mums' reviews"), related: L("حاجات تانية للبيبي", "More for the baby") } },
   name: L("ماما", "Mama"),
   description: L(
     "مستلزمات بيبي هادية: حسب سن البيبي، شنطة الولادة، وعدنا وكارت هدية لمامي جديدة. أربع صفحات جاهزة.",

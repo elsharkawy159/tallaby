@@ -1,5 +1,5 @@
 import { cn } from "@workspace/ui/lib/utils";
-import { SITE_ROOT_CLASS, SiteTheme, bottomNavOn, chromeHasThemeToggle, siteMotionAttrs } from "@workspace/store-sections/render";
+import { SITE_ROOT_CLASS, SiteTheme, bottomNavOn, chromeHasThemeToggle, designSystemToCss, siteMotionAttrs } from "@workspace/store-sections/render";
 import { CarouselRuntime, MotionRuntime } from "@workspace/store-sections/client";
 import { AuthDialogProvider } from "@/components/auth/auth-dialog-provider";
 import { CurrencyLabelProvider } from "@/lib/currency-label.client";
@@ -16,6 +16,10 @@ import { StoreViewsTag } from "@/components/storefront/store-views-tag.client";
 import { readStoreViewsGtmId } from "@/lib/store-views.server";
 import { StoreSiteBottomNav, StoreSiteChrome } from "./store-site";
 import { StorePreviewBanner } from "./store-preview-banner";
+import { pickStoreCouponOffer } from "@workspace/lib/orders/coupon-popup";
+import { StoreOfferProvider } from "@/components/storefront/store-offer.client";
+import { getCachedSellerPopupCoupons } from "@/lib/store-site/store-data.server";
+import { CouponOfferPopup } from "./coupon-offer-popup.client";
 import { StoreOffline } from "./store-offline";
 import s from "../storefront.module.css";
 
@@ -61,15 +65,27 @@ export async function StorefrontShell({
   }
 
   const storeViewsGtmId = readStoreViewsGtmId();
+  // The seller's coupon pop-up (0114); a failed read only loses the pop-up.
+  const offer = shared
+    ? null
+    : pickStoreCouponOffer(
+        await getCachedSellerPopupCoupons(store.id).catch((error) => {
+          console.error("Store coupon pop-up failed to load:", error);
+          return [];
+        }),
+      );
 
   return (
     <CurrencyLabelProvider label={store.currencyLabel}>
+    <StoreOfferProvider offer={offer}>
       {/* The theme toggle's init script may set `data-sf-theme` before hydration. */}
       <div className={cn(storefrontFont.variable, s.root, site && [SITE_ROOT_CLASS, storeFontVariables])}
         {...(site && siteMotionAttrs(site.designSystem.motion))}
         suppressHydrationWarning
       >
         {site && <SiteTheme designSystem={site.designSystem} dark={chromeHasThemeToggle(site.header, site.footer)} />}
+        {/* Dialogs, popovers and toasts render in <body>, outside the site root: give them the store's colors too. */}
+        {site && <style dangerouslySetInnerHTML={{ __html: designSystemToCss(site.designSystem, "body").replace(/</g, "\\3c ") }} />}
         {preview && <StorePreviewBanner state={preview} />}
         {site ? <StoreSiteChrome store={store} site={site} locale={locale} part="header" /> : <StorefrontHeader store={store} />}
         <main className="flex-1">{children}</main>
@@ -77,14 +93,16 @@ export async function StorefrontShell({
         {/* Phones: the bottom navigation (on by default; its cart badge replaces the floating cart bar). */}
         {site && bottomNavOn(site.header) ? <StoreSiteBottomNav site={site} locale={locale} /> : !shared && <MobileCartBar />}
         {/* The cart opens as a sheet from every cart link and after add-to-cart (not on shared pages: orders, checkout). */}
-        {!shared && <StoreCartSheet storeName={store.displayName} fontClassName={storefrontFont.variable} />}
+        {!shared && <StoreCartSheet storeName={store.displayName} fontClassName={cn(storefrontFont.variable, site && [SITE_ROOT_CLASS, storeFontVariables])} />}
         <AuthDialogProvider />
         {site && <CarouselRuntime />}
         {site && <MotionRuntime />}
         {!shared && <StorefrontTracking store={store} />}
         {/* Tallaby's store-views tag (SA-01): published pages only, never a draft preview. */}
         {!shared && !preview && storeViewsGtmId && <StoreViewsTag containerId={storeViewsGtmId} storeId={store.storeId} />}
+        {offer && <CouponOfferPopup fontClassName={cn(storefrontFont.variable, site && [SITE_ROOT_CLASS, storeFontVariables])} />}
       </div>
+    </StoreOfferProvider>
     </CurrencyLabelProvider>
   );
 }

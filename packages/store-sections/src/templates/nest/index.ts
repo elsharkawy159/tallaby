@@ -145,6 +145,7 @@ const DEMO = demoStore({
     ["bedding", "مفارش", "Bedding", PHOTOS.bedRumpled],
     ["lighting", "أباجورات", "Lamps", PHOTOS.bulbLamp],
     ["decor", "ديكور", "Decor", PHOTOS.vaseCandles],
+    ["throws", "بطاطين", "Throws", PHOTOS.throw],
   ],
   products: [
     ["washed-linen-duvet-set", "bedding", "طقم لحاف كتان مغسول", "Washed Linen Duvet Set", PHOTOS.bed, 2900, { isFeatured: true, rating: 4.9, sold90: 36 }],
@@ -154,7 +155,7 @@ const DEMO = demoStore({
     ["hand-glazed-tableware", "tableware", "طقم سفرة مطلي يدوي", "Hand-Glazed Tableware Set", PHOTOS.tableware, 980, { rating: 4.8, sold90: 41 }],
     ["linen-table-runner", "tableware", "رانر كتان للسفرة", "Linen Table Runner", PHOTOS.runner, 540, { sold90: 22 }],
     ["jar-candle-pair", "candles", "زوج شمع في برطمان", "Jar Candle Pair", PHOTOS.jarCandles, 380, { rating: 4.7, sold90: 88 }],
-    ["waffle-knit-throw", "bedding", "بطانية تريكو", "Waffle Knit Throw", PHOTOS.throw, 1350, { compareAtPrice: 1600, sold90: 47 }],
+    ["waffle-knit-throw", "throws", "بطانية تريكو", "Waffle Knit Throw", PHOTOS.throw, 1350, { compareAtPrice: 1600, sold90: 47 }],
     ["linen-shade-lamp", "lighting", "أباجورة بغطا كتان", "Linen Shade Lamp", PHOTOS.linenLamp, 1750, { sold90: 12 }],
     ["arch-sculpture-set", "decor", "طقم قوس وشمعدان", "Arch Sculpture Set", PHOTOS.arch, 760, { inStock: false, sold90: 9 }],
   ],
@@ -213,5 +214,5 @@ export const NEST = libraryTemplate({
     },
   ],
   demo: DEMO,
-  productPage: { thumbs: "side", band: "shelf", extras: ["product-shipping"], copy: { back: L("رجوع للمتجر", "Back to the shop"), reviews: L("آراء من سكنوا بها", "From homes that live with it"), related: L("قطع تناسب نفس الغرفة", "Pieces for the same room") } },
+  productPage: { thumbs: "side", band: "shelf", extras: ["product-shipping"], copy: { reviews: L("آراء من سكنوا بها", "From homes that live with it"), related: L("قطع تناسب نفس الغرفة", "Pieces for the same room") } },
 });

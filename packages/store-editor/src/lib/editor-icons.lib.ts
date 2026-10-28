@@ -70,6 +70,7 @@ import {
   ListCollapse,
   MoveHorizontal,
   Timer,
+  Signpost,
 } from "lucide-react";
 import type { ElementType, SectionCategory } from "@workspace/store-sections/render";
 import type { SectionGroupKey } from "./editor-palette.lib";
@@ -117,6 +118,7 @@ export const ELEMENT_ICONS: Record<ElementType, LucideIcon> = {
   themeToggle: SunMoon,
   accountLink: UserRound,
   mobileMenu: Menu,
+  productBreadcrumbs: Signpost,
   productGallery: Images,
   productPrice: TicketPercent,
   productStock: Boxes,

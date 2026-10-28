@@ -120,6 +120,7 @@ const DEMO = demoStore({
     ["table", "أباجورات مكتب", "Table lamps", PHOTOS.classicTable],
     ["ceiling", "نجف ومعلقات", "Pendants", PHOTOS.wovenPendants],
     ["decor", "ديكور", "Decor", PHOTOS.vaseCandles],
+    ["mosaic", "لمبات موزاييك", "Mosaic lamps", PHOTOS.mosaicLamps],
   ],
   products: [
     ["linen-floor-lamp", "floor", "أباجورة كتان أرضي", "Linen Floor Lamp", PHOTOS.swingFloor, 2600, { rating: 4.8, sold90: 96 }],
@@ -130,7 +131,7 @@ const DEMO = demoStore({
     ["rattan-pendant-trio", "ceiling", "٣ معلقات خوص", "Rattan Pendant Trio", PHOTOS.rattanPendants, 3400, { sold90: 27 }],
     ["glass-pendant", "ceiling", "معلقة إزاز", "Glass Pendant", PHOTOS.glassPendant, 1250, { sold90: 40 }],
     ["cone-pendant-set", "ceiling", "طقم معلقات مخروط", "Cone Pendant Set", PHOTOS.conePendants, 2800, { inStock: false, sold90: 12 }],
-    ["mosaic-lamp", "decor", "أباجورة موزاييك", "Mosaic Lamp", PHOTOS.mosaicLamps, 1450, { sold90: 36 }],
+    ["mosaic-lamp", "mosaic", "أباجورة موزاييك", "Mosaic Lamp", PHOTOS.mosaicLamps, 1450, { sold90: 36 }],
     ["vase-candle-trio", "decor", "فازة وشموع", "Vase & Candle Trio", PHOTOS.vaseCandles, 690, { rating: 4.9, sold90: 120 }],
   ],
 });
@@ -139,7 +140,7 @@ export const NOUR = libraryTemplate({
   key: NOUR_KEY,
   version: 3,
   changelog: "Nour v3: categories, wide hero photo, one service block",
-  productPage: { thumbs: "bottom", band: "shelf", extras: ["product-perks"], copy: { back: L("رجوع للإضاءة", "Back to the lights"), reviews: L("من بيوت منوّرة", "From lit-up homes"), related: L("إضاءة تكمّل المكان", "Lighting to finish the room") } },
+  productPage: { thumbs: "bottom", band: "shelf", extras: ["product-perks"], copy: { reviews: L("من بيوت منوّرة", "From lit-up homes"), related: L("إضاءة تكمّل المكان", "Lighting to finish the room") } },
   name: L("نور", "Nour"),
   description: L(
     "محل إضاءة بصفحة رئيسية غامقة: كلمة كبيرة، الأكتر نوراً، خدمة التركيب والتقسيط. أربع صفحات جاهزة.",

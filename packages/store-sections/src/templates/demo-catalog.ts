@@ -18,7 +18,11 @@ export function resolveDemoCatalog(
   const products: Record<string, ProductSummary[]> = {};
   for (const [instanceId, query] of Object.entries(queries)) {
     if (query.kind !== "products") continue;
-    products[instanceId] = selectProducts(query, demo?.products ?? []).map((p) => ({
+    products[instanceId] = selectProducts(
+      query,
+      demo?.products ?? [],
+      (demo?.categories ?? []).map((c) => c.id),
+    ).map((p) => ({
       id: p.id,
       title: name(p.title),
       href: `/products/${p.slug}`,

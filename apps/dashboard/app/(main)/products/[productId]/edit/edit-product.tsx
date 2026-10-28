@@ -20,6 +20,8 @@ interface EditProductProps {
   /** The seller's own category list. */
   sellerTaxonomy: { categories: SellerTaxonomyOption[] };
   linkHost: string | null;
+  /** Shows the AI box that edits the product on request. */
+  aiEnabled: boolean;
 }
 
 /** The add-product form in edit mode, so both pages look and behave the same. */
@@ -32,6 +34,7 @@ export function EditProduct({
   sellerPricing,
   sellerTaxonomy,
   linkHost,
+  aiEnabled,
 }: EditProductProps) {
   return (
     <AddProduct
@@ -39,6 +42,7 @@ export function EditProduct({
       sellerPricing={sellerPricing}
       sellerTaxonomy={sellerTaxonomy}
       linkHost={linkHost}
+      aiEnabled={aiEnabled}
       edit={{ productId, defaultValues }}
       headerActions={<EditProductActions productId={productId} status={status} previewUrl={previewUrl} />}
     />

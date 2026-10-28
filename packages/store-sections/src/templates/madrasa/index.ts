@@ -124,18 +124,20 @@ const DEMO = demoStore({
     ["learn", "اتعلم والعب", "Learn & play", PHOTOS.countingBlocks],
     ["bags", "شنط", "Bags", PHOTOS.messenger],
     ["stationery", "أدوات", "Stationery", PHOTOS.flatLay],
+    ["art", "رسم وتلوين", "Art & colour", PHOTOS.pencils],
+    ["lunch", "علب لانش", "Lunch boxes", PHOTOS.lunchBoxes],
   ],
   products: [
     ["first-readers-set", "books", "طقم أول قراية", "First Readers Set", PHOTOS.readers, 340, { isFeatured: true, rating: 4.8, sold90: 160 }],
     ["counting-blocks", "learn", "مكعبات العد", "Counting Blocks", PHOTOS.countingBlocks, 260, { sold90: 88 }],
     ["school-messenger", "bags", "شنطة مدرسة جلد", "Leather School Messenger", PHOTOS.messenger, 890, { compareAtPrice: 1050, sold90: 40 }],
     ["arabic-letter-blocks", "learn", "مكعبات الحروف", "Letter Blocks", PHOTOS.letterBlocks, 490, { sold90: 72 }],
-    ["coloured-pencils-24", "stationery", "ألوان خشب ٢٤ لون", "Coloured Pencils, 24", PHOTOS.pencils, 180, { rating: 4.9, sold90: 240 }],
+    ["coloured-pencils-24", "art", "ألوان خشب ٢٤ لون", "Coloured Pencils, 24", PHOTOS.pencils, 180, { rating: 4.9, sold90: 240 }],
     ["pencil-ruler-set", "stationery", "طقم أقلام ومسطرة وأستيكة", "Pencil, Ruler & Eraser Set", PHOTOS.flatLay, 120, { isFeatured: true, sold90: 210 }],
     ["kraft-notebook", "stationery", "كراسة كرافت ٦٠ ورقة", "Kraft Notebook, 60 sheets", PHOTOS.notebook, 45, { sold90: 320 }],
-    ["colour-card-pack", "stationery", "ورق ألوان ٢٠ لون", "Colour Card Pack, 20", PHOTOS.colourCard, 90, { sold90: 130 }],
+    ["colour-card-pack", "art", "ورق ألوان ٢٠ لون", "Colour Card Pack, 20", PHOTOS.colourCard, 90, { sold90: 130 }],
     ["scissors-and-clips", "stationery", "مقص ومشابك", "Scissors & Clips", PHOTOS.scissors, 75, { sold90: 95 }],
-    ["lunch-box-set", "bags", "طقم علب لانش", "Lunch Box Set", PHOTOS.lunchBoxes, 320, { inStock: false, sold90: 60 }],
+    ["lunch-box-set", "lunch", "طقم علب لانش", "Lunch Box Set", PHOTOS.lunchBoxes, 320, { inStock: false, sold90: 60 }],
   ],
 });
 
@@ -143,7 +145,7 @@ export const MADRASA = libraryTemplate({
   key: MADRASA_KEY,
   version: 3,
   changelog: "Madrasa v3: categories after the hero, one list service, newsletter close",
-  productPage: { thumbs: "side", band: "shelf", extras: ["product-shipping"], copy: { back: L("رجوع للمستلزمات", "Back to the supplies"), reviews: L("رأي أولياء الأمور", "Parents say"), related: L("أضفه لقائمتك", "Add to your list") } },
+  productPage: { thumbs: "side", band: "shelf", extras: ["product-shipping"], copy: { reviews: L("رأي أولياء الأمور", "Parents say"), related: L("أضفه لقائمتك", "Add to your list") } },
   name: L("مدرسة", "Madrasa"),
   description: L(
     "أدوات مدرسية: ابحث في اللستة، ابعت اللستة وفي كل لستة. أربع صفحات جاهزة.",

@@ -67,7 +67,7 @@ export function libraryTemplate(input: LibraryTemplateSpec): TemplateDefinition 
     designSystem: {
       colors: spec.colors,
       typography: { headingFont: spec.fonts.heading, bodyFont: spec.fonts.body },
-      spacing: { borderRadius: spec.radius, containerMaxWidth: spec.containerMaxWidth ?? 1280 },
+      spacing: { borderRadius: spec.radius, containerMaxWidth: spec.containerMaxWidth ?? 1440 },
     },
     header: section(spec.header),
     footer: section(spec.footer),
@@ -168,7 +168,26 @@ export function pexels(id: number, width = 1280): string {
   return `${PEXELS}${id}/pexels-photo-${id}.jpeg?auto=compress&cs=tinysrgb&w=${width}`;
 }
 
+/** A Pexels video file (`<id>` and the file name from its download link), for a background video. */
+export function pexelsVideo(id: number, file: string): string {
+  return `https://videos.pexels.com/video-files/${id}/${file}`;
+}
+
+/** The still Pexels publishes for a video, as its poster. */
+export function pexelsVideoPoster(id: number, width = 1920): string {
+  return `https://images.pexels.com/videos/${id}/pexels-photo-${id}.jpeg?auto=compress&cs=tinysrgb&w=${width}`;
+}
+
 /** A social handle (`@name`) kept left-to-right inside Arabic text (Unicode isolate), so the `@` stays in front. */
 export function handle(name: string): string {
   return `\u2066${name}\u2069`;
+}
+
+/**
+ * A phone number kept in reading order inside Arabic text. An isolate alone is not enough for
+ * Arabic-Indic digits: the spaces between digit groups resolve right-to-left, so the groups swap.
+ * A left-to-right mark after each group pins every space left-to-right.
+ */
+export function phone(number: string): string {
+  return `\u2066${number.trim().split(/\s+/).join("\u200e ")}\u2069`;
 }

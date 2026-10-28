@@ -114,6 +114,14 @@ export function CarouselRuntime({ doc }: { doc?: Document | null } = {}) {
 
     const onClick = (event: MouseEvent) => {
       const target = event.target instanceof window.Element ? event.target : null;
+      // A product carousel row (`rail`): a view at a time, towards the end side for "next".
+      const step = target?.closest<HTMLElement>("[data-rail-step]");
+      const rail = step?.closest("[data-rail-wrap]")?.querySelector<HTMLElement>("[data-rail]");
+      if (step && rail) {
+        const rtl = window.getComputedStyle(rail).direction === "rtl";
+        rail.scrollBy({ left: Number(step.dataset.railStep) * (rtl ? -1 : 1) * rail.clientWidth, behavior: reduce ? "auto" : "smooth" });
+        return;
+      }
       const button = target?.closest<HTMLElement>("[data-carousel-dot],[data-carousel-go],[data-carousel-play]");
       const root = button?.closest<HTMLElement>("[data-carousel]");
       if (!button || !root) return;

@@ -377,6 +377,7 @@ const REVEAL_SKIP = new Set([
   "addToCart",
   "wishlistButton",
   "mobileMenu",
+  "productBreadcrumbs",
   "productGallery",
   "productPrice",
   "productStock",
@@ -425,6 +426,18 @@ const MOBILE_RAIL_CLASS = {
   categories:
     "max-md:-mx-4 max-md:flex max-md:snap-x max-md:snap-mandatory max-md:scroll-px-4 max-md:overflow-x-auto max-md:px-4 max-md:pb-1 max-md:[scrollbar-width:none] max-md:*:shrink-0 max-md:*:basis-[44%] max-md:*:snap-start max-md:[&::-webkit-scrollbar]:hidden",
 } as const;
+
+/**
+ * A product list as a carousel row on every screen (`rail`, 2026-10-28): one
+ * row that scrolls and snaps card by card, four cards in view on desktop,
+ * three on tablets and a peeking card on phones (the widths assume the list's
+ * gaps: `--rail-gap` 24px, `--rail-gap-t` 16px). Publicly, previous and next
+ * arrows on tablet and desktop move it a view at a time (`CarouselRuntime`).
+ */
+const RAIL_CLASS =
+  "flex snap-x snap-mandatory overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden *:shrink-0 *:snap-start lg:*:basis-[calc((100%-3*var(--rail-gap,24px))/4)] md:max-lg:*:basis-[calc((100%-2*var(--rail-gap-t,16px))/3)] max-md:-mx-4 max-md:scroll-px-4 max-md:px-4 max-md:*:basis-[min(72%,280px)]";
+const RAIL_ARROW =
+  "absolute top-[34%] z-10 grid size-11 -translate-y-1/2 place-items-center rounded-full border border-(--sf-line) bg-(--sf-paper) text-(--sf-ink) shadow-md transition-colors hover:bg-(--sf-shelf) focus-visible:outline-2 focus-visible:outline-(--sf-brand) max-md:hidden";
 
 /** A clipped link holding a photo (product and category cards): the photo zooms a little on hover (`MOTION_CSS`). */
 function zoomsPhoto(node: ComponentNode): boolean {
@@ -763,9 +776,10 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
           </div>
         );
       }
-      const rail = props.mobileRail === true && !isPaginated(node) ? MOBILE_RAIL_CLASS[node.type === "categoryList" ? "categories" : "cards"] : undefined;
+      const carousel = props.rail === true && node.type === "productList" && !isPaginated(node);
+      const rail = carousel ? RAIL_CLASS : props.mobileRail === true && !isPaginated(node) ? MOBILE_RAIL_CLASS[node.type === "categoryList" ? "categories" : "cards"] : undefined;
       const grid = (
-        <div {...attrs} className={cn("grid min-w-0", rail)}>
+        <div {...attrs} {...(carousel && { "data-rail": "" })} className={cn(!carousel && "grid", "min-w-0", rail)}>
           {records.map((record, index) =>
             node.children.map((child) => (
               <ElementFragment key={`${recordKey(record)}-${child.id}`} node={child} ctx={ctx} depth={depth + 1} scope={record} reveal={reveal.children === null ? null : index} />
@@ -773,6 +787,20 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
           )}
         </div>
       );
+      if (carousel && ctx.mode !== "edit") {
+        return (
+          <div data-rail-wrap="" className="relative min-w-0">
+            {grid}
+            <button type="button" data-rail-step="-1" aria-label={sectionText("carouselPrevious", ctx.locale)} className={cn(RAIL_ARROW, "-start-5")}>
+              {/* Back points to the start side: right in Arabic, left in English. */}
+              <ArrowLeft className="size-4 rtl:-scale-x-100" aria-hidden />
+            </button>
+            <button type="button" data-rail-step="1" aria-label={sectionText("carouselNext", ctx.locale)} className={cn(RAIL_ARROW, "-end-5")}>
+              <ArrowLeft className="size-4 ltr:-scale-x-100" aria-hidden />
+            </button>
+          </div>
+        );
+      }
       return isPaginated(node) ? (
         <>
           {grid}
@@ -928,6 +956,7 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
       ) : null;
     }
     // Product page parts: the page's product (`product-elements.tsx`).
+    case "productBreadcrumbs":
     case "productGallery":
     case "productPrice":
     case "productStock":

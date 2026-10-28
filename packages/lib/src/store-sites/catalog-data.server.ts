@@ -9,6 +9,9 @@
  * scopes by it; store-scoped reads also check that the store is the seller's.
  */
 import { and, coupons, db, desc, eq, gte, inArray, orderItems, orders, productTranslations, products, reviews, sellerProductBrands, sql, storeProducts, stores, users } from "@workspace/db";
+import { isNotNull } from "drizzle-orm";
+import { isCouponPopupTrigger, type StoreCouponOfferCandidate } from "../orders/coupon-popup.lib";
+import { getCouponChannels, getCouponProductIds } from "../orders/coupon-scope.lib";
 import { BEST_SELLER_DAYS, SOLD_ORDER_STATUSES, UNSOLD_ITEM_STATUSES, couponDiscountType, isCouponLive, type CouponDiscountType, ratingStats, reviewAuthorName, type RatingStats } from "./catalog-data.lib";
 
 /** Units sold per product in this store's orders over the last `days` days. */
@@ -163,4 +166,59 @@ export async function sellerCoupons(sellerId: string, ids?: readonly string[]): 
     endsAt: c.expiresAt,
     live: isCouponLive(c),
   }));
+}
+
+/**
+ * The seller's coupons set to show as a store pop-up (0114) that have not
+ * ended or been switched off, newest change first. Which one is live is
+ * decided per request (`pickStoreCouponOffer`): these rows may be cached.
+ */
+export async function sellerPopupCoupons(sellerId: string): Promise<StoreCouponOfferCandidate[]> {
+  const rows = await db
+    .select({
+      id: coupons.id,
+      code: coupons.code,
+      discountType: coupons.discountType,
+      discountValue: coupons.discountValue,
+      popupTrigger: coupons.popupTrigger,
+      popupDurationMinutes: coupons.popupDurationMinutes,
+      applicableTo: coupons.applicableTo,
+      isActive: coupons.isActive,
+      startsAt: coupons.startsAt,
+      expiresAt: coupons.expiresAt,
+      usageLimit: coupons.usageLimit,
+      usageCount: coupons.usageCount,
+    })
+    .from(coupons)
+    .where(
+      and(
+        eq(coupons.sellerId, sellerId),
+        eq(coupons.isActive, true),
+        isNotNull(coupons.popupTrigger),
+        gte(coupons.expiresAt, new Date().toISOString()),
+      ),
+    )
+    .orderBy(desc(coupons.updatedAt))
+    .limit(10);
+  return rows.flatMap((c) => {
+    if (!isCouponPopupTrigger(c.popupTrigger) || !c.popupDurationMinutes) return [];
+    if (!getCouponChannels(c.applicableTo).includes("storefront")) return [];
+    // Seller coupons are a percentage or a fixed amount; anything else has no pop-up wording.
+    if (c.discountType !== "percentage" && c.discountType !== "fixed_amount") return [];
+    return [
+      {
+        couponId: c.id,
+        code: c.code,
+        discountType: c.discountType,
+        discountValue: Number(c.discountValue) || 0,
+        trigger: c.popupTrigger,
+        durationMinutes: c.popupDurationMinutes,
+        endsAt: c.expiresAt,
+        productIds: getCouponProductIds(c.applicableTo),
+        startsAt: c.startsAt,
+        usageLimit: c.usageLimit,
+        usageCount: c.usageCount,
+      },
+    ];
+  });
 }

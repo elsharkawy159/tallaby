@@ -68,6 +68,9 @@ const idsOf = (value: unknown) =>
         .slice(0, MAX_LIST_LIMIT)
     : [];
 
+/** A list's "Nth category of the store" (1–8), or null. */
+const categoryIndexOf = (value: unknown) => (typeof value === "number" && Number.isInteger(value) && value >= 1 && value <= 8 ? value : null);
+
 /** Records a list skips first (a "lead and list" design shows the first record once). */
 const offsetOf = (value: unknown) => (typeof value === "number" && Number.isFinite(value) ? Math.min(10, Math.max(0, Math.round(value))) : 0);
 
@@ -88,7 +91,9 @@ export function nodeCatalogQuery(node: ComponentNode, opts?: { product?: Product
     const extra = paginate ? { paginate: true } : {};
     if (source === "category") {
       const categoryId = idOf(props.categoryId);
-      return categoryId ? { kind: "products", source, categoryId, sort, limit, ...extra } : null;
+      if (categoryId) return { kind: "products", source, categoryId, sort, limit, ...extra };
+      const categoryIndex = categoryIndexOf(props.categoryIndex);
+      return categoryIndex ? { kind: "products", source, categoryIndex, sort, limit, ...extra } : null;
     }
     if (source === "selected") {
       const productIds = idsOf(props.productIds);

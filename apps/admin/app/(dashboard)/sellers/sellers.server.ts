@@ -237,6 +237,7 @@ export async function getSellers(query: SellersQuery = {}) {
         feeTrialEndsAt: sellers.feeTrialEndsAt,
         heardAboutUs: sellers.heardAboutUs,
         heardAboutUsOther: sellers.heardAboutUsOther,
+        adminContactedAt: sellers.adminContactedAt,
         ownerName: users.fullName,
         ownerEmail: users.email,
         ownerPhone: users.phone,
@@ -493,6 +494,34 @@ export async function getSellerById(sellerId: string) {
   } catch (error) {
     console.error("Error fetching seller:", error);
     return { success: false, error: "Failed to fetch seller" };
+  }
+}
+
+/**
+ * Record that an admin opened WhatsApp for this seller (0113). Every click
+ * moves the time forward, so the row shows the latest contact.
+ */
+export async function markSellerContacted(sellerId: string) {
+  try {
+    const admin = await getCurrentAdminUser();
+
+    const [updated] = await db
+      .update(sellers)
+      .set({
+        adminContactedAt: sql`now()`,
+        // The auth id may not have a public.users row; keep the FK valid.
+        adminContactedBy: sql`(select ${users.id} from ${users} where ${users.id} = ${admin.id})`,
+      })
+      .where(eq(sellers.id, sellerId))
+      .returning({ adminContactedAt: sellers.adminContactedAt });
+
+    if (!updated) return { success: false, error: "Seller not found" };
+
+    revalidatePath("/sellers");
+    return { success: true, adminContactedAt: updated.adminContactedAt };
+  } catch (error) {
+    console.error("Error marking seller contacted:", error);
+    return { success: false, error: "Failed to record the contact" };
   }
 }
 

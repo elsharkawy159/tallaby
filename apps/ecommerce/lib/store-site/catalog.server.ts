@@ -188,7 +188,12 @@ export async function resolveStoreCatalog(
       }
       let categoryIds: string[] | undefined;
       if (query.source === "category") {
-        const category = storeCategories.find((c) => c.key === query.categoryId || c.categoryIds.includes(query.categoryId ?? ""));
+        // By id, or by position: the store's Nth category in the order its category lists show (a template row).
+        const category = query.categoryId
+          ? storeCategories.find((c) => c.key === query.categoryId || c.categoryIds.includes(query.categoryId ?? ""))
+          : query.categoryIndex
+            ? storeCategories[query.categoryIndex - 1]
+            : undefined;
         if (!category) {
           products[instanceId] = [];
           return;

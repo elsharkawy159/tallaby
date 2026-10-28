@@ -1009,6 +1009,13 @@
       "fill": "Fill the form",
       "running": "Analyzing…",
       "thinking": "Reading your photos and writing the listing…",
+      "thinkingEdit": "Applying your change to the product…",
+      "help": "How it works",
+      "editTitle": "Edit your product with AI",
+      "editDescription": "Write the change you want, like “make the description longer” or “change the price to 350”, and AI updates the product in Arabic and English. You can also add new photos or screenshots of customer reviews. Review the change before you save.",
+      "editPlaceholder": "Write your change… e.g. write a longer detailed description, or change the price to 350",
+      "apply": "Apply change",
+      "nothingChanged": "No change needed: the product already matches your request.",
       "filledToast": "AI filled {count, plural, one {# field} other {# fields}}. Review them before publishing.",
       "nothingFilled": "Nothing new to fill: your fields are already filled.",
       "reviewTitle": "AI filled {count, plural, one {# field} other {# fields}}",
@@ -1033,6 +1040,8 @@
         "badFile": "Only JPG, PNG or WebP photos and PDF files are supported.",
         "rateLimited": "Too many requests. Wait a minute and try again.",
         "dailyLimit": "You've used today's AI fills. Try again tomorrow.",
+        "busy": "The AI service is very busy right now. Wait a moment and try again.",
+        "timeout": "The AI took too long to answer. Try again, or use fewer photos.",
         "failed": "AI couldn't read this product. Try again or add more details.",
         "pdfTooLarge": "The PDF must be 4 MB or smaller.",
         "tooManyImages": "You can add up to {max} photos.",
@@ -2378,7 +2387,26 @@
       "previewName": "Your coupon",
       "scope": "Only your products in the cart get this discount. Other sellers' items stay full price.",
       "worksOn": "Works on {places}",
-      "validUntil": "Until {date}"
+      "validUntil": "Until {date}",
+      "popup": "Show as a pop-up on your store",
+      "popupHint": "Visitors see a \"special offer for you\" pop-up with this code. Each visitor sees it once.",
+      "popupTriggers": {
+        "off": "Don't show",
+        "offHint": "Customers only get the code from you.",
+        "enter": "When they enter",
+        "enterHint": "A few seconds after the visitor arrives.",
+        "exit": "When they're leaving",
+        "exitHint": "When the visitor moves to leave the page.",
+        "random": "At a random time",
+        "randomHint": "At a random moment while they browse."
+      },
+      "popupDuration": "Time to use the discount",
+      "popupDurationHint": "Counted from when the pop-up appears. Product pages show a countdown. It never runs past the end date.",
+      "popupUnits": {
+        "minutes": "Minutes",
+        "hours": "Hours",
+        "days": "Days"
+      }
     },
     "errors": {
       "invalid_input": "Check the highlighted fields and try again.",
@@ -2394,7 +2422,8 @@
       "percentMax": "Enter a percent between 1 and 90.",
       "products": "Pick at least one product.",
       "channels": "Pick at least one place.",
-      "dates": "Pick a start and an end date."
+      "dates": "Pick a start and an end date.",
+      "popupDuration": "Enter a whole number, up to 30 days."
     },
     "deleteDialog": {
       "title": "Delete {code}?",
@@ -3905,7 +3934,13 @@
     "restoreTitle": "Restore version {number}?",
     "restoreBody": "Your current drafts are replaced with this version. What shoppers see doesn't change until you publish.",
     "restoredToast": "Version restored to your drafts. Publish to make it live.",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "heading": "Your website",
+    "visibility": "Website visibility",
+    "readyTitle": "Your website is ready to go live",
+    "needsTemplateTitle": "Choose a template to start",
+    "showAll": "Show all versions ({count})",
+    "showLess": "Show less"
   },
   "websitePages": {
     "title": "Pages",

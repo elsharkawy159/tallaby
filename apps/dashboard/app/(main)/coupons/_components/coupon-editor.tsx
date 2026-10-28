@@ -33,6 +33,7 @@ import {
   emptyCouponForm,
   toDateInput,
   generateCode,
+  POPUP_UNITS,
   normalizeCode,
   validateCouponForm,
   type CouponFormErrors,
@@ -45,11 +46,12 @@ type Props = {
   /** The coupon being edited; null opens a blank form. */
   coupon: SellerCouponRow | null;
   products: CouponProductOption[];
+  /** Unused while "Where it works" is hidden (owner, 2026-10-28). */
   storeHost: string | null;
   onSaved: () => void;
 };
 
-export function CouponEditor({ open, onOpenChange, coupon, products, storeHost, onSaved }: Props) {
+export function CouponEditor({ open, onOpenChange, coupon, products, onSaved }: Props) {
   const t = useTranslations("coupons.form");
   const tErrors = useTranslations("coupons.errors");
   const tRow = useTranslations("coupons.row");
@@ -291,21 +293,6 @@ export function CouponEditor({ open, onOpenChange, coupon, products, storeHost, 
               {fieldError("productIds")}
             </fieldset>
 
-            {/* Where it works */}
-            <fieldset className="space-y-3">
-              <legend className="mb-3 text-sm font-semibold">{t("channels")}</legend>
-              {/* Seller coupons work on the seller's own store only (owner, 2026-10-21). */}
-              <div className="rounded-lg border border-primary bg-primary/5 p-3">
-                <span className="block text-sm font-medium">{t("storefront")}</span>
-                <span
-                  dir={storeHost ? "ltr" : undefined}
-                  className="block truncate text-xs text-muted-foreground"
-                >
-                  {storeHost ?? t("storefrontNoHost")}
-                </span>
-              </div>
-            </fieldset>
-
             {/* Conditions */}
             <fieldset className="space-y-3">
               <legend className="mb-3 text-sm font-semibold">{t("limits")}</legend>
@@ -365,6 +352,76 @@ export function CouponEditor({ open, onOpenChange, coupon, products, storeHost, 
                 </div>
               </div>
               {fieldError("dates")}
+            </fieldset>
+
+            {/* Store pop-up (0114) */}
+            <fieldset className="space-y-3">
+              <legend className="mb-1 text-sm font-semibold">{t("popup")}</legend>
+              <p className="text-xs text-muted-foreground">{t("popupHint")}</p>
+              <RadioGroup
+                value={form.popupTrigger}
+                onValueChange={(v) => set("popupTrigger", v as CouponFormState["popupTrigger"])}
+                className="grid gap-2 sm:grid-cols-2"
+              >
+                {(["off", "enter", "exit", "random"] as const).map((trigger) => (
+                  <ChoiceCard
+                    key={trigger}
+                    id={`${ids}-popup-${trigger}`}
+                    title={t(`popupTriggers.${trigger}`)}
+                    hint={t(`popupTriggers.${trigger}Hint`)}
+                    checked={form.popupTrigger === trigger}
+                    control={<RadioGroupItem id={`${ids}-popup-${trigger}`} value={trigger} />}
+                  />
+                ))}
+              </RadioGroup>
+              {form.popupTrigger !== "off" && (
+                <div className="space-y-2">
+                  <Label htmlFor={`${ids}-popup-duration`}>{t("popupDuration")}</Label>
+                  <div className="flex flex-wrap gap-2">
+                    <Input
+                      id={`${ids}-popup-duration`}
+                      type="number"
+                      inputMode="numeric"
+                      min={1}
+                      step={1}
+                      dir="ltr"
+                      value={form.popupDuration}
+                      onChange={(e) => set("popupDuration", e.target.value)}
+                      aria-invalid={!!errors.popupDuration}
+                      aria-describedby={describedBy("popupDuration", true)}
+                      className="w-28"
+                    />
+                    <div
+                      role="radiogroup"
+                      aria-label={t("popupDuration")}
+                      className="inline-flex rounded-lg border bg-muted p-1"
+                    >
+                      {POPUP_UNITS.map((unit) => (
+                        <button
+                          key={unit}
+                          type="button"
+                          role="radio"
+                          aria-checked={form.popupUnit === unit}
+                          onClick={() => set("popupUnit", unit)}
+                          className={cn(
+                            "rounded-md px-3 py-1 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                            form.popupUnit === unit
+                              ? "bg-background text-foreground shadow-sm"
+                              : "text-muted-foreground hover:text-foreground"
+                          )}
+                        >
+                          {t(`popupUnits.${unit}`)}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  {fieldError("popupDuration") ?? (
+                    <p id={`${ids}-popupDuration-hint`} className="text-xs text-muted-foreground">
+                      {t("popupDurationHint")}
+                    </p>
+                  )}
+                </div>
+              )}
             </fieldset>
           </div>
 

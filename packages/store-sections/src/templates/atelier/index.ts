@@ -56,7 +56,7 @@ export function atelierConfig(): SiteConfig {
         accent: "#b8925a",
       },
       typography: { headingFont: "Amiri", bodyFont: "Noto Kufi Arabic" },
-      spacing: { borderRadius: 0, containerMaxWidth: 1280 },
+      spacing: { borderRadius: 0, containerMaxWidth: 1440 },
     },
     header: section(atelierHeader),
     footer: section(atelierFooter),

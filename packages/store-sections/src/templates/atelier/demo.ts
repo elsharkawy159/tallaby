@@ -12,6 +12,7 @@ const CATEGORIES = [
   { id: "demo-tailoring", name: { ar: "القمصان والتفصيل", en: "Shirts & tailoring" }, image: pexels(6461477, 900) },
   { id: "demo-knitwear", name: { ar: "التريكو", en: "Knitwear" }, image: pexels(14641440, 900) },
   { id: "demo-bags", name: { ar: "الشنط والإكسسوار", en: "Bags & accessories" }, image: pexels(9327162, 900) },
+  { id: "demo-sets", name: { ar: "الأطقم", en: "Sets" }, image: pexels(30569743, 900) },
 ];
 
 type DemoProduct = TemplateDemo["products"][number];
@@ -53,7 +54,7 @@ const PRODUCTS: DemoProduct[] = [
   product("ivory-cotton-overshirt", "demo-outerwear", "قميص قطن عاجي واسع", "Ivory Cotton Overshirt", 4641825, 2650, { sold90: 15 }),
   product("speckled-merino-sweater", "demo-knitwear", "بلوفر ميرينو منقّط", "Speckled Merino Sweater", 5710046, 2100, { rating: 4.6, sold90: 12 }),
   product("mini-leather-duffle", "demo-bags", "شنطة جلد صغيرة", "Mini Leather Duffle", 22434759, 2900, { compareAtPrice: 3400, sold90: 9 }),
-  product("earth-tone-knit-set", "demo-knitwear", "طقم تريكو بألوان الأرض", "Earth-Tone Knit Set", 30569743, 2250, { rating: 4.6, sold90: 52 }),
+  product("earth-tone-knit-set", "demo-sets", "طقم تريكو بألوان الأرض", "Earth-Tone Knit Set", 30569743, 2250, { rating: 4.6, sold90: 52 }),
   product("monochrome-silk-scarf", "demo-bags", "إيشارب حرير أبيض وأسود", "Monochrome Silk Scarf", 25524049, 950, { inStock: false, sold90: 7 }),
 ];
 

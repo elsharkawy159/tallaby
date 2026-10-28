@@ -167,6 +167,7 @@ const DEMO = demoStore({
     ["earrings", "حلقان", "Earrings", PHOTOS.hoopsTray],
     ["bracelets", "غوايش", "Bracelets", PHOTOS.bangles],
     ["sets", "أطقم", "Sets", PHOTOS.redBoxSet],
+    ["chains", "سلاسل", "Chains", PHOTOS.chainsRack],
   ],
   products: [
     ["wedding-bands-21k", "rings", "دبل دهب ٢١", "21K Wedding Bands", PHOTOS.bands, 13200, { isFeatured: true, rating: 4.8, sold90: 160 }],
@@ -176,7 +177,7 @@ const DEMO = demoStore({
     ["circle-set-18k", "sets", "طقم دواير ١٨", "18K Circle Set", PHOTOS.redBoxSet, 23200, { compareAtPrice: 27200, isFeatured: true, sold90: 31 }],
     ["solitaire-ring-18k", "rings", "خاتم سوليتير ١٨", "18K Solitaire Ring", PHOTOS.solitaire, 9600, { compareAtPrice: 11200, sold90: 52 }],
     ["slim-bands-21k", "rings", "دبل رفيعة ٢١", "21K Slim Bands", PHOTOS.marbleBands, 7600, { sold90: 44 }],
-    ["chain-21k", "sets", "سلسلة دهب ٢١", "21K Gold Chain", PHOTOS.chainsRack, 12800, { rating: 4.9, sold90: 70 }],
+    ["chain-21k", "chains", "سلسلة دهب ٢١", "21K Gold Chain", PHOTOS.chainsRack, 12800, { rating: 4.9, sold90: 70 }],
     ["bridal-ring-trio", "rings", "شبكة ٣ قطع", "Bridal Ring Trio", PHOTOS.bridalTrio, 14500, { inStock: false, sold90: 22 }],
   ],
 });
@@ -185,7 +186,7 @@ export const MAHR = libraryTemplate({
   key: MAHR_KEY,
   version: 3,
   changelog: "Mahr v3: hero first, categories, section order",
-  productPage: { surface: "flat", thumbs: "side", band: "shelf", extras: ["product-perks"], copy: { back: L("رجوع للدهب", "Back to the gold"), reviews: L("رأي اللي اشتروا", "From those who bought"), related: L("قطع تتشرى معاه", "Pieces often bought with it") } },
+  productPage: { surface: "flat", thumbs: "side", band: "shelf", extras: ["product-perks"], copy: { reviews: L("رأي اللي اشتروا", "From those who bought"), related: L("قطع تتشرى معاه", "Pieces often bought with it") } },
   name: L("مهر", "Mahr"),
   description: L(
     "دهب بالجرام: الأكتر شراءً، سعر النهارده، التقسيط، المحلات والأسئلة. أربع صفحات جاهزة.",

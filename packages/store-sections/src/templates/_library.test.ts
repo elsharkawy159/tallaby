@@ -78,7 +78,7 @@ describe("fromLibrary", () => {
     expect(gallery.style).toMatchObject({ order: 2, colSpan: 7, position: "sticky" });
     expect(gallery.breakpointStyles?.tablet).toMatchObject({ order: 0, colSpan: 1 });
     const column = nodes.find((n) => n.props.label === "عمود الشراء")!;
-    expect(column.style).toMatchObject({ radius: 8, background: "secondary", gap: 14 });
+    expect(column.style).toMatchObject({ radius: 8, background: "secondary", gap: 20 });
     expect(column.breakpointStyles?.mobile).toMatchObject({ gap: 8 });
     expect(() => build(fromLibrary("tpl", main, { nodes: { "غير موجود": { style: { order: 1 } } } }))).toThrow(/node "غير موجود"/);
   });

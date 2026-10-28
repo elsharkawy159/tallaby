@@ -220,5 +220,5 @@ export const PLAYROOM = libraryTemplate({
     },
   ],
   demo: DEMO,
-  productPage: { surface: "card", thumbs: "bottom", band: "brand", extras: ["product-shipping"], copy: { back: L("رجوع لغرفة اللعب", "Back to the playroom"), reviews: L("آراء الأهالي", "Parents say"), related: L("ألعاب تحبها كمان", "More toys to love") } },
+  productPage: { surface: "card", thumbs: "bottom", band: "brand", extras: ["product-shipping"], copy: { reviews: L("آراء الأهالي", "Parents say"), related: L("ألعاب تحبها كمان", "More toys to love") } },
 });

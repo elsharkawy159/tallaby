@@ -181,6 +181,11 @@ export function createTreeBuilder(industry?: string, photos?: DesignPhotos, opts
     /** The wishlist heart of the product a list card shows. */
     wishlistButton: (opts?: NodeOptions) => make("wishlistButton", {}, opts),
     // Product page parts (template product page spec §5.3): they show the page's product.
+    /** Home › the product's category › the product; `homeLabel` defaults to the package's copy. */
+    productBreadcrumbs: (opts?: NodeOptions & { showCategory?: boolean; homeLabel?: DesignText }) => {
+      const { showCategory = true, homeLabel, ...rest } = opts ?? {};
+      return make("productBreadcrumbs", { showCategory, homeLabel }, rest);
+    },
     productGallery: (opts?: NodeOptions & { thumbs?: "side" | "bottom" | "none"; zoom?: boolean }) => {
       const { thumbs = "side", zoom = true, ...rest } = opts ?? {};
       return make("productGallery", { thumbs, zoom }, rest);
@@ -190,21 +195,24 @@ export function createTreeBuilder(industry?: string, photos?: DesignPhotos, opts
       return make("productPrice", { showDiscount, showCountdown }, rest);
     },
     productStock: (opts?: NodeOptions) => make("productStock", {}, opts),
-    productRating: (opts?: NodeOptions & { showCount?: boolean }) => {
-      const { showCount = true, ...rest } = opts ?? {};
-      return make("productRating", { showCount }, rest);
+    /** The meta row: the category badge (on unless `showCategory` is false) and the stars. */
+    productRating: (opts?: NodeOptions & { showCount?: boolean; showCategory?: boolean }) => {
+      const { showCount = true, showCategory, ...rest } = opts ?? {};
+      return make("productRating", { showCount, showCategory }, rest);
     },
     productVariants: (opts?: NodeOptions) => make("productVariants", {}, opts),
     /** Quantity, add to cart and (optionally) buy now; the labels default to the package's copy. */
     productBuyBox: (
-      opts?: NodeOptions & { buyNow?: boolean; stickyMobile?: boolean; variant?: "solid" | "outline"; addLabel?: DesignText; buyLabel?: DesignText },
+      opts?: NodeOptions & { buyNow?: boolean; stickyMobile?: boolean; variant?: "solid" | "outline"; addLabel?: DesignText; buyLabel?: DesignText; perks?: boolean },
     ) => {
-      const { buyNow = true, stickyMobile = true, variant = "solid", addLabel, buyLabel, ...rest } = opts ?? {};
-      return make("productBuyBox", { buyNow, stickyMobile, variant, addLabel, buyLabel }, rest);
+      // `perks` (the box under the buttons) is on unless false, so it is only written when set.
+      const { buyNow = true, stickyMobile = true, variant = "solid", addLabel, buyLabel, perks, ...rest } = opts ?? {};
+      return make("productBuyBox", { buyNow, stickyMobile, variant, addLabel, buyLabel, perks }, rest);
     },
-    productDetails: (opts?: NodeOptions & { showDescription?: boolean; showBullets?: boolean }) => {
-      const { showDescription = true, showBullets = true, ...rest } = opts ?? {};
-      return make("productDetails", { showDescription, showBullets }, rest);
+    /** Description, highlights and delivery & returns (on unless `showDelivery` is false; its text defaults to the package's note). */
+    productDetails: (opts?: NodeOptions & { showDescription?: boolean; showBullets?: boolean; showDelivery?: boolean; deliveryText?: DesignText }) => {
+      const { showDescription = true, showBullets = true, showDelivery, deliveryText, ...rest } = opts ?? {};
+      return make("productDetails", { showDescription, showBullets, showDelivery, deliveryText }, rest);
     },
     productContent: (opts?: NodeOptions) => make("productContent", {}, opts),
     productSeller: (opts?: NodeOptions) => make("productSeller", {}, opts),
@@ -229,6 +237,13 @@ export function createTreeBuilder(industry?: string, photos?: DesignPhotos, opts
      */
     video: (poster: number, title: DesignText, opts?: NodeOptions) =>
       make("video", { url: "", thumbnail: "auto", controls: true, poster: stock(poster), title }, withDefaults("video", opts)),
+    /**
+     * A background video: a video file (link set by the seller or a template)
+     * filling its frame, muted on a loop. `poster` is the default photo
+     * `index`, shown first and in place of the video until a link is set.
+     */
+    backgroundVideo: (poster: number, title: DesignText, opts?: NodeOptions) =>
+      make("video", { url: "", background: true, poster: stock(poster), title }, opts),
     /**
      * A playlist: a player beside (or above) its list. Each video gets its
      * link from the seller; `poster` is a default photo used as its thumbnail.

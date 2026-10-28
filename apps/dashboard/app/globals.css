@@ -83,9 +83,10 @@
 }
 
 /*
- * Home setup checklist: the "Publish now" button, once it can be pressed,
- * sends out a soft accent ring and a light sheen every few seconds so a new
- * seller spots it. Stops on hover and focus; off with reduced motion.
+ * Publish buttons (home setup checklist "Publish now", Website › Overview
+ * "Publish changes" and the go-live switch), once they can be pressed, send
+ * out a soft accent ring and a light sheen every few seconds so a seller
+ * spots them. Stops on hover and focus; off with reduced motion.
  */
 @keyframes publish-ring {
   0% {

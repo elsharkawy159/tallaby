@@ -158,16 +158,18 @@ const DEMO = demoStore({
     ["turkish", "بن تركي", "Turkish coffee", PHOTOS.cezve],
     ["green", "بن أخضر", "Green beans", PHOTOS.greenHalves],
     ["pantry", "بهارات وأدوات", "Spices & tools", PHOTOS.spices],
+    ["espresso", "إسبريسو", "Espresso", PHOTOS.beansDark],
+    ["boxes", "بوكسات", "Boxes", PHOTOS.roasterTop],
   ],
   products: [
     ["ethiopia-sidamo", "beans", "إثيوبيا سيدامو ٢٥٠ جرام", "Ethiopia Sidamo, 250 g", PHOTOS.beansClose, 420, { isFeatured: true, rating: 4.9, sold90: 410 }],
     ["house-turkish-blend", "turkish", "خلطة البيت التركي ٥٠٠ جرام", "House Turkish Blend, 500 g", PHOTOS.cezve, 360, { rating: 4.8, sold90: 620 }],
     ["brazil-santos", "beans", "برازيل سانتوس كيلو", "Brazil Santos, 1 kg", PHOTOS.scoop, 980, { sold90: 88 }],
-    ["espresso-roast", "beans", "تحميص إسبريسو ٢٥٠ جرام", "Espresso Roast, 250 g", PHOTOS.beansDark, 390, { sold90: 120 }],
+    ["espresso-roast", "espresso", "تحميص إسبريسو ٢٥٠ جرام", "Espresso Roast, 250 g", PHOTOS.beansDark, 390, { sold90: 120 }],
     ["green-arabica", "green", "أرابيكا أخضر كيلو", "Green Arabica, 1 kg", PHOTOS.greenBeans, 650, { sold90: 24 }],
     ["copper-cezve", "pantry", "كنكة نحاس", "Copper Cezve", PHOTOS.sandCezve, 450, { isFeatured: true, sold90: 61 }],
     ["spice-jar-set", "pantry", "طقم برطمانات بهارات", "Spice Jar Set", PHOTOS.spices, 220, { compareAtPrice: 260, sold90: 61 }],
-    ["roasters-box", "beans", "بوكس المحمصة", "The Roaster’s Box", PHOTOS.roasterTop, 890, { compareAtPrice: 1020, inStock: false, sold90: 73 }],
+    ["roasters-box", "boxes", "بوكس المحمصة", "The Roaster’s Box", PHOTOS.roasterTop, 890, { compareAtPrice: 1020, inStock: false, sold90: 73 }],
   ],
 });
 
@@ -224,5 +226,5 @@ export const ROAST = libraryTemplate({
     },
   ],
   demo: DEMO,
-  productPage: { surface: "card", thumbs: "side", band: "paper", extras: ["product-perks"], copy: { back: L("رجوع للمحمصة", "Back to the roastery"), reviews: L("رأي شاربي القهوة", "What coffee drinkers say"), related: L("محاصيل تانية للتجربة", "More roasts to try") } },
+  productPage: { surface: "card", thumbs: "side", band: "paper", extras: ["product-perks"], copy: { reviews: L("رأي شاربي القهوة", "What coffee drinkers say"), related: L("محاصيل تانية للتجربة", "More roasts to try") } },
 });

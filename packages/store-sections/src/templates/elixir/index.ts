@@ -167,6 +167,7 @@ const DEMO = demoStore({
     ["care", "الوش والجسم", "Face & body", PHOTOS.cream],
     ["colour", "ألوان الشفايف", "Lip colour", PHOTOS.satinLip],
     ["gifts", "بوكسات هدايا", "Gift boxes", PHOTOS.tray],
+    ["mists", "ميست للجسم", "Body mists", PHOTOS.rosesBottle],
   ],
   products: [
     ["oud-noir", "fragrance", "أو دو بارفان عود نوار", "Oud Noir Eau de Parfum", PHOTOS.amberSquare, 3200, { isFeatured: true, rating: 4.9, sold90: 188 }],
@@ -179,6 +180,7 @@ const DEMO = demoStore({
     ["velvet-face-cream", "care", "كريم وش فيلفت", "Velvet Face Cream", PHOTOS.cream, 1350, { sold90: 52 }],
     ["satin-lip-rosewood", "colour", "روج ساتان روزوود", "Satin Lip, Rosewood", PHOTOS.satinLip, 650, { sold90: 73 }],
     ["discovery-box", "gifts", "بوكس الاكتشاف", "The Discovery Box", PHOTOS.tray, 1800, { compareAtPrice: 2100, rating: 4.9, sold90: 61 }],
+    ["rose-body-mist", "mists", "ميست ورد للجسم", "Rose Body Mist", PHOTOS.rosesBottle, 950, { sold90: 44 }],
   ],
 });
 
@@ -235,5 +237,5 @@ export const ELIXIR = libraryTemplate({
     },
   ],
   demo: DEMO,
-  productPage: { gallery: "end", thumbs: "side", surface: "flat", button: "outline", band: "shelf", copy: { back: L("العودة إلى الدار", "Back to the house"), reviews: L("ما قاله عملاؤنا", "What our clients say"), related: L("عطور من الدار", "From the house") } },
+  productPage: { gallery: "end", thumbs: "side", surface: "flat", button: "outline", band: "shelf", copy: { reviews: L("ما قاله عملاؤنا", "What our clients say"), related: L("عطور من الدار", "From the house") } },
 });

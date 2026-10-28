@@ -4,12 +4,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { useLocale } from "next-intl";
 import { HideBottomNavOnScroll } from "@/components/layout/hide-bottom-nav-on-scroll.client";
-import { ProductActions } from "@/components/product-page/ProductActions";
-import { ProductImages } from "@/components/product-page/ProductImages";
-import { PriceTicket } from "@/components/product-page/price-ticket";
-import { ProductStockBadge } from "@/components/product-page/product-stock-badge";
 import { ProductTabsWrapper } from "@/components/product-page/product-tabs-wrapper.client";
-import { VariantPicker } from "@/components/product-page/variant-picker";
 import { useProductPage } from "@/components/product-page/product-page-provider.client";
 import {
   LOW_STOCK_THRESHOLD,
@@ -17,17 +12,21 @@ import {
   pricingDiscountPercent,
   productHasFreeDelivery,
   productPricing,
-  stickyBuyBarClass,
 } from "@/components/product-page/product-page.lib";
 import type { ProductLocale } from "@/lib/product-translations";
 import { getVariantImageUrls } from "@/lib/variant-images";
+import { StoreBuyBox, StoreQuantity } from "./store-buy-box.client";
+import { StoreGallery } from "./store-product-gallery.client";
+import { StoreLiveViews, StorePriceBlock, StoreStockLine } from "./store-product-info.client";
+import { StoreVariantPicker } from "./store-variant-picker.client";
 
 /**
  * The interactive parts of a store product page (template product page spec
- * §5.3): today's product page components, each reading the page's selected
- * variant from `ProductPageProvider`, so price, stock, photos, picker and
- * buy box stay in sync wherever the seller placed them. Layout and spacing
- * come from the element's own box (the node's style).
+ * §5.3), each reading the page's selected variant from `ProductPageProvider`,
+ * so price, stock, photos, picker and buy box stay in sync wherever the
+ * seller placed them. They are drawn in the store's look (`--sf-*` tokens,
+ * the Product Section design); the marketplace page keeps its own
+ * components. Layout and spacing come from the element's own box.
  */
 
 /** The selected variant's price and stock, else the base product's. */
@@ -38,6 +37,7 @@ function useSelectedPricing() {
 
 export function StoreProductGallery({ thumbs, zoom }: { thumbs: "side" | "bottom" | "none"; zoom: boolean }) {
   const { product, variant } = useProductPage();
+  const pricing = useSelectedPricing();
   // As ProductHero: the selected variant's photos, else the product's.
   const images = useMemo(() => {
     const variantImages = getVariantImageUrls(variant);
@@ -53,14 +53,17 @@ export function StoreProductGallery({ thumbs, zoom }: { thumbs: "side" | "bottom
   );
 
   return (
-    <ProductImages
+    <StoreGallery
+      // A new photo set (another variant) starts again at its first photo.
+      key={images.join("|")}
+      productId={product.id}
       images={images}
       productName={product.title}
       description={product.description}
       bulletPoints={bulletPoints}
+      discountPercent={pricingDiscountPercent(product, variant, pricing)}
       thumbs={thumbs}
       zoom={zoom}
-      recede={false}
     />
   );
 }
@@ -73,11 +76,11 @@ export function StoreProductPrice({ showDiscount, showCountdown }: { showDiscoun
   const percent = showDiscount ? pricingDiscountPercent(product, variant, pricing) : null;
 
   return (
-    <PriceTicket
+    <StorePriceBlock
       price={pricing.price}
       listPrice={pricing.listPrice}
       discountPercent={percent}
-      discountExpiryDate={expiry}
+      discountEndsAt={expiry}
       hasFreeDelivery={productHasFreeDelivery(product)}
       locale={locale}
     />
@@ -88,13 +91,18 @@ export function StoreProductStock() {
   const { product } = useProductPage();
   const { stock } = useSelectedPricing();
   const hasStock = product.status === "active" && stock > 0;
-  return <ProductStockBadge hasStock={hasStock} isLowStock={hasStock && stock <= LOW_STOCK_THRESHOLD} stock={stock} />;
+  return <StoreStockLine hasStock={hasStock} isLowStock={hasStock && stock <= LOW_STOCK_THRESHOLD} stock={stock} />;
 }
 
 export function StoreProductVariants() {
   const { product, variantId, variant, selectVariant } = useProductPage();
   if (!product.productVariants?.length) return null;
-  return <VariantPicker product={product} selectedVariantId={variantId} selectedVariant={variant} onSelect={selectVariant} />;
+  return <StoreVariantPicker product={product} selectedVariantId={variantId} selectedVariant={variant} onSelect={selectVariant} />;
+}
+
+/** Live viewers (the renderer only asks for it when the seller ticked it). */
+export function StoreProductLiveViews({ productId }: { productId: string }) {
+  return <StoreLiveViews productId={productId} />;
 }
 
 export function StoreProductBuyBox({
@@ -111,38 +119,77 @@ export function StoreProductBuyBox({
   buyLabel?: string;
 }) {
   const { product, variantId, inCart, cartQuantity } = useProductPage();
-  const { price, listPrice, stock } = useSelectedPricing();
-  const actions = (
-    <ProductActions
-      product={{
-        ...product,
-        quantity: stock.toString(),
-        price: {
-          final: price,
-          list: listPrice ?? price,
-        } as any,
-      }}
+  const { stock } = useSelectedPricing();
+  // As ProductActions: starts at the cart's quantity (or 1). Shared by the in-page box and the phone dock.
+  const [quantity, setQuantity] = useState(cartQuantity || 1);
+  const hasStock = product.status === "active" && stock > 0;
+  const twoButtons = buyNow && product.directCheckout !== true && hasStock;
+
+  const box = (layout: "inline" | "dock", hideQuantity = false) => (
+    <StoreBuyBox
+      product={product}
+      stock={stock}
       selectedVariantId={variantId}
       isInCart={inCart}
-      cartItemQuantity={cartQuantity}
+      quantity={quantity}
+      onQuantityChange={setQuantity}
       addLabel={addLabel}
       buyLabel={buyLabel}
-      buttonVariant={buttonStyle === "outline" ? "outline" : "default"}
+      outline={buttonStyle === "outline"}
       showBuyNow={buyNow}
+      layout={layout}
+      hideQuantity={hideQuantity}
     />
   );
-  if (!stickyMobile) return actions;
+  if (!stickyMobile) return box("inline");
 
-  // Phones: docked at the bottom edge (a store host has no bottom nav to clear).
-  // Larger screens keep the buttons in place.
+  // Phones: the buttons are docked at the bottom edge (the site's bottom nav
+  // steps aside for them). With two buttons the dock has no room for the
+  // quantity, so it stays here in the page. Larger screens keep the box in place.
   return (
     <>
       <HideBottomNavOnScroll />
-      <div className="hidden md:block">{actions}</div>
+      <div className="hidden md:block">{box("inline")}</div>
+      {twoButtons && (
+        <div className="md:hidden">
+          <StoreQuantity value={quantity} max={stock} onChange={setQuantity} />
+        </div>
+      )}
       <SiteDock>
-        {/* data-sf-buy-bar: the site's phone bottom navigation steps aside for it (BottomNavRuntime). */}
-        <div data-sf-buy-bar="" className={`${stickyBuyBarClass(undefined, { bottomNav: false })} md:hidden`}>{actions}</div>
+        <DockBar>{box("dock", twoButtons)}</DockBar>
       </SiteDock>
+    </>
+  );
+}
+
+/**
+ * The phone buy bar: fixed on the bottom edge in the store's paper colour,
+ * padded for the safe area, with a spacer of its own height at the end of
+ * the site so it never covers the footer.
+ */
+function DockBar({ children }: { children: ReactNode }) {
+  const bar = useRef<HTMLDivElement>(null);
+  const [height, setHeight] = useState(0);
+  useEffect(() => {
+    const el = bar.current;
+    if (!el) return;
+    const measure = () => setHeight(el.offsetHeight);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+  return (
+    <>
+      <div aria-hidden className="shrink-0 md:hidden" style={{ height }} />
+      {/* data-sf-buy-bar: the site's phone bottom navigation and floating cart bar step aside for it. */}
+      <div
+        ref={bar}
+        data-sf-buy-bar=""
+        className="fixed inset-x-0 bottom-0 z-50 border-t border-(--sf-line) bg-(--sf-paper) px-3 pt-2.5 pb-[calc(0.625rem+env(safe-area-inset-bottom))] text-(--sf-ink) shadow-[0_-6px_20px_rgba(0,0,0,0.08)] md:hidden"
+      >
+        {children}
+      </div>
     </>
   );
 }

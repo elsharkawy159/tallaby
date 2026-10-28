@@ -1,5 +1,5 @@
 import { cacheProfiles, couponTags, createCachedQuery, productTags, reviewTags, storeTags } from "@workspace/cache";
-import { sellerBrandList, sellerCoupons, storeProductSales, storeReviewStats, storeReviews } from "@workspace/lib/store-sites/catalog-data";
+import { sellerBrandList, sellerCoupons, sellerPopupCoupons, storeProductSales, storeReviewStats, storeReviews } from "@workspace/lib/store-sites/catalog-data";
 import { BEST_SELLER_DAYS, TRENDING_DAYS } from "@workspace/lib/store-sites/catalog-data.lib";
 
 /**
@@ -48,4 +48,12 @@ export const getCachedSellerCoupons = createCachedQuery({
   ttl: cacheProfiles.listing,
   tags: (sellerId: string, _ids: string) => [couponTags.seller(sellerId)],
   query: (sellerId: string, ids: string) => sellerCoupons(sellerId, ids.split(",").filter(Boolean)),
+});
+
+/** The seller's store pop-up coupons (0114); `pickStoreCouponOffer` picks the live one per request. */
+export const getCachedSellerPopupCoupons = createCachedQuery({
+  name: "storefront:seller-popup-coupons:v1",
+  ttl: cacheProfiles.listing,
+  tags: (sellerId: string) => [couponTags.seller(sellerId)],
+  query: (sellerId: string) => sellerPopupCoupons(sellerId),
 });

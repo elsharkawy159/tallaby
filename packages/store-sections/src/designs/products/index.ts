@@ -12,10 +12,11 @@ import { productsTabbed } from "./products-tabbed";
 import { productsBoxed } from "./products-boxed";
 import { productsCampaign } from "./products-campaign";
 import { productsCarousel } from "./products-carousel";
+import { productsCategoryCarousel } from "./products-category-carousel";
 import { productsDeal } from "./products-deal";
 import { productsMinimal } from "./products-minimal";
 import { productsSpotlight } from "./products-spotlight";
 import { productsTabsGrid } from "./products-tabs-grid";
 
 /** First is the default for new stores (the Classic template's product grid). */
-export const PRODUCT_DESIGNS: readonly Design[] = [productsClassic, productsGrid, productsRail, productsFeature, productsShelf, productsList, productsTabbed, productsBento, productsRows, productsPanelRail, productsTabsGrid, productsCarousel, productsSpotlight, productsMinimal, productsBoxed, productsCampaign, productsDeal];
+export const PRODUCT_DESIGNS: readonly Design[] = [productsClassic, productsGrid, productsRail, productsFeature, productsShelf, productsList, productsTabbed, productsBento, productsRows, productsPanelRail, productsTabsGrid, productsCarousel, productsCategoryCarousel, productsSpotlight, productsMinimal, productsBoxed, productsCampaign, productsDeal];

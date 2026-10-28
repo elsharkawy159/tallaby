@@ -83,7 +83,7 @@ const home: Design[] = [
   lib("products-rail", {
     text: { "بيحبوها": L("وصل جديد", "New in"), "الأكثر مبيعًا": L("أدوات جديدة", "Fresh gear") },
     links: { "/products": NEW },
-    lists: [{ source: "newest", limit: 6 }],
+    lists: [{ source: "newest", limit: 8 }],
   }),
   lib("pay-days", {
     text: {
@@ -136,18 +136,23 @@ const DEMO = demoStore({
     ["camp", "تخييم", "Camp", PHOTOS.forestTent],
     ["cook", "طبخ ورحلة", "Cook & carry", PHOTOS.kettleStove],
     ["packs-light", "شنط وإضاءة", "Packs & light", PHOTOS.pack],
+    ["lanterns", "كشافات", "Lanterns", PHOTOS.ledLantern],
+    ["coffee", "قهوة الرحلة", "Trip coffee", PHOTOS.coffeeStove],
+    ["sleep", "نوم", "Sleep", PHOTOS.airPillow],
+    ["chairs", "كراسي", "Chairs", PHOTOS.chair],
+    ["coolers", "شنط تبريد", "Cooler bags", PHOTOS.beachBags],
   ],
   products: [
     ["two-person-dome-tent", "camp", "خيمة قبة لفردين", "Two-Person Dome Tent", PHOTOS.forestTent, 4200, { isFeatured: true, rating: 4.8, sold90: 96 }],
     ["trekking-pack-45l", "packs-light", "شنطة ٤٥ لتر", "45 L Trekking Pack", PHOTOS.pack, 2650, { rating: 4.7, sold90: 60 }],
-    ["gas-camp-lantern", "packs-light", "كشاف جاز للكامب", "Gas Camp Lantern", PHOTOS.gasLantern, 950, { sold90: 84 }],
-    ["rechargeable-led-lantern", "packs-light", "كشاف LED بيتشحن", "Rechargeable LED Lantern", PHOTOS.ledLantern, 1250, { compareAtPrice: 1450, isFeatured: true, sold90: 120 }],
+    ["gas-camp-lantern", "lanterns", "كشاف جاز للكامب", "Gas Camp Lantern", PHOTOS.gasLantern, 950, { sold90: 84 }],
+    ["rechargeable-led-lantern", "lanterns", "كشاف LED بيتشحن", "Rechargeable LED Lantern", PHOTOS.ledLantern, 1250, { compareAtPrice: 1450, isFeatured: true, sold90: 120 }],
     ["camp-stove-kettle", "cook", "بوتاجاز رحلات وكاتل", "Camp Stove and Kettle", PHOTOS.kettleStove, 1800, { rating: 4.6, sold90: 48 }],
-    ["trip-coffee-set", "cook", "طقم قهوة الرحلة", "Trip Coffee Set", PHOTOS.coffeeStove, 1100, { sold90: 66 }],
+    ["trip-coffee-set", "coffee", "طقم قهوة الرحلة", "Trip Coffee Set", PHOTOS.coffeeStove, 1100, { sold90: 66 }],
     ["camp-cook-set", "cook", "طقم حلل للكامب", "Camp Cook Set", PHOTOS.cookSet, 890, { sold90: 52 }],
-    ["air-pillow-pad", "camp", "مخدة نفخ ومرتبة", "Air Pillow and Sleeping Pad", PHOTOS.airPillow, 1350, { sold90: 40 }],
-    ["folding-camp-chair", "camp", "كرسي رحلات بيتطبق", "Folding Camp Chair", PHOTOS.chair, 780, { compareAtPrice: 900, sold90: 110 }],
-    ["beach-cooler-bag", "cook", "شنطة تبريد للبحر", "Beach Cooler Bag", PHOTOS.beachBags, 650, { inStock: false, sold90: 70 }],
+    ["air-pillow-pad", "sleep", "مخدة نفخ ومرتبة", "Air Pillow and Sleeping Pad", PHOTOS.airPillow, 1350, { sold90: 40 }],
+    ["folding-camp-chair", "chairs", "كرسي رحلات بيتطبق", "Folding Camp Chair", PHOTOS.chair, 780, { compareAtPrice: 900, sold90: 110 }],
+    ["beach-cooler-bag", "coolers", "شنطة تبريد للبحر", "Beach Cooler Bag", PHOTOS.beachBags, 650, { inStock: false, sold90: 70 }],
   ],
 });
 
@@ -155,7 +160,7 @@ export const SAFAR = libraryTemplate({
   key: SAFAR_KEY,
   version: 2,
   changelog: "Safar v2: product page",
-  productPage: { thumbs: "bottom", band: "shelf", extras: ["product-shipping"], copy: { back: L("رجوع للعدة", "Back to the gear"), reviews: L("رسائل من الطريق", "Messages from the road"), related: L("جهّز رحلتك", "Pack for your trip") } },
+  productPage: { thumbs: "bottom", band: "shelf", extras: ["product-shipping"], copy: { reviews: L("رسائل من الطريق", "Messages from the road"), related: L("جهّز رحلتك", "Pack for your trip") } },
   name: L("سفر", "Safar"),
   description: L(
     "أدوات رحلات وتخييم: بوستر الرحلة، أدوات جديدة، أيام التوصيل وآراء من الطريق. أربع صفحات جاهزة.",

@@ -105,7 +105,7 @@ const home: Design[] = [
       "كل اللي تحتاجه في مكان واحد، أصلي وبضمان.": L("الهدايا اللي الناس بترجع تطلبها لحبايبهم.", "The gifts people come back to order for the people they love."),
     },
     links: { "/products": BEST },
-    lists: [{ source: "best-sellers", limit: 5 }],
+    lists: [{ source: "best-sellers", limit: 6 }],
   }),
   lib("testimonials-spotlight", {
     text: {
@@ -142,6 +142,8 @@ const DEMO = demoStore({
     ["frames", "براويز", "Frames", PHOTOS.frameRoom],
     ["candles", "شموع", "Candles", PHOTOS.candleCorner],
     ["textiles", "منسوجات", "Textiles", PHOTOS.featherHanging],
+    ["cushions", "مخدات", "Cushions", PHOTOS.cushions],
+    ["trays", "صواني", "Trays", PHOTOS.woodTray],
   ],
   products: [
     ["donut-stoneware-vase", "vases", "فازة دونات ستون وير", "Stoneware Donut Vase", PHOTOS.donutVase, 450, { isFeatured: true, rating: 4.8, sold90: 140 }],
@@ -155,7 +157,8 @@ const DEMO = demoStore({
     ["amber-candle-jar", "candles", "شمعة في برطمان عنبري", "Amber Candle Jar", PHOTOS.candleJar, 260, { sold90: 95 }],
     ["macrame-wall-hanging", "textiles", "معلقة مكرمية", "Macrame Wall Hanging", PHOTOS.macrame, 420, { inStock: false, sold90: 21 }],
     ["waffle-throw", "textiles", "بطانية وافل", "Waffle Throw", PHOTOS.waffleThrow, 890, { compareAtPrice: 1050, sold90: 40 }],
-    ["cushion-set", "textiles", "طقم مخدات ألوان", "Cushion Set", PHOTOS.cushions, 650, { sold90: 22 }],
+    ["cushion-set", "cushions", "طقم مخدات ألوان", "Cushion Set", PHOTOS.cushions, 650, { sold90: 22 }],
+    ["wooden-serving-tray", "trays", "صينية خشب", "Wooden Serving Tray", PHOTOS.woodTray, 380, { sold90: 48 }],
   ],
 });
 
@@ -163,7 +166,7 @@ export const ROKN = libraryTemplate({
   key: ROKN_KEY,
   version: 3,
   changelog: "Rokn v3: categories, section order",
-  productPage: { thumbs: "bottom", gallery: "end", band: "shelf", extras: ["product-shipping"], copy: { back: L("رجوع للركن", "Back to the corner"), reviews: L("كلمات عملائنا", "Customers' words"), related: L("هدايا صغيرة معاه", "Small gifts to go with it") } },
+  productPage: { thumbs: "bottom", gallery: "end", band: "shelf", extras: ["product-shipping"], copy: { reviews: L("كلمات عملائنا", "Customers' words"), related: L("هدايا صغيرة معاه", "Small gifts to go with it") } },
   name: L("ركن", "Rokn"),
   description: L(
     "ديكور وهدايا: هدايا حسب الشخص، حسب الميزانية، الأكتر إهداءً وكارت هدية. أربع صفحات جاهزة.",

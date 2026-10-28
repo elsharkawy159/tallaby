@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { META_KEYWORDS_MAX } from "../meta-keywords.lib"
 
 /**
  * AI product autofill (PLAN.md AI-1): what the seller sends and what the model
@@ -16,6 +17,8 @@ export const AUTOFILL_LIMITS = {
   /** Under Vercel's 4.5 MB request body limit. */
   maxTotalBytes: 4.4 * 1024 * 1024,
   maxTextLength: 4000,
+  /** The current listing sent along when editing a product (JSON). */
+  maxCurrentLength: 12000,
 } as const
 
 export const AUTOFILL_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"] as const
@@ -27,6 +30,8 @@ export type AutofillInput = {
   text: string
   images: AutofillFile[]
   pdf: AutofillFile | null
+  /** Edit mode: the product as it is now (JSON), so the text is a change request. */
+  current?: string | null
 }
 
 /** Error codes returned by the route; the client maps them to `productForm.ai.errors.*`. */
@@ -38,6 +43,8 @@ export type AutofillErrorCode =
   | "badFile"
   | "rateLimited"
   | "dailyLimit"
+  | "busy"
+  | "timeout"
   | "failed"
 
 export const CONDITIONS = [
@@ -52,6 +59,11 @@ export const CONDITIONS = [
 
 export const VARIANT_KINDS = ["color", "size", "weight", "material", "style", "custom"] as const
 
+export const CONTENT_BLOCK_KINDS = ["heading", "paragraph", "list"] as const
+
+/** Most reviews one AI run may add (the form allows SELLER_REVIEWS_MAX). */
+export const AUTOFILL_MAX_REVIEWS = 20
+
 /** Field keys the model can report as missing; each has a `productForm.ai.missing.*` string. */
 export const MISSING_FIELDS = ["price", "stock", "category", "brand", "dimensions", "weight"] as const
 export type MissingField = (typeof MISSING_FIELDS)[number]
@@ -64,9 +76,35 @@ const localizedOutputSchema = z.object({
   bulletPoints: z.array(z.string()).max(6).describe("3 to 6 key features or benefits, one short line each."),
   metaTitle: z.string().describe("SEO title, at most 60 characters."),
   metaDescription: z.string().describe("SEO description, at most 160 characters."),
-  metaKeywords: z.array(z.string()).max(10).describe("5 to 10 search keywords shoppers would type."),
+  metaKeywords: z
+    .array(z.string())
+    .max(META_KEYWORDS_MAX)
+    .describe(
+      "At least 10 and up to 15 search keywords shoppers would type: the product type, its synonyms and common spellings, brand, material, color, size, use and occasion. Each 1 to 4 words, all different.",
+    ),
+  // No enum and no maxItems here: with them the whole schema is over Gemini's
+  // complexity limit ("Request contains an invalid argument"). cleanContentBlocks
+  // checks the kind and caps the counts instead.
+  contentBlocks: z
+    .array(
+      z.object({
+        kind: z.string().describe(`One of: ${CONTENT_BLOCK_KINDS.join(", ")}.`),
+        text: z.string().describe("The heading or paragraph text. For a list, an optional short lead-in, else empty."),
+        items: z.array(z.string()).describe("Bullet items for a list block, at most 8, one short line each. Empty for other kinds."),
+      }),
+    )
+    .describe(
+      "The detailed description on the product page, as blocks: a heading, a short intro paragraph, then 2 to 4 headed parts (what it is and why it is useful, specs and materials, how to use or care for it, what is in the box) using paragraphs and lists. Facts only from the input. Plain text, no markdown.",
+    ),
 })
 
+/**
+ * What the model returns. Gemini rejects a response schema over its complexity
+ * limit with a bare "Request contains an invalid argument", and this schema is
+ * right at that limit (checked live 2026-10-28): enums cost the most, so the
+ * fixed lists below are plain strings that cleanAutofillOutput checks. Test a
+ * real call after adding any field.
+ */
 export const productAutofillOutputSchema = z.object({
   localized: z.object({
     ar: localizedOutputSchema.describe("Arabic copy for Egyptian shoppers, clear and natural."),
@@ -81,22 +119,34 @@ export const productAutofillOutputSchema = z.object({
   price: z.object({
     list: z.number().nullable().describe("Regular price in EGP, only when the seller stated it. Else null."),
     final: z.number().nullable().describe("Sale price in EGP, only when the seller stated a lower sale price. Else null."),
+    discountPercent: z
+      .number()
+      .nullable()
+      .describe("Percent off (1 to 90) when the seller asked for a discount as a percentage and gave no sale price. Else null."),
+    discountEndsAt: z
+      .string()
+      .nullable()
+      .describe("Last day of the discount as YYYY-MM-DD, from an end date or duration the seller gave (count from TODAY). Else null."),
   }),
+  showLiveViews: z
+    .boolean()
+    .nullable()
+    .describe("true or false only when the seller asks to turn the live views counter on or off. Else null."),
   quantity: z.number().int().nullable().describe("Stock quantity, only when the seller stated it. Else null."),
   sku: z.string().nullable().describe("The seller's own stock code, only when the input labels it as SKU or item code. A model number is not a SKU. Else null."),
-  condition: z.enum(CONDITIONS).nullable(),
+  condition: z.string().nullable().describe(`One of: ${CONDITIONS.join(", ")}. Null if unsure.`),
   dimensions: z.object({
     length: z.number().nullable(),
     width: z.number().nullable(),
     height: z.number().nullable(),
-    unit: z.enum(["cm", "in"]).nullable(),
+    unit: z.string().nullable().describe("cm or in."),
     weight: z.number().nullable(),
-    weightUnit: z.enum(["kg", "g", "lb"]).nullable(),
+    weightUnit: z.string().nullable().describe("kg, g or lb."),
   }).describe("Only values stated in the input. Else null."),
   variantTypes: z
     .array(
       z.object({
-        kind: z.enum(VARIANT_KINDS),
+        kind: z.string().describe(`One of: ${VARIANT_KINDS.join(", ")}.`),
         nameEn: z.string(),
         nameAr: z.string(),
         valuesEn: z.array(z.string()).max(20),
@@ -105,11 +155,42 @@ export const productAutofillOutputSchema = z.object({
     )
     .max(3)
     .describe("Options the buyer chooses (colors, sizes…), only when the input lists them."),
-  missing: z.array(z.enum(MISSING_FIELDS)).describe("Important fields the input did not give."),
+  reviews: z
+    .array(
+      z.object({
+        reviewerName: z.string().describe("The customer's name as shown, or empty."),
+        rating: z.number().int().describe("1 to 5: the stars shown; else 5 for a clearly happy customer, 3 for mixed, 1 or 2 for unhappy."),
+        comment: z.string().describe("The customer's words as written (fix only obvious typos)."),
+      }),
+    )
+    .max(AUTOFILL_MAX_REVIEWS)
+    .describe(
+      "Real customer reviews that appear in the input: screenshots of customer messages, comments or ratings, or reviews the seller pasted. Never write a review yourself. Empty when the input has none.",
+    ),
+  productPhotos: z
+    .array(z.number().int())
+    .describe(
+      "The numbers (from 0, in the order attached) of the attached images that are photos of the product itself. Leave out screenshots of reviews, chats, price lists or spec sheets.",
+    ),
+  missing: z.array(z.string()).describe(`Important fields the input did not give, from: ${MISSING_FIELDS.join(", ")}.`),
   warnings: z.array(z.string()).max(3).describe("Short notes for the seller in Arabic, e.g. the photos show different products."),
 })
 
-export type ProductAutofillOutput = z.infer<typeof productAutofillOutputSchema>
+/** The model's raw answer, before cleanAutofillOutput. */
+export type ProductAutofillRawOutput = z.infer<typeof productAutofillOutputSchema>
+
+type RawVariantType = ProductAutofillRawOutput["variantTypes"][number]
+
+/** The cleaned answer: the plain-string fields narrowed to their fixed lists. */
+export type ProductAutofillOutput = Omit<ProductAutofillRawOutput, "condition" | "missing" | "variantTypes" | "dimensions"> & {
+  condition: (typeof CONDITIONS)[number] | null
+  missing: MissingField[]
+  variantTypes: Array<Omit<RawVariantType, "kind"> & { kind: (typeof VARIANT_KINDS)[number] }>
+  dimensions: Omit<ProductAutofillRawOutput["dimensions"], "unit" | "weightUnit"> & {
+    unit: "cm" | "in" | null
+    weightUnit: "kg" | "g" | "lb" | null
+  }
+}
 
 /** What the route returns on success: the cleaned output plus the seller's remaining calls today. */
 export type ProductAutofillResult = {
@@ -128,6 +209,7 @@ export function validateAutofillInput(input: AutofillInput): AutofillErrorCode |
   const text = input.text.trim()
   if (!text && input.images.length === 0 && !input.pdf) return "empty"
   if (input.text.length > AUTOFILL_LIMITS.maxTextLength) return "tooLarge"
+  if ((input.current?.length ?? 0) > AUTOFILL_LIMITS.maxCurrentLength) return "tooLarge"
   if (input.images.length > AUTOFILL_LIMITS.maxImages) return "tooLarge"
   for (const image of input.images) {
     if (!(AUTOFILL_IMAGE_TYPES as readonly string[]).includes(image.mediaType)) return "badFile"
@@ -137,7 +219,7 @@ export function validateAutofillInput(input: AutofillInput): AutofillErrorCode |
     if (input.pdf.mediaType !== AUTOFILL_PDF_TYPE) return "badFile"
     if (input.pdf.size > AUTOFILL_LIMITS.maxPdfBytes) return "tooLarge"
   }
-  const total = sizeOf(input.images) + (input.pdf?.size ?? 0) + input.text.length
+  const total = sizeOf(input.images) + (input.pdf?.size ?? 0) + input.text.length + (input.current?.length ?? 0)
   if (total > AUTOFILL_LIMITS.maxTotalBytes) return "tooLarge"
   return null
 }

@@ -137,6 +137,8 @@ export type StoreTemplateCard = {
   isDefault: boolean;
   isPremium: boolean;
   version: number;
+  /** Gallery position: templates are numbered as they are added, so a higher one is newer. */
+  sortOrder: number;
   /** Colour swatches (`templates.meta`, code fallback). */
   palette: string[];
   /** Page names in both languages by slug (`templates.meta`, code fallback). */
@@ -189,6 +191,7 @@ export async function listTemplateCards(_q?: Queryable): Promise<StoreTemplateCa
       isDefault: !!template.isDefault,
       isPremium: false,
       version: template.version,
+      sortOrder: template.sortOrder,
       palette: meta.palette,
       pageNames: meta.pageNames,
       formKinds: [...templateFormNeeds(config)],

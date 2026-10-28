@@ -54,6 +54,8 @@ describe("library sections seed", () => {
     ...["hero-fullbleed", "categories-showcase", "promo-banner-fullbleed", "about-fullbleed"],
     // Claude Design premium section set (2026-10-27).
     ...["header-centered-ticker", "header-inline", "hero-split", "hero-thumbs", "hero-banner", "categories-photo-tiles", "categories-circles", "categories-captioned", "products-tabs-grid", "products-carousel", "products-spotlight", "products-minimal", "products-boxed", "products-campaign", "products-deal", "promo-campaign-tiles", "promo-marquee", "promo-countdown", "features-trust-band", "about-split-story", "about-before-after", "about-shop-look", "gallery-social-strip", "testimonials-carousel", "testimonials-photo-cards", "testimonials-quote", "testimonials-summary", "newsletter-banner", "newsletter-strip", "newsletter-offer", "text-brand-statement", "footer-columns-signup", "footer-centered-light"],
+    // Template gap sections (2026-10-28).
+    ...["hero-video", "products-category-carousel", "header-topbar"],
   ]);
 
   it("every design from before 0109 was seeded by some migration", () => {

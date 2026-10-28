@@ -23,15 +23,14 @@ describe("productPage", () => {
     expect(types).toEqual([
       "section",
       "container",
-      "textLink",
+      "productBreadcrumbs",
       "grid",
       "productGallery",
       "vFlex",
-      "productSeller",
-      "productStock",
-      "heading",
       "productRating",
+      "heading",
       "productPrice",
+      "productStock",
       "productVariants",
       "productBuyBox",
       "productDetails",
@@ -50,6 +49,14 @@ describe("productPage", () => {
     const variant = (spec?: Parameters<typeof productPage>[1]) => byLabel(productPage(lib, spec)[0]!, "زر الشراء")[0]!.props.variant;
     expect(variant()).toBe("solid");
     expect(variant({ button: "outline" })).toBe("outline");
+  });
+
+  it("the perks section turns the buy box's own perks box off", () => {
+    const perks = (spec?: Parameters<typeof productPage>[1]) => byLabel(productPage(lib, spec)[0]!, "زر الشراء")[0]!.props.perks;
+    expect(perks()).toBeUndefined();
+    expect(perks({ extras: ["product-shipping"] })).toBeUndefined();
+    expect(perks({ extras: ["product-perks"], button: "outline" })).toBe(false);
+    expect(byLabel(productPage(lib, { extras: ["product-perks"], button: "outline" })[0]!, "زر الشراء")[0]!.props.variant).toBe("outline");
   });
 
   it("spec gallery end puts gallery second", () => {
@@ -74,7 +81,7 @@ describe("productPage", () => {
       surface: "shelf",
       headingCase: "upper",
       band: "brand",
-      copy: { back: L("كل المنتجات", "All products"), reviews: L("آراءكم", "Your words"), related: L("كمان من عندنا", "More from us") },
+      copy: { reviews: L("آراءكم", "Your words"), related: L("كمان من عندنا", "More from us") },
     });
     expect(byLabel(main!, "عمود الشراء")[0]!.style).toMatchObject({ background: "secondary" });
     expect(byLabel(main!, "اسم المنتج")[0]!.style).toMatchObject({ textTransform: "uppercase" });
@@ -84,13 +91,13 @@ describe("productPage", () => {
     // The panel spans the band like the related products below, not a 960px column.
     expect(byLabel(reviews!, "الحاوية")[0]!.style?.maxWidth).toBe("100%");
     const texts = [main!, reviews!, related!].flatMap(nodesOf).map((n) => n.props.text);
-    expect(texts).toEqual(expect.arrayContaining(["كل المنتجات", "آراءكم", "كمان من عندنا"]));
+    expect(texts).toEqual(expect.arrayContaining(["آراءكم", "كمان من عندنا"]));
   });
 
   it("productSitePage is the hidden product page", () => {
     const page = productSitePage(productPage(lib));
     expect(page).toMatchObject({ slug: PRODUCT_PAGE_SLUG, kind: "product", isHome: false, showInNav: false, name: "صفحة المنتج", seo: {} });
-    expect(page.content.sections.map((s) => s.source)).toEqual(["tpl-product-main@1", "tpl-product-content@1", "tpl-product-reviews@1", "tpl-product-related@1"]);
+    expect(page.content.sections.map((s) => s.source)).toEqual(["tpl-product-main@2", "tpl-product-content@1", "tpl-product-reviews@1", "tpl-product-related@1"]);
   });
 });
 

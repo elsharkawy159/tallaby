@@ -92,7 +92,7 @@ const home: Design[] = [
   lib("products-rail", {
     text: { "بيحبوها": L("وصل جديد", "New in"), "الأكثر مبيعًا": L("الأسبوع ده في الستوديو", "This week at the studio") },
     links: { "/products": NEW },
-    lists: [{ source: "newest", limit: 7 }],
+    lists: [{ source: "newest", limit: 8 }],
   }),
   lib("service-price-menu", {
     text: {
@@ -178,6 +178,9 @@ const DEMO = demoStore({
     ["jackets", "جواكت", "Jackets", PHOTOS.overshirt],
     ["basics", "أساسيات", "Basics", PHOTOS.foldedTees],
     ["bags", "شنط", "Bags", PHOTOS.topHandleBag],
+    ["knitwear", "تريكو", "Knitwear", PHOTOS.foldedKnits],
+    ["linen", "كتان", "Linen", PHOTOS.linenRail],
+    ["leather", "جلديات", "Leather goods", PHOTOS.messenger],
   ],
   products: [
     ["linen-overshirt", "jackets", "أوفرشيرت كتان", "Linen Overshirt", PHOTOS.overshirt, 2200, { sold90: 51 }],
@@ -185,10 +188,11 @@ const DEMO = demoStore({
     ["top-handle-leather-bag", "bags", "شنطة جلد بيد", "Top-Handle Leather Bag", PHOTOS.topHandleBag, 1850, { isFeatured: true, sold90: 47 }],
     ["charcoal-linen-suit", "suits", "بدلة كتان فحمي", "Charcoal Linen Suit", PHOTOS.charcoalJacket, 3900, { isFeatured: true, rating: 4.8, sold90: 86 }],
     ["floral-midi-dress", "dresses", "فستان ميدي مشجر", "Floral Midi Dress", PHOTOS.floralDress, 2400, { sold90: 64 }],
-    ["knit-vest", "basics", "فيست تريكو", "Knit Vest", PHOTOS.knitVest, 950, { compareAtPrice: 1150, sold90: 33 }],
-    ["leather-messenger", "bags", "شنطة ماسنجر جلد", "Leather Messenger", PHOTOS.messenger, 2100, { sold90: 22 }],
+    ["knit-vest", "knitwear", "فيست تريكو", "Knit Vest", PHOTOS.knitVest, 950, { compareAtPrice: 1150, sold90: 33 }],
+    ["leather-messenger", "leather", "شنطة ماسنجر جلد", "Leather Messenger", PHOTOS.messenger, 2100, { sold90: 22 }],
     ["printed-slip-dress", "dresses", "فستان سليب مطبوع", "Printed Slip Dress", PHOTOS.slipDress, 1900, { sold90: 38 }],
-    ["merino-knit-jumper", "basics", "بلوفر ميرينو", "Merino Knit Jumper", PHOTOS.foldedKnits, 1250, { inStock: false, sold90: 20 }],
+    ["merino-knit-jumper", "knitwear", "بلوفر ميرينو", "Merino Knit Jumper", PHOTOS.foldedKnits, 1250, { inStock: false, sold90: 20 }],
+    ["wide-linen-trousers", "linen", "بنطلون كتان واسع", "Wide Linen Trousers", PHOTOS.linenRail, 1450, { sold90: 40 }],
   ],
 });
 
@@ -196,7 +200,7 @@ export const GHORZA = libraryTemplate({
   key: GHORZA_KEY,
   version: 3,
   changelog: "Ghorza v3: new hero, categories, section order",
-  productPage: { surface: "flat", thumbs: "side", button: "outline", band: "shelf", extras: ["product-perks"], copy: { back: L("رجوع للتشكيلة", "Back to the collection"), reviews: L("رأي اللي لبسوا غُرزة", "Worn and reviewed"), related: L("كمّل اللوك", "Complete the look") } },
+  productPage: { surface: "flat", thumbs: "side", button: "outline", band: "shelf", extras: ["product-perks"], copy: { reviews: L("رأي اللي لبسوا غُرزة", "Worn and reviewed"), related: L("كمّل اللوك", "Complete the look") } },
   name: L("غُرزة", "Ghorza"),
   description: L(
     "لبس جاهز وستوديو ترزية: الأقسام، الجديد، أسعار التظبيط، الأكثر طلباً، وعودنا وآراء اللي لبسوا. أربع صفحات جاهزة.",

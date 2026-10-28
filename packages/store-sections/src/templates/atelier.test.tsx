@@ -57,7 +57,7 @@ describe("Atelier template", () => {
       expect(section.sectionId).toBe("custom-section");
       expect(section.componentTree).toHaveLength(1);
       expect(section.componentTree![0]!.type).toBe("section");
-      expect(section.source).toMatch(/^atelier-[a-z-]+@1$/);
+      expect(section.source).toMatch(/^atelier-[a-z-]+@\d+$/);
       expect(countNodes(section.componentTree!)).toBeLessThanOrEqual(MAX_NODES_PER_SECTION);
       expect(treeDepth(section.componentTree!)).toBeLessThanOrEqual(MAX_ELEMENT_DEPTH);
     }

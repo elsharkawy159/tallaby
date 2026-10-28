@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@workspace/ui/components/button";
-import { ShoppingCart, Loader2, Zap } from "lucide-react";
+import { ShoppingBag, ShoppingCart, Loader2, Zap } from "lucide-react";
 import type { AddToCartButtonProps } from "./product-card.types";
 import { useTranslations } from "next-intl";
 import { notifyCartItemAdded, useCart } from "@/providers/cart-provider";
@@ -38,6 +38,7 @@ export const AddToCartButton = ({
   stock = 1,
   buyNow = false,
   label,
+  icon = "cart",
 }: AddToCartButtonProps) => {
   const { addToCart, isProductLoading } = useCart();
   const router = useRouter();
@@ -90,6 +91,8 @@ export const AddToCartButton = ({
         showIcon &&
         (buyNow ? (
           <Zap className={styles.icon} />
+        ) : icon === "bag" ? (
+          <ShoppingBag className={styles.icon} />
         ) : (
           <ShoppingCart className={styles.icon} />
         ))

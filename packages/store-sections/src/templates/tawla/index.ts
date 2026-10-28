@@ -80,7 +80,7 @@ const home: Design[] = [
   lib("products-rail", {
     text: { "بيحبوها": L("وصل جديد", "New in"), "الأكثر مبيعًا": L("لسه من النول", "Fresh from the loom") },
     links: { "/products": NEW },
-    lists: [{ source: "newest", limit: 6 }],
+    lists: [{ source: "newest", limit: 8 }],
   }),
   lib("features-side-title", {
     text: {
@@ -159,18 +159,20 @@ const DEMO = demoStore({
     ["runners", "رانرات ومفارش", "Runners & cloths", PHOTOS.stripedRunner],
     ["napkins", "فوط سفرة", "Napkins", PHOTOS.napkinTrio],
     ["kitchen-towels", "فوط مطبخ", "Tea towels", PHOTOS.rolledLinen],
+    ["placemats", "مفارش أطباق", "Placemats", PHOTOS.placemat],
+    ["tablecloths", "مفارش سفرة", "Tablecloths", PHOTOS.washedLinen],
   ],
   products: [
     ["white-linen-runner", "runners", "رانر كتان أبيض ٢٫٤ متر", "White Linen Runner, 2.4 m", PHOTOS.whiteRunner, 450, { isFeatured: true, rating: 4.8, sold90: 120 }],
     ["striped-napkins", "napkins", "فوط سفرة مقلمة ٤ قطع", "Striped Napkins, Set of 4", PHOTOS.stripedNapkins, 380, { isFeatured: true, sold90: 140 }],
-    ["linen-placemat", "runners", "مفرش أطباق كتان", "Linen Placemat", PHOTOS.placemat, 290, { isFeatured: true, sold90: 96 }],
+    ["linen-placemat", "placemats", "مفرش أطباق كتان", "Linen Placemat", PHOTOS.placemat, 290, { isFeatured: true, sold90: 96 }],
     ["napkin-trio", "napkins", "فوط كتان ٣ ألوان", "Linen Napkin Trio", PHOTOS.napkinTrio, 340, { sold90: 74 }],
     ["floral-napkins", "napkins", "فوط مشجرة ٦ قطع", "Floral Napkins, Set of 6", PHOTOS.floralNapkins, 560, { rating: 4.9, sold90: 58 }],
     ["block-print-napkins", "napkins", "فوط مطبوعة يدوي", "Block-Printed Napkins", PHOTOS.printedNapkins, 420, { compareAtPrice: 520, sold90: 47 }],
     ["pastel-napkins", "napkins", "فوط باستيل ٤ قطع", "Pastel Napkins, Set of 4", PHOTOS.pastelNapkins, 360, { sold90: 66 }],
     ["striped-runner", "runners", "رانر مخطط ألوان", "Striped Colour Runner", PHOTOS.stripedRunner, 480, { sold90: 52 }],
     ["lace-runner", "runners", "رانر قطن مشغول", "Cotton Lace Runner", PHOTOS.laceRunner, 520, { sold90: 31 }],
-    ["washed-linen-tablecloth", "runners", "مفرش سفرة كتان مغسول", "Washed Linen Tablecloth", PHOTOS.washedLinen, 1350, { compareAtPrice: 1550, sold90: 22 }],
+    ["washed-linen-tablecloth", "tablecloths", "مفرش سفرة كتان مغسول", "Washed Linen Tablecloth", PHOTOS.washedLinen, 1350, { compareAtPrice: 1550, sold90: 22 }],
     ["olive-napkin-stack", "napkins", "فوط كتان زيتي ٦ قطع", "Olive Linen Napkins, Set of 6", PHOTOS.oliveStack, 540, { sold90: 39 }],
     ["blue-tea-towel", "kitchen-towels", "فوطة مطبخ مقلمة أزرق", "Blue Striped Tea Towel", PHOTOS.blueTowel, 160, { sold90: 110 }],
     ["pink-tea-towel", "kitchen-towels", "فوطة مطبخ مقلمة وردي", "Pink Striped Tea Towel", PHOTOS.pinkTowel, 160, { inStock: false, sold90: 84 }],
@@ -181,7 +183,7 @@ export const TAWLA = libraryTemplate({
   key: TAWLA_KEY,
   version: 3,
   changelog: "Tawla v3: categories, section order",
-  productPage: { gallery: "end", thumbs: "bottom", button: "outline", band: "paper", copy: { back: L("رجوع للسُفرة", "Back to the table"), reviews: L("رأي اللي جهّزوا سُفرتهم", "From laid tables"), related: L("كمّل السُفرة", "Dress the whole table") } },
+  productPage: { gallery: "end", thumbs: "bottom", button: "outline", band: "paper", copy: { reviews: L("رأي اللي جهّزوا سُفرتهم", "From laid tables"), related: L("كمّل السُفرة", "Dress the whole table") } },
   name: L("طاولة", "Tawla"),
   description: L(
     "مفارش ومنسوجات: لبّس السفرة، طقم السفرة كاملة، لسه من النول وطريقة العناية. أربع صفحات جاهزة.",

@@ -107,6 +107,7 @@ export function VisibilitySection({
       description={t("description")}
       summary={edited ? t("summaryEdited") : t("summaryAuto")}
       summaryTone={current.metaTitle ? "ok" : "muted"}
+      filled={edited}
     >
       <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
         <Controller

@@ -82,7 +82,7 @@ const home: Design[] = [
       "كل اللي تحتاجه في مكان واحد، أصلي وبضمان.": L("أجهزة أصلية متفحصة، بسعر أقل من الجديد بكتير.", "Genuine devices, checked, for much less than new."),
     },
     links: { "/products": BEST },
-    lists: [{ source: "best-sellers", limit: 5 }],
+    lists: [{ source: "best-sellers", limit: 6 }],
   }),
   lib("text-steps", {
     text: {
@@ -163,16 +163,20 @@ const DEMO = demoStore({
     ["watches", "ساعات", "Watches", PHOTOS.ultra],
     ["tv", "التلفزيون والبيت", "TV & home", PHOTOS.tvRoom],
     ["power", "الطاقة", "Power", PHOTOS.powerBank],
+    ["headphones", "هيدفون", "Headphones", PHOTOS.studio],
+    ["networking", "راوترات ونت", "Routers & Wi-Fi", PHOTOS.router],
+    ["smart-home", "البيت الذكي", "Smart home", PHOTOS.speaker],
+    ["grade-b", "فئة B بسعر أقل", "Grade B deals", PHOTOS.airBuds],
   ],
   products: [
     ["pulse-buds-pro-renewed", "audio", "بالس برو مجددة (فئة A)", "Pulse Buds Pro, renewed (grade A)", PHOTOS.pulseBuds, 1090, { compareAtPrice: 1730, isFeatured: true, rating: 4.6, sold90: 140 }],
     ["ultra-3-renewed", "watches", "ألترا 3 مجددة (فئة A)", "Ultra 3, renewed (grade A)", PHOTOS.ultra, 890, { compareAtPrice: 1450, sold90: 88 }],
     ["smart-tv-43-renewed", "tv", "شاشة سمارت ٤٣ مجددة (فئة B)", "43-inch Smart TV, renewed (grade B)", PHOTOS.tvRoom, 6900, { compareAtPrice: 11900, sold90: 41 }],
     ["power-bank-10k-renewed", "power", "باور بانك 10K مجدد", "10K Power Bank, renewed", PHOTOS.powerBank, 590, { compareAtPrice: 990, sold90: 22 }],
-    ["studio-headphones-renewed", "audio", "سماعة ستوديو مجددة (فئة A)", "Studio Headphones, renewed (grade A)", PHOTOS.studio, 590, { compareAtPrice: 990, sold90: 30 }],
-    ["air-buds-4-renewed", "audio", "إير 4 مجددة (فئة B)", "Air Buds 4, renewed (grade B)", PHOTOS.airBuds, 790, { compareAtPrice: 1390, sold90: 54 }],
-    ["wifi-router-renewed", "tv", "راوتر واي فاي مجدد", "Wi-Fi Router, renewed", PHOTOS.router, 950, { compareAtPrice: 1600, sold90: 26 }],
-    ["mini-speaker-renewed", "tv", "سبيكر ذكي ميني مجدد", "Mini Smart Speaker, renewed", PHOTOS.speaker, 690, { compareAtPrice: 1450, inStock: false, sold90: 18 }],
+    ["studio-headphones-renewed", "headphones", "سماعة ستوديو مجددة (فئة A)", "Studio Headphones, renewed (grade A)", PHOTOS.studio, 590, { compareAtPrice: 990, sold90: 30 }],
+    ["air-buds-4-renewed", "grade-b", "إير 4 مجددة (فئة B)", "Air Buds 4, renewed (grade B)", PHOTOS.airBuds, 790, { compareAtPrice: 1390, sold90: 54 }],
+    ["wifi-router-renewed", "networking", "راوتر واي فاي مجدد", "Wi-Fi Router, renewed", PHOTOS.router, 950, { compareAtPrice: 1600, sold90: 26 }],
+    ["mini-speaker-renewed", "smart-home", "سبيكر ذكي ميني مجدد", "Mini Smart Speaker, renewed", PHOTOS.speaker, 690, { compareAtPrice: 1450, inStock: false, sold90: 18 }],
   ],
 });
 
@@ -180,7 +184,7 @@ export const TANY = libraryTemplate({
   key: TANY_KEY,
   version: 3,
   changelog: "Tany v3: hero, categories, section order",
-  productPage: { thumbs: "side", band: "shelf", extras: ["product-perks"], copy: { back: L("رجوع للأجهزة المجدّدة", "Back to renewed devices"), reviews: L("رأي اللي جدّدوا معانا", "From renewed-device owners"), related: L("مجدّد كمان", "Also renewed") } },
+  productPage: { thumbs: "side", band: "shelf", extras: ["product-perks"], copy: { reviews: L("رأي اللي جدّدوا معانا", "From renewed-device owners"), related: L("مجدّد كمان", "Also renewed") } },
   name: L("تاني", "Tany"),
   description: L(
     "إلكترونيات مجددة: بنجدد الجهاز إزاي، الضمان، افتح قبل ما تدفع وتتبع طلبك. أربع صفحات جاهزة.",

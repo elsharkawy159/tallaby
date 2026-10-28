@@ -160,7 +160,7 @@ export const KOHL = libraryTemplate({
   key: KOHL_KEY,
   version: 3,
   changelog: "Kohl v3: wide hero photo",
-  productPage: { thumbs: "bottom", band: "brand", copy: { back: L("رجوع للألوان", "Back to the colours"), reviews: L("حيطة الآراء", "The review wall"), related: L("كمّلي المكياج", "Finish the look") } },
+  productPage: { thumbs: "bottom", band: "brand", copy: { reviews: L("حيطة الآراء", "The review wall"), related: L("كمّلي المكياج", "Finish the look") } },
   name: L("كحل", "Kohl"),
   description: L(
     "مكياج جريء: كلمة كبيرة، أقسام دائرية وآراء العميلات. أربع صفحات جاهزة.",

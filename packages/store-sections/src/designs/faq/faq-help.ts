@@ -8,50 +8,55 @@ import { FAQ_GROUPS } from "./_faq";
 
 export const faqHelp = defineDesign({
   id: "faq-help",
-  version: 1,
+  version: 2,
   category: "faq",
   subcategory: "help-center",
   name: L("مركز المساعدة", "Help centre"),
   description: L("رأس ملون بعنوان كبير وبحث، ثم الأسئلة في مجموعات.", "A tinted header with a big title and search, then grouped questions."),
   keywords: ["help", "faq", "support", "مساعدة", "أسئلة", "دعم"],
   tree: (t) =>
-    t.section({ label: L("مركز المساعدة", "Help centre"), style: { paddingTop: 0 } }, [
-      t.stack(
+    t.section({ label: L("مركز المساعدة", "Help centre") }, [
+      t.container(
         [
-          t.heading(L("كيف نقدر نساعدك؟", "How can we help?"), "h2", {
-            role: "title",
-            style: { fontSize: "display-md", fontWeight: "extrabold", textAlign: "center" },
-          }),
           t.stack(
             [
-              t.link(
-                "/products",
+              t.heading(L("كيف نقدر نساعدك؟", "How can we help?"), "h2", {
+                role: "title",
+                style: { fontSize: "display-md", fontWeight: "extrabold", textAlign: "center" },
+              }),
+              t.stack(
                 [
-                  t.row(
+                  t.link(
+                    "/products",
                     [
-                      t.icon("search", { style: { fontSize: "lg", color: "muted" } }),
-                      t.text(L("ابحث في الأسئلة…", "Search questions…"), { style: { color: "muted", fontSize: "md" } }),
+                      t.row(
+                        [
+                          t.icon("search", { style: { fontSize: "lg", color: "muted" } }),
+                          t.text(L("ابحث في الأسئلة…", "Search questions…"), { style: { color: "muted", fontSize: "md" } }),
+                        ],
+                        {
+                          label: L("المحتوى", "Content"),
+                          style: { gap: 10, wrap: false },
+                        },
+                      ),
                     ],
                     {
-                      label: L("المحتوى", "Content"),
-                      style: { gap: 10, wrap: false },
+                      label: L("البحث", "Search"),
+                      style: { background: "background", radius: 999, paddingTop: 16, paddingBottom: 16, paddingStart: 22, paddingEnd: 22, shadow: "sm" },
                     },
                   ),
                 ],
-                {
-                  label: L("البحث", "Search"),
-                  style: { background: "background", radius: 999, paddingTop: 16, paddingBottom: 16, paddingStart: 22, paddingEnd: 22, shadow: "sm" },
-                },
+                { label: L("خانة البحث", "Search box"), style: { width: "100%", maxWidth: "560px" } },
               ),
             ],
-            { label: L("خانة البحث", "Search box"), style: { width: "100%", maxWidth: "560px" } },
+            {
+              label: L("الرأس", "Header"),
+              style: { background: "secondary", radius: 24, alignItems: "center", gap: 20, paddingTop: 64, paddingBottom: 64, paddingStart: 16, paddingEnd: 16 },
+              mobile: { paddingTop: 40, paddingBottom: 40 },
+            },
           ),
         ],
-        {
-          label: L("الرأس", "Header"),
-          style: { background: "secondary", alignItems: "center", gap: 20, paddingTop: 64, paddingBottom: 64, paddingStart: 16, paddingEnd: 16 },
-          mobile: { paddingTop: 40, paddingBottom: 40 },
-        },
+        { label: L("حاوية الرأس", "Header container"), role: "container" },
       ),
       t.container(
         [

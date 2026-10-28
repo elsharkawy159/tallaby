@@ -551,9 +551,10 @@
   height: 56px;
   padding-inline: 18px 8px;
   border-radius: 999px;
-  background: var(--sf-ink);
-  color: #fff;
-  box-shadow: 0 10px 30px rgb(16 36 43 / 0.28);
+  /* The store's brand color, like every other button on its site. */
+  background: var(--sf-brand);
+  color: var(--sf-brand-ink);
+  box-shadow: 0 10px 30px color-mix(in oklab, var(--sf-brand) 35%, transparent);
 }
 
 @media (min-width: 768px) {
@@ -579,8 +580,8 @@
   height: 42px;
   padding-inline: 18px;
   border-radius: 999px;
-  background: var(--sf-sun);
-  color: var(--sf-ink);
+  background: var(--sf-brand-ink);
+  color: var(--sf-brand);
   font-weight: 700;
   display: inline-flex;
   align-items: center;
@@ -595,4 +596,55 @@
   .barSpacer {
     display: none;
   }
+}
+
+/* Store product page: the live viewers dot rings out, and the count bumps when it changes. */
+.liveDot {
+  position: relative;
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--destructive, #e5484d);
+}
+.liveDot::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid var(--destructive, #e5484d);
+  opacity: 0;
+}
+.liveCount {
+  display: inline-block;
+  font-variant-numeric: tabular-nums;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .liveDot::after {
+    animation: livePulse 1.8s ease-out infinite;
+  }
+  .liveCount {
+    animation: liveBump 0.35s ease-out;
+  }
+  @keyframes livePulse {
+    0% {
+      transform: scale(0.5);
+      opacity: 0.8;
+    }
+    100% {
+      transform: scale(1.6);
+      opacity: 0;
+    }
+  }
+  @keyframes liveBump {
+    40% {
+      transform: translateY(-2px) scale(1.15);
+    }
+  }
+}
+
+/* Phones: the product page's docked buy bar owns the bottom edge, so the floating cart bar steps aside. */
+:global(.sf-site:has([data-sf-buy-bar])) .cartBar,
+:global(.sf-site:has([data-sf-buy-bar])) .barSpacer {
+  display: none;
 }

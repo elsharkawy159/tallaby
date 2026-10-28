@@ -187,7 +187,7 @@ export const SITARA = libraryTemplate({
   key: SITARA_KEY,
   version: 2,
   changelog: "Sitara v2: product page",
-  productPage: { surface: "shelf", thumbs: "bottom", band: "paper", extras: ["product-perks"], copy: { back: L("رجوع للتشكيلة", "Back to the collection"), reviews: L("رأي صاحباتنا", "What our customers say"), related: L("تنسيقات تكمّلها", "Styles to go with it") } },
+  productPage: { surface: "shelf", thumbs: "bottom", band: "paper", extras: ["product-perks"], copy: { reviews: L("رأي صاحباتنا", "What our customers say"), related: L("تنسيقات تكمّلها", "Styles to go with it") } },
   name: L("سِتارة", "Sitara"),
   description: L(
     "لبس محتشم للستات: سلايدات الموسم، دواير الأقسام، الأكتر حباً، كروت هدية، طرق الدفع وآراء العميلات. أربع صفحات جاهزة.",

@@ -117,6 +117,12 @@ export type CatalogQuery =
       kind: "products";
       source: ProductSource;
       categoryId?: string | null;
+      /**
+       * `category` without a `categoryId`: the store's Nth category (1-based), in
+       * the order its category lists show them, so a template can bind a row to
+       * "the first category" of whichever store applies it.
+       */
+      categoryIndex?: number;
       productIds?: string[];
       /** `related`: the product page's current product; it is never in the result, its category's products come first. */
       relatedTo?: { productId: string; categoryId: string | null };
@@ -216,7 +222,8 @@ export type ProductDetail = ProductSummary & {
   variants: ProductVariantDetail[];
   reviewCount: number;
   brand: string | null;
-  category: { id: string; name: string } | null;
+  /** `href`: the storefront link to the category (the host fills it); without it, `/products?category=<id>`. */
+  category: { id: string; name: string; href?: string } | null;
   seller: { name: string; rating: number | null; ratingCount: number; freeDelivery: boolean };
 };
 
@@ -429,6 +436,8 @@ export interface RenderContext {
   renderProductReviews?: ProductElementHook;
   /** The live "N people viewing now" line, drawn above the buy box when the product has `liveViews` (storefront only). */
   renderLiveViews?: (product: ProductDetail) => ReactNode;
+  /** The store coupon pop-up's countdown, drawn above the live views line and the buy box (storefront only; draws nothing until the visitor saw the pop-up). */
+  renderOfferCountdown?: (product: ProductDetail) => ReactNode;
   /** Wishlist toggle, when the host supports it on this store. */
   renderWishlistButton?: (product: ProductSummary) => ReactNode;
   /** The header's switch to the store's other language (`languageSwitcher` node). */

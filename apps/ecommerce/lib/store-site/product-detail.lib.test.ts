@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Product } from "@/components/product-page/product-page.types";
-import { toProductDetail } from "./product-detail.lib";
+import { storeCategoryKey, toProductDetail } from "./product-detail.lib";
 
 const base = {
   id: "p-1",
@@ -99,5 +99,30 @@ describe("toProductDetail", () => {
     expect(detail.inStock).toBe(false);
     expect(detail.images).toEqual([]);
     expect(detail.image).toBeNull();
+  });
+});
+
+describe("breadcrumb category link", () => {
+  const storeCategories = [
+    { key: "fashion", categoryIds: ["c-1", "c-2"] },
+    { key: "f3b1c2d4-0000-0000-0000-000000000000", categoryIds: ["c-9"] },
+  ];
+
+  it("links the category to the store catalog filtered by its root", () => {
+    const key = storeCategoryKey({ id: "c-1", slug: "shirts", parentId: "root-1" }, storeCategories);
+    expect(key).toBe("fashion");
+    const detail = toProductDetail(base as unknown as Product, "en", { categoryKey: key });
+    expect(detail.category).toEqual({ id: "c-1", name: "Shirts", href: "/products?category=fashion" });
+  });
+
+  it("falls back to a root category's own slug, else its id; a sub-category outside the list has none", () => {
+    expect(storeCategoryKey({ id: "r-1", slug: "home", parentId: null }, [])).toBe("home");
+    expect(storeCategoryKey({ id: "r-2", slug: null, parentId: null }, [])).toBe("r-2");
+    expect(storeCategoryKey({ id: "c-5", slug: "mugs", parentId: "r-1" }, storeCategories)).toBeNull();
+    expect(storeCategoryKey(null, storeCategories)).toBeNull();
+  });
+
+  it("has no link without a key", () => {
+    expect(toProductDetail(base as unknown as Product, "en").category).toEqual({ id: "c-1", name: "Shirts" });
   });
 });

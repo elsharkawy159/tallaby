@@ -190,7 +190,7 @@ export const SOUQ = libraryTemplate({
   key: SOUQ_KEY,
   version: 3,
   changelog: "Souq v3: hero first, section order",
-  productPage: { thumbs: "bottom", band: "brand", extras: ["product-shipping"], copy: { back: L("رجوع للسوق", "Back to the aisles"), reviews: L("آراء اللي اشتروا", "From shoppers like you"), related: L("ضيف على سلتك", "Add to your basket") } },
+  productPage: { thumbs: "bottom", band: "brand", extras: ["product-shipping"], copy: { reviews: L("آراء اللي اشتروا", "From shoppers like you"), related: L("ضيف على سلتك", "Add to your basket") } },
   name: L("سوق", "Souq"),
   description: L(
     "سوبر ماركت أونلاين: بانرات متحركة، الأقسام، رف النهارده، مناطق الـ٤٥ دقيقة والدعم. أربع صفحات جاهزة.",

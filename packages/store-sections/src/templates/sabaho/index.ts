@@ -169,7 +169,7 @@ export const SABAHO = libraryTemplate({
   key: SABAHO_KEY,
   version: 3,
   changelog: "Sabaho v3: collage hero, categories, no coupon, section order",
-  productPage: { surface: "card", thumbs: "bottom", band: "shelf", extras: ["product-shipping"], copy: { back: L("رجوع لفطار الصبح", "Back to breakfast"), reviews: L("رأي اللي بيطلبوا كل صباح", "What morning regulars say"), related: L("ضيفه على طلب الصبح", "Add to tomorrow's order") } },
+  productPage: { surface: "card", thumbs: "bottom", band: "shelf", extras: ["product-shipping"], copy: { reviews: L("رأي اللي بيطلبوا كل صباح", "What morning regulars say"), related: L("ضيفه على طلب الصبح", "Add to tomorrow's order") } },
   name: L("صباحو", "Sabaho"),
   description: L(
     "توصيل فطار وبقالة: الأكتر إعادة طلب، مناطق ومواعيد التوصيل وتتبع الطلب. أربع صفحات جاهزة.",

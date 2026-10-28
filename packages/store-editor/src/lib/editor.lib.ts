@@ -262,7 +262,11 @@ export function resolveCanvasCatalog(
   const name = (value: { ar: string; en: string }) => value[locale] || value.ar || value.en;
   for (const [instanceId, query] of Object.entries(queries)) {
     if (query.kind === "products") {
-      products[instanceId] = selectProducts(query, catalog.products).map((p) => toSummary(p, locale));
+      products[instanceId] = selectProducts(
+        query,
+        catalog.products,
+        catalog.categories.map((c) => c.id),
+      ).map((p) => toSummary(p, locale));
     } else if (query.kind === "reviews") {
       reviews[instanceId] = (catalog.reviews ?? [])
         .filter((r) => !query.minRating || r.rating >= query.minRating)

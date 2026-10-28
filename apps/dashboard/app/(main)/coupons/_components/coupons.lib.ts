@@ -1,5 +1,6 @@
 import type { SellerCouponInput, SellerCouponRow } from "@/actions/coupons";
 import type { CouponChannel } from "@workspace/lib/orders/coupon-scope";
+import { COUPON_POPUP_MAX_MINUTES, type CouponPopupTrigger } from "@workspace/lib/orders/coupon-popup";
 
 export type CouponStatus = "running" | "scheduled" | "ended" | "usedUp" | "off";
 export type CouponFilter = "all" | "running" | "scheduled" | "ended" | "off";
@@ -40,7 +41,25 @@ export type CouponFormState = {
   channels: CouponChannel[];
   startDate: string;
   endDate: string;
+  /** Store pop-up: "off", or when it opens. */
+  popupTrigger: "off" | CouponPopupTrigger;
+  /** How long the visitor has to use the code, in `popupUnit`s. */
+  popupDuration: string;
+  popupUnit: PopupUnit;
 };
+
+export type PopupUnit = "minutes" | "hours" | "days";
+
+export const POPUP_UNITS: PopupUnit[] = ["minutes", "hours", "days"];
+
+const UNIT_MINUTES: Record<PopupUnit, number> = { minutes: 1, hours: 60, days: 24 * 60 };
+
+/** Minutes shown in the largest unit they divide evenly into. */
+export function minutesToDuration(minutes: number): { popupDuration: string; popupUnit: PopupUnit } {
+  const unit: PopupUnit =
+    minutes % UNIT_MINUTES.days === 0 ? "days" : minutes % UNIT_MINUTES.hours === 0 ? "hours" : "minutes";
+  return { popupDuration: String(minutes / UNIT_MINUTES[unit]), popupUnit: unit };
+}
 
 export type CouponFormField =
   | "code"
@@ -48,7 +67,8 @@ export type CouponFormField =
   | "discountValue"
   | "productIds"
   | "channels"
-  | "dates";
+  | "dates"
+  | "popupDuration";
 
 const CODE_PATTERN = /^[A-Z0-9_-]{3,24}$/;
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -76,6 +96,9 @@ export function emptyCouponForm(): CouponFormState {
     channels: ["storefront"],
     startDate: toDateInput(now),
     endDate: toDateInput(now + 30 * DAY_MS),
+    popupTrigger: "off",
+    popupDuration: "1",
+    popupUnit: "hours",
   };
 }
 
@@ -96,6 +119,9 @@ export function couponToForm(coupon: SellerCouponRow): CouponFormState {
     channels: ["storefront"],
     startDate: toDateInput(coupon.startsAt),
     endDate: toDateInput(coupon.expiresAt),
+    ...(coupon.popup
+      ? { popupTrigger: coupon.popup.trigger, ...minutesToDuration(coupon.popup.durationMinutes) }
+      : { popupTrigger: "off" as const, popupDuration: "1", popupUnit: "hours" as const }),
   };
 }
 
@@ -138,6 +164,10 @@ export function validateCouponForm(
   if (form.productScope === "selected" && form.productIds.length === 0) errors.productIds = "products";
   if (!form.startDate || !form.endDate) errors.dates = "dates";
   else if (form.endDate < form.startDate) errors.dates = "invalid_dates";
+  const popupMinutes = toCount(form.popupDuration) == null ? null : Number(form.popupDuration) * UNIT_MINUTES[form.popupUnit];
+  if (form.popupTrigger !== "off" && (popupMinutes == null || popupMinutes > COUPON_POPUP_MAX_MINUTES)) {
+    errors.popupDuration = "popupDuration";
+  }
 
   if (Object.keys(errors).length > 0) return { errors, input: null };
 
@@ -154,6 +184,8 @@ export function validateCouponForm(
       perUserLimit: toCount(form.perUserLimit),
       productIds: form.productScope === "selected" ? form.productIds : null,
       channels: ["storefront"],
+      popup:
+        form.popupTrigger === "off" ? null : { trigger: form.popupTrigger, durationMinutes: popupMinutes! },
       // Whole days in the seller's timezone: from the first moment of the
       // start day to the last moment of the end day.
       startsAt: new Date(`${form.startDate}T00:00:00`).toISOString(),

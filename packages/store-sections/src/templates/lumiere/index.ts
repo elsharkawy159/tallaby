@@ -230,5 +230,5 @@ export const LUMIERE = libraryTemplate({
     },
   ],
   demo: DEMO,
-  productPage: { surface: "flat", thumbs: "side", button: "outline", band: "paper", copy: { back: L("العودة للمجموعة", "Back to the collection"), reviews: L("كلمات من عملائنا", "Words from our clients"), related: L("قطع قد تعجبك", "Pieces you may love") } },
+  productPage: { surface: "flat", thumbs: "side", button: "outline", band: "paper", copy: { reviews: L("كلمات من عملائنا", "Words from our clients"), related: L("قطع قد تعجبك", "Pieces you may love") } },
 });

@@ -109,6 +109,10 @@
       "types": "./src/orders/coupon-scope.lib.ts",
       "default": "./src/orders/coupon-scope.lib.ts"
     },
+    "./orders/coupon-popup": {
+      "types": "./src/orders/coupon-popup.lib.ts",
+      "default": "./src/orders/coupon-popup.lib.ts"
+    },
     "./orders/platform-fee": {
       "types": "./src/orders/platform-fee.lib.ts",
       "default": "./src/orders/platform-fee.lib.ts"

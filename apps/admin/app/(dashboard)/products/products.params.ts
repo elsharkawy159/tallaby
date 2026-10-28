@@ -15,6 +15,7 @@ export const PRODUCTS_FILTER_KEYS = [
   "seller",
   "stock",
   "flags",
+  "ai",
 ] as const;
 
 const SORTABLE: readonly AdminProductsSortId[] = [

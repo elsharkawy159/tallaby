@@ -124,6 +124,9 @@ const DEMO = demoStore({
     ["wearables", "ساعات ذكية", "Smartwatches", PHOTOS.watch],
     ["cables", "كابلات وشواحن", "Cables & chargers", PHOTOS.cable],
     ["car", "إكسسوارات عربية", "Car accessories", PHOTOS.carMount],
+    ["headphones", "سماعات راس", "Headphones", PHOTOS.headphones],
+    ["chargers", "شواحن", "Chargers", PHOTOS.charger],
+    ["bundles", "باقات", "Bundles", PHOTOS.powerBankSilver],
   ],
   products: [
     // The first featured product fills hero-big-word: a wide landscape photo (template-rules, owner 2026-10-27).
@@ -133,11 +136,12 @@ const DEMO = demoStore({
     ["pulse-buds-pro", "audio", "سماعة بالس برو", "Pulse Buds Pro", PHOTOS.budsOpen, 1590, { compareAtPrice: 1890, rating: 4.6, sold90: 198 }],
     ["air-buds-4", "audio", "سماعة إير 4", "Air Buds 4", PHOTOS.buds, 1190, { sold90: 121 }],
     ["night-buds", "audio", "سماعة نايت", "Night Buds", PHOTOS.budsCase, 790, { compareAtPrice: 890, sold90: 88 }],
-    ["studio-headphones", "audio", "سماعة ستوديو", "Studio Headphones", PHOTOS.headphones, 890, { sold90: 64 }],
+    ["studio-headphones", "headphones", "سماعة ستوديو", "Studio Headphones", PHOTOS.headphones, 890, { sold90: 64 }],
     ["ultra-3-watch", "wearables", "ساعة ألترا 3", "Ultra 3 Smartwatch", PHOTOS.watch, 1450, { isFeatured: true, rating: 4.4, sold90: 92 }],
     ["usb-c-braided-cable", "cables", "كابل USB-C مضفّر", "Braided USB-C Cable", PHOTOS.cable, 190, { rating: 4.6, sold90: 330 }],
-    ["fast-wall-charger", "cables", "شاحن حيطة سريع", "Fast Wall Charger", PHOTOS.charger, 350, { sold90: 120 }],
+    ["fast-wall-charger", "chargers", "شاحن حيطة سريع", "Fast Wall Charger", PHOTOS.charger, 350, { sold90: 120 }],
     ["car-mount-360", "car", "حامل موبايل للعربية 360°", "360° Car Mount", PHOTOS.carMount, 350, { inStock: false, rating: 4.5, sold90: 330 }],
+    ["travel-power-bundle", "bundles", "باقة السفر: باور بانك وكابل", "Travel Bundle: Power Bank & Cable", PHOTOS.powerBankSilver, 1390, { compareAtPrice: 1580, sold90: 47 }],
   ],
 });
 
@@ -194,5 +198,5 @@ export const VOLT = libraryTemplate({
     },
   ],
   demo: DEMO,
-  productPage: { thumbs: "bottom", band: "brand", extras: ["product-shipping"], copy: { back: L("رجوع للمتجر", "Back to the shop"), reviews: L("آراء الزباين", "What buyers say"), related: L("اشتريها معاها", "Grab it with") } },
+  productPage: { thumbs: "bottom", band: "brand", extras: ["product-shipping"], copy: { reviews: L("آراء الزباين", "What buyers say"), related: L("اشتريها معاها", "Grab it with") } },
 });

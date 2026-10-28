@@ -54,6 +54,8 @@ export interface AdminProductsQuery {
   seller?: string[];
   stock?: string[];
   flags?: string[];
+  /** AI marker (0112): "ai" (any), "autofill_add", "autofill_edit" or "not-ai". */
+  ai?: string[];
   createdFrom?: string;
   createdTo?: string;
   sort?: { id: AdminProductsSortId; desc: boolean } | null;
@@ -147,6 +149,21 @@ async function buildWhere(query: AdminProductsQuery): Promise<SQL | undefined> {
     .filter(Boolean);
   if (flagConditions.length) conditions.push(or(...flagConditions)!);
 
+  const aiConditions = (query.ai ?? []).flatMap((value): SQL[] => {
+    switch (value) {
+      case "ai":
+        return [sql`${products.aiSource} is not null`];
+      case "autofill_add":
+      case "autofill_edit":
+        return [eq(products.aiSource, value)];
+      case "not-ai":
+        return [sql`${products.aiSource} is null`];
+      default:
+        return [];
+    }
+  });
+  if (aiConditions.length) conditions.push(or(...aiConditions)!);
+
   if (query.createdFrom) {
     conditions.push(gte(products.createdAt, query.createdFrom));
   }
@@ -228,6 +245,8 @@ export async function getAdminProducts(query: AdminProductsQuery = {}) {
         isPlatformChoice: true,
         isMostSelling: true,
         freeDelivery: true,
+        aiSource: true,
+        aiAssistedAt: true,
         createdAt: true,
         updatedAt: true,
       },

@@ -144,17 +144,21 @@ const DEMO = demoStore({
     ["interior", "الصالون", "Interior", PHOTOS.leatherSeat],
     ["safety", "أمان وطوارئ", "Safety & emergency", PHOTOS.jumperCables],
     ["extras", "إضافات", "Extras", PHOTOS.keys],
+    ["seats", "فرش المقاعد", "Seat covers", PHOTOS.leatherSeat],
+    ["lighting", "إضاءة الصالون", "Interior lighting", PHOTOS.starsCar],
+    ["classic", "كلاسيك", "Classic cars", PHOTOS.vintageDash],
   ],
   products: [
     ["wireless-charging-mount", "mounts", "حامل بشحن لاسلكي", "Wireless Charging Mount", PHOTOS.dashMount, 990, { isFeatured: true, rating: 4.8, sold90: 240 }],
     ["magnetic-vent-mount", "mounts", "حامل مغناطيس للتكييف", "Magnetic Vent Mount", PHOTOS.ventMount, 290, { sold90: 380 }],
     ["car-power-bank", "power", "باور بانك ٢٠ ألف", "20,000 mAh Power Bank", PHOTOS.powerBank, 850, { compareAtPrice: 990, rating: 4.7, sold90: 160 }],
     ["start-button-ring", "power", "حلقة زرار التشغيل", "Start Button Ring", PHOTOS.startButton, 220, { sold90: 90 }],
-    ["leather-seat-covers", "interior", "فرش جلد للمقاعد", "Leather Seat Covers", PHOTOS.leatherSeat, 3100, { isFeatured: true, sold90: 70 }],
+    ["leather-seat-covers", "seats", "فرش جلد للمقاعد", "Leather Seat Covers", PHOTOS.leatherSeat, 3100, { isFeatured: true, sold90: 70 }],
     ["headrest-cushion", "interior", "مخدة مسند الراس", "Headrest Cushion", PHOTOS.headrest, 360, { sold90: 130 }],
-    ["classic-dash-cover", "interior", "غطا تابلوه كلاسيك", "Classic Dash Cover", PHOTOS.vintageDash, 690, { inStock: false, sold90: 22 }],
+    ["classic-dash-cover", "classic", "غطا تابلوه كلاسيك", "Classic Dash Cover", PHOTOS.vintageDash, 690, { inStock: false, sold90: 22 }],
     ["jumper-cables-3m", "safety", "كابلات اشتراك ٣ متر", "Jumper Cables 3 m", PHOTOS.jumperCables, 420, { rating: 4.9, sold90: 150 }],
     ["key-fob-case", "extras", "جراب مفتاح وميدالية", "Key Fob Case", PHOTOS.keys, 160, { sold90: 210 }],
+    ["starlight-roof-kit", "lighting", "إضاءة نجوم للسقف", "Starlight Roof Kit", PHOTOS.starsCar, 2400, { sold90: 46 }],
   ],
 });
 
@@ -208,5 +212,5 @@ export const DRIVE = libraryTemplate({
     },
   ],
   demo: DEMO,
-  productPage: { surface: "card", thumbs: "side", band: "paper", extras: ["product-perks"], copy: { back: L("رجوع للمتجر", "Back to the store"), reviews: L("آراء السائقين", "Driver reviews"), related: L("منتجات مشابهة لسيارتك", "Similar for your car") } },
+  productPage: { surface: "card", thumbs: "side", band: "paper", extras: ["product-perks"], copy: { reviews: L("آراء السائقين", "Driver reviews"), related: L("منتجات مشابهة لسيارتك", "Similar for your car") } },
 });

@@ -155,17 +155,21 @@ const DEMO = demoStore({
     ["toys", "أول ألعاب", "First toys", PHOTOS.stackerGrey],
     ["play", "لعب وتعلّم", "Play & learn", PHOTOS.stackBoard],
     ["gifts", "بوكسات هدايا", "Gift boxes", PHOTOS.plushBasket],
+    ["blankets", "بطاطين", "Blankets", PHOTOS.elephantBlanket],
+    ["nappies", "حفاضات", "Nappies", PHOTOS.diapers],
+    ["music", "ألعاب بصوت", "Musical toys", PHOTOS.maracas],
+    ["nursery", "أوضة البيبي", "Nursery", PHOTOS.nursery],
   ],
   products: [
-    ["elephant-blanket", "clothes", "بطانية الأفيال", "Elephant Blanket", PHOTOS.elephantBlanket, 590, { isFeatured: true, rating: 4.9, sold90: 320 }],
+    ["elephant-blanket", "blankets", "بطانية الأفيال", "Elephant Blanket", PHOTOS.elephantBlanket, 590, { isFeatured: true, rating: 4.9, sold90: 320 }],
     ["knit-set", "clothes", "طقم تريكو قطن", "Cotton Knit Set", PHOTOS.knits, 690, { sold90: 120 }],
-    ["cloth-diapers", "clothes", "حفاضات قماش", "Cloth Nappies, 6", PHOTOS.diapers, 450, { sold90: 80 }],
+    ["cloth-diapers", "nappies", "حفاضات قماش", "Cloth Nappies, 6", PHOTOS.diapers, 450, { sold90: 80 }],
     ["stacking-rings", "toys", "حلقات التركيب", "Stacking Rings", PHOTOS.stackerGrey, 260, { rating: 4.8, sold90: 198 }],
-    ["wooden-maracas", "toys", "شخاليل خشب", "Wooden Maracas", PHOTOS.maracas, 220, { sold90: 66 }],
+    ["wooden-maracas", "music", "شخاليل خشب", "Wooden Maracas", PHOTOS.maracas, 220, { sold90: 66 }],
     ["shape-sorter", "play", "لعبة الأشكال", "Shape Sorter", PHOTOS.sorter, 320, { sold90: 54 }],
     ["stack-and-sort-board", "play", "لوحة تركيب وفرز", "Stack & Sort Board", PHOTOS.stackBoard, 560, { compareAtPrice: 650, sold90: 54 }],
     ["welcome-baby-box", "gifts", "بوكس استقبال البيبي", "Welcome Baby Box", PHOTOS.plushBasket, 1250, { compareAtPrice: 1450, isFeatured: true, sold90: 88 }],
-    ["nursery-basket-set", "gifts", "سلة أوضة البيبي", "Nursery Basket Set", PHOTOS.nursery, 890, { inStock: false, sold90: 20 }],
+    ["nursery-basket-set", "nursery", "سلة أوضة البيبي", "Nursery Basket Set", PHOTOS.nursery, 890, { inStock: false, sold90: 20 }],
   ],
 });
 
@@ -219,5 +223,5 @@ export const BAMBINO = libraryTemplate({
     },
   ],
   demo: DEMO,
-  productPage: { surface: "shelf", thumbs: "bottom", band: "paper", extras: ["product-perks"], copy: { back: L("رجوع للمتجر", "Back to the shop"), reviews: L("آراء الأمهات والآباء", "Parents' reviews"), related: L("محتاجينها لبيبي كمان", "More for baby") } },
+  productPage: { surface: "shelf", thumbs: "bottom", band: "paper", extras: ["product-perks"], copy: { reviews: L("آراء الأمهات والآباء", "Parents' reviews"), related: L("محتاجينها لبيبي كمان", "More for baby") } },
 });

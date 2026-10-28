@@ -163,7 +163,7 @@ const DEMO = demoStore({
   ],
   products: [
     ["velvet-matte-lipstick", "lips", "روج مطفي فيلفت", "Velvet Matte Lipstick", PHOTOS.lipMarble, 320, { isFeatured: true, rating: 4.8, sold90: 520 }],
-    ["glass-shine-gloss", "gloss", "جلوس لامع", "Glass Shine Gloss", PHOTOS.gloss, 260, { rating: 4.7, sold90: 310 }],
+    ["glass-shine-gloss", "gloss", "جلوس لامع", "Glass Shine Gloss", PHOTOS.gloss, 260, { isFeatured: true, rating: 4.7, sold90: 310 }],
     ["lip-tint-row", "lips", "تينت شفايف", "Lip Tint", PHOTOS.lipRow, 300, { sold90: 76 }],
     ["nude-lipstick-trio", "lips", "ثلاثي روج نود", "Nude Lipstick Trio", PHOTOS.lipTrio, 690, { compareAtPrice: 820, sold90: 144 }],
     ["cheek-lip-duo", "face", "ثنائي خدود وشفايف", "Cheek & Lip Duo", PHOTOS.blushLip, 450, { isFeatured: true, rating: 4.9, sold90: 205 }],
@@ -227,5 +227,5 @@ export const GLOW = libraryTemplate({
     },
   ],
   demo: DEMO,
-  productPage: { thumbs: "bottom", band: "brand", copy: { back: L("رجوع للشيدات", "Back to the shades"), reviews: L("صور وآراء حقيقية", "Real photos and reviews"), related: L("شيدات تحبيها كمان", "Shades you may love too") } },
+  productPage: { thumbs: "bottom", band: "brand", copy: { reviews: L("صور وآراء حقيقية", "Real photos and reviews"), related: L("شيدات تحبيها كمان", "Shades you may love too") } },
 });

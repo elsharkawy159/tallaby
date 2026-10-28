@@ -57,6 +57,7 @@ export const LIBRARY_CATEGORIES: readonly LibraryCategory[] = [
       sub("new-arrivals", "وصل حديثًا", "New arrivals"),
       sub("featured", "مميزة", "Featured"),
       sub("best-sellers", "الأكثر مبيعًا", "Best sellers"),
+      sub("by-category", "من قسم", "By category"),
       sub("shelf", "رف بروابط", "Shelf with links"),
       sub("list", "قائمة مدمجة", "Compact list"),
     ],

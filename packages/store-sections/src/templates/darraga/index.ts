@@ -77,7 +77,7 @@ const home: Design[] = [
   lib("products-rows", {
     text: { "إكسسوارات بسعر حلو": L("قبل أول مشوار", "Before your first ride") },
     links: { "/products": BEST },
-    lists: [{ source: "best-sellers", limit: 5 }],
+    lists: [{ source: "best-sellers", limit: 6 }],
   }),
   lib("service-price-menu", {
     text: {
@@ -144,15 +144,18 @@ const DEMO = demoStore({
     ["bikes", "عجل", "Bikes", PHOTOS.redBike],
     ["helmets", "خوذ", "Helmets", PHOTOS.helmetsBars],
     ["gear", "نور وأدوات", "Lights & gear", PHOTOS.headlight],
+    ["racks", "رفوف وشيالات", "Racks & carriers", PHOTOS.rearRack],
+    ["bells", "أجراس", "Bells", PHOTOS.bell],
+    ["bags", "شنط", "Bags", PHOTOS.pack],
   ],
   products: [
     ["city-helmet", "helmets", "خوذة مدينة", "City Helmet", PHOTOS.helmetsBars, 1450, { isFeatured: true, rating: 4.8, sold90: 96 }],
     ["light-road-helmet", "helmets", "خوذة طريق خفيفة", "Light Road Helmet", PHOTOS.helmetsWall, 1850, { compareAtPrice: 2100, sold90: 40 }],
     ["front-headlight", "gear", "كشاف أمامي", "Front Headlight", PHOTOS.headlight, 380, { sold90: 120 }],
     ["classic-led-lamp", "gear", "كشاف LED كلاسيك", "Classic LED Lamp", PHOTOS.ledLamp, 450, { sold90: 64 }],
-    ["rear-rack-reflector", "gear", "رف خلفي بعاكس", "Rear Rack with Reflector", PHOTOS.rearRack, 690, { sold90: 38 }],
-    ["brass-bell", "gear", "جرس نحاس", "Brass Bell", PHOTOS.bell, 150, { sold90: 150 }],
-    ["commuter-pack", "gear", "شنطة مشاوير ٢٠ لتر", "Commuter Pack 20 L", PHOTOS.pack, 1650, { sold90: 44 }],
+    ["rear-rack-reflector", "racks", "رف خلفي بعاكس", "Rear Rack with Reflector", PHOTOS.rearRack, 690, { sold90: 38 }],
+    ["brass-bell", "bells", "جرس نحاس", "Brass Bell", PHOTOS.bell, 150, { sold90: 150 }],
+    ["commuter-pack", "bags", "شنطة مشاوير ٢٠ لتر", "Commuter Pack 20 L", PHOTOS.pack, 1650, { sold90: 44 }],
     ["orange-city-bike", "bikes", "عجلة سيتي برتقالي", "Orange City Bike", PHOTOS.orangeBikesSmall, 14500, { isFeatured: true, rating: 4.9, sold90: 22 }],
     ["red-step-through", "bikes", "عجلة حمرا بدون عارضة", "Red Step-Through Bike", PHOTOS.redBike, 12900, { compareAtPrice: 13900, sold90: 18 }],
   ],
@@ -162,7 +165,7 @@ export const DARRAGA = libraryTemplate({
   key: DARRAGA_KEY,
   version: 3,
   changelog: "Darraga v3: categories after the hero, gear before the workshop, one price list",
-  productPage: { thumbs: "side", band: "shelf", extras: ["product-perks"], copy: { back: L("رجوع للدراجات", "Back to the bikes"), reviews: L("رأي الراكبين", "From the riders"), related: L("جهّز قبل أول مشوار", "Gear up for your first ride") } },
+  productPage: { thumbs: "side", band: "shelf", extras: ["product-perks"], copy: { reviews: L("رأي الراكبين", "From the riders"), related: L("جهّز قبل أول مشوار", "Gear up for your first ride") } },
   name: L("عجلة", "Darraga"),
   description: L(
     "عجل وورشة: أساسيات أول مشوار، أسعار الورشة وعنوان الورشة. أربع صفحات جاهزة.",

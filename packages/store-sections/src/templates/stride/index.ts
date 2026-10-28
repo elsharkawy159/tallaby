@@ -213,5 +213,5 @@ export const STRIDE = libraryTemplate({
     },
   ],
   demo: DEMO,
-  productPage: { surface: "card", thumbs: "bottom", band: "brand", extras: ["product-shipping"], copy: { back: L("رجوع للمتجر", "Back to the store"), reviews: L("آراء العدّائين", "Runners' reviews"), related: L("جهّز لجريتك الجاية", "Gear for your next run") } },
+  productPage: { surface: "card", thumbs: "bottom", band: "brand", extras: ["product-shipping"], copy: { reviews: L("آراء العدّائين", "Runners' reviews"), related: L("جهّز لجريتك الجاية", "Gear for your next run") } },
 });

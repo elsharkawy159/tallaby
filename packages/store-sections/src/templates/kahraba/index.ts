@@ -86,7 +86,7 @@ const home: Design[] = [
   lib("products-rows", {
     text: { "إكسسوارات بسعر حلو": L("للعربية", "For the car") },
     links: { "/products": BEST },
-    lists: [{ source: "best-sellers", limit: 5 }],
+    lists: [{ source: "best-sellers", limit: 6 }],
   }),
   lib("text-steps", {
     text: {
@@ -156,11 +156,13 @@ const DEMO = demoStore({
     ["charging", "الشحن", "Charging", PHOTOS.vanPort],
     ["cabin", "الصالون", "Cabin", PHOTOS.floorMat],
     ["tech", "تكنولوجيا", "Car tech", PHOTOS.camera],
+    ["home", "شواحن البيت", "Home chargers", PHOTOS.greyPort],
+    ["on-the-go", "شحن في الطريق", "On-the-go charging", PHOTOS.yellowPort],
   ],
   products: [
-    ["smart-home-charger-7kw", "charging", "شاحن البيت الذكي ٧ كيلووات", "Smart Home Charger 7 kW", PHOTOS.greyPort, 28500, { isFeatured: true, rating: 4.9, sold90: 40 }],
+    ["smart-home-charger-7kw", "home", "شاحن البيت الذكي ٧ كيلووات", "Smart Home Charger 7 kW", PHOTOS.greyPort, 28500, { isFeatured: true, rating: 4.9, sold90: 40 }],
     ["type-2-cable-5m", "charging", "كابل شحن تايب ٢، ٥ متر", "Type 2 Charging Cable, 5 m", PHOTOS.vanPort, 6900, { rating: 4.8, sold90: 72 }],
-    ["portable-charger", "charging", "شاحن متنقل للسفر", "Portable Travel Charger", PHOTOS.yellowPort, 14500, { compareAtPrice: 16000, sold90: 31 }],
+    ["portable-charger", "on-the-go", "شاحن متنقل للسفر", "Portable Travel Charger", PHOTOS.yellowPort, 14500, { compareAtPrice: 16000, sold90: 31 }],
     ["wall-cable-holster", "charging", "حامل كابل حائط", "Wall Cable Holster", PHOTOS.holster, 1200, { sold90: 58 }],
     ["charging-port-cover", "charging", "غطا مدخل الشحن", "Charging Port Cover", PHOTOS.whitePortSmall, 350, { sold90: 44 }],
     ["rubber-floor-mats", "cabin", "دواسات كاوتش", "Rubber Floor Mats", PHOTOS.floorMat, 950, { sold90: 120 }],
@@ -174,7 +176,7 @@ export const KAHRABA = libraryTemplate({
   key: KAHRABA_KEY,
   version: 3,
   changelog: "Kahraba v3: categories after the hero, chargers before the install, one service block",
-  productPage: { thumbs: "side", band: "shelf", extras: ["product-perks"], copy: { back: L("رجوع للشواحن", "Back to the chargers"), reviews: L("رأي أصحاب الشواحن", "From charger owners"), related: L("إكسسوارات للعربية", "Accessories for the car") } },
+  productPage: { thumbs: "side", band: "shelf", extras: ["product-perks"], copy: { reviews: L("رأي أصحاب الشواحن", "From charger owners"), related: L("إكسسوارات للعربية", "Accessories for the car") } },
   name: L("كهربا", "Kahraba"),
   description: L(
     "شحن العربيات الكهربا: شاحن البيت، خطوات التركيب، احجز معاينة وأسئلة. أربع صفحات جاهزة.",

@@ -171,15 +171,18 @@ const DEMO = demoStore({
     ["bread", "عيش", "Bread", PHOTOS.rustic],
     ["pastry", "مخبوزات", "Pastry", PHOTOS.croissants],
     ["buns", "بريوش وعيش صغير", "Brioche & rolls", PHOTOS.sesameBuns],
+    ["sourdough", "ساوردو", "Sourdough", PHOTOS.sourdough],
+    ["subscriptions", "اشتراكات", "Subscriptions", PHOTOS.loavesBuns],
+    ["breakfast", "فطار", "Breakfast", PHOTOS.croissantCoffee],
   ],
   products: [
     // The first featured product fills hero-big-word: a wide landscape photo (template-rules, owner 2026-10-27).
-    ["country-sourdough", "bread", "ساوردو بلدي", "Country Sourdough", PHOTOS.sourdoughWide, 120, { isFeatured: true, rating: 4.9, sold90: 640 }],
+    ["country-sourdough", "sourdough", "ساوردو بلدي", "Country Sourdough", PHOTOS.sourdoughWide, 120, { isFeatured: true, rating: 4.9, sold90: 640 }],
     ["scored-wheat-loaf", "bread", "رغيف قمح منقوش", "Scored Wheat Loaf", PHOTOS.scored, 140, { sold90: 60 }],
     ["rustic-white", "bread", "رغيف أبيض ريفي", "Rustic White Loaf", PHOTOS.rustic, 110, { sold90: 150 }],
-    ["weekly-loaf-subscription", "bread", "اشتراك رغيف أسبوعي", "Weekly Loaf Subscription", PHOTOS.loavesBuns, 380, { isFeatured: true, sold90: 110 }],
+    ["weekly-loaf-subscription", "subscriptions", "اشتراك رغيف أسبوعي", "Weekly Loaf Subscription", PHOTOS.loavesBuns, 380, { isFeatured: true, sold90: 110 }],
     ["butter-croissant", "pastry", "كرواسون زبدة", "Butter Croissant", PHOTOS.croissants, 45, { rating: 4.9, sold90: 520 }],
-    ["croissant-breakfast", "pastry", "فطار كرواسون وقهوة", "Croissant Breakfast", PHOTOS.croissantCoffee, 95, { sold90: 90 }],
+    ["croissant-breakfast", "breakfast", "فطار كرواسون وقهوة", "Croissant Breakfast", PHOTOS.croissantCoffee, 95, { sold90: 90 }],
     ["brioche-box", "buns", "بوكس بريوش", "Brioche Box", PHOTOS.briocheBoard, 180, { compareAtPrice: 210, sold90: 90 }],
     ["sesame-buns", "buns", "عيش سمسم", "Sesame Buns, 6", PHOTOS.sesameBuns, 75, { inStock: false, sold90: 70 }],
   ],
@@ -231,5 +234,5 @@ export const LOAF = libraryTemplate({
     },
   ],
   demo: DEMO,
-  productPage: { surface: "shelf", thumbs: "bottom", band: "brand", copy: { back: L("رجوع للفرن", "Back to the bakery"), reviews: L("اللي ذاقوه قالوا", "From our regulars"), related: L("من رف النهارده", "From today's shelf") } },
+  productPage: { surface: "shelf", thumbs: "bottom", band: "brand", copy: { reviews: L("اللي ذاقوه قالوا", "From our regulars"), related: L("من رف النهارده", "From today's shelf") } },
 });

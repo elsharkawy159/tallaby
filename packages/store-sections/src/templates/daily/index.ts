@@ -220,5 +220,5 @@ export const DAILY = libraryTemplate({
     },
   ],
   demo: DEMO,
-  productPage: { thumbs: "bottom", band: "brand", extras: ["product-shipping"], copy: { back: L("رجوع للمتجر", "Back to the shop"), reviews: L("الناس بتقول إيه", "What people say"), related: L("حاجات تحتاجها كمان", "More you may need") } },
+  productPage: { thumbs: "bottom", band: "brand", extras: ["product-shipping"], copy: { reviews: L("الناس بتقول إيه", "What people say"), related: L("حاجات تحتاجها كمان", "More you may need") } },
 });

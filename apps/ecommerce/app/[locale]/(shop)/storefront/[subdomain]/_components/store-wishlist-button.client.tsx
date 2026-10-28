@@ -13,7 +13,8 @@ const ROUND = "size-9 rounded-full border border-(--sf-line) bg-(--sf-paper) tex
  * signed-in shopper toggles their wishlist (the same server actions as the
  * marketplace); a guest gets the sign-in dialog instead of an error.
  */
-export function StoreWishlistButton({ productId }: { productId: string }) {
+export function StoreWishlistButton({ productId, className }: { productId: string; /** In place of the card look (e.g. the product gallery's 44px button). */ className?: string }) {
+  const round = className ?? ROUND;
   const t = useTranslations("toast");
   const { user, isLoading } = useAuthUserContext();
   const { open } = useAuthDialog();
@@ -22,7 +23,7 @@ export function StoreWishlistButton({ productId }: { productId: string }) {
     return (
       <button
         type="button"
-        className={`inline-flex items-center justify-center ${ROUND}`}
+        className={`inline-flex items-center justify-center ${round}`}
         disabled={isLoading}
         onClick={() => open("signin")}
         aria-label={t("signInToWishlist")}
@@ -31,5 +32,5 @@ export function StoreWishlistButton({ productId }: { productId: string }) {
       </button>
     );
   }
-  return <WishlistButton productId={productId} size="sm" variant="outline" showText={false} className={ROUND} />;
+  return <WishlistButton productId={productId} size="sm" variant="outline" showText={false} className={round} />;
 }

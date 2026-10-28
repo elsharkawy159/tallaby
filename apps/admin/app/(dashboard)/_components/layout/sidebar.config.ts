@@ -12,6 +12,7 @@ import {
   Settings,
   ShoppingBag,
   ShoppingCart,
+  Sparkles,
   Store,
   Tag,
   TicketPercent,
@@ -188,6 +189,7 @@ export const sidebarSections: SidebarSection[] = [
         countKey: "pendingAdRequests",
         countLabel: "Ad requests waiting for review",
       },
+      { key: "aiUsage", title: "AI usage", href: "/ai-usage", icon: Sparkles },
     ],
   },
   // Design library (Templates, Sections): code-only since 2026-10-27 (0109); its admin screens are disabled.

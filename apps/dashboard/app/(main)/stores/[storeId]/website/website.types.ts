@@ -12,6 +12,8 @@ export type WebsiteOverviewData = {
   readOnly: boolean;
   liveUrl: string;
   hostname: string;
+  /** The store's tallaby.com address (the same as `hostname` without a custom domain). */
+  defaultHostname: string;
   siteStatus: WebsiteSiteStatus;
   /** A builder revision is what the store host shows (otherwise Tallaby Classic). */
   isLive: boolean;

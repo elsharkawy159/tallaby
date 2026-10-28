@@ -154,17 +154,19 @@ const DEMO = demoStore({
     ["necklaces", "عقود", "Necklaces", PHOTOS.strands],
     ["earrings", "حلقان", "Earrings", PHOTOS.dropHoops],
     ["bracelets", "غوايش", "Bracelets", PHOTOS.baroque],
+    ["baroque", "لولي باروك", "Baroque pearls", PHOTOS.baroque],
+    ["sets", "أطقم", "Sets", PHOTOS.shellPlate],
   ],
   products: [
     ["freshwater-strand", "necklaces", "عقد لولي مية عذبة", "Freshwater Strand", PHOTOS.freshwater, 1980, { isFeatured: true, rating: 4.8, sold90: 160 }],
     ["pearl-drop-hoops", "earrings", "حلق هوب بلولية", "Pearl Drop Hoops", PHOTOS.dropHoops, 1188, { sold90: 120 }],
-    ["baroque-bracelet", "bracelets", "غويشة لولي باروك", "Baroque Pearl Bracelet", PHOTOS.baroque, 1740, { sold90: 88 }],
+    ["baroque-bracelet", "baroque", "غويشة لولي باروك", "Baroque Pearl Bracelet", PHOTOS.baroque, 1740, { sold90: 88 }],
     ["classic-pearl-bracelet", "bracelets", "غويشة لولي كلاسيك", "Classic Pearl Bracelet", PHOTOS.classicBracelet, 1140, { sold90: 44 }],
     ["three-row-bracelet", "bracelets", "غويشة ٣ صفوف", "Three-Row Bracelet", PHOTOS.threeRow, 3480, { compareAtPrice: 4080, isFeatured: true, sold90: 31 }],
     ["crystal-pearl-earrings", "earrings", "حلق كريستال ولولي", "Crystal Pearl Earrings", PHOTOS.crystalEarrings, 1440, { compareAtPrice: 1680, sold90: 52 }],
     ["layered-strands", "necklaces", "عقود طبقات", "Layered Strands", PHOTOS.layered, 2650, { rating: 4.9, sold90: 36 }],
     ["coin-pearl-necklace", "necklaces", "عقد عملة ولولي", "Coin & Pearl Necklace", PHOTOS.coinPearl, 1590, { sold90: 40 }],
-    ["pearl-brooch-set", "necklaces", "طقم لولي وبروش", "Pearl & Brooch Set", PHOTOS.shellPlate, 2900, { inStock: false, sold90: 18 }],
+    ["pearl-brooch-set", "sets", "طقم لولي وبروش", "Pearl & Brooch Set", PHOTOS.shellPlate, 2900, { inStock: false, sold90: 18 }],
   ],
 });
 
@@ -172,7 +174,7 @@ export const LULU = libraryTemplate({
   key: LULU_KEY,
   version: 3,
   changelog: "Lulu v3: categories, section order",
-  productPage: { thumbs: "side", button: "outline", gallery: "end", band: "paper", copy: { back: L("رجوع للؤلؤ", "Back to the pearls"), reviews: L("رأي من لبسته", "From those who wear it"), related: L("لؤلؤ يليق معاه", "Pearls to wear with it") } },
+  productPage: { thumbs: "side", button: "outline", gallery: "end", band: "paper", copy: { reviews: L("رأي من لبسته", "From those who wear it"), related: L("لؤلؤ يليق معاه", "Pearls to wear with it") } },
   name: L("لولو", "Lulu"),
   description: L(
     "لولي مية عذبة: هيرو نصين، بنختار إزاي، قطع جديدة، حجز معاينة، كلمة المؤسسة والآراء. أربع صفحات جاهزة.",

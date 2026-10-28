@@ -31,6 +31,8 @@ export interface Seller {
   /** Where the seller heard about Tallaby (0099); null = not answered yet. */
   heardAboutUs?: string | null;
   heardAboutUsOther?: string | null;
+  /** Last time an admin opened WhatsApp from the sellers table (0113); null = never. */
+  adminContactedAt?: string | null;
   /** The owner's user account (sellers.id = users.id). */
   ownerName?: string | null;
   ownerEmail?: string | null;

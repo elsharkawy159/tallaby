@@ -58,6 +58,7 @@ export function ShippingSection({
       summary={summary}
       summaryTone={hasHandling ? "ok" : submitCount > 0 ? "bad" : "need"}
       invalid={Boolean(weightError || handlingError)}
+      filled={hasWeight || Boolean(freeDelivery)}
     >
       {/*
         Fulfillment method is hidden for now (owner, 2026-10-26): every seller

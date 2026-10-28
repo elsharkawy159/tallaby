@@ -30,9 +30,12 @@ export type ProductPageSpec = {
   button?: "solid" | "outline";
   /** Reviews section background; default "shelf". */
   band?: "paper" | "shelf" | "brand";
-  /** Template copy: back link, reviews title and related products title. */
-  copy?: { back?: DesignText; reviews?: DesignText; related?: DesignText };
-  /** Store-wide library sections inserted after the main section; default none. */
+  /** Template copy: reviews title and related products title (the breadcrumbs use the package's own copy). */
+  copy?: { reviews?: DesignText; related?: DesignText };
+  /**
+   * Store-wide library sections inserted after the main section; default none.
+   * With `product-perks`, the buy box's own perks box is switched off.
+   */
   extras?: readonly ("product-perks" | "product-shipping")[];
 };
 
@@ -49,7 +52,6 @@ const REVIEWS_COLUMN = "العمود";
 const REVIEWS_CONTAINER = "الحاوية";
 const SECTION_TITLE = "العنوان";
 // The designs' copy the template copy replaces.
-const BACK_COPY = "العودة للمتجر";
 const REVIEWS_COPY = "رأي اللي جربوه";
 const RELATED_COPY = "ممكن يعجبك كمان";
 
@@ -88,14 +90,13 @@ export function productPage(lib: Lib, spec: ProductPageSpec = {}): Design[] {
   const mainNodes: Record<string, NodePatch> = {
     [GALLERY]: { props: { thumbs: spec.thumbs ?? "bottom" }, ...(spec.gallery === "end" && { style: { order: 2 }, tablet: { order: 0 } }) },
   };
-  if (spec.button === "outline") mainNodes[BUY_BOX] = { props: { variant: "outline" } };
+  // The perks section already says what the buy box's perks box would: keep one.
+  const buyBoxProps = { ...(spec.button === "outline" && { variant: "outline" }), ...(spec.extras?.includes("product-perks") && { perks: false }) };
+  if (Object.keys(buyBoxProps).length) mainNodes[BUY_BOX] = { props: buyBoxProps };
   const surface = spec.surface ?? "card";
   if (surface !== "flat") mainNodes[BUY_COLUMN] = SURFACES[surface];
 
-  const main = lib("product-main", {
-    nodes: withHeading(mainNodes, TITLE),
-    ...(spec.copy?.back && { text: { [BACK_COPY]: spec.copy.back } }),
-  });
+  const main = lib("product-main", { nodes: withHeading(mainNodes, TITLE) });
   const reviews = lib("product-reviews", {
     nodes: withHeading(bandNodes(spec.band ?? "shelf"), SECTION_TITLE),
     ...(spec.copy?.reviews && { text: { [REVIEWS_COPY]: spec.copy.reviews } }),

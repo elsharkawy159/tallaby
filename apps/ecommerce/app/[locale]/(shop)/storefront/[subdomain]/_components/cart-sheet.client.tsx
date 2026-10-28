@@ -35,8 +35,10 @@ export function StoreCartSheet({
   fontClassName,
 }: {
   storeName: string;
-  /** The storefront font's CSS variable class. Passed in because next/font
-   *  modules can't be imported from client components (Turbopack build). */
+  /** The storefront font's CSS variable class, plus the site root class on a
+   *  built site so the portaled sheet gets the store's brand colors and fonts.
+   *  Passed in because next/font modules can't be imported from client
+   *  components (Turbopack build). */
   fontClassName: string;
 }) {
   const t = useTranslations("storefront");
@@ -67,10 +69,10 @@ export function StoreCartSheet({
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <SheetContent side={locale === "ar" ? "left" : "right"} className={cn(fontClassName, s.tokens, "flex w-full flex-col gap-0 p-5 sm:max-w-md")}>
+      <SheetContent side={locale === "ar" ? "left" : "right"} data-sf-motion="off" className={cn(s.tokens, fontClassName, "flex w-full flex-col gap-0 bg-(--sf-paper) p-5 text-(--sf-ink) sm:max-w-md")}>
         <SheetHeader className="p-0 pb-2 text-start">
           <SheetTitle className="text-xl font-bold">{t("cartTitle")}</SheetTitle>
-          <SheetDescription className="sr-only">{t("cartScopeNote", { store: storeName })}</SheetDescription>
+          <SheetDescription className="sr-only">{t("cartTitle")}</SheetDescription>
         </SheetHeader>
         <div className="min-h-0 flex-1">
           <StorefrontCart storeName={storeName} onNavigate={() => setOpen(false)} />

@@ -54,7 +54,6 @@ import { ZAY } from "./zay";
 import { SITARA } from "./sitara";
 import { SHANTA } from "./shanta";
 import { TASFYA } from "./tasfya";
-import { LAYALI } from "./layali";
 import { KABL } from "./kabl";
 import { SADA } from "./sada";
 import { ZAKI } from "./zaki";
@@ -120,14 +119,55 @@ import { KHOLKHAL } from "./kholkhal";
 import { FARHA } from "./farha";
 import { NASHAT } from "./nashat";
 import { TARIK } from "./tarik";
+import { FURNITURE_BOLD } from "./furniture-bold";
+import { FURNITURE_LUXE } from "./furniture-luxe";
+import { FURNITURE_WARM } from "./furniture-warm";
+import { FASHION_BOLD } from "./fashion-bold";
+import { FASHION_LUXE } from "./fashion-luxe";
+import { FASHION_WARM } from "./fashion-warm";
+import { ELECTRONICS_BOLD } from "./electronics-bold";
+import { ELECTRONICS_LUXE } from "./electronics-luxe";
+import { ELECTRONICS_WARM } from "./electronics-warm";
+import { KIDS_BOLD } from "./kids-bold";
+import { KIDS_LUXE } from "./kids-luxe";
+import { KIDS_WARM } from "./kids-warm";
+import { BEAUTY_BOLD } from "./beauty-bold";
+import { BEAUTY_LUXE } from "./beauty-luxe";
+import { BEAUTY_WARM } from "./beauty-warm";
+import { GROCERY_BOLD } from "./grocery-bold";
+import { GROCERY_LUXE } from "./grocery-luxe";
+import { GROCERY_WARM } from "./grocery-warm";
+import { PERFUMES_BOLD } from "./perfumes-bold";
+import { PERFUMES_LUXE } from "./perfumes-luxe";
+import { PERFUMES_WARM } from "./perfumes-warm";
+import { JEWELRY_BOLD } from "./jewelry-bold";
+import { JEWELRY_LUXE } from "./jewelry-luxe";
+import { JEWELRY_WARM } from "./jewelry-warm";
+import { GIFTS_BOLD } from "./gifts-bold";
+import { GIFTS_LUXE } from "./gifts-luxe";
+import { GIFTS_WARM } from "./gifts-warm";
+import { SPORTS_BOLD } from "./sports-bold";
+import { SPORTS_LUXE } from "./sports-luxe";
+import { SPORTS_WARM } from "./sports-warm";
 import { templateRefConfig } from "./ref-config";
 import type { TemplateDefinition, TemplateDemo } from "./types";
 
 /** Templates 02–110, built from section-library designs (`library-template.ts`), in registry order. */
 export const LIBRARY_TEMPLATES: readonly TemplateDefinition[] = [MODE, STREETWEAR, KASR, TECHHUB, VOLT, ARCADE, ARENA, PURE, GLOW, ELIXIR, BOTANICA, NEST, DAILY, HEARTH, SIZZLE, HARVEST, LOAF, ROAST, VERDANT, LOFT, OAK, SAKAN, LUMIERE, KARAT, FADDA, PLAYROOM, BAMBINO, DOODLE, HEKAYA, PACE, STRIDE, CORE, BASECAMP, GARAGE, DRIVE, MOTO,
   BASHRA, SUFRA, SABAHO, DAR, SHABKA, HADAYA, REP, PITSTOP, GHORZA,
-  KETTAN, ZAY, SITARA, SHANTA, TASFYA, LAYALI, KABL, SADA, ZAKI, SAA, TANY, NADA, KOHL, OUD, SABON, BARBER, MATBAKH, FOKHAR, TAWLA, TANZIM, QAHWA, KHODAR, LAHMA, HALAWA, ATARA, DOKAN, BUNN, MOBILIA, ZAREA, NOUR, MAFRASH, ROKN, ZAHRA, NUQRA, LULU, SAAT, MAHR, LEGO, MAMA, MADRASA, HIKAYA, AHLAM, YOGA, KOORA, DARRAGA, SABAHA, BOXING, TYRE, ZEINA, KAHRABA, SAFAR, GARAGY,
+  KETTAN, ZAY, SITARA, SHANTA, TASFYA, KABL, SADA, ZAKI, SAA, TANY, NADA, KOHL, OUD, SABON, BARBER, MATBAKH, FOKHAR, TAWLA, TANZIM, QAHWA, KHODAR, LAHMA, HALAWA, ATARA, DOKAN, BUNN, MOBILIA, ZAREA, NOUR, MAFRASH, ROKN, ZAHRA, NUQRA, LULU, SAAT, MAHR, LEGO, MAMA, MADRASA, HIKAYA, AHLAM, YOGA, KOORA, DARRAGA, SABAHA, BOXING, TYRE, ZEINA, KAHRABA, SAFAR, GARAGY,
   MAWSEM, SHASHA, WARD, BEITY, SOUQ, SALON, KHOLKHAL, FARHA, NASHAT, TARIK,
+  // Niche templates (2026-10-28): three per niche, with the 12-slot home (top bar to footer).
+  FURNITURE_LUXE, FURNITURE_BOLD, FURNITURE_WARM,
+  FASHION_LUXE, FASHION_BOLD, FASHION_WARM,
+  ELECTRONICS_LUXE, ELECTRONICS_BOLD, ELECTRONICS_WARM,
+  KIDS_LUXE, KIDS_BOLD, KIDS_WARM,
+  BEAUTY_LUXE, BEAUTY_BOLD, BEAUTY_WARM,
+  GROCERY_LUXE, GROCERY_BOLD, GROCERY_WARM,
+  PERFUMES_LUXE, PERFUMES_BOLD, PERFUMES_WARM,
+  JEWELRY_LUXE, JEWELRY_BOLD, JEWELRY_WARM,
+  GIFTS_LUXE, GIFTS_BOLD, GIFTS_WARM,
+  SPORTS_LUXE, SPORTS_BOLD, SPORTS_WARM,
 ];
 
 export const CODE_TEMPLATES: readonly TemplateDefinition[] = [CLASSIC, ATELIER, ...LIBRARY_TEMPLATES];

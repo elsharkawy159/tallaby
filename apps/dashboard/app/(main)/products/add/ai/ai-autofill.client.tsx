@@ -1,34 +1,54 @@
 "use client"
 
 import { useRef, useState } from "react"
-import { useFormContext } from "react-hook-form"
+import { useForm, useFormContext, useWatch } from "react-hook-form"
 import { useDropzone } from "react-dropzone"
 import { useTranslations } from "next-intl"
 import { toast } from "sonner"
-import { FileText, ImagePlus, LoaderCircle, Paperclip, Sparkles, Undo2, X } from "lucide-react"
+import { ArrowUp, CircleHelp, FileText, ImagePlus, LoaderCircle, Paperclip, Sparkles, Undo2, X } from "lucide-react"
 import { Button } from "@workspace/ui/components/button"
-import { Textarea } from "@workspace/ui/components/textarea"
 import { Checkbox } from "@workspace/ui/components/checkbox"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@workspace/ui/components/tooltip"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@workspace/ui/components/dialog"
 import { createClient } from "@/supabase/client"
-import { cn, generateImageName } from "@/lib/utils"
+import { cn, generateImageName, getPublicUrl } from "@/lib/utils"
+import { useIsMobile } from "@/hooks/use-mobile"
 import type { SellerPricingSettings } from "@/lib/utils/product-pricing.lib"
-import { SectionCard, BUTTON_CLASS, SMALL_BUTTON_CLASS, TEXTAREA_CLASS } from "@/components/form/form-ui"
-import type { AddProductFormData, CategoryOption } from "../add-product.schema"
+import { SMALL_BUTTON_CLASS } from "@/components/form/form-ui"
+import type { AddProductFormData, CategoryOption, SupportedLocale } from "../add-product.schema"
 import { buildFormValuesFromImport } from "../build-form-values-from-import.lib"
+import { OPEN_SECTION_EVENT } from "../add-product.lib"
 import {
   AUTOFILL_IMAGE_TYPES,
   AUTOFILL_LIMITS,
   AUTOFILL_PDF_TYPE,
   type AutofillErrorCode,
   type MissingField,
+  type ProductAutofillOutput,
   type ProductAutofillResponse,
 } from "./ai-autofill.dto"
-import { planAutofillChanges, toParsedImport, type AutofillChange } from "./ai-autofill.lib"
+import {
+  contentBlocksToHtml,
+  describeCurrentListing,
+  planAutofillChanges,
+  sectionForPath,
+  toParsedImport,
+  type AutofillChange,
+} from "./ai-autofill.lib"
 
 /**
  * "Add your product with AI" (PLAN.md AI-1): photos, a PDF and/or a short
- * description fill the product form. The seller reviews and saves; nothing is
- * saved here. Photos also become the product's images.
+ * description fill the product form. On the edit page the same box takes a
+ * change request ("make the description longer") for the product as it is.
+ * The seller reviews and saves; nothing is saved here. Product photos also
+ * become the product's images; screenshots (of reviews, chats) do not.
  */
 
 /** Matches the form's image limit (basic-section MAX_PRODUCT_IMAGES). */
@@ -37,6 +57,7 @@ const MAX_PRODUCT_IMAGES = 8
 const AI_IMAGE_MAX_SIDE = 1536
 /** Product images the existing uploader accepts as they are. */
 const UPLOADABLE_TYPES = ["image/jpeg", "image/png"]
+const LOCALES: SupportedLocale[] = ["ar", "en"]
 
 type Picked = { id: string; file: File; preview: string }
 
@@ -46,6 +67,8 @@ type Review = {
   warnings: string[]
   undo: AutofillChange[]
 }
+
+type PromptValues = { prompt: string }
 
 function loadImage (file: File): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -82,16 +105,67 @@ async function toJpeg (file: File, maxSide: number, quality = 0.85): Promise<Blo
 
 const renamed = (name: string, ext: string) => `${name.replace(/\.[^.]+$/, "") || "photo"}.${ext}`
 
+/** The help text: a tooltip on the `?` with a pointer, a dialog on touch screens. */
+function AiHelp ({ title, text }: { title: string; text: string }) {
+  const isMobile = useIsMobile()
+  const t = useTranslations("productForm.ai")
+  const trigger = (
+    <button
+      type="button"
+      aria-label={t("help")}
+      className="inline-flex size-6 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:outline-none"
+    >
+      <CircleHelp className="size-4" aria-hidden />
+    </button>
+  )
+
+  if (isMobile) {
+    return (
+      <Dialog>
+        <DialogTrigger asChild>{trigger}</DialogTrigger>
+        <DialogContent className="max-w-[calc(100%-2rem)] rounded-2xl sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-base">
+              <Sparkles className="size-4 text-primary" aria-hidden />
+              {title}
+            </DialogTitle>
+            <DialogDescription className="text-start leading-relaxed">{text}</DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
+    )
+  }
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>{trigger}</TooltipTrigger>
+      <TooltipContent side="bottom" className="max-w-xs text-pretty leading-relaxed">
+        {text}
+      </TooltipContent>
+    </Tooltip>
+  )
+}
+
 export function AiAutofillCard ({
   categories,
   sellerPricing,
+  mode = "add",
+  onAppliedChange,
 }: {
   categories: CategoryOption[]
   sellerPricing: SellerPricingSettings
+  /** "edit": the product exists, and the text is a change request. */
+  mode?: "add" | "edit"
+  /** +1 when a fill changed the form, -1 when it was undone; the form marks the saved product as AI-assisted (0112). */
+  onAppliedChange?: (delta: 1 | -1) => void
 }) {
   const t = useTranslations("productForm.ai")
   const form = useFormContext<AddProductFormData>()
-  const [text, setText] = useState("")
+  const isEdit = mode === "edit"
+  // The prompt has its own small form: registered (uncontrolled), so typing
+  // never re-renders the product form and no keystroke is lost.
+  const promptForm = useForm<PromptValues>({ defaultValues: { prompt: "" } })
+  const prompt = useWatch({ control: promptForm.control, name: "prompt" }) ?? ""
   const [images, setImages] = useState<Picked[]>([])
   const [pdf, setPdf] = useState<File | null>(null)
   const [replace, setReplace] = useState(false)
@@ -100,11 +174,9 @@ export function AiAutofillCard ({
   const [remaining, setRemaining] = useState<number | null>(null)
   const idSeq = useRef(0)
 
-  const hasInput = text.trim().length > 0 || images.length > 0 || pdf !== null
-  const formHasContent = (() => {
-    const values = form.getValues()
-    return Boolean(values.localized?.ar?.title?.trim() || values.localized?.en?.title?.trim())
-  })()
+  const hasInput = prompt.trim().length > 0 || images.length > 0 || pdf !== null
+  const [arTitle, enTitle] = useWatch({ control: form.control, name: ["localized.ar.title", "localized.en.title"] })
+  const formHasContent = Boolean(arTitle?.trim() || enTitle?.trim())
 
   const addFiles = (files: File[]) => {
     const nextImages = [...images]
@@ -147,7 +219,7 @@ export function AiAutofillCard ({
     },
   })
 
-  /** The photos join the product's images (up to the form limit); webp is stored as JPEG. */
+  /** Product photos join the product's images (up to the form limit); webp is stored as JPEG. */
   const uploadProductImages = async (picked: Picked[]) => {
     const current = form.getValues("images") ?? []
     const room = Math.max(0, MAX_PRODUCT_IMAGES - current.length)
@@ -178,28 +250,41 @@ export function AiAutofillCard ({
     if (added.length < Math.min(room, picked.length)) toast.warning(t("errors.photoUploadFailed"))
   }
 
-  const requestAutofill = async (): Promise<ProductAutofillResponse> => {
+  /** Sends the prompt and files; `sent` lists the images in the order the model numbers them. */
+  const requestAutofill = async (text: string, sent: Picked[]): Promise<ProductAutofillResponse> => {
     const body = new FormData()
-    body.set("text", text.trim())
+    body.set("text", text)
     for (const item of images) {
       const jpeg = await toJpeg(item.file, AI_IMAGE_MAX_SIDE).catch(() => null)
-      if (jpeg) body.append("images", jpeg, renamed(item.file.name, "jpg"))
+      if (!jpeg) continue
+      body.append("images", jpeg, renamed(item.file.name, "jpg"))
+      sent.push(item)
     }
     if (pdf) body.set("pdf", pdf, pdf.name)
+    if (isEdit) body.set("current", describeCurrentListing(form.getValues(), AUTOFILL_LIMITS.maxCurrentLength))
     const response = await fetch("/api/ai/product-autofill", { method: "POST", body })
     try {
       return (await response.json()) as ProductAutofillResponse
     } catch {
-      return { ok: false, error: response.status === 413 ? "tooLarge" : "failed" }
+      // A non-JSON body comes from the platform (size limit or the 60 s cut-off), not the route.
+      const error = response.status === 413 ? "tooLarge" : response.status === 504 ? "timeout" : "failed"
+      return { ok: false, error }
     }
   }
 
-  const run = async () => {
+  /** The model's picks; when it marked none and found no reviews, every image counts as a product photo. */
+  const productPhotos = (output: ProductAutofillOutput, sent: Picked[]) =>
+    output.productPhotos.length || output.reviews.length
+      ? output.productPhotos.map((index) => sent[index]).filter((item): item is Picked => Boolean(item))
+      : sent
+
+  const run = async ({ prompt: text }: PromptValues) => {
     if (!hasInput || running) return
     setRunning(true)
     setReview(null)
     try {
-      const [response] = await Promise.all([requestAutofill(), uploadProductImages(images)])
+      const sent: Picked[] = []
+      const response = await requestAutofill(text.trim(), sent)
       if (!response.ok) {
         if (response.error === "dailyLimit") setRemaining(0)
         toast.error(t(`errors.${response.error satisfies AutofillErrorCode}`))
@@ -208,6 +293,8 @@ export function AiAutofillCard ({
 
       const { output, remainingToday } = response.result
       setRemaining(remainingToday)
+      await uploadProductImages(productPhotos(output, sent))
+
       // existingImages stops the import builder from fetching remote images.
       const built = await buildFormValuesFromImport(
         toParsedImport(output),
@@ -215,11 +302,29 @@ export function AiAutofillCard ({
         { existingImages: ["-"] }
       )
       const current = form.getValues()
-      const changes = planAutofillChanges(current, built.values, output, replace ? "replace" : "empty", {
-        categoryId: output.categoryId ?? (built.categoryMatched ? built.values.categoryId : null),
-        brandId: built.brandMatched ? built.values.brandId : undefined,
-        storeCategoryName: output.storeCategoryName,
-      })
+      const photoUrls = (current.images ?? []).map((path) => getPublicUrl(path, "products"))
+      const contentHtml = Object.fromEntries(
+        LOCALES.map((locale) => [
+          locale,
+          contentBlocksToHtml(
+            output.localized[locale].contentBlocks,
+            photoUrls,
+            output.localized[locale].title || current.localized?.[locale]?.title || ""
+          ),
+        ])
+      ) as Record<SupportedLocale, string>
+      const changes = planAutofillChanges(
+        current,
+        built.values,
+        output,
+        isEdit ? "edit" : replace ? "replace" : "empty",
+        {
+          categoryId: output.categoryId ?? (built.categoryMatched ? built.values.categoryId : null),
+          brandId: built.brandMatched ? built.values.brandId : undefined,
+          storeCategoryName: output.storeCategoryName,
+          contentHtml,
+        }
+      )
 
       // The variants editor builds rows from the types; undo must restore the
       // rows first, else it rebuilds types from the generated rows.
@@ -232,14 +337,19 @@ export function AiAutofillCard ({
       for (const { path, value } of changes) {
         form.setValue(path as never, value as never, { shouldDirty: true, shouldValidate: true })
       }
+      // Open every folded section the AI wrote into, so the seller sees it.
+      for (const section of new Set(changes.map(({ path }) => sectionForPath(path)))) {
+        document.dispatchEvent(new CustomEvent(OPEN_SECTION_EVENT, { detail: section }))
+      }
 
-      setReview({ filled: changes.length, missing: output.missing, warnings: output.warnings, undo })
-      setText("")
+      setReview({ filled: changes.length, missing: isEdit ? [] : output.missing, warnings: output.warnings, undo })
+      if (changes.length) onAppliedChange?.(1)
+      promptForm.reset({ prompt: "" })
       images.forEach((item) => URL.revokeObjectURL(item.preview))
       setImages([])
       setPdf(null)
       if (changes.length) toast.success(t("filledToast", { count: changes.length }))
-      else toast.message(t("nothingFilled"))
+      else toast.message(t(isEdit ? "nothingChanged" : "nothingFilled"))
     } catch (error) {
       console.error("AI autofill failed", error)
       toast.error(t("errors.failed"))
@@ -248,52 +358,57 @@ export function AiAutofillCard ({
     }
   }
 
+  const submit = promptForm.handleSubmit(run)
+
   const undoFill = () => {
     if (!review) return
     for (const { path, value } of review.undo) {
       form.setValue(path as never, value as never, { shouldDirty: true, shouldValidate: true })
     }
+    if (review.undo.length) onAppliedChange?.(-1)
     setReview(null)
     toast.message(t("undone"))
   }
 
   const outOfCalls = remaining === 0
+  const title = isEdit ? t("editTitle") : t("title")
+  const promptField = promptForm.register("prompt", {
+    setValueAs: (value: string) => value.slice(0, AUTOFILL_LIMITS.maxTextLength),
+  })
 
   return (
-    <SectionCard
+    <section
       id="sec-ai"
-      icon={Sparkles}
-      title={t("title")}
-      description={t("description")}
-      className="border-primary/30 bg-gradient-to-b from-primary/[0.04] to-transparent"
+      aria-labelledby="sec-ai-title"
+      className="scroll-mt-[136px] rounded-2xl border border-primary/25 bg-card p-3 md:scroll-mt-[88px] sm:p-3.5"
     >
+      <div className="mb-2 flex items-center gap-1.5 px-0.5">
+        <Sparkles className="size-4 shrink-0 text-primary" aria-hidden />
+        <h2 id="sec-ai-title" className="text-sm font-bold">
+          {title}
+        </h2>
+        <AiHelp title={title} text={isEdit ? t("editDescription") : t("description")} />
+        {!isEdit && formHasContent && (
+          <label className="ms-auto flex cursor-pointer items-center gap-1.5 text-xs text-muted-foreground">
+            <Checkbox checked={replace} onCheckedChange={(value) => setReplace(value === true)} disabled={running} />
+            {t("replaceAll")}
+          </label>
+        )}
+      </div>
+
       <div
         {...getRootProps()}
         className={cn(
-          "relative flex flex-col gap-3 rounded-xl transition-colors",
-          isDragActive && "ring-2 ring-primary/40 ring-offset-2 ring-offset-background"
+          "relative rounded-xl border bg-background transition-[border-color,box-shadow] focus-within:border-primary focus-within:ring-[3px] focus-within:ring-primary/15",
+          isDragActive && "border-primary ring-[3px] ring-primary/15"
         )}
       >
         <input {...getInputProps()} aria-label={t("attach")} />
-        <Textarea
-          value={text}
-          onChange={(event) => setText(event.target.value.slice(0, AUTOFILL_LIMITS.maxTextLength))}
-          onKeyDown={(event) => {
-            if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
-              event.preventDefault()
-              void run()
-            }
-          }}
-          placeholder={t("placeholder")}
-          disabled={running}
-          rows={3}
-          className={cn(TEXTAREA_CLASS, "min-h-[88px] resize-y")}
-        />
 
         {(images.length > 0 || pdf) && (
-          <ul className="flex flex-wrap gap-2" aria-label={t("attachments")}>
+          <ul className="flex flex-wrap gap-1.5 px-2.5 pt-2.5" aria-label={t("attachments")}>
             {images.map((item) => (
-              <li key={item.id} className="group relative size-16 overflow-hidden rounded-lg border bg-muted">
+              <li key={item.id} className="relative size-11 overflow-hidden rounded-lg border bg-muted">
                 {/* eslint-disable-next-line @next/next/no-img-element -- local blob preview */}
                 <img src={item.preview} alt="" className="size-full object-cover" />
                 <button
@@ -301,55 +416,69 @@ export function AiAutofillCard ({
                   onClick={() => removeImage(item.id)}
                   disabled={running}
                   aria-label={t("remove")}
-                  className="absolute end-1 top-1 rounded-full bg-background/90 p-0.5 shadow-sm"
+                  className="absolute end-0.5 top-0.5 rounded-full bg-background/90 p-0.5 shadow-sm"
                 >
-                  <X className="size-3.5" />
+                  <X className="size-3" />
                 </button>
               </li>
             ))}
             {pdf && (
-              <li className="flex h-16 max-w-[220px] items-center gap-2 rounded-lg border bg-muted px-3 text-xs">
-                <FileText className="size-5 shrink-0 text-primary" aria-hidden />
+              <li className="flex h-11 max-w-[200px] items-center gap-1.5 rounded-lg border bg-muted px-2.5 text-xs">
+                <FileText className="size-4 shrink-0 text-primary" aria-hidden />
                 <span className="truncate" dir="auto">{pdf.name}</span>
                 <button type="button" onClick={() => setPdf(null)} disabled={running} aria-label={t("remove")}>
-                  <X className="size-3.5" />
+                  <X className="size-3" />
                 </button>
               </li>
             )}
           </ul>
         )}
 
-        <div className="flex flex-wrap items-center gap-2">
-          <Button type="button" variant="neutral" className={SMALL_BUTTON_CLASS} onClick={open} disabled={running}>
+        <div className="flex items-end gap-1 p-1.5">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="size-9 shrink-0 rounded-lg text-muted-foreground"
+            onClick={open}
+            disabled={running}
+            aria-label={t("attach")}
+            title={t("limits", { images: AUTOFILL_LIMITS.maxImages, pdfMb: AUTOFILL_LIMITS.maxPdfBytes / 1024 / 1024 })}
+          >
             <Paperclip />
-            {t("attach")}
           </Button>
-          <span className="text-xs text-muted-foreground">
-            {t("limits", { images: AUTOFILL_LIMITS.maxImages, pdfMb: AUTOFILL_LIMITS.maxPdfBytes / 1024 / 1024 })}
-          </span>
-          <div className="ms-auto flex flex-wrap items-center gap-3">
-            {formHasContent && (
-              <label className="flex cursor-pointer items-center gap-2 text-xs text-muted-foreground">
-                <Checkbox checked={replace} onCheckedChange={(value) => setReplace(value === true)} disabled={running} />
-                {t("replaceAll")}
-              </label>
-            )}
-            <Button
-              type="button"
-              variant="accent"
-              className={cn(BUTTON_CLASS, "rounded-xl font-semibold")}
-              onClick={() => void run()}
-              disabled={!hasInput || running || outOfCalls}
-              aria-busy={running}
-            >
-              {running ? <LoaderCircle className="animate-spin" /> : <Sparkles />}
-              {running ? t("running") : t("fill")}
-            </Button>
-          </div>
+          <textarea
+            {...promptField}
+            aria-labelledby="sec-ai-title"
+            maxLength={AUTOFILL_LIMITS.maxTextLength}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
+                event.preventDefault()
+                void submit()
+              }
+            }}
+            placeholder={isEdit ? t("editPlaceholder") : t("placeholder")}
+            disabled={running}
+            rows={1}
+            dir="auto"
+            className="field-sizing-content max-h-40 min-h-9 flex-1 resize-none bg-transparent px-1.5 py-2 text-sm leading-5 outline-none placeholder:text-muted-foreground disabled:opacity-60"
+          />
+          <Button
+            type="button"
+            className="h-9 shrink-0 gap-1.5 rounded-lg px-3 text-[13px] font-semibold"
+            onClick={() => void submit()}
+            disabled={!hasInput || running || outOfCalls}
+            aria-busy={running}
+          >
+            {running ? <LoaderCircle className="animate-spin" /> : isEdit ? <Sparkles /> : <ArrowUp />}
+            <span className={cn(!running && "sr-only sm:not-sr-only")}>
+              {running ? t("running") : isEdit ? t("apply") : t("fill")}
+            </span>
+          </Button>
         </div>
 
         {isDragActive && (
-          <div className="pointer-events-none absolute inset-0 flex items-center justify-center rounded-xl bg-background/80 text-sm font-medium text-primary">
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center rounded-xl bg-background/85 text-sm font-medium text-primary">
             <ImagePlus className="me-2 size-5" aria-hidden />
             {t("dropHere")}
           </div>
@@ -357,50 +486,48 @@ export function AiAutofillCard ({
       </div>
 
       {running && (
-        <p className="text-sm text-muted-foreground" role="status" aria-live="polite">
-          <span className="animate-pulse">{t("thinking")}</span>
+        <p className="mt-2 px-0.5 text-xs text-muted-foreground" role="status" aria-live="polite">
+          <span className="animate-pulse">{t(isEdit ? "thinkingEdit" : "thinking")}</span>
         </p>
       )}
-
-      {outOfCalls && !running && <p className="text-xs text-destructive">{t("errors.dailyLimit")}</p>}
-      {remaining !== null && remaining > 0 && remaining <= 5 && (
-        <p className="text-xs text-muted-foreground">{t("remaining", { count: remaining })}</p>
+      {outOfCalls && !running && <p className="mt-2 px-0.5 text-xs text-destructive">{t("errors.dailyLimit")}</p>}
+      {remaining !== null && remaining > 0 && remaining <= 5 && !running && (
+        <p className="mt-2 px-0.5 text-xs text-muted-foreground">{t("remaining", { count: remaining })}</p>
       )}
 
       {review && (
-        <div className="flex flex-col gap-2 rounded-xl border border-primary/25 bg-primary/5 p-3.5 text-sm" role="status" aria-live="polite">
+        <div className="mt-2 flex flex-col gap-1.5 rounded-lg bg-primary/5 px-3 py-2 text-xs" role="status" aria-live="polite">
           <div className="flex flex-wrap items-center gap-2">
-            <Sparkles className="size-4 text-primary" aria-hidden />
             <span className="font-medium">{t("reviewTitle", { count: review.filled })}</span>
-            <div className="ms-auto flex gap-1.5">
+            <span className="text-muted-foreground">{t("reviewHint")}</span>
+            <div className="ms-auto flex gap-1">
               {review.undo.length > 0 && (
-                <Button type="button" variant="neutral" className={SMALL_BUTTON_CLASS} onClick={undoFill}>
+                <Button type="button" variant="neutral" className={cn(SMALL_BUTTON_CLASS, "h-7 px-2 text-xs")} onClick={undoFill}>
                   <Undo2 />
                   {t("undo")}
                 </Button>
               )}
-              <Button type="button" variant="ghost" className={SMALL_BUTTON_CLASS} onClick={() => setReview(null)}>
+              <Button type="button" variant="ghost" className={cn(SMALL_BUTTON_CLASS, "h-7 px-2 text-xs")} onClick={() => setReview(null)}>
                 {t("dismiss")}
               </Button>
             </div>
           </div>
-          <p className="text-xs text-muted-foreground">{t("reviewHint")}</p>
           {review.missing.length > 0 && (
-            <ul className="flex flex-wrap gap-1.5">
+            <ul className="flex flex-wrap gap-1">
               {review.missing.map((field) => (
-                <li key={field} className="rounded-full border border-amber-500/40 bg-amber-500/10 px-2.5 py-0.5 text-xs">
+                <li key={field} className="rounded-full border border-amber-500/40 bg-amber-500/10 px-2 py-0.5">
                   {t(`missing.${field}`)}
                 </li>
               ))}
             </ul>
           )}
           {review.warnings.map((warning) => (
-            <p key={warning} className="text-xs text-amber-700 dark:text-amber-400" dir="auto">
+            <p key={warning} className="text-amber-700 dark:text-amber-400" dir="auto">
               {warning}
             </p>
           ))}
         </div>
       )}
-    </SectionCard>
+    </section>
   )
 }

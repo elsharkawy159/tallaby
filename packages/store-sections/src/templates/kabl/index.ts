@@ -142,6 +142,7 @@ const DEMO = demoStore({
     ["power", "باور بانك", "Power banks", PHOTOS.slimBank],
     ["car", "للعربية", "For the car", PHOTOS.dashMount],
     ["cables", "كابلات", "Cables", PHOTOS.cableOrange],
+    ["kits", "باكدجات", "Bundles", PHOTOS.flatLay],
   ],
   products: [
     ["dual-usb-c-charger-35w", "chargers", "شاحن USB-C مزدوج ٣٥ وات", "Dual USB-C Charger 35W", PHOTOS.dualCharger, 390, { isFeatured: true, rating: 4.8, sold90: 410 }],
@@ -155,6 +156,7 @@ const DEMO = demoStore({
     ["braided-usb-c-cable", "cables", "كابل USB-C مضفّر", "Braided USB-C Cable", PHOTOS.cableC, 260, { isFeatured: true, rating: 4.9, sold90: 260 }],
     ["usb-cable-2m", "cables", "كابل USB برتقالي ٢ متر", "2 m Orange USB Cable", PHOTOS.cableOrange, 180, { sold90: 120 }],
     ["usb-cable-1m", "cables", "كابل USB أبيض ١ متر", "1 m White USB Cable", PHOTOS.cableWhite, 120, { inStock: false, sold90: 70 }],
+    ["charger-cable-bundle", "kits", "باكدج شاحن وكابل", "Charger & Cable Bundle", PHOTOS.flatLay, 490, { compareAtPrice: 580, sold90: 86 }],
   ],
 });
 
@@ -162,7 +164,7 @@ export const KABL = libraryTemplate({
   key: KABL_KEY,
   version: 3,
   changelog: "Kabl v3: category data tiles, section order, reviews to close",
-  productPage: { thumbs: "side", band: "shelf", extras: ["product-perks"], copy: { back: L("رجوع لكل الشواحن", "Back to all chargers"), reviews: L("رأي اللي شحنوا بيه", "From people who charge with it"), related: L("يشتغل معاه", "Works with") } },
+  productPage: { thumbs: "side", band: "shelf", extras: ["product-perks"], copy: { reviews: L("رأي اللي شحنوا بيه", "From people who charge with it"), related: L("يشتغل معاه", "Works with") } },
   name: L("كابل", "Kabl"),
   description: L(
     "شواحن وكابلات: بحث بالموديل أو الوات، الأكثر مبيعاً واختيار حسب المكان. أربع صفحات جاهزة.",

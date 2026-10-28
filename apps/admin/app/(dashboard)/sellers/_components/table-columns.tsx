@@ -35,6 +35,7 @@ import type { Seller } from "../sellers.types";
 import { customerHref, ordersHref, sellerHref, sellerWalletHref } from "../../_components/entity/entity-href.lib";
 import { PlatformFeeSummary } from "../../_components/entity/platform-fee.chunks";
 import { StoreSiteLink } from "../../_components/entity/store-site-link";
+import { SellerWhatsAppButton } from "./seller-whatsapp-button";
 
 /** Server-side filters (URL params) for the sellers table. */
 export const sellersFilters: DataTableFilter[] = [
@@ -252,6 +253,7 @@ export function getSellersColumns(
         const seller = row.original;
         return (
           <div className="flex items-center justify-end gap-2">
+            <SellerWhatsAppButton seller={seller} />
             {canApproveSeller(seller) && (
               <Button
                 size="sm"

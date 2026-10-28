@@ -53,6 +53,8 @@ export interface AddToCartButtonProps {
   buyNow?: boolean;
   /** Text in place of "Add to cart" / "Buy Now" (a store product page's own label). */
   label?: string;
+  /** The add icon: a cart (default) or a shopping bag (the store product page). */
+  icon?: "cart" | "bag";
 }
 
 export interface WishlistButtonProps {

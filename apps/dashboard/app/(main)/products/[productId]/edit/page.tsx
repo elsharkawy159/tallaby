@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
+import { aiConfigured } from "@workspace/ai";
 import { getProduct } from "@/actions/products";
 import { getAllCategories } from "@/actions/categories";
 import { EditProduct } from "./edit-product";
@@ -74,6 +75,7 @@ export default async function EditProductPage({
       sellerPricing={sellerPricing}
       sellerTaxonomy={sellerTaxonomy}
       linkHost={linkHost}
+      aiEnabled={aiConfigured()}
     />
   );
 }

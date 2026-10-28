@@ -270,6 +270,45 @@
     "freeDeliveryProgressStart": "0",
     "freeDeliveryProgressEnd": "200"
   },
+  "storeOffer": {
+    "title": "There's a special offer for you!",
+    "percentOff": "You've won {value}% off",
+    "amountOff": "You've won {value} off",
+    "copy": "Copy code",
+    "copied": "Code copied",
+    "continueShopping": "Continue shopping",
+    "endsIn": "Offer ends in",
+    "endsInLabel": "Offer ends in {days} days, {hours} hours and {minutes} minutes",
+    "units": {
+      "days": "Days",
+      "hours": "Hours",
+      "minutes": "Minutes",
+      "seconds": "Seconds"
+    }
+  },
+  "storeProduct": {
+    "save": "Save {amount}",
+    "discountBadge": "-{percent}%",
+    "offerEndsIn": "Offer ends in",
+    "endsInLabel": "Offer ends in {days} days, {hours} hours and {minutes} minutes",
+    "units": {
+      "days": "Days",
+      "hours": "Hours",
+      "minutes": "Minutes",
+      "seconds": "Seconds"
+    },
+    "liveViews": "<b>{count}</b> shoppers are viewing this right now",
+    "inStock": "In stock, ready to ship",
+    "lowStock": "Only {count} left",
+    "outOfStock": "Sold out",
+    "option": "Option",
+    "addToCart": "Add to cart",
+    "buyNow": "Buy now",
+    "goToCart": "Go to cart",
+    "checkout": "Checkout",
+    "photoOf": "Photo {index} of {total}",
+    "photos": "Product photos"
+  },
   "product": {
     "addToCart": "Add to Cart",
     "adding": "Adding...",
@@ -2058,7 +2097,6 @@
     "searchSeeAll": "See all {count, plural, one {# result} other {# results}} for “{query}”",
     "ratingSummary": "{rating} from {count, plural, one {# rating} other {# ratings}}",
     "cartTitle": "Your cart",
-    "cartScopeNote": "This cart is only for {store}. Your tallaby.com cart stays separate.",
     "cartEmpty": "Your cart is empty",
     "cartEmptyHint": "Add something from {store} and it will show up here.",
     "browseProducts": "Browse products",

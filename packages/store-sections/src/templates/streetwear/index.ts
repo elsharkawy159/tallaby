@@ -185,18 +185,22 @@ const DEMO = demoStore({
     ["bottoms", "بناطيل", "Bottoms", PHOTOS.sweatpants],
     ["shoes", "شوزات", "Shoes", PHOTOS.sneakers],
     ["bags", "شنط", "Bags", PHOTOS.messenger],
+    ["shirts", "قمصان", "Shirts", PHOTOS.shirtRack],
+    ["prints", "طباعات", "Graphic prints", PHOTOS.printTees],
+    ["blanks", "سادة", "Blanks", PHOTOS.blackHoodieRack],
   ],
   products: [
     ["drop07-heavy-hoodie", "hoodies", "هودي دروب ٠٧ تقيل", "Drop 07 Heavy Hoodie", PHOTOS.sageHoodie, 1650, { isFeatured: true, rating: 4.9, sold90: 132 }],
     ["washed-hoodie-duo", "hoodies", "هودي مغسول", "Washed Hoodie", PHOTOS.hoodiePair, 1450, { compareAtPrice: 1750, sold90: 58 }],
-    ["black-logo-hoodie", "hoodies", "هودي أسود سادة", "Black Blank Hoodie", PHOTOS.blackHoodieRack, 1550, { rating: 4.8, sold90: 44 }],
+    ["black-logo-hoodie", "blanks", "هودي أسود سادة", "Black Blank Hoodie", PHOTOS.blackHoodieRack, 1550, { rating: 4.8, sold90: 44 }],
     ["camo-tee", "tees", "تيشيرت مموّه", "Camo Tee", pexels(12262102, 900), 700, { sold90: 40 }],
-    ["plant-print-tee", "tees", "تيشيرت طباعة نبات", "Plant Print Tee", PHOTOS.printTees, 650, { rating: 4.7, sold90: 61 }],
+    ["plant-print-tee", "prints", "تيشيرت طباعة نبات", "Plant Print Tee", PHOTOS.printTees, 650, { rating: 4.7, sold90: 61 }],
     ["heavy-tee-pair", "tees", "تيشيرتين تقال", "Heavy Tee Pair", pexels(18186105, 900), 1100, { compareAtPrice: 1300, sold90: 33 }],
     ["lounge-joggers", "bottoms", "بنطلون جوجر", "Lounge Joggers", pexels(31961168, 900), 950, { rating: 4.7, sold90: 97 }],
     ["drawstring-sweatpants", "bottoms", "بنطلون سويت برباط", "Drawstring Sweatpants", PHOTOS.sweatpants, 900, { sold90: 21 }],
     ["grey-canvas-sneakers", "shoes", "كوتشي كانفاس رمادي", "Grey Canvas Sneakers", PHOTOS.sneakers, 1300, { sold90: 18 }],
     ["leather-messenger", "bags", "شنطة كروس جلد", "Leather Messenger", PHOTOS.messenger, 1300, { inStock: false, sold90: 39 }],
+    ["oversized-work-shirt", "shirts", "قميص أوفر سايز", "Oversized Work Shirt", PHOTOS.shirtRack, 1150, { sold90: 26 }],
   ],
 });
 
@@ -237,5 +241,5 @@ export const STREETWEAR = libraryTemplate({
     { slug: "faq", name: L("الأسئلة الشائعة", "FAQ"), seo: { title: L("الأسئلة الشائعة", "FAQ") }, sections: faq },
   ],
   demo: DEMO,
-  productPage: { thumbs: "side", headingCase: "upper", band: "brand", copy: { back: L("رجوع للشارع", "Back to the street"), reviews: L("الشارع بيقول إيه", "What the street says"), related: L("كمّل اللوك", "Run the full fit") } },
+  productPage: { thumbs: "side", headingCase: "upper", band: "brand", copy: { reviews: L("الشارع بيقول إيه", "What the street says"), related: L("كمّل اللوك", "Run the full fit") } },
 });

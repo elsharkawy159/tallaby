@@ -15,25 +15,25 @@ const TITLE = L("اسم المنتج", "Product name");
 
 export const classicProductMain = defineDesign({
   id: "tallaby-product-main",
-  version: 1,
+  version: 2,
   category: "product-page",
   subcategory: "buy-box",
   name: L("كلاسيك: المعرض وزر الشراء", "Classic: gallery and buy box"),
   description: L(
-    "صور المنتج جنب كارت شراء أبيض: البائع والمخزون والاسم والتقييم والسعر والاختيارات وزر الشراء والتفاصيل.",
-    "Product photos beside a white buy card: seller, stock, name, rating, price, options, buy box and details.",
+    "صور المنتج جنب كارت شراء أبيض: القسم والتقييم والاسم والسعر والمخزون والاختيارات وزر الشراء والتفاصيل.",
+    "Product photos beside a white buy card: category, rating, name, price, stock, options, buy box and details.",
   ),
-  keywords: ["product page", "classic", "tallaby", "gallery", "buy box", "صفحة المنتج", "كلاسيك", "شراء"],
+  keywords: ["product page", "classic", "tallaby", "gallery", "buy box", "breadcrumbs", "صفحة المنتج", "كلاسيك", "شراء"],
   tree: (t) =>
     t.section(
-      { label: L("المنتج", "Product"), style: { paddingTop: 28, paddingBottom: 0 }, mobile: { paddingTop: 16 } },
+      { label: L("المنتج", "Product"), style: { paddingTop: 20, paddingBottom: 0 }, mobile: { paddingTop: 12 } },
       [
         t.container(
           [
-            t.textLink(L("رجوع للمتجر", "Back to the store"), LINKS.home, {
-              label: L("رابط الرجوع", "Back link"),
-              style: { fontSize: "sm", fontWeight: "bold", color: "primary", marginBottom: 20 },
-              mobile: { marginBottom: 14 },
+            t.productBreadcrumbs({
+              label: L("مسار الصفحة", "Breadcrumbs"),
+              style: { marginBottom: 20 },
+              mobile: { marginBottom: 12 },
             }),
             t.grid(
               [
@@ -45,26 +45,25 @@ export const classicProductMain = defineDesign({
                 }),
                 t.stack(
                   [
-                    t.productSeller({ label: L("البائع", "Seller") }),
-                    t.productStock({ label: L("المخزون", "Stock") }),
+                    t.productRating({ label: L("التقييم", "Rating") }),
                     t.heading(TITLE, "h1", {
                       label: L("اسم المنتج", "Product name"),
                       role: "title",
                       bind: "title",
-                      style: { fontSize: "3xl", fontWeight: "extrabold", lineHeight: "tight" },
+                      style: { fontSize: "3xl", fontWeight: "extrabold", lineHeight: "snug" },
                       mobile: { fontSize: "2xl", lineHeight: "snug" },
                     }),
-                    t.productRating({ label: L("التقييم", "Rating") }),
-                    t.productPrice({ label: L("السعر", "Price"), style: { marginTop: 4, fontWeight: "extrabold" } }),
-                    t.productVariants({ label: L("الاختيارات", "Options"), style: { marginTop: 8 } }),
-                    t.productBuyBox({ label: L("زر الشراء", "Buy box"), style: { marginTop: 8 } }),
-                    t.productDetails({ label: L("التفاصيل", "Details"), style: { marginTop: 16 } }),
+                    t.productPrice({ label: L("السعر", "Price"), style: { fontWeight: "extrabold" } }),
+                    t.productStock({ label: L("المخزون", "Stock") }),
+                    t.productVariants({ label: L("الاختيارات", "Options"), style: { marginTop: 4 } }),
+                    t.productBuyBox({ label: L("زر الشراء", "Buy box"), style: { marginTop: 4 } }),
+                    t.productDetails({ label: L("التفاصيل", "Details"), style: { marginTop: 8 } }),
                   ],
                   {
                     label: L("عمود الشراء", "Buy column"),
-                    style: { ...CARD, gap: 14, colSpan: 5, paddingTop: 28, paddingBottom: 28, paddingStart: 28, paddingEnd: 28 },
+                    style: { ...CARD, gap: 20, colSpan: 5, paddingTop: 28, paddingBottom: 28, paddingStart: 28, paddingEnd: 28 },
                     tablet: { colSpan: 1 },
-                    mobile: { gap: 12, paddingTop: 18, paddingBottom: 18, paddingStart: 18, paddingEnd: 18 },
+                    mobile: { gap: 16, paddingTop: 18, paddingBottom: 18, paddingStart: 18, paddingEnd: 18 },
                   },
                 ),
               ],

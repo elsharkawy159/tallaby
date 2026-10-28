@@ -172,16 +172,20 @@ const DEMO = demoStore({
     ["audio", "سماعات", "Headsets", PHOTOS.headset],
     ["setups", "سيت أب كامل", "Full setups", PHOTOS.pcDesk],
     ["power", "باور", "Power", PHOTOS.cable],
+    ["controllers", "دراعات", "Controllers", PHOTOS.glowControllers],
+    ["switches", "سويتشات", "Switches", PHOTOS.switches],
+    ["cables", "كابلات", "Cables", PHOTOS.cable],
   ],
   products: [
     ["mechanical-rgb-keyboard", "keyboards", "كيبورد ميكانيكال RGB", "Mechanical RGB Keyboard", PHOTOS.rgbKeyboard, 3450, { isFeatured: true, rating: 4.8, sold90: 212 }],
-    ["switch-tester-kit", "keyboards", "طقم سويتشات للتجربة", "Switch Tester Kit", PHOTOS.switches, 690, { sold90: 73 }],
-    ["ultralight-wireless-mouse", "mice", "ماوس لاسلكي خفيف", "Ultralight Wireless Mouse", PHOTOS.mouseDesk, 1890, { rating: 4.7, sold90: 164 }],
+    ["switch-tester-kit", "switches", "طقم سويتشات للتجربة", "Switch Tester Kit", PHOTOS.switches, 690, { sold90: 73 }],
+    ["ultralight-wireless-mouse", "mice", "ماوس لاسلكي خفيف", "Ultralight Wireless Mouse", PHOTOS.mouseDesk, 1890, { isFeatured: true, rating: 4.7, sold90: 164 }],
     ["pro-gaming-headset", "audio", "سماعة جيمنج برو", "Pro Gaming Headset", PHOTOS.headset, 2650, { isFeatured: true, sold90: 98 }],
-    ["streamer-desk-bundle", "setups", "باقة مكتب الستريمر", "Streamer Desk Bundle", PHOTOS.editDesk, 9900, { compareAtPrice: 11400, sold90: 22 }],
+    ["streamer-desk-bundle", "setups", "باقة مكتب الستريمر", "Streamer Desk Bundle", PHOTOS.editDesk, 9900, { compareAtPrice: 11400, isFeatured: true, sold90: 22 }],
     ["console-corner-kit", "setups", "باقة ركن الكونسول", "Console Corner Kit", PHOTOS.neonController, 4200, { sold90: 17 }],
-    ["glow-controller", "setups", "دراع بإضاءة", "Glow Controller", PHOTOS.glowControllers, 1590, { compareAtPrice: 1790, sold90: 40 }],
+    ["glow-controller", "controllers", "دراع بإضاءة", "Glow Controller", PHOTOS.glowControllers, 1590, { compareAtPrice: 1790, sold90: 40 }],
     ["fast-power-bank", "power", "باور بانك سريع", "Fast Power Bank", PHOTOS.powerBank, 890, { inStock: false, rating: 4.6, sold90: 140 }],
+    ["braided-usb-c-cable", "cables", "كابل USB-C مضفّر", "Braided USB-C Cable", PHOTOS.cable, 190, { sold90: 210 }],
   ],
 });
 
@@ -226,5 +230,5 @@ export const ARENA = libraryTemplate({
     { slug: "faq", name: L("الأسئلة الشائعة", "FAQ"), seo: { title: L("الأسئلة الشائعة", "FAQ") }, sections: faq },
   ],
   demo: DEMO,
-  productPage: { thumbs: "bottom", surface: "shelf", band: "shelf", extras: ["product-perks"], copy: { back: L("رجوع للمتجر", "Back to the store"), reviews: L("رأي اللي جربوا", "From players who tried it"), related: L("معدات تكمّل السيتاب", "Gear to finish the setup") } },
+  productPage: { thumbs: "bottom", surface: "shelf", band: "shelf", extras: ["product-perks"], copy: { reviews: L("رأي اللي جربوا", "From players who tried it"), related: L("معدات تكمّل السيتاب", "Gear to finish the setup") } },
 });

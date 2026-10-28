@@ -1,12 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { categoryOrder, pageTemplates, parseTemplatesCategory, parseTemplatesPage, sortByIndustry } from "./templates.lib";
 
+// `sortOrder`: a higher one is a newer template.
 const rows = [
-  { key: "classic", category: "general" },
-  { key: "mode", category: "fashion" },
-  { key: "techhub", category: "electronics" },
-  { key: "kasr", category: "fashion" },
-  { key: "volt", category: "electronics" },
+  { key: "classic", category: "general", sortOrder: 10 },
+  { key: "mode", category: "fashion", sortOrder: 20 },
+  { key: "techhub", category: "electronics", sortOrder: 50 },
+  { key: "kasr", category: "fashion", sortOrder: 40 },
+  { key: "volt", category: "electronics", sortOrder: 60 },
 ];
 
 describe("sortByIndustry", () => {
@@ -21,16 +22,20 @@ describe("sortByIndustry", () => {
 });
 
 describe("pageTemplates", () => {
-  it("sorts by industry, then pages, and lists every category", () => {
+  it("lists All by relevance then newest, pages, with the industry's tab first", () => {
     const first = pageTemplates(rows, { page: 1, category: "all", industryId: "electronics", pageSize: 2 });
-    expect(first.items.map((r) => r.key)).toEqual(["techhub", "volt"]);
+    expect(first.items.map((r) => r.key)).toEqual(["volt", "techhub"]);
     expect(first).toMatchObject({ page: 1, pageCount: 3, total: 5, categories: ["electronics", "general", "fashion"] });
-    expect(pageTemplates(rows, { page: 3, category: "all", industryId: "electronics", pageSize: 2 }).items.map((r) => r.key)).toEqual(["kasr"]);
+    expect(pageTemplates(rows, { page: 3, category: "all", industryId: "electronics", pageSize: 2 }).items.map((r) => r.key)).toEqual(["classic"]);
+    // The store's industry leads even when other templates are newer; a store seed no longer shuffles.
+    expect(pageTemplates(rows, { page: 1, category: "all", industryId: "fashion", seed: "store-1" }).items.map((r) => r.key)).toEqual(["kasr", "mode", "volt", "techhub", "classic"]);
+    // No industry: newest first.
+    expect(pageTemplates(rows, { page: 1, category: "all" }).items.map((r) => r.key)).toEqual(["volt", "techhub", "kasr", "mode", "classic"]);
   });
 
   it("filters by category before paging", () => {
     const fashion = pageTemplates(rows, { page: 1, category: "fashion", pageSize: 1 });
-    expect(fashion.items.map((r) => r.key)).toEqual(["mode"]);
+    expect(fashion.items.map((r) => r.key)).toEqual(["kasr"]);
     expect(fashion).toMatchObject({ pageCount: 2, total: 2 });
     expect(fashion.categories).toEqual(["general", "fashion", "electronics"]);
   });
@@ -38,6 +43,15 @@ describe("pageTemplates", () => {
   it("clamps the page to the last one and handles an empty filter", () => {
     expect(pageTemplates(rows, { page: 9, category: "all", pageSize: 2 })).toMatchObject({ page: 3, pageCount: 3 });
     expect(pageTemplates(rows, { page: 2, category: "pets", pageSize: 2 })).toMatchObject({ items: [], page: 1, pageCount: 1, total: 0 });
+  });
+
+  it("defaults to the store's industry tab when it has templates, else all", () => {
+    const fashion = pageTemplates(rows, { page: 1, category: null, industryId: "fashion" });
+    expect(fashion.category).toBe("fashion");
+    expect(fashion.items.map((r) => r.key)).toEqual(["kasr", "mode"]);
+    expect(pageTemplates(rows, { page: 1, category: null, industryId: "pets" })).toMatchObject({ category: "all", total: 5 });
+    expect(pageTemplates(rows, { page: 1, category: null })).toMatchObject({ category: "all", total: 5 });
+    expect(pageTemplates(rows, { page: 1, category: "all", industryId: "fashion" })).toMatchObject({ category: "all", total: 5 });
   });
 });
 

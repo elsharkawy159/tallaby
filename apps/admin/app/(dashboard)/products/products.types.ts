@@ -126,6 +126,9 @@ export interface ProductDetailView {
   sponsored: boolean;
   freeDelivery: boolean;
   directCheckout: boolean;
+  /** 0112: "autofill_add" | "autofill_edit"; null = not made with AI. */
+  aiSource: string | null;
+  aiAssistedAt: string | null;
   metaTitle: string | null;
   metaDescription: string | null;
   images: string[];

@@ -153,11 +153,12 @@ const DEMO = demoStore({
     ["body", "الجسم", "Body", PHOTOS.bodyOil],
     ["hair", "الشعر", "Hair", PHOTOS.hairOil],
     ["sets", "أطقم", "Sets", PHOTOS.ritualSet],
+    ["soap", "صابون", "Soap", PHOTOS.oliveSoap],
   ],
   products: [
     ["prickly-pear-face-oil", "face", "زيت التين الشوكي", "Prickly Pear Face Oil", PHOTOS.faceOil, 690, { isFeatured: true, rating: 4.8, sold90: 164 }],
     ["rose-water-face-wash", "face", "غسول ماء الورد", "Rose Water Face Wash", PHOTOS.faceWash, 320, { rating: 4.7, sold90: 120 }],
-    ["olive-oil-soap-trio", "body", "٣ صابون زيت زيتون", "Olive Oil Soap Trio", PHOTOS.oliveSoap, 240, { rating: 4.9, sold90: 210 }],
+    ["olive-oil-soap-trio", "soap", "٣ صابون زيت زيتون", "Olive Oil Soap Trio", PHOTOS.oliveSoap, 240, { rating: 4.9, sold90: 210 }],
     ["sesame-body-oil", "body", "زيت سمسم للجسم", "Sesame Body Oil", PHOTOS.bodyOil, 380, { sold90: 48 }],
     ["rosemary-hair-oil", "hair", "زيت روزماري", "Rosemary Hair Oil", PHOTOS.hairOil, 290, { compareAtPrice: 340, rating: 4.8, sold90: 188 }],
     ["full-ritual-set", "sets", "طقم الروتين الكامل", "Full Ritual Set", PHOTOS.ritualSet, 1290, { compareAtPrice: 1520, isFeatured: true, rating: 4.9, sold90: 62 }],
@@ -170,7 +171,7 @@ export const NADA = libraryTemplate({
   key: NADA_KEY,
   version: 3,
   changelog: "Nada v3: categories, section order",
-  productPage: { surface: "flat", thumbs: "side", button: "outline", band: "paper", copy: { back: L("رجوع للروتين", "Back to the routine"), reviews: L("رأي اللي جرّبوا الروتين", "From those who tried the routine"), related: L("كمّل روتينك", "Complete your routine") } },
+  productPage: { surface: "flat", thumbs: "side", button: "outline", band: "paper", copy: { reviews: L("رأي اللي جرّبوا الروتين", "From those who tried the routine"), related: L("كمّل روتينك", "Complete your routine") } },
   name: L("ندى", "Nada"),
   description: L(
     "عناية بسيطة ونضيفة: روتين من ٥ منتجات والريفيل بيشتغل إزاي. أربع صفحات جاهزة.",

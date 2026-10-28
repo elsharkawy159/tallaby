@@ -224,7 +224,7 @@ export const KHOLKHAL = libraryTemplate({
   key: KHOLKHAL_KEY,
   version: 2,
   changelog: "Kholkhal v2: product page",
-  productPage: { thumbs: "side", gallery: "end", button: "outline", band: "shelf", extras: ["product-perks"], copy: { back: L("رجوع للمجموعة", "Back to the collection"), reviews: L("كلام العميلات", "Words from our customers"), related: L("قطع تحلّي معاها", "Pieces to wear with it") } },
+  productPage: { thumbs: "side", gallery: "end", button: "outline", band: "shelf", extras: ["product-perks"], copy: { reviews: L("كلام العميلات", "Words from our customers"), related: L("قطع تحلّي معاها", "Pieces to wear with it") } },
   name: L("خلخال", "Kholkhal"),
   description: L(
     "إكسسوارات مطلية دهب: بانرات متحركة، أقسام دائرية، هدايا حسب الميزانية وآراء العميلات. أربع صفحات جاهزة.",

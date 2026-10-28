@@ -270,6 +270,45 @@
     "freeDeliveryProgressStart": "0",
     "freeDeliveryProgressEnd": "200"
   },
+  "storeOffer": {
+    "title": "هناك عرض خاص لك!",
+    "percentOff": "لقد ربحت خصم {value}%",
+    "amountOff": "لقد ربحت خصم {value}",
+    "copy": "انسخ الكود",
+    "copied": "تم نسخ الكود",
+    "continueShopping": "متابعة التسوق",
+    "endsIn": "ينتهي العرض في",
+    "endsInLabel": "ينتهي العرض خلال {days} أيام و{hours} ساعات و{minutes} دقائق",
+    "units": {
+      "days": "أيام",
+      "hours": "ساعات",
+      "minutes": "دقائق",
+      "seconds": "ثواني"
+    }
+  },
+  "storeProduct": {
+    "save": "وفّر {amount}",
+    "discountBadge": "-{percent}%",
+    "offerEndsIn": "العرض ينتهي خلال",
+    "endsInLabel": "العرض ينتهي خلال {days} يوم و{hours} ساعة و{minutes} دقيقة",
+    "units": {
+      "days": "يوم",
+      "hours": "ساعة",
+      "minutes": "دقيقة",
+      "seconds": "ثانية"
+    },
+    "liveViews": "يشاهد المنتج دلوقتي <b>{count}</b> عميل",
+    "inStock": "متاح وجاهز للشحن",
+    "lowStock": "فاضل {count} بس",
+    "outOfStock": "نفذت الكمية",
+    "option": "الاختيار",
+    "addToCart": "أضف للسلة",
+    "buyNow": "اشتري الآن",
+    "goToCart": "روح للسلة",
+    "checkout": "كمّل الطلب",
+    "photoOf": "صورة {index} من {total}",
+    "photos": "صور المنتج"
+  },
   "product": {
     "addToCart": "أضف إلى السلة",
     "adding": "جاري الإضافة...",
@@ -2187,7 +2226,6 @@
     "searchSeeAll": "عرض {count, plural, zero {النتائج} one {نتيجة واحدة} two {النتيجتين} few {# نتائج} many {# نتيجة} other {# نتيجة}} لـ «{query}»",
     "ratingSummary": "{rating} من {count, plural, one {تقييم واحد} two {تقييمين} few {# تقييمات} many {# تقييمًا} other {# تقييم}}",
     "cartTitle": "سلتك",
-    "cartScopeNote": "هذه السلة خاصة بمتجر {store} فقط، وسلتك على tallaby.com منفصلة عنها.",
     "cartEmpty": "سلتك فارغة",
     "cartEmptyHint": "أضف منتجًا من {store} وسيظهر هنا.",
     "browseProducts": "تصفح المنتجات",

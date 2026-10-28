@@ -278,5 +278,5 @@ export const SIZZLE = libraryTemplate({
     },
   ],
   demo: DEMO,
-  productPage: { surface: "card", thumbs: "bottom", band: "shelf", extras: ["product-shipping"], copy: { back: L("رجوع للمنيو", "Back to the menu"), reviews: L("الزباين بتقول إيه", "What regulars say"), related: L("كمان ممكن تطلب", "Add to your order") } },
+  productPage: { surface: "card", thumbs: "bottom", band: "shelf", extras: ["product-shipping"], copy: { reviews: L("الزباين بتقول إيه", "What regulars say"), related: L("كمان ممكن تطلب", "Add to your order") } },
 });

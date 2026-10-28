@@ -229,12 +229,13 @@ const DEMO = demoStore({
     ["jackets", "جواكت", "Jackets", PHOTOS.jackets],
     ["basics", "أساسيات", "Basics", PHOTOS.flatLay],
     ["bags", "شنط", "Bags", PHOTOS.bagShelf],
+    ["coats", "بالطوهات", "Coats", PHOTOS.camelCoat],
   ],
   products: [
     ["sand-tailored-blazer", "sets", "بليزر رملي مفصّل", "Sand Tailored Blazer", PHOTOS.blazer, 3450, { isFeatured: true, rating: 4.9, sold90: 74 }],
-    ["olive-floral-dress", "dresses", "فستان زيتي مشجّر", "Olive Floral Dress", PHOTOS.floralDress, 2250, { rating: 4.8, sold90: 58 }],
+    ["olive-floral-dress", "dresses", "فستان زيتي مشجّر", "Olive Floral Dress", PHOTOS.floralDress, 2250, { isFeatured: true, rating: 4.8, sold90: 58 }],
     ["two-tone-overshirt", "jackets", "أوفر شيرت لونين", "Two-Tone Overshirt", PHOTOS.shirts, 2650, { sold90: 31 }],
-    ["teddy-coat", "jackets", "بالطو تيدي", "Teddy Coat", PHOTOS.teddyCoat, 3900, { isFeatured: true, sold90: 22 }],
+    ["teddy-coat", "coats", "بالطو تيدي", "Teddy Coat", PHOTOS.teddyCoat, 3900, { isFeatured: true, sold90: 22 }],
     ["shearling-leather-jacket", "jackets", "جاكت جلد بفرو", "Shearling Leather Jacket", PHOTOS.leatherJacket, 4800, { compareAtPrice: 5600, sold90: 12 }],
     ["pastel-crew-sweatshirt", "basics", "سويت شيرت باستيل", "Pastel Crew Sweatshirt", PHOTOS.sweatshirts, 590, { rating: 4.7, sold90: 210 }],
     ["corduroy-overshirt", "basics", "قميص قطيفة", "Corduroy Overshirt", PHOTOS.corduroy, 1450, { sold90: 27 }],
@@ -281,5 +282,5 @@ export const KASR = libraryTemplate({
     { slug: "faq", name: L("الأسئلة الشائعة", "FAQ"), seo: { title: L("الأسئلة الشائعة", "FAQ") }, sections: faq },
   ],
   demo: DEMO,
-  productPage: { thumbs: "side", band: "paper", copy: { back: L("العودة إلى المجموعة", "Back to the collection"), reviews: L("كلمة من جرّبوها", "A word from those who wear it"), related: L("قطع تُلبَس معها", "Pieces to wear with it") } },
+  productPage: { thumbs: "side", band: "paper", copy: { reviews: L("كلمة من جرّبوها", "A word from those who wear it"), related: L("قطع تُلبَس معها", "Pieces to wear with it") } },
 });

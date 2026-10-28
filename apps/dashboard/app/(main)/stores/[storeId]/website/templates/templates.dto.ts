@@ -8,6 +8,7 @@ type Localized = { ar?: string; en?: string };
 export type TemplateInstallView = { templateKey: string; installedAt: string; canUndo: boolean };
 
 /** Gallery filters, mirrored in the URL (`?page=`, `?category=`). */
+/** `category` left out: the store's industry tab when it has templates, else `all`. */
 export type TemplatesPageQuery = { page: number; category: string };
 
 /** One page of the gallery (`listTemplatesPage`). */
@@ -21,6 +22,8 @@ export type TemplatesPageView = {
   total: number;
   /** Every category of the gallery, for the filter tabs. */
   categories: string[];
+  /** The category tab served (the store's industry by default). */
+  category: string;
   currentKey: string;
   /** The last install, with its template's name (it may be on another page). */
   lastInstall: (TemplateInstallView & { name: Localized | null }) | null;

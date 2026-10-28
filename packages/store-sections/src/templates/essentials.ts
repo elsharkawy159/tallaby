@@ -32,6 +32,7 @@ const RECORD_LISTS = new Set(["productList", "categoryList", "postList"]);
 
 /** The product page's elements: they show the product being viewed. */
 export const PRODUCT_ELEMENT_TYPES: ReadonlySet<string> = new Set([
+  "productBreadcrumbs",
   "productGallery",
   "productPrice",
   "productStock",

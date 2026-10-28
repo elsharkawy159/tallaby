@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server"
-import { aiConfigured, checkDailyCap, logAiUsage, modelIdForTier } from "@workspace/ai"
+import { aiConfigured, aiErrorKind, checkDailyCap, logAiUsage, modelIdForTier } from "@workspace/ai"
 import { isAccessError, requireSeller } from "@/lib/auth/require-seller.server"
 import { createRateLimiter } from "@/lib/rate-limit.lib"
 import { autofillProduct } from "@/app/(main)/products/add/ai/ai-autofill.server"
@@ -32,6 +32,8 @@ const STATUS: Record<AutofillErrorCode, number> = {
   badFile: 415,
   rateLimited: 429,
   dailyLimit: 429,
+  busy: 503,
+  timeout: 504,
   failed: 502,
 }
 
@@ -70,7 +72,10 @@ export async function POST(request: NextRequest) {
   const pdfEntry = form.get("pdf")
   const pdf = pdfEntry ? await readFile(pdfEntry) : null
 
-  const input = { text, images, pdf }
+  const currentEntry = form.get("current")
+  const current = typeof currentEntry === "string" && currentEntry.trim() ? currentEntry : null
+
+  const input = { text, images, pdf, current }
   const invalid = validateAutofillInput(input)
   if (invalid) return fail(invalid)
 
@@ -93,8 +98,9 @@ export async function POST(request: NextRequest) {
       result: { output, remainingToday: Math.max(0, cap.remaining - 1) },
     })
   } catch (error) {
-    // The usage row (with the error code) is written by generateStructured.
+    // The usage rows (with the error codes) are written by generateStructured.
     console.error("[ai] product autofill failed", error instanceof Error ? error.message : error)
-    return fail("failed")
+    // Every model was tried; tell the seller whether to wait or change the input.
+    return fail(aiErrorKind(error))
   }
 }

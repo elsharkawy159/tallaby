@@ -123,7 +123,42 @@ const BOX = "relative block aspect-video w-full overflow-hidden bg-black";
 const itemStill = (options: VideoOptions | null, props: Record<string, unknown>, ctx: RenderContext) =>
   (options && videoStillUrl(options.source)) ?? ctx.imageUrl(resolvePhotoSlot(str(props.poster, 2048), ctx.industry));
 
+/**
+ * A background video (`background` on, a video file): it fills its frame like
+ * a cover photo, muted, looping and without controls. The poster image is
+ * drawn first (it is the page's largest content), and the video plays over
+ * it; with reduce motion, on the canvas or without a file only the poster shows.
+ */
+function BackgroundVideo({ attrs, props, ctx }: { attrs: Attrs; props: Record<string, unknown>; ctx: RenderContext }) {
+  const options = readVideoOptions({ ...props, autoplay: true, muted: true, loop: true, controls: false });
+  const file = options?.source.provider === "file" ? options : null;
+  const poster = ctx.imageUrl(resolvePhotoSlot(str(props.poster, 2048), ctx.industry));
+  return (
+    <div {...attrs} className="relative block w-full overflow-hidden bg-black">
+      {poster && (
+        // eslint-disable-next-line @next/next/no-img-element -- shared by both apps; the host optimizes through ctx.optimizeImage
+        <img {...imageSource(ctx, poster, IMAGE_SIZES.full)} alt="" className="absolute inset-0 size-full object-cover" fetchPriority="high" decoding="async" />
+      )}
+      {file && ctx.mode !== "edit" && (
+        <video
+          src={videoEmbedUrl(file)}
+          poster={poster ?? undefined}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          aria-hidden
+          tabIndex={-1}
+          className="absolute inset-0 size-full object-cover motion-reduce:hidden"
+        />
+      )}
+    </div>
+  );
+}
+
 export function VideoElement({ attrs, props, ctx }: { attrs: Attrs; props: Record<string, unknown>; ctx: RenderContext }) {
+  if (props.background === true) return <BackgroundVideo attrs={attrs} props={props} ctx={ctx} />;
   const options = readVideoOptions(props);
   const title = str(props.title, 120) || sectionText("videoTitle", ctx.locale);
   // The design's photo stands in on the canvas until a link is pasted.

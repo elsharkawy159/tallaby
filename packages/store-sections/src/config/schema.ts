@@ -52,6 +52,8 @@ export const ALLOWED_NODE_TYPES = [
   // Product page elements (template product page, 2026-10-23); additive.
   "productGallery", "productPrice", "productStock", "productRating", "productVariants",
   "productBuyBox", "productDetails", "productContent", "productSeller", "productReviews",
+  // Product page breadcrumbs (product page upgrade, 2026-10-28); additive.
+  "productBreadcrumbs",
   // Scrolling marquee and live countdown (Claude Design premium sections, 2026-10-27); additive.
   "marquee", "countdown",
 ] as const;
@@ -140,7 +142,17 @@ export const libraryPatchSchema = z.object({
   text: z.record(z.string().max(2000), patchTextSchema).optional(),
   links: z.record(z.string().max(2048), z.union([patchUrlSchema, z.array(patchUrlSchema.nullable()).max(100)])).optional(),
   lists: z
-    .array(z.object({ source: z.string().max(100).nullable().optional(), sort: z.string().max(100).nullable().optional(), limit: z.number().int().min(0).max(1000).nullable().optional() }).nullable())
+    .array(
+      z
+        .object({
+          source: z.string().max(100).nullable().optional(),
+          sort: z.string().max(100).nullable().optional(),
+          limit: z.number().int().min(0).max(1000).nullable().optional(),
+          offset: z.number().int().min(0).max(10).nullable().optional(),
+          categoryIndex: z.number().int().min(1).max(8).nullable().optional(),
+        })
+        .nullable(),
+    )
     .max(50)
     .optional(),
   nodes: z

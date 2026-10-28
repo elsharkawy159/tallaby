@@ -180,7 +180,7 @@ export const BEITY = libraryTemplate({
   key: BEITY_KEY,
   version: 3,
   changelog: "Beity v3: one trust block, no budget finder, newsletter close",
-  productPage: { thumbs: "side", band: "shelf", extras: ["product-shipping"], copy: { back: L("رجوع للمطبخ", "Back to the kitchen"), reviews: L("جربوه في بيوتهم", "Tried in their homes"), related: L("حاجات للمطبخ كمان", "More for your kitchen") } },
+  productPage: { thumbs: "side", band: "shelf", extras: ["product-shipping"], copy: { reviews: L("جربوه في بيوتهم", "Tried in their homes"), related: L("حاجات للمطبخ كمان", "More for your kitchen") } },
   name: L("بيتي", "Beity"),
   description: L(
     "متجر البيت والمطبخ: بانرات متحركة، الأقسام، رف الأسبوع، وعدنا وجديد المطبخ. أربع صفحات جاهزة.",

@@ -52,8 +52,12 @@ export function isDiscounted(product: Pick<ProductCandidate, "price" | "compareA
   return product.price != null && product.compareAtPrice != null && product.compareAtPrice > product.price;
 }
 
-/** The products a query shows, in display order, at most `limit`. */
-export function selectProducts<T extends ProductCandidate>(query: ProductQuery, candidates: readonly T[]): T[] {
+/**
+ * The products a query shows, in display order, at most `limit`.
+ * `categoryOrder` is the store's category ids in display order, for a
+ * `category` query by position (`categoryIndex`).
+ */
+export function selectProducts<T extends ProductCandidate>(query: ProductQuery, candidates: readonly T[], categoryOrder: readonly string[] = []): T[] {
   let list: T[];
   switch (query.source) {
     case "selected": {
@@ -67,9 +71,11 @@ export function selectProducts<T extends ProductCandidate>(query: ProductQuery, 
     case "featured":
       list = candidates.filter((p) => p.isFeatured).sort(newestFirst);
       break;
-    case "category":
-      list = query.categoryId ? candidates.filter((p) => p.categoryId === query.categoryId).sort(newestFirst) : [];
+    case "category": {
+      const categoryId = query.categoryId ?? (query.categoryIndex ? categoryOrder[query.categoryIndex - 1] : undefined);
+      list = categoryId ? candidates.filter((p) => p.categoryId === categoryId).sort(newestFirst) : [];
       break;
+    }
     case "best-sellers":
       list = candidates.filter((p) => (p.sold90 ?? 0) > 0).sort(bySales("sold90"));
       break;

@@ -127,19 +127,21 @@ const DEMO = demoStore({
     ["produce", "خضار وفاكهة", "Fruit & veg", PHOTOS.tomatoes],
     ["greens", "ورقيات", "Greens", PHOTOS.herbs],
     ["boxes", "بوكسات", "Boxes", PHOTOS.market],
+    ["citrus", "موالح", "Citrus", PHOTOS.oranges],
+    ["juice", "عصاير", "Juice", PHOTOS.juicer],
   ],
   products: [
     ["weekly-veg-box", "boxes", "بوكس خضار الأسبوع", "Weekly Veg Box", PHOTOS.market, 260, { isFeatured: true, rating: 4.8, sold90: 320 }],
     ["fruit-veg-basket", "boxes", "سلة خضار وفاكهة", "Fruit & Veg Basket", PHOTOS.tote, 320, { sold90: 144 }],
     ["greens-bundle", "greens", "باقة ورقيات", "Greens Bundle", PHOTOS.herbs, 140, { sold90: 96 }],
-    ["juice-box", "boxes", "بوكس العصير", "Juice Box", PHOTOS.juicer, 290, { compareAtPrice: 340, sold90: 41 }],
+    ["juice-box", "juice", "بوكس العصير", "Juice Box", PHOTOS.juicer, 290, { compareAtPrice: 340, sold90: 41 }],
     ["tomatoes-1kg", "produce", "طماطم بلدي ١ كيلو", "Local Tomatoes, 1 kg", PHOTOS.tomatoes, 25, { sold90: 410 }],
     ["mango-1kg", "produce", "مانجا عويس ١ كيلو", "Awees Mango, 1 kg", PHOTOS.mango, 70, { rating: 4.9, sold90: 230 }],
-    ["oranges-3kg", "produce", "برتقان بصرة ٣ كيلو", "Navel Oranges, 3 kg", PHOTOS.oranges, 60, { sold90: 180 }],
+    ["oranges-3kg", "citrus", "برتقان بصرة ٣ كيلو", "Navel Oranges, 3 kg", PHOTOS.oranges, 60, { sold90: 180 }],
     ["bananas-1kg", "produce", "موز ١ كيلو", "Bananas, 1 kg", PHOTOS.bananas, 35, { sold90: 260 }],
     ["potatoes-2kg", "produce", "بطاطس ٢ كيلو", "Potatoes, 2 kg", PHOTOS.potatoes, 40, { sold90: 200 }],
     ["aubergines-peppers", "produce", "باذنجان وفلفل رومي", "Aubergines & Peppers", PHOTOS.aubergines, 45, { inStock: false, sold90: 70 }],
-    ["lemons-1kg", "produce", "ليمون بلدي ١ كيلو", "Local Lemons, 1 kg", PHOTOS.lemons, 30, { compareAtPrice: 40, sold90: 150 }],
+    ["lemons-1kg", "citrus", "ليمون بلدي ١ كيلو", "Local Lemons, 1 kg", PHOTOS.lemons, 30, { compareAtPrice: 40, sold90: 150 }],
   ],
 });
 
@@ -147,7 +149,7 @@ export const KHODAR = libraryTemplate({
   key: KHODAR_KEY,
   version: 3,
   changelog: "Khodar v3: hero first, categories, section order",
-  productPage: { thumbs: "bottom", band: "shelf", extras: ["product-shipping"], copy: { back: L("رجوع للسوق", "Back to the market"), reviews: L("اللي طلبوا قالوا", "From people who ordered"), related: L("كمّل سلتك", "Fill your basket") } },
+  productPage: { thumbs: "bottom", band: "shelf", extras: ["product-shipping"], copy: { reviews: L("اللي طلبوا قالوا", "From people who ordered"), related: L("كمّل سلتك", "Fill your basket") } },
   name: L("خضار", "Khodar"),
   description: L(
     "خضار وفاكهة طازة: هدف التوصيل المجاني، بحث سريع، بوكس الأسبوع، آخر ميعاد ٣ العصر وتتبع الطلب. أربع صفحات جاهزة.",

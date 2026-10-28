@@ -34,6 +34,7 @@ export function SocialProofSection({ id = "sec-social-proof" }: { id?: string })
       description={t("description")}
       summary={parts.length ? parts.join(" · ") : t("summaryNone")}
       summaryTone={parts.length ? "ok" : "muted"}
+      filled={parts.length > 0}
       invalid={Boolean(errors.sellerReviews)}
     >
       <Controller

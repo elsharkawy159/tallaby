@@ -39,6 +39,10 @@ describe("data node queries", () => {
     expect(nodeCatalogQuery(node("productList", { source: "bogus" }))).toMatchObject({ source: "newest", limit: 8 });
     // A category or hand-picked list without its pick asks for nothing.
     expect(nodeCatalogQuery(node("productList", { source: "category" }))).toBeNull();
+    // Or a category by its place in the store (1–8); a picked category wins.
+    expect(nodeCatalogQuery(node("productList", { source: "category", categoryIndex: 2 }))).toMatchObject({ source: "category", categoryIndex: 2 });
+    expect(nodeCatalogQuery(node("productList", { source: "category", categoryIndex: 9 }))).toBeNull();
+    expect(nodeCatalogQuery(node("productList", { source: "category", categoryId: "c1", categoryIndex: 2 }))).not.toHaveProperty("categoryIndex");
     expect(nodeCatalogQuery(node("productList", { source: "selected", productIds: ["bad id!", 3] }))).toBeNull();
     expect(nodeCatalogQuery(node("productList", { source: "selected", productIds: ["p1", "p2"] }))).toMatchObject({ productIds: ["p1", "p2"] });
   });

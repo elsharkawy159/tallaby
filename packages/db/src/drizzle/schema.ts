@@ -226,6 +226,9 @@ export const coupons = pgTable("coupons", {
 	perUserLimit: integer("per_user_limit"),
 	applicableTo: jsonb("applicable_to"),
 	excludeItems: jsonb("exclude_items"),
+	// 0114: storefront pop-up ('enter' | 'exit' | 'random') and the visitor's minutes to use it.
+	popupTrigger: text("popup_trigger"),
+	popupDurationMinutes: integer("popup_duration_minutes"),
 	startsAt: timestamp("starts_at", { withTimezone: true, mode: 'string' }).notNull(),
 	expiresAt: timestamp("expires_at", { withTimezone: true, mode: 'string' }).notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
@@ -233,6 +236,8 @@ export const coupons = pgTable("coupons", {
 }, (table) => [
 	index("coupon_code_idx").using("btree", table.code.asc().nullsLast().op("text_ops")),
 	index("coupon_seller_id_idx").using("btree", table.sellerId.asc().nullsLast().op("uuid_ops")),
+	index("coupon_seller_popup_idx").using("btree", table.sellerId.asc().nullsLast().op("uuid_ops")).where(sql`popup_trigger IS NOT NULL`),
+	check("coupons_popup_check", sql`(popup_trigger IS NULL AND popup_duration_minutes IS NULL) OR (popup_trigger IN ('enter', 'exit', 'random') AND popup_duration_minutes BETWEEN 1 AND 43200)`),
 	foreignKey({
 			columns: [table.sellerId],
 			foreignColumns: [sellers.id],
@@ -451,6 +456,9 @@ export const sellers = pgTable("sellers", {
 	heardAboutUsOther: text("heard_about_us_other"),
 	/** When the seller answered; NULL = not asked yet (0099). */
 	heardAboutUsAt: timestamp("heard_about_us_at", { withTimezone: true, mode: 'string' }),
+	/** Last time an admin opened WhatsApp for this seller from Admin › Sellers; NULL = never (0113). */
+	adminContactedAt: timestamp("admin_contacted_at", { withTimezone: true, mode: 'string' }),
+	adminContactedBy: uuid("admin_contacted_by"),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 }, (table) => [
@@ -467,6 +475,11 @@ export const sellers = pgTable("sellers", {
 			foreignColumns: [users.id],
 			name: "sellers_id_users_id_fk"
 		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.adminContactedBy],
+			foreignColumns: [users.id],
+			name: "sellers_admin_contacted_by_fkey"
+		}).onDelete("set null"),
 	unique("sellers_slug_unique").on(table.slug),
 ]);
 
@@ -1485,6 +1498,10 @@ export const products = pgTable("products", {
 	directCheckout: boolean("direct_checkout").default(false).notNull(),
 	/** Product page shows a live "N people viewing now" line (0111; off by default). */
 	showLiveViews: boolean("show_live_views").default(false).notNull(),
+	/** How the AI helped fill this product (0112): 'autofill_add' | 'autofill_edit'; null = not AI. */
+	aiSource: text("ai_source"),
+	/** The last save with AI changes (0112). */
+	aiAssistedAt: timestamp("ai_assisted_at", { withTimezone: true, mode: 'string' }),
 	dimensions: jsonb(),
 	price: jsonb(),
 	productType: productType("product_type").default('physical'),
@@ -1493,6 +1510,8 @@ export const products = pgTable("products", {
 	index("product_main_category_id_idx").using("btree", table.categoryId.asc().nullsLast().op("uuid_ops")),
 	index("product_seller_category_id_idx").using("btree", table.sellerCategoryId).where(sql`seller_category_id IS NOT NULL`),
 	index("product_seller_brand_id_idx").using("btree", table.sellerBrandId).where(sql`seller_brand_id IS NOT NULL`),
+	index("product_ai_source_idx").using("btree", table.aiSource).where(sql`ai_source IS NOT NULL`),
+	check("products_ai_source_check", sql`ai_source IS NULL OR ai_source IN ('autofill_add', 'autofill_edit')`),
 	foreignKey({
 			columns: [table.sellerCategoryId],
 			foreignColumns: [sellerProductCategories.id],

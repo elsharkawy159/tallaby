@@ -34,7 +34,7 @@ Seven paid-theme demos (Adam, Attitude, Azimuth, Blum, Metropolitan, Veloza, Vol
 Every section is built from the same parts, in this order. Parts in brackets are optional.
 
 1. **Root** `section`: shell scheme, vertical padding, width, animation.
-2. **Container**: the content width. Full-width sections (§5.1) skip it or set the shell width to `full`.
+2. **Container**: the content width. Every section keeps its content inside it; only the full-width hero (§5.1) skips it.
 3. **(Head)**: a `stack` labelled "Heading" holding an optional eyebrow (≤ 3 words), the `heading` (h2, ≤ 8 words) and an optional one-line `paragraph`. On product, category and blog sections, a "View all" link sits at the end of the row on desktop and under the heading on mobile.
 4. **Body**: the grid, list, slides, cards or media.
 5. **(Foot)**: one button, centred, only when the head has no "View all".
@@ -77,8 +77,8 @@ The other categories (bundles, finder, payment, services, about, contact, tracki
 ### 5.1 Direction
 
 - Simple beats complex. Large photos, generous white space, one clear heading, one call to action.
-- **Full width (edge to edge)**: hero, banner, image with text, slideshow, video. The photo or video reaches the screen edges, and the text sits inside the container width.
-- **Contained**: product grids, collections, text, testimonials and everything else. Today's container is `max-width: var(--sf-max-width, 1200px)` with 16 px / 32 px side padding. **Target: `1280px` and `clamp(16px, 4vw, 48px)` (gap G13).**
+- **Full width (edge to edge)**: only the full-width hero (library subcategory `full-width`: carousel, photo carousel, thumbs, full-bleed, banner). The photo reaches the screen edges, and the text sits inside the container width. Headers may keep an edge-to-edge announcement bar.
+- **Contained**: every other section, including banners, image with text, video, galleries and split heroes (owner, 2026-10-28; guarded by `designs/container-width.test.ts`). Today's container is `max-width: var(--sf-max-width, 1200px)` with 16 px / 32 px side padding. **Target: `1280px` and `clamp(16px, 4vw, 48px)` (gap G13).**
 - Theme tokens only: colours as token names (`primary`, `foreground`, `muted`, `background`, `secondary`, `border`), fonts as `heading` / `body`. Never a fixed hex colour, except `white` text on a photo.
 - Logical properties only (start/end). Touch targets ≥ 44 px.
 - Alternate shell schemes (`default`, then `muted`, then `default`) so the page reads as clear bands. Never two `dark` sections in a row.

@@ -30,12 +30,15 @@ import { RemoteImage } from "@/components/media/remote-image";
 
 type Localized = { ar?: string; en?: string };
 
-/** Query key of one gallery page; `["store-templates", storeId]` matches every page of the store. */
-const templatesKey = (storeId: string, page?: number, category?: string) =>
+/**
+ * Query key of one gallery page; `["store-templates", storeId]` matches every
+ * page of the store. A `null` category is the store's default tab (its industry).
+ */
+const templatesKey = (storeId: string, page?: number, category?: string | null) =>
   page === undefined ? ["store-templates", storeId] : ["store-templates", storeId, page, { category }];
 
-async function fetchTemplatesPage(storeId: string, page: number, category: string): Promise<TemplatesPageView> {
-  const result = await listTemplatesPage(storeId, { page, category });
+async function fetchTemplatesPage(storeId: string, page: number, category: string | null): Promise<TemplatesPageView> {
+  const result = await listTemplatesPage(storeId, category === null ? { page } : { page, category });
   if (!result.success) throw new Error(result.error);
   return result.data;
 }
@@ -66,7 +69,9 @@ export function TemplateGallery({
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const page = parseTemplatesPage(searchParams.get("page"));
-  const category = parseTemplatesCategory(searchParams.get("category"));
+  // No `?category=`: the server picks the store's industry tab (owner request 2026-10-28).
+  const categoryParam = searchParams.get("category");
+  const requestedCategory = categoryParam === null ? null : parseTemplatesCategory(categoryParam);
   const listRef = useRef<HTMLDivElement>(null);
   const [confirming, setConfirming] = useState<TemplateCardView | null>(null);
   const [previewing, setPreviewing] = useState<TemplateCardView | null>(null);
@@ -74,13 +79,15 @@ export function TemplateGallery({
   const [isPending, startTransition] = useTransition();
 
   const query = useQuery({
-    queryKey: templatesKey(storeId, page, category),
-    queryFn: () => fetchTemplatesPage(storeId, page, category),
+    queryKey: templatesKey(storeId, page, requestedCategory),
+    queryFn: () => fetchTemplatesPage(storeId, page, requestedCategory),
     placeholderData: keepPreviousData,
     // One retry, then the error state with its own retry button.
     retry: 1,
   });
   const data = query.data;
+  // The tab shown: the one asked for in the URL, else the default the server served.
+  const category = requestedCategory ?? data?.category ?? "all";
   const currentKey = data?.currentKey ?? "";
   const lastInstall = data?.lastInstall ?? null;
   const categories = data?.categories ?? [];
@@ -101,13 +108,16 @@ export function TemplateGallery({
     });
   }, [data, query.isPlaceholderData, queryClient, storeId, category]);
 
-  /** Writes the filters to the URL (client-side only: no server round trip, the back button works). */
+  /**
+   * Writes the filters to the URL (client-side only: no server round trip, the
+   * back button works). The category is always written, `all` too, since no
+   * `?category=` means the store's industry tab.
+   */
   const setFilters = (next: { page: number; category: string }) => {
     const params = new URLSearchParams(searchParams.toString());
     if (next.page > 1) params.set("page", String(next.page));
     else params.delete("page");
-    if (next.category !== "all") params.set("category", next.category);
-    else params.delete("category");
+    params.set("category", next.category);
     const qs = params.toString();
     window.history.pushState(null, "", qs ? `${pathname}?${qs}` : pathname);
   };
@@ -116,14 +126,14 @@ export function TemplateGallery({
   useEffect(() => {
     if (data && !query.isPlaceholderData && data.page !== page) {
       // Seed the clamped page's key so the URL change doesn't fetch it again.
-      queryClient.setQueryData(templatesKey(storeId, data.page, category), data);
+      queryClient.setQueryData(templatesKey(storeId, data.page, requestedCategory), data);
       const params = new URLSearchParams(searchParams.toString());
       if (data.page > 1) params.set("page", String(data.page));
       else params.delete("page");
       const qs = params.toString();
       window.history.replaceState(null, "", qs ? `${pathname}?${qs}` : pathname);
     }
-  }, [data, query.isPlaceholderData, page, pathname, searchParams, queryClient, storeId, category]);
+  }, [data, query.isPlaceholderData, page, pathname, searchParams, queryClient, storeId, requestedCategory]);
 
   const goToPage = (next: number) => {
     setFilters({ page: next, category });
@@ -148,7 +158,9 @@ export function TemplateGallery({
         return;
       }
       toast.success(t("applied", { name: text(template.name) }));
-      refreshGallery();
+      void queryClient.invalidateQueries({ queryKey: templatesKey(storeId) });
+      // Next step is publishing: Website › Overview, where the publish button draws the eye.
+      router.push(`/stores/${storeId}/website`);
     });
 
   const onUndo = () =>

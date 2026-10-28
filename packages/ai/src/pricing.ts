@@ -14,6 +14,9 @@ export type ModelPrice = {
 
 export const MODEL_PRICES: Record<string, ModelPrice> = {
   "gemini-3.1-flash-lite": { input: 0.25, cachedInput: 0.025, output: 1.5 },
+  // Fallbacks (checked 2026-10-28).
+  "gemini-3.5-flash-lite": { input: 0.3, cachedInput: 0.03, output: 2.5 },
+  "gemini-3.6-flash": { input: 0.75, cachedInput: 0.075, output: 3.75 },
 }
 
 /** Unknown models are priced like a mid Flash tier, so costs are never undercounted to zero. */

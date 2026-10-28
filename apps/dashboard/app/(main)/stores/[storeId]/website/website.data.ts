@@ -54,6 +54,7 @@ export async function loadWebsiteOverview(store: StoreRow): Promise<WebsiteOverv
     readOnly: store.status !== "active",
     liveUrl: storeUrl(store.subdomain, customDomain),
     hostname: storeHostname(store.subdomain, customDomain),
+    defaultHostname: storeHostname(store.subdomain),
     siteStatus: status.siteStatus,
     isLive: status.isLive,
     hasUnpublishedChanges: status.hasUnpublishedChanges,

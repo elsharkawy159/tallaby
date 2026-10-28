@@ -155,6 +155,9 @@ const DEMO = demoStore({
     ["beef", "لحمة بلدي", "Beef", PHOTOS.steakCut],
     ["grill", "مشويات", "Grill", PHOTOS.koftaGrill],
     ["boxes", "بوكسات", "Boxes", PHOTOS.rawCuts],
+    ["lamb", "ضاني", "Lamb", PHOTOS.lambChops],
+    ["chicken", "فراخ", "Chicken", PHOTOS.chicken],
+    ["sausage", "سجق ومصنعات", "Sausage & deli", PHOTOS.sausages],
   ],
   products: [
     ["family-meat-box", "boxes", "بوكس لحمة العيلة ٥ كيلو", "Family Meat Box, 5 kg", PHOTOS.rawCuts, 2400, { isFeatured: true, rating: 4.8, sold90: 120 }],
@@ -163,11 +166,11 @@ const DEMO = demoStore({
     ["kofta-plate", "grill", "كفتة مشوية جاهزة", "Ready Grilled Kofta", PHOTOS.koftaPlate, 460, { compareAtPrice: 520, sold90: 190 }],
     ["rib-roast", "beef", "ريش بالعضم", "Bone-In Rib Roast", PHOTOS.ribRoast, 1350, { rating: 4.9, sold90: 44 }],
     ["steak-cut", "beef", "ستيك بلدي ١ كيلو", "Local Steak, 1 kg", PHOTOS.steakCut, 520, { sold90: 90 }],
-    ["lamb-chops", "beef", "ريش ضاني ١ كيلو", "Lamb Chops, 1 kg", PHOTOS.lambChops, 640, { sold90: 66 }],
-    ["beef-sausage", "grill", "سجق بلدي ١ كيلو", "Beef Sausage, 1 kg", PHOTOS.sausages, 340, { sold90: 110 }],
+    ["lamb-chops", "lamb", "ريش ضاني ١ كيلو", "Lamb Chops, 1 kg", PHOTOS.lambChops, 640, { sold90: 66 }],
+    ["beef-sausage", "sausage", "سجق بلدي ١ كيلو", "Beef Sausage, 1 kg", PHOTOS.sausages, 340, { sold90: 110 }],
     ["pot-roast-box", "boxes", "بوكس الروستو", "Pot Roast Box", PHOTOS.potRoast, 900, { sold90: 38 }],
     ["grill-steak-box", "boxes", "بوكس الشوي", "Grill Box", PHOTOS.grilledSteak, 1500, { inStock: false, sold90: 30 }],
-    ["marinated-chicken", "grill", "فراخ متتبلة للشوي", "Marinated Chicken", PHOTOS.chicken, 260, { sold90: 80 }],
+    ["marinated-chicken", "chicken", "فراخ متتبلة للشوي", "Marinated Chicken", PHOTOS.chicken, 260, { sold90: 80 }],
   ],
 });
 
@@ -175,7 +178,7 @@ export const LAHMA = libraryTemplate({
   key: LAHMA_KEY,
   version: 3,
   changelog: "Lahma v3: categories, one delivery block, section order",
-  productPage: { thumbs: "bottom", band: "brand", extras: ["product-shipping"], copy: { back: L("رجوع للقطعيات", "Back to the cuts"), reviews: L("زباين الجزارة بيقولوا", "The regulars say"), related: L("حاجة تكمّل الشوي", "Goes with the grill") } },
+  productPage: { thumbs: "bottom", band: "brand", extras: ["product-shipping"], copy: { reviews: L("زباين الجزارة بيقولوا", "The regulars say"), related: L("حاجة تكمّل الشوي", "Goes with the grill") } },
   name: L("لحمة", "Lahma"),
   description: L(
     "جزارة وبوكسات لحوم: بوستر بوكسات العيد، قطعيات الأسبوع، توصيل مبرد وافتح قبل ما تدفع. أربع صفحات جاهزة.",

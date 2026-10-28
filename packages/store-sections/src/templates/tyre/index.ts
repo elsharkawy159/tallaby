@@ -77,7 +77,7 @@ const home: Design[] = [
   lib("products-rows", {
     text: { "إكسسوارات بسعر حلو": L("الأكتر طلباً", "Most ordered") },
     links: { "/products": BEST },
-    lists: [{ source: "best-sellers", limit: 5 }],
+    lists: [{ source: "best-sellers", limit: 6 }],
   }),
   lib("service-booking", {
     text: {
@@ -129,17 +129,19 @@ const DEMO = demoStore({
     ["tyres", "كاوتش", "Tyres", PHOTOS.allTerrain],
     ["tools", "منفاخ وعدة", "Pumps & tools", PHOTOS.inflator],
     ["extras", "إضافات", "Add-ons", PHOTOS.floorMat],
+    ["sets", "أطقم كاوتش", "Tyre sets", PHOTOS.stacks],
+    ["electronics", "إلكترونيات", "Electronics", PHOTOS.camera],
   ],
   products: [
     ["all-terrain-265-70-r16", "tyres", "كاوتش أوف رود 265/70 R16", "All-Terrain Tyre 265/70 R16", PHOTOS.allTerrain, 5400, { isFeatured: true, rating: 4.8, sold90: 96 }],
     ["touring-205-55-r16", "tyres", "كاوتش ملاكي 205/55 R16", "Touring Tyre 205/55 R16", PHOTOS.tread, 3600, { compareAtPrice: 3950, rating: 4.7, sold90: 210 }],
-    ["set-of-four-195-65-r15", "tyres", "طقم ٤ كاوتش 195/65 R15", "Set of Four 195/65 R15", PHOTOS.stacks, 12800, { isFeatured: true, sold90: 74 }],
+    ["set-of-four-195-65-r15", "sets", "طقم ٤ كاوتش 195/65 R15", "Set of Four 195/65 R15", PHOTOS.stacks, 12800, { isFeatured: true, sold90: 74 }],
     ["sport-225-45-r17", "tyres", "كاوتش سبور 225/45 R17", "Sport Tyre 225/45 R17", PHOTOS.rows, 4700, { rating: 4.6, sold90: 52 }],
     ["portable-inflator", "tools", "منفاخ كاوتش محمول", "Portable Tyre Inflator", PHOTOS.inflator, 1150, { rating: 4.7, sold90: 160 }],
     ["pressure-gauge", "tools", "عداد ضغط هوا", "Tyre Pressure Gauge", PHOTOS.gauge, 320, { sold90: 140 }],
     ["rubber-floor-mats", "extras", "دواسات كاوتش", "Rubber Floor Mats", PHOTOS.floorMat, 950, { compareAtPrice: 1100, sold90: 120 }],
-    ["dash-camera", "extras", "كاميرا تابلوه", "Dash Camera", PHOTOS.camera, 2400, { sold90: 41 }],
-    ["jump-power-bank", "extras", "باور بانك للعربية", "Car Power Bank", PHOTOS.powerBank, 790, { inStock: false, sold90: 36 }],
+    ["dash-camera", "electronics", "كاميرا تابلوه", "Dash Camera", PHOTOS.camera, 2400, { sold90: 41 }],
+    ["jump-power-bank", "electronics", "باور بانك للعربية", "Car Power Bank", PHOTOS.powerBank, 790, { inStock: false, sold90: 36 }],
   ],
 });
 
@@ -147,7 +149,7 @@ export const TYRE = libraryTemplate({
   key: TYRE_KEY,
   version: 3,
   changelog: "Tyre v3: categories after the search, tyres before fitting, one service block",
-  productPage: { thumbs: "side", band: "shelf", extras: ["product-perks"], copy: { back: L("رجوع للكاوتش", "Back to the tyres"), reviews: L("رأي اللي ركّبوا", "From those who fitted"), related: L("إضافات وقت التركيب", "Add-ons while we fit") } },
+  productPage: { thumbs: "side", band: "shelf", extras: ["product-perks"], copy: { reviews: L("رأي اللي ركّبوا", "From those who fitted"), related: L("إضافات وقت التركيب", "Add-ons while we fit") } },
   name: L("كاوتش", "Kawetch"),
   description: L(
     "كاوتش وتركيب: بحث بالمقاس، تركيب في البيت، حجز معاد، تقسيط ومساعدة في المقاس. أربع صفحات جاهزة.",

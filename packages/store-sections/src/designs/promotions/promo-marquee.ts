@@ -1,6 +1,6 @@
 /**
  * Scrolling text (Claude Design premium set, `marquee`; 2026-10-27): large
- * words loop across the screen with a small spark between them, for store
+ * words loop across the store container with a small spark between them, for store
  * promises or collection names between sections. Built on the `marquee`
  * element: it stops and wraps into a still row with reduced motion or Theme ›
  * Animations off, and pauses on hover. Store promises only, no prices.
@@ -29,13 +29,13 @@ function word(t: TreeBuilder, text: DesignText): NodeTemplate[] {
 
 export const promoMarquee = defineDesign({
   id: "promo-marquee",
-  version: 1,
+  version: 2,
   category: "promotions",
   subcategory: "full-width",
   name: L("نص متحرك", "Scrolling text"),
   description: L(
-    "عبارات كبيرة بتلف على عرض الشاشة، لوعود المتجر أو أسماء المجموعات بين الأقسام.",
-    "Large words that loop across the screen, for store promises or collection names between sections.",
+    "عبارات كبيرة بتلف على عرض الصفحة، لوعود المتجر أو أسماء المجموعات بين الأقسام.",
+    "Large words that loop across the page, for store promises or collection names between sections.",
   ),
   keywords: ["marquee", "ticker", "scrolling text", "promises", "strip", "نص متحرك", "شريط", "وعود"],
   tree: (t) =>
@@ -46,9 +46,14 @@ export const promoMarquee = defineDesign({
         mobile: { paddingTop: 22, paddingBottom: 22 },
       },
       [
-        t.marquee(
-          WORDS.flatMap((text) => word(t, text)),
-          { label: L("الشريط", "Marquee"), role: "items", speed: 36, style: { gap: 40, alignItems: "center" }, mobile: { gap: 24 } },
+        t.container(
+          [
+            t.marquee(
+              WORDS.flatMap((text) => word(t, text)),
+              { label: L("الشريط", "Marquee"), role: "items", speed: 36, style: { gap: 40, alignItems: "center" }, mobile: { gap: 24 } },
+            ),
+          ],
+          { label: L("الحاوية", "Container"), role: "container", style: { overflow: "hidden" } },
         ),
       ],
     ),

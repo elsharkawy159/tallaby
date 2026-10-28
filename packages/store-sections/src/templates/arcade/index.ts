@@ -160,12 +160,13 @@ const DEMO = demoStore({
     ["gaming", "أدوات جيمنج", "Gaming gear", PHOTOS.glowControllers],
     ["wear", "ساعات", "Wearables", PHOTOS.watchGreen],
     ["power", "باور", "Power", PHOTOS.cable],
+    ["headsets", "سماعات جيمنج", "Gaming headsets", PHOTOS.headset],
   ],
   products: [
     ["studio-pro-headphones", "audio", "سماعة ستوديو برو", "Studio Pro Headphones", PHOTOS.headphones, 1290, { compareAtPrice: 1890, isFeatured: true, rating: 4.8, sold90: 410 }],
     ["pulse-buds-anc", "audio", "سماعة بالس ANC", "Pulse Buds ANC", PHOTOS.budsBlack, 1590, { sold90: 320 }],
     ["air-buds-4", "audio", "سماعة إير ٤", "Air Buds 4", PHOTOS.budsOpen, 1190, { sold90: 120 }],
-    ["arena-gaming-headset", "gaming", "سماعة جيمنج بمايك", "Gaming Headset with Mic", PHOTOS.headset, 1490, { compareAtPrice: 1790, sold90: 150 }],
+    ["arena-gaming-headset", "headsets", "سماعة جيمنج بمايك", "Gaming Headset with Mic", PHOTOS.headset, 1490, { compareAtPrice: 1790, sold90: 150 }],
     ["neon-controller", "gaming", "دراع لاسلكي نيون", "Neon Wireless Controller", PHOTOS.neonController, 1350, { isFeatured: true, sold90: 96 }],
     ["camo-controller-pair", "gaming", "دراعين مموّهين", "Camo Controller Pair", PHOTOS.camoControllers, 2400, { sold90: 44 }],
     ["ultra-watch-3", "wear", "ساعة ألترا ٣", "Ultra Watch 3", PHOTOS.watch, 1450, { sold90: 96 }],
@@ -227,5 +228,5 @@ export const ARCADE = libraryTemplate({
     },
   ],
   demo: DEMO,
-  productPage: { thumbs: "side", headingCase: "upper", band: "brand", copy: { back: L("رجوع للعروض", "Back to the deals"), reviews: L("رأي اللاعبين", "Player reviews"), related: L("كمّل السيتاب", "Level up your setup") } },
+  productPage: { thumbs: "side", headingCase: "upper", band: "brand", copy: { reviews: L("رأي اللاعبين", "Player reviews"), related: L("كمّل السيتاب", "Level up your setup") } },
 });

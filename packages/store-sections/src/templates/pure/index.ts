@@ -160,6 +160,7 @@ const DEMO = demoStore({
     ["serums", "سيرم وزيوت", "Serums & oils", PHOTOS.serum],
     ["moisturisers", "مرطبات", "Moisturisers", PHOTOS.creamJars],
     ["sets", "مجموعات", "Sets", PHOTOS.set],
+    ["body", "عناية الجسم", "Body care", PHOTOS.lotions],
   ],
   products: [
     ["hyaluronic-water-serum", "serums", "سيرم الهيالورونيك", "Hyaluronic Water Serum", PHOTOS.serum, 690, { isFeatured: true, rating: 4.9, sold90: 348 }],
@@ -170,6 +171,7 @@ const DEMO = demoStore({
     ["barrier-repair-cream", "moisturisers", "كريم إصلاح الحاجز", "Barrier Repair Cream", PHOTOS.creamJars, 720, { rating: 4.8, sold90: 265 }],
     ["light-day-lotion", "moisturisers", "لوشن نهاري خفيف", "Light Day Lotion", PHOTOS.lotions, 590, { sold90: 74 }],
     ["morning-set", "sets", "مجموعة الصباح", "The Morning Set", PHOTOS.set, 1650, { compareAtPrice: 1890, rating: 4.9, sold90: 58 }],
+    ["eucalyptus-body-lotion", "body", "لوشن جسم بالأوكالبتوس", "Eucalyptus Body Lotion", PHOTOS.lotions, 520, { sold90: 61 }],
   ],
 });
 
@@ -226,5 +228,5 @@ export const PURE = libraryTemplate({
     },
   ],
   demo: DEMO,
-  productPage: { thumbs: "bottom", surface: "shelf", band: "paper", extras: ["product-perks"], copy: { back: L("العودة للمتجر", "Back to the shop"), reviews: L("تجارب بشرة حقيقية", "Real skin, real results"), related: L("تكمل روتينك", "Complete your routine") } },
+  productPage: { thumbs: "bottom", surface: "shelf", band: "paper", extras: ["product-perks"], copy: { reviews: L("تجارب بشرة حقيقية", "Real skin, real results"), related: L("تكمل روتينك", "Complete your routine") } },
 });

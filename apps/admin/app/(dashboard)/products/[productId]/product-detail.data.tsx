@@ -24,6 +24,7 @@ import {
   Eye,
   ShoppingCart,
   BarChart3,
+  Sparkles,
 } from "lucide-react";
 import {
   Tooltip,
@@ -38,6 +39,7 @@ import { ProductImagesGallery } from "../_components/product-images-gallery";
 import { ProductReviewsTable } from "../_components/product-reviews-table";
 import { ProductInventoryTable } from "../_components/product-inventory-table";
 import {
+  aiSourceLabel,
   formatProductPrice,
   transformProductForDetail,
 } from "../products.lib";
@@ -253,6 +255,20 @@ async function ProductDetailContent({ productId }: ProductDetailDataProps) {
                 className="bg-orange-50 text-orange-700 border-orange-200"
               >
                 Direct Checkout
+              </Badge>
+            )}
+            {aiSourceLabel(product.aiSource) && (
+              <Badge
+                variant="outline"
+                className="gap-1 bg-violet-50 text-violet-700 border-violet-200"
+                title={
+                  product.aiAssistedAt
+                    ? `Last AI save: ${new Date(product.aiAssistedAt).toLocaleString("en-US")}`
+                    : undefined
+                }
+              >
+                <Sparkles className="h-3 w-3" />
+                {aiSourceLabel(product.aiSource)}
               </Badge>
             )}
           </div>

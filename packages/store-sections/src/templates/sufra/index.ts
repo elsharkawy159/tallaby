@@ -119,11 +119,12 @@ const DEMO = demoStore({
     ["prep", "ألواح وتحضير", "Boards & prep", PHOTOS.boards],
     ["storage", "التخزين", "Storage", PHOTOS.pantry],
     ["linen", "مفارش", "Table linen", PHOTOS.linenCloth],
+    ["mugs", "مجات وكوبايات", "Mugs & cups", PHOTOS.mugPair],
   ],
   products: [
     ["stoneware-dinner-set", "tableware", "طقم أطباق عشا ستون وير لـ٦", "Stoneware Dinner Set for Six", PHOTOS.dinnerSet, 2450, { isFeatured: true, rating: 4.8, sold90: 132 }],
     ["linen-tablecloth", "linen", "مفرش سفرة كتان", "Linen Tablecloth", PHOTOS.linenCloth, 450, { sold90: 47 }],
-    ["hand-painted-mug-pair", "tableware", "كوبايتين مرسومين باليد", "Hand-Painted Mug Pair", PHOTOS.mugPair, 420, { sold90: 88 }],
+    ["hand-painted-mug-pair", "mugs", "كوبايتين مرسومين باليد", "Hand-Painted Mug Pair", PHOTOS.mugPair, 420, { sold90: 88 }],
     ["olive-wood-board-set", "prep", "طقم ألواح خشب زيتون", "Olive Wood Board Set", PHOTOS.boards, 690, { sold90: 300 }],
     ["beech-utensil-set", "prep", "طقم معالق خشب زان", "Beech Utensil Set", PHOTOS.utensils, 340, { compareAtPrice: 420, sold90: 280 }],
     ["glass-jar-set", "storage", "٦ برطمانات إزاز", "Glass Jar Set of 6", PHOTOS.pantry, 560, { sold90: 260 }],
@@ -137,7 +138,7 @@ export const SUFRA = libraryTemplate({
   key: SUFRA_KEY,
   version: 3,
   changelog: "Sufra v3: full-bleed hero, categories, products high, section order",
-  productPage: { surface: "card", thumbs: "side", band: "paper", extras: ["product-perks"], copy: { back: L("رجوع للسفرة", "Back to the table"), reviews: L("رأي اللي جرّبوا السفرة", "From tables like yours"), related: L("يكمّل السفرة", "Set the rest of the table") } },
+  productPage: { surface: "card", thumbs: "side", band: "paper", extras: ["product-perks"], copy: { reviews: L("رأي اللي جرّبوا السفرة", "From tables like yours"), related: L("يكمّل السفرة", "Set the rest of the table") } },
   name: L("سفرة", "Sufra"),
   description: L(
     "أدوات سفرة بتركيز على التوصيل والدفع: يوصل بكره، موسم العزايم، طقم الجمعة، حسب ميزانيتك، طرق الدفع، افتح قبل ما تدفع وطقم المطبخ. أربع صفحات جاهزة.",

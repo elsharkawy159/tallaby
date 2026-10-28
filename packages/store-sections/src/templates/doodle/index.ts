@@ -148,18 +148,22 @@ const DEMO = demoStore({
     ["animals", "حيوانات", "Animals", PHOTOS.safari],
     ["builders", "ديناصورات", "Dinosaurs", PHOTOS.dinoTrio],
     ["vehicles", "عربيات وموسيقى", "Vehicles & music", PHOTOS.trucks],
+    ["music", "موسيقى", "Music", PHOTOS.xylophone],
+    ["sea", "حيوانات البحر", "Sea animals", PHOTOS.seaFriends],
+    ["pull-along", "ألعاب بعصاية", "Pull-along toys", PHOTOS.cat],
+    ["sets", "باقات", "Bundles", PHOTOS.blocksPillow],
   ],
   products: [
     ["rainbow-blocks", "blocks", "مكعبات قوس قزح", "Rainbow Number Blocks", PHOTOS.numberBlocks, 650, { isFeatured: true, rating: 4.9, sold90: 330 }],
     ["round-blocks", "blocks", "مكعبات مدوّرة", "Round Blocks", PHOTOS.roundBlocks, 420, { sold90: 90 }],
     ["green-blue-blocks", "blocks", "مكعبات أخضر وأزرق", "Green & Blue Blocks", PHOTOS.greenBlocks, 380, { sold90: 40 }],
     ["safari-friends", "animals", "أصحاب السفاري", "Safari Friends", PHOTOS.safari, 420, { rating: 4.8, sold90: 80 }],
-    ["sea-friends", "animals", "أصحاب البحر", "Sea Friends", PHOTOS.seaFriends, 420, { sold90: 40 }],
+    ["sea-friends", "sea", "أصحاب البحر", "Sea Friends", PHOTOS.seaFriends, 420, { sold90: 40 }],
     ["dino-trio", "builders", "ثلاثي الديناصورات", "Dino Trio", PHOTOS.dinoTrio, 560, { compareAtPrice: 650, sold90: 90 }],
     ["wooden-trucks", "vehicles", "عربيات خشب", "Wooden Trucks", PHOTOS.trucks, 480, { rating: 4.8, sold90: 140 }],
-    ["rainbow-xylophone", "vehicles", "إكسيليفون قوس قزح", "Rainbow Xylophone", PHOTOS.xylophone, 390, { sold90: 60 }],
-    ["playroom-starter", "blocks", "باقة أوضة اللعب", "Playroom Starter", PHOTOS.blocksPillow, 1450, { isFeatured: true, sold90: 22 }],
-    ["pull-along-cat", "animals", "قطة بعصاية", "Pull-along Cat", PHOTOS.cat, 220, { inStock: false, sold90: 30 }],
+    ["rainbow-xylophone", "music", "إكسيليفون قوس قزح", "Rainbow Xylophone", PHOTOS.xylophone, 390, { sold90: 60 }],
+    ["playroom-starter", "sets", "باقة أوضة اللعب", "Playroom Starter", PHOTOS.blocksPillow, 1450, { isFeatured: true, sold90: 22 }],
+    ["pull-along-cat", "pull-along", "قطة بعصاية", "Pull-along Cat", PHOTOS.cat, 220, { inStock: false, sold90: 30 }],
   ],
 });
 
@@ -213,5 +217,5 @@ export const DOODLE = libraryTemplate({
     },
   ],
   demo: DEMO,
-  productPage: { surface: "card", thumbs: "bottom", band: "brand", copy: { back: L("رجوع للعب", "Back to the toys"), reviews: L("صور من الأطفال السعداء", "Happy playtime reviews"), related: L("العب بحاجة تانية", "Play with something else") } },
+  productPage: { surface: "card", thumbs: "bottom", band: "brand", copy: { reviews: L("صور من الأطفال السعداء", "Happy playtime reviews"), related: L("العب بحاجة تانية", "Play with something else") } },
 });

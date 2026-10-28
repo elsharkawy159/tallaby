@@ -196,7 +196,7 @@ export const SALON = libraryTemplate({
   key: SALON_KEY,
   version: 3,
   changelog: "Salon v3: one payment block",
-  productPage: { surface: "flat", thumbs: "side", gallery: "end", button: "outline", band: "paper", extras: ["product-perks"], copy: { back: L("رجوع للمعرض", "Back to the showroom"), reviews: L("آراء أصحاب البيوت", "From homeowners"), related: L("قطع تناسب الأوضة", "Pieces for the room") } },
+  productPage: { surface: "flat", thumbs: "side", gallery: "end", button: "outline", band: "paper", extras: ["product-perks"], copy: { reviews: L("آراء أصحاب البيوت", "From homeowners"), related: L("قطع تناسب الأوضة", "Pieces for the room") } },
   name: L("صالون", "Salon"),
   description: L(
     "أثاث الصالة: بانرات متحركة، الأوض، الأكثر مبيعاً، التقسيط لحد ٢٤ شهر وأسئلة. أربع صفحات جاهزة.",

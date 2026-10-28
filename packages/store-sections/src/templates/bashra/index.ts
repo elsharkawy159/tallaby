@@ -162,9 +162,11 @@ const DEMO = demoStore({
     ["body", "الجسم", "Body", PHOTOS.soapTrio],
     ["hair", "الشعر", "Hair", PHOTOS.hairOil],
     ["sets", "أطقم", "Sets", PHOTOS.ritualSet],
+    ["soap", "صابون", "Soap", PHOTOS.soapRow],
+    ["tools", "أدوات", "Tools", PHOTOS.guaSha],
   ],
   products: [
-    ["olive-oil-soap-trio", "body", "٣ صابون زيت زيتون", "Olive Oil Soap Trio", PHOTOS.soapTrio, 240, { sold90: 210 }],
+    ["olive-oil-soap-trio", "soap", "٣ صابون زيت زيتون", "Olive Oil Soap Trio", PHOTOS.soapTrio, 240, { sold90: 210 }],
     ["prickly-pear-face-oil", "face", "زيت التين الشوكي للوش", "Prickly Pear Face Oil", PHOTOS.faceOil, 690, { rating: 4.8, sold90: 164 }],
     ["rose-water-toner", "face", "تونر ماء الورد", "Rose Water Toner", PHOTOS.toner, 320, { sold90: 120 }],
     ["sesame-body-oil", "body", "زيت سمسم للجسم", "Sesame Body Oil", PHOTOS.bodyOil, 380, { sold90: 48 }],
@@ -172,7 +174,8 @@ const DEMO = demoStore({
     ["full-ritual-set", "sets", "طقم الروتين الكامل", "Full Ritual Set", PHOTOS.ritualSet, 1290, { compareAtPrice: 1520, isFeatured: true, sold90: 62 }],
     ["whipped-face-cream", "face", "كريم وش مخفوق", "Whipped Face Cream", PHOTOS.faceCream, 450, { sold90: 70 }],
     ["gua-sha-serum-set", "sets", "طقم جواشا وسيروم", "Gua Sha and Serum Set", PHOTOS.guaSha, 780, { sold90: 35 }],
-    ["handmade-soap-bars", "body", "٧ صابونات هاند ميد", "Seven Handmade Soap Bars", PHOTOS.soapRow, 320, { sold90: 90 }],
+    ["handmade-soap-bars", "soap", "٧ صابونات هاند ميد", "Seven Handmade Soap Bars", PHOTOS.soapRow, 320, { sold90: 90 }],
+    ["rose-quartz-gua-sha", "tools", "جواشا كوارتز وردي", "Rose Quartz Gua Sha", PHOTOS.guaSha, 350, { sold90: 52 }],
   ],
 });
 
@@ -180,7 +183,7 @@ export const BASHRA = libraryTemplate({
   key: BASHRA_KEY,
   version: 3,
   changelog: "Bashra v3: classic hero, skin-need categories, section order",
-  productPage: { surface: "shelf", thumbs: "bottom", band: "brand", copy: { back: L("رجوع للعناية بالبشرة", "Back to skincare"), reviews: L("رأي أعضاء بشرة", "Member reviews"), related: L("كمّلي روتينك", "Complete your routine") } },
+  productPage: { surface: "shelf", thumbs: "bottom", band: "brand", copy: { reviews: L("رأي أعضاء بشرة", "Member reviews"), related: L("كمّلي روتينك", "Complete your routine") } },
   name: L("بشرة", "Bashra"),
   description: L(
     "عناية حسب نوع البشرة: لاقي روتينك، اختيارنا وآراء العميلات. أربع صفحات جاهزة.",

@@ -63,6 +63,13 @@ describe("selectProducts", () => {
     expect(selectProducts(q("category", { categoryId: null }), all)).toEqual([]);
   });
 
+  it("finds a category by its place in the store (a template row)", () => {
+    expect(ids(selectProducts(q("category", { categoryIndex: 2 }), all, ["c1", "c2"]))).toEqual(["c"]);
+    // No such place, or no category order given: nothing.
+    expect(selectProducts(q("category", { categoryIndex: 3 }), all, ["c1", "c2"])).toEqual([]);
+    expect(selectProducts(q("category", { categoryIndex: 1 }), all)).toEqual([]);
+  });
+
   it("ranks best sellers and trending by real units sold, never products without sales", () => {
     // Ties (a and c sold 2) go to the newer product.
     expect(ids(selectProducts(q("best-sellers"), all))).toEqual(["b", "c", "a"]);

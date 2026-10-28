@@ -1,10 +1,11 @@
 /**
- * Gallery and buy box (the product page's main section): a back link to the
- * store, then the product's photos beside its buy column, in the order of
- * today's storefront page (seller, stock, title, rating, price, options, buy
- * box, details). The gallery takes about 58% of the row on desktop and stays
- * in view while the column scrolls; below desktop it is one column, photos
- * first. Every part reads the page's product, so nothing here is typed in.
+ * Gallery and buy box (the product page's main section): breadcrumbs (Home ›
+ * category › product), then the product's photos beside its buy column, in
+ * the product page design's order (meta row with category and rating, title,
+ * price, stock, options, buy box with its perks box, details). The gallery
+ * takes about 58% of the row on desktop and stays in view while the column
+ * scrolls; below desktop it is one column, photos first. Every part reads
+ * the page's product, so nothing here is typed in.
  */
 import { defineDesign } from "../builder";
 import { L } from "../_kit";
@@ -14,29 +15,29 @@ const TITLE = L("اسم المنتج", "Product name");
 
 export const productMain = defineDesign({
   id: "product-main",
-  version: 1,
+  version: 2,
   category: "product-page",
   subcategory: "buy-box",
   name: L("المعرض وزر الشراء", "Gallery and buy box"),
   description: L(
-    "صور المنتج جنب عمود الشراء: البائع والمخزون والاسم والتقييم والسعر والاختيارات وزر الشراء والتفاصيل.",
-    "Product photos beside the buy column: seller, stock, name, rating, price, options, buy box and details.",
+    "صور المنتج جنب عمود الشراء: القسم والتقييم والاسم والسعر والمخزون والاختيارات وزر الشراء والتفاصيل.",
+    "Product photos beside the buy column: category, rating, name, price, stock, options, buy box and details.",
   ),
-  keywords: ["product page", "gallery", "buy box", "price", "add to cart", "variants", "صفحة المنتج", "صور", "شراء", "سعر", "سلة"],
+  keywords: ["product page", "gallery", "buy box", "price", "add to cart", "variants", "breadcrumbs", "صفحة المنتج", "صور", "شراء", "سعر", "سلة"],
   tree: (t) =>
     t.section(
       {
         label: L("المنتج", "Product"),
-        style: { paddingTop: 24, paddingBottom: 56 },
-        mobile: { paddingTop: 16, paddingBottom: 40 },
+        style: { paddingTop: 20, paddingBottom: 56 },
+        mobile: { paddingTop: 12, paddingBottom: 40 },
       },
       [
         t.container(
           [
-            t.textLink(L("العودة للمتجر", "Back to store"), "/", {
-              label: L("رابط الرجوع", "Back link"),
-              style: { fontSize: "sm", color: "muted", marginBottom: 20 },
-              mobile: { marginBottom: 14 },
+            t.productBreadcrumbs({
+              label: L("مسار الصفحة", "Breadcrumbs"),
+              style: { marginBottom: 20 },
+              mobile: { marginBottom: 12 },
             }),
             t.grid(
               [
@@ -47,26 +48,25 @@ export const productMain = defineDesign({
                 }),
                 t.stack(
                   [
-                    t.productSeller({ label: L("البائع", "Seller") }),
-                    t.productStock({ label: L("المخزون", "Stock") }),
+                    t.productRating({ label: L("التقييم", "Rating") }),
                     t.heading(TITLE, "h1", {
                       label: L("اسم المنتج", "Product name"),
                       role: "title",
                       bind: "title",
-                      style: { fontSize: "3xl", fontWeight: "bold", lineHeight: "tight" },
+                      style: { fontSize: "3xl", fontWeight: "extrabold", lineHeight: "snug" },
                       mobile: { fontSize: "2xl", lineHeight: "snug" },
                     }),
-                    t.productRating({ label: L("التقييم", "Rating") }),
-                    t.productPrice({ label: L("السعر", "Price"), style: { marginTop: 4 } }),
-                    t.productVariants({ label: L("الاختيارات", "Options"), style: { marginTop: 8 } }),
-                    t.productBuyBox({ label: L("زر الشراء", "Buy box"), style: { marginTop: 8 } }),
-                    t.productDetails({ label: L("التفاصيل", "Details"), style: { marginTop: 16 } }),
+                    t.productPrice({ label: L("السعر", "Price") }),
+                    t.productStock({ label: L("المخزون", "Stock") }),
+                    t.productVariants({ label: L("الاختيارات", "Options"), style: { marginTop: 4 } }),
+                    t.productBuyBox({ label: L("زر الشراء", "Buy box"), style: { marginTop: 4 } }),
+                    t.productDetails({ label: L("التفاصيل", "Details"), style: { marginTop: 8 } }),
                   ],
                   {
                     label: L("عمود الشراء", "Buy column"),
-                    style: { gap: 14, colSpan: 5 },
+                    style: { gap: 20, colSpan: 5 },
                     tablet: { colSpan: 1 },
-                    mobile: { gap: 12 },
+                    mobile: { gap: 16 },
                   },
                 ),
               ],
@@ -75,7 +75,7 @@ export const productMain = defineDesign({
                 columns: { desktop: 12, tablet: 1 },
                 style: { gap: 56, alignItems: "start" },
                 tablet: { gap: 32 },
-                mobile: { gap: 24 },
+                mobile: { gap: 20 },
               },
             ),
           ],

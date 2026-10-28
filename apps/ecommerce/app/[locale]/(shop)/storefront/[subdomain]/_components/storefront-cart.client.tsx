@@ -133,9 +133,6 @@ export function StorefrontCart({
             {t("checkout")}
           </Link>
         </Button>
-        <p className="text-center text-xs text-(--sf-muted)">
-          {t("cartScopeNote", { store: storeName })}
-        </p>
       </div>
     </div>
   );

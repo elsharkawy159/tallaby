@@ -11,6 +11,9 @@ import { getAccountRelations, type AccountRelations } from "../../_components/en
 import { RoleBadges } from "../../_components/entity/role-badges";
 import { UrlTabs, pickTab } from "../../_components/url-tabs";
 import { AdRequestsTable } from "../../ad-requests/ad-requests-table";
+import { AiFeaturesCard, AiRecentCallsCard, AiUsageKpis } from "../../ai-usage/ai-usage.chunks";
+import { AI_USAGE_RANGES, AI_USAGE_RANGE_LABELS } from "../../ai-usage/ai-usage.lib";
+import { getSellerAiUsage } from "../../ai-usage/ai-usage.server";
 import { ScopedCouponsData } from "../../coupons/seller-coupons.data";
 import { getSellerFulfillment } from "../../fulfillment/fulfillment.server";
 import { IntegrationsTable } from "../../integrations/integrations-table";
@@ -31,7 +34,7 @@ interface SellerPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
-const TABS = ["overview", "stores", "integrations", "coupons", "wallet", "fulfillment", "ads", "audit"] as const;
+const TABS = ["overview", "stores", "integrations", "coupons", "wallet", "fulfillment", "ads", "ai", "audit"] as const;
 type SellerTab = (typeof TABS)[number];
 
 const TAB_LABELS: Record<SellerTab, string> = {
@@ -42,6 +45,7 @@ const TAB_LABELS: Record<SellerTab, string> = {
   wallet: "Wallet",
   fulfillment: "Fulfillment",
   ads: "Ads",
+  ai: "AI usage",
   audit: "Audit",
 };
 
@@ -166,6 +170,35 @@ async function SellerTabContent({
             )}
           </CardContent>
         </Card>
+      );
+    }
+    case "ai": {
+      const range = pickTab(raw.range, AI_USAGE_RANGES);
+      const usage = await getSellerAiUsage(sellerId, range);
+      return (
+        <div className="space-y-6">
+          <UrlTabs
+            baseHref={`/sellers/${sellerId}`}
+            param="range"
+            keep={{ tab: "ai" }}
+            active={range}
+            tabs={AI_USAGE_RANGES.map((key) => ({ key, label: AI_USAGE_RANGE_LABELS[key] }))}
+          />
+          {usage ? (
+            <>
+              <AiUsageKpis totals={usage.totals} products={usage.products} today={usage.okToday} />
+              {usage.products.added + usage.products.edited > 0 && (
+                <Link href={`/products?seller=${sellerId}&ai=ai`} className="inline-block text-sm text-muted-foreground hover:underline">
+                  See this seller&apos;s products made with AI
+                </Link>
+              )}
+              <AiFeaturesCard features={usage.features} />
+              <AiRecentCallsCard calls={usage.recent} />
+            </>
+          ) : (
+            <Unavailable what="AI usage" />
+          )}
+        </div>
       );
     }
     case "audit": {

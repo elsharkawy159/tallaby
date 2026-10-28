@@ -195,6 +195,8 @@ const DEMO = demoStore({
     ["chairs", "الفوتيهات", "Armchairs", PHOTOS.showroom],
     ["dining", "السفرة", "Dining", PHOTOS.diningChairs],
     ["lighting", "إضاءة وترابيزات", "Lighting & tables", PHOTOS.bedsideLamp],
+    ["decor", "ديكور ومرايات", "Decor & mirrors", PHOTOS.mirrorsCorner],
+    ["living-sets", "أطقم ليفينج", "Living room sets", PHOTOS.navySofaRoom],
   ],
   products: [
     ["low-linen-sofa", "sofas", "كنبة كتان واطية", "Low Linen Sofa", PHOTOS.linenSofa, 26500, { isFeatured: true, rating: 4.9, sold90: 30 }],
@@ -205,6 +207,8 @@ const DEMO = demoStore({
     ["marble-side-table", "lighting", "ترابيزة جنب رخام", "Marble Side Table", PHOTOS.marbleTable, 4200, { compareAtPrice: 4900, sold90: 19 }],
     ["linen-floor-lamp", "lighting", "أباجورة أرضي كتان", "Linen Floor Lamp", PHOTOS.floorLamp, 2600, { sold90: 45 }],
     ["oak-dining-set", "dining", "سفرة أرو لـ٦", "Oak Dining Set for Six", PHOTOS.diningChairs, 34500, { sold90: 26 }],
+    ["round-wall-mirrors", "decor", "طقم مرايات حيطة مدورة", "Round Wall Mirror Set", PHOTOS.mirrorsCorner, 5400, { sold90: 28 }],
+    ["navy-living-set", "living-sets", "طقم ليفينج كحلي", "Navy Living Room Set", PHOTOS.navySofaRoom, 42500, { compareAtPrice: 47000, sold90: 12 }],
   ],
 });
 
@@ -212,7 +216,7 @@ export const DAR = libraryTemplate({
   key: DAR_KEY,
   version: 3,
   changelog: "Dar v3: room slideshow hero, categories, reviews, section order",
-  productPage: { surface: "shelf", thumbs: "side", band: "paper", extras: ["product-shipping"], copy: { back: L("رجوع للمعرض", "Back to the showroom"), reviews: L("رأي أصحاب البيوت", "From homes we furnished"), related: L("قطع تناسب نفس الغرفة", "Pieces for the same room") } },
+  productPage: { surface: "shelf", thumbs: "side", band: "paper", extras: ["product-shipping"], copy: { reviews: L("رأي أصحاب البيوت", "From homes we furnished"), related: L("قطع تناسب نفس الغرفة", "Pieces for the same room") } },
   name: L("دار", "Dar"),
   description: L(
     "بيت أثاث عائلي: من ١٩٨٢، الأكتر طلبًا، حاسبة التقسيط، زيارة مصمم، قصتنا ورحلتنا، بنشتغل إزاي والمعارض. أربع صفحات جاهزة.",

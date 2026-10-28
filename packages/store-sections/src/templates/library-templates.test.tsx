@@ -29,7 +29,7 @@ const SEEDS: Record<string, readonly string[]> = {
   ],
   // Templates 49–100 (v1), one migration for all ten store categories.
   "0090_library_templates_49_100.sql": [
-    ...["kettan", "zay", "sitara", "shanta", "tasfya", "layali", "kabl", "sada", "zaki", "saa", "tany"],
+    ...["kettan", "zay", "sitara", "shanta", "tasfya", "kabl", "sada", "zaki", "saa", "tany"],
     ...["nada", "kohl", "oud", "sabon", "barber", "matbakh", "fokhar", "tawla", "tanzim", "qahwa", "khodar"],
     ...["lahma", "halawa", "atara", "dokan", "bunn", "mobilia", "zarea", "nour", "mafrash", "rokn", "zahra"],
     ...["nuqra", "lulu", "saat", "mahr", "lego", "mama", "madrasa", "hikaya", "ahlam", "yoga", "koora"],
@@ -158,7 +158,8 @@ describe.each(LIBRARY_TEMPLATES.map((t) => [t.key, t] as const))("library templa
 
   it("renders every section with store data and cart buttons", () => {
     const product = { id: "p1", title: "منتج", href: "/products/p1", image: "https://cdn.test/p1.jpg", price: 900, compareAtPrice: 1200, rating: 4.6 };
-    const categories = [{ id: "c1", key: "c1", name: "قسم", href: "/products?category=c1", image: "https://cdn.test/c1.jpg", productCount: 3 }];
+    // Four categories, so a template's "products by category" rows (places 1–4) each have one.
+    const categories = [1, 2, 3, 4].map((n) => ({ id: `c${n}`, key: `c${n}`, name: `قسم ${n}`, href: `/products?category=c${n}`, image: `https://cdn.test/c${n}.jpg`, productCount: 3 }));
     const fitted = prepareTemplateForStore(config, { defaultLocale: "ar", formIds: Object.fromEntries(templateFormNeeds(config).map((n) => [n, "f1"])) });
     // Only the product page's sections get the page's product; the other pages render without one.
     const productSections = new Set(fitted.pages.filter((p) => p.kind === "product").flatMap((p) => p.content.sections));

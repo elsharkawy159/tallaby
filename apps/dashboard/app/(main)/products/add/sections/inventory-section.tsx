@@ -17,7 +17,7 @@ import { generateSku } from "../add-product.lib";
 import { useFieldError } from "./fields";
 import { VariantsEditor } from "./variants-editor";
 import { CollapsibleSection } from "./collapsible-section";
-import type { AddProductFormData, SupportedLocale } from "../add-product.schema";
+import { defaultValues, type AddProductFormData, type SupportedLocale } from "../add-product.schema";
 
 export function InventorySection({
   id = "sec-stock",
@@ -33,7 +33,7 @@ export function InventorySection({
   const form = useFormContext<AddProductFormData>();
   const quantityError = useFieldError("quantity");
   const variantsError = useFieldError("variants");
-  const [variants, quantity] = useWatch({ control: form.control, name: ["variants", "quantity"] });
+  const [variants, quantity, sku] = useWatch({ control: form.control, name: ["variants", "quantity", "sku"] });
   const variantCount = (variants ?? []).length;
   const hasVariants = variantCount > 0;
   const { submitCount } = useFormState({ control: form.control });
@@ -57,6 +57,7 @@ export function InventorySection({
       summary={summary}
       summaryTone={stock > 0 ? "ok" : submitCount > 0 ? "bad" : "need"}
       invalid={Boolean(quantityError || variantsError)}
+      filled={hasVariants || Boolean(sku?.trim()) || quantity !== defaultValues.quantity}
     >
       <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
         <div className="flex flex-col gap-1.5">

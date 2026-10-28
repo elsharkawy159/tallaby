@@ -101,6 +101,7 @@ export type ElementType =
   | "themeToggle"
   | "accountLink"
   | "mobileMenu"
+  | "productBreadcrumbs"
   | "productGallery"
   | "productPrice"
   | "productStock"
@@ -178,6 +179,18 @@ function hideUnsupported(key: string, props: Record<string, unknown>): boolean {
   return key in can && !can[key];
 }
 
+/**
+ * The single video's fields for these props: the thumbnail image only with a
+ * custom thumbnail or as a background; a background video has no thumbnail
+ * choice or playback options (it always plays muted on a loop).
+ */
+function hideVideoField(key: string, props: Record<string, unknown>): boolean {
+  const background = props.background === true;
+  if (key === "poster") return !background && props.thumbnail !== "custom";
+  if (background && (key === "thumbnail" || playbackFields.some((f) => f.key === key))) return true;
+  return hideUnsupported(key, props);
+}
+
 /** Elements that open a link or act on click (a playlist's rows are links); they never nest inside each other (no `<a>` in `<a>`). */
 export const LINK_TYPES: readonly ElementType[] = [
   "button",
@@ -187,7 +200,8 @@ export const LINK_TYPES: readonly ElementType[] = [
   "wishlistButton",
   "videoPlaylist",
   // Product parts with links or interactive content of their own (zoom, #reviews, swatches,
-  // cart buttons, collapsible rows, links in the product's content, review tabs).
+  // cart buttons, collapsible rows, links in the product's content, review tabs, breadcrumb links).
+  "productBreadcrumbs",
   "productGallery",
   "productRating",
   "productVariants",
@@ -526,11 +540,21 @@ const DEFINITIONS: readonly ElementDefinition[] = [
         hint: L("مع الغلاف يتحمّل الفيديو عند الضغط فقط، فتبقى الصفحة سريعة.", "With a thumbnail the video loads only on click, so the page stays fast."),
         hideWhen: { key: "autoplay", equals: [true] },
       },
-      { key: "poster", label: L("صورة الغلاف", "Thumbnail image"), type: "image", showWhen: { key: "thumbnail", equals: ["custom"] } },
+      { key: "poster", label: L("صورة الغلاف", "Thumbnail image"), type: "image" },
       textField("title", L("عنوان الفيديو (لقارئات الشاشة)", "Video title (for screen readers)"), 120),
+      {
+        key: "background",
+        label: L("فيديو خلفية", "Background video"),
+        type: "switch",
+        group: "advanced",
+        hint: L(
+          "لملف فيديو (mp4): يملأ مكانه ويشتغل صامتًا ومتكررًا بدون أزرار، وتظهر صورة الغلاف أولًا.",
+          "For a video file (mp4): fills its frame, plays muted on a loop without controls, and the thumbnail image shows first.",
+        ),
+      },
       ...playbackFields,
     ],
-    hideField: hideUnsupported,
+    hideField: hideVideoField,
   },
   {
     type: "videoPlaylist",
@@ -776,6 +800,16 @@ const DEFINITIONS: readonly ElementDefinition[] = [
         options: PRODUCT_SOURCES.filter((s) => s !== "all").map((value) => ({ value, label: SOURCE_LABELS[value] })),
       },
       { key: "categoryId", label: L("القسم", "Category"), type: "category", group: "data", showWhen: { key: "source", equals: ["category"] } },
+      {
+        key: "categoryIndex",
+        label: L("أو: ترتيب القسم في متجرك", "Or: the category by its place in your store"),
+        type: "number",
+        group: "data",
+        min: 1,
+        max: 8,
+        showWhen: { key: "source", equals: ["category"] },
+        hint: L("بدون قسم مختار: ١ = أول قسم في متجرك، ٢ = التاني، وهكذا.", "With no category picked: 1 = your store's first category, 2 = the second, and so on."),
+      },
       { key: "productIds", label: L("المنتجات", "Products"), type: "products", group: "data", showWhen: { key: "source", equals: ["selected"] } },
       {
         key: "sort",
@@ -787,6 +821,13 @@ const DEFINITIONS: readonly ElementDefinition[] = [
       { key: "limit", label: L("أقصى عدد", "Maximum"), type: "number", group: "data", min: 1, max: 24 },
       { key: "paginate", label: L("تقسيم على صفحات", "Split into pages"), type: "switch", group: "data" },
       { key: "mobileRail", label: L("صف يُسحب على الجوال", "Swipe row on phones"), type: "switch", group: "layout", hint: L("على الجوال تصطف البطاقات في صف واحد يُسحب جانبيًا، ويظهر طرف البطاقة التالية.", "On phones the cards sit in one row that swipes sideways, with the next card peeking in.") },
+      {
+        key: "rail",
+        label: L("شريط متحرك على كل الشاشات", "Carousel row on every screen"),
+        type: "switch",
+        group: "layout",
+        hint: L("صف واحد بأسهم: ٤ بطاقات على الكمبيوتر و٣ على التابلت، ويُسحب على الجوال.", "One row with arrows: 4 cards on desktop, 3 on tablets, and it swipes on phones."),
+      },
     ],
   },
   {
@@ -897,6 +938,18 @@ const DEFINITIONS: readonly ElementDefinition[] = [
   // Product page (template product page spec §5.3): parts of the page's product. The storefront
   // swaps the interactive ones for the host's components; the editor draws still renderings.
   {
+    type: "productBreadcrumbs",
+    group: "product",
+    label: L("مسار الصفحة", "Breadcrumbs"),
+    keywords: ["breadcrumbs", "breadcrumb", "path", "back", "category", "مسار", "رجوع", "قسم"],
+    container: false,
+    defaultProps: { showCategory: true },
+    fields: [
+      { key: "showCategory", label: L("قسم المنتج", "Product category"), type: "switch" },
+      { ...textField("homeLabel", L("نص الرئيسية", "Home label"), 40), placeholder: L("الرئيسية", "Home") },
+    ],
+  },
+  {
     type: "productGallery",
     group: "product",
     label: L("صور المنتج", "Product gallery"),
@@ -945,8 +998,16 @@ const DEFINITIONS: readonly ElementDefinition[] = [
     label: L("تقييم المنتج", "Product rating"),
     keywords: ["rating", "stars", "reviews", "تقييم", "نجوم"],
     container: false,
-    defaultProps: { showCount: true },
-    fields: [{ key: "showCount", label: L("عدد التقييمات", "Review count"), type: "switch" }],
+    defaultProps: { showCount: true, showCategory: true },
+    fields: [
+      { key: "showCount", label: L("عدد التقييمات", "Review count"), type: "switch" },
+      {
+        key: "showCategory",
+        label: L("قسم المنتج", "Product category"),
+        type: "switch",
+        hint: L("شارة القسم بتظهر حتى لو المنتج لسه مالوش تقييمات.", "The category badge shows even before the product has reviews."),
+      },
+    ],
   },
   {
     type: "productVariants",
@@ -963,7 +1024,7 @@ const DEFINITIONS: readonly ElementDefinition[] = [
     label: L("الكمية وأزرار الشراء", "Buy buttons"),
     keywords: ["buy", "cart", "quantity", "checkout", "شراء", "سلة", "كمية"],
     container: false,
-    defaultProps: { buyNow: true, stickyMobile: true, variant: "solid" },
+    defaultProps: { buyNow: true, stickyMobile: true, variant: "solid", perks: true },
     fields: [
       { ...textField("addLabel", L("نص زر السلة", "Add to cart label"), 60), placeholder: L("أضف للسلة", "Add to cart") },
       {
@@ -987,6 +1048,12 @@ const DEFINITIONS: readonly ElementDefinition[] = [
         type: "switch",
         hint: L("يبقى زر الشراء ظاهرًا أسفل الشاشة أثناء التمرير.", "Keeps the buy button at the bottom of the screen while scrolling."),
       },
+      {
+        key: "perks",
+        label: L("مميزات الشراء", "Perks box"),
+        type: "switch",
+        hint: L("صندوق تحت زر الشراء: توصيل سريع، الدفع عند الاستلام، جودة عالية.", "A box under the buy buttons: fast delivery, pay on delivery, high quality."),
+      },
     ],
   },
   {
@@ -995,10 +1062,20 @@ const DEFINITIONS: readonly ElementDefinition[] = [
     label: L("تفاصيل المنتج", "Product details"),
     keywords: ["description", "details", "features", "accordion", "وصف", "تفاصيل", "مميزات"],
     container: false,
-    defaultProps: { showDescription: true, showBullets: true },
+    defaultProps: { showDescription: true, showBullets: true, showDelivery: true },
     fields: [
       { key: "showDescription", label: L("الوصف", "Description"), type: "switch" },
       { key: "showBullets", label: L("المميزات", "Key features"), type: "switch" },
+      { key: "showDelivery", label: L("التوصيل والاسترجاع", "Delivery & returns"), type: "switch" },
+      {
+        ...textField("deliveryText", L("نص التوصيل والاسترجاع", "Delivery & returns text"), 600, "textarea"),
+        placeholder: L(
+          "هنأكد معاك الطلب بمكالمة أو رسالة قبل الشحن. مصاريف التوصيل بتظهر بالظبط في صفحة الدفع…",
+          "We confirm your order by call or message before it ships. The exact delivery fee shows at checkout…",
+        ),
+        hint: L("سيبه فاضي عشان يظهر النص العام.", "Leave it empty to show the general note."),
+        showWhen: { key: "showDelivery", equals: [true] },
+      },
     ],
   },
   {

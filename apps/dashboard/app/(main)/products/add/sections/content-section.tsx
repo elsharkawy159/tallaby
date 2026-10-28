@@ -54,6 +54,7 @@ export function ContentSection({
       description={t("description")}
       summary={summary || tPage("optional")}
       summaryTone={summary ? "ok" : "muted"}
+      filled={Boolean(summary)}
     >
       {(["en", "ar"] as const).map((loc) => (
         <div key={loc} className={cn("flex flex-col gap-4", activeLocale !== loc && "hidden")} lang={loc}>

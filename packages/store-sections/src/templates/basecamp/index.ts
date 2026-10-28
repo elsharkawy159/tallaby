@@ -160,6 +160,8 @@ const DEMO = demoStore({
     ["tents", "خيم ومخيم", "Tents & camp", PHOTOS.whiteSandTent],
     ["packs", "شنط", "Packs", PHOTOS.packOnRock],
     ["trail", "أدوات الرحلة", "Trail kit", PHOTOS.flatLay],
+    ["water", "مية وزمزميات", "Water & bottles", PHOTOS.bottle],
+    ["power", "أجهزة وشحن", "Devices & power", PHOTOS.powerBank],
   ],
   products: [
     ["dome-tent-3p", "tents", "خيمة قبة ٣ أفراد", "Dome Tent, 3 Person", PHOTOS.whiteSandTent, 4200, { isFeatured: true, rating: 4.8, sold90: 74 }],
@@ -168,9 +170,9 @@ const DEMO = demoStore({
     ["trek-pack-45l", "packs", "شنطة ترِك ٤٥ لتر", "Trek Pack 45 L", PHOTOS.packOnRock, 2650, { rating: 4.7, sold90: 66 }],
     ["canvas-daypack", "packs", "شنطة يوم كانفس", "Canvas Daypack", PHOTOS.daypack, 1350, { sold90: 90 }],
     ["trail-essentials-set", "trail", "طقم أساسيات الرحلة", "Trail Essentials Set", PHOTOS.flatLay, 1150, { sold90: 102 }],
-    ["insulated-bottle", "trail", "زمزمية معزولة", "Insulated Bottle", PHOTOS.bottle, 420, { sold90: 160 }],
-    ["solar-power-bank", "trail", "باور بانك للرحلات", "Trip Power Bank", PHOTOS.powerBank, 890, { compareAtPrice: 990, sold90: 70 }],
-    ["gps-trail-watch", "trail", "ساعة GPS للرحلات", "GPS Trail Watch", PHOTOS.watch, 3650, { inStock: false, rating: 4.6, sold90: 28 }],
+    ["insulated-bottle", "water", "زمزمية معزولة", "Insulated Bottle", PHOTOS.bottle, 420, { sold90: 160 }],
+    ["solar-power-bank", "power", "باور بانك للرحلات", "Trip Power Bank", PHOTOS.powerBank, 890, { compareAtPrice: 990, sold90: 70 }],
+    ["gps-trail-watch", "power", "ساعة GPS للرحلات", "GPS Trail Watch", PHOTOS.watch, 3650, { inStock: false, rating: 4.6, sold90: 28 }],
   ],
 });
 
@@ -224,5 +226,5 @@ export const BASECAMP = libraryTemplate({
     },
   ],
   demo: DEMO,
-  productPage: { surface: "shelf", thumbs: "side", band: "shelf", extras: ["product-perks"], copy: { back: L("رجوع للمعسكر", "Back to camp"), reviews: L("آراء المخيّمين", "Campers' reviews"), related: L("جهّز رحلتك الجاية", "Gear for your next trip") } },
+  productPage: { surface: "shelf", thumbs: "side", band: "shelf", extras: ["product-perks"], copy: { reviews: L("آراء المخيّمين", "Campers' reviews"), related: L("جهّز رحلتك الجاية", "Gear for your next trip") } },
 });

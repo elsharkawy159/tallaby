@@ -94,7 +94,7 @@ const home: Design[] = [
   lib("products-rail", {
     text: { "بيحبوها": L("وصل جديد", "New in"), "الأكثر مبيعًا": L("ألوان جديدة", "New colours") },
     links: { "/products": NEW },
-    lists: [{ source: "newest", limit: 6 }],
+    lists: [{ source: "newest", limit: 8 }],
   }),
   lib("features-ruled", {
     text: {
@@ -149,17 +149,19 @@ const DEMO = demoStore({
     ["bedding", "مفارش", "Bedding", PHOTOS.unmadeLinen],
     ["throws", "بطاطين", "Throws", PHOTOS.blanketStool],
     ["cushions", "مخدات", "Cushions", PHOTOS.sofaCushions],
+    ["sheets", "ملايات", "Sheets", PHOTOS.cottonSheets],
+    ["duvets", "لحف وكفرات", "Duvets & covers", PHOTOS.duvetCover],
   ],
   products: [
-    ["cotton-sheet-set", "bedding", "طقم ملايات قطن", "Cotton Sheet Set", PHOTOS.cottonSheets, 1450, { isFeatured: true, rating: 4.8, sold90: 210 }],
+    ["cotton-sheet-set", "sheets", "طقم ملايات قطن", "Cotton Sheet Set", PHOTOS.cottonSheets, 1450, { isFeatured: true, rating: 4.8, sold90: 210 }],
     ["waffle-knit-throw", "throws", "بطانية وافل", "Waffle Knit Throw", PHOTOS.waffleThrow, 890, { rating: 4.7, sold90: 96 }],
     ["velvet-cushion-pair", "cushions", "مخدتين قطيفة", "Velvet Cushion Pair", PHOTOS.velvetCushions, 650, { sold90: 120 }],
     ["beige-linen-set", "bedding", "طقم كتان بيج", "Beige Linen Set", PHOTOS.beigeLinen, 1750, { sold90: 48 }],
     ["olive-linen-set", "bedding", "طقم كتان زيتي", "Olive Linen Set", PHOTOS.oliveLinen, 1750, { sold90: 31 }],
     ["grey-linen-set", "bedding", "طقم كتان رمادي", "Grey Linen Set", PHOTOS.greyLinen, 1890, { sold90: 40 }],
-    ["gingham-bedding", "bedding", "طقم ملايات كاروهات", "Gingham Sheet Set", PHOTOS.gingham, 1290, { sold90: 27 }],
-    ["duvet-cover", "bedding", "كفر لحاف", "Duvet Cover", PHOTOS.duvetCover, 1190, { compareAtPrice: 1390, sold90: 41 }],
-    ["light-duvet", "bedding", "لحاف خفيف", "Light Duvet", PHOTOS.folded, 1690, { inStock: false, sold90: 22 }],
+    ["gingham-bedding", "sheets", "طقم ملايات كاروهات", "Gingham Sheet Set", PHOTOS.gingham, 1290, { sold90: 27 }],
+    ["duvet-cover", "duvets", "كفر لحاف", "Duvet Cover", PHOTOS.duvetCover, 1190, { compareAtPrice: 1390, sold90: 41 }],
+    ["light-duvet", "duvets", "لحاف خفيف", "Light Duvet", PHOTOS.folded, 1690, { inStock: false, sold90: 22 }],
     ["chunky-knit-blanket", "throws", "بطانية تريكو تقيلة", "Chunky Knit Blanket", PHOTOS.chunkyKnit, 1150, { isFeatured: true, sold90: 35 }],
     ["red-knit-throw", "throws", "بطانية تريكو حمرا", "Red Knit Throw", PHOTOS.redKnit, 950, { compareAtPrice: 1100, sold90: 19 }],
     ["blush-pillow", "cushions", "مخدة بينك فاتح", "Blush Pillow", PHOTOS.blushPillow, 390, { sold90: 64 }],
@@ -170,7 +172,7 @@ export const MAFRASH = libraryTemplate({
   key: MAFRASH_KEY,
   version: 3,
   changelog: "Mafrash v3: categories, section order",
-  productPage: { thumbs: "side", band: "paper", extras: ["product-perks"], copy: { back: L("رجوع للمفارش", "Back to the bedding"), reviews: L("رأي اللي نام عليها", "From people who slept on it"), related: L("يكمّل السرير", "Finish the bed") } },
+  productPage: { thumbs: "side", band: "paper", extras: ["product-perks"], copy: { reviews: L("رأي اللي نام عليها", "From people who slept on it"), related: L("يكمّل السرير", "Finish the bed") } },
   name: L("مفرش", "Mafrash"),
   description: L(
     "مفارش وملايات: تجربة ٣٠ ليلة، طقم السرير، قطن مصري، ألوان جديدة وشارك نومة حلوة. أربع صفحات جاهزة.",

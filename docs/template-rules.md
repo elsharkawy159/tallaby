@@ -124,7 +124,7 @@ Rules:
 The full design language (direction, spacing and type, layout, responsive rules, surfaces, product cards, images) is `docs/section-rules.md` §5. In short:
 
 - **Simple, Shopify-style**: large photos, generous white space, one heading, one subtext line and one or two buttons per section; no decorative clutter, nested cards or gradient backgrounds. The premium feel comes from spacing, type and photos, not effects.
-- **Width**: hero, banner, image with text, slideshow and video are full width; everything else is contained.
+- **Width**: only the full-width hero is edge to edge; every other section stays inside the store container (owner, 2026-10-28).
 - **Consistent**: one font pair (heading and body), one corner radius, one accent colour, all as design-system tokens so the seller can restyle everything from Theme.
 - **Spacing**: section padding about 96 px desktop / 48 px mobile (target `clamp(48px, 8vw, 112px)`), tighter only for trust strips; the same rhythm across the page.
 - **Product card (same across the template)**: image at a fixed ratio (1:1 or 3:4), title on at most 2 lines, price + compare-at price, discount badge, Add to cart. No extra clutter.

@@ -2,8 +2,8 @@ import type { ReactNode } from "react";
 import { productPageOf, type SiteConfig } from "@workspace/store-sections/config";
 import type { Product } from "@/components/product-page/product-page.types";
 import type { ProductLocale } from "@/lib/product-translations";
-import { toProductDetail } from "@/lib/store-site/product-detail.lib";
-import type { Storefront } from "@/lib/storefront.server";
+import { storeCategoryKey, toProductDetail } from "@/lib/store-site/product-detail.lib";
+import { catalogStoreId, getStorefrontCategories, type Storefront } from "@/lib/storefront.server";
 import { StoreSitePage } from "./store-site";
 
 /**
@@ -26,5 +26,13 @@ export async function StoreProductPage({
 }): Promise<ReactNode> {
   const page = productPageOf(site);
   if (!page) return null;
-  return <StoreSitePage store={store} site={site} page={page} locale={locale} product={toProductDetail(product, locale as ProductLocale)} />;
+  // The breadcrumb links its category to the catalog filtered by it; a failed read only loses the link.
+  const categories = product.category
+    ? await getStorefrontCategories(store.id, catalogStoreId(store)).catch((error) => {
+        console.error("Store categories failed to load for the product page:", error);
+        return [];
+      })
+    : [];
+  const detail = toProductDetail(product, locale as ProductLocale, { categoryKey: storeCategoryKey(product.category, categories) });
+  return <StoreSitePage store={store} site={site} page={page} locale={locale} product={detail} />;
 }

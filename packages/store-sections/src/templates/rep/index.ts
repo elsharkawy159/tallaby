@@ -165,16 +165,21 @@ const DEMO = demoStore({
     ["weights", "أوزان", "Weights", PHOTOS.hexDumbbells],
     ["mats", "مات", "Mats", PHOTOS.mat],
     ["tech", "ساعات وسماعات", "Watches & audio", PHOTOS.watch],
+    ["bands", "حبال مقاومة", "Bands", PHOTOS.bands],
+    ["cardio", "كارديو", "Cardio", PHOTOS.rope],
+    ["kettlebells", "كيتل بيل", "Kettlebells", PHOTOS.kettlebells],
+    ["home-gym", "جيم البيت", "Home gym", PHOTOS.homeGym],
   ],
   products: [
-    ["resistance-band-set", "kits", "طقم حبال مقاومة", "Resistance Band Set", PHOTOS.bands, 390, { rating: 4.8, sold90: 210 }],
+    ["resistance-band-set", "bands", "طقم حبال مقاومة", "Resistance Band Set", PHOTOS.bands, 390, { rating: 4.8, sold90: 210 }],
     ["thick-training-mat", "mats", "مات تمرين سميك", "Thick Training Mat", PHOTOS.mat, 690, { sold90: 120 }],
     ["neckband-sport-earphones", "tech", "سماعة سبورت لاسلكي", "Wireless Sport Earphones", PHOTOS.buds, 540, { compareAtPrice: 690, sold90: 77 }],
     ["home-strength-kit", "kits", "باكدج قوة البيت", "Home Strength Kit", PHOTOS.flatLaySmall, 2450, { compareAtPrice: 2800, isFeatured: true, rating: 4.8, sold90: 142 }],
     ["hex-dumbbell-pair-10kg", "weights", "جوز دمبل هكس ١٠ كيلو", "Hex Dumbbell Pair 10 kg", PHOTOS.hexDumbbells, 1350, { sold90: 98 }],
     ["pulse-sport-watch", "tech", "ساعة بالس سبورت", "Pulse Sport Watch", PHOTOS.watch, 1450, { sold90: 44 }],
-    ["kettlebell-pair-8kg", "weights", "جوز كيتل بيل ٨ كيلو", "Kettlebell Pair 8 kg", PHOTOS.kettlebells, 1100, { sold90: 52 }],
-    ["speed-jump-rope", "kits", "حبل نط سريع", "Speed Jump Rope", PHOTOS.rope, 260, { inStock: false, sold90: 40 }],
+    ["kettlebell-pair-8kg", "kettlebells", "جوز كيتل بيل ٨ كيلو", "Kettlebell Pair 8 kg", PHOTOS.kettlebells, 1100, { sold90: 52 }],
+    ["speed-jump-rope", "cardio", "حبل نط سريع", "Speed Jump Rope", PHOTOS.rope, 260, { inStock: false, sold90: 40 }],
+    ["home-gym-corner-set", "home-gym", "طقم ركن الجيم في البيت", "Home Gym Corner Set", PHOTOS.homeGym, 5900, { compareAtPrice: 6600, sold90: 21 }],
   ],
 });
 
@@ -182,7 +187,7 @@ export const REP = libraryTemplate({
   key: REP_KEY,
   version: 3,
   changelog: "Rep v3: new hero, categories, products, section order",
-  productPage: { surface: "flat", thumbs: "bottom", headingCase: "upper", band: "brand", extras: ["product-perks"], copy: { back: L("رجوع للمعدات", "Back to the gear"), reviews: L("رسايل الأعضاء", "Members' messages"), related: L("معدات تكمّل تمرينك", "Gear to complete your training") } },
+  productPage: { surface: "flat", thumbs: "bottom", headingCase: "upper", band: "brand", extras: ["product-perks"], copy: { reviews: L("رسايل الأعضاء", "Members' messages"), related: L("معدات تكمّل تمرينك", "Gear to complete your training") } },
   name: L("ريب", "Rep"),
   description: L(
     "نادي تمرين البيت: حسب الهدف، الكوتشات، الأرقام ورسايل الأعضاء. أربع صفحات جاهزة.",

@@ -15,6 +15,7 @@ import { heroCarousel } from "./hero-carousel";
 import { heroCarouselImages } from "./hero-carousel-images";
 import { heroSplit } from "./hero-split";
 import { heroThumbs } from "./hero-thumbs";
+import { heroVideo } from "./hero-video";
 
 /** In Add › Sections order: the two carousels first (owner, 2026-10-23). */
 export const HERO_DESIGNS: readonly Design[] = [
@@ -31,6 +32,7 @@ export const HERO_DESIGNS: readonly Design[] = [
   heroBigWord,
   heroSearch,
   heroFullbleed,
+  heroVideo,
   heroSplit,
   heroThumbs,
   heroBanner,

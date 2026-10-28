@@ -67,7 +67,7 @@ export function classicConfig(): SiteConfig {
         accent: "#fdad28",
       },
       typography: { headingFont: "Readex Pro", bodyFont: "Readex Pro" },
-      spacing: { borderRadius: 16, containerMaxWidth: 1240 },
+      spacing: { borderRadius: 16, containerMaxWidth: 1440 },
     },
     header: section(classicHeader),
     footer: section(classicFooter),

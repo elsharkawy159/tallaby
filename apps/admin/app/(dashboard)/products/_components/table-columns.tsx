@@ -6,6 +6,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import {
   MoreHorizontal,
   Package,
+  Sparkles,
   Star,
   SquareArrowOutUpRight,
 } from "lucide-react";
@@ -25,6 +26,7 @@ import type { DataTableFilter } from "@/app/(dashboard)/_components/data-table/d
 import { getPublicUrl } from "@/lib/utils";
 import {
   LOW_STOCK_THRESHOLD,
+  aiSourceLabel,
   canApproveProduct,
   canRejectProduct,
   formatProductPrice,
@@ -99,6 +101,16 @@ export function getProductsFilters(
         { label: "Platform choice", value: "platform-choice" },
         { label: "Most selling", value: "most-selling" },
         { label: "Free delivery", value: "free-delivery" },
+      ],
+    },
+    {
+      id: "ai",
+      title: "AI",
+      options: [
+        { label: "Made with AI (any)", value: "ai" },
+        { label: "Added with AI", value: "autofill_add" },
+        { label: "Edited with AI", value: "autofill_edit" },
+        { label: "Not AI", value: "not-ai" },
       ],
     },
     { id: "created", title: "Created", type: "dateRange" },
@@ -318,6 +330,28 @@ export function getProductsColumns(
         return (
           <Badge className={`capitalize ${STATUS_STYLES[status] ?? "bg-gray-600"}`}>
             {status}
+          </Badge>
+        );
+      },
+    },
+    {
+      id: "ai",
+      accessorFn: (product) => product.aiSource ?? "",
+      header: "AI",
+      enableSorting: false,
+      meta: { label: "AI" },
+      cell: ({ row }) => {
+        const label = aiSourceLabel(row.original.aiSource);
+        if (!label) return <div className="text-sm text-muted-foreground">No</div>;
+        const at = row.original.aiAssistedAt;
+        return (
+          <Badge
+            variant="outline"
+            className="gap-1 whitespace-nowrap border-violet-300 text-violet-700"
+            title={at ? `Last AI save: ${new Date(at).toLocaleString("en-US")}` : undefined}
+          >
+            <Sparkles className="h-3 w-3" />
+            {label}
           </Badge>
         );
       },

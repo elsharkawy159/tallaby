@@ -205,5 +205,5 @@ export const HARVEST = libraryTemplate({
     },
   ],
   demo: DEMO,
-  productPage: { surface: "card", thumbs: "side", band: "paper", extras: ["product-shipping"], copy: { back: L("رجوع للأقسام", "Back to the aisles"), reviews: L("آراء المتسوقين", "Shopper reviews"), related: L("إضافات لسلتك", "Add to your basket") } },
+  productPage: { surface: "card", thumbs: "side", band: "paper", extras: ["product-shipping"], copy: { reviews: L("آراء المتسوقين", "Shopper reviews"), related: L("إضافات لسلتك", "Add to your basket") } },
 });

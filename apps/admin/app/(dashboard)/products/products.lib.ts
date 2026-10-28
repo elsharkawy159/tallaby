@@ -309,6 +309,8 @@ export function transformProductForDetail(
     sponsored: product.sponsored ?? false,
     freeDelivery: product.freeDelivery ?? false,
     directCheckout: product.directCheckout,
+    aiSource: product.aiSource ?? null,
+    aiAssistedAt: product.aiAssistedAt ?? null,
     metaTitle: enTranslation?.metaTitle ?? null,
     metaDescription: enTranslation?.metaDescription ?? null,
     images: parseProductImages(product.images),
@@ -382,6 +384,16 @@ export function transformProductForForm(product: ProductRaw): Partial<ProductFor
     metaDescription: enTranslation?.metaDescription ?? undefined,
     locale: "en",
   };
+}
+
+/** `products.ai_source` (0112) → admin label; null = not made with AI. */
+export const AI_SOURCE_LABELS: Record<string, string> = {
+  autofill_add: "Added with AI",
+  autofill_edit: "Edited with AI",
+};
+
+export function aiSourceLabel(source: string | null | undefined): string | null {
+  return source ? (AI_SOURCE_LABELS[source] ?? "AI") : null;
 }
 
 export function canApproveProduct(status: ProductStatus): boolean {

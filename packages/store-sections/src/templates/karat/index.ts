@@ -217,5 +217,5 @@ export const KARAT = libraryTemplate({
     },
   ],
   demo: DEMO,
-  productPage: { surface: "card", thumbs: "bottom", band: "brand", copy: { back: L("رجوع للمتجر", "Back to the shop"), reviews: L("بنات قالوا إيه", "What you said"), related: L("كمل الإطلالة", "Finish the look") } },
+  productPage: { surface: "card", thumbs: "bottom", band: "brand", copy: { reviews: L("بنات قالوا إيه", "What you said"), related: L("كمل الإطلالة", "Finish the look") } },
 });

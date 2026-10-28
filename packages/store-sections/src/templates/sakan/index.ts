@@ -152,6 +152,7 @@ const DEMO = demoStore({
     ["bedroom", "النوم", "Bedroom", PHOTOS.woodBed],
     ["chairs", "فوتيهات", "Armchairs", PHOTOS.oliveArmchairs],
     ["lighting", "الإضاءة", "Lighting", PHOTOS.floorLamps],
+    ["dining", "السفرة", "Dining", PHOTOS.diningRoom],
   ],
   products: [
     ["low-linen-sofa", "living", "كنبة كتان واطية", "Low Linen Sofa", PHOTOS.beigeLiving, 26500, { isFeatured: true, rating: 4.8, sold90: 62 }],
@@ -163,6 +164,7 @@ const DEMO = demoStore({
     ["reading-armchair", "chairs", "فوتيه قراية", "Reading Armchair", PHOTOS.beigeArmchair, 9800, { isFeatured: true, sold90: 41 }],
     ["olive-armchair-pair", "chairs", "زوج فوتيه زيتي", "Olive Armchair Pair", PHOTOS.oliveArmchairs, 17800, { sold90: 19 }],
     ["brass-floor-lamp", "lighting", "أباجورة أرضي نحاس", "Brass Floor Lamp", PHOTOS.floorLamps, 3200, { inStock: false, sold90: 19 }],
+    ["oak-dining-set", "dining", "سفرة خشب ٦ كراسي", "Wooden Dining Set, 6 Chairs", PHOTOS.diningRoom, 34500, { sold90: 11 }],
   ],
 });
 
@@ -216,5 +218,5 @@ export const SAKAN = libraryTemplate({
     },
   ],
   demo: DEMO,
-  productPage: { surface: "shelf", thumbs: "side", band: "paper", extras: ["product-shipping"], copy: { back: L("رجوع للمعرض", "Back to the showroom"), reviews: L("آراء سكان البيوت", "What homeowners say"), related: L("قطع لنفس الغرفة", "More for the same room") } },
+  productPage: { surface: "shelf", thumbs: "side", band: "paper", extras: ["product-shipping"], copy: { reviews: L("آراء سكان البيوت", "What homeowners say"), related: L("قطع لنفس الغرفة", "More for the same room") } },
 });

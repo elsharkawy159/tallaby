@@ -20,7 +20,9 @@ const SUMMARY_TONE: Record<SectionSummaryTone, string> = {
  * A product-form section that folds to its header and a one-line summary,
  * so the optional details stay out of the way until the seller needs them.
  * The body stays mounted while closed: its fields keep registering and
- * validating. It opens itself when it holds an error.
+ * validating. It opens itself when it holds an error, and when it gets
+ * content (an existing product, or the AI filling it); the seller can still
+ * fold it again.
  */
 export function CollapsibleSection({
   id,
@@ -30,6 +32,7 @@ export function CollapsibleSection({
   summary,
   summaryTone = "muted",
   invalid = false,
+  filled = false,
   defaultOpen = false,
   children,
 }: {
@@ -40,15 +43,21 @@ export function CollapsibleSection({
   summary?: React.ReactNode;
   summaryTone?: SectionSummaryTone;
   invalid?: boolean;
+  /** The seller (or the AI) has put something in it beyond the defaults. */
+  filled?: boolean;
   defaultOpen?: boolean;
   children: React.ReactNode;
 }) {
-  const [open, setOpen] = useState(defaultOpen);
+  const [open, setOpen] = useState(defaultOpen || filled);
   const bodyId = useId();
 
   useEffect(() => {
     if (invalid) setOpen(true);
   }, [invalid]);
+
+  useEffect(() => {
+    if (filled) setOpen(true);
+  }, [filled]);
 
   useEffect(() => {
     const onOpen = (event: Event) => {

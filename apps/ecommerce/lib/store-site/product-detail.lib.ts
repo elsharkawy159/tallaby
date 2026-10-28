@@ -37,7 +37,29 @@ function variantDetail(product: Product, variant: NonNullable<Product["productVa
   };
 }
 
-export function toProductDetail(product: Product, locale: ProductLocale): ProductDetail {
+/**
+ * The store catalog filter key (`/products?category=<key>`) of the product's
+ * category: the key of the store category (a root category, see
+ * `StorefrontCategory`) whose product categories include it. Without that
+ * list, a root category is its own key (slug, else id); a sub-category then
+ * has none, since its root is not known here.
+ */
+export function storeCategoryKey(
+  category: Pick<NonNullable<Product["category"]>, "id" | "slug" | "parentId"> | null | undefined,
+  storeCategories: readonly { key: string; categoryIds: readonly string[] }[],
+): string | null {
+  if (!category) return null;
+  const root = storeCategories.find((c) => c.categoryIds.includes(category.id));
+  if (root) return root.key;
+  return category.parentId ? null : category.slug || category.id;
+}
+
+export function toProductDetail(
+  product: Product,
+  locale: ProductLocale,
+  /** `categoryKey`: the store catalog filter of its category (`storeCategoryKey`), for the breadcrumb link. */
+  { categoryKey }: { categoryKey?: string | null } = {},
+): ProductDetail {
   const pricing = productPricing(product, null);
   // As the gallery (ProductHero): a list of paths, or a single path.
   const images = strings(typeof product.images === "string" ? [product.images] : product.images).map(productImage).filter((url): url is string => Boolean(url));
@@ -46,7 +68,12 @@ export function toProductDetail(product: Product, locale: ProductLocale): Produc
   const quantity = variants.length ? variants.reduce((sum, v) => sum + Math.max(0, v.quantity), 0) : Math.max(0, pricing.stock);
   const content = product.content ?? "";
   const category = product.category
-    ? { id: product.category.id, name: (locale === "ar" ? product.category.nameAr || product.category.name : product.category.name) ?? "" }
+    ? {
+        id: product.category.id,
+        name: (locale === "ar" ? product.category.nameAr || product.category.name : product.category.name) ?? "",
+        // The storefront catalog filtered to it, as the store's category lists link (catalog.server.ts).
+        ...(categoryKey && { href: `/products?category=${encodeURIComponent(categoryKey)}` }),
+      }
     : null;
 
   return {

@@ -146,18 +146,20 @@ const DEMO = demoStore({
     ["decor", "فازات وتحف", "Vases & objects", PHOTOS.stoneVases],
     ["textiles", "بطاطين ومخدات", "Throws & cushions", PHOTOS.throw],
     ["frames", "براويز ولوحات", "Frames & art", PHOTOS.frames],
+    ["tables", "ترابيزات", "Tables", PHOTOS.marbleSide],
+    ["dried", "ورد مجفف", "Dried stems", PHOTOS.driedPalm],
   ],
   products: [
     ["lounge-chair-lamp", "chairs", "كرسي ليفنج وأباجورة", "Lounge Chair & Lamp", PHOTOS.blackChair, 9400, { isFeatured: true, rating: 4.8, sold90: 44 }],
     ["velvet-wing-chair", "chairs", "كرسي قطيفة نبيتي", "Burgundy Velvet Chair", PHOTOS.redChair, 7800, { sold90: 21 }],
-    ["marble-side-tables", "chairs", "ترابيزتين رخام", "Marble Side Table Pair", PHOTOS.marbleSide, 6400, { compareAtPrice: 7200, sold90: 12 }],
+    ["marble-side-tables", "tables", "ترابيزتين رخام", "Marble Side Table Pair", PHOTOS.marbleSide, 6400, { compareAtPrice: 7200, sold90: 12 }],
     ["ring-vase", "decor", "فازة الحلقة", "Ring Vase", PHOTOS.ringVase, 850, { rating: 4.9, sold90: 73 }],
     ["vase-candle-trio", "decor", "طقم فازتين وشمعة", "Vase & Candle Trio", PHOTOS.vaseTrio, 1250, { compareAtPrice: 1450, sold90: 34 }],
-    ["dried-palm-vase", "decor", "فازة بنخيل مجفف", "Dried Palm Vase", PHOTOS.driedPalm, 690, { sold90: 28 }],
+    ["dried-palm-vase", "dried", "فازة بنخيل مجفف", "Dried Palm Vase", PHOTOS.driedPalm, 690, { sold90: 28 }],
     ["chunky-knit-throw", "textiles", "بطانية تريكو تقيلة", "Chunky Knit Throw", PHOTOS.throw, 1350, { rating: 4.8, sold90: 47 }],
     ["cushion-set", "textiles", "طقم مخدات", "Cushion Set", PHOTOS.cushionSofa, 690, { sold90: 21 }],
     ["oak-frame-pair", "frames", "زوج براويز بلوط", "Oak Frame Pair", PHOTOS.frames, 760, { isFeatured: true, sold90: 12 }],
-    ["round-wood-table", "chairs", "ترابيزة خشب مدورة", "Round Wood Table", PHOTOS.woodTable, 3900, { inStock: false, sold90: 9 }],
+    ["round-wood-table", "tables", "ترابيزة خشب مدورة", "Round Wood Table", PHOTOS.woodTable, 3900, { inStock: false, sold90: 9 }],
   ],
 });
 
@@ -211,5 +213,5 @@ export const OAK = libraryTemplate({
     },
   ],
   demo: DEMO,
-  productPage: { surface: "flat", gallery: "end", thumbs: "bottom", button: "outline", band: "paper", copy: { back: L("رجوع للمجموعة", "Back to the collection"), reviews: L("كلمة من اشتروها", "Words from our buyers"), related: L("قطع أخرى مختارة", "More picked pieces") } },
+  productPage: { surface: "flat", gallery: "end", thumbs: "bottom", button: "outline", band: "paper", copy: { reviews: L("كلمة من اشتروها", "Words from our buyers"), related: L("قطع أخرى مختارة", "More picked pieces") } },
 });

@@ -93,6 +93,20 @@ describe("element renderer", () => {
     expect(edit).not.toContain("<iframe");
   });
 
+  it("plays a background video muted on a loop over its poster, and only the poster without a file", () => {
+    const file = "https://videos.example.com/hero.mp4";
+    const html = render(custom([node("video", { url: file, background: true, poster: "hero.jpg" })]));
+    expect(html).toContain('src="https://cdn/hero.jpg"');
+    expect(html).toMatch(/<video[^>]*autoplay=""[^>]*muted=""[^>]*loop=""[^>]*playsinline=""/i);
+    expect(html).not.toContain("controls");
+    expect(html).toContain("motion-reduce:hidden");
+    // A site link (not a file), or the canvas: the poster alone.
+    expect(render(custom([node("video", { url: "https://youtu.be/dQw4w9WgXcQ", background: true, poster: "hero.jpg" })]))).not.toContain("<video");
+    const edit = render(custom([node("video", { url: file, background: true, poster: "hero.jpg" })]), { mode: "edit" });
+    expect(edit).toContain("https://cdn/hero.jpg");
+    expect(edit).not.toContain("<video");
+  });
+
   it("plays a playlist row in the playlist's own frame", () => {
     const item = (id: string, url: string, title: string): ComponentNode => ({ id, type: "videoItem" as ComponentNode["type"], props: { url, title }, children: [] });
     const playlist: ComponentNode = {
