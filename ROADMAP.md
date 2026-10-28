@@ -439,6 +439,7 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 
 **Why:** The most-voted EasyOrders request (38). A small prepayment stops most fake and refused COD orders.
 **What:** Per store (and optionally per product): require X % (or a fixed amount) paid before the order ships. The customer pays the deposit with the store's wallet payments (Vodafone Cash, InstaPay … with a transfer-receipt upload) or a card when available; the rest is collected on delivery. The order waits in "awaiting deposit" until the seller confirms; the COD amount sent to the carrier is the remainder.
+- **Rounding (owner, 2026-10-29): a percentage deposit is always rounded UP to the nearest EGP 5**, so customers transfer a clean amount. Examples at 20 %: order 1,200 → 240; 1,199 → 239.80 → 240; 1,213 → 242.60 → 245; 1,226 → 245.20 → 250. Computed in integer piastres (`ceil(piastres / 500) * 500`), never more than the order total; the remainder is total − deposit. A fixed-amount deposit is used as the seller typed it.
 **Status:** [Planned]
 
 - **Found in code (2026-10-29):** storefront InstaPay / Vodafone Cash / e& Cash payments are a filter on methods that still pay **Tallaby's** accounts (`storefrontCheckoutMethods` in `packages/lib/src/payments/store-methods.ts`); seller-collected payment with seller confirmation is PLAN.md **P3-07 Part B**, waiting for owner approval. Checkout already supports split payments (customer wallet + manual-transfer remainder, `payment.lib.ts`) and a COD-collector rule, which the deposit can reuse. **Decided (owner, 2026-10-29): the deposit goes to the seller's own number** (Vodafone Cash / e& Cash / WE Pay / Orange Cash / InstaPay set in Store settings › Payment methods), and the seller confirms it. So **PLAN.md P3-07 Part B is built first, as part of F-21** (task F-21p below); its design is PLAN.md §8.6 "Customer flow on the store host" and "Money flow".
@@ -579,6 +580,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 | Date       | Request (owner's words)                                                                                                                  | Feature ID                                                                                       | Status  |
 | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ------- |
+| 2026-10-29 | "the deposit roundup automatically to nearest 5" | F-21 (rounding rule) | Planned |
 | 2026-10-29 | Deposit: who receives it? → "Seller's own number" | F-21 (+ F-21p = PLAN.md P3-07 Part B) | Planned |
 | 2026-10-29 | "a checkbox on the product /add or edit page to show a badge for user on low stock … فاضل قطعتين والوقت قرب يخلص" | F-34 | Planned |
 | 2026-10-29 | "I need to add Downsell feature, which is when a user removes an item from cart, shows a similar item but with discount or lower price popup" (+ phone mockup) | F-33 | Planned |
@@ -708,6 +710,7 @@ Newest first. One entry per finished task or decision: date, task, what changed,
 ### 2026-10-29 — Deposit check (owner question)
 
 - Corrected §2.1: storefront wallet/InstaPay payments go to Tallaby's accounts today; seller-collected payment is PLAN.md P3-07 Part B (not built). F-21 now notes this dependency and the split-payment code it can reuse.
+- Owner: a percentage deposit rounds **up** to the nearest EGP 5 (piastres, capped at the order total); unit tests must cover the examples in F-21.
 - Owner decided: the deposit goes to the **seller's own number**. Added F-21p (= PLAN.md P3-07 Part B, built first inside F-21) and noted it in PLAN.md §22.
 
 ### 2026-10-29 — Low-stock badge request (owner)
