@@ -211,31 +211,32 @@ Updated 2026-10-28 after the EasyOrders dashboard and roadmap review (§2.3, §2
 | 6   | F-21 | Deposit (عربون) before shipping a COD order                | P1       | yes                | **Needs approval** (money, checkout)     |
 | 7   | F-32 | Cross-sell offers under the product (on by default)        | P1       | yes                | Owner asked; design note OK (checkout)   |
 | 8   | F-34 | Low-stock urgency badge (product checkbox)                 | P1       | yes (small)        | —                                        |
-| 9   | F-25 | Checkout form & thank-you page settings                    | P1       | yes                | —                                        |
-| 10  | F-08 | Funnels: quick-order landing pages                         | P1       | maybe              | **Needs approval** (checkout)            |
-| 11  | F-07 | Quantity offers, bundles, upsell                           | P1       | yes                | **Needs approval** (checkout pricing)    |
-| 12  | F-22 | Sales pop-up (real recent orders)                          | P1       | no                 | —                                        |
-| 13  | F-24 | Bulk product editing (prices by category, stock, status)   | P1       | no                 | —                                        |
-| 14  | F-15 | Reports upgrade + per-product views                        | P1       | no                 | —                                        |
-| 15  | F-06 | New-order push alerts (PWA)                                | P1       | yes                | —                                        |
-| 16  | F-11 | Product feeds (Meta, Google Merchant, TikTok) + catalog    | P1       | no                 | —                                        |
-| 17  | F-09 | Staff accounts & permissions                               | P1       | yes                | — (security review)                      |
-| 18  | F-10 | Inventory alerts & stock history                           | P1       | yes                | —                                        |
-| 19  | F-12 | More shipping carriers                                     | P1       | small              | —                                        |
-| 20  | F-13 | Automatic discounts, min order, free gift                  | P2       | yes                | **Needs approval** (checkout pricing)    |
-| 21  | F-14 | Customer order messages (WhatsApp/SMS, confirm link)       | P2       | yes                | Provider cost                            |
-| 22  | F-16 | Campaigns: email, WhatsApp, retargeting audiences          | P2       | yes                | Provider cost                            |
-| 23  | F-23 | Back-in-stock alerts & pre-orders                          | P2       | yes                | —                                        |
-| 24  | F-26 | Campaign tracking (UTM links, orders per campaign)         | P2       | yes                | —                                        |
-| 25  | F-17 | Public API & webhooks                                      | P2       | yes                | — (security review)                      |
-| 26  | F-18 | Store affiliates / referral links                          | P3       | yes                | **Needs approval** (payouts)             |
-| 27  | F-19 | Gift cards & customer store credit                         | P3       | yes                | **Needs approval** (ledger)              |
-| 28  | F-20 | Loyalty points                                             | P3       | yes                | **Needs approval**                       |
-| 29  | F-27 | A/B tests                                                  | P3       | yes                | —                                        |
-| 30  | F-28 | Wholesale pricing                                          | P3       | yes                | **Needs approval** (checkout pricing)    |
-| 31  | F-29 | AI agent connection (MCP)                                  | P3       | no                 | — (after F-17)                           |
-| 32  | F-30 | Ad tracking upgrades (Purchase on delivery, event toggles) | P2       | maybe              | —                                        |
-| 33  | F-31 | POS and cashier                                            | P3       | yes                | **Needs approval** (order creation path) |
+| 9   | F-35 | Product trash (restore within 30 days)                     | P1       | yes (small)        | —                                        |
+| 10  | F-25 | Checkout form & thank-you page settings                    | P1       | yes                | —                                        |
+| 11  | F-08 | Funnels: quick-order landing pages                         | P1       | maybe              | **Needs approval** (checkout)            |
+| 12  | F-07 | Quantity offers, bundles, upsell                           | P1       | yes                | **Needs approval** (checkout pricing)    |
+| 13  | F-22 | Sales pop-up (real recent orders)                          | P1       | no                 | —                                        |
+| 14  | F-24 | Bulk product editing (prices by category, stock, status)   | P1       | no                 | —                                        |
+| 15  | F-15 | Reports upgrade + per-product views                        | P1       | no                 | —                                        |
+| 16  | F-06 | New-order push alerts (PWA)                                | P1       | yes                | —                                        |
+| 17  | F-11 | Product feeds (Meta, Google Merchant, TikTok) + catalog    | P1       | no                 | —                                        |
+| 18  | F-09 | Staff accounts & permissions                               | P1       | yes                | — (security review)                      |
+| 19  | F-10 | Inventory alerts & stock history                           | P1       | yes                | —                                        |
+| 20  | F-12 | More shipping carriers                                     | P1       | small              | —                                        |
+| 21  | F-13 | Automatic discounts, min order, free gift                  | P2       | yes                | **Needs approval** (checkout pricing)    |
+| 22  | F-14 | Customer order messages (WhatsApp/SMS, confirm link)       | P2       | yes                | Provider cost                            |
+| 23  | F-16 | Campaigns: email, WhatsApp, retargeting audiences          | P2       | yes                | Provider cost                            |
+| 24  | F-23 | Back-in-stock alerts & pre-orders                          | P2       | yes                | —                                        |
+| 25  | F-26 | Campaign tracking (UTM links, orders per campaign)         | P2       | yes                | —                                        |
+| 26  | F-17 | Public API & webhooks                                      | P2       | yes                | — (security review)                      |
+| 27  | F-18 | Store affiliates / referral links                          | P3       | yes                | **Needs approval** (payouts)             |
+| 28  | F-19 | Gift cards & customer store credit                         | P3       | yes                | **Needs approval** (ledger)              |
+| 29  | F-20 | Loyalty points                                             | P3       | yes                | **Needs approval**                       |
+| 30  | F-27 | A/B tests                                                  | P3       | yes                | —                                        |
+| 31  | F-28 | Wholesale pricing                                          | P3       | yes                | **Needs approval** (checkout pricing)    |
+| 32  | F-29 | AI agent connection (MCP)                                  | P3       | no                 | — (after F-17)                           |
+| 33  | F-30 | Ad tracking upgrades (Purchase on delivery, event toggles) | P2       | maybe              | —                                        |
+| 34  | F-31 | POS and cashier                                            | P3       | yes                | **Needs approval** (order creation path) |
 
 AI features (field helpers, bulk products, credits, store-build agent) stay in `PLAN.md` §22 (AI-2 … AI-5) and are not repeated here.
 
@@ -546,6 +547,22 @@ Removed: the store already shows a coupon pop-up when a visitor is leaving (`cou
 - **F-34c · P1 · deps: F-34a** Storefront: badge on the product page (follows the selected variant's stock), tag on product cards, store theme colours, RTL/EN, reduced motion; tests for 0, 1, 2, threshold and above.
 - **F-34d · P2 · deps: F-34c** Builder: a `stock-badge` element in the product-page templates so sellers can move or style it (tree element rules).
 
+### F-35 Product trash (restore within 30 days) — P1 · owner request
+
+**Why:** Owner, 2026-10-29: a deleted product should go to a Trash for 30 days so the seller can restore it. Today a delete is permanent: `deleteProduct` in `apps/dashboard/actions/products.ts` runs a hard `DELETE` on `products` (found in code 2026-10-29).
+**What:**
+- **Delete → Trash.** Deleting a product (row action or bulk) moves it to Trash instead of erasing it. It disappears at once from every store, the marketplace, search, sitemaps, feeds, carts and offers, as if deleted. The confirm dialog says "It stays in Trash for 30 days".
+- **Trash page** in the dashboard (Products › Trash, with a count): photo, name, deleted date, days left, **Restore** and **Delete forever** (with a confirm). Restore brings the product back with everything as it was (status, variants, images, reviews, store catalogs, category counts).
+- **After 30 days** a daily job deletes it permanently (the same cleanup as today's delete: category counts, cache invalidation).
+- Products in Trash do not count against any product limit, and their slug stays reserved so a restore never clashes.
+**Status:** [Planned]
+
+- **F-35a · P1 · deps: —** Migration (additive): `products.deleted_at timestamptz` and `products.deleted_by uuid`, partial index `WHERE deleted_at IS NOT NULL` for the Trash list and the purge job. The product queries select every column, so apply on staging, then production, **before** deploying. Mirror in `schema.ts`.
+- **F-35b · P1 · deps: F-35a** Hide trashed products everywhere: one shared filter (`notDeleted`) used by every product read (storefront, marketplace, search, sitemaps, store catalog, coupons, cross-sell, feeds, admin lists marked "in trash"); carts drop trashed items at checkout (server-side). Grep every `from(products)` / `query.products` and add a test that a trashed product never appears.
+- **F-35c · P1 · deps: F-35a** Trash and restore actions in the products feature folder (`trash.server.ts`, not in `actions/products.ts`, CLAUDE.md rule 14): seller-scoped `trashProduct`, `restoreProduct`, `deleteProductForever`; category counts and cache invalidation on each; the product row "Delete" and bulk delete call `trashProduct`.
+- **F-35d · P1 · deps: F-35c** Trash page + "Restore" toast with undo right after a delete; both languages.
+- **F-35e · P1 · deps: F-35c** Daily purge job (cron, like `apps/ecommerce/app/api/cron/abandoned-carts`, `CRON_SECRET`) deleting products trashed more than 30 days ago in batches; idempotent; logs counts only.
+
 ### F-31 POS and cashier — P3
 
 **What:** Sell in a physical shop from a phone or tablet with the same products and stock; orders tagged `source = pos`. Needs F-05 (manual orders) first.
@@ -564,6 +581,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 | Date       | Request (owner's words)                                                                                                                  | Feature ID                                                                                       | Status  |
 | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ------- |
+| 2026-10-29 | "when a user delete a product, it goes to Trash for 30 days so user can restore the product back" | F-35 | Planned |
 | 2026-10-29 | "the deposit roundup automatically to nearest 5" | F-21 (rounding rule) | Planned |
 | 2026-10-29 | Deposit: who receives it? → "Seller's own number" | F-21 (+ F-21p = PLAN.md P3-07 Part B) | Planned |
 | 2026-10-29 | "a checkbox on the product /add or edit page to show a badge for user on low stock … فاضل قطعتين والوقت قرب يخلص" | F-34 | Planned |
@@ -617,6 +635,11 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [ ] F-34a Low-stock badge migration (`show_low_stock_badge`, `low_stock_threshold`)
 - [ ] F-34b Checkbox + threshold in the product form
 - [ ] F-34c Badge on the store product page and cards
+- [ ] F-35a Trash migration (`products.deleted_at`, `deleted_by`)
+- [ ] F-35b Hide trashed products everywhere
+- [ ] F-35c Trash / restore / delete-forever actions
+- [ ] F-35d Trash page + undo toast
+- [ ] F-35e 30-day purge job
 - [ ] F-13b Minimum order + store free-shipping threshold
 - [ ] F-22a Recent orders endpoint
 - [ ] F-22b Sales pop-up on the store
@@ -685,6 +708,10 @@ Add each new request here first, with the date and the owner's words, then turn 
 ## 7. Log
 
 Newest first. One entry per finished task or decision: date, task, what changed, migrations (number, staging/production status), verification, notes.
+
+### 2026-10-29 — Product trash request (owner)
+
+- New F-35 (P1, after F-34): deleted products go to a Trash for 30 days and can be restored; a daily job deletes them for good after that. Found in code: today's `deleteProduct` (`apps/dashboard/actions/products.ts`) is a hard delete. Planned migration: `products.deleted_at`, `deleted_by` (before deploy, since product queries select every column). Not written yet.
 
 ### 2026-10-29 — Downsell removed (owner)
 
