@@ -209,31 +209,32 @@ Updated 2026-10-28 after the EasyOrders dashboard and roadmap review (§2.3, §2
 | 4   | F-04 | Invoices, packing slips & order export                     | P0       | no                 | —                                        |
 | 5   | F-05 | Manual orders (phone/WhatsApp sales)                       | P0       | maybe              | **Needs approval** (order creation path) |
 | 6   | F-21 | Deposit (عربون) before shipping a COD order                | P1       | yes                | **Needs approval** (money, checkout)     |
-| 7   | F-25 | Checkout form & thank-you page settings                    | P1       | yes                | —                                        |
-| 8   | F-08 | Funnels: quick-order landing pages                         | P1       | maybe              | **Needs approval** (checkout)            |
-| 9   | F-07 | Quantity offers, bundles, upsell, cross-sell, downsell     | P1       | yes                | **Needs approval** (checkout pricing)    |
-| 10  | F-22 | Sales pop-up (real recent orders)                          | P1       | no                 | —                                        |
-| 11  | F-24 | Bulk product editing (prices by category, stock, status)   | P1       | no                 | —                                        |
-| 12  | F-15 | Reports upgrade + per-product views                        | P1       | no                 | —                                        |
-| 13  | F-06 | New-order push alerts (PWA)                                | P1       | yes                | —                                        |
-| 14  | F-11 | Product feeds (Meta, Google Merchant, TikTok) + catalog    | P1       | no                 | —                                        |
-| 15  | F-09 | Staff accounts & permissions                               | P1       | yes                | — (security review)                      |
-| 16  | F-10 | Inventory alerts & stock history                           | P1       | yes                | —                                        |
-| 17  | F-12 | More shipping carriers                                     | P1       | small              | —                                        |
-| 18  | F-13 | Automatic discounts, min order, free gift                  | P2       | yes                | **Needs approval** (checkout pricing)    |
-| 19  | F-14 | Customer order messages (WhatsApp/SMS, confirm link)       | P2       | yes                | Provider cost                            |
-| 20  | F-16 | Campaigns: email, WhatsApp, retargeting audiences          | P2       | yes                | Provider cost                            |
-| 21  | F-23 | Back-in-stock alerts & pre-orders                          | P2       | yes                | —                                        |
-| 22  | F-26 | Campaign tracking (UTM links, orders per campaign)         | P2       | yes                | —                                        |
-| 23  | F-17 | Public API & webhooks                                      | P2       | yes                | — (security review)                      |
-| 24  | F-18 | Store affiliates / referral links                          | P3       | yes                | **Needs approval** (payouts)             |
-| 25  | F-19 | Gift cards & customer store credit                         | P3       | yes                | **Needs approval** (ledger)              |
-| 26  | F-20 | Loyalty points                                             | P3       | yes                | **Needs approval**                       |
-| 27  | F-27 | A/B tests                                                  | P3       | yes                | —                                        |
-| 28  | F-28 | Wholesale pricing                                          | P3       | yes                | **Needs approval** (checkout pricing)    |
-| 29  | F-29 | AI agent connection (MCP)                                  | P3       | no                 | — (after F-17)                           |
-| 30  | F-30 | Ad tracking upgrades (Purchase on delivery, event toggles) | P2       | maybe              | —                                        |
-| 31  | F-31 | POS and cashier                                            | P3       | yes                | **Needs approval** (order creation path) |
+| 7   | F-32 | Cross-sell offers under the product (on by default)        | P1       | yes                | Owner asked; design note OK (checkout)   |
+| 8   | F-25 | Checkout form & thank-you page settings                    | P1       | yes                | —                                        |
+| 9   | F-08 | Funnels: quick-order landing pages                         | P1       | maybe              | **Needs approval** (checkout)            |
+| 10  | F-07 | Quantity offers, bundles, upsell, downsell                 | P1       | yes                | **Needs approval** (checkout pricing)    |
+| 11  | F-22 | Sales pop-up (real recent orders)                          | P1       | no                 | —                                        |
+| 12  | F-24 | Bulk product editing (prices by category, stock, status)   | P1       | no                 | —                                        |
+| 13  | F-15 | Reports upgrade + per-product views                        | P1       | no                 | —                                        |
+| 14  | F-06 | New-order push alerts (PWA)                                | P1       | yes                | —                                        |
+| 15  | F-11 | Product feeds (Meta, Google Merchant, TikTok) + catalog    | P1       | no                 | —                                        |
+| 16  | F-09 | Staff accounts & permissions                               | P1       | yes                | — (security review)                      |
+| 17  | F-10 | Inventory alerts & stock history                           | P1       | yes                | —                                        |
+| 18  | F-12 | More shipping carriers                                     | P1       | small              | —                                        |
+| 19  | F-13 | Automatic discounts, min order, free gift                  | P2       | yes                | **Needs approval** (checkout pricing)    |
+| 20  | F-14 | Customer order messages (WhatsApp/SMS, confirm link)       | P2       | yes                | Provider cost                            |
+| 21  | F-16 | Campaigns: email, WhatsApp, retargeting audiences          | P2       | yes                | Provider cost                            |
+| 22  | F-23 | Back-in-stock alerts & pre-orders                          | P2       | yes                | —                                        |
+| 23  | F-26 | Campaign tracking (UTM links, orders per campaign)         | P2       | yes                | —                                        |
+| 24  | F-17 | Public API & webhooks                                      | P2       | yes                | — (security review)                      |
+| 25  | F-18 | Store affiliates / referral links                          | P3       | yes                | **Needs approval** (payouts)             |
+| 26  | F-19 | Gift cards & customer store credit                         | P3       | yes                | **Needs approval** (ledger)              |
+| 27  | F-20 | Loyalty points                                             | P3       | yes                | **Needs approval**                       |
+| 28  | F-27 | A/B tests                                                  | P3       | yes                | —                                        |
+| 29  | F-28 | Wholesale pricing                                          | P3       | yes                | **Needs approval** (checkout pricing)    |
+| 30  | F-29 | AI agent connection (MCP)                                  | P3       | no                 | — (after F-17)                           |
+| 31  | F-30 | Ad tracking upgrades (Purchase on delivery, event toggles) | P2       | maybe              | —                                        |
+| 32  | F-31 | POS and cashier                                            | P3       | yes                | **Needs approval** (order creation path) |
 
 AI features (field helpers, bulk products, credits, store-build agent) stay in `PLAN.md` §22 (AI-2 … AI-5) and are not repeated here.
 
@@ -324,7 +325,7 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 - **F-07a · P1 · deps: owner approval** Pricing rules design: how tiers apply in checkout and how the fee base is computed (PLAN.md D2).
 - **F-07b · P1 · deps: F-07a** Migration `product_quantity_offers` + editor in the product form.
 - **F-07c · P1 · deps: F-07b** Storefront: tier picker on the product page (builder element), applied at checkout server-side.
-- **F-07d · P2 · deps: F-07c** Upsell/cross-sell offers (`store_upsell_offers`) and checkout UI.
+- **F-07d · P2 · deps: F-07c** Upsell offers after "Order now" and in checkout. Cross-sell on the product page moved to its own feature, **F-32** (owner, 2026-10-29).
 - **F-07e · P2 · deps: F-07a** Downsell: when a visitor leaves the product page or checkout, offer a smaller discount once. Reuse the coupon pop-up (`coupons.popup_trigger = 'exit'`, 0114) where possible instead of a new engine.
 - **F-07f · P1 · deps: F-07a** Bundles (EasyOrders planned, 13 votes): a bundle product made of other products/variants at one price; stock taken from each item.
 
@@ -505,6 +506,23 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 - **F-30a · P2 · deps: —** Store setting + server event on the delivered transition (idempotent, one event per order, same `event_id` rules as today's CAPI code in `stores/[storeId]/apps/meta-capi.server.ts`).
 - **F-30b · P2 · deps: F-30a** Event toggles in the Apps page.
 
+### F-32 Cross-sell offers under the product — P1 · owner request
+
+**Why:** Owner, 2026-10-29: a customer buying a power bank sees, under the product, "add a charging cable for 10 % off". It raises order value with one tap.
+**What:** On the store's product page (under the buy box) and in the cart, show one or a few offers: "Add <product> − X %". The customer ticks it or taps "Add"; both go into the cart and the discount is applied **server-side at checkout** only while the main product is in the cart. **On by default for every store; the seller can turn it off at any time** (store-wide switch, plus per-offer on/off).
+- The seller links offers in the product form ("Frequently bought with"): pick a product/variant and a discount (10 % prefilled, % or fixed EGP).
+- Offers show only for active, in-stock products of the same store (and in that store's catalog).
+- Fits the builder: a `cross-sell` element in the product-page template (tree element, CLAUDE.md rule 17), with a fallback placement for stores whose product page lacks it.
+- **Decided (owner, 2026-10-29): when the seller has set no offer for a product, show nothing.** No automatic suggestions; the cross-sell block renders only when the product has at least one active offer whose product is active and in stock.
+**Status:** [Planned]
+
+- **F-32a · P1 · deps: —** Design note: the discount as an order-item line adjustment computed in piastres at checkout (`place-order.ts` behaviour kept for orders without offers), how it shows on the order and invoice, and the fee base (PLAN.md §13 unchanged: flat EGP 5 per delivered order, so no fee change). Owner OK on the note.
+- **F-32b · P1 · deps: F-32a** Migration `product_cross_sells` (`store_id`, `product_id`, `offer_product_id`, `offer_variant_id`, `discount_type` 'percent' | 'fixed', `discount_value`, `is_active`, `sort_order`; unique per store + product + offer; RLS on, no policies) and `stores.cross_sell_enabled boolean NOT NULL DEFAULT true` (on by default). Mirror in `schema.ts` / `relations.ts`.
+- **F-32c · P1 · deps: F-32b** Dashboard: "Frequently bought with" in the product form (picker, discount, on/off) and the store-wide switch in store settings. Ownership checked for both products.
+- **F-32d · P1 · deps: F-32b** Storefront: offer card under the buy box + in the cart sheet, both languages, `cross-sell` element added to the product-page templates; cached per seller + store.
+- **F-32e · P1 · deps: F-32a, F-32d** Checkout: apply the discount server-side only when the main product is in the same order; never trust the client's price; tests for removing the main product, quantity changes and out-of-stock offers.
+- **F-32f · P2 · deps: F-32d** Report: how many offers were shown, added and ordered (F-15).
+
 ### F-31 POS and cashier — P3
 
 **What:** Sell in a physical shop from a phone or tablet with the same products and stock; orders tagged `source = pos`. Needs F-05 (manual orders) first.
@@ -523,6 +541,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 | Date       | Request (owner's words)                                                                                                                  | Feature ID                                                                                       | Status  |
 | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ------- |
+| 2026-10-29 | "We need to add Cross-selling feature too … العميل مثلا هيشتري باور بانك … هيلاقي تحت المنتج عرض وصلة شاحن بخصم 10٪ … enabled by default and store owner can disable it anytime" | F-32 | Planned |
 | 2026-10-28 | "analyze the Easy orders features too … find the most important that we should have" (pasted EasyOrders sidebar + roadmap.easyorders.ai) | §2.3, §2.4; new F-21 … F-29; tasks added to F-01, F-02, F-03, F-07, F-08, F-11, F-13, F-15, F-16 | Planned |
 
 ---
@@ -562,6 +581,11 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [ ] F-25a Checkout form settings
 - [ ] F-25b Thank-you page settings
 - [ ] F-07f Bundles
+- [ ] F-32a Cross-sell design note (owner OK)
+- [ ] F-32b Cross-sell migration (`product_cross_sells`, `stores.cross_sell_enabled` default on)
+- [ ] F-32c Cross-sell in product form + store switch
+- [ ] F-32d Cross-sell on the store product page and cart
+- [ ] F-32e Cross-sell discount at checkout
 - [ ] F-13b Minimum order + store free-shipping threshold
 - [ ] F-22a Recent orders endpoint
 - [ ] F-22b Sales pop-up on the store
@@ -623,12 +647,17 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [ ] F-30a Purchase on delivery (CAPI)
 - [ ] F-30b Pixel event toggles
 - [ ] F-31 POS and cashier
+- [ ] F-32f Cross-sell report
 
 ---
 
 ## 7. Log
 
 Newest first. One entry per finished task or decision: date, task, what changed, migrations (number, staging/production status), verification, notes.
+
+### 2026-10-29 — Cross-sell request (owner)
+
+- New F-32 (P1, right after the deposit): an offer under the product such as "charging cable −10 %" when buying a power bank, on by default (`stores.cross_sell_enabled DEFAULT true`), switchable off by the seller store-wide or per offer. Cross-sell moved out of F-07d. Migration planned (`product_cross_sells`), not written yet. Decided the same day (owner): no offer set → show nothing (no automatic suggestions).
 
 ### 2026-10-29 — No OTP service (owner)
 
