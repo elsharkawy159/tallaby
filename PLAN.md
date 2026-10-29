@@ -4502,3 +4502,10 @@ Owner asked to keep only the current version of each template in `template_versi
 - Built per `docs/superpowers/specs/2026-10-29-affiliate-program-design.md` (plan `docs/superpowers/plans/2026-10-29-affiliate-program.md`); §13.1 now names the affiliate payout. Details and checks in `ROADMAP.md` §7.
 - Migration `0117_referral_program.sql`: **applied on staging 2026-10-29**; production needs owner approval and must land before the deploy. Re-run it after `0116` (0116 rebuilds the admin type check without a guard).
 - Checks: lib/db/dashboard/admin `tsc` clean; unit tests pass; integration on staging 5/6 (attribution blocked by 0113 missing on staging). ESLint crashes in its own setup. Manual E2E still to do: open `tallaby.com/?ref=<code>`, sign up, top up on staging, see the commission on `/earn`, request a withdrawal, mark it paid in Admin › Referrals.
+
+
+### 2026-10-29 — Admin sellers export (.xlsx for Google Sheets)
+
+- `admin.tallaby.com/sellers` › **Export** is now a menu. Website scopes: all, published stores, switched-off stores, never-published stores, sellers with no live website, sellers with no store. The table's current filters and search also apply. It downloads an `.xlsx` with one row per store; a seller with no store gets one row. Columns: seller, phone (kept as text), WhatsApp link (opens the welcome message), email, store, store link, industry, website status, store products, seller products, stores, wallet (EGP), joined, last order, account status, plan, heard about us, admin page. Header autofilter.
+- Code: `sellers-export.server.ts` (admin-checked action), `sellers-export.lib.ts` (scopes), `sellers.query.ts` (`buildSellersWhere`, the WHERE that `getSellers` now shares). `xlsx@^0.18.5` added to `apps/admin`. No migration.
+- Checks: admin `tsc` clean; admin tests 69 pass; xlsx round-trip checked (text phone, hyperlink, date cell); scope SQL run read-only on staging. ESLint crashes in its own setup (baseline). Manual E2E still to do: export each scope in the admin and import the file into Google Sheets.
