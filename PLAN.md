@@ -4520,3 +4520,9 @@ Owner asked to keep only the current version of each template in `template_versi
 - Pricing page (owner, 2026-10-29: "don't mention 7 days free neither 100EGP free, keep it flat 5 EGP"): `meta.pricing.description`, `pricing.plan.i6` (now the flat-fee point) and `pricing.faq.items.0.a` in `apps/ecommerce/messages/{ar,en}.json` no longer mention free days or the gift.
 - Home page and Terms (owner, 2026-10-29: yes): `home.features.wallet.howBody`, `faq.home.3.a` and `legal.terms.sections.4.paragraphs.0` no longer mention free days; Terms "last updated" set to 2026-10-29.
 - Not done (follow-ups): Admin screens show the gift only as a ledger `adjustment` (no "unspent gift" note yet); multi-account abuse is an accepted risk.
+
+### 2026-10-29 — ROADMAP F-03 Missed orders (0120)
+
+- Built per `docs/superpowers/specs/2026-10-29-missed-orders-design.md` (owner answers in chat): lead capture on store-host checkout when an address is set (`apps/ecommerce/actions/checkout-lead.ts`, `packages/lib/src/checkout-leads/`), conversion by an `orders` AFTER INSERT trigger (same store and cart, user or phone), Orders › Not completed page in the dashboard (`apps/dashboard/app/(main)/orders/missed/`) with WhatsApp/Call/contacted and a per-store WhatsApp message, daily 30-day cleanup cron. The reminder email is the existing daily store-branded cart email (signed-in customers only), shown on the lead.
+- Migration `0120_store_checkout_leads.sql`: **applied on staging 2026-10-29 (twice). Production pending owner approval, before the deploy** (the checkout save and the dashboard page read the table; the checkout save swallows errors, the dashboard page would fail).
+- Checks: lib unit 6/6, integration 4/4 on staging (cleanup verified), dashboard 294 tests, typecheck clean except the existing ecommerce `profile.chunks.tsx`. ESLint baseline crash. Manual E2E not run yet.

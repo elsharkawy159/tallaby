@@ -77,6 +77,8 @@ export const SIDEBAR_CONFIG: NavEntry[] = [
     icon: ShoppingBag,
     items: [
       { key: "orders", href: "/orders", countKey: "orders", status: "live", exact: true },
+      // Missed orders: store checkouts with an address but no order (F-03).
+      { key: "missedOrders", href: "/orders/missed", status: "live" },
       // Tracking individual orders; /shipping redirects here (P3-06).
       { key: "deliveryTracking", href: "/orders/delivery", countKey: "shipping", status: "live" },
     ],

@@ -181,6 +181,14 @@
       "types": "./src/sellers/server.ts",
       "default": "./src/sellers/server.ts"
     },
+    "./checkout-leads": {
+      "types": "./src/checkout-leads/checkout-leads.lib.ts",
+      "default": "./src/checkout-leads/checkout-leads.lib.ts"
+    },
+    "./checkout-leads/server": {
+      "types": "./src/checkout-leads/checkout-leads.server.ts",
+      "default": "./src/checkout-leads/checkout-leads.server.ts"
+    },
     "./stores": {
       "types": "./src/stores/stores.lib.ts",
       "default": "./src/stores/stores.lib.ts"

@@ -3451,6 +3451,52 @@ export const referralCommissions = pgTable("referral_commissions", {
 ]);
 
 /**
+ * Missed orders (0120, ROADMAP.md F-03): a store-website checkout that got a
+ * shipping address but no order yet. One open lead per (store, phone); an
+ * order on the store from the same cart, user or phone converts it (trigger).
+ * Server-only (RLS on, no policies).
+ */
+export const storeCheckoutLeads = pgTable("store_checkout_leads", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	storeId: uuid("store_id").notNull(),
+	sellerId: uuid("seller_id").notNull(),
+	userId: uuid("user_id"),
+	cartId: uuid("cart_id"),
+	fullName: text("full_name").notNull(),
+	/** Normalised 01XXXXXXXXX. */
+	phone: text().notNull(),
+	/** Only a signed-in customer's real email (never the guest placeholder). */
+	email: text(),
+	governorate: text(),
+	city: text(),
+	/** CheckoutLeadItem[] snapshot of the cart. */
+	items: jsonb().$type<Array<Record<string, unknown>>>().default([]).notNull(),
+	subtotal: numeric({ precision: 10, scale: 2 }).default('0').notNull(),
+	shipping: numeric({ precision: 10, scale: 2 }),
+	total: numeric({ precision: 10, scale: 2 }),
+	orderId: uuid("order_id"),
+	convertedAt: timestamp("converted_at", { withTimezone: true, mode: 'string' }),
+	contactedAt: timestamp("contacted_at", { withTimezone: true, mode: 'string' }),
+	contactedBy: uuid("contacted_by"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex("store_checkout_leads_open_phone_key").using("btree", table.storeId, table.phone).where(sql`order_id IS NULL`),
+	index("store_checkout_leads_seller_open_idx").using("btree", table.sellerId, table.updatedAt.desc()).where(sql`order_id IS NULL`),
+	index("store_checkout_leads_store_open_idx").using("btree", table.storeId).where(sql`order_id IS NULL`),
+	index("store_checkout_leads_created_idx").using("btree", table.createdAt),
+	foreignKey({ columns: [table.storeId], foreignColumns: [stores.id], name: "store_checkout_leads_store_id_fkey" }).onDelete("cascade"),
+	foreignKey({ columns: [table.sellerId], foreignColumns: [sellers.id], name: "store_checkout_leads_seller_id_fkey" }).onDelete("cascade"),
+	foreignKey({ columns: [table.userId], foreignColumns: [users.id], name: "store_checkout_leads_user_id_fkey" }).onDelete("set null"),
+	foreignKey({ columns: [table.cartId], foreignColumns: [carts.id], name: "store_checkout_leads_cart_id_fkey" }).onDelete("set null"),
+	foreignKey({ columns: [table.orderId], foreignColumns: [orders.id], name: "store_checkout_leads_order_id_fkey" }).onDelete("set null"),
+	foreignKey({ columns: [table.contactedBy], foreignColumns: [users.id], name: "store_checkout_leads_contacted_by_fkey" }).onDelete("set null"),
+	check("store_checkout_leads_phone_format", sql`phone ~ '^01[0125][0-9]{8}$'`),
+	check("store_checkout_leads_items_array", sql`jsonb_typeof(items) = 'array'`),
+	check("store_checkout_leads_amounts", sql`subtotal >= 0 AND (shipping IS NULL OR shipping >= 0) AND (total IS NULL OR total >= 0)`),
+]);
+
+/**
  * The EGP 100 welcome gift (0119): one row per seller (the primary key is the
  * one-gift guarantee). The money is two store-wallet `adjustment` entries
  * (claims welcome_gift:<seller> and welcome_gift_expiry:<seller>). Server-only.

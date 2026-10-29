@@ -30,6 +30,7 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createOrder } from "@/actions/order";
 import { recalculateCheckoutSummary } from "@/actions/checkout";
+import { saveCheckoutLead } from "@/actions/checkout-lead";
 import { toast } from "sonner";
 import { useLocale, useTranslations } from "next-intl";
 import type { AddressData } from "@/components/address/address.schema";
@@ -141,6 +142,18 @@ export const CheckoutData = ({
 
   const shippingAddressId = form.watch("shippingAddressId");
   const paymentMethod = form.watch("paymentMethod");
+
+  // Store websites: once there is a shipping address, save it as a missed
+  // order lead (F-03) so the seller can follow up if no order is placed.
+  // The server takes the store from the host and the cart from the session.
+  const isStorefront = Boolean(storePayments);
+  useEffect(() => {
+    if (!isStorefront || !shippingAddressId) return;
+    const timer = setTimeout(() => {
+      void saveCheckoutLead({ addressId: shippingAddressId });
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [isStorefront, shippingAddressId]);
 
   // Store websites: the seller's zones may not cover the chosen address.
   const storeShipping = summary.storeShipping ?? null;
@@ -497,6 +510,9 @@ export const CheckoutData = ({
               onAddressSelect={handleAddressSelect}
               isLoading={isLoadingAddresses}
             />
+            {isStorefront && (
+              <p className="-mt-2 px-1 text-xs text-gray-500 md:-mt-4">{t("leadConsent")}</p>
+            )}
 
             {/* Payment Method */}
             <Card className="rounded-xl md:rounded-2xl border border-gray-200 overflow-hidden pt-0">

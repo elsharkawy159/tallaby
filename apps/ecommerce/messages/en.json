@@ -184,6 +184,7 @@
     "codUnavailableHighShipping": "Not available for high shipping costs",
     "codUnavailableAboveMax": "Not available for orders above the store limit",
     "notDeliveredHere": "We don't deliver to this address yet.",
+    "leadConsent": "We may contact you about your order.",
     "egyptOnly": "We deliver inside Egypt only for now.",
     "zoneNoCod": "Cash on delivery isn't available for this address.",
     "arrivesIn": "Arrives in {min}–{max} days",

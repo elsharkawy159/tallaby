@@ -184,6 +184,7 @@
     "codUnavailableHighShipping": "غير متاح لتكاليف الشحن المرتفعة",
     "codUnavailableAboveMax": "غير متاح للطلبات التي تتجاوز حد المتجر",
     "notDeliveredHere": "لا نوصّل إلى هذا العنوان حاليًا.",
+    "leadConsent": "ممكن نتواصل معاك بخصوص طلبك.",
     "egyptOnly": "نوصّل داخل مصر فقط حاليًا.",
     "zoneNoCod": "الدفع عند الاستلام غير متاح لهذا العنوان.",
     "arrivesIn": "يصل خلال {min}–{max} أيام",

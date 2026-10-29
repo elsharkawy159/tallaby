@@ -51,7 +51,7 @@ Tallaby already gives Egyptian sellers a full store: products, orders, delivery 
 | Products         | Add/edit physical & digital products, variants, images, Excel import, import from URL, seller categories & brands, social proof (seller-added reviews, live views)                                                                                                   | `app/(main)/products/**`                                        |
 | AI               | Add/Edit product with AI (photos, PDF, text → both languages, SEO), daily cap, AI usage tab                                                                                                                                                                          | `products/add/ai`, `packages/ai`                                |
 | Store catalog    | Choose which products each store shows                                                                                                                                                                                                                               | `stores/[storeId]/catalog`                                      |
-| Orders           | Order list, stages, order details, WhatsApp/call buttons, Bosta ship + bulk ship                                                                                                                                                                                     | `app/(main)/orders/**`                                          |
+| Orders           | Order list, stages, order details, WhatsApp/call buttons, Bosta ship + bulk ship, missed orders (Not completed: WhatsApp/call, contacted, reminder email shown)                                                                                                     | `app/(main)/orders/**`                                          |
 | Delivery         | Delivery tracking, own riders, store shipping zones (places, free-over, COD per zone), Tallaby delivery, Bosta app                                                                                                                                                   | `orders/delivery`, `orders/riders`, `stores/[storeId]/shipping` |
 | Payments         | COD; the seller chooses which methods the store shows (InstaPay, Vodafone Cash, e& Cash), but those transfers still go to **Tallaby's** accounts. Paying the seller's own numbers with seller confirmation is PLAN.md P3-07 Part B, not built (corrected 2026-10-29) | `stores/[storeId]/settings/payments`                            |
 | Money            | Store wallet (can go negative), top-ups, account statements, reports, flat EGP 5 fee per delivered order, 7-day trial (sellers before 0119), EGP 100 welcome gift for new sellers on finishing setup (30 days, pop-up)                                                  | `wallet`, `financial`, `reports`, `store-wallet/welcome-gift.*` |
@@ -279,7 +279,7 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 
 **Why:** Many COD buyers fill name and phone, then leave. Sellers can call them and win the sale.
 **What:** When a visitor enters a phone at store checkout, save a lead with the cart. The seller sees a "Not completed" list with phone, items, total and a WhatsApp button prefilled with a message; leads that turn into orders drop off.
-**Status:** [Planned]
+**Status:** [Done] 2026-10-29 on `main` (0120 on staging, production pending owner approval; design `docs/superpowers/specs/2026-10-29-missed-orders-design.md`). Owner choices: WhatsApp + Call buttons; consent line «ممكن نتواصل معاك بخصوص طلبك», no checkbox; the existing once-a-day store-branded cart email is the reminder (signed-in customers only, no email field for guests), shown on the lead as "Reminder email sent". Leads are saved when a shipping address is picked or added (not per keystroke). Automatic WhatsApp stays with F-14.
 
 - **F-03a · P0 · deps: —** Migration `store_checkout_leads` (`store_id`, `phone`, `name`, `governorate`, `items jsonb`, `subtotal numeric(10,2)`, `order_id`, `contacted_at`, timestamps; RLS on, no policies; unique open lead per store + phone).
 - **F-03b · P0 · deps: F-03a** Storefront: save/update the lead (debounced) once a valid phone is typed; link `order_id` when the order is placed. Consent text on the checkout form.
@@ -665,9 +665,9 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [ ] F-02a Blocklist migration
 - [ ] F-02b Checkout block check
 - [ ] F-02c Block from dashboard + blocklist page
-- [ ] F-03a Leads migration
-- [ ] F-03b Storefront lead capture
-- [ ] F-03c Leads list in dashboard
+- [x] F-03a Leads migration (2026-10-29; 0120 on staging)
+- [x] F-03b Storefront lead capture (2026-10-29)
+- [x] F-03c Leads list in dashboard (2026-10-29; Orders › Not completed)
 - [ ] F-04a Invoice + packing slip print
 - [ ] F-04b Orders export
 - [ ] F-05a Manual orders design (owner approval)
@@ -680,7 +680,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [ ] F-02d Risk badge
 - [ ] F-02g Confirm by WhatsApp link (no API) — P0
 - [ ] F-02f Checkout OTP — **blocked: no OTP/WhatsApp API/SMS provider yet**
-- [ ] F-03e Missed-order reminders
+- [x] F-03e Missed-order reminders (2026-10-29; one-click WhatsApp + the existing daily store cart email shown on the lead; automatic WhatsApp with F-14)
 - [ ] F-04c Orders bulk actions
 - [ ] F-05c Send order link
 - [ ] F-21p Seller-collected payments (PLAN.md P3-07 Part B) — needed by the deposit
@@ -718,7 +718,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [ ] F-24a Bulk edit server action
 - [ ] F-24b Bulk edit UI
 - [ ] F-15b Per-product views
-- [ ] F-03f Shipping cost on missed orders
+- [x] F-03f Shipping cost on missed orders (2026-10-29)
 - [ ] F-04d Picking list
 - [ ] F-06a Push subscriptions migration
 - [ ] F-06b Push alerts
@@ -740,7 +740,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 **P2 / P3**
 
 - [ ] F-02e Checkout rate limit
-- [ ] F-03d Lead cleanup cron
+- [x] F-03d Lead cleanup cron (2026-10-29; `/api/cron/checkout-leads`)
 - [ ] F-01e Repeat order
 - [ ] F-07d Upsell / cross-sell
 - [ ] F-08c Funnel steps
@@ -789,6 +789,15 @@ Add each new request here first, with the date and the owner's words, then turn 
 ## 7. Log
 
 Newest first. One entry per finished task or decision: date, task, what changed, migrations (number, staging/production status), verification, notes.
+
+### 2026-10-29 — F-03 Missed orders built (owner)
+
+- **Capture** (`apps/ecommerce/actions/checkout-lead.ts`): on a store host, once the checkout has a shipping address (on load with a default, or when one is picked/added), the server saves a lead from the host's store, the session's cart and that user's own address: name, phone (`01XXXXXXXXX`), governorate, city, a cart snapshot, subtotal, shipping (the same quote the checkout shows) and total; a signed-in customer's real email (never the guest placeholder). One open lead per store + phone; rate-limited; never blocks the checkout. Consent line under the address: «ممكن نتواصل معاك بخصوص طلبك» / "We may contact you about your order".
+- **Drop off**: an `AFTER INSERT` trigger on `orders` converts the store's open lead for the same cart, user or phone (a guest with a new cookie still drops off); no change to the checkout or order code (F-02's uncommitted files untouched).
+- **Dashboard** `/orders/missed` ("طلبات لم تكتمل / Not completed", Orders sidebar group): all the seller's stores (store filter), date and contacted filters, cards with items, subtotal/shipping/total, "left X ago", "Reminder email sent" (the cart's existing daily store-branded email) and "Contacted" badges; WhatsApp (store's message, placeholders {name} {products} {total} {store} {link}), Call, Mark contacted/Undo; WhatsApp message editor per store (`stores.settings.missedOrders.whatsappTemplate`, default in the store's language).
+- **Migration 0120** (`store_checkout_leads`, RLS on, no policies; conversion trigger): **applied on staging 2026-10-29 (twice, idempotent); production pending owner approval, before the deploy.** Daily cleanup cron `/api/cron/checkout-leads` (03:45 UTC, 30 days).
+- Verified: `checkout-leads.lib.test.ts` 6/6; `checkout-leads.integration.test.ts` 4/4 on staging (one lead per phone, conversion by cart/phone, tenant isolation for list/contacted/template, cleanup), cleanup verified; dashboard tests 294 pass; typecheck clean (ecommerce: only the existing `profile.chunks.tsx` errors). Manual E2E (store checkout as guest → address → leave → seller list → WhatsApp) not run yet.
+
 
 ### 2026-10-29 — Welcome gift: EGP 100 for new sellers, 7-day trial paused for them (owner)
 
