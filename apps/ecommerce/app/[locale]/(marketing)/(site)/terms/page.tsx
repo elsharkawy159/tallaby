@@ -9,5 +9,5 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 }
 
 export default function TermsPage() {
-  return <LegalPage doc="terms" summaryIcons={[Store, BadgePercent, DoorOpen]} updated="2026-10-01" minutes={6} />;
+  return <LegalPage doc="terms" summaryIcons={[Store, BadgePercent, DoorOpen]} updated="2026-10-29" minutes={6} />;
 }

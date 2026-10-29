@@ -2495,7 +2495,7 @@
         "month": "This month: 46 sales, 230 EGP in fees",
         "topUp": "Top up wallet",
         "howTitle": "How platform fees work",
-        "howBody": "For every delivered order, Tallaby deducts a flat 5 EGP from your store wallet, whatever the order value. If your balance is zero or less, it goes negative. Orders placed in the first 7 days after you create your first store are free. No fees on cancelled or undelivered orders.",
+        "howBody": "For every delivered order, Tallaby deducts a flat 5 EGP from your store wallet, whatever the order value. If your balance is zero or less, it goes negative. No fees on cancelled or undelivered orders.",
         "activity": "Wallet activity",
         "all": "All",
         "sales": "Sales",
@@ -3193,7 +3193,7 @@
       },
       {
         "q": "How is the fee collected?",
-        "a": "Each store has a wallet. When an order is delivered, 5 EGP is deducted from it. If the balance reaches zero it can go negative, and you can top it up any time from the dashboard. Orders placed in the first 7 days after you create your first store are free."
+        "a": "Each store has a wallet. When an order is delivered, 5 EGP is deducted from it. If the balance reaches zero it can go negative, and you can top it up any time from the dashboard."
       },
       {
         "q": "Can I use my own couriers?",
@@ -3288,7 +3288,7 @@
           "id": "fees",
           "title": "Fees and payouts",
           "paragraphs": [
-            "Tallaby is free to use. We charge a flat 5 EGP for each delivered order, regardless of the order value. We don't take a percentage of your sales and there is no monthly subscription. Orders placed in the first 7 days after you create your first store are not charged. Products, orders and visitors are unlimited, and each account can have up to 3 stores.",
+            "Tallaby is free to use. We charge a flat 5 EGP for each delivered order, regardless of the order value. We don't take a percentage of your sales and there is no monthly subscription. Products, orders and visitors are unlimited, and each account can have up to 3 stores.",
             "Each store has a wallet. The fee is deducted from the store wallet when an order is delivered, and every deduction is listed in your dashboard. Cancelled orders and orders refused at delivery are not charged. The wallet balance can go negative; a negative balance is an amount you owe Tallaby, and you settle it by topping up the wallet from your dashboard. Payment processing and shipping are charged separately and shown before you enable or confirm them."
           ]
         },
