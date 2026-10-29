@@ -272,11 +272,14 @@ function AddProductForm({
           }
           draft.pause();
           draft.clear();
-          if (result.data?.status === "draft")
+          // Full page loads clear stuck pending UI and reset the form cleanly
+          if (result.data?.status === "draft") {
             toast.info(tToast("productSavedAsDraft"));
-          else toast.success(tToast("productCreatedSuccessfully"));
-          // Full reload clears stuck pending UI and resets the form cleanly
-          window.location.reload();
+            window.location.reload();
+          } else {
+            toast.success(tToast("productCreatedSuccessfully"));
+            window.location.assign("/products");
+          }
         } else {
           toast.error(result.error || tToast("failedToCreateProduct"));
         }

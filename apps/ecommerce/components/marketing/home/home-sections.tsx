@@ -32,6 +32,7 @@ import { richTags } from "@/components/marketing/site/rich-text";
 import { SignupTrigger, SlugClaimForm } from "@/components/marketing/signup/signup-trigger.client";
 import { TemplateCategories } from "@/components/marketing/templates/template-categories";
 import { CONTACT } from "@/lib/marketing/site.lib";
+import { getShowcaseStores } from "@/lib/marketing/stores.server";
 import { getTemplateGallery } from "@/lib/marketing/templates.server";
 import { BuilderStudio } from "./builder-studio.client";
 import { FeatureTour } from "./feature-tour.client";
@@ -115,6 +116,64 @@ export async function HowItWorks() {
         <Reveal className="mt-12 flex flex-wrap items-center gap-4">
           <SignupTrigger tone="teal" />
           <small className="text-sm text-neutral-600">{t("note")}</small>
+        </Reveal>
+      </Container>
+    </Section>
+  );
+}
+
+/** Below this many stores the wall would look empty, so it stays hidden. */
+const STORE_SHOWCASE_MIN = 4;
+
+/**
+ * "Stores already selling on Tallaby": published stores' logos, most products
+ * first (getShowcaseStores). Social proof for new visitors; each tile opens the store.
+ */
+export async function StoresShowcase() {
+  const [t, locale, stores] = await Promise.all([getTranslations("home.stores"), getLocale(), getShowcaseStores()]);
+  if (stores.length < STORE_SHOWCASE_MIN) return null;
+  const numbers = new Intl.NumberFormat(locale === "ar" ? "ar-EG" : "en");
+
+  return (
+    <Section id="stores" aria-labelledby="stores-title" className="relative overflow-hidden">
+      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[260px] bg-[radial-gradient(60%_100%_at_50%_0%,var(--color-teal-50),transparent)]" />
+      <Container className="relative">
+        <Reveal>
+          <SectionHeading id="stores-title" centered kicker={t("kicker")} title={t("title")} description={t("desc")} />
+        </Reveal>
+        <StaggerChildren as="ul" stagger={0.04} className="m-0 grid list-none grid-cols-2 gap-3 p-0 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-6">
+          {stores.map((store) => (
+            <li key={store.id}>
+              <a
+                href={store.url}
+                target="_blank"
+                rel="noopener"
+                className="group flex h-full flex-col items-center gap-3 rounded-2xl border border-neutral-200 bg-white px-3 pt-5 pb-4 text-center transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-0.5 hover:border-teal-100 hover:shadow-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+              >
+                <span className="grid size-[72px] place-items-center overflow-hidden rounded-2xl bg-paper ring-1 ring-neutral-100 sm:size-20">
+                  {store.logoUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element -- seller logos can live on any host
+                    <img src={store.logoUrl} alt="" loading="lazy" decoding="async" className="size-full object-contain p-2" />
+                  ) : (
+                    <span aria-hidden className="grid size-full place-items-center bg-teal-900 text-[28px] font-extrabold text-amber-300">
+                      {store.name.trim().charAt(0).toUpperCase()}
+                    </span>
+                  )}
+                </span>
+                <span className="w-full min-w-0">
+                  <b className="block truncate text-[14.5px] text-teal-900 group-hover:text-teal-700">{store.name}</b>
+                  <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-teal-50 px-2.5 py-0.5 text-[12px] font-semibold text-teal-700">
+                    <Package className="size-3" aria-hidden />
+                    {t("products", { count: store.productCount, formatted: numbers.format(store.productCount) })}
+                  </span>
+                </span>
+              </a>
+            </li>
+          ))}
+        </StaggerChildren>
+        <Reveal className="mt-10 flex flex-col items-center gap-3 text-center">
+          <p className="text-[15px] text-slate-ink">{t("join")}</p>
+          <SignupTrigger tone="teal" />
         </Reveal>
       </Container>
     </Section>

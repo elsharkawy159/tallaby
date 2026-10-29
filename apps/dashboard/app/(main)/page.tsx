@@ -25,6 +25,7 @@ import { TopProductsData } from "./_components/top-products.data";
 import { TrialBannerData } from "./_components/trial-banner.data";
 import { UnansweredQuestionsData } from "./_components/unanswered-questions.data";
 import { WelcomeBanner } from "./_components/welcome-banner.client";
+import { SignupPixelData } from "./_components/signup-pixel.data";
 
 // Per-seller data read from the session cookie.
 export const dynamic = "force-dynamic";
@@ -36,9 +37,9 @@ export const dynamic = "force-dynamic";
 export default async function VendorDashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ range?: string | string[]; channel?: string | string[]; welcome?: string | string[] }>;
+  searchParams: Promise<{ range?: string | string[]; channel?: string | string[]; welcome?: string | string[]; signup?: string | string[] }>;
 }) {
-  const [{ range: rawRange, channel: rawChannel, welcome }, t, { stores }] = await Promise.all([
+  const [{ range: rawRange, channel: rawChannel, welcome, signup }, t, { stores }] = await Promise.all([
     searchParams,
     getTranslations("home.header"),
     getSellerStores(),
@@ -77,6 +78,11 @@ export default async function VendorDashboardPage({
         setup={
           <>
             {welcome === "1" && <WelcomeBanner />}
+            {welcome === "1" && signup && (
+              <Suspense fallback={null}>
+                <SignupPixelData signup={signup} />
+              </Suspense>
+            )}
             <Suspense fallback={null}>
               <TrialBannerData />
             </Suspense>

@@ -6,7 +6,7 @@
 import type { StoreTemplateCard } from "@workspace/lib/store-sites/server";
 import { getDesign, storeSectionRegistry } from "@workspace/store-sections/render";
 import { getTemplateDesign } from "@workspace/store-sections/templates";
-import { findIndustry } from "@/lib/stores/industries.lib";
+import { RELATED_INDUSTRIES, findIndustry } from "@/lib/stores/industries.lib";
 import type { TemplateCardView } from "./templates.dto";
 
 /** A section's name: its design (tree sections, `source`) or its registry entry. */
@@ -18,30 +18,6 @@ function sectionName(id: string) {
   }
   return storeSectionRegistry.get(id)?.displayName ?? { ar: id, en: id };
 }
-
-/**
- * Industries whose templates suit a store of another industry, nearest first
- * (owner request 2026-10-27): after its own category, a store sees these.
- */
-const RELATED_INDUSTRIES: Record<string, readonly string[]> = {
-  fashion: ["shoes-bags", "jewelry", "beauty", "handmade"],
-  "shoes-bags": ["fashion", "jewelry", "sports"],
-  jewelry: ["fashion", "handmade", "beauty", "shoes-bags"],
-  beauty: ["health", "fashion", "jewelry", "handmade"],
-  health: ["beauty", "food", "sports"],
-  electronics: ["mobile-accessories", "kitchen", "auto"],
-  "mobile-accessories": ["electronics", "auto"],
-  home: ["kitchen", "handmade", "kids"],
-  kitchen: ["home", "food", "electronics"],
-  food: ["sweets", "kitchen", "health"],
-  sweets: ["food", "handmade", "kitchen"],
-  kids: ["books", "home", "sports", "fashion"],
-  books: ["kids", "handmade"],
-  sports: ["health", "fashion", "shoes-bags"],
-  auto: ["electronics", "mobile-accessories", "sports"],
-  pets: ["home", "food", "kids"],
-  handmade: ["home", "jewelry", "fashion", "sweets"],
-};
 
 /** The order of template categories for a store: its industry, related industries, then the rest in gallery order. */
 export function categoryOrder(categories: readonly string[], industryId: string | null | undefined): string[] {

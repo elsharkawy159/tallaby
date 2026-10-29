@@ -8,6 +8,7 @@ import {
   HomeHero,
   HowItWorks,
   PricingTeaser,
+  StoresShowcase,
   TemplatesShowcase,
 } from "@/components/marketing/home/home-sections";
 import { StickyCta } from "@/components/marketing/home/sticky-cta.client";
@@ -24,6 +25,7 @@ export default function HomePage() {
     <>
       <MotionScope>
         <HomeHero />
+        <StoresShowcase />
         <HowItWorks />
         <TemplatesShowcase />
         <BuilderSection />

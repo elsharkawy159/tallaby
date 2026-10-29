@@ -1,21 +1,20 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { LoaderCircle, Monitor, RotateCcw, Smartphone, Sparkles } from "lucide-react";
-import type { SiteLocale, TemplateDemo } from "@workspace/store-sections";
+import type { SiteLocale } from "@workspace/store-sections";
 import { DEMO_PRODUCT } from "@workspace/store-sections/render";
 import { templateDemoProduct } from "@workspace/store-sections/demo-product";
 import { Button } from "@workspace/ui/components/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@workspace/ui/components/dialog";
 import { cn } from "@workspace/ui/lib/utils";
-import { SitePreview, type PreviewCatalog, type PreviewDevice } from "../_components/site-preview.client";
+import { SitePreview, type PreviewDevice } from "../_components/site-preview.client";
+import { TemplateLiveThumbnail as SharedTemplateLiveThumbnail, demoCatalog } from "@workspace/store-editor/preview/template-live-thumbnail.client";
 import { templatePreview } from "./templates.server";
 import type { TemplateCardView, TemplatePreviewView } from "./templates.dto";
 
 type Localized = { ar?: string; en?: string };
-
-const EMPTY_CATALOG: PreviewCatalog = { products: [], categories: [] };
 
 /** Loaded previews by store and template, shared by the cards and the dialog. */
 const PREVIEWS = new Map<string, Promise<TemplatePreviewView | null>>();
@@ -44,11 +43,6 @@ function useTemplatePreview(storeId: string, key: string | undefined, enabled = 
     };
   }, [storeId, key, enabled]);
   return state.key === key ? state : { data: null, failed: false };
-}
-
-/** The demo store as the preview's catalog (same shape as the editor's). */
-function demoCatalog(demo: TemplateDemo | null): PreviewCatalog {
-  return demo ? { products: demo.products, categories: demo.categories } : EMPTY_CATALOG;
 }
 
 /**
@@ -179,13 +173,9 @@ function demoPageName(template: TemplateCardView, page: { slug: string }, locale
   return template.pageNames?.[page.slug]?.[locale] ?? null;
 }
 
-/** The thumbnail frame: a 16:10 desktop window. */
-const THUMB_WIDTH = 1280;
-const THUMB_HEIGHT = 800;
-
 /**
- * A card thumbnail: the template's home page with its demo store, drawn at
- * desktop width and scaled to the card. Loads when the card scrolls into view.
+ * A card thumbnail: the template's home page with its demo store (the shared
+ * `TemplateLiveThumbnail`), loaded through this page's preview cache.
  */
 export function TemplateLiveThumbnail({
   storeId,
@@ -198,48 +188,6 @@ export function TemplateLiveThumbnail({
   fontClassName: string;
   fallback: ReactNode;
 }) {
-  const box = useRef<HTMLDivElement>(null);
-  const [visible, setVisible] = useState(false);
-  const [scale, setScale] = useState(0.3);
-  const { data, failed } = useTemplatePreview(storeId, template.key, visible);
-
-  useEffect(() => {
-    const el = box.current;
-    if (!el) return;
-    const io = new IntersectionObserver(([entry]) => entry?.isIntersecting && setVisible(true), { rootMargin: "200px" });
-    const ro = new ResizeObserver(() => setScale(el.clientWidth / THUMB_WIDTH));
-    io.observe(el);
-    ro.observe(el);
-    return () => {
-      io.disconnect();
-      ro.disconnect();
-    };
-  }, []);
-
-  const home = data?.pages.find((p) => p.isHome) ?? data?.pages[0];
-  return (
-    <div ref={box} className="relative aspect-[16/10] w-full overflow-hidden border-b bg-muted/40" aria-hidden>
-      {data && home ? (
-        <div className="pointer-events-none absolute start-0 top-0 origin-top-left rtl:origin-top-right" style={{ width: THUMB_WIDTH, height: THUMB_HEIGHT, transform: `scale(${scale})` }}>
-          <SitePreview
-            className="h-full"
-            store={{ name: data.demo?.store.name.ar ?? "", url: "https://example.tallaby.com" }}
-            catalog={demoCatalog(data.demo)}
-            sections={home.sections.slice(0, 3)}
-            header={data.header}
-            footer={null}
-            designSystem={data.designSystem}
-            locale="ar"
-            fontClassName={fontClassName}
-          />
-        </div>
-      ) : failed ? (
-        fallback
-      ) : (
-        <div className="flex h-full items-center justify-center">
-          <LoaderCircle className="size-4 animate-spin text-muted-foreground" />
-        </div>
-      )}
-    </div>
-  );
+  const load = useCallback((key: string) => loadPreview(storeId, key), [storeId]);
+  return <SharedTemplateLiveThumbnail templateKey={template.key} load={load} fontClassName={fontClassName} fallback={fallback} />;
 }

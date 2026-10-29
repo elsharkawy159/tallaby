@@ -15,6 +15,7 @@ import { loadStorePage } from "@/lib/stores/store-page.server";
 import { storeFontVariables } from "@/app/(main)/stores/[storeId]/website/_components/store-fonts";
 import { toTemplateCardViews } from "@/app/(main)/stores/[storeId]/website/templates/templates.lib";
 import type { EditorInitial } from "@workspace/store-editor/editor.client";
+import { findIndustry, templatesForIndustry } from "@workspace/store-editor/lib/industries.lib";
 import { SellerEditor } from "./seller-editor.client";
 import { loadEditorSnapshot } from "./server/editor.data";
 import { loadLibraryPresets } from "./server/library.data";
@@ -53,6 +54,12 @@ export default async function StoreEditorPage({ params }: { params: Promise<{ st
   if (!editor) notFound();
   // Add › Sections lists the designs of the store's template first in each category.
   const templateKeys = await getStoreTemplateLibraryKeys(store.sellerId, store.id, gallery?.currentKey ?? "", undefined, loadCachedTemplateConfig).catch(() => []);
+  // Add › Templates lists the store's industry only (owner request 2026-10-29).
+  const storeCategory = { en: store.storeCategory, ar: store.storeCategoryAr };
+  const industry = findIndustry(storeCategory);
+  // No "current" template until the seller picks one (the new-store Classic drafts are a placeholder).
+  const templatesCurrentKey = gallery?.templateChosen ? gallery.currentKey : "";
+  const templateItems = toTemplateCardViews(gallery?.templates ?? [], storeCategory, store.id);
 
   const header = sectionInstanceSchema.safeParse(editor.store.sharedHeader);
   const footer = sectionInstanceSchema.safeParse(editor.store.sharedFooter);
@@ -99,8 +106,7 @@ export default async function StoreEditorPage({ params }: { params: Promise<{ st
     isLive: Boolean(status?.isLive),
     hasUnpublishedChanges: status?.hasUnpublishedChanges ?? true,
     previewEnabled: storePreviewSecret() !== null,
-    // No "current" template until the seller picks one (the new-store Classic drafts are a placeholder).
-    templates: { currentKey: gallery?.templateChosen ? gallery.currentKey : "", items: toTemplateCardViews(gallery?.templates ?? [], { en: store.storeCategory, ar: store.storeCategoryAr }, store.id) },
+    templates: { currentKey: templatesCurrentKey, items: templatesForIndustry(templateItems, industry?.id, templatesCurrentKey) },
     fontClassName: storeFontVariables,
     category: { en: store.storeCategory ?? null, ar: store.storeCategoryAr ?? null },
     presets: presets && preferTemplatePresets(presets, templateKeys),

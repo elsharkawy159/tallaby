@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/supabase/middleware";
 import { LOCALE_COOKIE, defaultLocale, resolveLocale } from "@/i18n/config";
+import { REFERRAL_COOKIE, referralCookieOptions, referralCookieToSet } from "@workspace/lib/referrals";
 
 export async function proxy(request: NextRequest) {
   // Run your session logic first
@@ -23,6 +24,10 @@ export async function proxy(request: NextRequest) {
       maxAge: 60 * 60 * 24 * 365, // 1 year
     });
   }
+
+  // Affiliate link (F-37): remember ?ref= for 60 days; the first link wins.
+  const referral = referralCookieToSet(request.nextUrl.searchParams.get("ref"), request.cookies.get(REFERRAL_COOKIE)?.value);
+  if (referral) response.cookies.set(REFERRAL_COOKIE, referral, referralCookieOptions(process.env.REFERRAL_COOKIE_DOMAIN));
 
   return response;
 }

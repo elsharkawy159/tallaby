@@ -48,6 +48,17 @@ export const ADMIN_AUDIT_ACTIONS = [
   "create_blog_post",
   "update_blog_post",
   "delete_blog_post",
+  // Public seller roadmap (0115)
+  "create_feature_request",
+  "update_feature_request",
+  "set_feature_request_status",
+  "hide_feature_request",
+  "unhide_feature_request",
+  // Affiliate program (0117, F-37)
+  "referral_payout_paid",
+  "referral_payout_rejected",
+  "referral_commissions_reversed",
+  "referral_relocked",
   // Admin website builder (store sites)
   "open_store_editor",
   "publish_store_site",
@@ -56,6 +67,11 @@ export const ADMIN_AUDIT_ACTIONS = [
   "discard_store_draft",
   "change_store_page",
   "apply_store_template",
+  // Store page › Website settings (store details, brand, social, SEO)
+  "update_store_details",
+  "update_store_design",
+  "update_store_social",
+  "update_store_seo",
   // Admin website builder (templates and library sections)
   "create_template",
   "publish_template_version",

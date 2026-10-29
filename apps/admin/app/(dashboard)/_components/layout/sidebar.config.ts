@@ -1,11 +1,13 @@
 import {
   Banknote,
   Globe,
+  HandCoins,
   // Handshake, // affiliates tab is commented out below
   History,
   Home,
   LineChart,
   Megaphone,
+  Map as MapIcon,
   Newspaper,
   Package,
   PlugZap,
@@ -163,6 +165,8 @@ export const sidebarSections: SidebarSection[] = [
         countKey: "pendingStoreTopUps",
         countLabel: "Store top-ups waiting for review",
       },
+      // Tallaby affiliate program (F-37): withdrawal requests and referrers.
+      { key: "referrals", title: "Referrals", href: "/referrals", icon: HandCoins },
       { key: "payments", title: "Payments", href: "/payments", icon: CreditCard },
       // Hidden 2026-10-18 (SaaS pivot), see docs/admin-saas.md §2.2.
       { key: "pricingCalculator", title: "Pricing calculator", href: "/pricing-calculator", icon: Banknote, hidden: true },
@@ -206,6 +210,7 @@ export const sidebarSections: SidebarSection[] = [
     title: "Tallaby site & system",
     links: [
       { key: "blog", title: "Blog", href: "/blog", icon: Newspaper },
+      { key: "roadmap", title: "Seller roadmap", href: "/roadmap", icon: MapIcon },
       { key: "audit", title: "Audit log", href: "/audit", icon: History },
       { key: "settings", title: "Settings", href: "/settings", icon: Settings },
     ],

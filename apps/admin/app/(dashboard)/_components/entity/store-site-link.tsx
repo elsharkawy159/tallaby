@@ -35,10 +35,12 @@ interface StoreSiteLinkProps {
   domain?: string | null;
   /** Show the storefront host under the name. */
   showHost?: boolean;
+  /** The store's industry, shown in gray after the name, e.g. "(Fashion)". */
+  industry?: string | null;
 }
 
 /** Store name (to the admin store page) with its website status and storefront link. */
-export function StoreSiteLink({ store, domain, showHost = true }: StoreSiteLinkProps) {
+export function StoreSiteLink({ store, domain, showHost = true, industry }: StoreSiteLinkProps) {
   return (
     <div className="min-w-0">
       <div className="flex items-center gap-2">
@@ -50,6 +52,11 @@ export function StoreSiteLink({ store, domain, showHost = true }: StoreSiteLinkP
         >
           {store.name}
         </Link>
+        {industry && (
+          <span className="max-w-32 shrink-0 truncate text-xs text-muted-foreground" title={industry}>
+            ({industry})
+          </span>
+        )}
       </div>
       {showHost && (
         <a

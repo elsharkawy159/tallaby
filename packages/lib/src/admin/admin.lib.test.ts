@@ -122,6 +122,7 @@ describe("store-site admin audit actions", () => {
   const NEW_ACTIONS = [
     "open_store_editor", "publish_store_site", "unpublish_store_site", "restore_store_revision",
     "discard_store_draft", "change_store_page", "apply_store_template",
+    "update_store_details", "update_store_design", "update_store_social", "update_store_seo",
     "create_template", "publish_template_version", "restore_template_version", "delete_template",
     "create_library_section", "update_library_section", "publish_library_section",
     "hide_library_section", "delete_library_section",

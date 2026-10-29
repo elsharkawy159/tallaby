@@ -4,6 +4,7 @@ export type MetaStandardEvent =
   | 'AddToCart'
   | 'InitiateCheckout'
   | 'Purchase'
+  | 'CompleteRegistration'
 
 export interface MetaContentParams {
   content_ids: string[]

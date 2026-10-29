@@ -28,7 +28,8 @@ async function finish(origin: string, user: User | null) {
     const error = result.error === "taken" ? "subdomainTaken" : "generic";
     return NextResponse.redirect(`${DASHBOARD_URL}signup?error=${error}`);
   }
-  return NextResponse.redirect(`${DASHBOARD_URL}?welcome=1`);
+  // `signup` only for a new account: the welcome page fires Meta's CompleteRegistration once.
+  return NextResponse.redirect(`${DASHBOARD_URL}?welcome=1${result.signup ? `&signup=${result.signup}` : ""}`);
 }
 
 export async function GET(request: NextRequest) {

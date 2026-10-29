@@ -14,6 +14,8 @@ export * from "./domains-admin.server";
 export * from "./audit-view.server";
 export * from "./overview.server";
 export * from "./platform-blog-admin.server";
+export * from "./roadmap-admin.server";
+export * from "./referrals-admin.server";
 export * from "./list-sort.server";
 export * from "./platform-admin.server";
 export * from "./store-site-admin.server";

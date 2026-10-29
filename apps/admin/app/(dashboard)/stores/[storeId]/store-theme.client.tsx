@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useCallback, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Check, Paintbrush, Search } from "lucide-react";
 import { toast } from "sonner";
@@ -11,7 +11,12 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Input } from "@workspace/ui/components/input";
 import { ADMIN_DEFAULT_REASON } from "@workspace/lib/admin";
 import { cn } from "@workspace/ui/lib/utils";
+import { TemplateLiveThumbnail } from "@workspace/store-editor/preview/template-live-thumbnail.client";
+import type { TemplatePreviewView } from "@workspace/store-editor/templates.dto";
 import { RemoteImage } from "@/components/media/remote-image";
+import { BuilderIntl } from "@/app/(builder)/builder-intl.client";
+import { templatePreview } from "@/app/(builder)/stores/[storeId]/editor/admin-store-editor.server";
+import { storeFontVariables } from "@/app/(builder)/stores/[storeId]/editor/store-fonts";
 import { applyStoreThemeAction } from "./website-actions.server";
 
 /** One offered theme (a `templates` row), as the store page shows it. */
@@ -41,7 +46,24 @@ export function PaletteBand({ palette, className }: { palette: readonly string[]
   );
 }
 
-const categoryLabel = (category: string) => (category ? category.charAt(0).toUpperCase() + category.slice(1).replace(/[-_]/g, " ") : "Other");
+/** Loaded theme content by store and key, shared by the dialog's cards; a failed load is retried next time. */
+const PREVIEWS = new Map<string, Promise<TemplatePreviewView | null>>();
+
+function loadThemePreview(storeId: string, key: string): Promise<TemplatePreviewView | null> {
+  const id = `${storeId}:${key}`;
+  let pending = PREVIEWS.get(id);
+  if (!pending) {
+    pending = templatePreview(storeId, key).then((result) => (result.success ? result.data : null));
+    void pending.then(
+      (data) => data ?? PREVIEWS.delete(id),
+      () => PREVIEWS.delete(id),
+    );
+    PREVIEWS.set(id, pending);
+  }
+  return pending;
+}
+
+const categoryLabel =(category: string) => (category ? category.charAt(0).toUpperCase() + category.slice(1).replace(/[-_]/g, " ") : "Other");
 
 /**
  * "Change theme": every offered theme with its colours, then, on a live site, whether to publish at once.
@@ -75,6 +97,7 @@ export function ChangeThemeButton({
     );
   }, [themes, query, category]);
   const choice = themes.find((theme) => theme.key === selected) ?? null;
+  const loadPreview = useCallback((key: string) => loadThemePreview(storeId, key), [storeId]);
 
   const reset = () => {
     setSelected(null);
@@ -96,7 +119,8 @@ export function ChangeThemeButton({
     });
 
   return (
-    <>
+    // The live theme cards (SitePreview) read the builder strings.
+    <BuilderIntl>
       <Button size="sm" onClick={() => setOpen(true)}>
         <Paintbrush className="mr-1 h-3.5 w-3.5" />
         Change theme
@@ -163,11 +187,19 @@ export function ChangeThemeButton({
                           isSelected ? "border-primary ring-2 ring-primary" : "hover:border-foreground/30",
                         )}
                       >
-                        <div className="relative aspect-[4/3] w-full border-b bg-muted">
+                        <div className="relative w-full bg-muted">
                           {theme.thumbnailUrl ? (
-                            <RemoteImage src={theme.thumbnailUrl} alt="" fill sizes="(min-width: 1024px) 240px, 45vw" className="object-cover object-top" />
+                            <div className="relative aspect-[16/10] w-full border-b">
+                              <RemoteImage src={theme.thumbnailUrl} alt="" fill sizes="(min-width: 1024px) 240px, 45vw" className="object-cover object-top" />
+                            </div>
                           ) : (
-                            <PaletteBand palette={theme.palette} className="absolute inset-0" />
+                            // The theme's home page, live with its demo store (the dashboard's template card thumbnail).
+                            <TemplateLiveThumbnail
+                              templateKey={theme.key}
+                              load={loadPreview}
+                              fontClassName={storeFontVariables}
+                              fallback={<PaletteBand palette={theme.palette} className="absolute inset-0" />}
+                            />
                           )}
                           {isSelected && (
                             <span className="absolute end-2 top-2 grid size-6 place-items-center rounded-full bg-primary text-primary-foreground shadow">
@@ -175,7 +207,7 @@ export function ChangeThemeButton({
                             </span>
                           )}
                         </div>
-                        {theme.thumbnailUrl && <PaletteBand palette={theme.palette} className="h-1.5" />}
+                        <PaletteBand palette={theme.palette} className="h-1.5" />
                         <div className="space-y-1 p-2.5">
                           <div className="flex items-center justify-between gap-2">
                             <span className="truncate text-sm font-medium">{theme.name}</span>
@@ -236,6 +268,6 @@ export function ChangeThemeButton({
           </div>
         </DialogContent>
       </Dialog>
-    </>
+    </BuilderIntl>
   );
 }

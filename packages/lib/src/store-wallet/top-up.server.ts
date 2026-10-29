@@ -1,6 +1,7 @@
 import { and, db, eq, inArray, sellerWalletTopUps, sql } from "@workspace/db";
 import { DuplicateStoreWalletEntryError, postStoreWalletEntry } from "@workspace/db/wallet";
 import { createKashierSession, getKashierConfig } from "../kashier";
+import { postReferralCommission } from "../referrals/referrals.server";
 import { buildStoreTopUpReference, parseStoreTopUpAmount } from "./top-up.lib";
 
 /**
@@ -151,6 +152,8 @@ export async function applyStoreTopUpWebhook(input: {
         .update(sellerWalletTopUps)
         .set({ status: "succeeded", providerTransactionId: transactionId, transactionId: entry.entryId, updatedAt: sql`now()` })
         .where(pending);
+      // The referrer's 20 % (F-37), in this transaction: never missed, never doubled.
+      await postReferralCommission(tx, { id: topUp.id, sellerId: topUp.sellerId, amount: topUp.amount });
       return "credited";
     } catch (error) {
       if (error instanceof DuplicateStoreWalletEntryError) return "duplicate";

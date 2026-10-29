@@ -58,6 +58,7 @@
     "mediaLibrary": "Media library",
     "apps": "Apps & integrations",
     "storeAnalytics": "Store views",
+    "roadmap": "Roadmap & ideas",
     "finance": "Wallet",
     "fulfillmentShipping": "Shipping & Fulfillment",
     "storeSettings": "Store settings",
@@ -78,7 +79,8 @@
     "campaigns": "Marketing campaigns",
     "accountHelp": "Account & help",
     "sellerCategories": "Categories",
-    "sellerBrands": "Brands"
+    "sellerBrands": "Brands",
+    "earn": "Earn with us"
   },
   "common": {
     "loading": "Loading...",
@@ -4524,6 +4526,18 @@
       "carrier_needs_attention": {
         "title": "Bosta needs your attention",
         "body": "Bosta flagged order #{orderNumber}. Open it to see why."
+      },
+      "referral_commission_earned": {
+        "title": "Commission earned",
+        "body": "You earned {amount} from {count, plural, one {a top-up} other {# top-ups}} by sellers you referred today."
+      },
+      "referral_payout_paid": {
+        "title": "Withdrawal paid",
+        "body": "Tallaby sent you {amount}. Check your account."
+      },
+      "referral_payout_rejected": {
+        "title": "Withdrawal not paid",
+        "body": "Your {amount} withdrawal was declined. Open Earn with us to see why."
       }
     }
   },
@@ -4582,6 +4596,222 @@
       "rateLimited": "You just refreshed. Wait a minute and try again.",
       "notFound": "This store wasn't found.",
       "generic": "Something went wrong. Try again."
+    }
+  },
+  "roadmap": {
+    "metaTitle": "Tallaby roadmap",
+    "metaDescription": "Suggest the features your store needs, vote on sellers' ideas and follow what we build.",
+    "backToDashboard": "Dashboard",
+    "signIn": "Sign in",
+    "startSelling": "Start selling free",
+    "projectName": "Tallaby roadmap",
+    "projectSubtitle": "Help us decide what's next: suggest a feature, vote on sellers' ideas and follow each one until it launches.",
+    "suggest": "Suggest a feature",
+    "howTitle": "How it works",
+    "how": {
+      "suggest": {
+        "title": "Suggest an idea",
+        "body": "Describe the problem you face in your store."
+      },
+      "vote": {
+        "title": "Vote on ideas",
+        "body": "One vote per idea; you can take it back any time."
+      },
+      "follow": {
+        "title": "Follow progress",
+        "body": "We review the most-voted ideas first."
+      }
+    },
+    "stats": {
+      "ideas": "ideas",
+      "votes": "votes",
+      "launched": "launched"
+    },
+    "views": {
+      "board": "Board",
+      "list": "List"
+    },
+    "tabs": {
+      "all": "All",
+      "mine": "My requests",
+      "voted": "Voted"
+    },
+    "filters": {
+      "category": "Category",
+      "allCategories": "All categories",
+      "sort": "Sort",
+      "sortVotes": "Most voted",
+      "sortNew": "Newest first",
+      "search": "Search ideas…",
+      "clear": "Clear filters"
+    },
+    "status": {
+      "waiting": "Waiting list",
+      "planned": "Planned",
+      "in_progress": "In progress",
+      "launched": "Launched"
+    },
+    "statusHint": {
+      "waiting": "Open for votes; the most voted are reviewed first",
+      "planned": "Approved and scheduled",
+      "in_progress": "Our team is building it now",
+      "launched": "Available to every seller"
+    },
+    "emptyColumn": {
+      "waiting": "Suggest a new idea or vote on other sellers' ideas",
+      "planned": "Approved ideas will show here",
+      "in_progress": "Ideas we're working on will show here",
+      "launched": "Launched features will show here"
+    },
+    "emptyTitle": "No ideas here yet",
+    "noResults": "Nothing matches your search",
+    "categories": {
+      "orders": "Orders",
+      "payments": "Payments",
+      "shipping": "Shipping",
+      "products": "Products",
+      "marketing": "Marketing",
+      "website": "Website & design",
+      "reports": "Reports",
+      "other": "Other"
+    },
+    "list": {
+      "title": "Idea",
+      "category": "Category",
+      "status": "Status",
+      "votes": "Votes",
+      "date": "Date"
+    },
+    "team": "Tallaby team",
+    "yours": "Yours",
+    "vote": "Vote",
+    "voted": "Voted",
+    "voteCount": "{count, plural, =0 {No votes} one {# vote} other {# votes}}",
+    "votesClosed": "Voting is closed because work has started",
+    "detail": {
+      "suggestedBy": "Suggested by",
+      "added": "Added {date}",
+      "launchedOn": "Launched {date}",
+      "progress": "Stage",
+      "voters": "{count, plural, =0 {No votes yet} one {# seller wants this} other {# sellers want this}}",
+      "youVoted": "including you",
+      "description": "Details",
+      "noDescription": "No extra details.",
+      "copyLink": "Copy link",
+      "linkCopied": "Link copied"
+    },
+    "form": {
+      "title": "Suggest a new feature",
+      "subtitle": "Your idea joins the waiting list where other sellers can vote on it.",
+      "titleLabel": "Idea title",
+      "titlePlaceholder": "e.g. Export orders to Excel",
+      "titleHint": "A short sentence describing the feature.",
+      "categoryLabel": "Category",
+      "descriptionLabel": "Details",
+      "descriptionPlaceholder": "What problem do you face? How would this feature help you?",
+      "similar": "Similar ideas already exist. Vote on them instead of adding a duplicate:",
+      "submit": "Send suggestion",
+      "cancel": "Cancel",
+      "titleTooShort": "Write a title of at least 3 characters.",
+      "descriptionTooShort": "Write at least 10 characters."
+    },
+    "auth": {
+      "title": "Sign in to take part",
+      "body": "Voting and suggesting are open to Tallaby sellers. Sign in, or create your store for free.",
+      "userBody": "Voting and suggesting are open to seller accounts. Finish creating your store to take part.",
+      "finishSignup": "Finish creating your store"
+    },
+    "toast": {
+      "voted": "Your vote is in",
+      "unvoted": "Your vote was removed",
+      "suggested": "Your suggestion was added to the waiting list",
+      "unauthorized": "Sign in as a seller to take part.",
+      "notVotable": "Voting is closed on this idea.",
+      "rateLimited": "You reached today's suggestion limit (5). Try again tomorrow.",
+      "invalidInput": "Check your input and try again.",
+      "generic": "Something went wrong. Please try again."
+    }
+  },
+  "earn": {
+    "metaTitle": "Earn with us",
+    "title": "Earn with us: affiliate marketing",
+    "intro": "Share your link with your referral code. You earn 20% of every amount the sellers you bring top up into their wallet, for life. Paid in cash (bank or Vodafone Cash), not as wallet credit.",
+    "stats": {
+      "earned": "Total commission",
+      "available": "Available to withdraw",
+      "paid": "Already paid"
+    },
+    "link": {
+      "title": "Your referral link",
+      "hint": "Anyone who opens it and creates a Tallaby store in the next 60 days is counted as yours.",
+      "code": "Your code: {code}",
+      "copy": "Copy link",
+      "copied": "Link copied",
+      "whatsapp": "WhatsApp",
+      "facebook": "Facebook",
+      "shareText": "Start your online store on Tallaby: {url}"
+    },
+    "progress": {
+      "title": "Unlock withdrawals",
+      "referrals": "{count} / {goal} successful referrals",
+      "stores": "{count} / {goal} stores created through your link",
+      "rule": "A referral counts once the seller's first wallet top-up succeeds. You can withdraw after at least 10 successful referrals and 10 stores.",
+      "unlocked": "Withdrawals are unlocked"
+    },
+    "referrals": {
+      "title": "Your referrals",
+      "empty": "No one has signed up through your link yet. Share it to start earning.",
+      "store": "Store",
+      "signedUp": "Signed up",
+      "stores": "Stores",
+      "toppedUp": "Topped up",
+      "commission": "Your commission",
+      "unnamed": "New store"
+    },
+    "withdraw": {
+      "title": "Withdraw",
+      "minimum": "Minimum withdrawal: {amount}",
+      "button": "Request withdrawal",
+      "support": "Contact support on WhatsApp",
+      "supportMessage": "Hi, I have a question about my Tallaby affiliate commission.",
+      "blocked": {
+        "suspended": "Your account is not active, so withdrawals are paused. Contact support.",
+        "locked": "Reach 10 successful referrals and 10 stores to unlock withdrawals.",
+        "open_request": "You already have a withdrawal request. The Tallaby team will pay it soon.",
+        "below_minimum": "You need at least {amount} available to withdraw."
+      },
+      "dialogTitle": "Request a withdrawal",
+      "dialogDescription": "We will send you your whole available balance, {amount}, in cash.",
+      "method": "Pay me by",
+      "bank": "Bank transfer",
+      "vodafone_cash": "Vodafone Cash",
+      "holderName": "Account holder name",
+      "bankName": "Bank name",
+      "accountNumber": "Account number or IBAN",
+      "phone": "Vodafone Cash number",
+      "submit": "Send request",
+      "cancel": "Cancel",
+      "success": "Request sent. The Tallaby team will pay {amount} and notify you.",
+      "errors": {
+        "invalid_input": "Check the payment details and try again.",
+        "suspended": "Your account is not active, so withdrawals are paused.",
+        "locked": "Withdrawals are not unlocked yet.",
+        "open_request": "You already have a withdrawal request.",
+        "below_minimum": "Your available balance is below the minimum.",
+        "not_found": "Something went wrong. Try again.",
+        "rateLimited": "Too many attempts. Wait a few minutes.",
+        "generic": "Something went wrong. Try again."
+      }
+    },
+    "payouts": {
+      "title": "Withdrawals",
+      "status": {
+        "requested": "Waiting for payment",
+        "paid": "Paid",
+        "rejected": "Declined"
+      },
+      "reference": "Reference: {reference}",
+      "reason": "Reason: {reason}"
     }
   }
 }

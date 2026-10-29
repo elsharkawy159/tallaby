@@ -1,8 +1,25 @@
-import { notificationText, type NotificationItem } from '@workspace/lib/notifications'
+import { notificationCount, notificationText, type NotificationItem } from '@workspace/lib/notifications'
 
 const TOP_UP_METHODS: Record<string, string> = {
   vodafone_cash: 'Vodafone Cash',
   instapay: 'InstaPay',
+}
+
+const INTEGRATION_PROVIDERS: Record<string, string> = {
+  meta_pixel: 'Meta Pixel',
+  meta_capi: 'Meta Conversions API',
+  google_analytics: 'Google Analytics',
+  google_tag_manager: 'Google Tag Manager',
+  tiktok_pixel: 'TikTok Pixel',
+  snapchat_pixel: 'Snapchat Pixel',
+  google_sheets: 'Google Sheets',
+  shopify_import: 'Shopify import',
+  bosta: 'Bosta',
+}
+
+/** "Seller · Store", leaving out what is missing or repeated. */
+function who(seller: string, store: string): string {
+  return [seller, store !== seller && store].filter(Boolean).join(' · ')
 }
 
 /** The bell's English copy for one admin notification. */
@@ -36,6 +53,57 @@ export function describeAdminNotification(n: Pick<NotificationItem, 'type' | 'da
         body: [seller, detail].filter(Boolean).join(' · ') || 'A manual top-up needs review.',
       }
     }
+    case 'feature_request_created': {
+      const title = notificationText(n.data, 'title')
+      return {
+        title: 'New roadmap idea',
+        body: [store, title && `“${title}”`].filter(Boolean).join(' · ') || 'A seller suggested a feature.',
+      }
+    }
+    case 'product_created': {
+      const count = notificationCount(n.data)
+      const title = notificationText(n.data, 'title')
+      const what = count > 1 ? `${count} products` : title && `“${title}”`
+      return {
+        title: count > 1 ? 'Products added' : 'New product added',
+        body: [who(seller, store), what].filter(Boolean).join(' · ') || 'A seller added a product.',
+      }
+    }
+    case 'first_order_received': {
+      const orderNumber = notificationText(n.data, 'orderNumber')
+      return {
+        title: 'First order for a seller',
+        body: [who(seller, store), orderNumber && `#${orderNumber}`].filter(Boolean).join(' · ') ||
+          'A seller received their first order.',
+      }
+    }
+    case 'integration_connected': {
+      const provider = notificationText(n.data, 'provider')
+      const name = INTEGRATION_PROVIDERS[provider] ?? provider
+      return {
+        title: name ? `${name} connected` : 'Integration connected',
+        body: who(seller, store) || 'A store connected an integration.',
+      }
+    }
+    case 'store_unpublished':
+      return {
+        title: 'Store website taken offline',
+        body: [who(seller, store), subdomain && `(${subdomain})`].filter(Boolean).join(' ') ||
+          'A seller turned their website off.',
+      }
+    case 'referral_payout_requested': {
+      const amount = notificationText(n.data, 'amount')
+      return {
+        title: 'Affiliate withdrawal requested',
+        body: [store, amount && `EGP ${amount}`].filter(Boolean).join(' · ') || 'A referrer asked to withdraw their commission.',
+      }
+    }
+    case 'store_deleted':
+      return {
+        title: 'Store deleted',
+        body: [who(seller, store), subdomain && `(${subdomain})`].filter(Boolean).join(' ') ||
+          'A seller deleted a store.',
+      }
     default:
       return { title: 'Notification', body: '' }
   }

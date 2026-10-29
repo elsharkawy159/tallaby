@@ -50,7 +50,12 @@ export async function updateSession(request: NextRequest) {
   const path = url.pathname;
 
   // /signup works signed out (new account) and signed in (customer becoming a seller).
-  const isPublic = path.startsWith("/login") || path === "/signup" || path.startsWith("/signup/");
+  // /roadmap is the public seller roadmap: anyone may read it; voting checks the seller server-side.
+  const isPublic =
+    path.startsWith("/login") ||
+    path === "/signup" ||
+    path.startsWith("/signup/") ||
+    path === "/roadmap";
   if (!user && !isPublic) {
     return NextResponse.redirect(new URL("/login", request.url));
   }

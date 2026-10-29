@@ -53,3 +53,43 @@ export function industryQueries(category: { en?: string | null; ar?: string | nu
   // Arabic-only free text is not searched (stock libraries are indexed in English).
   return en ? [en, ...GENERAL_QUERIES] : [...GENERAL_QUERIES];
 }
+
+/**
+ * Industries whose templates suit a store of another industry, nearest first
+ * (owner request 2026-10-27): after its own category, a store sees these.
+ */
+export const RELATED_INDUSTRIES: Readonly<Record<string, readonly string[]>> = {
+  fashion: ["shoes-bags", "jewelry", "beauty", "handmade"],
+  "shoes-bags": ["fashion", "jewelry", "sports"],
+  jewelry: ["fashion", "handmade", "beauty", "shoes-bags"],
+  beauty: ["health", "fashion", "jewelry", "handmade"],
+  health: ["beauty", "food", "sports"],
+  electronics: ["mobile-accessories", "kitchen", "auto"],
+  "mobile-accessories": ["electronics", "auto"],
+  home: ["kitchen", "handmade", "kids"],
+  kitchen: ["home", "food", "electronics"],
+  food: ["sweets", "kitchen", "health"],
+  sweets: ["food", "handmade", "kitchen"],
+  kids: ["books", "home", "sports", "fashion"],
+  books: ["kids", "handmade"],
+  sports: ["health", "fashion", "shoes-bags"],
+  auto: ["electronics", "mobile-accessories", "sports"],
+  pets: ["home", "food", "kids"],
+  handmade: ["home", "jewelry", "fashion", "sweets"],
+};
+
+/**
+ * The builder's Add › Templates list (owner request 2026-10-29): only the
+ * templates of the store's industry. A store whose industry has none sees
+ * its related industries' templates; one with no known industry, or no
+ * match at all, sees every template. The store's current template always
+ * stays in the list. Order is kept.
+ */
+export function templatesForIndustry<T extends { key: string; category: string }>(templates: readonly T[], industryId: string | null | undefined, currentKey?: string): T[] {
+  if (!industryId) return [...templates];
+  for (const ids of [[industryId], RELATED_INDUSTRIES[industryId] ?? []]) {
+    const matching = templates.filter((tpl) => ids.includes(tpl.category) || tpl.key === currentKey);
+    if (matching.some((tpl) => ids.includes(tpl.category))) return matching;
+  }
+  return [...templates];
+}

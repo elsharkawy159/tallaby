@@ -1,6 +1,8 @@
 "use server";
 
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
+import { signupEventId } from "@workspace/lib/integrations";
+import { REFERRAL_COOKIE, normalizeReferralCode } from "@workspace/lib/referrals";
 import { signupInputSchema } from "@workspace/lib/sellers";
 import { checkStoreSubdomain } from "@workspace/lib/stores/server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
@@ -50,13 +52,15 @@ export async function signUpWithEmail(input: EmailSignupInput): Promise<SignupRe
   if (!choice.ok) return fail(choice.error);
 
   const supabase = await createClient();
+  // Keeps the affiliate link (F-37) when the email is confirmed in another browser.
+  const ref = normalizeReferralCode((await cookies()).get(REFERRAL_COOKIE)?.value);
   const { data, error } = await supabase.auth.signUp({
     email: parsed.data.email,
     password: parsed.data.password,
     options: {
       // This site handles the confirmation link (it holds the intent cookie).
       emailRedirectTo: `${(await headers()).get("origin") ?? SITE_URL}/api/auth/signup-callback`,
-      data: { signup_subdomain: choice.intent.subdomain, phone: choice.intent.phone },
+      data: { signup_subdomain: choice.intent.subdomain, phone: choice.intent.phone, ...(ref ? { signup_ref: ref } : {}) },
     },
   });
   if (error) {
@@ -77,7 +81,12 @@ export async function signUpWithEmail(input: EmailSignupInput): Promise<SignupRe
   if (!data.session || !data.user) return { status: "confirm_email" };
   const done = await completeSignup(data.user, choice.intent);
   if (!done.success) return fail(done.error === "taken" ? "subdomainTaken" : "generic");
-  return { status: "done", storeUrl: done.storeUrl!, subdomain: done.data.subdomain };
+  return {
+    status: "done",
+    storeUrl: done.storeUrl!,
+    subdomain: done.data.subdomain,
+    signupEvent: done.signup ? { id: signupEventId(data.user.id), method: done.signup } : undefined,
+  };
 }
 
 // Resends are cheap to abuse (each one is an email): 3 per 10 minutes per IP.

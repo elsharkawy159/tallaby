@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Bell, CheckCheck } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@workspace/ui/components/popover";
 import {
+  notificationCount,
   notificationText,
   sellerNotificationHref,
   type NotificationFeed,
@@ -187,6 +188,8 @@ function NotificationRow({
     orderNumber: notificationText(item.data, "orderNumber"),
     amount: amount ? formatMoney(amount, locale) : "",
     rating,
+    // Grouped rows (referral_commission_earned, one per day).
+    count: notificationCount(item.data),
   };
   const href = sellerNotificationHref(item);
   const known = t.has(`${item.type}.title`);

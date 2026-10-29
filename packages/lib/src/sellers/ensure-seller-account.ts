@@ -14,6 +14,7 @@
  *   user's Supabase session).
  */
 import { and, db, eq, isNull, or, sellers, stores, sql, users } from "@workspace/db";
+import { resolveReferrerForSignup } from "../referrals/referrals.server";
 import { ensureStoreSiteScaffold, isStoreSubdomainTaken } from "../stores/server";
 import { displayNameFromSubdomain, signupInputSchema } from "./signup.lib";
 
@@ -25,6 +26,8 @@ export type EnsureSellerAccountInput = {
   email: string | null | undefined;
   subdomain: string;
   phone: string;
+  /** Affiliate code from the tallaby_ref cookie or user_metadata (F-37). Used only when the account is created. */
+  referralCode?: string | null;
 };
 
 export type EnsureSellerAccountError = "invalid_input" | "taken" | "no_user";
@@ -79,6 +82,9 @@ export async function ensureSellerAccount(
       // can differ from their subdomains, so a free subdomain may still be a
       // taken slug: suffix the slug instead of refusing (D17: independent).
       const [slugOwner] = await tx.select({ id: sellers.id }).from(sellers).where(eq(sellers.slug, subdomain)).limit(1);
+      // Affiliate attribution (F-37): only here, at creation, never changed later.
+      const referrerId = await resolveReferrerForSignup(tx, { referralCode: input.referralCode, userId: input.userId, phone });
+
       const slug = slugOwner ? `${subdomain}-${input.userId.slice(0, 6)}` : subdomain;
 
       const inserted = await tx
@@ -97,6 +103,7 @@ export async function ensureSellerAccount(
           onboardingComplete: false,
           // New sellers get the 7-day no-fee trial; the first store starts it (0067).
           feeTrialEligible: true,
+          ...(referrerId ? { referredBySellerId: referrerId, referredAt: sql`now()` } : {}),
         })
         .onConflictDoNothing({ target: sellers.id })
         .returning({ id: sellers.id });

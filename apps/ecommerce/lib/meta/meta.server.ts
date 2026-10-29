@@ -13,7 +13,7 @@ function getPixelId (): string | undefined {
 }
 
 function getAccessToken (): string | undefined {
-  return process.env.META_CONVERSIONS_API_ACCESS_TOKEN
+  return process.env.META_CAPI_TOKEN
 }
 
 export function getGraphVersion (): string {

@@ -1,6 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
+import { REFERRAL_COOKIE } from "@workspace/lib/referrals";
+import { resolveReferrerForSignup } from "@workspace/lib/referrals/server";
 import { createClient } from "@/supabase/server";
 import { db, sellers, users, eq, and, or, isNull } from "@workspace/db";
 import {
@@ -110,8 +113,16 @@ export const submitSellerApplication = async (
 
   try {
     // 5. Seller + role + fulfillment request, atomically.
+    const referralCode = (await cookies()).get(REFERRAL_COOKIE)?.value;
     await db.transaction(async (tx) => {
+      // Affiliate attribution (F-37), only at account creation.
+      const referrerId = await resolveReferrerForSignup(tx, {
+        referralCode,
+        userId: user.id,
+        phone: business.data.supportPhone ?? "",
+      });
       await tx.insert(sellers).values({
+        ...(referrerId ? { referredBySellerId: referrerId, referredAt: now } : {}),
         id: user.id,
         businessName: business.data.businessName,
         displayName: createDisplayName(business.data.businessName),

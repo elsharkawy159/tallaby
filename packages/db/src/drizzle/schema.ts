@@ -459,6 +459,15 @@ export const sellers = pgTable("sellers", {
 	/** Last time an admin opened WhatsApp for this seller from Admin › Sellers; NULL = never (0113). */
 	adminContactedAt: timestamp("admin_contacted_at", { withTimezone: true, mode: 'string' }),
 	adminContactedBy: uuid("admin_contacted_by"),
+	/** Affiliate program (0117, F-37): this seller's share code, created on first visit to /earn. */
+	referralCode: text("referral_code"),
+	/** The seller whose link this account signed up through; set once at account creation. */
+	referredBySellerId: uuid("referred_by_seller_id"),
+	referredAt: timestamp("referred_at", { withTimezone: true, mode: 'string' }),
+	/** Set once the seller reaches 10 successful referrals and 10 stores; only an admin re-lock clears it. */
+	referralUnlockedAt: timestamp("referral_unlocked_at", { withTimezone: true, mode: 'string' }),
+	/** An admin found this referred account fake: it stops counting toward its referrer's unlock. */
+	referralExcludedAt: timestamp("referral_excluded_at", { withTimezone: true, mode: 'string' }),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 }, (table) => [
@@ -480,6 +489,15 @@ export const sellers = pgTable("sellers", {
 			foreignColumns: [users.id],
 			name: "sellers_admin_contacted_by_fkey"
 		}).onDelete("set null"),
+	uniqueIndex("sellers_referral_code_key").using("btree", table.referralCode).where(sql`referral_code IS NOT NULL`),
+	index("sellers_referred_by_idx").using("btree", table.referredBySellerId).where(sql`referred_by_seller_id IS NOT NULL`),
+	foreignKey({
+			columns: [table.referredBySellerId],
+			foreignColumns: [table.id],
+			name: "sellers_referred_by_seller_id_fkey"
+		}).onDelete("set null"),
+	check("sellers_referral_code_format", sql`referral_code IS NULL OR referral_code ~ '^[A-HJ-NP-Z2-9]{7}$'`),
+	check("sellers_not_self_referred", sql`referred_by_seller_id IS NULL OR referred_by_seller_id <> id`),
 	unique("sellers_slug_unique").on(table.slug),
 ]);
 
@@ -3264,7 +3282,7 @@ export const adminNotifications = pgTable("admin_notifications", {
 			foreignColumns: [users.id],
 			name: "admin_notifications_read_by_fkey"
 		}).onDelete("set null"),
-	check("admin_notifications_type_check", sql`type IN ('seller_created', 'store_created', 'store_published', 'top_up_requested')`),
+	check("admin_notifications_type_check", sql`type IN ('seller_created', 'store_created', 'store_published', 'top_up_requested', 'feature_request_created', 'product_created', 'first_order_received', 'integration_connected', 'store_unpublished', 'store_deleted', 'referral_payout_requested')`),
 ]);
 
 /**
@@ -3275,7 +3293,7 @@ export const sellerNotifications = pgTable("seller_notifications", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	sellerId: uuid("seller_id").notNull(),
 	storeId: uuid("store_id"),
-	/** order_created | top_up_approved | top_up_rejected | question_received | review_received | carrier_shipment_failed | carrier_needs_attention */
+	/** order_created | top_up_approved | top_up_rejected | question_received | review_received | carrier_shipment_failed | carrier_needs_attention | referral_commission_earned | referral_payout_paid | referral_payout_rejected (0117) */
 	type: text().notNull(),
 	data: jsonb().$type<Record<string, unknown>>().default({}).notNull(),
 	dedupeKey: text("dedupe_key").notNull(),
@@ -3295,7 +3313,7 @@ export const sellerNotifications = pgTable("seller_notifications", {
 			foreignColumns: [stores.id],
 			name: "seller_notifications_store_id_fkey"
 		}).onDelete("set null"),
-	check("seller_notifications_type_check", sql`type IN ('order_created', 'top_up_approved', 'top_up_rejected', 'question_received', 'review_received', 'carrier_shipment_failed', 'carrier_needs_attention')`),
+	check("seller_notifications_type_check", sql`type IN ('order_created', 'top_up_approved', 'top_up_rejected', 'question_received', 'review_received', 'carrier_shipment_failed', 'carrier_needs_attention', 'referral_commission_earned', 'referral_payout_paid', 'referral_payout_rejected')`),
 ]);
 
 /** A carrier's status history for a shipment (0106). One row per (shipment, state, time). Server-only. */
@@ -3343,4 +3361,121 @@ export const aiUsageLogs = pgTable("ai_usage_logs", {
 			name: "ai_usage_logs_seller_id_fkey"
 		}).onDelete("cascade"),
 	check("ai_usage_logs_status_check", sql`status IN ('ok', 'error', 'blocked')`),
+]);
+
+/** 0115: public seller roadmap cards (team items and seller suggestions). Server-only. */
+export const featureRequests = pgTable("feature_requests", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	/** waiting | planned | in_progress | launched */
+	status: text().default('waiting').notNull(),
+	/** orders | payments | shipping | products | marketing | website | reports | other */
+	category: text().notNull(),
+	title: text().notNull(),
+	description: text().default('').notNull(),
+	titleEn: text("title_en"),
+	descriptionEn: text("description_en"),
+	/** NULL = added by the Tallaby team. */
+	sellerId: uuid("seller_id"),
+	roadmapRef: text("roadmap_ref"),
+	launchedAt: date("launched_at", { mode: 'string' }),
+	hiddenAt: timestamp("hidden_at", { withTimezone: true, mode: 'string' }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("feature_requests_status_idx").using("btree", table.status, table.createdAt.desc()).where(sql`hidden_at IS NULL`),
+	index("feature_requests_seller_created_idx").using("btree", table.sellerId, table.createdAt.desc()).where(sql`seller_id IS NOT NULL`),
+	foreignKey({
+			columns: [table.sellerId],
+			foreignColumns: [sellers.id],
+			name: "feature_requests_seller_id_fkey"
+		}).onDelete("set null"),
+	unique("feature_requests_roadmap_ref_key").on(table.roadmapRef),
+	check("feature_requests_status_check", sql`status IN ('waiting', 'planned', 'in_progress', 'launched')`),
+	check("feature_requests_category_check", sql`category IN ('orders', 'payments', 'shipping', 'products', 'marketing', 'website', 'reports', 'other')`),
+	check("feature_requests_title_check", sql`char_length(title) BETWEEN 3 AND 120`),
+	check("feature_requests_description_check", sql`char_length(description) <= 2000`),
+]);
+
+/** 0115: one roadmap vote per seller per card. Server-only. */
+export const featureRequestVotes = pgTable("feature_request_votes", {
+	requestId: uuid("request_id").notNull(),
+	sellerId: uuid("seller_id").notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	primaryKey({ columns: [table.requestId, table.sellerId], name: "feature_request_votes_pkey" }),
+	index("feature_request_votes_seller_idx").using("btree", table.sellerId),
+	foreignKey({
+			columns: [table.requestId],
+			foreignColumns: [featureRequests.id],
+			name: "feature_request_votes_request_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.sellerId],
+			foreignColumns: [sellers.id],
+			name: "feature_request_votes_seller_id_fkey"
+		}).onDelete("cascade"),
+]);
+
+/**
+ * Affiliate program commissions (0117, F-37): 20 % of each succeeded store-wallet
+ * top-up of a referred seller, one row per top-up. Its own ledger; paid in cash
+ * through referral_payouts. Server-only (RLS on, no policies).
+ */
+export const referralCommissions = pgTable("referral_commissions", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	referrerSellerId: uuid("referrer_seller_id").notNull(),
+	referredSellerId: uuid("referred_seller_id").notNull(),
+	topUpId: uuid("top_up_id").notNull(),
+	topUpAmount: numeric("top_up_amount", { precision: 10, scale: 2 }).notNull(),
+	amount: numeric({ precision: 10, scale: 2 }).notNull(),
+	/** earned | reversed */
+	status: text().default('earned').notNull(),
+	reversedAt: timestamp("reversed_at", { withTimezone: true, mode: 'string' }),
+	reversedBy: uuid("reversed_by"),
+	reversalReason: text("reversal_reason"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	unique("referral_commissions_top_up_key").on(table.topUpId),
+	index("referral_commissions_referrer_idx").using("btree", table.referrerSellerId, table.createdAt.desc()),
+	index("referral_commissions_referred_idx").using("btree", table.referredSellerId),
+	foreignKey({ columns: [table.referrerSellerId], foreignColumns: [sellers.id], name: "referral_commissions_referrer_seller_id_fkey" }).onDelete("restrict"),
+	foreignKey({ columns: [table.referredSellerId], foreignColumns: [sellers.id], name: "referral_commissions_referred_seller_id_fkey" }).onDelete("restrict"),
+	foreignKey({ columns: [table.topUpId], foreignColumns: [sellerWalletTopUps.id], name: "referral_commissions_top_up_id_fkey" }).onDelete("restrict"),
+	foreignKey({ columns: [table.reversedBy], foreignColumns: [users.id], name: "referral_commissions_reversed_by_fkey" }).onDelete("set null"),
+	check("referral_commissions_status_check", sql`status IN ('earned', 'reversed')`),
+	check("referral_commissions_amount_check", sql`amount >= 0 AND top_up_amount > 0`),
+	check("referral_commissions_not_self", sql`referrer_seller_id <> referred_seller_id`),
+	check("referral_commissions_reversed_check", sql`status <> 'reversed' OR reversed_at IS NOT NULL`),
+]);
+
+/**
+ * Affiliate withdrawals (0117, F-37): the referrer asks, an admin pays by hand
+ * and records the reference. One requested row per referrer. Server-only.
+ */
+export const referralPayouts = pgTable("referral_payouts", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	referrerSellerId: uuid("referrer_seller_id").notNull(),
+	amount: numeric({ precision: 10, scale: 2 }).notNull(),
+	/** bank | vodafone_cash */
+	method: text().notNull(),
+	/** Full PayoutDestination (@workspace/lib/referrals). Never sent to the client unmasked. */
+	destination: jsonb().$type<Record<string, unknown>>().notNull(),
+	/** requested | paid | rejected */
+	status: text().default('requested').notNull(),
+	reference: text(),
+	rejectionReason: text("rejection_reason"),
+	reviewedBy: uuid("reviewed_by"),
+	reviewedAt: timestamp("reviewed_at", { withTimezone: true, mode: 'string' }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex("referral_payouts_one_open").using("btree", table.referrerSellerId).where(sql`status = 'requested'`),
+	index("referral_payouts_referrer_idx").using("btree", table.referrerSellerId, table.createdAt.desc()),
+	index("referral_payouts_status_idx").using("btree", table.status, table.createdAt.desc()),
+	foreignKey({ columns: [table.referrerSellerId], foreignColumns: [sellers.id], name: "referral_payouts_referrer_seller_id_fkey" }).onDelete("restrict"),
+	foreignKey({ columns: [table.reviewedBy], foreignColumns: [users.id], name: "referral_payouts_reviewed_by_fkey" }).onDelete("set null"),
+	check("referral_payouts_amount_check", sql`amount >= 500`),
+	check("referral_payouts_method_check", sql`method IN ('bank', 'vodafone_cash')`),
+	check("referral_payouts_status_check", sql`status IN ('requested', 'paid', 'rejected')`),
+	check("referral_payouts_paid_check", sql`status <> 'paid' OR (reference IS NOT NULL AND reviewed_at IS NOT NULL)`),
+	check("referral_payouts_rejected_check", sql`status <> 'rejected' OR (rejection_reason IS NOT NULL AND reviewed_at IS NOT NULL)`),
 ]);

@@ -172,7 +172,7 @@ export default async function StoreDetailPage({ params }: PageProps) {
             id="website"
             icon={Globe}
             title="Website"
-            description="Theme, pages and published revisions. Theme changes go to the drafts first."
+            description="Theme, store details, brand, social links, SEO, pages and published revisions."
           >
             <Streamed>
               <StoreWebsiteSection store={store} canWrite={canWrite} />

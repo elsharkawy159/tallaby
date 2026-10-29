@@ -3,6 +3,7 @@ import {
   MAX_NOTIFICATION_IDS,
   adminNotificationHref,
   clampNotificationLimit,
+  notificationCount,
   notificationText,
   parseNotificationIds,
   sellerNotificationHref,
@@ -39,7 +40,32 @@ describe("adminNotificationHref", () => {
     expect(adminNotificationHref({ type: "store_published", sellerId: ID, storeId: ID })).toBe(`/stores/${ID}`);
     expect(adminNotificationHref({ type: "store_created", sellerId: ID, storeId: null })).toBe("/stores");
     expect(adminNotificationHref({ type: "top_up_requested", sellerId: ID, storeId: null })).toBe("/store-top-ups");
+    expect(adminNotificationHref({ type: "feature_request_created", sellerId: ID, storeId: null })).toBe("/roadmap");
+    expect(adminNotificationHref({ type: "referral_payout_requested", sellerId: ID, storeId: null })).toBe("/referrals");
     expect(adminNotificationHref({ type: "unknown", sellerId: null, storeId: null })).toBeNull();
+  });
+
+  it("links the seller-action types (0116)", () => {
+    const one = { type: "product_created", sellerId: ID, storeId: null, data: { productId: ID, count: 1 } };
+    expect(adminNotificationHref(one)).toBe(`/products/${ID}`);
+    expect(adminNotificationHref({ ...one, data: { productId: ID, count: 7 } })).toBe(`/products?seller=${ID}`);
+    expect(adminNotificationHref({ ...one, sellerId: null, data: {} })).toBe("/products");
+    expect(
+      adminNotificationHref({ type: "first_order_received", sellerId: ID, storeId: ID, data: { orderId: ID } })
+    ).toBe(`/orders/${ID}`);
+    expect(adminNotificationHref({ type: "first_order_received", sellerId: ID, storeId: ID })).toBe("/orders");
+    expect(adminNotificationHref({ type: "integration_connected", sellerId: ID, storeId: ID })).toBe("/integrations");
+    expect(adminNotificationHref({ type: "store_unpublished", sellerId: ID, storeId: ID })).toBe(`/stores/${ID}`);
+    expect(adminNotificationHref({ type: "store_deleted", sellerId: ID, storeId: ID })).toBe(`/sellers/${ID}`);
+  });
+});
+
+describe("notificationCount", () => {
+  it("reads a positive integer count, else 1", () => {
+    expect(notificationCount({ count: 12 })).toBe(12);
+    expect(notificationCount({})).toBe(1);
+    expect(notificationCount({ count: "3" })).toBe(1);
+    expect(notificationCount({ count: 0 })).toBe(1);
   });
 });
 
@@ -56,6 +82,9 @@ describe("sellerNotificationHref", () => {
   it("links the other types", () => {
     expect(sellerNotificationHref({ type: "top_up_rejected", data: {} })).toBe("/wallet");
     expect(sellerNotificationHref({ type: "review_received", data: {} })).toBe("/reviews");
+    expect(sellerNotificationHref({ type: "referral_commission_earned", data: {} })).toBe("/earn");
+    expect(sellerNotificationHref({ type: "referral_payout_paid", data: {} })).toBe("/earn");
+    expect(sellerNotificationHref({ type: "referral_payout_rejected", data: {} })).toBe("/earn");
     expect(sellerNotificationHref({ type: "nope", data: {} })).toBeNull();
   });
 });

@@ -5,6 +5,7 @@ import {
   Palette,
   Share2,
   LayoutTemplate,
+  Map as MapIcon,
   BarChart3,
   Bike,
   ChartLine,
@@ -18,6 +19,7 @@ import {
   Gem,
   Globe,
   Gift,
+  HandCoins,
   Images,
   Newspaper,
   MapPinned,
@@ -84,7 +86,10 @@ export type NavKey =
   | "campaigns"
   | "accountHelp"
   | "sellerCategories"
-  | "storeAnalytics";
+  | "storeAnalytics"
+  | "roadmap"
+  // Affiliate program (F-37)
+  | "earn";
 
 export interface DashboardRoute {
   /** A path, or a pattern with `[storeId]` for store-scoped pages. */
@@ -134,6 +139,8 @@ export const DASHBOARD_ROUTES: DashboardRoute[] = [
   { href: "/settings", title: "settings", parent: "accountHelp", icon: Settings },
   { href: "/settings/plan", title: "planUsage", parent: "accountHelp", icon: Gem },
   { href: "/help", title: "help", parent: "accountHelp", icon: CircleHelp },
+  { href: "/roadmap", title: "roadmap", parent: "accountHelp", icon: MapIcon },
+  { href: "/earn", title: "earn", parent: "accountHelp", icon: HandCoins },
 ];
 
 const EDIT_PRODUCT: DashboardRoute = {

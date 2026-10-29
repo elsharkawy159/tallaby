@@ -2,6 +2,7 @@
 export * from "./registry";
 export * from "./validate";
 export * from "./meta-capi.lib";
+export * from "./meta-signup.lib";
 export * from "./shopify.lib";
 export * from "./google-sheets.lib";
 export * from "./bosta.lib";

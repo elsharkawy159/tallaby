@@ -10,6 +10,7 @@ import { publicStoreSocialLinks } from "@workspace/lib/stores";
 import { getStore } from "@workspace/lib/stores/server";
 import { designSystemSchema, preferTemplatePresets, sectionInstanceSchema, type SiteLocale } from "@workspace/store-sections";
 import type { EditorInitial } from "@workspace/store-editor/editor.client";
+import { findIndustry, templatesForIndustry } from "@workspace/store-editor/lib/industries.lib";
 import { loadCachedTemplateCards, loadCachedTemplateConfig } from "@/lib/store-templates.data";
 import { adminActorId } from "@/app/(dashboard)/_lib/saas-admin.server";
 import { loadEditorSnapshot } from "./admin-store-editor.data";
@@ -97,7 +98,15 @@ export default async function AdminStoreEditorPage({ params }: { params: Promise
     isLive: Boolean(status?.isLive),
     hasUnpublishedChanges: status?.hasUnpublishedChanges ?? true,
     previewEnabled: storePreviewSecret() !== null,
-    templates: { currentKey: gallery?.currentKey ?? "", items: toTemplateCardViews(gallery?.templates ?? []) },
+    // Add › Templates lists the store's industry only (owner request 2026-10-29).
+    templates: {
+      currentKey: gallery?.currentKey ?? "",
+      items: templatesForIndustry(
+        toTemplateCardViews(gallery?.templates ?? []),
+        findIndustry({ en: store.storeCategory, ar: store.storeCategoryAr })?.id,
+        gallery?.currentKey,
+      ),
+    },
     fontClassName: storeFontVariables,
     category: { en: store.storeCategory ?? null, ar: store.storeCategoryAr ?? null },
     presets: presets && preferTemplatePresets(presets, templateKeys),

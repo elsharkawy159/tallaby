@@ -23,7 +23,8 @@
     "./media/media-library.client": "./src/media/media-library.client.tsx",
     "./media/media-picker.client": "./src/media/media-picker.client.tsx",
     "./media/*": "./src/media/*.ts",
-    "./preview/site-preview.client": "./src/preview/site-preview.client.tsx"
+    "./preview/site-preview.client": "./src/preview/site-preview.client.tsx",
+    "./preview/template-live-thumbnail.client": "./src/preview/template-live-thumbnail.client.tsx"
   },
   "scripts": {
     "test": "vitest run",

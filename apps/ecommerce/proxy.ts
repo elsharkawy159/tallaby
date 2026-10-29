@@ -7,6 +7,7 @@ import {
   storeSubdomainFromHost,
 } from "@workspace/lib/storefront";
 import { STORE_PREVIEW_COOKIE } from "@workspace/lib/store-sites/preview";
+import { REFERRAL_COOKIE, referralCookieOptions, referralCookieToSet } from "@workspace/lib/referrals";
 import { routing } from "@/i18n/routing";
 import {
   isCrawlFilePath,
@@ -73,6 +74,9 @@ export async function proxy(request: NextRequest) {
   }
 
   const response = handleI18nRouting(request);
+  // Affiliate link on tallaby.com (F-37): remember ?ref= for 60 days; the first link wins.
+  const referral = referralCookieToSet(request.nextUrl.searchParams.get("ref"), request.cookies.get(REFERRAL_COOKIE)?.value);
+  if (referral) response.cookies.set(REFERRAL_COOKIE, referral, referralCookieOptions(process.env.REFERRAL_COOKIE_DOMAIN));
   return updateSession(request, response);
 }
 

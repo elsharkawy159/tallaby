@@ -35,7 +35,11 @@ import { logServerError } from "@workspace/db/log";
 import { listStoreTemplates } from "@workspace/lib/store-sites/server";
 import { loadCachedTemplateCards } from "@/lib/store-templates.data";
 import { RemoteImage } from "@/components/media/remote-image";
+import { storeUrl } from "@workspace/lib/storefront";
+import { storeFontVariables } from "@/app/(builder)/stores/[storeId]/editor/store-fonts";
 import { ChangeThemeButton, PaletteBand, type ThemeOption } from "./store-theme.client";
+import { SiteSettingsEditor } from "./site-settings.client";
+import { loadSiteSettings } from "./site-settings.data";
 import {
   discardSiteDraftAction,
   restoreSiteRevisionAction,
@@ -262,14 +266,19 @@ const MEDIA_COLUMNS: AdminTableColumn[] = [
  * site actions re-check the role, the store and the reason on the server.
  */
 export async function StoreWebsiteSection({ store, canWrite }: SectionProps & { canWrite: boolean }) {
-  const [site, gallery] = await Promise.all([
+  const [site, gallery, settings] = await Promise.all([
     getStoreWebsiteForAdmin(store.id),
     listStoreTemplates(store.sellerId, store.id, undefined, loadCachedTemplateCards).catch((error) => {
       logServerError("admin", "store page theme gallery failed", { storeId: store.id }, error);
       return null;
     }),
+    loadSiteSettings(store.sellerId, store.id).catch((error) => {
+      logServerError("admin", "store page website settings failed", { storeId: store.id }, error);
+      return null;
+    }),
   ]);
-  const colors = (site.design?.colors ?? {}) as Record<string, unknown>;
+  const activeDomain = store.domains.find((domain) => domain.status === "active")?.domain ?? null;
+  const storeHost = storeUrl(store.subdomain, activeDomain).replace(/^https?:\/\//, "").replace(/\/$/, "");
   const themes: ThemeOption[] = (gallery?.templates ?? []).map((template) => ({
     key: template.key,
     name: localizedText(template.name),
@@ -335,6 +344,24 @@ export async function StoreWebsiteSection({ store, canWrite }: SectionProps & { 
         </div>
       </Card>
 
+      <div id="website-settings" className="scroll-mt-4 lg:col-span-2">
+        {settings ? (
+          <SiteSettingsEditor
+            storeId={store.id}
+            storeName={store.name}
+            storeHost={storeHost}
+            siteLive={store.siteStatus === "published"}
+            readOnly={!canWrite || store.status !== "active"}
+            fontClassName={storeFontVariables}
+            initial={settings}
+          />
+        ) : (
+          <Card>
+            <CardContent className="py-6 text-sm text-muted-foreground">The website settings could not be loaded. Reload the page to try again.</CardContent>
+          </Card>
+        )}
+      </div>
+
       <Card className="lg:col-span-2">
         <CardHeader>
           <CardTitle className="text-base">Pages ({site.pages.length})</CardTitle>
@@ -373,7 +400,7 @@ export async function StoreWebsiteSection({ store, canWrite }: SectionProps & { 
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="lg:col-span-2">
         <CardHeader>
           <CardTitle className="text-base">Published revisions</CardTitle>
         </CardHeader>
@@ -433,53 +460,6 @@ export async function StoreWebsiteSection({ store, canWrite }: SectionProps & { 
               <p className="w-full text-xs text-muted-foreground">Every action needs a reason and is saved in the audit log.</p>
             </div>
           )}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Design, SEO and social</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4 text-sm">
-          <div>
-            <h3 className="mb-1 text-xs text-muted-foreground">Colours</h3>
-            {Object.keys(colors).length === 0 ? (
-              <p className="text-muted-foreground">Template defaults.</p>
-            ) : (
-              <div className="flex flex-wrap gap-2">
-                {Object.entries(colors)
-                  .filter(([, value]) => typeof value === "string")
-                  .slice(0, 12)
-                  .map(([key, value]) => (
-                    <span key={key} className="inline-flex items-center gap-1 text-xs">
-                      <span className="size-4 rounded border" style={{ background: /^#[0-9a-f]{3,8}$/i.test(String(value)) ? String(value) : undefined }} />
-                      {key}
-                    </span>
-                  ))}
-              </div>
-            )}
-          </div>
-          <div>
-            <h3 className="mb-1 text-xs text-muted-foreground">SEO</h3>
-            <p>{typeof site.seo.title === "string" && site.seo.title ? site.seo.title : <span className="text-muted-foreground">No custom title</span>}</p>
-            {typeof site.seo.description === "string" && site.seo.description && (
-              <p className="text-xs text-muted-foreground">{site.seo.description}</p>
-            )}
-          </div>
-          <div>
-            <h3 className="mb-1 text-xs text-muted-foreground">Social links</h3>
-            {Object.keys(site.social).length === 0 ? (
-              <p className="text-muted-foreground">None.</p>
-            ) : (
-              <ul className="space-y-0.5">
-                {Object.entries(site.social).map(([network, url]) => (
-                  <li key={network} className="truncate" dir="ltr">
-                    <span className="text-muted-foreground">{network}:</span> {url}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
         </CardContent>
       </Card>
     </div>

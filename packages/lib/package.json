@@ -165,6 +165,14 @@
       "types": "./src/notifications/server.ts",
       "default": "./src/notifications/server.ts"
     },
+    "./referrals": {
+      "types": "./src/referrals/index.ts",
+      "default": "./src/referrals/index.ts"
+    },
+    "./referrals/server": {
+      "types": "./src/referrals/server.ts",
+      "default": "./src/referrals/server.ts"
+    },
     "./sellers": {
       "types": "./src/sellers/index.ts",
       "default": "./src/sellers/index.ts"

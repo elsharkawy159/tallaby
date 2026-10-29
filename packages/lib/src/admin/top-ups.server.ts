@@ -18,6 +18,7 @@ import { z } from "zod";
 import { MANUAL_TOP_UP_METHODS } from "../store-wallet/top-up.lib";
 import { ADMIN_REASON_MAX, ADMIN_REASON_MIN, type AdminResult } from "./admin.lib";
 import { AdminActorError, assertAdminActor, writeAdminAudit, type Queryable } from "./guard.server";
+import { postReferralCommission } from "../referrals/referrals.server";
 
 const MANUAL = [...MANUAL_TOP_UP_METHODS];
 
@@ -102,6 +103,8 @@ export async function reviewManualStoreTopUp(
         .update(sellerWalletTopUps)
         .set({ status: "succeeded", transactionId: entry.entryId, updatedAt: sql`now()` })
         .where(stillPending);
+      // The referrer's 20 % (F-37), in this transaction.
+      await postReferralCommission(tx, { id: topUp.id, sellerId: topUp.sellerId, amount: topUp.amount });
       await writeAdminAudit(tx, {
         actorId,
         sellerId: topUp.sellerId,

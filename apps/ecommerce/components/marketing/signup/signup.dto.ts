@@ -23,7 +23,8 @@ export type SignupErrorKey =
   | "generic";
 
 export type SignupResult =
-  | { status: "done"; storeUrl: string; subdomain: string }
+  /** `signupEvent`: a new account was created (Meta CompleteRegistration in the dialog). */
+  | { status: "done"; storeUrl: string; subdomain: string; signupEvent?: { id: string; method: "email" | "google" } }
   | { status: "confirm_email" }
   | { status: "ok" }
   | { status: "error"; error: SignupErrorKey };

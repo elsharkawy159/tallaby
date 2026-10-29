@@ -159,7 +159,7 @@ export function SignupForm({
       toast.success(
         t("created", { url: result.storeUrl.replace(/^https?:\/\//, "") }),
       );
-      router.replace("/?welcome=1");
+      router.replace(result.signup ? `/?welcome=1&signup=${result.signup}` : "/?welcome=1");
       router.refresh();
     } else if (result.status === "account_created") {
       // Signed in now: the server page renders step 2.

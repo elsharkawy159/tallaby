@@ -219,3 +219,7 @@ reference type. It applies only when Tallaby collected the payment; when the
 seller collected (own-rider COD) nothing extra is posted. The EGP 5 fee is
 unchanged and never computed on shipping. Marketplace orders and older orders
 without the snapshot are untouched.
+
+## 14. Affiliate commissions are not a wallet (2026-10-29)
+
+The Tallaby affiliate program (ROADMAP.md F-37, migration 0117) keeps its own ledger: `referral_commissions` (20 % of each succeeded store-wallet top-up of a referred seller, unique per `top_up_id`) and `referral_payouts` (cash withdrawals an admin pays by hand). It is posted inside the top-up success transaction but never writes `user_wallets`, `seller_wallet`, `wallet_transactions` or calls `postStoreWalletEntry`. Code: `packages/lib/src/referrals/`.

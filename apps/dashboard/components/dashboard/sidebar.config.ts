@@ -158,6 +158,9 @@ export const SIDEBAR_CONFIG: NavEntry[] = [
       { key: "settings", href: "/settings", status: "live", exact: true },
       { key: "planUsage", href: "/settings/plan", status: "live" },
       { key: "help", href: "/help", status: "live" },
+      { key: "roadmap", href: "/roadmap", status: "live" },
+      // Affiliate program (F-37): referral link, commissions, withdrawals.
+      { key: "earn", href: "/earn", status: "live" },
     ],
   },
 ];

@@ -1,7 +1,8 @@
 "use server";
 
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { and, db, eq, sellers, stores } from "@workspace/db";
+import { REFERRAL_COOKIE, normalizeReferralCode } from "@workspace/lib/referrals";
 import { checkStoreSubdomain } from "@workspace/lib/stores/server";
 import { createClient } from "@/supabase/server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
@@ -88,13 +89,16 @@ export async function signUpWithEmail(input: EmailSignupInput): Promise<SignupRe
 
   const { supabase } = await sessionUser();
   const origin = (await headers()).get("origin");
+  // Keeps the affiliate link (F-37) when the email is confirmed in another browser.
+  const ref = normalizeReferralCode((await cookies()).get(REFERRAL_COOKIE)?.value);
+  const meta = { ...(prefill ? { signup_subdomain: prefill } : {}), ...(ref ? { signup_ref: ref } : {}) };
   const { data, error } = await supabase.auth.signUp({
     email: parsed.data.email,
     password: parsed.data.password,
     options: {
       emailRedirectTo: `${siteUrl(origin)}/api/auth/callback?next=/`,
       // Pre-fills step 2 even when the email is confirmed in another browser.
-      data: prefill ? { signup_subdomain: prefill } : undefined,
+      data: Object.keys(meta).length ? meta : undefined,
     },
   });
   if (error) {
@@ -169,5 +173,5 @@ export async function createStoreForCurrentUser(input: StoreSetupInput): Promise
       .set(category)
       .where(and(eq(stores.id, done.data.storeId), eq(stores.sellerId, user.id)));
   }
-  return { status: "done", storeUrl: done.storeUrl! };
+  return { status: "done", storeUrl: done.storeUrl!, signup: done.signup };
 }

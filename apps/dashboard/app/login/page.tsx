@@ -23,6 +23,7 @@ import { OAuth } from "@/components/auth/o-auth";
 import { AuthShell, AuthTabs } from "./auth-shell.client";
 import { AuthField } from "./auth-field.client";
 import { AuthHeading, OUTLINE_BUTTON, PRIMARY_BUTTON } from "./auth-ui";
+import { safeNextPath } from "@/lib/auth/safe-next.lib";
 
 export default function AuthPage() {
   const [showResetForm, setShowResetForm] = useState(false);
@@ -33,6 +34,8 @@ export default function AuthPage() {
   const [isResending, startResending] = useTransition();
   const router = useRouter();
   const searchParams = useSearchParams();
+  // Where to go after signing in (e.g. back to the public /roadmap); same-site paths only.
+  const next = safeNextPath(searchParams.get("next"));
   const tToast = useTranslations("toast");
   const t = useTranslations("auth");
   const tValidation = useTranslations("validation");
@@ -76,7 +79,7 @@ export default function AuthPage() {
         return;
       }
       toast.success(tToast("redirectingToDashboard"));
-      router.push("/");
+      router.push(next);
     });
   };
 
@@ -184,7 +187,7 @@ export default function AuthPage() {
         subtitle={t("signInSubtitle")}
       />
       <AuthTabs active="signin" />
-      <OAuth next={"/"} />
+      <OAuth next={next} />
       <div className="flex items-center gap-3.5 text-[13px] text-muted-foreground before:h-px before:flex-1 before:bg-border after:h-px after:flex-1 after:bg-border">
         {t("orWithEmail")}
       </div>

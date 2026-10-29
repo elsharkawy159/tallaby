@@ -9,6 +9,7 @@ import { cn } from "@workspace/ui/lib/utils";
 import { Link } from "@/i18n/navigation";
 import { DASHBOARD_URL, LOGIN_URL, ROOT_DOMAIN, hasArabic, slugify } from "@/lib/marketing/site.lib";
 import { CtaButton } from "@/components/marketing/site/cta-button";
+import { trackSignupComplete } from "@/lib/meta/meta.client";
 import { createClient } from "@/supabase/client";
 import { useSlugCheck, type SlugState } from "./slug-check.client";
 import { resendSignupConfirmation, signUpWithEmail, startGoogleSignup } from "./signup.server";
@@ -129,7 +130,12 @@ function SignupForm({ initialSlug, initialError }: { initialSlug: string; initia
   };
 
   const handleResult = (result: SignupResult) => {
-    if (result.status === "done") setStep({ kind: "done", subdomain: result.subdomain });
+    if (result.status === "done") {
+      if (result.signupEvent) {
+        trackSignupComplete(result.signupEvent.id, result.signupEvent.method, { email: email.trim(), phone });
+      }
+      setStep({ kind: "done", subdomain: result.subdomain });
+    }
     else if (result.status === "confirm_email") setStep({ kind: "confirm", email: email.trim() });
     else if (result.status === "error") setFormError(result.error);
   };

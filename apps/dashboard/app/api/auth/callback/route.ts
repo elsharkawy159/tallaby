@@ -29,7 +29,8 @@ async function finish(origin: string, next: string, user: User | null) {
     // e.g. the address was taken meanwhile: let them pick another one.
     return NextResponse.redirect(`${origin}/signup?error=${result.error === "taken" ? "subdomainTaken" : "generic"}`);
   }
-  return NextResponse.redirect(`${origin}/?welcome=1`);
+  // `signup` only for a new account: the welcome page fires Meta's CompleteRegistration once.
+  return NextResponse.redirect(`${origin}/?welcome=1${result.signup ? `&signup=${result.signup}` : ""}`);
 }
 
 export async function GET(request: NextRequest) {

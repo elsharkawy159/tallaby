@@ -10,15 +10,11 @@ import {
   stores,
   sellerCustomDomains,
 } from "@workspace/db";
-import { HEARD_ABOUT_US_SOURCES, isHeardAboutUsSource } from "@workspace/lib/sellers";
+import { HEARD_ABOUT_US_SOURCES } from "@workspace/lib/sellers";
 
 import {
   eq,
   and,
-  or,
-  like,
-  gte,
-  lte,
   desc,
   asc,
   count,
@@ -27,10 +23,7 @@ import {
   ne,
   sql,
   sum,
-  ilike,
   inArray,
-  lt,
-  type SQL,
 } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -42,6 +35,7 @@ import {
   sellerFiltersSchema,
   sellerUpdateSchema,
 } from "./sellers.dto";
+import { buildSellersWhere } from "./sellers.query";
 import type {
   HeardAboutUsCount,
   Seller,
@@ -50,8 +44,6 @@ import type {
   SellerStatus,
   SellerStoreSummary,
 } from "./sellers.types";
-
-const SELLER_STATUSES = ["pending", "approved", "suspended", "restricted"] as const;
 
 export type SellersSortId =
   | "joinDate"
@@ -90,88 +82,7 @@ export async function getSellers(query: SellersQuery = {}) {
 
     const limit = Math.min(query.limit || 20, 100);
     const offset = query.offset || 0;
-    const conditions: SQL[] = [];
-
-    const statuses = (query.status ?? []).filter((value) =>
-      (SELLER_STATUSES as readonly string[]).includes(value)
-    ) as SellerStatus[];
-    if (statuses.length) conditions.push(inArray(sellers.status, statuses));
-
-    if (query.businessType?.length) {
-      conditions.push(inArray(sellers.businessType, query.businessType));
-    }
-
-    const booleanFilter = (
-      values: string[] | undefined,
-      column:
-        | typeof sellers.isVerified
-        | typeof sellers.isCommissionExempt
-        | typeof sellers.freeDelivery,
-      trueValue: string
-    ) => {
-      const set = new Set(values ?? []);
-      if (set.size !== 1) return;
-      conditions.push(
-        set.has(trueValue)
-          ? eq(column, true)
-          : sql`coalesce(${column}, false) = false`
-      );
-    };
-    booleanFilter(query.verification, sellers.isVerified, "verified");
-    booleanFilter(query.commission, sellers.isCommissionExempt, "exempt");
-    booleanFilter(query.delivery, sellers.freeDelivery, "free");
-
-    // Store wallet (D21): admins look at negative wallets and decide.
-    const wallet = new Set(query.wallet ?? []);
-    if (wallet.size === 1) {
-      conditions.push(
-        wallet.has("negative")
-          ? sql`coalesce(${sellers.walletBalance}, 0) < 0`
-          : sql`coalesce(${sellers.walletBalance}, 0) >= 0`
-      );
-    }
-
-    const sources = (query.source ?? []).filter(isHeardAboutUsSource);
-    const sourceConditions: SQL[] = [];
-    if (sources.length) sourceConditions.push(inArray(sellers.heardAboutUs, sources));
-    if (query.source?.includes("unknown")) sourceConditions.push(sql`${sellers.heardAboutUs} IS NULL`);
-    if (sourceConditions.length) conditions.push(or(...sourceConditions)!);
-
-    const site = new Set(query.site ?? []);
-    if (site.size === 1) {
-      const hasPublished = sql`EXISTS (
-        SELECT 1 FROM ${stores} st
-        WHERE st.seller_id = ${sellers.id} AND st.deleted_at IS NULL AND st.site_status = 'published'
-      )`;
-      conditions.push(site.has("published") ? hasPublished : sql`NOT ${hasPublished}`);
-    }
-
-    if (query.joinedFrom) conditions.push(gte(sellers.joinDate, query.joinedFrom));
-    if (query.joinedTo) conditions.push(lt(sellers.joinDate, query.joinedTo));
-
-    const search = query.search?.trim();
-    if (search) {
-      const pattern = `%${search}%`;
-      conditions.push(
-        or(
-          ilike(sellers.businessName, pattern),
-          ilike(sellers.displayName, pattern),
-          ilike(sellers.slug, pattern),
-          ilike(sellers.supportEmail, pattern),
-          ilike(sellers.supportPhone, pattern),
-          ilike(users.fullName, pattern),
-          ilike(users.email, pattern),
-          ilike(users.phone, pattern),
-          sql`EXISTS (
-            SELECT 1 FROM ${stores} st
-            WHERE st.seller_id = ${sellers.id} AND st.deleted_at IS NULL
-              AND (st.name ILIKE ${pattern} OR st.subdomain ILIKE ${pattern})
-          )`
-        )!
-      );
-    }
-
-    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+    const whereClause = buildSellersWhere(query);
 
     // sellers.productCount is a denormalized counter that drifts; count the
     // real products instead.
@@ -311,6 +222,8 @@ async function loadSellerStores(sellerIds: string[]) {
       subdomain: stores.subdomain,
       siteStatus: stores.siteStatus,
       isPrimary: stores.isPrimary,
+      storeCategory: stores.storeCategory,
+      storeCategoryAr: stores.storeCategoryAr,
       domain: sql<string | null>`(
         SELECT cd.domain FROM ${sellerCustomDomains} cd
         WHERE cd.store_id = ${stores.id} AND cd.status = 'active'
@@ -328,6 +241,8 @@ async function loadSellerStores(sellerIds: string[]) {
       subdomain: row.subdomain,
       siteStatus: row.siteStatus,
       isPrimary: row.isPrimary,
+      // The admin is in English: the English industry, else the Arabic one.
+      industry: row.storeCategory?.trim() || row.storeCategoryAr?.trim() || null,
       domain: row.domain ?? null,
     });
     bySeller.set(row.sellerId, list);

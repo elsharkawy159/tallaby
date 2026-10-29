@@ -28,7 +28,7 @@
    - When something blocks a task: write the blocker under the task and in §7.
    - When the owner asks for a new feature: add it to §5 (intake) the same turn, then turn it into a §4 feature with tasks and place it in the §3 priority order.
    - Move a feature in §2 (inventory) from "missing" to "live" when it ships.
-4. **Migrations:** hand-written, idempotent SQL in `packages/db/migrations/NNNN_name.sql`, mirrored in `packages/db/src/drizzle/schema.ts` and `relations.ts`. Check the next free number in `CLAUDE.md` rule 6 and in `packages/db/migrations/` (at 2026-10-28 the next is **`0115`**). New server-only tables: RLS on, no policies. Record every new migration in CLAUDE.md rule 6 and here. Apply to staging first; production only with owner approval. Never run `drizzle-kit generate`.
+4. **Migrations:** hand-written, idempotent SQL in `packages/db/migrations/NNNN_name.sql`, mirrored in `packages/db/src/drizzle/schema.ts` and `relations.ts`. Check the next free number in `CLAUDE.md` rule 6 and in `packages/db/migrations/` (at 2026-10-29 the next is **`0116`**). New server-only tables: RLS on, no policies. Record every new migration in CLAUDE.md rule 6 and here. Apply to staging first; production only with owner approval. Never run `drizzle-kit generate`.
 5. Every store-scoped table has `store_id` (and a check that the store belongs to the session seller). Every new string goes in both `ar.json` and `en.json` (Arabic first). Use the feature file split (`*.server.ts`, `*.data.tsx`, `*.client.tsx`, `*.dto.ts`, `*.types.ts`, `*.lib.ts`).
 6. Verify each task with `pnpm lint`, `pnpm typecheck`, `pnpm test` (or `--filter`), and record manual E2E checks in §7.
 7. All work happens on `main` in the main worktree (owner, 2026-10-28), unless the owner says otherwise.
@@ -45,23 +45,23 @@ Tallaby already gives Egyptian sellers a full store: products, orders, delivery 
 
 ### 2.1 Live
 
-| Area             | What sellers have today                                                                                                                                                              | Where                                                           |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------- |
-| Account & stores | Signup (email/Google), up to 3 stores on Free, store switcher, plan & usage page, heard-about-us                                                                                     | `app/signup`, `app/(main)/stores`, `settings/plan`              |
-| Products         | Add/edit physical & digital products, variants, images, Excel import, import from URL, seller categories & brands, social proof (seller-added reviews, live views)                   | `app/(main)/products/**`                                        |
-| AI               | Add/Edit product with AI (photos, PDF, text → both languages, SEO), daily cap, AI usage tab                                                                                          | `products/add/ai`, `packages/ai`                                |
-| Store catalog    | Choose which products each store shows                                                                                                                                               | `stores/[storeId]/catalog`                                      |
-| Orders           | Order list, stages, order details, WhatsApp/call buttons, Bosta ship + bulk ship                                                                                                     | `app/(main)/orders/**`                                          |
-| Delivery         | Delivery tracking, own riders, store shipping zones (places, free-over, COD per zone), Tallaby delivery, Bosta app                                                                   | `orders/delivery`, `orders/riders`, `stores/[storeId]/shipping` |
+| Area             | What sellers have today                                                                                                                                                                                                                                              | Where                                                           |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| Account & stores | Signup (email/Google), up to 3 stores on Free, store switcher, plan & usage page, heard-about-us                                                                                                                                                                     | `app/signup`, `app/(main)/stores`, `settings/plan`              |
+| Products         | Add/edit physical & digital products, variants, images, Excel import, import from URL, seller categories & brands, social proof (seller-added reviews, live views)                                                                                                   | `app/(main)/products/**`                                        |
+| AI               | Add/Edit product with AI (photos, PDF, text → both languages, SEO), daily cap, AI usage tab                                                                                                                                                                          | `products/add/ai`, `packages/ai`                                |
+| Store catalog    | Choose which products each store shows                                                                                                                                                                                                                               | `stores/[storeId]/catalog`                                      |
+| Orders           | Order list, stages, order details, WhatsApp/call buttons, Bosta ship + bulk ship                                                                                                                                                                                     | `app/(main)/orders/**`                                          |
+| Delivery         | Delivery tracking, own riders, store shipping zones (places, free-over, COD per zone), Tallaby delivery, Bosta app                                                                                                                                                   | `orders/delivery`, `orders/riders`, `stores/[storeId]/shipping` |
 | Payments         | COD; the seller chooses which methods the store shows (InstaPay, Vodafone Cash, e& Cash), but those transfers still go to **Tallaby's** accounts. Paying the seller's own numbers with seller confirmation is PLAN.md P3-07 Part B, not built (corrected 2026-10-29) | `stores/[storeId]/settings/payments`                            |
-| Money            | Store wallet (can go negative), top-ups, account statements, reports, flat EGP 5 fee per delivered order, 7-day trial                                                                | `wallet`, `financial`, `reports`                                |
-| Marketing        | Coupons (marketplace/store, product picker, store pop-up with trigger + countdown), paid ad packages, reviews & Q&A                                                                  | `coupons`, `marketing`, `reviews`                               |
-| Website          | Builder (element trees), 100+ templates, design system, pages, product page template, blog, forms + submissions, media library, domain & SEO, sitemap, social links, offline/publish | `app/(builder)`, `stores/[storeId]/website/**`                  |
-| Apps             | Meta Pixel, Meta CAPI, GA4, GTM, TikTok Pixel, Snapchat Pixel, Google Sheets order export, Shopify import, Bosta                                                                     | `stores/[storeId]/apps`                                         |
-| Analytics        | Store views (GA4 via Tallaby GTM)                                                                                                                                                    | `stores/[storeId]/analytics`, `docs/store-views.md`             |
-| Notifications    | Seller notification inbox (orders, top-ups, questions, reviews)                                                                                                                      | `seller_notifications` (0098)                                   |
-| Fulfillment      | Request Tallaby fulfillment services                                                                                                                                                 | `settings/fulfillment`                                          |
-| Help             | Help center, floating WhatsApp support, install-as-app button                                                                                                                        | `help`, `components/layout`                                     |
+| Money            | Store wallet (can go negative), top-ups, account statements, reports, flat EGP 5 fee per delivered order, 7-day trial                                                                                                                                                | `wallet`, `financial`, `reports`                                |
+| Marketing        | Coupons (marketplace/store, product picker, store pop-up with trigger + countdown), paid ad packages, reviews & Q&A                                                                                                                                                  | `coupons`, `marketing`, `reviews`                               |
+| Website          | Builder (element trees), 100+ templates, design system, pages, product page template, blog, forms + submissions, media library, domain & SEO, sitemap, social links, offline/publish                                                                                 | `app/(builder)`, `stores/[storeId]/website/**`                  |
+| Apps             | Meta Pixel, Meta CAPI, GA4, GTM, TikTok Pixel, Snapchat Pixel, Google Sheets order export, Shopify import, Bosta                                                                                                                                                     | `stores/[storeId]/apps`                                         |
+| Analytics        | Store views (GA4 via Tallaby GTM)                                                                                                                                                                                                                                    | `stores/[storeId]/analytics`, `docs/store-views.md`             |
+| Notifications    | Seller notification inbox (orders, top-ups, questions, reviews)                                                                                                                                                                                                      | `seller_notifications` (0098)                                   |
+| Fulfillment      | Request Tallaby fulfillment services                                                                                                                                                                                                                                 | `settings/fulfillment`                                          |
+| Help             | Help center, floating WhatsApp support, install-as-app button                                                                                                                                                                                                        | `help`, `components/layout`                                     |
 
 ### 2.2 Missing (compared with Shopify and EasyOrders)
 
@@ -201,44 +201,44 @@ All 88 ideas read on 2026-10-28 (the 66 waitlist items expanded in the browser; 
 
 Updated 2026-10-28 after the EasyOrders dashboard and roadmap review (§2.3, §2.4). IDs never change; only the order does.
 
-| #   | ID   | Feature                                                    | Priority | Migration          | Approval                                 |
-| --- | ---- | ---------------------------------------------------------- | -------- | ------------------ | ---------------------------------------- |
-| 1   | F-02 | Fake-order protection (blocklist, WhatsApp confirm, risk)  | P0       | yes                | —                                        |
-| 2   | F-03 | Missed orders (abandoned checkouts) + reminders            | P0       | yes                | —                                        |
-| 3   | F-01 | Customers list (store CRM)                                 | P0       | maybe (notes/tags) | —                                        |
-| 4   | F-04 | Invoices, packing slips & order export                     | P0       | no                 | —                                        |
-| 5   | F-05 | Manual orders (phone/WhatsApp sales)                       | P0       | maybe              | **Needs approval** (order creation path) |
-| 6   | F-21 | Deposit (عربون) before shipping a COD order                | P1       | yes                | **Needs approval** (money, checkout)     |
-| 7   | F-32 | Cross-sell offers under the product (on by default)        | P1       | yes                | Owner asked; design note OK (checkout)   |
-| 8   | F-34 | Low-stock urgency badge (product checkbox)                 | P1       | yes (small)        | —                                        |
-| 9   | F-35 | Product trash (restore within 30 days)                     | P1       | yes (small)        | —                                        |
-| 10  | F-36 | Store app (PWA with the store's name and logo)             | P1       | no (expected)      | —                                        |
-| 11  | F-37 | Tallaby affiliate program (20 % of referred top-ups, cash) | P1       | yes                | **Needs approval** (money, business model) |
-| 12  | F-25 | Checkout form & thank-you page settings                    | P1       | yes                | —                                        |
-| 13  | F-08 | Funnels: quick-order landing pages                         | P1       | maybe              | **Needs approval** (checkout)            |
-| 14  | F-07 | Quantity offers, bundles, upsell                           | P1       | yes                | **Needs approval** (checkout pricing)    |
-| 15  | F-22 | Sales pop-up (real recent orders)                          | P1       | no                 | —                                        |
-| 16  | F-24 | Bulk product editing (prices by category, stock, status)   | P1       | no                 | —                                        |
-| 17  | F-15 | Reports upgrade + per-product views                        | P1       | no                 | —                                        |
-| 18  | F-06 | New-order push alerts (PWA)                                | P1       | yes                | —                                        |
-| 19  | F-11 | Product feeds (Meta, Google Merchant, TikTok) + catalog    | P1       | no                 | —                                        |
-| 20  | F-09 | Staff accounts & permissions                               | P1       | yes                | — (security review)                      |
-| 21  | F-10 | Inventory alerts & stock history                           | P1       | yes                | —                                        |
-| 22  | F-12 | More shipping carriers                                     | P1       | small              | —                                        |
-| 23  | F-13 | Automatic discounts, min order, free gift                  | P2       | yes                | **Needs approval** (checkout pricing)    |
-| 24  | F-14 | Customer order messages (WhatsApp/SMS, confirm link)       | P2       | yes                | Provider cost                            |
-| 25  | F-16 | Campaigns: email, WhatsApp, retargeting audiences          | P2       | yes                | Provider cost                            |
-| 26  | F-23 | Back-in-stock alerts & pre-orders                          | P2       | yes                | —                                        |
-| 27  | F-26 | Campaign tracking (UTM links, orders per campaign)         | P2       | yes                | —                                        |
-| 28  | F-17 | Public API & webhooks                                      | P2       | yes                | — (security review)                      |
-| 29  | F-18 | Store affiliates / referral links                          | P3       | yes                | **Needs approval** (payouts)             |
-| 30  | F-19 | Gift cards & customer store credit                         | P3       | yes                | **Needs approval** (ledger)              |
-| 31  | F-20 | Loyalty points                                             | P3       | yes                | **Needs approval**                       |
-| 32  | F-27 | A/B tests                                                  | P3       | yes                | —                                        |
-| 33  | F-28 | Wholesale pricing                                          | P3       | yes                | **Needs approval** (checkout pricing)    |
-| 34  | F-29 | AI agent connection (MCP)                                  | P3       | no                 | — (after F-17)                           |
-| 35  | F-30 | Ad tracking upgrades (Purchase on delivery, event toggles) | P2       | maybe              | —                                        |
-| 36  | F-31 | POS and cashier                                            | P3       | yes                | **Needs approval** (order creation path) |
+| #   | ID   | Feature                                                    | Priority | Migration          | Approval                                    |
+| --- | ---- | ---------------------------------------------------------- | -------- | ------------------ | ------------------------------------------- |
+| 1   | F-02 | Fake-order protection (blocklist, WhatsApp confirm, risk)  | P0       | yes                | —                                           |
+| 2   | F-03 | Missed orders (abandoned checkouts) + reminders            | P0       | yes                | —                                           |
+| 3   | F-01 | Customers list (store CRM)                                 | P0       | maybe (notes/tags) | —                                           |
+| 4   | F-04 | Invoices, packing slips & order export                     | P0       | no                 | —                                           |
+| 5   | F-05 | Manual orders (phone/WhatsApp sales)                       | P0       | maybe              | **Needs approval** (order creation path)    |
+| 6   | F-21 | Deposit (عربون) before shipping a COD order                | P1       | yes                | **Needs approval** (money, checkout)        |
+| 7   | F-32 | Cross-sell offers under the product (on by default)        | P1       | yes                | Owner asked; design note OK (checkout)      |
+| 8   | F-34 | Low-stock urgency badge (product checkbox)                 | P1       | yes (small)        | —                                           |
+| 9   | F-35 | Product trash (restore within 30 days)                     | P1       | yes (small)        | —                                           |
+| 10  | F-36 | Store app (PWA with the store's name and logo)             | P1       | no (expected)      | —                                           |
+| 11  | F-37 | Tallaby affiliate program (20 % of referred top-ups, cash) | P1       | yes (0117)         | Approved 2026-10-29; built, 0117 on staging |
+| 12  | F-25 | Checkout form & thank-you page settings                    | P1       | yes                | —                                           |
+| 13  | F-08 | Funnels: quick-order landing pages                         | P1       | maybe              | **Needs approval** (checkout)               |
+| 14  | F-07 | Quantity offers, bundles, upsell                           | P1       | yes                | **Needs approval** (checkout pricing)       |
+| 15  | F-22 | Sales pop-up (real recent orders)                          | P1       | no                 | —                                           |
+| 16  | F-24 | Bulk product editing (prices by category, stock, status)   | P1       | no                 | —                                           |
+| 17  | F-15 | Reports upgrade + per-product views                        | P1       | no                 | —                                           |
+| 18  | F-06 | New-order push alerts (PWA)                                | P1       | yes                | —                                           |
+| 19  | F-11 | Product feeds (Meta, Google Merchant, TikTok) + catalog    | P1       | no                 | —                                           |
+| 20  | F-09 | Staff accounts & permissions                               | P1       | yes                | — (security review)                         |
+| 21  | F-10 | Inventory alerts & stock history                           | P1       | yes                | —                                           |
+| 22  | F-12 | More shipping carriers                                     | P1       | small              | —                                           |
+| 23  | F-13 | Automatic discounts, min order, free gift                  | P2       | yes                | **Needs approval** (checkout pricing)       |
+| 24  | F-14 | Customer order messages (WhatsApp/SMS, confirm link)       | P2       | yes                | Provider cost                               |
+| 25  | F-16 | Campaigns: email, WhatsApp, retargeting audiences          | P2       | yes                | Provider cost                               |
+| 26  | F-23 | Back-in-stock alerts & pre-orders                          | P2       | yes                | —                                           |
+| 27  | F-26 | Campaign tracking (UTM links, orders per campaign)         | P2       | yes                | —                                           |
+| 28  | F-17 | Public API & webhooks                                      | P2       | yes                | — (security review)                         |
+| 29  | F-18 | Store affiliates / referral links                          | P3       | yes                | **Needs approval** (payouts)                |
+| 30  | F-19 | Gift cards & customer store credit                         | P3       | yes                | **Needs approval** (ledger)                 |
+| 31  | F-20 | Loyalty points                                             | P3       | yes                | **Needs approval**                          |
+| 32  | F-27 | A/B tests                                                  | P3       | yes                | —                                           |
+| 33  | F-28 | Wholesale pricing                                          | P3       | yes                | **Needs approval** (checkout pricing)       |
+| 34  | F-29 | AI agent connection (MCP)                                  | P3       | no                 | — (after F-17)                              |
+| 35  | F-30 | Ad tracking upgrades (Purchase on delivery, event toggles) | P2       | maybe              | —                                           |
+| 36  | F-31 | POS and cashier                                            | P3       | yes                | **Needs approval** (order creation path)    |
 
 AI features (field helpers, bulk products, credits, store-build agent) stay in `PLAN.md` §22 (AI-2 … AI-5) and are not repeated here.
 
@@ -441,8 +441,9 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 
 **Why:** The most-voted EasyOrders request (38). A small prepayment stops most fake and refused COD orders.
 **What:** Per store (and optionally per product): require X % (or a fixed amount) paid before the order ships. The customer pays the deposit with the store's wallet payments (Vodafone Cash, InstaPay … with a transfer-receipt upload) or a card when available; the rest is collected on delivery. The order waits in "awaiting deposit" until the seller confirms; the COD amount sent to the carrier is the remainder.
+
 - **Rounding (owner, 2026-10-29): a percentage deposit is always rounded UP to the nearest EGP 5**, so customers transfer a clean amount. Examples at 20 %: order 1,200 → 240; 1,199 → 239.80 → 240; 1,213 → 242.60 → 245; 1,226 → 245.20 → 250. Computed in integer piastres (`ceil(piastres / 500) * 500`), never more than the order total; the remainder is total − deposit. A fixed-amount deposit is used as the seller typed it.
-**Status:** [Planned]
+  **Status:** [Planned]
 
 - **Found in code (2026-10-29):** storefront InstaPay / Vodafone Cash / e& Cash payments are a filter on methods that still pay **Tallaby's** accounts (`storefrontCheckoutMethods` in `packages/lib/src/payments/store-methods.ts`); seller-collected payment with seller confirmation is PLAN.md **P3-07 Part B**, waiting for owner approval. Checkout already supports split payments (customer wallet + manual-transfer remainder, `payment.lib.ts`) and a COD-collector rule, which the deposit can reuse. **Decided (owner, 2026-10-29): the deposit goes to the seller's own number** (Vodafone Cash / e& Cash / WE Pay / Orange Cash / InstaPay set in Store settings › Payment methods), and the seller confirms it. So **PLAN.md P3-07 Part B is built first, as part of F-21** (task F-21p below); its design is PLAN.md §8.6 "Customer flow on the store host" and "Money flow".
 - **F-21p · P1 · deps: —** PLAN.md P3-07 Part B, as written in §8.6: storefront checkout shows the store's own payment details (snapshot in `orders.metadata`, `paymentCollector: 'seller'`), the customer taps "I've paid" with an optional reference and a transfer screenshot, the seller confirms in the dashboard (`confirmManualPayment(storeId, orderId)`, store-scoped, status-guarded, idempotent), unpaid orders auto-cancel after 48 h (D32), every change to payment details is audited, emailed and rate-limited. Money: seller-collected payments post only the EGP 5 `fee` on delivery, no `sale` (PLAN.md §13.4). Existing stores keep Tallaby-collected methods until the owner decides D30. Full-amount transfers work with this alone; the deposit builds on it.
@@ -517,11 +518,12 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 
 **Why:** Owner, 2026-10-29: a customer buying a power bank sees, under the product, "add a charging cable for 10 % off". It raises order value with one tap.
 **What:** On the store's product page (under the buy box) and in the cart, show one or a few offers: "Add <product> − X %". The customer ticks it or taps "Add"; both go into the cart and the discount is applied **server-side at checkout** only while the main product is in the cart. **On by default for every store; the seller can turn it off at any time** (store-wide switch, plus per-offer on/off).
+
 - The seller links offers in the product form ("Frequently bought with"): pick a product/variant and a discount (10 % prefilled, % or fixed EGP).
 - Offers show only for active, in-stock products of the same store (and in that store's catalog).
 - Fits the builder: a `cross-sell` element in the product-page template (tree element, CLAUDE.md rule 17), with a fallback placement for stores whose product page lacks it.
 - **Decided (owner, 2026-10-29): when the seller has set no offer for a product, show nothing.** No automatic suggestions; the cross-sell block renders only when the product has at least one active offer whose product is active and in stock.
-**Status:** [Planned]
+  **Status:** [Planned]
 
 - **F-32a · P1 · deps: —** Design note: the discount as an order-item line adjustment computed in piastres at checkout (`place-order.ts` behaviour kept for orders without offers), how it shows on the order and invoice, and the fee base (PLAN.md §13 unchanged: flat EGP 5 per delivered order, so no fee change). Owner OK on the note.
 - **F-32b · P1 · deps: F-32a** Migration `product_cross_sells`: `store_id`, `product_id`, `offer_product_id`, `offer_variant_id`, `discount_type` ('percent' | 'fixed'), `discount_value`, `is_active`, `sort_order`; unique per store + product + offer; RLS on, no policies. Plus `stores.cross_sell_enabled boolean NOT NULL DEFAULT true`. The cart item keeps the accepted `offer_id` so checkout can re-check it. Mirror in `schema.ts` / `relations.ts`.
@@ -538,11 +540,12 @@ Removed: the store already shows a coupon pop-up when a visitor is leaving (`cou
 
 **Why:** Owner, 2026-10-29: "لو في منتج قرب يخلص ممكن نحط تحته … فاضل قطعتين والوقت قرب يخلص، ده بيستعجل العميل وبيحسسه إن المنتج مطلوب."
 **What:** A checkbox in the product form (Add and Edit), next to "Show live views": **"Show a low-stock alert"** (off by default, like `show_live_views`), with a threshold "show when stock is at or below N" (default 5). When ticked and the stock of the chosen variant (or the product) is at or below N, the store's product page shows an urgency badge under the price, e.g. "🔥 فاضل قطعتين بس — اطلب قبل ما يخلص", and a small "باقي X" tag on product cards.
+
 - **Real stock only:** the number is the product's (or selected variant's) real stock, never a made-up number, in line with the owner's real-reviews rule (2026-10-27). Hidden at 0 (the sold-out state shows instead) and for products without stock tracking.
 - **"Time running out":** when the product has a discount with an end date, the existing deal countdown (`DealCountdown` in `store-product-info.client.tsx`) shows beside the badge. No fake timers.
 - Today every store already shows a small automatic pill "متبقٍ N فقط" at stock ≤ 5 (`LOW_STOCK_THRESHOLD` in `apps/ecommerce/components/product-page/product-page.lib.ts`, `StoreStockLine`). The new badge is the seller-controlled, more visible version; when it is on, it replaces that pill on the product so the message is not shown twice. The pill stays as it is for products without the checkbox.
 - Arabic number wording ("قطعة واحدة", "قطعتين", "3 قطع", "11 قطعة") through ICU plurals in both `ar.json` and `en.json`.
-**Status:** [Planned]
+  **Status:** [Planned]
 
 - **F-34a · P1 · deps: —** Migration (additive): `products.show_low_stock_badge boolean NOT NULL DEFAULT false` and `products.low_stock_threshold integer` (1–99, null = 5; shared with F-10a, which later uses it for seller alerts). The product queries select every column, so apply on staging, then production, **before** deploying. Mirror in `schema.ts`.
 - **F-34b · P1 · deps: F-34a** Product form: checkbox + threshold in the same block as "Show live views" (`products/add`, edit, `add-product.schema.ts`), saved through the existing product save path (not `actions/products.ts`).
@@ -553,11 +556,12 @@ Removed: the store already shows a coupon pop-up when a visitor is leaving (`cou
 
 **Why:** Owner, 2026-10-29: a deleted product should go to a Trash for 30 days so the seller can restore it. Today a delete is permanent: `deleteProduct` in `apps/dashboard/actions/products.ts` runs a hard `DELETE` on `products` (found in code 2026-10-29).
 **What:**
+
 - **Delete → Trash.** Deleting a product (row action or bulk) moves it to Trash instead of erasing it. It disappears at once from every store, the marketplace, search, sitemaps, feeds, carts and offers, as if deleted. The confirm dialog says "It stays in Trash for 30 days".
 - **Trash page** in the dashboard (Products › Trash, with a count): photo, name, deleted date, days left, **Restore** and **Delete forever** (with a confirm). Restore brings the product back with everything as it was (status, variants, images, reviews, store catalogs, category counts).
 - **After 30 days** a daily job deletes it permanently (the same cleanup as today's delete: category counts, cache invalidation).
 - Products in Trash do not count against any product limit, and their slug stays reserved so a restore never clashes.
-**Status:** [Planned]
+  **Status:** [Planned]
 
 - **F-35a · P1 · deps: —** Migration (additive): `products.deleted_at timestamptz` and `products.deleted_by uuid`, partial index `WHERE deleted_at IS NOT NULL` for the Trash list and the purge job. The product queries select every column, so apply on staging, then production, **before** deploying. Mirror in `schema.ts`.
 - **F-35b · P1 · deps: F-35a** Hide trashed products everywhere: one shared filter (`notDeleted`) used by every product read (storefront, marketplace, search, sitemaps, store catalog, coupons, cross-sell, feeds, admin lists marked "in trash"); carts drop trashed items at checkout (server-side). Grep every `from(products)` / `query.products` and add a test that a trashed product never appears.
@@ -569,6 +573,7 @@ Removed: the store already shows a coupon pop-up when a visitor is leaving (`cou
 
 **Why:** Owner, 2026-10-29: improve the Next.js PWA so that installing a store website gives an app with **the store's name and logo**. Today every host of `apps/ecommerce` (the marketplace, every `*.tallaby.com` store and custom domains) serves one static manifest, `apps/ecommerce/app/manifest.ts`: "Tallaby.com – Online Shopping in Egypt" with the Tallaby logo, so a customer who adds a store to the home screen gets a Tallaby icon (found in code 2026-10-29). There is no service worker.
 **What:**
+
 - **Per-store manifest.** On a store host (subdomain or custom domain), `/manifest.webmanifest` returns the store's own app: `name` = store name, `short_name` = a short version (≤ 12 characters, editable), the store's logo as icons, `theme_color` / `background_color` from the store's design colours, `lang` / `dir` from the store's default language, `start_url` and `scope` = `/`, `display: standalone`, a stable `id` per store. The marketplace keeps today's Tallaby manifest. `manifest.ts` becomes dynamic by reading the request host (a request-time API; see `node_modules/next/dist/docs/01-app/02-guides/progressive-web-apps.md` and the manifest file-convention docs).
 - **Icons from the logo.** 192 px, 512 px, a maskable 512 px (logo on a padded square in the brand colour) and a 180 px Apple touch icon, generated from the store logo with `next/og` `ImageResponse`, cached per seller + store and refreshed when the logo changes. No logo → a clean initials icon in the store's colour. The page `<head>` also gets the store's `apple-touch-icon`, `theme-color` and `apple-mobile-web-app-title`.
 - **Install button on the store.** A small, store-styled "Install our app / ثبّت التطبيق" prompt on phones: Android/Chrome uses the browser's install event; iPhone shows the two-step "Share → Add to Home Screen" guide. Shown after some browsing, dismissible, not again for 30 days. Never on checkout.
@@ -576,7 +581,7 @@ Removed: the store already shows a coupon pop-up when a visitor is leaving (`cou
 - **Dashboard settings:** Store settings › App: app name and short name (default from the store name), icon preview on Android and iPhone, install prompt on/off (on by default).
 - Offline and unpublished stores (CLAUDE.md rule 12) serve no store manifest. Push notifications to customers stay with F-14 (needs a provider).
 - The seller dashboard's own install button (`install-app-button.client.tsx`) keeps the Tallaby brand; not part of this feature.
-**Status:** [Planned]
+  **Status:** [Planned]
 
 - **F-36a · P1 · deps: —** Host-aware `manifest.ts`: resolve the store from the host the same way storefront pages do (subdomain and custom domain, published only); Tallaby manifest otherwise; tests for marketplace, subdomain, custom domain, offline store. Check `proxy.ts`, which today skips `manifest.webmanifest`.
 - **F-36b · P1 · deps: F-36a** Icon route (`/app-icon/[size]`, `next/og`) from the store logo, maskable variant, initials fallback, seller-scoped cache tag purged on logo or name change; `<head>` icon and theme tags on store pages.
@@ -589,19 +594,20 @@ Removed: the store already shows a coupon pop-up when a visitor is leaving (`cou
 **Why:** Owner, 2026-10-29: grow Tallaby through its own sellers, like EasyOrders' "اربح معنا بالتسويق بالعمولة". A seller (or anyone with a Tallaby seller account) shares their referral link; when the people they bring sign up and **top up their store wallet**, the referrer earns **20 % of every top-up, for life**, paid **in cash** (bank account or Vodafone Cash), **not** as wallet balance.
 Not the same as F-18 (a seller's own marketers for their store) and not the marketplace customer affiliates (`affiliates` / `affiliate_commissions` tables), which stay untouched.
 **What (seller dashboard page "اربح معنا" / "Earn with us"):**
+
 - Header: "اربح معنا بالتسويق بالعمولة" and the explanation: share your link with your referral code and earn 20 % for life of any amount the sellers you bring top up; paid in cash, not wallet credit.
 - **Your commission:** total earned, available to withdraw, already paid (EGP).
 - **Your link:** `https://tallaby.com/?ref=<code>` (opens signup with the code kept), with Copy, WhatsApp and Facebook share buttons. Short, readable code per seller.
 - **Progress to unlock withdrawal:** "X / 10 successful referrals" and "X / 10 stores created through your link" (owner rule, copied from the EasyOrders text: withdrawal opens after **at least 10 successful referrals and 10 stores**).
 - **Your referrals:** list of referred sellers (store name only, masked contact), sign-up date, stores, total topped up, your commission.
 - **Withdraw:** "Request withdrawal" (bank account or Vodafone Cash details) → the Tallaby team pays and marks it paid in Admin; until then it also offers "Contact support on WhatsApp". Minimum withdrawal amount: to decide.
-**Money rules (to confirm in F-37a):**
+  **Money rules (to confirm in F-37a):**
 - Commission is earned only on **succeeded** top-ups (`seller_wallet_top_ups.status = 'succeeded'`, Kashier webhook or admin-approved manual top-up), at 20 % computed in integer piastres, one ledger row per top-up (unique claim on `top_up_id`, `ON CONFLICT DO NOTHING`, CLAUDE.md rule 7).
 - It is **its own ledger**, separate from the store wallet and the customer wallet; it never changes any wallet balance. Paid out only by an admin action that records the payout.
 - A reversed or refunded top-up reverses its commission. Self-referral (same person, same phone/card, same device) and fake accounts are blocked or held for review; commissions stay "pending" for N days before they become withdrawable.
 - Attribution: the code is saved at signup (link opened in the last 60 days, first link wins); a seller cannot change their referrer later, cannot refer themselves.
-**Open decisions for the owner (F-37a):** what counts as a "successful referral" (signed up / published a store / first top-up / first delivered order)? Are "10 referrals" and "10 stores" two separate counts? Is 20 % on top-ups sustainable against the EGP 5-per-order fee (PLAN.md §13)? Minimum payout and how often? Do customers (non-sellers) get links too?
-**Status:** [Planned]
+  **Decided (owner, 2026-10-29, design note `docs/superpowers/specs/2026-10-29-affiliate-program-design.md`):** a successful referral = the referred seller's first top-up succeeded; 10 referrals and 10 stores are two separate counts (stores of referred sellers, deleted ones excluded); minimum withdrawal EGP 500 (the whole balance per request); no hold (top-ups are never refunded), so commissions are withdrawable at once; only seller accounts get links. ~~Open decisions:~~ what counts as a "successful referral" (signed up / published a store / first top-up / first delivered order)? Are "10 referrals" and "10 stores" two separate counts? Is 20 % on top-ups sustainable against the EGP 5-per-order fee (PLAN.md §13)? Minimum payout and how often? Do customers (non-sellers) get links too?
+  **Status:** [Built, 2026-10-29] F-37a–f done (plan `docs/superpowers/plans/2026-10-29-affiliate-program.md`); 0117 applied on staging, production pending owner approval; browser QA and the attribution integration test (needs 0113 on staging) still to do. F-37g open.
 
 - **F-37a · P1 · deps: owner approval** Design note: the open decisions above, the commission ledger, fraud rules, and confirmation that the business model (PLAN.md §13) is changed only by adding this payout.
 - **F-37b · P1 · deps: F-37a** Migration: `sellers.referral_code` (unique), `sellers.referred_by_seller_id`, `sellers.referred_at`; server-only `referral_commissions` (`referrer_seller_id`, `referred_seller_id`, `top_up_id` unique, `amount numeric(10,2)`, `status` pending | available | paid | reversed, timestamps) and `referral_payouts` (`referrer_seller_id`, `amount`, `method` bank | vodafone_cash, masked destination, `reference`, `paid_by`, `paid_at`); RLS on, no policies. Mirror in `schema.ts` / `relations.ts`.
@@ -627,19 +633,22 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 Add each new request here first, with the date and the owner's words, then turn it into a §4 feature and place it in §3.
 
-| Date       | Request (owner's words)                                                                                                                  | Feature ID                                                                                       | Status  |
-| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ------- |
-| 2026-10-29 | "on /products/add if form has draft data, add clear button to clear it beside \"Save as draft\"" | Product form clear-draft button (no feature ID) | Done (uncommitted) |
-| 2026-10-29 | "Seller dashboard homepage new design, make good linking for everything if link of related title exists" (Claude Design: Seller Dashboard v2) + WhatsApp channel link | Dashboard home redesign (no feature ID) | Done (uncommitted) |
-| 2026-10-29 | "Affiliate program for Tallaby … عمولة 20% من اي مبلغ يقومون بشحنه … كاش وليس رصيد في المحفظة … سحب عمولتك بعد تحقيق 10 إحالات ناجحة على الأقل وإنشاء 10 متاجر" (EasyOrders' page text as the model) | F-37 | Planned (needs approval) |
-| 2026-10-29 | "Improve the Next.js PWA to make the application with the store name and logo" | F-36 (replaces F-06c) | Planned |
-| 2026-10-29 | "when a user delete a product, it goes to Trash for 30 days so user can restore the product back" | F-35 | Planned |
-| 2026-10-29 | "the deposit roundup automatically to nearest 5" | F-21 (rounding rule) | Planned |
-| 2026-10-29 | Deposit: who receives it? → "Seller's own number" | F-21 (+ F-21p = PLAN.md P3-07 Part B) | Planned |
-| 2026-10-29 | "a checkbox on the product /add or edit page to show a badge for user on low stock … فاضل قطعتين والوقت قرب يخلص" | F-34 | Planned |
-| 2026-10-29 | "I need to add Downsell feature, which is when a user removes an item from cart, shows a similar item but with discount or lower price popup" (+ phone mockup) | F-33 | **Removed** 2026-10-29 ("we have similar one already on live": the exit coupon pop-up) |
-| 2026-10-29 | "We need to add Cross-selling feature too … العميل مثلا هيشتري باور بانك … هيلاقي تحت المنتج عرض وصلة شاحن بخصم 10٪ … enabled by default and store owner can disable it anytime" | F-32 | Planned |
-| 2026-10-28 | "analyze the Easy orders features too … find the most important that we should have" (pasted EasyOrders sidebar + roadmap.easyorders.ai) | §2.3, §2.4; new F-21 … F-29; tasks added to F-01, F-02, F-03, F-07, F-08, F-11, F-13, F-15, F-16 | Planned |
+| Date       | Request (owner's words)                                                                                                                                                                                                         | Feature ID                                                                                       | Status                                                                                 |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- |
+| 2026-10-29 | Public seller roadmap page at `/roadmap` (sellers suggest ideas and vote, the team moves cards between Waiting, Planned, In progress and Launched; EasyOrders roadmap as the model)                                             | Seller roadmap page (no feature ID)                                                              | Done (uncommitted, 0115 not applied)                                                   |
+| 2026-10-29 | "can I manage the roadmap requests and columns from Admin project ? … build it, make me manage it from admin project"                                                                                                           | Admin › Seller roadmap (no feature ID)                                                           | Done (uncommitted, 0115 not applied)                                                   |
+| 2026-10-29 | "On the website builder > Add > Templates tab, show the related templates industry only, on dashboard and admin, And on Admin project, on Change theme to a store, show the theme reusable card on the dialog to see the theme" | Builder templates by industry + admin live theme cards (no feature ID)                           | Done (uncommitted)                                                                     |
+| 2026-10-29 | "on /products/add if form has draft data, add clear button to clear it beside \"Save as draft\""                                                                                                                                | Product form clear-draft button (no feature ID)                                                  | Done (uncommitted)                                                                     |
+| 2026-10-29 | "Seller dashboard homepage new design, make good linking for everything if link of related title exists" (Claude Design: Seller Dashboard v2) + WhatsApp channel link                                                           | Dashboard home redesign (no feature ID)                                                          | Done (uncommitted)                                                                     |
+| 2026-10-29 | "Affiliate program for Tallaby … عمولة 20% من اي مبلغ يقومون بشحنه … كاش وليس رصيد في المحفظة … سحب عمولتك بعد تحقيق 10 إحالات ناجحة على الأقل وإنشاء 10 متاجر" (EasyOrders' page text as the model)                            | F-37                                                                                             | Planned (needs approval)                                                               |
+| 2026-10-29 | "Improve the Next.js PWA to make the application with the store name and logo"                                                                                                                                                  | F-36 (replaces F-06c)                                                                            | Planned                                                                                |
+| 2026-10-29 | "when a user delete a product, it goes to Trash for 30 days so user can restore the product back"                                                                                                                               | F-35                                                                                             | Planned                                                                                |
+| 2026-10-29 | "the deposit roundup automatically to nearest 5"                                                                                                                                                                                | F-21 (rounding rule)                                                                             | Planned                                                                                |
+| 2026-10-29 | Deposit: who receives it? → "Seller's own number"                                                                                                                                                                               | F-21 (+ F-21p = PLAN.md P3-07 Part B)                                                            | Planned                                                                                |
+| 2026-10-29 | "a checkbox on the product /add or edit page to show a badge for user on low stock … فاضل قطعتين والوقت قرب يخلص"                                                                                                               | F-34                                                                                             | Planned                                                                                |
+| 2026-10-29 | "I need to add Downsell feature, which is when a user removes an item from cart, shows a similar item but with discount or lower price popup" (+ phone mockup)                                                                  | F-33                                                                                             | **Removed** 2026-10-29 ("we have similar one already on live": the exit coupon pop-up) |
+| 2026-10-29 | "We need to add Cross-selling feature too … العميل مثلا هيشتري باور بانك … هيلاقي تحت المنتج عرض وصلة شاحن بخصم 10٪ … enabled by default and store owner can disable it anytime"                                                | F-32                                                                                             | Planned                                                                                |
+| 2026-10-28 | "analyze the Easy orders features too … find the most important that we should have" (pasted EasyOrders sidebar + roadmap.easyorders.ai)                                                                                        | §2.3, §2.4; new F-21 … F-29; tasks added to F-01, F-02, F-03, F-07, F-08, F-11, F-13, F-15, F-16 | Planned                                                                                |
 
 ---
 
@@ -695,12 +704,12 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [ ] F-36a Store manifest per host
 - [ ] F-36b App icons from the store logo
 - [ ] F-36c Install prompt on the store
-- [ ] F-37a Affiliate design note + open decisions (owner approval)
-- [ ] F-37b Affiliate migration (referral code, commissions, payouts)
-- [ ] F-37c Referral attribution at signup
-- [ ] F-37d Commission on succeeded top-ups
-- [ ] F-37e "اربح معنا" dashboard page
-- [ ] F-37f Admin referrals + payouts
+- [x] F-37a Affiliate design note + open decisions (owner approval)
+- [x] F-37b Affiliate migration (referral code, commissions, payouts)
+- [x] F-37c Referral attribution at signup
+- [x] F-37d Commission on succeeded top-ups
+- [x] F-37e "اربح معنا" dashboard page
+- [x] F-37f Admin referrals + payouts
 - [ ] F-13b Minimum order + store free-shipping threshold
 - [ ] F-22a Recent orders endpoint
 - [ ] F-22b Sales pop-up on the store
@@ -771,6 +780,26 @@ Add each new request here first, with the date and the owner's words, then turn 
 ## 7. Log
 
 Newest first. One entry per finished task or decision: date, task, what changed, migrations (number, staging/production status), verification, notes.
+
+### 2026-10-29 — F-37 Tallaby affiliate program built (owner)
+
+- Owner decisions (F-37a): referral = first succeeded top-up; 10 referrals **and** 10 stores (separate counts); EGP 500 minimum, whole balance per request; no hold; seller accounts only. Design: `docs/superpowers/specs/2026-10-29-affiliate-program-design.md`; plan: `docs/superpowers/plans/2026-10-29-affiliate-program.md`.
+- Migration **`0117_referral_program`** (**applied on staging 2026-10-29; production pending owner approval**, before the deploy: the code reads the new `sellers` columns): `sellers.referral_code/referred_by_seller_id/referred_at/referral_unlocked_at/referral_excluded_at`; server-only `referral_commissions` (unique `top_up_id`, earned | reversed) and `referral_payouts` (requested | paid | rejected, one open per referrer, ≥ EGP 500); admin bell type `referral_payout_requested` (+ trigger); seller bell types `referral_commission_earned/payout_paid/payout_rejected`. **0116 rebuilds the admin type check without a guard: re-run 0117 after applying 0116.**
+- Code: `packages/lib/src/referrals/` (rules + server); commission posted inside both top-up success transactions (Kashier webhook, admin-approved manual top-up); attribution in `ensureSellerAccount` and `become-seller` from the 60-day `tallaby_ref` cookie set by the ecommerce and dashboard proxies (`REFERRAL_COOKIE_DOMAIN=.tallaby.com`), kept in `user_metadata.signup_ref` for email confirmation in another browser; ignored for unknown codes, the referrer's phone, or an existing seller. Dashboard `/earn` ("اربح معنا", Account & help). Admin › Money › Referrals (requests, paid/rejected, referrers, referrer detail with Reverse and Lock again; all audited).
+- Verified: lib/db/dashboard/admin typecheck clean; referrals unit tests (13), notifications, sidebar (29); integration on staging 5/6 (duplicate webhooks → one commission, none for unreferred or failed top-ups, none after an admin excluded the account, unlock + double-click payout → one request, EGP 500 minimum and suspended referrer); the attribution test fails only because staging lacks 0113's `admin_contacted_at` (another session). ESLint crashes in its own setup (as before). Browser QA to do.
+
+### 2026-10-29 — Public seller roadmap page (owner)
+
+- New public page `dashboard.tallaby.com/roadmap` (`apps/dashboard/app/roadmap/`): Board (four columns) and List views, search with Arabic normalisation, category filter, sort by votes or newest, "Mine" and "Voted" tabs, a detail sheet shareable as `?idea=<id>`, and a "Suggest an idea" dialog that shows similar ideas first. Anyone can read it; only an active seller can vote or suggest (session only, max 5 ideas a day; votes close once a card is In progress). Guests get a sign-in prompt, and `/login?next=/roadmap` comes back here (`safeNextPath`). The proxy lets `/roadmap` through without a session. Linked from the sidebar (Account & help › Roadmap & ideas) and the command palette.
+- Migration **`0115_feature_requests`** (**not applied yet**): `feature_requests` and `feature_request_votes` (RLS on, no policies; one vote per seller per card, counts computed). Seeded insert-only by `roadmap_ref`: 8 launched or in-progress items, the P0/P1 features as Planned, P2/P3 as Waiting. It also adds the `feature_request_created` admin notification (type check widened, AFTER INSERT trigger on seller ideas). Apply on staging, then production, before deploying (the page reads both tables).
+- **Admin › Seller roadmap** (`apps/admin/app/(dashboard)/roadmap/`, owner 2026-10-29): a four-column board of every card (hidden ones behind a switch) with vote counts and the suggesting store. Drag a card or use its menu to move it; Launched sets today as the launch date (or the date the admin picks). Edit any card (Arabic and English text, category, ROADMAP.md id), add team cards, hide or show cards. Filters: search, category, seller ideas or team cards. Every change is audited (`create_/update_feature_request`, `set_feature_request_status`, `hide_/unhide_feature_request`, target `feature_request`). New seller ideas show in the admin bell and lead to `/roadmap`. Logic in `packages/lib/src/admin/roadmap-admin.{lib,server}.ts`.
+- Verified: dashboard, admin and lib typecheck; dashboard roadmap.lib tests (6), dashboard sidebar tests (29), lib roadmap-admin + notifications + admin.lib tests (25), admin layout tests (12), eslint on the admin roadmap folder; ar/en key parity (98 keys). Browser QA waits for 0115 on staging.
+
+### 2026-10-29 — Builder templates by industry, admin live theme cards (owner)
+
+- Add › Templates in the builder (dashboard and admin) lists only the store's industry templates (`templatesForIndustry` in `packages/store-editor/src/lib/industries.lib.ts`). If the industry has none, it shows the related industries' templates. With no known industry it shows every template. The store's current template always stays. `RELATED_INDUSTRIES` moved there from the dashboard's `templates.lib.ts`. Website › Templates (the gallery page) is unchanged.
+- Admin › Store › Website › Change theme: every theme card without an uploaded image draws its home page live with its demo store. It uses the shared `TemplateLiveThumbnail` (`@workspace/store-editor/preview/template-live-thumbnail.client`, now also used by the dashboard gallery), loaded through admin's access-checked `templatePreview`.
+- No migration. Verified: store-editor typecheck and tests (143), dashboard and admin typecheck, dashboard templates.lib tests (12). Lint still crashes inside ESLint. Browser QA still to do.
 
 ### 2026-10-29 — Website publish fix + celebration, product form "Clear" draft (owner)
 

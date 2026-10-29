@@ -35,7 +35,8 @@ export type SignupErrorKey =
   | "generic";
 
 export type SignupResult =
-  | { status: "done"; storeUrl: string }
+  /** `signup`: a new account was created (Meta CompleteRegistration on the welcome page). */
+  | { status: "done"; storeUrl: string; signup?: "email" | "google" }
   | { status: "confirm_email" }
   /** Account created and signed in: show the store step. */
   | { status: "account_created" }

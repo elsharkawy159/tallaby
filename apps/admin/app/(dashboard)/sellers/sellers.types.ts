@@ -10,6 +10,8 @@ export interface SellerStoreSummary {
   /** draft | published | unpublished */
   siteStatus: string;
   isPrimary: boolean;
+  /** The store's industry (stores.store_category, else the Arabic one); null = not set. */
+  industry: string | null;
   /** Active custom domain, if any. */
   domain: string | null;
 }

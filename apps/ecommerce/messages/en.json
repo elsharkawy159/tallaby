@@ -2330,6 +2330,13 @@
         "step3": "The order reaches you"
       }
     },
+    "stores": {
+      "kicker": "Stores on Tallaby",
+      "title": "Brands already selling on Tallaby",
+      "desc": "Real stores built on Tallaby, sorted by how many products they sell. Open any of them and see for yourself.",
+      "products": "{count, plural, one {1 product} other {{formatted} products}}",
+      "join": "Your store could be next. Start free today."
+    },
     "how": {
       "kicker": "How it works",
       "title": "Three steps from idea to first order",
