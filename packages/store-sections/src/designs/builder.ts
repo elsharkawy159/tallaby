@@ -262,9 +262,9 @@ export function createTreeBuilder(industry?: string, photos?: DesignPhotos, opts
      * A banner carousel: one full-width slide in view, autoplaying every
      * `interval` seconds (pauses on hover, focus, off-screen, reduced motion).
      */
-    carousel: (slides: NodeTemplate[], opts?: NodeOptions & { autoplay?: boolean; interval?: number }) => {
-      const { autoplay = true, interval = 5, ...rest } = opts ?? {};
-      return make("carousel", { autoplay, interval }, rest, slides);
+    carousel: (slides: NodeTemplate[], opts?: NodeOptions & { autoplay?: boolean; interval?: number; controls?: "bar" | "sides" }) => {
+      const { autoplay = true, interval = 5, controls, ...rest } = opts ?? {};
+      return make("carousel", { autoplay, interval, ...(controls && { controls }) }, rest, slides);
     },
     /**
      * Items that loop sideways (words, badges, icons), `speed` seconds per

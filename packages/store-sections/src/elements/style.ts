@@ -74,7 +74,14 @@ export const GRADIENTS = {
   // A photo scrim under white text: always dark, also when dark mode turns --sf-ink light (owner, 2026-10-27).
   "ink-fade": "linear-gradient(to top,rgb(0 0 0 / 0.68),rgb(0 0 0 / 0.12) 60%,transparent)",
   shelf: "linear-gradient(180deg,var(--sf-shelf),var(--sf-paper))",
+  // A light scrim on the start side of a photo, for dark text over it (2026-10-29); flipped for RTL in `ruleFor`.
+  "shelf-start": "linear-gradient(to right,var(--sf-shelf) 18%,color-mix(in srgb,var(--sf-shelf) 60%,transparent) 38%,transparent 58%)",
 } as const;
+
+/** Gradients that run from the start side: the `:dir(rtl)` rule mirrors them. */
+const START_GRADIENTS_RTL: Partial<Record<keyof typeof GRADIENTS, string>> = {
+  "shelf-start": GRADIENTS["shelf-start"].replace("to right", "to left"),
+};
 
 type Enum<T extends Record<string, unknown>> = keyof T;
 
@@ -420,6 +427,8 @@ function hoverDeclarations(hover: HoverStyle): string[] {
 function ruleFor(selector: string, style: StyleValues, sectionRoot = false): string {
   const declarations = styleDeclarations(style, sectionRoot);
   let css = declarations.length ? `${selector}{${declarations.join(";")}}` : "";
+  const rtlGradient = style.gradient && START_GRADIENTS_RTL[style.gradient];
+  if (rtlGradient) css += `${selector}:dir(rtl){background-image:${rtlGradient}}`;
   const hover = style.hover ? hoverDeclarations(style.hover) : [];
   // Hover changes ease in (docs/section-rules.md §6.5): 200ms for colours, 600ms for zoom.
   if (hover.length) css += `${selector}{transition:${HOVER_TRANSITION}}${selector}:hover{${hover.join(";")}}`;

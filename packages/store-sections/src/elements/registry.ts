@@ -628,6 +628,15 @@ const DEFINITIONS: readonly ElementDefinition[] = [
         max: 15,
         showWhen: { key: "autoplay", equals: [true] },
       },
+      {
+        key: "controls",
+        label: L("مكان الأزرار", "Controls"),
+        type: "select",
+        options: [
+          { value: "bar", label: L("شريط تحت", "Bar at the bottom") },
+          { value: "sides", label: L("أسهم على الجنبين", "Arrows at the sides") },
+        ],
+      },
     ],
   },
   {

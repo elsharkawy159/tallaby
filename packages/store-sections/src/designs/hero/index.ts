@@ -13,6 +13,7 @@ import { heroSearch } from "./hero-search";
 import { heroTicket } from "./hero-ticket";
 import { heroCarousel } from "./hero-carousel";
 import { heroCarouselImages } from "./hero-carousel-images";
+import { heroCarouselPanel } from "./hero-carousel-panel";
 import { heroSplit } from "./hero-split";
 import { heroThumbs } from "./hero-thumbs";
 import { heroVideo } from "./hero-video";
@@ -21,6 +22,7 @@ import { heroVideo } from "./hero-video";
 export const HERO_DESIGNS: readonly Design[] = [
   heroCarousel,
   heroCarouselImages,
+  heroCarouselPanel,
   heroClassic,
   heroTicket,
   heroPoster,

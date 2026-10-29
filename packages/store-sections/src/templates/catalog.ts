@@ -149,6 +149,7 @@ import { GIFTS_WARM } from "./gifts-warm";
 import { SPORTS_BOLD } from "./sports-bold";
 import { SPORTS_LUXE } from "./sports-luxe";
 import { SPORTS_WARM } from "./sports-warm";
+import { WASLA } from "./wasla";
 import { templateRefConfig } from "./ref-config";
 import type { TemplateDefinition, TemplateDemo } from "./types";
 
@@ -168,6 +169,8 @@ export const LIBRARY_TEMPLATES: readonly TemplateDefinition[] = [MODE, STREETWEA
   JEWELRY_LUXE, JEWELRY_BOLD, JEWELRY_WARM,
   GIFTS_LUXE, GIFTS_BOLD, GIFTS_WARM,
   SPORTS_LUXE, SPORTS_BOLD, SPORTS_WARM,
+  // After the WoodMart "Accessories" demo's layout (2026-10-29).
+  WASLA,
 ];
 
 export const CODE_TEMPLATES: readonly TemplateDefinition[] = [CLASSIC, ATELIER, ...LIBRARY_TEMPLATES];

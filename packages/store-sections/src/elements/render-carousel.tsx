@@ -39,6 +39,13 @@ const boxedClass = cn(
 const controlClass =
   "pointer-events-auto inline-grid size-11 place-items-center rounded-full border border-white/50 bg-black/25 text-white backdrop-blur-sm transition-colors hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white";
 
+// The "sides" layout (2026-10-29, for light slides): ink on a paper glass, arrows at the two edges.
+const sideControlClass =
+  "pointer-events-auto size-11 place-items-center rounded-full bg-(--sf-paper,#fff)/80 text-(--sf-ink,#111) shadow-sm backdrop-blur-sm transition-colors hover:bg-(--sf-paper,#fff) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--sf-ink,#111)";
+
+/** Where the controls sit: one bar at the bottom (default), or arrows at the sides with the dots centred. */
+export type CarouselControls = "bar" | "sides";
+
 export function CarouselElement({
   attrs,
   node,
@@ -56,6 +63,7 @@ export function CarouselElement({
   const live = ctx.mode !== "edit";
   const autoplay = props.autoplay !== false;
   const seconds = carouselInterval(props.interval);
+  const sides = props.controls === "sides";
   return (
     <div
       {...attrs}
@@ -70,7 +78,58 @@ export function CarouselElement({
       <div data-carousel-track className="flex snap-x snap-mandatory overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {children}
       </div>
-      {live && count > 1 && (
+      {live && count > 1 && sides && (
+        <>
+          <button
+            type="button"
+            data-carousel-go="-1"
+            aria-label={sectionText("carouselPrevious", ctx.locale)}
+            className={cn(sideControlClass, "absolute start-4 top-1/2 hidden -translate-y-1/2 sm:group-data-[carousel-ready]/carousel:inline-grid md:start-6")}
+          >
+            <ArrowLeft className="size-4 rtl:-scale-x-100" aria-hidden />
+          </button>
+          <button
+            type="button"
+            data-carousel-go="1"
+            aria-label={sectionText("carouselNext", ctx.locale)}
+            className={cn(sideControlClass, "absolute end-4 top-1/2 hidden -translate-y-1/2 sm:group-data-[carousel-ready]/carousel:inline-grid md:end-6")}
+          >
+            <ArrowLeft className="size-4 ltr:-scale-x-100" aria-hidden />
+          </button>
+          <div
+            data-carousel-bar
+            className="pointer-events-none absolute inset-x-0 bottom-4 hidden items-center justify-center gap-2 group-data-[carousel-ready]/carousel:flex md:bottom-6"
+          >
+            <div className="pointer-events-auto flex items-center gap-1 rounded-full bg-(--sf-paper,#fff)/80 px-2 shadow-sm backdrop-blur-sm">
+              {Array.from({ length: count }, (_, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  data-carousel-dot={i}
+                  aria-current={i === 0 ? "true" : "false"}
+                  aria-label={sectionText("carouselSlide", ctx.locale, { n: i + 1 })}
+                  className="grid h-7 w-6 cursor-pointer place-items-center transition-[width] duration-300 aria-[current=true]:w-10 focus-visible:outline-2 focus-visible:outline-(--sf-ink,#111) motion-reduce:transition-none"
+                >
+                  <i className="relative block h-0.75 w-full overflow-hidden rounded-full bg-(--sf-ink,#111)/25">
+                    <b className="absolute inset-y-0 start-0 block w-[calc(var(--p,0)*100%)] bg-(--sf-brand,#111)" />
+                  </i>
+                </button>
+              ))}
+              <button
+                type="button"
+                data-carousel-play
+                aria-pressed="false"
+                aria-label={sectionText("carouselPause", ctx.locale)}
+                className="group/play grid size-7 cursor-pointer place-items-center text-(--sf-ink,#111) focus-visible:outline-2 focus-visible:outline-(--sf-ink,#111)"
+              >
+                <Pause className="size-3.5 group-aria-pressed/play:hidden" aria-hidden />
+                <Play className="hidden size-3.5 group-aria-pressed/play:block" aria-hidden />
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+      {live && count > 1 && !sides && (
         <div
           data-carousel-bar
           className="pointer-events-none absolute inset-x-0 bottom-5 mx-auto hidden w-full max-w-(--sf-max-width,1280px) items-center gap-2 px-5 group-data-[carousel-ready]/carousel:flex md:bottom-7 md:px-16"

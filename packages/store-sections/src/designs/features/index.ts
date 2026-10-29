@@ -10,6 +10,7 @@ import { featuresSideTitle } from "./features-side-title";
 import { featuresSteps } from "./features-steps";
 import { featuresTicker } from "./features-ticker";
 import { featuresTrustBand } from "./features-trust-band";
+import { featuresColumns } from "./features-columns";
 
 /** First is the default for new stores (the Classic template's features). */
-export const FEATURE_DESIGNS: readonly Design[] = [featuresClassic, featuresIconCards, featuresChecklist, featuresSteps, featuresRuled, featuresBento, featuresSideTitle, featuresTicker, featuresCompare, featuresOrbit, featuresTrustBand];
+export const FEATURE_DESIGNS: readonly Design[] = [featuresClassic, featuresIconCards, featuresChecklist, featuresSteps, featuresRuled, featuresBento, featuresSideTitle, featuresTicker, featuresCompare, featuresOrbit, featuresTrustBand, featuresColumns];

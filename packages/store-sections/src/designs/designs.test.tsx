@@ -14,14 +14,14 @@ import { DESIGNS, STOCK_INDUSTRIES, getDesign, instantiateDesign, type Design } 
 
 /** Designs this test expects to exist; each later design adds its id here. */
 const EXPECTED = [
-  ...["header-classic", "header-line", "header-centered", "header-announcement", "header-search", "header-pill", "header-ruled", "header-chips", "header-brand-bar", "header-departments", "header-centered-ticker", "header-inline", "header-topbar"],
-  ...["hero-carousel", "hero-carousel-images", "hero-classic", "hero-ticket", "hero-poster", "hero-inline", "hero-product", "hero-collage", "hero-bento", "hero-halves", "hero-big-word", "hero-search", "hero-fullbleed", "hero-video", "hero-split", "hero-thumbs", "hero-banner"],
-  ...["categories-classic", "categories-tiles", "categories-stories", "categories-rail", "categories-bento", "categories-index", "categories-ruled", "categories-chips", "categories-feature-list", "categories-big-type", "categories-showcase", "categories-photo-tiles", "categories-circles", "categories-captioned"],
-  ...["products-classic", "products-grid", "products-rail", "products-feature", "products-shelf", "products-list", "products-tabbed", "products-bento", "products-rows", "products-panel-rail", "products-tabs-grid", "products-carousel", "products-category-carousel", "products-spotlight", "products-minimal", "products-boxed", "products-campaign", "products-deal"],
+  ...["header-classic", "header-line", "header-centered", "header-announcement", "header-search", "header-pill", "header-ruled", "header-chips", "header-brand-bar", "header-departments", "header-centered-ticker", "header-inline", "header-topbar", "header-icons"],
+  ...["hero-carousel", "hero-carousel-images", "hero-carousel-panel", "hero-classic", "hero-ticket", "hero-poster", "hero-inline", "hero-product", "hero-collage", "hero-bento", "hero-halves", "hero-big-word", "hero-search", "hero-fullbleed", "hero-video", "hero-split", "hero-thumbs", "hero-banner"],
+  ...["categories-classic", "categories-tiles", "categories-stories", "categories-rail", "categories-bento", "categories-index", "categories-ruled", "categories-chips", "categories-feature-list", "categories-big-type", "categories-showcase", "categories-photo-tiles", "categories-circles", "categories-captioned", "categories-panels", "categories-counts"],
+  ...["products-classic", "products-grid", "products-rail", "products-feature", "products-shelf", "products-list", "products-tabbed", "products-bento", "products-rows", "products-panel-rail", "products-tabs-grid", "products-carousel", "products-category-carousel", "products-spotlight", "products-minimal", "products-boxed", "products-campaign", "products-deal", "products-category-tabs", "products-centered-row"],
   ...["bundle-plus", "bundle-builder", "bundle-poster", "bundle-tabs", "bundle-list", "bundle-box", "bundle-quantity", "bundle-rail", "bundle-price-drop", "bundle-gifts", "bundle-together"],
   ...["finder-use", "finder-budget", "finder-quiz", "finder-versus", "finder-matrix", "finder-price-bands", "finder-sentence", "finder-pick", "finder-features", "finder-this-or-that", "finder-guides"],
   ...["promo-pair", "promo-ticker", "promo-deal", "promo-coupon", "promo-bento", "promo-twin", "promo-shipping", "promo-percent", "promo-tiers", "promo-sticker", "promo-banner-fullbleed", "promo-campaign-tiles", "promo-marquee", "promo-countdown"],
-  ...["features-classic", "features-icon-cards", "features-checklist", "features-steps", "features-ruled", "features-bento", "features-side-title", "features-ticker", "features-compare", "features-orbit", "features-trust-band"],
+  ...["features-classic", "features-icon-cards", "features-checklist", "features-steps", "features-ruled", "features-bento", "features-side-title", "features-ticker", "features-compare", "features-orbit", "features-trust-band", "features-columns"],
   ...["pay-methods", "pay-installments", "pay-zones", "pay-promise", "pay-open-box", "pay-pickup", "pay-secure", "pay-installment-table", "pay-days", "pay-receipt", "pay-faq"],
   ...["stats-classic", "stats-big-numbers", "stats-photo", "stats-progress", "stats-strip", "stats-ruled", "stats-band", "stats-sentence", "stats-rating", "stats-milestones"],
   ...["about-classic", "about-panel", "about-overlap", "about-rows", "about-values", "about-list", "about-wide", "about-inset", "about-stories", "about-circle", "about-fullbleed", "about-split-story", "about-before-after", "about-shop-look"],
@@ -42,7 +42,7 @@ const EXPECTED = [
   ...["page-header", "page-banner", "page-image", "page-subcategories", "page-promo", "page-toolbar", "page-brand", "page-split", "page-centered", "page-count"],
   ...["product-main", "product-content", "product-reviews", "product-related", "product-perks", "product-shipping"],
   ...["cart-extras", "cart-empty", "cart-free-delivery", "cart-coupon"],
-  ...["footer-classic", "footer-line", "footer-wordmark", "footer-signup", "footer-centered", "footer-ruled", "footer-signoff", "footer-panel", "footer-help", "footer-links", "footer-columns-signup", "footer-centered-light"],
+  ...["footer-classic", "footer-line", "footer-wordmark", "footer-signup", "footer-centered", "footer-ruled", "footer-signoff", "footer-panel", "footer-help", "footer-links", "footer-columns-signup", "footer-centered-light", "footer-dark-bar"],
 ];
 
 const ctx = (over: Partial<RenderContext> = {}): RenderContext => ({

@@ -11,6 +11,7 @@ import { footerRuled } from "./footer-ruled";
 import { footerSignoff } from "./footer-signoff";
 import { footerSignup } from "./footer-signup";
 import { footerWordmark } from "./footer-wordmark";
+import { footerDarkBar } from "./footer-dark-bar";
 
 /** First is the default for new stores (the Classic template's footer). */
-export const FOOTER_DESIGNS: readonly Design[] = [footerClassic, footerLine, footerWordmark, footerSignup, footerCentered, footerRuled, footerSignoff, footerPanel, footerHelp, footerLinks, footerColumnsSignup, footerCenteredLight];
+export const FOOTER_DESIGNS: readonly Design[] = [footerClassic, footerLine, footerWordmark, footerSignup, footerCentered, footerRuled, footerSignoff, footerPanel, footerHelp, footerLinks, footerColumnsSignup, footerCenteredLight, footerDarkBar];
