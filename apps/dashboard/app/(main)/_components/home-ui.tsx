@@ -174,3 +174,50 @@ export function percentChange(current: number, previous: number): number | null 
   if (previous <= 0) return current > 0 ? null : 0;
   return ((current - previous) / previous) * 100;
 }
+
+/**
+ * Tiny trend line for a KPI card, oldest value first. RTL mirrors it so the
+ * newest day sits on the left, like the sales chart.
+ */
+export function Sparkline({ values, className }: { values: number[]; className?: string }) {
+  const W = 200;
+  const H = 34;
+  if (values.length < 2 || values.every((v) => v === 0)) {
+    return <div className={cn("h-[34px] border-b border-dashed", className)} aria-hidden />;
+  }
+  const max = Math.max(...values);
+  const min = Math.min(...values);
+  const points = values.map((v, i) => [
+    (i * W) / (values.length - 1),
+    H - 3 - ((v - min) / (max - min || 1)) * (H - 6),
+  ]);
+  const line = `M${points.map(([x, y]) => `${x!.toFixed(1)},${y!.toFixed(1)}`).join("L")}`;
+  return (
+    <svg
+      viewBox={`0 0 ${W} ${H}`}
+      preserveAspectRatio="none"
+      className={cn("block h-[34px] w-full rtl:-scale-x-100", className)}
+      aria-hidden
+    >
+      <path d={`${line}L${W},${H}L0,${H}Z`} className="fill-primary opacity-[0.08]" />
+      <path
+        d={line}
+        fill="none"
+        vectorEffect="non-scaling-stroke"
+        className="stroke-primary"
+        strokeWidth={1.75}
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+/** A Simple Icons brand mark (24×24 path) in the current text colour. */
+export function BrandIcon({ path, className }: { path: string; className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={cn("size-[15px]", className)} aria-hidden>
+      <path d={path} />
+    </svg>
+  );
+}

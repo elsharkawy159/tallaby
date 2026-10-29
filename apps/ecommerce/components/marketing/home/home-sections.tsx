@@ -1,9 +1,8 @@
 import {
+  ChartColumn,
   Check,
   FileSpreadsheet,
   FileText,
-  Gift,
-  Headset,
   Images,
   Languages,
   LayoutPanelTop,
@@ -23,7 +22,7 @@ import {
   Users,
 } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
-import { CountUp, Intro, IntroWords, Reveal, StaggerChildren } from "@workspace/motion";
+import { Intro, IntroWords, Reveal, StaggerChildren } from "@workspace/motion";
 import { Link } from "@/i18n/navigation";
 import { CtaButton } from "@/components/marketing/site/cta-button";
 import { ForwardArrow } from "@/components/marketing/site/direction-icons";
@@ -31,7 +30,7 @@ import { FaqAccordion, type FaqEntry } from "@/components/marketing/site/faq-acc
 import { Container, Eyebrow, Section, SectionHeading } from "@/components/marketing/site/layout-primitives";
 import { richTags } from "@/components/marketing/site/rich-text";
 import { SignupTrigger, SlugClaimForm } from "@/components/marketing/signup/signup-trigger.client";
-import { TemplateGallery } from "@/components/marketing/templates/template-gallery.client";
+import { TemplateCategories } from "@/components/marketing/templates/template-categories";
 import { CONTACT } from "@/lib/marketing/site.lib";
 import { getTemplateGallery } from "@/lib/marketing/templates.server";
 import { BuilderStudio } from "./builder-studio.client";
@@ -128,15 +127,10 @@ export async function TemplatesShowcase() {
   return (
     <Section id="templates" aria-labelledby="tpl-title" className="border-y border-neutral-100 bg-white">
       <Container>
-        <TemplateGallery
-          entries={entries}
-          variant="home"
-          heading={
-            <Reveal>
-              <SectionHeading id="tpl-title" kicker={t("kicker")} title={t("title")} description={t("desc")} className="mb-0" />
-            </Reveal>
-          }
-        />
+        <Reveal>
+          <SectionHeading id="tpl-title" kicker={t("kicker")} title={t("title")} description={t("desc")} />
+        </Reveal>
+        <TemplateCategories entries={entries} />
       </Container>
     </Section>
   );
@@ -233,16 +227,16 @@ export async function FeaturesSection() {
 
 export async function PricingTeaser() {
   const t = await getTranslations("home.pricing");
-  const tc = await getTranslations("common");
   const items = [
     { icon: Users, label: t("i1") },
     { icon: Package, label: t("i2") },
     { icon: ShoppingBag, label: t("i3") },
     { icon: MousePointerClick, label: t("i4") },
     { icon: LayoutTemplate, label: t("i5") },
-    { icon: Headset, label: t("i6") },
-    { icon: Store, label: t("i7") },
-    { icon: Gift, label: t("i8") },
+    { icon: TicketPercent, label: t("i6") },
+    { icon: Sparkles, label: t("i7") },
+    { icon: ChartColumn, label: t("i8") },
+    { icon: Star, label: t("i9") },
   ];
 
   return (
@@ -255,13 +249,8 @@ export async function PricingTeaser() {
           <div className="relative overflow-hidden bg-teal-900 px-[22px] pt-7 pb-8 text-white sm:px-8 sm:pt-9">
             <div aria-hidden className="absolute -top-[120px] size-[260px] rounded-full border-[40px] border-amber-600/10 ltr:-right-[110px] rtl:-left-[110px]" />
             <span className="relative inline-block rounded-full bg-amber-600/15 px-3.5 py-[5px] text-[13px] font-bold text-amber-300">{t("tag")}</span>
-            <div dir="ltr" className="relative mt-[18px] mb-3 flex items-end justify-center gap-2.5">
-              <CountUp className="font-latin text-[84px] leading-[0.85] font-extrabold tracking-[-0.05em] text-amber-600 sm:text-[104px]">5</CountUp>
-              <span className="grid pb-1.5 text-left">
-                <b className="text-2xl leading-none font-extrabold text-white">{tc("egp")}</b>
-                <small className="mt-1 text-[15px] text-haze">{t("perOrder")}</small>
-              </span>
-            </div>
+            <p className="relative mt-[18px] text-[64px] leading-none font-extrabold tracking-[-0.03em] text-amber-600 sm:text-[80px]">{t("price")}</p>
+            <p className="relative mt-3.5 mb-3 inline-block rounded-full bg-white/10 px-3.5 py-1 text-[14px] font-semibold text-white">{t("commission")}</p>
             <p className="relative mx-auto max-w-[340px] text-[15px] text-mist">{t("desc")}</p>
           </div>
           <StaggerChildren as="ul" stagger={0.06} className="m-0 grid list-none px-[22px] pt-[18px] pb-1 text-start sm:px-8 sm:pt-6 sm:pb-2">
@@ -274,18 +263,9 @@ export async function PricingTeaser() {
               </li>
             ))}
           </StaggerChildren>
-          <div className="px-[22px] pt-3.5 sm:px-8 sm:pt-4">
+          <div className="px-[22px] pt-3.5 pb-[22px] sm:px-8 sm:pt-4 sm:pb-7">
             <SignupTrigger size="lg" className="h-[54px] w-full rounded-[14px] text-base" />
           </div>
-          <small className="block px-[22px] pt-3.5 pb-[22px] text-[13px] text-neutral-600 sm:px-8 sm:pb-7">
-            {t.rich("note", {
-              link: (chunks) => (
-                <Link href="/pricing" className="text-teal-700 hover:underline">
-                  {chunks}
-                </Link>
-              ),
-            })}
-          </small>
         </Reveal>
       </Container>
     </Section>

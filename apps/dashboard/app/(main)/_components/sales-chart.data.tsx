@@ -91,7 +91,7 @@ function ChartSummary({
         <i className={`size-2.5 rounded-[3px] ${swatch}`} aria-hidden />
         {label}
       </small>
-      <b className="font-montserrat text-xl font-extrabold tabular-nums">
+      <b className="font-montserrat text-xl font-semibold tabular-nums">
         {value}
         {unit && <span className="ms-1 font-noto-kufi-arabic text-[13px] font-medium text-muted-foreground">{unit}</span>}
       </b>

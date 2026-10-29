@@ -49,18 +49,24 @@ async function accessToken(env: Ga4Env): Promise<string> {
   return token.value;
 }
 
-async function fetchStoreViews(storeId: string, range: StoreViewsRange): Promise<StoreViewsReport> {
+/** One GA4 Data API `runReport` on Tallaby's storefront property; returns the raw JSON. */
+export async function runGa4Report(body: unknown): Promise<unknown> {
   const env = readGa4Env();
   if (!env) throw new Error("GA4 is not configured");
   const response = await fetch(`https://analyticsdata.googleapis.com/v1beta/properties/${env.propertyId}:runReport`, {
     method: "POST",
     headers: { authorization: `Bearer ${await accessToken(env)}`, "content-type": "application/json" },
-    body: JSON.stringify(storeViewsReportBody(storeId, range)),
+    body: JSON.stringify(body),
     cache: "no-store",
   });
   if (!response.ok) throw new Error(`GA4 runReport failed (${response.status})`);
+  return response.json();
+}
+
+async function fetchStoreViews(storeId: string, range: StoreViewsRange): Promise<StoreViewsReport> {
+  const json = await runGa4Report(storeViewsReportBody(storeId, range));
   const now = new Date();
-  return parseStoreViewsReport(await response.json(), range, dayInZone(now, STORE_VIEWS_TIME_ZONE), now.toISOString());
+  return parseStoreViewsReport(json, range, dayInZone(now, STORE_VIEWS_TIME_ZONE), now.toISOString());
 }
 
 /**

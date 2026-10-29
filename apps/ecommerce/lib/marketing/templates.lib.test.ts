@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildGallery, categoryCode, localized, templateFrameSrc, type CatalogTemplate } from "./templates.lib";
+import { buildGallery, categoryCode, categoryShowcase, localized, templateFrameSrc, type CatalogTemplate } from "./templates.lib";
 
 const row = (over: Partial<CatalogTemplate>): CatalogTemplate => ({
   key: "x",
@@ -75,5 +75,35 @@ describe("template gallery", () => {
     expect(localized(null, "ar")).toBeNull();
     expect(categoryCode("fashion")).toBe("fa");
     expect(categoryCode("other")).toBe("ge");
+  });
+});
+
+describe("home category cards", () => {
+  const gallery = buildGallery(
+    [
+      row({ key: "mode", category: "fashion", sortOrder: 20 }),
+      row({ key: "fashion-warm", category: "fashion", sortOrder: 1250 }),
+      row({ key: "shanta", category: "shoes-bags", sortOrder: 520 }),
+      row({ key: "volt", category: "electronics", sortOrder: 60 }),
+      row({ key: "lumiere", category: "jewelry", sortOrder: 250 }),
+      row({ key: "sports-warm", category: "sports", sortOrder: 1490 }),
+    ],
+    "en",
+  );
+
+  const ids = (covers: { id: string }[]) => covers.map((c) => c.id).sort();
+
+  it("offers each featured category's templates but the newest as covers, skipping empty ones", () => {
+    const { cards } = categoryShowcase(gallery, ["fa", "el", "be"]);
+    expect(cards.map((c) => [c.category, c.count, ids(c.covers)])).toEqual([
+      ["fa", 3, ["mode", "shanta"]],
+      ["el", 1, ["volt"]],
+    ]);
+  });
+
+  it("puts every other template behind the More card, without the newest as a cover", () => {
+    const more = categoryShowcase(gallery, ["fa", "el"]).more;
+    expect(more && [more.count, ids(more.covers)]).toEqual([2, ["lumiere"]]);
+    expect(categoryShowcase(gallery, ["fa", "el", "jw", "sp"]).more).toBeNull();
   });
 });

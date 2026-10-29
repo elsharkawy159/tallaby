@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
-import { Check, Globe, LayoutTemplate, Package, Rocket, Truck } from "lucide-react";
+import { ArrowLeft, Check, Globe, LayoutTemplate, Package, Rocket, Truck } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Button } from "@workspace/ui/components/button";
@@ -8,7 +8,6 @@ import { cn } from "@workspace/ui/lib/utils";
 import { getHomeSnapshot, type HomeSnapshot } from "./home.queries";
 import { SETUP_DISMISS_COOKIE } from "./home.shared";
 import { HomeCard, IconTile } from "./home-ui";
-import { SetupAccordion } from "./setup-accordion.client";
 import { SetupDismissible } from "./setup-dismiss.client";
 import { SetupPublishButton } from "./setup-publish.client";
 
@@ -25,7 +24,7 @@ export function isSetupComplete(snapshot: HomeSnapshot) {
   return isSetupDone(snapshot.setup, snapshot.setupStoreId);
 }
 
-/** "Get your store ready" checklist. Hidden once complete or dismissed. */
+/** "Get your store ready" guide: numbered step cards. Hidden once complete or dismissed. */
 export async function SetupChecklistData() {
   const [snapshot, cookieStore, t] = await Promise.all([
     getHomeSnapshot(),
@@ -41,122 +40,113 @@ export async function SetupChecklistData() {
     icon: ICONS[task.key],
   }));
   const doneCount = TASKS.filter((task) => task.done).length;
-  // Open steps first (in their recommended order), so the visible half is what is left to do.
-  const ordered = [...TASKS.filter((task) => !task.done), ...TASKS.filter((task) => task.done)];
-  const nextKey = ordered[0]?.key;
+  // The first open step in the recommended order is the one to do next.
+  const nextKey = TASKS.find((task) => !task.done)?.key;
   const canPublish = publishReady(snapshot.setup);
   const lockReason = publishLockReason(snapshot.setup);
+  const percent = Math.round((doneCount / TASKS.length) * 100);
 
   return (
     <SetupDismissible>
-      <HomeCard aria-labelledby="setup-title" className="overflow-hidden">
-        <div className="flex flex-col gap-4 px-5 pb-4 pt-5">
-          <div className="flex items-start gap-3.5 pe-10">
-            <IconTile icon={Rocket} tone="accent" className="size-11 rounded-xl" />
-            <div className="min-w-0 flex-1">
-              <h2 id="setup-title" className="text-[17px] font-bold leading-snug">
-                {t("title")}
-              </h2>
-              <p className="mt-0.5 text-pretty text-[13px] text-muted-foreground">{t("description")}</p>
-            </div>
-            <p className="hidden shrink-0 text-end sm:block">
-              <span dir="ltr" className="block font-montserrat text-2xl font-bold leading-none tabular-nums">
-                {doneCount}
-                <span className="text-base font-semibold text-faint">/{TASKS.length}</span>
-              </span>
-              <span className="mt-1 block text-[11px] text-muted-foreground">{t("progress")}</span>
-            </p>
+      <HomeCard aria-labelledby="setup-title" className="flex flex-col gap-[18px] p-5 sm:p-[22px]">
+        <div className="flex items-start gap-3.5 pe-10">
+          <IconTile icon={Rocket} tone="accent" className="size-11 rounded-xl" />
+          <div className="min-w-0 flex-1">
+            <h2 id="setup-title" className="text-lg font-bold leading-normal">
+              {t("title")}
+            </h2>
+            <p className="mt-0.5 text-pretty text-[13px] text-muted-foreground">{t("description")}</p>
           </div>
+        </div>
 
-          {/* One segment per step; the next one breathes softly. */}
+        <div className="flex flex-col gap-2">
+          <div className="flex justify-between text-[13px] text-muted-foreground">
+            <span>{t("progressCount", { done: doneCount, total: TASKS.length })}</span>
+            <b dir="ltr" className="font-montserrat text-primary-ink tabular-nums">
+              {percent}%
+            </b>
+          </div>
           <div
-            className="flex h-2 gap-1"
+            className="h-2 overflow-hidden rounded-full border bg-muted"
             role="progressbar"
             aria-valuemin={0}
             aria-valuemax={TASKS.length}
             aria-valuenow={doneCount}
             aria-label={t("progress")}
           >
-            {TASKS.map((task, i) => (
-              <span
-                key={task.key}
-                className={cn(
-                  "flex-1 rounded-full transition-colors duration-500",
-                  i < doneCount
-                    ? "bg-accent"
-                    : i === doneCount
-                      ? "bg-primary/35 motion-safe:animate-pulse"
-                      : "bg-muted"
-                )}
-              />
-            ))}
+            <i
+              className="block h-full rounded-full bg-primary transition-[width] duration-500 ease-[cubic-bezier(.2,.6,.2,1)]"
+              style={{ width: `${percent}%` }}
+            />
           </div>
-          <p className="-mt-2 text-xs text-muted-foreground sm:hidden">
-            {t("remaining", { count: TASKS.length - doneCount })}
-          </p>
         </div>
 
-        <SetupAccordion showAllLabel={t("showAll", { count: TASKS.length })} showLessLabel={t("showLess")}>
-          <ol className="grid grid-cols-1 gap-2 px-5 pb-3 lg:grid-cols-2">
-            {ordered.map((task) => {
-              const done = task.done;
-              const next = task.key === nextKey;
-              return (
-                <li
-                  key={task.key}
-                  className={cn(
-                    "flex items-center gap-3 rounded-xl border px-3.5 py-3",
-                    next && "border-primary/25 bg-primary-soft",
-                    done && "border-transparent bg-muted/60"
-                  )}
-                >
+        <ol className="grid grid-cols-1 gap-3 pt-1 sm:grid-cols-2 xl:grid-cols-4">
+          {TASKS.map((task, i) => {
+            const done = task.done;
+            const next = task.key === nextKey;
+            return (
+              <li
+                key={task.key}
+                className={cn(
+                  "relative flex flex-col gap-2.5 rounded-[14px] border bg-card p-4",
+                  next && "border-primary ring-[3px] ring-ring/25",
+                  done && "bg-muted/60"
+                )}
+              >
+                {next && (
+                  <span className="absolute -top-2.5 start-3.5 inline-flex h-5 items-center whitespace-nowrap rounded-full bg-primary px-2 text-[11px] font-semibold text-primary-foreground">
+                    {t("nextStep")}
+                  </span>
+                )}
+                <div className="flex items-center justify-between">
+                  <IconTile icon={task.icon} />
+                  <span
+                    className={cn(
+                      "flex size-6 shrink-0 items-center justify-center rounded-full border-[1.5px] font-montserrat text-[11px] font-bold",
+                      done ? "border-success bg-success text-white" : "text-muted-foreground"
+                    )}
+                  >
+                    {done ? <Check className="size-3.5" aria-hidden /> : i + 1}
+                  </span>
+                </div>
+                <div>
+                  <b className={cn("block text-sm font-semibold leading-normal", done && "text-muted-foreground")}>
+                    {t(`tasks.${task.key}.title`)}
+                    {done && <span className="sr-only"> — {t("done")}</span>}
+                  </b>
+                  <small className="block text-pretty text-xs leading-relaxed text-muted-foreground">
+                    {!done && task.key === "publish" && lockReason
+                      ? t(`publish.${lockReason}`)
+                      : t(`tasks.${task.key}.description`)}
+                  </small>
+                </div>
+                <div className="mt-auto flex items-center justify-between gap-2 pt-1">
                   {done ? (
-                    <span className="flex size-9 shrink-0 items-center justify-center rounded-[10px] bg-success-soft text-success">
-                      <Check className="size-[17px]" aria-hidden />
+                    <span className="inline-flex items-center gap-1 text-xs font-medium text-success">
+                      <Check className="size-3.5" aria-hidden />
+                      {t("stepDone")}
                     </span>
-                  ) : (
-                    <IconTile icon={task.icon} className={cn(next && "bg-primary text-white")} />
-                  )}
-                  <div className="min-w-0 flex-1">
-                    {next && (
-                      <span className="mb-0.5 block text-[11px] font-semibold text-primary-ink">
-                        {t("nextStep")}
-                      </span>
-                    )}
-                    <b
-                      className={cn(
-                        "block truncate text-sm leading-normal",
-                        done ? "font-medium text-muted-foreground line-through" : "font-semibold"
-                      )}
-                    >
-                      {t(`tasks.${task.key}.title`)}
-                      {done && <span className="sr-only"> — {t("done")}</span>}
-                    </b>
-                    {!done && (
-                      <small className="line-clamp-2 text-xs text-muted-foreground">
-                        {task.key === "publish" && lockReason
-                          ? t(`publish.${lockReason}`)
-                          : t(`tasks.${task.key}.description`)}
-                      </small>
-                    )}
-                  </div>
-                  {!done && task.key === "publish" && snapshot.setupStoreId ? (
+                  ) : task.key === "publish" && snapshot.setupStoreId ? (
                     <SetupPublishButton
                       storeId={snapshot.setupStoreId}
                       ready={canPublish}
                       lockedLabel={lockReason ? t(`publish.${lockReason}`) : undefined}
                       variant={next ? "secondary" : "neutral"}
                     />
-                  ) : !done && (
+                  ) : (
                     <Button asChild size="sm" variant={next ? "secondary" : "neutral"} className="rounded-[9px]">
-                      <Link href={task.href}>{t(`tasks.${task.key}.cta`)}</Link>
+                      <Link href={task.href}>
+                        {t(`tasks.${task.key}.cta`)}
+                        <ArrowLeft className="ltr:rotate-180" aria-hidden />
+                      </Link>
                     </Button>
                   )}
-                </li>
-              );
-            })}
-          </ol>
-        </SetupAccordion>
+                </div>
+              </li>
+            );
+          })}
+        </ol>
       </HomeCard>
     </SetupDismissible>
   );

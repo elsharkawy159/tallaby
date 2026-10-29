@@ -58,7 +58,7 @@ export default async function TemplatesPage({ params }: { params: Promise<{ loca
 
       <Section>
         <Container>
-          <TemplateGallery entries={entries} variant="page" />
+          <TemplateGallery entries={entries} />
           <Reveal className="mt-[72px] grid gap-5 border-t border-neutral-200 pt-10 sm:grid-cols-2 lg:grid-cols-4">
             {why.map((w) => (
               <div key={w.title} className="grid gap-1.5">

@@ -53,7 +53,7 @@ export async function AttentionData() {
                 <span
                   className={cn(
                     "min-w-6 text-center font-montserrat text-lg tabular-nums",
-                    count ? "font-extrabold" : "font-semibold text-faint"
+                    count ? "font-semibold" : "font-semibold text-faint"
                   )}
                 >
                   {formatNumber(count, locale)}

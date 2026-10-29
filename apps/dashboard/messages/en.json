@@ -699,7 +699,9 @@
         "copied": "Link copied",
         "copyFailed": "Couldn't copy the link",
         "visit": "Visit store"
-      }
+      },
+      "progressCount": "{done} of {total} {total, plural, one {step} other {steps}}",
+      "stepDone": "Done"
     },
     "kpis": {
       "currency": "EGP",
@@ -720,7 +722,14 @@
       "storeWallet": "Store wallet",
       "walletNegative": "Below zero — top up now",
       "walletView": "View wallet",
-      "walletZero": "Platform fees are paid from this wallet"
+      "walletZero": "Platform fees are paid from this wallet",
+      "visits": "Store visits",
+      "visitsUnit": "visits",
+      "conversion": "Conversion rate",
+      "visitsStoresOnly": "Counted for store websites only",
+      "noVisits": "No visits yet",
+      "conversionHint": "Of your store website visits",
+      "viewDetails": "View details"
     },
     "chart": {
       "title": "Sales",
@@ -801,6 +810,50 @@
       "title": "Welcome to Tallaby! Your store is ready",
       "description": "Your website stays offline until you publish it. Follow the steps below to add a product, pick a design and go live.",
       "close": "Close"
+    },
+    "metrics": {
+      "label": "More metrics",
+      "aov": "Average order value",
+      "newCustomers": "New customers",
+      "customersUnit": "customers"
+    },
+    "journey": {
+      "title": "Customer journey",
+      "description": "From visit to completed order",
+      "visits": "Store visits",
+      "carts": "Added to cart",
+      "orders": "Completed the order",
+      "dropoff": "{percent} of shoppers who added to cart did not order. Try a discount code or free shipping to win them back.",
+      "dropoffCta": "Create a discount code",
+      "empty": "The customer journey shows up once your store is published and gets its first visitors.",
+      "storesOnly": "The customer journey is for store websites only. Pick a store or all channels.",
+      "viewAnalytics": "Store visits"
+    },
+    "sources": {
+      "title": "Traffic sources",
+      "description": "Where your customers come from",
+      "viewAll": "Details",
+      "visits": "{count, plural, one {# visit} other {# visits}}",
+      "platforms": {
+        "instagram": "Instagram",
+        "facebook": "Facebook",
+        "tiktok": "TikTok",
+        "google": "Google",
+        "whatsapp": "WhatsApp",
+        "youtube": "YouTube",
+        "direct": "Direct"
+      },
+      "emptyTitle": "No visits yet",
+      "emptyDescription": "Share your store link on your accounts to start getting visits.",
+      "storesOnly": "Traffic sources are for store websites only.",
+      "shareCta": "Social media links"
+    },
+    "community": {
+      "title": "Join Tallaby's WhatsApp channel",
+      "description": "News about new platform features, selling tips and exclusive offers for sellers.",
+      "join": "Join the channel",
+      "socialTitle": "Follow us on social media",
+      "socialDescription": "Tutorials and seller success stories on Tallaby"
     }
   },
   "table": {

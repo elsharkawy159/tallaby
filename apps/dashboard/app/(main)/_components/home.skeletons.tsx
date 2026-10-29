@@ -106,47 +106,72 @@ export function TableCardSkeleton() {
   );
 }
 
+export function MetricsSkeleton() {
+  return (
+    <HomeCard className="grid grid-cols-1 gap-px overflow-hidden bg-border sm:grid-cols-2 xl:grid-cols-4">
+      {Array.from({ length: 4 }, (_, i) => (
+        <div key={i} className="flex items-center gap-3 bg-card px-5 py-4">
+          <Skeleton className="size-9 rounded-[10px]" />
+          <div className="flex-1 space-y-1.5">
+            <Skeleton className="h-3 w-24" />
+            <Skeleton className="h-5 w-16" />
+          </div>
+        </div>
+      ))}
+    </HomeCard>
+  );
+}
+
 /** Whole-page fallback for `loading.tsx`. */
 export function HomeSkeleton() {
   return (
     <HomeLayout
       header={<HomeHeaderSkeleton />}
       kpis={<KpisSkeleton />}
+      metrics={<MetricsSkeleton />}
       chart={<ChartSkeleton />}
+      journey={<ListCardSkeleton rows={3} />}
       attention={<ListCardSkeleton />}
-      orders={<TableCardSkeleton />}
       topProducts={<ListCardSkeleton />}
-      questions={<ListCardSkeleton rows={2} />}
+      sources={<ListCardSkeleton />}
+      orders={<TableCardSkeleton />}
     />
   );
 }
 
-/** Grid shared by the page and its skeleton. */
+/** Grid shared by the page and its skeleton (Seller Dashboard v2 design). */
 export function HomeLayout(slots: {
   header: React.ReactNode;
   setup?: React.ReactNode;
   kpis: React.ReactNode;
+  metrics: React.ReactNode;
   chart: React.ReactNode;
+  journey: React.ReactNode;
   attention: React.ReactNode;
-  orders: React.ReactNode;
   topProducts: React.ReactNode;
-  questions: React.ReactNode;
+  sources: React.ReactNode;
+  orders: React.ReactNode;
+  questions?: React.ReactNode;
+  community?: React.ReactNode;
 }) {
-  const row = "grid grid-cols-1 items-start gap-5 lg:grid-cols-[minmax(0,1.75fr)_minmax(0,1fr)]";
   return (
     <div className="mx-auto flex w-full flex-col gap-5 px-3.5 pb-20 pt-5 sm:px-6 sm:pb-[72px] sm:pt-7">
       {slots.header}
       {slots.setup}
       {slots.kpis}
-      <div className={row}>
+      {slots.metrics}
+      <div className="grid grid-cols-1 items-stretch gap-5 lg:grid-cols-[minmax(0,1.75fr)_minmax(0,1fr)] [&>*]:min-w-0">
         {slots.chart}
+        {slots.journey}
+      </div>
+      <div className="grid grid-cols-1 items-stretch gap-5 md:grid-cols-2 xl:grid-cols-3 [&>*]:min-w-0 md:[&>*:last-child]:col-span-2 xl:[&>*:last-child]:col-span-1">
         {slots.attention}
-      </div>
-      <div className={row}>
-        {slots.orders}
         {slots.topProducts}
+        {slots.sources}
       </div>
+      {slots.orders}
       {slots.questions}
+      {slots.community}
     </div>
   );
 }

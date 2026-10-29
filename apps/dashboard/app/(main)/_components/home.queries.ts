@@ -6,6 +6,7 @@ import type { HomeChannel, HomeRange } from "./home.shared";
 import type { SetupFlags } from "./setup-checklist.lib";
 import type { FeeTrialFields } from "@workspace/lib/sellers";
 import { getSellerStores } from "@/lib/stores/current-store.server";
+import { getHomeTraffic } from "@/lib/analytics/home-traffic.server";
 
 /**
  * Read-only loaders for the dashboard home. Kept out of `actions/` on purpose:
@@ -362,4 +363,108 @@ export const getUnansweredQuestions = cache(async (locale: string): Promise<Home
     productTitle: r.title ?? "",
     image: productImageUrl(r.image),
   }));
+});
+
+// ---------------------------------------------------------------------------
+// Store-website traffic (GA4), customer journey and new customers.
+// ---------------------------------------------------------------------------
+
+/**
+ * The seller's stores a home channel covers: every store for "all", none for
+ * "marketplace", or the one store (already checked by resolveHomeChannel).
+ */
+export const getHomeChannelStores = cache(async (channel: HomeChannel) => {
+  const { stores, selected } = await getSellerStores();
+  const live = stores.filter((s) => s.status !== "archived");
+  const ids =
+    channel === "all" ? live.map((s) => s.id) : channel === "marketplace" ? [] : live.filter((s) => s.id === channel).map((s) => s.id);
+  // Where "Store views" opens: the channel's store, else the sidebar's.
+  const analyticsStoreId = channel !== "all" && channel !== "marketplace" ? channel : (selected?.id ?? null);
+  return { storeIds: ids, analyticsStoreId };
+});
+
+export const getHomeTrafficFor = cache(async (range: HomeRange, channel: HomeChannel) => {
+  const [sellerId, { storeIds }] = await Promise.all([getHomeSellerId(), getHomeChannelStores(channel)]);
+  if (!sellerId) return null;
+  return getHomeTraffic(sellerId, storeIds, range);
+});
+
+const idList = (ids: string[]) => sql.join(ids.map((id) => sql`${id}::uuid`), sql`, `);
+
+export type StoreFunnel = {
+  /** Store carts that got an item in the range (or turned into an order in it). */
+  carts: number;
+  orders: number;
+  previousOrders: number;
+  /** Store orders per day, oldest first. */
+  dailyOrders: number[];
+};
+
+/** Carts and orders of the seller's store websites, for the customer journey and conversion. */
+export const getStoreFunnel = cache(async (range: HomeRange, channel: HomeChannel): Promise<StoreFunnel> => {
+  const [sellerId, { storeIds }] = await Promise.all([getHomeSellerId(), getHomeChannelStores(channel)]);
+  const empty = { carts: 0, orders: 0, previousOrders: 0, dailyOrders: Array<number>(range).fill(0) };
+  if (!sellerId || storeIds.length === 0) return empty;
+
+  const result = await db.execute(sql`
+    WITH bounds AS (SELECT ${rangeStartLocal(range)} AS start_local),
+    days AS (
+      SELECT generate_series(b.start_local, b.start_local + make_interval(days => ${range - 1}::int), interval '1 day')::date AS day
+      FROM bounds b
+    ),
+    items AS (
+      SELECT DISTINCT (oi.created_at AT TIME ZONE 'Africa/Cairo')::date AS day, oi.order_id
+      FROM order_items oi
+      JOIN orders o ON o.id = oi.order_id, bounds b
+      WHERE oi.seller_id = ${sellerId}
+        AND o.store_id IN (${idList(storeIds)})
+        AND oi.status NOT IN ${NON_REVENUE}
+        AND coalesce(oi.is_refunded, false) = false
+        AND oi.created_at >= ((b.start_local - make_interval(days => ${range}::int)) AT TIME ZONE 'Africa/Cairo')
+    )
+    SELECT
+      d.day::text AS day,
+      count(DISTINCT i.order_id)::int AS orders,
+      (SELECT count(DISTINCT x.order_id)::int FROM items x, bounds b WHERE x.day >= b.start_local::date) AS total_orders,
+      (SELECT count(DISTINCT x.order_id)::int FROM items x, bounds b WHERE x.day < b.start_local::date) AS prev_orders,
+      (SELECT count(*)::int FROM carts c, bounds b
+        WHERE c.store_id IN (${idList(storeIds)})
+          AND (
+            (c.status = 'completed' AND c.updated_at >= (b.start_local AT TIME ZONE 'Africa/Cairo'))
+            OR EXISTS (SELECT 1 FROM cart_items ci
+              WHERE ci.cart_id = c.id AND ci.created_at >= (b.start_local AT TIME ZONE 'Africa/Cairo'))
+          )) AS carts
+    FROM days d
+    LEFT JOIN items i ON i.day = d.day
+    GROUP BY d.day
+    ORDER BY d.day
+  `);
+
+  const rows = rowsOf<Record<string, any>>(result);
+  if (rows.length === 0) return empty;
+  return {
+    carts: Number(rows[0].carts),
+    orders: Number(rows[0].total_orders),
+    previousOrders: Number(rows[0].prev_orders),
+    dailyOrders: rows.map((r) => Number(r.orders)),
+  };
+});
+
+/** Customers whose first order from this seller (in the channel) falls in the range. */
+export const getNewCustomers = cache(async (range: HomeRange, channel: HomeChannel = "all"): Promise<number> => {
+  const sellerId = await getHomeSellerId();
+  if (!sellerId) return 0;
+  const result = await db.execute(sql`
+    SELECT count(*)::int AS n FROM (
+      SELECT o.user_id, min(oi.created_at) AS first_at
+      FROM order_items oi
+      JOIN orders o ON o.id = oi.order_id
+      WHERE oi.seller_id = ${sellerId}
+        AND oi.status NOT IN ${NON_REVENUE}
+        ${channelFilter(channel)}
+      GROUP BY o.user_id
+    ) f
+    WHERE f.first_at >= (${rangeStartLocal(range)} AT TIME ZONE 'Africa/Cairo')
+  `);
+  return Number(rowsOf<{ n: number }>(result)[0]?.n ?? 0);
 });

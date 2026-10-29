@@ -13,7 +13,16 @@ const FRAME_HEIGHT = 960;
  * width and scaled down. Loads when the card nears the viewport; never
  * focusable or clickable (the card is the link).
  */
-export function TemplateLiveThumb({ src, className }: { src: string; className?: string }) {
+export function TemplateLiveThumb({
+  src,
+  className,
+  frameHeight = FRAME_HEIGHT,
+}: {
+  src: string;
+  className?: string;
+  /** A taller frame for a taller box (its aspect class in `className`), so the page fills it. */
+  frameHeight?: number;
+}) {
   const box = React.useRef<HTMLDivElement>(null);
   const [scale, setScale] = React.useState<number | null>(null);
   const [loaded, setLoaded] = React.useState(false);
@@ -42,7 +51,7 @@ export function TemplateLiveThumb({ src, className }: { src: string; className?:
             "pointer-events-none absolute start-0 top-0 origin-top-left border-0 bg-white transition-opacity duration-300 rtl:origin-top-right",
             loaded ? "opacity-100" : "opacity-0",
           )}
-          style={{ width: FRAME_WIDTH, height: FRAME_HEIGHT, transform: `scale(${scale})` }}
+          style={{ width: FRAME_WIDTH, height: frameHeight, transform: `scale(${scale})` }}
         />
       ) : null}
       {loaded ? null : <div className="absolute inset-0 animate-pulse bg-neutral-100" />}

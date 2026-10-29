@@ -2349,8 +2349,9 @@
       "title": "Start from a design made for what you sell",
       "desc": "Every template is fully editable and works on mobile out of the box.",
       "filter": "Filter templates",
-      "use": "Create your store",
-      "preview": "Preview",
+      "count": "{count, plural, one {# template} other {# templates}}",
+      "more": "More categories",
+      "moreBody": "{count, plural, one {# more template} other {# more templates}}: jewelry, kids, sports, cars and more",
       "seeAll": "See all templates"
     },
     "builder": {
@@ -2612,17 +2613,18 @@
       "kicker": "Simple pricing",
       "title": "One free plan. Pay only when you sell.",
       "tag": "Free plan",
-      "perOrder": "/ order",
+      "price": "Free",
+      "commission": "+ EGP 5 commission per delivered order",
       "desc": "No monthly fee and no percentage of your sales. You're only charged for delivered orders.",
       "i1": "Unlimited visitors",
       "i2": "Unlimited products",
       "i3": "Unlimited orders",
       "i4": "Website builder editor",
       "i5": "Free themes and sections",
-      "i6": "Fast support from real people",
-      "i7": "Up to 3 stores",
-      "i8": "Orders in your first 7 days are free",
-      "note": "Payment processing and shipping are charged separately. <link>Full pricing details</link>"
+      "i6": "Create discount coupons",
+      "i7": "AI tools",
+      "i8": "Basic store performance analytics",
+      "i9": "Customer product reviews"
     },
     "faq": {
       "kicker": "FAQ",
@@ -2647,6 +2649,11 @@
       "fa": "Fashion",
       "be": "Beauty",
       "ho": "Home",
+      "fo": "Food",
+      "jw": "Jewelry",
+      "ki": "Kids",
+      "sp": "Sports",
+      "au": "Cars",
       "ac": "Accessories"
     },
     "hero": {

@@ -42,15 +42,27 @@ export type GalleryEntry = {
   palette: string[];
   /** Home page first. */
   pages: GalleryPage[];
+  /** The code catalog's order: a higher number is a newer template. */
+  sortOrder: number;
 };
 
+/** Template categories (store industry ids) → gallery filter codes; anything else is "ge". */
 const CATEGORY_CODES: Record<string, Exclude<TemplateCategory, "all">> = {
   general: "ge",
   electronics: "el",
   fashion: "fa",
+  "shoes-bags": "fa",
   beauty: "be",
   home: "ho",
+  kitchen: "ho",
+  food: "fo",
+  sweets: "fo",
+  jewelry: "jw",
+  kids: "ki",
+  sports: "sp",
+  auto: "au",
   accessories: "ac",
+  "mobile-accessories": "ac",
 };
 
 export function categoryCode(category: string): Exclude<TemplateCategory, "all"> {
@@ -101,5 +113,38 @@ export function buildGallery(rows: readonly CatalogTemplate[], locale: string): 
       pages: [...row.pages]
         .sort((a, b) => Number(b.isHome) - Number(a.isHome))
         .map((page) => ({ slug: page.slug, isHome: page.isHome, name: localized(page.names, locale) ?? page.name })),
+      sortOrder: row.sortOrder,
     }));
+}
+
+/** A card's picture: the template key and thumbnail, small enough to hand to a client component. */
+export type CoverPick = { id: string; thumbnailUrl: string | null };
+
+export type CategoryCard = { category: Exclude<TemplateCategory, "all">; count: number; covers: CoverPick[] };
+
+/**
+ * The templates a card may be shown by (one is picked at random per visit):
+ * all but the newest (highest sort order), since the newest ones of a niche
+ * look alike (owner, 2026-10-29). A lone template is kept.
+ */
+function coverPool(entries: readonly GalleryEntry[]): CoverPick[] {
+  const newest = entries.reduce<GalleryEntry | undefined>((best, e) => (!best || e.sortOrder > best.sortOrder ? e : best), undefined);
+  const pool = entries.length > 1 ? entries.filter((e) => e !== newest) : entries;
+  return pool.map((e) => ({ id: e.id, thumbnailUrl: e.thumbnailUrl }));
+}
+
+/**
+ * The home page's category cards: one per `featured` code that has templates,
+ * plus a "more" card for every other template. `more` is null when nothing is left.
+ */
+export function categoryShowcase(
+  entries: readonly GalleryEntry[],
+  featured: readonly Exclude<TemplateCategory, "all">[],
+): { cards: CategoryCard[]; more: { count: number; covers: CoverPick[] } | null } {
+  const cards = featured.flatMap((category) => {
+    const matching = entries.filter((e) => e.category === category);
+    return matching.length ? [{ category, count: matching.length, covers: coverPool(matching) }] : [];
+  });
+  const rest = entries.filter((e) => !featured.includes(e.category));
+  return { cards, more: rest.length ? { count: rest.length, covers: coverPool(rest) } : null };
 }

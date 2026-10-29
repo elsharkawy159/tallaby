@@ -3,7 +3,10 @@ import { getTranslations } from "next-intl/server";
 import { Skeleton } from "@workspace/ui/components/skeleton";
 import { AttentionData } from "./_components/attention.data";
 import { HomeGreeting, HomeHeaderView, HomeSubtitle } from "./_components/home-header.data";
-import { HomeKpisData } from "./_components/home-kpis.data";
+import { HomeKpisData, HomeMetricsData } from "./_components/home-kpis.data";
+import { CommunityCard } from "./_components/community-card";
+import { CustomerJourneyData } from "./_components/customer-journey.data";
+import { TrafficSourcesData } from "./_components/traffic-sources.data";
 import { ChannelSelect, HomeRangeProvider, RangePending, RangeSelect } from "./_components/home-range.client";
 import { parseHomeChannel, parseHomeRange, resolveHomeChannel } from "./_components/home.shared";
 import { getSellerStores } from "@/lib/stores/current-store.server";
@@ -11,6 +14,7 @@ import {
   ChartSkeleton,
   HomeLayout,
   KpisSkeleton,
+  MetricsSkeleton,
   ListCardSkeleton,
   TableCardSkeleton,
 } from "./_components/home.skeletons";
@@ -88,6 +92,13 @@ export default async function VendorDashboardPage({
             </Suspense>
           </RangePending>
         }
+        metrics={
+          <RangePending>
+            <Suspense fallback={<MetricsSkeleton />}>
+              <HomeMetricsData range={range} channel={channel} />
+            </Suspense>
+          </RangePending>
+        }
         chart={
           <RangePending>
             <Suspense fallback={<ChartSkeleton />}>
@@ -95,14 +106,16 @@ export default async function VendorDashboardPage({
             </Suspense>
           </RangePending>
         }
+        journey={
+          <RangePending>
+            <Suspense fallback={<ListCardSkeleton rows={3} />}>
+              <CustomerJourneyData range={range} channel={channel} />
+            </Suspense>
+          </RangePending>
+        }
         attention={
           <Suspense fallback={<ListCardSkeleton />}>
             <AttentionData />
-          </Suspense>
-        }
-        orders={
-          <Suspense fallback={<TableCardSkeleton />}>
-            <RecentOrdersData />
           </Suspense>
         }
         topProducts={
@@ -112,11 +125,24 @@ export default async function VendorDashboardPage({
             </Suspense>
           </RangePending>
         }
+        sources={
+          <RangePending>
+            <Suspense fallback={<ListCardSkeleton />}>
+              <TrafficSourcesData range={range} channel={channel} />
+            </Suspense>
+          </RangePending>
+        }
+        orders={
+          <Suspense fallback={<TableCardSkeleton />}>
+            <RecentOrdersData />
+          </Suspense>
+        }
         questions={
           <Suspense fallback={<ListCardSkeleton rows={2} />}>
             <UnansweredQuestionsData />
           </Suspense>
         }
+        community={<CommunityCard />}
       />
     </HomeRangeProvider>
   );

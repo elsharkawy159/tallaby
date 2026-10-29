@@ -4,6 +4,8 @@ The topic bank for every Tallaby (طلبي) marketing video. **Audience for now:
 
 Use it together with [`TALLABY_VIDEO_RULES.md`](TALLABY_VIDEO_RULES.md) (format, voiceover, brand, QA). The rules win on how the video looks and sounds; this file decides **what the video is about**.
 
+**Focus: our finished features (owner, 2026-10-29).** Every video shows one طلبي feature that is done: listed in [`ROADMAP.md`](../../../ROADMAP.md) §2.1 Live, or a roadmap feature (F-xx) whose tasks are all `[x]` in its §6 checklist. Roadmap features that are `[Planned]` or `[In progress]` (customers list, fake-order protection, missed orders, invoices, manual orders, push alerts, upsell, staff accounts, …) never get a video until they are done. §2.1 below maps every live area to its topics.
+
 ---
 
 ## 0. Quick start: `/brag-slim` with only a count (owner, 2026-10-27)
@@ -40,7 +42,7 @@ The owner runs **`/brag-slim`** and says only how many videos they want (`/brag-
 
 **Run order for a batch of N:**
 
-1. Refresh §3 from the code and plan (§2). This is required on every run, not weekly.
+1. **Read `ROADMAP.md` first, every time the owner asks for new videos** (§2.1 Live, §6 checklist, newest §7 log entries), then refresh the §2.1 map and §3 from it, the code and `PLAN.md` (§2). This is required on every run, not weekly, and never skipped because an earlier run already read it. In the topic table you show the owner, name the `ROADMAP.md` §2.1 area each video covers.
 2. Pick the N topics (§1), then tell the owner the list in one short table (ID, title, format, hook) and start straight away; don't wait for approval unless something is unclear.
 3. Build each video with the full `/brag` workflow and the rules. Videos may be built in parallel subagents, each briefed with both files, but **generate the voiceovers one at a time** (ElevenLabs rate limits break parallel takes).
 4. Run the rules §10 QA on every video; fix or re-render failures before delivering.
@@ -52,9 +54,10 @@ The owner runs **`/brag-slim`** and says only how many videos they want (`/brag-
 2. **New features always get a video.** Every §3 topic that is **not yet covered** goes into the batch first, newest first, one video each. "Covered" means it has a §15 row for a delivered video that was not pulled or rejected. When N ≥ 2, keep at least one slot for a non-new topic so the batch stays varied; new features that don't fit go first in the next run. When N = 1 and an uncovered new feature exists, the video is about it.
 3. **Fill the other slots in this order:**
    1. Any remaining uncovered topic in **§3 New features** (newest first).
-   2. Otherwise, a ✅ topic from §4–§12 whose pillar was **not used in the last 3 videos** and whose ID was **not used in the last 30 days**.
-   3. If a season in §13 starts within the next 14 days, prefer its seasonal angle.
-   4. Within one batch, never repeat a topic ID or a pillar unless N is larger than the number of pillars with usable topics.
+   2. Otherwise, a ✅ **feature** topic from §4–§10 whose pillar was **not used in the last 3 videos** and whose ID was **not used in the last 30 days**. Prefer live `ROADMAP.md` §2.1 areas with no delivered video yet (see the "Covered" column in §2.1).
+   3. Pillar H (selling tips) at most **1 video in 5**, and only when the linked feature takes most of the video on screen. Pillar I is a format, not a topic: always pair it with a feature topic.
+   4. If a season in §13 starts within the next 14 days, prefer its seasonal angle (still on a feature topic).
+   5. Within one batch, never repeat a topic ID or a pillar unless N is larger than the number of pillars with usable topics.
 4. **Check what was used:** read §15 (Used topics log). On the daily automated run, also read the last 30 days of Buffer posts.
 5. **Check the status:**
    - ✅ **Live:** usable as is (still check the screen in the code before you show it).
@@ -69,17 +72,83 @@ The owner runs **`/brag-slim`** and says only how many videos they want (`/brag-
 
 **At the start of every run** (every `/brag-slim` or `/brag` call and every daily run), before picking topics:
 
-1. Read `PLAN.md` §22 (checklist) and the newest entries in §23 (log), plus `git log origin/main --since="14 days ago" --oneline`.
-2. For each new **seller-facing** feature that is live on production and has no topic yet, add a topic to **§3 New features** with today's date, in the same format, with `**Covered:** not yet`. Tell the owner which new features you added.
+1. Read `ROADMAP.md` §2.1 (Live inventory), its §6 checklist (any feature with every task `[x]`) and the newest §7 log entries; then `PLAN.md` §22 (checklist) and the newest §23 entries, plus `git log origin/main --since="14 days ago" --oneline`.
+2. For each new **seller-facing** feature that is done there, live on production and has no topic yet, add a topic to **§3 New features** with today's date, in the same format, with `**Covered:** not yet`, and add it to the §2.1 map. Tell the owner which new features you added.
 3. When a §3 topic has been covered and is older than 30 days, move it to its pillar section below.
 4. When a 🟡 topic is confirmed live, change it to ✅. When a feature is removed, delete its topic.
-5. Never add a topic for something that is only Planned.
+5. Never add a topic for something that is only Planned or in progress (in `ROADMAP.md` or `PLAN.md`).
+
+### 2.1 Done features → topics (from `ROADMAP.md` §2.1, checked 2026-10-29)
+
+Every live area should get videos. Areas with **no delivered video** come first when filling non-new slots.
+
+| `ROADMAP.md` §2.1 area | Topics | Covered (delivered video) |
+|---|---|---|
+| Account & stores | A-01, A-02, A-04, A-05, A-06 🟡, E-02 | A-01, A-04 |
+| Products | C-01, C-02, C-03, C-04, C-06, C-07, N-06 | C-02, C-03 |
+| AI | N-07 🟡 | — |
+| Store catalog | C-08 | — |
+| Orders | D-01, N-04 (Bosta ship + bulk ship) | N-04 |
+| Delivery | D-03, D-04, D-05, D-06, D-07 | — |
+| Payments | D-02, E-05 | — |
+| Money | E-01, E-03, E-04, E-06 | E-01 |
+| Marketing | F-01, N-08 🟡, F-03, F-12, F-13 | F-01 |
+| Website | A-03, A-07, A-08, B-01 … B-12, N-01, N-03, N-05, F-07 … F-11 | N-01, N-03, N-05 |
+| Apps | F-04, F-05, N-09, F-06 🟡, C-05 | — |
+| Analytics | N-10 | — |
+| Notifications | N-02 | N-02 |
+| Fulfillment | G-01, G-02 | — |
+| Help | N-11 | — |
+
+Update the Covered column whenever a §15 row is added.
 
 ---
 
 ## 3. New features (post these first)
 
 Every live seller-facing feature added since the last run gets a topic here, and every batch makes a video for each topic marked `**Covered:** not yet` (§1). Newest at the top.
+
+### N-11 · Help when you need it: help center, WhatsApp support, dashboard as an app 🆕 (added 2026-10-29 from `ROADMAP.md` §2.1) ✅
+- **Pain:** "If I get stuck, who do I ask?"
+- **Hooks:** "اتلخبطت؟ الدعم على الواتساب جنبك." / "لوحة متجرك على شاشة موبايلك… زي أي أبلكيشن."
+- **Show:** the Help center, the floating WhatsApp support button (official support number only), the install-as-app button in the dashboard header (`components/layout/install-app-button.client.tsx`) → the dashboard icon on the home screen. No reply-time promises.
+- **Status:** ✅ (check the button still shows in the mobile header).
+- **Covered:** not yet
+
+### N-10 · See how many people visit your store 🆕 (added 2026-10-29 from `ROADMAP.md` §2.1) ✅
+- **Pain:** posting every day without knowing if anyone opens the store.
+- **Hooks:** "عارف كام واحد دخل متجرك النهارده؟" / "زيارات متجرك… قدامك بالأرقام."
+- **Show:** Store › Analytics (store views, `docs/store-views.md`) with fictional numbers. No invented growth claims.
+- **Status:** ✅ (check the page shows data on production before filming; else use fictional data in a rebuilt screen).
+- **Covered:** not yet
+
+### N-09 · TikTok and Snapchat Pixel too 🆕 (added 2026-10-29 from `ROADMAP.md` §2.1) ✅
+- **Pain:** running TikTok ads with no way to know which ones brought orders.
+- **Hooks:** "بتعمل إعلانات على تيك توك؟ متجرك جاهز." / "Pixel تيك توك وسناب… من غير مبرمج."
+- **Show:** Store › Apps → TikTok Pixel → paste the ID → connected; the Snapchat card next to it. No TikTok/Snapchat logos beyond the app cards already in the dashboard; never "شريك رسمي".
+- **Status:** ✅
+- **Covered:** not yet
+
+### N-08 · Coupon pop-up with a countdown 🆕 (added 2026-10-29 from `ROADMAP.md` §2.1) 🟡
+- **Pain:** a coupon nobody sees because it's only in an Instagram story.
+- **Hooks:** "الكوبون بتاعك… يظهر للزبون أول ما يدخل." / "عرض بعدّاد… والزبون يلحق."
+- **Show:** Coupons → create a store coupon → pop-up trigger (on enter / on exit / random) and duration → the pop-up on the store, the countdown on the product page.
+- **Status:** 🟡 `0114` (coupon pop-up columns) was **not applied** at last record (CLAUDE.md rule 6). Only film once it's on production and deployed.
+- **Covered:** not yet
+
+### N-07 · Add a product with AI 🆕 (added 2026-10-29 from `ROADMAP.md` §2.1) 🟡
+- **Pain:** writing a title, description and SEO for every product, in Arabic and English.
+- **Hooks:** "صوّر المنتج… والوصف يتكتب لوحده." / "منتج كامل بالعربي والإنجليزي من صورة واحدة."
+- **Show:** Products › Add → "Add your product with AI" card → photos (or a PDF or text) → fields fill in both languages with SEO → the seller reviews and publishes (Undo visible). Price and stock come from the seller, never "AI sets your price". No promises of perfect results; the seller checks before publishing.
+- **Status:** 🟡 code on `main` (AI-1); the production deploy item in `PLAN.md` §22 (Gemini key on the dashboard project + one production autofill) was still open on 2026-10-29. Film only after it's ticked. Only AI-1 is live; AI-2…AI-5 are Planned.
+- **Covered:** not yet
+
+### N-06 · Real reviews and live views on your product page 🆕 (added 2026-10-29 from `ROADMAP.md` §2.1) ✅
+- **Pain:** a brand-new store with empty product pages that nobody trusts.
+- **Hooks:** "آراء زباينك الحقيقية… على صفحة المنتج." / "الزبون يشوف إن في ناس بتتفرج دلوقتي."
+- **Show:** the product form's reviews part (the seller adds real reviews they received, for example from WhatsApp) and the "show live views" checkbox → the product page with the reviews and the live-views line. Never suggest fake or generated reviews: say "آراء زباينك اللي وصلتك".
+- **Status:** ✅ (`0111` on production 2026-10-27).
+- **Covered:** not yet
 
 ### N-05 · Mobile menu + sticky header on every store 🆕 (live 2026-10-27) ✅
 - **Pain:** on phones the store header squeezed every menu link into two wrapped rows above the products.
@@ -324,17 +393,17 @@ Every live seller-facing feature added since the last run gets a topic here, and
 - **Show:** Orders › Delivery tracking and the customer timeline; the order-tracking section on the store.
 - **Status:** ✅
 
-### D-06 · Your own shipping prices by area 🟡
+### D-06 · Your own shipping prices by area ✅
 - **Pain:** one shipping price that loses money on far governorates.
 - **Hooks:** "سعر شحن لكل منطقة… إنت اللي تحدده." / "الشحن ببلاش فوق مبلغ معين؟ إنت تقرر."
 - **Show:** store Shipping page → zones with places, prices, free-over amount, COD per zone; the price check tool.
-- **Status:** 🟡 code is on `main`, but `0093` (zone places) was staging-only at last record. Check it's on production and the manual check in `PLAN.md` §23 passed.
+- **Status:** ✅ (`ROADMAP.md` §2.1 lists store shipping zones as live; `0093` confirmed on production 2026-10-25). Never promise free shipping as a طلبي offer: free-over is the seller's own setting.
 
-### D-07 · Shipping templates: set up in one click 🟡
+### D-07 · Shipping templates: set up in one click ✅
 - **Pain:** "Setting up shipping zones is confusing."
 - **Hooks:** "إعدادات الشحن في ضغطة واحدة."
 - **Show:** applying a shipping template on the Shipping page.
-- **Status:** 🟡 same as D-06.
+- **Status:** ✅ same as D-06 (check the template button is still on the Shipping page).
 
 ## 8. Pillar E: getting paid and money
 
@@ -363,11 +432,11 @@ Every live seller-facing feature added since the last run gets a topic here, and
 - **Show:** top-up → Kashier payment → balance updated.
 - **Status:** ✅
 
-### E-05 · Get paid on Vodafone Cash, InstaPay and more 🟡
+### E-05 · Get paid on Vodafone Cash, InstaPay and more ✅
 - **Pain:** customers who want to pay with mobile wallets.
 - **Hooks:** "فودافون كاش؟ إنستاباي؟ الزبون يدفعلك على رقمك."
 - **Show:** store Settings › Payments → turn on Vodafone Cash / InstaPay with your number → checkout shows it.
-- **Status:** 🟡 `PLAN.md` P3-07 is partly done (settings page and checkout filter). Check what is live and show only that. Never show card payment as available.
+- **Status:** ✅ `ROADMAP.md` §2.1 lists per-store wallet payments as live (Store › Settings › Payments; the customer pays to the seller's number and **the seller confirms** the payment). Show exactly that flow, no automatic confirmation. Never show card payment as available.
 
 ### E-06 · Earnings when the order is delivered ✅
 - **Pain:** "When do I actually get my money?"
@@ -487,7 +556,7 @@ Tips that help any seller and naturally lead to a طلبي feature. **No invente
 | H-03 | Writing a product description customers read | "وصف المنتج مش موضوع إنشا." | C-01 |
 | H-04 | Why the price should be visible | "السعر على الخاص بيخسّرك زباين." | A-01 |
 | H-05 | Your bio link: what to put there | "أهم لينك في حسابك… حاطط فيه إيه؟" | A-02 |
-| H-06 | Free shipping over an amount: does it work? | "الشحن المجاني… ميزة ولا خسارة؟" | D-06 🟡 |
+| H-06 | Free shipping over an amount: does it work? | "الشحن المجاني… ميزة ولا خسارة؟" | D-06 |
 | H-07 | How a coupon brings back old customers | "الكوبون ده رجّع زبون من 3 شهور." | F-01 |
 | H-08 | Bundles to raise the order value | "اعمل باقة… وخلي الأوردر أكبر." | B-08 |
 | H-09 | The return policy that builds trust | "سياسة الاسترجاع بتبيع." | B-09 |
@@ -536,7 +605,8 @@ Prefer a seasonal angle when a season starts within 14 days. Dates of Islamic ho
 
 ## 14. Never make videos about
 
-- Anything ⛔ Planned in `PLAN.md` / `PROJECT_DESCRIPTION.md`: AI features, paid plans, CMS collections in the dashboard (P4-11 not done), custom domains for extra stores (P3-03b), refunds (P6-12), card payments, Fawry, installments, Apple/Google Pay ("Soon" only).
+- Any `ROADMAP.md` feature that is not done (F-01 … F-34 were all `[Planned]` on 2026-10-29): customers list, fake-order protection, missed orders and reminders, invoices and order export, manual orders, push alerts on the phone, quantity offers/upsell/cross-sell/downsell, landing pages, staff accounts, stock alerts, product feeds, more carriers, automatic discounts, customer WhatsApp/SMS notifications, campaigns, API, affiliates, gift cards, loyalty points, deposits, sales pop-up, pre-orders, bulk edit, checkout settings, UTM, A/B tests, wholesale, POS, MCP.
+- Anything ⛔ Planned in `PLAN.md` / `PROJECT_DESCRIPTION.md`: AI features other than AI-1 product autofill (N-07), paid plans, CMS collections in the dashboard (P4-11 not done), custom domains for extra stores (P3-03b), refunds (P6-12), card payments, Fawry, installments, Apple/Google Pay ("Soon" only).
 - Shopper-facing topics (not in scope until the owner says so).
 - Comparisons that name or attack competitors.
 - Invented results ("بيعت 10 أضعاف"), invented seller stories presented as real, or real seller data.

@@ -8,7 +8,7 @@ Goal: every video should look like it came from a serious, well-funded Egyptian 
 
 ## 1. Facts and brand (non-negotiable)
 
-- **Source of truth:** `MARKETING_PROJECT.md` (Confirmed beats Proposed; never use anything marked Avoid), then `PROJECT_DESCRIPTION.md`. Before claiming a feature, check the code: only show **Live** features, never "Planned" ones.
+- **Source of truth:** `MARKETING_PROJECT.md` (Confirmed beats Proposed; never use anything marked Avoid), then `PROJECT_DESCRIPTION.md`. **Which features exist:** `ROADMAP.md` §2.1 Live and its finished (`[x]`) features (§9). Before claiming a feature, check the code: only show **Live** features, never "Planned" ones.
 - **Brand name:** Arabic **طلبي** (pronounced *ṭalabi*), never **تالابي**. Latin **Tallaby** / **tallaby.com**.
 - **No slogan in videos:** never say or show **"متجرك الشامل"** in a video (voiceover, captions, end card) (owner, 2026-10-24). Don't invent other slogans either.
 - **Never** invent numbers, stats, testimonials, awards, customer names or quotes. Never promise card payment or "free shipping over 500 EGP" (both are switched off). Delivery times are estimates, never guarantees.
@@ -174,9 +174,13 @@ The owner's reference is the **coupons tutorial of 2026-10-27** (F-01; plan, QA,
 - Keep the caption simple: no credit lines, no "Music:" lines.
 - Emoji sparingly (at most 2–3). No ALL CAPS, no false urgency, no "excited to share".
 
-## 9. Topics
+## 9. Topics: our features first (owner, 2026-10-29)
 
-The topic comes from [`TALLABY_VIDEO_TOPICS.md`](TALLABY_VIDEO_TOPICS.md): how to pick today's topic, the full topic bank (sellers only for now), new features first, the seasonal calendar and the used-topics log. Never make a video about a topic that is not live.
+- **Read `ROADMAP.md` on every request for new videos**, before picking any topic, even if it was read in an earlier run or session: features change daily.
+- **Every video is about one real, finished طلبي feature**, shown working on real screens. The feature list comes from [`ROADMAP.md`](../../../ROADMAP.md): **§2.1 Live** (what sellers have today), plus any roadmap feature (F-01, F-02, …) whose tasks are all marked `[x]` in §6 and whose §4 Status says Live. A feature that is `[Planned]`, `[In progress]` or partly done in `ROADMAP.md` never gets a video, not even as a teaser or "coming soon".
+- The topic itself (pain, hooks, what to show, status) comes from [`TALLABY_VIDEO_TOPICS.md`](TALLABY_VIDEO_TOPICS.md): how to pick today's topic, the topic bank (sellers only for now), new features first, the seasonal calendar and the used-topics log. Its §2.1 maps each `ROADMAP.md` §2.1 area to its topic IDs.
+- General selling tips (Pillar H) are allowed only as a door into a feature: the feature takes most of the video and is shown on screen.
+- Live in `ROADMAP.md` is not enough on its own: before showing a feature, still check the code and that it is on production (migration applied, env set), as the topics file's status rules say.
 
 ## 10. Final QA checklist (before delivering)
 
@@ -188,6 +192,7 @@ The topic comes from [`TALLABY_VIDEO_TOPICS.md`](TALLABY_VIDEO_TOPICS.md): how t
 - [ ] Captions match the voiceover word for word, and طلبي is pronounced correctly.
 - [ ] Voice follows §6.1: Tamer, eleven_v4, default settings, no tags, about 300–330 characters per generation, placed in chunks with air between beats; the accent check (no Gulf or MSA words, no Gulf pronunciation) is recorded in `qa.md`.
 - [ ] Sound effects follow §7: SFX bus about 0.35 against the voice at 1.0, effect peaks at least 15 dB under the voice (small repeated sounds 20 dB), nothing harsh.
+- [ ] The video shows one finished feature from `ROADMAP.md` (§2.1 Live, or an F-xx with every task `[x]`), and nothing Planned or in progress in `ROADMAP.md` or `PLAN.md` appears anywhere, not even as "soon".
 - [ ] No invented stats, no Planned features, no real personal data, no promises the brand guide marks Avoid.
 - [ ] Brand colors, fonts and logo correct; frame 0 is a strong cover.
 - [ ] None of the banned innuendo words or phrases (§1) appear in the voiceover, captions, on-screen text or post; the idea reads as professional.

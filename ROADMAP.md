@@ -629,6 +629,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 | Date       | Request (owner's words)                                                                                                                  | Feature ID                                                                                       | Status  |
 | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ------- |
+| 2026-10-29 | "Seller dashboard homepage new design, make good linking for everything if link of related title exists" (Claude Design: Seller Dashboard v2) + WhatsApp channel link | Dashboard home redesign (no feature ID) | Done (uncommitted) |
 | 2026-10-29 | "Affiliate program for Tallaby … عمولة 20% من اي مبلغ يقومون بشحنه … كاش وليس رصيد في المحفظة … سحب عمولتك بعد تحقيق 10 إحالات ناجحة على الأقل وإنشاء 10 متاجر" (EasyOrders' page text as the model) | F-37 | Planned (needs approval) |
 | 2026-10-29 | "Improve the Next.js PWA to make the application with the store name and logo" | F-36 (replaces F-06c) | Planned |
 | 2026-10-29 | "when a user delete a product, it goes to Trash for 30 days so user can restore the product back" | F-35 | Planned |
@@ -769,6 +770,13 @@ Add each new request here first, with the date and the owner's words, then turn 
 ## 7. Log
 
 Newest first. One entry per finished task or decision: date, task, what changed, migrations (number, staging/production status), verification, notes.
+
+### 2026-10-29 — Dashboard home redesign (Seller Dashboard v2, owner)
+
+- Home page rebuilt to the Claude Design `Seller Dashboard v2` layout: setup guide as numbered step cards with a progress bar; KPIs = sales, orders, **store visits**, **conversion** (each with a sparkline and period delta); a metrics strip (average order, new customers, store wallet, rating); sales chart + **customer journey** (visits → carts → orders, coupon tip on drop-off); attention / top products / **traffic sources**; recent orders; questions; **community card** (WhatsApp channel `https://whatsapp.com/channel/0029Vb9CWoJInlqNOoVPaN2X` + Tallaby socials).
+- Every card and metric links to its page: sales → `/financial`, orders and new customers → `/orders`, visits/conversion/journey/sources → `/stores/[id]/analytics`, wallet → `/wallet` (top-up when negative), rating → `/reviews`, drop-off tip → `/coupons`, no-traffic state → the store's social links page.
+- Visits and sources come from Tallaby's storefront GA4 (sessions; `apps/dashboard/lib/analytics/home-traffic.*`, cached 1 h per seller + stores, purged by Store views › Refresh). Carts and orders come from the DB, store websites only. Left out because there is no data or page for them yet: per-step tutorial videos, payments/SEO setup steps, abandoned-cart count (F-03).
+- No migration. Verified: dashboard typecheck, vitest (home + analytics, 30 tests), new SQL run on staging. `pnpm lint` crashes inside ESLint itself (ESLint 10 / typescript-eslint) before linting any file. Manual browser QA with a seller login is still to do.
 
 ### 2026-10-29 — Tallaby affiliate program request (owner)
 

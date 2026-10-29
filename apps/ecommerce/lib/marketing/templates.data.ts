@@ -51,7 +51,7 @@ export type StoreLook = {
   products: DemoProduct[];
 };
 
-export const TEMPLATE_CATEGORIES = ["all", "ge", "el", "fa", "be", "ho", "ac"] as const;
+export const TEMPLATE_CATEGORIES = ["all", "fa", "el", "be", "ho", "fo", "jw", "ki", "sp", "au", "ac", "ge"] as const;
 export type TemplateCategory = (typeof TEMPLATE_CATEGORIES)[number];
 
 export type StoreTemplate = {
