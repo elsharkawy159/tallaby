@@ -31,6 +31,7 @@ import { isAccessError, requireStore } from "@/lib/auth/require-seller.server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
 import { listStoreForms } from "@workspace/lib/store-forms/server";
 import { getStoreCatalog } from "@workspace/lib/stores/server";
+import { grantWelcomeGiftSafely } from "@workspace/lib/store-wallet/server";
 import { loadEditorForms, loadEditorSnapshot, type EditorCatalogSnapshot, type EditorForm } from "./editor.data";
 import { EDITOR_ERRORS, type EditorErrorKey, type EditorFormSummary, type EditorResult } from "@workspace/store-editor/editor.dto";
 
@@ -202,6 +203,8 @@ export async function publish(storeId: string) {
       requireTemplateChoice: true,
     });
     if (!result.success) return fail(result.error);
+    // A new seller who just finished setup gets the welcome gift (0119); never fails the publish.
+    await grantWelcomeGiftSafely(access.seller.sellerId);
     await invalidateStore(access);
     revalidatePath(`/stores/${access.store.id}/website`);
     return result;

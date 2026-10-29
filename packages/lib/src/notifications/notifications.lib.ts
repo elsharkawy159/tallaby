@@ -35,6 +35,10 @@ export const SELLER_NOTIFICATION_TYPES = [
   "referral_commission_earned",
   "referral_payout_paid",
   "referral_payout_rejected",
+  // Welcome gift (0119)
+  "welcome_gift_granted",
+  "welcome_gift_expiring",
+  "welcome_gift_expired",
 ] as const;
 export type SellerNotificationType = (typeof SELLER_NOTIFICATION_TYPES)[number];
 
@@ -130,6 +134,9 @@ export function sellerNotificationHref(n: Pick<NotificationItem, "type" | "data"
     }
     case "top_up_approved":
     case "top_up_rejected":
+    case "welcome_gift_granted":
+    case "welcome_gift_expiring":
+    case "welcome_gift_expired":
       return "/wallet";
     case "question_received":
     case "review_received":

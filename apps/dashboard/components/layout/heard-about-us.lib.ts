@@ -4,8 +4,7 @@ const WAIT_MS = 24 * 60 * 60 * 1000;
 /**
  * Whether to show the "where did you hear about us" pop-up (0099): only while
  * unanswered, and only once the seller's first store is a day old.
- * `firstStoreAt` is `sellers.fee_trial_started_at`, which is set from the
- * first store's created_at (0067).
+ * `firstStoreAt` is the seller's first store's created_at.
  */
 export function shouldAskHeardAboutUs({
   answeredAt,

@@ -442,8 +442,10 @@ export const sellers = pgTable("sellers", {
 	maxStoresOverride: integer("max_stores_override"),
 	/** Platform fee plan (flat EGP 5 since 0067); amounts live in @workspace/lib/orders/platform-fee. */
 	feePlan: text("fee_plan").default('flat_5').notNull(),
-	/** 7-day no-fee trial from the first store's created_at; every seller was backfilled true (0067). */
-	feeTrialEligible: boolean("fee_trial_eligible").default(true).notNull(),
+	/** 7-day no-fee trial from the first store's created_at; every seller was backfilled true (0067). Paused for new sellers: default false since 0119. */
+	feeTrialEligible: boolean("fee_trial_eligible").default(false).notNull(),
+	/** New sellers (created after 0119) get the EGP 100 welcome gift on finishing setup; existing sellers are false. */
+	welcomeGiftEligible: boolean("welcome_gift_eligible").default(true).notNull(),
 	/** Set once by startFeeTrialIfNeeded (stores insert trigger, 0067), with feeTrialEndsAt. */
 	feeTrialStartedAt: timestamp("fee_trial_started_at", { withTimezone: true, mode: 'string' }),
 	feeTrialEndsAt: timestamp("fee_trial_ends_at", { withTimezone: true, mode: 'string' }),
@@ -3293,7 +3295,7 @@ export const sellerNotifications = pgTable("seller_notifications", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	sellerId: uuid("seller_id").notNull(),
 	storeId: uuid("store_id"),
-	/** order_created | top_up_approved | top_up_rejected | question_received | review_received | carrier_shipment_failed | carrier_needs_attention | referral_commission_earned | referral_payout_paid | referral_payout_rejected (0117) */
+	/** order_created | top_up_approved | top_up_rejected | question_received | review_received | carrier_shipment_failed | carrier_needs_attention | referral_commission_earned | referral_payout_paid | referral_payout_rejected (0117) | welcome_gift_granted | welcome_gift_expiring | welcome_gift_expired (0119) */
 	type: text().notNull(),
 	data: jsonb().$type<Record<string, unknown>>().default({}).notNull(),
 	dedupeKey: text("dedupe_key").notNull(),
@@ -3313,7 +3315,7 @@ export const sellerNotifications = pgTable("seller_notifications", {
 			foreignColumns: [stores.id],
 			name: "seller_notifications_store_id_fkey"
 		}).onDelete("set null"),
-	check("seller_notifications_type_check", sql`type IN ('order_created', 'top_up_approved', 'top_up_rejected', 'question_received', 'review_received', 'carrier_shipment_failed', 'carrier_needs_attention', 'referral_commission_earned', 'referral_payout_paid', 'referral_payout_rejected')`),
+	check("seller_notifications_type_check", sql`type IN ('order_created', 'top_up_approved', 'top_up_rejected', 'question_received', 'review_received', 'carrier_shipment_failed', 'carrier_needs_attention', 'referral_commission_earned', 'referral_payout_paid', 'referral_payout_rejected', 'welcome_gift_granted', 'welcome_gift_expiring', 'welcome_gift_expired')`),
 ]);
 
 /** A carrier's status history for a shipment (0106). One row per (shipment, state, time). Server-only. */
@@ -3446,6 +3448,37 @@ export const referralCommissions = pgTable("referral_commissions", {
 	check("referral_commissions_amount_check", sql`amount >= 0 AND top_up_amount > 0`),
 	check("referral_commissions_not_self", sql`referrer_seller_id <> referred_seller_id`),
 	check("referral_commissions_reversed_check", sql`status <> 'reversed' OR reversed_at IS NOT NULL`),
+]);
+
+/**
+ * The EGP 100 welcome gift (0119): one row per seller (the primary key is the
+ * one-gift guarantee). The money is two store-wallet `adjustment` entries
+ * (claims welcome_gift:<seller> and welcome_gift_expiry:<seller>). Server-only.
+ */
+export const sellerWelcomeGifts = pgTable("seller_welcome_gifts", {
+	sellerId: uuid("seller_id").primaryKey().notNull(),
+	storeId: uuid("store_id"),
+	amount: numeric({ precision: 10, scale: 2 }).notNull(),
+	/** Debt the gift cleared at grant time, max(0, -balance_before). */
+	debtCleared: numeric("debt_cleared", { precision: 10, scale: 2 }).default('0').notNull(),
+	grantedAt: timestamp("granted_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	expiresAt: timestamp("expires_at", { withTimezone: true, mode: 'string' }).notNull(),
+	walletEntryId: uuid("wallet_entry_id"),
+	remindedAt: timestamp("reminded_at", { withTimezone: true, mode: 'string' }),
+	expiredAt: timestamp("expired_at", { withTimezone: true, mode: 'string' }),
+	expiredAmount: numeric("expired_amount", { precision: 10, scale: 2 }),
+	expiryEntryId: uuid("expiry_entry_id"),
+	popupSeenAt: timestamp("popup_seen_at", { withTimezone: true, mode: 'string' }),
+}, (table) => [
+	index("seller_welcome_gifts_open_idx").using("btree", table.expiresAt).where(sql`expired_at IS NULL`),
+	foreignKey({ columns: [table.sellerId], foreignColumns: [sellers.id], name: "seller_welcome_gifts_seller_id_fkey" }).onDelete("restrict"),
+	foreignKey({ columns: [table.storeId], foreignColumns: [stores.id], name: "seller_welcome_gifts_store_id_fkey" }).onDelete("set null"),
+	foreignKey({ columns: [table.walletEntryId], foreignColumns: [walletTransactions.id], name: "seller_welcome_gifts_wallet_entry_id_fkey" }).onDelete("restrict"),
+	foreignKey({ columns: [table.expiryEntryId], foreignColumns: [walletTransactions.id], name: "seller_welcome_gifts_expiry_entry_id_fkey" }).onDelete("restrict"),
+	check("seller_welcome_gifts_amount_positive", sql`amount > 0`),
+	check("seller_welcome_gifts_debt_range", sql`debt_cleared >= 0 AND debt_cleared <= amount`),
+	check("seller_welcome_gifts_expiry_after_grant", sql`expires_at > granted_at`),
+	check("seller_welcome_gifts_expired_amount", sql`expired_amount IS NULL OR (expired_amount >= 0 AND expired_amount <= amount)`),
 ]);
 
 /**

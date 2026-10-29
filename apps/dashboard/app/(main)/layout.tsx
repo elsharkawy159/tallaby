@@ -6,6 +6,8 @@ import { MainContentWrapper } from "@/components/layout/main-content-wrapper";
 import { NegativeWalletDialog } from "@/components/layout/negative-wallet-dialog.client";
 import { HeardAboutUsDialog } from "@/components/layout/heard-about-us-dialog.client";
 import { needsHeardAboutUs } from "@/components/layout/heard-about-us.data";
+import { WelcomeGiftDialog } from "@/components/layout/welcome-gift-dialog.client";
+import { loadWelcomeGiftWatch } from "@/components/layout/welcome-gift.data";
 import { SellerAccessBlocked } from "@/components/layout/seller-access-blocked";
 import { getSellerAccess } from "@/lib/auth/seller-access";
 import { getStoreWalletBalance } from "./wallet/store-wallet.server";
@@ -42,6 +44,7 @@ export default async function DashboardLayout({
   // sellers.id = users.id; the header shows the store wallet balance.
   const walletBalance = user ? await getStoreWalletBalance(user.id) : null;
   const askHeardAboutUs = user ? await needsHeardAboutUs(user.id) : false;
+  const welcomeGift = user ? await loadWelcomeGiftWatch(user.id) : ({ state: "none" } as const);
 
   return (
     <div className="min-h-screen flex w-full overflow-x-clip bg-background">
@@ -60,8 +63,11 @@ export default async function DashboardLayout({
       </MainContentWrapper>
       <SupportWhatsAppButton />
       <NegativeWalletDialog balance={walletBalance} />
-      {/* One pop-up at a time: a negative wallet is the more urgent one. */}
-      <HeardAboutUsDialog show={askHeardAboutUs && !(walletBalance != null && walletBalance < 0)} />
+      {/* One pop-up at a time: a negative wallet is the more urgent one, then the welcome gift. */}
+      <HeardAboutUsDialog
+        show={askHeardAboutUs && !(walletBalance != null && walletBalance < 0) && welcomeGift.state !== "unseen"}
+      />
+      <WelcomeGiftDialog initial={welcomeGift} />
     </div>
   );
 }

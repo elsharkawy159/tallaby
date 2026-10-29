@@ -13,6 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@workspace/ui/components/dialog";
+import { requestWelcomeGiftCheck } from "@/components/layout/welcome-gift.lib";
 
 export type LiveSite = { url: string; hostname: string };
 
@@ -20,7 +21,8 @@ export type LiveSite = { url: string; hostname: string };
  * "Your store is live!" over a confetti burst, after a store goes live (the
  * home checklist and Website › Overview). Open while `live` is set; the
  * caller clears it in `onClose` (and refreshes then, so the dialog is not
- * unmounted by the refreshed page under it).
+ * unmounted by the refreshed page under it). Closing it lets the welcome
+ * gift popup (0119) check, so a new seller sees it right after this one.
  */
 export function PublishCelebration({ live, onClose }: { live: LiveSite | null; onClose: () => void }) {
   const t = useTranslations("home.setup.publish");
@@ -38,7 +40,14 @@ export function PublishCelebration({ live, onClose }: { live: LiveSite | null; o
   return (
     <>
       {live && <Confetti />}
-      <Dialog open={live !== null} onOpenChange={(open) => !open && onClose()}>
+      <Dialog
+        open={live !== null}
+        onOpenChange={(open) => {
+          if (open) return;
+          onClose();
+          requestWelcomeGiftCheck();
+        }}
+      >
         <DialogContent className="sm:max-w-md">
           <DialogHeader className="items-center text-center sm:text-center">
             <span className="mb-1 flex size-14 items-center justify-center rounded-2xl bg-accent/15 text-accent motion-safe:animate-bounce">
@@ -82,7 +91,7 @@ const COLORS = ["#f59e0b", "#3b82f6", "#10b981", "#ef4444", "#8b5cf6", "#ec4899"
 const DURATION_MS = 3800;
 
 /** A one-off confetti burst from both bottom corners, over the whole screen. Skipped for reduced motion. */
-function Confetti() {
+export function Confetti() {
   const ref = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {

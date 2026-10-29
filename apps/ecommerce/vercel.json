@@ -4,6 +4,7 @@
   "crons": [
     { "path": "/api/cron/custom-domains", "schedule": "0 3 * * *" },
     { "path": "/api/cron/fee-trial-reminders", "schedule": "0 7 * * *" },
+    { "path": "/api/cron/welcome-gifts", "schedule": "15 5 * * *" },
     { "path": "/api/cron/abandoned-carts", "schedule": "0 17 * * *" },
     { "path": "/api/cron/form-submissions-retention", "schedule": "30 3 * * *" }
   ]

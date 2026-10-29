@@ -40,7 +40,8 @@ describe.skipIf(!TEST_DATABASE_URL)("fee trial start (integration)", { timeout: 
       legalAddress: { country: "EG" },
       supportEmail: "ft@example.com",
       status: "approved",
-      ...(opts.eligible === undefined ? {} : { feeTrialEligible: opts.eligible }),
+      // Sellers created before 0119 are eligible; the column default is false since then.
+      feeTrialEligible: opts.eligible ?? true,
     });
     const [store] = await db.select({ id: s.stores.id }).from(s.stores).where(eq(s.stores.sellerId, id));
     return { id, storeId: store!.id };

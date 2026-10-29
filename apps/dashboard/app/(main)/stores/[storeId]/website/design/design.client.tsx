@@ -36,6 +36,7 @@ import { BannerField, LogoField } from "@/components/stores/brand-image-fields.c
 import { storeLogoSrc } from "@/components/stores/store-logo.client";
 import { cn } from "@/lib/utils";
 import { publish, saveDesignSystem } from "@/app/(builder)/stores/[storeId]/editor/server/editor.server";
+import { requestWelcomeGiftCheck } from "@/components/layout/welcome-gift.lib";
 import { saveStoreGeneral } from "../../settings/store-settings.server";
 import { SitePreview, type PreviewCatalog, type PreviewDevice } from "../_components/site-preview.client";
 import {
@@ -137,6 +138,7 @@ export function DesignSystemEditor({
       if (result.success) {
         toast.success(t("published", { number: result.data.revisionNumber }));
         setConfirmPublish(false);
+        requestWelcomeGiftCheck();
       } else toast.error(t(`errors.${result.error}` as never));
     });
 

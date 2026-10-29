@@ -2537,7 +2537,7 @@
       },
       "fees": {
         "question": "What does Tallaby charge?",
-        "answer": "A flat EGP 5 per delivered order, taken from your store wallet. Your first 7 days, counted from when you created your first store, are free: an order placed in that time has no fee, even if it's delivered later. Cancelled or undelivered orders are never charged."
+        "answer": "A flat EGP 5 per delivered order, taken from your store wallet. New sellers get EGP 100 in their wallet when they finish their store (choose a template, add a product and publish), valid for 30 days. Cancelled or undelivered orders are never charged."
       },
       "plan": {
         "question": "How many stores can I have?",
@@ -3734,7 +3734,7 @@
     "negative": "Your balance is below zero. New sales pay it back automatically, or you can top up at any time.",
     "negativeStrong": "Your balance is well below zero. Top up soon: until it recovers, ads and other paid services can't be paid from the wallet.",
     "howTitle": "How the platform fee works",
-    "how": "For each delivered order, Tallaby takes a flat EGP 5 from your wallet, whatever the order total. If your balance is zero or less, it goes below zero. Your first 7 days are free. Nothing is charged for cancelled or undelivered orders.",
+    "how": "For each delivered order, Tallaby takes a flat EGP 5 from your wallet, whatever the order total. If your balance is zero or less, it goes below zero. Nothing is charged for cancelled or undelivered orders.",
     "trialActive": "Free trial: {days, plural, one {# day} other {# days}} left, no fee on orders placed until {date}.",
     "trialNotStarted": "Your 7-day free trial starts when your first store is created.",
     "entriesTitle": "Wallet activity",
@@ -3875,7 +3875,8 @@
         "notAllowed": "You can't top up this wallet.",
         "generic": "Couldn't send the request. Try again."
       }
-    }
+    },
+    "welcomeGiftActive": "Welcome gift: {amount} left, valid until {date}. It pays your fees first."
   },
   "websiteSocial": {
     "title": "Social media",
@@ -4538,6 +4539,18 @@
       "referral_payout_rejected": {
         "title": "Withdrawal not paid",
         "body": "Your {amount} withdrawal was declined. Open Earn with us to see why."
+      },
+      "welcome_gift_granted": {
+        "title": "Welcome gift: {amount}",
+        "body": "{amount} was added to your wallet for finishing your store. It's valid for 30 days."
+      },
+      "welcome_gift_expiring": {
+        "title": "Your gift ends soon",
+        "body": "{amount} of your welcome gift is left. It expires in 3 days."
+      },
+      "welcome_gift_expired": {
+        "title": "Welcome gift ended",
+        "body": "Your welcome gift's 30 days are over. {amount} that was left was removed from your wallet."
       }
     }
   },
@@ -4813,5 +4826,12 @@
       "reference": "Reference: {reference}",
       "reason": "Reason: {reason}"
     }
+  },
+  "welcomeGift": {
+    "imageAlt": "Congratulations! You got {amount} in your Tallaby wallet.",
+    "title": "Congratulations! {amount} is in your wallet",
+    "body": "A welcome gift for finishing your store. Use it for order fees and ads until {date}; whatever is left then expires.",
+    "close": "Close",
+    "goToWallet": "Go to wallet"
   }
 }

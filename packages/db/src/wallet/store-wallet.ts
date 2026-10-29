@@ -43,6 +43,10 @@ export const STORE_WALLET_REFERENCE_TYPES = {
   theme: "theme",
   payout: "payout",
   admin: "admin",
+  /** The EGP 100 welcome gift (0119); reference id = seller id. */
+  welcomeGift: "welcome_gift",
+  /** Its expiry: the unspent part taken back after 30 days (0119). */
+  welcomeGiftExpiry: "welcome_gift_expiry",
 } as const;
 
 export type StoreWalletReferenceType =

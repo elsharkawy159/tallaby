@@ -101,8 +101,10 @@ export async function ensureSellerAccount(
           supportPhone: phone,
           status: "approved",
           onboardingComplete: false,
-          // New sellers get the 7-day no-fee trial; the first store starts it (0067).
-          feeTrialEligible: true,
+          // New sellers get the EGP 100 welcome gift on finishing setup instead of
+          // the 7-day no-fee trial, which is paused for them (owner 2026-10-29, 0119).
+          feeTrialEligible: false,
+          welcomeGiftEligible: true,
           ...(referrerId ? { referredBySellerId: referrerId, referredAt: sql`now()` } : {}),
         })
         .onConflictDoNothing({ target: sellers.id })

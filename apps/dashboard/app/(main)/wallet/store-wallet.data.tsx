@@ -8,7 +8,7 @@ import {
   Info,
   Wallet,
 } from "lucide-react";
-import { listManualStoreTopUps } from "@workspace/lib/store-wallet/server";
+import { getWelcomeGiftStatus, listManualStoreTopUps } from "@workspace/lib/store-wallet/server";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getFeeTrialStatus } from "@workspace/lib/sellers";
 import { Badge } from "@workspace/ui/components/badge";
@@ -69,10 +69,12 @@ export async function StoreWalletSection({
   before: string | null;
   openTopUp?: boolean;
 }) {
-  const [overview, rows, topUps, t, tStatus, locale] = await Promise.all([
+  const [overview, rows, topUps, gift, t, tStatus, locale] = await Promise.all([
     getStoreWalletOverview(sellerId),
     listStoreWalletEntries(sellerId, { filter, before }),
     listManualStoreTopUps(sellerId),
+    // The welcome gift (0119); a missing table before the migration shows nothing.
+    getWelcomeGiftStatus(sellerId).catch(() => null),
     getTranslations("storeWallet"),
     getTranslations("status"),
     getLocale(),
@@ -182,6 +184,15 @@ export async function StoreWalletSection({
                       date: formatDate(trial.endsAt, locale),
                     })
                   : t("trialNotStarted")}
+              </p>
+            )}
+            {gift && !gift.expired && Number(gift.remaining) > 0 && (
+              <p className="flex gap-2 rounded-lg bg-success-soft p-2 text-success">
+                <Gift className="mt-0.5 size-4 shrink-0" aria-hidden />
+                {t("welcomeGiftActive", {
+                  amount: formatMoney(Number(gift.remaining), locale),
+                  date: formatDate(gift.expiresAt, locale),
+                })}
               </p>
             )}
             <div className="mt-auto flex items-center gap-2.5 pt-2 text-[12.5px] text-muted-foreground">

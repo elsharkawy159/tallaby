@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
 import { SellerAccessBlocked } from "@/components/layout/seller-access-blocked";
+import { WelcomeGiftDialog } from "@/components/layout/welcome-gift-dialog.client";
+import { loadWelcomeGiftWatch } from "@/components/layout/welcome-gift.data";
 import { getSellerAccess } from "@/lib/auth/seller-access";
 import { createClient } from "@/supabase/server";
 
@@ -18,5 +20,13 @@ export default async function BuilderLayout({ children }: { children: React.Reac
   if (!access.allowed && access.reason === "no_seller") redirect("/signup");
   if (!access.allowed) return <SellerAccessBlocked access={access} />;
 
-  return <div className="min-h-dvh bg-background">{children}</div>;
+  // A seller who publishes from the builder sees the welcome gift popup here (0119).
+  const welcomeGift = await loadWelcomeGiftWatch(user.id);
+
+  return (
+    <div className="min-h-dvh bg-background">
+      {children}
+      <WelcomeGiftDialog initial={welcomeGift} />
+    </div>
+  );
 }

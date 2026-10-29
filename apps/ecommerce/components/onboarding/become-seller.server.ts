@@ -141,6 +141,9 @@ export const submitSellerApplication = async (
         // requested stay "requested" until Tallaby activates them, and until
         // then orders run exactly as they do today.
         status: "approved",
+        // Welcome gift instead of the paused 7-day trial (owner 2026-10-29, 0119).
+        feeTrialEligible: false,
+        welcomeGiftEligible: true,
         onboardingStep: 7,
         onboardingComplete: true,
       });
