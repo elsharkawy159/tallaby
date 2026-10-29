@@ -629,6 +629,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 | Date       | Request (owner's words)                                                                                                                  | Feature ID                                                                                       | Status  |
 | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ------- |
+| 2026-10-29 | "on /products/add if form has draft data, add clear button to clear it beside \"Save as draft\"" | Product form clear-draft button (no feature ID) | Done (uncommitted) |
 | 2026-10-29 | "Seller dashboard homepage new design, make good linking for everything if link of related title exists" (Claude Design: Seller Dashboard v2) + WhatsApp channel link | Dashboard home redesign (no feature ID) | Done (uncommitted) |
 | 2026-10-29 | "Affiliate program for Tallaby … عمولة 20% من اي مبلغ يقومون بشحنه … كاش وليس رصيد في المحفظة … سحب عمولتك بعد تحقيق 10 إحالات ناجحة على الأقل وإنشاء 10 متاجر" (EasyOrders' page text as the model) | F-37 | Planned (needs approval) |
 | 2026-10-29 | "Improve the Next.js PWA to make the application with the store name and logo" | F-36 (replaces F-06c) | Planned |
@@ -770,6 +771,13 @@ Add each new request here first, with the date and the owner's words, then turn 
 ## 7. Log
 
 Newest first. One entry per finished task or decision: date, task, what changed, migrations (number, staging/production status), verification, notes.
+
+### 2026-10-29 — Website publish fix + celebration, product form "Clear" draft (owner)
+
+- Bug: `storeTemplateChosen` (packages/lib/src/store-sites/template-choice.server.ts) always returned false for a never-published store: in a one-table select Drizzle renders columns unqualified, so the EXISTS subquery compared `"store_id" = "id"` inside `template_installs`. Website › Overview kept showing "Choose a template" and Publish refused with `templateNotChosen` after a template was applied. The subquery now qualifies its columns. Same pattern still in `packages/lib/src/admin/coupons-admin.server.ts` (`isAffiliateCoupon` on one-table selects), not changed.
+- Website › Overview: going live opens the "Your store is live!" confetti pop-up (shared `publish-celebration.client.tsx`, also used by the home checklist).
+- /products/add: a "Clear" button beside "Save draft" (header and mobile bar) while a local draft is stored; it asks first, then empties the form and the stored draft. New strings in ar + en.
+- No migration. Verified: dashboard typecheck, dashboard tests, products/add tests; the fixed query checked against the dashboard DB. Lint still crashes inside ESLint. Browser QA still to do.
 
 ### 2026-10-29 — Dashboard home redesign (Seller Dashboard v2, owner)
 

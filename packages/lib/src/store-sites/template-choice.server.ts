@@ -20,11 +20,14 @@ type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 type Queryable = Tx | typeof db;
 
 export async function storeTemplateChosen(q: Queryable, storeId: string): Promise<boolean> {
+  // The subquery names its tables itself: a one-table select renders Drizzle
+  // columns unqualified, so `${templateInstalls.storeId} = ${stores.id}` came
+  // out as "store_id" = "id" (both template_installs) and was never true.
   const [row] = await q
     .select({
       chosen: sql<boolean>`(${stores.firstPublishedAt} IS NOT NULL
         OR ${stores.siteStatus} IN ('published', 'unpublished')
-        OR EXISTS (SELECT 1 FROM ${templateInstalls} WHERE ${templateInstalls.storeId} = ${stores.id} AND ${templateInstalls.undoneAt} IS NULL))`,
+        OR EXISTS (SELECT 1 FROM ${templateInstalls} ti WHERE ti.store_id = "stores"."id" AND ti.undone_at IS NULL))`,
     })
     .from(stores)
     .where(eq(stores.id, storeId))

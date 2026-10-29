@@ -11,7 +11,18 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { FileDown, LoaderCircle, Rocket, Save } from "lucide-react";
+import { FileDown, LoaderCircle, Rocket, Save, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@workspace/ui/components/alert-dialog";
 import { Button } from "@workspace/ui/components/button";
 import { Form } from "@workspace/ui/components/form";
 import { createProduct, updateProduct } from "@/actions/products";
@@ -341,6 +352,14 @@ function AddProductForm({
     toast.success(t("draftSaved"));
   };
 
+  /** "Clear": forget the stored draft and empty the form. */
+  const clearDraft = () => {
+    draft.clear();
+    form.reset(defaultValues as any);
+    aiFills.current = 0;
+    toast.success(t("draftCleared"));
+  };
+
   if (mode === "bulk") {
     return (
       <WithoutSellerTaxonomy>
@@ -421,6 +440,13 @@ function AddProductForm({
                     >
                       {t("saveDraft")}
                     </Button>
+                  )}
+                  {!isEdit && draft.hasDraft && (
+                    <ClearDraftButton
+                      className="hidden lg:inline-flex"
+                      disabled={isPending}
+                      onConfirm={clearDraft}
+                    />
                   )}
                 </div>
                 {headerActions}
@@ -505,6 +531,13 @@ function AddProductForm({
                     {t("draftShort")}
                   </Button>
                 )}
+                {!isEdit && draft.hasDraft && (
+                  <ClearDraftButton
+                    className="hidden sm:inline-flex"
+                    disabled={isPending}
+                    onConfirm={clearDraft}
+                  />
+                )}
                 {publishButton(true)}
               </>
             }
@@ -581,6 +614,47 @@ function ProgressChips({ activeSection }: { activeSection: string }) {
 
 function ProgressMobileBar({ actions }: { actions: React.ReactNode }) {
   return <MobilePublishBar sections={useSectionProgress()} actions={actions} />;
+}
+
+/** "Clear" beside "Save draft", shown while a draft is stored; asks first, since it empties the form. */
+function ClearDraftButton({
+  className,
+  disabled,
+  onConfirm,
+}: {
+  className?: string;
+  disabled?: boolean;
+  onConfirm: () => void;
+}) {
+  const t = useTranslations("productForm.page");
+  const tCommon = useTranslations("common");
+  return (
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button
+          type="button"
+          variant="ghost"
+          className={cn(BUTTON_CLASS, "rounded-xl text-destructive hover:text-destructive", className)}
+          disabled={disabled}
+        >
+          <Trash2 aria-hidden />
+          {t("clearDraft")}
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{t("clearDraftTitle")}</AlertDialogTitle>
+          <AlertDialogDescription>{t("clearDraftBody")}</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>{tCommon("cancel")}</AlertDialogCancel>
+          <AlertDialogAction onClick={onConfirm} className="bg-destructive text-white hover:bg-destructive/90">
+            {t("clearDraftConfirm")}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
 }
 
 function SaveStatus({ status }: { status: DraftStatus }) {

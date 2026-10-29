@@ -49,6 +49,7 @@ import { BUTTON_CLASS, SMALL_BUTTON_CLASS } from "@/components/form/form-ui";
 import { cn } from "@/lib/utils";
 import { discardDraft, publish, restoreRevision, unpublish } from "@/app/(builder)/stores/[storeId]/editor/server/editor.server";
 import { useStorePreview } from "@/app/(builder)/stores/[storeId]/editor/use-store-preview.client";
+import { PublishCelebration, type LiveSite } from "@/app/(main)/_components/publish-celebration.client";
 import type { WebsiteOverviewData } from "./website.types";
 
 /** The other Website pages (PLAN.md §7.2), in the design's order. */
@@ -86,15 +87,16 @@ export function WebsiteOverview({ data }: { data: WebsiteOverviewData }) {
   const [pending, startTransition] = useTransition();
   const [busy, setBusy] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
+  const [celebrate, setCelebrate] = useState<LiveSite | null>(null);
   const preview = useStorePreview(data.storeId);
   const base = `/stores/${data.storeId}`;
   const date = (iso: string) => format.dateTime(new Date(iso), { dateStyle: "medium", timeStyle: "short" });
 
-  /** Runs an editor action, shows its error, refreshes the server data. */
+  /** Runs an editor action, shows its error, refreshes the server data. `done` is a toast, or a callback in its place. */
   const run = (
     key: string,
     action: () => Promise<{ success: true } | { success: false; error: string }>,
-    done: string,
+    done: string | (() => void),
     onFail?: () => void,
   ) => {
     setBusy(key);
@@ -102,7 +104,8 @@ export function WebsiteOverview({ data }: { data: WebsiteOverviewData }) {
       try {
         const result = await action();
         if (result.success) {
-          toast.success(done);
+          if (typeof done === "string") toast.success(done);
+          else done();
           router.refresh();
         } else {
           onFail?.();
@@ -139,7 +142,8 @@ export function WebsiteOverview({ data }: { data: WebsiteOverviewData }) {
   const live = optimistic && optimistic.base === data.isLive ? optimistic.value : data.isLive;
   const goLive = () => {
     setOptimistic({ value: true, base: data.isLive });
-    run("publish", () => publish(data.storeId), t("publishedToast"), () => setOptimistic(null));
+    // Going live is the milestone: the celebration pop-up instead of a toast.
+    run("publish", () => publish(data.storeId), () => setCelebrate({ url: data.liveUrl, hostname: data.hostname }), () => setOptimistic(null));
   };
   const goOffline = () => {
     setOptimistic({ value: false, base: data.isLive });
@@ -484,6 +488,8 @@ export function WebsiteOverview({ data }: { data: WebsiteOverviewData }) {
           {nextActions("lg")}
         </div>
       )}
+
+      <PublishCelebration live={celebrate} onClose={() => setCelebrate(null)} />
     </div>
   );
 }

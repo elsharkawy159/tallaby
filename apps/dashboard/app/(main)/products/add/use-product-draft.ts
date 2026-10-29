@@ -52,6 +52,8 @@ export function useProductDraft(
   { enabled = true, onRestore }: { enabled?: boolean; onRestore?: () => void } = {}
 ) {
   const [status, setStatus] = useState<DraftStatus>("idle");
+  /** A draft with content is stored (shows the "Clear" button). */
+  const [hasDraft, setHasDraft] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const restored = useRef(false);
   const paused = useRef(false);
@@ -67,8 +69,10 @@ export function useProductDraft(
           STORAGE_KEY,
           JSON.stringify({ savedAt: Date.now(), values } satisfies StoredDraft)
         );
+        setHasDraft(true);
       } else {
         window.localStorage.removeItem(STORAGE_KEY);
+        setHasDraft(false);
       }
       setStatus("saved");
     } catch {
@@ -84,6 +88,7 @@ export function useProductDraft(
     if (draft && hasContent(draft.values)) {
       form.reset({ ...form.getValues(), ...draft.values });
       setStatus("saved");
+      setHasDraft(true);
       onRestoreRef.current?.();
     }
   }, [enabled, form]);
@@ -117,6 +122,7 @@ export function useProductDraft(
       // ignore
     }
     setStatus("idle");
+    setHasDraft(false);
   }, []);
 
   /** Stop autosaving (while the page reloads after publishing). */
@@ -125,5 +131,5 @@ export function useProductDraft(
     if (timer.current) clearTimeout(timer.current);
   }, []);
 
-  return { status, saveNow, clear, pause };
+  return { status, hasDraft, saveNow, clear, pause };
 }
