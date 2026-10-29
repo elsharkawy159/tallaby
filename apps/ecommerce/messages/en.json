@@ -2179,7 +2179,7 @@
     },
     "pricing": {
       "title": "Pricing",
-      "description": "Free plan. A flat 5 EGP per delivered order, with no percentage and no monthly subscription. Orders in your first 7 days are free."
+      "description": "Free plan. A flat 5 EGP per delivered order, with no percentage and no monthly subscription."
     },
     "blog": {
       "title": "Blog",
@@ -2729,7 +2729,7 @@
       "i3": "Unlimited visitors",
       "i4": "Every feature unlocked",
       "i5": "Up to 3 stores per account",
-      "i6": "Orders in your first 7 days are free",
+      "i6": "A flat 5 EGP per delivered order, whatever the order value",
       "wontPay": "What you won't pay",
       "commission": "commission on sales",
       "monthly": "EGP monthly subscription",
@@ -2779,7 +2779,7 @@
       "items": [
         {
           "q": "When is the 5 EGP charged?",
-          "a": "When an order is delivered. Cancelled orders and orders the customer refuses at delivery aren't charged, and orders placed in your first 7 days are free."
+          "a": "When an order is delivered. Cancelled orders and orders the customer refuses at delivery aren't charged."
         },
         {
           "q": "Does the fee change with order value?",
