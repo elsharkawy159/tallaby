@@ -212,31 +212,32 @@ Updated 2026-10-28 after the EasyOrders dashboard and roadmap review (§2.3, §2
 | 7   | F-32 | Cross-sell offers under the product (on by default)        | P1       | yes                | Owner asked; design note OK (checkout)   |
 | 8   | F-34 | Low-stock urgency badge (product checkbox)                 | P1       | yes (small)        | —                                        |
 | 9   | F-35 | Product trash (restore within 30 days)                     | P1       | yes (small)        | —                                        |
-| 10  | F-25 | Checkout form & thank-you page settings                    | P1       | yes                | —                                        |
-| 11  | F-08 | Funnels: quick-order landing pages                         | P1       | maybe              | **Needs approval** (checkout)            |
-| 12  | F-07 | Quantity offers, bundles, upsell                           | P1       | yes                | **Needs approval** (checkout pricing)    |
-| 13  | F-22 | Sales pop-up (real recent orders)                          | P1       | no                 | —                                        |
-| 14  | F-24 | Bulk product editing (prices by category, stock, status)   | P1       | no                 | —                                        |
-| 15  | F-15 | Reports upgrade + per-product views                        | P1       | no                 | —                                        |
-| 16  | F-06 | New-order push alerts (PWA)                                | P1       | yes                | —                                        |
-| 17  | F-11 | Product feeds (Meta, Google Merchant, TikTok) + catalog    | P1       | no                 | —                                        |
-| 18  | F-09 | Staff accounts & permissions                               | P1       | yes                | — (security review)                      |
-| 19  | F-10 | Inventory alerts & stock history                           | P1       | yes                | —                                        |
-| 20  | F-12 | More shipping carriers                                     | P1       | small              | —                                        |
-| 21  | F-13 | Automatic discounts, min order, free gift                  | P2       | yes                | **Needs approval** (checkout pricing)    |
-| 22  | F-14 | Customer order messages (WhatsApp/SMS, confirm link)       | P2       | yes                | Provider cost                            |
-| 23  | F-16 | Campaigns: email, WhatsApp, retargeting audiences          | P2       | yes                | Provider cost                            |
-| 24  | F-23 | Back-in-stock alerts & pre-orders                          | P2       | yes                | —                                        |
-| 25  | F-26 | Campaign tracking (UTM links, orders per campaign)         | P2       | yes                | —                                        |
-| 26  | F-17 | Public API & webhooks                                      | P2       | yes                | — (security review)                      |
-| 27  | F-18 | Store affiliates / referral links                          | P3       | yes                | **Needs approval** (payouts)             |
-| 28  | F-19 | Gift cards & customer store credit                         | P3       | yes                | **Needs approval** (ledger)              |
-| 29  | F-20 | Loyalty points                                             | P3       | yes                | **Needs approval**                       |
-| 30  | F-27 | A/B tests                                                  | P3       | yes                | —                                        |
-| 31  | F-28 | Wholesale pricing                                          | P3       | yes                | **Needs approval** (checkout pricing)    |
-| 32  | F-29 | AI agent connection (MCP)                                  | P3       | no                 | — (after F-17)                           |
-| 33  | F-30 | Ad tracking upgrades (Purchase on delivery, event toggles) | P2       | maybe              | —                                        |
-| 34  | F-31 | POS and cashier                                            | P3       | yes                | **Needs approval** (order creation path) |
+| 10  | F-36 | Store app (PWA with the store's name and logo)             | P1       | no (expected)      | —                                        |
+| 11  | F-25 | Checkout form & thank-you page settings                    | P1       | yes                | —                                        |
+| 12  | F-08 | Funnels: quick-order landing pages                         | P1       | maybe              | **Needs approval** (checkout)            |
+| 13  | F-07 | Quantity offers, bundles, upsell                           | P1       | yes                | **Needs approval** (checkout pricing)    |
+| 14  | F-22 | Sales pop-up (real recent orders)                          | P1       | no                 | —                                        |
+| 15  | F-24 | Bulk product editing (prices by category, stock, status)   | P1       | no                 | —                                        |
+| 16  | F-15 | Reports upgrade + per-product views                        | P1       | no                 | —                                        |
+| 17  | F-06 | New-order push alerts (PWA)                                | P1       | yes                | —                                        |
+| 18  | F-11 | Product feeds (Meta, Google Merchant, TikTok) + catalog    | P1       | no                 | —                                        |
+| 19  | F-09 | Staff accounts & permissions                               | P1       | yes                | — (security review)                      |
+| 20  | F-10 | Inventory alerts & stock history                           | P1       | yes                | —                                        |
+| 21  | F-12 | More shipping carriers                                     | P1       | small              | —                                        |
+| 22  | F-13 | Automatic discounts, min order, free gift                  | P2       | yes                | **Needs approval** (checkout pricing)    |
+| 23  | F-14 | Customer order messages (WhatsApp/SMS, confirm link)       | P2       | yes                | Provider cost                            |
+| 24  | F-16 | Campaigns: email, WhatsApp, retargeting audiences          | P2       | yes                | Provider cost                            |
+| 25  | F-23 | Back-in-stock alerts & pre-orders                          | P2       | yes                | —                                        |
+| 26  | F-26 | Campaign tracking (UTM links, orders per campaign)         | P2       | yes                | —                                        |
+| 27  | F-17 | Public API & webhooks                                      | P2       | yes                | — (security review)                      |
+| 28  | F-18 | Store affiliates / referral links                          | P3       | yes                | **Needs approval** (payouts)             |
+| 29  | F-19 | Gift cards & customer store credit                         | P3       | yes                | **Needs approval** (ledger)              |
+| 30  | F-20 | Loyalty points                                             | P3       | yes                | **Needs approval**                       |
+| 31  | F-27 | A/B tests                                                  | P3       | yes                | —                                        |
+| 32  | F-28 | Wholesale pricing                                          | P3       | yes                | **Needs approval** (checkout pricing)    |
+| 33  | F-29 | AI agent connection (MCP)                                  | P3       | no                 | — (after F-17)                           |
+| 34  | F-30 | Ad tracking upgrades (Purchase on delivery, event toggles) | P2       | maybe              | —                                        |
+| 35  | F-31 | POS and cashier                                            | P3       | yes                | **Needs approval** (order creation path) |
 
 AI features (field helpers, bulk products, credits, store-build agent) stay in `PLAN.md` §22 (AI-2 … AI-5) and are not repeated here.
 
@@ -316,7 +317,7 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 
 - **F-06a · P1 · deps: —** Migration `seller_push_subscriptions` (`seller_id`, endpoint, keys, user agent; RLS on, no policies). VAPID keys in server env only.
 - **F-06b · P1 · deps: F-06a** Service worker + "Turn on alerts" prompt; send from the existing `seller_notifications` trigger flow.
-- **F-06c · P3 · deps: —** Each store site installable as an app (PWA manifest per store host, store logo and name).
+- **F-06c** Moved to **F-36** (owner, 2026-10-29).
 
 ### F-07 Quantity offers, upsell & cross-sell — P1 · Needs approval
 
@@ -563,6 +564,25 @@ Removed: the store already shows a coupon pop-up when a visitor is leaving (`cou
 - **F-35d · P1 · deps: F-35c** Trash page + "Restore" toast with undo right after a delete; both languages.
 - **F-35e · P1 · deps: F-35c** Daily purge job (cron, like `apps/ecommerce/app/api/cron/abandoned-carts`, `CRON_SECRET`) deleting products trashed more than 30 days ago in batches; idempotent; logs counts only.
 
+### F-36 Store app (PWA with the store's name and logo) — P1 · owner request
+
+**Why:** Owner, 2026-10-29: improve the Next.js PWA so that installing a store website gives an app with **the store's name and logo**. Today every host of `apps/ecommerce` (the marketplace, every `*.tallaby.com` store and custom domains) serves one static manifest, `apps/ecommerce/app/manifest.ts`: "Tallaby.com – Online Shopping in Egypt" with the Tallaby logo, so a customer who adds a store to the home screen gets a Tallaby icon (found in code 2026-10-29). There is no service worker.
+**What:**
+- **Per-store manifest.** On a store host (subdomain or custom domain), `/manifest.webmanifest` returns the store's own app: `name` = store name, `short_name` = a short version (≤ 12 characters, editable), the store's logo as icons, `theme_color` / `background_color` from the store's design colours, `lang` / `dir` from the store's default language, `start_url` and `scope` = `/`, `display: standalone`, a stable `id` per store. The marketplace keeps today's Tallaby manifest. `manifest.ts` becomes dynamic by reading the request host (a request-time API; see `node_modules/next/dist/docs/01-app/02-guides/progressive-web-apps.md` and the manifest file-convention docs).
+- **Icons from the logo.** 192 px, 512 px, a maskable 512 px (logo on a padded square in the brand colour) and a 180 px Apple touch icon, generated from the store logo with `next/og` `ImageResponse`, cached per seller + store and refreshed when the logo changes. No logo → a clean initials icon in the store's colour. The page `<head>` also gets the store's `apple-touch-icon`, `theme-color` and `apple-mobile-web-app-title`.
+- **Install button on the store.** A small, store-styled "Install our app / ثبّت التطبيق" prompt on phones: Android/Chrome uses the browser's install event; iPhone shows the two-step "Share → Add to Home Screen" guide. Shown after some browsing, dismissible, not again for 30 days. Never on checkout.
+- **Offline page.** A minimal service worker (scope `/` on the store host) that shows a branded "You're offline" page and caches only static assets and the store logo; **never** carts, checkout, orders or account pages (CLAUDE.md rule 8). Optional later: `experimental.useOffline` for retrying navigations.
+- **Dashboard settings:** Store settings › App: app name and short name (default from the store name), icon preview on Android and iPhone, install prompt on/off (on by default).
+- Offline and unpublished stores (CLAUDE.md rule 12) serve no store manifest. Push notifications to customers stay with F-14 (needs a provider).
+- The seller dashboard's own install button (`install-app-button.client.tsx`) keeps the Tallaby brand; not part of this feature.
+**Status:** [Planned]
+
+- **F-36a · P1 · deps: —** Host-aware `manifest.ts`: resolve the store from the host the same way storefront pages do (subdomain and custom domain, published only); Tallaby manifest otherwise; tests for marketplace, subdomain, custom domain, offline store. Check `proxy.ts`, which today skips `manifest.webmanifest`.
+- **F-36b · P1 · deps: F-36a** Icon route (`/app-icon/[size]`, `next/og`) from the store logo, maskable variant, initials fallback, seller-scoped cache tag purged on logo or name change; `<head>` icon and theme tags on store pages.
+- **F-36c · P1 · deps: F-36a** Install prompt component (Android event + iPhone guide), store theme colours, Arabic and English, 30-day dismissal.
+- **F-36d · P2 · deps: F-36a** Service worker + branded offline page, with the security headers from the Next.js PWA guide; never caches cart, checkout, order or account routes.
+- **F-36e · P2 · deps: F-36a** Store settings › App (name, short name, previews, prompt switch); stored in the existing store settings JSON, so no migration expected (check first).
+
 ### F-31 POS and cashier — P3
 
 **What:** Sell in a physical shop from a phone or tablet with the same products and stock; orders tagged `source = pos`. Needs F-05 (manual orders) first.
@@ -581,6 +601,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 | Date       | Request (owner's words)                                                                                                                  | Feature ID                                                                                       | Status  |
 | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ------- |
+| 2026-10-29 | "Improve the Next.js PWA to make the application with the store name and logo" | F-36 (replaces F-06c) | Planned |
 | 2026-10-29 | "when a user delete a product, it goes to Trash for 30 days so user can restore the product back" | F-35 | Planned |
 | 2026-10-29 | "the deposit roundup automatically to nearest 5" | F-21 (rounding rule) | Planned |
 | 2026-10-29 | Deposit: who receives it? → "Seller's own number" | F-21 (+ F-21p = PLAN.md P3-07 Part B) | Planned |
@@ -640,6 +661,9 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [ ] F-35c Trash / restore / delete-forever actions
 - [ ] F-35d Trash page + undo toast
 - [ ] F-35e 30-day purge job
+- [ ] F-36a Store manifest per host
+- [ ] F-36b App icons from the store logo
+- [ ] F-36c Install prompt on the store
 - [ ] F-13b Minimum order + store free-shipping threshold
 - [ ] F-22a Recent orders endpoint
 - [ ] F-22b Sales pop-up on the store
@@ -693,7 +717,8 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [ ] F-28 Wholesale pricing
 - [ ] F-29 AI agent connection (MCP)
 - [ ] F-04e Returns barcode scan
-- [ ] F-06c Store as installable app
+- [ ] F-36d Store service worker + offline page
+- [ ] F-36e Store settings › App
 - [ ] F-16e Win-back messages
 - [ ] F-24c Update products from Excel
 - [ ] F-24d Product order in category
@@ -708,6 +733,10 @@ Add each new request here first, with the date and the owner's words, then turn 
 ## 7. Log
 
 Newest first. One entry per finished task or decision: date, task, what changed, migrations (number, staging/production status), verification, notes.
+
+### 2026-10-29 — Store app (PWA) request (owner)
+
+- New F-36 (P1, after F-35), replacing F-06c: installing a store website gives an app with the store's name, logo and colours. Found in code: one static Tallaby manifest (`apps/ecommerce/app/manifest.ts`) serves every host, and there is no service worker. Next 16 docs checked: `manifest.ts` turns dynamic when it uses a request-time API, so it can read the host. No migration expected.
 
 ### 2026-10-29 — Product trash request (owner)
 
