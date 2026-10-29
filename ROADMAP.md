@@ -54,12 +54,12 @@ Tallaby already gives Egyptian sellers a full store: products, orders, delivery 
 | Orders           | Order list, stages, order details, WhatsApp/call buttons, Bosta ship + bulk ship                                                                                                                                                                                     | `app/(main)/orders/**`                                          |
 | Delivery         | Delivery tracking, own riders, store shipping zones (places, free-over, COD per zone), Tallaby delivery, Bosta app                                                                                                                                                   | `orders/delivery`, `orders/riders`, `stores/[storeId]/shipping` |
 | Payments         | COD; the seller chooses which methods the store shows (InstaPay, Vodafone Cash, e& Cash), but those transfers still go to **Tallaby's** accounts. Paying the seller's own numbers with seller confirmation is PLAN.md P3-07 Part B, not built (corrected 2026-10-29) | `stores/[storeId]/settings/payments`                            |
-| Money            | Store wallet (can go negative), top-ups, account statements, reports, flat EGP 5 fee per delivered order, 7-day trial                                                                                                                                                | `wallet`, `financial`, `reports`                                |
+| Money            | Store wallet (can go negative), top-ups, account statements, reports, flat EGP 5 fee per delivered order, 7-day trial (sellers before 0119), EGP 100 welcome gift for new sellers on finishing setup (30 days, pop-up)                                                  | `wallet`, `financial`, `reports`, `store-wallet/welcome-gift.*` |
 | Marketing        | Coupons (marketplace/store, product picker, store pop-up with trigger + countdown), paid ad packages, reviews & Q&A                                                                                                                                                  | `coupons`, `marketing`, `reviews`                               |
 | Website          | Builder (element trees), 100+ templates, design system, pages, product page template, blog, forms + submissions, media library, domain & SEO, sitemap, social links, offline/publish                                                                                 | `app/(builder)`, `stores/[storeId]/website/**`                  |
 | Apps             | Meta Pixel, Meta CAPI, GA4, GTM, TikTok Pixel, Snapchat Pixel, Google Sheets order export, Shopify import, Bosta                                                                                                                                                     | `stores/[storeId]/apps`                                         |
 | Analytics        | Store views (GA4 via Tallaby GTM)                                                                                                                                                                                                                                    | `stores/[storeId]/analytics`, `docs/store-views.md`             |
-| Notifications    | Seller notification inbox (orders, top-ups, questions, reviews)                                                                                                                                                                                                      | `seller_notifications` (0098)                                   |
+| Notifications    | Seller notification inbox (orders, top-ups, questions, reviews, welcome gift)                                                                                                                                                                                        | `seller_notifications` (0098)                                   |
 | Fulfillment      | Request Tallaby fulfillment services                                                                                                                                                                                                                                 | `settings/fulfillment`                                          |
 | Help             | Help center, floating WhatsApp support, install-as-app button                                                                                                                                                                                                        | `help`, `components/layout`                                     |
 
@@ -777,6 +777,13 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [ ] F-32f Cross-sell report
 - [ ] F-34d Stock badge builder element
 
+**Done outside the feature list (owner requests, §5)**
+
+- [x] Welcome gift: EGP 100 for new sellers, 7-day trial paused for them (2026-10-29, `a7d36530`; 0119 on staging, production pending)
+- [x] tallaby.com copy: flat EGP 5 only, no free days or gift on pricing, home and Terms (2026-10-29, `8150c0bc`, `44b926fd`)
+- [ ] Welcome gift: manual phone E2E (new account → template → product → publish → pop-up, ar/en)
+- [ ] Welcome gift: "unspent gift" note on Admin wallet screens
+
 ---
 
 ## 7. Log
@@ -789,6 +796,7 @@ Newest first. One entry per finished task or decision: date, task, what changed,
 - **Pop-up**: the owner's image (`apps/dashboard/public/100EGP gift.png`) with confetti, after Publish (after the "store is live" pop-up closes) or on the next dashboard page; Close / Go to wallet; shown once (`popup_seen_at`). Wallet page shows the gift left and its end date; seller bell rows on grant, 3 days before the end and at the end.
 - **Migration 0119** (`seller_welcome_gifts`, `sellers.welcome_gift_eligible`, `fee_trial_eligible` default false, bell types): **applied on staging 2026-10-29; production pending owner approval, before the deploy.** Daily cron `/api/cron/welcome-gifts` (ecommerce, 05:15 UTC).
 - Verified: `welcome-gift.integration.test.ts` 5/5 on staging; lib/dashboard unit tests; typecheck. Manual phone E2E not run yet. Design: `docs/superpowers/specs/2026-10-29-welcome-gift-design.md`.
+- **Commits** on `main`: `a7d36530` (feature), `8150c0bc` (pricing page: flat EGP 5 only, owner: "don't mention 7 days free neither 100EGP free"), `44b926fd` (home page wallet + FAQ and Terms §4 without free days; Terms "last updated" 2026-10-29). The gift is not advertised on tallaby.com (owner).
 
 
 ### 2026-10-29 — F-37 Tallaby affiliate program built (owner)
