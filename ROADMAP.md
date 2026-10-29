@@ -213,31 +213,32 @@ Updated 2026-10-28 after the EasyOrders dashboard and roadmap review (§2.3, §2
 | 8   | F-34 | Low-stock urgency badge (product checkbox)                 | P1       | yes (small)        | —                                        |
 | 9   | F-35 | Product trash (restore within 30 days)                     | P1       | yes (small)        | —                                        |
 | 10  | F-36 | Store app (PWA with the store's name and logo)             | P1       | no (expected)      | —                                        |
-| 11  | F-25 | Checkout form & thank-you page settings                    | P1       | yes                | —                                        |
-| 12  | F-08 | Funnels: quick-order landing pages                         | P1       | maybe              | **Needs approval** (checkout)            |
-| 13  | F-07 | Quantity offers, bundles, upsell                           | P1       | yes                | **Needs approval** (checkout pricing)    |
-| 14  | F-22 | Sales pop-up (real recent orders)                          | P1       | no                 | —                                        |
-| 15  | F-24 | Bulk product editing (prices by category, stock, status)   | P1       | no                 | —                                        |
-| 16  | F-15 | Reports upgrade + per-product views                        | P1       | no                 | —                                        |
-| 17  | F-06 | New-order push alerts (PWA)                                | P1       | yes                | —                                        |
-| 18  | F-11 | Product feeds (Meta, Google Merchant, TikTok) + catalog    | P1       | no                 | —                                        |
-| 19  | F-09 | Staff accounts & permissions                               | P1       | yes                | — (security review)                      |
-| 20  | F-10 | Inventory alerts & stock history                           | P1       | yes                | —                                        |
-| 21  | F-12 | More shipping carriers                                     | P1       | small              | —                                        |
-| 22  | F-13 | Automatic discounts, min order, free gift                  | P2       | yes                | **Needs approval** (checkout pricing)    |
-| 23  | F-14 | Customer order messages (WhatsApp/SMS, confirm link)       | P2       | yes                | Provider cost                            |
-| 24  | F-16 | Campaigns: email, WhatsApp, retargeting audiences          | P2       | yes                | Provider cost                            |
-| 25  | F-23 | Back-in-stock alerts & pre-orders                          | P2       | yes                | —                                        |
-| 26  | F-26 | Campaign tracking (UTM links, orders per campaign)         | P2       | yes                | —                                        |
-| 27  | F-17 | Public API & webhooks                                      | P2       | yes                | — (security review)                      |
-| 28  | F-18 | Store affiliates / referral links                          | P3       | yes                | **Needs approval** (payouts)             |
-| 29  | F-19 | Gift cards & customer store credit                         | P3       | yes                | **Needs approval** (ledger)              |
-| 30  | F-20 | Loyalty points                                             | P3       | yes                | **Needs approval**                       |
-| 31  | F-27 | A/B tests                                                  | P3       | yes                | —                                        |
-| 32  | F-28 | Wholesale pricing                                          | P3       | yes                | **Needs approval** (checkout pricing)    |
-| 33  | F-29 | AI agent connection (MCP)                                  | P3       | no                 | — (after F-17)                           |
-| 34  | F-30 | Ad tracking upgrades (Purchase on delivery, event toggles) | P2       | maybe              | —                                        |
-| 35  | F-31 | POS and cashier                                            | P3       | yes                | **Needs approval** (order creation path) |
+| 11  | F-37 | Tallaby affiliate program (20 % of referred top-ups, cash) | P1       | yes                | **Needs approval** (money, business model) |
+| 12  | F-25 | Checkout form & thank-you page settings                    | P1       | yes                | —                                        |
+| 13  | F-08 | Funnels: quick-order landing pages                         | P1       | maybe              | **Needs approval** (checkout)            |
+| 14  | F-07 | Quantity offers, bundles, upsell                           | P1       | yes                | **Needs approval** (checkout pricing)    |
+| 15  | F-22 | Sales pop-up (real recent orders)                          | P1       | no                 | —                                        |
+| 16  | F-24 | Bulk product editing (prices by category, stock, status)   | P1       | no                 | —                                        |
+| 17  | F-15 | Reports upgrade + per-product views                        | P1       | no                 | —                                        |
+| 18  | F-06 | New-order push alerts (PWA)                                | P1       | yes                | —                                        |
+| 19  | F-11 | Product feeds (Meta, Google Merchant, TikTok) + catalog    | P1       | no                 | —                                        |
+| 20  | F-09 | Staff accounts & permissions                               | P1       | yes                | — (security review)                      |
+| 21  | F-10 | Inventory alerts & stock history                           | P1       | yes                | —                                        |
+| 22  | F-12 | More shipping carriers                                     | P1       | small              | —                                        |
+| 23  | F-13 | Automatic discounts, min order, free gift                  | P2       | yes                | **Needs approval** (checkout pricing)    |
+| 24  | F-14 | Customer order messages (WhatsApp/SMS, confirm link)       | P2       | yes                | Provider cost                            |
+| 25  | F-16 | Campaigns: email, WhatsApp, retargeting audiences          | P2       | yes                | Provider cost                            |
+| 26  | F-23 | Back-in-stock alerts & pre-orders                          | P2       | yes                | —                                        |
+| 27  | F-26 | Campaign tracking (UTM links, orders per campaign)         | P2       | yes                | —                                        |
+| 28  | F-17 | Public API & webhooks                                      | P2       | yes                | — (security review)                      |
+| 29  | F-18 | Store affiliates / referral links                          | P3       | yes                | **Needs approval** (payouts)             |
+| 30  | F-19 | Gift cards & customer store credit                         | P3       | yes                | **Needs approval** (ledger)              |
+| 31  | F-20 | Loyalty points                                             | P3       | yes                | **Needs approval**                       |
+| 32  | F-27 | A/B tests                                                  | P3       | yes                | —                                        |
+| 33  | F-28 | Wholesale pricing                                          | P3       | yes                | **Needs approval** (checkout pricing)    |
+| 34  | F-29 | AI agent connection (MCP)                                  | P3       | no                 | — (after F-17)                           |
+| 35  | F-30 | Ad tracking upgrades (Purchase on delivery, event toggles) | P2       | maybe              | —                                        |
+| 36  | F-31 | POS and cashier                                            | P3       | yes                | **Needs approval** (order creation path) |
 
 AI features (field helpers, bulk products, credits, store-build agent) stay in `PLAN.md` §22 (AI-2 … AI-5) and are not repeated here.
 
@@ -583,6 +584,33 @@ Removed: the store already shows a coupon pop-up when a visitor is leaving (`cou
 - **F-36d · P2 · deps: F-36a** Service worker + branded offline page, with the security headers from the Next.js PWA guide; never caches cart, checkout, order or account routes.
 - **F-36e · P2 · deps: F-36a** Store settings › App (name, short name, previews, prompt switch); stored in the existing store settings JSON, so no migration expected (check first).
 
+### F-37 Tallaby affiliate program (sellers refer sellers) — P1 · owner request · Needs approval (money)
+
+**Why:** Owner, 2026-10-29: grow Tallaby through its own sellers, like EasyOrders' "اربح معنا بالتسويق بالعمولة". A seller (or anyone with a Tallaby seller account) shares their referral link; when the people they bring sign up and **top up their store wallet**, the referrer earns **20 % of every top-up, for life**, paid **in cash** (bank account or Vodafone Cash), **not** as wallet balance.
+Not the same as F-18 (a seller's own marketers for their store) and not the marketplace customer affiliates (`affiliates` / `affiliate_commissions` tables), which stay untouched.
+**What (seller dashboard page "اربح معنا" / "Earn with us"):**
+- Header: "اربح معنا بالتسويق بالعمولة" and the explanation: share your link with your referral code and earn 20 % for life of any amount the sellers you bring top up; paid in cash, not wallet credit.
+- **Your commission:** total earned, available to withdraw, already paid (EGP).
+- **Your link:** `https://tallaby.com/?ref=<code>` (opens signup with the code kept), with Copy, WhatsApp and Facebook share buttons. Short, readable code per seller.
+- **Progress to unlock withdrawal:** "X / 10 successful referrals" and "X / 10 stores created through your link" (owner rule, copied from the EasyOrders text: withdrawal opens after **at least 10 successful referrals and 10 stores**).
+- **Your referrals:** list of referred sellers (store name only, masked contact), sign-up date, stores, total topped up, your commission.
+- **Withdraw:** "Request withdrawal" (bank account or Vodafone Cash details) → the Tallaby team pays and marks it paid in Admin; until then it also offers "Contact support on WhatsApp". Minimum withdrawal amount: to decide.
+**Money rules (to confirm in F-37a):**
+- Commission is earned only on **succeeded** top-ups (`seller_wallet_top_ups.status = 'succeeded'`, Kashier webhook or admin-approved manual top-up), at 20 % computed in integer piastres, one ledger row per top-up (unique claim on `top_up_id`, `ON CONFLICT DO NOTHING`, CLAUDE.md rule 7).
+- It is **its own ledger**, separate from the store wallet and the customer wallet; it never changes any wallet balance. Paid out only by an admin action that records the payout.
+- A reversed or refunded top-up reverses its commission. Self-referral (same person, same phone/card, same device) and fake accounts are blocked or held for review; commissions stay "pending" for N days before they become withdrawable.
+- Attribution: the code is saved at signup (link opened in the last 60 days, first link wins); a seller cannot change their referrer later, cannot refer themselves.
+**Open decisions for the owner (F-37a):** what counts as a "successful referral" (signed up / published a store / first top-up / first delivered order)? Are "10 referrals" and "10 stores" two separate counts? Is 20 % on top-ups sustainable against the EGP 5-per-order fee (PLAN.md §13)? Minimum payout and how often? Do customers (non-sellers) get links too?
+**Status:** [Planned]
+
+- **F-37a · P1 · deps: owner approval** Design note: the open decisions above, the commission ledger, fraud rules, and confirmation that the business model (PLAN.md §13) is changed only by adding this payout.
+- **F-37b · P1 · deps: F-37a** Migration: `sellers.referral_code` (unique), `sellers.referred_by_seller_id`, `sellers.referred_at`; server-only `referral_commissions` (`referrer_seller_id`, `referred_seller_id`, `top_up_id` unique, `amount numeric(10,2)`, `status` pending | available | paid | reversed, timestamps) and `referral_payouts` (`referrer_seller_id`, `amount`, `method` bank | vodafone_cash, masked destination, `reference`, `paid_by`, `paid_at`); RLS on, no policies. Mirror in `schema.ts` / `relations.ts`.
+- **F-37c · P1 · deps: F-37b** Attribution: `?ref=` on tallaby.com and the dashboard signup, kept in a 60-day first-party cookie, saved once in `ensureSellerAccount`; tests for self-referral and overwrite attempts.
+- **F-37d · P1 · deps: F-37b** Commission posting on succeeded top-ups (same transaction as the top-up confirmation or a follow-up idempotent job), reversal on refund, pending → available after the hold.
+- **F-37e · P1 · deps: F-37d** Dashboard page "اربح معنا" (both languages, sidebar entry under Account & help), share buttons, progress bars, referrals list, withdrawal request.
+- **F-37f · P1 · deps: F-37d** Admin: referrals overview, commissions per referrer, flagged/suspicious, withdrawal requests, "mark paid" with reference (audited in `admin_audit_log`).
+- **F-37g · P2 · deps: F-37e** Marketing page on tallaby.com explaining the program + terms (Arabic first).
+
 ### F-31 POS and cashier — P3
 
 **What:** Sell in a physical shop from a phone or tablet with the same products and stock; orders tagged `source = pos`. Needs F-05 (manual orders) first.
@@ -601,6 +629,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 | Date       | Request (owner's words)                                                                                                                  | Feature ID                                                                                       | Status  |
 | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ------- |
+| 2026-10-29 | "Affiliate program for Tallaby … عمولة 20% من اي مبلغ يقومون بشحنه … كاش وليس رصيد في المحفظة … سحب عمولتك بعد تحقيق 10 إحالات ناجحة على الأقل وإنشاء 10 متاجر" (EasyOrders' page text as the model) | F-37 | Planned (needs approval) |
 | 2026-10-29 | "Improve the Next.js PWA to make the application with the store name and logo" | F-36 (replaces F-06c) | Planned |
 | 2026-10-29 | "when a user delete a product, it goes to Trash for 30 days so user can restore the product back" | F-35 | Planned |
 | 2026-10-29 | "the deposit roundup automatically to nearest 5" | F-21 (rounding rule) | Planned |
@@ -664,6 +693,12 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [ ] F-36a Store manifest per host
 - [ ] F-36b App icons from the store logo
 - [ ] F-36c Install prompt on the store
+- [ ] F-37a Affiliate design note + open decisions (owner approval)
+- [ ] F-37b Affiliate migration (referral code, commissions, payouts)
+- [ ] F-37c Referral attribution at signup
+- [ ] F-37d Commission on succeeded top-ups
+- [ ] F-37e "اربح معنا" dashboard page
+- [ ] F-37f Admin referrals + payouts
 - [ ] F-13b Minimum order + store free-shipping threshold
 - [ ] F-22a Recent orders endpoint
 - [ ] F-22b Sales pop-up on the store
@@ -719,6 +754,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [ ] F-04e Returns barcode scan
 - [ ] F-36d Store service worker + offline page
 - [ ] F-36e Store settings › App
+- [ ] F-37g Affiliate program page on tallaby.com
 - [ ] F-16e Win-back messages
 - [ ] F-24c Update products from Excel
 - [ ] F-24d Product order in category
@@ -733,6 +769,10 @@ Add each new request here first, with the date and the owner's words, then turn 
 ## 7. Log
 
 Newest first. One entry per finished task or decision: date, task, what changed, migrations (number, staging/production status), verification, notes.
+
+### 2026-10-29 — Tallaby affiliate program request (owner)
+
+- New F-37 (P1, after F-36, **needs approval**): sellers share a referral link and earn 20 % of every succeeded store-wallet top-up by the sellers they bring, for life, paid in cash by the Tallaby team; withdrawal unlocks after 10 successful referrals and 10 stores. Own ledger (`referral_commissions`, `referral_payouts`), never touches wallets. Separate from F-18 and from the marketplace `affiliates` tables. Open decisions listed in F-37; no migration written.
 
 ### 2026-10-29 — Store app (PWA) request (owner)
 
