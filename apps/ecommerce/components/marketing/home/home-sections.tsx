@@ -23,7 +23,7 @@ import {
   Users,
 } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
-import { CountUp, Intro, IntroWords, ParallaxImage, PinnedProgress, PinnedStep, PinnedSteps, Reveal, StaggerChildren } from "@workspace/motion";
+import { CountUp, Intro, IntroWords, Reveal, StaggerChildren } from "@workspace/motion";
 import { Link } from "@/i18n/navigation";
 import { CtaButton } from "@/components/marketing/site/cta-button";
 import { ForwardArrow } from "@/components/marketing/site/direction-icons";
@@ -85,16 +85,15 @@ export async function HowItWorks() {
 
   return (
     <Section id="how" aria-labelledby="how-title">
-      {/* Desktop: pinned while the steps light up and the line fills; elsewhere the steps stagger in. */}
-      <PinnedSteps as={Container}>
+      {/* The steps simply fade up in turn (owner, 2026-10-29: no pinning). */}
+      <Container>
         <Reveal>
           <SectionHeading id="how-title" kicker={t("kicker")} title={t("title")} />
         </Reveal>
         <div className="relative">
-          <ol className="relative m-0 grid list-none gap-7 p-0 md:grid-cols-3 md:gap-10 md:before:absolute md:before:inset-x-14 md:before:top-[27px] md:before:h-0.5 md:before:bg-[repeating-linear-gradient(90deg,var(--color-teal-100)_0_8px,transparent_8px_14px)] md:before:content-['']">
+          <StaggerChildren as="ol" className="relative m-0 grid list-none gap-7 p-0 md:grid-cols-3 md:gap-10 md:before:absolute md:before:inset-x-14 md:before:top-[27px] md:before:h-0.5 md:before:bg-[repeating-linear-gradient(90deg,var(--color-teal-100)_0_8px,transparent_8px_14px)] md:before:content-['']">
             {steps.map((step, i) => (
-              <PinnedStep as="li" key={step.title} className="relative z-[2]">
-                {/* z-2 on the step itself: a moving step is its own stacking context, so a z-index inside it can't lift it over the bar. */}
+              <li key={step.title} className="relative z-[2]">
                 <span
                   className={`relative mb-[22px] grid size-14 place-items-center rounded-2xl font-latin text-[22px] font-extrabold ${
                     i === 0 ? "bg-amber-600 text-teal-900" : "bg-teal-900 text-white"
@@ -102,8 +101,7 @@ export async function HowItWorks() {
                 >
                   {i + 1}
                 </span>
-                {/* Only the text dims while a step waits; the number box stays solid over the line. */}
-                <div data-pin-fade="">
+                <div>
                   <h3 className="mb-2 text-[21px] font-bold text-teal-900">{step.title}</h3>
                   <p className="text-[15px] text-slate-ink">{step.body}</p>
                   <span className="mt-3.5 inline-flex items-center gap-1.5 rounded-full bg-teal-50 px-3 py-1 text-[13px] font-semibold text-teal-700">
@@ -111,17 +109,15 @@ export async function HowItWorks() {
                     {step.tag}
                   </span>
                 </div>
-              </PinnedStep>
+              </li>
             ))}
-          </ol>
-          {/* Over the dashed line (z-1), under the steps and their number boxes (z-2). */}
-          <PinnedProgress className="pointer-events-none absolute inset-x-14 top-[27px] z-[1] hidden h-0.5 rounded-full bg-amber-600 md:block" />
+          </StaggerChildren>
         </div>
         <Reveal className="mt-12 flex flex-wrap items-center gap-4">
           <SignupTrigger tone="teal" />
           <small className="text-sm text-neutral-600">{t("note")}</small>
         </Reveal>
-      </PinnedSteps>
+      </Container>
     </Section>
   );
 }
@@ -178,9 +174,7 @@ export async function BuilderSection() {
           </StaggerChildren>
         </div>
         <Reveal variant="scale-in">
-          <ParallaxImage speed={0.08}>
-            <BuilderStudio />
-          </ParallaxImage>
+          <BuilderStudio />
         </Reveal>
       </Container>
     </Section>

@@ -397,7 +397,11 @@ const REVEAL_ITEMS = new Set(["grid", "productList", "categoryList", "postList"]
 function revealOf(node: ComponentNode, props: Record<string, unknown>, ctx: RenderContext, input: RevealIn): { attrs: Record<string, string>; children: RevealOut } {
   if (!ctx.reveal || input === null || REVEAL_SKIP.has(node.type)) return { attrs: {}, children: null };
   const choice = REVEAL_CHOICES.find((c) => c === props.reveal) ?? "auto";
-  const step = typeof input === "number" ? Math.min(input, REVEAL_MAX_STEP) : 0;
+  // The section's Animation: a preset replaces the variant each element would pick (an element's own
+  // Reveal still wins); items stagger only with Auto and Stagger, else a list's items play together.
+  const preset = ctx.revealPreset ?? "auto";
+  const staggers = preset === "auto" || preset === "stagger";
+  const step = typeof input === "number" && staggers ? Math.min(input, REVEAL_MAX_STEP) : 0;
   let variant: RevealVariant | null = null;
   if (choice !== "auto") variant = choice === "none" ? null : (choice as Exclude<RevealChoice, "auto" | "none">);
   else if (typeof input === "number") variant = "fade-up";
@@ -407,6 +411,7 @@ function revealOf(node: ComponentNode, props: Record<string, unknown>, ctx: Rend
   else if (node.type === "image") variant = "zoom-in";
   // A marquee fades in whole (its items move on their own).
   else if (node.type === "marquee") variant = "fade";
+  if (variant && choice === "auto" && preset !== "auto") variant = preset === "stagger" ? "fade-up" : preset;
   if (variant) {
     const attrs: Record<string, string> = { "data-reveal": variant };
     if (step > 0) attrs["data-reveal-step"] = String(step);

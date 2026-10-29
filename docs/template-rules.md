@@ -150,15 +150,16 @@ Simple, calm, **on by default** and the same everywhere. The full system (tokens
 - Content is **visible without the script**, and with *reduce motion* on nothing moves.
 - Only `opacity` and `transform` animate, so the layout never jumps.
 - No reveal animation: header (it only hides and shows on scroll), bottom navigation, footer, announcement bar, product buy box, cart, checkout, forms.
-- No entrance motion in the editor canvas; the builder's preview mode and the live site show it.
+- Nothing in the editor canvas is ever hidden; with Preview animations on, a changed section plays its reveal once (`docs/section-rules.md` §6.8).
+- A template never adds its own animation CSS or library and leaves each section's Animation on Same as site unless a section must not move (`docs/section-rules.md` §6.9).
 
-**In the website builder**
+**In the website builder** (`docs/section-rules.md` §6.6)
 
-- **Theme › Animations**: on (default) / off for the whole site, and **Hover effect** (zoom, none).
-- **Section**: an Animation switch, on (default) / off, replacing today's None / Fade / Rise.
-- **Element** (advanced): Reveal = Auto / Fade up / Fade / Zoom in / Slide in / None.
+- **Theme › Motion**: Reveal sections on scroll, on (default) / off for the whole site; while on, a Default animation (Automatic by default) and an Animation speed (Normal by default); and **Hover effect** (zoom, none).
+- **Section**: an Animation select, Same as site (default) / None / Fade / Fade up / Slide from start / Slide from end / Zoom in / One after another.
+- **Element** (advanced): Reveal = Auto / Fade up / Fade / Zoom in / Slide from start / Slide from end / None.
 
-**How**: today's section animation is CSS-only (`animation-timeline: view()`, `elements/shell.ts`) and off unless chosen. It is replaced by one small platform script using `IntersectionObserver` (`docs/section-rules.md` §6.7).
+**How**: one small platform script using `IntersectionObserver` (`MotionRuntime`, `docs/section-rules.md` §6.7); no GSAP or other animation library (blocked by ESLint).
 
 ## 7. Checks (to be automated)
 

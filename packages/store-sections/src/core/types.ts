@@ -11,6 +11,7 @@
  */
 import type { ComponentType, ReactNode } from "react";
 import type { z } from "zod";
+import type { AnimationDefault } from "@workspace/motion/presets";
 import type { SectionInstance, SiteLocale } from "../config/schema";
 import type { SlotDefinition } from "./slots";
 
@@ -363,6 +364,19 @@ export interface RenderContext {
    * and the previews, never by the editor canvas or for the header and footer.
    */
   reveal?: boolean;
+  /**
+   * What a section set to Inherit plays (Theme › Animations default,
+   * `designSystem.motion.default`); `auto` (each element its own reveal)
+   * when unset. Read by the section renderer only.
+   */
+  revealDefault?: AnimationDefault;
+  /**
+   * The section being drawn: its resolved Animation (`resolveAnimation`).
+   * Set by the section renderer, never by a caller. `auto` or unset: each
+   * element picks its own reveal; a preset: every reveal in the section
+   * plays it (`stagger`: rising items one after another).
+   */
+  revealPreset?: AnimationDefault;
   /** The product a product page shows; seeds the `product` scope of its element trees. */
   product?: ProductDetail;
   /** Store industry; picks the photos for library photo slots (`designs/photo-slots.ts`). Editor only. */

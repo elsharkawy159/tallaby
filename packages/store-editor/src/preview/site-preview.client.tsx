@@ -161,9 +161,10 @@ export function SitePreview({
     doc.documentElement.dir = dir;
   }, [locale, dir]);
 
+  const revealDefault = designSystem.motion?.default;
   const ctx = useMemo(
-    () =>
-      previewRenderContext({
+    () => ({
+      ...previewRenderContext({
         sections: [...sections, ...(header ? [header] : []), ...(footer ? [footer] : [])],
         catalog,
         locale,
@@ -171,7 +172,9 @@ export function SitePreview({
         addToCartLabel: t("addToCart"),
         product,
       }),
-    [sections, header, footer, catalog, locale, store, t, product],
+      revealDefault,
+    }),
+    [sections, header, footer, catalog, locale, store, t, product, revealDefault],
   );
   // The header and footer never reveal on scroll.
   const chromeCtx = useMemo(() => ({ ...ctx, reveal: false }), [ctx]);

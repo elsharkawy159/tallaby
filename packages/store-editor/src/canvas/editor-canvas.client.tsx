@@ -17,9 +17,12 @@ import {
   designSystemToTokens,
   flushHeaderOnMobile,
   drawChrome,
+  siteMotionAttrs,
   storeSectionRegistry,
   type RenderContext,
 } from "@workspace/store-sections/render";
+import { replayReveal } from "@workspace/store-sections/client";
+import { motionSnapshot, replayTargets, type MotionSnapshot } from "../lib/editor-motion.lib";
 import { cn } from "@workspace/ui/lib/utils";
 import { gapLines, type SelectionHandles } from "./canvas-handles.lib";
 import { EditorOverlay, elementDragKey, type CanvasBox, type CanvasBoxes } from "./editor-overlay.client";
@@ -193,6 +196,25 @@ export function EditorCanvas({
   const container = useRef<HTMLDivElement>(null);
   const [doc, setDoc] = useState<Document | null>(null);
   const selection = useStore(store, (s) => s.selection);
+  // Preview animations (toolbar): page sections carry their reveals, but the canvas never runs the scroll
+  // runtime, so nothing is ever hidden; a changed Animation is played once with Web Animations.
+  const previewMotion = useStore(store, (s) => s.previewMotion);
+  const revealOn = previewMotion && designSystem.motion?.reveal !== false;
+  const revealDefault = designSystem.motion?.default;
+  const pageCtx = useMemo<RenderContext>(() => (revealOn ? { ...ctx, reveal: true, revealDefault } : ctx), [ctx, revealOn, revealDefault]);
+  const lastMotion = useRef<MotionSnapshot | null>(null);
+  useEffect(() => {
+    const next = motionSnapshot(previewMotion, designSystem, sections);
+    const targets = replayTargets(lastMotion.current, next);
+    lastMotion.current = next;
+    const main = doc?.querySelector("main");
+    if (!main || !targets.length) return;
+    const roots =
+      targets === "all"
+        ? Array.from(main.querySelectorAll<HTMLElement>("[data-section-id]")).filter((el) => !el.parentElement?.closest("[data-section-id]"))
+        : targets.flatMap((id) => Array.from(main.querySelectorAll<HTMLElement>(`[data-section-id="${esc(id)}"]`)));
+    for (const root of roots) replayReveal(root);
+  }, [doc, previewMotion, designSystem, sections]);
   const [hover, setHover] = useState<NonNullable<Selection> | null>(null);
   // The page section whose toolbar shows (the one under the pointer, kept while the pointer is on its toolbar).
   const [toolbarSection, setToolbarSection] = useState<string | null>(null);
@@ -551,6 +573,7 @@ export function EditorCanvas({
               fontFamily: "var(--sf-font-body, var(--font-storefront)), system-ui, sans-serif",
             }}
             dir={ctx.dir}
+            {...siteMotionAttrs(designSystem.motion)}
           >
             <SiteTheme designSystem={designSystem} />
             {/* Heading font like the storefront (and SitePreview). */}
@@ -573,7 +596,7 @@ export function EditorCanvas({
             )}
             <main className="flex-1">
               {sections.map((instance) => (
-                <SectionRenderer key={sectionKey(instance)} instance={instance} registry={storeSectionRegistry} ctx={ctx} defaultLocale={defaultLocale} />
+                <SectionRenderer key={sectionKey(instance)} instance={instance} registry={storeSectionRegistry} ctx={pageCtx} defaultLocale={defaultLocale} />
               ))}
             </main>
             {drawnFooter && (

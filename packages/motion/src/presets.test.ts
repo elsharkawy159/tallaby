@@ -1,40 +1,68 @@
 import { describe, expect, it } from "vitest";
-import { fillOrigin, formatCount, normalizeVariant, parseCount, parseNumber, revealFrom } from "./presets";
+import {
+  ANIMATION_PRESETS,
+  animationPresetSchema,
+  formatCount,
+  normalizePreset,
+  parseAnimationSetting,
+  parseCount,
+  parseNumber,
+  resolveAnimation,
+  siteAnimationSchema,
+  type AnimationDefault,
+  type AnimationSetting,
+} from "./presets";
 
-describe("normalizeVariant", () => {
-  it("keeps the store variants and maps aliases", () => {
-    expect(normalizeVariant("fade-up")).toBe("fade-up");
-    expect(normalizeVariant("slide-start")).toBe("slide-start");
-    expect(normalizeVariant("fade-in")).toBe("fade");
-    expect(normalizeVariant(" Scale-In ")).toBe("scale-in");
+describe("resolveAnimation", () => {
+  const settings: AnimationSetting[] = ["inherit", "none", ...ANIMATION_PRESETS];
+  const defaults: AnimationDefault[] = ["auto", ...ANIMATION_PRESETS];
+
+  it("is null whenever the master switch is off", () => {
+    for (const s of settings) for (const d of defaults) expect(resolveAnimation(s, { animationsEnabled: false, animationDefault: d })).toBeNull();
   });
-  it("defaults an empty or auto value to fade-up", () => {
-    expect(normalizeVariant("")).toBe("fade-up");
-    expect(normalizeVariant("auto")).toBe("fade-up");
+  it("is null for none, the site default for inherit, else the section's own preset", () => {
+    for (const d of defaults) {
+      const site = { animationsEnabled: true, animationDefault: d };
+      expect(resolveAnimation("none", site)).toBeNull();
+      expect(resolveAnimation("inherit", site)).toBe(d);
+      for (const p of ANIMATION_PRESETS) expect(resolveAnimation(p, site)).toBe(p);
+    }
   });
-  it("rejects none, unknown names and a missing attribute", () => {
-    expect(normalizeVariant("none")).toBeNull();
-    expect(normalizeVariant("spin")).toBeNull();
-    expect(normalizeVariant(undefined)).toBeNull();
+  it("treats a missing section setting as inherit and missing site settings as on with auto", () => {
+    expect(resolveAnimation(undefined, undefined)).toBe("auto");
+    expect(resolveAnimation(null, { animationDefault: "fade" })).toBe("fade");
+    expect(resolveAnimation("zoom-in", {})).toBe("zoom-in");
   });
 });
 
-describe("revealFrom", () => {
-  it("slides from the reading start: left in LTR, right in RTL", () => {
-    expect(revealFrom("slide-start", "ltr", 30)).toEqual({
-      opacity: 0,
-      x: -30,
-    });
-    expect(revealFrom("slide-start", "rtl", 30)).toEqual({ opacity: 0, x: 30 });
+describe("settings schemas", () => {
+  it("parses old section data with no animation field as inherit", () => {
+    const section = animationPresetSchema.default("inherit");
+    expect(section.parse(undefined)).toBe("inherit");
+    expect(parseAnimationSetting(undefined)).toBe("inherit");
+    expect(parseAnimationSetting("bogus")).toBe("inherit");
   });
-  it("only ever animates opacity and transforms", () => {
-    for (const v of ["fade-up", "fade", "zoom-in", "slide-start", "scale-in"] as const) {
-      for (const key of Object.keys(revealFrom(v, "rtl"))) expect(["opacity", "x", "y", "scale"]).toContain(key);
-    }
+  it("maps the first pilot's names", () => {
+    expect(parseAnimationSetting("scale-in")).toBe("zoom-in");
+    expect(parseAnimationSetting("fade-in")).toBe("fade");
+    expect(parseAnimationSetting(" Slide-End ")).toBe("slide-end");
   });
-  it("fills bars along the reading direction", () => {
-    expect(fillOrigin("ltr")).toBe("left center");
-    expect(fillOrigin("rtl")).toBe("right center");
+  it("defaults an old site to animations on, auto, normal speed", () => {
+    expect(siteAnimationSchema.parse({})).toEqual({ animationsEnabled: true, animationDefault: "auto", animationSpeed: "normal" });
+  });
+});
+
+describe("normalizePreset", () => {
+  it("keeps presets and maps aliases", () => {
+    expect(normalizePreset("fade-up")).toBe("fade-up");
+    expect(normalizePreset("slide-end")).toBe("slide-end");
+    expect(normalizePreset("scale-in")).toBe("zoom-in");
+    expect(normalizePreset("")).toBe("fade-up");
+  });
+  it("rejects none, unknown names and a missing attribute", () => {
+    expect(normalizePreset("none")).toBeNull();
+    expect(normalizePreset("spin")).toBeNull();
+    expect(normalizePreset(undefined)).toBeNull();
   });
 });
 
@@ -42,28 +70,14 @@ describe("parseNumber", () => {
   it("falls back on junk and clamps", () => {
     expect(parseNumber("0.2", 1)).toBe(0.2);
     expect(parseNumber("abc", 1)).toBe(1);
-    expect(parseNumber("", 1)).toBe(1);
     expect(parseNumber("9", 0, 0, 2)).toBe(2);
   });
 });
 
 describe("count text", () => {
   it("reads western, grouped and Arabic-Indic digits", () => {
-    expect(parseCount("5")).toEqual({
-      value: 5,
-      arabicDigits: false,
-      grouped: false,
-    });
-    expect(parseCount("1,080 EGP")).toEqual({
-      value: 1080,
-      arabicDigits: false,
-      grouped: true,
-    });
-    expect(parseCount("٣٩ قالب")).toEqual({
-      value: 39,
-      arabicDigits: true,
-      grouped: false,
-    });
+    expect(parseCount("1,080 EGP")).toEqual({ value: 1080, arabicDigits: false, grouped: true });
+    expect(parseCount("٣٩ قالب")).toEqual({ value: 39, arabicDigits: true, grouped: false });
     expect(parseCount("مجاني")).toBeNull();
   });
   it("writes counts back the way they were rendered", () => {

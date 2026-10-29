@@ -7,6 +7,8 @@ import { Check, ExternalLink, RotateCcw } from "lucide-react";
 import { useStore } from "zustand";
 import type { DesignSystem } from "@workspace/store-sections";
 import { FONT_PAIRINGS, STORE_FONTS, storeFontFamily } from "@workspace/store-sections/fonts";
+import { ANIMATION_DEFAULTS, ANIMATION_SPEEDS } from "@workspace/store-sections/render";
+import { Segmented } from "../inspector/controls/style-controls.client";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@workspace/ui/components/accordion";
 import {
   AlertDialog,
@@ -75,6 +77,14 @@ export function BrandPanel({ store, storeId, readOnly }: { store: EditorStore; s
       const motion = on ? rest : { ...rest, [key]: false };
       return { ...prev, motion: Object.keys(motion).length ? motion : undefined };
     });
+  // The default animation and speed: the default value (auto, normal) is stored as nothing.
+  const setMotionChoice = (key: "default" | "speed", value: string, fallback: string) =>
+    edit((prev) => {
+      const { [key]: _old, ...rest } = prev.motion ?? {};
+      const motion = value === fallback ? rest : { ...rest, [key]: value };
+      return { ...prev, motion: Object.keys(motion).length ? (motion as DesignSystem["motion"]) : undefined };
+    });
+  const revealOn = ds.motion?.reveal !== false;
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -285,6 +295,35 @@ export function BrandPanel({ store, storeId, readOnly }: { store: EditorStore; s
                       <Switch id={`brand-motion-${key}`} checked={ds.motion?.[key] !== false} onCheckedChange={(on) => setMotion(key, on)} />
                     </div>
                     <p className="text-xs text-muted-foreground">{t(`${key}Hint`)}</p>
+                    {key === "reveal" && revealOn && (
+                      <div className="mt-2 space-y-3 border-s-2 ps-3">
+                        <div className="space-y-1">
+                          <Label htmlFor="brand-motion-default">{t("defaultAnimation")}</Label>
+                          <Select value={ds.motion?.default ?? "auto"} onValueChange={(next) => setMotionChoice("default", next, "auto")}>
+                            <SelectTrigger id="brand-motion-default" size="sm" className="w-full">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {ANIMATION_DEFAULTS.map((value) => (
+                                <SelectItem key={value} value={value}>
+                                  {t(`animations.${value}`)}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <p className="text-xs text-muted-foreground">{t("defaultAnimationHint")}</p>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-sm font-medium">{t("speed")}</p>
+                          <Segmented
+                            label={t("speed")}
+                            value={ds.motion?.speed ?? "normal"}
+                            onChange={(next) => setMotionChoice("speed", next ?? "normal", "normal")}
+                            options={ANIMATION_SPEEDS.map((value) => ({ value, label: t(`speeds.${value}`), title: t(`speeds.${value}`) }))}
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </fieldset>

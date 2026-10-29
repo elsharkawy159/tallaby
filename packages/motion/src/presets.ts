@@ -1,74 +1,106 @@
 /**
- * Motion presets and tokens, shared by the React helpers and the runtime.
- * Pure: no DOM and no GSAP, so they are unit tested and safe on the server.
+ * Animation presets, tokens and the shared settings schema. Pure: no DOM, so
+ * they are unit tested and safe on the server. The runtime
+ * (`animations.client.tsx`) and the CSS (`animations.css`) read the same
+ * names from `data-animate`.
  *
- * The variant names match the store sites' CSS motion (`data-reveal`,
- * packages/store-sections/src/elements/motion.ts), so a store section that
- * already carries `data-reveal="fade-up"` animates the same way under this
- * runtime. `fade-in` is an alias of `fade`; `scale-in` is new here.
+ * Store sites use these names too (`packages/store-sections`, Theme ›
+ * Animations and each section's Animation setting); their CSS lives in
+ * `elements/motion.ts`.
  */
+import { z } from "zod";
 
-export const REVEAL_VARIANTS = ["fade-up", "fade", "zoom-in", "slide-start", "scale-in"] as const;
-export type RevealVariant = (typeof REVEAL_VARIANTS)[number];
+/** What a `data-animate` element can play. Directions are logical: `slide-start` comes from the reading start (the right in Arabic). */
+export const ANIMATION_PRESETS = ["fade", "fade-up", "slide-start", "slide-end", "zoom-in", "stagger"] as const;
+export type AnimationPreset = (typeof ANIMATION_PRESETS)[number];
 
-/** Names accepted from markup on top of the canonical ones. */
-const ALIASES: Record<string, RevealVariant> = { "fade-in": "fade" };
+/** A section's Animation setting: `inherit` takes the site default, `none` turns it off. */
+export const animationPresetSchema = z.enum(["inherit", "none", ...ANIMATION_PRESETS]);
+export type AnimationSetting = z.output<typeof animationPresetSchema>;
 
-/** Calm, short motion (owner brief, 2026-10-27): small distances, no bounce. */
+/**
+ * The site default. `auto` keeps each element's own reveal (headings rise,
+ * photos zoom, grids stagger): what every store had before this setting, so
+ * it is the default and existing sites look the same without being re-saved.
+ */
+export const animationDefaultSchema = z.enum(["auto", ...ANIMATION_PRESETS]);
+export type AnimationDefault = z.output<typeof animationDefaultSchema>;
+
+export const ANIMATION_SPEEDS = ["slow", "normal", "fast"] as const;
+export const animationSpeedSchema = z.enum(ANIMATION_SPEEDS);
+export type AnimationSpeed = z.output<typeof animationSpeedSchema>;
+
+/** Site-level animation settings: the master switch, the default preset and the speed. */
+export const siteAnimationSchema = z.object({
+  animationsEnabled: z.boolean().default(true),
+  animationDefault: animationDefaultSchema.default("auto"),
+  animationSpeed: animationSpeedSchema.default("normal"),
+});
+export type SiteAnimation = z.output<typeof siteAnimationSchema>;
+
+/** Old names still accepted from markup and saved data: `scale-in` and `fade-in` came from the first pilot. */
+const ALIASES: Record<string, AnimationPreset> = { "scale-in": "zoom-in", "fade-in": "fade" };
+
+/** A section setting from saved data: a known value, an alias, or `inherit` for anything else (missing, junk). */
+export function parseAnimationSetting(raw: unknown): AnimationSetting {
+  const v = typeof raw === "string" ? raw.trim().toLowerCase() : "";
+  if (v in ALIASES) return ALIASES[v]!;
+  const parsed = animationPresetSchema.safeParse(v);
+  return parsed.success ? parsed.data : "inherit";
+}
+
+/**
+ * What a section plays: `null` when the master switch is off or the section
+ * says `none`, the site default for `inherit`, else its own preset.
+ */
+export function resolveAnimation(
+  section: AnimationSetting | null | undefined,
+  site: { animationsEnabled?: boolean; animationDefault?: AnimationDefault } | null | undefined,
+): AnimationDefault | null {
+  if (site?.animationsEnabled === false) return null;
+  const setting = section ?? "inherit";
+  if (setting === "none") return null;
+  if (setting === "inherit") return site?.animationDefault ?? "auto";
+  return setting;
+}
+
+/** How much longer (or shorter) every animation runs at each speed. */
+export const SPEED_FACTOR: Record<AnimationSpeed, number> = { slow: 1.6, normal: 1, fast: 0.6 };
+
+/** Very simple, quick motion (owner, 2026-10-29): a short fade-up, no bounce. Mirrored as CSS tokens in `animations.css`. */
 export const MOTION = {
   /** Travel of a rise or slide, in px. */
-  distance: 28,
-  duration: 0.9,
-  /** Gap between items of a stagger group, in seconds. */
-  stagger: 0.08,
-  ease: "power3.out",
-  /** Long settle for photos and the pinned steps. */
-  easeSoft: "expo.out",
-  /** How far into the viewport an element must come before it plays. */
-  start: "top 88%",
-  /** Store `data-reveal-step` delay per step, in seconds (the CSS runtime's 90ms). */
-  stepDelay: 0.09,
-  /** Parallax travel per unit of `speed`, in px. */
-  parallax: 120,
+  distance: 16,
+  /** In ms. */
+  duration: 500,
+  /** Gap between items of a stagger group, in ms. */
+  stagger: 80,
+  /** Stagger items after this many play together, so a long grid doesn't trail. */
+  maxOrder: 8,
+  ease: "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+  /** Count-up length, in ms. */
+  countUp: 1000,
 } as const;
 
-export type MotionDirection = "ltr" | "rtl";
-
-/** A `data-reveal` value from markup, or `null` when it names no variant (`none`, typos). */
-export function normalizeVariant(raw: string | null | undefined): RevealVariant | null {
+/** A `data-animate` value from markup, or `null` when it names no preset (`none`, typos). */
+export function normalizePreset(raw: string | null | undefined): AnimationPreset | null {
   if (raw == null) return null;
   const v = raw.trim().toLowerCase();
   if (v === "" || v === "auto") return "fade-up";
   if (v in ALIASES) return ALIASES[v]!;
-  return (REVEAL_VARIANTS as readonly string[]).includes(v) ? (v as RevealVariant) : null;
-}
-
-/** The hidden state a variant starts from. Only opacity and transforms. */
-export function revealFrom(variant: RevealVariant, dir: MotionDirection, distance: number = MOTION.distance): Record<string, number> {
-  switch (variant) {
-    case "fade":
-      return { opacity: 0 };
-    case "fade-up":
-      return { opacity: 0, y: distance };
-    case "slide-start":
-      // "Start" is the reading side: from the left in LTR, from the right in RTL.
-      return { opacity: 0, x: dir === "rtl" ? distance : -distance };
-    case "zoom-in":
-      return { opacity: 0, scale: 1.06 };
-    case "scale-in":
-      return { opacity: 0, scale: 0.96, y: Math.round(distance / 2) };
-  }
-}
-
-/** The transform origin of a bar that fills along the reading direction. */
-export function fillOrigin(dir: MotionDirection): string {
-  return dir === "rtl" ? "right center" : "left center";
+  return (ANIMATION_PRESETS as readonly string[]).includes(v) ? (v as AnimationPreset) : null;
 }
 
 /** A finite number from an attribute, else the fallback; clamped when bounds are given. */
 export function parseNumber(raw: string | null | undefined, fallback: number, min = -Infinity, max = Infinity): number {
   const n = raw == null || raw.trim() === "" ? NaN : Number(raw);
   return Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : fallback;
+}
+
+/** An ease-out curve for count-ups: fast start, gentle settle. `t` in 0…1. */
+export function easeOutQuad(t: number): number {
+  const c = Math.min(1, Math.max(0, t));
+  return 1 - (1 - c) * (1 - c);
 }
 
 /**

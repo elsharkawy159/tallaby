@@ -10,12 +10,14 @@
  * colours as `--sf-shell-bg/fg`, and an inner element re-maps the tokens.
  */
 import type { CSSProperties } from "react";
+import { ANIMATION_PRESETS, parseAnimationSetting, type AnimationSetting } from "@workspace/motion/presets";
 import { hasDangerousScheme } from "../config/url";
 
 export const SHELL_SCHEMES = ["default", "muted", "primary", "dark"] as const;
 export const SHELL_PADDINGS = ["none", "sm", "md", "lg", "xl"] as const;
 export const SHELL_WIDTHS = ["contained", "wide", "full"] as const;
-export const SHELL_ANIMATIONS = ["none", "fade", "rise"] as const;
+/** The section's Animation setting (`@workspace/motion` presets); Inherit (the site default) is stored as nothing. */
+export const SHELL_ANIMATIONS = ["inherit", "none", ...ANIMATION_PRESETS] as const satisfies readonly AnimationSetting[];
 
 export type SectionShellStyle = {
   scheme?: (typeof SHELL_SCHEMES)[number];
@@ -27,7 +29,7 @@ export type SectionShellStyle = {
   overlay?: number;
   /** `id` of the section, for in-page links (`/#about`). */
   anchor?: string;
-  animation?: (typeof SHELL_ANIMATIONS)[number];
+  animation?: Exclude<AnimationSetting, "inherit">;
 };
 
 export const ANCHOR_RE = /^[a-z][a-z0-9-]{0,39}$/;
@@ -66,9 +68,10 @@ export function normalizeShell(input: unknown): SectionShellStyle | undefined {
     out.overlay = Math.min(80, Math.max(0, Math.round(raw.overlay)));
   }
   if (typeof raw.anchor === "string" && ANCHOR_RE.test(raw.anchor)) out.anchor = raw.anchor;
-  // Motion is on by default (docs/section-rules.md §6.6): "none" switches it off; fade and rise mean on.
-  const animation = oneOf(SHELL_ANIMATIONS, raw.animation);
-  if (animation) out.animation = animation;
+  // Motion is on by default (docs/section-rules.md §6.6): "none" switches it off, a preset picks the
+  // section's own. The old "rise" (it only meant on) and anything unknown become Inherit.
+  const animation = raw.animation === "rise" ? "inherit" : parseAnimationSetting(raw.animation);
+  if (animation !== "inherit") out.animation = animation;
   return Object.keys(out).length ? out : undefined;
 }
 
@@ -120,6 +123,3 @@ export function shellLayout(shell: SectionShellStyle | undefined, imageUrl: (src
     overlay: shell.overlay ?? (bgImage ? 40 : 0),
   };
 }
-
-/** False when the seller switched the section's Animation off (reveal on scroll, docs/section-rules.md §6). */
-export const shellAnimates = (shell: SectionShellStyle | undefined) => shell?.animation !== "none";

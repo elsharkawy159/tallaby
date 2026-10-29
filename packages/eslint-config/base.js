@@ -22,6 +22,21 @@ export const config = [
     },
   },
   {
+    // Animations are native (CSS + IntersectionObserver, @workspace/motion): no animation library comes back.
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            { name: "gsap", message: "Use @workspace/motion (data-animate presets) instead of GSAP." },
+            { name: "lenis", message: "Native smooth scrolling only (CSS scroll-behavior); no Lenis." },
+          ],
+          patterns: [{ group: ["gsap/*", "@gsap/*"], message: "Use @workspace/motion (data-animate presets) instead of GSAP." }],
+        },
+      ],
+    },
+  },
+  {
     plugins: {
       onlyWarn,
     },

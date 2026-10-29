@@ -3,6 +3,7 @@ import { Montserrat, Noto_Kufi_Arabic } from "next/font/google";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { DirectionProvider } from "@workspace/ui/components/direction";
+import { ANIMATIONS_INIT_SCRIPT } from "@workspace/motion/init-script";
 import { notFound } from "next/navigation";
 import { MetaPixel } from "@/components/meta/meta-pixel";
 import { GoogleAnalytics } from "@/components/layout/google-analytics";
@@ -60,7 +61,12 @@ export default async function RootLayout({
 
   return (
     // Smooth in-page scrolling on store sites (MOTION_CSS); Next turns it off during route changes.
-    <html lang={locale} dir={direction} data-scroll-behavior="smooth">
+    // suppressHydrationWarning: the head script adds `js-animations` to the class before React hydrates.
+    <html lang={locale} dir={direction} data-scroll-behavior="smooth" suppressHydrationWarning>
+      <head>
+        {/* Scroll animations (@workspace/motion): on before the first paint; without JS nothing is ever hidden. */}
+        <script dangerouslySetInnerHTML={{ __html: ANIMATIONS_INIT_SCRIPT }} />
+      </head>
       {/* No Kufi variable in English: the shop's body font picks Kufi whenever it is set. */}
       <body
         className={`${

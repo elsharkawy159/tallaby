@@ -72,8 +72,9 @@ export function MotionRuntime({ doc }: { doc?: Document | null } = {}) {
     const show = (el: HTMLElement) => {
       el.addEventListener("transitionend", done);
       el.classList.add("is-inview");
-      // A cancelled transition fires no transitionend: clean up anyway once the longest reveal is over.
-      window.setTimeout(() => finish(el), 2400);
+      // A cancelled transition fires no transitionend: clean up anyway once the longest reveal is over
+      // (a slow site's zoom-in, 1.6s × 1.6, plus the last stagger step).
+      window.setTimeout(() => finish(el), 3600);
     };
 
     const observer = new window.IntersectionObserver(

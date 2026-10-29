@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { getTranslations } from "next-intl/server";
+import { AnimationObserver } from "@workspace/motion";
 import { SITE_URL } from "@/lib/marketing/site.lib";
 import "./marketing.css";
 
@@ -19,6 +20,12 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 export const viewport: Viewport = { themeColor: "#0d3743" };
 
+/** One AnimationObserver plays every `data-animate` element on the tallaby.com pages (@workspace/motion). */
 export default function MarketingLayout({ children }: { children: React.ReactNode }) {
-  return children;
+  return (
+    <>
+      {children}
+      <AnimationObserver />
+    </>
+  );
 }

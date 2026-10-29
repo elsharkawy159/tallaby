@@ -6,9 +6,10 @@
  * under `sf-motion`, so a page without the script shows everything. Only
  * `opacity` and `transform` move, and nothing moves with reduced motion.
  */
+import { ANIMATION_SPEEDS, animationDefaultSchema } from "@workspace/motion/presets";
 import { SITE_ROOT_CLASS } from "../core/theme";
 
-export const REVEAL_VARIANTS = ["fade-up", "fade", "zoom-in", "slide-start"] as const;
+export const REVEAL_VARIANTS = ["fade-up", "fade", "zoom-in", "slide-start", "slide-end"] as const;
 export type RevealVariant = (typeof REVEAL_VARIANTS)[number];
 /** An element's Reveal override (advanced): `auto` lets the renderer pick. */
 export const REVEAL_CHOICES = ["auto", ...REVEAL_VARIANTS, "none"] as const;
@@ -31,17 +32,47 @@ export function marqueeSeconds(value: unknown): number {
   return Math.min(MARQUEE_SPEED.max, Math.max(MARQUEE_SPEED.min, n));
 }
 
-/** Root attributes for Theme › Animations (`data-sf-motion="off"`) and Hover effect (`data-sf-hover="none"`). */
-export function siteMotionAttrs(motion: { reveal?: boolean; hoverZoom?: boolean } | null | undefined): Record<string, string> {
+/** Theme › Animations choices for the editor: the default animation (`auto` first) and the speed. */
+export const ANIMATION_DEFAULTS = animationDefaultSchema.options;
+export { ANIMATION_SPEEDS };
+
+/** How much longer (or shorter) every reveal runs at each Theme › Animations speed (`--sf-speed`). */
+export const REVEAL_SPEED_FACTOR = { slow: 1.6, normal: 1, fast: 0.6 } as const;
+
+/**
+ * Root attributes for Theme › Animations (`data-sf-motion="off"`), its speed
+ * (`data-sf-speed`) and Hover effect (`data-sf-hover="none"`).
+ */
+export function siteMotionAttrs(motion: { reveal?: boolean; hoverZoom?: boolean; speed?: string } | null | undefined): Record<string, string> {
   const out: Record<string, string> = {};
   if (motion?.reveal === false) out["data-sf-motion"] = "off";
   if (motion?.hoverZoom === false) out["data-sf-hover"] = "none";
+  if (motion?.speed === "slow" || motion?.speed === "fast") out["data-sf-speed"] = motion.speed;
   return out;
 }
 
+/**
+ * Where a reveal starts, as Web Animations keyframe values (the editor's
+ * replay, `render/motion-replay.client.ts`); the same values as the CSS below.
+ */
+export function revealFrom(variant: string | undefined, rtl: boolean): { transform: string; clipPath?: string } {
+  const side = (px: number) => `translate3d(${rtl ? -px : px}px,0,0)`;
+  if (variant === "zoom-in") return { transform: "scale(1.1)", clipPath: "inset(6% 6% 6% 6%)" };
+  if (variant === "slide-start") return { transform: side(-28) };
+  if (variant === "slide-end") return { transform: side(28) };
+  if (variant === "fade") return { transform: "none" };
+  return { transform: "translate3d(0,28px,0)" };
+}
+
+/** Reveal timings in ms at normal speed, as in the CSS below. */
+export const REVEAL_TIMING = { duration: 1100, zoomDuration: 1600, step: STEP_MS } as const;
+
+/** A reveal time scaled by the site speed. */
+const timed = (seconds: number) => `calc(${seconds}s * var(--sf-speed,1))`;
+
 const root = `.${SITE_ROOT_CLASS}`;
 const hidden = `.sf-motion [data-reveal]:not(.is-inview)`;
-const steps = Array.from({ length: REVEAL_MAX_STEP }, (_, i) => `.sf-motion [data-reveal-step="${i + 1}"].is-inview{transition-delay:${(i + 1) * STEP_MS}ms}`).join("");
+const steps = Array.from({ length: REVEAL_MAX_STEP }, (_, i) => `.sf-motion [data-reveal-step="${i + 1}"].is-inview{transition-delay:${timed(((i + 1) * STEP_MS) / 1000)}}`).join("");
 
 /**
  * A live carousel (`data-carousel` is only drawn outside the editor canvas),
@@ -59,14 +90,18 @@ export const MOTION_CSS = [
   // Smooth in-page scrolling (anchor links, "back to top"); the html also carries
   // `data-scroll-behavior="smooth"`, so Next jumps instantly on route changes.
   `html:has(${root}){scroll-behavior:smooth}`,
+  `${root}[data-sf-speed="slow"]{--sf-speed:${REVEAL_SPEED_FACTOR.slow}}${root}[data-sf-speed="fast"]{--sf-speed:${REVEAL_SPEED_FACTOR.fast}}`,
   `${hidden}{opacity:0;will-change:opacity,transform}`,
   `${hidden}[data-reveal="fade-up"]{transform:translate3d(0,28px,0)}`,
   // Photos settle from a slight zoom and unmask from their frame (Claude Design premium motion, 2026-10-27).
   `${hidden}[data-reveal="zoom-in"]{transform:scale(1.1);clip-path:inset(6% 6% 6% 6%)}`,
   `${hidden}[data-reveal="slide-start"]{transform:translate3d(-28px,0,0)}`,
   `[dir="rtl"] ${hidden}[data-reveal="slide-start"]{transform:translate3d(28px,0,0)}`,
-  `.sf-motion [data-reveal].is-inview{transition:opacity .9s ${MOTION_EASE},transform 1.1s ${MOTION_EASE}}`,
-  `.sf-motion [data-reveal="zoom-in"].is-inview{clip-path:inset(0);transition:opacity .9s ${MOTION_EASE},transform 1.6s ${MOTION_EASE},clip-path 1.1s ${MOTION_EASE}}`,
+  // From the reading end: the left in Arabic, the right in English.
+  `${hidden}[data-reveal="slide-end"]{transform:translate3d(28px,0,0)}`,
+  `[dir="rtl"] ${hidden}[data-reveal="slide-end"]{transform:translate3d(-28px,0,0)}`,
+  `.sf-motion [data-reveal].is-inview{transition:opacity ${timed(0.9)} ${MOTION_EASE},transform ${timed(1.1)} ${MOTION_EASE}}`,
+  `.sf-motion [data-reveal="zoom-in"].is-inview{clip-path:inset(0);transition:opacity ${timed(0.9)} ${MOTION_EASE},transform ${timed(1.6)} ${MOTION_EASE},clip-path ${timed(1.1)} ${MOTION_EASE}}`,
   // A countdown's boxes pop in one after another as it is revealed.
   `.sf-motion [data-reveal]:not(.is-inview) [data-countdown-unit]{opacity:0;transform:translate3d(0,14px,0) scale(.9)}`,
   `.sf-motion [data-reveal].is-inview [data-countdown-unit]{transition:opacity .6s ${MOTION_EASE},transform .6s ${MOTION_EASE};transition-delay:calc(.25s + var(--sf-unit,0) * .1s)}`,

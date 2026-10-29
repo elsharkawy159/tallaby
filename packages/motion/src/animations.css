@@ -1,0 +1,106 @@
+/*
+ * @workspace/motion CSS: native scroll animations. Import once in the app's
+ * stylesheet. `AnimationObserver` (animations.client.tsx) drives it.
+ *
+ * - Presets come from `data-animate` (fade, fade-up, slide-start, slide-end,
+ *   zoom-in, stagger). `stagger` plays its `[data-animate-item]` children in
+ *   turn (`--animation-order` × `--anim-stagger`).
+ * - Hidden only under `html.js-animations` with no reduced-motion request,
+ *   and only once the observer has marked an element `anim-pending` (it does
+ *   that for elements still below the fold). So without JS, with reduced
+ *   motion, and for anything on the first screen, content is just visible.
+ * - `.is-visible` plays it. Only opacity and transform move.
+ * - Slides are logical: `slide-start` comes from the reading start, so it
+ *   mirrors on `[dir="rtl"]` pages.
+ */
+
+:root {
+  --anim-duration: 500ms;
+  --anim-ease: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --anim-distance: 16px;
+  --anim-stagger: 80ms;
+}
+[data-anim-speed="slow"] {
+  --anim-duration: 800ms;
+}
+[data-anim-speed="fast"] {
+  --anim-duration: 300ms;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html.js-animations :is([data-animate], [data-animate-item]).anim-pending {
+    opacity: 0;
+  }
+  html.js-animations :is([data-animate="fade-up"], [data-animate-item=""], [data-animate-item="fade-up"]).anim-pending {
+    transform: translate3d(0, var(--anim-distance), 0);
+  }
+  html.js-animations :is([data-animate="slide-start"], [data-animate-item="slide-start"]).anim-pending {
+    transform: translate3d(calc(-1 * var(--anim-distance)), 0, 0);
+  }
+  html.js-animations :is([data-animate="slide-end"], [data-animate-item="slide-end"]).anim-pending {
+    transform: translate3d(var(--anim-distance), 0, 0);
+  }
+  html.js-animations [dir="rtl"] :is([data-animate="slide-start"], [data-animate-item="slide-start"]).anim-pending,
+  html.js-animations[dir="rtl"] :is([data-animate="slide-start"], [data-animate-item="slide-start"]).anim-pending {
+    transform: translate3d(var(--anim-distance), 0, 0);
+  }
+  html.js-animations [dir="rtl"] :is([data-animate="slide-end"], [data-animate-item="slide-end"]).anim-pending,
+  html.js-animations[dir="rtl"] :is([data-animate="slide-end"], [data-animate-item="slide-end"]).anim-pending {
+    transform: translate3d(calc(-1 * var(--anim-distance)), 0, 0);
+  }
+  html.js-animations :is([data-animate="zoom-in"], [data-animate-item="zoom-in"]).anim-pending {
+    transform: scale(0.96);
+  }
+  html.js-animations :is([data-animate], [data-animate-item]).is-visible {
+    transition:
+      opacity var(--anim-duration) var(--anim-ease),
+      transform var(--anim-duration) var(--anim-ease);
+    transition-delay: calc(var(--anim-delay, 0ms) + var(--animation-order, 0) * var(--anim-stagger));
+  }
+}
+
+/* Load-time intro for the first screen (`Intro`, `IntroWords`): plain CSS from the first paint, always ends visible. */
+[data-intro="word"] {
+  display: inline-block;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-intro] {
+    animation: motion-intro-rise 0.8s cubic-bezier(0.16, 1, 0.3, 1) var(--intro-delay, 0s) both;
+  }
+  [data-intro="word"] {
+    animation-name: motion-intro-word;
+    animation-duration: 0.7s;
+  }
+  [data-intro="fade"] {
+    animation-name: motion-intro-fade;
+  }
+  [data-intro="float"] {
+    animation-name: motion-intro-float;
+    animation-duration: 1.2s;
+  }
+}
+
+@keyframes motion-intro-word {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 0.35em, 0);
+  }
+}
+@keyframes motion-intro-rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 20px, 0);
+  }
+}
+@keyframes motion-intro-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes motion-intro-float {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 40px, 0) scale(0.98);
+  }
+}

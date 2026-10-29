@@ -6,7 +6,7 @@ import type { RenderContext } from "../core/types";
 import { SectionRenderer } from "../render/render";
 import { DataEmpty } from "../sections/_data";
 import { storeSectionRegistry } from "../sections";
-import { normalizeShell, shellAnimates, shellLayout } from "./shell";
+import { normalizeShell, shellLayout } from "./shell";
 import { collectPageCss } from "./style";
 
 const ctx: RenderContext = {
@@ -35,15 +35,19 @@ describe("normalizeShell", () => {
     expect(normalizeShell({ scheme: "default" })).toBeUndefined();
     // Motion is on by default, so "none" (the section's Animation switched off) is kept.
     expect(normalizeShell({ animation: "none" })).toEqual({ animation: "none" });
-    expect(shellAnimates({ animation: "none" })).toBe(false);
-    expect(shellAnimates({ animation: "rise" })).toBe(true);
-    expect(shellAnimates(undefined)).toBe(true);
+    // A preset is kept; Inherit, the old "rise" (it only meant on) and junk are stored as nothing.
+    expect(normalizeShell({ animation: "slide-end" })).toEqual({ animation: "slide-end" });
+    expect(normalizeShell({ animation: "inherit" })).toBeUndefined();
+    expect(normalizeShell({ animation: "rise" })).toBeUndefined();
+    expect(normalizeShell({ animation: "bounce" })).toBeUndefined();
+    // Names from the first pilot map to their preset.
+    expect(normalizeShell({ animation: "scale-in" })).toEqual({ animation: "zoom-in" });
     // A chosen "contained" is kept: it contains a carousel, which is full width by default.
     expect(normalizeShell({ width: "contained" })).toEqual({ width: "contained" });
     expect(shellLayout({ width: "contained" }, () => null)?.outer).toEqual({ className: undefined, style: undefined, id: undefined, "data-shell-width": "contained" });
     expect(
-      normalizeShell({ scheme: "dark", paddingY: "lg", width: "full", anchor: "about-us", animation: "rise", bgImage: "media/a.jpg", overlay: 55.4 }),
-    ).toEqual({ scheme: "dark", paddingY: "lg", width: "full", anchor: "about-us", animation: "rise", bgImage: "media/a.jpg", overlay: 55 });
+      normalizeShell({ scheme: "dark", paddingY: "lg", width: "full", anchor: "about-us", animation: "fade", bgImage: "media/a.jpg", overlay: 55.4 }),
+    ).toEqual({ scheme: "dark", paddingY: "lg", width: "full", anchor: "about-us", animation: "fade", bgImage: "media/a.jpg", overlay: 55 });
   });
 
   it("rejects unsafe images, anchors and values", () => {

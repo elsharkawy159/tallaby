@@ -124,6 +124,8 @@ async function buildContext(
 
   return {
     mode: "public",
+    // Theme › Animations default: what sections set to Inherit play (docs/section-rules.md §6.6).
+    revealDefault: site.designSystem.motion?.default,
     locale: locale === "en" ? "en" : "ar",
     dir: locale === "en" ? "ltr" : "rtl",
     store: {

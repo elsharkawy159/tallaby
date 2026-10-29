@@ -106,6 +106,7 @@ function buildContext(
   return {
     mode: "public",
     reveal: true,
+    revealDefault: site.designSystem.motion?.default,
     locale,
     dir: locale === "en" ? "ltr" : "rtl",
     store: {

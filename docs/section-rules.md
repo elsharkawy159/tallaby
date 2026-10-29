@@ -210,7 +210,10 @@ Motion is **on by default**, calm, quick and the same everywhere. It is off when
 | `fade` | opacity 0 → 1 | Logos, small text, rows inside a strip |
 | `zoom-in` | the image scales 1.1 → 1 and unmasks from a 6% inset (`clip-path`) inside its frame, with a fade (2026-10-27, from the Claude Design premium motion) | Photos in banners, image with text, galleries |
 | `slide-start` | opacity 0 → 1, moves in 24 px from the start edge (RTL-aware) | The text column of a split section |
+| `slide-end` | opacity 0 → 1, moves in 24 px from the end edge (RTL-aware; added 2026-10-29) | A section a seller sets to it |
 | `none` | no motion | Chrome, buy box, forms, cart |
+
+Directions are logical, never left/right: `slide-start` comes from the reading start (the right in Arabic), `slide-end` from the reading end.
 
 The renderer picks the variant from the node, so a seller doesn't have to: a section's head and body items get `fade-up`, a grid's or list's items are **staggered**, and an image with `role: "image"` gets `zoom-in`. An element may override it (§6.6).
 
@@ -228,7 +231,7 @@ The renderer picks the variant from the node, so a seller doesn't have to: a sec
 - **No layout shift**: animate `opacity` and `transform` only.
 - **Once only**: elements are not hidden again when the visitor scrolls back up.
 - **No reveal animation**: header (it only hides and shows on scroll, §5.6), bottom navigation, footer, announcement bar, product buy box and price, cart, checkout, forms and their inputs, popups (they keep their own open fade).
-- **Editor**: no reveal motion in the editing canvas (selection outlines must not move). Preview mode and the live site show it.
+- **Editor**: nothing in the editing canvas is ever hidden: the canvas never runs the scroll runtime. With **Preview animations** on (toolbar, default on), a section whose Animation changes plays its reveal once with Web Animations (`fill: backwards`, so it is visible the moment it ends); with it off the canvas is fully static (§6.8). Preview mode and the live site show the scroll reveals.
 - No bounce, spin, shake, or effects that run for the whole page.
 
 ### 6.5 Hover and press
@@ -241,9 +244,12 @@ The renderer picks the variant from the node, so a seller doesn't have to: a sec
 
 ### 6.6 Controls in the website builder
 
-- **Theme › Animations**: on (default) / off for the whole site, and **Hover effect**: zoom (default) / none.
-- **Section**: an **Animation** switch, on (default) / off. It replaces today's None / Fade / Rise select (`SHELL_ANIMATIONS`). Stored values map as `rise` → on, `fade` → on, `none` → off.
-- **Element** (advanced): Reveal = Auto (default) / Fade up / Fade / Zoom in / Slide in / None.
+Rebuilt 2026-10-29 (GSAP removed; shared presets in `@workspace/motion/presets`):
+
+- **Theme › Motion** (`designSystem.motion`): **Reveal sections on scroll**, on (default) / off, the master switch (`reveal: false`); while on, **Default animation** = Automatic (default) / Fade / Fade up / Slide from start / Slide from end / Zoom in / One after another (`default`), and **Animation speed** = Slow / Normal (default) / Fast (`speed`, ×1.6 / ×1 / ×0.6 through `--sf-speed`); and **Hover effect**: zoom (default) / none. Defaults are stored as nothing; an unknown stored value is dropped, never an error.
+- **Section** (`style.shell.animation`): an **Animation** select = Same as site (default, stored as nothing) / None / Fade / Fade up / Slide from start / Slide from end / Zoom in / One after another (`SHELL_ANIMATIONS`). Old stored values: `rise` → Same as site, `scale-in` → Zoom in, `fade-in` → Fade, anything unknown → Same as site (`parseAnimationSetting`).
+- **What plays** (`resolveAnimation`): master switch off → nothing; None → nothing; Same as site → the site default; else the section's own. **Automatic** keeps each element's own variant (§6.2), so stores that never touch these settings look exactly as before. A preset replaces every element's Auto variant in the section; items stagger only with Automatic and One after another. An element's own Reveal (advanced) still wins.
+- **Element** (advanced): Reveal = Auto (default) / Fade up / Fade / Zoom in / Slide from start / Slide from end / None.
 - Every control has Arabic and English labels.
 
 ### 6.7 How it is built
@@ -252,6 +258,21 @@ The renderer picks the variant from the node, so a seller doesn't have to: a sec
 - One small platform script (about 1.5 KB, the same pattern as `CarouselRuntime`) adds `sf-motion` to the root and uses one `IntersectionObserver` (threshold 0.15) to add `is-inview` to each `[data-reveal]` as it enters, then stops watching it. It is platform code, not seller code (`CLAUDE.md` rule 9 is unaffected). It loads after the page is interactive.
 - The CSS-only animation in `elements/shell.ts` (`shellAnimationCss`, `animation-timeline: view()`) is removed. It only works in browsers that support view timelines, it is off unless a seller picks it, and only Tallaby Classic turns it on. **Removed 2026-10-27**; Classic no longer sets `rise`.
 - **As built (2026-10-27):** `elements/motion.ts` (`MOTION_CSS`, written by `SiteTheme`; `siteMotionAttrs`), `revealOf` in `elements/render.tsx` (a list's or grid's items stagger, a `role: "intro"` head reveals whole, single text and buttons fade up, photos zoom in; never `h1`, carousels, forms, cart buttons or product page parts), `render/motion-runtime.client.tsx` (`MotionRuntime`, mounted beside `CarouselRuntime` on the storefront, the template preview and `SitePreview`; not in the editor canvas). Elements already on screen when it starts lose their `data-reveal` and are never hidden. The header and footer render with `reveal: false`. `ctx.reveal` is set by `StoreSitePage`, `StoreSiteProductGrid`, the template preview and `previewRenderContext`.
+- **As built (2026-10-29):** `ctx.revealDefault` carries Theme › Motion's default into `SectionRenderer`, which sets `ctx.revealPreset` from `resolveAnimation`; `revealOf` applies it. `siteMotionAttrs` writes `data-sf-motion="off"`, `data-sf-hover="none"` and `data-sf-speed` on the site root (storefront, `SitePreview`, editor canvas). No animation library anywhere: an ESLint `no-restricted-imports` rule blocks `gsap`, `@gsap/*` and `lenis`.
+
+### 6.8 Editor replay
+
+- The editor canvas renders page sections with `reveal: true` while **Preview animations** is on (`previewMotion` in the editor store) and Theme › Motion is on; the header and footer never reveal. `MotionRuntime` is not mounted there, so `[data-reveal]` elements are never hidden.
+- After each edit, `replayTargets` (`store-editor/src/lib/editor-motion.lib.ts`) compares the sections' Animation settings and Theme › Motion's default and speed with the previous render: the changed sections, or every section when the default or speed changed or the preview was turned on, are passed to `replayReveal` (`render/motion-replay.client.ts`). A newly added or duplicated section is not replayed; it shows at once.
+- `replayReveal` uses Web Animations with `fill: "backwards"` and the same keyframes and timing as `MOTION_CSS` (scaled by the site speed), and does nothing with reduced motion or with Theme › Motion off.
+
+### 6.9 Rules for every new section and template
+
+- Motion comes only from the renderer's `data-reveal` attributes and the shared presets; a design never sets animation CSS, classes or scripts, and never imports an animation library.
+- Its frame takes the section **Animation** setting (`style.shell.animation`, default Same as site); designs and templates leave it unset unless a section must not move (`none`).
+- Directions are logical (`slide-start`, `slide-end`), so Arabic mirrors itself.
+- It renders fully visible without JavaScript and with reduced motion.
+- Example: a design that is a heading, a paragraph and a grid of cards needs nothing for motion. The renderer gives the heading and paragraph `fade-up`, staggers the cards and zooms their photos; a seller who sets the section to Slide from start makes every one of them slide in from the reading start instead.
 
 ## 7. Arabic, English and RTL
 

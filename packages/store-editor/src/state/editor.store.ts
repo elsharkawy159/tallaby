@@ -80,6 +80,8 @@ export type EditorState = {
   /** Inspector shows only the selected part's field ("Selected element only"). */
   focusSelected: boolean;
   gridOverlay: boolean;
+  /** The canvas plays a section's reveal again when its Animation (or Theme › Motion) changes; off: a static canvas. */
+  previewMotion: boolean;
   /** Last undoable change, so bursts of the same edit (typing) share one undo step. */
   lastCommit: { key: string; at: number } | null;
   /** A picture hovered in Images/Explore, shown on the selection's image only (never saved, not in history). */
@@ -109,6 +111,7 @@ export type EditorActions = {
   setInspectorTab: (tab: EditorState["inspectorTab"]) => void;
   setFocusSelected: (value: boolean) => void;
   toggleGridOverlay: () => void;
+  togglePreviewMotion: () => void;
   setSaveStatus: (status: SaveStatus) => void;
   setImagePreview: (src: string | null) => void;
   markPageSaved: (pageId: string, version: number, content: PageContent) => void;
@@ -188,6 +191,7 @@ export function createEditorStore(initial: Pick<EditorState, "pages" | "header" 
       inspectorTab: "content",
       focusSelected: false,
       gridOverlay: false,
+      previewMotion: true,
       lastCommit: null,
       imagePreview: null,
 
@@ -242,6 +246,7 @@ export function createEditorStore(initial: Pick<EditorState, "pages" | "header" 
       setInspectorTab: (inspectorTab) => set({ inspectorTab }),
       setFocusSelected: (focusSelected) => set({ focusSelected }),
       toggleGridOverlay: () => set((state) => ({ gridOverlay: !state.gridOverlay })),
+      togglePreviewMotion: () => set((state) => ({ previewMotion: !state.previewMotion })),
       setSaveStatus: (saveStatus) => set({ saveStatus }),
       setImagePreview: (imagePreview) => set((state) => (state.imagePreview === imagePreview ? {} : { imagePreview })),
 

@@ -9,7 +9,8 @@ import { applyMigrations, resolveSectionProps, type SectionRegistry } from "../c
 import { SITE_ROOT_CLASS, SITE_THEME_INIT_SCRIPT, designSystemToCss, siteDarkCss, type ThemeInput } from "../core/theme";
 import { IMAGE_SIZES, imageSource, type RenderContext } from "../core/types";
 import { MOTION_CSS } from "../elements/motion";
-import { shellAnimates, shellLayout } from "../elements/shell";
+import { resolveAnimation } from "@workspace/motion/presets";
+import { shellLayout } from "../elements/shell";
 import { collectPageCss, escapeStyleBlock, normalizeSectionStyle, type StyleCssMode } from "../elements/style";
 
 export function SectionRenderer({
@@ -31,8 +32,10 @@ export function SectionRenderer({
   const props = resolveSectionProps(definition, localizedInstance.props);
   const Component = definition.Component;
   const shellStyle = normalizeSectionStyle(instance.style).shell;
-  // The section's Animation switch (off: "none") turns its reveal off.
-  const sectionCtx = ctx.reveal && !shellAnimates(shellStyle) ? { ...ctx, reveal: false } : ctx;
+  // The section's Animation (docs/section-rules.md §6.6): "none" turns its reveal off, Inherit takes
+  // the site default, a preset is played by every reveal in the section.
+  const preset = ctx.reveal ? resolveAnimation(shellStyle?.animation, { animationDefault: ctx.revealDefault }) : null;
+  const sectionCtx: RenderContext = !ctx.reveal ? ctx : preset ? { ...ctx, revealPreset: preset } : { ...ctx, reveal: false };
   const content = <Component instance={localizedInstance} props={props} ctx={sectionCtx} />;
   const shell = shellLayout(shellStyle, (src) => ctx.imageUrl(src));
   // No shell: the wrapper renders exactly as before the shell existed (P4B-05).

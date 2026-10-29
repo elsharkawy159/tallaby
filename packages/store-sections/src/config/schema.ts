@@ -8,6 +8,7 @@
  * No React here: the dashboard and ecommerce apps both import this.
  */
 import { z } from "zod";
+import { animationDefaultSchema, animationSpeedSchema } from "@workspace/motion/presets";
 import { isHttpOrRelativeUrl } from "./url";
 import { PAGE_KINDS, PRODUCT_PAGE_SLUG } from "./product-page.lib";
 
@@ -291,11 +292,19 @@ export const designSystemSchema = z.object({
       borderRadius: z.number().min(0).max(64).optional(),
     })
     .default({}),
-  /** Theme › Animations (docs/section-rules.md §6.6): both on unless set to false. */
+  /**
+   * Theme › Animations (docs/section-rules.md §6.6): both switches on unless
+   * set to false (`reveal` is the master switch). `default`: what a section
+   * set to Inherit plays (`auto`, each element's own reveal, when unset);
+   * `speed`: normal when unset. A value that isn't known is dropped, never
+   * an error, so an old or hand-edited site still loads.
+   */
   motion: z
     .object({
       reveal: z.boolean().optional(),
       hoverZoom: z.boolean().optional(),
+      default: animationDefaultSchema.optional().catch(undefined),
+      speed: animationSpeedSchema.optional().catch(undefined),
     })
     .optional(),
 });

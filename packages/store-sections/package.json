@@ -61,6 +61,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@workspace/motion": "workspace:*",
     "sanitize-html": "^2.17.0",
     "zod": "^4.2.1",
     "lucide-react": "^0.562.0"

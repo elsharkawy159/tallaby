@@ -3,7 +3,7 @@
 import * as React from "react";
 import { Check, Lock, ShoppingBag } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Intro, ParallaxImage } from "@workspace/motion";
+import { Intro } from "@workspace/motion";
 import { cn } from "@workspace/ui/lib/utils";
 import { CtaButton } from "@/components/marketing/site/cta-button";
 import { useSignup } from "@/components/marketing/signup/signup-dialog.client";
@@ -113,12 +113,10 @@ export function HeroStory({ children }: { children?: React.ReactNode }) {
         </CtaButton>
       </form>
       {children}
-      {/* Floats in last, then drifts a little slower than the page (parallax moves the outer box). */}
-      <ParallaxImage speed={0.12} className="w-full">
-        <Intro variant="float" delay={0.6}>
-          <StoryStage beat={beat} slug={slug} />
-        </Intro>
-      </ParallaxImage>
+      {/* Floats in last. */}
+      <Intro variant="float" delay={0.6} className="w-full">
+        <StoryStage beat={beat} slug={slug} />
+      </Intro>
     </>
   );
 }

@@ -1112,7 +1112,8 @@ const REVEAL_LABELS: Record<RevealChoice, Localized> = {
   "fade-up": L("صعود مع ظهور", "Fade up"),
   fade: L("ظهور", "Fade"),
   "zoom-in": L("تقريب", "Zoom in"),
-  "slide-start": L("انزلاق من البداية", "Slide in"),
+  "slide-start": L("انزلاق من البداية", "Slide from start"),
+  "slide-end": L("انزلاق من النهاية", "Slide from end"),
   none: L("بدون", "None"),
 };
 

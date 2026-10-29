@@ -4,7 +4,7 @@ import type { ComponentNode, SectionInstance } from "../config/schema";
 import type { RenderContext } from "../core/types";
 import { PageRenderer, SectionRenderer } from "../render/render";
 import { storeSectionRegistry } from "../sections";
-import { MOTION_CSS, siteMotionAttrs } from "./motion";
+import { MOTION_CSS, revealFrom, siteMotionAttrs } from "./motion";
 import { collectPageCss, fallbackTabletColumns } from "./style";
 
 let n = 0;
@@ -88,8 +88,33 @@ describe("reveal on scroll (docs/section-rules.md §6)", () => {
   it("is off without ctx.reveal (the editor canvas) and when the section's Animation is off", () => {
     expect(render(custom(tree()), { reveal: false })).not.toContain("data-reveal");
     expect(render(custom(tree(), { shell: { animation: "none" } }))).not.toContain("data-reveal");
-    // Old "rise"/"fade" values mean on.
+    // The old "rise" meant on: it plays the site default.
     expect(render(custom(tree(), { shell: { animation: "rise" } }))).toContain("data-reveal");
+  });
+
+  it("plays the section's Animation preset in every reveal, and the site default for Inherit", () => {
+    const slide = reveals(render(custom(tree(), { shell: { animation: "slide-end" } })));
+    expect(slide.length).toBeGreaterThan(0);
+    // Every reveal plays the preset, and a list's items play together (no stagger steps).
+    expect(new Set(slide.map(([, variant]) => variant))).toEqual(new Set(["slide-end"]));
+    expect(new Set(slide.map(([, , step]) => step))).toEqual(new Set(["0"]));
+    // Stagger: everything rises, items one after another.
+    const stagger = reveals(render(custom(tree(), { shell: { animation: "stagger" } })));
+    expect(new Set(stagger.map(([, variant]) => variant))).toEqual(new Set(["fade-up"]));
+    expect(stagger.map(([, , step]) => step)).toContain("3");
+    // Inherit takes the site default; Auto (the default default) keeps each element's own.
+    expect(new Set(reveals(render(custom(tree()), { revealDefault: "fade" })).map(([, v]) => v))).toEqual(new Set(["fade"]));
+    expect(reveals(render(custom(tree()), { revealDefault: "auto" }))).toEqual(reveals(render(custom(tree()))));
+    // A section's own preset beats the site default; None turns it off.
+    expect(new Set(reveals(render(custom(tree(), { shell: { animation: "zoom-in" } }), { revealDefault: "fade" })).map(([, v]) => v))).toEqual(new Set(["zoom-in"]));
+    expect(render(custom(tree(), { shell: { animation: "none" } }), { revealDefault: "fade" })).not.toContain("data-reveal");
+  });
+
+  it("keeps an element's own Reveal and the hero heading under a section preset", () => {
+    const html = render(
+      custom([node("section", {}, [node("heading", { level: "h1", text: "Hero" }), node("paragraph", { text: "A", reveal: "slide-start" })])], { shell: { animation: "zoom-in" } }),
+    );
+    expect(reveals(html)).toEqual([["paragraph", "slide-start", "0"]]);
   });
 
   it("honours an element's Reveal override", () => {
@@ -118,13 +143,29 @@ describe("motion CSS", () => {
     expect(MOTION_CSS.startsWith("@media (prefers-reduced-motion:no-preference){")).toBe(true);
     expect(MOTION_CSS).toContain(".sf-motion [data-reveal]:not(.is-inview){opacity:0;");
     expect(MOTION_CSS).not.toMatch(/transition:[^;}]*(?:width|height|top|margin)/);
-    expect(MOTION_CSS).toContain('[data-reveal-step="5"].is-inview{transition-delay:450ms}');
+    expect(MOTION_CSS).toContain('[data-reveal-step="5"].is-inview{transition-delay:calc(0.45s * var(--sf-speed,1))}');
     expect(MOTION_CSS).not.toContain('data-reveal-step="6"');
   });
 
   it("maps the theme switches to root attributes", () => {
     expect(siteMotionAttrs(undefined)).toEqual({});
     expect(siteMotionAttrs({ reveal: false, hoverZoom: false })).toEqual({ "data-sf-motion": "off", "data-sf-hover": "none" });
+    // Speed: normal (or unknown) writes nothing; slow and fast scale every reveal through --sf-speed.
+    expect(siteMotionAttrs({ speed: "normal" })).toEqual({});
+    expect(siteMotionAttrs({ speed: "fast" })).toEqual({ "data-sf-speed": "fast" });
+    expect(siteMotionAttrs({ speed: "turbo" })).toEqual({});
+    expect(MOTION_CSS).toContain('[data-sf-speed="slow"]{--sf-speed:1.6}');
+  });
+
+  it("mirrors the logical slides in Arabic", () => {
+    expect(MOTION_CSS).toContain('[data-reveal="slide-end"]{transform:translate3d(28px,0,0)}');
+    expect(MOTION_CSS).toContain('[dir="rtl"] .sf-motion [data-reveal]:not(.is-inview)[data-reveal="slide-end"]{transform:translate3d(-28px,0,0)}');
+    // The editor replay starts from the same place as the CSS.
+    expect(revealFrom("slide-start", false)).toEqual({ transform: "translate3d(-28px,0,0)" });
+    expect(revealFrom("slide-start", true)).toEqual({ transform: "translate3d(28px,0,0)" });
+    expect(revealFrom("slide-end", true)).toEqual({ transform: "translate3d(-28px,0,0)" });
+    expect(revealFrom("zoom-in", true).clipPath).toBe("inset(6% 6% 6% 6%)");
+    expect(revealFrom(undefined, false)).toEqual({ transform: "translate3d(0,28px,0)" });
   });
 });
 

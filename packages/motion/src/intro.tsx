@@ -1,6 +1,6 @@
 /**
  * Load-time intro for the first screen (hero). Unlike the scroll presets this
- * is plain CSS (`motion.css`, `[data-intro]`): it starts with the first paint,
+ * is plain CSS (`animations.css`, `[data-intro]`): it starts with the first paint,
  * without waiting for JavaScript, so the hero headline (the LCP element) is
  * on screen within a few frames and never flashes visible → hidden → visible
  * at hydration. The animation always ends visible, and reduced motion turns

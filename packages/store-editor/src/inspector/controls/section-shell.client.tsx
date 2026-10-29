@@ -2,11 +2,11 @@
 
 import { useTranslations } from "next-intl";
 import { X } from "lucide-react";
-import { SHELL_PADDINGS, SHELL_SCHEMES, SHELL_WIDTHS, ANCHOR_RE, shellAnimates, type SectionShellStyle } from "@workspace/store-sections/render";
+import { SHELL_ANIMATIONS, SHELL_PADDINGS, SHELL_SCHEMES, SHELL_WIDTHS, ANCHOR_RE, type SectionShellStyle } from "@workspace/store-sections/render";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
-import { Switch } from "@workspace/ui/components/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select";
 import { cn } from "@workspace/ui/lib/utils";
 import { MediaPicker } from "../../media/media-picker.client";
 import { ControlRow, NumberControl, Segmented } from "./style-controls.client";
@@ -103,19 +103,27 @@ export function SectionShellControls({
         <p className="text-xs text-muted-foreground">{t("backgroundHint")}</p>
       </div>
 
-      {/* Motion is on by default (docs/section-rules.md §6.6); off stores "none". */}
+      {/* Motion is on by default (docs/section-rules.md §6.6): Inherit (the site default) stores nothing. */}
       <div className="space-y-1">
-        <div className="flex items-center justify-between gap-3">
-          <Label htmlFor="shell-animate" className="text-xs font-medium">
-            {t("animate")}
-          </Label>
-          <Switch
-            id="shell-animate"
-            checked={shellAnimates(value)}
-            disabled={readOnly}
-            onCheckedChange={(on) => onChange({ animation: on ? undefined : "none" })}
-          />
-        </div>
+        <Label htmlFor="shell-animate" className="text-xs font-medium">
+          {t("animate")}
+        </Label>
+        <Select
+          value={value.animation ?? "inherit"}
+          disabled={readOnly}
+          onValueChange={(next) => onChange({ animation: next === "inherit" ? undefined : (next as SectionShellStyle["animation"]) })}
+        >
+          <SelectTrigger id="shell-animate" size="sm" className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {SHELL_ANIMATIONS.map((animation) => (
+              <SelectItem key={animation} value={animation}>
+                {t(`animations.${animation}`)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         <p className="text-xs text-muted-foreground">{t("animateHint")}</p>
       </div>
       <div className="space-y-1">

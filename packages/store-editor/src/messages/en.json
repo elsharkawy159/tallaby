@@ -178,6 +178,7 @@
     "previewOnStore": "Preview on store",
     "managePages": "Manage pages…",
     "gridOverlay": "Column grid",
+    "previewMotion": "Preview animations",
     "rail": {
       "label": "Editor tools",
       "add": "Add",
@@ -512,8 +513,18 @@
         "removeImage": "Remove background image",
         "overlay": "Overlay",
         "backgroundHint": "Shows behind sections without their own background. The overlay darkens it so text stays readable.",
-        "animate": "Animate on scroll",
-        "animateHint": "The section’s content fades in as visitors reach it.",
+        "animate": "Animation",
+        "animateHint": "How the section’s content appears as visitors scroll to it. Same as site follows Theme › Motion.",
+        "animations": {
+          "inherit": "Same as site",
+          "none": "None",
+          "fade": "Fade",
+          "fade-up": "Fade up",
+          "slide-start": "Slide from start",
+          "slide-end": "Slide from end",
+          "zoom-in": "Zoom in",
+          "stagger": "One after another"
+        },
         "anchor": "Link name",
         "anchorHint": "Lowercase letters, numbers and dashes. Lets buttons link to this section.",
         "anchorLink": "Link to it with /#{anchor}",
@@ -601,6 +612,23 @@
       "motionHint": "Calm motion that makes the store feel premium without slowing it down.",
       "reveal": "Reveal sections on scroll",
       "revealHint": "Sections fade in gently as visitors scroll to them.",
+      "defaultAnimation": "Default animation",
+      "defaultAnimationHint": "What sections set to “Same as site” play. Automatic lets each element pick its own: headings rise, photos zoom, grids appear one after another.",
+      "animations": {
+        "auto": "Automatic",
+        "fade": "Fade",
+        "fade-up": "Fade up",
+        "slide-start": "Slide from start",
+        "slide-end": "Slide from end",
+        "zoom-in": "Zoom in",
+        "stagger": "One after another"
+      },
+      "speed": "Animation speed",
+      "speeds": {
+        "slow": "Slow",
+        "normal": "Normal",
+        "fast": "Fast"
+      },
       "hoverZoom": "Zoom photos on hover",
       "hoverZoomHint": "Product and category photos zoom in a little under the mouse."
     },

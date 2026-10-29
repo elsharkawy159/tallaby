@@ -16,6 +16,7 @@ import {
   Redo2,
   RotateCw,
   Smartphone,
+  Sparkles,
   Tablet,
   Undo2,
   UploadCloud,
@@ -99,6 +100,7 @@ export function EditorTopbar({
   const canUndo = useStore(store, (s) => s.past.length > 0);
   const canRedo = useStore(store, (s) => s.future.length > 0);
   const gridOverlay = useStore(store, (s) => s.gridOverlay);
+  const previewMotion = useStore(store, (s) => s.previewMotion);
   const state = store.getState();
   const page = pages.find((p) => p.id === activePageId) ?? pages[0]!;
   const host = storeUrl.replace(/^https?:\/\//, "").replace(/\/$/, "");
@@ -200,6 +202,9 @@ export function EditorTopbar({
           <IconAction label={t("gridOverlay")} onClick={() => state.toggleGridOverlay()} pressed={gridOverlay}>
             <Grid3x3 className="size-4" />
           </IconAction>
+          <IconAction label={t("previewMotion")} onClick={() => state.togglePreviewMotion()} pressed={previewMotion}>
+            <Sparkles className="size-4" />
+          </IconAction>
           {previewEnabled && capabilities.preview && (
             <IconAction label={t("previewOnStore")} onClick={preview.open} disabled={preview.opening || readOnly || saveStatus === "conflict"}>
               {preview.opening ? <LoaderCircle className="size-4 animate-spin" /> : <Eye className="size-4" />}
@@ -239,6 +244,10 @@ export function EditorTopbar({
             <DropdownMenuCheckboxItem checked={gridOverlay} onCheckedChange={() => state.toggleGridOverlay()}>
               <Grid3x3 aria-hidden />
               {t("gridOverlay")}
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuCheckboxItem checked={previewMotion} onCheckedChange={() => state.togglePreviewMotion()}>
+              <Sparkles aria-hidden />
+              {t("previewMotion")}
             </DropdownMenuCheckboxItem>
             {previewEnabled && capabilities.preview && (
               <DropdownMenuItem onSelect={preview.open} disabled={preview.opening || readOnly || saveStatus === "conflict"}>
