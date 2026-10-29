@@ -37,6 +37,7 @@ import {
 import {
   contentBlocksToHtml,
   describeCurrentListing,
+  pickAutofillCategory,
   planAutofillChanges,
   sectionForPath,
   toParsedImport,
@@ -287,7 +288,7 @@ export function AiAutofillCard ({
       const response = await requestAutofill(text.trim(), sent)
       if (!response.ok) {
         if (response.error === "dailyLimit") setRemaining(0)
-        toast.error(t(`errors.${response.error satisfies AutofillErrorCode}`))
+        toast.error(t(`errors.${response.error satisfies AutofillErrorCode}`, { max: AUTOFILL_LIMITS.maxPdfPages }))
         return
       }
 
@@ -313,13 +314,16 @@ export function AiAutofillCard ({
           ),
         ])
       ) as Record<SupportedLocale, string>
+      // Matched here from the AI's titles and hint; the prompt carries no category list (docs/ai.md).
+      const categoryId = pickAutofillCategory(categories, output) ?? (built.categoryMatched ? built.values.categoryId : null)
+      const missing: MissingField[] = categoryId || current.categoryId ? output.missing : [...output.missing, "category"]
       const changes = planAutofillChanges(
         current,
         built.values,
         output,
         isEdit ? "edit" : replace ? "replace" : "empty",
         {
-          categoryId: output.categoryId ?? (built.categoryMatched ? built.values.categoryId : null),
+          categoryId,
           brandId: built.brandMatched ? built.values.brandId : undefined,
           storeCategoryName: output.storeCategoryName,
           contentHtml,
@@ -342,7 +346,7 @@ export function AiAutofillCard ({
         document.dispatchEvent(new CustomEvent(OPEN_SECTION_EVENT, { detail: section }))
       }
 
-      setReview({ filled: changes.length, missing: isEdit ? [] : output.missing, warnings: output.warnings, undo })
+      setReview({ filled: changes.length, missing: isEdit ? [] : missing, warnings: output.warnings, undo })
       if (changes.length) onAppliedChange?.(1)
       promptForm.reset({ prompt: "" })
       images.forEach((item) => URL.revokeObjectURL(item.preview))
@@ -484,6 +488,18 @@ export function AiAutofillCard ({
           </div>
         )}
       </div>
+
+      {prompt.length > 0 && (
+        <p
+          className={cn(
+            "mt-1 px-0.5 text-end text-xs tabular-nums text-muted-foreground",
+            prompt.length >= AUTOFILL_LIMITS.maxTextLength && "text-destructive"
+          )}
+          aria-live="polite"
+        >
+          {prompt.length} / {AUTOFILL_LIMITS.maxTextLength}
+        </p>
+      )}
 
       {running && (
         <p className="mt-2 px-0.5 text-xs text-muted-foreground" role="status" aria-live="polite">

@@ -3,13 +3,16 @@ import type { z } from "zod"
 import { modelChainForTier, type ModelTier } from "./models"
 import { costMicroUsd } from "./pricing"
 import { google } from "./providers.server"
+import { readCachedResult, resultCacheKey, writeCachedResult } from "./result-cache.server"
 import { logAiUsage } from "./usage.server"
 
 /**
  * One structured (zod) model call with usage logging (PLAN.md AI-0). Every
  * call writes an ai_usage_logs row, success or failure. A failed call moves
  * on to the next model of the tier's chain (cheap fallbacks, then the smart
- * tier), within one time budget that fits the route's 60 s limit.
+ * tier), within one time budget that fits the route's 60 s limit. An
+ * overloaded first model gets one more try after a short wait before the
+ * chain moves on. Cost rules for every AI feature: docs/ai.md.
  */
 
 export type GenerateContentPart =
@@ -31,6 +34,21 @@ export type GenerateStructuredOptions<TSchema extends z.ZodType> = {
   maxOutputTokens?: number
   /** Total time for every attempt together, in ms. */
   budgetMs?: number
+  /**
+   * Tokens billed per image or PDF page (docs/ai.md). "low" for photos the
+   * model only needs to recognise; "medium" (default) when it must read small
+   * text, such as a review screenshot or a spec sheet.
+   */
+  mediaResolution?: "low" | "medium" | "high"
+  /** Thinking tokens bill as output. Default "low"; "minimal" for plain copy work. */
+  thinkingLevel?: "minimal" | "low" | "medium" | "high"
+  /**
+   * Keep the answer this long (ms) and return it, free, when the same seller
+   * sends the same input to the same feature again. 0 (default) = no cache.
+   */
+  cacheMs?: number
+  /** Test seam: the wait before retrying an overloaded first model. */
+  busyRetryDelayMs?: number
 }
 
 /** Fits inside a 60 s route with time left to answer. */
@@ -38,6 +56,17 @@ const DEFAULT_BUDGET_MS = 50_000
 const MAX_CALL_MS = 40_000
 /** Not worth starting another model with less time than this. */
 const MIN_CALL_MS = 8_000
+/**
+ * An overloaded cheap model often answers a second later; one short wait is
+ * cheaper than the next model in the chain (gemini-3.6-flash costs ~3×).
+ */
+const BUSY_RETRY_DELAY_MS = 2_000
+
+const MEDIA_RESOLUTION = {
+  low: "MEDIA_RESOLUTION_LOW",
+  medium: "MEDIA_RESOLUTION_MEDIUM",
+  high: "MEDIA_RESOLUTION_HIGH",
+} as const
 
 // AI SDK v7 takes images as file parts with an image/* media type.
 const toSdkPart = (part: GenerateContentPart) =>
@@ -69,8 +98,8 @@ export function aiErrorKind(error: unknown): AiErrorKind {
 }
 
 // Gemini 2.x takes a thinking budget; 3.x a thinking level.
-const thinkingConfig = (modelId: string) =>
-  /^gemini-2\./.test(modelId) ? { thinkingBudget: 0 } : { thinkingLevel: "low" }
+const thinkingConfig = (modelId: string, level: GenerateStructuredOptions<z.ZodType>["thinkingLevel"]) =>
+  /^gemini-2\./.test(modelId) ? { thinkingBudget: 0 } : { thinkingLevel: level ?? "low" }
 
 async function callOnce<TSchema extends z.ZodType>(
   modelId: string,
@@ -93,8 +122,8 @@ async function callOnce<TSchema extends z.ZodType>(
       providerOptions: {
         google: {
           // Listing copy needs little reasoning; thinking tokens bill as output.
-          thinkingConfig: thinkingConfig(modelId),
-          mediaResolution: "MEDIA_RESOLUTION_MEDIUM",
+          thinkingConfig: thinkingConfig(modelId, options.thinkingLevel),
+          mediaResolution: MEDIA_RESOLUTION[options.mediaResolution ?? "medium"],
         },
       },
     })
@@ -133,16 +162,47 @@ function readUsage(usage: unknown): CallUsage {
   }
 }
 
+/** Everything that decides the answer, so a cache hit is only ever the same request. */
+const cacheKeyFor = (options: GenerateStructuredOptions<z.ZodType>) =>
+  resultCacheKey([
+    options.feature,
+    options.sellerId,
+    options.tier,
+    options.mediaResolution ?? "medium",
+    options.system,
+    ...options.content.flatMap((part) => (part.type === "text" ? [part.type, part.text] : [part.type, part.mediaType, part.data])),
+  ])
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
 export async function generateStructured<TSchema extends z.ZodType>(
   options: GenerateStructuredOptions<TSchema>,
-): Promise<{ object: z.infer<TSchema>; usage: CallUsage; modelId: string }> {
+): Promise<{ object: z.infer<TSchema>; usage: CallUsage; modelId: string; cached?: boolean }> {
+  const cacheKey = options.cacheMs ? cacheKeyFor(options) : null
+  if (cacheKey) {
+    const hit = readCachedResult<{ object: z.infer<TSchema>; modelId: string }>(cacheKey)
+    if (hit) return { ...hit, usage: {}, cached: true }
+  }
+
   const deadline = Date.now() + (options.budgetMs ?? DEFAULT_BUDGET_MS)
+  const chain = modelChainForTier(options.tier)
+  const retryDelay = options.busyRetryDelayMs ?? BUSY_RETRY_DELAY_MS
+  // The cheapest model, overloaded: wait once and ask it again before paying for the next one.
+  const attempts: Array<{ modelId: string; afterBusyMs?: number }> = chain.map((modelId) => ({ modelId }))
+  if (chain.length > 1) attempts.splice(1, 0, { modelId: chain[0]!, afterBusyMs: retryDelay })
+
   let lastError: unknown
-  for (const [index, modelId] of modelChainForTier(options.tier).entries()) {
+  for (const [index, { modelId, afterBusyMs }] of attempts.entries()) {
+    if (afterBusyMs !== undefined) {
+      if (aiErrorKind(lastError) !== "busy" || deadline - Date.now() - afterBusyMs < MIN_CALL_MS) continue
+      await sleep(afterBusyMs)
+    }
     const left = deadline - Date.now()
     if (index > 0 && left < MIN_CALL_MS) break
     try {
-      return { ...(await callOnce(modelId, options, Math.min(MAX_CALL_MS, left))), modelId }
+      const result = { ...(await callOnce(modelId, options, Math.min(MAX_CALL_MS, left))), modelId }
+      if (cacheKey) writeCachedResult(cacheKey, { object: result.object, modelId }, options.cacheMs ?? 0)
+      return result
     } catch (error) {
       lastError = error
       console.warn(`[ai] ${options.feature} on ${modelId} failed (${errorCode(error)})`)

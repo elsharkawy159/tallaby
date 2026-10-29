@@ -3,4 +3,5 @@ export { MODEL_PRICES, costMicroUsd, type ModelPrice, type TokenUsage } from "./
 export { cairoDayStart } from "./day"
 export { aiConfigured } from "./providers.server"
 export { checkDailyCap, countAiUsageSince, logAiUsage, type AiUsageRow, type AiUsageStatus, type DailyCap } from "./usage.server"
+export { clearResultCache, resultCacheKey } from "./result-cache.server"
 export { aiErrorKind, generateStructured, type AiErrorKind, type GenerateContentPart, type GenerateStructuredOptions } from "./generate.server"

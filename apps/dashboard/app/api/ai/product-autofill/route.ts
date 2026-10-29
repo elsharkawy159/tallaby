@@ -29,6 +29,7 @@ const STATUS: Record<AutofillErrorCode, number> = {
   disabled: 503,
   empty: 400,
   tooLarge: 413,
+  pdfTooLong: 413,
   badFile: 415,
   rateLimited: 429,
   dailyLimit: 429,
@@ -92,10 +93,11 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const { output } = await autofillProduct(sellerId, input)
+    const { output, cached } = await autofillProduct(sellerId, input)
     return NextResponse.json<ProductAutofillResponse>({
       ok: true,
-      result: { output, remainingToday: Math.max(0, cap.remaining - 1) },
+      // A cached answer made no model call, so it does not use up a call.
+      result: { output, remainingToday: Math.max(0, cap.remaining - (cached ? 0 : 1)) },
     })
   } catch (error) {
     // The usage rows (with the error codes) are written by generateStructured.

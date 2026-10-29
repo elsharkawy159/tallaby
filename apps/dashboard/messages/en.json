@@ -1044,6 +1044,7 @@
         "timeout": "The AI took too long to answer. Try again, or use fewer photos.",
         "failed": "AI couldn't read this product. Try again or add more details.",
         "pdfTooLarge": "The PDF must be 4 MB or smaller.",
+        "pdfTooLong": "The PDF is too long. Send a PDF of {max} pages or fewer, only the product's own pages.",
         "tooManyImages": "You can add up to {max} photos.",
         "photoUploadFailed": "Some photos couldn't be added to the product images."
       }

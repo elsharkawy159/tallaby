@@ -8,6 +8,7 @@ vi.mock("./usage.server", () => ({ logAiUsage: async (row: Record<string, unknow
 vi.mock("./providers.server", () => ({ google: () => () => { throw new Error("no real model in tests") } }))
 
 const { aiErrorKind, generateStructured } = await import("./generate.server")
+const { clearResultCache } = await import("./result-cache.server")
 
 const schema = z.object({ title: z.string() })
 
@@ -25,6 +26,7 @@ const base = {
   feature: "test",
   sellerId: "seller-1",
   schema,
+  busyRetryDelayMs: 0,
   system: "rules",
   content: [{ type: "text" as const, text: "a red mug" }],
 }
@@ -32,6 +34,7 @@ const base = {
 describe("generateStructured", () => {
   beforeEach(() => {
     logs.length = 0
+    clearResultCache()
     delete process.env.AI_MODEL_SMART
     delete process.env.AI_MODEL_FALLBACKS
   })
@@ -89,12 +92,81 @@ describe("generateStructured", () => {
         })
       },
     })
-    expect(models).toEqual(["gemini-3.1-flash-lite", "gemini-3.5-flash-lite"])
+    // One wait-and-retry on the cheapest model, then the next model.
+    expect(models).toEqual(["gemini-3.1-flash-lite", "gemini-3.1-flash-lite", "gemini-3.5-flash-lite"])
     expect(out.modelId).toBe("gemini-3.5-flash-lite")
     expect(logs).toMatchObject([
       { status: "error", model: "gemini-3.1-flash-lite", errorCode: "APICallError_503" },
+      { status: "error", model: "gemini-3.1-flash-lite", errorCode: "APICallError_503" },
       { status: "ok", model: "gemini-3.5-flash-lite" },
     ])
+  })
+
+  it("answers from the cheapest model when its retry after a busy error works", async () => {
+    let calls = 0
+    const out = await generateStructured({
+      ...base,
+      tier: "fast",
+      model: () =>
+        new MockLanguageModelV4({
+          doGenerate: async () => {
+            if (calls++ === 0) throw busyError()
+            return result('{"title":"ok"}')
+          },
+        }),
+    })
+    expect(out.modelId).toBe("gemini-3.1-flash-lite")
+    expect(logs.map((l) => l.status)).toEqual(["error", "ok"])
+  })
+
+  it("does not retry the same model after a non-busy error", async () => {
+    const models: string[] = []
+    await generateStructured({
+      ...base,
+      tier: "fast",
+      model: (id) => {
+        models.push(id)
+        return new MockLanguageModelV4({ doGenerate: result(id === "gemini-3.1-flash-lite" ? "not json" : '{"title":"ok"}') })
+      },
+    })
+    expect(models).toEqual(["gemini-3.1-flash-lite", "gemini-3.5-flash-lite"])
+  })
+
+  it("returns a cached answer for the same input, without a model call or a usage row", async () => {
+    let calls = 0
+    const model = () => {
+      calls++
+      return new MockLanguageModelV4({ doGenerate: result('{"title":"Red mug"}') })
+    }
+    const first = await generateStructured({ ...base, tier: "fast", cacheMs: 60_000, model })
+    const second = await generateStructured({ ...base, tier: "fast", cacheMs: 60_000, model })
+    expect(second).toMatchObject({ object: first.object, cached: true })
+    expect(calls).toBe(1)
+    expect(logs).toHaveLength(1)
+    // Different input, or another seller: a real call.
+    await generateStructured({ ...base, tier: "fast", cacheMs: 60_000, model, content: [{ type: "text", text: "a blue mug" }] })
+    await generateStructured({ ...base, tier: "fast", cacheMs: 60_000, model, sellerId: "seller-2" })
+    expect(calls).toBe(3)
+  })
+
+  it("does not cache without cacheMs", async () => {
+    let calls = 0
+    const model = () => {
+      calls++
+      return new MockLanguageModelV4({ doGenerate: result('{"title":"Red mug"}') })
+    }
+    await generateStructured({ ...base, tier: "fast", model })
+    await generateStructured({ ...base, tier: "fast", model })
+    expect(calls).toBe(2)
+  })
+
+  it("sends the media resolution and thinking level asked for", async () => {
+    const model = new MockLanguageModelV4({ doGenerate: result('{"title":"ok"}') })
+    await generateStructured({ ...base, tier: "fast", model: () => model, mediaResolution: "low", thinkingLevel: "minimal" })
+    expect(model.doGenerateCalls[0]?.providerOptions?.google).toMatchObject({
+      mediaResolution: "MEDIA_RESOLUTION_LOW",
+      thinkingConfig: { thinkingLevel: "minimal" },
+    })
   })
 
   it("tries every model once, then rethrows the last error", async () => {
@@ -108,7 +180,7 @@ describe("generateStructured", () => {
       },
     })
     await expect(call).rejects.toSatisfy((error) => aiErrorKind(error) === "busy")
-    expect(models).toEqual(["gemini-3.1-flash-lite", "gemini-3.5-flash-lite", "gemini-3.6-flash"])
+    expect(models).toEqual(["gemini-3.1-flash-lite", "gemini-3.1-flash-lite", "gemini-3.5-flash-lite", "gemini-3.6-flash"])
   })
 
   it("does not start another model when the time budget is used up", async () => {

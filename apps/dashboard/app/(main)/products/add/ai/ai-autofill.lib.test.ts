@@ -1,14 +1,18 @@
 import { describe, expect, it } from "vitest"
-import { defaultValues, defaultLocalizedFields, type AddProductFormData } from "../add-product.schema"
-import { validateAutofillInput, type ProductAutofillOutput } from "./ai-autofill.dto"
+import { defaultValues, defaultLocalizedFields, type AddProductFormData, type CategoryOption } from "../add-product.schema"
+import { AUTOFILL_LIMITS, countPdfPages, validateAutofillInput, type ProductAutofillOutput } from "./ai-autofill.dto"
 import {
   cleanAutofillOutput,
   contentBlocksToHtml,
   paragraphsToHtml,
+  pickAutofillCategory,
   planAutofillChanges,
   sellerGaveFigures,
+  seoDescription,
+  seoTitle,
   toParsedImport,
 } from "./ai-autofill.lib"
+import { AUTOFILL_SYSTEM_RULES, autofillRequestText } from "./ai-autofill-prompt.lib"
 
 const copy = (title: string) => ({
   title,
@@ -26,7 +30,7 @@ const copy = (title: string) => ({
 
 const output = (overrides: Partial<ProductAutofillOutput> = {}): ProductAutofillOutput => ({
   localized: { ar: copy("تيشيرت قطن"), en: copy("Cotton T-shirt") },
-  categoryId: "cat-tees",
+  categoryHint: "t-shirts",
   brandName: null,
   storeCategoryName: "تيشيرتات",
   price: { list: 450, final: 399, discountPercent: null, discountEndsAt: null },
@@ -45,7 +49,7 @@ const output = (overrides: Partial<ProductAutofillOutput> = {}): ProductAutofill
   ...overrides,
 })
 
-const ctx = { categoryIds: new Set(["cat-tees"]), sellerText: "تيشيرت قطن بـ 450 جنيه", hasPdf: false, today: "2026-10-28" }
+const ctx = { sellerText: "تيشيرت قطن بـ 450 جنيه", hasPdf: false, today: "2026-10-28" }
 
 const price = (overrides: Partial<ProductAutofillOutput["price"]>): ProductAutofillOutput["price"] => ({
   list: null,
@@ -75,10 +79,91 @@ describe("validateAutofillInput", () => {
 
   it("rejects unsupported files and too many photos", () => {
     expect(validateAutofillInput({ text: "", images: [{ ...image, mediaType: "image/gif" }], pdf: null })).toBe("badFile")
-    expect(validateAutofillInput({ text: "", images: Array(7).fill(image), pdf: null })).toBe("tooLarge")
+    expect(validateAutofillInput({ text: "", images: Array(AUTOFILL_LIMITS.maxImages + 1).fill(image), pdf: null })).toBe("tooLarge")
     expect(
       validateAutofillInput({ text: "", images: [], pdf: { mediaType: "text/plain", size: 10, data: new Uint8Array() } })
     ).toBe("badFile")
+  })
+
+  it("rejects text over the limit", () => {
+    expect(validateAutofillInput({ text: "a".repeat(AUTOFILL_LIMITS.maxTextLength), images: [], pdf: null })).toBeNull()
+    expect(validateAutofillInput({ text: "a".repeat(AUTOFILL_LIMITS.maxTextLength + 1), images: [], pdf: null })).toBe("tooLarge")
+  })
+
+  it("rejects a PDF with too many pages, and lets one through when its pages cannot be counted", () => {
+    const pdf = (pages: number) => {
+      const data = new TextEncoder().encode(
+        `%PDF-1.4\n1 0 obj << /Type /Pages /Count ${pages} >> endobj\n` +
+          Array.from({ length: pages }, (_, i) => `${i + 2} 0 obj << /Type /Page /Parent 1 0 R >> endobj`).join("\n"),
+      )
+      return { mediaType: "application/pdf", size: data.length, data }
+    }
+    expect(countPdfPages(pdf(3).data)).toBe(3)
+    expect(validateAutofillInput({ text: "", images: [], pdf: pdf(AUTOFILL_LIMITS.maxPdfPages) })).toBeNull()
+    expect(validateAutofillInput({ text: "", images: [], pdf: pdf(AUTOFILL_LIMITS.maxPdfPages + 1) })).toBe("pdfTooLong")
+    const packed = new TextEncoder().encode("%PDF-1.7\n1 0 obj << /Type /ObjStm /N 40 >> stream ... endstream")
+    expect(countPdfPages(packed)).toBeNull()
+  })
+})
+
+describe("autofill prompt", () => {
+  it("carries no category list; a new product always gets the long description, an edit only on request", () => {
+    expect(AUTOFILL_SYSTEM_RULES).not.toMatch(/CATEGORIES \(id/)
+    const request = (current: string | null) =>
+      autofillRequestText({ text: "mug", current, imageCount: 0, hasPdf: false }, { today: "2026-10-29", storeCategories: [] })
+    expect(request(null)).toContain("DETAILED_DESCRIPTION: yes")
+    expect(request('{"title":"Mug"}')).toContain("DETAILED_DESCRIPTION: only if asked")
+  })
+})
+
+describe("SEO lines written in code", () => {
+  it("cuts at a word break within the limit", () => {
+    const title = "Handmade ceramic coffee mug with a wide handle and a speckled glaze, 350 ml"
+    expect(seoTitle(title)).toBe("Handmade ceramic coffee mug with a wide handle and a")
+    expect(seoTitle(title).length).toBeLessThanOrEqual(60)
+    expect(seoTitle("Short title")).toBe("Short title")
+  })
+
+  it("fills the SEO title and description from the copy", () => {
+    const clean = cleanAutofillOutput(output(), ctx)
+    expect(clean.localized.en.metaTitle).toBe("Cotton T-shirt")
+    expect(clean.localized.en.metaDescription).toBe("First paragraph. Second <b>paragraph</b>.")
+    expect(seoDescription("x ".repeat(200)).length).toBeLessThanOrEqual(160)
+  })
+
+  it("keeps the seller's own SEO lines when editing", () => {
+    const current = emptyForm()
+    current.localized.en.metaTitle = "My SEO title"
+    const paths = planAutofillChanges(current, emptyForm(), cleanAutofillOutput(output(), ctx), "edit", {
+      categoryId: null,
+      storeCategoryName: null,
+    }).map((c) => c.path)
+    expect(paths).not.toContain("localized.en.metaTitle")
+    expect(paths).toContain("localized.ar.metaTitle")
+  })
+})
+
+describe("pickAutofillCategory", () => {
+  const leaf = (id: string, name: string, nameAr: string) => ({ id, name, nameAr, slug: id, level: 2, categories: [] })
+  const categories = [
+    {
+      id: "fashion",
+      name: "Fashion",
+      nameAr: "أزياء",
+      slug: "fashion",
+      level: 1,
+      categories: [leaf("cat-tees", "T-Shirts", "تيشيرتات"), leaf("cat-shoes", "Running Shoes", "أحذية جري")],
+    },
+  ] as unknown as CategoryOption[]
+
+  it("matches the category from the AI's hint and titles", () => {
+    const clean = cleanAutofillOutput(output({ categoryHint: "running shoes" }), ctx)
+    expect(pickAutofillCategory(categories, { ...clean, localized: { ...clean.localized, en: { ...clean.localized.en, title: "Sneakers" } } })).toBe("cat-shoes")
+  })
+
+  it("returns null when nothing matches", () => {
+    const clean = cleanAutofillOutput(output({ categoryHint: "garden hose" }), ctx)
+    expect(pickAutofillCategory(categories, { ...clean, localized: { ar: { ...clean.localized.ar, title: "خرطوم" }, en: { ...clean.localized.en, title: "Hose" } } })).toBeNull()
   })
 })
 
@@ -105,10 +190,11 @@ describe("cleanAutofillOutput", () => {
     expect(sellerGaveFigures("السعر ٤٥٠", false)).toBe(true)
   })
 
-  it("drops a category id that is not in the list", () => {
-    const clean = cleanAutofillOutput(output({ categoryId: "made-up" }), ctx)
-    expect(clean.categoryId).toBeNull()
-    expect(clean.missing).toContain("category")
+  it("leaves the category to the form's match (no 'missing category' from the model)", () => {
+    const clean = cleanAutofillOutput(output({ missing: ["category", "brand"] }), ctx)
+    expect(clean.categoryHint).toBe("t-shirts")
+    expect(clean.missing).toEqual(expect.arrayContaining(["brand"]))
+    expect(clean.missing).not.toContain("category")
   })
 
   it("treats a lone or higher sale price sensibly", () => {

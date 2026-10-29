@@ -9,16 +9,25 @@ import { META_KEYWORDS_MAX } from "../meta-keywords.lib"
 
 export const AUTOFILL_FEATURE = "product_autofill"
 
+/**
+ * Input limits. Every image, PDF page and character is billed on every call,
+ * so these stay small on purpose (docs/ai.md); the seller adds more photos in
+ * the normal image uploader.
+ */
 export const AUTOFILL_LIMITS = {
-  maxImages: 6,
+  /** Each image costs ~560 input tokens at medium resolution. */
+  maxImages: 4,
   /** Per resized image, as sent to the model (the browser shrinks them first). */
   maxImageBytes: 1.5 * 1024 * 1024,
   maxPdfBytes: 4 * 1024 * 1024,
+  /** Each PDF page is billed like an image. */
+  maxPdfPages: 5,
   /** Under Vercel's 4.5 MB request body limit. */
   maxTotalBytes: 4.4 * 1024 * 1024,
-  maxTextLength: 4000,
+  /** Enough for a description or a spec list, not a whole pasted web page. */
+  maxTextLength: 1500,
   /** The current listing sent along when editing a product (JSON). */
-  maxCurrentLength: 12000,
+  maxCurrentLength: 6000,
 } as const
 
 export const AUTOFILL_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"] as const
@@ -40,6 +49,7 @@ export type AutofillErrorCode =
   | "disabled"
   | "empty"
   | "tooLarge"
+  | "pdfTooLong"
   | "badFile"
   | "rateLimited"
   | "dailyLimit"
@@ -68,19 +78,19 @@ export const AUTOFILL_MAX_REVIEWS = 20
 export const MISSING_FIELDS = ["price", "stock", "category", "brand", "dimensions", "weight"] as const
 export type MissingField = (typeof MISSING_FIELDS)[number]
 
+// No SEO title or description here: the code makes them from the title and
+// the short description (docs/ai.md, "the code does what it can").
 const localizedOutputSchema = z.object({
   title: z.string().describe("Product name, clear and specific, at most 120 characters. No price, no emojis."),
   description: z
     .string()
     .describe("Short sales description: 2 or 3 short paragraphs of plain text separated by a blank line. No markdown, no HTML."),
   bulletPoints: z.array(z.string()).max(6).describe("3 to 6 key features or benefits, one short line each."),
-  metaTitle: z.string().describe("SEO title, at most 60 characters."),
-  metaDescription: z.string().describe("SEO description, at most 160 characters."),
   metaKeywords: z
     .array(z.string())
     .max(META_KEYWORDS_MAX)
     .describe(
-      "At least 10 and up to 15 search keywords shoppers would type: the product type, its synonyms and common spellings, brand, material, color, size, use and occasion. Each 1 to 4 words, all different.",
+      "8 to 10 search keywords shoppers would type: the product type, its synonyms and common spellings, brand, material, color, use. Each 1 to 4 words, all different.",
     ),
   // No enum and no maxItems here: with them the whole schema is over Gemini's
   // complexity limit ("Request contains an invalid argument"). cleanContentBlocks
@@ -94,7 +104,7 @@ const localizedOutputSchema = z.object({
       }),
     )
     .describe(
-      "The detailed description on the product page, as blocks: a heading, a short intro paragraph, then 2 to 4 headed parts (what it is and why it is useful, specs and materials, how to use or care for it, what is in the box) using paragraphs and lists. Facts only from the input. Plain text, no markdown.",
+      "Follow DETAILED_DESCRIPTION. The detailed description on the product page, as blocks: a heading, a short intro paragraph, then 2 to 4 headed parts (what it is and why it is useful, specs and materials, how to use or care for it, what is in the box) using paragraphs and lists. Facts only from the input. Plain text, no markdown.",
     ),
 })
 
@@ -110,7 +120,9 @@ export const productAutofillOutputSchema = z.object({
     ar: localizedOutputSchema.describe("Arabic copy for Egyptian shoppers, clear and natural."),
     en: localizedOutputSchema.describe("English copy."),
   }),
-  categoryId: z.string().nullable().describe("The id of the best category from the CATEGORIES list, or null."),
+  // A hint, not an id: sending the 541-category list cost ~24k input tokens a
+  // call (2026-10-29). The form matches the category from the titles and this hint.
+  categoryHint: z.string().nullable().describe("The product type in plain English, 1 to 4 words (e.g. running shoes). Null if unclear."),
   brandName: z.string().nullable().describe("Brand only when it is written in the input or clearly visible on the product. Else null."),
   storeCategoryName: z
     .string()
@@ -181,8 +193,16 @@ export type ProductAutofillRawOutput = z.infer<typeof productAutofillOutputSchem
 
 type RawVariantType = ProductAutofillRawOutput["variantTypes"][number]
 
+type RawLocalized = ProductAutofillRawOutput["localized"]["ar"]
+/** One language of the cleaned answer, with the SEO title and description the code wrote. */
+export type AutofillLocalizedOutput = RawLocalized & { metaTitle: string; metaDescription: string }
+
 /** The cleaned answer: the plain-string fields narrowed to their fixed lists. */
-export type ProductAutofillOutput = Omit<ProductAutofillRawOutput, "condition" | "missing" | "variantTypes" | "dimensions"> & {
+export type ProductAutofillOutput = Omit<
+  ProductAutofillRawOutput,
+  "localized" | "condition" | "missing" | "variantTypes" | "dimensions"
+> & {
+  localized: { ar: AutofillLocalizedOutput; en: AutofillLocalizedOutput }
   condition: (typeof CONDITIONS)[number] | null
   missing: MissingField[]
   variantTypes: Array<Omit<RawVariantType, "kind"> & { kind: (typeof VARIANT_KINDS)[number] }>
@@ -204,6 +224,17 @@ export type ProductAutofillResponse =
 
 const sizeOf = (files: AutofillFile[]) => files.reduce((sum, file) => sum + file.size, 0)
 
+/**
+ * Page count read from the PDF's page objects, or null when they are packed
+ * in compressed object streams (then only the byte limit applies). Cheap and
+ * dependency-free; it only has to catch a long catalogue sent by mistake.
+ */
+export function countPdfPages(data: Uint8Array): number | null {
+  const text = new TextDecoder("latin1").decode(data)
+  const pages = text.match(/\/Type\s*\/Page(?![a-zA-Z])/g)?.length ?? 0
+  return pages > 0 ? pages : null
+}
+
 /** Checks the request limits; returns an error code or null when the input is usable. */
 export function validateAutofillInput(input: AutofillInput): AutofillErrorCode | null {
   const text = input.text.trim()
@@ -218,6 +249,7 @@ export function validateAutofillInput(input: AutofillInput): AutofillErrorCode |
   if (input.pdf) {
     if (input.pdf.mediaType !== AUTOFILL_PDF_TYPE) return "badFile"
     if (input.pdf.size > AUTOFILL_LIMITS.maxPdfBytes) return "tooLarge"
+    if ((countPdfPages(input.pdf.data) ?? 0) > AUTOFILL_LIMITS.maxPdfPages) return "pdfTooLong"
   }
   const total = sizeOf(input.images) + (input.pdf?.size ?? 0) + input.text.length + (input.current?.length ?? 0)
   if (total > AUTOFILL_LIMITS.maxTotalBytes) return "tooLarge"

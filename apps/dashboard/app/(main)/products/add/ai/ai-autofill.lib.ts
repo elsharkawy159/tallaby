@@ -1,5 +1,6 @@
 import { cleanKeywords } from "../meta-keywords.lib"
-import { defaultValues, type AddProductFormData, type SupportedLocale } from "../add-product.schema"
+import { suggestCategories } from "../add-product.lib"
+import { defaultValues, type AddProductFormData, type CategoryOption, type SupportedLocale } from "../add-product.schema"
 import type { ParsedProductImport } from "../parse-product-import.types"
 import { SELLER_REVIEWS_MAX } from "../../social-proof/social-proof.dto"
 import {
@@ -42,8 +43,6 @@ export function sellerGaveFigures(text: string, hasPdf: boolean): boolean {
 }
 
 export type CleanContext = {
-  /** Every Tallaby category id the seller may pick. */
-  categoryIds: ReadonlySet<string>
   sellerText: string
   hasPdf: boolean
   /** How many images were attached, to check the product photo numbers. */
@@ -69,38 +68,71 @@ function cleanEndDay(value: string | null | undefined, today: string): string | 
   return day >= today && date <= limit ? day : null
 }
 
+/** Cut at the last word break that fits, so an SEO line never ends mid-word. */
+function clipWords(value: string, max: number): string {
+  const text = value.replace(/\s+/g, " ").trim()
+  if (text.length <= max) return text
+  const cut = text.slice(0, max + 1)
+  const space = cut.lastIndexOf(" ")
+  return (space > max * 0.6 ? cut.slice(0, space) : text.slice(0, max)).replace(/[\s,.،;:–-]+$/, "")
+}
+
+/** SEO title from the product title (the model no longer writes one; docs/ai.md). */
+export const seoTitle = (title: string) => clipWords(title, 60)
+
+/** SEO description from the first sentences of the short description. */
+export const seoDescription = (description: string) => clipWords(description.replace(/\n+/g, " "), 160)
+
+/**
+ * The Tallaby category for the AI output, matched in code from the model's
+ * English hint and both titles, so the prompt carries no category list.
+ */
+export function pickAutofillCategory(categories: CategoryOption[], output: ProductAutofillOutput): string | null {
+  const [best] = suggestCategories(
+    categories,
+    {
+      titles: [output.categoryHint ?? undefined, output.localized.en.title, output.localized.ar.title],
+      description: output.localized.en.description,
+    },
+    1,
+  )
+  return best?.category.id ?? null
+}
+
 /** The sale price for a percent off, rounded to whole piastres. */
 const priceAfterPercent = (list: number, percent: number) => Math.round(Math.round(list * 100) * (100 - percent) / 100) / 100
 
 /**
- * Defence in depth on top of the prompt: lengths clamped, an unknown category
- * dropped, and price / stock / SKU dropped when the seller gave no figures at
- * all (the model must never invent them).
+ * Defence in depth on top of the prompt: lengths clamped, price / stock / SKU
+ * dropped when the seller gave no figures at all (the model must never invent
+ * them), and the SEO title and description written here from the copy. The
+ * category is matched later, on the client (pickAutofillCategory).
  */
 export function cleanAutofillOutput(output: ProductAutofillRawOutput, ctx: CleanContext): ProductAutofillOutput {
   const figures = sellerGaveFigures(ctx.sellerText, ctx.hasPdf)
   const missing = new Set(output.missing.map((field) => oneOf(MISSING_FIELDS, field)).filter((field) => field !== null))
+  // Only the category match knows whether a category was found.
+  missing.delete("category")
 
   const localized = Object.fromEntries(
     LOCALES.map((locale) => {
       const fields = output.localized[locale]
+      const title = clip(fields.title, 120)
+      const description = (fields.description ?? "").trim().slice(0, 3000)
       return [
         locale,
         {
-          title: clip(fields.title, 120),
-          description: (fields.description ?? "").trim().slice(0, 3000),
+          title,
+          description,
           bulletPoints: clipLines(fields.bulletPoints, 6, 200),
-          metaTitle: clip(fields.metaTitle, 60),
-          metaDescription: clip(fields.metaDescription, 160),
+          metaTitle: seoTitle(title),
+          metaDescription: seoDescription(description),
           metaKeywords: cleanKeywords(fields.metaKeywords),
           contentBlocks: cleanContentBlocks(fields.contentBlocks),
         },
       ]
     }),
   ) as ProductAutofillOutput["localized"]
-
-  const categoryId = output.categoryId && ctx.categoryIds.has(output.categoryId) ? output.categoryId : null
-  if (!categoryId) missing.add("category")
 
   let list = figures ? positive(output.price.list) : null
   let final = figures ? positive(output.price.final) : null
@@ -137,7 +169,7 @@ export function cleanAutofillOutput(output: ProductAutofillRawOutput, ctx: Clean
   const dims = output.dimensions
   return {
     localized,
-    categoryId,
+    categoryHint: clip(output.categoryHint, 60) || null,
     brandName: clip(output.brandName, 80) || null,
     // A name, not a path: "Beauty > Makeup" keeps its last part.
     storeCategoryName: clip(output.storeCategoryName?.split(">").pop(), 80) || null,
@@ -358,8 +390,9 @@ export function planAutofillChanges(
     take(`${base}.description`, filled.localized[locale].description)
     take(`${base}.bulletPoints`, filled.localized[locale].bulletPoints)
     take(`${base}.content`, extra.contentHtml?.[locale])
-    take(`${base}.metaTitle`, ai.metaTitle)
-    take(`${base}.metaDescription`, ai.metaDescription)
+    // Made in code from the title and description; editing keeps the seller's own SEO lines.
+    takeOnce(`${base}.metaTitle`, ai.metaTitle)
+    takeOnce(`${base}.metaDescription`, ai.metaDescription)
     take(`${base}.metaKeywords`, ai.metaKeywords)
   }
 
@@ -418,9 +451,10 @@ const htmlToText = (html: string | undefined, max: number) =>
   (html ?? "").replace(/<\/(p|h\d|li)>/g, "\n").replace(/<[^>]*>/g, " ").replace(/&nbsp;/g, " ").replace(/[ \t]+/g, " ").replace(/\n\s*/g, "\n").trim().slice(0, max)
 
 /**
- * The product as it is now, for the edit page's change requests. Text only,
- * so it fits the request limit; the AI returns the full listing with the
- * requested change applied.
+ * The product as it is now, for the edit page's change requests. Text only
+ * and trimmed (every character is billed on every call; docs/ai.md); the AI
+ * returns the full listing with the requested change applied. No SEO title or
+ * description: the AI does not write them.
  */
 export function describeCurrentListing(values: AddProductFormData, maxLength: number): string {
   const localized = Object.fromEntries(
@@ -430,11 +464,9 @@ export function describeCurrentListing(values: AddProductFormData, maxLength: nu
         locale,
         {
           title: fields?.title ?? "",
-          description: htmlToText(fields?.description, 1500),
+          description: htmlToText(fields?.description, 800),
           bulletPoints: fields?.bulletPoints ?? [],
-          detailedDescription: htmlToText(fields?.content, 2500),
-          metaTitle: fields?.metaTitle ?? "",
-          metaDescription: fields?.metaDescription ?? "",
+          detailedDescription: htmlToText(fields?.content, 1200),
           metaKeywords: fields?.metaKeywords ?? [],
         },
       ]

@@ -2629,7 +2629,9 @@ Tick each box when its acceptance is met, and add the date and commit.
 - [ ] AI-1 deploy: `0110` on production (done, checked 2026-10-27), then `GOOGLE_GENERATIVE_AI_API_KEY` (paid tier) on the dashboard Vercel project; after deploy, one photo autofill on production; still unchecked by hand: "Replace what I wrote" with seller-typed fields and photo upload to the `products` bucket
 - [x] AI-1 admin view: products marked as made with AI (`0112`, Admin › Products column/filter/badge) and Admin › AI usage page + seller "AI usage" tab — 2026-10-28
 - [ ] AI-1 admin view deploy: apply `0112` on staging, then production (owner approval), before deploying
-- [ ] AI-2 Field helpers on add and edit (rewrite, translate ar↔en, SEO, bullets)
+- [x] AI-1c Lower AI cost: no category list in the prompt (hint matched in code), SEO title/description in code, thinking `minimal`, input caps (1,500 chars, 4 photos, 5 PDF pages), a 10-minute result cache, a busy retry of the cheap model; cost rules for every AI feature in `docs/ai.md` (CLAUDE.md rule 20) — 2026-10-29
+- [ ] AI-1c deploy check: one text and one photo autofill on production, then compare cost per call in Admin › AI usage
+- [ ] AI-2 Field helpers on add and edit (rewrite, translate ar↔en, SEO, bullets) (every AI task follows `docs/ai.md`)
 - [ ] AI-3 Bulk products from Excel/CSV/PDF (parse in code, AI writes copy in batches)
 - [ ] AI-4 Monthly AI credits (`plans/index.ts` `ai`, `aiCreditsMonthly`), idempotent `ai_credit_ledger`, admin cost view
 - [ ] AI-5 Store-build agent, editor `AgentDock`, dashboard assistant (`docs/AI_AGENT_PLAN_PROMPT.md`)
@@ -4304,6 +4306,15 @@ Owner asked to keep only the current version of each template in `template_versi
 - Follow-up (owner, 2026-10-27): the section and template library at `/dev-library` now works on live and in builds, not only `next dev` on localhost (`assertDevLocalhost` removed). It is never indexed: noindex/nofollow meta in its layout plus `X-Robots-Tag: noindex, nofollow, noarchive` from `next.config.mjs` for `/dev-library` and `/{ar,en}/dev-library`, and it is not in the sitemap. Store hosts never reach it (the proxy sends store paths to the storefront). Deployed builds have no `packages/` sources, so the cards show no file paths there; the library data is built once per server instance outside dev.
 - Follow-up (owner, 2026-10-27, "remove duplicated sections"): removed three of the new designs that duplicated existing ones (tree-similarity check against every design in the same category): `hero-slideshow` (same tree as `hero-carousel`, only the copy centred), `products-showcase` (same tree as `products-classic`/`products-rail`, only borderless portrait cards) and `faq-accordion` (same English name as `faq-side`, the `faq-simple` list plus a WhatsApp row). No template used them; 32 new designs remain. Snapshots updated; store-sections tests and typecheck pass.
 - Follow-up (owner, 2026-10-27): the home setup checklist's "Publish now" button (`setup-publish.client.tsx`) gets the `publish-attention` class (`apps/dashboard/app/globals.css`) when it can be pressed: a soft accent ring and a light sheen every 2.4 s (the sheen mirrored in RTL), stopped on hover and focus and off with reduced motion. CSS only. Dashboard typecheck clean; not checked in a browser.
+
+### 2026-10-29: AI cost cut for the product autofill, and AI cost rules (owner)
+
+- Owner asked to lower AI cost; product copy keeps both Arabic and English (owner). Production `ai_usage_logs` showed ~$0.0073 per autofill call, ~90% of the input being the 541-category list.
+- `packages/ai`: `generateStructured` takes `thinkingLevel`, `mediaResolution` and `cacheMs`; new `result-cache.server.ts` (per instance, sha256 key over feature, seller, tier, resolution, system and content, 200 entries); an overloaded first model is retried once after 2 s before the next (pricier) model.
+- Autofill: prompt moved to `ai-autofill-prompt.lib.ts` (fixed rules, then per-call text); no category list: the model returns `categoryHint` and the client matches the category with `suggestCategories` (`pickAutofillCategory`); no SEO title/description from the model (`seoTitle`/`seoDescription` cut from the title and short description; on edit the seller's own SEO lines are kept); 8–10 keywords; long description always for a new product, on edit only when asked; thinking `minimal`; limits text 4,000 → 1,500 (counter in the card), photos 6 → 4, PDF ≤ 5 pages (`pdfTooLong`, 413), edit listing 12,000 → 6,000; 10-minute result cache, which does not use up a daily call.
+- Live run (Gemini key, no DB writes): Arabic t-shirt text, 1,111 input / 1,302 output tokens, no thinking tokens, $0.00223, category matched from the hint. Estimate ~$0.0015–0.0022 per call, down from ~$0.0073.
+- Docs: new `docs/ai.md` (building blocks, 12 cost rules, a checklist for new AI features, before/after numbers); CLAUDE.md rule 20.
+- Checks: `packages/ai` vitest 24/24 and tsc clean; dashboard vitest 260 passed, with 2 files failing to load because of the unrelated in-progress motion/GSAP work (`@workspace/motion/presets`, `shellAnimates`), which also causes the only dashboard tsc errors. Not yet checked in a browser.
 
 ### 2026-10-28: Admin AI view: products made with AI and seller AI usage (owner)
 
