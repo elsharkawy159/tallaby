@@ -239,7 +239,7 @@ Updated 2026-10-28 after the EasyOrders dashboard and roadmap review (§2.3, §2
 | 32  | F-20 | Loyalty points                                             | P3       | yes                | **Needs approval**                          |
 | 33  | F-27 | A/B tests                                                  | P3       | yes                | —                                           |
 | 34  | F-28 | Wholesale pricing                                          | P3       | yes                | **Needs approval** (checkout pricing)       |
-| 35  | F-29 | AI agent connection (MCP)                                  | P3       | no                 | — (after F-17)                              |
+| 35  | F-29 | AI agent connection (MCP) — owner request 2026-10-30       | P1       | yes (0132)         | Approved 2026-10-30 (free, owners only)     |
 | 36  | F-30 | Ad tracking upgrades (Purchase on delivery, event toggles) | P2       | maybe              | —                                           |
 | 37  | F-31 | POS and cashier                                            | P3       | yes                | **Needs approval** (order creation path)    |
 
@@ -429,7 +429,7 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 **What:** Per-store API keys (hashed) and webhooks (order created/updated) for sellers' own tools.
 **Status:** [Planned]
 
-- **F-17a · P2 · deps: F-09a** Key model, scopes, rate limits, signed webhooks; security review.
+- **F-17a · P2 · deps: F-09a, F-29b** Key model, scopes, rate limits, signed webhooks; security review. Keys reuse F-29's `agent_tokens` (personal access tokens) and scopes (2026-10-30).
 
 ### F-18 Store affiliates / marketers — P3 · Needs approval
 
@@ -664,10 +664,24 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 **What:** Sell in a physical shop from a phone or tablet with the same products and stock; orders tagged `source = pos`. Needs F-05 (manual orders) first.
 **Status:** [Planned]
 
-### F-29 AI agent connection (MCP) — P3
+### F-29 AI agent connection (MCP) — P1 · owner request
 
-**What:** An official MCP server so a seller's AI assistant can read orders and manage products (EasyOrders planned, 14 votes). Built on F-17 keys and scopes.
-**Status:** [Planned]
+**Why:** Sellers want to run the store from Claude, ChatGPT and other assistants (EasyOrders planned, 14 votes; owner, 2026-10-30).
+**What:** A remote MCP server at `mcp.tallaby.com/mcp` (apps/backend, Streamable HTTP) with a Tallaby OAuth 2.1 server in the dashboard (DCR + CIMD, PKCE, consent with store picker and scopes). About 45 tools: products, stock, categories, orders and shipping, customers (PII off by default), coupons, reports, website builder drafts, theme, pages, publish (with confirm), store settings. Agents edit builder drafts only; bulk, destructive and publish tools need a preview + confirm token. Owner-only areas (wallet, payouts, payment methods, secrets, domains, staff, store create/delete) are never exposed. Products, orders and coupons logic moves first into shared `packages/lib/src/commands/*` used by both the dashboard and MCP. Personal access tokens in the same table become the F-17 key model (F-17 now builds on F-29).
+**Status:** [Planned] F-29a design note written and owner answers recorded 2026-10-30 (`docs/superpowers/specs/2026-10-30-mcp-agent-connection-design.md` §12): free on every plan, owners only, agent may publish when the seller asks, `mcp.tallaby.com`, directory listings yes, 90-day activity log. **Build order:** b → c → d → **f (products)** → **l (store setup by AI)** → h → i → e (orders) → g → j → k.
+
+- **F-29a · P1 · deps: —** Design note, owner answers, security review.
+- **F-29l · P1 · deps: F-29f** Store setup by AI: `create_store` (plan limit), theme selector + apply template, store info/contact/logo, social links and pixel IDs, shipping zones/templates/free delivery, Wassalha, carrier status (secret keys only via dashboard links), setup checklist.
+- **F-29b · P1 · deps: F-29a** Migration `0132` (oauth_clients, agent_grants, oauth_auth_codes, agent_tokens, agent_tool_calls, agent_rate_windows; RLS on, no policies) + OAuth server in the dashboard + token verification lib.
+- **F-29c · P1 · deps: F-29b** MCP endpoint in apps/backend, tool registry, audit, Postgres rate limit, idempotency, confirm tokens; read-only tools.
+- **F-29d · P1 · deps: F-29b** Store › Apps › AI assistants page (connections, revoke, activity, personal tokens) + `agent_connected` bell.
+- **F-29e · P1 · deps: F-29c** Order commands extracted to `packages/lib`; order write tools (bulk, Bosta, Wassalha).
+- **F-29f · P1 · deps: F-29c** Product commands extracted (server-side zod); catalog write tools; image import from URL (SSRF guard).
+- **F-29g · P1 · deps: F-29f** Coupons, bulk price change (preview/apply/undo), Q&A and review replies.
+- **F-29h · P1 · deps: F-29c** Builder tools: outline, designs/templates, sections, nodes, theme, header/footer, pages, preview link (drafts only).
+- **F-29i · P1 · deps: F-29h** Publish when the seller asks (confirm + `website.publish`, calls `grantWelcomeGiftSafely` like the dashboard), revisions, discard.
+- **F-29j · P2 · deps: F-29c** Settings tools (store info, checkout, shipping zones, free delivery) + MCP prompts.
+- **F-29k · P2 · deps: F-29e–j** Cross-tenant tests per tool, `mcp.tallaby.com`, docs page, video, Claude and ChatGPT directory submissions.
 
 ---
 
@@ -677,6 +691,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 | Date       | Request (owner's words)                                                                                                                                                                                                                                                                                                                                               | Feature ID                                                                                       | Status                                                                                 |
 | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- |
+| 2026-10-30 | "analyze the project and plan for MCP so sellers can connect their accounts Claude, Chatgpt, etc with Tallaby to fully manage their store ? want to make it advanced, manage items, orders, website builder, theme, etc" (+ answers: free for all plans; "Can Publish if he asked for"; "Product is the first thing as it was requested by a customer, then … Theme Selector and apply, website builder, Social media integrations, shipping integrations, Store settings and contact info … let users create a store by AI from the beginning, then … Orders"; owners only; directory listings yes) | F-29 (moved to P1; tasks F-29a–l) | Planned (approved; build order in F-29) |
 | 2026-10-30 | "I need to allow notifications on Admin/Dashboard in the browser for any new notification, also, allow the notification in the PWA (Push notifications). Also, allow me as an admin from Admin project to send Notification to specific Seller from Seller's profile" | F-06d, F-06e, F-06f | Built (uncommitted; 0131 on staging) |
 | 2026-10-30 | "gather everything we discussed: Tallaby Apps, Shipping Companies, Payment methods … build them in the best-practice way, with clean code structure and DRY logic" (+ earlier the same day: Egypt Post as "Wassalha Egypt Post" with their template, store ID and name on enabling, export one or many orders; weight 998 g when unknown; shipping page with any carrier, rate templates, free delivery, free over an amount) | F-41, F-12c, F-12d, F-13b (free delivery), F-39 | Built (local `main`, 0130 applied 2026-10-30) |
 | 2026-10-30 | "I need also to integrate payment methods, Payment methods will be Internal (Kashier, payments go to store's wallet) and Externals (User integrate his payment method gateway himself … like Paymob, Kashier, Paypal)" → "Let's build the External methods only for now and keep internal Soon" (PayPal: Soon; fee-only) | F-39 | Built (uncommitted, 0130 applied 2026-10-30) |
@@ -829,7 +844,18 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [ ] F-20 Loyalty points
 - [ ] F-27 A/B tests
 - [ ] F-28 Wholesale pricing
-- [ ] F-29 AI agent connection (MCP)
+- [x] F-29a MCP design note (2026-10-30, written; owner answers recorded the same day)
+- [ ] F-29l Store setup by AI (create store, theme, info, social, shipping)
+- [ ] F-29b MCP OAuth server + migration 0132
+- [ ] F-29c MCP endpoint + read-only tools
+- [ ] F-29d AI assistants page
+- [ ] F-29e Order commands + tools
+- [ ] F-29f Product commands + tools
+- [ ] F-29g Coupons, bulk prices, Q&A tools
+- [ ] F-29h Builder and theme tools
+- [ ] F-29i Publish and revisions tools
+- [ ] F-29j Settings tools + prompts
+- [ ] F-29k MCP hardening and directory listings
 - [x] F-04e Returns barcode scan (2026-10-30, uncommitted; `/orders/scan`; camera needs BarcodeDetector, typing elsewhere)
 - [x] F-36d Store service worker + offline page (2026-10-29, uncommitted)
 - [x] F-36e Store settings › App (2026-10-29, uncommitted; switch + preview only)
@@ -853,6 +879,12 @@ Add each new request here first, with the date and the owner's words, then turn 
 ---
 
 ## 7. Log
+
+### 2026-10-30 — F-29a MCP design note written
+
+- Owner request (§5). Plan in `docs/superpowers/specs/2026-10-30-mcp-agent-connection-design.md`: remote MCP in apps/backend at `mcp.tallaby.com/mcp`, Tallaby OAuth 2.1 server in the dashboard (DCR + CIMD for Claude and ChatGPT), scopes mapped to the F-09 permission keys, about 45 tools (catalog, orders, customers, coupons, reports, builder drafts, theme, publish, settings), confirm tokens for bulk, destructive and publish tools, Postgres rate limits and an activity log. Planned migration **0132** (not written). F-29 moved from P3 to P1; F-17 keys now build on F-29's token table.
+- Code check: products, orders and coupons logic is still inside `"use server"` actions (cookie session, no server-side zod for products), so F-29e/F-29f extract shared `packages/lib/src/commands/*` first. Builder, media, shipping, customers, notifications and trash are already reusable with a seller/store id.
+- Owner answered the same day (note §12): free on every plan, default scopes approved, agent may publish when the seller asks, `mcp.tallaby.com`, owners only, Claude/ChatGPT directory listings yes, 90-day activity log. Build order: products first (customer request), then new **F-29l store setup by AI** (create store, theme selector, store info, social, shipping) and builder/publish, then orders. `create_store` added (scope `stores.create`, off by default). No code changed.
 
 ### 2026-10-30 — F-06d/e/f Push for every notification, admin push, admin messages to a seller
 
