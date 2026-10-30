@@ -6,3 +6,5 @@ export * from "./meta-signup.lib";
 export * from "./shopify.lib";
 export * from "./google-sheets.lib";
 export * from "./bosta.lib";
+export * from "./wassalha.lib";
+export * from "./catalog";

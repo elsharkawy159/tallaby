@@ -24,6 +24,7 @@ import { OrderRiskNote } from "./order-risk.client";
 import { OrderStageBadge } from "./order-stage-badge";
 import type { SellerOrderRow } from "./orders.types";
 import { PrintOrdersButton } from "./print-orders-button.client";
+import { canExportForWassalha, WassalhaExportButton } from "./wassalha-export.client";
 
 function Row({ label, value }: { label: string; value?: string | null }) {
   return (
@@ -177,7 +178,7 @@ export function OrderDetailsDialog({
                   {t("lastAttempt", { reason: order.failureReason })}
                 </p>
               )}
-              {(order.flow.primary || canShipWithBosta(order)) && (
+              {(order.flow.primary || canShipWithBosta(order) || canExportForWassalha(order)) && (
                 <div className="flex flex-col gap-2 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex flex-wrap items-center gap-1.5">
                     {order.confirmMessage && order.customerPhone && (
@@ -190,8 +191,11 @@ export function OrderDetailsDialog({
                     )}
                     <OrderActions order={order} className="flex-wrap" />
                     <ShipWithBostaButton order={order} className="flex-1 sm:flex-none" />
+                    {order.storeId && (
+                      <WassalhaExportButton storeId={order.storeId} orders={[order]} className="flex-1 sm:flex-none" />
+                    )}
                   </div>
-                  {order.flow.stage === "to_ship" && !order.bostaConnected && (
+                  {order.flow.stage === "to_ship" && !order.bostaConnected && !order.wassalhaConnected && (
                     <Link
                       href="/orders/delivery"
                       className="text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"

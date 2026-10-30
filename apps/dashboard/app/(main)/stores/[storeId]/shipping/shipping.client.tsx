@@ -10,10 +10,10 @@ import { Info, LayoutTemplate, LoaderCircle, MapPinned, Pencil, Plus, Save, Sett
 // import { TALLABY_SERVICES_ENABLED } from "@workspace/lib/fulfillment";
 // import { applyShippingFeesAndRound, getBaseRateForGovernorate, getGovernorateLabel } from "@workspace/lib/shipping";
 // import { ZONE_GOVERNORATES } from "@workspace/lib/shipping/store-zones";
-// import { CurrencyInput } from "@/components/form/currency-input";
+import { CurrencyInput } from "@/components/form/currency-input";
 import type { StoreShippingSettings as Settings } from "@workspace/lib/shipping/store-zones";
 import type { StoreShippingZone } from "@workspace/lib/stores/server";
-import type { BostaOverview } from "@workspace/lib/integrations/server";
+import type { BostaOverview, WassalhaOverview } from "@workspace/lib/integrations/server";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,7 +33,7 @@ import { BUTTON_CLASS, FIELD_CLASS, LabelNote, SectionCard, SMALL_BUTTON_CLASS }
 import { PageActionBar } from "@/components/layout/page-action-bar";
 import { cn } from "@/lib/utils";
 import { CheckPrice } from "./check-price.client";
-import { DeliveryPartnerCard } from "./delivery-partner.client";
+import { ShippingCompaniesCard } from "./shipping-companies.client";
 import { deleteShippingZone, saveShippingSettings } from "./shipping.server";
 import type { TemplateOption, ZoneView } from "./shipping.dto";
 import { ShippingTemplates, TemplatesSheet } from "./templates.client";
@@ -49,6 +49,7 @@ export function StoreShippingSettings({
   uncovered,
   templates,
   bosta,
+  wassalha,
   readOnly,
 }: {
   storeId: string;
@@ -60,6 +61,8 @@ export function StoreShippingSettings({
   templates: TemplateOption[];
   /** The store's Bosta integration (BS-07), or null when it has none. */
   bosta: BostaOverview | null;
+  /** The store's Wassalha settings (F-12c), or null when it has none. */
+  wassalha: WassalhaOverview | null;
   readOnly: boolean;
 }) {
   const t = useTranslations("storeShipping");
@@ -113,7 +116,7 @@ export function StoreShippingSettings({
         </div>
       </div>
 
-      <DeliveryPartnerCard storeId={storeId} bosta={bosta} readOnly={readOnly} />
+      <ShippingCompaniesCard storeId={storeId} bosta={bosta} wassalha={wassalha} readOnly={readOnly} />
 
       {zones.length === 0 && (
         <SectionCard id="shipping-templates" icon={LayoutTemplate} title={t("templates.startTitle")} description={t("templates.description")}>
@@ -323,15 +326,16 @@ function useSettingsForm(storeId: string, initial: Settings) {
   const method: Settings["method"] = "own";
   const [handlingDays, setHandlingDays] = useState(String(initial.handlingDays));
   const [otherPlaces, setOtherPlaces] = useState(initial.otherPlaces);
-  // Tallaby's seller-funded free delivery; kept as stored while hidden.
-  const [freeOver] = useState(initial.freeShippingOver === null ? "" : String(initial.freeShippingOver));
+  // Store-wide free delivery on the seller's zones (F-13b): none, every order, or over an amount.
+  const [freeMode, setFreeMode] = useState<FreeMode>(freeModeOf(initial.freeShippingOver));
+  const [freeOver, setFreeOver] = useState(initial.freeShippingOver ? String(initial.freeShippingOver) : "");
   // const [showRates, setShowRates] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   const next: Settings = {
     method,
     handlingDays: Number(handlingDays),
-    freeShippingOver: freeOver.trim() === "" ? null : Number(freeOver.replace(",", ".")),
+    freeShippingOver: freeShippingOverFor(freeMode, freeOver),
     otherPlaces,
   };
   const dirty = JSON.stringify(next) !== JSON.stringify(saved);
@@ -348,7 +352,37 @@ function useSettingsForm(storeId: string, initial: Settings) {
       }
     });
 
-  return { saved, handlingDays, setHandlingDays, otherPlaces, setOtherPlaces, dirty, isPending, submit };
+  const freeOverValid = freeMode !== "over" || (next.freeShippingOver !== null && next.freeShippingOver > 0);
+
+  return {
+    saved,
+    handlingDays,
+    setHandlingDays,
+    otherPlaces,
+    setOtherPlaces,
+    freeMode,
+    setFreeMode,
+    freeOver,
+    setFreeOver,
+    freeOverValid,
+    dirty: dirty && freeOverValid,
+    isPending,
+    submit,
+  };
+}
+
+type FreeMode = "none" | "all" | "over";
+
+/** settings.shipping.freeShippingOver ↔ the three choices: null = none, 0 = every order, X = over X. */
+function freeModeOf(value: number | null): FreeMode {
+  return value === null ? "none" : value === 0 ? "all" : "over";
+}
+
+function freeShippingOverFor(mode: FreeMode, amount: string): number | null {
+  if (mode === "none") return null;
+  if (mode === "all") return 0;
+  const n = Number(amount.replace(",", "."));
+  return amount.trim() !== "" && Number.isFinite(n) ? n : null;
 }
 
 type SettingsForm = ReturnType<typeof useSettingsForm>;
@@ -366,7 +400,7 @@ function SettingsSaveButton({ form, readOnly }: { form: SettingsForm; readOnly: 
 
 function SettingsCard({ form, readOnly }: { form: SettingsForm; readOnly: boolean }) {
   const t = useTranslations("storeShipping");
-  const { handlingDays, setHandlingDays, otherPlaces, setOtherPlaces } = form;
+  const { handlingDays, setHandlingDays, otherPlaces, setOtherPlaces, freeMode, setFreeMode, freeOver, setFreeOver, freeOverValid } = form;
 
   return (
     <SectionCard id="shipping-settings" icon={Settings2} title={t("settingsTitle")} description={t("settingsDescription")}>
@@ -396,6 +430,29 @@ function SettingsCard({ form, readOnly }: { form: SettingsForm; readOnly: boolea
           <ChoiceCard value="own" indicator title={t("ownTitle")} description={t("ownDescription")} />
         </ChoiceGroup>
         */}
+
+        <fieldset className="space-y-2">
+          <legend className="mb-1 text-sm font-medium">{t("freeDelivery.title")}</legend>
+          <ChoiceGroup value={freeMode} onValueChange={(v) => setFreeMode(v as FreeMode)} columns={3} stack disabled={readOnly}>
+            <ChoiceCard value="none" indicator title={t("freeDelivery.none")} description={t("freeDelivery.noneDescription")} />
+            <ChoiceCard value="over" indicator title={t("freeDelivery.over")} description={t("freeDelivery.overDescription")} />
+            <ChoiceCard value="all" indicator title={t("freeDelivery.all")} description={t("freeDelivery.allDescription")} />
+          </ChoiceGroup>
+          {freeMode === "over" && (
+            <div className="grid max-w-xs gap-1.5 pt-1">
+              <Label htmlFor="free-over">{t("freeDelivery.amount")}</Label>
+              <CurrencyInput
+                id="free-over"
+                disabled={readOnly}
+                placeholder="500"
+                value={freeOver}
+                onChange={setFreeOver}
+                invalid={!freeOverValid}
+              />
+            </div>
+          )}
+          <LabelNote>{t("freeDelivery.note")}</LabelNote>
+        </fieldset>
 
         <fieldset className="space-y-2">
           <legend className="mb-1 text-sm font-medium">{t("otherPlaces.title")}</legend>

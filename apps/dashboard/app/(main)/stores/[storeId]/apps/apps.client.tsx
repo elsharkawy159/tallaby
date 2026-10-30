@@ -19,9 +19,15 @@ import {
 
 import {
   INTEGRATIONS,
-  INTEGRATION_PROVIDERS,
+  STORE_APPS,
+  STORE_APP_GROUPS,
+  isStoreAppLive,
+  storeAppHref,
+  storeAppProvider,
   validateIdentifierConfig,
   type IntegrationProvider,
+  type StoreApp,
+  type StoreAppGroup,
 } from "@workspace/lib/integrations";
 import type { StoreIntegrationSummary } from "@workspace/lib/integrations/server";
 import { Badge } from "@workspace/ui/components/badge";
@@ -33,7 +39,7 @@ import { cn } from "@workspace/ui/lib/utils";
 import { BUTTON_CLASS } from "@/components/form/form-ui";
 import { StoreLogo } from "@/components/stores/store-logo.client";
 import { StoreSiteStatusNote } from "@/components/stores/store-site-status-note";
-import { APP_BRANDS, groupOf, kindLabelOf, type AppGroup } from "./apps-brand.lib";
+import { AppLogo } from "./app-logo";
 import { connectStoreApp, disconnectStoreApp } from "./apps.server";
 import { DisconnectAppButton } from "./disconnect-button.client";
 import type { AppCategoryOption } from "./apps.types";
@@ -41,25 +47,12 @@ import { GoogleSheetsPanel } from "./google-sheets.client";
 import { MetaCapiPanel } from "./meta-capi.client";
 import { ShopifyImportPanel } from "./shopify-import.client";
 
-/** Shown in the order sellers are most likely to need them. */
-const ORDER: IntegrationProvider[] = [
-  "meta_pixel",
-  "google_analytics",
-  "google_tag_manager",
-  "meta_capi",
-  "tiktok_pixel",
-  "snapchat_pixel",
-  "google_sheets",
-  "shopify_import",
-  "bosta",
-];
-
-const GROUPS: AppGroup[] = ["tracking", "shipping", "data"];
-
-/** Apps with their own page instead of a side sheet. */
-const APP_PAGES: Partial<Record<IntegrationProvider, string>> = { bosta: "bosta" };
-
-type Tab = "all" | AppGroup | "connected";
+/**
+ * The catalog (`STORE_APPS`) decides the order, the groups and which apps
+ * have their own page (Bosta, Wassalha, the payment gateways); the others
+ * open the side sheet below.
+ */
+type Tab = "all" | StoreAppGroup | "connected";
 
 /** Identifier apps get a short "how to connect" list in the sheet. */
 const STEP_KEYS = ["step1", "step2", "step3"] as const;
@@ -93,7 +86,7 @@ export function StoreApps({
   const [tab, setTab] = useState<Tab>("all");
   const [query, setQuery] = useState("");
   const byProvider = new Map(items.map((item) => [item.provider, item]));
-  const providers = ORDER.filter((p) => INTEGRATION_PROVIDERS.includes(p));
+  const apps: StoreApp[] = [...STORE_APPS];
 
   useEffect(() => setItems(initial), [initial]);
 
@@ -105,45 +98,49 @@ export function StoreApps({
     router.replace(pathname);
   }, [googleResult, pathname, router, t]);
 
-  const isAvailable = (provider: IntegrationProvider) =>
-    INTEGRATIONS[provider].availability === "available" && (provider !== "google_sheets" || googleSheetsEnabled);
-  const isConnected = (provider: IntegrationProvider) => byProvider.has(provider);
+  const isAvailable = (app: StoreApp) => isStoreAppLive(app) && (app.key !== "google_sheets" || googleSheetsEnabled);
+  const currentOf = (app: StoreApp) => {
+    const provider = storeAppProvider(app);
+    return provider ? byProvider.get(provider) : undefined;
+  };
+  const isConnected = (app: StoreApp) => Boolean(currentOf(app));
 
-  const available = providers.filter(isAvailable);
+  const available = apps.filter(isAvailable);
   const connectedCount = available.filter(isConnected).length;
   // Available apps first, "coming soon" last.
-  const sorted = [...providers].sort((a, b) => Number(!isAvailable(a)) - Number(!isAvailable(b)));
+  const sorted = [...apps].sort((a, b) => Number(!isAvailable(a)) - Number(!isAvailable(b)));
 
   const q = query.trim().toLowerCase();
-  const matches = sorted.filter((provider) => {
-    if (tab === "connected" && !isConnected(provider)) return false;
-    if (tab !== "all" && tab !== "connected" && groupOf(INTEGRATIONS[provider].category) !== tab) return false;
+  const matches = sorted.filter((app) => {
+    if (tab === "connected" && !isConnected(app)) return false;
+    if (tab !== "all" && tab !== "connected" && app.group !== tab) return false;
     if (!q) return true;
-    const text = `${t(`providers.${provider}.name`)} ${t(`providers.${provider}.vendor`)} ${t(`providers.${provider}.description`)}`;
+    const text = `${t(`providers.${app.key}.name`)} ${t(`providers.${app.key}.vendor`)} ${t(`providers.${app.key}.description`)}`;
     return text.toLowerCase().includes(q);
   });
 
   const tabs: { key: Tab; label: string; count: number }[] = [
-    { key: "all", label: t("tabs.all"), count: providers.length },
-    ...GROUPS.map((group) => ({
+    { key: "all", label: t("tabs.all"), count: apps.length },
+    ...STORE_APP_GROUPS.map((group) => ({
       key: group,
       label: t(`groups.${group}`),
-      count: providers.filter((p) => groupOf(INTEGRATIONS[p].category) === group).length,
+      count: apps.filter((app) => app.group === group).length,
     })),
     { key: "connected", label: t("tabs.connected"), count: connectedCount },
   ];
 
-  const renderCard = (provider: IntegrationProvider) => (
+  const renderCard = (app: StoreApp) => (
     <AppCard
-      key={provider}
-      provider={provider}
-      current={byProvider.get(provider)}
-      available={isAvailable(provider)}
-      disabled={readOnly && !byProvider.has(provider)}
+      key={app.key}
+      app={app}
+      current={currentOf(app)}
+      available={isAvailable(app)}
+      disabled={readOnly && !isConnected(app)}
       onOpen={() => {
-        const page = APP_PAGES[provider];
-        if (page) router.push(`/stores/${storeId}/apps/${page}`);
-        else setEditing(provider);
+        const href = storeAppHref(storeId, app);
+        const provider = storeAppProvider(app);
+        if (href) router.push(href);
+        else if (provider) setEditing(provider);
       }}
     />
   );
@@ -179,12 +176,12 @@ export function StoreApps({
             <small className="mt-1 block text-xs whitespace-nowrap text-muted-foreground">{t("connectedCount")}</small>
           </div>
           <div className="flex ps-2" aria-hidden>
-            {available.map((provider) =>
-              isConnected(provider) ? (
-                <AppLogo key={provider} provider={provider} className="-ms-2 size-[34px] rounded-[10px] ring-[3px] ring-card" />
+            {available.map((app) =>
+              isConnected(app) ? (
+                <AppLogo key={app.key} app={app.key} className="-ms-2 size-[34px] rounded-[10px] ring-[3px] ring-card" />
               ) : (
                 <span
-                  key={provider}
+                  key={app.key}
                   className="-ms-2 size-[34px] rounded-[10px] border-[1.5px] border-dashed bg-muted/50 ring-[3px] ring-card"
                 />
               ),
@@ -231,8 +228,8 @@ export function StoreApps({
           {noneConnected ? t("empty.noneBody") : t("empty.noMatchBody")}
         </div>
       ) : tab === "all" && !q ? (
-        GROUPS.map((group) => {
-          const list = matches.filter((p) => groupOf(INTEGRATIONS[p].category) === group);
+        STORE_APP_GROUPS.map((group) => {
+          const list = matches.filter((app) => app.group === group);
           return (
             <section key={group} aria-labelledby={`apps-${group}`}>
               <div className="mb-3 flex items-baseline gap-2.5">
@@ -278,53 +275,21 @@ export function StoreApps({
   );
 }
 
-/** The brand tile, with a green check when the app is connected. */
-function AppLogo({
-  provider,
-  connected,
-  className,
-}: {
-  provider: IntegrationProvider;
-  connected?: boolean;
-  className?: string;
-}) {
-  const brand = APP_BRANDS[provider];
-  return (
-    <span
-      className={cn(
-        "relative grid size-12 shrink-0 place-items-center rounded-[14px]",
-        brand.dark && "shadow-[inset_0_0_0_1px_rgba(255,255,255,0.12)]",
-        className,
-      )}
-      style={{ background: brand.bg }}
-    >
-      <svg viewBox="0 0 24 24" aria-hidden className="size-[52%]" style={{ fill: brand.fg }}>
-        <path d={brand.icon.path} />
-      </svg>
-      {connected && (
-        <span className="absolute -end-1 -bottom-1 grid size-[18px] place-items-center rounded-full bg-success text-background ring-[3px] ring-card">
-          <Check className="size-[11px] stroke-[3]" aria-hidden />
-        </span>
-      )}
-    </span>
-  );
-}
-
 function AppCard({
-  provider,
+  app,
   current,
   available,
   disabled,
   onOpen,
 }: {
-  provider: IntegrationProvider;
+  app: StoreApp;
   current?: StoreIntegrationSummary;
   available: boolean;
   disabled: boolean;
   onOpen: () => void;
 }) {
   const t = useTranslations("storeApps");
-  const isImport = provider === "shopify_import";
+  const isImport = app.key === "shopify_import";
   const connected = Boolean(current);
   const failing = current?.status === "error";
   const interactive = available && !disabled;
@@ -341,7 +306,7 @@ function AppCard({
     </span>
   ) : (
     <span className="inline-flex h-6 items-center rounded-full border bg-muted/50 px-2.5 text-xs font-semibold whitespace-nowrap text-muted-foreground">
-      {t(`kinds.${kindLabelOf(provider)}`)}
+      {t(`kinds.${app.kind}`)}
     </span>
   );
 
@@ -371,10 +336,10 @@ function AppCard({
       )}
     >
       <div className="flex items-start gap-3.5">
-        <AppLogo provider={provider} connected={connected && !failing} className="app-logo" />
+        <AppLogo app={app.key} connected={connected && !failing} className="app-logo" />
         <div className="min-w-0 flex-1">
-          <h3 className="text-[15px] leading-snug font-bold">{t(`providers.${provider}.name`)}</h3>
-          <small className="mt-0.5 block text-xs text-faint">{t(`providers.${provider}.vendor`)}</small>
+          <h3 className="text-[15px] leading-snug font-bold">{t(`providers.${app.key}.name`)}</h3>
+          <small className="mt-0.5 block text-xs text-faint">{t(`providers.${app.key}.vendor`)}</small>
           {connected && (current?.identifier || current?.details.shopDomain) && (
             <p dir="ltr" className="mt-1 truncate text-start font-mono text-xs text-faint rtl:text-end">
               {current?.identifier ?? current?.details.shopDomain}
@@ -388,7 +353,7 @@ function AppCard({
         </div>
       </div>
       <p className="flex-1 text-pretty text-[13px] leading-relaxed text-muted-foreground">
-        {t(`providers.${provider}.description`)}
+        {t(`providers.${app.key}.description`)}
       </p>
       <div className="flex items-center justify-between gap-2.5 border-t pt-3.5">
         {pill}
@@ -447,7 +412,7 @@ function AppSheet({
         {provider && (
           <>
             <SheetHeader className="flex-row items-center gap-3.5 border-b px-[22px] py-5">
-              <AppLogo provider={provider} className="size-14 rounded-2xl" />
+              <AppLogo app={provider} className="size-14 rounded-2xl" />
               <div className="min-w-0">
                 <SheetTitle className="text-lg font-extrabold">{t(`providers.${provider}.name`)}</SheetTitle>
                 <SheetDescription className="text-[13px]">

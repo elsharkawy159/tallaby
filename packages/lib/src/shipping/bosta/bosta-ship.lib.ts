@@ -38,7 +38,9 @@ export function bostaShipBlocker(
   if (!(BOSTA_SHIPPABLE_ORDER_STATUSES as readonly string[]).includes(order.status ?? "pending")) return "not_shippable";
   if (shipment) {
     if (shipment.externalId) return "already_shipped";
-    if (shipment.carrier !== "bosta" && (shipment.carrier !== "seller" || shipment.riderId)) return "other_carrier";
+    // A Wassalha sheet export (F-12c) is not a handover yet, so Bosta may still take it.
+    const sellerOwned = shipment.carrier === "seller" || shipment.carrier === "wassalha";
+    if (shipment.carrier !== "bosta" && (!sellerOwned || shipment.riderId)) return "other_carrier";
     if (shipment.status !== "pending") return "already_shipped";
   }
   const collection = bostaCollection(order);

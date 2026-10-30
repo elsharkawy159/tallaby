@@ -78,6 +78,10 @@ export interface SellerOrderRow {
   bostaCanCancel: boolean;
   /** The order's Bosta shipment, once one was attempted. */
   bosta: SellerOrderBosta | null;
+  /** The order's store has Wassalha (Egypt Post) set up, so it can be exported for it (F-12c). */
+  wassalhaConnected: boolean;
+  /** The order is already in a Wassalha sheet (its shipment carrier is `wassalha`). */
+  wassalhaExported: boolean;
   flow: SellerOrderFlow;
   /** Prefilled WhatsApp "please confirm" text for a new store order (ROADMAP.md F-02g). */
   confirmMessage: string | null;

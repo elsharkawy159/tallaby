@@ -121,11 +121,23 @@ export interface EgyptPostBatchDefaults {
   merchantCode: string
   merchantName: string
   warehouseName: string
+  /**
+   * Seller dashboard exports (one store, ROADMAP.md F-12c): the sender name
+   * for every row. Without it, the order's only seller name is used (the
+   * multi-seller apps/shipping batches).
+   */
+  sellerName?: string
+  /** HasPOD; FALSE when not set. */
+  hasPod?: boolean
+  /** Appended to every row's Item_Special_Notes. */
+  extraNotes?: string
 }
 
 export interface EgyptPostRowError {
   orderId: string
   orderNumber: string
+  /** Machine-readable cause, for translated messages. */
+  code: 'bad_phone' | 'bad_governorate'
   reason: string
 }
 
@@ -186,11 +198,8 @@ function buildStreet(addressLine1: string | null | undefined, addressLine2: stri
   return addressLine2 ? `${addressLine1 ?? ''}, ${addressLine2}` : (addressLine1 ?? '')
 }
 
-function buildSpecialNotes(
-  deliveryInstructions: string | null | undefined,
-  orderNotes: string | null | undefined
-): string {
-  return [deliveryInstructions, orderNotes].filter((value): value is string => Boolean(value?.trim())).join(' — ')
+function buildSpecialNotes(...notes: (string | null | undefined)[]): string {
+  return notes.filter((value): value is string => Boolean(value?.trim())).join(' — ')
 }
 
 /**
@@ -210,6 +219,7 @@ export function toEgyptPostRow(
       error: {
         orderId: order.orderId,
         orderNumber: order.orderNumber,
+        code: 'bad_phone',
         reason: `No valid Egyptian mobile number (got "${order.phone ?? order.fallbackPhone ?? ''}")`,
       },
     }
@@ -222,13 +232,15 @@ export function toEgyptPostRow(
       error: {
         orderId: order.orderId,
         orderNumber: order.orderNumber,
+        code: 'bad_governorate',
         reason: `Governorate "${order.governorate ?? order.city ?? ''}" is not recognized`,
       },
     }
   }
 
   const sellerName =
-    order.sellerNames.length === 1 && order.sellerNames[0] ? order.sellerNames[0] : defaults.merchantName
+    defaults.sellerName ??
+    (order.sellerNames.length === 1 && order.sellerNames[0] ? order.sellerNames[0] : defaults.merchantName)
 
   const row: EgyptPostRow = {
     Package_Serial: index + 1,
@@ -236,7 +248,7 @@ export function toEgyptPostRow(
     Total_Weight: kgToGrams(order.packageWeightKg ?? defaults.weightKg),
     Package_volume: defaults.volume,
     COD_Value: isSettled(order.paymentStatus) ? 0 : order.totalAmount,
-    Item_Special_Notes: buildSpecialNotes(order.deliveryInstructions, order.orderNotes),
+    Item_Special_Notes: buildSpecialNotes(order.deliveryInstructions, order.orderNotes, defaults.extraNotes),
     Customer_Name: order.customerName ?? '',
     Mobile_No: mobile,
     Street: buildStreet(order.addressLine1, order.addressLine2),
@@ -244,7 +256,7 @@ export function toEgyptPostRow(
     'Package_Ref. Number': order.orderNumber,
     Merchant_Name: defaults.merchantName,
     Warehouse_Name: defaults.warehouseName,
-    HasPOD: 'FALSE',
+    HasPOD: defaults.hasPod ? 'TRUE' : 'FALSE',
     SellerName: sellerName,
     Post_Id: defaults.merchantCode,
   }
@@ -280,4 +292,22 @@ export function toEgyptPostRows(
   }
 
   return { rows, errors }
+}
+
+/**
+ * The parcel weight from the products' own weights (`products.dimensions`:
+ * `weight` + `weightUnit`, g or kg), or null when none of them has one.
+ * Items without a weight count as nothing.
+ */
+export function itemsWeightKg(
+  items: { quantity: number; weight?: unknown; weightUnit?: unknown }[]
+): number | null {
+  let kg = 0
+  for (const item of items) {
+    const weight = Number(item.weight)
+    if (!Number.isFinite(weight) || weight <= 0) continue
+    const unit = typeof item.weightUnit === 'string' ? item.weightUnit.toLowerCase() : 'kg'
+    kg += (unit === 'g' || unit === 'gram' || unit === 'grams' ? weight / GRAMS_PER_KG : weight) * Math.max(1, item.quantity)
+  }
+  return kg > 0 ? Math.round(kg * 1000) / 1000 : null
 }

@@ -22,13 +22,8 @@ export function isStoreGatewayProvider(value: unknown): value is StoreGatewayPro
   return typeof value === "string" && (STORE_GATEWAY_PROVIDERS as readonly string[]).includes(value);
 }
 
-/** What the Payment methods page lists under "Online card payments". */
-export const STORE_GATEWAY_CATALOG = [
-  { key: "paymob", status: "live" },
-  { key: "kashier", status: "live" },
-  { key: "paypal", status: "soon" },
-  { key: "tallaby_pay", status: "soon" },
-] as const satisfies readonly { key: string; status: "live" | "soon" }[];
+// Which gateways the Payment methods page lists (and PayPal / Tallaby Pay as
+// "soon") is the store apps catalog: integrations/catalog.ts, group "payments".
 
 export type GatewayMode = "test" | "live";
 

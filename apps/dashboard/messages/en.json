@@ -2194,6 +2194,29 @@
         "tracking": "Bosta tracking number",
         "notes": "Notes"
       }
+    },
+    "wassalha": {
+      "export": "Export for Wassalha",
+      "exportAgain": "Export for Wassalha again",
+      "exportMany": "Export {count} for Wassalha",
+      "exported": "{count, plural, one {# order} other {# orders}} exported. Upload the file on the Wassalha dashboard.",
+      "skipped": "{count, plural, one {# order wasn't} other {# orders weren't}} added to the file",
+      "reasons": {
+        "not_found": "not on this store",
+        "not_ready": "not waiting to ship",
+        "other_carrier": "already with another carrier",
+        "bad_phone": "no valid Egyptian mobile number",
+        "bad_governorate": "governorate not recognised"
+      },
+      "errors": {
+        "notSetUp": "Set up Wassalha first: Store › Apps › Wassalha.",
+        "noOrders": "No orders to export.",
+        "tooMany": "Too many orders at once. Export at most 500.",
+        "rateLimited": "Too many exports. Please wait a few minutes.",
+        "readOnly": "This store is read-only.",
+        "notFound": "Store not found.",
+        "generic": "Couldn't export. Please try again."
+      }
     }
   },
   "shipping": {
@@ -3304,22 +3327,10 @@
       },
       "providers": {
         "paymob": {
-          "name": "Paymob",
-          "description": "Cards, Meeza and mobile wallets with your own Paymob account.",
           "whereToFind": "In your Paymob dashboard: Settings › Account info for the secret, public and HMAC keys, and Developers › Payment integrations for the integration IDs."
         },
         "kashier": {
-          "name": "Kashier",
-          "description": "Cards and mobile wallets with your own Kashier account.",
           "whereToFind": "In your Kashier dashboard: Integrate now / API keys for the Merchant ID, Payment API key and Secret key. Choose Test or Live to match the keys."
-        },
-        "paypal": {
-          "name": "PayPal",
-          "description": "For customers paying from abroad. Coming in a later update."
-        },
-        "tallaby_pay": {
-          "name": "Tallaby Pay",
-          "description": "Card payments with no gateway account of your own; the money goes to your store wallet. Coming soon."
         }
       },
       "errors": {
@@ -3504,16 +3515,10 @@
     "tallabyLegacy": "Your store still uses Tallaby's rates. Tallaby delivery is coming soon, so add your own zones and switch to own delivery.",
     "tallabySoonDescription": "Tallaby's couriers will deliver your orders. Coming soon.",
     "partner": {
-      "title": "Delivery partner",
-      "description": "Send orders to a shipping company instead of delivering them yourself.",
-      "connectTitle": "Ship your orders with Bosta",
-      "connectBody": "Link your Bosta account once. Then send any order to Bosta in one click, or automatically when you confirm it.",
-      "connect": "Connect Bosta",
-      "finishSetup": "Finish Bosta setup",
-      "bosta": "Bosta",
+      "title": "Shipping companies",
+      "description": "Hand your orders to a shipping company instead of delivering them yourself.",
       "connected": "Connected",
       "error": "Key error",
-      "manage": "Bosta settings",
       "autoShipTitle": "Create Bosta shipments",
       "manualTitle": "Manually",
       "manualBody": "Press \"Ship with Bosta\" on the orders you choose.",
@@ -3521,7 +3526,30 @@
       "autoBody": "Confirmed orders go to Bosta right away. Unpaid online orders wait until they are paid.",
       "savedManual": "Bosta shipments will be created when you press \"Ship with Bosta\".",
       "savedAuto": "Confirmed orders will be sent to Bosta automatically.",
-      "feesNote": "Customers still pay the shipping prices of your zones below. What Bosta charges you is between you and Bosta."
+      "feesNote": "Customers still pay the shipping prices of your zones below. What the shipping company charges you is between you and them.",
+      "soon": "Soon",
+      "connectCarrier": "Connect",
+      "finishSetupCarrier": "Finish setup",
+      "manageCarrier": "Settings",
+      "wassalhaReady": "Export orders for Wassalha from the Orders page, then upload the file on the Wassalha dashboard.",
+      "carrierBody": {
+        "bosta": "Send any order to Bosta in one click, or automatically when you confirm it.",
+        "wassalha": "Egypt Post to every governorate: export your orders as Wassalha's upload sheet.",
+        "mylerz": "Coming soon.",
+        "jt_express": "Coming soon.",
+        "aramex": "Coming soon."
+      }
+    },
+    "freeDelivery": {
+      "title": "Free delivery",
+      "none": "No free delivery",
+      "noneDescription": "Customers pay your zone prices.",
+      "over": "Free over an amount",
+      "overDescription": "Free delivery for orders at or over the amount you set.",
+      "all": "Free on every order",
+      "allDescription": "You pay the delivery on every order.",
+      "amount": "Free delivery for orders of (EGP) or more",
+      "note": "Applies to your zones. A zone with its own free-delivery amount keeps it, and places your zones don't cover keep Tallaby's rates."
     }
   },
   "storeApps": {
@@ -3709,6 +3737,46 @@
         "name": "Bosta",
         "vendor": "Bosta",
         "description": "Send your store's orders to Bosta in one click, or automatically when you confirm them. Tracking updates come back by themselves."
+      },
+      "wassalha": {
+        "name": "Wassalha (Egypt Post)",
+        "vendor": "Egypt Post",
+        "description": "Download your orders as Wassalha's upload sheet and upload it on the Wassalha dashboard. Reaches every governorate."
+      },
+      "mylerz": {
+        "name": "Mylerz",
+        "vendor": "Mylerz",
+        "description": "Ship with your own Mylerz account, with tracking updates coming back automatically. Coming soon."
+      },
+      "jt_express": {
+        "name": "J&T Express",
+        "vendor": "J&T Express Egypt",
+        "description": "Ship with your own J&T Express account across Egypt. Coming soon."
+      },
+      "aramex": {
+        "name": "Aramex",
+        "vendor": "Aramex",
+        "description": "Ship with your own Aramex account, in Egypt and abroad. Coming soon."
+      },
+      "paymob": {
+        "name": "Paymob",
+        "vendor": "Paymob",
+        "description": "Card, Meeza and mobile wallet payments on your store, paid straight to your own Paymob account."
+      },
+      "kashier": {
+        "name": "Kashier",
+        "vendor": "Kashier",
+        "description": "Card and mobile wallet payments on your store, paid straight to your own Kashier account."
+      },
+      "paypal": {
+        "name": "PayPal",
+        "vendor": "PayPal",
+        "description": "For customers paying from abroad. Coming soon."
+      },
+      "tallaby_pay": {
+        "name": "Tallaby Pay",
+        "vendor": "Tallaby",
+        "description": "Card payments with no gateway account of your own; the money goes to your store wallet. Coming soon."
       }
     },
     "heroTitle": "Connect your tools",
@@ -3721,7 +3789,8 @@
     "groups": {
       "tracking": "Tracking & ads",
       "data": "Import & export",
-      "shipping": "Shipping"
+      "shipping": "Shipping",
+      "payments": "Payments"
     },
     "groupCount": "{count, plural, one {# app} other {# apps}}",
     "find": "Find an app",
@@ -3730,7 +3799,9 @@
       "server": "Server-side",
       "import": "One-time import",
       "account": "Google account",
-      "carrier": "Shipping company"
+      "carrier": "Shipping company",
+      "sheet": "Excel upload",
+      "gateway": "Payment gateway"
     },
     "comingSoon": "Coming soon",
     "imported": "Imported",
@@ -3874,6 +3945,58 @@
         "dangerBody": "Tallaby stops creating Bosta shipments for this store.",
         "disconnectConfirm": "Shipments already sent to Bosta stay in Bosta, but Tallaby will stop updating their status. Your key is deleted from Tallaby."
       }
+    },
+    "wassalha": {
+      "back": "Apps",
+      "title": "Wassalha (Egypt Post)",
+      "subtitle": "Ship {store}'s orders with Egypt Post to every governorate.",
+      "readOnly": "This store is read-only, so these settings can't be changed.",
+      "steps": {
+        "account": "Open a merchant account on Wassalha and add your pickup warehouse there.",
+        "export": "Save your Wassalha details below. Then, on the Orders page, choose \"Export for Wassalha\".",
+        "upload": "Upload the downloaded Excel file on the Wassalha dashboard to create the shipments.",
+        "status": "Egypt Post has no automatic updates: move each order to shipped or delivered from the order page."
+      },
+      "accountTitle": "Your Wassalha account",
+      "accountHelp": "These are printed on every row of the file, exactly as they are on your Wassalha dashboard.",
+      "fields": {
+        "postId": "Wassalha store ID",
+        "merchantName": "Merchant name on Wassalha",
+        "warehouseName": "Warehouse name on Wassalha",
+        "senderName": "Sender name on the parcel",
+        "volume": "Package size",
+        "hasPod": "Proof of delivery",
+        "note": "Note on every parcel"
+      },
+      "help": {
+        "postId": "The ID of your store on the Wassalha dashboard.",
+        "merchantName": "Spelled exactly as on Wassalha.",
+        "warehouseName": "The pickup warehouse you added on Wassalha.",
+        "senderName": "The name the customer sees as the sender.",
+        "volume": "Used for every order in the file.",
+        "hasPod": "Ask Egypt Post for a proof of delivery.",
+        "note": "For example: call before delivery."
+      },
+      "errors": {
+        "postId": "Use letters, numbers and dashes only.",
+        "merchantName": "Enter the merchant name.",
+        "warehouseName": "Enter the warehouse name.",
+        "senderName": "Enter the sender name."
+      },
+      "volumes": {
+        "small": "Small",
+        "medium": "Medium",
+        "large": "Large"
+      },
+      "optional": "Optional",
+      "notePlaceholder": "اتصل قبل التوصيل",
+      "weightNote": "Weight comes from your products' weights. Orders whose products have no weight are sent as 998 g. Cash on delivery is the order total when it isn't paid yet, otherwise 0.",
+      "save": "Save",
+      "connect": "Save and turn on",
+      "connected": "Wassalha is on. Export orders from the Orders page.",
+      "saved": "Wassalha details saved.",
+      "disconnected": "Wassalha turned off.",
+      "goToOrders": "Go to orders"
     }
   },
   "storeWallet": {

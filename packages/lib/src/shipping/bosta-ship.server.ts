@@ -272,7 +272,8 @@ async function claimShipment(account: StoreBostaAccount, orderId: string): Promi
         AND ${shipments.status} = 'pending'
         AND ${shipments.sellerId} = ${account.sellerId}
         AND ${shipments.riderId} IS NULL
-        AND ${shipments.carrier} IN ('seller', 'bosta')
+        -- A Wassalha sheet export is not a handover yet, so Bosta may still take it (F-12c).
+        AND ${shipments.carrier} IN ('seller', 'bosta', 'wassalha')
         AND (${shipments.externalState} IS DISTINCT FROM ${CREATING}
           OR ${shipments.updatedAt} < now() - make_interval(secs => ${CLAIM_STALE_SECONDS}))`,
     })

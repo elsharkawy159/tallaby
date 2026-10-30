@@ -55,7 +55,12 @@ export function resolveStorefrontShipping(input: {
   const found = findZoneForPlace(zones, place);
   if (found) {
     const { zone } = found;
-    const { amountPiastres, free } = quoteZone(zone, subtotal);
+    // A zone's own free-over wins; otherwise the store-wide offer (Shipping ›
+    // Free delivery: null = none, 0 = every order, X = orders of X or more).
+    const { amountPiastres, free } = quoteZone(
+      { price: zone.price, freeOver: zone.freeOver ?? settings.freeShippingOver },
+      subtotal,
+    );
     return {
       kind: "zone",
       shippingCost: amountPiastres / 100,

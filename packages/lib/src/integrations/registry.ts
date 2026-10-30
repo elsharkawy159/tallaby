@@ -2,7 +2,8 @@
  * Store apps and integrations (PLAN.md §9, P7-01). Pure and edge-safe.
  *
  * Every provider listed here exists in the `store_integrations.provider`
- * CHECK (0056; `bosta` from 0106; `paymob` and `kashier` from 0122). Public identifiers live in `config`; secrets only ever go
+ * CHECK (0056; `bosta` from 0106; `paymob`, `kashier` and `wassalha` from 0122).
+ * Where each one shows up in the dashboard is catalog.ts. Public identifiers live in `config`; secrets only ever go
  * through `encryptCredentials` (crypto.server.ts).
  */
 
@@ -18,6 +19,7 @@ export const INTEGRATION_PROVIDERS = [
   "bosta",
   "paymob",
   "kashier",
+  "wassalha",
 ] as const;
 
 export type IntegrationProvider = (typeof INTEGRATION_PROVIDERS)[number];
@@ -29,8 +31,9 @@ export type IntegrationCategory = "tracking" | "export" | "import" | "shipping" 
  *   rendered through a fixed script template on that store's host only.
  * - `credentials`: a secret token, encrypted at rest.
  * - `oauth`: a connect flow with the provider.
+ * - `settings`: public settings only (no secret, no script), e.g. Wassalha.
  */
-export type IntegrationKind = "identifier" | "credentials" | "oauth";
+export type IntegrationKind = "identifier" | "credentials" | "oauth" | "settings";
 
 export type IntegrationAvailability = "available" | "soon";
 
@@ -72,6 +75,9 @@ export const INTEGRATIONS: Record<IntegrationProvider, IntegrationDefinition> = 
   // Payment methods, not the Apps page; see payments/store-gateways.*.
   paymob: { provider: "paymob", category: "payments", kind: "credentials", availability: "available" },
   kashier: { provider: "kashier", category: "payments", kind: "credentials", availability: "available" },
+  // Wassalha (Egypt Post): no API; orders go out as its Excel upload sheet
+  // (ROADMAP.md F-12c). Public settings only, no secret.
+  wassalha: { provider: "wassalha", category: "shipping", kind: "settings", availability: "available" },
 };
 
 export function isIntegrationProvider(value: unknown): value is IntegrationProvider {

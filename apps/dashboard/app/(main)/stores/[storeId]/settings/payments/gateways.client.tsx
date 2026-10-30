@@ -6,7 +6,8 @@ import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Check, CircleDashed, Clock, KeyRound, LoaderCircle, Plug, ShieldCheck, Unplug } from "lucide-react";
 
-import { STORE_GATEWAY_CATALOG, type StoreGatewayProvider } from "@workspace/lib/payments/store-gateways";
+import { isStoreAppLive, storeAppsInGroup, type StoreApp } from "@workspace/lib/integrations";
+import { isStoreGatewayProvider, type StoreGatewayProvider } from "@workspace/lib/payments/store-gateways";
 import type { StoreGatewayOverview } from "@workspace/lib/payments/store-gateways/server";
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
@@ -16,31 +17,12 @@ import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetT
 import { BUTTON_CLASS, FIELD_CLASS, SMALL_BUTTON_CLASS } from "@/components/form/form-ui";
 import { ConfirmActionDialog } from "@/components/layout/confirm-action-dialog.client";
 import { cn } from "@/lib/utils";
+import { AppLogo } from "../../apps/app-logo";
 import { connectGateway, disconnectGateway } from "./gateways.server";
 import { GATEWAY_FIELDS } from "./gateways.dto";
 
-type GatewayKey = (typeof STORE_GATEWAY_CATALOG)[number]["key"];
-
-/** Brand initials until official logo files are added (owner action, like WE Pay). */
-const BADGES: Record<GatewayKey, { text: string; color: string }> = {
-  paymob: { text: "PM", color: "#1863dc" },
-  kashier: { text: "K", color: "#5b2be0" },
-  paypal: { text: "PP", color: "#003087" },
-  tallaby_pay: { text: "T", color: "#0a5c4f" },
-};
-
-function GatewayBadge({ gateway, className }: { gateway: GatewayKey; className?: string }) {
-  const badge = BADGES[gateway];
-  return (
-    <span
-      className={cn("flex size-11 shrink-0 items-center justify-center rounded-xl text-[11px] font-bold text-white", className)}
-      style={{ backgroundColor: badge.color }}
-      aria-hidden
-    >
-      <span dir="ltr">{badge.text}</span>
-    </span>
-  );
-}
+/** Paymob, Kashier, PayPal, Tallaby Pay: the catalog's payments group. */
+const GATEWAYS = storeAppsInGroup("payments");
 
 /**
  * Store settings › Payment methods › Online card payments (ROADMAP.md F-39):
@@ -57,6 +39,7 @@ export function StoreGatewaysCard({
   readOnly: boolean;
 }) {
   const t = useTranslations("storePayments.gateways");
+  const tApp = useTranslations("storeApps.providers");
   const router = useRouter();
   const [overview, setOverview] = useState(initial);
   const [editing, setEditing] = useState<StoreGatewayProvider | null>(null);
@@ -78,15 +61,16 @@ export function StoreGatewaysCard({
     });
   };
 
-  const row = (key: GatewayKey, status: "live" | "soon") => {
-    const live = status === "live";
+  const row = (app: StoreApp) => {
+    const key = app.key;
+    const live = isStoreAppLive(app) && isStoreGatewayProvider(key);
     const provider = key as StoreGatewayProvider;
     const isConnected = live && connected?.provider === provider;
     const blocked = live && !!connected && !isConnected;
-    const name = t(`providers.${key}.name`);
+    const name = tApp(`${key}.name`);
     return (
       <li key={key} className={cn("flex flex-wrap items-center gap-3.5 border-t px-4 py-4 first:border-t-0 sm:flex-nowrap sm:px-6", !live && "opacity-70")}>
-        <GatewayBadge gateway={key} />
+        <AppLogo app={key} connected={isConnected} className="size-11 rounded-xl" />
         <div className="min-w-0 flex-1">
           <p className="flex flex-wrap items-center gap-2 text-[15px] font-semibold">
             {name}
@@ -98,7 +82,7 @@ export function StoreGatewaysCard({
               <ConnectedTag verified={!!connected?.details.webhookVerifiedAt} />
             ) : null}
           </p>
-          <p className="text-[13px] leading-relaxed text-muted-foreground">{t(`providers.${key}.description`)}</p>
+          <p className="text-[13px] leading-relaxed text-muted-foreground">{tApp(`${key}.description`)}</p>
           {isConnected && connected && (
             <p className="mt-0.5 flex flex-wrap items-center gap-1.5 text-[12.5px]">
               <KeyRound className="size-3.5 text-faint" aria-hidden />
@@ -165,11 +149,11 @@ export function StoreGatewaysCard({
       {!overview.webhooksReady && (
         <p className="border-b bg-muted/40 px-4 py-3 text-[13px] text-muted-foreground sm:px-6">{t("errors.webhooksNotConfigured")}</p>
       )}
-      <ul>{STORE_GATEWAY_CATALOG.map((g) => row(g.key, g.status))}</ul>
+      <ul>{GATEWAYS.map(row)}</ul>
       <ConfirmActionDialog
         open={!!confirming}
         onOpenChange={(open) => !open && setConfirming(null)}
-        title={t("disconnectConfirm.title", { gateway: confirming ? t(`providers.${confirming}.name`) : "" })}
+        title={t("disconnectConfirm.title", { gateway: confirming ? tApp(`${confirming}.name`) : "" })}
         description={t("disconnectConfirm.description")}
         confirmLabel={t("disconnect")}
         destructive
@@ -228,13 +212,14 @@ function GatewaySheet({
   onConnected: (overview: StoreGatewayOverview) => void;
 }) {
   const t = useTranslations("storePayments.gateways");
+  const tApp = useTranslations("storeApps.providers");
   const locale = useLocale();
   const fields = GATEWAY_FIELDS[provider];
   const [values, setValues] = useState<Record<string, string>>({});
   const [mode, setMode] = useState<"test" | "live">(currentMode ?? "live");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
-  const name = t(`providers.${provider}.name`);
+  const name = tApp(`${provider}.name`);
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -251,7 +236,7 @@ function GatewaySheet({
       <SheetContent side={locale.startsWith("ar") ? "left" : "right"} className="flex w-full flex-col gap-0 p-0 sm:max-w-[460px]">
         <SheetHeader className="border-b px-5 py-[18px]">
           <div className="flex items-center gap-3">
-            <GatewayBadge gateway={provider} />
+            <AppLogo app={provider} className="size-11 rounded-xl" />
             <div className="min-w-0">
               <SheetTitle className="text-base font-bold">{t(isUpdate ? "updateTitle" : "connectTitle", { gateway: name })}</SheetTitle>
               <SheetDescription className="text-xs">{t(`providers.${provider}.whereToFind`)}</SheetDescription>

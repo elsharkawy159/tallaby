@@ -1,20 +1,9 @@
 import { notificationCount, notificationText, type NotificationItem } from '@workspace/lib/notifications'
+import { PROVIDER_LABELS as INTEGRATION_PROVIDERS } from '../../stores/stores.lib'
 
 const TOP_UP_METHODS: Record<string, string> = {
   vodafone_cash: 'Vodafone Cash',
   instapay: 'InstaPay',
-}
-
-const INTEGRATION_PROVIDERS: Record<string, string> = {
-  meta_pixel: 'Meta Pixel',
-  meta_capi: 'Meta Conversions API',
-  google_analytics: 'Google Analytics',
-  google_tag_manager: 'Google Tag Manager',
-  tiktok_pixel: 'TikTok Pixel',
-  snapchat_pixel: 'Snapchat Pixel',
-  google_sheets: 'Google Sheets',
-  shopify_import: 'Shopify import',
-  bosta: 'Bosta',
 }
 
 /** "Seller · Store", leaving out what is missing or repeated. */

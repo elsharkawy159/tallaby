@@ -1,5 +1,5 @@
 import { getStoreShipping } from "@workspace/lib/stores/server";
-import { getBostaOverview } from "@workspace/lib/integrations/server";
+import { getBostaOverview, getWassalhaOverview } from "@workspace/lib/integrations/server";
 import { placeChain, placeLabel } from "@workspace/lib/places";
 import {
   findZoneForPlace,
@@ -17,9 +17,10 @@ import type { TemplateOption, ZoneView } from "./shipping.dto";
 export default async function StoreShippingPage({ params }: { params: Promise<{ storeId: string }> }) {
   const { storeId } = await params;
   const store = await loadStorePage(storeId);
-  const [shipping, bosta] = await Promise.all([
+  const [shipping, bosta, wassalha] = await Promise.all([
     getStoreShipping(store.sellerId, store.id),
     getBostaOverview(store.sellerId, store.id),
+    getWassalhaOverview(store.sellerId, store.id),
   ]);
   if (!shipping) notFound();
 
@@ -76,6 +77,7 @@ export default async function StoreShippingPage({ params }: { params: Promise<{ 
         uncovered={uncovered}
         templates={templates}
         bosta={bosta}
+        wassalha={wassalha}
         readOnly={store.status !== "active"}
       />
     </section>

@@ -82,6 +82,10 @@ export type IntegrationPublicDetails = {
   /** Payment gateways (paymob, kashier): test or live, and whether a signed webhook has arrived yet. */
   mode?: string;
   webhookVerifiedAt?: string;
+  /** Wassalha: the account it exports for. */
+  postId?: string;
+  merchantName?: string;
+  warehouseName?: string;
 };
 
 const DETAIL_KEYS: Partial<Record<IntegrationProvider, Array<keyof IntegrationPublicDetails>>> = {
@@ -91,6 +95,7 @@ const DETAIL_KEYS: Partial<Record<IntegrationProvider, Array<keyof IntegrationPu
   bosta: ["keyHint", "pickupLocationName", "autoShip"],
   paymob: ["keyHint", "mode", "webhookVerifiedAt"],
   kashier: ["keyHint", "mode", "webhookVerifiedAt"],
+  wassalha: ["postId", "merchantName", "warehouseName"],
 };
 
 export function readPublicDetails(provider: IntegrationProvider, config: unknown): IntegrationPublicDetails {
