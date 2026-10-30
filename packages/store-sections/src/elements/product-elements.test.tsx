@@ -191,6 +191,11 @@ describe("product elements", () => {
     const details = draw(node("productDetails", { showDescription: true, showBullets: true }), withBullets);
     expect(details).toContain('data-part="highlights"');
     expect(details).toContain("Fast charging");
+    // Features open by default whenever there are any, under an open description too (owner, 2026-10-30).
+    const rows = details.match(/<details[^>]*>[\s\S]*?<\/details>/g) ?? [];
+    const features = rows.find((r) => r.includes('data-part="highlights"')) ?? "";
+    expect(rows.length).toBeGreaterThan(1);
+    expect(features).toMatch(/^<details[^>]*\sopen=""/);
     expect(draw(node("productDetails", { showDescription: true, showBullets: false }), withBullets)).not.toContain("Fast charging");
   });
 });

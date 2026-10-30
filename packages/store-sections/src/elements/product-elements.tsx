@@ -531,7 +531,8 @@ function Details({ product, props, attrs, ctx }: StillProps) {
       {bullets.length > 0 &&
         row(
           sectionText("productFeatures", ctx.locale),
-          !description,
+          // Always open when the product has features, under the description too (owner, 2026-10-30).
+          true,
           <ul data-part="highlights" className="flex flex-col gap-2">
             {bullets.map((point, i) => (
               <li key={i} className="flex items-start gap-2.5">

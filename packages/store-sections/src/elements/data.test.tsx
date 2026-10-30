@@ -106,6 +106,24 @@ describe("bindings", () => {
     expect(html).toContain("line-through");
   });
 
+  it("keeps the sale badge above a card's hover photo swap", () => {
+    const list = node("productList", { source: "newest" }, [
+      node("vFlex", { label: "Photo", style: { position: "relative" } }, [
+        node("image", { bind: "image", src: "" }),
+        node("badge", { bind: "discount", text: "-20%", style: { position: "absolute" } }),
+      ]),
+    ]);
+    const html = renderToStaticMarkup(
+      <>{renderElementTree([list], ctx({ catalog: { products: { productList: [{ ...product, secondImage: "https://cdn.test/p1-b.jpg" }] }, categories: [] } }))}</>,
+    );
+    expect(html).toContain("p1-b.jpg");
+    expect(html).toContain("25% Off");
+    // The first photo is lifted (z-index 1) over the second; `isolate` keeps that lift inside the swap,
+    // so the absolutely placed badge after it still paints on top until hover (owner bug, 2026-10-30).
+    const swap = html.match(/<span class="([^"]*group\/pc[^"]*)"/)?.[1] ?? "";
+    expect(swap.split(" ")).toContain("isolate");
+  });
+
   it("shows picked categories in the seller's order", () => {
     const categories = ["a", "b", "c"].map((id) => ({ id, key: id, name: id.toUpperCase(), href: `/c/${id}`, image: null }));
     const records = listRecords(node("categoryList", { categoryIds: ["c", "a", "zz"] }), ctx({ catalog: { products: {}, categories } }));

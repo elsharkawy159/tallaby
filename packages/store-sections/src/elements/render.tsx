@@ -636,8 +636,9 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
       const secondUrl = typeof props.secondSrc === "string" ? ctx.imageUrl(props.secondSrc) : null;
       if (secondUrl) {
         // Both photos overlap; hovering the card fades the first one out to show the second.
+        // `isolate` keeps the first photo's z-index inside this swap, so a sale badge placed over the photo stays on top.
         return (
-          <span className="group/pc relative block w-full">
+          <span className="group/pc relative isolate block w-full">
             {/* eslint-disable-next-line @next/next/no-img-element -- shared by both apps; the host optimizes through ctx.optimizeImage */}
             <img {...attrs} {...imageSource(ctx, url, sizes)} alt={str(props.alt, 160)} className="relative z-[1] block w-full transition-opacity duration-500 ease-in-out group-hover/pc:opacity-0 motion-reduce:transition-none" loading="lazy" decoding="async" />
             {/* eslint-disable-next-line @next/next/no-img-element -- same as above */}
