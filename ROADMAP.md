@@ -216,7 +216,7 @@ Updated 2026-10-28 after the EasyOrders dashboard and roadmap review (§2.3, §2
 | 11  | F-37 | Tallaby affiliate program (20 % of referred top-ups, cash) | P1       | yes (0117)         | Approved 2026-10-29; built, 0117 on staging |
 | 12  | F-38 | MersalSMS: OTP and order confirmation SMS                  | P1       | yes                | Provider cost (who pays)                    |
 | 12a | F-41 | One store apps catalog (Apps, carriers, gateways)              | P1       | no                 | Built 2026-10-30                            |
-| 12b | F-39 | Seller's own card gateway (Paymob, Kashier)                 | P1       | yes (0130)         | Approved 2026-10-30; built, 0130 not applied |
+| 12b | F-39 | Seller's own card gateway (Paymob, Kashier)                 | P1       | yes (0130)         | Approved 2026-10-30; built, 0130 applied 2026-10-30 |
 | 13  | F-25 | Checkout form & thank-you page settings                    | P1       | yes                | —                                           |
 | 14  | F-08 | Funnels: quick-order landing pages                         | P1       | maybe              | **Needs approval** (checkout)               |
 | 15  | F-07 | Quantity offers, bundles, upsell                           | P1       | yes                | **Needs approval** (checkout pricing)       |
@@ -377,7 +377,7 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 ### F-12 More shipping carriers — P1
 
 **What:** After Bosta, add J&T Express, Mylerz and Aramex the same way (`store_integrations` provider, `shipments` carrier columns, webhook events), and Egypt Post through Wassalha's upload sheet (no API).
-**Status:** [In progress] F-12c and F-12d built 2026-10-30 (local `main`, 0130 not applied). Mylerz, J&T Express and Aramex show as "Soon" in the catalog until F-12a/b.
+**Status:** [In progress] F-12c and F-12d built 2026-10-30 (local `main`, 0130 applied 2026-10-30). Mylerz, J&T Express and Aramex show as "Soon" in the catalog until F-12a/b.
 
 - **F-12a · P1 · deps: —** Pick the next API carrier with the owner (Mylerz, J&T, Aramex); migration extends `store_integrations_provider_check` and the catalog entry gets its `provider`. Order stages update automatically from carrier webhooks, as with Bosta.
 - **F-12b · P1 · deps: F-12a** Integration following `docs/fulfillment.md` and the Bosta code.
@@ -640,7 +640,7 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 **Why:** Sellers with their own Paymob or Kashier account want card payment on their store, paid straight to them. Until now storefronts offered no card payment (Tallaby's card checkout is marketplace-only).
 **What:** Store settings › Payment methods › **Online card payments**: the seller connects their own Paymob (secret key, public key, HMAC secret, card integration ID, optional wallet integration ID) or Kashier (Merchant ID, Payment API key, secret key, test/live) account. One gateway per store. Keys are checked with a 1 EGP checkout that is never paid, then stored AES-256-GCM in `store_integrations` (providers `paymob`, `kashier`, 0130). Checkout then offers card payment (`online_payment`); the order gets `metadata.paymentCollector = 'seller'` (fee-only on delivery, `PLAN.md` §13.4) and `metadata.paymentGateway`. The payment page opens the seller's gateway; the gateway posts to `POST /api/webhooks/store-payments/:integrationId` (apps/backend), checked with that store's keys, and only that store's orders that name that integration can change. **PayPal** and **Tallaby Pay** (internal: card money to the store wallet through Tallaby's Kashier) show as "Soon".
 **Owner decisions (2026-10-30):** external gateways now, internal later; PayPal "Soon" (no EGP, Egyptian accounts often can't receive); fee-only like other seller-collected payments. This changes `PLAN.md` §9.2's non-goal "per-seller payment gateways".
-**Status:** [Built, 2026-10-30, local `main` (also on branch `feat/store-payment-gateways`)] F-39a–d done; the gateways card now reads the store apps catalog (F-41), so Paymob and Kashier also show on the Apps page (Payments tab, linking here). 0130 not applied (staging first, then production with owner approval). Needs `STORE_PAYMENTS_WEBHOOK_BASE_URL` or `BACKEND_API_URL` (public https backend) on the dashboard, ecommerce and backend, and `INTEGRATIONS_ENCRYPTION_KEY` on all three. Manual E2E with Paymob and Kashier test accounts still to do (F-39e).
+**Status:** [Built, 2026-10-30, local `main` (also on branch `feat/store-payment-gateways`)] F-39a–d done; the gateways card now reads the store apps catalog (F-41), so Paymob and Kashier also show on the Apps page (Payments tab, linking here). 0130 applied 2026-10-30 (staging first, then production with owner approval). Needs `STORE_PAYMENTS_WEBHOOK_BASE_URL` or `BACKEND_API_URL` (public https backend) on the dashboard, ecommerce and backend, and `INTEGRATIONS_ENCRYPTION_KEY` on all three. Manual E2E with Paymob and Kashier test accounts still to do (F-39e).
 
 - **F-39a · P1** Migration 0130 (providers `paymob`, `kashier`), registry + public details, `packages/lib/src/payments/store-gateways.{lib,server}.ts` (validation, key check, encrypted save, audit in `store_settings_audit`, disconnect, checkout, webhook) + unit tests.
 - **F-39b · P1 · deps: F-39a** Dashboard: "Online card payments" card on Store settings › Payment methods (connect sheet per gateway, update keys, disconnect, "waiting for first payment" until a signed webhook arrives), both languages.
@@ -674,8 +674,8 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 | Date       | Request (owner's words)                                                                                                                                                                                                                                                                                                                                               | Feature ID                                                                                       | Status                                                                                 |
 | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- |
-| 2026-10-30 | "gather everything we discussed: Tallaby Apps, Shipping Companies, Payment methods … build them in the best-practice way, with clean code structure and DRY logic" (+ earlier the same day: Egypt Post as "Wassalha Egypt Post" with their template, store ID and name on enabling, export one or many orders; weight 998 g when unknown; shipping page with any carrier, rate templates, free delivery, free over an amount) | F-41, F-12c, F-12d, F-13b (free delivery), F-39 | Built (local `main`, 0130 not applied) |
-| 2026-10-30 | "I need also to integrate payment methods, Payment methods will be Internal (Kashier, payments go to store's wallet) and Externals (User integrate his payment method gateway himself … like Paymob, Kashier, Paypal)" → "Let's build the External methods only for now and keep internal Soon" (PayPal: Soon; fee-only) | F-39 | Built (uncommitted, 0130 not applied) |
+| 2026-10-30 | "gather everything we discussed: Tallaby Apps, Shipping Companies, Payment methods … build them in the best-practice way, with clean code structure and DRY logic" (+ earlier the same day: Egypt Post as "Wassalha Egypt Post" with their template, store ID and name on enabling, export one or many orders; weight 998 g when unknown; shipping page with any carrier, rate templates, free delivery, free over an amount) | F-41, F-12c, F-12d, F-13b (free delivery), F-39 | Built (local `main`, 0130 applied 2026-10-30) |
+| 2026-10-30 | "I need also to integrate payment methods, Payment methods will be Internal (Kashier, payments go to store's wallet) and Externals (User integrate his payment method gateway himself … like Paymob, Kashier, Paypal)" → "Let's build the External methods only for now and keep internal Soon" (PayPal: Soon; fee-only) | F-39 | Built (uncommitted, 0130 applied 2026-10-30) |
 | 2026-10-30 | "For the categories sections on the storefront, integrate the section with seller_product_categories table, and check where do we use this seller_categories as I see it's empty?" | Storefront store categories (no feature ID) | Done (uncommitted) |
 | 2026-10-30 | "Integrate https://mersalsms.com MersalSMS for OTP and Orders confirmations"                                                                                                                                                                                                                                                                                          | F-38 (unblocks F-02f, F-14a)                                                                     | Planned (needs price + who pays)                                                       |
 | 2026-10-29 | "let's built the gift 100EGP for new users, user get the gift after publishing his store directly with a celebrating Pop-up … Pause the 7 days free for new users … 100EGP for users who setup their ecommerce only (choose theme, add a product, publish the website) and valid for 30 days only" (+ only sellers who sign up after launch; unspent part disappears) | Welcome gift (no feature ID; PLAN.md §13.1, 0119)                                                | Done (0119 on staging and production, production 2026-10-30)                           |
@@ -735,7 +735,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [ ] F-39e Manual E2E with Paymob and Kashier test accounts (needs 0130 on staging)
 - [ ] F-39f Tallaby Pay, PayPal, refunds, unpaid card order auto-cancel
 - [x] F-41 One store apps catalog for Apps, Shipping companies and Payment methods (2026-10-30, local `main`)
-- [x] F-12c Wassalha (Egypt Post) settings + Excel export (2026-10-30, local `main`; 0130 not applied)
+- [x] F-12c Wassalha (Egypt Post) settings + Excel export (2026-10-30, local `main`; 0130 applied 2026-10-30)
 - [x] F-12d Shipping › Shipping companies card (2026-10-30, local `main`)
 - [ ] F-12e Wassalha tracking numbers (result file upload, tracking link)
 - [x] F-13b Store-wide free delivery (none / over an amount / every order) (2026-10-30, local `main`; minimum order value still open)
@@ -846,6 +846,26 @@ Add each new request here first, with the date and the owner's words, then turn 
 ---
 
 ## 7. Log
+
+### 2026-10-30 — Merged, migrated and deployed (owner)
+
+- **Merge:** local `main` merged `origin/main` (F-39 card gateways, F-12c Wassalha, F-41 apps catalog). The upstream `0122_store_gateways_and_wassalha.sql` clashed with `0122_product_low_stock_badge.sql` (already on staging), so it was renamed **`0130_store_gateways_and_wassalha.sql`**. Next migration: **0131**. Conflicts were in checkout/order actions (both sides kept: the gateway card check first, then the rate limit, minimum order and checkout form), the integrations validator, the dashboard messages (three-way JSON merge, no real conflicts) and the docs.
+- **Migrations, 2026-10-30:**
+  - Staging: 0112, 0113, 0114, 0115 and 0130 applied (0116–0129 were already there).
+  - Production: dry run with rollback, then one transaction for 0117 (re-run: 0116 had dropped `referral_payout_requested` from the admin type check), 0122, 0123, 0124, 0125, 0126, 0128, 0129 and 0130. Each file was run twice to prove it is idempotent.
+  - Both databases now have every migration through 0130. The 9 new server-only tables have RLS on and no policies.
+- **Deploy:** pushed `e89c0985`. Vercel built ecommerce, dashboard, backend and admin to production. `tallaby-shipping` has Git deploys turned off (`vercel.json`), so its F-30a change (delivered Purchase from riders) needs a manual deploy.
+  - Smoke test: tallaby.com, `/affiliates`, dashboard `/login` and `/roadmap`, the API, and two live stores (home, products, cart, a product page, the product feed) all return 200.
+- **Env:** `BACKEND_API_URL=https://api.tallaby.com` (no `/api`; the code adds it) and one shared `INTERNAL_API_SECRET` on backend, ecommerce and dashboard, checked on Vercel. Before this, ecommerce had `…/api` and a different secret, so its backend emails were rejected.
+- **/roadmap cards (staging and production):**
+  - Launched: F-01, F-03, F-04, F-10, F-11, F-15, F-22, F-24, F-25, F-26, F-34, F-35, F-36.
+  - In progress: F-02, F-06, F-12, F-13, F-16, F-23.
+  - New cards: F-37 and F-30 (launched), F-39 (in progress), F-32 (planned).
+- **Still to do:**
+  - web push: VAPID env + the Supabase Database Webhook on `seller_notifications` INSERT
+  - Resend plan and sender for campaigns
+  - browser E2E of the batch
+  - fixing `pnpm lint`
 
 ### 2026-10-30 — Batch 4 closed: F-02e, F-01e, F-11c, F-26a, F-04e, F-37g, F-24c, F-30a/b, F-34d
 
