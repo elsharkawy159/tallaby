@@ -189,9 +189,29 @@
       "types": "./src/checkout-leads/checkout-leads.server.ts",
       "default": "./src/checkout-leads/checkout-leads.server.ts"
     },
+    "./customers": {
+      "types": "./src/customers/customers.lib.ts",
+      "default": "./src/customers/customers.lib.ts"
+    },
+    "./customers/server": {
+      "types": "./src/customers/customers.server.ts",
+      "default": "./src/customers/customers.server.ts"
+    },
     "./stores": {
       "types": "./src/stores/stores.lib.ts",
       "default": "./src/stores/stores.lib.ts"
+    },
+    "./stores/app": {
+      "types": "./src/stores/store-app.lib.ts",
+      "default": "./src/stores/store-app.lib.ts"
+    },
+    "./stores/blocked-phones": {
+      "types": "./src/stores/blocked-phones.lib.ts",
+      "default": "./src/stores/blocked-phones.lib.ts"
+    },
+    "./stores/blocked-phones/server": {
+      "types": "./src/stores/blocked-phones.server.ts",
+      "default": "./src/stores/blocked-phones.server.ts"
     },
     "./stores/server": {
       "types": "./src/stores/server.ts",

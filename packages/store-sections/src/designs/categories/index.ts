@@ -15,6 +15,7 @@ import { categoriesCircles } from "./categories-circles";
 import { categoriesCaptioned } from "./categories-captioned";
 import { categoriesPanels } from "./categories-panels";
 import { categoriesCounts } from "./categories-counts";
+import { categoriesPortraitLabels } from "./categories-portrait-labels";
 
 /** First is the default for new stores (the Classic template's category row). */
-export const CATEGORY_DESIGNS: readonly Design[] = [categoriesClassic, categoriesTiles, categoriesStories, categoriesRail, categoriesBento, categoriesIndex, categoriesRuled, categoriesChips, categoriesFeatureList, categoriesBigType, categoriesShowcase, categoriesPhotoTiles, categoriesCircles, categoriesCaptioned, categoriesPanels, categoriesCounts];
+export const CATEGORY_DESIGNS: readonly Design[] = [categoriesClassic, categoriesTiles, categoriesStories, categoriesRail, categoriesBento, categoriesIndex, categoriesRuled, categoriesChips, categoriesFeatureList, categoriesBigType, categoriesShowcase, categoriesPhotoTiles, categoriesCircles, categoriesCaptioned, categoriesPanels, categoriesCounts, categoriesPortraitLabels];

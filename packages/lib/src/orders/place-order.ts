@@ -66,6 +66,7 @@ import {
   type StorefrontShipping,
 } from '../shipping/store-quote'
 import { getStorefrontShippingContext } from '../stores/shipping-context.server'
+import { isStorePhoneBlocked } from '../stores/blocked-phones.server'
 
 /**
  * Snapshot on every store-website order placed while the store delivers itself
@@ -274,7 +275,7 @@ export async function placeOrderFromCart(
   )
 
   let shippingAddress:
-    | { id: string; state: string; city: string; country: string; addressLine1: string }
+    | { id: string; state: string; city: string; country: string; addressLine1: string; phone: string }
     | undefined
   if (!isDigitalOnlyCart) {
     if (!shippingAddressId) {
@@ -300,6 +301,17 @@ export async function placeOrderFromCart(
         error: `Product is no longer available: ${item.product.sku ?? item.productId}`,
       }
     }
+  }
+
+  // Store websites: the seller blocked this shipping phone on the store
+  // (ROADMAP.md F-02). Refused before any stock, coupon or money is touched.
+  if (
+    orderSource === 'storefront' &&
+    cart.storeId &&
+    shippingAddress &&
+    (await isStorePhoneBlocked(cart.storeId, shippingAddress.phone))
+  ) {
+    return { success: false, error: 'storeCustomerBlocked' }
   }
 
   let subtotal = 0

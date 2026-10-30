@@ -21,8 +21,10 @@ import {
   desc,
   asc,
   isNotNull,
+  isNull,
   inArray,
 } from "@workspace/db"
+import type { StoreCategoryFilter } from "@workspace/lib/store-sites/catalog-data"
 import {
   getProductIdBySlug,
   getProductTranslationWithFallback,
@@ -38,6 +40,8 @@ interface ProductFilters {
   categoryId?: string;
   /** Any of these categories, e.g. every leaf under one root. */
   categoryIds?: string[];
+  /** One store category's products (`StorefrontCategory`), by the rule of `storeCategoryGroups`. Use with sellerId. */
+  storeCategory?: StoreCategoryFilter;
   categoryName?: string;
   /** Any of these category names (multi-select filter on /products). */
   categoryNames?: string[];
@@ -103,6 +107,23 @@ export const getProducts = createCachedQuery({
 
       if (filters.categoryIds?.length) {
         conditions.push(inArray(products.categoryId, filters.categoryIds));
+      }
+
+      if (filters.storeCategory) {
+        const { sellerCategoryId, sourceCategoryId, categoryIds } = filters.storeCategory;
+        // Its own products, plus unlinked ones of the Tallaby category it was picked from;
+        // a Tallaby root group holds only unlinked products (its ids leave out picked categories).
+        conditions.push(
+          sellerCategoryId
+            ? (or(
+                eq(products.sellerCategoryId, sellerCategoryId),
+                sourceCategoryId ? and(isNull(products.sellerCategoryId), eq(products.categoryId, sourceCategoryId)) : undefined,
+              ) ?? sql`false`)
+            : (and(
+                isNull(products.sellerCategoryId),
+                inArray(products.categoryId, categoryIds.length ? categoryIds : ["00000000-0000-0000-0000-000000000000"]),
+              ) ?? sql`false`)
+        );
       }
 
       if (filters.productIds) {

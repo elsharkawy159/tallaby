@@ -3558,3 +3558,47 @@ export const referralPayouts = pgTable("referral_payouts", {
 	check("referral_payouts_paid_check", sql`status <> 'paid' OR (reference IS NOT NULL AND reviewed_at IS NOT NULL)`),
 	check("referral_payouts_rejected_check", sql`status <> 'rejected' OR (rejection_reason IS NOT NULL AND reviewed_at IS NOT NULL)`),
 ]);
+
+/**
+ * Store phone blocklist (0118, ROADMAP.md F-02): the store's website checkout
+ * refuses orders whose shipping phone is listed. `phone` is `01XXXXXXXXX`
+ * (normalizeBlockedPhone). Server-only (RLS on, no policies).
+ */
+export const storeBlockedPhones = pgTable("store_blocked_phones", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	storeId: uuid("store_id").notNull(),
+	phone: text().notNull(),
+	reason: text(),
+	createdBy: uuid("created_by"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	unique("store_blocked_phones_store_phone_key").on(table.storeId, table.phone),
+	index("store_blocked_phones_store_created_idx").using("btree", table.storeId, table.createdAt.desc()),
+	foreignKey({ columns: [table.storeId], foreignColumns: [stores.id], name: "store_blocked_phones_store_id_fkey" }).onDelete("cascade"),
+	foreignKey({ columns: [table.createdBy], foreignColumns: [users.id], name: "store_blocked_phones_created_by_fkey" }).onDelete("set null"),
+	check("store_blocked_phones_phone_check", sql`phone ~ '^01[0-9]{9}$'`),
+	check("store_blocked_phones_reason_check", sql`reason IS NULL OR char_length(reason) <= 300`),
+]);
+
+/**
+ * What a seller writes about one of a store's customers (0121, ROADMAP.md
+ * F-01c). customer_key is the Customers page key: 'p:<phone>' or 'u:<user id>'.
+ * Server-only (RLS on, no policies).
+ */
+export const storeCustomerNotes = pgTable("store_customer_notes", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	storeId: uuid("store_id").notNull(),
+	customerKey: text("customer_key").notNull(),
+	note: text(),
+	tags: text().array().default([]).notNull(),
+	updatedBy: uuid("updated_by"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex("store_customer_notes_store_key").using("btree", table.storeId, table.customerKey),
+	foreignKey({ columns: [table.storeId], foreignColumns: [stores.id], name: "store_customer_notes_store_id_fkey" }).onDelete("cascade"),
+	foreignKey({ columns: [table.updatedBy], foreignColumns: [users.id], name: "store_customer_notes_updated_by_fkey" }).onDelete("set null"),
+	check("store_customer_notes_key_format", sql`customer_key ~ '^p:[0-9]{6,20}$' OR customer_key ~ '^u:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'`),
+	check("store_customer_notes_note_length", sql`note IS NULL OR char_length(note) <= 2000`),
+	check("store_customer_notes_tags_count", sql`cardinality(tags) <= 10`),
+]);

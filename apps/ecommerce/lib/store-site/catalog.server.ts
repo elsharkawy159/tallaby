@@ -12,7 +12,8 @@ import type {
 import { getPublicUrl } from "@workspace/ui/lib/utils";
 import { getProducts } from "@/actions/products";
 import type { ProductLocale } from "@/lib/product-translations";
-import { getStorefrontCategories, type StorefrontCategory } from "@/lib/storefront.server";
+import { getStorefrontCategories, storeCategoryFilter, type StorefrontCategory } from "@/lib/storefront.server";
+import type { StoreCategoryFilter } from "@workspace/lib/store-sites/catalog-data";
 import { SALES_DAYS, getCachedSellerBrands, getCachedSellerCoupons, getCachedStoreReviewStats, getCachedStoreReviews, getCachedStoreSales } from "./store-data.server";
 
 /**
@@ -48,11 +49,13 @@ export type ResolvedCatalog = {
   productPages?: Record<string, { page: number; totalPages: number }>;
 };
 
-function firstImage(images: unknown): string | null {
+function nthImage(images: unknown, index: number): string | null {
   if (!Array.isArray(images)) return null;
-  const first = images.find((image) => typeof image === "string" && image.trim());
-  return typeof first === "string" ? getPublicUrl(first, "products") || null : null;
+  const found = images.filter((image): image is string => typeof image === "string" && image.trim() !== "")[index];
+  return found ? getPublicUrl(found, "products") || null : null;
 }
+
+const firstImage = (images: unknown) => nthImage(images, 0);
 
 function toSummary(product: RawProduct): ProductSummary {
   const price = parsePriceJson(product.price);
@@ -63,6 +66,7 @@ function toSummary(product: RawProduct): ProductSummary {
     title: product.title ?? "",
     href: `/products/${product.slug ?? product.id}`,
     image: firstImage(product.images),
+    secondImage: nthImage(product.images, 1),
     price: final,
     compareAtPrice: list != null && final != null && list > final ? list : null,
     rating: product.averageRating ?? null,
@@ -186,11 +190,13 @@ export async function resolveStoreCatalog(
         products[instanceId] = picked;
         return;
       }
-      let categoryIds: string[] | undefined;
+      let storeCategory: StoreCategoryFilter | undefined;
       if (query.source === "category") {
         // By id, or by position: the store's Nth category in the order its category lists show (a template row).
+        // An id saved before seller categories is a Tallaby one: the store category holding it.
         const category = query.categoryId
-          ? storeCategories.find((c) => c.key === query.categoryId || c.categoryIds.includes(query.categoryId ?? ""))
+          ? (storeCategories.find((c) => c.key === query.categoryId) ??
+            storeCategories.find((c) => c.sourceCategoryId === query.categoryId || c.categoryIds.includes(query.categoryId ?? "")))
           : query.categoryIndex
             ? storeCategories[query.categoryIndex - 1]
             : undefined;
@@ -198,13 +204,13 @@ export async function resolveStoreCatalog(
           products[instanceId] = [];
           return;
         }
-        categoryIds = category.categoryIds;
+        storeCategory = storeCategoryFilter(category);
       }
       const result = await fetchPage(
         {
           ...(offset > 0 && { offset }),
           ...(query.source === "featured" && { isFeatured: true }),
-          ...(categoryIds && { categoryIds }),
+          ...(storeCategory && { storeCategory }),
           ...(query.source === "selected" && { productIds: query.productIds ?? [] }),
           // Hand-picked lists keep the seller's order.
           ...(sortBy && query.source !== "selected" && { sortBy }),

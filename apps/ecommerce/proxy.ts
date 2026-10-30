@@ -90,7 +90,7 @@ export const config = {
      * - api/ (route handlers under app/api/, including OAuth callback and
      *   server-to-server webhooks — locale routing must not intercept these
      *   or they 404 instead of running their handlers)
-     * - sitemap.xsl (the sitemap's browser stylesheet), manifest.webmanifest
+     * - sitemap.xsl (the sitemap's browser stylesheet), manifest.webmanifest, store-sw.js
      *   (top-level files outside app/[locale]/ — locale routing must not
      *   intercept these or they 404 instead of returning their content)
      * robots.txt, sitemap.xml and sitemaps/ DO run through the proxy: store
@@ -98,6 +98,6 @@ export const config = {
      * marketplace files (see isCrawlFilePath above).
      * Feel free to modify this pattern to include more paths.
      */
-    "/((?!api/|_next/static|_next/image|favicon.ico|sitemap.xsl|manifest.webmanifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!api/|_next/static|_next/image|favicon.ico|sitemap.xsl|manifest.webmanifest|store-sw.js|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

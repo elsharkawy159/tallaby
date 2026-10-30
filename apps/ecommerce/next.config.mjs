@@ -9,6 +9,8 @@ const nextConfig = {
   experimental: {
     // app/global-not-found.tsx: the root layout sits under [locale].
     globalNotFound: true,
+    // Inline the (Tailwind) CSS in <head> instead of 4 render-blocking <link>s: PageSpeed 2026-10-30, est. 490 ms on mobile.
+    inlineCss: true,
     staleTimes: {
       dynamic: 0,
       static: 30,
@@ -24,6 +26,15 @@ const nextConfig = {
         headers: [
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+        ],
+      },
+      // Store app service worker (ROADMAP.md F-36d; Next.js PWA guide): never cached, own scripts only.
+      {
+        source: "/store-sw.js",
+        headers: [
+          { key: "Content-Type", value: "application/javascript; charset=utf-8" },
+          { key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
+          { key: "Content-Security-Policy", value: "default-src 'self'; script-src 'self'" },
         ],
       },
       // The section and template library is open but never indexed (also a noindex meta).

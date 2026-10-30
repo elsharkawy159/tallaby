@@ -15,6 +15,10 @@ import { LanguageToggle } from "./language-toggle.client";
 import { NotificationBell } from "./notification-bell.client";
 import { ThemeToggle } from "./theme-toggle.client";
 
+// Phone "⋯" menu rows: full width, icon then label. From sm up they stay icon buttons.
+const MENU_ITEM =
+  "max-sm:h-10 max-sm:w-full max-sm:justify-start max-sm:gap-2.5 max-sm:px-3 max-sm:text-sm max-sm:text-sidebar-foreground";
+
 const ICON_BUTTON =
   "flex size-9.5 shrink-0 items-center justify-center rounded-[10px] border border-transparent text-muted-foreground transition-colors hover:border-sidebar-border hover:bg-sidebar-accent hover:text-sidebar-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40";
 
@@ -165,13 +169,13 @@ export function DashboardHeader({ walletBalance }: { walletBalance: number | nul
             id={toolsId}
             className={cn(
               "flex items-center gap-1 sm:gap-3",
-              "max-sm:absolute max-sm:end-0 max-sm:top-full max-sm:mt-2 max-sm:rounded-xl max-sm:border max-sm:border-sidebar-border max-sm:bg-popover max-sm:p-1 max-sm:shadow-lg",
+              "max-sm:absolute max-sm:end-0 max-sm:top-full max-sm:mt-2 max-sm:min-w-48 max-sm:flex-col max-sm:items-stretch max-sm:gap-0.5 max-sm:rounded-xl max-sm:border max-sm:border-sidebar-border max-sm:bg-popover max-sm:p-1 max-sm:shadow-lg",
               !toolsOpen && "max-sm:hidden"
             )}
           >
-            <InstallAppButton />
-            <LanguageToggle />
-            <ThemeToggle />
+            <InstallAppButton className={MENU_ITEM} />
+            <LanguageToggle className={MENU_ITEM} />
+            <ThemeToggle className={MENU_ITEM} />
           </div>
         </div>
       </div>

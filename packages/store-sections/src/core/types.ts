@@ -68,6 +68,8 @@ export interface PropDefinition {
   group?: "content" | "layout" | "appearance" | "data" | "advanced";
   /** Show the field only while another prop has one of these values (e.g. `categoryId` when `source` is `category`). */
   showWhen?: { key: string; equals: readonly (string | boolean)[] };
+  /** A `switch` with no saved value reads as on (the behaviour is on unless the seller turns it off). */
+  defaultOn?: boolean;
   /** Hide the field while another prop has one of these values (e.g. thumbnail options while autoplay is on). */
   hideWhen?: { key: string; equals: readonly (string | boolean)[] };
 }
@@ -178,6 +180,8 @@ export type ProductSummary = {
   title: string;
   href: string;
   image: string | null;
+  /** The product's second photo: a card fades to it on hover. */
+  secondImage?: string | null;
   price: number | null;
   compareAtPrice?: number | null;
   rating?: number | null;
@@ -346,6 +350,8 @@ export const IMAGE_SIZES = {
   full: "100vw",
   /** Content images and video posters, capped by the page width. */
   content: "(min-width: 1280px) 1280px, 100vw",
+  /** The store logo (shown at most 160px wide, so 2x and 3x screens stay sharp from the 384px size up). */
+  logo: "160px",
   /** Product cards in a grid (2 columns on phones, up to 4 on desktop). */
   card: "(min-width: 1024px) 25vw, 50vw",
 } as const;
@@ -456,6 +462,8 @@ export interface RenderContext {
   renderWishlistButton?: (product: ProductSummary) => ReactNode;
   /** The header's switch to the store's other language (`languageSwitcher` node). */
   renderLanguageSwitcher?: () => ReactNode;
+  /** The store app's "Download application" button (`appInstall` node, ROADMAP.md F-36). */
+  renderAppInstall?: () => ReactNode;
   /** Customer account link or menu, when the host supports it (`accountLink` node: sign-in for guests). */
   renderAccountButton?: () => ReactNode;
   /**

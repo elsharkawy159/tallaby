@@ -187,6 +187,7 @@
     "leadConsent": "We may contact you about your order.",
     "egyptOnly": "We deliver inside Egypt only for now.",
     "zoneNoCod": "Cash on delivery isn't available for this address.",
+    "orderNotAccepted": "We can't accept this order right now. Please contact the store directly.",
     "arrivesIn": "Arrives in {min}–{max} days",
     "noPaymentMethodsAvailable": "This store has no payment method available for this order. Please contact the store.",
     "payWithCard": "Pay with Card",
@@ -2068,6 +2069,15 @@
     "backHome": "Back to the store"
   },
   "storefront": {
+    "app": {
+      "download": "Download application",
+      "guideTitle": "Install the {name} app",
+      "guideDescription": "Two steps and the app is on your home screen.",
+      "iosStep1": "Tap the Share button at the bottom of Safari.",
+      "iosStep2": "Choose \"Add to Home Screen\", then \"Add\".",
+      "otherStep1": "Open your browser menu (⋮).",
+      "otherStep2": "Choose \"Install app\" or \"Add to Home screen\"."
+    },
     "theme": {
       "dark": "Switch to dark mode",
       "light": "Switch to light mode"

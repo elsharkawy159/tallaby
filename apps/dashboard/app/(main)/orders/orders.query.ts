@@ -7,14 +7,24 @@ import {
   orderItems,
   orders,
   sellerCustomDomains,
+  storeBlockedPhones,
+  stores as storesTable,
   userWalletTransactions,
   users,
 } from "@workspace/db";
 import { WALLET_REFERENCE_TYPES } from "@workspace/db/wallet";
+import { hasOrderRisk } from "@workspace/lib/customers";
+import { loadStoreOrderRisks } from "@workspace/lib/customers/server";
+import { normalizeBlockedPhone } from "@workspace/lib/stores/blocked-phones";
 import { storeUrl } from "@workspace/lib/storefront";
 import { getStorefrontProductUrl } from "@/lib/constants";
 import { loadProductStoreLinks } from "../products/_components/product-store-links.data";
 import { isSellerHandledLine, resolveSellerOrderFlow } from "./order-flow.lib";
+import {
+  parseOrderConfirmTemplate,
+  renderOrderConfirmMessage,
+  unconfirmedHours,
+} from "./order-confirm.lib";
 import {
   pickProductSlug,
   resolveCustomerEmail,
@@ -123,7 +133,8 @@ export async function loadSellerOrders(
     ownLines.map((i) => [i.productId, pickProductSlug(i.product?.productTranslations)]),
   );
 
-  const [walletPaid, riders, domains, marketplaceLinks] = await Promise.all([
+  const ownStoreIds = stores.map((s) => s.id);
+  const [walletPaid, riders, domains, marketplaceLinks, blocked, storeConfirm, risks] = await Promise.all([
     db
       .select({ orderId: userWalletTransactions.referenceId })
       .from(userWalletTransactions)
@@ -146,7 +157,46 @@ export async function loadSellerOrders(
     loadProductStoreLinks(
       [...slugByProduct].map(([id, slug]) => ({ id, slug })),
     ),
+    // Phones this seller blocked on their stores (ROADMAP.md F-02).
+    ownStoreIds.length
+      ? db
+          .select({ storeId: storeBlockedPhones.storeId, phone: storeBlockedPhones.phone })
+          .from(storeBlockedPhones)
+          .where(inArray(storeBlockedPhones.storeId, ownStoreIds))
+      : Promise.resolve([]),
+    // Each store's WhatsApp confirm template and language (ROADMAP.md F-02g).
+    ownStoreIds.length
+      ? db
+          .select({ id: storesTable.id, settings: storesTable.settings, defaultLocale: storesTable.defaultLocale })
+          .from(storesTable)
+          .where(and(eq(storesTable.sellerId, sellerId), inArray(storesTable.id, ownStoreIds)))
+      : Promise.resolve([]),
+    // Refusals and quick duplicates of the same phone on the same store (ROADMAP.md F-02d).
+    loadStoreOrderRisks(
+      sellerId,
+      list.map((o) => ({
+        orderId: o.id,
+        storeId: o.storeId,
+        addressPhone: o.userAddress_shippingAddressId?.phone ?? null,
+        userPhone: o.user?.phone ?? null,
+      })),
+    ),
   ]);
+  const confirmByStore = new Map(
+    storeConfirm.map((row) => [
+      row.id,
+      {
+        template: parseOrderConfirmTemplate(row.settings),
+        locale: row.defaultLocale === "en" ? ("en" as const) : ("ar" as const),
+      },
+    ]),
+  );
+  const now = Date.now();
+  const blockedKeys = new Set(blocked.map((b) => `${b.storeId}:${b.phone}`));
+  const isBlocked = (storeId: string | null, phone: string | null) => {
+    const normalized = phone ? normalizeBlockedPhone(phone) : null;
+    return Boolean(storeId && normalized && blockedKeys.has(`${storeId}:${normalized}`));
+  };
 
   const walletPaidOrders = new Set(walletPaid.map((w) => w.orderId));
   const riderNames = new Map(riders.map((r) => [r.id, r.fullName]));
@@ -168,6 +218,7 @@ export async function loadSellerOrders(
     const shipment = o.shipments[0] ?? null;
     const addr = o.userAddress_shippingAddressId;
     const store = o.storeId ? storeById.get(o.storeId) : undefined;
+    const customerPhone = resolveCustomerPhone(o);
 
     const flow = resolveSellerOrderFlow({
       orderStatus: o.status,
@@ -181,14 +232,22 @@ export async function loadSellerOrders(
       walletPaid: walletPaidOrders.has(o.id),
     });
 
+    const confirm = o.storeId ? confirmByStore.get(o.storeId) : undefined;
+    const createdAt = o.createdAt ?? new Date(now).toISOString();
+
     return {
       id: o.id,
       orderNumber: o.orderNumber,
-      createdAt: o.createdAt ?? new Date().toISOString(),
+      createdAt,
       storeId: o.storeId,
       storeName: store?.name ?? null,
       customerName: resolveCustomerName(o, ""),
-      customerPhone: resolveCustomerPhone(o),
+      customerPhone,
+      customerBlocked: Boolean(store) && isBlocked(o.storeId, customerPhone),
+      risk: (() => {
+        const risk = risks.get(o.id);
+        return hasOrderRisk(risk) ? risk : null;
+      })(),
       customerEmail: resolveCustomerEmail(o),
       isGuest: o.user?.isGuest ?? false,
       address: addr
@@ -241,6 +300,26 @@ export async function loadSellerOrders(
             }
           : null,
       flow,
+      confirmMessage:
+        store && confirm && customerPhone && flow.stage === "new"
+          ? renderOrderConfirmMessage(confirm.template, {
+              order: {
+                customerName: resolveCustomerName(o, ""),
+                orderNumber: o.orderNumber,
+                totalAmount: o.totalAmount ?? "0",
+                lines: mine.map((i) => ({ productName: i.productName, variantName: i.variantName, quantity: i.quantity ?? 1 })),
+                address: addr
+                  ? {
+                      line: [addr.addressLine1, addr.addressLine2].filter(Boolean).join(", "),
+                      area: [addr.city, addr.state].filter(Boolean).join(", "),
+                    }
+                  : null,
+              },
+              storeName: store.name,
+              locale: confirm.locale,
+            })
+          : null,
+      unconfirmedHours: unconfirmedHours(flow.stage, createdAt, now),
       shippedAt: o.shippedAt,
       deliveredAt: o.deliveredAt,
       cancelledAt: o.cancelledAt,

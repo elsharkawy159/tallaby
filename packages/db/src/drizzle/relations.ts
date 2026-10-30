@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { stores, storeProducts, storeDesignSystems, storePages, storeSiteRevisions, templateInstalls, mediaFolders, mediaAssets, savedBlocks, storeForms, storeFormSubmissions, cmsCollections, cmsItems, cmsItemRevisions, storeIntegrations, storeShippingZones, storeSettingsAudit, sellerWalletTopUps, adminAuditLog, platformBlogPosts, sellerProductCategories, sellerProductBrands, adminNotifications, sellerNotifications, shipmentCarrierEvents, aiUsageLogs, featureRequests, featureRequestVotes, referralCommissions, referralPayouts, sellerWelcomeGifts, storeCheckoutLeads } from "./schema";
+import { stores, storeBlockedPhones, storeProducts, storeDesignSystems, storePages, storeSiteRevisions, templateInstalls, mediaFolders, mediaAssets, savedBlocks, storeForms, storeFormSubmissions, cmsCollections, cmsItems, cmsItemRevisions, storeIntegrations, storeShippingZones, storeSettingsAudit, sellerWalletTopUps, adminAuditLog, platformBlogPosts, sellerProductCategories, sellerProductBrands, adminNotifications, sellerNotifications, shipmentCarrierEvents, aiUsageLogs, featureRequests, featureRequestVotes, referralCommissions, referralPayouts, sellerWelcomeGifts, storeCheckoutLeads, storeCustomerNotes } from "./schema";
 import { users, deliveries, shipments, orders, payments, paymentMethods, carts, categories, sellers, coupons, notifications, contacts, userAddresses, products, productVariants, refunds, returns, orderItems, shipmentItems, productQuestions, shippingAddresses, couponUsage, cartItems, reviews, returnItems, reviewVotes, searchLogs, sellerDocuments, sellerPayoutItems, sellerPayouts, reviewComments, userDevices, wishlistItems, wishlists, brands, productAnswers, userRewards, productTranslations, digitalProducts, digitalOrders, sellerCategories, sellerWallet, walletTransactions, digitalFiles, licenseKeys, digitalBundleItems, digitalAccessLogs, shippingProviders, shipmentBatches, shipmentBatchItems, userWallets, userWalletTransactions, walletTopUps, walletPayoutRequests, affiliates, affiliateCommissions } from "./schema";
 
 export const deliveriesRelations = relations(deliveries, ({one}) => ({
@@ -861,6 +861,7 @@ export const storesRelations = relations(stores, ({one, many}) => ({
 	settingsAudit: many(storeSettingsAudit),
 	savedBlocks: many(savedBlocks),
 	adminAuditLog: many(adminAuditLog),
+	blockedPhones: many(storeBlockedPhones),
 }));
 
 export const storeProductsRelations = relations(storeProducts, ({one}) => ({
@@ -1139,6 +1140,13 @@ export const referralPayoutsRelations = relations(referralPayouts, ({one}) => ({
 	}),
 }));
 
+export const storeBlockedPhonesRelations = relations(storeBlockedPhones, ({one}) => ({
+	store: one(stores, {
+		fields: [storeBlockedPhones.storeId],
+		references: [stores.id]
+	}),
+}));
+
 export const sellerWelcomeGiftsRelations = relations(sellerWelcomeGifts, ({one}) => ({
 	seller: one(sellers, {
 		fields: [sellerWelcomeGifts.sellerId],
@@ -1162,5 +1170,12 @@ export const storeCheckoutLeadsRelations = relations(storeCheckoutLeads, ({one})
 	order: one(orders, {
 		fields: [storeCheckoutLeads.orderId],
 		references: [orders.id]
+	}),
+}));
+
+export const storeCustomerNotesRelations = relations(storeCustomerNotes, ({one}) => ({
+	store: one(stores, {
+		fields: [storeCustomerNotes.storeId],
+		references: [stores.id]
 	}),
 }));

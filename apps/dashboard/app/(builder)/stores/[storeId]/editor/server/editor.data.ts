@@ -1,4 +1,4 @@
-import { and, categories, db, desc, eq, inArray, productTranslations, products, sql, storeProducts } from "@workspace/db";
+import { and, db, desc, eq, productTranslations, products, sql, storeProducts } from "@workspace/db";
 import { parsePriceJson } from "@workspace/lib";
 import { BLOG_FIELDS, cmsItemPath, cmsItemSummaryFields } from "@workspace/lib/cms";
 import { listCmsCollections, listCmsItems } from "@workspace/lib/cms/server";
@@ -6,6 +6,7 @@ import { listStoreFormDefinitions } from "@workspace/lib/store-forms/server";
 import {
   sellerBrandList,
   sellerCoupons,
+  storeCategoryGroups,
   storeProductSales,
   storeReviewStats,
   storeReviews,
@@ -46,10 +47,10 @@ export async function loadEditorForms(sellerId: string, storeId: string): Promis
 
 const MAX_PRODUCTS = 300;
 
-function publicImage(path: unknown): string | null {
+function publicImage(path: unknown, bucket: "products" | "categories" = "products"): string | null {
   if (typeof path !== "string" || !path.trim()) return null;
   if (/^https?:\/\//.test(path)) return path;
-  return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/products/${path}`;
+  return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${bucket}/${path}`;
 }
 
 /**
@@ -208,24 +209,26 @@ export async function loadEditorCatalog(
     };
   });
 
-  const categoryIds = [...new Set(list.map((p) => p.categoryId))];
-  const categoryRows = categoryIds.length
-    ? await db
-        .select({ id: categories.id, name: categories.name, nameAr: categories.nameAr, imageUrl: categories.imageUrl })
-        .from(categories)
-        .where(inArray(categories.id, categoryIds))
-    : [];
+  // The store's categories as the storefront shows them (seller categories, else Tallaby roots), in its order.
+  const groups = await storeCategoryGroups(sellerId, catalogStoreId);
+  const groupOf = new Map(groups.flatMap((g) => g.productIds.map((id) => [id, g.key] as const)));
+  for (const product of list) {
+    product.relatedCategoryId = product.categoryId;
+    product.categoryId = groupOf.get(product.id) ?? product.categoryId;
+  }
 
   return {
     salesFailed: salesFailed.length > 0,
     products: list,
-    categories: categoryRows
-      .map((c) => ({
-        id: c.id,
-        name: { ar: c.nameAr ?? c.name ?? "", en: c.name ?? c.nameAr ?? "" },
-        image: publicImage(c.imageUrl) ?? list.find((p) => p.categoryId === c.id && p.image)?.image ?? null,
-        productCount: list.filter((p) => p.categoryId === c.id).length,
-      }))
-      .sort((a, b) => b.productCount - a.productCount),
+    categories: groups.map((g) => {
+      const cover = typeof g.productImage === "string" ? g.productImage : (g.productImage as { url?: string } | null)?.url;
+      return {
+        id: g.key,
+        name: { ar: g.nameAr || g.name || "", en: g.name || g.nameAr || "" },
+        // The seller's own category photo first, else the best-rated product's.
+        image: publicImage(g.ownImage, "categories") ?? publicImage(cover),
+        productCount: g.productCount,
+      };
+    }),
   };
 }

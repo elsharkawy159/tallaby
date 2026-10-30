@@ -140,8 +140,9 @@ function Gallery({ product, props, attrs, ctx }: StillProps) {
         </div>
       )}
       {percent != null && (
-        <span dir="ltr" data-part="discount" className="absolute start-3 top-3 rounded-full bg-[#dc2626] px-2.5 py-1 text-xs font-bold text-white tabular-nums">
-          -{percent}%
+        // Only the text is LTR: `dir` on the badge itself would flip `start` to the left on Arabic pages.
+        <span data-part="discount" className="absolute start-3 top-3 rounded-full bg-[#dc2626] px-2.5 py-1 text-xs font-bold text-white tabular-nums">
+          <bdi dir="ltr">-{percent}%</bdi>
         </span>
       )}
       {/* Dots: always without thumbnails, else only on phones (the thumbnails take over from tablet up). */}

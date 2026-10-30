@@ -50,6 +50,83 @@ export async function sellerBrandList(sellerId: string, limit = 48): Promise<Sel
     .limit(Math.min(Math.max(limit, 1), 100));
 }
 
+export type StoreCategoryGroup = {
+  /** Catalog filter key: the seller category id, else the Tallaby root's slug (or id). */
+  key: string;
+  /** The seller's own category (0068); null for a Tallaby root group. */
+  sellerCategoryId: string | null;
+  /** The Tallaby category the seller category was picked from. */
+  sourceCategoryId: string | null;
+  name: string | null;
+  nameAr: string | null;
+  productCount: number;
+  /** The Tallaby categories (`products.category_id`) of the products in it. */
+  categoryIds: string[];
+  productIds: string[];
+  /** Storage path in the `categories` bucket: the seller's own category photo. */
+  ownImage: string | null;
+  /** First image entry (a path or `{ url }`) of the best-rated product in it. */
+  productImage: unknown;
+};
+
+/**
+ * The store's categories, as its category lists and catalog filter show them
+ * (storefront and builder alike). A product belongs to its seller category
+ * (`products.seller_category_id`); a product without one, to the seller
+ * category picked from its Tallaby category; anything else (products made
+ * before 0068) to its Tallaby root category. Only categories with active
+ * products, the seller's own first in their order, then the roots by size.
+ * With `catalogStoreId` (a store in selected mode) only that store's picks count.
+ */
+export async function storeCategoryGroups(
+  sellerId: string,
+  catalogStoreId?: string,
+  q: Pick<typeof db, "execute"> = db,
+): Promise<StoreCategoryGroup[]> {
+  const selected = catalogStoreId
+    ? sql`AND EXISTS (SELECT 1 FROM store_products sp WHERE sp.store_id = ${catalogStoreId} AND sp.product_id = p.id)`
+    : sql``;
+  const rows = await q.execute(sql`
+    WITH RECURSIVE ancestry AS (
+      SELECT id, id AS root_id, parent_id FROM categories
+      UNION ALL
+      SELECT a.id, c.id, c.parent_id
+      FROM ancestry a JOIN categories c ON c.id = a.parent_id
+    ),
+    items AS (
+      SELECT p.id, p.category_id, p.images, p.average_rating, p.created_at,
+             spc.id AS spc_id, spc.source_category_id, spc.name AS spc_name, spc.name_ar AS spc_name_ar,
+             spc.image_url, spc.position, spc.created_at AS spc_created_at,
+             r.id AS root_id, r.slug AS root_slug, r.name AS root_name, r.name_ar AS root_name_ar
+      FROM products p
+      LEFT JOIN seller_product_categories spc ON spc.seller_id = p.seller_id
+        AND (spc.id = p.seller_category_id OR (p.seller_category_id IS NULL AND spc.source_category_id = p.category_id))
+      LEFT JOIN ancestry a ON spc.id IS NULL AND a.id = p.category_id AND a.parent_id IS NULL
+      LEFT JOIN categories r ON r.id = a.root_id
+      WHERE p.seller_id = ${sellerId} AND p.status = 'active' AND (spc.id IS NOT NULL OR r.id IS NOT NULL) ${selected}
+    )
+    SELECT coalesce(spc_id::text, root_slug, root_id::text) AS key,
+           spc_id AS "sellerCategoryId",
+           min(source_category_id::text) AS "sourceCategoryId",
+           coalesce(min(spc_name), min(root_name)) AS name,
+           coalesce(min(spc_name_ar), min(root_name_ar)) AS "nameAr",
+           count(*)::int AS "productCount",
+           json_agg(DISTINCT category_id) AS "categoryIds",
+           json_agg(id) AS "productIds",
+           min(nullif(btrim(image_url), '')) AS "ownImage",
+           (array_agg(images -> 0 ORDER BY average_rating DESC NULLS LAST, created_at DESC)
+              FILTER (WHERE jsonb_typeof(images) = 'array' AND jsonb_array_length(images) > 0))[1]
+             AS "productImage"
+    FROM items
+    GROUP BY 1, 2
+    ORDER BY (spc_id IS NULL), min(position), min(spc_created_at), count(*) DESC, name
+  `);
+  return [...rows] as StoreCategoryGroup[];
+}
+
+/** What a product listing needs to show one store category's products, by the same rule. */
+export type StoreCategoryFilter = Pick<StoreCategoryGroup, "sellerCategoryId" | "sourceCategoryId" | "categoryIds">;
+
 export type StoreReviewRow = {
   id: string;
   rating: number;

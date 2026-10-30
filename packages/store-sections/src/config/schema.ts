@@ -50,6 +50,8 @@ export const ALLOWED_NODE_TYPES = [
   "storeLogo", "themeToggle", "accountLink",
   // Mobile burger menu of every header (owner, 2026-10-27); drawn, never saved by hand; additive.
   "mobileMenu",
+  // Store app (PWA) download button of every footer (ROADMAP.md F-36, owner 2026-10-29); drawn, never saved by hand; additive.
+  "appInstall",
   // Product page elements (template product page, 2026-10-23); additive.
   "productGallery", "productPrice", "productStock", "productRating", "productVariants",
   "productBuyBox", "productDetails", "productContent", "productSeller", "productReviews",

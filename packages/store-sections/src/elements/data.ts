@@ -41,7 +41,7 @@ export const DATA_BINDINGS = {
 } as const satisfies Record<DataListType | "product", readonly string[]>;
 
 export type DataRecord =
-  { kind: "product"; record: ProductDetail } | { kind: "productList"; record: ProductSummary } | { kind: "categoryList"; record: CategorySummary } | { kind: "postList"; record: ContentItemSummary };
+  { kind: "product"; record: ProductDetail } | { kind: "productList"; record: ProductSummary; /** The list's "second photo on hover" switch (on unless turned off). */ hoverImage?: boolean } | { kind: "categoryList"; record: CategorySummary } | { kind: "postList"; record: ContentItemSummary };
 
 /** What each data node type needs from the store (Add-panel chips, empty states). */
 export const DATA_NODE_NEEDS: Record<string, DataNeed> = {
@@ -199,7 +199,7 @@ export function listRecords(node: ComponentNode, ctx: RenderContext): DataRecord
     if (!nodeCatalogQuery(node)) return [];
     // The host already resolved the current page of a paginated list.
     const offset = isPaginated(node) ? 0 : offsetOf(props.offset);
-    return (ctx.catalog.products[node.id] ?? []).slice(offset, offset + clampLimit(props.limit, 8)).map((record) => ({ kind: "productList", record }));
+    return (ctx.catalog.products[node.id] ?? []).slice(offset, offset + clampLimit(props.limit, 8)).map((record) => ({ kind: "productList", record, hoverImage: props.hoverSecondImage !== false }));
   }
   if (node.type === "categoryList") {
     const picked = idsOf(props.categoryIds);
@@ -216,6 +216,11 @@ export function listRecords(node: ComponentNode, ctx: RenderContext): DataRecord
   return [];
 }
 
+/** An amount without its currency, in western digits like the host's prices (`formatPricePlain`). */
+function plainAmount(amount: number, locale: string): string {
+  return new Intl.NumberFormat(locale === "ar" ? "ar-EG" : "en-EG", { maximumFractionDigits: 2, numberingSystem: "latn" }).format(amount);
+}
+
 /** The fields a product list card and the product page share. */
 function productSummaryValue(p: ProductSummary, bind: string, ctx: RenderContext): string | null {
   switch (bind) {
@@ -228,12 +233,13 @@ function productSummaryValue(p: ProductSummary, bind: string, ctx: RenderContext
     case "price":
       return p.price == null ? null : ctx.formatPrice(p.price);
     case "compareAtPrice":
-      return p.compareAtPrice != null && p.price != null && p.compareAtPrice > p.price ? ctx.formatPrice(p.compareAtPrice) : null;
+      // The price before the discount: the amount alone, struck through by the renderer (owner, 2026-10-29).
+      return p.compareAtPrice != null && p.price != null && p.compareAtPrice > p.price ? plainAmount(p.compareAtPrice, ctx.locale) : null;
     case "discount": {
       if (p.compareAtPrice == null || p.price == null || p.compareAtPrice <= p.price) return null;
       const off = Math.round((1 - p.price / p.compareAtPrice) * 100);
-      // Locale percent keeps the minus on the right side in Arabic ("‎-٢٣٪").
-      return off > 0 ? new Intl.NumberFormat(ctx.locale === "ar" ? "ar-EG" : "en-US", { style: "percent", signDisplay: "always" }).format(-off / 100) : null;
+      // "خصم 10%" / "10% Off", western digits like the prices: a minus read like a zero in Arabic (owner, 2026-10-29).
+      return off > 0 ? (ctx.locale === "ar" ? `خصم ${off}%` : `${off}% Off`) : null;
     }
     case "rating":
       return p.rating ? new Intl.NumberFormat(ctx.locale === "ar" ? "ar-EG" : "en-US", { maximumFractionDigits: 1 }).format(p.rating) : null;

@@ -70,8 +70,11 @@ describe("bindings", () => {
     const scope = { kind: "productList" as const, record: product };
     const c = ctx();
     expect(boundValue(scope, "price", c)).toBe("EGP 900");
-    expect(boundValue(scope, "compareAtPrice", c)).toBe("EGP 1200");
-    expect(boundValue(scope, "discount", c)).toBe("-25%");
+    // The old price is the amount alone (struck through by the renderer); the badge has no minus sign.
+    expect(boundValue(scope, "compareAtPrice", c)).toBe("1,200");
+    expect(boundValue(scope, "discount", c)).toBe("25% Off");
+    expect(boundValue(scope, "discount", { ...c, locale: "ar" })).toBe("خصم 25%");
+    expect(boundValue(scope, "compareAtPrice", { ...c, locale: "ar" })).toBe("1,200");
     expect(boundValue({ kind: "productList", record: { ...product, compareAtPrice: null } }, "compareAtPrice", c)).toBeNull();
     expect(boundValue(scope, "nope", c)).toBeNull();
   });
@@ -99,7 +102,8 @@ describe("bindings", () => {
     expect(html).toContain("Charger");
     expect(html).toContain("add p2");
     expect(html).not.toContain("Product name");
-    expect(html.match(/EGP 1200/g)).toHaveLength(1);
+    expect(html.match(/1,200/g)).toHaveLength(1);
+    expect(html).toContain("line-through");
   });
 
   it("shows picked categories in the seller's order", () => {
@@ -208,7 +212,7 @@ describe("product scope", () => {
     const html = page(tree, { product: { ...detail, compareAtPrice: null } });
     expect(html).toContain("EGP 900");
     expect(html).not.toContain("was");
-    expect(boundValue({ kind: "product", record: detail }, "discount", ctx())).toBe("-25%");
+    expect(boundValue({ kind: "product", record: detail }, "discount", ctx())).toBe("25% Off");
     expect(boundValue({ kind: "product", record: detail }, "brand", ctx())).toBe(detail.brand);
     expect(boundValue({ kind: "product", record: { ...detail, reviewCount: 0 } }, "reviewCount", ctx())).toBeNull();
   });

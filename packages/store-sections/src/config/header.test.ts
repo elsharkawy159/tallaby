@@ -192,11 +192,15 @@ describe("header and footer options (drawChrome)", () => {
         ]),
       ]);
 
-    it("goes first in the header's bar, holding plain copies of the menu links", () => {
+    it("goes first in the header's bar, in a phone-only start cell, holding plain copies of the menu links", () => {
       const out = drawChrome(bar(), "header", off)!;
       const row = findNode(out.componentTree!, "bar")!;
-      expect(row.children[0]!.type).toBe("mobileMenu");
-      const copies = row.children[0]!.children;
+      const start = row.children[0]!;
+      expect(start.id).toBe("c-mobile-start");
+      expect(start.style?.hidden).toBe(true);
+      expect(start.breakpointStyles).toMatchObject({ tablet: { hidden: true }, mobile: { hidden: false } });
+      expect(start.children[0]!.type).toBe("mobileMenu");
+      const copies = start.children[0]!.children;
       expect(copies.map((c) => c.props.href)).toEqual(["/", "/products"]);
       expect(copies.every((c) => c.id.startsWith("c-mm-") && !c.style)).toBe(true);
     });
@@ -208,14 +212,50 @@ describe("header and footer options (drawChrome)", () => {
       expect(findNode(input.componentTree!, "menu")!.props.collapse).toBeUndefined();
     });
 
-    it("shares the first cell of a grid bar, so the column count stays", () => {
-      const input = chrome([n("grid", "grid", {}, [n("menu", "hFlex", { role: "menu" }, [link("home", "/", "Home")]), classicLogo(), n("end", "hFlex")])]);
-      const grid = findNode(drawChrome(input, "header", off)!.componentTree!, "grid")!;
-      expect(grid.children).toHaveLength(3);
-      expect(grid.children[0]!.children.map((c) => c.type)).toEqual(["mobileMenu", "hFlex"]);
+    it("draws a row bar as start · logo · end on phones, the cart in the end cell", () => {
+      const out = drawChrome(bar(), "header", off)!.componentTree!;
+      const row = findNode(out, "bar")!;
+      expect(row.props.split).toBe("mobile");
+      expect(row.children.map((c) => c.id)).toEqual(["c-mobile-start", "logo", "c-mobile-end"]);
+      const end = findNode(out, "c-mobile-end")!;
+      expect(end.props.group).toBe("mobile");
+      expect(end.children.map((c) => c.id)).toEqual(["menu", "cart"]);
     });
 
-    it("goes into the first cell of the outermost bar, not beside a logo in its own cell", () => {
+    it("adds a grid bar's start cell shown on phones only, so the desktop column count stays", () => {
+      const input = chrome([n("grid", "grid", {}, [n("menu", "hFlex", { role: "menu" }, [link("home", "/", "Home")]), classicLogo(), n("end", "hFlex", {}, [n("cart", "linkBlock", { href: "/cart" }, [n("bag", "icon", { name: "shopping-bag" })])])])]);
+      input.componentTree![0]!.children[0]!.style = { columns: 3 };
+      const grid = findNode(drawChrome(input, "header", off)!.componentTree!, "grid")!;
+      expect(grid.children.map((c) => c.id)).toEqual(["c-mobile-start", "menu", "c-logo-cell", "end"]);
+      expect(grid.style?.columns).toBe(3);
+      // The menu cell hides; start, logo (the middle two of four columns) and cart remain.
+      expect(grid.children[1]!.breakpointStyles?.mobile?.hidden).toBe(true);
+      expect(grid.breakpointStyles?.mobile?.columns).toBe(4);
+      expect(grid.children[2]!.breakpointStyles?.mobile?.colSpan).toBe(2);
+    });
+
+    it("moves the search icon and the language switch beside the burger on phones, and groups the tools with a spread-out cart", () => {
+      const input = chrome(
+        [
+          n("bar", "hFlex", {}, [
+            classicLogo(),
+            n("search", "linkBlock", { href: "/products" }, [n("s-i", "icon", { name: "search" })]),
+            n("cart", "linkBlock", { href: "/cart" }, [n("bag", "icon", { name: "shopping-bag" })]),
+          ]),
+        ],
+        { themeToggle: true },
+      );
+      input.componentTree![0]!.children[0]!.style = { justifyContent: "between" };
+      const out = drawChrome(input, "header", { translated: true, hasLogo: false })!.componentTree!;
+      // Desktop: one group, so the language switch sits by the cart, not a share of the free space away.
+      expect(findNode(out, "c-tools")!.children.map((c) => c.id)).toEqual(["c-language", "c-theme", "cart"]);
+      expect(findNode(out, "c-language")!.breakpointStyles?.mobile?.hidden).toBe(true);
+      expect(findNode(out, "search")!.breakpointStyles?.mobile?.hidden).toBe(true);
+      // Phones: burger, search, language, theme at the start.
+      expect(findNode(out, "c-mobile-start")!.children.map((c) => c.id)).toEqual(["c-mobile-menu", "c-mobile-search", "c-language-mobile", "c-theme-mobile"]);
+    });
+
+    it("goes into the start cell of the outermost bar, not beside a logo in its own cell", () => {
       const input = chrome([
         n("grid", "grid", {}, [
           n("start", "hFlex", {}, [n("fake", "linkBlock", { href: "/products" }, [n("fake-i", "icon", { name: "menu" })])]),
@@ -225,12 +265,13 @@ describe("header and footer options (drawChrome)", () => {
       ]);
       const out = drawChrome(input, "header", off)!.componentTree!;
       const grid = findNode(out, "grid")!;
-      // A first cell shown on phones takes the burger at its start (and keeps its look).
-      expect(grid.children[0]!.id).toBe("start");
-      expect(grid.children[0]!.children.map((c) => c.type)).toEqual(["mobileMenu", "linkBlock"]);
+      expect(grid.children.map((c) => c.id)).toEqual(["c-mobile-start", "start", "logo-cell", "end"]);
+      expect(grid.children[0]!.children.map((c) => c.type)).toEqual(["mobileMenu"]);
       expect(findNode(out, "logo-cell")!.children.map((c) => c.type)).toEqual(["linkBlock"]);
-      // The design's own menu icon hides on phones (the burger replaces it).
+      // The design's own menu icon hides on phones (the burger replaces it), and its emptied cell with it.
       expect(findNode(out, "fake")!.breakpointStyles?.mobile?.hidden).toBe(true);
+      expect(findNode(out, "start")!.breakpointStyles?.mobile?.hidden).toBe(true);
+      expect(grid.breakpointStyles?.mobile?.columns).toBe(4);
     });
 
     it("keeps phones to one row: rows after the bar hide, a wide search becomes an icon, the bar is at most 10px padded", () => {
@@ -249,11 +290,10 @@ describe("header and footer options (drawChrome)", () => {
       expect(findNode(out, "box")!.breakpointStyles?.mobile?.hidden).toBe(true);
       expect(findNode(out, "cats")!.breakpointStyles?.mobile?.hidden).toBe(true);
       expect(bar.style).toEqual(input.componentTree![0]!.children[0]!.style);
-      const types = bar.children.map((c) => c.id);
-      expect(types.indexOf("c-mobile-search")).toBe(types.indexOf("cart") - 1);
+      expect(findNode(out, "c-mobile-start")!.children.map((c) => c.id)).toEqual(["c-mobile-menu", "c-mobile-search"]);
       expect(findNode(out, "c-mobile-search")!.props.label).toBe("Search");
       // The hidden row's links move into the burger sheet.
-      expect(bar.children[0]!.children.map((c) => c.props.href)).toEqual(["/products"]);
+      expect(findNode(out, "c-mobile-menu")!.children.map((c) => c.props.href)).toEqual(["/products"]);
     });
 
     it("keeps Tallaby Classic's account icon on phones; other headers move it into the sheet", () => {
@@ -349,6 +389,20 @@ describe("header and footer options (drawChrome)", () => {
     const walk = (list: Tree) => list.forEach((node) => (hrefs.push(node.props.href), walk(node.children)));
     walk(footer?.componentTree ?? []);
     expect(hrefs.filter((h) => h === "https://tallaby.com")).toHaveLength(1);
+  });
+
+  it.each(CODE_TEMPLATES.map((t) => [t.key, t] as const))("%s: the footer gets one Download application button when the store allows it", (_key, template) => {
+    const { header, footer } = template.config();
+    const types = (instance: SectionInstance | null | undefined) => {
+      const out: string[] = [];
+      const walk = (list: Tree) => list.forEach((node) => (out.push(node.type), walk(node.children)));
+      walk(instance?.componentTree ?? []);
+      return out;
+    };
+    const on = { translated: false, hasLogo: false, locale: "ar", appInstall: true };
+    expect(types(drawChrome(footer, "footer", on)).filter((t) => t === "appInstall")).toHaveLength(footer?.componentTree?.length ? 1 : 0);
+    expect(types(drawChrome(footer, "footer", { ...on, appInstall: false }))).not.toContain("appInstall");
+    expect(types(drawChrome(header, "header", on))).not.toContain("appInstall");
   });
 
   it("stores only changes from the defaults", () => {

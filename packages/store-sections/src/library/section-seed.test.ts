@@ -58,6 +58,8 @@ describe("library sections seed", () => {
     ...["hero-video", "products-category-carousel", "header-topbar"],
     // WoodMart Accessories look, Wasla template (2026-10-29).
     ...["header-icons", "hero-carousel-panel", "categories-panels", "categories-counts", "products-category-tabs", "products-centered-row", "features-columns", "footer-dark-bar"],
+    // Void Fashion look, Vella template (2026-10-30).
+    ...["header-announcement-strip", "categories-portrait-labels", "text-big-marquee"],
   ]);
 
   it("every design from before 0109 was seeded by some migration", () => {

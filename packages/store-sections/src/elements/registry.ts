@@ -100,6 +100,7 @@ export type ElementType =
   | "storeLogo"
   | "themeToggle"
   | "accountLink"
+  | "appInstall"
   | "mobileMenu"
   | "productBreadcrumbs"
   | "productGallery"
@@ -829,6 +830,14 @@ const DEFINITIONS: readonly ElementDefinition[] = [
       },
       { key: "limit", label: L("أقصى عدد", "Maximum"), type: "number", group: "data", min: 1, max: 24 },
       { key: "paginate", label: L("تقسيم على صفحات", "Split into pages"), type: "switch", group: "data" },
+      {
+        key: "hoverSecondImage",
+        label: L("الصورة التانية عند المرور", "Show second photo on hover"),
+        type: "switch",
+        defaultOn: true,
+        group: "layout",
+        hint: L("عند المرور على البطاقة تتلاشى الصورة الأولى وتظهر الصورة التانية للمنتج.", "Hovering a card fades the first photo out to show the product's second photo."),
+      },
       { key: "mobileRail", label: L("صف يُسحب على الجوال", "Swipe row on phones"), type: "switch", group: "layout", hint: L("على الجوال تصطف البطاقات في صف واحد يُسحب جانبيًا، ويظهر طرف البطاقة التالية.", "On phones the cards sit in one row that swipes sideways, with the next card peeking in.") },
       {
         key: "rail",
@@ -930,6 +939,16 @@ const DEFINITIONS: readonly ElementDefinition[] = [
     group: "data",
     label: L("تسجيل الدخول", "Sign in"),
     keywords: ["login", "sign in", "account", "دخول", "حساب"],
+    container: false,
+    defaultProps: {},
+    fields: [],
+  },
+  // The store app's "Download application" button (ROADMAP.md F-36), drawn in every footer the store allows it in.
+  {
+    type: "appInstall",
+    group: "data",
+    label: L("تحميل التطبيق", "Download application"),
+    keywords: ["app", "pwa", "install", "download", "تطبيق", "تحميل"],
     container: false,
     defaultProps: {},
     fields: [],
@@ -1168,7 +1187,7 @@ export function getElementDefinition(type: string): ElementDefinition | undefine
  * is added to the header for translated stores (`withLanguageSwitcher`), never by hand, and so
  * are the store logo, theme toggle and sign-in (the header/footer options, `drawChrome`).
  */
-const NOT_IN_PALETTE: readonly ElementType[] = ["listItem", "videoItem", "section", "languageSwitcher", "storeLogo", "themeToggle", "accountLink", "mobileMenu"];
+const NOT_IN_PALETTE: readonly ElementType[] = ["listItem", "videoItem", "section", "languageSwitcher", "storeLogo", "themeToggle", "accountLink", "appInstall", "mobileMenu"];
 
 /** Types shown in the palette. */
 export const PALETTE_TYPES: readonly ElementType[] = ELEMENT_DEFINITIONS.filter((d) => !NOT_IN_PALETTE.includes(d.type)).map((d) => d.type);

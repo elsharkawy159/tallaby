@@ -138,12 +138,41 @@ describe("reveal on scroll (docs/section-rules.md §6)", () => {
   });
 });
 
+describe("hover and press feedback", () => {
+  it("lifts buttons and cards on hover devices, only with motion allowed and Hover effect on", () => {
+    expect(MOTION_CSS).toContain("@media (hover:hover) and (prefers-reduced-motion:no-preference){");
+    expect(MOTION_CSS).toContain(':is(:hover,:focus-visible){translate:0 -2px;');
+    expect(MOTION_CSS).toContain(':hover{translate:0 -3px;');
+    expect(MOTION_CSS).toContain(':not([data-sf-hover="none"])');
+  });
+
+  it("lifts a button reached by keyboard like a hovered one", () => {
+    expect(MOTION_CSS).toContain(":is(:hover,:focus-visible){translate:0 -2px;");
+  });
+
+  it("slides the burger sheet out on close, not only in on open", () => {
+    expect(MOTION_CSS).toContain('dialog[data-sf-sheet]{transform:translate3d(-100%,0,0);transition:transform .2s');
+    expect(MOTION_CSS).toContain("overlay .2s allow-discrete,display .2s allow-discrete");
+    expect(MOTION_CSS).toContain('dialog[data-sf-sheet][open]{transform:none;animation:sf-sheet-in');
+    expect(MOTION_CSS).toContain("::backdrop{opacity:0;transition:opacity .2s");
+  });
+
+  it("presses buttons in on touch screens too", () => {
+    expect(MOTION_CSS).toContain("@media (hover:none) and (prefers-reduced-motion:no-preference){");
+    expect(MOTION_CSS).toMatch(/hover:none\) and \(prefers-reduced-motion:no-preference\)\{[^@]*:active\{scale:\.97/);
+  });
+});
+
 describe("motion CSS", () => {
   it("hides only under sf-motion, moves only opacity and transform, and respects reduced motion", () => {
     expect(MOTION_CSS.startsWith("@media (prefers-reduced-motion:no-preference){")).toBe(true);
-    expect(MOTION_CSS).toContain(".sf-motion [data-reveal]:not(.is-inview){opacity:0;");
+    expect(MOTION_CSS).toContain(".sf-motion [data-reveal]:not(.is-inview){opacity:0}");
     expect(MOTION_CSS).not.toMatch(/transition:[^;}]*(?:width|height|top|margin)/);
-    expect(MOTION_CSS).toContain('[data-reveal-step="5"].is-inview{transition-delay:calc(0.45s * var(--sf-speed,1))}');
+    expect(MOTION_CSS).toContain('[data-reveal-step="5"]{--sf-delay:calc(0.45s * var(--sf-speed,1))}');
+    // Only the reveal's own parts wait for the stagger, never hover or press.
+    expect(MOTION_CSS).toContain("opacity calc(0.9s * var(--sf-speed,1)) cubic-bezier(.16,1,.3,1) var(--sf-delay,0s)");
+    expect(MOTION_CSS).not.toMatch(/translate \.3s[^,;}]*var\(--sf-delay/);
+    expect(MOTION_CSS).not.toContain("will-change");
     expect(MOTION_CSS).not.toContain('data-reveal-step="6"');
   });
 

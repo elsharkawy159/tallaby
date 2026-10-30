@@ -119,7 +119,7 @@ export function StoreGallery({
                       sizes="(max-width: 1024px) 100vw, 50vw"
                       priority={index === 0}
                       fetchPriority={index === 0 ? "high" : "low"}
-                      className="object-contain p-[11%] transition-transform duration-200 ease-out motion-reduce:transition-none"
+                      className="object-contain transition-transform duration-200 ease-out motion-reduce:transition-none"
                       style={
                         lens && index === current
                           ? { transform: "scale(1.8)", transformOrigin: `${lens.x}% ${lens.y}%` }
@@ -133,13 +133,15 @@ export function StoreGallery({
           </Carousel>
         </div>
 
+        {/* Badges at the top start, tools at the top end. Only the badge text is
+            LTR: `dir` on the badge itself would flip `start` to the left on
+            Arabic pages, under the wishlist button. */}
         {discountPercent != null && (
           <span
-            dir="ltr"
             className="pointer-events-none absolute start-3 top-3 z-10 rounded-full px-2.5 py-1 text-xs font-extrabold leading-none text-white md:start-4 md:top-4 md:text-[13px]"
             style={{ background: "var(--destructive,#dc2626)" }}
           >
-            {t("discountBadge", { percent: discountPercent })}
+            <bdi dir="ltr">{t("discountBadge", { percent: discountPercent })}</bdi>
           </span>
         )}
 

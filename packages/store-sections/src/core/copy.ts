@@ -139,6 +139,7 @@ export const SECTION_COPY = {
   /** The language switcher shows the language it switches TO. */
   otherLanguage: { ar: "English", en: "عربي" },
   signIn: { ar: "تسجيل الدخول", en: "Sign in" },
+  downloadApp: { ar: "حمّل التطبيق", en: "Download application" },
   openMenu: { ar: "افتح القائمة", en: "Open menu" },
   closeMenu: { ar: "اقفل القائمة", en: "Close menu" },
   themeToggle: { ar: "تبديل الوضع الفاتح والداكن", en: "Switch light and dark mode" },

@@ -4,6 +4,7 @@
  */
 import type { Metadata } from "next";
 import { storeUrl } from "@workspace/lib/storefront";
+import { appIconVersion, appShortName } from "@workspace/lib/stores/app";
 import { GOOGLE_SITE_VERIFICATION_RE, TITLE_TEMPLATE_TOKEN, type StoreSeo } from "@workspace/lib/stores";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
 
@@ -68,7 +69,13 @@ export function buildStoreMetadata(
       description,
       images: image ? [getPublicUrl(image, "sellers")] : undefined,
     },
-    icons: store.faviconUrl || store.logoUrl ? { icon: getPublicUrl((store.faviconUrl || store.logoUrl)!, "sellers") } : undefined,
+    icons: {
+      ...((store.faviconUrl || store.logoUrl) && { icon: getPublicUrl((store.faviconUrl || store.logoUrl)!, "sellers") }),
+      // The store app's home-screen icon (ROADMAP.md F-36), drawn from the favicon by /app-icon.
+      apple: `/app-icon/180.png?v=${appIconVersion(store.faviconUrl || store.logoUrl || null, store.displayName)}`,
+    },
+    // Added to the iPhone home screen: the store's name, full screen.
+    appleWebApp: { capable: true, title: appShortName(store.displayName), statusBarStyle: "default" },
     // Zero visible products or indexing switched off (PLAN.md §10.3).
     ...(!indexable && { robots: STORE_NOINDEX }),
     ...(token && GOOGLE_SITE_VERIFICATION_RE.test(token) && { verification: { google: token } }),

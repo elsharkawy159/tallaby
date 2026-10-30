@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Product } from "@/components/product-page/product-page.types";
-import { storeCategoryKey, toProductDetail } from "./product-detail.lib";
+import { storeCategoryOf, toProductDetail } from "./product-detail.lib";
 
 const base = {
   id: "p-1",
@@ -103,23 +103,30 @@ describe("toProductDetail", () => {
 });
 
 describe("breadcrumb category link", () => {
-  const storeCategories = [
-    { key: "fashion", categoryIds: ["c-1", "c-2"] },
-    { key: "f3b1c2d4-0000-0000-0000-000000000000", categoryIds: ["c-9"] },
-  ];
+  const root = (key: string, categoryIds: string[]) => ({ key, name: "Fashion", nameAr: "أزياء", sellerCategoryId: null, sourceCategoryId: null, categoryIds });
+  const own = (id: string, sourceCategoryId: string | null) => ({ key: id, name: "Summer", nameAr: "صيفي", sellerCategoryId: id, sourceCategoryId, categoryIds: [] });
+  const storeCategories = [own("s-1", null), own("s-2", "c-2"), root("fashion", ["c-1"]), root("f3b1c2d4-0000-0000-0000-000000000000", ["c-9"])];
+  const product = (sellerCategoryId: string | null, category: { id: string; slug: string | null; parentId: string | null } | null) => ({ sellerCategoryId, category });
 
   it("links the category to the store catalog filtered by its root", () => {
-    const key = storeCategoryKey({ id: "c-1", slug: "shirts", parentId: "root-1" }, storeCategories);
-    expect(key).toBe("fashion");
-    const detail = toProductDetail(base as unknown as Product, "en", { categoryKey: key });
-    expect(detail.category).toEqual({ id: "c-1", name: "Shirts", href: "/products?category=fashion" });
+    const ref = storeCategoryOf(product(null, { id: "c-1", slug: "shirts", parentId: "root-1" }), storeCategories);
+    expect(ref?.key).toBe("fashion");
+    const detail = toProductDetail(base as unknown as Product, "en", { storeCategory: ref });
+    expect(detail.category).toEqual({ id: "c-1", name: "Fashion", href: "/products?category=fashion" });
+  });
+
+  it("puts a product in its seller category, else the one picked from its Tallaby category", () => {
+    expect(storeCategoryOf(product("s-1", { id: "c-1", slug: "shirts", parentId: "root-1" }), storeCategories)?.key).toBe("s-1");
+    const picked = storeCategoryOf(product(null, { id: "c-2", slug: "dresses", parentId: "root-1" }), storeCategories);
+    expect(picked?.key).toBe("s-2");
+    expect(toProductDetail(base as unknown as Product, "ar", { storeCategory: picked }).category).toEqual({ id: "c-1", name: "صيفي", href: "/products?category=s-2" });
   });
 
   it("falls back to a root category's own slug, else its id; a sub-category outside the list has none", () => {
-    expect(storeCategoryKey({ id: "r-1", slug: "home", parentId: null }, [])).toBe("home");
-    expect(storeCategoryKey({ id: "r-2", slug: null, parentId: null }, [])).toBe("r-2");
-    expect(storeCategoryKey({ id: "c-5", slug: "mugs", parentId: "r-1" }, storeCategories)).toBeNull();
-    expect(storeCategoryKey(null, storeCategories)).toBeNull();
+    expect(storeCategoryOf(product(null, { id: "r-1", slug: "home", parentId: null }), [])?.key).toBe("home");
+    expect(storeCategoryOf(product(null, { id: "r-2", slug: null, parentId: null }), [])?.key).toBe("r-2");
+    expect(storeCategoryOf(product(null, { id: "c-5", slug: "mugs", parentId: "r-1" }), storeCategories)).toBeNull();
+    expect(storeCategoryOf(product(null, null), storeCategories)).toBeNull();
   });
 
   it("has no link without a key", () => {

@@ -133,9 +133,9 @@ The header is on every page and is most of what a phone visitor sees first, so i
 
 | Device | Layout |
 |---|---|
-| Mobile ≤ 767 px | **One row, 56 to 64 px high**: **burger icon** (start), logo (start or centre), search and cart (end). The burger opens a **sheet** that slides in from the start side (RTL-aware). The sheet is the default (owner, 2026-10-27); a full-width **dropdown** under the header is the only alternative a design may choose. The menu links are never shown inline. Nothing wraps to a second line. |
+| Mobile ≤ 767 px | **One row, 56 to 64 px high**: **burger icon**, search and language switch (start), logo (centre), cart (end) (owner, 2026-10-29; drawn by `drawChrome`, `config/header.ts`: a phone-only start cell, a row bar becomes three columns). The burger opens a **sheet** that slides in from the start side (RTL-aware). The sheet is the default (owner, 2026-10-27); a full-width **dropdown** under the header is the only alternative a design may choose. The menu links are never shown inline. Nothing wraps to a second line. |
 | Tablet 768 to 1023 px | Same as mobile (burger), or logo + menu + tools when the menu fits on one line. |
-| Desktop ≥ 1024 px | One row, 64 to 80 px high: logo, menu (≤ 7 links, one line, never wraps), tools (search, account, language, cart). An announcement bar above it is optional. |
+| Desktop ≥ 1024 px | One row, 64 to 80 px high: logo, menu (≤ 7 links, one line, never wraps), tools (search, account, language, cart). The drawn tools (language, theme, sign-in) sit in one group with the cart, never spread apart by a `between` row. An announcement bar above it is optional. |
 
 **Rules**
 

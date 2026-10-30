@@ -21,8 +21,9 @@ export function ThemeToggle({ className }: { className?: string }) {
       )}
     >
       {/* Icons swap via the `dark` class, so there's no hydration mismatch. */}
-      <Moon className="size-[18px] dark:hidden" />
-      <Sun className="hidden size-[18px] dark:block" />
+      <Moon className="size-[18px] shrink-0 dark:hidden" />
+      <Sun className="hidden size-[18px] shrink-0 dark:block" />
+      <span className="sm:hidden">{t("menuDarkMode")}</span>
     </button>
   );
 }

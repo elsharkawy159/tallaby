@@ -35,7 +35,7 @@ export function LanguageToggle({ className }: { className?: string }) {
       title={t("language")}
       aria-label={`${t("language")}: ${target.label}`}
       className={cn(
-        "flex h-9.5 shrink-0 items-center gap-1.5 rounded-[10px] px-2.5 font-montserrat text-[13px] text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60",
+        "flex h-9.5 shrink-0 items-center gap-1.5 rounded-[10px] px-2.5 text-[13px] text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60",
         className
       )}
     >
@@ -44,7 +44,9 @@ export function LanguageToggle({ className }: { className?: string }) {
       ) : (
         <Languages className="size-[18px]" />
       )}
-      <span className="hidden sm:inline">{target.label}</span>
+      {/* Phones (the "⋯" menu): "Language" plus the target language at the row's end. */}
+      <span className="sm:hidden">{t("menuLanguage")}</span>
+      <span className="font-montserrat max-sm:ms-auto max-sm:text-xs">{target.label}</span>
     </button>
   );
 }

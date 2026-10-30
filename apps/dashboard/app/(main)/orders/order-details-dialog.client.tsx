@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Check, ExternalLink, Info } from "lucide-react";
+import { Check, Clock, ExternalLink, Info } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { CallButton, WhatsAppButton } from "@workspace/ui/components/contact-buttons";
 import {
@@ -16,11 +16,14 @@ import { MapsLinkButton } from "@workspace/ui/components/maps-link-button";
 import { getPublicUrl, cn } from "@/lib/utils";
 import { formatDateTime, formatMoney } from "@/lib/i18n/format";
 import { humanizeStatus, translateStatus } from "@/lib/i18n/status";
+import { BlockCustomerButton } from "./block-customer.client";
 import { BostaDeliveryCard, canShipWithBosta, ShipWithBostaButton } from "./bosta-ship.client";
 import { PROGRESS_STEPS, progressIndex } from "./order-flow.lib";
 import { OrderActions } from "./order-actions.client";
+import { OrderRiskNote } from "./order-risk.client";
 import { OrderStageBadge } from "./order-stage-badge";
 import type { SellerOrderRow } from "./orders.types";
+import { PrintOrdersButton } from "./print-orders-button.client";
 
 function Row({ label, value }: { label: string; value?: string | null }) {
   return (
@@ -162,6 +165,9 @@ export function OrderDetailsDialog({
                   channel: order.storeName ?? tChannel("marketplace"),
                 })}
               </DialogDescription>
+              <div className="flex pt-1">
+                <PrintOrdersButton orderIds={[order.id]} className="h-8" />
+              </div>
             </DialogHeader>
 
             <div className="space-y-4 rounded-xl border bg-muted/30 p-4">
@@ -174,6 +180,14 @@ export function OrderDetailsDialog({
               {(order.flow.primary || canShipWithBosta(order)) && (
                 <div className="flex flex-col gap-2 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex flex-wrap items-center gap-1.5">
+                    {order.confirmMessage && order.customerPhone && (
+                      <WhatsAppButton
+                        phone={order.customerPhone}
+                        text={order.confirmMessage}
+                        label={t("askToConfirm")}
+                        variant="outline"
+                      />
+                    )}
                     <OrderActions order={order} className="flex-wrap" />
                     <ShipWithBostaButton order={order} className="flex-1 sm:flex-none" />
                   </div>
@@ -189,6 +203,13 @@ export function OrderDetailsDialog({
                   )}
                 </div>
               )}
+              {order.unconfirmedHours != null && (
+                <p className="flex items-center gap-2 text-xs font-medium text-amber-700 dark:text-amber-400">
+                  <Clock className="size-3.5 shrink-0" />
+                  {t("unconfirmedFor", { hours: order.unconfirmedHours })}
+                </p>
+              )}
+              <OrderRiskNote order={order} />
               <FlowNote order={order} />
               <BostaDeliveryCard order={order} />
             </div>
@@ -307,6 +328,7 @@ export function OrderDetailsDialog({
                         />
                       </div>
                     )}
+                    <BlockCustomerButton key={`${order.id}:${order.customerBlocked}`} order={order} />
                   </div>
                 </Section>
 

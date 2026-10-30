@@ -28,7 +28,7 @@
    - When something blocks a task: write the blocker under the task and in §7.
    - When the owner asks for a new feature: add it to §5 (intake) the same turn, then turn it into a §4 feature with tasks and place it in the §3 priority order.
    - Move a feature in §2 (inventory) from "missing" to "live" when it ships.
-4. **Migrations:** hand-written, idempotent SQL in `packages/db/migrations/NNNN_name.sql`, mirrored in `packages/db/src/drizzle/schema.ts` and `relations.ts`. Check the next free number in `CLAUDE.md` rule 6 and in `packages/db/migrations/` (at 2026-10-29 the next is **`0116`**). New server-only tables: RLS on, no policies. Record every new migration in CLAUDE.md rule 6 and here. Apply to staging first; production only with owner approval. Never run `drizzle-kit generate`.
+4. **Migrations:** hand-written, idempotent SQL in `packages/db/migrations/NNNN_name.sql`, mirrored in `packages/db/src/drizzle/schema.ts` and `relations.ts`. Check the next free number in `CLAUDE.md` rule 6 and in `packages/db/migrations/` (at 2026-10-29 the next is **`0119`**). New server-only tables: RLS on, no policies. Record every new migration in CLAUDE.md rule 6 and here. Apply to staging first; production only with owner approval. Never run `drizzle-kit generate`.
 5. Every store-scoped table has `store_id` (and a check that the store belongs to the session seller). Every new string goes in both `ar.json` and `en.json` (Arabic first). Use the feature file split (`*.server.ts`, `*.data.tsx`, `*.client.tsx`, `*.dto.ts`, `*.types.ts`, `*.lib.ts`).
 6. Verify each task with `pnpm lint`, `pnpm typecheck`, `pnpm test` (or `--filter`), and record manual E2E checks in §7.
 7. All work happens on `main` in the main worktree (owner, 2026-10-28), unless the owner says otherwise.
@@ -51,10 +51,10 @@ Tallaby already gives Egyptian sellers a full store: products, orders, delivery 
 | Products         | Add/edit physical & digital products, variants, images, Excel import, import from URL, seller categories & brands, social proof (seller-added reviews, live views)                                                                                                   | `app/(main)/products/**`                                        |
 | AI               | Add/Edit product with AI (photos, PDF, text → both languages, SEO), daily cap, AI usage tab                                                                                                                                                                          | `products/add/ai`, `packages/ai`                                |
 | Store catalog    | Choose which products each store shows                                                                                                                                                                                                                               | `stores/[storeId]/catalog`                                      |
-| Orders           | Order list, stages, order details, WhatsApp/call buttons, Bosta ship + bulk ship, missed orders (Not completed: WhatsApp/call, contacted, reminder email shown)                                                                                                     | `app/(main)/orders/**`                                          |
+| Orders           | Order list, stages, order details, WhatsApp/call buttons, Bosta ship + bulk ship, missed orders (Not completed: WhatsApp/call, contacted, reminder email shown)                                                                                                      | `app/(main)/orders/**`                                          |
 | Delivery         | Delivery tracking, own riders, store shipping zones (places, free-over, COD per zone), Tallaby delivery, Bosta app                                                                                                                                                   | `orders/delivery`, `orders/riders`, `stores/[storeId]/shipping` |
 | Payments         | COD; the seller chooses which methods the store shows (InstaPay, Vodafone Cash, e& Cash), but those transfers still go to **Tallaby's** accounts. Paying the seller's own numbers with seller confirmation is PLAN.md P3-07 Part B, not built (corrected 2026-10-29) | `stores/[storeId]/settings/payments`                            |
-| Money            | Store wallet (can go negative), top-ups, account statements, reports, flat EGP 5 fee per delivered order, 7-day trial (sellers before 0119), EGP 100 welcome gift for new sellers on finishing setup (30 days, pop-up)                                                  | `wallet`, `financial`, `reports`, `store-wallet/welcome-gift.*` |
+| Money            | Store wallet (can go negative), top-ups, account statements, reports, flat EGP 5 fee per delivered order, 7-day trial (sellers before 0119), EGP 100 welcome gift for new sellers on finishing setup (30 days, pop-up)                                               | `wallet`, `financial`, `reports`, `store-wallet/welcome-gift.*` |
 | Marketing        | Coupons (marketplace/store, product picker, store pop-up with trigger + countdown), paid ad packages, reviews & Q&A                                                                                                                                                  | `coupons`, `marketing`, `reviews`                               |
 | Website          | Builder (element trees), 100+ templates, design system, pages, product page template, blog, forms + submissions, media library, domain & SEO, sitemap, social links, offline/publish                                                                                 | `app/(builder)`, `stores/[storeId]/website/**`                  |
 | Apps             | Meta Pixel, Meta CAPI, GA4, GTM, TikTok Pixel, Snapchat Pixel, Google Sheets order export, Shopify import, Bosta                                                                                                                                                     | `stores/[storeId]/apps`                                         |
@@ -214,31 +214,32 @@ Updated 2026-10-28 after the EasyOrders dashboard and roadmap review (§2.3, §2
 | 9   | F-35 | Product trash (restore within 30 days)                     | P1       | yes (small)        | —                                           |
 | 10  | F-36 | Store app (PWA with the store's name and logo)             | P1       | no (expected)      | —                                           |
 | 11  | F-37 | Tallaby affiliate program (20 % of referred top-ups, cash) | P1       | yes (0117)         | Approved 2026-10-29; built, 0117 on staging |
-| 12  | F-25 | Checkout form & thank-you page settings                    | P1       | yes                | —                                           |
-| 13  | F-08 | Funnels: quick-order landing pages                         | P1       | maybe              | **Needs approval** (checkout)               |
-| 14  | F-07 | Quantity offers, bundles, upsell                           | P1       | yes                | **Needs approval** (checkout pricing)       |
-| 15  | F-22 | Sales pop-up (real recent orders)                          | P1       | no                 | —                                           |
-| 16  | F-24 | Bulk product editing (prices by category, stock, status)   | P1       | no                 | —                                           |
-| 17  | F-15 | Reports upgrade + per-product views                        | P1       | no                 | —                                           |
-| 18  | F-06 | New-order push alerts (PWA)                                | P1       | yes                | —                                           |
-| 19  | F-11 | Product feeds (Meta, Google Merchant, TikTok) + catalog    | P1       | no                 | —                                           |
-| 20  | F-09 | Staff accounts & permissions                               | P1       | yes                | — (security review)                         |
-| 21  | F-10 | Inventory alerts & stock history                           | P1       | yes                | —                                           |
-| 22  | F-12 | More shipping carriers                                     | P1       | small              | —                                           |
-| 23  | F-13 | Automatic discounts, min order, free gift                  | P2       | yes                | **Needs approval** (checkout pricing)       |
-| 24  | F-14 | Customer order messages (WhatsApp/SMS, confirm link)       | P2       | yes                | Provider cost                               |
-| 25  | F-16 | Campaigns: email, WhatsApp, retargeting audiences          | P2       | yes                | Provider cost                               |
-| 26  | F-23 | Back-in-stock alerts & pre-orders                          | P2       | yes                | —                                           |
-| 27  | F-26 | Campaign tracking (UTM links, orders per campaign)         | P2       | yes                | —                                           |
-| 28  | F-17 | Public API & webhooks                                      | P2       | yes                | — (security review)                         |
-| 29  | F-18 | Store affiliates / referral links                          | P3       | yes                | **Needs approval** (payouts)                |
-| 30  | F-19 | Gift cards & customer store credit                         | P3       | yes                | **Needs approval** (ledger)                 |
-| 31  | F-20 | Loyalty points                                             | P3       | yes                | **Needs approval**                          |
-| 32  | F-27 | A/B tests                                                  | P3       | yes                | —                                           |
-| 33  | F-28 | Wholesale pricing                                          | P3       | yes                | **Needs approval** (checkout pricing)       |
-| 34  | F-29 | AI agent connection (MCP)                                  | P3       | no                 | — (after F-17)                              |
-| 35  | F-30 | Ad tracking upgrades (Purchase on delivery, event toggles) | P2       | maybe              | —                                           |
-| 36  | F-31 | POS and cashier                                            | P3       | yes                | **Needs approval** (order creation path)    |
+| 12  | F-38 | MersalSMS: OTP and order confirmation SMS                  | P1       | yes                | Provider cost (who pays)                    |
+| 13  | F-25 | Checkout form & thank-you page settings                    | P1       | yes                | —                                           |
+| 14  | F-08 | Funnels: quick-order landing pages                         | P1       | maybe              | **Needs approval** (checkout)               |
+| 15  | F-07 | Quantity offers, bundles, upsell                           | P1       | yes                | **Needs approval** (checkout pricing)       |
+| 16  | F-22 | Sales pop-up (real recent orders)                          | P1       | no                 | —                                           |
+| 17  | F-24 | Bulk product editing (prices by category, stock, status)   | P1       | no                 | —                                           |
+| 18  | F-15 | Reports upgrade + per-product views                        | P1       | no                 | —                                           |
+| 19  | F-06 | New-order push alerts (PWA)                                | P1       | yes                | —                                           |
+| 20  | F-11 | Product feeds (Meta, Google Merchant, TikTok) + catalog    | P1       | no                 | —                                           |
+| 21  | F-09 | Staff accounts & permissions                               | P1       | yes                | — (security review)                         |
+| 22  | F-10 | Inventory alerts & stock history                           | P1       | yes                | —                                           |
+| 23  | F-12 | More shipping carriers                                     | P1       | small              | —                                           |
+| 24  | F-13 | Automatic discounts, min order, free gift                  | P2       | yes                | **Needs approval** (checkout pricing)       |
+| 25  | F-14 | Customer order messages (WhatsApp/SMS, confirm link)       | P2       | yes                | Provider cost                               |
+| 26  | F-16 | Campaigns: email, WhatsApp, retargeting audiences          | P2       | yes                | Provider cost                               |
+| 27  | F-23 | Back-in-stock alerts & pre-orders                          | P2       | yes                | —                                           |
+| 28  | F-26 | Campaign tracking (UTM links, orders per campaign)         | P2       | yes                | —                                           |
+| 29  | F-17 | Public API & webhooks                                      | P2       | yes                | — (security review)                         |
+| 30  | F-18 | Store affiliates / referral links                          | P3       | yes                | **Needs approval** (payouts)                |
+| 31  | F-19 | Gift cards & customer store credit                         | P3       | yes                | **Needs approval** (ledger)                 |
+| 32  | F-20 | Loyalty points                                             | P3       | yes                | **Needs approval**                          |
+| 33  | F-27 | A/B tests                                                  | P3       | yes                | —                                           |
+| 34  | F-28 | Wholesale pricing                                          | P3       | yes                | **Needs approval** (checkout pricing)       |
+| 35  | F-29 | AI agent connection (MCP)                                  | P3       | no                 | — (after F-17)                              |
+| 36  | F-30 | Ad tracking upgrades (Purchase on delivery, event toggles) | P2       | maybe              | —                                           |
+| 37  | F-31 | POS and cashier                                            | P3       | yes                | **Needs approval** (order creation path)    |
 
 AI features (field helpers, bulk products, credits, store-build agent) stay in `PLAN.md` §22 (AI-2 … AI-5) and are not repeated here.
 
@@ -252,7 +253,7 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 
 **Why:** Sellers sell to the same people again on WhatsApp. Today they cannot see who bought, how often, or for how much.
 **What:** A Customers page per store: name, phone, governorate, order count, total spent, last order, COD success rate (delivered vs refused/returned), link to orders, WhatsApp button, notes and tags, CSV export.
-**Status:** [Planned]
+**Status:** [In progress] F-01a built 2026-10-30 on `main` (uncommitted, no migration). It lives in `packages/lib/src/customers/` (`@workspace/lib/customers`, `/customers/server`), not the dashboard folder, so F-02d can reuse it. `listStoreCustomers(sellerId, storeId)` and `getStoreCustomer(sellerId, storeId, key)` join `stores` on the session seller. A customer is a store's orders with the same phone (normalised like the blocklist, so it matches F-02), or the same user when there is no usable phone. Delivered = order `delivered`; refused = order `returned` or a `failed`/`returned` shipment; cancelled/refunded are left out of spend and success rate. Reads the newest 5000 orders per store. F-01b built 2026-10-30 (uncommitted): Orders › Customers (`/orders/customers`, `app/(main)/orders/customers/`), one store at a time (URL `?store=` if it is the seller's, else the sidebar's selected store). It has search (name, email, phone in any spelling), filters (all, repeat buyers, refused an order), sort (last order, most orders, most spent), three counters, and a table showing 100 rows plus "Show more". The drawer has stats, WhatsApp, Call, Block/Unblock (the F-02 blocklist actions), and the order history linking to `/orders?order=<id>`. Phone E2E is not done yet. F-01c built 2026-10-30 (uncommitted; 0121 on staging, production pending owner approval): notes and tags in the customer drawer, tags under the name in the table, a tag filter, and search also matches notes and tags. F-01d built 2026-10-30 (uncommitted, no migration): "Export (N)" downloads the rows on screen as .xlsx. Left: F-01e (needs F-05), the browser E2E.
 
 - **F-01a · P0 · deps: —** Data: a server query that groups the store's orders by customer phone (and user id when signed in), filtered by `store_id` and the session seller. No new table. `app/(main)/stores/[storeId]/customers/customers.server.ts`.
 - **F-01b · P0 · deps: F-01a** Page: table with search, sort, filters (repeat buyers, refused orders), customer drawer with order history. Sidebar entry under Orders. Both languages.
@@ -265,7 +266,7 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 
 **Why:** Refused COD orders cost sellers shipping both ways. EasyOrders sells this as a core feature.
 **What:** Block a phone number from ordering on a store (phone only for now, owner 2026-10-29; IP blocking later if needed); flag risky orders (many refusals across the store, same phone many orders in minutes); optional "confirm order" step where the seller marks an order confirmed before shipping.
-**Status:** [Planned]
+**Status:** [In progress] F-02a–c built 2026-10-29 on `main` (0118 on staging and production, production 2026-10-30): `packages/lib/src/stores/blocked-phones.{lib,server}.ts`, Store settings › Order protection (blocklist), "Block this customer" in the order panel, checkout refusal in `place-order.ts`. F-02g built the same day (WhatsApp "Ask to confirm" on new orders, per-store message in Order protection, 24 h unconfirmed highlight). F-02d built 2026-10-30 (uncommitted, no migration): "Refused N orders" and "Possible duplicate" chips on the order card and in the table, and a note in the order panel. Left: F-02e, F-02f (after F-38b), the optional thank-you-page "Confirm on WhatsApp" link (with F-25b).
 
 - **F-02a · P0 · deps: —** Migration `store_blocked_phones` (`store_id`, `phone` normalised to `+20…`, `reason`, `created_at`; unique per store + phone; RLS on, no policies). Phone only (owner, 2026-10-29).
 - **F-02b · P0 · deps: F-02a** Storefront checkout check: refuse a blocked phone (compared after normalising, so `010…`, `+2010…` and `2010…` all match) with a neutral message before the order is created. Touches the store-website checkout path only, not money logic; re-read `packages/lib/src/orders/place-order.ts` and keep its behaviour.
@@ -273,13 +274,13 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 - **F-02d · P1 · deps: F-01a** Risk badge on orders: refusal history for that phone in this store, duplicate orders within 10 minutes.
 - **F-02e · P2 · deps: F-02b** Rate limit per IP/phone on store checkout (Upstash).
 - **F-02g · P0 · deps: —** Confirm by WhatsApp, **no API or provider needed**: the order page in the dashboard gets a "Ask to confirm" button that opens WhatsApp (`wa.me`) to the customer with a prefilled message (order number, items, total, address; editable template per store), and a "Confirmed" action that moves the order to the existing confirmed stage. Optional: the store's thank-you page shows "Confirm on WhatsApp", which opens a prefilled message to the seller's number. Orders not confirmed after N hours are highlighted.
-- **F-02f · P2 · Blocked: Tallaby has no OTP / WhatsApp API / SMS service yet (owner, 2026-10-29). deps: F-02a, owner decision (provider, who pays)** OTP check at store checkout: the seller lists phones (or turns on "all first-time phones" / "phones with a refusal") that must enter a code before the order is placed (EasyOrders "الأرقام المحظورة OTP"). Code sent by SMS or WhatsApp; attempts limited; table `store_checkout_otps` (hashed code, expiry; RLS on, no policies).
+- **F-02f · P2 · Provider chosen: MersalSMS (F-38, owner 2026-10-30). deps: F-02a, F-38b** OTP check at store checkout: the seller lists phones (or turns on "all first-time phones" / "phones with a refusal") that must enter a code before the order is placed (EasyOrders "الأرقام المحظورة OTP"). Code sent by SMS or WhatsApp; attempts limited; table `store_checkout_otps` (hashed code, expiry; RLS on, no policies).
 
 ### F-03 Missed orders (abandoned checkouts) + reminders — P0
 
 **Why:** Many COD buyers fill name and phone, then leave. Sellers can call them and win the sale.
 **What:** When a visitor enters a phone at store checkout, save a lead with the cart. The seller sees a "Not completed" list with phone, items, total and a WhatsApp button prefilled with a message; leads that turn into orders drop off.
-**Status:** [Done] 2026-10-29 on `main` (0120 on staging, production pending owner approval; design `docs/superpowers/specs/2026-10-29-missed-orders-design.md`). Owner choices: WhatsApp + Call buttons; consent line «ممكن نتواصل معاك بخصوص طلبك», no checkbox; the existing once-a-day store-branded cart email is the reminder (signed-in customers only, no email field for guests), shown on the lead as "Reminder email sent". Leads are saved when a shipping address is picked or added (not per keystroke). Automatic WhatsApp stays with F-14.
+**Status:** [Done] 2026-10-29 on `main` (0120 on staging and production, production 2026-10-30; design `docs/superpowers/specs/2026-10-29-missed-orders-design.md`). Owner choices: WhatsApp + Call buttons; consent line «ممكن نتواصل معاك بخصوص طلبك», no checkbox; the existing once-a-day store-branded cart email is the reminder (signed-in customers only, no email field for guests), shown on the lead as "Reminder email sent". Leads are saved when a shipping address is picked or added (not per keystroke). Automatic WhatsApp stays with F-14.
 
 - **F-03a · P0 · deps: —** Migration `store_checkout_leads` (`store_id`, `phone`, `name`, `governorate`, `items jsonb`, `subtotal numeric(10,2)`, `order_id`, `contacted_at`, timestamps; RLS on, no policies; unique open lead per store + phone).
 - **F-03b · P0 · deps: F-03a** Storefront: save/update the lead (debounced) once a valid phone is typed; link `order_id` when the order is placed. Consent text on the checkout form.
@@ -292,7 +293,7 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 
 **Why:** Sellers print a slip for each parcel and share invoices with customers.
 **What:** Printable A4 invoice and A6 packing slip (store logo, order, items, COD amount, barcode), bulk print selected orders, CSV/Excel export of orders, bulk status change.
-**Status:** [Planned]
+**Status:** [In progress] F-04a built 2026-10-30 on `main` (uncommitted, no migration): `/print/orders?doc=invoice|slip&ids=…&lang=ar|en` in `apps/dashboard/app/print/orders/`, opened from a Print menu in the order panel and a "Print (N)" menu on the orders list (the orders on screen, at most 50). Barcode left to F-04e. F-04b built 2026-10-30 (uncommitted, no migration): "Export (N)" on the orders list downloads the orders on screen as .xlsx. Browser E2E of both pending. Left: F-04c–F-04e.
 
 - **F-04a · P0 · deps: —** Print views (HTML + print CSS, Arabic RTL and English) for one or many orders; store-branded.
 - **F-04b · P0 · deps: —** Orders CSV/Excel export with current filters.
@@ -393,7 +394,7 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 **What:** Automatic messages to the buyer: order received (with confirm link, helps F-02), shipped, out for delivery. Needs a WhatsApp Business API / SMS provider and a cost model.
 **Status:** [Planned]
 
-- **F-14a · P2 · deps: owner decision (provider, who pays)** Provider integration and message templates.
+- **F-14a · P2 · deps: F-38b (SMS via MersalSMS); WhatsApp provider still open** Provider integration and message templates.
 - **F-14b · P2 · deps: F-14a** Per-store settings and a message log table.
 
 ### F-15 Reports upgrade + per-product views — P1
@@ -581,7 +582,7 @@ Removed: the store already shows a coupon pop-up when a visitor is leaving (`cou
 - **Dashboard settings:** Store settings › App: app name and short name (default from the store name), icon preview on Android and iPhone, install prompt on/off (on by default).
 - Offline and unpublished stores (CLAUDE.md rule 12) serve no store manifest. Push notifications to customers stay with F-14 (needs a provider).
 - The seller dashboard's own install button (`install-app-button.client.tsx`) keeps the Tallaby brand; not part of this feature.
-  **Status:** [Planned]
+  **Status:** [In progress] F-36a–e built 2026-10-29 on `main` (uncommitted, no migration). Owner changes (2026-10-29): icons come from the store **favicon** first (then logo, then initials), and the timed install prompt became a **"Download application" button in every store footer**, hideable in Store settings › App. Left: custom app name/short name and brand theme colour (later), phone E2E (Android install + iPhone guide).
 
 - **F-36a · P1 · deps: —** Host-aware `manifest.ts`: resolve the store from the host the same way storefront pages do (subdomain and custom domain, published only); Tallaby manifest otherwise; tests for marketplace, subdomain, custom domain, offline store. Check `proxy.ts`, which today skips `manifest.webmanifest`.
 - **F-36b · P1 · deps: F-36a** Icon route (`/app-icon/[size]`, `next/og`) from the store logo, maskable variant, initials fallback, seller-scoped cache tag purged on logo or name change; `<head>` icon and theme tags on store pages.
@@ -607,7 +608,7 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 - A reversed or refunded top-up reverses its commission. Self-referral (same person, same phone/card, same device) and fake accounts are blocked or held for review; commissions stay "pending" for N days before they become withdrawable.
 - Attribution: the code is saved at signup (link opened in the last 60 days, first link wins); a seller cannot change their referrer later, cannot refer themselves.
   **Decided (owner, 2026-10-29, design note `docs/superpowers/specs/2026-10-29-affiliate-program-design.md`):** a successful referral = the referred seller's first top-up succeeded; 10 referrals and 10 stores are two separate counts (stores of referred sellers, deleted ones excluded); minimum withdrawal EGP 500 (the whole balance per request); no hold (top-ups are never refunded), so commissions are withdrawable at once; only seller accounts get links. ~~Open decisions:~~ what counts as a "successful referral" (signed up / published a store / first top-up / first delivered order)? Are "10 referrals" and "10 stores" two separate counts? Is 20 % on top-ups sustainable against the EGP 5-per-order fee (PLAN.md §13)? Minimum payout and how often? Do customers (non-sellers) get links too?
-  **Status:** [Built, 2026-10-29] F-37a–f done (plan `docs/superpowers/plans/2026-10-29-affiliate-program.md`); 0117 applied on staging, production pending owner approval; browser QA and the attribution integration test (needs 0113 on staging) still to do. F-37g open.
+  **Status:** [Built, 2026-10-29] F-37a–f done (plan `docs/superpowers/plans/2026-10-29-affiliate-program.md`); 0117 applied on staging and production (production 2026-10-30); browser QA and the attribution integration test (needs 0113 on staging) still to do. F-37g open.
 
 - **F-37a · P1 · deps: owner approval** Design note: the open decisions above, the commission ledger, fraud rules, and confirmation that the business model (PLAN.md §13) is changed only by adding this payout.
 - **F-37b · P1 · deps: F-37a** Migration: `sellers.referral_code` (unique), `sellers.referred_by_seller_id`, `sellers.referred_at`; server-only `referral_commissions` (`referrer_seller_id`, `referred_seller_id`, `top_up_id` unique, `amount numeric(10,2)`, `status` pending | available | paid | reversed, timestamps) and `referral_payouts` (`referrer_seller_id`, `amount`, `method` bank | vodafone_cash, masked destination, `reference`, `paid_by`, `paid_at`); RLS on, no policies. Mirror in `schema.ts` / `relations.ts`.
@@ -616,6 +617,18 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 - **F-37e · P1 · deps: F-37d** Dashboard page "اربح معنا" (both languages, sidebar entry under Account & help), share buttons, progress bars, referrals list, withdrawal request.
 - **F-37f · P1 · deps: F-37d** Admin: referrals overview, commissions per referrer, flagged/suspicious, withdrawal requests, "mark paid" with reference (audited in `admin_audit_log`).
 - **F-37g · P2 · deps: F-37e** Marketing page on tallaby.com explaining the program + terms (Arabic first).
+
+### F-38 MersalSMS: OTP and order confirmation SMS — P1 · owner request · Provider cost
+
+**Why:** Tallaby had no SMS or OTP provider, so checkout OTP (F-02f) and automatic order messages (F-14) were blocked. The owner chose [MersalSMS](https://mersalsms.com) (2026-10-30).
+**What:** A server-only SMS client for MersalSMS. It sends checkout OTP codes and order-confirmation SMS from the store's name (sender ID). Every send is logged and capped. According to its home page (read 2026-10-30), MersalSMS offers an SMS API for OTP and transactional messages and unlimited sender IDs. It does not mention WhatsApp. Prices and API docs are not public (portal: portal.mersalsms.com).
+**Status:** [Planned]
+
+- **F-38a · P1 · deps: owner** Account and decisions: get the API docs and credentials from the MersalSMS portal; price per SMS; who pays (Tallaby, or a charge on the store wallet through `postStoreWalletEntry`, which needs approval, rule 7 / `PLAN.md` §13); sender ID per store or one "Tallaby" sender; daily caps per store.
+- **F-38b · P1 · deps: F-38a** `packages/lib/src/sms/mersal.server.ts`: send (with a timeout, no retry loops, no phone or code in logs). Credentials only in server env (rule 10). Migration `sms_messages` (store_id, phone, kind `otp` | `order_confirm` | …, status, provider id, cost piastres, created_at; RLS on, no policies) for the log and caps.
+- **F-38c · P1 · deps: F-38b** Order confirmation SMS: on a new store order, send the customer a message with the order number and a confirm link; the link moves the order to `confirmed` (the same stage as F-02g's "Confirmed" button). Per-store switch and template in Store settings › Order protection.
+- **F-38d · P1 · deps: F-38b** Unblocks **F-02f** (checkout OTP over SMS) and **F-14a** (order status SMS: shipped, out for delivery).
+- Acceptance: no secret in client code or logs; a store over its daily cap sends nothing more that day; a confirm link works only for its own order and store.
 
 ### F-31 POS and cashier — P3
 
@@ -633,24 +646,27 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 Add each new request here first, with the date and the owner's words, then turn it into a §4 feature and place it in §3.
 
-| Date       | Request (owner's words)                                                                                                                                                                                                         | Feature ID                                                                                       | Status                                                                                 |
-| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- |
-| 2026-10-29 | "let's built the gift 100EGP for new users, user get the gift after publishing his store directly with a celebrating Pop-up … Pause the 7 days free for new users … 100EGP for users who setup their ecommerce only (choose theme, add a product, publish the website) and valid for 30 days only" (+ only sellers who sign up after launch; unspent part disappears) | Welcome gift (no feature ID; PLAN.md §13.1, 0119)                                                 | Done (0119 on staging, production pending)                                              |
-| 2026-10-29 | "making the Tallaby seller wallet deducts from it on using AI, so for example if adding a product with AI costs 0.25EGP so deduct it from the Wallet … Specially when I provide them 100EGP free gift for new users for 1 month"                       | PLAN.md AI-4 (AI credits; wallet charge for AI deferred by owner) + welcome gift                 | AI charge: later (owner testing AI use first); gift: see next row                       |
-| 2026-10-29 | Public seller roadmap page at `/roadmap` (sellers suggest ideas and vote, the team moves cards between Waiting, Planned, In progress and Launched; EasyOrders roadmap as the model)                                             | Seller roadmap page (no feature ID)                                                              | Done (uncommitted, 0115 not applied)                                                   |
-| 2026-10-29 | "can I manage the roadmap requests and columns from Admin project ? … build it, make me manage it from admin project"                                                                                                           | Admin › Seller roadmap (no feature ID)                                                           | Done (uncommitted, 0115 not applied)                                                   |
-| 2026-10-29 | "On the website builder > Add > Templates tab, show the related templates industry only, on dashboard and admin, And on Admin project, on Change theme to a store, show the theme reusable card on the dialog to see the theme" | Builder templates by industry + admin live theme cards (no feature ID)                           | Done (uncommitted)                                                                     |
-| 2026-10-29 | "on /products/add if form has draft data, add clear button to clear it beside \"Save as draft\""                                                                                                                                | Product form clear-draft button (no feature ID)                                                  | Done (uncommitted)                                                                     |
-| 2026-10-29 | "Seller dashboard homepage new design, make good linking for everything if link of related title exists" (Claude Design: Seller Dashboard v2) + WhatsApp channel link                                                           | Dashboard home redesign (no feature ID)                                                          | Done (uncommitted)                                                                     |
-| 2026-10-29 | "Affiliate program for Tallaby … عمولة 20% من اي مبلغ يقومون بشحنه … كاش وليس رصيد في المحفظة … سحب عمولتك بعد تحقيق 10 إحالات ناجحة على الأقل وإنشاء 10 متاجر" (EasyOrders' page text as the model)                            | F-37                                                                                             | Planned (needs approval)                                                               |
-| 2026-10-29 | "Improve the Next.js PWA to make the application with the store name and logo"                                                                                                                                                  | F-36 (replaces F-06c)                                                                            | Planned                                                                                |
-| 2026-10-29 | "when a user delete a product, it goes to Trash for 30 days so user can restore the product back"                                                                                                                               | F-35                                                                                             | Planned                                                                                |
-| 2026-10-29 | "the deposit roundup automatically to nearest 5"                                                                                                                                                                                | F-21 (rounding rule)                                                                             | Planned                                                                                |
-| 2026-10-29 | Deposit: who receives it? → "Seller's own number"                                                                                                                                                                               | F-21 (+ F-21p = PLAN.md P3-07 Part B)                                                            | Planned                                                                                |
-| 2026-10-29 | "a checkbox on the product /add or edit page to show a badge for user on low stock … فاضل قطعتين والوقت قرب يخلص"                                                                                                               | F-34                                                                                             | Planned                                                                                |
-| 2026-10-29 | "I need to add Downsell feature, which is when a user removes an item from cart, shows a similar item but with discount or lower price popup" (+ phone mockup)                                                                  | F-33                                                                                             | **Removed** 2026-10-29 ("we have similar one already on live": the exit coupon pop-up) |
-| 2026-10-29 | "We need to add Cross-selling feature too … العميل مثلا هيشتري باور بانك … هيلاقي تحت المنتج عرض وصلة شاحن بخصم 10٪ … enabled by default and store owner can disable it anytime"                                                | F-32                                                                                             | Planned                                                                                |
-| 2026-10-28 | "analyze the Easy orders features too … find the most important that we should have" (pasted EasyOrders sidebar + roadmap.easyorders.ai)                                                                                        | §2.3, §2.4; new F-21 … F-29; tasks added to F-01, F-02, F-03, F-07, F-08, F-11, F-13, F-15, F-16 | Planned                                                                                |
+| Date       | Request (owner's words)                                                                                                                                                                                                                                                                                                                                               | Feature ID                                                                                       | Status                                                                                 |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- |
+| 2026-10-30 | "For the categories sections on the storefront, integrate the section with seller_product_categories table, and check where do we use this seller_categories as I see it's empty?" | Storefront store categories (no feature ID) | Done (uncommitted) |
+| 2026-10-30 | "Integrate https://mersalsms.com MersalSMS for OTP and Orders confirmations"                                                                                                                                                                                                                                                                                          | F-38 (unblocks F-02f, F-14a)                                                                     | Planned (needs price + who pays)                                                       |
+| 2026-10-29 | "let's built the gift 100EGP for new users, user get the gift after publishing his store directly with a celebrating Pop-up … Pause the 7 days free for new users … 100EGP for users who setup their ecommerce only (choose theme, add a product, publish the website) and valid for 30 days only" (+ only sellers who sign up after launch; unspent part disappears) | Welcome gift (no feature ID; PLAN.md §13.1, 0119)                                                | Done (0119 on staging and production, production 2026-10-30)                                             |
+| 2026-10-29 | "making the Tallaby seller wallet deducts from it on using AI, so for example if adding a product with AI costs 0.25EGP so deduct it from the Wallet … Specially when I provide them 100EGP free gift for new users for 1 month"                                                                                                                                      | PLAN.md AI-4 (AI credits; wallet charge for AI deferred by owner) + welcome gift                 | AI charge: later (owner testing AI use first); gift: see next row                      |
+| 2026-10-29 | Public seller roadmap page at `/roadmap` (sellers suggest ideas and vote, the team moves cards between Waiting, Planned, In progress and Launched; EasyOrders roadmap as the model)                                                                                                                                                                                   | Seller roadmap page (no feature ID)                                                              | Done (uncommitted, 0115 not applied)                                                   |
+| 2026-10-29 | "can I manage the roadmap requests and columns from Admin project ? … build it, make me manage it from admin project"                                                                                                                                                                                                                                                 | Admin › Seller roadmap (no feature ID)                                                           | Done (uncommitted, 0115 not applied)                                                   |
+| 2026-10-29 | "On the website builder > Add > Templates tab, show the related templates industry only, on dashboard and admin, And on Admin project, on Change theme to a store, show the theme reusable card on the dialog to see the theme"                                                                                                                                       | Builder templates by industry + admin live theme cards (no feature ID)                           | Done (uncommitted)                                                                     |
+| 2026-10-29 | "on /products/add if form has draft data, add clear button to clear it beside \"Save as draft\""                                                                                                                                                                                                                                                                      | Product form clear-draft button (no feature ID)                                                  | Done (uncommitted)                                                                     |
+| 2026-10-29 | "Seller dashboard homepage new design, make good linking for everything if link of related title exists" (Claude Design: Seller Dashboard v2) + WhatsApp channel link                                                                                                                                                                                                 | Dashboard home redesign (no feature ID)                                                          | Done (uncommitted)                                                                     |
+| 2026-10-29 | "Affiliate program for Tallaby … عمولة 20% من اي مبلغ يقومون بشحنه … كاش وليس رصيد في المحفظة … سحب عمولتك بعد تحقيق 10 إحالات ناجحة على الأقل وإنشاء 10 متاجر" (EasyOrders' page text as the model)                                                                                                                                                                  | F-37                                                                                             | Planned (needs approval)                                                               |
+| 2026-10-29 | "work on the PWA mobile application for stores, and add a button for each template/store on the footer \"Download Application\", user can hide this button from dashboard setting; ensure that the store application takes the store's favicon and name"                                                                                                              | F-36 (footer button replaces the timed prompt of F-36c; icons from the favicon first)            | Done (uncommitted)                                                                     |
+| 2026-10-29 | "Improve the Next.js PWA to make the application with the store name and logo"                                                                                                                                                                                                                                                                                        | F-36 (replaces F-06c)                                                                            | Planned                                                                                |
+| 2026-10-29 | "when a user delete a product, it goes to Trash for 30 days so user can restore the product back"                                                                                                                                                                                                                                                                     | F-35                                                                                             | Planned                                                                                |
+| 2026-10-29 | "the deposit roundup automatically to nearest 5"                                                                                                                                                                                                                                                                                                                      | F-21 (rounding rule)                                                                             | Planned                                                                                |
+| 2026-10-29 | Deposit: who receives it? → "Seller's own number"                                                                                                                                                                                                                                                                                                                     | F-21 (+ F-21p = PLAN.md P3-07 Part B)                                                            | Planned                                                                                |
+| 2026-10-29 | "a checkbox on the product /add or edit page to show a badge for user on low stock … فاضل قطعتين والوقت قرب يخلص"                                                                                                                                                                                                                                                     | F-34                                                                                             | Planned                                                                                |
+| 2026-10-29 | "I need to add Downsell feature, which is when a user removes an item from cart, shows a similar item but with discount or lower price popup" (+ phone mockup)                                                                                                                                                                                                        | F-33                                                                                             | **Removed** 2026-10-29 ("we have similar one already on live": the exit coupon pop-up) |
+| 2026-10-29 | "We need to add Cross-selling feature too … العميل مثلا هيشتري باور بانك … هيلاقي تحت المنتج عرض وصلة شاحن بخصم 10٪ … enabled by default and store owner can disable it anytime"                                                                                                                                                                                      | F-32                                                                                             | Planned                                                                                |
+| 2026-10-28 | "analyze the Easy orders features too … find the most important that we should have" (pasted EasyOrders sidebar + roadmap.easyorders.ai)                                                                                                                                                                                                                              | §2.3, §2.4; new F-21 … F-29; tasks added to F-01, F-02, F-03, F-07, F-08, F-11, F-13, F-15, F-16 | Planned                                                                                |
 
 ---
 
@@ -660,26 +676,30 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 **P0**
 
-- [ ] F-01a Customers query
-- [ ] F-01b Customers page
-- [ ] F-02a Blocklist migration
-- [ ] F-02b Checkout block check
-- [ ] F-02c Block from dashboard + blocklist page
+- [x] F-01a Customers query (2026-10-30, uncommitted; `packages/lib/src/customers/`)
+- [x] F-01b Customers page (2026-10-30, uncommitted; Orders › Customers; phone E2E pending)
+- [x] F-02a Blocklist migration (2026-10-29, uncommitted; 0118 on staging)
+- [x] F-02b Checkout block check (2026-10-29, uncommitted)
+- [x] F-02c Block from dashboard + blocklist page (2026-10-29, uncommitted)
 - [x] F-03a Leads migration (2026-10-29; 0120 on staging)
 - [x] F-03b Storefront lead capture (2026-10-29)
 - [x] F-03c Leads list in dashboard (2026-10-29; Orders › Not completed)
-- [ ] F-04a Invoice + packing slip print
-- [ ] F-04b Orders export
+- [x] F-04a Invoice + packing slip print (2026-10-30, uncommitted; `/print/orders`; browser E2E pending)
+- [x] F-04b Orders export (2026-10-30, uncommitted; .xlsx of the orders on screen; browser E2E pending)
 - [ ] F-05a Manual orders design (owner approval)
 - [ ] F-05b Create order form
 
 **P1**
 
-- [ ] F-01c Customer notes & tags
-- [ ] F-01d Customers export
-- [ ] F-02d Risk badge
-- [ ] F-02g Confirm by WhatsApp link (no API) — P0
-- [ ] F-02f Checkout OTP — **blocked: no OTP/WhatsApp API/SMS provider yet**
+- [x] F-01c Customer notes & tags (2026-10-30, uncommitted; 0121 on staging)
+- [x] F-01d Customers export (2026-10-30, uncommitted; .xlsx of the filtered list)
+- [x] F-02d Risk badge (2026-10-30, uncommitted; card, table and order panel)
+- [x] F-02g Confirm by WhatsApp link (no API) — P0 (2026-10-29, uncommitted; thank-you page link left for F-25b)
+- [ ] F-02f Checkout OTP (SMS via MersalSMS, after F-38b)
+- [ ] F-38a MersalSMS account, price and who pays (owner)
+- [ ] F-38b MersalSMS client + `sms_messages` log migration
+- [ ] F-38c Order confirmation SMS with confirm link
+- [ ] F-38d Hook up F-02f and F-14a
 - [x] F-03e Missed-order reminders (2026-10-29; one-click WhatsApp + the existing daily store cart email shown on the lead; automatic WhatsApp with F-14)
 - [ ] F-04c Orders bulk actions
 - [ ] F-05c Send order link
@@ -703,9 +723,9 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [ ] F-35c Trash / restore / delete-forever actions
 - [ ] F-35d Trash page + undo toast
 - [ ] F-35e 30-day purge job
-- [ ] F-36a Store manifest per host
-- [ ] F-36b App icons from the store logo
-- [ ] F-36c Install prompt on the store
+- [x] F-36a Store manifest per host (2026-10-29, uncommitted)
+- [x] F-36b App icons from the store favicon/logo (2026-10-29, uncommitted)
+- [x] F-36c "Download application" footer button (2026-10-29, uncommitted)
 - [x] F-37a Affiliate design note + open decisions (owner approval)
 - [x] F-37b Affiliate migration (referral code, commissions, payouts)
 - [x] F-37c Referral attribution at signup
@@ -765,8 +785,8 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [ ] F-28 Wholesale pricing
 - [ ] F-29 AI agent connection (MCP)
 - [ ] F-04e Returns barcode scan
-- [ ] F-36d Store service worker + offline page
-- [ ] F-36e Store settings › App
+- [x] F-36d Store service worker + offline page (2026-10-29, uncommitted)
+- [x] F-36e Store settings › App (2026-10-29, uncommitted; switch + preview only)
 - [ ] F-37g Affiliate program page on tallaby.com
 - [ ] F-16e Win-back messages
 - [ ] F-24c Update products from Excel
@@ -779,7 +799,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 **Done outside the feature list (owner requests, §5)**
 
-- [x] Welcome gift: EGP 100 for new sellers, 7-day trial paused for them (2026-10-29, `a7d36530`; 0119 on staging, production pending)
+- [x] Welcome gift: EGP 100 for new sellers, 7-day trial paused for them (2026-10-29, `a7d36530`; 0119 on staging and production, production 2026-10-30)
 - [x] tallaby.com copy: flat EGP 5 only, no free days or gift on pricing, home and Terms (2026-10-29, `8150c0bc`, `44b926fd`)
 - [ ] Welcome gift: manual phone E2E (new account → template → product → publish → pop-up, ar/en)
 - [ ] Welcome gift: "unspent gift" note on Admin wallet screens
@@ -787,6 +807,80 @@ Add each new request here first, with the date and the owner's words, then turn 
 ---
 
 ## 7. Log
+
+### 2026-10-30 — Migrations 0117–0121 on production; work committed
+
+- Owner applied `0118`–`0121` on production on 2026-10-30. A read-only check the same day found `0117` (referral program) on production too, along with `0118` (`store_blocked_phones`), `0119` (welcome gift), `0120` (`store_checkout_leads`) and `0121` (`store_customer_notes`). `0112` and `0113` are also on production but not on staging. CLAUDE.md rule 6 and the Status lines are updated.
+- All the uncommitted work went into one commit to `main` and was pushed: F-01 (customers), F-02 (protection), F-04a/b (print, export), F-36 (store app), plus the template and section work in the tree.
+
+### 2026-10-30 — Public /roadmap cards updated (production)
+
+- Owner-approved write to production `feature_requests` (one transaction, guarded on the old status, exactly 6 rows): F-01, F-02, F-03, F-04 and F-36 `planned` → `in_progress` (built, not live yet: their migrations are staging-only); `L-coupon-popup` `in_progress` → `launched` (`launched_at` 2026-10-30; `coupons.popup_trigger` is on production).
+- `feature_requests` exists on **production only**; staging has no 0115 (CLAUDE.md rule 6 still says "not applied yet").
+- No cards yet for the welcome gift, F-37 affiliates or F-38 SMS; add them from Admin › Seller roadmap if wanted. When a feature deploys, move its card to `launched` with the date.
+
+### 2026-10-30 — F-04b Orders export built
+
+- "Export (N)" button on the orders list, beside Print. It downloads exactly the orders on screen (sales channel, tab, search and the Bosta attention filter applied) as `orders-<date>.xlsx`, built in the browser with the existing `downloadXlsx` (SheetJS loaded only on click), like the F-01d customers export. No server call and no migration: the rows are already this seller's, loaded by `/orders`.
+- It differs from the plan: .xlsx only, not CSV too; and the page loads the newest 200 orders (`LIST_LIMIT` in `orders.query.ts`), so the export covers at most those. A date-range export of older orders needs a server query (later, with F-04c if sellers ask).
+- Columns come from `ORDER_EXPORT_COLUMNS` and `orderExportRow` in `app/(main)/orders/orders-export.lib.ts`: order number, date (`YYYY-MM-DD HH:mm`, Cairo time), sales channel (store name or Tallaby marketplace), status (stage label), customer, phone (text, keeps the leading 0), email, address, area, items (`name (variant) × qty`, this seller's lines only), quantity, your items total, shipping, discount, order total, payment method and status (translated), amount to collect (`amountToCollect`, same rule as the print slip), Bosta tracking number, notes. Money cells are numbers in EGP. Headers in `orders.export` in `ar.json` and `en.json` (20 columns in both).
+- Checks: 4 new unit tests (`orders-export.lib.test.ts`); dashboard `tsc` clean; dashboard orders + print tests pass (37). ESLint still crashes (tooling, see F-01b). Browser E2E pending: `apps/dashboard/.env` points at production, so it needs staging overrides and a signed-in staging seller.
+
+### 2026-10-30 — F-04a Invoice and packing slip print built
+
+- New print route `apps/dashboard/app/print/orders/` (outside `(main)`, so no dashboard chrome): `/print/orders?doc=invoice|slip&ids=<uuid,…>&lang=ar|en&print=1`. A4 invoice and A6 packing slip, one sheet per order with a page break between them, Arabic RTL or English (defaults to the dashboard language; the toolbar switches document and language). `print=1` opens the print dialog once fonts and the logo have loaded. `force-dynamic`, noindex, never cached (customer data).
+- Isolation: `loadPrintOrders(sellerId, ids)` reads only orders that have at least one of the session seller's `order_items`, prints only that seller's lines, and reads a store (name, logo, website or active custom domain, contact phone) only when `stores.seller_id` is the seller's. Unknown or foreign ids are dropped. Ids are validated as UUIDs, deduped and capped at 50 (`PRINT_MAX_ORDERS`).
+- The sender is the order's store; a marketplace order prints in Tallaby's name. The courier box shows the order total for an unpaid COD order (`amountToCollect`), else "Nothing to collect". When another seller's lines share the order, the printout shows only "Your items" and no order totals or amount to collect.
+- Entry points: `PrintOrdersButton` (`app/(main)/orders/print-orders-button.client.tsx`) in the order panel header (Invoice / Packing slip) and on the orders list ("Print (N)" for the orders on screen). Strings: `orders.print` and `orders.printActions` in `ar.json` and `en.json` (35 + 7 keys, same in both).
+- It differs from the plan: no barcode yet (left to F-04e).
+- No migration. Checks: dashboard `tsc` clean; dashboard orders + print tests pass (33, including 7 new in `print-orders.lib.test.ts`). ESLint still crashes before linting (tooling, see F-01b). Browser E2E (ar/en, A4 and A6 print preview, a store logo, a mixed-seller marketplace order) pending.
+
+### 2026-10-30 — Storefront categories from the seller's own list
+
+- Storefront category lists, the catalog filter (`/products?category=`), category product lists and the product breadcrumb now use the seller's categories (`seller_product_categories`, 0068) instead of Tallaby root categories. One rule, `storeCategoryGroups` in `packages/lib/src/store-sites/catalog-data.server.ts`: a product sits in its `seller_category_id`; an unlinked product sits in the seller category picked from its Tallaby category (`source_category_id`); anything else (products made before 0068) falls back to its Tallaby root as before. Order: the seller's categories in their order, then roots by size. The seller's category photo is used first, then the best-rated product photo. `getProducts` takes a matching `storeCategory` filter. The dashboard and admin builder previews use the same groups, so a category picked in the builder is the same key the storefront uses. Related products still match on the Tallaby category (`relatedCategoryId`). Adding a category picked from a Tallaby one now clears the seller's storefront cache.
+- `seller_categories` (0002) is dead: 0 rows on staging, and no code reads or writes it (only the Drizzle schema and relations). It can be dropped in a later migration (owner approval needed). On staging, none of the 97 products had `seller_category_id` (all were made before the product form linked one), so every store still shows root categories until the seller picks or saves categories.
+- No migration. Checks: the query ran on staging read-only, and in a rolled-back transaction with a picked and an own category; store-sections tests (205 + 1 new), store-editor tests (143) and ecommerce `lib/store-site` tests (19, breadcrumb tests rewritten) pass; `tsc` is clean apart from the existing `profile.chunks.tsx` errors in ecommerce. ESLint still crashes (tooling). Browser E2E pending.
+
+### 2026-10-30 — F-01d Customers export built
+
+- "Export (N)" button on Orders › Customers, beside Sort. It downloads exactly the rows on screen (search, filter, tag and sort applied) as `customers-<date>.xlsx`, built in the browser with the existing `downloadXlsx` (`lib/product-excel.ts`, SheetJS loaded only on click). No server call and no migration: the rows are already this seller's, loaded by the page.
+- It differs from the plan: .xlsx only, not CSV too (opens in Excel and Google Sheets; Arabic shows correctly without a BOM).
+- Columns come from `CUSTOMER_EXPORT_COLUMNS` and `customerExportRow` in `packages/lib/src/customers/customers.lib.ts`: name, phone (text, keeps the leading 0), email, governorate, city, orders, delivered, refused or returned, cancelled, spent (number in EGP), delivered %, first and last order (`YYYY-MM-DD HH:mm`, Cairo time), tags, note. Headers in `customers.export` in `ar.json` and `en.json`.
+- Checks: 2 new unit tests (17 in `customers.lib.test.ts`); dashboard `tsc` clean; dashboard orders, sidebar and product-excel tests pass (59). ESLint still crashes (see F-01b). Opening a real export in Excel is part of the pending browser E2E.
+
+### 2026-10-30 — F-01c Customer notes and tags built
+
+- Migration `0121_store_customer_notes.sql`: server-only `store_customer_notes` (`store_id`, `customer_key`, `note` ≤ 2000 chars, `tags text[]` ≤ 10, `updated_by`; unique per store + key; RLS on, no policies). **Applied on staging 2026-10-30; production pending owner approval, before the deploy** (the Customers page reads it). Mirrored in `schema.ts` and `relations.ts`.
+- It differs from the plan: the row is keyed by the Customers page's `customer_key` (`p:<phone>` or `u:<user id>`), not by `phone`, so customers without a usable phone can have notes too.
+- Server: `listStoreCustomerNotes` and `saveStoreCustomerNote` in `packages/lib/src/customers/customers.server.ts` (both join `stores` on the session seller; an empty note and no tags delete the row). Dashboard action `saveCustomerNote` in `app/(main)/orders/customers/customers.server.ts` (`requireStore(..., { forWrite: true })`).
+- UI: "Notes and tags" box in the customer drawer (tags added with Enter or a comma, suggestions from the store's other tags, Save button), tags and a note icon under the name in the table, a tag filter row, and the search matches note and tag text. Strings: `customers.notes` in `ar.json` and `en.json`.
+- Checks: dashboard `tsc` clean; 15 unit and 4 integration tests in `customers` pass with `TEST_DATABASE_URL` = staging (the F-01c test checks another seller can neither read nor delete A's note); dashboard orders and sidebar tests pass (55). ESLint still crashes (see F-01b). Browser check (ar/en, phone width) pending.
+
+### 2026-10-30 — F-02d Order risk badge built
+
+- `loadStoreOrderRisks(sellerId, orders)` and the pure `computeOrderRisks` are in `packages/lib/src/customers/`. For the orders on `/orders`, the query reads only the seller's stores' orders whose phone ends in the same 10 digits, then matches the exact customer key in code (same phone rule as the blocklist and Customers). No migration.
+- **Refused:** the customer's other orders on the same store that were returned, or had a `failed`/`returned` shipment (delivered count shown alongside).
+- **Possible duplicate:** another still-open order from the same phone on the same store within 10 minutes. Delivered, refused and cancelled orders are not duplicates.
+- UI: `order-risk.client.tsx` (chips on the order card and in the table's customer column; a note in the order panel with a link to Orders › Customers). New strings: `orders.risk` in `ar.json` and `en.json`. New field `SellerOrderRow.risk`.
+- Checks: 14 unit and 3 integration tests in `customers`, including the case where another seller's session sees no risk for A's orders. They pass with `TEST_DATABASE_URL` = staging. Dashboard orders and sidebar tests pass (55). `tsc` is clean except for uncommitted `store-sections/src/templates/vella` errors from another session (font "Jost"). ESLint still can't run (see the F-01b entry). Browser check is pending.
+
+### 2026-10-30 — F-01b Customers page built
+
+- Orders › Customers at `/orders/customers` (sidebar under Orders, after Not completed; the old "Customers belongs here" comment in `sidebar.config.ts` is removed). Files: `app/(main)/orders/customers/{page,customers.data,customers.server,customers.client}.tsx|ts`. Strings are in `customers` and `nav.customers` in `ar.json` and `en.json`. No migration.
+- It differs from the plan: the page is under Orders with a store picker (like Not completed), not `stores/[storeId]/customers`. The drawer action `loadCustomerOrders` takes an explicit storeId through `requireStore`.
+- Search, filter and sort run in the browser on the loaded list, using `selectStoreCustomers` in `packages/lib/src/customers/customers.lib.ts` (4 new unit tests, 12 in total).
+- Checks: `tsc` is clean for `@workspace/lib` and the dashboard; the dashboard sidebar tests (26) and the customers unit and integration tests pass. **ESLint could not run**: ESLint 10.9.1 crashes loading `@typescript-eslint/utils` 8 ("Class extends value undefined"), a toolchain problem that affects the whole repo. Manual check in the browser (ar/en, phone width) is still to do.
+
+### 2026-10-30 — MersalSMS request (owner)
+
+- The owner asked to integrate MersalSMS for OTP and order confirmations. Added as F-38 (P1, #12 in §3). F-02f is no longer blocked on a provider, and F-14a's SMS part depends on F-38b. WhatsApp automation (F-14, F-16c) still has no provider.
+- Open for the owner (F-38a): API docs and credentials, price per SMS, who pays, sender ID per store or one shared.
+
+### 2026-10-30 — F-01a Customers query built
+
+- `packages/lib/src/customers/customers.{lib,server}.ts` plus exports in `packages/lib/package.json`. No migration. It uses the uncommitted `stores/blocked-phones.lib.ts` (F-02) for phone normalisation.
+- It differs from the plan: the code is in `packages/lib`, not `app/(main)/stores/[storeId]/customers/`, so F-01b and F-02d can share it.
+- Tests: `customers.lib.test.ts` (8 unit tests) and `customers.integration.test.ts` (grouping, refused shipment, two stores of one seller kept apart, another seller's store id returns nothing). Both pass with `TEST_DATABASE_URL` = staging. `tsc` on `@workspace/lib` is clean; the package has no lint script.
 
 Newest first. One entry per finished task or decision: date, task, what changed, migrations (number, staging/production status), verification, notes.
 
@@ -798,7 +892,6 @@ Newest first. One entry per finished task or decision: date, task, what changed,
 - **Migration 0120** (`store_checkout_leads`, RLS on, no policies; conversion trigger): **applied on staging 2026-10-29 (twice, idempotent); production pending owner approval, before the deploy.** Daily cleanup cron `/api/cron/checkout-leads` (03:45 UTC, 30 days).
 - Verified: `checkout-leads.lib.test.ts` 6/6; `checkout-leads.integration.test.ts` 4/4 on staging (one lead per phone, conversion by cart/phone, tenant isolation for list/contacted/template, cleanup), cleanup verified; dashboard tests 294 pass; typecheck clean (ecommerce: only the existing `profile.chunks.tsx` errors). Manual E2E (store checkout as guest → address → leave → seller list → WhatsApp) not run yet.
 
-
 ### 2026-10-29 — Welcome gift: EGP 100 for new sellers, 7-day trial paused for them (owner)
 
 - **Rule** (PLAN.md §13.1): a seller created after 0119 gets EGP 100 in the store wallet once they chose a template themselves, have an active product and published the website; once per account; valid 30 days, then the unspent part is removed (fees and ad charges spend it first; never the seller's own money). No 7-day trial for them; existing sellers keep theirs and never get the gift. Not a top-up, so no F-37 commission.
@@ -807,6 +900,29 @@ Newest first. One entry per finished task or decision: date, task, what changed,
 - Verified: `welcome-gift.integration.test.ts` 5/5 on staging; lib/dashboard unit tests; typecheck. Manual phone E2E not run yet. Design: `docs/superpowers/specs/2026-10-29-welcome-gift-design.md`.
 - **Commits** on `main`: `a7d36530` (feature), `8150c0bc` (pricing page: flat EGP 5 only, owner: "don't mention 7 days free neither 100EGP free"), `44b926fd` (home page wallet + FAQ and Terms §4 without free days; Terms "last updated" 2026-10-29). The gift is not advertised on tallaby.com (owner).
 
+### 2026-10-29 — F-36 Store app (PWA) built (owner)
+
+- **Manifest per host** (`apps/ecommerce/app/manifest.ts`, request-time): a published store's subdomain or custom domain gets its own app (`name` = store name, `short_name` ≤ 12 chars via `appShortName`, `id`/`start_url`/`scope` `/`, standalone, `lang`/`dir` from the store's first language, icons 192/512 + maskable 512). tallaby.com and offline/unpublished stores keep the Tallaby manifest (`getRequestStoreApp`, `apps/ecommerce/lib/store-app.server.ts`).
+- **Icons** (`apps/ecommerce/app/app-icon/[file]/route.tsx`, `next/og`): `/app-icon/{180,192,512}.png` on the store host, drawn from the **favicon** (owner), else the logo, else initials on dark (a bag icon for non-Latin names; the built-in font has no Arabic). `.ico`/`.webp` fall through to the next image. `?v=` = hash of image + name (`appIconVersion`), so a new favicon is a new URL (immutable cache). Store pages get `apple-touch-icon` and `apple-mobile-web-app-title` (`buildStoreMetadata`).
+- **Footer button** (owner: "Download Application" on every template/store footer): new drawn element type `appInstall` (store-sections `schema.ts`, `registry.ts` (not in the palette), `render.tsx`, `ctx.renderAppInstall`); `drawChrome(…, "footer", { appInstall })` adds it to the footer tools row, never saved, so every template and every existing store footer gets it with no data change. Also in the default (non-builder) footer and the credit-only footer. Client `store-app-install.client.tsx`: Chrome/Edge/Android use the browser install dialog (`beforeinstallprompt`, caught at chunk load); iPhone and other browsers get a two-step guide; hidden inside the installed app.
+- **Service worker** `public/store-sw.js` (registered by the button on production builds): caches nothing; a failed page navigation shows a bilingual offline page. Served with the Next.js PWA guide headers (`next.config.mjs`) and skipped by the proxy matcher.
+- **Dashboard**: Store settings › **App** (`stores/[storeId]/settings/app/`, sidebar + command palette): home-screen preview (icon + short name, says whether it comes from favicon/logo/initials, link to Website › Design to change it) and the **"Download application" button in the footer** switch (on by default). Saved in `stores.settings.app.showDownloadButton` (`parseStoreApp`, `packages/lib/src/stores/store-app.lib.ts`); invalidates the storefront cache (profile cache key → `storefront-v12`). No migration.
+- Verified: store-sections header tests 990 pass (new: every one of the 138 templates' footers gets exactly one button when allowed, none when hidden, never in the header); `store-app.lib.test.ts` (5); dashboard 294, ecommerce 190, store-editor 143 pass; typecheck clean for lib, store-sections, store-editor, dashboard, admin (ecommerce: only the old `profile.chunks.tsx` errors). Local run against staging (`qa-owner-store.localhost`): store manifest with the store name and versioned icons; `/app-icon/192.png` and the maskable 512 return PNGs (initials "QO", no favicon on that store); tallaby.com manifest unchanged and `/app-icon` 404 there; the home page has the apple-touch-icon, the app title and «حمّل التطبيق» in the footer; `/store-sw.js` served with no-store. The full store-sections run has 2 failures (`product-main` snapshot, `zz-survey`) from another session's uncommitted product-page/header work in the same tree, not from this change. Phone E2E (Android install, iPhone guide, a store with a PNG favicon) to do.
+
+### 2026-10-29 — F-02g Confirm by WhatsApp (no API) built
+
+- New store-website orders (stage "new", with a phone) get **Ask to confirm** in the order panel and on the order card: it opens `wa.me` to the customer with a prefilled message (name, order number, items with variant × qty, total, address, store name). The seller then uses the existing **Confirm order** action, so no new order state or migration.
+- The message is per store: Store settings › **Order protection** › WhatsApp order confirmation message (live WhatsApp-style preview; placeholders `{name} {number} {items} {total} {address} {store}`; max 1,000 chars). Saved in `stores.settings.orderConfirm.template` (other keys kept); empty or the default text = the built-in default in the store's default language (Arabic or English). Logic in `apps/dashboard/app/(main)/orders/order-confirm.lib.ts`; the text is rendered on the server in `orders.query.ts` (`confirmMessage`).
+- New orders not confirmed after **24 h** (`UNCONFIRMED_AFTER_HOURS`) are highlighted (amber border + "Not confirmed for N h") on the card and in the panel (`unconfirmedHours`, computed on the server).
+- Not built (optional in the plan): "Confirm on WhatsApp" on the store's thank-you page; it belongs with F-25b.
+- Navigation: sidebar › Store settings › **Order protection** (`sidebar.config.ts`) and the command palette (`dashboard-routes.lib.ts`, `ShieldCheck` icon), next to General and Payment methods.
+- Verified: dashboard typecheck clean; dashboard suite 294 pass (incl. `order-confirm.lib.test.ts`, 6). Browser QA to do: `apps/dashboard/.env` is the production DB (no 0118 yet), so local QA needs staging env and a staging seller.
+
+- Migration **`0118_store_blocked_phones`** (**applied on staging 2026-10-29**, re-run is a no-op; **production pending owner approval, before the deploy**: checkout and `/orders` read it): server-only `store_blocked_phones` (`store_id` → stores ON DELETE CASCADE, `phone`, `reason` ≤ 300, `created_by`, unique store + phone; RLS on, no policies). Mirrored in `schema.ts` / `relations.ts`.
+- **Differs from the plan:** phones are stored in the local form `01XXXXXXXXX` (CHECK `^01[0-9]{9}$`), not `+20…`; `normalizeBlockedPhone` (`packages/lib/src/stores/blocked-phones.lib.ts`) maps `010…`, `+2010…`, `2010…`, `002010…`, spaces/dashes and Arabic digits to it.
+- F-02b: `placeOrderFromCart` refuses a `storefront` order whose shipping-address phone is blocked on the cart's store (`storeCustomerBlocked`), right after the product checks and before any stock, coupon, wallet or fee code. The store website shows the neutral `checkout.orderNotAccepted` ("We can't accept this order right now. Please contact the store directly."). Marketplace orders and the seller's other stores are unaffected.
+- F-02c: Store settings › **Order protection** tab (`stores/[storeId]/settings/protection/`, blocklist card: add phone + private reason, list, unblock; `requireStore(forWrite)`, rate-limited, phone never logged). The order panel's customer card gets **Block this customer / Unblock** (store-website orders only; reason "From order #…"), and `/orders` rows carry `customerBlocked`. The F-01 customer drawer will reuse the same actions.
+- Verified: lib/db/dashboard typecheck clean (ecommerce has 16 errors only in the untouched `profile.chunks.tsx`); `blocked-phones.lib.test.ts` (4); lib suite 615 pass, 1 failure that was already there (`starter-forms.lib.test.ts` reads `store-editor` messages); dashboard suite 288 pass. Constraints exercised on staging in a rolled-back transaction (upsert keeps one row and updates the reason; a `+20…` value is rejected). New integration test `place-order-blocked-phone.integration.test.ts` (refusal in any spelling, no order row, other store + marketplace still order, per-store unblock) **cannot run on staging yet**: the shared isolation fixture inserts `sellers.admin_contacted_at` from another session's unapplied `0113`. ESLint crashes in its own setup (as before). Browser QA to do.
 
 ### 2026-10-29 — F-37 Tallaby affiliate program built (owner)
 

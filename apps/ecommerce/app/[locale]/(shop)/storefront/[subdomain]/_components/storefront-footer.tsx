@@ -7,6 +7,7 @@ import { BASE_URL } from "@/lib/constants";
 import { storeCategoryLabel, type Storefront } from "@/lib/storefront.server";
 import { StoreLogo } from "./store-logo";
 import { PoweredByTallaby } from "./powered-by-tallaby";
+import { StoreAppInstallButton } from "./store-app-install.client";
 import s from "../storefront.module.css";
 
 /** Egyptian numbers as wa.me expects them: country code, digits only. */
@@ -131,9 +132,12 @@ export async function StorefrontFooter({ store }: { store: Storefront }) {
           <span>
             {t("copyright", { year: new Date().getFullYear(), store: store.displayName })} · <PoweredByTallaby />
           </span>
-          <a href={BASE_URL || "https://tallaby.com"} className="font-medium text-white hover:underline">
-            {t("moreStores")}
-          </a>
+          <div className="flex flex-wrap items-center gap-3">
+            {store.app.showDownloadButton && <StoreAppInstallButton storeName={store.displayName} />}
+            <a href={BASE_URL || "https://tallaby.com"} className="font-medium text-white hover:underline">
+              {t("moreStores")}
+            </a>
+          </div>
         </div>
       </div>
     </footer>

@@ -25,7 +25,8 @@ export function InstallAppButton({ className }: { className?: string }) {
         className
       )}
     >
-      <Download className="size-[18px]" />
+      <Download className="size-[18px] shrink-0" />
+      <span className="sm:hidden">{t("menuInstallApp")}</span>
     </button>
   );
 }

@@ -365,3 +365,14 @@ describe("carousel element", () => {
     expect(validateSiteConfig(withHomeSections([custom(tree)])).success).toBe(true);
   });
 });
+
+describe("image delivery sizes (PageSpeed, 2026-10-30)", () => {
+  const optimizeImage = (url: string, sizes: string) => ({ src: `/_next/image?url=${encodeURIComponent(url)}`, srcSet: "/_next/image?w=384 384w", sizes });
+
+  it("serves the store logo through the optimizer at its own small size", () => {
+    const html = render(custom([node("section", {}, [node("storeLogo", {})])]), { optimizeImage, store: { name: "S", url: "https://s.test", logoUrl: "logos/logo.png" } });
+    expect(html).toContain("/_next/image?url=");
+    expect(html).toContain('sizes="160px"');
+  });
+
+});

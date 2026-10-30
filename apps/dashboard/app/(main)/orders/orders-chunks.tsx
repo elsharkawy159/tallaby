@@ -24,6 +24,7 @@ import { BostaChip, ShipWithBostaButton } from "./bosta-ship.client";
 import { OrderActions } from "./order-actions.client";
 import { OrderCard } from "./order-card.client";
 import { OrderDetailsDialog } from "./order-details-dialog.client";
+import { OrderRiskBadges } from "./order-risk.client";
 import { OrderStageBadge } from "./order-stage-badge";
 import {
   ORDERS_TABS,
@@ -36,7 +37,9 @@ import {
   type OrdersTab,
   type OrdersViewMode,
 } from "./orders-view.lib";
+import { ExportOrdersButton } from "./export-orders-button.client";
 import type { SellerOrderRow } from "./orders.types";
+import { PrintOrdersButton } from "./print-orders-button.client";
 
 const VIEW_STORAGE_KEY = "tl-orders-view";
 const GRID_PAGE_SIZE = 24;
@@ -113,6 +116,7 @@ function OrdersTable({ orders, onOpen }: { orders: SellerOrderRow[]; onOpen: (id
         cell: ({ row }) => (
           <div className="min-w-0">
             <div className="truncate">{row.original.customerName || t("guest")}</div>
+            <OrderRiskBadges order={row.original} className="mt-0.5" />
             {row.original.address?.area && (
               <div className="truncate text-xs text-muted-foreground">{row.original.address.area}</div>
             )}
@@ -342,8 +346,13 @@ export function VendorOrdersTable({
             {t("bosta.attentionFilter", { count: attentionCount })}
           </button>
         )}
+        <ExportOrdersButton orders={visible} className="ms-auto h-10" />
+        <PrintOrdersButton orderIds={visible.map((o) => o.id)} showCount className="h-10" />
         <div
-          className="ms-auto inline-flex gap-0.5 rounded-[11px] border bg-card p-[3px]"
+          className={cn(
+            "inline-flex gap-0.5 rounded-[11px] border bg-card p-[3px]",
+            visible.length === 0 && "ms-auto",
+          )}
           role="group"
           aria-label={tList("viewLabel")}
         >

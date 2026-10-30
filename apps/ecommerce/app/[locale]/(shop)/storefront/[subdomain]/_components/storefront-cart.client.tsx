@@ -9,8 +9,9 @@ import { Skeleton } from "@workspace/ui/components/skeleton";
 import { Link } from "@/i18n/navigation";
 import { QuantitySelector } from "@/components/product";
 import { ImageWithFallback } from "@/components/shared/image-with-fallback";
-import { resolvePrimaryImage } from "@/lib/utils";
+import { cn, resolvePrimaryImage } from "@/lib/utils";
 import { useCart } from "@/providers/cart-provider";
+import { STORE_SOLID_BUTTON } from "./store-buttons.lib";
 
 /**
  * This storefront's cart: the cart actions are scoped by host, so on a store
@@ -58,7 +59,7 @@ export function StorefrontCart({
         <p className="mt-1 max-w-xs text-sm text-(--sf-muted)">
           {t("cartEmptyHint", { store: storeName })}
         </p>
-        <Button asChild className="mt-6 h-11 rounded-full px-6">
+        <Button asChild className={cn("mt-6 h-11 rounded-full px-6", STORE_SOLID_BUTTON)}>
           <Link href="/" onClick={onNavigate}>
             {t("browseProducts")}
           </Link>
@@ -128,7 +129,7 @@ export function StorefrontCart({
           </span>
         </div>
         <p className="text-xs text-(--sf-muted)">{t("shippingNote")}</p>
-        <Button asChild className="h-12 w-full rounded-full text-base font-semibold">
+        <Button asChild className={cn("h-12 w-full rounded-full text-base font-semibold", STORE_SOLID_BUTTON)}>
           <Link href="/cart/checkout" onClick={onNavigate}>
             {t("checkout")}
           </Link>

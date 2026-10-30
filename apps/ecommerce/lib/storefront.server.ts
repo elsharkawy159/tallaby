@@ -38,6 +38,8 @@ import { normalizeGovernorate } from "@workspace/lib/shipping";
 import { publicStoreSocialLinks } from "@workspace/lib/stores";
 import { parseStoreSeo } from "@workspace/lib/stores";
 import { storeHasVisibleProducts } from "@workspace/lib/stores/server";
+import { storeCategoryGroups, type StoreCategoryFilter } from "@workspace/lib/store-sites/catalog-data";
+import { parseStoreApp } from "@workspace/lib/stores/app";
 import {
   parseStorePayments,
   storefrontCheckoutMethods,
@@ -200,6 +202,8 @@ export function getStorefrontBySubdomain(subdomain: string) {
         /** Enabled social links (Website › Social media, P4-15), read live from the store row. */
         social: publicStoreSocialLinks(row.contact),
         /** Checkout methods (Store settings › Payment methods; cash on delivery by default), for footer payment rows. */
+        /** Store settings › App (ROADMAP.md F-36): the footer's Download application button. */
+        app: parseStoreApp(row.settings),
         paymentMethods: storefrontCheckoutMethods(parseStorePayments((row.settings as Record<string, unknown> | null)?.payments)).methods,
         /**
          * Builder site state: "draft" (never published), "published", or
@@ -211,8 +215,8 @@ export function getStorefrontBySubdomain(subdomain: string) {
         supportedLocales: row.supportedLocales,
       };
     },
-    // v11: + paymentMethods (footer payment rows). v10: + supportedLocales (header language switcher). v9: + siteStatus (offline stores). v6: + seo (P4-14) and social links (P4-15). v4: resolves through stores (P5-00).
-    [`storefront-v11-${subdomain}`],
+    // v12: + app (store app download button). v11: + paymentMethods (footer payment rows). v10: + supportedLocales (header language switcher). v9: + siteStatus (offline stores). v6: + seo (P4-14) and social links (P4-15). v4: resolves through stores (P5-00).
+    [`storefront-v12-${subdomain}`],
     { tags: ["sellers", sellerTags.subdomain(subdomain)], revalidate: 3600 },
   )();
 }
@@ -314,12 +318,16 @@ export function activeCartWhere(userId: string, scope: CartScope | null) {
 }
 
 export type StorefrontCategory = {
-  /** Root slug (or id when slugless); duplicate roots sharing a slug merge. */
+  /** The seller category id; for a Tallaby root group, its slug (or id when slugless). */
   key: string;
+  /** The seller's own category (0068); null for a Tallaby root group. */
+  sellerCategoryId: string | null;
+  /** The Tallaby category the seller category was picked from. */
+  sourceCategoryId: string | null;
   name: string | null;
   nameAr: string | null;
   productCount: number;
-  /** The seller's product categories under this root, for filtering. */
+  /** The Tallaby categories (`products.category_id`) of its products; filter with `storeCategoryFilter`. */
   categoryIds: string[];
   /**
    * Public URL of the category photo: the seller's own category image when
@@ -327,6 +335,11 @@ export type StorefrontCategory = {
    */
   coverImage: string | null;
 };
+
+/** The `getProducts` filter for one store category's products. */
+export function storeCategoryFilter(category: StorefrontCategory): StoreCategoryFilter {
+  return { sellerCategoryId: category.sellerCategoryId, sourceCategoryId: category.sourceCategoryId, categoryIds: category.categoryIds };
+}
 
 /**
  * The store id to narrow product lists by: set only when the store shows a
@@ -382,47 +395,20 @@ export async function isStorefrontIndexable(
 }
 
 /**
- * One seller's root categories, each with one of their own product photos.
- * With `storeId` (a store in selected mode) only that store's picks count.
+ * One seller's store categories (`storeCategoryGroups`: their own categories,
+ * else Tallaby roots), each with its photo. With `storeId` (a store in
+ * selected mode) only that store's picks count.
  */
 export function getStorefrontCategories(sellerId: string, storeId?: string) {
-  const selected = storeId
-    ? sql`AND EXISTS (SELECT 1 FROM store_products sp WHERE sp.store_id = ${storeId} AND sp.product_id = p.id)`
-    : sql``;
   return unstable_cache(
     async () => {
       try {
-        const rows = await db.execute(sql`
-          WITH RECURSIVE ancestry AS (
-            SELECT id, id AS root_id, parent_id FROM categories
-            UNION ALL
-            SELECT a.id, c.id, c.parent_id
-            FROM ancestry a JOIN categories c ON c.id = a.parent_id
-          )
-          SELECT coalesce(r.slug, r.id::text) AS key,
-                 min(r.name) AS name, min(r.name_ar) AS "nameAr",
-                 count(p.id)::int AS "productCount",
-                 json_agg(DISTINCT p.category_id) AS "categoryIds",
-                 (array_agg(p.images -> 0 ORDER BY p.average_rating DESC NULLS LAST, p.created_at DESC)
-                    FILTER (WHERE jsonb_typeof(p.images) = 'array' AND jsonb_array_length(p.images) > 0))[1]
-                   AS "coverImage",
-                 (array_agg(spc.image_url ORDER BY spc.position, spc.created_at)
-                    FILTER (WHERE nullif(btrim(spc.image_url), '') IS NOT NULL))[1]
-                   AS "ownImage"
-          FROM products p
-          JOIN ancestry a ON a.id = p.category_id AND a.parent_id IS NULL
-          JOIN categories r ON r.id = a.root_id
-          LEFT JOIN seller_product_categories spc ON spc.id = p.seller_category_id AND spc.seller_id = p.seller_id
-          WHERE p.seller_id = ${sellerId} AND p.status = 'active' ${selected}
-          GROUP BY 1
-          ORDER BY "productCount" DESC, name
-        `);
-        return [...rows].map((row) => {
-          const { coverImage: cover, ownImage, ...rest } = row as Omit<StorefrontCategory, "coverImage"> & { coverImage: unknown; ownImage: unknown };
+        const groups = await storeCategoryGroups(sellerId, storeId);
+        return groups.map(({ ownImage, productImage: cover, productIds: _productIds, ...rest }): StorefrontCategory => {
           // Image entries are either a storage path or { url }.
           const productImage = typeof cover === "string" ? cover : ((cover as { url?: string } | null)?.url ?? null);
           // The seller's own category photo first; without one, a photo of a product in it.
-          const own = typeof ownImage === "string" ? getPublicUrl(ownImage, "categories") : "";
+          const own = ownImage ? getPublicUrl(ownImage, "categories") : "";
           return { ...rest, coverImage: own || (productImage ? getPublicUrl(productImage, "products") || null : null) };
         });
       } catch (error) {
@@ -430,7 +416,8 @@ export function getStorefrontCategories(sellerId: string, storeId?: string) {
         return [] as StorefrontCategory[];
       }
     },
-    storeId ? [`storefront-categories-${sellerId}-${storeId}`] : [`storefront-categories-${sellerId}`],
+    // v2: seller categories (storeCategoryGroups); never read a cached root-only list.
+    storeId ? [`storefront-categories-v2-${sellerId}-${storeId}`] : [`storefront-categories-v2-${sellerId}`],
     {
       tags: [productTags.seller(sellerId), categoryTags.all(), ...(storeId ? [storeTags.catalog(sellerId, storeId)] : [])],
       revalidate: 3600,

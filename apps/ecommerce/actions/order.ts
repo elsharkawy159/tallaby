@@ -53,10 +53,12 @@ import { revalidateCartCheckout } from "@/lib/revalidate-cart-checkout";
 import { clearPendingCouponCode } from "@/lib/affiliate-coupon-cookie";
 
 /** placeOrderFromCart's store-shipping refusals → checkout message keys. */
-const STORE_SHIPPING_ERRORS: Record<string, "notDeliveredHere" | "egyptOnly" | "zoneNoCod"> = {
+const STORE_SHIPPING_ERRORS: Record<string, "notDeliveredHere" | "egyptOnly" | "zoneNoCod" | "orderNotAccepted"> = {
   storeShippingNotCovered: "notDeliveredHere",
   storeShippingOutsideEgypt: "egyptOnly",
   storeShippingNoCod: "zoneNoCod",
+  // A phone the seller blocked (ROADMAP.md F-02): neutral, never "you are blocked".
+  storeCustomerBlocked: "orderNotAccepted",
 };
 
 /** Internal control-flow signal: a concurrent request already transitioned this order (cancel idempotency guard). */

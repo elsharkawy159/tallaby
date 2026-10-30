@@ -150,6 +150,7 @@ import { SPORTS_BOLD } from "./sports-bold";
 import { SPORTS_LUXE } from "./sports-luxe";
 import { SPORTS_WARM } from "./sports-warm";
 import { WASLA } from "./wasla";
+import { VELLA } from "./vella";
 import { templateRefConfig } from "./ref-config";
 import type { TemplateDefinition, TemplateDemo } from "./types";
 
@@ -171,6 +172,8 @@ export const LIBRARY_TEMPLATES: readonly TemplateDefinition[] = [MODE, STREETWEA
   SPORTS_LUXE, SPORTS_BOLD, SPORTS_WARM,
   // After the WoodMart "Accessories" demo's layout (2026-10-29).
   WASLA,
+  // After the Void Fashion store on EasyOrders (2026-10-30).
+  VELLA,
 ];
 
 export const CODE_TEMPLATES: readonly TemplateDefinition[] = [CLASSIC, ATELIER, ...LIBRARY_TEMPLATES];

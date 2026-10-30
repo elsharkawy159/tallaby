@@ -286,19 +286,30 @@ function pathTo(nodes: readonly Node[], match: (node: Node) => boolean, trail: N
 
 /**
  * The header on phones is one row (docs/section-rules.md §5.6; owner,
- * 2026-10-27 "fix navbars on templates mobile screen"): burger · logo ·
- * search icon · cart. The bar is the outermost row or grid around the logo.
- * Under 768px (breakpoint `hidden`, so desktop and tablet are untouched):
+ * 2026-10-27 "fix navbars on templates mobile screen", 2026-10-29 "cart on a
+ * side, logo centred, burger + search + language on the other side"):
+ * [burger · search · language] · logo · [cart]. The bar is the outermost row
+ * or grid around the logo. Under 768px (breakpoint `hidden`, so desktop and
+ * tablet are untouched):
  * - rows after the bar (category chips, department links, a second search or
  *   menu row) are hidden; rows before it (announcement bars) stay;
- * - in the bar, a wide search box is hidden and a search icon goes before the
- *   cart; wishlist and account icons and a design's own menu icon are hidden
- *   (the burger sheet holds the account; Tallaby Classic keeps its account icon);
+ * - in the bar, a wide search box or a search icon is hidden and a search icon
+ *   goes into the start cell beside the burger, as do the language switch and
+ *   theme toggle (copies; the ones by the cart hide); wishlist and account
+ *   icons and a design's own menu icon are hidden (the burger sheet holds the
+ *   account; Tallaby Classic keeps its account icon);
+ * - the start cell (`<id>-mobile-start`) shows only on phones; a row bar is
+ *   drawn as three columns (`split`: start, the logo in the middle, the rest
+ *   in an end cell that is transparent from 768px up); a grid bar gets one
+ *   column per cell still shown, the logo spanning the middle two of four;
  * - a tagline beside the store name in the logo is hidden;
- * - the bar's vertical padding is at most 10px (44px icons: a 64px header),
- *   and a grid bar gets one column per item still shown, so nothing wraps.
+ * - the bar's vertical padding is at most 10px (44px icons: a 64px header).
  */
 const MOBILE_BAR_PADDING = 10;
+/** `props.split` on a header bar: three columns on phones (start, logo, end). */
+export const MOBILE_SPLIT = "mobile";
+/** `props.group` on a drawn cell: a real box on phones only (`display: contents` from 768px up). */
+export const MOBILE_GROUP = "mobile";
 
 /** The style a node has on phones (mobile, else tablet, else desktop: tablet and mobile are max-width overrides). */
 function mobileValue(node: Node, key: string): unknown {
@@ -339,26 +350,39 @@ const isSheetIcon = (node: Node) =>
 const KEEPS_ACCOUNT_ON_MOBILE = new Set(["tallaby-header"]);
 const isAccount = (node: Node) => node.type === "accountLink" || (isLink(node) && !hasText(node) && iconsIn(node).join() === "user");
 
-/** Rewrites the bar's subtree for phones (see above); `addSearch` is set when a wide search got hidden. */
-function compactBar(bar: Node, id: string, locale: string): Node {
+/** Drawn tools that move into the phone start cell, beside the burger. */
+const START_TOOLS = new Set(["languageSwitcher", "themeToggle"]);
+const BOXES = new Set(["hFlex", "vFlex", "grid", "div", "container"]);
+/** Something is still drawn on phones: shown there, and a box only when something inside it is. */
+const visibleOnMobile = (node: Node): boolean =>
+  shownOnMobile(node) && (!BOXES.has(node.type) || node.children.some(visibleOnMobile));
+const holdsLogo = (node: Node) => node.props.role === "logo" || contains(node.children, hasRole("logo"));
+
+/**
+ * Rewrites the bar's subtree for phones (see above). Returns the bar and what
+ * moves into the start cell: a search icon (when the bar had a search) and
+ * copies of the drawn language switch and theme toggle.
+ */
+function compactBar(bar: Node, id: string, locale: string): { bar: Node; start: Node[] } {
   const keepAccount = KEEPS_ACCOUNT_ON_MOBILE.has(id);
-  let hidSearch = false;
-  let mobileSearch = false;
+  let hadSearch = false;
+  const tools: Node[] = [];
   const walk = (node: Node): Node => {
     if (!shownOnMobile(node)) return node;
-    if (isWideSearch(node)) {
-      hidSearch = true;
+    if (isWideSearch(node) || isSearchIcon(node)) {
+      hadSearch = true;
       return hideOnMobile(node);
     }
-    if (isSearchIcon(node)) mobileSearch = true;
+    if (START_TOOLS.has(node.type)) {
+      tools.push({ id: `${node.id}-mobile`, type: node.type, props: node.props, children: [] });
+      return hideOnMobile(node);
+    }
     if (isSheetIcon(node) && !(keepAccount && isAccount(node))) return hideOnMobile(node);
     // A box left with nothing shown (a wide search's sized wrapper) hides with it, so no empty slot or
-    // second line is left; not a grid bar's first cell, which the burger joins.
+    // second line is left.
     const children = node.children.map(walk);
-    const firstCell = bar.type === "grid" && bar.children[0] === node;
     if (
       node !== bar &&
-      !firstCell &&
       children.some((c, i) => c !== node.children[i]) &&
       children.every((c) => !shownOnMobile(c)) &&
       !contains(children, hasRole("logo"))
@@ -371,44 +395,62 @@ function compactBar(bar: Node, id: string, locale: string): Node {
     }
     return children.some((c, i) => c !== node.children[i]) ? { ...node, children } : node;
   };
-  let out = walk(bar);
-  if (hidSearch && !mobileSearch) {
-    const search: Node = {
-      id: `${id}-mobile-search`,
-      type: "linkBlock",
-      props: { href: "/products", label: locale === "en" ? "Search" : "بحث" },
-      style: { hidden: true, width: "44px", paddingTop: 11, paddingBottom: 9, paddingStart: 0, paddingEnd: 0, radius: 999, textAlign: "center" },
-      breakpointStyles: { tablet: { hidden: true }, mobile: { hidden: false } },
-      children: [{ id: `${id}-mobile-search-icon`, type: "icon", props: { name: "search" }, style: { fontSize: "lg" }, children: [] }],
-    };
-    out = insertBeside([out], isCart, search, false)?.[0] ?? { ...out, children: [...out.children, search] };
-  }
+  const out = walk(bar);
+  const search: Node[] = hadSearch
+    ? [
+        {
+          id: `${id}-mobile-search`,
+          type: "linkBlock",
+          props: { href: "/products", label: locale === "en" ? "Search" : "بحث" },
+          style: { width: "44px", paddingTop: 11, paddingBottom: 9, paddingStart: 0, paddingEnd: 0, radius: 999, textAlign: "center" },
+          children: [{ id: `${id}-mobile-search-icon`, type: "icon", props: { name: "search" }, style: { fontSize: "lg" }, children: [] }],
+        },
+      ]
+    : [];
   const mobile: Record<string, unknown> = {};
   for (const key of ["paddingTop", "paddingBottom"] as const) {
     const value = mobileValue(out, key);
     if (typeof value === "number" && value > MOBILE_BAR_PADDING) mobile[key] = MOBILE_BAR_PADDING;
   }
-  if (out.type === "grid") {
-    // The first cell always shows: the burger joins it (withMobileMenu).
-    const shown = out.children.filter((c, i) => i === 0 || shownOnMobile(c)).length;
-    const columns = mobileValue(out, "columns");
-    if (shown > 0 && typeof columns === "number" && columns < shown) mobile.columns = shown;
-    // A centred logo between two cells gets the middle half (4 columns, the logo spans 2), so a
-    // longer store name stays on one line between the burger and the icons.
-    const logoAt = out.children.findIndex((c) => c.props.role === "logo" || contains(c.children, hasRole("logo")));
-    if (shown === 3 && out.children.length === 3 && logoAt === 1) {
+  return { bar: Object.keys(mobile).length ? withMobileStyle(out, mobile) : out, start: [...search, ...tools] };
+}
+
+/** Puts the phone start cell first in the bar and lays the bar out as start · logo · end (see above). */
+function splitBar(bar: Node, startCell: Node, id: string): Node {
+  // Cells with nothing left on phones hide, so they take no column or gap.
+  const cells = bar.children.map((c) => (visibleOnMobile(c) || holdsLogo(c) ? c : hideOnMobile(c)));
+  const logoAt = cells.findIndex(holdsLogo);
+  if (bar.type === "grid") {
+    let children = [startCell, ...cells];
+    const shown = children.filter(shownOnMobile);
+    const mobile: Record<string, unknown> = { columns: Math.max(1, shown.length) };
+    // A logo between two cells gets the middle half (4 columns, the logo spans 2), so a longer store
+    // name stays on one line between the start icons and the cart.
+    if (shown.length === 3 && holdsLogo(shown[1]!)) {
       mobile.columns = 4;
       // A link is drawn inside an <a> (the grid item), so a link logo gets a centred cell around it.
-      const middle = out.children[1]!;
+      const middle = shown[1]!;
       const cell: Node =
         middle.type === "linkBlock"
           ? { id: `${id}-logo-cell`, type: "hFlex", props: {}, style: { justifyContent: "center", alignItems: "center", wrap: false }, children: [middle] }
           : middle;
-      const logoCell = withMobileStyle(cell, { colSpan: 2 });
-      out = { ...out, children: [out.children[0]!, logoCell, out.children[2]!] };
+      children = children.map((c) => (c === middle ? withMobileStyle(cell, { colSpan: 2 }) : c));
     }
+    return withMobileStyle({ ...bar, children }, mobile);
   }
-  return Object.keys(mobile).length ? withMobileStyle(out, mobile) : out;
+  // A row: three columns when nothing but the start cell comes before the logo.
+  if (logoAt < 0 || cells.slice(0, logoAt).some(shownOnMobile)) return { ...bar, children: [startCell, ...cells] };
+  const end: Node = {
+    id: `${id}-mobile-end`,
+    type: "hFlex",
+    props: { group: MOBILE_GROUP },
+    style: { justifyContent: "end", alignItems: "center", gap: 4, wrap: false },
+    children: cells.slice(logoAt + 1),
+  };
+  return withMobileStyle(
+    { ...bar, props: { ...bar.props, split: MOBILE_SPLIT }, children: [startCell, ...cells.slice(0, logoAt + 1), end] },
+    { gap: 8 },
+  );
 }
 
 /** Hides, on phones, what follows the bar at every level up to the header's root (dividers stay). */
@@ -454,21 +496,40 @@ function withMobileMenu(tree: Node[], id: string, locale: string): Node[] {
   if (path && barAt >= 0) {
     const old = path[barAt]!;
     nodes = hideAfter(nodes, path.slice(0, barAt + 1));
-    const bar = compactBar(pathTo(nodes, (node) => node.id === old.id)!.at(-1)!, id, locale);
-    const first = bar.children[0];
-    // In a grid the burger joins the first cell: at its start when that cell is a row shown on
-    // phones (it keeps the cell's look), else in a new cell beside it, so the column count stays.
-    const cell: Node | null =
-      bar.type !== "grid" || !first
-        ? null
-        : first.type === "hFlex" && shownOnMobile(first)
-          ? { ...first, children: [burger, ...first.children] }
-          : { id: `${id}-mobile-menu-cell`, type: "hFlex", props: {}, style: { gap: 8, alignItems: "center", wrap: false }, children: [burger, first] };
-    const children = cell ? [cell, ...bar.children.slice(1)] : [burger, ...bar.children];
-    return replaceFirst(nodes, (node) => node.id === old.id, () => ({ ...bar, children }))!;
+    const { bar, start } = compactBar(pathTo(nodes, (node) => node.id === old.id)!.at(-1)!, id, locale);
+    // Phones only: the burger, then the search icon and the language switch.
+    const startCell: Node = {
+      id: `${id}-mobile-start`,
+      type: "hFlex",
+      props: {},
+      style: { hidden: true, gap: 0, alignItems: "center", wrap: false },
+      breakpointStyles: { tablet: { hidden: true }, mobile: { hidden: false } },
+      children: [burger, ...start],
+    };
+    return replaceFirst(nodes, (node) => node.id === old.id, () => splitBar(bar, startCell, id))!;
   }
   const [root, ...rest] = nodes;
   return root!.type === "section" ? [{ ...root!, children: [burger, ...root!.children] }, ...rest] : [burger, ...nodes];
+}
+
+/**
+ * The header's tools beside a cart whose row spreads its items (`between` or
+ * `around`) or is a grid: they go into one group with the cart, so each one
+ * does not take an equal share of the free space or a cell of its own (owner,
+ * 2026-10-29: a big gap between the language switch and the cart). Null when
+ * the cart's row packs its items (they go in as siblings) or there is no cart.
+ */
+const SPREAD = new Set(["between", "around"]);
+
+function groupWithCart(nodes: Node[], tools: Node[], id: string): Node[] | null {
+  const path = pathTo(nodes, isCart);
+  const cart = path?.at(-1);
+  const parent = path?.at(-2);
+  if (!cart || !parent) return null;
+  const spreads = parent.type === "grid" || (parent.type === "hFlex" && SPREAD.has(String((parent.style as Record<string, unknown> | undefined)?.justifyContent)));
+  if (!spreads) return null;
+  const group: Node = { id: `${id}-tools`, type: "hFlex", props: {}, style: { gap: 8, alignItems: "center", wrap: false }, children: [...tools, cart] };
+  return replaceFirst(nodes, (node) => node === cart, () => group);
 }
 
 /** Where the platform credit links. */
@@ -553,13 +614,14 @@ function withTallabyCredit(tree: Node[], id: string, locale: string): Node[] {
  * language. `hasLogo`: the store uploaded a logo. `logoPlaceholder` (editor
  * only): without a logo, the logo node still goes in, beside the store name,
  * so the canvas can show its uploader there. `locale`: the language shown
- * (the footer's Powered by Tallaby line; Arabic when not given). Never
+ * (the footer's Powered by Tallaby line; Arabic when not given). `appInstall`:
+ * the footer gets the store app's Download application button. Never
  * mutates its input, and returns a header unchanged when nothing applies.
  */
 export function drawChrome(
   instance: SectionInstance | null | undefined,
   part: ChromePart,
-  opts: { translated: boolean; hasLogo: boolean; logoPlaceholder?: boolean; locale?: string },
+  opts: { translated: boolean; hasLogo: boolean; logoPlaceholder?: boolean; locale?: string; appInstall?: boolean },
 ): SectionInstance | null | undefined {
   const tree = instance?.componentTree;
   if (!instance || !tree?.length) return instance;
@@ -575,6 +637,8 @@ export function drawChrome(
   if (opts.translated && on("languageSwitcher")) tool("languageSwitcher", "language");
   if (on("themeToggle")) tool("themeToggle", "theme");
   if (on("account")) tool("accountLink", "account");
+  // The store app's "Download application" button (ROADMAP.md F-36): every footer, unless the store hid it.
+  if (part === "footer" && opts.appInstall) tool("appInstall", "app");
   if (tools.length && part === "header") {
     // Before the cart (in this order), else after the menu, else after the logo, else at the end.
     const [root, ...rest] = nodes;
@@ -584,6 +648,7 @@ export function drawChrome(
       return out;
     };
     nodes =
+      groupWithCart(nodes, tools, instance.id) ??
       group(nodes, isCart, false) ??
       group(nodes, hasRole("menu"), true) ??
       group(nodes, hasRole("logo"), true) ??

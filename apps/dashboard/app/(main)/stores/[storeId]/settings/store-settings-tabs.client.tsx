@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
-/** General (with the store catalog) · Payment methods. */
+/** General (with the store catalog) · Payment methods · Order protection · App. */
 export function StoreSettingsTabs({ storeId }: { storeId: string }) {
   const t = useTranslations("nav");
   const pathname = usePathname();
@@ -13,6 +13,8 @@ export function StoreSettingsTabs({ storeId }: { storeId: string }) {
   const tabs = [
     { href: base, label: t("general"), exact: true },
     { href: `${base}/payments`, label: t("paymentMethods") },
+    { href: `${base}/protection`, label: t("orderProtection") },
+    { href: `${base}/app`, label: t("storeApp") },
   ];
 
   return (
@@ -25,7 +27,7 @@ export function StoreSettingsTabs({ storeId }: { storeId: string }) {
             href={tab.href}
             aria-current={active ? "page" : undefined}
             className={cn(
-              // Two tabs: they share the row on phones.
+              // Few tabs: they share the row on phones.
               "shrink-0 border-b-2 px-3 py-2.5 text-center text-sm transition-colors max-sm:flex-1",
               active
                 ? "border-primary font-medium text-primary-ink"

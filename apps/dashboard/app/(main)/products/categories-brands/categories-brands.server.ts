@@ -152,6 +152,8 @@ export async function addTaxonomyItem(kind: TaxonomyKind, input: unknown): Promi
             .returning({ id: sellerProductBrands.id });
 
     revalidatePath(TAXONOMY_PAGE_HREF[kind]);
+    // A category picked from a Tallaby one takes in that category's unlinked products on the storefront (storeCategoryGroups).
+    if (kind === "category" && values.sourceId) await applyInvalidation(invalidateSellerProducts(seller.sellerId), { from: "dashboard", mode: "action" });
     return { success: true, data: { id: row!.id, ...values, productCount: 0 } };
   } catch (error) {
     return failure(error, "add");

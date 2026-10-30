@@ -13,6 +13,7 @@ import { headerRuled } from "./header-ruled";
 import { headerSearch } from "./header-search";
 import { headerTopbar } from "./header-topbar";
 import { headerIcons } from "./header-icons";
+import { headerAnnouncementStrip } from "./header-announcement-strip";
 
 /** First is the default for new stores (the Classic template's header). */
-export const HEADER_DESIGNS: readonly Design[] = [headerClassic, headerLine, headerCentered, headerAnnouncement, headerSearch, headerPill, headerRuled, headerChips, headerBrandBar, headerDepartments, headerCenteredTicker, headerInline, headerTopbar, headerIcons];
+export const HEADER_DESIGNS: readonly Design[] = [headerClassic, headerLine, headerCentered, headerAnnouncement, headerSearch, headerPill, headerRuled, headerChips, headerBrandBar, headerDepartments, headerCenteredTicker, headerInline, headerTopbar, headerIcons, headerAnnouncementStrip];

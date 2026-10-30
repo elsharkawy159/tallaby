@@ -1,3 +1,4 @@
+import type { OrderRisk } from "@workspace/lib/customers";
 import type { SellerOrderFlow } from "./order-flow.lib";
 
 export interface SellerOrderLine {
@@ -49,6 +50,10 @@ export interface SellerOrderRow {
   storeName: string | null;
   customerName: string;
   customerPhone: string | null;
+  /** The seller blocked this phone on the order's store (ROADMAP.md F-02). */
+  customerBlocked: boolean;
+  /** The phone refused orders on this store before, or ordered again within minutes (ROADMAP.md F-02d); null when neither. */
+  risk: OrderRisk | null;
   customerEmail: string | null;
   isGuest: boolean;
   address: SellerOrderAddress | null;
@@ -74,6 +79,10 @@ export interface SellerOrderRow {
   /** The order's Bosta shipment, once one was attempted. */
   bosta: SellerOrderBosta | null;
   flow: SellerOrderFlow;
+  /** Prefilled WhatsApp "please confirm" text for a new store order (ROADMAP.md F-02g). */
+  confirmMessage: string | null;
+  /** Hours a new order has waited unconfirmed, once past UNCONFIRMED_AFTER_HOURS. */
+  unconfirmedHours: number | null;
   shippedAt: string | null;
   deliveredAt: string | null;
   cancelledAt: string | null;

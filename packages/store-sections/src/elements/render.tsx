@@ -47,11 +47,12 @@ import {
   Users,
   Wrench,
   X,
+  Smartphone,
   Youtube,
   Zap,
   type LucideIcon,
 } from "lucide-react";
-import { MOBILE_COLLAPSE } from "../config/header";
+import { MOBILE_COLLAPSE, MOBILE_GROUP, MOBILE_SPLIT } from "../config/header";
 import type { ComponentNode } from "../config/schema";
 import { sectionText } from "../core/copy";
 import { IMAGE_SIZES, imageSource, type RenderContext } from "../core/types";
@@ -158,6 +159,10 @@ function scopedProps(node: ComponentNode, ctx: RenderContext, scope: DataRecord 
   if (value === null) return null;
   const next: Record<string, unknown> = { ...props, [target]: value };
   if (node.type === "image") next.alt = scope.kind === "categoryList" ? scope.record.name : scope.record.title;
+  // A product card's photo fades to the product's second photo on hover (storefront only).
+  if (node.type === "image" && props.bind === "image" && scope.kind === "productList" && scope.hoverImage !== false && ctx.mode === "public" && scope.record.secondImage) {
+    next.secondSrc = scope.record.secondImage;
+  }
   return next;
 }
 
@@ -427,9 +432,9 @@ function revealOf(node: ComponentNode, props: Record<string, unknown>, ctx: Rend
  */
 const MOBILE_RAIL_CLASS = {
   cards:
-    "max-md:-mx-4 max-md:flex max-md:snap-x max-md:snap-mandatory max-md:scroll-px-4 max-md:overflow-x-auto max-md:px-4 max-md:pb-1 max-md:[scrollbar-width:none] max-md:*:shrink-0 max-md:*:basis-[min(72%,280px)] max-md:*:snap-start max-md:[&::-webkit-scrollbar]:hidden",
+    "max-md:-mx-4 max-md:flex max-md:snap-x max-md:snap-mandatory max-md:scroll-px-4 max-md:overflow-x-auto max-md:overflow-y-hidden max-md:px-4 max-md:pb-1 max-md:[scrollbar-width:none] max-md:*:shrink-0 max-md:*:basis-[min(72%,280px)] max-md:*:snap-start max-md:[&::-webkit-scrollbar]:hidden",
   categories:
-    "max-md:-mx-4 max-md:flex max-md:snap-x max-md:snap-mandatory max-md:scroll-px-4 max-md:overflow-x-auto max-md:px-4 max-md:pb-1 max-md:[scrollbar-width:none] max-md:*:shrink-0 max-md:*:basis-[44%] max-md:*:snap-start max-md:[&::-webkit-scrollbar]:hidden",
+    "max-md:-mx-4 max-md:flex max-md:snap-x max-md:snap-mandatory max-md:scroll-px-4 max-md:overflow-x-auto max-md:overflow-y-hidden max-md:px-4 max-md:pb-1 max-md:[scrollbar-width:none] max-md:*:shrink-0 max-md:*:basis-[44%] max-md:*:snap-start max-md:[&::-webkit-scrollbar]:hidden",
 } as const;
 
 /**
@@ -440,7 +445,7 @@ const MOBILE_RAIL_CLASS = {
  * arrows on tablet and desktop move it a view at a time (`CarouselRuntime`).
  */
 const RAIL_CLASS =
-  "flex snap-x snap-mandatory overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden *:shrink-0 *:snap-start lg:*:basis-[calc((100%-3*var(--rail-gap,24px))/4)] md:max-lg:*:basis-[calc((100%-2*var(--rail-gap-t,16px))/3)] max-md:-mx-4 max-md:scroll-px-4 max-md:px-4 max-md:*:basis-[min(72%,280px)]";
+  "flex snap-x snap-mandatory overflow-x-auto overflow-y-hidden pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden *:shrink-0 *:snap-start lg:*:basis-[calc((100%-3*var(--rail-gap,24px))/4)] md:max-lg:*:basis-[calc((100%-2*var(--rail-gap-t,16px))/3)] max-md:-mx-4 max-md:scroll-px-4 max-md:px-4 max-md:*:basis-[min(72%,280px)]";
 const RAIL_ARROW =
   "absolute top-[34%] z-10 grid size-11 -translate-y-1/2 place-items-center rounded-full border border-(--sf-line) bg-(--sf-paper) text-(--sf-ink) shadow-md transition-colors hover:bg-(--sf-shelf) focus-visible:outline-2 focus-visible:outline-(--sf-brand) max-md:hidden";
 
@@ -545,8 +550,18 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
       );
     case "hFlex":
       // A header menu (`collapse: "mobile"`, drawChrome) hides on phones: the burger menu holds it there.
+      // A header bar (`split`) is three columns on phones, the logo in the middle; its end cell
+      // (`group`) is a box only there.
       return (
-        <div {...attrs} className={cn("flex min-w-0 flex-row flex-wrap", props.collapse === MOBILE_COLLAPSE && "max-md:hidden")}>
+        <div
+          {...attrs}
+          className={cn(
+            "flex min-w-0 flex-row flex-wrap",
+            props.collapse === MOBILE_COLLAPSE && "max-md:hidden",
+            props.split === MOBILE_SPLIT && "max-md:grid max-md:grid-cols-[1fr_auto_1fr]",
+            props.group === MOBILE_GROUP && "md:contents",
+          )}
+        >
           {kids()}
         </div>
       );
@@ -584,8 +599,9 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
         </p>
       );
     case "text":
+      // The price before a discount is always struck through (owner, 2026-10-29).
       return (
-        <p {...attrs} className="text-sm">
+        <p {...attrs} className={cn("text-sm", props.bind === "compareAtPrice" && "line-through")}>
           {str(props.text, 300)}
         </p>
       );
@@ -616,8 +632,21 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
       if (!url) {
         return ctx.mode === "edit" ? <div {...attrs} aria-hidden className="block w-full bg-(--sf-shelf)" /> : null;
       }
+      const sizes = typeof props.bind === "string" ? IMAGE_SIZES.card : IMAGE_SIZES.content;
+      const secondUrl = typeof props.secondSrc === "string" ? ctx.imageUrl(props.secondSrc) : null;
+      if (secondUrl) {
+        // Both photos overlap; hovering the card fades the first one out to show the second.
+        return (
+          <span className="group/pc relative block w-full">
+            {/* eslint-disable-next-line @next/next/no-img-element -- shared by both apps; the host optimizes through ctx.optimizeImage */}
+            <img {...attrs} {...imageSource(ctx, url, sizes)} alt={str(props.alt, 160)} className="relative z-[1] block w-full transition-opacity duration-500 ease-in-out group-hover/pc:opacity-0 motion-reduce:transition-none" loading="lazy" decoding="async" />
+            {/* eslint-disable-next-line @next/next/no-img-element -- same as above */}
+            <img {...attrs} {...imageSource(ctx, secondUrl, sizes)} alt="" aria-hidden className="absolute! inset-0 block size-full! object-cover" loading="lazy" decoding="async" />
+          </span>
+        );
+      }
       // eslint-disable-next-line @next/next/no-img-element -- shared by both apps; the host optimizes through ctx.optimizeImage
-      return <img {...attrs} {...imageSource(ctx, url, IMAGE_SIZES.content)} alt={str(props.alt, 160)} className="block w-full" loading="lazy" decoding="async" />;
+      return <img {...attrs} {...imageSource(ctx, url, sizes)} alt={str(props.alt, 160)} className="block w-full" loading="lazy" decoding="async" />;
     }
     case "video":
       return <VideoElement attrs={attrs} props={props} ctx={ctx} />;
@@ -893,10 +922,10 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
         ) : null;
       }
       return (
-        // eslint-disable-next-line @next/next/no-img-element -- shared by both apps; a logo is small
+        // eslint-disable-next-line @next/next/no-img-element -- shared by both apps; the host optimizes through ctx.optimizeImage
         <img
           {...attrs}
-          src={url}
+          {...imageSource(ctx, url, IMAGE_SIZES.logo)}
           alt={ctx.store.name}
           className={cn("block w-auto max-w-40 shrink-0 object-contain", props.size === "lg" ? "h-12" : "h-9 md:h-10")}
           decoding="async"
@@ -917,6 +946,24 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
           <span className="inline-grid size-10 place-items-center rounded-full">
             <Moon className="size-4.5" aria-hidden />
             <span className="sr-only">{sectionText("themeToggle", ctx.locale)}</span>
+          </span>
+        </div>
+      ) : null;
+    }
+    case "appInstall": {
+      const button = ctx.renderAppInstall?.();
+      if (button) {
+        return (
+          <div {...attrs} className="flex">
+            {button}
+          </div>
+        );
+      }
+      return ctx.mode === "edit" ? (
+        <div {...attrs} className="flex">
+          <span className="inline-flex h-10 items-center gap-1.5 rounded-full border border-current/20 px-3.5 text-sm font-medium">
+            <Smartphone className="size-4" aria-hidden />
+            {sectionText("downloadApp", ctx.locale)}
           </span>
         </div>
       ) : null;

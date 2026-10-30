@@ -11,8 +11,9 @@ const JITTER = 8;
  * docs/section-rules.md §5.6): scrolling down past its height slides it up
  * out of view, scrolling up slides it back. It stays shown at the top of the
  * page, while focus is inside it (search), while a sheet locks the page
- * scroll, and for visitors who ask for reduced motion. Only `transform`
- * moves, so the page never jumps.
+ * scroll, and for visitors who ask for reduced motion. Only `translate`
+ * moves (Tailwind v4's `-translate-y-full` sets `translate`, not `transform`,
+ * so that is the property to transition), so the page never jumps.
  */
 export function StickyStoreHeader({ children }: { children: ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -59,7 +60,7 @@ export function StickyStoreHeader({ children }: { children: ReactNode }) {
       data-header-hidden={hidden || undefined}
       className={cn(
         // Every section is its own stacking context (`relative isolate`); z-40 keeps the header's search results above the page.
-        "sticky top-0 z-40 bg-(--sf-paper) transition-[transform,box-shadow] duration-[250ms] ease-[cubic-bezier(.2,.7,.2,1)] motion-reduce:transition-none",
+        "sticky top-0 z-40 bg-(--sf-paper) transition-[translate,box-shadow] duration-[350ms] ease-[cubic-bezier(.2,.7,.2,1)] motion-reduce:transition-none",
         hidden && "-translate-y-full",
         scrolled && !hidden && "shadow-[0_1px_0_var(--sf-line)]",
       )}

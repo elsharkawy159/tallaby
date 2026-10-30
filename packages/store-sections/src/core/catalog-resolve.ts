@@ -14,7 +14,10 @@ export type ProductCandidate = {
   /** ISO date the product was added. */
   createdAt: string;
   isFeatured: boolean;
+  /** Its store category (the key category lists and `category` queries use). */
   categoryId: string | null;
+  /** The category a related list matches the current product's on (the Tallaby one); defaults to `categoryId`. */
+  relatedCategoryId?: string | null;
   price: number | null;
   compareAtPrice: number | null;
   rating?: number | null;
@@ -89,7 +92,7 @@ export function selectProducts<T extends ProductCandidate>(query: ProductQuery, 
       // Same category first, then the newest of the rest; never the current product.
       const rel = query.relatedTo;
       const others = candidates.filter((p) => p.id !== rel?.productId).sort(newestFirst);
-      const same = rel?.categoryId ? others.filter((p) => p.categoryId === rel.categoryId) : [];
+      const same = rel?.categoryId ? others.filter((p) => (p.relatedCategoryId ?? p.categoryId) === rel.categoryId) : [];
       // The source's own order is kept: a sort would break "same category first".
       return [...same, ...others.filter((p) => !same.includes(p))].slice(0, query.limit);
     }

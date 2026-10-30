@@ -33,6 +33,7 @@ import { StoreForm } from "./store-form.client";
 import { StorefrontLanguageSwitcher } from "./storefront-language.client";
 import { StorefrontThemeToggle } from "./storefront-theme-toggle.client";
 import { StoreAccountButton } from "./store-account-button.client";
+import { StoreAppInstallButton } from "./store-app-install.client";
 import { StoreMobileMenu } from "./store-mobile-menu.client";
 import { StickyStoreHeader } from "./sticky-store-header.client";
 import { StoreWishlistButton } from "./store-wishlist-button.client";
@@ -172,6 +173,7 @@ async function buildContext(
     renderLanguageSwitcher: () => <StorefrontLanguageSwitcher variant="site" />,
     renderThemeToggle: () => <StorefrontThemeToggle />,
     renderAccountButton: () => <StoreAccountButton />,
+    renderAppInstall: () => <StoreAppInstallButton storeName={store.displayName} />,
     renderMobileMenu: ({ links, title }) => <StoreMobileMenu title={title} links={links} fontClassName={storefrontFont.variable} />,
     renderAddToCart: (product) => (
       <StoreCardAddToCart productId={product.id} href={product.href} inStock={!!product.inStock} hasVariants={catalog.withVariants.has(product.id)} />
@@ -196,12 +198,19 @@ export async function StoreSiteChrome({
   part: "header" | "footer";
 }): Promise<ReactNode> {
   // The logo and tools the seller turned on (Content › Header/Footer options), drawn and never saved.
-  const opts = { translated: new Set(store.supportedLocales).size > 1, hasLogo: Boolean(store.logoUrl), locale };
+  const opts = {
+    translated: new Set(store.supportedLocales).size > 1,
+    hasLogo: Boolean(store.logoUrl),
+    locale,
+    // Store settings › App (ROADMAP.md F-36): the footer's Download application button.
+    appInstall: store.app.showDownloadButton,
+  };
   const instance = part === "header" ? drawChrome(flushHeaderOnMobile(site.header), "header", opts) : drawChrome(site.footer, "footer", opts);
   // drawChrome credits the platform in every footer tree; a footer without one (or no footer) gets the line here.
   const credit = part === "footer" && !instance?.componentTree?.length && (
-    <footer className="py-5 text-center text-xs opacity-80">
-      <PoweredByTallaby />
+    <footer className="flex flex-col items-center gap-3 py-5 text-center text-xs">
+      {store.app.showDownloadButton && <StoreAppInstallButton storeName={store.displayName} />}
+      <PoweredByTallaby className="opacity-80" />
     </footer>
   );
   if (!instance) return credit || null;

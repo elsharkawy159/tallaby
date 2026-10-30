@@ -81,7 +81,10 @@
     "sellerCategories": "Categories",
     "sellerBrands": "Brands",
     "earn": "Earn with us",
-    "missedOrders": "Not completed"
+    "orderProtection": "Order protection",
+    "storeApp": "Store app",
+    "missedOrders": "Not completed",
+    "customers": "Customers"
   },
   "common": {
     "loading": "Loading...",
@@ -1974,7 +1977,15 @@
       "call": "Call",
       "whatsapp": "WhatsApp",
       "whatsappText": "Hi, about your order #{number}",
-      "openMap": "Open in Maps"
+      "openMap": "Open in Maps",
+      "blockCustomer": "Block this customer",
+      "unblockCustomer": "Unblock",
+      "customerBlocked": "Phone blocked. It can no longer order from this store.",
+      "customerUnblocked": "Phone unblocked.",
+      "blockedNote": "This phone is blocked on this store.",
+      "blockReason": "From order {number}",
+      "askToConfirm": "Ask to confirm",
+      "unconfirmedFor": "Not confirmed for {hours} h"
     },
     "channel": {
       "label": "Sales channel",
@@ -2100,6 +2111,88 @@
         "back": "Back",
         "done": "{shipped, plural, one {# order} other {# orders}} sent to Bosta.",
         "partial": "{shipped} sent to Bosta, {failed} need your attention."
+      }
+    },
+    "risk": {
+      "refused": "{count, plural, one {Refused # order} other {Refused # orders}}",
+      "refusedTitle": "This phone refused {refused} and received {delivered} of its other orders on this store",
+      "refusedNote": "This phone refused or returned {refused} other orders on this store (and received {delivered}). Confirm before you ship.",
+      "duplicate": "Possible duplicate",
+      "duplicateTitle": "Same phone ordered {numbers} within 10 minutes",
+      "duplicateNote": "The same phone placed {numbers} within 10 minutes of this order. Check it isn't the same order twice.",
+      "seeCustomers": "See this store's customers"
+    },
+    "print": {
+      "metaTitle": "Print orders",
+      "invoice": "Invoice",
+      "slip": "Packing slip",
+      "print": "Print",
+      "close": "Close",
+      "ordersCount": "{count, plural, one {# order} other {# orders}}",
+      "empty": "No orders to print.",
+      "emptyHint": "These orders may not be yours, or they no longer exist.",
+      "order": "Order #{number}",
+      "date": "Date",
+      "payment": "Payment",
+      "billTo": "Bill to",
+      "shipTo": "Ship to",
+      "item": "Item",
+      "qty": "Qty",
+      "price": "Price",
+      "total": "Total",
+      "subtotal": "Subtotal",
+      "shipping": "Shipping",
+      "discount": "Discount",
+      "orderTotal": "Order total",
+      "yourItems": "Your items",
+      "partialNote": "Only your items from this order are listed. Tallaby collects the payment.",
+      "collect": "Collect on delivery",
+      "nothingToCollect": "Nothing to collect",
+      "paid": "Paid",
+      "note": "Customer note",
+      "giftMessage": "Gift message",
+      "instructions": "Delivery notes",
+      "items": "{count, plural, one {# item} other {# items}}",
+      "thanks": "Thank you for shopping with us.",
+      "sku": "SKU {sku}",
+      "tallaby": "Tallaby",
+      "language": "Language",
+      "noAddress": "No shipping address"
+    },
+    "printActions": {
+      "print": "Print",
+      "printCount": "Print ({count})",
+      "invoice": "Invoice (A4)",
+      "slip": "Packing slip (A6)",
+      "invoices": "Invoices (A4)",
+      "slips": "Packing slips (A6)",
+      "capped": "The first {max} orders in this list"
+    },
+    "export": {
+      "button": "Export ({count})",
+      "sheet": "Orders",
+      "failed": "Couldn't export the orders. Try again.",
+      "columns": {
+        "orderNumber": "Order number",
+        "date": "Date",
+        "channel": "Sales channel",
+        "stage": "Status",
+        "customer": "Customer",
+        "phone": "Phone",
+        "email": "Email",
+        "address": "Address",
+        "area": "Area",
+        "items": "Items",
+        "quantity": "Quantity",
+        "itemsTotal": "Your items total (EGP)",
+        "shipping": "Shipping (EGP)",
+        "discount": "Discount (EGP)",
+        "total": "Order total (EGP)",
+        "paymentMethod": "Payment method",
+        "paymentStatus": "Payment status",
+        "collect": "To collect (EGP)",
+        "tracking": "Bosta tracking number",
+        "notes": "Notes"
       }
     }
   },
@@ -2613,6 +2706,9 @@
     "pages": "Pages",
     "language": "Switch language",
     "toggleTheme": "Toggle dark mode",
+    "menuInstallApp": "Download app",
+    "menuLanguage": "Language",
+    "menuDarkMode": "Dark mode",
     "walletBalance": "Wallet Balance: {amount}",
     "walletLabel": "Wallet Balance:"
   },
@@ -4828,6 +4924,76 @@
       "reason": "Reason: {reason}"
     }
   },
+  "blockedCustomers": {
+    "title": "Block customer phones",
+    "description": "Blocked phones can't place an order on this store's website. Useful for fake orders or customers who refuse deliveries.",
+    "phone": "Mobile number",
+    "reason": "Reason (only you see it)",
+    "reasonPlaceholder": "e.g. refused delivery twice",
+    "block": "Block",
+    "unblock": "Unblock",
+    "hint": "Matches the number in any format (010… or +2010…). The customer sees a general message and is not told they are blocked.",
+    "listTitle": "Blocked phones ({count})",
+    "empty": "No blocked phones.",
+    "blocked": "Phone blocked.",
+    "unblocked": "Phone unblocked.",
+    "readOnly": "This store is read-only, so the blocklist can't be changed.",
+    "errors": {
+      "phoneInvalid": "Enter a valid Egyptian mobile number.",
+      "readOnly": "This store is read-only.",
+      "notFound": "Phone or store not found.",
+      "rateLimited": "Too many attempts. Try again shortly.",
+      "generic": "Something went wrong. Try again.",
+      "templateTooLong": "The message is too long (1,000 characters max)."
+    }
+  },
+  "orderProtection": {
+    "confirmTitle": "WhatsApp order confirmation message",
+    "confirmDescription": "The \"Ask to confirm\" button on new orders opens WhatsApp to the customer with this message. When they reply, press \"Confirm order\". Orders not confirmed within 24 hours are highlighted.",
+    "template": "Message",
+    "placeholders": "You can use:",
+    "preview": "Preview",
+    "save": "Save message",
+    "useDefault": "Use the default message",
+    "saved": "Message saved.",
+    "sample": {
+      "name": "Mona",
+      "product": "Power bank 10,000 mAh",
+      "line": "12 El Nasr St",
+      "area": "Nasr City, Cairo"
+    },
+    "errors": {
+      "phoneInvalid": "Enter a valid Egyptian mobile number.",
+      "templateTooLong": "The message is too long (1,000 characters max).",
+      "readOnly": "This store is read-only.",
+      "notFound": "Store not found.",
+      "rateLimited": "Too many attempts. Try again shortly.",
+      "generic": "Something went wrong. Try again."
+    }
+  },
+  "storeApp": {
+    "title": "Your store app",
+    "description": "Customers can install your store website as a phone app with your store's name and icon, and open it from the home screen without a browser.",
+    "appName": "App name",
+    "appIcon": "App icon",
+    "iconFromFavicon": "From your site icon (favicon)",
+    "iconFromLogo": "From your store logo (no favicon yet)",
+    "iconInitials": "Your store's initials (no favicon or logo yet)",
+    "changeIcon": "Change icon",
+    "nameHint": "The name is your store name; the short label under the icon is shortened automatically. Change the name in General settings.",
+    "buttonTitle": "\"Download application\" button in the footer",
+    "buttonDescription": "Shows in your website footer on every template. If you hide it, customers can still install the app from the browser menu.",
+    "viewStore": "Open store",
+    "shown": "The download button shows in the footer.",
+    "hidden": "Download button hidden.",
+    "readOnly": "This store is read-only.",
+    "errors": {
+      "readOnly": "This store is read-only.",
+      "notFound": "Store not found.",
+      "rateLimited": "Too many attempts. Try again shortly.",
+      "generic": "Something went wrong. Try again."
+    }
+  },
   "welcomeGift": {
     "imageAlt": "Congratulations! You got {amount} in your Tallaby wallet.",
     "title": "Congratulations! {amount} is in your wallet",
@@ -4892,6 +5058,110 @@
       "readOnly": "This store is read-only.",
       "tooLong": "The message is too long (1,000 characters max).",
       "generic": "Something went wrong. Try again."
+    }
+  },
+  "customers": {
+    "title": "Customers",
+    "description": "Everyone who ordered from your store, grouped by phone number. See how often they buy, how much they spent and how many cash-on-delivery orders they received or refused.",
+    "search": "Search by name, phone or email",
+    "filters": {
+      "store": "Store",
+      "label": "Filter",
+      "all": "All",
+      "repeat": "Repeat buyers",
+      "refused": "Refused an order"
+    },
+    "sort": {
+      "label": "Sort",
+      "recent": "Last order",
+      "orders": "Most orders",
+      "spent": "Most spent"
+    },
+    "stats": {
+      "customers": "Customers",
+      "repeat": "Repeat buyers",
+      "refused": "Refused an order"
+    },
+    "columns": {
+      "customer": "Customer",
+      "place": "Area",
+      "orders": "Orders",
+      "spent": "Spent",
+      "success": "Delivered",
+      "lastOrder": "Last order"
+    },
+    "successTitle": "{delivered} delivered, {refused} refused",
+    "breakdown": "{delivered} delivered · {refused} refused or returned · {cancelled} cancelled",
+    "firstOrder": "First order",
+    "noName": "No name",
+    "blocked": "Blocked",
+    "blockedNote": "This phone is blocked: it can't place orders on this store.",
+    "block": "Block customer",
+    "unblock": "Unblock",
+    "blockReason": "Blocked from Customers",
+    "blockedToast": "Customer blocked",
+    "unblockedToast": "Customer unblocked",
+    "whatsapp": "WhatsApp",
+    "call": "Call",
+    "orderHistory": "Orders",
+    "loadFailed": "Couldn't load the orders. Try again.",
+    "showMore": "Show more ({count} left)",
+    "outcome": {
+      "delivered": "Delivered",
+      "refused": "Refused",
+      "cancelled": "Cancelled",
+      "open": "In progress"
+    },
+    "empty": {
+      "title": "No customers yet",
+      "body": "Customers appear here after their first order on this store."
+    },
+    "noMatch": {
+      "title": "No matching customers",
+      "body": "Try another name or number, or clear the filter."
+    },
+    "noStore": {
+      "title": "No store yet",
+      "body": "Create a store first. Its customers will appear here."
+    },
+    "notes": {
+      "title": "Notes and tags",
+      "tags": "Tags",
+      "tagPlaceholder": "Add a tag, then press Enter",
+      "tagsFull": "Up to {max} tags",
+      "removeTag": "Remove tag {tag}",
+      "tagFilter": "Tags",
+      "note": "Note",
+      "notePlaceholder": "Only you see this. For example: prefers WhatsApp, calls after 6 pm",
+      "hasNote": "Has a note",
+      "save": "Save",
+      "saved": "Saved",
+      "errors": {
+        "notFound": "This customer isn't in your store anymore.",
+        "generic": "Couldn't save. Try again."
+      }
+    },
+    "export": {
+      "button": "Export ({count})",
+      "sheet": "Customers",
+      "failed": "Couldn't create the file. Try again.",
+      "columns": {
+        "name": "Name",
+        "phone": "Phone",
+        "email": "Email",
+        "governorate": "Governorate",
+        "city": "City",
+        "orders": "Orders",
+        "delivered": "Delivered",
+        "refused": "Refused or returned",
+        "cancelled": "Cancelled",
+        "spent": "Spent (EGP)",
+        "successRate": "Delivered %",
+        "firstOrder": "First order",
+        "lastOrder": "Last order",
+        "tags": "Tags",
+        "note": "Note"
+      }
     }
   }
 }

@@ -108,7 +108,7 @@ export function Field({
         />
       );
     case "switch":
-      return <Switch id={id} checked={value === true} onCheckedChange={(checked) => onChange(checked)} />;
+      return <Switch id={id} checked={prop.defaultOn ? value !== false : value === true} onCheckedChange={(checked) => onChange(checked)} />;
     case "select":
       if (isShortChoice(prop, uiLocale)) {
         return (

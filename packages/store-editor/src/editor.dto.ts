@@ -78,7 +78,10 @@ export type EditorProduct = {
   price: number | null;
   compareAtPrice: number | null;
   isFeatured: boolean;
+  /** Its store category key (`storeCategoryGroups`): the seller category id, else the Tallaby root's key. */
   categoryId: string;
+  /** Its Tallaby category (`products.category_id`), which related lists match on; optional for older snapshots. */
+  relatedCategoryId?: string;
   inStock: boolean;
   createdAt: string;
   rating: number | null;

@@ -27,11 +27,14 @@ import {
   Package,
   PackagePlus,
   Settings,
+  ShieldCheck,
+  Smartphone,
   ShoppingBag,
   Star,
   Store,
   TrendingUp,
   Truck,
+  Users,
   Wallet,
   Warehouse,
 } from "lucide-react";
@@ -56,6 +59,7 @@ export type NavKey =
   // Sidebar groups and items added with the multi-store sitemap (PLAN.md §7.2)
   | "ordersGroup"
   | "missedOrders"
+  | "customers"
   | "deliveryTracking"
   | "fulfillmentShipping"
   | "riders"
@@ -79,6 +83,8 @@ export type NavKey =
   | "general"
   | "catalog"
   | "paymentMethods"
+  | "orderProtection"
+  | "storeApp"
   | "myStores"
   | "planUsage"
   | "wallet"
@@ -115,6 +121,7 @@ export const DASHBOARD_ROUTES: DashboardRoute[] = [
   { href: "/reviews", title: "reviews", parent: "products", icon: Star },
   { href: "/orders", title: "orders", parent: "ordersGroup", icon: ShoppingBag },
   { href: "/orders/missed", title: "missedOrders", parent: "ordersGroup", icon: PhoneMissed },
+  { href: "/orders/customers", title: "customers", parent: "ordersGroup", icon: Users },
   { href: "/orders/delivery", title: "deliveryTracking", parent: "ordersGroup", icon: Truck },
   { href: "/orders/riders", title: "riders", parent: "fulfillmentShipping", icon: Bike },
   { href: "/stores/[storeId]/shipping", title: "shippingSettings", parent: "fulfillmentShipping", icon: MapPinned },
@@ -138,6 +145,8 @@ export const DASHBOARD_ROUTES: DashboardRoute[] = [
   { href: "/stores/[storeId]/apps", title: "apps", icon: AppWindow },
   { href: "/stores/[storeId]/settings", title: "general", parent: "settingsGroup", icon: Store },
   { href: "/stores/[storeId]/settings/payments", title: "paymentMethods", parent: "settingsGroup", icon: CreditCard },
+  { href: "/stores/[storeId]/settings/protection", title: "orderProtection", parent: "settingsGroup", icon: ShieldCheck },
+  { href: "/stores/[storeId]/settings/app", title: "storeApp", parent: "settingsGroup", icon: Smartphone },
   { href: "/stores", title: "myStores", parent: "accountHelp", icon: Store },
   { href: "/settings", title: "settings", parent: "accountHelp", icon: Settings },
   { href: "/settings/plan", title: "planUsage", parent: "accountHelp", icon: Gem },

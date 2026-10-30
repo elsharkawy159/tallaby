@@ -79,6 +79,8 @@ export const SIDEBAR_CONFIG: NavEntry[] = [
       { key: "orders", href: "/orders", countKey: "orders", status: "live", exact: true },
       // Missed orders: store checkouts with an address but no order (F-03).
       { key: "missedOrders", href: "/orders/missed", status: "live" },
+      // Customers of a store, grouped from its orders by phone (F-01).
+      { key: "customers", href: "/orders/customers", status: "live" },
       // Tracking individual orders; /shipping redirects here (P3-06).
       { key: "deliveryTracking", href: "/orders/delivery", countKey: "shipping", status: "live" },
     ],
@@ -94,7 +96,6 @@ export const SIDEBAR_CONFIG: NavEntry[] = [
       { key: "fulfillment", href: "/settings/fulfillment", status: "live" },
     ],
   },
-  // Customers belongs here once it has a page; there is no customers route yet.
   // Money (balance, ledger) first, then analytics.
   {
     kind: "group",
@@ -147,6 +148,10 @@ export const SIDEBAR_CONFIG: NavEntry[] = [
     items: [
       { key: "general", href: "/stores/[storeId]/settings", status: "live", exact: true },
       { key: "paymentMethods", href: "/stores/[storeId]/settings/payments", status: "live" },
+      // Phone blocklist + WhatsApp confirm message (ROADMAP.md F-02).
+      { key: "orderProtection", href: "/stores/[storeId]/settings/protection", status: "live" },
+      // The store website as an installable app (ROADMAP.md F-36).
+      { key: "storeApp", href: "/stores/[storeId]/settings/app", status: "live" },
     ],
   },
   { kind: "divider" },

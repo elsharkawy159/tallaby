@@ -17,7 +17,8 @@ import {
 import { ProductsGridSkeleton } from "@/components/home/products-grid.skeleton";
 import type { ProductCardProps } from "@/components/product";
 import type { ProductLocale } from "@/lib/product-translations";
-import type { StorefrontCategory } from "@/lib/storefront.server";
+import { storeCategoryFilter, type StorefrontCategory } from "@/lib/storefront.server";
+import type { StoreCategoryFilter } from "@workspace/lib/store-sites/catalog-data";
 import s from "../storefront.module.css";
 
 export async function StorefrontCatalog({
@@ -87,7 +88,7 @@ export async function StorefrontCatalog({
           sellerId={sellerId}
           catalogStoreId={catalogStoreId}
           locale={locale}
-          categoryIds={active?.categoryIds}
+          storeCategory={active ? storeCategoryFilter(active) : undefined}
           query={query}
           basePath={basePath}
           renderProducts={renderProducts}
@@ -101,7 +102,7 @@ async function CatalogGrid({
   sellerId,
   catalogStoreId,
   locale,
-  categoryIds,
+  storeCategory,
   query,
   basePath,
   renderProducts,
@@ -109,7 +110,7 @@ async function CatalogGrid({
   sellerId: string;
   catalogStoreId?: string;
   locale: string;
-  categoryIds?: string[];
+  storeCategory?: StoreCategoryFilter;
   query: StoreQuery;
   basePath: string;
   renderProducts?: (rows: unknown[]) => ReactNode;
@@ -118,7 +119,7 @@ async function CatalogGrid({
   const result = await getProducts({
     sellerId,
     catalogStoreId,
-    categoryIds,
+    storeCategory,
     searchQuery: query.search,
     sortBy: SORT_MAP[query.sort as keyof typeof SORT_MAP] ?? "popular",
     limit: STORE_PAGE_SIZE,

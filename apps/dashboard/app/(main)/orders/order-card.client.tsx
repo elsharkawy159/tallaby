@@ -2,12 +2,14 @@
 
 import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
-import { ImageIcon, MapPin, Phone } from "lucide-react";
+import { Clock, ImageIcon, MapPin, Phone } from "lucide-react";
+import { WhatsAppButton } from "@workspace/ui/components/contact-buttons";
 import { cn } from "@workspace/ui/lib/utils";
 import { getPublicUrl } from "@/lib/utils";
 import { formatDateTime, formatMoney } from "@/lib/i18n/format";
 import { BostaChip, canShipWithBosta, ShipWithBostaButton } from "./bosta-ship.client";
 import { OrderActions } from "./order-actions.client";
+import { OrderRiskBadges } from "./order-risk.client";
 import { OrderStageBadge } from "./order-stage-badge";
 import type { SellerOrderRow } from "./orders.types";
 
@@ -31,6 +33,7 @@ export function OrderCard({ order, onOpen }: { order: SellerOrderRow; onOpen: ()
       className={cn(
         "group relative flex flex-col rounded-2xl border bg-card shadow-xs transition-[border-color,box-shadow] hover:border-input hover:shadow-[0_6px_20px_rgba(20,81,99,0.08)]",
         needsYou && "border-primary/40",
+        order.unconfirmedHours != null && "border-amber-400/70",
         failed && "border-destructive/40",
       )}
     >
@@ -60,6 +63,7 @@ export function OrderCard({ order, onOpen }: { order: SellerOrderRow; onOpen: ()
 
         <div className="space-y-1 text-sm">
           <p className="truncate font-medium">{order.customerName || t("guest")}</p>
+          <OrderRiskBadges order={order} />
           {order.address?.area && (
             <p className="flex items-center gap-1.5 truncate text-xs text-muted-foreground">
               <MapPin className="size-3.5 shrink-0" aria-hidden="true" />
@@ -106,6 +110,13 @@ export function OrderCard({ order, onOpen }: { order: SellerOrderRow; onOpen: ()
           </div>
         </div>
 
+        {order.unconfirmedHours != null && (
+          <p className="flex items-center gap-1.5 text-xs font-medium text-amber-700 dark:text-amber-400">
+            <Clock className="size-3.5 shrink-0" aria-hidden="true" />
+            {t("details.unconfirmedFor", { hours: order.unconfirmedHours })}
+          </p>
+        )}
+
         {failed && order.failureReason && (
           <p className="line-clamp-2 text-xs text-destructive">
             {t("details.lastAttempt", { reason: order.failureReason })}
@@ -126,6 +137,16 @@ export function OrderCard({ order, onOpen }: { order: SellerOrderRow; onOpen: ()
 
       {(order.flow.primary || canShipWithBosta(order)) && (
         <div className="relative z-10 flex flex-wrap gap-1.5 border-t p-3">
+          {order.confirmMessage && order.customerPhone && (
+            <WhatsAppButton
+              phone={order.customerPhone}
+              text={order.confirmMessage}
+              label={t("details.askToConfirm")}
+              variant="outline"
+              size="sm"
+              className="flex-1"
+            />
+          )}
           <OrderActions order={order} compact className="flex-1 [&>button:first-child]:flex-1" />
           <ShipWithBostaButton order={order} className="flex-1" />
         </div>

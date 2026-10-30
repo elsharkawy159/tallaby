@@ -46,6 +46,11 @@ describe("selectProducts related", () => {
     expect(selectProducts(rel("zz", "c1"), [])).toEqual([]);
   });
 
+  it("matches on relatedCategoryId (the Tallaby category) when set, not the store category", () => {
+    const store = [p("a", { categoryId: "s1", relatedCategoryId: "t1" }), p("b", { categoryId: "s1", relatedCategoryId: "t2" }), p("c", { categoryId: "s2", relatedCategoryId: "t1" })];
+    expect(ids(selectProducts(rel("a", "t1", { limit: 1 }), store))).toEqual(["c"]);
+  });
+
   it("without relatedTo behaves as newest", () => {
     expect(ids(selectProducts(q("related", { limit: 2 }), all))).toEqual(["e", "d"]);
   });
