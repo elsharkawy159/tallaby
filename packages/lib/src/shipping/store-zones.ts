@@ -50,7 +50,11 @@ const settingsShape = {
   method: z.enum(["tallaby", "own"]),
   /** Preparation time before handing over, in days. */
   handlingDays: z.number().int().min(0).max(30),
-  /** Tallaby delivery: seller-funded free delivery at or over this subtotal (EGP). */
+  /**
+   * Store-wide free delivery on the seller's zones (ROADMAP.md F-13b): null =
+   * none, 0 = every order, X = orders of X EGP or more. A zone's own
+   * free-over overrides it. Tallaby's rates (other places) are not affected.
+   */
   freeShippingOver: money(1_000_000).nullable(),
 };
 

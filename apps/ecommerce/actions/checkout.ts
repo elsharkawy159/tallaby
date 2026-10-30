@@ -302,11 +302,14 @@ export async function getCheckoutData() {
         pendingCouponCode,
         walletAvailableBalance: walletSummary?.availableBalance ?? null,
         walletCurrency: walletSummary?.currency ?? null,
-        onlineCardPaymentEnabled:
-          !storePayments &&
-          ONLINE_CARD_PAYMENT_ENABLED &&
-          isOnlineCardPaymentEnabled(),
-        storePayments,
+        // Storefronts: card only through the seller's own gateway (F-39).
+        onlineCardPaymentEnabled: storePayments
+          ? storePayments.methods.includes("online_payment")
+          : ONLINE_CARD_PAYMENT_ENABLED && isOnlineCardPaymentEnabled(),
+        // The gateway's integration id stays on the server.
+        storePayments: storePayments
+          ? { ...storePayments, gateway: null }
+          : null,
         storeCheckoutForm,
         storeMinOrder,
       },

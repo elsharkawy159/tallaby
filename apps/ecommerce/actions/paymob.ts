@@ -1,5 +1,6 @@
 "use server";
 
+import { readOrderGateway } from "@workspace/lib/payments/store-gateways";
 import { getCurrentUserId } from "@/lib/get-current-user-id";
 import { getRequestSiteUrl } from "@/lib/storefront.server";
 import { db, orders, eq, and } from "@workspace/db";
@@ -71,7 +72,8 @@ export async function createPaymobCheckoutUrl(orderId: string) {
       return { success: false as const, error: "Order not found" };
     }
 
-    if (order.paymentMethod !== "online_payment") {
+    // Orders placed with the seller's own gateway (F-39) are never paid to Tallaby.
+    if (order.paymentMethod !== "online_payment" || readOrderGateway(order.metadata)) {
       return { success: false as const, error: "Order is not payable online" };
     }
 

@@ -652,6 +652,15 @@ export async function placeOrderFromCart(
     }
   }
 
+  // Storefront card payment through the seller's own gateway (ROADMAP.md
+  // F-39): the money goes straight to the seller, so the order is
+  // seller-collected (fee-only on delivery, PLAN.md §13.4) and keeps which
+  // gateway it was placed with.
+  const sellerGateway =
+    storefrontPayments?.gateway && resolvedPaymentMethod === 'online_payment'
+      ? storefrontPayments.gateway
+      : null
+
   const storeShipping: StoreShippingSnapshot | null =
     storeQuote && (storeQuote.kind === 'zone' || storeQuote.kind === 'tallaby_rates')
       ? {
@@ -662,12 +671,24 @@ export async function placeOrderFromCart(
             : {}),
           place: storeQuote.place,
           billedPiastres: Math.round(billedShipping * 100),
-          collector: storeShippingCollector(resolvedPaymentMethod),
+          collector: sellerGateway
+            ? 'seller'
+            : storeShippingCollector(resolvedPaymentMethod),
         }
       : null
-  const baseOrderMetadata: Record<string, unknown> | null = storeShipping
-    ? { storeShipping }
-    : null
+  const baseOrderMetadata: Record<string, unknown> | null =
+    storeShipping || sellerGateway
+      ? {
+          ...(storeShipping && { storeShipping }),
+          ...(sellerGateway && {
+            paymentCollector: 'seller',
+            paymentGateway: {
+              provider: sellerGateway.provider,
+              integrationId: sellerGateway.integrationId,
+            },
+          }),
+        }
+      : null
 
   if (
     storefrontPayments &&

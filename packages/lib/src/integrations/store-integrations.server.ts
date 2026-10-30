@@ -160,6 +160,84 @@ export async function connectIdentifierIntegration(
   });
 }
 
+/**
+ * Connects (or updates) a `settings` app such as Wassalha: public settings
+ * only, validated by the caller. The config replaces the stored one.
+ */
+export async function saveSettingsIntegration(
+  sellerId: string,
+  actorId: string,
+  storeId: string,
+  provider: IntegrationProvider,
+  config: Record<string, unknown>,
+  q: Queryable = db,
+): Promise<IntegrationResult<StoreIntegrationSummary, "not_found" | "store_read_only" | "not_available">> {
+  if (!UUID_RE.test(storeId)) return { success: false, error: "not_found" };
+  if (INTEGRATIONS[provider].kind !== "settings" || INTEGRATIONS[provider].availability !== "available") {
+    return { success: false, error: "not_available" };
+  }
+
+  return q.transaction(async (tx) => {
+    const store = await ownStoreStatus(tx, sellerId, storeId, true);
+    if (!store) return { success: false, error: "not_found" } as const;
+    if (store.status !== "active") return { success: false, error: "store_read_only" } as const;
+
+    const [row] = await tx
+      .insert(storeIntegrations)
+      .values({ storeId, sellerId, provider, status: "connected", config, connectedBy: actorId, connectedAt: sql`now()` })
+      .onConflictDoUpdate({
+        target: [storeIntegrations.storeId, storeIntegrations.provider],
+        set: { status: "connected", config, lastError: null, updatedAt: sql`now()` },
+      })
+      .returning(summaryColumns);
+
+    return { success: true, data: toIntegrationSummary(provider, row!) } as const;
+  });
+}
+
+/** The stored config of one connected app (no secrets), for server code that already checked ownership. */
+export async function readIntegrationConfig(
+  sellerId: string,
+  storeId: string,
+  provider: IntegrationProvider,
+  q: Queryable = db,
+): Promise<{ integrationId: string; config: unknown; summary: StoreIntegrationSummary } | null> {
+  if (!UUID_RE.test(storeId)) return null;
+  const [row] = await q
+    .select({ ...summaryColumns, id: storeIntegrations.id })
+    .from(storeIntegrations)
+    .innerJoin(stores, eq(stores.id, storeIntegrations.storeId))
+    .where(
+      and(
+        eq(storeIntegrations.storeId, storeId),
+        eq(storeIntegrations.sellerId, sellerId),
+        eq(storeIntegrations.provider, provider),
+        eq(stores.sellerId, sellerId),
+        sql`${stores.deletedAt} IS NULL`,
+      ),
+    )
+    .limit(1);
+  return row ? { integrationId: row.id, config: row.config, summary: toIntegrationSummary(provider, row) } : null;
+}
+
+/** The seller's stores with this app connected (e.g. the Orders page's Wassalha export). */
+export async function listSellerStoresWith(sellerId: string, provider: IntegrationProvider, q: Queryable = db): Promise<Set<string>> {
+  const rows = await q
+    .select({ storeId: storeIntegrations.storeId })
+    .from(storeIntegrations)
+    .innerJoin(stores, eq(stores.id, storeIntegrations.storeId))
+    .where(
+      and(
+        eq(storeIntegrations.sellerId, sellerId),
+        eq(storeIntegrations.provider, provider),
+        eq(storeIntegrations.status, "connected"),
+        eq(stores.sellerId, sellerId),
+        sql`${stores.deletedAt} IS NULL`,
+      ),
+    );
+  return new Set(rows.map((r) => r.storeId));
+}
+
 /** Disconnects an app: the row is deleted, so its script stops rendering. */
 export async function disconnectStoreIntegration(
   sellerId: string,

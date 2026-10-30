@@ -50,6 +50,8 @@ export async function loadSellerOrders(
   stores: { id: string; name: string; subdomain: string }[],
   /** Stores of this seller with Bosta connected, and when they ship (BS-08/09). */
   bostaStores: ReadonlyMap<string, { autoShip: "manual" | "on_confirm"; canCancel: boolean }> = new Map(),
+  /** Stores of this seller with Wassalha (Egypt Post) set up (F-12c). */
+  wassalhaStores: ReadonlySet<string> = new Set(),
 ): Promise<SellerOrderRow[]> {
   const list = await db.query.orders.findMany({
     where: inArray(
@@ -287,6 +289,8 @@ export async function loadSellerOrders(
       bostaConnected: Boolean(o.storeId && bostaStores.has(o.storeId)),
       bostaAutoShip: Boolean(o.storeId && bostaStores.get(o.storeId)?.autoShip === "on_confirm"),
       bostaCanCancel: Boolean(o.storeId && bostaStores.get(o.storeId)?.canCancel),
+      wassalhaConnected: Boolean(o.storeId && wassalhaStores.has(o.storeId)),
+      wassalhaExported: shipment?.carrier === "wassalha" && shipment.sellerId === sellerId,
       bosta:
         shipment?.carrier === "bosta" && shipment.sellerId === sellerId
           ? {

@@ -43,6 +43,7 @@ import {
 import { ExportOrdersButton } from "./export-orders-button.client";
 import type { SellerOrderRow } from "./orders.types";
 import { PrintOrdersButton } from "./print-orders-button.client";
+import { WassalhaExportButton } from "./wassalha-export.client";
 
 const VIEW_STORAGE_KEY = "tl-orders-view";
 const GRID_PAGE_SIZE = 24;
@@ -246,6 +247,8 @@ export function VendorOrdersTable({
     [rows, channel, query, bostaAttention],
   );
   const bostaStore = channel !== "all" && channel !== "marketplace" && rows.some((r) => r.storeId === channel && r.bostaConnected);
+  // One store picked and Wassalha set up there: export its waiting orders in one sheet (F-12c).
+  const wassalhaStore = channel !== "all" && channel !== "marketplace" && rows.some((r) => r.storeId === channel && r.wassalhaConnected);
   const counts = useMemo(() => countByTab(scoped), [scoped]);
   const visible = useMemo(() => scoped.filter((r) => matchesTab(r, tab)), [scoped, tab]);
   const selected = useMemo(() => visible.filter((r) => selection[r.id]), [visible, selection]);
@@ -374,6 +377,7 @@ export function VendorOrdersTable({
           </button>
         )}
         <ExportOrdersButton orders={visible} className="ms-auto h-10" />
+        {wassalhaStore && <WassalhaExportButton storeId={channel} orders={visible} showCount className="h-10" />}
         <PrintOrdersButton orderIds={visible.map((o) => o.id)} showCount className="h-10" />
         <div
           className={cn(

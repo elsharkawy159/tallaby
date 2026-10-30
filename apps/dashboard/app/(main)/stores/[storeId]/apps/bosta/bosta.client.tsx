@@ -1,11 +1,10 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useFormatter, useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { ChevronLeft, ExternalLink, KeyRound, LoaderCircle, MapPin, RefreshCw, TriangleAlert } from "lucide-react";
+import { ExternalLink, KeyRound, LoaderCircle, MapPin, RefreshCw, TriangleAlert } from "lucide-react";
 
 import type { BostaOverview } from "@workspace/lib/integrations/server";
 import type { BostaPickupLocation } from "@workspace/lib/shipping/bosta";
@@ -13,7 +12,7 @@ import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
 import { cn } from "@workspace/ui/lib/utils";
 import { BUTTON_CLASS, SMALL_BUTTON_CLASS } from "@/components/form/form-ui";
-import { APP_BRANDS } from "../apps-brand.lib";
+import { AppPageHeader } from "../app-page-header";
 import { disconnectStoreApp } from "../apps.server";
 import { DisconnectAppButton } from "../disconnect-button.client";
 import { BostaPreferences } from "./bosta-preferences.client";
@@ -41,24 +40,13 @@ export function BostaApp({
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <Link
-          href={`/stores/${storeId}/apps`}
-          className="mb-4 inline-flex items-center gap-1 text-[13px] font-semibold text-muted-foreground hover:text-foreground"
-        >
-          <ChevronLeft className="size-4 rtl:rotate-180" aria-hidden />
-          {t("back")}
-        </Link>
-        <div className="flex items-center gap-3.5">
-          <BostaLogo />
-          <div className="min-w-0">
-            <h1 className="text-[22px] leading-tight font-extrabold tracking-tight sm:text-[26px]">
-              {wizard ? t("titleConnect") : t("title")}
-            </h1>
-            <p className="mt-0.5 text-[13px] text-muted-foreground">{t("subtitle", { store: storeName })}</p>
-          </div>
-        </div>
-      </div>
+      <AppPageHeader
+        storeId={storeId}
+        app="bosta"
+        backLabel={t("back")}
+        title={wizard ? t("titleConnect") : t("title")}
+        subtitle={t("subtitle", { store: storeName })}
+      />
 
       {readOnly && <p className="rounded-xl bg-muted p-3.5 text-[13px] text-muted-foreground">{t("readOnly")}</p>}
 
@@ -76,17 +64,6 @@ export function BostaApp({
         <BostaSettingsView storeId={storeId} overview={overview} readOnly={readOnly} onChange={setOverview} />
       ) : null}
     </div>
-  );
-}
-
-function BostaLogo() {
-  const brand = APP_BRANDS.bosta;
-  return (
-    <span className="grid size-14 shrink-0 place-items-center rounded-2xl" style={{ background: brand.bg }}>
-      <svg viewBox="0 0 24 24" aria-hidden className="size-[52%]" style={{ fill: brand.fg }}>
-        <path d={brand.icon.path} />
-      </svg>
-    </span>
   );
 }
 

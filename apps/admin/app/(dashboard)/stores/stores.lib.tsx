@@ -1,5 +1,6 @@
 import { Badge } from "@workspace/ui/components/badge";
 import { cn } from "@workspace/ui/lib/utils";
+import type { IntegrationProvider } from "@workspace/lib/integrations";
 
 const SITE_CLASSES: Record<string, string> = {
   published: "bg-green-100 text-green-900 border-green-200",
@@ -57,7 +58,8 @@ export const PAYMENT_METHOD_LABELS: Record<string, string> = {
   instapay: "InstaPay",
 };
 
-export const PROVIDER_LABELS: Record<string, string> = {
+/** Every store app provider's name (registry + DB CHECK); one list for the admin pages and the bell. */
+export const PROVIDER_LABELS: Record<IntegrationProvider, string> & Record<string, string> = {
   meta_pixel: "Meta Pixel",
   google_analytics: "Google Analytics",
   google_tag_manager: "Google Tag Manager",
@@ -66,6 +68,10 @@ export const PROVIDER_LABELS: Record<string, string> = {
   snapchat_pixel: "Snapchat Pixel",
   google_sheets: "Google Sheets",
   shopify_import: "Shopify import",
+  bosta: "Bosta",
+  paymob: "Paymob (seller gateway)",
+  kashier: "Kashier (seller gateway)",
+  wassalha: "Wassalha (Egypt Post)",
 };
 
 const INTEGRATION_CLASSES: Record<string, string> = {

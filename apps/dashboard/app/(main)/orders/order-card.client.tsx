@@ -13,6 +13,7 @@ import { OrderActions } from "./order-actions.client";
 import { OrderRiskBadges } from "./order-risk.client";
 import { OrderStageBadge } from "./order-stage-badge";
 import type { SellerOrderRow } from "./orders.types";
+import { canExportForWassalha, WassalhaExportButton } from "./wassalha-export.client";
 
 /**
  * One order as a card (card view of /orders). The whole card opens the order
@@ -156,7 +157,7 @@ export function OrderCard({
         </div>
       </div>
 
-      {(order.flow.primary || canShipWithBosta(order)) && (
+      {(order.flow.primary || canShipWithBosta(order) || canExportForWassalha(order)) && (
         <div className="relative z-10 flex flex-wrap gap-1.5 border-t p-3">
           {order.confirmMessage && order.customerPhone && (
             <WhatsAppButton
@@ -170,6 +171,7 @@ export function OrderCard({
           )}
           <OrderActions order={order} compact className="flex-1 [&>button:first-child]:flex-1" />
           <ShipWithBostaButton order={order} className="flex-1" />
+          {order.storeId && <WassalhaExportButton storeId={order.storeId} orders={[order]} className="flex-1" />}
         </div>
       )}
     </article>
