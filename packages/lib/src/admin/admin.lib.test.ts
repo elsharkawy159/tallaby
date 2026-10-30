@@ -6,6 +6,7 @@ import {
   isAdminWriteRole,
   piastresToDecimal,
   sellerOverrideSchema,
+  sellerMessageSchema,
   walletAdjustmentSchema,
 } from "./admin.lib";
 
@@ -133,5 +134,29 @@ describe("store-site admin audit actions", () => {
       expect(action).toMatch(/^[a-z][a-z_]{2,63}$/);
     }
     expect(new Set(ADMIN_AUDIT_ACTIONS).size).toBe(ADMIN_AUDIT_ACTIONS.length);
+  });
+});
+
+describe("sellerMessageSchema (0131)", () => {
+  const ok = {
+    sellerId: "6f1c2a3b-4d5e-4f60-8a7b-9c0d1e2f3a4b",
+    title: " Hello ",
+    body: "Your store is live",
+    idempotencyKey: "7f1c2a3b-4d5e-4f60-8a7b-9c0d1e2f3a4b",
+  };
+
+  it("trims, makes an empty link null and keeps a dashboard path", () => {
+    expect(sellerMessageSchema.parse(ok)).toMatchObject({ title: "Hello", link: null });
+    expect(sellerMessageSchema.parse({ ...ok, link: "" }).link).toBeNull();
+    expect(sellerMessageSchema.parse({ ...ok, link: "/wallet" }).link).toBe("/wallet");
+  });
+
+  it("refuses empty text, long text, outside links and extra fields", () => {
+    expect(sellerMessageSchema.safeParse({ ...ok, title: "  " }).success).toBe(false);
+    expect(sellerMessageSchema.safeParse({ ...ok, body: "x".repeat(501) }).success).toBe(false);
+    expect(sellerMessageSchema.safeParse({ ...ok, link: "https://evil.com" }).success).toBe(false);
+    expect(sellerMessageSchema.safeParse({ ...ok, link: "//evil.com" }).success).toBe(false);
+    expect(sellerMessageSchema.safeParse({ ...ok, idempotencyKey: "x" }).success).toBe(false);
+    expect(sellerMessageSchema.safeParse({ ...ok, sellerName: "x" }).success).toBe(false);
   });
 });

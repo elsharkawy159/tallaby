@@ -41,6 +41,8 @@ export const SELLER_NOTIFICATION_TYPES = [
   "welcome_gift_expired",
   // Stock crossed down to the product's low-stock threshold (0125, F-10)
   "low_stock",
+  // A message from the Tallaby team, sent from Admin › Sellers (0131, F-06f)
+  "admin_message",
 ] as const;
 export type SellerNotificationType = (typeof SELLER_NOTIFICATION_TYPES)[number];
 
@@ -151,6 +153,10 @@ export function sellerNotificationHref(n: Pick<NotificationItem, "type" | "data"
       const productId = dataString(n.data, "productId");
       return productId ? `/products/inventory?product=${encodeURIComponent(productId)}` : "/products/inventory";
     }
+    case "admin_message": {
+      const link = dataString(n.data, "link");
+      return link && isDashboardPath(link) ? link : null;
+    }
     default:
       return null;
   }
@@ -165,4 +171,47 @@ export function notificationCount(data: Record<string, unknown>): number {
 /** Reads a string field of `data` for display, or "" when it is missing. */
 export function notificationText(data: Record<string, unknown>, key: string): string {
   return dataString(data, key) ?? "";
+}
+
+/**
+ * The ICU values of a seller bell row's `notifications.types.<type>` text.
+ * Shared by the bell and the push dispatcher so both say the same thing.
+ * `formatAmount` formats a decimal amount for the viewer's locale.
+ */
+export function sellerNotificationValues(
+  data: Record<string, unknown>,
+  formatAmount: (amount: string) => string,
+): Record<string, string | number> {
+  const amount = notificationText(data, "amount");
+  return {
+    orderNumber: notificationText(data, "orderNumber"),
+    amount: amount ? formatAmount(amount) : "",
+    rating: typeof data.rating === "number" ? data.rating : 0,
+    // Grouped rows (referral_commission_earned, one per day).
+    count: notificationCount(data),
+    // low_stock (0125): product name (+ variant) and the stock left.
+    name: [notificationText(data, "name"), notificationText(data, "variantTitle")].filter(Boolean).join(" · "),
+    stock: typeof data.stock === "number" ? data.stock : 0,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Admin messages to one seller (0131, F-06f)
+// ---------------------------------------------------------------------------
+
+export const ADMIN_MESSAGE_TITLE_MAX = 80;
+export const ADMIN_MESSAGE_BODY_MAX = 500;
+export const ADMIN_MESSAGE_LINK_MAX = 200;
+
+/**
+ * A path inside the seller dashboard: starts with one "/", no scheme, no
+ * protocol-relative or backslash tricks, no whitespace or control characters.
+ */
+export function isDashboardPath(value: string): boolean {
+  return (
+    value.length <= ADMIN_MESSAGE_LINK_MAX &&
+    /^\/(?![/\\])[^\s\\]*$/.test(value) &&
+    // eslint-disable-next-line no-control-regex
+    !/[\u0000-\u001f\u007f]/.test(value)
+  );
 }

@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
+import { SELLER_NOTIFICATION_TYPES } from "@workspace/lib/notifications";
 import ar from "@/messages/ar.json";
 import en from "@/messages/en.json";
 import { pushPrefsInputSchema, pushSubscriptionInputSchema } from "./push-alerts.dto";
 import {
+  ALWAYS_PUSHED_TYPES,
+  BELL_TEXT_PUSH_TYPES,
   buildPushPayload,
   DEFAULT_PUSH_PREFS,
   isAllowedPushEndpoint,
@@ -41,13 +44,30 @@ function device(sellerId: string, id = `dev-${sellerId.slice(0, 4)}`): PushDevic
 }
 
 describe("type → push category", () => {
-  it("maps new orders and order problems, nothing else", () => {
+  it("maps every bell type to a switch (0131), Tallaby messages to none", () => {
     expect(pushCategoryOf("order_created")).toBe("newOrder");
     expect(pushCategoryOf("carrier_needs_attention")).toBe("orderProblem");
     expect(pushCategoryOf("carrier_shipment_failed")).toBe("orderProblem");
-    expect(pushCategoryOf("review_received")).toBeNull();
-    expect(pushCategoryOf("welcome_gift_granted")).toBeNull();
+    expect(pushCategoryOf("review_received")).toBe("account");
+    expect(pushCategoryOf("welcome_gift_granted")).toBe("account");
+    expect(pushCategoryOf("admin_message")).toBeNull();
     expect(pushCategoryOf("toString")).toBeNull();
+  });
+
+  it("pushes every seller bell type", () => {
+    for (const type of SELLER_NOTIFICATION_TYPES) {
+      expect(pushCategoryOf(type) !== null || ALWAYS_PUSHED_TYPES.has(type), type).toBe(true);
+    }
+  });
+
+  it("types without a push text have bell text in both languages", () => {
+    for (const messages of [ar, en]) {
+      const texts = messages.notifications.types as Record<string, { title?: string; body?: string }>;
+      for (const type of BELL_TEXT_PUSH_TYPES) {
+        expect(texts[type]?.title, type).toBeTruthy();
+        expect(texts[type]?.body, type).toBeTruthy();
+      }
+    }
   });
 
   it("every pushed type has a title and body in both languages", () => {
@@ -64,13 +84,14 @@ describe("type → push category", () => {
 describe("prefs", () => {
   it("defaults to all on and fills missing fields", () => {
     expect(normalizePushPrefs(null)).toEqual(DEFAULT_PUSH_PREFS);
-    expect(normalizePushPrefs({ newOrder: false })).toEqual({ newOrder: false, orderProblem: true, lowStock: true });
+    expect(normalizePushPrefs({ newOrder: false })).toEqual({ newOrder: false, orderProblem: true, lowStock: true, account: true });
   });
 
   it("the input schema is strict", () => {
-    expect(pushPrefsInputSchema.safeParse({ newOrder: true, orderProblem: false, lowStock: true }).success).toBe(true);
-    expect(pushPrefsInputSchema.safeParse({ newOrder: true, orderProblem: false }).success).toBe(false);
-    expect(pushPrefsInputSchema.safeParse({ newOrder: true, orderProblem: false, lowStock: true, x: 1 }).success).toBe(false);
+    const all = { newOrder: true, orderProblem: false, lowStock: true, account: true };
+    expect(pushPrefsInputSchema.safeParse(all).success).toBe(true);
+    expect(pushPrefsInputSchema.safeParse({ newOrder: true, orderProblem: false, lowStock: true }).success).toBe(false);
+    expect(pushPrefsInputSchema.safeParse({ ...all, x: 1 }).success).toBe(false);
   });
 });
 
@@ -86,15 +107,22 @@ describe("planPushDeliveries (claim selection)", () => {
     expect(out.every((d) => d.category === "newOrder")).toBe(true);
   });
 
-  it("skips non-pushed types, old rows, switched-off types and sellers without devices", () => {
+  it("skips unknown types, old rows, switched-off types and sellers without devices", () => {
     const rows = [
-      row({ type: "review_received" }),
+      row({ type: "something_new" }),
       row({ createdAt: "2026-10-30T10:30:00Z" }),
       row({ sellerId: SELLER_B }),
+      row({ sellerId: SELLER_B, type: "review_received" }),
       row({ sellerId: "66666666-6666-4666-8666-666666666666" }),
     ];
-    const prefs = new Map([[SELLER_B, { ...DEFAULT_PUSH_PREFS, newOrder: false }]]);
+    const prefs = new Map([[SELLER_B, { ...DEFAULT_PUSH_PREFS, newOrder: false, account: false }]]);
     expect(planPushDeliveries(rows, prefs, devices, NOW)).toEqual([]);
+  });
+
+  it("pushes Tallaby messages even with every switch off", () => {
+    const off = { newOrder: false, orderProblem: false, lowStock: false, account: false };
+    const out = planPushDeliveries([row({ sellerId: SELLER_B, type: "admin_message" })], new Map([[SELLER_B, off]]), devices, NOW);
+    expect(out.map((d) => [d.device.id, d.category])).toEqual([["b1", null]]);
   });
 
   it("never sends one seller's row to another seller's device", () => {
@@ -136,6 +164,22 @@ describe("buildPushPayload", () => {
     expect(p.url.startsWith("/products")).toBe(true);
     expect(buildPushPayload(row({ type: "low_stock", data: {} }), "en", (key) => key).body).toBe("low_stock.body");
     expect(p.url.startsWith("/")).toBe(true);
+  });
+
+  it("uses the bell text for account types", () => {
+    const bell = { t: (key: string, v?: Record<string, string | number>) => `${key}|${v?.amount}`, values: { amount: "EGP 100" } };
+    const p = buildPushPayload(row({ type: "top_up_approved", data: { amount: "100.00" } }), "en", t, null, bell);
+    expect(p.title).toBe("top_up_approved.title|EGP 100");
+    expect(p.body).toBe("top_up_approved.body|EGP 100");
+    expect(p.url).toBe("/wallet");
+  });
+
+  it("shows a Tallaby message's own text and only an in-app link", () => {
+    const p = buildPushPayload(row({ type: "admin_message", data: { title: "Hi", body: "Check this", link: "/wallet" } }), "en", t);
+    expect([p.title, p.body, p.url]).toEqual(["Hi", "Check this", "/wallet"]);
+    const evil = buildPushPayload(row({ type: "admin_message", data: { title: "", body: "x", link: "//evil.com" } }), "ar", t);
+    expect(evil.url).toBe("/");
+    expect(evil.title).toBe("طلبي");
   });
 
   it("clips long text", () => {

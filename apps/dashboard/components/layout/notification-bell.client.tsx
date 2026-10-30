@@ -6,9 +6,9 @@ import { useLocale, useTranslations } from "next-intl";
 import { Bell, BellRing, CheckCheck } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@workspace/ui/components/popover";
 import {
-  notificationCount,
   notificationText,
   sellerNotificationHref,
+  sellerNotificationValues,
   type NotificationFeed,
   type NotificationItem,
   type SellerNotificationType,
@@ -204,20 +204,17 @@ function NotificationRow({
 }) {
   const t = useTranslations("notifications.types");
   const locale = useLocale();
-  const amount = notificationText(item.data, "amount");
-  const rating = typeof item.data.rating === "number" ? item.data.rating : 0;
-  const values = {
-    orderNumber: notificationText(item.data, "orderNumber"),
-    amount: amount ? formatMoney(amount, locale) : "",
-    rating,
-    // Grouped rows (referral_commission_earned, one per day).
-    count: notificationCount(item.data),
-    // low_stock (0125): product name (+ variant) and the stock left.
-    name: [notificationText(item.data, "name"), notificationText(item.data, "variantTitle")].filter(Boolean).join(" · "),
-    stock: typeof item.data.stock === "number" ? item.data.stock : 0,
-  };
+  const values = sellerNotificationValues(item.data, (amount) => formatMoney(amount, locale));
   const href = sellerNotificationHref(item);
-  const known = t.has(`${item.type}.title`);
+  // A message from the Tallaby team (0131) carries the admin's own title and text.
+  const isMessage = item.type === "admin_message";
+  const known = !isMessage && t.has(`${item.type}.title`);
+  const title = isMessage
+    ? notificationText(item.data, "title") || t("admin_message.fallbackTitle")
+    : known
+      ? t(`${item.type}.title`)
+      : item.type;
+  const body = isMessage ? notificationText(item.data, "body") : known ? t(`${item.type}.body`, values) : "";
   const content = (
     <>
       <span
@@ -225,11 +222,14 @@ function NotificationRow({
         className={cn("mt-1.5 size-2 shrink-0 rounded-full", item.readAt ? "bg-transparent" : "bg-primary")}
       />
       <span className="min-w-0 flex-1">
-        <span className={cn("block text-sm", !item.readAt && "font-semibold")}>
-          {known ? t(`${item.type}.title`) : item.type}
-        </span>
-        {known && (
-          <span className="block text-xs text-muted-foreground">{t(`${item.type}.body`, values)}</span>
+        {isMessage && (
+          <span className="mb-0.5 block text-[11px] font-medium text-primary">{t("admin_message.from")}</span>
+        )}
+        <span className={cn("block text-sm", !item.readAt && "font-semibold")}>{title}</span>
+        {body && (
+          <span className={cn("block text-xs text-muted-foreground", isMessage && "whitespace-pre-line break-words")}>
+            {body}
+          </span>
         )}
         <time dateTime={item.createdAt} className="mt-0.5 block text-[11px] text-muted-foreground">
           {formatRelativeTime(item.createdAt, locale)}

@@ -17,11 +17,12 @@
     "@supabase/supabase-js": "^2.89.0",
     "@workspace/cache": "workspace:*",
     "@workspace/db": "workspace:*",
+    "@workspace/store-sections": "workspace:*",
+    "@workspace/tiptap": "workspace:*",
     "drizzle-orm": "0.45.1",
     "stripe": "^22.1.1",
-    "zod": "^4.2.1",
-    "@workspace/store-sections": "workspace:*",
-    "@workspace/tiptap": "workspace:*"
+    "web-push": "^3.6.7",
+    "zod": "^4.2.1"
   },
   "types": "index.ts",
   "exports": {
@@ -168,6 +169,14 @@
     "./store-wallet/server": {
       "types": "./src/store-wallet/server.ts",
       "default": "./src/store-wallet/server.ts"
+    },
+    "./push": {
+      "types": "./src/push/index.ts",
+      "default": "./src/push/index.ts"
+    },
+    "./push/server": {
+      "types": "./src/push/server.ts",
+      "default": "./src/push/server.ts"
     },
     "./notifications": {
       "types": "./src/notifications/index.ts",
@@ -376,6 +385,7 @@
   },
   "devDependencies": {
     "@types/node": "^25.0.3",
+    "@types/web-push": "^3.6.4",
     "@workspace/typescript-config": "workspace:^",
     "postgres": "^3.4.7",
     "tsx": "^4.21.0",

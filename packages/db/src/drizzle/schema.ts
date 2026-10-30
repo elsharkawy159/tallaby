@@ -3277,10 +3277,13 @@ export const adminNotifications = pgTable("admin_notifications", {
 	readAt: timestamp("read_at", { withTimezone: true, mode: 'string' }),
 	readBy: uuid("read_by"),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	/** Admin push dispatcher claim (0131, F-06e): set once the row was handled (sent, no device, or too old). */
+	pushedAt: timestamp("pushed_at", { withTimezone: true, mode: 'string' }),
 }, (table) => [
 	unique("admin_notifications_dedupe_key").on(table.dedupeKey),
 	index("admin_notifications_created_idx").using("btree", table.createdAt.desc()),
 	index("admin_notifications_unread_idx").using("btree", table.createdAt.desc()).where(sql`read_at IS NULL`),
+	index("admin_notifications_push_pending_idx").using("btree", table.createdAt).where(sql`pushed_at IS NULL`),
 	foreignKey({
 			columns: [table.sellerId],
 			foreignColumns: [sellers.id],
@@ -3307,7 +3310,7 @@ export const sellerNotifications = pgTable("seller_notifications", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	sellerId: uuid("seller_id").notNull(),
 	storeId: uuid("store_id"),
-	/** order_created | top_up_approved | top_up_rejected | question_received | review_received | carrier_shipment_failed | carrier_needs_attention | referral_commission_earned | referral_payout_paid | referral_payout_rejected (0117) | welcome_gift_granted | welcome_gift_expiring | welcome_gift_expired (0119) | low_stock (0125) */
+	/** order_created | top_up_approved | top_up_rejected | question_received | review_received | carrier_shipment_failed | carrier_needs_attention | referral_commission_earned | referral_payout_paid | referral_payout_rejected (0117) | welcome_gift_granted | welcome_gift_expiring | welcome_gift_expired (0119) | low_stock (0125) | admin_message (0131: `data` = { title, body, link? }, sent from Admin) */
 	type: text().notNull(),
 	data: jsonb().$type<Record<string, unknown>>().default({}).notNull(),
 	dedupeKey: text("dedupe_key").notNull(),
@@ -3330,7 +3333,7 @@ export const sellerNotifications = pgTable("seller_notifications", {
 			foreignColumns: [stores.id],
 			name: "seller_notifications_store_id_fkey"
 		}).onDelete("set null"),
-	check("seller_notifications_type_check", sql`type IN ('order_created', 'top_up_approved', 'top_up_rejected', 'question_received', 'review_received', 'carrier_shipment_failed', 'carrier_needs_attention', 'referral_commission_earned', 'referral_payout_paid', 'referral_payout_rejected', 'welcome_gift_granted', 'welcome_gift_expiring', 'welcome_gift_expired', 'low_stock')`),
+	check("seller_notifications_type_check", sql`type IN ('order_created', 'top_up_approved', 'top_up_rejected', 'question_received', 'review_received', 'carrier_shipment_failed', 'carrier_needs_attention', 'referral_commission_earned', 'referral_payout_paid', 'referral_payout_rejected', 'welcome_gift_granted', 'welcome_gift_expiring', 'welcome_gift_expired', 'low_stock', 'admin_message')`),
 ]);
 
 /** A carrier's status history for a shipment (0106). One row per (shipment, state, time). Server-only. */
@@ -3650,9 +3653,35 @@ export const sellerPushSettings = pgTable("seller_push_settings", {
 	newOrder: boolean("new_order").default(true).notNull(),
 	orderProblem: boolean("order_problem").default(true).notNull(),
 	lowStock: boolean("low_stock").default(true).notNull(),
+	/** Wallet, reviews and questions, affiliate and welcome gift alerts (0131, F-06d). */
+	account: boolean().default(true).notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
 	foreignKey({ columns: [table.sellerId], foreignColumns: [sellers.id], name: "seller_push_settings_seller_id_fkey" }).onDelete("cascade"),
+]);
+
+/**
+ * An admin browser/device that turned on push alerts for the admin bell
+ * (0131, F-06e). The dispatcher only sends to users who are still verified,
+ * unsuspended admins. Server-only (RLS on, no policies).
+ */
+export const adminPushSubscriptions = pgTable("admin_push_subscriptions", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	userId: uuid("user_id").notNull(),
+	endpoint: text().notNull(),
+	p256dh: text().notNull(),
+	auth: text().notNull(),
+	userAgent: text("user_agent"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	lastSuccessAt: timestamp("last_success_at", { withTimezone: true, mode: 'string' }),
+}, (table) => [
+	unique("admin_push_subscriptions_endpoint_key").on(table.endpoint),
+	index("admin_push_subscriptions_user_idx").using("btree", table.userId),
+	foreignKey({ columns: [table.userId], foreignColumns: [users.id], name: "admin_push_subscriptions_user_id_fkey" }).onDelete("cascade"),
+	check("admin_push_subscriptions_endpoint_https", sql`endpoint ~ '^https://' AND char_length(endpoint) <= 1000`),
+	check("admin_push_subscriptions_keys_length", sql`char_length(p256dh) <= 200 AND char_length(auth) <= 100`),
+	check("admin_push_subscriptions_user_agent_length", sql`user_agent IS NULL OR char_length(user_agent) <= 300`),
 ]);
 
 /**

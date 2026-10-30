@@ -1,4 +1,3 @@
-import webpush from "web-push";
 import { createTranslator } from "next-intl";
 import {
   and,
@@ -15,21 +14,21 @@ import {
   sellerPushSubscriptions,
   sql,
 } from "@workspace/db";
-import { logServerError } from "@workspace/db/log";
+import { sellerNotificationValues } from "@workspace/lib/notifications";
+import { sendWebPushes, type WebPushJob } from "@workspace/lib/push/server";
 import arMessages from "@/messages/ar.json";
 import enMessages from "@/messages/en.json";
 import { formatMoney } from "@/lib/i18n/format";
 import type { PushSubscriptionInput } from "./push-alerts.dto";
 import {
+  BELL_TEXT_PUSH_TYPES,
   buildPushPayload,
-  isGonePushStatus,
   normalizePushPrefs,
   orderIdsNeedingAmount,
   parseVapidConfig,
   planPushDeliveries,
   pushLocale,
   PUSH_CLAIM_LIMIT,
-  PUSH_TTL_SECONDS,
   PUSH_WINDOW_MINUTES,
   type PushCandidate,
   type PushDevice,
@@ -62,6 +61,7 @@ export async function getSellerPushPrefs(sellerId: string): Promise<PushPrefs> {
       newOrder: sellerPushSettings.newOrder,
       orderProblem: sellerPushSettings.orderProblem,
       lowStock: sellerPushSettings.lowStock,
+      account: sellerPushSettings.account,
     })
     .from(sellerPushSettings)
     .where(eq(sellerPushSettings.sellerId, sellerId))
@@ -151,6 +151,7 @@ async function loadPrefs(sellerIds: string[]): Promise<Map<string, PushPrefs>> {
       newOrder: sellerPushSettings.newOrder,
       orderProblem: sellerPushSettings.orderProblem,
       lowStock: sellerPushSettings.lowStock,
+      account: sellerPushSettings.account,
     })
     .from(sellerPushSettings)
     .where(inArray(sellerPushSettings.sellerId, sellerIds));
@@ -171,17 +172,27 @@ async function loadOrderAmounts(rows: PushCandidate[]): Promise<Map<string, { st
   return map;
 }
 
+type Messages = { pushAlerts: { messages: Record<string, unknown> }; notifications: { types: Record<string, unknown> } };
+
 const TRANSLATORS: Record<PushLocale, PushTranslate> = {
-  ar: makeTranslator("ar", arMessages),
-  en: makeTranslator("en", enMessages),
+  ar: makeTranslator("ar", arMessages, "push"),
+  en: makeTranslator("en", enMessages, "push"),
 };
 
-function makeTranslator(locale: PushLocale, messages: { pushAlerts: { messages: Record<string, unknown> } }): PushTranslate {
-  const t = createTranslator({
-    locale,
-    messages: { pushAlerts: { messages: messages.pushAlerts.messages } },
-    namespace: "pushAlerts.messages",
-  } as never) as unknown as (key: string, values?: Record<string, string | number>) => string;
+/** The bell's `notifications.types` text, for pushed types without their own push text (0131). */
+const BELL_TRANSLATORS: Record<PushLocale, PushTranslate> = {
+  ar: makeTranslator("ar", arMessages, "bell"),
+  en: makeTranslator("en", enMessages, "bell"),
+};
+
+const BELL_TEXT_TYPES: ReadonlySet<string> = new Set(BELL_TEXT_PUSH_TYPES);
+
+function makeTranslator(locale: PushLocale, messages: Messages, which: "push" | "bell"): PushTranslate {
+  const t = createTranslator(
+    (which === "push"
+      ? { locale, messages: { pushAlerts: { messages: messages.pushAlerts.messages } }, namespace: "pushAlerts.messages" }
+      : { locale, messages: { notifications: { types: messages.notifications.types } }, namespace: "notifications.types" }) as never,
+  ) as unknown as (key: string, values?: Record<string, string | number>) => string;
   return (key, values) => t(key, values);
 }
 
@@ -220,60 +231,28 @@ async function claimPendingRows(limit: number): Promise<{ expired: number; rows:
   return { expired: expired.length, rows: claimed.map((row) => ({ ...row, data: row.data ?? {} })) };
 }
 
-type SendOutcome = "sent" | "gone" | "failed";
+type SellerPushJob = { device: PushDevice; payload: PushPayload; urgent: boolean };
 
-async function sendOne(config: VapidConfig, device: PushDevice, payload: PushPayload, urgent: boolean): Promise<SendOutcome> {
-  try {
-    await webpush.sendNotification(
-      { endpoint: device.endpoint, keys: { p256dh: device.p256dh, auth: device.auth } },
-      JSON.stringify(payload),
-      {
-        vapidDetails: { subject: config.subject, publicKey: config.publicKey, privateKey: config.privateKey },
-        TTL: PUSH_TTL_SECONDS,
-        urgency: urgent ? "high" : "normal",
-        timeout: 10_000,
-      },
-    );
-    return "sent";
-  } catch (error) {
-    const statusCode = (error as { statusCode?: unknown })?.statusCode;
-    if (isGonePushStatus(statusCode)) return "gone";
-    logServerError("integration", "seller push failed", { statusCode: typeof statusCode === "number" ? statusCode : null }, error);
-    return "failed";
+async function sendAll(config: VapidConfig, jobs: SellerPushJob[]): Promise<{ sent: number; failed: number; removed: number }> {
+  const webJobs: WebPushJob[] = jobs.map(({ device, payload, urgent }) => ({
+    id: device.id,
+    endpoint: device.endpoint,
+    p256dh: device.p256dh,
+    auth: device.auth,
+    payload,
+    urgent,
+  }));
+  const { sent, failed, okIds, goneIds } = await sendWebPushes(config, webJobs, "seller");
+  if (goneIds.length > 0) {
+    await db.delete(sellerPushSubscriptions).where(inArray(sellerPushSubscriptions.id, goneIds));
   }
-}
-
-async function sendAll(
-  config: VapidConfig,
-  jobs: { device: PushDevice; payload: PushPayload; urgent: boolean }[],
-): Promise<{ sent: number; failed: number; removed: number }> {
-  const okIds = new Set<string>();
-  const goneIds = new Set<string>();
-  let sent = 0;
-  let failed = 0;
-  const CONCURRENCY = 10;
-  for (let i = 0; i < jobs.length; i += CONCURRENCY) {
-    const batch = jobs.slice(i, i + CONCURRENCY);
-    const outcomes = await Promise.all(batch.map((job) => sendOne(config, job.device, job.payload, job.urgent)));
-    outcomes.forEach((outcome, index) => {
-      const id = batch[index]!.device.id;
-      if (outcome === "sent") {
-        okIds.add(id);
-        sent += 1;
-      } else if (outcome === "gone") goneIds.add(id);
-      else failed += 1;
-    });
-  }
-  if (goneIds.size > 0) {
-    await db.delete(sellerPushSubscriptions).where(inArray(sellerPushSubscriptions.id, [...goneIds]));
-  }
-  if (okIds.size > 0) {
+  if (okIds.length > 0) {
     await db
       .update(sellerPushSubscriptions)
       .set({ lastSuccessAt: sql`now()` })
-      .where(inArray(sellerPushSubscriptions.id, [...okIds]));
+      .where(inArray(sellerPushSubscriptions.id, okIds));
   }
-  return { sent, failed, removed: goneIds.size };
+  return { sent, failed, removed: goneIds.length };
 }
 
 export type PushDispatchResult = {
@@ -311,9 +290,15 @@ export async function dispatchSellerPushes(limit: number = PUSH_CLAIM_LIMIT): Pr
     const order = orderId ? amounts.get(orderId) : undefined;
     // Only the notified store's own order shows its amount.
     const amount = order && row.storeId && order.storeId === row.storeId ? formatMoney(order.total, device.locale) : null;
+    const bell = BELL_TEXT_TYPES.has(row.type)
+      ? {
+          t: BELL_TRANSLATORS[device.locale],
+          values: sellerNotificationValues(row.data, (value) => formatMoney(value, device.locale)),
+        }
+      : undefined;
     return {
       device,
-      payload: buildPushPayload(row, device.locale, TRANSLATORS[device.locale], amount),
+      payload: buildPushPayload(row, device.locale, TRANSLATORS[device.locale], amount, bell),
       urgent: category === "newOrder",
     };
   });
@@ -327,7 +312,7 @@ export async function sendSellerTestPush(sellerId: string): Promise<{ sent: numb
   const config = getVapidConfig();
   if (!config) return { sent: 0, devices: 0 };
   const devices = (await loadDevices([sellerId])).get(sellerId) ?? [];
-  const jobs = devices.map((device) => {
+  const jobs: SellerPushJob[] = devices.map((device) => {
     const t = TRANSLATORS[device.locale];
     return {
       device,

@@ -215,7 +215,9 @@ export function PushAlertsSection({ publicKey, initialPrefs }: { publicKey: stri
               );
             })}
           </ul>
-          <p className="text-xs text-muted-foreground">{t("allDevices")}</p>
+          <p className="text-xs text-muted-foreground">
+            {t("allDevices")} {t("alwaysOn")}
+          </p>
         </>
       )}
     </SectionCard>

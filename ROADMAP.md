@@ -317,11 +317,14 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 
 **Why:** EasyOrders and Shopify have apps that ping on every order; Tallaby sellers find out late.
 **What:** Web push for the installed dashboard PWA (and browser): new order, order refused, low stock. Settings per type.
-**Status:** [Live, uncommitted] F-06a/b built 2026-10-30 (Settings › Phone alerts; 0124 on staging). Needs VAPID env + a Supabase webhook on `seller_notifications` INSERT (see §7). Browser E2E pending.
+**Status:** [Live, uncommitted] F-06a/b built 2026-10-30 (Settings › Phone alerts; 0124 on staging and production). F-06d/e/f built 2026-10-30 (0131 on staging only). Needs VAPID env on dashboard **and admin**, plus Supabase webhooks on `seller_notifications` INSERT → dashboard `/api/cron/seller-push` and `admin_notifications` INSERT → admin `/api/cron/admin-push` (see §7). Browser E2E pending.
 
 - **F-06a · P1 · deps: —** Migration `seller_push_subscriptions` (`seller_id`, endpoint, keys, user agent; RLS on, no policies). VAPID keys in server env only.
 - **F-06b · P1 · deps: F-06a** Service worker + "Turn on alerts" prompt; send from the existing `seller_notifications` trigger flow.
 - **F-06c** Moved to **F-36** (owner, 2026-10-29).
+- **F-06d · P1 · deps: F-06b** Push every seller bell type (owner, 2026-10-30): new "Wallet and account" switch (`seller_push_settings.account`, 0131) for top-ups, reviews/questions, affiliate and welcome gift; those reuse the bell text.
+- **F-06e · P1 · deps: F-06b** Admin browser/PWA push for every admin bell row: `admin_push_subscriptions` + `admin_notifications.pushed_at` (0131), admin `public/sw.js`, "Turn on alerts" in the admin bell, `/api/cron/admin-push` (webhook + daily cron). Only verified, unsuspended admins receive pushes.
+- **F-06f · P1 · deps: F-06d** Admin › Sellers › <seller> › "Send notification": title, message, optional dashboard link; a `seller_notifications` row of type `admin_message` (0131), audited (`send_seller_notification`), always pushed (no switch).
 
 ### F-07 Quantity offers, upsell & cross-sell — P1 · Needs approval
 
@@ -674,6 +677,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 | Date       | Request (owner's words)                                                                                                                                                                                                                                                                                                                                               | Feature ID                                                                                       | Status                                                                                 |
 | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- |
+| 2026-10-30 | "I need to allow notifications on Admin/Dashboard in the browser for any new notification, also, allow the notification in the PWA (Push notifications). Also, allow me as an admin from Admin project to send Notification to specific Seller from Seller's profile" | F-06d, F-06e, F-06f | Built (uncommitted; 0131 on staging) |
 | 2026-10-30 | "gather everything we discussed: Tallaby Apps, Shipping Companies, Payment methods … build them in the best-practice way, with clean code structure and DRY logic" (+ earlier the same day: Egypt Post as "Wassalha Egypt Post" with their template, store ID and name on enabling, export one or many orders; weight 998 g when unknown; shipping page with any carrier, rate templates, free delivery, free over an amount) | F-41, F-12c, F-12d, F-13b (free delivery), F-39 | Built (local `main`, 0130 applied 2026-10-30) |
 | 2026-10-30 | "I need also to integrate payment methods, Payment methods will be Internal (Kashier, payments go to store's wallet) and Externals (User integrate his payment method gateway himself … like Paymob, Kashier, Paypal)" → "Let's build the External methods only for now and keep internal Soon" (PayPal: Soon; fee-only) | F-39 | Built (uncommitted, 0130 applied 2026-10-30) |
 | 2026-10-30 | "For the categories sections on the storefront, integrate the section with seller_product_categories table, and check where do we use this seller_categories as I see it's empty?" | Storefront store categories (no feature ID) | Done (uncommitted) |
@@ -781,6 +785,9 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-04d Picking list (2026-10-30, uncommitted; `/print/orders?doc=picking`; browser E2E pending)
 - [x] F-06a Push subscriptions migration (2026-10-30, uncommitted; 0124 on staging)
 - [x] F-06b Push alerts (2026-10-30, uncommitted; needs VAPID env + DB webhook; browser E2E pending)
+- [x] F-06d Push every seller notification type (2026-10-30, uncommitted; 0131 on staging)
+- [x] F-06e Admin browser/PWA push (2026-10-30, uncommitted; 0131 on staging; needs admin VAPID env + DB webhook)
+- [x] F-06f Admin sends a notification to one seller (2026-10-30, uncommitted; 0131 on staging)
 - [ ] F-07a Quantity offers design (owner approval)
 - [ ] F-07b Quantity offers in product form
 - [ ] F-07c Quantity offers on storefront
@@ -846,6 +853,16 @@ Add each new request here first, with the date and the owner's words, then turn 
 ---
 
 ## 7. Log
+
+### 2026-10-30 — F-06d/e/f Push for every notification, admin push, admin messages to a seller
+
+- Owner request (§5). Migration **0131** (`0131_push_everywhere_and_admin_messages.sql`, applied on **staging only** 2026-10-30, re-run checked as a no-op): `seller_push_settings.account`, `admin_message` added to `seller_notifications_type_check`, server-only `admin_push_subscriptions` (RLS on, no policies), `admin_notifications.pushed_at` + partial index. Additive; the dashboard selects `seller_push_settings.account`, so apply it on production **before** deploying.
+- Web Push core moved to `@workspace/lib/push` (VAPID parsing, push-service allowlist, subscription schema, sender); the dashboard re-exports it, and admin uses it.
+- Seller: every bell type is pushed. Types without their own push text use the bell's `notifications.types` text (`sellerNotificationValues` shared with the bell). Settings › Phone alerts has a fourth switch "Wallet and account"; Tallaby messages are always pushed.
+- Admin: `public/sw.js`, "Turn on alerts / Test / Turn off" at the foot of the admin bell, dispatcher `/api/cron/admin-push` (CRON_SECRET; proxy now skips `sw.js` and `api/cron/`), daily cron in `apps/admin/vercel.json`. A burst sends the newest 5 plus one "N more" alert per device.
+- Admin › Sellers › <seller> header: "Send notification" dialog (title ≤ 80, message ≤ 500, optional dashboard path, idempotency key). `sendSellerMessageByAdmin` re-checks the admin, inserts the bell row and writes `admin_audit_log` (`send_seller_notification`) in one transaction. The dashboard bell shows it as "From the Tallaby team" with the full text.
+- **To go live:** set `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` and `CRON_SECRET` on the **admin** Vercel project (same keys as the dashboard), and add a Supabase Database Webhook on `admin_notifications` INSERT → `https://<admin host>/api/cron/admin-push` with `Authorization: Bearer <CRON_SECRET>`. Apply 0131 on production first.
+- Checks: typecheck lib/dashboard/admin clean; tests: dashboard 455 passed, admin 69 passed, lib 818 passed with 1 failure (`starter-forms.lib.test.ts`, also failing on clean main). Lint not run (ESLint crashes repo-wide). Browser E2E pending.
 
 ### 2026-10-30 — Merged, migrated and deployed (owner)
 

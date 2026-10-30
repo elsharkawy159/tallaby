@@ -5307,13 +5307,17 @@
       "low_stock": {
         "title": "Stock running low",
         "body": "{stock, plural, =0 {{name} is out of stock.} one {Only 1 left of {name}.} other {Only # left of {name}.}}"
+      },
+      "admin_message": {
+        "from": "From the Tallaby team",
+        "fallbackTitle": "Message from Tallaby"
       }
     }
   },
   "pushAlerts": {
     "title": "Phone alerts",
-    "description": "Get a notification on this phone or computer the moment an order arrives, even when the dashboard is closed.",
-    "bellPrompt": "Get new orders on your phone",
+    "description": "Get a notification on this phone or computer for every new order and every update, even when the dashboard is closed.",
+    "bellPrompt": "Get your notifications on your phone",
     "checking": "Checking this browser…",
     "unsupported": "This browser can't show alerts. Try Chrome, Edge, Firefox or Safari, or install the dashboard as an app.",
     "iosHint": "On iPhone and iPad, alerts work only in the installed app (iOS 16.4 or later). In Safari tap Share, then \"Add to Home Screen\", open Tallaby from your home screen and turn alerts on there.",
@@ -5340,6 +5344,10 @@
       "lowStock": {
         "title": "Low stock",
         "description": "A product is about to run out."
+      },
+      "account": {
+        "title": "Wallet and account",
+        "description": "Top-ups, reviews and questions, affiliate earnings and your welcome gift."
       }
     },
     "errors": {
@@ -5371,9 +5379,10 @@
       },
       "test": {
         "title": "Tallaby alerts are on",
-        "body": "You'll get an alert like this for every new order."
+        "body": "You'll get an alert like this for every new order and update."
       }
-    }
+    },
+    "alwaysOn": "Messages from the Tallaby team always reach you."
   },
   "heardAboutUsDialog": {
     "title": "Where did you hear about Tallaby?",

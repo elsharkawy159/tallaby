@@ -58,6 +58,7 @@ export const AUDIT_ACTION_LABELS: Record<AdminAuditAction, string> = {
   publish_library_section: "Library section published",
   hide_library_section: "Library section hidden",
   delete_library_section: "Library section deleted",
+  send_seller_notification: "Notification sent to seller",
 };
 
 export function auditActionLabel(action: string): string {
@@ -76,6 +77,7 @@ export const ADMIN_ERROR_MESSAGES: Record<string, string> = {
   store_read_only: "Only an active store can be unpublished. Unsuspend or restore it first.",
   not_published: "This store has no published site.",
   wallet_not_active: "The store wallet is not active.",
+  already_sent: "This message was already sent.",
   generic: "Something went wrong. Try again.",
 };
 

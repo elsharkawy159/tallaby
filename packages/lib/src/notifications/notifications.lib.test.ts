@@ -3,10 +3,12 @@ import {
   MAX_NOTIFICATION_IDS,
   adminNotificationHref,
   clampNotificationLimit,
+  isDashboardPath,
   notificationCount,
   notificationText,
   parseNotificationIds,
   sellerNotificationHref,
+  sellerNotificationValues,
 } from "./notifications.lib";
 
 const ID = "6f1c2a3b-4d5e-4f60-8a7b-9c0d1e2f3a4b";
@@ -98,5 +100,30 @@ describe("notificationText", () => {
   it("returns strings only", () => {
     expect(notificationText({ a: "x", b: 3 }, "a")).toBe("x");
     expect(notificationText({ a: "x", b: 3 }, "b")).toBe("");
+  });
+});
+
+describe("admin messages (0131)", () => {
+  it("isDashboardPath accepts in-app paths only", () => {
+    expect(isDashboardPath("/wallet")).toBe(true);
+    expect(isDashboardPath("/orders?order=1")).toBe(true);
+    expect(isDashboardPath("//evil.com")).toBe(false);
+    expect(isDashboardPath("/\\evil.com")).toBe(false);
+    expect(isDashboardPath("https://evil.com")).toBe(false);
+    expect(isDashboardPath("javascript:alert(1)")).toBe(false);
+    expect(isDashboardPath("/a b")).toBe(false);
+    expect(isDashboardPath(`/${"a".repeat(300)}`)).toBe(false);
+  });
+
+  it("links an admin message only to a safe dashboard path", () => {
+    expect(sellerNotificationHref({ type: "admin_message", data: { link: "/wallet" } })).toBe("/wallet");
+    expect(sellerNotificationHref({ type: "admin_message", data: { link: "//evil.com" } })).toBeNull();
+    expect(sellerNotificationHref({ type: "admin_message", data: {} })).toBeNull();
+  });
+
+  it("sellerNotificationValues formats what the bell shows", () => {
+    const values = sellerNotificationValues({ amount: "100.00", orderNumber: "7", name: "Mug", variantTitle: "Red", stock: 2 }, (a) => `EGP ${a}`);
+    expect(values).toMatchObject({ amount: "EGP 100.00", orderNumber: "7", name: "Mug · Red", stock: 2, count: 1, rating: 0 });
+    expect(sellerNotificationValues({}, () => "x").amount).toBe("");
   });
 });

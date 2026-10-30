@@ -21,6 +21,7 @@ import {
   markAdminNotificationsReadAction,
 } from '@/actions/notifications'
 import { createClient } from '@/supabase/client'
+import { AdminPushToggle } from './admin-push-toggle'
 import { describeAdminNotification, relativeTime } from './notification-bell.lib'
 
 type Feed = NotificationFeed<AdminNotificationType>
@@ -165,6 +166,7 @@ export function NotificationBell() {
             </ul>
           )}
         </div>
+        <AdminPushToggle />
       </PopoverContent>
     </Popover>
   )

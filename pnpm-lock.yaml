@@ -808,6 +808,9 @@ importers:
       stripe:
         specifier: ^22.1.1
         version: 22.1.1(@types/node@25.0.6)
+      web-push:
+        specifier: ^3.6.7
+        version: 3.6.7
       zod:
         specifier: ^4.2.1
         version: 4.2.1
@@ -815,6 +818,9 @@ importers:
       '@types/node':
         specifier: ^25.0.3
         version: 25.0.6
+      '@types/web-push':
+        specifier: ^3.6.4
+        version: 3.6.4
       '@workspace/typescript-config':
         specifier: workspace:^
         version: link:../typescript-config

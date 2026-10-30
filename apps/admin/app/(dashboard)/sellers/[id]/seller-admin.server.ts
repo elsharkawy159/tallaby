@@ -14,6 +14,7 @@ import {
   adjustStoreWalletByAdmin,
   applyAdminStoreAction,
   applySellerOverride,
+  sendSellerMessageByAdmin,
 } from "@workspace/lib/admin/server";
 import { validateAdminAccess } from "@/lib/auth/admin-auth";
 import { adminErrorMessage } from "./seller-admin.lib";
@@ -126,6 +127,23 @@ export async function walletAdjustmentAction(input: unknown): Promise<ActionResu
     };
   } catch (error) {
     logServerError("wallet", "admin adjustment failed", { sellerId }, error);
+    return { success: false, error: adminErrorMessage("generic") };
+  }
+}
+
+/** A message to this seller's dashboard bell and devices (F-06f, 0131). */
+export async function sendSellerNotificationAction(input: unknown): Promise<ActionResult> {
+  const actorId = await adminActor();
+  if (!actorId) return { success: false, error: adminErrorMessage("not_admin") };
+  const sellerId = sellerIdOf(input);
+
+  try {
+    const result = await sendSellerMessageByAdmin(actorId, input);
+    if (!result.success) return { success: false, error: adminErrorMessage(result.error) };
+    if (sellerId) revalidatePath(`/sellers/${sellerId}`);
+    return { success: true, message: "Sent. The seller sees it in their bell and on their devices." };
+  } catch (error) {
+    logServerError("admin", "seller notification failed", { sellerId }, error);
     return { success: false, error: adminErrorMessage("generic") };
   }
 }

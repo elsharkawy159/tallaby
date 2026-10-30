@@ -6,6 +6,11 @@
  * Every input carries a required `reason`, which goes to admin_audit_log.
  */
 import { z } from "zod";
+import {
+  ADMIN_MESSAGE_BODY_MAX,
+  ADMIN_MESSAGE_TITLE_MAX,
+  isDashboardPath,
+} from "../notifications/notifications.lib";
 import { FEE_PLANS, type FeePlanId } from "../orders/platform-fee.lib";
 import { PLANS, type PlanId } from "../plans";
 
@@ -82,6 +87,8 @@ export const ADMIN_AUDIT_ACTIONS = [
   "publish_library_section",
   "hide_library_section",
   "delete_library_section",
+  // A message to one seller (seller bell + push, 0131, F-06f)
+  "send_seller_notification",
 ] as const;
 
 export type AdminAuditAction = (typeof ADMIN_AUDIT_ACTIONS)[number];
@@ -205,5 +212,26 @@ export const walletAdjustmentSchema = z.strictObject({
 });
 
 export type WalletAdjustmentInput = z.input<typeof walletAdjustmentSchema>;
+
+/**
+ * A message from the Tallaby team to one seller (0131, F-06f): it lands in the
+ * seller dashboard bell and is pushed to the seller's devices. `link` is an
+ * optional path inside the seller dashboard. `idempotencyKey` is generated
+ * once per dialog, so a double submit sends one message.
+ */
+export const sellerMessageSchema = z.strictObject({
+  sellerId: uuid,
+  title: z.string().trim().min(1, "Add a title").max(ADMIN_MESSAGE_TITLE_MAX),
+  body: z.string().trim().min(1, "Write the message").max(ADMIN_MESSAGE_BODY_MAX),
+  link: z
+    .string()
+    .trim()
+    .max(200)
+    .optional()
+    .transform((value) => value || null)
+    .refine((value) => value === null || isDashboardPath(value), "The link must be a dashboard path such as /wallet"),
+  idempotencyKey: uuid,
+});
+export type SellerMessageInput = z.input<typeof sellerMessageSchema>;
 
 export type AdminResult<T, E extends string> = { success: true; data: T } | { success: false; error: E };

@@ -24,6 +24,7 @@ import { getSellerAccountTab, getSellerAuditTab, getSellerStoresTab, getSellerWa
 import { SellerDetailContent } from "./seller-detail.client";
 import { SellerDetailSkeleton } from "./seller-detail.skeleton";
 import { SellerFulfillmentSummary } from "./seller-fulfillment.chunks";
+import { SendSellerNotification } from "./seller-notify.client";
 import { SellerStoresPanel } from "./seller-stores.client";
 import { SellerWalletPanel } from "./seller-wallet.client";
 
@@ -81,6 +82,7 @@ export default async function SellerDetailPage({ params, searchParams }: SellerP
           </span>
         }
         relations={accountChips(account, { personRole: "Owner", omit: ["seller"], ordersFilter: "seller" })}
+        actions={<SendSellerNotification sellerId={seller.id} sellerName={seller.businessName} />}
       />
       <UrlTabs baseHref={`/sellers/${id}`} active={tab} tabs={TABS.map((key) => ({ key, label: TAB_LABELS[key] }))} />
       <Suspense key={tab} fallback={<SellerDetailSkeleton />}>
