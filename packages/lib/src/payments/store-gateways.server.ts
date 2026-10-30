@@ -221,7 +221,8 @@ export async function connectStoreGateway(
 /**
  * Disconnects the store's gateway: the row (and its keys) is deleted, so
  * checkout stops offering card payment at once. Orders already sent to the
- * gateway can no longer be confirmed by webhook; the seller confirms them.
+ * gateway can no longer be confirmed by webhook (their result is ignored);
+ * they stay awaiting payment. Known limit, ROADMAP.md F-39f.
  */
 export async function disconnectStoreGateway(
   sellerId: string,
@@ -432,7 +433,12 @@ export async function createStoreGatewayCheckout(input: {
     where: and(eq(orders.id, input.orderId), eq(orders.userId, input.userId)),
     with: { user: true, userAddress_shippingAddressId: true },
   });
-  if (!order || order.paymentMethod !== "online_payment" || !["pending", "failed"].includes(order.paymentStatus ?? "pending")) {
+  if (
+    !order ||
+    order.paymentMethod !== "online_payment" ||
+    !["pending", "failed"].includes(order.paymentStatus ?? "pending") ||
+    !["payment_processing", "pending"].includes(order.status ?? "")
+  ) {
     return { success: false, error: "not_payable" };
   }
   const meta = readOrderGateway(order.metadata);
@@ -584,14 +590,20 @@ export async function applyGatewayEvent(account: GatewayAccount, orderId: string
 
   const now = new Date().toISOString();
   const amount = (event.amountPiastres / 100).toFixed(2);
+  // Every seller can sign any transaction id with their own keys, so the id is
+  // namespaced by the integration: one store can never claim or settle
+  // another store's payment row.
+  const transactionId = `store:${account.integrationId}:${event.transactionId}`;
   const paymentData = { provider: account.provider, collector: "seller", integrationId: account.integrationId, event };
   let outcome: ApplyOutcome = "pending";
 
   await db.transaction(async (tx) => {
     // Gateways retry and may deliver concurrently; payments has no unique
     // transaction_id, so serialise on it (same as the Kashier route).
-    await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${event.transactionId}))`);
-    const existing = await tx.query.payments.findFirst({ where: eq(payments.transactionId, event.transactionId) });
+    await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${transactionId}))`);
+    const existing = await tx.query.payments.findFirst({
+      where: and(eq(payments.transactionId, transactionId), eq(payments.orderId, orderId)),
+    });
     if (existing && (existing.status === "paid" || existing.status === "failed")) {
       outcome = "duplicate";
       return;
@@ -607,7 +619,7 @@ export async function applyGatewayEvent(account: GatewayAccount, orderId: string
         amount,
         method: "online_payment",
         currency: event.currency || order.currency || "EGP",
-        transactionId: event.transactionId,
+        transactionId,
         paymentData,
         ...values,
       };
@@ -629,10 +641,25 @@ export async function applyGatewayEvent(account: GatewayAccount, orderId: string
       const [claimed] = await tx
         .update(orders)
         .set({ paymentStatus: "paid", status: "confirmed", paidAt: now, processedAt: now, updatedAt: now })
-        .where(and(eq(orders.id, orderId), inArray(orders.paymentStatus, ["pending", "failed"])))
+        .where(
+          and(
+            eq(orders.id, orderId),
+            inArray(orders.paymentStatus, ["pending", "failed"]),
+            // A cancelled order stays cancelled; the money is kept for review.
+            inArray(orders.status, ["payment_processing", "pending"]),
+          ),
+        )
         .returning({ id: orders.id });
       if (!claimed) {
-        outcome = "duplicate";
+        const current = await tx.query.orders.findFirst({ where: eq(orders.id, orderId), columns: { paymentStatus: true } });
+        if (current?.paymentStatus === "paid") {
+          outcome = "duplicate";
+          return;
+        }
+        // Paid on the gateway, but the order was cancelled meanwhile: record it
+        // (the seller refunds from their gateway) and never confirm the order.
+        await writePayment({ status: "pending", errorMessage: "Paid after the order was cancelled; refund from the gateway" });
+        outcome = "mismatch";
         return;
       }
       await writePayment({ status: "paid", capturedAt: now });

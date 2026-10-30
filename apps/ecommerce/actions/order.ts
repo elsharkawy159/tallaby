@@ -88,12 +88,6 @@ export async function createOrder(data: {
       return { success: false, error: "Unable to get user ID" };
     }
 
-    if (
-      data.paymentMethod === "online_payment" &&
-      !(ONLINE_CARD_PAYMENT_ENABLED && isOnlineCardPaymentEnabled())
-    ) {
-      return { success: false, error: "Online card payment is unavailable" };
-    }
 
     // The seller took this store's website offline: it takes no orders.
     if (await isCartStoreOffline(data.cartId)) {
@@ -110,6 +104,17 @@ export async function createOrder(data: {
     // Storefront: only the store's enabled methods (checked again with the
     // order total inside placeOrderFromCart).
     const storefrontPayments = await getStorefrontCheckoutPayments();
+
+    // Card: on a storefront only through the seller's own gateway (F-39,
+    // checked in placeOrderFromCart); on the marketplace, Tallaby's switch.
+    if (
+      data.paymentMethod === "online_payment" &&
+      (storefrontPayments
+        ? !storefrontPayments.gateway
+        : !(ONLINE_CARD_PAYMENT_ENABLED && isOnlineCardPaymentEnabled()))
+    ) {
+      return { success: false, error: "Online card payment is unavailable" };
+    }
 
     const result = await placeOrderFromCart({
       userId,

@@ -3340,7 +3340,8 @@
         "notFound": "Store not found.",
         "rateLimited": "Too many attempts. Please wait a minute and try again.",
         "generic": "Something went wrong. Please try again."
-      }
+      },
+      "testModeWarning": "Test mode: customers can \"pay\" with test cards and their orders are confirmed, but no money arrives. Switch to live keys before you sell."
     }
   },
   "storeShipping": {

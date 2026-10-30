@@ -108,6 +108,9 @@ export function StoreGatewaysCard({
               · {t(connected.details.mode === "live" ? "modeLive" : "modeTest")}
             </p>
           )}
+          {isConnected && connected?.details.mode === "test" && (
+            <p className="mt-1 rounded-lg border border-amber-500/40 bg-amber-500/10 px-2.5 py-1.5 text-[12.5px]">{t("testModeWarning")}</p>
+          )}
           {blocked && <p className="mt-0.5 text-[12.5px] text-muted-foreground">{t("oneAtATime")}</p>}
         </div>
         {live && (
