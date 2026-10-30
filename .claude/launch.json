@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "dashboard",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "dashboard", "dev"],
+      "port": 3002
+    },
+    {
+      "name": "ecommerce-staging",
+      "runtimeExecutable": "C:/Program Files/Git/bin/bash.exe",
+      "runtimeArgs": ["C:/Users/elsha/AppData/Local/Temp/claude/F--Programming-Projects-tallaby/e77464a6-bcb4-4d60-9177-f5f43b6860e3/scratchpad/ecommerce-staging.sh"],
+      "port": 3100
+    }
+  ]
+}
