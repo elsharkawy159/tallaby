@@ -5,6 +5,7 @@ import paymobRoutes from "../routes/paymob";
 import kashierRoutes from "../routes/kashier";
 import webhookRoutes from "../routes/webhooks";
 import bostaWebhookRoutes from "../routes/bosta";
+import storePaymentsWebhookRoutes from "../routes/store-payments";
 import { internalApiAuth } from "../lib/middleware";
 
 export const app = new Hono().basePath("/api");
@@ -48,4 +49,5 @@ app.route("/emails", emails);
 app.route("/paymob", paymobRoutes);
 app.route("/kashier", kashierRoutes);
 app.route("/webhooks/bosta", bostaWebhookRoutes);
+app.route("/webhooks/store-payments", storePaymentsWebhookRoutes);
 app.route("/webhooks", webhookRoutes);

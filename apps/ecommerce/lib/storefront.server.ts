@@ -38,6 +38,7 @@ import { normalizeGovernorate } from "@workspace/lib/shipping";
 import { publicStoreSocialLinks } from "@workspace/lib/stores";
 import { parseStoreSeo } from "@workspace/lib/stores";
 import { storeHasVisibleProducts } from "@workspace/lib/stores/server";
+import { getStorefrontGateway } from "@workspace/lib/payments/store-gateways/server";
 import { storeCategoryGroups, type StoreCategoryFilter } from "@workspace/lib/store-sites/catalog-data";
 import { parseStoreApp } from "@workspace/lib/stores/app";
 import {
@@ -301,7 +302,9 @@ export async function getStorefrontCheckoutPayments(): Promise<StorefrontCheckou
     .where(and(eq(stores.id, scope.storeId), eq(stores.sellerId, scope.sellerId)))
     .limit(1);
   const settings = row?.settings as Record<string, unknown> | null | undefined;
-  return storefrontCheckoutMethods(parseStorePayments(settings?.payments));
+  // The seller's own card gateway, when connected (ROADMAP.md F-39).
+  const gateway = row ? await getStorefrontGateway(scope.storeId, scope.sellerId) : null;
+  return storefrontCheckoutMethods(parseStorePayments(settings?.payments), gateway);
 }
 
 /**

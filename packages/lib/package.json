@@ -101,6 +101,14 @@
       "types": "./src/payments/store-methods.ts",
       "default": "./src/payments/store-methods.ts"
     },
+    "./payments/store-gateways": {
+      "types": "./src/payments/store-gateways.lib.ts",
+      "default": "./src/payments/store-gateways.lib.ts"
+    },
+    "./payments/store-gateways/server": {
+      "types": "./src/payments/store-gateways.server.ts",
+      "default": "./src/payments/store-gateways.server.ts"
+    },
     "./orders": {
       "types": "./src/orders/index.ts",
       "default": "./src/orders/index.ts"

@@ -11,6 +11,7 @@
 import { z } from "zod";
 import { EGYPT_MOBILE_REGEX } from "../fulfillment/validate";
 import { MANUAL_PAYMENT_METHOD_VALUES } from "../orders/payment.lib";
+import type { OrderGatewayMeta } from "./store-gateways.lib";
 
 export type PaymentCollector = "seller" | "tallaby" | "delivery";
 export type PaymentMethodStatus = "live" | "soon";
@@ -237,10 +238,15 @@ export function validateMethodChange(
 }
 
 /** Checkout values (orders.payment_method) a storefront may offer. */
-export type StorefrontCheckoutMethod = "cash_on_delivery" | "instapay" | "vodafone_cash" | "e_cash";
+export type StorefrontCheckoutMethod = "cash_on_delivery" | "instapay" | "vodafone_cash" | "e_cash" | "online_payment";
 
 export type StorefrontCheckoutPayments = {
   methods: StorefrontCheckoutMethod[];
+  /**
+   * The seller's own connected card gateway (ROADMAP.md F-39), or null. When
+   * set, `online_payment` is offered and the order is paid to the seller.
+   */
+  gateway?: OrderGatewayMeta | null;
   /** COD is refused for order totals above this (EGP). */
   codMaxOrder: number | null;
   codNote: string | null;
@@ -251,17 +257,24 @@ export type StorefrontCheckoutPayments = {
  * the existing checkout methods, which Tallaby still collects: an enabled
  * wallet or InstaPay shows Tallaby's matching manual transfer. WE Pay and
  * Orange Cash have no Tallaby account, so they show nothing until Part B.
- * Card and the customer wallet are not store options ("soon"), so storefronts
- * never offer them.
+ * Tallaby's card checkout and the customer wallet are not store options, so
+ * storefronts never offer them. Card payment (`online_payment`) is offered
+ * only through the seller's own connected gateway (`gateway`), which the
+ * caller reads from store_integrations.
  */
-export function storefrontCheckoutMethods(payments: StorePayments): StorefrontCheckoutPayments {
+export function storefrontCheckoutMethods(
+  payments: StorePayments,
+  gateway: OrderGatewayMeta | null = null,
+): StorefrontCheckoutPayments {
   const methods: StorefrontCheckoutMethod[] = [];
   if (payments.cod?.enabled) methods.push("cash_on_delivery");
+  if (gateway) methods.push("online_payment");
   if (payments.instapay?.enabled) methods.push("instapay");
   if (payments.vodafone_cash?.enabled) methods.push("vodafone_cash");
   if (payments.e_cash?.enabled) methods.push("e_cash");
   return {
     methods,
+    gateway,
     codMaxOrder: payments.cod?.enabled ? (payments.cod.maxOrder ?? null) : null,
     codNote: payments.cod?.enabled ? (payments.cod.note ?? null) : null,
   };

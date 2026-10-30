@@ -730,7 +730,7 @@ Manual transfers are configured in `apps/ecommerce/lib/manual-payment-methods.ts
 | **Bosta** (built 2026-10-26) | Ship storefront orders with the seller's own Bosta account; tracking comes back automatically | Seller-facing carrier | API key from the seller's Bosta dashboard (Settings › API Integration), Read/Write (Full access only to cancel from Tallaby) | None on Tallaby's side; no sandbox | `credentials_encrypted` = { apiKey, webhookToken }; `config` = pickup location, autoShip (manual default), size, open-package, note, keyHint, canCancel | Create delivery on "Ship with Bosta" or on confirm; per-delivery webhook with a per-store token; daily sync cron; labels (mass AWB, ≤ 50) | 4-step wizard, settings page, Shipping-page partner card, order card/bulk actions | Delete row: shipments stay, updates stop | **Built** |
 | **TikTok Pixel** | Ads in Egypt | Seller-facing tracking | Identifier | None | `config.pixelId` | Same event map | ID field | Delete | **P3** (optional, only if requested) |
 
-Non-goals: generic "paste your script" fields, per-seller payment gateways (all payments stay on Tallaby's Paymob/Kashier accounts), Shopify storefront sync.
+Non-goals: generic "paste your script" fields, Shopify storefront sync. (Per-seller payment gateways were a non-goal until the owner changed it on 2026-10-30: a store can connect its own Paymob or Kashier account for storefront card payments, paid straight to the seller and fee-only on delivery; `ROADMAP.md` F-39, migration 0122.)
 
 ### 9.3 Consent and privacy
 

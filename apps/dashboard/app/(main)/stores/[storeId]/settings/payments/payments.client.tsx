@@ -27,6 +27,8 @@ import { PaymentMethodLogo } from "@/components/payments/payment-method-logo";
 import { cn } from "@/lib/utils";
 import { saveStorePaymentMethod } from "./payments.server";
 import { toDetails, type PaymentDetailsFormValues } from "./payments.dto";
+import type { StoreGatewayOverview } from "@workspace/lib/payments/store-gateways/server";
+import { StoreGatewaysCard } from "./gateways.client";
 
 type LiveKey = "cod" | "vodafone_cash" | "e_cash" | "we_pay" | "orange_cash" | "instapay";
 type Entry = { enabled: boolean; details?: Record<string, string>; fee?: number; maxOrder?: number; note?: string };
@@ -34,7 +36,8 @@ type Change = { enabled: boolean; details?: unknown; fee?: number; maxOrder?: nu
 
 const LIVE = STORE_PAYMENT_METHODS.filter((m) => m.status === "live");
 const WALLETS = LIVE.filter((m) => m.key !== "cod").map((m) => m.key as LiveKey);
-const SOON = STORE_PAYMENT_METHODS.filter((m) => m.status === "soon");
+// Card payments have their own card (StoreGatewaysCard: the seller's gateway, Tallaby Pay soon).
+const SOON = STORE_PAYMENT_METHODS.filter((m) => m.status === "soon" && m.key !== "card");
 const EMPTY: PaymentDetailsFormValues = { holderName: "", phone: "", ipa: "", iban: "", paymentLink: "" };
 
 /** Field errors from the shared detail schemas, keyed by field. */
@@ -65,10 +68,12 @@ const maskNumber = (n: string) => (n.length > 7 ? `${n.slice(0, 3)} ••••
 export function StorePaymentsSettings({
   storeId,
   initial,
+  gateways,
   readOnly,
 }: {
   storeId: string;
   initial: StorePayments;
+  gateways: StoreGatewayOverview;
   readOnly: boolean;
 }) {
   const t = useTranslations("storePayments");
@@ -181,6 +186,8 @@ export function StorePaymentsSettings({
       >
         <ul>{WALLETS.map(row)}</ul>
       </PaymentCard>
+
+      <StoreGatewaysCard storeId={storeId} initial={gateways} readOnly={readOnly} />
 
       <PaymentCard title={t("soonTitle")} description={t("soonDescription")}>
         <ul className="grid gap-3 p-4 sm:grid-cols-2 sm:p-6">

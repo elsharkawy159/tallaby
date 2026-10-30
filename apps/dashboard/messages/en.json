@@ -3256,6 +3256,91 @@
       "choose": "The customer picks {method} and confirms the order.",
       "transfer": "They see your payment details and transfer the amount.",
       "confirm": "You check the transfer and press \"Confirm payment\" on the order page."
+    },
+    "gateways": {
+      "title": "Online card payments",
+      "description": "Connect your own payment gateway account. Customers pay by card on your store and the money goes straight to your account.",
+      "soon": "Soon",
+      "connect": "Connect",
+      "updateKeys": "Update keys",
+      "disconnect": "Disconnect",
+      "connected": "Gateway connected. Card payment now shows at your store's checkout.",
+      "disconnected": "Gateway disconnected. Card payment no longer shows at checkout.",
+      "oneAtATime": "You can connect one gateway at a time. Disconnect the current one first.",
+      "modeLive": "Live",
+      "modeTest": "Test mode",
+      "optional": "Optional",
+      "keepSaved": "Leave blank to keep the saved key",
+      "blankKeepsSaved": "Leave a key blank to keep the one you saved before.",
+      "connectTitle": "Connect {gateway}",
+      "updateTitle": "Update {gateway} keys",
+      "verifyAndConnect": "Check keys and connect",
+      "saveKeys": "Check and save",
+      "verifying": "Checking with the gateway…",
+      "cancel": "Cancel",
+      "disconnectConfirm": {
+        "title": "Disconnect {gateway}?",
+        "description": "Card payment will disappear from your checkout and your saved keys will be deleted. Orders already being paid can no longer be confirmed automatically, so check them in your gateway's dashboard."
+      },
+      "status": {
+        "connected": "Connected",
+        "waiting": "Waiting for first payment",
+        "waitingHelp": "Your keys work. The connection is fully confirmed after the gateway sends us its first payment result."
+      },
+      "howItWorks": {
+        "verify": "We check your keys by creating a 1 EGP test checkout in your account. Nobody is charged.",
+        "money": "Card payments go straight to your gateway account. Tallaby never holds this money, and refunds are made from your gateway's dashboard.",
+        "fee": "Tallaby's EGP 5 fee per delivered order is taken from your store wallet, as with cash on delivery."
+      },
+      "fields": {
+        "mode": "Account mode",
+        "secretKey": "Secret key",
+        "publicKey": "Public key",
+        "hmacSecret": "HMAC secret",
+        "cardIntegrationId": "Card integration ID",
+        "walletIntegrationId": "Mobile wallet integration ID",
+        "merchantId": "Merchant ID",
+        "paymentApiKey": "Payment API key"
+      },
+      "providers": {
+        "paymob": {
+          "name": "Paymob",
+          "description": "Cards, Meeza and mobile wallets with your own Paymob account.",
+          "whereToFind": "In your Paymob dashboard: Settings › Account info for the secret, public and HMAC keys, and Developers › Payment integrations for the integration IDs."
+        },
+        "kashier": {
+          "name": "Kashier",
+          "description": "Cards and mobile wallets with your own Kashier account.",
+          "whereToFind": "In your Kashier dashboard: Integrate now / API keys for the Merchant ID, Payment API key and Secret key. Choose Test or Live to match the keys."
+        },
+        "paypal": {
+          "name": "PayPal",
+          "description": "For customers paying from abroad. Coming in a later update."
+        },
+        "tallaby_pay": {
+          "name": "Tallaby Pay",
+          "description": "Card payments with no gateway account of your own; the money goes to your store wallet. Coming soon."
+        }
+      },
+      "errors": {
+        "invalidSecretKey": "The secret key doesn't look right. Copy it again from your gateway's dashboard.",
+        "invalidPublicKey": "The public key doesn't look right. Copy it again from your gateway's dashboard.",
+        "modeMismatch": "One key is a test key and the other is live. Use two test keys or two live keys.",
+        "invalidIntegrationId": "Integration IDs are numbers, and the wallet ID must differ from the card ID.",
+        "invalidHmacSecret": "The HMAC secret doesn't look right. Copy it again from your Paymob dashboard.",
+        "invalidMerchantId": "The Merchant ID looks like MID-12345-678.",
+        "invalidApiKey": "The Payment API key doesn't look right. Copy it again from your Kashier dashboard.",
+        "invalidMode": "Choose Test or Live.",
+        "keysRejected": "The gateway didn't accept these keys. Check them, and check the mode (test or live).",
+        "gatewayUnreachable": "We couldn't reach the gateway. Please try again in a minute.",
+        "otherGatewayConnected": "Another gateway is already connected. Disconnect it first.",
+        "webhooksNotConfigured": "Card payments can't be set up right now. Please contact Tallaby support.",
+        "notAvailable": "This gateway isn't available yet.",
+        "readOnly": "This store is read-only.",
+        "notFound": "Store not found.",
+        "rateLimited": "Too many attempts. Please wait a minute and try again.",
+        "generic": "Something went wrong. Please try again."
+      }
     }
   },
   "storeShipping": {

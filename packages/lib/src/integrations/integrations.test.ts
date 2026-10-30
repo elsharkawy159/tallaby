@@ -16,7 +16,7 @@ const STORE_A = "11111111-1111-4111-8111-111111111111";
 const STORE_B = "22222222-2222-4222-8222-222222222222";
 
 describe("registry", () => {
-  it("matches the provider CHECK list (0056, plus bosta from 0106)", () => {
+  it("matches the provider CHECK list (0056, plus bosta from 0106, paymob and kashier from 0122)", () => {
     expect([...INTEGRATION_PROVIDERS].sort()).toEqual(
       [
         "meta_pixel",
@@ -28,12 +28,14 @@ describe("registry", () => {
         "google_sheets",
         "shopify_import",
         "bosta",
+        "paymob",
+        "kashier",
       ].sort(),
     );
     for (const provider of INTEGRATION_PROVIDERS) expect(INTEGRATIONS[provider].provider).toBe(provider);
   });
 
-  it("launches Pixel, GA4, GTM, Meta CAPI, Sheets, Shopify and Bosta; GTM carries the D18 warning", () => {
+  it("launches Pixel, GA4, GTM, Meta CAPI, Sheets, Shopify, Bosta and the payment gateways; GTM carries the D18 warning", () => {
     const available = INTEGRATION_PROVIDERS.filter((p) => INTEGRATIONS[p].availability === "available");
     expect(available).toEqual([
       "meta_pixel",
@@ -43,6 +45,8 @@ describe("registry", () => {
       "google_sheets",
       "shopify_import",
       "bosta",
+      "paymob",
+      "kashier",
     ]);
     expect(INTEGRATIONS.google_tag_manager.warnsAboutSellerScripts).toBe(true);
   });
