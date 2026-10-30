@@ -21,6 +21,7 @@ import {
   Timer,
   Users,
 } from "lucide-react";
+import type { CSSProperties } from "react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Intro, IntroWords, Reveal, StaggerChildren } from "@workspace/motion";
 import { Link } from "@/i18n/navigation";
@@ -124,15 +125,58 @@ export async function HowItWorks() {
 
 /** Below this many stores the wall would look empty, so it stays hidden. */
 const STORE_SHOWCASE_MIN = 4;
+/** One copy of the moving row repeats the stores up to at least this many tiles, so it is wider than the screen. */
+const STORE_MARQUEE_TILES = 12;
+
+type ShowcaseStore = Awaited<ReturnType<typeof getShowcaseStores>>[number];
+
+/** One copy of the store row. The second copy (`hidden`) only makes the loop seamless. */
+function StoreMarqueeRow({ stores, hidden }: { stores: (ShowcaseStore & { key: string })[]; hidden?: boolean }) {
+  return (
+    <ul
+      aria-hidden={hidden || undefined}
+      data-marquee-copy={hidden ? "" : undefined}
+      className="m-0 flex shrink-0 list-none p-0"
+    >
+      {stores.map((store) => (
+        <li key={store.key} className="w-[148px] shrink-0 pe-3 sm:w-[176px] sm:pe-4">
+          <a
+            href={store.url}
+            target="_blank"
+            rel="noopener"
+            tabIndex={hidden ? -1 : undefined}
+            className="group flex flex-col items-center gap-3 rounded-2xl border border-neutral-200 bg-white px-3 pt-5 pb-4 text-center transition-[border-color,box-shadow] duration-300 hover:border-teal-100 hover:shadow-soft focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-teal-700"
+          >
+            <span className="grid size-[72px] place-items-center overflow-hidden rounded-2xl bg-paper ring-1 ring-neutral-100 sm:size-20">
+              {store.logoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element -- seller logos can live on any host
+                <img src={store.logoUrl} alt="" loading="lazy" decoding="async" className="size-full object-contain p-2" />
+              ) : (
+                <span aria-hidden className="grid size-full place-items-center bg-teal-900 text-[28px] font-extrabold text-amber-300">
+                  {store.name.trim().charAt(0).toUpperCase()}
+                </span>
+              )}
+            </span>
+            <b dir="auto" className="block w-full truncate text-[14.5px] text-teal-900 group-hover:text-teal-700">
+              {store.name}
+            </b>
+          </a>
+        </li>
+      ))}
+    </ul>
+  );
+}
 
 /**
- * "Stores already selling on Tallaby": published stores' logos, most products
- * first (getShowcaseStores). Social proof for new visitors; each tile opens the store.
+ * "Stores already selling on Tallaby": published stores' logos and names, most products
+ * first (getShowcaseStores), in an auto-playing row that pauses on hover or focus.
+ * Social proof for new visitors; each tile opens the store.
  */
 export async function StoresShowcase() {
-  const [t, locale, stores] = await Promise.all([getTranslations("home.stores"), getLocale(), getShowcaseStores()]);
+  const [t, stores] = await Promise.all([getTranslations("home.stores"), getShowcaseStores()]);
   if (stores.length < STORE_SHOWCASE_MIN) return null;
-  const numbers = new Intl.NumberFormat(locale === "ar" ? "ar-EG" : "en");
+  const repeats = Math.ceil(STORE_MARQUEE_TILES / stores.length);
+  const tiles = Array.from({ length: repeats }, (_, r) => stores.map((store) => ({ ...store, key: `${r}-${store.id}` }))).flat();
 
   return (
     <Section id="stores" aria-labelledby="stores-title" className="relative overflow-hidden">
@@ -141,36 +185,17 @@ export async function StoresShowcase() {
         <Reveal>
           <SectionHeading id="stores-title" centered kicker={t("kicker")} title={t("title")} description={t("desc")} />
         </Reveal>
-        <StaggerChildren as="ul" stagger={0.04} className="m-0 grid list-none grid-cols-2 gap-3 p-0 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-6">
-          {stores.map((store) => (
-            <li key={store.id}>
-              <a
-                href={store.url}
-                target="_blank"
-                rel="noopener"
-                className="group flex h-full flex-col items-center gap-3 rounded-2xl border border-neutral-200 bg-white px-3 pt-5 pb-4 text-center transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-0.5 hover:border-teal-100 hover:shadow-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
-              >
-                <span className="grid size-[72px] place-items-center overflow-hidden rounded-2xl bg-paper ring-1 ring-neutral-100 sm:size-20">
-                  {store.logoUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element -- seller logos can live on any host
-                    <img src={store.logoUrl} alt="" loading="lazy" decoding="async" className="size-full object-contain p-2" />
-                  ) : (
-                    <span aria-hidden className="grid size-full place-items-center bg-teal-900 text-[28px] font-extrabold text-amber-300">
-                      {store.name.trim().charAt(0).toUpperCase()}
-                    </span>
-                  )}
-                </span>
-                <span className="w-full min-w-0">
-                  <b className="block truncate text-[14.5px] text-teal-900 group-hover:text-teal-700">{store.name}</b>
-                  <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-teal-50 px-2.5 py-0.5 text-[12px] font-semibold text-teal-700">
-                    <Package className="size-3" aria-hidden />
-                    {t("products", { count: store.productCount, formatted: numbers.format(store.productCount) })}
-                  </span>
-                </span>
-              </a>
-            </li>
-          ))}
-        </StaggerChildren>
+      </Container>
+      {/* Full-bleed row. dir="ltr" keeps the -50% loop math the same in Arabic; names keep dir="auto". */}
+      <Reveal className="relative">
+        <div dir="ltr" className="store-marquee overflow-hidden py-1">
+          <div className="store-marquee-track flex w-max" style={{ "--marquee-duration": `${tiles.length * 3}s` } as CSSProperties}>
+            <StoreMarqueeRow stores={tiles} />
+            <StoreMarqueeRow stores={tiles} hidden />
+          </div>
+        </div>
+      </Reveal>
+      <Container className="relative">
         <Reveal className="mt-10 flex flex-col items-center gap-3 text-center">
           <p className="text-[15px] text-slate-ink">{t("join")}</p>
           <SignupTrigger tone="teal" />
