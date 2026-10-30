@@ -1,4 +1,20 @@
 {
+  "catalogShare": {
+    "defaultTitle": "Our catalog",
+    "newestTitle": "Our latest products",
+    "count": "{count, plural, =0 {No products} one {1 product} other {# products}}",
+    "pricesAsOf": "Prices as of {date}",
+    "pricesNote": "Prices and stock may change. Your cart always shows today's price.",
+    "ogDescription": "{count, plural, one {1 product} other {# products}} from {store}, with photos and prices. Order in one tap.",
+    "shareText": "{title} from {store}",
+    "print": "Print / Save as PDF",
+    "share": "Share",
+    "copyLink": "Copy link",
+    "copied": "Copied",
+    "soldOut": "Sold out",
+    "empty": "These products aren't available right now.",
+    "browseStore": "Browse the store"
+  },
   "metadata": {
     "title": "Online Shopping in Egypt | Tallaby.com",
     "titleDefault": "Online Shopping in Egypt | Tallaby.com",
@@ -159,6 +175,23 @@
     "viewCart": "View Cart",
     "similarItems": "You might also like"
   },
+  "storeCheckoutForm": {
+    "optional": "optional",
+    "email": "Email",
+    "secondPhone": "Another phone number",
+    "errors": {
+      "emailRequired": "Please enter your email.",
+      "emailInvalid": "Please enter a valid email.",
+      "secondPhoneRequired": "Please enter another phone number.",
+      "secondPhoneInvalid": "Please enter a valid Egyptian mobile number (01XXXXXXXXX).",
+      "customAnswerRequired": "Please answer the store's question.",
+      "notesRequired": "Please add your order notes."
+    }
+  },
+  "storeThankYou": {
+    "confirmOnWhatsapp": "Confirm on WhatsApp",
+    "suggestedTitle": "You may also like"
+  },
   "checkout": {
     "checkout": "Checkout",
     "completeOrderDetails": "Complete your order details",
@@ -184,10 +217,13 @@
     "codUnavailableHighShipping": "Not available for high shipping costs",
     "codUnavailableAboveMax": "Not available for orders above the store limit",
     "notDeliveredHere": "We don't deliver to this address yet.",
+    "minOrderNotReached": "This store's minimum order is EGP {minimum}. Add EGP {missing} more to place your order.",
+    "minOrderAddMore": "Add {amount} more to order (minimum order {minimum}).",
     "leadConsent": "We may contact you about your order.",
     "egyptOnly": "We deliver inside Egypt only for now.",
     "zoneNoCod": "Cash on delivery isn't available for this address.",
     "orderNotAccepted": "We can't accept this order right now. Please contact the store directly.",
+    "tooManyOrders": "You've placed several orders in a short time. Please wait a little and try again, or contact the store directly.",
     "arrivesIn": "Arrives in {min}–{max} days",
     "noPaymentMethodsAvailable": "This store has no payment method available for this order. Please contact the store.",
     "payWithCard": "Pay with Card",
@@ -288,7 +324,45 @@
       "seconds": "Seconds"
     }
   },
+  "storeSalesPopup": {
+    "someoneFrom": "Someone from {governorate} ordered",
+    "someone": "Someone ordered",
+    "justNow": "Just now",
+    "close": "Close"
+  },
+  "stockAlerts": {
+    "unsubscribe": {
+      "title": "Back-in-stock alerts",
+      "confirm": "Stop back-in-stock alerts from this store?",
+      "button": "Yes, stop them",
+      "done": "Done. You won't get more alerts from {store}.",
+      "invalid": "This link is not valid or has expired."
+    }
+  },
+  "emailUnsubscribe": {
+    "title": "Store emails",
+    "confirm": "Stop marketing emails from this store?",
+    "button": "Yes, unsubscribe me",
+    "done": "Done. You will not get more marketing emails from {store}.",
+    "invalid": "This link is not valid or has expired."
+  },
   "storeProduct": {
+    "restock": {
+      "title": "Notify me when it's back",
+      "description": "Leave your email and we'll write to you as soon as this item is back in stock.",
+      "emailLabel": "Email",
+      "emailPlaceholder": "you@example.com",
+      "submit": "Notify me",
+      "done": "Done! We'll email you as soon as it's back.",
+      "errors": {
+        "invalid": "Enter a valid email.",
+        "notFound": "This product isn't available right now.",
+        "inStock": "This item is in stock now, you can order it right away.",
+        "tooMany": "You already have many alerts on this store. Wait for them first.",
+        "rateLimited": "Too many tries. Please try again in a bit.",
+        "generic": "Something went wrong. Please try again."
+      }
+    },
     "save": "Save {amount}",
     "discountBadge": "-{percent}%",
     "offerEndsIn": "Offer ends in",
@@ -302,6 +376,7 @@
     "liveViews": "<b>{count}</b> shoppers are viewing this right now",
     "inStock": "In stock, ready to ship",
     "lowStock": "Only {count} left",
+    "lowStockAlert": "Only {count} left, order before it's gone",
     "outOfStock": "Sold out",
     "option": "Option",
     "addToCart": "Add to cart",
@@ -545,6 +620,15 @@
     "startShoppingDescription": "Start shopping to see your orders here"
   },
   "orders": {
+    "reorder": {
+      "title": "Want the same order again?",
+      "pricesNote": "We'll add what's still available to your cart at today's prices.",
+      "button": "Order again",
+      "added": "Added to your cart",
+      "partial": "Added what's available. Some items are sold out or no longer sold, or fewer are left.",
+      "nothingAvailable": "None of these products are available right now.",
+      "failed": "Couldn't add the products. Try again."
+    },
     "deliveryUpdates": "Delivery updates",
     "deliveryPlaced": "Order placed",
     "deliveryAssigned": "Courier assigned",
@@ -815,6 +899,7 @@
     "resultsForSubheading": "Find the products you're looking for",
     "enterSearchTerm": "Enter a search term to find products",
     "sortBy": "Sort by",
+    "sortFeatured": "Featured",
     "sortMostPopular": "Most Popular",
     "sortPriceLowToHigh": "Price: Low to High",
     "sortPriceHighToLow": "Price: High to Low",
@@ -2114,6 +2199,7 @@
     "itemCount": "{count, plural, one {# item} other {# items}}",
     "subtotal": "Subtotal",
     "shippingNote": "Delivery is calculated at checkout.",
+    "minOrderAddMore": "Add {amount} more to order (minimum order {minimum}).",
     "checkout": "Checkout",
     "viewCart": "View cart",
     "continueShopping": "Continue shopping",
@@ -2220,6 +2306,10 @@
       "title": "Privacy policy",
       "description": "What we collect, why we collect it, and the choices you have."
     },
+    "affiliates": {
+      "title": "Earn with us: the Tallaby affiliate program",
+      "description": "Share your referral link and earn 20% for life of every amount the sellers you bring top up in their store wallet, paid in cash to your bank account or Vodafone Cash."
+    },
     "followUs": {
       "title": "Follow Tallaby",
       "description": "Follow us on social media for updated promotions and discounts."
@@ -2254,6 +2344,7 @@
     "templates": "Templates",
     "builder": "Store builder",
     "pricing": "Pricing",
+    "affiliates": "Earn with us",
     "faq": "FAQ",
     "helpCenter": "Help center",
     "paymentMethods": "Payment methods",
@@ -3463,6 +3554,101 @@
           "contact": ""
         }
       ]
+    }
+  },
+  "affiliates": {
+    "hero": {
+      "eyebrow": "Earn with us",
+      "title": "Earn <em>20%</em> of every top-up by the sellers you bring, for life",
+      "lead": "Share your link with your referral code. Every time a seller who signed up through it tops up their store wallet on Tallaby, you earn 20% of the amount, in cash, not wallet credit.",
+      "getLink": "Get your link",
+      "howLink": "How it works"
+    },
+    "card": {
+      "rate": "20%",
+      "rateLabel": "of every store-wallet top-up",
+      "lifetime": "For life, every time the seller tops up",
+      "cash": "Cash to a bank account or Vodafone Cash",
+      "minimum": "Withdraw from EGP 500"
+    },
+    "how": {
+      "kicker": "How it works",
+      "title": "Four steps from link to cash",
+      "steps": [
+        {
+          "title": "Get your link",
+          "body": "Create a free seller account on Tallaby, then open “Earn with us” in your dashboard to find your link and referral code."
+        },
+        {
+          "title": "Share it",
+          "body": "Copy it or share it on WhatsApp and Facebook with anyone who wants to start an online store. Whoever opens your link and signs up within 60 days counts for you."
+        },
+        {
+          "title": "Earn 20% for life",
+          "body": "Every time a seller you brought tops up their store wallet successfully, 20% of the amount is credited to you, every time, with no end date."
+        },
+        {
+          "title": "Withdraw in cash",
+          "body": "After 10 successful referrals and 10 stores, request your available balance (EGP 500 or more) to your bank account or Vodafone Cash."
+        }
+      ]
+    },
+    "example": {
+      "kicker": "Example",
+      "title": "An EGP 1,000 top-up = EGP 200 for you",
+      "body": "A seller who signed up through your link tops up their store wallet with EGP 1,000? You earn EGP 200 right away. If they top up again, you earn 20% again.",
+      "topUp": "Seller's top-up",
+      "commission": "Your commission",
+      "currency": "EGP"
+    },
+    "terms": {
+      "kicker": "Terms",
+      "title": "The program's terms, plainly",
+      "items": [
+        "The commission is 20% of every successful store-wallet top-up by a seller who signed up through your link, for life.",
+        "Commissions are paid in cash to a bank account or Vodafone Cash, never as credit in your store wallet.",
+        "A referral counts as successful once the referred seller's first wallet top-up succeeds.",
+        "Withdrawal opens after at least 10 successful referrals and at least 10 stores created through your link. They are two separate counts, and a seller who creates 3 stores counts as 3 stores.",
+        "The minimum withdrawal is EGP 500, each request covers your whole available balance, and you can have one open request at a time.",
+        "A commission can be withdrawn as soon as it is credited, with no waiting period.",
+        "Your link is remembered for 60 days and the first link a person opens is the one that counts. The referrer can't be changed after signup, and you can't refer yourself.",
+        "Referral links are for Tallaby seller accounts only.",
+        "Tallaby cancels commissions from fake accounts and self-referrals, and withdrawals are paused while your account isn't active."
+      ]
+    },
+    "faq": {
+      "kicker": "FAQ",
+      "title": "Questions about the program",
+      "items": [
+        {
+          "q": "Who can join?",
+          "a": "Anyone with a Tallaby seller account. Creating one is free, and your link is ready on the “Earn with us” page of your dashboard."
+        },
+        {
+          "q": "Which amounts earn a commission?",
+          "a": "20% of every amount a seller you brought successfully tops up in their store wallet, for life. The EGP 100 welcome gift isn't a top-up, so it earns no commission."
+        },
+        {
+          "q": "When can I withdraw?",
+          "a": "Once you reach at least 10 successful referrals and at least 10 stores created through your link, and your available balance is EGP 500 or more. After that, withdrawal stays open for you."
+        },
+        {
+          "q": "How do I get paid?",
+          "a": "Request a withdrawal on the “Earn with us” page and choose a bank account or Vodafone Cash. The Tallaby team transfers your whole available balance and lets you know when it's paid."
+        },
+        {
+          "q": "Do I see the details of the sellers I referred?",
+          "a": "You see the store name, signup date, number of stores, total topped up and your commission from it, never their phone number or email."
+        },
+        {
+          "q": "Does a seller I referred pay more?",
+          "a": "No. They pay Tallaby's usual prices like every seller; Tallaby pays your commission."
+        }
+      ]
+    },
+    "band": {
+      "title": "Your link is ready in your dashboard",
+      "body": "Create a free seller account, or sign in and open “Earn with us”."
     }
   },
   "followUs": {

@@ -8,7 +8,7 @@ import {
   productAnswers,
   db,
 } from "@workspace/db";
-import { eq, and, desc, asc, sql, inArray } from "drizzle-orm";
+import { eq, and, desc, asc, sql, inArray, isNull } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { getUser } from "./auth";
 import slugify from "slugify";
@@ -28,6 +28,7 @@ import {
   syncCategoryProductCountOnDelete,
 } from "@workspace/db/categories";
 import { syncProductVariants } from "@workspace/db/products";
+import { setStockContext } from "@workspace/db/inventory";
 import { normalizePrice } from "@workspace/lib";
 import { getSellerAccess } from "@/lib/auth/seller-access";
 import {
@@ -163,7 +164,8 @@ export async function getSellerProducts(params?: {
       throw new Error("Unauthorized");
     }
 
-    const conditions = [eq(products.sellerId, session.user.id)];
+    // Products in Trash (0123, F-35) have their own page.
+    const conditions = [eq(products.sellerId, session.user.id), isNull(products.deletedAt)];
 
     if (params?.status !== undefined) {
       conditions.push(eq(products.status, params.status));
@@ -856,7 +858,7 @@ export async function bulkInsertProductsAction(records: ParsedBulkRow[]) {
           isFeatured: rec.product.isFeatured,
           taxClass: "standard",
           variants: rec.variants || [],
-        });
+        }, { stockReason: "import" });
 
         if (!res.success || !res.data?.id) {
           results.failed++;
@@ -955,7 +957,7 @@ export async function bulkCreateProductsAction(
       if (!product) continue;
 
       try {
-        const res = await createProduct(product as any);
+        const res = await createProduct(product as any, { stockReason: "import" });
         if (!res.success || !res.data?.id) {
           results.failed++;
           results.errors.push({
@@ -1173,7 +1175,9 @@ function hasLocalized(
 }
 
 export async function createProduct(
-  data: CreateProductLegacy | CreateProductNew
+  data: CreateProductLegacy | CreateProductNew,
+  /** Stock history label (0125): the bulk imports below pass "import". */
+  options?: { stockReason?: "import" }
 ) {
   try {
     const session = await getUser();
@@ -1233,6 +1237,7 @@ export async function createProduct(
     const slugsForSnapshot: { locale: string; slug: string | null }[] = [];
 
     const createdProduct = await db.transaction(async (tx) => {
+      await setStockContext(tx, { reason: options?.stockReason === "import" ? "import" : "edit", actorId: session.user.id });
       const newProduct = await tx
         .insert(products)
         .values(productPayload)
@@ -1488,6 +1493,7 @@ export async function updateProduct(
     }
 
     const updatedProduct = await db.transaction(async (tx) => {
+      await setStockContext(tx, { reason: "edit", actorId: session.user.id });
       // Update the main product (shared fields only). Status comes from
       // nextProductStatus, never from `productData` (the seller form cannot
       // set it): a live product stays live, a draft stays a draft.
@@ -1512,7 +1518,7 @@ export async function updateProduct(
           updatedAt: new Date().toISOString(),
         })
         .where(
-          and(eq(products.id, productId), eq(products.sellerId, session.user.id))
+          and(eq(products.id, productId), eq(products.sellerId, session.user.id), isNull(products.deletedAt))
         )
         .returning();
 
@@ -1677,7 +1683,9 @@ export async function toggleProductStatus(productId: string) {
   const product = await db.query.products.findFirst({
     where: and(
       eq(products.id, productId),
-      eq(products.sellerId, session.user.id)
+      eq(products.sellerId, session.user.id),
+      // A product in Trash (F-35) is restored first, never switched on here.
+      isNull(products.deletedAt)
     ),
     columns: { status: true },
   });
@@ -1699,7 +1707,8 @@ export async function setProductPublished(productId: string, published: boolean)
     const product = await db.query.products.findFirst({
       where: and(
         eq(products.id, productId),
-        eq(products.sellerId, session.user.id)
+        eq(products.sellerId, session.user.id),
+        isNull(products.deletedAt)
       ),
     });
 

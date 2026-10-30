@@ -5,7 +5,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { isAccessError, requireSeller } from "@/lib/auth/require-seller.server";
 import ar from "@/messages/ar.json";
 import en from "@/messages/en.json";
-import { InvoiceDocument, SlipDocument, type PrintT } from "./print-documents";
+import { InvoiceDocument, PickingDocument, SlipDocument, type PrintT } from "./print-documents";
 import { PRINT_DOCS, parsePrintDoc, parsePrintIds, parsePrintLocale, printOrdersHref } from "./print-orders.lib";
 import { loadPrintOrders } from "./print-orders.server";
 import { PrintToolbar } from "./print-toolbar.client";
@@ -83,6 +83,10 @@ export default async function PrintOrdersPage({
         <div className="mx-auto max-w-md px-4 py-16 text-center">
           <p className="font-semibold">{t("print.empty")}</p>
           <p className="text-sm text-muted-foreground">{t("print.emptyHint")}</p>
+        </div>
+      ) : doc === "picking" ? (
+        <div className="px-4 pb-8 print:p-0">
+          <PickingDocument orders={orders} t={t} locale={locale} />
         </div>
       ) : (
         <div className="px-4 pb-8 print:p-0">

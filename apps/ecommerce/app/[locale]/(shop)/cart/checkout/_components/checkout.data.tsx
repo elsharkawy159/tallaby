@@ -31,6 +31,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { createOrder } from "@/actions/order";
 import { recalculateCheckoutSummary } from "@/actions/checkout";
 import { saveCheckoutLead } from "@/actions/checkout-lead";
+import { trackStoreLead } from "@/components/meta/meta-lead.client";
 import { toast } from "sonner";
 import { useLocale, useTranslations } from "next-intl";
 import type { AddressData } from "@/components/address/address.schema";
@@ -56,6 +57,16 @@ import {
   isManualPaymentMethod,
 } from "@/lib/manual-payment-methods";
 import type { StorefrontCheckoutPayments } from "@workspace/lib/payments/store-methods";
+import {
+  applyCheckoutAnswers,
+  isDefaultCheckoutForm,
+  type CheckoutAnswersError,
+  type CheckoutFieldKey,
+  type StoreCheckoutForm,
+} from "@workspace/lib/stores/checkout-form";
+import { StoreCheckoutFields, type StoreCheckoutAnswers } from "./store-checkout-fields.client";
+import { checkMinOrder, itemsSubtotalPiastres, type StoreMinOrder } from "@workspace/lib/stores/min-order";
+import { useCurrencyLabel } from "@/lib/currency-label.client";
 
 export const CheckoutData = ({
   checkoutData,
@@ -104,6 +115,7 @@ export const CheckoutData = ({
   const t = useTranslations("checkout");
   const tToast = useTranslations("toast");
   const locale = useLocale();
+  const currencyLabel = useCurrencyLabel();
 
   const checkoutFormSchema = useMemo(
     () => createCheckoutFormSchema((key: string) => t(key as any)),
@@ -129,6 +141,22 @@ export const CheckoutData = ({
     ? (manualMethods[0]?.value ?? "")
     : DEFAULT_MANUAL_PAYMENT_METHOD;
 
+  // Storefront: the store's checkout form (F-25a). Null keeps today's
+  // checkout exactly: the optional order notes box and nothing else.
+  const storeCheckoutForm: StoreCheckoutForm | null =
+    checkoutData.storeCheckoutForm && !isDefaultCheckoutForm(checkoutData.storeCheckoutForm)
+      ? checkoutData.storeCheckoutForm
+      : null;
+  const [checkoutAnswers, setCheckoutAnswers] = useState<StoreCheckoutAnswers>({
+    email: "",
+    secondPhone: "",
+    customAnswer: "",
+  });
+  const [checkoutAnswersError, setCheckoutAnswersError] = useState<{
+    field: CheckoutFieldKey;
+    error: CheckoutAnswersError;
+  } | null>(null);
+
   const form = useForm<CheckoutFormData>({
     resolver: zodResolver(checkoutFormSchema),
     mode: "onChange",
@@ -150,7 +178,7 @@ export const CheckoutData = ({
   useEffect(() => {
     if (!isStorefront || !shippingAddressId) return;
     const timer = setTimeout(() => {
-      void saveCheckoutLead({ addressId: shippingAddressId });
+      void saveCheckoutLead({ addressId: shippingAddressId }).then(trackStoreLead, () => {});
     }, 1000);
     return () => clearTimeout(timer);
   }, [isStorefront, shippingAddressId]);
@@ -165,8 +193,21 @@ export const CheckoutData = ({
         : null;
   const isZoneShipping = storeShipping?.kind === "zone";
 
+  // Store websites: the store's minimum order (F-13b), on the items subtotal
+  // before shipping and coupons, in piastres (createOrder checks it again).
+  const minOrderCheck = checkMinOrder(
+    (checkoutData.storeMinOrder as StoreMinOrder | null | undefined) ?? null,
+    itemsSubtotalPiastres(cart?.cartItems ?? []),
+  );
+  const minOrderMessage = minOrderCheck.ok
+    ? null
+    : t("minOrderAddMore", {
+        amount: formatPricePlain(minOrderCheck.shortPiastres / 100, locale, currencyLabel),
+        minimum: formatPricePlain(minOrderCheck.minimumPiastres / 100, locale, currencyLabel),
+      });
+
   const canPlaceOrder = Boolean(
-    shippingAddressId?.trim() && paymentMethod?.trim() && !shippingRefusal
+    shippingAddressId?.trim() && paymentMethod?.trim() && !shippingRefusal && minOrderCheck.ok
   );
 
   // Sync form with address changes from hook
@@ -421,6 +462,15 @@ export const CheckoutData = ({
   };
 
   const handleSubmit = (data: CheckoutFormData) => {
+    if (storeCheckoutForm) {
+      // The same check the server runs, for an instant message.
+      const checked = applyCheckoutAnswers(storeCheckoutForm, { ...checkoutAnswers, notes: data.notes });
+      if (!checked.ok) {
+        setCheckoutAnswersError({ field: checked.field, error: checked.error });
+        return;
+      }
+      setCheckoutAnswersError(null);
+    }
     startTransition(async () => {
       try {
         const result = await createOrder({
@@ -432,6 +482,7 @@ export const CheckoutData = ({
           notes: data.notes,
           isGift: data.isGift,
           giftMessage: data.giftMessage,
+          ...(storeCheckoutForm && { checkoutAnswers }),
         });
 
         if (result.success) {
@@ -685,6 +736,18 @@ export const CheckoutData = ({
               </CardContent>
             </Card>
 
+            {storeCheckoutForm ? (
+              <StoreCheckoutFields
+                form={form}
+                checkoutForm={storeCheckoutForm}
+                answers={checkoutAnswers}
+                onAnswersChange={(next) => {
+                  setCheckoutAnswers(next);
+                  setCheckoutAnswersError(null);
+                }}
+                error={checkoutAnswersError}
+              />
+            ) : (
             <Card className="rounded-xl md:rounded-2xl border border-gray-200 overflow-hidden pt-0">
               <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-4 md:px-6 py-3 md:py-5 border-b border-gray-200">
                 <CardTitle className="flex items-center gap-2 text-sm md:text-xl font-bold text-gray-900">
@@ -722,6 +785,7 @@ export const CheckoutData = ({
                 </div>
               </CardContent>
             </Card>
+            )}
           </div>
 
           {/* Order Summary Sidebar */}
@@ -752,6 +816,11 @@ export const CheckoutData = ({
                   })}
                 </p>
               ) : null}
+              {minOrderMessage && (
+                <p role="alert" className="text-xs md:text-sm text-orange-600">
+                  {minOrderMessage}
+                </p>
+              )}
               <Button
                 type="submit"
                 size="lg"

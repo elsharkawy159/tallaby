@@ -119,6 +119,32 @@ export interface TransactionalCopy {
     couponUntil: string;
     complete: string;
   };
+  backInStock: {
+    subject: string;
+    preview: string;
+    eyebrow: string;
+    heading: string;
+    lead: string;
+    shop: string;
+    reason: string;
+    unsubscribe: string;
+  };
+  /** Store email campaigns (F-16a): the seller writes subject + text. */
+  storeCampaign: {
+    shop: string;
+    viewProduct: string;
+    reason: string;
+    unsubscribe: string;
+    testBanner: string;
+    testSubject: string;
+  };
+  /** Win-back email (F-16e); subject/body are the default when the seller leaves them empty. */
+  winback: {
+    subject: string;
+    body: string;
+    shop: string;
+    reason: string;
+  };
   welcomeVerify: {
     subject: string;
     preview: string;
@@ -364,6 +390,30 @@ export const transactionalEn: TransactionalCopy = {
     coupon: "{discount} off with code",
     couponUntil: "until {date}",
     complete: "Complete your order",
+  },
+  backInStock: {
+    subject: "{product} is back in stock",
+    preview: "The item you asked about is available again at {store}.",
+    eyebrow: "Back in stock",
+    heading: "It's back!",
+    lead: "You asked us to tell you when this item is available again. It is in stock now at {store}, but quantities are limited, so order soon.",
+    shop: "Order now",
+    reason: "You get this email because you asked to be told when this item is back in stock.",
+    unsubscribe: "Stop these alerts",
+  },
+  storeCampaign: {
+    shop: "Shop now",
+    viewProduct: "View product",
+    reason: "You get this email because you ordered from {store} or subscribed to its newsletter.",
+    unsubscribe: "Unsubscribe",
+    testBanner: "Test email: only you received this.",
+    testSubject: "[Test] {subject}",
+  },
+  winback: {
+    subject: "We miss you at {store}",
+    body: "It's been a while since your last order, and we have new things we think you'll like.\n\nTake a look at what's new at {store}. We'd love to see you again!",
+    shop: "See what's new",
+    reason: "You get this email because you ordered from {store} before.",
   },
   welcomeVerify: {
     subject: "Welcome to Tallaby · confirm your email",
@@ -621,6 +671,30 @@ export const transactionalAr: TransactionalCopy = {
     coupon: "خصم {discount} بكود",
     couponUntil: "حتى {date}",
     complete: "أكمل الطلب",
+  },
+  backInStock: {
+    subject: "{product} رجع تاني",
+    preview: "المنتج اللي طلبت نبلغك بيه متوفر دلوقتي في {store}.",
+    eyebrow: "رجع المخزون",
+    heading: "رجع تاني!",
+    lead: "طلبت مننا نبلغك أول ما المنتج ده يرجع. هو متوفر دلوقتي في {store}، بس الكمية محدودة، فاطلبه بسرعة.",
+    shop: "اطلب دلوقتي",
+    reason: "وصلك الإيميل ده لأنك طلبت نبلغك لما المنتج ده يرجع.",
+    unsubscribe: "إيقاف التنبيهات دي",
+  },
+  storeCampaign: {
+    shop: "تسوّق دلوقتي",
+    viewProduct: "شوف المنتج",
+    reason: "وصلك الإيميل ده لأنك طلبت قبل كده من {store} أو اشتركت في النشرة بتاعته.",
+    unsubscribe: "إلغاء الاشتراك",
+    testBanner: "إيميل تجربة: وصلك إنت بس.",
+    testSubject: "[تجربة] {subject}",
+  },
+  winback: {
+    subject: "وحشتنا في {store}",
+    body: "بقالك فترة مطلبتش مننا، وعندنا حاجات جديدة هتعجبك.\n\nبص على الجديد في {store}، مستنيينك!",
+    shop: "شوف الجديد",
+    reason: "وصلك الإيميل ده لأنك طلبت من {store} قبل كده.",
   },
   welcomeVerify: {
     subject: "أهلًا بك في طلبي · أكّد بريدك الإلكتروني",

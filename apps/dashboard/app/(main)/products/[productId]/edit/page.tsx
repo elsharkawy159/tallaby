@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { aiConfigured } from "@workspace/ai";
@@ -12,6 +12,7 @@ import { requireSeller } from "@/lib/auth/require-seller.server";
 import { loadSellerTaxonomyOptions } from "../../categories-brands/categories-brands.data";
 import { loadProductLinkHost } from "../../add/product-link-host.data";
 import { loadProductStoreLinks } from "../../_components/product-store-links.data";
+import { loadProductViewStats } from "../../_components/product-views.data";
 import { loadProductSocialProof } from "../../social-proof/social-proof.data";
 import type { EditProductStatus } from "./edit-product-actions.client";
 import type { CategoryOption } from "../../add/add-product.schema";
@@ -47,6 +48,8 @@ export default async function EditProductPage({
   }
 
   const product = productResult.data;
+  // In Trash (0123, F-35): it is restored from there before it can be edited.
+  if ((product as { deletedAt?: string | null }).deletedAt) redirect("/products/trash");
   const categories = (categoriesRes.data || []) as CategoryOption[];
   const seller = sellerProfile.success ? sellerProfile.data : null;
   const sellerPricing = {
@@ -59,9 +62,13 @@ export default async function EditProductPage({
   const defaultValues = {
     ...buildEditDefaultValues(product as Parameters<typeof buildEditDefaultValues>[0], sellerPricing),
     showLiveViews: socialProof.showLiveViews,
+    showLowStockBadge: socialProof.showLowStockBadge,
+    lowStockThreshold: socialProof.lowStockThreshold,
     sellerReviews: socialProof.reviews,
   };
 
+  // Not awaited: the views stat streams into the header (F-15b); never rejects.
+  const viewStats = loadProductViewStats([productId]);
   const slug = defaultValues.localized?.en?.slug?.trim() || null;
   const storeLinks = await loadProductStoreLinks([{ id: productId, slug }]);
 
@@ -76,6 +83,7 @@ export default async function EditProductPage({
       sellerTaxonomy={sellerTaxonomy}
       linkHost={linkHost}
       aiEnabled={aiConfigured()}
+      viewStats={viewStats}
     />
   );
 }

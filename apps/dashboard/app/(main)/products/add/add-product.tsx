@@ -220,6 +220,8 @@ function AddProductForm({
     const {
       sellerCategoryName: _typedCategory,
       showLiveViews: _liveViews,
+      showLowStockBadge: _lowStockBadge,
+      lowStockThreshold: _lowStockThreshold,
       sellerReviews: _reviews,
       ...payload
     } = rest;
@@ -232,6 +234,8 @@ function AddProductForm({
   ) => {
     const saved = await saveProductSocialProof(productId, {
       showLiveViews: data.showLiveViews ?? false,
+      showLowStockBadge: data.showLowStockBadge ?? false,
+      lowStockThreshold: data.lowStockThreshold ?? null,
       reviews: data.sellerReviews ?? [],
     });
     if (!saved.success) toast.warning(tSocialProof("saveFailed"));

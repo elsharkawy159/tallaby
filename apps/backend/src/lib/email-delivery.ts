@@ -12,6 +12,14 @@ export const EMAIL_TYPES = {
   refundIssued: "refund_issued",
   /** reference_id = cart id. */
   abandonedCart: "abandoned_cart",
+  /** reference_id = store_stock_subscriptions.id (one per alert, 0126). */
+  backInStock: "back_in_stock",
+  /** reference_id = store_email_campaign_recipients.id (F-16a, 0129). */
+  storeCampaign: "store_campaign",
+  /** reference_id = store_winback_sends.id (F-16e, 0129). */
+  storeWinback: "store_winback",
+  /** Seller test send of a campaign/win-back draft: fresh reference id; metadata.storeId feeds the daily cap. */
+  storeCampaignTest: "store_campaign_test",
   /**
    * Seller mail per (order, seller): reference_id = the seller's first
    * order_items.id in that order, a stable uuid unique to the pair.

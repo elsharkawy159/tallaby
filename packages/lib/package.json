@@ -185,6 +185,14 @@
       "types": "./src/checkout-leads/checkout-leads.lib.ts",
       "default": "./src/checkout-leads/checkout-leads.lib.ts"
     },
+    "./stock-alerts": {
+      "types": "./src/stock-alerts/stock-alerts.lib.ts",
+      "default": "./src/stock-alerts/stock-alerts.lib.ts"
+    },
+    "./stock-alerts/server": {
+      "types": "./src/stock-alerts/stock-alerts.server.ts",
+      "default": "./src/stock-alerts/stock-alerts.server.ts"
+    },
     "./checkout-leads/server": {
       "types": "./src/checkout-leads/checkout-leads.server.ts",
       "default": "./src/checkout-leads/checkout-leads.server.ts"
@@ -197,6 +205,50 @@
       "types": "./src/customers/customers.server.ts",
       "default": "./src/customers/customers.server.ts"
     },
+    "./audiences": {
+      "types": "./src/audiences/audiences.lib.ts",
+      "default": "./src/audiences/audiences.lib.ts"
+    },
+    "./audiences/server": {
+      "types": "./src/audiences/audiences.server.ts",
+      "default": "./src/audiences/audiences.server.ts"
+    },
+    "./email-campaigns": {
+      "types": "./src/email-campaigns/email-campaigns.lib.ts",
+      "default": "./src/email-campaigns/email-campaigns.lib.ts"
+    },
+    "./email-campaigns/server": {
+      "types": "./src/email-campaigns/email-campaigns.server.ts",
+      "default": "./src/email-campaigns/email-campaigns.server.ts"
+    },
+    "./email-campaigns/send": {
+      "types": "./src/email-campaigns/email-campaigns-send.server.ts",
+      "default": "./src/email-campaigns/email-campaigns-send.server.ts"
+    },
+    "./store-forms/subscribers": {
+      "types": "./src/store-forms/subscribers.lib.ts",
+      "default": "./src/store-forms/subscribers.lib.ts"
+    },
+    "./store-forms/subscribers/server": {
+      "types": "./src/store-forms/subscribers.server.ts",
+      "default": "./src/store-forms/subscribers.server.ts"
+    },
+    "./products/trash": {
+      "types": "./src/products/trash.lib.ts",
+      "default": "./src/products/trash.lib.ts"
+    },
+    "./products/trash/server": {
+      "types": "./src/products/trash.server.ts",
+      "default": "./src/products/trash.server.ts"
+    },
+    "./catalog-share": {
+      "types": "./src/catalog-share/catalog-share.lib.ts",
+      "default": "./src/catalog-share/catalog-share.lib.ts"
+    },
+    "./catalog-share/server": {
+      "types": "./src/catalog-share/catalog-share.server.ts",
+      "default": "./src/catalog-share/catalog-share.server.ts"
+    },
     "./stores": {
       "types": "./src/stores/stores.lib.ts",
       "default": "./src/stores/stores.lib.ts"
@@ -205,6 +257,18 @@
       "types": "./src/stores/store-app.lib.ts",
       "default": "./src/stores/store-app.lib.ts"
     },
+    "./stores/checkout-form": {
+      "types": "./src/stores/checkout-form.lib.ts",
+      "default": "./src/stores/checkout-form.lib.ts"
+    },
+    "./campaigns/utm": {
+      "types": "./src/campaigns/utm.lib.ts",
+      "default": "./src/campaigns/utm.lib.ts"
+    },
+    "./stores/min-order": {
+      "types": "./src/stores/min-order.lib.ts",
+      "default": "./src/stores/min-order.lib.ts"
+    },
     "./stores/blocked-phones": {
       "types": "./src/stores/blocked-phones.lib.ts",
       "default": "./src/stores/blocked-phones.lib.ts"
@@ -212,6 +276,14 @@
     "./stores/blocked-phones/server": {
       "types": "./src/stores/blocked-phones.server.ts",
       "default": "./src/stores/blocked-phones.server.ts"
+    },
+    "./stores/sales-popup": {
+      "types": "./src/stores/sales-popup.lib.ts",
+      "default": "./src/stores/sales-popup.lib.ts"
+    },
+    "./stores/sales-popup/server": {
+      "types": "./src/stores/sales-popup.server.ts",
+      "default": "./src/stores/sales-popup.server.ts"
     },
     "./stores/server": {
       "types": "./src/stores/server.ts",

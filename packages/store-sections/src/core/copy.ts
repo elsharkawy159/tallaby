@@ -89,6 +89,11 @@ export const SECTION_COPY = {
   buyNow: { ar: "اشترِ الآن", en: "Buy now" },
   inStock: { ar: "متوفر", en: "In stock" },
   onlyLeft: { ar: "باقي {n} فقط", en: "Only {n} left" },
+  stockLeft: { ar: "باقي {n}", en: "{n} left" },
+  stockBadgeSample: {
+    ar: "مثال: بيظهر بس لما تفعّل تنبيه قرب نفاد الكمية في المنتج ومخزونه يوصل للحد اللي حددته",
+    en: "Sample: shows only when the product's low-stock alert is on and its stock is at or below your limit",
+  },
   freeDelivery: { ar: "توصيل مجاني", en: "Free delivery" },
   trending: { ar: "رائج", en: "Trending" },
   seasonal: { ar: "موسمي", en: "Seasonal" },

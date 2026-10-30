@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { INTEGRATIONS, type IntegrationProvider } from "./registry";
+import { readMetaTrackingSettings, type MetaTrackingSettings } from "./meta-tracking.lib";
 
 /**
  * Identifier formats (PLAN.md §9.2). Checked before storing **and** again
@@ -79,6 +80,8 @@ export type IntegrationPublicDetails = {
   keyHint?: string;
   pickupLocationName?: string;
   autoShip?: string;
+  /** Meta Pixel: which events are sent and when Purchase is sent (F-30). */
+  tracking?: MetaTrackingSettings;
 };
 
 const DETAIL_KEYS: Partial<Record<IntegrationProvider, Array<keyof IntegrationPublicDetails>>> = {
@@ -89,6 +92,7 @@ const DETAIL_KEYS: Partial<Record<IntegrationProvider, Array<keyof IntegrationPu
 };
 
 export function readPublicDetails(provider: IntegrationProvider, config: unknown): IntegrationPublicDetails {
+  if (provider === "meta_pixel") return { tracking: readMetaTrackingSettings(config) };
   const keys = DETAIL_KEYS[provider];
   if (!keys || !config || typeof config !== "object") return {};
   const source = config as Record<string, unknown>;

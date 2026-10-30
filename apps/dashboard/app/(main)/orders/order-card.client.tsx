@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
 import { Clock, ImageIcon, MapPin, Phone } from "lucide-react";
+import { Checkbox } from "@workspace/ui/components/checkbox";
 import { WhatsAppButton } from "@workspace/ui/components/contact-buttons";
 import { cn } from "@workspace/ui/lib/utils";
 import { getPublicUrl } from "@/lib/utils";
@@ -18,7 +19,18 @@ import type { SellerOrderRow } from "./orders.types";
  * panel; the next-step button sits at the bottom so a seller can work a queue
  * without opening anything.
  */
-export function OrderCard({ order, onOpen }: { order: SellerOrderRow; onOpen: () => void }) {
+export function OrderCard({
+  order,
+  onOpen,
+  selected = false,
+  onSelectedChange,
+}: {
+  order: SellerOrderRow;
+  onOpen: () => void;
+  /** Bulk selection (F-04c); no checkbox without onSelectedChange. */
+  selected?: boolean;
+  onSelectedChange?: (selected: boolean) => void;
+}) {
   const t = useTranslations("orders");
   const tPayment = useTranslations("orders.details.paymentMethods");
   const locale = useLocale();
@@ -35,6 +47,7 @@ export function OrderCard({ order, onOpen }: { order: SellerOrderRow; onOpen: ()
         needsYou && "border-primary/40",
         order.unconfirmedHours != null && "border-amber-400/70",
         failed && "border-destructive/40",
+        selected && "border-primary ring-2 ring-primary/30",
       )}
     >
       {/* Covers the card so it opens on click; the action buttons sit above it. */}
@@ -47,7 +60,15 @@ export function OrderCard({ order, onOpen }: { order: SellerOrderRow; onOpen: ()
 
       <div className="pointer-events-none relative flex flex-1 flex-col gap-3 p-4">
         <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0">
+          {onSelectedChange && (
+            <Checkbox
+              checked={selected}
+              onCheckedChange={(value) => onSelectedChange(value === true)}
+              aria-label={t("bulk.selectOrder", { number: order.orderNumber })}
+              className="pointer-events-auto mt-0.5 size-5 shrink-0"
+            />
+          )}
+          <div className="me-auto min-w-0">
             <p className="font-semibold text-primary-ink">#{order.orderNumber}</p>
             <p className="text-xs text-muted-foreground">
               {formatDateTime(order.createdAt, locale)}

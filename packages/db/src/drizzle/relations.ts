@@ -1,5 +1,6 @@
 import { relations } from "drizzle-orm/relations";
-import { stores, storeBlockedPhones, storeProducts, storeDesignSystems, storePages, storeSiteRevisions, templateInstalls, mediaFolders, mediaAssets, savedBlocks, storeForms, storeFormSubmissions, cmsCollections, cmsItems, cmsItemRevisions, storeIntegrations, storeShippingZones, storeSettingsAudit, sellerWalletTopUps, adminAuditLog, platformBlogPosts, sellerProductCategories, sellerProductBrands, adminNotifications, sellerNotifications, shipmentCarrierEvents, aiUsageLogs, featureRequests, featureRequestVotes, referralCommissions, referralPayouts, sellerWelcomeGifts, storeCheckoutLeads, storeCustomerNotes } from "./schema";
+import { sellerCategoryProductPositions } from "./schema";
+import { stores, storeBlockedPhones, storeProducts, storeDesignSystems, storePages, storeSiteRevisions, templateInstalls, mediaFolders, mediaAssets, savedBlocks, storeForms, storeFormSubmissions, cmsCollections, cmsItems, cmsItemRevisions, storeIntegrations, storeShippingZones, storeSettingsAudit, sellerWalletTopUps, adminAuditLog, platformBlogPosts, sellerProductCategories, sellerProductBrands, adminNotifications, sellerNotifications, shipmentCarrierEvents, aiUsageLogs, featureRequests, featureRequestVotes, referralCommissions, referralPayouts, sellerWelcomeGifts, storeCheckoutLeads, storeCustomerNotes, sellerPushSubscriptions, sellerPushSettings, stockMovements, storeStockSubscriptions, storeEmailCampaigns, storeEmailCampaignRecipients, storeEmailUnsubscribes, storeWinbackSends } from "./schema";
 import { users, deliveries, shipments, orders, payments, paymentMethods, carts, categories, sellers, coupons, notifications, contacts, userAddresses, products, productVariants, refunds, returns, orderItems, shipmentItems, productQuestions, shippingAddresses, couponUsage, cartItems, reviews, returnItems, reviewVotes, searchLogs, sellerDocuments, sellerPayoutItems, sellerPayouts, reviewComments, userDevices, wishlistItems, wishlists, brands, productAnswers, userRewards, productTranslations, digitalProducts, digitalOrders, sellerCategories, sellerWallet, walletTransactions, digitalFiles, licenseKeys, digitalBundleItems, digitalAccessLogs, shippingProviders, shipmentBatches, shipmentBatchItems, userWallets, userWalletTransactions, walletTopUps, walletPayoutRequests, affiliates, affiliateCommissions } from "./schema";
 
 export const deliveriesRelations = relations(deliveries, ({one}) => ({
@@ -1177,5 +1178,109 @@ export const storeCustomerNotesRelations = relations(storeCustomerNotes, ({one})
 	store: one(stores, {
 		fields: [storeCustomerNotes.storeId],
 		references: [stores.id]
+	}),
+}));
+
+export const sellerPushSubscriptionsRelations = relations(sellerPushSubscriptions, ({one}) => ({
+	seller: one(sellers, {
+		fields: [sellerPushSubscriptions.sellerId],
+		references: [sellers.id]
+	}),
+}));
+
+export const sellerPushSettingsRelations = relations(sellerPushSettings, ({one}) => ({
+	seller: one(sellers, {
+		fields: [sellerPushSettings.sellerId],
+		references: [sellers.id]
+	}),
+}));
+
+export const stockMovementsRelations = relations(stockMovements, ({one}) => ({
+	seller: one(sellers, {
+		fields: [stockMovements.sellerId],
+		references: [sellers.id]
+	}),
+	product: one(products, {
+		fields: [stockMovements.productId],
+		references: [products.id]
+	}),
+	order: one(orders, {
+		fields: [stockMovements.orderId],
+		references: [orders.id]
+	}),
+}));
+
+export const storeStockSubscriptionsRelations = relations(storeStockSubscriptions, ({one}) => ({
+	store: one(stores, {
+		fields: [storeStockSubscriptions.storeId],
+		references: [stores.id]
+	}),
+	seller: one(sellers, {
+		fields: [storeStockSubscriptions.sellerId],
+		references: [sellers.id]
+	}),
+	product: one(products, {
+		fields: [storeStockSubscriptions.productId],
+		references: [products.id]
+	}),
+	variant: one(productVariants, {
+		fields: [storeStockSubscriptions.variantId],
+		references: [productVariants.id]
+	}),
+}));
+
+export const sellerCategoryProductPositionsRelations = relations(sellerCategoryProductPositions, ({one}) => ({
+	sellerCategory: one(sellerProductCategories, {
+		fields: [sellerCategoryProductPositions.sellerCategoryId],
+		references: [sellerProductCategories.id]
+	}),
+	product: one(products, {
+		fields: [sellerCategoryProductPositions.productId],
+		references: [products.id]
+	}),
+	seller: one(sellers, {
+		fields: [sellerCategoryProductPositions.sellerId],
+		references: [sellers.id]
+	}),
+}));
+
+export const storeEmailCampaignsRelations = relations(storeEmailCampaigns, ({one, many}) => ({
+	store: one(stores, {
+		fields: [storeEmailCampaigns.storeId],
+		references: [stores.id]
+	}),
+	seller: one(sellers, {
+		fields: [storeEmailCampaigns.sellerId],
+		references: [sellers.id]
+	}),
+	recipients: many(storeEmailCampaignRecipients),
+}));
+
+export const storeEmailCampaignRecipientsRelations = relations(storeEmailCampaignRecipients, ({one}) => ({
+	campaign: one(storeEmailCampaigns, {
+		fields: [storeEmailCampaignRecipients.campaignId],
+		references: [storeEmailCampaigns.id]
+	}),
+	store: one(stores, {
+		fields: [storeEmailCampaignRecipients.storeId],
+		references: [stores.id]
+	}),
+}));
+
+export const storeEmailUnsubscribesRelations = relations(storeEmailUnsubscribes, ({one}) => ({
+	store: one(stores, {
+		fields: [storeEmailUnsubscribes.storeId],
+		references: [stores.id]
+	}),
+}));
+
+export const storeWinbackSendsRelations = relations(storeWinbackSends, ({one}) => ({
+	store: one(stores, {
+		fields: [storeWinbackSends.storeId],
+		references: [stores.id]
+	}),
+	seller: one(sellers, {
+		fields: [storeWinbackSends.sellerId],
+		references: [sellers.id]
 	}),
 }));

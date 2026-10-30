@@ -25,6 +25,13 @@ import {
   sendSellerWalletTopUp,
 } from "../lib/emails/seller-emails";
 import { sendFeeTrialReminder } from "../lib/fee-trial-reminder";
+import { sendBackInStock } from "../lib/emails/stock-alert-email";
+import {
+  renderStoreCampaignPreview,
+  sendStoreCampaign,
+  sendStoreCampaignTest,
+  sendStoreWinback,
+} from "../lib/emails/store-campaign-email";
 import {
   claimEmailDelivery,
   EMAIL_TYPES,
@@ -328,6 +335,86 @@ app.post("/abandoned-cart", async (c) => {
   } catch (error) {
     console.error("Error sending abandoned cart email:", error);
     return c.json({ error: "Failed to send abandoned cart email" }, 500);
+  }
+});
+
+const stockAlertSchema = z.object({ subscriptionId: z.string().uuid() });
+
+app.post("/back-in-stock", async (c) => {
+  const parsed = stockAlertSchema.safeParse(await c.req.json().catch(() => null));
+  if (!parsed.success) {
+    return c.json({ error: "Invalid request", details: parsed.error.flatten() }, 400);
+  }
+  try {
+    return c.json({ success: true, result: await sendBackInStock(parsed.data.subscriptionId) });
+  } catch (error) {
+    console.error("Error sending back-in-stock email:", error instanceof Error ? error.message : error);
+    return c.json({ error: "Failed to send back-in-stock email" }, 500);
+  }
+});
+
+// Store email campaigns + win-back (F-16a, F-16e; 0129). Errors log no address.
+const campaignRecipientSchema = z.object({ recipientId: z.string().uuid() });
+
+app.post("/store-campaign", async (c) => {
+  const parsed = campaignRecipientSchema.safeParse(await c.req.json().catch(() => null));
+  if (!parsed.success) return c.json({ error: "Invalid request" }, 400);
+  try {
+    return c.json({ success: true, result: await sendStoreCampaign(parsed.data.recipientId) });
+  } catch (error) {
+    console.error("Error sending store campaign email:", error instanceof Error ? error.message : "unknown");
+    return c.json({ error: "Failed to send store campaign email" }, 500);
+  }
+});
+
+const winbackSendSchema = z.object({ sendId: z.string().uuid() });
+
+app.post("/store-winback", async (c) => {
+  const parsed = winbackSendSchema.safeParse(await c.req.json().catch(() => null));
+  if (!parsed.success) return c.json({ error: "Invalid request" }, 400);
+  try {
+    return c.json({ success: true, result: await sendStoreWinback(parsed.data.sendId) });
+  } catch (error) {
+    console.error("Error sending win-back email:", error instanceof Error ? error.message : "unknown");
+    return c.json({ error: "Failed to send win-back email" }, 500);
+  }
+});
+
+const campaignDraftSchema = z.object({
+  sellerId: z.string().uuid(),
+  storeId: z.string().uuid(),
+  kind: z.enum(["campaign", "winback"]),
+  draft: z.object({
+    subject: z.string().max(400),
+    body: z.string().max(12_000),
+    ctaLabel: z.string().max(200).nullable(),
+    productIds: z.array(z.string().uuid()).max(10),
+    locale: z.enum(["ar", "en"]),
+  }),
+});
+
+app.post("/store-campaign-preview", async (c) => {
+  const parsed = campaignDraftSchema.safeParse(await c.req.json().catch(() => null));
+  if (!parsed.success) return c.json({ error: "Invalid request" }, 400);
+  try {
+    const result = await renderStoreCampaignPreview(parsed.data);
+    if (!result.ok) return c.json({ error: result.error }, 422);
+    return c.json({ subject: result.subject, html: result.html });
+  } catch (error) {
+    console.error("Error rendering campaign preview:", error instanceof Error ? error.message : "unknown");
+    return c.json({ error: "Failed to render preview" }, 500);
+  }
+});
+
+app.post("/store-campaign-test", async (c) => {
+  const parsed = campaignDraftSchema.safeParse(await c.req.json().catch(() => null));
+  if (!parsed.success) return c.json({ error: "Invalid request" }, 400);
+  try {
+    const result = await sendStoreCampaignTest(parsed.data);
+    return c.json(result.ok ? { success: true } : { success: false, error: result.error });
+  } catch (error) {
+    console.error("Error sending campaign test email:", error instanceof Error ? error.message : "unknown");
+    return c.json({ error: "Failed to send test email" }, 500);
   }
 });
 

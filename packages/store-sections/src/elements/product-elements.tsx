@@ -12,9 +12,10 @@
  * sanitizer here, so it stays out of the editor's client bundle).
  */
 import type { ReactNode } from "react";
-import { BadgeCheck, Banknote, Check, ChevronDown, ChevronRight, Image as ImageIcon, Minus, Plus, ShieldCheck, ShoppingBag, Star, Truck, Zap } from "lucide-react";
+import { BadgeCheck, Banknote, Check, ChevronDown, ChevronRight, Flame, Image as ImageIcon, Minus, Plus, ShieldCheck, ShoppingBag, Star, Truck, Zap } from "lucide-react";
 import { sectionText, type SectionCopyKey } from "../core/copy";
 import { DEMO_PRODUCT } from "../core/demo-product";
+import { STOCK_ALERT_ELSEWHERE_PROP, lowStockAlertText, lowStockLeft } from "../core/low-stock";
 import { decodeTextEntities } from "../core/text";
 import { IMAGE_SIZES, imageSource, type ProductDetail, type ProductElementHook, type RenderContext } from "../core/types";
 import { cn, SmartLink } from "../sections/_primitives";
@@ -28,6 +29,7 @@ export const PRODUCT_ELEMENT_TYPES = [
   "productGallery",
   "productPrice",
   "productStock",
+  "productStockBadge",
   "productRating",
   "productVariants",
   "productBuyBox",
@@ -38,13 +40,21 @@ export const PRODUCT_ELEMENT_TYPES = [
 ] as const satisfies readonly ElementType[];
 export type ProductElementType = (typeof PRODUCT_ELEMENT_TYPES)[number];
 
-type HookKey = "renderProductGallery" | "renderProductPrice" | "renderProductStock" | "renderProductVariants" | "renderProductBuyBox" | "renderProductReviews";
+type HookKey =
+  | "renderProductGallery"
+  | "renderProductPrice"
+  | "renderProductStock"
+  | "renderProductStockBadge"
+  | "renderProductVariants"
+  | "renderProductBuyBox"
+  | "renderProductReviews";
 
 /** The interactive elements and the host hook that draws each on the storefront. */
 const HOOKS: Partial<Record<ProductElementType, HookKey>> = {
   productGallery: "renderProductGallery",
   productPrice: "renderProductPrice",
   productStock: "renderProductStock",
+  productStockBadge: "renderProductStockBadge",
   productVariants: "renderProductVariants",
   productBuyBox: "renderProductBuyBox",
   productReviews: "renderProductReviews",
@@ -231,8 +241,27 @@ function Price({ product, props, attrs, ctx }: StillProps) {
   );
 }
 
-function Stock({ product, attrs, ctx }: StillProps) {
+/** The seller's low-stock alert (F-34): "Only 2 left, order before it's gone", from the real stock. */
+function LowStockBadge({ left, attrs, ctx, title }: { left: number; attrs: Attrs; ctx: RenderContext; title?: string }) {
+  return (
+    <p
+      {...attrs}
+      data-stock="alert"
+      title={title}
+      className="inline-flex w-fit items-center gap-2 rounded-(--sf-radius,12px) bg-[#dc2626]/10 px-3.5 py-2 text-sm font-bold leading-snug text-[#b91c1c]"
+    >
+      <Flame aria-hidden className="size-4 shrink-0 motion-safe:animate-pulse" />
+      {lowStockAlertText(left, ctx.locale)}
+    </p>
+  );
+}
+
+function Stock({ product, props, attrs, ctx }: StillProps) {
   const count = productStockCount(product);
+  // The seller's low-stock alert (F-34) replaces the pill, so the message isn't shown twice. When the
+  // page has its own badge element (F-34d) the alert is drawn there, and this line steps aside.
+  const left = lowStockLeft(count, product.lowStockAlert);
+  if (left != null) return props[STOCK_ALERT_ELSEWHERE_PROP] === true ? null : <LowStockBadge left={left} attrs={attrs} ctx={ctx} />;
   const text = count <= 0 ? sectionText("outOfStock", ctx.locale) : count <= LOW_STOCK ? sectionText("onlyLeft", ctx.locale, { n: count }) : sectionText("inStock", ctx.locale);
   // A clear pill: brand dot in stock, amber when few are left, muted when sold out.
   const tone = count <= 0 ? "out" : count <= LOW_STOCK ? "low" : "in";
@@ -248,6 +277,39 @@ function Stock({ product, attrs, ctx }: StillProps) {
       <span aria-hidden className={cn("size-2 shrink-0 rounded-full", tone === "out" ? "bg-(--sf-muted)" : tone === "low" ? "bg-[#d97706]" : "bg-(--sf-brand)")} />
       {text}
     </p>
+  );
+}
+
+/** Units the editor's sample badge shows when the product has no alert to show. */
+const SAMPLE_LEFT = 2;
+
+/**
+ * The low-stock badge element (F-34d): the seller's alert, wherever they put
+ * it. Publicly it shows only when the product's alert is on and its real
+ * stock is at or below the threshold; the editor shows a sample (with a hint)
+ * otherwise, so the seller can select and style it.
+ */
+function StockBadge({ product, attrs, ctx }: StillProps) {
+  const left = lowStockLeft(productStockCount(product), product.lowStockAlert);
+  if (left != null) return <LowStockBadge left={left} attrs={attrs} ctx={ctx} />;
+  if (ctx.mode !== "edit") return null;
+  return <LowStockBadge left={SAMPLE_LEFT} attrs={{ ...attrs, "data-sample": "" }} ctx={ctx} title={sectionText("stockBadgeSample", ctx.locale)} />;
+}
+
+/** "N left" of a product list card (`ProductSummary.stockLeft`, set only when the seller's alert applies). */
+function CardStockBadge({ left, attrs, ctx }: { left: number | null | undefined; attrs: Attrs; ctx: RenderContext }) {
+  const sample = left == null || left <= 0;
+  if (sample && ctx.mode !== "edit") return null;
+  return (
+    <span
+      {...attrs}
+      {...(sample && { "data-sample": "", title: sectionText("stockBadgeSample", ctx.locale) })}
+      data-stock-left={sample ? undefined : left}
+      className="inline-flex w-fit items-center gap-1 rounded-full bg-[#dc2626]/10 px-2 py-0.5 text-[11px] font-bold text-[#b91c1c]"
+    >
+      <Flame aria-hidden className="size-3 shrink-0" />
+      {sectionText("stockLeft", ctx.locale, { n: sample ? SAMPLE_LEFT : left })}
+    </span>
   );
 }
 
@@ -652,6 +714,9 @@ function productPartEmpty(node: ComponentNode & { type: ProductElementType }, pr
       );
     case "productContent":
       return !product.contentHtml?.trim();
+    // Variant-aware on the storefront, so only "alert off" is known to draw nothing.
+    case "productStockBadge":
+      return !product.lowStockAlert?.show;
     default:
       return false;
   }
@@ -696,6 +761,7 @@ const STILLS: Record<ProductElementType, (p: StillProps) => ReactNode> = {
   productGallery: Gallery,
   productPrice: Price,
   productStock: Stock,
+  productStockBadge: StockBadge,
   productRating: Rating,
   productVariants: Variants,
   productBuyBox: BuyBox,
@@ -710,7 +776,11 @@ const STILLS: Record<ProductElementType, (p: StillProps) => ReactNode> = {
  * draws inside the node's box; otherwise (the editor, Admin, or a host
  * without hooks) the still rendering.
  */
-export function renderProductElement(type: ProductElementType, props: Record<string, unknown>, nodeAttrs: Attrs, ctx: RenderContext, scope?: DataRecord): ReactNode {
+export function renderProductElement(type: ProductElementType, rawProps: Record<string, unknown>, nodeAttrs: Attrs, ctx: RenderContext, scope?: DataRecord): ReactNode {
+  // In a product list card the badge is the card's "N left" tag (the list's record, not the page's product).
+  if (type === "productStockBadge" && scope?.kind === "productList") return <CardStockBadge left={scope.record.stockLeft} attrs={nodeAttrs} ctx={ctx} />;
+  // The page has its own low-stock badge element (F-34d): the stock line leaves the alert to it.
+  const props = type === "productStock" && ctx.stockBadgeOnPage ? { ...rawProps, [STOCK_ALERT_ELSEWHERE_PROP]: true } : rawProps;
   const product = productOf(ctx, scope);
   if (!product) return null;
   // The rating links to the reviews (one per page). A part of the page's own product (not a list
@@ -739,7 +809,8 @@ export function renderProductElement(type: ProductElementType, props: Record<str
   if (hook) {
     // The host's live price has no badges of its own: the trending / seasonal chips sit above it.
     return (
-      <div {...attrs} className={cn("min-w-0", type === "productPrice" && "flex flex-col gap-2")}>
+      // The badge's host part draws nothing while no alert applies: its box then takes no room either.
+      <div {...attrs} className={cn("min-w-0", type === "productPrice" && "flex flex-col gap-2", type === "productStockBadge" && "w-fit empty:hidden")}>
         {type === "productPrice" && <ProductFlags product={product} ctx={ctx} />}
         {hook(product, props)}
       </div>

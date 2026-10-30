@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import type { RowSelectionState } from "@tanstack/react-table";
 import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
 import type { ColumnDef } from "@tanstack/react-table";
 import { ChevronLeft, ChevronRight, CircleAlert, LayoutGrid, List, PackageSearch, Search, Store } from "lucide-react";
 import { Button } from "@workspace/ui/components/button";
+import { Checkbox } from "@workspace/ui/components/checkbox";
 import { Input } from "@workspace/ui/components/input";
 import {
   Select,
@@ -22,6 +24,7 @@ import { pageList } from "../products/_components/products-view.lib";
 import { BostaBulkBar } from "./bosta-bulk.client";
 import { BostaChip, ShipWithBostaButton } from "./bosta-ship.client";
 import { OrderActions } from "./order-actions.client";
+import { OrdersBulkBar } from "./orders-bulk.client";
 import { OrderCard } from "./order-card.client";
 import { OrderDetailsDialog } from "./order-details-dialog.client";
 import { OrderRiskBadges } from "./order-risk.client";
@@ -78,7 +81,17 @@ function ItemsCell({ order }: { order: SellerOrderRow }) {
   );
 }
 
-function OrdersTable({ orders, onOpen }: { orders: SellerOrderRow[]; onOpen: (id: string) => void }) {
+function OrdersTable({
+  orders,
+  onOpen,
+  selection,
+  onSelectionChange,
+}: {
+  orders: SellerOrderRow[];
+  onOpen: (id: string) => void;
+  selection: RowSelectionState;
+  onSelectionChange: (selection: RowSelectionState) => void;
+}) {
   const t = useTranslations("orders");
   const tTable = useTranslations("orders.table");
   const tPayment = useTranslations("orders.details.paymentMethods");
@@ -178,6 +191,8 @@ function OrdersTable({ orders, onOpen }: { orders: SellerOrderRow[]; onOpen: (id
       columns={columns}
       hideSearch
       labels={{ ...tableLabels, noResults: t("empty.tab") }}
+      rowSelection={selection}
+      onRowSelectionChange={onSelectionChange}
     />
   );
 }
@@ -204,6 +219,8 @@ export function VendorOrdersTable({
   const [bostaAttention, setBostaAttention] = useState(false);
   const [page, setPage] = useState(1);
   const [openOrderId, setOpenOrderId] = useState<string | null>(initialOrderId);
+  // Bulk selection by order id (F-04c); only orders still on screen count.
+  const [selection, setSelection] = useState<RowSelectionState>({});
 
   // Read the saved view after mount so the server and first client render agree.
   useEffect(() => {
@@ -231,6 +248,16 @@ export function VendorOrdersTable({
   const bostaStore = channel !== "all" && channel !== "marketplace" && rows.some((r) => r.storeId === channel && r.bostaConnected);
   const counts = useMemo(() => countByTab(scoped), [scoped]);
   const visible = useMemo(() => scoped.filter((r) => matchesTab(r, tab)), [scoped, tab]);
+  const selected = useMemo(() => visible.filter((r) => selection[r.id]), [visible, selection]);
+  const allSelected = visible.length > 0 && selected.length === visible.length;
+  const toggleOne = (id: string, on: boolean) =>
+    setSelection((prev) => {
+      const next = { ...prev };
+      if (on) next[id] = true;
+      else delete next[id];
+      return next;
+    });
+  const toggleAll = (on: boolean) => setSelection(on ? Object.fromEntries(visible.map((r) => [r.id, true])) : {});
 
   const pages = Math.max(1, Math.ceil(visible.length / GRID_PAGE_SIZE));
   const currentPage = Math.min(page, pages);
@@ -382,6 +409,8 @@ export function VendorOrdersTable({
 
       {bostaStore && <BostaBulkBar storeId={channel} orders={visible} />}
 
+      <OrdersBulkBar orders={selected} onClear={() => setSelection({})} />
+
       {visible.length === 0 ? (
         <div className="flex flex-col items-center gap-1.5 rounded-2xl border border-dashed border-input bg-card px-5 py-14 text-center text-[13px] text-muted-foreground">
           <span className="mb-1 grid size-12 place-items-center rounded-xl bg-primary-soft text-primary-ink">
@@ -397,12 +426,25 @@ export function VendorOrdersTable({
           )}
         </div>
       ) : view === "table" ? (
-        <OrdersTable orders={visible} onOpen={setOpenOrderId} />
+        <OrdersTable orders={visible} onOpen={setOpenOrderId} selection={selection} onSelectionChange={setSelection} />
       ) : (
         <>
+          <label className="flex w-fit cursor-pointer items-center gap-2 text-[13px] text-muted-foreground">
+            <Checkbox
+              checked={allSelected ? true : selected.length > 0 ? "indeterminate" : false}
+              onCheckedChange={(value) => toggleAll(value === true)}
+            />
+            {t("bulk.selectAll", { count: visible.length })}
+          </label>
           <div className="grid gap-3 sm:grid-cols-[repeat(auto-fill,minmax(280px,1fr))] sm:gap-4">
             {pageItems.map((order) => (
-              <OrderCard key={order.id} order={order} onOpen={() => setOpenOrderId(order.id)} />
+              <OrderCard
+                key={order.id}
+                order={order}
+                onOpen={() => setOpenOrderId(order.id)}
+                selected={Boolean(selection[order.id])}
+                onSelectedChange={(on) => toggleOne(order.id, on)}
+              />
             ))}
           </div>
 

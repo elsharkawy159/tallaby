@@ -4,11 +4,15 @@ import type { ProductSocialProofInput } from "./social-proof.dto";
 /** The edit form's reviews and live views switch; callers pass the session seller's id. */
 export async function loadProductSocialProof(sellerId: string, productId: string): Promise<ProductSocialProofInput> {
   const [product] = await db
-    .select({ showLiveViews: products.showLiveViews })
+    .select({
+      showLiveViews: products.showLiveViews,
+      showLowStockBadge: products.showLowStockBadge,
+      lowStockThreshold: products.lowStockThreshold,
+    })
     .from(products)
     .where(and(eq(products.id, productId), eq(products.sellerId, sellerId)))
     .limit(1);
-  if (!product) return { showLiveViews: false, reviews: [] };
+  if (!product) return { showLiveViews: false, showLowStockBadge: false, lowStockThreshold: null, reviews: [] };
 
   const rows = await db
     .select({ id: reviews.id, reviewerName: reviews.reviewerName, rating: reviews.rating, comment: reviews.comment })
@@ -18,6 +22,8 @@ export async function loadProductSocialProof(sellerId: string, productId: string
 
   return {
     showLiveViews: product.showLiveViews,
+    showLowStockBadge: product.showLowStockBadge,
+    lowStockThreshold: product.lowStockThreshold,
     reviews: rows.map((row) => ({ id: row.id, reviewerName: row.reviewerName ?? "", rating: row.rating, comment: row.comment ?? "" })),
   };
 }

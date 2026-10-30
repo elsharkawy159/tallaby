@@ -40,6 +40,8 @@ import { parseStoreSeo } from "@workspace/lib/stores";
 import { storeHasVisibleProducts } from "@workspace/lib/stores/server";
 import { storeCategoryGroups, type StoreCategoryFilter } from "@workspace/lib/store-sites/catalog-data";
 import { parseStoreApp } from "@workspace/lib/stores/app";
+import { parseStoreSalesPopup } from "@workspace/lib/stores/sales-popup";
+import { parseStoreMinOrder } from "@workspace/lib/stores/min-order";
 import {
   parseStorePayments,
   storefrontCheckoutMethods,
@@ -204,6 +206,10 @@ export function getStorefrontBySubdomain(subdomain: string) {
         /** Checkout methods (Store settings › Payment methods; cash on delivery by default), for footer payment rows. */
         /** Store settings › App (ROADMAP.md F-36): the footer's Download application button. */
         app: parseStoreApp(row.settings),
+        /** Store settings › Sales pop-up (ROADMAP.md F-22): on/off, delay and pages. */
+        salesPopup: parseStoreSalesPopup(row.settings),
+        /** Store settings › Checkout › Minimum order (ROADMAP.md F-13b), for the cart's "add X more". Checkout reads it fresh. */
+        minOrder: parseStoreMinOrder(row.settings),
         paymentMethods: storefrontCheckoutMethods(parseStorePayments((row.settings as Record<string, unknown> | null)?.payments)).methods,
         /**
          * Builder site state: "draft" (never published), "published", or
@@ -215,8 +221,8 @@ export function getStorefrontBySubdomain(subdomain: string) {
         supportedLocales: row.supportedLocales,
       };
     },
-    // v12: + app (store app download button). v11: + paymentMethods (footer payment rows). v10: + supportedLocales (header language switcher). v9: + siteStatus (offline stores). v6: + seo (P4-14) and social links (P4-15). v4: resolves through stores (P5-00).
-    [`storefront-v12-${subdomain}`],
+    // v14: + minOrder (F-13b). v13: + salesPopup (F-22). v12: + app (store app download button). v11: + paymentMethods (footer payment rows). v10: + supportedLocales (header language switcher). v9: + siteStatus (offline stores). v6: + seo (P4-14) and social links (P4-15). v4: resolves through stores (P5-00).
+    [`storefront-v14-${subdomain}`],
     { tags: ["sellers", sellerTags.subdomain(subdomain)], revalidate: 3600 },
   )();
 }

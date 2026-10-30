@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { cn } from "@workspace/ui/lib/utils";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@workspace/ui/components/sheet";
 import { onCartItemAdded, useCart } from "@/providers/cart-provider";
+import type { StoreMinOrder } from "@workspace/lib/stores/min-order";
 import { StorefrontCart } from "./storefront-cart.client";
 import s from "../storefront.module.css";
 
@@ -32,9 +33,12 @@ function isCartLink(a: HTMLAnchorElement): boolean {
  */
 export function StoreCartSheet({
   storeName,
+  minOrder,
   fontClassName,
 }: {
   storeName: string;
+  /** The store's minimum order (F-13b), for the "add X more" line. */
+  minOrder?: StoreMinOrder | null;
   /** The storefront font's CSS variable class, plus the site root class on a
    *  built site so the portaled sheet gets the store's brand colors and fonts.
    *  Passed in because next/font modules can't be imported from client
@@ -75,7 +79,7 @@ export function StoreCartSheet({
           <SheetDescription className="sr-only">{t("cartTitle")}</SheetDescription>
         </SheetHeader>
         <div className="min-h-0 flex-1">
-          <StorefrontCart storeName={storeName} onNavigate={() => setOpen(false)} />
+          <StorefrontCart storeName={storeName} minOrder={minOrder} onNavigate={() => setOpen(false)} />
         </div>
       </SheetContent>
     </Sheet>

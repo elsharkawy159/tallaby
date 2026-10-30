@@ -1518,6 +1518,16 @@ export const products = pgTable("products", {
 	directCheckout: boolean("direct_checkout").default(false).notNull(),
 	/** Product page shows a live "N people viewing now" line (0111; off by default). */
 	showLiveViews: boolean("show_live_views").default(false).notNull(),
+	/** Store product page urgency badge and card tag at low real stock (0122, F-34; off by default). */
+	showLowStockBadge: boolean("show_low_stock_badge").default(false).notNull(),
+	/** Badge threshold, 1-99; null = 5 (0122). */
+	lowStockThreshold: integer("low_stock_threshold"),
+	/** Product Trash (0123, F-35): when it was trashed (null = not in Trash), by whom, and the status Restore puts back. A trashed product is 'draft'. */
+	deletedAt: timestamp("deleted_at", { withTimezone: true, mode: 'string' }),
+	deletedBy: uuid("deleted_by"),
+	trashedStatus: productStatus("trashed_status"),
+	/** Deleted for good while orders still point to it (0123): kept for order history, out of Trash. */
+	purgedAt: timestamp("purged_at", { withTimezone: true, mode: 'string' }),
 	/** How the AI helped fill this product (0112): 'autofill_add' | 'autofill_edit'; null = not AI. */
 	aiSource: text("ai_source"),
 	/** The last save with AI changes (0112). */
@@ -1531,6 +1541,8 @@ export const products = pgTable("products", {
 	index("product_seller_category_id_idx").using("btree", table.sellerCategoryId).where(sql`seller_category_id IS NOT NULL`),
 	index("product_seller_brand_id_idx").using("btree", table.sellerBrandId).where(sql`seller_brand_id IS NOT NULL`),
 	index("product_ai_source_idx").using("btree", table.aiSource).where(sql`ai_source IS NOT NULL`),
+	index("products_trashed_idx").using("btree", table.sellerId.asc().nullsLast().op("uuid_ops"), table.deletedAt.asc().nullsLast().op("timestamptz_ops")).where(sql`(deleted_at IS NOT NULL AND purged_at IS NULL)`),
+	check("products_low_stock_threshold_check", sql`low_stock_threshold IS NULL OR low_stock_threshold BETWEEN 1 AND 99`),
 	check("products_ai_source_check", sql`ai_source IS NULL OR ai_source IN ('autofill_add', 'autofill_edit')`),
 	foreignKey({
 			columns: [table.sellerCategoryId],
@@ -3295,16 +3307,19 @@ export const sellerNotifications = pgTable("seller_notifications", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	sellerId: uuid("seller_id").notNull(),
 	storeId: uuid("store_id"),
-	/** order_created | top_up_approved | top_up_rejected | question_received | review_received | carrier_shipment_failed | carrier_needs_attention | referral_commission_earned | referral_payout_paid | referral_payout_rejected (0117) | welcome_gift_granted | welcome_gift_expiring | welcome_gift_expired (0119) */
+	/** order_created | top_up_approved | top_up_rejected | question_received | review_received | carrier_shipment_failed | carrier_needs_attention | referral_commission_earned | referral_payout_paid | referral_payout_rejected (0117) | welcome_gift_granted | welcome_gift_expiring | welcome_gift_expired (0119) | low_stock (0125) */
 	type: text().notNull(),
 	data: jsonb().$type<Record<string, unknown>>().default({}).notNull(),
 	dedupeKey: text("dedupe_key").notNull(),
 	readAt: timestamp("read_at", { withTimezone: true, mode: 'string' }),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	/** Push dispatcher claim (0124, F-06): set once the row was handled (sent, skipped or too old). */
+	pushedAt: timestamp("pushed_at", { withTimezone: true, mode: 'string' }),
 }, (table) => [
 	unique("seller_notifications_dedupe_key").on(table.sellerId, table.dedupeKey),
 	index("seller_notifications_seller_created_idx").using("btree", table.sellerId, table.createdAt.desc()),
 	index("seller_notifications_seller_unread_idx").using("btree", table.sellerId).where(sql`read_at IS NULL`),
+	index("seller_notifications_push_pending_idx").using("btree", table.createdAt).where(sql`pushed_at IS NULL`),
 	foreignKey({
 			columns: [table.sellerId],
 			foreignColumns: [sellers.id],
@@ -3315,7 +3330,7 @@ export const sellerNotifications = pgTable("seller_notifications", {
 			foreignColumns: [stores.id],
 			name: "seller_notifications_store_id_fkey"
 		}).onDelete("set null"),
-	check("seller_notifications_type_check", sql`type IN ('order_created', 'top_up_approved', 'top_up_rejected', 'question_received', 'review_received', 'carrier_shipment_failed', 'carrier_needs_attention', 'referral_commission_earned', 'referral_payout_paid', 'referral_payout_rejected', 'welcome_gift_granted', 'welcome_gift_expiring', 'welcome_gift_expired')`),
+	check("seller_notifications_type_check", sql`type IN ('order_created', 'top_up_approved', 'top_up_rejected', 'question_received', 'review_received', 'carrier_shipment_failed', 'carrier_needs_attention', 'referral_commission_earned', 'referral_payout_paid', 'referral_payout_rejected', 'welcome_gift_granted', 'welcome_gift_expiring', 'welcome_gift_expired', 'low_stock')`),
 ]);
 
 /** A carrier's status history for a shipment (0106). One row per (shipment, state, time). Server-only. */
@@ -3601,4 +3616,267 @@ export const storeCustomerNotes = pgTable("store_customer_notes", {
 	check("store_customer_notes_key_format", sql`customer_key ~ '^p:[0-9]{6,20}$' OR customer_key ~ '^u:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'`),
 	check("store_customer_notes_note_length", sql`note IS NULL OR char_length(note) <= 2000`),
 	check("store_customer_notes_tags_count", sql`cardinality(tags) <= 10`),
+]);
+
+/**
+ * A browser/device that turned on seller push alerts (0124, ROADMAP.md F-06).
+ * One row per Web Push endpoint. Server-only (RLS on, no policies).
+ */
+export const sellerPushSubscriptions = pgTable("seller_push_subscriptions", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	sellerId: uuid("seller_id").notNull(),
+	endpoint: text().notNull(),
+	p256dh: text().notNull(),
+	auth: text().notNull(),
+	userAgent: text("user_agent"),
+	/** 'ar' | 'en': the dashboard language when the device subscribed. */
+	locale: text().default('ar').notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	lastSuccessAt: timestamp("last_success_at", { withTimezone: true, mode: 'string' }),
+}, (table) => [
+	unique("seller_push_subscriptions_endpoint_key").on(table.endpoint),
+	index("seller_push_subscriptions_seller_idx").using("btree", table.sellerId),
+	foreignKey({ columns: [table.sellerId], foreignColumns: [sellers.id], name: "seller_push_subscriptions_seller_id_fkey" }).onDelete("cascade"),
+	check("seller_push_subscriptions_endpoint_https", sql`endpoint ~ '^https://' AND char_length(endpoint) <= 1000`),
+	check("seller_push_subscriptions_keys_length", sql`char_length(p256dh) <= 200 AND char_length(auth) <= 100`),
+	check("seller_push_subscriptions_user_agent_length", sql`user_agent IS NULL OR char_length(user_agent) <= 300`),
+	check("seller_push_subscriptions_locale_check", sql`locale IN ('ar', 'en')`),
+]);
+
+/** The seller's push alert switches per type (0124, F-06). No row = all on. Server-only. */
+export const sellerPushSettings = pgTable("seller_push_settings", {
+	sellerId: uuid("seller_id").primaryKey().notNull(),
+	newOrder: boolean("new_order").default(true).notNull(),
+	orderProblem: boolean("order_problem").default(true).notNull(),
+	lowStock: boolean("low_stock").default(true).notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	foreignKey({ columns: [table.sellerId], foreignColumns: [sellers.id], name: "seller_push_settings_seller_id_fkey" }).onDelete("cascade"),
+]);
+
+/**
+ * Stock history (0125, ROADMAP.md F-10): one row per change of a product's own
+ * stock (`products.quantity`, products without variants) or a tracked variant's
+ * stock. Written only by DB triggers; the reason/actor/order come from
+ * transaction-local settings (`setStockContext` in @workspace/db/inventory).
+ * `variant_id` has no foreign key so the history outlives a removed variant.
+ * Server-only (RLS on, no policies).
+ */
+export const stockMovements = pgTable("stock_movements", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	sellerId: uuid("seller_id").notNull(),
+	storeId: uuid("store_id"),
+	productId: uuid("product_id").notNull(),
+	variantId: uuid("variant_id"),
+	delta: integer().notNull(),
+	stockAfter: integer("stock_after").notNull(),
+	/** 'order' | 'cancel' | 'return' | 'edit' | 'bulk_edit' | 'import' | 'other' */
+	reason: text().notNull(),
+	orderId: uuid("order_id"),
+	actorUserId: uuid("actor_user_id"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("stock_movements_product_created_idx").using("btree", table.productId, table.createdAt.desc()),
+	index("stock_movements_seller_created_idx").using("btree", table.sellerId, table.createdAt.desc()),
+	index("stock_movements_order_link_idx").using("btree", table.productId, table.createdAt).where(sql`reason = 'order' AND order_id IS NULL`),
+	index("stock_movements_order_idx").using("btree", table.orderId).where(sql`order_id IS NOT NULL`),
+	foreignKey({ columns: [table.sellerId], foreignColumns: [sellers.id], name: "stock_movements_seller_id_fkey" }).onDelete("cascade"),
+	foreignKey({ columns: [table.storeId], foreignColumns: [stores.id], name: "stock_movements_store_id_fkey" }).onDelete("set null"),
+	foreignKey({ columns: [table.productId], foreignColumns: [products.id], name: "stock_movements_product_id_fkey" }).onDelete("cascade"),
+	foreignKey({ columns: [table.orderId], foreignColumns: [orders.id], name: "stock_movements_order_id_fkey" }).onDelete("set null"),
+	check("stock_movements_reason_check", sql`reason IN ('order', 'cancel', 'return', 'edit', 'bulk_edit', 'import', 'other')`),
+	check("stock_movements_delta_check", sql`delta <> 0`),
+]);
+
+/**
+ * Back-in-stock alerts (0126, ROADMAP.md F-23a): a store-website visitor's
+ * email for an out-of-stock product (variant_id NULL) or variant. The daily
+ * stock-alerts cron claims open rows whose stock is back (notified_at), sends
+ * one store-branded email each and clears the claim when a send fails.
+ * One open row per store + product + variant + email. Email only for now.
+ * Server-only (RLS on, no policies).
+ */
+export const storeStockSubscriptions = pgTable("store_stock_subscriptions", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	storeId: uuid("store_id").notNull(),
+	sellerId: uuid("seller_id").notNull(),
+	productId: uuid("product_id").notNull(),
+	variantId: uuid("variant_id"),
+	/** Lower-cased. */
+	email: text().notNull(),
+	/** 'ar' | 'en' */
+	locale: text().default('ar').notNull(),
+	unsubscribeToken: text("unsubscribe_token").notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	notifiedAt: timestamp("notified_at", { withTimezone: true, mode: 'string' }),
+	cancelledAt: timestamp("cancelled_at", { withTimezone: true, mode: 'string' }),
+}, (table) => [
+	uniqueIndex("store_stock_subscriptions_token_key").using("btree", table.unsubscribeToken),
+	uniqueIndex("store_stock_subscriptions_open_key").using("btree", table.storeId, table.productId, sql`coalesce(${table.variantId}, '00000000-0000-0000-0000-000000000000'::uuid)`, table.email).where(sql`notified_at IS NULL AND cancelled_at IS NULL`),
+	index("store_stock_subscriptions_open_product_idx").using("btree", table.productId, table.variantId).where(sql`notified_at IS NULL AND cancelled_at IS NULL`),
+	index("store_stock_subscriptions_seller_open_idx").using("btree", table.sellerId).where(sql`notified_at IS NULL AND cancelled_at IS NULL`),
+	foreignKey({ columns: [table.storeId], foreignColumns: [stores.id], name: "store_stock_subscriptions_store_id_fkey" }).onDelete("cascade"),
+	foreignKey({ columns: [table.sellerId], foreignColumns: [sellers.id], name: "store_stock_subscriptions_seller_id_fkey" }).onDelete("cascade"),
+	foreignKey({ columns: [table.productId], foreignColumns: [products.id], name: "store_stock_subscriptions_product_id_fkey" }).onDelete("cascade"),
+	foreignKey({ columns: [table.variantId], foreignColumns: [productVariants.id], name: "store_stock_subscriptions_variant_id_fkey" }).onDelete("cascade"),
+	check("store_stock_subscriptions_locale_check", sql`locale IN ('ar', 'en')`),
+	check("store_stock_subscriptions_email_check", sql`char_length(email) BETWEEN 3 AND 254 AND email = lower(email) AND position('@' IN email) > 1`),
+	check("store_stock_subscriptions_token_check", sql`char_length(unsubscribe_token) >= 32`),
+]);
+
+/**
+ * Manual product order inside a seller category (0128, ROADMAP.md F-24d): the
+ * store's category pages sort by it by default ("Featured"). Written only by
+ * the dashboard action after an ownership check. Server-only (RLS on, no policies).
+ */
+export const sellerCategoryProductPositions = pgTable("seller_category_product_positions", {
+	sellerCategoryId: uuid("seller_category_id").notNull(),
+	productId: uuid("product_id").notNull(),
+	sellerId: uuid("seller_id").notNull(),
+	position: integer().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	primaryKey({ columns: [table.sellerCategoryId, table.productId], name: "seller_category_product_positions_pkey" }),
+	index("seller_category_product_positions_product_idx").using("btree", table.productId),
+	index("seller_category_product_positions_seller_idx").using("btree", table.sellerId),
+	foreignKey({ columns: [table.sellerCategoryId], foreignColumns: [sellerProductCategories.id], name: "seller_category_product_positions_seller_category_id_fkey" }).onDelete("cascade"),
+	foreignKey({ columns: [table.productId], foreignColumns: [products.id], name: "seller_category_product_positions_product_id_fkey" }).onDelete("cascade"),
+	foreignKey({ columns: [table.sellerId], foreignColumns: [sellers.id], name: "seller_category_product_positions_seller_id_fkey" }).onDelete("cascade"),
+	check("seller_category_product_positions_position_check", sql`position >= 0`),
+]);
+
+/**
+ * Store email campaigns (0129, ROADMAP.md F-16a). A seller's email to one
+ * audience of their store's customers: subject + plain-text body (tiny
+ * markdown subset, never HTML), up to 4 featured products. "Send now"
+ * snapshots the recipients and queues it (status 'scheduled'); the
+ * email-campaigns cron sends it. Server-only (RLS on, no policies).
+ */
+export const storeEmailCampaigns = pgTable("store_email_campaigns", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	storeId: uuid("store_id").notNull(),
+	sellerId: uuid("seller_id").notNull(),
+	subject: text().default('').notNull(),
+	body: text().default('').notNull(),
+	ctaLabel: text("cta_label"),
+	productIds: uuid("product_ids").array().default(sql`'{}'::uuid[]`).notNull(),
+	/** 'subscribers' | 'buyers' | 'all' | 'inactive' */
+	audience: text().default('subscribers').notNull(),
+	inactiveDays: integer("inactive_days"),
+	/** 'ar' | 'en' */
+	locale: text().default('ar').notNull(),
+	/** 'draft' | 'scheduled' | 'sending' | 'sent' | 'cancelled' */
+	status: text().default('draft').notNull(),
+	scheduledAt: timestamp("scheduled_at", { withTimezone: true, mode: 'string' }),
+	queuedAt: timestamp("queued_at", { withTimezone: true, mode: 'string' }),
+	startedAt: timestamp("started_at", { withTimezone: true, mode: 'string' }),
+	completedAt: timestamp("completed_at", { withTimezone: true, mode: 'string' }),
+	cancelledAt: timestamp("cancelled_at", { withTimezone: true, mode: 'string' }),
+	recipientCount: integer("recipient_count").default(0).notNull(),
+	sentCount: integer("sent_count").default(0).notNull(),
+	failedCount: integer("failed_count").default(0).notNull(),
+	skippedCount: integer("skipped_count").default(0).notNull(),
+	testSendCount: integer("test_send_count").default(0).notNull(),
+	lastTestAt: timestamp("last_test_at", { withTimezone: true, mode: 'string' }),
+	createdBy: uuid("created_by"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("store_email_campaigns_store_created_idx").using("btree", table.storeId, table.createdAt.desc()),
+	index("store_email_campaigns_store_queued_idx").using("btree", table.storeId, table.queuedAt).where(sql`queued_at IS NOT NULL`),
+	index("store_email_campaigns_active_idx").using("btree", table.scheduledAt).where(sql`status IN ('scheduled', 'sending')`),
+	foreignKey({ columns: [table.storeId], foreignColumns: [stores.id], name: "store_email_campaigns_store_id_fkey" }).onDelete("cascade"),
+	foreignKey({ columns: [table.sellerId], foreignColumns: [sellers.id], name: "store_email_campaigns_seller_id_fkey" }).onDelete("cascade"),
+	check("store_email_campaigns_subject_check", sql`char_length(subject) <= 150`),
+	check("store_email_campaigns_body_check", sql`char_length(body) <= 5000`),
+	check("store_email_campaigns_cta_check", sql`cta_label IS NULL OR char_length(cta_label) <= 40`),
+	check("store_email_campaigns_products_check", sql`cardinality(product_ids) <= 4`),
+	check("store_email_campaigns_audience_check", sql`audience IN ('subscribers', 'buyers', 'all', 'inactive')`),
+	check("store_email_campaigns_inactive_days_check", sql`inactive_days IS NULL OR inactive_days BETWEEN 7 AND 730`),
+	check("store_email_campaigns_locale_check", sql`locale IN ('ar', 'en')`),
+	check("store_email_campaigns_status_check", sql`status IN ('draft', 'scheduled', 'sending', 'sent', 'cancelled')`),
+	check("store_email_campaigns_counts_check", sql`recipient_count >= 0 AND sent_count >= 0 AND failed_count >= 0 AND skipped_count >= 0 AND test_send_count >= 0`),
+]);
+
+/**
+ * One recipient of a queued campaign (0129). Lower-cased email, unique per
+ * campaign. The cron claims 'pending' rows ('sending' + claimed_at, FOR
+ * UPDATE SKIP LOCKED) and marks them 'sent' / 'skipped', or gives them back
+ * ('failed' after 3 tries). Server-only (RLS on, no policies).
+ */
+export const storeEmailCampaignRecipients = pgTable("store_email_campaign_recipients", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	campaignId: uuid("campaign_id").notNull(),
+	storeId: uuid("store_id").notNull(),
+	email: text().notNull(),
+	/** 'pending' | 'sending' | 'sent' | 'failed' | 'skipped' */
+	status: text().default('pending').notNull(),
+	attempts: integer().default(0).notNull(),
+	unsubscribeToken: text("unsubscribe_token").notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	claimedAt: timestamp("claimed_at", { withTimezone: true, mode: 'string' }),
+	sentAt: timestamp("sent_at", { withTimezone: true, mode: 'string' }),
+}, (table) => [
+	unique("store_email_campaign_recipients_campaign_email_key").on(table.campaignId, table.email),
+	uniqueIndex("store_email_campaign_recipients_token_key").using("btree", table.unsubscribeToken),
+	index("store_email_campaign_recipients_open_idx").using("btree", table.campaignId, table.createdAt).where(sql`status IN ('pending', 'sending')`),
+	index("store_email_campaign_recipients_campaign_status_idx").using("btree", table.campaignId, table.status),
+	foreignKey({ columns: [table.campaignId], foreignColumns: [storeEmailCampaigns.id], name: "store_email_campaign_recipients_campaign_id_fkey" }).onDelete("cascade"),
+	foreignKey({ columns: [table.storeId], foreignColumns: [stores.id], name: "store_email_campaign_recipients_store_id_fkey" }).onDelete("cascade"),
+	check("store_email_campaign_recipients_status_check", sql`status IN ('pending', 'sending', 'sent', 'failed', 'skipped')`),
+	check("store_email_campaign_recipients_email_check", sql`char_length(email) BETWEEN 3 AND 254 AND email = lower(email) AND position('@' IN email) > 1`),
+	check("store_email_campaign_recipients_token_check", sql`char_length(unsubscribe_token) >= 32`),
+	check("store_email_campaign_recipients_attempts_check", sql`attempts >= 0`),
+]);
+
+/**
+ * Per-store email opt-out list (0129), honoured by every campaign and
+ * win-back email. Server-only (RLS on, no policies).
+ */
+export const storeEmailUnsubscribes = pgTable("store_email_unsubscribes", {
+	storeId: uuid("store_id").notNull(),
+	email: text().notNull(),
+	/** 'link' | 'seller' */
+	source: text().default('link').notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	primaryKey({ columns: [table.storeId, table.email], name: "store_email_unsubscribes_pkey" }),
+	foreignKey({ columns: [table.storeId], foreignColumns: [stores.id], name: "store_email_unsubscribes_store_id_fkey" }).onDelete("cascade"),
+	check("store_email_unsubscribes_source_check", sql`source IN ('link', 'seller')`),
+	check("store_email_unsubscribes_email_check", sql`char_length(email) BETWEEN 3 AND 254 AND email = lower(email) AND position('@' IN email) > 1`),
+]);
+
+/**
+ * Win-back emails (0129, ROADMAP.md F-16e): one row per customer email and
+ * inactivity period (unique store + email + last_order_at). Planned and sent
+ * by the email-campaigns cron. Server-only (RLS on, no policies).
+ */
+export const storeWinbackSends = pgTable("store_winback_sends", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	storeId: uuid("store_id").notNull(),
+	sellerId: uuid("seller_id").notNull(),
+	email: text().notNull(),
+	lastOrderAt: timestamp("last_order_at", { withTimezone: true, mode: 'string' }).notNull(),
+	/** 'ar' | 'en' */
+	locale: text().default('ar').notNull(),
+	/** 'pending' | 'sending' | 'sent' | 'failed' | 'skipped' */
+	status: text().default('pending').notNull(),
+	attempts: integer().default(0).notNull(),
+	unsubscribeToken: text("unsubscribe_token").notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	claimedAt: timestamp("claimed_at", { withTimezone: true, mode: 'string' }),
+	sentAt: timestamp("sent_at", { withTimezone: true, mode: 'string' }),
+}, (table) => [
+	unique("store_winback_sends_period_key").on(table.storeId, table.email, table.lastOrderAt),
+	uniqueIndex("store_winback_sends_token_key").using("btree", table.unsubscribeToken),
+	index("store_winback_sends_open_idx").using("btree", table.createdAt).where(sql`status IN ('pending', 'sending')`),
+	index("store_winback_sends_store_created_idx").using("btree", table.storeId, table.createdAt.desc()),
+	foreignKey({ columns: [table.storeId], foreignColumns: [stores.id], name: "store_winback_sends_store_id_fkey" }).onDelete("cascade"),
+	foreignKey({ columns: [table.sellerId], foreignColumns: [sellers.id], name: "store_winback_sends_seller_id_fkey" }).onDelete("cascade"),
+	check("store_winback_sends_status_check", sql`status IN ('pending', 'sending', 'sent', 'failed', 'skipped')`),
+	check("store_winback_sends_locale_check", sql`locale IN ('ar', 'en')`),
+	check("store_winback_sends_email_check", sql`char_length(email) BETWEEN 3 AND 254 AND email = lower(email) AND position('@' IN email) > 1`),
+	check("store_winback_sends_token_check", sql`char_length(unsubscribe_token) >= 32`),
+	check("store_winback_sends_attempts_check", sql`attempts >= 0`),
 ]);

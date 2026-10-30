@@ -41,6 +41,10 @@ interface OrderConfirmationContentProps {
   accessToken?: string;
   /** Where "Need help?" leads: the store's WhatsApp or phone, or Tallaby's. */
   supportHref: string | null;
+  /** Store websites: the seller's thank-you block (F-25b), under the header. */
+  thankYou?: React.ReactNode;
+  /** Store websites: "Order again" for the order's owner (F-01e). */
+  reorder?: React.ReactNode;
 }
 
 export async function OrderConfirmationContent({
@@ -49,6 +53,8 @@ export async function OrderConfirmationContent({
   autoExpandReviewItemId,
   accessToken,
   supportHref,
+  thankYou,
+  reorder,
 }: OrderConfirmationContentProps) {
   const t = await getTranslations("orders");
   const { order, orderItems, storeSellers, shipments, shippingAddress, summary } = data;
@@ -161,6 +167,10 @@ export async function OrderConfirmationContent({
           </div>
         </div>
       </div>
+
+      {thankYou}
+
+      {reorder}
 
       {/* Order Summary Card */}
 

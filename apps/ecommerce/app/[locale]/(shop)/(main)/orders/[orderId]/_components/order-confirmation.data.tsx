@@ -9,6 +9,10 @@ import { verifyOrderAccess } from "@/lib/order-access-token";
 import { getRequestStoreSubdomain, getStorefrontBySubdomain } from "@/lib/storefront.server";
 import { CONTACT } from "@/lib/marketing/site.lib";
 import { whatsappNumber } from "@/app/[locale]/(shop)/storefront/[subdomain]/_components/storefront-footer";
+import { getStoreThankYouView } from "./store-thank-you.server";
+import { StoreThankYou } from "./store-thank-you";
+import { reorderAccess } from "@/lib/reorder/reorder.server";
+import { OrderReorderButton } from "./order-reorder-button";
 
 const FINAL_ORDER_STATUSES = new Set(["delivered", "cancelled", "refunded", "returned"]);
 
@@ -65,6 +69,24 @@ export async function OrderConfirmationData({
     );
   }
 
+  // The store's thank-you block (F-25b); null leaves the page as it was, and
+  // a failure never breaks the order page.
+  const thankYouView = await getStoreThankYouView({
+    orderId,
+    orderNumber: result.data.order.orderNumber,
+    orderStatus: result.data.order.status,
+    orderedProductIds: result.data.orderItems.map((item) => item.productId),
+    locale,
+  }).catch((error: unknown) => {
+    console.error("[store-thank-you] failed", (error as Error)?.message);
+    return null;
+  });
+
+  // "Order again" (F-01e): the order's owner, on the store it was placed on.
+  const canReorder = await reorderAccess(orderId)
+    .then(Boolean)
+    .catch(() => false);
+
   return (
     <>
       {canSubscribe && <OrderRealtime orderId={orderId} />}
@@ -75,6 +97,8 @@ export async function OrderConfirmationData({
         autoExpandReviewItemId={autoExpandReviewItemId}
         accessToken={accessToken && verifyOrderAccess(orderId, accessToken) ? accessToken : undefined}
         supportHref={await getSupportHref()}
+        {...(thankYouView && { thankYou: <StoreThankYou view={thankYouView} locale={locale} /> })}
+        {...(canReorder && { reorder: <OrderReorderButton orderId={orderId} /> })}
       />
     </>
   );

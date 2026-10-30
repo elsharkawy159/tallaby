@@ -7,6 +7,7 @@ import { treeBuilder } from "../designs/builder";
 import { PALETTE_TYPES, getElementDefinition } from "./registry";
 import { renderElementTree } from "./render";
 import { canContain } from "./tree";
+import { ProductCardView } from "../sections/_primitives";
 
 const node = (type: string, props: Record<string, unknown> = {}): ComponentNode => ({ id: `n-${type}`, type, props, children: [] }) as ComponentNode;
 
@@ -42,6 +43,7 @@ const PRODUCT_TYPES = [
   "productGallery",
   "productPrice",
   "productStock",
+  "productStockBadge",
   "productRating",
   "productVariants",
   "productBuyBox",
@@ -70,7 +72,62 @@ describe("product elements", () => {
       expect(canContain(tree, "root", node(type)), type).toBe(true);
     }
     // Plain text parts may sit in a link card.
-    for (const type of ["productPrice", "productStock", "productSeller"]) expect(canContain(tree, "link", node(type)), type).toBe(true);
+    for (const type of ["productPrice", "productStock", "productStockBadge", "productSeller"]) expect(canContain(tree, "link", node(type)), type).toBe(true);
+  });
+
+  it("productStockBadge shows the seller's alert only when it applies (F-34d)", () => {
+    const alert = { show: true, threshold: 3 };
+    const pub = { mode: "public" as const };
+    const html = draw(node("productStockBadge"), { ...product, quantity: 2, lowStockAlert: alert }, pub);
+    expect(html).toContain('data-node-type="productStockBadge"');
+    expect(html).toContain("Only 2 left, order before it");
+    // Above the threshold, sold out, or alert off: nothing on the storefront.
+    expect(draw(node("productStockBadge"), { ...product, quantity: 4, lowStockAlert: alert }, pub)).toBe("");
+    const soldOut = { ...product, quantity: 0, variants: product.variants.map((v) => ({ ...v, quantity: 0 })), lowStockAlert: alert };
+    expect(draw(node("productStockBadge"), soldOut, pub)).toBe("");
+    expect(draw(node("productStockBadge"), { ...product, quantity: 2, lowStockAlert: null }, pub)).toBe("");
+    // The editor draws a sample so the seller can select and style it.
+    const sample = draw(node("productStockBadge"), { ...product, quantity: 24, lowStockAlert: null });
+    expect(sample).toContain("data-sample");
+    expect(sample).toContain("Only 2 left");
+  });
+
+  it("productStockBadge uses the storefront hook, and the stock line steps aside while the page has one", () => {
+    const alert = { show: true, threshold: 3 };
+    const low = { ...product, quantity: 2, lowStockAlert: alert };
+    const seen: Record<string, unknown>[] = [];
+    const hooks = {
+      mode: "public" as const,
+      renderProductStockBadge: () => <i>badge-hook</i>,
+      renderProductStock: (_p: ProductDetail, props: Record<string, unknown>) => {
+        seen.push(props);
+        return <i>stock-hook</i>;
+      },
+    };
+    expect(draw(node("productStockBadge"), low, hooks)).toContain("badge-hook");
+    draw(node("productStock"), low, hooks);
+    draw(node("productStock"), low, { ...hooks, stockBadgeOnPage: true });
+    expect(seen[0]?.lowStockAlertElsewhere).toBeUndefined();
+    expect(seen[1]?.lowStockAlertElsewhere).toBe(true);
+    // The still stock line: no alert (and no "Only 2 left" pill) when the badge carries it; the pill otherwise.
+    expect(draw(node("productStock"), low, { mode: "public", stockBadgeOnPage: true })).toBe("");
+    expect(draw(node("productStock"), { ...low, quantity: 24 }, { mode: "public", stockBadgeOnPage: true })).toContain("In stock");
+    expect(draw(node("productStock"), low, { mode: "public" })).toContain("order before it");
+  });
+
+  it("productStockBadge in a product list card shows the card's N left", () => {
+    const card = (stockLeft: number | null, mode: "edit" | "public" = "public") =>
+      renderToStaticMarkup(
+        <>
+          {renderElementTree([node("productStockBadge")], ctx({ mode }), 1, {
+            kind: "productList",
+            record: { id: "p", title: "Mug", href: "/products/mug", image: null, price: 100, inStock: true, stockLeft },
+          })}
+        </>,
+      );
+    expect(card(3)).toContain("3 left");
+    expect(card(null)).toBe("");
+    expect(card(null, "edit")).toContain("data-sample");
   });
 
   it("productGallery without images draws placeholder", () => {
@@ -102,6 +159,26 @@ describe("product elements", () => {
     expect(draw(node("productStock"), soldOut)).toContain("Out of stock");
     expect(draw(node("productStock"), { ...product, quantity: 3 })).toContain("Only 3 left");
     expect(draw(node("productStock"), { ...product, quantity: 24 })).toContain("In stock");
+  });
+
+  it("productStock shows the seller low-stock alert instead of the pill (F-34)", () => {
+    const alert = { show: true, threshold: 3 };
+    const html = draw(node("productStock"), { ...product, quantity: 2, lowStockAlert: alert });
+    expect(html).toContain("Only 2 left, order before it");
+    expect(html).not.toContain("Only 2 left<");
+    expect(html).toContain(`data-stock="alert"`);
+    // Above the threshold, sold out, or off: the usual pill.
+    expect(draw(node("productStock"), { ...product, quantity: 4, lowStockAlert: alert })).toContain("Only 4 left");
+    const soldOut = { ...product, quantity: 0, variants: product.variants.map((v) => ({ ...v, quantity: 0 })), lowStockAlert: alert };
+    expect(draw(node("productStock"), soldOut)).toContain("Out of stock");
+    expect(draw(node("productStock"), { ...product, quantity: 2, lowStockAlert: { show: false, threshold: 3 } })).not.toContain("alert");
+  });
+
+  it("productCard shows the card tag only when the host set stockLeft", () => {
+    const card = (stockLeft: number | null) =>
+      renderToStaticMarkup(<ProductCardView product={{ id: "p", title: "Mug", href: "/products/mug", image: null, price: 100, inStock: true, stockLeft }} ctx={ctx()} />);
+    expect(card(2)).toContain("2 left");
+    expect(card(null)).not.toContain("left");
   });
 
   it("productBuyBox edit mode buttons are inert (no href, disabled)", () => {

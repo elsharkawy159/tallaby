@@ -10,6 +10,7 @@ import {
   sql,
   storeIntegrations,
 } from "@workspace/db";
+import { setStockContext } from "@workspace/db/inventory";
 import { decryptCredentials, encryptCredentials } from "./crypto.server";
 import { INTEGRATIONS } from "./registry";
 import {
@@ -286,6 +287,8 @@ async function insertDraftProduct(
 ): Promise<string | null> {
   const slug = await freeSlug(q, mapped.slugBase, mapped.shopifyId);
   return q.transaction(async (tx) => {
+    // Stock history (0125): the initial stock is recorded as an import.
+    await setStockContext(tx, { reason: "import", actorId: sellerId });
     const [created] = await tx
       .insert(products)
       .values({

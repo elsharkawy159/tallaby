@@ -106,6 +106,7 @@ export type ElementType =
   | "productGallery"
   | "productPrice"
   | "productStock"
+  | "productStockBadge"
   | "productRating"
   | "productVariants"
   | "productBuyBox"
@@ -1016,6 +1017,18 @@ const DEFINITIONS: readonly ElementDefinition[] = [
     group: "product",
     label: L("حالة المخزون", "Stock status"),
     keywords: ["stock", "inventory", "availability", "مخزون", "متوفر"],
+    container: false,
+    defaultProps: {},
+    fields: [],
+  },
+  // The seller's low-stock alert as its own element (ROADMAP.md F-34d), to move and style. It shows
+  // only when the product's "Show a low-stock alert" box is ticked and its real stock is at or below
+  // the threshold; while the page has one, the stock element no longer shows the alert itself.
+  {
+    type: "productStockBadge",
+    group: "product",
+    label: L("تنبيه قرب نفاد الكمية", "Low-stock badge"),
+    keywords: ["stock", "low stock", "badge", "urgency", "left", "scarcity", "مخزون", "قرب يخلص", "فاضل", "باقي", "تنبيه", "شارة"],
     container: false,
     defaultProps: {},
     fields: [],

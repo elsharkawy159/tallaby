@@ -386,6 +386,7 @@ const REVEAL_SKIP = new Set([
   "productGallery",
   "productPrice",
   "productStock",
+  "productStockBadge",
   "productRating",
   "productVariants",
   "productBuyBox",
@@ -1013,6 +1014,7 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
     case "productGallery":
     case "productPrice":
     case "productStock":
+    case "productStockBadge":
     case "productRating":
     case "productVariants":
     case "productBuyBox":

@@ -1,6 +1,7 @@
 /** Palette and layer icons for elements, presets and section groups (editor only). */
 import {
   Heart,
+  Flame,
   Languages,
   SunMoon,
   UserRound,
@@ -124,6 +125,7 @@ export const ELEMENT_ICONS: Record<ElementType, LucideIcon> = {
   productGallery: Images,
   productPrice: TicketPercent,
   productStock: Boxes,
+  productStockBadge: Flame,
   productRating: Star,
   productVariants: SwatchBook,
   productBuyBox: ShoppingCart,

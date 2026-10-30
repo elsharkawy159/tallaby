@@ -4,6 +4,7 @@ import { useCurrencyLabel } from "@/lib/currency-label.client";
 import { ShoppingBag } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { formatPricePlain } from "@workspace/lib";
+import { checkMinOrder, itemsSubtotalPiastres, type StoreMinOrder } from "@workspace/lib/stores/min-order";
 import { Button } from "@workspace/ui/components/button";
 import { Skeleton } from "@workspace/ui/components/skeleton";
 import { Link } from "@/i18n/navigation";
@@ -19,9 +20,12 @@ import { STORE_SOLID_BUTTON } from "./store-buttons.lib";
  */
 export function StorefrontCart({
   storeName,
+  minOrder = null,
   onNavigate,
 }: {
   storeName: string;
+  /** The store's minimum order (F-13b); below it checkout is disabled with "add X more". */
+  minOrder?: StoreMinOrder | null;
   /** Called when a link inside is followed, so a sheet can close itself. */
   onNavigate?: () => void;
 }) {
@@ -32,6 +36,8 @@ export function StorefrontCart({
   const items = cartItems.filter((item) => !item.savedForLater);
   const subtotal = items.reduce((sum, i) => sum + Number(i.price) * i.quantity, 0);
   const count = items.reduce((sum, i) => sum + i.quantity, 0);
+  // The store's minimum order (F-13b): items subtotal before shipping and coupons, in piastres.
+  const minOrderCheck = checkMinOrder(minOrder, itemsSubtotalPiastres(items));
 
   if (loading) {
     return (
@@ -129,11 +135,25 @@ export function StorefrontCart({
           </span>
         </div>
         <p className="text-xs text-(--sf-muted)">{t("shippingNote")}</p>
-        <Button asChild className={cn("h-12 w-full rounded-full text-base font-semibold", STORE_SOLID_BUTTON)}>
-          <Link href="/cart/checkout" onClick={onNavigate}>
-            {t("checkout")}
-          </Link>
-        </Button>
+        {minOrderCheck.ok ? (
+          <Button asChild className={cn("h-12 w-full rounded-full text-base font-semibold", STORE_SOLID_BUTTON)}>
+            <Link href="/cart/checkout" onClick={onNavigate}>
+              {t("checkout")}
+            </Link>
+          </Button>
+        ) : (
+          <>
+            <p role="status" className="text-sm font-medium text-orange-600">
+              {t("minOrderAddMore", {
+                amount: formatPricePlain(minOrderCheck.shortPiastres / 100, locale, currencyLabel),
+                minimum: formatPricePlain(minOrderCheck.minimumPiastres / 100, locale, currencyLabel),
+              })}
+            </p>
+            <Button type="button" disabled className={cn("h-12 w-full rounded-full text-base font-semibold", STORE_SOLID_BUTTON)}>
+              {t("checkout")}
+            </Button>
+          </>
+        )}
       </div>
     </div>
   );

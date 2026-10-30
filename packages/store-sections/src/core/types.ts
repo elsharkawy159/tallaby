@@ -13,6 +13,7 @@ import type { ComponentType, ReactNode } from "react";
 import type { z } from "zod";
 import type { AnimationDefault } from "@workspace/motion/presets";
 import type { SectionInstance, SiteLocale } from "../config/schema";
+import type { LowStockSetting } from "./low-stock";
 import type { SlotDefinition } from "./slots";
 
 export type Localized = { ar: string; en: string };
@@ -186,6 +187,11 @@ export type ProductSummary = {
   compareAtPrice?: number | null;
   rating?: number | null;
   inStock?: boolean;
+  /**
+   * Real units left, set only when the seller ticked "Show a low-stock alert"
+   * (0122, F-34) and the stock is at or below their threshold: the card shows "N left".
+   */
+  stockLeft?: number | null;
   /** The seller marked it trending / seasonal (product form › Visibility): a badge on its card and page. */
   trending?: boolean;
   seasonal?: boolean;
@@ -224,6 +230,8 @@ export type ProductDetail = ProductSummary & {
   directCheckout: boolean;
   /** The seller ticked "show live views" (0111): the storefront draws `renderLiveViews` above the buy box. */
   liveViews?: boolean;
+  /** The seller's "Show a low-stock alert" (0122, F-34): the stock element turns into the urgency badge at or below the threshold. */
+  lowStockAlert?: LowStockSetting | null;
   variants: ProductVariantDetail[];
   reviewCount: number;
   brand: string | null;
@@ -385,6 +393,11 @@ export interface RenderContext {
   revealPreset?: AnimationDefault;
   /** The product a product page shows; seeds the `product` scope of its element trees. */
   product?: ProductDetail;
+  /**
+   * The product page holds a `productStockBadge` element (F-34d, `pageHasStockBadge`): the
+   * low-stock alert is drawn there only, and the stock element no longer shows it itself.
+   */
+  stockBadgeOnPage?: boolean;
   /** Store industry; picks the photos for library photo slots (`designs/photo-slots.ts`). Editor only. */
   industry?: string;
   locale: SiteLocale;
@@ -451,6 +464,8 @@ export interface RenderContext {
   renderProductGallery?: ProductElementHook;
   renderProductPrice?: ProductElementHook;
   renderProductStock?: ProductElementHook;
+  /** The low-stock badge element (F-34d), following the selected variant; draws nothing when no alert applies. */
+  renderProductStockBadge?: ProductElementHook;
   renderProductVariants?: ProductElementHook;
   renderProductBuyBox?: ProductElementHook;
   renderProductReviews?: ProductElementHook;

@@ -19,7 +19,8 @@ type Params = Partial<MetaContentParams> & Record<string, unknown>
 
 type QueuedEvent = { name: MetaStandardEvent; params: Params; options?: TrackMetaEventOptions }
 
-type Bus = { ready: boolean; queue: QueuedEvent[] }
+/** `metaBlocked`: Meta events this store does not send (F-30), set before `ready`. */
+type Bus = { ready: boolean; queue: QueuedEvent[]; metaBlocked?: Set<string> }
 
 declare global {
   interface Window {
@@ -53,7 +54,9 @@ export function toGa4Ecommerce (params: Params, options?: TrackMetaEventOptions)
 }
 
 function dispatch ({ name, params, options }: QueuedEvent) {
-  trackMetaEvent(name, params, options)
+  // The store's Meta event toggles and Purchase-on-delivery (F-30) apply to
+  // its Meta Pixel only; GA4 / GTM keep their events.
+  if (!bus().metaBlocked?.has(name)) trackMetaEvent(name, params, options)
   const ga4Name = GA4_EVENT[name]
   if (!ga4Name) return
   const ecommerce = toGa4Ecommerce(params, options)
@@ -81,6 +84,15 @@ export function trackCommerceEvent (
   const events = bus()
   if (events.ready) dispatch({ name, params, options })
   else events.queue.push({ name, params, options })
+}
+
+/**
+ * Called by the store's tracker before `markStoreTrackingReady`: the Meta
+ * events this store's Pixel must not send (switched off in the dashboard, or
+ * Purchase when it is sent on delivery). Server-computed; never client input.
+ */
+export function setStoreMetaBlockedEvents (blocked: readonly string[] | undefined): void {
+  bus().metaBlocked = new Set(blocked ?? [])
 }
 
 /** Called by the store's tracker once its scripts are in place. */

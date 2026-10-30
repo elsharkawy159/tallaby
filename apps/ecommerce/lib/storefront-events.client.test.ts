@@ -50,6 +50,26 @@ describe("trackCommerceEvent (P7-04)", () => {
     expect(gtag).toHaveBeenLastCalledWith("event", "view_item", { currency: "EGP", value: 5, items: [{ item_id: "p3" }] });
   });
 
+  it("drops the store's blocked Meta events (F-30) but keeps GA4", async () => {
+    const win = fakeWindow("faster.tallaby.com");
+    const { markStoreTrackingReady, setStoreMetaBlockedEvents, trackCommerceEvent } = await import(
+      "./storefront-events.client"
+    );
+    trackCommerceEvent("Purchase", { content_ids: ["p1"], value: 10, currency: "EGP" }, { eventId: "order-2" });
+    const fbq = vi.fn();
+    const gtag = vi.fn();
+    Object.assign(win, { fbq, gtag });
+    setStoreMetaBlockedEvents(["Purchase", "Lead"]);
+    markStoreTrackingReady();
+    trackCommerceEvent("Lead", { value: 10, currency: "EGP" }, { eventId: "lead-cart" });
+    trackCommerceEvent("AddToCart", { content_ids: ["p1"], value: 10, currency: "EGP" });
+
+    expect(fbq).toHaveBeenCalledTimes(1);
+    expect(fbq).toHaveBeenCalledWith("track", "AddToCart", { content_ids: ["p1"], value: 10, currency: "EGP" });
+    expect(gtag).toHaveBeenCalledWith("event", "purchase", expect.objectContaining({ transaction_id: "order-2" }));
+    expect(gtag).not.toHaveBeenCalledWith("event", "generate_lead", expect.anything());
+  });
+
   it("does nothing on the server", async () => {
     vi.stubGlobal("window", undefined);
     const { trackCommerceEvent } = await import("./storefront-events.client");

@@ -64,6 +64,7 @@
     "storeSettings": "Store settings",
     "general": "General",
     "paymentMethods": "Payment methods",
+    "checkoutForm": "Checkout & thank you",
     "myStores": "My stores",
     "planUsage": "Plan & usage",
     "soon": "Soon",
@@ -77,14 +78,22 @@
     "wallet": "Wallet",
     "walletBalance": "Balance & top-ups",
     "campaigns": "Marketing campaigns",
+    "subscribers": "Newsletter subscribers",
+    "emailCampaigns": "Email campaigns",
+    "campaignTracking": "Campaign tracking",
     "accountHelp": "Account & help",
     "sellerCategories": "Categories",
     "sellerBrands": "Brands",
     "earn": "Earn with us",
     "orderProtection": "Order protection",
     "storeApp": "Store app",
+    "salesPopup": "Sales pop-up",
     "missedOrders": "Not completed",
-    "customers": "Customers"
+    "customers": "Customers",
+    "scanReturns": "Scan returns",
+    "productTrash": "Trash",
+    "inventory": "Inventory",
+    "catalogShare": "Shareable catalog"
   },
   "common": {
     "loading": "Loading...",
@@ -167,9 +176,145 @@
     "expiresValue": "Expires: {date}",
     "usage": "Usage"
   },
+  "campaignReport": {
+    "currency": "EGP",
+    "tabs": {
+      "label": "Report sections",
+      "overview": "Overview",
+      "campaigns": "Campaigns"
+    },
+    "builder": {
+      "title": "Make a campaign link",
+      "description": "Put this link in your ad or send it to an influencer, and see where every order came from.",
+      "preset": "Platform",
+      "presets": {
+        "facebook": "Facebook",
+        "instagram": "Instagram",
+        "tiktok": "TikTok",
+        "whatsapp": "WhatsApp",
+        "influencer": "Influencer"
+      },
+      "page": "Link opens",
+      "storeHome": "Store home page",
+      "source": "Source (utm_source)",
+      "influencerName": "Influencer name",
+      "influencerPlaceholder": "e.g. sara_style",
+      "medium": "Medium (utm_medium)",
+      "campaign": "Campaign name (utm_campaign)",
+      "campaignPlaceholder": "e.g. eid-sale",
+      "content": "Ad name (optional)",
+      "contentPlaceholder": "e.g. video-1",
+      "result": "Campaign link",
+      "copy": "Copy link",
+      "copied": "Link copied",
+      "errors": {
+        "missingSource": "Enter a source first",
+        "missingInfluencer": "Enter the influencer's name first",
+        "missingCampaign": "Enter a campaign name to get the link",
+        "invalidUrl": "This link isn't valid"
+      }
+    },
+    "kpi": {
+      "orders": "Orders from campaigns",
+      "delivered": "Delivered",
+      "revenue": "Campaign sales",
+      "trackedShare": "Tracked orders"
+    },
+    "table": {
+      "title": "Orders by source and campaign",
+      "description": "Store website orders only, by where the customer first came from.",
+      "source": "Source / campaign",
+      "orders": "Orders",
+      "delivered": "Delivered",
+      "deliveryRate": "Delivery rate",
+      "revenue": "Sales",
+      "noCampaign": "No campaign name",
+      "emptyTitle": "No orders in this period",
+      "emptyDescription": "Make a campaign link above and put it in your ad; orders will show up here.",
+      "note": "We keep where the customer first came from for 30 days on the same device. Orders from before this feature or direct visits show as \"Direct\". Sales leave out cancelled and returned orders."
+    },
+    "sources": {
+      "facebook": "Facebook",
+      "instagram": "Instagram",
+      "tiktok": "TikTok",
+      "whatsapp": "WhatsApp",
+      "google": "Google",
+      "youtube": "YouTube",
+      "snapchat": "Snapchat",
+      "x": "X (Twitter)",
+      "telegram": "Telegram",
+      "bing": "Bing",
+      "direct": "Direct / not tracked"
+    }
+  },
   "reports": {
     "title": "Reports & Analytics",
-    "subtitle": "Comprehensive business insights and performance metrics",
+    "subtitle": "How your store performs: from visit to delivery, sales by source, refusals by governorate, and best and worst products.",
+    "store": "Store",
+    "period": "Period",
+    "days": "Last {count} days",
+    "currency": "EGP",
+    "noStoreTitle": "You don't have a store yet",
+    "noStoreDescription": "Reports are shown per store. Create your first store and start taking orders.",
+    "noStoreCta": "My stores",
+    "kpi": {
+      "revenue": "Store sales",
+      "orders": "Orders",
+      "aov": "Average order value",
+      "deliveryRate": "Delivery rate",
+      "refusalRate": "Refusal rate",
+      "cancelRate": "Cancel rate"
+    },
+    "funnel": {
+      "title": "Conversion funnel",
+      "description": "Visits → checkouts started → orders → delivered",
+      "viewAnalytics": "Store views",
+      "views": "Visits",
+      "checkouts": "Checkouts started",
+      "orders": "Orders",
+      "delivered": "Delivered",
+      "ofPrevious": "{percent} of the step before",
+      "viewsNote": "Visits come from Google Analytics and refresh every hour. Checkouts started = orders + checkouts that were not completed.",
+      "noViews": "Visits are not available yet, so the funnel starts at checkouts.",
+      "viewsUnavailable": "We couldn't load visits right now. Try again in a bit.",
+      "leadsRetention": "Checkouts that were not completed are kept for {days} days only."
+    },
+    "sources": {
+      "title": "Sales by source",
+      "description": "Your sales in this period by where the order was placed",
+      "store": "This store's website",
+      "otherStores": "Your other stores",
+      "marketplace": "Tallaby marketplace",
+      "manual": "Manual orders",
+      "orders": "{count, plural, =0 {No orders} one {# order} other {# orders}}",
+      "currency": "EGP"
+    },
+    "governorates": {
+      "title": "Refusals and cancellations by governorate",
+      "description": "The store's orders in this period and how they ended",
+      "governorate": "Governorate",
+      "orders": "Orders",
+      "delivered": "Delivered",
+      "refused": "Refused",
+      "cancelled": "Cancelled",
+      "open": "In progress",
+      "refusalRate": "Refusal rate",
+      "cancelRate": "Cancel rate",
+      "unknown": "Not set",
+      "emptyTitle": "No orders in this period",
+      "emptyDescription": "Once your store website gets orders, they show up here by governorate.",
+      "note": "Refusal rate = refused ÷ (delivered + refused). Cancel rate = cancelled ÷ all orders."
+    },
+    "products": {
+      "bestTitle": "Best sellers",
+      "bestDescription": "Top products by sales on the store website",
+      "bestEmpty": "No sales in this period",
+      "worstTitle": "Weakest sellers",
+      "worstDescription": "Products the store shows that sell the least",
+      "worstEmpty": "No other products to show here",
+      "emptyDescription": "Try a longer period or add products to the store.",
+      "units": "{count, plural, =0 {Not sold} one {# sold} other {# sold}}"
+    },
     "exportReport": "Export Report",
     "last7days": "Last 7 Days",
     "last30days": "Last 30 Days",
@@ -887,6 +1032,15 @@
     "last": "Last"
   },
   "products": {
+    "productViews": {
+      "column": "Views ({days} days)",
+      "period": "last {days} days",
+      "views": "{count, plural, =1 {# view} other {# views}}",
+      "conversion": "{percent}% → orders",
+      "orders": "{count, plural, =1 {# order} other {# orders}}",
+      "title": "Last {days} days on your store website",
+      "hint": "Product page views on your store websites, and how many of them became orders (not cancelled)."
+    },
     "list": {
       "copied": "Copied!",
       "copy": "Copy",
@@ -910,10 +1064,10 @@
       "delete": "Delete",
       "addNew": "Add new product",
       "deleteTitle": "Delete \"{title}\"?",
-      "deleteDescription": "The product is removed from your stores and the marketplace. This can't be undone.",
-      "deleted": "\"{title}\" deleted",
+      "deleteDescription": "It disappears from your stores and the marketplace and stays in Trash for 30 days, where you can restore it.",
+      "deleted": "\"{title}\" moved to Trash",
       "deleteFailed": "Couldn't delete the product. Try again.",
-      "bulkDeleted": "{count, plural, one {# product deleted} other {# products deleted}}",
+      "bulkDeleted": "{count, plural, one {# product moved to Trash} other {# products moved to Trash}}",
       "bulkDeleteFailed": "{count, plural, one {# product couldn't be deleted} other {# products couldn't be deleted}}",
       "discount": "Discount",
       "tabs": {
@@ -948,6 +1102,8 @@
       "bulkPublish": "Publish",
       "bulkDraft": "Move to draft",
       "clearSelection": "Clear selection",
+      "selectAllFiltered": "Select all {count}",
+      "bulkEdit": "Edit selected",
       "bulkPublished": "{count, plural, one {# product published} other {# products published}}",
       "bulkDrafted": "{count, plural, one {# product moved to draft} other {# products moved to draft}}",
       "bulkPublishFailed": "{count, plural, one {# product couldn't be updated} other {# products couldn't be updated}}",
@@ -962,7 +1118,11 @@
       "nextPage": "Next page",
       "pageN": "Page {page}",
       "moreActions": "More actions",
-      "noImage": "No image"
+      "noImage": "No image",
+      "undo": "Undo",
+      "restored": "{count, plural, one {# product restored} other {# products restored}}",
+      "restoreFailed": "Couldn't restore. Open Trash and try again.",
+      "shareCatalog": "Share catalog"
     },
     "columnsDialog": {
       "trigger": "Manage Columns",
@@ -1011,7 +1171,148 @@
       "rowError": "Row {row}: {message}",
       "more": "+{count} more…",
       "cancel": "Cancel",
-      "insert": "Insert"
+      "insert": "Insert",
+      "updateFromExcel": "Update products from Excel"
+    },
+    "bulkEdit": {
+      "title": "{count, plural, one {Edit # product} other {Edit # products}}",
+      "description": "Choose one change, check the preview, then apply. You can undo it for 10 minutes.",
+      "whatToChange": "What to change",
+      "kind": {
+        "price": "Price",
+        "discount": "Discount",
+        "stock": "Stock",
+        "status": "Published or draft"
+      },
+      "direction": "Raise or lower",
+      "increase": "Raise",
+      "decrease": "Lower",
+      "by": "By",
+      "byPercent": "Percent (%)",
+      "byAmount": "Amount (EGP)",
+      "discountType": "Discount",
+      "discountPercent": "Percent off",
+      "discountAmount": "Amount off (EGP)",
+      "discountNone": "Remove the discount",
+      "endsAt": "Discount ends on (optional)",
+      "stockMode": "Stock",
+      "stockSet": "Set stock to",
+      "stockAdd": "Add to stock",
+      "stockSubtract": "Take from stock",
+      "publish": "Publish",
+      "unpublish": "Move to drafts",
+      "value": "Value",
+      "unitPounds": "EGP",
+      "unitPieces": "pcs",
+      "roundWhole": "Round new prices to whole pounds",
+      "hint": {
+        "price": "The regular and sale prices (and every variant's own price) move together, so discounts stay. A product whose price would reach 0 is skipped.",
+        "discount": "The discount is taken from each product's regular price, variants included.",
+        "stock": "Applies to the product and to each of its variants.",
+        "status": "Same rules as the Publish switch: a product needs an image to go live, and a product taken down by Tallaby stays as it is."
+      },
+      "preview": "Preview",
+      "back": "Back",
+      "cancel": "Cancel",
+      "apply": "{count, plural, one {Apply to # product} other {Apply to # products}}",
+      "previewSummary": "{count, plural, =0 {Nothing will change} one {# product will change} other {# products will change}}",
+      "previewSkipped": "{count, plural, one {# skipped} other {# skipped}}",
+      "previewProduct": "Product",
+      "previewBefore": "Now",
+      "previewAfter": "After",
+      "untitled": "Untitled product",
+      "noChange": "No change",
+      "skip": {
+        "rejected": "Taken down by Tallaby",
+        "needsImage": "Needs an image to publish",
+        "cannotPublish": "Your account can't publish right now",
+        "priceTooLow": "Price would be 0 or less",
+        "discountTooHigh": "Discount is more than the price",
+        "noPrice": "Has no price",
+        "notFound": "Not found or in Trash"
+      },
+      "statusValue": {
+        "active": "Published",
+        "draft": "Draft",
+        "pending": "Pending",
+        "rejected": "Taken down"
+      },
+      "tooMany": "You can edit up to {max} products at once. Select fewer products.",
+      "applied": "{count, plural, one {# product updated} other {# products updated}}",
+      "appliedSkipped": "{count, plural, one {# product was skipped} other {# products were skipped}}",
+      "nothingChanged": "Nothing changed",
+      "undoBar": "{count, plural, one {# product edited.} other {# products edited.}} Undo is available for",
+      "undo": "Undo",
+      "dismiss": "Dismiss",
+      "undone": "{count, plural, one {# product put back} other {# products put back}}",
+      "undoConflicts": "{count, plural, one {# product was changed again since, so it was left as it is} other {# products were changed again since, so they were left as they are}}",
+      "undoExpired": "Undo is no longer available",
+      "errorReadOnly": "Your account is read-only right now",
+      "errorInvalid": "Check the values and try again",
+      "errorGeneric": "Something went wrong. Try again."
+    },
+    "inventory": {
+      "pageTitle": "Inventory",
+      "subtitle": "See what's running low, restock in one step, and check every stock change.",
+      "back": "Products",
+      "lowStockTitle": "Low or out of stock ({count})",
+      "emptyTitle": "Nothing is running low",
+      "emptyDescription": "Products at or below their low-stock number show up here.",
+      "untitled": "Untitled product",
+      "outOfStock": "Out of stock",
+      "inStock": "{count, plural, one {1 left} other {{stock} left}}",
+      "threshold": "Alert at {threshold}",
+      "waiting": "{count, plural, one {# customer waiting} other {{n} customers waiting}}",
+      "waitingHint": "Customers who asked for an email when this is back. They get it automatically once you add stock.",
+      "history": "History",
+      "historyFor": "Stock history",
+      "editProduct": "Edit product",
+      "closeHistory": "Close history",
+      "untracked": "This product doesn't track stock.",
+      "noHistory": "No stock changes recorded yet. Changes are recorded from now on.",
+      "addPlaceholder": "+ qty",
+      "addLabel": "Units to add to {title}",
+      "restock": "Add",
+      "restocked": "{title}: stock is now {stock}",
+      "restockFailed": "Couldn't update the stock. Try again.",
+      "notFound": "This product was not found. It may have been deleted.",
+      "readOnly": "Your account is read-only right now.",
+      "order": "Order #{number}",
+      "orderNoNumber": "Order",
+      "byYou": "by you",
+      "after": "Stock: {stock}",
+      "reasons": {
+        "order": "Sold",
+        "cancel": "Order cancelled",
+        "return": "Returned",
+        "edit": "Edited",
+        "bulk_edit": "Bulk edit",
+        "import": "Imported",
+        "other": "Other change"
+      }
+    },
+    "trash": {
+      "pageTitle": "Trash",
+      "subtitle": "Deleted products wait here for 30 days. Restore one to bring it back as it was, or delete it for good.",
+      "back": "Products",
+      "emptyTitle": "Trash is empty",
+      "emptyDescription": "Products you delete stay here for 30 days before they're gone for good.",
+      "selectAll": "Select all ({count})",
+      "select": "Select {title}",
+      "untitled": "Untitled product",
+      "deletedOn": "Deleted {date}",
+      "daysLeft": "{count, plural, =0 {Deleted for good today} one {# day left} other {{days} days left}}",
+      "restore": "Restore",
+      "restoreCount": "Restore ({count})",
+      "deleteForever": "Delete forever",
+      "deleteCount": "Delete forever ({count})",
+      "confirmTitle": "{count, plural, one {Delete this product forever?} other {Delete # products forever?}}",
+      "confirmDescription": "It can't be restored after this. Orders that already have it keep their details.",
+      "cancel": "Go back",
+      "restored": "{count, plural, one {# product restored} other {# products restored}}",
+      "restoreFailed": "Couldn't restore. Try again.",
+      "deleted": "{count, plural, one {# product deleted forever} other {# products deleted forever}}",
+      "deleteFailed": "Couldn't delete. Try again."
     }
   },
   "inputs": {
@@ -1490,7 +1791,7 @@
         "restoreAuto": "Restore automatic"
       },
       "socialProof": {
-        "title": "Reviews and live views",
+        "title": "Reviews, live views and stock alert",
         "description": "Add reviews you really received, and show how many people are viewing the product.",
         "summaryNone": "Optional",
         "summaryReviews": "{count, plural, one {# review} other {# reviews}}",
@@ -1508,7 +1809,13 @@
         "comment": "Review",
         "commentPlaceholder": "What the customer said",
         "optional": "Optional",
-        "saveFailed": "The product was saved, but its reviews or live views setting were not. Open the product and save again."
+        "saveFailed": "The product was saved, but its reviews or live views setting were not. Open the product and save again.",
+        "summaryLowStock": "Low-stock alert on",
+        "lowStock": "Show a low-stock alert",
+        "lowStockDescription": "When few are left, your store shows \"Only 2 left, order before it's gone\" under the price and \"2 left\" on the product card. It always uses your real stock. Off by default.",
+        "lowStockThreshold": "Show when stock is at or below",
+        "lowStockThresholdHint": "{count, plural, one {Shows at # piece left.} other {Shows at # pieces or fewer.}} Leave it empty for 5.",
+        "lowStockThresholdInvalid": "Enter a whole number from {min} to {max}."
       }
     },
     "import": {
@@ -2157,7 +2464,13 @@
       "sku": "SKU {sku}",
       "tallaby": "Tallaby",
       "language": "Language",
-      "noAddress": "No shipping address"
+      "noAddress": "No shipping address",
+      "picking": "Picking list",
+      "unitsCount": "{count, plural, one {# piece} other {# pieces}}",
+      "printedAt": "Printed {date}",
+      "picked": "Picked",
+      "inOrders": "Orders",
+      "includedOrders": "Orders on this list"
     },
     "printActions": {
       "print": "Print",
@@ -2166,7 +2479,8 @@
       "slip": "Packing slip (A6)",
       "invoices": "Invoices (A4)",
       "slips": "Packing slips (A6)",
-      "capped": "The first {max} orders in this list"
+      "capped": "The first {max} orders in this list",
+      "picking": "Picking list (A4)"
     },
     "export": {
       "button": "Export ({count})",
@@ -2193,6 +2507,33 @@
         "collect": "To collect (EGP)",
         "tracking": "Bosta tracking number",
         "notes": "Notes"
+      }
+    },
+    "bulk": {
+      "selectAll": "Select all ({count})",
+      "selectOrder": "Select order #{number}",
+      "selected": "{count, plural, one {# order selected} other {# orders selected}}",
+      "clear": "Clear",
+      "back": "Go back",
+      "actions": {
+        "confirm": "Confirm ({count})",
+        "ship": "Out for delivery ({count})",
+        "deliver": "Delivered ({count})",
+        "cancel": "Cancel ({count})"
+      },
+      "progress": "Updating {done} of {total}…",
+      "done": "{done, plural, one {# order} other {# orders}} updated.",
+      "partial": "{done} updated, {skipped} skipped: their status changed or they can't be changed here.",
+      "confirm": {
+        "confirmTitle": "Confirm {count, plural, one {# order} other {# orders}}?",
+        "confirmDescription": "Do this after you have checked them with the customers.",
+        "shipTitle": "Mark {count, plural, one {# order} other {# orders}} out for delivery?",
+        "shipDescription": "Do this when the parcels have left with the courier.",
+        "deliverTitle": "Mark {count, plural, one {# order} other {# orders}} delivered?",
+        "deliverDescription": "Do this once the customers have their orders. It closes the orders and can't be undone.",
+        "cancelTitle": "Cancel {count, plural, one {# order} other {# orders}}?",
+        "cancelDescription": "The items go back into stock and each customer gets an email. This can't be undone.",
+        "skipNote": "{count, plural, one {# selected order doesn't} other {# selected orders don't}} fit this step and will stay as they are."
       }
     }
   },
@@ -3438,6 +3779,46 @@
       "feesNote": "Customers still pay the shipping prices of your zones below. What Bosta charges you is between you and Bosta."
     }
   },
+  "productFeeds": {
+    "title": "Product feeds",
+    "count": "{count} catalogs",
+    "description": "Show your products in Facebook and Instagram shops, Google Shopping and TikTok ads. Each platform reads your products from this address and updates them on its own every day.",
+    "notPublished": "The feed works once your website is published. Until then the platforms can't read it.",
+    "feedUrl": "Feed address",
+    "feedUrlEnglish": "English feed address",
+    "copy": "Copy",
+    "copiedShort": "Copied",
+    "copied": "Feed address copied",
+    "copyFailed": "Couldn't copy. Select the address and copy it yourself.",
+    "howTo": "How to set it up",
+    "meta": {
+      "name": "Meta catalog",
+      "vendor": "Facebook & Instagram",
+      "description": "Your products in Facebook and Instagram shops and in catalog ads.",
+      "step1": "Open <b>Meta Commerce Manager</b> and pick your catalog, or create one",
+      "step2": "Go to <b>Catalog › Data sources</b>, then <b>Add items › Data feed</b>",
+      "step3": "Choose <b>Scheduled feed</b> and paste the feed address",
+      "step4": "Set it to update <b>daily</b> and save. Meta reads your products in a few minutes"
+    },
+    "google": {
+      "name": "Google Merchant Center",
+      "vendor": "Google Shopping",
+      "description": "Your products in Google Shopping, free listings and Shopping ads.",
+      "step1": "Open <b>Google Merchant Center</b> and add your store address as your website",
+      "step2": "Go to <b>Products › Add products</b>, then <b>Add products from a file</b>",
+      "step3": "Choose <b>Add a file link</b> and paste the feed address",
+      "step4": "Set it to fetch <b>daily</b> and save. Google checks your products within a day"
+    },
+    "tiktok": {
+      "name": "TikTok catalog",
+      "vendor": "TikTok",
+      "description": "Your products in TikTok catalog and video shopping ads.",
+      "step1": "Open <b>TikTok Ads Manager</b>, then <b>Assets › Catalogs</b>",
+      "step2": "Create a catalog, or open yours, and choose <b>Add products</b>",
+      "step3": "Choose <b>Data feed</b> and paste the feed address",
+      "step4": "Set it to update <b>daily</b> and save. TikTok reviews your products"
+    }
+  },
   "storeApps": {
     "title": "Apps",
     "description": "Connect tracking, export and import tools to this store. Tracking tools load only on this store's website.",
@@ -3491,6 +3872,41 @@
       "consentNote": "A server Purchase is sent only for orders placed on this store's website, after the shopper accepts tracking there. It uses the order id as the event id, so Meta counts it once with the Pixel's Purchase.",
       "test": "Test connection",
       "testOk": "Connected. Meta accepted the token for this Pixel."
+    },
+    "metaEvents": {
+      "title": "Meta events",
+      "hint": "Choose which events the Pixel sends to Meta from your store.",
+      "events": {
+        "ViewContent": {
+          "name": "View product (ViewContent)",
+          "hint": "When a shopper opens a product page."
+        },
+        "AddToCart": {
+          "name": "Add to cart (AddToCart)",
+          "hint": "When a shopper adds a product to the cart."
+        },
+        "InitiateCheckout": {
+          "name": "Start checkout (InitiateCheckout)",
+          "hint": "When a shopper opens the checkout page."
+        },
+        "Purchase": {
+          "name": "Purchase",
+          "hint": "A completed order. Choose below when it is sent."
+        },
+        "Lead": {
+          "name": "Lead",
+          "hint": "When a shopper enters an address at checkout, even if they don't finish the order."
+        }
+      },
+      "purchaseOn": {
+        "label": "Send Purchase",
+        "order": "At order",
+        "orderHint": "As today: from the thank-you page and from the server when the order is placed.",
+        "delivered": "When delivered",
+        "deliveredHint": "One server event when the order is delivered. Refused or cancelled orders never count as purchases, so your ads learn from real buyers.",
+        "needsCapi": "Sending on delivery needs the Meta Conversions API. Until you connect it, Purchase is sent at order."
+      },
+      "save": "Save events"
     },
     "shopify": {
       "setupHint": "In your Shopify admin, create a custom app (Settings › Apps and sales channels › Develop apps), give it the read_products and read_inventory Admin API scopes, install it, then paste its Admin API access token here.",
@@ -4503,6 +4919,30 @@
       }
     }
   },
+  "categoryOrder": {
+    "open": "Arrange products",
+    "title": "Arrange products in {name}",
+    "description": "Drag products into the order your store's category page shows them. Products you don't move follow, newest first.",
+    "loading": "Loading products…",
+    "empty": "No products in this category yet.",
+    "truncated": "Only the first {max} products are shown here; the rest follow, newest first.",
+    "dragHandle": "Drag {name}",
+    "moveTop": "Move {name} to the top",
+    "untitled": "Untitled product",
+    "draft": "Hidden",
+    "unplaced": "Not placed yet",
+    "save": "Save order",
+    "saved": "Order saved. Your store shows it now.",
+    "reset": "Reset to newest first",
+    "resetDone": "Order reset to newest first.",
+    "cancel": "Cancel",
+    "errors": {
+      "invalidInput": "This order can't be saved. Reload and try again.",
+      "notFound": "This category or one of its products was not found. Reload and try again.",
+      "readOnly": "Your account is read-only right now.",
+      "generic": "Something went wrong. Try again."
+    }
+  },
   "categoriesBrands": {
     "categories": {
       "title": "Your categories",
@@ -4648,6 +5088,75 @@
       "welcome_gift_expired": {
         "title": "Welcome gift ended",
         "body": "Your welcome gift's 30 days are over. {amount} that was left was removed from your wallet."
+      },
+      "low_stock": {
+        "title": "Stock running low",
+        "body": "{stock, plural, =0 {{name} is out of stock.} one {Only 1 left of {name}.} other {Only # left of {name}.}}"
+      }
+    }
+  },
+  "pushAlerts": {
+    "title": "Phone alerts",
+    "description": "Get a notification on this phone or computer the moment an order arrives, even when the dashboard is closed.",
+    "bellPrompt": "Get new orders on your phone",
+    "checking": "Checking this browser…",
+    "unsupported": "This browser can't show alerts. Try Chrome, Edge, Firefox or Safari, or install the dashboard as an app.",
+    "iosHint": "On iPhone and iPad, alerts work only in the installed app (iOS 16.4 or later). In Safari tap Share, then \"Add to Home Screen\", open Tallaby from your home screen and turn alerts on there.",
+    "statusOn": "Alerts are on for this device.",
+    "statusOff": "Alerts are off for this device.",
+    "turnOn": "Turn on alerts",
+    "turnOff": "Turn off",
+    "sendTest": "Send a test alert",
+    "turnedOn": "Alerts are on for this device.",
+    "turnedOff": "Alerts are off for this device.",
+    "testSent": "Test alert sent. It should arrive in a few seconds.",
+    "blocked": "Notifications are blocked for this site. Allow them in your browser settings, then try again.",
+    "soon": "Soon",
+    "allDevices": "These switches apply to every device where you turned alerts on.",
+    "types": {
+      "newOrder": {
+        "title": "New orders",
+        "description": "Every new order, with its number and total."
+      },
+      "orderProblem": {
+        "title": "Order problems",
+        "description": "A shipment that couldn't be sent, or the carrier flagged a refused or failed delivery."
+      },
+      "lowStock": {
+        "title": "Low stock",
+        "description": "A product is about to run out."
+      }
+    },
+    "errors": {
+      "denied": "Alerts weren't allowed. You can allow them later in your browser settings.",
+      "disabled": "Phone alerts aren't available right now.",
+      "invalidInput": "This browser sent an alert setup we can't use. Try another browser.",
+      "forbidden": "Your account can't change this right now.",
+      "generic": "Something went wrong. Try again.",
+      "testFailed": "The test alert couldn't be sent. Turn alerts off and on again."
+    },
+    "messages": {
+      "order_created": {
+        "title": "New order",
+        "body": "Order #{orderNumber} is waiting to be prepared.",
+        "bodyWithAmount": "Order #{orderNumber} · {amount}. Open it to prepare it."
+      },
+      "carrier_shipment_failed": {
+        "title": "Shipment not created",
+        "body": "Order #{orderNumber} couldn't be sent to Bosta. Open it to fix it."
+      },
+      "carrier_needs_attention": {
+        "title": "Order needs your attention",
+        "body": "Bosta flagged order #{orderNumber} (refused, failed or delayed). Open it to see why."
+      },
+      "low_stock": {
+        "title": "Running low on stock",
+        "body": "One of your products is about to run out. Restock it before sales stop.",
+        "bodyWithProduct": "\"{productName}\" is about to run out. Restock it before sales stop."
+      },
+      "test": {
+        "title": "Tallaby alerts are on",
+        "body": "You'll get an alert like this for every new order."
       }
     }
   },
@@ -4994,12 +5503,135 @@
       "generic": "Something went wrong. Try again."
     }
   },
+  "storeMinOrder": {
+    "title": "Minimum order",
+    "description": "Customers on your store website can't place an order until the products in the cart add up to this amount. Shipping and coupons don't count toward it.",
+    "enabled": "Require a minimum order",
+    "amountLabel": "Minimum order (EGP)",
+    "amountPlaceholder": "e.g. 300",
+    "amountHint": "The cart and checkout tell the customer how much more to add. Marketplace orders are not affected.",
+    "save": "Save minimum order",
+    "saved": "Minimum order saved",
+    "errors": {
+      "readOnly": "This store is not active, so its settings can't be changed.",
+      "notFound": "Store not found.",
+      "rateLimited": "Too many saves. Try again in a few minutes.",
+      "invalid": "Enter the amount in EGP, like 300 or 299.50.",
+      "amountRequired": "Enter a minimum order above zero.",
+      "amountTooHigh": "The minimum order can't be more than EGP 1,000,000.",
+      "generic": "Couldn't save. Try again."
+    }
+  },
+  "storeCheckoutSettings": {
+    "readOnly": "This store is not active, so its settings can't be changed.",
+    "formTitle": "Checkout form",
+    "formDescription": "Choose which extra fields your store website's checkout shows, whether they are required, and their order.",
+    "alwaysRequired": "The customer's name, phone and delivery address (governorate, area and street) are always required. The governorate and area are picked from lists.",
+    "fields": {
+      "email": "Email",
+      "secondPhone": "Another phone number",
+      "customQuestion": "Your own question",
+      "notes": "Order notes"
+    },
+    "modes": {
+      "hidden": "Hidden",
+      "optional": "Optional",
+      "required": "Required"
+    },
+    "moveUp": "Move {field} up",
+    "moveDown": "Move {field} down",
+    "questionLabel": "Question shown to the customer",
+    "questionPlaceholder": "e.g. Which size do you want?",
+    "previewTitle": "Preview: \"Order details\" at checkout",
+    "previewEmpty": "No extra fields: the checkout shows only the address and payment.",
+    "thankYouTitle": "Thank-you page",
+    "thankYouDescription": "What the customer sees on your website right after ordering.",
+    "messageLabel": "Your message",
+    "messagePlaceholder": "e.g. Thank you for your order! We'll call you within 24 hours to confirm it.",
+    "messageHint": "Plain text, {count}/{max} characters.",
+    "whatsappLabel": "\"Confirm on WhatsApp\" button",
+    "whatsappHint": "Opens a chat with your store's WhatsApp, with the order number already written. Shown while the order is new.",
+    "whatsappMissing": "Add your store's WhatsApp or phone number in Store settings › General first.",
+    "productsLabel": "Suggest products",
+    "productsHint": "Shows up to 4 of your store's products in stock: best sellers first, then the newest.",
+    "pixelsKept": "Your pixels and analytics still record the purchase on this page as before.",
+    "save": "Save",
+    "saved": "Checkout settings saved",
+    "viewStore": "View store",
+    "errors": {
+      "readOnly": "This store is not active, so its settings can't be changed.",
+      "notFound": "Store not found.",
+      "rateLimited": "Too many saves. Try again in a few minutes.",
+      "invalid": "Some values are not valid. Check the form and try again.",
+      "questionRequired": "Write the question, or hide it.",
+      "generic": "Something went wrong. Try again."
+    }
+  },
+  "storeSalesPopup": {
+    "title": "Sales pop-up",
+    "description": "Small notices on your store website that show your latest orders, like \"Someone from Giza ordered …\". They build trust and help visitors decide.",
+    "realOnly": "Only your store's real orders from the last {days} days are shown: the product, the governorate and how long ago. Never a name or phone number. It stays hidden until you have at least {min} recent orders.",
+    "viewStore": "Open store",
+    "previewTitle": "How it looks",
+    "previewFrom": "Someone from Giza ordered",
+    "previewProduct": "Product name",
+    "previewAgo": "12 minutes ago",
+    "previewHint": "Example only. Your store shows your real orders, in your website's colors.",
+    "delayLabel": "Delay before each pop-up",
+    "seconds": "seconds",
+    "delayHint": "Between {min} and {max} seconds. Each order shows once per visit, and a visitor can close the pop-ups.",
+    "pagesLabel": "Show on",
+    "pages": {
+      "home": "Home page",
+      "catalog": "Products page",
+      "product": "Product pages",
+      "other": "Other pages (blog, custom pages)"
+    },
+    "pagesHint": "Never shown on the cart, checkout or customer account pages.",
+    "save": "Save",
+    "saved": "Sales pop-up settings saved.",
+    "readOnly": "This store is read-only.",
+    "errors": {
+      "readOnly": "This store is read-only.",
+      "notFound": "Store not found.",
+      "rateLimited": "Too many attempts. Try again shortly.",
+      "generic": "Something went wrong. Try again."
+    }
+  },
   "welcomeGift": {
     "imageAlt": "Congratulations! You got {amount} in your Tallaby wallet.",
     "title": "Congratulations! {amount} is in your wallet",
     "body": "A welcome gift for finishing your store. Use it for order fees and ads until {date}; whatever is left then expires.",
     "close": "Close",
     "goToWallet": "Go to wallet"
+  },
+  "scanReturns": {
+    "description": "Scan the barcode on a returned parcel's slip or invoice to find its order and mark it returned. You can also type the order number.",
+    "startCamera": "Open camera and scan",
+    "scanNext": "Scan another parcel",
+    "stopCamera": "Close camera",
+    "aim": "Point the camera at the barcode and hold the phone steady.",
+    "noCamera": "This browser can't read barcodes with the camera (it works in Chrome on Android). Type the order number below, or use a barcode scanner.",
+    "cameraDenied": "Camera access is blocked. Allow the camera for this site in your browser settings, or type the order number.",
+    "cameraFailed": "Couldn't open the camera. Try again, or type the order number.",
+    "manualLabel": "Order number",
+    "manualPlaceholder": "ORD…",
+    "find": "Find",
+    "looking": "Looking for the order…",
+    "customer": "Customer",
+    "phone": "Phone",
+    "total": "Your items",
+    "items": "{count, plural, one {# item} other {# items}}",
+    "openOrder": "Open the order",
+    "alreadyReturned": "This order is already marked returned.",
+    "carrierManaged": "Bosta updates this order's status itself, so it can't be marked returned here.",
+    "notReturnable": "Only an order that is out for delivery or had a failed delivery can be marked returned. Open the order to see what to do.",
+    "errors": {
+      "invalid": "That doesn't look like an order number. Try scanning again or type it.",
+      "notFound": "No order #{number} in your orders.",
+      "unauthorized": "Sign in again to look up orders.",
+      "generic": "Couldn't look up the order. Try again."
+    }
   },
   "missedOrders": {
     "title": "Not completed",
@@ -5060,7 +5692,147 @@
       "generic": "Something went wrong. Try again."
     }
   },
+  "subscribers": {
+    "title": "Newsletter subscribers",
+    "description": "Everyone who signed up through your store's newsletter forms (the sign-up sections, footer and pop-ups). Export the list, or unsubscribe people who asked to stop.",
+    "store": "Store",
+    "search": "Search by email, name or phone",
+    "filters": {
+      "label": "Status",
+      "subscribed": "Subscribed",
+      "unsubscribed": "Unsubscribed",
+      "all": "All"
+    },
+    "stats": {
+      "subscribed": "Subscribed",
+      "unsubscribed": "Unsubscribed"
+    },
+    "status": {
+      "subscribed": "Subscribed",
+      "unsubscribed": "Unsubscribed"
+    },
+    "columns": {
+      "subscriber": "Subscriber",
+      "form": "Form",
+      "status": "Status",
+      "signedUp": "Signed up",
+      "actions": "Actions"
+    },
+    "signups": "{count, plural, one {# sign-up} other {# sign-ups}}",
+    "actions": {
+      "unsubscribe": "Unsubscribe",
+      "resubscribe": "Subscribe again",
+      "delete": "Delete"
+    },
+    "bulk": {
+      "selected": "{count} selected",
+      "clear": "Clear",
+      "selectAll": "Select all on this page",
+      "select": "Select {email}"
+    },
+    "toasts": {
+      "unsubscribed": "{count, plural, one {# subscriber unsubscribed} other {# subscribers unsubscribed}}",
+      "resubscribed": "{count, plural, one {# subscriber subscribed again} other {# subscribers subscribed again}}",
+      "deleted": "{count, plural, one {# subscriber deleted} other {# subscribers deleted}}"
+    },
+    "deleteDialog": {
+      "title": "{count, plural, one {Delete # subscriber?} other {Delete # subscribers?}}",
+      "body": "Every sign-up of these emails is deleted for good, from here and from the Forms inbox. To just stop messaging them, unsubscribe instead.",
+      "cancel": "Cancel",
+      "confirm": "Delete"
+    },
+    "paging": {
+      "label": "Pages",
+      "previous": "Previous page",
+      "next": "Next page",
+      "status": "Page {page} of {pages}"
+    },
+    "export": {
+      "button": "Export ({count})",
+      "sheet": "Subscribers",
+      "failed": "Couldn't create the file. Try again.",
+      "columns": {
+        "email": "Email",
+        "name": "Name",
+        "phone": "Phone",
+        "status": "Status",
+        "form": "Form",
+        "signedUp": "First sign-up",
+        "lastSignUp": "Last sign-up"
+      }
+    },
+    "errors": {
+      "notFound": "This store isn't yours or no longer exists.",
+      "readOnly": "This store is read-only right now.",
+      "generic": "Something went wrong. Try again."
+    },
+    "empty": {
+      "title": "No subscribers yet",
+      "body": "Sign-ups from your website's newsletter forms will appear here."
+    },
+    "noMatch": {
+      "title": "No matching subscribers",
+      "body": "Try another email or name, or switch the status."
+    },
+    "noForm": {
+      "title": "No newsletter form yet",
+      "body": "Add a newsletter section or pop-up to your website from the builder. Forms that ask for an email (and no message) count as sign-up forms."
+    },
+    "noStore": {
+      "title": "No store yet",
+      "body": "Create a store first. Its newsletter subscribers will appear here."
+    }
+  },
   "customers": {
+    "audience": {
+      "button": "Export audience",
+      "title": "Export an ads audience",
+      "description": "Download your own customers as a file you can upload to Meta (Facebook, Instagram) or TikTok Ads, to show them ads or find people like them.",
+      "segmentLabel": "Who",
+      "segments": {
+        "buyers": {
+          "title": "Buyers",
+          "body": "Customers with at least one delivered order."
+        },
+        "all": {
+          "title": "All customers",
+          "body": "Everyone who ordered from this store."
+        },
+        "refused": {
+          "title": "Refused or cancelled",
+          "body": "Customers who refused, returned or cancelled an order. Useful to exclude them from ads."
+        },
+        "leads": {
+          "title": "Missed orders",
+          "body": "People who filled in checkout but didn't place the order."
+        },
+        "subscribers": {
+          "title": "Newsletter subscribers",
+          "body": "Everyone subscribed through your website's newsletter forms."
+        }
+      },
+      "formatLabel": "File for",
+      "formats": {
+        "meta": "Meta (Facebook)",
+        "tiktok_phone": "TikTok · phones",
+        "tiktok_email": "TikTok · emails"
+      },
+      "formatHints": {
+        "meta": "Ads Manager › Audiences › Create audience › Custom audience › Customer list. Columns: email, phone (+20…), first and last name, city and country.",
+        "tiktok_phone": "TikTok Ads Manager › Assets › Audiences › Custom audience › Customer file. Pick \"Phone number\": one number per line in +20… format.",
+        "tiktok_email": "TikTok Ads Manager › Assets › Audiences › Custom audience › Customer file. Pick \"Email\": one email per line."
+      },
+      "privacy": "Only this store's customers. Blocked numbers are left out (except in \"Refused or cancelled\"). Both platforms encrypt the data on upload.",
+      "cancel": "Cancel",
+      "download": "Download file",
+      "done": "File downloaded: {count} rows",
+      "errors": {
+        "notFound": "This store isn't yours or no longer exists.",
+        "invalid": "Pick who to export and the file type.",
+        "empty": "Nobody in this group has a phone or email to export yet.",
+        "generic": "Couldn't create the file. Try again."
+      }
+    },
     "title": "Customers",
     "description": "Everyone who ordered from your store, grouped by phone number. See how often they buy, how much they spent and how many cash-on-delivery orders they received or refused.",
     "search": "Search by name, phone or email",
@@ -5162,6 +5934,273 @@
         "tags": "Tags",
         "note": "Note"
       }
+    }
+  },
+  "emailCampaigns": {
+    "title": "Email campaigns",
+    "description": "Send an email from your store to your customers and newsletter subscribers: a sale, new products or news. Emails go out under your store's name and colours, and every email has an unsubscribe link.",
+    "store": "Store",
+    "offline": "Your website is offline. Publish it (Website live) before you send a campaign: the email buttons lead to your site.",
+    "noStore": {
+      "title": "No store yet",
+      "body": "Create a store first, then come back to email your customers."
+    },
+    "stats": {
+      "sent": "Emails sent",
+      "unsubscribed": "Unsubscribed",
+      "today": "Campaigns today",
+      "todayValue": "{used} of {max}"
+    },
+    "list": {
+      "title": "Your campaigns",
+      "limits": "Up to {recipients} recipients per campaign, {perDay} campaign per day.",
+      "new": "New campaign",
+      "empty": "No campaigns yet. Write your first email to your customers.",
+      "untitled": "(No subject)",
+      "scheduledFor": "Scheduled for {date}",
+      "sentOn": "Finished {date}",
+      "createdOn": "Created {date}",
+      "counts": "Sent {sent} of {total} · failed {failed} · skipped {skipped}"
+    },
+    "status": {
+      "draft": "Draft",
+      "scheduled": "Scheduled",
+      "sending": "Sending",
+      "sent": "Sent",
+      "cancelled": "Cancelled"
+    },
+    "audience": {
+      "subscribers": {
+        "label": "Newsletter subscribers",
+        "body": "People who signed up through your website's newsletter forms."
+      },
+      "buyers": {
+        "label": "Customers who received an order",
+        "body": "Signed-in customers with at least one delivered order."
+      },
+      "all": {
+        "label": "All customers",
+        "body": "Every signed-in customer who ordered from this store."
+      },
+      "inactive": {
+        "label": "Customers who stopped ordering",
+        "body": "Customers with no order in the number of days you pick."
+      },
+      "inactiveShort": "No order in {days} days"
+    },
+    "actions": {
+      "edit": "Edit",
+      "delete": "Delete",
+      "cancel": "Stop sending",
+      "save": "Save",
+      "preview": "Preview",
+      "test": "Send me a test ({count} left)",
+      "sendNow": "Send now",
+      "schedule": "Schedule",
+      "testWinback": "Send me a test"
+    },
+    "toasts": {
+      "deleted": "Draft deleted.",
+      "cancelled": "Campaign stopped. Emails not sent yet will not go out.",
+      "saved": "Draft saved.",
+      "testSent": "Test email sent to your account email.",
+      "scheduled": "Scheduled for {count, plural, one {# recipient} other {# recipients}}.",
+      "sending": "Sending to {count, plural, one {# recipient} other {# recipients}}. This can take a few minutes.",
+      "winbackSaved": "Win-back settings saved."
+    },
+    "deleteDialog": {
+      "title": "Delete this draft?",
+      "body": "The draft is deleted for good.",
+      "confirm": "Delete"
+    },
+    "cancelDialog": {
+      "title": "Stop this campaign?",
+      "body": "Emails already sent stay sent. The rest will not go out, and it still counts toward today's limit.",
+      "confirm": "Stop sending"
+    },
+    "dialog": {
+      "back": "Back"
+    },
+    "preview": {
+      "title": "Email preview"
+    },
+    "composer": {
+      "title": "Write your email",
+      "description": "Plain text only. The email gets your store's logo, colours and a button to your website.",
+      "back": "Back to campaigns",
+      "subject": "Subject",
+      "subjectPlaceholder": "e.g. End-of-season sale is here",
+      "body": "Message",
+      "bodyPlaceholder": "Write your message to your customers…",
+      "bodyHint": "Leave an empty line between paragraphs. Put text between two pairs of stars (**text**) to make it bold, and start lines with a dash and a space to make a list. Links are not allowed: the button and products link to your website.",
+      "cta": "Button text (optional)",
+      "ctaPlaceholder": "Shop now",
+      "ctaHint": "The button opens your website's home page.",
+      "products": "Products in the email ({count} of {max})",
+      "noProducts": "You have no live products to add.",
+      "productSearch": "Search your products",
+      "audience": "Who gets it",
+      "inactiveDays": "No order in the last (days)",
+      "recipients": "{formatted} {count, plural, one {recipient} other {recipients}}",
+      "counting": "Counting recipients…",
+      "overCap": "(only the newest {max})",
+      "excluded": "Left out: {unsubscribed} unsubscribed, {noEmail} with no email (guest orders have no email).",
+      "when": "When",
+      "now": "Send now",
+      "schedule": "Schedule for later",
+      "scheduleAt": "Send on",
+      "scheduleHint": "Scheduled campaigns go out in the first daily send after this time (every day around 10:00 Cairo time), up to 30 days ahead.",
+      "cannotQueue": "You can send one campaign per day, and only while your website is live."
+    },
+    "sendDialog": {
+      "title": "Send to {count, plural, one {# recipient} other {# recipients}}?",
+      "body": "After sending you can stop the emails that did not go out yet, but you can't take back the ones already sent. Each customer gets the email once."
+    },
+    "winback": {
+      "title": "Win-back email",
+      "description": "An automatic email to customers who bought from you before and have not ordered for a while. Each customer gets it once per quiet period, up to {perDay} emails a day.",
+      "on": "On",
+      "off": "Off",
+      "stats": "Sent in the last 30 days: {sent} · waiting to send: {pending}",
+      "days": "Send after no order for (days)",
+      "subject": "Subject (optional)",
+      "subjectPlaceholder": "We miss you at your store",
+      "body": "Message (optional)",
+      "bodyPlaceholder": "Leave empty to use our friendly default message.",
+      "hint": "Leave them empty to use the default text in your store's language. Links are not allowed."
+    },
+    "errors": {
+      "notFound": "This store or campaign was not found.",
+      "readOnly": "This store is read-only right now.",
+      "generic": "Something went wrong. Please try again.",
+      "notDraft": "This campaign was already sent or scheduled and can't be changed.",
+      "storeOffline": "Publish your website before sending a campaign.",
+      "dailyLimit": "You already sent a campaign in the last 24 hours. Try again tomorrow.",
+      "noRecipients": "Nobody to send to in this audience.",
+      "subjectRequired": "Write a subject first.",
+      "bodyRequired": "Write a message first.",
+      "subjectLink": "Remove the link from the subject.",
+      "bodyLink": "Remove the link from the message. The button and products already link to your website.",
+      "ctaLink": "Remove the link from the button text.",
+      "scheduleInvalid": "Pick a time at least 5 minutes from now and within 30 days.",
+      "testLimit": "You reached the test email limit. Try again later.",
+      "noEmail": "Your account has no email to send the test to.",
+      "notConfigured": "Email sending is not available right now. Please try again later.",
+      "sendFailed": "The email could not be sent. Please try again."
+    }
+  },
+  "catalogShare": {
+    "title": "Shareable catalog",
+    "description": "Make a link to a list of your products with prices and order buttons, to send on WhatsApp or save as PDF.",
+    "pageDescription": "Pick a store and the products to show. You get a link to send on WhatsApp, and a printable page you can save as PDF.",
+    "store": "Store",
+    "noStores": "You have no stores yet.",
+    "offlineBadge": "offline",
+    "offlineWarning": "This store's website is offline, so the link shows an offline page until you publish it.",
+    "selectedCatalogNote": "This store shows only the products you chose in its catalog settings; the link follows that list.",
+    "pickedProducts": "{count, plural, one {# product picked} other {# products picked}}",
+    "show": "Show",
+    "modeCategory": "One category (up to {max} products)",
+    "modeNewest": "Newest products (up to {max})",
+    "pickCategory": "Choose a category",
+    "titleLabel": "Title (optional)",
+    "titlePlaceholder": "e.g. New summer collection",
+    "create": "Create link",
+    "copied": "Link copied",
+    "copyFailed": "Could not copy the link",
+    "whatsappMessage": "Take a look at our products",
+    "ready": "{count, plural, one {Your catalog has # product.} other {Your catalog has # products.}}",
+    "skipped": "{count, plural, one {# product was left out} other {# products were left out}} (not live, out of stock or over the {max} limit).",
+    "copy": "Copy link",
+    "whatsapp": "Send on WhatsApp",
+    "open": "Open",
+    "pdf": "Save as PDF",
+    "copyEnglish": "Copy the English link",
+    "copyArabic": "Copy the Arabic link",
+    "liveNote": "Prices and stock on the link are always live, so you never need to make it again after a change.",
+    "another": "Make another catalog",
+    "errors": {
+      "invalid": "Check the choices and try again.",
+      "store": "This store was not found.",
+      "noProducts": "There are no live products to show.",
+      "config": "Catalog links are not available right now.",
+      "failed": "Could not create the link. Try again."
+    }
+  },
+  "excelUpdate": {
+    "title": "Update products from Excel",
+    "description": "Change prices, stock, status and SKU of many products at once with an Excel sheet.",
+    "previewDescription": "Check the changes below. Nothing is saved until you apply.",
+    "step1": "1. Download the sheet",
+    "step1Hint": "{count, plural, =0 {All your live products} one {The # product on screen} other {The # products on screen}}, with their variants.",
+    "download": "Download sheet",
+    "step2": "2. Edit it in Excel",
+    "rulePrices": "Prices are in EGP. Leave the sale price empty to remove a discount.",
+    "ruleBlank": "An empty cell leaves that value as it is.",
+    "ruleStatus": "Status is active or draft.",
+    "ruleKeys": "Do not change the product id, variant id or SKU columns used to find each row.",
+    "step3": "3. Upload it",
+    "step3Hint": "An .xlsx file of up to {max} rows.",
+    "upload": "Upload sheet",
+    "summaryChange": "{count, plural, one {# change} other {# changes}} in {products, plural, one {# product} other {# products}}",
+    "summarySame": "{count, plural, one {# row unchanged} other {# rows unchanged}}",
+    "summarySkip": "{count, plural, one {# row skipped} other {# rows skipped}}",
+    "noChanges": "The sheet changes nothing.",
+    "colRow": "Row",
+    "colProduct": "Product",
+    "colChange": "Change",
+    "untitled": "Untitled product",
+    "back": "Back",
+    "apply": "{count, plural, one {Update # product} other {Update # products}}",
+    "cancel": "Cancel",
+    "nothingToExport": "There are no products to export.",
+    "exported": "{count, plural, one {Exported # product} other {Exported # products}}",
+    "exportTruncated": "Exported the first {max} rows of {count} products.",
+    "nothingChanged": "Nothing changed.",
+    "applied": "{count, plural, one {Updated # product} other {Updated # products}}",
+    "appliedSkipped": "{count, plural, one {# row was skipped} other {# rows were skipped}}",
+    "field": {
+      "price": "Price",
+      "salePrice": "Sale price",
+      "stock": "Stock",
+      "status": "Status",
+      "sku": "SKU"
+    },
+    "statusValue": {
+      "active": "Active",
+      "draft": "Draft",
+      "rejected": "Rejected"
+    },
+    "skip": {
+      "noKey": "No product id or SKU",
+      "badId": "Invalid id",
+      "notFound": "Product not found",
+      "inTrash": "Product is in the trash",
+      "ambiguousSku": "SKU matches more than one product",
+      "duplicateRow": "Same product appears twice",
+      "variantMismatch": "Variant does not belong to this product",
+      "invalidPrice": "Invalid price",
+      "invalidSalePrice": "Invalid sale price",
+      "saleAboveRegular": "Sale price is not below the price",
+      "noPrice": "Price is missing",
+      "invalidStock": "Invalid stock",
+      "invalidStatus": "Invalid status",
+      "invalidSku": "Invalid SKU",
+      "skuTaken": "SKU is used by another product",
+      "rejected": "Rejected products cannot be changed",
+      "needsImage": "Add a photo before making it active",
+      "cannotPublish": "Your account cannot publish products yet"
+    },
+    "errors": {
+      "unauthorized": "Sign in again to continue.",
+      "readOnly": "Your account is read-only right now.",
+      "noFile": "Choose a file first.",
+      "tooBig": "The file is too big.",
+      "badFile": "This is not a valid .xlsx file.",
+      "noRows": "The sheet has no product rows.",
+      "tooManyRows": "The sheet has more than {max} rows.",
+      "missingColumns": "The sheet is missing required columns. Download a new sheet and try again.",
+      "generic": "Something went wrong. Try again."
     }
   }
 }

@@ -4,7 +4,7 @@ import { getMarketingPosts } from "@/lib/marketing/blog.server";
 import { localizedUrl } from "@/lib/marketing/metadata.lib";
 import { getTemplateGallery } from "@/lib/marketing/templates.server";
 
-const STATIC_PATHS = ["/", "/templates", "/pricing", "/blog", "/about", "/careers", "/contact", "/faq", "/terms", "/privacy", "/follow-us"];
+const STATIC_PATHS = ["/", "/templates", "/pricing", "/affiliates", "/blog", "/about", "/careers", "/contact", "/faq", "/terms", "/privacy", "/follow-us"];
 
 function entry(path: string, locales: readonly string[] = routing.locales, lastModified?: string): MetadataRoute.Sitemap[number] {
   const primary = locales.includes(routing.defaultLocale) ? routing.defaultLocale : locales[0]!;

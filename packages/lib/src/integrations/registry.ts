@@ -83,4 +83,9 @@ export type StorefrontTrackingConfig = {
   metaPixelId: string | null;
   ga4MeasurementId: string | null;
   gtmContainerId: string | null;
+  /**
+   * Meta events the store's browser Pixel must not send (F-30): switched-off
+   * events, plus Purchase when it is sent on delivery. Absent = none blocked.
+   */
+  metaBlockedEvents?: string[];
 };

@@ -1,5 +1,7 @@
 import { isPaymentSettled } from "@/app/(main)/orders/order-flow.lib";
 import { formatDateTime, formatMoney } from "@/lib/i18n/format";
+import { pickingList } from "./print-orders.lib";
+import { OrderBarcode } from "./order-barcode";
 import type { PrintOrder, PrintSender } from "./print-orders.types";
 
 /** A translator for the `orders` namespace (createTranslator), in the printout's language. */
@@ -123,6 +125,9 @@ export function InvoiceDocument({ order, t, locale }: DocProps) {
           <p className="text-2xl font-extrabold uppercase">{t("print.invoice")}</p>
           <p className="font-semibold">{t("print.order", { number: order.orderNumber })}</p>
           <p className="text-neutral-600">{formatDateTime(order.createdAt, locale)}</p>
+          <div dir="ltr" className="mt-2 flex justify-end">
+            <OrderBarcode orderNumber={order.orderNumber} height={36} module={1.25} />
+          </div>
         </div>
       </header>
 
@@ -215,6 +220,10 @@ export function SlipDocument({ order, t, locale }: DocProps) {
         </div>
       </header>
 
+      <div dir="ltr" className="flex justify-center">
+        <OrderBarcode orderNumber={order.orderNumber} height={38} module={1.5} />
+      </div>
+
       <section>
         <h2 className="text-[10px] font-bold uppercase text-neutral-500">{t("print.shipTo")}</h2>
         <AddressBlock order={order} t={t} large />
@@ -241,6 +250,77 @@ export function SlipDocument({ order, t, locale }: DocProps) {
       </section>
 
       <Notes order={order} t={t} />
+    </article>
+  );
+}
+
+/**
+ * A4 picking list for all the printed orders (ROADMAP.md F-04d): each product
+ * and variant once with the total to take off the shelf, a box to tick, and
+ * the orders it goes into.
+ */
+export function PickingDocument({ orders, t, locale }: { orders: PrintOrder[]; t: PrintT; locale: "ar" | "en" }) {
+  const rows = pickingList(orders, locale);
+  const units = rows.reduce((n, r) => n + r.quantity, 0);
+  const senders = new Set(orders.map((o) => o.sender.name));
+  const sender = senders.size === 1 ? orders[0]!.sender : null;
+  return (
+    <article className="print-sheet print-sheet-a4 flex flex-col gap-5 text-[13px]">
+      <header className="flex items-start justify-between gap-6 border-b-2 border-black pb-4">
+        {sender ? <SenderBlock sender={sender} /> : <span />}
+        <div className="shrink-0 text-end">
+          <p className="text-2xl font-extrabold uppercase">{t("print.picking")}</p>
+          <p className="font-semibold">
+            {t("print.ordersCount", { count: orders.length })} · {t("print.unitsCount", { count: units })}
+          </p>
+          <p className="text-neutral-600">{t("print.printedAt", { date: formatDateTime(new Date().toISOString(), locale) })}</p>
+        </div>
+      </header>
+
+      <table className="w-full border-collapse">
+        <thead>
+          <tr className="border-b border-black text-xs uppercase">
+            <th className="w-8 py-1.5" aria-label={t("print.picked")} />
+            <th className="py-1.5 text-start font-bold">{t("print.item")}</th>
+            <th className="w-16 py-1.5 text-center font-bold">{t("print.qty")}</th>
+            <th className="w-[38%] py-1.5 text-start font-bold">{t("print.inOrders")}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr key={row.key} className="break-inside-avoid border-b border-neutral-300 align-top">
+              <td className="py-2">
+                <span className="mt-0.5 block size-4 rounded-sm border-2 border-black" />
+              </td>
+              <td className="py-2 pe-3">
+                <p className="font-medium">{row.productName}</p>
+                {(row.variantName || row.sku) && (
+                  <p className="text-xs text-neutral-600">
+                    {row.variantName}
+                    {row.variantName && row.sku && " · "}
+                    {row.sku && t("print.sku", { sku: row.sku })}
+                  </p>
+                )}
+              </td>
+              <td className="py-2 text-center text-lg font-extrabold tabular-nums">{row.quantity}</td>
+              <td className="py-2 text-xs leading-relaxed text-neutral-700">
+                {row.orderNumbers.map((n) => (
+                  <span key={n} className="me-2 inline-block" dir="ltr">
+                    #{n}
+                  </span>
+                ))}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <footer className="mt-auto border-t border-neutral-300 pt-3 text-xs text-neutral-600">
+        <p className="mb-1 font-semibold text-black">{t("print.includedOrders")}</p>
+        <p className="leading-relaxed">
+          {orders.map((o) => `#${o.orderNumber} ${o.address?.fullName || o.customerName}`.trim()).join(" · ")}
+        </p>
+      </footer>
     </article>
   );
 }

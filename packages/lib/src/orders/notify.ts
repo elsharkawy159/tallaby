@@ -101,3 +101,8 @@ export async function sendStoreCreatedEmail(storeId: string): Promise<EmailResul
 export async function sendAbandonedCartEmail(cartId: string): Promise<EmailResult> {
   return postEmail('abandoned-cart', { cartId })
 }
+
+/** Back-in-stock alert for one claimed subscription (the stock-alerts cron, 0126). */
+export async function sendBackInStockEmail(subscriptionId: string): Promise<EmailResult> {
+  return postEmail('back-in-stock', { subscriptionId })
+}

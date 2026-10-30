@@ -63,6 +63,8 @@ export async function loadPrintOrders(
         columns: {
           id: true,
           sellerId: true,
+          productId: true,
+          variantId: true,
           productName: true,
           variantName: true,
           sku: true,
@@ -147,6 +149,8 @@ export async function loadPrintOrders(
       paymentStatus: o.paymentStatus,
       lines: mine.map((i) => ({
         id: i.id,
+        productId: i.productId,
+        variantId: i.variantId,
         productName: i.productName,
         variantName: i.variantName,
         sku: i.sku,

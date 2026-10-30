@@ -7,7 +7,7 @@ import {
   products,
   productTranslations,
 } from "@workspace/db";
-import { and, desc, eq, ilike, or } from "drizzle-orm";
+import { and, desc, eq, ilike, isNull, or } from "drizzle-orm";
 import { getLocale } from "next-intl/server";
 import { getUser } from "@/actions/auth";
 
@@ -55,6 +55,7 @@ export async function searchDashboard(
         .where(
           and(
             eq(products.sellerId, sellerId),
+            isNull(products.deletedAt),
             or(
               ilike(productTranslations.title, pattern),
               ilike(products.sku, pattern)

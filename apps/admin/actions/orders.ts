@@ -6,6 +6,7 @@ import { eq, and, desc, sql, gte, lte, like, or, inArray, notInArray } from "dri
 import { creditSellerOnDelivery } from "@workspace/db/wallet";
 import { fulfillDigitalOrderItems } from "@workspace/lib/digital";
 import { sendOrderEventEmail } from "@workspace/lib/orders";
+import { sendDeliveredMetaPurchase } from "@workspace/lib/integrations/server";
 import {
   scheduleAffiliateCommissionRelease,
   reverseAffiliateCommission,
@@ -245,6 +246,8 @@ export async function updateOrderStatus(
           ? status
           : null;
     if (emailEvent) await sendOrderEventEmail(orderId, emailEvent, "system");
+    // The store's Meta Purchase on delivery (F-30a); a no-op unless deferred, never throws.
+    if (status === "delivered") await sendDeliveredMetaPurchase(orderId);
 
     return { success: true, data: updatedOrder };
   } catch (error) {

@@ -88,6 +88,8 @@ interface SellerSettingsFormProps {
   account: SellerAccountView
   /** The main store, whose settings now hold logo and description. */
   primaryStoreId: string | null
+  /** Phone alerts card (F-06); null while push is not configured. */
+  pushAlertsSection?: React.ReactNode
 }
 
 const AUTOSAVE_DELAY_MS = 900
@@ -98,6 +100,7 @@ export function SellerSettingsForm ({
   linkSection,
   account,
   primaryStoreId,
+  pushAlertsSection = null,
 }: SellerSettingsFormProps) {
   const t = useTranslations('settings')
   const router = useRouter()
@@ -357,6 +360,8 @@ export function SellerSettingsForm ({
             >
               {linkSection}
             </SectionCard>
+
+            {pushAlertsSection}
 
 
             <DocumentsSection

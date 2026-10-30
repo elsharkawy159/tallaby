@@ -3,6 +3,7 @@
   "ignoreCommand": "npx turbo-ignore",
   "crons": [
     { "path": "/api/cron/google-sheets", "schedule": "30 2 * * *" },
-    { "path": "/api/cron/bosta-sync", "schedule": "15 4 * * *" }
+    { "path": "/api/cron/bosta-sync", "schedule": "15 4 * * *" },
+    { "path": "/api/cron/seller-push", "schedule": "45 4 * * *" }
   ]
 }

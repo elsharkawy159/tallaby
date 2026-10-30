@@ -13,12 +13,14 @@ import {
   productHasFreeDelivery,
   productPricing,
 } from "@/components/product-page/product-page.lib";
+import { lowStockLeft } from "@workspace/store-sections/low-stock";
 import type { ProductLocale } from "@/lib/product-translations";
 import { getVariantImageUrls } from "@/lib/variant-images";
 import { StoreBuyBox, StoreQuantity } from "./store-buy-box.client";
 import { StoreGallery } from "./store-product-gallery.client";
-import { StoreLiveViews, StorePriceBlock, StoreStockLine } from "./store-product-info.client";
+import { StoreLiveViews, StoreLowStockAlert, StorePriceBlock, StoreStockLine } from "./store-product-info.client";
 import { StoreVariantPicker } from "./store-variant-picker.client";
+import { StoreRestockForm } from "./store-restock-form.client";
 
 /**
  * The interactive parts of a store product page (template product page spec
@@ -87,11 +89,30 @@ export function StoreProductPrice({ showDiscount, showCountdown }: { showDiscoun
   );
 }
 
-export function StoreProductStock() {
+/** Units left for the seller's low-stock alert (F-34), following the selected variant; null when none applies. */
+function useLowStockLeft() {
   const { product } = useProductPage();
   const { stock } = useSelectedPricing();
   const hasStock = product.status === "active" && stock > 0;
+  const left = hasStock ? lowStockLeft(stock, { show: product.showLowStockBadge === true, threshold: product.lowStockThreshold }) : null;
+  return { hasStock, stock, left };
+}
+
+/**
+ * `alertElsewhere`: the page has its own low-stock badge element (F-34d), so
+ * this line leaves the alert to it (and shows nothing while it applies).
+ */
+export function StoreProductStock({ alertElsewhere = false }: { alertElsewhere?: boolean }) {
+  const { hasStock, stock, left } = useLowStockLeft();
+  // The seller's low-stock alert (F-34) follows the selected variant and replaces the pill, so it isn't said twice.
+  if (left != null) return alertElsewhere ? null : <StoreLowStockAlert left={left} />;
   return <StoreStockLine hasStock={hasStock} isLowStock={hasStock && stock <= LOW_STOCK_THRESHOLD} stock={stock} />;
+}
+
+/** The low-stock badge element (F-34d): the alert where the seller placed it, nothing otherwise. */
+export function StoreProductStockBadge() {
+  const { left } = useLowStockLeft();
+  return left != null ? <StoreLowStockAlert left={left} /> : null;
 }
 
 export function StoreProductVariants() {
@@ -141,7 +162,20 @@ export function StoreProductBuyBox({
       hideQuantity={hideQuantity}
     />
   );
-  if (!stickyMobile) return box("inline");
+  // Out of stock: "Notify me when it's back" (F-23a), per selected variant.
+  const restock =
+    !hasStock && product.status === "active" ? (
+      <StoreRestockForm key={variantId ?? "product"} productId={product.id} variantId={variantId} />
+    ) : null;
+  if (!stickyMobile) {
+    if (!restock) return box("inline");
+    return (
+      <div className="grid min-w-0 gap-3">
+        {box("inline")}
+        {restock}
+      </div>
+    );
+  }
 
   // Phones: the buttons are docked at the bottom edge (the site's bottom nav
   // steps aside for them). With two buttons the dock has no room for the
@@ -150,6 +184,7 @@ export function StoreProductBuyBox({
     <>
       <HideBottomNavOnScroll />
       <div className="hidden md:block">{box("inline")}</div>
+      {restock && <div className="md:mt-3">{restock}</div>}
       {twoButtons && (
         <div className="md:hidden">
           <StoreQuantity value={quantity} max={stock} onChange={setQuantity} />

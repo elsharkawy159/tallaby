@@ -23,7 +23,7 @@ export default async function StorefrontCartPage({ params }: StorefrontCartPageP
     <div className={s.wrap}>
       <div className="mx-auto max-w-2xl py-10 md:py-14">
         <h1 className={cn(s.sectionTitle, "mb-4")}>{t("cartTitle")}</h1>
-        <StorefrontCart storeName={store.displayName} />
+        <StorefrontCart storeName={store.displayName} minOrder={store.minOrder} />
       </div>
     </div>
   );

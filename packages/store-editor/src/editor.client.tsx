@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { useStore } from "zustand";
 import type { DesignSystem, SectionInstance, SiteLocale } from "@workspace/store-sections";
+import { pageHasStockBadge } from "@workspace/store-sections/low-stock";
 import {
   CLASSIC_TOKENS,
   collectCatalogQueries,
@@ -345,6 +346,8 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
         renderAction: (need, label) => <DataActionButton need={need} label={label} store={dataStore} onOpenPages={openPages} />,
         renderRetry: (label) => <DataRetryButton label={label} onRetry={() => void refreshData(true)} />,
       },
+      // As on the storefront: a placed low-stock badge (F-34d) takes the alert over from the stock line.
+      ...(product && { stockBadgeOnPage: pageHasStockBadge(page.content.sections) }),
     };
     // openPages and dataStore only read stable values.
     // eslint-disable-next-line react-hooks/exhaustive-deps

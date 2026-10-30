@@ -33,15 +33,20 @@ const firstImage = (images: unknown): string | null => {
   return base ? `${base}/storage/v1/object/public/products/${first}` : null;
 };
 
-export async function saveCheckoutLead(input: { addressId: string }): Promise<void> {
+/**
+ * Returns what the browser needs for the store Pixel's Lead event (F-30b:
+ * sent only when the seller switched Lead on; `event_id` is per cart), or
+ * null when no lead was saved.
+ */
+export async function saveCheckoutLead(input: { addressId: string }): Promise<{ eventId: string; value: number } | null> {
   try {
     const addressId = String(input?.addressId ?? "");
-    if (!UUID_RE.test(addressId)) return;
+    if (!UUID_RE.test(addressId)) return null;
 
     const scope = await getCartScope();
-    if (!scope || (await isRequestStoreOffline())) return;
+    if (!scope || (await isRequestStoreOffline())) return null;
     const userId = await getCurrentUserId();
-    if (!userId || !leadLimiter.check(`lead:${userId}`)) return;
+    if (!userId || !leadLimiter.check(`lead:${userId}`)) return null;
 
     const [address, user, cart] = await Promise.all([
       db.query.userAddresses.findFirst({
@@ -69,7 +74,7 @@ export async function saveCheckoutLead(input: { addressId: string }): Promise<vo
         },
       }),
     ]);
-    if (!address || !cart || cart.cartItems.length === 0) return;
+    if (!address || !cart || cart.cartItems.length === 0) return null;
 
     const locale = (await getLocale()) as ProductLocale;
     const items: CheckoutLeadItem[] = cart.cartItems.map((item) => {
@@ -88,7 +93,7 @@ export async function saveCheckoutLead(input: { addressId: string }): Promise<vo
     // The same quote the checkout shows for this address (store zones or Tallaby rates).
     const { shippingCost } = await getCheckoutShipping(cart.cartItems, address, scope);
 
-    await saveStoreCheckoutLead({
+    const saved = await saveStoreCheckoutLead({
       storeId: scope.storeId,
       sellerId: scope.sellerId,
       userId,
@@ -104,8 +109,10 @@ export async function saveCheckoutLead(input: { addressId: string }): Promise<vo
       shipping: shippingCost,
       total: shippingCost == null ? null : subtotal + shippingCost,
     });
+    return saved ? { eventId: `lead-${cart.id}`, value: subtotal } : null;
   } catch {
     // Never log the phone; never let a lead break the checkout.
     console.error("[checkout-lead] save failed");
+    return null;
   }
 }

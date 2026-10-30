@@ -46,7 +46,8 @@ async function productPageInvalidation(productId: string, sellerId: string): Pro
 }
 
 /**
- * Saves the product form's reviews and live views switch (0111). The product
+ * Saves the product form's reviews, live views switch (0111) and low-stock
+ * alert (0122). The product
  * must be the session seller's; only that product's seller-added reviews are
  * ever changed or removed (customer reviews are never touched). Review ids
  * from the client are matched together with the product and `source =
@@ -57,12 +58,12 @@ export async function saveProductSocialProof(productId: string, input: unknown):
     const seller = await requireSeller({ forWrite: true });
     const parsed = productSocialProofSchema.safeParse(input);
     if (!parsed.success || typeof productId !== "string") return { success: false, error: "invalidInput" };
-    const { showLiveViews, reviews: list } = parsed.data;
+    const { showLiveViews, showLowStockBadge, lowStockThreshold, reviews: list } = parsed.data;
 
     const owned = await db.transaction(async (tx) => {
       const updated = await tx
         .update(products)
-        .set({ showLiveViews })
+        .set({ showLiveViews, showLowStockBadge, lowStockThreshold })
         .where(and(eq(products.id, productId), eq(products.sellerId, seller.sellerId)))
         .returning({ id: products.id });
       if (!updated.length) return false;

@@ -36,6 +36,7 @@ export const PRODUCT_ELEMENT_TYPES: ReadonlySet<string> = new Set([
   "productGallery",
   "productPrice",
   "productStock",
+  "productStockBadge",
   "productRating",
   "productVariants",
   "productBuyBox",

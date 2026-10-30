@@ -8,7 +8,6 @@ import { getProducts } from "@/actions/products";
 import ProductCard from "@/components/product-page/ProductCard";
 import ProductsSorting from "@/components/products-list/ProductsSorting";
 import {
-  SORT_MAP,
   STORE_PAGE_SIZE,
   StorePagination,
   storeQueryHref,
@@ -19,6 +18,7 @@ import type { ProductCardProps } from "@/components/product";
 import type { ProductLocale } from "@/lib/product-translations";
 import { storeCategoryFilter, type StorefrontCategory } from "@/lib/storefront.server";
 import type { StoreCategoryFilter } from "@workspace/lib/store-sites/catalog-data";
+import { storefrontSortBy } from "@/lib/store-site/featured-sort.lib";
 import s from "../storefront.module.css";
 
 export async function StorefrontCatalog({
@@ -78,7 +78,7 @@ export async function StorefrontCatalog({
             </Button>
           </form>
           <Suspense>
-            <ProductsSorting />
+            <ProductsSorting featured={Boolean(active?.sellerCategoryId)} />
           </Suspense>
         </div>
       </div>
@@ -121,7 +121,8 @@ async function CatalogGrid({
     catalogStoreId,
     storeCategory,
     searchQuery: query.search,
-    sortBy: SORT_MAP[query.sort as keyof typeof SORT_MAP] ?? "popular",
+    // A seller category opens on its manual order (F-24d, 0128).
+    sortBy: storefrontSortBy(query.sort, storeCategory?.sellerCategoryId),
     limit: STORE_PAGE_SIZE,
     offset: (query.page - 1) * STORE_PAGE_SIZE,
     locale: locale as ProductLocale,

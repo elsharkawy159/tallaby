@@ -195,6 +195,8 @@ export function createTreeBuilder(industry?: string, photos?: DesignPhotos, opts
       return make("productPrice", { showDiscount, showCountdown }, rest);
     },
     productStock: (opts?: NodeOptions) => make("productStock", {}, opts),
+    /** The seller's low-stock alert (F-34d): drawn only when the product's alert is on and stock is low. */
+    productStockBadge: (opts?: NodeOptions) => make("productStockBadge", {}, opts),
     /** The meta row: the category badge (on unless `showCategory` is false) and the stars. */
     productRating: (opts?: NodeOptions & { showCount?: boolean; showCategory?: boolean }) => {
       const { showCount = true, showCategory, ...rest } = opts ?? {};

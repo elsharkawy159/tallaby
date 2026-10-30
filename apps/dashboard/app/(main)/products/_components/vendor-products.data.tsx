@@ -3,9 +3,13 @@ import { getSellerProducts } from "@/actions/products";
 import { parsePriceJson } from "@workspace/lib";
 import { richTextToPlainText } from "@workspace/tiptap/plain-text";
 import { loadProductStoreLinks } from "./product-store-links.data";
+import { ProductViewsProvider } from "./product-views.client";
+import { loadProductViewStats } from "./product-views.data";
 import { VendorProductsSection, type VendorProduct } from "./vendor-products.section";
 
 export async function VendorProductsData() {
+  // Not awaited: GA4 views stream into the table cells (F-15b); never rejects.
+  const viewStats = loadProductViewStats();
   const [{ data, totalCount }, locale] = await Promise.all([
     getSellerProducts({ offset: 0 }),
     getLocale(),
@@ -62,5 +66,9 @@ export async function VendorProductsData() {
   const storeLinks = await loadProductStoreLinks(products.map((p) => ({ id: p.id, slug: p.slug ?? null })));
   const rows: VendorProduct[] = products.map((p) => ({ ...p, storeUrl: storeLinks.get(p.id) ?? null }));
 
-  return <VendorProductsSection products={rows} total={totalCount || 0} />;
+  return (
+    <ProductViewsProvider stats={viewStats}>
+      <VendorProductsSection products={rows} total={totalCount || 0} />
+    </ProductViewsProvider>
+  );
 }

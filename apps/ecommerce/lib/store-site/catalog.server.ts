@@ -9,11 +9,13 @@ import type {
   ReviewStats,
   ReviewSummary,
 } from "@workspace/store-sections/render";
+import { lowStockLeft } from "@workspace/store-sections/low-stock";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
 import { getProducts } from "@/actions/products";
 import type { ProductLocale } from "@/lib/product-translations";
 import { getStorefrontCategories, storeCategoryFilter, type StorefrontCategory } from "@/lib/storefront.server";
 import type { StoreCategoryFilter } from "@workspace/lib/store-sites/catalog-data";
+import { builderCategorySortBy } from "./featured-sort.lib";
 import { SALES_DAYS, getCachedSellerBrands, getCachedSellerCoupons, getCachedStoreReviewStats, getCachedStoreReviews, getCachedStoreSales } from "./store-data.server";
 
 /**
@@ -34,6 +36,8 @@ type RawProduct = Record<string, unknown> & {
   productVariants?: unknown[];
   isTrending?: boolean | null;
   isSeasonal?: boolean | null;
+  showLowStockBadge?: boolean | null;
+  lowStockThreshold?: number | null;
 };
 
 export type ResolvedCatalog = {
@@ -71,6 +75,8 @@ function toSummary(product: RawProduct): ProductSummary {
     compareAtPrice: list != null && final != null && list > final ? list : null,
     rating: product.averageRating ?? null,
     inStock: Number(product.quantity ?? 0) > 0,
+    // The seller's low-stock alert (0122, F-34): the card says "N left", from the real stock.
+    stockLeft: lowStockLeft(Number(product.quantity ?? 0), { show: product.showLowStockBadge === true, threshold: product.lowStockThreshold }),
     trending: product.isTrending === true,
     seasonal: product.isSeasonal === true,
   };
@@ -149,7 +155,8 @@ export async function resolveStoreCatalog(
   await Promise.all(
     entries.map(async ([instanceId, query]) => {
       if (query.kind !== "products") return;
-      const sortBy = query.sort && query.sort !== "default" ? SORT_BY[query.sort] : undefined;
+      // A category list on its default sort follows the seller's manual order (F-24d, 0128).
+      const sortBy = builderCategorySortBy(query.source, query.sort, query.sort && query.sort !== "default" ? SORT_BY[query.sort] : undefined);
       // A paginated list (the home page's main grid): page `query.page` of `query.limit` products.
       const page = query.paginate ? Math.max(1, Math.floor(query.page ?? 1)) : 1;
       const offset = (page - 1) * query.limit;

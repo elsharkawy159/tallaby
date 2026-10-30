@@ -20,7 +20,10 @@ import { pickStoreCouponOffer } from "@workspace/lib/orders/coupon-popup";
 import { StoreOfferProvider } from "@/components/storefront/store-offer.client";
 import { getCachedSellerPopupCoupons } from "@/lib/store-site/store-data.server";
 import { CouponOfferPopup } from "./coupon-offer-popup.client";
+import { loadStoreSalesFeed } from "@/lib/store-site/sales-popup.server";
+import { SalesPopup } from "./sales-popup.client";
 import { StoreOffline } from "./store-offline";
+import { CampaignCapture } from "./campaign-capture.client";
 import s from "../storefront.module.css";
 
 /**
@@ -74,6 +77,9 @@ export async function StorefrontShell({
           return [];
         }),
       );
+  // Sales pop-up (F-22): real recent orders of this store. Not on shared pages
+  // (checkout, orders, account) and never in a builder draft preview.
+  const salesFeed = shared || preview ? [] : await loadStoreSalesFeed(store, locale);
 
   return (
     <CurrencyLabelProvider label={store.currencyLabel}>
@@ -93,13 +99,18 @@ export async function StorefrontShell({
         {/* Phones: the bottom navigation (on by default; its cart badge replaces the floating cart bar). */}
         {site && bottomNavOn(site.header) ? <StoreSiteBottomNav site={site} locale={locale} /> : !shared && <MobileCartBar />}
         {/* The cart opens as a sheet from every cart link and after add-to-cart (not on shared pages: orders, checkout). */}
-        {!shared && <StoreCartSheet storeName={store.displayName} fontClassName={cn(storefrontFont.variable, site && [SITE_ROOT_CLASS, storeFontVariables])} />}
+        {!shared && <StoreCartSheet storeName={store.displayName} minOrder={store.minOrder} fontClassName={cn(storefrontFont.variable, site && [SITE_ROOT_CLASS, storeFontVariables])} />}
         <AuthDialogProvider />
         {site && <CarouselRuntime />}
         {site && <MotionRuntime />}
         {!shared && <StorefrontTracking store={store} />}
+        {/* First-touch UTM cookie for the Campaigns report (ROADMAP.md F-26a); client-only, pages stay cached. */}
+        {!shared && !preview && <CampaignCapture />}
         {/* Tallaby's store-views tag (SA-01): published pages only, never a draft preview. */}
         {!shared && !preview && storeViewsGtmId && <StoreViewsTag containerId={storeViewsGtmId} storeId={store.storeId} />}
+        {salesFeed.length > 0 && (
+          <SalesPopup items={salesFeed} delaySeconds={store.salesPopup.delaySeconds} pages={store.salesPopup.pages} />
+        )}
         {offer && <CouponOfferPopup fontClassName={cn(storefrontFont.variable, site && [SITE_ROOT_CLASS, storeFontVariables])} />}
       </div>
     </StoreOfferProvider>

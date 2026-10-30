@@ -39,6 +39,8 @@ export const SELLER_NOTIFICATION_TYPES = [
   "welcome_gift_granted",
   "welcome_gift_expiring",
   "welcome_gift_expired",
+  // Stock crossed down to the product's low-stock threshold (0125, F-10)
+  "low_stock",
 ] as const;
 export type SellerNotificationType = (typeof SELLER_NOTIFICATION_TYPES)[number];
 
@@ -145,6 +147,10 @@ export function sellerNotificationHref(n: Pick<NotificationItem, "type" | "data"
     case "referral_payout_paid":
     case "referral_payout_rejected":
       return "/earn";
+    case "low_stock": {
+      const productId = dataString(n.data, "productId");
+      return productId ? `/products/inventory?product=${encodeURIComponent(productId)}` : "/products/inventory";
+    }
     default:
       return null;
   }

@@ -20,10 +20,12 @@ const SORT_OPTIONS = [
   { value: "rating", labelKey: "sortHighestRated" },
 ] as const;
 
-const ProductsSorting: React.FC = () => {
+/** `featured`: a store category page (F-24d) offers, and opens on, the seller's manual order. */
+const ProductsSorting: React.FC<{ featured?: boolean }> = ({ featured = false }) => {
   const t = useTranslations("search");
   const { params, updateParams } = useUrlParams();
-  const currentSort = params.sort || "popularity";
+  const currentSort = params.sort || (featured ? "featured" : "popularity");
+  const options = featured ? [{ value: "featured", labelKey: "sortFeatured" } as const, ...SORT_OPTIONS] : SORT_OPTIONS;
 
   const handleSortChange = (newValue: string) => {
     updateParams(
@@ -43,7 +45,7 @@ const ProductsSorting: React.FC = () => {
       <SelectContent>
         <SelectGroup>
           <SelectLabel>{t("sortBy")}</SelectLabel>
-          {SORT_OPTIONS.map((opt) => (
+          {options.map((opt) => (
             <SelectItem key={opt.value} value={opt.value}>
               {t(opt.labelKey)}
             </SelectItem>

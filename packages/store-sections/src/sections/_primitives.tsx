@@ -272,6 +272,11 @@ export function ProductCardView({ product, ctx }: { product: ProductSummary; ctx
             </s>
           )}
         </div>
+        {product.inStock !== false && product.stockLeft != null && product.stockLeft > 0 && (
+          <span className="w-fit rounded-full bg-[#dc2626]/10 px-2 py-0.5 text-[11px] font-bold text-[#b91c1c]" data-stock-left={product.stockLeft}>
+            {sectionText("stockLeft", ctx.locale, { n: product.stockLeft })}
+          </span>
+        )}
         {product.inStock === false ? (
           <span className="text-xs text-(--sf-muted)">{sectionText("outOfStock", ctx.locale)}</span>
         ) : (

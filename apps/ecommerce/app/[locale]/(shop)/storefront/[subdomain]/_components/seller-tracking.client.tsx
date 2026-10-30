@@ -4,7 +4,7 @@ import { useEffect, useSyncExternalStore } from "react";
 import Script from "next/script";
 import { useTranslations } from "next-intl";
 import { isValidIntegrationId, type StorefrontTrackingConfig } from "@workspace/lib/integrations";
-import { markStoreTrackingReady } from "@/lib/storefront-events.client";
+import { markStoreTrackingReady, setStoreMetaBlockedEvents } from "@/lib/storefront-events.client";
 import { STORE_TRACKING_CONSENT_COOKIE } from "@/lib/storefront-consent";
 
 /**
@@ -66,6 +66,8 @@ export function SellerTracking({ config }: { config: StorefrontTrackingConfig })
   const ga4Id = isValidIntegrationId("google_analytics", config.ga4MeasurementId) ? config.ga4MeasurementId : null;
   const gtmId = isValidIntegrationId("google_tag_manager", config.gtmContainerId) ? config.gtmContainerId : null;
   const any = Boolean(pixelId || ga4Id || gtmId);
+  // F-30: Meta events this store does not send from the browser (server-computed).
+  const metaBlockedKey = (config.metaBlockedEvents ?? []).join(",");
 
   // Choices made before the cookie existed (localStorage only) are mirrored once.
   useEffect(() => {
@@ -86,11 +88,14 @@ export function SellerTracking({ config }: { config: StorefrontTrackingConfig })
         (!gtmId || Array.isArray(window.dataLayer));
       if (loaded || ++tries > 100) {
         clearInterval(timer);
-        if (loaded) markStoreTrackingReady();
+        if (loaded) {
+          setStoreMetaBlockedEvents(metaBlockedKey ? metaBlockedKey.split(",") : []);
+          markStoreTrackingReady();
+        }
       }
     }, 100);
     return () => clearInterval(timer);
-  }, [any, consent, pixelId, ga4Id, gtmId]);
+  }, [any, consent, pixelId, ga4Id, gtmId, metaBlockedKey]);
 
   if (!any) return null;
 

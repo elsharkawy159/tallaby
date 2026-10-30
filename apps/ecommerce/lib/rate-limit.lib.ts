@@ -7,6 +7,8 @@
 
 export type RateLimiter = {
   check: (key: string, now?: number) => boolean;
+  /** Would `check` pass right now? Counts nothing (peek before, record with `check` after success). */
+  peek: (key: string, now?: number) => boolean;
   size: () => number;
 };
 
@@ -37,6 +39,10 @@ export function createRateLimiter({
       if (entry.count >= limit) return false;
       entry.count += 1;
       return true;
+    },
+    peek(key, now = Date.now()) {
+      const entry = hits.get(key);
+      return !entry || now - entry.start >= windowMs || entry.count < limit;
     },
     size: () => hits.size,
   };

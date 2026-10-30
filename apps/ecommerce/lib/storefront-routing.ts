@@ -119,6 +119,11 @@ export function routeStorefrontRequest(
   const blogPost = /^\/blog\/([a-z0-9](?:[a-z0-9-]{0,198}[a-z0-9])?)\/?$/.exec(path);
   if (blogPost) return rewrite(`/blog/${blogPost[1]}`);
 
+  // A shared catalog link (ROADMAP.md F-11c): /catalog/{body}.{mac}. The dot
+  // keeps it apart from a CMS item, whose slugs can't contain one.
+  const catalog = /^\/catalog\/([A-Za-z0-9_-]{8,2400}\.[A-Za-z0-9_-]{8,64})\/?$/.exec(path);
+  if (catalog) return rewrite(`/catalog/${catalog[1]}`);
+
   // A CMS item (/{collection}/{item}, P4-11). An unknown collection or item
   // is redirected to the marketplace by the route, as before.
   const cmsItem = /^\/([a-z0-9](?:[a-z0-9-]{0,126}[a-z0-9])?)\/([a-z0-9](?:[a-z0-9-]{0,198}[a-z0-9])?)\/?$/.exec(path);

@@ -9,7 +9,7 @@ import { logServerError } from "@workspace/db/log";
  * invalidates the tag on every change.
  */
 export const getCachedStorefrontTracking = createCachedQuery({
-  name: "storefront:tracking:v1",
+  name: "storefront:tracking:v2", // v2: + metaBlockedEvents (F-30)
   ttl: cacheProfiles.seller,
   tags: (sellerId: string, storeId: string) => [storeTags.integrations(sellerId, storeId)],
   query: (_sellerId: string, storeId: string) => getStorefrontTracking(storeId),

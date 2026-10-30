@@ -12,6 +12,8 @@ export interface PrintSender {
 
 export interface PrintOrderLine {
   id: string;
+  productId: string | null;
+  variantId: string | null;
   productName: string;
   variantName: string | null;
   sku: string | null;

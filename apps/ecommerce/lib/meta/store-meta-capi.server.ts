@@ -1,8 +1,11 @@
 import {
+  deferStorePurchase,
   getStoreMetaCapiCredentials,
+  getStoreMetaTracking,
   recordMetaCapiResult,
 } from '@workspace/lib/integrations/server'
-import { sendMetaCapiEvent } from './meta.server'
+import { orderTimePurchaseDecision } from '@workspace/lib/integrations'
+import { buildMetaCapiEvent, sendMetaCapiEvent } from './meta.server'
 import { getMetaCapiUserData } from './meta.user'
 import { toMetaContentIds } from './meta.product'
 import { DEFAULT_CURRENCY } from '@/lib/constants'
@@ -22,13 +25,29 @@ export type StorePurchaseInput = {
  * the browser Purchase. Credentials are loaded here, on the server, for the
  * store id the caller resolved from the request host; nothing is logged but
  * a redacted error. Never throws: the order is already committed.
+ *
+ * The store's Meta settings (ROADMAP.md F-30) decide first: Purchase off →
+ * nothing; "when delivered" (with CAPI) → the visitor's match data is saved
+ * on the order and the one Purchase is sent on delivery
+ * (sendDeliveredMetaPurchase); otherwise today's Purchase at checkout.
  */
 export async function sendStorePurchaseEvent ({ storeId, order, items }: StorePurchaseInput): Promise<void> {
   try {
     const credentials = await getStoreMetaCapiCredentials(storeId)
     if (!credentials) return
 
+    const { settings, capiConnected } = await getStoreMetaTracking(storeId)
+    const decision = orderTimePurchaseDecision(settings, capiConnected)
+    if (decision === 'skip') return
+
     const { userData, eventSourceUrl } = await getMetaCapiUserData()
+    if (decision === 'defer') {
+      // Same user_data the checkout Purchase would carry (PII hashed here).
+      const built = buildMetaCapiEvent({ eventName: 'Purchase', eventId: order.id, userData })
+      await deferStorePurchase({ orderId: order.id, storeId, userData: built.user_data, eventSourceUrl })
+      return
+    }
+
     const result = await sendMetaCapiEvent(
       {
         eventName: 'Purchase',

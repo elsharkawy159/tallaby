@@ -12,6 +12,7 @@ import {
   categories,
   brands,
   storeProducts,
+  sellerCategoryProductPositions,
   eq,
   and,
   or,
@@ -65,7 +66,12 @@ interface ProductFilters {
   /** Only products whose list price is above the selling price. */
   onSale?: boolean;
   searchQuery?: string;
-  sortBy?: "price_asc" | "price_desc" | "rating" | "newest" | "popular";
+  /**
+   * `featured`: a seller category's manual order (0128, ROADMAP.md F-24d):
+   * placed products first by position, then the rest newest first. Without a
+   * seller category it is newest first.
+   */
+  sortBy?: "price_asc" | "price_desc" | "rating" | "newest" | "popular" | "featured";
   limit?: number;
   offset?: number;
   locale?: ProductLocale;
@@ -246,6 +252,16 @@ export const getProducts = createCachedQuery({
         case "popular":
           orderBy.push(desc(products.reviewCount));
           break;
+        case "featured": {
+          const sellerCategoryId = filters.storeCategory?.sellerCategoryId;
+          if (sellerCategoryId) {
+            orderBy.push(
+              sql`(SELECT scp.position FROM ${sellerCategoryProductPositions} scp WHERE scp.seller_category_id = ${sellerCategoryId} AND scp.product_id = ${products.id} AND scp.seller_id = ${products.sellerId}) ASC NULLS LAST`,
+            );
+          }
+          orderBy.push(desc(products.createdAt), asc(products.id));
+          break;
+        }
         default:
           orderBy.push(desc(products.createdAt));
       }

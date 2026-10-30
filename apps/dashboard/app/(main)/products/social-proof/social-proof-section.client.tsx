@@ -2,7 +2,8 @@
 
 import { Controller, useFieldArray, useFormContext, useFormState, useWatch } from "react-hook-form";
 import { useTranslations } from "next-intl";
-import { Eye, MessageSquareQuote, Plus, Star, Trash2 } from "lucide-react";
+import { Eye, Flame, MessageSquareQuote, Plus, Star, Trash2 } from "lucide-react";
+import { LOW_STOCK_THRESHOLD_DEFAULT, LOW_STOCK_THRESHOLD_MAX, LOW_STOCK_THRESHOLD_MIN } from "@workspace/store-sections/low-stock";
 import { Button } from "@workspace/ui/components/button";
 import { Checkbox } from "@workspace/ui/components/checkbox";
 import { Input } from "@workspace/ui/components/input";
@@ -15,16 +16,22 @@ import type { AddProductFormData } from "../add/add-product.schema";
 import { REVIEW_COMMENT_MAX, REVIEWER_NAME_MAX, SELLER_REVIEWS_MAX } from "./social-proof.dto";
 
 /**
- * Reviews the seller really received elsewhere (typed in, never generated)
- * and the product page's live views counter, off until the seller ticks it.
+ * Reviews the seller really received elsewhere (typed in, never generated),
+ * the product page's live views counter, and the low-stock alert (F-34),
+ * both off until the seller ticks them.
  */
 export function SocialProofSection({ id = "sec-social-proof" }: { id?: string }) {
   const t = useTranslations("productForm.sections.socialProof");
   const form = useFormContext<AddProductFormData>();
   const { fields, append, remove } = useFieldArray({ control: form.control, name: "sellerReviews", keyName: "key" });
   const showLiveViews = useWatch({ control: form.control, name: "showLiveViews" });
-  const { errors } = useFormState({ control: form.control, name: "sellerReviews" });
-  const parts = [fields.length ? t("summaryReviews", { count: fields.length }) : null, showLiveViews ? t("summaryLiveViews") : null].filter(Boolean);
+  const showLowStockBadge = useWatch({ control: form.control, name: "showLowStockBadge" });
+  const { errors } = useFormState({ control: form.control, name: ["sellerReviews", "lowStockThreshold"] });
+  const parts = [
+    fields.length ? t("summaryReviews", { count: fields.length }) : null,
+    showLiveViews ? t("summaryLiveViews") : null,
+    showLowStockBadge ? t("summaryLowStock") : null,
+  ].filter(Boolean);
 
   return (
     <CollapsibleSection
@@ -35,7 +42,7 @@ export function SocialProofSection({ id = "sec-social-proof" }: { id?: string })
       summary={parts.length ? parts.join(" · ") : t("summaryNone")}
       summaryTone={parts.length ? "ok" : "muted"}
       filled={parts.length > 0}
-      invalid={Boolean(errors.sellerReviews)}
+      invalid={Boolean(errors.sellerReviews || errors.lowStockThreshold)}
     >
       <Controller
         control={form.control}
@@ -53,6 +60,8 @@ export function SocialProofSection({ id = "sec-social-proof" }: { id?: string })
           </label>
         )}
       />
+
+      <LowStockAlert />
 
       <SubHeading>{t("reviewsHeading")}</SubHeading>
       <FieldHint>{t("reviewsHint")}</FieldHint>
@@ -141,6 +150,62 @@ function ReviewRow({ index, onRemove }: { index: number; onRemove: () => void })
         <Trash2 />
         {t("removeReview")}
       </Button>
+    </div>
+  );
+}
+
+/** "Show a low-stock alert" (0122): off by default; the threshold appears once it is ticked. */
+function LowStockAlert() {
+  const t = useTranslations("productForm.sections.socialProof");
+  const form = useFormContext<AddProductFormData>();
+  const show = useWatch({ control: form.control, name: "showLowStockBadge" });
+  const thresholdError = useFieldError("lowStockThreshold");
+
+  return (
+    <div className="flex flex-col gap-3 rounded-xl border bg-muted px-4 py-3.5">
+      <Controller
+        control={form.control}
+        name="showLowStockBadge"
+        render={({ field }) => (
+          <label htmlFor="show-low-stock" className="flex cursor-pointer items-start gap-3">
+            <Checkbox id="show-low-stock" checked={!!field.value} onCheckedChange={(checked) => field.onChange(checked === true)} className="mt-0.5" />
+            <span className="min-w-0">
+              <span className="flex items-center gap-1.5 text-sm font-semibold">
+                <Flame className="size-4 text-muted-foreground" aria-hidden />
+                {t("lowStock")}
+              </span>
+              <span className="mt-0.5 block text-xs leading-relaxed text-muted-foreground">{t("lowStockDescription")}</span>
+            </span>
+          </label>
+        )}
+      />
+      {show && (
+        <Controller
+          control={form.control}
+          name="lowStockThreshold"
+          render={({ field }) => (
+            <div className="flex flex-col gap-1.5 ps-7">
+              <FieldLabel htmlFor="low-stock-threshold">{t("lowStockThreshold")}</FieldLabel>
+              <Input
+                id="low-stock-threshold"
+                type="number"
+                inputMode="numeric"
+                min={LOW_STOCK_THRESHOLD_MIN}
+                max={LOW_STOCK_THRESHOLD_MAX}
+                step={1}
+                value={field.value ?? ""}
+                placeholder={String(LOW_STOCK_THRESHOLD_DEFAULT)}
+                onChange={(e) => field.onChange(e.target.value === "" ? null : Number(e.target.value))}
+                onBlur={field.onBlur}
+                aria-invalid={Boolean(thresholdError)}
+                className={cn(FIELD_CLASS, "w-28 max-md:text-base")}
+              />
+              <FieldHint>{t("lowStockThresholdHint", { count: field.value ?? LOW_STOCK_THRESHOLD_DEFAULT })}</FieldHint>
+              <FieldError>{thresholdError ? t("lowStockThresholdInvalid", { min: LOW_STOCK_THRESHOLD_MIN, max: LOW_STOCK_THRESHOLD_MAX }) : null}</FieldError>
+            </div>
+          )}
+        />
+      )}
     </div>
   );
 }

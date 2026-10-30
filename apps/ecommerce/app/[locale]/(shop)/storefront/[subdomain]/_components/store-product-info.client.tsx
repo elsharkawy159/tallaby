@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Truck } from "lucide-react";
+import { Flame, Truck } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { formatPrice, formatPricePlain } from "@workspace/lib";
 import { LIVE_VIEWS_TICK_MS, liveViewsBase, nextLiveViews } from "@/components/product-page/live-views.lib";
@@ -101,6 +101,24 @@ export function StoreStockLine({ hasStock, isLowStock, stock }: { hasStock: bool
       <span aria-hidden className="size-2 shrink-0 rounded-full" style={{ background: tone }} />
       {!hasStock ? t("outOfStock") : isLowStock ? t("lowStock", { count: stock }) : t("inStock")}
     </span>
+  );
+}
+
+/**
+ * The seller's low-stock alert (F-34): "Only 2 left, order before it's gone",
+ * louder than the pill, from the real stock. The flame pulses only when the
+ * visitor allows motion; screen readers hear it once, with the stock line.
+ */
+export function StoreLowStockAlert({ left }: { left: number }) {
+  const t = useTranslations("storeProduct");
+  return (
+    <p
+      className="inline-flex w-fit items-center gap-2 rounded-(--sf-radius,12px) px-3.5 py-2 text-sm font-bold leading-snug"
+      style={{ background: `color-mix(in srgb, ${DANGER} 10%, transparent)`, color: `color-mix(in srgb, ${DANGER} 80%, var(--sf-ink))` }}
+    >
+      <Flame aria-hidden className="size-4 shrink-0 motion-safe:animate-pulse" style={{ color: DANGER }} />
+      {t("lowStockAlert", { count: left })}
+    </p>
   );
 }
 

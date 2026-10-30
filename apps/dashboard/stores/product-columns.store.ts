@@ -16,22 +16,28 @@ export const DEFAULT_PRODUCT_COLUMN_ORDER = [
   "discount",
   "rating",
   "quantity",
+  "views",
   "status",
   "actions",
 ];
 
 /**
  * Reconciles a persisted order against the columns that actually exist today:
- * drops ids that were removed, appends ids that were added since it was saved.
+ * drops ids that were removed, and puts ids added since it was saved right
+ * after the column they follow in `currentIds` (at the start when first).
  */
 export function reconcileColumnOrder(
   storedOrder: string[],
   currentIds: string[]
 ): string[] {
   const known = new Set(currentIds);
-  const kept = storedOrder.filter((id) => known.has(id));
-  const added = currentIds.filter((id) => !kept.includes(id));
-  return [...kept, ...added];
+  const result = storedOrder.filter((id) => known.has(id));
+  currentIds.forEach((id, i) => {
+    if (result.includes(id)) return;
+    const after = i > 0 ? result.indexOf(currentIds[i - 1]!) : -1;
+    result.splice(after + 1, 0, id);
+  });
+  return result;
 }
 
 interface ProductColumnsState {

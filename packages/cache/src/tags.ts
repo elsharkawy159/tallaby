@@ -76,6 +76,13 @@ export const storeTags = {
   cms: (sellerId: string, storeId: string) => `store:cms:${sellerId}:${storeId}`,
   /** Store views read from Tallaby's GA4 property (SA-01). Dashboard only. */
   views: (sellerId: string, storeId: string) => `store:views:${sellerId}:${storeId}`,
+  /**
+   * Dashboard › Reports (ROADMAP.md F-15a): counts and sums per store and
+   * period only, never order, customer or wallet rows. Short TTL, no purges.
+   */
+  reports: (sellerId: string, storeId: string) => `store:reports:${sellerId}:${storeId}`,
+  /** The sales pop-up's anonymised recent-orders feed (ROADMAP.md F-22a). Short TTL; no per-customer data. */
+  recentOrders: (sellerId: string, storeId: string) => `store:recent-orders:${sellerId}:${storeId}`,
 } as const;
 
 export const reviewTags = {

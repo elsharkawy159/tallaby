@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
-import { Bell, CheckCheck } from "lucide-react";
+import { Bell, BellRing, CheckCheck } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@workspace/ui/components/popover";
 import {
   notificationCount,
@@ -87,8 +87,20 @@ function useSellerNotificationFeed() {
 export function NotificationBell({ className }: { className?: string }) {
   const t = useTranslations("notifications");
   const { feed, setFeed, refresh } = useSellerNotificationFeed();
+  const tPush = useTranslations("pushAlerts");
   const [open, setOpen] = useState(false);
   const unread = feed?.unreadCount ?? 0;
+  // Phone alerts prompt (F-06): only while this browser can push and was never asked.
+  const [canAskPush, setCanAskPush] = useState(false);
+  useEffect(() => {
+    if (!open) return;
+    setCanAskPush(
+      "serviceWorker" in navigator &&
+        "PushManager" in window &&
+        "Notification" in window &&
+        Notification.permission === "default",
+    );
+  }, [open]);
 
   const markRead = useCallback(
     async (ids?: string[]) => {
@@ -168,6 +180,16 @@ export function NotificationBell({ className }: { className?: string }) {
             </ul>
           )}
         </div>
+        {canAskPush && (
+          <Link
+            href="/settings#push-alerts"
+            onClick={() => setOpen(false)}
+            className="flex items-center gap-2 border-t px-4 py-2.5 text-xs font-medium text-primary transition-colors hover:bg-muted/60"
+          >
+            <BellRing className="size-3.5" />
+            {tPush("bellPrompt")}
+          </Link>
+        )}
       </PopoverContent>
     </Popover>
   );
@@ -190,6 +212,9 @@ function NotificationRow({
     rating,
     // Grouped rows (referral_commission_earned, one per day).
     count: notificationCount(item.data),
+    // low_stock (0125): product name (+ variant) and the stock left.
+    name: [notificationText(item.data, "name"), notificationText(item.data, "variantTitle")].filter(Boolean).join(" · "),
+    stock: typeof item.data.stock === "number" ? item.data.stock : 0,
   };
   const href = sellerNotificationHref(item);
   const known = t.has(`${item.type}.title`);

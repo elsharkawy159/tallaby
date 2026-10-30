@@ -178,6 +178,24 @@ describe.skipIf(!TEST_DATABASE_URL || !SELLER_ID)("product reviews and live view
     await expect(db.insert(reviews).values({ productId, sellerId: SELLER_ID, source: "customer", rating: 5, status: "approved" })).rejects.toThrow();
   });
 
+  it("saves and loads the low-stock alert, and refuses a threshold out of range (0122)", async () => {
+    const { db, eq, products, saveProductSocialProof, loadProductSocialProof } = await load();
+    const current = await loadProductSocialProof(SELLER_ID, productId);
+    const base = { showLiveViews: true, reviews: current.reviews };
+    expect(await saveProductSocialProof(productId, { ...base, showLowStockBadge: true, lowStockThreshold: 3 })).toEqual({ success: true });
+    expect(await loadProductSocialProof(SELLER_ID, productId)).toMatchObject({ showLowStockBadge: true, lowStockThreshold: 3 });
+    for (const lowStockThreshold of [0, 100, 2.5]) {
+      expect(await saveProductSocialProof(productId, { ...base, showLowStockBadge: true, lowStockThreshold })).toEqual({ success: false, error: "invalidInput" });
+    }
+    await expect(db.update(products).set({ lowStockThreshold: 0 }).where(eq(products.id, productId))).rejects.toThrow();
+    // Another seller can't switch it off.
+    session.sellerId = randomUUID();
+    expect(await saveProductSocialProof(productId, { ...base, showLowStockBadge: false })).toEqual({ success: false, error: "notFound" });
+    session.sellerId = SELLER_ID;
+    const [product] = await db.select().from(products).where(eq(products.id, productId));
+    expect([product!.showLowStockBadge, product!.lowStockThreshold]).toEqual([true, 3]);
+  });
+
   it("keeps the final state for the storefront check", async () => {
     const { saveProductSocialProof, loadProductSocialProof } = await load();
     const current = await loadProductSocialProof(SELLER_ID, productId);

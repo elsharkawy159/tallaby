@@ -17,7 +17,7 @@ import {
   isCouponPopupTrigger,
   type CouponPopupTrigger,
 } from "@workspace/lib/orders/coupon-popup";
-import { and, desc, eq, inArray, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { getLocale } from "next-intl/server";
 import { z } from "zod";
@@ -179,7 +179,7 @@ export async function getSellerCouponsPage(): Promise<SellerCouponsPage> {
       .where(eq(coupons.sellerId, sellerId))
       .groupBy(couponUsage.couponId),
     db.query.products.findMany({
-      where: eq(products.sellerId, sellerId),
+      where: and(eq(products.sellerId, sellerId), isNull(products.deletedAt)),
       columns: { id: true, images: true, price: true, status: true },
       with: { productTranslations: { columns: { locale: true, title: true } } },
       orderBy: [desc(products.createdAt)],

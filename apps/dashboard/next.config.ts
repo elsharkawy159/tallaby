@@ -15,6 +15,20 @@ const nextConfig: NextConfig = {
       hostname,
     })),
   },
+  // Push alerts service worker (F-06): never cached, so a fixed sw.js reaches
+  // every device on its next visit (Next docs, Progressive Web Apps guide).
+  async headers() {
+    return [
+      {
+        source: "/sw.js",
+        headers: [
+          { key: "Content-Type", value: "application/javascript; charset=utf-8" },
+          { key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
+          { key: "Content-Security-Policy", value: "default-src 'self'; script-src 'self'" },
+        ],
+      },
+    ];
+  },
 };
 
 const withNextIntl = createNextIntlPlugin();

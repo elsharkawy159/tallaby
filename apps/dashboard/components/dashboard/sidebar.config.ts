@@ -68,6 +68,10 @@ export const SIDEBAR_CONFIG: NavEntry[] = [
       { key: "addProducts", href: "/products/add", status: "live" },
       // The seller's own category list (0068). Which products a store shows is in Store settings › General.
       { key: "sellerCategories", href: "/products/categories", status: "live" },
+      // Low stock, quick restock and stock history (0125, F-10).
+      { key: "inventory", href: "/products/inventory", status: "live" },
+      // Deleted products wait here 30 days (0123, F-35).
+      { key: "productTrash", href: "/products/trash", status: "live" },
       { key: "reviews", href: "/reviews", countKey: "reviews", status: "live" },
     ],
   },
@@ -81,6 +85,8 @@ export const SIDEBAR_CONFIG: NavEntry[] = [
       { key: "missedOrders", href: "/orders/missed", status: "live" },
       // Customers of a store, grouped from its orders by phone (F-01).
       { key: "customers", href: "/orders/customers", status: "live" },
+      // Scan a returned parcel's barcode to find the order and mark it returned (F-04e).
+      { key: "scanReturns", href: "/orders/scan", status: "live" },
       // Tracking individual orders; /shipping redirects here (P3-06).
       { key: "deliveryTracking", href: "/orders/delivery", countKey: "shipping", status: "live" },
     ],
@@ -104,8 +110,8 @@ export const SIDEBAR_CONFIG: NavEntry[] = [
     items: [
       { key: "walletBalance", href: "/wallet", status: "live" },
       { key: "accountStatements", href: "/financial", countKey: "financial", status: "live" },
-      // Hidden until the page has content (owner, 2026-10-19).
-      // { key: "reports", href: "/reports", status: "live" },
+      // Per-store funnel, sources, refusals by governorate, best/worst products (ROADMAP.md F-15a).
+      { key: "reports", href: "/reports", status: "live", exact: true },
     ],
   },
   { kind: "divider" },
@@ -136,6 +142,14 @@ export const SIDEBAR_CONFIG: NavEntry[] = [
     items: [
       { key: "coupons", href: "/coupons", countKey: "promotions", status: "live" },
       { key: "campaigns", href: "/marketing", countKey: "marketing", status: "live" },
+      // Newsletter sign-ups from the store's sign-up forms (ROADMAP.md F-16d).
+      { key: "subscribers", href: "/marketing/subscribers", status: "live" },
+      // Store email campaigns + win-back (ROADMAP.md F-16a, F-16e).
+      { key: "emailCampaigns", href: "/marketing/emails", status: "live" },
+      // Shareable product catalog link / PDF for WhatsApp (ROADMAP.md F-11c).
+      { key: "catalogShare", href: "/marketing/catalog", status: "live" },
+      // UTM link builder + orders per campaign (ROADMAP.md F-26a), a tab of Reports.
+      { key: "campaignTracking", href: "/reports/campaigns", status: "live" },
     ],
   },
   // Store views from Tallaby's GA4 (SA-01).
@@ -148,10 +162,14 @@ export const SIDEBAR_CONFIG: NavEntry[] = [
     items: [
       { key: "general", href: "/stores/[storeId]/settings", status: "live", exact: true },
       { key: "paymentMethods", href: "/stores/[storeId]/settings/payments", status: "live" },
+      // Extra checkout fields + thank-you page (ROADMAP.md F-25).
+      { key: "checkoutForm", href: "/stores/[storeId]/settings/checkout", status: "live" },
       // Phone blocklist + WhatsApp confirm message (ROADMAP.md F-02).
       { key: "orderProtection", href: "/stores/[storeId]/settings/protection", status: "live" },
       // The store website as an installable app (ROADMAP.md F-36).
       { key: "storeApp", href: "/stores/[storeId]/settings/app", status: "live" },
+      // Real recent orders as toasts on the store website (ROADMAP.md F-22).
+      { key: "salesPopup", href: "/stores/[storeId]/settings/sales-popup", status: "live" },
     ],
   },
   { kind: "divider" },

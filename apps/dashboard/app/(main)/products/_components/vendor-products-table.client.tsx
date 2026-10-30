@@ -13,7 +13,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@workspace/ui/components/tooltip";
-import { deleteProduct } from "@/actions/products";
+import { restoreProductsAction, trashProductsAction } from "../trash/trash.server";
 import {
   reconcileColumnOrder,
   useProductColumnsStore,
@@ -29,6 +29,7 @@ import {
 } from "./product-card.client";
 import { ProductImageUpload } from "./product-image-upload";
 import { ProductStatusCell } from "./product-publish-toggle.client";
+import { ProductViewsCell, useProductViewsColumnLabel } from "./product-views.client";
 import { discountPercent } from "./products-view.lib";
 import type { VendorProduct } from "./vendor-products.section";
 
@@ -69,14 +70,20 @@ const CopyableTitle = ({ title }: { title: string }) => {
 export function VendorProductsTable({
   products,
   onDelete,
+  selectedIds,
+  onSelectedIdsChange,
 }: {
   products: VendorProduct[];
   onDelete: (product: VendorProduct) => void;
+  /** Selection owned by the products section (bulk edit, F-24b). */
+  selectedIds?: Set<string>;
+  onSelectedIdsChange?: (ids: Set<string>) => void;
 }) {
   const { visibility, order, setVisibility, setOrder } =
     useProductColumnsStore();
   const t = useTranslations("products.list");
   const locale = useLocale();
+  const viewsLabel = useProductViewsColumnLabel();
   const tableLabels = useTableSectionLabels();
   const router = useRouter();
 
@@ -198,6 +205,14 @@ export function VendorProductsTable({
         size: 110,
       },
       {
+        // Store product page views and views → orders (F-15b); "—" without GA4.
+        id: "views",
+        header: viewsLabel,
+        meta: { label: viewsLabel, hideOnMobile: true },
+        cell: ({ row }) => <ProductViewsCell productId={row.original.id} />,
+        size: 110,
+      },
+      {
         id: "status",
         accessorKey: "status",
         header: t("columns.status"),
@@ -222,7 +237,7 @@ export function VendorProductsTable({
       },
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [t, locale]
+    [t, locale, viewsLabel]
   );
 
   const columnOrder = useMemo(
@@ -242,17 +257,40 @@ export function VendorProductsTable({
       onColumnVisibilityChange={setVisibility}
       columnOrder={columnOrder}
       onColumnOrderChange={setOrder}
+      {...(selectedIds && onSelectedIdsChange
+        ? {
+            rowSelection: Object.fromEntries([...selectedIds].map((id) => [id, true])),
+            onRowSelectionChange: (selection: Record<string, boolean>) =>
+              onSelectedIdsChange(new Set(Object.keys(selection).filter((id) => selection[id]))),
+          }
+        : {})}
       hideViewOptions
       hideSearch
       buttons={(table) => <ManageColumnsDialog table={table} />}
       onDeleteSelected={async (ids) => {
-        const results = await Promise.all(ids.map((id) => deleteProduct(id)));
-        const failed = results.filter((result) => !result.success).length;
-        if (failed > 0) toast.error(t("bulkDeleteFailed", { count: failed }));
-        if (failed < ids.length) toast.success(t("bulkDeleted", { count: ids.length - failed }));
+        // Delete moves products to Trash (F-35); the toast offers Undo.
+        const res = await trashProductsAction(ids);
+        const done = res.success ? res.count : 0;
+        if (ids.length - done > 0) toast.error(t("bulkDeleteFailed", { count: ids.length - done }));
+        if (res.success && done > 0) {
+          toast.success(t("bulkDeleted", { count: done }), {
+            action: {
+              label: t("undo"),
+              onClick: async () => {
+                const undone = await restoreProductsAction(res.ids);
+                if (undone.success) toast.success(t("restored", { count: undone.count }));
+                else toast.error(t("restoreFailed"));
+                router.refresh();
+              },
+            },
+          });
+        }
         router.refresh();
       }}
-      labels={tableLabels}
+      labels={{
+        ...tableLabels,
+        confirmDescription: () => t("deleteDescription"),
+      }}
     />
   );
 }

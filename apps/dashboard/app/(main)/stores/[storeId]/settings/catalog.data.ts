@@ -1,4 +1,4 @@
-import { and, db, desc, eq, productTranslations, products, sql, storeProducts } from "@workspace/db";
+import { and, db, desc, eq, isNull, productTranslations, products, sql, storeProducts } from "@workspace/db";
 import { parsePriceJson } from "@workspace/lib";
 import { STORE_CATALOG_MAX_PRODUCTS } from "@workspace/lib/stores";
 import type { CatalogProduct } from "./catalog.dto";
@@ -26,7 +26,7 @@ export async function loadCatalogProducts(sellerId: string, storeId: string): Pr
       titleEn: sql<string | null>`(SELECT t.title FROM ${productTranslations} t WHERE t.product_id = ${products.id} AND t.locale = 'en' LIMIT 1)`,
     })
     .from(products)
-    .where(and(eq(products.sellerId, sellerId)))
+    .where(and(eq(products.sellerId, sellerId), isNull(products.deletedAt)))
     .orderBy(desc(picked), desc(products.createdAt))
     .limit(STORE_CATALOG_MAX_PRODUCTS);
 

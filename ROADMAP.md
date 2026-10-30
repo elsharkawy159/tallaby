@@ -28,7 +28,7 @@
    - When something blocks a task: write the blocker under the task and in §7.
    - When the owner asks for a new feature: add it to §5 (intake) the same turn, then turn it into a §4 feature with tasks and place it in the §3 priority order.
    - Move a feature in §2 (inventory) from "missing" to "live" when it ships.
-4. **Migrations:** hand-written, idempotent SQL in `packages/db/migrations/NNNN_name.sql`, mirrored in `packages/db/src/drizzle/schema.ts` and `relations.ts`. Check the next free number in `CLAUDE.md` rule 6 and in `packages/db/migrations/` (at 2026-10-29 the next is **`0119`**). New server-only tables: RLS on, no policies. Record every new migration in CLAUDE.md rule 6 and here. Apply to staging first; production only with owner approval. Never run `drizzle-kit generate`.
+4. **Migrations:** hand-written, idempotent SQL in `packages/db/migrations/NNNN_name.sql`, mirrored in `packages/db/src/drizzle/schema.ts` and `relations.ts`. Check the next free number in `CLAUDE.md` rule 6 and in `packages/db/migrations/` (at 2026-10-30 the next is **`0127`**). New server-only tables: RLS on, no policies. Record every new migration in CLAUDE.md rule 6 and here. Apply to staging first; production only with owner approval. Never run `drizzle-kit generate`.
 5. Every store-scoped table has `store_id` (and a check that the store belongs to the session seller). Every new string goes in both `ar.json` and `en.json` (Arabic first). Use the feature file split (`*.server.ts`, `*.data.tsx`, `*.client.tsx`, `*.dto.ts`, `*.types.ts`, `*.lib.ts`).
 6. Verify each task with `pnpm lint`, `pnpm typecheck`, `pnpm test` (or `--filter`), and record manual E2E checks in §7.
 7. All work happens on `main` in the main worktree (owner, 2026-10-28), unless the owner says otherwise.
@@ -253,7 +253,7 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 
 **Why:** Sellers sell to the same people again on WhatsApp. Today they cannot see who bought, how often, or for how much.
 **What:** A Customers page per store: name, phone, governorate, order count, total spent, last order, COD success rate (delivered vs refused/returned), link to orders, WhatsApp button, notes and tags, CSV export.
-**Status:** [In progress] F-01a built 2026-10-30 on `main` (uncommitted, no migration). It lives in `packages/lib/src/customers/` (`@workspace/lib/customers`, `/customers/server`), not the dashboard folder, so F-02d can reuse it. `listStoreCustomers(sellerId, storeId)` and `getStoreCustomer(sellerId, storeId, key)` join `stores` on the session seller. A customer is a store's orders with the same phone (normalised like the blocklist, so it matches F-02), or the same user when there is no usable phone. Delivered = order `delivered`; refused = order `returned` or a `failed`/`returned` shipment; cancelled/refunded are left out of spend and success rate. Reads the newest 5000 orders per store. F-01b built 2026-10-30 (uncommitted): Orders › Customers (`/orders/customers`, `app/(main)/orders/customers/`), one store at a time (URL `?store=` if it is the seller's, else the sidebar's selected store). It has search (name, email, phone in any spelling), filters (all, repeat buyers, refused an order), sort (last order, most orders, most spent), three counters, and a table showing 100 rows plus "Show more". The drawer has stats, WhatsApp, Call, Block/Unblock (the F-02 blocklist actions), and the order history linking to `/orders?order=<id>`. Phone E2E is not done yet. F-01c built 2026-10-30 (uncommitted; 0121 on staging, production pending owner approval): notes and tags in the customer drawer, tags under the name in the table, a tag filter, and search also matches notes and tags. F-01d built 2026-10-30 (uncommitted, no migration): "Export (N)" downloads the rows on screen as .xlsx. Left: F-01e (needs F-05), the browser E2E.
+**Status:** [In progress] F-01a built 2026-10-30 on `main` (uncommitted, no migration). It lives in `packages/lib/src/customers/` (`@workspace/lib/customers`, `/customers/server`), not the dashboard folder, so F-02d can reuse it. `listStoreCustomers(sellerId, storeId)` and `getStoreCustomer(sellerId, storeId, key)` join `stores` on the session seller. A customer is a store's orders with the same phone (normalised like the blocklist, so it matches F-02), or the same user when there is no usable phone. Delivered = order `delivered`; refused = order `returned` or a `failed`/`returned` shipment; cancelled/refunded are left out of spend and success rate. Reads the newest 5000 orders per store. F-01b built 2026-10-30 (uncommitted): Orders › Customers (`/orders/customers`, `app/(main)/orders/customers/`), one store at a time (URL `?store=` if it is the seller's, else the sidebar's selected store). It has search (name, email, phone in any spelling), filters (all, repeat buyers, refused an order), sort (last order, most orders, most spent), three counters, and a table showing 100 rows plus "Show more". The drawer has stats, WhatsApp, Call, Block/Unblock (the F-02 blocklist actions), and the order history linking to `/orders?order=<id>`. Phone E2E is not done yet. F-01c built 2026-10-30 (uncommitted; 0121 on staging, production pending owner approval): notes and tags in the customer drawer, tags under the name in the table, a tag filter, and search also matches notes and tags. F-01d built 2026-10-30 (uncommitted, no migration): "Export (N)" downloads the rows on screen as .xlsx. F-01e store side built 2026-10-30 (uncommitted): "Order again" on the store's order page. Left: the dashboard "repeat order" (with F-05), the browser E2E.
 
 - **F-01a · P0 · deps: —** Data: a server query that groups the store's orders by customer phone (and user id when signed in), filtered by `store_id` and the session seller. No new table. `app/(main)/stores/[storeId]/customers/customers.server.ts`.
 - **F-01b · P0 · deps: F-01a** Page: table with search, sort, filters (repeat buyers, refused orders), customer drawer with order history. Sidebar entry under Orders. Both languages.
@@ -266,7 +266,7 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 
 **Why:** Refused COD orders cost sellers shipping both ways. EasyOrders sells this as a core feature.
 **What:** Block a phone number from ordering on a store (phone only for now, owner 2026-10-29; IP blocking later if needed); flag risky orders (many refusals across the store, same phone many orders in minutes); optional "confirm order" step where the seller marks an order confirmed before shipping.
-**Status:** [In progress] F-02a–c built 2026-10-29 on `main` (0118 on staging and production, production 2026-10-30): `packages/lib/src/stores/blocked-phones.{lib,server}.ts`, Store settings › Order protection (blocklist), "Block this customer" in the order panel, checkout refusal in `place-order.ts`. F-02g built the same day (WhatsApp "Ask to confirm" on new orders, per-store message in Order protection, 24 h unconfirmed highlight). F-02d built 2026-10-30 (uncommitted, no migration): "Refused N orders" and "Possible duplicate" chips on the order card and in the table, and a note in the order panel. Left: F-02e, F-02f (after F-38b), the optional thank-you-page "Confirm on WhatsApp" link (with F-25b).
+**Status:** [In progress] F-02a–c built 2026-10-29 on `main` (0118 on staging and production, production 2026-10-30): `packages/lib/src/stores/blocked-phones.{lib,server}.ts`, Store settings › Order protection (blocklist), "Block this customer" in the order panel, checkout refusal in `place-order.ts`. F-02g built the same day (WhatsApp "Ask to confirm" on new orders, per-store message in Order protection, 24 h unconfirmed highlight). F-02d built 2026-10-30 (uncommitted, no migration): "Refused N orders" and "Possible duplicate" chips on the order card and in the table, and a note in the order panel. F-02e built 2026-10-30 (uncommitted): per-store checkout limits per IP, phone and user, in memory per server instance (Upstash left). Left: F-02f (after F-38b).
 
 - **F-02a · P0 · deps: —** Migration `store_blocked_phones` (`store_id`, `phone` normalised to `+20…`, `reason`, `created_at`; unique per store + phone; RLS on, no policies). Phone only (owner, 2026-10-29).
 - **F-02b · P0 · deps: F-02a** Storefront checkout check: refuse a blocked phone (compared after normalising, so `010…`, `+2010…` and `2010…` all match) with a neutral message before the order is created. Touches the store-website checkout path only, not money logic; re-read `packages/lib/src/orders/place-order.ts` and keep its behaviour.
@@ -293,7 +293,7 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 
 **Why:** Sellers print a slip for each parcel and share invoices with customers.
 **What:** Printable A4 invoice and A6 packing slip (store logo, order, items, COD amount, barcode), bulk print selected orders, CSV/Excel export of orders, bulk status change.
-**Status:** [In progress] F-04a built 2026-10-30 on `main` (uncommitted, no migration): `/print/orders?doc=invoice|slip&ids=…&lang=ar|en` in `apps/dashboard/app/print/orders/`, opened from a Print menu in the order panel and a "Print (N)" menu on the orders list (the orders on screen, at most 50). Barcode left to F-04e. F-04b built 2026-10-30 (uncommitted, no migration): "Export (N)" on the orders list downloads the orders on screen as .xlsx. Browser E2E of both pending. Left: F-04c–F-04e.
+**Status:** [In progress] F-04a built 2026-10-30 on `main` (uncommitted, no migration): `/print/orders?doc=invoice|slip&ids=…&lang=ar|en` in `apps/dashboard/app/print/orders/`, opened from a Print menu in the order panel and a "Print (N)" menu on the orders list (the orders on screen, at most 50). Barcode left to F-04e. F-04b built 2026-10-30 (uncommitted, no migration): "Export (N)" on the orders list downloads the orders on screen as .xlsx. Browser E2E of both pending. F-04c built 2026-10-30 (uncommitted, no migration): select orders on the list (card checkboxes, "Select all", table checkboxes) for a bar with Confirm, Out for delivery, Delivered, Cancel, Print and Export of the selection. F-04d built 2026-10-30 (uncommitted, no migration): "Picking list (A4)" in the list's Print menu (`doc=picking`), one sheet adding up the printed orders' items. F-04e built 2026-10-30 (uncommitted, no migration): Code 128 order barcode on invoices and slips, Orders › Scan returns (`/orders/scan`). Left: browser E2E.
 
 - **F-04a · P0 · deps: —** Print views (HTML + print CSS, Arabic RTL and English) for one or many orders; store-branded.
 - **F-04b · P0 · deps: —** Orders CSV/Excel export with current filters.
@@ -305,7 +305,7 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 
 **Why:** Much of the sales happen in chat. Sellers want those orders in the same list, shipped the same way.
 **What:** "Create order" in the dashboard: pick products/variants, customer name, phone, address, shipping zone, discount, payment (COD or already paid). The order is tagged `source = manual` and follows the normal stages, shipping and fee rules.
-**Status:** [Planned]
+**Status:** [Planned] F-05a design note written 2026-10-30 (`docs/superpowers/specs/2026-10-30-manual-orders-design.md`); waiting on owner approval and answers.
 
 - **F-05a · P0 · deps: owner approval** Design note: how a manual order goes through the existing order creation (`place-order.ts`) without changing money logic; fee and wallet behaviour equal to a storefront COD order. Get the owner's OK.
 - **F-05b · P0 · deps: F-05a** Migration if needed (an order `source` value), then the create-order form and server action (`requireStore`, stock check).
@@ -315,7 +315,7 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 
 **Why:** EasyOrders and Shopify have apps that ping on every order; Tallaby sellers find out late.
 **What:** Web push for the installed dashboard PWA (and browser): new order, order refused, low stock. Settings per type.
-**Status:** [Planned]
+**Status:** [Live, uncommitted] F-06a/b built 2026-10-30 (Settings › Phone alerts; 0124 on staging). Needs VAPID env + a Supabase webhook on `seller_notifications` INSERT (see §7). Browser E2E pending.
 
 - **F-06a · P1 · deps: —** Migration `seller_push_subscriptions` (`seller_id`, endpoint, keys, user agent; RLS on, no policies). VAPID keys in server env only.
 - **F-06b · P1 · deps: F-06a** Service worker + "Turn on alerts" prompt; send from the existing `seller_notifications` trigger flow.
@@ -348,7 +348,7 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 
 **Why:** Sellers with a team share one password today.
 **What:** Invite staff by email to one or more stores with roles (orders only, products, full). Staff never see wallet/payout unless allowed.
-**Status:** [Planned]
+**Status:** [Planned] F-09a design note + security review written 2026-10-30 (`docs/superpowers/specs/2026-10-30-staff-accounts-design.md`); waiting on the owner's answers (§10 of the note) before F-09b.
 
 - **F-09a · P1 · deps: —** Design note: how `requireSeller`/`requireStore` resolve a staff member to the owner's seller id, and every action that must check the role. Security review before code.
 - **F-09b · P1 · deps: F-09a** Migration `store_staff` (`seller_id`, `user_id`, `store_ids`, `role`, invite token, status) and audit log entries.
@@ -357,7 +357,7 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 ### F-10 Inventory alerts & stock history — P1
 
 **What:** Low-stock threshold per product/variant, alert in notifications (and push, F-06), stock change history (who/why: order, manual edit, import, return).
-**Status:** [Planned]
+**Status:** [Live, uncommitted] F-10a–c built 2026-10-30 (`stock_movements` + triggers, `low_stock` bell/push, Products › Inventory; 0125 on staging). Browser E2E pending.
 
 - **F-10a · P1 · deps: —** Migration: `low_stock_threshold` on products/variants and `stock_movements` (RLS on, no policies).
 - **F-10b · P1 · deps: F-10a** Write movements on order, cancel/return, edit and import; low-stock notification type.
@@ -366,7 +366,7 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 ### F-11 Product feeds (Meta, Google, TikTok) — P1
 
 **What:** A public, per-store product feed URL (CSV/XML) for Meta Commerce catalog, Google Merchant Center and TikTok catalog, with an Apps card explaining setup.
-**Status:** [Planned]
+**Status:** [Live, uncommitted] F-11a/b built 2026-10-30 (feed URLs `/api/feeds/products.{xml,csv}` on the store host, Store › Apps cards). Browser E2E and feed validators pending. F-11c built 2026-10-30 (uncommitted, no migration): signed catalog links `/catalog/<token>` on the store host with a print/PDF view.
 
 - **F-11a · P1 · deps: —** Feed route on the storefront host (published store, active products only, cached with seller-scoped tags).
 - **F-11b · P1 · deps: F-11a** Apps cards with the feed URL and steps, both languages (Meta catalog, Google Merchant, TikTok). Include the product video when there is one, and map store categories to Google/Meta categories.
@@ -383,7 +383,7 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 ### F-13 Automatic discounts — P2 · Needs approval
 
 **What:** Store-wide rules without a code: free shipping over X, buy X get Y, % off a category, time-limited sale.
-**Status:** [Planned]
+**Status:** [In progress] F-13b minimum order built 2026-10-30 (uncommitted, Store settings › Checkout; no migration). Free-shipping threshold waits for owner approval. F-13a/F-13c need F-07a.
 
 - **F-13a · P2 · deps: F-07a** Rules model + checkout application (server-side, one engine with coupons).
 - **F-13b · P1 · deps: —** Store-wide minimum order value (checkout refuses below it, with a clear message) and a store-wide free-shipping threshold on top of the per-zone free-over that exists. Validation only for the minimum; the threshold touches the shipping fee, so check with the owner.
@@ -400,7 +400,7 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 ### F-15 Reports upgrade + per-product views — P1
 
 **What:** Best and worst products, refusal rate by governorate, sales by source (store/marketplace/manual), conversion funnel (views → checkout → order) using store views + leads, and visits per product (EasyOrders is building this, 20 votes).
-**Status:** [Planned]
+**Status:** [Live, uncommitted] F-15b (2026-10-30): "Views (30 days)" on the products table and edit page. F-15a (2026-10-30): `/reports` per store (funnel, sources, refusal by governorate, best/worst products). No migration. Browser and GA4 E2E pending.
 
 - **F-15a · P2 · deps: F-03** Report queries (cached per seller + store) and charts.
 - **F-15b · P1 · deps: —** Per-product views: read GA4 `page_path` for product pages from the existing store-views report (`apps/dashboard/lib/analytics/`, `docs/store-views.md`), show views and views → orders on the products list and product page. No migration.
@@ -408,7 +408,7 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 ### F-16 Campaigns: email, WhatsApp, retargeting — P2
 
 **What:** Send a branded email to store subscribers and past customers (new products, sale), with unsubscribe and limits; WhatsApp broadcasts through the F-14 provider; export customer audiences for Meta/TikTok retargeting.
-**Status:** [Planned]
+**Status:** [In progress] F-16d subscribers list and F-16b audience export built 2026-10-30 (uncommitted, no migration; Marketing › Newsletter subscribers, Orders › Customers › Export audience). F-16a email campaigns and F-16e win-back email built 2026-10-30 (uncommitted; Marketing › Email campaigns `/marketing/emails`; `0129` on staging, production pending; dashboard needs `BACKEND_API_URL` + `INTERNAL_API_SECRET`; E2E pending). Left: F-16c (WhatsApp, no provider yet; F-16e's WhatsApp part waits for it).
 
 - **F-16a · P2 · deps: F-01** Audience, composer, send through the existing email service, `store_email_campaigns` table, daily caps.
 - **F-16b · P2 · deps: F-01** Retargeting audiences: export a segment (buyers, refused, leads from F-03) as a Meta/TikTok custom-audience CSV (phones normalised to E.164). Only the seller's own customers.
@@ -456,7 +456,7 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 
 **Why:** Social proof raises conversion; EasyOrders has it as a marketing tool.
 **What:** Small toasts on the store: "Someone from Giza ordered <product> 12 minutes ago". **Only real orders of that store** (no made-up data, in line with the owner's real-reviews rule, 2026-10-27), no names or phones, governorate only. On/off, delay and pages in the builder or store settings.
-**Status:** [Planned]
+**Status:** [Done, E2E pending] F-22a–b built 2026-10-30 (uncommitted, no migration; settings in `stores.settings.salesPopup`). Store settings › Sales pop-up. Browser E2E on staging pending.
 
 - **F-22a · P1 · deps: —** Public, cached, store-scoped endpoint returning the last N orders as `{product, governorate, minutesAgo}` only; hidden when there are fewer than 3 recent orders.
 - **F-22b · P1 · deps: F-22a** Storefront toast element + setting; respects reduced motion; off on checkout.
@@ -464,7 +464,7 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 ### F-23 Back-in-stock alerts & pre-orders — P2
 
 **What:** "Notify me" on out-of-stock products and variants (phone or email); a message when stock returns. Optional pre-order: accept orders for an out-of-stock product with an expected date. The `popup-restock` design exists but is static.
-**Status:** [Planned]
+**Status:** [In progress] F-23a back-in-stock email alerts built 2026-10-30 (uncommitted; 0126 on staging; daily cron). Left: F-23b pre-orders.
 
 - **F-23a · P2 · deps: F-10b** Migration `store_stock_subscriptions` (RLS on, no policies), storefront form, send on restock.
 - **F-23b · P3 · deps: F-23a** Pre-order flag and date on products; order stage label.
@@ -473,7 +473,7 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 
 **Why:** Sellers change prices often (EasyOrders waitlist, 7 votes: "raise every product in a category at once").
 **What:** Select products (or a whole category) and change price by % or amount, set discount, stock, status or store visibility in one action, with a preview and undo. Product Excel export already exists (`products/_components/import-export-button.client.tsx`).
-**Status:** [Planned]
+**Status:** [In progress] F-24a–b built 2026-10-30 (uncommitted, no migration): "Edit selected" on Products with preview and 10-minute Undo. Store visibility left out (Catalog settings covers it). F-24d built 2026-10-30 (uncommitted; 0128 on staging, production pending): Products › Categories › "Arrange products" drag-to-sort, used as the "Featured" default sort of store category pages and builder category lists. F-24c built 2026-10-30 (uncommitted, no migration): Products › Import/Export › "Update products from Excel" (download, edit, preview, apply). Left: browser E2E.
 
 - **F-24a · P1 · deps: —** Server action that applies a change to many of the seller's products/variants in one transaction (ownership checked per row), plus cache purge.
 - **F-24b · P1 · deps: F-24a** UI on the products list: selection (including "select all"), "Edit selected", preview table, undo for 10 minutes.
@@ -484,7 +484,7 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 
 **Why:** EasyOrders "نموذج الشراء" (planned, 17 votes) and "تعديل صفحة الشكر". COD sellers want a short form and a thank-you page that keeps the customer.
 **What:** Per store: which checkout fields show and are required (email, second phone, area, notes, custom question), field order, governorate/area as dropdowns; a thank-you page with the seller's message, WhatsApp button, suggested products and pixel events kept.
-**Status:** [Planned]
+**Status:** [Live, uncommitted] F-25a/b built 2026-10-30 (Store settings › Checkout; answers go into the order notes; thank-you message, WhatsApp confirm button, suggested products). No migration. Browser E2E pending.
 
 - **F-25a · P1 · deps: —** Store setting (jsonb on `stores` or a `store_checkout_settings` table) + dashboard page; validated server-side at checkout (phone and the delivery address stay required).
 - **F-25b · P1 · deps: F-25a** Thank-you page settings and rendering on the store order-confirmation page.
@@ -492,7 +492,7 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 ### F-26 Campaign tracking (UTM links) — P2
 
 **What:** A link builder for ads and influencers (`utm_source/medium/campaign`), store the first-touch UTM on the order, and show orders and revenue per campaign.
-**Status:** [Planned]
+**Status:** [Live, uncommitted] F-26a built 2026-10-30 (no migration): first-touch UTM cookie on the store host, stored in `orders.metadata.utm` (not a new column), Reports › Campaigns link builder and report.
 
 - **F-26a · P2 · deps: —** Additive order column (`utm jsonb`), capture on the storefront, link builder page, report by campaign.
 
@@ -510,7 +510,7 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 
 **Why:** COD orders that are refused still count as purchases in Meta/TikTok, so ads optimise for the wrong buyers (EasyOrders waitlist: "send Purchase when delivered", "control pixel events").
 **What:** Per store, choose when Purchase is sent to Meta CAPI (and later TikTok Events API): at order (today) or when delivered; send a cancellation signal for refused orders where the platform allows it; switch individual events on or off; abandoned-checkout event from F-03.
-**Status:** [Planned]
+**Status:** [Live, uncommitted] F-30a/b built 2026-10-30 (no migration; settings in the store's `meta_pixel` config): Purchase at order or on delivery (CAPI), per-event toggles in Store › Apps › Meta Pixel. Real Meta test event pending.
 
 - **F-30a · P2 · deps: —** Store setting + server event on the delivered transition (idempotent, one event per order, same `event_id` rules as today's CAPI code in `stores/[storeId]/apps/meta-capi.server.ts`).
 - **F-30b · P2 · deps: F-30a** Event toggles in the Apps page.
@@ -524,7 +524,7 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 - Offers show only for active, in-stock products of the same store (and in that store's catalog).
 - Fits the builder: a `cross-sell` element in the product-page template (tree element, CLAUDE.md rule 17), with a fallback placement for stores whose product page lacks it.
 - **Decided (owner, 2026-10-29): when the seller has set no offer for a product, show nothing.** No automatic suggestions; the cross-sell block renders only when the product has at least one active offer whose product is active and in stock.
-  **Status:** [Planned]
+  **Status:** [Planned] F-32a design note written 2026-10-30 (`docs/superpowers/specs/2026-10-30-cross-sell-design.md`); waiting on owner OK and answers.
 
 - **F-32a · P1 · deps: —** Design note: the discount as an order-item line adjustment computed in piastres at checkout (`place-order.ts` behaviour kept for orders without offers), how it shows on the order and invoice, and the fee base (PLAN.md §13 unchanged: flat EGP 5 per delivered order, so no fee change). Owner OK on the note.
 - **F-32b · P1 · deps: F-32a** Migration `product_cross_sells`: `store_id`, `product_id`, `offer_product_id`, `offer_variant_id`, `discount_type` ('percent' | 'fixed'), `discount_value`, `is_active`, `sort_order`; unique per store + product + offer; RLS on, no policies. Plus `stores.cross_sell_enabled boolean NOT NULL DEFAULT true`. The cart item keeps the accepted `offer_id` so checkout can re-check it. Mirror in `schema.ts` / `relations.ts`.
@@ -546,7 +546,7 @@ Removed: the store already shows a coupon pop-up when a visitor is leaving (`cou
 - **"Time running out":** when the product has a discount with an end date, the existing deal countdown (`DealCountdown` in `store-product-info.client.tsx`) shows beside the badge. No fake timers.
 - Today every store already shows a small automatic pill "متبقٍ N فقط" at stock ≤ 5 (`LOW_STOCK_THRESHOLD` in `apps/ecommerce/components/product-page/product-page.lib.ts`, `StoreStockLine`). The new badge is the seller-controlled, more visible version; when it is on, it replaces that pill on the product so the message is not shown twice. The pill stays as it is for products without the checkbox.
 - Arabic number wording ("قطعة واحدة", "قطعتين", "3 قطع", "11 قطعة") through ICU plurals in both `ar.json` and `en.json`.
-  **Status:** [Planned]
+  **Status:** [In progress] F-34a–c built 2026-10-30 on `main` (uncommitted; 0122 on staging, production pending owner approval before the deploy). Checkbox + threshold in the product form's "Reviews, live views and stock alert" section; the store product page's stock element becomes the urgency badge (follows the selected variant) and the store's generic product card shows "N left". F-34d built 2026-10-30 (uncommitted): `productStockBadge` builder element. Left: browser E2E.
 
 - **F-34a · P1 · deps: —** Migration (additive): `products.show_low_stock_badge boolean NOT NULL DEFAULT false` and `products.low_stock_threshold integer` (1–99, null = 5; shared with F-10a, which later uses it for seller alerts). The product queries select every column, so apply on staging, then production, **before** deploying. Mirror in `schema.ts`.
 - **F-34b · P1 · deps: F-34a** Product form: checkbox + threshold in the same block as "Show live views" (`products/add`, edit, `add-product.schema.ts`), saved through the existing product save path (not `actions/products.ts`).
@@ -562,7 +562,7 @@ Removed: the store already shows a coupon pop-up when a visitor is leaving (`cou
 - **Trash page** in the dashboard (Products › Trash, with a count): photo, name, deleted date, days left, **Restore** and **Delete forever** (with a confirm). Restore brings the product back with everything as it was (status, variants, images, reviews, store catalogs, category counts).
 - **After 30 days** a daily job deletes it permanently (the same cleanup as today's delete: category counts, cache invalidation).
 - Products in Trash do not count against any product limit, and their slug stays reserved so a restore never clashes.
-  **Status:** [Planned]
+  **Status:** [In progress] F-35a–e built 2026-10-30 on `main` (uncommitted; 0123 on staging, production pending owner approval before the deploy). Delete on Products moves to Trash with an Undo toast; Products › Trash restores or deletes forever; a daily cron purges after 30 days. Trashed products are hidden by setting status `draft` (see the §7 log for what that covers). Left: browser E2E, a Trash count in the sidebar, admin lists marking "in trash".
 
 - **F-35a · P1 · deps: —** Migration (additive): `products.deleted_at timestamptz` and `products.deleted_by uuid`, partial index `WHERE deleted_at IS NOT NULL` for the Trash list and the purge job. The product queries select every column, so apply on staging, then production, **before** deploying. Mirror in `schema.ts`.
 - **F-35b · P1 · deps: F-35a** Hide trashed products everywhere: one shared filter (`notDeleted`) used by every product read (storefront, marketplace, search, sitemaps, store catalog, coupons, cross-sell, feeds, admin lists marked "in trash"); carts drop trashed items at checkout (server-side). Grep every `from(products)` / `query.products` and add a test that a trashed product never appears.
@@ -608,7 +608,7 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 - A reversed or refunded top-up reverses its commission. Self-referral (same person, same phone/card, same device) and fake accounts are blocked or held for review; commissions stay "pending" for N days before they become withdrawable.
 - Attribution: the code is saved at signup (link opened in the last 60 days, first link wins); a seller cannot change their referrer later, cannot refer themselves.
   **Decided (owner, 2026-10-29, design note `docs/superpowers/specs/2026-10-29-affiliate-program-design.md`):** a successful referral = the referred seller's first top-up succeeded; 10 referrals and 10 stores are two separate counts (stores of referred sellers, deleted ones excluded); minimum withdrawal EGP 500 (the whole balance per request); no hold (top-ups are never refunded), so commissions are withdrawable at once; only seller accounts get links. ~~Open decisions:~~ what counts as a "successful referral" (signed up / published a store / first top-up / first delivered order)? Are "10 referrals" and "10 stores" two separate counts? Is 20 % on top-ups sustainable against the EGP 5-per-order fee (PLAN.md §13)? Minimum payout and how often? Do customers (non-sellers) get links too?
-  **Status:** [Built, 2026-10-29] F-37a–f done (plan `docs/superpowers/plans/2026-10-29-affiliate-program.md`); 0117 applied on staging and production (production 2026-10-30); browser QA and the attribution integration test (needs 0113 on staging) still to do. F-37g open.
+  **Status:** [Built, 2026-10-29] F-37a–f done (plan `docs/superpowers/plans/2026-10-29-affiliate-program.md`); 0117 applied on staging and production (production 2026-10-30); browser QA and the attribution integration test (needs 0113 on staging) still to do. F-37g built 2026-10-30 (uncommitted): `tallaby.com/affiliates`.
 
 - **F-37a · P1 · deps: owner approval** Design note: the open decisions above, the commission ledger, fraud rules, and confirmation that the business model (PLAN.md §13) is changed only by adding this payout.
 - **F-37b · P1 · deps: F-37a** Migration: `sellers.referral_code` (unique), `sellers.referred_by_seller_id`, `sellers.referred_at`; server-only `referral_commissions` (`referrer_seller_id`, `referred_seller_id`, `top_up_id` unique, `amount numeric(10,2)`, `status` pending | available | paid | reversed, timestamps) and `referral_payouts` (`referrer_seller_id`, `amount`, `method` bank | vodafone_cash, masked destination, `reference`, `paid_by`, `paid_at`); RLS on, no policies. Mirror in `schema.ts` / `relations.ts`.
@@ -648,9 +648,9 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 | Date       | Request (owner's words)                                                                                                                                                                                                                                                                                                                                               | Feature ID                                                                                       | Status                                                                                 |
 | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- |
-| 2026-10-30 | "For the categories sections on the storefront, integrate the section with seller_product_categories table, and check where do we use this seller_categories as I see it's empty?" | Storefront store categories (no feature ID) | Done (uncommitted) |
+| 2026-10-30 | "For the categories sections on the storefront, integrate the section with seller_product_categories table, and check where do we use this seller_categories as I see it's empty?"                                                                                                                                                                                    | Storefront store categories (no feature ID)                                                      | Done (uncommitted)                                                                     |
 | 2026-10-30 | "Integrate https://mersalsms.com MersalSMS for OTP and Orders confirmations"                                                                                                                                                                                                                                                                                          | F-38 (unblocks F-02f, F-14a)                                                                     | Planned (needs price + who pays)                                                       |
-| 2026-10-29 | "let's built the gift 100EGP for new users, user get the gift after publishing his store directly with a celebrating Pop-up … Pause the 7 days free for new users … 100EGP for users who setup their ecommerce only (choose theme, add a product, publish the website) and valid for 30 days only" (+ only sellers who sign up after launch; unspent part disappears) | Welcome gift (no feature ID; PLAN.md §13.1, 0119)                                                | Done (0119 on staging and production, production 2026-10-30)                                             |
+| 2026-10-29 | "let's built the gift 100EGP for new users, user get the gift after publishing his store directly with a celebrating Pop-up … Pause the 7 days free for new users … 100EGP for users who setup their ecommerce only (choose theme, add a product, publish the website) and valid for 30 days only" (+ only sellers who sign up after launch; unspent part disappears) | Welcome gift (no feature ID; PLAN.md §13.1, 0119)                                                | Done (0119 on staging and production, production 2026-10-30)                           |
 | 2026-10-29 | "making the Tallaby seller wallet deducts from it on using AI, so for example if adding a product with AI costs 0.25EGP so deduct it from the Wallet … Specially when I provide them 100EGP free gift for new users for 1 month"                                                                                                                                      | PLAN.md AI-4 (AI credits; wallet charge for AI deferred by owner) + welcome gift                 | AI charge: later (owner testing AI use first); gift: see next row                      |
 | 2026-10-29 | Public seller roadmap page at `/roadmap` (sellers suggest ideas and vote, the team moves cards between Waiting, Planned, In progress and Launched; EasyOrders roadmap as the model)                                                                                                                                                                                   | Seller roadmap page (no feature ID)                                                              | Done (uncommitted, 0115 not applied)                                                   |
 | 2026-10-29 | "can I manage the roadmap requests and columns from Admin project ? … build it, make me manage it from admin project"                                                                                                                                                                                                                                                 | Admin › Seller roadmap (no feature ID)                                                           | Done (uncommitted, 0115 not applied)                                                   |
@@ -686,7 +686,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-03c Leads list in dashboard (2026-10-29; Orders › Not completed)
 - [x] F-04a Invoice + packing slip print (2026-10-30, uncommitted; `/print/orders`; browser E2E pending)
 - [x] F-04b Orders export (2026-10-30, uncommitted; .xlsx of the orders on screen; browser E2E pending)
-- [ ] F-05a Manual orders design (owner approval)
+- [~] F-05a Manual orders design (owner approval) (2026-10-30; note written, owner approval pending)
 - [ ] F-05b Create order form
 
 **P1**
@@ -694,35 +694,35 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-01c Customer notes & tags (2026-10-30, uncommitted; 0121 on staging)
 - [x] F-01d Customers export (2026-10-30, uncommitted; .xlsx of the filtered list)
 - [x] F-02d Risk badge (2026-10-30, uncommitted; card, table and order panel)
-- [x] F-02g Confirm by WhatsApp link (no API) — P0 (2026-10-29, uncommitted; thank-you page link left for F-25b)
+- [x] F-02g Confirm by WhatsApp link (no API) — P0 (2026-10-29, uncommitted; thank-you page link added with F-25b on 2026-10-30)
 - [ ] F-02f Checkout OTP (SMS via MersalSMS, after F-38b)
 - [ ] F-38a MersalSMS account, price and who pays (owner)
 - [ ] F-38b MersalSMS client + `sms_messages` log migration
 - [ ] F-38c Order confirmation SMS with confirm link
 - [ ] F-38d Hook up F-02f and F-14a
 - [x] F-03e Missed-order reminders (2026-10-29; one-click WhatsApp + the existing daily store cart email shown on the lead; automatic WhatsApp with F-14)
-- [ ] F-04c Orders bulk actions
+- [x] F-04c Orders bulk actions (2026-10-30, uncommitted; selection bar on /orders; browser E2E pending)
 - [ ] F-05c Send order link
 - [ ] F-21p Seller-collected payments (PLAN.md P3-07 Part B) — needed by the deposit
 - [ ] F-21a Deposit design (owner approval)
 - [ ] F-21b Deposit migration + settings
 - [ ] F-21c Deposit checkout + seller confirm
-- [ ] F-25a Checkout form settings
-- [ ] F-25b Thank-you page settings
+- [x] F-25a Checkout form settings (2026-10-30, uncommitted; no migration; browser E2E pending)
+- [x] F-25b Thank-you page settings (2026-10-30, uncommitted; browser E2E pending)
 - [ ] F-07f Bundles
-- [ ] F-32a Cross-sell design note (owner OK)
+- [~] F-32a Cross-sell design note (owner OK) (2026-10-30; note written, owner OK pending)
 - [ ] F-32b Offers migration (`product_cross_sells`, `stores.cross_sell_enabled` default on)
 - [ ] F-32c Cross-sell in product form + store switch
 - [ ] F-32d Cross-sell on the store product page and cart
 - [ ] F-32e Cross-sell discount at checkout
-- [ ] F-34a Low-stock badge migration (`show_low_stock_badge`, `low_stock_threshold`)
-- [ ] F-34b Checkbox + threshold in the product form
-- [ ] F-34c Badge on the store product page and cards
-- [ ] F-35a Trash migration (`products.deleted_at`, `deleted_by`)
-- [ ] F-35b Hide trashed products everywhere
-- [ ] F-35c Trash / restore / delete-forever actions
-- [ ] F-35d Trash page + undo toast
-- [ ] F-35e 30-day purge job
+- [x] F-34a Low-stock badge migration (`show_low_stock_badge`, `low_stock_threshold`) (2026-10-30, uncommitted; 0122 on staging)
+- [x] F-34b Checkbox + threshold in the product form (2026-10-30, uncommitted)
+- [x] F-34c Badge on the store product page and cards (2026-10-30, uncommitted; browser E2E pending)
+- [x] F-35a Trash migration (`products.deleted_at`, `deleted_by`) (2026-10-30, uncommitted; 0123 on staging)
+- [x] F-35b Hide trashed products everywhere (2026-10-30, uncommitted; status `draft` + `deleted_at` filters on seller lists)
+- [x] F-35c Trash / restore / delete-forever actions (2026-10-30, uncommitted)
+- [x] F-35d Trash page + undo toast (2026-10-30, uncommitted; browser E2E pending)
+- [x] F-35e 30-day purge job (2026-10-30, uncommitted; `/api/cron/product-trash`)
 - [x] F-36a Store manifest per host (2026-10-29, uncommitted)
 - [x] F-36b App icons from the store favicon/logo (2026-10-29, uncommitted)
 - [x] F-36c "Download application" footer button (2026-10-29, uncommitted)
@@ -732,70 +732,70 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-37d Commission on succeeded top-ups
 - [x] F-37e "اربح معنا" dashboard page
 - [x] F-37f Admin referrals + payouts
-- [ ] F-13b Minimum order + store free-shipping threshold
-- [ ] F-22a Recent orders endpoint
-- [ ] F-22b Sales pop-up on the store
-- [ ] F-24a Bulk edit server action
-- [ ] F-24b Bulk edit UI
-- [ ] F-15b Per-product views
+- [~] F-13b Minimum order + store free-shipping threshold (2026-10-30: minimum built, uncommitted, browser E2E pending; threshold needs owner approval)
+- [x] F-22a Recent orders endpoint (2026-10-30, uncommitted; server-side feed, no public endpoint)
+- [x] F-22b Sales pop-up on the store (2026-10-30, uncommitted; browser E2E pending)
+- [x] F-24a Bulk edit server action (2026-10-30, uncommitted; no migration)
+- [x] F-24b Bulk edit UI (2026-10-30, uncommitted; browser E2E pending)
+- [x] F-15b Per-product views (2026-10-30, uncommitted; GA4 E2E pending)
 - [x] F-03f Shipping cost on missed orders (2026-10-29)
-- [ ] F-04d Picking list
-- [ ] F-06a Push subscriptions migration
-- [ ] F-06b Push alerts
+- [x] F-04d Picking list (2026-10-30, uncommitted; `/print/orders?doc=picking`; browser E2E pending)
+- [x] F-06a Push subscriptions migration (2026-10-30, uncommitted; 0124 on staging)
+- [x] F-06b Push alerts (2026-10-30, uncommitted; needs VAPID env + DB webhook; browser E2E pending)
 - [ ] F-07a Quantity offers design (owner approval)
 - [ ] F-07b Quantity offers in product form
 - [ ] F-07c Quantity offers on storefront
 - [ ] F-08a Inline order form (owner approval)
 - [ ] F-08b Landing page designs
-- [ ] F-09a Staff design + security review
+- [x] F-09a Staff design + security review (2026-10-30, note written; owner answers pending)
 - [ ] F-09b Staff migration
 - [ ] F-09c Staff invite + roles
-- [ ] F-10a Inventory migration
-- [ ] F-10b Stock movements + low-stock alert
-- [ ] F-11a Product feed route
-- [ ] F-11b Feed apps cards
+- [x] F-10a Inventory migration (2026-10-30, uncommitted; 0125 on staging)
+- [x] F-10b Stock movements + low-stock alert (2026-10-30, uncommitted)
+- [x] F-11a Product feed route (2026-10-30, uncommitted; `/api/feeds/products.{xml,csv}`)
+- [x] F-11b Feed apps cards (2026-10-30, uncommitted; browser E2E pending)
 - [ ] F-12a Next carrier chosen
 - [ ] F-12b Carrier integration
 
 **P2 / P3**
 
-- [ ] F-02e Checkout rate limit
+- [x] F-02e Checkout rate limit (2026-10-30, uncommitted; in-memory per server instance, Upstash left)
 - [x] F-03d Lead cleanup cron (2026-10-29; `/api/cron/checkout-leads`)
-- [ ] F-01e Repeat order
+- [x] F-01e Repeat order (2026-10-30, uncommitted; store "Order again" button; the dashboard half waits on F-05)
 - [ ] F-07d Upsell / cross-sell
 - [ ] F-08c Funnel steps
-- [ ] F-10c Inventory page
-- [ ] F-11c Shareable catalog
+- [x] F-10c Inventory page (2026-10-30, uncommitted; `/products/inventory`; browser E2E pending)
+- [x] F-11c Shareable catalog (2026-10-30, uncommitted; Marketing › Shareable catalog + "Share catalog" on selected products; browser E2E pending)
 - [ ] F-13a Automatic discounts
 - [ ] F-13c Coupons in cart + free gift
 - [ ] F-14a / F-14b Customer notifications
-- [ ] F-15a Reports upgrade
-- [ ] F-16a Email campaigns
-- [ ] F-16b Retargeting audiences
+- [x] F-15a Reports upgrade (2026-10-30, uncommitted; `/reports`; browser E2E pending)
+- [x] F-16a Email campaigns (2026-10-30, uncommitted; 0129 on staging; `/marketing/emails`; dashboard backend env + real-send E2E pending)
+- [x] F-16b Retargeting audiences (2026-10-30, uncommitted; Meta/TikTok upload test pending)
 - [ ] F-16c WhatsApp broadcasts
-- [ ] F-16d Subscribers list
+- [x] F-16d Subscribers list (2026-10-30, uncommitted; `/marketing/subscribers`; browser E2E pending)
 - [ ] F-17a Public API & webhooks
-- [ ] F-23a Back-in-stock alerts
+- [x] F-23a Back-in-stock alerts (2026-10-30, uncommitted; 0126 on staging; email E2E pending)
 - [ ] F-23b Pre-orders
-- [ ] F-26a Campaign tracking (UTM)
+- [x] F-26a Campaign tracking (UTM) (2026-10-30, uncommitted; `orders.metadata.utm`, no migration; Reports › Campaigns)
 - [ ] F-18 Store affiliates / referral links
 - [ ] F-19 Gift cards & store credit
 - [ ] F-20 Loyalty points
 - [ ] F-27 A/B tests
 - [ ] F-28 Wholesale pricing
 - [ ] F-29 AI agent connection (MCP)
-- [ ] F-04e Returns barcode scan
+- [x] F-04e Returns barcode scan (2026-10-30, uncommitted; `/orders/scan`; camera needs BarcodeDetector, typing elsewhere)
 - [x] F-36d Store service worker + offline page (2026-10-29, uncommitted)
 - [x] F-36e Store settings › App (2026-10-29, uncommitted; switch + preview only)
-- [ ] F-37g Affiliate program page on tallaby.com
-- [ ] F-16e Win-back messages
-- [ ] F-24c Update products from Excel
-- [ ] F-24d Product order in category
-- [ ] F-30a Purchase on delivery (CAPI)
-- [ ] F-30b Pixel event toggles
+- [x] F-37g Affiliate program page on tallaby.com (2026-10-30, uncommitted; `/affiliates`)
+- [x] F-16e Win-back messages (2026-10-30, uncommitted; 0129 on staging; email only, WhatsApp waits for F-14/F-16c; cron E2E pending)
+- [x] F-24c Update products from Excel (2026-10-30, uncommitted; browser E2E pending)
+- [x] F-24d Product order in category (2026-10-30, uncommitted; 0128 on staging; browser E2E pending)
+- [x] F-30a Purchase on delivery (CAPI) (2026-10-30, uncommitted; real Meta test event pending)
+- [x] F-30b Pixel event toggles (2026-10-30, uncommitted; Store › Apps › Meta Pixel)
 - [ ] F-31 POS and cashier
 - [ ] F-32f Cross-sell report
-- [ ] F-34d Stock badge builder element
+- [x] F-34d Stock badge builder element (2026-10-30, uncommitted; `productStockBadge`, editor E2E pending)
 
 **Done outside the feature list (owner requests, §5)**
 
@@ -807,6 +807,161 @@ Add each new request here first, with the date and the owner's words, then turn 
 ---
 
 ## 7. Log
+
+### 2026-10-30 — Batch 4 closed: F-02e, F-01e, F-11c, F-26a, F-04e, F-37g, F-24c, F-30a/b, F-34d
+
+These were built by parallel subagents in the previous session, which stopped before logging them. A read-only review on 2026-10-30 checked each against the code. None needs a migration (0127 was never used: F-26a went into `orders.metadata.utm` instead of a new column). Next migration: 0130.
+
+- **F-02e** `apps/ecommerce/lib/order-rate-limit.{lib,server}.ts`, in `createOrder` before the minimum-order and form checks, store-website checkout only, keys scoped per store: 5 orders / 10 min per IP, 3 / hour per shipping phone (normalised like the blocklist), 5 / 10 min per user. Only placed orders count; fail-open. **In memory per server instance**, so it is easy to get around on Vercel; Upstash is left.
+- **F-01e** (store side) "Order again" on the store's order page (`actions/reorder.ts`, `lib/reorder/`): the server checks that the order belongs to this user and this host's store, and that the store is online, then re-adds the lines still sold, at today's price, capped by stock. The dashboard half waits on F-05.
+- **F-11c** Marketing › Shareable catalog (`/marketing/catalog`) and "Share catalog" in the products selection bar: one category, the newest products (up to 48) or the picked products. Signed token (HMAC with HKDF from `INTEGRATIONS_ENCRYPTION_KEY`, tied to seller + store; nothing stored). `/catalog/<token>` on the store host (noindex, offline page when offline, live prices, add to cart) plus `?print=1` for PDF. This session fixed: the missing dashboard `catalogShare` strings (ar/en), the missing sidebar/route entry, and the unmounted products-list dialog.
+- **F-26a** `packages/lib/src/campaigns/utm.lib.ts`: sanitised first-touch cookie `tallaby_utm` (30 days, store host only; click ids recorded as present, never their value), merged into `orders.metadata.utm` after the order commits. Reports › Campaigns (`/reports/campaigns`): UTM link builder plus orders, delivered and revenue (piastres) per source/medium/campaign, cached with `storeTags.reports(seller, store)`.
+- **F-04e** Code 128 order barcode on invoices and A6 slips; Orders › Scan returns (`/orders/scan`): camera scan through `BarcodeDetector` (Chrome/Android; iPhone Safari and Firefox type the number), finds only orders with the seller's lines, and "Mark returned" goes through the existing `updateSellerOrder("return")`; Bosta orders are marked.
+- **F-37g** `tallaby.com/affiliates` (hero, 20 % for life, steps, terms, FAQ with FAQPage JSON-LD, CTA to the dashboard Earn page), in the footer and sitemap.
+- **F-24c** Products › Import/Export › "Update products from Excel": download a sheet (the products on screen or all live ones), upload it for a before/after preview, apply. Rows match by product id, SKU, variant id or variant SKU; price, sale price, stock, status and SKU can change. Applied in one transaction with `FOR UPDATE` and a re-plan; stock changes are logged as `import` movements (0125); trashed products are never written; seller-scoped; caches invalidated. This session fixed a dashboard type error and the missing `excelUpdate` strings and menu label (ar/en).
+- **F-30a/b** The store's `meta_pixel` config gets `tracking`: per-event toggles (ViewContent, AddToCart, InitiateCheckout, Purchase, Lead; Lead off by default) and `purchaseOn: order | delivered` (`delivered` works only with CAPI connected). A delivered order sends one Purchase (`event_id` = order id, conditional-UPDATE claim) from `applySellerShipmentStatus` (Bosta too), riders and admin; the `bosta-sync` daily sweep retries failures up to 3 times. The browser pixel drops blocked events (tracking cache v2). Known gaps: a crash between the claim and the Graph call leaves that order marked as sent; orders already deferred stay unsent if CAPI is later disconnected.
+- **F-34d** `productStockBadge` builder element (registry, allowed types, editor icon, `@workspace/store-sections/low-stock`). It shows the low-stock alert on the product page (follows the variant) and "N left" in list cards. While a page has the badge, the stock line stops showing the alert. No code template places it yet.
+- Checks (whole repo, 2026-10-30): typecheck clean except the 16 known ecommerce `profile.chunks.tsx` errors. Tests all pass except the known `starter-forms` failure; `storefront-events` and `store-payments` time out in the full parallel run but pass alone. **`pnpm lint` crashes before checking any file** (`scopeManager.addGlobals is not a function`, ESLint 10.9.1 against typescript-eslint); this needs its own fix. Browser E2E pending for all of these.
+
+### 2026-10-30 — F-16a Email campaigns and F-16e Win-back email built
+
+- Migration `0129_store_email_campaigns.sql`: `store_email_campaigns` (draft → scheduled → sending → sent / cancelled; subject ≤ 150, plain-text body ≤ 5000, optional button text, ≤ 4 product ids, audience `subscribers | buyers | all | inactive` + inactive days 7–730, locale, counts), `store_email_campaign_recipients` (snapshot, one row per lower-cased email per campaign, claim status, random unsubscribe token), `store_email_unsubscribes` (per-store opt-out list), `store_winback_sends` (unique store + email + last order date = once per quiet period). Win-back settings live in `stores.settings.winback` (no column). RLS on, no policies on all four. Additive, idempotent, mirrored in `schema.ts`/`relations.ts`. **Applied on staging 2026-10-30 and re-run to prove idempotency (4 tables, RLS on, 0 policies, column counts match); production pending owner approval, before the deploy** (the dashboard page reads it).
+- Dashboard: Marketing › Email campaigns (`/marketing/emails`, sidebar + routes, `requireStore()` on every action, ids from the browser only pick rows inside that seller's store). Campaign list with status and sent / failed / skipped counts, stop sending (unsent rows → skipped), delete drafts. Composer: subject, text (blank line = paragraph, `**bold**`, "- " lists; links refused in subject, text and button; never HTML), button text, up to 4 of the store's live products, audience picker with live recipient count (unsubscribed, guest placeholders, blocked phones (F-02) and the plan cap left out), send now or schedule (5 min to 30 days ahead), preview (backend-rendered HTML in a sandboxed iframe), test send to the seller's own account email. Win-back card: on/off, days (30–365), optional subject/text (empty = default copy in the store's language), preview, test.
+- Caps (`EMAIL_CAMPAIGN_LIMITS`, Free plan): 1 campaign queued per store per rolling 24 h (checked under a lock on the store row), 500 recipients per campaign, 5 tests per campaign + 10 tests per store per 24 h (backend, counted in `email_deliveries`), win-back 50 per store per day, only customers with a delivered order whose last order is N–365 days old, never twice within N days. Only published, active stores can send.
+- Sending: "Send now" snapshots recipients and starts a run for that campaign in `after()` (page `maxDuration` 300); new ecommerce cron `/api/cron/email-campaigns` (`vercel.json`, daily 08:00 UTC, `CRON_SECRET`) plans win-back, starts scheduled campaigns, claims batches of 20 (4 parallel, `FOR UPDATE SKIP LOCKED`, stale claims re-claimed after 30 min, failed after 3 tries, max 1500 per run). Backend endpoints `store-campaign`, `store-winback`, `store-campaign-preview`, `store-campaign-test` (`apps/backend/src/lib/emails/store-campaign-email.ts`): re-check campaign still sending, store live and the seller's, address not unsubscribed, then send once through the `email_deliveries` claim (new types `store_campaign`, `store_winback`, `store_campaign_test`), store-branded `StoreCampaignEmail`, products and button link to the store's own site. Logs counts only, never an email.
+- Unsubscribe: every email links to `/api/email/unsubscribe?token=` on the store host. GET shows a confirm button (link scanners can't unsubscribe); POST adds the email to the store's list and skips its unsent campaign and win-back rows there. Strings in ecommerce `emailUnsubscribe` (ar + en).
+- Files: `packages/lib/src/email-campaigns/` (lib + 13 new tests, server, send), `packages/emails/src/StoreCampaignEmail.tsx`, `kit/plain-text.ts` (+ test), email copy in `i18n/transactional.ts`; `apps/backend/src/lib/emails/store-campaign-email.ts`, `routes/emails.ts`, `lib/email-delivery.ts`; `apps/dashboard/app/(main)/marketing/emails/` (`page.tsx`, `email-campaigns.data.tsx`, `.client.tsx`, `.server.ts`, `.types.ts`), sidebar config, routes, messages (`emailCampaigns`, both languages); `apps/ecommerce/app/api/cron/email-campaigns/route.ts`, `app/api/email/unsubscribe/route.ts`, `vercel.json`, messages.
+- Checks: `tsc` clean for dashboard, lib, emails and backend; ecommerce the same 16 existing errors in `profile.chunks.tsx`. Tests: lib 775 pass (13 new) + the known `starter-forms` failure (someone else's Arabic contact-form copy edit); emails 14; dashboard 450; ecommerce 238. `eslint` still crashes before linting (toolchain).
+- Pending / owner: (1) **dashboard Vercel env needs `BACKEND_API_URL` and `INTERNAL_API_SECRET`** (preview, test send and "send now" call the backend; without them they show "not available", and queued campaigns still go out with the daily ecommerce cron); (2) the cron is daily (Hobby); scheduled campaigns go out at the first run after their time, and the cron should be hourly if the plan allows; (3) `0129` on production; (4) E2E: compose → test → send now → inbox (ar/en, phone width) → unsubscribe page → next campaign skips that email; win-back with a staging customer whose last delivered order is > N days old.
+
+### 2026-10-30 — F-24d Manual product order inside a category built
+
+- Migration `0128_category_product_order.sql`: `seller_category_product_positions` (seller category + product primary key, seller, position ≥ 0, updated at; cascade on category, product and seller delete; product and seller indexes). RLS on, no policies. Additive, idempotent, mirrored in `schema.ts`/`relations.ts`. **Applied on staging 2026-10-30 and re-run to prove idempotency (RLS on, 0 policies, 3 indexes); production pending owner approval, before the deploy** (the storefront "Featured" order reads it).
+- Dashboard: Products › Categories rows have an "Arrange products" button (list icon) that opens a dialog with the category's products (the same rule as the store category page: linked to it, plus unlinked products of the Tallaby category it was picked from; trashed ones left out; up to 1000). Drag by the handle (pointer or keyboard, dnd-kit) or "move to top", then Save; "Reset to newest first" forgets the order. Server actions (`category-order.server.ts`) take the seller from the session, check the category is theirs and every product id is one of that category's products (else nothing is written), and rewrite the rows in one transaction. Saving clears `productTags.seller` and `sellerTags.storefront` (seller-scoped) through `invalidateSellerProducts`.
+- Storefront: `getProducts` has a new `sortBy: "featured"` (placed products by position, then newest first, then id). A seller category on the store catalog page (`/products?category=`) opens on it, with a new "Featured / المميزة" option in the sort select there only; every other sort and the marketplace pages are unchanged. Builder product lists with source "category" on their "default" sort use it too; other lists keep newest first. Rules in `apps/ecommerce/lib/store-site/featured-sort.lib.ts` (4 tests); the dashboard order helpers have 5 tests.
+- Not changed: the builder editor preview (`selectProducts` in store-sections) does not use the manual order; catalog share (`lib/catalog-share`) still lists a category newest first.
+- Checks: `tsc` clean for dashboard, db and lib; ecommerce the same 16 existing errors in `profile.chunks.tsx`. Tests: dashboard 450, ecommerce 238. The Featured order SQL ran on staging. `eslint` crashes before linting in both apps (ESLint 10.9.1 against typescript-eslint: `scopeManager.addGlobals is not a function`), a toolchain problem that has nothing to do with this change. Pending: browser E2E (drag, save, the store category page order, ar/en, phone).
+
+### 2026-10-30 — F-23a Back-in-stock alerts built
+
+- Migration `0126_store_stock_subscriptions.sql`: `store_stock_subscriptions` (store, seller, product, nullable variant, lower-cased email, locale, random unsubscribe token, created/notified/cancelled at; cascade on product/variant delete; one open alert per store + product + variant + email). RLS on, no policies. Additive, idempotent, mirrored in `schema.ts`/`relations.ts`. **Applied on staging 2026-10-30** (re-run clean); **production pending owner approval, before the deploy** (the Inventory page reads it).
+- Storefront: "بلّغني لما يرجع" email form under the out-of-stock buy box (inside the existing buy-box tree element, follows the selected variant; no new element type), store hosts and active products only. Server action: store from the host, online check, honeypot, 6 tries / 10 min per visitor and 300 per store, product owned by that store's seller, live, not trashed, out of stock now, variant belongs to the product; duplicates show success; max 30 open alerts per email per store; email never logged. The static `popup-restock` design is left as it is.
+- Sending: cron `/api/cron/stock-alerts` (ecommerce `vercel.json`, daily 09:00 UTC, `CRON_SECRET`) claims up to 100 alerts per run whose product/variant has stock again (`notified_at`, `FOR UPDATE SKIP LOCKED`), only for published active stores and active, non-trashed products still in the store catalog, never older than 180 days; a failed send releases the claim. Store-branded email (`BackInStockEmail`, subscriber's language) through the backend's one-email-per-alert guard, link to the product on the store's own site, unsubscribe link → a confirm page on the store host (a button, so link scanners can't cancel) that cancels that email's open alerts on the store. **Daily cron = up to a day's delay; switch to hourly if the Vercel plan allows.**
+- Dashboard: Products › Inventory lines show "N waiting" with a tooltip (seller-scoped count).
+- Checks: `tsc` clean for db, lib, emails, dashboard, backend; ecommerce the same 16 existing errors. Tests: lib 722 (9 new) + the known `starter-forms` failure; db 11; emails 9; dashboard 406; ecommerce 216. Integration test on staging: 3/3 pass, cleaned up. Email preview renders. Pending: browser test of the form (phone/desktop, variants, ar/en); end-to-end email (restock → cron → email → unsubscribe).
+
+### 2026-10-30 — F-15a Reports upgrade built
+
+- `/reports` (was an empty stub) is now a per-store report, back in the sidebar under Wallet. `?store=` (only the seller's own stores, re-checked with `requireStore()`, foreign id → 404) and `?range=7|30|90` Cairo days (default 30).
+- Shows: store sales, orders, average order value, delivery, refusal and cancel rates; conversion funnel (GA4 visits from the hourly store-views cache → checkouts started = orders + open `store_checkout_leads` → orders → delivered; without GA4 it starts at checkouts; rates capped at 100 %; 90-day note that leads are kept 30 days); sales by source (this store's website, the seller's other stores, marketplace, manual = `order_source = 'external'`); refusal and cancel rate by governorate (raw address states merged per governorate, top 8 chart + full table; refusal = refused ÷ (delivered + refused), same rules as Customers); best 5 and worst products (active, non-trashed, linked to edit). recharts.
+- Money summed in SQL as integer piastres. Cached 5 min per seller + store + period start + locale (`createCachedQuery`, new tag `storeTags.reports(sellerId, storeId)` in `packages/cache/src/tags.ts`); only counts, sums and product titles/images cached, no order, customer or wallet rows; nothing purges the tag (numbers up to 5 min old). No migration.
+- Files: `apps/dashboard/app/(main)/reports/` (`reports.lib.ts` + 17 tests, `reports.server.ts`, `reports.data.tsx`, `reports.client.tsx`, `page.tsx`), `packages/cache/src/tags.ts`, sidebar config, messages (`reports`, 24 keys).
+- Checks: dashboard `tsc` clean, 406 tests pass; `packages/cache` `tsc` clean, 41 pass. Staging read-only: 5 parallel queries ~135–165 ms each (no store-website orders on staging yet). Browser E2E pending (phone + desktop, ar/en, RTL chart axes, funnel with and without GA4; real visits need `GA4_*`).
+
+### 2026-10-30 — F-16d Subscribers list and F-16b Export audience built
+
+- **F-16d** Marketing › Newsletter subscribers (`/marketing/subscribers`, sidebar + routes): from `store_form_submissions` of the store's own sign-up forms (a form counts when it asks for an email and has no long-text field; only the ready-made newsletter form matches among the starters, unit-tested). The platform `newsletter_subscribers` (tallaby.com blog) is never read. One row per email per store (phone when no email) with sign-up count and first/last dates; spam never shown. No status column exists, so unsubscribe sets that email's submissions to `archived` (**also archives them in the Forms inbox**) and "subscribe again" sets `read`; a new sign-up after unsubscribing counts as subscribed. Store picker, status filter, search, 50 per page, bulk unsubscribe / resubscribe / delete forever (confirm), .xlsx export of the current filter.
+- **F-16b** Orders › Customers › "Export audience": segments buyers (delivered), all customers, refused/cancelled, missed orders (open `store_checkout_leads` without an order), subscribed newsletter contacts. Phones to E.164 (`+20…`, Arabic digits too, unmatched dropped), emails lower-cased, guest placeholders dropped, de-duplicated, max 20,000, formula characters stripped. Blocked phones (F-02) left out of every segment except refused/cancelled. Formats (plain, platforms hash on upload, no BOM): Meta customer list CSV `email,phone,fn,ln,ct,country`; TikTok one identifier type per file, one value per line, no header (from memory of TikTok's docs; check with a first real upload). `requireStore`, validated segment/format, every query scoped to seller + store. No migration.
+- Files: `packages/lib/src/audiences/` and `packages/lib/src/store-forms/subscribers.*` (lib, server, tests, integration test), `apps/dashboard/app/(main)/marketing/subscribers/`, `orders/customers/audience.server.ts`, `audience-export.client.tsx`.
+- Checks: `tsc` clean for dashboard and lib; lib 722 pass (25 new) + the known `starter-forms` failure; dashboard 406 pass. EXPLAIN of the subscribers and leads queries on staging (read-only) OK. Not run: `subscribers.integration.test.ts` (writes to the DB). Pending: browser check ar/en at phone width; a real Meta and TikTok upload.
+
+### 2026-10-30 — F-13b Store minimum order value built (minimum only)
+
+- Store settings › Checkout › "Minimum order" card (on/off + EGP amount, Arabic digits accepted, amount kept when turned off), saved by its own `saveStoreMinOrder` (`requireStore(storeId, { forWrite: true })`, explicit `storeId`, rate-limited, update filtered by store and seller, merges only `stores.settings.minOrder = { enabled, amountPiastres }`, clears the storefront cache). Off by default; an invalid stored amount turns it off. No migration.
+- Subtotal rule: sum of cart lines' unit price (after the product's own discount) × quantity, in integer piastres, **before any coupon** and without shipping, so a coupon never blocks a cart that qualified and the cart page shows the same number as checkout; exactly the minimum passes.
+- Enforced server-side in `createOrder` on store websites only (store from the request host, minimum read fresh, subtotal from the session user's cart rows), before the F-25 checks and `placeOrderFromCart`, with a localized refusal. Checkout, cart page and cart sheet show "Add X more to order" and disable the button (the cart reads `minOrder` from the storefront profile; cache key bumped `storefront-v13` → `v14`). Marketplace checkout and `place-order.ts` unchanged.
+- **Not built:** the store-wide free-shipping threshold (changes the shipping fee; owner approval).
+- Files: `packages/lib/src/stores/min-order.lib.ts` (+ test, export `./stores/min-order`), `apps/dashboard/app/(main)/stores/[storeId]/settings/checkout/min-order.{dto,dto.test,server,client}`, ecommerce `actions/order.ts`, `actions/checkout.ts`, `lib/storefront-checkout-form.server.ts` (`getStorefrontMinOrder`), `lib/storefront.server.ts`, checkout data, store cart page, cart sheet, storefront cart and shell.
+- Checks: `tsc` clean for dashboard and lib, ecommerce the same 16 existing errors. Tests: lib 722 pass (9 new) + the known `starter-forms` failure; dashboard 406 (8 new); ecommerce 216. Browser E2E pending: settings on/off ar/en (and F-25 still saves), cart/sheet/checkout below and at the minimum, direct `/cart/checkout` refused by the server, coupon below the minimum still orders, marketplace and builder preview unchanged.
+
+### 2026-10-30 — F-05a Manual orders and F-32a Cross-sell design notes written
+
+- Notes: [`docs/superpowers/specs/2026-10-30-manual-orders-design.md`](docs/superpowers/specs/2026-10-30-manual-orders-design.md) and [`docs/superpowers/specs/2026-10-30-cross-sell-design.md`](docs/superpowers/specs/2026-10-30-cross-sell-design.md). No code.
+- **F-05:** the seller's order goes through `placeOrderFromCart` like the admin external-order desk (`apps/admin/actions/external-orders.ts`), always as a new guest customer, prices from the DB only. The admin `applyDiscountOverride` can't be reused (it doesn't lower line totals, so Tallaby would pay the discount through the `sale` credit); a `sellerDiscount` input works like a seller coupon. "Already paid" = new payment method `seller_collected` + `metadata.paymentCollector = 'seller'` (fee only on delivery; the ledger already reads the flag), no P3-07 Part B needed. Order source: recommended additive migration (`manual` in `order_source` + widen the `orders_fill_store_id` trigger, else CRM, missed orders, Bosta and store wallet entries miss the order); a no-migration metadata alternative is described. Fee and wallet as a storefront COD order; stock reason `order` with the seller as actor; F-05c = pending order the customer confirms + auto-cancel.
+- **F-32:** seller-paid line discount in piastres inside `place-order.ts` before coupons, lowering line `total`/`discountAmount` plus an order-level `cross_sell` discount line (like seller coupons); orders without offers byte-identical (snapshot test). Fee unchanged (EGP 5); the `sale` credit is net, so the seller pays the offer. Max offer units = main units; removing the main product returns the item to full price. Coupons stack on the net price (needs one fix: the seller-coupon code overwrites line `total`). Migration sketch differs from F-32b: `product_cross_sells` gets `seller_id` and a nullable `store_id`; `cart_items.cross_sell_id`; offer details in `order_items.metadata`. Storefront `productCrossSell` builder element + fallback under the buy box; invoice gains per-line discounts (also fixes seller-coupon line printing).
+- **Waiting on the owner:** 7 questions per note (in each note's questions section). Build after the current print/export work is committed (shared files). Next free migration after F-23a's `0126` is `0127`.
+
+### 2026-10-30 — F-09a Staff accounts design note + security review written
+
+- Note: [`docs/superpowers/specs/2026-10-30-staff-accounts-design.md`](docs/superpowers/specs/2026-10-30-staff-accounts-design.md). No code.
+- Key finding: every guard assumes the signed-in user is the owner (`requireSeller` loads `sellers` by user id; older `actions/*.ts` use the user id as the seller id), so staff can't simply resolve to the owner's id without opening wallet, payouts, plan and affiliate earnings. Design: deny by default (`requireSeller`/`requireStore` become owner-only), new `resolveActor` / `requirePermission` / `requireStorePermission(storeId, perm)`; actor (`userId`, for audit) vs account (`sellerId`, for filtering). Roles `orders`, `products`, `manager` + optional wallet view; store scope `all_stores` or `store_ids` (products, coupons, reviews, riders and marketplace orders have no `store_id`, so all-stores in v1). Migration sketch: `store_staff` (sha256 invite token, 7-day expiry), `seller_audit_log`, `seller_push_subscriptions.user_id`. Media uploads must move to server-signed URLs (storage RLS is `{auth.uid()}/`).
+- Inventory: 64 action files / 213 exports, 189 need a check (36 owner-only, 153 staff), 6 of 11 route handlers, the push cron fan-out, ~50 pages and 31 data loaders. Security review: 17 threats with mitigation + test each (incl. a static test that fails on an unguarded `"use server"` export). Top risks: wallet data via side doors (header balance, charts, search, counts, bell, push), user-id-as-seller-id actions, invite token leakage, stale access after removal, wallet refunds via order cancel.
+- **Waiting on the owner:** 12 questions in §10 of the note (one seller per staff user, roles, store scope, seat count on Free, owner-only settings, cancel of wallet-paid orders, realtime vs 60 s bell, per-staff "seen", roadmap votes, invite expiry/notifications, audit retention, wallet top-up). Re-run the action counts at F-09c time; check the `product-images` bucket policy in Supabase first.
+
+### 2026-10-30 — F-10a–c Stock history, low-stock alert and Inventory page built
+
+- Migration `0125_stock_movements.sql`: server-only `stock_movements` (RLS on, no policies): seller, store, product, variant (no FK, so a deleted variant's history keeps its id), `delta` (never 0), `stock_after`, `reason` (`order`|`cancel`|`return`|`edit`|`bulk_edit`|`import`|`other`), `order_id`, `actor_user_id`, `created_at`; four indexes. Triggers on `products.quantity` and tracked `product_variants.stock` (NULL = not tracked; a product with variants records only its variants; unchanged values skipped), and an `order_items` insert trigger that fills the order, store and buyer on checkout rows (checkout takes stock before the order exists). New `seller_notifications` type `low_stock` (type check rebuilt with every existing type, guarded): fires when stock goes from above the threshold to at or below it, product active and not trashed, threshold `products.low_stock_threshold` (null = 5, also used for variants; no per-variant threshold), at most once per product/variant per Cairo day. Every trigger catches its own errors and only warns, so history or alerts never block a sale or a save. **Applied on staging 2026-10-30; production pending owner approval** (not needed before the deploy: without it nothing is recorded). Mirrored in `schema.ts`/`relations.ts`.
+- Reason and actor come from `setStockContext` (`@workspace/db/inventory`, transaction-local settings read by the trigger; default `other`): checkout `decrementStock` → `order` (buyer); customer cancel (`apps/ecommerce/actions/order.ts`) and seller cancel (`orders.server.ts`) → `cancel`; product form → `edit`; Excel/URL bulk import and Shopify import → `import`; bulk edit apply/undo → `bulk_edit`; Inventory quick restock → `edit`. `place-order.ts` unchanged. It differs from CLAUDE.md rule 14: `apps/dashboard/actions/products.ts` got two one-line context calls and an optional `{ stockReason: "import" }` argument on `createProduct` (no other way to label form edits and imports). Admin edits and `createProductVariant` record `other`; `return` is never written (nothing restocks returns today).
+- Dashboard: Products › Inventory (`/products/inventory`): low and out-of-stock list (up to 300, emptiest first) with atomic "+N" restock (store cache refreshed), and with `?product=<id>` that product's stock lines and last 100 changes linked to orders. Every query scoped to the session seller, trashed and purged products left out. Reached from the sidebar, routes list/command palette, the product edit header ("Stock history") and the bell (`low_stock` row with name, variant and stock, plural forms in ar/en). F-06 push already maps `low_stock` with the same data keys. No Admin change.
+- Checks: `tsc` clean for dashboard, `packages/db`, `packages/lib`; ecommerce the same 16 existing errors. Dashboard 381 pass, 7 skipped; `packages/lib` 679 pass + the known `starter-forms.lib.test.ts` failure; `packages/db` unit tests pass. The new trigger integration test (`stock-movements.integration.test.ts`) fails in setup on staging because staging lacks 0113 (`sellers.admin_contacted_at`), the known gap; instead the migration ran twice in rolled-back transactions on staging and confirmed reasons (unknown → `other`), actor, variant rows, once-a-day low-stock alert and order/buyer linking. Browser E2E pending: sidebar, Inventory page, restock, bell, push.
+
+### 2026-10-30 — F-06a/b New-order push alerts built
+
+- Migration `0124_seller_push_subscriptions.sql`: `seller_push_subscriptions` (endpoint unique, p256dh/auth keys, user agent, locale) and `seller_push_settings` (per-type switches, no row = all on), both RLS on with no policies, plus `seller_notifications.pushed_at` (the dispatcher's claim; existing rows older than an hour marked handled). Additive, idempotent, mirrored in `schema.ts`/`relations.ts`. **Applied on staging** (re-run 2026-10-30: every statement skipped cleanly); **production pending owner approval** (code selects named columns, so it can land before or after the deploy, but before push is turned on).
+- Dashboard: Settings › Phone alerts (`#push-alerts`): turn on for this device, send a test alert, turn off; three switches for all devices (new orders; order problems = `carrier_shipment_failed` / `carrier_needs_attention`, which is where refused deliveries arrive (no separate "refused" type); low stock = F-10's `low_stock`). iPhone/iPad Safari gets "install the app first" help (iOS 16.4+). The card shows only when VAPID keys are set. The bell popover links "Get new orders on your phone" when push is supported and never asked. No Admin change needed.
+- Sending (`apps/dashboard/lib/push/`): each run claims recent `seller_notifications` rows (`pushed_at`, `FOR UPDATE SKIP LOCKED`), never twice; rows older than 60 min are dropped; a seller's rows go only to that seller's devices; texts carry the order number (and amount for store orders), no customer data. 404/410 endpoints are deleted; only FCM, Mozilla, WNS and Apple endpoints are accepted. `sw.js` handles push and notification clicks only (no fetch handler, no caching), opens dashboard pages only; served no-cache with a strict CSP from `next.config.ts`; `proxy.ts` skips it.
+- **Needed before it works:** env `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` (`npx web-push generate-vapid-keys`), `CRON_SECRET`; and a **Supabase Database Webhook** on INSERT into `seller_notifications` → POST `https://dashboard.tallaby.com/api/cron/seller-push` with `Authorization: Bearer <CRON_SECRET>` (staging, then production). It's not in the migration because the secret would go into git. The Vercel cron `/api/cron/seller-push` (`45 4 * * *`) only cleans up; without the webhook alerts almost never arrive.
+- Checks: dashboard `tsc` clean; dashboard vitest 375 pass, 7 skipped (19 push tests); `packages/db` 7 pass (rest skipped, no `TEST_DATABASE_URL`); `packages/lib` 679 pass, 1 known failure (`starter-forms.lib.test.ts`). Dispatcher ran once on staging with throwaway keys: `{enabled:true, claimed:0, sent:0}`. New deps `web-push`, `@types/web-push`. Browser E2E pending: real push on Android Chrome, desktop Chrome/Edge/Firefox, installed iOS app; tap opens the order; turn off per device; dead endpoint cleanup.
+
+### 2026-10-30 — F-25a/b Checkout form and thank-you page settings built
+
+- Store settings › Checkout (`/stores/[storeId]/settings/checkout`, tab + sidebar entry + route registered): email, second phone, one custom question and order notes, each hidden / optional / required, with field order and a live preview. Saved in `stores.settings.checkoutForm` and `stores.settings.thankYou` (other keys kept). No migration. Name, phone and address stay outside the setting: they come from the customer's address, which `place-order.ts` already requires; governorate and area were already dropdowns.
+- Checkout validation: `createOrder` (`apps/ecommerce/actions/order.ts`) reads the form of the store from the request host only, checked against its seller; `applyCheckoutAnswers` (`packages/lib/src/stores/checkout-form.lib.ts`) ignores hidden fields, enforces required ones, validates email, normalises the second phone to `01XXXXXXXXX`, caps the custom answer at 300 and the customer note at 1,000 characters (`CHECKOUT_NOTES_MAX`). Answers are written into `orders.notes` as labelled lines, so Orders, print-outs and export show them with no new column. With no saved form, notes pass through exactly as before. `place-order.ts` and money logic untouched; marketplace checkout and order page unchanged (every new path returns null without a store host).
+- Thank-you page (store host only): the seller's message (plain text, max 500), a "Confirm on WhatsApp" `wa.me` button with the store number and order number while the order is `pending` (this is the F-02g thank-you link), and up to 4 in-stock products of the same store (best sellers, then newest, without the ordered ones). Pixels (`MetaPurchase`, `HostStoreTracking`, server-side Meta Purchase) untouched. A failing thank-you lookup is logged and the page renders as before.
+- Dashboard save `saveStoreCheckoutSettings(storeId, input)`: explicit `storeId`, `requireStore(..., { forWrite: true })`, update filtered by `stores.sellerId`, rate-limited, zod + shared sanitisers; a shown custom question without a label is refused. Settings are read fresh from the store row, so no storefront profile key bump.
+- Checks: `checkout-form.lib.test.ts` 15/15, `checkout-settings.dto.test.ts` 3/3; `packages/lib` 678 pass, 1 known failure (`starter-forms.lib.test.ts`); `tsc` clean for lib and dashboard, ecommerce the same 16 existing errors. DB integration tests skipped (no `TEST_DATABASE_URL`). Browser E2E pending: each field mode at checkout (and a form change mid-checkout), notes in Orders/print/export, thank-you message + WhatsApp button + suggestions, Purchase pixel fires once, the Checkout tab in ar/en.
+
+### 2026-10-30 — F-11a/b Product feeds built
+
+- One public feed per store for Meta catalog, Google Merchant Center and TikTok catalog: `https://<store host>/api/feeds/products.xml` (RSS 2.0 with `g:` fields) and `/api/feeds/products.csv` (same columns, UTF-8 BOM); `?lang=ar|en`, default the store's first language. The store comes only from the request host (subdomain or active custom domain); tallaby.com, unknown hosts and offline stores get 404, a renamed subdomain gets 308. Active, non-trashed products of that store's catalog (selected mode respected), newest first, max 5,000 items; one item per variant (`item_group_id`, `?variant=` link); price and sale price in the store currency, up to 10 extra images, brand, colour/size, gallery video, `google_product_category` from a code-only slug map (falls back to the parent; all 19 staging roots covered). XML escaped, CSV quoted, public catalog data only.
+- Cached with `@workspace/cache`, tags with seller + store ids (product edits and catalog picks clear it; currency cache keyed on `sellerTags.subdomain`, key `store-feed:currency:v2`), plus 15 min CDN cache.
+- Dashboard: Store › Apps › "Product feeds" section (All tab) with Meta, Google and TikTok cards: feed URL, copy button, English URL when the store has English, four setup steps, a note when the site isn't published. No sidebar change (existing Apps route); no Admin change needed. No migration.
+- Files: `apps/ecommerce/app/api/feeds/[file]/route.ts`, `apps/ecommerce/lib/product-feed/` (lib, server, google-category, tests), `apps/dashboard/app/(main)/stores/[storeId]/apps/product-feeds.{client.tsx,lib.ts,lib.test.ts}`.
+- Checks: ecommerce feed tests 25 and dashboard 2 pass; dashboard `tsc` clean, ecommerce the same 16 existing errors. Read-only feed query on staging OK (51 products, ~300 ms; the only published staging store has 0 products). Browser E2E and Meta/Google/TikTok feed validators pending. Production needs `0123` before this deploys (already the rule).
+
+### 2026-10-30 — F-22, F-24a/b and F-15b built (three parallel subagents)
+
+- **F-22 Sales pop-up.** Small toasts on the store website built from that store's real recent orders ("Someone from Giza ordered …, 12 minutes ago"): product, governorate and time only, no names or phones. Feed: last 7 days, newest 10 non-cancelled orders, scoped by seller and the store from the request host (`packages/lib/src/stores/sales-popup.{lib,server}.ts`); hidden with fewer than 3; cached 5 minutes per seller, store and language (`storeTags.recentOrders`), with the age worked out on each render. It differs from the plan: no public HTTP endpoint (the feed is loaded server-side with the page), and the toast is part of the store shell, not a builder element. Store settings › Sales pop-up: off by default, delay 3–120 s, pages (home, products, product pages, other); never on cart, checkout, account, sign-in or wishlist pages, offline stores or the builder preview; follows reduced motion. Settings in `stores.settings.salesPopup`; storefront profile cache key bumped to v13. No migration. The feed query ran read-only on staging (0 rows there).
+- **F-24a/b Bulk product editing.** New `app/(main)/products/bulk-edit/` (dto, lib + 28 tests, signed undo token, server actions, dialog); nothing added to `actions/products.ts`. One transaction, rows locked and scoped by seller, trashed products skipped; price by % or amount in piastres (regular, sale and variant prices move together; whole-pound rounding on by default; a product is skipped if any price would reach 0); discount %/amount/remove with an optional end date; stock set/add/take (never below 0); publish/draft with the Publish switch rules; category counts and caches cleared. Preview shows before → after per product and variant with skip reasons. Undo for 10 minutes with an HMAC-signed token (key derived from `INTEGRATIONS_ENCRYPTION_KEY`, bound to the seller), only for products still holding the edited values. Products list: selection bar in both views with "Select all N" (the filtered list, so a whole category) and "Edit selected"; max 500 per edit. Store visibility left out (catalog all/selected modes; Catalog settings covers it).
+- **F-15b Per-product views.** One GA4 report per seller (page path, `store_id` in the seller's stores, product-page paths), cached 1 h under the store-views tags so Store views › Refresh clears it (`lib/analytics/product-views.{lib,server}.ts`). Paths map to the seller's own non-trashed products by slug (page locale first). Views → orders = store-website orders with the product (not cancelled, last 30 Cairo days) ÷ views, only when views > 0; orders aren't cached. Products table: "Views (30 days)" column, streamed, "—" without GA4; edit page: header badge. Grid cards don't show it yet (one-line follow-up in `vendor-products.section.tsx`).
+- No migrations. Checks after all three: `tsc` clean for dashboard, lib, cache, db, admin, store-sections; ecommerce has the same 16 existing errors. Tests: dashboard 352, lib 663 (1 existing failure in `starter-forms.lib.test.ts`, unrelated), cache 41, store-sections 10011, ecommerce 191 — all pass. Message files parse; edits were insertions only. ESLint still crashes (tooling). Browser E2E pending for all three; F-15b also needs `GA4_*` set to see real numbers.
+
+### 2026-10-30 — F-35 Product trash built
+
+- Migration `0123_product_trash.sql`: `products.deleted_at`, `deleted_by`, `trashed_status` (`product_status`) and `purged_at`, plus partial index `products_trashed_idx (seller_id, deleted_at) WHERE deleted_at IS NOT NULL AND purged_at IS NULL`. Additive, idempotent. **Applied on staging 2026-10-30** (re-run: notices only); **production pending owner approval, before the deploy** (the product queries select every column). Mirrored in `schema.ts`.
+- It differs from the plan (F-35b): instead of adding a `notDeleted` filter to every product read, trashing sets `status = 'draft'` and keeps the old status in `trashed_status`. An audit of every product read (2026-10-30) found that storefront, marketplace, search, sitemaps, feeds, recommendations, store catalogs and `place-order.ts` already require `active`, so they hide trashed products with no change. The reads that don't (cart page, checkout summary, coupon subtotal, missed-order lead, abandoned-cart email) all go through `cart_items`, so trashing removes the product from shoppers' carts. Seller lists that show drafts got an explicit `deleted_at IS NULL`: `getSellerProducts` (list, count, Excel export, ad picker), sidebar product count, dashboard search, coupon product picker, store catalog picker, category/brand counts. `updateProduct`, `toggleProductStatus` and `setProductPublished` refuse a trashed product, and its edit URL redirects to Trash.
+- Server (`packages/lib/src/products/trash.{lib,server}.ts`, exported as `@workspace/lib/products/trash` and `/products/trash/server`): `trashProducts`, `restoreProducts` (puts the old status back; a live product returns as draft when it has no photo or the seller can't publish, like the Publish switch), `deleteTrashedProductsForever`, `purgeExpiredTrash`, `listTrashedProducts`, `countTrashedProducts`. Every seller function takes the session seller and scopes each write by it; ids are validated and capped at 100. Category counts and cache invalidation run on trash and restore.
+- Deleting for good: `order_items`, `cart_items`, `reviews` and `search_logs` reference `products` with no cascade, so today's hard `deleteProduct` already failed for any product that was ever ordered or reviewed. Now the cart lines and reviews are removed, search click links set to null, and the row deleted; when orders still point to it, the row stays (stamped `purged_at`, out of Trash, still `draft`) so order history keeps it.
+- Dashboard: `app/(main)/products/trash/` (`trash.server.ts` actions, `page.tsx`, `trash.client.tsx`). Products' row delete, bulk delete and table bulk delete call `trashProductsAction`, the dialog says it stays in Trash for 30 days, and the toast has Undo. Products › Trash (sidebar entry, route registered) lists photo, name, deleted date and days left, with Restore and Delete forever (confirm), single or selected. Strings: `products.trash`, `products.list.{undo,restored,restoreFailed}` and the new delete copy, `nav.productTrash`, in ar and en. The old `deleteProduct` in `actions/products.ts` has no callers now (left in place).
+- Cron: `apps/ecommerce/app/api/cron/product-trash` (daily 04:00 UTC in `vercel.json`, `CRON_SECRET`), up to 500 per run, returns `{ deleted, kept }`.
+- Not done: no Trash count badge in the sidebar; admin product lists show trashed products as drafts (no "in trash" mark); wishlists still list a trashed product, as they already do for unpublished ones.
+- Checks: 5 unit tests (`trash.lib.test.ts`) and 5 integration tests on staging (`trash.integration.test.ts`: trash hides and empties carts, restore, can't-publish restore, another seller refused everywhere, sold vs unsold delete forever, purge after 30 days only) pass. `tsc` clean for dashboard, lib, db, admin; ecommerce has the same 16 existing errors. Dashboard tests pass (314). `packages/lib`: 652 pass, 1 fails, and it already failed without these changes (`starter-forms.lib.test.ts`: the dashboard's Arabic contact-form success text was reworded to Egyptian Arabic, "وهنرد عليك قريب", and the starter copy wasn't updated). ESLint still crashes (tooling). Browser E2E pending.
+
+### 2026-10-30 — F-34a–c Low-stock alert built
+
+- Migration `0122_product_low_stock_badge.sql`: `products.show_low_stock_badge boolean NOT NULL DEFAULT false` and `products.low_stock_threshold integer` (CHECK 1–99; null = 5), idempotent. **Applied on staging 2026-10-30** (re-run is a no-op); **production pending owner approval, before the deploy** (the product queries select every column). Mirrored in `schema.ts`.
+- One rule for all apps: `lowStockLeft(stock, { show, threshold })` and `lowStockAlertText` in `packages/store-sections/src/core/low-stock.ts`, exported as `@workspace/store-sections/low-stock` (a small subpath, so the product form doesn't pull in the templates). Real stock only; nothing at 0 (sold out shows instead) or above the threshold.
+- Dashboard: "Show a low-stock alert" checkbox with "Show when stock is at or below" (empty = 5) in the product form section, renamed "Reviews, live views and stock alert". Saved through `saveProductSocialProof` (the 0111 path, not `actions/products.ts`), which takes `showLowStockBadge` and `lowStockThreshold` and checks the product is the session seller's. Not offered to AI autofill.
+- Storefront: on the store product page the stock element (`StoreProductStock`) shows `StoreLowStockAlert` instead of the "Only N left" pill when the alert applies, following the selected variant's stock (flame icon that pulses only with motion allowed, the store's danger colour, `storeProduct.lowStockAlert` ICU plurals in ar/en). The deal countdown keeps showing in the price block when the offer has an end date. Store cards built by `toSummary` (`catalog.server.ts`) get `stockLeft`, and the generic `ProductCardView` shows a "باقي N" / "N left" tag. The editor's still `productStock` element shows the same badge when `ProductDetail.lowStockAlert` is set. The marketplace product page is unchanged.
+- It differs from the plan: cards drawn by tree templates (bound nodes) don't show the tag yet; that comes with F-34d's builder element. The builder preview's product data (`preview-product.lib.ts`) doesn't carry the setting (it doesn't carry live views either).
+- Checks: 5 new `low-stock` unit tests, 2 new element/card tests; store-sections (10011), dashboard products/orders/print (153) and ecommerce store-site/product-page (28) tests pass; `tsc` clean for dashboard, store-sections, lib, db and store-editor; ecommerce shows the same 16 existing errors before and after. A new case in `social-proof.integration.test.ts` (save/load, out-of-range threshold refused by zod and the DB CHECK, another seller refused) **could not run on staging**: staging lacks `0112` (`products.ai_source`), so the fixture's product insert fails; it runs once staging has 0112. ESLint still crashes (tooling). Browser E2E pending (form ar/en, product page with variants at 1/2/threshold, cards).
+
+### 2026-10-30 — F-04d Picking list built
+
+- Third document on the F-04a print route: `/print/orders?doc=picking&ids=…&lang=ar|en`, one A4 sheet for all the printed orders (`PickingDocument` in `app/print/orders/print-documents.tsx`). Each product and variant appears once (grouped by `product_id` + `variant_id`, else by name, variant and SKU for old lines) with a tick box, the variant and SKU, the total quantity in large type, and the order numbers it goes into. The header shows the order and piece counts and when it was printed; the store's name and logo appear only when every order is from the same store. The footer lists the included orders with the customer name. Rows are sorted by product name, then variant, so one product's sizes and colours sit together (`pickingList` in `print-orders.lib.ts`).
+- Entry point: "Picking list (A4)" in the "Print (N)" menu on the orders list and in the bulk bar (F-04c), not in a single order's menu. The toolbar on the print page switches between invoice, slip and picking list.
+- Same isolation as F-04a: `loadPrintOrders` reads only the session seller's orders and only their lines (now with `productId`/`variantId` too), at most 50 orders.
+- It differs from the plan: "for a day" is the orders list's filters plus the selection (pick a tab and store, select, print), not a separate date picker.
+- Strings: `orders.print.{picking,unitsCount,printedAt,picked,inOrders,includedOrders}` and `orders.printActions.picking` in `ar.json` and `en.json`.
+- No migration. Checks: 3 new `pickingList` unit tests and 2 server-render tests of the sheet (`print-documents.test.ts`); dashboard `tsc` clean; dashboard orders + print tests pass (46). ESLint still crashes (tooling). Browser print preview (ar/en, A4, many rows across pages) pending with the F-04a E2E.
+
+### 2026-10-30 — F-04c Orders bulk actions built
+
+- /orders now has a selection: a checkbox on each order card plus "Select all (N)" above the cards, and the table's own row checkboxes (`TableSection` takes optional controlled `rowSelection`/`onRowSelectionChange` and keys rows by `id`; other tables keep their internal state). Only orders still on screen count as selected. While something is selected, `OrdersBulkBar` (`app/(main)/orders/orders-bulk.client.tsx`) shows the count, Clear, a button per stage move that fits at least one selected order (with how many), and Print / Export of the selection (the F-04a/F-04b buttons).
+- Bulk stage moves: confirm, out for delivery, delivered, cancel (`BULK_ORDER_ACTIONS` in `orders-bulk.lib.ts`). "Delivery failed" (needs a reason per order) and "Mark returned" stay on the order. Every bulk move asks first; the dialog says how many selected orders don't fit and will stay as they are.
+- Server: `bulkUpdateSellerOrders({ orderIds, action })` in `orders.server.ts` (at most 50 UUIDs per call; the client sends bigger selections in chunks). Each order runs through `runSellerOrderAction`, now shared with the single-order `updateSellerOrder`: session seller, the order must have one of their lines, the move must be one `resolveSellerOrderFlow` allows right now, and the same guarded writes, stock restore, emails, Bosta auto-ship and fee path. An order that changed meanwhile or isn't the seller's is skipped and counted ("N updated, M skipped"). No money or ledger logic changed.
+- Strings: `orders.bulk` in `ar.json` and `en.json` (full Arabic plurals).
+- No migration. Checks: 4 new unit tests (`orders-bulk.lib.test.ts`); dashboard `tsc` clean; dashboard orders + print tests pass (41); `packages/ui` `tsc` shows the same 19 existing errors (other apps' path aliases) before and after. ESLint still crashes (tooling, see F-01b). Browser E2E pending (staging seller: select on cards and table, bulk confirm on a Bosta auto-ship store, bulk cancel restocks, a mixed selection skips the orders that don't fit).
 
 ### 2026-10-30 — Migrations 0117–0121 on production; work committed
 

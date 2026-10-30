@@ -1,6 +1,7 @@
 import { and, db, deliveries, eq, orderItems, orders, payments, shipments } from "@workspace/db";
 import { creditSellerOnDelivery } from "@workspace/db/wallet";
 import { sendOrderEventEmail, type OrderEmailEvent } from "@workspace/lib/orders";
+import { sendDeliveredMetaPurchase } from "@workspace/lib/integrations/server";
 import {
   scheduleAffiliateCommissionRelease,
   reverseAffiliateCommission,
@@ -218,6 +219,8 @@ export async function applyShipmentStatus({
   // Best-effort; the backend sends each email at most once per order.
   const emailEvent = SHIPMENT_EMAIL_EVENTS[status];
   if (emailEvent) await sendOrderEventEmail(orderId, emailEvent, "system");
+  // The store's Meta Purchase on delivery (F-30a); a no-op unless deferred, never throws.
+  if (status === "delivered") await sendDeliveredMetaPurchase(orderId);
 }
 
 /** "Out for delivery" is when the parcel actually leaves with the courier. */

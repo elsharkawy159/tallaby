@@ -17,6 +17,7 @@ import {
   type ProductDetail,
   type RenderContext,
 } from "@workspace/store-sections/render";
+import { STOCK_ALERT_ELSEWHERE_PROP, pageHasStockBadge } from "@workspace/store-sections/low-stock";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
 import { Link } from "@/i18n/navigation";
 import { formatContentDate, toContentSummary } from "@/lib/store-cms/cms.lib";
@@ -47,6 +48,7 @@ import {
   StoreProductPrice,
   StoreProductReviews,
   StoreProductStock,
+  StoreProductStockBadge,
   StoreProductVariants,
 } from "./product-hooks.client";
 
@@ -67,6 +69,7 @@ const PRODUCT_HOOKS: Pick<
   | "renderProductGallery"
   | "renderProductPrice"
   | "renderProductStock"
+  | "renderProductStockBadge"
   | "renderProductVariants"
   | "renderProductBuyBox"
   | "renderProductReviews"
@@ -79,7 +82,8 @@ const PRODUCT_HOOKS: Pick<
     <StoreProductGallery thumbs={props.thumbs === "bottom" || props.thumbs === "none" ? props.thumbs : "side"} zoom={props.zoom !== false} />
   ),
   renderProductPrice: (_product, props) => <StoreProductPrice showDiscount={props.showDiscount !== false} showCountdown={props.showCountdown !== false} />,
-  renderProductStock: () => <StoreProductStock />,
+  renderProductStock: (_product, props) => <StoreProductStock alertElsewhere={props[STOCK_ALERT_ELSEWHERE_PROP] === true} />,
+  renderProductStockBadge: () => <StoreProductStockBadge />,
   renderProductVariants: () => <StoreProductVariants />,
   renderProductBuyBox: (_product, props) => (
     <StoreProductBuyBox
@@ -181,7 +185,8 @@ async function buildContext(
     renderWishlistButton: (product) => <StoreWishlistButton productId={product.id} />,
     forms,
     renderForm: (form, instanceId) => <StoreForm form={form} instanceId={instanceId} />,
-    ...(product && { product, ...PRODUCT_HOOKS }),
+    // A seller-placed low-stock badge (F-34d) takes the alert over from the stock line.
+    ...(product && { product, ...PRODUCT_HOOKS, stockBadgeOnPage: pageHasStockBadge(sections) }),
   };
 }
 

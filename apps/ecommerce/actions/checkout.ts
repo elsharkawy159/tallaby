@@ -26,6 +26,7 @@ import { validateCoupon } from "./coupons";
 import { isOnlineCardPaymentEnabled } from "@workspace/lib/payments";
 import { ONLINE_CARD_PAYMENT_ENABLED } from "@/lib/constants";
 import { getCheckoutShipping } from "@/lib/shipping.server";
+import { getStorefrontCheckoutForm, getStorefrontMinOrder } from "@/lib/storefront-checkout-form.server";
 import {
   buildSummaryWithCoupon,
   type CheckoutStoreShipping,
@@ -285,6 +286,10 @@ export async function getCheckoutData() {
     const walletSummary = storePayments
       ? null
       : await getUserWalletSummary(db, userId);
+    // Store websites: which extra fields the checkout shows (F-25a).
+    const storeCheckoutForm = storePayments ? await getStorefrontCheckoutForm() : null;
+    // Store websites: the store's minimum order (F-13b); createOrder checks it again.
+    const storeMinOrder = storePayments ? await getStorefrontMinOrder() : null;
 
     return {
       success: true,
@@ -302,6 +307,8 @@ export async function getCheckoutData() {
           ONLINE_CARD_PAYMENT_ENABLED &&
           isOnlineCardPaymentEnabled(),
         storePayments,
+        storeCheckoutForm,
+        storeMinOrder,
       },
     };
   } catch (error) {

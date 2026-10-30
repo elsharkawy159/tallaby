@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { useLocale, useTranslations } from "next-intl";
 import {
   ArrowUpDown,
+  CheckCheck,
   ChevronLeft,
   ChevronRight,
   Eye,
@@ -15,8 +16,10 @@ import {
   Layers,
   List,
   PackageSearch,
+  PencilLine,
   PlusIcon,
   Search,
+  Share2,
   Trash2,
   X,
 } from "lucide-react";
@@ -31,7 +34,10 @@ import {
 } from "@workspace/ui/components/select";
 import { cn } from "@workspace/ui/lib/utils";
 import { ConfirmActionDialog } from "@/components/layout/confirm-action-dialog.client";
-import { deleteProduct, setProductPublished } from "@/actions/products";
+import { setProductPublished } from "@/actions/products";
+import { restoreProductsAction, trashProductsAction } from "../trash/trash.server";
+import { BulkEditDialog, BulkEditUndoBar, type BulkEditUndo } from "../bulk-edit/bulk-edit.client";
+import { ShareCatalogDialog } from "../../marketing/catalog/catalog-share.client";
 import { formatNumber } from "@/lib/i18n/format";
 import { ImportExportButton } from "./import-export-button.client";
 import { ProductCard } from "./product-card.client";
@@ -97,6 +103,12 @@ export function VendorProductsSection({
   const [selected, setSelected] = useState<Set<string>>(() => new Set());
   const [deleting, setDeleting] = useState<VendorProduct | null>(null);
   const [bulkDeleting, setBulkDeleting] = useState(false);
+  // Bulk edit (F-24b): the dialog, and the Undo of the last edit (10 minutes).
+  const [bulkEditing, setBulkEditing] = useState(false);
+  const [bulkUndo, setBulkUndo] = useState<BulkEditUndo | null>(null);
+  // Shareable catalog of the picked products (F-11c).
+  const [sharing, setSharing] = useState(false);
+  const clearBulkUndo = useCallback(() => setBulkUndo(null), []);
   const [isPending, startTransition] = useTransition();
 
   // Read the saved view after mount so the server and first client render agree.
@@ -180,15 +192,27 @@ export function VendorProductsSection({
     });
   };
 
+  // Delete moves products to Trash (F-35); the toast offers Undo.
+  const undoTrash = (ids: string[]) => ({
+    label: t("undo"),
+    onClick: async () => {
+      const res = await restoreProductsAction(ids);
+      if (res.success) toast.success(t("restored", { count: res.count }));
+      else toast.error(t("restoreFailed"));
+      router.refresh();
+    },
+  });
+
   const confirmDelete = () => {
     if (bulkDeleting) {
       const ids = [...selected];
       startTransition(async () => {
-        const results = await Promise.all(ids.map((id) => deleteProduct(id)));
-        const failed = results.filter((r) => !r.success).length;
+        const res = await trashProductsAction(ids);
+        const done = res.success ? res.count : 0;
+        const failed = ids.length - done;
         if (failed > 0) toast.error(t("bulkDeleteFailed", { count: failed }));
-        if (failed < ids.length)
-          toast.success(t("bulkDeleted", { count: ids.length - failed }));
+        if (res.success && done > 0)
+          toast.success(t("bulkDeleted", { count: done }), { action: undoTrash(res.ids) });
         setBulkDeleting(false);
         setSelected(new Set());
         router.refresh();
@@ -197,12 +221,12 @@ export function VendorProductsSection({
     }
     if (!deleting) return;
     startTransition(async () => {
-      const result = await deleteProduct(deleting.id);
-      if (!result.success) {
+      const res = await trashProductsAction([deleting.id]);
+      if (!res.success || res.count === 0) {
         toast.error(t("deleteFailed"));
         return;
       }
-      toast.success(t("deleted", { title: deleting.title }));
+      toast.success(t("deleted", { title: deleting.title }), { action: undoTrash(res.ids) });
       setDeleting(null);
       router.refresh();
     });
@@ -356,16 +380,30 @@ export function VendorProductsSection({
         </div>
       </div>
 
-      {/* Bulk actions (card view; the table has its own selection) */}
-      {view === "grid" && selected.size > 0 && (
+      {bulkUndo && <BulkEditUndoBar undo={bulkUndo} onClear={clearBulkUndo} />}
+
+      {/* Bulk actions (both views; the table keeps its own Delete button) */}
+      {selected.size > 0 && (
         <div className="flex flex-wrap items-center gap-2.5 rounded-xl bg-primary py-2 ps-3.5 pe-2 text-[13px] text-primary-foreground">
           <span>{t("selected", { count: selected.size })}</span>
+          {selected.size < filtered.length && (
+            <Button
+              size="sm"
+              onClick={() => setSelected(new Set(filtered.map((p) => p.id)))}
+              className="h-8 rounded-[9px] bg-white/12 text-white hover:bg-white/22"
+            >
+              <CheckCheck className="size-4" />
+              {t("selectAllFiltered", { count: filtered.length })}
+            </Button>
+          )}
           <span className="flex-1" />
           {(
             [
+              [PencilLine, t("bulkEdit"), () => setBulkEditing(true)],
+              [Share2, t("shareCatalog"), () => setSharing(true)],
               [Eye, t("bulkPublish"), () => bulkPublish(true)],
               [EyeOff, t("bulkDraft"), () => bulkPublish(false)],
-              [Trash2, t("delete"), () => setBulkDeleting(true)],
+              ...(view === "grid" ? ([[Trash2, t("delete"), () => setBulkDeleting(true)]] as const) : []),
             ] as const
           ).map(([Icon, label, onClick]) => (
             <Button
@@ -418,7 +456,12 @@ export function VendorProductsSection({
           )}
         </div>
       ) : view === "table" ? (
-        <VendorProductsTable products={filtered} onDelete={setDeleting} />
+        <VendorProductsTable
+          products={filtered}
+          onDelete={setDeleting}
+          selectedIds={selected}
+          onSelectedIdsChange={setSelected}
+        />
       ) : (
         <>
           <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-[repeat(auto-fill,minmax(220px,1fr))] sm:gap-4">
@@ -506,6 +549,19 @@ export function VendorProductsSection({
         destructive
         pending={isPending}
         onConfirm={confirmDelete}
+      />
+
+      <ShareCatalogDialog open={sharing} onOpenChange={setSharing} productIds={[...selected]} />
+
+      <BulkEditDialog
+        open={bulkEditing}
+        onOpenChange={setBulkEditing}
+        ids={[...selected]}
+        onApplied={(undo) => {
+          setBulkUndo(undo);
+          setSelected(new Set());
+          router.refresh();
+        }}
       />
     </div>
   );

@@ -1,6 +1,7 @@
 import { and, db, eq, orderItems, orders, shipments } from "@workspace/db";
 import { creditSellerOnDelivery } from "@workspace/db/wallet";
 import { sendOrderEventEmail, type OrderEmailEvent } from "../orders";
+import { sendDeliveredMetaPurchase } from "../integrations/meta-tracking.server";
 import {
   cancelPendingAffiliateCommission,
   reverseAffiliateCommission,
@@ -141,6 +142,8 @@ export async function applySellerShipmentStatus({
   // A seller cancel tells the customer; the seller themself gets no email.
   const emailEvent = SHIPMENT_EMAIL_EVENTS[status];
   if (emailEvent) await sendOrderEventEmail(orderId, emailEvent, "seller");
+  // The store's Meta Purchase on delivery (F-30a); a no-op unless deferred, never throws.
+  if (status === "delivered") await sendDeliveredMetaPurchase(orderId);
 }
 
 /** "Out for delivery" is when the parcel actually leaves with the courier. */

@@ -40,6 +40,13 @@ describe("store host routing (P5-01)", () => {
     expect(rewriteOf("/blog/Bad_Slug")).toBeFalsy();
   });
 
+  it("serves shared catalog links at /catalog/{token} (F-11c), apart from CMS items", () => {
+    expect(rewriteOf("/catalog/AQEabc_-XYZ12.Mac_-12345678?print=1")).toContain("/ar/storefront/sara/catalog/AQEabc_-XYZ12.Mac_-12345678?print=1");
+    expect(rewriteOf("/en/catalog/AQEabc_-XYZ12.Mac_-12345678/")).toContain("/en/storefront/sara/catalog/AQEabc_-XYZ12.Mac_-12345678");
+    // No dot: still a CMS item of a "catalog" collection.
+    expect(rewriteOf("/catalog/summer")).toContain("/ar/storefront/sara/cms/catalog/summer");
+  });
+
   it("serves CMS items at /{collection}/{item} (P4-11); unknown ones are redirected by the route", () => {
     expect(rewriteOf("/lookbook/summer-2026")).toContain("/ar/storefront/sara/cms/lookbook/summer-2026");
     expect(rewriteOf("/en/faq/returns/")).toContain("/en/storefront/sara/cms/faq/returns");

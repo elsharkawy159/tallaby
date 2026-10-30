@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
-/** General (with the store catalog) · Payment methods · Order protection · App. */
+/** General (with the store catalog) · Payment methods · Order protection · App · Sales pop-up. */
 export function StoreSettingsTabs({ storeId }: { storeId: string }) {
   const t = useTranslations("nav");
   const pathname = usePathname();
@@ -13,8 +13,10 @@ export function StoreSettingsTabs({ storeId }: { storeId: string }) {
   const tabs = [
     { href: base, label: t("general"), exact: true },
     { href: `${base}/payments`, label: t("paymentMethods") },
+    { href: `${base}/checkout`, label: t("checkoutForm") },
     { href: `${base}/protection`, label: t("orderProtection") },
     { href: `${base}/app`, label: t("storeApp") },
+    { href: `${base}/sales-popup`, label: t("salesPopup") },
   ];
 
   return (

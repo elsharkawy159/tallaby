@@ -5,6 +5,8 @@ import { db } from "@workspace/db";
 import { isOnlineCardPaymentEnabled } from "@workspace/lib/payments";
 import { ONLINE_CARD_PAYMENT_ENABLED } from "@/lib/constants";
 import {
+  carts,
+  cartItems,
   orders,
   orderItems,
   returns,
@@ -51,6 +53,12 @@ import { buildOrderPagePath, verifyOrderAccess } from "@/lib/order-access-token"
 import { getUser } from "./auth";
 import { revalidateCartCheckout } from "@/lib/revalidate-cart-checkout";
 import { clearPendingCouponCode } from "@/lib/affiliate-coupon-cookie";
+import { getStorefrontCheckoutForm, getStorefrontMinOrder } from "@/lib/storefront-checkout-form.server";
+import { applyCheckoutAnswers } from "@workspace/lib/stores/checkout-form";
+import { isStoreOrderAllowed, recordStoreOrder, storeOrderRateKeys } from "@/lib/order-rate-limit.server";
+import type { OrderRateKeys } from "@/lib/order-rate-limit.lib";
+import { activeMinOrderPiastres, checkMinOrder, itemsSubtotalPiastres, piastresToEgpText } from "@workspace/lib/stores/min-order";
+import { CAMPAIGN_COOKIE, decodeCampaignCookie } from "@workspace/lib/campaigns/utm";
 
 /** placeOrderFromCart's store-shipping refusals → checkout message keys. */
 const STORE_SHIPPING_ERRORS: Record<string, "notDeliveredHere" | "egyptOnly" | "zoneNoCod" | "orderNotAccepted"> = {
@@ -81,6 +89,8 @@ export async function createOrder(data: {
   isGift?: boolean;
   giftMessage?: string;
   variantId?: string;
+  /** Store websites (F-25): the extra checkout fields; checked against the store's form. */
+  checkoutAnswers?: { email?: string; secondPhone?: string; customAnswer?: string };
 }) {
   try {
     const userId = await getCurrentUserId();
@@ -111,6 +121,56 @@ export async function createOrder(data: {
     // order total inside placeOrderFromCart).
     const storefrontPayments = await getStorefrontCheckoutPayments();
 
+    // Store websites: the store's checkout form (ROADMAP.md F-25a). Hidden
+    // fields are dropped, required ones enforced, and the answers go into the
+    // order notes. Without saved settings the notes pass through unchanged.
+    let notes = data.notes;
+    // Store websites: orders per IP, phone and user (ROADMAP.md F-02e).
+    let orderRateKeys: OrderRateKeys | null = null;
+    if (storefrontPayments) {
+      const rateScope = await getCartScope();
+      if (rateScope) {
+        orderRateKeys = await storeOrderRateKeys({ storeId: rateScope.storeId, userId, shippingAddressId: data.shippingAddressId });
+        if (!isStoreOrderAllowed(orderRateKeys)) {
+          const t = await getTranslations("checkout");
+          return { success: false, error: t("tooManyOrders") };
+        }
+      }
+
+      // Store websites: the store's minimum order (ROADMAP.md F-13b). The
+      // items subtotal of this user's cart, before shipping and coupons, in
+      // piastres; validation only, no price changes.
+      const minOrder = await getStorefrontMinOrder();
+      if (activeMinOrderPiastres(minOrder) != null) {
+        const lines = await db
+          .select({ price: cartItems.price, quantity: cartItems.quantity })
+          .from(cartItems)
+          .innerJoin(carts, eq(carts.id, cartItems.cartId))
+          .where(and(eq(carts.id, data.cartId), eq(carts.userId, userId), eq(cartItems.savedForLater, false)));
+        const minCheck = checkMinOrder(minOrder, itemsSubtotalPiastres(lines));
+        if (!minCheck.ok) {
+          const t = await getTranslations("checkout");
+          return {
+            success: false,
+            error: t("minOrderNotReached", {
+              minimum: piastresToEgpText(minCheck.minimumPiastres),
+              missing: piastresToEgpText(minCheck.shortPiastres),
+            }),
+          };
+        }
+      }
+
+      const checkoutForm = await getStorefrontCheckoutForm();
+      if (checkoutForm) {
+        const checked = applyCheckoutAnswers(checkoutForm, { ...data.checkoutAnswers, notes: data.notes });
+        if (!checked.ok) {
+          const t = await getTranslations("storeCheckoutForm");
+          return { success: false, error: t(`errors.${checked.error}`) };
+        }
+        notes = checked.notes;
+      }
+    }
+
     const result = await placeOrderFromCart({
       userId,
       cartId: data.cartId,
@@ -118,7 +178,7 @@ export async function createOrder(data: {
       billingAddressId: data.billingAddressId,
       paymentMethod: data.paymentMethod,
       couponCode: data.couponCode,
-      notes: data.notes,
+      notes,
       isGift: data.isGift,
       giftMessage: data.giftMessage,
       orderSource: storefrontPayments ? "storefront" : "website",
@@ -143,6 +203,7 @@ export async function createOrder(data: {
     }
 
     const { order, orderItems: createdOrderItems, inventoryItems } = result.data;
+    recordStoreOrder(orderRateKeys);
 
     await applyInvalidation(invalidateProductInventory(inventoryItems), {
       from: "ecommerce",
@@ -151,6 +212,32 @@ export async function createOrder(data: {
 
     revalidateCartCheckout();
     await clearPendingCouponCode();
+
+    // Campaign tracking (ROADMAP.md F-26a): the store host's first-touch UTM
+    // cookie, re-sanitized, merged into orders.metadata.utm after the order
+    // committed. Reporting only; a failure never touches the order.
+    if (storefrontPayments && order.storeId) {
+      try {
+        const touch = decodeCampaignCookie((await cookies()).get(CAMPAIGN_COOKIE)?.value);
+        const scope = touch ? await getCartScope() : null;
+        if (touch && scope?.storeId === order.storeId) {
+          const orderId = order.id;
+          const storeId = order.storeId;
+          after(async () => {
+            try {
+              await db
+                .update(orders)
+                .set({ metadata: sql`coalesce(${orders.metadata}, '{}'::jsonb) || jsonb_build_object('utm', ${JSON.stringify(touch)}::jsonb)` })
+                .where(and(eq(orders.id, orderId), eq(orders.storeId, storeId)));
+            } catch {
+              console.error("Order campaign tracking failed");
+            }
+          });
+        }
+      } catch {
+        console.error("Order campaign tracking failed");
+      }
+    }
 
     const metaEventId = order.id;
     // Tallaby CAPI is marketplace-only; storefront orders skip it (PLAN.md P5-05).
@@ -530,7 +617,7 @@ export async function cancelOrder(orderId: string, reason?: string, accessToken?
             ? { kind: "variant" as const, id: item.variantId, quantity: item.quantity }
             : { kind: "product" as const, id: item.productId, quantity: item.quantity }
         );
-        stockResults = await restoreStock(tx, stockLines);
+        stockResults = await restoreStock(tx, stockLines, { reason: "cancel", orderId, actorId: userId ?? order.userId });
 
         await cancelPendingAffiliateCommission(tx, orderId);
 

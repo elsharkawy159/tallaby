@@ -87,6 +87,11 @@ describe("sellerNotificationHref", () => {
     expect(sellerNotificationHref({ type: "referral_payout_rejected", data: {} })).toBe("/earn");
     expect(sellerNotificationHref({ type: "nope", data: {} })).toBeNull();
   });
+
+  it("opens a low-stock alert on the product's inventory history", () => {
+    expect(sellerNotificationHref({ type: "low_stock", data: { productId: ID } })).toBe(`/products/inventory?product=${ID}`);
+    expect(sellerNotificationHref({ type: "low_stock", data: {} })).toBe("/products/inventory");
+  });
 });
 
 describe("notificationText", () => {

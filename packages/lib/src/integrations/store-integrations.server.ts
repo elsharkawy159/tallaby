@@ -6,6 +6,7 @@ import {
   type IntegrationStatus,
   type StorefrontTrackingConfig,
 } from "./registry";
+import { browserBlockedMetaEvents, readMetaTrackingSettings } from "./meta-tracking.lib";
 import {
   readIntegrationId,
   readPublicDetails,
@@ -145,7 +146,8 @@ export async function connectIdentifierIntegration(
         target: [storeIntegrations.storeId, storeIntegrations.provider],
         set: {
           status: "connected",
-          config: validated.config,
+          // Merged, so a new id keeps the row's other settings (Meta `tracking`, F-30).
+          config: sql`coalesce(${storeIntegrations.config}, '{}'::jsonb) || ${JSON.stringify(validated.config)}::jsonb`,
           lastError: null,
           connectedBy: actorId,
           connectedAt: sql`now()`,
@@ -194,18 +196,23 @@ export async function getStorefrontTracking(storeId: string, q: Queryable = db):
   const empty: StorefrontTrackingConfig = { metaPixelId: null, ga4MeasurementId: null, gtmContainerId: null };
   if (!UUID_RE.test(storeId)) return empty;
 
-  const rows = await q
-    .select({ provider: storeIntegrations.provider, config: storeIntegrations.config })
+  const all = await q
+    .select({
+      provider: storeIntegrations.provider,
+      status: storeIntegrations.status,
+      config: storeIntegrations.config,
+      hasSecret: sql<boolean>`(${storeIntegrations.credentialsEncrypted} IS NOT NULL)`,
+    })
     .from(storeIntegrations)
     .innerJoin(stores, eq(stores.id, storeIntegrations.storeId))
     .where(
       and(
         eq(storeIntegrations.storeId, storeId),
-        eq(storeIntegrations.status, "connected"),
         // The owner check the 0056 trigger enforces, again at read time.
         eq(stores.sellerId, storeIntegrations.sellerId),
       ),
     );
+  const rows = all.filter((r) => r.status === "connected");
 
   const idFor = (provider: IntegrationProvider) => {
     if (INTEGRATIONS[provider].availability !== "available") return null;
@@ -213,9 +220,29 @@ export async function getStorefrontTracking(storeId: string, q: Queryable = db):
     return row ? readIntegrationId(provider, row.config) : null;
   };
 
-  return {
-    metaPixelId: idFor("meta_pixel"),
+  const metaPixelId = idFor("meta_pixel");
+  const config: StorefrontTrackingConfig = {
+    metaPixelId,
     ga4MeasurementId: idFor("google_analytics"),
     gtmContainerId: idFor("google_tag_manager"),
   };
+  if (metaPixelId) {
+    // F-30: the events this store's browser Pixel must not send. CAPI counts
+    // as connected exactly as getStoreMetaCapiCredentials reads it, so the
+    // browser and the server agree on when Purchase is sent.
+    const pixel = rows.find((r) => r.provider === "meta_pixel");
+    config.metaBlockedEvents = browserBlockedMetaEvents(
+      readMetaTrackingSettings(pixel?.config),
+      isMetaCapiUsable(all),
+    );
+  }
+  return config;
+}
+
+/** CAPI is usable when its row holds a secret and is not disconnected (same rule as the sender). */
+export function isMetaCapiUsable(rows: Array<{ provider: string; status: string; hasSecret: boolean }>): boolean {
+  return (
+    INTEGRATIONS.meta_capi.availability === "available" &&
+    rows.some((r) => r.provider === "meta_capi" && r.status !== "disconnected" && Boolean(r.hasSecret))
+  );
 }

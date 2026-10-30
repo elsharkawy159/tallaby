@@ -5,6 +5,7 @@ import {
   parsePrintDoc,
   parsePrintIds,
   parsePrintLocale,
+  pickingList,
   printOrdersHref,
 } from "./print-orders.lib";
 
@@ -33,6 +34,7 @@ describe("parsePrintIds", () => {
 describe("parsePrintDoc / parsePrintLocale", () => {
   it("defaults to the invoice and the fallback locale", () => {
     expect(parsePrintDoc("slip")).toBe("slip");
+    expect(parsePrintDoc("picking")).toBe("picking");
     expect(parsePrintDoc("x")).toBe("invoice");
     expect(parsePrintLocale("en", "ar")).toBe("en");
     expect(parsePrintLocale("fr", "ar")).toBe("ar");
@@ -56,5 +58,52 @@ describe("amountToCollect", () => {
     expect(amountToCollect({ paymentMethod: "cod", paymentStatus: "collected", totalAmount: "250.00" })).toBeNull();
     expect(amountToCollect({ paymentMethod: "instapay", paymentStatus: "pending", totalAmount: "250.00" })).toBeNull();
     expect(amountToCollect({ paymentMethod: null, paymentStatus: null, totalAmount: "250.00" })).toBeNull();
+  });
+});
+
+describe("pickingList", () => {
+  const line = (productId: string | null, variantId: string | null, productName: string, variantName: string | null, quantity: number) => ({
+    productId,
+    variantId,
+    productName,
+    variantName,
+    sku: null,
+    quantity,
+  });
+
+  it("adds up the same product and variant across orders", () => {
+    const rows = pickingList(
+      [
+        { orderNumber: "TL-1", lines: [line("p1", "v1", "Shirt", "Red / M", 2), line("p2", null, "Mug", null, 1)] },
+        { orderNumber: "TL-2", lines: [line("p1", "v1", "Shirt", "Red / M", 1), line("p1", "v2", "Shirt", "Blue / L", 3)] },
+        { orderNumber: "TL-3", lines: [line("p2", null, "Mug", null, 4)] },
+      ],
+      "en",
+    );
+    expect(rows.map((r) => [r.productName, r.variantName, r.quantity, r.orderNumbers])).toEqual([
+      ["Mug", null, 5, ["TL-1", "TL-3"]],
+      ["Shirt", "Blue / L", 3, ["TL-2"]],
+      ["Shirt", "Red / M", 3, ["TL-1", "TL-2"]],
+    ]);
+  });
+
+  it("lists an order once even when it has the item on two lines", () => {
+    const rows = pickingList([{ orderNumber: "TL-9", lines: [line("p1", null, "Cap", null, 1), line("p1", null, "Cap", null, 2)] }], "ar");
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({ quantity: 3, orderNumbers: ["TL-9"] });
+  });
+
+  it("groups lines without a product id by name", () => {
+    const rows = pickingList(
+      [
+        { orderNumber: "TL-1", lines: [line(null, null, "Old item", null, 1)] },
+        { orderNumber: "TL-2", lines: [line(null, null, "Old item", null, 1), line(null, null, "Old item", "XL", 1)] },
+      ],
+      "en",
+    );
+    expect(rows.map((r) => [r.variantName, r.quantity])).toEqual([
+      [null, 2],
+      ["XL", 1],
+    ]);
   });
 });

@@ -49,6 +49,8 @@ describe.skipIf(!TEST_DATABASE_URL)("store integrations (integration)", { timeou
       metaPixelId: "123456789012345",
       ga4MeasurementId: "G-AAAAAA1111",
       gtmContainerId: null,
+      // F-30 defaults: Lead is off, everything else on, Purchase at order.
+      metaBlockedEvents: ["Lead"],
     });
     const none = { metaPixelId: null, ga4MeasurementId: null, gtmContainerId: null };
     expect(await getStorefrontTracking(w.a.a2, db)).toEqual(none);

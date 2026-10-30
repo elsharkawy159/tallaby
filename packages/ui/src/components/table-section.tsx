@@ -12,6 +12,7 @@ import {
   getSortedRowModel,
   PaginationState,
   RowData,
+  RowSelectionState,
   SortingState,
   Table as TanstackTable,
   Updater,
@@ -173,6 +174,9 @@ export type TableSectionProps<TData extends { id: string }> = {
   hideSearch?: boolean;
   /** Localized UI copy; any label left out keeps its English default. */
   labels?: Partial<TableSectionLabels>;
+  /** Optional controlled row selection, keyed by row id. Falls back to internal state. */
+  rowSelection?: RowSelectionState;
+  onRowSelectionChange?: (selection: RowSelectionState) => void;
 };
 
 export function TableSection<TData extends { id: string }>(
@@ -191,6 +195,8 @@ export function TableSection<TData extends { id: string }>(
     onColumnOrderChange,
     hideViewOptions = false,
     hideSearch = false,
+    rowSelection: controlledSelection,
+    onRowSelectionChange,
   } = props;
   const labels = { ...defaultTableSectionLabels, ...props.labels };
 
@@ -210,6 +216,14 @@ export function TableSection<TData extends { id: string }>(
     pageIndex: 0,
     pageSize: 10,
   });
+
+  const [internalSelection, setInternalSelection] = useState<RowSelectionState>({});
+  const rowSelection = controlledSelection ?? internalSelection;
+  const handleSelectionChange = (updater: Updater<RowSelectionState>) => {
+    const next = typeof updater === "function" ? updater(rowSelection) : updater;
+    if (onRowSelectionChange) onRowSelectionChange(next);
+    else setInternalSelection(next);
+  };
 
   const columnVisibility = controlledVisibility ?? internalVisibility;
   const handleVisibilityChange = (updater: Updater<VisibilityState>) => {
@@ -301,12 +315,15 @@ export function TableSection<TData extends { id: string }>(
     onColumnVisibilityChange: handleVisibilityChange,
     onColumnOrderChange: handleOrderChange,
     onPaginationChange: setPagination,
+    onRowSelectionChange: handleSelectionChange,
+    getRowId: (row) => row.id,
     state: {
       sorting,
       columnFilters,
       columnVisibility,
       columnOrder,
       pagination,
+      rowSelection,
     },
     enableRowSelection: true,
   });

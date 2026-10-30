@@ -35,6 +35,7 @@ import { formatDate, formatDateTime, formatMoney, formatNumber, formatRelativeTi
 import { downloadXlsx, todayStamp } from "@/lib/product-excel";
 import { blockCustomerPhone, unblockCustomerPhone } from "../../stores/[storeId]/settings/protection/protection.server";
 import { loadCustomerOrders, saveCustomerNote, type CustomerOrderItem } from "./customers.server";
+import { AudienceExportButton } from "./audience-export.client";
 
 type Props = {
   customers: StoreCustomer[];
@@ -194,6 +195,7 @@ export function CustomersView({ customers, blockedPhones, notes: initialNotes, s
           {exporting ? <LoaderCircle className="animate-spin" aria-hidden /> : <Download aria-hidden />}
           {t("export.button", { count: rows.length })}
         </Button>
+        <AudienceExportButton storeId={storeId} />
       </div>
 
       {customers.length === 0 ? (

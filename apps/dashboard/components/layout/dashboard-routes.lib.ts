@@ -2,6 +2,7 @@ import type { LucideIcon } from "lucide-react";
 import {
   AppWindow,
   PhoneMissed,
+  ScanBarcode,
   LayoutGrid,
   Palette,
   Share2,
@@ -17,11 +18,15 @@ import {
   FileBarChart,
   FileText,
   FolderTree,
+  Trash2,
+  Boxes,
   Gem,
   Globe,
   Gift,
   HandCoins,
   Images,
+  Mail,
+  MailCheck,
   Newspaper,
   MapPinned,
   Package,
@@ -60,6 +65,7 @@ export type NavKey =
   | "ordersGroup"
   | "missedOrders"
   | "customers"
+  | "scanReturns"
   | "deliveryTracking"
   | "fulfillmentShipping"
   | "riders"
@@ -83,8 +89,10 @@ export type NavKey =
   | "general"
   | "catalog"
   | "paymentMethods"
+  | "checkoutForm"
   | "orderProtection"
   | "storeApp"
+  | "salesPopup"
   | "myStores"
   | "planUsage"
   | "wallet"
@@ -92,8 +100,14 @@ export type NavKey =
   | "walletBalance"
   | "coupons"
   | "campaigns"
+  | "subscribers"
+  | "emailCampaigns"
+  | "catalogShare"
+  | "campaignTracking"
   | "accountHelp"
   | "sellerCategories"
+  | "productTrash"
+  | "inventory"
   | "storeAnalytics"
   | "roadmap"
   // Affiliate program (F-37)
@@ -118,10 +132,13 @@ export const DASHBOARD_ROUTES: DashboardRoute[] = [
   { href: "/products", title: "manageProducts", parent: "products", parentHref: "/products", icon: Package },
   { href: "/products/add", title: "addProducts", parent: "products", parentHref: "/products", icon: PackagePlus },
   { href: "/products/categories", title: "sellerCategories", parent: "products", parentHref: "/products", icon: FolderTree },
+  { href: "/products/inventory", title: "inventory", parent: "products", parentHref: "/products", icon: Boxes },
+  { href: "/products/trash", title: "productTrash", parent: "products", parentHref: "/products", icon: Trash2 },
   { href: "/reviews", title: "reviews", parent: "products", icon: Star },
   { href: "/orders", title: "orders", parent: "ordersGroup", icon: ShoppingBag },
   { href: "/orders/missed", title: "missedOrders", parent: "ordersGroup", icon: PhoneMissed },
   { href: "/orders/customers", title: "customers", parent: "ordersGroup", icon: Users },
+  { href: "/orders/scan", title: "scanReturns", parent: "ordersGroup", icon: ScanBarcode },
   { href: "/orders/delivery", title: "deliveryTracking", parent: "ordersGroup", icon: Truck },
   { href: "/orders/riders", title: "riders", parent: "fulfillmentShipping", icon: Bike },
   { href: "/stores/[storeId]/shipping", title: "shippingSettings", parent: "fulfillmentShipping", icon: MapPinned },
@@ -141,12 +158,18 @@ export const DASHBOARD_ROUTES: DashboardRoute[] = [
   { href: "/stores/[storeId]/website/media", title: "mediaLibrary", parent: "websiteContent", icon: Images },
   { href: "/coupons", title: "coupons", parent: "marketing", icon: Gift },
   { href: "/marketing", title: "campaigns", parent: "marketing", icon: TrendingUp },
+  { href: "/marketing/subscribers", title: "subscribers", parent: "marketing", icon: MailCheck },
+  { href: "/marketing/emails", title: "emailCampaigns", parent: "marketing", icon: Mail },
+  { href: "/marketing/catalog", title: "catalogShare", parent: "marketing", icon: Share2 },
+  { href: "/reports/campaigns", title: "campaignTracking", parent: "marketing", icon: TrendingUp },
   { href: "/stores/[storeId]/analytics", title: "storeAnalytics", icon: ChartLine },
   { href: "/stores/[storeId]/apps", title: "apps", icon: AppWindow },
   { href: "/stores/[storeId]/settings", title: "general", parent: "settingsGroup", icon: Store },
   { href: "/stores/[storeId]/settings/payments", title: "paymentMethods", parent: "settingsGroup", icon: CreditCard },
+  { href: "/stores/[storeId]/settings/checkout", title: "checkoutForm", parent: "settingsGroup", icon: ClipboardList },
   { href: "/stores/[storeId]/settings/protection", title: "orderProtection", parent: "settingsGroup", icon: ShieldCheck },
   { href: "/stores/[storeId]/settings/app", title: "storeApp", parent: "settingsGroup", icon: Smartphone },
+  { href: "/stores/[storeId]/settings/sales-popup", title: "salesPopup", parent: "settingsGroup", icon: ShoppingBag },
   { href: "/stores", title: "myStores", parent: "accountHelp", icon: Store },
   { href: "/settings", title: "settings", parent: "accountHelp", icon: Settings },
   { href: "/settings/plan", title: "planUsage", parent: "accountHelp", icon: Gem },

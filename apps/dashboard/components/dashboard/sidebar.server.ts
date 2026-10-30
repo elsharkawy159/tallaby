@@ -9,7 +9,7 @@ import {
   sellerPayouts,
   shipments,
 } from "@workspace/db";
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 import { countNewFormSubmissions } from "@workspace/lib/store-forms/server";
 import { getUser } from "@/actions/auth";
 import {
@@ -42,7 +42,7 @@ export async function getSidebarCounts(): Promise<SidebarCounts> {
       db
         .select({ count: sql<number>`count(*)` })
         .from(products)
-        .where(eq(products.sellerId, sellerId)),
+        .where(and(eq(products.sellerId, sellerId), isNull(products.deletedAt))),
       db
         .select({ count: sql<number>`count(*)` })
         .from(reviews)

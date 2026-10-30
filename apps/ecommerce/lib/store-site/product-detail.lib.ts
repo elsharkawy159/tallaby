@@ -111,6 +111,7 @@ export function toProductDetail(
     quantity,
     directCheckout: product.directCheckout === true,
     liveViews: product.showLiveViews === true,
+    lowStockAlert: product.showLowStockBadge === true ? { show: true, threshold: product.lowStockThreshold ?? null } : null,
     variants,
     reviewCount: Number(product.reviewCount ?? 0),
     brand: product.brand?.name ?? null,

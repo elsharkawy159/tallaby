@@ -1,8 +1,10 @@
 import { z } from "zod";
+import { LOW_STOCK_THRESHOLD_MAX, LOW_STOCK_THRESHOLD_MIN } from "@workspace/store-sections/low-stock";
 
 /**
  * The product form's "Reviews and live views" part (0111): reviews the seller
- * really received elsewhere and types in, and the live views counter switch.
+ * really received elsewhere and types in, the live views counter switch, and
+ * the low-stock alert (0122, ROADMAP.md F-34).
  * Saved by saveProductSocialProof after createProduct / updateProduct, so
  * actions/products.ts stays untouched.
  */
@@ -21,8 +23,13 @@ export const sellerReviewSchema = z.object({
 
 export type SellerReviewInput = z.infer<typeof sellerReviewSchema>;
 
+/** The low-stock threshold; empty (null) means the default, 5. */
+export const lowStockThresholdSchema = z.number().int().min(LOW_STOCK_THRESHOLD_MIN).max(LOW_STOCK_THRESHOLD_MAX).nullable();
+
 export const productSocialProofSchema = z.object({
   showLiveViews: z.boolean(),
+  showLowStockBadge: z.boolean().default(false),
+  lowStockThreshold: lowStockThresholdSchema.default(null),
   reviews: z.array(sellerReviewSchema).max(SELLER_REVIEWS_MAX),
 });
 

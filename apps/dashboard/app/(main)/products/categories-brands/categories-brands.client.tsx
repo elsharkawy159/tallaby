@@ -9,6 +9,7 @@ import {
   Check,
   FolderTree,
   GripVertical,
+  ListOrdered,
   LoaderCircle,
   Pencil,
   Plus,
@@ -84,6 +85,7 @@ import {
   taxonomyNameKey,
 } from "./categories-brands.lib";
 import { RemoteImage } from "@/components/media/remote-image";
+import { CategoryOrderDialog } from "../category-order/category-order.client";
 
 const KEY: Record<TaxonomyKind, "categories" | "brands"> = { category: "categories", brand: "brands" };
 
@@ -149,11 +151,13 @@ function TaxonomyList({
   setItems: React.Dispatch<React.SetStateAction<SellerTaxonomyItem[]>>;
 }) {
   const t = useTranslations("categoriesBrands");
+  const tOrder = useTranslations("categoryOrder");
   const locale = useLocale();
   const [query, setQuery] = useState("");
   const [adding, setAdding] = useState(false);
   const [editing, setEditing] = useState<SellerTaxonomyItem | null>(null);
   const [removing, setRemoving] = useState<SellerTaxonomyItem | null>(null);
+  const [arranging, setArranging] = useState<SellerTaxonomyItem | null>(null);
   const [confirmSort, setConfirmSort] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [isOrdering, startOrdering] = useTransition();
@@ -283,6 +287,18 @@ function TaxonomyList({
                         {item.sourceId ? ` · ${t("fromPack")}` : ""}
                       </p>
                     </div>
+                    {kind === "category" && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setArranging(item)}
+                        aria-label={tOrder("open")}
+                        title={tOrder("open")}
+                      >
+                        <ListOrdered className="size-4" />
+                      </Button>
+                    )}
                     <Button type="button" variant="ghost" size="icon" onClick={() => setEditing(item)} aria-label={t("edit")}>
                       <Pencil className="size-4" />
                     </Button>
@@ -318,6 +334,12 @@ function TaxonomyList({
         onClose={() => setEditing(null)}
         onSaved={(patch) => setItems((current) => current.map((i) => (i.id === patch.id ? { ...i, ...patch } : i)))}
       />
+      {kind === "category" && (
+        <CategoryOrderDialog
+          category={arranging ? { id: arranging.id, label: taxonomyLabel(arranging, locale) } : null}
+          onClose={() => setArranging(null)}
+        />
+      )}
       <AlertDialog open={confirmSort} onOpenChange={setConfirmSort}>
         <AlertDialogContent>
           <AlertDialogHeader>

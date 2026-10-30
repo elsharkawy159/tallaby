@@ -43,6 +43,10 @@
       "types": "./src/templates/demo-product.ts",
       "default": "./src/templates/demo-product.ts"
     },
+    "./low-stock": {
+      "types": "./src/core/low-stock.ts",
+      "default": "./src/core/low-stock.ts"
+    },
     "./social": {
       "types": "./src/social/platforms.ts",
       "default": "./src/social/platforms.ts"

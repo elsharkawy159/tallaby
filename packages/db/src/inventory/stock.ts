@@ -1,6 +1,7 @@
 import { and, eq, gte, isNotNull, sql } from "drizzle-orm";
 import { products, productVariants } from "../drizzle/schema";
 import type { db as dbType } from "../drizzle/database";
+import { setStockContext, type StockContext } from "./stock-context";
 
 /**
  * Atomic stock primitives. No read-then-write anywhere in this file — every
@@ -62,10 +63,15 @@ function sortedLines(lines: readonly StockLine[]): StockLine[] {
  */
 export async function decrementStock(
   tx: Tx,
-  lines: readonly StockLine[]
+  lines: readonly StockLine[],
+  context: StockContext = { reason: "order" }
 ): Promise<StockResult[]> {
   const results: StockResult[] = [];
   const now = new Date().toISOString();
+  // Stock history (0125): the trigger records each change with this reason;
+  // the order id is linked when the order's order_items rows are inserted.
+  const tracked = lines.some((line) => line.quantity > 0);
+  if (tracked) await setStockContext(tx, context);
 
   for (const line of sortedLines(lines)) {
     if (line.quantity <= 0) continue;
@@ -120,6 +126,7 @@ export async function decrementStock(
     }
   }
 
+  if (tracked) await setStockContext(tx, null);
   return results;
 }
 
@@ -135,10 +142,13 @@ export async function decrementStock(
  */
 export async function restoreStock(
   tx: Tx,
-  lines: readonly StockLine[]
+  lines: readonly StockLine[],
+  context: StockContext = { reason: "cancel" }
 ): Promise<StockResult[]> {
   const results: StockResult[] = [];
   const now = new Date().toISOString();
+  const tracked = lines.some((line) => line.quantity > 0);
+  if (tracked) await setStockContext(tx, context);
 
   for (const line of sortedLines(lines)) {
     if (line.quantity <= 0) continue;
@@ -187,5 +197,6 @@ export async function restoreStock(
     }
   }
 
+  if (tracked) await setStockContext(tx, null);
   return results;
 }

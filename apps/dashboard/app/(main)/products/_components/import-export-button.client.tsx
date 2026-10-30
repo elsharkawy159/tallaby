@@ -7,6 +7,7 @@ import {
   Download,
   FileSpreadsheet,
   LoaderIcon,
+  RefreshCw,
   Upload,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -36,6 +37,7 @@ import {
   PRODUCT_EXCEL_TEMPLATE_ROW,
 } from "@/lib/product-excel";
 import type { VendorProduct } from "./vendor-products.section";
+import { ExcelUpdateDialog } from "../excel-update/excel-update.client";
 
 export function ImportExportButton({
   products: exportable,
@@ -51,6 +53,7 @@ export function ImportExportButton({
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [open, setOpen] = useState(false);
+  const [updateOpen, setUpdateOpen] = useState(false);
   const [preview, setPreview] = useState<{
     valid: ParsedBulkRow[];
     invalid: { row: number; message: string }[];
@@ -208,8 +211,25 @@ export function ImportExportButton({
             />
             {t("downloadTemplate")}
           </Button>
+          <Button
+            variant="ghost"
+            className="w-full justify-start font-normal"
+            onClick={() => {
+              setMenuOpen(false);
+              setUpdateOpen(true);
+            }}
+          >
+            <RefreshCw className="opacity-60" size={16} aria-hidden="true" />
+            {t("updateFromExcel")}
+          </Button>
         </PopoverContent>
       </Popover>
+
+      <ExcelUpdateDialog
+        open={updateOpen}
+        onOpenChange={setUpdateOpen}
+        productIds={exportable.map((p) => p.id)}
+      />
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-3xl">

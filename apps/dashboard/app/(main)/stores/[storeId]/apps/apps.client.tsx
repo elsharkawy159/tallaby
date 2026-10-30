@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useState, useTransition, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useFormatter, useTranslations } from "next-intl";
@@ -39,6 +39,7 @@ import { DisconnectAppButton } from "./disconnect-button.client";
 import type { AppCategoryOption } from "./apps.types";
 import { GoogleSheetsPanel } from "./google-sheets.client";
 import { MetaCapiPanel } from "./meta-capi.client";
+import { MetaEventsSettings } from "./meta-events.client";
 import { ShopifyImportPanel } from "./shopify-import.client";
 
 /** Shown in the order sellers are most likely to need them. */
@@ -76,6 +77,7 @@ export function StoreApps({
   readOnly,
   googleSheetsEnabled,
   categories,
+  feeds,
 }: {
   storeId: string;
   store: AppsStore;
@@ -83,6 +85,8 @@ export function StoreApps({
   readOnly: boolean;
   googleSheetsEnabled: boolean;
   categories: AppCategoryOption[];
+  /** Product feeds (F-11b): shown on the "All" tab, under the apps. */
+  feeds?: ReactNode;
 }) {
   const t = useTranslations("storeApps");
   const router = useRouter();
@@ -251,6 +255,8 @@ export function StoreApps({
         <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,300px),1fr))] gap-3.5">{matches.map(renderCard)}</div>
       )}
 
+      {tab === "all" && !q && feeds}
+
       <div className="flex flex-wrap items-center gap-3.5 rounded-2xl border-[1.5px] border-dashed px-[18px] py-4 text-muted-foreground">
         <Lightbulb className="size-[22px] shrink-0 text-accent" aria-hidden />
         <div className="min-w-0 flex-1">
@@ -268,6 +274,7 @@ export function StoreApps({
         provider={editing}
         current={editing ? byProvider.get(editing) : undefined}
         pixelConnected={byProvider.get("meta_pixel")?.status === "connected"}
+        capiConnected={Boolean(byProvider.get("meta_capi")?.credentialsSaved)}
         categories={categories}
         readOnly={readOnly}
         onClose={() => setEditing(null)}
@@ -419,6 +426,7 @@ function AppSheet({
   provider,
   current,
   pixelConnected,
+  capiConnected,
   categories,
   readOnly,
   onClose,
@@ -429,6 +437,7 @@ function AppSheet({
   provider: IntegrationProvider | null;
   current?: StoreIntegrationSummary;
   pixelConnected: boolean;
+  capiConnected: boolean;
   categories: AppCategoryOption[];
   readOnly: boolean;
   onClose: () => void;
@@ -493,6 +502,8 @@ function AppSheet({
                 storeId={storeId}
                 provider={provider}
                 current={current}
+                capiConnected={capiConnected}
+                readOnly={readOnly}
                 onClose={onClose}
                 onSaved={onSaved}
                 onRemoved={onRemoved}
@@ -509,6 +520,8 @@ function IdentifierPanel({
   storeId,
   provider,
   current,
+  capiConnected,
+  readOnly,
   onClose,
   onSaved,
   onRemoved,
@@ -516,6 +529,8 @@ function IdentifierPanel({
   storeId: string;
   provider: IntegrationProvider;
   current?: StoreIntegrationSummary;
+  capiConnected: boolean;
+  readOnly: boolean;
   onClose: () => void;
   onSaved: (summary: StoreIntegrationSummary) => void;
   onRemoved: (provider: IntegrationProvider) => void;
@@ -629,6 +644,15 @@ function IdentifierPanel({
             <Info className="mt-px size-4 shrink-0" aria-hidden />
             {t("eventsDelay", { vendor: t(`providers.${provider}.vendor`) })}
           </p>
+        )}
+        {provider === "meta_pixel" && current && (
+          <MetaEventsSettings
+            storeId={storeId}
+            current={current}
+            capiConnected={capiConnected}
+            readOnly={readOnly}
+            onSaved={onSaved}
+          />
         )}
         <p className="text-xs text-faint">{t("onlyThisStore")}</p>
       </div>

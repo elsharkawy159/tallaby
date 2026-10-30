@@ -31,6 +31,7 @@ import {
   SELLER_ORDER_ACTIONS,
   type SellerOrderAction,
 } from "./order-flow.lib";
+import { BULK_MAX_ORDERS, BULK_ORDER_ACTIONS } from "./orders-bulk.lib";
 
 type ActionResult = { success: true } | { success: false; error: string };
 
@@ -183,7 +184,7 @@ async function cancelOrder({ order, shipment }: LoadedOrder, sellerId: string) {
       if (cancelled.length === 0) throw new OrderActionError("alreadyUpdated");
     }
 
-    const results = await restoreStock(tx, stockLines);
+    const results = await restoreStock(tx, stockLines, { reason: "cancel", orderId: order.id, actorId: sellerId });
     await cancelPendingAffiliateCommission(tx, order.id);
     return results;
   });
@@ -241,26 +242,35 @@ async function moveShipment(
  * from the session; the order must have a line of theirs, and the move must
  * be one resolveSellerOrderFlow allows for the order as stored right now.
  */
+async function runSellerOrderAction(
+  sellerId: string,
+  orderId: string,
+  action: SellerOrderAction,
+  reason: string | undefined,
+) {
+  const loaded = await loadOrder(orderId, sellerId);
+
+  if (loaded.flow.readOnly) throw new OrderActionError(`readOnly.${loaded.flow.readOnly}`);
+  if (!loaded.flow.actions.includes(action)) throw new OrderActionError("notAllowed");
+
+  if (action === "confirm") {
+    await confirmOrder(loaded, sellerId);
+    // Stores set to "ship with Bosta when I confirm" (BS-09): after the response, so the seller never waits on Bosta.
+    const storeId = loaded.order.storeId;
+    if (storeId) {
+      after(() => autoShipOrderWithBosta(storeId, orderId, sellerId));
+    }
+  }
+  else if (action === "cancel") await cancelOrder(loaded, sellerId);
+  else await moveShipment(loaded, sellerId, action, reason);
+}
+
 export async function updateSellerOrder(input: unknown): Promise<ActionResult> {
   const t = await getTranslations("orders.errors");
   try {
     const { sellerId } = await requireSeller();
     const { orderId, action, reason } = inputSchema.parse(input);
-    const loaded = await loadOrder(orderId, sellerId);
-
-    if (loaded.flow.readOnly) throw new OrderActionError(`readOnly.${loaded.flow.readOnly}`);
-    if (!loaded.flow.actions.includes(action)) throw new OrderActionError("notAllowed");
-
-    if (action === "confirm") {
-      await confirmOrder(loaded, sellerId);
-      // Stores set to "ship with Bosta when I confirm" (BS-09): after the response, so the seller never waits on Bosta.
-      const storeId = loaded.order.storeId;
-      if (storeId) {
-        after(() => autoShipOrderWithBosta(storeId, orderId, sellerId));
-      }
-    }
-    else if (action === "cancel") await cancelOrder(loaded, sellerId);
-    else await moveShipment(loaded, sellerId, action, reason);
+    await runSellerOrderAction(sellerId, orderId, action, reason);
 
     revalidatePath("/orders", "layout");
     return { success: true };
@@ -269,6 +279,46 @@ export async function updateSellerOrder(input: unknown): Promise<ActionResult> {
     if (error instanceof AccessError) return { success: false, error: t("unauthorized") };
     if (error instanceof z.ZodError) return { success: false, error: t("invalid") };
     console.error("updateSellerOrder:", error);
+    return { success: false, error: t("generic") };
+  }
+}
+
+const bulkInputSchema = z.object({
+  orderIds: z.array(z.uuid()).min(1).max(BULK_MAX_ORDERS),
+  action: z.enum(BULK_ORDER_ACTIONS),
+});
+
+type BulkResult = { success: true; done: number; skipped: number } | { success: false; error: string };
+
+/**
+ * One stage move on many orders (ROADMAP.md F-04c). Each order goes through
+ * the same checks and write as its own button, one at a time, so an order
+ * that changed meanwhile or isn't the seller's is skipped, never forced.
+ */
+export async function bulkUpdateSellerOrders(input: unknown): Promise<BulkResult> {
+  const t = await getTranslations("orders.errors");
+  try {
+    const { sellerId } = await requireSeller();
+    const { orderIds, action } = bulkInputSchema.parse(input);
+
+    let done = 0;
+    let skipped = 0;
+    for (const orderId of new Set(orderIds)) {
+      try {
+        await runSellerOrderAction(sellerId, orderId, action, undefined);
+        done += 1;
+      } catch (error) {
+        if (!(error instanceof OrderActionError)) console.error("bulkUpdateSellerOrders:", orderId, error);
+        skipped += 1;
+      }
+    }
+
+    if (done > 0) revalidatePath("/orders", "layout");
+    return { success: true, done, skipped };
+  } catch (error) {
+    if (error instanceof AccessError) return { success: false, error: t("unauthorized") };
+    if (error instanceof z.ZodError) return { success: false, error: t("invalid") };
+    console.error("bulkUpdateSellerOrders:", error);
     return { success: false, error: t("generic") };
   }
 }

@@ -57,6 +57,8 @@ export const ALLOWED_NODE_TYPES = [
   "productBuyBox", "productDetails", "productContent", "productSeller", "productReviews",
   // Product page breadcrumbs (product page upgrade, 2026-10-28); additive.
   "productBreadcrumbs",
+  // Low-stock badge of the product page (ROADMAP.md F-34d, 2026-10-30); additive.
+  "productStockBadge",
   // Scrolling marquee and live countdown (Claude Design premium sections, 2026-10-27); additive.
   "marquee", "countdown",
 ] as const;
