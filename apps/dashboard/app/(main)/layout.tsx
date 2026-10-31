@@ -10,6 +10,7 @@ import { WelcomeGiftDialog } from "@/components/layout/welcome-gift-dialog.clien
 import { loadWelcomeGiftWatch } from "@/components/layout/welcome-gift.data";
 import { SellerAccessBlocked } from "@/components/layout/seller-access-blocked";
 import { getSellerAccess } from "@/lib/auth/seller-access";
+import { getSelectedStoreLink } from "@/lib/stores/store-link.server";
 import { getStoreWalletBalance } from "./wallet/store-wallet.server";
 import { createClient } from "@/supabase/server";
 import { getTranslations } from "next-intl/server";
@@ -45,6 +46,7 @@ export default async function DashboardLayout({
   const walletBalance = user ? await getStoreWalletBalance(user.id) : null;
   const askHeardAboutUs = user ? await needsHeardAboutUs(user.id) : false;
   const welcomeGift = user ? await loadWelcomeGiftWatch(user.id) : ({ state: "none" } as const);
+  const storeLink = await getSelectedStoreLink().catch(() => null);
 
   return (
     <div className="min-h-screen flex w-full overflow-x-clip bg-background">
@@ -52,7 +54,7 @@ export default async function DashboardLayout({
 
       {/* Main Content Area */}
       <MainContentWrapper>
-        <DashboardHeader walletBalance={walletBalance} />
+        <DashboardHeader walletBalance={walletBalance} storeLink={storeLink} />
         {access.status === "restricted" && (
           <div className="border-b border-amber-200 bg-amber-50 px-6 py-3 text-sm text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-200">
             <strong>{t("sellerStatus.restricted.title")}.</strong>{" "}

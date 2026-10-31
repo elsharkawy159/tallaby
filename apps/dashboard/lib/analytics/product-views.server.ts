@@ -10,7 +10,7 @@ import { parseProductViewsReport, productViewsReportBody, type PathViews } from 
  * already belong to the session's seller.
  */
 
-/** Hourly per seller + stores + range; Store views › Refresh purges a store's tag. */
+/** 5 minutes per seller + stores + range; Store views › Refresh purges a store's tag. */
 const getCachedProductPathViews = createCachedQuery({
   name: "dashboard:product-views:v1",
   ttl: STORE_VIEWS_TTL_SECONDS,

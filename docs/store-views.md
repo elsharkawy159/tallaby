@@ -24,10 +24,13 @@ Sellers see how many people visit each store website under **Store views**
 3. **Dashboard.** The server calls the GA4 Data API (`runReport`) with a
    service account, filtered on `customEvent:store_id` = the store the seller
    owns (checked by `requireStore`). Code: `apps/dashboard/lib/analytics/`.
-4. **Cache.** Results are cached per seller + store + range for 1 hour
-   (`createCachedQuery`, tag `storeTags.views(sellerId, storeId)`). The
-   **Refresh** button purges that tag (at most once a minute per store) and
-   reads GA4 again. Errors are never cached.
+4. **Cache.** Results are cached per seller + store + range for 5 minutes
+   (`STORE_VIEWS_TTL_SECONDS`, `createCachedQuery`, tag
+   `storeTags.views(sellerId, storeId)`). An open Store views page re-reads
+   its numbers every 5 minutes while the tab is visible, and on coming back
+   to a tab hidden longer than that (`useAutoRefresh`, owner 2026-10-31), so
+   sellers don't have to press **Refresh**. Refresh still purges the tag (at
+   most once a minute per store) and reads GA4 again. Errors are never cached.
 
 ## One-time setup
 
@@ -82,9 +85,33 @@ Sellers see how many people visit each store website under **Store views**
 Until the `GA4_*` vars are set, the page shows "Store views are coming soon".
 Until `STORE_VIEWS_GTM_ID` is set, no tag loads on storefronts.
 
+## Debugging "Store visits = 0"
+
+`0` on the dashboard means GA4 answered but has no processed rows for the
+store; `—` means GA4 is not configured or the read failed (check the logs).
+
+1. Run `pnpm --filter dashboard ga4:check [storeId]` (needs the dashboard
+   `.env`, read-only). It prints realtime hits, processed `page_view`s per
+   day, and sessions per `store_id`, and how to read them.
+2. Realtime rows but no processed days: GA4 has not processed the hits yet
+   (hours; 24–48 h on a new property). GA4's "active users in the last 30
+   minutes" is realtime and does not mean the Data API has the data.
+3. On the storefront, `window.tallabyDataLayer` must hold a
+   `tallaby_page_view` with the store id, and the `collect?v=2` request must
+   carry `ep.store_id=<uuid>`. If not, check `STORE_VIEWS_GTM_ID` on the
+   ecommerce deploy and that the GTM container is **published**.
+4. Once data exists, a cached `0` can stay for up to 5 minutes: wait, or
+   press **Refresh** on Store views (it also clears the home card).
+
+The local `GA4_SERVICE_ACCOUNT_PRIVATE_KEY` must be wrapped in matching
+quotes (`'-----BEGIN …-----\n'`); a stray quote inside the PEM breaks
+signing and the dashboard shows `—`.
+
 ## Limits
 
 - GA4 shows new hits after minutes to hours; "today" is partial.
 - Visitors who block Google Tag Manager are not counted.
-- Data API quota: the 1-hour cache plus the per-store refresh cooldown keep
-  usage to about one request per store, per range, per hour.
+- Data API quota: the 5-minute cache plus the per-store refresh cooldown keep
+  usage to at most about 12 requests per store, per range, per hour, and only
+  while a seller has the page open (hidden tabs don't poll). If GA4 quota
+  errors show up as sellers grow, raise `STORE_VIEWS_TTL_SECONDS`.

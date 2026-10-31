@@ -70,7 +70,7 @@ async function fetchStoreViews(storeId: string, range: StoreViewsRange): Promise
 }
 
 /**
- * Cached per seller + store + range for an hour; Refresh purges the store's
+ * Cached per seller + store + range for 5 minutes; Refresh purges the store's
  * tag. Errors are not cached, so a failed read is retried on the next visit.
  */
 export const getStoreViews = createCachedQuery({

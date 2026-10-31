@@ -1,15 +1,40 @@
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { ExternalLink, Plus } from "lucide-react";
 import { getTranslations } from "next-intl/server";
+import { getSelectedStoreLink } from "@/lib/stores/store-link.server";
 import { Button } from "@workspace/ui/components/button";
 import { getHomeSnapshot } from "./home.queries";
 import { isSetupComplete } from "./setup-checklist.data";
 
-/** "Good morning, {name}" in the seller's (Cairo) time of day. */
+/**
+ * "Good morning, {name}" in the seller's (Cairo) time of day. On phones the
+ * store's address follows it in small type (the header shows it from md up).
+ */
 export async function HomeGreeting() {
-  const [snapshot, t] = await Promise.all([getHomeSnapshot(), getTranslations("home.header")]);
+  const [snapshot, t, tHeader, storeLink] = await Promise.all([
+    getHomeSnapshot(),
+    getTranslations("home.header"),
+    getTranslations("header"),
+    getSelectedStoreLink().catch(() => null),
+  ]);
   const hour = snapshot?.localHour ?? 12;
-  return <>{t(hour < 12 ? "morning" : "evening", { name: snapshot?.displayName ?? "" })}</>;
+  return (
+    <>
+      {t(hour < 12 ? "morning" : "evening", { name: snapshot?.displayName ?? "" })}
+      {storeLink && (
+        <a
+          href={storeLink.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          title={tHeader("openStore")}
+          className="ms-2 inline-flex max-w-full items-center gap-1 align-middle text-xs font-normal text-muted-foreground hover:text-primary md:hidden"
+        >
+          <bdi dir="ltr" className="truncate">{storeLink.host}</bdi>
+          <ExternalLink className="size-3 shrink-0" aria-hidden />
+        </a>
+      )}
+    </>
+  );
 }
 
 /** One line on what needs doing first. */

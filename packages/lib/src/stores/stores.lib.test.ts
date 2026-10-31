@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   createStoreInputSchema,
+  facebookDomainVerificationSchema,
+  parseStoreSeo,
+  storeSeoSchema,
   storeGeneralSettingsSchema,
   subdomainCandidates,
 } from "./stores.lib";
@@ -109,5 +112,29 @@ describe("catalog mode", () => {
     expect(
       storeCatalogInputSchema.safeParse({ mode: "selected", productIds: Array(STORE_CATALOG_MAX_PRODUCTS + 1).fill(a) }).success,
     ).toBe(false);
+  });
+});
+
+describe("facebook domain verification", () => {
+  it("accepts a Meta token and turns an empty value into null (remove)", () => {
+    expect(facebookDomainVerificationSchema.parse(" abc123def456ghi789jkl012mno345 ")).toBe("abc123def456ghi789jkl012mno345");
+    expect(facebookDomainVerificationSchema.parse("")).toBeNull();
+  });
+
+  it("refuses anything that could break out of the content attribute", () => {
+    for (const bad of ['abc" onload="x', "<script>", "short", "a".repeat(101), "abc-def_ghi123"]) {
+      expect(facebookDomainVerificationSchema.safeParse(bad).success, bad).toBe(false);
+    }
+  });
+
+  it("is read from stores.seo and a bad stored value is dropped", () => {
+    expect(parseStoreSeo({ facebookDomainVerification: "abc123def456" }).facebookDomainVerification).toBe("abc123def456");
+    expect(parseStoreSeo({ facebookDomainVerification: '"><x' }).facebookDomainVerification).toBeNull();
+    expect(parseStoreSeo(null).facebookDomainVerification).toBeNull();
+  });
+
+  it("is not part of the SEO form, so saving the form never sends it", () => {
+    const parsed = storeSeoSchema.parse({ titleTemplate: "", description: "", shareImageUrl: "", indexing: true, googleSiteVerification: "" });
+    expect(parsed).not.toHaveProperty("facebookDomainVerification");
   });
 });

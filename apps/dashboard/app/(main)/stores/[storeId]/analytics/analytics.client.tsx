@@ -11,7 +11,8 @@ import { Button } from "@workspace/ui/components/button";
 import { cn } from "@workspace/ui/lib/utils";
 import { EmptyState, HomeCard, HomeCardHeader, IconTile } from "@/app/(main)/_components/home-ui";
 import { formatCompactNumber, formatDate, formatNumber, formatRelativeTime } from "@/lib/i18n/format";
-import { STORE_VIEWS_RANGES, type StoreViewsRange, type StoreViewsReport } from "@/lib/analytics/store-views.lib";
+import { useAutoRefresh } from "@/hooks/use-auto-refresh";
+import { STORE_VIEWS_AUTO_REFRESH_MS, STORE_VIEWS_RANGES, type StoreViewsRange, type StoreViewsReport } from "@/lib/analytics/store-views.lib";
 import { refreshStoreViews } from "./analytics.server";
 
 const VIEWS = "var(--primary)";
@@ -35,6 +36,7 @@ export function StoreViews({
   const locale = useLocale();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  useAutoRefresh(STORE_VIEWS_AUTO_REFRESH_MS, state !== "notConfigured");
 
   const refresh = () => {
     startTransition(async () => {

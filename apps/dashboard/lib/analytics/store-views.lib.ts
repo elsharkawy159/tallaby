@@ -9,8 +9,13 @@ export const STORE_VIEWS_RANGES = [7, 28, 90] as const;
 export type StoreViewsRange = (typeof STORE_VIEWS_RANGES)[number];
 export const DEFAULT_STORE_VIEWS_RANGE: StoreViewsRange = 28;
 
-/** Cache backstop: GA4 data lags by minutes to hours, so hourly is enough. */
-export const STORE_VIEWS_TTL_SECONDS = 3600;
+/**
+ * Cache backstop: 5 minutes, so new visits show up without pressing Refresh
+ * (owner, 2026-10-31). GA4 itself still lags by minutes to hours.
+ */
+export const STORE_VIEWS_TTL_SECONDS = 300;
+/** The open Store views page re-reads its numbers this often while visible. */
+export const STORE_VIEWS_AUTO_REFRESH_MS = 5 * 60_000;
 /** Minimum gap between two Refresh presses for one store. */
 export const STORE_VIEWS_REFRESH_COOLDOWN_MS = 60_000;
 

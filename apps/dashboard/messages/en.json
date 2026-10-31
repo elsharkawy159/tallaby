@@ -793,7 +793,7 @@
       "notStartedTitle": "Your 7-day free trial is waiting",
       "notStarted": "No platform fee for 7 days, counted from the day your first store was created.",
       "activeTitle": "{days, plural, one {# day} other {# days}} left in your free trial",
-      "active": "No platform fee on orders placed until {date}. After that, the fee is a flat EGP 5 per delivered order."
+      "active": "No platform fee on orders placed until {date}. After that, the fee is a flat EGP 5 per new order."
     },
     "range": {
       "label": "Reporting period",
@@ -866,7 +866,7 @@
       "averageOrder": "Avg. order {value} {currency}",
       "noOrders": "No orders yet",
       "withdraw": "Withdraw balance",
-      "walletEmpty": "Added after your first delivered order",
+      "walletEmpty": "Changes after your first order",
       "ratingLabel": "Rated {rating} out of 5",
       "positive": "{percent} positive",
       "noRatings": "No ratings yet",
@@ -3008,7 +3008,7 @@
       },
       "fees": {
         "question": "What does Tallaby charge?",
-        "answer": "A flat EGP 5 per delivered order, taken from your store wallet. New sellers get EGP 100 in their wallet when they finish their store (choose a template, add a product and publish), valid for 30 days. Cancelled or undelivered orders are never charged."
+        "answer": "A flat EGP 5 per new order, taken from your store wallet when the order is placed. An order that looks like a test or a duplicate (same customer and same products within 2 hours) is charged only if it is delivered. New sellers get EGP 100 in their wallet when they finish their store (choose a template, add a product and publish), valid for 30 days."
       },
       "plan": {
         "question": "How many stores can I have?",
@@ -3036,7 +3036,7 @@
       },
       "wallet": {
         "question": "How does the store wallet work?",
-        "answer": "Fees for delivered orders are taken from your wallet, and every entry is listed in Balance & top-ups. The balance can go below zero; when it does, you'll see a reminder to top up."
+        "answer": "Order fees are taken from your wallet, and every entry is listed in Balance & top-ups. The order amount itself is never added to the wallet: the customer pays you directly. The balance can go below zero; when it does, you'll see a reminder to top up."
       },
       "topUp": {
         "question": "How do I top up my wallet?",
@@ -3087,11 +3087,12 @@
     "menuLanguage": "Language",
     "menuDarkMode": "Dark mode",
     "walletBalance": "Wallet Balance: {amount}",
-    "walletLabel": "Wallet Balance:"
+    "walletLabel": "Wallet Balance:",
+    "openStore": "Open your store"
   },
   "negativeWalletDialog": {
     "title": "Your wallet balance is negative",
-    "description": "Tallaby takes a flat EGP 5 from your wallet for each delivered order. Top up to clear the amount you owe.",
+    "description": "Tallaby takes a flat EGP 5 from your wallet for each new order. Top up to clear the amount you owe.",
     "balanceLabel": "Current balance:",
     "topUp": "Top up now",
     "later": "Later"
@@ -3502,7 +3503,7 @@
     "manageStores": "Manage stores",
     "fees": "Fees",
     "feesDescription": "What Tallaby charges. There's no monthly subscription.",
-    "feeLine": "Platform fee per delivered order, paid from your store wallet",
+    "feeLine": "Platform fee per new order, paid from your store wallet",
     "trialActive": "Free trial: {days, plural, one {# day} other {# days}} left, no fee on orders placed until {date}.",
     "trialEnded": "Your free trial ended on {date}.",
     "trialNotStarted": "Your {days}-day free trial starts when you create your first store.",
@@ -3526,7 +3527,7 @@
     },
     "saved": "Payment methods updated.",
     "readOnly": "This store is read-only, so payment methods can't be changed.",
-    "checkoutNotice": "Your store's checkout shows only the methods you turn on here. Wallet and InstaPay payments go straight to your own account, so they are not added to your Tallaby wallet; only the EGP 5 fee per delivered order is taken from it.",
+    "checkoutNotice": "Your store's checkout shows only the methods you turn on here. Wallet and InstaPay payments go straight to your own account, so they are not added to your Tallaby wallet; only the EGP 5 fee per order is taken from it.",
     "soonTitle": "Coming soon",
     "soonDescription": "These will be available in a later update.",
     "soon": "Soon",
@@ -3682,7 +3683,7 @@
       "howItWorks": {
         "verify": "We check your keys by creating a 1 EGP test checkout in your account. Nobody is charged.",
         "money": "Card payments go straight to your gateway account. Tallaby never holds this money, and refunds are made from your gateway's dashboard.",
-        "fee": "Tallaby's EGP 5 fee per delivered order is taken from your store wallet, as with cash on delivery."
+        "fee": "Tallaby's EGP 5 fee per order is taken from your store wallet once the payment is confirmed, as with any order."
       },
       "fields": {
         "mode": "Account mode",
@@ -4020,6 +4021,17 @@
       "consentNote": "A server Purchase is sent only for orders placed on this store's website, after the shopper accepts tracking there. It uses the order id as the event id, so Meta counts it once with the Pixel's Purchase.",
       "test": "Test connection",
       "testOk": "Connected. Meta accepted the token for this Pixel."
+    },
+    "metaDomain": {
+      "title": "Domain verification",
+      "hint": "Meta Business Manager asks you to add a meta tag to the head of your home page. Paste the whole tag, or only the code inside content=\"…\", and we add it to your store for you.",
+      "label": "Meta tag from Meta",
+      "invalid": "Paste the whole tag or the code inside content=\"…\" (letters and numbers only).",
+      "needsDomain": "Meta verifies your own domain (like mystore.com), so connect your domain first in Website › Domain & SEO. A tallaby.com address can’t be verified by you.",
+      "live": "The tag is on your store. Go back to Meta and press Verify.",
+      "save": "Save tag",
+      "saved": "Verification tag saved",
+      "removed": "Verification tag removed"
     },
     "metaEvents": {
       "title": "Meta events",
@@ -4561,13 +4573,13 @@
       }
     },
     "title": "Store wallet",
-    "pageDescription": "EGP {fee} is taken from your balance for every delivered order. Top up ahead so orders keep coming in.",
+    "pageDescription": "EGP {fee} is taken from your balance for every new order. Top up ahead so orders keep coming in.",
     "runway": "Covers about {count, plural, one {# order} other {# orders}}",
     "thisMonth": "This month: {sales} in sales, {fees} in fees",
     "negative": "Your balance is below zero. New sales pay it back automatically, or you can top up at any time.",
     "negativeStrong": "Your balance is well below zero. Top up soon: until it recovers, ads and other paid services can't be paid from the wallet.",
     "howTitle": "How the platform fee works",
-    "how": "For each delivered order, Tallaby takes a flat EGP 5 from your wallet, whatever the order total. If your balance is zero or less, it goes below zero. Nothing is charged for cancelled or undelivered orders.",
+    "how": "For each new order, Tallaby takes a flat EGP 5 from your wallet when the order is placed, whatever the total. An order that looks like a test (a name like \"test\" or a phone like 01000000000) or a duplicate (same customer and same products within 2 hours) is charged only if it is delivered. The order amount is never added to the wallet. If your balance is zero or less, it goes below zero.",
     "trialActive": "Free trial: {days, plural, one {# day} other {# days}} left, no fee on orders placed until {date}.",
     "trialNotStarted": "Your 7-day free trial starts when your first store is created.",
     "entriesTitle": "Wallet activity",
@@ -5535,7 +5547,7 @@
     "emptyTitle": "No views yet",
     "emptyDescription": "Share your store link to bring your first visitors.",
     "offline": "Your website isn't published, so visitors can't see it and no views are counted. Publish it from Website › Overview.",
-    "delayNote": "New visits can take a few hours to show up. The numbers refresh every hour, or when you press Refresh.",
+    "delayNote": "New visits can take a few hours to show up. The numbers update by themselves every few minutes.",
     "notConfiguredTitle": "Store views are coming soon",
     "notConfiguredDescription": "Visitor counts for your website aren't switched on yet.",
     "errorTitle": "Couldn't load your store views",

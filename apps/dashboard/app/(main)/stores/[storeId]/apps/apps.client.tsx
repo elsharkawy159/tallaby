@@ -46,6 +46,7 @@ import type { AppCategoryOption } from "./apps.types";
 import { GoogleSheetsPanel } from "./google-sheets.client";
 import { MetaCapiPanel } from "./meta-capi.client";
 import { MetaEventsSettings } from "./meta-events.client";
+import { MetaDomainVerification } from "./meta-domain.client";
 import { ShopifyImportPanel } from "./shopify-import.client";
 
 /**
@@ -61,7 +62,16 @@ const STEP_KEYS = ["step1", "step2", "step3"] as const;
 /** Result of the Google OAuth round-trip, passed back as `?google=…` (P7-06). */
 const GOOGLE_RESULTS = new Set(["connected", "cancelled", "failed", "invalid", "rateLimited"]);
 
-export type AppsStore = { name: string; logoUrl: string | null; hostname: string; siteStatus: string };
+export type AppsStore = {
+  name: string;
+  logoUrl: string | null;
+  hostname: string;
+  siteStatus: string;
+  /** An active custom domain: Meta can only verify a domain the seller owns. */
+  hasCustomDomain: boolean;
+  /** Meta Pixel › Domain verification token (stores.seo). */
+  metaDomainToken: string | null;
+};
 
 export function StoreApps({
   storeId,
@@ -272,6 +282,7 @@ export function StoreApps({
         current={editing ? byProvider.get(editing) : undefined}
         pixelConnected={byProvider.get("meta_pixel")?.status === "connected"}
         capiConnected={Boolean(byProvider.get("meta_capi")?.credentialsSaved)}
+        store={store}
         categories={categories}
         readOnly={readOnly}
         onClose={() => setEditing(null)}
@@ -392,6 +403,7 @@ function AppSheet({
   current,
   pixelConnected,
   capiConnected,
+  store,
   categories,
   readOnly,
   onClose,
@@ -403,6 +415,7 @@ function AppSheet({
   current?: StoreIntegrationSummary;
   pixelConnected: boolean;
   capiConnected: boolean;
+  store: AppsStore;
   categories: AppCategoryOption[];
   readOnly: boolean;
   onClose: () => void;
@@ -468,6 +481,7 @@ function AppSheet({
                 provider={provider}
                 current={current}
                 capiConnected={capiConnected}
+                store={store}
                 readOnly={readOnly}
                 onClose={onClose}
                 onSaved={onSaved}
@@ -486,6 +500,7 @@ function IdentifierPanel({
   provider,
   current,
   capiConnected,
+  store,
   readOnly,
   onClose,
   onSaved,
@@ -495,6 +510,7 @@ function IdentifierPanel({
   provider: IntegrationProvider;
   current?: StoreIntegrationSummary;
   capiConnected: boolean;
+  store: AppsStore;
   readOnly: boolean;
   onClose: () => void;
   onSaved: (summary: StoreIntegrationSummary) => void;
@@ -617,6 +633,14 @@ function IdentifierPanel({
             capiConnected={capiConnected}
             readOnly={readOnly}
             onSaved={onSaved}
+          />
+        )}
+        {provider === "meta_pixel" && (
+          <MetaDomainVerification
+            storeId={storeId}
+            initial={store.metaDomainToken}
+            hasCustomDomain={store.hasCustomDomain}
+            readOnly={readOnly}
           />
         )}
         <p className="text-xs text-faint">{t("onlyThisStore")}</p>

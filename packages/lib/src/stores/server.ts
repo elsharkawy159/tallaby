@@ -53,6 +53,8 @@ import {
   createStoreInputSchema,
   storeGeneralSettingsSchema,
   storeSocialLinksSchema,
+  facebookDomainVerificationSchema,
+  parseStoreSeo,
   storeSeoSchema,
   subdomainCandidates,
   type StoreSocialLink,
@@ -514,7 +516,36 @@ export async function updateStoreSeo(
     .set({ seo: next, updatedAt: sql`now()` })
     .where(and(ownStore(sellerId, storeId), eq(stores.status, "active")))
     .returning({ id: stores.id });
-  return updated.length ? { success: true, data: parsed.data } : { success: false, error: "store_read_only" };
+  return updated.length ? { success: true, data: parseStoreSeo(next) } : { success: false, error: "store_read_only" };
+}
+
+/**
+ * Apps › Meta Pixel › Domain verification. Sets (or, when empty, removes)
+ * only `stores.seo.facebookDomainVerification`; every other SEO key is kept.
+ * The storefront renders it as `<meta name="facebook-domain-verification">`.
+ */
+export async function updateStoreFacebookDomainVerification(
+  sellerId: string,
+  storeId: string,
+  input: unknown,
+  q: Queryable = db,
+): Promise<StoreResult<{ token: string | null }, StoreWriteError>> {
+  const parsed = facebookDomainVerificationSchema.safeParse(input);
+  if (!parsed.success) return { success: false, error: "invalid_input" };
+  const store = await getStore(sellerId, storeId, q);
+  if (!store) return { success: false, error: "not_found" };
+  if (store.status !== "active") return { success: false, error: "store_read_only" };
+
+  const token = parsed.data;
+  const seo = token
+    ? sql`coalesce(${stores.seo}, '{}'::jsonb) || jsonb_build_object('facebookDomainVerification', ${token}::text)`
+    : sql`coalesce(${stores.seo}, '{}'::jsonb) - 'facebookDomainVerification'`;
+  const updated = await q
+    .update(stores)
+    .set({ seo, updatedAt: sql`now()` })
+    .where(and(ownStore(sellerId, storeId), eq(stores.status, "active")))
+    .returning({ id: stores.id });
+  return updated.length ? { success: true, data: { token } } : { success: false, error: "store_read_only" };
 }
 
 /**

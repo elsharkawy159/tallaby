@@ -885,6 +885,20 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 ## 7. Log
 
+### 2026-10-31 — Meta Pixel: domain verification meta tag (seller report)
+
+- A seller adding the Meta Pixel could not find where to paste Meta's `<meta name="facebook-domain-verification" content="…">` tag (on WordPress they paste it in the `<head>`). Store › Apps › Meta Pixel now has a "Domain verification" box (shown whether or not the Pixel is connected): paste the whole tag or only the code, and only the token is kept (letters and digits, 10–100). Stored in `stores.seo.facebookDomainVerification` (`updateStoreFacebookDomainVerification` in `@workspace/lib/stores/server`, ownership checked, active stores only); the SEO form leaves the key alone. The storefront renders it through Next `verification.other` as an escaped tag on that store's host only, and checks the token again (rule 9: no seller HTML). Meta verifies the root domain, so the box warns when the store has no active custom domain. New strings `storeApps.metaDomain.*` (ar/en). No migration (jsonb key).
+- Checks: lib, dashboard and admin typecheck 0 errors; ecommerce typecheck shows only the existing `profile.chunks.tsx` errors; new tests in `stores.lib.test.ts` and `apps/ecommerce/lib/store-seo/store-seo.lib.test.ts` pass; dashboard tests pass. ESLint does not start (known). Not looked at in a browser yet.
+
+### 2026-10-31 — EGP 5 fee at order creation, fake/duplicate orders held (owner request)
+
+- Owner: take the EGP 5 on every order once it is created, except fake or duplicated orders, which pay only if delivered; never add the order amount to the seller's wallet. Business-model change recorded in `PLAN.md` §13.1 and §23 (details, checks and what is left). Store wallet page, FAQ, trial banner, negative-wallet pop-up and payments notices updated (ar/en). The marketing site copy still says "per delivered order" (owner to decide). No migration.
+
+### 2026-10-31 — Store link in the dashboard header (owner request)
+
+- Owner: show the store link, clickable and simple, in the seller dashboard header on desktop, and on phones beside "مساء الخير، {name}" in small type. `getSelectedStoreLink` (`apps/dashboard/lib/stores/store-link.server.ts`) gives the sidebar-selected store's live address (active custom domain, else `{subdomain}.tallaby.com`). The header shows the hostname with an external-link icon after the page title from `md` up; the home greeting shows it in `text-xs` below `md`. Opens in a new tab; new string `header.openStore` (ar/en). No migration.
+- Checks: dashboard typecheck 0 errors. Not looked at in a browser yet.
+
 ### 2026-10-31 — Website › Design: store banner = the home hero's photos (owner request)
 
 - Owner: show "بانر المتجر" only when the theme's hero has banner photos, and make it a list that follows a hero carousel. `hero-banners.lib.ts` (Website › Design) finds the hero in the home page DRAFT (first two sections, skipping designs of another category): a `carousel` gives one banner per slide, any other hero its `role: "image"` photos; a video or text-only hero hides the card.

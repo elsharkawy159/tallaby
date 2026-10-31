@@ -6,6 +6,7 @@ import { loadStorePage } from "@/lib/stores/store-page.server";
 import { isGoogleSheetsConfigured } from "@/lib/integrations/google-oauth.server";
 import { storeHostname, storeUrl } from "@workspace/lib/storefront";
 import { findActiveCustomDomainForSubdomain } from "@workspace/lib/storefront/server";
+import { parseStoreSeo } from "@workspace/lib/stores";
 import { StoreApps } from "./apps.client";
 import { ProductFeeds } from "./product-feeds.client";
 import { storeFeedUrls } from "./product-feeds.lib";
@@ -41,7 +42,14 @@ export default async function StoreAppsPage({ params }: { params: Promise<{ stor
     <section className="mx-auto w-full max-w-[1120px] px-3.5 pt-[22px] pb-20 sm:px-6 sm:pt-8 sm:pb-24">
       <StoreApps
         storeId={store.id}
-        store={{ name: store.name, logoUrl: store.logoUrl, hostname: storeHostname(store.subdomain), siteStatus: store.siteStatus }}
+        store={{
+          name: store.name,
+          logoUrl: store.logoUrl,
+          hostname: storeHostname(store.subdomain),
+          siteStatus: store.siteStatus,
+          hasCustomDomain: Boolean(customDomain),
+          metaDomainToken: parseStoreSeo(store.seo).facebookDomainVerification,
+        }}
         initial={integrations}
         readOnly={store.status !== "active"}
         googleSheetsEnabled={isGoogleSheetsConfigured()}

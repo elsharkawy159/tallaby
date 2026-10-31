@@ -29,7 +29,7 @@ async function fetchHomeTraffic(storeIds: string[], days: number): Promise<HomeT
   };
 }
 
-/** Hourly per seller + stores + range; Store views › Refresh purges a store's tag. */
+/** 5 minutes per seller + stores + range; Store views › Refresh purges a store's tag. */
 const getCachedHomeTraffic = createCachedQuery({
   name: "dashboard:home-traffic:v1",
   ttl: STORE_VIEWS_TTL_SECONDS,

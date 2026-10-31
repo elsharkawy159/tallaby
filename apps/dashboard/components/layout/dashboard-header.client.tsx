@@ -4,7 +4,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { ChevronRight, Ellipsis, Menu, Search, Wallet } from "lucide-react";
+import { ChevronRight, Ellipsis, ExternalLink, Menu, Search, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatMoney } from "@/lib/i18n/format";
 import { useSidebarStore } from "@/stores";
@@ -22,7 +22,13 @@ const MENU_ITEM =
 const ICON_BUTTON =
   "flex size-9.5 shrink-0 items-center justify-center rounded-[10px] border border-transparent text-muted-foreground transition-colors hover:border-sidebar-border hover:bg-sidebar-accent hover:text-sidebar-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40";
 
-export function DashboardHeader({ walletBalance }: { walletBalance: number | null }) {
+export function DashboardHeader({
+  walletBalance,
+  storeLink,
+}: {
+  walletBalance: number | null;
+  storeLink: { url: string; host: string } | null;
+}) {
   const t = useTranslations("header");
   const locale = useLocale();
   const tNav = useTranslations("nav");
@@ -101,6 +107,19 @@ export function DashboardHeader({ walletBalance }: { walletBalance: number | nul
           </>
         )}
         <h1 className="truncate text-[15px] font-semibold text-sidebar-foreground">{tNav(route.title)}</h1>
+        {/* Desktop: the selected store's live address. Phones see it beside the home greeting. */}
+        {storeLink && (
+          <a
+            href={storeLink.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={t("openStore")}
+            className="ms-2 hidden min-w-0 items-center gap-1 text-[13px] text-muted-foreground transition-colors hover:text-primary md:inline-flex"
+          >
+            <bdi dir="ltr" className="truncate">{storeLink.host}</bdi>
+            <ExternalLink className="size-3.5 shrink-0" aria-hidden />
+          </a>
+        )}
       </div>
 
       {/* Desktop: title, search and actions share the width equally, so the search sits in the middle. */}

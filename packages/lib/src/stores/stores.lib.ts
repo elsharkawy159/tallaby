@@ -187,6 +187,12 @@ export function publicStoreSocialLinks(contact: unknown): { platform: string; ur
  * and angle brackets.
  */
 export const GOOGLE_SITE_VERIFICATION_RE = /^[A-Za-z0-9_-]{10,100}$/;
+/**
+ * Meta Business Manager "Meta-tag" domain verification token (Apps › Meta
+ * Pixel), kept in `stores.seo.facebookDomainVerification`. Rendered the same
+ * way, only as the content of `<meta name="facebook-domain-verification">`.
+ */
+export const FACEBOOK_DOMAIN_VERIFICATION_RE = /^[A-Za-z0-9]{10,100}$/;
 /** Where the page title goes in a store title template: "%s | My store". */
 export const TITLE_TEMPLATE_TOKEN = "%s";
 
@@ -199,6 +205,13 @@ const titleTemplate = z
   .refine((v) => v.split(TITLE_TEMPLATE_TOKEN).length === 2, "invalid_title_template");
 const seoDescription = z.string().trim().max(320);
 const googleSiteVerification = z.string().trim().regex(GOOGLE_SITE_VERIFICATION_RE, "invalid_verification_token");
+const facebookDomainVerification = z
+  .string()
+  .trim()
+  .regex(FACEBOOK_DOMAIN_VERIFICATION_RE, "invalid_verification_token");
+
+/** Apps › Meta Pixel › Domain verification: a token, or empty to remove it. */
+export const facebookDomainVerificationSchema = z.preprocess(blankToNull, facebookDomainVerification.nullable());
 
 /**
  * Website › Domain & SEO › SEO (PLAN.md §7.3, P4-14), stored in `stores.seo`.
@@ -224,6 +237,8 @@ export type StoreSeo = {
   shareImageUrl: string | null;
   indexing: boolean;
   googleSiteVerification: string | null;
+  /** Not part of the SEO form (Apps › Meta Pixel saves it); the form keeps it. */
+  facebookDomainVerification: string | null;
 };
 
 export const DEFAULT_STORE_SEO: StoreSeo = {
@@ -232,6 +247,7 @@ export const DEFAULT_STORE_SEO: StoreSeo = {
   shareImageUrl: null,
   indexing: true,
   googleSiteVerification: null,
+  facebookDomainVerification: null,
 };
 
 /**
@@ -251,5 +267,6 @@ export function parseStoreSeo(raw: unknown): StoreSeo {
     shareImageUrl: pick(httpUrl, value.shareImageUrl) || null,
     indexing: value.indexing !== false,
     googleSiteVerification: pick(googleSiteVerification, value.googleSiteVerification),
+    facebookDomainVerification: pick(facebookDomainVerification, value.facebookDomainVerification),
   };
 }

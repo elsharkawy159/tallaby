@@ -5,7 +5,12 @@
 import type { Metadata } from "next";
 import { storeUrl } from "@workspace/lib/storefront";
 import { appIconVersion, appShortName } from "@workspace/lib/stores/app";
-import { GOOGLE_SITE_VERIFICATION_RE, TITLE_TEMPLATE_TOKEN, type StoreSeo } from "@workspace/lib/stores";
+import {
+  FACEBOOK_DOMAIN_VERIFICATION_RE,
+  GOOGLE_SITE_VERIFICATION_RE,
+  TITLE_TEMPLATE_TOKEN,
+  type StoreSeo,
+} from "@workspace/lib/stores";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
 
 /** Robots value for a store kept out of search; links are still followed. */
@@ -36,10 +41,10 @@ export function storeTitleTemplate(seo: StoreSeo, displayName: string): string {
 
 /**
  * Layout-level metadata for a store host. Builder pages and product pages
- * override the title/description of their own page. The Search Console token
- * is passed only through Next's `verification` field, which renders it as an
- * escaped `<meta name="google-site-verification" content="…">`; it is checked
- * against the pattern again here, so a bad stored value renders nothing.
+ * override the title/description of their own page. The Search Console and
+ * Meta tokens are passed only through Next's `verification` field, which
+ * renders them as escaped `<meta name="google-site-verification">` and
+ * `<meta name="facebook-domain-verification">` tags.
  */
 export function buildStoreMetadata(
   store: StoreMetadataInput,
@@ -50,7 +55,7 @@ export function buildStoreMetadata(
   const { seo } = store;
   const description = seo.description || store.description || store.storeDescription || undefined;
   const image = seo.shareImageUrl || store.bannerUrl || store.logoUrl;
-  const token = seo.googleSiteVerification;
+  const verification = storeVerification(seo);
 
   return {
     // The store is the brand here, not Tallaby.
@@ -78,6 +83,22 @@ export function buildStoreMetadata(
     appleWebApp: { capable: true, title: appShortName(store.displayName), statusBarStyle: "default" },
     // Zero visible products or indexing switched off (PLAN.md §10.3).
     ...(!indexable && { robots: STORE_NOINDEX }),
-    ...(token && GOOGLE_SITE_VERIFICATION_RE.test(token) && { verification: { google: token } }),
+    ...(verification && { verification }),
+  };
+}
+
+/**
+ * Search Console and Meta domain verification tags. Each token is checked
+ * against its pattern again here, so a bad stored value renders nothing.
+ */
+function storeVerification(seo: StoreSeo): Metadata["verification"] | undefined {
+  const google = seo.googleSiteVerification;
+  const facebook = seo.facebookDomainVerification;
+  const hasGoogle = Boolean(google && GOOGLE_SITE_VERIFICATION_RE.test(google));
+  const hasFacebook = Boolean(facebook && FACEBOOK_DOMAIN_VERIFICATION_RE.test(facebook));
+  if (!hasGoogle && !hasFacebook) return undefined;
+  return {
+    ...(hasGoogle && { google: google! }),
+    ...(hasFacebook && { other: { "facebook-domain-verification": facebook! } }),
   };
 }
