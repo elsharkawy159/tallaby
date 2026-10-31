@@ -5,7 +5,6 @@ import { getMessages } from "next-intl/server";
 import { DirectionProvider } from "@workspace/ui/components/direction";
 import { ANIMATIONS_INIT_SCRIPT } from "@workspace/motion/init-script";
 import { notFound } from "next/navigation";
-import { MetaPixel } from "@/components/meta/meta-pixel";
 import { GoogleAnalytics } from "@/components/layout/google-analytics";
 import { routing } from "@/i18n/routing";
 import { BASE_URL } from "@/lib/constants";
@@ -73,8 +72,9 @@ export default async function RootLayout({
           locale === "ar" ? `${notoKufiArabic.variable} ${montserrat.variable}` : montserrat.variable
         } antialiased`}
       >
-        {/* Tallaby's own tracking: both skip seller storefronts (P5-05). */}
-        <MetaPixel />
+        {/* Tallaby's GA4 skips seller storefronts (P5-05). Tallaby's Meta Pixel is
+            mounted only in the tallaby.com layouts, never here: this layout also
+            wraps every storefront (docs/meta-pixel.md). */}
         <GoogleAnalytics />
         <NextIntlClientProvider messages={messages}>
           <DirectionProvider dir={direction}>{children}</DirectionProvider>

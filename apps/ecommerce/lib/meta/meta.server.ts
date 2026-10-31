@@ -1,4 +1,7 @@
+import { headers } from 'next/headers'
 import {
+  isTallabyPixelHost,
+  isTallabyPixelUrl,
   postMetaCapiEvents,
   type MetaCapiCredentials,
 } from '@workspace/lib/integrations'
@@ -62,6 +65,16 @@ export function buildMetaCapiEvent (
   }
 }
 
+/** The request host and the event's page are both on Tallaby's pixel allow-list. */
+async function isTallabyCapiRequest (eventSourceUrl: string | undefined): Promise<boolean> {
+  try {
+    if (!isTallabyPixelHost((await headers()).get('host'))) return false
+  } catch {
+    return false // outside a request: no host to check, so send nothing
+  }
+  return !eventSourceUrl || !/^[a-z][a-z0-9+.-]*:/i.test(eventSourceUrl) || isTallabyPixelUrl(eventSourceUrl)
+}
+
 /**
  * Send a server-side Conversions API event.
  *
@@ -83,6 +96,13 @@ export async function sendMetaCapiEvent (
   })()
 
   if (!credentials) {
+    return { success: true, skipped: true }
+  }
+
+  // Tallaby's own pixel reports only from tallaby.com, www.tallaby.com and
+  // dashboard.tallaby.com (exact hosts): never a store subdomain, custom
+  // domain, *.localhost preview or Vercel preview (docs/meta-pixel.md).
+  if (!options.credentials && !(await isTallabyCapiRequest(params.eventSourceUrl))) {
     return { success: true, skipped: true }
   }
 

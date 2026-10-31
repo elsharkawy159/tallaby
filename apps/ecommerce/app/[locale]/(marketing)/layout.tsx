@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { getTranslations } from "next-intl/server";
 import { AnimationObserver } from "@workspace/motion";
+import { MetaPixel } from "@/components/meta/meta-pixel";
 import { SITE_URL } from "@/lib/marketing/site.lib";
 import "./marketing.css";
 
@@ -26,6 +27,7 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
     <>
       {children}
       <AnimationObserver />
+      <MetaPixel />
     </>
   );
 }
