@@ -51,7 +51,8 @@ Sellers see how many people visit each store website under **Store views**
 1. Create a **Web** container **Tallaby Storefronts** → its id (`GTM-…`) is
    `STORE_VIEWS_GTM_ID` on the ecommerce project.
 2. Variables › New › **Data Layer Variable**: name `DLV - tallaby_store_id`,
-   variable name `tallaby_store_id`.
+   variable name `tallaby_store_id`. Add a second one, `DLV - page_title`,
+   variable name `page_title` (web containers have no built-in Page Title).
 3. Triggers › New › **Custom Event**: name `tallaby_page_view`, event name
    `tallaby_page_view`.
 4. Tags › New › **Google tag**: tag id = the Measurement ID; configuration
@@ -60,7 +61,7 @@ Sellers see how many people visit each store website under **Store views**
    event name `page_view`, event parameters:
    - `store_id` = `{{DLV - tallaby_store_id}}`
    - `page_location` = `{{Page URL}}`
-   - `page_title` = `{{Page Title}}`
+   - `page_title` = `{{DLV - page_title}}`
 
    Trigger: `tallaby_page_view`.
 6. Preview on a published store (Tag Assistant), check one `page_view` per
