@@ -1,40 +1,22 @@
 'use client'
 
-import Script from 'next/script'
-import { useIsMarketplaceHost } from '@/lib/marketplace/marketplace-host.client'
+import { useEffect } from 'react'
+import { usePathname } from 'next/navigation'
+import { trackTallabyPageView } from '@workspace/lib/integrations'
 
 const PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID
 
 /**
- * Loads Meta Pixel once globally. PageView is fired from the init snippet only.
- * Do not call track('PageView') from route components.
- *
- * Marketplace only (PLAN.md P5-05), see `useIsMarketplaceHost`. The
- * <noscript> image fallback is therefore gone; it only counted visitors with
- * JavaScript disabled.
+ * Tallaby's own Meta Pixel on tallaby.com: PageView on the first load and on
+ * every client-side route change. The shared helper decides where it may run
+ * (production hosts only, so never on seller storefronts, which share this
+ * layout, nor on localhost or previews), loads Meta's base code once and
+ * ignores a repeat of the same path. See docs/meta-pixel.md.
  */
 export function MetaPixel () {
-  const onMarketplace = useIsMarketplaceHost()
-  if (!PIXEL_ID || !onMarketplace) return null
-
-  return (
-    <Script
-      id="meta-pixel"
-      strategy="afterInteractive"
-      dangerouslySetInnerHTML={{
-        __html: `
-!function(f,b,e,v,n,t,s)
-{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-n.queue=[];t=b.createElement(e);t.async=!0;
-t.src=v;s=b.getElementsByTagName(e)[0];
-s.parentNode.insertBefore(t,s)}(window, document,'script',
-'https://connect.facebook.net/en_US/fbevents.js');
-fbq('init', '${PIXEL_ID}');
-fbq('track', 'PageView');
-        `.trim(),
-      }}
-    />
-  )
+  const pathname = usePathname()
+  useEffect(() => {
+    trackTallabyPageView(PIXEL_ID, pathname)
+  }, [pathname])
+  return null
 }

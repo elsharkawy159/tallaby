@@ -4610,6 +4610,13 @@ Owner asked to keep only the current version of each template in `template_versi
 - Env: the token is now `META_CAPI_TOKEN` (renamed from `META_CONVERSIONS_API_ACCESS_TOKEN`, owner) for the marketplace CAPI too; the dashboard needs `NEXT_PUBLIC_META_PIXEL_ID`, `META_PIXEL_ID`, `META_CAPI_TOKEN`. No migration.
 - Checks: dashboard and lib `tsc` clean; ecommerce `tsc` only has the existing `profile.chunks.tsx` errors (file untouched); `meta-signup.lib.test.ts` 7 pass, integrations + sellers 109 pass, signup tests pass; ESLint crashes in its own setup (environment, as before). Manual E2E pending (Meta Test Events).
 
+### 2026-10-31: Tallaby Meta Pixel on every page of tallaby.com and the dashboard (owner)
+
+- Request (owner, 2026-10-31): Meta only got PageView from the tallaby.com home, nothing from dashboard.tallaby.com, and many events from localhost. Pixel 3628548033960332 ("Tallaby_dataset") everywhere; 1550740293762147 is in no code.
+- One helper, `packages/lib/src/integrations/meta-pixel.lib.ts`: loads Meta's base code once, only on `tallaby.com`, `www.tallaby.com`, `dashboard.tallaby.com` and never in a frame (localhost, previews, staging and storefronts get nothing); PageView per pathname with Meta's history tracking off; `trackTallabySignup` (`tb_reg_sent_<event id>` guard). Mounted in the ecommerce `[locale]` layout (replaces the inline snippet) and the dashboard root layout (new: every page, `/signup` included).
+- CompleteRegistration params are now `{ content_name: "seller_signup", registration_method }` (browser and CAPI); browser advanced matching (em/ph) removed; the dashboard event uses the global pixel and strips `signup` after queuing it. The signup CAPI event is skipped unless the request host is one of the three hosts. Notes in `docs/meta-pixel.md`. No migration.
+- Checks: lib `tsc` clean, dashboard `tsc` clean, ecommerce `tsc` only the existing `profile.chunks.tsx` errors; lib integrations 121 pass (new `meta-pixel.lib.test.ts`), dashboard 465 pass, ecommerce 241 pass; dashboard `next build` passes; ecommerce `next build` fails on a Google font download (`readex_pro`, environment); ESLint crashes in its own setup (as before). Manual E2E after deploy: Meta Test Events with a new Google account.
+
 ### 2026-10-29: Admin bell, more seller actions (owner)
 
 - Request (owner, 2026-10-29): the admin notifications should include more seller actions, such as an added product.

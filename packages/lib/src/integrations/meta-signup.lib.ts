@@ -22,9 +22,9 @@ export function parseSignupMethod(raw: unknown): SignupMethod | null {
   return raw === "email" || raw === "google" ? raw : null;
 }
 
-/** The custom data both events carry. */
+/** The custom data both events carry (no personal data). */
 export function signupEventParams(method: SignupMethod) {
-  return { content_name: "seller_signup", status: true, method };
+  return { content_name: "seller_signup", registration_method: method };
 }
 
 /**

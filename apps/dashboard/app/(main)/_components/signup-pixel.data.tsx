@@ -27,13 +27,5 @@ export async function SignupPixelData({ signup }: { signup: unknown }) {
     .limit(1);
   if (!seller?.createdAt || Date.now() - new Date(seller.createdAt).getTime() > NEW_ACCOUNT_MS) return null;
 
-  const phone = (user.user_metadata as Record<string, unknown> | undefined)?.phone;
-  return (
-    <SignupPixel
-      eventId={signupEventId(user.id)}
-      method={method}
-      email={user.email ?? null}
-      phone={typeof phone === "string" ? phone : null}
-    />
-  );
+  return <SignupPixel eventId={signupEventId(user.id)} method={method} />;
 }

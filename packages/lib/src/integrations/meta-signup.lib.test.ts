@@ -81,7 +81,7 @@ describe("buildSignupCapiEvent", () => {
         client_user_agent: "Mozilla/5.0",
         fbp: "fb.1.1700000000000.123",
       },
-      custom_data: { content_name: "seller_signup", status: true, method: "google" },
+      custom_data: { content_name: "seller_signup", registration_method: "google" },
     });
   });
 

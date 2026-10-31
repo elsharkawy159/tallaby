@@ -132,7 +132,7 @@ function SignupForm({ initialSlug, initialError }: { initialSlug: string; initia
   const handleResult = (result: SignupResult) => {
     if (result.status === "done") {
       if (result.signupEvent) {
-        trackSignupComplete(result.signupEvent.id, result.signupEvent.method, { email: email.trim(), phone });
+        trackSignupComplete(result.signupEvent.id, result.signupEvent.method);
       }
       setStep({ kind: "done", subdomain: result.subdomain });
     }

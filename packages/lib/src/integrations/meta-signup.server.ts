@@ -7,6 +7,7 @@ import {
   type SignupMethod,
   type SignupRequestContext,
 } from "./meta-signup.lib";
+import { isTallabyPixelUrl } from "./meta-pixel.lib";
 
 const sha256 = (value: string) => createHash("sha256").update(value).digest("hex");
 
@@ -58,7 +59,8 @@ export function buildSignupCapiEvent(input: SignupCapiInput, now = Date.now()): 
 export async function sendSignupCapiEvent(input: SignupCapiInput): Promise<void> {
   try {
     const credentials = tallabyCredentials();
-    if (!credentials) return;
+    // Only signups made on tallaby.com / dashboard.tallaby.com (not localhost, previews or staging).
+    if (!credentials || !isTallabyPixelUrl(input.context.eventSourceUrl)) return;
     const result = await postMetaCapiEvents(credentials, [buildSignupCapiEvent(input)], {
       graphVersion: process.env.META_GRAPH_API_VERSION || DEFAULT_META_GRAPH_VERSION,
     });

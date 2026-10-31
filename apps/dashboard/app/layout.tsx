@@ -11,6 +11,7 @@ import { SiteDataProvider } from "@/providers/site-data";
 import { ZodLocale } from "@/lib/i18n/zod-locale.client";
 import { ThemeProvider } from "@/providers/theme";
 import QueryProvider from "@/providers/use-query";
+import { MetaPixel } from "@/components/meta-pixel.client";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -69,6 +70,7 @@ export default async function RootLayout({
       <body
         className={`${locale === "ar" ? notoKufiArabic.variable : montserrat.variable} antialiased`}
       >
+        <MetaPixel />
         <DirectionProvider dir={direction}>
           <SiteDataProvider promise={getSiteData()}>
             <NextIntlClientProvider>

@@ -4,6 +4,7 @@ export * from "./validate";
 export * from "./meta-capi.lib";
 export * from "./meta-tracking.lib";
 export * from "./meta-signup.lib";
+export * from "./meta-pixel.lib";
 export * from "./shopify.lib";
 export * from "./google-sheets.lib";
 export * from "./bosta.lib";
