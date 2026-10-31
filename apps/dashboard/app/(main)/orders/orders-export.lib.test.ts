@@ -43,7 +43,7 @@ const order = (patch: Partial<SellerOrderRow> = {}): SellerOrderRow =>
     lines: [line("a", "100.10", 2), line("b", "199.90")],
     itemCount: 3,
     bosta: null,
-    flow: { stage: "new", primary: null, actions: [], readOnly: null, prepaid: false, carrierManaged: false } as SellerOrderFlow,
+    flow: { stage: "new", primary: null, actions: [], corrections: [], readOnly: null, prepaid: false, carrierManaged: false } as SellerOrderFlow,
     ...patch,
   }) as SellerOrderRow;
 

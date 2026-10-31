@@ -22,6 +22,8 @@ const PAYMENT_METHOD_LABEL_KEYS: Record<string, string> = {
   instapay: "instapay",
   vodafone_cash: "vodafoneCash",
   e_cash: "eCash",
+  we_pay: "wePay",
+  orange_cash: "orangeCash",
 };
 
 function formatAddressLines(

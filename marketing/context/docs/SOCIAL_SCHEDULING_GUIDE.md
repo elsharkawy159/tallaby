@@ -14,12 +14,12 @@
 
 ### Required CSV columns
 
-| Column           | Rules                                                                                       |
-| ---------------- | ------------------------------------------------------------------------------------------- |
-| **Text**         | Caption + hashtags (Egyptian Arabic, brand as **طلبي**). Save as **CSV UTF-8 (with BOM)** so Arabic isn't garbled. |
-| **Image URL**    | A **direct image URL** (see section 2)                                                      |
+| Column           | Rules                                                                                                                          |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| **Text**         | Caption + hashtags (Egyptian Arabic, brand as **طلبي**). Save as **CSV UTF-8 (with BOM)** so Arabic isn't garbled.             |
+| **Image URL**    | A **direct image URL** (see section 2)                                                                                         |
 | **Tags**         | **Leave EMPTY in every new Buffer file** (user rule, 22 Oct 2026). Older sheets already made with pillar tags stay as they are |
-| **Posting Time** | `YYYY-MM-DD HH:MM`, Cairo time (e.g. `2026-10-20 19:00`). Excel may reformat dates — check before upload |
+| **Posting Time** | `YYYY-MM-DD HH:MM`, Cairo time (e.g. `2026-10-20 19:00`). Excel may reformat dates — check before upload                       |
 
 ### Content rules for every post
 
@@ -44,33 +44,34 @@
 
 **Don't randomize.** Every day's post goes out on all relevant platforms on the **same day with the same design**. Only the caption, format and time change per platform. This keeps one consistent message, builds recognition (awareness campaign), halves production work, and makes results comparable across platforms.
 
-| Platform | What gets posted | Adaptation |
-|---|---|---|
-| **Facebook** | Every post (A + B) | Caption with `https://tallaby.com` |
-| **Instagram** | Every post (A + B) | Same caption, URL replaced with "اللينك في البايو". Reels also shared to the feed. **Story** of each feed post (same design, 9:16 crop) with a link sticker |
-| **TikTok** | Reels only | Same video, 3–5 TikTok hashtags, posted 20:00–23:00 |
-| **YouTube Shorts** | Reels only | Same video, short title + `tallaby.com` in the description |
-| **LinkedIn** | B2B posts only (marked `LinkedIn: yes` in the post bank, max 2/week) | Professional caption (fuller sentences, less عامية), weekdays 10:00–12:00 |
-| **Threads / X** | Optional: the day's headline as a short text post | No design needed |
-| **Pinterest** | Skip during this seller campaign | — |
+| Platform           | What gets posted                                                     | Adaptation                                                                                                                                                  |
+| ------------------ | -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Facebook**       | Every post (A + B)                                                   | Caption with `https://tallaby.com`                                                                                                                          |
+| **Instagram**      | Every post (A + B)                                                   | Same caption, URL replaced with "اللينك في البايو". Reels also shared to the feed. **Story** of each feed post (same design, 9:16 crop) with a link sticker |
+| **TikTok**         | Reels only                                                           | Same video, 3–5 TikTok hashtags, posted 20:00–23:00                                                                                                         |
+| **YouTube Shorts** | Reels only                                                           | Same video, short title + `tallaby.com` in the description                                                                                                  |
+| **LinkedIn**       | B2B posts only (marked `LinkedIn: yes` in the post bank, max 2/week) | Professional caption (fuller sentences, less عامية), weekdays 10:00–12:00                                                                                   |
+| **Threads / X**    | Optional: the day's headline as a short text post                    | No design needed                                                                                                                                            |
+| **Pinterest**      | Skip during this seller campaign                                     | —                                                                                                                                                           |
 
 Small variation is fine: a different caption hook on LinkedIn, or a story-only poll. **Never** a different design for the same day's message.
 
 ### Scheduling tools (recommended)
 
-| Platform | Tool | Why |
-|---|---|---|
-| **Facebook + Instagram** | **Meta Business Suite → Planner** (free) | Schedules both at once from one post, supports **images, carousels, reels and stories**, and lets you change the caption per platform |
-| TikTok | TikTok web (tiktok.com/upload) scheduler or Business Suite if linked | Native, keeps reach |
-| YouTube Shorts | YouTube Studio → Schedule | Native |
-| LinkedIn | LinkedIn native scheduler (clock icon) | Native, free |
-| **Buffer (CSV)** | Optional, only for bulk single-image posts | The free plan is limited to single images and 10 rows per upload, so Meta Business Suite is the better main tool |
+| Platform                 | Tool                                                                 | Why                                                                                                                                   |
+| ------------------------ | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| **Facebook + Instagram** | **Meta Business Suite → Planner** (free)                             | Schedules both at once from one post, supports **images, carousels, reels and stories**, and lets you change the caption per platform |
+| TikTok                   | TikTok web (tiktok.com/upload) scheduler or Business Suite if linked | Native, keeps reach                                                                                                                   |
+| YouTube Shorts           | YouTube Studio → Schedule                                            | Native                                                                                                                                |
+| LinkedIn                 | LinkedIn native scheduler (clock icon)                               | Native, free                                                                                                                          |
+| **Buffer (CSV)**         | Optional, only for bulk single-image posts                           | The free plan is limited to single images and 10 rows per upload, so Meta Business Suite is the better main tool                      |
 
 **Canva download folder:** final designs ready to post are moved into a Canva folder per batch (first 30 posts: "Tallaby — First 30 posts — READY TO DOWNLOAD", `FAHYgS31N6o`). Since 20 Oct, Claude exports PNGs from Canva itself and uploads them straight into Drive through the user's Chrome (fetch the export URL on a drive.google.com tab, then New → File upload with a patched file input) — the user no longer needs to download anything.
 
-**★ Main Drive = tallabycommerce@gmail.com (user rule, 24 Oct 2026).** All Tallaby designs, sheets and docs must live in — and be **owned by** — the `tallabycommerce@gmail.com` Drive. Never create new Tallaby files owned by `elsharkawy159.om@gmail.com`. Existing files in "Tallaby seller posts" (still owned by elsharkawy159 on 24 Oct; transfer waits for Chrome) are being moved with Drive's *Transfer ownership* (keeps file IDs, so Buffer/`uc?export=view&id=` links keep working); do **not** copy them (copies get new IDs and break links). New uploads must be made while connected/signed in as tallabycommerce (Google Drive connector authorised with that account, or Chrome Drive tab on that account). If the only Drive access available is the personal account, stop and tell the user instead of uploading there.
+**★ Main Drive = omar@tallaby.com (user rule, 24 Oct 2026).** All Tallaby designs, sheets and docs must live in — and be **owned by** — the `omar@tallaby.com` Drive. Never create new Tallaby files owned by `elsharkawy159.om@gmail.com`. Existing files in "Tallaby seller posts" (still owned by elsharkawy159 on 24 Oct; transfer waits for Chrome) are being moved with Drive's _Transfer ownership_ (keeps file IDs, so Buffer/`uc?export=view&id=` links keep working); do **not** copy them (copies get new IDs and break links). New uploads must be made while connected/signed in as tallabycommerce (Google Drive connector authorised with that account, or Chrome Drive tab on that account). If the only Drive access available is the personal account, stop and tell the user instead of uploading there.
 
 **Drive (seller posts) — structure since 24 Oct 2026:** root "Tallaby seller posts" `1tMJg9wKaM55ItUfPlSIjJwGEeGEcS7Ti` (shared "anyone with the link"; image links `https://drive.google.com/uc?export=view&id=FILE_ID`):
+
 - `00 · ✅ Already scheduled in Buffer (do NOT upload again)` `1qrkGdQYIgWwSs53Lv9Dc-Y8sa-nn5dKV` — designs fully scheduled on all their channels + the `· 01 · IN BUFFER` sheets + `BUFFER LOG` sheet `1HIbsDeWh7V26kHBCTCziL-9MsZBVr588QmmYQ1DBezw` (per channel: date, post, status). **Rule:** whenever posts are added to Buffer, move their designs here and update the log; check Buffer (`list_posts` status scheduled, org `6a96ab93a5eea55a438f3bc7`) before building any new sheet. Channels: Facebook `6ad017f9778b240e2f10f8ad`, Instagram `6ad01836778b240e2f10fd96`, LinkedIn `6ad74e27778b240e2f684d29`.
 - `00 · START HERE — how this Drive works` (Doc `14Mh0lU3PbgHxBDxdSW4RMEi2-ZEHSDfcMWdr5bePQxg`)
 - `01 · Designs` `1fg-iv0nrHJtmOIQRe0MapCMa9P6iGifO` — **single-image posts only** (+ reels later), one folder, named by posting date/time: `YYYY-MM-DD_HHMM_POSTID.png`, reels `YYYY-MM-DD_HHMM_POSTID_reel.mp4`. No sub-folders. **Carousels never go here** (user rule 24 Oct).
@@ -95,17 +96,22 @@ Each image must use a **direct image URL** — it opens the image by itself (not
 **Quick test:** open the link in a new tab. If only the image appears, it's direct.
 
 ### Google Drive
+
 1. Upload the image, right-click → **Get link** → General access: **Anyone with the link**.
 2. Copy the file ID and use: `https://drive.google.com/uc?export=view&id=FILE_ID`
+
 > This link doesn't end in `.png`/`.jpg` — test one post in Buffer first.
 
 ### Dropbox
+
 Share → Copy link (anyone with the link) → change `dl=0` to `raw=1`.
 
 ### Own website (most reliable)
+
 Put images in the site's public folder, e.g. `https://tallaby.com/social/post-01.png`.
 
 ### Free image hosts
+
 e.g. **ImgBB** → copy the **direct link** (ends in `.png`/`.jpg`).
 
 ---
@@ -120,7 +126,9 @@ e.g. **ImgBB** → copy the **direct link** (ends in `.png`/`.jpg`).
 6. Upload per channel and review the preview before confirming.
 
 ## Calendar & Buffer sheets (24 Oct 2026)
-Ground truth checked in Buffer (org "My organization", tallabycommerce@gmail.com, free plan = 10 scheduled posts per channel): only the 22–31 Oct upload is in Buffer. The old Batch 1/2 sheets were never uploaded → archived.
+
+Ground truth checked in Buffer (org "My organization", omar@tallaby.com, free plan = 10 scheduled posts per channel): only the 22–31 Oct upload is in Buffer. The old Batch 1/2 sheets were never uploaded → archived.
+
 - **22–31 Oct:** 1 post/day 20:00 (FB+IG) + LinkedIn 10:30 — sheets `· 01 · IN BUFFER` (FB `1RG7AVvcRvJDKtGn3Zh9mL5xlrar_7aAUhTevIf59S4A`, IG `179f6PR0zZ92oxP83ml7PbbUawtw6eqmlVYGpwgIY2ok`, LI `1xelFfaCC6RxXMYzx8UUdLlTaxnsPndOep2h1p1GdWNI`). LinkedIn already used P4-17, P4-19, P1-12, P2-11 (28–31 Oct) — don't repeat them on LinkedIn.
 - **1–26 Nov (user choice 24 Oct: 2 posts/day 13:30 + 20:00):** all 51 remaining designs in original plan order, no same-pillar pair on one day. P1-11 skipped (needs real footage). Brand film P1-04 on 1 Nov 20:00, Black Friday reel P2-17 19 Nov, COD/BF post P4-15 26 Nov.
   - **24 Oct: added via Buffer API** FB+IG P2-01 (1 Nov 13:30), P3-01 (2 Nov 13:30); LinkedIn P2-01 (1 Nov 10:30), P1-01 (2 Nov 10:30) → each channel now has 10 scheduled (free-plan max). Sheet 02s were rebuilt with 8 rows: FB `1A7brPyND0fIHg7MctIEDc5SD7FHae5NDy30ozZSkTAg`, IG `18WIBjXDoyIldjX7BN8Ssw0beHn7BsAYmEuIpvNn7HMA`, LI `155fohKRAz62MBAhwIivY77GloUUbvWJWHY8ieTZJ0x0`.
@@ -133,6 +141,7 @@ Ground truth checked in Buffer (org "My organization", tallabycommerce@gmail.com
 - P3-01 caption: FB "ابعتلنا وهنرد عليك: http://wa.me/@tallaby" · IG "ابعتلنا على Whatsapp @tallaby وهنرد عليك."
 
 ## Reels sheet (20 Oct 2026)
+
 **REELS — schedule, file names & captions** `156f4UauoLj5QQSJ0HVxEMSYAm4fLS6B6NQWWeIWVOk4` (v3, 20 Oct — after P4-06) (Drive folder "Tallaby seller posts"). One row per reel: date, time, post ID, title, **file name** (files live in `Desktop\tallaby\Social Media Designs\Reels`), length, status, FB + IG captions, LinkedIn, notes. This is the source of truth for reels — the Drive connector can't edit sheets, so each update is a new version of this sheet (trash the old one). Reels are posted natively (Meta Business Suite), not through Buffer.
 
 - Timezone note: Egypt switched back to UTC+2 on 30 Oct 2026 — Buffer `dueAt` for November uses `+02:00`.

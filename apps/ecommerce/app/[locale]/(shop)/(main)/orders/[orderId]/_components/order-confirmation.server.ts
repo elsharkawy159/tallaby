@@ -14,7 +14,8 @@ import { getLocale } from "next-intl/server";
 import {
   pickTranslationFromArray,
   type ProductLocale,
-} from "@/lib/product-translations";
+} from "@/lib/product-translations";
+import { readPaymentProof } from "@workspace/lib/orders/payment-proof";
 
 export async function getOrderConfirmationData(
   orderId: string,
@@ -205,6 +206,7 @@ export async function getOrderConfirmationData(
         currency: order.currency || "",
         paymentStatus: order.paymentStatus || "",
         paymentMethod: order.paymentMethod || "",
+        hasPaymentProof: readPaymentProof(order.id, order.metadata) !== null,
         isGift: order.isGift || false,
         giftMessage: order.giftMessage || "",
         notes: order.notes || "",

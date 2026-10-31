@@ -11,13 +11,13 @@
  */
 import { INTEGRATIONS, type IntegrationProvider } from "./registry";
 
-export type StoreAppGroup = "tracking" | "shipping" | "payments" | "data";
+export type StoreAppGroup = "ai" | "tracking" | "shipping" | "payments" | "data";
 
 /** How an app works, shown on its card before it is connected. */
-export type StoreAppKind = "script" | "server" | "import" | "account" | "carrier" | "sheet" | "gateway";
+export type StoreAppKind = "script" | "server" | "import" | "account" | "carrier" | "sheet" | "gateway" | "agent";
 
 /** Dashboard page (under /stores/:storeId/) that manages the app; none → the Apps page side sheet. */
-export type StoreAppPage = "apps/bosta" | "apps/wassalha" | "settings/payments";
+export type StoreAppPage = "apps/bosta" | "apps/wassalha" | "apps/ai-assistants" | "settings/payments";
 
 type StoreAppDefinition = {
   key: string;
@@ -25,10 +25,15 @@ type StoreAppDefinition = {
   kind: StoreAppKind;
   provider?: IntegrationProvider;
   page?: StoreAppPage;
+  /** A built app with no store_integrations row (its own page manages it): always live. */
+  live?: true;
 };
 
 /** In the order sellers are most likely to need them, per group. */
 export const STORE_APPS = [
+  // F-29: Claude, ChatGPT, Cursor … manage the store over MCP. Connections live in agent_grants (0133), not store_integrations.
+  { key: "ai_assistants", group: "ai", kind: "agent", page: "apps/ai-assistants", live: true },
+
   { key: "meta_pixel", group: "tracking", kind: "script", provider: "meta_pixel" },
   { key: "google_analytics", group: "tracking", kind: "script", provider: "google_analytics" },
   { key: "google_tag_manager", group: "tracking", kind: "script", provider: "google_tag_manager" },
@@ -54,10 +59,11 @@ export const STORE_APPS = [
 export type StoreApp = (typeof STORE_APPS)[number];
 export type StoreAppKey = StoreApp["key"];
 
-export const STORE_APP_GROUPS: StoreAppGroup[] = ["tracking", "shipping", "payments", "data"];
+export const STORE_APP_GROUPS: StoreAppGroup[] = ["ai", "tracking", "shipping", "payments", "data"];
 
-/** Live when it has a provider whose registry entry is available; everything else is "soon". */
+/** Live when it has a provider whose registry entry is available, or is a built page-only app; everything else is "soon". */
 export function isStoreAppLive(app: StoreApp): boolean {
+  if ("live" in app && app.live) return true;
   return "provider" in app && INTEGRATIONS[app.provider].availability === "available";
 }
 

@@ -52,6 +52,7 @@ import {
   toWalletPartialPaymentMethod,
 } from "@workspace/lib/orders/payment";
 import {
+  ALL_MANUAL_PAYMENT_METHODS,
   MANUAL_PAYMENT_METHODS,
   DEFAULT_MANUAL_PAYMENT_METHOD,
   isManualPaymentMethod,
@@ -131,7 +132,7 @@ export const CheckoutData = ({
   const manualMethods = useMemo(
     () =>
       storePayments
-        ? MANUAL_PAYMENT_METHODS.filter((m) =>
+        ? ALL_MANUAL_PAYMENT_METHODS.filter((m) =>
             (storePayments.methods as string[]).includes(m.value),
           )
         : MANUAL_PAYMENT_METHODS,

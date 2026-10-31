@@ -33,7 +33,15 @@ interface Input {
   /** Status the caller observed; guards against a double-submit re-applying. */
   expectedFromStatus: ShippingStatus;
   failureReason?: string;
+  /**
+   * Extra writes that must commit with the status (e.g. taking stock again
+   * when a seller moves a cancelled order back on its way). Runs last, inside
+   * the same transaction.
+   */
+  inTransaction?: (tx: Tx) => Promise<void>;
 }
+
+type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
 /**
  * Seller-side counterpart of apps/shipping/lib/apply-shipment-status.ts (used by
@@ -49,6 +57,7 @@ export async function applySellerShipmentStatus({
   status,
   expectedFromStatus,
   failureReason,
+  inTransaction,
 }: Input): Promise<void> {
   const now = new Date().toISOString();
 
@@ -136,6 +145,8 @@ export async function applySellerShipmentStatus({
     } else if (status === "cancelled") {
       await cancelPendingAffiliateCommission(tx, orderId);
     }
+
+    if (inTransaction) await inTransaction(tx);
   });
 
   // Customer mail once the status is committed (best-effort, once per order).

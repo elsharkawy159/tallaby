@@ -4,7 +4,7 @@ import { bulkActionCounts, bulkTargets, chunk } from "./orders-bulk.lib";
 
 const order = (id: string, actions: SellerOrderAction[]) => ({
   id,
-  flow: { stage: "new", primary: actions[0] ?? null, actions, readOnly: null, prepaid: false, carrierManaged: false } as SellerOrderFlow,
+  flow: { stage: "new", primary: actions[0] ?? null, actions, corrections: [], readOnly: null, prepaid: false, carrierManaged: false } as SellerOrderFlow,
 });
 
 describe("orders bulk actions", () => {

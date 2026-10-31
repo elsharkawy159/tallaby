@@ -19,13 +19,14 @@ export const SUPPORT_WHATSAPP_HANDLE = "@tallaby";
 export const SUPPORT_WHATSAPP_URL = `https://wa.me/${SUPPORT_WHATSAPP_HANDLE}`;
 
 /** Tallaby seller-support inbox. */
-export const SUPPORT_EMAIL = "tallabycommerce@gmail.com";
+export const SUPPORT_EMAIL = "omar@tallaby.com";
 
-export const getSupportWhatsAppUrl =(message: string) =>
+export const getSupportWhatsAppUrl = (message: string) =>
   `${SUPPORT_WHATSAPP_URL}?text=${encodeURIComponent(message)}`;
 
 /** Tallaby's WhatsApp channel: platform news and selling tips for sellers. */
-export const TALLABY_WHATSAPP_CHANNEL_URL = "https://whatsapp.com/channel/0029Vb9CWoJInlqNOoVPaN2X";
+export const TALLABY_WHATSAPP_CHANNEL_URL =
+  "https://whatsapp.com/channel/0029Vb9CWoJInlqNOoVPaN2X";
 
 /** Tallaby's official social accounts (same as the tallaby.com footer). */
 export const TALLABY_SOCIAL_LINKS = {

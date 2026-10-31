@@ -31,7 +31,8 @@ import { OrderStoreReviewCard } from "./order-store-review-card";
 import { OrderCancelButton } from "./order-cancel-button";
 import { cn } from "@/lib/utils";
 import { getTranslations } from "next-intl/server";
-import { MetaPurchase } from "@/components/meta/meta-purchase.client";
+import { MetaPurchase } from "@/components/meta/meta-purchase.client";
+import { OrderPaymentProof } from "./order-payment-proof";
 
 interface OrderConfirmationContentProps {
   data: OrderConfirmationData;
@@ -85,7 +86,7 @@ export async function OrderConfirmationContent({
     }
   };
 
-  const MANUAL_PAYMENT_METHODS = ["instapay", "vodafone_cash", "e_cash"];
+  const MANUAL_PAYMENT_METHODS = ["instapay", "vodafone_cash", "e_cash", "we_pay", "orange_cash"];
   const isAwaitingManualVerification =
     MANUAL_PAYMENT_METHODS.includes(order.paymentMethod) &&
     order.paymentStatus === "pending";
@@ -104,6 +105,8 @@ export async function OrderConfirmationContent({
       instapay: "instapay",
       vodafone_cash: "vodafoneCash",
       e_cash: "eCash",
+      we_pay: "wePay",
+      orange_cash: "orangeCash",
     };
     const translationKey =
       paymentMethodMap[paymentMethod.toLowerCase()] || paymentMethod;
@@ -250,8 +253,9 @@ export async function OrderConfirmationContent({
 
       {isAwaitingManualVerification && (
         <Card className="rounded-xl md:rounded-2xl border border-amber-200 bg-amber-50/60">
-          <CardContent className="py-3 md:py-4 text-xs md:text-sm text-amber-800">
-            {t("paymentAwaitingVerification")}
+          <CardContent className="space-y-3 py-3 md:py-4 text-xs md:text-sm text-amber-800">
+            <p>{t("paymentAwaitingVerification")}</p>
+            <OrderPaymentProof orderId={order.id} accessToken={accessToken} hasProof={order.hasPaymentProof} />
           </CardContent>
         </Card>
       )}

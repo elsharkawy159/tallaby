@@ -31,5 +31,13 @@ describe("store apps catalog", () => {
     expect(storeAppHref("s1", getStoreApp("bosta")!)).toBe("/stores/s1/apps/bosta");
     expect(storeAppHref("s1", getStoreApp("paymob")!)).toBe("/stores/s1/settings/payments");
     expect(storeAppHref("s1", getStoreApp("meta_pixel")!)).toBeNull();
+    expect(storeAppHref("s1", getStoreApp("ai_assistants")!)).toBe("/stores/s1/apps/ai-assistants");
+  });
+
+  it("shows the AI assistants app as live without an integration row (F-29)", () => {
+    const app = getStoreApp("ai_assistants")!;
+    expect(isStoreAppLive(app)).toBe(true);
+    expect("provider" in app).toBe(false);
+    expect(storeAppsInGroup("ai").map((a) => a.key)).toEqual(["ai_assistants"]);
   });
 });

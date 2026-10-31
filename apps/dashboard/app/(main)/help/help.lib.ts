@@ -1,3 +1,5 @@
+import { TALLABY_SERVICES_ENABLED } from "@workspace/lib/fulfillment";
+
 /**
  * Help page content as data: FAQ topics (text lives in messages `help.faqs`)
  * and shortcuts into real dashboard pages. Labels for links reuse `nav.*`.
@@ -52,7 +54,8 @@ export const HELP_TOPICS: HelpTopic[] = [
     faqs: [
       { key: "manageOrders", link: L.orders },
       { key: "delivery", link: L.shipping },
-      { key: "fulfillment", link: L.fulfillment },
+      // Hidden while Tallaby offers no fulfillment services (owner, 2026-10-31).
+      ...(TALLABY_SERVICES_ENABLED ? [{ key: "fulfillment", link: L.fulfillment }] : []),
     ],
   },
   {

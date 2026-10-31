@@ -10,6 +10,7 @@ import { Button } from "@workspace/ui/components/button";
 import { FieldHint, LabelNote, SMALL_BUTTON_CLASS } from "@/components/form/form-ui";
 import { SELLER_IMAGE_ACCEPT, SELLER_IMAGE_ACCEPT_ATTR, useSellerUpload } from "@/components/inputs/use-seller-upload";
 import { storeLogoSrc } from "@/components/stores/store-logo.client";
+import { isOptimizableImage } from "@/lib/image-hosts";
 import { cn } from "@/lib/utils";
 
 /**
@@ -113,6 +114,7 @@ export function BannerField({
   disabled,
   label,
   sizeNote,
+  removable = true,
 }: {
   value: string;
   onChange: (value: string) => void;
@@ -120,6 +122,8 @@ export function BannerField({
   /** Field label and size note for other wide images (e.g. the SEO share image). */
   label?: string;
   sizeNote?: string;
+  /** False hides the remove button (an image that must stay, like a hero photo). */
+  removable?: boolean;
 }) {
   const t = useTranslations("settings");
   const banner = useUploadPreview("banners", onChange);
@@ -159,7 +163,7 @@ export function BannerField({
               fill
               sizes="(max-width: 768px) 100vw, 880px"
               className="object-cover"
-              unoptimized={src.startsWith("blob:")}
+              unoptimized={src.startsWith("blob:") || !isOptimizableImage(src)}
             />
             <div className="absolute end-3 bottom-3 flex gap-2">
               <Button
@@ -172,16 +176,18 @@ export function BannerField({
                 <ImageUp />
                 {t("identity.changeBanner")}
               </Button>
-              <Button
-                type="button"
-                variant="neutral"
-                className={cn(SMALL_BUTTON_CLASS, "border-transparent bg-white/95 px-2.5 text-[#c62828] hover:bg-[#fdecec] dark:bg-white/95")}
-                disabled={disabled || banner.isUploading}
-                onClick={() => onChange("")}
-                aria-label={t("identity.removeBanner")}
-              >
-                <Trash2 />
-              </Button>
+              {removable && (
+                <Button
+                  type="button"
+                  variant="neutral"
+                  className={cn(SMALL_BUTTON_CLASS, "border-transparent bg-white/95 px-2.5 text-[#c62828] hover:bg-[#fdecec] dark:bg-white/95")}
+                  disabled={disabled || banner.isUploading}
+                  onClick={() => onChange("")}
+                  aria-label={t("identity.removeBanner")}
+                >
+                  <Trash2 />
+                </Button>
+              )}
             </div>
             {banner.isUploading && (
               <div className="absolute inset-0 grid place-items-center bg-black/40">

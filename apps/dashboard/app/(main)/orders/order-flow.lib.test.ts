@@ -65,10 +65,36 @@ describe("resolveSellerOrderFlow", () => {
     });
   });
 
-  it("final stages have no actions", () => {
+  it("final stages have no next step, so bulk moves skip them", () => {
     for (const orderStatus of ["delivered", "cancelled", "returned", "refunded"]) {
-      expect(flow({ orderStatus }).actions).toEqual([]);
+      expect(flow({ orderStatus })).toMatchObject({ primary: null, actions: [] });
     }
+  });
+
+  it("a closed order can always move to another status", () => {
+    expect(flow({ orderStatus: "delivered", shipment: { status: "delivered", ownedBySeller: true } }).corrections).toEqual([
+      "reopen",
+      "ship",
+      "return",
+      "cancel",
+    ]);
+    expect(flow({ orderStatus: "returned", shipment: { status: "returned", ownedBySeller: true } }).corrections).toEqual([
+      "reopen",
+      "ship",
+      "deliver",
+      "cancel",
+    ]);
+    expect(flow({ orderStatus: "cancelled" }).corrections).toEqual(["reopen", "ship", "deliver", "return"]);
+  });
+
+  it("a prepaid closed order can't be cancelled here", () => {
+    expect(flow({ orderStatus: "delivered", paymentStatus: "paid" }).corrections).not.toContain("cancel");
+  });
+
+  it("open orders and refunds have no corrections", () => {
+    expect(flow({}).corrections).toEqual([]);
+    expect(flow({ orderStatus: "refunded" }).corrections).toEqual([]);
+    expect(flow({ allLinesOwned: false, orderStatus: "delivered" }).corrections).toEqual([]);
   });
 
   it("is read-only when another seller, Tallaby or a digital order is involved", () => {

@@ -22,6 +22,7 @@ import { PROGRESS_STEPS, progressIndex } from "./order-flow.lib";
 import { OrderActions } from "./order-actions.client";
 import { OrderRiskNote } from "./order-risk.client";
 import { OrderStageBadge } from "./order-stage-badge";
+import { OrderPaymentProof } from "./payment-proof.client";
 import type { SellerOrderRow } from "./orders.types";
 import { PrintOrdersButton } from "./print-orders-button.client";
 import { canExportForWassalha, WassalhaExportButton } from "./wassalha-export.client";
@@ -178,7 +179,7 @@ export function OrderDetailsDialog({
                   {t("lastAttempt", { reason: order.failureReason })}
                 </p>
               )}
-              {(order.flow.primary || canShipWithBosta(order) || canExportForWassalha(order)) && (
+              {(order.flow.primary || order.flow.corrections.length > 0 || canShipWithBosta(order) || canExportForWassalha(order)) && (
                 <div className="flex flex-col gap-2 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex flex-wrap items-center gap-1.5">
                     {order.confirmMessage && order.customerPhone && (
@@ -284,6 +285,7 @@ export function OrderDetailsDialog({
                       label={t("paymentStatus")}
                       value={order.paymentStatus ? translateStatus(tStatus, "payment", order.paymentStatus) : null}
                     />
+                    <OrderPaymentProof orderId={order.id} />
                     <div className="flex items-baseline justify-between gap-4 border-t pt-2">
                       <span className="text-sm font-semibold">{t("orderTotal")}</span>
                       <span className="text-lg font-bold tabular-nums" dir="ltr">

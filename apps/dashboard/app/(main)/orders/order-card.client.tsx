@@ -157,7 +157,7 @@ export function OrderCard({
         </div>
       </div>
 
-      {(order.flow.primary || canShipWithBosta(order) || canExportForWassalha(order)) && (
+      {(order.flow.primary || order.flow.corrections.length > 0 || canShipWithBosta(order) || canExportForWassalha(order)) && (
         <div className="relative z-10 flex flex-wrap gap-1.5 border-t p-3">
           {order.confirmMessage && order.customerPhone && (
             <WhatsAppButton

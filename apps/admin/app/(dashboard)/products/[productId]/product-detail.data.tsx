@@ -44,6 +44,7 @@ import {
   transformProductForDetail,
 } from "../products.lib";
 import { ProductDetailSkeleton } from "./product-detail.skeleton";
+import { loadProductStoreLink } from "./product-store-link.server";
 import { EntityChip } from "../../_components/entity/entity-chip";
 import { sellerHref } from "../../_components/entity/entity-href.lib";
 import { accountChips } from "../../_components/entity/relation-chips.lib";
@@ -170,9 +171,10 @@ async function ProductDetailContent({ productId }: ProductDetailDataProps) {
 
   const product = transformProductForDetail(productResult.data, salesSummary);
   // Products reach a store only through their seller (no products.store_id).
-  const sellerAccount = product.seller
-    ? await getAccountRelations(product.seller.id).catch(() => null)
-    : null;
+  const [sellerAccount, storeLink] = await Promise.all([
+    product.seller ? getAccountRelations(product.seller.id).catch(() => null) : null,
+    loadProductStoreLink({ id: product.id, slug: product.slug, sellerId: product.seller?.id ?? null }).catch(() => null),
+  ]);
   const relations = sellerAccount
     ? accountChips(sellerAccount, { personRole: "Owner", omit: ["wallet", "orders"] })
     : [];
@@ -288,8 +290,8 @@ async function ProductDetailContent({ productId }: ProductDetailDataProps) {
               Edit
             </Button>
           </Link>
-          {product.storefrontUrl ? (
-            <Link href={product.storefrontUrl} target="_blank">
+          {storeLink ? (
+            <Link href={storeLink} target="_blank" rel="noopener noreferrer">
               <Button>
                 <Eye className="h-4 w-4 mr-2" />
                 View on Site
@@ -307,7 +309,11 @@ async function ProductDetailContent({ productId }: ProductDetailDataProps) {
                   </span>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>Product slug is missing. Add a slug in the edit form.</p>
+                  <p>
+                    {product.slug
+                      ? "No store of this seller shows this product."
+                      : "Product slug is missing. Add a slug in the edit form."}
+                  </p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>

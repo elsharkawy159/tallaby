@@ -16,7 +16,7 @@ export function OAuth({ next }: { next?: string }) {
       const baseUrl = getShareUrl();
 
       const supabase = createClient();
-      const redirectUrl = `${baseUrl}/api/auth/callback?next=${next || "/"}`;
+      const redirectUrl = `${baseUrl}/api/auth/callback?next=${encodeURIComponent(next || "/")}`;
 
       supabase.auth.signInWithOAuth({
         provider: provider,

@@ -1,10 +1,13 @@
 /** Maximum shipping cost (EGP) eligible for Cash on Delivery. */
 export const COD_MAX_SHIPPING_COST = 90
 
+/** Manual transfers; WE Pay and Orange Cash only on storefronts (store-methods STOREFRONT_ONLY_METHODS). */
 export const MANUAL_PAYMENT_METHOD_VALUES = [
   'instapay',
   'vodafone_cash',
   'e_cash',
+  'we_pay',
+  'orange_cash',
 ] as const
 
 export type ManualPaymentMethodValue =

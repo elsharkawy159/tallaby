@@ -6,11 +6,13 @@ import { getStoreForEditor } from "@workspace/lib/store-sites/server";
 import { publicStoreSocialLinks } from "@workspace/lib/stores";
 import { storeUrl } from "@workspace/lib/storefront";
 import { designSystemSchema, sectionInstanceSchema, type SectionInstance } from "@workspace/store-sections";
+import { getDesign } from "@workspace/store-sections/render";
 import { StorePageHeader } from "@/components/stores/store-page-header";
 import { loadWebsiteStorePage } from "@/lib/stores/website-page.server";
 import { loadEditorCatalog } from "@/app/(builder)/stores/[storeId]/editor/server/editor.data";
 import { storeFontVariables } from "../_components/store-fonts";
 import { DesignSystemEditor } from "./design.client";
+import { findHeroBanners } from "./hero-banners.lib";
 
 export const dynamic = "force-dynamic";
 
@@ -22,8 +24,10 @@ export async function generateMetadata(): Promise<Metadata> {
 /**
  * Website › Design system (PLAN.md P4-13, §7.3). Colors, typography and
  * buttons are the store's design-system DRAFT (live on Publish), saved with
- * the editor's `saveDesignSystem` (optimistic version). Logo, favicon and
- * banner are store fields and apply at once, like Store settings › General.
+ * the editor's `saveDesignSystem` (optimistic version). Logo and favicon
+ * are store fields and apply at once, like Store settings › General. The
+ * banner list is the home page hero's photos (`hero-banners.lib.ts`), saved
+ * to the home page draft; its first photo is also the store's banner.
  */
 export default async function WebsiteDesignPage({ params }: { params: Promise<{ storeId: string }> }) {
   const { storeId } = await params;
@@ -43,6 +47,11 @@ export default async function WebsiteDesignPage({ params }: { params: Promise<{ 
   const header = sectionInstanceSchema.safeParse(editor.store.sharedHeader);
   const footer = sectionInstanceSchema.safeParse(editor.store.sharedFooter);
   const contact = (store.contact ?? {}) as { phone?: string; email?: string };
+  // The banner list edits the home page hero's photos (only when it has some).
+  const hero = findHeroBanners(homeSections, (designId) => {
+    const design = getDesign(designId);
+    return Boolean(design && design.category !== "hero");
+  });
 
   return (
     // Full width: the settings and a tall live preview side by side on one screen.
@@ -74,6 +83,11 @@ export default async function WebsiteDesignPage({ params }: { params: Promise<{ 
           header: header.success ? header.data : null,
           footer: footer.success ? footer.data : null,
         }}
+        heroBanners={
+          hero && home
+            ? { hero, pageId: home.id, version: home.draftVersion, content: (home.draftContent ?? { sections: [] }) as { sections: SectionInstance[] } }
+            : null
+        }
         fontClassName={storeFontVariables}
         translated={new Set(store.supportedLocales).size > 1}
       />

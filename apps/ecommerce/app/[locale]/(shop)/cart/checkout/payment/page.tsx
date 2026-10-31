@@ -13,7 +13,12 @@ import type { Metadata } from "next";
 import { PaymentOrderSummary } from "./_components/payment-order-summary";
 import { PaymobIframe } from "./_components/paymob-iframe";
 import { ManualPaymentInstructions } from "./_components/manual-payment-instructions";
-import { isManualPaymentMethod } from "@/lib/manual-payment-methods";
+import {
+  isManualPaymentMethod,
+  marketplacePaymentRecipient,
+  sellerPaymentRecipient,
+} from "@/lib/manual-payment-methods";
+import { readSellerPayment } from "@workspace/lib/payments/store-methods";
 import { computeManualRemainderAmount } from "@workspace/lib/orders/payment";
 
 export const metadata: Metadata = generateNoIndexMetadata();
@@ -65,6 +70,12 @@ export default async function CheckoutPaymentPage({
       order.totalAmount,
       order.metadata,
     );
+    // A storefront order is paid to the store's own details, snapshotted at
+    // checkout; marketplace orders go to Tallaby's account.
+    const sellerPayment = readSellerPayment(order.metadata);
+    const recipient = sellerPayment
+      ? sellerPaymentRecipient(sellerPayment)
+      : marketplacePaymentRecipient(order.paymentMethod);
 
     return (
       <div className="min-h-screen flex flex-col bg-linear-to-b from-gray-50 to-white">
@@ -79,9 +90,11 @@ export default async function CheckoutPaymentPage({
             <PaymentOrderSummary order={order} />
             <ManualPaymentInstructions
               orderId={order.id}
+              orderNumber={order.orderNumber ?? null}
               method={order.paymentMethod}
               amount={remainderAmount.toFixed(2)}
               currency={order.currency || "EGP"}
+              recipient={recipient}
             />
           </div>
         </main>

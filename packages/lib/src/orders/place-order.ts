@@ -57,6 +57,7 @@ import { computeOrderLineFees, type PlatformFeeSnapshot } from './platform-fee.l
 import { isCodEligibleForShipping, parseWalletPartialPaymentMethod } from './payment.lib'
 import {
   isStorefrontCheckoutMethodAllowed,
+  sellerTransferFor,
   storeShippingCollector,
   type StorefrontCheckoutPayments,
 } from '../payments/store-methods'
@@ -660,6 +661,11 @@ export async function placeOrderFromCart(
     storefrontPayments?.gateway && resolvedPaymentMethod === 'online_payment'
       ? storefrontPayments.gateway
       : null
+  // Storefront InstaPay / Vodafone Cash / e& Cash: paid to the seller's own
+  // details (owner, 2026-10-31; PLAN.md P3-07 Part B), so seller-collected
+  // too, with a snapshot of what the customer was shown.
+  const sellerTransfer = sellerTransferFor(storefrontPayments, resolvedPaymentMethod)
+  const sellerCollected = Boolean(sellerGateway || sellerTransfer)
 
   const storeShipping: StoreShippingSnapshot | null =
     storeQuote && (storeQuote.kind === 'zone' || storeQuote.kind === 'tallaby_rates')
@@ -671,22 +677,23 @@ export async function placeOrderFromCart(
             : {}),
           place: storeQuote.place,
           billedPiastres: Math.round(billedShipping * 100),
-          collector: sellerGateway
+          collector: sellerCollected
             ? 'seller'
             : storeShippingCollector(resolvedPaymentMethod),
         }
       : null
   const baseOrderMetadata: Record<string, unknown> | null =
-    storeShipping || sellerGateway
+    storeShipping || sellerCollected
       ? {
           ...(storeShipping && { storeShipping }),
+          ...(sellerCollected && { paymentCollector: 'seller' }),
           ...(sellerGateway && {
-            paymentCollector: 'seller',
             paymentGateway: {
               provider: sellerGateway.provider,
               integrationId: sellerGateway.integrationId,
             },
           }),
+          ...(sellerTransfer && { sellerPayment: sellerTransfer }),
         }
       : null
 

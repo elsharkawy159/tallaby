@@ -32,10 +32,10 @@ import { FieldHint, SMALL_BUTTON_CLASS, BUTTON_CLASS } from "@/components/form/f
 import { SELLER_IMAGE_ACCEPT_ATTR, useSellerUpload } from "@/components/inputs/use-seller-upload";
 import { ConfirmActionDialog } from "@/components/layout/confirm-action-dialog.client";
 import { PageActionBar } from "@/components/layout/page-action-bar";
-import { BannerField, LogoField } from "@/components/stores/brand-image-fields.client";
+import { LogoField } from "@/components/stores/brand-image-fields.client";
 import { storeLogoSrc } from "@/components/stores/store-logo.client";
 import { cn } from "@/lib/utils";
-import { publish, saveDesignSystem } from "@/app/(builder)/stores/[storeId]/editor/server/editor.server";
+import { publish, saveDesignSystem, saveDraft } from "@/app/(builder)/stores/[storeId]/editor/server/editor.server";
 import { requestWelcomeGiftCheck } from "@/components/layout/welcome-gift.lib";
 import { saveStoreGeneral } from "../../settings/store-settings.server";
 import { SitePreview, type PreviewCatalog, type PreviewDevice } from "../_components/site-preview.client";
@@ -51,8 +51,13 @@ import {
   setToken,
   type ColorKey,
 } from "./design.lib";
+import { HeroBannerList } from "./hero-banners.client";
+import { applyHeroBanners, type HeroBanners } from "./hero-banners.lib";
 
 type Brand = { logoUrl: string; faviconUrl: string; bannerUrl: string };
+
+/** The home page draft whose hero photos the banner list edits (null: no hero photos). */
+export type HeroBannersDraft = { hero: HeroBanners; pageId: string; version: number; content: { sections: SectionInstance[] } };
 
 /** The page's groups, in order (the jump bar and the section anchors). */
 const SECTIONS: readonly { id: "brand" | "colors" | "typography" | "buttons" | "layout"; icon: LucideIcon }[] = [
@@ -77,6 +82,7 @@ export function DesignSystemEditor({
   defaultLocale,
   catalog,
   preview,
+  heroBanners,
   fontClassName,
   translated = false,
 }: {
@@ -88,6 +94,7 @@ export function DesignSystemEditor({
   catalog: PreviewCatalog;
   /** The store's draft home page, header and footer. */
   preview: { sections: SectionInstance[]; header: SectionInstance | null; footer: SectionInstance | null };
+  heroBanners: HeroBannersDraft | null;
   fontClassName: string;
   /** The store has more than one language (the preview header shows its language switcher). */
   translated?: boolean;
@@ -106,16 +113,25 @@ export function DesignSystemEditor({
   const [publishing, startPublishing] = useTransition();
   const [savingBrand, startSavingBrand] = useTransition();
   const [confirmPublish, setConfirmPublish] = useState(false);
+  const [banners, setBanners] = useState(heroBanners?.hero.srcs ?? []);
+  const [savedBanners, setSavedBanners] = useState(JSON.stringify(heroBanners?.hero.srcs ?? []));
+  const [homeVersion, setHomeVersion] = useState(heroBanners?.version ?? 0);
 
   const dirty = JSON.stringify(ds) !== savedDs;
-  const brandDirty = JSON.stringify(brand) !== savedBrand;
+  const bannersDirty = JSON.stringify(banners) !== savedBanners;
+  const brandDirty = JSON.stringify(brand) !== savedBrand || bannersDirty;
   const disabled = readOnly || saving || publishing;
   const preset = matchPreset(ds.colors);
   const pairing = findFontPairing(ds.typography);
 
   const previewStore = useMemo<StoreProfile>(
-    () => ({ ...store, logoUrl: brand.logoUrl || null, bannerUrl: brand.bannerUrl || null }),
-    [store, brand.logoUrl, brand.bannerUrl],
+    () => ({ ...store, logoUrl: brand.logoUrl || null, bannerUrl: banners[0] || brand.bannerUrl || null }),
+    [store, brand.logoUrl, brand.bannerUrl, banners],
+  );
+  // The preview shows the banners before they are saved.
+  const previewSections = useMemo(
+    () => (heroBanners ? applyHeroBanners(preview.sections, heroBanners.hero, banners) : preview.sections),
+    [heroBanners, preview.sections, banners],
   );
 
   const onSave = (then?: () => void) =>
@@ -144,10 +160,24 @@ export function DesignSystemEditor({
 
   const onSaveBrand = () =>
     startSavingBrand(async () => {
+      // Banners are the home page hero's photos: saved to its draft (live on Publish).
+      if (heroBanners && bannersDirty) {
+        const sections = applyHeroBanners(heroBanners.content.sections, heroBanners.hero, banners);
+        const draft = await saveDraft(storeId, heroBanners.pageId, { ...heroBanners.content, sections }, homeVersion);
+        if (!draft.success) {
+          if (draft.error === "versionConflict") setConflict(true);
+          toast.error(t(`errors.${draft.error}` as never));
+          return;
+        }
+        setHomeVersion(draft.data.draftVersion);
+        setSavedBanners(JSON.stringify(banners));
+      }
+      // The first banner is also the store's banner (marketplace store page).
+      const first = banners[0];
       const result = await saveStoreGeneral(storeId, {
         logoUrl: brand.logoUrl || null,
         faviconUrl: brand.faviconUrl || null,
-        bannerUrl: brand.bannerUrl || null,
+        ...(bannersDirty && first && /^https:\/\//.test(first) && { bannerUrl: first }),
       });
       if (result.success) {
         setSavedBrand(JSON.stringify(brand));
@@ -224,7 +254,8 @@ export function DesignSystemEditor({
           <FieldHint>{t("brand.hint")}</FieldHint>
           <LogoField value={brand.logoUrl} onChange={(logoUrl) => setBrand((b) => ({ ...b, logoUrl }))} name={store.name} disabled={readOnly || savingBrand} />
           <FaviconField value={brand.faviconUrl} onChange={(faviconUrl) => setBrand((b) => ({ ...b, faviconUrl }))} disabled={readOnly || savingBrand} />
-          <BannerField value={brand.bannerUrl} onChange={(bannerUrl) => setBrand((b) => ({ ...b, bannerUrl }))} disabled={readOnly || savingBrand} />
+          {/* Only a theme whose hero has photos gets banners (owner, 2026-10-31). */}
+          {heroBanners && <HeroBannerList kind={heroBanners.hero.kind} value={banners} onChange={setBanners} disabled={readOnly || savingBrand || conflict} />}
           <div className="flex justify-end">
             <Button type="button" className={BUTTON_CLASS} disabled={readOnly || savingBrand || !brandDirty} onClick={onSaveBrand}>
               {savingBrand ? <LoaderCircle className="animate-spin" /> : <Save />}
@@ -444,7 +475,7 @@ export function DesignSystemEditor({
           className="h-[70vh] min-h-[480px] rounded-xl bg-muted/40 p-2 lg:h-[calc(100dvh-11rem)]"
           store={previewStore}
           catalog={catalog}
-          sections={preview.sections}
+          sections={previewSections}
           header={preview.header}
           footer={preview.footer}
           designSystem={ds}

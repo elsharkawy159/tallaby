@@ -46,6 +46,8 @@ export interface OrderConfirmationData {
     currency: string;
     paymentStatus: string;
     paymentMethod: string;
+    /** The customer attached a transfer screenshot (ROADMAP.md F-21p). */
+    hasPaymentProof: boolean;
     isGift: boolean;
     giftMessage?: string;
     notes?: string;

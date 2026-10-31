@@ -43,7 +43,9 @@ export type SellerOrderAction =
   | "deliver"
   | "fail"
   | "return"
-  | "cancel";
+  | "cancel"
+  /** Back to "ready to ship" from a closed order (owner, 2026-10-31). */
+  | "reopen";
 
 export const SELLER_ORDER_ACTIONS = [
   "confirm",
@@ -52,6 +54,7 @@ export const SELLER_ORDER_ACTIONS = [
   "fail",
   "return",
   "cancel",
+  "reopen",
 ] as const satisfies readonly SellerOrderAction[];
 
 /** Why an order is view-only for this seller. */
@@ -81,6 +84,12 @@ export interface SellerOrderFlow {
   primary: SellerOrderAction | null;
   /** Every allowed action, primary first. */
   actions: SellerOrderAction[];
+  /**
+   * Status changes on a closed order (delivered, returned, cancelled): the
+   * seller can always move it to another status (owner, 2026-10-31). Kept
+   * apart from `actions` so bulk moves never touch closed orders.
+   */
+  corrections: SellerOrderAction[];
   readOnly: ReadOnlyReason | null;
   /** Paid in advance, so it can't be cancelled here (refunds go through Tallaby). */
   prepaid: boolean;
@@ -145,9 +154,10 @@ export function resolveSellerOrderFlow(input: SellerOrderFlowInput): SellerOrder
 
   const carrierManaged = Boolean(input.shipment?.carrierManaged);
 
-  if (readOnly) return { stage, primary: null, actions: [], readOnly, prepaid, carrierManaged };
+  const none = { primary: null, actions: [], corrections: [] };
+  if (readOnly) return { stage, ...none, readOnly, prepaid, carrierManaged };
   // Bosta updates the status itself; cancelling goes through Bosta (order panel).
-  if (carrierManaged) return { stage, primary: null, actions: [], readOnly: null, prepaid, carrierManaged };
+  if (carrierManaged) return { stage, ...none, readOnly: null, prepaid, carrierManaged };
 
   const cancel: SellerOrderAction[] = prepaid ? [] : ["cancel"];
   let actions: SellerOrderAction[] = [];
@@ -166,7 +176,25 @@ export function resolveSellerOrderFlow(input: SellerOrderFlowInput): SellerOrder
       break;
   }
 
-  return { stage, primary: actions[0] ?? null, actions, readOnly: null, prepaid, carrierManaged };
+  const corrections = CLOSED_STAGE_CORRECTIONS[stage]?.filter((a) => a !== "cancel" || !prepaid) ?? [];
+
+  return { stage, primary: actions[0] ?? null, actions, corrections, readOnly: null, prepaid, carrierManaged };
+}
+
+/**
+ * Where a closed order can go. "fail" is left out: a failed attempt keeps the
+ * order's status, so it would stay closed; reopen it and ship it instead.
+ * Leaving "delivered" moves no money: the delivery fee claim stays, and
+ * delivering again never charges twice (owner, 2026-10-31).
+ */
+const CLOSED_STAGE_CORRECTIONS: Partial<Record<SellerOrderStage, SellerOrderAction[]>> = {
+  delivered: ["reopen", "ship", "return", "cancel"],
+  returned: ["reopen", "ship", "deliver", "cancel"],
+  cancelled: ["reopen", "ship", "deliver", "return"],
+};
+
+export function isClosedStage(stage: SellerOrderStage): boolean {
+  return stage in CLOSED_STAGE_CORRECTIONS;
 }
 
 /** Shipment status each shipment move lands on. */

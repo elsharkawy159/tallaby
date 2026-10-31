@@ -80,6 +80,8 @@ const PAYMENT_METHOD_LABELS: Record<string, string> = {
   instapay: "InstaPay",
   vodafone_cash: "Vodafone Cash",
   e_cash: "E& Cash",
+  we_pay: "WE Pay",
+  orange_cash: "Orange Cash",
   online_payment: "Online Payment",
   online: "Online Payment",
   cash_on_delivery: "Cash on Delivery",

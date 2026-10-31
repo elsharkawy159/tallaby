@@ -1,6 +1,6 @@
 # Tallaby MCP: AI assistants manage the store (F-29) — design note
 
-**Status:** Plan, 2026-10-30. Nothing built. Owner answered §12 on 2026-10-30; F-29b can start.
+**Status:** Plan, 2026-10-30. Owner answered §12 on 2026-10-30. **F-29b built 2026-10-31** (migration 0133 on staging; OAuth server in the dashboard; `packages/lib/src/agents/`); next F-29c.
 **Roadmap:** `ROADMAP.md` §4 F-29 (tasks F-29a … F-29k). Related: F-09 staff (`2026-10-30-staff-accounts-design.md`), F-17 public API and webhooks.
 **Goal (owner, 2026-10-30):** "sellers can connect their accounts Claude, ChatGPT, etc with Tallaby to fully manage their store … advanced, manage items, orders, website builder, theme, etc".
 
@@ -178,7 +178,7 @@ Naming: `snake_case`, verb first. Every tool has zod input and output schemas, M
 | Secrets | `MCP_TOKEN_PEPPER` (optional HMAC pepper) and `MCP_CONFIRM_SECRET` server env only (rule 10). No secrets in tool results or logs; args logged as a redacted summary. |
 | Caching | Never cache tokens, grants or tool results (rule 8). Writes invalidate the same tags the dashboard does, through `@workspace/cache` broadcast, with seller id in every tag. |
 
-## 9. Data model (migration `0132_mcp_agent_connections.sql`, server-only, RLS on, no policies)
+## 9. Data model (migration `0133_mcp_agent_connections.sql`, server-only, RLS on, no policies)
 
 - `oauth_clients` — `id`, `client_id` (DCR random id or CIMD URL), `kind` (`dcr`|`cimd`|`pat`), `name`, `redirect_uris text[]`, `logo_url`, `software_id`, `created_at`, `last_used_at`, `disabled_at`.
 - `agent_grants` — `id`, `seller_id` → sellers, `user_id` (who approved; = seller for owners), `client_id` → oauth_clients, `client_label` (e.g. "Claude"), `all_stores bool`, `store_ids uuid[]`, `scopes text[]` (CHECK ⊆ known list), `created_at`, `last_used_at`, `revoked_at`, `revoked_reason`.
@@ -207,7 +207,7 @@ Task IDs never change; the **order** below is the build order.
 | # | Task | What | Deps | Size |
 | --- | --- | --- | --- | --- |
 | — | **F-29a** | This design note, owner answers (done 2026-10-30), security review sign-off. | — | S |
-| 1 | **F-29b** | Migration 0132; OAuth AS in the dashboard (metadata, DCR, CIMD fetch+cache with validation, authorize/consent, token with PKCE S256 + refresh rotation, revoke); token verification lib in `packages/lib/src/agents/` (`resolveAgentActor(token)`); unit tests for PKCE, rotation reuse, scope narrowing. | F-29a | L |
+| 1 | **F-29b** | Migration 0133; OAuth AS in the dashboard (metadata, DCR, CIMD fetch+cache with validation, authorize/consent, token with PKCE S256 + refresh rotation, revoke); token verification lib in `packages/lib/src/agents/` (`resolveAgentActor(token)`); unit tests for PKCE, rotation reuse, scope narrowing. | F-29a | L |
 | 2 | **F-29c** | MCP endpoint in `apps/backend` (`/mcp`, protected-resource metadata, `WWW-Authenticate` on 401), tool registry with zod I/O, audit, Postgres rate limiter, idempotency, confirm tokens; **read-only tools** (stores, overview, products, orders, customers masked, coupons, reports, site outline, notifications). Test with Claude (custom connector), ChatGPT developer mode and MCP Inspector. | F-29b | L |
 | 3 | **F-29d** | Dashboard AI assistants page (connections, revoke, activity, personal tokens) + `agent_connected` bell. | F-29b | M |
 | 4 | **F-29f** | **Products first** (a customer asked for it): extract product commands (create/update/variants/status/stock/taxonomy, trash) with server-side zod; catalog write tools; image import from URL (SSRF guard). | F-29c | XL |

@@ -2,15 +2,14 @@
  * Store payment methods (PLAN.md §8.6, P3-07): the catalog every app shows and
  * the rules for stores.settings.payments. Pure; no DB imports.
  *
- * Storefront checkout uses these settings as a FILTER only (owner, 2026-10-20;
- * see storefrontCheckoutMethods). Seller-collected payment (the seller's own
- * numbers at checkout, seller confirmation, fee-only delivery entry) is still
- * P3-07 Part B: seller-collected money must not be credited to the seller as
- * seller_earning on delivery.
+ * Storefront checkout offers the store's enabled methods and, for the manual
+ * transfers (InstaPay, Vodafone Cash, e& Cash), shows the SELLER's own details
+ * (owner, 2026-10-31; PLAN.md P3-07 Part B, ROADMAP.md F-21p). The order keeps
+ * a snapshot of them and `metadata.paymentCollector = 'seller'`, so delivery
+ * posts only the fee, never a `sale` (PLAN.md §13.4).
  */
 import { z } from "zod";
 import { EGYPT_MOBILE_REGEX } from "../fulfillment/validate";
-import { MANUAL_PAYMENT_METHOD_VALUES } from "../orders/payment.lib";
 import type { OrderGatewayMeta } from "./store-gateways.lib";
 
 export type PaymentCollector = "seller" | "tallaby" | "delivery";
@@ -58,7 +57,8 @@ export function getStorePaymentMethod(key: string) {
   return STORE_PAYMENT_METHODS.find((m) => m.key === key);
 }
 
-const TALLABY_RECEIVED_METHODS: readonly string[] = ["online_payment", "card", "wallet", ...MANUAL_PAYMENT_METHOD_VALUES];
+// Tallaby has its own InstaPay, Vodafone Cash and e& Cash accounts only.
+const TALLABY_RECEIVED_METHODS: readonly string[] = ["online_payment", "card", "wallet", "instapay", "vodafone_cash", "e_cash"];
 
 /**
  * Who holds the shipping money of a store-website order whose store delivers
@@ -67,13 +67,12 @@ const TALLABY_RECEIVED_METHODS: readonly string[] = ["online_payment", "card", "
  *
  * - `seller`: the customer pays cash to the deliverer (`cash_on_delivery`, or
  *   a wallet-partial order whose remainder is cash on delivery).
- * - `tallaby`: every method Tallaby receives TODAY: online / card, the
- *   customer wallet, and the manual transfers (InstaPay, Vodafone Cash, e&
- *   Cash), alone or as a wallet-partial remainder. Storefronts still show
- *   Tallaby's own transfer accounts for these (see storefrontCheckoutMethods),
- *   so this deliberately does NOT use the catalogue `collector`, which
- *   describes P3-07 Part B. When Part B sends the money to the seller's own
- *   numbers, the receiving methods must switch to `seller` here.
+ * - `tallaby`: every method Tallaby receives on the marketplace: online /
+ *   card, the customer wallet, and the manual transfers (InstaPay, Vodafone
+ *   Cash, e& Cash, paid to Tallaby's own accounts there), alone or as a
+ *   wallet-partial remainder. A storefront transfer is paid to the seller
+ *   (`sellerTransferFor`), and place-order sets the collector to `seller`
+ *   for it, like the seller's own card gateway.
  * - anything unknown: `seller`, so shipping is never over-credited.
  */
 export function storeShippingCollector(paymentMethod: string): "tallaby" | "seller" {
@@ -112,6 +111,19 @@ const mobile = z
 
 export const walletDetailsSchema = z.object({ holderName, phone: mobile }).strict();
 
+/**
+ * How a store receives InstaPay: one identifier, picked from a dropdown in the
+ * dashboard (owner, 2026-10-31). `ipa` is the InstaPay address, which looks
+ * like an email (name@instapay).
+ */
+export const INSTAPAY_RECEIVE_TYPES = ["ipa", "phone", "iban", "paymentLink"] as const;
+export type InstapayReceiveType = (typeof INSTAPAY_RECEIVE_TYPES)[number];
+
+/** The identifier saved details use; the first one set for older multi-field details. */
+export function instapayReceiveType(details: Partial<Record<InstapayReceiveType, unknown>> | null | undefined): InstapayReceiveType {
+  return INSTAPAY_RECEIVE_TYPES.find((type) => typeof details?.[type] === "string" && details[type]) ?? "ipa";
+}
+
 export const instapayDetailsSchema = z
   .object({
     holderName,
@@ -130,7 +142,7 @@ export const instapayDetailsSchema = z
     qrMediaId: z.uuid().optional(),
   })
   .strict()
-  .refine((d) => d.ipa || d.phone || d.iban, { message: "identifier_required", path: ["ipa"] });
+  .refine((d) => d.ipa || d.phone || d.iban || d.paymentLink, { message: "identifier_required", path: ["ipa"] });
 
 export const codSettingsSchema = z
   .object({
@@ -238,7 +250,38 @@ export function validateMethodChange(
 }
 
 /** Checkout values (orders.payment_method) a storefront may offer. */
-export type StorefrontCheckoutMethod = "cash_on_delivery" | "instapay" | "vodafone_cash" | "e_cash" | "online_payment";
+export type StorefrontCheckoutMethod =
+  | "cash_on_delivery"
+  | "instapay"
+  | "vodafone_cash"
+  | "e_cash"
+  | "we_pay"
+  | "orange_cash"
+  | "online_payment";
+
+/**
+ * Storefront manual transfers, paid to the seller's own details. WE Pay and
+ * Orange Cash exist only here: the marketplace has no Tallaby account for them
+ * (owner, 2026-10-31).
+ */
+export type SellerTransferMethod = "instapay" | "vodafone_cash" | "e_cash" | "we_pay" | "orange_cash";
+export const SELLER_TRANSFER_METHODS: readonly SellerTransferMethod[] = ["instapay", "vodafone_cash", "e_cash", "we_pay", "orange_cash"];
+/** Transfer methods only a storefront offers (refused on the marketplace). */
+export const STOREFRONT_ONLY_METHODS: readonly SellerTransferMethod[] = ["we_pay", "orange_cash"];
+
+/**
+ * Where the customer sends a storefront transfer: the seller's saved details
+ * (public: they are shown at checkout). Snapshotted into
+ * `orders.metadata.sellerPayment` so a later edit never changes a placed order.
+ */
+export type SellerPaymentDetails = {
+  method: SellerTransferMethod;
+  holderName: string;
+  phone?: string;
+  ipa?: string;
+  iban?: string;
+  paymentLink?: string;
+};
 
 export type StorefrontCheckoutPayments = {
   methods: StorefrontCheckoutMethod[];
@@ -250,14 +293,14 @@ export type StorefrontCheckoutPayments = {
   /** COD is refused for order totals above this (EGP). */
   codMaxOrder: number | null;
   codNote: string | null;
+  /** The seller's receiving details for each offered manual transfer. */
+  transfers: Partial<Record<SellerTransferMethod, SellerPaymentDetails>>;
 };
 
 /**
- * What a storefront's checkout offers, from its saved settings. A filter over
- * the existing checkout methods, which Tallaby still collects: an enabled
- * wallet or InstaPay shows Tallaby's matching manual transfer. WE Pay and
- * Orange Cash have no Tallaby account, so they show nothing until Part B.
- * Tallaby's card checkout and the customer wallet are not store options, so
+ * What a storefront's checkout offers, from its saved settings. An enabled
+ * InstaPay or mobile wallet (Vodafone Cash, e& Cash, WE Pay, Orange Cash) is
+ * paid to the seller's own details (`transfers`). Tallaby's card checkout and the customer wallet are not store options, so
  * storefronts never offer them. Card payment (`online_payment`) is offered
  * only through the seller's own connected gateway (`gateway`), which the
  * caller reads from store_integrations.
@@ -267,17 +310,51 @@ export function storefrontCheckoutMethods(
   gateway: OrderGatewayMeta | null = null,
 ): StorefrontCheckoutPayments {
   const methods: StorefrontCheckoutMethod[] = [];
+  const transfers: StorefrontCheckoutPayments["transfers"] = {};
   if (payments.cod?.enabled) methods.push("cash_on_delivery");
   if (gateway) methods.push("online_payment");
-  if (payments.instapay?.enabled) methods.push("instapay");
-  if (payments.vodafone_cash?.enabled) methods.push("vodafone_cash");
-  if (payments.e_cash?.enabled) methods.push("e_cash");
+  for (const method of SELLER_TRANSFER_METHODS) {
+    const entry = payments[method];
+    // Enabling requires details (storePaymentsSchema), so this always has them.
+    if (!entry?.enabled || !entry.details) continue;
+    methods.push(method);
+    const { holderName, ...ids } = entry.details as Record<string, string | undefined>;
+    const details: SellerPaymentDetails = { method, holderName: holderName ?? "" };
+    for (const key of ["phone", "ipa", "iban", "paymentLink"] as const) {
+      if (ids[key]) details[key] = ids[key];
+    }
+    transfers[method] = details;
+  }
   return {
     methods,
     gateway,
     codMaxOrder: payments.cod?.enabled ? (payments.cod.maxOrder ?? null) : null,
     codNote: payments.cod?.enabled ? (payments.cod.note ?? null) : null,
+    transfers,
   };
+}
+
+/** The seller details a storefront order placed with `method` is paid to, or null. */
+export function sellerTransferFor(
+  checkout: StorefrontCheckoutPayments | null | undefined,
+  method: string,
+): SellerPaymentDetails | null {
+  if (!checkout || !(SELLER_TRANSFER_METHODS as readonly string[]).includes(method)) return null;
+  return checkout.transfers?.[method as SellerTransferMethod] ?? null;
+}
+
+/** `orders.metadata.sellerPayment` when it is a valid snapshot, else null (marketplace orders). */
+export function readSellerPayment(metadata: unknown): SellerPaymentDetails | null {
+  if (!metadata || typeof metadata !== "object") return null;
+  const raw = (metadata as Record<string, unknown>).sellerPayment;
+  if (!raw || typeof raw !== "object") return null;
+  const d = raw as Record<string, unknown>;
+  if (!(SELLER_TRANSFER_METHODS as readonly unknown[]).includes(d.method) || typeof d.holderName !== "string") return null;
+  const out: SellerPaymentDetails = { method: d.method as SellerTransferMethod, holderName: d.holderName };
+  for (const key of ["phone", "ipa", "iban", "paymentLink"] as const) {
+    if (typeof d[key] === "string" && d[key]) out[key] = d[key] as string;
+  }
+  return out;
 }
 
 /** Server-side check for a storefront order: the method, and COD's max order. */

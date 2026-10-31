@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Check, ChevronDown, PackageCheck, Truck } from "lucide-react";
+import { Check, ChevronDown, PackageCheck, RefreshCw, Truck } from "lucide-react";
 import { Button } from "@workspace/ui/components/button";
 import {
   Dialog,
@@ -28,7 +28,7 @@ import type { SellerOrderAction } from "./order-flow.lib";
 import type { SellerOrderRow } from "./orders.types";
 import { updateSellerOrder } from "./orders.server";
 
-/** Moves that can't be taken back ask first. */
+/** Big moves ask first. */
 type ConfirmedAction = "deliver" | "return" | "cancel";
 const isConfirmed = (a: SellerOrderAction): a is ConfirmedAction =>
   a === "deliver" || a === "return" || a === "cancel";
@@ -64,8 +64,8 @@ export function OrderActions({
   const [failing, setFailing] = useState(false);
   const [reason, setReason] = useState("");
 
-  const { primary, actions } = order.flow;
-  if (!primary) return null;
+  const { primary, actions, corrections } = order.flow;
+  if (!primary && corrections.length === 0) return null;
   const secondary = actions.filter((a) => a !== primary);
 
   const run = (action: SellerOrderAction, failureReason?: string) =>
@@ -92,23 +92,55 @@ export function OrderActions({
     else run(action);
   };
 
-  const PrimaryIcon = ICON[primary];
+  const PrimaryIcon = primary ? ICON[primary] : undefined;
 
   return (
     <>
       <div className={cn("flex items-center gap-1.5", className)}>
-        <Button
-          size="sm"
-          className={compact ? undefined : "flex-1 sm:flex-none"}
-          disabled={isPending}
-          onClick={(e) => {
-            e.stopPropagation();
-            pick(primary);
-          }}
-        >
-          {PrimaryIcon && <PrimaryIcon className="size-4" />}
-          {t(actionLabelKey(order, primary))}
-        </Button>
+        {/* A closed order (delivered, returned, cancelled) can still move to another status. */}
+        {!primary && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                size="sm"
+                variant="outline"
+                className={compact ? undefined : "flex-1 sm:flex-none"}
+                disabled={isPending}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <RefreshCw className="size-4" />
+                {t("changeStatus")}
+                <ChevronDown className="size-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+              {corrections.map((action) => (
+                <DropdownMenuItem
+                  key={action}
+                  className={DESTRUCTIVE.includes(action) ? "text-destructive focus:text-destructive" : undefined}
+                  onSelect={() => pick(action)}
+                >
+                  {t(actionLabelKey(order, action))}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+
+        {primary && (
+          <Button
+            size="sm"
+            className={compact ? undefined : "flex-1 sm:flex-none"}
+            disabled={isPending}
+            onClick={(e) => {
+              e.stopPropagation();
+              pick(primary);
+            }}
+          >
+            {PrimaryIcon && <PrimaryIcon className="size-4" />}
+            {t(actionLabelKey(order, primary))}
+          </Button>
+        )}
 
         {secondary.length > 0 &&
           (compact ? (

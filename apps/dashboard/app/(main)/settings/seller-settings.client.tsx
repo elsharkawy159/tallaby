@@ -49,6 +49,7 @@ import {
 } from './seller-settings.schema'
 import { handleUpdateSellerProfile } from './seller-settings.server'
 import type { SellerAccountView } from '@workspace/lib/sellers/server'
+import { TALLABY_SERVICES_ENABLED } from '@workspace/lib/fulfillment'
 import { LegalDetailsSection, PayoutDetailsSection, StoreDetailsMovedCard } from './account-sections.client'
 import { DocumentsSection } from './seller-documents.client'
 import {
@@ -369,7 +370,7 @@ export function SellerSettingsForm ({
               onUploaded={() => router.refresh()}
             />
 
-            <FulfillmentLinkCard />
+            {TALLABY_SERVICES_ENABLED && <FulfillmentLinkCard />}
         </div>
       </div>
     </div>

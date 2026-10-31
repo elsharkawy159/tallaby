@@ -3,10 +3,13 @@ import {
   STORE_PAYMENT_METHODS,
   defaultStorePayments,
   ibanChecksumValid,
+  instapayReceiveType,
   isStorefrontCheckoutMethodAllowed,
   maskPaymentDetails,
   operatorHint,
   parseStorePayments,
+  readSellerPayment,
+  sellerTransferFor,
   storeShippingCollector,
   storefrontCheckoutMethods,
   validateMethodChange,
@@ -21,10 +24,33 @@ describe("storefrontCheckoutMethods", () => {
       gateway: null,
       codMaxOrder: null,
       codNote: null,
+      transfers: {},
     });
   });
 
-  it("maps enabled wallets and InstaPay to the existing manual methods; WE Pay and Orange show nothing", () => {
+  it("pays storefront transfers to the seller's own details, and reads the order snapshot back", () => {
+    const out = storefrontCheckoutMethods({
+      cod: { enabled: true, fee: 0 },
+      vodafone_cash: wallet,
+      e_cash: { enabled: false, details: { holderName: "Omar", phone: "01112345678" } },
+      instapay: { enabled: true, details: { holderName: "Omar Ali", ipa: "omar@instapay" } },
+    });
+    expect(out.transfers).toEqual({
+      instapay: { method: "instapay", holderName: "Omar Ali", ipa: "omar@instapay" },
+      vodafone_cash: { method: "vodafone_cash", holderName: "Omar", phone: "01012345678" },
+    });
+    expect(sellerTransferFor(out, "instapay")).toEqual(out.transfers.instapay);
+    expect(sellerTransferFor(out, "e_cash")).toBeNull();
+    expect(sellerTransferFor(out, "cash_on_delivery")).toBeNull();
+    expect(sellerTransferFor(null, "instapay")).toBeNull();
+
+    expect(readSellerPayment({ sellerPayment: out.transfers.instapay, other: 1 })).toEqual(out.transfers.instapay);
+    expect(readSellerPayment({})).toBeNull();
+    expect(readSellerPayment({ sellerPayment: { method: "card", holderName: "x" } })).toBeNull();
+    expect(readSellerPayment(null)).toBeNull();
+  });
+
+  it("offers every enabled wallet and InstaPay, WE Pay and Orange Cash included", () => {
     const out = storefrontCheckoutMethods({
       cod: { enabled: false, fee: 0, maxOrder: 500 },
       vodafone_cash: wallet,
@@ -32,7 +58,8 @@ describe("storefrontCheckoutMethods", () => {
       orange_cash: wallet,
       instapay: { enabled: true, details: { holderName: "Omar", ipa: "omar@instapay" } },
     });
-    expect(out.methods).toEqual(["instapay", "vodafone_cash"]);
+    expect(out.methods).toEqual(["instapay", "vodafone_cash", "we_pay", "orange_cash"]);
+    expect(out.transfers.we_pay).toEqual({ method: "we_pay", holderName: "Omar", phone: "01012345678" });
     expect(out.codMaxOrder).toBeNull();
   });
 
@@ -122,6 +149,14 @@ describe("validateMethodChange", () => {
         details: { holderName: "Omar", ipa: "omar@instapay", paymentLink: "https://ipn.eg/S/omar/instapay/abc" },
       }).success,
     ).toBe(true);
+  });
+
+  it("accepts an InstaPay payment link as the only identifier", () => {
+    const link = { holderName: "Omar", paymentLink: "https://ipn.eg/S/omar/instapay/abc" };
+    expect(validateMethodChange(base, "instapay", { enabled: true, details: link }).success).toBe(true);
+    expect(instapayReceiveType(link)).toBe("paymentLink");
+    expect(instapayReceiveType({ phone: "01012345678", iban: "EG380019000500000000263180002" })).toBe("phone");
+    expect(instapayReceiveType(undefined)).toBe("ipa");
   });
 
   it("never lets the last enabled method be switched off", () => {

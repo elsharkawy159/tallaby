@@ -1,4 +1,5 @@
 import { CalendarRange, Clock, FileText, Info } from "lucide-react";
+import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { getUser } from "@/actions/auth";
@@ -50,6 +51,8 @@ const STATUS_CLASSES: Record<FulfillmentServiceStatus, string> = {
 };
 
 export default async function FulfillmentSetupPage() {
+  // Hidden while Tallaby offers no storage, packing or delivery (owner, 2026-10-31).
+  if (!TALLABY_SERVICES_ENABLED) notFound();
   const t = await getTranslations("fulfillment");
   const locale = await getLocale();
   const { user } = await getUser();

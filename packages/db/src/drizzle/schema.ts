@@ -3310,7 +3310,7 @@ export const sellerNotifications = pgTable("seller_notifications", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	sellerId: uuid("seller_id").notNull(),
 	storeId: uuid("store_id"),
-	/** order_created | top_up_approved | top_up_rejected | question_received | review_received | carrier_shipment_failed | carrier_needs_attention | referral_commission_earned | referral_payout_paid | referral_payout_rejected (0117) | welcome_gift_granted | welcome_gift_expiring | welcome_gift_expired (0119) | low_stock (0125) | admin_message (0131: `data` = { title, body, link? }, sent from Admin) */
+	/** order_created | top_up_approved | top_up_rejected | question_received | review_received | carrier_shipment_failed | carrier_needs_attention | referral_commission_earned | referral_payout_paid | referral_payout_rejected (0117) | welcome_gift_granted | welcome_gift_expiring | welcome_gift_expired (0119) | low_stock (0125) | admin_message (0131: `data` = { title, body, link? }, sent from Admin) | agent_connected (0133, F-29d) */
 	type: text().notNull(),
 	data: jsonb().$type<Record<string, unknown>>().default({}).notNull(),
 	dedupeKey: text("dedupe_key").notNull(),
@@ -3333,7 +3333,7 @@ export const sellerNotifications = pgTable("seller_notifications", {
 			foreignColumns: [stores.id],
 			name: "seller_notifications_store_id_fkey"
 		}).onDelete("set null"),
-	check("seller_notifications_type_check", sql`type IN ('order_created', 'top_up_approved', 'top_up_rejected', 'question_received', 'review_received', 'carrier_shipment_failed', 'carrier_needs_attention', 'referral_commission_earned', 'referral_payout_paid', 'referral_payout_rejected', 'welcome_gift_granted', 'welcome_gift_expiring', 'welcome_gift_expired', 'low_stock', 'admin_message')`),
+	check("seller_notifications_type_check", sql`type IN ('order_created', 'top_up_approved', 'top_up_rejected', 'question_received', 'review_received', 'carrier_shipment_failed', 'carrier_needs_attention', 'referral_commission_earned', 'referral_payout_paid', 'referral_payout_rejected', 'welcome_gift_granted', 'welcome_gift_expiring', 'welcome_gift_expired', 'low_stock', 'admin_message', 'agent_connected')`),
 ]);
 
 /** A carrier's status history for a shipment (0106). One row per (shipment, state, time). Server-only. */
@@ -3908,4 +3908,157 @@ export const storeWinbackSends = pgTable("store_winback_sends", {
 	check("store_winback_sends_email_check", sql`char_length(email) BETWEEN 3 AND 254 AND email = lower(email) AND position('@' IN email) > 1`),
 	check("store_winback_sends_token_check", sql`char_length(unsubscribe_token) >= 32`),
 	check("store_winback_sends_attempts_check", sql`attempts >= 0`),
+]);
+
+/**
+ * AI assistant apps that may ask for MCP access (0133, ROADMAP.md F-29b).
+ * `client_id` is a DCR random id, a Client ID Metadata Document URL (cimd,
+ * cached copy) or the built-in personal-token client (pat). Server-only.
+ */
+export const oauthClients = pgTable("oauth_clients", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	clientId: text("client_id").notNull(),
+	/** 'dcr' | 'cimd' | 'pat' */
+	kind: text().notNull(),
+	name: text().notNull(),
+	redirectUris: text("redirect_uris").array().default([]).notNull(),
+	clientUri: text("client_uri"),
+	logoUrl: text("logo_url"),
+	softwareId: text("software_id"),
+	/** CIMD: when the metadata document was last fetched. */
+	metadataFetchedAt: timestamp("metadata_fetched_at", { withTimezone: true, mode: 'string' }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	lastUsedAt: timestamp("last_used_at", { withTimezone: true, mode: 'string' }),
+	disabledAt: timestamp("disabled_at", { withTimezone: true, mode: 'string' }),
+}, (table) => [
+	unique("oauth_clients_client_id_key").on(table.clientId),
+	check("oauth_clients_kind_check", sql`kind IN ('dcr', 'cimd', 'pat')`),
+	check("oauth_clients_client_id_length", sql`char_length(client_id) BETWEEN 8 AND 2000`),
+	check("oauth_clients_name_length", sql`char_length(name) BETWEEN 1 AND 200`),
+	check("oauth_clients_redirect_uris_count", sql`cardinality(redirect_uris) <= 20`),
+	check("oauth_clients_urls_length", sql`(client_uri IS NULL OR char_length(client_uri) <= 2000) AND (logo_url IS NULL OR char_length(logo_url) <= 2000) AND (software_id IS NULL OR char_length(software_id) <= 200)`),
+]);
+
+/**
+ * One "Allow" on the MCP consent page (0133, F-29b): seller, approving user,
+ * stores (or all) and scopes. Revoking it kills every token under it. Server-only.
+ */
+export const agentGrants = pgTable("agent_grants", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	sellerId: uuid("seller_id").notNull(),
+	userId: uuid("user_id").notNull(),
+	clientId: uuid("client_id").notNull(),
+	clientLabel: text("client_label").notNull(),
+	allStores: boolean("all_stores").default(false).notNull(),
+	storeIds: uuid("store_ids").array().default(sql`'{}'::uuid[]`).notNull(),
+	scopes: text().array().notNull(),
+	resource: text(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	lastUsedAt: timestamp("last_used_at", { withTimezone: true, mode: 'string' }),
+	revokedAt: timestamp("revoked_at", { withTimezone: true, mode: 'string' }),
+	/** 'seller' | 'client' | 'code_reuse' | 'refresh_reuse' | 'seller_blocked' | 'password_changed' | 'admin' */
+	revokedReason: text("revoked_reason"),
+}, (table) => [
+	index("agent_grants_seller_idx").using("btree", table.sellerId, table.createdAt.desc()),
+	foreignKey({ columns: [table.sellerId], foreignColumns: [sellers.id], name: "agent_grants_seller_id_fkey" }).onDelete("cascade"),
+	foreignKey({ columns: [table.userId], foreignColumns: [users.id], name: "agent_grants_user_id_fkey" }).onDelete("cascade"),
+	foreignKey({ columns: [table.clientId], foreignColumns: [oauthClients.id], name: "agent_grants_client_id_fkey" }).onDelete("cascade"),
+	check("agent_grants_scopes_check", sql`cardinality(scopes) BETWEEN 1 AND 20 AND 'store.read' = ANY (scopes) AND scopes <@ ARRAY['store.read', 'customers.read', 'products.write', 'orders.write', 'orders.refund', 'website.write', 'website.publish', 'settings.write', 'products.purge', 'stores.create']::text[]`),
+	check("agent_grants_stores_check", sql`all_stores OR cardinality(store_ids) BETWEEN 1 AND 100`),
+	check("agent_grants_client_label_length", sql`char_length(client_label) BETWEEN 1 AND 200`),
+	check("agent_grants_resource_length", sql`resource IS NULL OR char_length(resource) <= 2000`),
+	check("agent_grants_revoked_reason_check", sql`revoked_reason IS NULL OR revoked_reason IN ('seller', 'client', 'code_reuse', 'refresh_reuse', 'seller_blocked', 'password_changed', 'admin')`),
+]);
+
+/** One-time OAuth authorization codes (0133, F-29b): sha256 only, 60 s, PKCE S256. Server-only. */
+export const oauthAuthCodes = pgTable("oauth_auth_codes", {
+	codeHash: text("code_hash").primaryKey().notNull(),
+	grantId: uuid("grant_id").notNull(),
+	redirectUri: text("redirect_uri").notNull(),
+	codeChallenge: text("code_challenge").notNull(),
+	resource: text(),
+	expiresAt: timestamp("expires_at", { withTimezone: true, mode: 'string' }).notNull(),
+	usedAt: timestamp("used_at", { withTimezone: true, mode: 'string' }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("oauth_auth_codes_grant_idx").using("btree", table.grantId),
+	foreignKey({ columns: [table.grantId], foreignColumns: [agentGrants.id], name: "oauth_auth_codes_grant_id_fkey" }).onDelete("cascade"),
+	check("oauth_auth_codes_hash_length", sql`char_length(code_hash) = 64`),
+	check("oauth_auth_codes_challenge_length", sql`char_length(code_challenge) BETWEEN 43 AND 128`),
+	check("oauth_auth_codes_redirect_length", sql`char_length(redirect_uri) <= 2000`),
+]);
+
+/**
+ * MCP access, refresh and personal tokens (0133, F-29b): sha256 only.
+ * Refresh tokens rotate on every use; `family_id` links a chain so a reused
+ * refresh token revokes the grant. Server-only.
+ */
+export const agentTokens = pgTable("agent_tokens", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	grantId: uuid("grant_id").notNull(),
+	/** 'access' | 'refresh' | 'pat' */
+	kind: text().notNull(),
+	tokenHash: text("token_hash").notNull(),
+	familyId: uuid("family_id").notNull(),
+	expiresAt: timestamp("expires_at", { withTimezone: true, mode: 'string' }),
+	/** Refresh tokens: set when exchanged (rotated). */
+	usedAt: timestamp("used_at", { withTimezone: true, mode: 'string' }),
+	revokedAt: timestamp("revoked_at", { withTimezone: true, mode: 'string' }),
+	name: text(),
+	lastUsedAt: timestamp("last_used_at", { withTimezone: true, mode: 'string' }),
+	lastUsedIp: text("last_used_ip"),
+	lastUsedUa: text("last_used_ua"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	unique("agent_tokens_token_hash_key").on(table.tokenHash),
+	index("agent_tokens_grant_idx").using("btree", table.grantId),
+	index("agent_tokens_family_idx").using("btree", table.familyId),
+	foreignKey({ columns: [table.grantId], foreignColumns: [agentGrants.id], name: "agent_tokens_grant_id_fkey" }).onDelete("cascade"),
+	check("agent_tokens_kind_check", sql`kind IN ('access', 'refresh', 'pat')`),
+	check("agent_tokens_hash_length", sql`char_length(token_hash) = 64`),
+	check("agent_tokens_expiry_check", sql`kind = 'pat' OR expires_at IS NOT NULL`),
+	check("agent_tokens_text_length", sql`(name IS NULL OR char_length(name) <= 100) AND (last_used_ip IS NULL OR char_length(last_used_ip) <= 100) AND (last_used_ua IS NULL OR char_length(last_used_ua) <= 300)`),
+]);
+
+/** MCP activity log + idempotency store (0133, F-29b/c). Kept 90 days. Server-only. */
+export const agentToolCalls = pgTable("agent_tool_calls", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	grantId: uuid("grant_id").notNull(),
+	sellerId: uuid("seller_id").notNull(),
+	storeId: uuid("store_id"),
+	tool: text().notNull(),
+	argsSummary: jsonb("args_summary").$type<Record<string, unknown>>().default({}).notNull(),
+	/** 'ok' | 'error' | 'denied' | 'rate_limited' */
+	status: text().notNull(),
+	errorCode: text("error_code"),
+	idempotencyKey: text("idempotency_key"),
+	resultRef: jsonb("result_ref").$type<Record<string, unknown>>(),
+	durationMs: integer("duration_ms"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex("agent_tool_calls_idempotency_key").using("btree", table.grantId, table.idempotencyKey).where(sql`idempotency_key IS NOT NULL`),
+	index("agent_tool_calls_seller_created_idx").using("btree", table.sellerId, table.createdAt.desc()),
+	index("agent_tool_calls_created_idx").using("btree", table.createdAt),
+	foreignKey({ columns: [table.grantId], foreignColumns: [agentGrants.id], name: "agent_tool_calls_grant_id_fkey" }).onDelete("cascade"),
+	foreignKey({ columns: [table.sellerId], foreignColumns: [sellers.id], name: "agent_tool_calls_seller_id_fkey" }).onDelete("cascade"),
+	foreignKey({ columns: [table.storeId], foreignColumns: [stores.id], name: "agent_tool_calls_store_id_fkey" }).onDelete("cascade"),
+	check("agent_tool_calls_status_check", sql`status IN ('ok', 'error', 'denied', 'rate_limited')`),
+	check("agent_tool_calls_tool_length", sql`char_length(tool) BETWEEN 1 AND 100`),
+	check("agent_tool_calls_error_code_length", sql`error_code IS NULL OR char_length(error_code) <= 100`),
+	check("agent_tool_calls_idempotency_key_length", sql`idempotency_key IS NULL OR char_length(idempotency_key) BETWEEN 1 AND 200`),
+	check("agent_tool_calls_duration_check", sql`duration_ms IS NULL OR duration_ms >= 0`),
+]);
+
+/** Durable per-grant MCP rate-limit counters (0133, F-29c). Server-only. */
+export const agentRateWindows = pgTable("agent_rate_windows", {
+	grantId: uuid("grant_id").notNull(),
+	bucket: text().notNull(),
+	windowStart: timestamp("window_start", { withTimezone: true, mode: 'string' }).notNull(),
+	count: integer().default(0).notNull(),
+}, (table) => [
+	primaryKey({ columns: [table.grantId, table.bucket, table.windowStart], name: "agent_rate_windows_pkey" }),
+	index("agent_rate_windows_window_idx").using("btree", table.windowStart),
+	foreignKey({ columns: [table.grantId], foreignColumns: [agentGrants.id], name: "agent_rate_windows_grant_id_fkey" }).onDelete("cascade"),
+	check("agent_rate_windows_bucket_length", sql`char_length(bucket) BETWEEN 1 AND 50`),
+	check("agent_rate_windows_count_check", sql`count >= 0`),
 ]);

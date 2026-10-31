@@ -4,20 +4,24 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { AtSign, Check, CircleDashed, Info, LoaderCircle, Pencil, Plus, Settings2, Smartphone, TriangleAlert } from "lucide-react";
+import { AtSign, Check, CircleDashed, Info, Landmark, Link2, LoaderCircle, Pencil, Plus, Settings2, Smartphone, TriangleAlert } from "lucide-react";
 
 import {
+  INSTAPAY_RECEIVE_TYPES,
   STORE_PAYMENT_METHODS,
   codSettingsSchema,
   instapayDetailsSchema,
+  instapayReceiveType,
   operatorHint,
   walletDetailsSchema,
+  type InstapayReceiveType,
   type StorePayments,
 } from "@workspace/lib/payments/store-methods";
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select";
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@workspace/ui/components/sheet";
 import { Switch } from "@workspace/ui/components/switch";
 import { Textarea } from "@workspace/ui/components/textarea";
@@ -40,10 +44,30 @@ const WALLETS = LIVE.filter((m) => m.key !== "cod").map((m) => m.key as LiveKey)
 const SOON = STORE_PAYMENT_METHODS.filter((m) => m.status === "soon" && m.key !== "card");
 const EMPTY: PaymentDetailsFormValues = { holderName: "", phone: "", ipa: "", iban: "", paymentLink: "" };
 
+/** InstaPay "receive by" choices: the field each one fills and how it reads. */
+const RECEIVE_INPUT: Record<
+  InstapayReceiveType,
+  { icon: typeof AtSign; placeholder: string; inputMode?: "tel" | "email" | "url" }
+> = {
+  ipa: { icon: AtSign, placeholder: "name@instapay", inputMode: "email" },
+  phone: { icon: Smartphone, placeholder: "01XXXXXXXXX", inputMode: "tel" },
+  iban: { icon: Landmark, placeholder: "EG00 0000 0000 0000 0000 0000 0000 0" },
+  paymentLink: { icon: Link2, placeholder: "https://ipn.eg/…", inputMode: "url" },
+};
+
 /** Field errors from the shared detail schemas, keyed by field. */
-function fieldErrors(kind: "wallet" | "instapay", v: PaymentDetailsFormValues) {
+function fieldErrors(
+  kind: "wallet" | "instapay",
+  v: PaymentDetailsFormValues,
+  receiveBy: InstapayReceiveType,
+): Partial<Record<keyof PaymentDetailsFormValues, string>> {
+  // The picked InstaPay identifier is required; the schema alone would call an empty one "invalid".
+  if (kind === "instapay" && !v[receiveBy].trim()) {
+    const rest = fieldErrors(kind, { ...v, [receiveBy]: "x" }, receiveBy);
+    return { ...rest, [receiveBy]: "identifier_required" };
+  }
   const schema = kind === "wallet" ? walletDetailsSchema : instapayDetailsSchema;
-  const parsed = schema.safeParse(toDetails(kind, v));
+  const parsed = schema.safeParse(toDetails(kind, v, receiveBy));
   if (parsed.success) return {};
   const out: Partial<Record<keyof PaymentDetailsFormValues, string>> = {};
   for (const issue of parsed.error.issues) {
@@ -283,8 +307,13 @@ function DetailsLine({ methodKey, entry }: { methodKey: LiveKey; entry?: Entry }
   }
   const d = entry?.details;
   if (!d) return null;
-  const id = d.ipa ?? (d.phone ? maskNumber(d.phone) : d.iban ? `•••• ${d.iban.slice(-4)}` : "");
-  const Icon = d.ipa ? AtSign : Smartphone;
+  const type = methodKey === "instapay" ? instapayReceiveType(d) : "phone";
+  const id =
+    type === "ipa" ? d.ipa
+    : type === "phone" ? maskNumber(d.phone ?? "")
+    : type === "iban" ? `•••• ${d.iban?.slice(-4)}`
+    : t("receiveBy.paymentLink");
+  const Icon = RECEIVE_INPUT[type].icon;
   return (
     <p className={line}>
       <Icon className={icon} aria-hidden />
@@ -315,17 +344,18 @@ function MethodSheet({
   const kind = methodKey === "cod" ? "cod" : methodKey === "instapay" ? "instapay" : "wallet";
   const setUp = kind === "cod" || !!entry?.details;
   const [values, setValues] = useState<PaymentDetailsFormValues>({ ...EMPTY, ...(entry?.details ?? {}) });
+  const [receiveBy, setReceiveBy] = useState<InstapayReceiveType>(() => instapayReceiveType(entry?.details));
   const [fee, setFee] = useState(entry?.fee ? String(entry.fee) : "");
   const [maxOrder, setMaxOrder] = useState(entry?.maxOrder ? String(entry.maxOrder) : "");
   const [note, setNote] = useState(entry?.note ?? "");
   const [submitted, setSubmitted] = useState(false);
 
-  const errors = kind === "cod" ? {} : fieldErrors(kind, values);
+  const errors = kind === "cod" ? {} : fieldErrors(kind, values, receiveBy);
   const feeValue = fee ? Number(fee) : 0;
   const maxValue = maxOrder ? Number(maxOrder) : undefined;
   const feeValid = Number.isInteger(feeValue) && feeValue >= 0 && feeValue <= 500;
   const maxValid = codSettingsSchema.shape.maxOrder.safeParse(maxValue).success;
-  const hint = kind !== "cod" && values.phone ? operatorHint(values.phone) : null;
+  const hint = kind === "wallet" && values.phone ? operatorHint(values.phone) : null;
   const hintMismatch = kind === "wallet" && hint && hint !== methodKey;
   // Saving details turns the method on; it can be switched off from the list.
   const enabled = methodKey === "cod" ? (entry?.enabled ?? true) : true;
@@ -337,17 +367,17 @@ function MethodSheet({
       if (feeValid && maxValid) onSave({ enabled, fee: feeValue, maxOrder: maxValue ?? null, note: note.trim() });
       return;
     }
-    if (Object.keys(errors).length === 0) onSave({ enabled, details: toDetails(kind, values) });
+    if (Object.keys(errors).length === 0) onSave({ enabled, details: toDetails(kind, values, receiveBy) });
   };
 
   const field = (
     name: keyof PaymentDetailsFormValues,
-    opts: { ltr?: boolean; placeholder?: string; inputMode?: "tel" | "email" | "url"; help?: string } = {},
+    opts: { ltr?: boolean; placeholder?: string; inputMode?: "tel" | "email" | "url"; help?: string; label?: string } = {},
   ) => {
     const error = submitted ? errors[name] : undefined;
     return (
       <div className="grid gap-1.5">
-        <Label htmlFor={`pm-${name}`}>{t(`fields.${name}`)}</Label>
+        <Label htmlFor={`pm-${name}`}>{opts.label ?? t(`fields.${name}`)}</Label>
         <Input
           id={`pm-${name}`}
           className={cn(FIELD_CLASS, opts.ltr && "text-start font-mono", error && "border-destructive")}
@@ -432,11 +462,32 @@ function MethodSheet({
               {kind === "wallet" && field("phone", { ltr: true, inputMode: "tel", placeholder: "01XXXXXXXXX", help: t("fields.phoneHelp") })}
               {kind === "instapay" && (
                 <>
-                  <p className="text-sm text-muted-foreground">{t("instapayIdentifiers")}</p>
-                  {field("ipa", { ltr: true, inputMode: "email", placeholder: "name@instapay", help: t("fields.ipaHelp") })}
-                  {field("phone", { ltr: true, inputMode: "tel", placeholder: "01XXXXXXXXX" })}
-                  {field("iban", { ltr: true, placeholder: "EG00 0000 0000 0000 0000 0000 0000 0" })}
-                  {field("paymentLink", { ltr: true, inputMode: "url", placeholder: "https://ipn.eg/…" })}
+                  <div className="grid gap-1.5">
+                    <Label htmlFor="pm-receive-by">{t("receiveBy.label")}</Label>
+                    <Select value={receiveBy} onValueChange={(next) => setReceiveBy(next as InstapayReceiveType)}>
+                      <SelectTrigger id="pm-receive-by" className={cn(FIELD_CLASS, "w-full")}>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {INSTAPAY_RECEIVE_TYPES.map((type) => {
+                          const Icon = RECEIVE_INPUT[type].icon;
+                          return (
+                            <SelectItem key={type} value={type}>
+                              <Icon className="size-4 text-muted-foreground" aria-hidden />
+                              {t(`receiveBy.${type}`)}
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  {field(receiveBy, {
+                    ltr: true,
+                    label: t(`receiveBy.${receiveBy}Field`),
+                    placeholder: RECEIVE_INPUT[receiveBy].placeholder,
+                    inputMode: RECEIVE_INPUT[receiveBy].inputMode,
+                    help: t(`receiveBy.${receiveBy}Help`),
+                  })}
                 </>
               )}
               {field("holderName", { help: t("fields.holderHelp") })}

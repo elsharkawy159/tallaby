@@ -12,6 +12,7 @@ import {
   Truck,
   Wallet,
 } from "lucide-react";
+import { TALLABY_SERVICES_ENABLED } from "@workspace/lib/fulfillment";
 import type { NavKey } from "../layout/dashboard-routes.lib";
 import type { SidebarCounts } from "./sidebar.types";
 
@@ -85,8 +86,8 @@ export const SIDEBAR_CONFIG: NavEntry[] = [
       { key: "missedOrders", href: "/orders/missed", status: "live" },
       // Customers of a store, grouped from its orders by phone (F-01).
       { key: "customers", href: "/orders/customers", status: "live" },
-      // Scan a returned parcel's barcode to find the order and mark it returned (F-04e).
-      { key: "scanReturns", href: "/orders/scan", status: "live" },
+      // Scan returns (F-04e) hidden for now: the /orders search finds the order (owner, 2026-10-31).
+      // { key: "scanReturns", href: "/orders/scan", status: "live" },
       // Tracking individual orders; /shipping redirects here (P3-06).
       { key: "deliveryTracking", href: "/orders/delivery", countKey: "shipping", status: "live" },
     ],
@@ -99,7 +100,10 @@ export const SIDEBAR_CONFIG: NavEntry[] = [
     items: [
       { key: "riders", href: "/orders/riders", status: "live" },
       { key: "shippingSettings", href: "/stores/[storeId]/shipping", status: "live" },
-      { key: "fulfillment", href: "/settings/fulfillment", status: "live" },
+      // Hidden while Tallaby offers no storage, packing or delivery (owner, 2026-10-31).
+      ...(TALLABY_SERVICES_ENABLED
+        ? [{ key: "fulfillment", href: "/settings/fulfillment", status: "live" } satisfies NavLinkConfig]
+        : []),
     ],
   },
   // Money (balance, ledger) first, then analytics.

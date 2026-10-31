@@ -56,7 +56,7 @@ describe("SIDEBAR_CONFIG", () => {
 
   it("keeps every existing page reachable", () => {
     const hrefs = allLinks(resolveSidebar(SIDEBAR_CONFIG, { storeId: STORE, features: {} })).map((l) => l.href);
-    for (const href of ["/", "/orders", "/orders/delivery", "/orders/riders", "/products", "/products/add", "/products/categories", "/reviews", "/coupons", "/marketing", "/wallet", "/financial", "/stores", "/settings", "/settings/plan", "/settings/fulfillment", "/help"]) {
+    for (const href of ["/", "/orders", "/orders/delivery", "/orders/riders", "/products", "/products/add", "/products/categories", "/reviews", "/coupons", "/marketing", "/wallet", "/financial", "/stores", "/settings", "/settings/plan", "/help"]) {
       expect(hrefs, href).toContain(href);
     }
   });
@@ -227,7 +227,7 @@ describe("findActiveHref", () => {
   it("picks the most specific link, so one group opens", () => {
     expect(active("/orders/delivery")).toBe("/orders/delivery");
     expect(active("/orders")).toBe("/orders");
-    expect(active("/settings/fulfillment")).toBe("/settings/fulfillment");
+    expect(active("/orders/riders")).toBe("/orders/riders");
     expect(active("/settings/plan")).toBe("/settings/plan");
     expect(active(`/stores/${STORE}/settings/payments`)).toBe(`/stores/${STORE}/settings/payments`);
     expect(active(`/stores/${STORE}/website/blog/new`)).toBe(`/stores/${STORE}/website/blog`);
@@ -254,6 +254,12 @@ describe("resolveDashboardRoute", () => {
 
   it("still resolves existing pages", () => {
     expect(resolveDashboardRoute("/orders").title).toBe("orders");
-    expect(resolveDashboardRoute("/settings/fulfillment").title).toBe("fulfillment");
+    expect(resolveDashboardRoute("/orders/riders").title).toBe("riders");
+  });
+
+  it("hides the fulfillment page while Tallaby offers no fulfillment services", () => {
+    const hrefs = allLinks(resolveSidebar(SIDEBAR_CONFIG, { storeId: STORE, features: {} })).map((l) => l.href);
+    expect(hrefs).not.toContain("/settings/fulfillment");
+    expect(DASHBOARD_ROUTES.some((r) => r.href === "/settings/fulfillment")).toBe(false);
   });
 });

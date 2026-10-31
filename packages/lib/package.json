@@ -130,6 +130,10 @@
       "types": "./src/orders/platform-fee.lib.ts",
       "default": "./src/orders/platform-fee.lib.ts"
     },
+    "./orders/payment-proof": {
+      "types": "./src/orders/payment-proof.lib.ts",
+      "default": "./src/orders/payment-proof.lib.ts"
+    },
     "./orders/payment": {
       "types": "./src/orders/payment.lib.ts",
       "default": "./src/orders/payment.lib.ts"
@@ -169,6 +173,18 @@
     "./store-wallet/server": {
       "types": "./src/store-wallet/server.ts",
       "default": "./src/store-wallet/server.ts"
+    },
+    "./agents": {
+      "types": "./src/agents/index.ts",
+      "default": "./src/agents/index.ts"
+    },
+    "./agents/scopes": {
+      "types": "./src/agents/scopes.lib.ts",
+      "default": "./src/agents/scopes.lib.ts"
+    },
+    "./agents/server": {
+      "types": "./src/agents/server.ts",
+      "default": "./src/agents/server.ts"
     },
     "./push": {
       "types": "./src/push/index.ts",

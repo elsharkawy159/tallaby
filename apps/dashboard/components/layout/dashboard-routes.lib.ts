@@ -1,8 +1,9 @@
 import type { LucideIcon } from "lucide-react";
+import { TALLABY_SERVICES_ENABLED } from "@workspace/lib/fulfillment";
 import {
   AppWindow,
   PhoneMissed,
-  ScanBarcode,
+  // ScanBarcode, // scan returns hidden (owner, 2026-10-31)
   LayoutGrid,
   Palette,
   Share2,
@@ -138,11 +139,15 @@ export const DASHBOARD_ROUTES: DashboardRoute[] = [
   { href: "/orders", title: "orders", parent: "ordersGroup", icon: ShoppingBag },
   { href: "/orders/missed", title: "missedOrders", parent: "ordersGroup", icon: PhoneMissed },
   { href: "/orders/customers", title: "customers", parent: "ordersGroup", icon: Users },
-  { href: "/orders/scan", title: "scanReturns", parent: "ordersGroup", icon: ScanBarcode },
+  // Scan returns hidden for now (owner, 2026-10-31).
+  // { href: "/orders/scan", title: "scanReturns", parent: "ordersGroup", icon: ScanBarcode },
   { href: "/orders/delivery", title: "deliveryTracking", parent: "ordersGroup", icon: Truck },
   { href: "/orders/riders", title: "riders", parent: "fulfillmentShipping", icon: Bike },
   { href: "/stores/[storeId]/shipping", title: "shippingSettings", parent: "fulfillmentShipping", icon: MapPinned },
-  { href: "/settings/fulfillment", title: "fulfillment", parent: "fulfillmentShipping", icon: Warehouse },
+  // Hidden while Tallaby offers no storage, packing or delivery (owner, 2026-10-31).
+  ...(TALLABY_SERVICES_ENABLED
+    ? [{ href: "/settings/fulfillment", title: "fulfillment", parent: "fulfillmentShipping", icon: Warehouse } satisfies DashboardRoute]
+    : []),
   { href: "/wallet", title: "walletBalance", parent: "finance", icon: Wallet },
   { href: "/financial", title: "accountStatements", parent: "finance", icon: DollarSign },
   { href: "/reports", title: "reports", parent: "finance", icon: FileBarChart },

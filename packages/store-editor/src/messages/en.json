@@ -967,7 +967,7 @@
       "classic": "Tallaby Classic"
     },
     "brand": {
-      "hint": "Logo, favicon and cover apply to your store right away; they don't wait for Publish.",
+      "hint": "Logo and favicon apply to your store right away. Banner photos show on your website after you publish.",
       "save": "Save brand",
       "saved": "Brand saved.",
       "favicon": "Favicon",
@@ -975,6 +975,14 @@
       "uploadFavicon": "Upload favicon",
       "changeFavicon": "Change favicon",
       "remove": "Remove"
+    },
+    "banners": {
+      "title": "Store banner",
+      "carouselHint": "The sliding photos at the top of your home page, one per slide (up to {max}). They show on your website after you publish.",
+      "fixedHint": "The photo at the top of your home page. It shows on your website after you publish.",
+      "single": "Banner photo",
+      "item": "Banner {number}",
+      "add": "Add banner"
     },
     "buttons": {
       "radius": "Corner roundness",

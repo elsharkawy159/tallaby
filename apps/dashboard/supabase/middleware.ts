@@ -55,9 +55,13 @@ export async function updateSession(request: NextRequest) {
     path.startsWith("/login") ||
     path === "/signup" ||
     path.startsWith("/signup/") ||
-    path === "/roadmap";
+    path === "/roadmap" ||
+    path.startsWith("/.well-known/");
   if (!user && !isPublic) {
-    return NextResponse.redirect(new URL("/login", request.url));
+    const login = new URL("/login", request.url);
+    // MCP consent (F-29b): come back to the same authorize request after signing in.
+    if (path === "/oauth/authorize") login.searchParams.set("next", `${path}${url.search}`);
+    return NextResponse.redirect(login);
   }
 
   if (user && path.startsWith("/login")) {

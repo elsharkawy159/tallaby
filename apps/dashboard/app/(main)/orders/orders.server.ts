@@ -10,14 +10,22 @@ import {
   db,
   eq,
   inArray,
+  isNull,
   orderItems,
   orders,
+  productVariants,
   shipments,
   sql,
   userWalletTransactions,
 } from "@workspace/db";
-import { cancelPendingAffiliateCommission } from "@workspace/db/affiliates";
-import { restoreStock, type StockLine } from "@workspace/db/inventory";
+import { cancelPendingAffiliateCommission, reverseAffiliateCommission } from "@workspace/db/affiliates";
+import {
+  decrementStock,
+  InsufficientStockError,
+  restoreStock,
+  type StockLine,
+  type StockResult,
+} from "@workspace/db/inventory";
 import { WALLET_REFERENCE_TYPES } from "@workspace/db/wallet";
 import { sendOrderEventEmail } from "@workspace/lib/orders";
 import { autoShipOrderWithBosta } from "@workspace/lib/shipping/bosta-ship";
@@ -144,11 +152,7 @@ async function confirmOrder({ order }: LoadedOrder, sellerId: string) {
  */
 async function cancelOrder({ order, shipment }: LoadedOrder, sellerId: string) {
   const now = new Date().toISOString();
-  const stockLines: StockLine[] = order.orderItems.map((item) =>
-    item.variantId
-      ? { kind: "variant" as const, id: item.variantId, quantity: item.quantity }
-      : { kind: "product" as const, id: item.productId, quantity: item.quantity },
-  );
+  const stockLines = orderStockLines(order);
 
   const stockResults = await db.transaction(async (tx) => {
     const updated = await tx
@@ -189,6 +193,20 @@ async function cancelOrder({ order, shipment }: LoadedOrder, sellerId: string) {
     return results;
   });
 
+  await invalidateOrderStock(order, stockResults);
+  await sendOrderEventEmail(order.id, "cancelled", "seller");
+}
+
+function orderStockLines(order: LoadedOrder["order"]): StockLine[] {
+  return order.orderItems.map((item) =>
+    item.variantId
+      ? { kind: "variant" as const, id: item.variantId, quantity: item.quantity }
+      : { kind: "product" as const, id: item.productId, quantity: item.quantity },
+  );
+}
+
+async function invalidateOrderStock(order: LoadedOrder["order"], stockResults: StockResult[]) {
+  if (stockResults.length === 0) return;
   await applyInvalidation(
     invalidateProductInventory(
       stockResults.map((r) => {
@@ -206,16 +224,130 @@ async function cancelOrder({ order, shipment }: LoadedOrder, sellerId: string) {
     ),
     { from: "dashboard", mode: "action" },
   );
-  await sendOrderEventEmail(order.id, "cancelled", "seller");
+}
+
+type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
+
+/**
+ * A cancelled order's stock went back on the shelf, so moving it back on its
+ * way takes the stock again. Untracked (null-stock) variants are skipped, as
+ * restoreStock skips them. Not enough stock stops the move.
+ */
+async function takeStockAgain(tx: Tx, order: LoadedOrder["order"], sellerId: string): Promise<StockResult[]> {
+  const lines = orderStockLines(order);
+  const variantIds = lines.filter((l) => l.kind === "variant").map((l) => l.id);
+  const untracked = new Set<string>();
+  if (variantIds.length > 0) {
+    const rows = await tx
+      .select({ id: productVariants.id })
+      .from(productVariants)
+      .where(and(inArray(productVariants.id, variantIds), isNull(productVariants.stock)));
+    for (const r of rows) untracked.add(r.id);
+  }
+  try {
+    return await decrementStock(
+      tx,
+      lines.filter((l) => !(l.kind === "variant" && untracked.has(l.id))),
+      { reason: "order", orderId: order.id, actorId: sellerId },
+    );
+  } catch (error) {
+    if (error instanceof InsufficientStockError) throw new OrderActionError("outOfStock");
+    throw error;
+  }
+}
+
+/** Shipment status each status change on a closed order lands on ("reopen" has its own write). */
+const CORRECTION_SHIPMENT_STATUS: Partial<Record<SellerOrderAction, ShippingStatus>> = {
+  ...ACTION_SHIPMENT_STATUS,
+  cancel: "cancelled",
+};
+
+/**
+ * Moves a closed order (delivered, returned, cancelled) to another status
+ * (owner, 2026-10-31). Stock follows "cancelled": it goes back on the shelf
+ * when the order is cancelled and is taken again when it leaves cancelled.
+ * No money moves here: leaving "delivered" keeps the delivery fee entry, and
+ * delivering again never posts it twice (its claim is per order).
+ */
+async function correctClosedOrder(
+  loaded: LoadedOrder,
+  sellerId: string,
+  action: SellerOrderAction,
+  reason: string | undefined,
+) {
+  const { order } = loaded;
+  const wasCancelled = loaded.flow.stage === "cancelled";
+  let stockResults: StockResult[] = [];
+
+  if (action === "reopen") {
+    stockResults = await reopenOrder(loaded, sellerId, wasCancelled);
+  } else {
+    const status = CORRECTION_SHIPMENT_STATUS[action];
+    if (!status) throw new OrderActionError("notAllowed");
+    await moveShipment(loaded, sellerId, status, reason, async (tx) => {
+      if (wasCancelled) {
+        stockResults = await takeStockAgain(tx, order, sellerId);
+      } else if (status === "cancelled") {
+        stockResults = await restoreStock(tx, orderStockLines(order), {
+          reason: "cancel",
+          orderId: order.id,
+          actorId: sellerId,
+        });
+        // A delivered order's commission may already be scheduled, not just pending.
+        await reverseAffiliateCommission(tx, order.id);
+      }
+    });
+  }
+
+  await invalidateOrderStock(order, stockResults);
+}
+
+/** Back to "ready to ship": order and lines confirmed, shipment pending. */
+async function reopenOrder(
+  { order, shipment }: LoadedOrder,
+  sellerId: string,
+  wasCancelled: boolean,
+): Promise<StockResult[]> {
+  const now = new Date().toISOString();
+  return db.transaction(async (tx) => {
+    const updated = await tx
+      .update(orders)
+      .set({ status: "confirmed", updatedAt: now })
+      .where(and(eq(orders.id, order.id), eq(orders.status, order.status ?? "pending")))
+      .returning({ id: orders.id });
+    if (updated.length === 0) throw new OrderActionError("alreadyUpdated");
+
+    await tx
+      .update(orderItems)
+      .set({ status: "confirmed", updatedAt: now })
+      .where(and(eq(orderItems.orderId, order.id), eq(orderItems.sellerId, sellerId)));
+
+    if (shipment) {
+      const moved = await tx
+        .update(shipments)
+        .set({ status: "pending", failureReason: null, updatedAt: now })
+        .where(
+          and(
+            eq(shipments.id, shipment.id),
+            eq(shipments.sellerId, sellerId),
+            eq(shipments.status, shipment.status),
+          ),
+        )
+        .returning({ id: shipments.id });
+      if (moved.length === 0) throw new OrderActionError("alreadyUpdated");
+    }
+
+    return wasCancelled ? takeStockAgain(tx, order, sellerId) : [];
+  });
 }
 
 async function moveShipment(
   { order, shipment }: LoadedOrder,
   sellerId: string,
-  action: SellerOrderAction,
+  status: ShippingStatus,
   reason: string | undefined,
+  inTransaction?: (tx: Tx) => Promise<void>,
 ) {
-  const status = ACTION_SHIPMENT_STATUS[action]!;
   if (status === "failed" && !reason) throw new OrderActionError("reasonRequired");
   const from: ShippingStatus =
     shipment && isShippingStatus(shipment.status) ? shipment.status : "pending";
@@ -228,6 +360,7 @@ async function moveShipment(
       status,
       expectedFromStatus: from,
       failureReason: reason,
+      inTransaction,
     });
   } catch (error) {
     if (error instanceof Error && error.message.startsWith("Shipment was already updated")) {
@@ -241,17 +374,26 @@ async function moveShipment(
  * The one write behind every order button on /orders. The seller id comes
  * from the session; the order must have a line of theirs, and the move must
  * be one resolveSellerOrderFlow allows for the order as stored right now.
+ * Status changes on a closed order run one order at a time only, so a bulk
+ * move never reopens delivered or cancelled orders.
  */
 async function runSellerOrderAction(
   sellerId: string,
   orderId: string,
   action: SellerOrderAction,
   reason: string | undefined,
+  { allowCorrections = false }: { allowCorrections?: boolean } = {},
 ) {
   const loaded = await loadOrder(orderId, sellerId);
 
   if (loaded.flow.readOnly) throw new OrderActionError(`readOnly.${loaded.flow.readOnly}`);
-  if (!loaded.flow.actions.includes(action)) throw new OrderActionError("notAllowed");
+  if (!loaded.flow.actions.includes(action)) {
+    if (allowCorrections && loaded.flow.corrections.includes(action)) {
+      await correctClosedOrder(loaded, sellerId, action, reason);
+      return;
+    }
+    throw new OrderActionError("notAllowed");
+  }
 
   if (action === "confirm") {
     await confirmOrder(loaded, sellerId);
@@ -262,7 +404,11 @@ async function runSellerOrderAction(
     }
   }
   else if (action === "cancel") await cancelOrder(loaded, sellerId);
-  else await moveShipment(loaded, sellerId, action, reason);
+  else {
+    const status = ACTION_SHIPMENT_STATUS[action];
+    if (!status) throw new OrderActionError("notAllowed");
+    await moveShipment(loaded, sellerId, status, reason);
+  }
 }
 
 export async function updateSellerOrder(input: unknown): Promise<ActionResult> {
@@ -270,7 +416,7 @@ export async function updateSellerOrder(input: unknown): Promise<ActionResult> {
   try {
     const { sellerId } = await requireSeller();
     const { orderId, action, reason } = inputSchema.parse(input);
-    await runSellerOrderAction(sellerId, orderId, action, reason);
+    await runSellerOrderAction(sellerId, orderId, action, reason, { allowCorrections: true });
 
     revalidatePath("/orders", "layout");
     return { success: true };

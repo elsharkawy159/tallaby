@@ -45,7 +45,7 @@
     "deliveryTracking": "Delivery tracking",
     "riders": "Riders",
     "shippingSettings": "Shipping settings",
-    "websiteContent": "Website & Content",
+    "websiteContent": "Online Store",
     "websiteOverview": "Overview",
     "websiteBuilder": "Website builder",
     "templates": "Templates",
@@ -2192,7 +2192,9 @@
       "fail": "Delivery failed",
       "return": "Mark returned",
       "cancel": "Cancel order",
+      "reopen": "Back to ready to ship",
       "more": "More actions",
+      "changeStatus": "Change status",
       "done": {
         "confirm": "Order #{number} confirmed",
         "ship": "Order #{number} is out for delivery",
@@ -2200,16 +2202,17 @@
         "deliver": "Order #{number} delivered",
         "fail": "Failed attempt saved for #{number}",
         "return": "Order #{number} marked returned",
-        "cancel": "Order #{number} cancelled"
+        "cancel": "Order #{number} cancelled",
+        "reopen": "Order #{number} is ready to ship again"
       },
       "dialog": {
         "back": "Go back",
         "deliverTitle": "Mark order #{number} delivered?",
-        "deliverDescription": "Do this once the customer has the order. It closes the order and can't be undone.",
+        "deliverDescription": "Do this once the customer has the order. You can change the status later if needed.",
         "returnTitle": "Mark order #{number} returned?",
-        "returnDescription": "Use this when the parcel came back to you. It can't be undone.",
+        "returnDescription": "Use this when the parcel came back to you. You can change the status later if needed.",
         "cancelTitle": "Cancel order #{number}?",
-        "cancelDescription": "The items go back into stock and the customer gets an email. This can't be undone."
+        "cancelDescription": "The items go back into stock and the customer gets an email. You can change the status later if needed."
       },
       "failDialog": {
         "title": "Delivery failed for #{number}",
@@ -2233,6 +2236,7 @@
       "notFound": "This order isn't available.",
       "alreadyUpdated": "This order changed in the meantime. Refresh the page and try again.",
       "reasonRequired": "Say what happened with the delivery.",
+      "outOfStock": "Not enough stock to put this order back on its way. Add stock first.",
       "notAllowed": "This step isn't available for this order right now.",
       "readOnly": {
         "multi_seller": "This order has items from other sellers, so Tallaby handles it.",
@@ -2271,7 +2275,16 @@
         "wallet": "Wallet",
         "instapay": "InstaPay",
         "vodafone_cash": "Vodafone Cash",
-        "bank_transfer": "Bank transfer"
+        "bank_transfer": "Bank transfer",
+        "e_cash": "e& Cash",
+        "we_pay": "WE Pay",
+        "orange_cash": "Orange Cash"
+      },
+      "paymentProof": {
+        "title": "Payment screenshot",
+        "open": "Open full size",
+        "alt": "Screenshot of the customer's transfer",
+        "hint": "Sent by the customer. Check that the money arrived in your account before you confirm the order."
       },
       "paymentStatus": "Payment status",
       "orderTotal": "Order total",
@@ -3496,9 +3509,24 @@
     "viewWallet": "View store wallet"
   },
   "storePayments": {
+    "receiveBy": {
+      "label": "Customers send the money to",
+      "ipa": "InstaPay address (email)",
+      "phone": "Mobile number",
+      "iban": "Bank account (IBAN)",
+      "paymentLink": "InstaPay payment link",
+      "ipaField": "InstaPay address",
+      "phoneField": "Mobile number linked to InstaPay",
+      "ibanField": "IBAN",
+      "paymentLinkField": "InstaPay payment link",
+      "ipaHelp": "Looks like an email: name@instapay. You'll find it in the InstaPay app, under your profile.",
+      "phoneHelp": "The mobile number your InstaPay account is registered with.",
+      "ibanHelp": "EG followed by 27 digits. Your bank shows it in its app or on your statement.",
+      "paymentLinkHelp": "In the InstaPay app, open your profile and share your payment link. It starts with https://ipn.eg/."
+    },
     "saved": "Payment methods updated.",
     "readOnly": "This store is read-only, so payment methods can't be changed.",
-    "checkoutNotice": "Your store's checkout shows only the methods you turn on here. For now, wallet and InstaPay payments are received by Tallaby and settled to you as today. WE Pay and Orange Cash aren't shown at checkout yet.",
+    "checkoutNotice": "Your store's checkout shows only the methods you turn on here. Wallet and InstaPay payments go straight to your own account, so they are not added to your Tallaby wallet; only the EGP 5 fee per delivered order is taken from it.",
     "soonTitle": "Coming soon",
     "soonDescription": "These will be available in a later update.",
     "soon": "Soon",
@@ -3534,7 +3562,7 @@
       "iban_invalid": "An Egyptian IBAN is EG followed by 27 digits.",
       "iban_checksum": "This IBAN isn't valid. Check the digits.",
       "link_invalid": "Use an InstaPay link that starts with https://ipn.eg/.",
-      "identifier_required": "Add an InstaPay address, mobile number or IBAN.",
+      "identifier_required": "Enter where customers should send the money.",
       "codInvalid": "The fee must be a whole number from 0 to 500.",
       "invalid": "This value isn't valid.",
       "codMaxInvalid": "Enter a number from 0 to 1,000,000, or leave it empty."
@@ -3619,7 +3647,7 @@
     "howItWorks": {
       "choose": "The customer picks {method} and confirms the order.",
       "transfer": "They see your payment details and transfer the amount.",
-      "confirm": "You check the transfer and press \"Confirm payment\" on the order page."
+      "confirm": "You check that the money arrived in your account, then confirm the order."
     },
     "gateways": {
       "title": "Online card payments",
@@ -4199,6 +4227,11 @@
         "name": "Tallaby Pay",
         "vendor": "Tallaby",
         "description": "Card payments with no gateway account of your own; the money goes to your store wallet. Coming soon."
+      },
+      "ai_assistants": {
+        "name": "AI assistants",
+        "vendor": "Claude · ChatGPT · Cursor",
+        "description": "Manage your products, orders and website by chatting with Claude, ChatGPT or Cursor."
       }
     },
     "heroTitle": "Connect your tools",
@@ -4212,7 +4245,8 @@
       "tracking": "Tracking & ads",
       "data": "Import & export",
       "shipping": "Shipping",
-      "payments": "Payments"
+      "payments": "Payments",
+      "ai": "AI"
     },
     "groupCount": "{count, plural, one {# app} other {# apps}}",
     "find": "Find an app",
@@ -4223,7 +4257,8 @@
       "account": "Google account",
       "carrier": "Shipping company",
       "sheet": "Excel upload",
-      "gateway": "Payment gateway"
+      "gateway": "Payment gateway",
+      "agent": "AI assistant"
     },
     "comingSoon": "Coming soon",
     "imported": "Imported",
@@ -4419,6 +4454,76 @@
       "saved": "Wassalha details saved.",
       "disconnected": "Wassalha turned off.",
       "goToOrders": "Go to orders"
+    },
+    "aiAssistants": {
+      "back": "Apps",
+      "title": "AI assistants",
+      "subtitle": "Manage {store} by chatting with Claude, ChatGPT and other AI assistants.",
+      "soonTitle": "Opening soon",
+      "soonBody": "The Tallaby connection isn't open yet. These steps will work as soon as we launch it, and we'll let you know.",
+      "urlLabel": "Connection URL",
+      "urlHelp": "Paste this in your AI assistant. It's the same for every store; you choose the stores when you connect.",
+      "copy": "Copy",
+      "copied": "Copied",
+      "howTitle": "How to connect",
+      "noteLabel": "Good to know",
+      "tabs": {
+        "claude": {
+          "name": "Claude",
+          "steps": {
+            "1": "Open Claude (claude.ai, or the desktop or phone app) and go to Settings › Connectors.",
+            "2": "Click “Add custom connector”.",
+            "3": "Name it Tallaby, paste the connection URL above, then click Add.",
+            "4": "Click Connect. The Tallaby page opens: sign in, choose your stores and what Claude may do, then click Allow.",
+            "5": "Open a new chat, turn on Tallaby from the tools menu (+), and ask what you need."
+          },
+          "note": "Don't see “Add custom connector”? Your Claude plan may not include custom connectors."
+        },
+        "chatgpt": {
+          "name": "ChatGPT",
+          "steps": {
+            "1": "Open ChatGPT (chatgpt.com) and go to Settings › Apps › Advanced settings, then turn on Developer mode.",
+            "2": "Back in Apps, click Create.",
+            "3": "Name it Tallaby, paste the connection URL above, choose OAuth for authentication, tick “I trust this application”, then click Create.",
+            "4": "The Tallaby page opens: sign in, choose your stores and what ChatGPT may do, then click Allow.",
+            "5": "In a chat, click + › Developer mode, pick Tallaby, then ask what you need."
+          },
+          "note": "Developer mode and custom apps depend on your ChatGPT plan, and OpenAI may change where they are."
+        },
+        "claude_code": {
+          "name": "Claude Code",
+          "steps": {
+            "1": "Run this command in your terminal:",
+            "2": "Start Claude Code, type /mcp, choose tallaby, then Authenticate.",
+            "3": "Your browser opens the Tallaby page: sign in, choose your stores and permissions, then click Allow.",
+            "4": "Back in the terminal, ask Claude Code to work on your store."
+          },
+          "note": "For developers. Works the same in other tools that support remote MCP servers."
+        },
+        "cursor": {
+          "name": "Cursor",
+          "steps": {
+            "1": "Open Cursor Settings › MCP & Integrations › New MCP server, or add this to ~/.cursor/mcp.json:",
+            "2": "Next to tallaby, click Connect (or “Needs login”).",
+            "3": "The Tallaby page opens: sign in, choose your stores and permissions, then click Allow.",
+            "4": "Use Tallaby from the Agent chat."
+          },
+          "note": "For developers. Cursor's menu names may change between versions."
+        }
+      },
+      "examplesTitle": "Try asking",
+      "examples": {
+        "1": "Add these 5 products from the photos, write the descriptions in Arabic and English, and put them in Kitchen.",
+        "2": "What orders came in today?",
+        "3": "Raise every price in Shoes by 10 %, but show me first.",
+        "4": "Which products are about to sell out?"
+      },
+      "safetyTitle": "You stay in control",
+      "safety": {
+        "1": "You choose which stores the assistant can use and what it may do.",
+        "2": "It never sees your wallet, payouts, payment accounts or secret keys.",
+        "3": "Big changes (many products, publishing your website) always ask you to confirm first."
+      }
     }
   },
   "storeWallet": {
@@ -6425,6 +6530,44 @@
       "tooManyRows": "The sheet has more than {max} rows.",
       "missingColumns": "The sheet is missing required columns. Download a new sheet and try again.",
       "generic": "Something went wrong. Try again."
+    }
+  },
+  "agentConsent": {
+    "title": "{client} wants to manage your store",
+    "subtitle": "Signed in as {name}. You can disconnect it at any time from Store settings › Apps.",
+    "redirectNote": "After you allow it, you'll go back to {host}.",
+    "storesTitle": "Which stores?",
+    "allStores": "All my stores (and new ones)",
+    "scopesTitle": "What can it do?",
+    "required": "Always on",
+    "sensitive": "Turn on only if you need it",
+    "allow": "Allow",
+    "cancel": "Cancel",
+    "allowing": "Connecting…",
+    "pickStore": "Choose at least one store.",
+    "failed": "We couldn't connect it. Try again.",
+    "warning": "Only allow apps you trust. The assistant acts for you inside the stores and permissions you choose.",
+    "scopes": {
+      "store.read": "See store data (products, orders, reports, website)",
+      "customers.read": "See customer details (phones and addresses)",
+      "products.write": "Manage products, stock and coupons",
+      "orders.write": "Manage orders and shipping",
+      "orders.refund": "Cancel paid orders and refund them",
+      "website.write": "Edit the website design (draft only)",
+      "website.publish": "Publish the website to visitors",
+      "settings.write": "Store and shipping settings",
+      "products.purge": "Delete products from the trash forever",
+      "stores.create": "Create new stores"
+    },
+    "errors": {
+      "title": "This connection link doesn't work",
+      "badRequest": "The link from the AI app is missing information. Go back to the app and try connecting again.",
+      "unknownClient": "We don't recognise this app. Go back to it and add Tallaby again.",
+      "badRedirect": "This app's return address isn't allowed, so we stopped here to keep your store safe.",
+      "noSeller": "This account has no seller account yet. Sign in with your seller account, or create one first.",
+      "blocked": "Your seller account is paused, so you can't connect apps right now. Contact Tallaby support.",
+      "noStores": "You don't have a store yet. Create one in the dashboard first.",
+      "back": "Go to the dashboard"
     }
   }
 }

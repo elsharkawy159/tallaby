@@ -1,3 +1,5 @@
+import type { InstapayReceiveType } from "@workspace/lib/payments/store-methods";
+
 /** Error keys live under `storePayments.errors`. */
 export type StorePaymentsErrorKey =
   | "invalidDetails"
@@ -19,12 +21,12 @@ export type PaymentDetailsFormValues = {
   paymentLink: string;
 };
 
-/** Form values → the strict detail schema (empty strings omitted). */
-export function toDetails(kind: "wallet" | "instapay", v: PaymentDetailsFormValues) {
+/**
+ * Form values → the strict detail schema. InstaPay keeps only the identifier
+ * picked in the "receive by" dropdown (owner, 2026-10-31), so the customer
+ * sees exactly one way to pay.
+ */
+export function toDetails(kind: "wallet" | "instapay", v: PaymentDetailsFormValues, receiveBy: InstapayReceiveType = "ipa") {
   if (kind === "wallet") return { holderName: v.holderName.trim(), phone: v.phone.trim() };
-  const out: Record<string, string> = { holderName: v.holderName.trim() };
-  for (const key of ["phone", "ipa", "iban", "paymentLink"] as const) {
-    if (v[key].trim()) out[key] = v[key].trim();
-  }
-  return out;
+  return { holderName: v.holderName.trim(), [receiveBy]: v[receiveBy].trim() };
 }

@@ -1,10 +1,17 @@
-import { ScanReturnsView } from "./scan-returns.client";
+import { notFound } from "next/navigation";
 
-/** Orders › Scan returns (ROADMAP.md F-04e). The lookup runs per scan, scoped to the session seller. */
+// import { ScanReturnsView } from "./scan-returns.client";
+
+/**
+ * Orders › Scan returns (ROADMAP.md F-04e). Hidden for now (owner, 2026-10-31):
+ * the search on /orders already finds an order, so this page returns 404.
+ * Restore the body below and the sidebar/route entries to bring it back.
+ */
 export default function ScanReturnsPage() {
-  return (
-    <div className="min-h-screen p-4 sm:p-6">
-      <ScanReturnsView />
-    </div>
-  );
+  notFound();
+  // return (
+  //   <div className="min-h-screen p-4 sm:p-6">
+  //     <ScanReturnsView />
+  //   </div>
+  // );
 }

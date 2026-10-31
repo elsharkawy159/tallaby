@@ -33,7 +33,13 @@ const SHEET_ICON = {
   path: "M6 2h8l6 6v12.5A1.5 1.5 0 0 1 18.5 22h-13A1.5 1.5 0 0 1 4 20.5v-17A1.5 1.5 0 0 1 5.5 2H6Zm7 1.8V8.5a.5.5 0 0 0 .5.5h4.7L13 3.8ZM7 12v2h4v-2H7Zm6 0v2h4v-2h-4Zm-6 4v2h4v-2H7Zm6 0v2h4v-2h-4Z",
 };
 
+/** Sparkles: the AI assistants app (F-29), which covers several assistant brands. */
+const SPARKLES_ICON = {
+  path: "M10 2.5c.4 0 .75.27.86.66l.9 3.17a4.5 4.5 0 0 0 3.1 3.1l3.17.9a.9.9 0 0 1 0 1.73l-3.17.9a4.5 4.5 0 0 0-3.1 3.1l-.9 3.17a.9.9 0 0 1-1.72 0l-.91-3.17a4.5 4.5 0 0 0-3.1-3.1l-3.17-.9a.9.9 0 0 1 0-1.73l3.17-.9a4.5 4.5 0 0 0 3.1-3.1l.9-3.17c.12-.39.47-.66.87-.66Zm8.5 11c.33 0 .62.22.71.54l.32 1.1a2 2 0 0 0 1.33 1.33l1.1.32a.74.74 0 0 1 0 1.42l-1.1.32a2 2 0 0 0-1.33 1.33l-.32 1.1a.74.74 0 0 1-1.42 0l-.32-1.1a2 2 0 0 0-1.33-1.33l-1.1-.32a.74.74 0 0 1 0-1.42l1.1-.32a2 2 0 0 0 1.33-1.33l.32-1.1c.09-.32.38-.54.71-.54Zm0-12c.3 0 .55.19.64.47l.22.74a1.5 1.5 0 0 0 1.03 1.03l.74.22a.67.67 0 0 1 0 1.28l-.74.22a1.5 1.5 0 0 0-1.03 1.03l-.22.74a.67.67 0 0 1-1.28 0l-.22-.74a1.5 1.5 0 0 0-1.03-1.03l-.74-.22a.67.67 0 0 1 0-1.28l.74-.22a1.5 1.5 0 0 0 1.03-1.03l.22-.74c.09-.28.35-.47.64-.47Z",
+};
+
 export const APP_BRANDS: Record<StoreAppKey, AppBrand> = {
+  ai_assistants: { icon: SPARKLES_ICON, bg: "#1F1A2E", fg: "#F4B860", dark: true },
   meta_pixel: { icon: siMeta, bg: "#0866FF", fg: "#FFFFFF" },
   meta_capi: { icon: siMeta, bg: "#0B1F3A", fg: "#5AA0FF", dark: true },
   google_analytics: { icon: siGoogleanalytics, bg: "#F9AB00", fg: "#FFFFFF" },

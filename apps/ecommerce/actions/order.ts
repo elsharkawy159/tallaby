@@ -51,6 +51,15 @@ import { after } from "next/server";
 import { isMarketplaceRequest } from "@/lib/marketplace/marketplace-host.server";
 import { buildOrderPagePath, verifyOrderAccess } from "@/lib/order-access-token";
 import { getUser } from "./auth";
+import { getServiceClient } from "@workspace/db/supabase/service";
+import { STOREFRONT_ONLY_METHODS } from "@workspace/lib/payments/store-methods";
+import { parseWalletPartialPaymentMethod } from "@workspace/lib/orders/payment";
+import {
+  PAYMENT_PROOF_BUCKET,
+  PAYMENT_PROOF_MAX_BYTES,
+  buildPaymentProofPath,
+  sniffPaymentProofType,
+} from "@workspace/lib/orders/payment-proof";
 import { revalidateCartCheckout } from "@/lib/revalidate-cart-checkout";
 import { clearPendingCouponCode } from "@/lib/affiliate-coupon-cookie";
 import { getStorefrontCheckoutForm, getStorefrontMinOrder } from "@/lib/storefront-checkout-form.server";
@@ -114,6 +123,13 @@ export async function createOrder(data: {
     // Storefront: only the store's enabled methods (checked again with the
     // order total inside placeOrderFromCart).
     const storefrontPayments = await getStorefrontCheckoutPayments();
+
+    // WE Pay and Orange Cash are paid to a seller's own wallet, so only a
+    // store website offers them; the marketplace has no account for them.
+    const transferMethod = parseWalletPartialPaymentMethod(data.paymentMethod) ?? data.paymentMethod;
+    if (!storefrontPayments && (STOREFRONT_ONLY_METHODS as readonly string[]).includes(transferMethod)) {
+      return { success: false, error: "This payment method is not available" };
+    }
 
     // Card: on a storefront only through the seller's own gateway (F-39,
     // checked in placeOrderFromCart); on the marketplace, Tallaby's switch.
@@ -494,17 +510,31 @@ export async function getOrder(orderId: string) {
   }
 }
 
-const MANUAL_PAYMENT_METHODS = ["instapay", "vodafone_cash", "e_cash"] as const;
+const MANUAL_PAYMENT_METHODS = ["instapay", "vodafone_cash", "e_cash", "we_pay", "orange_cash"] as const;
+/** A customer can replace the payment screenshot this many times per order. */
+const MAX_PAYMENT_PROOF_UPLOADS = 5;
 
-export async function reportManualPaymentSent(orderId: string) {
+/**
+ * "I've sent the payment" for a manual-transfer order, optionally with a
+ * screenshot of the transfer (`proof`, ROADMAP.md F-21p). The shopper is the
+ * order's owner (signed in or the guest cookie that placed it) or holds its
+ * signed access link (`accessToken`). The file's type is read from its bytes
+ * and it goes to the private bucket through the service role; the seller sees
+ * it on the order in the dashboard. Payload: FormData { orderId, accessToken?, proof? }.
+ */
+export async function reportManualPaymentSent(formData: FormData) {
   try {
-    const user = await getUser();
-    if (!user) {
+    const orderId = String(formData.get("orderId") ?? "");
+    const accessToken = formData.get("accessToken");
+    const proof = formData.get("proof");
+    const hasAccessLink = typeof accessToken === "string" && accessToken ? verifyOrderAccess(orderId, accessToken) : false;
+    const userId = hasAccessLink ? null : await getCurrentUserId();
+    if (!hasAccessLink && !userId) {
       return { success: false, error: "Authentication required" };
     }
 
     const order = await db.query.orders.findFirst({
-      where: and(eq(orders.id, orderId), eq(orders.userId, user.user.id)),
+      where: hasAccessLink ? eq(orders.id, orderId) : and(eq(orders.id, orderId), eq(orders.userId, userId!)),
     });
 
     if (!order) {
@@ -519,21 +549,57 @@ export async function reportManualPaymentSent(orderId: string) {
       return { success: false, error: "Order is not a manual-transfer payment" };
     }
 
+    const metadata = (order.metadata as Record<string, unknown> | null) ?? {};
+    const now = new Date().toISOString();
+    let paymentProof: { path: string; uploadedAt: string } | null = null;
+
+    if (proof instanceof File && proof.size > 0) {
+      const t = await getTranslations("checkout.transfer.proof");
+      if (order.status === "cancelled" || order.paymentStatus === "paid" || order.paymentStatus === "collected") {
+        return { success: false, error: t("closed") };
+      }
+      const uploads = Number(metadata.paymentProofUploads ?? 0);
+      if (uploads >= MAX_PAYMENT_PROOF_UPLOADS) {
+        return { success: false, error: t("tooMany") };
+      }
+      if (proof.size > PAYMENT_PROOF_MAX_BYTES) {
+        return { success: false, error: t("tooLarge") };
+      }
+      const bytes = new Uint8Array(await proof.arrayBuffer());
+      const type = sniffPaymentProofType(bytes);
+      if (!type) {
+        return { success: false, error: t("notImage") };
+      }
+      const path = buildPaymentProofPath(order.id, crypto.randomUUID(), type);
+      const { error: uploadError } = await getServiceClient()
+        .storage.from(PAYMENT_PROOF_BUCKET)
+        .upload(path, bytes, { contentType: type, upsert: false });
+      if (uploadError) {
+        console.error("[payment-proof] upload failed", uploadError.message);
+        return { success: false, error: t("uploadFailed") };
+      }
+      paymentProof = { path, uploadedAt: now };
+    }
+
     await db
       .update(orders)
       .set({
         metadata: {
-          ...((order.metadata as Record<string, unknown> | null) ?? {}),
+          ...metadata,
           paymentSelfReported: true,
-          paymentSelfReportedAt: new Date().toISOString(),
+          paymentSelfReportedAt: now,
+          ...(paymentProof && {
+            paymentProof,
+            paymentProofUploads: Number(metadata.paymentProofUploads ?? 0) + 1,
+          }),
         },
-        updatedAt: new Date().toISOString(),
+        updatedAt: now,
       })
-      .where(eq(orders.id, orderId));
+      .where(eq(orders.id, order.id));
 
     return {
       success: true,
-      data: { orderPagePath: buildOrderPagePath(orderId) },
+      data: { orderPagePath: buildOrderPagePath(order.id) },
     };
   } catch (error) {
     console.error("Error reporting manual payment:", error);

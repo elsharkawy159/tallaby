@@ -26,6 +26,7 @@ import { ELEMENT_ICONS, PRESET_ICONS } from "../../lib/editor-icons.lib";
 import { matchesSearch, mostUsedItems, recentItems, recordUse, type PaletteKey } from "../../lib/editor-palette.lib";
 import type { EditorStore } from "../../state/editor.store";
 import { PageTemplatesTab } from "./page-templates.client";
+import { PalettePreview, elementPreview, presetPreview } from "./element-previews.client";
 import { SectionLibrary } from "./section-library.client";
 import type { TemplatePreviewHost } from "./template-preview-dialog.client";
 import { useEditorAdapter } from "../../adapter.client";
@@ -34,7 +35,7 @@ import { offeredElementGroups, offeredPaletteTypes, offersProductParts } from ".
 
 const pick = (value: { ar: string; en: string }, locale: string) => (locale === "en" ? value.en : value.ar) || value.ar;
 
-type Item = { key: PaletteKey; label: string; icon: ReactNode; keywords: string[]; run: () => void; payload: DragPayload };
+type Item = { key: PaletteKey; label: string; icon: ReactNode; preview: ReactNode | null; keywords: string[]; run: () => void; payload: DragPayload };
 
 /**
  * Add panel (P4B-03/07/12), like the reference elements/layouts palette:
@@ -116,6 +117,7 @@ function ElementsTab({ commands, uiLocale, productParts }: { commands: EditorCom
         key,
         label: pick(definition.label, uiLocale),
         icon: <Icon className="size-4" aria-hidden />,
+        preview: elementPreview(type),
         keywords: [definition.label.ar, definition.label.en, ...definition.keywords],
         run: use(key, () => commands.addElement(type)),
         payload: { kind: "element", elementType: type },
@@ -128,6 +130,7 @@ function ElementsTab({ commands, uiLocale, productParts }: { commands: EditorCom
         key,
         label: pick(preset.label, uiLocale),
         icon: <Icon className="size-4" aria-hidden />,
+        preview: presetPreview(preset.id),
         keywords: [preset.label.ar, preset.label.en, ...preset.keywords],
         run: use(key, () => commands.addPreset(preset)),
         payload: { kind: "preset", presetId: preset.id },
@@ -208,13 +211,25 @@ function PaletteItem({ id, item, compact }: { id: string; item: Item; compact?: 
       onClick={item.run}
       title={t("dragElementHint")}
       className={cn(
-        "flex w-full cursor-grab items-center gap-2 rounded-lg border bg-background text-start text-sm shadow-xs transition-colors hover:border-primary/50 hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:cursor-grabbing",
-        compact ? "px-2.5 py-2" : "px-2.5 py-3",
+        "flex w-full cursor-grab rounded-lg border bg-background text-start text-sm shadow-xs transition-colors hover:border-primary/50 hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:cursor-grabbing",
+        item.preview ? "flex-col gap-1.5 p-1.5" : cn("items-center gap-2 px-2.5", compact ? "py-2" : "py-3"),
         isDragging && "opacity-50",
       )}
     >
-      <span className="grid size-7 shrink-0 place-items-center rounded-md border bg-muted/40 text-muted-foreground">{item.icon}</span>
-      <span className="min-w-0 truncate">{item.label}</span>
+      {item.preview ? (
+        <>
+          <PalettePreview>{item.preview}</PalettePreview>
+          <span className="flex min-w-0 items-center gap-1.5 px-0.5 text-xs text-muted-foreground [&_svg]:size-3.5 [&_svg]:shrink-0">
+            {item.icon}
+            <span className="min-w-0 truncate text-foreground">{item.label}</span>
+          </span>
+        </>
+      ) : (
+        <>
+          <span className="grid size-7 shrink-0 place-items-center rounded-md border bg-muted/40 text-muted-foreground">{item.icon}</span>
+          <span className="min-w-0 truncate">{item.label}</span>
+        </>
+      )}
     </button>
   );
 }
