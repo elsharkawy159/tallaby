@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
-import { eq, inArray } from 'drizzle-orm'
+import { and, eq, inArray } from 'drizzle-orm'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import * as DB_SCHEMA from '@workspace/db/schema'
 
@@ -120,9 +120,9 @@ describe.skipIf(!TEST_DATABASE_URL)('platform fee at order placement (integratio
       .insert(s.userAddresses)
       .values({
         userId: buyer,
-        fullName: 'Fee Test',
-        phone: '01012345678',
-        addressLine1: '1 Test St',
+        fullName: 'Fee Customer',
+        phone: '01093847261',
+        addressLine1: '12 Tahrir Street',
         city: 'Nasr City',
         state: 'Cairo',
         postalCode: '11765',
@@ -153,14 +153,17 @@ describe.skipIf(!TEST_DATABASE_URL)('platform fee at order placement (integratio
     if (orderIds.length) {
       await db.delete(s.couponUsage).where(inArray(s.couponUsage.orderId, orderIds))
       await db.delete(s.orderItems).where(inArray(s.orderItems.orderId, orderIds))
-      await db.delete(s.orders).where(inArray(s.orders.id, orderIds))
     }
     if (couponIds.length) await db.delete(s.coupons).where(inArray(s.coupons.id, couponIds))
-    await db.delete(s.carts).where(eq(s.carts.userId, buyer))
     await db.delete(s.products).where(inArray(s.products.sellerId, sellers))
     await db.delete(s.sellerSubdomainRedirects).where(inArray(s.sellerSubdomainRedirects.sellerId, sellers))
+    // Seller accounts first: that cascades their fee entries (the one allowed
+    // ledger delete), so deleting the orders never touches a ledger row.
+    await db.delete(s.users).where(inArray(s.users.id, sellers))
+    if (orderIds.length) await db.delete(s.orders).where(inArray(s.orders.id, orderIds))
+    await db.delete(s.carts).where(eq(s.carts.userId, buyer))
     await db.delete(s.userAddresses).where(eq(s.userAddresses.userId, buyer))
-    await db.delete(s.users).where(inArray(s.users.id, [buyer, ...sellers]))
+    await db.delete(s.users).where(eq(s.users.id, buyer))
     await client.end()
   })
 
@@ -228,5 +231,56 @@ describe.skipIf(!TEST_DATABASE_URL)('platform fee at order placement (integratio
     expect(order.discountAmount).toBe('50.00')
     expect(line('a1')).toMatchObject({ total: '300.00', commissionAmount: '4.29' })
     expect(line('a2')).toMatchObject({ total: '50.00', commissionAmount: '0.71' })
+  })
+
+  /** A confirmed (not awaiting card payment) order, so the fee is taken at creation. */
+  async function placeConfirmed (cartId: string, shippingAddressId = addressId) {
+    const result = await placeOrderFromCart({
+      userId: buyer,
+      cartId,
+      shippingAddressId,
+      paymentMethod: 'online_payment',
+      paymentOverrides: { paymentMethod: 'online_payment', paymentStatus: 'paid', status: 'confirmed' },
+      sendConfirmationEmail: false,
+    })
+    if (!result.success) throw new Error(`placeOrderFromCart failed: ${result.error}`)
+    const [order] = await db.select().from(s.orders).where(eq(s.orders.id, result.data.order.id))
+    return order!
+  }
+
+  const feeEntries = (sellerId: string, orderId: string) =>
+    db
+      .select({ type: s.walletTransactions.type, amount: s.walletTransactions.amount, metadata: s.walletTransactions.metadata })
+      .from(s.walletTransactions)
+      .where(and(eq(s.walletTransactions.sellerId, sellerId), eq(s.walletTransactions.orderId, orderId)))
+
+  it('takes the EGP 5 at creation and holds a repeat of the same order within 2 hours', async () => {
+    const first = await placeConfirmed(await cart([['d1', sellerD, '100.00', 1]]))
+    expect(await feeEntries(sellerD, first.id)).toEqual([
+      { type: 'fee', amount: '-5.00', metadata: { chargedAt: 'placed' } },
+    ])
+
+    // Same phone, same items, minutes later: a duplicate, nothing until delivery.
+    const repeat = await placeConfirmed(await cart([['d1', sellerD, '100.00', 1]]))
+    expect(repeat.metadata).toMatchObject({ feeHolds: { [sellerD]: ['duplicate'] } })
+    expect(await feeEntries(sellerD, repeat.id)).toEqual([])
+  })
+
+  it('holds an order whose name, phone and address look fake', async () => {
+    const [fake] = await db
+      .insert(s.userAddresses)
+      .values({
+        userId: buyer,
+        fullName: 'test',
+        phone: '01000000000',
+        addressLine1: 'asdasd',
+        city: 'Nasr City',
+        state: 'Cairo',
+        postalCode: '11765',
+      })
+      .returning({ id: s.userAddresses.id })
+    const order = await placeConfirmed(await cart([['a2', sellerA, '80.00', 1]]), fake!.id)
+    expect(order.metadata).toMatchObject({ feeHolds: { [sellerA]: ['junk_name', 'fake_phone', 'junk_address'] } })
+    expect(await feeEntries(sellerA, order.id)).toEqual([])
   })
 })

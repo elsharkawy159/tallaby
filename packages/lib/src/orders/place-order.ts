@@ -21,6 +21,7 @@ import {
 } from '@workspace/db/inventory'
 import { claimCouponUsage } from '@workspace/db/coupons'
 import {
+  chargeOrderPlacementFee,
   getOrCreateUserWallet,
   postWalletTransaction,
   WALLET_REFERENCE_TYPES,
@@ -54,6 +55,7 @@ import {
 } from './order-discounts'
 import { sendOrderConfirmationEmail, sendOrderEventEmail } from './notify'
 import { computeOrderLineFees, type PlatformFeeSnapshot } from './platform-fee.lib'
+import { detectFeeHolds } from './fee-hold.server'
 import { isCodEligibleForShipping, parseWalletPartialPaymentMethod } from './payment.lib'
 import {
   isStorefrontCheckoutMethodAllowed,
@@ -682,9 +684,19 @@ export async function placeOrderFromCart(
             : storeShippingCollector(resolvedPaymentMethod),
         }
       : null
+  // The EGP 5 fee is taken at creation, except for sellers whose part looks
+  // fake or duplicated: theirs waits for delivery (owner, 2026-10-31).
+  const feeHolds = await detectFeeHolds({
+    userId,
+    address: shippingAddress,
+    lines: orderItemsData,
+  })
+  const hasFeeHolds = Object.keys(feeHolds).length > 0
+
   const baseOrderMetadata: Record<string, unknown> | null =
-    storeShipping || sellerCollected
+    storeShipping || sellerCollected || hasFeeHolds
       ? {
+          ...(hasFeeHolds && { feeHolds }),
           ...(storeShipping && { storeShipping }),
           ...(sellerCollected && { paymentCollector: 'seller' }),
           ...(sellerGateway && {
@@ -905,6 +917,12 @@ export async function placeOrderFromCart(
           status: resolvedPaymentStatus,
           capturedAt: paymentOverrides.paidAt ?? new Date().toISOString(),
         })
+      }
+
+      // Card orders still waiting for their payment are charged when the
+      // payment webhook confirms them; an abandoned payment costs nothing.
+      if (newOrder!.status !== 'payment_processing') {
+        await chargeOrderPlacementFee(tx, newOrder!.id)
       }
 
       await tx

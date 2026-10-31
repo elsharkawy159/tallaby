@@ -5,7 +5,7 @@ import { eq, inArray, sql } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import * as DB_SCHEMA from "../drizzle/schema";
 import * as DB_RELATIONS from "../drizzle/relations";
-import { creditSellerOnDelivery } from "./credit-seller-on-delivery";
+import { chargeOrderPlacementFee, creditSellerOnDelivery } from "./credit-seller-on-delivery";
 import {
   DuplicateStoreWalletEntryError,
   InvalidStoreWalletEntryError,
@@ -117,6 +117,7 @@ describe.skipIf(!TEST_DATABASE_URL)("store wallet (integration)", { timeout: 60_
         storeId: s.walletTransactions.storeId,
         before: s.walletTransactions.balanceBefore,
         after: s.walletTransactions.balanceAfter,
+        metadata: s.walletTransactions.metadata,
       })
       .from(s.walletTransactions)
       .where(eq(s.walletTransactions.sellerId, sellerId))
@@ -151,66 +152,72 @@ describe.skipIf(!TEST_DATABASE_URL)("store wallet (integration)", { timeout: 60_
     await client.end();
   });
 
-  it("Tallaby-collected delivery posts a gross sale and the fee, once", async () => {
+  it("delivery posts only the fee, once, and never the order amount", async () => {
     const a = await newSeller();
-    const orderId = await deliveredOrder({ lines: [[a, "300.00", "6.00"], [a, "50.00", "1.00"]], paymentMethod: "online_payment" });
+    const orderId = await deliveredOrder({ lines: [[a, "300.00", "3.00"], [a, "50.00", "2.00"]], paymentMethod: "online_payment" });
 
     await db.transaction((tx) => creditSellerOnDelivery(tx, orderId));
     await db.transaction((tx) => creditSellerOnDelivery(tx, orderId));
 
     expect(await entries(a.id)).toEqual([
-      expect.objectContaining({ type: "sale", amount: "350.00", before: "0.00", after: "350.00" }),
-      expect.objectContaining({ type: "fee", amount: "-7.00", before: "350.00", after: "343.00" }),
+      expect.objectContaining({ type: "fee", amount: "-5.00", before: "0.00", after: "-5.00" }),
     ]);
-    expect(await balance(a.id)).toBe("343.00");
-  });
-
-  it("concurrent deliveries post each entry exactly once", async () => {
-    const a = await newSeller();
-    const orderId = await deliveredOrder({ lines: [[a, "1000.00", "20.00"]], paymentMethod: "online_payment" });
-    await Promise.all(Array.from({ length: 5 }, () => db.transaction((tx) => creditSellerOnDelivery(tx, orderId))));
-    expect((await entries(a.id)).map((e) => e.type)).toEqual(["sale", "fee"]);
-    expect(await balance(a.id)).toBe("980.00");
-  });
-
-  it("seller-collected cash posts only the fee, and the wallet may go negative", async () => {
-    const a = await newSeller();
-    const orderId = await deliveredOrder({ lines: [[a, "200.00", "5.00"]], shipmentSellerId: a.id, storeId: a.storeId });
-    await db.transaction((tx) => creditSellerOnDelivery(tx, orderId));
-    expect(await entries(a.id)).toEqual([expect.objectContaining({ type: "fee", amount: "-5.00", storeId: a.storeId })]);
     expect(await balance(a.id)).toBe("-5.00");
   });
 
-  it("COD delivered by a Tallaby rider is Tallaby-collected; paymentCollector=seller is fee-only", async () => {
+  it("concurrent deliveries post the fee exactly once", async () => {
     const a = await newSeller();
-    const tallabyRider = await deliveredOrder({ lines: [[a, "100.00", "5.00"]], shipmentSellerId: null });
-    const sellerMethod = await deliveredOrder({
-      lines: [[a, "100.00", "5.00"]],
-      paymentMethod: "vodafone_cash",
-      metadata: { paymentCollector: "seller" },
-    });
-    await db.transaction((tx) => creditSellerOnDelivery(tx, tallabyRider));
-    await db.transaction((tx) => creditSellerOnDelivery(tx, sellerMethod));
-    expect((await entries(a.id)).map((e) => `${e.type}:${e.amount}`)).toEqual(["sale:100.00", "fee:-5.00", "fee:-5.00"]);
-    expect(await balance(a.id)).toBe("90.00");
+    const orderId = await deliveredOrder({ lines: [[a, "1000.00", "5.00"]], paymentMethod: "online_payment" });
+    await Promise.all(Array.from({ length: 5 }, () => db.transaction((tx) => creditSellerOnDelivery(tx, orderId))));
+    expect((await entries(a.id)).map((e) => e.type)).toEqual(["fee"]);
+    expect(await balance(a.id)).toBe("-5.00");
   });
 
-  it("each seller of a marketplace order gets its own entries and no store id", async () => {
+  it("the fee taken at creation is not taken again on delivery", async () => {
+    const a = await newSeller();
+    const orderId = await deliveredOrder({ lines: [[a, "200.00", "5.00"]], shipmentSellerId: a.id, storeId: a.storeId });
+    await db.transaction((tx) => chargeOrderPlacementFee(tx, orderId));
+    await db.transaction((tx) => chargeOrderPlacementFee(tx, orderId));
+    await db.transaction((tx) => creditSellerOnDelivery(tx, orderId));
+    expect(await entries(a.id)).toEqual([
+      expect.objectContaining({ type: "fee", amount: "-5.00", storeId: a.storeId, metadata: { chargedAt: "placed" } }),
+    ]);
+    expect(await balance(a.id)).toBe("-5.00");
+  });
+
+  it("a held (fake or duplicate) order pays nothing at creation and the fee on delivery", async () => {
     const a = await newSeller();
     const b = await newSeller();
-    const orderId = await deliveredOrder({ lines: [[a, "100.00", "5.00"], [b, "500.00", "10.00"]], paymentMethod: "online_payment" });
+    const orderId = await deliveredOrder({
+      lines: [[a, "100.00", "5.00"], [b, "100.00", "5.00"]],
+      metadata: { feeHolds: { [a.id]: ["junk_name"] } },
+    });
+    await db.transaction((tx) => chargeOrderPlacementFee(tx, orderId));
+    expect(await entries(a.id)).toEqual([]);
+    expect(await balance(b.id)).toBe("-5.00");
+
     await db.transaction((tx) => creditSellerOnDelivery(tx, orderId));
-    expect(await balance(a.id)).toBe("95.00");
-    expect(await balance(b.id)).toBe("490.00");
+    expect(await entries(a.id)).toEqual([
+      expect.objectContaining({ type: "fee", amount: "-5.00", metadata: { chargedAt: "delivered" } }),
+    ]);
+    expect(await balance(b.id)).toBe("-5.00");
+  });
+
+  it("each seller of a marketplace order pays its own fee with no store id", async () => {
+    const a = await newSeller();
+    const b = await newSeller();
+    const orderId = await deliveredOrder({ lines: [[a, "100.00", "5.00"], [b, "500.00", "5.00"]], paymentMethod: "online_payment" });
+    await db.transaction((tx) => creditSellerOnDelivery(tx, orderId));
+    expect(await balance(a.id)).toBe("-5.00");
+    expect(await balance(b.id)).toBe("-5.00");
     expect((await entries(b.id)).every((e) => e.storeId === null)).toBe(true);
   });
 
-  it("orders without a fee snapshot keep the legacy single net sale", async () => {
+  it("orders without a fee snapshot post nothing", async () => {
     const a = await newSeller();
     const orderId = await deliveredOrder({ lines: [[a, "100.00", "5.00"]], snapshot: false });
     await db.transaction((tx) => creditSellerOnDelivery(tx, orderId));
-    await db.transaction((tx) => creditSellerOnDelivery(tx, orderId));
-    expect(await entries(a.id)).toEqual([expect.objectContaining({ type: "sale", amount: "95.00" })]);
+    expect(await entries(a.id)).toEqual([]);
   });
 
   it("never posts over a legacy sale row written before the store wallet", async () => {

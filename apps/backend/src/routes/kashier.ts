@@ -1,5 +1,6 @@
 import { Hono } from 'hono'
 import { db, orders, payments, eq, and, inArray, sql } from '@workspace/db'
+import { chargeOrderPlacementFee } from '@workspace/db/wallet'
 import {
   parseKashierOrderReference,
   verifyKashierWebhookSignature,
@@ -217,6 +218,8 @@ async function processKashierEvent(
       }
 
       await writePayment({ status: 'paid', capturedAt: now })
+      // The order is real now: the EGP 5 fee (PLAN.md §13.3; held sellers wait for delivery).
+      await chargeOrderPlacementFee(tx, orderId)
       paid = true
       return
     }

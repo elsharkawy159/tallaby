@@ -8,6 +8,7 @@ import {
   and,
   inArray,
 } from '@workspace/db'
+import { chargeOrderPlacementFee } from '@workspace/db/wallet'
 import {
   amountToCents,
   buildBillingData,
@@ -246,6 +247,9 @@ app.post('/webhook', async (c) => {
           paymentData: body,
           capturedAt: now,
         })
+
+        // The order is real now: the EGP 5 fee (PLAN.md §13.3; held sellers wait for delivery).
+        await chargeOrderPlacementFee(tx, orderId)
       })
 
       await fulfillDigitalOrderItems(orderId).catch((error) => {

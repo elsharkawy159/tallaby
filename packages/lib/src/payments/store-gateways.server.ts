@@ -1,4 +1,5 @@
 import { and, db, eq, inArray, orders, payments, sql, storeIntegrations, storeSettingsAudit } from "@workspace/db";
+import { chargeOrderPlacementFee } from "@workspace/db/wallet";
 import { decryptCredentials, encryptCredentials } from "../integrations/crypto.server";
 import { INTEGRATIONS } from "../integrations/registry";
 import {
@@ -663,6 +664,8 @@ export async function applyGatewayEvent(account: GatewayAccount, orderId: string
         return;
       }
       await writePayment({ status: "paid", capturedAt: now });
+      // The order is real now: the EGP 5 fee (PLAN.md §13.3; held sellers wait for delivery).
+      await chargeOrderPlacementFee(tx, orderId);
       outcome = "paid";
       return;
     }
