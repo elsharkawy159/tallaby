@@ -2682,40 +2682,31 @@
         },
         "toast": "Live at nour.tallaby.com"
       },
-      "moreTitle": "Also in your dashboard",
+      "moreTitle": "Everything you need to sell",
+      "moreDesc": "Built around the real work of running a store — from your first product to repeat customers.",
+      "liveLabel": "Live today",
+      "roadmapLabel": "On the roadmap",
+      "roadmapTitle": "More ways to grow, coming next",
+      "roadmapDesc": "We are building the tools Egyptian sellers ask for most, without adding complexity to your store.",
+      "roadmap": {
+        "quickOrder": "Quick-order landing pages",
+        "upsells": "Quantity offers and upsells",
+        "productFeeds": "Product feeds for Meta, Google and TikTok",
+        "whatsapp": "WhatsApp-first order workflows"
+      },
       "more": {
-        "coupons": {
-          "title": "Discount coupons",
-          "body": "Discount codes to share with customers"
-        },
-        "reviews": {
-          "title": "Customer reviews",
-          "body": "Product reviews and an overall store rating"
-        },
-        "templates": {
-          "title": "Ready templates",
-          "body": "Tallaby Classic, Atelier and more. Switch any time"
-        },
-        "forms": {
-          "title": "Forms",
-          "body": "Contact and request forms, with submissions in your dashboard"
-        },
-        "blog": {
-          "title": "Store blog",
-          "body": "Write posts that bring in search traffic"
-        },
-        "media": {
-          "title": "Media library",
-          "body": "All your store images in one place"
-        },
-        "reports": {
-          "title": "Statements & reports",
-          "body": "Download sales and fee statements any time"
-        },
-        "stores": {
-          "title": "Up to 3 stores",
-          "body": "Each with its own link and design, from one account"
-        }
+        "coupons": { "title": "Discount coupons", "body": "Share offers and bring customers back" },
+        "customers": { "title": "Customer CRM", "body": "See repeat buyers, notes, tags and order history" },
+        "protection": { "title": "Fake-order protection", "body": "Block risky numbers and confirm COD orders" },
+        "missedOrders": { "title": "Missed orders", "body": "Recover abandoned checkouts with one click" },
+        "inventory": { "title": "Inventory alerts", "body": "Know what is low before you run out" },
+        "delivery": { "title": "Delivery operations", "body": "Assign couriers and keep every order moving" },
+        "marketing": { "title": "Marketing integrations", "body": "Connect Meta, Google and TikTok without code" },
+        "analytics": { "title": "Reports and analytics", "body": "Understand sales, fees and store performance" },
+        "reviews": { "title": "Customer reviews", "body": "Build trust with product reviews and ratings" },
+        "templates": { "title": "Ready templates", "body": "Start fast with designs made for your category" },
+        "forms": { "title": "Forms", "body": "Collect contact and request submissions" },
+        "blog": { "title": "Store blog", "body": "Publish posts that bring in search traffic" }
       }
     },
     "pricing": {

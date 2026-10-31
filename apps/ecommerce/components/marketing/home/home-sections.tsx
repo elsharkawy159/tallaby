@@ -1,18 +1,23 @@
 import {
+  BellRing,
+  Boxes,
   ChartColumn,
   Check,
+  FileBarChart,
   FileSpreadsheet,
   FileText,
   Images,
   Languages,
   LayoutPanelTop,
   LayoutTemplate,
+  Megaphone,
   MonitorSmartphone,
   MousePointerClick,
   Newspaper,
   Package,
   Palette,
   Rocket,
+  ShieldCheck,
   ShoppingBag,
   Sparkles,
   Star,
@@ -20,6 +25,8 @@ import {
   TicketPercent,
   Timer,
   Users,
+  UsersRound,
+  Workflow,
 } from "lucide-react";
 import type { CSSProperties } from "react";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -262,13 +269,24 @@ export async function BuilderSection() {
 /** "Also in your dashboard": the areas the tour above doesn't act out. */
 const MORE = [
   { key: "coupons", icon: TicketPercent },
+  { key: "customers", icon: UsersRound },
+  { key: "protection", icon: ShieldCheck },
+  { key: "missedOrders", icon: BellRing },
+  { key: "inventory", icon: Boxes },
+  { key: "delivery", icon: Store },
+  { key: "marketing", icon: Megaphone },
+  { key: "analytics", icon: FileBarChart },
   { key: "reviews", icon: Star },
   { key: "templates", icon: LayoutTemplate },
   { key: "forms", icon: FileText },
   { key: "blog", icon: Newspaper },
-  { key: "media", icon: Images },
-  { key: "reports", icon: FileSpreadsheet },
-  { key: "stores", icon: Store },
+] as const;
+
+const ROADMAP = [
+  { key: "quickOrder", icon: Rocket },
+  { key: "upsells", icon: Workflow },
+  { key: "productFeeds", icon: ChartColumn },
+  { key: "whatsapp", icon: Users },
 ] as const;
 
 export async function FeaturesSection() {
@@ -282,28 +300,29 @@ export async function FeaturesSection() {
         <Reveal>
           <FeatureTour />
         </Reveal>
-        <div className="mt-16">
-          <Reveal as="h3" className="mb-[18px] text-xl font-bold text-teal-900">
-            {t("moreTitle")}
-          </Reveal>
-          {/* Two columns from phone width: icon over the text on phones, beside it from sm. */}
-          <StaggerChildren as="ul" stagger={0.06} className="m-0 grid list-none grid-cols-2 gap-2.5 p-0 sm:gap-3 lg:grid-cols-4">
+        <div className="mt-16 rounded-[28px] bg-paper p-5 sm:p-8 lg:p-10">
+          <div className="mb-7 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <Reveal as="h3" className="text-xl font-bold text-teal-900 sm:text-2xl">{t("moreTitle")}</Reveal>
+              <Reveal as="p" className="mt-1 max-w-xl text-sm text-slate-ink">{t("moreDesc")}</Reveal>
+            </div>
+            <span className="w-fit rounded-full bg-teal-900 px-3 py-1 text-xs font-bold text-amber-300">{t("liveLabel")}</span>
+          </div>
+          <StaggerChildren as="ul" stagger={0.04} className="m-0 grid list-none grid-cols-1 gap-3 p-0 sm:grid-cols-2 lg:grid-cols-3">
             {MORE.map((m) => (
-              <li
-                key={m.key}
-                className="flex flex-col gap-2.5 rounded-2xl border border-neutral-200 bg-paper p-3.5 transition-[border-color,box-shadow] duration-300 hover:border-teal-100 hover:shadow-soft sm:flex-row sm:items-start sm:gap-3.5 sm:p-[18px]"
-              >
-                <span className="grid size-9 flex-none place-items-center rounded-xl bg-white text-teal-700 shadow-card ring-1 ring-teal-50 sm:size-10">
-                  <m.icon className="size-[17px] sm:size-[18px]" aria-hidden />
-                </span>
-                <div className="min-w-0">
-                  <b className="block text-[14px] leading-snug text-teal-900 sm:text-[15px]">{t(`more.${m.key}.title`)}</b>
-                  <span className="mt-1 block text-[12.5px] leading-relaxed text-slate-ink sm:text-[13.5px]">{t(`more.${m.key}.body`)}</span>
-                </div>
+              <li key={m.key} className="group flex gap-3.5 rounded-2xl border border-neutral-200 bg-white p-4 transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-0.5 hover:border-teal-100 hover:shadow-soft">
+                <span className="grid size-10 flex-none place-items-center rounded-xl bg-teal-50 text-teal-700"><m.icon className="size-[18px]" aria-hidden /></span>
+                <div className="min-w-0"><b className="block text-[14px] leading-snug text-teal-900 sm:text-[15px]">{t(`more.${m.key}.title`)}</b><span className="mt-1 block text-[12.5px] leading-relaxed text-slate-ink sm:text-[13px]">{t(`more.${m.key}.body`)}</span></div>
               </li>
             ))}
           </StaggerChildren>
         </div>
+        <Reveal className="mt-6 rounded-[28px] bg-teal-900 p-5 text-white sm:p-8">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+            <div className="max-w-md"><span className="text-xs font-bold uppercase tracking-[0.14em] text-amber-300">{t("roadmapLabel")}</span><h3 className="mt-2 text-2xl font-bold">{t("roadmapTitle")}</h3><p className="mt-2 text-sm leading-relaxed text-mist">{t("roadmapDesc")}</p></div>
+            <ul className="m-0 grid list-none gap-2 p-0 sm:grid-cols-2 lg:min-w-[510px]">{ROADMAP.map((item) => <li key={item.key} className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-3 py-3"><item.icon className="size-4 text-amber-300" aria-hidden /><span className="text-sm font-semibold">{t(`roadmap.${item.key}`)}</span></li>)}</ul>
+          </div>
+        </Reveal>
       </Container>
     </Section>
   );
