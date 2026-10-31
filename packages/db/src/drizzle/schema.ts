@@ -104,7 +104,7 @@ export const deliveries = pgTable("deliveries", {
 			columns: [table.driverId],
 			foreignColumns: [users.id],
 			name: "deliveries_driver_id_users_id_fk"
-		}),
+		}).onDelete("set null"),
 	foreignKey({
 			columns: [table.shipmentId],
 			foreignColumns: [shipments.id],
@@ -139,7 +139,7 @@ export const payments = pgTable("payments", {
 			columns: [table.paymentMethodId],
 			foreignColumns: [paymentMethods.id],
 			name: "payments_payment_method_id_payment_methods_id_fk"
-		}),
+		}).onDelete("set null"),
 ]);
 
 export const carts = pgTable("carts", {
@@ -242,7 +242,7 @@ export const coupons = pgTable("coupons", {
 			columns: [table.sellerId],
 			foreignColumns: [sellers.id],
 			name: "coupons_seller_id_sellers_id_fk"
-		}),
+		}).onDelete("cascade"),
 	unique("coupons_code_unique").on(table.code),
 ]);
 
@@ -307,7 +307,7 @@ export const paymentMethods = pgTable("payment_methods", {
 			columns: [table.billingAddressId],
 			foreignColumns: [userAddresses.id],
 			name: "payment_methods_billing_address_id_user_addresses_id_fk"
-		}),
+		}).onDelete("set null"),
 	foreignKey({
 			columns: [table.userId],
 			foreignColumns: [users.id],
@@ -367,17 +367,17 @@ export const refunds = pgTable("refunds", {
 			columns: [table.orderId],
 			foreignColumns: [orders.id],
 			name: "refunds_order_id_orders_id_fk"
-		}),
+		}).onDelete("cascade"),
 	foreignKey({
 			columns: [table.refundedBy],
 			foreignColumns: [users.id],
 			name: "refunds_refunded_by_users_id_fk"
-		}),
+		}).onDelete("set null"),
 	foreignKey({
 			columns: [table.returnId],
 			foreignColumns: [returns.id],
 			name: "refunds_return_id_returns_id_fk"
-		}),
+		}).onDelete("set null"),
 ]);
 
 export const sellers = pgTable("sellers", {
@@ -583,7 +583,7 @@ export const shipmentItems = pgTable("shipment_items", {
 			columns: [table.orderItemId],
 			foreignColumns: [orderItems.id],
 			name: "shipment_items_order_item_id_order_items_id_fk"
-		}),
+		}).onDelete("cascade"),
 	foreignKey({
 			columns: [table.shipmentId],
 			foreignColumns: [shipments.id],
@@ -618,7 +618,7 @@ export const shipmentBatches = pgTable("shipment_batches", {
 			columns: [table.createdBy],
 			foreignColumns: [users.id],
 			name: "shipment_batches_created_by_users_id_fk"
-		}),
+		}).onDelete("set null"),
 ]);
 
 /** One row per order in a batch. `riderId` is set only for Tallaby batches. */
@@ -645,7 +645,7 @@ export const shipmentBatchItems = pgTable("shipment_batch_items", {
 			columns: [table.riderId],
 			foreignColumns: [users.id],
 			name: "shipment_batch_items_rider_id_users_id_fk"
-		}),
+		}).onDelete("set null"),
 ]);
 
 /**
@@ -753,7 +753,7 @@ export const couponUsage = pgTable("coupon_usage", {
 			columns: [table.orderId],
 			foreignColumns: [orders.id],
 			name: "coupon_usage_order_id_orders_id_fk"
-		}),
+		}).onDelete("cascade"),
 	foreignKey({
 			columns: [table.userId],
 			foreignColumns: [users.id],
@@ -785,7 +785,7 @@ export const cartItems = pgTable("cart_items", {
 			columns: [table.productId],
 			foreignColumns: [products.id],
 			name: "cart_items_product_id_products_id_fk"
-		}),
+		}).onDelete("cascade"),
 	foreignKey({
 			columns: [table.sellerId],
 			foreignColumns: [sellers.id],
@@ -880,7 +880,7 @@ export const shipments = pgTable("shipments", {
 			columns: [table.sellerId],
 			foreignColumns: [sellers.id],
 			name: "shipments_seller_id_sellers_id_fk"
-		}),
+		}).onDelete("cascade"),
 	foreignKey({
 			columns: [table.providerId],
 			foreignColumns: [shippingProviders.id],
@@ -890,7 +890,7 @@ export const shipments = pgTable("shipments", {
 			columns: [table.riderId],
 			foreignColumns: [users.id],
 			name: "shipments_rider_id_users_id_fk"
-		}),
+		}).onDelete("set null"),
 	unique("shipments_order_id_unique").on(table.orderId),
 ]);
 
@@ -942,12 +942,12 @@ export const returns = pgTable("returns", {
 			columns: [table.orderId],
 			foreignColumns: [orders.id],
 			name: "returns_order_id_orders_id_fk"
-		}),
+		}).onDelete("cascade"),
 	foreignKey({
 			columns: [table.userId],
 			foreignColumns: [users.id],
 			name: "returns_user_id_users_id_fk"
-		}),
+		}).onDelete("cascade"),
 	unique("returns_rma_number_unique").on(table.rmaNumber),
 ]);
 
@@ -993,17 +993,17 @@ export const reviews = pgTable("reviews", {
 			columns: [table.orderItemId],
 			foreignColumns: [orderItems.id],
 			name: "reviews_order_item_id_order_items_id_fk"
-		}),
+		}).onDelete("cascade"),
 	foreignKey({
 			columns: [table.productId],
 			foreignColumns: [products.id],
 			name: "reviews_product_id_products_id_fk"
-		}),
+		}).onDelete("cascade"),
 	foreignKey({
 			columns: [table.sellerId],
 			foreignColumns: [sellers.id],
 			name: "reviews_seller_id_sellers_id_fk"
-		}),
+		}).onDelete("cascade"),
 	foreignKey({
 			columns: [table.userId],
 			foreignColumns: [users.id],
@@ -1030,7 +1030,7 @@ export const returnItems = pgTable("return_items", {
 			columns: [table.orderItemId],
 			foreignColumns: [orderItems.id],
 			name: "return_items_order_item_id_order_items_id_fk"
-		}),
+		}).onDelete("cascade"),
 	foreignKey({
 			columns: [table.returnId],
 			foreignColumns: [returns.id],
@@ -1079,12 +1079,12 @@ export const searchLogs = pgTable("search_logs", {
 			columns: [table.clickedProductId],
 			foreignColumns: [products.id],
 			name: "search_logs_clicked_product_id_products_id_fk"
-		}),
+		}).onDelete("set null"),
 	foreignKey({
 			columns: [table.userId],
 			foreignColumns: [users.id],
 			name: "search_logs_user_id_users_id_fk"
-		}),
+		}).onDelete("cascade"),
 ]);
 
 export const sellerDocuments = pgTable("seller_documents", {
@@ -1104,7 +1104,7 @@ export const sellerDocuments = pgTable("seller_documents", {
 			columns: [table.reviewedBy],
 			foreignColumns: [users.id],
 			name: "seller_documents_reviewed_by_users_id_fk"
-		}),
+		}).onDelete("set null"),
 	foreignKey({
 			columns: [table.sellerId],
 			foreignColumns: [sellers.id],
@@ -1129,12 +1129,12 @@ export const sellerPayoutItems = pgTable("seller_payout_items", {
 			columns: [table.orderId],
 			foreignColumns: [orders.id],
 			name: "seller_payout_items_order_id_orders_id_fk"
-		}),
+		}).onDelete("cascade"),
 	foreignKey({
 			columns: [table.orderItemId],
 			foreignColumns: [orderItems.id],
 			name: "seller_payout_items_order_item_id_order_items_id_fk"
-		}),
+		}).onDelete("cascade"),
 	foreignKey({
 			columns: [table.payoutId],
 			foreignColumns: [sellerPayouts.id],
@@ -1193,12 +1193,12 @@ export const reviewComments = pgTable("review_comments", {
 			columns: [table.sellerId],
 			foreignColumns: [sellers.id],
 			name: "review_comments_seller_id_sellers_id_fk"
-		}),
+		}).onDelete("cascade"),
 	foreignKey({
 			columns: [table.userId],
 			foreignColumns: [users.id],
 			name: "review_comments_user_id_users_id_fk"
-		}),
+		}).onDelete("cascade"),
 ]);
 
 export const userAddresses = pgTable("user_addresses", {
@@ -1351,7 +1351,7 @@ export const orderItems = pgTable("order_items", {
 			columns: [table.productId],
 			foreignColumns: [products.id],
 			name: "order_items_product_id_products_id_fk"
-		}),
+		}).onDelete("cascade"),
 	foreignKey({
 			columns: [table.sellerId],
 			foreignColumns: [sellers.id],
@@ -1385,6 +1385,8 @@ export const brands = pgTable("brands", {
 	unique("brands_slug_unique").on(table.slug),
 ]);
 
+// users.id -> auth.users(id) ON DELETE CASCADE (users_id_auth_users_fk, NOT VALID, 0134). auth.users is
+// not modelled here; deleting an auth user removes the users row and everything that cascades from it.
 export const users = pgTable("users", {
 	id: uuid().primaryKey().notNull(),
 	email: text(),
@@ -1415,7 +1417,7 @@ export const users = pgTable("users", {
 			columns: [table.referredBy],
 			foreignColumns: [table.id],
 			name: "users_referred_by_fkey"
-		}).onUpdate("cascade").onDelete("cascade"),
+		}).onDelete("set null").onUpdate("cascade").onDelete("cascade"),
 	unique("users_email_unique").on(table.email),
 	unique("users_referral_code_unique").on(table.referralCode),
 	// 0049: public read-all, self insert and self update were dropped, and
@@ -1609,7 +1611,7 @@ export const productAnswers = pgTable("product_answers", {
 			columns: [table.sellerId],
 			foreignColumns: [sellers.id],
 			name: "product_answers_seller_id_fkey"
-		}).onUpdate("cascade"),
+		}).onDelete("cascade").onUpdate("cascade"),
 	foreignKey({
 			columns: [table.userId],
 			foreignColumns: [users.id],
@@ -1671,17 +1673,17 @@ export const orders = pgTable("orders", {
 			columns: [table.billingAddressId],
 			foreignColumns: [userAddresses.id],
 			name: "orders_billing_address_id_user_addresses_id_fk"
-		}),
+		}).onDelete("set null"),
 	foreignKey({
 			columns: [table.cartId],
 			foreignColumns: [carts.id],
 			name: "orders_cart_id_carts_id_fk"
-		}),
+		}).onDelete("set null"),
 	foreignKey({
 			columns: [table.shippingAddressId],
 			foreignColumns: [userAddresses.id],
 			name: "orders_shipping_address_id_user_addresses_id_fk"
-		}),
+		}).onDelete("set null"),
 	foreignKey({
 			columns: [table.userId],
 			foreignColumns: [users.id],
@@ -2004,7 +2006,7 @@ export const walletTransactions = pgTable("wallet_transactions", {
 		columns: [table.orderId],
 		foreignColumns: [orders.id],
 		name: "wallet_transactions_order_id_orders_id_fk"
-	}),
+	}).onDelete("set null"),
 ]);
 
 /**
@@ -2294,7 +2296,7 @@ export const affiliates = pgTable("affiliates", {
 		columns: [table.couponId],
 		foreignColumns: [coupons.id],
 		name: "affiliates_coupon_id_coupons_id_fk"
-	}),
+	}).onDelete("cascade"),
 	// One affiliate account per user, one coupon per affiliate — both directions
 	// of "prevent the same user from creating multiple affiliate accounts".
 	unique("affiliates_user_id_unique").on(table.userId),
@@ -2351,17 +2353,17 @@ export const affiliateCommissions = pgTable("affiliate_commissions", {
 		columns: [table.orderId],
 		foreignColumns: [orders.id],
 		name: "affiliate_commissions_order_id_orders_id_fk"
-	}),
+	}).onDelete("cascade"),
 	foreignKey({
 		columns: [table.couponId],
 		foreignColumns: [coupons.id],
 		name: "affiliate_commissions_coupon_id_coupons_id_fk"
-	}),
+	}).onDelete("cascade"),
 	foreignKey({
 		columns: [table.parentCommissionId],
 		foreignColumns: [table.id],
 		name: "affiliate_commissions_parent_commission_id_fk"
-	}),
+	}).onDelete("set null"),
 	foreignKey({
 		columns: [table.walletTransactionId],
 		foreignColumns: [userWalletTransactions.id],
@@ -3458,9 +3460,9 @@ export const referralCommissions = pgTable("referral_commissions", {
 	unique("referral_commissions_top_up_key").on(table.topUpId),
 	index("referral_commissions_referrer_idx").using("btree", table.referrerSellerId, table.createdAt.desc()),
 	index("referral_commissions_referred_idx").using("btree", table.referredSellerId),
-	foreignKey({ columns: [table.referrerSellerId], foreignColumns: [sellers.id], name: "referral_commissions_referrer_seller_id_fkey" }).onDelete("restrict"),
-	foreignKey({ columns: [table.referredSellerId], foreignColumns: [sellers.id], name: "referral_commissions_referred_seller_id_fkey" }).onDelete("restrict"),
-	foreignKey({ columns: [table.topUpId], foreignColumns: [sellerWalletTopUps.id], name: "referral_commissions_top_up_id_fkey" }).onDelete("restrict"),
+	foreignKey({ columns: [table.referrerSellerId], foreignColumns: [sellers.id], name: "referral_commissions_referrer_seller_id_fkey" }).onDelete("cascade"),
+	foreignKey({ columns: [table.referredSellerId], foreignColumns: [sellers.id], name: "referral_commissions_referred_seller_id_fkey" }).onDelete("cascade"),
+	foreignKey({ columns: [table.topUpId], foreignColumns: [sellerWalletTopUps.id], name: "referral_commissions_top_up_id_fkey" }).onDelete("cascade"),
 	foreignKey({ columns: [table.reversedBy], foreignColumns: [users.id], name: "referral_commissions_reversed_by_fkey" }).onDelete("set null"),
 	check("referral_commissions_status_check", sql`status IN ('earned', 'reversed')`),
 	check("referral_commissions_amount_check", sql`amount >= 0 AND top_up_amount > 0`),
@@ -3535,10 +3537,10 @@ export const sellerWelcomeGifts = pgTable("seller_welcome_gifts", {
 	popupSeenAt: timestamp("popup_seen_at", { withTimezone: true, mode: 'string' }),
 }, (table) => [
 	index("seller_welcome_gifts_open_idx").using("btree", table.expiresAt).where(sql`expired_at IS NULL`),
-	foreignKey({ columns: [table.sellerId], foreignColumns: [sellers.id], name: "seller_welcome_gifts_seller_id_fkey" }).onDelete("restrict"),
+	foreignKey({ columns: [table.sellerId], foreignColumns: [sellers.id], name: "seller_welcome_gifts_seller_id_fkey" }).onDelete("cascade"),
 	foreignKey({ columns: [table.storeId], foreignColumns: [stores.id], name: "seller_welcome_gifts_store_id_fkey" }).onDelete("set null"),
-	foreignKey({ columns: [table.walletEntryId], foreignColumns: [walletTransactions.id], name: "seller_welcome_gifts_wallet_entry_id_fkey" }).onDelete("restrict"),
-	foreignKey({ columns: [table.expiryEntryId], foreignColumns: [walletTransactions.id], name: "seller_welcome_gifts_expiry_entry_id_fkey" }).onDelete("restrict"),
+	foreignKey({ columns: [table.walletEntryId], foreignColumns: [walletTransactions.id], name: "seller_welcome_gifts_wallet_entry_id_fkey" }).onDelete("set null"),
+	foreignKey({ columns: [table.expiryEntryId], foreignColumns: [walletTransactions.id], name: "seller_welcome_gifts_expiry_entry_id_fkey" }).onDelete("set null"),
 	check("seller_welcome_gifts_amount_positive", sql`amount > 0`),
 	check("seller_welcome_gifts_debt_range", sql`debt_cleared >= 0 AND debt_cleared <= amount`),
 	check("seller_welcome_gifts_expiry_after_grant", sql`expires_at > granted_at`),
@@ -3568,7 +3570,7 @@ export const referralPayouts = pgTable("referral_payouts", {
 	uniqueIndex("referral_payouts_one_open").using("btree", table.referrerSellerId).where(sql`status = 'requested'`),
 	index("referral_payouts_referrer_idx").using("btree", table.referrerSellerId, table.createdAt.desc()),
 	index("referral_payouts_status_idx").using("btree", table.status, table.createdAt.desc()),
-	foreignKey({ columns: [table.referrerSellerId], foreignColumns: [sellers.id], name: "referral_payouts_referrer_seller_id_fkey" }).onDelete("restrict"),
+	foreignKey({ columns: [table.referrerSellerId], foreignColumns: [sellers.id], name: "referral_payouts_referrer_seller_id_fkey" }).onDelete("cascade"),
 	foreignKey({ columns: [table.reviewedBy], foreignColumns: [users.id], name: "referral_payouts_reviewed_by_fkey" }).onDelete("set null"),
 	check("referral_payouts_amount_check", sql`amount >= 500`),
 	check("referral_payouts_method_check", sql`method IN ('bank', 'vodafone_cash')`),
