@@ -3562,7 +3562,7 @@
           "title": "Fees and payouts",
           "paragraphs": [
             "Tallaby is free to use. We charge a flat 5 EGP for each delivered order, regardless of the order value. We don't take a percentage of your sales and there is no monthly subscription. Products, orders and visitors are unlimited, and each account can have up to 3 stores.",
-            "Each store has a wallet. The fee is deducted from the store wallet when an order is delivered, and every deduction is listed in your dashboard. Cancelled orders and orders refused at delivery are not charged. The wallet balance can go negative; a negative balance is an amount you owe Tallaby, and you settle it by topping up the wallet from your dashboard. Payment processing and shipping are charged separately and shown before you enable or confirm them."
+            "Each store has a wallet. The fee is deducted from the store wallet when an order is delivered, and every deduction is listed in your dashboard. Cancelled orders and orders refused at delivery are not charged. The wallet balance can go negative; a negative balance is an amount you owe Tallaby, and you settle it by topping up the wallet from your dashboard. Any amount deducted from a seller's wallet is non-refundable. Payment processing and shipping are charged separately and shown before you enable or confirm them."
           ]
         },
         {

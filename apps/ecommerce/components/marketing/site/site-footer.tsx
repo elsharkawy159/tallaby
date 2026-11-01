@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { Mail, MapPin } from "lucide-react";
+import { Mail, MapPin, Phone } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { type PaymentMethod, PaymentMethodIcons } from "@/components/layout/payment-method-icons";
@@ -78,6 +78,12 @@ export async function SiteFooter() {
                 <Mail aria-hidden />
                 <a href={`mailto:${CONTACT.email}`} className={`font-latin ${link}`}>
                   {CONTACT.email}
+                </a>
+              </li>
+              <li className="flex items-center gap-2.5">
+                <Phone aria-hidden />
+                <a href={`tel:${CONTACT.phone}`} dir="ltr" className={`font-latin ${link}`}>
+                  {CONTACT.phone}
                 </a>
               </li>
             </ul>

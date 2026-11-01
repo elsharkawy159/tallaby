@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ArrowUpRight, Clock, Headset, LifeBuoy, Mail, MapPin, MessageCircle } from "lucide-react";
+import { ArrowUpRight, Clock, Headset, LifeBuoy, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { cn } from "@workspace/ui/lib/utils";
 import { Link } from "@/i18n/navigation";
@@ -22,6 +22,7 @@ export default async function ContactPage() {
     ...(CONTACT.whatsapp && CONTACT.whatsappHandle
       ? [{ href: CONTACT.whatsapp, icon: MessageCircle, title: t("whatsapp"), body: t("whatsappBody"), value: CONTACT.whatsappHandle, highlight: true, ltr: true }]
       : []),
+    { href: `tel:${CONTACT.phone}`, icon: Phone, title: t("phone"), body: t("phoneBody"), value: CONTACT.phone, highlight: false, ltr: true },
     { href: `mailto:${CONTACT.email}`, icon: Mail, title: t("email"), body: t("emailBody"), value: CONTACT.email, highlight: !CONTACT.whatsapp, ltr: false },
   ];
 

@@ -13,6 +13,7 @@ const SUPPORT_WHATSAPP_USERNAME = "tallaby";
 
 export const CONTACT = {
   email: "omar@tallaby.com",
+  phone: "01003272830",
   whatsapp: `https://wa.me/${hasWhatsAppNumber ? SUPPORT_WHATSAPP : SUPPORT_WHATSAPP_USERNAME}`,
   whatsappHandle: hasWhatsAppNumber
     ? `+${SUPPORT_WHATSAPP}`

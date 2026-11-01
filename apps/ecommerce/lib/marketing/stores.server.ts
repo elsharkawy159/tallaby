@@ -24,11 +24,11 @@ type ShowcaseRow = Omit<ShowcaseStore, "url" | "logoUrl"> & {
 /**
  * Published stores of approved sellers, most active products first (the same
  * count as Admin › Stores: a "selected" catalog counts its listed products).
- * Stores with no product are left out: an empty shop is no proof. Public
+ * Stores with no product or no logo are left out: an empty shop is no proof. Public
  * fields only (name, logo, link), read once per hour for every visitor.
  */
 const getCachedShowcase = createCachedQuery({
-  name: "marketing:store-showcase:v1",
+  name: "marketing:store-showcase:v2",
   ttl: cacheProfiles.seller,
   tags: () => [marketingStoreTags.showcase()],
   query: async (): Promise<ShowcaseRow[]> => {
@@ -48,6 +48,7 @@ const getCachedShowcase = createCachedQuery({
         JOIN sellers s ON s.id = st.seller_id
         WHERE st.site_status = 'published' AND st.status = 'active' AND st.deleted_at IS NULL
           AND s.status = 'approved'
+          AND st.logo_url IS NOT NULL AND btrim(st.logo_url) <> ''
       ) ranked
       WHERE product_count > 0
       ORDER BY product_count DESC, created_at
