@@ -1,9 +1,13 @@
-import { Mail, MapPin, MessageCircle } from "lucide-react";
+import { Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { Logo } from "../logo";
 import { getTranslations } from "next-intl/server";
 import { InstallAppButton } from "../install-app-button";
-import { TALLABY_CONTACT_EMAIL } from "@/lib/contact";
+import {
+  TALLABY_CONTACT_EMAIL,
+  TALLABY_CONTACT_PHONE,
+  TALLABY_CONTACT_PHONE_TEL,
+} from "@/lib/contact";
 import { SocialBrandLinks } from "./social-brand-icons";
 import { PaymentMethodIcons } from "./payment-method-icons";
 
@@ -50,7 +54,17 @@ const Footer = async () => {
                 </a>
               </div>
               <div className="flex items-center gap-3">
-                <Mail className="h-4 w-4 text-accent flex-shrink-0" />
+                <Phone className="h-4 w-4 text-accent flex-shrink-0" />
+                <a
+                  href={`tel:${TALLABY_CONTACT_PHONE_TEL}`}
+                  dir="ltr"
+                  className="hover:text-white transition-colors"
+                >
+                  {TALLABY_CONTACT_PHONE}
+                </a>
+              </div>
+              <div className="flex items-center gap-3">
+                <MailclassName="h-4 w-4 text-accent flex-shrink-0" />
                 <a
                   href={`mailto:${TALLABY_CONTACT_EMAIL}`}
                   className="hover:text-white transition-colors"
