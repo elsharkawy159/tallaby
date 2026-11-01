@@ -6566,16 +6566,16 @@
     "failed": "We couldn't connect it. Try again.",
     "warning": "Only allow apps you trust. The assistant acts for you inside the stores and permissions you choose.",
     "scopes": {
-      "store.read": "See store data (products, orders, reports, website)",
-      "customers.read": "See customer details (phones and addresses)",
-      "products.write": "Manage products, stock and coupons",
-      "orders.write": "Manage orders and shipping",
-      "orders.refund": "Cancel paid orders and refund them",
-      "website.write": "Edit the website design (draft only)",
-      "website.publish": "Publish the website to visitors",
-      "settings.write": "Store and shipping settings",
-      "products.purge": "Delete products from the trash forever",
-      "stores.create": "Create new stores"
+      "store_read": "See store data (products, orders, reports, website)",
+      "customers_read": "See customer details (phones and addresses)",
+      "products_write": "Manage products, stock and coupons",
+      "orders_write": "Manage orders and shipping",
+      "orders_refund": "Cancel paid orders and refund them",
+      "website_write": "Edit the website design (draft only)",
+      "website_publish": "Publish the website to visitors",
+      "settings_write": "Store and shipping settings",
+      "products_purge": "Delete products from the trash forever",
+      "stores_create": "Create new stores"
     },
     "errors": {
       "title": "This connection link doesn't work",

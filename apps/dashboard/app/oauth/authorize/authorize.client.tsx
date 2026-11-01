@@ -110,7 +110,7 @@ export function ConsentForm({ query, clientName, clientLogo, redirectHost, selle
             return (
               <label key={scope} className="flex cursor-pointer items-center justify-between gap-3 p-3">
                 <span className="min-w-0">
-                  <span className="block text-sm">{t(`scopes.${scope}`)}</span>
+                  <span className="block text-sm">{t(`scopes.${scope.replace(".", "_")}`)}</span>
                   {required || sensitive ? (
                     <span className="block text-xs text-muted-foreground">{required ? t("required") : t("sensitive")}</span>
                   ) : null}
