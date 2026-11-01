@@ -1,6 +1,6 @@
 # Tallaby Seller Features — Roadmap
 
-> **Status:** Created 2026-10-28; EasyOrders dashboard and public roadmap added the same day (§2.3, §2.4, F-21 … F-31; all 88 EasyOrders roadmap ideas mapped). No roadmap feature is started yet. The owner will add more feature requests in chat; each one is added here (§5 intake, then a feature in §4).
+> **Status:** Created 2026-10-28; EasyOrders dashboard and public roadmap added the same day (§2.3, §2.4, F-21 … F-31; all 88 EasyOrders roadmap ideas mapped). Since then most P0/P1 features have been built (see §6 and §7; synced with the code at `b45f4bb1`, 2026-11-01); F-29 (MCP) is in progress. The owner will add more feature requests in chat; each one is added here (§5 intake, then a feature in §4).
 > **Scope:** New **seller features** only, mostly in the seller dashboard (`apps/dashboard`) and the store website (`apps/ecommerce` storefront). Platform work (multi-store, builder, templates, fees, wallets, admin) stays in [`PLAN.md`](PLAN.md).
 > **Authority:** [`CLAUDE.md`](CLAUDE.md) durable rules apply to every task here (tenant isolation, money, migrations, i18n, caching, verification). `PLAN.md` §13 (business model) is never changed from this file.
 > **Companion docs:** [`PROJECT.md`](PROJECT.md), [`PROJECT_DESCRIPTION.md`](PROJECT_DESCRIPTION.md), [`PLAN.md`](PLAN.md), [`docs/wallet.md`](docs/wallet.md), [`docs/fulfillment.md`](docs/fulfillment.md).
@@ -28,7 +28,7 @@
    - When something blocks a task: write the blocker under the task and in §7.
    - When the owner asks for a new feature: add it to §5 (intake) the same turn, then turn it into a §4 feature with tasks and place it in the §3 priority order.
    - Move a feature in §2 (inventory) from "missing" to "live" when it ships.
-4. **Migrations:** hand-written, idempotent SQL in `packages/db/migrations/NNNN_name.sql`, mirrored in `packages/db/src/drizzle/schema.ts` and `relations.ts`. Check the next free number in `CLAUDE.md` rule 6 and in `packages/db/migrations/` (at 2026-10-30 the next is **`0127`**). New server-only tables: RLS on, no policies. Record every new migration in CLAUDE.md rule 6 and here. Apply to staging first; production only with owner approval. Never run `drizzle-kit generate`.
+4. **Migrations:** hand-written, idempotent SQL in `packages/db/migrations/NNNN_name.sql`, mirrored in `packages/db/src/drizzle/schema.ts` and `relations.ts`. Check the next free number in `CLAUDE.md` rule 6 and in `packages/db/migrations/` (at 2026-11-01 the next is **`0136`**). New server-only tables: RLS on, no policies. Record every new migration in CLAUDE.md rule 6 and here. Apply to staging first; production only with owner approval. Never run `drizzle-kit generate`.
 5. Every store-scoped table has `store_id` (and a check that the store belongs to the session seller). Every new string goes in both `ar.json` and `en.json` (Arabic first). Use the feature file split (`*.server.ts`, `*.data.tsx`, `*.client.tsx`, `*.dto.ts`, `*.types.ts`, `*.lib.ts`).
 6. Verify each task with `pnpm lint`, `pnpm typecheck`, `pnpm test` (or `--filter`), and record manual E2E checks in §7.
 7. All work happens on `main` in the main worktree (owner, 2026-10-28), unless the owner says otherwise.
@@ -317,7 +317,7 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 
 **Why:** EasyOrders and Shopify have apps that ping on every order; Tallaby sellers find out late.
 **What:** Web push for the installed dashboard PWA (and browser): new order, order refused, low stock. Settings per type.
-**Status:** [Live, uncommitted] F-06a/b built 2026-10-30 (Settings › Phone alerts; 0124 on staging and production). F-06d/e/f built 2026-10-30 (0131 on staging only). Needs VAPID env on dashboard **and admin**, plus Supabase webhooks on `seller_notifications` INSERT → dashboard `/api/cron/seller-push` and `admin_notifications` INSERT → admin `/api/cron/admin-push` (see §7). Browser E2E pending.
+**Status:** [Live] F-06a/b built 2026-10-30 (Settings › Phone alerts; 0124 on staging and production). F-06d/e/f built 2026-10-30 (0131 on staging only). Needs VAPID env on dashboard **and admin**, plus Supabase webhooks on `seller_notifications` INSERT → dashboard `/api/cron/seller-push` and `admin_notifications` INSERT → admin `/api/cron/admin-push` (see §7). Browser E2E pending.
 
 - **F-06a · P1 · deps: —** Migration `seller_push_subscriptions` (`seller_id`, endpoint, keys, user agent; RLS on, no policies). VAPID keys in server env only.
 - **F-06b · P1 · deps: F-06a** Service worker + "Turn on alerts" prompt; send from the existing `seller_notifications` trigger flow.
@@ -362,7 +362,7 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 ### F-10 Inventory alerts & stock history — P1
 
 **What:** Low-stock threshold per product/variant, alert in notifications (and push, F-06), stock change history (who/why: order, manual edit, import, return).
-**Status:** [Live, uncommitted] F-10a–c built 2026-10-30 (`stock_movements` + triggers, `low_stock` bell/push, Products › Inventory; 0125 on staging). Browser E2E pending.
+**Status:** [Live] F-10a–c built 2026-10-30 (`stock_movements` + triggers, `low_stock` bell/push, Products › Inventory; 0125 on staging). Browser E2E pending.
 
 - **F-10a · P1 · deps: —** Migration: `low_stock_threshold` on products/variants and `stock_movements` (RLS on, no policies).
 - **F-10b · P1 · deps: F-10a** Write movements on order, cancel/return, edit and import; low-stock notification type.
@@ -371,7 +371,7 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 ### F-11 Product feeds (Meta, Google, TikTok) — P1
 
 **What:** A public, per-store product feed URL (CSV/XML) for Meta Commerce catalog, Google Merchant Center and TikTok catalog, with an Apps card explaining setup.
-**Status:** [Live, uncommitted] F-11a/b built 2026-10-30 (feed URLs `/api/feeds/products.{xml,csv}` on the store host, Store › Apps cards). Browser E2E and feed validators pending. F-11c built 2026-10-30 (uncommitted, no migration): signed catalog links `/catalog/<token>` on the store host with a print/PDF view.
+**Status:** [Live] F-11a/b built 2026-10-30 (feed URLs `/api/feeds/products.{xml,csv}` on the store host, Store › Apps cards). Browser E2E and feed validators pending. F-11c built 2026-10-30 (uncommitted, no migration): signed catalog links `/catalog/<token>` on the store host with a print/PDF view.
 
 - **F-11a · P1 · deps: —** Feed route on the storefront host (published store, active products only, cached with seller-scoped tags).
 - **F-11b · P1 · deps: F-11a** Apps cards with the feed URL and steps, both languages (Meta catalog, Google Merchant, TikTok). Include the product video when there is one, and map store categories to Google/Meta categories.
@@ -408,7 +408,7 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 ### F-15 Reports upgrade + per-product views — P1
 
 **What:** Best and worst products, refusal rate by governorate, sales by source (store/marketplace/manual), conversion funnel (views → checkout → order) using store views + leads, and visits per product (EasyOrders is building this, 20 votes).
-**Status:** [Live, uncommitted] F-15b (2026-10-30): "Views (30 days)" on the products table and edit page. F-15a (2026-10-30): `/reports` per store (funnel, sources, refusal by governorate, best/worst products). No migration. Browser and GA4 E2E pending.
+**Status:** [Live] F-15b (2026-10-30): "Views (30 days)" on the products table and edit page. F-15a (2026-10-30): `/reports` per store (funnel, sources, refusal by governorate, best/worst products). No migration. Browser and GA4 E2E pending.
 
 - **F-15a · P2 · deps: F-03** Report queries (cached per seller + store) and charts.
 - **F-15b · P1 · deps: —** Per-product views: read GA4 `page_path` for product pages from the existing store-views report (`apps/dashboard/lib/analytics/`, `docs/store-views.md`), show views and views → orders on the products list and product page. No migration.
@@ -492,7 +492,7 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 
 **Why:** EasyOrders "نموذج الشراء" (planned, 17 votes) and "تعديل صفحة الشكر". COD sellers want a short form and a thank-you page that keeps the customer.
 **What:** Per store: which checkout fields show and are required (email, second phone, area, notes, custom question), field order, governorate/area as dropdowns; a thank-you page with the seller's message, WhatsApp button, suggested products and pixel events kept.
-**Status:** [Live, uncommitted] F-25a/b built 2026-10-30 (Store settings › Checkout; answers go into the order notes; thank-you message, WhatsApp confirm button, suggested products). No migration. Browser E2E pending.
+**Status:** [Live] F-25a/b built 2026-10-30 (Store settings › Checkout; answers go into the order notes; thank-you message, WhatsApp confirm button, suggested products). No migration. Browser E2E pending.
 
 - **F-25a · P1 · deps: —** Store setting (jsonb on `stores` or a `store_checkout_settings` table) + dashboard page; validated server-side at checkout (phone and the delivery address stay required).
 - **F-25b · P1 · deps: F-25a** Thank-you page settings and rendering on the store order-confirmation page.
@@ -500,7 +500,7 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 ### F-26 Campaign tracking (UTM links) — P2
 
 **What:** A link builder for ads and influencers (`utm_source/medium/campaign`), store the first-touch UTM on the order, and show orders and revenue per campaign.
-**Status:** [Live, uncommitted] F-26a built 2026-10-30 (no migration): first-touch UTM cookie on the store host, stored in `orders.metadata.utm` (not a new column), Reports › Campaigns link builder and report.
+**Status:** [Live] F-26a built 2026-10-30 (no migration): first-touch UTM cookie on the store host, stored in `orders.metadata.utm` (not a new column), Reports › Campaigns link builder and report.
 
 - **F-26a · P2 · deps: —** Additive order column (`utm jsonb`), capture on the storefront, link builder page, report by campaign.
 
@@ -518,7 +518,7 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 
 **Why:** COD orders that are refused still count as purchases in Meta/TikTok, so ads optimise for the wrong buyers (EasyOrders waitlist: "send Purchase when delivered", "control pixel events").
 **What:** Per store, choose when Purchase is sent to Meta CAPI (and later TikTok Events API): at order (today) or when delivered; send a cancellation signal for refused orders where the platform allows it; switch individual events on or off; abandoned-checkout event from F-03.
-**Status:** [Live, uncommitted] F-30a/b built 2026-10-30 (no migration; settings in the store's `meta_pixel` config): Purchase at order or on delivery (CAPI), per-event toggles in Store › Apps › Meta Pixel. Real Meta test event pending.
+**Status:** [Live] F-30a/b built 2026-10-30 (no migration; settings in the store's `meta_pixel` config): Purchase at order or on delivery (CAPI), per-event toggles in Store › Apps › Meta Pixel. Real Meta test event pending.
 
 - **F-30a · P2 · deps: —** Store setting + server event on the delivered transition (idempotent, one event per order, same `event_id` rules as today's CAPI code in `stores/[storeId]/apps/meta-capi.server.ts`).
 - **F-30b · P2 · deps: F-30a** Event toggles in the Apps page.
@@ -668,7 +668,7 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 **Why:** Sellers want to run the store from Claude, ChatGPT and other assistants (EasyOrders planned, 14 votes; owner, 2026-10-30).
 **What:** A remote MCP server at `mcp.tallaby.com/mcp` (apps/backend, Streamable HTTP) with a Tallaby OAuth 2.1 server in the dashboard (DCR + CIMD, PKCE, consent with store picker and scopes). About 45 tools: products, stock, categories, orders and shipping, customers (PII off by default), coupons, reports, website builder drafts, theme, pages, publish (with confirm), store settings. Agents edit builder drafts only; bulk, destructive and publish tools need a preview + confirm token. Owner-only areas (wallet, payouts, payment methods, secrets, domains, staff, store create/delete) are never exposed. Products, orders and coupons logic moves first into shared `packages/lib/src/commands/*` used by both the dashboard and MCP. Personal access tokens in the same table become the F-17 key model (F-17 now builds on F-29).
-**Status:** [In progress] F-29c (endpoint, no read-only tools beyond products/stores yet) and F-29f (products) built 2026-11-01, uncommitted: `apps/backend/src/mcp/`, 11 tools (§7); staging E2E 55 checks passed; not deployed. F-29b built 2026-10-31 (OAuth server in the dashboard, migration 0133 on staging). F-29a design note written and owner answers recorded 2026-10-30 (`docs/superpowers/specs/2026-10-30-mcp-agent-connection-design.md` §12): free on every plan, owners only, agent may publish when the seller asks, `mcp.tallaby.com`, directory listings yes, 90-day activity log. **Build order:** b → c → d → **f (products)** → **l (store setup by AI)** → h → i → e (orders) → g → j → k.
+**Status:** [In progress] F-29c (endpoint, no read-only tools beyond products/stores yet) and F-29f (products) built 2026-11-01 (`d215f7c1`): `apps/backend/src/mcp/`, 11 tools (§7); staging E2E 55 checks passed; not deployed. F-29b built 2026-10-31 (OAuth server in the dashboard, migration 0133 on staging). F-29a design note written and owner answers recorded 2026-10-30 (`docs/superpowers/specs/2026-10-30-mcp-agent-connection-design.md` §12): free on every plan, owners only, agent may publish when the seller asks, `mcp.tallaby.com`, directory listings yes, 90-day activity log. **Build order:** b → c → d → **f (products)** → **l (store setup by AI)** → h → i → e (orders) → g → j → k.
 
 - **F-29a · P1 · deps: —** Design note, owner answers, security review.
 - **F-29l · P1 · deps: F-29f** Store setup by AI: `create_store` (plan limit), theme selector + apply template, store info/contact/logo, social links and pixel IDs, shipping zones/templates/free delivery, Wassalha, carrier status (secret keys only via dashboard links), setup checklist.
@@ -854,8 +854,8 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-29a MCP design note (2026-10-30, written; owner answers recorded the same day)
 - [ ] F-29l Store setup by AI (create store, theme, info, social, shipping)
 - [x] F-29b MCP OAuth server + migration 0133 (2026-10-31, uncommitted; 0133 on staging; storage E2E on staging passed; real Claude/ChatGPT connect waits for F-29c)
-- [~] F-29c MCP endpoint + read-only tools (2026-11-01, uncommitted: `/mcp` endpoint, protected-resource metadata, rate limits, activity log, idempotency, `whoami`/`list_stores`; read-only tools for orders, customers, coupons, reports, site outline and notifications left; confirm tokens left)
-- [~] F-29d AI assistants page (2026-10-31: app card + "how to connect" tabs built, uncommitted; connections list, revoke, activity, personal tokens and the bell left)
+- [~] F-29c MCP endpoint + read-only tools (2026-11-01, `d215f7c1`: `/mcp` endpoint, protected-resource metadata, rate limits, activity log, idempotency, `whoami`/`list_stores`; read-only tools for orders, customers, coupons, reports, site outline and notifications left; confirm tokens left)
+- [~] F-29d AI assistants page (2026-10-31: app card + "how to connect" tabs built; connections list, revoke, activity, personal tokens and the bell left)
 - [ ] F-29e Order commands + tools
 - [x] F-29f Product commands + tools (2026-11-01, uncommitted: 9 product tools, server-side zod, image import from URL; staging E2E passed; real Claude connect after deploy)
 - [ ] F-29g Coupons, bulk prices, Q&A tools
