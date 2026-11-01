@@ -161,6 +161,15 @@ describe("client metadata", () => {
     expect(
       parseCimdDocument(id, { client_id: id, redirect_uris: ["https://chatgpt.com/cb"], token_endpoint_auth_method: "private_key_jwt" }).ok,
     ).toBe(false);
+    // ChatGPT's real document: declares private_key_jwt but also supports none.
+    expect(
+      parseCimdDocument(id, {
+        client_id: id,
+        redirect_uris: ["https://chatgpt.com/cb"],
+        token_endpoint_auth_method: "private_key_jwt",
+        token_endpoint_auth_methods_supported: ["none", "private_key_jwt"],
+      }).ok,
+    ).toBe(true);
   });
 });
 

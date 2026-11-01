@@ -31,6 +31,7 @@ const baseSchema = z.object({
   grant_types: z.array(z.string()).max(10).optional().nullable(),
   response_types: z.array(z.string()).max(10).optional().nullable(),
   token_endpoint_auth_method: z.string().max(100).optional().nullable(),
+  token_endpoint_auth_methods_supported: z.array(z.string()).max(20).optional().nullable(),
 });
 
 export type ClientMetadataResult =
@@ -72,7 +73,10 @@ function toMetadata(
   const method = input.token_endpoint_auth_method;
   // DCR: a client asking for a secret still gets a public client (the response
   // says `none`). CIMD: a document asking for key auth cannot be honoured.
-  if (method && method !== "none" && !options.allowConfidentialMethods) {
+  // A CIMD document that declares key auth but also lists `none` as supported
+  // (ChatGPT does) is fine: Tallaby's metadata only offers `none`, so it uses it.
+  const supportsNone = input.token_endpoint_auth_methods_supported?.includes("none") === true;
+  if (method && method !== "none" && !options.allowConfidentialMethods && !supportsNone) {
     return { ok: false, error: "invalid_client_metadata", description: "Only token_endpoint_auth_method none is supported." };
   }
   return {
