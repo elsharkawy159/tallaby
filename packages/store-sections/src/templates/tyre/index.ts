@@ -161,7 +161,7 @@ export const TYRE = libraryTemplate({
   colors: {
     primary: "#f59e0b",
     secondary: "#e4e4e4",
-    background: "#f4f4f4",
+    background: "#ffffff",
     foreground: "#141414",
     muted: "#555555",
     border: "#d1d1d1",

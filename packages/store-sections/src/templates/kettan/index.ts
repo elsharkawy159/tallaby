@@ -200,7 +200,7 @@ export const KETTAN = libraryTemplate({
   colors: {
     primary: "#3f4a3c",
     secondary: "#ebe6dc",
-    background: "#f7f5f0",
+    background: "#ffffff",
     foreground: "#1f1d1a",
     muted: "#5f5a52",
     border: "#ddd6c8",

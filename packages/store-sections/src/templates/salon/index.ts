@@ -208,7 +208,7 @@ export const SALON = libraryTemplate({
   colors: {
     primary: "#5a4636",
     secondary: "#ebe7e0",
-    background: "#f6f4f0",
+    background: "#ffffff",
     foreground: "#24211d",
     muted: "#6b655d",
     border: "#dcd6cc",

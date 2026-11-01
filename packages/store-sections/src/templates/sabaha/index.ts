@@ -192,7 +192,7 @@ export const SABAHA = libraryTemplate({
   colors: {
     primary: "#0e7490",
     secondary: "#dff3f6",
-    background: "#f4fbfc",
+    background: "#ffffff",
     foreground: "#0b2a33",
     muted: "#4a6870",
     border: "#c4e6ec",

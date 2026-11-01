@@ -186,7 +186,7 @@ export const LULU = libraryTemplate({
   colors: {
     primary: "#5e6b7c",
     secondary: "#f1ece5",
-    background: "#fbf9f6",
+    background: "#ffffff",
     foreground: "#22201d",
     muted: "#625d56",
     border: "#e5ddd2",

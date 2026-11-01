@@ -216,7 +216,7 @@ export const TARIK = libraryTemplate({
   colors: {
     primary: "#c2410c",
     secondary: "#e3e6e9",
-    background: "#f3f4f5",
+    background: "#ffffff",
     foreground: "#15191d",
     muted: "#5a6168",
     border: "#cfd4d9",

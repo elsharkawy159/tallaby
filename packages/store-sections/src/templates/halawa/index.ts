@@ -198,7 +198,7 @@ export const HALAWA = libraryTemplate({
   colors: {
     primary: "#b45309",
     secondary: "#fbe9cf",
-    background: "#fff9f0",
+    background: "#ffffff",
     foreground: "#2e1a0c",
     muted: "#6b5440",
     border: "#f0d7b2",

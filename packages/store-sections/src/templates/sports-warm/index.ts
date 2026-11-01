@@ -248,7 +248,7 @@ export const SPORTS_WARM = libraryTemplate({
   colors: {
     primary: "#a4471f",
     secondary: "#ece0cd",
-    background: "#f6efe4",
+    background: "#ffffff",
     foreground: "#2e261e",
     muted: "#6a5c4d",
     border: "#ddcdb6",

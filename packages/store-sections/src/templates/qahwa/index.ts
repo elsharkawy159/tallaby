@@ -157,7 +157,7 @@ export const QAHWA = libraryTemplate({
   colors: {
     primary: "#3b2a20",
     secondary: "#e9e0d4",
-    background: "#f6f2ec",
+    background: "#ffffff",
     foreground: "#21160f",
     muted: "#66574a",
     border: "#dacfbf",

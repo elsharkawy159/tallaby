@@ -241,7 +241,7 @@ export const MODE = libraryTemplate({
   colors: {
     primary: "#1d1d1f",
     secondary: "#e8e2dc",
-    background: "#f4f1ee",
+    background: "#ffffff",
     foreground: "#1d1d1f",
     muted: "#5f5a55",
     border: "#ddd5cc",

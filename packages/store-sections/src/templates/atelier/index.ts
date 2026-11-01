@@ -49,7 +49,7 @@ export function atelierConfig(): SiteConfig {
       colors: {
         primary: "#1a1714",
         secondary: "#ece4d6",
-        background: "#f6f1e9",
+        background: "#ffffff",
         foreground: "#1a1714",
         muted: "#6b6157",
         border: "#d9cfbf",

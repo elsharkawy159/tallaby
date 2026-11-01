@@ -186,7 +186,7 @@ export const TECHHUB = libraryTemplate({
   colors: {
     primary: "#1f5cff",
     secondary: "#eceff3",
-    background: "#f6f7f9",
+    background: "#ffffff",
     foreground: "#14171c",
     muted: "#555d69",
     border: "#dde1e7",

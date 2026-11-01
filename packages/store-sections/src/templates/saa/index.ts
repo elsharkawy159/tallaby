@@ -174,7 +174,7 @@ export const SAA = libraryTemplate({
   colors: {
     primary: "#e11d48",
     secondary: "#ebebe6",
-    background: "#f7f7f5",
+    background: "#ffffff",
     foreground: "#18181b",
     muted: "#55555c",
     border: "#dcdcd5",

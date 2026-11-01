@@ -257,7 +257,7 @@ export const PERFUMES_WARM = libraryTemplate({
   colors: {
     primary: "#5b2333",
     secondary: "#efe1d6",
-    background: "#faf4ee",
+    background: "#ffffff",
     foreground: "#2a1418",
     muted: "#6c5753",
     border: "#e2cfc3",

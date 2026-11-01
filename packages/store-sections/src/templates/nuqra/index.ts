@@ -185,7 +185,7 @@ export const NUQRA = libraryTemplate({
   colors: {
     primary: "#3f3f46",
     secondary: "#e3e3e3",
-    background: "#f2f2f2",
+    background: "#ffffff",
     foreground: "#111111",
     muted: "#525252",
     border: "#d0d0d0",

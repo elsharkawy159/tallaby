@@ -189,7 +189,7 @@ export const GLOW = libraryTemplate({
   colors: {
     primary: "#d8432c",
     secondary: "#ffe1d6",
-    background: "#fff6f1",
+    background: "#ffffff",
     foreground: "#2b1b1f",
     muted: "#6e5458",
     border: "#f1d4c9",

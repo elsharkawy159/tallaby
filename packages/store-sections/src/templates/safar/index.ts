@@ -172,7 +172,7 @@ export const SAFAR = libraryTemplate({
   colors: {
     primary: "#b45309",
     secondary: "#e5dccb",
-    background: "#f3efe6",
+    background: "#ffffff",
     foreground: "#1f2a22",
     muted: "#5a604f",
     border: "#d4c7ae",

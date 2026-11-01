@@ -256,7 +256,7 @@ export const ELECTRONICS_WARM = libraryTemplate({
   colors: {
     primary: "#8a4b22",
     secondary: "#ebe1d3",
-    background: "#f5efe6",
+    background: "#ffffff",
     foreground: "#2a211a",
     muted: "#6d5f52",
     border: "#ddcfbd",

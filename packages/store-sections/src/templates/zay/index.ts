@@ -177,7 +177,7 @@ export const ZAY = libraryTemplate({
   colors: {
     primary: "#1f3a5f",
     secondary: "#e5e7eb",
-    background: "#f3f4f6",
+    background: "#ffffff",
     foreground: "#111827",
     muted: "#4b5563",
     border: "#d1d5db",

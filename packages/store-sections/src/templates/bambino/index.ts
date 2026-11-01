@@ -188,7 +188,7 @@ export const BAMBINO = libraryTemplate({
   colors: {
     primary: "#30425a",
     secondary: "#eef2f6",
-    background: "#fbf8f4",
+    background: "#ffffff",
     foreground: "#30425a",
     muted: "#5e6b7c",
     border: "#e1e6ec",

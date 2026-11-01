@@ -217,7 +217,7 @@ export const FURNITURE_LUXE = libraryTemplate({
   colors: {
     primary: "#2b2622",
     secondary: "#ece6db",
-    background: "#f7f4ee",
+    background: "#ffffff",
     foreground: "#1d1b18",
     muted: "#6b625a",
     border: "#ddd5c8",

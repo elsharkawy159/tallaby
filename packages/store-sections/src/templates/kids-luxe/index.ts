@@ -236,7 +236,7 @@ export const KIDS_LUXE = libraryTemplate({
   colors: {
     primary: "#2f3a2e",
     secondary: "#ebe4d6",
-    background: "#f6f2ea",
+    background: "#ffffff",
     foreground: "#22261f",
     muted: "#66675c",
     border: "#dcd5c6",

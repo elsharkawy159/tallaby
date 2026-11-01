@@ -199,7 +199,7 @@ export const ELIXIR = libraryTemplate({
   colors: {
     primary: "#3b1f33",
     secondary: "#e6d8c3",
-    background: "#f5efe6",
+    background: "#ffffff",
     foreground: "#2a1724",
     muted: "#6a5664",
     border: "#dccbb3",

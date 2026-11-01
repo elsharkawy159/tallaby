@@ -187,7 +187,7 @@ export const ATARA = libraryTemplate({
   colors: {
     primary: "#a63d10",
     secondary: "#f3e6cf",
-    background: "#fbf7ef",
+    background: "#ffffff",
     foreground: "#2a1a0e",
     muted: "#6c5642",
     border: "#e6d4b2",

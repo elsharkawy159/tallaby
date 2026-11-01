@@ -3,7 +3,7 @@ import {
   mergeInvalidations,
   type CacheInvalidation,
   type ProductCacheSnapshot,
-} from "@workspace/cache";
+} from "@workspace/cache/invalidate";
 import {
   and,
   asc,

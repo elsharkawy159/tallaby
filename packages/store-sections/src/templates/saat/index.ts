@@ -190,7 +190,7 @@ export const SAAT = libraryTemplate({
   colors: {
     primary: "#14532d",
     secondary: "#e9e6df",
-    background: "#f6f5f2",
+    background: "#ffffff",
     foreground: "#1a1a1a",
     muted: "#5c5a55",
     border: "#dad5cb",

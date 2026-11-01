@@ -212,7 +212,7 @@ export const ZAREA = libraryTemplate({
   colors: {
     primary: "#2d6a4f",
     secondary: "#e2e9d8",
-    background: "#f4f6ef",
+    background: "#ffffff",
     foreground: "#17251b",
     muted: "#506052",
     border: "#d0dbc2",

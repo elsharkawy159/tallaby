@@ -239,7 +239,7 @@ export const GIFTS_LUXE = libraryTemplate({
   colors: {
     primary: "#2a2522",
     secondary: "#efe8de",
-    background: "#faf6f0",
+    background: "#ffffff",
     foreground: "#1f1b18",
     muted: "#665c54",
     border: "#e3d9cc",

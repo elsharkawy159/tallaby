@@ -176,7 +176,7 @@ export const NEST = libraryTemplate({
   colors: {
     primary: "#b65a3a",
     secondary: "#e3d6c2",
-    background: "#f3ede3",
+    background: "#ffffff",
     foreground: "#2b2c24",
     muted: "#625f52",
     border: "#d8ccb9",

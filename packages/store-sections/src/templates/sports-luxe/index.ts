@@ -248,7 +248,7 @@ export const SPORTS_LUXE = libraryTemplate({
   colors: {
     primary: "#1c2a26",
     secondary: "#e8e6df",
-    background: "#f5f4f0",
+    background: "#ffffff",
     foreground: "#151a18",
     muted: "#5d645f",
     border: "#d9d6cd",

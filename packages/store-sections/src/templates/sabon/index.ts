@@ -191,7 +191,7 @@ export const SABON = libraryTemplate({
   colors: {
     primary: "#6b7d2a",
     secondary: "#f0e9d8",
-    background: "#fbf8f1",
+    background: "#ffffff",
     foreground: "#2b2a20",
     muted: "#625e4e",
     border: "#e3d9c2",

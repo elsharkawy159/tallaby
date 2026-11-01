@@ -185,7 +185,7 @@ export const OUD = libraryTemplate({
   colors: {
     primary: "#5a2d1a",
     secondary: "#e8dcc8",
-    background: "#f5efe6",
+    background: "#ffffff",
     foreground: "#24130f",
     muted: "#6a564a",
     border: "#d9c9ae",

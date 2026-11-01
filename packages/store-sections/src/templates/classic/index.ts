@@ -60,7 +60,7 @@ export function classicConfig(): SiteConfig {
       colors: {
         primary: "#145163",
         secondary: "#eef3f3",
-        background: "#f7f6f2",
+        background: "#ffffff",
         foreground: "#1b2629",
         muted: "#5b6a6f",
         border: "#e5e1db",

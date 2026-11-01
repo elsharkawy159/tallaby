@@ -235,7 +235,7 @@ export const ELECTRONICS_LUXE = libraryTemplate({
   colors: {
     primary: "#1c1f24",
     secondary: "#eceef2",
-    background: "#f6f7f9",
+    background: "#ffffff",
     foreground: "#121418",
     muted: "#5d6470",
     border: "#dde1e7",

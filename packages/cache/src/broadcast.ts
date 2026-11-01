@@ -1,6 +1,7 @@
 import type { CacheInvalidation } from "./invalidate";
 
-export type AppId = "ecommerce" | "dashboard" | "admin";
+/** "backend" (apps/backend, the MCP server) only sends: it has no Next.js cache of its own. */
+export type AppId = "ecommerce" | "dashboard" | "admin" | "backend";
 
 /**
  * Resolves the peer apps to notify from environment variables.
@@ -14,6 +15,8 @@ function peerUrls(from: AppId): Partial<Record<AppId, string>> {
     ecommerce: process.env.ECOMMERCE_URL || process.env.ECOMMERCE_DOMAIN,
     dashboard: process.env.DASHBOARD_URL,
     admin: process.env.ADMIN_URL,
+    // Never a target: the backend has no /api/revalidate.
+    backend: undefined,
   };
   const peers: Partial<Record<AppId, string>> = {};
   for (const [id, url] of Object.entries(all) as [AppId, string | undefined][]) {

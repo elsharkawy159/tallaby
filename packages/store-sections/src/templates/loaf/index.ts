@@ -203,7 +203,7 @@ export const LOAF = libraryTemplate({
   colors: {
     primary: "#3b2416",
     secondary: "#f4e3c8",
-    background: "#fff6ea",
+    background: "#ffffff",
     foreground: "#3b2416",
     muted: "#6e5847",
     border: "#ecd8bb",

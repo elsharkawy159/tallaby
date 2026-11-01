@@ -198,7 +198,7 @@ export const SHABKA = libraryTemplate({
   colors: {
     primary: "#7a1f2b",
     secondary: "#f1e6cf",
-    background: "#fbf7ef",
+    background: "#ffffff",
     foreground: "#2a1416",
     muted: "#6a5658",
     border: "#e6d8bd",

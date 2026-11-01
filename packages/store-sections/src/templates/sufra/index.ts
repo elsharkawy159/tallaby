@@ -150,7 +150,7 @@ export const SUFRA = libraryTemplate({
   colors: {
     primary: "#2f5d50",
     secondary: "#ece3d2",
-    background: "#f8f4ec",
+    background: "#ffffff",
     foreground: "#1f2a26",
     muted: "#5d655f",
     border: "#e0d6c4",

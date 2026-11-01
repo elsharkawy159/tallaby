@@ -176,7 +176,7 @@ export const KABL = libraryTemplate({
   colors: {
     primary: "#2563eb",
     secondary: "#e7ebf0",
-    background: "#f6f7f9",
+    background: "#ffffff",
     foreground: "#0f172a",
     muted: "#4b5563",
     border: "#d7dde5",

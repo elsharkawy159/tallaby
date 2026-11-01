@@ -205,7 +205,7 @@ export const ZEINA = libraryTemplate({
   colors: {
     primary: "#7c3aed",
     secondary: "#efe9e3",
-    background: "#faf8f6",
+    background: "#ffffff",
     foreground: "#24201d",
     muted: "#625a54",
     border: "#e2d9d0",

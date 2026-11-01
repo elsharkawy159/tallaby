@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
-import { ArrowLeft, Check, Globe, LayoutTemplate, Package, Rocket, Truck } from "lucide-react";
+import { ArrowLeft, Check, Globe, LayoutTemplate, Package, Palette, Rocket, Truck } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Button } from "@workspace/ui/components/button";
@@ -11,11 +11,12 @@ import { HomeCard, IconTile } from "./home-ui";
 import { SetupDismissible } from "./setup-dismiss.client";
 import { SetupPublishButton } from "./setup-publish.client";
 
-import { buildSetupTasks, isSetupDone, publishLockReason, publishReady, type SetupKey } from "./setup-checklist.lib";
+import { buildSetupTasks, isGuideDone, isSetupDone, publishLockReason, publishReady, type SetupKey } from "./setup-checklist.lib";
 
 const ICONS: Record<SetupKey, LucideIcon> = {
-  product: Package,
   template: LayoutTemplate,
+  brand: Palette,
+  product: Package,
   shipping: Truck,
   publish: Globe,
 };
@@ -24,7 +25,11 @@ export function isSetupComplete(snapshot: HomeSnapshot) {
   return isSetupDone(snapshot.setup, snapshot.setupStoreId);
 }
 
-/** "Get your store ready" guide: numbered step cards. Hidden once complete or dismissed. */
+/**
+ * "Get your store ready" guide: numbered step cards. Progress counts the
+ * required steps; shipping is a "later" card that keeps the guide on the
+ * home page after publishing until it is set up or dismissed.
+ */
 export async function SetupChecklistData() {
   const [snapshot, cookieStore, t] = await Promise.all([
     getHomeSnapshot(),
@@ -32,19 +37,21 @@ export async function SetupChecklistData() {
     getTranslations("home.setup"),
   ]);
 
-  if (!snapshot || isSetupComplete(snapshot)) return null;
+  if (!snapshot || isGuideDone(snapshot.setup, snapshot.setupStoreId)) return null;
   if (cookieStore.get(SETUP_DISMISS_COOKIE)?.value === "1") return null;
 
   const TASKS = buildSetupTasks(snapshot.setup, snapshot.setupStoreId).map((task) => ({
     ...task,
     icon: ICONS[task.key],
   }));
-  const doneCount = TASKS.filter((task) => task.done).length;
-  // The first open step in the recommended order is the one to do next.
-  const nextKey = TASKS.find((task) => !task.done)?.key;
+  const required = TASKS.filter((task) => !task.optional);
+  const doneCount = required.filter((task) => task.done).length;
+  // The first open step in the recommended order is the one to do next
+  // (the optional one only once every required step is done).
+  const nextKey = (required.find((task) => !task.done) ?? TASKS.find((task) => !task.done))?.key;
   const canPublish = publishReady(snapshot.setup);
   const lockReason = publishLockReason(snapshot.setup);
-  const percent = Math.round((doneCount / TASKS.length) * 100);
+  const percent = Math.round((doneCount / required.length) * 100);
 
   return (
     <SetupDismissible>
@@ -61,7 +68,7 @@ export async function SetupChecklistData() {
 
         <div className="flex flex-col gap-2">
           <div className="flex justify-between text-[13px] text-muted-foreground">
-            <span>{t("progressCount", { done: doneCount, total: TASKS.length })}</span>
+            <span>{t("progressCount", { done: doneCount, total: required.length })}</span>
             <b dir="ltr" className="font-montserrat text-primary-ink tabular-nums">
               {percent}%
             </b>
@@ -70,7 +77,7 @@ export async function SetupChecklistData() {
             className="h-2 overflow-hidden rounded-full border bg-muted"
             role="progressbar"
             aria-valuemin={0}
-            aria-valuemax={TASKS.length}
+            aria-valuemax={required.length}
             aria-valuenow={doneCount}
             aria-label={t("progress")}
           >
@@ -81,7 +88,7 @@ export async function SetupChecklistData() {
           </div>
         </div>
 
-        <ol className="grid grid-cols-1 gap-3 pt-1 sm:grid-cols-2 xl:grid-cols-4">
+        <ol className="grid grid-cols-1 gap-3 pt-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">
           {TASKS.map((task, i) => {
             const done = task.done;
             const next = task.key === nextKey;
@@ -101,6 +108,11 @@ export async function SetupChecklistData() {
                 )}
                 <div className="flex items-center justify-between">
                   <IconTile icon={task.icon} />
+                  {task.optional && !done && (
+                    <span className="ms-auto me-2 rounded-full border px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                      {t("later")}
+                    </span>
+                  )}
                   <span
                     className={cn(
                       "flex size-6 shrink-0 items-center justify-center rounded-full border-[1.5px] font-montserrat text-[11px] font-bold",

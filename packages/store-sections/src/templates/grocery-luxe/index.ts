@@ -232,7 +232,7 @@ export const GROCERY_LUXE = libraryTemplate({
   colors: {
     primary: "#2f3a24",
     secondary: "#efe8d8",
-    background: "#faf6ee",
+    background: "#ffffff",
     foreground: "#1e2318",
     muted: "#646a58",
     border: "#e0d8c6",

@@ -233,7 +233,7 @@ export const KIDS_WARM = libraryTemplate({
   colors: {
     primary: "#9c4a2f",
     secondary: "#f3e3d3",
-    background: "#fbf3ec",
+    background: "#ffffff",
     foreground: "#3a2a22",
     muted: "#74604f",
     border: "#e8d6c4",

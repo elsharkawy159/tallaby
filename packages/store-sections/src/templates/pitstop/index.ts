@@ -212,7 +212,7 @@ export const PITSTOP = libraryTemplate({
   colors: {
     primary: "#0a4d8c",
     secondary: "#e1e7ec",
-    background: "#f3f5f7",
+    background: "#ffffff",
     foreground: "#0d1b2a",
     muted: "#4f5d6b",
     border: "#d2dae2",

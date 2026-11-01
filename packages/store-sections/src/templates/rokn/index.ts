@@ -178,7 +178,7 @@ export const ROKN = libraryTemplate({
   colors: {
     primary: "#7f5539",
     secondary: "#f0e7dc",
-    background: "#faf6f1",
+    background: "#ffffff",
     foreground: "#2a2420",
     muted: "#675c53",
     border: "#e3d6c6",

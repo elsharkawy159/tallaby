@@ -182,7 +182,7 @@ export const KARAT = libraryTemplate({
   colors: {
     primary: "#2a1e2c",
     secondary: "#f7e6da",
-    background: "#fff8f2",
+    background: "#ffffff",
     foreground: "#2a1e2c",
     muted: "#6a5a6b",
     border: "#efdccd",

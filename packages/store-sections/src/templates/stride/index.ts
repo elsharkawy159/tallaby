@@ -178,7 +178,7 @@ export const STRIDE = libraryTemplate({
   colors: {
     primary: "#14303b",
     secondary: "#e3ece8",
-    background: "#f6f8f6",
+    background: "#ffffff",
     foreground: "#14303b",
     muted: "#4f656d",
     border: "#d6e1dc",

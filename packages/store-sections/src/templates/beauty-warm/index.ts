@@ -244,7 +244,7 @@ export const BEAUTY_WARM = libraryTemplate({
   colors: {
     primary: "#7a3e1d",
     secondary: "#efe2cf",
-    background: "#f8f1e7",
+    background: "#ffffff",
     foreground: "#2b1d14",
     muted: "#6b5646",
     border: "#e0cfb7",

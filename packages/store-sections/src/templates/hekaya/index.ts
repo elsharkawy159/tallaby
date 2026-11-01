@@ -167,7 +167,7 @@ export const HEKAYA = libraryTemplate({
   colors: {
     primary: "#1f3a5f",
     secondary: "#fde8c9",
-    background: "#fffaf1",
+    background: "#ffffff",
     foreground: "#1f3a5f",
     muted: "#566781",
     border: "#f0dfc1",

@@ -278,6 +278,14 @@
       "types": "./src/products/trash.server.ts",
       "default": "./src/products/trash.server.ts"
     },
+    "./products/agent": {
+      "types": "./src/products/agent-products.dto.ts",
+      "default": "./src/products/agent-products.dto.ts"
+    },
+    "./products/agent/server": {
+      "types": "./src/products/agent-products.server.ts",
+      "default": "./src/products/agent-products.server.ts"
+    },
     "./catalog-share": {
       "types": "./src/catalog-share/catalog-share.lib.ts",
       "default": "./src/catalog-share/catalog-share.lib.ts"

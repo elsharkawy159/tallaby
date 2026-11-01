@@ -184,7 +184,7 @@ export const VERDANT = libraryTemplate({
   colors: {
     primary: "#3f7d4e",
     secondary: "#dfe7d3",
-    background: "#f2f4ec",
+    background: "#ffffff",
     foreground: "#1d2a1f",
     muted: "#56645a",
     border: "#d3dcc6",

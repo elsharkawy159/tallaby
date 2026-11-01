@@ -196,7 +196,7 @@ export const TANY = libraryTemplate({
   colors: {
     primary: "#2f7d32",
     secondary: "#e2ead9",
-    background: "#f4f7f2",
+    background: "#ffffff",
     foreground: "#17251a",
     muted: "#4f5f50",
     border: "#d0dbc4",

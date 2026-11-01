@@ -243,7 +243,7 @@ export const SIZZLE = libraryTemplate({
   colors: {
     primary: "#c8281e",
     secondary: "#ffe3c4",
-    background: "#fff7ee",
+    background: "#ffffff",
     foreground: "#1e1410",
     muted: "#6a554a",
     border: "#f0d6bb",

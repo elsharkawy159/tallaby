@@ -177,7 +177,7 @@ export const DRIVE = libraryTemplate({
   colors: {
     primary: "#2a6df4",
     secondary: "#e8eef6",
-    background: "#f5f7fa",
+    background: "#ffffff",
     foreground: "#0f2340",
     muted: "#52617a",
     border: "#d9e1ec",

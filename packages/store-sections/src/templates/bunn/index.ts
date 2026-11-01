@@ -176,7 +176,7 @@ export const BUNN = libraryTemplate({
   colors: {
     primary: "#d9480f",
     secondary: "#e6e0d6",
-    background: "#f4f1ec",
+    background: "#ffffff",
     foreground: "#1a1714",
     muted: "#5d564f",
     border: "#d8d0c3",

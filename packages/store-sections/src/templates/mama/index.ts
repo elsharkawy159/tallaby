@@ -170,7 +170,7 @@ export const MAMA = libraryTemplate({
   colors: {
     primary: "#7a9e9f",
     secondary: "#f1ede7",
-    background: "#fcfaf7",
+    background: "#ffffff",
     foreground: "#2a3140",
     muted: "#606878",
     border: "#e5dfd6",

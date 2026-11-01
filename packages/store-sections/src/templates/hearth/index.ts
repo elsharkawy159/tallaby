@@ -198,7 +198,7 @@ export const HEARTH = libraryTemplate({
   colors: {
     primary: "#a3482a",
     secondary: "#ebe2d4",
-    background: "#f6f1ea",
+    background: "#ffffff",
     foreground: "#33261d",
     muted: "#6b5d51",
     border: "#e0d4c3",

@@ -178,7 +178,7 @@ export const OAK = libraryTemplate({
   colors: {
     primary: "#9b4d2c",
     secondary: "#efe8db",
-    background: "#faf7f1",
+    background: "#ffffff",
     foreground: "#2c2a24",
     muted: "#665f53",
     border: "#e2d9c8",

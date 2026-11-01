@@ -190,7 +190,7 @@ export const LAHMA = libraryTemplate({
   colors: {
     primary: "#9b1c1c",
     secondary: "#efe6dc",
-    background: "#faf7f3",
+    background: "#ffffff",
     foreground: "#241510",
     muted: "#665247",
     border: "#e2d5c6",

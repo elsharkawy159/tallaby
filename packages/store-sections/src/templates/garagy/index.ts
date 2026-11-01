@@ -185,7 +185,7 @@ export const GARAGY = libraryTemplate({
   colors: {
     primary: "#4338ca",
     secondary: "#e6e9f3",
-    background: "#f6f7fb",
+    background: "#ffffff",
     foreground: "#121a33",
     muted: "#515a76",
     border: "#d3d8e8",

@@ -228,7 +228,7 @@ export const DAR = libraryTemplate({
   colors: {
     primary: "#5a4632",
     secondary: "#e8e0d3",
-    background: "#f5f1ea",
+    background: "#ffffff",
     foreground: "#2a241e",
     muted: "#655c52",
     border: "#ddd3c4",

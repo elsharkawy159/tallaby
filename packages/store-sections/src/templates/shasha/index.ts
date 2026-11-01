@@ -181,7 +181,7 @@ export const SHASHA = libraryTemplate({
   colors: {
     primary: "#1d4ed8",
     secondary: "#e8ecf2",
-    background: "#f5f7fa",
+    background: "#ffffff",
     foreground: "#0f172a",
     muted: "#5b6576",
     border: "#d8dee8",

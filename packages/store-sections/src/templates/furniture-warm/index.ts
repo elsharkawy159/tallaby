@@ -226,7 +226,7 @@ export const FURNITURE_WARM = libraryTemplate({
   colors: {
     primary: "#7a4b2e",
     secondary: "#e9dfd2",
-    background: "#f4ede4",
+    background: "#ffffff",
     foreground: "#2f2a24",
     muted: "#6e6257",
     border: "#ddd0c0",

@@ -184,7 +184,7 @@ export const MAFRASH = libraryTemplate({
   colors: {
     primary: "#4a6fa5",
     secondary: "#efece6",
-    background: "#fbfaf8",
+    background: "#ffffff",
     foreground: "#1f2328",
     muted: "#5b6168",
     border: "#e2ded5",

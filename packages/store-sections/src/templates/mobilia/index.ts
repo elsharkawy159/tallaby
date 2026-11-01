@@ -211,7 +211,7 @@ export const MOBILIA = libraryTemplate({
   colors: {
     primary: "#2f2f2f",
     secondary: "#ececea",
-    background: "#f7f7f5",
+    background: "#ffffff",
     foreground: "#161616",
     muted: "#5a5a56",
     border: "#dededa",

@@ -818,25 +818,30 @@
       "showLess": "Show less",
       "remaining": "{count, plural, one {# step left} other {# steps left}}",
       "tasks": {
-        "product": {
-          "title": "Add your first product",
-          "description": "Photos, price and stock",
-          "cta": "Add product"
-        },
         "template": {
           "title": "Choose your template",
           "description": "Pick a design for your website. You need one to go live.",
           "cta": "Choose"
         },
-        "shipping": {
-          "title": "Set up shipping",
-          "description": "How and where you deliver orders",
-          "cta": "Set up"
+        "brand": {
+          "title": "Set your brand identity",
+          "description": "Your logo, colours and fonts",
+          "cta": "Customize"
+        },
+        "product": {
+          "title": "Add your first product",
+          "description": "Photos, price and stock",
+          "cta": "Add product"
         },
         "publish": {
           "title": "Publish your store",
           "description": "Go live so customers can visit and order",
           "cta": "Publish now"
+        },
+        "shipping": {
+          "title": "Set up shipping",
+          "description": "You can set this up later, before your first delivery",
+          "cta": "Set up"
         }
       },
       "publish": {
@@ -852,7 +857,8 @@
         "visit": "Visit store"
       },
       "progressCount": "{done} of {total} {total, plural, one {step} other {steps}}",
-      "stepDone": "Done"
+      "stepDone": "Done",
+      "later": "Later"
     },
     "kpis": {
       "currency": "EGP",

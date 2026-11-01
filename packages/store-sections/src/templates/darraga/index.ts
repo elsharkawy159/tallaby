@@ -177,7 +177,7 @@ export const DARRAGA = libraryTemplate({
   colors: {
     primary: "#c2410c",
     secondary: "#e6e8df",
-    background: "#f5f6f2",
+    background: "#ffffff",
     foreground: "#1b1f16",
     muted: "#575d4f",
     border: "#d5d9cb",

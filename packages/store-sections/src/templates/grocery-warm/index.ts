@@ -256,7 +256,7 @@ export const GROCERY_WARM = libraryTemplate({
   colors: {
     primary: "#8a4a2b",
     secondary: "#ebe0cb",
-    background: "#f6efe2",
+    background: "#ffffff",
     foreground: "#2e241b",
     muted: "#6c5e4e",
     border: "#dccdb4",

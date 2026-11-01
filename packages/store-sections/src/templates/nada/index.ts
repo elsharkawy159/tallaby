@@ -183,7 +183,7 @@ export const NADA = libraryTemplate({
   colors: {
     primary: "#3e6b57",
     secondary: "#eef1ec",
-    background: "#fbfbf9",
+    background: "#ffffff",
     foreground: "#1d2420",
     muted: "#5a635d",
     border: "#e0e5dd",

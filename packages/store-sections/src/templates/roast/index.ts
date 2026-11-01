@@ -188,7 +188,7 @@ export const ROAST = libraryTemplate({
   colors: {
     primary: "#2a1a12",
     secondary: "#ecdcc6",
-    background: "#f7efe4",
+    background: "#ffffff",
     foreground: "#2a1a12",
     muted: "#6b5546",
     border: "#e2cfb5",

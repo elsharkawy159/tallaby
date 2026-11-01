@@ -180,7 +180,7 @@ export const NASHAT = libraryTemplate({
   colors: {
     primary: "#111111",
     secondary: "#e5e8e1",
-    background: "#f4f5f2",
+    background: "#ffffff",
     foreground: "#121412",
     muted: "#5a5f58",
     border: "#d3d8cd",

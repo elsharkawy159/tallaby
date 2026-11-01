@@ -195,7 +195,7 @@ export const LUMIERE = libraryTemplate({
   colors: {
     primary: "#1f1a17",
     secondary: "#efe4d2",
-    background: "#f8f3ea",
+    background: "#ffffff",
     foreground: "#1f1a17",
     muted: "#655b52",
     border: "#e2d5bf",

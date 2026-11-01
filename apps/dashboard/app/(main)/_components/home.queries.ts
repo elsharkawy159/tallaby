@@ -89,6 +89,12 @@ export const getHomeSnapshot = cache(async (): Promise<HomeSnapshot | null> => {
       -- Same rule as storeTemplateChosen (@workspace/lib): the Classic placeholder drafts are not a choice.
       coalesce(st.first_published_at IS NOT NULL OR st.site_status IN ('published', 'unpublished')
         OR EXISTS (SELECT 1 FROM template_installs ti WHERE ti.store_id = st.id AND ti.undone_at IS NULL), false) AS setup_template,
+      -- Brand identity: a logo, or the design system saved after the latest template install
+      -- (an install rewrites the design system in the same transaction, so it is not "after").
+      coalesce(nullif(st.logo_url, '') IS NOT NULL
+        OR EXISTS (SELECT 1 FROM store_design_systems ds WHERE ds.store_id = st.id
+          AND ds.updated_at > (SELECT max(ti.installed_at) FROM template_installs ti
+            WHERE ti.store_id = st.id AND ti.undone_at IS NULL)), false) AS setup_brand,
       coalesce(st.settings ? 'shipping'
         OR EXISTS (SELECT 1 FROM store_shipping_zones z WHERE z.store_id = st.id), false) AS setup_shipping,
       coalesce(st.site_status = 'published', false) AS setup_publish,
@@ -120,10 +126,11 @@ export const getHomeSnapshot = cache(async (): Promise<HomeSnapshot | null> => {
       row.positive_rating_percent == null ? null : Number(row.positive_rating_percent),
     totalRatings: Number(row.total_ratings),
     setup: {
-      product: Boolean(row.setup_product),
       template: Boolean(row.setup_template),
-      shipping: Boolean(row.setup_shipping),
+      brand: Boolean(row.setup_brand),
+      product: Boolean(row.setup_product),
       publish: Boolean(row.setup_publish),
+      shipping: Boolean(row.setup_shipping),
     },
     setupStoreId: storeId,
     feeTrial: {

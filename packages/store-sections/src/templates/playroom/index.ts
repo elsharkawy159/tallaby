@@ -185,7 +185,7 @@ export const PLAYROOM = libraryTemplate({
   colors: {
     primary: "#e0532f",
     secondary: "#ffe7c2",
-    background: "#fff8ec",
+    background: "#ffffff",
     foreground: "#24324a",
     muted: "#5a6478",
     border: "#f1dfc2",

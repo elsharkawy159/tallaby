@@ -206,7 +206,7 @@ export const MAWSEM = libraryTemplate({
   colors: {
     primary: "#2f4a3a",
     secondary: "#ebe6de",
-    background: "#f7f5f1",
+    background: "#ffffff",
     foreground: "#1f1d1a",
     muted: "#6a645c",
     border: "#ddd6ca",

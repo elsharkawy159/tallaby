@@ -190,7 +190,7 @@ export const PURE = libraryTemplate({
   colors: {
     primary: "#4f6146",
     secondary: "#e9ede4",
-    background: "#faf8f3",
+    background: "#ffffff",
     foreground: "#26302a",
     muted: "#5c665e",
     border: "#dfe3d8",

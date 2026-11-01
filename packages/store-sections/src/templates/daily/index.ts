@@ -182,7 +182,7 @@ export const DAILY = libraryTemplate({
   colors: {
     primary: "#2f9e5b",
     secondary: "#ffe2b8",
-    background: "#fffaf0",
+    background: "#ffffff",
     foreground: "#1f2a22",
     muted: "#56605a",
     border: "#eedfc6",

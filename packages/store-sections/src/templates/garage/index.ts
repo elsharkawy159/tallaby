@@ -168,7 +168,7 @@ export const GARAGE = libraryTemplate({
   colors: {
     primary: "#121417",
     secondary: "#e4e4e0",
-    background: "#f2f2f0",
+    background: "#ffffff",
     foreground: "#121417",
     muted: "#585c63",
     border: "#d8d8d3",

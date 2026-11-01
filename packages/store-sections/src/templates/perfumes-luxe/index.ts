@@ -225,7 +225,7 @@ export const PERFUMES_LUXE = libraryTemplate({
   colors: {
     primary: "#1d2533",
     secondary: "#ecebe6",
-    background: "#f7f6f2",
+    background: "#ffffff",
     foreground: "#161a22",
     muted: "#5d626b",
     border: "#dcdad3",

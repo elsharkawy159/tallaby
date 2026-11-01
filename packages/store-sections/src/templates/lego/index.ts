@@ -198,7 +198,7 @@ export const LEGO = libraryTemplate({
   colors: {
     primary: "#e63946",
     secondary: "#fff1c2",
-    background: "#fffdf5",
+    background: "#ffffff",
     foreground: "#1c2541",
     muted: "#5a6078",
     border: "#f5e2a0",

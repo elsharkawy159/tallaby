@@ -252,7 +252,7 @@ export const JEWELRY_LUXE = libraryTemplate({
   colors: {
     primary: "#1c1b19",
     secondary: "#efebe4",
-    background: "#faf8f4",
+    background: "#ffffff",
     foreground: "#161514",
     muted: "#6a645c",
     border: "#e2dcd2",

@@ -195,7 +195,7 @@ export const BASHRA = libraryTemplate({
   colors: {
     primary: "#9c3d54",
     secondary: "#f3e4dc",
-    background: "#fbf6f2",
+    background: "#ffffff",
     foreground: "#2e1a20",
     muted: "#6b555b",
     border: "#ead8d0",

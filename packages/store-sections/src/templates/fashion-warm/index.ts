@@ -265,7 +265,7 @@ export const FASHION_WARM = libraryTemplate({
   colors: {
     primary: "#9a4a2c",
     secondary: "#ebe1d3",
-    background: "#f5efe6",
+    background: "#ffffff",
     foreground: "#2d241e",
     muted: "#6b5d52",
     border: "#ddd0bf",

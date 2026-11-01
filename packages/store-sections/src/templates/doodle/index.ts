@@ -182,7 +182,7 @@ export const DOODLE = libraryTemplate({
   colors: {
     primary: "#d62839",
     secondary: "#dceee6",
-    background: "#f1faee",
+    background: "#ffffff",
     foreground: "#1d3557",
     muted: "#4d5f78",
     border: "#cfe3d9",

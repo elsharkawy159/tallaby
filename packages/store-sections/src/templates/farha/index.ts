@@ -204,7 +204,7 @@ export const FARHA = libraryTemplate({
   colors: {
     primary: "#c8432f",
     secondary: "#fdeed6",
-    background: "#fffaf2",
+    background: "#ffffff",
     foreground: "#2a2140",
     muted: "#6a5f7c",
     border: "#f4dcb8",

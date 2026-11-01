@@ -192,7 +192,7 @@ export const BEITY = libraryTemplate({
   colors: {
     primary: "#b4532a",
     secondary: "#ede8df",
-    background: "#f8f6f2",
+    background: "#ffffff",
     foreground: "#232220",
     muted: "#67625a",
     border: "#ddd5c8",

@@ -199,7 +199,7 @@ export const LOFT = libraryTemplate({
   colors: {
     primary: "#22201c",
     secondary: "#ece6dc",
-    background: "#f7f4ef",
+    background: "#ffffff",
     foreground: "#22201c",
     muted: "#625b52",
     border: "#ddd5c8",

@@ -20,6 +20,11 @@
       "import": "./src/invalidate.ts",
       "require": "./src/invalidate.ts"
     },
+    "./broadcast": {
+      "types": "./src/broadcast.ts",
+      "import": "./src/broadcast.ts",
+      "require": "./src/broadcast.ts"
+    },
     "./key": {
       "types": "./src/key.ts",
       "import": "./src/key.ts",

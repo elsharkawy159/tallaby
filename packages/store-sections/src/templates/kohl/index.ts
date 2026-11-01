@@ -172,7 +172,7 @@ export const KOHL = libraryTemplate({
   colors: {
     primary: "#c2185b",
     secondary: "#ffe1db",
-    background: "#fff5f3",
+    background: "#ffffff",
     foreground: "#2a0f14",
     muted: "#6e4a50",
     border: "#f5cdc5",

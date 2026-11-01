@@ -184,7 +184,7 @@ export const HIKAYA = libraryTemplate({
   colors: {
     primary: "#6c4ab6",
     secondary: "#fdebd0",
-    background: "#fffaf2",
+    background: "#ffffff",
     foreground: "#2b2346",
     muted: "#665d80",
     border: "#f3d9b5",

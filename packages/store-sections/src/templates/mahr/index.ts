@@ -198,7 +198,7 @@ export const MAHR = libraryTemplate({
   colors: {
     primary: "#8a6d1d",
     secondary: "#f7f0dc",
-    background: "#fffdf7",
+    background: "#ffffff",
     foreground: "#1f1a0e",
     muted: "#635a42",
     border: "#ece0bd",

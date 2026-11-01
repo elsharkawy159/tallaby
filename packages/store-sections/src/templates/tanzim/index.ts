@@ -184,7 +184,7 @@ export const TANZIM = libraryTemplate({
   colors: {
     primary: "#0ea5e9",
     secondary: "#eef0f3",
-    background: "#fafafa",
+    background: "#ffffff",
     foreground: "#1c2430",
     muted: "#566070",
     border: "#dfe3e8",

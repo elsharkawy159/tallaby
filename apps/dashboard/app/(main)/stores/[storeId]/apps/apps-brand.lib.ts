@@ -14,9 +14,17 @@ import type { StoreAppKey } from "@workspace/lib/integrations";
 /**
  * Brand mark and tile colours for every entry of the store apps catalog
  * (`STORE_APPS` in @workspace/lib/integrations). Marks without a Simple Icons
- * glyph use a generic shape on the brand colour until official assets exist.
+ * glyph use the company's own logo (`image`, from its website or Wikimedia
+ * Commons); `icon` stays as the fallback shape.
  */
-export type AppBrand = { icon: Pick<SimpleIcon, "path">; bg: string; fg: string; dark?: boolean };
+export type AppBrand = {
+  icon: Pick<SimpleIcon, "path">;
+  bg: string;
+  fg: string;
+  dark?: boolean;
+  /** The brand's own square logo in `public/app-logos`; shown instead of `icon` when set. */
+  image?: string;
+};
 
 /** A parcel: shipping companies with no Simple Icons mark. */
 const PARCEL_ICON = {
@@ -48,13 +56,13 @@ export const APP_BRANDS: Record<StoreAppKey, AppBrand> = {
   snapchat_pixel: { icon: siSnapchat, bg: "#FFFC00", fg: "#000000" },
   shopify_import: { icon: siShopify, bg: "#95BF47", fg: "#FFFFFF" },
   google_sheets: { icon: siGooglesheets, bg: "#0F9D58", fg: "#FFFFFF" },
-  bosta: { icon: PARCEL_ICON, bg: "#E30613", fg: "#FFFFFF" },
-  wassalha: { icon: SHEET_ICON, bg: "#003F87", fg: "#FFD100", dark: true },
-  mylerz: { icon: PARCEL_ICON, bg: "#1B2A6B", fg: "#FFFFFF", dark: true },
-  jt_express: { icon: PARCEL_ICON, bg: "#D7000F", fg: "#FFFFFF" },
-  aramex: { icon: PARCEL_ICON, bg: "#DC291E", fg: "#FFFFFF" },
-  paymob: { icon: CARD_ICON, bg: "#1863DC", fg: "#FFFFFF" },
-  kashier: { icon: CARD_ICON, bg: "#5B2BE0", fg: "#FFFFFF" },
+  bosta: { icon: PARCEL_ICON, bg: "#E30613", fg: "#FFFFFF", image: "/app-logos/bosta.png" },
+  wassalha: { icon: SHEET_ICON, bg: "#003F87", fg: "#FFD100", dark: true, image: "/app-logos/egypt-post.png" },
+  mylerz: { icon: PARCEL_ICON, bg: "#1B2A6B", fg: "#FFFFFF", dark: true, image: "/app-logos/mylerz.png" },
+  jt_express: { icon: PARCEL_ICON, bg: "#D7000F", fg: "#FFFFFF", image: "/app-logos/jt-express.png" },
+  aramex: { icon: PARCEL_ICON, bg: "#DC291E", fg: "#FFFFFF", image: "/app-logos/aramex.png" },
+  paymob: { icon: CARD_ICON, bg: "#1863DC", fg: "#FFFFFF", image: "/app-logos/paymob.png" },
+  kashier: { icon: CARD_ICON, bg: "#5B2BE0", fg: "#FFFFFF", image: "/app-logos/kashier.png" },
   paypal: { icon: siPaypal, bg: "#003087", fg: "#FFFFFF", dark: true },
-  tallaby_pay: { icon: CARD_ICON, bg: "#0A5C4F", fg: "#FFFFFF", dark: true },
+  tallaby_pay: { icon: CARD_ICON, bg: "#0A5C4F", fg: "#FFFFFF", dark: true, image: "/logo/logo.png" },
 };

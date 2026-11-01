@@ -227,7 +227,7 @@ export const BOTANICA = libraryTemplate({
   colors: {
     primary: "#2d3a22",
     secondary: "#e9e0c8",
-    background: "#f6f1e3",
+    background: "#ffffff",
     foreground: "#2d3a22",
     muted: "#5e6650",
     border: "#ddd2b6",

@@ -181,7 +181,7 @@ export const SABAHO = libraryTemplate({
   colors: {
     primary: "#1f7a3a",
     secondary: "#fdf0cf",
-    background: "#fffdf6",
+    background: "#ffffff",
     foreground: "#17321f",
     muted: "#56635a",
     border: "#eee3c4",

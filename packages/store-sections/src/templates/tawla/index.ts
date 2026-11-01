@@ -195,7 +195,7 @@ export const TAWLA = libraryTemplate({
   colors: {
     primary: "#355c7d",
     secondary: "#ebe7dc",
-    background: "#f8f6f1",
+    background: "#ffffff",
     foreground: "#202523",
     muted: "#5c625e",
     border: "#dcd6c7",

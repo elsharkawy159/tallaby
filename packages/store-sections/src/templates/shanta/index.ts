@@ -187,7 +187,7 @@ export const SHANTA = libraryTemplate({
   colors: {
     primary: "#8a4b24",
     secondary: "#eadfce",
-    background: "#f6f1ea",
+    background: "#ffffff",
     foreground: "#2a1f17",
     muted: "#6e5f50",
     border: "#dccdb6",

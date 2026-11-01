@@ -1,6 +1,6 @@
 # Tallaby MCP: AI assistants manage the store (F-29) — design note
 
-**Status:** Plan, 2026-10-30. Owner answered §12 on 2026-10-30. **F-29b built 2026-10-31** (migration 0133 on staging; OAuth server in the dashboard; `packages/lib/src/agents/`); next F-29c.
+**Status:** Plan, 2026-10-30. Owner answered §12 on 2026-10-30. **F-29b built 2026-10-31** (migration 0133 on staging; OAuth server in the dashboard; `packages/lib/src/agents/`). **F-29c endpoint + F-29f product tools built 2026-11-01** (`apps/backend/src/mcp/`, `packages/lib/src/products/agent-products.*`; staging E2E passed; not deployed).
 **Roadmap:** `ROADMAP.md` §4 F-29 (tasks F-29a … F-29k). Related: F-09 staff (`2026-10-30-staff-accounts-design.md`), F-17 public API and webhooks.
 **Goal (owner, 2026-10-30):** "sellers can connect their accounts Claude, ChatGPT, etc with Tallaby to fully manage their store … advanced, manage items, orders, website builder, theme, etc".
 

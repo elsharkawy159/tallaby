@@ -209,7 +209,7 @@ export const ZAHRA = libraryTemplate({
   colors: {
     primary: "#b7791f",
     secondary: "#f8ecd9",
-    background: "#fffaf3",
+    background: "#ffffff",
     foreground: "#2a1d12",
     muted: "#6b5a49",
     border: "#efdcc0",

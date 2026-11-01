@@ -188,7 +188,7 @@ export const KAHRABA = libraryTemplate({
   colors: {
     primary: "#0891b2",
     secondary: "#e3ecf2",
-    background: "#f5f8fa",
+    background: "#ffffff",
     foreground: "#0b1b26",
     muted: "#4b5d6a",
     border: "#cfdde8",

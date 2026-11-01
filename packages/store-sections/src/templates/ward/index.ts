@@ -199,7 +199,7 @@ export const WARD = libraryTemplate({
   colors: {
     primary: "#9b3d5a",
     secondary: "#f2e9e6",
-    background: "#fbf8f6",
+    background: "#ffffff",
     foreground: "#2e2326",
     muted: "#6e5f62",
     border: "#e6d8d3",

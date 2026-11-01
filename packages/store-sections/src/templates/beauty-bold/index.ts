@@ -239,7 +239,7 @@ export const BEAUTY_BOLD = libraryTemplate({
   colors: {
     primary: "#c2185b",
     secondary: "#fde3ee",
-    background: "#fff6f9",
+    background: "#ffffff",
     foreground: "#1f0f19",
     muted: "#6d5664",
     border: "#f2cddc",

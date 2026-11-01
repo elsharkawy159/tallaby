@@ -177,7 +177,7 @@ export const BARBER = libraryTemplate({
   colors: {
     primary: "#1f3d36",
     secondary: "#e2ddd3",
-    background: "#f2f0eb",
+    background: "#ffffff",
     foreground: "#151515",
     muted: "#57534c",
     border: "#d2cbbd",

@@ -202,7 +202,7 @@ export const SOUQ = libraryTemplate({
   colors: {
     primary: "#2f7d32",
     secondary: "#e9eddc",
-    background: "#f7f8f2",
+    background: "#ffffff",
     foreground: "#1c2416",
     muted: "#5e6955",
     border: "#d8dfc6",

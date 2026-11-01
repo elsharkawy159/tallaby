@@ -199,7 +199,7 @@ export const REP = libraryTemplate({
   colors: {
     primary: "#111111",
     secondary: "#e2e5df",
-    background: "#f2f3f1",
+    background: "#ffffff",
     foreground: "#111111",
     muted: "#55594f",
     border: "#d3d7cf",

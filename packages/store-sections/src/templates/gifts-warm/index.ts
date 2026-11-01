@@ -269,7 +269,7 @@ export const GIFTS_WARM = libraryTemplate({
   colors: {
     primary: "#9a4a2c",
     secondary: "#ebdfcc",
-    background: "#f6efe4",
+    background: "#ffffff",
     foreground: "#2e2620",
     muted: "#6b5d50",
     border: "#e0d2bd",

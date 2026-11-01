@@ -191,7 +191,7 @@ export const BASECAMP = libraryTemplate({
   colors: {
     primary: "#1f2b24",
     secondary: "#ded6c4",
-    background: "#efeadf",
+    background: "#ffffff",
     foreground: "#1f2b24",
     muted: "#5b6159",
     border: "#d6cdb8",

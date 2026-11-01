@@ -212,7 +212,7 @@ export const GHORZA = libraryTemplate({
   colors: {
     primary: "#3d2c5c",
     secondary: "#e9e2d9",
-    background: "#f6f3ef",
+    background: "#ffffff",
     foreground: "#1d1724",
     muted: "#5f5866",
     border: "#ddd5cb",

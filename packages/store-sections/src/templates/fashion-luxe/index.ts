@@ -245,7 +245,7 @@ export const FASHION_LUXE = libraryTemplate({
   colors: {
     primary: "#161616",
     secondary: "#ecebe6",
-    background: "#f7f6f3",
+    background: "#ffffff",
     foreground: "#141414",
     muted: "#64615c",
     border: "#dcdad3",

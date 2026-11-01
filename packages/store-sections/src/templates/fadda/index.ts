@@ -191,7 +191,7 @@ export const FADDA = libraryTemplate({
   colors: {
     primary: "#1d1f22",
     secondary: "#e4e4e1",
-    background: "#f2f2f0",
+    background: "#ffffff",
     foreground: "#1d1f22",
     muted: "#5d6066",
     border: "#d4d4d0",

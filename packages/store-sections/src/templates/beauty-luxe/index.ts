@@ -253,7 +253,7 @@ export const BEAUTY_LUXE = libraryTemplate({
   colors: {
     primary: "#2a2527",
     secondary: "#f1eee9",
-    background: "#fbfaf8",
+    background: "#ffffff",
     foreground: "#1f1b1c",
     muted: "#6b6460",
     border: "#e3ded7",

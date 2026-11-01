@@ -818,25 +818,30 @@
       "showLess": "عرض أقل",
       "remaining": "{count, plural, one {متبقي خطوة واحدة} two {متبقي خطوتان} few {متبقي # خطوات} many {متبقي # خطوة} other {متبقي # خطوة}}",
       "tasks": {
-        "product": {
-          "title": "إضافة أول منتج",
-          "description": "الصور، السعر والمخزون",
-          "cta": "أضف منتجًا"
-        },
         "template": {
           "title": "اختر قالب متجرك",
           "description": "اختر تصميمًا لموقعك. تحتاجه قبل النشر.",
           "cta": "اختيار"
         },
-        "shipping": {
-          "title": "إعداد الشحن",
-          "description": "طريقة التوصيل والمناطق التي تشحن إليها",
-          "cta": "إعداد"
+        "brand": {
+          "title": "اضبط هوية علامتك",
+          "description": "الشعار والألوان والخطوط",
+          "cta": "تخصيص"
+        },
+        "product": {
+          "title": "إضافة أول منتج",
+          "description": "الصور، السعر والمخزون",
+          "cta": "أضف منتجًا"
         },
         "publish": {
           "title": "انشر متجرك",
           "description": "اجعل متجرك متاحًا ليزوره العملاء ويطلبوا منه",
           "cta": "انشر الآن"
+        },
+        "shipping": {
+          "title": "إعداد الشحن",
+          "description": "يمكنك إعداده لاحقًا، قبل أول توصيل",
+          "cta": "إعداد"
         }
       },
       "publish": {
@@ -852,7 +857,8 @@
         "visit": "زيارة المتجر"
       },
       "progressCount": "{done} من {total} {total, plural, few {خطوات} other {خطوة}}",
-      "stepDone": "تمّت"
+      "stepDone": "تمّت",
+      "later": "لاحقًا"
     },
     "kpis": {
       "currency": "EGP",

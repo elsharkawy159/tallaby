@@ -199,7 +199,7 @@ export const SITARA = libraryTemplate({
   colors: {
     primary: "#6d3b47",
     secondary: "#efe7df",
-    background: "#faf7f4",
+    background: "#ffffff",
     foreground: "#2b2320",
     muted: "#6b5f58",
     border: "#e2d7cc",

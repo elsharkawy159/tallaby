@@ -176,7 +176,7 @@ export const AHLAM = libraryTemplate({
   colors: {
     primary: "#e07a5f",
     secondary: "#eef2f0",
-    background: "#fbfaf7",
+    background: "#ffffff",
     foreground: "#1f2d2a",
     muted: "#566663",
     border: "#dde5e1",

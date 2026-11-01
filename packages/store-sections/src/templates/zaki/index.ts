@@ -217,7 +217,7 @@ export const ZAKI = libraryTemplate({
   colors: {
     primary: "#0f766e",
     secondary: "#e3ebe7",
-    background: "#f5f7f6",
+    background: "#ffffff",
     foreground: "#13221c",
     muted: "#4d5c55",
     border: "#d3ddd8",

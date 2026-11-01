@@ -191,7 +191,7 @@ export const FOKHAR = libraryTemplate({
   colors: {
     primary: "#a4502a",
     secondary: "#ecdfd0",
-    background: "#f7f1ea",
+    background: "#ffffff",
     foreground: "#2b1d14",
     muted: "#6c5a4c",
     border: "#dfcdb8",

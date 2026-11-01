@@ -185,7 +185,7 @@ export const CORE = libraryTemplate({
   colors: {
     primary: "#101010",
     secondary: "#e6e6e2",
-    background: "#f4f4f2",
+    background: "#ffffff",
     foreground: "#101010",
     muted: "#5a5a58",
     border: "#d9d9d4",

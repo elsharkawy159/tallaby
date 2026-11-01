@@ -236,7 +236,7 @@ export const KHOLKHAL = libraryTemplate({
   colors: {
     primary: "#7a5a2e",
     secondary: "#f1ebe1",
-    background: "#fbf9f5",
+    background: "#ffffff",
     foreground: "#2a2420",
     muted: "#6d635a",
     border: "#e4dbcd",

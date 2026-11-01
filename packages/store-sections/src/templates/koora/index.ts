@@ -165,7 +165,7 @@ export const KOORA = libraryTemplate({
   colors: {
     primary: "#15803d",
     secondary: "#e2ebe3",
-    background: "#f4f7f4",
+    background: "#ffffff",
     foreground: "#0e1f14",
     muted: "#4a5c50",
     border: "#cfdcd1",

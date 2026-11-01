@@ -205,7 +205,7 @@ export const HADAYA = libraryTemplate({
   colors: {
     primary: "#3b4cca",
     secondary: "#ffe4d1",
-    background: "#fff7f0",
+    background: "#ffffff",
     foreground: "#1e2a5a",
     muted: "#56607f",
     border: "#f5d8c2",

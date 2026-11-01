@@ -260,7 +260,7 @@ export const KASR = libraryTemplate({
   colors: {
     primary: "#a3472b",
     secondary: "#e8e2d8",
-    background: "#f4f1ec",
+    background: "#ffffff",
     foreground: "#1c1b19",
     muted: "#615c54",
     border: "#dcd5c9",

@@ -211,7 +211,7 @@ export const YOGA = libraryTemplate({
   colors: {
     primary: "#6b8f71",
     secondary: "#ebe6dd",
-    background: "#f7f5f1",
+    background: "#ffffff",
     foreground: "#232622",
     muted: "#5d625b",
     border: "#ddd6ca",

@@ -266,7 +266,7 @@ export const JEWELRY_WARM = libraryTemplate({
   colors: {
     primary: "#8a5a2b",
     secondary: "#ece1d0",
-    background: "#f6efe4",
+    background: "#ffffff",
     foreground: "#2d241b",
     muted: "#6f6152",
     border: "#dccdb7",

@@ -200,7 +200,7 @@ export const MOTO = libraryTemplate({
   colors: {
     primary: "#e23d28",
     secondary: "#e2e0dc",
-    background: "#f1f0ee",
+    background: "#ffffff",
     foreground: "#141414",
     muted: "#5c5a57",
     border: "#d6d3ce",

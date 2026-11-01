@@ -183,7 +183,7 @@ export const SAKAN = libraryTemplate({
   colors: {
     primary: "#26302e",
     secondary: "#e3ddd2",
-    background: "#f3f0ea",
+    background: "#ffffff",
     foreground: "#26302e",
     muted: "#5f6763",
     border: "#d8d1c4",

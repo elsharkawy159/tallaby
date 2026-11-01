@@ -176,7 +176,7 @@ export const PACE = libraryTemplate({
   colors: {
     primary: "#e8410f",
     secondary: "#e2e6dc",
-    background: "#f4f5f0",
+    background: "#ffffff",
     foreground: "#111315",
     muted: "#53585f",
     border: "#d8dcd2",
