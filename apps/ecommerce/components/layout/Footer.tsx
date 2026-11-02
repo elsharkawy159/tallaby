@@ -64,7 +64,7 @@ const Footer = async () => {
                 </a>
               </div>
               <div className="flex items-center gap-3">
-                <MailclassName="h-4 w-4 text-accent flex-shrink-0" />
+                <Mail className="h-4 w-4 text-accent flex-shrink-0" />
                 <a
                   href={`mailto:${TALLABY_CONTACT_EMAIL}`}
                   className="hover:text-white transition-colors"

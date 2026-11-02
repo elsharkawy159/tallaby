@@ -1385,8 +1385,9 @@ export const brands = pgTable("brands", {
 	unique("brands_slug_unique").on(table.slug),
 ]);
 
-// users.id -> auth.users(id) ON DELETE CASCADE (users_id_auth_users_fk, NOT VALID, 0134). auth.users is
-// not modelled here; deleting an auth user removes the users row and everything that cascades from it.
+// 0136 keeps guest users outside auth.users so guests can own carts and orders.
+// auth.users deletion still removes its public.users profile through the
+// delete_public_user_after_auth_delete trigger; auth.users is not modelled here.
 export const users = pgTable("users", {
 	id: uuid().primaryKey().notNull(),
 	email: text(),

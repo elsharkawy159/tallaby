@@ -4695,6 +4695,12 @@ Owner asked to keep only the current version of each template in `template_versi
 - Code: `STORE_VIEWS_TTL_SECONDS` 3600 → 300 (Store views, home traffic, product views); new `apps/dashboard/hooks/use-auto-refresh.ts` (`router.refresh()` every 5 min while the tab is visible, and on returning to a tab hidden longer than that), used by the Store views page; the page note (ar/en) now says the numbers update every few minutes; `docs/store-views.md` updated (cache, debugging, quota). No migration.
 - Checks: dashboard `tsc` clean; `lib/analytics` tests 22 pass; eslint not runnable (known). Manual check after deploy: open Store views, visit the store, wait ≤ 10 min (GA4 processing + 5 min cache) without pressing Refresh.
 
+### 2026-11-02 — Guest storefront carts and orders work without login
+
+- Cause: migration `0134_user_delete_cascade.sql` added `public.users.id -> auth.users.id`. Guest checkout intentionally creates a temporary `public.users` row from the `guest_uid` cookie without creating a Supabase Auth account, so adding a product failed before a cart could be made.
+- Fix: `0136_guest_users_without_auth_fk.sql` removes that unconditional foreign key and installs `auth.users`' `delete_public_user_after_auth_delete` trigger instead. Deleting a real Auth user still removes its public profile and all cascading owned rows; guest rows can create carts, addresses and orders normally, then are deleted when merged into an account. `check-0134-user-delete-cascade.sql` now verifies the trigger and confirms the old FK is absent.
+- Deploy: apply migration `0136` before deploying. Verify on staging with a fresh private-window storefront visit: add an item, complete a guest checkout, then delete a test Auth user and confirm its public profile is removed.
+
 ### 2026-10-31 — Deleting an auth user deletes everything they own (migration 0134)
 - Request (owner, 2026-10-31): deleting a user in Supabase Auth left the seller, stores and orders behind; deleting an order by hand failed with `wallet_transactions is append-only … DELETE`.
 - Cause: `public.users` had no foreign key to `auth.users`, so nothing followed the auth delete. 45 child keys were NO ACTION/RESTRICT, so deleting an order, product or seller stopped partway. One of these, `wallet_transactions.order_id`, hit the append-only ledger trigger. Also, `users.referred_by` was ON DELETE CASCADE, so deleting a user would have deleted every user they referred.
