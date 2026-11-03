@@ -11,7 +11,8 @@ import { getAccountRelations, type AccountRelations } from "../../_components/en
 import { RoleBadges } from "../../_components/entity/role-badges";
 import { UrlTabs, pickTab } from "../../_components/url-tabs";
 import { AdRequestsTable } from "../../ad-requests/ad-requests-table";
-import { AiFeaturesCard, AiRecentCallsCard, AiUsageKpis } from "../../ai-usage/ai-usage.chunks";
+import { getBillingState } from "@workspace/lib/billing/server";
+import { AiCostEstimateNote, AiFeaturesCard, AiRecentCallsCard, AiUsageKpis } from "../../ai-usage/ai-usage.chunks";
 import { AI_USAGE_RANGES, AI_USAGE_RANGE_LABELS } from "../../ai-usage/ai-usage.lib";
 import { getSellerAiUsage } from "../../ai-usage/ai-usage.server";
 import { ScopedCouponsData } from "../../coupons/seller-coupons.data";
@@ -144,6 +145,7 @@ async function SellerTabContent({
         <SellerWalletPanel
           sellerId={sellerId}
           wallet={wallet.account.wallet}
+          currency={wallet.account.walletCurrency}
           entries={wallet.entries}
           topUps={wallet.topUps}
           stores={wallet.stores.map((store) => ({ id: store.id, name: store.name }))}
@@ -177,6 +179,8 @@ async function SellerTabContent({
     case "ai": {
       const range = pickTab(raw.range, AI_USAGE_RANGES);
       const usage = await getSellerAiUsage(sellerId, range);
+      // With no rate the costs show USD only, so a failed read never hides the tab.
+      const marketRate = await getBillingState().then((state) => state.marketRate, () => null);
       return (
         <div className="space-y-6">
           <UrlTabs
@@ -188,14 +192,15 @@ async function SellerTabContent({
           />
           {usage ? (
             <>
-              <AiUsageKpis totals={usage.totals} products={usage.products} today={usage.okToday} />
+              <AiCostEstimateNote marketRate={marketRate} />
+              <AiUsageKpis totals={usage.totals} products={usage.products} marketRate={marketRate} today={usage.okToday} />
               {usage.products.added + usage.products.edited > 0 && (
                 <Link href={`/products?seller=${sellerId}&ai=ai`} className="inline-block text-sm text-muted-foreground hover:underline">
                   See this seller&apos;s products made with AI
                 </Link>
               )}
-              <AiFeaturesCard features={usage.features} />
-              <AiRecentCallsCard calls={usage.recent} />
+              <AiFeaturesCard features={usage.features} marketRate={marketRate} />
+              <AiRecentCallsCard calls={usage.recent} marketRate={marketRate} />
             </>
           ) : (
             <Unavailable what="AI usage" />

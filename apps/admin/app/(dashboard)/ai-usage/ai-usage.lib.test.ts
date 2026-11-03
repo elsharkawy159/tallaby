@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { aiFeatureLabel, aiUsageRangeStart, errorRate, formatMicroUsd, formatTokens, toNumber } from "./ai-usage.lib";
+import {
+  aiFeatureLabel,
+  aiUsageRangeStart,
+  averageCostMicro,
+  errorRate,
+  formatAiCost,
+  formatMicroUsd,
+  formatTokens,
+  toNumber,
+} from "./ai-usage.lib";
 
 describe("ai usage lib", () => {
   it("starts each range the right number of days back", () => {
@@ -12,6 +21,23 @@ describe("ai usage lib", () => {
     expect(formatMicroUsd(0)).toBe("$0.00");
     expect(formatMicroUsd(1_800)).toBe("$0.0018");
     expect(formatMicroUsd(12_345_678)).toBe("$12.35");
+  });
+
+  it("adds the estimated EGP to a cost when there is a rate", () => {
+    expect(formatAiCost(500_000, 50)).toBe("$0.5000 (~25 EGP)");
+    expect(formatAiCost(12_345_678, 50)).toBe("$12.35 (~617 EGP)");
+    expect(formatAiCost(1_800, 50)).toBe("$0.0018 (~0.09 EGP)");
+  });
+
+  it("shows USD only with no rate or no cost", () => {
+    expect(formatAiCost(1_800, null)).toBe("$0.0018");
+    expect(formatAiCost(0, 50)).toBe("$0.00");
+  });
+
+  it("averages cost over the calls, with nothing to show for no calls", () => {
+    expect(averageCostMicro(3_000, 2)).toBe(1_500);
+    expect(averageCostMicro(1_000, 3)).toBe(333);
+    expect(averageCostMicro(0, 0)).toBeNull();
   });
 
   it("shortens large token counts", () => {

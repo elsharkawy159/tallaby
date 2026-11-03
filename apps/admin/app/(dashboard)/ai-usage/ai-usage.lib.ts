@@ -40,6 +40,23 @@ export function formatMicroUsd(micro: number): string {
   return `$${usd.toLocaleString("en-US", { minimumFractionDigits: digits, maximumFractionDigits: digits })}`;
 }
 
+/**
+ * The one way Admin shows an AI cost: "$0.50 (~25 EGP)". The EGP is an estimate
+ * at the market rate (F-58); with no rate, or a zero cost, it shows USD only.
+ */
+export function formatAiCost(micro: number, marketRate: number | null): string {
+  const usd = formatMicroUsd(micro);
+  if (!marketRate || micro === 0) return usd;
+  const egp = (micro / 1_000_000) * marketRate;
+  const digits = Math.abs(egp) < 10 ? 2 : 0;
+  return `${usd} (~${egp.toLocaleString("en-US", { minimumFractionDigits: digits, maximumFractionDigits: digits })} EGP)`;
+}
+
+/** Average cost of a successful call, in whole micro-USD; null with no calls. */
+export function averageCostMicro(costMicroUsd: number, calls: number): number | null {
+  return calls > 0 ? Math.round(costMicroUsd / calls) : null;
+}
+
 export function formatTokens(tokens: number): string {
   if (tokens >= 1_000_000) return `${(tokens / 1_000_000).toFixed(1)}M`;
   if (tokens >= 10_000) return `${Math.round(tokens / 1_000)}k`;

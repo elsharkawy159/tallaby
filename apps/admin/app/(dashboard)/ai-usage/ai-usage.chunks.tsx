@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { Activity, CircleDollarSign, Coins, Package, Sparkles, TriangleAlert } from "lucide-react";
+import { Activity, CircleDollarSign, Coins, Divide, Package, Sparkles, TriangleAlert } from "lucide-react";
 import { Badge } from "@workspace/ui/components/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/components/card";
 import { AdminTable, type AdminTableColumn, type AdminTableRow } from "../_components/admin-table/admin-table";
 import { KpiCard } from "../_components/cards/kpi-card";
-import { aiFeatureLabel, errorRate, formatMicroUsd, formatTokens } from "./ai-usage.lib";
+import { aiFeatureLabel, averageCostMicro, errorRate, formatAiCost, formatTokens } from "./ai-usage.lib";
 import type {
   AiProductCounts,
   AiUsageCallRow,
@@ -19,17 +19,30 @@ function formatDate(value: string | null): string {
   return value ? dateTime.format(new Date(value)) : "—";
 }
 
-/** Calls, cost, tokens, errors and AI-made products for the range. */
+/** Says once on the page that EGP costs are estimates. Nothing without a rate: costs are then USD only. */
+export function AiCostEstimateNote({ marketRate }: { marketRate: number | null }) {
+  if (!marketRate) return null;
+  return (
+    <p className="text-xs text-muted-foreground">
+      EGP costs are estimates at today's market rate ($1 = {marketRate.toFixed(2)} EGP). Providers bill in USD.
+    </p>
+  );
+}
+
+/** Calls, cost, average per call, tokens, errors and AI-made products for the range. */
 export function AiUsageKpis({
   totals,
   products,
+  marketRate,
   today,
 }: {
   totals: AiUsageTotals;
   products: AiProductCounts;
+  marketRate: number | null;
   /** Seller page only: successful calls since Cairo midnight. */
   today?: number;
 }) {
+  const average = averageCostMicro(totals.costMicroUsd, totals.ok);
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       <KpiCard
@@ -41,9 +54,15 @@ export function AiUsageKpis({
       />
       <KpiCard
         label="Cost"
-        value={formatMicroUsd(totals.costMicroUsd)}
+        value={formatAiCost(totals.costMicroUsd, marketRate)}
         icon={<CircleDollarSign />}
-        hint={totals.ok > 0 ? `${formatMicroUsd(Math.round(totals.costMicroUsd / totals.ok))} per call` : "No calls yet"}
+        hint={`For ${totals.ok.toLocaleString("en-US")} calls in this range`}
+      />
+      <KpiCard
+        label="Average cost per call"
+        value={average === null ? "—" : formatAiCost(average, marketRate)}
+        icon={<Divide />}
+        hint={today === undefined ? "Across all stores" : "This seller's calls"}
       />
       <KpiCard
         label="Tokens"
@@ -81,7 +100,7 @@ const FEATURE_COLUMNS: AdminTableColumn[] = [
   { id: "cost", header: "Cost", sortable: true, descFirst: true, align: "end" },
 ];
 
-export function AiFeaturesCard({ features }: { features: AiUsageFeatureRow[] }) {
+export function AiFeaturesCard({ features, marketRate }: { features: AiUsageFeatureRow[]; marketRate: number | null }) {
   const rows: AdminTableRow[] = features.map((row) => ({
     id: `${row.feature}:${row.model}`,
     cells: {
@@ -91,7 +110,7 @@ export function AiFeaturesCard({ features }: { features: AiUsageFeatureRow[] }) 
       errors: row.errors,
       blocked: row.blocked,
       tokens: formatTokens(row.tokens),
-      cost: formatMicroUsd(row.costMicroUsd),
+      cost: formatAiCost(row.costMicroUsd, marketRate),
     },
     sortValues: { model: row.model, tokens: row.tokens, cost: row.costMicroUsd },
   }));
@@ -119,7 +138,7 @@ const SELLER_COLUMNS: AdminTableColumn[] = [
   { id: "last", header: "Last used", sortable: true, descFirst: true },
 ];
 
-export function AiSellersCard({ sellers }: { sellers: AiUsageSellerRow[] }) {
+export function AiSellersCard({ sellers, marketRate }: { sellers: AiUsageSellerRow[]; marketRate: number | null }) {
   const rows: AdminTableRow[] = sellers.map((row) => ({
     id: row.sellerId,
     cells: {
@@ -133,7 +152,7 @@ export function AiSellersCard({ sellers }: { sellers: AiUsageSellerRow[] }) {
       errors: row.errors,
       blocked: row.blocked,
       tokens: formatTokens(row.tokens),
-      cost: formatMicroUsd(row.costMicroUsd),
+      cost: formatAiCost(row.costMicroUsd, marketRate),
       products:
         row.aiProducts > 0 ? (
           <Link href={`/products?seller=${row.sellerId}&ai=ai`} className="hover:underline">
@@ -180,7 +199,7 @@ const CALL_COLUMNS: AdminTableColumn[] = [
 ];
 
 /** The seller's latest calls (newest first). No prompt text is ever stored. */
-export function AiRecentCallsCard({ calls }: { calls: AiUsageCallRow[] }) {
+export function AiRecentCallsCard({ calls, marketRate }: { calls: AiUsageCallRow[]; marketRate: number | null }) {
   const rows: AdminTableRow[] = calls.map((call) => ({
     id: call.id,
     cells: {
@@ -202,7 +221,7 @@ export function AiRecentCallsCard({ calls }: { calls: AiUsageCallRow[] }) {
         call.inputTokens == null && call.outputTokens == null
           ? "—"
           : `${formatTokens(call.inputTokens ?? 0)} / ${formatTokens(call.outputTokens ?? 0)}`,
-      cost: formatMicroUsd(call.costMicroUsd),
+      cost: formatAiCost(call.costMicroUsd, marketRate),
       latency: call.latencyMs == null ? "—" : `${(call.latencyMs / 1000).toFixed(1)} s`,
     },
   }));
