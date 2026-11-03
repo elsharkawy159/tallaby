@@ -335,7 +335,9 @@ export async function applyExcelUpdateAction(formData: FormData): Promise<ExcelA
     await afterWrite(result.done);
     return { success: true, changedRows: result.changedRows, changedProducts: result.done.length, skipped: result.skipped };
   } catch (error) {
-    if (error && typeof error === "object" && (error as { code?: string }).code === "23505") {
+    // Drizzle wraps driver errors: the SQLSTATE is on `.cause`.
+    const pg = error as { code?: string; cause?: { code?: string } } | null;
+    if ((pg?.cause?.code ?? pg?.code) === "23505") {
       // A SKU taken between preview and apply (another tab): nothing was written.
       return { success: false, error: "generic" };
     }

@@ -178,6 +178,33 @@ describe.skipIf(!TEST_DATABASE_URL)("affiliate commissions (integration)", () =>
     expect(affiliateRows).toHaveLength(1);
   });
 
+  it("a double-submit race returns the winner's account, not an error", async () => {
+    const userId = await makeUser("Race Runner");
+
+    const accounts = await Promise.all(
+      Array.from({ length: 4 }, () =>
+        joinAffiliateProgram(db, { userId, fullName: "Race Runner" })
+      )
+    );
+
+    expect(new Set(accounts.map((a) => a.affiliateId)).size).toBe(1);
+    const rows = await db
+      .select({ id: schema.affiliates.id, couponId: schema.affiliates.couponId })
+      .from(schema.affiliates)
+      .where(eq(schema.affiliates.userId, userId));
+    expect(rows).toHaveLength(1);
+
+    // Losers' coupons rolled back with their transactions.
+    const leftover = await db
+      .select({ id: schema.coupons.id })
+      .from(schema.coupons)
+      .where(eq(schema.coupons.code, accounts[0]!.code));
+    expect(leftover.map((c) => c.id)).toEqual([rows[0]!.couponId]);
+
+    await db.delete(schema.affiliates).where(eq(schema.affiliates.id, rows[0]!.id));
+    await db.delete(schema.coupons).where(eq(schema.coupons.id, rows[0]!.couponId));
+  });
+
   // -------------------------------------------------------------------------
   // Attribution
   // -------------------------------------------------------------------------

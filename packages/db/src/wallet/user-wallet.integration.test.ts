@@ -378,6 +378,91 @@ describe.skipIf(!TEST_DATABASE_URL)("user wallet ledger (integration)", () => {
     expect((await readWallet(walletId))?.balance).toBe("500.01");
   });
 
+  it("sees a duplicate through Drizzle's error wrapper (SQLSTATE on .cause)", async () => {
+    const { userId, walletId } = await makeFundedWallet("10.00");
+    const referenceId = randomUUID();
+    const row = {
+      walletId,
+      userId,
+      type: "top_up",
+      amount: "1.00",
+      balanceBefore: "10.00",
+      balanceAfter: "11.00",
+      currency: "EGP",
+      status: "completed",
+      referenceType: WALLET_REFERENCE_TYPES.topUp,
+      referenceId,
+    } as const;
+    const credit = () =>
+      db.transaction((tx) =>
+        postWalletTransaction(tx, {
+          walletId,
+          userId,
+          type: "top_up",
+          amount: "1.00",
+          direction: "credit",
+          referenceType: WALLET_REFERENCE_TYPES.topUp,
+          referenceId,
+        })
+      );
+    await credit();
+
+    // The premise: a direct insert fails with no .code of its own.
+    const raw = await db
+      .insert(schema.userWalletTransactions)
+      .values(row)
+      .then(
+        () => null,
+        (error: unknown) => error as { code?: string; cause?: { code?: string } }
+      );
+    expect(raw?.code).toBeUndefined();
+    expect(raw?.cause?.code).toBe("23505");
+
+    await expect(credit()).rejects.toMatchObject({
+      name: "DuplicateWalletTransactionError",
+      type: "top_up",
+      referenceId,
+    });
+    expect((await readWallet(walletId))?.balance).toBe("11.00");
+    expect(await countLedgerRows(walletId)).toBe(2);
+  });
+
+  it("a caller that swallows the duplicate cannot commit anything (the transaction is already aborted)", async () => {
+    // cancelOrder in apps/ecommerce/actions/order.ts catches the duplicate
+    // inside its transaction and goes on to update payments. The unique
+    // violation has aborted the transaction, so the next statement fails and
+    // everything rolls back: no second credit, no false success.
+    const { userId, walletId } = await makeFundedWallet("50.00");
+    const referenceId = randomUUID();
+    const refund = (tx: Parameters<Parameters<typeof db.transaction>[0]>[0]) =>
+      postWalletTransaction(tx, {
+        walletId,
+        userId,
+        type: "refund",
+        amount: "20.00",
+        direction: "credit",
+        referenceType: WALLET_REFERENCE_TYPES.order,
+        referenceId,
+      });
+    await db.transaction(refund);
+
+    let swallowed = false;
+    const replay = db.transaction(async (tx) => {
+      try {
+        await refund(tx);
+      } catch (error) {
+        if (!(error instanceof DuplicateWalletTransactionError)) throw error;
+        swallowed = true;
+      }
+      await tx.execute(sql`select 1`);
+    });
+
+    await expect(replay).rejects.toBeDefined();
+    expect(swallowed).toBe(true);
+    expect((await readWallet(walletId))?.balance).toBe("70.00");
+    expect(await countLedgerRows(walletId)).toBe(2);
+  });
+
   it("concurrent deliveries of the same event credit exactly once", async () => {
     const { userId, walletId } = await makeFundedWallet("0.01");
     const referenceId = randomUUID();
@@ -494,13 +579,26 @@ describe.skipIf(!TEST_DATABASE_URL)("user wallet ledger (integration)", () => {
     expect(wallet?.balance).toBe("40.00");
     expect(wallet?.reservedBalance).toBe("0.00");
 
+    // A replay with nothing reserved stops at the balance guard, before the
+    // ledger insert: the reservation can't go negative.
     await expect(
       db.transaction((tx) =>
         settlePayout(tx, { walletId, userId, amount: "60.00", payoutRequestId })
       )
+    ).rejects.toBeInstanceOf(InsufficientWalletBalanceError);
+    expect((await readWallet(walletId))?.balance).toBe("40.00");
+
+    // With funds reserved again it passes that guard, and the ledger index stops it.
+    await db.transaction((tx) => reservePayoutAmount(tx, walletId, "30.00"));
+    await expect(
+      db.transaction((tx) =>
+        settlePayout(tx, { walletId, userId, amount: "30.00", payoutRequestId })
+      )
     ).rejects.toBeInstanceOf(DuplicateWalletTransactionError);
 
-    expect((await readWallet(walletId))?.balance).toBe("40.00");
+    const after = await readWallet(walletId);
+    expect(after?.balance).toBe("40.00");
+    expect(after?.reservedBalance).toBe("30.00");
   });
 
   // -------------------------------------------------------------------------

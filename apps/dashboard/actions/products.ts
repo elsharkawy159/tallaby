@@ -1309,7 +1309,10 @@ export async function createProduct(
 
     const skuUsed = (data as CreateProductLegacy).sku || "generated";
 
-    if (error?.code === "23505" && error?.constraint_name?.includes("slug")) {
+    // Drizzle wraps driver errors: the Postgres fields are on `.cause`.
+    const pgError = error?.cause ?? error;
+
+    if (pgError?.code === "23505" && pgError?.constraint_name?.includes("slug")) {
       const slugUsed = hasLocalized(data)
         ? data.localized.en.slug
         : (data as CreateProductLegacy).slug;
@@ -1318,7 +1321,7 @@ export async function createProduct(
         error: `A product with the slug "${slugUsed}" already exists. Please use a different slug.`,
       };
     }
-    if (error?.code === "23505" && error?.constraint_name?.includes("sku")) {
+    if (pgError?.code === "23505" && pgError?.constraint_name?.includes("sku")) {
       return {
         success: false,
         error: `A product with the SKU "${skuUsed}" already exists. Please use a different SKU.`,

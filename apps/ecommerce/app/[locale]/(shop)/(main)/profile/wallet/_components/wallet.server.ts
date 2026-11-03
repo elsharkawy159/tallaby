@@ -471,7 +471,9 @@ export async function createPayoutRequest(
     // The partial unique index on (user_id) WHERE status IN (open) is what
     // actually enforces one open request per user, including against a
     // double-submit that races past any read-based check.
-    if ((error as { code?: string })?.code === "23505") {
+    // Drizzle wraps driver errors: the SQLSTATE is on `.cause`.
+    const pg = error as { code?: string; cause?: { code?: string } };
+    if ((pg?.cause?.code ?? pg?.code) === "23505") {
       return {
         success: false,
         error: "You already have a payout request in progress",

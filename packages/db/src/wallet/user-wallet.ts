@@ -233,13 +233,10 @@ async function applyBalanceDelta(
   return row.balance;
 }
 
+/** Drizzle wraps driver errors in DrizzleQueryError: the SQLSTATE is on `.cause`. */
 function isUniqueViolation(error: unknown): boolean {
-  return (
-    typeof error === "object" &&
-    error !== null &&
-    "code" in error &&
-    (error as { code?: unknown }).code === PG_UNIQUE_VIOLATION
-  );
+  const e = error as { code?: unknown; cause?: { code?: unknown } } | null | undefined;
+  return (e?.cause?.code ?? e?.code) === PG_UNIQUE_VIOLATION;
 }
 
 export interface PostWalletTransactionInput {
