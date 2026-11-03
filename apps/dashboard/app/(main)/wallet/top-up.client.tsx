@@ -53,9 +53,6 @@ type Step = (typeof STEPS)[number] | "done";
 const METHOD_COLOR: Record<ManualTopUpMethod, string> = {
   instapay: "#3D1F73",
   vodafone_cash: "#E60000",
-  e_cash: "#E00800",
-  orange_cash: "#FF7900",
-  we_pay: "#5C2D91",
 };
 
 /** "01003272830" → "0100 327 2830", easier to read off a screen and type into a wallet app. */

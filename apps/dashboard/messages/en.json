@@ -5042,24 +5042,6 @@
           "to": "To InstaPay number",
           "sender": "Phone number linked to InstaPay"
         },
-        "e_cash": {
-          "name": "e& Cash",
-          "hint": "From any e& Cash wallet",
-          "to": "To this Vodafone Cash number, from your e& Cash wallet",
-          "sender": "Wallet number you sent from"
-        },
-        "orange_cash": {
-          "name": "Orange Cash",
-          "hint": "From any Orange Cash wallet",
-          "to": "To this Vodafone Cash number, from your Orange Cash wallet",
-          "sender": "Wallet number you sent from"
-        },
-        "we_pay": {
-          "name": "WE Cash",
-          "hint": "From any WE wallet",
-          "to": "To this Vodafone Cash number, from your WE wallet",
-          "sender": "Wallet number you sent from"
-        },
         "card": {
           "name": "Debit or credit card",
           "hint": "Not available yet",
