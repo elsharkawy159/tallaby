@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { LayoutTemplate, LoaderCircle, MapPinned, Pencil, Plus, Save, Settings2, Trash2 } from "lucide-react";
+import { LayoutTemplate, LoaderCircle, MapPinned, Pencil, Plus, Save, Settings2, Sparkles, Trash2 } from "lucide-react";
 
 // Tallaby delivery UI is disabled (owner, 2026-10-21); these imports only served it. See SettingsCard.
 // import { TALLABY_SERVICES_ENABLED } from "@workspace/lib/fulfillment";
@@ -35,6 +35,7 @@ import { cn } from "@/lib/utils";
 import { CheckPrice } from "./check-price.client";
 import { ShippingCompaniesCard } from "./shipping-companies.client";
 import { ShippingCoverage } from "./shipping-coverage";
+import { DescribeZonesSheet } from "./ai/ai-zones.client";
 import { deleteShippingZone, saveShippingSettings } from "./shipping.server";
 import type { CoverageItem, TemplateOption, ZoneView } from "./shipping.dto";
 import { ShippingTemplates, TemplatesSheet } from "./templates.client";
@@ -71,6 +72,7 @@ export function StoreShippingSettings({
   const [editing, setEditing] = useState<ZoneView | "new" | null>(null);
   const [deleting, setDeleting] = useState<StoreShippingZone | null>(null);
   const [templatesOpen, setTemplatesOpen] = useState(false);
+  const [describing, setDescribing] = useState(false);
   const [isPending, startTransition] = useTransition();
   const settingsForm = useSettingsForm(storeId, settings);
   const raw = zones.map((z) => z.zone);
@@ -146,6 +148,10 @@ export function StoreShippingSettings({
                 {t("templates.button")}
               </Button>
             )}
+            <Button type="button" variant="outline" size="sm" className={SMALL_BUTTON_CLASS} disabled={disabled} onClick={() => setDescribing(true)}>
+              <Sparkles />
+              {t("describe.button")}
+            </Button>
             <Button type="button" size="sm" className={SMALL_BUTTON_CLASS} disabled={disabled} onClick={() => setEditing("new")}>
               <Plus />
               {t("addZone")}
@@ -154,7 +160,13 @@ export function StoreShippingSettings({
         }
       >
         {zones.length === 0 ? (
-          <p className="text-sm text-muted-foreground">{t("noZones")}</p>
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">{t("noZones")}</p>
+            <Button type="button" variant="outline" className={BUTTON_CLASS} disabled={disabled} onClick={() => setDescribing(true)}>
+              <Sparkles />
+              {t("describe.button")}
+            </Button>
+          </div>
         ) : (
           <ul className="divide-y">
             {zones.map((view) => (
@@ -193,7 +205,11 @@ export function StoreShippingSettings({
         />
       )}
 
-      <AlertDialog open={!!deleting} onOpenChange={(open) => !open && setDeleting(null)}>
+      {describing && (
+        <DescribeZonesSheet storeId={storeId} existingZones={raw} onClose={() => setDescribing(false)} onChanged={() => router.refresh()} />
+      )}
+
+      <AlertDialog open={!!deleting}onOpenChange={(open) => !open && setDeleting(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{t("deleteTitle", { name: deleting?.nameAr ?? "" })}</AlertDialogTitle>
