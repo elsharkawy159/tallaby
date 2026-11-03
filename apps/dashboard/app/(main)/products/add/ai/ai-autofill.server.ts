@@ -25,7 +25,12 @@ export type AutofillRun = {
   cached: boolean
 }
 
-export async function autofillProduct(sellerId: string, input: AutofillInput): Promise<AutofillRun> {
+export async function autofillProduct(
+  sellerId: string,
+  input: AutofillInput,
+  /** Its own usage-log name when another feature calls this (the AI Store Builder). */
+  options: { feature?: string } = {},
+): Promise<AutofillRun> {
   const today = cairoToday()
   const taxonomy = await loadSellerTaxonomyOptions(sellerId)
   const storeCategories = taxonomy.categories.map((c) => c.nameAr || c.name).filter(Boolean)
@@ -43,7 +48,7 @@ export async function autofillProduct(sellerId: string, input: AutofillInput): P
   ]
 
   const { object, cached } = await generateStructured({
-    feature: AUTOFILL_FEATURE,
+    feature: options.feature ?? AUTOFILL_FEATURE,
     sellerId,
     tier: "fast",
     schema: productAutofillOutputSchema,

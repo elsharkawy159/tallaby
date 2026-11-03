@@ -5,6 +5,7 @@ import { createClient } from "@/supabase/server";
 import { safeNextPath } from "@/lib/auth/safe-next.lib";
 import { completeSignup, signupIntentFromMetadata } from "@/app/signup/signup-complete.server";
 import { readSignupIntentCookie } from "@/app/signup/signup-intent.server";
+import { afterSignupPath } from "@/app/signup/signup.dto";
 
 /**
  * OAuth and email-confirmation callback. After the session is established, a
@@ -22,7 +23,9 @@ async function finish(origin: string, next: string, user: User | null) {
   if (seller) return NextResponse.redirect(`${origin}${next}`);
 
   const intent = (await readSignupIntentCookie()) ?? signupIntentFromMetadata(user);
-  if (!intent) return NextResponse.redirect(`${origin}/signup`);
+  // The seller came for the AI Store Builder: step 2 of signup keeps taking them there.
+  const after = afterSignupPath(next);
+  if (!intent) return NextResponse.redirect(`${origin}/signup${after ? `?next=${after}` : ""}`);
 
   const result = await completeSignup(user, intent);
   if (!result.success) {
@@ -30,7 +33,7 @@ async function finish(origin: string, next: string, user: User | null) {
     return NextResponse.redirect(`${origin}/signup?error=${result.error === "taken" ? "subdomainTaken" : "generic"}`);
   }
   // `signup` only for a new account: the welcome page fires Meta's CompleteRegistration once.
-  return NextResponse.redirect(`${origin}/?welcome=1${result.signup ? `&signup=${result.signup}` : ""}`);
+  return NextResponse.redirect(`${origin}${after ?? "/"}?welcome=1${result.signup ? `&signup=${result.signup}` : ""}`);
 }
 
 export async function GET(request: NextRequest) {

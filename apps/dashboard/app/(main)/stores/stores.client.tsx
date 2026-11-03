@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useFormatter, useTranslations } from "next-intl";
+import Link from "next/link";
 import { toast } from "sonner";
 import { z } from "zod";
 import {
@@ -16,6 +17,7 @@ import {
   MoreHorizontal,
   MousePointerClick,
   Plus,
+  Sparkles,
 } from "lucide-react";
 
 import { storeHostname, storeUrl, subdomainFromName } from "@workspace/lib/storefront";
@@ -77,13 +79,17 @@ export function StoresView({
   selectedId,
   maxStores,
   openCreate,
+  aiBuilder = false,
 }: {
   stores: StoreCardData[];
   selectedId: string | null;
   maxStores: number;
   openCreate: boolean;
+  /** The AI Store Builder's switch (F-54). */
+  aiBuilder?: boolean;
 }) {
   const t = useTranslations("stores");
+  const tBuilder = useTranslations("aiBuilder");
   const [createOpen, setCreateOpen] = useState(openCreate);
   const atLimit = stores.length >= maxStores;
 
@@ -99,10 +105,20 @@ export function StoresView({
             </span>
           </div>
         </div>
-        <Button onClick={() => setCreateOpen(true)} disabled={atLimit} title={atLimit ? t("limitHint") : undefined}>
-          <Plus className="size-4" />
-          {t("create")}
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          {aiBuilder && (
+            <Button variant="outline" asChild>
+              <Link href="/ai-builder">
+                <Sparkles className="size-4" />
+                {tBuilder("entry")}
+              </Link>
+            </Button>
+          )}
+          <Button onClick={() => setCreateOpen(true)} disabled={atLimit} title={atLimit ? t("limitHint") : undefined}>
+            <Plus className="size-4" />
+            {t("create")}
+          </Button>
+        </div>
       </div>
 
       {atLimit && <p className="rounded-lg border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">{t("limitHint")}</p>}

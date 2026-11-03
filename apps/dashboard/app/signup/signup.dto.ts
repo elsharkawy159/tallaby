@@ -5,6 +5,9 @@ import { signupInputSchema } from "@workspace/lib/sellers";
  * Signup form payloads (PLAN.md §6.1). Error messages are i18n keys under
  * `signup.errors`. The server re-validates with the same schemas.
  */
+/** Where a seller goes right after signup when they came for it. Only this path: never a free redirect. */
+export const afterSignupPath = (next: unknown): "/ai-builder" | null => (next === "/ai-builder" ? "/ai-builder" : null);
+
 export const storeChoiceSchema = signupInputSchema;
 export type StoreChoiceInput = z.input<typeof storeChoiceSchema>;
 

@@ -11,9 +11,14 @@ import { AI_ZONES_SYSTEM_RULES, aiZonesRequestText, cleanAiZones } from "./ai-zo
 /** The same seller sending the same text again within this window gets the stored answer, free. */
 const RESULT_CACHE_MS = 10 * 60_000;
 
-export async function proposeZones(sellerId: string, text: string): Promise<{ zones: ProposedZone[]; cached: boolean }> {
+export async function proposeZones(
+  sellerId: string,
+  text: string,
+  /** Its own usage-log name when another feature calls this (the AI Store Builder). */
+  options: { feature?: string } = {},
+): Promise<{ zones: ProposedZone[]; cached: boolean }> {
   const { object, cached } = await generateStructured({
-    feature: AI_ZONES_FEATURE,
+    feature: options.feature ?? AI_ZONES_FEATURE,
     sellerId,
     tier: "fast",
     schema: aiZonesOutputSchema,

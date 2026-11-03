@@ -18,6 +18,7 @@ import {
   type StoreSetupInput,
   type EmailSignupInput,
   type SubdomainCheckResult,
+  afterSignupPath,
 } from "./signup.dto";
 
 /**
@@ -81,7 +82,7 @@ export async function checkSignupSubdomain(input: string): Promise<SubdomainChec
  * session, else after the confirmation link (the callback finds no seller and
  * no intent and sends the user there).
  */
-export async function signUpWithEmail(input: EmailSignupInput): Promise<SignupResult> {
+export async function signUpWithEmail(input: EmailSignupInput, next?: string | null): Promise<SignupResult> {
   if (!signupLimiter.check(await clientKey())) return fail("rateLimited");
   const parsed = emailSignupSchema.safeParse(input);
   if (!parsed.success) return fail("invalidInput");
@@ -96,7 +97,7 @@ export async function signUpWithEmail(input: EmailSignupInput): Promise<SignupRe
     email: parsed.data.email,
     password: parsed.data.password,
     options: {
-      emailRedirectTo: `${siteUrl(origin)}/api/auth/callback?next=/`,
+      emailRedirectTo: `${siteUrl(origin)}/api/auth/callback?next=${afterSignupPath(next) ?? "/"}`,
       // Pre-fills step 2 even when the email is confirmed in another browser.
       data: Object.keys(meta).length ? meta : undefined,
     },

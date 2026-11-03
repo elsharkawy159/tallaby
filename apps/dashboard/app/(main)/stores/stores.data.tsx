@@ -1,6 +1,7 @@
 import { and, db, eq, sellerCustomDomains } from "@workspace/db";
 import { requireSeller } from "@/lib/auth/require-seller.server";
 import { getSellerStores } from "@/lib/stores/current-store.server";
+import { builderEnabled } from "../ai-builder/builder-access.server";
 import { StoresView } from "./stores.client";
 import type { StoreCardData } from "./stores.dto";
 
@@ -31,6 +32,7 @@ export async function StoresData({ openCreate }: { openCreate: boolean }) {
       stores={cards}
       selectedId={selected?.id ?? null}
       maxStores={maxStores}
+      aiBuilder={builderEnabled()}
       openCreate={openCreate && stores.length < maxStores}
     />
   );

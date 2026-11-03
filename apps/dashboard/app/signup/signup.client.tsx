@@ -67,11 +67,14 @@ export function SignupForm({
   signedInEmail,
   initialError,
   initialSubdomain = "",
+  afterSignup = null,
 }: {
   /** Set when a user is already signed in (no seller row yet): step 2. */
   signedInEmail: string | null;
   initialError: SignupErrorKey | null;
   initialSubdomain?: string;
+  /** Where to go once the store exists, when the seller came for it. */
+  afterSignup?: string | null;
 }) {
   const t = useTranslations("signup");
   const tAuth = useTranslations("auth");
@@ -159,7 +162,7 @@ export function SignupForm({
       toast.success(
         t("created", { url: result.storeUrl.replace(/^https?:\/\//, "") }),
       );
-      router.replace(result.signup ? `/?welcome=1&signup=${result.signup}` : "/?welcome=1");
+      router.replace(`${afterSignup ?? "/"}?welcome=1${result.signup ? `&signup=${result.signup}` : ""}`);
       router.refresh();
     } else if (result.status === "account_created") {
       // Signed in now: the server page renders step 2.
@@ -196,7 +199,7 @@ export function SignupForm({
             subdomain: initialSubdomain,
             email: values.email,
             password: values.password,
-          });
+          }, afterSignup);
       handleResult(result, values.email);
     });
   };
@@ -213,7 +216,7 @@ export function SignupForm({
     const { error } = await createClient().auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/api/auth/callback?next=/`,
+        redirectTo: `${window.location.origin}/api/auth/callback?next=${afterSignup ?? "/"}`,
       },
     });
     if (error) {

@@ -3,7 +3,7 @@ import { Mail, MapPin, Phone } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { type PaymentMethod, PaymentMethodIcons } from "@/components/layout/payment-method-icons";
-import { CONTACT, LOGIN_URL, SOCIAL_LINKS } from "@/lib/marketing/site.lib";
+import { CONTACT, DASHBOARD_URL, LOGIN_URL, SOCIAL_LINKS } from "@/lib/marketing/site.lib";
 import { BrandIcon, type BrandIconName } from "./brand-icon";
 import { FooterClaim } from "./footer-claim.client";
 import { Container, Ltr } from "./layout-primitives";
@@ -26,6 +26,8 @@ export async function SiteFooter() {
         { href: "/templates", label: t("templates") },
         { href: "/#builder", label: t("builder") },
         { href: "/pricing", label: t("pricing") },
+        // The AI Store Builder's entry (F-54): signup, then the chat. Hidden behind its switch.
+        ...(process.env.STORE_BUILDER_AI_ENABLED === "1" ? [{ href: `${DASHBOARD_URL}signup?next=/ai-builder`, label: t("aiBuilder"), external: true }] : []),
         { href: "/affiliates", label: t("affiliates") },
         { href: "/faq", label: t("faq") },
       ],

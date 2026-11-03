@@ -61,6 +61,8 @@ export async function updateSession(request: NextRequest) {
     const login = new URL("/login", request.url);
     // MCP consent (F-29b): come back to the same authorize request after signing in.
     if (path === "/oauth/authorize") login.searchParams.set("next", `${path}${url.search}`);
+    // The AI Store Builder's link (F-54): back to the chat after signing in.
+    if (path === "/ai-builder") login.searchParams.set("next", path);
     return NextResponse.redirect(login);
   }
 
