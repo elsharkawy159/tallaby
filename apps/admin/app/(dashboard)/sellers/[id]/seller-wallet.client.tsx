@@ -6,7 +6,8 @@ import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/components/card";
 import type { SellerAdminPanel } from "./seller-admin.data";
-import { formatCurrency, formatDateTime } from "../sellers.lib";
+import { egp, topUpCreditLabel, walletMoney } from "../../wallets/store-wallets.lib";
+import { formatDateTime } from "../sellers.lib";
 import { WALLET_ENTRY_LABELS } from "./seller-admin.lib";
 import { AdjustStoreWalletButton } from "../../wallets/store-wallet-actions.client";
 
@@ -19,12 +20,14 @@ const amountClass = (amount: string | number | null) => (Number(amount ?? 0) < 0
 export function SellerWalletPanel({
   sellerId,
   wallet,
+  currency,
   entries,
   topUps,
   stores,
 }: {
   sellerId: string;
   wallet: SellerAdminPanel["account"]["wallet"];
+  currency: string;
   entries: SellerAdminPanel["walletEntries"];
   topUps: SellerAdminPanel["topUps"];
   stores: { id: string; name: string }[];
@@ -40,21 +43,21 @@ export function SellerWalletPanel({
           <Button asChild size="sm" variant="outline">
             <Link href={`/wallets/sellers/${sellerId}`}>Full wallet</Link>
           </Button>
-          <AdjustStoreWalletButton sellerId={sellerId} stores={stores} />
+          <AdjustStoreWalletButton sellerId={sellerId} stores={stores} currency={currency} />
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="flex flex-wrap items-end gap-6">
           <div>
             <div className="text-sm text-muted-foreground">Balance</div>
-            <div className={`text-3xl font-semibold ${amountClass(balance)}`}>{formatCurrency(balance)}</div>
+            <div className={`text-3xl font-semibold ${amountClass(balance)}`}>{walletMoney(balance, currency)}</div>
           </div>
           <div className="text-sm text-muted-foreground">
             Status: <Badge variant="outline">{wallet?.status ?? "no wallet yet"}</Badge>
           </div>
           {wallet && (
             <div className={`text-sm ${ledgerMismatch ? "font-medium text-red-600" : "text-muted-foreground"}`}>
-              Ledger total {formatCurrency(wallet.ledgerTotal)}
+              Ledger total {walletMoney(wallet.ledgerTotal, currency)}
               {ledgerMismatch ? " · does not match the balance, investigate" : " · matches"}
             </div>
           )}
@@ -96,8 +99,8 @@ export function SellerWalletPanel({
                         "—"
                       )}
                     </td>
-                    <td className={`py-2 pr-3 text-right font-medium ${amountClass(entry.amount)}`}>{formatCurrency(entry.amount)}</td>
-                    <td className="py-2 text-right">{entry.balanceAfter !== null ? formatCurrency(entry.balanceAfter) : "—"}</td>
+                    <td className={`py-2 pr-3 text-right font-medium ${amountClass(entry.amount)}`}>{walletMoney(entry.amount, entry.currency)}</td>
+                    <td className="py-2 text-right">{entry.balanceAfter !== null ? walletMoney(entry.balanceAfter, entry.currency) : "—"}</td>
                   </tr>
                 ))}
               </tbody>
@@ -131,7 +134,10 @@ export function SellerWalletPanel({
                       <Badge variant="outline">{topUp.status}</Badge>
                       {topUp.failureReason && <div className="text-xs text-red-600">{topUp.failureReason}</div>}
                     </td>
-                    <td className="py-2 text-right">{formatCurrency(topUp.amount)}</td>
+                    <td className="py-2 text-right">
+                      {egp(topUp.amount)}
+                      {topUpCreditLabel(topUp) && <div className="text-xs text-muted-foreground">Credits {topUpCreditLabel(topUp)}</div>}
+                    </td>
                   </tr>
                 ))}
               </tbody>

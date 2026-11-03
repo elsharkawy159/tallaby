@@ -12,7 +12,7 @@ import {
 import type { StoreWalletTotals } from "@workspace/lib/admin/server";
 import { Card, CardContent } from "@workspace/ui/components/card";
 import { cn } from "@workspace/ui/lib/utils";
-import { egp } from "./store-wallets.lib";
+import { egp, walletMoney } from "./store-wallets.lib";
 import type { WalletsScope } from "./store-wallets.params";
 
 /** Seller wallets (store wallets, the seller ledger) vs customer wallets (user_wallets). */
@@ -45,16 +45,17 @@ export function WalletsScopeNav({ scope }: { scope: WalletsScope }) {
 type Tile = { label: string; value: string; hint?: string; icon: typeof WalletIcon; tone?: "danger" | "warn"; href?: string };
 
 export function StoreWalletTotalsCards({ totals }: { totals: StoreWalletTotals }) {
+  const money = (value: string) => walletMoney(value, totals.currency);
   const tiles: Tile[] = [
     {
       label: "Held for sellers",
-      value: egp(totals.totalHeld),
-      hint: `Net ${egp(totals.netBalance)} across ${totals.walletCount.toLocaleString()} wallets`,
+      value: money(totals.totalHeld),
+      hint: `Net ${money(totals.netBalance)} across ${totals.walletCount.toLocaleString()} wallets`,
       icon: Landmark,
     },
     {
       label: "Owed by sellers",
-      value: egp(totals.totalOwed),
+      value: money(totals.totalOwed),
       hint: `${totals.negativeCount.toLocaleString()} wallets below zero`,
       icon: TrendingDown,
       tone: totals.negativeCount > 0 ? "danger" : undefined,
@@ -63,19 +64,19 @@ export function StoreWalletTotalsCards({ totals }: { totals: StoreWalletTotals }
     {
       label: "Top-ups to review",
       value: totals.pendingReviewCount.toLocaleString(),
-      hint: egp(totals.pendingReviewAmount),
+      hint: `${egp(totals.pendingReviewAmount)} paid`,
       icon: Hourglass,
       tone: totals.pendingReviewCount > 0 ? "warn" : undefined,
       href: "/wallets?tab=topups&status=pending&provider=vodafone_cash,instapay",
     },
     {
       label: "Fees earned, 30 days",
-      value: egp(totals.fees30d),
-      hint: `All time ${egp(totals.feesAllTime)} (net of reversals)`,
+      value: money(totals.fees30d),
+      hint: `All time ${money(totals.feesAllTime)} (net of reversals)`,
       icon: Receipt,
     },
-    { label: "Top-ups credited, 30 days", value: egp(totals.topUps30d), icon: ArrowDownToLine },
-    { label: "Sales credited, 30 days", value: egp(totals.sales30d), icon: Banknote },
+    { label: "Top-ups credited, 30 days", value: money(totals.topUps30d), icon: ArrowDownToLine },
+    { label: "Sales credited, 30 days", value: money(totals.sales30d), icon: Banknote },
     {
       label: "Ledger check",
       value: totals.mismatchCount === 0 ? "All match" : `${totals.mismatchCount} mismatch`,
@@ -90,7 +91,13 @@ export function StoreWalletTotalsCards({ totals }: { totals: StoreWalletTotals }
   ];
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 2xl:grid-cols-7">
+    <div className="space-y-2">
+      {totals.currency === "USD" && (
+        <p className="text-xs text-muted-foreground">
+          These totals count USD wallets and USD entries only. EGP entries from before the switch stay in each wallet's history.
+        </p>
+      )}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 2xl:grid-cols-7">
       {tiles.map((tile) => {
         const body = (
           <Card
@@ -132,6 +139,7 @@ export function StoreWalletTotalsCards({ totals }: { totals: StoreWalletTotals }
           <div key={tile.label}>{body}</div>
         );
       })}
+      </div>
     </div>
   );
 }

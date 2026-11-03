@@ -26,7 +26,9 @@ import {
   entryTypeLabel,
   shortId,
   signClass,
+  topUpCreditLabel,
   topUpProviderLabel,
+  walletMoney,
 } from "../store-wallets.lib";
 
 export const storeWalletFilters: DataTableFilter[] = [
@@ -56,9 +58,9 @@ function SellerLink({ sellerId, name }: { sellerId: string; name: string | null 
   );
 }
 
-function Money({ value, bold = false }: { value: string | null; bold?: boolean }) {
+function Money({ value, currency, bold = false }: { value: string | null; currency: string | null; bold?: boolean }) {
   if (value === null) return <span className="text-muted-foreground">—</span>;
-  return <span className={`tabular-nums ${bold ? "font-semibold" : ""} ${signClass(value)}`}>{egp(value)}</span>;
+  return <span className={`tabular-nums ${bold ? "font-semibold" : ""} ${signClass(value)}`}>{walletMoney(value, currency)}</span>;
 }
 
 /* Wallets ------------------------------------------------------------------ */
@@ -84,10 +86,10 @@ export function getStoreWalletColumns(): ColumnDef<AdminStoreWalletRow>[] {
       meta: { label: "Balance" },
       cell: ({ row }) => (
         <div>
-          <Money value={row.original.balance} bold />
+          <Money value={row.original.balance} currency={row.original.currency} bold />
           {row.original.mismatch && (
             <div className="flex items-center gap-1 text-xs font-medium text-red-600">
-              <AlertTriangle className="size-3" aria-hidden /> Ledger {egp(row.original.ledgerTotal)}
+              <AlertTriangle className="size-3" aria-hidden /> Ledger {walletMoney(row.original.ledgerTotal, row.original.currency)}
             </div>
           )}
         </div>
@@ -112,7 +114,7 @@ export function getStoreWalletColumns(): ColumnDef<AdminStoreWalletRow>[] {
       meta: { label: "Negative limit" },
       cell: ({ row }) =>
         row.original.negativeLimit ? (
-          <span className="tabular-nums">{egp(`-${row.original.negativeLimit}`)}</span>
+          <span className="tabular-nums">{walletMoney(`-${row.original.negativeLimit}`, row.original.currency)}</span>
         ) : (
           <span className="text-xs text-muted-foreground">None</span>
         ),
@@ -225,7 +227,7 @@ export function getStoreWalletEntryColumns({ showSeller }: { showSeller: boolean
       accessorKey: "amount",
       header: ({ column }) => <DataTableColumnHeader column={column} title="Amount" />,
       meta: { label: "Amount" },
-      cell: ({ row }) => <Money value={row.original.amount} bold />,
+      cell: ({ row }) => <Money value={row.original.amount} currency={row.original.currency} bold />,
     },
     {
       id: "balance",
@@ -233,9 +235,9 @@ export function getStoreWalletEntryColumns({ showSeller }: { showSeller: boolean
       meta: { label: "Balance before → after" },
       cell: ({ row }) => (
         <span className="whitespace-nowrap text-xs tabular-nums text-muted-foreground">
-          {row.original.balanceBefore !== null ? egp(row.original.balanceBefore) : "—"} →{" "}
+          {row.original.balanceBefore !== null ? walletMoney(row.original.balanceBefore, row.original.currency) : "—"} →{" "}
           <span className={signClass(row.original.balanceAfter)}>
-            {row.original.balanceAfter !== null ? egp(row.original.balanceAfter) : "—"}
+            {row.original.balanceAfter !== null ? walletMoney(row.original.balanceAfter, row.original.currency) : "—"}
           </span>
         </span>
       ),
@@ -282,9 +284,17 @@ export function getStoreTopUpColumns({ showSeller }: { showSeller: boolean }): C
     {
       id: "amount",
       accessorKey: "amount",
-      header: ({ column }) => <DataTableColumnHeader column={column} title="Amount" />,
-      meta: { label: "Amount" },
-      cell: ({ row }) => <span className="font-semibold tabular-nums">{egp(row.original.amount)}</span>,
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Paid" />,
+      meta: { label: "Paid" },
+      cell: ({ row }) => {
+        const credit = topUpCreditLabel(row.original);
+        return (
+          <div>
+            <span className="font-semibold tabular-nums">{egp(row.original.amount)}</span>
+            {credit && <div className="text-xs tabular-nums text-muted-foreground">Credits {credit}</div>}
+          </div>
+        );
+      },
     },
     {
       id: "method",

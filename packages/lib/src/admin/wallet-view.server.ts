@@ -65,12 +65,16 @@ function dayRange(column: SQL | Parameters<typeof asc>[0], from?: string, to?: s
 }
 
 const sellerName = sql<string>`coalesce(nullif(${sellers.displayName}, ''), ${sellers.businessName})`;
+// Single-table select: the column's table name is dropped, which is fine here.
+const entryCurrency = sql<string>`coalesce(${walletTransactions.currency}, 'EGP')`;
 
 // ---------------------------------------------------------------------------
 // Platform totals
 // ---------------------------------------------------------------------------
 
 export type StoreWalletTotals = {
+  /** Every total below counts this currency only: USD once the switch is live, EGP until then (0136). */
+  currency: "EGP" | "USD";
   walletCount: number;
   /** Sum of balances above zero: money Tallaby holds for sellers. */
   totalHeld: string;
@@ -82,6 +86,7 @@ export type StoreWalletTotals = {
   /** Wallets whose balance differs from the sum of their ledger, or from the sellers.wallet_balance mirror. */
   mismatchCount: number;
   pendingReviewCount: number;
+  /** Always the EGP sellers paid. */
   pendingReviewAmount: string;
   /** Last 30 days. Fees are net of fee reversals (a positive number = earned). */
   fees30d: string;
@@ -106,14 +111,19 @@ export async function getStoreWalletTotals(q: Queryable = db): Promise<StoreWall
            (count(*) FILTER (WHERE balance < 0))::int AS negative_count,
            (count(*) FILTER (WHERE status <> 'active'))::int AS inactive_count
       FROM seller_wallet
+     WHERE currency = billing_wallet_currency()
   `);
+  const [{ currency } = { currency: "EGP" }] = await q.execute<{ currency: string }>(sql`SELECT billing_wallet_currency() AS currency`);
 
   const [mismatch] = await q.execute<{ n: number }>(sql`
     SELECT count(*)::int AS n
       FROM seller_wallet w
       JOIN sellers s ON s.id = w.seller_id
-      LEFT JOIN (SELECT seller_id, sum(amount) AS total FROM wallet_transactions GROUP BY seller_id) t
-        ON t.seller_id = w.seller_id
+      LEFT JOIN (
+        SELECT seller_id, coalesce(currency, 'EGP') AS currency, sum(amount) AS total
+          FROM wallet_transactions
+         GROUP BY 1, 2
+      ) t ON t.seller_id = w.seller_id AND t.currency = w.currency
      WHERE w.balance <> coalesce(t.total, 0)
         OR coalesce(s.wallet_balance, 0) <> w.balance
   `);
@@ -132,9 +142,11 @@ export async function getStoreWalletTotals(q: Queryable = db): Promise<StoreWall
            coalesce(sum(amount) FILTER (WHERE type = 'sale' AND created_at >= now() - interval '30 days'), 0)::text AS sales_30d,
            coalesce(-sum(amount) FILTER (WHERE type IN ('fee', 'fee_reversal')), 0)::text AS fees_all
       FROM wallet_transactions
+     WHERE coalesce(currency, 'EGP') = billing_wallet_currency()
   `);
 
   return {
+    currency: currency === "USD" ? "USD" : "EGP",
     walletCount: Number(wallets?.wallet_count ?? 0),
     totalHeld: wallets?.total_held ?? "0",
     totalOwed: wallets?.total_owed ?? "0",
@@ -162,6 +174,8 @@ export type AdminStoreWalletRow = {
   sellerStatus: string | null;
   /** NULL when the seller has no wallet row yet (balance 0, created on the first entry). */
   walletStatus: string | null;
+  /** The wallet's currency; a seller with no wallet row yet shows the currency a new wallet would get. */
+  currency: string;
   balance: string;
   negativeLimit: string | null;
   ledgerTotal: string;
@@ -179,7 +193,9 @@ export async function listStoreWalletsForAdmin(input: unknown = {}, q: Queryable
   const f = parsed.data;
 
   const balance = sql`coalesce(${sellerWallet.balance}, 0)`;
-  const ledgerTotal = sql`(SELECT coalesce(sum(t.amount), 0) FROM wallet_transactions t WHERE t.seller_id = ${sellers.id})`;
+  const currency = sql`coalesce(${sellerWallet.currency}, billing_wallet_currency())`;
+  // Only entries in the wallet's currency: a converted wallet's EGP rows net to zero (0136).
+  const ledgerTotal = sql`(SELECT coalesce(sum(t.amount), 0) FROM wallet_transactions t WHERE t.seller_id = ${sellers.id} AND coalesce(t.currency, 'EGP') = ${currency})`;
   const lastEntryAt = sql`(SELECT max(t.created_at) FROM wallet_transactions t WHERE t.seller_id = ${sellers.id})`;
   const mismatch = sql`(${balance} <> ${ledgerTotal} OR (${sellerWallet.id} IS NOT NULL AND coalesce(${sellers.walletBalance}, 0) <> ${sellerWallet.balance}))`;
 
@@ -210,6 +226,7 @@ export async function listStoreWalletsForAdmin(input: unknown = {}, q: Queryable
       sellerEmail: sql<string | null>`coalesce(${users.email}, ${sellers.supportEmail})`,
       sellerStatus: sellers.status,
       walletStatus: sellerWallet.status,
+      currency: sql<string>`${currency}`,
       balance: sql<string>`${balance}::text`,
       negativeLimit: sellerWallet.negativeLimit,
       ledgerTotal: sql<string>`${ledgerTotal}::text`,
@@ -259,6 +276,8 @@ export type AdminStoreWalletEntryRow = {
   storeName: string | null;
   type: string;
   amount: string;
+  /** The entry's own currency: old rows stay EGP after the switch. */
+  currency: string | null;
   balanceBefore: string | null;
   balanceAfter: string | null;
   description: string | null;
@@ -309,6 +328,7 @@ export async function listStoreWalletEntriesPagedForAdmin(
       storeName: stores.name,
       type: walletTransactions.type,
       amount: walletTransactions.amount,
+      currency: walletTransactions.currency,
       balanceBefore: walletTransactions.balanceBefore,
       balanceAfter: walletTransactions.balanceAfter,
       description: walletTransactions.description,
@@ -349,7 +369,12 @@ export type AdminStoreTopUpRow = {
   id: string;
   sellerId: string;
   sellerName: string;
+  /** The EGP paid. */
   amount: string;
+  /** What the wallet receives, when priced in USD (0136). Null on old EGP top-ups. */
+  creditAmount: string | null;
+  creditCurrency: string | null;
+  exchangeRate: string | null;
   status: string;
   provider: string;
   providerReference: string | null;
@@ -393,6 +418,9 @@ export async function listStoreTopUpsPagedForAdmin(input: unknown = {}, q: Query
       sellerId: sellerWalletTopUps.sellerId,
       sellerName,
       amount: sellerWalletTopUps.amount,
+      creditAmount: sellerWalletTopUps.creditAmount,
+      creditCurrency: sellerWalletTopUps.creditCurrency,
+      exchangeRate: sellerWalletTopUps.exchangeRate,
       status: sellerWalletTopUps.status,
       provider: sellerWalletTopUps.provider,
       providerReference: sellerWalletTopUps.providerReference,
@@ -439,10 +467,10 @@ export async function listStoreTopUpsPagedForAdmin(input: unknown = {}, q: Query
 
 export type StoreWalletBreakdown = {
   seller: { name: string; email: string | null; status: string | null; mirrorBalance: string | null } | null;
-  /** Sum and count per entry type, all time. */
-  byType: { type: string; total: string; count: number }[];
-  /** Sum and count per store; storeId NULL = account-level entries. */
-  byStore: { storeId: string | null; storeName: string | null; total: string; count: number }[];
+  /** Sum and count per entry type and currency, all time. Currencies are never added together. */
+  byType: { type: string; currency: string; total: string; count: number }[];
+  /** Sum and count per store and currency; storeId NULL = account-level entries. */
+  byStore: { storeId: string | null; storeName: string | null; currency: string; total: string; count: number }[];
   /** The seller's current stores, for the adjustment form. */
   stores: { id: string; name: string }[];
 };
@@ -464,25 +492,27 @@ export async function getStoreWalletBreakdownForAdmin(sellerId: string, q: Query
     q
       .select({
         type: walletTransactions.type,
+        currency: entryCurrency,
         total: sql<string>`sum(${walletTransactions.amount})::text`,
         count: sql<number>`count(*)::int`,
       })
       .from(walletTransactions)
       .where(eq(walletTransactions.sellerId, sellerId))
-      .groupBy(walletTransactions.type)
-      .orderBy(walletTransactions.type),
+      .groupBy(walletTransactions.type, walletTransactions.currency)
+      .orderBy(walletTransactions.type, walletTransactions.currency),
     q
       .select({
         storeId: stores.id,
         storeName: stores.name,
+        currency: sql<string>`coalesce(${walletTransactions.currency}, 'EGP')`,
         total: sql<string>`sum(${walletTransactions.amount})::text`,
         count: sql<number>`count(*)::int`,
       })
       .from(walletTransactions)
       .leftJoin(stores, and(eq(stores.id, walletTransactions.storeId), eq(stores.sellerId, sellerId)))
       .where(eq(walletTransactions.sellerId, sellerId))
-      .groupBy(stores.id, stores.name)
-      .orderBy(sql`${stores.name} nulls first`),
+      .groupBy(stores.id, stores.name, walletTransactions.currency)
+      .orderBy(sql`${stores.name} nulls first`, walletTransactions.currency),
     q
       .select({ id: stores.id, name: stores.name })
       .from(stores)

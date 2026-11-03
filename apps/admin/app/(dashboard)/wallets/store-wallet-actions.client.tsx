@@ -29,7 +29,7 @@ import { ReasonField } from "../sellers/[id]/seller-account.client";
 import { sellerOverrideAction, walletAdjustmentAction } from "../sellers/[id]/seller-admin.server";
 import { ReviewDialog } from "../store-top-ups/store-top-ups.client";
 import type { StoreTopUpWithProof } from "./store-wallets.data";
-import { egp } from "./store-wallets.lib";
+import { walletMoney } from "./store-wallets.lib";
 
 /**
  * Store-wallet writes for admins. All go through the existing audited
@@ -44,10 +44,13 @@ const ACCOUNT_LEVEL = "account";
 export function AdjustStoreWalletButton({
   sellerId,
   stores,
+  currency,
   size = "sm",
 }: {
   sellerId: string;
   stores: { id: string; name: string }[];
+  /** The wallet's currency: the amount is in it. */
+  currency: string;
   size?: "sm" | "default";
 }) {
   const router = useRouter();
@@ -78,6 +81,7 @@ export function AdjustStoreWalletButton({
         sellerId,
         storeId: storeId === ACCOUNT_LEVEL ? null : storeId,
         amount: signed,
+        currency: currency === "USD" ? "USD" : "EGP",
         reason: reasonOrDefault(reason),
         idempotencyKey,
       });
@@ -120,7 +124,7 @@ export function AdjustStoreWalletButton({
               ))}
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="adjust-amount">Amount in EGP</Label>
+              <Label htmlFor="adjust-amount">Amount in {currency === "USD" ? "USD" : "EGP"}</Label>
               <Input
                 id="adjust-amount"
                 inputMode="decimal"
@@ -148,7 +152,7 @@ export function AdjustStoreWalletButton({
             <ReasonField value={reason} onChange={setReason} />
             {cleanAmount !== "" && (
               <p className="text-sm text-muted-foreground">
-                This will post <strong className={direction === "debit" ? "text-red-600" : "text-green-700"}>{egp(signed)}</strong>.
+                This will post <strong className={direction === "debit" ? "text-red-600" : "text-green-700"}>{walletMoney(signed, currency)}</strong>.
               </p>
             )}
           </div>
@@ -171,7 +175,7 @@ export function AdjustStoreWalletButton({
 }
 
 /** D21 overdraft for optional purchases (ads, themes). Fees ignore it. */
-export function NegativeLimitButton({ sellerId, current }: { sellerId: string; current: string | null }) {
+export function NegativeLimitButton({ sellerId, current, currency }: { sellerId: string; current: string | null; currency: string }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
@@ -215,7 +219,7 @@ export function NegativeLimitButton({ sellerId, current }: { sellerId: string; c
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="negative-limit">Limit in EGP (empty = none)</Label>
+              <Label htmlFor="negative-limit">Limit in {currency === "USD" ? "USD" : "EGP"} (empty = none)</Label>
               <Input
                 id="negative-limit"
                 inputMode="decimal"

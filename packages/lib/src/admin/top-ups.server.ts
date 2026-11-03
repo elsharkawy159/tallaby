@@ -37,7 +37,7 @@ export const topUpReviewSchema = z
   });
 
 export type TopUpReviewError = "not_admin" | "invalid_input" | "not_found" | "already_reviewed" | "wallet_not_active";
-export type TopUpReviewResult = { status: "approved"; balanceAfter: string } | { status: "rejected" };
+export type TopUpReviewResult = { status: "approved"; balanceAfter: string; currency: "EGP" | "USD" } | { status: "rejected" };
 
 class ReviewError extends Error {
   constructor(readonly code: TopUpReviewError) {
@@ -83,9 +83,9 @@ export async function reviewManualStoreTopUp(
         return { status: "rejected" };
       }
 
+      const credit = topUpCredit(topUp);
       let entry;
       try {
-        const credit = topUpCredit(topUp);
         entry = await postStoreWalletEntry(tx, {
           sellerId: topUp.sellerId,
           type: "top_up",
@@ -113,10 +113,18 @@ export async function reviewManualStoreTopUp(
         sellerId: topUp.sellerId,
         action: "approve_top_up",
         before: { status: "pending", balance: entry.balanceBefore },
-        after: { status: "succeeded", balance: entry.balanceAfter, amount: topUp.amount, entryId: entry.entryId, topUpId: topUp.id },
+        after: {
+          status: "succeeded",
+          balance: entry.balanceAfter,
+          amount: topUp.amount,
+          credited: credit.amount,
+          currency: credit.currency,
+          entryId: entry.entryId,
+          topUpId: topUp.id,
+        },
         reason,
       });
-      return { status: "approved", balanceAfter: entry.balanceAfter };
+      return { status: "approved", balanceAfter: entry.balanceAfter, currency: credit.currency };
     });
     return { success: true, data };
   } catch (error) {
@@ -130,7 +138,12 @@ export type AdminTopUpRow = {
   id: string;
   sellerId: string;
   sellerName: string | null;
+  /** The EGP paid. */
   amount: string;
+  /** What the wallet receives, when priced in USD (0136). Null on old EGP top-ups. */
+  creditAmount: string | null;
+  creditCurrency: string | null;
+  exchangeRate: string | null;
   method: string;
   status: string;
   proofPath: string | null;
@@ -152,6 +165,9 @@ export async function listManualTopUpsForAdmin(
       sellerId: sellerWalletTopUps.sellerId,
       sellerName: sql<string | null>`coalesce(${sellers.displayName}, ${sellers.businessName})`,
       amount: sellerWalletTopUps.amount,
+      creditAmount: sellerWalletTopUps.creditAmount,
+      creditCurrency: sellerWalletTopUps.creditCurrency,
+      exchangeRate: sellerWalletTopUps.exchangeRate,
       method: sellerWalletTopUps.provider,
       status: sellerWalletTopUps.status,
       metadata: sellerWalletTopUps.metadata,

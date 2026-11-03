@@ -4,7 +4,6 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Check, ExternalLink, ImageOff, LoaderCircle, X } from "lucide-react";
-import { formatCurrency } from "@workspace/lib";
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
 import { Card, CardContent } from "@workspace/ui/components/card";
@@ -18,6 +17,7 @@ import {
 } from "@workspace/ui/components/dialog";
 import { Label } from "@workspace/ui/components/label";
 import { Textarea } from "@workspace/ui/components/textarea";
+import { egp, topUpCreditLabel } from "../wallets/store-wallets.lib";
 import type { TopUpWithProof } from "./store-top-ups.data";
 import { reviewStoreTopUpAction } from "./store-top-ups.server";
 
@@ -65,13 +65,22 @@ export function StoreTopUpsList({ rows, view }: { rows: TopUpWithProof[]; view: 
                   </a>
                   <p className="text-xs text-muted-foreground">{when(row.createdAt)}</p>
                 </div>
-                <p className="text-xl font-bold tabular-nums">{formatCurrency(Number(row.amount))}</p>
+                <div className="text-end">
+                  <p className="text-xl font-bold tabular-nums">{egp(row.amount)}</p>
+                  {topUpCreditLabel(row) && <p className="text-xs tabular-nums text-muted-foreground">paid, credits {topUpCreditLabel(row)}</p>}
+                </div>
               </div>
               <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
                 <dt className="text-muted-foreground">Method</dt>
                 <dd>{METHOD[row.method] ?? row.method}</dd>
                 <dt className="text-muted-foreground">Sent from</dt>
                 <dd className="font-mono">{row.senderPhone ?? "—"}</dd>
+                {row.exchangeRate && (
+                  <>
+                    <dt className="text-muted-foreground">Rate</dt>
+                    <dd className="tabular-nums">$1 = {Number(row.exchangeRate).toFixed(2)} EGP</dd>
+                  </>
+                )}
                 {view === "reviewed" && (
                   <>
                     <dt className="text-muted-foreground">Result</dt>
@@ -119,7 +128,9 @@ export function ReviewDialog({
   const router = useRouter();
   const [reason, setReason] = useState("");
   const [isPending, startTransition] = useTransition();
-  const amount = formatCurrency(Number(row.amount));
+  const amount = egp(row.amount);
+  // The wallet receives the saved USD credit when there is one, else the EGP paid.
+  const credit = topUpCreditLabel(row) ?? amount;
   const approve = decision === "approve";
   const method = METHOD[row.method] ?? row.method;
 
@@ -139,10 +150,10 @@ export function ReviewDialog({
     <Dialog open onOpenChange={(open) => !open && !isPending && onClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{approve ? `Add ${amount} to this wallet?` : `Reject this ${amount} top-up?`}</DialogTitle>
+          <DialogTitle>{approve ? `Add ${credit} to this wallet?` : `Reject this ${amount} top-up?`}</DialogTitle>
           <DialogDescription>
             {approve
-              ? `Approve only after ${amount} has arrived in the ${method} account. This credits the seller's store wallet and is logged.`
+              ? `Approve only after ${amount} has arrived in the ${method} account. This credits ${credit} to the seller's store wallet and is logged.`
               : "Nothing is credited. The seller sees your reason on their wallet page."}
           </DialogDescription>
         </DialogHeader>

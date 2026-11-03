@@ -54,6 +54,16 @@ export const CHECK_OPTIONS = [{ value: "mismatch", label: "Doesn't match the led
 /** Signed EGP; numeric text from Postgres. */
 export const egp = (value: string | number | null | undefined) => formatCurrency(Number(value ?? 0));
 
+const USD = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
+
+/** A signed amount in its own currency: "-$0.03" or "250 EGP". Anything but USD is EGP (old rows have no currency). */
+export const walletMoney = (value: string | number | null | undefined, currency: string | null | undefined) =>
+  currency === "USD" ? USD.format(Number(value ?? 0)) : egp(value);
+
+/** What a top-up puts in the wallet, or null for an old EGP top-up (the wallet got the EGP paid). */
+export const topUpCreditLabel = (row: { creditAmount: string | null; creditCurrency: string | null }) =>
+  row.creditAmount && row.creditCurrency ? walletMoney(row.creditAmount, row.creditCurrency) : null;
+
 export const signClass = (value: string | number | null | undefined) => {
   const n = Number(value ?? 0);
   return n < 0 ? "text-red-600" : n > 0 ? "text-green-700" : "text-muted-foreground";

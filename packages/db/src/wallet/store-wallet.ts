@@ -260,7 +260,9 @@ export async function getStoreWalletSummary(tx: Tx | typeof dbType, sellerId: st
       status: sellerWallet.status,
       negativeLimit: sellerWallet.negativeLimit,
       currency: sellerWallet.currency,
-      ledgerTotal: sql<string>`(SELECT coalesce(sum(t.amount), 0)::text FROM wallet_transactions t WHERE t.seller_id = ${sellerId})`,
+      // Only entries in the wallet's currency: a converted wallet's EGP rows net to zero (0136).
+      // The table name is written out: drizzle drops it from a column in a single-table select.
+      ledgerTotal: sql<string>`(SELECT coalesce(sum(t.amount), 0)::text FROM wallet_transactions t WHERE t.seller_id = ${sellerId} AND coalesce(t.currency, 'EGP') = seller_wallet.currency)`,
     })
     .from(sellerWallet)
     .where(eq(sellerWallet.sellerId, sellerId));

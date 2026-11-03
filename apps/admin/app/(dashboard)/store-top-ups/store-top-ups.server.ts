@@ -5,6 +5,7 @@ import { logServerError } from "@workspace/db/log";
 import { reviewManualStoreTopUp } from "@workspace/lib/admin/server";
 import { validateAdminAccess } from "@/lib/auth/admin-auth";
 import { sendStoreWalletTopUpEmail } from "@workspace/lib/orders";
+import { walletMoney } from "../wallets/store-wallets.lib";
 
 /**
  * Store top-ups (owner request 2026-10-18): manual Vodafone Cash / InstaPay
@@ -51,7 +52,7 @@ export async function reviewStoreTopUpAction(input: {
       success: true,
       message:
         result.data.status === "approved"
-          ? `Approved. New balance EGP ${result.data.balanceAfter}`
+          ? `Approved. New balance ${walletMoney(result.data.balanceAfter, result.data.currency)}`
           : "Rejected. The seller sees your reason.",
     };
   } catch (error) {
