@@ -340,7 +340,7 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 
 **Why:** Much of the sales happen in chat. Sellers want those orders in the same list, shipped the same way.
 **What:** "Create order" in the dashboard: pick products/variants, customer name, phone, address, shipping zone, discount, payment (COD or already paid). The order is tagged `source = manual` and follows the normal stages, shipping and fee rules.
-**Status:** [Planned] F-05a design note written 2026-10-30 (`docs/superpowers/specs/2026-10-30-manual-orders-design.md`); waiting on owner approval and answers.
+**Status:** [Approved] Owner approved the design note 2026-11-04; building.
 
 - **F-05a · P0 · deps: owner approval** Design note: how a manual order goes through the existing order creation (`place-order.ts`) without changing money logic; fee and wallet behaviour equal to a storefront COD order. Get the owner's OK.
 - **F-05b · P0 · deps: F-05a** Migration if needed (an order `source` value), then the create-order form and server action (`requireStore`, stock check).
@@ -386,7 +386,7 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 
 **Why:** Sellers with a team share one password today.
 **What:** Invite staff by email to one or more stores with roles (orders only, products, full). Staff never see wallet/payout unless allowed.
-**Status:** [Planned] F-09a design note + security review written 2026-10-30 (`docs/superpowers/specs/2026-10-30-staff-accounts-design.md`); waiting on the owner's answers (§10 of the note) before F-09b.
+**Status:** [Delayed] Owner, 2026-11-04: later.
 
 - **F-09a · P1 · deps: —** Design note: how `requireSeller`/`requireStore` resolve a staff member to the owner's seller id, and every action that must check the role. Security review before code.
 - **F-09b · P1 · deps: F-09a** Migration `store_staff` (`seller_id`, `user_id`, `store_ids`, `role`, invite token, status) and audit log entries.
@@ -467,17 +467,17 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 ### F-18 Store affiliates / marketers — P3 · Needs approval
 
 **What:** Sellers give marketers a referral link/code (EasyOrders "روابط الإحالة") and pay them a commission per delivered order. Payouts touch money.
-**Status:** [Planned]
+**Status:** [Delayed] Owner, 2026-11-04: later.
 
 ### F-19 Gift cards & customer store credit — P3 · Needs approval
 
 **What:** Sell gift cards and give store credit on returns (EasyOrders waitlist, 13 votes). Needs its own ledger design (separate from both wallets).
-**Status:** [Planned]
+**Status:** [Delayed] Owner, 2026-11-04: later.
 
 ### F-20 Loyalty points — P3 · Needs approval
 
 **What:** Points per order, redeem at checkout, per store.
-**Status:** [Planned]
+**Status:** [Delayed] Owner, 2026-11-04: later.
 
 ### F-21 Deposit (عربون) before shipping a COD order — P1 · Needs approval
 
@@ -540,12 +540,12 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 ### F-27 A/B tests — P3
 
 **What:** Two versions of a product page or landing page (title, price display, hero image); traffic split; orders per version.
-**Status:** [Planned]
+**Status:** [Delayed] Owner, 2026-11-04: later.
 
 ### F-28 Wholesale pricing — P3 · Needs approval
 
 **What:** A wholesale price with a minimum quantity next to the retail price (EasyOrders waitlist, 8 votes).
-**Status:** [Planned]
+**Status:** [Delayed] Owner, 2026-11-04: later.
 
 ### F-30 Ad tracking upgrades — P2
 
@@ -565,7 +565,7 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 - Offers show only for active, in-stock products of the same store (and in that store's catalog).
 - Fits the builder: a `cross-sell` element in the product-page template (tree element, CLAUDE.md rule 17), with a fallback placement for stores whose product page lacks it.
 - **Decided (owner, 2026-10-29): when the seller has set no offer for a product, show nothing.** No automatic suggestions; the cross-sell block renders only when the product has at least one active offer whose product is active and in stock.
-  **Status:** [Planned] F-32a design note written 2026-10-30 (`docs/superpowers/specs/2026-10-30-cross-sell-design.md`); waiting on owner OK and answers.
+  **Status:** [Approved] Owner approved the design note 2026-11-04; building.
 
 - **F-32a · P1 · deps: —** Design note: the discount as an order-item line adjustment computed in piastres at checkout (`place-order.ts` behaviour kept for orders without offers), how it shows on the order and invoice, and the fee base (PLAN.md §13 unchanged: flat EGP 5 per delivered order, so no fee change). Owner OK on the note.
 - **F-32b · P1 · deps: F-32a** Migration `product_cross_sells`: `store_id`, `product_id`, `offer_product_id`, `offer_variant_id`, `discount_type` ('percent' | 'fixed'), `discount_value`, `is_active`, `sort_order`; unique per store + product + offer; RLS on, no policies. Plus `stores.cross_sell_enabled boolean NOT NULL DEFAULT true`. The cart item keeps the accepted `offer_id` so checkout can re-check it. Mirror in `schema.ts` / `relations.ts`.
@@ -663,7 +663,7 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 **Why:** Tallaby had no SMS or OTP provider, so checkout OTP (F-02f) and automatic order messages (F-14) were blocked. The owner chose [MersalSMS](https://mersalsms.com) (2026-10-30).
 **What:** A server-only SMS client for MersalSMS. It sends checkout OTP codes and order-confirmation SMS from the store's name (sender ID). Every send is logged and capped. According to its home page (read 2026-10-30), MersalSMS offers an SMS API for OTP and transactional messages and unlimited sender IDs. It does not mention WhatsApp. Prices and API docs are not public (portal: portal.mersalsms.com).
-**Status:** [Planned]
+**Status:** [Delayed] Owner, 2026-11-04: delay MersalSMS for now. The dashboard shows SMS as Soon (F-62).
 
 - **F-38a · P1 · deps: owner** Account and decisions: get the API docs and credentials from the MersalSMS portal; price per SMS; who pays (Tallaby, or a charge on the store wallet through `postStoreWalletEntry`, which needs approval, rule 7 / `PLAN.md` §13); sender ID per store or one "Tallaby" sender; daily caps per store.
 - **F-38b · P1 · deps: F-38a** `packages/lib/src/sms/mersal.server.ts`: send (with a timeout, no retry loops, no phone or code in logs). Credentials only in server env (rule 10). Migration `sms_messages` (store_id, phone, kind `otp` | `order_confirm` | …, status, provider id, cost piastres, created_at; RLS on, no policies) for the log and caps.
@@ -695,13 +695,13 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 ### F-31 POS and cashier — P3
 
 **What:** Sell in a physical shop from a phone or tablet with the same products and stock; orders tagged `source = pos`. Needs F-05 (manual orders) first.
-**Status:** [Planned]
+**Status:** [Delayed] Owner, 2026-11-04: later.
 
 ### F-29 AI agent connection (MCP) — P1 · owner request
 
 **Why:** Sellers want to run the store from Claude, ChatGPT and other assistants (EasyOrders planned, 14 votes; owner, 2026-10-30).
 **What:** A remote MCP server at `mcp.tallaby.com/mcp` (apps/backend, Streamable HTTP) with a Tallaby OAuth 2.1 server in the dashboard (DCR + CIMD, PKCE, consent with store picker and scopes). About 45 tools: products, stock, categories, orders and shipping, customers (PII off by default), coupons, reports, website builder drafts, theme, pages, publish (with confirm), store settings. Agents edit builder drafts only; bulk, destructive and publish tools need a preview + confirm token. Owner-only areas (wallet, payouts, payment methods, secrets, domains, staff, store create/delete) are never exposed. Products, orders and coupons logic moves first into shared `packages/lib/src/commands/*` used by both the dashboard and MCP. Personal access tokens in the same table become the F-17 key model (F-17 now builds on F-29).
-**Status:** [In progress] F-29c (endpoint, no read-only tools beyond products/stores yet) and F-29f (products) built 2026-11-01 (`d215f7c1`): `apps/backend/src/mcp/`, 11 tools (§7); staging E2E 55 checks passed; not deployed. F-29b built 2026-10-31 (OAuth server in the dashboard, migration 0133 on staging). F-29a design note written and owner answers recorded 2026-10-30 (`docs/superpowers/specs/2026-10-30-mcp-agent-connection-design.md` §12): free on every plan, owners only, agent may publish when the seller asks, `mcp.tallaby.com`, directory listings yes, 90-day activity log. **Build order:** b → c → d → **f (products)** → **l (store setup by AI)** → h → i → e (orders) → g → j → k.
+**Status:** [Delayed] Owner, 2026-11-04: delay the rest of the MCP work for now. What's built stays as it is.
 
 - **F-29a · P1 · deps: —** Design note, owner answers, security review.
 - **F-29l · P1 · deps: F-29f** Store setup by AI: `create_store` (plan limit), theme selector + apply template, store info/contact/logo, social links and pixel IDs, shipping zones/templates/free delivery, Wassalha, carrier status (secret keys only via dashboard links), setup checklist.
@@ -1024,6 +1024,14 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 - **F-67a · P2 · deps: —** A Pending carts page in the seller's dashboard, for one store at a time: customer, items, value and last activity. It filters by `carts.store_id` for a store the session's seller owns (CLAUDE.md rule 5), with server paging. Contact details show only where the customer gave them. Check the overlap with Orders › Not completed (F-03) and decide whether to link or merge them.
 
+### F-68 First top-up before orders — P1 · owner request · Needs owner answers
+
+**Why:** A seller should know that they need a $5 top-up first, before orders work for them.
+**What:** A simple message on the dashboard home, a ⚠️ on Orders in the sidebar, and the Orders page blurred with a message to top up. What the rule blocks, what counts as topped up and who it covers are waiting on the owner.
+**Status:** [Planned]
+
+- **F-68a · P1 · deps: owner** Build the rule, the message, the sidebar warning and the blurred Orders page once the owner has answered.
+
 ---
 
 ## 5. Owner feature requests (intake)
@@ -1032,6 +1040,8 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 | Date       | Request (owner's words)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | Feature ID                                                                                       | Status                                                                                 |
 | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- |
+| 2026-11-04 | "Seller should know that he can't receive any order until Top-up with 5$ first, show it as a simple message on dashboard main page and make warning icon ⚠️ on the Orders page on side bar so when user enter the Orders page should find like blurred with a message to Top-up to see your orders" | F-68 |
+| 2026-11-04 | "Approve Manual orders and Cross-sell … Approved. Approve the free-shipping threshold … Approved. Delay the MersalSMS for now, write Soon on it on the dashboard. Delay the AI Assistants MCP for now. Yes keep the For later list to be delayed for later. Yes drop the gifts" | F-05, F-32, F-13b, F-38, F-29 |
 | 2026-11-04 | "Make the checkout to be just a simple form contains full name, mobile number, Country, Full address, Note), with a simple location icon button beside the Full Address to automatically write the customer address onClick, in that field (only 1 field full address one line) and show a loading icon while searching about the customer location, and these info to be saved to the user so auto fill, also, make customer able to change the items count on checkout, for customers who have saved address, make autofill with the default address and Edit Address button to select the other addresses" | F-64 |
 | 2026-11-04 | "Remove the page \"الحملات التسويقية\" and \"تتبع الحملات\" from dashboard and hide \"زيارات المتجر\" page from the sidebar as it's already on dashboard / homepage" | F-65 |
 | 2026-11-04 | "On the /emails page, show the email preview while editing it, improve the page to be easier UX for the customer" | F-66 |
@@ -1090,7 +1100,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-03c Leads list in dashboard (2026-10-29; Orders › Not completed)
 - [x] F-04a Invoice + packing slip print (2026-10-30, uncommitted; `/print/orders`; browser E2E pending)
 - [x] F-04b Orders export (2026-10-30, uncommitted; .xlsx of the orders on screen; browser E2E pending)
-- [~] F-05a Manual orders design (owner approval) (2026-10-30; note written, owner approval pending)
+- [x] F-05a Manual orders design (owner approved 2026-11-04)
 - [ ] F-05b Create order form
 
 **P1**
@@ -1125,7 +1135,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-25a Checkout form settings (2026-10-30, uncommitted; no migration; browser E2E pending)
 - [x] F-25b Thank-you page settings (2026-10-30, uncommitted; browser E2E pending)
 - [ ] F-07f Bundles
-- [~] F-32a Cross-sell design note (owner OK) (2026-10-30; note written, owner OK pending)
+- [x] F-32a Cross-sell design note (owner approved 2026-11-04)
 - [ ] F-32b Offers migration (`product_cross_sells`, `stores.cross_sell_enabled` default on)
 - [ ] F-32c Cross-sell in product form + store switch
 - [ ] F-32d Cross-sell on the store product page and cart
@@ -1147,7 +1157,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-37d Commission on succeeded top-ups
 - [x] F-37e "اربح معنا" dashboard page
 - [x] F-37f Admin referrals + payouts
-- [~] F-13b Minimum order + store free-shipping threshold (2026-10-30: minimum built, uncommitted, browser E2E pending; threshold needs owner approval)
+- [~] F-13b Minimum order + store free-shipping threshold (owner approved 2026-11-04; check the built parts against this)
 - [x] F-22a Recent orders endpoint (2026-10-30, uncommitted; server-side feed, no public endpoint)
 - [x] F-22b Sales pop-up on the store (2026-10-30, uncommitted; browser E2E pending)
 - [x] F-24a Bulk edit server action (2026-10-30, uncommitted; no migration)
@@ -1194,7 +1204,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-16d Subscribers list (2026-10-30, uncommitted; `/marketing/subscribers`; browser E2E pending)
 - [ ] F-17a Public API & webhooks
 - [x] F-23a Back-in-stock alerts (2026-10-30, uncommitted; 0126 on staging; email E2E pending)
-- [ ] F-23b Pre-orders
+- [ ] F-23b Pre-orders (delayed by owner 2026-11-04)
 - [x] F-26a Campaign tracking (UTM) (2026-10-30, uncommitted; `orders.metadata.utm`, no migration; Reports › Campaigns)
 - [ ] F-18 Store affiliates / referral links
 - [ ] F-19 Gift cards & store credit
@@ -1289,8 +1299,6 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 - [x] Welcome gift: EGP 100 for new sellers, 7-day trial paused for them (2026-10-29, `a7d36530`; 0119 on staging and production, production 2026-10-30)
 - [x] tallaby.com copy: flat EGP 5 only, no free days or gift on pricing, home and Terms (2026-10-29, `8150c0bc`, `44b926fd`)
-- [ ] Welcome gift: manual phone E2E (new account → template → product → publish → pop-up, ar/en)
-- [ ] Welcome gift: "unspent gift" note on Admin wallet screens
 
 **Owner requests 2026-11-04**
 
@@ -1320,10 +1328,18 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [ ] F-66a Email preview while editing
 - [ ] F-66b Easier emails page
 - [ ] F-67a Pending carts on the seller dashboard
+- [ ] F-68a First top-up: message, sidebar warning, blurred Orders page (owner answers needed)
 
 ---
 
 ## 7. Log
+
+### 2026-11-04 — Owner decisions: approvals and delays
+
+- **Approved:** Manual orders (F-05), Cross-sell (F-32) and the free-shipping threshold (F-13b).
+- **Delayed:** MersalSMS (F-38), the rest of the MCP work (F-29), and staff, affiliates, gift cards, loyalty, A/B tests, wholesale, POS and pre-orders.
+- **Dropped:** the two open welcome gift tasks, because the gift ends at the USD switch.
+- **New:** F-68, first top-up before orders, with questions open.
 
 ### 2026-11-04 — Order notifications: two owner decisions
 
