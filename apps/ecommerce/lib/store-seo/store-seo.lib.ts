@@ -40,26 +40,57 @@ export function storeTitleTemplate(seo: StoreSeo, displayName: string): string {
 }
 
 /**
+ * The store's title and description when the seller wrote none (ROADMAP.md
+ * F-48a). Built at render time, so existing stores get it too: their saved
+ * template copies never change. `category` is the store's category label in
+ * the visitor's language, when it has one.
+ */
+export function storeSeoFallback(name: string, category: string | null | undefined, locale: string): { title: string; description: string } {
+  const label = category?.trim() || null;
+  if (locale === "ar") {
+    return {
+      title: label ? `اشتري ${label} من ${name} الآن | طلبي` : `تسوّق من ${name} الآن | طلبي`,
+      description: label
+        ? `تصفح ${label} من ${name} واطلب أونلاين بخطوات بسيطة.`
+        : `تصفح منتجات ${name} واطلب أونلاين بخطوات بسيطة.`,
+    };
+  }
+  return {
+    title: label ? `Buy ${label} from ${name} now | Tallaby` : `Shop from ${name} now | Tallaby`,
+    description: label
+      ? `Browse ${label} from ${name} and order online in a few simple steps.`
+      : `Browse ${name}'s products and order online in a few simple steps.`,
+  };
+}
+
+/**
  * Layout-level metadata for a store host. Builder pages and product pages
  * override the title/description of their own page. The Search Console and
  * Meta tokens are passed only through Next's `verification` field, which
  * renders them as escaped `<meta name="google-site-verification">` and
  * `<meta name="facebook-domain-verification">` tags.
+ *
+ * The fallback title is only `title.default` (pages with no title of their
+ * own, like the home page): Next.js does not run a layout's template over its
+ * own default, so the store name is never added twice. A seller who wrote a
+ * title template keeps the plain store name there, as before.
  */
 export function buildStoreMetadata(
   store: StoreMetadataInput,
   locale: string,
-  { indexable }: { indexable: boolean },
+  { indexable, category }: { indexable: boolean; category?: string | null },
 ): Metadata {
   const url = storeUrl(store.subdomain, store.customDomain);
   const { seo } = store;
-  const description = seo.description || store.description || store.storeDescription || undefined;
+  const fallback = storeSeoFallback(store.displayName, category, locale);
+  const description = seo.description || store.description || store.storeDescription || fallback.description;
+  const title = seo.titleTemplate ? store.displayName : fallback.title;
   const image = seo.shareImageUrl || store.bannerUrl || store.logoUrl;
   const verification = storeVerification(seo);
 
   return {
-    // The store is the brand here, not Tallaby.
-    title: { default: store.displayName, template: storeTitleTemplate(seo, store.displayName) },
+    // Other pages carry the store's name, not Tallaby's.
+    title: { default: title, template: storeTitleTemplate(seo, store.displayName) },
     description,
     metadataBase: new URL(url),
     alternates: {
@@ -70,7 +101,7 @@ export function buildStoreMetadata(
       type: "website",
       url,
       siteName: store.displayName,
-      title: store.displayName,
+      title,
       description,
       images: image ? [getPublicUrl(image, "sellers")] : undefined,
     },
