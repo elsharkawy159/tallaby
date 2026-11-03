@@ -819,7 +819,7 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 ### F-46 Each store's own policies — P0 · owner request
 
-**Why:** Checked in code: store footers link to `/returns` and `/shipping` (`packages/store-sections/src/designs/footers/_shared.ts`), and on a store host those routes show **Tallaby's global policy text inside the store's header and footer** (`app/[locale]/(shop)/(main)/returns`, `StoreHostShell`). A customer can therefore read rules that aren't the seller's.
+**Why:** Checked in code: store footers link to `/returns` and `/shipping` (`packages/store-sections/src/designs/footers/_shared.ts`), and unless the seller built a page with that slug, the store host **redirects the customer to tallaby.com** (`storefront/[subdomain]/pages/[pageSlug]/page.tsx`). Templates link `/contact`, `/about` and `/faq` the same way. (The first version of this plan wrongly said the global text showed inside the store's design.) **Status:** [Built 2026-11-03] F-46a, F-46b (§7).
 **What:** On a store host, `/returns` and `/shipping` show that store's policy, in this order: the store's own builder page, then the account's `sellers.return_policy` / `shipping_policy` (0065), then a neutral default with the store's name and no Tallaby wording. No link leaves the store. tallaby.com keeps its global pages. This order is a planning call; 0065 removed the store-level policies field in favour of builder pages, so no new column is expected.
 **Status:** [Planned]
 
@@ -1160,9 +1160,9 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [ ] F-44c Remove the welcome-gift pop-up and copy
 - [ ] F-45a Shipping page audit and redesign
 - [ ] F-45b AI delivery areas from a written description
-- [ ] F-46a Store's own `/returns` and `/shipping` with fallback order
-- [ ] F-46b Fix storefront links into the marketplace
-- [ ] F-46c Make return and replacement policies easy to find
+- [x] F-46a Store's own `/returns` and `/shipping` with fallback order (2026-11-03)
+- [x] F-46b Fix storefront links into the marketplace (2026-11-03; `/privacy` and `/terms` still go to Tallaby's, owner to decide)
+- [~] F-46c Make return and replacement policies easy to find (2026-11-03; store footers done, link from the setup flow not done)
 - [ ] F-47a Apps marketplace design note (pricing models, install state, charges)
 - [ ] F-47b Installed and Explore page
 - [ ] F-47c Paid app charges from the USD wallet
@@ -1214,6 +1214,17 @@ Add each new request here first, with the date and the owner's words, then turn 
 ---
 
 ## 7. Log
+
+### 2026-11-03 — F-46a, F-46b Each store's own policies
+
+- **Before:** a store's `/returns` and `/shipping` redirected customers to tallaby.com unless the seller had built a page with that slug.
+- **Now:** in this order, the store's own builder page; then the seller's saved text from Settings (`sellers.return_policy` / `shipping_policy`); then a neutral page with the store's contact details. The neutral page never promises a return period, and it isn't indexed by search engines. No migration.
+- **Also kept on the store:** `/contact` shows the store's contact details, and `/about` and `/faq` go to the store's home when the seller has no such page, because templates link to them.
+- **Still going to Tallaby:** `/privacy` and `/terms` when the store has no such page, since they may need Tallaby's legal text. Left for the owner to decide. Other unknown paths redirect as before.
+- **Policy text is per account:** sellers with several stores share one text unless they build a page per store (0065 removed the per-store field).
+- **F-46c (part):** the built-in store footer now links both policies; template footers already did. A link from the seller setup flow isn't done yet.
+- **Not checked:** the product structured data (`lib/structured-data.ts`) has a fixed return policy built for the marketplace; whether store pages use it wasn't reviewed.
+- **Checks:** 5 unit tests pass, and no new type errors (the 16 in `profile.chunks.tsx` are in a file this work didn't touch). Requested on a staging store with a crawler user agent: `/returns`, `/en/shipping` and `/contact` return 200 on the store with a store canonical; a built `/about` still renders; `/privacy` still redirects. Store with saved policy text: not tested with real text, since the only published staging store has none.
 
 ### 2026-11-03 — F-42b, F-42c, F-42d Product management on phones
 

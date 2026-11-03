@@ -63,9 +63,9 @@ const PASS_THROUGH = [
   "/payment",
   "/profile",
   "/error",
-  // /privacy, /terms, /shipping and /returns are not here: a store host
-  // serves its own builder page of that slug, or the page route redirects to
-  // Tallaby's.
+  // /privacy, /terms, /shipping and /returns are not here: a store host serves
+  // its own builder page of that slug. Without one, /shipping and /returns show
+  // the store's own policy (F-46), and /privacy and /terms redirect to Tallaby's.
   "/cookies",
 ];
 

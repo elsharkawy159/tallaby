@@ -2339,6 +2339,26 @@
     "backHome": "Back to the store"
   },
   "storefront": {
+    "policy": {
+      "heading": "Store policies",
+      "whatsapp": "Message on WhatsApp",
+      "email": "Email",
+      "returns": {
+        "title": "Returns & replacements",
+        "empty": "To return or replace a product, contact {store} and they'll tell you what to do next.",
+        "emptyNoContact": "To return or replace a product, please contact {store}."
+      },
+      "shipping": {
+        "title": "Shipping & delivery",
+        "empty": "You'll see the delivery cost before you confirm your order. For anything else about delivery, contact {store}.",
+        "emptyNoContact": "You'll see the delivery cost before you confirm your order."
+      },
+      "contact": {
+        "title": "Contact us",
+        "empty": "Have a question for {store}? Get in touch:",
+        "emptyNoContact": "{store} hasn't added contact details yet."
+      }
+    },
     "app": {
       "download": "Download application",
       "guideTitle": "Install the {name} app",

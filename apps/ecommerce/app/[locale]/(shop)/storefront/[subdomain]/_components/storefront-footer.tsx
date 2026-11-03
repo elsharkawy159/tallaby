@@ -3,6 +3,7 @@ import { Mail, MapPin, MessageCircle, Phone, Star, Store } from "lucide-react";
 import { getGovernorateLabel } from "@workspace/lib/shipping";
 import { SocialIcon, getSocialPlatform } from "@workspace/store-sections/render";
 import { cn } from "@workspace/ui/lib/utils";
+import { Link } from "@/i18n/navigation";
 import { BASE_URL } from "@/lib/constants";
 import { storeCategoryLabel, type Storefront } from "@/lib/storefront.server";
 import { StoreLogo } from "./store-logo";
@@ -67,6 +68,16 @@ export async function StorefrontFooter({ store }: { store: Storefront }) {
               </ul>
             </div>
           </div>
+
+          {/* The store's own policies, on its own site (ROADMAP.md F-46). */}
+          <nav aria-label={t("policy.heading")} className={s.footerContact}>
+            <Link href="/returns" className={s.footerButton}>
+              {t("policy.returns.title")}
+            </Link>
+            <Link href="/shipping" className={s.footerButton}>
+              {t("policy.shipping.title")}
+            </Link>
+          </nav>
 
           {(store.supportPhone || store.supportEmail || social.length > 0) && (
             <nav aria-label={t("contactHeading")} className={s.footerContact}>
