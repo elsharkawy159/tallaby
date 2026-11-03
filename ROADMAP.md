@@ -270,6 +270,9 @@ Priorities are the owner's (`Roadmap_new.md` §9). The order inside them is prop
 | 54  | F-58 | Admin AI cost display                               | P3                          | no              | —                                                   |
 | 55  | F-59 | Salla research                                      | P3                          | no              | —                                                   |
 | 56  | F-60 | Q&A videos                                          | P3                          | no              | —                                                   |
+| 57  | F-63 | Customer notifications app (1 cent per order)       | P1                          | yes             | Owner request; goes live with the USD switch        |
+| 58  | F-62 | SMS app: Soon, sellers can request it               | P2                          | yes             | SMS sending waits for F-38                          |
+| 59  | F-61 | International storefront                            | P2                          | yes             | **Needs approval** (money, checkout)                |
 
 ---
 
@@ -951,6 +954,36 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 - **F-60a · P3 · deps: —** Add a Q&A series to `.claude/skills/brag-slim/TALLABY_VIDEO_TOPICS.md`: common questions, startup problems, tips, objections. Confirm with the owner whether this relaxes the current limit of tips at 1 video in 5.
 
+### F-61 International storefront — P2 · owner request · Needs approval (money, checkout)
+
+**Why:** Stores can only sell inside Egypt in EGP today. The owner wants a store to sell in any country and currency, and to detect the shopper's country and currency.
+**What:** Every currency, every country on the Shipping page, and the store detects the shopper's country and currency, which the shopper can change. Today's limits, checked in code 2026-11-04: shipping place keys start at `EG`, phones are validated as Egyptian mobiles, and orders, prices and customer wallets are EGP. The USD work (F-56) kept those in EGP on purpose.
+**Status:** [Planned]
+
+- **F-61a · P2 · deps: F-55h** Design note, owner approval first (rule 4): each store's base currency, what the shopper sees and what is actually charged, where rates come from (the daily saved rate, F-56b, widened to all currencies), rounding, what order and wallet records store, and how the fee and each payment method behave.
+- **F-61b · P2 · deps: F-61a** Store currency: choose the base currency, and show prices, carts, orders, emails and structured data in it.
+- **F-61c · P2 · deps: F-61b** Detect the shopper's country and currency from the request, with a switcher that is remembered. The shopper always sees the amount they'll be charged before paying. Search engines get one stable version of each page.
+- **F-61d · P2 · deps: F-61a** Shipping page: every country and its regions in `store_shipping_zones.places`, with zones, prices and checkout matching on them. Egypt keeps its governorates and areas.
+- **F-61e · P2 · deps: F-61d** Checkout for other countries: address forms, phone validation, and only the payment methods that work there. Cash on delivery and Egyptian wallets stay Egypt-only unless the seller says otherwise.
+
+### F-62 SMS app: Soon, sellers can request it — P2 · owner request
+
+**Why:** SMS isn't connected yet (F-38), but sellers should be able to ask for it, and the owner enables it for those who do.
+**Status:** [Planned]
+
+- **F-62a · P2 · deps: —** An SMS card on Apps showing "Soon" with a Request button. The request is saved per store, once, and the Admin bell announces it.
+- **F-62b · P2 · deps: F-62a** Admin list of requests with an Enable action. The seller's card shows Requested or Enabled.
+- **F-62c · P2 · deps: F-38b, F-63b** An enabled store's customers get SMS through the Customer notifications app.
+
+### F-63 Customer notifications app — P1 · owner request
+
+**Why:** Order emails to customers become a paid choice for the seller: 1 cent per order from the store wallet. Not subscribed is the default.
+**Status:** [Planned]
+
+- **F-63a · P1 · deps: F-47** Catalog app at 1 cent per order, per store, off by default. Before the USD switch it can't be bought, like every paid app.
+- **F-63b · P1 · deps: F-63a** The customer's order confirmation email sends only for a store subscribed to the app, and each sent confirmation charges 1 cent. A short wallet forgives that charge and starts grace, and it never fails the order. Sellers' own emails are unchanged.
+- **F-63c · P1 · deps: F-38b, F-62b** SMS through the same subscription, once F-38 is live. Check the price per SMS against 1 cent first.
+
 ---
 
 ## 5. Owner feature requests (intake)
@@ -959,6 +992,9 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 | Date       | Request (owner's words)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | Feature ID                                                                                       | Status                                                                                 |
 | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- |
+| 2026-11-04 | "add a task in roadmap to make Storefront can be international (all currencies, all countries in Shipping page, etc) And detect the Currency/Country, etc" | F-61 |
+| 2026-11-04 | "For the SMS we can make it \"Soon\" but still can be requested by sellers on \"Apps\" so if a user requested it I will enable it" | F-62 |
+| 2026-11-04 | "on the apps, I need to make a Notification App (Customer) and costs 1 cent per order, if customer wants to send an SMS and Email to customer who placed an order / So pause the automatically emails that sens to customer on new orders and make it integrated with the app subscription / Unsubscriped is the default" | F-63 |
 | 2026-11-03 | "Anaylze the Roadmap_new.md and update our PLAN.md and PROJECT.md and all files with our new business updates and pricing, put in the ROADMAP.md file, just analyze and plan for now, code later" (seller, storefront, public-site, AI builder, pricing, admin, research and marketing items; owner's answers are in §4)                                                                                                                                                                                                                                                                             | F-42 … F-60                                                                                      | **Planned** 2026-11-03 (§3.1, §4, §7); no code yet                                     |
 | 2026-11-01 | "resort the Store setup on dashboard for new users, I need to make user choose a theme and adjust their brand identity first then add product then publish the store so they finish the store in minutes, leave the shipping for later"                                                                                                                                                                                                                                                                                                                                                              | Home setup guide order (no feature ID)                                                           | **Done** 2026-11-01 (§7), uncommitted                                                  |
 | 2026-11-01 | "make MCP totally works with Product Add/Edit"                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | F-29c, F-29f                                                                                     | **Built** 2026-11-01 (§7), not deployed                                                |
@@ -1210,6 +1246,20 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] tallaby.com copy: flat EGP 5 only, no free days or gift on pricing, home and Terms (2026-10-29, `8150c0bc`, `44b926fd`)
 - [ ] Welcome gift: manual phone E2E (new account → template → product → publish → pop-up, ar/en)
 - [ ] Welcome gift: "unspent gift" note on Admin wallet screens
+
+**Owner requests 2026-11-04**
+
+- [ ] F-63a Customer notifications app in the catalog (1 cent per order, off by default)
+- [ ] F-63b Order confirmation email only for subscribed stores, with the charge
+- [ ] F-63c SMS through the same subscription (after F-38)
+- [ ] F-62a SMS card: Soon, with a Request button
+- [ ] F-62b Admin requests list and Enable
+- [ ] F-62c SMS for enabled stores (after F-38)
+- [ ] F-61a International design note (owner approval)
+- [ ] F-61b Store base currency
+- [ ] F-61c Detect country and currency, with a switcher
+- [ ] F-61d All countries on the Shipping page
+- [ ] F-61e International checkout
 
 ---
 
