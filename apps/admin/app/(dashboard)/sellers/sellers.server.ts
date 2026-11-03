@@ -135,6 +135,9 @@ export async function getSellers(query: SellersQuery = {}) {
         lastPayoutDate: sellers.lastPayoutDate,
         lastPayoutAmount: sellers.lastPayoutAmount,
         walletBalance: sellers.walletBalance,
+        walletCurrency: sql<string>`coalesce((SELECT w.currency FROM seller_wallet w WHERE w.seller_id = sellers.id), billing_wallet_currency())`,
+        planExpiresAt: sellers.planExpiresAt,
+        planGraceUntil: sellers.planGraceUntil,
         stripeAccountId: sellers.stripeAccountId,
         externalIds: sellers.externalIds,
         sellerLevel: sellers.sellerLevel,
@@ -554,6 +557,10 @@ export async function getSellerDetail(
       return { success: false, error: "Seller not found" };
     }
 
+    const [walletRow] = await db.execute<{ currency: string }>(
+      sql`SELECT coalesce((SELECT w.currency FROM seller_wallet w WHERE w.seller_id = ${sellerId}), billing_wallet_currency()) AS currency`,
+    );
+
     // Cancelled items never became revenue.
     const liveItems = and(
       eq(orderItems.sellerId, sellerId),
@@ -695,6 +702,7 @@ export async function getSellerDetail(
         payoutSchedule: seller.payoutSchedule ?? "biweekly",
         sellerLevel: seller.sellerLevel ?? "standard",
         walletBalance: seller.walletBalance ?? "0",
+        walletCurrency: walletRow?.currency ?? "EGP",
         joinDate: seller.joinDate ?? seller.createdAt ?? "",
         createdAt: seller.createdAt ?? "",
         updatedAt: seller.updatedAt ?? "",

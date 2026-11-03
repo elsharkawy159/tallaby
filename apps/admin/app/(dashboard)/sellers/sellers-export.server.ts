@@ -6,6 +6,7 @@ import { storeUrl } from "@workspace/lib/storefront";
 import { buildWhatsAppUrl, toWhatsAppNumber } from "@workspace/ui/lib/contact";
 import { and, asc, desc, eq, inArray, sql, type SQL } from "drizzle-orm";
 import { headers } from "next/headers";
+import { getBillingState } from "@workspace/lib/billing/server";
 import * as XLSX from "xlsx";
 import { getCurrentAdminUser } from "@/lib/auth/admin-auth";
 import type { RawSearchParams } from "../_components/data-table/search-params";
@@ -87,9 +88,11 @@ const COLUMNS: Array<{ header: string; width: number }> = [
   { header: "Admin page", width: 14 },
 ];
 
-function buildWorkbook(rows: Cell[][]): string {
+function buildWorkbook(rows: Cell[][], walletCurrency: string): string {
   const sheet: XLSX.WorkSheet = {};
-  const all = [COLUMNS.map((column) => column.header), ...rows];
+  // Every wallet is in the same currency: the USD switch moves them all at once (0136).
+  const headers = COLUMNS.map((column) => (column.header === "Wallet (EGP)" ? `Wallet (${walletCurrency})` : column.header));
+  const all = [headers, ...rows];
   all.forEach((row, r) => {
     row.forEach((value, c) => {
       if (value === null || value === "") return;
@@ -256,7 +259,7 @@ export async function exportSellers(params: RawSearchParams, scopeInput: string)
     return {
       success: true as const,
       fileName: `tallaby-sellers-${scope.replace("_", "-")}-${day}.xlsx`,
-      base64: buildWorkbook(rows),
+      base64: buildWorkbook(rows, (await getBillingState()).usdLive ? "USD" : "EGP"),
       sellerCount: sellerRows.length,
       rowCount: rows.length,
     };

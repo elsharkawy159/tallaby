@@ -14,6 +14,7 @@ import {
 } from "@workspace/lib/admin/server";
 import { getGovernorateLabel } from "@workspace/lib/shipping";
 import { formatCurrency } from "@workspace/lib";
+import { walletMoney } from "../../wallets/store-wallets.lib";
 import { AdminTable, type AdminTableColumn } from "../../_components/admin-table/admin-table";
 import { ReasonActionButton } from "../../_components/dialogs/reason-action.client";
 import { IntegrationsTable } from "../../integrations/integrations-table";
@@ -132,7 +133,7 @@ export async function StoreOverviewSection({ store, canWrite }: SectionProps & {
                 "—"
               ) : (
                 <Link href={sellerWalletHref(store.sellerId)} className={Number(store.walletBalance) < 0 ? "text-destructive hover:underline" : "hover:underline"}>
-                  {formatCurrency(Number(store.walletBalance))}
+                  {walletMoney(store.walletBalance, store.walletCurrency)}
                 </Link>
               )}
             </Fact>

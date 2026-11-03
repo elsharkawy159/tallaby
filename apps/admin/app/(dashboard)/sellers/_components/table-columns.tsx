@@ -25,7 +25,7 @@ import {
   canApproveSeller,
   canReactivateSeller,
   canSuspendSeller,
-  formatCurrency,
+  formatWalletBalance,
   formatDate,
   getBusinessTypeOptions,
   getInitials,
@@ -230,7 +230,7 @@ export function getSellersColumns(
               : "font-medium whitespace-nowrap"
           }
         >
-          {formatCurrency(row.original.walletBalance)}
+          {formatWalletBalance(row.original.walletBalance, row.original.walletCurrency)}
         </div>
       ),
     },

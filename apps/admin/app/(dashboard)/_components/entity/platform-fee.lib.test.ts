@@ -9,6 +9,17 @@ describe("platform fee display", () => {
     expect(platformFeeState({}, at)).toEqual({ kind: "standard", label: FLAT_FEE_LABEL });
   });
 
+  it("follows a USD wallet: 3 cents on Free, nothing on an active Pro", () => {
+    const usd = { walletCurrency: "USD" };
+    expect(platformFeeState(usd, at)).toEqual({ kind: "standard", label: "$0.03 per order" });
+    expect(platformFeeState({ ...usd, plan: "pro", planExpiresAt: "2026-11-21T00:00:00Z" }, at).kind).toBe("pro");
+    expect(platformFeeState({ ...usd, plan: "pro", planExpiresAt: "2026-10-01T00:00:00Z" }, at)).toEqual({
+      kind: "standard",
+      label: "$0.03 per order",
+    });
+    expect(platformFeeState({ ...usd, isCommissionExempt: true }, at).kind).toBe("exempt");
+  });
+
   it("shows an active trial with its end date", () => {
     const state = platformFeeState(
       { feeTrialStartedAt: "2026-10-18T00:00:00Z", feeTrialEndsAt: "2026-10-25T00:00:00Z" },

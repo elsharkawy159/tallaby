@@ -75,6 +75,10 @@ export interface Seller {
   lastPayoutDate?: string | null;
   lastPayoutAmount?: string | null;
   walletBalance: string;
+  /** The store wallet's currency, or what a new wallet would open in (0136). */
+  walletCurrency?: string | null;
+  planExpiresAt?: string | null;
+  planGraceUntil?: string | null;
   stripeAccountId?: string | null;
   externalIds?: Record<string, unknown> | null;
   sellerLevel: string;

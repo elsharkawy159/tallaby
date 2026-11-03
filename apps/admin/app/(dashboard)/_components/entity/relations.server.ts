@@ -37,8 +37,11 @@ export const getAccountRelations = cache(async (userId: string) => {
         feeTrialStartedAt: sellers.feeTrialStartedAt,
         feeTrialEndsAt: sellers.feeTrialEndsAt,
         isCommissionExempt: sellers.isCommissionExempt,
+        planExpiresAt: sellers.planExpiresAt,
+        planGraceUntil: sellers.planGraceUntil,
       },
       walletBalance: sql<string | null>`${sellerWallet.balance}::text`,
+      walletCurrency: sql<string>`coalesce(${sellerWallet.currency}, billing_wallet_currency())`,
     })
     .from(users)
     .leftJoin(sellers, eq(sellers.id, users.id))
@@ -65,11 +68,11 @@ export const getAccountRelations = cache(async (userId: string) => {
         .orderBy(desc(stores.isPrimary), asc(stores.createdAt))
     : [];
 
-  const { seller: _seller, walletBalance, ...user } = row;
+  const { seller: _seller, walletBalance, walletCurrency, ...user } = row;
   return {
     user,
     seller: seller
-      ? { ...seller, name: seller.displayName?.trim() || seller.businessName, walletBalance }
+      ? { ...seller, name: seller.displayName?.trim() || seller.businessName, walletBalance, walletCurrency }
       : null,
     stores: sellerStores,
   };

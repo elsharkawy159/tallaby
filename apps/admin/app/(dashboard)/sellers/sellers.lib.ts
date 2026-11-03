@@ -1,5 +1,10 @@
 import type { Seller, SellerStatus } from "./sellers.types";
 import { formatCurrency as formatCurrencyValue } from "@workspace/lib";
+import { walletMoney } from "../wallets/store-wallets.lib";
+
+/** A seller's store-wallet figure: as `formatCurrency` until the wallet is in USD (0136). */
+export const formatWalletBalance = (amount: string | number, currency: string | null | undefined): string =>
+  currency === "USD" ? walletMoney(amount, "USD") : formatCurrency(amount);
 
 export const formatCurrency = (amount: string | number): string => {
   const numAmount = typeof amount === "string" ? parseFloat(amount) : amount;

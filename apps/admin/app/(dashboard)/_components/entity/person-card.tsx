@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Mail, Phone, ShoppingCart, Store, UserRound, Wallet } from "lucide-react";
-import { formatCurrency } from "@workspace/lib";
+import { walletMoney } from "../../wallets/store-wallets.lib";
 import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/components/card";
 import { cn } from "@workspace/ui/lib/utils";
 import { EntityAvatar } from "./entity-avatar";
@@ -103,7 +103,7 @@ export function PersonCard({
               <CardLink
                 href={sellerWalletHref(seller.id)}
                 icon={Wallet}
-                label={balance != null ? formatCurrency(balance) : "Store wallet"}
+                label={balance != null ? walletMoney(balance, seller.walletCurrency) : "Store wallet"}
                 emphasis={balance != null && balance < 0 ? "negative" : undefined}
               />
             </>

@@ -40,7 +40,7 @@ import type { HeardAboutUsCount, SellerStats } from "./sellers.types";
 import {
   getStatusColor,
   getStatusLabel,
-  formatCurrency,
+  formatWalletBalance,
   getInitials,
   canApproveSeller,
   canSuspendSeller,
@@ -122,7 +122,7 @@ export const SellerCard = ({ seller, onAction }: SellerCardProps) => {
             </Link>
           </div>
           <div className="text-xs text-gray-500">
-            {formatCurrency(seller.walletBalance)} balance
+            {formatWalletBalance(seller.walletBalance, seller.walletCurrency)} balance
           </div>
         </div>
 

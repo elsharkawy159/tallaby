@@ -203,7 +203,7 @@ export function SellerAccountPanel({ sellerId, account }: { sellerId: string; ac
         </Row>
 
         <Row label="Fee plan">
-          <span className="font-medium">{account.feePlan === "flat_5" ? "Flat EGP 5 per order" : account.feePlan}</span>
+          <span className="font-medium">{account.walletCurrency === "USD" ? "$0.03 per order on Free, none on Pro" : account.feePlan === "flat_5" ? "Flat EGP 5 per order" : account.feePlan}</span>
           {account.feePlanEffectiveAt && (
             <span className="text-muted-foreground"> · since {formatDate(account.feePlanEffectiveAt)} · the only fee plan today</span>
           )}

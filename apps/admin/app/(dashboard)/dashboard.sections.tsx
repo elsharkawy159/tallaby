@@ -18,6 +18,8 @@ import {
   type LucideIcon
 } from 'lucide-react'
 import { formatCurrency } from '@workspace/lib'
+import { getBillingState } from '@workspace/lib/billing/server'
+import { walletMoney } from './wallets/store-wallets.lib'
 import { storeHostname } from '@workspace/lib/storefront'
 import { cn } from '@workspace/ui/lib/utils'
 import { RemoteImage } from '@/components/media/remote-image'
@@ -44,6 +46,7 @@ import { GmvFeesChart } from './dashboard-chart.client'
 
 const num = (value: number) => Math.round(value).toLocaleString('en-US')
 const money = (value: number) => formatCurrency(value, 'en-EG', { maximumFractionDigits: 0 })
+const storeWallet = (value: number, currency: string) => (currency === 'USD' ? walletMoney(value, 'USD') : money(value))
 
 export function Panel ({ className, children }: { className?: string, children: ReactNode }) {
   return (
@@ -184,7 +187,7 @@ function KpiTile ({ title, icon: Icon, value, unit, metric, hint, spark, href }:
 }
 
 export async function KpiSection ({ range }: { range: OverviewRange }) {
-  const trend = await getOverviewTrend(range)
+  const [trend, billing] = await Promise.all([getOverviewTrend(range), getBillingState()])
   return (
     <section className="grid grid-cols-2 gap-5 lg:grid-cols-3 xl:grid-cols-5">
       <KpiTile
@@ -203,7 +206,7 @@ export async function KpiSection ({ range }: { range: OverviewRange }) {
         value={num(trend.fees.current)}
         unit="EGP"
         metric={trend.fees}
-        hint="EGP 5 per delivered order"
+        hint={billing.usdLive ? '$0.03 per order on Free, shown in EGP' : 'EGP 5 per delivered order'}
         spark={bucket(trend.days, 'fees')}
         href="/wallets?tab=ledger"
       />
@@ -333,7 +336,7 @@ function Bar ({ label, value, color }: { label: string, value: number, color: st
 }
 
 export async function MixSection ({ range }: { range: OverviewRange }) {
-  const mix = await getOverviewMix(range)
+  const [mix, billing] = await Promise.all([getOverviewMix(range), getBillingState()])
   const sites = [
     { key: 'published', label: 'Published', value: mix.sites.published ?? 0, color: 'bg-primary' },
     { key: 'draft', label: 'Never published', value: mix.sites.draft ?? 0, color: 'bg-secondary' },
@@ -375,7 +378,7 @@ export async function MixSection ({ range }: { range: OverviewRange }) {
             Fee trial <b>{num(mix.sellersInTrial)}</b> sellers · Past trial <b>{num(mix.sellersPastTrial)}</b> ·{' '}
             <Link href="/wallets?balance=negative" className="hover:underline">
               Negative wallets <b className={cn(mix.negativeWallets > 0 && 'text-destructive!')}>{num(mix.negativeWallets)}</b>
-              {mix.negativeWallets > 0 && <> ({money(mix.negativeTotal)})</>}
+              {mix.negativeWallets > 0 && <> ({billing.usdLive ? walletMoney(mix.negativeTotal, 'USD') : money(mix.negativeTotal)})</>}
             </Link>
           </Note>
         </PanelBody>
@@ -539,8 +542,8 @@ export async function StoresSection ({ range }: { range: OverviewRange }) {
                         {store.walletBalance == null
                           ? <span className="text-faint">—</span>
                           : store.walletBalance < 0
-                            ? <Pill tone="danger">{money(store.walletBalance)}</Pill>
-                            : money(store.walletBalance)}
+                            ? <Pill tone="danger">{storeWallet(store.walletBalance, store.walletCurrency)}</Pill>
+                            : storeWallet(store.walletBalance, store.walletCurrency)}
                       </td>
                     </tr>
                   ))}

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Badge } from "@workspace/ui/components/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@workspace/ui/components/card";
 import { logServerError } from "@workspace/db/log";
+import { getBillingState } from "@workspace/lib/billing/server";
 import { getPlatformSettingsForAdmin, type AdminPlatformSettings } from "@workspace/lib/admin/server";
 import { FEE_TRIAL_DAYS, STANDARD_FEE_MIN_PIASTRES } from "@workspace/lib/orders/platform-fee";
 import { DEFAULT_PLAN, PLANS, type PlanId } from "@workspace/lib/plans";
@@ -72,6 +73,7 @@ export default async function SettingsPage() {
   }
   const services = serviceStatus();
   const fee = STANDARD_FEE_MIN_PIASTRES / 100;
+  const { usdLive } = await getBillingState();
 
   return (
     <div className="space-y-6">
@@ -107,15 +109,21 @@ export default async function SettingsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Seller fee</CardTitle>
-            <CardDescription>Taken from the store wallet when an order is delivered.</CardDescription>
+            <CardDescription>
+              {usdLive ? "Taken from the store wallet when an order is placed." : "Taken from the store wallet when an order is delivered."}
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
               <dt className="text-muted-foreground">Fee</dt>
-              <dd>EGP {fee.toLocaleString()} per seller per delivered order, shipping excluded</dd>
+              <dd>
+                {usdLive
+                  ? "$0.03 per seller per order on Free, none on Pro ($29 a month)"
+                  : `EGP ${fee.toLocaleString()} per seller per delivered order, shipping excluded`}
+              </dd>
               <dt className="text-muted-foreground">Free trial</dt>
               <dd>
-                {FEE_TRIAL_DAYS} days from the seller&apos;s first store
+                {usdLive ? "None for new sellers; trials already running finish" : `${FEE_TRIAL_DAYS} days from the seller's first store`}
               </dd>
               <dt className="text-muted-foreground">Wallets</dt>
               <dd>

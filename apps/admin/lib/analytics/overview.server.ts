@@ -71,7 +71,8 @@ export const getOverviewTrend = cache(async function getOverviewTrend (
       ),
       f AS (
         SELECT ((t.created_at AT TIME ZONE 'Africa/Cairo')::date - w.start_local::date) AS i,
-          -sum(t.amount) AS fees
+          -- USD fees at the switch's rate, so the chart stays in one currency beside GMV.
+          -sum(t.amount * CASE WHEN t.currency = 'USD' THEN coalesce((SELECT b.conversion_rate FROM billing_settings b WHERE b.id), 1) ELSE 1 END) AS fees
         FROM wallet_transactions t, w
         WHERE t.type IN ('fee', 'fee_reversal') AND t.created_at >= w.start_at GROUP BY 1
       ),
@@ -207,6 +208,7 @@ export async function getOverviewStores (range: OverviewRange): Promise<{
         cur.orders, cur.gmv::numeric(14,2)::text AS gmv, cur.delivered, cur.returned,
         prev.gmv::numeric(14,2)::text AS prev_gmv,
         sw.balance::text AS wallet,
+        sw.currency AS wallet_currency,
         (SELECT d.domain FROM seller_custom_domains d
           WHERE d.store_id = st.id AND d.status = 'active' LIMIT 1) AS custom_domain
       FROM cur
@@ -245,7 +247,8 @@ export async function getOverviewStores (range: OverviewRange): Promise<{
         gmv,
         growthPercent: previous > 0 ? Math.round(((gmv - previous) / previous) * 1000) / 10 : null,
         deliveryRate: finished > 0 ? Math.round((delivered / finished) * 1000) / 10 : null,
-        walletBalance: row.wallet == null ? null : toNumber(row.wallet)
+        walletBalance: row.wallet == null ? null : toNumber(row.wallet),
+        walletCurrency: row.wallet_currency ? String(row.wallet_currency) : 'EGP'
       }
     }),
     latest: rows(latestResult).map((row) => ({

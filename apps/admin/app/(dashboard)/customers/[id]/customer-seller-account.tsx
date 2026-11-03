@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
-import { formatCurrency } from "@workspace/lib";
+import { walletMoney } from "../../wallets/store-wallets.lib";
 import { Button } from "@workspace/ui/components/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/components/card";
 import { cn } from "@workspace/ui/lib/utils";
@@ -44,7 +44,7 @@ export function CustomerSellerAccount({ account }: { account: AccountRelations }
               href={sellerWalletHref(seller.id)}
               className={cn("text-lg font-semibold tabular-nums hover:underline", balance != null && balance < 0 && "text-destructive")}
             >
-              {balance != null ? formatCurrency(balance) : "No wallet yet"}
+              {balance != null ? walletMoney(balance, seller.walletCurrency) : "No wallet yet"}
             </Link>
           </div>
         </div>

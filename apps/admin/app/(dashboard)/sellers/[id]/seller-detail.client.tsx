@@ -33,6 +33,7 @@ import { toWhatsAppNumber } from "@workspace/ui/lib/contact";
 import {
   buildSellerWelcomeMessage,
   formatCurrency,
+  formatWalletBalance,
   formatDate,
   getStatusColor,
   getStatusLabel,
@@ -263,7 +264,7 @@ export function SellerDetailContent({
         />
         <Metric
           label="Wallet balance"
-          value={formatCurrency(seller.walletBalance)}
+          value={formatWalletBalance(seller.walletBalance, seller.walletCurrency)}
           hint={
             seller.lastPayoutDate
               ? `Last payout ${formatDate(seller.lastPayoutDate)}`

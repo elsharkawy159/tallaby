@@ -123,7 +123,7 @@ export async function walletAdjustmentAction(input: unknown): Promise<ActionResu
       message:
         result.data.status === "already_applied"
           ? "This adjustment was already posted; nothing changed"
-          : `Posted. New balance EGP ${result.data.balanceAfter}`,
+          : `Posted. New balance ${(input as { currency?: string }).currency === "USD" ? "$" : "EGP "}${result.data.balanceAfter}`,
     };
   } catch (error) {
     logServerError("wallet", "admin adjustment failed", { sellerId }, error);

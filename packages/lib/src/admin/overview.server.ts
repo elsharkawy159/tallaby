@@ -31,7 +31,8 @@ export async function getSaasKpis(q: Queryable = db): Promise<SaasKpis> {
       (SELECT count(DISTINCT seller_id) FROM stores WHERE deleted_at IS NULL AND status = 'active')::int AS active_sellers,
       (SELECT count(*) FROM sellers WHERE fee_trial_ends_at > now())::int AS sellers_in_trial,
       (SELECT count(*) FROM sellers WHERE fee_trial_ends_at <= now())::int AS sellers_past_trial,
-      (SELECT coalesce(-sum(amount), 0)::numeric(12,2)::text FROM wallet_transactions
+      -- USD fees at the switch's rate, so the tile stays one currency.
+      (SELECT coalesce(-sum(amount * CASE WHEN currency = 'USD' THEN coalesce((SELECT b.conversion_rate FROM billing_settings b WHERE b.id), 1) ELSE 1 END), 0)::numeric(12,2)::text FROM wallet_transactions
         WHERE type = 'fee' AND created_at >= now() - interval '30 days') AS fee_revenue_30d,
       (SELECT count(*) FROM seller_wallet WHERE balance < 0)::int AS negative_wallets,
       (SELECT coalesce(sum(balance), 0)::numeric(12,2)::text FROM seller_wallet WHERE balance < 0) AS negative_total

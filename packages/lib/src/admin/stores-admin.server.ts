@@ -221,6 +221,7 @@ export async function getStoreForAdmin(storeId: string, q: Queryable = db) {
       sellerEmail: users.email,
       sellerSlug: sellers.slug,
       plan: sellers.plan,
+      walletCurrency: sql<string>`coalesce((SELECT w.currency FROM seller_wallet w WHERE w.seller_id = ${stores.sellerId}), billing_wallet_currency())`,
       walletBalance: sql<string | null>`(SELECT balance::text FROM seller_wallet w WHERE w.seller_id = ${stores.sellerId})`,
     })
     .from(stores)

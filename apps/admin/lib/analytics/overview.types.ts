@@ -64,6 +64,7 @@ export interface OverviewStoreRow {
   deliveryRate: number | null
   /** The owning seller's store wallet. */
   walletBalance: number | null
+  walletCurrency: string
 }
 
 export interface OverviewNewStore {

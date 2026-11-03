@@ -4,6 +4,8 @@ import { cn } from "@workspace/ui/lib/utils";
 import { formatCurrency } from "@workspace/lib";
 import { logServerError } from "@workspace/db/log";
 import { getSaasKpis } from "@workspace/lib/admin/server";
+import { getBillingState } from "@workspace/lib/billing/server";
+import { walletMoney } from "./wallets/store-wallets.lib";
 import { getSidebarCounts } from "./_components/layout/sidebar.server";
 
 /**
@@ -45,8 +47,9 @@ export async function ActionCentreSection() {
 
 export async function SaasKpiSection() {
   let kpis: Awaited<ReturnType<typeof getSaasKpis>>;
+  let usdLive = false;
   try {
-    kpis = await getSaasKpis();
+    [kpis, { usdLive }] = await Promise.all([getSaasKpis(), getBillingState()]);
   } catch (error) {
     logServerError("admin", "saas kpis failed", {}, error);
     return null;
@@ -55,11 +58,11 @@ export async function SaasKpiSection() {
     { label: "Stores", value: kpis.storesTotal.toLocaleString(), hint: `+${kpis.stores7d} this week · +${kpis.stores30d} in 30 days`, href: "/stores" },
     { label: "Published sites", value: kpis.publishedSites.toLocaleString(), hint: `${kpis.activeSellers} sellers with an active store`, href: "/stores?site=published" },
     { label: "Fee trial", value: kpis.sellersInTrial.toLocaleString(), hint: `${kpis.sellersPastTrial} past the 7-day trial`, href: "/sellers" },
-    { label: "Platform fees (30 days)", value: formatCurrency(Number(kpis.feeRevenue30d)), hint: "EGP 5 per delivered order", href: "/wallets?tab=ledger" },
+    { label: "Platform fees (30 days)", value: formatCurrency(Number(kpis.feeRevenue30d)), hint: usdLive ? "$0.03 per order on Free, shown in EGP" : "EGP 5 per delivered order", href: "/wallets?tab=ledger" },
     {
       label: "Negative wallets",
       value: kpis.negativeWallets.toLocaleString(),
-      hint: `Total ${formatCurrency(Number(kpis.negativeTotal))}`,
+      hint: `Total ${usdLive ? walletMoney(kpis.negativeTotal, "USD") : formatCurrency(Number(kpis.negativeTotal))}`,
       href: "/wallets?balance=negative",
       warn: kpis.negativeWallets > 0,
     },

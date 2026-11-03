@@ -1,5 +1,5 @@
 import { ShoppingCart, Wallet } from "lucide-react";
-import { formatCurrency } from "@workspace/lib";
+import { walletMoney } from "../../wallets/store-wallets.lib";
 import { storeTone, type EntityChipProps } from "./entity-chip";
 import { customerHref, ordersHref, sellerHref, sellerWalletHref, storeHref } from "./entity-href.lib";
 import type { AccountRelations } from "./relations.server";
@@ -58,7 +58,7 @@ export function accountChips(
     chips.push({
       href: sellerWalletHref(seller.id),
       role: "Wallet",
-      name: balance != null ? formatCurrency(balance) : "No wallet yet",
+      name: balance != null ? walletMoney(balance, seller.walletCurrency) : "No wallet yet",
       icon: Wallet,
       tone: balance != null && balance < 0 ? "warn" : undefined,
     });
