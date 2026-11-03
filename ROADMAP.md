@@ -1215,6 +1215,17 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 ## 7. Log
 
+### 2026-11-04 — Store SEO audit and fixes (owner: "the best SEO for our stores")
+
+- **Live bugs fixed, not deployed:** every store page carried Tallaby's Organization and WebSite data, keywords, author and `@tallaby` Twitter tags. `/products` named the home page as its canonical URL, so the catalog and all categories asked Google to index the home page instead. Blog and CMS pages cleared the store's noindex, so a store with indexing off could still have them indexed. The SEO text a seller writes for the home page in Website › Pages was ignored.
+- **Now:** each store page gives its own canonical, hreflang, Open Graph URL, title and image through one helper (`storePageMetadata`). The home page outputs the store's own `OnlineStore` and `WebSite` data. Each category at `/products?category=` has its own canonical and title; search results are noindex; sort options point at the unsorted page.
+- **Sitemap:** it now also lists blog posts, `/blog`, CMS items, `/products` and categories. It was meant to include the blog but its source list was empty.
+- **Languages:** a language turned off in Store settings › Languages no longer appears in hreflang or the sitemap, and its pages name the other language as canonical. Product hreflang uses each language's real slug, as the sitemap does.
+- **Smaller:** `/products` has an h1. CMS images use the item's title as alt text. Two new strings in both `ar.json` and `en.json`.
+- **Already fine, not changed:** a subdomain with a custom domain forwards with a 308, so the two aren't both indexed. Robots and sitemap are per host. Offline stores, previews, cart and shared catalogs are noindex. Product image alt text is set.
+- **Left for a decision or bigger work:** (1) slugs aren't unique across sellers, and a store looks a product up across all sellers, so a newer product with the same English title as another seller's opens the store's home page and stays out of the sitemap; (2) the home title fallback ends in "| طلبي" / "| Tallaby", as F-48 specified, on the seller's own search result; (3) template pages copy demo names into stores' titles ("عن فولتا ستور"), and those titles are Arabic only, so `/en/about` shows them too; (4) 6 of 118 templates have no h1 on the home page (volt, loaf, kohl, qahwa, bunn, nour) and streetwear has 2; (5) removed products send a 307 to the home page rather than a 404, as the owner chose on 2026-11-03, which Google treats as a soft 404.
+- **Checks:** `tsc` shows only the known errors (`profile.chunks.tsx`, `templates/catalog.ts`). All ecommerce tests pass (291, 2 skipped). The Next.js merge rule was read from its source. **No app was started and nothing was opened in a browser, so no rendered page was seen.** No migration.
+
 ### 2026-11-04 — Top-up wallets, default privacy policy, store product SEO (owner)
 
 - **Confirmed by the owner:** each store shows only its own pages, apart from shared ones such as cart, checkout, orders and profile. "Powered by Tallaby" keeps linking to tallaby.com.
