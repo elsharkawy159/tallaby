@@ -1,6 +1,6 @@
 "use server";
 
-import { db, orders, products, sellerPayouts, sellerPayoutItems, orderItems, sellers, walletTransactions } from "@workspace/db";
+import { db, sellerPayouts, sellerPayoutItems, orderItems, sellers, walletTransactions } from "@workspace/db";
 import { eq, and, desc, sql, gte, between } from "drizzle-orm";
 import { getUser } from "./auth";
 
@@ -21,39 +21,25 @@ export async function getSellerPayouts(params?: {
       conditions.push(eq(sellerPayouts.status, params.status));
     }
 
+    // The list shows one line per payout; getPayoutDetails has the items.
     const payoutsList = await db.query.sellerPayouts.findMany({
       where: and(...conditions),
-      with: {
-        sellerPayoutItems: {
-          with: {
-            order: {
-              columns: {
-                orderNumber: true,
-              },
-            },
-            orderItem: {
-              columns: {
-                productName: true,
-                quantity: true,
-              },
-            },
-          },
-        },
+      columns: {
+        id: true,
+        netAmount: true,
+        status: true,
+        processedAt: true,
+        createdAt: true,
+        method: true,
       },
       orderBy: [desc(sellerPayouts.createdAt)],
       limit: params?.limit || 20,
       offset: params?.offset || 0,
     });
 
-    const totalCount = await db
-      .select({ count: sql`count(*)` })
-      .from(sellerPayouts)
-      .where(and(...conditions));
-
-    return { 
-      success: true, 
+    return {
+      success: true,
       data: payoutsList,
-      totalCount: Number(totalCount[0].count)
     };
   } catch (error) {
     console.error("Error fetching payouts:", error);
@@ -180,6 +166,13 @@ export async function getWalletTransactions(params?: { limit?: number }) {
       where: eq(walletTransactions.sellerId, session.user.id),
       orderBy: [desc(walletTransactions.createdAt)],
       limit: params?.limit ?? 20,
+      columns: {
+        id: true,
+        type: true,
+        amount: true,
+        description: true,
+        createdAt: true,
+      },
       with: {
         order: {
           columns: {
@@ -210,7 +203,7 @@ export async function getPayoutStats(year?: number) {
     const startDate = new Date(targetYear, 0, 1).toISOString();
     const endDate = new Date(targetYear, 11, 31, 23, 59, 59).toISOString();
 
-    const monthlyPayouts = await db
+    const monthlyQuery = db
       .select({
         month: sql<string>`TO_CHAR(${sellerPayouts.processedAt}, 'YYYY-MM')`,
         totalAmount: sql<number>`sum(${sellerPayouts.netAmount})`,
@@ -227,7 +220,7 @@ export async function getPayoutStats(year?: number) {
       .groupBy(sql`TO_CHAR(${sellerPayouts.processedAt}, 'YYYY-MM')`)
       .orderBy(sql`TO_CHAR(${sellerPayouts.processedAt}, 'YYYY-MM')`);
 
-    const totalStats = await db
+    const totalQuery = db
       .select({
         totalPaid: sql<number>`sum(${sellerPayouts.netAmount})`,
         totalFees: sql<number>`sum(${sellerPayouts.fee})`,
@@ -242,8 +235,10 @@ export async function getPayoutStats(year?: number) {
         )
       );
 
-    return { 
-      success: true, 
+    const [monthlyPayouts, totalStats] = await Promise.all([monthlyQuery, totalQuery]);
+
+    return {
+      success: true,
       data: {
         monthly: monthlyPayouts,
         total: totalStats[0],
@@ -255,7 +250,7 @@ export async function getPayoutStats(year?: number) {
   }
 }
 
-// dashboard/actions/analytics.ts
+/** The sales figures for the /financial cards: one query over this seller's order items. */
 export async function getDashboardAnalytics() {
   try {
      const session = await getUser();
@@ -263,13 +258,11 @@ export async function getDashboardAnalytics() {
       throw new Error("Unauthorized");
     }
 
-    const today = new Date().toDateString();
     // Midnight on the 1st; same boundary as the /financial sales-sources card.
     const now = new Date();
     const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
 
-    // Sales Analytics
     const salesStats = await db
       .select({
         todaySales: sql<number>`sum(case when DATE(${orderItems.createdAt}) = CURRENT_DATE then ${orderItems.sellerEarning} else 0 end)`,
@@ -281,83 +274,11 @@ export async function getDashboardAnalytics() {
       .from(orderItems)
       .where(eq(orderItems.sellerId, session.user.id));
 
-    // Product Performance
-    const topProducts = await db
-      .select({
-        productId: orderItems.productId,
-        productName: orderItems.productName,
-        totalSold: sql<number>`sum(${orderItems.quantity})`,
-        totalRevenue: sql<number>`sum(${orderItems.sellerEarning})`,
-      })
-      .from(orderItems)
-      .where(
-        and(
-          eq(orderItems.sellerId, session.user.id),
-          gte(orderItems.createdAt, new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
-        )
-      )
-      .groupBy(orderItems.productId, orderItems.productName)
-      .orderBy(sql`sum(${orderItems.quantity}) DESC`)
-      .limit(10);
-
-    // Customer Analytics
-    const repeatCustomers = await db
-      .select({
-        customerId: orders.userId,
-        orderCount: sql<number>`count(distinct ${orders.id})`,
-        totalSpent: sql<number>`sum(${orderItems.sellerEarning})`,
-      })
-      .from(orderItems)
-      .innerJoin(orders, eq(orderItems.orderId, orders.id))
-      .where(eq(orderItems.sellerId, session.user.id))
-      .groupBy(orders.userId)
-      .having(sql`count(distinct ${orders.id}) > 1`)
-      .orderBy(sql`sum(${orderItems.sellerEarning}) DESC`)
-      .limit(10);
-
-    // Conversion Rate
-    const conversionStats = await db.query.products.findMany({
-      where: eq(products.sellerId, session.user.id),
-      columns: {
-        id: true,
-        reviewCount: true,
-        averageRating: true,
-      },
-      with: {
-        productTranslations: {
-          columns: { title: true },
-        },
-      },
-      orderBy: [desc(products.reviewCount)],
-      limit: 10,
-    });
-
-    // Daily Sales Trend (Last 30 days)
-    const dailyTrend = await db
-      .select({
-        date: sql<string>`DATE(${orderItems.createdAt})`,
-        sales: sql<number>`sum(${orderItems.sellerEarning})`,
-        orders: sql<number>`count(*)`,
-      })
-      .from(orderItems)
-      .where(
-        and(
-          eq(orderItems.sellerId, session.user.id),
-          gte(orderItems.createdAt, new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
-        )
-      )
-      .groupBy(sql`DATE(${orderItems.createdAt})`)
-      .orderBy(sql`DATE(${orderItems.createdAt})`);
-
-    return { 
-      success: true, 
+    return {
+      success: true,
       data: {
         sales: salesStats[0],
-        topProducts,
-        repeatCustomers,
-        conversionStats,
-        dailyTrend,
-      }
+      },
     };
   } catch (error) {
     console.error("Error fetching analytics:", error);

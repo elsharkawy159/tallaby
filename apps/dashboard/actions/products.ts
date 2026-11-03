@@ -943,18 +943,10 @@ export async function getProduct(productId: string) {
         eq(products.id, productId),
         eq(products.sellerId, session.user.id)
       ),
+      // The edit form reads the product, its variants and translations only.
       with: {
-        brand: true,
         productVariants: true,
         productTranslations: true,
-        productQuestions: {
-          with: {
-            productAnswers: true,
-          },
-        },
-        reviews: {
-          limit: 10,
-        },
       },
     });
 

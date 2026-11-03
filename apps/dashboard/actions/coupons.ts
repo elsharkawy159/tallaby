@@ -1,7 +1,7 @@
 "use server";
 
 import { applyInvalidation, invalidateSellerCoupons } from "@workspace/cache";
-import { db, coupons, couponUsage, products, sellers } from "@workspace/db";
+import { db, coupons, couponUsage, productTranslations, products, sellers } from "@workspace/db";
 import { uniqueViolationConstraint } from "@workspace/lib/fulfillment/server";
 import { parsePriceJson } from "@workspace/lib";
 import {
@@ -178,12 +178,18 @@ export async function getSellerCouponsPage(): Promise<SellerCouponsPage> {
       .innerJoin(coupons, eq(coupons.id, couponUsage.couponId))
       .where(eq(coupons.sellerId, sellerId))
       .groupBy(couponUsage.couponId),
-    db.query.products.findMany({
-      where: and(eq(products.sellerId, sellerId), isNull(products.deletedAt)),
-      columns: { id: true, images: true, price: true, status: true },
-      with: { productTranslations: { columns: { locale: true, title: true } } },
-      orderBy: [desc(products.createdAt)],
-    }),
+    // The picker shows one title and one photo, so only those leave the database.
+    db
+      .select({
+        id: products.id,
+        price: products.price,
+        status: products.status,
+        image: sql<string | null>`${products.images}->>0`,
+        title: sql<string | null>`(SELECT t.title FROM ${productTranslations} t WHERE t.product_id = ${products.id} ORDER BY (t.locale = ${locale}) DESC LIMIT 1)`,
+      })
+      .from(products)
+      .where(and(eq(products.sellerId, sellerId), isNull(products.deletedAt)))
+      .orderBy(desc(products.createdAt)),
     db.query.sellers.findFirst({
       where: eq(sellers.id, sellerId),
       columns: { subdomain: true },
@@ -196,21 +202,13 @@ export async function getSellerCouponsPage(): Promise<SellerCouponsPage> {
 
   return {
     coupons: couponRows.map((c) => toRow(c, discountByCoupon.get(c.id) ?? 0)),
-    products: productRows.map((p) => {
-      const translations = p.productTranslations ?? [];
-      const title =
-        translations.find((t) => t.locale === locale)?.title ??
-        translations[0]?.title ??
-        "";
-      const images = Array.isArray(p.images) ? (p.images as string[]) : [];
-      return {
-        id: p.id,
-        title,
-        image: images[0] ?? null,
-        price: parsePriceJson(p.price).final ?? null,
-        isActive: p.status === "active",
-      };
-    }),
+    products: productRows.map((p) => ({
+      id: p.id,
+      title: p.title ?? "",
+      image: p.image,
+      price: parsePriceJson(p.price).final ?? null,
+      isActive: p.status === "active",
+    })),
     storeHost: seller?.subdomain
       ? `${seller.subdomain}.${STORE_ROOT_DOMAIN}`
       : null,

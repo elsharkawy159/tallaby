@@ -58,7 +58,18 @@ export async function loadPrintOrders(
     },
     with: {
       user: { columns: { email: true, fullName: true, phone: true, isGuest: true } },
-      userAddress_shippingAddressId: true,
+      userAddress_shippingAddressId: {
+        columns: {
+          fullName: true,
+          phone: true,
+          addressLine1: true,
+          addressLine2: true,
+          city: true,
+          state: true,
+          postalCode: true,
+          deliveryInstructions: true,
+        },
+      },
       orderItems: {
         columns: {
           id: true,

@@ -10,32 +10,45 @@ import { cacheProfiles, categoryTags, createCachedQuery } from "@workspace/cache
  * invalidated by admin's category mutations (see apps/admin/actions/categories.ts)
  * via the cross-app broadcast, not by anything in the dashboard app.
  */
-export const getAllCategories = createCachedQuery({
-  name: "dashboard:categories:all",
+const CATEGORY_NODE_COLUMNS = {
+  id: true,
+  name: true,
+  nameAr: true,
+  slug: true,
+  level: true,
+  parentId: true,
+} as const;
+
+const loadCategoryTree = createCachedQuery({
+  name: "dashboard:categories:tree:v2",
   ttl: cacheProfiles.taxonomy,
   tags: () => [categoryTags.all(), categoryTags.tree()],
-  query: async () => {
-    try {
-      // Get root categories
-      const rootCategories = await db.query.categories.findMany({
-        where: isNull(categories.parentId),
-        with: {
-          categories: {
-            with: {
-              categories: true,
-            },
+  // Sent to the product form as a prop, so only what the pickers read. A failure
+  // throws here: it must not sit in the 24 h cache as an empty category list.
+  query: () =>
+    db.query.categories.findMany({
+      where: isNull(categories.parentId),
+      columns: CATEGORY_NODE_COLUMNS,
+      with: {
+        categories: {
+          columns: CATEGORY_NODE_COLUMNS,
+          with: {
+            categories: { columns: CATEGORY_NODE_COLUMNS },
           },
         },
-        orderBy: [asc(categories.name)],
-      });
-
-      return { success: true, data: rootCategories };
-    } catch (error) {
-      console.error("Error fetching category tree:", error);
-      return { success: false, error: "Failed to fetch category tree" };
-    }
-  },
+      },
+      orderBy: [asc(categories.name)],
+    }),
 });
+
+export async function getAllCategories() {
+  try {
+    return { success: true as const, data: await loadCategoryTree() };
+  } catch (error) {
+    console.error("Error fetching category tree:", error);
+    return { success: false as const, error: "Failed to fetch category tree", data: undefined };
+  }
+}
 
 export async function getCategoryBySlug(slug: string) {
   try {

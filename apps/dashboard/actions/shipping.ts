@@ -230,8 +230,27 @@ export async function getShippingOverview(): Promise<ActionResult<ShippingOvervi
             },
             with: {
               user: { columns: { fullName: true, phone: true } },
-              userAddress_shippingAddressId: true,
-              shipments: true,
+              userAddress_shippingAddressId: {
+                columns: {
+                  fullName: true,
+                  phone: true,
+                  addressLine1: true,
+                  addressLine2: true,
+                  city: true,
+                  deliveryInstructions: true,
+                },
+              },
+              shipments: {
+                columns: {
+                  id: true,
+                  status: true,
+                  sellerId: true,
+                  riderId: true,
+                  failureReason: true,
+                  assignedAt: true,
+                  deliveredAt: true,
+                },
+              },
               orderItems: {
                 where: eq(orderItems.sellerId, sellerId),
                 columns: { productName: true, quantity: true, total: true },

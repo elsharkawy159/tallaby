@@ -84,7 +84,21 @@ export async function loadSellerOrders(
     },
     with: {
       user: { columns: { email: true, fullName: true, phone: true, isGuest: true } },
-      userAddress_shippingAddressId: true,
+      userAddress_shippingAddressId: {
+        columns: {
+          fullName: true,
+          phone: true,
+          addressLine1: true,
+          addressLine2: true,
+          city: true,
+          state: true,
+          postalCode: true,
+          country: true,
+          deliveryInstructions: true,
+          latitude: true,
+          longitude: true,
+        },
+      },
       shipments: {
         columns: {
           id: true,

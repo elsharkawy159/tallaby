@@ -34,6 +34,14 @@ export async function getSellerReviews(params?: {
 
     const reviewsList = await db.query.reviews.findMany({
       where: and(...conditions),
+      columns: {
+        id: true,
+        createdAt: true,
+        rating: true,
+        title: true,
+        comment: true,
+        reviewType: true,
+      },
       with: {
         user: {
           columns: {
@@ -57,26 +65,20 @@ export async function getSellerReviews(params?: {
             orderNumber: true,
           },
         },
+        // Only "has the seller replied"; the list never shows the text or the votes.
         reviewComments: {
           where: eq(reviewComments.sellerId, session.user.id),
-          orderBy: [desc(reviewComments.createdAt)],
+          columns: { id: true },
         },
-        reviewVotes: true,
       },
       orderBy: [desc(reviews.createdAt)],
       limit: params?.limit || 20,
       offset: params?.offset || 0,
     });
 
-    const totalCount = await db
-      .select({ count: sql`count(*)` })
-      .from(reviews)
-      .where(and(...conditions));
-
-    return { 
-      success: true, 
+    return {
+      success: true,
       data: reviewsList,
-      totalCount: Number(totalCount[0].count)
     };
   } catch (error) {
     console.error("Error fetching reviews:", error);
