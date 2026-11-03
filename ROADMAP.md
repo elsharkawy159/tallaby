@@ -803,7 +803,7 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 **Why:** New sellers should be led one step at a time, without blocking their work.
 **What:** Add prompts on top of the live checklist (`_components/setup-checklist.lib.ts`) and keep its order: choose a template → brand → first product → publish → shipping (later). On the first dashboard visit, a top Sonner notification appears after 5 seconds for the first step. When a step is done, the next one appears as a top banner 5 seconds later.
-**Status:** [Planned]
+**Status:** [Built, not deployed] 2026-11-03 (§7).
 
 - **F-44a · P1 · deps: —** Progress: step completion stays derived from real data (`home.queries.ts`). Save per seller which prompts were shown or dismissed, so it survives refreshes, new sessions and other devices. Migration only if no existing field fits.
 - **F-44b · P1 · deps: F-44a** Toast and banner UI, in both languages. Never shown inside the builder or while a form is in progress, and completed steps never return.
@@ -821,7 +821,7 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 **Why:** Checked in code: store footers link to `/returns` and `/shipping` (`packages/store-sections/src/designs/footers/_shared.ts`), and unless the seller built a page with that slug, the store host **redirects the customer to tallaby.com** (`storefront/[subdomain]/pages/[pageSlug]/page.tsx`). Templates link `/contact`, `/about` and `/faq` the same way. (The first version of this plan wrongly said the global text showed inside the store's design.) **Status:** [Built 2026-11-03] F-46a, F-46b (§7).
 **What:** On a store host, `/returns` and `/shipping` show that store's policy, in this order: the store's own builder page, then the account's `sellers.return_policy` / `shipping_policy` (0065), then a neutral default with the store's name and no Tallaby wording. No link leaves the store. tallaby.com keeps its global pages. This order is a planning call; 0065 removed the store-level policies field in favour of builder pages, so no new column is expected.
-**Status:** [Planned]
+**Status:** [Built, not deployed] 2026-11-03 (§7).
 
 - **F-46a · P0 · deps: —** Add the fallback order above. The store comes from the request host only (CLAUDE.md rule 5).
 - **F-46b · P0 · deps: F-46a** Check every storefront link for routes into the marketplace (footers, checkout, order pages, emails), and fix them.
@@ -896,7 +896,7 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 ### F-55 Free and Pro plans — P1 · owner request · Approved 2026-11-03
 
 **Why:** See the decisions above. Replaces "everyone is Free" (`packages/lib/src/plans/index.ts`) and the `flat_5` fee (`packages/lib/src/orders/platform-fee.lib.ts`).
-**Status:** [Planned]
+**Status:** [Built, off until the USD switch] 2026-11-03, except F-55g (owner, Claude Design) and the launch in F-55h (§7).
 
 - **F-55a · P1 · deps: F-56a** Design note: plan states, billing periods, order-fee snapshot, downgrade and grace rules, notifications.
 - **F-55b · P1 · deps: F-55a, F-56c** Plans module: add `pro`, set credits to 100 and 2,000, and turn `ai` on for both. On switch day, end gifts and unstarted trials for everyone who doesn't already have them: change existing `welcome_gift_eligible` and `fee_trial_eligible` rows as well as the defaults, and retire `grantWelcomeGiftIfEligible`, whose fixed `100.00` would otherwise post $100. Gifts already granted run out as planned, and their expiry logic moves to USD.
@@ -911,7 +911,7 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 **Why:** Foundation for plans, credit packs and paid apps. The wallet is EGP today (`seller_wallet.currency`, piastres in `top-up.lib.ts`), and no exchange rate exists in the code.
 **Must ship together:** all of F-55, F-56 and F-57 go live behind one switch on one day (owner, 2026-11-03). The balance conversion runs as part of that switch. Otherwise EGP 5 could be deducted from a USD balance, or a top-up could credit the wrong currency.
-**Status:** [Planned]
+**Status:** [Built, off until the USD switch] 2026-11-03: 0136 on staging, switch not run. Kashier's maximum and the rate source still need confirming (§7).
 
 - **F-56a · P1 · deps: —** Design note: how append-only `wallet_transactions` marks each row's currency, the conversion entry per seller (rounding, negative balances, idempotency), what happens to `sellers.wallet_balance`, the negative limit, and EGP-priced ads and service charges. Include manual proofs awaiting review and open Kashier sessions, credited at the switch-day market rate. Dry-run totals on a staging copy, reporting positive and negative balances and how much of the positive total came from old `sale` entries, for the owner's information before approval. The owner approves it before any production migration (CLAUDE.md rule 4).
 - **F-56b · P1 · deps: —** Exchange-rate service: one server-side module and table with rate history, a daily fetch, Admin margin and override, and a stale-rate alert. If a fetch fails, keep the last rate. The market rate and the top-up rate (market rate + 2% to start) are separate values. Add one tax setting beside it: `tax = false`, rate 14%. Provider chosen in the design note; any key stays server-only.
