@@ -973,19 +973,19 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 ### F-62 SMS app: Soon, sellers can request it — P2 · owner request
 
 **Why:** SMS isn't connected yet (F-38), but sellers should be able to ask for it, and the owner enables it for those who do.
-**Status:** [Planned]
+**Status:** [Built, not deployed] 2026-11-04: request, Admin list and bell. Enabling records the status; sending waits for F-38 (§7).
 
 - **F-62a · P2 · deps: —** An SMS card on Apps showing "Soon" with a Request button. The request is saved per store, once, and the Admin bell announces it.
 - **F-62b · P2 · deps: F-62a** Admin list of requests with an Enable action. The seller's card shows Requested or Enabled.
 - **F-62c · P2 · deps: F-38b, F-63b** An enabled store's customers get SMS through the Customer notifications app.
 
-### F-63 Customer notifications app — P1 · owner request
+### F-63 Order notifications app (`customer_notifications`) — P1 · owner request
 
-**Why:** Order emails to customers become a paid choice for the seller: 1 cent per order from the store wallet. Not subscribed is the default.
-**Status:** [Planned]
+**Why:** Customer order emails become a paid choice for the seller: 1 cent per order from the store wallet. Not subscribed is the default. All other automatic emails pause, except the seller's "store is ready" email (`docs/email-inventory.md`).
+**Status:** [Built, off until the USD switch] 2026-11-04: email now, SMS later with MersalSMS (§7).
 
 - **F-63a · P1 · deps: F-47** Catalog app at 1 cent per order, per store, off by default. Before the USD switch it can't be bought, like every paid app.
-- **F-63b · P1 · deps: F-63a** The customer's order confirmation email sends only for a store subscribed to the app, and each sent confirmation charges 1 cent. A short wallet forgives that charge and starts grace, and it never fails the order. Sellers' own emails are unchanged.
+- **F-63b · P1 · deps: F-63a** After the USD switch, customer order emails (confirmation, shipped, delivered, cancelled, refund) send only for a subscribed store, and the order pays 1 cent once, on its first sent email. A short wallet forgives that charge and starts grace, and it never fails the order. Every other automatic email is paused through one list, `EMAIL_RULES`, except the seller's "store is ready" email.
 - **F-63c · P1 · deps: F-38b, F-62b** SMS through the same subscription, once F-38 is live. Check the price per SMS against 1 cent first.
 
 ### F-64 Simple one-page checkout — P1 · owner request
@@ -1038,6 +1038,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 | 2026-11-04 | "Add Pending Carts on Seller's dashboard to show the customer's of that store who has items in the cart" | F-67 |
 | 2026-11-04 | "add a task in roadmap to make Storefront can be international (all currencies, all countries in Shipping page, etc) And detect the Currency/Country, etc" | F-61 |
 | 2026-11-04 | "For the SMS we can make it \"Soon\" but still can be requested by sellers on \"Apps\" so if a user requested it I will enable it" | F-62 |
+| 2026-11-04 | "work on the Order Notification and integrate the emails with it and pause the automatic emails, keep only the one email to sellers that Store is ready, and we will integrate the MersalSMS to the Order notifications later" | F-63, `docs/email-inventory.md` |
 | 2026-11-04 | "on the apps, I need to make a Notification App (Customer) and costs 1 cent per order, if customer wants to send an SMS and Email to customer who placed an order / So pause the automatically emails that sens to customer on new orders and make it integrated with the app subscription / Unsubscriped is the default" | F-63 |
 | 2026-11-03 | "Anaylze the Roadmap_new.md and update our PLAN.md and PROJECT.md and all files with our new business updates and pricing, put in the ROADMAP.md file, just analyze and plan for now, code later" (seller, storefront, public-site, AI builder, pricing, admin, research and marketing items; owner's answers are in §4)                                                                                                                                                                                                                                                                             | F-42 … F-60                                                                                      | **Planned** 2026-11-03 (§3.1, §4, §7); no code yet                                     |
 | 2026-11-01 | "resort the Store setup on dashboard for new users, I need to make user choose a theme and adjust their brand identity first then add product then publish the store so they finish the store in minutes, leave the shipping for later"                                                                                                                                                                                                                                                                                                                                                              | Home setup guide order (no feature ID)                                                           | **Done** 2026-11-01 (§7), uncommitted                                                  |
@@ -1293,11 +1294,11 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 **Owner requests 2026-11-04**
 
-- [ ] F-63a Customer notifications app in the catalog (1 cent per order, off by default)
-- [ ] F-63b Order confirmation email only for subscribed stores, with the charge
+- [x] F-63a Order notifications app in the catalog (1 cent per order, off by default) (2026-11-04; not seen in a browser)
+- [x] F-63b Customer order emails only for subscribed stores, the charge, and the pause on other automatic emails (2026-11-04; off until the USD switch)
 - [ ] F-63c SMS through the same subscription (after F-38)
-- [ ] F-62a SMS card: Soon, with a Request button
-- [ ] F-62b Admin requests list and Enable
+- [x] F-62a SMS card: Soon, with a Request button (2026-11-04; 0143 on staging; not seen in a browser)
+- [x] F-62b Admin requests list and Enable (2026-11-04; not seen in a browser)
 - [ ] F-62c SMS for enabled stores (after F-38)
 - [ ] F-61a International design note (owner approval)
 - [ ] F-61b Store base currency
@@ -1323,6 +1324,18 @@ Add each new request here first, with the date and the owner's words, then turn 
 ---
 
 ## 7. Log
+
+### 2026-11-04 — Order notifications app, email pause and SMS requests (owner)
+
+- **Owner's words:** "work on the Order Notification and integrate the emails with it and pause the automatic emails, keep only the one email to sellers that Store is ready, and we will integrate the MersalSMS to the Order notifications later".
+- **When:** everything below applies only once `usd_live` is true. Before the switch, every email sends as it did. **The backend must be deployed for the pause to apply.**
+- **One list:** `EMAIL_RULES` in `packages/lib/src/emails/email-policy.lib.ts`; full table in `docs/email-inventory.md`. `sendOnce` asks it before taking a delivery claim, and `sendEmail` won't compile without its answer. A failed check doesn't send, except the store-ready email, which reads nothing.
+- **Order notifications (F-63):** per-store app at 1 cent per order, off by default. Confirmation, shipped, delivered, cancelled and refund emails send only for a subscribed store, and an order with no store doesn't send. The order pays once, on its first sent email; the wallet's per-order claim makes later emails no-ops. A short wallet forgives the charge and starts grace. Before the switch it can't be bought, like every paid app.
+- **Kept:** the seller's "Your store is ready on Tallaby" (`seller_store_created`). **Unchanged:** a seller's campaigns and test sends, and Supabase Auth mail.
+- **Paused:** seller new order, cancelled, low stock, top-up and fee trial; customer welcome, digital delivery, abandoned cart, back in stock and win-back. The stock alert, win-back and abandoned cart crons stop first, so a paused email doesn't use up an alert. Bell and push are unchanged.
+- **SMS (F-62):** a "Soon" card with a Request button, saved once per store, with an Admin bell and a new Admin › App requests page (Enable and Decline, in the audit log). Enabling only records the status: nothing sends until F-38.
+- **Migration:** `0143` (`store_app_requests`, `app_requested` bell type), staging only, run twice with no errors. The Apps page and Admin sidebar read it, so it goes to production before deploying.
+- **Checks:** `tsc` clean in db, lib, dashboard, admin and backend; ecommerce reports only `profile.chunks.tsx` and `catalog.ts`, outside this work. On staging, lib's billing, email policy, campaigns, wallet and notification tests pass (16 files, 140 tests), including one charge across repeated emails. Admin tests pass, and so do the related dashboard and ecommerce ones. The paused branch is covered by unit tests only, because staging's `usd_live` stays off. **Nothing was opened in a browser, no email was really sent, and the switch wasn't run.**
 
 ### 2026-11-04 — Store SEO audit and fixes (owner: "the best SEO for our stores")
 

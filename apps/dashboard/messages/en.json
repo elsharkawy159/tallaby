@@ -4362,7 +4362,14 @@
         "day": "{price} per day"
       }
     },
+    "appRequest": {
+      "request": "Request",
+      "requested": "Requested",
+      "enabled": "Enabled",
+      "sent": "Request sent. We'll review it."
+    },
     "appInstall": {
+      "removeBodyNow": "The app stops right away, and you pay nothing for orders after that.",
       "installTitle": "Install {app}?",
       "removeTitle": "Remove {app}?",
       "install": "Install",
@@ -4499,6 +4506,16 @@
       }
     },
     "providers": {
+      "customer_notifications": {
+        "name": "Order notifications",
+        "vendor": "Tallaby",
+        "description": "Emails your customer about their order under your store's name: confirmation, shipped, delivered, cancelled and refund. SMS is coming later. Without this app, your customers don't get these emails."
+      },
+      "sms": {
+        "name": "SMS",
+        "vendor": "Tallaby",
+        "description": "Text your customers about their orders. Not available yet: request it and we'll turn it on for your store."
+      },
       "meta_pixel": {
         "name": "Meta Pixel",
         "description": "Measure your Facebook and Instagram ads and build audiences.",
@@ -4619,6 +4636,7 @@
       "connected": "Connected"
     },
     "groups": {
+      "messaging": "Messages",
       "tracking": "Tracking & ads",
       "data": "Import & export",
       "shipping": "Shipping",
@@ -4628,6 +4646,7 @@
     "groupCount": "{count, plural, one {# app} other {# apps}}",
     "find": "Find an app",
     "kinds": {
+      "notifications": "Customer messages",
       "script": "Storefront script",
       "server": "Server-side",
       "import": "One-time import",

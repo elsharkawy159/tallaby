@@ -4,6 +4,7 @@ import { logServerError } from "@workspace/db/log";
 import { installStoreApp, uninstallStoreApp, type AppInstallError } from "@workspace/lib/billing/apps";
 import {
   connectIdentifierIntegration,
+  requestStoreApp,
   disconnectGoogleSheets,
   disconnectStoreIntegration,
   type StoreIntegrationSummary,
@@ -57,6 +58,28 @@ const INSTALL_ERRORS: Record<AppInstallError, StoreAppsErrorKey> = {
   wallet_inactive: "walletInactive",
   wallet_not_usd: "walletNotUsd",
 };
+
+/** Asks for an app that isn't open yet (F-62). Saved once per store; the Admin bell announces it. */
+export async function requestApp(storeId: string, appKey: string): Promise<StoreAppsResult<null>> {
+  try {
+    const { seller, store } = await requireStore(String(storeId), { forWrite: true });
+    if (!appsSaveLimiter.check(`apps:${seller.sellerId}`)) return { success: false, error: "rateLimited" };
+
+    const result = await requestStoreApp({
+      sellerId: seller.sellerId,
+      storeId: store.id,
+      appKey: String(appKey),
+      actorId: seller.userId,
+    });
+    if (!result.success) return { success: false, error: "notAvailable" };
+    return { success: true, data: null };
+  } catch (error) {
+    const denied = appsAccessError(error);
+    if (denied) return denied;
+    logServerError("integration", "app request failed", { storeId: String(storeId), appKey: String(appKey) }, error);
+    return { success: false, error: "generic" };
+  }
+}
 
 /** Installs a catalog app. The price comes from the catalog; a paid app is charged to the store wallet (F-47). */
 export async function installApp(storeId: string, appKey: string): Promise<StoreAppsResult<null>> {

@@ -24,6 +24,7 @@ import {
   STORE_APP_GROUPS,
   isStoreAppDefaultInstalled,
   isStoreAppLive,
+  isStoreAppRequestable,
   storeAppHref,
   storeAppPricing,
   storeAppProvider,
@@ -44,7 +45,7 @@ import { StoreLogo } from "@/components/stores/store-logo.client";
 import { StoreSiteStatusNote } from "@/components/stores/store-site-status-note";
 import { AppLogo } from "./app-logo";
 import { AppInstallDialog, useAppPriceLabel } from "./app-install.client";
-import { connectStoreApp, disconnectStoreApp } from "./apps.server";
+import { connectStoreApp, disconnectStoreApp, requestApp } from "./apps.server";
 import { DisconnectAppButton } from "./disconnect-button.client";
 import type { AppCategoryOption } from "./apps.types";
 import { GoogleSheetsPanel } from "./google-sheets.client";
@@ -86,6 +87,7 @@ export function StoreApps({
   store,
   initial,
   installs,
+  requests,
   readOnly,
   googleSheetsEnabled,
   categories,
@@ -96,6 +98,8 @@ export function StoreApps({
   initial: StoreIntegrationSummary[];
   /** Apps with a live install row (0139). Connected ones come from `initial`, default ones from the catalog. */
   installs: { appKey: string; cancelAtPeriodEnd: boolean }[];
+  /** What this store asked for (0143, F-62). */
+  requests: { appKey: string; status: "requested" | "enabled" | "declined" }[];
   readOnly: boolean;
   googleSheetsEnabled: boolean;
   categories: AppCategoryOption[];
@@ -109,6 +113,8 @@ export function StoreApps({
   const [items, setItems] = useState(initial);
   const [editing, setEditing] = useState<IntegrationProvider | null>(null);
   const [installTarget, setInstallTarget] = useState<StoreApp | null>(null);
+  const [requesting, setRequesting] = useState<string | null>(null);
+  const [, startRequest] = useTransition();
   const [view, setView] = useState<View>("installed");
   const [category, setCategory] = useState<Category>("all");
   const [query, setQuery] = useState("");
@@ -179,6 +185,9 @@ export function StoreApps({
         installed={isInstalled(app)}
         priceLabel={priceLabel(storeAppPricing(app))}
         disabled={readOnly && !isConnected(app)}
+        requestStatus={requests.find((request) => request.appKey === app.key)?.status ?? null}
+        requesting={requesting === app.key}
+        onRequest={() => request(app)}
         onOpen={() => {
           if (viaEngine) setInstallTarget(app);
           else if (href) router.push(href);
@@ -186,6 +195,20 @@ export function StoreApps({
         }}
       />
     );
+  };
+
+  const request = (app: StoreApp) => {
+    setRequesting(app.key);
+    startRequest(async () => {
+      const result = await requestApp(storeId, app.key);
+      setRequesting(null);
+      if (!result.success) {
+        toast.error(t(`errors.${result.error}`));
+        return;
+      }
+      toast.success(t("appRequest.sent"));
+      router.refresh();
+    });
   };
 
   const noneInstalled = view === "installed" && !q;
@@ -381,6 +404,9 @@ function AppCard({
   installed,
   priceLabel,
   disabled,
+  requestStatus,
+  requesting,
+  onRequest,
   onOpen,
 }: {
   app: StoreApp;
@@ -390,6 +416,9 @@ function AppCard({
   installed: boolean;
   priceLabel: string;
   disabled: boolean;
+  requestStatus: "requested" | "enabled" | "declined" | null;
+  requesting: boolean;
+  onRequest: () => void;
   onOpen: () => void;
 }) {
   const t = useTranslations("storeApps");
@@ -397,8 +426,21 @@ function AppCard({
   const connected = Boolean(current);
   const failing = current?.status === "error";
   const interactive = available && !disabled;
+  const requestable = isStoreAppRequestable(app);
 
-  const pill = !available ? (
+  const pill = requestStatus === "enabled" ? (
+    <span className="inline-flex h-6 items-center gap-1.5 rounded-full bg-success-soft px-2.5 text-xs font-semibold whitespace-nowrap">
+      {t("appRequest.enabled")}
+    </span>
+  ) : requestStatus === "requested" ? (
+    <span className="inline-flex h-6 items-center rounded-full border bg-muted/50 px-2.5 text-xs font-semibold whitespace-nowrap">
+      {t("appRequest.requested")}
+    </span>
+  ) : requestable ? (
+    <span className="inline-flex h-6 items-center rounded-full bg-accent-soft px-2.5 text-xs font-semibold whitespace-nowrap">
+      {t("soon")}
+    </span>
+  ) : !available ? (
     <span className="inline-flex h-6 items-center rounded-full bg-accent-soft px-2.5 text-xs font-semibold whitespace-nowrap text-accent-ink">
       {t("comingSoon")}
     </span>
@@ -467,6 +509,11 @@ function AppCard({
       </p>
       <div className="flex items-center justify-between gap-2.5 border-t pt-3.5">
         {pill}
+        {requestable && !requestStatus && !disabled && (
+          <Button type="button" size="sm" disabled={requesting} onClick={onRequest}>
+            {t("appRequest.request")}
+          </Button>
+        )}
         {available &&
           (installed ? (
             <span className="inline-flex h-9 items-center gap-2 rounded-[10px] border px-3.5 text-[13px] font-semibold">

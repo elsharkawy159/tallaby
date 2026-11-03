@@ -8,6 +8,7 @@
 import { render } from "@react-email/render";
 import { Resend } from "resend";
 import type { ReactElement } from "react";
+import type { EmailSendDecision } from "@workspace/lib/emails/policy";
 
 const DEFAULT_FROM_NAME = "Tallaby";
 const DEFAULT_FROM_ADDRESS = "info@tallaby.com";
@@ -34,6 +35,11 @@ function getResendClient() {
 }
 
 export interface SendEmailParams {
+  /**
+   * The answer from `decideEmail` (ROADMAP.md F-63). Required, so a new call
+   * site can't compile without asking whether this email may go out.
+   */
+  decision: EmailSendDecision;
   to: string;
   subject: string;
   content: ReactElement;

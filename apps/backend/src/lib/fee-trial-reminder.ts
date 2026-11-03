@@ -1,6 +1,7 @@
 import { db, eq, sellers, users } from "@workspace/db";
 import { logServerError } from "@workspace/db/log";
 import { getBillingState } from "@workspace/lib/billing/server";
+import { decideEmail } from "@workspace/lib/emails/policy";
 import { feeTrialReminderStage, type FeeTrialReminderStage } from "@workspace/lib/sellers";
 import {
   FeeTrialReminderEmail,
@@ -20,7 +21,7 @@ const DASHBOARD_URL = process.env.DASHBOARD_URL || "https://dashboard.tallaby.co
 export type FeeTrialReminderResult =
   | { status: "sent"; emailId: string | null }
   | { status: "duplicate" }
-  | { status: "skipped"; reason: "not_found" | "not_due" | "no_email" };
+  | { status: "skipped"; reason: "not_found" | "not_due" | "no_email" | "paused" | "not_subscribed" | "check_failed" };
 
 /**
  * Sends one fee trial reminder (PLAN.md §13.5, P6-07). The seller is re-read
@@ -51,6 +52,9 @@ export async function sendFeeTrialReminder(
   const recipient = row.email?.trim() || row.supportEmail?.trim();
   if (!recipient) return { status: "skipped", reason: "no_email" };
 
+  const decision = await decideEmail(stage === "t1" ? EMAIL_TYPES.feeTrialReminderT1 : EMAIL_TYPES.feeTrialReminderT7, null);
+  if (decision.action === "skip") return { status: "skipped", reason: decision.reason };
+
   const claim = await claimEmailDelivery({
     emailType: stage === "t1" ? EMAIL_TYPES.feeTrialReminderT1 : EMAIL_TYPES.feeTrialReminderT7,
     referenceId: sellerId,
@@ -64,6 +68,7 @@ export async function sendFeeTrialReminder(
     const copy = getEmailMessages(locale).feeTrialReminder;
     const { usdLive } = await getBillingState();
     const { id } = await sendEmail({
+      decision,
       to: recipient,
       subject: stage === "t1" ? copy.subjectT1 : copy.subjectT7,
       content: FeeTrialReminderEmail({

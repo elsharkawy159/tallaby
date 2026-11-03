@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { and, carts, db, eq, gt, isNull, lte, sql } from "@workspace/db";
 import { logServerError } from "@workspace/db/log";
+import { isAutomaticEmailPaused } from "@workspace/lib/emails/policy";
 import { sendAbandonedCartEmail } from "@workspace/lib/orders";
 
 export const dynamic = "force-dynamic";
@@ -23,6 +24,8 @@ export async function GET(request: NextRequest) {
   if (!secret || request.headers.get("authorization") !== `Bearer ${secret}`) {
     return new NextResponse("Unauthorized", { status: 401 });
   }
+
+  if (await isAutomaticEmailPaused("abandoned_cart")) return NextResponse.json({ paused: true });
 
   const candidates = await db
     .select({ id: carts.id })

@@ -44,11 +44,12 @@ describe("store apps catalog", () => {
     expect(storeAppHref("s1", getStoreApp("ai_assistants")!)).toBe("/stores/s1/apps/ai-assistants");
   });
 
-  it("has no paid app, and every price is valid (F-47)", () => {
+  it("has only Order notifications as a paid app, and every price is valid (F-47, F-63)", () => {
     for (const app of STORE_APPS) {
       expect(isValidAppPricing(storeAppPricing(app)), app.key).toBe(true);
-      expect(isPaidAppPricing(storeAppPricing(app)), app.key).toBe(false);
+      expect(isPaidAppPricing(storeAppPricing(app)), app.key).toBe(app.key === "customer_notifications");
     }
+    expect(storeAppPricing(getStoreApp("customer_notifications")!)).toEqual({ model: "per_order", usdCents: 1 });
   });
 
   it("installs only AI assistants by default, and every default app is live (F-47)", () => {

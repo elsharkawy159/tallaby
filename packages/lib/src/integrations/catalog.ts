@@ -13,10 +13,10 @@ import type { AppPricing } from "../billing/app-pricing.lib";
 import { INTEGRATIONS, type IntegrationProvider } from "./registry";
 
 /** Also the Apps page's Explore categories (F-47). */
-export type StoreAppGroup = "ai" | "tracking" | "shipping" | "payments" | "data";
+export type StoreAppGroup = "ai" | "tracking" | "shipping" | "payments" | "data" | "messaging";
 
 /** How an app works, shown on its card before it is connected. */
-export type StoreAppKind = "script" | "server" | "import" | "account" | "carrier" | "sheet" | "gateway" | "agent";
+export type StoreAppKind = "script" | "server" | "import" | "account" | "carrier" | "sheet" | "gateway" | "agent" | "notifications";
 
 /** Dashboard page (under /stores/:storeId/) that manages the app; none → the Apps page side sheet. */
 export type StoreAppPage = "apps/bosta" | "apps/wassalha" | "apps/ai-assistants" | "settings/payments";
@@ -33,6 +33,8 @@ type StoreAppDefinition = {
   pricing: AppPricing;
   /** Comes with every store and needs no connecting, so it is always under Installed (F-47). */
   defaultInstalled?: true;
+  /** Not open yet, but a seller can ask for it from its card (F-62). */
+  requestable?: true;
 };
 
 const FREE = { model: "free" } as const;
@@ -62,12 +64,16 @@ export const STORE_APPS = [
 
   { key: "google_sheets", group: "data", kind: "account", provider: "google_sheets", pricing: FREE },
   { key: "shopify_import", group: "data", kind: "import", provider: "shopify_import", pricing: FREE },
+  // Order notifications. Off by default: after the USD switch, customer order emails need it (F-63).
+  { key: "customer_notifications", group: "messaging", kind: "notifications", live: true, pricing: { model: "per_order", usdCents: 1 } },
+  // No SMS price exists yet: it's set with F-38 (F-62c, F-63c).
+  { key: "sms", group: "messaging", kind: "notifications", requestable: true, pricing: FREE },
 ] as const satisfies readonly StoreAppDefinition[];
 
 export type StoreApp = (typeof STORE_APPS)[number];
 export type StoreAppKey = StoreApp["key"];
 
-export const STORE_APP_GROUPS: StoreAppGroup[] = ["ai", "tracking", "shipping", "payments", "data"];
+export const STORE_APP_GROUPS: StoreAppGroup[] = ["ai", "tracking", "shipping", "payments", "data", "messaging"];
 
 /** Live when it has a provider whose registry entry is available, or is a built page-only app; everything else is "soon". */
 export function isStoreAppLive(app: StoreApp): boolean {
@@ -82,6 +88,10 @@ export function storeAppProvider(app: StoreApp): IntegrationProvider | null {
 /** Widened from the literal in the list, so callers handle every model before a paid app ships. */
 export function storeAppPricing(app: StoreApp): AppPricing {
   return app.pricing;
+}
+
+export function isStoreAppRequestable(app: StoreApp): boolean {
+  return "requestable" in app && app.requestable === true;
 }
 
 export function isStoreAppDefaultInstalled(app: StoreApp): boolean {

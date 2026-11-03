@@ -91,6 +91,9 @@ export const ADMIN_AUDIT_ACTIONS = [
   "send_seller_notification",
   // Admin › Billing: margin, fixed rate and tax switch (0136, F-56)
   "update_billing_settings",
+  // Admin › App requests (0143, F-62)
+  "enable_app_request",
+  "decline_app_request",
 ] as const;
 
 export type AdminAuditAction = (typeof ADMIN_AUDIT_ACTIONS)[number];

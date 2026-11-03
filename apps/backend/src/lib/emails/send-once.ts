@@ -1,4 +1,5 @@
 import type { ReactElement } from "react";
+import { chargeOrderNotification, decideEmail } from "@workspace/lib/emails/policy";
 import { sendEmail } from "../resend";
 import {
   claimEmailDelivery,
@@ -17,6 +18,9 @@ export type SendOnceResult =
  * `email_deliveries` claim stops retries and concurrent callers, and the
  * Resend idempotency key catches anything that slips past it. A failed send
  * releases the claim so a later call can try again.
+ *
+ * Every email asks the policy first (docs/email-inventory.md), before any claim,
+ * so a paused one can be turned back on later. Order emails pass `order`.
  */
 export async function sendOnce(params: {
   emailType: EmailType;
@@ -28,7 +32,12 @@ export async function sendOnce(params: {
   fromName?: string;
   replyTo?: string;
   metadata?: Record<string, unknown>;
+  /** A customer order email: decides the subscription check and the per-order charge. */
+  order?: { id: string; storeId: string | null };
 }): Promise<SendOnceResult> {
+  const decision = await decideEmail(params.emailType, params.order?.storeId ?? null);
+  if (decision.action === "skip") return { status: "skipped", reason: decision.reason };
+
   const claim = await claimEmailDelivery({
     emailType: params.emailType,
     referenceId: params.referenceId,
@@ -39,6 +48,7 @@ export async function sendOnce(params: {
 
   try {
     const { id } = await sendEmail({
+      decision,
       to: params.recipient,
       subject: params.subject,
       content: params.content,
@@ -48,6 +58,9 @@ export async function sendOnce(params: {
       idempotencyKey: `${params.emailType}:${params.referenceId}`,
     });
     await markEmailSent(claim.delivery.id, id);
+    if (decision.charge && params.order?.storeId) {
+      await chargeOrderNotification({ orderId: params.order.id, storeId: params.order.storeId });
+    }
     return { status: "sent", emailId: id };
   } catch (error) {
     await releaseFailedEmailDelivery(

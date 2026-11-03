@@ -83,7 +83,9 @@ export function AppInstallDialog({
       description={
         target
           ? target.installed
-            ? t("appInstall.removeBody")
+            ? target.pricing.model === "monthly"
+              ? t("appInstall.removeBody")
+              : t("appInstall.removeBodyNow")
             : paid
               ? t("appInstall.paidBody", { price: priceLabel(target.pricing) })
               : t("appInstall.freeBody")

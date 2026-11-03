@@ -263,6 +263,37 @@ describe.skipIf(!TEST_DATABASE_URL)("store app billing (integration)", { timeout
     expect(await chargeAppUsage({ ...target, appKey: MONTHLY.key, eventId: `evt-${randomUUID()}` })).toEqual({ charged: false, reason: "not_installed" });
   });
 
+  it("charges an order's notifications once, however many emails it sends (F-63)", async () => {
+    const { db, sql } = await load();
+    const { chargeOrderNotification, decideEmail } = await import("../emails/email-policy.server");
+    await setBalance("0.30");
+    expect(await install(PER_ORDER)).toEqual({ success: true });
+
+    const orderId = randomUUID();
+    await db.execute(sql`INSERT INTO orders (id, order_number, user_id, status, subtotal, total_amount) VALUES (${orderId}, ${`QA-${orderId}`}, ${sellerId}, 'pending', 0, 0)`);
+    await chargeOrderNotification({ orderId, storeId });
+    await chargeOrderNotification({ orderId, storeId });
+    await chargeOrderNotification({ orderId, storeId });
+    expect(await balance()).toBe(0.05);
+
+    // Staging's usd_live is off, so every email still sends, uncharged.
+    expect(await decideEmail("seller_new_order", null)).toEqual({ action: "send", charge: false });
+    expect(await decideEmail("order_confirmation", storeId)).toEqual({ action: "send", charge: false });
+    expect(await decideEmail("seller_store_created", null)).toEqual({ action: "send", charge: false });
+  });
+
+  it("saves an app request once per store, and refuses an app that can't be requested (F-62)", async () => {
+    const { db, storeAppRequests, eq } = await load();
+    const { listStoreAppRequests, requestStoreApp } = await import("../integrations/app-requests.server");
+    const input = { sellerId, storeId, appKey: "sms", actorId: sellerId };
+    expect(await requestStoreApp(input)).toEqual({ success: true });
+    expect(await requestStoreApp(input)).toEqual({ success: true });
+    expect(await requestStoreApp({ ...input, appKey: "customer_notifications" })).toEqual({ success: false, error: "not_requestable" });
+    expect(await listStoreAppRequests(sellerId, storeId)).toEqual([{ appKey: "sms", status: "requested" }]);
+    expect(await listStoreAppRequests(otherSellerId, storeId)).toEqual([]);
+    await db.delete(storeAppRequests).where(eq(storeAppRequests.storeId, storeId));
+  });
+
   it("bills per order once, never fails the order, and goes into grace instead of debt", async () => {
     const { chargeStoreAppsForOrder, renewOneApp, db, sql, storeAppInstalls, eq } = await load();
     await setBalance("0.30");

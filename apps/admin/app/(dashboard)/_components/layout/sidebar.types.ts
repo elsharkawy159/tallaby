@@ -13,6 +13,8 @@ export interface SidebarCounts {
   pendingSellers: number;
   /** Manual store-wallet top-ups (Vodafone Cash / InstaPay) waiting for review. */
   pendingStoreTopUps: number;
+  /** Apps sellers asked for, waiting for review (0143, F-62). */
+  pendingAppRequests: number;
   /** Sellers with at least one fulfillment service requested, under review or awaiting agreement. */
   fulfillmentOpenSellers: number;
   /** Ad campaign requests in `pending`. */
@@ -45,6 +47,7 @@ export const EMPTY_SIDEBAR_COUNTS: SidebarCounts = {
   pendingProducts: 0,
   pendingSellers: 0,
   pendingStoreTopUps: 0,
+  pendingAppRequests: 0,
   fulfillmentOpenSellers: 0,
   pendingAdRequests: 0,
   integrationErrors: 0,

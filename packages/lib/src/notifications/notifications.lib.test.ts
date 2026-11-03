@@ -44,6 +44,7 @@ describe("adminNotificationHref", () => {
     expect(adminNotificationHref({ type: "top_up_requested", sellerId: ID, storeId: null })).toBe("/store-top-ups");
     expect(adminNotificationHref({ type: "feature_request_created", sellerId: ID, storeId: null })).toBe("/roadmap");
     expect(adminNotificationHref({ type: "referral_payout_requested", sellerId: ID, storeId: null })).toBe("/referrals");
+    expect(adminNotificationHref({ type: "app_requested", sellerId: ID, storeId: ID })).toBe("/app-requests");
     expect(adminNotificationHref({ type: "unknown", sellerId: null, storeId: null })).toBeNull();
   });
 

@@ -126,6 +126,7 @@ export async function sendOrderShipped(orderId: string): Promise<SendOnceResult>
   return sendOnce({
     emailType: EMAIL_TYPES.orderShipped,
     referenceId: orderId,
+    order: { id: orderId, storeId: ctx.order.storeId ?? null },
     recipient: ctx.recipient,
     subject: interpolate(getEmailMessages(ctx.locale).orderShipped.subject, { orderNumber: ctx.order.orderNumber }),
     content: createElement(OrderShippedEmail, {
@@ -156,6 +157,7 @@ export async function sendOrderDelivered(orderId: string): Promise<SendOnceResul
   return sendOnce({
     emailType: EMAIL_TYPES.orderDelivered,
     referenceId: orderId,
+    order: { id: orderId, storeId: ctx.order.storeId ?? null },
     recipient: ctx.recipient,
     subject: interpolate(getEmailMessages(ctx.locale).orderDelivered.subject, { orderNumber: ctx.order.orderNumber }),
     content: createElement(OrderDeliveredEmail, {
@@ -194,6 +196,7 @@ export async function sendOrderCancelled(orderId: string, cancelledBy: Cancelled
   return sendOnce({
     emailType: EMAIL_TYPES.orderCancelled,
     referenceId: orderId,
+    order: { id: orderId, storeId: ctx.order.storeId ?? null },
     recipient: ctx.recipient,
     subject: interpolate(getEmailMessages(ctx.locale).orderCancelled.subject, { orderNumber: ctx.order.orderNumber }),
     content: createElement(OrderCancelledEmail, {
@@ -229,6 +232,7 @@ export async function sendRefundIssued(
   return sendOnce({
     emailType: EMAIL_TYPES.refundIssued,
     referenceId: orderId,
+    order: { id: orderId, storeId: ctx.order.storeId ?? null },
     recipient: ctx.recipient,
     subject: interpolate(getEmailMessages(ctx.locale).refundIssued.subject, { amount, orderNumber: ctx.order.orderNumber }),
     content: createElement(RefundIssuedEmail, {

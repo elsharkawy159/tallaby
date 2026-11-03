@@ -60,6 +60,8 @@ export const AUDIT_ACTION_LABELS: Record<AdminAuditAction, string> = {
   delete_library_section: "Library section deleted",
   send_seller_notification: "Notification sent to seller",
   update_billing_settings: "Billing settings changed",
+  enable_app_request: "App request enabled",
+  decline_app_request: "App request declined",
 };
 
 export function auditActionLabel(action: string): string {

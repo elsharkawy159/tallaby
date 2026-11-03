@@ -414,6 +414,10 @@
       "types": "./src/billing/app-pricing.lib.ts",
       "default": "./src/billing/app-pricing.lib.ts"
     },
+    "./emails/policy": {
+      "types": "./src/emails/email-policy.server.ts",
+      "default": "./src/emails/email-policy.server.ts"
+    },
     "./billing/apps": {
       "types": "./src/billing/app-billing.server.ts",
       "default": "./src/billing/app-billing.server.ts"

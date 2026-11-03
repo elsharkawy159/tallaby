@@ -9,6 +9,7 @@ import {
   interpolate,
   resolveEmailLocale,
 } from "@workspace/emails";
+import { chargeOrderNotification, decideEmail } from "@workspace/lib/emails/policy";
 import {
   buildOrderConfirmation,
   sendAbandonedCart,
@@ -69,7 +70,11 @@ app.post("/welcome", async (c) => {
     );
     const copy = getEmailMessages(locale).welcome;
 
+    const decision = await decideEmail("welcome", null);
+    if (decision.action === "skip") return c.json({ success: true, skipped: true, reason: decision.reason });
+
     await sendEmail({
+      decision,
       to: email,
       subject: copy.subject,
       content: WelcomeEmail({
@@ -105,7 +110,11 @@ app.post("/digital-delivery", async (c) => {
     );
     const copy = getEmailMessages(locale).digitalDelivery;
 
+    const decision = await decideEmail("digital_delivery", null);
+    if (decision.action === "skip") return c.json({ success: true, skipped: true, reason: decision.reason });
+
     await sendEmail({
+      decision,
       to: email,
       subject: interpolate(copy.subject, { orderNumber: orderNumber ?? "" }),
       content: DigitalDeliveryEmail({
@@ -151,6 +160,13 @@ app.post("/order-confirmation", async (c) => {
       return c.json({ success: false, skipped: true, reason: built.error }, status);
     }
 
+    // Order notifications app (F-63): after the USD switch, a store must subscribe.
+    const storeId = built.ctx.order.storeId ?? null;
+    const decision = await decideEmail(EMAIL_TYPES.orderConfirmation, storeId);
+    if (decision.action === "skip") {
+      return c.json({ success: true, skipped: true, reason: decision.reason });
+    }
+
     const claim = await claimEmailDelivery({
       emailType: EMAIL_TYPES.orderConfirmation,
       referenceId: orderId,
@@ -169,6 +185,7 @@ app.post("/order-confirmation", async (c) => {
     claimedDeliveryId = claim.delivery.id;
 
     const { id } = await sendEmail({
+      decision,
       to: built.recipient,
       subject: built.subject,
       content: built.content,
@@ -180,6 +197,9 @@ app.post("/order-confirmation", async (c) => {
     });
 
     await markEmailSent(claim.delivery.id, id);
+
+    // Only a new claim that really sent reaches this. It never throws, and its own claim stops a double charge.
+    if (decision.charge && storeId) await chargeOrderNotification({ orderId, storeId });
 
     return c.json({ success: true, emailId: id });
   } catch (error) {

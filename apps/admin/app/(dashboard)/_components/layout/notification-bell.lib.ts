@@ -83,6 +83,11 @@ export function describeAdminNotification(n: Pick<NotificationItem, 'type' | 'da
         body: [who(seller, store), subdomain && `(${subdomain})`].filter(Boolean).join(' ') ||
           'A seller turned their website off.',
       }
+    case 'app_requested':
+      return {
+        title: 'App requested',
+        body: [store, notificationText(n.data, 'appKey')].filter(Boolean).join(' · ') || 'A seller asked for an app.',
+      }
     case 'referral_payout_requested': {
       const amount = notificationText(n.data, 'amount')
       return {

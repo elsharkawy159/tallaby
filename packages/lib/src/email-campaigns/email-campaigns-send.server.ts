@@ -17,6 +17,7 @@ import {
   releaseWinbackSend,
   startDueCampaigns,
 } from "./email-campaigns.server";
+import { isAutomaticEmailPaused } from "../emails/email-policy.server";
 import { EMAIL_CRON_BATCH, EMAIL_CRON_CONCURRENCY, EMAIL_CRON_MAX_PER_RUN } from "./email-campaigns.lib";
 
 export type BackendSendStatus = "sent" | "duplicate" | "skipped";
@@ -88,7 +89,10 @@ export async function runEmailCampaignCron(
   const summary: EmailCronSummary = { campaignsStarted: 0, winbackStores: 0, winbackPlanned: 0, sent: 0, skipped: 0, released: 0 };
   const total = () => summary.sent + summary.skipped + summary.released;
 
-  if (options.winback && !options.campaignId) {
+  // Planning and claiming use up the win-back queue, so a paused email stops before both (F-63).
+  const winbackPaused = await isAutomaticEmailPaused("store_winback");
+
+  if (options.winback && !options.campaignId && !winbackPaused) {
     const plan = await planWinbackSends();
     summary.winbackStores = plan.stores;
     summary.winbackPlanned = plan.planned;
@@ -120,7 +124,7 @@ export async function runEmailCampaignCron(
   }
 
   // Win-back emails.
-  if (!options.campaignId) {
+  if (!options.campaignId && !winbackPaused) {
     while (timeLeft() && total() < EMAIL_CRON_MAX_PER_RUN) {
       const ids = await claimWinbackSends({ limit: Math.min(EMAIL_CRON_BATCH, EMAIL_CRON_MAX_PER_RUN - total()) });
       if (!ids.length) break;

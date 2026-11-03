@@ -46,8 +46,20 @@ const SPARKLES_ICON = {
   path: "M10 2.5c.4 0 .75.27.86.66l.9 3.17a4.5 4.5 0 0 0 3.1 3.1l3.17.9a.9.9 0 0 1 0 1.73l-3.17.9a4.5 4.5 0 0 0-3.1 3.1l-.9 3.17a.9.9 0 0 1-1.72 0l-.91-3.17a4.5 4.5 0 0 0-3.1-3.1l-3.17-.9a.9.9 0 0 1 0-1.73l3.17-.9a4.5 4.5 0 0 0 3.1-3.1l.9-3.17c.12-.39.47-.66.87-.66Zm8.5 11c.33 0 .62.22.71.54l.32 1.1a2 2 0 0 0 1.33 1.33l1.1.32a.74.74 0 0 1 0 1.42l-1.1.32a2 2 0 0 0-1.33 1.33l-.32 1.1a.74.74 0 0 1-1.42 0l-.32-1.1a2 2 0 0 0-1.33-1.33l-1.1-.32a.74.74 0 0 1 0-1.42l1.1-.32a2 2 0 0 0 1.33-1.33l.32-1.1c.09-.32.38-.54.71-.54Zm0-12c.3 0 .55.19.64.47l.22.74a1.5 1.5 0 0 0 1.03 1.03l.74.22a.67.67 0 0 1 0 1.28l-.74.22a1.5 1.5 0 0 0-1.03 1.03l-.22.74a.67.67 0 0 1-1.28 0l-.22-.74a1.5 1.5 0 0 0-1.03-1.03l-.74-.22a.67.67 0 0 1 0-1.28l.74-.22a1.5 1.5 0 0 0 1.03-1.03l.22-.74c.09-.28.35-.47.64-.47Z",
 };
 
+/** Bell: customer order notifications (F-63). */
+const BELL_ICON = {
+  path: "M12 2.5a6.5 6.5 0 0 0-6.5 6.5c0 3.6-.9 5.7-1.7 6.9-.4.6 0 1.6.8 1.6h14.8c.8 0 1.2-1 .8-1.6-.8-1.2-1.7-3.3-1.7-6.9A6.5 6.5 0 0 0 12 2.5Zm-2.6 16.5a2.7 2.7 0 0 0 5.2 0H9.4Z",
+};
+
+/** Speech bubble: SMS (F-62). */
+const MESSAGE_ICON = {
+  path: "M4.5 3.5h15A2.5 2.5 0 0 1 22 6v9.5a2.5 2.5 0 0 1-2.5 2.5H10l-4.6 3.4c-.6.4-1.4 0-1.4-.8V18A2.5 2.5 0 0 1 2 15.5V6a2.5 2.5 0 0 1 2.5-2.5Z",
+};
+
 export const APP_BRANDS: Record<StoreAppKey, AppBrand> = {
   ai_assistants: { icon: SPARKLES_ICON, bg: "#1F1A2E", fg: "#F4B860", dark: true },
+  customer_notifications: { icon: BELL_ICON, bg: "#145163", fg: "#FFFFFF", dark: true },
+  sms: { icon: MESSAGE_ICON, bg: "#fdad28", fg: "#145163" },
   meta_pixel: { icon: siMeta, bg: "#0866FF", fg: "#FFFFFF" },
   meta_capi: { icon: siMeta, bg: "#0B1F3A", fg: "#5AA0FF", dark: true },
   google_analytics: { icon: siGoogleanalytics, bg: "#F9AB00", fg: "#FFFFFF" },

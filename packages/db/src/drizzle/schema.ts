@@ -3131,6 +3131,24 @@ export const storeShippingZones = pgTable("store_shipping_zones", {
  * A catalog app installed on a store, with the price the seller agreed to (0139, ROADMAP.md F-47).
  * Connected integrations stay in store_integrations. Server-only: RLS on, no policies.
  */
+export const storeAppRequests = pgTable("store_app_requests", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	sellerId: uuid("seller_id").notNull().references(() => sellers.id, { onDelete: "cascade" }),
+	storeId: uuid("store_id").notNull().references(() => stores.id, { onDelete: "cascade" }),
+	appKey: text("app_key").notNull(),
+	status: text().default('requested').notNull(),
+	requestedBy: uuid("requested_by").references(() => users.id, { onDelete: "set null" }),
+	reviewedBy: uuid("reviewed_by").references(() => users.id, { onDelete: "set null" }),
+	reviewedAt: timestamp("reviewed_at", { withTimezone: true, mode: 'string' }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	unique("store_app_requests_store_app_key").on(table.storeId, table.appKey),
+	index("store_app_requests_seller_idx").using("btree", table.sellerId),
+	index("store_app_requests_open_idx").using("btree", table.createdAt).where(sql`status = 'requested'`),
+	check("store_app_requests_status_check", sql`status IN ('requested', 'enabled', 'declined')`),
+]);
+
 export const storeAppInstalls = pgTable("store_app_installs", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	sellerId: uuid("seller_id").notNull().references(() => sellers.id, { onDelete: "cascade" }),

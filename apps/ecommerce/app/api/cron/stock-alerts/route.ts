@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { logServerError } from "@workspace/db/log";
+import { isAutomaticEmailPaused } from "@workspace/lib/emails/policy";
 import { sendBackInStockEmail } from "@workspace/lib/orders";
 import { STOCK_ALERT_BATCH } from "@workspace/lib/stock-alerts";
 import { claimStockAlerts, releaseStockAlertClaim } from "@workspace/lib/stock-alerts/server";
@@ -20,6 +21,9 @@ export async function GET(request: NextRequest) {
   if (!secret || request.headers.get("authorization") !== `Bearer ${secret}`) {
     return new NextResponse("Unauthorized", { status: 401 });
   }
+
+  // Claiming stamps notified_at, so a paused email must stop here or the alert is used up.
+  if (await isAutomaticEmailPaused("back_in_stock")) return NextResponse.json({ paused: true });
 
   let claimed: string[];
   try {

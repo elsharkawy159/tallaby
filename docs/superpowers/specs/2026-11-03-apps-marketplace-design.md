@@ -84,7 +84,7 @@ Removing an app:
 
 ## Not wired yet
 
-- `chargeStoreAppsForOrder` isn't called from the order flow. No per-order app exists, and the order path is money code to change only when one does. The hook belongs next to `postOrderFees`, in the same transaction.
+- `chargeStoreAppsForOrder` isn't called from the order flow. Its first caller is Order notifications (F-63): the backend charges after a customer order email really sends, in its own transaction (`chargeOrderNotification`), and the per-order claim makes later emails for that order no-ops. A future per-order app that doesn't send an email still needs its own hook.
 - `chargeAppUsage` has no caller, for the same reason.
 - A paid app with its own panel adds its Remove button there, using the same server action.
 - There's no refund flow. Admin can refund through a wallet adjustment.

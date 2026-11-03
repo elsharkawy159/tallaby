@@ -1,4 +1,5 @@
 import { db, emailDeliveries, and, eq } from "@workspace/db";
+import type { AutomaticEmailType } from "@workspace/lib/emails/policy";
 
 export const EMAIL_TYPES = {
   orderConfirmation: "order_confirmation",
@@ -34,6 +35,11 @@ export const EMAIL_TYPES = {
 } as const;
 
 export type EmailType = (typeof EMAIL_TYPES)[keyof typeof EMAIL_TYPES];
+
+// Every type must have a line in EMAIL_RULES, or this stops compiling.
+type _EveryEmailHasARule = EmailType extends AutomaticEmailType ? true : never;
+const _everyEmailHasARule: _EveryEmailHasARule = true;
+void _everyEmailHasARule;
 
 /**
  * Terminal-ness ranking for delivery statuses. Resend webhooks can arrive out

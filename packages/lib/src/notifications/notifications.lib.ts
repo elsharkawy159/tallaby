@@ -19,6 +19,8 @@ export const ADMIN_NOTIFICATION_TYPES = [
   "store_deleted",
   // A referrer asked for an affiliate withdrawal (0117, F-37)
   "referral_payout_requested",
+  // A seller asked for an app that isn't open yet (0143, F-62)
+  "app_requested",
 ] as const;
 export type AdminNotificationType = (typeof ADMIN_NOTIFICATION_TYPES)[number];
 
@@ -130,6 +132,8 @@ export function adminNotificationHref(
       return "/roadmap";
     case "referral_payout_requested":
       return "/referrals";
+    case "app_requested":
+      return "/app-requests";
     default:
       return null;
   }
