@@ -47,6 +47,10 @@ export const SELLER_NOTIFICATION_TYPES = [
   "plan_renewed",
   "plan_renewal_failed",
   "plan_ended",
+  // A paid store app's renewal from the store wallet (0139, F-47)
+  "app_renewed",
+  "app_renewal_failed",
+  "app_ended",
 ] as const;
 export type SellerNotificationType = (typeof SELLER_NOTIFICATION_TYPES)[number];
 
@@ -150,6 +154,12 @@ export function sellerNotificationHref(n: Pick<NotificationItem, "type" | "data"
     case "plan_renewal_failed":
     case "plan_ended":
       return "/settings/plan";
+    case "app_renewed":
+    case "app_renewal_failed":
+    case "app_ended": {
+      const storeId = dataString(n.data, "storeId");
+      return storeId ? `/stores/${encodeURIComponent(storeId)}/apps` : "/wallet";
+    }
     case "question_received":
     case "review_received":
       return "/reviews";

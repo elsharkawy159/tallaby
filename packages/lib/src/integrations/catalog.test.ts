@@ -1,6 +1,16 @@
 import { describe, expect, it } from "vitest";
 import { INTEGRATION_PROVIDERS } from "./registry";
-import { STORE_APPS, STORE_APP_GROUPS, getStoreApp, isStoreAppLive, storeAppHref, storeAppsInGroup } from "./catalog";
+import { isPaidAppPricing, isValidAppPricing } from "../billing/app-pricing.lib";
+import {
+  STORE_APPS,
+  STORE_APP_GROUPS,
+  getStoreApp,
+  isStoreAppDefaultInstalled,
+  isStoreAppLive,
+  storeAppHref,
+  storeAppPricing,
+  storeAppsInGroup,
+} from "./catalog";
 
 describe("store apps catalog", () => {
   it("lists every integration provider exactly once, with unique keys", () => {
@@ -32,6 +42,19 @@ describe("store apps catalog", () => {
     expect(storeAppHref("s1", getStoreApp("paymob")!)).toBe("/stores/s1/settings/payments");
     expect(storeAppHref("s1", getStoreApp("meta_pixel")!)).toBeNull();
     expect(storeAppHref("s1", getStoreApp("ai_assistants")!)).toBe("/stores/s1/apps/ai-assistants");
+  });
+
+  it("has no paid app, and every price is valid (F-47)", () => {
+    for (const app of STORE_APPS) {
+      expect(isValidAppPricing(storeAppPricing(app)), app.key).toBe(true);
+      expect(isPaidAppPricing(storeAppPricing(app)), app.key).toBe(false);
+    }
+  });
+
+  it("installs only AI assistants by default, and every default app is live (F-47)", () => {
+    const defaults = STORE_APPS.filter(isStoreAppDefaultInstalled);
+    expect(defaults.map((a) => a.key)).toEqual(["ai_assistants"]);
+    for (const app of defaults) expect(isStoreAppLive(app), app.key).toBe(true);
   });
 
   it("shows the AI assistants app as live without an integration row (F-29)", () => {

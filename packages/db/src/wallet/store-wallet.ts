@@ -54,6 +54,8 @@ export const STORE_WALLET_REFERENCE_TYPES = {
   plan: "plan",
   /** A bought pack of AI credits (0137). */
   aiCredits: "ai_credits",
+  /** A store app's charge (0139, F-47); reference id = appChargeReference(). */
+  storeApp: "store_app",
 } as const;
 
 export type StoreWalletReferenceType =

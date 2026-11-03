@@ -49,6 +49,9 @@ const PUSH_TYPE_CATEGORY: Readonly<Record<string, PushCategory>> = {
   plan_renewed: "account",
   plan_renewal_failed: "account",
   plan_ended: "account",
+  app_renewed: "account",
+  app_renewal_failed: "account",
+  app_ended: "account",
 };
 
 /** Messages from the Tallaby team (Admin › Sellers, 0131): pushed to every device, no switch. */

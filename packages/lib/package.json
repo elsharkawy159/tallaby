@@ -410,6 +410,14 @@
       "types": "./src/billing/billing.lib.ts",
       "default": "./src/billing/billing.lib.ts"
     },
+    "./billing/app-pricing": {
+      "types": "./src/billing/app-pricing.lib.ts",
+      "default": "./src/billing/app-pricing.lib.ts"
+    },
+    "./billing/apps": {
+      "types": "./src/billing/app-billing.server.ts",
+      "default": "./src/billing/app-billing.server.ts"
+    },
     "./billing/server": {
       "types": "./src/billing/billing.server.ts",
       "default": "./src/billing/billing.server.ts"

@@ -9,8 +9,10 @@
  * mirrors the DB CHECK). Entries without a provider are "coming soon" cards:
  * they need no row and no migration until they are built.
  */
+import type { AppPricing } from "../billing/app-pricing.lib";
 import { INTEGRATIONS, type IntegrationProvider } from "./registry";
 
+/** Also the Apps page's Explore categories (F-47). */
 export type StoreAppGroup = "ai" | "tracking" | "shipping" | "payments" | "data";
 
 /** How an app works, shown on its card before it is connected. */
@@ -27,33 +29,39 @@ type StoreAppDefinition = {
   page?: StoreAppPage;
   /** A built app with no store_integrations row (its own page manages it): always live. */
   live?: true;
+  /** What Tallaby charges for the app (F-47). Prices are US cents. */
+  pricing: AppPricing;
+  /** Comes with every store and needs no connecting, so it is always under Installed (F-47). */
+  defaultInstalled?: true;
 };
+
+const FREE = { model: "free" } as const;
 
 /** In the order sellers are most likely to need them, per group. */
 export const STORE_APPS = [
   // F-29: Claude, ChatGPT, Cursor … manage the store over MCP. Connections live in agent_grants (0133), not store_integrations.
-  { key: "ai_assistants", group: "ai", kind: "agent", page: "apps/ai-assistants", live: true },
+  { key: "ai_assistants", group: "ai", kind: "agent", page: "apps/ai-assistants", live: true, pricing: FREE, defaultInstalled: true },
 
-  { key: "meta_pixel", group: "tracking", kind: "script", provider: "meta_pixel" },
-  { key: "google_analytics", group: "tracking", kind: "script", provider: "google_analytics" },
-  { key: "google_tag_manager", group: "tracking", kind: "script", provider: "google_tag_manager" },
-  { key: "meta_capi", group: "tracking", kind: "server", provider: "meta_capi" },
-  { key: "tiktok_pixel", group: "tracking", kind: "script", provider: "tiktok_pixel" },
-  { key: "snapchat_pixel", group: "tracking", kind: "script", provider: "snapchat_pixel" },
+  { key: "meta_pixel", group: "tracking", kind: "script", provider: "meta_pixel", pricing: FREE },
+  { key: "google_analytics", group: "tracking", kind: "script", provider: "google_analytics", pricing: FREE },
+  { key: "google_tag_manager", group: "tracking", kind: "script", provider: "google_tag_manager", pricing: FREE },
+  { key: "meta_capi", group: "tracking", kind: "server", provider: "meta_capi", pricing: FREE },
+  { key: "tiktok_pixel", group: "tracking", kind: "script", provider: "tiktok_pixel", pricing: FREE },
+  { key: "snapchat_pixel", group: "tracking", kind: "script", provider: "snapchat_pixel", pricing: FREE },
 
-  { key: "bosta", group: "shipping", kind: "carrier", provider: "bosta", page: "apps/bosta" },
-  { key: "wassalha", group: "shipping", kind: "sheet", provider: "wassalha", page: "apps/wassalha" },
-  { key: "mylerz", group: "shipping", kind: "carrier" },
-  { key: "jt_express", group: "shipping", kind: "carrier" },
-  { key: "aramex", group: "shipping", kind: "carrier" },
+  { key: "bosta", group: "shipping", kind: "carrier", provider: "bosta", page: "apps/bosta", pricing: FREE },
+  { key: "wassalha", group: "shipping", kind: "sheet", provider: "wassalha", page: "apps/wassalha", pricing: FREE },
+  { key: "mylerz", group: "shipping", kind: "carrier", pricing: FREE },
+  { key: "jt_express", group: "shipping", kind: "carrier", pricing: FREE },
+  { key: "aramex", group: "shipping", kind: "carrier", pricing: FREE },
 
-  { key: "paymob", group: "payments", kind: "gateway", provider: "paymob", page: "settings/payments" },
-  { key: "kashier", group: "payments", kind: "gateway", provider: "kashier", page: "settings/payments" },
-  { key: "paypal", group: "payments", kind: "gateway" },
-  { key: "tallaby_pay", group: "payments", kind: "gateway" },
+  { key: "paymob", group: "payments", kind: "gateway", provider: "paymob", page: "settings/payments", pricing: FREE },
+  { key: "kashier", group: "payments", kind: "gateway", provider: "kashier", page: "settings/payments", pricing: FREE },
+  { key: "paypal", group: "payments", kind: "gateway", pricing: FREE },
+  { key: "tallaby_pay", group: "payments", kind: "gateway", pricing: FREE },
 
-  { key: "google_sheets", group: "data", kind: "account", provider: "google_sheets" },
-  { key: "shopify_import", group: "data", kind: "import", provider: "shopify_import" },
+  { key: "google_sheets", group: "data", kind: "account", provider: "google_sheets", pricing: FREE },
+  { key: "shopify_import", group: "data", kind: "import", provider: "shopify_import", pricing: FREE },
 ] as const satisfies readonly StoreAppDefinition[];
 
 export type StoreApp = (typeof STORE_APPS)[number];
@@ -69,6 +77,15 @@ export function isStoreAppLive(app: StoreApp): boolean {
 
 export function storeAppProvider(app: StoreApp): IntegrationProvider | null {
   return "provider" in app ? app.provider : null;
+}
+
+/** Widened from the literal in the list, so callers handle every model before a paid app ships. */
+export function storeAppPricing(app: StoreApp): AppPricing {
+  return app.pricing;
+}
+
+export function isStoreAppDefaultInstalled(app: StoreApp): boolean {
+  return "defaultInstalled" in app && app.defaultInstalled === true;
 }
 
 export function storeAppsInGroup(group: StoreAppGroup): StoreApp[] {
