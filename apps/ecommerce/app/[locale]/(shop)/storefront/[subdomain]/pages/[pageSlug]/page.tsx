@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
-import { storeUrl } from "@workspace/lib/storefront";
 import { isProductPage } from "@workspace/store-sections/config";
 import { routing } from "@/i18n/routing";
 import { getTranslations } from "next-intl/server";
@@ -9,7 +8,8 @@ import { storePageFallback } from "@/lib/store-site/store-policy.lib";
 import { loadStorePolicyText } from "@/lib/store-site/store-policy.server";
 import { isSubdomainOfflineForRequest, STORE_OFFLINE_METADATA } from "@/lib/store-site/offline.server";
 import { resolveStorefront } from "@/lib/storefront.server";
-import { STORE_NOINDEX } from "@/lib/store-seo/store-seo.lib";
+import { storePageMetadata } from "@/lib/store-seo/store-seo.lib";
+import { getPublicUrl } from "@workspace/ui/lib/utils";
 import { StorePolicyPage } from "../../_components/store-policy-page";
 import { StoreSitePage } from "../../_components/store-site";
 
@@ -47,28 +47,27 @@ export async function generateMetadata({ params }: StorePageProps): Promise<Meta
   if (await isSubdomainOfflineForRequest(subdomain)) return STORE_OFFLINE_METADATA;
   const resolved = await resolvePage(locale, subdomain, pageSlug);
   const { store, preview } = resolved;
-  const url = `${storeUrl(store.subdomain, store.customDomain)}${locale === routing.defaultLocale ? "" : `/${locale}`}/${pageSlug}`;
+  const paths = `/${pageSlug}`;
   if (resolved.policy) {
     const t = await getTranslations("storefront.policy");
     const text = await loadStorePolicyText(store.id, resolved.policy);
-    return {
+    return storePageMetadata(store, locale, {
+      paths,
       // The store layout's title template adds the store's name.
       title: t(`${resolved.policy}.title`),
-      alternates: { canonical: url },
       // Nothing of the seller's own to rank, so only their written text is indexed.
-      ...((preview || (!text && resolved.policy !== "contact")) && { robots: STORE_NOINDEX }),
-    };
+      noindex: Boolean(preview) || (!text && resolved.policy !== "contact"),
+    });
   }
   const { page } = resolved;
-  return {
+  return storePageMetadata(store, locale, {
+    paths,
     title: page.seo.title || page.name,
-    description: page.seo.description || undefined,
-    alternates: { canonical: url },
-    // Only set when needed: an explicit value would also replace the
-    // layout's store-wide noindex (P5-04). Previews are never indexed (P4-08).
-    ...((preview || page.seo.noindex) && { robots: STORE_NOINDEX }),
-    openGraph: page.seo.ogImage ? { images: [{ url: page.seo.ogImage }] } : undefined,
-  };
+    description: page.seo.description,
+    image: page.seo.ogImage ? getPublicUrl(page.seo.ogImage, "sellers") : null,
+    // Only ever adds a noindex, so the layout's store-wide one (P5-04) stays. Previews are never indexed (P4-08).
+    noindex: Boolean(preview) || page.seo.noindex,
+  });
 }
 
 export default async function StoreBuilderPage({ params, searchParams }: StorePageProps) {

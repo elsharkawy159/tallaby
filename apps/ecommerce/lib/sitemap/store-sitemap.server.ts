@@ -1,8 +1,11 @@
+import { listPublicCmsUrls } from "@workspace/lib/cms/server";
 import { storeUrl } from "@workspace/lib/storefront";
+import { storeIndexLocales } from "@/lib/store-seo/store-seo.lib";
 import { getCachedPublishedSite } from "@/lib/store-site/published-site.server";
 import {
   catalogStoreId,
   getRenamedStoreSubdomain,
+  getStorefrontCategories,
   getStorefrontBySubdomain,
   isStorefrontIndexable,
   type Storefront,
@@ -22,12 +25,13 @@ export interface StoreSitemapStore {
 export type StoreSitemapUrlProvider = (store: StoreSitemapStore) => Promise<StoreSitemapUrl[]>;
 
 /**
- * Extra URL providers for store sitemaps. Blog posts and CMS items (P4-16,
- * P4-11) are added here, e.g. a provider wrapping `listPublicCmsUrls(storeId)`
- * that maps each published item to `{ path, lastModified }`. A provider must
- * list only published, public URLs of that one store.
+ * Extra URL providers for store sitemaps: blog posts, /blog and CMS items
+ * (P4-16, P4-11). A provider must list only published, public URLs of that
+ * one store.
  */
-export const STORE_SITEMAP_URL_PROVIDERS: StoreSitemapUrlProvider[] = [];
+export const STORE_SITEMAP_URL_PROVIDERS: StoreSitemapUrlProvider[] = [
+  async ({ storeId }) => (await listPublicCmsUrls(storeId)).map(({ path, lastmod }) => ({ path, lastModified: lastmod })),
+];
 
 async function extraUrls(store: StoreSitemapStore): Promise<StoreSitemapUrl[]> {
   const results = await Promise.allSettled(STORE_SITEMAP_URL_PROVIDERS.map((provider) => provider(store)));
@@ -90,15 +94,27 @@ export async function getStoreSitemapDataset(subdomain: string): Promise<StoreSi
   if (!indexable) return { baseUrl, indexable, entries: [] };
 
   const scope: StoreSitemapStore = { sellerId: store.id, storeId: store.storeId, subdomain: store.subdomain };
-  const [site, products, extra] = await Promise.all([
+  const [site, products, extra, categories] = await Promise.all([
     getCachedPublishedSite(store.id, store.storeId, store.subdomain),
     fetchActiveProductTranslations({ sellerId: store.id, selectedStoreId: catalogStoreId(store) }),
     extraUrls(scope),
+    getStorefrontCategories(store.id, catalogStoreId(store)),
   ]);
+  const withProducts = categories.filter((category) => category.productCount > 0);
 
   return {
     baseUrl,
     indexable,
-    entries: buildStoreSitemapEntries({ baseUrl, indexable, pages: site?.pages ?? [], products, extra }),
+    entries: buildStoreSitemapEntries({
+      baseUrl,
+      indexable,
+      pages: site?.pages ?? [],
+      products,
+      extra,
+      catalogPage: Boolean(site),
+      // One category is the whole catalog again, and the page shows no link to it.
+      categoryKeys: withProducts.length > 1 ? withProducts.map((category) => category.key) : [],
+      locales: storeIndexLocales(store.supportedLocales),
+    }),
   };
 }

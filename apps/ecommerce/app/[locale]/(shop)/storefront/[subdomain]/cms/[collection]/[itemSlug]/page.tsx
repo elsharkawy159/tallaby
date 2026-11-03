@@ -3,10 +3,10 @@ import { notFound } from "next/navigation";
 import { getFormatter } from "next-intl/server";
 import { cmsItemSummaryFields, type CmsFieldDef } from "@workspace/lib/cms";
 import { storeUrl } from "@workspace/lib/storefront";
-import { routing } from "@/i18n/routing";
 import { cmsImageUrl } from "@/lib/store-cms/cms.lib";
 import { getCachedCmsCollection, getCachedCmsItem } from "@/lib/store-cms/cms.server";
 import { resolveStorefront } from "@/lib/storefront.server";
+import { storePageMetadata } from "@/lib/store-seo/store-seo.lib";
 import { isSubdomainOfflineForRequest, STORE_OFFLINE_METADATA } from "@/lib/store-site/offline.server";
 import { ArticleBody, ContentImage, JsonLd } from "../../../_components/store-content";
 import s from "../../../storefront.module.css";
@@ -34,20 +34,17 @@ export async function generateMetadata({ params }: CmsItemPageProps): Promise<Me
   const { locale, subdomain, collection: collectionSlug, itemSlug } = await params;
   if (await isSubdomainOfflineForRequest(subdomain)) return STORE_OFFLINE_METADATA;
   const { store, collection, item, summary } = await load(locale, subdomain, collectionSlug, itemSlug);
-  const url = `${storeUrl(store.subdomain, store.customDomain)}${locale === routing.defaultLocale ? "" : `/${locale}`}/${collection.slug}/${item.slug}`;
-  const image = cmsImageUrl(item.seo.ogImage || summary.image);
-  const title = item.seo.title || summary.title || item.slug;
-  const description = item.seo.description || summary.excerpt || undefined;
-  return {
-    title,
-    description,
-    alternates: { canonical: url },
-    robots: item.seo.noindex ? { index: false, follow: true } : undefined,
-    openGraph: { type: "article", url, title, description, siteName: store.displayName, images: image ? [{ url: image }] : undefined },
-  };
+  return storePageMetadata(store, locale, {
+    paths: `/${collection.slug}/${item.slug}`,
+    title: item.seo.title || summary.title || item.slug,
+    description: item.seo.description || summary.excerpt,
+    image: cmsImageUrl(item.seo.ogImage || summary.image),
+    article: { publishedTime: item.publishedAt, modifiedTime: item.updatedAt },
+    noindex: item.seo.noindex,
+  });
 }
 
-function FieldValue({ field, value, format }: { field: CmsFieldDef; value: unknown; format: Awaited<ReturnType<typeof getFormatter>> }) {
+function FieldValue({ field, value, format, itemTitle }: { field: CmsFieldDef; value: unknown; format: Awaited<ReturnType<typeof getFormatter>>; itemTitle: string }) {
   switch (field.type) {
     case "richtext":
       return <ArticleBody html={typeof value === "string" ? value : ""} />;
@@ -56,7 +53,7 @@ function FieldValue({ field, value, format }: { field: CmsFieldDef; value: unkno
     case "image":
       return (
         <div className="overflow-hidden rounded-(--sf-radius,12px) bg-(--sf-shelf)">
-          <ContentImage src={String(value)} alt={field.label} className="h-auto w-full" sizes="(min-width: 768px) 768px, 100vw" />
+          <ContentImage src={String(value)} alt={itemTitle} className="h-auto w-full" sizes="(min-width: 768px) 768px, 100vw" />
         </div>
       );
     case "boolean":
@@ -127,7 +124,7 @@ export default async function StoreCmsItemPage({ params }: CmsItemPageProps) {
             {field.type !== "richtext" && field.type !== "image" && field.type !== "textarea" && (
               <h2 className="text-sm font-semibold text-(--sf-muted)">{field.label}</h2>
             )}
-            <FieldValue field={field} value={item.data[field.key]} format={format} />
+            <FieldValue field={field} value={item.data[field.key]} format={format} itemTitle={summary.title || item.slug} />
           </section>
         ))}
       </div>

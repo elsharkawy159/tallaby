@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { storeUrl } from "@workspace/lib/storefront";
-import { routing } from "@/i18n/routing";
 import { Link } from "@/i18n/navigation";
 import { toContentSummary } from "@/lib/store-cms/cms.lib";
 import { BLOG_PAGE_SIZE, getCachedBlogPage, getCachedBlogTags } from "@/lib/store-cms/cms.server";
 import { resolveStorefront } from "@/lib/storefront.server";
+import { storePageMetadata } from "@/lib/store-seo/store-seo.lib";
 import {
   isStoreOfflineForRequest,
   isSubdomainOfflineForRequest,
@@ -46,15 +45,13 @@ export async function generateMetadata({ params, searchParams }: BlogPageProps):
   if (await isSubdomainOfflineForRequest(subdomain)) return STORE_OFFLINE_METADATA;
   const { page, tag } = parseQuery(await searchParams);
   const [store, t] = await Promise.all([resolveStorefront(subdomain), getTranslations({ locale, namespace: "storefrontBlog" })]);
-  const prefix = locale === routing.defaultLocale ? "" : `/${locale}`;
-  const url = `${storeUrl(store.subdomain, store.customDomain)}${prefix}/blog`;
-  return {
+  return storePageMetadata(store, locale, {
+    paths: "/blog",
     title: tag ? t("tagTitle", { tag }) : t("title"),
     description: t("description", { store: store.displayName }),
-    alternates: { canonical: url },
     // Filtered and deeper pages are crawlable but not indexed (the sitemap lists /blog and every post).
-    robots: tag || page > 1 ? { index: false, follow: true } : undefined,
-  };
+    noindex: Boolean(tag) || page > 1,
+  });
 }
 
 export default async function StoreBlogPage({ params, searchParams }: BlogPageProps) {

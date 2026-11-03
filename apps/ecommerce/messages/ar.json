@@ -2395,6 +2395,8 @@
     "categoriesLabel": "تسوق حسب القسم",
     "allProducts": "كل المنتجات",
     "productsHeading": "المنتجات",
+    "catalogMetaDescription": "تصفح كل منتجات {store} واطلب أونلاين بخطوات بسيطة.",
+    "categoryMetaDescription": "تسوّق {category} من {store} واطلب أونلاين بخطوات بسيطة.",
     "inCategory": "{category}",
     "searchPlaceholder": "ابحث في هذا المتجر",
     "searchSubmit": "بحث",

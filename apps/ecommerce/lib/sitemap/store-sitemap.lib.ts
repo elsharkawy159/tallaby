@@ -4,6 +4,7 @@
  * serves the same locales the same way ("as-needed", ar unprefixed).
  */
 import {
+  buildAlternates,
   buildProductEntries,
   dedupeEntries,
   isValidSlug,
@@ -11,6 +12,7 @@ import {
   type ChangeFrequency,
   type ProductTranslationRow,
   type SitemapEntry,
+  type SitemapLocale,
 } from "./sitemap.lib";
 
 /** A published builder page of the store (from the published snapshot only). */
@@ -45,6 +47,22 @@ export interface StoreSitemapInput {
   /** Translation rows of the store's visible, active products. */
   products: ProductTranslationRow[];
   extra?: StoreSitemapUrl[];
+  /** The store has a /products page (a builder site); without one it sends shoppers home. */
+  catalogPage?: boolean;
+  /** Store category keys, each a landing page at /products?category=. */
+  categoryKeys?: string[];
+  /** The languages the store offers; both when not given. */
+  locales?: readonly SitemapLocale[];
+}
+
+/** Only the store's languages, each entry's hreflang included. */
+function inLocales(entries: SitemapEntry[], locales: readonly SitemapLocale[]): SitemapEntry[] {
+  return entries
+    .filter((entry) => locales.includes(entry.locale))
+    .map((entry) => {
+      const urls = Object.fromEntries(locales.flatMap((l) => (entry.alternates[l] ? [[l, entry.alternates[l]]] : [])));
+      return { ...entry, alternates: Object.keys(urls).length > 1 ? buildAlternates(urls) : {} };
+    });
 }
 
 /** One or more lowercase path segments, nothing that could leave the host. */
@@ -52,8 +70,8 @@ const SAFE_PATH = /^(?:\/[a-z0-9][a-z0-9-]*){1,4}$/;
 
 /**
  * Every indexable URL of one store: home, published builder pages (except
- * the home page, which is "/", the product page template, and pages marked noindex), the store's own
- * products, then provider URLs. Nothing at all for a store kept out of
+ * the home page, which is "/", the product page template, and pages marked noindex), the catalog
+ * page and its categories, the store's own products, then provider URLs. Nothing at all for a store kept out of
  * search, so the sitemap never contradicts the pages' `noindex`.
  */
 export function buildStoreSitemapEntries(input: StoreSitemapInput): SitemapEntry[] {
@@ -76,10 +94,21 @@ export function buildStoreSitemapEntries(input: StoreSitemapInput): SitemapEntry
       ),
     );
 
-  return dedupeEntries([
+  const catalogEntries = input.catalogPage
+    ? [
+        ...page("/products", { lastModified: null, changeFrequency: "daily", priority: 0.8 }),
+        ...(input.categoryKeys ?? []).flatMap((key) =>
+          page(`/products?category=${encodeURIComponent(key)}`, { lastModified: null, changeFrequency: "weekly", priority: 0.7 }),
+        ),
+      ]
+    : [];
+
+  const { entries } = dedupeEntries([
     ...page("", { lastModified: null, changeFrequency: "daily", priority: 1 }),
     ...pageEntries,
+    ...catalogEntries,
     ...buildProductEntries(baseUrl, input.products).entries,
     ...extraEntries,
-  ]).entries;
+  ]);
+  return input.locales ? inLocales(entries, input.locales) : entries;
 }

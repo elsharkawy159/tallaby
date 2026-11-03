@@ -2398,6 +2398,8 @@
     "categoriesLabel": "Shop by category",
     "allProducts": "Everything",
     "productsHeading": "Products",
+    "catalogMetaDescription": "Browse all of {store}'s products and order online in a few simple steps.",
+    "categoryMetaDescription": "Shop {category} from {store} and order online in a few simple steps.",
     "inCategory": "{category}",
     "searchPlaceholder": "Search this store",
     "searchSubmit": "Search",

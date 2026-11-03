@@ -8,9 +8,10 @@ import { cn } from "@workspace/ui/lib/utils";
 import { socialShareImageUrl } from "@/lib/metadata";
 import { getProductBySlug } from "@/actions/products";
 import { Link } from "@/i18n/navigation";
-import type { ProductLocale } from "@/lib/product-translations";
+import { getProductIdBySlug, getProductSlugForLocaleStrict, type ProductLocale } from "@/lib/product-translations";
 import { resolveStorefront, storeShowsProduct } from "@/lib/storefront.server";
 import { isSubdomainOfflineForRequest, STORE_OFFLINE_METADATA } from "@/lib/store-site/offline.server";
+import { storePageMetadata } from "@/lib/store-seo/store-seo.lib";
 import { getStorefrontSite } from "@/lib/store-site/preview.server";
 import { getDefaultProductVariant } from "@/lib/product-variants";
 import { MetaViewContent } from "@/components/meta/meta-view-content.client";
@@ -28,9 +29,21 @@ type StorefrontProductPageProps = {
   params: Promise<{ locale: string; subdomain: string; slug: string }>;
 };
 
-/** This store's own address for the product, in one language. */
-function storeProductUrl(store: { subdomain: string; customDomain?: string | null }, locale: string, slug: string) {
-  return `${storeUrl(store.subdomain, store.customDomain)}${locale === "ar" ? "" : `/${locale}`}/products/${slug}`;
+/**
+ * The product's path in each language with a real translation, under the rule
+ * the sitemap lists it: slugs differ per language, and a slug another product
+ * holds would open that product. A page opened through the other language's
+ * slug names the real one as canonical, so a product has one URL per language.
+ */
+async function storeProductPaths(productId: string, slug: string, locale: string) {
+  const paths: Partial<Record<ProductLocale, string>> = {};
+  await Promise.all(
+    (["ar", "en"] as const).map(async (l) => {
+      const own = await getProductSlugForLocaleStrict(productId, l);
+      if (own && (await getProductIdBySlug(own, l)) === productId) paths[l] = `/products/${encodeURIComponent(own)}`;
+    }),
+  );
+  return Object.keys(paths).length ? paths : { [locale === "en" ? "en" : "ar"]: `/products/${slug}` };
 }
 
 /**
@@ -56,29 +69,21 @@ export async function generateMetadata({
   const { locale, subdomain, slug } = await params;
   if (await isSubdomainOfflineForRequest(subdomain)) return STORE_OFFLINE_METADATA;
   const { store, product } = await resolveStoreProduct(locale, subdomain, slug);
-  const canonical = storeProductUrl(store, locale, slug);
   const firstImage = (product.images as string[] | undefined)?.find((i) => i?.trim());
   // Seller-entered SEO (dashboard product form) wins over the name and short description.
   const seo = (product as { seo?: { metaTitle?: string; metaDescription?: string; metaKeywords?: string[] } }).seo;
   const keywords = seo?.metaKeywords?.filter((k) => typeof k === "string" && k.trim());
 
   return {
-    title: seo?.metaTitle?.trim() || product.title,
-    description: seo?.metaDescription?.trim() || product.description || undefined,
-    ...(keywords?.length ? { keywords } : {}),
     // The store's own page is the real copy: there are no marketplace product pages.
-    alternates: {
-      canonical,
-      languages: {
-        ar: storeProductUrl(store, "ar", slug),
-        en: storeProductUrl(store, "en", slug),
-        "x-default": storeProductUrl(store, "ar", slug),
-      },
-    },
-    openGraph: {
-      url: canonical,
-      ...(firstImage && { images: [{ url: socialShareImageUrl(firstImage), alt: product.title }] }),
-    },
+    ...storePageMetadata(store, locale, {
+      paths: await storeProductPaths(product.id, slug, locale),
+      title: seo?.metaTitle?.trim() || product.title,
+      description: seo?.metaDescription?.trim() || product.description,
+      image: firstImage ? socialShareImageUrl(firstImage) : null,
+      imageAlt: firstImage ? product.title : undefined,
+    }),
+    ...(keywords?.length ? { keywords } : {}),
   };
 }
 

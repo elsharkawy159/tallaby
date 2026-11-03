@@ -1,6 +1,17 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_STORE_SEO } from "@workspace/lib/stores";
-import { buildStoreMetadata, storeSeoFallback, type StoreMetadataInput } from "./store-seo.lib";
+import {
+  buildStoreMetadata,
+  STORE_NOINDEX,
+  storeAlternates,
+  storeCatalogSeo,
+  storeHomeMetadata,
+  storeIndexLocales,
+  storePageMetadata,
+  storeSeoFallback,
+  storeStructuredData,
+  type StoreMetadataInput,
+} from "./store-seo.lib";
 
 const store = (seo: Partial<StoreMetadataInput["seo"]>): StoreMetadataInput => ({
   displayName: "Shop",
@@ -80,5 +91,162 @@ describe("buildStoreMetadata title and description", () => {
     expect(bio.description).toBe("About us");
     const storeBio = buildStoreMetadata({ ...store({}), storeDescription: "Store text" }, "en", { indexable: true });
     expect(storeBio.description).toBe("Store text");
+  });
+});
+
+describe("storeIndexLocales", () => {
+  it("keeps the store's languages and treats a missing or unusable setting as both", () => {
+    expect(storeIndexLocales(["ar"])).toEqual(["ar"]);
+    expect(storeIndexLocales(["en", "ar"])).toEqual(["ar", "en"]);
+    expect(storeIndexLocales(null)).toEqual(["ar", "en"]);
+    expect(storeIndexLocales(["fr"])).toEqual(["ar", "en"]);
+  });
+});
+
+describe("storeAlternates", () => {
+  const both = store({});
+
+  it("names the page itself in its language, with ar unprefixed and en under /en", () => {
+    expect(storeAlternates(both, "ar", "/about")).toEqual({
+      canonical: "https://shop.com/about",
+      languages: { en: "https://shop.com/en/about", ar: "https://shop.com/about", "x-default": "https://shop.com/about" },
+    });
+    expect(storeAlternates(both, "en", "/about").canonical).toBe("https://shop.com/en/about");
+    expect(storeAlternates(both, "en", "").canonical).toBe("https://shop.com/en");
+  });
+
+  it("uses each language's own slug", () => {
+    const alternates = storeAlternates(both, "en", { ar: "/products/kob", en: "/products/mug" });
+    expect(alternates.canonical).toBe("https://shop.com/en/products/mug");
+    expect(alternates.languages?.ar).toBe("https://shop.com/products/kob");
+  });
+
+  it("lists only a language the page really has", () => {
+    const alternates = storeAlternates(both, "ar", { ar: "/products/kob" });
+    expect(alternates).toEqual({ canonical: "https://shop.com/products/kob" });
+  });
+
+  it("points a language the store doesn't offer at the one it does", () => {
+    const arOnly = { ...both, supportedLocales: ["ar"] };
+    expect(storeAlternates(arOnly, "en", "/about")).toEqual({ canonical: "https://shop.com/about" });
+    const enOnly = { ...both, supportedLocales: ["en"] };
+    expect(storeAlternates(enOnly, "ar", "")).toEqual({ canonical: "https://shop.com/en" });
+  });
+
+  it("still has a canonical when the only translation is in a language the store doesn't offer", () => {
+    const arOnly = { ...both, supportedLocales: ["ar"] };
+    expect(storeAlternates(arOnly, "en", { en: "/products/mug" }).canonical).toBe("https://shop.com/en/products/mug");
+  });
+});
+
+describe("storePageMetadata", () => {
+  it("never sets an empty key: Next would treat it as clearing the layout's value", () => {
+    const meta = storePageMetadata(store({}), "ar", { paths: "/about", title: "About" });
+    expect("robots" in meta).toBe(false);
+    expect("description" in meta).toBe(false);
+    const noFlag = storePageMetadata(store({}), "ar", { paths: "/about", title: "About", noindex: undefined });
+    expect("robots" in noFlag).toBe(false);
+  });
+
+  it("gives the page its own Open Graph address, title and language", () => {
+    const meta = storePageMetadata(store({}), "en", { paths: "/about", title: "About", description: "Who we are", image: "https://img/x.jpg" });
+    expect(meta.openGraph).toMatchObject({
+      url: "https://shop.com/en/about",
+      title: "About",
+      description: "Who we are",
+      siteName: "Shop",
+      locale: "en_US",
+      images: [{ url: "https://img/x.jpg" }],
+    });
+    expect(meta.twitter).toEqual({ card: "summary_large_image" });
+  });
+
+  it("falls back to the store's share image", () => {
+    const meta = storePageMetadata(store({ shareImageUrl: "https://img/store.jpg" }), "ar", { paths: "/about", title: "About" });
+    expect(meta.openGraph?.images).toEqual([{ url: "https://img/store.jpg" }]);
+  });
+
+  it("adds article dates only for an article, and noindex only when asked", () => {
+    const meta = storePageMetadata(store({}), "ar", {
+      paths: "/blog/x",
+      title: "X",
+      article: { publishedTime: "2026-01-01T00:00:00Z" },
+      noindex: true,
+    });
+    expect(meta.openGraph).toMatchObject({ type: "article", publishedTime: "2026-01-01T00:00:00Z" });
+    expect(meta.robots).toEqual(STORE_NOINDEX);
+  });
+});
+
+describe("buildStoreMetadata", () => {
+  it("clears what the Tallaby layout above it sets", () => {
+    const meta = buildStoreMetadata(store({}), "ar", { indexable: true });
+    expect(meta).toMatchObject({ keywords: null, authors: null, creator: null, publisher: null, category: null });
+    expect(meta.twitter).toEqual({ card: "summary" });
+    expect(JSON.stringify(meta.twitter)).not.toContain("tallaby");
+  });
+
+  it("gives /en its own Open Graph address, and adds no noindex to an indexable store", () => {
+    const meta = buildStoreMetadata(store({}), "en", { indexable: true });
+    expect(meta.openGraph).toMatchObject({ url: "https://shop.com/en", locale: "en_US" });
+    expect("robots" in meta).toBe(false);
+    expect(buildStoreMetadata(store({}), "ar", { indexable: false }).robots).toEqual(STORE_NOINDEX);
+  });
+});
+
+describe("storeHomeMetadata", () => {
+  it("changes nothing when the seller wrote nothing", () => {
+    expect(storeHomeMetadata(store({}), "ar", {})).toEqual({});
+    expect(storeHomeMetadata(store({}), "ar", undefined)).toEqual({});
+  });
+
+  it("uses the seller's text and keeps the rest of the home page's values", () => {
+    const meta = storeHomeMetadata(store({}), "ar", { title: "Best mugs", description: "Mugs in Cairo" });
+    expect(meta.title).toBe("Best mugs");
+    expect(meta.description).toBe("Mugs in Cairo");
+    expect(meta.openGraph).toMatchObject({ url: "https://shop.com", title: "Best mugs", description: "Mugs in Cairo" });
+    expect("robots" in meta).toBe(false);
+    expect("alternates" in meta).toBe(false);
+  });
+
+  it("doesn't add the store name to a title that has it, and honours noindex", () => {
+    expect(storeHomeMetadata(store({}), "ar", { title: "Shop for mugs" }).title).toEqual({ absolute: "Shop for mugs" });
+    const hidden = storeHomeMetadata(store({}), "ar", { noindex: true });
+    expect(hidden.robots).toEqual(STORE_NOINDEX);
+    expect("title" in hidden).toBe(false);
+  });
+});
+
+describe("storeCatalogSeo", () => {
+  it("keeps the category and page, and drops sort", () => {
+    expect(storeCatalogSeo({})).toEqual({ path: "/products", noindex: false });
+    expect(storeCatalogSeo({ category: "mugs", page: 1 }).path).toBe("/products?category=mugs");
+    expect(storeCatalogSeo({ category: "mugs", page: 3 }).path).toBe("/products?category=mugs&page=3");
+  });
+
+  it("keeps search results out of the index, under the catalog's address", () => {
+    expect(storeCatalogSeo({ search: "red mug" })).toEqual({ path: "/products", noindex: true });
+  });
+});
+
+describe("storeStructuredData", () => {
+  const input = {
+    displayName: "Shop",
+    subdomain: "shop",
+    customDomain: "shop.com",
+    logoUrl: "https://img/logo.png",
+    description: "Mugs",
+    social: [{ url: "https://instagram.com/shop" }, { url: "01000000000" }],
+    supportEmail: "hi@shop.com",
+    supportPhone: null,
+  };
+
+  it("describes the store at its own address, never Tallaby", () => {
+    const [organization, website] = storeStructuredData(input, "ar");
+    expect(organization).toMatchObject({ "@type": "OnlineStore", name: "Shop", url: "https://shop.com", logo: "https://img/logo.png", email: "hi@shop.com" });
+    expect(organization).not.toHaveProperty("telephone");
+    expect(organization?.sameAs).toEqual(["https://instagram.com/shop"]);
+    expect(website).toMatchObject({ "@type": "WebSite", name: "Shop", url: "https://shop.com", inLanguage: "ar" });
+    expect(JSON.stringify([organization, website]).toLowerCase()).not.toContain("tallaby");
   });
 });

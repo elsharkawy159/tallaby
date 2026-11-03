@@ -7,6 +7,7 @@ import { Link } from "@/i18n/navigation";
 import { cmsImageUrl, toContentSummary } from "@/lib/store-cms/cms.lib";
 import { getCachedBlogPage, getCachedCmsItem } from "@/lib/store-cms/cms.server";
 import { resolveStorefront } from "@/lib/storefront.server";
+import { storePageMetadata } from "@/lib/store-seo/store-seo.lib";
 import { isSubdomainOfflineForRequest, STORE_OFFLINE_METADATA } from "@/lib/store-site/offline.server";
 import { ArticleBody, ContentImage, JsonLd, PostCard, PostMeta } from "../../_components/store-content";
 import s from "../../storefront.module.css";
@@ -35,29 +36,19 @@ export async function generateMetadata({ params }: BlogPostProps): Promise<Metad
   const { locale, subdomain, postSlug } = await params;
   if (await isSubdomainOfflineForRequest(subdomain)) return STORE_OFFLINE_METADATA;
   const { store, item, post } = await loadPost(subdomain, postSlug);
-  const url = postUrl(storeUrl(store.subdomain, store.customDomain), locale, item.slug);
-  const image = cmsImageUrl(item.seo.ogImage || post.image);
-  const title = item.seo.title || post.title;
-  const description = item.seo.description || post.excerpt || undefined;
-  return {
-    title,
-    description,
-    alternates: { canonical: url },
-    robots: item.seo.noindex ? { index: false, follow: true } : undefined,
-    openGraph: {
-      type: "article",
-      url,
-      title,
-      description,
-      siteName: store.displayName,
+  return storePageMetadata(store, locale, {
+    paths: `/blog/${item.slug}`,
+    title: item.seo.title || post.title,
+    description: item.seo.description || post.excerpt,
+    image: cmsImageUrl(item.seo.ogImage || post.image),
+    article: {
       publishedTime: item.publishedAt,
       modifiedTime: item.updatedAt,
       authors: post.authorName ? [post.authorName] : undefined,
       tags: post.tags,
-      images: image ? [{ url: image }] : undefined,
     },
-    twitter: { card: image ? "summary_large_image" : "summary", title, description, images: image ? [image] : undefined },
-  };
+    noindex: item.seo.noindex,
+  });
 }
 
 export default async function StoreBlogPostPage({ params }: BlogPostProps) {

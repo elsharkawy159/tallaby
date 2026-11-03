@@ -1,6 +1,9 @@
+import type { Metadata } from "next";
 import { cn } from "@workspace/ui/lib/utils";
+import { JsonLd } from "@/components/seo/json-ld";
+import { storeHomeMetadata, storeStructuredData } from "@/lib/store-seo/store-seo.lib";
 import type { StoreQuery } from "@/components/store-page/store-products";
-import { catalogStoreId, getStorefrontCategories, resolveStorefront } from "@/lib/storefront.server";
+import { catalogStoreId, getStorefrontCategories, resolveStorefront, storeCategoryLabel } from "@/lib/storefront.server";
 import { StorefrontHero } from "./_components/storefront-hero";
 import { CategoryCircles } from "./_components/category-circles";
 import { StorefrontCatalog } from "./_components/storefront-catalog";
@@ -16,6 +19,16 @@ type StorefrontPageProps = {
 
 const one = (value: string | string[] | undefined) =>
   (Array.isArray(value) ? value[0] : value)?.trim() || undefined;
+
+/** The SEO text the seller wrote for the home page in Website › Pages. */
+export async function generateMetadata({ params }: StorefrontPageProps): Promise<Metadata> {
+  const { locale, subdomain } = await params;
+  const store = await resolveStorefront(subdomain);
+  if (await isStoreOfflineForRequest(store)) return {};
+  const { site } = await getStorefrontSite(store.id, store.storeId, store.subdomain);
+  const home = site?.pages.find((page) => page.isHome);
+  return storeHomeMetadata(store, locale, home?.seo, storeCategoryLabel(store, locale));
+}
 
 export default async function StorefrontPage({ params, searchParams }: StorefrontPageProps) {
   const { locale, subdomain } = await params;
@@ -36,12 +49,19 @@ export default async function StorefrontPage({ params, searchParams }: Storefron
   // A published builder site renders its own home page (P5-01); in preview, the draft (P4-08).
   const { site } = await getStorefrontSite(store.id, store.storeId, store.subdomain);
   const home = site?.pages.find((page) => page.isHome);
+  const identity = <JsonLd data={storeStructuredData(store, locale)} />;
   if (site && home) {
-    return <StoreSitePage store={store} site={site} page={home} locale={locale} productPage={query.page} />;
+    return (
+      <>
+        {identity}
+        <StoreSitePage store={store} site={site} page={home} locale={locale} productPage={query.page} />
+      </>
+    );
   }
 
   return (
     <>
+      {identity}
       <StorefrontHero store={store} />
       <div className={cn(s.wrap, "space-y-10 py-10 md:space-y-14 md:py-14")}>
         <CategoryCircles categories={categories} query={query} />

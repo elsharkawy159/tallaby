@@ -3,7 +3,6 @@ import "@workspace/ui/globals.css";
 import "./globals.css";
 import { Providers } from "./providers";
 import NextTopLoader from "nextjs-toploader";
-import { Scripts } from "@/components/layout/structured-data";
 import { getTranslations } from "next-intl/server";
 import { Toaster } from "@workspace/ui/components/sonner";
 import { routing } from "@/i18n/routing";
@@ -85,7 +84,6 @@ export async function generateMetadata({
 export default function ShopLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
-      <Scripts />
       <NextTopLoader
         color="var(--accent)"
         crawlSpeed={200}

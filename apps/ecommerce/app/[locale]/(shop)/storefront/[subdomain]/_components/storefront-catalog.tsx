@@ -47,11 +47,13 @@ export async function StorefrontCatalog({
   const heading = active
     ? ((locale === "ar" ? active.nameAr || active.name : active.name || active.nameAr) ?? "")
     : t("productsHeading");
+  const Heading = basePath === "/" ? "h2" : "h1";
 
   return (
     <section id="products" className="scroll-mt-20">
       <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-        <h2 className={s.sectionTitle}>{heading}</h2>
+        {/* The catalog is the page's main heading on /products; on the classic home the hero has it. */}
+        <Heading className={s.sectionTitle}>{heading}</Heading>
         <div className="flex flex-col gap-2 sm:flex-row">
           <form role="search" className="relative sm:w-72">
             {query.category && <input type="hidden" name="category" value={query.category} />}

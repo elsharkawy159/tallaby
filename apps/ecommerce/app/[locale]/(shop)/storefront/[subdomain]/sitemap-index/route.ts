@@ -11,8 +11,8 @@ export async function generateStaticParams() {
 }
 
 /**
- * {store host}/sitemap.xml (P5-04): home, published builder pages and the
- * store's products on the store's canonical host. An empty <urlset> for a
+ * {store host}/sitemap.xml (P5-04): home, published builder pages, the catalog
+ * and its categories, products, blog and CMS items on the store's canonical host. An empty <urlset> for a
  * store kept out of search (no products, indexing off). Reached only through
  * the proxy.ts rewrite on a store host.
  */

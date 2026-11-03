@@ -6,7 +6,8 @@ import { cn } from "@workspace/ui/lib/utils";
 import { storeQueryHref, type StoreQuery } from "@/components/store-page/store-products";
 import { catalogStoreId, getStorefrontCategories, resolveStorefront } from "@/lib/storefront.server";
 import { getStorefrontSite } from "@/lib/store-site/preview.server";
-import { isStoreOfflineForRequest } from "@/lib/store-site/offline.server";
+import { isStoreOfflineForRequest, isSubdomainOfflineForRequest, STORE_OFFLINE_METADATA } from "@/lib/store-site/offline.server";
+import { storeCatalogSeo, storePageMetadata } from "@/lib/store-seo/store-seo.lib";
 import { CategoryCircles } from "../_components/category-circles";
 import { StoreSiteProductGrid } from "../_components/store-site";
 import { StorefrontCatalog } from "../_components/storefront-catalog";
@@ -19,10 +20,29 @@ type StoreProductsPageProps = {
 
 const one = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value)?.trim() || undefined;
 
-export async function generateMetadata({ params }: StoreProductsPageProps): Promise<Metadata> {
-  const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "storefront" });
-  return { title: t("productsHeading") };
+export async function generateMetadata({ params, searchParams }: StoreProductsPageProps): Promise<Metadata> {
+  const { locale, subdomain } = await params;
+  if (await isSubdomainOfflineForRequest(subdomain)) return STORE_OFFLINE_METADATA;
+  const sp = await searchParams;
+  const [store, t] = await Promise.all([resolveStorefront(subdomain), getTranslations({ locale, namespace: "storefront" })]);
+  const categories = await getStorefrontCategories(store.id, catalogStoreId(store));
+  const active = categories.find((c) => c.key === one(sp.category));
+  const categoryName = active ? (locale === "ar" ? active.nameAr || active.name : active.name || active.nameAr) : null;
+  const { path, noindex } = storeCatalogSeo({
+    category: active?.key,
+    search: one(sp.search) ?? one(sp.q),
+    page: Math.max(1, Math.floor(Number(one(sp.page)) || 1)),
+  });
+  // A preview keeps the layout's noindex: the key is only set here when true.
+  return storePageMetadata(store, locale, {
+    paths: path,
+    title: categoryName || t("productsHeading"),
+    description: categoryName
+      ? t("categoryMetaDescription", { category: categoryName, store: store.displayName })
+      : t("catalogMetaDescription", { store: store.displayName }),
+    image: active?.coverImage,
+    noindex,
+  });
 }
 
 /**
