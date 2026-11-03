@@ -4166,3 +4166,61 @@ export const agentRateWindows = pgTable("agent_rate_windows", {
 	check("agent_rate_windows_bucket_length", sql`char_length(bucket) BETWEEN 1 AND 50`),
 	check("agent_rate_windows_count_check", sql`count >= 0`),
 ]);
+
+/** The AI Store Builder's conversation and build (0141, ROADMAP.md F-54). Server-only. */
+export const storeBuilds = pgTable("store_builds", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	sellerId: uuid("seller_id").notNull(),
+	storeId: uuid("store_id"),
+	/** collecting | building | review | abandoned */
+	status: text().default("collecting").notNull(),
+	free: boolean().default(false).notNull(),
+	state: jsonb().default({}).notNull(),
+	chatTurns: integer("chat_turns").default(0).notNull(),
+	siteCopyRuns: integer("site_copy_runs").default(0).notNull(),
+	stopReason: text("stop_reason"),
+	lockUntil: timestamp("lock_until", { withTimezone: true, mode: 'string' }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("store_builds_seller_idx").using("btree", table.sellerId, table.createdAt.desc()),
+	uniqueIndex("store_builds_one_open_idx").using("btree", table.sellerId).where(sql`status IN ('collecting', 'building')`),
+	foreignKey({ columns: [table.sellerId], foreignColumns: [sellers.id], name: "store_builds_seller_id_fkey" }).onDelete("cascade"),
+	foreignKey({ columns: [table.storeId], foreignColumns: [stores.id], name: "store_builds_store_id_fkey" }).onDelete("set null"),
+	check("store_builds_status_check", sql`status IN ('collecting', 'building', 'review', 'abandoned')`),
+	check("store_builds_chat_turns_check", sql`chat_turns >= 0`),
+	check("store_builds_site_copy_runs_check", sql`site_copy_runs >= 0`),
+]);
+
+/** One build step (0141): a step that is done is never run again. */
+export const storeBuildItems = pgTable("store_build_items", {
+	buildId: uuid("build_id").notNull(),
+	key: text().notNull(),
+	/** pending | done | failed | skipped */
+	status: text().default("pending").notNull(),
+	attempts: integer().default(0).notNull(),
+	data: jsonb().default({}).notNull(),
+	productId: uuid("product_id"),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	primaryKey({ columns: [table.buildId, table.key], name: "store_build_items_pkey" }),
+	foreignKey({ columns: [table.buildId], foreignColumns: [storeBuilds.id], name: "store_build_items_build_id_fkey" }).onDelete("cascade"),
+	foreignKey({ columns: [table.productId], foreignColumns: [products.id], name: "store_build_items_product_id_fkey" }).onDelete("set null"),
+	check("store_build_items_key_check", sql`char_length(key) BETWEEN 1 AND 80`),
+	check("store_build_items_status_check", sql`status IN ('pending', 'done', 'failed', 'skipped')`),
+	check("store_build_items_attempts_check", sql`attempts >= 0`),
+]);
+
+/** The free build (0141): one per seller, ever, and one per phone number. */
+export const storeBuildClaims = pgTable("store_build_claims", {
+	sellerId: uuid("seller_id").primaryKey().notNull(),
+	buildId: uuid("build_id"),
+	phoneKey: text("phone_key"),
+	ipHash: text("ip_hash"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex("store_build_claims_phone_idx").using("btree", table.phoneKey).where(sql`phone_key IS NOT NULL`),
+	index("store_build_claims_ip_idx").using("btree", table.ipHash, table.createdAt.desc()).where(sql`ip_hash IS NOT NULL`),
+	foreignKey({ columns: [table.sellerId], foreignColumns: [sellers.id], name: "store_build_claims_seller_id_fkey" }).onDelete("cascade"),
+	foreignKey({ columns: [table.buildId], foreignColumns: [storeBuilds.id], name: "store_build_claims_build_id_fkey" }).onDelete("set null"),
+]);

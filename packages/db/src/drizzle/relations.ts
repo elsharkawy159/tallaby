@@ -1,4 +1,5 @@
 import { relations } from "drizzle-orm/relations";
+import { storeBuilds, storeBuildItems, storeBuildClaims } from "./schema";
 import { sellerCategoryProductPositions, oauthClients, agentGrants, oauthAuthCodes, agentTokens, agentToolCalls, agentRateWindows } from "./schema";
 import { stores, storeBlockedPhones, storeProducts, storeDesignSystems, storePages, storeSiteRevisions, templateInstalls, mediaFolders, mediaAssets, savedBlocks, storeForms, storeFormSubmissions, cmsCollections, cmsItems, cmsItemRevisions, storeIntegrations, storeShippingZones, storeSettingsAudit, sellerWalletTopUps, adminAuditLog, platformBlogPosts, sellerProductCategories, sellerProductBrands, adminNotifications, sellerNotifications, shipmentCarrierEvents, aiUsageLogs, featureRequests, featureRequestVotes, referralCommissions, referralPayouts, sellerWelcomeGifts, storeCheckoutLeads, storeCustomerNotes, sellerPushSubscriptions, sellerPushSettings, adminPushSubscriptions, stockMovements, storeStockSubscriptions, storeEmailCampaigns, storeEmailCampaignRecipients, storeEmailUnsubscribes, storeWinbackSends } from "./schema";
 import { users, deliveries, shipments, orders, payments, paymentMethods, carts, categories, sellers, coupons, notifications, contacts, userAddresses, products, productVariants, refunds, returns, orderItems, shipmentItems, productQuestions, shippingAddresses, couponUsage, cartItems, reviews, returnItems, reviewVotes, searchLogs, sellerDocuments, sellerPayoutItems, sellerPayouts, reviewComments, userDevices, wishlistItems, wishlists, brands, productAnswers, userRewards, productTranslations, digitalProducts, digitalOrders, sellerCategories, sellerWallet, walletTransactions, digitalFiles, licenseKeys, digitalBundleItems, digitalAccessLogs, shippingProviders, shipmentBatches, shipmentBatchItems, userWallets, userWalletTransactions, walletTopUps, walletPayoutRequests, affiliates, affiliateCommissions } from "./schema";
@@ -1348,5 +1349,39 @@ export const agentRateWindowsRelations = relations(agentRateWindows, ({one}) => 
 	grant: one(agentGrants, {
 		fields: [agentRateWindows.grantId],
 		references: [agentGrants.id]
+	}),
+}));
+
+export const storeBuildsRelations = relations(storeBuilds, ({one, many}) => ({
+	seller: one(sellers, {
+		fields: [storeBuilds.sellerId],
+		references: [sellers.id]
+	}),
+	store: one(stores, {
+		fields: [storeBuilds.storeId],
+		references: [stores.id]
+	}),
+	items: many(storeBuildItems),
+}));
+
+export const storeBuildItemsRelations = relations(storeBuildItems, ({one}) => ({
+	build: one(storeBuilds, {
+		fields: [storeBuildItems.buildId],
+		references: [storeBuilds.id]
+	}),
+	product: one(products, {
+		fields: [storeBuildItems.productId],
+		references: [products.id]
+	}),
+}));
+
+export const storeBuildClaimsRelations = relations(storeBuildClaims, ({one}) => ({
+	seller: one(sellers, {
+		fields: [storeBuildClaims.sellerId],
+		references: [sellers.id]
+	}),
+	build: one(storeBuilds, {
+		fields: [storeBuildClaims.buildId],
+		references: [storeBuilds.id]
 	}),
 }));
