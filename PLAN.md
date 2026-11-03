@@ -1283,6 +1283,8 @@ Unpublish ([Proposed], P4-04): sets `site_status = 'unpublished'` and keeps `pub
 
 ### 13.1 Agreed rules (do not change without the user)
 
+> **Approved by the owner on 2026-11-03; planned, not live.** Until `ROADMAP.md` F-55, F-56 and F-57 ship, the rules below stay in force. Then: **Free** is $0 a month with **$0.03 per order** and 100 AI credits a month; **Pro** is **$29 a month** paid from the store wallet, with no order fee and 2,000 AI credits a month; both have unlimited products and orders, and otherwise the same features and limits. 1 AI credit = 1 action, shared across the seller account, and 100 extra credits cost $1 from the wallet. The **seller store wallet moves to USD**: top-ups are $5–$1,000, paid in EGP at a daily rate plus an Admin-set margin (2% to start), and existing balances convert once at that day's market rate with no margin. **The welcome gift ends for new sellers.** The AI Store Builder's first store uses no credits, with a per-account limit. Orders, product prices and customer wallets stay in EGP. Everything goes live on one day, when ready. No tax for now: 14% is built but off (`tax = false`), with no formal receipts. The USD wallet is spend-only; unstarted gifts and trials and uncharged old EGP 5 fees are cancelled on that day. Details and planning calls: `ROADMAP.md` §4, "Business update 2026-11-03".
+
 - Account and store creation are free. No wallet deposit is required to register, create a store, publish or sell.
 
 > **Changed by the owner on 2026-10-18 (migration `0067`).** This replaces the 2%/min 5 fee and the 30-day trial below wherever they still appear in this plan: Tallaby's only profit per order is a **flat EGP 5 per seller per order** (fee plan `flat_5`), taken from the store wallet **when the order is delivered**. The wallet keeps going down at 0 or below (−5, −10, …). **Every seller account** gets **7 free days counted from its first store's `created_at`**. Whether an order is free depends on when it was **placed** (D4): an order placed on day 6 and delivered on day 9 is free. Orders placed from day 8 pay EGP 5. 0067 applied the rule to all existing sellers too, ending running 30-day trials. A negative wallet opens a top-up pop-up in the dashboard once per session.
@@ -2457,6 +2459,7 @@ Each phase above has a **Phase acceptance** block, and every task has its own ac
 | D32  | Auto-cancel window for unpaid manual-transfer orders (wallets/InstaPay)                                                                                                                     | 48 hours, configurable per store later                                                                                                                                                                                                                                  |
 | D33  | Is the COD fee (and any shipping) excluded from the 2% fee base?                                                                                                                            | Yes, the fee base is product prices only (consistent with D2)                                                                                                                                                                                                           |
 | D34  | Tallaby's own store-views tag (GTM → GA4) on seller storefronts, and consent                                                                                                                | **Owner, 2026-10-27:** allowed (an exception to P5-05 for this one tag, in its own `tallabyDataLayer`), and it loads **without** the consent banner (an exception to D19 for this tag only; the seller's own apps still wait for consent). SA-01, `docs/store-views.md` |
+| D35  | New plans, USD wallet, AI credits and end of the welcome gift (owner, 2026-11-03) | Approved, not live: §13.1 note and `ROADMAP.md` §4, F-54 … F-57. Also updates D13: AI moves to monthly credits, and the AI Store Builder is planned after a cost study. |
 
 ### 21.4 Reconciled documentation conflicts
 
@@ -2737,8 +2740,12 @@ Tick each box when its acceptance is met, and add the date and commit.
 - [ ] AI-1c deploy check: one text and one photo autofill on production, then compare cost per call in Admin › AI usage
 - [ ] AI-2 Field helpers on add and edit (rewrite, translate ar↔en, SEO, bullets) (every AI task follows `docs/ai.md`)
 - [ ] AI-3 Bulk products from Excel/CSV/PDF (parse in code, AI writes copy in batches)
-- [ ] AI-4 Monthly AI credits (`plans/index.ts` `ai`, `aiCreditsMonthly`), idempotent `ai_credit_ledger`, admin cost view
-- [ ] AI-5 Store-build agent, editor `AgentDock`, dashboard assistant (`docs/AI_AGENT_PLAN_PROMPT.md`)
+- [ ] AI-4 Monthly AI credits (`plans/index.ts` `ai`, `aiCreditsMonthly`), idempotent `ai_credit_ledger`, admin cost view **Moved to `ROADMAP.md` F-57 (owner, 2026-11-03).**
+- [ ] AI-5 Store-build agent, editor `AgentDock`, dashboard assistant (`docs/AI_AGENT_PLAN_PROMPT.md`) **The tallaby.com store builder is now `ROADMAP.md` F-54 (cost study first, owner 2026-11-03).**
+
+**Free and Pro, USD wallet, AI credits (owner, 2026-11-03)**
+
+- [ ] Tracked in `ROADMAP.md` §3.1 and §6: F-56 USD wallet and exchange rate → F-55 plans and fee → F-57 AI credits. Tick this when all three are live and §13.1 is rewritten.
 
 **Seller store analytics (owner, 2026-10-27)**
 
@@ -4708,3 +4715,8 @@ Owner asked to keep only the current version of each template in `template_versi
 - Checks on staging: every check below ran in a transaction that was rolled back. Without 0134, deleting an order with a ledger row fails. With it, the order is deleted, the ledger row is kept with `order_id` NULL and the amount is unchanged. Deleting the biggest seller removed their users, seller, 2 stores, 43 products and ledger rows. Deleting a customer with other sellers' items removed their orders, and the ledger total did not change. Deleting all 43 auth users at once succeeded. An FK closure check from `auth.users` finds no blockers. Applied on **staging** 2026-10-31. **Production: not applied (needs owner approval).**
 - Left over: there are 434 orphaned `public.users` rows on staging (8 sellers, 70 orders) from users deleted before the fix. `NOT VALID` leaves them alone. A rolled-back test showed they can be removed with `DELETE FROM public.users u WHERE NOT EXISTS (SELECT 1 FROM auth.users a WHERE a.id = u.id)`. Not run: it needs owner approval.
 - Follow-up (2026-10-31): the owner applied `0134` on production (`check-0134-user-delete-cascade.sql` all true), but deleting a user still failed with the ledger error. A read-only check found 4 duplicate foreign keys that only production has: `wallet_transactions_order_id_fkey` (CASCADE, the cause), `orders_cart_id_fkey` (CASCADE, which deleted an order with its cart), and `reviews_seller_id_fkey` and `shipments_seller_id_fkey` (copies). `0135_drop_duplicate_fks.sql` drops them. In a rolled-back dry run on production, deleting an order with a −5.00 fee entry worked and the entry was kept with `order_id` NULL. Applied on staging (a no-op). Production: the owner runs it.
+
+### 2026-11-03 — New business model planned (owner; no code)
+
+- The owner's `Roadmap_new.md` and answers were recorded: Free ($0.03 per order, 100 AI credits), Pro ($29 a month from the wallet, no fee, 2,000 credits), USD store wallet, daily rate plus margin, welcome gift ended. See §13.1 note, D35 and `ROADMAP.md` §4, §7.
+- Planning only: no migration, code or live pricing changed. The fee remains EGP 5 until F-55 ships.

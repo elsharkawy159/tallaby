@@ -8,6 +8,8 @@ is `packages/db/src/wallet/user-wallet.ts`.
 > and `sellers.wallet_balance` are a separate, older system that credits sellers on
 > delivery. Nothing here touches it. Converging the two is future work — see
 > "Deferred" below.
+>
+> **Planned (owner, 2026-11-03):** the seller store wallet moves to USD (`ROADMAP.md` F-56). This customer wallet stays in EGP.
 
 ## 1. Shape
 

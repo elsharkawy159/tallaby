@@ -9,6 +9,7 @@ Goal: every video should look like it came from a serious, well-funded Egyptian 
 ## 1. Facts and brand (non-negotiable)
 
 - **Source of truth:** `MARKETING_PROJECT.md` (Confirmed beats Proposed; never use anything marked Avoid), then `PROJECT_DESCRIPTION.md`. **Which features exist:** `ROADMAP.md` §2.1 Live and its finished (`[x]`) features (§9). Before claiming a feature, check the code: only show **Live** features, never "Planned" ones.
+- **Pricing:** only say what is live. The Free and Pro plans and USD wallet (`ROADMAP.md` F-55 … F-57) are planned, so don't mention them until they ship.
 - **Brand name:** Arabic **طلبي** (pronounced *ṭalabi*), never **تالابي**. Latin **Tallaby** / **tallaby.com**.
 - **No slogan in videos:** never say or show **"متجرك الشامل"** in a video (voiceover, captions, end card) (owner, 2026-10-24). Don't invent other slogans either.
 - **Never** invent numbers, stats, testimonials, awards, customer names or quotes. Never promise card payment or "free shipping over 500 EGP" (both are switched off). Delivery times are estimates, never guarantees.

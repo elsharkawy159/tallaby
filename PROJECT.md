@@ -12,7 +12,7 @@
 - an independent storefront for every seller at `{subdomain}.tallaby.com` or on the seller's own domain;
 - a seller dashboard, an admin panel, and a shipping/rider app.
 
-**[Planned]** Tallaby becomes a seller SaaS. Sellers sign up in under a minute, design their storefront with a visual builder and templates, connect marketing apps, and pay a flat EGP 5 platform fee per delivered order after a 7-day free trial. The marketplace keeps working alongside this.
+**[Planned]** Tallaby becomes a seller SaaS. Sellers sign up in under a minute, design their storefront with a visual builder and templates, connect marketing apps, and pay a flat EGP 5 platform fee per delivered order after a 7-day free trial. The marketplace keeps working alongside this. **Pricing is changing (owner, 2026-11-03, not live):** Free and Pro plans and a USD seller wallet; see §8.
 
 ## 2. Monorepo
 
@@ -79,7 +79,7 @@ Commands: `pnpm lint`, `pnpm typecheck`, `pnpm test` (Vitest), `pnpm build`, and
 **[Planned]** Multi-store, decided by the owner on 2026-10-17:
 
 - `sellers` becomes the **account**: new columns `plan` (default `free`), `plan_started_at`, `plan_expires_at`, and the fee and trial columns.
-- A new **`stores`** table is the **tenant**. A seller can own up to `plan.maxStores` stores: **3 on Free**, and everyone is Free for now. Subscriptions for AI usage, store limits and advanced settings come later.
+- A new **`stores`** table is the **tenant**. A seller can own up to `plan.maxStores` stores: **3 on Free**, and everyone is Free for now. **[Planned, owner 2026-11-03]** Pro adds 2,000 AI credits and no order fee at $29 a month; the store limit and other settings stay the same on both plans (`ROADMAP.md` F-55).
 - A backfill creates one primary store per existing seller. Legacy columns (`sellers.subdomain`, `carts.store_seller_id`, seller-keyed custom domains and redirects) are kept and mirrored.
 - Per-store tables, mirroring the Valorcy reference so its builder code ports: `store_design_systems`, `store_pages` (drafts), `store_site_revisions` (immutable publish snapshots), `store_forms` + `store_form_submissions`, `cms_collections` / `cms_items` / `cms_item_revisions`, `saved_blocks`, `store_integrations`, `store_products` (catalog selection).
 - Global and account tables: `templates` / `template_versions` / `template_installs` (global), `media_folders` / `media_assets` (seller library, optional `store_id`), Storage bucket `store-media`, `seller_wallet_top_ups`.
@@ -132,9 +132,10 @@ Cart, checkout and coupon lookups are scoped by host through `activeCartWhere(us
 ## 8. Commission and trial model
 
 - **[Current, owner decision 2026-10-18]** Tallaby's only profit from an order is a **flat EGP 5 per seller per order** (fee plan `flat_5`, `packages/lib/src/orders/platform-fee.lib.ts`). No percentage. Shipping does not change it; it is only capped at the seller's line total for orders under EGP 5. `placeOrderFromCart` computes it in integer piastres and snapshots it per line (`order_items.commission_amount`, `metadata.platformFee`). Orders placed earlier keep their old snapshots (5% or 2%/min 5).
-- **[Current]** The fee is **taken from the seller's store wallet when the order is delivered** (`creditSellerOnDelivery`, a `fee` entry of −5.00). Cancelled or undelivered orders pay nothing. The wallet may go below zero: at 0 the balance becomes −5, then −10, and so on. Fees are never refused.
+- **[Current, owner decision 2026-10-31]** The fee is **taken from the seller's store wallet when the order is created** (card orders: when paid), as a `fee` entry of −5.00, and is kept if the order is later cancelled or refused. An order that looks fake or duplicated is held and pays only if delivered (`packages/lib/src/orders/fee-hold.server.ts`). The wallet may go below zero: at 0 the balance becomes −5, then −10, and so on. Fees are never refused.
 - **[Current]** **7-day free trial** for every seller account, counted from the `created_at` of the seller's **first store** (0067: a `stores` insert trigger writes `sellers.fee_trial_started_at/ends_at` once). An order **placed** before `fee_trial_ends_at` pays no fee, even if it is delivered later; orders placed from day 8 pay EGP 5. A second or third store does not restart the trial. 0067 applied this rule to all existing sellers too (running 30-day trials end on their first store's day 7).
 - **[Current]** When the store wallet is negative, the dashboard opens a pop-up once per browser session (`components/layout/negative-wallet-dialog.client.tsx`) with the balance and a **Top up now** button to `/wallet?topup=1`, which opens the top-up dialog.
+- **[Planned, owner-approved 2026-11-03; replaces the fee, gift and wallet currency above when live]** **Free:** $0.03 per order and 100 AI credits a month. **Pro:** $29 a month from the wallet, no order fee, 2,000 AI credits a month. The seller store wallet moves to USD, with $5–$1,000 top-ups paid in EGP at a daily rate plus margin, and old balances converted once at the market rate. New sellers get no welcome gift. Orders, prices and customer wallets stay in EGP. See `PLAN.md` §13.1 and `ROADMAP.md` F-55, F-56, F-57.
 - **[Planned, owner-approved]**
   - **Store wallet:** the existing `seller_wallet` / `wallet_transactions` are upgraded into one signed ledger per seller (can be negative). It has append-only entries with unique references and a single posting primitive. Entries cover earnings (`sale`), platform fees (`fee`), Kashier top-ups (`top_up`), paid services such as product ads and themes (`service_charge`), payouts and admin adjustments. Refunds are deferred.
   - Kashier is the first provider for new payment work. See `PLAN.md` §13.

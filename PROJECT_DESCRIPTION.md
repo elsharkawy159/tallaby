@@ -73,15 +73,29 @@ Catalog with categories, brands, variants (with per-variant price, images and di
 
 Each seller's tracking runs only on that seller's store, never on the marketplace or on other stores.
 
-## 8. Platform fee, 30-day trial and store wallet (agreed business model, planned implementation)
+## 8. Pricing, platform fee and store wallet
+
+**Live today**
 
 - Creating an account and a store is **free**, and no deposit is required to sign up, publish or sell.
-- **Fee for all sellers, old and new:** on each successful order, **2% of the seller's product subtotal with a minimum of EGP 5**. Shipping is excluded. Examples: EGP 100 → 5, EGP 250 → 5, EGP 500 → 10, EGP 1,000 → 20. Payment-provider fees and fulfillment charges are separate. Separate fees for future services (fulfillment, ads, themes) will be designed later.
-- **New sellers: no platform fee for 30 days**, starting when their store first goes live (first publish or first product, see PLAN D20). Preparing the store does not use up trial days. Republishing or changing templates does not restart the trial. Existing sellers have no trial.
-- **Store wallet:** every seller has a wallet that can be positive or negative. It updates automatically: earnings from delivered orders that Tallaby collected the money for are added, the platform fee is subtracted, and purchases such as product ads (and later themes and other services) are subtracted. Sellers can **top it up at any time** (through Kashier first). When a seller collects the cash themselves, only the fee is subtracted, which can make the balance negative until they top up or earn more.
-- **Refunds** are handled later, together with the Kashier integration work.
-- Still open (PLAN §21.3): how discounts affect the fee base (D2), the negative-balance limit (D21), and the minimum per seller on multi-seller marketplace orders (D22).
-- *Today (live):* orders carry a fixed 5% commission. The marketing copy and `MARKETING_PROJECT.md` still say "5% by default" and must be updated when the new fee ships.
+- **Fee:** a flat **EGP 5 per seller per order**, taken from the store wallet when the order is created (card orders: when paid). It is kept if the order is later cancelled or refused. An order that looks fake or duplicated is held and pays only if delivered.
+- **New sellers** get EGP 100 in the store wallet after finishing setup, valid 30 days. Older accounts had a 7-day free period instead.
+- **Store wallet:** one per seller, in EGP. It can go negative, and sellers top it up to cover fees and paid services. The order amount is never credited to it.
+
+**Planned (approved by the owner 2026-11-03, not live; `ROADMAP.md` F-55, F-56, F-57)**
+
+| | Free | Pro |
+| --- | --- | --- |
+| Monthly price | $0 | $29, paid from the store wallet |
+| Order fee | $0.03 per order | None |
+| AI credits per month | 100 | 2,000 |
+| Products and orders | Unlimited | Unlimited |
+
+- 1 AI credit = 1 action, shared across the seller's account. Extra credits cost $1 per 100, from the wallet.
+- The store wallet moves to **USD**. Top-ups are $5–$1,000, paid in EGP at a daily rate plus margin, with the EGP total shown first. Existing balances convert once at that day's market rate.
+- The welcome gift ends for new sellers, and gifts or trials not yet started end on switch day.
+- The wallet balance is spend-only, for Tallaby services. All of this goes live on one day, when ready.
+- Customers, product prices and orders stay in EGP.
 
 ## 9. Optional fulfillment
 
@@ -99,9 +113,9 @@ The admin panel manages sellers (status, commission settings, documents), produc
 
 - Every seller account is on the **Free** plan: up to **3 stores**, all current features, no AI builder features, no advanced settings.
 - Each seller has one account-level wallet, fee trial and payout setup, shared by all their stores. Products are one shared catalog, and each store can show all of them or a selection.
-- **Later (not built yet):** paid subscriptions could raise the store limit and unlock AI usage and advanced settings. The system stores each seller's plan from day one so this can be added without restructuring.
+- **Planned (owner, 2026-11-03):** a paid **Pro** plan with more AI credits and no order fee; see §8. The store limit and other features stay the same on both plans.
 
 ## 12. Boundaries and future opportunities
 
-- **Not planned now:** separate deployments per seller, seller-supplied code, per-seller payment gateways, AI site generation, team/staff accounts per store, Shopify storefront sync, and a monthly subscription.
+- **Not planned now:** separate deployments per seller, seller-supplied code, team/staff accounts per store and Shopify storefront sync. An AI store builder and an optional monthly Pro plan are now planned (`ROADMAP.md` F-54, F-55).
 - **Future options:** more templates (once designs are approved), AI-assisted content, staff accounts, scheduled publishing, admin template authoring, an optional pre-funded seller wallet, automated payouts, and moving the marketplace to `store.tallaby.com` with `tallaby.com` as the seller acquisition site.

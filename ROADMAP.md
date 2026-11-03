@@ -1,7 +1,7 @@
 # Tallaby Seller Features — Roadmap
 
-> **Status:** Created 2026-10-28; EasyOrders dashboard and public roadmap added the same day (§2.3, §2.4, F-21 … F-31; all 88 EasyOrders roadmap ideas mapped). Since then most P0/P1 features have been built (see §6 and §7; synced with the code at `b45f4bb1`, 2026-11-01); F-29 (MCP) is in progress. The owner will add more feature requests in chat; each one is added here (§5 intake, then a feature in §4).
-> **Scope:** New **seller features** only, mostly in the seller dashboard (`apps/dashboard`) and the store website (`apps/ecommerce` storefront). Platform work (multi-store, builder, templates, fees, wallets, admin) stays in [`PLAN.md`](PLAN.md).
+> **Status:** Created 2026-10-28; EasyOrders dashboard and public roadmap added the same day (§2.3, §2.4, F-21 … F-31; all 88 EasyOrders roadmap ideas mapped). Since then most P0/P1 features have been built (see §6 and §7; synced with the code at `b45f4bb1`, 2026-11-01); F-29 (MCP) is in progress. The owner will add more feature requests in chat; each one is added here (§5 intake, then a feature in §4). **2026-11-03:** the owner's new roadmap and pricing (Free and Pro, USD wallet, AI credits) added as F-42 … F-60; all planned, none built (§3.1, §4).
+> **Scope:** New **seller features** only, mostly in the seller dashboard (`apps/dashboard`) and the store website (`apps/ecommerce` storefront). Platform work (multi-store, builder, templates, fees, wallets, admin) stays in [`PLAN.md`](PLAN.md). **Exception:** the 2026-11-03 business update (F-55, F-56, F-57) is planned here at the owner's request, with the agreed rules recorded in `PLAN.md` §13.1.
 > **Authority:** [`CLAUDE.md`](CLAUDE.md) durable rules apply to every task here (tenant isolation, money, migrations, i18n, caching, verification). `PLAN.md` §13 (business model) is never changed from this file.
 > **Companion docs:** [`PROJECT.md`](PROJECT.md), [`PROJECT_DESCRIPTION.md`](PROJECT_DESCRIPTION.md), [`PLAN.md`](PLAN.md), [`docs/wallet.md`](docs/wallet.md), [`docs/fulfillment.md`](docs/fulfillment.md).
 
@@ -243,7 +243,33 @@ Updated 2026-10-28 after the EasyOrders dashboard and roadmap review (§2.3, §2
 | 36  | F-30 | Ad tracking upgrades (Purchase on delivery, event toggles) | P2       | maybe              | —                                           |
 | 37  | F-31 | POS and cashier                                            | P3       | yes                | **Needs approval** (order creation path)    |
 
-AI features (field helpers, bulk products, credits, store-build agent) stay in `PLAN.md` §22 (AI-2 … AI-5) and are not repeated here.
+AI features (field helpers, bulk products) stay in `PLAN.md` §22 (AI-2, AI-3). AI credits moved here as F-57 and the store-build agent's first part as F-54 (2026-11-03).
+
+### 3.1 Business update order (owner, 2026-11-03)
+
+Priorities are the owner's (`Roadmap_new.md` §9). The order inside them is proposed, so the owner can change it. Decisions and pricing are at the top of the update in §4.
+
+| #   | ID   | Feature | Priority | Migration | Approval |
+| --- | ---- | ------- | -------- | --------- | -------- |
+| 38  | F-43 | Dashboard performance and server pagination | P0 | maybe (indexes) | — |
+| 39  | F-42 | Product management on mobile + faster stock updates | P0 | no (expected) | — |
+| 40  | F-46 | Each store's own policies | P0 | no (expected) | — |
+| 41  | F-45 | Shipping page redesign (AI delivery areas are P2) | P0 / P2 | no (expected) | — |
+| 42  | F-56 | USD store wallet and exchange rate | P1, first of the money work | yes | Approved; production migration needs owner approval |
+| 43  | F-55 | Free and Pro plans | P1 | yes | Approved 2026-11-03 |
+| 44  | F-57 | AI credits | P1 | yes | Approved 2026-11-03 |
+| 45  | F-44 | Guided setup prompts | P1 | maybe | — |
+| 46  | F-50 | Storefront banner sizing | P1 | no | — |
+| 47  | F-48 | Theme SEO defaults | P1 | no | — |
+| 48  | F-49 | Storefront animation system | P1 | no (expected) | Default template design changes need approval |
+| 49  | F-52 | tallaby.com homepage redesign | P1 | no | — |
+| 50  | F-53 | tallaby.com SEO | P1 | no | — |
+| 51  | F-54 | AI Store Builder (cost study first) | P2 | yes | **Needs approval** after the cost study |
+| 52  | F-47 | Apps marketplace | P2 | yes | **Needs approval** (money) |
+| 53  | F-51 | Unlimited stock | P2 | yes | Checkout review |
+| 54  | F-58 | Admin AI cost display | P3 | no | — |
+| 55  | F-59 | Salla research | P3 | no | — |
+| 56  | F-60 | Q&A videos | P3 | no | — |
 
 ---
 
@@ -685,12 +711,255 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 ---
 
+### Business update 2026-11-03: decisions and work order
+
+**Source:** the owner's `Roadmap_new.md` plus their answers on 2026-11-03. Nothing below is built. Live pricing stays the flat EGP 5 fee until F-55 and F-56 ship, so public copy must not show the new prices before then.
+
+**Owner decisions**
+
+| Topic | Decision |
+| --- | --- |
+| Plans | **Free** and **Pro**, both with unlimited products and orders. |
+| Free | $0 a month, **$0.03 per order** (about EGP 1.5 at $1 = EGP 50), 100 AI credits a month. |
+| Pro | **$29 a month**, no order fee, 2,000 AI credits a month. Credits and the order fee are the only differences: store limit, Tallaby badge and advanced settings stay the same on both plans. |
+| AI credits | 1 credit = 1 action, shared across the whole seller account. Limits are enforced on the server. |
+| Extra credits | When credits run out, the seller can buy **100 credits for $1** from the wallet. |
+| Paying for Pro | **From the store wallet**: at the start and on each renewal. If the balance is too low, the seller gets a few days' notice, then drops to Free. |
+| Wallet currency | The seller store wallet moves to **USD**. Top-ups are priced in USD, **$5 minimum, $1,000 maximum**, and paid in EGP. |
+| Exchange rate | Fetched automatically every day, plus a **2% margin** that can be changed in Admin, with an Admin override. Each top-up saves the rate it used. |
+| Existing balances | Converted once, including negative balances, at **that day's market rate with no margin**. Old EGP history stays viewable. |
+| Welcome gift | **Removed** for new sellers. This replaces the EGP 100 gift decision of 2026-10-29. |
+| Launch | **Everything goes live on one day**, behind one switch: USD wallet, fee, Pro, credits, Terms and copy. **No fixed date:** switch when it's ready. Sellers already know, so no separate notice is needed (owner, 2026-11-03). |
+| Tax | **None for now.** 14% tax comes later, so it's built but turned off with a boolean (`tax = false`). No formal receipts for now (owner, 2026-11-03). |
+| Sellers in between | **Ended on switch day.** A seller who hasn't finished setup gets no gift, and a seller whose trial hasn't started gets no trial. |
+| Cashing out | **The USD wallet is spend-only**, for Tallaby services. Old balances convert with no settling of past order money. The Terms must say this. |
+| Charges caught by the switch | **Uncharged old EGP 5 fees are cancelled** (held orders, unpaid card orders): orders created before the switch never pay the fee later. Pending top-ups are credited at the switch-day market rate, with no margin. |
+| AI Store Builder | **The first store uses no credits**, with a hard limit per account. Later stores and edits use credits. A cost study comes before any build. |
+| Setup order | **Keep today's order**: theme, brand, product, publish, then shipping as "later" (owner, 2026-11-01). This overrides the order in `Roadmap_new.md` §1.3. |
+| AI image upload fix | Already fixed (owner, 2026-11-03), so it is out of scope. |
+
+**Calls made while planning (not owner decisions; correct any of these)**
+
+- **Only the seller store wallet moves to USD.** Product prices, orders, customer `user_wallets`, COD and customer payments stay in EGP.
+- **The fee's rules stay the same:** per seller per order, taken at creation (card orders: when paid), kept on cancel or refusal, and held for fake or duplicate orders until delivered. Only the amount and currency change.
+- **Pro's zero fee follows the plan at order creation.** A held order later delivered uses that same snapshot, so downgrading or upgrading can't change it.
+- **Upgrades start immediately** and start a new monthly period. **Downgrades take effect at the end of the paid period**, with no partial refunds. A failed renewal gets **3 days' grace**.
+- **Pro, credit packs and paid apps can't take a wallet below zero.** Only the order fee can.
+- **Free credits reset on the 1st of the Cairo calendar month;** Pro credits reset on renewal. Monthly credits don't carry over. **Bought credits don't expire** and are spent after the monthly ones, because the seller paid for them.
+- **Failed and cached AI calls use no credits.** Seller-connected assistants (MCP, F-29) use none either, because the seller's own AI does the work.
+- **Trials already running finish,** and gifts already granted run until their existing expiry date, converted to USD. New sellers have neither, so their wallet goes negative from the first order, as `PLAN.md` §13.1 already allows.
+- **Wallet debt has no limit and never forces payment,** as today. The negative-balance pop-up shows from -$1, so a seller at -$0.03 isn't asked for a $5 top-up. Income from the $0.03 fee therefore depends on sellers choosing to top up.
+- **A converted gift can pay for anything the wallet can buy,** and those purchases count as spending the gift, like service charges today.
+- **A Pro plan set by an admin** runs free until a date the admin picks, is never charged by the renewal job, and isn't counted as Pro income.
+- **The affiliate program stays in EGP:** 20% of the EGP actually paid, cash payout, EGP 500 minimum.
+- **When tax is turned on, it applies once, to the EGP the seller pays at top-up,** as its own line in the quote. The wallet still gets the full USD amount. Spending from the wallet (order fee, Pro, packs) isn't taxed again, and affiliate commission uses the amount before tax. Check this with the accountant before turning tax on.
+- **Stock when an order changes (F-42a; the owner left this to the recommendation):** see F-42 for the flow.
+- **`sellers.plan` stays the source of the plan.** `plan_started_at` and `plan_expires_at` already exist.
+
+**Pricing checks**
+
+| Check | Result |
+| --- | --- |
+| Fee income per order | About $0.03 instead of about $0.10, a drop of about 70% (owner accepted). |
+| Against EasyOrders | $0.03 is below the $0.04 recorded in `MARKETING_PROJECT.md` §4. Recheck their price before any claim about being cheaper. |
+| When Pro saves a seller money on fees | Above about 967 orders a month. |
+| Most AI can cost per seller, at today's $0.0015 per autofill | Free about $0.15 a month (5 orders' fees), Pro about $3 a month, a credit pack about $0.15 against its $1 price. Heavier future actions (image work, store chat) must be measured before they get a 1-credit price. |
+| Top-up limits, at $1 = EGP 50 | Minimum goes from EGP 100 to about EGP 250. Maximum goes from EGP 20,000 to about EGP 50,000; **check Kashier's limit** first. |
+| Today's AI daily cap | 30 autofills a day (`AI_PRODUCT_AUTOFILL_DAILY_LIMIT`) would stop a Pro seller using 2,000 a month evenly (about 67 a day). It needs a per-plan value. |
+
+**Still open for the owner**
+
+1. The builder's per-account limit (set after the cost study, F-54a).
+
+**Things in `Roadmap_new.md` that were fixed or moved here**
+
+- "For paid usage, deduct from the wallet" sits under §1.7 Themes but belongs to Apps (F-47).
+- §1.7 Themes and the USD wallet aren't in its priority list. F-48 is placed at P1. F-56 is P1 and comes first because plans and credits depend on it.
+- Admin AI costs (P3) need the shared exchange rate, so F-58 waits for F-56b.
+- The file's role instructions and execution rules match `CLAUDE.md`, which still governs.
+
+### F-42 Product management on mobile + faster stock updates — P0 · owner request
+
+**Why:** Adding, editing and restocking products is the seller's most frequent job, and it is hardest on a phone.
+**Stock today (checked in code, `orders/orders.server.ts`):** cancelling puts stock back automatically, and moving an order out of cancelled takes it again. If there isn't enough stock, the move stops with "Add stock first" and the seller has to leave the order. On a closed order, stock follows only "cancelled", so a returned order doesn't appear to go back on the shelf (confirm in F-42a).
+**Status:** [Planned]
+
+- **F-42a · P0 · deps: —** Faster stock around order updates. Normal status changes stay automatic, with no stock input. **Returned order:** one tap, "Back in stock?", on by default, and off for damaged items. **Not enough stock:** show the short items in the order dialog, with a one-tap "Add what's needed" or a number field, then continue the move without leaving. Uses the existing `restoreStock` and `decrementStock`, and each change appears in stock history (F-10).
+- **F-42b · P0 · deps: —** Add/Edit Product pass at phone width: layout, field order, sticky actions, keyboard types (`products/add`, `products/[productId]`).
+- **F-42c · P0 · deps: —** Redesign the variants UI for mobile. Keep the existing data shape and the checkout behaviour.
+- **F-42d · P0 · deps: F-43a** Products list usability on mobile: filters, quick edit, bulk actions.
+
+### F-43 Dashboard performance and server pagination — P0 · owner request
+
+**Why:** The products page loads the whole catalog today: `vendor-products.data.tsx` calls `getSellerProducts({ offset: 0 })` with no limit, and joins brand, category, variants and translations for every product.
+**Status:** [Planned]
+
+- **F-43a · P0 · deps: —** Server-side pagination: 20 per page by default, with 20, 50, 100 and 200 to choose from. Search, filters and sort run on the server, with the state in the URL. New code goes in the feature file split, not `actions/products.ts` (CLAUDE.md rule 14). Check every screen that relied on having the full list, such as bulk actions.
+- **F-43b · P0 · deps: F-43a** Select only the columns each list needs, and add indexes where query plans show a need.
+- **F-43c · P1 · deps: —** Review caching and revalidation under `docs/caching-and-data-fetching.md` and CLAUDE.md rule 8.
+- **F-43d · P1 · deps: —** Audit server/client components and data fetching on the slowest dashboard pages. Record before-and-after timings in §7.
+
+### F-44 Guided setup prompts — P1 · owner request
+
+**Why:** New sellers should be led one step at a time, without blocking their work.
+**What:** Add prompts on top of the live checklist (`_components/setup-checklist.lib.ts`) and keep its order: choose a template → brand → first product → publish → shipping (later). On the first dashboard visit, a top Sonner notification appears after 5 seconds for the first step. When a step is done, the next one appears as a top banner 5 seconds later.
+**Status:** [Planned]
+
+- **F-44a · P1 · deps: —** Progress: step completion stays derived from real data (`home.queries.ts`). Save per seller which prompts were shown or dismissed, so it survives refreshes, new sessions and other devices. Migration only if no existing field fits.
+- **F-44b · P1 · deps: F-44a** Toast and banner UI, in both languages. Never shown inside the builder or while a form is in progress, and completed steps never return.
+- **F-44c · P1 · deps: F-55b** Remove the welcome-gift pop-up and its copy from the new-seller path.
+
+### F-45 Shipping page redesign + AI delivery areas — P0 / P2 · owner request
+
+**Why:** Shipping is a common setup blocker, and many sellers can describe their coverage faster than they can configure it.
+**Status:** [Planned]
+
+- **F-45a · P0 · deps: —** Audit the current shipping page and redesign it for desktop and mobile. Keep the zone data and checkout behaviour (`store_shipping_zones.places`, `docs/fulfillment.md`).
+- **F-45b · P2 · deps: F-45a, F-57b** "Describe your delivery areas": AI turns the text into `EG`, `EG/<governorate>` and `EG/<governorate>/<area>` places and prices. Place names are matched in code, not sent as a list in the prompt (`docs/ai.md`). The seller reviews and edits; nothing saves without confirmation. Costs 1 credit.
+
+### F-46 Each store's own policies — P0 · owner request
+
+**Why:** Checked in code: store footers link to `/returns` and `/shipping` (`packages/store-sections/src/designs/footers/_shared.ts`), and on a store host those routes show **Tallaby's global policy text inside the store's header and footer** (`app/[locale]/(shop)/(main)/returns`, `StoreHostShell`). A customer can therefore read rules that aren't the seller's.
+**What:** On a store host, `/returns` and `/shipping` show that store's policy, in this order: the store's own builder page, then the account's `sellers.return_policy` / `shipping_policy` (0065), then a neutral default with the store's name and no Tallaby wording. No link leaves the store. tallaby.com keeps its global pages. This order is a planning call; 0065 removed the store-level policies field in favour of builder pages, so no new column is expected.
+**Status:** [Planned]
+
+- **F-46a · P0 · deps: —** Add the fallback order above. The store comes from the request host only (CLAUDE.md rule 5).
+- **F-46b · P0 · deps: F-46a** Check every storefront link for routes into the marketplace (footers, checkout, order pages, emails), and fix them.
+- **F-46c · P1 · deps: F-46a** Make return and replacement policies easy to find on every storefront, and let the seller reach their policy settings from the setup flow.
+
+### F-47 Apps marketplace — P2 · owner request · Needs approval (money)
+
+**Why:** Sellers need one place to find and manage apps, and paid apps give Tallaby new income.
+**What:** Extends the one apps catalog (F-41, `packages/lib/src/integrations/catalog`, `stores/[storeId]/apps`). Installed and Explore tabs; categories in a sidebar on desktop and tabs on mobile; default and manually installed apps. Tallaby-built apps only: no seller or third-party code (CLAUDE.md rule 9).
+**Status:** [Planned]
+
+- **F-47a · P2 · deps: F-55d** Design note: pricing data (free, one-time, monthly, per order, per action or time unit) that can take more models later, install state per store or per account, and which wallet entry each charge posts.
+- **F-47b · P2 · deps: F-47a** Installed and Explore page, on desktop and mobile.
+- **F-47c · P2 · deps: F-47a, F-56c** Charges in USD from the store wallet through `postStoreWalletEntry`, idempotent per period, order or usage event. Reuse the F-55d renewal job for monthly apps.
+
+### F-48 Theme SEO defaults — P1 · owner request
+
+**Why:** A store with no SEO text should still have a good title and description.
+**What:** When the seller hasn't written them, build them at render time from the store's name and industry, for example "Buy Fashion from {store_name} now | Tallaby", with an Arabic version. Rendering it this way also covers existing stores, whose saved template copies don't change (CLAUDE.md rule 17). The seller's own text always wins.
+**Status:** [Planned]
+
+- **F-48a · P1 · deps: —** Fallback helper with tests, in both languages, used by the store home and pages. Each template can supply its own default wording.
+
+### F-49 Storefront animation system — P1 · owner request
+
+**Status:** [Planned]
+
+- **F-49a · P1 · deps: —** Audit current animations (including rise on scroll) and define a small shared set: reveals, section transitions, hover and press. Keep them CSS-first and honour `prefers-reduced-motion`.
+- **F-49b · P1 · deps: F-49a** Add them to the element-tree system (CLAUDE.md rule 17), and check phone performance. Published stores change only when the seller republishes. A change to the default template's design needs owner approval (rule 12).
+
+### F-50 Storefront banner sizing — P1 · owner request
+
+**Status:** [Planned]
+
+- **F-50a · P1 · deps: —** Fix the banner's dimensions and aspect ratios across screen sizes and templates, with no distortion or unexpected cropping. The store banner is the home hero's photos (§7, 2026-10-31). Tell sellers the recommended image size.
+
+### F-51 Unlimited stock — P2 · owner request
+
+**Why:** Digital, made-to-order and service sellers shouldn't be marked out of stock.
+**What (proposed):** A "don't track stock" setting on the product and its variants, not a magic quantity number. `products.quantity` and `product_variants.stock` stay as they are.
+**Status:** [Planned]
+
+- **F-51a · P2 · deps: —** Design note listing every stock reader: `stock.ts`, cart validation, `place-order.ts`, low-stock badge (F-34), back-in-stock alerts (F-23), stock history (F-10), Inventory, Excel, feeds, MCP tools. Checkout is covered by CLAUDE.md rule 3.
+- **F-51b · P2 · deps: F-51a** Migration, product form, and all the readers above, with oversell and cancel tests.
+
+### F-52 tallaby.com homepage redesign — P1 · owner request
+
+**Status:** [Planned]
+
+- **F-52a · P1 · deps: —** New hierarchy, clearer value and stronger calls to action, responsive and on brand.
+- **F-52b · P1 · deps: F-52a** Real dashboard screenshots from a demo store with fictional data, with no real sellers or customers. Arabic and English.
+- **F-52c · P1 · deps: F-55h** Show the new pricing once it is live.
+
+### F-53 tallaby.com SEO — P1 · owner request
+
+**Status:** [Planned]
+
+- **F-53a · P1 · deps: —** Audit titles, descriptions, structured data, canonical URLs, internal links, sitemap, robots.txt, Open Graph, indexing and Core Web Vitals. Rank fixes by likely seller traffic.
+- **F-53b · P1 · deps: F-53a** Build the fixes.
+
+### F-54 AI Store Builder — P2 · owner request · Needs approval (cost)
+
+**Why:** A new seller should get a complete, professional store from one conversation.
+**What:** A chat on tallaby.com that collects business details, logo, social links, contact details, products, photos, prices, stock, shipping and policies; asks for what's missing; writes copy in both languages; sets the brand, theme, shipping and policies; validates the result; and presents it for the seller's review. **Only the seller publishes.** Extends `PLAN.md` AI-5 (`docs/AI_AGENT_PLAN_PROMPT.md`) and follows `docs/ai.md` and CLAUDE.md rules 17 and 20. Stores are made from existing templates and sections; the AI never generates code.
+**Status:** [Planned]
+
+- **F-54a · P2 · deps: —** **Cost study before any build (owner requirement):** models and task routing, tokens, image processing and generation, prompts, context, caching, one step or several, and quality against cost. Output: estimated cost per completed store with its assumptions, and the proposed per-account limit. Don't reduce store quality just to lower cost.
+- **F-54b · P2 · deps: F-54a, owner approval** Design note: conversation flow, how a guest becomes an account (proposed: an account is required before uploads or costly steps), abuse limits, and how a free first store is tracked.
+- **F-54c · P2 · deps: F-54b, F-57b** Build the chat and collection steps.
+- **F-54d · P2 · deps: F-54c** Build store generation, validation and the review screen, reusing product and store code paths (and the F-29 tools where they fit).
+
+### F-55 Free and Pro plans — P1 · owner request · Approved 2026-11-03
+
+**Why:** See the decisions above. Replaces "everyone is Free" (`packages/lib/src/plans/index.ts`) and the `flat_5` fee (`packages/lib/src/orders/platform-fee.lib.ts`).
+**Status:** [Planned]
+
+- **F-55a · P1 · deps: F-56a** Design note: plan states, billing periods, order-fee snapshot, downgrade and grace rules, notifications.
+- **F-55b · P1 · deps: F-55a, F-56c** Plans module: add `pro`, set credits to 100 and 2,000, and turn `ai` on for both. On switch day, end gifts and unstarted trials for everyone who doesn't already have them: change existing `welcome_gift_eligible` and `fee_trial_eligible` rows as well as the defaults, and retire `grantWelcomeGiftIfEligible`, whose fixed `100.00` would otherwise post $100. Gifts already granted run out as planned, and their expiry logic moves to USD.
+- **F-55c · P1 · deps: F-55b** Fee: new USD fee plan of 3 cents on Free and 0 on Pro. Old order snapshots are never recomputed, but delivery of an order created before the switch must post no fee (`postOrderFees` posts `commission_amount` directly, so without this rule it would charge $5.00); trial, exemption, cap and hold rules stay. Each order line's commission stays in EGP using that day's rate, with USD cents and the rate saved in `metadata.platformFee`. Update the admin fee screens and tests.
+- **F-55d · P1 · deps: F-55b** Upgrade, downgrade and a daily renewal job: idempotent wallet charges (unique claim per seller and period, CLAUDE.md rule 7), notice before renewal, grace, then Free. Enforced on the server only.
+- **F-55e · P1 · deps: F-55d** Dashboard Plan page (`settings/plan`): compare plans, current plan, renewal date, remaining credits, top-up prompt.
+- **F-55f · P1 · deps: F-55d** Admin: see and change a seller's plan (audited), including free Pro until a chosen date, and paid Pro counts and income.
+- **F-55g · P1 · deps: F-55c** Refactor the public pricing page and fee calculators (`components/marketing/pricing`, `lib/marketing/pricing.lib.ts`), behind the launch switch.
+- **F-55h · P1 · deps: F-55g, F-56f, F-57d** Launch: the one switch for F-55, F-56 and F-57, Terms (including the spend-only wallet) and every EGP 5 or gift mention (ecommerce, dashboard and email messages, `MARKETING_PROJECT.md`, `docs/`), and marking the §13 rules as live. No separate seller notice (owner: sellers already know).
+
+### F-56 USD store wallet and exchange rate — P1 · owner request · Approved 2026-11-03 · Needs production migration approval
+
+**Why:** Foundation for plans, credit packs and paid apps. The wallet is EGP today (`seller_wallet.currency`, piastres in `top-up.lib.ts`), and no exchange rate exists in the code.
+**Must ship together:** all of F-55, F-56 and F-57 go live behind one switch on one day (owner, 2026-11-03). The balance conversion runs as part of that switch. Otherwise EGP 5 could be deducted from a USD balance, or a top-up could credit the wrong currency.
+**Status:** [Planned]
+
+- **F-56a · P1 · deps: —** Design note: how append-only `wallet_transactions` marks each row's currency, the conversion entry per seller (rounding, negative balances, idempotency), what happens to `sellers.wallet_balance`, the negative limit, and EGP-priced ads and service charges. Include manual proofs awaiting review and open Kashier sessions, credited at the switch-day market rate. Dry-run totals on a staging copy, reporting positive and negative balances and how much of the positive total came from old `sale` entries, for the owner's information before approval. The owner approves it before any production migration (CLAUDE.md rule 4).
+- **F-56b · P1 · deps: —** Exchange-rate service: one server-side module and table with rate history, a daily fetch, Admin margin and override, and a stale-rate alert. If a fetch fails, keep the last rate. The market rate and the top-up rate (market rate + 2% to start) are separate values. Add one tax setting beside it: `tax = false`, rate 14%. Provider chosen in the design note; any key stays server-only.
+- **F-56c · P1 · deps: F-56a, F-56b** Migration and code switch to USD cents through `postStoreWalletEntry`. The conversion runs once and writes one entry per seller. Applied to staging first, then production when everything is ready, with the owner's go-ahead (CLAUDE.md rule 4).
+- **F-56d · P1 · deps: F-56b, F-56c** Kashier top-ups: seller picks $5–$1,000, sees the EGP total, and the rate and both amounts are saved on the `seller_wallet_top_ups` row. Tax support is built and tested but off: while `tax = false`, nothing is added or shown; when true, 14% is added to the EGP total as its own line and saved on the row. The webhook checks the saved EGP amount and credits the saved USD amount, so a late payment can't change it. Confirm Kashier's maximum first.
+- **F-56e · P1 · deps: F-56d** Manual top-ups: same quote and limits. Admin approves the EGP proof and the saved USD amount is credited.
+- **F-56f · P1 · deps: F-56c** USD display on the wallet, header, home, negative-balance pop-up, statements and Admin wallets. Old rows keep their EGP label and amount. Referral commissions (F-37) keep working from the EGP paid.
+
+### F-57 AI credits — P1 · owner request · Approved 2026-11-03
+
+**Why:** Replaces `PLAN.md` AI-4 and today's free-for-all daily cap with monthly allowances.
+**Status:** [Planned]
+
+- **F-57a · P1 · deps: F-55a** Migration: server-only `ai_credit_ledger` (RLS on, no policies) with idempotent grant, use and purchase entries, shared by the seller account (staff included, F-09).
+- **F-57b · P1 · deps: F-57a, F-55b** Enforcement in the AI routes before and after `generateStructured`: an atomic claim so parallel calls can't overspend, charged only on success, with none for cached or failed calls, and the block is decided on the server. Failure to check credits blocks the call (`docs/ai.md`). Daily cap becomes a per-plan abuse guard.
+- **F-57c · P1 · deps: F-57b** Show remaining credits at the AI buttons and on the Plan page, with a warning when low.
+- **F-57d · P1 · deps: F-57b, F-56c** Buy 100 credits for $1 from the wallet; multiple packs allowed; idempotent; can't take the wallet below zero.
+
+### F-58 Admin AI cost display — P3 · owner request
+
+**Status:** [Planned]
+
+- **F-58a · P3 · deps: F-56b** Show AI costs as `$0.50 (~25 EGP)`, labelled as an estimate, through one shared formatter using the market rate. No rates in components.
+- **F-58b · P3 · deps: —** Add average cost per call across all stores (`apps/admin/.../ai-usage`).
+
+### F-59 Salla research — P3 · owner request
+
+**Status:** [Planned]
+
+- **F-59a · P3 · deps: —** Research how Salla handles store setup, design and branding, shipping, social links and onboarding. Compare with the journey in `Roadmap_new.md` §7.1 and today's setup order, and write adapted recommendations. Don't copy blindly.
+
+### F-60 Q&A videos — P3 · owner request
+
+**Why:** Short answers to sellers' real questions educate them, handle objections and drive signups.
+**What:** Short videos for Facebook, Instagram and TikTok under CLAUDE.md rule 18. Each answer shows a finished feature wherever it fits. Video prices follow what is live.
+**Status:** [Planned]
+
+- **F-60a · P3 · deps: —** Add a Q&A series to `.claude/skills/brag-slim/TALLABY_VIDEO_TOPICS.md`: common questions, startup problems, tips, objections. Confirm with the owner whether this relaxes the current limit of tips at 1 video in 5.
+
+---
+
 ## 5. Owner feature requests (intake)
 
 Add each new request here first, with the date and the owner's words, then turn it into a §4 feature and place it in §3.
 
 | Date       | Request (owner's words)                                                                                                                                                                                                                                                                                                                                               | Feature ID                                                                                       | Status                                                                                 |
 | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- |
+| 2026-11-03 | "Anaylze the Roadmap_new.md and update our PLAN.md and PROJECT.md and all files with our new business updates and pricing, put in the ROADMAP.md file, just analyze and plan for now, code later" (seller, storefront, public-site, AI builder, pricing, admin, research and marketing items; owner's answers are in §4) | F-42 … F-60 | **Planned** 2026-11-03 (§3.1, §4, §7); no code yet |
 | 2026-11-01 | "resort the Store setup on dashboard for new users, I need to make user choose a theme and adjust their brand identity first then add product then publish the store so they finish the store in minutes, leave the shipping for later" | Home setup guide order (no feature ID) | **Done** 2026-11-01 (§7), uncommitted |
 | 2026-11-01 | "make MCP totally works with Product Add/Edit" | F-29c, F-29f | **Built** 2026-11-01 (§7), not deployed |
 | 2026-10-31 | "add We Pay and Orange Cash on the checkout if the seller enabled them" | F-21p | **Done** 2026-10-31 (§7) |
@@ -876,6 +1145,65 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [ ] F-32f Cross-sell report
 - [x] F-34d Stock badge builder element (2026-10-30, uncommitted; `productStockBadge`, editor E2E pending)
 
+**Business update 2026-11-03 (nothing built yet; order in §3.1)**
+
+- [ ] F-42a Audit and simplify stock changes around order updates
+- [ ] F-42b Add/Edit Product pass at phone width
+- [ ] F-42c Redesign the variants UI for mobile
+- [ ] F-42d Products list usability on mobile
+- [ ] F-43a Server-side product pagination (20 by default; 50, 100, 200)
+- [ ] F-43b Leaner product queries and indexes
+- [ ] F-43c Caching and revalidation review
+- [ ] F-43d Slow-page audit with before-and-after timings
+- [ ] F-44a Save setup prompt progress per seller
+- [ ] F-44b Setup toast and banner UI
+- [ ] F-44c Remove the welcome-gift pop-up and copy
+- [ ] F-45a Shipping page audit and redesign
+- [ ] F-45b AI delivery areas from a written description
+- [ ] F-46a Store's own `/returns` and `/shipping` with fallback order
+- [ ] F-46b Fix storefront links into the marketplace
+- [ ] F-46c Make return and replacement policies easy to find
+- [ ] F-47a Apps marketplace design note (pricing models, install state, charges)
+- [ ] F-47b Installed and Explore page
+- [ ] F-47c Paid app charges from the USD wallet
+- [ ] F-48a Store SEO fallback title and description
+- [ ] F-49a Animation audit and shared set
+- [ ] F-49b Add animations to element trees; phone performance check
+- [ ] F-50a Fix banner sizing across screens and templates
+- [ ] F-51a Unlimited stock design note (every stock reader)
+- [ ] F-51b Unlimited stock migration, form and readers
+- [ ] F-52a Homepage redesign
+- [ ] F-52b Real dashboard screenshots from a fictional demo store
+- [ ] F-52c Homepage shows new pricing once live
+- [ ] F-53a Public-site SEO audit
+- [ ] F-53b Public-site SEO fixes
+- [ ] F-54a AI Store Builder cost study
+- [ ] F-54b AI Store Builder design note
+- [ ] F-54c Builder chat and collection steps
+- [ ] F-54d Store generation, validation and review screen
+- [ ] F-55a Plans design note
+- [ ] F-55b Plans module adds Pro; new welcome gifts stop
+- [ ] F-55c USD order fee by plan ($0.03 on Free, none on Pro)
+- [ ] F-55d Upgrade, downgrade and renewal job
+- [ ] F-55e Dashboard Plan page
+- [ ] F-55f Admin plan management
+- [ ] F-55g Public pricing page and fee calculators
+- [ ] F-55h Pricing launch: Terms, copy, seller notice, §13 rewrite
+- [ ] F-56a USD wallet design note and staging dry run
+- [ ] F-56b Exchange-rate service
+- [ ] F-56c USD migration and one-time balance conversion
+- [ ] F-56d Kashier top-ups in USD, paid in EGP
+- [ ] F-56e Manual top-ups in USD, paid in EGP
+- [ ] F-56f USD display across dashboard and Admin
+- [ ] F-57a AI credit ledger migration
+- [ ] F-57b AI credit enforcement on the server
+- [ ] F-57c Show remaining credits
+- [ ] F-57d Buy 100 credits for $1 from the wallet
+- [ ] F-58a AI costs in USD with estimated EGP
+- [ ] F-58b Average AI cost per call across all stores
+- [ ] F-59a Salla research and recommendations
+- [ ] F-60a Q&A video series topics
+
 **Done outside the feature list (owner requests, §5)**
 
 - [x] Welcome gift: EGP 100 for new sellers, 7-day trial paused for them (2026-10-29, `a7d36530`; 0119 on staging and production, production 2026-10-30)
@@ -886,6 +1214,15 @@ Add each new request here first, with the date and the owner's words, then turn 
 ---
 
 ## 7. Log
+
+### 2026-11-03 — New roadmap and pricing planned (owner; no code)
+
+- Owner's later answers: 2% margin; switch when ready, with no separate notice; no tax for now, with 14% built but off (`tax = false`); no formal receipts; stock flow left to the recommendation (F-42a).
+- Read the owner's `Roadmap_new.md`, checked it against the code, and took the owner's answers on the fee, Pro billing, exchange rate, gift, credit packs, builder cost, Pro extras, setup order and old balances. Recorded in §4 and `PLAN.md` §13.1.
+- Added F-42 … F-60, §3.1, the §5 intake row and §6 tasks. Updated `PLAN.md`, `PROJECT.md`, `PROJECT_DESCRIPTION.md`, `MARKETING_PROJECT.md`, `CLAUDE.md`, `docs/ai.md`, `docs/wallet.md` and the video rules. Each says the new pricing isn't live.
+- Found in code: the products page loads the whole catalog; a store's `/returns` and `/shipping` show Tallaby's global text; the setup order in the file conflicted with the owner's 2026-11-01 request (owner kept the live order); the 30-a-day AI cap would limit Pro.
+- A review of the plan raised launch timing, in-between sellers, cashing out and charges caught by the switch; the owner decided all four the same day (§4).
+- No migration and no code change.
 
 ### 2026-11-01 — Home setup guide reordered (owner: theme and brand first, shipping later)
 

@@ -2,6 +2,8 @@
 
 Every AI feature (the product autofill today; field helpers, bulk products, credits and the store agent later: `PLAN.md` §22 AI-2 … AI-5) goes through `packages/ai` and follows the cost rules below. Read this before adding or changing an AI call.
 
+**Planned (owner, 2026-11-03; not live):** monthly AI credits replace today's free daily cap: 100 on Free, 2,000 on Pro, 1 credit = 1 action, shared by the seller account, with extra packs from the wallet (`ROADMAP.md` F-57). Before giving a new action a 1-credit price, measure its cost. The AI Store Builder needs a cost study first (F-54a).
+
 ## 1. The building blocks (`packages/ai`)
 
 | File | What it does |
