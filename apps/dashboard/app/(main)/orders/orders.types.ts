@@ -94,5 +94,14 @@ export interface SellerOrderRow {
   cancelledAt: string | null;
 }
 
+/**
+ * What bulk moves and the Bosta and Wassalha queues read from an order. A full
+ * row fits it, so the page's rows and a whole-list selection work alike.
+ */
+export type OrderSummary = Pick<
+  SellerOrderRow,
+  "id" | "storeId" | "flow" | "bostaConnected" | "wassalhaConnected" | "wassalhaExported"
+> & { bosta: Pick<SellerOrderBosta, "trackingNumber"> | null };
+
 /** An order line there isn't enough stock for. */
 export type StockShortage = { title: string; need: number; have: number };

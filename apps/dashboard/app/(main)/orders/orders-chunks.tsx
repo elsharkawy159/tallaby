@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import type { RowSelectionState } from "@tanstack/react-table";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { useLocale, useTranslations } from "next-intl";
 import type { ColumnDef } from "@tanstack/react-table";
-import { ChevronLeft, ChevronRight, CircleAlert, LayoutGrid, List, PackageSearch, Search, Store } from "lucide-react";
-import { Button } from "@workspace/ui/components/button";
+import { ArrowUpDown, CircleAlert, LayoutGrid, List, PackageSearch, Search, Store } from "lucide-react";
 import { Checkbox } from "@workspace/ui/components/checkbox";
 import { Input } from "@workspace/ui/components/input";
 import {
@@ -20,33 +21,33 @@ import { TableSection } from "@workspace/ui/components/table-section";
 import { cn, getPublicUrl } from "@/lib/utils";
 import { formatDateTime, formatMoney, formatNumber } from "@/lib/i18n/format";
 import { useTableSectionLabels } from "@/lib/i18n/table-labels";
-import { pageList } from "../products/_components/products-view.lib";
 import { BostaBulkBar } from "./bosta-bulk.client";
 import { BostaChip, ShipWithBostaButton } from "./bosta-ship.client";
 import { OrderActions } from "./order-actions.client";
 import { OrdersBulkBar } from "./orders-bulk.client";
 import { OrderCard } from "./order-card.client";
+import { ListPager } from "./list-pager.client";
 import { OrderDetailsDialog } from "./order-details-dialog.client";
 import { OrderRiskBadges } from "./order-risk.client";
 import { OrderStageBadge } from "./order-stage-badge";
+import { loadOrderRowAction, selectFilteredOrdersAction } from "./orders-list.server";
 import {
+  ORDERS_PAGE_SIZES,
+  ORDERS_PAGE_SIZE_COOKIE,
+  ORDERS_SORTS,
   ORDERS_TABS,
-  countByTab,
-  initialTab,
-  matchesChannel,
-  matchesQuery,
-  matchesTab,
-  type OrdersChannel,
+  ordersListHref,
+  type OrdersListFilters,
+  type OrdersSort,
   type OrdersTab,
   type OrdersViewMode,
 } from "./orders-view.lib";
 import { ExportOrdersButton } from "./export-orders-button.client";
-import type { SellerOrderRow } from "./orders.types";
+import type { OrderSummary, SellerOrderRow } from "./orders.types";
 import { PrintOrdersButton } from "./print-orders-button.client";
 import { WassalhaExportButton } from "./wassalha-export.client";
 
 const VIEW_STORAGE_KEY = "tl-orders-view";
-const GRID_PAGE_SIZE = 24;
 
 function ItemsCell({ order }: { order: SellerOrderRow }) {
   const t = useTranslations("orders.table");
@@ -84,11 +85,13 @@ function ItemsCell({ order }: { order: SellerOrderRow }) {
 
 function OrdersTable({
   orders,
+  rowIndexOffset,
   onOpen,
   selection,
   onSelectionChange,
 }: {
   orders: SellerOrderRow[];
+  rowIndexOffset: number;
   onOpen: (id: string) => void;
   selection: RowSelectionState;
   onSelectionChange: (selection: RowSelectionState) => void;
@@ -191,6 +194,7 @@ function OrdersTable({
       rows={orders}
       columns={columns}
       hideSearch
+      externalPaging={{ rowIndexOffset }}
       labels={{ ...tableLabels, noResults: t("empty.tab") }}
       rowSelection={selection}
       onRowSelectionChange={onSelectionChange}
@@ -198,13 +202,40 @@ function OrdersTable({
   );
 }
 
+/** Filters on the page, with the tab already picked. */
+type ResolvedFilters = OrdersListFilters & { tab: OrdersTab };
+
+const SEARCH_DEBOUNCE_MS = 300;
+
 export function VendorOrdersTable({
   rows,
+  total,
+  pages,
+  counts,
+  overview,
+  filters,
+  printIds,
+  shipQueue,
   initialOrderId = null,
+  linkedOrder = null,
   stores = [],
 }: {
+  /** One page of the filtered list. */
   rows: SellerOrderRow[];
+  /** Orders matching the filters and tab, across all pages. */
+  total: number;
+  pages: number;
+  counts: Record<OrdersTab, number>;
+  /** All the seller's orders, whatever the filters. */
+  overview: { orders: number; attention: number };
+  filters: ResolvedFilters;
+  /** The first print job of the filtered list. */
+  printIds: string[];
+  /** One store's waiting orders under the filters, for its Bosta and Wassalha actions. */
+  shipQueue: { orders: OrderSummary[]; bosta: boolean; wassalha: boolean };
   initialOrderId?: string | null;
+  /** The `?order=` order when it isn't on this page. */
+  linkedOrder?: SellerOrderRow | null;
   /** The seller's stores, for the sales-channel filter (P3-06). */
   stores?: { id: string; name: string }[];
 }) {
@@ -212,16 +243,18 @@ export function VendorOrdersTable({
   const tChannel = useTranslations("orders.channel");
   const tList = useTranslations("products.list");
   const locale = useLocale();
+  const router = useRouter();
 
   const [view, setView] = useState<OrdersViewMode>("grid");
-  const [tab, setTab] = useState<OrdersTab>(() => initialTab(rows));
-  const [channel, setChannel] = useState<OrdersChannel>("all");
-  const [query, setQuery] = useState("");
-  const [bostaAttention, setBostaAttention] = useState(false);
-  const [page, setPage] = useState(1);
+  // The typed search; the URL follows it after a short pause.
+  const [query, setQuery] = useState(filters.q);
   const [openOrderId, setOpenOrderId] = useState<string | null>(initialOrderId);
-  // Bulk selection by order id (F-04c); only orders still on screen count.
-  const [selection, setSelection] = useState<RowSelectionState>({});
+  // The open order when it isn't in `rows`: it moved to another tab after an action.
+  const [detached, setDetached] = useState<SellerOrderRow | null>(null);
+  // Bulk selection by order id (F-04c); can span pages the browser never loaded.
+  const [selection, setSelection] = useState<ReadonlyMap<string, OrderSummary>>(() => new Map());
+  const [isNavigating, startNavigation] = useTransition();
+  const [isSelecting, startSelecting] = useTransition();
 
   // Read the saved view after mount so the server and first client render agree.
   useEffect(() => {
@@ -238,42 +271,124 @@ export function VendorOrdersTable({
     } catch {}
   };
 
-  const attentionCount = useMemo(() => rows.filter((r) => r.bosta?.needsAttention).length, [rows]);
-  const scoped = useMemo(
-    () =>
-      rows.filter(
-        (r) => matchesChannel(r, channel) && matchesQuery(r, query) && (!bostaAttention || Boolean(r.bosta?.needsAttention)),
-      ),
-    [rows, channel, query, bostaAttention],
+  const navigate = useCallback(
+    (over: Partial<OrdersListFilters>, options?: { replace?: boolean }) => {
+      const href = ordersListHref({ ...filters, ...over });
+      startNavigation(() => {
+        if (options?.replace) router.replace(href, { scroll: false });
+        else router.push(href, { scroll: false });
+      });
+    },
+    [filters, router],
   );
-  const bostaStore = channel !== "all" && channel !== "marketplace" && rows.some((r) => r.storeId === channel && r.bostaConnected);
-  // One store picked and Wassalha set up there: export its waiting orders in one sheet (F-12c).
-  const wassalhaStore = channel !== "all" && channel !== "marketplace" && rows.some((r) => r.storeId === channel && r.wassalhaConnected);
-  const counts = useMemo(() => countByTab(scoped), [scoped]);
-  const visible = useMemo(() => scoped.filter((r) => matchesTab(r, tab)), [scoped, tab]);
-  const selected = useMemo(() => visible.filter((r) => selection[r.id]), [visible, selection]);
-  const allSelected = visible.length > 0 && selected.length === visible.length;
-  const toggleOne = (id: string, on: boolean) =>
-    setSelection((prev) => {
-      const next = { ...prev };
-      if (on) next[id] = true;
-      else delete next[id];
-      return next;
-    });
-  const toggleAll = (on: boolean) => setSelection(on ? Object.fromEntries(visible.map((r) => [r.id, true])) : {});
 
-  const pages = Math.max(1, Math.ceil(visible.length / GRID_PAGE_SIZE));
-  const currentPage = Math.min(page, pages);
-  const pageItems = visible.slice((currentPage - 1) * GRID_PAGE_SIZE, currentPage * GRID_PAGE_SIZE);
-  const rangeFrom = visible.length ? (currentPage - 1) * GRID_PAGE_SIZE + 1 : 0;
-  const rangeTo = Math.min(currentPage * GRID_PAGE_SIZE, visible.length);
+  // Filters change what is listed, so a selection made before would be hidden.
+  const applyFilter = (over: Partial<OrdersListFilters>) => {
+    setSelection(new Map());
+    navigate({ ...over, page: 1 });
+  };
+
+  // Typing searches after a short pause. Back and forward restore the box.
+  const lastPushedQuery = useRef(filters.q);
+  useEffect(() => {
+    if (filters.q !== lastPushedQuery.current) {
+      lastPushedQuery.current = filters.q;
+      setQuery(filters.q);
+    }
+  }, [filters.q]);
+  useEffect(() => {
+    const next = query.trim();
+    if (next === lastPushedQuery.current) return;
+    const timer = setTimeout(() => {
+      lastPushedQuery.current = next;
+      setSelection(new Map());
+      navigate({ q: next, page: 1 }, { replace: true });
+    }, SEARCH_DEBOUNCE_MS);
+    return () => clearTimeout(timer);
+  }, [query, navigate]);
+
   const goToPage = (next: number) => {
-    setPage(next);
+    navigate({ page: next });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // The panel reads the live row, so it updates in place after an action.
-  const openOrder = rows.find((r) => r.id === openOrderId) ?? null;
+  const changePageSize = (size: number) => {
+    // Remembered for next time, so the sidebar link keeps the seller's choice.
+    document.cookie = `${ORDERS_PAGE_SIZE_COOKIE}=${size}; path=/; max-age=31536000; samesite=lax`;
+    navigate({ size, page: 1 });
+  };
+
+  const rowById = useMemo(() => new Map(rows.map((r) => [r.id, r])), [rows]);
+  // Orders on this page read their live row, so bulk counts follow a single-order move.
+  const selected = useMemo(() => [...selection.values()].map((o) => rowById.get(o.id) ?? o), [selection, rowById]);
+  const allSelected = total > 0 && selected.length >= total;
+  const toggleOne = (order: SellerOrderRow, on: boolean) =>
+    setSelection((prev) => {
+      const next = new Map(prev);
+      if (on) next.set(order.id, order);
+      else next.delete(order.id);
+      return next;
+    });
+  const toggleAll = (on: boolean) => {
+    if (!on) {
+      setSelection(new Map());
+      return;
+    }
+    startSelecting(async () => {
+      const res = await selectFilteredOrdersAction(filters);
+      if (!res.success) {
+        toast.error(t("bulk.selectAllFailed"));
+        return;
+      }
+      setSelection(new Map(res.orders.map((o) => [o.id, o])));
+      if (res.capped) toast.warning(t("bulk.selectCapped", { count: res.orders.length }));
+    });
+  };
+  const tableSelection = useMemo<RowSelectionState>(
+    () => Object.fromEntries([...selection.keys()].map((id) => [id, true])),
+    [selection],
+  );
+  const onTableSelection = (next: RowSelectionState) =>
+    setSelection(
+      new Map(
+        Object.keys(next).flatMap((id) => {
+          const order = next[id] ? (selection.get(id) ?? rowById.get(id)) : null;
+          return order ? [[id, order] as const] : [];
+        }),
+      ),
+    );
+
+  const openById = useCallback(
+    (id: string) => {
+      setDetached(rowById.get(id) ?? null);
+      setOpenOrderId(id);
+    },
+    [rowById],
+  );
+
+  // Another `?order=` while the page is mounted (header search) opens that one.
+  useEffect(() => {
+    if (initialOrderId) setOpenOrderId(initialOrderId);
+  }, [initialOrderId]);
+
+  // The panel reads the live row, so it updates in place after an action. When
+  // the action moved the order off this page, it is read on its own.
+  const liveRow = openOrderId
+    ? (rowById.get(openOrderId) ?? (linkedOrder?.id === openOrderId ? linkedOrder : null))
+    : null;
+  useEffect(() => {
+    if (!openOrderId || liveRow) return;
+    let live = true;
+    loadOrderRowAction(openOrderId).then((row) => {
+      if (live && row) setDetached(row);
+    });
+    return () => {
+      live = false;
+    };
+  }, [openOrderId, liveRow, rows]);
+  const openOrder = liveRow ?? (detached?.id === openOrderId ? detached : null);
+
+  const storeChannel = filters.channel !== "all" && filters.channel !== "marketplace";
 
   return (
     <div className="space-y-4">
@@ -286,17 +401,14 @@ export function VendorOrdersTable({
         aria-label={t("table.status")}
       >
         {ORDERS_TABS.map((key) => {
-          const on = tab === key;
+          const on = filters.tab === key;
           return (
             <button
               key={key}
               type="button"
               role="tab"
               aria-selected={on}
-              onClick={() => {
-                setTab(key);
-                setPage(1);
-              }}
+              onClick={() => applyFilter({ tab: key })}
               className={cn(
                 "flex h-10.5 cursor-pointer items-center gap-2 whitespace-nowrap px-3.5 text-sm text-muted-foreground transition-colors hover:text-foreground",
                 on && "font-semibold text-primary-ink shadow-[inset_0_-2px_0_var(--primary)]",
@@ -327,23 +439,14 @@ export function VendorOrdersTable({
           <Input
             type="search"
             value={query}
-            onChange={(e) => {
-              setQuery(e.target.value);
-              setPage(1);
-            }}
+            onChange={(e) => setQuery(e.target.value)}
             placeholder={t("searchPlaceholder")}
             aria-label={t("searchLabel")}
             className="h-10 rounded-[10px] bg-card ps-9"
           />
         </div>
         {stores.length > 0 && (
-          <Select
-            value={channel}
-            onValueChange={(value) => {
-              setChannel(value);
-              setPage(1);
-            }}
-          >
+          <Select value={filters.channel} onValueChange={(value) => applyFilter({ channel: value })}>
             <SelectTrigger className="rounded-[10px] bg-card" aria-label={tChannel("label")}>
               <Store className="size-4 text-muted-foreground" aria-hidden="true" />
               <SelectValue />
@@ -359,30 +462,42 @@ export function VendorOrdersTable({
             </SelectContent>
           </Select>
         )}
-        {(attentionCount > 0 || bostaAttention) && (
+        <Select value={filters.sort} onValueChange={(value) => navigate({ sort: value as OrdersSort, page: 1 })}>
+          <SelectTrigger className="rounded-[10px] bg-card" aria-label={t("sort.label")}>
+            <ArrowUpDown className="size-4 text-muted-foreground" aria-hidden="true" />
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {ORDERS_SORTS.map((key) => (
+              <SelectItem key={key} value={key}>
+                {t(`sort.${key}`)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {(overview.attention > 0 || filters.attention) && (
           <button
             type="button"
-            aria-pressed={bostaAttention}
-            onClick={() => {
-              setBostaAttention((on) => !on);
-              setPage(1);
-            }}
+            aria-pressed={filters.attention}
+            onClick={() => applyFilter({ attention: !filters.attention })}
             className={cn(
               "inline-flex h-10 items-center gap-1.5 rounded-[10px] border bg-card px-3 text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground",
-              bostaAttention && "border-destructive/40 bg-destructive/10 text-destructive hover:text-destructive",
+              filters.attention && "border-destructive/40 bg-destructive/10 text-destructive hover:text-destructive",
             )}
           >
             <CircleAlert className="size-4" aria-hidden="true" />
-            {t("bosta.attentionFilter", { count: attentionCount })}
+            {t("bosta.attentionFilter", { count: overview.attention })}
           </button>
         )}
-        <ExportOrdersButton orders={visible} className="ms-auto h-10" />
-        {wassalhaStore && <WassalhaExportButton storeId={channel} orders={visible} showCount className="h-10" />}
-        <PrintOrdersButton orderIds={visible.map((o) => o.id)} showCount className="h-10" />
+        <ExportOrdersButton filters={filters} count={total} className="ms-auto h-10" />
+        {storeChannel && shipQueue.wassalha && (
+          <WassalhaExportButton storeId={filters.channel} orders={shipQueue.orders} showCount className="h-10" />
+        )}
+        <PrintOrdersButton orderIds={printIds} total={total} showCount className="h-10" />
         <div
           className={cn(
             "inline-flex gap-0.5 rounded-[11px] border bg-card p-[3px]",
-            visible.length === 0 && "ms-auto",
+            total === 0 && "ms-auto",
           )}
           role="group"
           aria-label={tList("viewLabel")}
@@ -411,16 +526,16 @@ export function VendorOrdersTable({
         </div>
       </div>
 
-      {bostaStore && <BostaBulkBar storeId={channel} orders={visible} />}
+      {storeChannel && shipQueue.bosta && <BostaBulkBar storeId={filters.channel} orders={shipQueue.orders} />}
 
-      <OrdersBulkBar orders={selected} onClear={() => setSelection({})} />
+      <OrdersBulkBar orders={selected} onClear={() => setSelection(new Map())} />
 
-      {visible.length === 0 ? (
+      {total === 0 ? (
         <div className="flex flex-col items-center gap-1.5 rounded-2xl border border-dashed border-input bg-card px-5 py-14 text-center text-[13px] text-muted-foreground">
           <span className="mb-1 grid size-12 place-items-center rounded-xl bg-primary-soft text-primary-ink">
             <PackageSearch className="size-5" aria-hidden="true" />
           </span>
-          {rows.length === 0 ? (
+          {overview.orders === 0 ? (
             <>
               <b className="text-[15px] text-foreground">{t("empty.title")}</b>
               <span>{t("empty.description")}</span>
@@ -429,81 +544,53 @@ export function VendorOrdersTable({
             <b className="text-[15px] text-foreground">{t("empty.tab")}</b>
           )}
         </div>
-      ) : view === "table" ? (
-        <OrdersTable orders={visible} onOpen={setOpenOrderId} selection={selection} onSelectionChange={setSelection} />
       ) : (
         <>
           <label className="flex w-fit cursor-pointer items-center gap-2 text-[13px] text-muted-foreground">
             <Checkbox
               checked={allSelected ? true : selected.length > 0 ? "indeterminate" : false}
+              disabled={isSelecting}
               onCheckedChange={(value) => toggleAll(value === true)}
             />
-            {t("bulk.selectAll", { count: visible.length })}
+            {t("bulk.selectAll", { count: total })}
           </label>
-          <div className="grid gap-3 sm:grid-cols-[repeat(auto-fill,minmax(280px,1fr))] sm:gap-4">
-            {pageItems.map((order) => (
-              <OrderCard
-                key={order.id}
-                order={order}
-                onOpen={() => setOpenOrderId(order.id)}
-                selected={Boolean(selection[order.id])}
-                onSelectedChange={(on) => toggleOne(order.id, on)}
-              />
-            ))}
-          </div>
+          {view === "table" ? (
+            <OrdersTable
+              orders={rows}
+              rowIndexOffset={(filters.page - 1) * filters.size}
+              onOpen={openById}
+              selection={tableSelection}
+              onSelectionChange={onTableSelection}
+            />
+          ) : (
+            <div
+              aria-busy={isNavigating}
+              className={cn(
+                "grid gap-3 transition-opacity sm:grid-cols-[repeat(auto-fill,minmax(280px,1fr))] sm:gap-4",
+                isNavigating && "opacity-60",
+              )}
+            >
+              {rows.map((order) => (
+                <OrderCard
+                  key={order.id}
+                  order={order}
+                  onOpen={() => openById(order.id)}
+                  selected={selection.has(order.id)}
+                  onSelectedChange={(on) => toggleOne(order, on)}
+                />
+              ))}
+            </div>
+          )}
 
-          <div className="flex flex-wrap items-center justify-between gap-3 text-[13px] text-muted-foreground">
-            <span className="tabular-nums">
-              {tList("range", {
-                from: formatNumber(rangeFrom, locale),
-                to: formatNumber(rangeTo, locale),
-                total: formatNumber(visible.length, locale),
-              })}
-            </span>
-            {pages > 1 && (
-              <nav className="flex gap-1">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="size-9 rounded-[9px]"
-                  disabled={currentPage === 1}
-                  onClick={() => goToPage(currentPage - 1)}
-                  aria-label={tList("previousPage")}
-                >
-                  <ChevronRight className="size-4 ltr:rotate-180" />
-                </Button>
-                {pageList(currentPage, pages).map((p, i) =>
-                  p === "gap" ? (
-                    <span key={`gap-${i}`} className="grid h-9 min-w-6 place-items-center">
-                      …
-                    </span>
-                  ) : (
-                    <Button
-                      key={p}
-                      variant={p === currentPage ? "default" : "outline"}
-                      size="icon"
-                      className="size-9 rounded-[9px] text-[13px] tabular-nums"
-                      onClick={() => goToPage(p)}
-                      aria-label={tList("pageN", { page: p })}
-                      aria-current={p === currentPage ? "page" : undefined}
-                    >
-                      {formatNumber(p, locale)}
-                    </Button>
-                  ),
-                )}
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="size-9 rounded-[9px]"
-                  disabled={currentPage === pages}
-                  onClick={() => goToPage(currentPage + 1)}
-                  aria-label={tList("nextPage")}
-                >
-                  <ChevronLeft className="size-4 ltr:rotate-180" />
-                </Button>
-              </nav>
-            )}
-          </div>
+          <ListPager
+            page={filters.page}
+            pages={pages}
+            size={filters.size}
+            sizes={ORDERS_PAGE_SIZES}
+            total={total}
+            onPage={goToPage}
+            onSize={changePageSize}
+          />
         </>
       )}
 
@@ -512,7 +599,7 @@ export function VendorOrdersTable({
         onClose={() => {
           setOpenOrderId(null);
           // Drop the deep-link param so a refresh doesn't reopen the dialog.
-          if (initialOrderId) window.history.replaceState(null, "", "/orders");
+          if (initialOrderId) window.history.replaceState(null, "", ordersListHref(filters));
         }}
       />
     </div>

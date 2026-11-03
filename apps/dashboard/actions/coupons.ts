@@ -218,7 +218,8 @@ export async function searchCouponProducts(input: {
     price: products.price,
     status: products.status,
     image: sql<string | null>`${products.images}->>0`,
-    title: sql<string | null>`(SELECT t.title FROM ${productTranslations} t WHERE t.product_id = ${products.id} ORDER BY (t.locale = ${locale}) DESC LIMIT 1)`,
+    // Nested: a one-table select strips the table name from a field's top-level columns.
+    title: sql<string | null>`${sql`(SELECT t.title FROM ${productTranslations} t WHERE t.product_id = ${products.id} ORDER BY (t.locale = ${locale}) DESC LIMIT 1)`}`,
   };
   const own = and(eq(products.sellerId, sellerId), isNull(products.deletedAt));
 

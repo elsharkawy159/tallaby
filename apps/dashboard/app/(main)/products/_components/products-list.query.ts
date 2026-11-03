@@ -273,18 +273,20 @@ export async function loadOwnProductStatuses(sellerId: string, ids: string[]) {
 /** Light product options for the ad picker: no variants or descriptions. */
 export async function listSellerProductOptions(sellerId: string, locale: string) {
   // One title (this language, then English, then any) and one photo: all the picker shows.
+  // Nested SQL: in a one-table select drizzle strips the table name from a field's
+  // top-level columns, and a bare "id" would mean the translation's id in there.
   return db
     .select({
       id: products.id,
       price: products.price,
       status: products.status,
       image: sql<string | null>`${products.images}->>0`,
-      title: sql<string | null>`(
+      title: sql<string | null>`${sql`(
         SELECT t.title FROM ${productTranslations} t
         WHERE t.product_id = ${products.id}
         ORDER BY (t.locale = ${locale}) DESC, (t.locale = 'en') DESC
         LIMIT 1
-      )`,
+      )`}`,
     })
     .from(products)
     .where(and(...baseConditions(sellerId)))

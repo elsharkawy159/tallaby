@@ -19,10 +19,13 @@ import { PRINT_MAX_ORDERS, printOrdersHref, type PrintDoc } from "@/app/print/or
  */
 export function PrintOrdersButton({
   orderIds,
+  total = orderIds.length,
   showCount = false,
   className,
 }: {
   orderIds: readonly string[];
+  /** How many orders these ids were cut from, when the list has more than one print job. */
+  total?: number;
   /** "Print (N)" for a list; plain "Print" for one order. */
   showCount?: boolean;
   className?: string;
@@ -41,7 +44,7 @@ export function PrintOrdersButton({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        {orderIds.length > PRINT_MAX_ORDERS && (
+        {total > PRINT_MAX_ORDERS && (
           <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
             {t("capped", { max: PRINT_MAX_ORDERS })}
           </DropdownMenuLabel>

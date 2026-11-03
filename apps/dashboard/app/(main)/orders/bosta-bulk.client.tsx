@@ -10,18 +10,18 @@ import { Button } from "@workspace/ui/components/button";
 import { ConfirmActionDialog } from "@/components/layout/confirm-action-dialog.client";
 import { bostaLabelsUrl, canShipWithBosta } from "./bosta-ship.client";
 import { shipWithBosta } from "./bosta-ship.server";
-import type { SellerOrderRow } from "./orders.types";
+import type { OrderSummary } from "./orders.types";
 
 /** Bosta prints at most 50 labels in one PDF. */
 const LABELS_MAX = 50;
 
 /**
- * Bulk Bosta actions for the orders on screen of one store (BS-12): send the
- * ones still to ship, and print the labels of the ones Bosta has not picked
- * up yet. Shipping runs one order at a time, so each keeps its own claim and
- * an address problem stops only that order.
+ * Bulk Bosta actions for one store's waiting orders under the current filters,
+ * on any page (BS-12): send the ones still to ship, and print the labels of the
+ * ones Bosta has not picked up yet. Shipping runs one order at a time, so each
+ * keeps its own claim and an address problem stops only that order.
  */
-export function BostaBulkBar({ storeId, orders }: { storeId: string; orders: SellerOrderRow[] }) {
+export function BostaBulkBar({ storeId, orders }: { storeId: string; orders: OrderSummary[] }) {
   const t = useTranslations("orders.bosta.bulk");
   const locale = useLocale();
   const router = useRouter();

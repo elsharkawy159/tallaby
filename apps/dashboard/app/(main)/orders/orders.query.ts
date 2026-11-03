@@ -1,7 +1,6 @@
 import {
   and,
   db,
-  desc,
   eq,
   inArray,
   orderItems,
@@ -13,7 +12,7 @@ import {
   users,
 } from "@workspace/db";
 import { WALLET_REFERENCE_TYPES } from "@workspace/db/wallet";
-import { hasOrderRisk } from "@workspace/lib/customers";
+import { hasOrderRisk, type OrderRisk } from "@workspace/lib/customers";
 import { loadStoreOrderRisks } from "@workspace/lib/customers/server";
 import { normalizeBlockedPhone } from "@workspace/lib/stores/blocked-phones";
 import { storeUrl } from "@workspace/lib/storefront";
@@ -32,35 +31,129 @@ import {
   resolveCustomerName,
   resolveCustomerPhone,
 } from "./orders.lib";
-import type { SellerOrderRow } from "./orders.types";
-
-const LIST_LIMIT = 200;
+import type { OrderSummary, SellerOrderRow } from "./orders.types";
 
 const toNumber = (value: string | number | null | undefined) => {
   const n = Number(value);
   return Number.isFinite(n) ? n : null;
 };
 
+/** The seller's stores and integrations a row needs. Loaded once per request. */
+export type OrderRowContext = {
+  stores: { id: string; name: string; subdomain: string }[];
+  /** Stores of this seller with Bosta connected, and when they ship (BS-08/09). */
+  bostaStores: ReadonlyMap<string, { autoShip: "manual" | "on_confirm"; canCancel: boolean }>;
+  /** Stores of this seller with Wassalha (Egypt Post) set up (F-12c). */
+  wassalhaStores: ReadonlySet<string>;
+};
+
+/** Only orders with at least one line of this seller, whatever ids were asked for. */
+const ownOrders = (sellerId: string) =>
+  inArray(orders.id, db.select({ id: orderItems.orderId }).from(orderItems).where(eq(orderItems.sellerId, sellerId)));
+
+const loadWalletPaid = async (ids: string[]) => {
+  const rows = await db
+    .select({ orderId: userWalletTransactions.referenceId })
+    .from(userWalletTransactions)
+    .where(
+      and(
+        eq(userWalletTransactions.referenceType, WALLET_REFERENCE_TYPES.order),
+        eq(userWalletTransactions.type, "order_payment"),
+        eq(userWalletTransactions.status, "completed"),
+        inArray(userWalletTransactions.referenceId, ids),
+      ),
+    );
+  return new Set(rows.map((w) => w.orderId));
+};
+
+/** One flow for the list, the selection and the server action. */
+function orderFlow(
+  sellerId: string,
+  order: {
+    id: string;
+    status: string | null;
+    paymentStatus: string | null;
+    isDigitalOnly: boolean | null;
+    orderItems: { sellerId: string; fulfillmentType: string | null }[];
+    shipments: { status: string; sellerId: string | null; externalId: string | null }[];
+  },
+  walletPaid: ReadonlySet<string | null>,
+) {
+  const mine = order.orderItems.filter((i) => i.sellerId === sellerId);
+  const shipment = order.shipments[0] ?? null;
+  return resolveSellerOrderFlow({
+    orderStatus: order.status,
+    paymentStatus: order.paymentStatus,
+    isDigitalOnly: order.isDigitalOnly,
+    allLinesOwned: order.orderItems.every((i) => i.sellerId === sellerId),
+    sellerFulfilled: mine.some((i) => isSellerHandledLine(i.fulfillmentType)),
+    shipment: shipment
+      ? { status: shipment.status, ownedBySeller: shipment.sellerId === sellerId, carrierManaged: Boolean(shipment.externalId) }
+      : null,
+    walletPaid: walletPaid.has(order.id),
+  });
+}
+
 /**
- * The seller's orders for /orders, newest first: every order with at least
- * one of their lines, carrying only their lines plus what the order panel
- * and its status actions need (no second fetch when a seller opens one).
+ * What selecting or queueing an order needs, without the rest of the row: the
+ * whole filtered list can be selected, and most of it never reaches the page.
+ * In the order of `ids`; ids that are not this seller's are dropped.
+ */
+export async function loadOrderSummaries(
+  sellerId: string,
+  ids: string[],
+  { bostaStores, wassalhaStores }: Pick<OrderRowContext, "bostaStores" | "wassalhaStores">,
+): Promise<OrderSummary[]> {
+  if (ids.length === 0) return [];
+  const [list, walletPaid] = await Promise.all([
+    db.query.orders.findMany({
+      where: and(inArray(orders.id, ids), ownOrders(sellerId)),
+      columns: { id: true, status: true, paymentStatus: true, isDigitalOnly: true, storeId: true },
+      with: {
+        shipments: { columns: { status: true, sellerId: true, externalId: true, carrier: true, trackingNumber: true } },
+        orderItems: { columns: { sellerId: true, fulfillmentType: true } },
+      },
+    }),
+    loadWalletPaid(ids),
+  ]);
+  const byId = new Map(list.map((o) => [o.id, o]));
+  return ids.flatMap((id) => {
+    const o = byId.get(id);
+    if (!o) return [];
+    const shipment = o.shipments[0] ?? null;
+    return [
+      {
+        id: o.id,
+        storeId: o.storeId,
+        flow: orderFlow(sellerId, o, walletPaid),
+        bostaConnected: Boolean(o.storeId && bostaStores.has(o.storeId)),
+        wassalhaConnected: Boolean(o.storeId && wassalhaStores.has(o.storeId)),
+        wassalhaExported: shipment?.carrier === "wassalha" && shipment.sellerId === sellerId,
+        bosta:
+          shipment?.carrier === "bosta" && shipment.sellerId === sellerId
+            ? { trackingNumber: shipment.trackingNumber }
+            : null,
+      },
+    ];
+  });
+}
+
+/**
+ * Full rows for /orders, in the order of `ids`: orders with at least one of
+ * this seller's lines (other ids are dropped), carrying only their lines plus
+ * what the order panel and its status actions need (no second fetch when a
+ * seller opens one). The ids come from orders-list.query.ts.
  */
 export async function loadSellerOrders(
   sellerId: string,
-  stores: { id: string; name: string; subdomain: string }[],
-  /** Stores of this seller with Bosta connected, and when they ship (BS-08/09). */
-  bostaStores: ReadonlyMap<string, { autoShip: "manual" | "on_confirm"; canCancel: boolean }> = new Map(),
-  /** Stores of this seller with Wassalha (Egypt Post) set up (F-12c). */
-  wassalhaStores: ReadonlySet<string> = new Set(),
+  ids: string[],
+  { stores, bostaStores, wassalhaStores }: OrderRowContext,
+  /** The export has no risk column, and risks are the costly part of a row. */
+  options: { withRisks?: boolean } = {},
 ): Promise<SellerOrderRow[]> {
-  const list = await db.query.orders.findMany({
-    where: inArray(
-      orders.id,
-      db.select({ id: orderItems.orderId }).from(orderItems).where(eq(orderItems.sellerId, sellerId)),
-    ),
-    orderBy: [desc(orders.createdAt)],
-    limit: LIST_LIMIT,
+  if (ids.length === 0) return [];
+  const found = await db.query.orders.findMany({
+    where: and(inArray(orders.id, ids), ownOrders(sellerId)),
     columns: {
       id: true,
       orderNumber: true,
@@ -140,8 +233,9 @@ export async function loadSellerOrders(
     },
   });
 
-  if (list.length === 0) return [];
-  const ids = list.map((o) => o.id);
+  if (found.length === 0) return [];
+  const byId = new Map(found.map((o) => [o.id, o]));
+  const list = ids.flatMap((id) => byId.get(id) ?? []);
   const riderIds = [
     ...new Set(list.flatMap((o) => o.shipments.map((s) => s.riderId)).filter((id): id is string => Boolean(id))),
   ];
@@ -152,18 +246,8 @@ export async function loadSellerOrders(
   );
 
   const ownStoreIds = stores.map((s) => s.id);
-  const [walletPaid, riders, domains, marketplaceLinks, blocked, storeConfirm, risks] = await Promise.all([
-    db
-      .select({ orderId: userWalletTransactions.referenceId })
-      .from(userWalletTransactions)
-      .where(
-        and(
-          eq(userWalletTransactions.referenceType, WALLET_REFERENCE_TYPES.order),
-          eq(userWalletTransactions.type, "order_payment"),
-          eq(userWalletTransactions.status, "completed"),
-          inArray(userWalletTransactions.referenceId, ids),
-        ),
-      ),
+  const [walletPaidOrders, riders, domains, marketplaceLinks, blocked, storeConfirm, risks] = await Promise.all([
+    loadWalletPaid(ids),
     riderIds.length
       ? db.select({ id: users.id, fullName: users.fullName }).from(users).where(inArray(users.id, riderIds))
       : Promise.resolve([]),
@@ -190,15 +274,17 @@ export async function loadSellerOrders(
           .where(and(eq(storesTable.sellerId, sellerId), inArray(storesTable.id, ownStoreIds)))
       : Promise.resolve([]),
     // Refusals and quick duplicates of the same phone on the same store (ROADMAP.md F-02d).
-    loadStoreOrderRisks(
-      sellerId,
-      list.map((o) => ({
-        orderId: o.id,
-        storeId: o.storeId,
-        addressPhone: o.userAddress_shippingAddressId?.phone ?? null,
-        userPhone: o.user?.phone ?? null,
-      })),
-    ),
+    options.withRisks === false
+      ? Promise.resolve(new Map<string, OrderRisk>())
+      : loadStoreOrderRisks(
+          sellerId,
+          list.map((o) => ({
+            orderId: o.id,
+            storeId: o.storeId,
+            addressPhone: o.userAddress_shippingAddressId?.phone ?? null,
+            userPhone: o.user?.phone ?? null,
+          })),
+        ),
   ]);
   const confirmByStore = new Map(
     storeConfirm.map((row) => [
@@ -216,7 +302,6 @@ export async function loadSellerOrders(
     return Boolean(storeId && normalized && blockedKeys.has(`${storeId}:${normalized}`));
   };
 
-  const walletPaidOrders = new Set(walletPaid.map((w) => w.orderId));
   const riderNames = new Map(riders.map((r) => [r.id, r.fullName]));
   const domainByStore = new Map(domains.map((d) => [d.storeId, d.domain]));
   const storeById = new Map(stores.map((s) => [s.id, s]));
@@ -238,17 +323,7 @@ export async function loadSellerOrders(
     const store = o.storeId ? storeById.get(o.storeId) : undefined;
     const customerPhone = resolveCustomerPhone(o);
 
-    const flow = resolveSellerOrderFlow({
-      orderStatus: o.status,
-      paymentStatus: o.paymentStatus,
-      isDigitalOnly: o.isDigitalOnly,
-      allLinesOwned: o.orderItems.every((i) => i.sellerId === sellerId),
-      sellerFulfilled: mine.some((i) => isSellerHandledLine(i.fulfillmentType)),
-      shipment: shipment
-        ? { status: shipment.status, ownedBySeller: shipment.sellerId === sellerId, carrierManaged: Boolean(shipment.externalId) }
-        : null,
-      walletPaid: walletPaidOrders.has(o.id),
-    });
+    const flow = orderFlow(sellerId, o, walletPaidOrders);
 
     const confirm = o.storeId ? confirmByStore.get(o.storeId) : undefined;
     const createdAt = o.createdAt ?? new Date(now).toISOString();

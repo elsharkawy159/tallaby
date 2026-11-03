@@ -9,11 +9,11 @@ import { FileSpreadsheet, LoaderCircle } from "lucide-react";
 import { Button } from "@workspace/ui/components/button";
 import { cn } from "@/lib/utils";
 import { downloadXlsx } from "@/lib/product-excel";
-import type { SellerOrderRow } from "./orders.types";
+import type { OrderSummary } from "./orders.types";
 import { exportForWassalha } from "./wassalha-export.server";
 
 /** The order can go into a Wassalha sheet: its store has Wassalha, it waits to ship, and no carrier took it. */
-export function canExportForWassalha(order: SellerOrderRow): boolean {
+export function canExportForWassalha(order: OrderSummary): boolean {
   return (
     order.wassalhaConnected &&
     !order.flow.readOnly &&
@@ -25,7 +25,7 @@ export function canExportForWassalha(order: SellerOrderRow): boolean {
 
 /**
  * "Export for Wassalha" (F-12c): one order (order card, order panel) or every
- * exportable order on screen for one store (orders toolbar). Downloads the
+ * exportable order under the filters for one store (orders toolbar). Downloads the
  * sheet to upload on the Wassalha dashboard; orders that can't go in are
  * listed in a toast.
  */
@@ -36,7 +36,7 @@ export function WassalhaExportButton({
   className,
 }: {
   storeId: string;
-  orders: SellerOrderRow[];
+  orders: OrderSummary[];
   showCount?: boolean;
   className?: string;
 }) {

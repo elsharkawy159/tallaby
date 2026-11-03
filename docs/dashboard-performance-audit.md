@@ -27,6 +27,18 @@ All are behaviour-preserving. Tenant checks are unchanged. Only reads changed: n
 | Coupon picker: only one title and one photo leave the database, not every translation and the whole image array | Database-to-server payload down; the client prop is unchanged and still lists the whole catalog (see P3) | Reasoned |
 | Orders list, print and shipping: named address and shipment columns instead of every column | Small: about 558 bytes per address on staging, some of it now skipped. Also stops loading personal fields nothing shows | Measured size; small effect |
 
+## Fixed after the audit (2026-11-03)
+
+- **P1 layout:** `getSessionUser()` and `Promise.all`, done. Streaming the sidebar badges is still open.
+- **P2 customers (F-43e):** the page groups in SQL with server paging (`listStoreCustomersPage`), no 5,000-order cut-off, and the drawer filters by key in SQL. `customers.integration.test.ts` holds SQL equal to `aggregateStoreCustomers` and `selectStoreCustomers`, Arabic-digit phones included. Audiences and campaigns still use `listStoreCustomers` (5,000 cap).
+- **P3 pickers (F-43f):** the coupon picker loads 40 products as the seller types. The ad picker reads one title and one photo per product but still lists the whole catalog, so it is lighter, not capped.
+- **P4 orders (F-43g):** `/orders` filters, sorts, counts and pages on the server (`orders-list.query.ts`), with risks only for the visible page. `orders-list.integration.test.ts` holds the SQL stage, counts and search equal to the rows over every order, payment and shipment status mix. Select all, export, print, Bosta and Wassalha work across pages.
+- **P5 indexes:** `0140_list_indexes.sql`, staging only. On production run each statement with `CONCURRENTLY`. The `EXPLAIN ANALYZE` on seeded data (P8) is still owed.
+
+Nothing above was timed or checked in a browser.
+
+**New finding:** in a one-table `db.select({...})`, drizzle strips the table name from a field's top-level columns, so `(SELECT ... WHERE t.product_id = ${products.id})` becomes `t.product_id = "id"`, reads the inner table's id and returns NULL. The coupon picker title had this bug (fixed by nesting the SQL). `stores/[storeId]/settings/catalog.data.ts` and `(builder)/.../editor/server/editor.data.ts` have the same shape and were not changed, so check their titles.
+
 ## Not fixed, ranked by likely impact
 
 ### P1. Lead to apply: `app/(main)/layout.tsx` (another agent's file)

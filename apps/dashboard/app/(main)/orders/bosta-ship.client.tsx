@@ -45,7 +45,7 @@ import {
   shipWithBosta,
   type BostaActionError,
 } from "./bosta-ship.server";
-import type { SellerOrderRow } from "./orders.types";
+import type { OrderSummary, SellerOrderRow } from "./orders.types";
 
 type Size = "SMALL" | "MEDIUM" | "LARGE";
 
@@ -99,7 +99,7 @@ export function BostaChip({ order, className }: { order: SellerOrderRow; classNa
 }
 
 /** Stages in which an order can still go to Bosta. */
-export function canShipWithBosta(order: SellerOrderRow): boolean {
+export function canShipWithBosta(order: Pick<OrderSummary, "bostaConnected" | "flow" | "bosta">): boolean {
   return (
     order.bostaConnected &&
     !order.flow.readOnly &&

@@ -1347,6 +1347,7 @@ export const orderItems = pgTable("order_items", {
 	index("order_items_order_id_idx").using("btree", table.orderId.asc().nullsLast().op("uuid_ops")),
 	index("order_items_product_id_idx").using("btree", table.productId.asc().nullsLast().op("uuid_ops")),
 	index("order_items_seller_id_idx").using("btree", table.sellerId.asc().nullsLast().op("uuid_ops")),
+	index("order_items_seller_created_idx").using("btree", table.sellerId.asc().nullsLast().op("uuid_ops"), table.createdAt.desc().nullsFirst().op("timestamptz_ops")),
 	index("order_items_status_idx").using("btree", table.status.asc().nullsLast().op("enum_ops")),
 	foreignKey({
 			columns: [table.orderId],
@@ -1673,6 +1674,7 @@ export const orders = pgTable("orders", {
 	index("order_status_idx").using("btree", table.status.asc().nullsLast().op("enum_ops")),
 	index("order_user_id_idx").using("btree", table.userId.asc().nullsLast().op("uuid_ops")),
 	index("orders_store_id_idx").using("btree", table.storeId.asc().nullsLast().op("uuid_ops")).where(sql`store_id IS NOT NULL`),
+	index("orders_store_created_idx").using("btree", table.storeId.asc().nullsLast().op("uuid_ops"), table.createdAt.desc().nullsFirst().op("timestamptz_ops")).where(sql`store_id IS NOT NULL`),
 	foreignKey({
 			columns: [table.storeId],
 			foreignColumns: [stores.id],
@@ -2005,6 +2007,7 @@ export const walletTransactions = pgTable("wallet_transactions", {
 		name: "wallet_transactions_created_by_fkey"
 	}).onDelete("set null"),
 	index("wallet_transactions_seller_id_idx").using("btree", table.sellerId.asc().nullsLast().op("uuid_ops")),
+	index("wallet_transactions_seller_created_idx").using("btree", table.sellerId.asc().nullsLast().op("uuid_ops"), table.createdAt.desc().nullsFirst().op("timestamptz_ops")),
 	index("wallet_transactions_type_idx").using("btree", table.type.asc().nullsLast().op("enum_ops")),
 	foreignKey({
 		columns: [table.sellerId],

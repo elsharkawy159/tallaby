@@ -2169,6 +2169,13 @@
   },
   "orders": {
     "subtitle": "Confirm new orders, send them out and mark them delivered. You handle the delivery.",
+    "sort": {
+      "label": "Sort",
+      "newest": "Newest first",
+      "oldest": "Oldest first",
+      "totalDesc": "Highest total",
+      "totalAsc": "Lowest total"
+    },
     "tabs": {
       "all": "All",
       "new": "To confirm",
@@ -2568,6 +2575,8 @@
     "bulk": {
       "selectAll": "Select all ({count})",
       "selectOrder": "Select order #{number}",
+      "selectAllFailed": "Could not select all orders. Try again.",
+      "selectCapped": "Selected only the first {count} orders.",
       "selected": "{count, plural, one {# order selected} other {# orders selected}}",
       "clear": "Clear",
       "back": "Go back",

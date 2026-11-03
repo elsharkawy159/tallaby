@@ -16,7 +16,7 @@ import {
   type BulkOrderAction,
 } from "./orders-bulk.lib";
 import { bulkUpdateSellerOrders } from "./orders.server";
-import type { SellerOrderRow } from "./orders.types";
+import type { OrderSummary } from "./orders.types";
 import { PrintOrdersButton } from "./print-orders-button.client";
 
 const ICON: Record<BulkOrderAction, React.ComponentType<{ className?: string }>> = {
@@ -30,7 +30,7 @@ const ICON: Record<BulkOrderAction, React.ComponentType<{ className?: string }>>
  * Actions on the selected orders (ROADMAP.md F-04c): stage moves each order
  * already allows, print and export. Shows only while something is selected.
  */
-export function OrdersBulkBar({ orders, onClear }: { orders: SellerOrderRow[]; onClear: () => void }) {
+export function OrdersBulkBar({ orders, onClear }: { orders: OrderSummary[]; onClear: () => void }) {
   const t = useTranslations("orders.bulk");
   const router = useRouter();
   const [confirming, setConfirming] = useState<BulkOrderAction | null>(null);
@@ -95,7 +95,7 @@ export function OrdersBulkBar({ orders, onClear }: { orders: SellerOrderRow[]; o
           );
         })}
         <PrintOrdersButton orderIds={orders.map((o) => o.id)} showCount className="h-8 bg-card" />
-        <ExportOrdersButton orders={orders} className="h-8" />
+        <ExportOrdersButton ids={orders.map((o) => o.id)} count={orders.length} className="h-8" />
       </div>
       <ConfirmActionDialog
         open={confirming !== null}
