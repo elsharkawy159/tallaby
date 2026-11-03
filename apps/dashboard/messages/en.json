@@ -1574,6 +1574,8 @@
       "emptyBody": "Add an option and we'll create every combination so you can set a price and quantity for each.",
       "addOption": "Add option",
       "addAnotherOption": "Add another option",
+      "addThisValue": "Add this value",
+      "details": "Show photos, price and barcode",
       "optionName": "Option name",
       "customNamePlaceholderEn": "e.g. Fabric, Fit",
       "customNamePlaceholderAr": "مثال: القماش، القصة",

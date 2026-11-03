@@ -304,7 +304,7 @@ export function VendorProductsSection({
           })}
         </div>
         {/* On mobile the page actions come first, above the tabs. */}
-        <div className="flex flex-wrap items-center gap-2.5 pb-1 max-sm:order-first max-sm:w-full max-sm:pb-0">
+        <div className="flex flex-wrap items-center gap-2.5 pb-1 max-sm:order-first max-sm:grid max-sm:w-full max-sm:grid-cols-2 max-sm:pb-0 max-sm:[&>*]:w-full">
           <ImportExportButton filters={filters} total={total} />
           <Button asChild>
             <Link href="/products/add">
@@ -336,7 +336,7 @@ export function VendorProductsSection({
           onValueChange={(value) => applyFilter({ category: value === ALL_CATEGORIES ? "" : value })}
         >
           <SelectTrigger
-            className="rounded-[10px] bg-card"
+            className="rounded-[10px] bg-card max-sm:min-w-0 max-sm:flex-1"
             aria-label={t("category")}
           >
             <Layers className="size-4 text-muted-foreground" aria-hidden="true" />
@@ -356,7 +356,7 @@ export function VendorProductsSection({
           onValueChange={(value) => navigate({ sort: value as ProductsSort, page: 1 })}
         >
           <SelectTrigger
-            className="rounded-[10px] bg-card"
+            className="rounded-[10px] bg-card max-sm:min-w-0 max-sm:flex-1"
             aria-label={t("sortLabel")}
           >
             <ArrowUpDown className="size-4 text-muted-foreground" aria-hidden="true" />

@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Controller, useFieldArray, useFormContext, useWatch } from "react-hook-form";
+import { Controller, useFieldArray, useFormContext, useFormState, useWatch } from "react-hook-form";
 import { useLocale, useTranslations } from "next-intl";
-import { Layers, Plus, Trash2, X } from "lucide-react";
+import { ChevronDown, Layers, Plus, Trash2, X } from "lucide-react";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import { cn, getPublicUrl } from "@/lib/utils";
@@ -392,7 +392,7 @@ export function VariantsEditor({
         {variantTypes.map((type) => (
           <div
             key={type.id}
-            className="grid grid-cols-1 items-start gap-2.5 rounded-xl border bg-muted p-3 sm:grid-cols-[180px_minmax(0,1fr)_auto]"
+            className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2.5 rounded-xl border bg-muted p-3 sm:grid-cols-[180px_minmax(0,1fr)_auto]"
           >
             <div className="flex flex-col gap-2">
               <select
@@ -449,6 +449,7 @@ export function VariantsEditor({
             </div>
 
             <ValueChips
+              className="max-sm:order-last max-sm:col-span-2"
               type={type}
               activeLocale={activeLocale}
               onAdd={(value) => appendValue(type.id, value)}
@@ -499,6 +500,7 @@ export function VariantsEditor({
 }
 
 function ValueChips({
+  className,
   type,
   activeLocale,
   onAdd,
@@ -506,6 +508,7 @@ function ValueChips({
   onRename,
   onSwatch,
 }: {
+  className?: string;
   type: VariantTypeFormValue;
   activeLocale: SupportedLocale;
   onAdd: (value: string) => void;
@@ -529,7 +532,10 @@ function ValueChips({
 
   return (
     <div
-      className="flex min-h-11 flex-wrap items-center gap-1.5 rounded-[10px] border border-input bg-card px-2 py-1.5 transition-[border-color,box-shadow] focus-within:border-primary focus-within:ring-[3px] focus-within:ring-primary/20"
+      className={cn(
+        "flex min-h-11 flex-wrap items-center gap-1.5 rounded-[10px] border border-input bg-card px-2 py-1.5 transition-[border-color,box-shadow] focus-within:border-primary focus-within:ring-[3px] focus-within:ring-primary/20",
+        className,
+      )}
       onClick={(e) => {
         if (e.target === e.currentTarget) inputRef.current?.focus();
       }}
@@ -568,7 +574,7 @@ function ValueChips({
           <span
             key={index}
             className={cn(
-              "inline-flex h-7 items-center gap-1 rounded-lg ps-2.5 pe-1.5 text-xs font-semibold",
+              "inline-flex h-7 items-center gap-1 rounded-lg ps-2.5 pe-1.5 text-xs font-semibold max-sm:h-9 max-sm:text-[13px]",
               missing
                 ? "border border-dashed border-accent-ink/40 bg-accent-soft text-accent-ink"
                 : "bg-primary-soft text-primary-ink"
@@ -576,7 +582,7 @@ function ValueChips({
           >
             {type.kind === "color" && (
               <label
-                className="relative size-3.5 shrink-0 cursor-pointer overflow-hidden rounded-full ring-1 ring-black/15"
+                className="relative size-3.5 shrink-0 cursor-pointer overflow-hidden rounded-full ring-1 ring-black/15 max-sm:size-5"
                 style={{
                   background:
                     type.swatches?.[index] ||
@@ -604,7 +610,7 @@ function ValueChips({
               type="button"
               onClick={() => onRemove(index)}
               aria-label={t("removeValue", { value: label })}
-              className="grid place-items-center rounded opacity-70 hover:opacity-100"
+              className="grid place-items-center rounded opacity-70 hover:opacity-100 max-sm:size-7"
             >
               <X className="size-3.5" />
             </button>
@@ -627,9 +633,25 @@ function ValueChips({
           }
         }}
         onBlur={commitDraft}
+        enterKeyHint="done"
         placeholder={count > 0 ? t("valuesPlaceholder") : t("valuesPlaceholderFirst")}
-        className="h-7 min-w-[110px] flex-1 bg-transparent text-[13px] outline-none placeholder:text-faint"
+        className="h-7 min-w-[110px] flex-1 bg-transparent text-[13px] outline-none placeholder:text-faint max-sm:h-9"
       />
+      {/* Some phone keyboards don't report Enter, so the value needs a visible way in. */}
+      {draft.trim() && (
+        <button
+          type="button"
+          aria-label={t("addThisValue")}
+          onPointerDown={(e) => e.preventDefault()}
+          onClick={() => {
+            commitDraft();
+            inputRef.current?.focus();
+          }}
+          className="grid size-9 shrink-0 place-items-center rounded-lg bg-primary text-primary-foreground sm:hidden"
+        >
+          <Plus className="size-4" />
+        </button>
+      )}
     </div>
   );
 }
@@ -656,15 +678,20 @@ function VariantsTable({
   const tStock = useTranslations("productForm.sections.stock");
   const locale = useLocale();
   const form = useFormContext<AddProductFormData>();
+  // Phones: one card open at a time, so a long list stays easy to scan.
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+  // A card with a price problem can't stay shut, or the seller never sees it.
+  const { errors } = useFormState({ control: form.control, name: "variants" });
+  const variantErrors = errors.variants as unknown[] | undefined;
 
   return (
     <div className="flex flex-col gap-2">
       <p className="text-xs text-muted-foreground">
         {t("combinationsHint", { count: fieldIds.length })}
       </p>
-      <div className="overflow-x-auto rounded-xl border">
-        <table className="w-full border-collapse text-[13px]">
-          <thead>
+      <div className="sm:overflow-x-auto sm:rounded-xl sm:border">
+        <table className="w-full border-collapse text-[13px] max-sm:block">
+          <thead className="max-sm:hidden">
             <tr>
               {[
                 t("columns.variant"),
@@ -682,7 +709,7 @@ function VariantsTable({
               ))}
             </tr>
           </thead>
-          <tbody>
+          <tbody className="max-sm:flex max-sm:flex-col max-sm:gap-2">
             {fieldIds.map((fieldId, index) => {
               const variant = variants[index];
               const isDefault = variant?.isDefault === true;
@@ -690,39 +717,66 @@ function VariantsTable({
               const options = [localized?.option1, localized?.option2, localized?.option3]
                 .filter(Boolean)
                 .map((option) => String(option).split(":").pop()?.trim() || String(option));
+              const isOpen = openIndex === index || Boolean(variantErrors?.[index]);
+              // Hidden on a phone until the card is opened; always shown in the desktop table.
+              const detailCell = cn("border-b px-3 py-3 max-sm:block max-sm:border-0 max-sm:px-0 max-sm:py-0", !isOpen && "max-sm:hidden");
+              const phoneLabel = "mb-1.5 block text-xs font-medium text-muted-foreground sm:hidden";
+              const cardPrice = isDefault ? mainFinalPrice : Number(variant?.price) || 0;
 
               return (
-                <tr key={fieldId} className="align-top [&:last-child>td]:border-b-0">
-                  <td className="border-b px-3 py-3">
-                    <label className="flex cursor-pointer items-start gap-2">
+                <tr
+                  key={fieldId}
+                  className="align-top max-sm:flex max-sm:flex-col max-sm:gap-3 max-sm:rounded-xl max-sm:border max-sm:bg-card max-sm:p-3 sm:[&:last-child>td]:border-b-0"
+                >
+                  <td className="border-b px-3 py-3 max-sm:block max-sm:border-0 max-sm:p-0">
+                    <div className="flex items-start gap-2">
+                      {/* The radio alone sets the default, so tapping a card to open it can't change it. */}
                       <input
                         type="radio"
                         name="default-variant"
                         checked={isDefault}
                         onChange={() => onSetDefault(index)}
-                        className="mt-1 size-4 accent-[var(--primary)]"
+                        className="mt-1 size-4 cursor-pointer accent-[var(--primary)] max-sm:size-5"
                         aria-label={t("setDefault", { name: localized?.title || variant?.title || "" })}
                       />
-                      <span className="flex flex-col gap-1">
+                      <div
+                        className="flex min-w-0 flex-1 flex-col gap-1 max-sm:cursor-pointer"
+                        onClick={() => setOpenIndex(openIndex === index ? null : index)}
+                      >
                         <span className="flex flex-wrap gap-1">
                           {(options.length ? options : [variant?.title]).map((option) => (
                             <span
                               key={option}
-                              className="rounded-md border bg-muted px-1.5 text-xs whitespace-nowrap"
+                              className="rounded-md border bg-muted px-1.5 text-xs whitespace-nowrap max-sm:px-2 max-sm:text-[13px] max-sm:leading-6"
                             >
                               {option}
                             </span>
                           ))}
                         </span>
-                        {isDefault && (
-                          <span className="w-fit rounded-[5px] bg-primary-soft px-1.5 text-[10px] leading-[18px] font-bold text-primary-ink">
-                            {t("default")}
+                        <span className="flex flex-wrap items-center gap-1.5">
+                          {isDefault && (
+                            <span className="w-fit rounded-[5px] bg-primary-soft px-1.5 text-[10px] leading-[18px] font-bold text-primary-ink">
+                              {t("default")}
+                            </span>
+                          )}
+                          <span className="font-sans text-xs font-semibold tabular-nums text-muted-foreground sm:hidden">
+                            {cardPrice > 0 ? formatMoney(cardPrice, locale) : "—"}
                           </span>
-                        )}
-                      </span>
-                    </label>
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        aria-expanded={isOpen}
+                        aria-label={t("details")}
+                        onClick={() => setOpenIndex(openIndex === index ? null : index)}
+                        className="grid size-9 shrink-0 place-items-center rounded-lg text-muted-foreground sm:hidden"
+                      >
+                        <ChevronDown className={cn("size-[18px] transition-transform", isOpen && "rotate-180")} aria-hidden />
+                      </button>
+                    </div>
                   </td>
-                  <td className="border-b px-3 py-3">
+                  <td className={cn(detailCell, "max-sm:order-1")}>
+                    <span className={phoneLabel}>{t("columns.images")}</span>
                     {isDefault ? (
                       <MainImagesPreview images={mainImages} />
                     ) : (
@@ -744,7 +798,8 @@ function VariantsTable({
                       />
                     )}
                   </td>
-                  <td className="border-b px-3 py-3">
+                  <td className={cn(detailCell, "max-sm:order-2")}>
+                    <span className={phoneLabel}>{t("columns.pricing")}</span>
                     {isDefault ? (
                       <div className="min-w-[180px]">
                         <p className="text-xs text-muted-foreground">{tPricing("usesMainPrice")}</p>
@@ -756,8 +811,9 @@ function VariantsTable({
                       <VariantPricingFields index={index} sellerPricing={sellerPricing} />
                     )}
                   </td>
-                  <td className="border-b px-3 py-3">
-                    <div className="w-32">
+                  <td className="border-b px-3 py-3 max-sm:flex max-sm:items-center max-sm:justify-between max-sm:gap-3 max-sm:border-0 max-sm:p-0">
+                    <span className="text-xs font-medium text-muted-foreground sm:hidden">{t("columns.stock")}</span>
+                    <div className="w-32 max-sm:w-40">
                       {/* The default variant's stock follows the main quantity. */}
                       <Controller
                         name={`variants.${index}.stock`}
@@ -777,7 +833,8 @@ function VariantsTable({
                       />
                     </div>
                   </td>
-                  <td className="border-b px-3 py-3">
+                  <td className={cn(detailCell, "max-sm:order-3")}>
+                    <span className={phoneLabel}>{t("columns.barcode")}</span>
                     <Controller
                       name={`variants.${index}.barCode`}
                       control={form.control}
@@ -787,7 +844,7 @@ function VariantsTable({
                           value={field.value ?? ""}
                           dir="ltr"
                           placeholder="—"
-                          className="h-9 w-32 rounded-[10px] text-[13px]"
+                          className="h-9 w-32 rounded-[10px] text-[13px] max-sm:h-11 max-sm:w-full"
                         />
                       )}
                     />

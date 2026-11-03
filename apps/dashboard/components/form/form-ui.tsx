@@ -89,7 +89,7 @@ export function SectionCard ({
     >
       <CardHeader
         className={cn(
-          'flex items-start px-4',
+          'flex flex-wrap items-start px-4 sm:flex-nowrap',
           divided
             ? 'gap-3.5 border-b py-4 sm:px-6 sm:py-5 [.border-b]:pb-4 sm:[.border-b]:pb-5'
             : 'gap-3 pt-4 pb-0 sm:px-[22px] sm:pt-5'
@@ -107,7 +107,7 @@ export function SectionCard ({
           </CardDescription>
         </div>
         {tag ? <div className='hidden shrink-0 sm:block'>{tag}</div> : null}
-        {action ? <div className='shrink-0'>{action}</div> : null}
+        {action ? <div className='shrink-0 max-sm:basis-full'>{action}</div> : null}
       </CardHeader>
       <CardContent
         className={cn(
@@ -297,7 +297,7 @@ export function NumberStepper ({
   const small = size === 'sm'
   const buttonClass = cn(
     'grid shrink-0 place-items-center bg-muted text-muted-foreground transition-colors hover:text-primary-ink disabled:cursor-not-allowed disabled:opacity-50',
-    small ? 'w-8' : 'w-11'
+    small ? 'w-8 max-sm:w-11' : 'w-11'
   )
   const iconClass = small ? 'size-3.5' : 'size-4'
 
@@ -305,7 +305,7 @@ export function NumberStepper ({
     <div
       className={cn(
         INPUT_GROUP_CLASS,
-        small ? 'h-9 rounded-[10px]' : 'h-11',
+        small ? 'h-9 rounded-[10px] max-sm:h-11' : 'h-11',
         disabled && 'opacity-60',
         invalid && INVALID_FIELD_CLASS
       )}

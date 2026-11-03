@@ -85,8 +85,8 @@ export function VariantPricingFields({ index, sellerPricing }: VariantPricingFie
   const sellerEarning = calculateSellerEarning(sellingPrice, sellerPricing);
 
   return (
-    <div className="flex min-w-[260px] flex-col gap-2">
-      <div className="grid grid-cols-2 gap-2 [&_input]:text-[13px] [&_select]:h-full [&>div]:h-9">
+    <div className="flex min-w-[260px] flex-col gap-2 max-sm:min-w-0">
+      <div className="grid grid-cols-2 gap-2 max-sm:grid-cols-1 [&_input]:text-[13px] [&_select]:h-full [&>div]:h-9 max-sm:[&>div]:h-11">
         <MoneyField
           name={`variants.${index}.listPrice`}
           invalid={Boolean(priceError)}

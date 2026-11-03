@@ -1574,6 +1574,8 @@
       "emptyBody": "أضف خيارًا وسننشئ كل التركيبات لتحدد سعر وكمية كل منها.",
       "addOption": "إضافة خيار",
       "addAnotherOption": "إضافة خيار آخر",
+      "addThisValue": "أضف هذه القيمة",
+      "details": "عرض الصور والسعر والباركود",
       "optionName": "اسم الخيار",
       "customNamePlaceholderEn": "e.g. Fabric, Fit",
       "customNamePlaceholderAr": "مثال: القماش، القصة",
