@@ -8,6 +8,7 @@ import { routing } from "@/i18n/routing";
 import { ArticleToc, PriceCalculator, ReadingProgress, ShareBar } from "@/components/marketing/blog/article-tools.client";
 import { PostMeta } from "@/components/marketing/blog/post-meta";
 import { ForwardChevron } from "@/components/marketing/site/direction-icons";
+import { JsonLd } from "@/components/marketing/site/json-ld";
 import { Container } from "@/components/marketing/site/layout-primitives";
 import { SignupTrigger } from "@/components/marketing/signup/signup-trigger.client";
 import { ArticleHtml } from "@/components/marketing/blog/article-html";
@@ -15,6 +16,7 @@ import { isOptimizableImage } from "@/lib/marketing/blog.lib";
 import { getMarketingPost, getMarketingPosts } from "@/lib/marketing/blog.server";
 import { formatLongDate } from "@/lib/marketing/format.lib";
 import { localizedUrl, pageMetadata } from "@/lib/marketing/metadata.lib";
+import { breadcrumbSchema } from "@/lib/marketing/structured-data.lib";
 
 type Props = { params: Promise<{ locale: string; slug: string }> };
 
@@ -53,8 +55,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       modifiedTime: post.updatedAt,
       tags: post.tags,
       images: [{ url: image }],
+      // A one-language post has no other language to advertise.
+      alternateLocale: post.langs?.length === 1 ? undefined : base.openGraph?.alternateLocale,
     },
-    twitter: { card: "summary_large_image", title, description, images: [image] },
+    twitter: { ...base.twitter, title, description, images: [image] },
   };
 }
 
@@ -65,7 +69,7 @@ export default async function BlogPostPage({ params }: Props) {
   const post = await getMarketingPost(locale, slug);
   if (!post) notFound();
 
-  const [t, posts] = await Promise.all([getTranslations("blog"), getMarketingPosts(locale)]);
+  const [t, tm, posts] = await Promise.all([getTranslations("blog"), getTranslations("meta"), getMarketingPosts(locale)]);
   const title = post.title;
   const author = post.authorName || t("author");
   const related = posts.filter((p) => p.id !== post.id).slice(0, 3);
@@ -85,9 +89,15 @@ export default async function BlogPostPage({ params }: Props) {
     publisher: { "@type": "Organization", name: t("author"), logo: { "@type": "ImageObject", url: localizedUrl(routing.defaultLocale, "/logo-mark.png") } },
     mainEntityOfPage: localizedUrl(locale, `/blog/${post.id}`),
   };
+  const breadcrumbs = breadcrumbSchema([
+    { name: tm("siteName"), url: localizedUrl(locale, "/") },
+    { name: tm("blog.title"), url: localizedUrl(locale, "/blog") },
+    { name: title, url: localizedUrl(locale, `/blog/${post.id}`) },
+  ]);
 
   return (
     <>
+      <JsonLd data={breadcrumbs} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <ReadingProgress targetId="article" />
 

@@ -12,6 +12,7 @@ import {
   TemplatesShowcase,
 } from "@/components/marketing/home/home-sections";
 import { StickyCta } from "@/components/marketing/home/sticky-cta.client";
+import { ProductJsonLd } from "@/components/marketing/site/json-ld";
 import { pageMetadata } from "@/lib/marketing/metadata.lib";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -23,6 +24,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 export default function HomePage() {
   return (
     <>
+      <ProductJsonLd page="home" path="/" />
       <MotionScope>
         <HomeHero />
         <StoresShowcase />

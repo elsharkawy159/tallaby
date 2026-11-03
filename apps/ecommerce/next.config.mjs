@@ -37,6 +37,13 @@ const nextConfig = {
           { key: "Content-Security-Policy", value: "default-src 'self'; script-src 'self'" },
         ],
       },
+      // Old marketplace policy pages: still reachable on tallaby.com but written for the marketplace
+      // (docs/seo-audit-tallaby-com.md), so out of search there. Store hosts are not matched.
+      ...["shipping", "returns", "payment", "cookies"].flatMap((page) => [`/${page}`, `/en/${page}`]).map((source) => ({
+        source,
+        has: [{ type: "host", value: "(?:www\\.)?tallaby\\.com" }],
+        headers: [{ key: "X-Robots-Tag", value: "noindex, follow" }],
+      })),
       // The section and template library is open but never indexed (also a noindex meta).
       ...["/dev-library", "/dev-library/:path*", "/:locale(ar|en)/dev-library", "/:locale(ar|en)/dev-library/:path*"].map((source) => ({
         source,

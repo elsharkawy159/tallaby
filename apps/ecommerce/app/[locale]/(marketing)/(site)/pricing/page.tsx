@@ -5,6 +5,7 @@ import { Link } from "@/i18n/navigation";
 import { CtaBand } from "@/components/marketing/site/cta-band";
 import { CtaButton } from "@/components/marketing/site/cta-button";
 import { FaqAccordion, type FaqEntry } from "@/components/marketing/site/faq-accordion";
+import { ProductJsonLd } from "@/components/marketing/site/json-ld";
 import { Container, Num, Section, SectionHeading } from "@/components/marketing/site/layout-primitives";
 import { PageHero } from "@/components/marketing/site/page-hero";
 import { Reveal } from "@/components/marketing/site/reveal.client";
@@ -45,6 +46,7 @@ export default async function PricingPage() {
 
   return (
     <>
+      <ProductJsonLd page="pricing" path="/pricing" />
       <PageHero eyebrow={t("hero.eyebrow")} title={t.rich("hero.title", richTags)} lead={t("hero.lead")} aside={<FeeDial />}>
         <div className="mt-[30px] flex flex-wrap gap-2.5">
           <SignupTrigger />

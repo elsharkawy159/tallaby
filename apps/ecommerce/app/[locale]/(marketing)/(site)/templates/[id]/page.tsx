@@ -5,13 +5,16 @@ import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import { CtaButton } from "@/components/marketing/site/cta-button";
+import { JsonLd } from "@/components/marketing/site/json-ld";
 import { BackArrow, ForwardArrow, ForwardChevron } from "@/components/marketing/site/direction-icons";
 import { Container, Eyebrow } from "@/components/marketing/site/layout-primitives";
 import { SignupTrigger } from "@/components/marketing/signup/signup-trigger.client";
 import { TemplateFrame } from "@/components/marketing/templates/template-card";
 import { TemplateStage } from "@/components/marketing/templates/template-stage.client";
 import { formatMoney } from "@/lib/marketing/format.lib";
-import { pageMetadata } from "@/lib/marketing/metadata.lib";
+import { localizedUrl, pageMetadata } from "@/lib/marketing/metadata.lib";
+import { templateMetaDesc } from "@/lib/marketing/seo.lib";
+import { breadcrumbSchema } from "@/lib/marketing/structured-data.lib";
 import { templateFrameSrc } from "@/lib/marketing/templates.lib";
 import { findGalleryEntry, getTemplateGallery } from "@/lib/marketing/templates.server";
 
@@ -36,7 +39,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     page: "template",
     path: `/templates/${id}`,
     // An empty description would render ". Free, …".
-    values: { name: entry.name, desc: entry.description?.trim() || t("detail.metaFallback", { name: entry.name }) },
+    values: {
+      name: entry.name,
+      category: t(`categories.${entry.category}`),
+      desc: templateMetaDesc(entry.description?.trim() || t("detail.metaFallback", { name: entry.name })),
+    },
   });
   return entry.thumbnailUrl ? { ...meta, openGraph: { ...meta.openGraph, images: [{ url: entry.thumbnailUrl }] } } : meta;
 }
@@ -46,15 +53,21 @@ export default async function TemplatePage({ params }: Props) {
   const [entry, gallery] = await Promise.all([findGalleryEntry(locale, id), getTemplateGallery(locale)]);
   if (!entry) notFound();
 
-  const t = await getTranslations("templates");
+  const [t, tm] = await Promise.all([getTranslations("templates"), getTranslations("meta")]);
   const index = gallery.indexOf(entry);
   const prev = gallery[(index - 1 + gallery.length) % gallery.length]!;
   const next = gallery[(index + 1) % gallery.length]!;
   const more = gallery.filter((x) => x !== entry).slice(0, 3);
   const category = t(`categories.${entry.category}`);
+  const breadcrumbs = breadcrumbSchema([
+    { name: tm("siteName"), url: localizedUrl(locale, "/") },
+    { name: t("hero.eyebrow"), url: localizedUrl(locale, "/templates") },
+    { name: entry.name, url: localizedUrl(locale, `/templates/${entry.id}`) },
+  ]);
 
   return (
     <>
+      <JsonLd data={breadcrumbs} />
       <div className="relative bg-teal-900 pt-7 pb-[120px] text-white">
         <Container>
           <nav aria-label={t("detail.breadcrumb")} className="mb-[22px] flex items-center gap-2 text-[13px] text-haze">

@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { routing, type AppLocale } from "@/i18n/routing";
-import { SITE_URL } from "./site.lib";
+import { hreflangMap, localizedUrl } from "./seo.lib";
+import { SOCIAL_LINKS } from "./site.lib";
 
-/** Absolute URL for a path in a locale ("as-needed": Arabic is unprefixed). */
-export function localizedUrl(locale: string, path: string): string {
-  const clean = path === "/" ? "" : path;
-  return locale === routing.defaultLocale ? `${SITE_URL}${clean}` || SITE_URL : `${SITE_URL}/${locale}${clean}`;
-}
+export { localizedUrl };
+
+/** public/og-image.jpg, the share image of every page without its own. */
+const DEFAULT_OG_IMAGE = { url: "/og-image.jpg", width: 1200, height: 630 };
 
 /** Title, description, canonical and hreflang for a page. */
 export async function pageMetadata({
@@ -28,24 +27,25 @@ export async function pageMetadata({
   const t = await getTranslations({ locale, namespace: "meta" });
   const title = t(`${page}.title`, values);
   const description = t(`${page}.description`, values);
-  const languages = Object.fromEntries(routing.locales.map((l: AppLocale) => [l, localizedUrl(l, path)]));
+  const image = { ...DEFAULT_OG_IMAGE, alt: t("siteName") };
 
   return {
     title: absoluteTitle ? { absolute: title } : title,
     description,
     alternates: {
       canonical: localizedUrl(locale, path),
-      languages: { ...languages, "x-default": localizedUrl(routing.defaultLocale, path) },
+      languages: hreflangMap(path),
     },
     openGraph: {
       type: "website",
       siteName: t("siteName"),
       locale: locale === "ar" ? "ar_EG" : "en_US",
+      alternateLocale: locale === "ar" ? "en_US" : "ar_EG",
       url: localizedUrl(locale, path),
       title,
       description,
-      images: [{ url: "/og-image.jpg" }],
+      images: [image],
     },
-    twitter: { card: "summary_large_image", title, description },
+    twitter: { card: "summary_large_image", site: SOCIAL_LINKS.x.handle, title, description, images: [image] },
   };
 }

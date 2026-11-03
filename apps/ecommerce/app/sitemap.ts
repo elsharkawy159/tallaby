@@ -1,21 +1,10 @@
 import type { MetadataRoute } from "next";
 import { routing } from "@/i18n/routing";
 import { getMarketingPosts } from "@/lib/marketing/blog.server";
-import { localizedUrl } from "@/lib/marketing/metadata.lib";
+import { sitemapEntries } from "@/lib/marketing/seo.lib";
 import { getTemplateGallery } from "@/lib/marketing/templates.server";
 
 const STATIC_PATHS = ["/", "/templates", "/pricing", "/affiliates", "/blog", "/about", "/careers", "/contact", "/faq", "/terms", "/privacy", "/follow-us"];
-
-function entry(path: string, locales: readonly string[] = routing.locales, lastModified?: string): MetadataRoute.Sitemap[number] {
-  const primary = locales.includes(routing.defaultLocale) ? routing.defaultLocale : locales[0]!;
-  return {
-    url: localizedUrl(primary, path),
-    ...(lastModified && { lastModified }),
-    alternates: {
-      languages: Object.fromEntries(locales.map((l) => [l, localizedUrl(l, path)])),
-    },
-  };
-}
 
 /**
  * tallaby.com pages, templates (from the gallery) and blog posts. Blog posts
@@ -39,8 +28,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   });
 
   return [
-    ...STATIC_PATHS.map((path) => entry(path)),
-    ...gallery.map((t) => entry(`/templates/${t.id}`)),
-    ...[...posts].map(([id, { locales, lastModified }]) => entry(`/blog/${id}`, locales, lastModified)),
+    ...STATIC_PATHS.flatMap((path) => sitemapEntries(path)),
+    ...gallery.flatMap((t) => sitemapEntries(`/templates/${t.id}`)),
+    ...[...posts].flatMap(([id, { locales, lastModified }]) => sitemapEntries(`/blog/${id}`, locales, lastModified)),
   ];
 }

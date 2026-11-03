@@ -2468,28 +2468,28 @@
     "siteName": "Tallaby",
     "titleTemplate": "%s | Tallaby",
     "home": {
-      "title": "Tallaby | Get your store link in minutes, free",
+      "title": "Tallaby | Create your online store in Egypt for free",
       "description": "Create a professional online store under your own brand with no code. Free plan, just 5 EGP per delivered order, and no percentage."
     },
     "templates": {
-      "title": "Store templates",
+      "title": "Free online store templates",
       "description": "Pick a store template made for what you sell. Every template is free, fully editable and mobile-ready."
     },
     "template": {
-      "title": "{name} template",
+      "title": "{name} store template: {category}",
       "description": "{desc}. Free, fully editable and mobile-ready."
     },
     "pricing": {
-      "title": "Pricing",
+      "title": "Online store pricing: free plan, no commission",
       "description": "Free plan. A flat 5 EGP per delivered order, with no percentage and no monthly subscription."
     },
     "blog": {
-      "title": "Blog",
+      "title": "Blog: selling online in Egypt",
       "description": "Practical guides, seller stories and product updates for Egyptian brands."
     },
     "about": {
       "title": "About us",
-      "description": "Every brand in Egypt deserves a store with its own name on it."
+      "description": "Tallaby is the store-building platform for Egyptian brands. Every brand in Egypt deserves a store with its own name on it."
     },
     "careers": {
       "title": "Careers",
@@ -2497,11 +2497,11 @@
     },
     "contact": {
       "title": "Contact us",
-      "description": "Talk to a person, not a bot. WhatsApp or email."
+      "description": "Talk to a person, not a bot. Reach the Tallaby team on WhatsApp or email with any question about setting up your store."
     },
     "faq": {
-      "title": "FAQ and help center",
-      "description": "Answers about setting up, selling, payments and shipping on Tallaby."
+      "title": "Online store FAQ and help center",
+      "description": "Answers about setting up your online store, selling, payments and shipping on Tallaby."
     },
     "terms": {
       "title": "Terms of service",
@@ -2512,11 +2512,11 @@
       "description": "What we collect, why we collect it, and the choices you have."
     },
     "affiliates": {
-      "title": "Earn with us: the Tallaby affiliate program",
-      "description": "Share your referral link and earn 20% for life of every amount the sellers you bring top up in their store wallet, paid in cash to your bank account or Vodafone Cash."
+      "title": "Earn with us: the affiliate program",
+      "description": "Share your referral link and earn 20% for life of every top-up by the sellers you bring, paid in cash to your bank account or Vodafone Cash."
     },
     "followUs": {
-      "title": "Follow Tallaby",
+      "title": "Follow us",
       "description": "Follow us on social media for updated promotions and discounts."
     }
   },
