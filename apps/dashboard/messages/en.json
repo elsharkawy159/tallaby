@@ -1,4 +1,8 @@
 {
+  "aiCredits": {
+    "left": "{count, plural, =0 {No AI credits left.} one {# AI credit left.} other {# AI credits left.}}",
+    "buy": "Get more"
+  },
   "nav": {
     "dashboard": "Dashboard",
     "products": "Products",
