@@ -3116,10 +3116,39 @@ export const storeShippingZones = pgTable("store_shipping_zones", {
 ]);
 
 /** Store-wallet top-ups, confirmed only by the provider webhook (0060, P6-09/P6-10). */
+/** Billing settings, one row (0136, ROADMAP.md F-56). Server-only: RLS on, no policies. */
+export const billingSettings = pgTable("billing_settings", {
+	id: boolean().default(true).primaryKey().notNull(),
+	usdLive: boolean("usd_live").default(false).notNull(),
+	usdLiveAt: timestamp("usd_live_at", { withTimezone: true, mode: 'string' }),
+	conversionRate: numeric("conversion_rate", { precision: 12, scale: 4 }),
+	marginBps: integer("margin_bps").default(200).notNull(),
+	rateOverride: numeric("rate_override", { precision: 12, scale: 4 }),
+	taxEnabled: boolean("tax_enabled").default(false).notNull(),
+	taxRateBps: integer("tax_rate_bps").default(1400).notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedBy: uuid("updated_by"),
+});
+
+/** Daily EGP-per-USD market rates (0136). Server-only: RLS on, no policies. */
+export const exchangeRates = pgTable("exchange_rates", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	marketRate: numeric("market_rate", { precision: 12, scale: 4 }).notNull(),
+	source: text().notNull(),
+	fetchedAt: timestamp("fetched_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("exchange_rates_fetched_idx").using("btree", table.fetchedAt.desc()),
+]);
+
 export const sellerWalletTopUps = pgTable("seller_wallet_top_ups", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	sellerId: uuid("seller_id").notNull(),
+	/** The EGP paid. What the wallet receives is credit_amount when set (0136). */
 	amount: numeric({ precision: 10, scale: 2 }).notNull(),
+	creditAmount: numeric("credit_amount", { precision: 10, scale: 2 }),
+	creditCurrency: text("credit_currency"),
+	exchangeRate: numeric("exchange_rate", { precision: 12, scale: 4 }),
+	taxAmount: numeric("tax_amount", { precision: 10, scale: 2 }),
 	currency: text().default('EGP').notNull(),
 	status: walletTopUpStatus().default('pending').notNull(),
 	provider: text().default('kashier').notNull(),

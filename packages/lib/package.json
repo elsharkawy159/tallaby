@@ -405,6 +405,14 @@
     "./platform-blog/server": {
       "types": "./src/platform-blog/platform-blog.server.ts",
       "default": "./src/platform-blog/platform-blog.server.ts"
+    },
+    "./billing": {
+      "types": "./src/billing/billing.lib.ts",
+      "default": "./src/billing/billing.lib.ts"
+    },
+    "./billing/server": {
+      "types": "./src/billing/billing.server.ts",
+      "default": "./src/billing/billing.server.ts"
     }
   },
   "devDependencies": {
