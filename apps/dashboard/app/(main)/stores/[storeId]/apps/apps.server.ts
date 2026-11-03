@@ -1,6 +1,7 @@
 "use server";
 
 import { logServerError } from "@workspace/db/log";
+import { installStoreApp, uninstallStoreApp, type AppInstallError } from "@workspace/lib/billing/apps";
 import {
   connectIdentifierIntegration,
   disconnectGoogleSheets,
@@ -43,6 +44,59 @@ export async function connectStoreApp(
     const denied = appsAccessError(error);
     if (denied) return denied;
     logServerError("integration", "connect failed", { storeId: String(storeId), provider: String(provider) }, error);
+    return { success: false, error: "generic" };
+  }
+}
+
+const INSTALL_ERRORS: Record<AppInstallError, StoreAppsErrorKey> = {
+  not_available: "notAvailable",
+  not_live: "notLive",
+  not_found: "notFound",
+  already_installed: "alreadyInstalled",
+  insufficient_balance: "insufficientBalance",
+  wallet_inactive: "walletInactive",
+  wallet_not_usd: "walletNotUsd",
+};
+
+/** Installs a catalog app. The price comes from the catalog; a paid app is charged to the store wallet (F-47). */
+export async function installApp(storeId: string, appKey: string): Promise<StoreAppsResult<null>> {
+  try {
+    const { seller, store } = await requireStore(String(storeId), { forWrite: true });
+    if (!appsSaveLimiter.check(`apps:${seller.sellerId}`)) return { success: false, error: "rateLimited" };
+
+    const result = await installStoreApp({
+      sellerId: seller.sellerId,
+      storeId: store.id,
+      appKey: String(appKey),
+      actorId: seller.userId,
+    });
+    if (!result.success) return { success: false, error: INSTALL_ERRORS[result.error] };
+
+    await afterAppChange(seller.sellerId, store.id);
+    return { success: true, data: null };
+  } catch (error) {
+    const denied = appsAccessError(error);
+    if (denied) return denied;
+    logServerError("integration", "app install failed", { storeId: String(storeId), appKey: String(appKey) }, error);
+    return { success: false, error: "generic" };
+  }
+}
+
+/** Removes an installed app. `endsAt` is set when a paid month keeps it until then (F-47). */
+export async function uninstallApp(storeId: string, appKey: string): Promise<StoreAppsResult<{ endsAt: string | null }>> {
+  try {
+    const { seller, store } = await requireStore(String(storeId), { forWrite: true });
+    if (!appsSaveLimiter.check(`apps:${seller.sellerId}`)) return { success: false, error: "rateLimited" };
+
+    const result = await uninstallStoreApp({ sellerId: seller.sellerId, storeId: store.id, appKey: String(appKey) });
+    if (!result.success) return { success: false, error: "notInstalled" };
+
+    await afterAppChange(seller.sellerId, store.id);
+    return { success: true, data: { endsAt: result.endsAt } };
+  } catch (error) {
+    const denied = appsAccessError(error);
+    if (denied) return denied;
+    logServerError("integration", "app uninstall failed", { storeId: String(storeId), appKey: String(appKey) }, error);
     return { success: false, error: "generic" };
   }
 }

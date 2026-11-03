@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { getLocale } from "next-intl/server";
+import { listStoreAppInstalls } from "@workspace/lib/billing/apps";
 import { listStoreIntegrations } from "@workspace/lib/integrations/server";
 import { getAllCategories } from "@/actions/categories";
 import { loadStorePage } from "@/lib/stores/store-page.server";
@@ -29,10 +30,11 @@ export default async function StoreAppsPage({ params }: { params: Promise<{ stor
   const integrations = await listStoreIntegrations(store.sellerId, store.id);
   if (!integrations) notFound();
 
-  const [locale, tree, customDomain] = await Promise.all([
+  const [locale, tree, customDomain, installs] = await Promise.all([
     getLocale(),
     getAllCategories(),
     findActiveCustomDomainForSubdomain(store.subdomain),
+    listStoreAppInstalls(store.sellerId, store.id),
   ]);
   const categories = tree.success ? categoryOptions((tree.data ?? []) as CategoryNode[], locale) : [];
   // Product feeds (F-11b) live on the store's own address: its active custom domain, else its subdomain.
@@ -51,6 +53,7 @@ export default async function StoreAppsPage({ params }: { params: Promise<{ stor
           metaDomainToken: parseStoreSeo(store.seo).facebookDomainVerification,
         }}
         initial={integrations}
+        installs={installs.map(({ appKey, cancelAtPeriodEnd }) => ({ appKey, cancelAtPeriodEnd }))}
         readOnly={store.status !== "active"}
         googleSheetsEnabled={isGoogleSheetsConfigured()}
         categories={categories}

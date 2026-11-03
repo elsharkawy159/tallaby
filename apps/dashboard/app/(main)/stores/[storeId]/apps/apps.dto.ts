@@ -28,7 +28,14 @@ export type StoreAppsErrorKey =
   | "bostaKeyRejected"
   | "bostaUnreachable"
   | "bostaUnknownLocation"
-  | "invalidSettings";
+  | "invalidSettings"
+  // Install and charges (F-47)
+  | "notLive"
+  | "alreadyInstalled"
+  | "notInstalled"
+  | "insufficientBalance"
+  | "walletInactive"
+  | "walletNotUsd";
 
 export type StoreAppsResult<T> =
   | { success: true; data: T }

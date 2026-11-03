@@ -17,12 +17,15 @@ import {
   ShieldAlert,
 } from "lucide-react";
 
+import { isPaidAppPricing } from "@workspace/lib/billing/app-pricing";
 import {
   INTEGRATIONS,
   STORE_APPS,
   STORE_APP_GROUPS,
+  isStoreAppDefaultInstalled,
   isStoreAppLive,
   storeAppHref,
+  storeAppPricing,
   storeAppProvider,
   validateIdentifierConfig,
   type IntegrationProvider,
@@ -40,6 +43,7 @@ import { BUTTON_CLASS } from "@/components/form/form-ui";
 import { StoreLogo } from "@/components/stores/store-logo.client";
 import { StoreSiteStatusNote } from "@/components/stores/store-site-status-note";
 import { AppLogo } from "./app-logo";
+import { AppInstallDialog, useAppPriceLabel } from "./app-install.client";
 import { connectStoreApp, disconnectStoreApp } from "./apps.server";
 import { DisconnectAppButton } from "./disconnect-button.client";
 import type { AppCategoryOption } from "./apps.types";
@@ -52,9 +56,13 @@ import { ShopifyImportPanel } from "./shopify-import.client";
 /**
  * The catalog (`STORE_APPS`) decides the order, the groups and which apps
  * have their own page (Bosta, Wassalha, the payment gateways); the others
- * open the side sheet below.
+ * open the side sheet below. Installed lists what this store has; Explore
+ * lists the whole catalog by category (F-47).
  */
-type Tab = "all" | StoreAppGroup | "connected";
+type View = "installed" | "explore";
+type Category = "all" | StoreAppGroup;
+
+const APP_GRID = "grid grid-cols-[repeat(auto-fill,minmax(min(100%,300px),1fr))] gap-3.5";
 
 /** Identifier apps get a short "how to connect" list in the sheet. */
 const STEP_KEYS = ["step1", "step2", "step3"] as const;
@@ -77,6 +85,7 @@ export function StoreApps({
   storeId,
   store,
   initial,
+  installs,
   readOnly,
   googleSheetsEnabled,
   categories,
@@ -85,10 +94,12 @@ export function StoreApps({
   storeId: string;
   store: AppsStore;
   initial: StoreIntegrationSummary[];
+  /** Apps with a live install row (0139). Connected ones come from `initial`, default ones from the catalog. */
+  installs: { appKey: string; cancelAtPeriodEnd: boolean }[];
   readOnly: boolean;
   googleSheetsEnabled: boolean;
   categories: AppCategoryOption[];
-  /** Product feeds (F-11b): shown on the "All" tab, under the apps. */
+  /** Product feeds (F-11b): shown on the Installed tab, under the apps. */
   feeds?: ReactNode;
 }) {
   const t = useTranslations("storeApps");
@@ -97,8 +108,11 @@ export function StoreApps({
   const searchParams = useSearchParams();
   const [items, setItems] = useState(initial);
   const [editing, setEditing] = useState<IntegrationProvider | null>(null);
-  const [tab, setTab] = useState<Tab>("all");
+  const [installTarget, setInstallTarget] = useState<StoreApp | null>(null);
+  const [view, setView] = useState<View>("installed");
+  const [category, setCategory] = useState<Category>("all");
   const [query, setQuery] = useState("");
+  const priceLabel = useAppPriceLabel();
   const byProvider = new Map(items.map((item) => [item.provider, item]));
   const apps: StoreApp[] = [...STORE_APPS];
 
@@ -118,48 +132,63 @@ export function StoreApps({
     return provider ? byProvider.get(provider) : undefined;
   };
   const isConnected = (app: StoreApp) => Boolean(currentOf(app));
+  const installOf = (app: StoreApp) => installs.find((install) => install.appKey === app.key);
+  const hasInstallRow = (app: StoreApp) => Boolean(installOf(app));
+  const isInstalled = (app: StoreApp) =>
+    isAvailable(app) && (isStoreAppDefaultInstalled(app) || isConnected(app) || hasInstallRow(app));
 
   const available = apps.filter(isAvailable);
   const connectedCount = available.filter(isConnected).length;
   // Available apps first, "coming soon" last.
   const sorted = [...apps].sort((a, b) => Number(!isAvailable(a)) - Number(!isAvailable(b)));
 
+  const installedApps = sorted.filter(isInstalled);
   const q = query.trim().toLowerCase();
-  const matches = sorted.filter((app) => {
-    if (tab === "connected" && !isConnected(app)) return false;
-    if (tab !== "all" && tab !== "connected" && app.group !== tab) return false;
+  const matchesQuery = (app: StoreApp) => {
     if (!q) return true;
     const text = `${t(`providers.${app.key}.name`)} ${t(`providers.${app.key}.vendor`)} ${t(`providers.${app.key}.description`)}`;
     return text.toLowerCase().includes(q);
-  });
+  };
+  const exploreApps = sorted.filter((app) => category === "all" || app.group === category);
+  const matches = (view === "installed" ? installedApps : exploreApps).filter(matchesQuery);
 
-  const tabs: { key: Tab; label: string; count: number }[] = [
+  const views: { key: View; label: string; count: number }[] = [
+    { key: "installed", label: t("views.installed"), count: installedApps.length },
+    { key: "explore", label: t("views.explore"), count: apps.length },
+  ];
+  const categoryTabs: { key: Category; label: string; count: number }[] = [
     { key: "all", label: t("tabs.all"), count: apps.length },
     ...STORE_APP_GROUPS.map((group) => ({
       key: group,
       label: t(`groups.${group}`),
       count: apps.filter((app) => app.group === group).length,
     })),
-    { key: "connected", label: t("tabs.connected"), count: connectedCount },
   ];
 
-  const renderCard = (app: StoreApp) => (
-    <AppCard
-      key={app.key}
-      app={app}
-      current={currentOf(app)}
-      available={isAvailable(app)}
-      disabled={readOnly && !isConnected(app)}
-      onOpen={() => {
-        const href = storeAppHref(storeId, app);
-        const provider = storeAppProvider(app);
-        if (href) router.push(href);
-        else if (provider) setEditing(provider);
-      }}
-    />
-  );
+  const renderCard = (app: StoreApp) => {
+    const href = storeAppHref(storeId, app);
+    const provider = storeAppProvider(app);
+    // Connect flows stay as they are. Only an app with no panel, or a paid one not yet bought, goes through the engine.
+    const viaEngine = (!href && !provider) || (isPaidAppPricing(storeAppPricing(app)) && !hasInstallRow(app));
+    return (
+      <AppCard
+        key={app.key}
+        app={app}
+        current={currentOf(app)}
+        available={isAvailable(app)}
+        installed={isInstalled(app)}
+        priceLabel={priceLabel(storeAppPricing(app))}
+        disabled={readOnly && !isConnected(app)}
+        onOpen={() => {
+          if (viaEngine) setInstallTarget(app);
+          else if (href) router.push(href);
+          else if (provider) setEditing(provider);
+        }}
+      />
+    );
+  };
 
-  const noneConnected = tab === "connected" && !q;
+  const noneInstalled = view === "installed" && !q;
 
   return (
     <div className="space-y-7">
@@ -206,16 +235,16 @@ export function StoreApps({
 
       <div className="flex flex-wrap items-center gap-3">
         <div role="tablist" className="flex w-full gap-1 overflow-x-auto rounded-xl border bg-card p-1 sm:w-auto">
-          {tabs.map(({ key, label, count }) => (
+          {views.map(({ key, label, count }) => (
             <button
               key={key}
               type="button"
               role="tab"
-              aria-selected={tab === key}
-              onClick={() => setTab(key)}
+              aria-selected={view === key}
+              onClick={() => setView(key)}
               className={cn(
                 "inline-flex h-[34px] items-center justify-center gap-1.5 rounded-[9px] px-3.5 max-sm:flex-1 text-[13px] font-semibold whitespace-nowrap text-muted-foreground transition-colors hover:text-foreground",
-                tab === key && "bg-primary text-primary-foreground hover:text-primary-foreground",
+                view === key && "bg-primary text-primary-foreground hover:text-primary-foreground",
               )}
             >
               {label}
@@ -236,33 +265,61 @@ export function StoreApps({
         </label>
       </div>
 
-      {matches.length === 0 ? (
-        <div className="rounded-2xl border-[1.5px] border-dashed px-5 py-12 text-center text-muted-foreground">
-          <b className="mb-1 block text-foreground">{noneConnected ? t("empty.noneTitle") : t("empty.noMatchTitle")}</b>
-          {noneConnected ? t("empty.noneBody") : t("empty.noMatchBody")}
-        </div>
-      ) : tab === "all" && !q ? (
-        STORE_APP_GROUPS.map((group) => {
-          const list = matches.filter((app) => app.group === group);
-          return (
-            <section key={group} aria-labelledby={`apps-${group}`}>
-              <div className="mb-3 flex items-baseline gap-2.5">
-                <h2 id={`apps-${group}`} className="text-[13px] font-bold tracking-wider whitespace-nowrap text-muted-foreground uppercase">
-                  {t(`groups.${group}`)}
-                </h2>
-                <span className="text-xs text-faint">{t("groupCount", { count: list.length })}</span>
-              </div>
-              <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,300px),1fr))] gap-3.5">
-                {list.map(renderCard)}
-              </div>
-            </section>
-          );
-        })
+      {view === "installed" ? (
+        matches.length === 0 ? (
+          <AppsEmpty none={noneInstalled} />
+        ) : (
+          <div className={APP_GRID}>{matches.map(renderCard)}</div>
+        )
       ) : (
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,300px),1fr))] gap-3.5">{matches.map(renderCard)}</div>
+        <div className="grid gap-5 md:grid-cols-[200px_minmax(0,1fr)]">
+          {/* A row of tabs on mobile, a sidebar from md up. */}
+          <nav
+            aria-label={t("views.categories")}
+            className="flex gap-1 self-start overflow-x-auto rounded-xl border bg-card p-1 md:sticky md:top-4 md:flex-col md:overflow-visible"
+          >
+            {categoryTabs.map(({ key, label, count }) => (
+              <button
+                key={key}
+                type="button"
+                aria-current={category === key ? "true" : undefined}
+                onClick={() => setCategory(key)}
+                className={cn(
+                  "inline-flex h-[34px] shrink-0 items-center justify-between gap-2 rounded-[9px] px-3 text-start text-[13px] font-semibold whitespace-nowrap text-muted-foreground transition-colors hover:text-foreground",
+                  category === key && "bg-primary text-primary-foreground hover:text-primary-foreground",
+                )}
+              >
+                {label}
+                <span className="text-[11px] opacity-70">{count}</span>
+              </button>
+            ))}
+          </nav>
+          <div className="min-w-0 space-y-7">
+            {matches.length === 0 ? (
+              <AppsEmpty none={false} />
+            ) : category === "all" && !q ? (
+              STORE_APP_GROUPS.map((group) => {
+                const list = matches.filter((app) => app.group === group);
+                return (
+                  <section key={group} aria-labelledby={`apps-${group}`}>
+                    <div className="mb-3 flex items-baseline gap-2.5">
+                      <h2 id={`apps-${group}`} className="text-[13px] font-bold tracking-wider whitespace-nowrap text-muted-foreground uppercase">
+                        {t(`groups.${group}`)}
+                      </h2>
+                      <span className="text-xs text-faint">{t("groupCount", { count: list.length })}</span>
+                    </div>
+                    <div className={APP_GRID}>{list.map(renderCard)}</div>
+                  </section>
+                );
+              })
+            ) : (
+              <div className={APP_GRID}>{matches.map(renderCard)}</div>
+            )}
+          </div>
+        </div>
       )}
 
-      {tab === "all" && !q && feeds}
+      {view === "installed" && !q && feeds}
 
       <div className="flex flex-wrap items-center gap-3.5 rounded-2xl border-[1.5px] border-dashed px-[18px] py-4 text-muted-foreground">
         <Lightbulb className="size-[22px] shrink-0 text-accent" aria-hidden />
@@ -289,6 +346,30 @@ export function StoreApps({
         onSaved={(summary) => setItems((list) => [...list.filter((i) => i.provider !== summary.provider), summary])}
         onRemoved={(provider) => setItems((list) => list.filter((i) => i.provider !== provider))}
       />
+
+      <AppInstallDialog
+        storeId={storeId}
+        target={
+          installTarget && {
+            key: installTarget.key,
+            name: t(`providers.${installTarget.key}.name`),
+            pricing: storeAppPricing(installTarget),
+            // Removed but paid until the period ends: the dialog offers to keep it, for free.
+            installed: hasInstallRow(installTarget) && !installOf(installTarget)?.cancelAtPeriodEnd,
+          }
+        }
+        onClose={() => setInstallTarget(null)}
+      />
+    </div>
+  );
+}
+
+function AppsEmpty({ none }: { none: boolean }) {
+  const t = useTranslations("storeApps");
+  return (
+    <div className="rounded-2xl border-[1.5px] border-dashed px-5 py-12 text-center text-muted-foreground">
+      <b className="mb-1 block text-foreground">{none ? t("empty.noneTitle") : t("empty.noMatchTitle")}</b>
+      {none ? t("empty.noneBody") : t("empty.noMatchBody")}
     </div>
   );
 }
@@ -297,12 +378,17 @@ function AppCard({
   app,
   current,
   available,
+  installed,
+  priceLabel,
   disabled,
   onOpen,
 }: {
   app: StoreApp;
   current?: StoreIntegrationSummary;
   available: boolean;
+  /** Default, connected or bought; `connected` below is only the integration kind. */
+  installed: boolean;
+  priceLabel: string;
   disabled: boolean;
   onOpen: () => void;
 }) {
@@ -321,6 +407,10 @@ function AppCard({
   ) : connected ? (
     <span className="inline-flex h-6 items-center gap-1.5 rounded-full bg-success-soft px-2.5 text-xs font-semibold whitespace-nowrap text-success before:size-1.5 before:rounded-full before:bg-current">
       {isImport ? t("imported") : t("connected")}
+    </span>
+  ) : installed ? (
+    <span className="inline-flex h-6 items-center gap-1.5 rounded-full bg-success-soft px-2.5 text-xs font-semibold whitespace-nowrap text-success before:size-1.5 before:rounded-full before:bg-current">
+      {t("views.installed")}
     </span>
   ) : (
     <span className="inline-flex h-6 items-center rounded-full border bg-muted/50 px-2.5 text-xs font-semibold whitespace-nowrap text-muted-foreground">
@@ -357,7 +447,9 @@ function AppCard({
         <AppLogo app={app.key} connected={connected && !failing} className="app-logo" />
         <div className="min-w-0 flex-1">
           <h3 className="text-[15px] leading-snug font-bold">{t(`providers.${app.key}.name`)}</h3>
-          <small className="mt-0.5 block text-xs text-faint">{t(`providers.${app.key}.vendor`)}</small>
+          <small className="mt-0.5 block text-xs text-faint">
+            {t(`providers.${app.key}.vendor`)} · {priceLabel}
+          </small>
           {connected && (current?.identifier || current?.details.shopDomain) && (
             <p dir="ltr" className="mt-1 truncate text-start font-mono text-xs text-faint rtl:text-end">
               {current?.identifier ?? current?.details.shopDomain}
@@ -376,7 +468,7 @@ function AppCard({
       <div className="flex items-center justify-between gap-2.5 border-t pt-3.5">
         {pill}
         {available &&
-          (connected ? (
+          (installed ? (
             <span className="inline-flex h-9 items-center gap-2 rounded-[10px] border px-3.5 text-[13px] font-semibold">
               {isImport ? t("view") : t("manage")}
               <ChevronRight className="size-4 rtl:rotate-180" aria-hidden />

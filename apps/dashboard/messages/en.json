@@ -4331,7 +4331,41 @@
       "bostaKeyRejected": "Bosta didn't accept this key. It may be wrong, or disabled in your Bosta settings.",
       "bostaUnreachable": "Couldn't reach Bosta. Try again in a moment.",
       "bostaUnknownLocation": "That pickup location isn't in your Bosta account anymore. Pick another one.",
-      "invalidSettings": "Check the settings and try again."
+      "invalidSettings": "Check the settings and try again.",
+      "notLive": "Paid apps can't be installed yet. They open once wallets move to US dollars.",
+      "alreadyInstalled": "This app is already installed on this store.",
+      "notInstalled": "This app isn't installed on this store.",
+      "insufficientBalance": "Your wallet doesn't have enough. Top up and try again.",
+      "walletInactive": "Your wallet is on hold, so nothing can be charged to it.",
+      "walletNotUsd": "Your wallet hasn't moved to US dollars yet."
+    },
+    "views": {
+      "installed": "Installed",
+      "explore": "Explore",
+      "categories": "App categories"
+    },
+    "price": {
+      "free": "Free",
+      "one_time": "{price} once",
+      "monthly": "{price} a month",
+      "per_order": "{price} per order",
+      "usage": {
+        "action": "{price} per action",
+        "minute": "{price} per minute",
+        "hour": "{price} per hour",
+        "day": "{price} per day"
+      }
+    },
+    "appInstall": {
+      "installTitle": "Install {app}?",
+      "removeTitle": "Remove {app}?",
+      "install": "Install",
+      "remove": "Remove",
+      "installed": "App installed",
+      "removedAt": "The app stays until {date} and won't renew after that.",
+      "freeBody": "This app is free and runs only on this store.",
+      "paidBody": "Price: {price}. It's charged to your store wallet, and it can't take your balance below zero.",
+      "removeBody": "A paid monthly app stays until the end of the paid month, with no refund."
     },
     "error": "Error",
     "lastError": "Last error",
@@ -5754,6 +5788,18 @@
       "plan_renewal_failed": {
         "title": "Pro couldn't renew",
         "body": "Your wallet doesn't have enough. Top up within 3 days to keep Pro."
+      },
+      "app_renewed": {
+        "title": "App renewed",
+        "body": "Your wallet paid for another month of an app on one of your stores."
+      },
+      "app_renewal_failed": {
+        "title": "Couldn't charge for an app",
+        "body": "Your wallet doesn't have enough. Top up within 3 days to keep the app."
+      },
+      "app_ended": {
+        "title": "App removed",
+        "body": "An app on one of your stores has ended."
       },
       "plan_ended": {
         "title": "You're on Free now",
