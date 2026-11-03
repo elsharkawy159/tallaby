@@ -159,7 +159,7 @@ export function BuilderChat({
     const run = async () => {
       let failures = 0;
       while (!stopped) {
-        const result = await postJson<BuilderBuildResponse>("/api/ai/store-builder/build", { action: "step", buildId });
+        const result = await postJson<BuilderBuildResponse>("/api/ai/store-builder/run", { action: "step", buildId });
         if (stopped) return;
         if (!result.ok) {
           // Another tab is running this build, or a passing error: its steps are saved, so try again.
@@ -188,7 +188,7 @@ export function BuilderChat({
       if (!view) return;
       setBusy(true);
       setError(null);
-      const result = await postJson<BuilderBuildResponse>("/api/ai/store-builder/build", { action, buildId: view.id });
+      const result = await postJson<BuilderBuildResponse>("/api/ai/store-builder/run", { action, buildId: view.id });
       if (result.ok) {
         setView(result.view);
         setReview(result.review);

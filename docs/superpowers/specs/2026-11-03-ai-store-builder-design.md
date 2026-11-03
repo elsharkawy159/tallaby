@@ -48,7 +48,7 @@ Progress is saved per seller in `store_builds.state`, so a closed tab resumes. A
 
 ## 4. Build
 
-The browser calls `POST /api/ai/store-builder/build` until it says done. Each call does one step, because there is no job queue and a route has 60 s (`docs/AI_AGENT_PLAN_PROMPT.md`). A closed tab loses nothing: reopening continues.
+The browser calls `POST /api/ai/store-builder/run` until it says done. Each call does one step, because there is no job queue and a route has 60 s (`docs/AI_AGENT_PLAN_PROMPT.md`). A closed tab loses nothing: reopening continues.
 
 | Item | What runs | Model |
 |---|---|---|
