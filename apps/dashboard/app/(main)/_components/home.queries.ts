@@ -40,6 +40,32 @@ export function productImageUrl(path: string | null | undefined): string | null 
   return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/products/${path}`;
 }
 
+/** The setup flags, for `sellers s LEFT JOIN stores st` with st limited to this seller. */
+const SETUP_FLAG_COLUMNS = sql`
+      EXISTS (SELECT 1 FROM products p WHERE p.seller_id = s.id AND p.status = 'active') AS setup_product,
+      -- st is already limited to this seller (join below), so st.id scopes the child rows.
+      -- Same rule as storeTemplateChosen (@workspace/lib): the Classic placeholder drafts are not a choice.
+      coalesce(st.first_published_at IS NOT NULL OR st.site_status IN ('published', 'unpublished')
+        OR EXISTS (SELECT 1 FROM template_installs ti WHERE ti.store_id = st.id AND ti.undone_at IS NULL), false) AS setup_template,
+      -- Brand identity: a logo, or the design system saved after the latest template install
+      -- (an install rewrites the design system in the same transaction, so it is not "after").
+      coalesce(nullif(st.logo_url, '') IS NOT NULL
+        OR EXISTS (SELECT 1 FROM store_design_systems ds WHERE ds.store_id = st.id
+          AND ds.updated_at > (SELECT max(ti.installed_at) FROM template_installs ti
+            WHERE ti.store_id = st.id AND ti.undone_at IS NULL)), false) AS setup_brand,
+      coalesce(st.settings ? 'shipping'
+        OR EXISTS (SELECT 1 FROM store_shipping_zones z WHERE z.store_id = st.id), false) AS setup_shipping,
+      coalesce(st.site_status = 'published', false) AS setup_publish
+`;
+
+const toSetupFlags = (row: Record<string, unknown>): SetupFlags => ({
+  template: Boolean(row.setup_template),
+  brand: Boolean(row.setup_brand),
+  product: Boolean(row.setup_product),
+  publish: Boolean(row.setup_publish),
+  shipping: Boolean(row.setup_shipping),
+});
+
 // ---------------------------------------------------------------------------
 // Snapshot: profile, setup progress and open tasks in one round-trip.
 // ---------------------------------------------------------------------------
@@ -66,6 +92,23 @@ export type HomeSnapshot = {
   };
 };
 
+/** The setup flags alone, plus the saved prompt progress (setup-prompts.lib.ts): one light read. */
+export async function getSetupPromptRow(
+  sellerId: string,
+  storeId: string | null,
+): Promise<{ flags: SetupFlags; state: unknown } | null> {
+  const result = await db.execute(sql`
+    SELECT
+      s.seller_metrics -> 'setupPrompts' AS setup_prompts,
+      ${SETUP_FLAG_COLUMNS}
+    FROM sellers s
+    LEFT JOIN stores st ON st.id = ${storeId}::uuid AND st.seller_id = s.id
+    WHERE s.id = ${sellerId}
+  `);
+  const row = rowsOf<Record<string, unknown>>(result)[0];
+  return row ? { flags: toSetupFlags(row), state: row.setup_prompts } : null;
+}
+
 export const getHomeSnapshot = cache(async (): Promise<HomeSnapshot | null> => {
   const sellerId = await getHomeSellerId();
   if (!sellerId) return null;
@@ -84,20 +127,7 @@ export const getHomeSnapshot = cache(async (): Promise<HomeSnapshot | null> => {
       s.fee_trial_eligible,
       s.fee_trial_started_at,
       s.fee_trial_ends_at,
-      EXISTS (SELECT 1 FROM products p WHERE p.seller_id = s.id AND p.status = 'active') AS setup_product,
-      -- st is already limited to this seller (join below), so st.id scopes the child rows.
-      -- Same rule as storeTemplateChosen (@workspace/lib): the Classic placeholder drafts are not a choice.
-      coalesce(st.first_published_at IS NOT NULL OR st.site_status IN ('published', 'unpublished')
-        OR EXISTS (SELECT 1 FROM template_installs ti WHERE ti.store_id = st.id AND ti.undone_at IS NULL), false) AS setup_template,
-      -- Brand identity: a logo, or the design system saved after the latest template install
-      -- (an install rewrites the design system in the same transaction, so it is not "after").
-      coalesce(nullif(st.logo_url, '') IS NOT NULL
-        OR EXISTS (SELECT 1 FROM store_design_systems ds WHERE ds.store_id = st.id
-          AND ds.updated_at > (SELECT max(ti.installed_at) FROM template_installs ti
-            WHERE ti.store_id = st.id AND ti.undone_at IS NULL)), false) AS setup_brand,
-      coalesce(st.settings ? 'shipping'
-        OR EXISTS (SELECT 1 FROM store_shipping_zones z WHERE z.store_id = st.id), false) AS setup_shipping,
-      coalesce(st.site_status = 'published', false) AS setup_publish,
+      ${SETUP_FLAG_COLUMNS},
       EXISTS (SELECT 1 FROM order_items oi WHERE oi.seller_id = s.id) AS has_orders,
       (SELECT count(DISTINCT oi.order_id)::int FROM order_items oi
         WHERE oi.seller_id = s.id AND oi.status IN ${AWAITING_PREP}) AS pending_orders,
@@ -125,13 +155,7 @@ export const getHomeSnapshot = cache(async (): Promise<HomeSnapshot | null> => {
     positiveRatingPercent:
       row.positive_rating_percent == null ? null : Number(row.positive_rating_percent),
     totalRatings: Number(row.total_ratings),
-    setup: {
-      template: Boolean(row.setup_template),
-      brand: Boolean(row.setup_brand),
-      product: Boolean(row.setup_product),
-      publish: Boolean(row.setup_publish),
-      shipping: Boolean(row.setup_shipping),
-    },
+    setup: toSetupFlags(row),
     setupStoreId: storeId,
     feeTrial: {
       feeTrialEligible: Boolean(row.fee_trial_eligible),

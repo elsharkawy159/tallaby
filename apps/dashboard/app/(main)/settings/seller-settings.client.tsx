@@ -15,6 +15,7 @@ import {
   CloudUpload,
   ExternalLink,
   FileCheck2,
+  FileText,
   Globe,
   Headphones,
   Landmark,
@@ -52,6 +53,7 @@ import type { SellerAccountView } from '@workspace/lib/sellers/server'
 import { TALLABY_SERVICES_ENABLED } from '@workspace/lib/fulfillment'
 import { LegalDetailsSection, PayoutDetailsSection, StoreDetailsMovedCard } from './account-sections.client'
 import { DocumentsSection } from './seller-documents.client'
+import { PoliciesSection } from './policies.client'
 import {
   FIELD_CLASS,
   INPUT_GROUP_CLASS,
@@ -66,7 +68,7 @@ import {
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 
-type SectionId = 'info' | 'contact' | 'legal' | 'payout' | 'link' | 'docs'
+type SectionId = 'info' | 'contact' | 'legal' | 'payout' | 'policies' | 'link' | 'docs'
 
 // Store-level fields (logo, banner, description) moved to
 // Store settings (PLAN.md P3-05); this page is the seller ACCOUNT.
@@ -75,6 +77,7 @@ const SECTIONS: { id: SectionId; icon: LucideIcon }[] = [
   { id: 'contact', icon: Headphones },
   { id: 'legal', icon: Landmark },
   { id: 'payout', icon: Wallet },
+  { id: 'policies', icon: FileText },
   { id: 'link', icon: Globe },
   { id: 'docs', icon: FileCheck2 },
 ]
@@ -217,6 +220,8 @@ export function SellerSettingsForm ({
     contact: has(values.supportEmail) && has(values.supportPhone),
     legal: Boolean(account.legalAddress.state && account.legalAddress.street),
     payout: account.payout !== null,
+    // Optional: a store with no text shows a neutral default.
+    policies: true,
     link: true,
     // Documents are optional, so the section never blocks completion.
     docs: true,
@@ -346,6 +351,10 @@ export function SellerSettingsForm ({
 
             <LegalDetailsSection account={account} />
             <PayoutDetailsSection payout={account.payout} />
+            <PoliciesSection
+              returnPolicy={initialData.profile.returnPolicy}
+              shippingPolicy={initialData.profile.shippingPolicy}
+            />
 
             <SectionCard
               id='link'

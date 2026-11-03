@@ -159,6 +159,13 @@ export async function SetupChecklistData() {
             );
           })}
         </ol>
+
+        <p className="border-t pt-3 text-pretty text-xs leading-relaxed text-muted-foreground">
+          {t("policies.note")}{" "}
+          <Link href="/settings#policies" className="font-medium text-primary-ink underline-offset-2 hover:underline">
+            {t("policies.link")}
+          </Link>
+        </p>
       </HomeCard>
     </SetupDismissible>
   );

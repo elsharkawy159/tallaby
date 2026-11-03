@@ -857,6 +857,16 @@
         "visit": "Visit store"
       },
       "progressCount": "{done} of {total} {total, plural, one {step} other {steps}}",
+      "prompts": {
+        "toast": "Your next step: {step}",
+        "banner": "Your next step: {step}",
+        "start": "Start",
+        "dismiss": "Hide"
+      },
+      "policies": {
+        "note": "Your return and shipping text shows on your store's /returns and /shipping pages.",
+        "link": "Edit policies"
+      },
       "stepDone": "Done",
       "later": "Later"
     },
@@ -2093,8 +2103,14 @@
       "saved": "Saved",
       "cancel": "Cancel",
       "moved": {
-        "title": "Logo, description and policies moved to Store settings",
-        "description": "Each store now has its own identity and policies. Open your main store's settings to edit them."
+        "title": "Logo and description moved to Store settings",
+        "description": "Each store now has its own identity. Open your main store's settings to edit it."
+      },
+      "policies": {
+        "title": "Return and shipping policies",
+        "description": "This text shows on your stores' /returns and /shipping pages, unless you built a page with that link. Left empty, a general wording with your store's name shows instead.",
+        "returns": "Return and replacement policy",
+        "shipping": "Shipping policy"
       },
       "legal": {
         "title": "Legal details",
@@ -5565,7 +5581,7 @@
       },
       "account": {
         "title": "Wallet and account",
-        "description": "Top-ups, reviews and questions, affiliate earnings and your welcome gift."
+        "description": "Top-ups, reviews and questions, affiliate earnings and wallet updates."
       }
     },
     "errors": {

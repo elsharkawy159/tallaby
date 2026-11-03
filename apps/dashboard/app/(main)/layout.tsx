@@ -11,6 +11,7 @@ import { loadWelcomeGiftWatch } from "@/components/layout/welcome-gift.data";
 import { SellerAccessBlocked } from "@/components/layout/seller-access-blocked";
 import { getSellerAccess } from "@/lib/auth/seller-access";
 import { getSelectedStoreLink } from "@/lib/stores/store-link.server";
+import { SetupPrompts } from "./_components/setup-prompts.client";
 import { getStoreWalletBalance } from "./wallet/store-wallet.server";
 import { createClient } from "@/supabase/server";
 import { getTranslations } from "next-intl/server";
@@ -62,6 +63,7 @@ export default async function DashboardLayout({
             {t("sellerStatus.restricted.message")}
           </div>
         )}
+        <SetupPrompts />
         <DashboardMain>{children}</DashboardMain>
       </MainContentWrapper>
       <SupportWhatsAppButton />

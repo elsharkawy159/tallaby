@@ -6,6 +6,7 @@ import {
   type WelcomeGiftWatch,
 } from "@workspace/lib/store-wallet/server";
 import { requireSeller } from "@/lib/auth/require-seller.server";
+import { welcomeGiftEnded } from "./welcome-gift.data";
 
 /**
  * The welcome gift popup's server actions (0119). The seller always comes from
@@ -16,6 +17,7 @@ import { requireSeller } from "@/lib/auth/require-seller.server";
 export async function checkWelcomeGiftAction(): Promise<WelcomeGiftWatch> {
   try {
     const seller = await requireSeller();
+    if (await welcomeGiftEnded()) return { state: "none" };
     return await checkWelcomeGift(seller.sellerId);
   } catch {
     // Not signed in as a seller, or a DB hiccup: show nothing, try again later.

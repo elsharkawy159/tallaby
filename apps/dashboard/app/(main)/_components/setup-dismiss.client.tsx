@@ -4,6 +4,7 @@ import { useState } from "react";
 import { X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { SETUP_DISMISS_COOKIE } from "./home.shared";
+import { requestSetupPromptCheck } from "./setup-prompts.lib";
 
 /** Lets the seller hide the setup card; remembered for a year in a cookie the server reads. */
 export function SetupDismissible({ children }: { children: React.ReactNode }) {
@@ -14,6 +15,7 @@ export function SetupDismissible({ children }: { children: React.ReactNode }) {
   const dismiss = () => {
     document.cookie = `${SETUP_DISMISS_COOKIE}=1; path=/; max-age=31536000; samesite=lax`;
     setHidden(true);
+    requestSetupPromptCheck();
   };
 
   return (
