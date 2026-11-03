@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
-import { inArray, sql } from "drizzle-orm";
+import { eq, inArray, sql } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import * as DB_SCHEMA from "@workspace/db/schema";
 
@@ -21,11 +21,17 @@ describe.skipIf(!TEST_DATABASE_URL)("store customers (integration)", { timeout: 
   const createdUsers: string[] = [];
   let customers: typeof import("./customers.server");
 
+  /** users.id points at auth.users; the auth trigger makes the users row, and deleting it cascades (0134). */
+  async function newAuthUser(id: string) {
+    await db.execute(sql`INSERT INTO auth.users (id, email, aud, role) VALUES (${id}, ${`qa-${id.slice(0, 8)}@example.test`}, 'authenticated', 'authenticated')`);
+  }
+
   async function newSeller() {
     const id = randomUUID();
     const sub = `cu-${id.slice(0, 8)}`;
     createdUsers.push(id);
-    await db.insert(s.users).values({ id, isGuest: false, role: "seller" });
+    await newAuthUser(id);
+    await db.update(s.users).set({ isGuest: false, role: "seller" }).where(eq(s.users.id, id));
     await db.execute(sql`
       INSERT INTO sellers (id, business_name, display_name, slug, subdomain, business_type, legal_address, support_email, status)
       VALUES (${id}, ${sub}, ${sub}, ${sub}, ${sub}, 'individual', '{"country":"EG"}'::jsonb, 'cu@example.com', 'approved')
@@ -45,7 +51,8 @@ describe.skipIf(!TEST_DATABASE_URL)("store customers (integration)", { timeout: 
   async function newCustomer() {
     const id = randomUUID();
     createdUsers.push(id);
-    await db.insert(s.users).values({ id, isGuest: true, role: "customer", fullName: "Guest User" });
+    await newAuthUser(id);
+    await db.update(s.users).set({ isGuest: true, role: "customer", fullName: "Guest User" }).where(eq(s.users.id, id));
     return id;
   }
 
@@ -79,6 +86,7 @@ describe.skipIf(!TEST_DATABASE_URL)("store customers (integration)", { timeout: 
       await db.execute(sql`DELETE FROM orders WHERE user_id IN ${ids}`);
       await db.delete(s.sellerSubdomainRedirects).where(inArray(s.sellerSubdomainRedirects.sellerId, createdUsers));
       await db.delete(s.users).where(inArray(s.users.id, createdUsers));
+      await db.execute(sql`DELETE FROM auth.users WHERE id IN ${ids}`);
     }
     await client.end();
   });
@@ -151,6 +159,123 @@ describe.skipIf(!TEST_DATABASE_URL)("store customers (integration)", { timeout: 
     // Empty note and no tags delete the row.
     expect((await save(a.id, a.storeId, "  ", [])).saved).toBe(true);
     expect((await customers.listStoreCustomerNotes(a.id, a.storeId, db)).size).toBe(0);
+  });
+
+  it("groups, searches, sorts and pages in SQL exactly as the code does (F-43e)", async () => {
+    const a = await newSeller();
+    const b = await newSeller();
+    const order = async (input: {
+      phone: string;
+      total: number;
+      status?: string;
+      refused?: boolean;
+      name?: string;
+      user?: string;
+      userPhone?: string;
+      email?: string;
+    }) => {
+      const userId = input.user ?? (await newCustomer());
+      await db.execute(sql`
+        UPDATE users SET phone = ${input.userPhone ?? null}, email = ${input.email ?? null},
+                         is_guest = ${!input.email}
+         WHERE id = ${userId}
+      `);
+      const [address] = [...(await db.execute(sql`
+        INSERT INTO user_addresses (user_id, full_name, phone, address_line1, city, state, postal_code, country)
+        VALUES (${userId}, ${input.name ?? "Guest User"}, ${input.phone}, '1 St', ' Nasr City ', 'Cairo', '', 'EG') RETURNING id
+      `))] as { id: string }[];
+      const [row] = [...(await db.execute(sql`
+        INSERT INTO orders (user_id, order_number, subtotal, total_amount, store_id, shipping_address_id, status)
+        VALUES (${userId}, ${`CU-${randomUUID().slice(0, 10)}`}, ${input.total}, ${input.total}, ${a.storeId}, ${address!.id},
+                ${input.status ?? "pending"}::order_status) RETURNING id
+      `))] as { id: string }[];
+      if (input.refused) await db.execute(sql`INSERT INTO shipments (order_id, status) VALUES (${row!.id}, 'failed')`);
+      return userId;
+    };
+
+    // Every spelling of one mobile is one customer, Arabic digits included.
+    await order({ phone: "01012345678", total: 100.5, status: "delivered", name: "Mona Ali" });
+    await order({ phone: "+20 101 234 5678", total: 80, status: "shipped", refused: true });
+    await order({ phone: "٠١٠١٢٣٤٥٦٧٨", total: 40.25 });
+    await order({ phone: "201012345678", total: 10, status: "cancelled" });
+    await order({ phone: "00201012345678", total: 5, status: "returned" });
+    await order({ phone: "1012345678", total: 3, status: "refund_requested", name: "Mona New" });
+    // A landline in Arabic digits has no ASCII digits: falls through to the user's phone.
+    await order({ phone: "٠٢٢٣٤٥٦٧٨٩", total: 20, userPhone: "01112223333", name: "Karim", email: "karim@example.com" });
+    await order({ phone: "01112223333", total: 30, status: "delivered" });
+    // Six digits typed is a phone; five is not, and groups by user.
+    await order({ phone: "12-34-56", total: 7, name: "Short six" });
+    const noPhone = await newCustomer();
+    await order({ phone: "12345", total: 9, user: noPhone, name: "No phone", email: "nophone@example.com" });
+    await order({ phone: "", total: 11, user: noPhone, status: "delivered", email: "nophone@example.com" });
+    // A synthetic guest email never shows.
+    await order({ phone: "01223334444", total: 1, email: "guest_x@temp.local" });
+    // Another seller's store must not leak in.
+    await placeOrder({ storeId: b.storeId, phone: "01012345678", total: 999 });
+
+    await customers.saveStoreCustomerNote(
+      a.id,
+      { storeId: a.storeId, key: "p:01112223333", note: "Calls after six", tags: ["VIP"], userId: a.id },
+      db,
+    );
+
+    const { selectStoreCustomers, CUSTOMER_FILTERS, CUSTOMER_SORTS } = await import("./customers.lib");
+    const reference = await customers.listStoreCustomers(a.id, a.storeId, db);
+    const base = { q: "", filter: "all", sort: "recent", tag: "" } as const;
+    const inSql = (over: object) => customers.listFilteredStoreCustomers(a.id, a.storeId, { ...base, ...over }, db);
+
+    expect(reference).toHaveLength(5);
+    expect(await inSql({})).toEqual(reference);
+    expect(reference.find((c) => c.key === "p:01012345678")).toMatchObject({
+      name: "Mona New",
+      orderCount: 6,
+      deliveredCount: 1,
+      refusedCount: 2,
+      cancelledCount: 2,
+      totalSpent: "140.75",
+      successRate: 33,
+      city: "Nasr City",
+    });
+
+    for (const filter of CUSTOMER_FILTERS) {
+      for (const sort of CUSTOMER_SORTS) {
+        const want = selectStoreCustomers(reference, { filter, sort }).map((c) => c.key);
+        expect((await inSql({ filter, sort })).map((c) => c.key)).toEqual(want);
+      }
+    }
+    for (const q of ["mona", "MONA", "karim@", "0101", "+20101", "١٠١", "123456", "12", "temp.local", "%", "nothing"]) {
+      const want = selectStoreCustomers(reference, { query: q }).map((c) => c.key);
+      expect((await inSql({ q })).map((c) => c.key).sort()).toEqual([...want].sort());
+    }
+
+    // Notes and tags are searched too, and only the tag's customer passes.
+    expect((await inSql({ q: "after six" })).map((c) => c.key)).toEqual(["p:01112223333"]);
+    expect((await inSql({ q: "vip" })).map((c) => c.key)).toEqual(["p:01112223333"]);
+    expect((await inSql({ tag: "vip" })).map((c) => c.key)).toEqual(["p:01112223333"]);
+
+    // Paging: the pages add up to the list, and an old page number lands on the last.
+    const page = (over: object) =>
+      customers.listStoreCustomersPage(a.id, a.storeId, { ...base, page: 1, size: 2, ...over }, db);
+    const [p1, p2, p3] = [await page({ page: 1 }), await page({ page: 2 }), await page({ page: 99 })];
+    expect([...p1.customers, ...p2.customers, ...p3.customers]).toEqual(reference);
+    expect(p3).toMatchObject({ page: 3, pages: 3, matched: 5 });
+    expect(p1.stats).toEqual({
+      customers: reference.length,
+      repeat: reference.filter((c) => c.orderCount >= 2).length,
+      refused: reference.filter((c) => c.refusedCount > 0).length,
+    });
+    expect((await page({ q: "nothing" })).stats.customers).toBe(reference.length);
+
+    // The drawer finds each customer by key, with the same totals as the list.
+    for (const customer of reference) {
+      const detail = await customers.getStoreCustomer(a.id, a.storeId, customer.key, db);
+      expect(detail?.customer).toEqual(customer);
+      expect(detail?.orders).toHaveLength(customer.orderCount);
+    }
+
+    // B's session sees nothing of A's store.
+    expect(await customers.listFilteredStoreCustomers(b.id, a.storeId, base, db)).toEqual([]);
+    expect((await customers.listStoreCustomersPage(b.id, a.storeId, { ...base, page: 1, size: 20 }, db)).matched).toBe(0);
   });
 
   it("keeps each store's customers apart and returns nothing for another seller's store", async () => {

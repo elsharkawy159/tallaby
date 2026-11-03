@@ -5,10 +5,12 @@ import {
   computeOrderRisks,
   customerKey,
   customerPhone,
+  customerSearchDigits,
   normalizeCustomerNote,
   parseCustomerKey,
   type CustomerNote,
   type CustomerOrderRow,
+  type CustomersListFilters,
   type OrderRisk,
   type StoreCustomer,
 } from "./customers.lib";
@@ -80,7 +82,235 @@ function loadStoreOrderRows(sellerId: string, storeId: string, q: Queryable): Pr
   return queryOrderRows(sellerId, sql`o.store_id = ${storeId}`, q);
 }
 
-/** One row per customer of the seller's store, most recent buyer first. */
+/* ---------- The grouping of customers.lib.ts, in SQL (ROADMAP.md F-43e). ---------- */
+
+// JS trim() whitespace that shows up in real data.
+const WS = String.raw`E' \t\n\r\f\u000B '`;
+const trimmedSql = (col: string) => `NULLIF(btrim(${col}, ${WS}), '')`;
+
+/** normalizeBlockedPhone(): every spelling of an Egyptian mobile becomes 01XXXXXXXXX, else NULL. */
+const mobileSql = (col: string) => `(
+  SELECT CASE WHEN s2 ~ '^01[0125][0-9]{8}$' THEN s2 END FROM (
+    SELECT CASE WHEN length(s1) = 10 AND s1 LIKE '1%' THEN '0' || s1 ELSE s1 END AS s2 FROM (
+      SELECT CASE WHEN d LIKE '0020%' THEN substr(d, 5)
+                  WHEN d LIKE '20%' AND length(d) = 12 THEN substr(d, 3)
+                  ELSE d END AS s1 FROM (
+        SELECT regexp_replace(translate(${col}, '٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹', '01234567890123456789'), '[^0-9]', '', 'g') AS d
+      ) p0
+    ) p1
+  ) p2
+)`;
+
+/** The ASCII digits typed, when there are at least 6. As in customerPhone(), Arabic digits don't count here. */
+const typedDigitsSql = (col: string) => `(
+  SELECT CASE WHEN length(d) >= 6 THEN d END FROM (SELECT regexp_replace(${col}, '[^0-9]', '', 'g') AS d) p0
+)`;
+
+/** customerPhone(), over `user_addresses a` and `users u`. */
+const CUSTOMER_PHONE_SQL = sql.raw(
+  `COALESCE(${mobileSql("a.phone")}, ${typedDigitsSql("a.phone")}, ${mobileSql("u.phone")}, ${typedDigitsSql("u.phone")})`,
+);
+
+const realNameSql = (col: string) => `NULLIF(${trimmedSql(col)}, 'Guest User')`;
+
+/** One row per customer of the store: the CTEs every list query starts from. */
+const customersCte = (sellerId: string, storeId: string) => sql`
+  WITH order_rows AS (
+    SELECT o.user_id, o.created_at, o.total_amount, o.status::text AS status,
+           ${CUSTOMER_PHONE_SQL} AS phone,
+           COALESCE(${sql.raw(realNameSql("a.full_name"))}, ${sql.raw(realNameSql("u.full_name"))}) AS name,
+           CASE WHEN u.is_guest OR u.email LIKE '%@temp.local%' THEN NULL ELSE ${sql.raw(trimmedSql("u.email"))} END AS email,
+           ${sql.raw(trimmedSql("a.state"))} AS governorate,
+           ${sql.raw(trimmedSql("a.city"))} AS city,
+           EXISTS (SELECT 1 FROM shipments sh
+                    WHERE sh.order_id = o.id AND sh.status IN ('failed', 'returned')) AS shipment_refused
+      FROM orders o
+      JOIN stores st ON st.id = o.store_id AND st.seller_id = ${sellerId} AND st.deleted_at IS NULL
+      LEFT JOIN user_addresses a ON a.id = o.shipping_address_id
+      LEFT JOIN users u ON u.id = o.user_id
+     WHERE o.store_id = ${storeId}
+  ),
+  keyed AS (
+    SELECT order_rows.*,
+           COALESCE('p:' || phone, 'u:' || user_id::text) AS key,
+           CASE WHEN status = 'delivered' THEN 'delivered'
+                WHEN status = 'returned' OR shipment_refused THEN 'refused'
+                WHEN status IN ('cancelled', 'refunded', 'refund_requested') THEN 'cancelled'
+                ELSE 'open' END AS outcome
+      FROM order_rows
+  ),
+  customers AS (
+    SELECT key,
+           max(phone) AS phone,
+           (array_agg(user_id ORDER BY created_at DESC))[1]::text AS user_id,
+           COALESCE((array_agg(name ORDER BY created_at DESC) FILTER (WHERE name IS NOT NULL))[1], '') AS name,
+           (array_agg(email ORDER BY created_at DESC) FILTER (WHERE email IS NOT NULL))[1] AS email,
+           (array_agg(governorate ORDER BY created_at DESC) FILTER (WHERE governorate IS NOT NULL))[1] AS governorate,
+           (array_agg(city ORDER BY created_at DESC) FILTER (WHERE city IS NOT NULL))[1] AS city,
+           count(*)::int AS order_count,
+           (count(*) FILTER (WHERE outcome = 'delivered'))::int AS delivered_count,
+           (count(*) FILTER (WHERE outcome = 'refused'))::int AS refused_count,
+           (count(*) FILTER (WHERE outcome = 'cancelled'))::int AS cancelled_count,
+           COALESCE(sum(total_amount) FILTER (WHERE outcome IN ('delivered', 'open')), 0)::numeric(14, 2)::text AS spent,
+           min(created_at)::text AS first_at,
+           max(created_at)::text AS last_at,
+           max(created_at) AS last_ts,
+           COALESCE(sum(total_amount) FILTER (WHERE outcome IN ('delivered', 'open')), 0) AS spent_sort
+      FROM keyed
+     GROUP BY key
+  )`;
+
+const customersFrom = (storeId: string) => sql`
+  FROM customers c
+  LEFT JOIN store_customer_notes n ON n.store_id = ${storeId} AND n.customer_key = c.key`;
+
+type CustomersQuery = Pick<CustomersListFilters, "q" | "filter" | "sort" | "tag">;
+
+const escapeLike = (text: string) => `%${text.replace(/[\\%_]/g, (ch) => `\\${ch}`)}%`;
+
+/** selectStoreCustomers() plus the seller's own notes and tags, in SQL. */
+function customersWhere(filters: CustomersQuery): SQL {
+  const parts: SQL[] = [];
+  const text = filters.q.trim();
+  if (text) {
+    const pattern = escapeLike(text);
+    const digits = customerSearchDigits(text);
+    parts.push(sql`(
+      c.name ILIKE ${pattern}
+      OR COALESCE(c.email, '') ILIKE ${pattern}
+      OR COALESCE(n.note, '') ILIKE ${pattern}
+      OR EXISTS (SELECT 1 FROM unnest(n.tags) AS t WHERE t ILIKE ${pattern})
+      ${digits.length >= 3 ? sql`OR COALESCE(c.phone, '') LIKE ${escapeLike(digits)}` : sql``}
+    )`);
+  }
+  if (filters.filter === "repeat") parts.push(sql`c.order_count >= 2`);
+  if (filters.filter === "refused") parts.push(sql`c.refused_count > 0`);
+  if (filters.tag) {
+    parts.push(sql`EXISTS (SELECT 1 FROM unnest(n.tags) AS t WHERE lower(t) = lower(${filters.tag}))`);
+  }
+  return parts.length ? sql.join(parts, sql` AND `) : sql`TRUE`;
+}
+
+function customersOrder(sort: CustomersQuery["sort"]): SQL {
+  // The key keeps paging stable when times repeat.
+  const recent = sql`c.last_ts DESC, c.key`;
+  if (sort === "orders") return sql`c.order_count DESC, ${recent}`;
+  if (sort === "spent") return sql`c.spent_sort DESC, ${recent}`;
+  return recent;
+}
+
+function toStoreCustomer(r: Record<string, unknown>, storeId: string): StoreCustomer {
+  const delivered = Number(r.delivered_count);
+  const refused = Number(r.refused_count);
+  const ended = delivered + refused;
+  return {
+    key: String(r.key),
+    storeId,
+    phone: str(r.phone),
+    userId: String(r.user_id),
+    name: String(r.name ?? ""),
+    email: str(r.email),
+    governorate: str(r.governorate),
+    city: str(r.city),
+    orderCount: Number(r.order_count),
+    deliveredCount: delivered,
+    refusedCount: refused,
+    cancelledCount: Number(r.cancelled_count),
+    totalSpent: String(r.spent),
+    firstOrderAt: String(r.first_at),
+    lastOrderAt: String(r.last_at),
+    successRate: ended > 0 ? Math.round((delivered / ended) * 100) : null,
+  };
+}
+
+const isListable = (sellerId: string, storeId: string) => UUID_RE.test(sellerId) && UUID_RE.test(storeId);
+
+/** Every customer matching the filters (no paging): the .xlsx export. */
+export async function listFilteredStoreCustomers(
+  sellerId: string,
+  storeId: string,
+  filters: CustomersQuery,
+  q: Queryable = db,
+): Promise<StoreCustomer[]> {
+  if (!isListable(sellerId, storeId)) return [];
+  const rows = rowsOf(
+    await q.execute(sql`
+      ${customersCte(sellerId, storeId)}
+      SELECT c.*
+      ${customersFrom(storeId)}
+      WHERE ${customersWhere(filters)}
+      ORDER BY ${customersOrder(filters.sort)}
+    `),
+  );
+  return rows.map((r) => toStoreCustomer(r, storeId));
+}
+
+/**
+ * One page of the store's customers, grouped in SQL so nothing but this page
+ * leaves the database, with no cut-off on how many orders are counted. The
+ * stats ignore the filters, as the Customers page always has.
+ */
+export async function listStoreCustomersPage(
+  sellerId: string,
+  storeId: string,
+  filters: CustomersListFilters,
+  q: Queryable = db,
+): Promise<{
+  customers: StoreCustomer[];
+  stats: { customers: number; repeat: number; refused: number };
+  matched: number;
+  page: number;
+  pages: number;
+}> {
+  if (!isListable(sellerId, storeId)) {
+    return { customers: [], stats: { customers: 0, repeat: 0, refused: 0 }, matched: 0, page: 1, pages: 1 };
+  }
+
+  const [stats] = rowsOf(
+    await q.execute(sql`
+      ${customersCte(sellerId, storeId)}
+      SELECT count(*)::int AS customers,
+             (count(*) FILTER (WHERE c.order_count >= 2))::int AS repeat_customers,
+             (count(*) FILTER (WHERE c.refused_count > 0))::int AS refused_customers,
+             (count(*) FILTER (WHERE ${customersWhere(filters)}))::int AS matched
+      ${customersFrom(storeId)}
+    `),
+  );
+  const matched = Number(stats?.matched ?? 0);
+  const pages = Math.max(1, Math.ceil(matched / filters.size));
+  // A filter change or an old link can point past the end.
+  const page = Math.min(filters.page, pages);
+  const rows = matched
+    ? rowsOf(
+        await q.execute(sql`
+          ${customersCte(sellerId, storeId)}
+          SELECT c.*
+          ${customersFrom(storeId)}
+          WHERE ${customersWhere(filters)}
+          ORDER BY ${customersOrder(filters.sort)}
+          LIMIT ${filters.size} OFFSET ${(page - 1) * filters.size}
+        `),
+      )
+    : [];
+
+  return {
+    customers: rows.map((r) => toStoreCustomer(r, storeId)),
+    stats: {
+      customers: Number(stats?.customers ?? 0),
+      repeat: Number(stats?.repeat_customers ?? 0),
+      refused: Number(stats?.refused_customers ?? 0),
+    },
+    matched,
+    page,
+    pages,
+  };
+}
+
+/**
+ * One row per customer of the seller's store, most recent buyer first. Reads
+ * the newest CUSTOMER_ORDERS_MAX orders: audiences and email campaigns use it.
+ * The Customers page uses listStoreCustomersPage.
+ */
 export async function listStoreCustomers(
   sellerId: string,
   storeId: string,
@@ -99,7 +329,17 @@ export async function getStoreCustomer(
   key: string,
   q: Queryable = db,
 ): Promise<{ customer: StoreCustomer; orders: CustomerOrderRow[] } | null> {
-  const orders = (await loadStoreOrderRows(sellerId, storeId, q)).filter((row) => customerKey(row) === key);
+  const parsed = parseCustomerKey(key);
+  if (!parsed || !UUID_RE.test(storeId)) return null;
+  // Only this customer's rows leave the database. The key check in code stays the rule.
+  const rows = await queryOrderRows(
+    sellerId,
+    "phone" in parsed
+      ? sql`o.store_id = ${storeId} AND ${CUSTOMER_PHONE_SQL} = ${parsed.phone}`
+      : sql`o.store_id = ${storeId} AND ${CUSTOMER_PHONE_SQL} IS NULL AND o.user_id = ${parsed.userId}`,
+    q,
+  );
+  const orders = rows.filter((row) => customerKey(row) === key);
   const [customer] = aggregateStoreCustomers(orders);
   return customer ? { customer, orders } : null;
 }

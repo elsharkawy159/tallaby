@@ -175,19 +175,80 @@ export const parseCustomerFilter = (value: unknown): CustomerFilter =>
 export const parseCustomerSort = (value: unknown): CustomerSort =>
   CUSTOMER_SORTS.includes(value as CustomerSort) ? (value as CustomerSort) : "recent";
 
+/** Customers page URL state (ROADMAP.md F-43e). The URL is user input, so everything is validated. */
+export const CUSTOMER_PAGE_SIZES = [20, 50, 100, 200] as const;
+export const DEFAULT_CUSTOMER_PAGE_SIZE = 20;
+/** Cookie that remembers the seller's chosen page size. */
+export const CUSTOMER_PAGE_SIZE_COOKIE = "tl-cust-size";
+
+export type CustomersListFilters = {
+  q: string;
+  filter: CustomerFilter;
+  sort: CustomerSort;
+  /** One of the seller's tags, or "". */
+  tag: string;
+  page: number;
+  size: number;
+};
+
+type RawListParam = string | string[] | number | undefined | null;
+
+const singleParam = (value: RawListParam) => String((Array.isArray(value) ? value[0] : value) ?? "");
+
+const parseCustomerPageSize = (value: RawListParam): number | null => {
+  const size = Number(singleParam(value));
+  return (CUSTOMER_PAGE_SIZES as readonly number[]).includes(size) ? size : null;
+};
+
+export function parseCustomersListFilters(
+  raw: Partial<Record<keyof CustomersListFilters, RawListParam>>,
+  sizeFallback?: string | null,
+): CustomersListFilters {
+  const page = Number(singleParam(raw.page));
+  return {
+    q: singleParam(raw.q).trim().slice(0, 100),
+    filter: parseCustomerFilter(singleParam(raw.filter)),
+    sort: parseCustomerSort(singleParam(raw.sort)),
+    tag: singleParam(raw.tag).trim().slice(0, CUSTOMER_TAG_MAX_LENGTH),
+    page: Number.isSafeInteger(page) && page >= 1 ? page : 1,
+    size: parseCustomerPageSize(raw.size) ?? parseCustomerPageSize(sizeFallback) ?? DEFAULT_CUSTOMER_PAGE_SIZE,
+  };
+}
+
+/** The list URL, leaving out defaults. */
+export function customersListHref(pathname: string, storeId: string | null, filters: CustomersListFilters): string {
+  const params = new URLSearchParams();
+  if (storeId) params.set("store", storeId);
+  if (filters.q) params.set("q", filters.q);
+  if (filters.filter !== "all") params.set("filter", filters.filter);
+  if (filters.sort !== "recent") params.set("sort", filters.sort);
+  if (filters.tag) params.set("tag", filters.tag);
+  if (filters.size !== DEFAULT_CUSTOMER_PAGE_SIZE) params.set("size", String(filters.size));
+  if (filters.page > 1) params.set("page", String(filters.page));
+  const query = params.toString();
+  return query ? `${pathname}?${query}` : pathname;
+}
+
+/**
+ * The phone part of a customer search: ASCII digits without the +20 / 0020
+ * prefix or leading zeros, so "0101", "+20101" and "١٠١" all find 01012345678.
+ */
+export function customerSearchDigits(query: string): string {
+  const ascii = query.trim().toLowerCase().replace(/[٠-٩]/g, (d) => String(d.charCodeAt(0) - 0x660));
+  return ascii.replace(/^\s*(\+20|0020)/, "").replace(/\D/g, "").replace(/^0+/, "");
+}
+
 /**
  * Search (name, phone in any spelling, email), filter and sort for the
- * Customers page. Ties keep the most recent buyer first.
+ * Customers page. Ties keep the most recent buyer first. The page itself runs
+ * this in SQL (listStoreCustomersPage); the integration test holds the two equal.
  */
 export function selectStoreCustomers(
   customers: StoreCustomer[],
   options: { query?: string; filter?: CustomerFilter; sort?: CustomerSort },
 ): StoreCustomer[] {
   const query = (options.query ?? "").trim().toLowerCase();
-  // Phone part: ASCII digits without the +20 / 0020 prefix or leading zeros, so
-  // "0101", "+20101" and "١٠١" all find 01012345678.
-  const ascii = query.replace(/[٠-٩]/g, (d) => String(d.charCodeAt(0) - 0x660));
-  const digits = ascii.replace(/^\s*(\+20|0020)/, "").replace(/\D/g, "").replace(/^0+/, "");
+  const digits = customerSearchDigits(query);
   const matches = (c: StoreCustomer) =>
     !query ||
     c.name.toLowerCase().includes(query) ||

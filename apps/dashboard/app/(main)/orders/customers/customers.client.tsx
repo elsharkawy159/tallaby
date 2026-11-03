@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
@@ -17,16 +17,18 @@ import { cn } from "@workspace/ui/lib/utils";
 import {
   CUSTOMER_EXPORT_COLUMNS,
   CUSTOMER_FILTERS,
+  CUSTOMER_PAGE_SIZE_COOKIE,
+  CUSTOMER_PAGE_SIZES,
   customerExportRow,
+  customersListHref,
   CUSTOMER_NOTE_MAX,
   CUSTOMER_SORTS,
   CUSTOMER_TAG_MAX_LENGTH,
   CUSTOMER_TAGS_MAX,
   normalizeCustomerTags,
   customerWhatsAppUrl,
-  selectStoreCustomers,
-  type CustomerFilter,
   type CustomerNote,
+  type CustomersListFilters,
   type CustomerOrderOutcome,
   type CustomerSort,
   type StoreCustomer,
@@ -34,20 +36,29 @@ import {
 import { formatDate, formatDateTime, formatMoney, formatNumber, formatRelativeTime } from "@/lib/i18n/format";
 import { downloadXlsx, todayStamp } from "@/lib/product-excel";
 import { blockCustomerPhone, unblockCustomerPhone } from "../../stores/[storeId]/settings/protection/protection.server";
-import { loadCustomerOrders, saveCustomerNote, type CustomerOrderItem } from "./customers.server";
+import { ListPager } from "../list-pager.client";
+import { exportFilteredCustomers, loadCustomerOrders, saveCustomerNote, type CustomerOrderItem } from "./customers.server";
 import { AudienceExportButton } from "./audience-export.client";
 
 type Props = {
+  /** One page of the filtered customers. */
   customers: StoreCustomer[];
+  /** The whole store, whatever the filters (F-43e). */
+  stats: { customers: number; repeat: number; refused: number };
+  /** Customers matching the filters, across all pages. */
+  matched: number;
+  pages: number;
+  filters: CustomersListFilters;
   blockedPhones: string[];
-  /** Notes and tags by customer key (F-01c). */
+  /** Notes and tags (F-01c) of the customers on this page, by customer key. */
   notes: Record<string, CustomerNote>;
+  /** Every tag this store's customers have, for the filter chips. */
+  allTags: string[];
   stores: { id: string; name: string }[];
   storeId: string | null;
 };
 
-/** Rows rendered at first; "Show more" adds this many again. */
-const PAGE_SIZE = 100;
+const SEARCH_DEBOUNCE_MS = 300;
 
 const chip = (active: boolean) =>
   cn(
@@ -56,65 +67,102 @@ const chip = (active: boolean) =>
   );
 
 /** Orders › Customers: store picker, search, filters, the table and the customer drawer. */
-export function CustomersView({ customers, blockedPhones, notes: initialNotes, stores, storeId }: Props) {
+export function CustomersView({
+  customers,
+  stats,
+  matched,
+  pages,
+  filters,
+  blockedPhones,
+  notes: pageNotes,
+  allTags: storeTags,
+  stores,
+  storeId,
+}: Props) {
   const t = useTranslations("customers");
   const locale = useLocale();
   const pathname = usePathname();
-  const [query, setQuery] = useState("");
-  const [filter, setFilter] = useState<CustomerFilter>("all");
-  const [sort, setSort] = useState<CustomerSort>("recent");
-  const [shown, setShown] = useState(PAGE_SIZE);
-  const [openKey, setOpenKey] = useState<string | null>(null);
-  const [notes, setNotes] = useState(initialNotes);
-  const [tag, setTag] = useState<string | null>(null);
+  const router = useRouter();
+  const [, startNavigation] = useTransition();
+  // The typed search; the URL follows it after a short pause.
+  const [query, setQuery] = useState(filters.q);
+  // Kept when a refresh moves the customer off this page, so the drawer stays open.
+  const [openCustomer, setOpenCustomer] = useState<StoreCustomer | null>(null);
+  // Notes saved here: they show at once, whatever page the server sends next.
+  const [savedNotes, setSavedNotes] = useState<Record<string, CustomerNote>>({});
+  const notes = useMemo(() => ({ ...pageNotes, ...savedNotes }), [pageNotes, savedNotes]);
   const blocked = useMemo(() => new Set(blockedPhones), [blockedPhones]);
   const allTags = useMemo(
     () =>
-      normalizeCustomerTags(Object.values(notes).flatMap((n) => n.tags)).sort((a, b) => a.localeCompare(b, locale)),
-    [notes, locale],
+      normalizeCustomerTags([...storeTags, ...Object.values(savedNotes).flatMap((n) => n.tags)]).sort((a, b) =>
+        a.localeCompare(b, locale),
+      ),
+    [storeTags, savedNotes, locale],
   );
-  const activeTag = tag && allTags.some((x) => x.toLowerCase() === tag.toLowerCase()) ? tag : null;
 
-  const rows = useMemo(() => {
-    // Name, phone and email go through the shared search; the seller's own
-    // notes and tags are matched here as plain text.
-    const text = query.trim().toLowerCase();
-    const found = new Set(selectStoreCustomers(customers, { query }).map((c) => c.key));
-    const noteMatches = (key: string) => {
-      const n = notes[key];
-      return Boolean(
-        text && n && ((n.note ?? "").toLowerCase().includes(text) || n.tags.some((x) => x.toLowerCase().includes(text))),
-      );
-    };
-    return selectStoreCustomers(customers, { filter, sort }).filter(
-      (c) =>
-        (found.has(c.key) || noteMatches(c.key)) &&
-        (!activeTag || (notes[c.key]?.tags ?? []).some((x) => x.toLowerCase() === activeTag.toLowerCase())),
-    );
-  }, [customers, notes, query, filter, sort, activeTag]);
+  const navigate = useCallback(
+    (over: Partial<CustomersListFilters>, options?: { replace?: boolean }) => {
+      const href = customersListHref(pathname, storeId, { ...filters, ...over });
+      startNavigation(() => {
+        if (options?.replace) router.replace(href, { scroll: false });
+        else router.push(href, { scroll: false });
+      });
+    },
+    [filters, pathname, router, storeId],
+  );
 
-  // F-01d: the rows on screen (search, filter, tag and sort applied) as .xlsx,
-  // built in the browser from data this seller already loaded.
+  // Typing searches after a short pause. Back and forward restore the box.
+  const lastPushedQuery = useRef(filters.q);
+  useEffect(() => {
+    if (filters.q !== lastPushedQuery.current) {
+      lastPushedQuery.current = filters.q;
+      setQuery(filters.q);
+    }
+  }, [filters.q]);
+  useEffect(() => {
+    const next = query.trim();
+    if (next === lastPushedQuery.current) return;
+    const timer = setTimeout(() => {
+      lastPushedQuery.current = next;
+      navigate({ q: next, page: 1 }, { replace: true });
+    }, SEARCH_DEBOUNCE_MS);
+    return () => clearTimeout(timer);
+  }, [query, navigate]);
+
+  // F-01d: every customer matching the filters as .xlsx. The server reads them
+  // again for the session's seller, since only one page is in the browser.
   const [exporting, startExporting] = useTransition();
   const exportRows = () =>
     startExporting(async () => {
-      const header = CUSTOMER_EXPORT_COLUMNS.map((column) => t(`export.columns.${column}`));
-      const sheet = rows.map((c) => {
-        const values = customerExportRow(c, notes[c.key]);
-        return Object.fromEntries(CUSTOMER_EXPORT_COLUMNS.map((column, i) => [header[i], values[column]]));
-      });
+      if (!storeId) return;
       try {
+        const res = await exportFilteredCustomers({ storeId, filters });
+        if (!res.success) {
+          toast.error(t("export.failed"));
+          return;
+        }
+        const header = CUSTOMER_EXPORT_COLUMNS.map((column) => t(`export.columns.${column}`));
+        const sheet = res.customers.map((c) => {
+          const values = customerExportRow(c, savedNotes[c.key] ?? res.notes[c.key]);
+          return Object.fromEntries(CUSTOMER_EXPORT_COLUMNS.map((column, i) => [header[i], values[column]]));
+        });
         await downloadXlsx(sheet, { fileName: `customers-${todayStamp()}.xlsx`, sheetName: t("export.sheet"), header });
       } catch {
         toast.error(t("export.failed"));
       }
     });
-  const open = openKey ? (customers.find((c) => c.key === openKey) ?? null) : null;
-  const repeatCount = customers.filter((c) => c.orderCount >= 2).length;
+
+  const open = openCustomer ? (customers.find((c) => c.key === openCustomer.key) ?? openCustomer) : null;
 
   if (!storeId) {
     return <EmptyCard title={t("noStore.title")} body={t("noStore.body")} />;
   }
+
+  const changePageSize = (size: number) => {
+    // Remembered for next time, so the sidebar link keeps the seller's choice.
+    document.cookie = `${CUSTOMER_PAGE_SIZE_COOKIE}=${size}; path=/; max-age=31536000; samesite=lax`;
+    navigate({ size, page: 1 });
+  };
 
   return (
     <div className="space-y-4">
@@ -129,12 +177,9 @@ export function CustomersView({ customers, blockedPhones, notes: initialNotes, s
       )}
 
       <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-        <Stat label={t("stats.customers")} value={formatNumber(customers.length, locale)} />
-        <Stat label={t("stats.repeat")} value={formatNumber(repeatCount, locale)} />
-        <Stat
-          label={t("stats.refused")}
-          value={formatNumber(customers.filter((c) => c.refusedCount > 0).length, locale)}
-        />
+        <Stat label={t("stats.customers")} value={formatNumber(stats.customers, locale)} />
+        <Stat label={t("stats.repeat")} value={formatNumber(stats.repeat, locale)} />
+        <Stat label={t("stats.refused")} value={formatNumber(stats.refused, locale)} />
       </dl>
 
       <div className="flex flex-wrap items-center gap-2">
@@ -143,10 +188,7 @@ export function CustomersView({ customers, blockedPhones, notes: initialNotes, s
           <Input
             type="search"
             value={query}
-            onChange={(e) => {
-              setQuery(e.target.value);
-              setShown(PAGE_SIZE);
-            }}
+            onChange={(e) => setQuery(e.target.value)}
             placeholder={t("search")}
             aria-label={t("search")}
             className="ps-9"
@@ -154,7 +196,13 @@ export function CustomersView({ customers, blockedPhones, notes: initialNotes, s
         </div>
         <nav aria-label={t("filters.label")} className="flex flex-wrap gap-1.5">
           {CUSTOMER_FILTERS.map((f) => (
-            <button key={f} type="button" className={chip(filter === f)} onClick={() => setFilter(f)} aria-pressed={filter === f}>
+            <button
+              key={f}
+              type="button"
+              className={chip(filters.filter === f)}
+              onClick={() => navigate({ filter: f, page: 1 })}
+              aria-pressed={filters.filter === f}
+            >
               {t(`filters.${f}`)}
             </button>
           ))}
@@ -162,13 +210,13 @@ export function CustomersView({ customers, blockedPhones, notes: initialNotes, s
         {allTags.length > 0 && (
           <nav aria-label={t("notes.tagFilter")} className="flex flex-wrap gap-1.5">
             {allTags.map((name) => {
-              const active = activeTag?.toLowerCase() === name.toLowerCase();
+              const active = filters.tag.toLowerCase() === name.toLowerCase();
               return (
                 <button
                   key={name}
                   type="button"
                   className={chip(active)}
-                  onClick={() => setTag(active ? null : name)}
+                  onClick={() => navigate({ tag: active ? "" : name, page: 1 })}
                   aria-pressed={active}
                 >
                   #{name}
@@ -180,8 +228,8 @@ export function CustomersView({ customers, blockedPhones, notes: initialNotes, s
         <label className="ms-auto flex items-center gap-2 text-xs text-muted-foreground">
           {t("sort.label")}
           <select
-            value={sort}
-            onChange={(e) => setSort(e.target.value as CustomerSort)}
+            value={filters.sort}
+            onChange={(e) => navigate({ sort: e.target.value as CustomerSort, page: 1 })}
             className="h-8 rounded-md border bg-background px-2 text-xs text-foreground"
           >
             {CUSTOMER_SORTS.map((s) => (
@@ -191,16 +239,16 @@ export function CustomersView({ customers, blockedPhones, notes: initialNotes, s
             ))}
           </select>
         </label>
-        <Button type="button" size="sm" variant="neutral" disabled={rows.length === 0 || exporting} onClick={exportRows}>
+        <Button type="button" size="sm" variant="neutral" disabled={matched === 0 || exporting} onClick={exportRows}>
           {exporting ? <LoaderCircle className="animate-spin" aria-hidden /> : <Download aria-hidden />}
-          {t("export.button", { count: rows.length })}
+          {t("export.button", { count: matched })}
         </Button>
         <AudienceExportButton storeId={storeId} />
       </div>
 
-      {customers.length === 0 ? (
+      {stats.customers === 0 ? (
         <EmptyCard title={t("empty.title")} body={t("empty.body")} />
-      ) : rows.length === 0 ? (
+      ) : customers.length === 0 ? (
         <EmptyCard title={t("noMatch.title")} body={t("noMatch.body")} />
       ) : (
         <Card className="py-0">
@@ -218,10 +266,10 @@ export function CustomersView({ customers, blockedPhones, notes: initialNotes, s
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {rows.slice(0, shown).map((c) => (
-                    <TableRow key={c.key} className="cursor-pointer" onClick={() => setOpenKey(c.key)}>
+                  {customers.map((c) => (
+                    <TableRow key={c.key} className="cursor-pointer" onClick={() => setOpenCustomer(c)}>
                       <TableCell>
-                        <button type="button" className="min-w-0 text-start" onClick={() => setOpenKey(c.key)}>
+                        <button type="button" className="min-w-0 text-start" onClick={() => setOpenCustomer(c)}>
                           <span className="flex items-center gap-1.5 font-medium">
                             {c.name || t("noName")}
                             {c.phone && blocked.has(c.phone) && (
@@ -260,12 +308,16 @@ export function CustomersView({ customers, blockedPhones, notes: initialNotes, s
         </Card>
       )}
 
-      {rows.length > shown && (
-        <div className="flex justify-center">
-          <Button type="button" variant="neutral" onClick={() => setShown((n) => n + PAGE_SIZE)}>
-            {t("showMore", { count: rows.length - shown })}
-          </Button>
-        </div>
+      {matched > 0 && (
+        <ListPager
+          page={filters.page}
+          pages={pages}
+          size={filters.size}
+          sizes={CUSTOMER_PAGE_SIZES}
+          total={matched}
+          onPage={(page) => navigate({ page })}
+          onSize={changePageSize}
+        />
       )}
 
       {open && (
@@ -275,15 +327,12 @@ export function CustomersView({ customers, blockedPhones, notes: initialNotes, s
           blocked={Boolean(open.phone && blocked.has(open.phone))}
           note={notes[open.key] ?? null}
           tagSuggestions={allTags}
-          onNoteSaved={(value) =>
-            setNotes((current) => {
-              const next = { ...current };
-              if (value.note || value.tags.length) next[open.key] = value;
-              else delete next[open.key];
-              return next;
-            })
-          }
-          onClose={() => setOpenKey(null)}
+          onNoteSaved={(value) => {
+            setSavedNotes((current) => ({ ...current, [open.key]: value }));
+            // A tag filter or note search may now match differently.
+            router.refresh();
+          }}
+          onClose={() => setOpenCustomer(null)}
         />
       )}
     </div>

@@ -1,7 +1,19 @@
 "use server";
 
-import { orderOutcome, parseCustomerKey, type CustomerNote, type CustomerOrderOutcome } from "@workspace/lib/customers";
-import { getStoreCustomer, saveStoreCustomerNote } from "@workspace/lib/customers/server";
+import {
+  orderOutcome,
+  parseCustomerKey,
+  parseCustomersListFilters,
+  type CustomerNote,
+  type CustomerOrderOutcome,
+  type StoreCustomer,
+} from "@workspace/lib/customers";
+import {
+  getStoreCustomer,
+  listFilteredStoreCustomers,
+  listStoreCustomerNotes,
+  saveStoreCustomerNote,
+} from "@workspace/lib/customers/server";
 import { isAccessError, requireStore } from "@/lib/auth/require-seller.server";
 
 /**
@@ -45,6 +57,30 @@ export async function loadCustomerOrders(input: { storeId: string; key: string }
     if (isAccessError(error)) return { success: false, error: "notFound" };
     console.error("[customers] load orders failed");
     return { success: false, error: "generic" };
+  }
+}
+
+export type ExportCustomersResult =
+  | { success: true; customers: StoreCustomer[]; notes: Record<string, CustomerNote> }
+  | { success: false };
+
+/**
+ * Every customer matching the page's filters, for the .xlsx export (F-01d).
+ * Filters from the client are parsed again; the store is checked against the
+ * session's seller and the query is scoped by that seller again.
+ */
+export async function exportFilteredCustomers(input: { storeId: string; filters: unknown }): Promise<ExportCustomersResult> {
+  try {
+    const { seller, store } = await requireStore(String(input?.storeId ?? ""));
+    const filters = parseCustomersListFilters((input?.filters ?? {}) as Parameters<typeof parseCustomersListFilters>[0]);
+    const [customers, notes] = await Promise.all([
+      listFilteredStoreCustomers(seller.sellerId, store.id, filters),
+      listStoreCustomerNotes(seller.sellerId, store.id),
+    ]);
+    return { success: true, customers, notes: Object.fromEntries(notes) };
+  } catch (error) {
+    if (!isAccessError(error)) console.error("[customers] export failed");
+    return { success: false };
   }
 }
 
