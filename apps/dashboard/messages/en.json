@@ -3746,6 +3746,14 @@
     }
   },
   "storeShipping": {
+    "coverage": {
+      "summary": "You deliver to {covered} of {total} governorates",
+      "allCovered": "Customers anywhere in Egypt see a delivery price at checkout.",
+      "gapsRefuse": "Customers in the dashed governorates can't order yet. Add a zone to reach them.",
+      "gapsRates": "Customers in the dashed governorates pay Tallaby's rates. Add a zone to set your own price.",
+      "closeGaps": "Add a zone",
+      "partial": "Some areas"
+    },
     "saved": "Shipping settings saved.",
     "zoneSaved": "Zone saved.",
     "zoneDeleted": "Zone deleted.",

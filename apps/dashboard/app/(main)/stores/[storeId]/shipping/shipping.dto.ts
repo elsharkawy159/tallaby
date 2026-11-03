@@ -63,3 +63,13 @@ export type TemplateOption = {
   /** Price range of the template's zones; null for "one price for all Egypt" (the seller types it). */
   prices: { min: number; max: number } | null;
 };
+
+/** One governorate on the coverage board: the price a customer there pays, if a zone covers it. */
+export type CoverageItem = {
+  key: string;
+  label: string;
+  price: number | null;
+  zoneName: string | null;
+  /** A zone covers only some of its cities or areas. */
+  partial: boolean;
+};

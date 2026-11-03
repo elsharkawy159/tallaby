@@ -4,7 +4,7 @@ import { placeChain, placeLabel } from "@workspace/lib/places";
 import {
   findZoneForPlace,
   templateZones,
-  uncoveredGovernorates,
+  ZONE_GOVERNORATES,
   type ShippingTemplate,
 } from "@workspace/lib/shipping/store-zones";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -12,7 +12,7 @@ import { notFound } from "next/navigation";
 import { loadStorePage } from "@/lib/stores/store-page.server";
 import { StorePageHeader } from "@/components/stores/store-page-header";
 import { StoreShippingSettings } from "./shipping.client";
-import type { TemplateOption, ZoneView } from "./shipping.dto";
+import type { CoverageItem, TemplateOption, ZoneView } from "./shipping.dto";
 
 export default async function StoreShippingPage({ params }: { params: Promise<{ storeId: string }> }) {
   const { storeId } = await params;
@@ -63,9 +63,19 @@ export default async function StoreShippingPage({ params }: { params: Promise<{ 
     }
     return { zone, chips: zone.places.map((key) => ({ key, label: placeLabel(key, locale) })), overrides };
   });
-  const uncovered = shipping.zones.some((z) => z.enabled)
-    ? uncoveredGovernorates(shipping.zones).map((g) => placeLabel(`EG/${g}`, locale))
-    : [];
+
+  const enabledZones = shipping.zones.filter((z) => z.enabled);
+  const coverage: CoverageItem[] = ZONE_GOVERNORATES.map((g) => {
+    const key = `EG/${g}`;
+    const found = findZoneForPlace(enabledZones, key);
+    return {
+      key,
+      label: placeLabel(key, locale),
+      price: found ? found.zone.price : null,
+      zoneName: found ? (!locale.startsWith("ar") && found.zone.nameEn) || found.zone.nameAr : null,
+      partial: !found && enabledZones.some((z) => z.places.some((place) => place.startsWith(`${key}/`))),
+    };
+  });
 
   return (
     <section className="mx-auto w-full max-w-4xl space-y-5 p-4 sm:p-6">
@@ -74,7 +84,7 @@ export default async function StoreShippingPage({ params }: { params: Promise<{ 
         storeId={store.id}
         settings={shipping.settings}
         zones={zones}
-        uncovered={uncovered}
+        coverage={coverage}
         templates={templates}
         bosta={bosta}
         wassalha={wassalha}

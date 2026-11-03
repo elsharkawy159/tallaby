@@ -1158,7 +1158,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [ ] F-44a Save setup prompt progress per seller
 - [ ] F-44b Setup toast and banner UI
 - [ ] F-44c Remove the welcome-gift pop-up and copy
-- [ ] F-45a Shipping page audit and redesign
+- [x] F-45a Shipping page audit and redesign (2026-11-03; not seen in a browser yet)
 - [ ] F-45b AI delivery areas from a written description
 - [x] F-46a Store's own `/returns` and `/shipping` with fallback order (2026-11-03)
 - [x] F-46b Fix storefront links into the marketplace (2026-11-03; `/privacy` and `/terms` still go to Tallaby's, owner to decide)
@@ -1214,6 +1214,11 @@ Add each new request here first, with the date and the owner's words, then turn 
 ---
 
 ## 7. Log
+
+### 2026-11-03 — F-45a Shipping page redesign
+
+- New coverage board at the top: every governorate with what a customer there pays; gaps are dashed, partly covered ones gold. Delivery zones now lead with the price. Shipping companies moved below zones and the price check. No data or checkout change.
+- **Checks:** typecheck and tests. **Not seen in a browser** (Chrome extension disconnected); check it at phone and desktop width.
 
 ### 2026-11-03 — F-46a, F-46b Each store's own policies
 

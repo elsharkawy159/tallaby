@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Info, LayoutTemplate, LoaderCircle, MapPinned, Pencil, Plus, Save, Settings2, Trash2 } from "lucide-react";
+import { LayoutTemplate, LoaderCircle, MapPinned, Pencil, Plus, Save, Settings2, Trash2 } from "lucide-react";
 
 // Tallaby delivery UI is disabled (owner, 2026-10-21); these imports only served it. See SettingsCard.
 // import { TALLABY_SERVICES_ENABLED } from "@workspace/lib/fulfillment";
@@ -34,8 +34,9 @@ import { PageActionBar } from "@/components/layout/page-action-bar";
 import { cn } from "@/lib/utils";
 import { CheckPrice } from "./check-price.client";
 import { ShippingCompaniesCard } from "./shipping-companies.client";
+import { ShippingCoverage } from "./shipping-coverage";
 import { deleteShippingZone, saveShippingSettings } from "./shipping.server";
-import type { TemplateOption, ZoneView } from "./shipping.dto";
+import type { CoverageItem, TemplateOption, ZoneView } from "./shipping.dto";
 import { ShippingTemplates, TemplatesSheet } from "./templates.client";
 import { formatEgp, ZoneSheet } from "./zone-sheet.client";
 
@@ -46,7 +47,7 @@ export function StoreShippingSettings({
   storeId,
   settings,
   zones,
-  uncovered,
+  coverage,
   templates,
   bosta,
   wassalha,
@@ -56,8 +57,8 @@ export function StoreShippingSettings({
   settings: Settings;
   /** Saved zones with server-computed place labels and override hints. */
   zones: ZoneView[];
-  /** Labels of Egypt's governorates no enabled zone covers (empty while no zone is on). */
-  uncovered: string[];
+  /** Every governorate with its price, for the coverage board. */
+  coverage: CoverageItem[];
   templates: TemplateOption[];
   /** The store's Bosta integration (BS-07), or null when it has none. */
   bosta: BostaOverview | null;
@@ -108,15 +109,16 @@ export function StoreShippingSettings({
         <SettingsSaveButton form={settingsForm} readOnly={readOnly} />
       </PageActionBar>
       {readOnly && <p className="rounded-lg border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">{t("readOnly")}</p>}
-      <div className="flex gap-2.5 rounded-lg border border-primary/25 bg-primary/5 px-4 py-3 text-sm">
-        <Info className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
-        <div className="space-y-0.5">
-          <p className="font-semibold">{t("noticeTitle")}</p>
-          <p className="text-muted-foreground">{t("checkoutNotice")}</p>
-        </div>
-      </div>
+      <p className="text-sm text-pretty text-muted-foreground">{t("checkoutNotice")}</p>
 
-      <ShippingCompaniesCard storeId={storeId} bosta={bosta} wassalha={wassalha} readOnly={readOnly} />
+      {zones.length > 0 && (
+        <ShippingCoverage
+          items={coverage}
+          refuseElsewhere={settings.otherPlaces === "refuse"}
+          disabled={disabled}
+          onAddZone={() => setEditing("new")}
+        />
+      )}
 
       {zones.length === 0 && (
         <SectionCard id="shipping-templates" icon={LayoutTemplate} title={t("templates.startTitle")} description={t("templates.description")}>
@@ -166,16 +168,11 @@ export function StoreShippingSettings({
             ))}
           </ul>
         )}
-        {uncovered.length > 0 && (
-          <p className="mt-4 rounded-lg bg-muted/40 px-3 py-2.5 text-sm text-muted-foreground">
-            <span className="font-medium text-foreground">{t("uncovered", { count: uncovered.length })}</span>{" "}
-            {uncovered.join(t("listSeparator"))}.{" "}
-            {settings.otherPlaces === "refuse" ? t("uncoveredRefuse") : t("uncoveredTallabyRates")}
-          </p>
-        )}
       </SectionCard>
 
       <CheckPrice zones={raw} settings={settings} />
+
+      <ShippingCompaniesCard storeId={storeId} bosta={bosta} wassalha={wassalha} readOnly={readOnly} />
 
       <SettingsCard form={settingsForm} readOnly={readOnly} />
 
@@ -245,8 +242,11 @@ function ZoneRow({
   ].filter(Boolean);
 
   return (
-    <li className={cn("flex flex-col gap-3 py-4 first:pt-0 last:pb-0 sm:flex-row sm:items-start", !zone.enabled && "opacity-70")}>
-      <div className="min-w-0 flex-1 space-y-1.5">
+    <li className={cn("grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-3 py-4 first:pt-0 last:pb-0 sm:grid-cols-[6rem_minmax(0,1fr)_auto]", !zone.enabled && "opacity-70")}>
+      <p className="text-lg leading-tight font-bold whitespace-nowrap tabular-nums sm:text-xl">
+        {zone.price === 0 ? t("free") : t("egp", { amount: formatEgp(locale, zone.price) })}
+      </p>
+      <div className="min-w-0 space-y-1.5">
         <p className="flex flex-wrap items-center gap-2 font-semibold">
           <span className="min-w-0 break-words">{name}</span>
           {!zone.enabled && (
@@ -280,9 +280,8 @@ function ZoneRow({
         </ul>
         <LabelNote>{meta.join(" · ")}</LabelNote>
       </div>
-      <div className="flex items-center justify-between gap-3 sm:flex-col sm:items-end">
-        <p className="whitespace-nowrap text-base font-bold tabular-nums">{t("egp", { amount: formatEgp(locale, zone.price) })}</p>
-        <div className="flex items-center gap-2">
+      <div className="col-span-2 sm:col-span-1">
+        <div className="flex items-center justify-end gap-2">
           <Button type="button" variant="outline" size="sm" className={SMALL_BUTTON_CLASS} disabled={disabled} onClick={onEdit}>
             <Pencil />
             {t("edit")}
