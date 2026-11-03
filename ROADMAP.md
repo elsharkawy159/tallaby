@@ -273,6 +273,10 @@ Priorities are the owner's (`Roadmap_new.md` §9). The order inside them is prop
 | 57  | F-63 | Customer notifications app (1 cent per order)       | P1                          | yes             | Owner request; goes live with the USD switch        |
 | 58  | F-62 | SMS app: Soon, sellers can request it               | P2                          | yes             | SMS sending waits for F-38                          |
 | 59  | F-61 | International storefront                            | P2                          | yes             | **Needs approval** (money, checkout)                |
+| 60  | F-64 | Simple one-page checkout                            | P1                          | yes             | Checkout review; shipping price needs a decision    |
+| 61  | F-65 | Remove campaign pages, hide store visits link       | P1                          | no              | Removing paid ads needs owner confirmation          |
+| 62  | F-66 | Email editor with live preview                      | P2                          | no              | —                                                   |
+| 63  | F-67 | Pending carts for sellers                           | P2                          | no (expected)   | Customer data: store's own carts only               |
 
 ---
 
@@ -984,6 +988,42 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 - **F-63b · P1 · deps: F-63a** The customer's order confirmation email sends only for a store subscribed to the app, and each sent confirmation charges 1 cent. A short wallet forgives that charge and starts grace, and it never fails the order. Sellers' own emails are unchanged.
 - **F-63c · P1 · deps: F-38b, F-62b** SMS through the same subscription, once F-38 is live. Check the price per SMS against 1 cent first.
 
+### F-64 Simple one-page checkout — P1 · owner request
+
+**Why:** A shorter form means fewer customers give up at checkout.
+**What:** The checkout is one simple form: full name, mobile number, country, full address (one line) and a note. Saved details fill in next time, and the customer can change item counts on the checkout page.
+**Status:** [Planned]
+
+- **F-64a · P1 · deps: —** Design note. **To decide with the owner:** shipping prices, zones and Bosta all use a governorate today (`shippingAddress.state`, `store_shipping_zones.places`), and a one-line address has none. Options: read the governorate from the address in code, ask for it only when it can't be read, or keep a governorate picker. Also choose the provider that turns a location into an address, with its cost and limits, following `docs/ai.md` if AI is used.
+- **F-64b · P1 · deps: F-64a** The form: full name, mobile number, country, full address on one line, and note. Replaces `shipping-information.tsx` and `store-checkout-fields.client.tsx` in both languages, with phone-only ordering and blocked-phone checks kept.
+- **F-64c · P1 · deps: F-64b** A location icon button beside Full address. On click it asks the browser for the location, shows a loading icon while searching, then writes the address into that field, which stays editable. If permission is refused or the search fails, the customer just types it, with a short message.
+- **F-64d · P1 · deps: F-64b** Save these details to the user, guests included, so they fill in automatically next time.
+- **F-64e · P1 · deps: F-64d** A customer with saved addresses gets the default one filled in, plus an Edit Address button to choose another.
+- **F-64f · P1 · deps: F-64b** Change item counts on the checkout page. Totals, shipping, coupons and stock checks update, and the server re-checks them when the order is placed.
+- Acceptance: `place-order.ts` keeps its rules, works on a phone, and no location is stored or sent unless the customer taps the button.
+
+### F-65 Remove campaign pages, hide store visits link — P1 · owner request
+
+**Status:** [Planned]
+
+- **F-65a · P1 · deps: owner** Remove "الحملات التسويقية" (`/marketing`) from the dashboard. **To confirm with the owner:** this page is where sellers buy paid ads from the wallet (`advertise.data`, `actions/ads.ts`), and it is the parent of Marketing's other pages. Confirm paid ads end, what happens to running or pending ads and Admin › Ad requests, and where Marketing lands.
+- **F-65b · P1 · deps: —** Remove "تتبع الحملات" (`/reports/campaigns`). Check other pages and links that lead to it.
+- **F-65c · P1 · deps: —** Hide "زيارات المتجر" (`/stores/[storeId]/analytics`) from the sidebar, because the numbers are on the dashboard home. The page stays reachable, and the home page's link to it keeps working.
+
+### F-66 Email editor with live preview — P2 · owner request
+
+**Status:** [Planned]
+
+- **F-66a · P2 · deps: —** On `/marketing/emails`, show the email preview beside the editor, updating as the seller types. On a phone, switch between Edit and Preview.
+- **F-66b · P2 · deps: F-66a** Make the page easier to use: review the steps from creating an email to sending it, and simplify them.
+
+### F-67 Pending carts for sellers — P2 · owner request
+
+**Why:** Sellers can follow up with customers who have items in a cart but haven't ordered. Admin already has this page across all stores (`apps/admin/.../pending-carts`).
+**Status:** [Planned]
+
+- **F-67a · P2 · deps: —** A Pending carts page in the seller's dashboard, for one store at a time: customer, items, value and last activity. It filters by `carts.store_id` for a store the session's seller owns (CLAUDE.md rule 5), with server paging. Contact details show only where the customer gave them. Check the overlap with Orders › Not completed (F-03) and decide whether to link or merge them.
+
 ---
 
 ## 5. Owner feature requests (intake)
@@ -992,6 +1032,10 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 | Date       | Request (owner's words)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | Feature ID                                                                                       | Status                                                                                 |
 | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- |
+| 2026-11-04 | "Make the checkout to be just a simple form contains full name, mobile number, Country, Full address, Note), with a simple location icon button beside the Full Address to automatically write the customer address onClick, in that field (only 1 field full address one line) and show a loading icon while searching about the customer location, and these info to be saved to the user so auto fill, also, make customer able to change the items count on checkout, for customers who have saved address, make autofill with the default address and Edit Address button to select the other addresses" | F-64 |
+| 2026-11-04 | "Remove the page \"الحملات التسويقية\" and \"تتبع الحملات\" from dashboard and hide \"زيارات المتجر\" page from the sidebar as it's already on dashboard / homepage" | F-65 |
+| 2026-11-04 | "On the /emails page, show the email preview while editing it, improve the page to be easier UX for the customer" | F-66 |
+| 2026-11-04 | "Add Pending Carts on Seller's dashboard to show the customer's of that store who has items in the cart" | F-67 |
 | 2026-11-04 | "add a task in roadmap to make Storefront can be international (all currencies, all countries in Shipping page, etc) And detect the Currency/Country, etc" | F-61 |
 | 2026-11-04 | "For the SMS we can make it \"Soon\" but still can be requested by sellers on \"Apps\" so if a user requested it I will enable it" | F-62 |
 | 2026-11-04 | "on the apps, I need to make a Notification App (Customer) and costs 1 cent per order, if customer wants to send an SMS and Email to customer who placed an order / So pause the automatically emails that sens to customer on new orders and make it integrated with the app subscription / Unsubscriped is the default" | F-63 |
@@ -1260,6 +1304,21 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [ ] F-61c Detect country and currency, with a switcher
 - [ ] F-61d All countries on the Shipping page
 - [ ] F-61e International checkout
+
+**Owner requests 2026-11-04 (checkout and dashboard)**
+
+- [ ] F-64a Simple checkout design note (shipping price, location provider)
+- [ ] F-64b Simple checkout form
+- [ ] F-64c Location button with loading icon
+- [ ] F-64d Save details and fill in automatically
+- [ ] F-64e Default address and Edit Address
+- [ ] F-64f Change item counts on checkout
+- [ ] F-65a Remove الحملات التسويقية (owner to confirm paid ads end)
+- [ ] F-65b Remove تتبع الحملات
+- [ ] F-65c Hide زيارات المتجر from the sidebar
+- [ ] F-66a Email preview while editing
+- [ ] F-66b Easier emails page
+- [ ] F-67a Pending carts on the seller dashboard
 
 ---
 
