@@ -1,5 +1,5 @@
 import { normalizePrice } from '@workspace/lib'
-import { computeSellerPlatformFee } from '@workspace/lib/orders/platform-fee'
+import { computeSellerPlatformFee, type FeeBilling } from '@workspace/lib/orders/platform-fee'
 
 export { normalizePrice }
 
@@ -10,6 +10,11 @@ export interface SellerPricingSettings {
   sellerFreeDelivery?: boolean
   feeTrialStartedAt?: string | null
   feeTrialEndsAt?: string | null
+  /** The USD switch and rate (0136). Without it, the EGP 5 fee. */
+  feeBilling?: FeeBilling
+  plan?: string | null
+  planExpiresAt?: string | null
+  planGraceUntil?: string | null
 }
 
 export const DEFAULT_COMMISSION_RATE = 5
@@ -48,8 +53,9 @@ export function calculateProductFinalPrice(
 
 /**
  * What the seller is paid for an order of one unit sold at `sellingPrice`,
- * after the flat EGP 5 platform fee (PLAN.md §13). 0 fee while the seller's
- * trial runs or when exempt. Larger orders pay a lower share.
+ * after the platform fee (PLAN.md §13): the flat EGP 5, or after the USD switch
+ * the EGP equivalent of 3 US cents on Free and nothing on Pro. 0 fee while the
+ * seller's trial runs or when exempt. Larger orders pay a lower share.
  */
 export function calculateSellerEarning(
   sellingPrice: number | string | undefined,
@@ -66,8 +72,13 @@ export function calculateSellerEarning(
       isCommissionExempt: settings.isCommissionExempt,
       feeTrialStartedAt: settings.feeTrialStartedAt,
       feeTrialEndsAt: settings.feeTrialEndsAt,
+      plan: settings.plan,
+      planExpiresAt: settings.planExpiresAt,
+      planGraceUntil: settings.planGraceUntil,
     },
-    [{ total: numericPrice }]
+    [{ total: numericPrice }],
+    new Date(),
+    settings.feeBilling
   )
   return parseFloat((numericPrice - (lineFeesPiastres[0] ?? 0) / 100).toFixed(2))
 }

@@ -16,7 +16,7 @@ import {
 } from "@workspace/ui/components/table";
 import { Badge } from "@workspace/ui/components/badge";
 import { useLocale, useTranslations } from "next-intl";
-import { formatDate, formatMoney, formatNumber } from "@/lib/i18n/format";
+import { formatDate, formatMoney, formatNumber, formatWalletMoney } from "@/lib/i18n/format";
 import { humanizeStatus, translateStatus } from "@/lib/i18n/status";
 import type { SalesSources } from "./financial.lib";
 import { SalesSourcesCard } from "./sales-sources.client";
@@ -24,6 +24,7 @@ import { SalesSourcesCard } from "./sales-sources.client";
 interface FinancialDashboardContentProps {
   wallet: {
     walletBalance?: string | null;
+    walletCurrency?: string | null;
     payoutSchedule?: string | null;
     lastPayoutDate?: string | null;
     lastPayoutAmount?: string | null;
@@ -52,6 +53,8 @@ interface FinancialDashboardContentProps {
     id: string;
     type: string;
     amount: string;
+    /** The entry's own currency: older rows stay in EGP after the USD switch. */
+    currency?: string | null;
     description?: string | null;
     createdAt?: string | null;
     order?: { orderNumber?: string | null } | null;
@@ -168,7 +171,7 @@ export function FinancialDashboardContent({
               <div>
                 <p className="text-sm text-muted-foreground">{t("walletBalance")}</p>
                 <p className="text-2xl font-bold text-foreground">
-                  {formatCurrency(walletBalance)}
+                  {formatWalletMoney(walletBalance, wallet?.walletCurrency, locale)}
                 </p>
                 <Link href="/wallet" className="text-sm text-primary-ink hover:underline">
                   {t("viewStoreWallet")}
@@ -226,7 +229,7 @@ export function FinancialDashboardContent({
                       >
                         <bdi dir="ltr">
                           {Number(tx.amount) > 0 ? "+" : ""}
-                          {formatCurrency(tx.amount)}
+                          {formatWalletMoney(tx.amount, tx.currency, locale)}
                         </bdi>
                       </TableCell>
                       <TableCell>

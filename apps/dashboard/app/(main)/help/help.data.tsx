@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { ChevronRight, PlayCircle } from "lucide-react";
+import { getBillingState } from "@workspace/lib/billing/server";
 import { Badge } from "@workspace/ui/components/badge";
 import { requireSeller } from "@/lib/auth/require-seller.server";
 import { getSellerStores } from "@/lib/stores/current-store.server";
 import { storeBuilderEnabled } from "@/components/dashboard/sidebar.config";
-import { HELP_SHORTCUTS, HELP_TOPICS, HELP_VIDEOS, resolveHelpLink } from "./help.lib";
+import { HELP_SHORTCUTS, HELP_TOPICS, HELP_VIDEOS, USD_ANSWER_FAQS, resolveHelpLink } from "./help.lib";
 import { ContactDesk, FaqBrowser, type FaqTopicView } from "./help.client";
 
 /**
@@ -14,11 +15,12 @@ import { ContactDesk, FaqBrowser, type FaqTopicView } from "./help.client";
  * The selected store only fills navigation links (never a write target).
  */
 export async function HelpData() {
-  const [seller, { selected }, t, tNav] = await Promise.all([
+  const [seller, { selected }, t, tNav, billing] = await Promise.all([
     requireSeller(),
     getSellerStores(),
     getTranslations("help"),
     getTranslations("nav"),
+    getBillingState(),
   ]);
   const ctx = { storeId: selected?.id ?? null, builder: storeBuilderEnabled(seller.sellerId) };
 
@@ -30,7 +32,7 @@ export async function HelpData() {
       return {
         key: faq.key,
         question: t(`faqs.${faq.key}.question`),
-        answer: t(`faqs.${faq.key}.answer`),
+        answer: t(billing.usdLive && USD_ANSWER_FAQS.has(faq.key) ? `faqs.${faq.key}.answerUsd` : `faqs.${faq.key}.answer`),
         link: link ? { href: link.href, label: t("openPage", { page: tNav(link.nav) }) } : null,
       };
     }),

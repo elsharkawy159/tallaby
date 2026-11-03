@@ -64,7 +64,7 @@ export function NegativeWalletDialog({ balance, currency }: { balance: number | 
             <AlertTriangle className="size-6" aria-hidden />
           </span>
           <DialogTitle>{t("title")}</DialogTitle>
-          <DialogDescription>{t("description")}</DialogDescription>
+          <DialogDescription>{t(currency === "USD" ? "descriptionUsd" : "description")}</DialogDescription>
         </DialogHeader>
         <p className="text-center text-sm text-muted-foreground">
           {t("balanceLabel")}{" "}

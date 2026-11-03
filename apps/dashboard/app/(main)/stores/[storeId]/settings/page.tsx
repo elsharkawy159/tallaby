@@ -4,6 +4,7 @@ import { STORE_CATALOG_MAX_PRODUCTS } from "@workspace/lib/stores";
 import { getStoreCatalog } from "@workspace/lib/stores/server";
 import { storeBuilderEnabled } from "@/components/dashboard/sidebar.config";
 import { loadStorePage } from "@/lib/stores/store-page.server";
+import { getBillingState } from "@workspace/lib/billing/server"
 import { StoreGeneralForm } from "./store-general.client";
 import { loadCatalogProducts } from "./catalog.data";
 import type { StoreGeneralFormValues } from "./store-settings.dto";
@@ -11,9 +12,10 @@ import type { StoreGeneralFormValues } from "./store-settings.dto";
 export default async function StoreGeneralSettingsPage({ params }: { params: Promise<{ storeId: string }> }) {
   const { storeId } = await params;
   const store = await loadStorePage(storeId);
-  const [catalog, catalogProducts] = await Promise.all([
+  const [catalog, catalogProducts, billing] = await Promise.all([
     getStoreCatalog(store.sellerId, store.id),
     loadCatalogProducts(store.sellerId, store.id),
+    getBillingState(),
   ]);
   if (!catalog) notFound();
   const contact = (store.contact ?? {}) as Record<string, string | undefined>;
@@ -39,6 +41,7 @@ export default async function StoreGeneralSettingsPage({ params }: { params: Pro
 
   return (
     <StoreGeneralForm
+      usdLive={billing.usdLive}
       storeId={store.id}
       initial={initial}
       readOnly={readOnly}

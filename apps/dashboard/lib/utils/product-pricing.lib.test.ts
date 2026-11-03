@@ -10,6 +10,20 @@ describe('calculateSellerEarning (platform fee, PLAN.md §13)', () => {
     expect(calculateSellerEarning('251', base)).toBe(246)
   })
 
+  it('after the USD switch: the EGP equivalent of 3 cents on Free, nothing on Pro', () => {
+    const live = { ...base, feeBilling: { usdLive: true, marketRate: 50 } }
+    expect(calculateSellerEarning(100, live)).toBe(98.5)
+    const until = new Date(Date.now() + 86_400_000).toISOString()
+    expect(calculateSellerEarning(100, { ...live, plan: 'pro', planExpiresAt: until })).toBe(100)
+    // A lapsed Pro seller pays like Free.
+    const past = new Date(Date.now() - 86_400_000).toISOString()
+    expect(calculateSellerEarning(100, { ...live, plan: 'pro', planExpiresAt: past })).toBe(98.5)
+  })
+
+  it('stays EGP 5 while the switch is off', () => {
+    expect(calculateSellerEarning(100, { ...base, feeBilling: { usdLive: false, marketRate: 50 } })).toBe(95)
+  })
+
   it('never goes below zero for prices under EGP 5', () => {
     expect(calculateSellerEarning(3, base)).toBe(0)
   })

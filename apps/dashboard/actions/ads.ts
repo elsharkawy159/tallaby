@@ -1,6 +1,5 @@
 "use server";
 
-import { minorToAmount, piastresToUsdCents } from "@workspace/lib/billing";
 import { getBillingState } from "@workspace/lib/billing/server";
 import { db, adCampaignRequests, products, sellerWallet } from "@workspace/db";
 import {
@@ -18,6 +17,7 @@ import {
   EGYPT_MOBILE_REGEX,
   getAdPackage,
   type AdRequestStatus,
+  adWalletAmount,
 } from "@/lib/ad-packages";
 
 export type AdRequestRow = {
@@ -47,7 +47,14 @@ export type CreateAdRequestError =
 export type AdPaymentMethod = "vodafone_cash" | "wallet";
 
 /** Store wallet figures the payment step needs (PLAN.md P6-11). */
-export type AdWallet = { balance: number; negativeLimit: number; active: boolean };
+export type AdWallet = {
+  balance: number;
+  negativeLimit: number;
+  active: boolean;
+  currency: string;
+  /** EGP per USD when the wallet is in USD, else null (no conversion). */
+  usdRate: number | null;
+};
 
 const createAdRequestSchema = z.discriminatedUnion("paymentMethod", [
   z.object({
@@ -68,10 +75,19 @@ export async function getAdWallet(): Promise<AdWallet | null> {
   const session = await getUser();
   if (!session?.user?.id) return null;
   const [row] = await db
-    .select({ balance: sellerWallet.balance, negativeLimit: sellerWallet.negativeLimit, status: sellerWallet.status })
+    .select({
+      balance: sellerWallet.balance,
+      negativeLimit: sellerWallet.negativeLimit,
+      status: sellerWallet.status,
+      currency: sellerWallet.currency,
+    })
     .from(sellerWallet)
     .where(eq(sellerWallet.sellerId, session.user.id));
+  const billing = await getBillingState();
+  const currency = row?.currency ?? (billing.usdLive ? "USD" : "EGP");
   return {
+    currency,
+    usdRate: currency === "USD" ? billing.marketRate : null,
     balance: Number(row?.balance ?? 0),
     negativeLimit: Number(row?.negativeLimit ?? 0),
     active: (row?.status ?? "active") === "active",
@@ -162,10 +178,7 @@ export async function createAdRequest(input: {
     const amount = pkg.price.toFixed(2);
     // Packages are priced in EGP; a USD wallet pays the equivalent (0136).
     const billing = await getBillingState();
-    const walletAmount =
-      billing.usdLive && billing.marketRate
-        ? minorToAmount(Math.max(1, piastresToUsdCents(Math.round(pkg.price * 100), billing.marketRate)))
-        : amount;
+    const walletAmount = adWalletAmount(pkg.price, billing.usdLive ? billing.marketRate : null);
 
     // Paid from the store wallet: the request and its service_charge commit
     // together; the charge may not overdraw past the wallet's limit (D21).

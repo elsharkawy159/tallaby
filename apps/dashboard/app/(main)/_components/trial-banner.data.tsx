@@ -1,7 +1,8 @@
 import { Gift } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getFeeTrialStatus } from "@workspace/lib/sellers";
-import { formatDate } from "@/lib/i18n/format";
+import { FEE_PER_ORDER_USD } from "../wallet/store-wallet.lib";
+import { formatDate, formatWalletMoney } from "@/lib/i18n/format";
 import { getHomeSnapshot } from "./home.queries";
 import { HomeCard, IconTile } from "./home-ui";
 
@@ -34,7 +35,11 @@ export async function TrialBannerData() {
           {active ? t("activeTitle", { days: status.daysLeft }) : t("notStartedTitle")}
         </h2>
         <p className="text-pretty text-[13px] text-muted-foreground">
-          {active ? t("active", { date: formatDate(status.endsAt, locale) }) : t("notStarted")}
+          {!active
+            ? t("notStarted")
+            : snapshot.walletCurrency === "USD"
+              ? t("activeUsd", { date: formatDate(status.endsAt, locale), fee: formatWalletMoney(FEE_PER_ORDER_USD, "USD", locale) })
+              : t("active", { date: formatDate(status.endsAt, locale) })}
         </p>
       </div>
     </HomeCard>

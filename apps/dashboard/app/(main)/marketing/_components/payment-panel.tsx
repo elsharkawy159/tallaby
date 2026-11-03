@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { Copy, Smartphone, Wallet } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button } from "@workspace/ui/components/button";
 import { Checkbox } from "@workspace/ui/components/checkbox";
@@ -10,7 +10,8 @@ import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
 import { createAdRequest, type AdPaymentMethod, type AdWallet } from "@/actions/ads";
 import { cn } from "@/lib/utils";
-import { EGYPT_MOBILE_REGEX, VODAFONE_CASH_NUMBER, type AdPackage } from "@/lib/ad-packages";
+import { formatWalletMoney } from "@/lib/i18n/format";
+import { adWalletAmount, EGYPT_MOBILE_REGEX, VODAFONE_CASH_NUMBER, type AdPackage } from "@/lib/ad-packages";
 
 /** Vodafone's brand red, used only to mark this as the Vodafone Cash step. */
 const VODAFONE_RED = "#E60000";
@@ -21,7 +22,7 @@ const VODAFONE_RED = "#E60000";
  */
 /** Whether the store wallet can pay this price (D21: no overdraft past the limit). */
 export function walletCanPay(wallet: AdWallet | null, price: number) {
-  return !!wallet && wallet.active && wallet.balance - price >= -wallet.negativeLimit;
+  return !!wallet && wallet.active && wallet.balance - Number(adWalletAmount(price, wallet.usdRate)) >= -wallet.negativeLimit;
 }
 
 export function usePaymentForm({
@@ -108,7 +109,12 @@ export function PaymentPanel({ pkg, form }: { pkg: AdPackage; form: PaymentForm 
   const showPhoneError = form.phoneTouched && !form.phoneValid;
   const wallet = form.wallet;
   const canPay = walletCanPay(wallet, pkg.price);
-  const after = (wallet?.balance ?? 0) - pkg.price;
+  const usdWallet = wallet?.currency === "USD";
+  const walletPrice = Number(adWalletAmount(pkg.price, wallet?.usdRate ?? null));
+  const after = (wallet?.balance ?? 0) - walletPrice;
+  const locale = useLocale();
+  const walletFigure = (value: number) =>
+    usdWallet ? formatWalletMoney(value, "USD", locale) : `${value.toLocaleString()} ${tPackage("currency")}`;
 
   const copy = async (value: string, message: string) => {
     try {
@@ -145,7 +151,7 @@ export function PaymentPanel({ pkg, form }: { pkg: AdPackage; form: PaymentForm 
             <span className="flex-1">{key === "wallet" ? tWallet("method") : t("brand")}</span>
             {key === "wallet" && wallet && (
               <span dir="ltr" className="text-xs font-normal tabular-nums">
-                {wallet.balance.toLocaleString()} {tPackage("currency")}
+                {walletFigure(wallet.balance)}
               </span>
             )}
           </button>
@@ -157,13 +163,21 @@ export function PaymentPanel({ pkg, form }: { pkg: AdPackage; form: PaymentForm 
           <p className="flex justify-between gap-2">
             <span className="text-muted-foreground">{tWallet("balance")}</span>
             <span dir="ltr" className="font-semibold tabular-nums">
-              {(wallet?.balance ?? 0).toLocaleString()} {tPackage("currency")}
+              {walletFigure(wallet?.balance ?? 0)}
             </span>
           </p>
+          {usdWallet && (
+            <p className="flex justify-between gap-2">
+              <span className="text-muted-foreground">{tWallet("priceInWallet", { price: amount })}</span>
+              <span dir="ltr" className="font-semibold tabular-nums">
+                {walletFigure(walletPrice)}
+              </span>
+            </p>
+          )}
           <p className="flex justify-between gap-2">
             <span className="text-muted-foreground">{tWallet("after")}</span>
             <span dir="ltr" className={cn("font-semibold tabular-nums", after < 0 && "text-destructive")}>
-              {after.toLocaleString()} {tPackage("currency")}
+              {walletFigure(after)}
             </span>
           </p>
           <p className={cn("text-xs", canPay ? "text-muted-foreground" : "text-destructive")}>

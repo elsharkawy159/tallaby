@@ -33,6 +33,9 @@ const L = {
   coupons: { nav: "coupons", href: "/coupons" },
 } satisfies Record<string, HelpLink>;
 
+/** FAQs whose answer changes at the USD switch: they have an `answerUsd` too. */
+export const USD_ANSWER_FAQS: ReadonlySet<string> = new Set(["fees", "topUp"]);
+
 export const HELP_TOPICS: HelpTopic[] = [
   {
     key: "start",

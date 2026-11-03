@@ -1,6 +1,6 @@
 "use server";
 
-import { db, sellerPayouts, sellerPayoutItems, orderItems, sellers, walletTransactions } from "@workspace/db";
+import { db, sellerPayouts, sellerPayoutItems, sellerWallet, orderItems, sellers, walletTransactions } from "@workspace/db";
 import { eq, and, desc, sql, gte, between } from "drizzle-orm";
 import { getUser } from "./auth";
 
@@ -138,17 +138,23 @@ export async function getWalletBalance() {
       throw new Error("Unauthorized");
     }
 
-    const seller = await db.query.sellers.findFirst({
-      where: eq(sellers.id, session.user.id),
-      columns: {
-        walletBalance: true,
-        payoutSchedule: true,
-        lastPayoutDate: true,
-        lastPayoutAmount: true,
-      },
-    });
+    const [seller, wallet] = await Promise.all([
+      db.query.sellers.findFirst({
+        where: eq(sellers.id, session.user.id),
+        columns: {
+          walletBalance: true,
+          payoutSchedule: true,
+          lastPayoutDate: true,
+          lastPayoutAmount: true,
+        },
+      }),
+      db.query.sellerWallet.findFirst({
+        where: eq(sellerWallet.sellerId, session.user.id),
+        columns: { currency: true },
+      }),
+    ]);
 
-    return { success: true, data: seller };
+    return { success: true, data: seller && { ...seller, walletCurrency: wallet?.currency ?? "EGP" } };
   } catch (error) {
     console.error("Error fetching wallet balance:", error);
     return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
@@ -170,6 +176,7 @@ export async function getWalletTransactions(params?: { limit?: number }) {
         id: true,
         type: true,
         amount: true,
+        currency: true,
         description: true,
         createdAt: true,
       },

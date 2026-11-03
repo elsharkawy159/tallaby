@@ -1,3 +1,15 @@
+import { minorToAmount, piastresToUsdCents } from "@workspace/lib/billing";
+
+/**
+ * What a package costs the store wallet, as a decimal. Packages are priced in
+ * EGP; a USD wallet (0136) pays the equivalent at this market rate.
+ */
+export function adWalletAmount(priceEgp: number, usdRate: number | null): string {
+  return usdRate
+    ? minorToAmount(Math.max(1, piastresToUsdCents(Math.round(priceEgp * 100), usdRate)))
+    : priceEgp.toFixed(2);
+}
+
 /**
  * Ad packages a seller can buy from "Advertise your products". The price here
  * is the source of truth: `createAdRequest` snapshots it into the request, so

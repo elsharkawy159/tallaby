@@ -7,6 +7,7 @@ import { getAllCategories } from "@/actions/categories";
 import { EditProduct } from "./edit-product";
 import { buildEditDefaultValues } from "./edit-product.lib";
 import { getSellerProfile } from "@/actions/seller";
+import { getBillingState } from "@workspace/lib/billing/server";
 import { DEFAULT_COMMISSION_RATE } from "@/lib/utils/product-pricing.lib";
 import { requireSeller } from "@/lib/auth/require-seller.server";
 import { loadSellerTaxonomyOptions } from "../../categories-brands/categories-brands.data";
@@ -33,7 +34,7 @@ export default async function EditProductPage({
 }: EditProductPageProps) {
   const { productId } = await params;
   const { sellerId } = await requireSeller();
-  const [productResult, categoriesRes, sellerProfile, sellerTaxonomy, linkHost, socialProof] =
+  const [productResult, categoriesRes, sellerProfile, sellerTaxonomy, linkHost, socialProof, billing] =
     await Promise.all([
       getProduct(productId),
       getAllCategories(),
@@ -41,6 +42,7 @@ export default async function EditProductPage({
       loadSellerTaxonomyOptions(sellerId),
       loadProductLinkHost(sellerId),
       loadProductSocialProof(sellerId, productId),
+      getBillingState(),
     ]);
 
   if (!productResult.success || !productResult.data) {
@@ -58,6 +60,10 @@ export default async function EditProductPage({
     sellerFreeDelivery: seller?.freeDelivery ?? false,
     feeTrialStartedAt: seller?.feeTrialStartedAt ?? null,
     feeTrialEndsAt: seller?.feeTrialEndsAt ?? null,
+    feeBilling: { usdLive: billing.usdLive, marketRate: billing.marketRate },
+    plan: seller?.plan ?? null,
+    planExpiresAt: seller?.planExpiresAt ?? null,
+    planGraceUntil: seller?.planGraceUntil ?? null,
   };
   const defaultValues = {
     ...buildEditDefaultValues(product as Parameters<typeof buildEditDefaultValues>[0], sellerPricing),

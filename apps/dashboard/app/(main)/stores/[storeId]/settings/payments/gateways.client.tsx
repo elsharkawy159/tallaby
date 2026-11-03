@@ -33,10 +33,12 @@ export function StoreGatewaysCard({
   storeId,
   initial,
   readOnly,
+  usdLive,
 }: {
   storeId: string;
   initial: StoreGatewayOverview;
   readOnly: boolean;
+  usdLive: boolean;
 }) {
   const t = useTranslations("storePayments.gateways");
   const tApp = useTranslations("storeApps.providers");
@@ -162,6 +164,7 @@ export function StoreGatewaysCard({
       />
       {editing && (
         <GatewaySheet
+          feeKey={usdLive ? "howItWorks.feeUsd" : "howItWorks.fee"}
           key={editing}
           provider={editing}
           storeId={storeId}
@@ -203,7 +206,9 @@ function GatewaySheet({
   currentMode,
   onClose,
   onConnected,
+  feeKey,
 }: {
+  feeKey: "howItWorks.fee" | "howItWorks.feeUsd";
   provider: StoreGatewayProvider;
   storeId: string;
   isUpdate: boolean;
@@ -299,7 +304,7 @@ function GatewaySheet({
             <div className="space-y-1.5">
               <p>{t("howItWorks.verify")}</p>
               <p>{t("howItWorks.money")}</p>
-              <p>{t("howItWorks.fee")}</p>
+              <p>{t(feeKey)}</p>
             </div>
           </div>
 

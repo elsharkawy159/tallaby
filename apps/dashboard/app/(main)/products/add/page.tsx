@@ -4,6 +4,7 @@ import { aiConfigured } from "@workspace/ai";
 import AddProduct from "./add-product";
 import { getAllCategories } from "@/actions/categories";
 import { getSellerProfile } from "@/actions/seller";
+import { getBillingState } from "@workspace/lib/billing/server";
 import { DEFAULT_COMMISSION_RATE } from "@/lib/utils/product-pricing.lib";
 import { requireSeller } from "@/lib/auth/require-seller.server";
 import { loadSellerTaxonomyOptions } from "../categories-brands/categories-brands.data";
@@ -16,11 +17,12 @@ export const dynamic = "force-dynamic";
 // Main page component
 export default async function AddProductPage() {
   const seller = await requireSeller();
-  const [categories, sellerProfile, sellerTaxonomy, linkHost] = await Promise.all([
+  const [categories, sellerProfile, sellerTaxonomy, linkHost, billing] = await Promise.all([
     getAllCategories(),
     getSellerProfile(),
     loadSellerTaxonomyOptions(seller.sellerId),
     loadProductLinkHost(seller.sellerId),
+    getBillingState(),
   ]);
 
   const profile = sellerProfile.success ? sellerProfile.data : null;
@@ -37,6 +39,10 @@ export default async function AddProductPage() {
         sellerFreeDelivery: profile?.freeDelivery ?? false,
         feeTrialStartedAt: profile?.feeTrialStartedAt ?? null,
         feeTrialEndsAt: profile?.feeTrialEndsAt ?? null,
+        feeBilling: { usdLive: billing.usdLive, marketRate: billing.marketRate },
+        plan: profile?.plan ?? null,
+        planExpiresAt: profile?.planExpiresAt ?? null,
+        planGraceUntil: profile?.planGraceUntil ?? null,
       }}
     />
   );

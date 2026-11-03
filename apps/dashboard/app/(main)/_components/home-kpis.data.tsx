@@ -3,7 +3,7 @@ import type { LucideIcon } from "lucide-react";
 import { Banknote, Eye, Percent, Receipt, ShoppingBag, Star, UserPlus, Wallet } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { cn } from "@workspace/ui/lib/utils";
-import { formatNumber } from "@/lib/i18n/format";
+import { formatNumber, formatWalletMoney } from "@/lib/i18n/format";
 import {
   getHomeChannelStores,
   getHomeSnapshot,
@@ -103,6 +103,7 @@ export async function HomeMetricsData({ range, channel = "all" }: { range: HomeR
   const num = (value: number, digits = 0) => formatNumber(value, locale, { maximumFractionDigits: digits });
   const wallet = snapshot?.walletBalance ?? 0;
   const walletState = walletKpiState(wallet);
+  const usdWallet = snapshot?.walletCurrency === "USD";
   const rating = snapshot?.storeRating;
   const hasRating = rating != null && (snapshot?.totalRatings ?? 0) > 0;
 
@@ -122,8 +123,8 @@ export async function HomeMetricsData({ range, channel = "all" }: { range: HomeR
         icon={Wallet}
         tone={walletState === "negative" ? "danger" : "success"}
         label={t("storeWallet")}
-        value={num(wallet, 2)}
-        unit={t("currency")}
+        value={usdWallet ? formatWalletMoney(wallet, "USD", locale) : num(wallet, 2)}
+        unit={usdWallet ? undefined : t("currency")}
         note={walletState === "negative" ? t("walletNegative") : undefined}
       />
       <Metric

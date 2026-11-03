@@ -793,7 +793,8 @@
       "notStartedTitle": "Your 7-day free trial is waiting",
       "notStarted": "No platform fee for 7 days, counted from the day your first store was created.",
       "activeTitle": "{days, plural, one {# day} other {# days}} left in your free trial",
-      "active": "No platform fee on orders placed until {date}. After that, the fee is a flat EGP 5 per new order."
+      "active": "No platform fee on orders placed until {date}. After that, the fee is a flat EGP 5 per new order.",
+      "activeUsd": "No platform fee on orders placed until {date}. After that, the fee on the Free plan is {fee} per new order."
     },
     "range": {
       "label": "Reporting period",
@@ -3050,6 +3051,7 @@
       },
       "fees": {
         "question": "What does Tallaby charge?",
+        "answerUsd": "On the Free plan, $0.03 per new order, taken from your store wallet when the order is placed. An order that looks like a test or a duplicate (same customer and same products within 2 hours) is charged only if it is delivered. The Pro plan is $29 a month with no order fee. See Plan & usage.",
         "answer": "A flat EGP 5 per new order, taken from your store wallet when the order is placed. An order that looks like a test or a duplicate (same customer and same products within 2 hours) is charged only if it is delivered. New sellers get EGP 100 in their wallet when they finish their store (choose a template, add a product and publish), valid for 30 days."
       },
       "plan": {
@@ -3082,6 +3084,7 @@
       },
       "topUp": {
         "question": "How do I top up my wallet?",
+        "answerUsd": "Open Balance & top-ups and choose Top up. Pick an amount from $5 to $1,000; you see the total in EGP before you pay. Pay by card or mobile wallet on Kashier, or send it by Vodafone Cash or InstaPay and upload the transfer receipt. A receipt is credited once our team confirms the transfer.",
         "answer": "Open Balance & top-ups and choose Top up. Send between EGP 100 and EGP 20,000 by Vodafone Cash or InstaPay, then upload the transfer receipt. Your balance updates once our team confirms the transfer."
       },
       "paymentMethods": {
@@ -3133,6 +3136,7 @@
     "openStore": "Open your store"
   },
   "negativeWalletDialog": {
+    "descriptionUsd": "Tallaby takes its order fee from your wallet for each new order on the Free plan. Top up to clear the amount you owe.",
     "title": "Your wallet balance is negative",
     "description": "Tallaby takes a flat EGP 5 from your wallet for each new order. Top up to clear the amount you owe.",
     "balanceLabel": "Current balance:",
@@ -3249,6 +3253,7 @@
       "method": "Store wallet",
       "balance": "Wallet balance",
       "after": "Balance after this ad",
+      "priceInWallet": "This ad ({price} EGP) from your wallet",
       "note": "The amount is taken from your store wallet when you send the request. If we reject it, it goes back to your wallet.",
       "insufficient": "Your wallet balance isn't enough for this package. Top up your wallet or pay with Vodafone Cash.",
       "notActive": "Your store wallet is frozen, so it can't pay for ads right now.",
@@ -3504,6 +3509,7 @@
       "description": "The currency your prices are shown in on your store's website, and how its symbol looks.",
       "currency": "Currency",
       "symbol": "Currency symbol",
+      "hintUsd": "Prices are not converted: the amounts you enter are shown with this currency. The dashboard and shipping fees stay in EGP. Your Tallaby wallet is in US dollars.",
       "hint": "Prices are not converted: the amounts you enter are shown with this currency. The dashboard, wallet and shipping fees stay in EGP.",
       "groups": {
         "regional": "Egypt and the Gulf",
@@ -3625,6 +3631,7 @@
     },
     "saved": "Payment methods updated.",
     "readOnly": "This store is read-only, so payment methods can't be changed.",
+    "checkoutNoticeUsd": "Your store's checkout shows only the methods you turn on here. Wallet and InstaPay payments go straight to your own account, so they are not added to your Tallaby wallet; only your plan's order fee, if it has one, is taken from it.",
     "checkoutNotice": "Your store's checkout shows only the methods you turn on here. Wallet and InstaPay payments go straight to your own account, so they are not added to your Tallaby wallet; only the EGP 5 fee per order is taken from it.",
     "soonTitle": "Coming soon",
     "soonDescription": "These will be available in a later update.",
@@ -3781,7 +3788,8 @@
       "howItWorks": {
         "verify": "We check your keys by creating a 1 EGP test checkout in your account. Nobody is charged.",
         "money": "Card payments go straight to your gateway account. Tallaby never holds this money, and refunds are made from your gateway's dashboard.",
-        "fee": "Tallaby's EGP 5 fee per order is taken from your store wallet once the payment is confirmed, as with any order."
+        "fee": "Tallaby's EGP 5 fee per order is taken from your store wallet once the payment is confirmed, as with any order.",
+        "feeUsd": "Your plan's order fee, if it has one, is taken from your store wallet once the payment is confirmed, as with any order."
       },
       "fields": {
         "mode": "Account mode",
@@ -4725,6 +4733,7 @@
     "negative": "Your balance is below zero. New sales pay it back automatically, or you can top up at any time.",
     "negativeStrong": "Your balance is well below zero. Top up soon: until it recovers, ads and other paid services can't be paid from the wallet.",
     "howTitle": "How the platform fee works",
+    "howUsd": "On the Free plan, Tallaby takes {fee} from your wallet for each new order, whatever the total; the Pro plan has no order fee. An order that looks like a test (a name like \"test\" or a phone like 01000000000) or a duplicate (same customer and same products within 2 hours) is charged only if it is delivered. The order amount is never added to the wallet. If your balance is zero or less, it goes below zero.",
     "how": "For each new order, Tallaby takes a flat EGP 5 from your wallet when the order is placed, whatever the total. An order that looks like a test (a name like \"test\" or a phone like 01000000000) or a duplicate (same customer and same products within 2 hours) is charged only if it is delivered. The order amount is never added to the wallet. If your balance is zero or less, it goes below zero.",
     "trialActive": "Free trial: {days, plural, one {# day} other {# days}} left, no fee on orders placed until {date}.",
     "trialNotStarted": "Your 7-day free trial starts when your first store is created.",

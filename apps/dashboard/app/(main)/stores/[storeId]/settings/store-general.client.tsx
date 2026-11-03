@@ -56,7 +56,10 @@ export function StoreGeneralForm({
   readOnly,
   brandInSettings,
   catalog: catalogProps,
+  usdLive,
 }: {
+  /** The USD switch (0136): the wallet is no longer in EGP. */
+  usdLive: boolean;
   storeId: string;
   initial: StoreGeneralFormValues;
   readOnly: boolean;
@@ -380,7 +383,7 @@ export function StoreGeneralForm({
               </FormItem>
             )}
           />
-          <FieldHint>{t("currency.hint")}</FieldHint>
+          <FieldHint>{t(usdLive ? "currency.hintUsd" : "currency.hint")}</FieldHint>
         </SectionCard>
         </div>
         </div>

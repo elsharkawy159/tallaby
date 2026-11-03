@@ -179,7 +179,7 @@ export async function StoreWalletSection({
               <Info className="size-4 text-primary-ink" aria-hidden />
               {t("howTitle")}
             </p>
-            <p className="text-pretty text-muted-foreground">{t("how")}</p>
+            <p className="text-pretty text-muted-foreground">{usd ? t("howUsd", { fee: money(FEE_PER_ORDER_USD) }) : t("how")}</p>
             {(trial.state === "active" || trial.state === "not_started") && (
               <p className="flex gap-2 rounded-lg bg-success-soft p-2 text-success">
                 <Gift className="mt-0.5 size-4 shrink-0" aria-hidden />

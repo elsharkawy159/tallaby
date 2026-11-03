@@ -94,11 +94,14 @@ export function StorePaymentsSettings({
   initial,
   gateways,
   readOnly,
+  usdLive,
 }: {
   storeId: string;
   initial: StorePayments;
   gateways: StoreGatewayOverview;
   readOnly: boolean;
+  /** The USD switch (0136): the order fee is no longer EGP 5. */
+  usdLive: boolean;
 }) {
   const t = useTranslations("storePayments");
   const router = useRouter();
@@ -193,7 +196,7 @@ export function StorePaymentsSettings({
       {readOnly && <p className="rounded-xl border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">{t("readOnly")}</p>}
       <p className="flex items-start gap-2.5 rounded-xl bg-primary-soft px-4 py-3 text-[13px] text-primary-ink">
         <Info className="mt-0.5 size-4 shrink-0" aria-hidden />
-        <span>{t("checkoutNotice")}</span>
+        <span>{t(usdLive ? "checkoutNoticeUsd" : "checkoutNotice")}</span>
       </p>
 
       <PaymentCard title={t("cashTitle")} description={t("cashDescription")}>
@@ -211,7 +214,7 @@ export function StorePaymentsSettings({
         <ul>{WALLETS.map(row)}</ul>
       </PaymentCard>
 
-      <StoreGatewaysCard storeId={storeId} initial={gateways} readOnly={readOnly} />
+      <StoreGatewaysCard storeId={storeId} initial={gateways} readOnly={readOnly} usdLive={usdLive} />
 
       <PaymentCard title={t("soonTitle")} description={t("soonDescription")}>
         <ul className="grid gap-3 p-4 sm:grid-cols-2 sm:p-6">

@@ -71,6 +71,8 @@ export type HomeSnapshot = {
   /** Hour of day in Cairo, for the greeting. */
   localHour: number;
   walletBalance: number;
+  /** The wallet's currency, or what a new wallet would open in (0136). */
+  walletCurrency: string;
   storeRating: number | null;
   positiveRatingPercent: number | null;
   totalRatings: number;
@@ -117,6 +119,7 @@ export const getHomeSnapshot = cache(async (): Promise<HomeSnapshot | null> => {
       s.display_name,
       extract(hour FROM now() AT TIME ZONE 'Africa/Cairo')::int AS local_hour,
       coalesce(s.wallet_balance, 0)::float8 AS wallet_balance,
+      coalesce((SELECT w.currency FROM seller_wallet w WHERE w.seller_id = s.id), billing_wallet_currency()) AS wallet_currency,
       s.store_rating::float8 AS store_rating,
       s.positive_rating_percent::float8 AS positive_rating_percent,
       coalesce(s.total_ratings, 0)::int AS total_ratings,
@@ -147,6 +150,7 @@ export const getHomeSnapshot = cache(async (): Promise<HomeSnapshot | null> => {
     displayName: row.display_name,
     localHour: Number(row.local_hour),
     walletBalance: Number(row.wallet_balance),
+    walletCurrency: String(row.wallet_currency),
     storeRating: row.store_rating == null ? null : Number(row.store_rating),
     positiveRatingPercent:
       row.positive_rating_percent == null ? null : Number(row.positive_rating_percent),
