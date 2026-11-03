@@ -46,13 +46,16 @@ export async function refreshExchangeRate(
 }
 
 /** Admin › Billing: margin, tax switch and an optional fixed rate. Numbers already validated by the caller. */
-export async function updateBillingSettings(input: {
-  marginBps: number;
-  rateOverride: number | null;
-  taxEnabled: boolean;
-  updatedBy: string;
-}): Promise<void> {
-  await db
+export async function updateBillingSettings(
+  input: {
+    marginBps: number;
+    rateOverride: number | null;
+    taxEnabled: boolean;
+    updatedBy: string;
+  },
+  q: Pick<typeof db, "update"> = db,
+): Promise<void> {
+  await q
     .update(billingSettings)
     .set({
       marginBps: input.marginBps,

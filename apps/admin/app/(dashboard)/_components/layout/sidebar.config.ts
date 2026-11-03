@@ -25,6 +25,7 @@ import {
   Warehouse,
   CreditCard,
   Award,
+  Coins,
 } from "lucide-react";
 import type { SidebarCounts } from "./sidebar.types";
 
@@ -168,6 +169,8 @@ export const sidebarSections: SidebarSection[] = [
       // Tallaby affiliate program (F-37): withdrawal requests and referrers.
       { key: "referrals", title: "Referrals", href: "/referrals", icon: HandCoins },
       { key: "payments", title: "Payments", href: "/payments", icon: CreditCard },
+      // USD switch, exchange rates and Pro income (F-55f, F-56).
+      { key: "billing", title: "Billing", href: "/billing", icon: Coins },
       // Hidden 2026-10-18 (SaaS pivot), see docs/admin-saas.md §2.2.
       { key: "pricingCalculator", title: "Pricing calculator", href: "/pricing-calculator", icon: Banknote, hidden: true },
     ],

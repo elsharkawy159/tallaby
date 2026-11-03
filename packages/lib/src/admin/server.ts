@@ -5,6 +5,7 @@ export * from "./seller-messages.server";
 export * from "./seller-view.server";
 export * from "./top-ups.server";
 export * from "./wallet-view.server";
+export * from "./billing-admin.server";
 export * from "./coupons-admin.server";
 export * from "./stores-admin.server";
 export * from "./integrations-admin.server";
