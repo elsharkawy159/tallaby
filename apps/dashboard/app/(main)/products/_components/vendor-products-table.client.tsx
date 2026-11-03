@@ -66,14 +66,17 @@ const CopyableTitle = ({ title }: { title: string }) => {
   );
 };
 
-/** Table view of the products page. Rows arrive already filtered and sorted. */
+/** Table view of the products page. Rows arrive filtered, sorted and paged by the server. */
 export function VendorProductsTable({
   products,
+  rowIndexOffset,
   onDelete,
   selectedIds,
   onSelectedIdsChange,
 }: {
   products: VendorProduct[];
+  /** Rows before this page, so the # column keeps counting across pages. */
+  rowIndexOffset: number;
   onDelete: (product: VendorProduct) => void;
   /** Selection owned by the products section (bulk edit, F-24b). */
   selectedIds?: Set<string>;
@@ -266,6 +269,7 @@ export function VendorProductsTable({
         : {})}
       hideViewOptions
       hideSearch
+      externalPaging={{ rowIndexOffset }}
       buttons={(table) => <ManageColumnsDialog table={table} />}
       onDeleteSelected={async (ids) => {
         // Delete moves products to Trash (F-35); the toast offers Undo.

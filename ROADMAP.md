@@ -792,7 +792,7 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 ### F-43 Dashboard performance and server pagination — P0 · owner request
 
 **Why:** The products page loads the whole catalog today: `vendor-products.data.tsx` calls `getSellerProducts({ offset: 0 })` with no limit, and joins brand, category, variants and translations for every product.
-**Status:** [Planned]
+**Status:** [In progress] F-43a and F-43b built 2026-11-03 (§7); F-43c and F-43d not started.
 
 - **F-43a · P0 · deps: —** Server-side pagination: 20 per page by default, with 20, 50, 100 and 200 to choose from. Search, filters and sort run on the server, with the state in the URL. New code goes in the feature file split, not `actions/products.ts` (CLAUDE.md rule 14). Check every screen that relied on having the full list, such as bulk actions.
 - **F-43b · P0 · deps: F-43a** Select only the columns each list needs, and add indexes where query plans show a need.
@@ -1151,8 +1151,8 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [ ] F-42b Add/Edit Product pass at phone width
 - [ ] F-42c Redesign the variants UI for mobile
 - [ ] F-42d Products list usability on mobile
-- [ ] F-43a Server-side product pagination (20 by default; 50, 100, 200)
-- [ ] F-43b Leaner product queries and indexes
+- [x] F-43a Server-side product pagination (20 by default; 50, 100, 200) (2026-11-03; browser E2E pending)
+- [x] F-43b Leaner product queries and indexes (2026-11-03; no new index needed)
 - [ ] F-43c Caching and revalidation review
 - [ ] F-43d Slow-page audit with before-and-after timings
 - [ ] F-44a Save setup prompt progress per seller
@@ -1214,6 +1214,16 @@ Add each new request here first, with the date and the owner's words, then turn 
 ---
 
 ## 7. Log
+
+### 2026-11-03 — F-43a, F-43b Products list on the server
+
+- **What changed:** `/products` now loads one page from the server (20 by default; 50, 100 or 200, and the choice is remembered in a cookie). Tab, search, category, sort, page and size live in the URL (`products-view.lib.ts`, all validated). Queries are in `products-list.query.ts`, scoped to the session seller and leaving out Trash.
+- **Whole-list actions still cover every page:** Excel export, "Update from Excel", "Select all" and bulk publish now run on the server (`products-list.server.ts`), because the browser no longer holds the full list.
+- **Differences from before:** search now also matches the title in the other language; the grid shows 20 per page, not 24; the category filter uses the category id, not its name.
+- **Leaner (F-43b):** the list no longer loads variants or descriptions (descriptions only for export), store links read only this page's products, and the ad picker has a light query. `getSellerProducts` is removed from `actions/products.ts`, since nothing else used it.
+- **Indexes:** none added. On staging's largest seller (51 products) each query ran in 24 ms or less through the existing indexes, or by a scan the planner chose because the tables are small. Staging can't show how a large catalog behaves, so recheck with real data if a seller reports slowness.
+- **`TableSection`** gets an `externalPaging` option; other tables are unchanged.
+- **Checks:** dashboard typecheck, admin typecheck, 469 dashboard tests and `next build` pass. New `products-list.integration.test.ts` (11 tests) passes on staging: seller isolation, Trash, both languages, literal `%`, tabs, all three price shapes, paging, export. ESLint not run (known crash on start). **Browser E2E (phone and desktop) is still pending.**
 
 ### 2026-11-03 — New roadmap and pricing planned (owner; no code)
 

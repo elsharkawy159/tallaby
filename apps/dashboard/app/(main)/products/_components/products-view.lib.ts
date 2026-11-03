@@ -1,5 +1,6 @@
-// Client-side tabs, search, category filter and sort for the seller products
-// page. The page loads every product of the seller, so this runs in memory.
+// Tabs, search, category filter, sort and paging of the seller products page.
+// The filtering runs on the server (products-list.query.ts); these helpers read
+// and write the URL that holds it (ROADMAP.md F-43a).
 
 export type ProductsTab = "all" | "published" | "draft" | "lowStock" | "outOfStock";
 export type ProductsSort = "newest" | "priceAsc" | "priceDesc" | "stockAsc" | "name";
@@ -9,19 +10,68 @@ export type StockLevel = "in" | "low" | "out";
 export const PRODUCTS_TABS: ProductsTab[] = ["all", "published", "draft", "lowStock", "outOfStock"];
 export const PRODUCTS_SORTS: ProductsSort[] = ["newest", "priceAsc", "priceDesc", "stockAsc", "name"];
 
+export const PRODUCTS_PAGE_SIZES = [20, 50, 100, 200] as const;
+export const DEFAULT_PRODUCTS_PAGE_SIZE = 20;
+/** Cookie that remembers the seller's chosen page size. */
+export const PRODUCTS_PAGE_SIZE_COOKIE = "tl-prod-size";
+const SEARCH_MAX_LENGTH = 100;
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 /** Below this many units a product counts as low on stock. */
 export const LOW_STOCK_THRESHOLD = 10;
 
-export type ViewableProduct = {
-  id: string;
-  title: string;
-  sku?: string | null;
-  status: "draft" | "pending" | "active" | "rejected";
-  quantity?: number | null;
-  basePrice?: string | number | null;
-  salePrice?: string | number | null;
-  category?: { name: string | null } | null;
+/** What the URL asks for. Everything is validated: the URL is user input. */
+export type ProductsListFilters = {
+  tab: ProductsTab;
+  q: string;
+  /** A Tallaby category id, or "" for all. */
+  category: string;
+  sort: ProductsSort;
+  page: number;
+  size: number;
 };
+
+type RawParams = Partial<Record<keyof ProductsListFilters, string | string[] | undefined>>;
+
+const single = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value) ?? "";
+
+export function parsePageSize(value: string | undefined | null): number | null {
+  const size = Number(value);
+  return (PRODUCTS_PAGE_SIZES as readonly number[]).includes(size) ? size : null;
+}
+
+export function parseProductsFilters(raw: RawParams, sizeFallback?: string | null): ProductsListFilters {
+  const tab = single(raw.tab) as ProductsTab;
+  const sort = single(raw.sort) as ProductsSort;
+  const category = single(raw.category);
+  const page = Number(single(raw.page));
+  return {
+    tab: PRODUCTS_TABS.includes(tab) ? tab : "all",
+    q: single(raw.q).trim().slice(0, SEARCH_MAX_LENGTH),
+    category: UUID.test(category) ? category : "",
+    sort: PRODUCTS_SORTS.includes(sort) ? sort : "newest",
+    page: Number.isSafeInteger(page) && page >= 1 ? page : 1,
+    size: parsePageSize(single(raw.size)) ?? parsePageSize(sizeFallback) ?? DEFAULT_PRODUCTS_PAGE_SIZE,
+  };
+}
+
+/** The list URL, leaving out defaults so a plain /products stays plain. */
+export function productsListHref(filters: ProductsListFilters): string {
+  const params = new URLSearchParams();
+  if (filters.tab !== "all") params.set("tab", filters.tab);
+  if (filters.q) params.set("q", filters.q);
+  if (filters.category) params.set("category", filters.category);
+  if (filters.sort !== "newest") params.set("sort", filters.sort);
+  if (filters.size !== DEFAULT_PRODUCTS_PAGE_SIZE) params.set("size", String(filters.size));
+  if (filters.page > 1) params.set("page", String(filters.page));
+  const query = params.toString();
+  return query ? `/products?${query}` : "/products";
+}
+
+/** Escapes %, _ and backslash so a seller's search text is matched literally by ILIKE. */
+export function likePattern(text: string): string {
+  return `%${text.replace(/[\\%_]/g, (c) => `\\${c}`)}%`;
+}
 
 const toNumber = (value: string | number | null | undefined) => {
   const num = typeof value === "string" ? parseFloat(value) : (value ?? 0);
@@ -34,70 +84,19 @@ export function stockLevel(quantity: number | null | undefined): StockLevel {
   return qty < LOW_STOCK_THRESHOLD ? "low" : "in";
 }
 
+type PricedProduct = { basePrice?: string | number | null; salePrice?: string | number | null };
+
 /** The price a buyer pays: the sale price when there is one. */
-export function effectivePrice(product: Pick<ViewableProduct, "basePrice" | "salePrice">) {
+export function effectivePrice(product: PricedProduct) {
   return toNumber(product.salePrice ?? product.basePrice);
 }
 
 /** Whole-percent discount of the sale price off the base price, 0 when none. */
-export function discountPercent(product: Pick<ViewableProduct, "basePrice" | "salePrice">) {
+export function discountPercent(product: PricedProduct) {
   const base = toNumber(product.basePrice);
   const sale = toNumber(product.salePrice ?? product.basePrice);
   if (base <= 0 || sale >= base) return 0;
   return Math.round((1 - sale / base) * 100);
-}
-
-export function matchesTab(product: ViewableProduct, tab: ProductsTab) {
-  switch (tab) {
-    case "published":
-      return product.status === "active";
-    case "draft":
-      return product.status !== "active";
-    case "lowStock":
-      return stockLevel(product.quantity) === "low";
-    case "outOfStock":
-      return stockLevel(product.quantity) === "out";
-    default:
-      return true;
-  }
-}
-
-export function countByTab(products: ViewableProduct[]): Record<ProductsTab, number> {
-  return Object.fromEntries(
-    PRODUCTS_TABS.map((tab) => [tab, products.filter((p) => matchesTab(p, tab)).length])
-  ) as Record<ProductsTab, number>;
-}
-
-/** Distinct category names, sorted for the locale. */
-export function categoryOptions(products: ViewableProduct[], locale: string) {
-  const names = new Set<string>();
-  for (const p of products) if (p.category?.name) names.add(p.category.name);
-  return [...names].sort((a, b) => a.localeCompare(b, locale));
-}
-
-export function filterProducts<T extends ViewableProduct>(
-  products: T[],
-  opts: { tab: ProductsTab; query: string; category: string; sort: ProductsSort; locale: string }
-): T[] {
-  const query = opts.query.trim().toLowerCase();
-  const rows = products.filter(
-    (p) =>
-      matchesTab(p, opts.tab) &&
-      (!opts.category || p.category?.name === opts.category) &&
-      (!query ||
-        p.title.toLowerCase().includes(query) ||
-        (p.sku ?? "").toLowerCase().includes(query))
-  );
-
-  // `products` arrives newest first, so "newest" keeps that order.
-  if (opts.sort === "newest") return rows;
-  const compare: Record<Exclude<ProductsSort, "newest">, (a: T, b: T) => number> = {
-    priceAsc: (a, b) => effectivePrice(a) - effectivePrice(b),
-    priceDesc: (a, b) => effectivePrice(b) - effectivePrice(a),
-    stockAsc: (a, b) => (a.quantity ?? 0) - (b.quantity ?? 0),
-    name: (a, b) => a.title.localeCompare(b.title, opts.locale),
-  };
-  return [...rows].sort(compare[opts.sort]);
 }
 
 /** Page numbers with gaps: 1 … 4 5 6 … 12. */

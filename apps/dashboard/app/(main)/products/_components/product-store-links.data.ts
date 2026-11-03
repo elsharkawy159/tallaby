@@ -38,7 +38,12 @@ export async function loadProductStoreLinks(
     ? await db
         .select({ storeId: storeProducts.storeId, productId: storeProducts.productId })
         .from(storeProducts)
-        .where(inArray(storeProducts.storeId, [...selectedMode]))
+        .where(
+          and(
+            inArray(storeProducts.storeId, [...selectedMode]),
+            inArray(storeProducts.productId, products.map((p) => p.id)),
+          ),
+        )
     : [];
   const picked = new Set(picks.map((p) => `${p.storeId}:${p.productId}`));
   const domainByStore = new Map(domains.map((d) => [d.storeId, d.domain]));

@@ -36,14 +36,18 @@ import {
   PRODUCT_EXCEL_COLUMNS,
   PRODUCT_EXCEL_TEMPLATE_ROW,
 } from "@/lib/product-excel";
-import type { VendorProduct } from "./vendor-products.section";
 import { ExcelUpdateDialog } from "../excel-update/excel-update.client";
+import { exportFilteredProductsAction, listFilteredProductIdsAction } from "./products-list.server";
+import type { ProductsListFilters } from "./products-view.lib";
 
 export function ImportExportButton({
-  products: exportable,
+  filters,
+  total,
 }: {
   /** What the page currently shows (tab, search and category applied). */
-  products: VendorProduct[];
+  filters: ProductsListFilters;
+  /** How many products those filters match, across all pages. */
+  total: number;
 }) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -54,6 +58,7 @@ export function ImportExportButton({
   const [menuOpen, setMenuOpen] = useState(false);
   const [open, setOpen] = useState(false);
   const [updateOpen, setUpdateOpen] = useState(false);
+  const [updateIds, setUpdateIds] = useState<string[]>([]);
   const [preview, setPreview] = useState<{
     valid: ParsedBulkRow[];
     invalid: { row: number; message: string }[];
@@ -123,25 +128,44 @@ export function ImportExportButton({
   };
 
   /** Exports what the page currently shows: filters applied, all pages. */
-  const handleExport = async () => {
+  const handleExport = () => {
     setMenuOpen(false);
-    const products = exportable;
-
-    if (products.length === 0) {
+    if (total === 0) {
       toast.error(t("nothingToExport"));
       return;
     }
 
-    try {
-      await downloadXlsx(productsToExcelRows(products), {
-        fileName: `vendor-products-${todayStamp()}.xlsx`,
-        header: PRODUCT_EXCEL_COLUMNS,
-      });
-      toast.success(t("exported", { count: products.length }));
-    } catch (err) {
-      console.error(err);
-      toast.error(t("exportFailed"));
-    }
+    startTransition(async () => {
+      try {
+        const res = await exportFilteredProductsAction(filters);
+        if (!res.success) {
+          toast.error(t("exportFailed"));
+          return;
+        }
+        await downloadXlsx(productsToExcelRows(res.products), {
+          fileName: `vendor-products-${todayStamp()}.xlsx`,
+          header: PRODUCT_EXCEL_COLUMNS,
+        });
+        toast.success(t("exported", { count: res.products.length }));
+      } catch (err) {
+        console.error(err);
+        toast.error(t("exportFailed"));
+      }
+    });
+  };
+
+  /** "Update from Excel" works on every filtered product, not one page. */
+  const handleOpenUpdate = () => {
+    setMenuOpen(false);
+    startTransition(async () => {
+      const res = await listFilteredProductIdsAction(filters);
+      if (!res.success) {
+        toast.error(t("exportFailed"));
+        return;
+      }
+      setUpdateIds(res.ids);
+      setUpdateOpen(true);
+    });
   };
 
   const handleDownloadTemplate = async () => {
@@ -214,10 +238,7 @@ export function ImportExportButton({
           <Button
             variant="ghost"
             className="w-full justify-start font-normal"
-            onClick={() => {
-              setMenuOpen(false);
-              setUpdateOpen(true);
-            }}
+            onClick={handleOpenUpdate}
           >
             <RefreshCw className="opacity-60" size={16} aria-hidden="true" />
             {t("updateFromExcel")}
@@ -228,7 +249,7 @@ export function ImportExportButton({
       <ExcelUpdateDialog
         open={updateOpen}
         onOpenChange={setUpdateOpen}
-        productIds={exportable.map((p) => p.id)}
+        productIds={updateIds}
       />
 
       <Dialog open={open} onOpenChange={setOpen}>

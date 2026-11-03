@@ -1,31 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
-  categoryOptions,
-  countByTab,
   discountPercent,
-  filterProducts,
+  likePattern,
+  pageList,
+  parseProductsFilters,
+  productsListHref,
   stockLevel,
-  type ViewableProduct,
 } from "./products-view.lib";
-
-const product = (over: Partial<ViewableProduct> & { id: string }): ViewableProduct => ({
-  title: `Product ${over.id}`,
-  status: "active",
-  quantity: 20,
-  basePrice: 100,
-  salePrice: 100,
-  category: { name: "Phones" },
-  ...over,
-});
-
-const products = [
-  product({ id: "1", title: "Power bank", sku: "PB-10K", basePrice: 780, salePrice: 650 }),
-  product({ id: "2", title: "AirPods", quantity: 6, basePrice: 7200, salePrice: 6450, category: { name: "Audio" } }),
-  product({ id: "3", title: "TV mount", status: "draft", quantity: 0, basePrice: 350, salePrice: 350 }),
-  product({ id: "4", title: "Watch", status: "rejected", quantity: 3, basePrice: "980", salePrice: null }),
-];
-
-const opts = { tab: "all" as const, query: "", category: "", sort: "newest" as const, locale: "en" };
 
 describe("products view", () => {
   it("classifies stock", () => {
@@ -42,26 +23,50 @@ describe("products view", () => {
     expect(discountPercent({ basePrice: 0, salePrice: 0 })).toBe(0);
   });
 
-  it("counts every tab; anything not active is a draft", () => {
-    expect(countByTab(products)).toEqual({ all: 4, published: 2, draft: 2, lowStock: 2, outOfStock: 1 });
+  it("lists pages with gaps", () => {
+    expect(pageList(2, 5)).toEqual([1, 2, 3, 4, 5]);
+    expect(pageList(6, 12)).toEqual([1, "gap", 5, 6, 7, "gap", 12]);
+  });
+});
+
+describe("products list URL", () => {
+  const defaults = { tab: "all", q: "", category: "", sort: "newest", page: 1, size: 20 };
+  const category = "3f2b8c1e-7a4d-4e21-9b6a-0c5d8e7f1a2b";
+
+  it("defaults to 20 per page, first page, newest", () => {
+    expect(parseProductsFilters({})).toEqual(defaults);
   });
 
-  it("filters by tab, category and title or SKU", () => {
-    expect(filterProducts(products, { ...opts, tab: "lowStock" }).map((p) => p.id)).toEqual(["2", "4"]);
-    expect(filterProducts(products, { ...opts, category: "Audio" }).map((p) => p.id)).toEqual(["2"]);
-    expect(filterProducts(products, { ...opts, query: "pb-10" }).map((p) => p.id)).toEqual(["1"]);
-    expect(filterProducts(products, { ...opts, query: " air " }).map((p) => p.id)).toEqual(["2"]);
+  it("accepts valid values", () => {
+    expect(
+      parseProductsFilters({ tab: "lowStock", q: "  bank ", category, sort: "name", page: "3", size: "100" }),
+    ).toEqual({ tab: "lowStock", q: "bank", category, sort: "name", page: 3, size: 100 });
   });
 
-  it("sorts by the price a buyer pays, stock and name, keeping newest as loaded", () => {
-    expect(filterProducts(products, opts).map((p) => p.id)).toEqual(["1", "2", "3", "4"]);
-    expect(filterProducts(products, { ...opts, sort: "priceAsc" }).map((p) => p.id)).toEqual(["3", "1", "4", "2"]);
-    expect(filterProducts(products, { ...opts, sort: "priceDesc" }).map((p) => p.id)).toEqual(["2", "4", "1", "3"]);
-    expect(filterProducts(products, { ...opts, sort: "stockAsc" }).map((p) => p.id)).toEqual(["3", "4", "2", "1"]);
-    expect(filterProducts(products, { ...opts, sort: "name" }).map((p) => p.id)).toEqual(["2", "1", "3", "4"]);
+  it("ignores anything invalid in the URL", () => {
+    expect(parseProductsFilters({ tab: "x", category: "1 OR 1=1", sort: "x", page: "-2", size: "7" })).toEqual(defaults);
+    expect(parseProductsFilters({ page: "1e99" }).page).toBe(1);
+    expect(parseProductsFilters({ page: "2.5" }).page).toBe(1);
+    expect(parseProductsFilters({ q: "x".repeat(500) }).q).toHaveLength(100);
+    expect(parseProductsFilters({ size: ["50", "20"] }).size).toBe(50);
   });
 
-  it("lists distinct categories", () => {
-    expect(categoryOptions(products, "en")).toEqual(["Audio", "Phones"]);
+  it("falls back to the remembered page size, and the URL wins over it", () => {
+    expect(parseProductsFilters({}, "50").size).toBe(50);
+    expect(parseProductsFilters({}, "9999").size).toBe(20);
+    expect(parseProductsFilters({ size: "100" }, "50").size).toBe(100);
+  });
+
+  it("builds a URL that reads back the same", () => {
+    const filters = parseProductsFilters({ tab: "draft", q: "طقم & كوب", category, sort: "priceAsc", page: "2", size: "50" });
+    const url = new URL(productsListHref(filters), "https://x.test");
+    expect(url.pathname).toBe("/products");
+    expect(parseProductsFilters(Object.fromEntries(url.searchParams))).toEqual(filters);
+    expect(productsListHref(parseProductsFilters({}))).toBe("/products");
+  });
+
+  it("matches search text literally", () => {
+    expect(likePattern("50%_off")).toBe(String.raw`%50\%\_off%`);
+    expect(likePattern(String.raw`a\b`)).toBe(String.raw`%a\\b%`);
   });
 });

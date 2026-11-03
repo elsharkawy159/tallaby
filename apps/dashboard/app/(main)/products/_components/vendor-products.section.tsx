@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { useLocale, useTranslations } from "next-intl";
 import {
@@ -34,7 +34,6 @@ import {
 } from "@workspace/ui/components/select";
 import { cn } from "@workspace/ui/lib/utils";
 import { ConfirmActionDialog } from "@/components/layout/confirm-action-dialog.client";
-import { setProductPublished } from "@/actions/products";
 import { restoreProductsAction, trashProductsAction } from "../trash/trash.server";
 import { BulkEditDialog, BulkEditUndoBar, type BulkEditUndo } from "../bulk-edit/bulk-edit.client";
 import { ShareCatalogDialog } from "../../marketing/catalog/catalog-share.client";
@@ -42,13 +41,16 @@ import { formatNumber } from "@/lib/i18n/format";
 import { ImportExportButton } from "./import-export-button.client";
 import { ProductCard } from "./product-card.client";
 import { VendorProductsTable } from "./vendor-products-table.client";
+import { bulkSetPublishedAction, listFilteredProductIdsAction } from "./products-list.server";
+import type { ProductsCategoryOption } from "./products-list.query";
 import {
+  PRODUCTS_PAGE_SIZES,
+  PRODUCTS_PAGE_SIZE_COOKIE,
   PRODUCTS_SORTS,
   PRODUCTS_TABS,
-  categoryOptions,
-  countByTab,
-  filterProducts,
   pageList,
+  productsListHref,
+  type ProductsListFilters,
   type ProductsSort,
   type ProductsTab,
   type ProductsViewMode,
@@ -76,7 +78,7 @@ export type VendorProduct = {
 };
 
 const VIEW_STORAGE_KEY = "tl-prod-view";
-const GRID_PAGE_SIZE = 24;
+const SEARCH_DEBOUNCE_MS = 300;
 const ALL_CATEGORIES = "__all__";
 
 const tabCountStyles: Partial<Record<ProductsTab, string>> = {
@@ -86,20 +88,28 @@ const tabCountStyles: Partial<Record<ProductsTab, string>> = {
 
 export function VendorProductsSection({
   products,
+  total,
+  counts,
+  categories,
+  filters,
+  pages,
 }: {
+  /** One page of the filtered list. */
   products: VendorProduct[];
-  total?: number;
+  /** How many products match the filters, across all pages. */
+  total: number;
+  counts: Record<ProductsTab, number>;
+  categories: ProductsCategoryOption[];
+  filters: ProductsListFilters;
+  pages: number;
 }) {
   const t = useTranslations("products.list");
   const locale = useLocale();
   const router = useRouter();
 
   const [view, setView] = useState<ProductsViewMode>("grid");
-  const [tab, setTab] = useState<ProductsTab>("all");
-  const [query, setQuery] = useState("");
-  const [category, setCategory] = useState("");
-  const [sort, setSort] = useState<ProductsSort>("newest");
-  const [page, setPage] = useState(1);
+  // The typed search; the URL follows it after a short pause.
+  const [query, setQuery] = useState(filters.q);
   const [selected, setSelected] = useState<Set<string>>(() => new Set());
   const [deleting, setDeleting] = useState<VendorProduct | null>(null);
   const [bulkDeleting, setBulkDeleting] = useState(false);
@@ -110,6 +120,8 @@ export function VendorProductsSection({
   const [sharing, setSharing] = useState(false);
   const clearBulkUndo = useCallback(() => setBulkUndo(null), []);
   const [isPending, startTransition] = useTransition();
+  // A filter or page change: the current rows stay on screen until the next arrive.
+  const [isNavigating, startNavigation] = useTransition();
 
   // Read the saved view after mount so the server and first client render agree.
   useEffect(() => {
@@ -119,6 +131,42 @@ export function VendorProductsSection({
     } catch {}
   }, []);
 
+  const navigate = useCallback(
+    (over: Partial<ProductsListFilters>, options?: { replace?: boolean }) => {
+      const href = productsListHref({ ...filters, ...over });
+      startNavigation(() => {
+        if (options?.replace) router.replace(href, { scroll: false });
+        else router.push(href, { scroll: false });
+      });
+    },
+    [filters, router],
+  );
+
+  // Filters change what is on screen, so a selection made before would be hidden.
+  const applyFilter = (over: Partial<ProductsListFilters>) => {
+    setSelected(new Set());
+    navigate({ ...over, page: 1 });
+  };
+
+  // Typing searches after a short pause. Back and forward restore the box.
+  const lastPushedQuery = useRef(filters.q);
+  useEffect(() => {
+    if (filters.q !== lastPushedQuery.current) {
+      lastPushedQuery.current = filters.q;
+      setQuery(filters.q);
+    }
+  }, [filters.q]);
+  useEffect(() => {
+    const next = query.trim();
+    if (next === lastPushedQuery.current) return;
+    const timer = setTimeout(() => {
+      lastPushedQuery.current = next;
+      setSelected(new Set());
+      navigate({ q: next, page: 1 }, { replace: true });
+    }, SEARCH_DEBOUNCE_MS);
+    return () => clearTimeout(timer);
+  }, [query, navigate]);
+
   const changeView = (next: ProductsViewMode) => {
     setView(next);
     setSelected(new Set());
@@ -127,31 +175,10 @@ export function VendorProductsSection({
     } catch {}
   };
 
-  const counts = useMemo(() => countByTab(products), [products]);
-  const categories = useMemo(() => categoryOptions(products, locale), [products, locale]);
-  const filtered = useMemo(
-    () => filterProducts(products, { tab, query, category, sort, locale }),
-    [products, tab, query, category, sort, locale]
-  );
-
-  const pages = Math.max(1, Math.ceil(filtered.length / GRID_PAGE_SIZE));
-  const currentPage = Math.min(page, pages);
-  const pageItems = filtered.slice(
-    (currentPage - 1) * GRID_PAGE_SIZE,
-    currentPage * GRID_PAGE_SIZE
-  );
-
-  // Filters change what is on screen, so a selection made before would be hidden.
-  const resetPaging = () => {
-    setPage(1);
-    setSelected(new Set());
-  };
-
   const clearFilters = () => {
-    setTab("all");
     setQuery("");
-    setCategory("");
-    resetPaging();
+    lastPushedQuery.current = "";
+    applyFilter({ tab: "all", q: "", category: "" });
   };
 
   const toggleSelected = (id: string, on: boolean) =>
@@ -163,30 +190,33 @@ export function VendorProductsSection({
     });
 
   const goToPage = (next: number) => {
-    setPage(next);
+    navigate({ page: next });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const bulkPublish = (published: boolean) => {
-    const targets = products.filter(
-      (p) =>
-        selected.has(p.id) &&
-        p.status !== "rejected" &&
-        (p.status === "active") !== published
-    );
-    if (targets.length === 0) {
-      setSelected(new Set());
-      return;
-    }
+  const changePageSize = (size: number) => {
+    // Remembered for next time, so the sidebar link keeps the seller's choice.
+    document.cookie = `${PRODUCTS_PAGE_SIZE_COOKIE}=${size}; path=/; max-age=31536000; samesite=lax`;
+    navigate({ size, page: 1 });
+  };
+
+  const selectAllFiltered = () => {
     startTransition(async () => {
-      const results = await Promise.all(
-        targets.map((p) => setProductPublished(p.id, published))
-      );
-      const failed = results.filter((r) => !r.success).length;
-      const done = targets.length - failed;
-      if (failed > 0) toast.error(t("bulkPublishFailed", { count: failed }));
-      if (done > 0)
-        toast.success(t(published ? "bulkPublished" : "bulkDrafted", { count: done }));
+      const res = await listFilteredProductIdsAction(filters);
+      if (res.success) setSelected(new Set(res.ids));
+      else toast.error(t("selectAllFailed"));
+    });
+  };
+
+  const bulkPublish = (published: boolean) => {
+    startTransition(async () => {
+      const res = await bulkSetPublishedAction([...selected], published);
+      if (!res.success) {
+        toast.error(t("bulkPublishFailed", { count: selected.size }));
+        return;
+      }
+      if (res.failed > 0) toast.error(t("bulkPublishFailed", { count: res.failed }));
+      if (res.done > 0) toast.success(t(published ? "bulkPublished" : "bulkDrafted", { count: res.done }));
       setSelected(new Set());
       router.refresh();
     });
@@ -232,8 +262,9 @@ export function VendorProductsSection({
     });
   };
 
-  const rangeFrom = filtered.length ? (currentPage - 1) * GRID_PAGE_SIZE + 1 : 0;
-  const rangeTo = Math.min(currentPage * GRID_PAGE_SIZE, filtered.length);
+  const currentPage = filters.page;
+  const rangeFrom = total ? (currentPage - 1) * filters.size + 1 : 0;
+  const rangeTo = Math.min(currentPage * filters.size, total);
 
   return (
     <div className="flex flex-col gap-4">
@@ -245,17 +276,14 @@ export function VendorProductsSection({
           aria-label={t("columns.status")}
         >
           {PRODUCTS_TABS.map((key) => {
-            const on = tab === key;
+            const on = filters.tab === key;
             return (
               <button
                 key={key}
                 type="button"
                 role="tab"
                 aria-selected={on}
-                onClick={() => {
-                  setTab(key);
-                  resetPaging();
-                }}
+                onClick={() => applyFilter({ tab: key })}
                 className={cn(
                   "flex h-10.5 cursor-pointer items-center gap-2 whitespace-nowrap px-3.5 text-sm text-muted-foreground transition-colors hover:text-foreground",
                   on && "font-semibold text-primary-ink shadow-[inset_0_-2px_0_var(--primary)]"
@@ -277,7 +305,7 @@ export function VendorProductsSection({
         </div>
         {/* On mobile the page actions come first, above the tabs. */}
         <div className="flex flex-wrap items-center gap-2.5 pb-1 max-sm:order-first max-sm:w-full max-sm:pb-0">
-          <ImportExportButton products={filtered} />
+          <ImportExportButton filters={filters} total={total} />
           <Button asChild>
             <Link href="/products/add">
               <PlusIcon size={16} aria-hidden="true" />
@@ -297,21 +325,15 @@ export function VendorProductsSection({
           <Input
             type="search"
             value={query}
-            onChange={(e) => {
-              setQuery(e.target.value);
-              resetPaging();
-            }}
+            onChange={(e) => setQuery(e.target.value)}
             placeholder={t("searchPlaceholder")}
             aria-label={t("searchLabel")}
             className="h-10 rounded-[10px] bg-card ps-9"
           />
         </div>
         <Select
-          value={category || ALL_CATEGORIES}
-          onValueChange={(value) => {
-            setCategory(value === ALL_CATEGORIES ? "" : value);
-            resetPaging();
-          }}
+          value={filters.category || ALL_CATEGORIES}
+          onValueChange={(value) => applyFilter({ category: value === ALL_CATEGORIES ? "" : value })}
         >
           <SelectTrigger
             className="rounded-[10px] bg-card"
@@ -322,19 +344,16 @@ export function VendorProductsSection({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value={ALL_CATEGORIES}>{t("allCategories")}</SelectItem>
-            {categories.map((name) => (
-              <SelectItem key={name} value={name}>
-                {name}
+            {categories.map((c) => (
+              <SelectItem key={c.id} value={c.id}>
+                {c.name}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
         <Select
-          value={sort}
-          onValueChange={(value) => {
-            setSort(value as ProductsSort);
-            setPage(1);
-          }}
+          value={filters.sort}
+          onValueChange={(value) => navigate({ sort: value as ProductsSort, page: 1 })}
         >
           <SelectTrigger
             className="rounded-[10px] bg-card"
@@ -386,14 +405,15 @@ export function VendorProductsSection({
       {selected.size > 0 && (
         <div className="flex flex-wrap items-center gap-2.5 rounded-xl bg-primary py-2 ps-3.5 pe-2 text-[13px] text-primary-foreground">
           <span>{t("selected", { count: selected.size })}</span>
-          {selected.size < filtered.length && (
+          {selected.size < total && (
             <Button
               size="sm"
-              onClick={() => setSelected(new Set(filtered.map((p) => p.id)))}
+              disabled={isPending}
+              onClick={selectAllFiltered}
               className="h-8 rounded-[9px] bg-white/12 text-white hover:bg-white/22"
             >
               <CheckCheck className="size-4" />
-              {t("selectAllFiltered", { count: filtered.length })}
+              {t("selectAllFiltered", { count: total })}
             </Button>
           )}
           <span className="flex-1" />
@@ -429,12 +449,12 @@ export function VendorProductsSection({
       )}
 
       {/* Products */}
-      {filtered.length === 0 ? (
+      {products.length === 0 ? (
         <div className="flex flex-col items-center gap-1.5 rounded-2xl border border-dashed border-input bg-card px-5 py-14 text-center text-[13px] text-muted-foreground">
           <span className="mb-1 grid size-12 place-items-center rounded-xl bg-primary-soft text-primary-ink">
             <PackageSearch className="size-5" aria-hidden="true" />
           </span>
-          {products.length === 0 ? (
+          {counts.all === 0 ? (
             <>
               <b className="text-[15px] text-foreground">{t("noProductsTitle")}</b>
               <span>{t("noProductsDescription")}</span>
@@ -455,17 +475,25 @@ export function VendorProductsSection({
             </>
           )}
         </div>
-      ) : view === "table" ? (
-        <VendorProductsTable
-          products={filtered}
-          onDelete={setDeleting}
-          selectedIds={selected}
-          onSelectedIdsChange={setSelected}
-        />
       ) : (
         <>
-          <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-[repeat(auto-fill,minmax(220px,1fr))] sm:gap-4">
-            {pageItems.map((product) => (
+          {view === "table" ? (
+            <VendorProductsTable
+              products={products}
+              rowIndexOffset={rangeFrom - 1}
+              onDelete={setDeleting}
+              selectedIds={selected}
+              onSelectedIdsChange={setSelected}
+            />
+          ) : (
+          <div
+            aria-busy={isNavigating}
+            className={cn(
+              "grid grid-cols-2 gap-2.5 transition-opacity sm:grid-cols-[repeat(auto-fill,minmax(220px,1fr))] sm:gap-4",
+              isNavigating && "opacity-60",
+            )}
+          >
+            {products.map((product) => (
               <ProductCard
                 key={product.id}
                 product={product}
@@ -476,15 +504,33 @@ export function VendorProductsSection({
               />
             ))}
           </div>
+          )}
 
           <div className="flex flex-wrap items-center justify-between gap-3 text-[13px] text-muted-foreground">
-            <span className="tabular-nums">
-              {t("range", {
-                from: formatNumber(rangeFrom, locale),
-                to: formatNumber(rangeTo, locale),
-                total: formatNumber(filtered.length, locale),
-              })}
-            </span>
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="tabular-nums">
+                {t("range", {
+                  from: formatNumber(rangeFrom, locale),
+                  to: formatNumber(rangeTo, locale),
+                  total: formatNumber(total, locale),
+                })}
+              </span>
+              <div className="flex items-center gap-2">
+                <span>{t("perPage")}</span>
+                <Select value={String(filters.size)} onValueChange={(value) => changePageSize(Number(value))}>
+                  <SelectTrigger className="h-9 w-20 rounded-[9px] bg-card" aria-label={t("perPage")}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PRODUCTS_PAGE_SIZES.map((size) => (
+                      <SelectItem key={size} value={String(size)}>
+                        {formatNumber(size, locale)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
             {pages > 1 && (
               <nav className="flex gap-1">
                 <Button

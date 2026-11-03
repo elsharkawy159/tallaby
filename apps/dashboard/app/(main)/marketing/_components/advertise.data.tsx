@@ -1,7 +1,8 @@
 import { getLocale } from "next-intl/server";
 import { parsePriceJson } from "@workspace/lib";
 import { getAdWallet, getSellerAdRequests } from "@/actions/ads";
-import { getSellerProducts } from "@/actions/products";
+import { requireSeller } from "@/lib/auth/require-seller.server";
+import { listSellerProductOptions } from "../../products/_components/products-list.query";
 import { AdvertiseProducts } from "./advertise-products.client";
 import type { AdProductOption } from "./product-picker";
 
@@ -9,9 +10,10 @@ import type { AdProductOption } from "./product-picker";
 const OPEN_STATUSES = new Set(["pending", "approved", "active"]);
 
 export async function AdvertiseData() {
-  const [locale, productsResult, requests, wallet] = await Promise.all([
+  const seller = await requireSeller();
+  const [locale, productRows, requests, wallet] = await Promise.all([
     getLocale(),
-    getSellerProducts(),
+    listSellerProductOptions(seller.sellerId),
     getSellerAdRequests(),
     getAdWallet(),
   ]);
@@ -20,10 +22,13 @@ export async function AdvertiseData() {
     requests.filter((r) => OPEN_STATUSES.has(r.status)).map((r) => r.product.id)
   );
 
-  const products: AdProductOption[] = (productsResult.data ?? []).map((p) => {
+  const products: AdProductOption[] = productRows.map((p) => {
     const translations = p.productTranslations ?? [];
     const title =
-      translations.find((t) => t.locale === locale)?.title ?? p.title;
+      translations.find((t) => t.locale === locale)?.title ??
+      translations.find((t) => t.locale === "en")?.title ??
+      translations[0]?.title ??
+      "";
     const images = Array.isArray(p.images) ? (p.images as string[]) : [];
     return {
       id: p.id,

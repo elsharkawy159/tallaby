@@ -177,6 +177,11 @@ export type TableSectionProps<TData extends { id: string }> = {
   /** Optional controlled row selection, keyed by row id. Falls back to internal state. */
   rowSelection?: RowSelectionState;
   onRowSelectionChange?: (selection: RowSelectionState) => void;
+  /**
+   * The page pages the rows itself (server-side): show every row given, hide
+   * the built-in pager, and start the # column after the earlier pages' rows.
+   */
+  externalPaging?: { rowIndexOffset: number };
 };
 
 export function TableSection<TData extends { id: string }>(
@@ -197,6 +202,7 @@ export function TableSection<TData extends { id: string }>(
     hideSearch = false,
     rowSelection: controlledSelection,
     onRowSelectionChange,
+    externalPaging,
   } = props;
   const labels = { ...defaultTableSectionLabels, ...props.labels };
 
@@ -262,7 +268,8 @@ export function TableSection<TData extends { id: string }>(
     header: () => <span>#</span>,
     cell: ({ row, table }) => {
       const { pageIndex, pageSize } = table.getState().pagination;
-      return <span>{pageIndex * pageSize + row.index + 1}</span>;
+      const offset = externalPaging ? externalPaging.rowIndexOffset : pageIndex * pageSize;
+      return <span>{offset + row.index + 1}</span>;
     },
     enableSorting: false,
     enableHiding: false,
@@ -301,7 +308,7 @@ export function TableSection<TData extends { id: string }>(
     );
     return [indexColumn, selectColumn, ...cleaned];
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userColumns, labels.selectAll, labels.selectRow]);
+  }, [userColumns, labels.selectAll, labels.selectRow, externalPaging?.rowIndexOffset]);
 
   const table = useReactTable({
     data,
@@ -322,7 +329,7 @@ export function TableSection<TData extends { id: string }>(
       columnFilters,
       columnVisibility,
       columnOrder,
-      pagination,
+      pagination: externalPaging ? { pageIndex: 0, pageSize: Math.max(data.length, 1) } : pagination,
       rowSelection,
     },
     enableRowSelection: true,
@@ -576,6 +583,7 @@ export function TableSection<TData extends { id: string }>(
       </div>
 
       {/* Pagination controls */}
+      {!externalPaging && (
       <div className="flex flex-col gap-3 md:flex-row md:flex-wrap md:items-center md:justify-between">
         {/* Rows per page selector */}
         <div className="flex items-center gap-2">
@@ -658,6 +666,7 @@ export function TableSection<TData extends { id: string }>(
           </Button>
         </div>
       </div>
+      )}
     </div>
   );
 }

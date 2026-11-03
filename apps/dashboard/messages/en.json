@@ -1123,6 +1123,8 @@
       "previousPage": "Previous page",
       "nextPage": "Next page",
       "pageN": "Page {page}",
+      "perPage": "Per page",
+      "selectAllFailed": "Couldn't select all the products. Try again.",
       "moreActions": "More actions",
       "noImage": "No image",
       "undo": "Undo",

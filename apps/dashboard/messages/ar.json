@@ -1123,6 +1123,8 @@
       "previousPage": "الصفحة السابقة",
       "nextPage": "الصفحة التالية",
       "pageN": "صفحة {page}",
+      "perPage": "لكل صفحة",
+      "selectAllFailed": "تعذّر تحديد كل المنتجات. حاول مرة أخرى.",
       "moreActions": "المزيد",
       "noImage": "بدون صورة",
       "undo": "تراجع",

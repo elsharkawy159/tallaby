@@ -153,69 +153,6 @@ function findBestCategoryMatch(
   return highestScore > 3 ? bestMatch : null;
 }
 
-export async function getSellerProducts(params?: {
-  status?: "draft" | "pending" | "active" | "rejected";
-  limit?: number;
-  offset?: number;
-}) {
-  try {
-    const session = await getUser();
-    if (!session?.user?.id) {
-      throw new Error("Unauthorized");
-    }
-
-    // Products in Trash (0123, F-35) have their own page.
-    const conditions = [eq(products.sellerId, session.user.id), isNull(products.deletedAt)];
-
-    if (params?.status !== undefined) {
-      conditions.push(eq(products.status, params.status));
-    }
-
-    const productListRaw = await db.query.products.findMany({
-      where: and(...conditions),
-      with: {
-        brand: true,
-        category: true,
-        productVariants: true,
-        productTranslations: true,
-      },
-      orderBy: [desc(products.createdAt)],
-      ...(params?.limit !== undefined ? { limit: params.limit } : {}),
-      offset: params?.offset || 0,
-    });
-
-    const productList = productListRaw.map((p) => {
-      const translations =
-        (
-          p as {
-            productTranslations?: Array<{ locale: string; title: string }>;
-          }
-        ).productTranslations ?? [];
-      const enT = translations.find((t) => t.locale === "en");
-      const arT = translations.find((t) => t.locale === "ar");
-      const title = enT?.title ?? arT?.title ?? "";
-      return { ...p, title };
-    });
-
-    const totalCount = await db
-      .select({ count: sql`count(*)` })
-      .from(products)
-      .where(and(...conditions));
-
-    return {
-      success: true,
-      data: productList,
-      totalCount: Number(totalCount[0].count),
-    };
-  } catch (error) {
-    console.error("Error fetching products:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Unknown error",
-    };
-  }
-}
-
 // Bulk upload via Excel/CSV
 // Helpers for bulk upload
 const normalizeKey = normalizeHeaderKey;
