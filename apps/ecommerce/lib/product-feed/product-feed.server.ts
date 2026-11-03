@@ -171,7 +171,8 @@ export async function loadFeedPage(sellerId: string, selectedStoreId: string | n
         slug: productTranslations.slug,
         // As the store sitemap: a slug an older active product of ANOTHER seller
         // also uses opens that product on the store host, so it is no link here.
-        claimedElsewhere: sql<boolean>`EXISTS (
+        // Nested sql keeps the table name on outer columns; a no-join select strips it from a bare field (outer-column.test.ts).
+        claimedElsewhere: sql<boolean>`${sql`EXISTS (
           SELECT 1 FROM product_translations t2
           JOIN products p2 ON p2.id = t2.product_id
           JOIN products p1 ON p1.id = ${productTranslations.productId}
@@ -180,7 +181,7 @@ export async function loadFeedPage(sellerId: string, selectedStoreId: string | n
             AND (p2.created_at < p1.created_at
                  OR (p2.created_at = p1.created_at AND p2.id < p1.id)
                  OR (p1.created_at IS NULL AND p2.created_at IS NOT NULL))
-        )`,
+        )`}`,
       })
       .from(productTranslations)
       .where(inArray(productTranslations.productId, ids)),

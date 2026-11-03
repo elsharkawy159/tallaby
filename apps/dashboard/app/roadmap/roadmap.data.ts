@@ -33,12 +33,13 @@ export async function getRoadmapItems(sellerId: string | null, locale: string): 
       createdAt: featureRequests.createdAt,
       launchedAt: featureRequests.launchedAt,
       // Only the suggester's store name is public, never their account details.
-      author: sql<string | null>`(
+      // Nested sql keeps the table name on outer columns; a no-join select strips it from a bare field (outer-column.test.ts).
+      author: sql<string | null>`${sql`(
         SELECT s.name FROM stores s
         WHERE s.seller_id = ${featureRequests.sellerId} AND s.deleted_at IS NULL
         ORDER BY s.is_primary DESC, s.created_at ASC
         LIMIT 1
-      )`,
+      )`}`,
       votes: sql<number>`(
         SELECT count(*)::int FROM feature_request_votes v WHERE v.request_id = ${featureRequests.id}
       )`,

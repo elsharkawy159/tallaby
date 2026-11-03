@@ -151,7 +151,8 @@ export async function listCmsCollections(sellerId: string, storeId: string, q: Q
   const rows = await q
     .select({
       ...collectionColumns,
-      itemCount: sql<number>`(SELECT count(*)::int FROM ${cmsItems} i WHERE i.collection_id = ${cmsCollections.id} AND i.store_id = ${storeId})`,
+      // Nested sql keeps the table name on outer columns; a no-join select strips it from a bare field (outer-column.test.ts).
+      itemCount: sql<number>`${sql`(SELECT count(*)::int FROM ${cmsItems} i WHERE i.collection_id = ${cmsCollections.id} AND i.store_id = ${storeId})`}`,
     })
     .from(cmsCollections)
     .where(eq(cmsCollections.storeId, storeId))

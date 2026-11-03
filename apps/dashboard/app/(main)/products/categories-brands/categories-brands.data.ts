@@ -15,7 +15,8 @@ export async function loadSellerTaxonomyList(sellerId: string, kind: TaxonomyKin
         nameAr: sellerProductCategories.nameAr,
         sourceId: sellerProductCategories.sourceCategoryId,
         image: sellerProductCategories.imageUrl,
-        productCount: sql<number>`(SELECT count(*)::int FROM ${products} p WHERE p.seller_category_id = ${sellerProductCategories.id} AND p.seller_id = ${sellerId} AND p.deleted_at IS NULL)`,
+        // Nested sql keeps the table name on outer columns; a no-join select strips it from a bare field (outer-column.test.ts).
+        productCount: sql<number>`${sql`(SELECT count(*)::int FROM ${products} p WHERE p.seller_category_id = ${sellerProductCategories.id} AND p.seller_id = ${sellerId} AND p.deleted_at IS NULL)`}`,
       })
       .from(sellerProductCategories)
       .where(eq(sellerProductCategories.sellerId, sellerId))
@@ -28,7 +29,8 @@ export async function loadSellerTaxonomyList(sellerId: string, kind: TaxonomyKin
       nameAr: sellerProductBrands.nameAr,
       sourceId: sellerProductBrands.sourceBrandId,
       image: sellerProductBrands.logoUrl,
-      productCount: sql<number>`(SELECT count(*)::int FROM ${products} p WHERE p.seller_brand_id = ${sellerProductBrands.id} AND p.seller_id = ${sellerId} AND p.deleted_at IS NULL)`,
+      // Nested sql keeps the table name on outer columns; a no-join select strips it from a bare field (outer-column.test.ts).
+      productCount: sql<number>`${sql`(SELECT count(*)::int FROM ${products} p WHERE p.seller_brand_id = ${sellerProductBrands.id} AND p.seller_id = ${sellerId} AND p.deleted_at IS NULL)`}`,
     })
     .from(sellerProductBrands)
     .where(eq(sellerProductBrands.sellerId, sellerId))

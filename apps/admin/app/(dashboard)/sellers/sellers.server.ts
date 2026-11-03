@@ -227,11 +227,12 @@ async function loadSellerStores(sellerIds: string[]) {
       isPrimary: stores.isPrimary,
       storeCategory: stores.storeCategory,
       storeCategoryAr: stores.storeCategoryAr,
-      domain: sql<string | null>`(
+      // Nested sql keeps the table name on outer columns; a no-join select strips it from a bare field (outer-column.test.ts).
+      domain: sql<string | null>`${sql`(
         SELECT cd.domain FROM ${sellerCustomDomains} cd
         WHERE cd.store_id = ${stores.id} AND cd.status = 'active'
         ORDER BY cd.created_at LIMIT 1
-      )`,
+      )`}`,
     })
     .from(stores)
     .where(and(inArray(stores.sellerId, sellerIds), sql`${stores.deletedAt} IS NULL`))

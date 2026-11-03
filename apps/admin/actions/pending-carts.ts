@@ -50,11 +50,12 @@ export interface PendingCartsQuery {
 }
 
 /** The store's active custom domain, if any (for its storefront link). */
-const storeActiveDomain = sql<string | null>`(
+// Nested sql keeps the table name on outer columns; a no-join select strips it from a bare field (outer-column.test.ts).
+const storeActiveDomain = sql<string | null>`${sql`(
   SELECT ${sellerCustomDomains.domain} FROM ${sellerCustomDomains}
   WHERE ${sellerCustomDomains.storeId} = ${stores.id} AND ${sellerCustomDomains.status} = 'active'
   ORDER BY ${sellerCustomDomains.verifiedAt} DESC NULLS LAST LIMIT 1
-)`;
+)`}`;
 
 const cartStoreColumns = {
   id: stores.id,

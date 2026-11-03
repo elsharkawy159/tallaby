@@ -18,11 +18,12 @@ async function grantedStores(actor: AgentActor) {
       siteStatus: stores.siteStatus,
       catalogMode: stores.catalogMode,
       defaultLocale: stores.defaultLocale,
-      products: sql<number>`(
+      // Nested sql keeps the table name on outer columns; a no-join select strips it from a bare field (outer-column.test.ts).
+      products: sql<number>`${sql`(
         SELECT count(*)::int FROM ${products} p
         WHERE p.seller_id = ${stores.sellerId} AND p.deleted_at IS NULL AND p.purged_at IS NULL
           AND (${stores.catalogMode} = 'all' OR EXISTS (SELECT 1 FROM store_products sp WHERE sp.store_id = ${stores.id} AND sp.product_id = p.id))
-      )`,
+      )`}`,
     })
     .from(stores)
     .where(and(eq(stores.sellerId, actor.sellerId), inArray(stores.id, actor.storeIds), isNull(stores.deletedAt)))

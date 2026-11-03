@@ -117,9 +117,10 @@ export async function listStoreForms(sellerId: string, storeId: string, q: Query
       status: storeForms.status,
       updatedAt: storeForms.updatedAt,
       fieldCount: sql<number>`coalesce(jsonb_array_length(${storeForms.fields}), 0)::int`,
-      submissionCount: sql<number>`(SELECT count(*)::int FROM ${storeFormSubmissions} s WHERE s.form_id = ${storeForms.id} AND s.store_id = ${storeForms.storeId})`,
-      newCount: sql<number>`(SELECT count(*)::int FROM ${storeFormSubmissions} s WHERE s.form_id = ${storeForms.id} AND s.store_id = ${storeForms.storeId} AND s.status = 'new')`,
-      lastSubmissionAt: sql<string | null>`(SELECT max(s.created_at)::text FROM ${storeFormSubmissions} s WHERE s.form_id = ${storeForms.id} AND s.store_id = ${storeForms.storeId})`,
+      // Nested sql keeps the table name on outer columns; a no-join select strips it from a bare field (outer-column.test.ts).
+      submissionCount: sql<number>`${sql`(SELECT count(*)::int FROM ${storeFormSubmissions} s WHERE s.form_id = ${storeForms.id} AND s.store_id = ${storeForms.storeId})`}`,
+      newCount: sql<number>`${sql`(SELECT count(*)::int FROM ${storeFormSubmissions} s WHERE s.form_id = ${storeForms.id} AND s.store_id = ${storeForms.storeId} AND s.status = 'new')`}`,
+      lastSubmissionAt: sql<string | null>`${sql`(SELECT max(s.created_at)::text FROM ${storeFormSubmissions} s WHERE s.form_id = ${storeForms.id} AND s.store_id = ${storeForms.storeId})`}`,
     })
     .from(storeForms)
     .where(eq(storeForms.storeId, storeId))

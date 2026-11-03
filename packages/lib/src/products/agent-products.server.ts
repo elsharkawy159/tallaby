@@ -822,7 +822,8 @@ export async function agentListStoreCategories(ctx: AgentProductContext) {
       name: sellerProductCategories.name,
       nameAr: sellerProductCategories.nameAr,
       tallabyCategoryId: sellerProductCategories.sourceCategoryId,
-      products: sql<number>`(SELECT count(*)::int FROM ${products} p WHERE p.seller_category_id = ${sellerProductCategories.id} AND p.deleted_at IS NULL)`,
+      // Nested sql keeps the table name on outer columns; a no-join select strips it from a bare field (outer-column.test.ts).
+      products: sql<number>`${sql`(SELECT count(*)::int FROM ${products} p WHERE p.seller_category_id = ${sellerProductCategories.id} AND p.deleted_at IS NULL)`}`,
     })
     .from(sellerProductCategories)
     .where(eq(sellerProductCategories.sellerId, ctx.sellerId))
@@ -840,8 +841,9 @@ export async function agentSearchCategories(ctx: AgentProductContext, query: str
       id: categories.id,
       name: categories.name,
       nameAr: categories.nameAr,
-      parent: sql<string | null>`(SELECT p.name FROM ${categories} p WHERE p.id = ${categories.parentId})`,
-      parentAr: sql<string | null>`(SELECT p.name_ar FROM ${categories} p WHERE p.id = ${categories.parentId})`,
+      // Nested sql keeps the table name on outer columns; a no-join select strips it from a bare field (outer-column.test.ts).
+      parent: sql<string | null>`${sql`(SELECT p.name FROM ${categories} p WHERE p.id = ${categories.parentId})`}`,
+      parentAr: sql<string | null>`${sql`(SELECT p.name_ar FROM ${categories} p WHERE p.id = ${categories.parentId})`}`,
     })
     .from(categories)
     .where(or(ilike(categories.name, pattern), ilike(categories.nameAr, pattern)))

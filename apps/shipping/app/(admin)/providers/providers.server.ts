@@ -51,30 +51,31 @@ export async function getProviders(): Promise<ListResult<ProviderRow>> {
         contactEmail: shippingProviders.contactEmail,
         website: shippingProviders.website,
         notes: shippingProviders.notes,
-        shipmentCount: sql<number>`(
+        // Nested sql keeps the table name on outer columns; a no-join select strips it from a bare field (outer-column.test.ts).
+        shipmentCount: sql<number>`${sql`(
           select count(*)::int from "shipments"
           where "shipments"."provider_id" = ${shippingProviders.id}
-        )`,
-        activeCount: sql<number>`(
+        )`}`,
+        activeCount: sql<number>`${sql`(
           select count(*)::int from "shipments"
           where "shipments"."provider_id" = ${shippingProviders.id}
             and "shipments"."status" in ('assigned', 'out_for_delivery')
-        )`,
-        deliveredCount: sql<number>`(
+        )`}`,
+        deliveredCount: sql<number>`${sql`(
           select count(*)::int from "shipments"
           where "shipments"."provider_id" = ${shippingProviders.id}
             and "shipments"."status" = 'delivered'
-        )`,
-        failedCount: sql<number>`(
+        )`}`,
+        failedCount: sql<number>`${sql`(
           select count(*)::int from "shipments"
           where "shipments"."provider_id" = ${shippingProviders.id}
             and "shipments"."status" = 'failed'
-        )`,
-        returnedCount: sql<number>`(
+        )`}`,
+        returnedCount: sql<number>`${sql`(
           select count(*)::int from "shipments"
           where "shipments"."provider_id" = ${shippingProviders.id}
             and "shipments"."status" = 'returned'
-        )`,
+        )`}`,
       })
       .from(shippingProviders)
       .orderBy(asc(shippingProviders.name));

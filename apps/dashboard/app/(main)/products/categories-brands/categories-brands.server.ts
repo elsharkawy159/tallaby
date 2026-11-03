@@ -88,8 +88,9 @@ export async function searchTaxonomyPack(kind: TaxonomyKind, query: string): Pro
           name: categories.name,
           nameAr: categories.nameAr,
           image: categories.imageUrl,
-          parentName: sql<string | null>`(SELECT p.name FROM ${categories} p WHERE p.id = ${categories.parentId})`,
-          parentNameAr: sql<string | null>`(SELECT p.name_ar FROM ${categories} p WHERE p.id = ${categories.parentId})`,
+          // Nested sql keeps the table name on outer columns; a no-join select strips it from a bare field (outer-column.test.ts).
+          parentName: sql<string | null>`${sql`(SELECT p.name FROM ${categories} p WHERE p.id = ${categories.parentId})`}`,
+          parentNameAr: sql<string | null>`${sql`(SELECT p.name_ar FROM ${categories} p WHERE p.id = ${categories.parentId})`}`,
         })
         .from(categories)
         .where(or(ilike(categories.name, pattern), ilike(categories.nameAr, pattern)))

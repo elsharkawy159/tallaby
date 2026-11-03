@@ -387,8 +387,9 @@ export async function listStoreFormsForAdmin(storeId: string, q: Queryable = db)
       key: storeForms.key,
       status: storeForms.status,
       createdAt: storeForms.createdAt,
-      submissions: sql<number>`(SELECT count(*)::int FROM ${storeFormSubmissions} WHERE ${storeFormSubmissions.formId} = ${storeForms.id})`,
-      lastSubmissionAt: sql<string | null>`(SELECT max(${storeFormSubmissions.createdAt})::text FROM ${storeFormSubmissions} WHERE ${storeFormSubmissions.formId} = ${storeForms.id})`,
+      // Nested sql keeps the table name on outer columns; a no-join select strips it from a bare field (outer-column.test.ts).
+      submissions: sql<number>`${sql`(SELECT count(*)::int FROM ${storeFormSubmissions} WHERE ${storeFormSubmissions.formId} = ${storeForms.id})`}`,
+      lastSubmissionAt: sql<string | null>`${sql`(SELECT max(${storeFormSubmissions.createdAt})::text FROM ${storeFormSubmissions} WHERE ${storeFormSubmissions.formId} = ${storeForms.id})`}`,
     })
     .from(storeForms)
     .where(eq(storeForms.storeId, storeId))
@@ -404,8 +405,9 @@ export async function listStoreContentForAdmin(storeId: string, q: Queryable = d
         name: cmsCollections.name,
         kind: cmsCollections.kind,
         slug: cmsCollections.slug,
-        items: sql<number>`(SELECT count(*)::int FROM ${cmsItems} WHERE ${cmsItems.collectionId} = ${cmsCollections.id})`,
-        published: sql<number>`(SELECT count(*)::int FROM ${cmsItems} WHERE ${cmsItems.collectionId} = ${cmsCollections.id} AND ${cmsItems.status} = 'published')`,
+        // Nested sql keeps the table name on outer columns; a no-join select strips it from a bare field (outer-column.test.ts).
+        items: sql<number>`${sql`(SELECT count(*)::int FROM ${cmsItems} WHERE ${cmsItems.collectionId} = ${cmsCollections.id})`}`,
+        published: sql<number>`${sql`(SELECT count(*)::int FROM ${cmsItems} WHERE ${cmsItems.collectionId} = ${cmsCollections.id} AND ${cmsItems.status} = 'published')`}`,
       })
       .from(cmsCollections)
       .where(eq(cmsCollections.storeId, storeId))
