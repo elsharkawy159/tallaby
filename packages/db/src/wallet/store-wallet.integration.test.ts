@@ -3,6 +3,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { eq, inArray, sql } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { createAuthUsers } from "../testing/auth-users";
 import * as DB_SCHEMA from "../drizzle/schema";
 import * as DB_RELATIONS from "../drizzle/relations";
 import { chargeOrderPlacementFee, creditSellerOnDelivery } from "./credit-seller-on-delivery";
@@ -38,6 +39,7 @@ describe.skipIf(!TEST_DATABASE_URL)("store wallet (integration)", { timeout: 60_
     const id = randomUUID();
     sellerIds.push(id);
     const sub = `sw-${tag}-${sellerIds.length}`;
+    await createAuthUsers(id);
     await db.insert(s.users).values({ id, isGuest: false, role: "seller" });
     await db.insert(s.sellers).values({
       id,
@@ -134,6 +136,7 @@ describe.skipIf(!TEST_DATABASE_URL)("store wallet (integration)", { timeout: 60_
   beforeAll(async () => {
     const [category] = await db.select({ id: s.categories.id }).from(s.categories).limit(1);
     categoryId = category!.id;
+    await createAuthUsers(buyer);
     await db.insert(s.users).values({ id: buyer, isGuest: false, role: "customer" });
   });
 

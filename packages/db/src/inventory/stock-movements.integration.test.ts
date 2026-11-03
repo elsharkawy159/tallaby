@@ -3,6 +3,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { and, asc, eq, sql } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { createAuthUsers } from "../testing/auth-users";
 import * as DB_SCHEMA from "../drizzle/schema";
 import * as DB_RELATIONS from "../drizzle/relations";
 import { decrementStock, restoreStock } from "./stock";
@@ -18,7 +19,7 @@ const schema = { ...DB_SCHEMA, ...DB_RELATIONS };
 const TEST_DATABASE_URL = process.env.TEST_DATABASE_URL;
 
 describe.skipIf(!TEST_DATABASE_URL)("stock movements (integration)", () => {
-  const client = postgres(TEST_DATABASE_URL ?? "postgres://unused");
+  const client = postgres(TEST_DATABASE_URL ?? "postgres://unused", { prepare: false });
   const db = drizzle(client, { schema });
 
   let sellerId: string;
@@ -64,6 +65,7 @@ describe.skipIf(!TEST_DATABASE_URL)("stock movements (integration)", () => {
 
   beforeAll(async () => {
     sellerId = randomUUID();
+    await createAuthUsers(sellerId);
     await db.insert(schema.users).values({ id: sellerId, isGuest: true });
     await db.insert(schema.sellers).values({
       id: sellerId,

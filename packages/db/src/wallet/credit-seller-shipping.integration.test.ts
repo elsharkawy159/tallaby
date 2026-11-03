@@ -3,6 +3,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { eq, inArray } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { createAuthUsers } from "../testing/auth-users";
 import * as DB_SCHEMA from "../drizzle/schema";
 import * as DB_RELATIONS from "../drizzle/relations";
 import { creditSellerOnDelivery } from "./credit-seller-on-delivery";
@@ -31,6 +32,7 @@ describe.skipIf(!TEST_DATABASE_URL)("store shipping credit (integration)", { tim
     const id = randomUUID();
     sellerIds.push(id);
     const sub = `ss-${tag}-${sellerIds.length}`;
+    await createAuthUsers(id);
     await db.insert(s.users).values({ id, isGuest: false, role: "seller" });
     await db.insert(s.sellers).values({
       id,
@@ -126,6 +128,7 @@ describe.skipIf(!TEST_DATABASE_URL)("store shipping credit (integration)", { tim
   beforeAll(async () => {
     const [category] = await db.select({ id: s.categories.id }).from(s.categories).limit(1);
     categoryId = category!.id;
+    await createAuthUsers(buyer);
     await db.insert(s.users).values({ id: buyer, isGuest: false, role: "customer" });
   });
 

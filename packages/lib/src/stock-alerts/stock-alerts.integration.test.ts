@@ -3,6 +3,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { inArray, sql } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { createAuthUsers } from "../../../db/src/testing/auth-users";
 import * as DB_SCHEMA from "@workspace/db/schema";
 
 /**
@@ -27,6 +28,7 @@ describe.skipIf(!TEST_DATABASE_URL)("back-in-stock alerts (integration)", { time
     const id = randomUUID();
     const sub = `sa-${id.slice(0, 8)}`;
     createdUsers.push(id);
+    await createAuthUsers(id);
     await db.insert(s.users).values({ id, isGuest: false, role: "seller" });
     await db.execute(sql`
       INSERT INTO sellers (id, business_name, display_name, slug, subdomain, business_type, legal_address, support_email, status)

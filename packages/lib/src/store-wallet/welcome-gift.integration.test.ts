@@ -3,6 +3,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { createAuthUsers } from "../../../db/src/testing/auth-users";
 import * as DB_SCHEMA from "@workspace/db/schema";
 import { postStoreWalletEntry } from "@workspace/db/wallet";
 import { getStoreForEditor, publishStoreSite, saveStorePageDraft } from "../store-sites/server";
@@ -31,6 +32,7 @@ describe.skipIf(!TEST_DATABASE_URL)("welcome gift (integration)", { timeout: 60_
     const id = randomUUID();
     const sub = `wg-${id.slice(0, 8)}`;
     created.push(id);
+    await createAuthUsers(id);
     await db.insert(s.users).values({ id, isGuest: false, role: "seller" });
     // Raw insert: the schema can be ahead of staging (another session's 0113 columns).
     await db.execute(sql`
@@ -154,6 +156,7 @@ describe.skipIf(!TEST_DATABASE_URL)("welcome gift (integration)", { timeout: 60_
     const seller = await newSeller({ giftEligible: true });
     const admin = randomUUID();
     created.push(admin);
+    await createAuthUsers(admin);
     await db.insert(s.users).values({ id: admin, isGuest: false, role: "admin", isVerified: true });
     await chooseTemplate(seller.storeId, admin);
     await addProduct(seller.id);

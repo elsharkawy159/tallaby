@@ -3,6 +3,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { and, eq, inArray } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { createAuthUsers } from "../../../db/src/testing/auth-users";
 import * as DB_SCHEMA from "@workspace/db/schema";
 import { MAX_OPEN_MANUAL_TOP_UPS } from "./top-up.lib";
 
@@ -33,6 +34,7 @@ describe.skipIf(!TEST_DATABASE_URL)("manual store top-ups (integration)", { time
     process.env.DATABASE_URL = TEST_DATABASE_URL;
     ({ submitManualStoreTopUp: submit } = await import("./manual-top-up.server"));
     ({ reviewManualStoreTopUp: review } = await import("../admin/top-ups.server"));
+    await createAuthUsers(sellerId, otherSeller, adminId);
     await db.insert(s.users).values([
       { id: sellerId, isGuest: false, role: "seller" },
       { id: otherSeller, isGuest: false, role: "seller" },

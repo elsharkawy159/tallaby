@@ -3,6 +3,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { eq, inArray } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { createAuthUsers } from "../../../db/src/testing/auth-users";
 import * as DB_SCHEMA from "@workspace/db/schema";
 import { createStore } from "../stores/server";
 import { findActiveCustomDomainForSubdomain, findSubdomainForCustomDomain } from "./custom-domains.server";
@@ -23,6 +24,7 @@ describe.skipIf(!TEST_DATABASE_URL)("custom domain → store (integration)", () 
   let secondStore: string;
 
   beforeAll(async () => {
+    await createAuthUsers(sellerId);
     await db.insert(s.users).values({ id: sellerId, isGuest: false, role: "seller" });
     await db.insert(s.sellers).values({
       id: sellerId,

@@ -3,6 +3,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { inArray, sql } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { createAuthUsers } from "../../../db/src/testing/auth-users";
 import * as DB_SCHEMA from "@workspace/db/schema";
 
 /**
@@ -29,6 +30,7 @@ describe.skipIf(!TEST_DATABASE_URL)("product trash (integration)", { timeout: 90
     const id = randomUUID();
     const sub = `tr-${id.slice(0, 8)}`;
     createdUsers.push(id);
+    await createAuthUsers(id);
     await db.insert(s.users).values({ id, isGuest: false, role: "seller" });
     await db.execute(sql`
       INSERT INTO sellers (id, business_name, display_name, slug, subdomain, business_type, legal_address, support_email, status)
@@ -52,6 +54,7 @@ describe.skipIf(!TEST_DATABASE_URL)("product trash (integration)", { timeout: 90
   async function addToCart(sellerId: string, productId: string) {
     const userId = randomUUID();
     createdUsers.push(userId);
+    await createAuthUsers(userId);
     await db.insert(s.users).values({ id: userId, isGuest: true, role: "customer" });
     const [cart] = rows<{ id: string }>(await db.execute(sql`INSERT INTO carts (user_id, status) VALUES (${userId}, 'active') RETURNING id`));
     await db.execute(sql`INSERT INTO cart_items (cart_id, product_id, seller_id, quantity, price) VALUES (${cart!.id}, ${productId}, ${sellerId}, 1, 100)`);
@@ -60,6 +63,7 @@ describe.skipIf(!TEST_DATABASE_URL)("product trash (integration)", { timeout: 90
   async function addOrder(sellerId: string, productId: string) {
     const userId = randomUUID();
     createdUsers.push(userId);
+    await createAuthUsers(userId);
     await db.insert(s.users).values({ id: userId, isGuest: true, role: "customer" });
     const [order] = rows<{ id: string }>(
       await db.execute(sql`

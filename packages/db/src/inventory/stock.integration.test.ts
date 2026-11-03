@@ -1,8 +1,9 @@
 import { randomUUID } from "node:crypto";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
-import { eq, sql } from "drizzle-orm";
+import { eq, inArray, sql } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { createAuthUsers } from "../testing/auth-users";
 import * as DB_SCHEMA from "../drizzle/schema";
 import * as DB_RELATIONS from "../drizzle/relations";
 import { decrementStock, InsufficientStockError, restoreStock } from "./stock";
@@ -27,11 +28,13 @@ const schema = { ...DB_SCHEMA, ...DB_RELATIONS };
 const TEST_DATABASE_URL = process.env.TEST_DATABASE_URL;
 
 describe.skipIf(!TEST_DATABASE_URL)("inventory concurrency (integration)", () => {
-  const client = postgres(TEST_DATABASE_URL ?? "postgres://unused");
+  const client = postgres(TEST_DATABASE_URL ?? "postgres://unused", { prepare: false });
   const db = drizzle(client, { schema });
 
   let sellerId: string;
   let categoryId: string;
+  // Coupons belong to no seller, so the auth cascade doesn't remove them.
+  const couponIds: string[] = [];
 
   async function makeProduct(quantity: number) {
     const id = randomUUID();
@@ -60,6 +63,7 @@ describe.skipIf(!TEST_DATABASE_URL)("inventory concurrency (integration)", () =>
 
   async function makeCoupon(usageLimit: number | null) {
     const id = randomUUID();
+    couponIds.push(id);
     await db.insert(schema.coupons).values({
       id,
       code: `TEST-${id}`,
@@ -76,6 +80,7 @@ describe.skipIf(!TEST_DATABASE_URL)("inventory concurrency (integration)", () =>
 
   beforeAll(async () => {
     const userId = randomUUID();
+    await createAuthUsers(userId);
     await db.insert(schema.users).values({ id: userId, isGuest: true });
     sellerId = userId;
     await db.insert(schema.sellers).values({
@@ -94,6 +99,7 @@ describe.skipIf(!TEST_DATABASE_URL)("inventory concurrency (integration)", () =>
   });
 
   afterAll(async () => {
+    if (couponIds.length > 0) await db.delete(schema.coupons).where(inArray(schema.coupons.id, couponIds));
     await db.delete(schema.products).where(eq(schema.products.sellerId, sellerId));
     await db.delete(schema.sellers).where(eq(schema.sellers.id, sellerId));
     await db.delete(schema.users).where(eq(schema.users.id, sellerId));

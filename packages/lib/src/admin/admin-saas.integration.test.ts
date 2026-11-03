@@ -3,6 +3,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { and, eq, inArray } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { createAuthUsers } from "../../../db/src/testing/auth-users";
 import * as DB_SCHEMA from "@workspace/db/schema";
 import { createIsolationWorld, type IsolationWorld } from "../stores/isolation.fixtures";
 import { listFulfillmentSellerQueue, listFulfillmentQueueSellerIds } from "../fulfillment/queue.server";
@@ -18,7 +19,7 @@ import { listStoresForAdmin } from "./stores-admin.server";
  */
 const TEST_DATABASE_URL = process.env.TEST_DATABASE_URL;
 
-describe.skipIf(!TEST_DATABASE_URL)("admin SaaS views (integration)", { timeout: 60_000 }, () => {
+describe.skipIf(!TEST_DATABASE_URL)("admin SaaS views (integration)", { timeout: 120_000 }, () => {
   const client = postgres(TEST_DATABASE_URL ?? "postgres://unused", { prepare: false, max: 4 });
   const db = drizzle(client, { schema: DB_SCHEMA });
   const s = DB_SCHEMA;
@@ -31,6 +32,7 @@ describe.skipIf(!TEST_DATABASE_URL)("admin SaaS views (integration)", { timeout:
 
   beforeAll(async () => {
     w = await createIsolationWorld(db);
+    await createAuthUsers(adminId, sellerUserId);
     await db.insert(s.users).values([
       { id: adminId, isGuest: false, role: "admin", isVerified: true, fullName: "QA Admin" },
       { id: sellerUserId, isGuest: false, role: "seller", isVerified: true },
@@ -61,14 +63,14 @@ describe.skipIf(!TEST_DATABASE_URL)("admin SaaS views (integration)", { timeout:
       credentialsEncrypted: "ciphertext",
       lastError: "token expired",
     });
-  });
+  }, 180_000);
 
   afterAll(async () => {
     await db.delete(s.coupons).where(inArray(s.coupons.id, [couponId, platformCouponId]));
     await w?.cleanup();
     await db.delete(s.users).where(inArray(s.users.id, [adminId, sellerUserId]));
     await client.end();
-  });
+  }, 180_000);
 
   it("lists a seller with five services as one row with open count and oldest request", async () => {
     const { rows } = await listFulfillmentSellerQueue({ state: "open", service: null, review: null, q: "Iso", page: 1 }, db);

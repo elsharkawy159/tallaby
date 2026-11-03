@@ -3,6 +3,7 @@ import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
 import { and, eq, inArray } from 'drizzle-orm'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { createAuthUsers } from '../../../db/src/testing/auth-users'
 import * as DB_SCHEMA from '@workspace/db/schema'
 import {
   activateSellerService,
@@ -21,7 +22,7 @@ import type { FulfillmentServiceType } from './constants'
 const TEST_DATABASE_URL = process.env.TEST_DATABASE_URL
 
 describe.skipIf(!TEST_DATABASE_URL)('seller fulfillment request (integration)', () => {
-  const client = postgres(TEST_DATABASE_URL ?? 'postgres://unused', { max: 2 })
+  const client = postgres(TEST_DATABASE_URL ?? 'postgres://unused', { max: 2, prepare: false })
   const db = drizzle(client, { schema: DB_SCHEMA })
   const s = DB_SCHEMA
 
@@ -59,6 +60,7 @@ describe.skipIf(!TEST_DATABASE_URL)('seller fulfillment request (integration)', 
   })
 
   beforeAll(async () => {
+    await createAuthUsers(sellerA, sellerB, adminId)
     await db.insert(s.users).values([
       { id: sellerA, isGuest: false, role: 'seller' },
       { id: sellerB, isGuest: false, role: 'seller' },

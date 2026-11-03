@@ -10,6 +10,7 @@ import { eq, inArray } from "drizzle-orm";
 import * as s from "@workspace/db/schema";
 import { createStore } from "./server";
 import { getStoreForEditor, publishStoreSite, saveStorePageDraft } from "../store-sites/server";
+import { createAuthUsers } from "../../../db/src/testing/auth-users";
 
 /** The handle the server functions accept (any Drizzle db over @workspace/db schema). */
 type TestDb = NonNullable<Parameters<typeof createStore>[2]>;
@@ -23,6 +24,7 @@ export type IsolationWorld = {
 const hero = (title: string) => ({ sections: [{ id: "s1", sectionId: "classic-hero", version: 1, props: { title } }] });
 
 async function insertSeller(db: TestDb, id: string, subdomain: string) {
+  await createAuthUsers(id);
   await db.insert(s.users).values({ id, isGuest: false, role: "seller" });
   await db.insert(s.sellers).values({
     id,

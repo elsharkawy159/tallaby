@@ -3,6 +3,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { createAuthUsers } from "../../../db/src/testing/auth-users";
 import * as DB_SCHEMA from "@workspace/db/schema";
 
 /**
@@ -28,6 +29,7 @@ describe.skipIf(!TEST_DATABASE_URL)("affiliate program (integration)", { timeout
   async function makeSeller(opts: { phone?: string; referrer?: string; status?: "approved" | "suspended" } = {}) {
     const id = randomUUID();
     const sub = `rf-${tag}-${created.length}`;
+    await createAuthUsers(id);
     await db.insert(s.users).values({ id, isGuest: false, role: "seller" });
     created.push(id);
     // Plain SQL: names only the columns it sets, so a staging copy without a
@@ -112,6 +114,7 @@ describe.skipIf(!TEST_DATABASE_URL)("affiliate program (integration)", { timeout
     expect(code).toMatch(/^[A-HJ-NP-Z2-9]{7}$/);
 
     const newUser = randomUUID();
+    await createAuthUsers(newUser);
     await db.insert(s.users).values({ id: newUser, isGuest: false });
     created.push(newUser);
     const ok = await ensure.ensureSellerAccount({
@@ -123,6 +126,7 @@ describe.skipIf(!TEST_DATABASE_URL)("affiliate program (integration)", { timeout
     expect(row!.at).not.toBeNull();
 
     const samePhone = randomUUID();
+    await createAuthUsers(samePhone);
     await db.insert(s.users).values({ id: samePhone, isGuest: false });
     created.push(samePhone);
     await ensure.ensureSellerAccount({ userId: samePhone, email: null, subdomain: `rf-${tag}-sp`, phone: "+20 109 999 0000", referralCode: code });

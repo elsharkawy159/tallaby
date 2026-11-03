@@ -3,6 +3,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { and, eq, inArray } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { createAuthUsers } from "../../../db/src/testing/auth-users";
 import * as DB_SCHEMA from "@workspace/db/schema";
 import type { IsolationWorld } from "../stores/isolation.fixtures";
 
@@ -129,6 +130,7 @@ describe.skipIf(!TEST_DATABASE_URL)("Bosta status updates (integration)", { time
       .values({ sellerId: w.a.sellerId, categoryId: category!.id, status: "active", quantity: "100", sku: `sy-${buyer.slice(0, 8)}` })
       .returning({ id: s.products.id });
     productId = product!.id;
+    await createAuthUsers(buyer);
     await db.insert(s.users).values({ id: buyer, isGuest: false, role: "customer" });
     const [address] = await db
       .insert(s.userAddresses)

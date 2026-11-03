@@ -3,6 +3,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { eq } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { createAuthUsers } from "../../../db/src/testing/auth-users";
 import * as DB_SCHEMA from "@workspace/db/schema";
 import { getSellerAccountView, updateSellerLegalDetails, updateSellerPayoutDetails } from "./account.server";
 
@@ -16,6 +17,7 @@ describe.skipIf(!TEST_DATABASE_URL)("seller account (integration)", () => {
   const sellerId = randomUUID();
 
   beforeAll(async () => {
+    await createAuthUsers(sellerId);
     await db.insert(s.users).values({ id: sellerId, isGuest: false, role: "seller" });
     await db.insert(s.sellers).values({
       id: sellerId,

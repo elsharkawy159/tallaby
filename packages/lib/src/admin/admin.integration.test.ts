@@ -3,6 +3,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { createAuthUsers } from "../../../db/src/testing/auth-users";
 import * as DB_SCHEMA from "@workspace/db/schema";
 import { createIsolationWorld, type IsolationWorld } from "../stores/isolation.fixtures";
 import { AdminActorError, assertAdminActor } from "./guard.server";
@@ -26,7 +27,7 @@ import {
  */
 const TEST_DATABASE_URL = process.env.TEST_DATABASE_URL;
 
-describe.skipIf(!TEST_DATABASE_URL)("admin overrides (integration)", { timeout: 60_000 }, () => {
+describe.skipIf(!TEST_DATABASE_URL)("admin overrides (integration)", { timeout: 120_000 }, () => {
   const client = postgres(TEST_DATABASE_URL ?? "postgres://unused", { prepare: false, max: 4 });
   const db = drizzle(client, { schema: DB_SCHEMA });
   const s = DB_SCHEMA;
@@ -43,6 +44,7 @@ describe.skipIf(!TEST_DATABASE_URL)("admin overrides (integration)", { timeout: 
 
   beforeAll(async () => {
     w = await createIsolationWorld(db);
+    await createAuthUsers(adminId, unverifiedAdminId, sellerUserId, sellerC);
     await db.insert(s.users).values([
       { id: adminId, isGuest: false, role: "admin", isVerified: true, fullName: "QA Admin" },
       { id: unverifiedAdminId, isGuest: false, role: "admin", isVerified: false },
@@ -63,14 +65,14 @@ describe.skipIf(!TEST_DATABASE_URL)("admin overrides (integration)", { timeout: 
       status: "approved",
       feeTrialEligible: false,
     });
-  });
+  }, 180_000);
 
   afterAll(async () => {
     await w?.cleanup();
     await db.delete(s.sellerSubdomainRedirects).where(eq(s.sellerSubdomainRedirects.sellerId, sellerC));
     await db.delete(s.users).where(inArray(s.users.id, [sellerC, adminId, unverifiedAdminId, sellerUserId]));
     await client.end();
-  });
+  }, 180_000);
 
   it("the guard refuses non-admins, unverified admins and unknown ids", async () => {
     await expect(assertAdminActor(db, adminId)).resolves.toMatchObject({ id: adminId, role: "admin" });
@@ -342,6 +344,7 @@ describe.skipIf(!TEST_DATABASE_URL)("admin overrides (integration)", { timeout: 
 
   it("store-site guard: moderators blocked, deleted stores null, audit row has store_id", async () => {
     const moderatorId = randomUUID();
+    await createAuthUsers(moderatorId);
     await db.insert(s.users).values({ id: moderatorId, isGuest: false, role: "moderator", isVerified: true });
     try {
       await expect(resolveStoreForAdmin(moderatorId, w.a.a1, db)).rejects.toBeInstanceOf(AdminActorError);

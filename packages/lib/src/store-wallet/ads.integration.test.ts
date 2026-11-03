@@ -3,6 +3,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { eq } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { createAuthUsers } from "../../../db/src/testing/auth-users";
 import * as DB_SCHEMA from "@workspace/db/schema";
 import { StoreWalletLimitError, postStoreWalletEntry } from "@workspace/db/wallet";
 
@@ -49,6 +50,7 @@ describe.skipIf(!TEST_DATABASE_URL)("ads paid from the store wallet (integration
     process.env.DATABASE_URL = TEST_DATABASE_URL;
     ({ refundRejectedWalletAdRequest: refund } = await import("./ads.server"));
     const sub = `ad-${sellerId.slice(0, 8)}`;
+    await createAuthUsers(sellerId);
     await db.insert(s.users).values({ id: sellerId, isGuest: false, role: "seller" });
     await db.insert(s.sellers).values({
       id: sellerId,

@@ -3,6 +3,7 @@ import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
 import { eq, inArray, sql } from 'drizzle-orm'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { createAuthUsers } from '../../../db/src/testing/auth-users'
 import * as DB_SCHEMA from '@workspace/db/schema'
 import type { IsolationWorld } from '../stores/isolation.fixtures'
 import { calculateLocationShippingCost } from '../shipping/shipping.lib'
@@ -136,6 +137,7 @@ describe.skipIf(!TEST_DATABASE_URL)('storefront shipping at order placement (int
       .returning({ id: s.products.id })
     productId = product!.id
 
+    await createAuthUsers(buyer)
     await db.insert(s.users).values({ id: buyer, isGuest: false, role: 'customer' })
     // Default country column (the address form's Egypt default).
     addr.cairo = await addAddress({ state: 'القاهرة', city: 'مدينة نصر' })

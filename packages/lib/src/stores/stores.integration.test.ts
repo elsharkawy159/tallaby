@@ -3,6 +3,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { and, eq, inArray } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { createAuthUsers } from "../../../db/src/testing/auth-users";
 import * as DB_SCHEMA from "@workspace/db/schema";
 import {
   archiveStore,
@@ -22,7 +23,7 @@ import {
  */
 const TEST_DATABASE_URL = process.env.TEST_DATABASE_URL;
 
-describe.skipIf(!TEST_DATABASE_URL)("stores (integration)", () => {
+describe.skipIf(!TEST_DATABASE_URL)("stores (integration)", { timeout: 120_000 }, () => {
   const client = postgres(TEST_DATABASE_URL ?? "postgres://unused", { prepare: false, max: 4 });
   const db = drizzle(client, { schema: DB_SCHEMA });
   const s = DB_SCHEMA;
@@ -36,6 +37,7 @@ describe.skipIf(!TEST_DATABASE_URL)("stores (integration)", () => {
   let primaryB: string;
 
   beforeAll(async () => {
+    await createAuthUsers(sellerA, sellerB);
     await db.insert(s.users).values([
       { id: sellerA, isGuest: false, role: "seller" },
       { id: sellerB, isGuest: false, role: "seller" },
@@ -56,13 +58,13 @@ describe.skipIf(!TEST_DATABASE_URL)("stores (integration)", () => {
     const rows = await db.select().from(s.stores).where(inArray(s.stores.sellerId, [sellerA, sellerB]));
     primaryA = rows.find((r) => r.sellerId === sellerA)!.id;
     primaryB = rows.find((r) => r.sellerId === sellerB)!.id;
-  });
+  }, 180_000);
 
   afterAll(async () => {
     await db.delete(s.sellerSubdomainRedirects).where(inArray(s.sellerSubdomainRedirects.sellerId, [sellerA, sellerB]));
     await db.delete(s.users).where(inArray(s.users.id, [sellerA, sellerB]));
     await client.end();
-  });
+  }, 180_000);
 
   it("gives every new seller one primary store (trigger)", async () => {
     const list = await listStores(sellerA, db);

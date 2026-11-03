@@ -3,6 +3,7 @@ import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
 import { and, eq, inArray } from 'drizzle-orm'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { createAuthUsers } from '../../../db/src/testing/auth-users'
 import * as DB_SCHEMA from '@workspace/db/schema'
 
 /**
@@ -34,6 +35,7 @@ describe.skipIf(!TEST_DATABASE_URL)('platform fee at order placement (integratio
 
   async function addSeller (id: string, extra: Partial<typeof s.sellers.$inferInsert>) {
     const sub = `pf-${tag}-${id.slice(0, 4)}`
+    await createAuthUsers(id)
     await db.insert(s.users).values({ id, isGuest: false, role: 'seller' })
     await db.insert(s.sellers).values({
       id,
@@ -115,6 +117,7 @@ describe.skipIf(!TEST_DATABASE_URL)('platform fee at order placement (integratio
     const [category] = await db.select({ id: s.categories.id }).from(s.categories).limit(1)
     categoryId = category!.id
 
+    await createAuthUsers(buyer)
     await db.insert(s.users).values({ id: buyer, isGuest: false, role: 'customer' })
     const [address] = await db
       .insert(s.userAddresses)

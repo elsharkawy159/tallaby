@@ -3,6 +3,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { inArray, sql } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { createAuthUsers } from "../../../db/src/testing/auth-users";
 import * as DB_SCHEMA from "@workspace/db/schema";
 
 /**
@@ -25,6 +26,7 @@ describe.skipIf(!TEST_DATABASE_URL)("missed orders (integration)", { timeout: 60
     const id = randomUUID();
     const sub = `cl-${id.slice(0, 8)}`;
     createdUsers.push(id);
+    await createAuthUsers(id);
     await db.insert(s.users).values({ id, isGuest: false, role: "seller" });
     await db.execute(sql`
       INSERT INTO sellers (id, business_name, display_name, slug, subdomain, business_type, legal_address, support_email, status)
@@ -37,6 +39,7 @@ describe.skipIf(!TEST_DATABASE_URL)("missed orders (integration)", { timeout: 60
   async function newCustomer() {
     const id = randomUUID();
     createdUsers.push(id);
+    await createAuthUsers(id);
     await db.insert(s.users).values({ id, isGuest: true, role: "customer" });
     return id;
   }

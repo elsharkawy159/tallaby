@@ -3,6 +3,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { eq, inArray } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { createAuthUsers } from "../../../db/src/testing/auth-users";
 import * as DB_SCHEMA from "@workspace/db/schema";
 import { ensureSellerAccount } from "./ensure-seller-account";
 
@@ -25,6 +26,7 @@ describe.skipIf(!TEST_DATABASE_URL)("ensureSellerAccount (integration)", () => {
   const users = [u1, u2, u3, u4, u5, u6];
 
   beforeAll(async () => {
+    await createAuthUsers(...users);
     await db.insert(s.users).values(users.map((id) => ({ id, isGuest: false, role: "customer" as const })));
   });
 

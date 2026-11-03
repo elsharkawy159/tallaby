@@ -3,6 +3,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { eq, inArray } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { createAuthUsers } from "../../../db/src/testing/auth-users";
 import * as DB_SCHEMA from "@workspace/db/schema";
 import { getStoreForEditor, publishStoreSite, saveStorePageDraft } from "../store-sites/server";
 import { startFeeTrialIfNeeded } from "./fee-trial.server";
@@ -29,6 +30,7 @@ describe.skipIf(!TEST_DATABASE_URL)("fee trial start (integration)", { timeout: 
     const id = randomUUID();
     const sub = `ft-${id.slice(0, 8)}`;
     created.push(id);
+    await createAuthUsers(id);
     await db.insert(s.users).values({ id, isGuest: false, role: "seller" });
     await db.insert(s.sellers).values({
       id,

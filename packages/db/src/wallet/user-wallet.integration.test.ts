@@ -3,6 +3,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { and, eq, sql } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { createAuthUsers } from "../testing/auth-users";
 import * as DB_SCHEMA from "../drizzle/schema";
 import * as DB_RELATIONS from "../drizzle/relations";
 import {
@@ -55,7 +56,7 @@ const schema = { ...DB_SCHEMA, ...DB_RELATIONS };
 const TEST_DATABASE_URL = process.env.TEST_DATABASE_URL;
 
 describe.skipIf(!TEST_DATABASE_URL)("user wallet ledger (integration)", () => {
-  const client = postgres(TEST_DATABASE_URL ?? "postgres://unused");
+  const client = postgres(TEST_DATABASE_URL ?? "postgres://unused", { prepare: false });
   const db = drizzle(client, { schema });
 
   const createdUserIds: string[] = [];
@@ -63,6 +64,7 @@ describe.skipIf(!TEST_DATABASE_URL)("user wallet ledger (integration)", () => {
   /** A registered (non-guest) user, which the 0025 trigger auto-provisions. */
   async function makeUser(overrides: { isGuest?: boolean } = {}) {
     const id = randomUUID();
+    await createAuthUsers(id);
     await db.insert(schema.users).values({
       id,
       email: `wallet-test-${id}@example.com`,
