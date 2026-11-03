@@ -29,7 +29,7 @@ import {
  */
 const TEST_DATABASE_URL = process.env.TEST_DATABASE_URL;
 const ALLOWED = storeSectionRegistry.allowedSections();
-const hero = (title: string) => ({ sections: [{ id: "h1", sectionId: "hero-banner", version: 1, props: { title } }] });
+const hero = (title: string) => ({ sections: [{ id: "h1", sectionId: "custom-section", version: 1, props: { title } }] });
 
 describe.skipIf(!TEST_DATABASE_URL)("store builder (integration)", { timeout: 60_000 }, () => {
   const client = postgres(TEST_DATABASE_URL ?? "postgres://unused", { prepare: false, max: 4 });
@@ -60,11 +60,11 @@ describe.skipIf(!TEST_DATABASE_URL)("store builder (integration)", { timeout: 60
   });
 
   it("saves the header and footer from the section library only", async () => {
-    const header = { id: "hdr", sectionId: "store-header", version: 1, props: { announcement: "شحن مجاني" } };
+    const header = { id: "hdr", sectionId: "custom-section", version: 1, props: { announcement: "شحن مجاني" } };
     const v0 = (await getStoreForEditor(w.a.sellerId, w.a.a2, db))!.store.chromeVersion;
     expect(await saveStoreChrome(w.a.sellerId, w.a.a2, "header", header, v0, { allowedSections: ALLOWED }, db)).toEqual({ success: true, data: { version: v0 + 1 } });
     const [store] = await db.select().from(s.stores).where(eq(s.stores.id, w.a.a2));
-    expect(store!.sharedHeader).toMatchObject({ sectionId: "store-header", props: { announcement: "شحن مجاني" } });
+    expect(store!.sharedHeader).toMatchObject({ sectionId: "custom-section", props: { announcement: "شحن مجاني" } });
 
     const bad = { id: "x", sectionId: "custom-html", version: 1, props: {} };
     expect(await saveStoreChrome(w.a.sellerId, w.a.a2, "footer", bad, v0 + 1, { allowedSections: ALLOWED }, db)).toMatchObject({ error: "invalid_content" });
@@ -116,11 +116,11 @@ describe.skipIf(!TEST_DATABASE_URL)("store builder (integration)", { timeout: 60
     let productId = "";
 
     beforeAll(async () => {
-      // Store b1 of seller B gets a product page, as the Task 3 seeding will.
+      // Store b1 of seller B got its product page with the Tallaby Classic drafts.
       const [row] = await db
-        .insert(s.storePages)
-        .values({ storeId: w.b.b1, slug: "product", kind: "product", showInNav: false, name: { ar: "صفحة المنتج", en: "Product page" }, orderIndex: 99 })
-        .returning({ id: s.storePages.id });
+        .select({ id: s.storePages.id })
+        .from(s.storePages)
+        .where(and(eq(s.storePages.storeId, w.b.b1), eq(s.storePages.kind, "product")));
       productId = row!.id;
     });
 

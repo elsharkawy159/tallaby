@@ -16,7 +16,7 @@ import { getStoreDraftKey, getStoreDraftSiteForPreview, getStoreForEditor, saveS
 const TEST_DATABASE_URL = process.env.TEST_DATABASE_URL;
 const ALLOWED = storeSectionRegistry.allowedSections();
 const SECRET = "integration-preview-secret-0123456789abcdef";
-const hero = (title: string) => ({ sections: [{ id: "h1", sectionId: "hero-banner", version: 1, props: { title } }] });
+const hero = (title: string) => ({ sections: [{ id: "h1", sectionId: "custom-section", version: 1, props: { title } }] });
 
 describe.skipIf(!TEST_DATABASE_URL)("store preview (integration)", { timeout: 60_000 }, () => {
   const client = postgres(TEST_DATABASE_URL ?? "postgres://unused", { prepare: false, max: 4 });

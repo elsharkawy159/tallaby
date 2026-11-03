@@ -16,7 +16,7 @@ export const STARTER_FORM_COPY: Record<"contact" | "newsletter", Record<"ar" | "
       name: "نموذج تواصل",
       description: "الاسم والهاتف والبريد ورسالة. نموذج «تواصل معنا» المعتاد.",
       submit: "إرسال الرسالة",
-      success: "شكرًا! وصلتنا رسالتك وهنرد عليك قريب.",
+      success: "شكرًا! وصلتنا رسالتك وسنرد عليك قريبًا.",
       fields: { name: "الاسم", phone: "رقم الهاتف", email: "البريد الإلكتروني", message: "رسالتك" },
     },
     en: {
@@ -30,9 +30,9 @@ export const STARTER_FORM_COPY: Record<"contact" | "newsletter", Record<"ar" | "
   newsletter: {
     ar: {
       name: "اشتراك في النشرة",
-      description: "اجمع بريد العملاء علشان تبعتلهم الجديد والعروض.",
+      description: "اجمع بريد العملاء لترسل لهم الجديد والعروض.",
       submit: "اشترك",
-      success: "اشتراكك تم. استنى عرضنا الجاي على بريدك.",
+      success: "تم اشتراكك. انتظر عرضنا القادم على بريدك.",
       fields: { email: "البريد الإلكتروني", name: "الاسم الأول", consent: "أوافق على استلام رسائل بالعروض والمنتجات الجديدة" },
     },
     en: {

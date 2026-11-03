@@ -21,7 +21,7 @@ export type IsolationWorld = {
   cleanup: () => Promise<void>;
 };
 
-const hero = (title: string) => ({ sections: [{ id: "s1", sectionId: "classic-hero", version: 1, props: { title } }] });
+const hero = (title: string) => ({ sections: [{ id: "s1", sectionId: "custom-section", version: 1, props: { title } }] });
 
 async function insertSeller(db: TestDb, id: string, subdomain: string) {
   await createAuthUsers(id);

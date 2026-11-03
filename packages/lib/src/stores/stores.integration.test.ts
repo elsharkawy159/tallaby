@@ -84,7 +84,8 @@ describe.skipIf(!TEST_DATABASE_URL)("stores (integration)", { timeout: 120_000 }
   it("scaffolds a design system and a home page for a new store", async () => {
     const [store] = await db.select().from(s.stores).where(eq(s.stores.subdomain, sub("second")));
     const pages = await db.select().from(s.storePages).where(eq(s.storePages.storeId, store!.id));
-    expect(pages).toEqual([expect.objectContaining({ slug: "home", isHome: true })]);
+    // Tallaby Classic's pages: the home page plus about, contact, faq, privacy, product and terms.
+    expect(pages.filter((p) => p.isHome)).toEqual([expect.objectContaining({ slug: "home", isHome: true })]);
     const ds = await db.select().from(s.storeDesignSystems).where(eq(s.storeDesignSystems.storeId, store!.id));
     expect(ds).toHaveLength(1);
   });

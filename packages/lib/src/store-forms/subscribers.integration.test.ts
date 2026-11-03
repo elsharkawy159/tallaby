@@ -66,7 +66,11 @@ describe.skipIf(!TEST_DATABASE_URL)("store subscribers (integration)", () => {
   });
 
   it("finds only sign-up forms of the seller's own store", async () => {
-    expect(await listSignUpFormIds(w.a.sellerId, w.a.a1, db)).toEqual([f.news]);
+    // Besides the store's starter newsletter form (seeded with its site).
+    const signUps = await listSignUpFormIds(w.a.sellerId, w.a.a1, db);
+    expect(signUps).toContain(f.news);
+    expect(signUps).not.toContain(f.contact);
+    expect(signUps).not.toContain(f.b);
     expect(await listSignUpFormIds(w.b.sellerId, w.a.a1, db)).toEqual([]);
   });
 

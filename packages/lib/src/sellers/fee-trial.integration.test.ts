@@ -150,7 +150,8 @@ describe.skipIf(!TEST_DATABASE_URL)("fee trial start (integration)", { timeout: 
   });
 
   it("rejects inconsistent trial dates", async () => {
-    const seller = await newSeller();
+    // Not eligible, so no trial started with its store: both dates are empty.
+    const seller = await newSeller({ eligible: false });
     await expect(
       db.update(s.sellers).set({ feeTrialStartedAt: new Date().toISOString() }).where(eq(s.sellers.id, seller.id)),
     ).rejects.toThrow();

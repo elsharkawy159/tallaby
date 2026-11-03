@@ -107,7 +107,7 @@ describe.skipIf(!TEST_DATABASE_URL)("manual store top-ups (integration)", { time
     expect(await review(sellerId, { topUpId: id, decision: "approve" }, db)).toEqual({ success: false, error: "not_admin" });
     expect(await review(adminId, { topUpId: id, decision: "approve" }, db)).toEqual({
       success: true,
-      data: { status: "approved", balanceAfter: "250.00" },
+      data: { status: "approved", balanceAfter: "250.00", currency: "EGP" },
     });
     expect(await balance()).toBe("250.00");
     expect(await review(adminId, { topUpId: id, decision: "approve" }, db)).toEqual({ success: false, error: "already_reviewed" });

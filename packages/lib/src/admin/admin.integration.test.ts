@@ -135,7 +135,9 @@ describe.skipIf(!TEST_DATABASE_URL)("admin overrides (integration)", { timeout: 
   });
 
   it("trial: extend only a started trial to a later date; grant/revoke only before it starts", async () => {
-    // A has a store, which started its trial (0067).
+    // Sellers since 0119 are not eligible, so make A a pre-0119 seller: its store starts the trial (0067).
+    await db.update(s.sellers).set({ feeTrialEligible: true }).where(eq(s.sellers.id, w.a.sellerId));
+    await db.execute(sql`select start_fee_trial_if_needed(${w.a.sellerId}::uuid, 'store_created')`);
     const [a] = await db
       .select({ endsAt: s.sellers.feeTrialEndsAt, startedAt: s.sellers.feeTrialStartedAt })
       .from(s.sellers)
@@ -342,10 +344,11 @@ describe.skipIf(!TEST_DATABASE_URL)("admin overrides (integration)", { timeout: 
     expect(await listSellerIntegrationsForAdmin(w.b.sellerId, db)).toHaveLength(0);
   });
 
-  it("store-site guard: moderators blocked, deleted stores null, audit row has store_id", async () => {
+  it("store-site guard: non-admin staff blocked, deleted stores null, audit row has store_id", async () => {
+    // user_role has no "moderator"; "support" is the verified staff role without admin writes.
     const moderatorId = randomUUID();
     await createAuthUsers(moderatorId);
-    await db.insert(s.users).values({ id: moderatorId, isGuest: false, role: "moderator", isVerified: true });
+    await db.insert(s.users).values({ id: moderatorId, isGuest: false, role: "support", isVerified: true });
     try {
       await expect(resolveStoreForAdmin(moderatorId, w.a.a1, db)).rejects.toBeInstanceOf(AdminActorError);
 

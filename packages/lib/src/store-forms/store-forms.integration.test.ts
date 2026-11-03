@@ -65,7 +65,11 @@ describe.skipIf(!TEST_DATABASE_URL)("store forms (integration)", () => {
   });
 
   it("lists and reads forms only for the owning seller and store", async () => {
-    expect((await listStoreForms(w.a.sellerId, w.a.a1, db)).map((r) => r.id)).toEqual([f.a1]);
+    // Besides the store's two starter forms (seeded with its site).
+    const a1Forms = (await listStoreForms(w.a.sellerId, w.a.a1, db)).map((r) => r.id);
+    expect(a1Forms).toContain(f.a1);
+    expect(a1Forms).not.toContain(f.a2);
+    expect(a1Forms).not.toContain(f.b1);
     expect(await listStoreForms(w.b.sellerId, w.a.a1, db)).toEqual([]);
     expect(await getStoreForm(w.b.sellerId, w.a.a1, f.a1, db)).toBeNull();
     // Own form id, but passed with the sibling store → nothing.

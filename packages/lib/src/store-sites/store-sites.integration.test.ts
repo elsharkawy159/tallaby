@@ -27,7 +27,7 @@ const TEST_DATABASE_URL = process.env.TEST_DATABASE_URL;
 // The real section library: stores start as Tallaby Classic (classic header/footer, P4-03).
 const ALLOWED = storeSectionRegistry.allowedSections();
 const hero = (title: string) => ({
-  sections: [{ id: "s1", sectionId: "classic-hero", version: 1, props: { title } }],
+  sections: [{ id: "s1", sectionId: "custom-section", version: 1, props: { title } }],
 });
 
 describe.skipIf(!TEST_DATABASE_URL)("store sites (integration)", () => {
@@ -74,9 +74,10 @@ describe.skipIf(!TEST_DATABASE_URL)("store sites (integration)", () => {
   it("loads the editor for the owner and scaffolds a home page for backfilled stores", async () => {
     const editor = await getStoreForEditor(sellerA, storeA, db);
     expect(editor).not.toBeNull();
-    expect(editor!.pages).toEqual([expect.objectContaining({ slug: "home", isHome: true, draftVersion: 1 })]);
+    const home = editor!.pages.filter((p) => p.isHome);
+    expect(home).toEqual([expect.objectContaining({ slug: "home", isHome: true, draftVersion: 1 })]);
     expect(editor!.designSystem).toMatchObject({ colors: {}, typography: {}, spacing: {} });
-    homeA = editor!.pages[0]!.id;
+    homeA = home[0]!.id;
   });
 
   it("never loads another seller's store", async () => {
@@ -95,7 +96,7 @@ describe.skipIf(!TEST_DATABASE_URL)("store sites (integration)", () => {
       sellerA,
       storeA,
       homeA,
-      { sections: [{ id: "s1", sectionId: "classic-hero", version: 1, props: { title: "<script>x</script>Hi" } }] },
+      { sections: [{ id: "s1", sectionId: "custom-section", version: 1, props: { title: "<script>x</script>Hi" } }] },
       2,
       { allowedSections: ALLOWED },
       db,
@@ -156,7 +157,7 @@ describe.skipIf(!TEST_DATABASE_URL)("store sites (integration)", () => {
   });
 
   it("saveStoreChrome with a stale version returns version_conflict and leaves shared_header unchanged", async () => {
-    const header = { id: "hdr", sectionId: "store-header", version: 1, props: { announcement: "first" } };
+    const header = { id: "hdr", sectionId: "custom-section", version: 1, props: { announcement: "first" } };
     const stale = { ...header, props: { announcement: "stale" } };
     const v = (await getStoreForEditor(sellerA, storeA, db))!.store.chromeVersion;
     expect(await saveStoreChrome(sellerA, storeA, "header", header, v, { allowedSections: ALLOWED }, db)).toEqual({ success: true, data: { version: v + 1 } });

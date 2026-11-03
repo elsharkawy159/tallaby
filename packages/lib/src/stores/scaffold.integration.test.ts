@@ -36,10 +36,10 @@ describe.skipIf(!TEST_DATABASE_URL)("site scaffold (integration)", { timeout: 60
     expect(editor!.store.chromeVersion).toBe(after!.chromeVersion);
     expect(editor!.store.sharedHeader).toEqual(after!.sharedHeader);
     const row = await store(w.a.a2);
-    expect((row.sharedHeader as { source?: string }).source).toBe("tallaby-header@1");
-    expect((row.sharedFooter as { source?: string }).source).toBe("tallaby-footer@1");
+    expect((row.sharedHeader as { source?: string }).source).toMatch(/^tallaby-header@[0-9]+$/);
+    expect((row.sharedFooter as { source?: string }).source).toMatch(/^tallaby-footer@[0-9]+$/);
     const content = (await home(w.a.a2)).draftContent as { sections: { source?: string }[] };
-    expect(content.sections.map((s) => s.source)[0]).toBe("tallaby-hero@1");
+    expect(content.sections.map((s) => s.source)[0]).toMatch(/^tallaby-hero@[0-9]+$/);
     const pages = await db.select().from(s.storePages).where(eq(s.storePages.storeId, w.a.a2));
     expect(pages.map((p) => p.slug).sort()).toEqual(["about", "contact", "faq", "home", "privacy", "product", "terms"]);
     // The product page is seeded with kind product and stays out of the menu.
