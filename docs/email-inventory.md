@@ -10,7 +10,7 @@ Every email leaves through the backend (`apps/backend`). The states live in one 
 
 ## Order notifications app
 
-These send only for a store subscribed to the app (catalog key `customer_notifications`). An order with no store doesn't send. The order pays 1 cent once, on the first email that really goes out.
+These send only for a store subscribed to the app (catalog key `customer_notifications`). An order with no store doesn't send. A card order waiting for its payment isn't charged, so an abandoned payment costs nothing. The order pays 1 cent once, on the first email that really goes out.
 
 | Email | Type | Trigger |
 | --- | --- | --- |
@@ -47,7 +47,7 @@ These send only for a store subscribed to the app (catalog key `customer_notific
 | Customer: back in stock | `back_in_stock` | Daily cron | Cron stops before claiming, so alerts wait |
 | Customer: win-back | `store_winback` | Campaign cron | Cron stops before planning, so nothing is queued |
 | Customer: welcome | `welcome` | Backend route, no caller in this repo | Not sent later |
-| Customer: digital delivery | `digital_delivery` | Backend route, no caller in this repo | Not sent later |
+| Customer: digital delivery | `digital_delivery` | Backend route, no caller in this repo | Not sent later. Digital products are delayed for now (owner, 2026-11-04) |
 
 ## Enforcement
 

@@ -1,8 +1,14 @@
-import { and, db, eq, isNull, storeAppInstalls, stores } from "@workspace/db";
+import { and, db, eq, isNull, orders, storeAppInstalls, stores } from "@workspace/db";
 import { logServerError } from "@workspace/db/log";
 import { chargeStoreAppsForOrder } from "../billing/app-billing.server";
 import { getBillingState } from "../billing/billing.server";
-import { emailDecision, emailRule, type AutomaticEmailType, type EmailDecision } from "./email-policy.lib";
+import {
+  emailDecision,
+  emailRule,
+  orderNotificationChargeable,
+  type AutomaticEmailType,
+  type EmailDecision,
+} from "./email-policy.lib";
 
 /**
  * Applies `EMAIL_RULES` to one email (owner, 2026-11-04; ROADMAP.md F-63).
@@ -61,6 +67,8 @@ export async function isAutomaticEmailPaused(type: AutomaticEmailType): Promise<
  */
 export async function chargeOrderNotification(order: { orderId: string; storeId: string }): Promise<void> {
   try {
+    const [row] = await db.select({ status: orders.status }).from(orders).where(eq(orders.id, order.orderId)).limit(1);
+    if (!orderNotificationChargeable(row?.status)) return;
     const [store] = await db.select({ sellerId: stores.sellerId }).from(stores).where(eq(stores.id, order.storeId)).limit(1);
     if (!store?.sellerId) return;
     await db.transaction((tx) =>

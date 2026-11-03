@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { EMAIL_RULES, emailDecision, type AutomaticEmailType } from "./email-policy.lib";
+import { EMAIL_RULES, emailDecision, orderNotificationChargeable, type AutomaticEmailType } from "./email-policy.lib";
 
 const live = { storeId: "store", usdLive: true, subscribed: true };
 const types = Object.keys(EMAIL_RULES) as AutomaticEmailType[];
@@ -52,5 +52,18 @@ describe("email policy", () => {
 
   it("doesn't send a type missing from the list", () => {
     expect(emailDecision({ ...live, type: "new_type" as AutomaticEmailType })).toEqual({ action: "skip", reason: "paused" });
+  });
+});
+
+describe("order notification charge", () => {
+  it("skips a card order still waiting for its payment", () => {
+    expect(orderNotificationChargeable("payment_processing")).toBe(false);
+    expect(orderNotificationChargeable(null)).toBe(false);
+  });
+
+  it("charges every other order", () => {
+    expect(orderNotificationChargeable("pending")).toBe(true);
+    expect(orderNotificationChargeable("confirmed")).toBe(true);
+    expect(orderNotificationChargeable("cancelled")).toBe(true);
   });
 });

@@ -34,6 +34,11 @@ type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 type InstallRow = typeof storeAppInstalls.$inferSelect;
 
 /** What the engine needs from a catalog entry. Tests pass their own, so no paid app has to ship. */
+/** What the seller reads on their wallet ledger. */
+const APP_CHARGE_DESCRIPTIONS: Record<string, string> = {
+  customer_notifications: "Order notifications",
+};
+
 export type BillableApp = { key: string; pricing: AppPricing; live: boolean };
 export type AppResolver = (key: string) => BillableApp | null;
 
@@ -100,7 +105,7 @@ async function charge(
     currency: "USD",
     referenceType,
     referenceId,
-    description: `App: ${target.appKey}`,
+    description: APP_CHARGE_DESCRIPTIONS[target.appKey] ?? `App: ${target.appKey}`,
     metadata: { appKey: target.appKey, model: what.model, usdCents, ...extra.metadata },
     createdBy: extra.actorId ?? null,
     enforceNegativeLimit: true,

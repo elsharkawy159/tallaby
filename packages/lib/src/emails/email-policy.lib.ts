@@ -55,6 +55,15 @@ export type EmailDecision = EmailSendDecision | EmailSkipDecision;
  * After it, the rules apply. Only "order_app" emails can charge: the wallet's
  * per-order claim makes every email after an order's first a no-op.
  */
+/**
+ * A card order still waiting for its payment isn't charged, as with the platform
+ * fee: an abandoned payment costs the seller nothing. If it's paid, the order's
+ * next email takes the charge.
+ */
+export function orderNotificationChargeable(orderStatus: string | null | undefined): boolean {
+  return Boolean(orderStatus) && orderStatus !== "payment_processing";
+}
+
 export function emailDecision(input: {
   type: AutomaticEmailType;
   storeId: string | null;

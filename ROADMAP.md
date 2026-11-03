@@ -1325,6 +1325,12 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 ## 7. Log
 
+### 2026-11-04 — Order notifications: two owner decisions
+
+- **Digital delivery email stays paused:** the owner is delaying digital products for now.
+- **Abandoned card payments cost nothing (owner left this to us):** a card order waiting for payment isn't charged, same as the platform fee. If it's paid, the order's next email takes the 1 cent. The customer can still get the first email free.
+- **Wallet ledger:** the charge now reads "Order notifications". Unit tests only; no browser or real email.
+
 ### 2026-11-04 — Order notifications app, email pause and SMS requests (owner)
 
 - **Owner's words:** "work on the Order Notification and integrate the emails with it and pause the automatic emails, keep only the one email to sellers that Store is ready, and we will integrate the MersalSMS to the Order notifications later".
