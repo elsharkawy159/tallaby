@@ -1161,7 +1161,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-45a Shipping page audit and redesign (2026-11-03; `777aa466`; not seen in a browser)
 - [x] F-45b AI delivery areas from a written description (2026-11-03; `c887b65e`; not seen in a browser)
 - [x] F-46a Store's own `/returns` and `/shipping` with fallback order (2026-11-03)
-- [x] F-46b Fix storefront links into the marketplace (2026-11-03; `/privacy` and `/terms` still go to Tallaby's, owner to decide)
+- [x] F-46b Fix storefront links into the marketplace (2026-11-03; no store page redirects to tallaby.com now)
 - [x] F-46c Make return and replacement policies easy to find (2026-11-03; `3db11f22`; adds a policy editor in Settings)
 - [x] F-47a Apps marketplace design note (pricing models, install state, charges) (2026-11-03; `docs/superpowers/specs/2026-11-03-apps-marketplace-design.md`)
 - [x] F-47b Installed and Explore page (2026-11-03; `38199f33`; not seen in a browser)
@@ -1214,6 +1214,14 @@ Add each new request here first, with the date and the owner's words, then turn 
 ---
 
 ## 7. Log
+
+### 2026-11-03 — Owner answers; store pages never redirect to tallaby.com
+
+- **Owner decisions:** no push or deploy until the owner has tested. Terms draft accepted, with a later check on the website. Classic hero tablet ratio approved. Shipping redesign `777aa466` stays. Every Q&A video counts toward the 1-in-5 tips limit. Rate source accepted, saved once a day.
+- **Assumption to confirm:** the owner wrote "no any storefront page should redirect to tallaby"; this was read as "no storefront page should". On a store host, `/privacy` and `/terms` now show the store's builder page or a neutral page with its contact details (noindex). Unknown paths and collections show the store's 404. Another seller's product, or one this store doesn't show, goes to the store's home. No migration.
+- **No legal text was written for sellers:** a store with no privacy page has only the neutral page.
+- **Not changed:** store product pages still name the tallaby.com product page as their canonical URL. Links such as "Powered by" and the offline page's link still go to tallaby.com; they aren't redirects.
+- **Exchange rate:** the daily cron is the only caller, and everything else reads the saved row, so it already makes one provider call a day. The open endpoint needs no key but its terms require attribution, so `EXCHANGE_RATE_API_KEY` is now optional and uses the keyed endpoint. The keyed path has only unit tests; it hasn't called the provider.
 
 ### 2026-11-03 — Dashboard roadmap batch built, nothing deployed (owner)
 

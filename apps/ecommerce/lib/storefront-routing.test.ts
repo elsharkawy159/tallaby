@@ -24,10 +24,11 @@ describe("store host routing (P5-01)", () => {
     expect(rewriteOf("/en/search?q=coat")).toContain("/en/storefront/sara/products?q=coat");
   });
 
-  it("keeps the old redirects for deeper marketplace paths", () => {
-    expect(redirectOf("/categories/shoes/sale")).toContain("/categories/shoes/sale");
-    expect(redirectOf("/products/a/b")).toContain("/products/a/b");
-    expect(rewriteOf("/About")).toBeFalsy();
+  it("keeps deeper unknown paths on the store, as its 404", () => {
+    expect(redirectOf("/categories/shoes/sale")).toBeFalsy();
+    expect(redirectOf("/products/a/b")).toBeFalsy();
+    expect(rewriteOf("/categories/shoes/sale")).toContain("/ar/storefront/sara/pages/_missing");
+    expect(rewriteOf("/About")).toContain("/pages/_missing");
   });
 
   it("serves the store blog (P4-16)", () => {
@@ -37,7 +38,7 @@ describe("store host routing (P5-01)", () => {
     expect(rewriteOf("/en/blog/size-guide/")).toContain("/en/storefront/sara/blog/size-guide");
     // Never a builder page called "blog".
     expect(rewriteOf("/blog")).not.toContain("/pages/");
-    expect(rewriteOf("/blog/Bad_Slug")).toBeFalsy();
+    expect(rewriteOf("/blog/Bad_Slug")).toContain("/pages/_missing");
   });
 
   it("serves shared catalog links at /catalog/{token} (F-11c), apart from CMS items", () => {
@@ -47,7 +48,7 @@ describe("store host routing (P5-01)", () => {
     expect(rewriteOf("/catalog/summer")).toContain("/ar/storefront/sara/cms/catalog/summer");
   });
 
-  it("serves CMS items at /{collection}/{item} (P4-11); unknown ones are redirected by the route", () => {
+  it("serves CMS items at /{collection}/{item} (P4-11); unknown ones are the store's 404", () => {
     expect(rewriteOf("/lookbook/summer-2026")).toContain("/ar/storefront/sara/cms/lookbook/summer-2026");
     expect(rewriteOf("/en/faq/returns/")).toContain("/en/storefront/sara/cms/faq/returns");
     expect(rewriteOf("/categories/shoes")).toContain("/ar/storefront/sara/cms/categories/shoes");

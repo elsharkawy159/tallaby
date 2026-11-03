@@ -6,6 +6,8 @@ describe("store page fallback", () => {
     expect(storePageFallback("returns")).toEqual({ policy: "returns" });
     expect(storePageFallback("shipping")).toEqual({ policy: "shipping" });
     expect(storePageFallback("contact")).toEqual({ policy: "contact" });
+    expect(storePageFallback("privacy")).toEqual({ policy: "privacy" });
+    expect(storePageFallback("terms")).toEqual({ policy: "terms" });
   });
 
   it("sends template links with no page to the store's home", () => {
@@ -14,7 +16,6 @@ describe("store page fallback", () => {
   });
 
   it("leaves other slugs alone", () => {
-    expect(storePageFallback("privacy")).toBeNull();
     expect(storePageFallback("anything")).toBeNull();
     expect(storePageFallback("constructor")).toBeNull();
     expect(storePageFallback("__proto__")).toBeNull();

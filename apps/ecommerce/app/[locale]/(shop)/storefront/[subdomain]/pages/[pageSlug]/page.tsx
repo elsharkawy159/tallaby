@@ -9,7 +9,6 @@ import { storePageFallback } from "@/lib/store-site/store-policy.lib";
 import { loadStorePolicyText } from "@/lib/store-site/store-policy.server";
 import { isSubdomainOfflineForRequest, STORE_OFFLINE_METADATA } from "@/lib/store-site/offline.server";
 import { resolveStorefront } from "@/lib/storefront.server";
-import { marketplaceOrigin } from "@/lib/storefront-routing";
 import { STORE_NOINDEX } from "@/lib/store-seo/store-seo.lib";
 import { StorePolicyPage } from "../../_components/store-policy-page";
 import { StoreSitePage } from "../../_components/store-site";
@@ -23,8 +22,8 @@ type StorePageProps = {
  * A builder page of this store, e.g. /about (PLAN.md P5-01b). Only published
  * pages exist here. Without one, footer links stay on the store (F-46): a
  * policy or contact page shows the store's details, and /about and /faq go to
- * its home. Anything else goes to the marketplace, as unknown paths did before
- * builder pages existed.
+ * its home. Anything else is this store's 404: no store page leaves for
+ * tallaby.com (owner, 2026-11-03).
  */
 async function resolvePage(locale: string, subdomain: string, pageSlug: string) {
   const store = await resolveStorefront(subdomain);
@@ -38,7 +37,7 @@ async function resolvePage(locale: string, subdomain: string, pageSlug: string) 
     const fallback = storePageFallback(pageSlug);
     if (fallback === "home") redirect(prefix || "/");
     if (fallback) return { store, policy: fallback.policy, preview } as const;
-    redirect(`${marketplaceOrigin()}${prefix}/${pageSlug}`);
+    notFound();
   }
   return { store, site, page, preview, policy: null } as const;
 }

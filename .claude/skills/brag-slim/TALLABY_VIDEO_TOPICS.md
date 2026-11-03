@@ -588,7 +588,7 @@ Use any of these formats with any ✅ topic to keep the feed fresh:
 
 ## 12a. Pillar Q: Q&A series (F-60a, added 2026-11-03)
 
-**Owner to confirm:** §1 limits tips to 1 video in 5, but the owner's new roadmap (`Roadmap_new.md` §8.1) puts Q&A videos first. Do Q&A videos count toward that limit? Until the owner answers, count every Q-xx video toward it.
+**Owner, 2026-11-03:** every Q-xx video counts toward §1's limit of 1 tips video in 5.
 
 How this series works:
 

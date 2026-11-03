@@ -7,7 +7,7 @@ import { policyTextFor, type StorePolicyKind } from "./store-policy.lib";
  * little traffic, and a seller's edit should show straight away.
  */
 export async function loadStorePolicyText(sellerId: string, kind: StorePolicyKind): Promise<string | null> {
-  if (kind === "contact") return null;
+  if (kind !== "returns" && kind !== "shipping") return null;
   const [row] = await db
     .select({ returnPolicy: sellers.returnPolicy, shippingPolicy: sellers.shippingPolicy })
     .from(sellers)

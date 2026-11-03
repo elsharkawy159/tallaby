@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
+  egpRateFromResponse,
+  exchangeRateSource,
   addOneMonth,
   cairoMonthKey,
   isPlausibleRate,
@@ -108,5 +110,21 @@ describe("helpers", () => {
   it("uses the Cairo month", () => {
     expect(cairoMonthKey(new Date("2026-10-31T22:30:00Z"))).toBe("2026-11");
     expect(cairoMonthKey(new Date("2026-10-31T20:00:00Z"))).toBe("2026-10");
+  });
+});
+
+describe("exchange rate source", () => {
+  it("uses the keyed endpoint only when a key is set", () => {
+    expect(exchangeRateSource("abc").url).toBe("https://v6.exchangerate-api.com/v6/abc/latest/USD");
+    expect(exchangeRateSource("  ").url).toBe("https://open.er-api.com/v6/latest/USD");
+    expect(exchangeRateSource(undefined).source).toBe("open.er-api.com");
+  });
+
+  it("reads EGP from either response shape and refuses bad answers", () => {
+    expect(egpRateFromResponse({ result: "success", rates: { EGP: 50 } })).toBe(50);
+    expect(egpRateFromResponse({ result: "success", conversion_rates: { EGP: 51 } })).toBe(51);
+    expect(egpRateFromResponse({ result: "error", rates: { EGP: 50 } })).toBeNull();
+    expect(egpRateFromResponse({ result: "success", rates: { EGP: 0 } })).toBeNull();
+    expect(egpRateFromResponse(null)).toBeNull();
   });
 });

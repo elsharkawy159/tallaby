@@ -35,8 +35,8 @@ function marketplaceProductUrl(locale: string, slug: string) {
 
 /**
  * Only this seller's products open inside their storefront; another seller's
- * product (an old link, a related item) opens on tallaby.com instead, and an
- * unknown product sends the shopper back to the store.
+ * product (an old link, a related item) or an unknown one sends the shopper to
+ * the store's home, never to tallaby.com (owner, 2026-11-03).
  */
 async function resolveStoreProduct(locale: string, subdomain: string, slug: string) {
   const store = await resolveStorefront(subdomain);
@@ -44,9 +44,9 @@ async function resolveStoreProduct(locale: string, subdomain: string, slug: stri
   const product = result.success ? (result.data as Product | undefined) : undefined;
 
   if (!product) redirect(locale === "ar" ? "/" : `/${locale}`);
-  if (product.sellerId !== store.id) redirect(marketplaceProductUrl(locale, slug));
+  if (product.sellerId !== store.id) redirect(locale === "ar" ? "/" : `/${locale}`);
   // A store with a selected catalog (D24) only opens its picks.
-  if (!(await storeShowsProduct(store, product.id))) redirect(marketplaceProductUrl(locale, slug));
+  if (!(await storeShowsProduct(store, product.id))) redirect(locale === "ar" ? "/" : `/${locale}`);
   return { store, product };
 }
 

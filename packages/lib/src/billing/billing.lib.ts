@@ -82,6 +82,24 @@ export function minorToAmount(minor: number): string {
 }
 
 /** Sanity range for a fetched or typed EGP-per-USD rate. */
+/**
+ * Where the daily rate comes from. With a key: ExchangeRate-API's keyed endpoint.
+ * Without one: its open endpoint, whose terms require a visible attribution link.
+ */
+export function exchangeRateSource(apiKey?: string): { url: string; source: string } {
+  const key = apiKey?.trim();
+  return key
+    ? { url: `https://v6.exchangerate-api.com/v6/${encodeURIComponent(key)}/latest/USD`, source: "exchangerate-api.com" }
+    : { url: "https://open.er-api.com/v6/latest/USD", source: "open.er-api.com" };
+}
+
+/** EGP per USD from either endpoint's response, or null if it isn't a usable answer. */
+export function egpRateFromResponse(body: unknown): number | null {
+  const data = body as { result?: string; rates?: { EGP?: unknown }; conversion_rates?: { EGP?: unknown } } | null;
+  const rate = Number(data?.conversion_rates?.EGP ?? data?.rates?.EGP);
+  return data?.result === "success" && isPlausibleRate(rate) ? rate : null;
+}
+
 export function isPlausibleRate(rate: number): boolean {
   return Number.isFinite(rate) && rate >= 10 && rate <= 500;
 }

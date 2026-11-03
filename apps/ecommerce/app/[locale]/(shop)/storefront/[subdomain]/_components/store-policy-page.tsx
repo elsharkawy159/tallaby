@@ -6,7 +6,7 @@ import type { Storefront } from "@/lib/storefront.server";
 import { whatsappNumber } from "./storefront-footer";
 
 /**
- * A store's own returns, shipping or contact page when the seller hasn't built
+ * A store's own returns, shipping, contact, privacy or terms page when the seller hasn't built
  * one in the website builder (ROADMAP.md F-46). It only states the seller's
  * text; with none, it says to ask the store and never promises a return period.
  */

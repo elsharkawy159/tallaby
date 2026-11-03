@@ -2357,6 +2357,16 @@
         "title": "Contact us",
         "empty": "Have a question for {store}? Get in touch:",
         "emptyNoContact": "{store} hasn't added contact details yet."
+      },
+      "privacy": {
+        "title": "Privacy policy",
+        "empty": "To ask how {store} uses your details, get in touch:",
+        "emptyNoContact": "{store} hasn't published a privacy policy yet."
+      },
+      "terms": {
+        "title": "Terms and conditions",
+        "empty": "To ask about {store}'s terms of sale, get in touch:",
+        "emptyNoContact": "{store} hasn't published its terms yet."
       }
     },
     "app": {
@@ -2420,6 +2430,9 @@
     "notFoundTitle": "There's no store at this address",
     "notFoundBody": "Check the link you were sent, or find the store on Tallaby.",
     "notFoundCta": "Browse stores on Tallaby",
+    "pageNotFoundTitle": "This page isn't here",
+    "pageNotFoundBody": "The link may be old, or the page may have moved.",
+    "pageNotFoundCta": "Back to the store",
     "offlineTitle": "This store is temporarily unavailable",
     "offlineBody": "{store} isn't taking visitors or orders right now. Please check back later.",
     "offlineCta": "Go to Tallaby",

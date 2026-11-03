@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { getFormatter } from "next-intl/server";
 import { cmsItemSummaryFields, type CmsFieldDef } from "@workspace/lib/cms";
 import { storeUrl } from "@workspace/lib/storefront";
@@ -8,7 +8,6 @@ import { cmsImageUrl } from "@/lib/store-cms/cms.lib";
 import { getCachedCmsCollection, getCachedCmsItem } from "@/lib/store-cms/cms.server";
 import { resolveStorefront } from "@/lib/storefront.server";
 import { isSubdomainOfflineForRequest, STORE_OFFLINE_METADATA } from "@/lib/store-site/offline.server";
-import { marketplaceOrigin } from "@/lib/storefront-routing";
 import { ArticleBody, ContentImage, JsonLd } from "../../../_components/store-content";
 import s from "../../../storefront.module.css";
 
@@ -19,16 +18,12 @@ type CmsItemPageProps = {
 /**
  * A published CMS item, /{collection}/{item} on a store host (PLAN.md §8.5,
  * P4-11). A path whose first segment is not one of this store's collections
- * goes to the marketplace, as unknown paths did before; a known collection
- * with no such published item is a 404.
+ * or a known collection with no such published item, is this store's 404.
  */
 async function load(locale: string, subdomain: string, collectionSlug: string, itemSlug: string) {
   const store = await resolveStorefront(subdomain);
   const collection = await getCachedCmsCollection(store.id, store.storeId, collectionSlug);
-  if (!collection || collection.kind === "blog") {
-    const prefix = locale === routing.defaultLocale ? "" : `/${locale}`;
-    redirect(`${marketplaceOrigin()}${prefix}/${collectionSlug}/${itemSlug}`);
-  }
+  if (!collection || collection.kind === "blog") notFound();
   const item = await getCachedCmsItem(store.id, store.storeId, collection.slug, itemSlug);
   if (!item) notFound();
   const summary = cmsItemSummaryFields(collection.fields, item.data);

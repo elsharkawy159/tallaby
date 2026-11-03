@@ -11,8 +11,8 @@
  *
  * Checkout, sign-in, orders and the cookies page run as-is on the store host
  * (cart actions are scoped by host, so they act on the storefront cart).
- * Anything else redirects to tallaby.com, which is now the marketing site
- * (app/[locale]/(marketing)).
+ * Anything else is the store's own 404: a store host never redirects to
+ * tallaby.com (owner, 2026-11-03).
  */
 
 import { NextResponse, type NextRequest } from "next/server";
@@ -64,8 +64,7 @@ const PASS_THROUGH = [
   "/profile",
   "/error",
   // /privacy, /terms, /shipping and /returns are not here: a store host serves
-  // its own builder page of that slug. Without one, /shipping and /returns show
-  // the store's own policy (F-46), and /privacy and /terms redirect to Tallaby's.
+  // its own builder page of that slug, or else the store's own policy page (F-46).
   "/cookies",
 ];
 
@@ -77,12 +76,6 @@ function splitLocale(pathname: string): { locale: AppLocale; path: string } {
     }
   }
   return { locale: routing.defaultLocale, path: pathname };
-}
-
-export function marketplaceOrigin(): string {
-  const site = process.env.NEXT_PUBLIC_SITE_URL;
-  if (site) return site.replace(/\/$/, "");
-  return `https://${process.env.NEXT_PUBLIC_ROOT_DOMAIN || "tallaby.com"}`;
 }
 
 /**
@@ -125,14 +118,13 @@ export function routeStorefrontRequest(
   if (catalog) return rewrite(`/catalog/${catalog[1]}`);
 
   // A CMS item (/{collection}/{item}, P4-11). An unknown collection or item
-  // is redirected to the marketplace by the route, as before.
+  // is the store's 404.
   const cmsItem = /^\/([a-z0-9](?:[a-z0-9-]{0,126}[a-z0-9])?)\/([a-z0-9](?:[a-z0-9-]{0,198}[a-z0-9])?)\/?$/.exec(path);
   if (cmsItem && cmsItem[1] !== "products" && cmsItem[1] !== "blog") {
     return rewrite(`/cms/${cmsItem[1]}/${cmsItem[2]}`);
   }
 
-  // A builder page of this store (/about). An unknown slug is redirected to
-  // the marketplace by the page route, as before (P5-01).
+  // A builder page of this store (/about). An unknown slug is the store's 404.
   if (/^\/[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?\/?$/.test(path) && path !== "/products" && path !== "/search") {
     return rewrite(`/pages${path.replace(/\/$/, "")}`);
   }
@@ -141,5 +133,6 @@ export function routeStorefrontRequest(
   // builder site the route sends it on to the home page, which is its catalog.
   if (path === "/products" || path === "/products/" || path === "/search") return rewrite("/products");
 
-  return NextResponse.redirect(new URL(`${pathname}${search}`, marketplaceOrigin()));
+  // No route matches, and no builder slug can contain "_", so the page route 404s.
+  return rewrite("/pages/_missing");
 }

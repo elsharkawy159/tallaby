@@ -1,5 +1,5 @@
 import { billingSettings, db, desc, eq, exchangeRates } from "@workspace/db";
-import { isPlausibleRate, type BillingState } from "./billing.lib";
+import { egpRateFromResponse, exchangeRateSource, type BillingState } from "./billing.lib";
 
 /**
  * Billing settings and the current exchange rate (ROADMAP.md F-56b). Read
@@ -23,22 +23,22 @@ export async function getBillingState(): Promise<BillingState> {
   };
 }
 
-const RATE_URL = "https://open.er-api.com/v6/latest/USD";
-
 /**
- * Saves today's market rate. A failed or implausible fetch saves nothing, so
- * the last good rate stays in use and the caller can alert the Admin.
+ * Saves today's market rate. Only the daily cron calls this; everything else
+ * reads the saved row, so the provider gets one call a day. A failed or
+ * implausible fetch saves nothing, so the last good rate stays in use and the
+ * caller can alert the Admin. Never log the URL: it can hold the API key.
  */
 export async function refreshExchangeRate(
   fetchImpl: typeof fetch = fetch,
 ): Promise<{ ok: true; rate: number } | { ok: false; reason: string }> {
   try {
-    const response = await fetchImpl(RATE_URL, { signal: AbortSignal.timeout(10_000) });
+    const { url, source } = exchangeRateSource(process.env.EXCHANGE_RATE_API_KEY);
+    const response = await fetchImpl(url, { signal: AbortSignal.timeout(10_000) });
     if (!response.ok) return { ok: false, reason: `http_${response.status}` };
-    const body = (await response.json()) as { result?: string; rates?: Record<string, unknown> };
-    const rate = Number(body?.rates?.EGP);
-    if (body?.result !== "success" || !isPlausibleRate(rate)) return { ok: false, reason: "bad_response" };
-    await db.insert(exchangeRates).values({ marketRate: rate.toFixed(4), source: "open.er-api.com" });
+    const rate = egpRateFromResponse(await response.json());
+    if (rate === null) return { ok: false, reason: "bad_response" };
+    await db.insert(exchangeRates).values({ marketRate: rate.toFixed(4), source });
     return { ok: true, rate };
   } catch (error) {
     return { ok: false, reason: error instanceof Error ? error.name : "unknown" };

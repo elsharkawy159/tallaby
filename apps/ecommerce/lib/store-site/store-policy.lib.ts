@@ -5,12 +5,14 @@
  * nothing to fall back on goes to the store's home.
  */
 
-export type StorePolicyKind = "returns" | "shipping" | "contact";
+export type StorePolicyKind = "returns" | "shipping" | "contact" | "privacy" | "terms";
 
 const POLICY_SLUGS: Readonly<Record<string, StorePolicyKind>> = {
   returns: "returns",
   shipping: "shipping",
   contact: "contact",
+  privacy: "privacy",
+  terms: "terms",
 };
 const HOME_SLUGS = new Set(["about", "faq"]);
 
@@ -22,7 +24,7 @@ export function storePageFallback(slug: string): StorePageFallback {
   return HOME_SLUGS.has(slug) ? "home" : null;
 }
 
-/** The seller's saved text for this page; contact has none, and blank counts as none. */
+/** The seller's saved text for this page; only returns and shipping have any, and blank counts as none. */
 export function policyTextFor(
   kind: StorePolicyKind,
   policies: { returnPolicy: string | null; shippingPolicy: string | null } | null | undefined,
