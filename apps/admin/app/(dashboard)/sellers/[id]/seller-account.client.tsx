@@ -20,11 +20,14 @@ import { Label } from "@workspace/ui/components/label";
 import { Textarea } from "@workspace/ui/components/textarea";
 import { ADMIN_DEFAULT_REASON, ADMIN_REASON_MAX, MAX_STORES_OVERRIDE_LIMIT, type SellerOverrideInput } from "@workspace/lib/admin";
 import type { SellerAccountForAdmin } from "@workspace/lib/admin/server";
-import { formatCurrency, formatDate, formatDateTime } from "../sellers.lib";
+import { walletMoney } from "../../wallets/store-wallets.lib";
+import { formatDate, formatDateTime } from "../sellers.lib";
 import { TRIAL_STATE_LABELS } from "./seller-admin.lib";
 import { sellerOverrideAction } from "./seller-admin.server";
 
 type OverrideKind =
+  | "grant_pro"
+  | "end_pro"
   | "set_store_limit"
   | "extend_trial"
   | "grant_trial"
@@ -33,6 +36,8 @@ type OverrideKind =
   | "set_negative_limit";
 
 const DIALOG_TITLES: Record<OverrideKind, string> = {
+  grant_pro: "Give Pro for free",
+  end_pro: "Move to Free",
   set_store_limit: "Store limit exception",
   extend_trial: "Extend the fee trial",
   grant_trial: "Grant trial eligibility",
@@ -86,6 +91,14 @@ export function SellerAccountPanel({ sellerId, account }: { sellerId: string; ac
   const buildInput = (kind: OverrideKind): SellerOverrideInput | null => {
     const base = { sellerId, reason: ADMIN_DEFAULT_REASON };
     switch (kind) {
+      case "grant_pro": {
+        if (value.trim() === "") return { action: "set_plan", ...base, plan: "pro", planExpiresAt: null };
+        // The chosen day, until its end (UTC).
+        const date = new Date(`${value}T23:59:59.000Z`);
+        return Number.isNaN(date.getTime()) ? null : { action: "set_plan", ...base, plan: "pro", planExpiresAt: date.toISOString() };
+      }
+      case "end_pro":
+        return { action: "set_plan", ...base, plan: "free" };
       case "set_store_limit": {
         if (value.trim() === "") return { action: kind, ...base, maxStoresOverride: null };
         const n = Number(value);
@@ -135,9 +148,40 @@ export function SellerAccountPanel({ sellerId, account }: { sellerId: string; ac
         <CardTitle>Account, plan and fees</CardTitle>
       </CardHeader>
       <CardContent>
-        <Row label="Subscription plan">
+        <Row
+          label="Subscription plan"
+          action={
+            <>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => openDialog("grant_pro", account.planAdminGranted ? (account.planExpiresAt ?? "").slice(0, 10) : "")}
+              >
+                {account.planAdminGranted ? "Change free Pro" : "Give Pro for free"}
+              </Button>
+              {account.plan === "pro" && (
+                <Button size="sm" variant="outline" onClick={() => openDialog("end_pro")}>
+                  Move to Free
+                </Button>
+              )}
+            </>
+          }
+        >
           <span className="font-medium capitalize">{account.plan}</span>
-          <span className="text-muted-foreground"> · since {formatDate(account.planStartedAt)} · only Free exists today</span>
+          {account.plan === "pro" && (
+            <Badge variant="outline" className="ms-2">
+              {account.planAdminGranted ? "Free from Admin" : "Paid"}
+            </Badge>
+          )}
+          <span className="text-muted-foreground"> · since {formatDate(account.planStartedAt)}</span>
+          {account.plan === "pro" && (
+            <div className="text-xs text-muted-foreground">
+              {account.planExpiresAt
+                ? `${account.planCancelAtPeriodEnd ? "Ends" : account.planAdminGranted ? "Free until" : "Renews"} ${formatDateTime(account.planExpiresAt)}`
+                : "No end date"}
+              {account.planGraceUntil && ` · renewal failed, grace until ${formatDateTime(account.planGraceUntil)}`}
+            </div>
+          )}
         </Row>
 
         <Row
@@ -220,7 +264,7 @@ export function SellerAccountPanel({ sellerId, account }: { sellerId: string; ac
             </Button>
           }
         >
-          {wallet?.negativeLimit ? `${formatCurrency(wallet.negativeLimit)} below zero` : "None (no overdraft for ads or themes)"}
+          {wallet?.negativeLimit ? `${walletMoney(wallet.negativeLimit, account.walletCurrency)} below zero` : "None (no overdraft for ads or themes)"}
           <div className="text-xs text-muted-foreground">Fees always post, whatever this limit.</div>
         </Row>
       </CardContent>
@@ -233,6 +277,18 @@ export function SellerAccountPanel({ sellerId, account }: { sellerId: string; ac
           </DialogHeader>
 
           <div className="space-y-4">
+            {open === "grant_pro" && (
+              <div className="space-y-1.5">
+                <Label htmlFor="pro-until">Free until (leave empty for no end date)</Label>
+                <Input id="pro-until" type="date" value={value} onChange={(e) => setValue(e.target.value)} />
+                <p className="text-xs text-muted-foreground">
+                  Never charged and not counted as Pro income. A running paid plan stops renewing, with no refund.
+                </p>
+              </div>
+            )}
+            {open === "end_pro" && (
+              <p className="text-sm">The seller goes back to Free now, with no refund for a paid month.</p>
+            )}
             {open === "set_store_limit" && (
               <div className="space-y-1.5">
                 <Label htmlFor="store-limit">Maximum stores (0–{MAX_STORES_OVERRIDE_LIMIT}); leave empty for the plan limit ({account.planMaxStores})</Label>
@@ -261,7 +317,7 @@ export function SellerAccountPanel({ sellerId, account }: { sellerId: string; ac
             )}
             {open === "set_negative_limit" && (
               <div className="space-y-1.5">
-                <Label htmlFor="negative-limit">How far below zero optional purchases may go, in EGP (empty = none)</Label>
+                <Label htmlFor="negative-limit">How far below zero optional purchases may go, in {account.walletCurrency === "USD" ? "USD" : "EGP"} (empty = none)</Label>
                 <Input id="negative-limit" inputMode="decimal" value={value} onChange={(e) => setValue(e.target.value)} placeholder="e.g. 500" />
               </div>
             )}

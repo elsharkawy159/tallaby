@@ -40,6 +40,9 @@ export async function getSellerAccountForAdmin(sellerId: string, q: Queryable = 
       plan: sellers.plan,
       planStartedAt: sellers.planStartedAt,
       planExpiresAt: sellers.planExpiresAt,
+      planAdminGranted: sellers.planAdminGranted,
+      planGraceUntil: sellers.planGraceUntil,
+      planCancelAtPeriodEnd: sellers.planCancelAtPeriodEnd,
       maxStoresOverride: sellers.maxStoresOverride,
       feePlan: sellers.feePlan,
       feePlanEffectiveAt: sellers.feePlanEffectiveAt,
@@ -61,9 +64,17 @@ export async function getSellerAccountForAdmin(sellerId: string, q: Queryable = 
     getStoreWalletSummary(q, sellerId),
   ]);
 
+  // No wallet row yet: the currency it will open in (0136).
+  let walletCurrency = wallet?.currency;
+  if (!walletCurrency) {
+    const [row] = await q.execute<{ currency: string }>(sql`SELECT billing_wallet_currency() AS currency`);
+    walletCurrency = row?.currency ?? "EGP";
+  }
+
   const trial = getFeeTrialStatus(seller);
   return {
     ...seller,
+    walletCurrency,
     planMaxStores: getPlanLimits(seller.plan).maxStores,
     maxStores: getMaxStores(seller.plan, { maxStoresOverride: seller.maxStoresOverride }),
     storeCount: Number(storeCount),
@@ -182,6 +193,7 @@ export async function listStoreWalletEntriesForAdmin(sellerId: string, limit = 5
       id: walletTransactions.id,
       type: walletTransactions.type,
       amount: walletTransactions.amount,
+      currency: walletTransactions.currency,
       balanceAfter: walletTransactions.balanceAfter,
       description: walletTransactions.description,
       referenceType: walletTransactions.referenceType,
@@ -206,6 +218,8 @@ export async function listStoreTopUpsForAdmin(sellerId: string, limit = 20, q: Q
     .select({
       id: sellerWalletTopUps.id,
       amount: sellerWalletTopUps.amount,
+      creditAmount: sellerWalletTopUps.creditAmount,
+      creditCurrency: sellerWalletTopUps.creditCurrency,
       status: sellerWalletTopUps.status,
       provider: sellerWalletTopUps.provider,
       providerReference: sellerWalletTopUps.providerReference,

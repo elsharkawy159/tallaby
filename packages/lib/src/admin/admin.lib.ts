@@ -89,6 +89,8 @@ export const ADMIN_AUDIT_ACTIONS = [
   "delete_library_section",
   // A message to one seller (seller bell + push, 0131, F-06f)
   "send_seller_notification",
+  // Admin › Billing: margin, fixed rate and tax switch (0136, F-56)
+  "update_billing_settings",
 ] as const;
 
 export type AdminAuditAction = (typeof ADMIN_AUDIT_ACTIONS)[number];
@@ -155,7 +157,13 @@ const base = { sellerId: uuid, reason };
 
 /** P9-02 seller-account overrides. One audited action per call. */
 export const sellerOverrideSchema = z.discriminatedUnion("action", [
-  z.strictObject({ action: z.literal("set_plan"), ...base, plan: z.enum(PLAN_IDS) }),
+  z.strictObject({
+    action: z.literal("set_plan"),
+    ...base,
+    plan: z.enum(PLAN_IDS),
+    /** Pro only: when the free Pro ends; null or missing = open-ended (ROADMAP.md F-55f). */
+    planExpiresAt: z.iso.datetime({ offset: true }).nullable().optional(),
+  }),
   z.strictObject({
     action: z.literal("set_store_limit"),
     ...base,
@@ -196,6 +204,8 @@ export type AdminStoreActionInput = z.input<typeof adminStoreActionSchema>;
 export const walletAdjustmentSchema = z.strictObject({
   sellerId: uuid,
   storeId: uuid.nullable().optional(),
+  /** The wallet currency the admin was shown; another currency in the wallet refuses the entry. */
+  currency: z.enum(["EGP", "USD"]).optional(),
   amount: z
     .string()
     .trim()

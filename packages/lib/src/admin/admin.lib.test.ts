@@ -52,6 +52,9 @@ describe("sellerOverrideSchema", () => {
   it("accepts each override with a reason", () => {
     const inputs = [
       { action: "set_plan", sellerId, reason, plan: "free" },
+      { action: "set_plan", sellerId, reason, plan: "pro" },
+      { action: "set_plan", sellerId, reason, plan: "pro", planExpiresAt: null },
+      { action: "set_plan", sellerId, reason, plan: "pro", planExpiresAt: "2026-12-01T23:59:59.000Z" },
       { action: "set_store_limit", sellerId, reason, maxStoresOverride: 5 },
       { action: "set_store_limit", sellerId, reason, maxStoresOverride: null },
       { action: "set_fee_plan", sellerId, reason, feePlan: "flat_5" },
@@ -73,7 +76,8 @@ describe("sellerOverrideSchema", () => {
     const bad = [
       { action: "set_plan", sellerId, reason: "  ", plan: "free" },
       { action: "set_plan", sellerId, plan: "free" },
-      { action: "set_plan", sellerId, reason, plan: "pro" },
+      { action: "set_plan", sellerId, reason, plan: "gold" },
+      { action: "set_plan", sellerId, reason, plan: "pro", planExpiresAt: "next month" },
       { action: "set_fee_plan", sellerId, reason, feePlan: "five_percent" },
       { action: "set_store_limit", sellerId, reason, maxStoresOverride: 1.5 },
       { action: "set_store_limit", sellerId, reason, maxStoresOverride: 101 },

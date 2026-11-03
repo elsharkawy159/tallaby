@@ -27,6 +27,7 @@ import {
 import {
   DuplicateStoreWalletEntryError,
   STORE_WALLET_REFERENCE_TYPES,
+  StoreWalletCurrencyError,
   StoreWalletNotActiveError,
   postStoreWalletEntry,
 } from "@workspace/db/wallet";
@@ -76,6 +77,8 @@ export type SellerOverrideResult = { auditId: string; before: Record<string, unk
 const SELLER_FIELDS = {
   id: sellers.id,
   plan: sellers.plan,
+  planExpiresAt: sellers.planExpiresAt,
+  planAdminGranted: sellers.planAdminGranted,
   maxStoresOverride: sellers.maxStoresOverride,
   feePlan: sellers.feePlan,
   feeTrialEligible: sellers.feeTrialEligible,
@@ -87,6 +90,8 @@ const SELLER_FIELDS = {
 type SellerSnapshot = {
   id: string;
   plan: string;
+  planExpiresAt: string | null;
+  planAdminGranted: boolean;
   maxStoresOverride: number | null;
   feePlan: string;
   feeTrialEligible: boolean;
@@ -107,13 +112,32 @@ function sellerChange(o: SellerOverride, seller: SellerSnapshot, now: Date): Sel
     throw new OverrideError("no_change");
   };
   switch (o.action) {
-    case "set_plan":
-      if (o.plan === seller.plan) nothing();
+    case "set_plan": {
+      // Pro set here is a free grant: never charged, not counted as income (ROADMAP.md F-55f).
+      const grant = o.plan === "pro";
+      const until = grant && o.planExpiresAt ? new Date(o.planExpiresAt) : null;
+      if ((!grant && o.planExpiresAt) || (until && until.getTime() <= now.getTime())) {
+        throw new OverrideError("invalid_input");
+      }
+      const planExpiresAt = until ? until.toISOString() : null;
+      // Pro to Pro is a change when it turns a paid plan into a grant or moves the grant's end.
+      const samePlan = o.plan === seller.plan;
+      if (samePlan && (!grant || (seller.planAdminGranted && time(seller.planExpiresAt) === (until?.getTime() ?? null)))) {
+        nothing();
+      }
       return {
-        before: { plan: seller.plan },
-        after: { plan: o.plan },
-        set: { plan: o.plan, planStartedAt: now.toISOString() },
+        before: { plan: seller.plan, planExpiresAt: seller.planExpiresAt, planAdminGranted: seller.planAdminGranted },
+        after: { plan: o.plan, planExpiresAt, planAdminGranted: grant },
+        set: {
+          plan: o.plan,
+          ...(samePlan ? {} : { planStartedAt: now.toISOString() }),
+          planExpiresAt,
+          planAdminGranted: grant,
+          planCancelAtPeriodEnd: false,
+          planGraceUntil: null,
+        },
       };
+    }
     case "set_store_limit":
       if (o.maxStoresOverride === seller.maxStoresOverride) nothing();
       return {
@@ -331,7 +355,7 @@ export async function applyAdminStoreAction(
 // Store-wallet adjustment (P9-01)
 // ---------------------------------------------------------------------------
 
-export type WalletAdjustmentError = "not_admin" | "invalid_input" | "not_found" | "wallet_not_active";
+export type WalletAdjustmentError = "not_admin" | "invalid_input" | "not_found" | "wallet_not_active" | "wallet_currency_changed";
 
 export type WalletAdjustmentResult =
   | { status: "applied"; entryId: string; balanceBefore: string; balanceAfter: string; auditId: string }
@@ -368,6 +392,8 @@ export async function adjustStoreWalletByAdmin(
           storeId: o.storeId ?? null,
           type: "adjustment",
           amount: o.amount,
+          // The currency the admin was shown, so a form left open across the USD switch is refused.
+          ...(o.currency ? { currency: o.currency } : {}),
           referenceType: STORE_WALLET_REFERENCE_TYPES.admin,
           referenceId: o.idempotencyKey,
           description: "Tallaby adjustment",
@@ -377,6 +403,7 @@ export async function adjustStoreWalletByAdmin(
       } catch (error) {
         if (error instanceof DuplicateStoreWalletEntryError) return { status: "already_applied" };
         if (error instanceof StoreWalletNotActiveError) throw new OverrideError("wallet_not_active");
+        if (error instanceof StoreWalletCurrencyError) throw new OverrideError("wallet_currency_changed");
         throw error;
       }
 
