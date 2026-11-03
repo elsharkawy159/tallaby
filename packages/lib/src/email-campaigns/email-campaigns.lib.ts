@@ -49,6 +49,7 @@ export type EmailCampaignLimits = {
 
 export const EMAIL_CAMPAIGN_LIMITS: Record<PlanId, EmailCampaignLimits> = {
   free: { campaignsPerDay: 1, maxRecipients: 500, testSendsPerCampaign: 5, winbackPerStorePerDay: 50 },
+  pro: { campaignsPerDay: 1, maxRecipients: 500, testSendsPerCampaign: 5, winbackPerStorePerDay: 50 },
 };
 
 export function emailCampaignLimits(plan: string | null | undefined): EmailCampaignLimits {

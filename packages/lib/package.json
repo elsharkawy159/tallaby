@@ -413,6 +413,14 @@
     "./billing/server": {
       "types": "./src/billing/billing.server.ts",
       "default": "./src/billing/billing.server.ts"
+    },
+    "./billing/plans": {
+      "types": "./src/billing/plan-billing.server.ts",
+      "default": "./src/billing/plan-billing.server.ts"
+    },
+    "./billing/credits": {
+      "types": "./src/billing/ai-credits.server.ts",
+      "default": "./src/billing/ai-credits.server.ts"
     }
   },
   "devDependencies": {

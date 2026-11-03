@@ -23,6 +23,23 @@ export function parseStoreTopUpReference(reference: string | null | undefined): 
   return match ? match[1]!.toLowerCase() : null;
 }
 
+/** What a succeeded top-up puts in the wallet: the saved credit, or the EGP paid on an old one (0136). */
+export function topUpCredit(topUp: { amount: string; creditAmount: string | null; creditCurrency: string | null }): {
+  amount: string;
+  currency: "EGP" | "USD";
+} {
+  return topUp.creditAmount && topUp.creditCurrency === "USD"
+    ? { amount: topUp.creditAmount, currency: "USD" }
+    : { amount: topUp.amount, currency: "EGP" };
+}
+
+/** The EGP a referral commission is worked out on: what was paid, before any tax. */
+export function topUpCommissionBase(topUp: { amount: string; taxAmount: string | null }): string {
+  const paid = Math.round(Number(topUp.amount) * 100);
+  const tax = topUp.taxAmount ? Math.round(Number(topUp.taxAmount) * 100) : 0;
+  return ((paid - tax) / 100).toFixed(2);
+}
+
 export type TopUpAmountResult =
   | { success: true; piastres: number; amount: string }
   | { success: false; error: "invalid" | "too_small" | "too_large" };

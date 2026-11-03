@@ -6,6 +6,7 @@
  * (1 EGP = 100).
  */
 
+import { FREE_ORDER_FEE_USD_CENTS, isProActive, usdCentsToPiastres, type PlanDates } from '../billing/billing.lib'
 import { allocateDiscountAcrossLines } from './coupon-scope.lib'
 
 /** No percentage: the fee is the flat minimum (owner decision, 2026-10-18). */
@@ -65,7 +66,10 @@ export function allocateFeeAcrossLines (feePiastres: number, linePiastres: numbe
     .map(toPiastres)
 }
 
-export type SellerFeeProfile = {
+/** When the USD wallet is live (0136), the fee is in US cents by plan (owner, 2026-11-03). */
+export type FeeBilling = { usdLive: boolean; marketRate: number | null }
+
+export type SellerFeeProfile = PlanDates & {
   feePlan?: string | null
   feeTrialStartedAt?: string | Date | null
   feeTrialEndsAt?: string | Date | null
@@ -96,6 +100,10 @@ export type PlatformFeeSnapshot = {
   trial: boolean
   exempt: boolean
   computedAt: string
+  /** USD wallet only: what the wallet is charged, and the rate behind feePiastres. */
+  feeUsdCents?: number
+  rate?: number
+  pro?: boolean
 }
 
 export type SellerPlatformFee = {
@@ -112,13 +120,22 @@ export function computeSellerPlatformFee (
   seller: SellerFeeProfile,
   lines: ReadonlyArray<{ total: number | string }>,
   at: Date = new Date(),
+  billing?: FeeBilling,
 ): SellerPlatformFee {
   const linePiastres = lines.map((line) => Math.max(0, toPiastres(line.total)))
   const eligiblePiastres = linePiastres.reduce((sum, value) => sum + value, 0)
   const plan = resolveFeePlan(seller.feePlan)
   const exempt = seller.isCommissionExempt === true
   const trial = isTrialActive(seller, at)
-  const feePiastres = exempt || trial ? 0 : computePlatformFeePiastres(eligiblePiastres, plan)
+  const usd = billing?.usdLive === true && billing.marketRate != null
+  const pro = usd && isProActive(seller, at)
+  const feeUsdCents = usd && !exempt && !trial && !pro && eligiblePiastres > 0 ? FREE_ORDER_FEE_USD_CENTS : 0
+  // The line amounts stay in EGP for order reports; the wallet is charged feeUsdCents.
+  const feePiastres = usd
+    ? Math.min(eligiblePiastres, usdCentsToPiastres(feeUsdCents, billing!.marketRate!))
+    : exempt || trial
+      ? 0
+      : computePlatformFeePiastres(eligiblePiastres, plan)
 
   return {
     feePiastres,
@@ -134,6 +151,7 @@ export function computeSellerPlatformFee (
       trial,
       exempt,
       computedAt: at.toISOString(),
+      ...(usd && { feeUsdCents, rate: billing!.marketRate!, pro }),
     },
   }
 }
@@ -154,6 +172,7 @@ export function computeOrderLineFees (
   lines: ReadonlyArray<{ sellerId: string; total: number | string }>,
   profiles: ReadonlyMap<string, SellerFeeProfile>,
   at: Date = new Date(),
+  billing?: FeeBilling,
 ): OrderLineFee[] {
   const groups = new Map<string, number[]>()
   lines.forEach((line, index) => {
@@ -164,7 +183,7 @@ export function computeOrderLineFees (
 
   const result = new Array<OrderLineFee>(lines.length)
   for (const [sellerId, indexes] of groups) {
-    const fee = computeSellerPlatformFee(profiles.get(sellerId) ?? {}, indexes.map((i) => lines[i]!), at)
+    const fee = computeSellerPlatformFee(profiles.get(sellerId) ?? {}, indexes.map((i) => lines[i]!), at, billing)
     indexes.forEach((lineIndex, position) => {
       const total = Math.max(0, toPiastres(lines[lineIndex]!.total))
       const lineFee = fee.lineFeesPiastres[position] ?? 0

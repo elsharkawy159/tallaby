@@ -5,6 +5,7 @@ import { orders, orderItems, users, products, sellers } from "@workspace/db";
 import { eq, and, desc, sql, gte, lte, like, or, inArray, notInArray } from "drizzle-orm";
 import { creditSellerOnDelivery } from "@workspace/db/wallet";
 import { fulfillDigitalOrderItems } from "@workspace/lib/digital";
+import { getBillingState } from "@workspace/lib/billing/server";
 import { sendOrderEventEmail } from "@workspace/lib/orders";
 import { sendDeliveredMetaPurchase } from "@workspace/lib/integrations/server";
 import {
@@ -392,16 +393,25 @@ export async function updateOrderPricing(orderId: string, input: unknown) {
           feeTrialStartedAt: sellers.feeTrialStartedAt,
           feeTrialEndsAt: sellers.feeTrialEndsAt,
           isCommissionExempt: sellers.isCommissionExempt,
+          plan: sellers.plan,
+          planExpiresAt: sellers.planExpiresAt,
+          planGraceUntil: sellers.planGraceUntil,
         })
         .from(sellers)
         .where(inArray(sellers.id, sellerIds));
+      // An order from before the USD switch keeps its old fee rules (0136).
+      const hadUsdFee = existing.orderItems.some(
+        (item) => (item.metadata as { platformFee?: { feeUsdCents?: number } } | null)?.platformFee?.feeUsdCents !== undefined,
+      );
+      const feeBilling = hadUsdFee ? await getBillingState() : undefined;
       lineFees = computeOrderLineFees(
         existing.orderItems.map((item, index) => ({
           sellerId: item.sellerId,
           total: lineSubtotals[index]!,
         })),
         new Map(profiles.map((profile) => [profile.id, profile])),
-        existing.createdAt ? new Date(existing.createdAt) : new Date()
+        existing.createdAt ? new Date(existing.createdAt) : new Date(),
+        feeBilling,
       );
     }
 

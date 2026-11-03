@@ -149,8 +149,12 @@ export async function grantWelcomeGiftSafely(sellerId: string): Promise<boolean>
 async function chargesSinceGrant(q: Queryable, sellerId: string, grantedAt: string): Promise<number> {
   const [row] = rowsOf(
     await q.execute(sql`
-      SELECT coalesce(sum(t.amount), 0)::text AS total
+      SELECT coalesce(sum(
+               CASE WHEN t.currency = 'USD' OR b.conversion_rate IS NULL THEN t.amount
+                    ELSE round(t.amount / b.conversion_rate, 2) END
+             ), 0)::text AS total
         FROM wallet_transactions t
+        LEFT JOIN billing_settings b ON b.id
        WHERE t.seller_id = ${sellerId}
          AND t.created_at >= ${grantedAt}::timestamptz
          AND (

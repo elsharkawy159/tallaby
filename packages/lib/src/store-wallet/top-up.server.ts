@@ -2,7 +2,9 @@ import { and, db, eq, inArray, sellerWalletTopUps, sql } from "@workspace/db";
 import { DuplicateStoreWalletEntryError, postStoreWalletEntry } from "@workspace/db/wallet";
 import { createKashierSession, getKashierConfig } from "../kashier";
 import { postReferralCommission } from "../referrals/referrals.server";
-import { buildStoreTopUpReference, parseStoreTopUpAmount } from "./top-up.lib";
+import { minorToAmount, parseUsdTopUp, quoteTopUp } from "../billing/billing.lib";
+import { getBillingState } from "../billing/billing.server";
+import { buildStoreTopUpReference, parseStoreTopUpAmount, topUpCommissionBase, topUpCredit } from "./top-up.lib";
 
 /**
  * Store-wallet top-ups through Kashier (PLAN.md §13.4, P6-09/P6-10).
@@ -11,6 +13,43 @@ import { buildStoreTopUpReference, parseStoreTopUpAmount } from "./top-up.lib";
  */
 
 export type StartTopUpError = "invalid" | "too_small" | "too_large" | "not_configured" | "provider_error";
+
+/**
+ * The row values for a top-up of this seller-entered amount: USD priced and paid
+ * in EGP once the wallet is live (0136), else today's EGP amount.
+ */
+async function resolveTopUpValues(raw: unknown): Promise<
+  | {
+      success: true;
+      amount: string;
+      values: { amount: string; creditAmount?: string; creditCurrency?: string; exchangeRate?: string; taxAmount?: string };
+    }
+  | { success: false; error: "invalid" | "too_small" | "too_large" | "not_configured" }
+> {
+  const billing = await getBillingState();
+  if (!billing.usdLive) {
+    const parsed = parseStoreTopUpAmount(raw);
+    return parsed.success ? { success: true, amount: parsed.amount, values: { amount: parsed.amount } } : parsed;
+  }
+  const parsed = parseUsdTopUp(raw);
+  if (!parsed.success) return parsed;
+  const quote = quoteTopUp(parsed.usdCents, billing);
+  if (!quote) return { success: false, error: "not_configured" };
+  const amount = minorToAmount(quote.totalPiastres);
+  return {
+    success: true,
+    amount,
+    values: {
+      amount,
+      creditAmount: minorToAmount(quote.usdCents),
+      creditCurrency: "USD",
+      exchangeRate: quote.rate.toFixed(4),
+      taxAmount: minorToAmount(quote.taxPiastres),
+    },
+  };
+}
+
+export { resolveTopUpValues };
 
 export type StartTopUpResult =
   | { success: true; topUpId: string; sessionUrl: string }
@@ -28,7 +67,7 @@ export async function startStoreTopUp(input: {
   returnUrl: string;
   locale?: "ar" | "en";
 }): Promise<StartTopUpResult> {
-  const amount = parseStoreTopUpAmount(input.amount);
+  const amount = await resolveTopUpValues(input.amount);
   if (!amount.success) return amount;
   const config = getKashierConfig();
   if (!config) return { success: false, error: "not_configured" };
@@ -37,7 +76,7 @@ export async function startStoreTopUp(input: {
     .insert(sellerWalletTopUps)
     .values({
       sellerId: input.sellerId,
-      amount: amount.amount,
+      ...amount.values,
       provider: "kashier",
       status: "pending",
       createdBy: input.actorId,
@@ -138,10 +177,12 @@ export async function applyStoreTopUpWebhook(input: {
     }
 
     try {
+      const credit = topUpCredit(topUp);
       const entry = await postStoreWalletEntry(tx, {
         sellerId: topUp.sellerId,
         type: "top_up",
-        amount: topUp.amount,
+        amount: credit.amount,
+        currency: credit.currency,
         referenceType: "top_up",
         referenceId: topUp.id,
         description: "Wallet top-up (Kashier)",
@@ -153,7 +194,7 @@ export async function applyStoreTopUpWebhook(input: {
         .set({ status: "succeeded", providerTransactionId: transactionId, transactionId: entry.entryId, updatedAt: sql`now()` })
         .where(pending);
       // The referrer's 20 % (F-37), in this transaction: never missed, never doubled.
-      await postReferralCommission(tx, { id: topUp.id, sellerId: topUp.sellerId, amount: topUp.amount });
+      await postReferralCommission(tx, { id: topUp.id, sellerId: topUp.sellerId, amount: topUpCommissionBase(topUp) });
       return "credited";
     } catch (error) {
       if (error instanceof DuplicateStoreWalletEntryError) return "duplicate";

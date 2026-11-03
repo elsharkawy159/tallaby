@@ -56,6 +56,7 @@ import {
 import { sendOrderConfirmationEmail, sendOrderEventEmail } from './notify'
 import { computeOrderLineFees, type PlatformFeeSnapshot } from './platform-fee.lib'
 import { detectFeeHolds } from './fee-hold.server'
+import { getBillingState } from '../billing/billing.server'
 import { isCodEligibleForShipping, parseWalletPartialPaymentMethod } from './payment.lib'
 import {
   isStorefrontCheckoutMethodAllowed,
@@ -573,12 +574,17 @@ export async function placeOrderFromCart(
       feeTrialStartedAt: sellers.feeTrialStartedAt,
       feeTrialEndsAt: sellers.feeTrialEndsAt,
       isCommissionExempt: sellers.isCommissionExempt,
+      plan: sellers.plan,
+      planExpiresAt: sellers.planExpiresAt,
+      planGraceUntil: sellers.planGraceUntil,
     })
     .from(sellers)
     .where(inArray(sellers.id, feeSellerIds))
   const lineFees = computeOrderLineFees(
     orderItemsData,
     new Map(feeProfiles.map((profile) => [profile.id, profile])),
+    new Date(),
+    await getBillingState(),
   )
   orderItemsData.forEach((item, index) => {
     const fee = lineFees[index]!

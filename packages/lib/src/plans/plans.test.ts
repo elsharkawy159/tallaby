@@ -20,7 +20,8 @@ describe("resolvePlanId", () => {
   it("keeps a known plan and maps anything else to free", () => {
     expect(resolvePlanId("free")).toBe("free");
     expect(resolvePlanId("FREE ")).toBe("free");
-    expect(resolvePlanId("pro")).toBe("free");
+    expect(resolvePlanId("pro")).toBe("pro");
+    expect(resolvePlanId("enterprise")).toBe("free");
   });
 });
 
@@ -49,9 +50,13 @@ describe("canCreateStore", () => {
 });
 
 describe("hasFeature", () => {
-  it("keeps AI and advanced settings off on Free", () => {
-    expect(hasFeature("free", "ai")).toBe(false);
+  it("gives both plans AI, and only credits differ (owner, 2026-11-03)", () => {
+    expect(hasFeature("free", "ai")).toBe(true);
     expect(hasFeature("free", "advancedSettings")).toBe(false);
+    expect(getPlanLimits("free").aiCreditsMonthly).toBe(100);
+    expect(getPlanLimits("pro").aiCreditsMonthly).toBe(2000);
+    expect(getPlanLimits("pro").maxStores).toBe(getPlanLimits("free").maxStores);
+    expect(hasFeature("pro", "removeTallabyBadge")).toBe(false);
   });
 
   it("keeps custom domains on for Free (today's behaviour)", () => {
@@ -60,6 +65,6 @@ describe("hasFeature", () => {
 
   it("uses Free features for an unknown plan", () => {
     expect(hasFeature("unknown", "customDomain")).toBe(true);
-    expect(hasFeature("unknown", "ai")).toBe(false);
+    expect(hasFeature("unknown", "advancedSettings")).toBe(false);
   });
 });

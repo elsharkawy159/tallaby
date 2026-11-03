@@ -1,4 +1,5 @@
-import { adCampaignRequests, and, db, eq } from "@workspace/db";
+import { adCampaignRequests, and, db, eq, sellerWallet, walletTransactions } from "@workspace/db";
+import { getBillingState } from "../billing/billing.server";
 import { postStoreWalletEntryOnce } from "@workspace/db/wallet";
 
 /**
@@ -27,10 +28,31 @@ export async function refundRejectedWalletAdRequest(
       .for("update");
     if (!request || request.paymentMethod !== "wallet" || request.status !== "rejected") return "not_applicable";
 
+    // What the wallet actually paid, in the currency it paid in (0136).
+    const [charge] = await tx
+      .select({ amount: walletTransactions.amount, currency: walletTransactions.currency })
+      .from(walletTransactions)
+      .where(
+        and(
+          eq(walletTransactions.sellerId, request.sellerId),
+          eq(walletTransactions.type, "service_charge"),
+          eq(walletTransactions.referenceType, "ad_request"),
+          eq(walletTransactions.referenceId, requestId),
+        ),
+      );
+    const [wallet] = await tx
+      .select({ currency: sellerWallet.currency })
+      .from(sellerWallet)
+      .where(eq(sellerWallet.sellerId, request.sellerId));
+    const charged = charge ? Math.abs(Number(charge.amount)) : Number(request.amount);
+    // Charged in EGP before the switch but refunded after it: the same value in USD.
+    const rate = charge?.currency !== "USD" && wallet?.currency === "USD" ? (await getBillingState()).marketRate : null;
+    const refund = rate ? charged / rate : charged;
+
     const entry = await postStoreWalletEntryOnce(tx, {
       sellerId: request.sellerId,
       type: "adjustment",
-      amount: Number(request.amount).toFixed(2),
+      amount: refund.toFixed(2),
       referenceType: "ad_request",
       referenceId: requestId,
       description: "Refund of a rejected product ad",

@@ -20,10 +20,19 @@ export type PlanLimits = PlanFeatures & {
 export const PLANS = {
   free: {
     maxStores: 3,
-    aiCreditsMonthly: 0,
-    ai: false,
+    aiCreditsMonthly: 100,
+    ai: true,
     advancedSettings: false,
     // Custom domains are already available to every seller today.
+    customDomain: true,
+    removeTallabyBadge: false,
+  },
+  // Owner, 2026-11-03: credits and the order fee are the only differences.
+  pro: {
+    maxStores: 3,
+    aiCreditsMonthly: 2000,
+    ai: true,
+    advancedSettings: false,
     customDomain: true,
     removeTallabyBadge: false,
   },

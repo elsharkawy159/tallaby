@@ -1,10 +1,10 @@
+import { resolveTopUpValues } from "./top-up.server";
 import { and, db, desc, eq, inArray, sellerWallet, sellerWalletTopUps, sellers, sql } from "@workspace/db";
 import {
   MANUAL_TOP_UP_METHODS,
   MAX_OPEN_MANUAL_TOP_UPS,
   isOwnTopUpProofPath,
   manualTopUpInputSchema,
-  parseStoreTopUpAmount,
   type ManualTopUpMethod,
 } from "./top-up.lib";
 
@@ -23,7 +23,7 @@ export type SubmitManualTopUpError =
   | "too_large"
   | "invalid_proof"
   | "too_many_open"
-  | "wallet_not_active";
+  | "wallet_not_active" | "not_configured";
 
 export type SubmitManualTopUpResult =
   | { success: true; topUpId: string; amount: string }
@@ -41,7 +41,7 @@ export async function submitManualStoreTopUp(
 ): Promise<SubmitManualTopUpResult> {
   const parsed = manualTopUpInputSchema.safeParse(input.data);
   if (!parsed.success) return { success: false, error: "invalid" };
-  const amount = parseStoreTopUpAmount(parsed.data.amount);
+  const amount = await resolveTopUpValues(parsed.data.amount);
   if (!amount.success) return amount;
   if (!isOwnTopUpProofPath(input.sellerId, parsed.data.proofPath)) return { success: false, error: "invalid_proof" };
 
@@ -86,7 +86,7 @@ export async function submitManualStoreTopUp(
         .insert(sellerWalletTopUps)
         .values({
           sellerId: input.sellerId,
-          amount: amount.amount,
+          ...amount.values,
           provider: parsed.data.method,
           status: "pending",
           // One request per receipt file.

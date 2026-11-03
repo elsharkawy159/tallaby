@@ -15,7 +15,7 @@ export async function getBillingState(): Promise<BillingState> {
   const fetched = latest ? Number(latest.marketRate) : null;
   return {
     usdLive: settings?.usdLive === true,
-    marketRate: override ?? fetched,
+    marketRate: override ?? fetched ?? (settings?.conversionRate ? Number(settings.conversionRate) : null),
     marginBps: settings?.marginBps ?? 200,
     taxEnabled: settings?.taxEnabled === true,
     taxRateBps: settings?.taxRateBps ?? 1400,

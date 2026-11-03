@@ -7,6 +7,7 @@
  * a `top_up` entry through postStoreWalletEntry (claim `top_up:<id>`, so a
  * replay credits nothing) and writes one admin_audit_log row.
  */
+import { topUpCommissionBase, topUpCredit } from "../store-wallet/top-up.lib";
 import { and, db, desc, eq, inArray, sellerWalletTopUps, sellers, sql } from "@workspace/db";
 import {
   DuplicateStoreWalletEntryError,
@@ -84,10 +85,12 @@ export async function reviewManualStoreTopUp(
 
       let entry;
       try {
+        const credit = topUpCredit(topUp);
         entry = await postStoreWalletEntry(tx, {
           sellerId: topUp.sellerId,
           type: "top_up",
-          amount: topUp.amount,
+          amount: credit.amount,
+          currency: credit.currency,
           referenceType: STORE_WALLET_REFERENCE_TYPES.topUp,
           referenceId: topUp.id,
           description: topUp.provider === "instapay" ? "Wallet top-up (InstaPay)" : "Wallet top-up (Vodafone Cash)",
@@ -104,7 +107,7 @@ export async function reviewManualStoreTopUp(
         .set({ status: "succeeded", transactionId: entry.entryId, updatedAt: sql`now()` })
         .where(stillPending);
       // The referrer's 20 % (F-37), in this transaction.
-      await postReferralCommission(tx, { id: topUp.id, sellerId: topUp.sellerId, amount: topUp.amount });
+      await postReferralCommission(tx, { id: topUp.id, sellerId: topUp.sellerId, amount: topUpCommissionBase(topUp) });
       await writeAdminAudit(tx, {
         actorId,
         sellerId: topUp.sellerId,

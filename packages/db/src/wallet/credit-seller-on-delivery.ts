@@ -1,8 +1,8 @@
-import { and, eq, isNull, ne } from "drizzle-orm";
+import { and, eq, isNull, ne, sql } from "drizzle-orm";
 
 import type { db as dbType } from "../drizzle/database";
 import { logServerError } from "../log";
-import { orderItems, orders, stores, walletTransactions } from "../drizzle/schema";
+import { orderItems, orders, sellerWallet, stores, walletTransactions } from "../drizzle/schema";
 import { postStoreWalletEntryOnce, STORE_WALLET_REFERENCE_TYPES } from "./store-wallet";
 
 type Tx = Parameters<Parameters<typeof dbType.transaction>[0]>[0];
@@ -14,6 +14,21 @@ type FeeLine = { sellerId: string; commissionAmount: string; metadata: unknown }
 
 const hasFeeSnapshot = (line: FeeLine) =>
   (line.metadata as { platformFee?: unknown } | null)?.platformFee != null;
+
+/** The USD fee in the line's snapshot; undefined on an order from before the switch (0136). */
+const feeUsdCentsOf = (line: FeeLine) =>
+  (line.metadata as { platformFee?: { feeUsdCents?: number } } | null)?.platformFee?.feeUsdCents;
+
+/** The wallet's currency, or what a new wallet would start in. */
+async function walletCurrency(tx: Tx, sellerId: string): Promise<string> {
+  const [wallet] = await tx
+    .select({ currency: sql<string>`coalesce(${sellerWallet.currency}, 'EGP')` })
+    .from(sellerWallet)
+    .where(eq(sellerWallet.sellerId, sellerId));
+  if (wallet) return wallet.currency;
+  const rows = await tx.execute<{ currency: string }>(sql`SELECT billing_wallet_currency() AS currency`);
+  return rows[0]?.currency ?? "EGP";
+}
 
 /** `orders.metadata.feeHolds[sellerId]`: why that seller's fee waits for delivery (fee-hold.lib.ts). */
 function heldSellers(metadata: unknown): Set<string> {
@@ -87,7 +102,14 @@ async function postOrderFees(tx: Tx, orderId: string, moment: FeeMoment): Promis
       .limit(1);
     if (legacySale) continue;
 
-    const fee = sellerLines.reduce((sum, line) => sum + Math.max(0, toPiastres(line.commissionAmount)), 0);
+    // USD wallet: the snapshot's cents. A fee from before the switch that wasn't
+    // charged yet is cancelled (owner, 2026-11-03), so it posts nothing.
+    const usd = (await walletCurrency(tx, sellerId)) === "USD";
+    const fee = usd
+      ? (feeUsdCentsOf(sellerLines[0]!) ?? 0)
+      : sellerLines.every((line) => feeUsdCentsOf(line) === undefined)
+        ? sellerLines.reduce((sum, line) => sum + Math.max(0, toPiastres(line.commissionAmount)), 0)
+        : 0;
     if (fee <= 0) continue;
 
     await postStoreWalletEntryOnce(tx, {
@@ -98,6 +120,7 @@ async function postOrderFees(tx: Tx, orderId: string, moment: FeeMoment): Promis
       referenceId: orderId,
       type: "fee",
       amount: fromPiastres(-fee),
+      currency: usd ? "USD" : "EGP",
       description: "Tallaby platform fee",
       metadata: { chargedAt: moment },
     });

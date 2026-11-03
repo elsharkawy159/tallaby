@@ -226,7 +226,7 @@ async function setNegativeLimit(tx: Queryable, sellerId: string, next: string | 
   // Wallet rows are created lazily (balance 0), the same way postStoreWalletEntry does.
   await tx
     .insert(sellerWallet)
-    .values({ sellerId, balance: "0", currency: "EGP", negativeLimit: next })
+    .values({ sellerId, balance: "0", negativeLimit: next })
     .onConflictDoUpdate({ target: sellerWallet.sellerId, set: { negativeLimit: next, updatedAt: sql`now()` } });
   return { before: { negativeLimit: current }, after: { negativeLimit: next } };
 }

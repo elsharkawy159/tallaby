@@ -1,5 +1,7 @@
 "use server";
 
+import { minorToAmount, piastresToUsdCents } from "@workspace/lib/billing";
+import { getBillingState } from "@workspace/lib/billing/server";
 import { db, adCampaignRequests, products, sellerWallet } from "@workspace/db";
 import {
   StoreWalletLimitError,
@@ -158,6 +160,12 @@ export async function createAdRequest(input: {
 
     const sellerId = session.user.id;
     const amount = pkg.price.toFixed(2);
+    // Packages are priced in EGP; a USD wallet pays the equivalent (0136).
+    const billing = await getBillingState();
+    const walletAmount =
+      billing.usdLive && billing.marketRate
+        ? minorToAmount(Math.max(1, piastresToUsdCents(Math.round(pkg.price * 100), billing.marketRate)))
+        : amount;
 
     // Paid from the store wallet: the request and its service_charge commit
     // together; the charge may not overdraw past the wallet's limit (D21).
@@ -180,7 +188,8 @@ export async function createAdRequest(input: {
         await postStoreWalletEntry(tx, {
           sellerId,
           type: "service_charge",
-          amount: `-${amount}`,
+          amount: `-${walletAmount}`,
+          currency: billing.usdLive ? "USD" : "EGP",
           referenceType: "ad_request",
           referenceId: row!.id,
           description: `Product ad: ${pkg.key}`,

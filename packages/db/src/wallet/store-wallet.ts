@@ -22,6 +22,9 @@ import { sellerWallet, sellers, walletTransactions } from "../drizzle/schema";
  *   4. The balance moves in one `UPDATE … RETURNING`; balance_before/after
  *      come from it, never from a separate read.
  *   5. Amounts are decimal strings (2 dp). No JS floating point.
+ *   6. An amount is in the wallet's own currency (seller_wallet.currency, 0136).
+ *      A caller that priced in one currency passes `currency`, and a wallet in
+ *      the other one refuses the entry, so a fee can't land in the wrong money.
  */
 
 type Tx = Parameters<Parameters<typeof dbType.transaction>[0]>[0];
@@ -47,6 +50,10 @@ export const STORE_WALLET_REFERENCE_TYPES = {
   welcomeGift: "welcome_gift",
   /** Its expiry: the unspent part taken back after 30 days (0119). */
   welcomeGiftExpiry: "welcome_gift_expiry",
+  /** A Pro plan period (0137); reference id = "<seller>:<period start>". */
+  plan: "plan",
+  /** A bought pack of AI credits (0137). */
+  aiCredits: "ai_credits",
 } as const;
 
 export type StoreWalletReferenceType =
@@ -95,6 +102,13 @@ export class StoreWalletNotActiveError extends Error {
   }
 }
 
+export class StoreWalletCurrencyError extends Error {
+  constructor(public readonly sellerId: string, public readonly expected: string, public readonly actual: string) {
+    super(`Store wallet of seller ${sellerId} is in ${actual}, not ${expected}`);
+    this.name = "StoreWalletCurrencyError";
+  }
+}
+
 export class StoreWalletLimitError extends Error {
   constructor(public readonly sellerId: string) {
     super(`Store wallet of seller ${sellerId} would go past its negative limit`);
@@ -114,6 +128,8 @@ export interface PostStoreWalletEntryInput {
   description: string;
   metadata?: Record<string, unknown> | null;
   createdBy?: string | null;
+  /** The currency this amount was priced in; a wallet in another currency refuses it. */
+  currency?: "EGP" | "USD";
   /** Optional purchases only: refuse if the balance would pass -negative_limit (NULL = DEFAULT_NEGATIVE_LIMIT). Fees never set this. */
   enforceNegativeLimit?: boolean;
 }
@@ -158,7 +174,8 @@ export async function postStoreWalletEntry(
       // Wallets are created lazily (sellers that never had an entry).
       await sp
         .insert(sellerWallet)
-        .values({ sellerId: input.sellerId, balance: "0", currency: "EGP" })
+        // The column default picks the currency (billing_wallet_currency, 0136).
+        .values({ sellerId: input.sellerId, balance: "0" })
         .onConflictDoNothing({ target: sellerWallet.sellerId });
 
       // D21: optional purchases may not take the balance below -negative_limit;
@@ -167,11 +184,11 @@ export async function postStoreWalletEntry(
         ? sql`AND balance + ${amount} >= -coalesce(negative_limit, ${DEFAULT_NEGATIVE_LIMIT}::numeric)`
         : sql``;
 
-      const moved = await sp.execute<{ balance_before: string; balance_after: string }>(sql`
+      const moved = await sp.execute<{ balance_before: string; balance_after: string; currency: string }>(sql`
         UPDATE seller_wallet
            SET balance = balance + ${amount}, updated_at = now()
          WHERE seller_id = ${input.sellerId} AND status = 'active' ${limitGuard}
-        RETURNING (balance - ${amount})::text AS balance_before, balance::text AS balance_after
+        RETURNING (balance - ${amount})::text AS balance_before, balance::text AS balance_after, currency
       `);
       const row = moved[0];
 
@@ -183,6 +200,10 @@ export async function postStoreWalletEntry(
         if (wallet && wallet.status !== "active") throw new StoreWalletNotActiveError(input.sellerId, wallet.status);
         throw new StoreWalletLimitError(input.sellerId);
       }
+      // Thrown inside the savepoint, so the balance move above rolls back.
+      if (input.currency && row.currency !== input.currency) {
+        throw new StoreWalletCurrencyError(input.sellerId, input.currency, row.currency);
+      }
 
       const [entry] = await sp
         .insert(walletTransactions)
@@ -191,7 +212,7 @@ export async function postStoreWalletEntry(
           storeId: input.storeId ?? null,
           type: input.type,
           amount: input.amount,
-          currency: "EGP",
+          currency: row.currency,
           orderId: input.orderId ?? null,
           description: input.description,
           referenceType: input.referenceType,
@@ -238,6 +259,7 @@ export async function getStoreWalletSummary(tx: Tx | typeof dbType, sellerId: st
       balance: sellerWallet.balance,
       status: sellerWallet.status,
       negativeLimit: sellerWallet.negativeLimit,
+      currency: sellerWallet.currency,
       ledgerTotal: sql<string>`(SELECT coalesce(sum(t.amount), 0)::text FROM wallet_transactions t WHERE t.seller_id = ${sellerId})`,
     })
     .from(sellerWallet)

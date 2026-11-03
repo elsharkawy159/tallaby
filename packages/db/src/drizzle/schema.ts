@@ -436,6 +436,12 @@ export const sellers = pgTable("sellers", {
 	storeCategoryAr: text("store_category_ar"),
 	/** Account plan id; limits live in @workspace/lib/plans (0050). */
 	plan: text().default('free').notNull(),
+	/** Pro: stops at plan_expires_at instead of renewing (0137). */
+	planCancelAtPeriodEnd: boolean("plan_cancel_at_period_end").default(false).notNull(),
+	/** A renewal the wallet couldn't pay keeps Pro until this time (0137). */
+	planGraceUntil: timestamp("plan_grace_until", { withTimezone: true, mode: 'string' }),
+	/** Pro given by an admin: never charged, not counted as income (0137). */
+	planAdminGranted: boolean("plan_admin_granted").default(false).notNull(),
 	planStartedAt: timestamp("plan_started_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	planExpiresAt: timestamp("plan_expires_at", { withTimezone: true, mode: 'string' }),
 	/** Audited admin override of the plan's store limit (D27). NULL = plan limit. */
@@ -3116,6 +3122,31 @@ export const storeShippingZones = pgTable("store_shipping_zones", {
 ]);
 
 /** Store-wallet top-ups, confirmed only by the provider webhook (0060, P6-09/P6-10). */
+/** One AI credit balance per seller account (0137, ROADMAP.md F-57). Server-only: RLS on, no policies. */
+export const sellerAiCredits = pgTable("seller_ai_credits", {
+	sellerId: uuid("seller_id").primaryKey().notNull().references(() => sellers.id, { onDelete: "cascade" }),
+	monthlyRemaining: integer("monthly_remaining").default(0).notNull(),
+	monthlyPeriod: text("monthly_period"),
+	purchasedRemaining: integer("purchased_remaining").default(0).notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+});
+
+/** AI credit history; the unique claim makes each entry happen once (0137). Server-only. */
+export const aiCreditLedger = pgTable("ai_credit_ledger", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	sellerId: uuid("seller_id").notNull().references(() => sellers.id, { onDelete: "cascade" }),
+	kind: text().notNull(),
+	monthlyDelta: integer("monthly_delta").default(0).notNull(),
+	purchasedDelta: integer("purchased_delta").default(0).notNull(),
+	feature: text(),
+	reference: text().notNull(),
+	createdBy: uuid("created_by"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	unique("ai_credit_ledger_reference_once").on(table.sellerId, table.kind, table.reference),
+	index("ai_credit_ledger_seller_idx").using("btree", table.sellerId, table.createdAt.desc()),
+]);
+
 /** Billing settings, one row (0136, ROADMAP.md F-56). Server-only: RLS on, no policies. */
 export const billingSettings = pgTable("billing_settings", {
 	id: boolean().default(true).primaryKey().notNull(),
@@ -3365,7 +3396,7 @@ export const sellerNotifications = pgTable("seller_notifications", {
 			foreignColumns: [stores.id],
 			name: "seller_notifications_store_id_fkey"
 		}).onDelete("set null"),
-	check("seller_notifications_type_check", sql`type IN ('order_created', 'top_up_approved', 'top_up_rejected', 'question_received', 'review_received', 'carrier_shipment_failed', 'carrier_needs_attention', 'referral_commission_earned', 'referral_payout_paid', 'referral_payout_rejected', 'welcome_gift_granted', 'welcome_gift_expiring', 'welcome_gift_expired', 'low_stock', 'admin_message', 'agent_connected')`),
+	check("seller_notifications_type_check", sql`type IN ('order_created', 'top_up_approved', 'top_up_rejected', 'question_received', 'review_received', 'carrier_shipment_failed', 'carrier_needs_attention', 'referral_commission_earned', 'referral_payout_paid', 'referral_payout_rejected', 'welcome_gift_granted', 'welcome_gift_expiring', 'welcome_gift_expired', 'low_stock', 'admin_message', 'agent_connected', 'plan_renewed', 'plan_renewal_failed', 'plan_ended')`),
 ]);
 
 /** A carrier's status history for a shipment (0106). One row per (shipment, state, time). Server-only. */

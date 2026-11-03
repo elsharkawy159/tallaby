@@ -112,6 +112,9 @@ BEGIN
    WHERE status IN ('pending', 'processing') AND credit_amount IS NULL;
   GET DIAGNOSTICS priced = ROW_COUNT;
 
+  -- Open gifts move with the wallet (billing_convert_open_gifts, 0137).
+  PERFORM billing_convert_open_gifts(p_market_rate);
+
   -- Gifts and trials that haven't started end today (owner). Running ones finish.
   UPDATE sellers SET welcome_gift_eligible = false WHERE welcome_gift_eligible;
   UPDATE sellers SET fee_trial_eligible = false WHERE fee_trial_eligible AND fee_trial_started_at IS NULL;
