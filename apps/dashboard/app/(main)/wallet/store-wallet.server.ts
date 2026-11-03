@@ -24,6 +24,7 @@ export function parseEntryFilter(value: string | string[] | undefined): EntryFil
 
 export type StoreWalletOverview = {
   balance: string;
+  currency: string;
   status: string;
   negativeLimit: string | null;
   /** Sum of all entries; equals `balance` (shown so sellers can check it). */
@@ -37,6 +38,7 @@ export async function getStoreWalletOverview(sellerId: string): Promise<StoreWal
   const [row] = await db
     .select({
       balance: sql<string>`coalesce(${sellerWallet.balance}, 0)::text`,
+      currency: sql<string>`coalesce(${sellerWallet.currency}, 'EGP')`,
       status: sql<string>`coalesce(${sellerWallet.status}::text, 'active')`,
       negativeLimit: sellerWallet.negativeLimit,
       trialEligible: sellers.feeTrialEligible,
@@ -55,10 +57,12 @@ export async function getStoreWalletOverview(sellerId: string): Promise<StoreWal
       salesThisMonth: sql<string>`coalesce(sum(${walletTransactions.amount}) FILTER (WHERE ${walletTransactions.type} = 'sale' AND ${walletTransactions.createdAt} >= date_trunc('month', now() AT TIME ZONE 'Africa/Cairo') AT TIME ZONE 'Africa/Cairo'), 0)::text`,
     })
     .from(walletTransactions)
-    .where(eq(walletTransactions.sellerId, sellerId));
+    // Only this currency's entries: older EGP rows net to zero after the switch (0136).
+    .where(and(eq(walletTransactions.sellerId, sellerId), sql`coalesce(${walletTransactions.currency}, 'EGP') = ${row.currency}`));
 
   return {
     balance: row.balance,
+    currency: row.currency,
     status: row.status,
     negativeLimit: row.negativeLimit,
     ledgerTotal: totals?.ledgerTotal ?? "0",
@@ -69,6 +73,8 @@ export async function getStoreWalletOverview(sellerId: string): Promise<StoreWal
 }
 
 export type StoreWalletEntryRow = {
+  /** The entry's own currency: older rows stay in EGP after the switch. */
+  currency: string | null;
   id: string;
   type: string;
   amount: string;
@@ -117,6 +123,7 @@ export async function listStoreWalletEntries(
       id: walletTransactions.id,
       type: sql<string>`${walletTransactions.type}::text`,
       amount: walletTransactions.amount,
+      currency: walletTransactions.currency,
       balanceAfter: walletTransactions.balanceAfter,
       description: walletTransactions.description,
       createdAt: walletTransactions.createdAt,
@@ -133,12 +140,15 @@ export async function listStoreWalletEntries(
     .limit(ENTRIES_PAGE_SIZE + 1);
 }
 
-/** The header's wallet box: the balance only, read fresh (never cached). */
-export async function getStoreWalletBalance(sellerId: string): Promise<number | null> {
+/** The header's wallet box: the balance and its currency, read fresh (never cached). */
+export async function getStoreWalletBalance(sellerId: string): Promise<{ balance: number; currency: string } | null> {
   const [row] = await db
-    .select({ balance: sql<string>`coalesce(${sellerWallet.balance}, 0)::text` })
+    .select({
+      balance: sql<string>`coalesce(${sellerWallet.balance}, 0)::text`,
+      currency: sql<string>`coalesce(${sellerWallet.currency}, 'EGP')`,
+    })
     .from(sellers)
     .leftJoin(sellerWallet, eq(sellerWallet.sellerId, sellers.id))
     .where(eq(sellers.id, sellerId));
-  return row ? Number(row.balance) : null;
+  return row ? { balance: Number(row.balance), currency: row.currency } : null;
 }

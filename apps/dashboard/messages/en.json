@@ -1408,6 +1408,7 @@
         "badFile": "Only JPG, PNG or WebP photos and PDF files are supported.",
         "rateLimited": "Too many requests. Wait a minute and try again.",
         "dailyLimit": "You've used today's AI fills. Try again tomorrow.",
+        "noCredits": "You've used your AI credits. Buy more from Plan & usage.",
         "busy": "The AI service is very busy right now. Wait a moment and try again.",
         "timeout": "The AI took too long to answer. Try again, or use fewer photos.",
         "failed": "AI couldn't read this product. Try again or add more details.",
@@ -3501,6 +3502,62 @@
       }
     }
   },
+  "planLive": {
+    "yourPlanFree": "You're on Free.",
+    "yourPlanPro": "You're on Pro.",
+    "renewsOn": "Renews {date} from your wallet.",
+    "endsOn": "Ends {date}, then you move to Free.",
+    "granted": "Given by the Tallaby team.",
+    "grantedUntil": "Given by the Tallaby team until {date}.",
+    "grace": "Your wallet couldn't pay for Pro. Top up by {date} to keep it.",
+    "topUp": "Top up",
+    "ordersHeadline": "{count, plural, =0 {No orders in the last 30 days} one {# order in the last 30 days} other {# orders in the last 30 days}}",
+    "proSummary": "On Free, those would have cost {fees} in order fees. Pro has none.",
+    "freeButProSaves": "On Free, those cost {fees} in order fees. Pro would have saved you {saves}.",
+    "freeIsRight": "On Free, those cost {fees} in order fees, so Free is the cheaper plan for you right now.",
+    "plans": {
+      "free": "Free",
+      "pro": "Pro"
+    },
+    "current": "Your plan",
+    "freePrice": "$0 a month",
+    "proPrice": "{amount} a month",
+    "noFee": "no",
+    "feeLine": "{fee} order fee",
+    "creditsLine": "{count, number} AI credits a month",
+    "unlimited": "Unlimited products and orders",
+    "everythingElse": "Every other feature, on both plans",
+    "upgrade": "Move to Pro",
+    "topUpFirst": "Top up your wallet",
+    "needBalance": "Pro costs {amount} from your wallet. You have {balance}.",
+    "cancel": "Cancel Pro",
+    "resume": "Keep Pro",
+    "resumed": "Pro will keep renewing.",
+    "upgraded": "You're on Pro.",
+    "cancelled": "Pro won't renew.",
+    "creditsTitle": "AI credits",
+    "creditsHelp": "Each AI action uses 1 credit. Everyone on your account shares them.",
+    "monthlyLeft": "{left, number} of {total, number} monthly credits left.",
+    "purchasedLeft": "Plus {count, number} bought credits, which don't expire.",
+    "resetsFree": "Monthly credits reset on the 1st.",
+    "fewerPacks": "Fewer credits",
+    "morePacks": "More credits",
+    "creditsCount": "{count, number} credits",
+    "buy": "Buy for {amount}",
+    "bought": "Added {count, number} credits.",
+    "buyNote": "Paid from your wallet.",
+    "back": "Go back",
+    "confirmUpgradeTitle": "Pay {amount} from your wallet?",
+    "confirmUpgradeBody": "Pro starts now and renews every month from your wallet. You can cancel any time.",
+    "confirmCancelTitle": "Cancel Pro?",
+    "confirmCancelBody": "You keep Pro until {date}, then move to Free. There's no refund for the current month.",
+    "errors": {
+      "insufficient_balance": "Your wallet doesn't have enough. Top up and try again.",
+      "not_live": "This isn't available yet.",
+      "unauthorized": "You can't change this account.",
+      "generic": "That didn't work. Try again."
+    }
+  },
   "planUsage": {
     "description": "Your plan decides how many stores you can run and which tools you get.",
     "currentPlan": "Current plan",
@@ -4567,6 +4624,7 @@
     }
   },
   "storeWallet": {
+    "pageDescriptionUsd": "Your wallet pays Tallaby's {fee} fee on each order on the Free plan, and Pro and AI credits. Top up any time, paid in EGP.",
     "topUp": {
       "button": "Top up",
       "title": "Top up your store wallet",
@@ -4646,6 +4704,7 @@
       }
     },
     "manualTopUp": {
+    "limitsUsd": "From $5 to $1,000. You pay in EGP at the rate shown.",
       "button": "Top up wallet",
       "title": "Top up wallet",
       "description": "Transfer the amount from your wallet or bank, then upload a picture of the receipt.",
@@ -4660,6 +4719,8 @@
         "increase": "Increase",
         "methods": "Transfer with:",
         "summary": {
+          "rate": "Rate",
+          "tax": "Tax",
           "amount": "Top-up amount",
           "fee": "Top-up fee",
           "free": "Free",
@@ -5444,6 +5505,18 @@
       "welcome_gift_expiring": {
         "title": "Your gift ends soon",
         "body": "{amount} of your welcome gift is left. It expires in 3 days."
+      },
+      "plan_renewed": {
+        "title": "Pro renewed",
+        "body": "Your wallet paid for another month of Pro."
+      },
+      "plan_renewal_failed": {
+        "title": "Pro couldn't renew",
+        "body": "Your wallet doesn't have enough. Top up within 3 days to keep Pro."
+      },
+      "plan_ended": {
+        "title": "You're on Free now",
+        "body": "Your Pro plan has ended."
       },
       "welcome_gift_expired": {
         "title": "Welcome gift ended",

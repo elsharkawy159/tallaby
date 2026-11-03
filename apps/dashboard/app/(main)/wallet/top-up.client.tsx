@@ -39,9 +39,10 @@ import { BUTTON_CLASS, FIELD_CLASS } from "@/components/form/form-ui";
 import { CURRENCY_CODE } from "@/components/form/currency-input";
 import { uploadOwnFolderFile } from "@/components/inputs/use-seller-upload";
 import { PaymentMethodLogo } from "@/components/payments/payment-method-logo";
-import { formatMoney } from "@/lib/i18n/format";
+import { formatMoney, formatWalletMoney } from "@/lib/i18n/format";
 import { cn } from "@/lib/utils";
-import { POPULAR_TOP_UP, TOP_UP_PRESETS, TOP_UP_STEP_EGP, ordersCovered, stepTopUpAmount } from "./store-wallet.lib";
+import { minorToAmount, parseUsdTopUp, quoteTopUp, type BillingState } from "@workspace/lib/billing";
+import { POPULAR_TOP_UP, POPULAR_TOP_UP_USD, TOP_UP_PRESETS, TOP_UP_PRESETS_USD, TOP_UP_STEP_EGP, TOP_UP_STEP_USD, ordersCovered, stepTopUpAmount, stepUsdTopUp } from "./store-wallet.lib";
 import { submitManualTopUp } from "./top-up.server";
 
 const STEPS = ["method", "transfer", "receipt"] as const;
@@ -68,7 +69,10 @@ export function TopUpPanel({
   balance,
   disabled,
   defaultOpen,
+  billing,
 }: {
+  /** Set once the wallet is in USD (0136): priced in dollars, paid in EGP. */
+  billing?: BillingState | null;
   sellerId: string;
   /** The current balance, for "balance after the top-up". */
   balance: number;
@@ -86,7 +90,8 @@ export function TopUpPanel({
 
   const [open, setOpen] = useState(Boolean(defaultOpen) && !disabled);
   const [step, setStep] = useState<Step>("method");
-  const [amount, setAmount] = useState("250");
+  const usd = Boolean(billing?.usdLive);
+  const [amount, setAmount] = useState(usd ? "10" : "250");
   const [method, setMethod] = useState<ManualTopUpMethod>("vodafone_cash");
   const [senderPhone, setSenderPhone] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -95,9 +100,19 @@ export function TopUpPanel({
   const [copied, setCopied] = useState<"number" | "amount" | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  const parsed = parseStoreTopUpAmount(amount);
+  const usdParsed = usd ? parseUsdTopUp(amount) : null;
+  const quote = usdParsed?.success && billing ? quoteTopUp(usdParsed.usdCents, billing) : null;
+  // Whichever mode: `parsed.amount` is what the seller typed, `money` is the EGP to send.
+  const parsed: ReturnType<typeof parseStoreTopUpAmount> = !usd
+    ? parseStoreTopUpAmount(amount)
+    : usdParsed?.success
+      ? quote
+        ? { success: true, piastres: quote.totalPiastres, amount: minorToAmount(usdParsed.usdCents) }
+        : { success: false, error: "invalid" }
+      : { success: false, error: usdParsed?.error ?? "invalid" };
   const value = Number(amount) || 0;
-  const money = parsed.success ? formatMoney(parsed.amount, locale) : "";
+  const money = !parsed.success ? "" : quote ? formatMoney(quote.totalPiastres / 100, locale) : formatMoney(parsed.amount, locale);
+  const credited = parsed.success ? formatWalletMoney(parsed.amount, usd ? "USD" : "EGP", locale) : "—";
   const account = TALLABY_TOP_UP_ACCOUNTS[method];
   const methodLabel = t(`methods.${method}.name`);
   // Only a typed amount gets an error; an empty field just shows the limits.
@@ -199,7 +214,7 @@ export function TopUpPanel({
           <fieldset disabled={disabled}>
             <legend className="mb-2 text-[13px] font-semibold">{t("panel.presets")}</legend>
             <div className="grid grid-cols-2 gap-2 pt-2 sm:grid-cols-3 xl:grid-cols-5 sm:gap-2.5">
-              {TOP_UP_PRESETS.map((preset) => {
+              {(usd ? TOP_UP_PRESETS_USD : TOP_UP_PRESETS).map((preset) => {
                 const selected = value === preset;
                 return (
                   <button
@@ -212,7 +227,7 @@ export function TopUpPanel({
                       selected ? "border-primary bg-primary-soft" : "hover:border-input hover:bg-muted/40",
                     )}
                   >
-                    {preset === POPULAR_TOP_UP && (
+                    {preset === (usd ? POPULAR_TOP_UP_USD : POPULAR_TOP_UP) && (
                       <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-accent px-2 text-[10.5px] font-bold leading-5 text-accent-foreground">
                         {t("panel.popular")}
                       </span>
@@ -223,10 +238,10 @@ export function TopUpPanel({
                       </span>
                     )}
                     <bdi dir="ltr" className={cn("text-lg font-extrabold tabular-nums sm:text-xl", selected && "text-primary-ink")}>
-                      {preset.toLocaleString("en-US")}
+                      {usd ? "$" : ""}{preset.toLocaleString("en-US")}
                     </bdi>
                     <span className="text-[11.5px] text-muted-foreground">
-                      {t("panel.approxOrders", { count: ordersCovered(preset) })}
+                      {t("panel.approxOrders", { count: ordersCovered(preset, usd ? "USD" : "EGP") })}
                     </span>
                   </button>
                 );
@@ -247,7 +262,7 @@ export function TopUpPanel({
               )}
             >
               <span className="flex items-center border-e bg-muted/40 px-4 font-mono text-sm font-semibold text-muted-foreground">
-                {CURRENCY_CODE}
+                {usd ? "USD" : CURRENCY_CODE}
               </span>
               <input
                 ref={amountInput}
@@ -263,8 +278,8 @@ export function TopUpPanel({
               />
               {(
                 [
-                  [-TOP_UP_STEP_EGP, Minus, "panel.decrease"],
-                  [TOP_UP_STEP_EGP, Plus, "panel.increase"],
+                  [usd ? -TOP_UP_STEP_USD : -TOP_UP_STEP_EGP, Minus, "panel.decrease"],
+                  [usd ? TOP_UP_STEP_USD : TOP_UP_STEP_EGP, Plus, "panel.increase"],
                 ] as const
               ).map(([delta, Icon, label]) => (
                 <button
@@ -272,7 +287,7 @@ export function TopUpPanel({
                   type="button"
                   disabled={disabled}
                   aria-label={t(label)}
-                  onClick={() => setAmount(String(stepTopUpAmount(value, delta)))}
+                  onClick={() => setAmount(String(usd ? stepUsdTopUp(value, delta) : stepTopUpAmount(value, delta)))}
                   className="grid w-11 place-items-center border-s text-muted-foreground hover:bg-muted/40 hover:text-foreground"
                 >
                   <Icon className="size-[18px]" aria-hidden />
@@ -280,7 +295,7 @@ export function TopUpPanel({
               ))}
             </div>
             <p id={`${ids}-amount-hint`} className={cn("mt-1.5 text-xs", amountError ? "text-destructive" : "text-muted-foreground")}>
-              {amountError ?? t("limits")}
+              {amountError ?? (usd ? t("limitsUsd") : t("limits"))}
             </p>
           </div>
 
@@ -296,8 +311,17 @@ export function TopUpPanel({
         </div>
 
         <aside className="flex flex-col gap-3 border-s bg-muted/30 p-6 max-lg:hidden">
-          <SummaryRow label={t("panel.summary.amount")} value={total} />
-          <SummaryRow label={t("panel.summary.fee")} value={t("panel.summary.free")} />
+          <SummaryRow label={t("panel.summary.amount")} value={usd ? credited : total} />
+          {quote && (
+            <SummaryRow
+              label={t("panel.summary.rate")}
+              value={`$1 = ${formatMoney(quote.rate, locale)}`}
+            />
+          )}
+          {quote && quote.taxPiastres > 0 && (
+            <SummaryRow label={t("panel.summary.tax")} value={formatMoney(quote.taxPiastres / 100, locale)} />
+          )}
+          {!usd && <SummaryRow label={t("panel.summary.fee")} value={t("panel.summary.free")} />}
           <div className="flex items-baseline justify-between gap-3 border-t border-dashed pt-3 font-semibold">
             <span className="whitespace-nowrap">{t("panel.summary.total")}</span>
             <bdi dir="ltr" className="whitespace-nowrap text-[22px] font-extrabold tabular-nums">
@@ -308,7 +332,7 @@ export function TopUpPanel({
             <TrendingUp className="size-[15px] shrink-0" aria-hidden />
             {t("panel.summary.after")}
             <bdi dir="ltr" className="font-semibold text-success tabular-nums">
-              {parsed.success ? formatMoney(balance + Number(parsed.amount), locale) : "—"}
+              {parsed.success ? formatWalletMoney(balance + Number(parsed.amount), usd ? "USD" : "EGP", locale) : "—"}
             </bdi>
           </p>
           <Button type="button" variant="accent" className="h-[50px] w-full rounded-[14px] text-[15px] font-semibold" disabled={!canStart} onClick={start}>

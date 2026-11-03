@@ -43,7 +43,8 @@ export default async function DashboardLayout({
   }
 
   // sellers.id = users.id; the header shows the store wallet balance.
-  const walletBalance = user ? await getStoreWalletBalance(user.id) : null;
+  const wallet = user ? await getStoreWalletBalance(user.id) : null;
+  const walletBalance = wallet?.balance ?? null;
   const askHeardAboutUs = user ? await needsHeardAboutUs(user.id) : false;
   const welcomeGift = user ? await loadWelcomeGiftWatch(user.id) : ({ state: "none" } as const);
   const storeLink = await getSelectedStoreLink().catch(() => null);
@@ -54,7 +55,7 @@ export default async function DashboardLayout({
 
       {/* Main Content Area */}
       <MainContentWrapper>
-        <DashboardHeader walletBalance={walletBalance} storeLink={storeLink} />
+        <DashboardHeader walletBalance={walletBalance} walletCurrency={wallet?.currency ?? "EGP"} storeLink={storeLink} />
         {access.status === "restricted" && (
           <div className="border-b border-amber-200 bg-amber-50 px-6 py-3 text-sm text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-200">
             <strong>{t("sellerStatus.restricted.title")}.</strong>{" "}
@@ -64,7 +65,7 @@ export default async function DashboardLayout({
         <DashboardMain>{children}</DashboardMain>
       </MainContentWrapper>
       <SupportWhatsAppButton />
-      <NegativeWalletDialog balance={walletBalance} />
+      <NegativeWalletDialog balance={walletBalance} currency={wallet?.currency ?? "EGP"} />
       {/* One pop-up at a time: a negative wallet is the more urgent one, then the welcome gift. */}
       <HeardAboutUsDialog
         show={askHeardAboutUs && !(walletBalance != null && walletBalance < 0) && welcomeGift.state !== "unseen"}

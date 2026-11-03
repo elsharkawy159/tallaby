@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { ChevronRight, Ellipsis, ExternalLink, Menu, Search, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { formatMoney } from "@/lib/i18n/format";
+import { formatWalletMoney } from "@/lib/i18n/format";
 import { useSidebarStore } from "@/stores";
 import { CommandPalette } from "./command-palette.client";
 import { resolveDashboardRoute } from "./dashboard-routes.lib";
@@ -24,9 +24,11 @@ const ICON_BUTTON =
 
 export function DashboardHeader({
   walletBalance,
+  walletCurrency,
   storeLink,
 }: {
   walletBalance: number | null;
+  walletCurrency: string;
   storeLink: { url: string; host: string } | null;
 }) {
   const t = useTranslations("header");
@@ -155,7 +157,7 @@ export function DashboardHeader({
         {walletBalance != null && (
           <Link
             href="/wallet"
-            title={t("walletBalance", { amount: formatMoney(walletBalance, locale) })}
+            title={t("walletBalance", { amount: formatWalletMoney(walletBalance, walletCurrency, locale) })}
             aria-current={pathname === "/wallet" ? "page" : undefined}
             className={cn(
               "flex h-9.5 shrink-0 items-center gap-2 rounded-[10px] border border-sidebar-border bg-sidebar-accent px-2.5 text-[13px] transition-colors hover:border-input focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
@@ -165,7 +167,7 @@ export function DashboardHeader({
             <Wallet className="size-4 shrink-0 text-muted-foreground" aria-hidden />
             <span className="hidden text-muted-foreground lg:inline">{t("walletLabel")}</span>
             <bdi dir="ltr" className={cn("font-semibold tabular-nums", walletBalance < 0 && "text-destructive")}>
-              {formatMoney(walletBalance, locale)}
+              {formatWalletMoney(walletBalance, walletCurrency, locale)}
             </bdi>
           </Link>
         )}

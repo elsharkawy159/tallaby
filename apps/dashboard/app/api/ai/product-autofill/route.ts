@@ -1,5 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server"
 import { aiConfigured, aiErrorKind, checkDailyCap, logAiUsage, modelIdForTier } from "@workspace/ai"
+import { db, eq, sellers } from "@workspace/db"
+import { isProActive } from "@workspace/lib/billing"
+import { claimAiCredit, getAiCreditStatus, refundAiCredit } from "@workspace/lib/billing/credits"
+import { getBillingState } from "@workspace/lib/billing/server"
 import { isAccessError, requireSeller } from "@/lib/auth/require-seller.server"
 import { createRateLimiter } from "@/lib/rate-limit.lib"
 import { autofillProduct } from "@/app/(main)/products/add/ai/ai-autofill.server"
@@ -17,6 +21,8 @@ import {
 export const maxDuration = 60
 
 // Bursts per instance; the daily cap below is the real, cross-instance limit.
+const PRO_DAILY_MULTIPLIER = 10
+
 const burstLimiter = createRateLimiter({ limit: 5, windowMs: 60_000 })
 
 const dailyLimit = () => {
@@ -33,6 +39,7 @@ const STATUS: Record<AutofillErrorCode, number> = {
   badFile: 415,
   rateLimited: 429,
   dailyLimit: 429,
+  noCredits: 402,
   busy: 503,
   timeout: 504,
   failed: 502,
@@ -81,8 +88,15 @@ export async function POST(request: NextRequest) {
   if (invalid) return fail(invalid)
 
   if (!burstLimiter.check(sellerId)) return fail("rateLimited")
+  // Once credits are on (0136, F-57), Pro's 2,000 a month needs a higher abuse guard.
+  const billing = await getBillingState().catch(() => null)
+  if (!billing) return fail("failed")
+  const planRow = billing.usdLive
+    ? (await db.select({ plan: sellers.plan, planExpiresAt: sellers.planExpiresAt, planGraceUntil: sellers.planGraceUntil }).from(sellers).where(eq(sellers.id, sellerId)))[0]
+    : null
+  const limit = planRow && isProActive(planRow) ? dailyLimit() * PRO_DAILY_MULTIPLIER : dailyLimit()
   // Fails closed: without the usage table (0110) there is no cap, so no AI.
-  const cap = await checkDailyCap(sellerId, AUTOFILL_FEATURE, dailyLimit()).catch((error: unknown) => {
+  const cap = await checkDailyCap(sellerId, AUTOFILL_FEATURE, limit).catch((error: unknown) => {
     console.error("[ai] daily cap check failed", error instanceof Error ? error.message : error)
     return null
   })
@@ -92,14 +106,40 @@ export async function POST(request: NextRequest) {
     return fail("dailyLimit")
   }
 
+  // Credits (F-57): take one before the call, give it back if it fails or was cached.
+  // Fails closed, like the cap: if credits can't be checked, no AI.
+  let creditReference: string | null = null
+  if (billing.usdLive) {
+    const claim = await claimAiCredit(sellerId, AUTOFILL_FEATURE).catch((error: unknown) => {
+      console.error("[ai] credit claim failed", error instanceof Error ? error.message : error)
+      return null
+    })
+    if (!claim) return fail("failed")
+    if (!claim.ok) {
+      await logAiUsage({ sellerId, feature: AUTOFILL_FEATURE, model: modelIdForTier("fast"), status: "blocked", errorCode: "no_credits" })
+      return fail("noCredits")
+    }
+    creditReference = claim.reference
+  }
+  const giveBack = async () => {
+    if (creditReference) await refundAiCredit(sellerId, creditReference).catch(() => {})
+  }
+
   try {
     const { output, cached } = await autofillProduct(sellerId, input)
+    if (cached) await giveBack()
+    const credits = billing.usdLive ? await getAiCreditStatus(sellerId).catch(() => null) : null
     return NextResponse.json<ProductAutofillResponse>({
       ok: true,
       // A cached answer made no model call, so it does not use up a call.
-      result: { output, remainingToday: Math.max(0, cap.remaining - (cached ? 0 : 1)) },
+      result: {
+        output,
+        remainingToday: Math.max(0, cap.remaining - (cached ? 0 : 1)),
+        ...(credits && { creditsRemaining: credits.total }),
+      },
     })
   } catch (error) {
+    await giveBack()
     // The usage rows (with the error codes) are written by generateStructured.
     console.error("[ai] product autofill failed", error instanceof Error ? error.message : error)
     // Every model was tried; tell the seller whether to wait or change the input.

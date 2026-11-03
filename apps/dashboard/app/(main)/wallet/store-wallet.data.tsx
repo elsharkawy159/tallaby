@@ -27,7 +27,8 @@ import {
   TableRow,
 } from "@workspace/ui/components/table";
 import { cn } from "@workspace/ui/lib/utils";
-import { formatDate, formatMoney } from "@/lib/i18n/format";
+import { getBillingState } from "@workspace/lib/billing/server";
+import { formatDate, formatMoney, formatWalletMoney } from "@/lib/i18n/format";
 import { translateStatus } from "@/lib/i18n/status";
 import {
   ENTRIES_PAGE_SIZE,
@@ -37,7 +38,7 @@ import {
   listStoreWalletEntries,
   type EntryFilter,
 } from "./store-wallet.server";
-import { FEE_PER_ORDER_EGP, ordersCovered } from "./store-wallet.lib";
+import { FEE_PER_ORDER_EGP, FEE_PER_ORDER_USD, ordersCovered } from "./store-wallet.lib";
 import { TopUpPanel } from "./top-up.client";
 
 /** The runway bar is full at this many orders. */
@@ -45,6 +46,7 @@ const RUNWAY_FULL_ORDERS = 200;
 
 /** Below this (EGP) the notice gets stronger (D21 / P6-08). Optional purchases stop at the wallet's limit. */
 const NEGATIVE_ALERT_EGP = -500;
+const NEGATIVE_ALERT_USD = -10;
 
 const signedClass = (value: number) =>
   value < 0
@@ -69,7 +71,7 @@ export async function StoreWalletSection({
   before: string | null;
   openTopUp?: boolean;
 }) {
-  const [overview, rows, topUps, gift, t, tStatus, locale] = await Promise.all([
+  const [overview, rows, topUps, gift, t, tStatus, locale, billing] = await Promise.all([
     getStoreWalletOverview(sellerId),
     listStoreWalletEntries(sellerId, { filter, before }),
     listManualStoreTopUps(sellerId),
@@ -78,8 +80,11 @@ export async function StoreWalletSection({
     getTranslations("storeWallet"),
     getTranslations("status"),
     getLocale(),
+    getBillingState(),
   ]);
   if (!overview) return null;
+  const usd = overview.currency === "USD";
+  const money = (value: string | number) => formatWalletMoney(value, overview.currency, locale);
 
   const balance = Number(overview.balance);
   const trial = getFeeTrialStatus({
@@ -87,7 +92,7 @@ export async function StoreWalletSection({
     feeTrialStartedAt: overview.trial.startedAt,
     feeTrialEndsAt: overview.trial.endsAt,
   });
-  const runway = ordersCovered(balance);
+  const runway = ordersCovered(balance, overview.currency);
   const entries = rows.slice(0, ENTRIES_PAGE_SIZE);
   const pendingTotal = topUps
     .filter((r) => r.status === "pending")
@@ -112,7 +117,7 @@ export async function StoreWalletSection({
     >
       {/* No page title: the header's breadcrumb already names the page. */}
       <p className="text-pretty text-muted-foreground">
-        {t("pageDescription", { fee: FEE_PER_ORDER_EGP })}
+        {usd ? t("pageDescriptionUsd", { fee: money(FEE_PER_ORDER_USD) }) : t("pageDescription", { fee: FEE_PER_ORDER_EGP })}
       </p>
 
       <div className="grid gap-4 lg:grid-cols-3">
@@ -140,7 +145,7 @@ export async function StoreWalletSection({
                   signedClass(balance),
                 )}
               >
-                {formatMoney(balance, locale)}
+                {money(balance)}
               </p>
               {pendingTotal > 0 && (
                 <p className="mb-1 inline-flex items-center gap-1.5 rounded-full bg-accent-soft px-2.5 py-0.5 text-xs font-medium text-accent-ink">
@@ -152,8 +157,8 @@ export async function StoreWalletSection({
               )}
               <p className="text-xs text-muted-foreground">
                 {t("thisMonth", {
-                  sales: formatMoney(Number(overview.salesThisMonth), locale),
-                  fees: formatMoney(Number(overview.feesThisMonth), locale),
+                  sales: money(Number(overview.salesThisMonth)),
+                  fees: money(Number(overview.feesThisMonth)),
                 })}
               </p>
             </div>
@@ -161,7 +166,7 @@ export async function StoreWalletSection({
           {balance < 0 && (
             <p className="mx-6 mb-6 flex gap-2 rounded-xl bg-destructive-soft p-3 text-[13px] text-destructive">
               <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden />
-              {balance <= NEGATIVE_ALERT_EGP
+              {balance <= (usd ? NEGATIVE_ALERT_USD : NEGATIVE_ALERT_EGP)
                 ? t("negativeStrong")
                 : t("negative")}
             </p>
@@ -190,7 +195,7 @@ export async function StoreWalletSection({
               <p className="flex gap-2 rounded-lg bg-success-soft p-2 text-success">
                 <Gift className="mt-0.5 size-4 shrink-0" aria-hidden />
                 {t("welcomeGiftActive", {
-                  amount: formatMoney(Number(gift.remaining), locale),
+                  amount: money(Number(gift.remaining)),
                   date: formatDate(gift.expiresAt, locale),
                 })}
               </p>
@@ -214,6 +219,7 @@ export async function StoreWalletSection({
       </div>
 
       <TopUpPanel
+              billing={usd ? billing : null}
         sellerId={sellerId}
         balance={balance}
         disabled={overview.status !== "active"}
@@ -372,7 +378,7 @@ export async function StoreWalletSection({
                       >
                         <bdi dir="ltr">
                           {amount > 0 ? "+" : ""}
-                          {formatMoney(amount, locale)}
+                          {formatWalletMoney(amount, entry.currency, locale)}
                         </bdi>
                       </TableCell>
                       <TableCell className="text-end tabular-nums text-muted-foreground">
@@ -380,7 +386,7 @@ export async function StoreWalletSection({
                           "—"
                         ) : (
                           <bdi dir="ltr">
-                            {formatMoney(Number(entry.balanceAfter), locale)}
+                            {formatWalletMoney(Number(entry.balanceAfter), entry.currency, locale)}
                           </bdi>
                         )}
                       </TableCell>

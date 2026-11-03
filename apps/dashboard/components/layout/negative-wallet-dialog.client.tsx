@@ -14,7 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@workspace/ui/components/dialog";
-import { formatMoney } from "@/lib/i18n/format";
+import { formatWalletMoney } from "@/lib/i18n/format";
 
 /** Per browser session: closing the pop-up hides it until the next session. */
 const DISMISSED_KEY = "tallaby:negative-wallet-dialog";
@@ -24,13 +24,14 @@ const DISMISSED_KEY = "tallaby:negative-wallet-dialog";
  * being taken from a zero or negative balance, PLAN.md §13.4). Shown once per
  * session and never on /wallet, where the balance and top-up are on screen.
  */
-export function NegativeWalletDialog({ balance }: { balance: number | null }) {
+export function NegativeWalletDialog({ balance, currency }: { balance: number | null; currency: string }) {
   const t = useTranslations("negativeWalletDialog");
   const locale = useLocale();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
-  const negative = balance != null && balance < 0;
+  // At a few cents a fee, a tiny debt isn't worth a pop-up asking for a $5 top-up.
+  const negative = balance != null && balance <= (currency === "USD" ? -1 : -0.01);
   const onWalletPage = pathname === "/wallet" || pathname.startsWith("/wallet/");
 
   useEffect(() => {
@@ -68,7 +69,7 @@ export function NegativeWalletDialog({ balance }: { balance: number | null }) {
         <p className="text-center text-sm text-muted-foreground">
           {t("balanceLabel")}{" "}
           <bdi dir="ltr" className="text-lg font-bold tabular-nums text-destructive">
-            {formatMoney(balance ?? 0, locale)}
+            {formatWalletMoney(balance ?? 0, currency, locale)}
           </bdi>
         </p>
         <DialogFooter className="gap-2 sm:justify-center">

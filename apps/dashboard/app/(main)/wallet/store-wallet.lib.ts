@@ -1,3 +1,4 @@
+import { FREE_ORDER_FEE_USD_CENTS, TOP_UP_MAX_USD_CENTS, TOP_UP_MIN_USD_CENTS } from "@workspace/lib/billing";
 import { STANDARD_FEE_MIN_PIASTRES } from "@workspace/lib/orders/platform-fee";
 import { STORE_TOP_UP_MAX_PIASTRES, STORE_TOP_UP_MIN_EGP } from "@workspace/lib/store-wallet";
 
@@ -13,9 +14,23 @@ export const POPULAR_TOP_UP = 500;
 /** The +/- buttons beside the amount field move by this much (EGP). */
 export const TOP_UP_STEP_EGP = 50;
 
-/** How many delivered orders an amount covers at the flat fee (none for zero or less). */
-export function ordersCovered(amountEgp: number): number {
-  return amountEgp > 0 ? Math.floor(amountEgp / FEE_PER_ORDER_EGP) : 0;
+/** USD wallet (0136): one-tap top-ups in dollars, and the +/- step. */
+export const TOP_UP_PRESETS_USD = [5, 10, 25, 50, 100] as const;
+export const POPULAR_TOP_UP_USD = 10;
+export const TOP_UP_STEP_USD = 5;
+export const FEE_PER_ORDER_USD = FREE_ORDER_FEE_USD_CENTS / 100;
+
+/** How many orders an amount covers at the flat fee (none for zero or less). */
+export function ordersCovered(amount: number, currency: string = "EGP"): number {
+  if (amount <= 0) return 0;
+  return currency === "USD"
+    ? Math.floor((Math.round(amount * 100)) / FREE_ORDER_FEE_USD_CENTS)
+    : Math.floor(amount / FEE_PER_ORDER_EGP);
+}
+
+/** The amount after a +/- tap on a USD top-up, kept within the limits. */
+export function stepUsdTopUp(current: number, delta: number): number {
+  return Math.min(TOP_UP_MAX_USD_CENTS / 100, Math.max(TOP_UP_MIN_USD_CENTS / 100, (current || 0) + delta));
 }
 
 /** The amount after a +/- tap, kept within the top-up limits. */

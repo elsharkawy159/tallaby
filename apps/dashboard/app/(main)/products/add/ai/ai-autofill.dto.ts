@@ -53,6 +53,7 @@ export type AutofillErrorCode =
   | "badFile"
   | "rateLimited"
   | "dailyLimit"
+  | "noCredits"
   | "busy"
   | "timeout"
   | "failed"
@@ -216,6 +217,8 @@ export type ProductAutofillOutput = Omit<
 export type ProductAutofillResult = {
   output: ProductAutofillOutput
   remainingToday: number
+  /** AI credits left on the account, once credits are on (F-57). */
+  creditsRemaining?: number
 }
 
 export type ProductAutofillResponse =

@@ -19,6 +19,21 @@ export function formatMoney(value: string | number | null | undefined, locale: s
   return formatPricePlain(Number.isFinite(num) ? num : 0, locale);
 }
 
+/** A store-wallet amount in the wallet's own currency (EGP until the USD switch, 0136). */
+export function formatWalletMoney(
+  value: string | number | null | undefined,
+  currency: string | null | undefined,
+  locale: string,
+) {
+  if (currency !== "USD") return formatMoney(value, locale);
+  const num = value == null ? 0 : Number(value);
+  const amount = new Intl.NumberFormat("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(Math.abs(Number.isFinite(num) ? num : 0));
+  return `${num < 0 ? "-" : ""}$${amount}`;
+}
+
 export function formatNumber(
   value: number,
   locale: string,

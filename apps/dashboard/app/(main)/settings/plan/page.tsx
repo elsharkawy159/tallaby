@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Check, Gem, Minus, Receipt, Store } from "lucide-react";
-import { db, eq, sellers } from "@workspace/db";
+import { and, db, eq, gte, orderItems, sellers, sql } from "@workspace/db";
+import { isProActive } from "@workspace/lib/billing";
+import { getAiCreditStatus } from "@workspace/lib/billing/credits";
+import { getBillingState } from "@workspace/lib/billing/server";
 import { FEE_TRIAL_DAYS, STANDARD_FEE_MIN_PIASTRES } from "@workspace/lib/orders";
 import { getPlanLimits, resolvePlanId, type PlanFeatures } from "@workspace/lib/plans";
 import { getFeeTrialStatus, type FeeTrialStatus } from "@workspace/lib/sellers";
@@ -12,6 +15,8 @@ import { Progress } from "@workspace/ui/components/progress";
 import { SectionCard } from "@/components/form/form-ui";
 import { requireSeller } from "@/lib/auth/require-seller.server";
 import { getSellerStores } from "@/lib/stores/current-store.server";
+import { getStoreWalletBalance } from "../../wallet/store-wallet.server";
+import { PlanLive } from "./plan-live.client";
 
 const FEATURES: (keyof PlanFeatures)[] = ["customDomain", "ai", "advancedSettings", "removeTallabyBadge"];
 
@@ -20,6 +25,7 @@ const FEATURES: (keyof PlanFeatures)[] = ["customDomain", "ai", "advancedSetting
  * from the plans module (@workspace/lib/plans). No prices until paid plans exist.
  */
 export default async function PlanPage() {
+  if ((await getBillingState()).usdLive) return <LivePlanPage />;
   const [seller, { stores, maxStores }, t] = await Promise.all([
     requireSeller(),
     getSellerStores(),
@@ -106,6 +112,42 @@ export default async function PlanPage() {
         </div>
       </SectionCard>
     </section>
+  );
+}
+
+/** Plan & usage once the new pricing is live (ROADMAP.md F-55e). */
+async function LivePlanPage() {
+  const seller = await requireSeller();
+  const since = new Date(Date.now() - 30 * 86_400_000).toISOString();
+  const [[row], credits, wallet, [orderCount]] = await Promise.all([
+    db
+      .select({
+        plan: sellers.plan,
+        planExpiresAt: sellers.planExpiresAt,
+        planGraceUntil: sellers.planGraceUntil,
+        planCancelAtPeriodEnd: sellers.planCancelAtPeriodEnd,
+        planAdminGranted: sellers.planAdminGranted,
+      })
+      .from(sellers)
+      .where(eq(sellers.id, seller.sellerId)),
+    getAiCreditStatus(seller.sellerId),
+    getStoreWalletBalance(seller.sellerId),
+    db
+      .select({ count: sql<number>`count(DISTINCT ${orderItems.orderId})::int` })
+      .from(orderItems)
+      .where(and(eq(orderItems.sellerId, seller.sellerId), gte(orderItems.createdAt, since))),
+  ]);
+  return (
+    <PlanLive
+      isPro={row ? isProActive(row) : false}
+      periodEnd={row?.planExpiresAt ?? null}
+      cancelAtPeriodEnd={row?.planCancelAtPeriodEnd ?? false}
+      graceUntil={row?.planGraceUntil ?? null}
+      adminGranted={row?.planAdminGranted ?? false}
+      credits={credits}
+      walletBalance={wallet?.balance ?? 0}
+      ordersLast30Days={orderCount?.count ?? 0}
+    />
   );
 }
 

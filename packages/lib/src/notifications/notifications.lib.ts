@@ -43,6 +43,10 @@ export const SELLER_NOTIFICATION_TYPES = [
   "low_stock",
   // A message from the Tallaby team, sent from Admin › Sellers (0131, F-06f)
   "admin_message",
+  // Pro renewal from the store wallet (0137, F-55d)
+  "plan_renewed",
+  "plan_renewal_failed",
+  "plan_ended",
 ] as const;
 export type SellerNotificationType = (typeof SELLER_NOTIFICATION_TYPES)[number];
 
@@ -142,6 +146,10 @@ export function sellerNotificationHref(n: Pick<NotificationItem, "type" | "data"
     case "welcome_gift_expiring":
     case "welcome_gift_expired":
       return "/wallet";
+    case "plan_renewed":
+    case "plan_renewal_failed":
+    case "plan_ended":
+      return "/settings/plan";
     case "question_received":
     case "review_received":
       return "/reviews";
