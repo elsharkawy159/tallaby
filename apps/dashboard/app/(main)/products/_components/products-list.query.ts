@@ -271,11 +271,22 @@ export async function loadOwnProductStatuses(sellerId: string, ids: string[]) {
 }
 
 /** Light product options for the ad picker: no variants or descriptions. */
-export async function listSellerProductOptions(sellerId: string) {
-  return db.query.products.findMany({
-    where: and(...baseConditions(sellerId)),
-    columns: { id: true, images: true, status: true, price: true },
-    with: { productTranslations: { columns: { locale: true, title: true } } },
-    orderBy: [desc(products.createdAt)],
-  });
+export async function listSellerProductOptions(sellerId: string, locale: string) {
+  // One title (this language, then English, then any) and one photo: all the picker shows.
+  return db
+    .select({
+      id: products.id,
+      price: products.price,
+      status: products.status,
+      image: sql<string | null>`${products.images}->>0`,
+      title: sql<string | null>`(
+        SELECT t.title FROM ${productTranslations} t
+        WHERE t.product_id = ${products.id}
+        ORDER BY (t.locale = ${locale}) DESC, (t.locale = 'en') DESC
+        LIMIT 1
+      )`,
+    })
+    .from(products)
+    .where(and(...baseConditions(sellerId)))
+    .orderBy(desc(products.createdAt));
 }

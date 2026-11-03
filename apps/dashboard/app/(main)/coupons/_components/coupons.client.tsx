@@ -43,7 +43,7 @@ import {
   type CouponStatus,
 } from "./coupons.lib";
 
-export function CouponsView({ coupons: initialCoupons, products, storeHost }: SellerCouponsPage) {
+export function CouponsView({ coupons: initialCoupons, storeHost }: SellerCouponsPage) {
   const t = useTranslations("coupons");
   const router = useRouter();
   const [coupons, setCoupons] = useState(initialCoupons);
@@ -78,7 +78,6 @@ export function CouponsView({ coupons: initialCoupons, products, storeHost }: Se
       open={editorOpen}
       onOpenChange={setEditorOpen}
       coupon={editing}
-      products={products}
       storeHost={storeHost}
       onSaved={() => router.refresh()}
     />

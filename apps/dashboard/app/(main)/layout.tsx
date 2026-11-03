@@ -13,7 +13,7 @@ import { getSellerAccess } from "@/lib/auth/seller-access";
 import { getSelectedStoreLink } from "@/lib/stores/store-link.server";
 import { SetupPrompts } from "./_components/setup-prompts.client";
 import { getStoreWalletBalance } from "./wallet/store-wallet.server";
-import { createClient } from "@/supabase/server";
+import { getSessionUser } from "@/lib/auth/session.server";
 import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 
@@ -24,10 +24,7 @@ export default async function DashboardLayout({
 }) {
   // The proxy guarantees a session; this gate decides whether that session
   // belongs to a seller who may use the dashboard right now.
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getSessionUser();
   const access = user
     ? await getSellerAccess(user.id)
     : ({ allowed: false, reason: "no_seller" } as const);
@@ -44,11 +41,13 @@ export default async function DashboardLayout({
   }
 
   // sellers.id = users.id; the header shows the store wallet balance.
-  const wallet = user ? await getStoreWalletBalance(user.id) : null;
+  const [wallet, askHeardAboutUs, welcomeGift, storeLink] = await Promise.all([
+    user ? getStoreWalletBalance(user.id) : null,
+    user ? needsHeardAboutUs(user.id) : false,
+    user ? loadWelcomeGiftWatch(user.id) : ({ state: "none" } as const),
+    getSelectedStoreLink().catch(() => null),
+  ]);
   const walletBalance = wallet?.balance ?? null;
-  const askHeardAboutUs = user ? await needsHeardAboutUs(user.id) : false;
-  const welcomeGift = user ? await loadWelcomeGiftWatch(user.id) : ({ state: "none" } as const);
-  const storeLink = await getSelectedStoreLink().catch(() => null);
 
   return (
     <div className="min-h-screen flex w-full overflow-x-clip bg-background">

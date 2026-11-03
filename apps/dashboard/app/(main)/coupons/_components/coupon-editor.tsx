@@ -20,7 +20,6 @@ import { Spinner } from "@workspace/ui/components/spinner";
 import { cn } from "@workspace/ui/lib/utils";
 import {
   saveSellerCoupon,
-  type CouponProductOption,
   type SellerCouponRow,
 } from "@/actions/coupons";
 import { formatDate } from "@/lib/i18n/format";
@@ -45,13 +44,12 @@ type Props = {
   onOpenChange: (open: boolean) => void;
   /** The coupon being edited; null opens a blank form. */
   coupon: SellerCouponRow | null;
-  products: CouponProductOption[];
   /** Unused while "Where it works" is hidden (owner, 2026-10-28). */
   storeHost: string | null;
   onSaved: () => void;
 };
 
-export function CouponEditor({ open, onOpenChange, coupon, products, onSaved }: Props) {
+export function CouponEditor({ open, onOpenChange, coupon, onSaved }: Props) {
   const t = useTranslations("coupons.form");
   const tErrors = useTranslations("coupons.errors");
   const tRow = useTranslations("coupons.row");
@@ -284,7 +282,6 @@ export function CouponEditor({ open, onOpenChange, coupon, products, onSaved }: 
               </RadioGroup>
               {form.productScope === "selected" && (
                 <CouponProductPicker
-                  products={products}
                   selectedIds={form.productIds}
                   onChange={(next) => set("productIds", next)}
                   invalid={!!errors.productIds}

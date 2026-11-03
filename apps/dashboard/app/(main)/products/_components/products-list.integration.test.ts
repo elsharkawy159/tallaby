@@ -150,9 +150,11 @@ describe.skipIf(!TEST_DATABASE_URL)("products list (integration)", { timeout: 60
 
   it("keeps the ad picker light", async () => {
     const { listSellerProductOptions } = await load();
-    const options = (await listSellerProductOptions(sellerId)).filter((p) => (mine as string[]).includes(p.id));
+    const options = (await listSellerProductOptions(sellerId, "ar")).filter((p) => (mine as string[]).includes(p.id));
     expect(options).toHaveLength(3);
-    expect(Object.keys(options[0]!).sort()).toEqual(["id", "images", "price", "productTranslations", "status"]);
+    expect(Object.keys(options[0]!).sort()).toEqual(["id", "image", "price", "status", "title"]);
+    expect(options.find((p) => p.id === ids.a)?.title).toBe(`ألف ${run}`);
+    expect(options.find((p) => p.id === ids.b)?.title).toBe(`Apple ${run} 50%`);
   });
 
 });

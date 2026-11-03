@@ -1,38 +1,66 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Check, ImageOff, Search } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Input } from "@workspace/ui/components/input";
 import { cn } from "@workspace/ui/lib/utils";
-import type { CouponProductOption } from "@/actions/coupons";
+import { searchCouponProducts, type CouponProductOption } from "@/actions/coupons";
 import { formatMoney } from "@/lib/i18n/format";
 import { RemoteImage } from "@/components/media/remote-image";
 
 type Props = {
-  products: CouponProductOption[];
   selectedIds: string[];
   onChange: (ids: string[]) => void;
   invalid?: boolean;
 };
 
 const SEARCH_THRESHOLD = 6;
+const SEARCH_DEBOUNCE_MS = 300;
 
-export function CouponProductPicker({ products, selectedIds, onChange, invalid }: Props) {
+export function CouponProductPicker({ selectedIds, onChange, invalid }: Props) {
   const t = useTranslations("coupons.form");
   const locale = useLocale();
   const [query, setQuery] = useState("");
   const selected = useMemo(() => new Set(selectedIds), [selectedIds]);
 
-  const visible = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return products.filter((p) => !q || p.title.toLowerCase().includes(q));
-  }, [products, query]);
+  // The picker loads products as the seller types, not the whole catalog with the page.
+  const [visible, setVisible] = useState<CouponProductOption[] | null>(null);
+  const [showSearch, setShowSearch] = useState(false);
+  const firstLoad = useRef(true);
+  const selectedRef = useRef(selectedIds);
+  selectedRef.current = selectedIds;
+  const search = query.trim();
+
+  useEffect(() => {
+    let live = true;
+    const timer = setTimeout(
+      () => {
+        searchCouponProducts({ query: search, selectedIds: selectedRef.current })
+          .then((found) => {
+            if (!live) return;
+            setVisible(found);
+            if (!search && found.length > SEARCH_THRESHOLD) setShowSearch(true);
+          })
+          .catch(() => live && setVisible((current) => current ?? []));
+      },
+      firstLoad.current ? 0 : SEARCH_DEBOUNCE_MS,
+    );
+    firstLoad.current = false;
+    return () => {
+      live = false;
+      clearTimeout(timer);
+    };
+  }, [search]);
 
   const toggle = (id: string) =>
     onChange(selected.has(id) ? selectedIds.filter((x) => x !== id) : [...selectedIds, id]);
 
-  if (products.length === 0) {
+  if (visible === null) {
+    return <div className="h-32 animate-pulse rounded-lg bg-muted" aria-busy />;
+  }
+
+  if (visible.length === 0 && !search && !showSearch) {
     return (
       <p className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
         {t("noProducts")}
@@ -48,7 +76,7 @@ export function CouponProductPicker({ products, selectedIds, onChange, invalid }
             ? t("selectedCount", { count: selectedIds.length })
             : t("selectedProductsHint")}
         </p>
-        {products.length > SEARCH_THRESHOLD && (
+        {showSearch && (
           <div className="relative w-full sm:w-56">
             <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input

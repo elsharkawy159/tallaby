@@ -17,7 +17,7 @@ import {
   isCouponPopupTrigger,
   type CouponPopupTrigger,
 } from "@workspace/lib/orders/coupon-popup";
-import { and, desc, eq, inArray, isNull, sql } from "drizzle-orm";
+import { and, desc, eq, exists, ilike, inArray, isNull, or, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { getLocale } from "next-intl/server";
 import { z } from "zod";
@@ -55,7 +55,6 @@ export type CouponProductOption = {
 
 export type SellerCouponsPage = {
   coupons: SellerCouponRow[];
-  products: CouponProductOption[];
   storeHost: string | null;
 };
 
@@ -160,11 +159,9 @@ function toRow(
 /** Everything the coupons page needs, in one round trip. */
 export async function getSellerCouponsPage(): Promise<SellerCouponsPage> {
   const sellerId = await getSellerId();
-  if (!sellerId) return { coupons: [], products: [], storeHost: null };
+  if (!sellerId) return { coupons: [], storeHost: null };
 
-  const locale = await getLocale();
-
-  const [couponRows, discountRows, productRows, seller] = await Promise.all([
+  const [couponRows, discountRows, seller] = await Promise.all([
     db.query.coupons.findMany({
       where: eq(coupons.sellerId, sellerId),
       orderBy: [desc(coupons.createdAt)],
@@ -178,18 +175,6 @@ export async function getSellerCouponsPage(): Promise<SellerCouponsPage> {
       .innerJoin(coupons, eq(coupons.id, couponUsage.couponId))
       .where(eq(coupons.sellerId, sellerId))
       .groupBy(couponUsage.couponId),
-    // The picker shows one title and one photo, so only those leave the database.
-    db
-      .select({
-        id: products.id,
-        price: products.price,
-        status: products.status,
-        image: sql<string | null>`${products.images}->>0`,
-        title: sql<string | null>`(SELECT t.title FROM ${productTranslations} t WHERE t.product_id = ${products.id} ORDER BY (t.locale = ${locale}) DESC LIMIT 1)`,
-      })
-      .from(products)
-      .where(and(eq(products.sellerId, sellerId), isNull(products.deletedAt)))
-      .orderBy(desc(products.createdAt)),
     db.query.sellers.findFirst({
       where: eq(sellers.id, sellerId),
       columns: { subdomain: true },
@@ -202,17 +187,82 @@ export async function getSellerCouponsPage(): Promise<SellerCouponsPage> {
 
   return {
     coupons: couponRows.map((c) => toRow(c, discountByCoupon.get(c.id) ?? 0)),
-    products: productRows.map((p) => ({
-      id: p.id,
-      title: p.title ?? "",
-      image: p.image,
-      price: parsePriceJson(p.price).final ?? null,
-      isActive: p.status === "active",
-    })),
     storeHost: seller?.subdomain
       ? `${seller.subdomain}.${STORE_ROOT_DOMAIN}`
       : null,
   };
+}
+
+const COUPON_PICKER_LIMIT = 40;
+
+/**
+ * The coupon product picker, loaded as the seller types: the newest products
+ * matching a title in either language or the SKU, plus (with no search) the
+ * already-chosen ones so they stay visible. Own products only; ids from the
+ * client just narrow that.
+ */
+export async function searchCouponProducts(input: {
+  query?: string;
+  selectedIds?: string[];
+}): Promise<CouponProductOption[]> {
+  const sellerId = await getSellerId();
+  if (!sellerId) return [];
+
+  const locale = await getLocale();
+  const text = String(input?.query ?? "").trim().slice(0, 100);
+  const selected = text ? [] : z.array(z.string().uuid()).max(500).catch([]).parse(input?.selectedIds);
+  const pattern = `%${text.replace(/[\\%_]/g, (c) => `\\${c}`)}%`;
+
+  const fields = {
+    id: products.id,
+    price: products.price,
+    status: products.status,
+    image: sql<string | null>`${products.images}->>0`,
+    title: sql<string | null>`(SELECT t.title FROM ${productTranslations} t WHERE t.product_id = ${products.id} ORDER BY (t.locale = ${locale}) DESC LIMIT 1)`,
+  };
+  const own = and(eq(products.sellerId, sellerId), isNull(products.deletedAt));
+
+  const [chosen, found] = await Promise.all([
+    selected.length
+      ? db.select(fields).from(products).where(and(own, inArray(products.id, selected)))
+      : Promise.resolve([]),
+    db
+      .select(fields)
+      .from(products)
+      .where(
+        and(
+          own,
+          text
+            ? or(
+                ilike(products.sku, pattern),
+                exists(
+                  db
+                    .select({ one: sql`1` })
+                    .from(productTranslations)
+                    .where(and(eq(productTranslations.productId, products.id), ilike(productTranslations.title, pattern))),
+                ),
+              )
+            : undefined,
+        ),
+      )
+      .orderBy(desc(products.createdAt))
+      .limit(COUPON_PICKER_LIMIT),
+  ]);
+
+  const seen = new Set<string>();
+  return [...chosen, ...found].flatMap((p) => {
+    if (seen.has(p.id)) return [];
+    seen.add(p.id);
+    return [
+      {
+        id: p.id,
+        title: p.title ?? "",
+        image: p.image,
+        price: parsePriceJson(p.price).final ?? null,
+        isActive: p.status === "active",
+      },
+    ];
+  });
 }
 
 /** Creates a coupon, or updates one when `couponId` is given. */
