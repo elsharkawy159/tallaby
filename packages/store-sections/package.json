@@ -43,6 +43,10 @@
       "types": "./src/templates/demo-product.ts",
       "default": "./src/templates/demo-product.ts"
     },
+    "./image-size": {
+      "types": "./src/elements/image-size.ts",
+      "default": "./src/elements/image-size.ts"
+    },
     "./low-stock": {
       "types": "./src/core/low-stock.ts",
       "default": "./src/core/low-stock.ts"

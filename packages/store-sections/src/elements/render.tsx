@@ -69,7 +69,7 @@ import { ProductFlags, hasProductFlags } from "./product-flags";
 import { SocialIcon } from "../social/icon";
 import { contactRowGone, storeSocialLinks, withStoreContact } from "./store-contact";
 import { PaymentLogo, storePayments } from "./store-payments";
-import { normalizeStyle } from "./style";
+import { isBannerPhoto, normalizeStyle } from "./style";
 import { REVEAL_CHOICES, REVEAL_MAX_STEP, marqueeSeconds, type RevealChoice, type RevealVariant } from "./motion";
 import { CountdownElement } from "./countdown";
 
@@ -633,7 +633,8 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
       if (!url) {
         return ctx.mode === "edit" ? <div {...attrs} aria-hidden className="block w-full bg-(--sf-shelf)" /> : null;
       }
-      const sizes = typeof props.bind === "string" ? IMAGE_SIZES.card : IMAGE_SIZES.content;
+      // A banner runs the full screen width: capped at the page width, the browser picked a file too small and it looked soft on wide screens.
+      const sizes = isBannerPhoto(node) ? IMAGE_SIZES.full : typeof props.bind === "string" ? IMAGE_SIZES.card : IMAGE_SIZES.content;
       const secondUrl = typeof props.secondSrc === "string" ? ctx.imageUrl(props.secondSrc) : null;
       if (secondUrl) {
         // Both photos overlap; hovering the card fades the first one out to show the second.

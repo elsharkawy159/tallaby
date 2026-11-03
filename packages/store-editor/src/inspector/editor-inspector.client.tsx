@@ -38,6 +38,7 @@ import { applyPresetDesign, currentPreset, distinctDesigns, fieldGroups } from "
 import { addItem, newId, readItemProp, readProp, removeItem, setItemProp, setSectionProp } from "../lib/editor.lib";
 import { placeItem } from "../lib/editor-slots.lib";
 import { partField, readNodeProp, readPart, setNodeProp, writePart } from "../lib/editor-selection.lib";
+import { recommendedImageSize } from "@workspace/store-sections/image-size";
 import { EditorImage } from "../media/editor-image";
 
 type Catalog = {
@@ -867,6 +868,8 @@ export function ElementInspector({
       </FieldRow>
     );
   };
+  // A product's or category's own photo isn't uploaded here, so a size means nothing for it.
+  const imageSize = node.type === "image" && typeof node.props.bind !== "string" ? recommendedImageSize(node) : null;
   // Items that only live in this element (playlist videos) are added here, not from the palette.
   const itemType = definition.childTypes?.length === 1 && !PALETTE_TYPES.includes(definition.childTypes[0]!) ? definition.childTypes[0]! : null;
   const itemDefinition = itemType ? getElementDefinition(itemType) : undefined;
@@ -890,6 +893,11 @@ export function ElementInspector({
           </div>
         )}
         {main.length > 0 && <div className="space-y-4">{main.map(renderField)}</div>}
+        {imageSize && (
+          <p className="text-xs text-muted-foreground">
+            {t(imageSize.cropsOnPhones ? "imageSizeCrop" : "imageSize", { size: `${imageSize.width}×${imageSize.height}` })}
+          </p>
+        )}
         {data.length > 0 && <FieldGroup title={t("groups.data")}>{data.map(renderField)}</FieldGroup>}
         {itemType && itemDefinition && (
           <div className="space-y-1.5">

@@ -255,7 +255,7 @@ export function DesignSystemEditor({
           <LogoField value={brand.logoUrl} onChange={(logoUrl) => setBrand((b) => ({ ...b, logoUrl }))} name={store.name} disabled={readOnly || savingBrand} />
           <FaviconField value={brand.faviconUrl} onChange={(faviconUrl) => setBrand((b) => ({ ...b, faviconUrl }))} disabled={readOnly || savingBrand} />
           {/* Only a theme whose hero has photos gets banners (owner, 2026-10-31). */}
-          {heroBanners && <HeroBannerList kind={heroBanners.hero.kind} value={banners} onChange={setBanners} disabled={readOnly || savingBrand || conflict} />}
+          {heroBanners && <HeroBannerList kind={heroBanners.hero.kind} size={heroBanners.hero.size} value={banners} onChange={setBanners} disabled={readOnly || savingBrand || conflict} />}
           <div className="flex justify-end">
             <Button type="button" className={BUTTON_CLASS} disabled={readOnly || savingBrand || !brandDirty} onClick={onSaveBrand}>
               {savingBrand ? <LoaderCircle className="animate-spin" /> : <Save />}

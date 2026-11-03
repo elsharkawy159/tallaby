@@ -448,7 +448,7 @@ function hiddenRule(selector: string, mode: StyleCssMode): string {
   return mode === "edit" ? `${selector}{opacity:0.35;outline:1px dashed currentColor}` : `${selector}{display:none!important}`;
 }
 
-type Responsive = { base?: StyleValues; tablet?: StyleValues; mobile?: StyleValues; sectionRoot?: boolean };
+type Responsive = { base?: StyleValues; tablet?: StyleValues; mobile?: StyleValues; sectionRoot?: boolean; capHeight?: boolean };
 
 function collect(target: Map<string, Responsive>, selector: string, slot: "base" | StyleBreakpoint, style: StyleValues | undefined) {
   if (!style || !Object.keys(style).length) return;
@@ -476,18 +476,46 @@ export function fallbackTabletColumns(type: string, columns: number | undefined)
   return LIST_TYPES.has(type) || columns >= 6 ? 3 : 2;
 }
 
+/**
+ * A full-width banner photo: a 21:9 image, as in the hero and promo designs
+ * (ROADMAP.md F-50a). Saved trees keep their style, so what these need on
+ * other screens is added when the page's CSS is built, for every store:
+ * - no tablet ratio of its own: 16:9 there, since 21:9 on an 800px tablet is
+ *   only 340px tall, too short for a hero's copy, which then gets clipped;
+ * - never taller than the screen: a 3:4 or 9:16 phone frame is over 1000px tall
+ *   on a phone held sideways or a small tablet.
+ */
+export function isBannerPhoto(node: Pick<ComponentNode, "type" | "style">): boolean {
+  return node.type === "image" && normalizeStyle(node.style).aspectRatio === "banner";
+}
+
+const BANNER_MAX_HEIGHT = "max-height:100vh;max-height:100svh";
+
+/**
+ * An image framed by a ratio or a height but given no fit would stretch (the
+ * browser's default is `fill`), so it crops instead. Any fit it sets is kept.
+ */
+function fallbackObjectFit(node: Pick<ComponentNode, "type">, styles: readonly (StyleValues | undefined)[]): "cover" | undefined {
+  if (node.type !== "image" || styles.some((style) => style?.objectFit)) return undefined;
+  return styles.some((style) => style?.aspectRatio || style?.minHeight) ? "cover" : undefined;
+}
+
 function collectNodes(target: Map<string, Responsive>, sectionId: string, nodes: ComponentNode[] | undefined, depth = 0) {
   for (const node of nodes ?? []) {
     if (ID_RE.test(node.id)) {
       const selector = nodeSelector(sectionId, node);
       const base = normalizeStyle(node.style);
-      collect(target, selector, "base", base);
       const bps = normalizeBreakpointStyles(node.breakpointStyles, normalizeStyle);
+      const objectFit = fallbackObjectFit(node, [base, bps.tablet, bps.mobile]);
+      collect(target, selector, "base", objectFit ? { ...base, objectFit } : base);
       const tabletColumns = bps.tablet?.columns === undefined ? fallbackTabletColumns(node.type, base.columns) : undefined;
       if (tabletColumns) bps.tablet = { ...bps.tablet, columns: tabletColumns };
+      const banner = isBannerPhoto(node);
+      if (banner && !bps.tablet?.aspectRatio) bps.tablet = { ...bps.tablet, aspectRatio: "wide" };
       for (const bp of STYLE_BREAKPOINTS) collect(target, selector, bp, bps[bp]);
       const entry = target.get(selector);
       if (entry && depth === 0 && node.type === "section") entry.sectionRoot = true;
+      if (entry && banner) entry.capHeight = true;
     }
     collectNodes(target, sectionId, node.children, depth + 1);
   }
@@ -530,6 +558,7 @@ export function collectPageCss(sections: readonly (SectionInstance | null | unde
   for (const [selector, entry] of target) {
     if ([entry.base, entry.tablet, entry.mobile].some((style) => style?.hover)) hovered.push(selector);
     if (entry.base) base.push(ruleFor(selector, entry.base, entry.sectionRoot));
+    if (entry.capHeight) base.push(`${selector}{${BANNER_MAX_HEIGHT}}`);
     if (entry.base?.hidden) hidden.base.push(hiddenRule(selector, mode));
     for (const bp of STYLE_BREAKPOINTS) {
       const style = entry[bp];

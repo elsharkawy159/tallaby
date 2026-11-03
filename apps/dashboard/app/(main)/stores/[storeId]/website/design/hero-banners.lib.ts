@@ -1,4 +1,5 @@
 import type { ComponentNode, SectionInstance } from "@workspace/store-sections";
+import { recommendedImageSize, type RecommendedImageSize } from "@workspace/store-sections/image-size";
 
 /**
  * Website › Design "Store banner" (owner, 2026-10-31): the photos of the
@@ -18,6 +19,8 @@ export type HeroBanners = {
   /** Image node ids, in order (the slide's photo for a carousel). */
   imageIds: string[];
   srcs: string[];
+  /** What to tell the seller to upload, from the first photo's ratio. */
+  size?: RecommendedImageSize;
 };
 
 /** Most slides a carousel hero takes from this list. */
@@ -47,6 +50,11 @@ const srcOf = (node: ComponentNode) => (typeof node.props.src === "string" ? nod
 /** The slide's main photo: its `role: "image"` photo, else its first photo. */
 const slidePhoto = (slide: ComponentNode) => find([slide], (n) => isImage(n) && n.props.role === "image") ?? find([slide], isImage);
 
+const sizeOf = (photo: ComponentNode) => {
+  const size = recommendedImageSize(photo);
+  return size ? { size } : {};
+};
+
 /** The design id a section started from (`hero-carousel@1` → `hero-carousel`). */
 const designIdOf = (section: SectionInstance) => section.source?.split("@")[0];
 
@@ -64,14 +72,14 @@ export function findHeroBanners(sections: readonly SectionInstance[], isNotHero:
     const carousel = find(tree, (n) => n.type === "carousel");
     if (carousel) {
       const photos = carousel.children.map(slidePhoto).filter((n): n is ComponentNode => Boolean(n));
-      if (photos.length) return { sectionId: section.id, kind: "carousel", imageIds: photos.map((n) => n.id), srcs: photos.map(srcOf) };
+      if (photos.length) return { sectionId: section.id, kind: "carousel", imageIds: photos.map((n) => n.id), srcs: photos.map(srcOf), ...sizeOf(photos[0]!) };
     }
 
     const photos: ComponentNode[] = [];
     walk(tree, (n) => {
       if (isImage(n) && n.props.role === "image") photos.push(n);
     });
-    if (photos.length) return { sectionId: section.id, kind: "fixed", imageIds: photos.map((n) => n.id), srcs: photos.map(srcOf) };
+    if (photos.length) return { sectionId: section.id, kind: "fixed", imageIds: photos.map((n) => n.id), srcs: photos.map(srcOf), ...sizeOf(photos[0]!) };
   }
   return null;
 }

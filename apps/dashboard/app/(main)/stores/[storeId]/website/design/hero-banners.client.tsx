@@ -12,17 +12,20 @@ import { MAX_HERO_BANNERS, type HeroBanners } from "./hero-banners.lib";
  */
 export function HeroBannerList({
   kind,
+  size,
   value,
   onChange,
   disabled,
 }: {
   kind: HeroBanners["kind"];
+  size?: HeroBanners["size"];
   value: string[];
   onChange: (value: string[]) => void;
   disabled?: boolean;
 }) {
   const t = useTranslations("websiteDesign.banners");
   const carousel = kind === "carousel";
+  const sizeNote = size && t("sizeNote", { size: `${size.width}×${size.height}` });
   const set = (index: number, src: string) => {
     // Remove (empty src) drops a carousel slide; a fixed photo is only replaced.
     if (!src) onChange(value.filter((_, i) => i !== index));
@@ -34,6 +37,7 @@ export function HeroBannerList({
       <div>
         <p className="text-sm font-semibold">{t("title")}</p>
         <FieldHint>{carousel ? t("carouselHint", { max: MAX_HERO_BANNERS }) : t("fixedHint")}</FieldHint>
+        {size?.cropsOnPhones && <FieldHint>{t("phoneCropHint")}</FieldHint>}
       </div>
       {value.map((src, index) => (
         <BannerField
@@ -43,11 +47,12 @@ export function HeroBannerList({
           onChange={(next) => set(index, next)}
           disabled={disabled}
           label={value.length > 1 ? t("item", { number: index + 1 }) : t("single")}
+          sizeNote={sizeNote}
           removable={carousel && value.length > 1}
         />
       ))}
       {carousel && value.length < MAX_HERO_BANNERS && (
-        <BannerField value="" onChange={(src) => src && onChange([...value, src])} disabled={disabled} label={t("add")} />
+        <BannerField value="" onChange={(src) => src && onChange([...value, src])} disabled={disabled} label={t("add")} sizeNote={sizeNote} />
       )}
     </div>
   );
