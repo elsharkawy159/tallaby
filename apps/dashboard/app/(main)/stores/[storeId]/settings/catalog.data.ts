@@ -22,8 +22,8 @@ export async function loadCatalogProducts(sellerId: string, storeId: string): Pr
       images: products.images,
       price: products.price,
       sku: products.sku,
-      titleAr: sql<string | null>`(SELECT t.title FROM ${productTranslations} t WHERE t.product_id = ${products.id} AND t.locale = 'ar' LIMIT 1)`,
-      titleEn: sql<string | null>`(SELECT t.title FROM ${productTranslations} t WHERE t.product_id = ${products.id} AND t.locale = 'en' LIMIT 1)`,
+      titleAr: sql<string | null>`${sql`(SELECT t.title FROM ${productTranslations} t WHERE t.product_id = ${products.id} AND t.locale = 'ar' LIMIT 1)`}`,
+      titleEn: sql<string | null>`${sql`(SELECT t.title FROM ${productTranslations} t WHERE t.product_id = ${products.id} AND t.locale = 'en' LIMIT 1)`}`,
     })
     .from(products)
     .where(and(eq(products.sellerId, sellerId), isNull(products.deletedAt)))

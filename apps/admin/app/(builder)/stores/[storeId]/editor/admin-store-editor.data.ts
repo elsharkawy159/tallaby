@@ -170,11 +170,11 @@ export async function loadEditorCatalog(
       trackStock: products.trackStock,
       createdAt: products.createdAt,
       averageRating: products.averageRating,
-      titleAr: sql<string | null>`(SELECT t.title FROM ${productTranslations} t WHERE t.product_id = ${products.id} AND t.locale = 'ar' LIMIT 1)`,
-      titleEn: sql<string | null>`(SELECT t.title FROM ${productTranslations} t WHERE t.product_id = ${products.id} AND t.locale = 'en' LIMIT 1)`,
+      titleAr: sql<string | null>`${sql`(SELECT t.title FROM ${productTranslations} t WHERE t.product_id = ${products.id} AND t.locale = 'ar' LIMIT 1)`}`,
+      titleEn: sql<string | null>`${sql`(SELECT t.title FROM ${productTranslations} t WHERE t.product_id = ${products.id} AND t.locale = 'en' LIMIT 1)`}`,
       slug: sql<
         string | null
-      >`(SELECT coalesce(t.slug, '') FROM ${productTranslations} t WHERE t.product_id = ${products.id} ORDER BY (t.locale = 'ar') DESC LIMIT 1)`,
+      >`${sql`(SELECT coalesce(t.slug, '') FROM ${productTranslations} t WHERE t.product_id = ${products.id} ORDER BY (t.locale = 'ar') DESC LIMIT 1)`}`,
     })
     .from(products)
     .where(
