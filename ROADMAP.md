@@ -1155,24 +1155,24 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-43b Leaner product queries and indexes (2026-11-03; no new index needed)
 - [ ] F-43c Caching and revalidation review
 - [ ] F-43d Slow-page audit with before-and-after timings
-- [ ] F-44a Save setup prompt progress per seller
-- [ ] F-44b Setup toast and banner UI
-- [ ] F-44c Remove the welcome-gift pop-up and copy
-- [x] F-45a Shipping page audit and redesign (2026-11-03; not seen in a browser yet)
+- [x] F-44a Save setup prompt progress per seller (2026-11-03; `3db11f22`; no migration)
+- [x] F-44b Setup toast and banner UI (2026-11-03; `3db11f22`; not seen in a browser)
+- [x] F-44c Remove the welcome-gift pop-up and copy (2026-11-03; `3db11f22`)
+- [x] F-45a Shipping page audit and redesign (2026-11-03; `777aa466`; not seen in a browser)
 - [ ] F-45b AI delivery areas from a written description
 - [x] F-46a Store's own `/returns` and `/shipping` with fallback order (2026-11-03)
 - [x] F-46b Fix storefront links into the marketplace (2026-11-03; `/privacy` and `/terms` still go to Tallaby's, owner to decide)
-- [~] F-46c Make return and replacement policies easy to find (2026-11-03; store footers done, link from the setup flow not done)
+- [x] F-46c Make return and replacement policies easy to find (2026-11-03; `3db11f22`; adds a policy editor in Settings)
 - [ ] F-47a Apps marketplace design note (pricing models, install state, charges)
 - [ ] F-47b Installed and Explore page
 - [ ] F-47c Paid app charges from the USD wallet
 - [ ] F-48a Store SEO fallback title and description
-- [ ] F-49a Animation audit and shared set
+- [ ] F-49a Animation audit and shared set (owner, on Claude Design)
 - [ ] F-49b Add animations to element trees; phone performance check
 - [ ] F-50a Fix banner sizing across screens and templates
 - [ ] F-51a Unlimited stock design note (every stock reader)
 - [ ] F-51b Unlimited stock migration, form and readers
-- [ ] F-52a Homepage redesign
+- [ ] F-52a Homepage redesign (owner, on Claude Design)
 - [ ] F-52b Real dashboard screenshots from a fictional demo store
 - [ ] F-52c Homepage shows new pricing once live
 - [ ] F-53a Public-site SEO audit
@@ -1181,24 +1181,24 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [ ] F-54b AI Store Builder design note
 - [ ] F-54c Builder chat and collection steps
 - [ ] F-54d Store generation, validation and review screen
-- [ ] F-55a Plans design note
-- [ ] F-55b Plans module adds Pro; new welcome gifts stop
-- [ ] F-55c USD order fee by plan ($0.03 on Free, none on Pro)
-- [ ] F-55d Upgrade, downgrade and renewal job
-- [ ] F-55e Dashboard Plan page
+- [x] F-55a Plans design note (2026-11-03)
+- [x] F-55b Plans module adds Pro; new welcome gifts stop (2026-11-03)
+- [x] F-55c USD order fee by plan ($0.03 on Free, none on Pro) (2026-11-03)
+- [x] F-55d Upgrade, downgrade and renewal job (2026-11-03; integration tests on staging)
+- [x] F-55e Dashboard Plan page (2026-11-03; not seen in a browser)
 - [ ] F-55f Admin plan management
-- [ ] F-55g Public pricing page and fee calculators
+- [ ] F-55g Public pricing page and fee calculators (owner, on Claude Design)
 - [ ] F-55h Pricing launch: Terms, copy, seller notice, §13 rewrite
-- [ ] F-56a USD wallet design note and staging dry run
-- [ ] F-56b Exchange-rate service
-- [ ] F-56c USD migration and one-time balance conversion
-- [ ] F-56d Kashier top-ups in USD, paid in EGP
-- [ ] F-56e Manual top-ups in USD, paid in EGP
-- [ ] F-56f USD display across dashboard and Admin
-- [ ] F-57a AI credit ledger migration
-- [ ] F-57b AI credit enforcement on the server
+- [x] F-56a USD wallet design note and staging dry run (2026-11-03; `docs/superpowers/specs/2026-11-03-usd-wallet-and-plans-design.md`; dry run script added, owner still approves before production)
+- [x] F-56b Exchange-rate service (2026-11-03; server and cron done, Admin settings in progress)
+- [x] F-56c USD migration and one-time balance conversion (2026-11-03; code and switch function built, 0136 on staging, switch not run)
+- [x] F-56d Kashier top-ups in USD, paid in EGP (2026-11-03; Kashier's maximum not confirmed)
+- [x] F-56e Manual top-ups in USD, paid in EGP (2026-11-03)
+- [~] F-56f USD display across dashboard and Admin (2026-11-03; dashboard done, Admin in progress)
+- [x] F-57a AI credit ledger migration (2026-11-03; 0137 on staging)
+- [x] F-57b AI credit enforcement on the server (2026-11-03)
 - [ ] F-57c Show remaining credits
-- [ ] F-57d Buy 100 credits for $1 from the wallet
+- [x] F-57d Buy 100 credits for $1 from the wallet (2026-11-03)
 - [ ] F-58a AI costs in USD with estimated EGP
 - [ ] F-58b Average AI cost per call across all stores
 - [ ] F-59a Salla research and recommendations
@@ -1214,6 +1214,16 @@ Add each new request here first, with the date and the owner's words, then turn 
 ---
 
 ## 7. Log
+
+### 2026-11-03 — USD wallet, plans and AI credits built, not switched on (owner)
+
+- **Owner instruction:** redesign tasks wait for the owner's Claude Design work (F-52, F-49, F-55g). Work continues on dashboard tasks with several agents, committed to `main`.
+- **How it stays safe:** everything is dark until `SELECT billing_switch_to_usd(<market rate>)` runs, one transaction, one way. Money code follows each wallet's `seller_wallet.currency`; screens follow `billing_settings.usd_live`. Design: `docs/superpowers/specs/2026-11-03-usd-wallet-and-plans-design.md`.
+- **Migrations:** `0136` (settings, rates, top-up credit columns, switch function; widens the old EGP-only checks on the seller wallet and ledger) and `0137` (plan columns, `seller_ai_credits`, `ai_credit_ledger`, bell types). **Staging only.** Production needs them before the code that reads the new columns deploys, because `place-order` and the plan page select them.
+- **Built:** fee from the order snapshot (3 cents, 0 on Pro), old uncharged fees cancelled, top-ups priced in USD with the rate saved, wrong-currency entries refused, Pro upgrade/cancel/renewal with 3 days' grace, AI credits with atomic claim, packs, plan page, USD wallet screens, daily rate and renewal crons.
+- **Calls:** negative-balance pop-up shows from -$1 once in USD. Ad packages stay priced in EGP and a USD wallet pays the market-rate equivalent. Pro's AI daily guard is 10 times Free's.
+- **Checks:** rehearsed the switch on staging in a rolled-back transaction (12 wallets, EGP 538.20 became $10.76, ledger and mirror match, second run refused). It caught the old EGP-only constraints. 8 switch tests and 19 plan and credit tests pass on staging; staging stays in EGP. **No screen has been seen in a browser yet.**
+- **Still to confirm:** Kashier's maximum for EGP 50,000 top-ups, and that open.er-api.com is acceptable as the rate source.
 
 ### 2026-11-03 — F-45a Shipping page redesign
 
