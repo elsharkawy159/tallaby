@@ -1,6 +1,6 @@
 import { cache } from "react";
-import { db, eq, sellers } from "@workspace/db";
 import type { SellerStatus } from "@/lib/utils/seller";
+import { loadSeller } from "./require-seller.server";
 
 /**
  * Dashboard access is decided by the `sellers` row, not by `users.role` or
@@ -17,11 +17,7 @@ export type SellerAccess =
 
 export const getSellerAccess = cache(
   async (userId: string): Promise<SellerAccess> => {
-    const [seller] = await db
-      .select({ status: sellers.status })
-      .from(sellers)
-      .where(eq(sellers.id, userId))
-      .limit(1);
+    const seller = await loadSeller(userId);
 
     if (!seller) return { allowed: false, reason: "no_seller" };
 

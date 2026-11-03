@@ -1,7 +1,7 @@
 import { cache } from "react";
 import { db, orderItems } from "@workspace/db";
 import { desc, eq, sql } from "drizzle-orm";
-import { createClient } from "@/supabase/server";
+import { getSessionUser } from "@/lib/auth/session.server";
 import type { HomeChannel, HomeRange } from "./home.shared";
 import type { SetupFlags } from "./setup-checklist.lib";
 import type { FeeTrialFields } from "@workspace/lib/sellers";
@@ -27,11 +27,7 @@ const rowsOf = <T,>(result: unknown): T[] =>
   (Array.isArray(result) ? result : ((result as { rows?: T[] }).rows ?? [])) as T[];
 
 /** Signed-in seller id; the (main) layout already gated access. */
-export const getHomeSellerId = cache(async (): Promise<string | null> => {
-  const supabase = await createClient();
-  const { data } = await supabase.auth.getUser();
-  return data.user?.id ?? null;
-});
+export const getHomeSellerId = async (): Promise<string | null> => (await getSessionUser())?.id ?? null;
 
 /** Public URL for a `products` bucket path; full URLs pass through. */
 export function productImageUrl(path: string | null | undefined): string | null {
@@ -132,7 +128,7 @@ export const getHomeSnapshot = cache(async (): Promise<HomeSnapshot | null> => {
       (SELECT count(DISTINCT oi.order_id)::int FROM order_items oi
         WHERE oi.seller_id = s.id AND oi.status IN ${AWAITING_PREP}) AS pending_orders,
       (SELECT count(*)::int FROM products p
-        WHERE p.seller_id = s.id AND p.status = 'active' AND p.quantity < ${LOW_STOCK_THRESHOLD}) AS low_stock,
+        WHERE p.seller_id = s.id AND p.status = 'active' AND p.track_stock AND p.quantity < ${LOW_STOCK_THRESHOLD}) AS low_stock,
       (SELECT count(*)::int FROM product_questions q JOIN products p ON p.id = q.product_id
         WHERE p.seller_id = s.id AND q.is_answered = false) AS unanswered_questions,
       (SELECT count(*)::int FROM reviews r

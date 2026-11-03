@@ -3,17 +3,14 @@ import { SellerAccessBlocked } from "@/components/layout/seller-access-blocked";
 import { WelcomeGiftDialog } from "@/components/layout/welcome-gift-dialog.client";
 import { loadWelcomeGiftWatch } from "@/components/layout/welcome-gift.data";
 import { getSellerAccess } from "@/lib/auth/seller-access";
-import { createClient } from "@/supabase/server";
+import { getSessionUser } from "@/lib/auth/session.server";
 
 /**
  * Full-screen builder routes (PLAN.md P4-06): the same seller gate as the
  * dashboard layout, without the sidebar.
  */
 export default async function BuilderLayout({ children }: { children: React.ReactNode }) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getSessionUser();
   if (!user) redirect("/login");
 
   const access = await getSellerAccess(user.id);

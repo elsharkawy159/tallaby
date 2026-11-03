@@ -1,6 +1,6 @@
 import { db, eq, sellers } from "@workspace/db";
 import { parseSignupMethod, signupEventId } from "@workspace/lib/integrations";
-import { createClient } from "@/supabase/server";
+import { getSessionUser } from "@/lib/auth/session.server";
 import { SignupPixel } from "./signup-pixel.client";
 
 // A hand-typed `?signup=` on an old account must not count as a signup.
@@ -15,9 +15,7 @@ export async function SignupPixelData({ signup }: { signup: unknown }) {
   const method = parseSignupMethod(signup);
   if (!method || !process.env.NEXT_PUBLIC_META_PIXEL_ID) return null;
 
-  const supabase = await createClient();
-  const { data } = await supabase.auth.getUser();
-  const user = data.user;
+  const user = await getSessionUser();
   if (!user) return null;
 
   const [seller] = await db

@@ -4,6 +4,7 @@ import { createClient } from "@/supabase/server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
+import { getAuthResult } from "@/lib/auth/session.server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
 
 /**
@@ -26,8 +27,7 @@ async function clientKey(): Promise<string> {
 }
 
 export const getUser = async () => {
-  const supabase = await createClient();
-  const { data, error } = await supabase.auth.getUser();
+  const { data, error } = await getAuthResult();
 
   if (error) {
     throw new Error(error.message);

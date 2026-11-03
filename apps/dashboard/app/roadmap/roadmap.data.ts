@@ -1,17 +1,16 @@
 import { and, db, desc, eq, featureRequests, isNull, sql } from "@workspace/db";
 import { getSellerAccess } from "@/lib/auth/seller-access";
-import { createClient } from "@/supabase/server";
+import { getSessionUser } from "@/lib/auth/session.server";
 import type { RoadmapCategory, RoadmapItem, RoadmapStatus, RoadmapViewer } from "./roadmap.types";
 
 /** The page is public: a missing session is a guest, not an error. */
 export async function getRoadmapViewer(): Promise<{ viewer: RoadmapViewer; sellerId: string | null }> {
   try {
-    const supabase = await createClient();
-    const { data } = await supabase.auth.getUser();
-    if (!data.user) return { viewer: { kind: "guest" }, sellerId: null };
-    const access = await getSellerAccess(data.user.id);
+    const user = await getSessionUser();
+    if (!user) return { viewer: { kind: "guest" }, sellerId: null };
+    const access = await getSellerAccess(user.id);
     return access.allowed
-      ? { viewer: { kind: "seller" }, sellerId: data.user.id }
+      ? { viewer: { kind: "seller" }, sellerId: user.id }
       : { viewer: { kind: "user" }, sellerId: null };
   } catch {
     return { viewer: { kind: "guest" }, sellerId: null };

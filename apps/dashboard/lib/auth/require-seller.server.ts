@@ -1,6 +1,6 @@
 import { cache } from "react";
 import { and, db, eq, isNull, sellers, stores } from "@workspace/db";
-import { createClient } from "@/supabase/server";
+import { getSessionUser } from "./session.server";
 import {
   type AccessCode,
   type AccessOptions,
@@ -43,13 +43,10 @@ export type StoreContext = {
   status: string;
 };
 
-const loadSession = cache(async (): Promise<string | null> => {
-  const supabase = await createClient();
-  const { data } = await supabase.auth.getUser();
-  return data.user?.id ?? null;
-});
+const loadSession = async (): Promise<string | null> => (await getSessionUser())?.id ?? null;
 
-const loadSeller = cache(async (userId: string) => {
+/** One read of the seller row per request; seller-access.ts shares it. */
+export const loadSeller = cache(async (userId: string) => {
   const [row] = await db
     .select({
       id: sellers.id,
