@@ -4,8 +4,9 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Check, ChevronDown, PackageCheck, RefreshCw, Truck } from "lucide-react";
+import { Check, ChevronDown, PackageCheck, PackagePlus, RefreshCw, Truck } from "lucide-react";
 import { Button } from "@workspace/ui/components/button";
+import { Checkbox } from "@workspace/ui/components/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -25,13 +26,13 @@ import { Textarea } from "@workspace/ui/components/textarea";
 import { ConfirmActionDialog } from "@/components/layout/confirm-action-dialog.client";
 import { cn } from "@/lib/utils";
 import type { SellerOrderAction } from "./order-flow.lib";
-import type { SellerOrderRow } from "./orders.types";
-import { updateSellerOrder } from "./orders.server";
+import type { SellerOrderRow, StockShortage } from "./orders.types";
+import { restockReturnedOrder, updateSellerOrder } from "./orders.server";
 
-/** Big moves ask first. */
-type ConfirmedAction = "deliver" | "return" | "cancel";
+/** Big moves ask first. "return" has its own dialog, with the stock choice. */
+type ConfirmedAction = "deliver" | "cancel";
 const isConfirmed = (a: SellerOrderAction): a is ConfirmedAction =>
-  a === "deliver" || a === "return" || a === "cancel";
+  a === "deliver" || a === "cancel";
 
 const DESTRUCTIVE: SellerOrderAction[] = ["fail", "return", "cancel"];
 
@@ -63,15 +64,34 @@ export function OrderActions({
   const [confirming, setConfirming] = useState<ConfirmedAction | null>(null);
   const [failing, setFailing] = useState(false);
   const [reason, setReason] = useState("");
+  const [returning, setReturning] = useState(false);
+  // Most returned items are fine to sell again; off for damaged ones.
+  const [restock, setRestock] = useState(true);
+  const [short, setShort] = useState<{ action: SellerOrderAction; items: StockShortage[] } | null>(null);
 
   const { primary, actions, corrections } = order.flow;
-  if (!primary && corrections.length === 0) return null;
+  if (!primary && corrections.length === 0 && !order.canRestockReturn) return null;
   const secondary = actions.filter((a) => a !== primary);
 
-  const run = (action: SellerOrderAction, failureReason?: string) =>
+  const run = (
+    action: SellerOrderAction,
+    options: { failureReason?: string; restock?: boolean; addMissingStock?: boolean } = {},
+  ) =>
     startTransition(async () => {
-      const res = await updateSellerOrder({ orderId: order.id, action, reason: failureReason });
+      const res = await updateSellerOrder({
+        orderId: order.id,
+        action,
+        reason: options.failureReason,
+        restock: options.restock,
+        addMissingStock: options.addMissingStock,
+      });
       if (!res.success) {
+        // Not enough stock: offer the fix here, so the seller doesn't have to leave the order.
+        if (res.shortage?.length) {
+          setShort({ action, items: res.shortage });
+          setConfirming(null);
+          return;
+        }
         toast.error(res.error);
         return;
       }
@@ -84,11 +104,26 @@ export function OrderActions({
       setConfirming(null);
       setFailing(false);
       setReason("");
+      setReturning(false);
+      setShort(null);
+    });
+
+  const restockNow = () =>
+    startTransition(async () => {
+      const res = await restockReturnedOrder({ orderId: order.id });
+      if (!res.success) {
+        toast.error(res.error);
+        return;
+      }
+      toast.success(t("done.restocked", { number: order.orderNumber }));
     });
 
   const pick = (action: SellerOrderAction) => {
     if (action === "fail") setFailing(true);
-    else if (isConfirmed(action)) setConfirming(action);
+    else if (action === "return") {
+      setRestock(true);
+      setReturning(true);
+    } else if (isConfirmed(action)) setConfirming(action);
     else run(action);
   };
 
@@ -97,8 +132,24 @@ export function OrderActions({
   return (
     <>
       <div className={cn("flex items-center gap-1.5", className)}>
+        {order.canRestockReturn && (
+          <Button
+            size="sm"
+            variant="outline"
+            className={compact ? undefined : "flex-1 sm:flex-none"}
+            disabled={isPending}
+            onClick={(e) => {
+              e.stopPropagation();
+              restockNow();
+            }}
+          >
+            <PackagePlus className="size-4" />
+            {t("restock")}
+          </Button>
+        )}
+
         {/* A closed order (delivered, returned, cancelled) can still move to another status. */}
-        {!primary && (
+        {!primary && corrections.length > 0 && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -192,7 +243,7 @@ export function OrderActions({
         description={confirming ? t(`dialog.${confirming}Description`) : ""}
         confirmLabel={confirming ? t(confirming) : ""}
         cancelLabel={t("dialog.back")}
-        destructive={confirming === "cancel" || confirming === "return"}
+        destructive={confirming === "cancel"}
         pending={isPending}
         onConfirm={() => confirming && run(confirming)}
       />
@@ -221,9 +272,68 @@ export function OrderActions({
             <Button
               variant="destructive"
               disabled={isPending || !reason.trim()}
-              onClick={() => run("fail", reason.trim())}
+              onClick={() => run("fail", { failureReason: reason.trim() })}
             >
               {t("failDialog.save")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={returning} onOpenChange={(open) => !open && !isPending && setReturning(false)}>
+        <DialogContent className="sm:max-w-md" onClick={(e) => e.stopPropagation()}>
+          <DialogHeader>
+            <DialogTitle>{t("dialog.returnTitle", { number: order.orderNumber })}</DialogTitle>
+            <DialogDescription>{t("dialog.returnDescription")}</DialogDescription>
+          </DialogHeader>
+          <Label className="flex cursor-pointer items-start gap-3 rounded-lg border p-3 font-normal">
+            <Checkbox
+              className="mt-0.5"
+              checked={restock}
+              onCheckedChange={(value) => setRestock(value === true)}
+            />
+            <span className="space-y-0.5">
+              <span className="block text-sm font-medium">{t("dialog.returnRestock")}</span>
+              <span className="block text-xs text-muted-foreground">{t("dialog.returnRestockHint")}</span>
+            </span>
+          </Label>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setReturning(false)} disabled={isPending}>
+              {t("dialog.back")}
+            </Button>
+            <Button variant="destructive" disabled={isPending} onClick={() => run("return", { restock })}>
+              {t("return")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={short !== null} onOpenChange={(open) => !open && !isPending && setShort(null)}>
+        <DialogContent className="sm:max-w-md" onClick={(e) => e.stopPropagation()}>
+          <DialogHeader>
+            <DialogTitle>{t("shortage.title")}</DialogTitle>
+            <DialogDescription>{t("shortage.description")}</DialogDescription>
+          </DialogHeader>
+          <ul className="divide-y rounded-lg border text-sm">
+            {short?.items.map((item) => (
+              <li key={item.title} className="flex items-center justify-between gap-3 p-3">
+                <span className="min-w-0 truncate">{item.title}</span>
+                <span className="shrink-0 tabular-nums text-muted-foreground">
+                  {t("shortage.counts", { need: item.need, have: item.have })}
+                </span>
+              </li>
+            ))}
+          </ul>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShort(null)} disabled={isPending}>
+              {t("dialog.back")}
+            </Button>
+            <Button
+              disabled={isPending || !short}
+              onClick={() => short && run(short.action, { addMissingStock: true })}
+            >
+              <PackagePlus className="size-4" />
+              {t("shortage.addAndContinue")}
             </Button>
           </DialogFooter>
         </DialogContent>

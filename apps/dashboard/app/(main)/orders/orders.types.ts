@@ -83,6 +83,8 @@ export interface SellerOrderRow {
   /** The order is already in a Wassalha sheet (its shipment carrier is `wassalha`). */
   wassalhaExported: boolean;
   flow: SellerOrderFlow;
+  /** A returned order whose items can still go back in stock (ROADMAP.md F-42a). */
+  canRestockReturn: boolean;
   /** Prefilled WhatsApp "please confirm" text for a new store order (ROADMAP.md F-02g). */
   confirmMessage: string | null;
   /** Hours a new order has waited unconfirmed, once past UNCONFIRMED_AFTER_HOURS. */
@@ -91,3 +93,6 @@ export interface SellerOrderRow {
   deliveredAt: string | null;
   cancelledAt: string | null;
 }
+
+/** An order line there isn't enough stock for. */
+export type StockShortage = { title: string; need: number; have: number };

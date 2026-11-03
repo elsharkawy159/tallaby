@@ -200,3 +200,41 @@ export async function restoreStock(
   if (tracked) await setStockContext(tx, null);
   return results;
 }
+
+/**
+ * Raises stock to at least what the lines need, adding only the difference
+ * (ROADMAP.md F-42a: "Add what's needed" when an order can't go back on its
+ * way). One atomic UPDATE per item, never a read-then-write. Lines for the same
+ * item are added up first. Untracked (null-stock) variants are left alone.
+ * Call decrementStock afterwards in the same transaction.
+ */
+export async function ensureStockAtLeast(
+  tx: Tx,
+  lines: readonly StockLine[],
+  context: StockContext = { reason: "edit" }
+): Promise<void> {
+  const needed = new Map<string, StockLine>();
+  for (const line of lines) {
+    if (line.quantity <= 0) continue;
+    const key = `${line.kind}:${line.id}`;
+    const quantity = (needed.get(key)?.quantity ?? 0) + line.quantity;
+    needed.set(key, { ...line, quantity });
+  }
+  if (needed.size === 0) return;
+  await setStockContext(tx, context);
+
+  const now = new Date().toISOString();
+  for (const line of sortedLines([...needed.values()])) {
+    if (line.kind === "product") {
+      await tx
+        .update(products)
+        .set({ quantity: sql`GREATEST(${products.quantity}, ${line.quantity})`, updatedAt: now })
+        .where(and(eq(products.id, line.id), sql`${products.quantity} < ${line.quantity}`));
+    } else {
+      await tx
+        .update(productVariants)
+        .set({ stock: sql`GREATEST(${productVariants.stock}, ${line.quantity})`, updatedAt: now })
+        .where(and(eq(productVariants.id, line.id), sql`${productVariants.stock} < ${line.quantity}`));
+    }
+  }
+}

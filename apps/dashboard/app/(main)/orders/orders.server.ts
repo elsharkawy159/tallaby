@@ -14,6 +14,7 @@ import {
   orderItems,
   orders,
   productVariants,
+  products,
   shipments,
   sql,
   userWalletTransactions,
@@ -21,6 +22,7 @@ import {
 import { cancelPendingAffiliateCommission, reverseAffiliateCommission } from "@workspace/db/affiliates";
 import {
   decrementStock,
+  ensureStockAtLeast,
   InsufficientStockError,
   restoreStock,
   type StockLine,
@@ -40,8 +42,27 @@ import {
   type SellerOrderAction,
 } from "./order-flow.lib";
 import { BULK_MAX_ORDERS, BULK_ORDER_ACTIONS } from "./orders-bulk.lib";
+import {
+  canRestockReturn,
+  isReturnRestocked,
+  isStockOnShelf,
+  RETURN_RESTOCKED_KEY,
+  resolveStockMove,
+} from "./order-stock.lib";
+import type { StockShortage } from "./orders.types";
 
-type ActionResult = { success: true } | { success: false; error: string };
+type ActionResult =
+  | { success: true }
+  /** `shortage`: the order needs more stock; the dialog offers to add it and carry on. */
+  | { success: false; error: string; shortage?: StockShortage[] };
+
+/** The seller's stock choices on one order move (ROADMAP.md F-42a). */
+type StockOptions = {
+  /** A return: the items go back on the shelf. */
+  restock?: boolean;
+  /** Not enough stock: raise it to what the order needs, then carry on. */
+  addMissingStock?: boolean;
+};
 
 /** An error the seller should read; `key` lives in "orders.errors". */
 class OrderActionError extends Error {
@@ -54,6 +75,8 @@ const inputSchema = z.object({
   orderId: z.uuid(),
   action: z.enum(SELLER_ORDER_ACTIONS),
   reason: z.string().trim().max(500).optional(),
+  restock: z.boolean().optional(),
+  addMissingStock: z.boolean().optional(),
 });
 
 /** Statuses an order can be cancelled from: nothing has left yet. */
@@ -70,7 +93,7 @@ async function loadOrder(orderId: string, sellerId: string) {
         db.select({ id: orderItems.orderId }).from(orderItems).where(eq(orderItems.sellerId, sellerId)),
       ),
     ),
-    columns: { id: true, status: true, paymentStatus: true, isDigitalOnly: true, storeId: true },
+    columns: { id: true, status: true, paymentStatus: true, isDigitalOnly: true, storeId: true, metadata: true },
     with: {
       shipments: { columns: { id: true, status: true, sellerId: true, externalId: true } },
       orderItems: {
@@ -233,7 +256,12 @@ type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
  * way takes the stock again. Untracked (null-stock) variants are skipped, as
  * restoreStock skips them. Not enough stock stops the move.
  */
-async function takeStockAgain(tx: Tx, order: LoadedOrder["order"], sellerId: string): Promise<StockResult[]> {
+async function takeStockAgain(
+  tx: Tx,
+  order: LoadedOrder["order"],
+  sellerId: string,
+  addMissingStock = false,
+): Promise<StockResult[]> {
   const lines = orderStockLines(order);
   const variantIds = lines.filter((l) => l.kind === "variant").map((l) => l.id);
   const untracked = new Set<string>();
@@ -244,16 +272,61 @@ async function takeStockAgain(tx: Tx, order: LoadedOrder["order"], sellerId: str
       .where(and(inArray(productVariants.id, variantIds), isNull(productVariants.stock)));
     for (const r of rows) untracked.add(r.id);
   }
+  const tracked = lines.filter((l) => !(l.kind === "variant" && untracked.has(l.id)));
   try {
-    return await decrementStock(
-      tx,
-      lines.filter((l) => !(l.kind === "variant" && untracked.has(l.id))),
-      { reason: "order", orderId: order.id, actorId: sellerId },
-    );
+    if (addMissingStock) {
+      await ensureStockAtLeast(tx, tracked, { reason: "edit", orderId: order.id, actorId: sellerId });
+    }
+    return await decrementStock(tx, tracked, { reason: "order", orderId: order.id, actorId: sellerId });
   } catch (error) {
     if (error instanceof InsufficientStockError) throw new OrderActionError("outOfStock");
     throw error;
   }
+}
+
+/** Saves whether a returned order's items went back on the shelf. */
+async function setReturnRestocked(tx: Tx, orderId: string, restocked: boolean, now: string) {
+  await tx
+    .update(orders)
+    .set({
+      metadata: restocked
+        ? sql`coalesce(${orders.metadata}, '{}'::jsonb) || ${JSON.stringify({ [RETURN_RESTOCKED_KEY]: now })}::jsonb`
+        : sql`coalesce(${orders.metadata}, '{}'::jsonb) - ${RETURN_RESTOCKED_KEY}`,
+    })
+    .where(eq(orders.id, orderId));
+}
+
+/**
+ * What this move does to the stock (order-stock.lib.ts), in the move's own
+ * transaction, so the stock and the status can't disagree.
+ */
+async function applyStockMove(
+  tx: Tx,
+  { order, flow }: LoadedOrder,
+  sellerId: string,
+  action: SellerOrderAction,
+  { restock, addMissingStock }: StockOptions,
+): Promise<StockResult[]> {
+  const move = resolveStockMove({
+    stockOnShelf: isStockOnShelf(flow.stage, order.metadata),
+    action,
+    restock,
+  });
+  let results: StockResult[] = [];
+  if (move === "take") {
+    results = await takeStockAgain(tx, order, sellerId, addMissingStock);
+  } else if (move === "restore") {
+    results = await restoreStock(tx, orderStockLines(order), {
+      reason: action === "return" ? "return" : "cancel",
+      orderId: order.id,
+      actorId: sellerId,
+    });
+  }
+  const restocked = action === "return" && Boolean(restock);
+  if (restocked !== isReturnRestocked(order.metadata)) {
+    await setReturnRestocked(tx, order.id, restocked, new Date().toISOString());
+  }
+  return results;
 }
 
 /** Shipment status each status change on a closed order lands on ("reopen" has its own write). */
@@ -264,9 +337,8 @@ const CORRECTION_SHIPMENT_STATUS: Partial<Record<SellerOrderAction, ShippingStat
 
 /**
  * Moves a closed order (delivered, returned, cancelled) to another status
- * (owner, 2026-10-31). Stock follows "cancelled": it goes back on the shelf
- * when the order is cancelled and is taken again when it leaves cancelled.
- * No money moves here: leaving "delivered" keeps the delivery fee entry, and
+ * (owner, 2026-10-31). Stock follows whether the items are on the shelf
+ * (order-stock.lib.ts). No money moves here: leaving "delivered" keeps the delivery fee entry, and
  * delivering again never posts it twice (its claim is per order).
  */
 async function correctClosedOrder(
@@ -274,28 +346,20 @@ async function correctClosedOrder(
   sellerId: string,
   action: SellerOrderAction,
   reason: string | undefined,
+  stockOptions: StockOptions,
 ) {
   const { order } = loaded;
-  const wasCancelled = loaded.flow.stage === "cancelled";
   let stockResults: StockResult[] = [];
 
   if (action === "reopen") {
-    stockResults = await reopenOrder(loaded, sellerId, wasCancelled);
+    stockResults = await reopenOrder(loaded, sellerId, stockOptions);
   } else {
     const status = CORRECTION_SHIPMENT_STATUS[action];
     if (!status) throw new OrderActionError("notAllowed");
     await moveShipment(loaded, sellerId, status, reason, async (tx) => {
-      if (wasCancelled) {
-        stockResults = await takeStockAgain(tx, order, sellerId);
-      } else if (status === "cancelled") {
-        stockResults = await restoreStock(tx, orderStockLines(order), {
-          reason: "cancel",
-          orderId: order.id,
-          actorId: sellerId,
-        });
-        // A delivered order's commission may already be scheduled, not just pending.
-        await reverseAffiliateCommission(tx, order.id);
-      }
+      stockResults = await applyStockMove(tx, loaded, sellerId, action, stockOptions);
+      // A delivered order's commission may already be scheduled, not just pending.
+      if (status === "cancelled") await reverseAffiliateCommission(tx, order.id);
     });
   }
 
@@ -304,10 +368,11 @@ async function correctClosedOrder(
 
 /** Back to "ready to ship": order and lines confirmed, shipment pending. */
 async function reopenOrder(
-  { order, shipment }: LoadedOrder,
+  loaded: LoadedOrder,
   sellerId: string,
-  wasCancelled: boolean,
+  stockOptions: StockOptions,
 ): Promise<StockResult[]> {
+  const { order, shipment } = loaded;
   const now = new Date().toISOString();
   return db.transaction(async (tx) => {
     const updated = await tx
@@ -337,7 +402,7 @@ async function reopenOrder(
       if (moved.length === 0) throw new OrderActionError("alreadyUpdated");
     }
 
-    return wasCancelled ? takeStockAgain(tx, order, sellerId) : [];
+    return applyStockMove(tx, loaded, sellerId, "reopen", stockOptions);
   });
 }
 
@@ -382,14 +447,14 @@ async function runSellerOrderAction(
   orderId: string,
   action: SellerOrderAction,
   reason: string | undefined,
-  { allowCorrections = false }: { allowCorrections?: boolean } = {},
+  { allowCorrections = false, ...stockOptions }: { allowCorrections?: boolean } & StockOptions = {},
 ) {
   const loaded = await loadOrder(orderId, sellerId);
 
   if (loaded.flow.readOnly) throw new OrderActionError(`readOnly.${loaded.flow.readOnly}`);
   if (!loaded.flow.actions.includes(action)) {
     if (allowCorrections && loaded.flow.corrections.includes(action)) {
-      await correctClosedOrder(loaded, sellerId, action, reason);
+      await correctClosedOrder(loaded, sellerId, action, reason, stockOptions);
       return;
     }
     throw new OrderActionError("notAllowed");
@@ -407,16 +472,69 @@ async function runSellerOrderAction(
   else {
     const status = ACTION_SHIPMENT_STATUS[action];
     if (!status) throw new OrderActionError("notAllowed");
-    await moveShipment(loaded, sellerId, status, reason);
+    let stockResults: StockResult[] = [];
+    await moveShipment(
+      loaded,
+      sellerId,
+      status,
+      reason,
+      action === "return"
+        ? async (tx) => {
+            stockResults = await applyStockMove(tx, loaded, sellerId, action, stockOptions);
+          }
+        : undefined,
+    );
+    await invalidateOrderStock(loaded.order, stockResults);
   }
+}
+
+/** Which items an order is short of, for the dialog that offers to add them. */
+async function loadStockShortage(orderId: string, sellerId: string): Promise<StockShortage[]> {
+  const lines = await db
+    .select({
+      title: orderItems.productName,
+      variantName: orderItems.variantName,
+      need: orderItems.quantity,
+      variantId: orderItems.variantId,
+      productStock: products.quantity,
+      variantStock: productVariants.stock,
+    })
+    .from(orderItems)
+    .leftJoin(products, eq(products.id, orderItems.productId))
+    .leftJoin(productVariants, eq(productVariants.id, orderItems.variantId))
+    .where(and(eq(orderItems.orderId, orderId), eq(orderItems.sellerId, sellerId)));
+
+  return lines.flatMap((line) => {
+    const have = line.variantId ? line.variantStock : Number(line.productStock ?? 0);
+    // An untracked (null-stock) variant is never short.
+    if (have === null || have >= line.need) return [];
+    return [
+      {
+        title: line.variantName ? `${line.title} (${line.variantName})` : line.title,
+        need: line.need,
+        have: Math.max(0, have),
+      },
+    ];
+  });
 }
 
 export async function updateSellerOrder(input: unknown): Promise<ActionResult> {
   const t = await getTranslations("orders.errors");
   try {
     const { sellerId } = await requireSeller();
-    const { orderId, action, reason } = inputSchema.parse(input);
-    await runSellerOrderAction(sellerId, orderId, action, reason, { allowCorrections: true });
+    const { orderId, action, reason, restock, addMissingStock } = inputSchema.parse(input);
+    try {
+      await runSellerOrderAction(sellerId, orderId, action, reason, {
+        allowCorrections: true,
+        restock,
+        addMissingStock,
+      });
+    } catch (error) {
+      if (error instanceof OrderActionError && error.key === "outOfStock") {
+        return { success: false, error: t("outOfStock"), shortage: await loadStockShortage(orderId, sellerId) };
+      }
+      throw error;
+    }
 
     revalidatePath("/orders", "layout");
     return { success: true };
@@ -425,6 +543,47 @@ export async function updateSellerOrder(input: unknown): Promise<ActionResult> {
     if (error instanceof AccessError) return { success: false, error: t("unauthorized") };
     if (error instanceof z.ZodError) return { success: false, error: t("invalid") };
     console.error("updateSellerOrder:", error);
+    return { success: false, error: t("generic") };
+  }
+}
+
+/**
+ * "Put back in stock" on a returned order: for a carrier return, or when the
+ * seller left the box off and later finds the items are fine. The claim on the
+ * order makes it work once, however many times it's pressed.
+ */
+export async function restockReturnedOrder(input: unknown): Promise<ActionResult> {
+  const t = await getTranslations("orders.errors");
+  try {
+    const { sellerId } = await requireSeller();
+    const { orderId } = z.object({ orderId: z.uuid() }).parse(input);
+    const loaded = await loadOrder(orderId, sellerId);
+    const { order, flow } = loaded;
+    if (flow.readOnly) throw new OrderActionError(`readOnly.${flow.readOnly}`);
+    if (!canRestockReturn(flow.stage, order.metadata, false)) throw new OrderActionError("alreadyUpdated");
+
+    const now = new Date().toISOString();
+    const stockResults = await db.transaction(async (tx) => {
+      const claimed = await tx
+        .update(orders)
+        .set({
+          metadata: sql`coalesce(${orders.metadata}, '{}'::jsonb) || ${JSON.stringify({ [RETURN_RESTOCKED_KEY]: now })}::jsonb`,
+          updatedAt: now,
+        })
+        .where(and(eq(orders.id, order.id), sql`${orders.metadata}->>${RETURN_RESTOCKED_KEY} IS NULL`))
+        .returning({ id: orders.id });
+      if (claimed.length === 0) throw new OrderActionError("alreadyUpdated");
+      return restoreStock(tx, orderStockLines(order), { reason: "return", orderId: order.id, actorId: sellerId });
+    });
+
+    await invalidateOrderStock(order, stockResults);
+    revalidatePath("/orders", "layout");
+    return { success: true };
+  } catch (error) {
+    if (error instanceof OrderActionError) return { success: false, error: t(error.key) };
+    if (error instanceof AccessError) return { success: false, error: t("unauthorized") };
+    if (error instanceof z.ZodError) return { success: false, error: t("invalid") };
+    console.error("restockReturnedOrder:", error);
     return { success: false, error: t("generic") };
   }
 }

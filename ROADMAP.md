@@ -781,8 +781,8 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 ### F-42 Product management on mobile + faster stock updates — P0 · owner request
 
 **Why:** Adding, editing and restocking products is the seller's most frequent job, and it is hardest on a phone.
-**Stock today (checked in code, `orders/orders.server.ts`):** cancelling puts stock back automatically, and moving an order out of cancelled takes it again. If there isn't enough stock, the move stops with "Add stock first" and the seller has to leave the order. On a closed order, stock follows only "cancelled", so a returned order doesn't appear to go back on the shelf (confirm in F-42a).
-**Status:** [Planned]
+**Stock today (checked in code, `orders/orders.server.ts`):** cancelling puts stock back automatically, and moving an order out of cancelled takes it again. If there isn't enough stock, the move stops with "Add stock first" and the seller has to leave the order. On a closed order, stock follows only "cancelled", so a returned order doesn't go back on the shelf (confirmed in F-42a).
+**Status:** [In progress] F-42a built 2026-11-03 (§7); F-42b, F-42c and F-42d not started.
 
 - **F-42a · P0 · deps: —** Faster stock around order updates. Normal status changes stay automatic, with no stock input. **Returned order:** one tap, "Back in stock?", on by default, and off for damaged items. **Not enough stock:** show the short items in the order dialog, with a one-tap "Add what's needed" or a number field, then continue the move without leaving. Uses the existing `restoreStock` and `decrementStock`, and each change appears in stock history (F-10).
 - **F-42b · P0 · deps: —** Add/Edit Product pass at phone width: layout, field order, sticky actions, keyboard types (`products/add`, `products/[productId]`).
@@ -1147,7 +1147,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 **Business update 2026-11-03 (nothing built yet; order in §3.1)**
 
-- [ ] F-42a Audit and simplify stock changes around order updates
+- [x] F-42a Audit and simplify stock changes around order updates (2026-11-03; browser E2E pending)
 - [ ] F-42b Add/Edit Product pass at phone width
 - [ ] F-42c Redesign the variants UI for mobile
 - [ ] F-42d Products list usability on mobile
@@ -1214,6 +1214,14 @@ Add each new request here first, with the date and the owner's words, then turn 
 ---
 
 ## 7. Log
+
+### 2026-11-03 — F-42a Faster stock around order updates
+
+- **Return:** the Mark returned dialog has "Put the items back in stock", on by default and off for damaged items. Returned orders whose items aren't back yet (including Bosta returns) get a one-tap "Put back in stock" button that works once.
+- **Not enough stock:** moving an order back on its way now shows the short items in a dialog, with "Add what's needed and continue", instead of stopping with "Add stock first". It raises stock only to what the order needs (`ensureStockAtLeast`, atomic). This is the one-tap option; the number field in the plan wasn't needed.
+- **No double counting:** `orders.metadata.returnRestockedAt` records the return choice, and `order-stock.lib.ts` works out each move from whether the items are on the shelf. Stock changes in the same transaction as the status, and stock history records the reason and actor. No migration.
+- **Behaviour change (approved in the plan):** a return used to leave stock alone; by default it now adds the items back. Moving a cancelled order to returned also keeps stock on the shelf when the box is on, where it used to take the stock.
+- **Checks:** dashboard typecheck passes, 7 unit tests pass, and `order-stock.integration.test.ts` (6 tests through the real server actions) passes on staging. **Browser E2E is still pending.**
 
 ### 2026-11-03 — F-43a, F-43b Products list on the server
 

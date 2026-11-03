@@ -20,6 +20,7 @@ import { storeUrl } from "@workspace/lib/storefront";
 import { getStorefrontProductUrl } from "@/lib/constants";
 import { loadProductStoreLinks } from "../products/_components/product-store-links.data";
 import { isSellerHandledLine, resolveSellerOrderFlow } from "./order-flow.lib";
+import { canRestockReturn } from "./order-stock.lib";
 import {
   parseOrderConfirmTemplate,
   renderOrderConfirmMessage,
@@ -75,6 +76,7 @@ export async function loadSellerOrders(
       giftMessage: true,
       isDigitalOnly: true,
       storeId: true,
+      metadata: true,
       createdAt: true,
       shippedAt: true,
       deliveredAt: true,
@@ -304,6 +306,7 @@ export async function loadSellerOrders(
             }
           : null,
       flow,
+      canRestockReturn: canRestockReturn(flow.stage, o.metadata, Boolean(flow.readOnly)),
       confirmMessage:
         store && confirm && customerPhone && flow.stage === "new"
           ? renderOrderConfirmMessage(confirm.template, {

@@ -2203,7 +2203,15 @@
       "reopen": "Back to ready to ship",
       "more": "More actions",
       "changeStatus": "Change status",
+      "restock": "Put back in stock",
+      "shortage": {
+        "title": "Not enough stock",
+        "description": "This order needs more than you have right now.",
+        "counts": "Need {need}, have {have}",
+        "addAndContinue": "Add what's needed and continue"
+      },
       "done": {
+        "restocked": "Items from order #{number} are back in stock",
         "confirm": "Order #{number} confirmed",
         "ship": "Order #{number} is out for delivery",
         "retry": "Order #{number} is out for delivery",
@@ -2219,6 +2227,8 @@
         "deliverDescription": "Do this once the customer has the order. You can change the status later if needed.",
         "returnTitle": "Mark order #{number} returned?",
         "returnDescription": "Use this when the parcel came back to you. You can change the status later if needed.",
+        "returnRestock": "Put the items back in stock",
+        "returnRestockHint": "Turn this off if they came back damaged.",
         "cancelTitle": "Cancel order #{number}?",
         "cancelDescription": "The items go back into stock and the customer gets an email. You can change the status later if needed."
       },
