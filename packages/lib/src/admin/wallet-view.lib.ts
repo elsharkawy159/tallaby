@@ -24,7 +24,7 @@ export const STORE_WALLET_ENTRY_TYPES = [
 
 export const STORE_WALLET_STATUSES = ["active", "frozen", "closed"] as const;
 export const STORE_TOP_UP_STATUSES = ["pending", "processing", "succeeded", "failed", "cancelled"] as const;
-export const STORE_TOP_UP_PROVIDERS = ["vodafone_cash", "instapay", "kashier"] as const;
+export const STORE_TOP_UP_PROVIDERS = ["instapay", "vodafone_cash", "e_cash", "orange_cash", "we_pay", "kashier"] as const;
 /** Sign of the balance: below zero, exactly zero, above zero. */
 export const STORE_WALLET_BALANCE_FILTERS = ["negative", "zero", "positive"] as const;
 

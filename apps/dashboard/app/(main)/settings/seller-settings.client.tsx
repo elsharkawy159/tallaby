@@ -354,6 +354,7 @@ export function SellerSettingsForm ({
             <PoliciesSection
               returnPolicy={initialData.profile.returnPolicy}
               shippingPolicy={initialData.profile.shippingPolicy}
+              privacyPolicy={initialData.profile.privacyPolicy}
             />
 
             <SectionCard

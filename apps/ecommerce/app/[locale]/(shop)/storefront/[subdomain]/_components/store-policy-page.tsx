@@ -7,8 +7,9 @@ import { whatsappNumber } from "./storefront-footer";
 
 /**
  * A store's own returns, shipping, contact, privacy or terms page when the seller hasn't built
- * one in the website builder (ROADMAP.md F-46). It only states the seller's
- * text; with none, it says to ask the store and never promises a return period.
+ * one in the website builder (ROADMAP.md F-46). It states the seller's text;
+ * with none, it says to ask the store and never promises a return period. Privacy
+ * alone has a general default (owner, 2026-11-03), which promises nothing store-specific.
  */
 export async function StorePolicyPage({
   store,
@@ -30,6 +31,8 @@ export async function StorePolicyPage({
         <p dir="auto" className="mt-6 leading-relaxed whitespace-pre-line">
           {text}
         </p>
+      ) : kind === "privacy" ? (
+        <p className="mt-6 leading-relaxed whitespace-pre-line">{t("privacy.default", { store: store.displayName })}</p>
       ) : (
         <p className="mt-6 leading-relaxed opacity-80">
           {t(hasContact ? `${kind}.empty` : `${kind}.emptyNoContact`, { store: store.displayName })}

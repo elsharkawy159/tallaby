@@ -233,6 +233,9 @@ export async function sendSellerLowStock(orderId: string): Promise<Sent> {
 const TOP_UP_METHODS: Record<string, TopUpMethod> = {
   kashier: "card",
   vodafone_cash: "wallet",
+  e_cash: "wallet",
+  orange_cash: "wallet",
+  we_pay: "wallet",
   instapay: "instapay",
   bank_transfer: "bank_transfer",
   manual: "manual",

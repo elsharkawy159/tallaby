@@ -396,6 +396,7 @@ export const sellers = pgTable("sellers", {
 	verificationDetails: jsonb("verification_details"),
 	returnPolicy: text("return_policy"),
 	shippingPolicy: text("shipping_policy"),
+	privacyPolicy: text("privacy_policy"),
 	isVerified: boolean("is_verified").default(false),
 	approvedCategories: jsonb("approved_categories"),
 	supportEmail: text("support_email").notNull(),

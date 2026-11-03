@@ -60,7 +60,7 @@ export const getSidebarCounts = cache(async function getSidebarCounts(): Promise
         (SELECT count(*)::int FROM ${sellers} WHERE ${sellers.status} = 'pending') AS pending_sellers,
         (SELECT count(*)::int FROM ${sellerWalletTopUps}
           WHERE ${sellerWalletTopUps.status} = 'pending'
-            AND ${sellerWalletTopUps.provider} IN ('vodafone_cash', 'instapay')
+            AND ${sellerWalletTopUps.provider} IN ('instapay', 'vodafone_cash', 'e_cash', 'orange_cash', 'we_pay')
         ) AS pending_store_top_ups,
         (SELECT count(DISTINCT ${sellerFulfillmentServices.sellerId})::int FROM ${sellerFulfillmentServices}
           WHERE ${sellerFulfillmentServices.status} IN ('requested', 'under_review', 'awaiting_agreement')

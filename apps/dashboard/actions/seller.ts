@@ -52,6 +52,7 @@ export async function updateSellerProfile(data: {
   supportPhone?: string;
   returnPolicy?: string;
   shippingPolicy?: string;
+  privacyPolicy?: string;
 }) {
   try {
     const session = await getUser();

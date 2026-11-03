@@ -43,6 +43,7 @@ export async function SellerSettingsData() {
       supportPhone: profile.supportPhone,
       returnPolicy: profile.returnPolicy,
       shippingPolicy: profile.shippingPolicy,
+      privacyPolicy: profile.privacyPolicy,
     },
     documents: (documents ?? []).map((doc) => ({
       id: doc.id,

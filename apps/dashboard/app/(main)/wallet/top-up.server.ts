@@ -5,7 +5,7 @@ import { headers } from "next/headers";
 import { getLocale } from "next-intl/server";
 import { db, eq, users } from "@workspace/db";
 import { getServiceClient } from "@workspace/db/supabase/service";
-import { TOP_UP_PROOF_BUCKET, isOwnTopUpProofPath } from "@workspace/lib/store-wallet";
+import { CARD_TOP_UPS_ENABLED, TOP_UP_PROOF_BUCKET, isOwnTopUpProofPath } from "@workspace/lib/store-wallet";
 import {
   startStoreTopUp,
   submitManualStoreTopUp,
@@ -28,6 +28,7 @@ export type TopUpActionResult = { success: true; sessionUrl: string } | { succes
 
 export async function startTopUp(amount: string): Promise<TopUpActionResult> {
   try {
+    if (!CARD_TOP_UPS_ENABLED) return { success: false, error: "notAllowed" };
     const seller = await requireSeller({ forWrite: true });
     if (!topUpLimiter.check(`top-up:${seller.sellerId}`)) return { success: false, error: "rateLimited" };
 

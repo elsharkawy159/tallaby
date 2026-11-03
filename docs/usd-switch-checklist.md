@@ -9,7 +9,7 @@ Turns on the USD store wallet, Free and Pro plans and AI credits together (`ROAD
 3. **Confirm these are set:**
    - `CRON_SECRET` on the dashboard, for `/api/cron/exchange-rate` and `/api/cron/plan-renewals` (`apps/dashboard/vercel.json`).
    - `EXCHANGE_RATE_API_KEY` on the dashboard: a free ExchangeRate-API key. Without it the job uses the open endpoint, whose terms require a visible attribution link, and no such link exists.
-   - Kashier's real maximum for an EGP payment. `$1,000` must fit; this is still unconfirmed (F-56d).
+   - Card top-ups stay "Soon" (`CARD_TOP_UPS_ENABLED = false`, owner 2026-11-04). Only before turning them on: confirm Kashier's real maximum for an EGP payment. `$1,000` must fit (F-56d).
 4. **Confirm a fresh rate exists.** Admin › Billing shows the latest rate and when it was fetched. If there is none, trigger the exchange-rate cron once, then check it again. Staging had no rate rows on 2026-11-03, so its cron hasn't run yet.
 5. **Dry run.** Admin › Billing shows it, or run `packages/db/scripts/billing-usd-dry-run.sql` (read-only) with the rate on its first line. Review:
    - wallets to convert, and the positive and negative totals in EGP and USD

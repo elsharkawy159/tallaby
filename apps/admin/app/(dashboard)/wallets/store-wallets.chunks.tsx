@@ -67,7 +67,7 @@ export function StoreWalletTotalsCards({ totals }: { totals: StoreWalletTotals }
       hint: `${egp(totals.pendingReviewAmount)} paid`,
       icon: Hourglass,
       tone: totals.pendingReviewCount > 0 ? "warn" : undefined,
-      href: "/wallets?tab=topups&status=pending&provider=vodafone_cash,instapay",
+      href: "/wallets?tab=topups&status=pending&provider=instapay,vodafone_cash,e_cash,orange_cash,we_pay",
     },
     {
       label: "Fees earned, 30 days",

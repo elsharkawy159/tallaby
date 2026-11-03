@@ -27,6 +27,8 @@ describe("policy text", () => {
 
   it("picks the seller's text for the page", () => {
     expect(policyTextFor("returns", policies)).toBe("14 days");
+    expect(policyTextFor("privacy", { ...policies, privacyPolicy: " ours " })).toBe("ours");
+    expect(policyTextFor("privacy", policies)).toBeNull();
   });
 
   it("treats blank or missing text as none", () => {

@@ -24,11 +24,18 @@ export function storePageFallback(slug: string): StorePageFallback {
   return HOME_SLUGS.has(slug) ? "home" : null;
 }
 
-/** The seller's saved text for this page; only returns and shipping have any, and blank counts as none. */
+/** The seller's saved text for this page; contact and terms have none, and blank counts as none. */
 export function policyTextFor(
   kind: StorePolicyKind,
-  policies: { returnPolicy: string | null; shippingPolicy: string | null } | null | undefined,
+  policies: { returnPolicy: string | null; shippingPolicy: string | null; privacyPolicy?: string | null } | null | undefined,
 ): string | null {
-  const text = kind === "returns" ? policies?.returnPolicy : kind === "shipping" ? policies?.shippingPolicy : null;
+  const text =
+    kind === "returns"
+      ? policies?.returnPolicy
+      : kind === "shipping"
+        ? policies?.shippingPolicy
+        : kind === "privacy"
+          ? policies?.privacyPolicy
+          : null;
   return text?.trim() || null;
 }

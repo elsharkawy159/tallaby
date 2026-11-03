@@ -21,7 +21,13 @@ import { egp, topUpCreditLabel } from "../wallets/store-wallets.lib";
 import type { TopUpWithProof } from "./store-top-ups.data";
 import { reviewStoreTopUpAction } from "./store-top-ups.server";
 
-const METHOD: Record<string, string> = { vodafone_cash: "Vodafone Cash", instapay: "InstaPay" };
+const METHOD: Record<string, string> = {
+  instapay: "InstaPay",
+  vodafone_cash: "Vodafone Cash",
+  e_cash: "e& Cash",
+  orange_cash: "Orange Cash",
+  we_pay: "WE Cash",
+};
 
 const when = (iso: string) =>
   new Intl.DateTimeFormat("en-EG", { dateStyle: "medium", timeStyle: "short", timeZone: "Africa/Cairo" }).format(new Date(iso));

@@ -1,9 +1,6 @@
 import {
   BASE_URL,
   DEFAULT_CURRENCY,
-  DELIVERY_ESTIMATE_OTHER,
-  RETURN_WINDOW_DAYS,
-  SHIPPING_COST,
 } from "./constants";
 import { TALLABY_SOCIAL_SAME_AS } from "./social-links";
 import { TALLABY_CONTACT_EMAIL } from "./contact";
@@ -40,8 +37,6 @@ interface Product {
   /** Not counted (0138, F-51): in stock while active, no stock count shown. */
   unlimitedStock?: boolean;
   status?: string;
-  /** Product or its seller ships free (no delivery fee for this item). */
-  freeDelivery?: boolean;
 }
 
 interface Category {
@@ -61,42 +56,6 @@ interface BreadcrumbItem {
   url: string;
 }
 
-/** "2-5" -> [2, 5]; the widest (non-metro) estimate, so it is never optimistic. */
-const [MIN_TRANSIT_DAYS, MAX_TRANSIT_DAYS] = DELIVERY_ESTIMATE_OTHER.split("-").map(Number);
-
-/** Merchant-listing shipping/returns, from the same constants checkout and the policy pages use. */
-function offerShippingDetails(freeDelivery: boolean) {
-  return {
-    "@type": "OfferShippingDetails",
-    shippingRate: {
-      "@type": "MonetaryAmount",
-      value: freeDelivery ? 0 : Number(SHIPPING_COST),
-      currency: DEFAULT_CURRENCY,
-    },
-    shippingDestination: { "@type": "DefinedRegion", addressCountry: "EG" },
-    deliveryTime: {
-      "@type": "ShippingDeliveryTime",
-      handlingTime: { "@type": "QuantitativeValue", minValue: 0, maxValue: 1, unitCode: "DAY" },
-      transitTime: {
-        "@type": "QuantitativeValue",
-        minValue: MIN_TRANSIT_DAYS,
-        maxValue: MAX_TRANSIT_DAYS,
-        unitCode: "DAY",
-      },
-    },
-  };
-}
-
-const MERCHANT_RETURN_POLICY = {
-  "@type": "MerchantReturnPolicy",
-  applicableCountry: "EG",
-  returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
-  merchantReturnDays: RETURN_WINDOW_DAYS,
-  returnMethod: "https://schema.org/ReturnByMail",
-  // Returns are free within the window (the original delivery fee isn't refunded).
-  returnFees: "https://schema.org/FreeReturn",
-};
-
 /** Prices have no scheduled end; Google wants a date, so roll it a year ahead. */
 function priceValidUntil(): string {
   const date = new Date();
@@ -112,8 +71,16 @@ function schemaItemCondition(condition?: string | null): string {
   return "https://schema.org/UsedCondition";
 }
 
-export function generateProductStructuredData(product: Product, locale: SeoLocale = "en") {
-  const productUrl = localizedUrl(locale, `/products/${product.slug}`);
+/**
+ * A product on a store's own site. Every URL and the seller come from the store.
+ * Delivery cost and returns are left out: each seller sets their own, so a fixed
+ * value here would tell Google something the store may not offer.
+ */
+export function generateProductStructuredData(
+  product: Product,
+  store: { home: string; sellerName: string },
+) {
+  const productUrl = `${store.home}/products/${product.slug}`;
   const images = (product.images ?? [])
     .filter((image) => image?.trim())
     .map(absoluteProductImageUrl);
@@ -128,12 +95,10 @@ export function generateProductStructuredData(product: Product, locale: SeoLocal
         : "https://schema.org/OutOfStock",
     itemCondition: schemaItemCondition(product.condition),
     priceValidUntil: priceValidUntil(),
-    shippingDetails: offerShippingDetails(Boolean(product.freeDelivery)),
-    hasMerchantReturnPolicy: MERCHANT_RETURN_POLICY,
     url: productUrl,
     seller: {
       "@type": "Organization",
-      name: "Tallaby.com",
+      name: store.sellerName,
     },
   };
 
@@ -153,18 +118,11 @@ export function generateProductStructuredData(product: Product, locale: SeoLocal
     "@type": "Product",
     name: product.title,
     description: product.description,
-    image: images.length > 0 ? images : [`${BASE_URL}/og-image.jpg`],
+    ...(images.length > 0 ? { image: images } : {}),
     url: productUrl,
     ...(product.sku ? { sku: product.sku } : {}),
-    brand: {
-      "@type": "Brand",
-      name: product?.brand?.name ?? "",
-    },
-    category: product.category ? {
-      "@type": "Thing",
-      name: product?.category?.name ?? "",
-      url: localizedUrl(locale, `/categories/${product.category.slug}`),
-    } : undefined,
+    ...(product.brand?.name ? { brand: { "@type": "Brand", name: product.brand.name } } : {}),
+    ...(product.category?.name ? { category: product.category.name } : {}),
     offers,
     ...(aggregateRating && { aggregateRating }),
     ...(product.stockCount && {

@@ -2117,10 +2117,12 @@
         "description": "Each store now has its own identity. Open your main store's settings to edit it."
       },
       "policies": {
-        "title": "Return and shipping policies",
-        "description": "This text shows on your stores' /returns and /shipping pages, unless you built a page with that link. Left empty, a general wording with your store's name shows instead.",
+        "title": "Return, shipping and privacy policies",
+        "description": "This text shows on /returns, /shipping and /privacy in your stores, unless you designed a page with the same link. If you leave it empty, general wording with your store's name shows instead.",
         "returns": "Return and replacement policy",
-        "shipping": "Shipping policy"
+        "shipping": "Shipping policy",
+        "privacy": "Privacy policy",
+        "privacyHint": "Leave it empty to show a general privacy policy with your store's name."
       },
       "legal": {
         "title": "Legal details",
@@ -5039,6 +5041,29 @@
           "hint": "From the InstaPay app",
           "to": "To InstaPay number",
           "sender": "Phone number linked to InstaPay"
+        },
+        "e_cash": {
+          "name": "e& Cash",
+          "hint": "From any e& Cash wallet",
+          "to": "To this Vodafone Cash number, from your e& Cash wallet",
+          "sender": "Wallet number you sent from"
+        },
+        "orange_cash": {
+          "name": "Orange Cash",
+          "hint": "From any Orange Cash wallet",
+          "to": "To this Vodafone Cash number, from your Orange Cash wallet",
+          "sender": "Wallet number you sent from"
+        },
+        "we_pay": {
+          "name": "WE Cash",
+          "hint": "From any WE wallet",
+          "to": "To this Vodafone Cash number, from your WE wallet",
+          "sender": "Wallet number you sent from"
+        },
+        "card": {
+          "name": "Debit or credit card",
+          "hint": "Not available yet",
+          "soon": "Soon"
         }
       },
       "slip": {

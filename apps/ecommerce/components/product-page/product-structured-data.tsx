@@ -3,7 +3,6 @@ import {
   generateBreadcrumbStructuredData,
   generateProductStructuredData,
 } from "@/lib/structured-data";
-import { localizedUrl } from "@/lib/metadata";
 import { parsePriceJson } from "@workspace/lib";
 import type { Product } from "./product-page.types";
 import type { ProductLocale } from "@/lib/product-translations";
@@ -13,13 +12,17 @@ interface ProductStructuredDataProps {
   locale: ProductLocale;
   /** Localized "Home" label for the breadcrumb trail. */
   homeLabel: string;
+  /** The store this page belongs to: every URL and the seller name come from it. */
+  store: { url: string; name: string };
 }
 
 export function ProductStructuredData({
   product,
   locale,
   homeLabel,
+  store,
 }: ProductStructuredDataProps) {
+  const home = `${store.url}${locale === "ar" ? "" : `/${locale}`}`;
   const price = parsePriceJson(product.price);
   const stockCount = product.trackStock !== false && product.quantity ? Number(product.quantity) : undefined;
   const categoryName =
@@ -64,26 +67,11 @@ export function ProductStructuredData({
     stockCount,
     unlimitedStock: product.trackStock === false,
     status: product.status,
-    // Checkout only waives delivery for seller-level free delivery (the
-    // product-level flag isn't applied), and digital items never ship.
-    freeDelivery:
-      product.seller?.freeDelivery === true || product.productType === "digital",
-  }, locale);
+  }, { home, sellerName: store.name });
 
   const breadcrumbData = generateBreadcrumbStructuredData([
-    { name: homeLabel, url: localizedUrl(locale, "") },
-    ...(product.category?.slug && categoryName
-      ? [
-          {
-            name: categoryName,
-            url: localizedUrl(locale, `/categories/${product.category.slug}`),
-          },
-        ]
-      : []),
-    {
-      name: product.title,
-      url: localizedUrl(locale, `/products/${product.slug}`),
-    },
+    { name: homeLabel, url: home },
+    { name: product.title, url: `${home}/products/${product.slug}` },
   ]);
 
   return (

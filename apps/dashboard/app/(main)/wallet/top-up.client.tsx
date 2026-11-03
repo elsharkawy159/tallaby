@@ -21,6 +21,7 @@ import {
   X,
 } from "lucide-react";
 import {
+  CARD_TOP_UPS_ENABLED,
   MANUAL_TOP_UP_METHODS,
   STORE_TOP_UP_MIN_EGP,
   TALLABY_TOP_UP_ACCOUNTS,
@@ -49,7 +50,13 @@ const STEPS = ["method", "transfer", "receipt"] as const;
 type Step = (typeof STEPS)[number] | "done";
 
 /** Brand colour per method, used only for the slip's edge and the chosen card. */
-const METHOD_COLOR: Record<ManualTopUpMethod, string> = { vodafone_cash: "#E60000", instapay: "#3D1F73" };
+const METHOD_COLOR: Record<ManualTopUpMethod, string> = {
+  instapay: "#3D1F73",
+  vodafone_cash: "#E60000",
+  e_cash: "#E00800",
+  orange_cash: "#FF7900",
+  we_pay: "#5C2D91",
+};
 
 /** "01003272830" → "0100 327 2830", easier to read off a screen and type into a wallet app. */
 const groupNumber = (n: string) => n.replace(/^(\d{4})(\d{3})(\d+)$/, "$1 $2 $3");
@@ -92,7 +99,7 @@ export function TopUpPanel({
   const [step, setStep] = useState<Step>("method");
   const usd = Boolean(billing?.usdLive);
   const [amount, setAmount] = useState(usd ? "10" : "250");
-  const [method, setMethod] = useState<ManualTopUpMethod>("vodafone_cash");
+  const [method, setMethod] = useState<ManualTopUpMethod>(MANUAL_TOP_UP_METHODS[0]);
   const [senderPhone, setSenderPhone] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -445,6 +452,18 @@ export function TopUpPanel({
                         </label>
                       );
                     })}
+                    {!CARD_TOP_UPS_ENABLED && (
+                      <div className="flex items-center gap-3 rounded-xl border border-dashed p-3 opacity-70" aria-disabled="true">
+                        <PaymentMethodLogo method="card" label={t("methods.card.name")} className="size-10" />
+                        <span className="min-w-0 flex-1">
+                          <span className="block text-sm font-semibold">{t("methods.card.name")}</span>
+                          <span className="block text-xs text-muted-foreground">{t("methods.card.hint")}</span>
+                        </span>
+                        <span className="shrink-0 rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
+                          {t("methods.card.soon")}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </fieldset>
               </div>

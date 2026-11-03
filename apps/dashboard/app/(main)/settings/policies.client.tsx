@@ -10,16 +10,22 @@ import { Textarea } from "@workspace/ui/components/textarea";
 import { SectionCard } from "./settings-ui";
 import { savePolicies } from "./policies.server";
 
-/** Return and shipping text for every store on this account (F-46c). */
+/** Return, shipping and privacy text for every store on this account (F-46c). */
 export function PoliciesSection({
   returnPolicy,
   shippingPolicy,
+  privacyPolicy,
 }: {
   returnPolicy: string | null;
   shippingPolicy: string | null;
+  privacyPolicy: string | null;
 }) {
   const t = useTranslations("settings.account");
-  const [values, setValues] = useState({ returnPolicy: returnPolicy ?? "", shippingPolicy: shippingPolicy ?? "" });
+  const [values, setValues] = useState({
+    returnPolicy: returnPolicy ?? "",
+    shippingPolicy: shippingPolicy ?? "",
+    privacyPolicy: privacyPolicy ?? "",
+  });
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const sectionRef = useRef<HTMLDivElement>(null);
@@ -66,6 +72,20 @@ export function PoliciesSection({
               value={values.shippingPolicy}
               onChange={(e) => setValues((v) => ({ ...v, shippingPolicy: e.target.value }))}
             />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="privacyPolicy" className="text-[13px] font-semibold">
+              {t("policies.privacy")}
+            </Label>
+            <Textarea
+              id="privacyPolicy"
+              rows={5}
+              maxLength={5000}
+              disabled={isPending}
+              value={values.privacyPolicy}
+              onChange={(e) => setValues((v) => ({ ...v, privacyPolicy: e.target.value }))}
+            />
+            <p className="text-xs text-muted-foreground">{t("policies.privacyHint")}</p>
           </div>
           {error && <p className="text-sm text-destructive">{error}</p>}
           <div>

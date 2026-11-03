@@ -55,12 +55,12 @@ export function parseStoreTopUpAmount(raw: unknown): TopUpAmountResult {
 }
 
 // ---------------------------------------------------------------------------
-// Manual top-ups (owner request 2026-10-18): the seller transfers by Vodafone
-// Cash or InstaPay, uploads the receipt, and the top-up stays pending until a
+// Manual top-ups (owner request 2026-10-18): the seller transfers by InstaPay
+// or a mobile wallet, uploads the receipt, and the top-up stays pending until a
 // Tallaby admin approves it. Only the approval credits the wallet.
 // ---------------------------------------------------------------------------
 
-export const MANUAL_TOP_UP_METHODS = ["vodafone_cash", "instapay"] as const;
+export const MANUAL_TOP_UP_METHODS = ["instapay", "vodafone_cash", "e_cash", "orange_cash", "we_pay"] as const;
 export type ManualTopUpMethod = (typeof MANUAL_TOP_UP_METHODS)[number];
 
 /** Masked account holder name shown to sellers (owner-provided, 2026-10-18). */
@@ -70,7 +70,14 @@ const TOP_UP_ACCOUNT_HOLDER = "عمر م*** ع******* ا**** م***";
 export const TALLABY_TOP_UP_ACCOUNTS: Record<ManualTopUpMethod, { number: string; holder: string }> = {
   vodafone_cash: { number: "01003272830", holder: TOP_UP_ACCOUNT_HOLDER },
   instapay: { number: "01152372358", holder: TOP_UP_ACCOUNT_HOLDER },
+  // Tallaby has one wallet: the other networks transfer to the Vodafone Cash number.
+  e_cash: { number: "01003272830", holder: TOP_UP_ACCOUNT_HOLDER },
+  orange_cash: { number: "01003272830", holder: TOP_UP_ACCOUNT_HOLDER },
+  we_pay: { number: "01003272830", holder: TOP_UP_ACCOUNT_HOLDER },
 };
+
+/** Card top-ups through Kashier show as "Soon" until the owner confirms them (2026-11-03). */
+export const CARD_TOP_UPS_ENABLED = false;
 
 /** Private bucket: sellers upload into their own folder, admins read through signed URLs. */
 export const TOP_UP_PROOF_BUCKET = "store-top-up-proofs";

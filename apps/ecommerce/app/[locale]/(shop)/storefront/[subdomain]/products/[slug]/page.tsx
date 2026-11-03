@@ -2,12 +2,12 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { ChevronLeft } from "lucide-react";
+import { storeUrl } from "@workspace/lib/storefront";
 import { productPageOf } from "@workspace/store-sections/config";
 import { cn } from "@workspace/ui/lib/utils";
 import { socialShareImageUrl } from "@/lib/metadata";
 import { getProductBySlug } from "@/actions/products";
 import { Link } from "@/i18n/navigation";
-import { BASE_URL } from "@/lib/constants";
 import type { ProductLocale } from "@/lib/product-translations";
 import { resolveStorefront, storeShowsProduct } from "@/lib/storefront.server";
 import { isSubdomainOfflineForRequest, STORE_OFFLINE_METADATA } from "@/lib/store-site/offline.server";
@@ -28,9 +28,9 @@ type StorefrontProductPageProps = {
   params: Promise<{ locale: string; subdomain: string; slug: string }>;
 };
 
-function marketplaceProductUrl(locale: string, slug: string) {
-  const origin = BASE_URL || "https://tallaby.com";
-  return `${origin}${locale === "ar" ? "" : `/${locale}`}/products/${slug}`;
+/** This store's own address for the product, in one language. */
+function storeProductUrl(store: { subdomain: string; customDomain?: string | null }, locale: string, slug: string) {
+  return `${storeUrl(store.subdomain, store.customDomain)}${locale === "ar" ? "" : `/${locale}`}/products/${slug}`;
 }
 
 /**
@@ -55,7 +55,8 @@ export async function generateMetadata({
 }: StorefrontProductPageProps): Promise<Metadata> {
   const { locale, subdomain, slug } = await params;
   if (await isSubdomainOfflineForRequest(subdomain)) return STORE_OFFLINE_METADATA;
-  const { product } = await resolveStoreProduct(locale, subdomain, slug);
+  const { store, product } = await resolveStoreProduct(locale, subdomain, slug);
+  const canonical = storeProductUrl(store, locale, slug);
   const firstImage = (product.images as string[] | undefined)?.find((i) => i?.trim());
   // Seller-entered SEO (dashboard product form) wins over the name and short description.
   const seo = (product as { seo?: { metaTitle?: string; metaDescription?: string; metaKeywords?: string[] } }).seo;
@@ -65,13 +66,19 @@ export async function generateMetadata({
     title: seo?.metaTitle?.trim() || product.title,
     description: seo?.metaDescription?.trim() || product.description || undefined,
     ...(keywords?.length ? { keywords } : {}),
-    // The marketplace page is the canonical copy of a product.
-    alternates: { canonical: marketplaceProductUrl(locale, slug) },
-    ...(firstImage && {
-      openGraph: {
-        images: [{ url: socialShareImageUrl(firstImage), alt: product.title }],
+    // The store's own page is the real copy: there are no marketplace product pages.
+    alternates: {
+      canonical,
+      languages: {
+        ar: storeProductUrl(store, "ar", slug),
+        en: storeProductUrl(store, "en", slug),
+        "x-default": storeProductUrl(store, "ar", slug),
       },
-    }),
+    },
+    openGraph: {
+      url: canonical,
+      ...(firstImage && { images: [{ url: socialShareImageUrl(firstImage), alt: product.title }] }),
+    },
   };
 }
 
@@ -93,7 +100,12 @@ export default async function StorefrontProductPage({ params }: StorefrontProduc
     const { price } = productPricing(product, getDefaultProductVariant(product.productVariants));
     return (
       <ProductPageProvider product={product}>
-        <ProductStructuredData product={product} locale={locale as ProductLocale} homeLabel={tBreadcrumb("home")} />
+        <ProductStructuredData
+          product={product}
+          locale={locale as ProductLocale}
+          homeLabel={tBreadcrumb("home")}
+          store={{ url: storeUrl(store.subdomain, store.customDomain), name: store.displayName }}
+        />
         <MetaViewContent productId={product.id} value={price} />
         <ProductPageDeepLink />
         <StoreProductPage store={store} site={site} locale={locale} product={product} />
@@ -103,6 +115,12 @@ export default async function StorefrontProductPage({ params }: StorefrontProduc
 
   return (
     <>
+      <ProductStructuredData
+        product={product}
+        locale={locale as ProductLocale}
+        homeLabel={tBreadcrumb("home")}
+        store={{ url: storeUrl(store.subdomain, store.customDomain), name: store.displayName }}
+      />
       <div className={cn(s.wrap, "pt-6 pb-10")}>
         <Link
           href="/"

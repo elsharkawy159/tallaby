@@ -17,6 +17,9 @@ export const entryTypeLabel = (type: string) => ENTRY_TYPE_LABELS[type] ?? type.
 export const TOP_UP_PROVIDER_LABELS: Record<string, string> = {
   vodafone_cash: "Vodafone Cash",
   instapay: "InstaPay",
+  e_cash: "e& Cash",
+  orange_cash: "Orange Cash",
+  we_pay: "WE Cash",
   kashier: "Kashier (card)",
 };
 

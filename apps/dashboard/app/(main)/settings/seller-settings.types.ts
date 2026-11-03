@@ -9,6 +9,7 @@ export interface SellerProfileData {
   supportPhone: string | null
   returnPolicy: string | null
   shippingPolicy: string | null
+  privacyPolicy: string | null
 }
 
 export interface SellerDocument {

@@ -77,6 +77,9 @@ export async function StorefrontFooter({ store }: { store: Storefront }) {
             <Link href="/shipping" className={s.footerButton}>
               {t("policy.shipping.title")}
             </Link>
+            <Link href="/privacy" className={s.footerButton}>
+              {t("policy.privacy.title")}
+            </Link>
           </nav>
 
           {(store.supportPhone || store.supportEmail || social.length > 0) && (

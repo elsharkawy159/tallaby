@@ -4,6 +4,9 @@ import { PROVIDER_LABELS as INTEGRATION_PROVIDERS } from '../../stores/stores.li
 const TOP_UP_METHODS: Record<string, string> = {
   vodafone_cash: 'Vodafone Cash',
   instapay: 'InstaPay',
+  e_cash: 'e& Cash',
+  orange_cash: 'Orange Cash',
+  we_pay: 'WE Cash',
 }
 
 /** "Seller · Store", leaving out what is missing or repeated. */

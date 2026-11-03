@@ -2360,8 +2360,7 @@
       },
       "privacy": {
         "title": "Privacy policy",
-        "empty": "To ask how {store} uses your details, get in touch:",
-        "emptyNoContact": "{store} hasn't published a privacy policy yet."
+        "default": "{store} uses your details only to run your orders and serve you.\n\nWhat we collect: your name, phone number, delivery address, your email if you give it, your order details, and the messages you send us.\n\nWhy we use it: to confirm and deliver your order, contact you about it, and answer your questions. If you agree to receive offers, we may send them, and you can stop them at any time.\n\nWho sees it: the delivery company or rider who brings your order, the payment provider if you pay online, and Tallaby, the platform this store runs on. We don't sell your details.\n\nCookies: this site uses cookies to keep your cart and sign-in working. It may also use analytics and advertising tools to measure visits and ads.\n\nYour choices: you can ask {store} to show, correct or delete your details, unless the law requires us to keep them, such as order records.\n\nChanges: we may update this policy. The latest version is always on this page."
       },
       "terms": {
         "title": "Terms and conditions",

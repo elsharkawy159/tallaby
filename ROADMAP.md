@@ -1215,6 +1215,17 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 ## 7. Log
 
+### 2026-11-04 — Top-up wallets, default privacy policy, store product SEO (owner)
+
+- **Confirmed by the owner:** each store shows only its own pages, apart from shared ones such as cart, checkout, orders and profile. "Powered by Tallaby" keeps linking to tallaby.com.
+- **Top-ups:** InstaPay, Vodafone Cash, e& Cash, Orange Cash and WE Cash are on. Card (Kashier) shows "Soon" and the server action refuses it (`CARD_TOP_UPS_ENABLED`). **Call to confirm:** Tallaby has one wallet number, so e&, Orange and WE sellers are told to transfer to the Vodafone Cash number. The method key `we_pay` is kept, shown as "WE Cash".
+- **Privacy:** `/privacy` shows the store's builder page, else the seller's text from Settings (new `sellers.privacy_policy`), else a general default with the store's name. The default isn't indexed, because every store would share it. No lawyer has reviewed it. `/terms` still has only the neutral page. The built-in footer links to it; template footers weren't changed.
+- **Store product SEO, a live bug:** every store product page named `tallaby.com/products/<slug>` as its canonical URL, and that address returns 404 (no marketplace product route exists). Canonical and Open Graph URLs now use the store's own address, with ar, en and x-default hreflang.
+- **Structured data:** product URLs, breadcrumbs and the seller are now the store's. A fixed return window and delivery cost built for the marketplace are gone, because a seller may not offer them. Empty brand and fallback image are gone. Pages without a template product page now output it too.
+- **Migration:** `0142`, staging only (run twice, no errors).
+- **Checks:** `tsc` clean in db, lib, dashboard and backend; admin and ecommerce report only errors outside this work (below). Tests pass in admin, the wallet and admin parts of lib, and ecommerce except `storefront-events.client.test.ts`, which failed in the full run and passed 4 of 4 alone. **Nothing was opened in a browser.**
+- **Not this work:** uncommitted template deletions appeared in `packages/store-sections` during this task, breaking `catalog.ts` type checks. They were left alone and not committed.
+
 ### 2026-11-03 — Owner answers; store pages never redirect to tallaby.com
 
 - **Owner decisions:** no push or deploy until the owner has tested. Terms draft accepted, with a later check on the website. Classic hero tablet ratio approved. Shipping redesign `777aa466` stays. Every Q&A video counts toward the 1-in-5 tips limit. Rate source accepted, saved once a day.

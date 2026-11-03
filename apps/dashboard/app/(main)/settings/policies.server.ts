@@ -8,11 +8,12 @@ import { isAccessError, requireSeller } from "@/lib/auth/require-seller.server";
 const policiesSchema = z.object({
   returnPolicy: z.string().trim().max(5000),
   shippingPolicy: z.string().trim().max(5000),
+  privacyPolicy: z.string().trim().max(5000),
 });
 
 export type SavePoliciesResult = { success: true } | { success: false; error: "invalidInput" | "forbidden" | "generic" };
 
-/** The account's return and shipping text, shown on each store's /returns and /shipping (F-46). */
+/** The account's policy text, shown on each store's /returns, /shipping and /privacy (F-46). */
 export async function savePolicies(input: unknown): Promise<SavePoliciesResult> {
   try {
     await requireSeller({ forWrite: true });
