@@ -47,14 +47,17 @@ export function stockAlertUnsubscribeUrl(storeOrigin: string, token: string): st
 /**
  * Whether the visitor's choice is in stock now, as the store product page
  * counts it: the selected variant's stock (untracked = 0), else the product's
- * own count, else what its variants hold.
+ * own count, else what its variants hold. An unlimited product (0138, F-51) is
+ * always in stock.
  */
 export function alertTargetInStock(input: {
+  trackStock?: boolean | null;
   variantId: string | null;
   variantStock: number | null | undefined;
   productQuantity: number | string | null | undefined;
   variantStocks: Array<number | null | undefined>;
 }): boolean {
+  if (input.trackStock === false) return true;
   if (input.variantId) return Number(input.variantStock ?? 0) > 0;
   if (Number(input.productQuantity ?? 0) > 0) return true;
   return input.variantStocks.some((stock) => Number(stock ?? 0) > 0);

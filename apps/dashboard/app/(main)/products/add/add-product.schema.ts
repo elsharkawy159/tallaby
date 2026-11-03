@@ -191,6 +191,7 @@ export const addProductFormSchema = z
     notes: z.string().optional(),
     // Saved by saveProductSocialProof, not createProduct / updateProduct (social-proof.dto.ts).
     showLiveViews: z.boolean().default(false),
+    trackStock: z.boolean().default(true),
     showLowStockBadge: z.boolean().default(false),
     lowStockThreshold: lowStockThresholdSchema.default(null),
     sellerReviews: z.array(sellerReviewSchema).max(SELLER_REVIEWS_MAX).default([]),
@@ -317,6 +318,7 @@ export const defaultValues = {
   taxClass: "standard" as const,
   notes: "",
   showLiveViews: false,
+  trackStock: true,
   showLowStockBadge: false,
   lowStockThreshold: null,
   sellerReviews: [],

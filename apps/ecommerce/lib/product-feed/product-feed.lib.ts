@@ -50,6 +50,8 @@ export interface FeedProductRow {
   id: string;
   price: unknown;
   quantity: number;
+  /** False: unlimited stock (0138, F-51), always "in stock". */
+  trackStock?: boolean;
   condition: string | null;
   /** Public image URLs, gallery order. */
   images: string[];
@@ -232,7 +234,7 @@ export function buildProductItems(product: FeedProductRow, locale: FeedLocale, s
     const pricing = feedPricing(product.price);
     if (!pricing) return [];
     const single = item(
-      { id: product.id, itemGroupId: null, title, link, availability: product.quantity > 0 ? "in stock" : "out of stock", color: null, size: null },
+      { id: product.id, itemGroupId: null, title, link, availability: product.trackStock === false || product.quantity > 0 ? "in stock" : "out of stock", color: null, size: null },
       pricing,
       images,
     );
@@ -252,7 +254,7 @@ export function buildProductItems(product: FeedProductRow, locale: FeedLocale, s
         title: label ? cleanText(`${translation.title} - ${label}`, TITLE_MAX) : title,
         // `?variant=` preselects it on the product page (findVariantIdByToken accepts the id).
         link: `${link}?variant=${encodeURIComponent(variant.id)}`,
-        availability: variant.stock > 0 ? "in stock" : "out of stock",
+        availability: product.trackStock === false || variant.stock > 0 ? "in stock" : "out of stock",
         color: color ? cleanText(color, 100) : null,
         size: size ? cleanText(size, 100) : null,
       },

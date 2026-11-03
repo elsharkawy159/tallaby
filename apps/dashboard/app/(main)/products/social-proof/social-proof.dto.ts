@@ -4,7 +4,8 @@ import { LOW_STOCK_THRESHOLD_MAX, LOW_STOCK_THRESHOLD_MIN } from "@workspace/sto
 /**
  * The product form's "Reviews and live views" part (0111): reviews the seller
  * really received elsewhere and types in, the live views counter switch, and
- * the low-stock alert (0122, ROADMAP.md F-34).
+ * the low-stock alert (0122, ROADMAP.md F-34), and the stock tracking switch
+ * of the inventory section (0138, F-51).
  * Saved by saveProductSocialProof after createProduct / updateProduct, so
  * actions/products.ts stays untouched.
  */
@@ -28,6 +29,7 @@ export const lowStockThresholdSchema = z.number().int().min(LOW_STOCK_THRESHOLD_
 
 export const productSocialProofSchema = z.object({
   showLiveViews: z.boolean(),
+  trackStock: z.boolean().default(true),
   showLowStockBadge: z.boolean().default(false),
   lowStockThreshold: lowStockThresholdSchema.default(null),
   reviews: z.array(sellerReviewSchema).max(SELLER_REVIEWS_MAX),

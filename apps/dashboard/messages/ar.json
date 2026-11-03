@@ -1111,7 +1111,8 @@
       "stock": {
         "out": "نفد المخزون",
         "low": "متبقي {count}",
-        "in": "متوفر · {count}"
+        "in": "متوفر · {count}",
+        "unlimited": "غير محدود"
       },
       "select": "تحديد {title}",
       "selected": "{count, plural, one {تم تحديد منتج واحد} two {تم تحديد منتجين} few {تم تحديد # منتجات} other {تم تحديد # منتج}}",
@@ -1755,6 +1756,10 @@
         "decrease": "إنقاص",
         "increase": "زيادة",
         "defaultVariantStock": "هذه كمية النوع الافتراضي",
+        "trackStock": "متابعة المخزون",
+        "trackStockOn": "الطلبات تخصم من الكمية، والمنتج يظهر نفد لما تخلص.",
+        "trackStockOff": "مخزون غير محدود: مناسب للمنتجات الرقمية والخدمات وما يُصنع حسب الطلب. الطلبات لا تخصم شيئًا والمنتج لا ينفد أبدًا.",
+        "summaryUnlimited": "مخزون غير محدود",
         "variantsHeading": "الأنواع والخيارات",
         "summaryVariants": "{count, plural, one {نوع واحد} two {نوعان} few {# أنواع} many {# نوعًا} other {# نوع}} · {stock} قطعة",
         "summaryStock": "{stock} قطعة متاحة",

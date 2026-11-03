@@ -1527,6 +1527,8 @@ export const products = pgTable("products", {
 	directCheckout: boolean("direct_checkout").default(false).notNull(),
 	/** Product page shows a live "N people viewing now" line (0111; off by default). */
 	showLiveViews: boolean("show_live_views").default(false).notNull(),
+	/** Unlimited stock (0138, F-51): false = never counted, never sold out; variants inherit it. `quantity` stays as stored. */
+	trackStock: boolean("track_stock").default(true).notNull(),
 	/** Store product page urgency badge and card tag at low real stock (0122, F-34; off by default). */
 	showLowStockBadge: boolean("show_low_stock_badge").default(false).notNull(),
 	/** Badge threshold, 1-99; null = 5 (0122). */
@@ -3121,6 +3123,45 @@ export const storeShippingZones = pgTable("store_shipping_zones", {
 	check("store_shipping_zones_days_check", sql`delivery_days_min >= 0 AND delivery_days_max >= delivery_days_min`),
 ]);
 
+/**
+ * A catalog app installed on a store, with the price the seller agreed to (0139, ROADMAP.md F-47).
+ * Connected integrations stay in store_integrations. Server-only: RLS on, no policies.
+ */
+export const storeAppInstalls = pgTable("store_app_installs", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	sellerId: uuid("seller_id").notNull().references(() => sellers.id, { onDelete: "cascade" }),
+	storeId: uuid("store_id").notNull().references(() => stores.id, { onDelete: "cascade" }),
+	appKey: text("app_key").notNull(),
+	/** free | one_time | monthly | per_order | usage */
+	pricingModel: text("pricing_model").notNull(),
+	priceUsdCents: integer("price_usd_cents").default(0).notNull(),
+	/** Usage apps only: action | minute | hour | day */
+	usageUnit: text("usage_unit"),
+	/** Monthly apps only: the paid period. */
+	currentPeriodStart: timestamp("current_period_start", { withTimezone: true, mode: 'string' }),
+	currentPeriodEnd: timestamp("current_period_end", { withTimezone: true, mode: 'string' }),
+	cancelAtPeriodEnd: boolean("cancel_at_period_end").default(false).notNull(),
+	/** Set when the wallet couldn't pay; the app is removed once this has passed. */
+	graceUntil: timestamp("grace_until", { withTimezone: true, mode: 'string' }),
+	installedBy: uuid("installed_by").references(() => users.id, { onDelete: "set null" }),
+	installedAt: timestamp("installed_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	uninstalledAt: timestamp("uninstalled_at", { withTimezone: true, mode: 'string' }),
+	/** seller | payment_failed | retired */
+	uninstallReason: text("uninstall_reason"),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex("store_app_installs_live_once").using("btree", table.storeId, table.appKey).where(sql`uninstalled_at IS NULL`),
+	index("store_app_installs_seller_idx").using("btree", table.sellerId),
+	index("store_app_installs_renewal_idx").using("btree", table.currentPeriodEnd).where(sql`uninstalled_at IS NULL AND pricing_model = 'monthly'`),
+	index("store_app_installs_grace_idx").using("btree", table.graceUntil).where(sql`uninstalled_at IS NULL AND grace_until IS NOT NULL`),
+	check("store_app_installs_pricing_model_check", sql`pricing_model IN ('free', 'one_time', 'monthly', 'per_order', 'usage')`),
+	check("store_app_installs_usage_unit_check", sql`usage_unit IS NULL OR usage_unit IN ('action', 'minute', 'hour', 'day')`),
+	check("store_app_installs_uninstall_reason_check", sql`uninstall_reason IS NULL OR uninstall_reason IN ('seller', 'payment_failed', 'retired')`),
+	check("store_app_installs_price_check", sql`(pricing_model = 'free' AND price_usd_cents = 0) OR (pricing_model <> 'free' AND price_usd_cents > 0)`),
+	check("store_app_installs_usage_unit_pair_check", sql`(pricing_model = 'usage') = (usage_unit IS NOT NULL)`),
+	check("store_app_installs_period_check", sql`pricing_model <> 'monthly' OR (current_period_start IS NOT NULL AND current_period_end IS NOT NULL)`),
+]);
+
 /** Store-wallet top-ups, confirmed only by the provider webhook (0060, P6-09/P6-10). */
 /** One AI credit balance per seller account (0137, ROADMAP.md F-57). Server-only: RLS on, no policies. */
 export const sellerAiCredits = pgTable("seller_ai_credits", {
@@ -3396,7 +3437,7 @@ export const sellerNotifications = pgTable("seller_notifications", {
 			foreignColumns: [stores.id],
 			name: "seller_notifications_store_id_fkey"
 		}).onDelete("set null"),
-	check("seller_notifications_type_check", sql`type IN ('order_created', 'top_up_approved', 'top_up_rejected', 'question_received', 'review_received', 'carrier_shipment_failed', 'carrier_needs_attention', 'referral_commission_earned', 'referral_payout_paid', 'referral_payout_rejected', 'welcome_gift_granted', 'welcome_gift_expiring', 'welcome_gift_expired', 'low_stock', 'admin_message', 'agent_connected', 'plan_renewed', 'plan_renewal_failed', 'plan_ended')`),
+	check("seller_notifications_type_check", sql`type IN ('order_created', 'top_up_approved', 'top_up_rejected', 'question_received', 'review_received', 'carrier_shipment_failed', 'carrier_needs_attention', 'referral_commission_earned', 'referral_payout_paid', 'referral_payout_rejected', 'welcome_gift_granted', 'welcome_gift_expiring', 'welcome_gift_expired', 'low_stock', 'admin_message', 'agent_connected', 'plan_renewed', 'plan_renewal_failed', 'plan_ended', 'app_renewed', 'app_renewal_failed', 'app_ended')`),
 ]);
 
 /** A carrier's status history for a shipment (0106). One row per (shipment, state, time). Server-only. */

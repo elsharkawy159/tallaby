@@ -32,6 +32,7 @@ type RawProduct = Record<string, unknown> & {
   images?: unknown;
   price?: unknown;
   quantity?: unknown;
+  trackStock?: boolean | null;
   averageRating?: number | null;
   productVariants?: unknown[];
   isTrending?: boolean | null;
@@ -65,6 +66,8 @@ function toSummary(product: RawProduct): ProductSummary {
   const price = parsePriceJson(product.price);
   const final = price.final ?? null;
   const list = price.list ?? null;
+  // Unlimited stock (0138, F-51): never out, and no "N left".
+  const stock = product.trackStock === false ? Number.POSITIVE_INFINITY : Number(product.quantity ?? 0);
   return {
     id: product.id,
     title: product.title ?? "",
@@ -74,9 +77,9 @@ function toSummary(product: RawProduct): ProductSummary {
     price: final,
     compareAtPrice: list != null && final != null && list > final ? list : null,
     rating: product.averageRating ?? null,
-    inStock: Number(product.quantity ?? 0) > 0,
+    inStock: stock > 0,
     // The seller's low-stock alert (0122, F-34): the card says "N left", from the real stock.
-    stockLeft: lowStockLeft(Number(product.quantity ?? 0), { show: product.showLowStockBadge === true, threshold: product.lowStockThreshold }),
+    stockLeft: lowStockLeft(stock, { show: product.showLowStockBadge === true, threshold: product.lowStockThreshold }),
     trending: product.isTrending === true,
     seasonal: product.isSeasonal === true,
   };

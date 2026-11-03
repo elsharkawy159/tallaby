@@ -38,6 +38,8 @@ export type PreviewProductRow = {
   images: unknown;
   price: unknown;
   quantity: string | number | null;
+  /** False: unlimited stock (0138, F-51). Missing counts as tracked. */
+  trackStock?: boolean | null;
   averageRating: number | null;
   reviewCount: number | null;
   directCheckout: boolean;
@@ -101,7 +103,7 @@ function variantPricing(product: PreviewProductRow, variant: PreviewVariantRow) 
   const productList = getPriceList(product.price);
   const ownDiscount = parsed.list != null && parsed.list > parsed.final;
   const list = ownDiscount ? parsed.list : productList != null && productList > parsed.final ? productList : null;
-  return { price: parsed.final, listPrice: list, stock: Number(variant.stock ?? 0) };
+  return { price: parsed.final, listPrice: list, stock: product.trackStock === false ? Number.POSITIVE_INFINITY : Number(variant.stock ?? 0) };
 }
 
 function variantDetail(product: PreviewProductRow, variant: PreviewVariantRow, locale: PreviewLocale): ProductVariantDetail {
@@ -137,8 +139,8 @@ export function toPreviewProductDetail(product: PreviewProductRow, locale: Previ
     .filter((url): url is string => Boolean(url));
   const variants = product.variants.map((variant) => variantDetail(product, variant, locale));
   // Total stock: what the variants hold when there are variants, else the product's own count.
-  const own = Number(product.quantity ?? 0);
-  const quantity = variants.length ? variants.reduce((sum, v) => sum + Math.max(0, v.quantity), 0) : Math.max(0, Number.isFinite(own) ? own : 0);
+  const own = product.trackStock === false ? Number.POSITIVE_INFINITY : Number(product.quantity ?? 0);
+  const quantity = variants.length ? variants.reduce((sum, v) => sum + Math.max(0, v.quantity), 0) : Math.max(0, Number.isNaN(own) ? 0 : own);
   const t = product.translation;
   const content = t?.content ?? "";
   const slug = t?.slug || product.id;

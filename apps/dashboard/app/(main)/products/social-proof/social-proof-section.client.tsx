@@ -26,11 +26,12 @@ export function SocialProofSection({ id = "sec-social-proof" }: { id?: string })
   const { fields, append, remove } = useFieldArray({ control: form.control, name: "sellerReviews", keyName: "key" });
   const showLiveViews = useWatch({ control: form.control, name: "showLiveViews" });
   const showLowStockBadge = useWatch({ control: form.control, name: "showLowStockBadge" });
+  const trackStock = useWatch({ control: form.control, name: "trackStock" });
   const { errors } = useFormState({ control: form.control, name: ["sellerReviews", "lowStockThreshold"] });
   const parts = [
     fields.length ? t("summaryReviews", { count: fields.length }) : null,
     showLiveViews ? t("summaryLiveViews") : null,
-    showLowStockBadge ? t("summaryLowStock") : null,
+    showLowStockBadge && trackStock !== false ? t("summaryLowStock") : null,
   ].filter(Boolean);
 
   return (
@@ -160,6 +161,10 @@ function LowStockAlert() {
   const form = useFormContext<AddProductFormData>();
   const show = useWatch({ control: form.control, name: "showLowStockBadge" });
   const thresholdError = useFieldError("lowStockThreshold");
+  const trackStock = useWatch({ control: form.control, name: "trackStock" });
+
+  // Unlimited stock (F-51) has no count to warn about.
+  if (trackStock === false) return null;
 
   return (
     <div className="flex flex-col gap-3 rounded-xl border bg-muted px-4 py-3.5">

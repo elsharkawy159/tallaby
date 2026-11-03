@@ -35,6 +35,7 @@ export async function GET () {
         price: true,
         images: true,
         quantity: true,
+        trackStock: true,
         condition: true,
       },
       with: {
@@ -72,7 +73,7 @@ export async function GET () {
       if (!imageLink) continue
 
       const stock = Number(product.quantity ?? 0)
-      const availability = stock > 0 ? 'in stock' : 'out of stock'
+      const availability = product.trackStock === false || stock > 0 ? 'in stock' : 'out of stock'
       const description = (richTextToPlainText(translation.description) || translation.title)
         .replace(/\s+/g, ' ')
         .trim()

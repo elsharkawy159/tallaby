@@ -144,6 +144,7 @@ type ResolvedLine = {
     freeDelivery: boolean | null
     dimensions: unknown
     quantity: string | number | null
+    trackStock?: boolean | null
     sku: string | null
     sellerId: string
     sellerFreeDelivery: boolean | null
@@ -201,7 +202,7 @@ async function resolveLineItems(
         return { success: false, error: 'Selected product variant not found' }
       }
 
-      if (Number(variant.stock ?? 0) < item.quantity) {
+      if (product.trackStock !== false && Number(variant.stock ?? 0) < item.quantity) {
         return {
           success: false,
           error: `Insufficient stock for ${product.sku ?? product.id}`,
@@ -220,7 +221,7 @@ async function resolveLineItems(
         sku: variant.sku,
         imageUrl: variant.imageUrl,
       }
-    } else if (Number(product.quantity ?? 0) < item.quantity) {
+    } else if (product.trackStock !== false && Number(product.quantity ?? 0) < item.quantity) {
       return {
         success: false,
         error: `Insufficient stock for ${product.sku ?? product.id}`,
@@ -418,7 +419,9 @@ export async function searchProductsForExternalOrder(query: string) {
         sku: product.sku,
         price,
         image: images[0] ?? null,
-        stock: product.quantity,
+        // Null: unlimited stock (0138, F-51), no count to show.
+        stock: product.trackStock === false ? null : product.quantity,
+        unlimited: product.trackStock === false,
         productType: product.productType,
         variants: product.productVariants.map((v) => ({
           id: v.id,

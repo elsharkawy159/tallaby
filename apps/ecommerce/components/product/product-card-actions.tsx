@@ -23,6 +23,8 @@ export const ProductCardActions = ({
   wishlistItemId,
 }: ProductCardActionsProps) => {
   const productId = product.id || "";
+  // Unlimited stock (0138, F-51) has no limit.
+  const stock = product.trackStock === false ? Number.POSITIVE_INFINITY : product.quantity || 0;
   const { getCartItem } = useCart();
   const cartItem = productId ? getCartItem(productId) : undefined;
   const isInCartStatus = !!cartItem;
@@ -55,7 +57,7 @@ export const ProductCardActions = ({
                 showRemoveButton={true}
                 cartItemId={cartItemId}
                 initialQuantity={cartItemQuantity}
-                productStock={product.quantity || 0}
+                productStock={stock}
                 maxOrderQuantity={safeMaxOrderQty}
               />
             </div>
@@ -78,7 +80,7 @@ export const ProductCardActions = ({
               showIcon={true}
               showText={true}
               className="w-full"
-              stock={product.quantity || 0}
+              stock={stock}
             />
             <WishlistButton
               productId={productId}
@@ -100,7 +102,7 @@ export const ProductCardActions = ({
       <div className={cn("rounded-lg bg-accent shadow-sm", className)}>
         <QuantitySelector
           showRemoveButton={true}
-          productStock={product.quantity || 0}
+          productStock={stock}
           cartItemId={cartItemId}
           initialQuantity={cartItemQuantity}
           maxOrderQuantity={safeMaxOrderQty}
@@ -118,7 +120,7 @@ export const ProductCardActions = ({
       variant="default"
       showIcon={true}
       showText={false}
-      stock={product.quantity || 0}
+      stock={stock}
     />
   );
 };

@@ -29,6 +29,14 @@ function row(over: Partial<BulkProductRow> = {}): BulkProductRow {
   };
 }
 
+describe("unlimited stock (F-51)", () => {
+  it("a stock change leaves an untracked product alone", () => {
+    const r = row({ trackStock: false, variants: [{ id: "v", title: "Red", price: { list: 90, final: 90 }, stock: 3, discountEndsAt: null }] });
+    expect(planProductEdit(r, change({ kind: "stock", mode: "set", value: 7 }), ctx).outcome).toBe("same");
+    expect(planProductEdit(row({ trackStock: true }), change({ kind: "stock", mode: "set", value: 7 }), ctx).outcome).toBe("change");
+  });
+});
+
 const afterPrice = (r: BulkProductRow, c: BulkChangeInput) => {
   const plan = planProductEdit(r, change(c), ctx);
   if (plan.outcome !== "change") throw new Error(`expected change, got ${plan.outcome}`);

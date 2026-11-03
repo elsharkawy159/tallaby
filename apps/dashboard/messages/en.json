@@ -1111,7 +1111,8 @@
       "stock": {
         "out": "Out of stock",
         "low": "{count} left",
-        "in": "In stock · {count}"
+        "in": "In stock · {count}",
+        "unlimited": "Unlimited"
       },
       "select": "Select {title}",
       "selected": "{count, plural, one {# product selected} other {# products selected}}",
@@ -1755,6 +1756,10 @@
         "decrease": "Decrease",
         "increase": "Increase",
         "defaultVariantStock": "This is the stock of the default variant",
+        "trackStock": "Track stock",
+        "trackStockOn": "Orders take from the quantity, and the product sells out when it reaches zero.",
+        "trackStockOff": "Unlimited stock: for digital products, services and made-to-order items. Orders take nothing and it never sells out.",
+        "summaryUnlimited": "Unlimited stock",
         "variantsHeading": "Variants & options",
         "summaryVariants": "{count, plural, one {# variant} other {# variants}} · {stock} in stock",
         "summaryStock": "{stock} in stock",

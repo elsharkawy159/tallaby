@@ -25,6 +25,8 @@ export type BulkProductRow = {
   status: ProductStatus;
   images: unknown;
   quantity: number;
+  /** False: unlimited stock (0138, F-51); stock changes leave it alone. */
+  trackStock?: boolean;
   price: unknown;
   variants: BulkVariantRow[];
 };
@@ -214,6 +216,7 @@ export function planProductEdit(row: BulkProductRow, change: BulkChange, ctx: Pl
       after.status = "draft";
     }
   } else if (change.kind === "stock") {
+    if (row.trackStock === false) return { id: row.id, outcome: "same" };
     after.quantity = nextStock(row.quantity, change);
     after.variants = row.variants.map((v) => ({ id: v.id, stock: nextStock(v.stock, change) }));
   } else {

@@ -79,7 +79,9 @@ export function StorefrontCart({
       <ul className="-mx-1 flex-1 divide-y divide-(--sf-line) overflow-y-auto px-1">
         {items.map((item) => {
           const variantTitle = (item.variant as { title?: string } | null)?.title;
-          const stock = (item.product as { quantity?: number | string }).quantity;
+          // No cap on an unlimited product (0138, F-51).
+          const cartProduct = item.product as { quantity?: number | string; trackStock?: boolean | null };
+          const stock = cartProduct.trackStock === false ? undefined : cartProduct.quantity;
           return (
             <li key={item.id} className="flex gap-3 py-4">
               <Link

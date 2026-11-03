@@ -191,6 +191,8 @@ export async function sendSellerLowStock(orderId: string): Promise<Sent> {
   for (const [sellerId, items] of itemsBySeller(ctx)) {
     const low = items
       .map((item) => {
+        // Unlimited stock (0138, F-51): never low.
+        if (item.product?.trackStock === false) return null;
         const tracked = item.variantId ? item.productVariant?.stock : item.product?.quantity;
         if (tracked === null || tracked === undefined) return null;
         const remaining = Number(tracked);

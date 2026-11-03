@@ -46,7 +46,7 @@ function toLine(r: LineRow): InventoryLine {
 
 /**
  * Stock lines (products without variants, and tracked variants) of the
- * seller's products, optionally for one product only. The title is the
+ * seller's products that track stock (0138, F-51), optionally for one product only. The title is the
  * dashboard locale's, else any.
  */
 function linesQuery(sellerId: string, locale: "ar" | "en", productId: string | null, lowOnly: boolean) {
@@ -58,7 +58,7 @@ function linesQuery(sellerId: string, locale: "ar" | "en", productId: string | n
         (SELECT t.title FROM product_translations t WHERE t.product_id = p.id
           ORDER BY (t.locale = ${locale}) DESC, t.created_at LIMIT 1) AS title
       FROM products p
-      WHERE p.seller_id = ${sellerId} AND p.deleted_at IS NULL AND p.purged_at IS NULL ${productFilter}
+      WHERE p.seller_id = ${sellerId} AND p.deleted_at IS NULL AND p.purged_at IS NULL AND p.track_stock ${productFilter}
     ),
     lines AS (
       SELECT o.id AS product_id, NULL::uuid AS variant_id, o.title, NULL::text AS variant_title,

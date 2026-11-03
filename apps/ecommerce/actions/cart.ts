@@ -290,7 +290,7 @@ export async function addToCart(
     }
 
     // Check variant stock
-    if (Number(variant.stock ?? 0) < qty) {
+    if (product.trackStock !== false && Number(variant.stock ?? 0) < qty) {
       return {
         success: false,
         error: "Insufficient stock for selected variant",
@@ -310,7 +310,7 @@ export async function addToCart(
     };
   } else {
     // Check product stock if no variant
-    if (Number(product.quantity) < qty) {
+    if (product.trackStock !== false && Number(product.quantity) < qty) {
       return { success: false, error: "Insufficient stock" };
     }
   }
@@ -413,7 +413,7 @@ export async function updateCartItem(itemId: string, quantity: number) {
   });
   if (!item) return { success: false, error: "Item not found" };
 
-  if (Number(item.product.quantity) < quantity)
+  if (item.product.trackStock !== false && Number(item.product.quantity) < quantity)
     return { success: false, error: "Insufficient stock" };
   if (quantity <= 0) return removeFromCart(itemId);
 

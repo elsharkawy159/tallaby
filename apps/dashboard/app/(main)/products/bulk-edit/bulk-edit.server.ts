@@ -80,6 +80,7 @@ async function loadRows(q: Queryable, sellerId: string, ids: string[], lock: boo
       status: products.status,
       images: products.images,
       quantity: products.quantity,
+      trackStock: products.trackStock,
       price: products.price,
       isFeatured: products.isFeatured,
       isTrending: products.isTrending,

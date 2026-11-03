@@ -126,7 +126,7 @@ export async function searchProducts(filters: SearchFilters) {
 
     // Stock filter
     if (filters.inStock) {
-      conditions.push(sql`${products.quantity} > 0`);
+      conditions.push(sql`(${products.trackStock} = false OR ${products.quantity} > 0)`);
     }
 
     // Free shipping filter: product-level flag, or the product's seller

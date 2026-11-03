@@ -31,9 +31,15 @@ export function stickyBuyBarClass(desktop?: string, { bottomNav = true }: { bott
   return [`${dock} shadow-[0_-4px_16px_rgba(0,0,0,0.06)] md:relative md:bottom-0 md:z-auto`, desktop, "md:border-0 md:bg-transparent md:p-0 md:shadow-none"].filter(Boolean).join(" ");
 }
 
+/** Whether a variant can be bought: its own stock, or an unlimited product (0138, F-51; variants inherit it). */
+export function variantHasStock(product: Pick<Product, "trackStock">, variant: Pick<ProductVariant, "stock">): boolean {
+  return product.trackStock === false || Number(variant.stock ?? 0) > 0;
+}
+
 export type ProductPricing = {
   price: number;
   listPrice: number | null;
+  /** Infinity for an unlimited product (0138, F-51): every "> 0" and "<= N" reads right; never stored. */
   stock: number;
   discountEndsAt: string | null;
 };
@@ -43,7 +49,7 @@ export function productPricing(product: Product, selectedVariant: ProductVariant
   if (selectedVariant) {
     const parsed = parsePriceJson(selectedVariant.price);
     const variantPrice = parsed.final;
-    const variantStock = Number(selectedVariant.stock ?? 0);
+    const variantStock = product.trackStock === false ? Number.POSITIVE_INFINITY : Number(selectedVariant.stock ?? 0);
     const variantList = parsed.list;
     const productList = getPriceList(product.price);
     const hasOwnDiscount = variantList != null && variantList > variantPrice;
@@ -74,7 +80,7 @@ export function productPricing(product: Product, selectedVariant: ProductVariant
   }
 
   const parsed = parsePriceJson(product.price);
-  const baseStock = product.quantity ? Number(product.quantity) : 0;
+  const baseStock = product.trackStock === false ? Number.POSITIVE_INFINITY : product.quantity ? Number(product.quantity) : 0;
 
   return {
     price: parsed.final,

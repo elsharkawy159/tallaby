@@ -69,6 +69,8 @@ export type VendorProduct = {
   condition?: string | null;
   isFeatured?: boolean | null;
   quantity?: number | null;
+  /** False: unlimited stock (0138, F-51). */
+  trackStock?: boolean | null;
   basePrice?: string | number | null;
   salePrice?: string | number | null;
   brand?: { name: string } | null;

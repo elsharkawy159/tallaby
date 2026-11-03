@@ -261,6 +261,8 @@ export type CatalogProduct = {
   status: ProductStatus;
   images: unknown;
   quantity: number;
+  /** False: unlimited stock (0138, F-51): the sheet leaves its stock cells empty and ignores them. */
+  trackStock?: boolean;
   price: unknown;
   /** live: editable; trashed: in Trash (0123); purged: deleted for good (kept for orders). */
   state: "live" | "trashed" | "purged";
@@ -482,7 +484,8 @@ export function planExcelUpdate(
     if (row.price === INVALID) { skip("invalidPrice"); continue; }
     if (row.salePrice === INVALID) { skip("invalidSalePrice"); continue; }
     if (row.price === 0) { skip("invalidPrice"); continue; }
-    if (row.stock === INVALID) { skip("invalidStock"); continue; }
+    const untracked = product.trackStock === false;
+    if (row.stock === INVALID && !untracked) { skip("invalidStock"); continue; }
     if (!variant && row.status === INVALID) { skip("invalidStatus"); continue; }
 
     const lines: ExcelPreviewLine[] = [];
@@ -507,7 +510,8 @@ export function planExcelUpdate(
     }
 
     // Stock
-    const nextStock = row.stock != null && row.stock !== current.stock ? row.stock : undefined;
+    const sheetStock = untracked || row.stock === INVALID ? null : row.stock;
+    const nextStock = sheetStock != null && sheetStock !== current.stock ? sheetStock : undefined;
     if (nextStock != null) lines.push({ field: "stock", before: current.stock, after: nextStock });
 
     // SKU: changeable when the row is found by id (a SKU-matched row's SKU is its key).
@@ -647,7 +651,7 @@ export function buildUpdateSheet(
       [h.sku]: product.sku ?? "",
       [h.price]: price ? pounds(price.regular) : "",
       [h.salePrice]: price ? pounds(price.sale) : "",
-      [h.stock]: product.quantity,
+      [h.stock]: product.trackStock === false ? "" : product.quantity,
       [h.status]: words[sheetStatusOf(product.status)],
     });
     for (const variant of product.variants) {
@@ -660,7 +664,7 @@ export function buildUpdateSheet(
         [h.sku]: variant.sku ?? "",
         [h.price]: own ? pounds(own.regular) : "",
         [h.salePrice]: own ? pounds(own.sale) : "",
-        [h.stock]: variant.stock,
+        [h.stock]: product.trackStock === false ? "" : variant.stock,
         [h.status]: "",
       });
     }

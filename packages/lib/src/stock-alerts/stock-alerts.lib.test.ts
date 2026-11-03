@@ -60,6 +60,12 @@ describe("alertTargetInStock", () => {
     expect(alertTargetInStock({ variantId: "v", variantStock: null, productQuantity: 9, variantStocks: [] })).toBe(false);
   });
 
+  it("is always in stock for an unlimited product (0138, F-51)", () => {
+    expect(alertTargetInStock({ trackStock: false, variantId: "v", variantStock: 0, productQuantity: 0, variantStocks: [0] })).toBe(true);
+    expect(alertTargetInStock({ trackStock: false, variantId: null, variantStock: null, productQuantity: 0, variantStocks: [] })).toBe(true);
+    expect(alertTargetInStock({ trackStock: true, variantId: null, variantStock: null, productQuantity: 0, variantStocks: [] })).toBe(false);
+  });
+
   it("uses the product count, else any variant's stock", () => {
     expect(alertTargetInStock({ variantId: null, variantStock: null, productQuantity: "3", variantStocks: [] })).toBe(true);
     expect(alertTargetInStock({ variantId: null, variantStock: null, productQuantity: 0, variantStocks: [0, 1] })).toBe(true);

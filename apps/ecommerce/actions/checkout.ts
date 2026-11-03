@@ -378,7 +378,7 @@ export async function validateCheckout(data: {
 
     const unavailableItems = [];
     for (const item of cart.cartItems) {
-      if (Number(item.product.quantity) < item.quantity) {
+      if (item.product.trackStock !== false && Number(item.product.quantity) < item.quantity) {
         unavailableItems.push({
           product: item.product.sku ?? item.productId,
           available: item.product.quantity,

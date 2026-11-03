@@ -497,6 +497,7 @@ async function loadStockShortage(orderId: string, sellerId: string): Promise<Sto
       need: orderItems.quantity,
       variantId: orderItems.variantId,
       productStock: products.quantity,
+      trackStock: products.trackStock,
       variantStock: productVariants.stock,
     })
     .from(orderItems)
@@ -505,6 +506,8 @@ async function loadStockShortage(orderId: string, sellerId: string): Promise<Sto
     .where(and(eq(orderItems.orderId, orderId), eq(orderItems.sellerId, sellerId)));
 
   return lines.flatMap((line) => {
+    // An unlimited product (0138, F-51) is never short.
+    if (line.trackStock === false) return [];
     const have = line.variantId ? line.variantStock : Number(line.productStock ?? 0);
     // An untracked (null-stock) variant is never short.
     if (have === null || have >= line.need) return [];

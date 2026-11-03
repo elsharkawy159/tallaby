@@ -6,13 +6,14 @@ export async function loadProductSocialProof(sellerId: string, productId: string
   const [product] = await db
     .select({
       showLiveViews: products.showLiveViews,
+      trackStock: products.trackStock,
       showLowStockBadge: products.showLowStockBadge,
       lowStockThreshold: products.lowStockThreshold,
     })
     .from(products)
     .where(and(eq(products.id, productId), eq(products.sellerId, sellerId)))
     .limit(1);
-  if (!product) return { showLiveViews: false, showLowStockBadge: false, lowStockThreshold: null, reviews: [] };
+  if (!product) return { showLiveViews: false, trackStock: true, showLowStockBadge: false, lowStockThreshold: null, reviews: [] };
 
   const rows = await db
     .select({ id: reviews.id, reviewerName: reviews.reviewerName, rating: reviews.rating, comment: reviews.comment })
@@ -22,6 +23,7 @@ export async function loadProductSocialProof(sellerId: string, productId: string
 
   return {
     showLiveViews: product.showLiveViews,
+    trackStock: product.trackStock,
     showLowStockBadge: product.showLowStockBadge,
     lowStockThreshold: product.lowStockThreshold,
     reviews: rows.map((row) => ({ id: row.id, reviewerName: row.reviewerName ?? "", rating: row.rating, comment: row.comment ?? "" })),

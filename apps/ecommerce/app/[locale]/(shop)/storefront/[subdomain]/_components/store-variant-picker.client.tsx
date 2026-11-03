@@ -1,5 +1,6 @@
 "use client";
 
+import { variantHasStock } from "@/components/product-page/product-page.lib";
 import { useMemo } from "react";
 import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
@@ -41,8 +42,8 @@ export function StoreVariantPicker({
   const tProduct = useTranslations("product");
 
   const variants = useMemo(
-    () => [...(product.productVariants ?? [])].sort((a, b) => Number(Number(b.stock ?? 0) > 0) - Number(Number(a.stock ?? 0) > 0)),
-    [product.productVariants],
+    () => [...(product.productVariants ?? [])].sort((a, b) => Number(variantHasStock(product, b)) - Number(variantHasStock(product, a))),
+    [product],
   );
 
   const optionNames = useMemo(() => {
@@ -80,7 +81,7 @@ export function StoreVariantPicker({
           const options = [display.option1, display.option2, display.option3].filter((o): o is string => Boolean(o));
           const label = display.title || variant.title || options.map((o) => splitOption(o)[1]).join(" / ") || "";
           const isSelected = selectedVariantId === variant.id;
-          const isAvailable = Number(variant.stock ?? 0) > 0;
+          const isAvailable = variantHasStock(product, variant);
           const color = getVariantColor(variant, locale)?.hex ?? null;
           const thumbnail = getVariantImageUrls(variant)[0];
           const name = isAvailable ? label : `${label} (${tProduct("outOfStock")})`;

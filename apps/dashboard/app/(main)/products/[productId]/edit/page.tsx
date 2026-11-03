@@ -62,6 +62,7 @@ export default async function EditProductPage({
   const defaultValues = {
     ...buildEditDefaultValues(product as Parameters<typeof buildEditDefaultValues>[0], sellerPricing),
     showLiveViews: socialProof.showLiveViews,
+    trackStock: socialProof.trackStock,
     showLowStockBadge: socialProof.showLowStockBadge,
     lowStockThreshold: socialProof.lowStockThreshold,
     sellerReviews: socialProof.reviews,

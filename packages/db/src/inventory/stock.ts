@@ -44,6 +44,34 @@ export class InsufficientStockError extends Error {
 type Tx = Parameters<Parameters<typeof dbType.transaction>[0]>[0];
 
 /**
+ * Unlimited stock (0138, F-51): a variant inherits `products.track_stock`. As a
+ * NOT EXISTS, so a tracked product and a variant with no product keep their
+ * old behaviour.
+ */
+const variantProductTracked = sql`NOT EXISTS (
+  SELECT 1 FROM public.products p
+  WHERE p.id = product_variants.product_id AND p.track_stock = false
+)`;
+
+/**
+ * Whether a line that wrote nothing is on an untracked product, rather than
+ * short of stock. Only read after the guarded UPDATE missed, so tracked orders
+ * cost no extra query.
+ */
+async function isUntrackedLine(tx: Tx, line: StockLine): Promise<boolean> {
+  const [row] =
+    line.kind === "product"
+      ? await tx.select({ trackStock: products.trackStock }).from(products).where(eq(products.id, line.id)).limit(1)
+      : await tx
+          .select({ trackStock: products.trackStock })
+          .from(productVariants)
+          .innerJoin(products, eq(products.id, productVariants.productId))
+          .where(eq(productVariants.id, line.id))
+          .limit(1);
+  return row?.trackStock === false;
+}
+
+/**
  * Sorts lines by (kind, id) so a multi-item order and a concurrent order
  * that shares some of the same rows always acquire row locks in the same
  * order, which rules out a lock-ordering deadlock between the two.
@@ -59,7 +87,8 @@ function sortedLines(lines: readonly StockLine[]): StockLine[] {
  * Atomically decrements stock for each line, in a consistent lock order.
  * Throws InsufficientStockError the instant any line can't be satisfied —
  * the caller's transaction rolls back, so a multi-item order either fully
- * succeeds or fully fails; nothing is decremented partway.
+ * succeeds or fully fails; nothing is decremented partway. A line on an
+ * untracked product (0138) is skipped: nothing written, no result.
  */
 export async function decrementStock(
   tx: Tx,
@@ -86,12 +115,16 @@ export async function decrementStock(
         .where(
           and(
             eq(products.id, line.id),
+            eq(products.trackStock, true),
             gte(products.quantity, sql`${line.quantity}::numeric`)
           )
         )
         .returning({ quantity: products.quantity });
 
-      if (!row) throw new InsufficientStockError("product", line.id);
+      if (!row) {
+        if (await isUntrackedLine(tx, line)) continue;
+        throw new InsufficientStockError("product", line.id);
+      }
       const newQuantity = Number(row.quantity);
       results.push({
         kind: "product",
@@ -110,12 +143,16 @@ export async function decrementStock(
           and(
             eq(productVariants.id, line.id),
             isNotNull(productVariants.stock),
-            gte(productVariants.stock, line.quantity)
+            gte(productVariants.stock, line.quantity),
+            variantProductTracked
           )
         )
         .returning({ stock: productVariants.stock });
 
-      if (!row) throw new InsufficientStockError("variant", line.id);
+      if (!row) {
+        if (await isUntrackedLine(tx, line)) continue;
+        throw new InsufficientStockError("variant", line.id);
+      }
       const newQuantity = Number(row.stock);
       results.push({
         kind: "variant",
@@ -138,7 +175,8 @@ export async function decrementStock(
  *
  * A variant whose stock is NULL (untracked inventory) is skipped rather
  * than failing the whole restore — inventory tracking is opt-in per
- * variant, and a refund must not be blocked by an untracked row.
+ * variant, and a refund must not be blocked by an untracked row. The same
+ * goes for a line on an untracked product (0138).
  */
 export async function restoreStock(
   tx: Tx,
@@ -160,10 +198,13 @@ export async function restoreStock(
           quantity: sql`${products.quantity} + ${line.quantity}`,
           updatedAt: now,
         })
-        .where(eq(products.id, line.id))
+        .where(and(eq(products.id, line.id), eq(products.trackStock, true)))
         .returning({ quantity: products.quantity });
 
-      if (!row) throw new InsufficientStockError("product", line.id);
+      if (!row) {
+        if (await isUntrackedLine(tx, line)) continue;
+        throw new InsufficientStockError("product", line.id);
+      }
       const newQuantity = Number(row.quantity);
       const previousQuantity = newQuantity - line.quantity;
       results.push({
@@ -180,7 +221,7 @@ export async function restoreStock(
           updatedAt: now,
         })
         .where(
-          and(eq(productVariants.id, line.id), isNotNull(productVariants.stock))
+          and(eq(productVariants.id, line.id), isNotNull(productVariants.stock), variantProductTracked)
         )
         .returning({ stock: productVariants.stock });
 
@@ -205,7 +246,8 @@ export async function restoreStock(
  * Raises stock to at least what the lines need, adding only the difference
  * (ROADMAP.md F-42a: "Add what's needed" when an order can't go back on its
  * way). One atomic UPDATE per item, never a read-then-write. Lines for the same
- * item are added up first. Untracked (null-stock) variants are left alone.
+ * item are added up first. Untracked (null-stock) variants and lines on an
+ * untracked product (0138) are left alone.
  * Call decrementStock afterwards in the same transaction.
  */
 export async function ensureStockAtLeast(
@@ -229,12 +271,12 @@ export async function ensureStockAtLeast(
       await tx
         .update(products)
         .set({ quantity: sql`GREATEST(${products.quantity}, ${line.quantity})`, updatedAt: now })
-        .where(and(eq(products.id, line.id), sql`${products.quantity} < ${line.quantity}`));
+        .where(and(eq(products.id, line.id), eq(products.trackStock, true), sql`${products.quantity} < ${line.quantity}`));
     } else {
       await tx
         .update(productVariants)
         .set({ stock: sql`GREATEST(${productVariants.stock}, ${line.quantity})`, updatedAt: now })
-        .where(and(eq(productVariants.id, line.id), sql`${productVariants.stock} < ${line.quantity}`));
+        .where(and(eq(productVariants.id, line.id), sql`${productVariants.stock} < ${line.quantity}`, variantProductTracked));
     }
   }
 }

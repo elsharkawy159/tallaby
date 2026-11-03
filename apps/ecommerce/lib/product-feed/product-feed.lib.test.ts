@@ -149,6 +149,11 @@ describe("items", () => {
     expect(buildProductItems(product({ images: [] }), "ar", STORE)).toEqual([]);
   });
 
+  it("an unlimited product (0138, F-51) is in stock, variants too", () => {
+    const [item] = buildProductItems(product({ quantity: 0, trackStock: false }), "ar", STORE);
+    expect(item?.availability).toBe("in stock");
+  });
+
   it("marks zero stock out of stock and maps used conditions", () => {
     const [item] = buildProductItems(product({ quantity: 0, condition: "used_good" }), "ar", STORE);
     expect(item?.availability).toBe("out of stock");

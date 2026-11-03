@@ -93,7 +93,7 @@ export function registerProductTools(server: McpServer, actor: AgentActor) {
       "Add a new product to the seller's catalog.",
       COPY_RULES,
       "Required: storeId, title {ar, en}, price, images (1–10 public https links to JPEG/PNG/WebP photos, up to 5 MB each; Tallaby downloads and stores them), and a categoryId from search_categories (or a storeCategoryId/storeCategoryName whose category Tallaby already knows).",
-      "Optional: description and content (HTML or plain text) {ar, en}, bulletPoints {ar: [], en: []}, seo, compareAtPrice (the higher \"before\" price), quantity, sku, variants (e.g. sizes and colours: each variant lists the same options in the same order, with its own price and stock), freeDelivery, weightGrams.",
+      "Optional: description and content (HTML or plain text) {ar, en}, bulletPoints {ar: [], en: []}, seo, compareAtPrice (the higher \"before\" price), quantity, trackStock (false = unlimited stock for digital, made-to-order or services: orders never count it), sku, variants (e.g. sizes and colours: each variant lists the same options in the same order, with its own price and stock), freeDelivery, weightGrams.",
       "With a photo the product goes live on the store at once; pass publish: false to keep it as a hidden draft. Show the seller what you will add before adding many products. Pass an idempotencyKey so a retry never adds the product twice.",
     ].join(" "),
     input: agentCreateProductSchema,

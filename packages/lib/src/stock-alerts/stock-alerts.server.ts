@@ -50,7 +50,7 @@ export async function subscribeToStockAlert(
   if (variantId !== null && !isUuid(variantId)) return { ok: false, error: "invalid" };
 
   const [product] = await q
-    .select({ id: products.id, quantity: products.quantity, catalogMode: stores.catalogMode })
+    .select({ id: products.id, quantity: products.quantity, trackStock: products.trackStock, catalogMode: stores.catalogMode })
     .from(products)
     .innerJoin(stores, and(eq(stores.id, input.storeId), eq(stores.sellerId, input.sellerId)))
     .where(
@@ -84,6 +84,7 @@ export async function subscribeToStockAlert(
   if (variantId && !variant) return { ok: false, error: "notFound" };
 
   const inStock = alertTargetInStock({
+    trackStock: product.trackStock,
     variantId,
     variantStock: variant?.stock ?? null,
     productQuantity: product.quantity,
@@ -142,11 +143,11 @@ export async function claimStockAlerts({ limit = STOCK_ALERT_BATCH }: { limit?: 
           AND st.deleted_at IS NULL AND st.status = 'active' AND st.site_status = 'published'
           AND (st.catalog_mode <> 'selected'
                OR EXISTS (SELECT 1 FROM store_products sp WHERE sp.store_id = a.store_id AND sp.product_id = a.product_id))
-          AND CASE
+          AND (p.track_stock = false OR CASE
                 WHEN a.variant_id IS NOT NULL THEN coalesce(v.stock, 0) > 0
                 ELSE p.quantity > 0
                   OR EXISTS (SELECT 1 FROM product_variants pv WHERE pv.product_id = a.product_id AND pv.stock > 0)
-              END
+              END)
         ORDER BY a.created_at
         LIMIT ${n}
         FOR UPDATE OF a SKIP LOCKED

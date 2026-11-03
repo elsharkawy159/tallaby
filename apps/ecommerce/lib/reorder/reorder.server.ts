@@ -44,6 +44,7 @@ export async function planReorder(orderId: string, { userId, scope }: Owned): Pr
         status: products.status,
         deletedAt: products.deletedAt,
         quantity: products.quantity,
+        trackStock: products.trackStock,
         // The store's catalog: every product in "all" mode, its picks in "selected" mode.
         inCatalog: sql<boolean>`(
           EXISTS (SELECT 1 FROM stores s WHERE s.id = ${scope.storeId} AND s.seller_id = ${scope.sellerId} AND s.catalog_mode = 'all')
@@ -69,6 +70,7 @@ export async function planReorder(orderId: string, { userId, scope }: Owned): Pr
     status: row.status,
     deletedAt: row.deletedAt,
     quantity: Number(row.quantity ?? 0) || 0,
+    trackStock: row.trackStock,
     inCatalog: Boolean(row.inCatalog),
     variants: variants.filter((v) => v.productId === row.id).map((v) => ({ id: v.id, stock: Number(v.stock ?? 0) || 0 })),
   }));

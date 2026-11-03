@@ -18,6 +18,8 @@ export type ReorderProduct = {
   deletedAt: string | null;
   /** Product stock (used when the line has no variant). */
   quantity: number;
+  /** False: unlimited stock (0138, F-51), so no line is capped by stock. */
+  trackStock?: boolean;
   /** Whether this store sells it (catalog all/selected mode). */
   inCatalog: boolean;
   variants: { id: string; stock: number }[];
@@ -84,6 +86,7 @@ export function buildReorderLines(
       }
       stock = product.quantity;
     }
+    if (product.trackStock === false) stock = Number.POSITIVE_INFINITY;
     const left = Math.max(0, Math.floor(stock) - (inCart.get(key) ?? 0));
     if (left <= 0) {
       skip("outOfStock");

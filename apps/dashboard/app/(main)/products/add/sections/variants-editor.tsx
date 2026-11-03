@@ -683,6 +683,8 @@ function VariantsTable({
   // A card with a price problem can't stay shut, or the seller never sees it.
   const { errors } = useFormState({ control: form.control, name: "variants" });
   const variantErrors = errors.variants as unknown[] | undefined;
+  // Unlimited stock (0138, F-51): variants inherit it, so their counts are hidden and stay as saved.
+  const trackStock = useWatch({ control: form.control, name: "trackStock" }) !== false;
 
   return (
     <div className="flex flex-col gap-2">
@@ -697,7 +699,7 @@ function VariantsTable({
                 t("columns.variant"),
                 t("columns.images"),
                 t("columns.pricing"),
-                t("columns.stock"),
+                ...(trackStock ? [t("columns.stock")] : []),
                 t("columns.barcode"),
               ].map((heading) => (
                 <th
@@ -811,7 +813,7 @@ function VariantsTable({
                       <VariantPricingFields index={index} sellerPricing={sellerPricing} />
                     )}
                   </td>
-                  <td className="border-b px-3 py-3 max-sm:flex max-sm:items-center max-sm:justify-between max-sm:gap-3 max-sm:border-0 max-sm:p-0">
+                  {trackStock && <td className="border-b px-3 py-3 max-sm:flex max-sm:items-center max-sm:justify-between max-sm:gap-3 max-sm:border-0 max-sm:p-0">
                     <span className="text-xs font-medium text-muted-foreground sm:hidden">{t("columns.stock")}</span>
                     <div className="w-32 max-sm:w-40">
                       {/* The default variant's stock follows the main quantity. */}
@@ -832,7 +834,7 @@ function VariantsTable({
                         )}
                       />
                     </div>
-                  </td>
+                  </td>}
                   <td className={cn(detailCell, "max-sm:order-3")}>
                     <span className={phoneLabel}>{t("columns.barcode")}</span>
                     <Controller

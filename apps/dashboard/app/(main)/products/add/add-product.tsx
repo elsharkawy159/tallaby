@@ -220,6 +220,7 @@ function AddProductForm({
     const {
       sellerCategoryName: _typedCategory,
       showLiveViews: _liveViews,
+      trackStock: _trackStock,
       showLowStockBadge: _lowStockBadge,
       lowStockThreshold: _lowStockThreshold,
       sellerReviews: _reviews,
@@ -234,6 +235,7 @@ function AddProductForm({
   ) => {
     const saved = await saveProductSocialProof(productId, {
       showLiveViews: data.showLiveViews ?? false,
+      trackStock: data.trackStock ?? true,
       showLowStockBadge: data.showLowStockBadge ?? false,
       lowStockThreshold: data.lowStockThreshold ?? null,
       reviews: data.sellerReviews ?? [],

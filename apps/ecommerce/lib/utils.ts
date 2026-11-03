@@ -104,6 +104,7 @@ type ProductCardSource = Record<string, unknown> & {
   images?: ProductCardProps["images"];
   price?: ProductCardProps["price"];
   quantity?: number | string;
+  trackStock?: boolean | null;
   maxOrderQuantity?: number | string;
   averageRating?: number | null;
   reviewCount?: number;
@@ -119,6 +120,7 @@ export function toProductCardProps(product: ProductCardSource): ProductCardProps
     images: product.images,
     price: product.price,
     quantity: product.quantity,
+    trackStock: product.trackStock,
     maxOrderQuantity: product.maxOrderQuantity,
     averageRating: product.averageRating ?? null,
     reviewCount: product.reviewCount ?? 0,

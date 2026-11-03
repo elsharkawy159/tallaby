@@ -28,14 +28,18 @@ const stockStyles = {
 
 export function StockBadge({
   quantity,
+  trackStock,
   className,
 }: {
   quantity?: number | null;
+  /** False: unlimited stock (0138, F-51), shown as "Unlimited". */
+  trackStock?: boolean | null;
   className?: string;
 }) {
   const t = useTranslations("products.list.stock");
   const locale = useLocale();
-  const level = stockLevel(quantity);
+  const unlimited = trackStock === false;
+  const level = unlimited ? "in" : stockLevel(quantity);
   const count = formatNumber(quantity ?? 0, locale);
 
   return (
@@ -46,7 +50,7 @@ export function StockBadge({
         className
       )}
     >
-      {t(level, { count })}
+      {unlimited ? t("unlimited") : t(level, { count })}
     </span>
   );
 }
@@ -197,7 +201,7 @@ export function ProductCard({
         </div>
 
         <div className="pointer-events-none absolute bottom-2.5 start-2.5">
-          <StockBadge quantity={product.quantity} className="shadow-[0_0_0_2px_var(--card)]" />
+          <StockBadge quantity={product.quantity} trackStock={product.trackStock} className="shadow-[0_0_0_2px_var(--card)]" />
         </div>
       </div>
 

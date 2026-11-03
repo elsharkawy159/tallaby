@@ -421,6 +421,7 @@ export async function agentCreateProduct(
         sellerCategoryId: taxonomy.sellerCategoryId ?? null,
         sku,
         quantity: String(quantity),
+        ...(input.trackStock !== undefined && { trackStock: input.trackStock }),
         images,
         price: buildAgentPrice(input.price, input.compareAtPrice, discountEndsAt),
         status,
@@ -532,6 +533,7 @@ export async function agentUpdateProduct(
         discountEndsAt,
       );
     }
+    if (input.trackStock !== undefined) patch.trackStock = input.trackStock;
     if (input.quantity !== undefined) patch.quantity = String(input.quantity);
     else if (input.variants?.length) patch.quantity = String(variantStockTotal(input.variants));
     if (input.sku) patch.sku = input.sku.trim();
@@ -662,6 +664,8 @@ export type AgentProductRow = {
   price: number;
   compareAtPrice: number | null;
   stock: number;
+  /** False: unlimited stock (0138, F-51); `stock` is then not meaningful. */
+  trackStock: boolean;
   variants: number;
   sku: string | null;
   image: string | null;
@@ -681,7 +685,7 @@ export async function agentSearchProducts(
     input.status === "trash" ? isNotNull(products.deletedAt) : isNull(products.deletedAt),
     input.status === "active" || input.status === "draft" ? eq(products.status, input.status) : undefined,
     input.storeCategoryId ? eq(products.sellerCategoryId, input.storeCategoryId) : undefined,
-    input.maxStock !== undefined ? sql`${products.quantity}::numeric <= ${input.maxStock}` : undefined,
+    input.maxStock !== undefined ? sql`${products.trackStock} AND ${products.quantity}::numeric <= ${input.maxStock}` : undefined,
     pattern
       ? or(
           ilike(products.sku, pattern),
@@ -693,7 +697,7 @@ export async function agentSearchProducts(
   const [rows, [counted]] = await Promise.all([
     db.query.products.findMany({
       where,
-      columns: { id: true, status: true, deletedAt: true, price: true, quantity: true, sku: true, images: true, sellerCategoryId: true, updatedAt: true },
+      columns: { id: true, status: true, deletedAt: true, price: true, quantity: true, trackStock: true, sku: true, images: true, sellerCategoryId: true, updatedAt: true },
       with: {
         productTranslations: { columns: { locale: true, title: true } },
         productVariants: { columns: { id: true, stock: true } },
@@ -720,6 +724,7 @@ export async function agentSearchProducts(
       price: price.price,
       compareAtPrice: price.compareAtPrice,
       stock: variantStock ?? Number(p.quantity ?? 0),
+      trackStock: p.trackStock,
       variants: p.productVariants.length,
       sku: p.sku,
       image: first ? productImageUrl(first, supabaseUrl()) : null,
@@ -780,6 +785,7 @@ export async function agentGetProduct(ctx: AgentProductContext, productId: strin
     compareAtPrice: price.compareAtPrice,
     discountEndsAt: price.discountEndsAt,
     quantity: Number(product.quantity ?? 0),
+    trackStock: product.trackStock,
     images: imageList(product.images).map((path) => productImageUrl(path, base)),
     category: product.category ? { id: product.category.id, name: product.category.name, nameAr: product.category.nameAr } : null,
     storeCategory: storeCategory ?? null,

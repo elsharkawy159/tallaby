@@ -56,6 +56,16 @@ function row(over: Partial<ParsedSheetRow> = {}): ParsedSheetRow {
 
 const ctx = { canPublish: true };
 
+describe("unlimited stock (F-51)", () => {
+  it("exports empty stock cells and ignores any value in them", () => {
+    const catalog = [product({ trackStock: false, quantity: 4 })];
+    const sheet = buildUpdateSheet(catalog, "en", 100);
+    expect(sheet.rows[0]?.Stock).toBe("");
+    const rows = parseSheetRows([{ ...sheet.rows[0]!, Stock: 99 }], mapHeaders(sheet.header));
+    expect(previewFromPlan(planExcelUpdate(rows, catalog, ctx))).toMatchObject({ changeCount: 0, skipCount: 0, sameCount: 1 });
+  });
+});
+
 describe("headers", () => {
   it("maps English and Arabic headers (and aliases) to columns", () => {
     const en = mapHeaders(Object.values(EXCEL_UPDATE_HEADERS.en));

@@ -38,7 +38,7 @@ export type ProductsCategoryOption = { id: string; name: string };
 
 const baseConditions = (sellerId: string) => [eq(products.sellerId, sellerId), isNull(products.deletedAt)];
 
-/** The same tab rules as stockLevel(): out at 0 or below, low under the threshold. */
+/** The same tab rules as stockLevel(): out at 0 or below, low under the threshold. Unlimited stock (0138) is neither. */
 function tabCondition(tab: ProductsTab): SQL | undefined {
   switch (tab) {
     case "published":
@@ -46,9 +46,9 @@ function tabCondition(tab: ProductsTab): SQL | undefined {
     case "draft":
       return sql`${products.status} <> 'active'`;
     case "lowStock":
-      return sql`${products.quantity} > 0 AND ${products.quantity} < ${LOW_STOCK_THRESHOLD}`;
+      return sql`${products.trackStock} AND ${products.quantity} > 0 AND ${products.quantity} < ${LOW_STOCK_THRESHOLD}`;
     case "outOfStock":
-      return sql`${products.quantity} <= 0`;
+      return sql`${products.trackStock} AND ${products.quantity} <= 0`;
     default:
       return undefined;
   }
@@ -98,7 +98,8 @@ function sortOrder(sort: ProductsSort, locale: string): SQL[] {
     case "priceDesc":
       return [desc(buyerPrice), ...newest];
     case "stockAsc":
-      return [asc(products.quantity), ...newest];
+      // Unlimited stock (0138) has no count: last.
+      return [sql`CASE WHEN ${products.trackStock} THEN ${products.quantity} END ASC NULLS LAST`, ...newest];
     case "name": {
       // The title the list shows: this language first, then the other one.
       const language = locale.startsWith("ar") ? "ar" : "en";
@@ -129,6 +130,7 @@ async function loadProductsByIds(sellerId: string, ids: string[], withDescriptio
       condition: true,
       isFeatured: true,
       quantity: true,
+      trackStock: true,
       price: true,
       averageRating: true,
       reviewCount: true,
@@ -166,6 +168,7 @@ function toVendorProduct(p: LoadedProduct, isArabic: boolean): Omit<VendorProduc
     condition: p.condition ?? null,
     isFeatured: p.isFeatured ?? false,
     quantity: Number(p.quantity) || 0,
+    trackStock: p.trackStock,
     basePrice: price.base,
     salePrice: price.final,
     brand: p.brand ? { name: p.brand.name } : null,

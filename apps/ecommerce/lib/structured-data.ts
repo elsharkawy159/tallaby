@@ -37,6 +37,8 @@ interface Product {
   averageRating: number;
   reviewCount: number;
   stockCount?: number;
+  /** Not counted (0138, F-51): in stock while active, no stock count shown. */
+  unlimitedStock?: boolean;
   status?: string;
   /** Product or its seller ships free (no delivery fee for this item). */
   freeDelivery?: boolean;
@@ -121,7 +123,7 @@ export function generateProductStructuredData(product: Product, locale: SeoLocal
     price: product.price.final,
     priceCurrency: DEFAULT_CURRENCY,
     availability:
-      product.status === "active" && (product.stockCount || 0) > 0
+      product.status === "active" && (product.unlimitedStock || (product.stockCount || 0) > 0)
         ? "https://schema.org/InStock"
         : "https://schema.org/OutOfStock",
     itemCondition: schemaItemCondition(product.condition),

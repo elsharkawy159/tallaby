@@ -35,7 +35,9 @@ export const ProductStockBadge = ({ hasStock, isLowStock, stock }: ProductStockB
         ? t("outOfStock")
         : isLowStock
           ? t("onlyLeft", { count: stock })
-          : t("inStockAvailable", { count: stock })}
+          : Number.isFinite(stock)
+            ? t("inStockAvailable", { count: stock })
+            : t("inStock")}
     </span>
   );
 };

@@ -88,6 +88,7 @@ async function loadProducts(q: Queryable, sellerId: string, match: SQL, lock: bo
       status: products.status,
       images: products.images,
       quantity: products.quantity,
+      trackStock: products.trackStock,
       price: products.price,
       deletedAt: products.deletedAt,
       purgedAt: products.purgedAt,

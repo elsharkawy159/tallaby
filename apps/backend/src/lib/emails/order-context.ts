@@ -41,7 +41,7 @@ async function loadOrder(orderId: string) {
       userAddress_shippingAddressId: true,
       orderItems: {
         with: {
-          product: { columns: { images: true, sku: true, quantity: true } },
+          product: { columns: { images: true, sku: true, quantity: true, trackStock: true } },
           productVariant: { columns: { sku: true, stock: true, imageUrl: true } },
           seller: { columns: { displayName: true } },
         },

@@ -158,6 +158,27 @@ describe.skipIf(!TEST_DATABASE_URL)("stock on order moves (integration)", { time
     expect((row!.m as Record<string, unknown> | null)?.returnRestockedAt).toBeUndefined();
   });
 
+  it("an unlimited product (0138, F-51) is never short and never moves", async () => {
+    const { db, eq, products } = await load();
+    await setStock(0);
+    await db.update(products).set({ trackStock: false }).where(eq(products.id, productId));
+    try {
+      expect(await act("ship")).toEqual({ success: true });
+      expect(await act("return", { restock: true })).toEqual({ success: true });
+      expect(await stock()).toBe(0);
+      // Back on its way: no shortage dialog, nothing taken.
+      expect(await act("reopen")).toEqual({ success: true });
+      expect(await stock()).toBe(0);
+      expect(await act("cancel")).toEqual({ success: true });
+      expect(await stock()).toBe(0);
+      expect(await act("reopen", { addMissingStock: true })).toEqual({ success: true });
+      expect(await stock()).toBe(0);
+    } finally {
+      await db.update(products).set({ trackStock: true }).where(eq(products.id, productId));
+      await setStock(5);
+    }
+  });
+
   it("another seller can't touch the order", async () => {
     const { restockReturnedOrder } = await load();
     session.sellerId = randomUUID();

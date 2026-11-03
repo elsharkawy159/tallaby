@@ -220,6 +220,7 @@ export function buildEditDefaultValues(
     notes: "",
     // Filled from loadProductSocialProof by the edit page.
     showLiveViews: false,
+    trackStock: true,
     showLowStockBadge: false,
     lowStockThreshold: null,
     sellerReviews: [],

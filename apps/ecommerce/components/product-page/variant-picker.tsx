@@ -1,5 +1,6 @@
 "use client";
 
+import { variantHasStock } from "./product-page.lib";
 import { useMemo } from "react";
 import Image from "next/image";
 import { Check } from "lucide-react";
@@ -47,9 +48,9 @@ export const VariantPicker = ({
     () =>
       [...(product.productVariants ?? [])].sort(
         (a, b) =>
-          Number(Number(b.stock ?? 0) > 0) - Number(Number(a.stock ?? 0) > 0),
+          Number(variantHasStock(product, b)) - Number(variantHasStock(product, a)),
       ),
-    [product.productVariants],
+    [product],
   );
 
   const variantOptionLabel = useMemo(() => {
@@ -85,8 +86,7 @@ export const VariantPicker = ({
   ) => {
     const display = getVariantDisplayFields(variant, locale);
     const isSelected = selectedVariantId === variant.id;
-    const variantStock = Number(variant.stock ?? 0);
-    const isAvailable = variantStock > 0;
+    const isAvailable = variantHasStock(product, variant);
     const isDefaultVariant = variant.isDefault === true;
     const optionParts: string[] = [];
     if (display.option1) optionParts.push(display.option1);

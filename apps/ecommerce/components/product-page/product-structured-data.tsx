@@ -21,7 +21,7 @@ export function ProductStructuredData({
   homeLabel,
 }: ProductStructuredDataProps) {
   const price = parsePriceJson(product.price);
-  const stockCount = product.quantity ? Number(product.quantity) : undefined;
+  const stockCount = product.trackStock !== false && product.quantity ? Number(product.quantity) : undefined;
   const categoryName =
     product.category
       ? locale === "ar"
@@ -62,6 +62,7 @@ export function ProductStructuredData({
     averageRating: Number(product.averageRating ?? 0),
     reviewCount: Number(product.reviewCount ?? 0),
     stockCount,
+    unlimitedStock: product.trackStock === false,
     status: product.status,
     // Checkout only waives delivery for seller-level free delivery (the
     // product-level flag isn't applied), and digital items never ship.

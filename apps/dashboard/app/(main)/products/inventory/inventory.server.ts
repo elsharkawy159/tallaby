@@ -31,7 +31,7 @@ export async function restockAction(input: unknown): Promise<RestockResult> {
       const [product] = await tx
         .select({ id: products.id, sellerId: products.sellerId, categoryId: products.categoryId, brandId: products.brandId })
         .from(products)
-        .where(and(eq(products.id, productId), eq(products.sellerId, seller.sellerId), isNull(products.deletedAt), isNull(products.purgedAt)))
+        .where(and(eq(products.id, productId), eq(products.sellerId, seller.sellerId), isNull(products.deletedAt), isNull(products.purgedAt), eq(products.trackStock, true)))
         .limit(1);
       if (!product) return null;
 

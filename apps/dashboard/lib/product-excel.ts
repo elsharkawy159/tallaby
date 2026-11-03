@@ -58,7 +58,8 @@ export function productsToExcelRows(
     Description: product.description ?? "",
     Category: product.category?.name ?? "",
     Brand: product.brand?.name ?? "",
-    Quantity: product.quantity ?? 0,
+    // Unlimited stock (0138, F-51) has no count.
+    Quantity: product.trackStock === false ? "" : (product.quantity ?? 0),
     "Base Price": toNumber(product.basePrice),
     "List Price": toNumber(product.basePrice),
     "Final Price": toNumber(product.salePrice ?? product.basePrice),

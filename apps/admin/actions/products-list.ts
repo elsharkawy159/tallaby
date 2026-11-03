@@ -131,13 +131,13 @@ async function buildWhere(query: AdminProductsQuery): Promise<SQL | undefined> {
   const stockConditions = (query.stock ?? []).flatMap((level): SQL[] => {
     switch (level as ProductStockLevel) {
       case "out-of-stock":
-        return [sql`${quantityNumber} <= 0`];
+        return [sql`${products.trackStock} and ${quantityNumber} <= 0`];
       case "low-stock":
         return [
-          sql`${quantityNumber} > 0 and ${quantityNumber} < ${LOW_STOCK_THRESHOLD}`,
+          sql`${products.trackStock} and ${quantityNumber} > 0 and ${quantityNumber} < ${LOW_STOCK_THRESHOLD}`,
         ];
       case "in-stock":
-        return [sql`${quantityNumber} >= ${LOW_STOCK_THRESHOLD}`];
+        return [sql`(${products.trackStock} = false or ${quantityNumber} >= ${LOW_STOCK_THRESHOLD})`];
       default:
         return [];
     }

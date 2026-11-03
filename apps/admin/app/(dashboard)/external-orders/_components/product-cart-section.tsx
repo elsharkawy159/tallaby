@@ -44,6 +44,8 @@ interface SearchProduct {
   price: number
   image: string | null
   stock: number | string | null
+  /** Unlimited stock (0138, F-51). */
+  unlimited?: boolean
   variants: SearchVariant[]
 }
 
@@ -399,9 +401,11 @@ export function ProductCartSection({
                                 {variant.label}
                               </span>
                               <span className="text-xs text-muted-foreground">
-                                {variant.stock > 0
-                                  ? `${variant.stock} in stock`
-                                  : 'Out of stock'}
+                                {product.unlimited
+                                  ? 'Unlimited'
+                                  : variant.stock > 0
+                                    ? `${variant.stock} in stock`
+                                    : 'Out of stock'}
                                 {variantInCart > 0 && ` · in cart ×${variantInCart}`}
                               </span>
                             </span>

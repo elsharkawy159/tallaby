@@ -23,6 +23,8 @@ export interface ProductCardProps {
       }
     | null;
   quantity?: number | string;
+  /** False: unlimited stock (0138, F-51). */
+  trackStock?: boolean | null;
   maxOrderQuantity?: number | string;
   /** Seller flags (product form › Visibility): a badge on the card. */
   isTrending?: boolean | null;

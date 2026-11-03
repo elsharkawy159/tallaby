@@ -103,6 +103,8 @@ const productFields = {
   discountEndsAt: z.string().datetime({ offset: true }).nullable(),
   /** Stock for a product without variants. */
   quantity: stock,
+  /** False: unlimited stock (digital, made to order, services): orders never count it and it never sells out. */
+  trackStock: z.boolean(),
   sku: z.string().trim().min(1).max(L.sku),
   /** A Tallaby category id from search_categories (required on create unless the store category was picked from one). */
   categoryId: uuid,
@@ -132,6 +134,7 @@ export const agentCreateProductSchema = z
     compareAtPrice: productFields.compareAtPrice.optional(),
     discountEndsAt: productFields.discountEndsAt.optional(),
     quantity: productFields.quantity.optional(),
+    trackStock: productFields.trackStock.optional(),
     sku: productFields.sku.optional(),
     categoryId: productFields.categoryId.optional(),
     storeCategoryId: productFields.storeCategoryId.optional(),
@@ -160,6 +163,7 @@ export const agentUpdateProductSchema = z
     compareAtPrice: productFields.compareAtPrice.optional(),
     discountEndsAt: productFields.discountEndsAt.optional(),
     quantity: productFields.quantity.optional(),
+    trackStock: productFields.trackStock.optional(),
     sku: productFields.sku.optional(),
     categoryId: productFields.categoryId.optional(),
     storeCategoryId: productFields.storeCategoryId.optional(),
@@ -191,7 +195,7 @@ export const agentSearchProductsSchema = z
     query: z.string().trim().max(100).optional(),
     status: z.enum(["active", "draft", "trash"]).optional(),
     storeCategoryId: uuid.optional(),
-    /** Only products with at most this much stock. */
+    /** Only products with at most this much stock (unlimited products never match). */
     maxStock: z.number().int().min(0).max(L.maxStock).optional(),
     limit: z.number().int().min(1).max(L.searchLimit).default(20),
     cursor: z.number().int().min(0).max(100_000).default(0),

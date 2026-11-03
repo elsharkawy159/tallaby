@@ -13,6 +13,20 @@ const product = (over: Partial<ReorderProduct> & { id: string }): ReorderProduct
 });
 
 describe("buildReorderLines", () => {
+  it("never caps or skips an unlimited product (0138, F-51)", () => {
+    const plan = buildReorderLines(
+      [
+        { productId: "a", variantId: null, quantity: 50 },
+        { productId: "b", variantId: "b-red", quantity: 50 },
+      ],
+      [product({ id: "a", quantity: 0, trackStock: false }), product({ id: "b", trackStock: false, variants: [{ id: "b-red", stock: 0 }] })],
+      { sellerId: seller },
+    );
+    expect(plan.skipped).toEqual([]);
+    expect(plan.capped).toBe(0);
+    expect(plan.lines.map((l) => l.quantity)).toEqual([50, 50]);
+  });
+
   it("puts back available lines with their quantities", () => {
     const plan = buildReorderLines(
       [

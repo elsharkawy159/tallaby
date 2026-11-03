@@ -3,6 +3,7 @@
 import { Controller, useFormContext, useFormState, useWatch } from "react-hook-form";
 import { useTranslations } from "next-intl";
 import { Boxes, Wand2 } from "lucide-react";
+import { Switch } from "@workspace/ui/components/switch";
 import type { SellerPricingSettings } from "@/lib/utils/product-pricing.lib";
 import {
   FieldError,
@@ -33,7 +34,9 @@ export function InventorySection({
   const form = useFormContext<AddProductFormData>();
   const quantityError = useFieldError("quantity");
   const variantsError = useFieldError("variants");
-  const [variants, quantity, sku] = useWatch({ control: form.control, name: ["variants", "quantity", "sku"] });
+  const [variants, quantity, sku, trackStockValue] = useWatch({ control: form.control, name: ["variants", "quantity", "sku", "trackStock"] });
+  // Unlimited stock (0138, F-51): the count is hidden, and stays saved as it was.
+  const trackStock = trackStockValue !== false;
   const variantCount = (variants ?? []).length;
   const hasVariants = variantCount > 0;
   const { submitCount } = useFormState({ control: form.control });
@@ -42,7 +45,9 @@ export function InventorySection({
     : typeof quantity === "number"
       ? quantity
       : 0;
-  const summary = hasVariants
+  const summary = !trackStock
+    ? t("summaryUnlimited")
+    : hasVariants
     ? t("summaryVariants", { count: variantCount, stock })
     : stock > 0
       ? t("summaryStock", { stock })
@@ -55,10 +60,24 @@ export function InventorySection({
       title={t("title")}
       description={t("description")}
       summary={summary}
-      summaryTone={stock > 0 ? "ok" : submitCount > 0 ? "bad" : "need"}
+      summaryTone={!trackStock || stock > 0 ? "ok" : submitCount > 0 ? "bad" : "need"}
       invalid={Boolean(quantityError || variantsError)}
-      filled={hasVariants || Boolean(sku?.trim()) || quantity !== defaultValues.quantity}
+      filled={hasVariants || !trackStock || Boolean(sku?.trim()) || quantity !== defaultValues.quantity}
     >
+      <Controller
+        control={form.control}
+        name="trackStock"
+        render={({ field }) => (
+          <label htmlFor="track-stock" className="flex cursor-pointer items-start justify-between gap-3 rounded-xl border bg-muted px-4 py-3.5">
+            <span className="flex min-w-0 flex-col gap-0.5">
+              <span className="text-sm font-medium">{t("trackStock")}</span>
+              <span className="text-xs text-muted-foreground">{t(field.value === false ? "trackStockOff" : "trackStockOn")}</span>
+            </span>
+            <Switch id="track-stock" checked={field.value !== false} onCheckedChange={field.onChange} />
+          </label>
+        )}
+      />
+
       <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
         <div className="flex flex-col gap-1.5">
           <FieldLabel htmlFor="sku" note={tPage("optional")}>
@@ -92,7 +111,7 @@ export function InventorySection({
           />
         </div>
 
-        <div className="flex flex-col gap-1.5">
+        {trackStock && <div className="flex flex-col gap-1.5">
           <FieldLabel htmlFor="quantity" required>
             {t("quantity")}
           </FieldLabel>
@@ -113,7 +132,7 @@ export function InventorySection({
           />
           {hasVariants && <FieldHint>{t("defaultVariantStock")}</FieldHint>}
           <FieldError>{quantityError}</FieldError>
-        </div>
+        </div>}
       </div>
 
       <SubHeading>{t("variantsHeading")}</SubHeading>

@@ -204,7 +204,7 @@ export function VendorProductsTable({
         accessorKey: "quantity",
         header: t("columns.stock"),
         meta: { label: t("columns.stock") },
-        cell: ({ row }) => <StockBadge quantity={row.original.quantity} />,
+        cell: ({ row }) => <StockBadge quantity={row.original.quantity} trackStock={row.original.trackStock} />,
         size: 110,
       },
       {
