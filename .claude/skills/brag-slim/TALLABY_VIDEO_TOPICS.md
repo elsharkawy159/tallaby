@@ -586,6 +586,152 @@ Use any of these formats with any ✅ topic to keep the feed fresh:
 | **"How do I…?"** | Answer a real seller question in under 30 s. |
 | **Build-along** | Speed-ramped build of a whole store from zero to Publish. |
 
+## 12a. Pillar Q: Q&A series (F-60a, added 2026-11-03)
+
+**Owner to confirm:** §1 limits tips to 1 video in 5, but the owner's new roadmap (`Roadmap_new.md` §8.1) puts Q&A videos first. Do Q&A videos count toward that limit? Until the owner answers, count every Q-xx video toward it.
+
+How this series works:
+
+- **Format:** "How do I…?" (§12). The seller's question is the hook, spoken and on screen in the first second. The answer shows one finished feature on real screens for most of the video. One question, one feature. For Facebook, Instagram and TikTok, per the rules file.
+- **Checked 2026-11-03** against `ROADMAP.md` §2.1 and §6 (every task `[x]`). Re-check at each run (§2), and confirm the screen is on production. The Status lines in `ROADMAP.md` §4 lag behind §6, so read both.
+- **§14 is older than this series:** its list dates from 2026-10-29. F-01, F-03, F-04, F-10 and F-11 now have every task done, so Q-13, Q-15, Q-17, Q-18 and Q-20 may use them. The rest of §14 still applies.
+- **Don't use yet:**
+  - The new pricing, USD wallet, Pro and AI credits (F-55 … F-57), which aren't live.
+  - The welcome gift, which is ending.
+  - F-02 fake-order protection, F-12 carriers, F-16 campaigns, F-21p seller payments and F-39 card gateways, which still have open tasks.
+  - F-42, F-44, F-45a and F-46: their tasks are done, but the code wasn't on `origin/main` on 2026-11-03.
+  - Topics D-03, G-01 and G-02 as answers (see the next point).
+- **Current marketing facts (owner, 2026-10-31):** طلبي doesn't deliver. The seller uses their own riders or a shipping company, so say «شركات الشحن» and name no carrier. Don't mention the store limit. Older topics above may still say otherwise, including E-01's "only on delivered orders" wording.
+- **No numbers** beyond the ones written here: no time claims, template counts, results or percentages.
+
+### Starting out
+
+### Q-01 · "What do I do first?" ✅
+- **Pain:** a new seller opens the dashboard and doesn't know where to begin.
+- **Hooks:** "أبدأ متجري بإيه الأول؟" / "فتحت الحساب… وبعدين؟"
+- **Show:** the home guide with its real labels: «اختر قالب متجرك» → «اضبط هوية علامتك» → «إضافة أول منتج» → «انشر متجرك», and «إعداد الشحن» marked for later. No welcome-gift pop-up and no setup prompts (F-44) on screen. Don't say how many minutes it takes (A-06).
+- **Status:** ✅ Account & stores (guide is on `origin/main`).
+
+### Q-02 · "I don't know any coding" ✅
+- **Pain:** thinking a store needs a programmer.
+- **Hooks:** "مبفهمش في البرمجة… أقدر أعمل متجر؟" / "لازم مبرمج عشان تفتح متجر؟"
+- **Show:** the builder: tap a title, change the text and colour, then move a section (B-03, B-04).
+- **Status:** ✅ Website.
+
+### Q-03 · "I don't have a designer" ✅
+- **Pain:** a designer costs more than a new seller can spend.
+- **Hooks:** "معنديش مصمم… متجري هيبقى شكله إيه؟" / "من غير مصمم… ينفع شكله يبقى حلو؟"
+- **Show:** the template gallery → pick one for the seller's category → change the logo and colour in Website › Design (B-01, B-05). No template count.
+- **Status:** ✅ Website.
+
+### Q-04 · "I have too many products to add" ✅
+- **Pain:** a whole catalog to enter by hand.
+- **Hooks:** "عندي منتجات كتير… هكتبهم واحد واحد؟" / "الكتالوج كبير… أبدأ منين؟"
+- **Show:** the Excel template → a filled sheet → the import preview → the products list (C-03).
+- **Status:** ✅ Products.
+
+### Q-05 · "I can't write product descriptions" 🟡
+- **Pain:** staring at an empty description, in two languages.
+- **Hooks:** "مبعرفش أكتب وصف للمنتج… أعمل إيه؟" / "الوصف واقف قدامك؟ ابدأ بصورة."
+- **Show:** Add product with AI: a photo → both languages filled in → the seller checks and publishes (N-07). The seller sets the price. No credits or plans, and no promise of perfect results.
+- **Status:** 🟡 AI. The AI-1 deploy item in `PLAN.md` §22 is still open. Film only after it is ticked.
+
+### Q-06 · "What if I break my store?" ✅
+- **Pain:** fear of changing something and customers seeing the mistake.
+- **Hooks:** "لو غلطت… المتجر هيبوظ؟" / "خايف تغيّر حاجة في متجرك؟"
+- **Show:** edit a draft → preview → the live store unchanged → Publish (B-11, A-05).
+- **Status:** ✅ Website.
+
+### Common objections
+
+### Q-07 · "My Facebook page is enough" ✅
+- **Pain:** the seller already sells in DMs and sees no need for a store.
+- **Hooks:** "عندي صفحة فيسبوك… ليه أعمل متجر؟" / "الصفحة بتبيع… المتجر هيزوّد إيه؟"
+- **Show:** the same DM chat next to the store: price, sizes and order are visible without asking, then the order lands in the list (A-01, D-01). Don't attack Facebook, and don't claim more sales.
+- **Status:** ✅ Website, Orders.
+
+### Q-08 · "Do I need a monthly subscription?" 🟡
+- **Pain:** a fee before the first sale.
+- **Hooks:** "لازم اشتراك شهري عشان أبدأ؟" / "هدفع كام قبل أول أوردر؟"
+- **Show:** opening an account and store for free, then the live fee: «5 جنيه على الأوردر». It is taken when the order is created and isn't only on delivered orders (`PROJECT_DESCRIPTION.md` §8), so don't reuse E-01's wording. No Pro, dollars or credits on screen, and no trial or gift.
+- **Status:** 🟡 Money. Pricing changes on switch day (F-55 … F-57). Before filming, confirm the switch hasn't happened and that the screen shows live pricing. Pull any posted video on switch day, and remake it only from the new live pricing.
+
+### Q-09 · "My customers only pay cash" ✅
+- **Pain:** thinking an online store means online payment.
+- **Hooks:** "الزبون عايز يدفع كاش… ينفع؟" / "مش لازم فيزا عشان تبيع أونلاين."
+- **Show:** store checkout with «الدفع عند الاستلام» selected → order placed → the order in the dashboard (D-02). Never show card payment as available.
+- **Status:** ✅ Payments.
+
+### Q-10 · "Who delivers my orders?" ✅
+- **Pain:** a new seller assumes they must find a whole delivery system first.
+- **Hooks:** "مين هيوصّل الأوردرات لزباينك؟" / "عندك مندوب؟ تقدر تتابعه من متجرك."
+- **Show:** Orders › Riders → add a rider → assign an order → status updates (D-04). Say the seller can also use «شركات الشحن», with no carrier name on screen. Never say طلبي delivers. No delivery-time promises.
+- **Status:** ✅ Delivery.
+
+### Q-11 · "Why would anyone trust a new store?" ✅ (Tip)
+- **Pain:** a new store has no history.
+- **Hooks:** "متجر جديد… الزبون هيثق فيه إزاي؟" / "زبون أول مرة… يطمن ليك إزاي؟"
+- **Show:** the tip: show the words real customers already sent you. Then the product form's reviews part → the reviews on the product page (N-06). Say «آراء زباينك اللي وصلتك». Never suggest fake or generated reviews.
+- **Status:** ✅ Products.
+
+### Q-12 · "I run everything from my phone" ✅
+- **Pain:** no laptop, and a fear that a dashboard needs one.
+- **Hooks:** "شغلي كله من الموبايل… ينفع؟" / "معندكش لابتوب؟ مش مشكلة."
+- **Show:** the install-as-app button in the dashboard header → the icon on the home screen → orders on the phone (N-11). Don't film the new phone product screens (F-42) until they're on production.
+- **Status:** ✅ Help (check the button still shows in the mobile header).
+
+### Daily problems
+
+### Q-13 · "A customer started an order and left" ✅
+- **Pain:** a buyer typed their details, then disappeared.
+- **Hooks:** "الزبون كتب بياناته ومكملش… أعمل إيه؟" / "زبون كان هيطلب… ومكملش؟"
+- **Show:** Orders › Not completed → a fictional lead → the WhatsApp and call buttons → marked as contacted (F-03). No recovery percentages.
+- **Status:** ✅ Orders (F-03 done; `0120` on production).
+
+### Q-14 · "Fake orders are costing me money" ✅ (Tip)
+- **Pain:** shipping an order nobody wanted, then paying for the return trip.
+- **Hooks:** "الأوردر الوهمي بيخسّرك… تعمل إيه؟" / "قبل ما تشحن… كلّم الزبون."
+- **Show:** the tip: confirm before you ship. Then the order details and the WhatsApp and call buttons (`ROADMAP.md` §2.1). Don't show the blocklist, risk badge or confirm link, and don't call this fake-order protection: F-02 still has an open task (F-02f).
+- **Status:** ✅ Orders. Replace with an F-02 topic once F-02 is done.
+
+### Q-15 · "I sold something that was out of stock" ✅
+- **Pain:** finding out a product ran out only after the order came in.
+- **Hooks:** "المنتج خلص وإنت مش واخد بالك؟" / "اعرف المخزون قبل ما الزبون يطلب."
+- **Show:** Products › Inventory → the low-stock bell notification → the stock history (F-10).
+- **Status:** ✅ Products (F-10 done; `0125` on production). Check the bell on production; browser testing was still pending in the roadmap.
+
+### Q-16 · "Shipping is eating my profit" ✅ (Tip)
+- **Pain:** one shipping price for all of Egypt loses money on far governorates.
+- **Hooks:** "سعر شحن واحد لكل المحافظات؟ غلط." / "الشحن بياكل مكسبك؟"
+- **Show:** the tip: price by area. Then store Shipping → zones with places and prices → the price at checkout (D-06). Free delivery over an amount is the seller's own choice, never a طلبي offer. Film the screen that is on production, not the unpushed redesign (F-45a).
+- **Status:** ✅ Delivery.
+
+### Q-17 · "I write every order's details by hand" ✅
+- **Pain:** copying names and addresses onto paper for every package.
+- **Hooks:** "بتكتب بيانات كل أوردر بإيدك؟" / "التغليف مضيّع يومك كله؟"
+- **Show:** selected orders → the Print menu → invoices and packing slips → the picking list (F-04). Fictional names only.
+- **Status:** ✅ Orders (F-04 done). Check printing on production; browser testing was still pending in the roadmap.
+
+### Q-18 · "I don't know who my best customers are" ✅
+- **Pain:** customer history scattered across chats and notebooks.
+- **Hooks:** "مين زباينك اللي بيرجعوا يشتروا؟" / "زبونك اشترى كام مرة؟ تعرف؟"
+- **Show:** Orders › Customers → a fictional customer's orders → a note and a tag (F-01). Fictional data only.
+- **Status:** ✅ Orders (F-01 done; `0121` on production).
+
+### Growing
+
+### Q-19 · "Which ad brought this order?" ✅
+- **Pain:** paying for ads with no idea which one worked.
+- **Hooks:** "أنهي إعلان جاب الأوردر؟" / "بتدفع إعلانات… وبتجيبلك إيه؟"
+- **Show:** Reports › Campaigns → build a tracked link → the report per campaign with fictional numbers (F-26). No promises about ad results.
+- **Status:** ✅ Analytics (F-26 done).
+
+### Q-20 · "A customer asked for my catalog" ✅
+- **Pain:** sending photos and prices one by one in a chat.
+- **Hooks:** "الزبون عايز الكتالوج… تبعتله إيه؟" / "بطّل تبعت الصور واحدة واحدة."
+- **Show:** Marketing › Shareable catalog → pick products → copy the link → the catalog opening on a phone (F-11c).
+- **Status:** ✅ Marketing (F-11 done). Check the link on production; browser testing was still pending in the roadmap.
+
 ## 13. Seasonal calendar (Egypt)
 
 Prefer a seasonal angle when a season starts within 14 days. Dates of Islamic holidays move every year: **check the exact date before using it**.
