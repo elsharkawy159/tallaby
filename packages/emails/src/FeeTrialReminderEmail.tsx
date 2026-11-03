@@ -13,6 +13,8 @@ export interface FeeTrialReminderEmailProps {
   endsAt?: string;
   dashboardUrl?: string;
   locale?: EmailLocale;
+  /** After the USD switch (0136): the fee line names the new fee. */
+  usdLive?: boolean;
 }
 
 /** Seller reminder 7 days and 1 day before the fee trial ends (PLAN.md §13.5, P6-07). */
@@ -22,6 +24,7 @@ export const FeeTrialReminderEmail = ({
   endsAt = new Date().toISOString(),
   dashboardUrl = "https://dashboard.tallaby.com/",
   locale = "en",
+  usdLive = false,
 }: FeeTrialReminderEmailProps) => {
   const copy = getEmailMessages(locale).feeTrialReminder;
   const date = new Date(endsAt).toLocaleDateString(emailDateLocale(locale), {
@@ -43,7 +46,7 @@ export const FeeTrialReminderEmail = ({
         <Text className="m-0 mb-4 text-[16px] leading-[1.6] text-[#555555]">
           {interpolate(t1 ? copy.bodyT1 : copy.bodyT7, { date })}
         </Text>
-        <Text className="m-0 text-[14px] leading-[1.6] text-secondary">{copy.feeNote}</Text>
+        <Text className="m-0 text-[14px] leading-[1.6] text-secondary">{usdLive ? copy.feeNoteUsd : copy.feeNote}</Text>
       </Section>
 
       <Section className="email-pad px-6 py-6">

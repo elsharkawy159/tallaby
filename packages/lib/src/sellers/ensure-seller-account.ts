@@ -104,7 +104,8 @@ export async function ensureSellerAccount(
           // New sellers get the EGP 100 welcome gift on finishing setup instead of
           // the 7-day no-fee trial, which is paused for them (owner 2026-10-29, 0119).
           feeTrialEligible: false,
-          welcomeGiftEligible: true,
+          // Ends at the USD switch (F-55b): an explicit true would outlive its new default.
+          welcomeGiftEligible: sql`coalesce((SELECT NOT usd_live FROM billing_settings WHERE id), true)`,
           ...(referrerId ? { referredBySellerId: referrerId, referredAt: sql`now()` } : {}),
         })
         .onConflictDoNothing({ target: sellers.id })

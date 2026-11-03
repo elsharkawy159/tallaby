@@ -1,5 +1,6 @@
 import { db, eq, sellers, users } from "@workspace/db";
 import { logServerError } from "@workspace/db/log";
+import { getBillingState } from "@workspace/lib/billing/server";
 import { feeTrialReminderStage, type FeeTrialReminderStage } from "@workspace/lib/sellers";
 import {
   FeeTrialReminderEmail,
@@ -61,6 +62,7 @@ export async function sendFeeTrialReminder(
   try {
     const locale = resolveEmailLocale(row.preferredLanguage);
     const copy = getEmailMessages(locale).feeTrialReminder;
+    const { usdLive } = await getBillingState();
     const { id } = await sendEmail({
       to: recipient,
       subject: stage === "t1" ? copy.subjectT1 : copy.subjectT7,
@@ -70,6 +72,7 @@ export async function sendFeeTrialReminder(
         endsAt: new Date(row.endsAt!).toISOString(),
         dashboardUrl: DASHBOARD_URL,
         locale,
+        usdLive,
       }),
       idempotencyKey: `fee-trial-reminder:${stage}:${sellerId}`,
     });

@@ -211,6 +211,8 @@ export async function getStoreTopUp(sellerId: string, topUpId: string) {
       id: sellerWalletTopUps.id,
       amount: sellerWalletTopUps.amount,
       status: sellerWalletTopUps.status,
+      creditAmount: sellerWalletTopUps.creditAmount,
+      creditCurrency: sellerWalletTopUps.creditCurrency,
       createdAt: sellerWalletTopUps.createdAt,
     })
     .from(sellerWalletTopUps)

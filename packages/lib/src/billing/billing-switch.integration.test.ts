@@ -85,8 +85,8 @@ describe.skipIf(!TEST_DATABASE_URL)("USD switch (integration)", { timeout: 90_00
   };
 
   beforeAll(async () => {
-    const { db, sellers, categories, products } = await load();
-    sellerId = (await db.select({ id: sellers.id }).from(sellers).limit(1))[0]!.id;
+    const { db, sellerWallet, categories, products } = await load();
+    sellerId = (await db.select({ id: sellerWallet.sellerId }).from(sellerWallet).limit(1))[0]!.id;
     categoryId = (await db.select({ id: categories.id }).from(categories).limit(1))[0]!.id;
     await db.insert(products).values({ id: productId, sellerId, categoryId, status: "draft", quantity: "5", price: 100, images: [], sku: `QA-${productId.slice(0, 8)}` });
   }, 90_000);
@@ -192,6 +192,63 @@ describe.skipIf(!TEST_DATABASE_URL)("USD switch (integration)", { timeout: 90_00
       await expect(
         tx.transaction((sp: any) => sp.execute(sql`SELECT * FROM billing_switch_to_usd(50)`)),
       ).rejects.toThrow();
+    });
+  });
+
+  it("gives no welcome gift once live, though the same seller gets one before", async () => {
+    const { sql, sellerWallet, eq } = await load();
+    const { grantWelcomeGiftIfEligible, runWelcomeGiftJob } = await import("../store-wallet/welcome-gift.server");
+    const setUp = async (tx: any) => {
+      const id = randomUUID();
+      const sub = `usdg-${id.slice(0, 8)}`;
+      await tx.execute(sql`INSERT INTO auth.users (id) VALUES (${id})`);
+      await tx.execute(sql`UPDATE users SET is_guest = false, role = 'seller' WHERE id = ${id}`);
+      await tx.execute(sql`
+        INSERT INTO sellers (id, business_name, display_name, slug, subdomain, business_type, legal_address, support_email, support_phone,
+                             fee_trial_eligible, welcome_gift_eligible)
+        VALUES (${id}, ${sub}, ${sub}, ${sub}, ${sub}, 'individual', '{"country":"EG"}'::jsonb, 'g@example.com', '01000000000', false, true)`);
+      const [store] = await tx.execute(sql`SELECT id FROM stores WHERE seller_id = ${id} LIMIT 1`);
+      await tx.execute(sql`UPDATE stores SET site_status = 'published', first_published_at = now() WHERE id = ${store.id}`);
+      await tx.execute(sql`INSERT INTO template_installs (template_key, template_version, store_id, installed_by)
+                           VALUES ('tallaby-classic', 1, ${store.id}, ${id})`);
+      await tx.execute(sql`INSERT INTO products (seller_id, category_id, status, quantity, sku)
+                           VALUES (${id}, ${categoryId}, 'active', 1, ${sub})`);
+      return id;
+    };
+
+    await inRollback(async (tx) => {
+      const id = await setUp(tx);
+      expect((await grantWelcomeGiftIfEligible(id, tx)).granted).toBe(true);
+    });
+
+    await inRollback(async (tx) => {
+      await switchOn(tx);
+      const id = await setUp(tx);
+      expect((await grantWelcomeGiftIfEligible(id, tx)).granted).toBe(false);
+      const [wallet] = await tx.select().from(sellerWallet).where(eq(sellerWallet.sellerId, id));
+      expect(Number(wallet?.balance ?? 0)).toBe(0);
+      expect((await runWelcomeGiftJob(tx)).granted).toBe(0);
+    });
+  });
+
+  it("tells the seller's bell what the wallet got, not the EGP paid", async () => {
+    const { sql } = await load();
+    const { reviewManualStoreTopUp } = await import("../admin/top-ups.server");
+    await inRollback(async (tx) => {
+      await switchOn(tx);
+      const adminId = randomUUID();
+      await tx.execute(sql`INSERT INTO auth.users (id) VALUES (${adminId})`);
+      await tx.execute(sql`UPDATE users SET is_guest = false, role = 'admin', is_verified = true WHERE id = ${adminId}`);
+      const [topUp] = await tx.execute(sql`
+        INSERT INTO seller_wallet_top_ups (seller_id, amount, credit_amount, credit_currency, exchange_rate, provider, status, provider_reference, created_by)
+        VALUES (${sellerId}, 510, 10, 'USD', 51, 'vodafone_cash', 'pending', ${randomUUID()}, ${sellerId})
+        RETURNING id`);
+      const result = await reviewManualStoreTopUp(adminId, { topUpId: topUp.id, decision: "approve" }, tx);
+      expect(result.success).toBe(true);
+      const [bell] = await tx.execute(sql`
+        SELECT data FROM seller_notifications WHERE dedupe_key = ${`top_up_approved:${topUp.id}`}`);
+      expect(bell.data.currency).toBe("USD");
+      expect(Number(bell.data.amount)).toBe(10);
     });
   });
 

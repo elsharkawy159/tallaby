@@ -184,16 +184,18 @@ export function notificationText(data: Record<string, unknown>, key: string): st
 /**
  * The ICU values of a seller bell row's `notifications.types.<type>` text.
  * Shared by the bell and the push dispatcher so both say the same thing.
- * `formatAmount` formats a decimal amount for the viewer's locale.
+ * `formatAmount` formats a decimal amount for the viewer's locale, in the
+ * row's own `currency` when it has one (store-wallet amounts after the USD
+ * switch); a row with none is EGP.
  */
 export function sellerNotificationValues(
   data: Record<string, unknown>,
-  formatAmount: (amount: string) => string,
+  formatAmount: (amount: string, currency: string | null) => string,
 ): Record<string, string | number> {
   const amount = notificationText(data, "amount");
   return {
     orderNumber: notificationText(data, "orderNumber"),
-    amount: amount ? formatAmount(amount) : "",
+    amount: amount ? formatAmount(amount, notificationText(data, "currency") || null) : "",
     rating: typeof data.rating === "number" ? data.rating : 0,
     // Grouped rows (referral_commission_earned, one per day).
     count: notificationCount(data),

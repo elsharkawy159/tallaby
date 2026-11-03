@@ -54,7 +54,7 @@ async function setupStoreId(q: Queryable, sellerId: string): Promise<string | nu
   return row ? String(row.id) : null;
 }
 
-/** A seller bell row; in a savepoint so the bell never blocks the money. */
+/** A seller bell row, with the wallet's currency; in a savepoint so the bell never blocks the money. */
 async function notify(
   tx: Tx,
   sellerId: string,
@@ -65,7 +65,13 @@ async function notify(
     await tx.transaction(async (sp) => {
       await sp
         .insert(sellerNotifications)
-        .values({ sellerId, type, data: { amount }, dedupeKey: `${type}:${sellerId}` })
+        .values({
+          sellerId,
+          type,
+          // An open gift moves to USD with the wallet at the switch (0137).
+          data: sql`jsonb_build_object('amount', ${amount}::text, 'currency', coalesce((SELECT currency FROM seller_wallet WHERE seller_id = ${sellerId}), 'EGP'))`,
+          dedupeKey: `${type}:${sellerId}`,
+        })
         .onConflictDoNothing();
     });
   } catch (error) {
@@ -80,19 +86,24 @@ export type GrantWelcomeGiftResult = { granted: boolean };
  * yet, and has finished setup. Safe to call any time and any number of times.
  * Throws only on a database or wallet error (e.g. a frozen wallet), in which
  * case nothing is written; callers that must not fail use grantWelcomeGiftSafely.
+ *
+ * No gift once the USD switch is live (owner, F-55b): the amount is EGP 100, and
+ * the same figure posted to a USD wallet would be $100. Checked here as well as
+ * on the eligible flag, so a seller row written by old code still gets nothing.
  */
 export async function grantWelcomeGiftIfEligible(sellerId: string, q: typeof db = db): Promise<GrantWelcomeGiftResult> {
   return q.transaction(async (tx) => {
     const [seller] = rowsOf(
       await tx.execute(sql`
         SELECT s.welcome_gift_eligible AS eligible,
-               EXISTS (SELECT 1 FROM seller_welcome_gifts g WHERE g.seller_id = s.id) AS has_gift
+               EXISTS (SELECT 1 FROM seller_welcome_gifts g WHERE g.seller_id = s.id) AS has_gift,
+               coalesce((SELECT b.usd_live FROM billing_settings b WHERE b.id), false) AS usd_live
           FROM sellers s
          WHERE s.id = ${sellerId}
          FOR UPDATE OF s
       `),
     );
-    if (!seller || seller.eligible !== true || seller.has_gift === true) return { granted: false };
+    if (!seller || seller.eligible !== true || seller.has_gift === true || seller.usd_live === true) return { granted: false };
 
     const storeId = await setupStoreId(tx, sellerId);
     if (!storeId) return { granted: false };
@@ -334,6 +345,7 @@ export async function runWelcomeGiftJob(q: typeof db = db): Promise<WelcomeGiftJ
     await q.execute(sql`
       SELECT s.id FROM sellers s
        WHERE s.welcome_gift_eligible
+         AND NOT coalesce((SELECT b.usd_live FROM billing_settings b WHERE b.id), false)
          AND NOT EXISTS (SELECT 1 FROM seller_welcome_gifts g WHERE g.seller_id = s.id)
          AND EXISTS (SELECT 1 FROM stores st WHERE st.seller_id = s.id AND st.deleted_at IS NULL AND st.site_status = 'published')
     `),

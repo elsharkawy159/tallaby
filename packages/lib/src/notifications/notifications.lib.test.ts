@@ -121,6 +121,12 @@ describe("admin messages (0131)", () => {
     expect(sellerNotificationHref({ type: "admin_message", data: {} })).toBeNull();
   });
 
+  it("sellerNotificationValues passes the row's currency to the formatter", () => {
+    const format = (amount: string, currency: string | null) => `${currency ?? "EGP"} ${amount}`;
+    expect(sellerNotificationValues({ amount: "2.50", currency: "USD" }, format).amount).toBe("USD 2.50");
+    expect(sellerNotificationValues({ amount: "100.00" }, format).amount).toBe("EGP 100.00");
+  });
+
   it("sellerNotificationValues formats what the bell shows", () => {
     const values = sellerNotificationValues({ amount: "100.00", orderNumber: "7", name: "Mug", variantTitle: "Red", stock: 2 }, (a) => `EGP ${a}`);
     expect(values).toMatchObject({ amount: "EGP 100.00", orderNumber: "7", name: "Mug · Red", stock: 2, count: 1, rating: 0 });

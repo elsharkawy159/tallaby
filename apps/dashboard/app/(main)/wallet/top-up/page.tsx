@@ -2,11 +2,12 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { CheckCircle2, Clock, XCircle } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
+import { topUpCredit } from "@workspace/lib/store-wallet";
 import { getStoreTopUp } from "@workspace/lib/store-wallet/server";
 import { Button } from "@workspace/ui/components/button";
 import { Card, CardContent } from "@workspace/ui/components/card";
 import { isAccessError, requireSeller } from "@/lib/auth/require-seller.server";
-import { formatMoney } from "@/lib/i18n/format";
+import { formatWalletMoney } from "@/lib/i18n/format";
 
 export const dynamic = "force-dynamic";
 
@@ -29,6 +30,8 @@ export default async function TopUpReturnPage({
 
   const [t, locale] = await Promise.all([getTranslations("storeWallet.topUp"), getLocale()]);
   const state = row.status === "succeeded" ? "succeeded" : row.status === "failed" || row.status === "cancelled" ? "failed" : "processing";
+  // What the wallet gets, not the EGP paid: the same until the USD switch.
+  const credit = topUpCredit(row);
   const Icon = state === "succeeded" ? CheckCircle2 : state === "failed" ? XCircle : Clock;
 
   return (
@@ -41,7 +44,7 @@ export default async function TopUpReturnPage({
           />
           <h1 className="text-lg font-bold">{t(`result.${state}.title`)}</h1>
           <p className="text-pretty text-sm text-muted-foreground">
-            {t(`result.${state}.description`, { amount: formatMoney(Number(row.amount), locale) })}
+            {t(`result.${state}.description`, { amount: formatWalletMoney(Number(credit.amount), credit.currency, locale) })}
           </p>
           <div className="flex gap-2">
             {state === "processing" && (

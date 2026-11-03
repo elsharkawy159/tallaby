@@ -14,6 +14,7 @@ import {
   type TopUpMethod,
 } from "@workspace/emails";
 import { storeHostname, storeUrl } from "@workspace/lib/storefront";
+import { topUpCredit } from "@workspace/lib/store-wallet";
 import { findActiveCustomDomainForSubdomain } from "@workspace/lib/storefront/server";
 import { EMAIL_TYPES } from "../email-delivery";
 import { addDays, DASHBOARD_URL, formatDate, formatDateTime, formatMoney, joinUrl, SITE_URL } from "./format";
@@ -251,11 +252,13 @@ export async function sendSellerWalletTopUp(topUpId: string, balanceAfter?: stri
     const [row] = await db.select({ balance: sellers.walletBalance }).from(sellers).where(eq(sellers.id, topUp.sellerId)).limit(1);
     balance = row?.balance ?? null;
   }
-  const money = (value: string | number | null | undefined) => formatMoney(value, seller.locale, topUp.currency);
-  const amount = money(topUp.amount);
+  // What the wallet got, in the wallet's currency. The EGP paid is only the same before the USD switch.
+  const credit = topUpCredit(topUp);
+  const money = (value: string | number | null | undefined) => formatMoney(value, seller.locale, credit.currency);
+  const amount = money(credit.amount);
   const copy = getEmailMessages(seller.locale).sellerWalletTopUp;
   const balanceLabel = balance === null ? amount : money(balance);
-  const previous = balance === null ? null : money(Number(balance) - Number(topUp.amount));
+  const previous = balance === null ? null : money(Number(balance) - Number(credit.amount));
 
   return sendOnce({
     emailType: EMAIL_TYPES.sellerWalletTopUp,

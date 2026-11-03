@@ -82,6 +82,7 @@ export interface FeeTrialReminderCopy {
   bodyT7: string;
   bodyT1: string;
   feeNote: string;
+  feeNoteUsd: string;
   cta: string;
 }
 
@@ -175,6 +176,7 @@ const en: EmailMessages = {
     bodyT7: "Your 7-day free trial ends on {date}. Until then, Tallaby charges no platform fee on your orders.",
     bodyT1: "Your 7-day free trial ends on {date}. Orders placed after that pay the platform fee.",
     feeNote: "The platform fee is a flat EGP 5 per delivered order, taken from your Tallaby wallet.",
+    feeNoteUsd: "On the Free plan, the platform fee is $0.03 per order, taken from your Tallaby wallet. The Pro plan has no order fee.",
     cta: "Open your dashboard",
   },
   paymentMethods: {
@@ -268,6 +270,7 @@ const ar: EmailMessages = {
     bodyT7: "تنتهي تجربتك المجانية لمدة 7 أيام في {date}. وحتى ذلك الوقت لا يحصل طلبي على أي رسوم منصة من طلباتك.",
     bodyT1: "تنتهي تجربتك المجانية لمدة 7 أيام في {date}. الطلبات التي تصل بعد ذلك تُحسب عليها رسوم المنصة.",
     feeNote: "رسوم المنصة 5 جنيهات ثابتة عن كل طلب يتم توصيله، تُخصم من محفظتك على طلبي.",
+    feeNoteUsd: "رسوم المنصة في الباقة المجانية $0.03 عن كل طلب، تُخصم من محفظتك على طلبي. باقة Pro بدون رسوم طلبات.",
     cta: "افتح لوحة التحكم",
   },
   paymentMethods: {

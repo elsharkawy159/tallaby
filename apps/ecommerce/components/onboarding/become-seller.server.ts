@@ -5,7 +5,7 @@ import { cookies } from "next/headers";
 import { REFERRAL_COOKIE } from "@workspace/lib/referrals";
 import { resolveReferrerForSignup } from "@workspace/lib/referrals/server";
 import { createClient } from "@/supabase/server";
-import { db, sellers, users, eq, and, or, isNull } from "@workspace/db";
+import { db, sellers, users, eq, and, or, isNull, sql } from "@workspace/db";
 import {
   collectCatalogIssues,
   fulfillmentRequestSchema,
@@ -143,7 +143,8 @@ export const submitSellerApplication = async (
         status: "approved",
         // Welcome gift instead of the paused 7-day trial (owner 2026-10-29, 0119).
         feeTrialEligible: false,
-        welcomeGiftEligible: true,
+        // Ends at the USD switch (F-55b): an explicit true would outlive its new default.
+        welcomeGiftEligible: sql`coalesce((SELECT NOT usd_live FROM billing_settings WHERE id), true)`,
         onboardingStep: 7,
         onboardingComplete: true,
       });

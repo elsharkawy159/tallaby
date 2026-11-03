@@ -8,7 +8,7 @@
  * replay credits nothing) and writes one admin_audit_log row.
  */
 import { topUpCommissionBase, topUpCredit } from "../store-wallet/top-up.lib";
-import { and, db, desc, eq, inArray, sellerWalletTopUps, sellers, sql } from "@workspace/db";
+import { and, db, desc, eq, inArray, sellerNotifications, sellerWalletTopUps, sellers, sql } from "@workspace/db";
 import {
   DuplicateStoreWalletEntryError,
   STORE_WALLET_REFERENCE_TYPES,
@@ -106,6 +106,13 @@ export async function reviewManualStoreTopUp(
         .update(sellerWalletTopUps)
         .set({ status: "succeeded", transactionId: entry.entryId, updatedAt: sql`now()` })
         .where(stillPending);
+      // The bell's trigger (0098) saves the EGP paid; "was added to your wallet" means the USD credit.
+      if (credit.currency === "USD") {
+        await tx
+          .update(sellerNotifications)
+          .set({ data: sql`${sellerNotifications.data} || jsonb_build_object('amount', ${credit.amount}::text, 'currency', 'USD')` })
+          .where(and(eq(sellerNotifications.sellerId, topUp.sellerId), eq(sellerNotifications.dedupeKey, `top_up_approved:${topUp.id}`)));
+      }
       // The referrer's 20 % (F-37), in this transaction.
       await postReferralCommission(tx, { id: topUp.id, sellerId: topUp.sellerId, amount: topUpCommissionBase(topUp) });
       await writeAdminAudit(tx, {

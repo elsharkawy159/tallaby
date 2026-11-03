@@ -18,7 +18,7 @@ import { sellerNotificationValues } from "@workspace/lib/notifications";
 import { sendWebPushes, type WebPushJob } from "@workspace/lib/push/server";
 import arMessages from "@/messages/ar.json";
 import enMessages from "@/messages/en.json";
-import { formatMoney } from "@/lib/i18n/format";
+import { formatMoney, formatWalletMoney } from "@/lib/i18n/format";
 import type { PushSubscriptionInput } from "./push-alerts.dto";
 import {
   BELL_TEXT_PUSH_TYPES,
@@ -293,7 +293,7 @@ export async function dispatchSellerPushes(limit: number = PUSH_CLAIM_LIMIT): Pr
     const bell = BELL_TEXT_TYPES.has(row.type)
       ? {
           t: BELL_TRANSLATORS[device.locale],
-          values: sellerNotificationValues(row.data, (value) => formatMoney(value, device.locale)),
+          values: sellerNotificationValues(row.data, (value, currency) => formatWalletMoney(value, currency, device.locale)),
         }
       : undefined;
     return {
