@@ -4716,6 +4716,11 @@ Owner asked to keep only the current version of each template in `template_versi
 - Left over: there are 434 orphaned `public.users` rows on staging (8 sellers, 70 orders) from users deleted before the fix. `NOT VALID` leaves them alone. A rolled-back test showed they can be removed with `DELETE FROM public.users u WHERE NOT EXISTS (SELECT 1 FROM auth.users a WHERE a.id = u.id)`. Not run: it needs owner approval.
 - Follow-up (2026-10-31): the owner applied `0134` on production (`check-0134-user-delete-cascade.sql` all true), but deleting a user still failed with the ledger error. A read-only check found 4 duplicate foreign keys that only production has: `wallet_transactions_order_id_fkey` (CASCADE, the cause), `orders_cart_id_fkey` (CASCADE, which deleted an order with its cart), and `reviews_seller_id_fkey` and `shipments_seller_id_fkey` (copies). `0135_drop_duplicate_fks.sql` drops them. In a rolled-back dry run on production, deleting an order with a −5.00 fee entry worked and the entry was kept with `order_id` NULL. Applied on staging (a no-op). Production: the owner runs it.
 
+### 2026-11-03 — USD wallet, plans, AI credits and dashboard batch built; not deployed
+
+- Details, commits and checks: `ROADMAP.md` §7. Everything sits on `main`, unpushed. The fee stays EGP 5 until `SELECT billing_switch_to_usd(<market rate>)` runs (`docs/usd-switch-checklist.md`).
+- Migrations `0136`–`0141` are on staging only. Manual E2E still owed: no screen from this batch has been seen in a browser or on an iPhone.
+
 ### 2026-11-03 — New business model planned (owner; no code)
 
 - The owner's `Roadmap_new.md` and answers were recorded: Free ($0.03 per order, 100 AI credits), Pro ($29 a month from the wallet, no fee, 2,000 credits), USD store wallet, daily rate plus margin, welcome gift ended. See §13.1 note, D35 and `ROADMAP.md` §4, §7.

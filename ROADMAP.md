@@ -792,7 +792,7 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 ### F-43 Dashboard performance and server pagination — P0 · owner request
 
 **Why:** The products page loads the whole catalog today: `vendor-products.data.tsx` calls `getSellerProducts({ offset: 0 })` with no limit, and joins brand, category, variants and translations for every product.
-**Status:** [In progress] F-43a and F-43b built 2026-11-03 (§7); F-43c and F-43d not started.
+**Status:** [In progress] Lists, queries and caching built 2026-11-03, plus customers, pickers and orders on the server (`3f030c29`, `9ef70941`, `7162f427`). Only the before-and-after timings of F-43d are left.
 
 - **F-43a · P0 · deps: —** Server-side pagination: 20 per page by default, with 20, 50, 100 and 200 to choose from. Search, filters and sort run on the server, with the state in the URL. New code goes in the feature file split, not `actions/products.ts` (CLAUDE.md rule 14). Check every screen that relied on having the full list, such as bulk actions.
 - **F-43b · P0 · deps: F-43a** Select only the columns each list needs, and add indexes where query plans show a need.
@@ -812,7 +812,7 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 ### F-45 Shipping page redesign + AI delivery areas — P0 / P2 · owner request
 
 **Why:** Shipping is a common setup blocker, and many sellers can describe their coverage faster than they can configure it.
-**Status:** [Planned]
+**Status:** [Built, not deployed] 2026-11-03 (§7).
 
 - **F-45a · P0 · deps: —** Audit the current shipping page and redesign it for desktop and mobile. Keep the zone data and checkout behaviour (`store_shipping_zones.places`, `docs/fulfillment.md`).
 - **F-45b · P2 · deps: F-45a, F-57b** "Describe your delivery areas": AI turns the text into `EG`, `EG/<governorate>` and `EG/<governorate>/<area>` places and prices. Place names are matched in code, not sent as a list in the prompt (`docs/ai.md`). The seller reviews and edits; nothing saves without confirmation. Costs 1 credit.
@@ -831,7 +831,7 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 **Why:** Sellers need one place to find and manage apps, and paid apps give Tallaby new income.
 **What:** Extends the one apps catalog (F-41, `packages/lib/src/integrations/catalog`, `stores/[storeId]/apps`). Installed and Explore tabs; categories in a sidebar on desktop and tabs on mobile; default and manually installed apps. Tallaby-built apps only: no seller or third-party code (CLAUDE.md rule 9).
-**Status:** [Planned]
+**Status:** [Built, not deployed] 2026-11-03: only free apps exist today. Paid per-order and usage charges wait for a paid app (§7).
 
 - **F-47a · P2 · deps: F-55d** Design note: pricing data (free, one-time, monthly, per order, per action or time unit) that can take more models later, install state per store or per account, and which wallet entry each charge posts.
 - **F-47b · P2 · deps: F-47a** Installed and Explore page, on desktop and mobile.
@@ -841,7 +841,7 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 **Why:** A store with no SEO text should still have a good title and description.
 **What:** When the seller hasn't written them, build them at render time from the store's name and industry, for example "Buy Fashion from {store_name} now | Tallaby", with an Arabic version. Rendering it this way also covers existing stores, whose saved template copies don't change (CLAUDE.md rule 17). The seller's own text always wins.
-**Status:** [Planned]
+**Status:** [Built, not deployed] 2026-11-03 (§7).
 
 - **F-48a · P1 · deps: —** Fallback helper with tests, in both languages, used by the store home and pages. Each template can supply its own default wording.
 
@@ -854,7 +854,7 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 ### F-50 Storefront banner sizing — P1 · owner request
 
-**Status:** [Planned]
+**Status:** [Built, not deployed] 2026-11-03 (§7).
 
 - **F-50a · P1 · deps: —** Fix the banner's dimensions and aspect ratios across screen sizes and templates, with no distortion or unexpected cropping. The store banner is the home hero's photos (§7, 2026-10-31). Tell sellers the recommended image size.
 
@@ -862,7 +862,7 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 **Why:** Digital, made-to-order and service sellers shouldn't be marked out of stock.
 **What (proposed):** A "don't track stock" setting on the product and its variants, not a magic quantity number. `products.quantity` and `product_variants.stock` stay as they are.
-**Status:** [Planned]
+**Status:** [Built, not deployed] 2026-11-03 (§7).
 
 - **F-51a · P2 · deps: —** Design note listing every stock reader: `stock.ts`, cart validation, `place-order.ts`, low-stock badge (F-34), back-in-stock alerts (F-23), stock history (F-10), Inventory, Excel, feeds, MCP tools. Checkout is covered by CLAUDE.md rule 3.
 - **F-51b · P2 · deps: F-51a** Migration, product form, and all the readers above, with oversell and cancel tests.
@@ -877,7 +877,7 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 ### F-53 tallaby.com SEO — P1 · owner request
 
-**Status:** [Planned]
+**Status:** [Built, not deployed] 2026-11-03; the owner must choose the primary host (§7).
 
 - **F-53a · P1 · deps: —** Audit titles, descriptions, structured data, canonical URLs, internal links, sitemap, robots.txt, Open Graph, indexing and Core Web Vitals. Rank fixes by likely seller traffic.
 - **F-53b · P1 · deps: F-53a** Build the fixes.
@@ -886,7 +886,7 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 **Why:** A new seller should get a complete, professional store from one conversation.
 **What:** A chat on tallaby.com that collects business details, logo, social links, contact details, products, photos, prices, stock, shipping and policies; asks for what's missing; writes copy in both languages; sets the brand, theme, shipping and policies; validates the result; and presents it for the seller's review. **Only the seller publishes.** Extends `PLAN.md` AI-5 (`docs/AI_AGENT_PLAN_PROMPT.md`) and follows `docs/ai.md` and CLAUDE.md rules 17 and 20. Stores are made from existing templates and sections; the AI never generates code.
-**Status:** [Planned]
+**Status:** [Built, off] 2026-11-03: off until `STORE_BUILDER_AI_ENABLED` is set after a live cost measurement (§7).
 
 - **F-54a · P2 · deps: —** **Cost study before any build (owner requirement):** models and task routing, tokens, image processing and generation, prompts, context, caching, one step or several, and quality against cost. Output: estimated cost per completed store with its assumptions, and the proposed per-account limit. Don't reduce store quality just to lower cost.
 - **F-54b · P2 · deps: F-54a, owner approval** Design note: conversation flow, how a guest becomes an account (proposed: an account is required before uploads or costly steps), abuse limits, and how a free first store is tracked.
@@ -923,7 +923,7 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 ### F-57 AI credits — P1 · owner request · Approved 2026-11-03
 
 **Why:** Replaces `PLAN.md` AI-4 and today's free-for-all daily cap with monthly allowances.
-**Status:** [Planned]
+**Status:** [Built, off until the USD switch] 2026-11-03 (§7).
 
 - **F-57a · P1 · deps: F-55a** Migration: server-only `ai_credit_ledger` (RLS on, no policies) with idempotent grant, use and purchase entries, shared by the seller account (staff included, F-09).
 - **F-57b · P1 · deps: F-57a, F-55b** Enforcement in the AI routes before and after `generateStructured`: an atomic claim so parallel calls can't overspend, charged only on success, with none for cached or failed calls, and the block is decided on the server. Failure to check credits blocks the call (`docs/ai.md`). Daily cap becomes a per-plan abuse guard.
@@ -932,14 +932,14 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 ### F-58 Admin AI cost display — P3 · owner request
 
-**Status:** [Planned]
+**Status:** [Built, not deployed] 2026-11-03 (§7).
 
 - **F-58a · P3 · deps: F-56b** Show AI costs as `$0.50 (~25 EGP)`, labelled as an estimate, through one shared formatter using the market rate. No rates in components.
 - **F-58b · P3 · deps: —** Add average cost per call across all stores (`apps/admin/.../ai-usage`).
 
 ### F-59 Salla research — P3 · owner request
 
-**Status:** [Planned]
+**Status:** [Done] 2026-11-03: research in `docs/research/salla-seller-experience.md`.
 
 - **F-59a · P3 · deps: —** Research how Salla handles store setup, design and branding, shipping, social links and onboarding. Compare with the journey in `Roadmap_new.md` §7.1 and today's setup order, and write adapted recommendations. Don't copy blindly.
 
@@ -947,7 +947,7 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 **Why:** Short answers to sellers' real questions educate them, handle objections and drive signups.
 **What:** Short videos for Facebook, Instagram and TikTok under CLAUDE.md rule 18. Each answer shows a finished feature wherever it fits. Video prices follow what is live.
-**Status:** [Planned]
+**Status:** [Done] 2026-11-03: topics added; videos not made.
 
 - **F-60a · P3 · deps: —** Add a Q&A series to `.claude/skills/brag-slim/TALLABY_VIDEO_TOPICS.md`: common questions, startup problems, tips, objections. Confirm with the owner whether this relaxes the current limit of tips at 1 video in 5.
 
@@ -1153,56 +1153,56 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-42d Products list usability on mobile (2026-11-03)
 - [x] F-43a Server-side product pagination (20 by default; 50, 100, 200) (2026-11-03; `ea7c6233`; checked in the browser at phone width)
 - [x] F-43b Leaner product queries and indexes (2026-11-03; no new index needed)
-- [ ] F-43c Caching and revalidation review
-- [ ] F-43d Slow-page audit with before-and-after timings
+- [x] F-43c Caching and revalidation review (2026-11-03; `f0b117a9`, `d8c4a729`, `9ef70941`; `docs/dashboard-performance-audit.md`)
+- [~] F-43d Slow-page audit with before-and-after timings (2026-11-03; audit done, no timings taken: needs a browser and real data)
 - [x] F-44a Save setup prompt progress per seller (2026-11-03; `3db11f22`; no migration)
 - [x] F-44b Setup toast and banner UI (2026-11-03; `3db11f22`; not seen in a browser)
 - [x] F-44c Remove the welcome-gift pop-up and copy (2026-11-03; `3db11f22`)
 - [x] F-45a Shipping page audit and redesign (2026-11-03; `777aa466`; not seen in a browser)
-- [ ] F-45b AI delivery areas from a written description
+- [x] F-45b AI delivery areas from a written description (2026-11-03; `c887b65e`; not seen in a browser)
 - [x] F-46a Store's own `/returns` and `/shipping` with fallback order (2026-11-03)
 - [x] F-46b Fix storefront links into the marketplace (2026-11-03; `/privacy` and `/terms` still go to Tallaby's, owner to decide)
 - [x] F-46c Make return and replacement policies easy to find (2026-11-03; `3db11f22`; adds a policy editor in Settings)
-- [ ] F-47a Apps marketplace design note (pricing models, install state, charges)
-- [ ] F-47b Installed and Explore page
-- [ ] F-47c Paid app charges from the USD wallet
-- [ ] F-48a Store SEO fallback title and description
+- [x] F-47a Apps marketplace design note (pricing models, install state, charges) (2026-11-03; `docs/superpowers/specs/2026-11-03-apps-marketplace-design.md`)
+- [x] F-47b Installed and Explore page (2026-11-03; `38199f33`; not seen in a browser)
+- [~] F-47c Paid app charges from the USD wallet (2026-11-03; `1aa34f49`; monthly renewals run, per-order and usage charges have no callers until a paid app exists)
+- [x] F-48a Store SEO fallback title and description (2026-11-03; `f6974eaa`)
 - [ ] F-49a Animation audit and shared set (owner, on Claude Design)
 - [ ] F-49b Add animations to element trees; phone performance check
-- [ ] F-50a Fix banner sizing across screens and templates
-- [ ] F-51a Unlimited stock design note (every stock reader)
-- [ ] F-51b Unlimited stock migration, form and readers
+- [x] F-50a Fix banner sizing across screens and templates (2026-11-03; `eb853ea7`; phone view of 21:9 banners not checked)
+- [x] F-51a Unlimited stock design note (every stock reader) (2026-11-03; `docs/superpowers/specs/2026-11-03-unlimited-stock-design.md`)
+- [x] F-51b Unlimited stock migration, form and readers (2026-11-03; `891604f7`; 0138 on staging)
 - [ ] F-52a Homepage redesign (owner, on Claude Design)
 - [ ] F-52b Real dashboard screenshots from a fictional demo store
 - [ ] F-52c Homepage shows new pricing once live
-- [ ] F-53a Public-site SEO audit
-- [ ] F-53b Public-site SEO fixes
-- [ ] F-54a AI Store Builder cost study
-- [ ] F-54b AI Store Builder design note
-- [ ] F-54c Builder chat and collection steps
-- [ ] F-54d Store generation, validation and review screen
+- [x] F-53a Public-site SEO audit (2026-11-03; `docs/seo-audit-tallaby-com.md`)
+- [x] F-53b Public-site SEO fixes (2026-11-03; `c17c3c53`; the main canonical host fix needs an owner setting)
+- [x] F-54a AI Store Builder cost study (2026-11-03; `docs/ai-store-builder-cost-study.md`; estimates, no live measurement)
+- [x] F-54b AI Store Builder design note (2026-11-03; `239aa804`)
+- [x] F-54c Builder chat and collection steps (2026-11-03; `995c4f1d`; off until `STORE_BUILDER_AI_ENABLED` is set)
+- [x] F-54d Store generation, validation and review screen (2026-11-03; `eace0f13`, `f588361c`; 0141 on staging; not seen in a browser)
 - [x] F-55a Plans design note (2026-11-03)
 - [x] F-55b Plans module adds Pro; new welcome gifts stop (2026-11-03)
 - [x] F-55c USD order fee by plan ($0.03 on Free, none on Pro) (2026-11-03)
 - [x] F-55d Upgrade, downgrade and renewal job (2026-11-03; integration tests on staging)
 - [x] F-55e Dashboard Plan page (2026-11-03; not seen in a browser)
-- [ ] F-55f Admin plan management
+- [x] F-55f Admin plan management (2026-11-03; `9496a9a0`)
 - [ ] F-55g Public pricing page and fee calculators (owner, on Claude Design)
-- [ ] F-55h Pricing launch: Terms, copy, seller notice, §13 rewrite
+- [~] F-55h Pricing launch: Terms, copy, seller notice, §13 rewrite (2026-11-03; Terms draft and go-live checklist `926a6831`; launch not run)
 - [x] F-56a USD wallet design note and staging dry run (2026-11-03; `docs/superpowers/specs/2026-11-03-usd-wallet-and-plans-design.md`; dry run script added, owner still approves before production)
-- [x] F-56b Exchange-rate service (2026-11-03; server and cron done, Admin settings in progress)
+- [x] F-56b Exchange-rate service (2026-11-03; server, cron and Admin settings `abb55584`)
 - [x] F-56c USD migration and one-time balance conversion (2026-11-03; code and switch function built, 0136 on staging, switch not run)
 - [x] F-56d Kashier top-ups in USD, paid in EGP (2026-11-03; Kashier's maximum not confirmed)
 - [x] F-56e Manual top-ups in USD, paid in EGP (2026-11-03)
-- [~] F-56f USD display across dashboard and Admin (2026-11-03; dashboard done, Admin in progress)
+- [x] F-56f USD display across dashboard and Admin (2026-11-03; `ed4f6412`, `8857bb3b`, `a046b99c`; not seen in a browser)
 - [x] F-57a AI credit ledger migration (2026-11-03; 0137 on staging)
 - [x] F-57b AI credit enforcement on the server (2026-11-03)
-- [ ] F-57c Show remaining credits
+- [x] F-57c Show remaining credits (2026-11-03; `39bffc4a`; the AI Store Builder chat shows no count yet)
 - [x] F-57d Buy 100 credits for $1 from the wallet (2026-11-03)
-- [ ] F-58a AI costs in USD with estimated EGP
-- [ ] F-58b Average AI cost per call across all stores
-- [ ] F-59a Salla research and recommendations
-- [ ] F-60a Q&A video series topics
+- [x] F-58a AI costs in USD with estimated EGP (2026-11-03; `7e322e2e`)
+- [x] F-58b Average AI cost per call across all stores (2026-11-03; `7e322e2e`)
+- [x] F-59a Salla research and recommendations (2026-11-03; `badfa0c0`; `docs/research/salla-seller-experience.md`)
+- [x] F-60a Q&A video series topics (2026-11-03; `fd0429b1`; videos not made)
 
 **Done outside the feature list (owner requests, §5)**
 
@@ -1214,6 +1214,17 @@ Add each new request here first, with the date and the owner's words, then turn 
 ---
 
 ## 7. Log
+
+### 2026-11-03 — Dashboard roadmap batch built, nothing deployed (owner)
+
+- **Instruction:** the owner told us to take the recommended settings, leave redesign tasks for Claude Design, and commit to `main` in the main worktree. Nothing is pushed or deployed.
+- **Built:** F-43c and the customers, picker and orders lists; F-45b; F-47; F-48a; F-50a; F-51; F-53; F-54 (off behind `STORE_BUILDER_AI_ENABLED`); F-55f; F-56f; F-57c; F-58; research F-59a; topics F-60a. F-55h has only the Terms draft and `docs/usd-switch-checklist.md`.
+- **Waiting on the owner:** F-49, F-52 and F-55g (Claude Design).
+- **Bugs found on the way, and live on production today:** product titles came back blank in the catalog and store editor pickers, and subquery fields read the wrong row in one-table selects (`6658df85`, `0c7b03b3`). Drizzle strips table names from a one-table select's top-level fields, so a subquery field must be nested as a second `sql` template.
+- **Also fixed:** sellers signing up after the switch would have received a $100 welcome gift (`bb59a93a`, caught by a review before any deploy); a duplicate ledger write was not recognised through Drizzle's error wrapper (`14a13c50`).
+- **Migrations, staging only:** `0138` track_stock, `0139` store app installs, `0140` list indexes (use `CONCURRENTLY` on production), `0141` store builds. With `0136` and `0137`, all six must reach production before this code deploys, because checkout and product queries read them. Staging's `usd_live` is still false (checked 2026-11-03).
+- **Checks 2026-11-03:** `tsc` clean in db, lib, dashboard and admin. Tests against staging: db 10 files, dashboard 72, ecommerce 30 and admin 13 pass (some skipped). lib: 126 files pass, 1 failed: the "4th store on Free" case in `stores/isolation.integration.test.ts` failed once in the full run, then passed 4 of 4 alone, cause not found. `tsc` fails in ecommerce only on `profile.chunks.tsx`, last changed 2026-10-24; ecommerce builds ignore type errors. **No full build ran and no screen from this batch has been seen in a browser or on an iPhone.**
+- **Open:** drafts with pre-tree sections can't publish (3 staging stores, production not checked). `cancelOrder` stays uncancellable on a refund replay (money, needs the owner).
 
 ### 2026-11-03 — USD wallet, plans and AI credits built, not switched on (owner)
 
