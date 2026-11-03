@@ -75,6 +75,17 @@ export async function hasFreeClaim(sellerId: string): Promise<boolean> {
   return Boolean(row);
 }
 
+/** True when the account's claim sits on an abandoned conversation: restart refuses a build that began, so it made nothing. */
+async function restartedClaim(sellerId: string): Promise<boolean> {
+  const [row] = await db
+    .select({ status: storeBuilds.status })
+    .from(storeBuildClaims)
+    .innerJoin(storeBuilds, eq(storeBuilds.id, storeBuildClaims.buildId))
+    .where(eq(storeBuildClaims.sellerId, sellerId))
+    .limit(1);
+  return row?.status === "abandoned";
+}
+
 export type StartBuild = { ok: true; build: BuildRow } | { ok: false; error: BuilderErrorCode };
 
 /**
@@ -92,15 +103,20 @@ export async function startBuild(sellerId: string, initial: (state: BuilderState
     .where(and(eq(storeBuilds.sellerId, sellerId), gte(storeBuilds.createdAt, since)));
   if ((today?.value ?? 0) >= BUILDER_LIMITS.buildsPerDay) return { ok: false, error: "tooManyBuilds" };
 
-  const paid = await hasFreeClaim(sellerId);
+  // A free build the seller restarted before it began stays theirs: it moves to the new conversation.
+  const carried = await restartedClaim(sellerId);
+  const paid = !carried && (await hasFreeClaim(sellerId));
   if (paid) {
     const billing = await getBillingState().catch(() => null);
     if (!billing?.usdLive) return { ok: false, error: "creditsNotLive" };
   }
 
   const state = initial(parseBuilderState({ paid }));
-  const [created] = await db.insert(storeBuilds).values({ sellerId, state }).onConflictDoNothing().returning();
-  if (created) return { ok: true, build: toRow(created) };
+  const [created] = await db.insert(storeBuilds).values({ sellerId, state, free: carried }).onConflictDoNothing().returning();
+  if (created) {
+    if (carried) await db.update(storeBuildClaims).set({ buildId: created.id }).where(eq(storeBuildClaims.sellerId, sellerId));
+    return { ok: true, build: toRow(created) };
+  }
   // A second tab opened it at the same moment.
   const raced = await loadOpenBuild(sellerId);
   return raced ? { ok: true, build: raced } : { ok: false, error: "failed" };

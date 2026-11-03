@@ -11,3 +11,9 @@ export function imageTypeOf(bytes: Uint8Array): (typeof BUILDER_IMAGE_TYPES)[num
 
 /** A path in the "products" bucket this seller's builder uploaded, and no other. */
 export const isOwnBuilderPath = (path: string, sellerId: string) => path.startsWith(`ai-builder/${sellerId}/`) && !path.includes("..");
+
+/** The public URL of a stored photo in the "products" bucket. */
+export function builderPhotoUrl(path: string, supabaseUrl: string | null | undefined = process.env.NEXT_PUBLIC_SUPABASE_URL): string {
+  if (!supabaseUrl) return path;
+  return `${supabaseUrl.replace(/\/+$/, "")}/storage/v1/object/public/products/${path.split("/").map(encodeURIComponent).join("/")}`;
+}

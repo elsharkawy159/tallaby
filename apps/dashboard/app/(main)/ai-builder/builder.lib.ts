@@ -50,8 +50,11 @@ export function withNextQuestion(state: BuilderState): BuilderState {
   return { ...state, messages: [...state.messages, { role: "assistant", key }] };
 }
 
+const MAX_MESSAGES = 200;
+
 export function withSellerMessage(state: BuilderState, text: string): BuilderState {
-  return { ...state, messages: [...state.messages, { role: "seller", text: clip(text, BUILDER_LIMITS.textMax) }] };
+  // The latest ones are enough to resume; the state holds the answers.
+  return { ...state, messages: [...state.messages, { role: "seller" as const, text: clip(text, BUILDER_LIMITS.textMax) }].slice(-MAX_MESSAGES) };
 }
 
 export type AnswerResult =
