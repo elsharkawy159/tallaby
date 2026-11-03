@@ -27,6 +27,13 @@ export function aiUsageRangeStart(range: AiUsageRange, now = new Date()): Date |
 export const AI_FEATURE_LABELS: Record<string, string> = {
   product_autofill: "Product autofill",
   shipping_zones: "Delivery areas",
+  store_builder_chat: "Store builder: chat",
+  store_builder_brief: "Store builder: brief",
+  store_builder_product: "Store builder: product copy",
+  store_builder_site_copy: "Store builder: site copy",
+  store_builder_shipping: "Store builder: shipping",
+  store_builder_policies: "Store builder: policies",
+  store_builder_review: "Store builder: final check",
 };
 
 export function aiFeatureLabel(feature: string): string {

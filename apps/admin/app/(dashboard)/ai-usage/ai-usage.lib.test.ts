@@ -54,6 +54,7 @@ describe("ai usage lib", () => {
   it("labels known features and keeps unknown keys", () => {
     expect(aiFeatureLabel("product_autofill")).toBe("Product autofill");
     expect(aiFeatureLabel("new_thing")).toBe("new_thing");
+    expect(aiFeatureLabel("store_builder_site_copy")).toBe("Store builder: site copy");
   });
 
   it("reads numeric strings from sums", () => {
