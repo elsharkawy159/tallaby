@@ -274,7 +274,7 @@ Priorities are the owner's (`Roadmap_new.md` §9). The order inside them is prop
 | 58  | F-62 | SMS app: Soon, sellers can request it               | P2                          | yes             | SMS sending waits for F-38                          |
 | 59  | F-61 | International storefront                            | P2                          | yes             | **Needs approval** (money, checkout)                |
 | 60  | F-64 | Simple one-page checkout                            | P1                          | yes             | Checkout review; shipping price needs a decision    |
-| 61  | F-65 | Remove campaign pages, hide store visits link       | P1                          | no              | Removing paid ads needs owner confirmation          |
+| 61  | F-65 | Hide campaign pages and store visits link           | P1                          | no              | Owner confirmed: no running ads                     |
 | 62  | F-66 | Email editor with live preview                      | P2                          | no              | —                                                   |
 | 63  | F-67 | Pending carts for sellers                           | P2                          | no (expected)   | Customer data: store's own carts only               |
 
@@ -994,7 +994,7 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 **What:** The checkout is one simple form: full name, mobile number, country, full address (one line) and a note. Saved details fill in next time, and the customer can change item counts on the checkout page.
 **Status:** [Planned]
 
-- **F-64a · P1 · deps: —** Design note. **To decide with the owner:** shipping prices, zones and Bosta all use a governorate today (`shippingAddress.state`, `store_shipping_zones.places`), and a one-line address has none. Options: read the governorate from the address in code, ask for it only when it can't be read, or keep a governorate picker. Also choose the provider that turns a location into an address, with its cost and limits, following `docs/ai.md` if AI is used.
+- **F-64a · P1 · deps: —** Design note. **Decided (owner, 2026-11-04):** shipping prices, zones and Bosta use a governorate today (`shippingAddress.state`, `store_shipping_zones.places`), and a one-line address has none, so read the governorate from the address in code and ask for it only when it can't be read. The location button reuses the existing map detector (`components/address/location-map.tsx`, `address-dialog-steps/map-location-step`): browser location, then OpenStreetMap Nominatim, which also returns the governorate. Check Nominatim's usage limits for production traffic before launch; its search is limited to Egypt today (`countrycodes=eg`), which matters for F-61.
 - **F-64b · P1 · deps: F-64a** The form: full name, mobile number, country, full address on one line, and note. Replaces `shipping-information.tsx` and `store-checkout-fields.client.tsx` in both languages, with phone-only ordering and blocked-phone checks kept.
 - **F-64c · P1 · deps: F-64b** A location icon button beside Full address. On click it asks the browser for the location, shows a loading icon while searching, then writes the address into that field, which stays editable. If permission is refused or the search fails, the customer just types it, with a short message.
 - **F-64d · P1 · deps: F-64b** Save these details to the user, guests included, so they fill in automatically next time.
@@ -1002,11 +1002,11 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 - **F-64f · P1 · deps: F-64b** Change item counts on the checkout page. Totals, shipping, coupons and stock checks update, and the server re-checks them when the order is placed.
 - Acceptance: `place-order.ts` keeps its rules, works on a phone, and no location is stored or sent unless the customer taps the button.
 
-### F-65 Remove campaign pages, hide store visits link — P1 · owner request
+### F-65 Hide campaign pages and store visits link — P1 · owner request
 
 **Status:** [Planned]
 
-- **F-65a · P1 · deps: owner** Remove "الحملات التسويقية" (`/marketing`) from the dashboard. **To confirm with the owner:** this page is where sellers buy paid ads from the wallet (`advertise.data`, `actions/ads.ts`), and it is the parent of Marketing's other pages. Confirm paid ads end, what happens to running or pending ads and Admin › Ad requests, and where Marketing lands.
+- **F-65a · P1 · deps: —** Hide "الحملات التسويقية" (`/marketing`, where sellers buy paid ads from the wallet: `advertise.data`, `actions/ads.ts`) from the dashboard for now. **Owner, 2026-11-04:** there are no running or pending ads, this kind of ad will be removed, and media buyers will help sellers create ads later. The code and Admin › Ad requests stay until then. It is the parent of Marketing's other pages, so choose where Marketing lands, and check nothing else links to it.
 - **F-65b · P1 · deps: —** Remove "تتبع الحملات" (`/reports/campaigns`). Check other pages and links that lead to it.
 - **F-65c · P1 · deps: —** Hide "زيارات المتجر" (`/stores/[storeId]/analytics`) from the sidebar, because the numbers are on the dashboard home. The page stays reachable, and the home page's link to it keeps working.
 
@@ -1313,7 +1313,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [ ] F-64d Save details and fill in automatically
 - [ ] F-64e Default address and Edit Address
 - [ ] F-64f Change item counts on checkout
-- [ ] F-65a Remove الحملات التسويقية (owner to confirm paid ads end)
+- [ ] F-65a Hide الحملات التسويقية (paid ads to be removed later; media buyers planned)
 - [ ] F-65b Remove تتبع الحملات
 - [ ] F-65c Hide زيارات المتجر from the sidebar
 - [ ] F-66a Email preview while editing
