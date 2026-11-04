@@ -1,6 +1,6 @@
 # USD switch: go-live checklist
 
-Turns on the USD store wallet, Free and Pro plans and AI credits together (`ROADMAP.md` F-55h; design: `docs/superpowers/specs/2026-11-03-usd-wallet-and-plans-design.md`). It needs the owner's go-ahead (`CLAUDE.md` rule 4). Until step 7, every screen and fee stays as it is today.
+Turns on the USD store wallet, Free and Pro plans and AI credits together (`ROADMAP.md` F-55h; design: `docs/superpowers/specs/2026-11-03-usd-wallet-and-plans-design.md`). It needs the owner's go-ahead (`CLAUDE.md` rule 4). Until step 8, every screen and fee stays as it is today.
 
 ## Steps, in order
 
@@ -19,12 +19,13 @@ Turns on the USD store wallet, Free and Pro plans and AI credits together (`ROAD
    - pending top-ups
    - gifts and unstarted trials that will end
 6. **Owner go-ahead.** The owner approves the rate and the dry-run numbers, and picks a quiet hour.
-7. **Run the switch** on production, once, with the approved market rate (no margin):
+7. **Terms.** Set `USD_SWITCH_DATE` in `(site)/terms/page.tsx` and update the Terms' last-updated date. The file is `apps/ecommerce/app/[locale]/(marketing)/(site)/terms/page.tsx`, and the date shows the clause "The move to US dollars", so it needs a deploy timed with the switch.
+8. **Run the switch** on production, once, with the approved market rate (no margin):
    ```sql
    SELECT * FROM billing_switch_to_usd(<rate>);
    ```
    It runs in one transaction and returns the wallets converted and top-ups priced. A second run is refused.
-8. **Verify right after** (read-only):
+9. **Verify right after** (read-only):
    ```sql
    SELECT usd_live, usd_live_at, conversion_rate FROM billing_settings;
    SELECT currency, count(*) FROM seller_wallet GROUP BY 1;                 -- only USD
@@ -34,7 +35,7 @@ Turns on the USD store wallet, Free and Pro plans and AI credits together (`ROAD
    SELECT count(*) FROM sellers WHERE welcome_gift_eligible;                -- 0
    ```
    Admin › Wallets should show no ledger mismatches.
-9. **Smoke checks**, with a test seller:
+10. **Smoke checks**, with a test seller:
    - **Dashboard:** the header, home wallet KPI, `/wallet`, `/financial` and the negative-balance pop-up all show `$`. Old ledger rows keep their EGP label.
    - **Top-up:** card top-ups stay Soon, so test a manual InstaPay or Vodafone Cash top-up: it shows USD and the EGP total, and once approved in Admin the bell and the email show the USD credit.
    - **Order:** a Free store order takes `$0.03`, and `order_items.metadata.platformFee` has `feeUsdCents`. On Pro it takes nothing.
@@ -43,8 +44,8 @@ Turns on the USD store wallet, Free and Pro plans and AI credits together (`ROAD
    - **Ads:** paying from the wallet shows the USD price and takes the same amount.
    - **Admin:** the sellers list, seller page, store page, person card and home KPIs show the right currency. Settings shows the new fee.
    - **New signup:** `welcome_gift_eligible` is false, and finishing setup grants nothing.
-10. **Next day:** check the exchange-rate, plan-renewals, welcome-gifts and fee-trial-reminders crons in the logs.
-11. **Publish what's waiting on the owner** (below), then mark F-55h done and rewrite `PLAN.md` §13 as live.
+11. **Next day:** check the exchange-rate, plan-renewals, welcome-gifts and fee-trial-reminders crons in the logs.
+12. **Publish what's waiting on the owner** (below), then mark F-55h done and rewrite `PLAN.md` §13 as live.
 
 ## What can't be undone
 
@@ -58,16 +59,16 @@ There is no reverse function. Treat the switch as one-way.
 
 ## Waiting on the owner
 
-These still promise EGP 5 or the gift after the switch. They are not gated.
+Static copy to check at the switch. It isn't gated. The groups in `apps/ecommerce/messages/marketing/` already use the new prices. The strings still in the base files (`apps/ecommerce/messages/{ar,en}.json`) still promise the old ones.
 
-- **Public pricing page and homepage** (F-55g, the owner's redesign): `components/marketing/pricing`, `lib/marketing/pricing.lib.ts`, and the marketing strings in `apps/ecommerce/messages/*.json` (`5 EGP`, "per delivered order").
-- **Terms:** approve `docs/terms-usd-wallet-draft.md`, then edit the `fees` section of the terms in `apps/ecommerce/messages/*.json`.
+- **Public pricing page and homepage** (F-55g, the owner's redesign): `components/marketing/pricing`, `lib/marketing/pricing.lib.ts`, and `apps/ecommerce/messages/marketing/{pricing,home}.{ar,en}.json`.
+- **Terms:** approve `docs/terms-usd-wallet-draft.md`, then edit the `fees` section of the terms in `apps/ecommerce/messages/marketing/legal.{ar,en}.json`.
 - **Other tallaby.com copy, all static pages.** A live `usd_live` check would make them dynamic, so these need a copy edit timed with the switch:
-  - the public help centre and FAQ ("Pricing and fees", "When is the 5 EGP charged?", the `5 EGP` search term)
-  - the about page ("no monthly fee", "no subscriptions")
-  - the blog pricing post and its price tool, which adds the 5 EGP fee
-  - the seller FAQ ("no monthly fee", commission wording)
-  - the affiliates FAQ sentence "The EGP 100 welcome gift isn't a top-up"
+  - the public help centre and FAQ: `messages/marketing/faq.{ar,en}.json`
+  - the about page: `messages/marketing/about.{ar,en}.json`
+  - the blog pricing post and its price tool: `messages/marketing/blog.{ar,en}.json` and `lib/marketing/blog-calculator.lib.ts`, which adds the fee as `FREE_PLAN_FEE_EGP`
+  - the seller FAQ ("no monthly fee", commission wording): base files, `pages.sell`
+  - the affiliates FAQ sentence "The EGP 100 welcome gift isn't a top-up": base files, `affiliates.faq`
 - **Internal docs:** `MARKETING_PROJECT.md`, `docs/wallet.md`, `docs/admin-saas.md`, `PLAN.md` §13.
 - **Referral program copy stays EGP on purpose:** commissions are worked out on the EGP paid, before tax.
 
