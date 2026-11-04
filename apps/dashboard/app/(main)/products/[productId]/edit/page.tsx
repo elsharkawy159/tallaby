@@ -1,3 +1,5 @@
+import { CrossSellSection } from "./cross-sell.client";
+import { listCrossSells } from "./cross-sell.server";
 import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
@@ -79,7 +81,10 @@ export default async function EditProductPage({
   const slug = defaultValues.localized?.en?.slug?.trim() || null;
   const storeLinks = await loadProductStoreLinks([{ id: productId, slug }]);
 
+  const crossSells = await listCrossSells(productId);
+
   return (
+    <>
     <EditProduct
       productId={productId}
       status={(product.status ?? "draft") as EditProductStatus}
@@ -92,5 +97,9 @@ export default async function EditProductPage({
       aiEnabled={aiConfigured()}
       viewStats={viewStats}
     />
+    <div className="px-4 pb-6 sm:px-6">
+      <CrossSellSection productId={productId} initial={crossSells} />
+    </div>
+    </>
   );
 }

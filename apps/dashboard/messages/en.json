@@ -1,4 +1,31 @@
 {
+  "crossSell": {
+    "title": "Frequently bought with",
+    "description": "Offer another product with this one at a discount. It shows under this product on your stores, and the discount only applies while both are in the order. It comes out of your own sale.",
+    "search": "Search your products",
+    "discountType": "Discount type",
+    "percent": "Percent",
+    "fixed": "Amount (EGP)",
+    "discountValue": "Discount",
+    "add": "Add offer",
+    "added": "Offer added",
+    "remove": "Remove offer",
+    "active": "Offer on or off",
+    "percentOff": "{value}% off",
+    "amountOff": "{value} off",
+    "errors": {
+      "invalid": "Check the discount: 1 to 90 percent, or an amount above zero.",
+      "duplicate": "This product already has this offer.",
+      "notFound": "That product isn't available.",
+      "rateLimited": "Too many changes. Try again in a few minutes.",
+      "generic": "Something went wrong. Try again."
+    },
+    "store": {
+      "title": "Cross-sell offers",
+      "description": "Show the offers you set on products, under the product and in the cart.",
+      "failed": "Couldn't save. Try again."
+    }
+  },
   "manualOrder": {
     "title": "Create order",
     "subtitle": "A new order for {store}, taken by phone or chat.",

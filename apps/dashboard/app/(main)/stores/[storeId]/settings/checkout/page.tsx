@@ -3,6 +3,7 @@ import { parseStoreMinOrder } from "@workspace/lib/stores/min-order";
 import { storeUrl } from "@workspace/lib/storefront";
 import { loadStorePage } from "@/lib/stores/store-page.server";
 import { StoreCheckoutSettingsForm } from "./checkout-settings.client";
+import { StoreCrossSellSwitch } from "./cross-sell-switch.client";
 import { StoreMinOrderForm } from "./min-order.client";
 
 /** Store settings › Checkout (ROADMAP.md F-25, F-13b): minimum order, extra checkout fields and the thank-you page. */
@@ -14,6 +15,7 @@ export default async function StoreCheckoutSettingsPage({ params }: { params: Pr
 
   return (
     <div className="space-y-5">
+      <StoreCrossSellSwitch storeId={store.id} initial={store.crossSellEnabled} readOnly={readOnly} />
       <StoreMinOrderForm storeId={store.id} initial={parseStoreMinOrder(store.settings)} readOnly={readOnly} />
       <StoreCheckoutSettingsForm
         storeId={store.id}

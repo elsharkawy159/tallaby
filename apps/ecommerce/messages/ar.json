@@ -2344,6 +2344,15 @@
     "backHome": "العودة إلى المتجر"
   },
   "storefront": {
+    "crossSell": {
+      "title": "بيتشتري مع بعض",
+      "add": "أضف",
+      "added": "اتضاف لسلتك",
+      "failed": "ما اتضافش. حاول تاني.",
+      "chooseOption": "اختر",
+      "percentOff": "خصم {value}%",
+      "amountOff": "خصم {value}"
+    },
     "policy": {
       "heading": "سياسات المتجر",
       "whatsapp": "راسلنا على واتساب",

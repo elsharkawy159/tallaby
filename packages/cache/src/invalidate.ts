@@ -285,6 +285,11 @@ export function invalidateStoreIntegrations(sellerId: string, storeId: string): 
   return inv([storeTags.integrations(sellerId, storeId)]);
 }
 
+/** Offers or the store's switch changed (F-32). An offer can apply in every store of the seller. */
+export function invalidateStoreCrossSells(sellerId: string, storeIds: readonly string[]): CacheInvalidation {
+  return inv(storeIds.map((storeId) => storeTags.crossSells(sellerId, storeId)));
+}
+
 /** The seller pressed Refresh on Store views (SA-01). */
 export function invalidateStoreViews(sellerId: string, storeId: string): CacheInvalidation {
   return inv([storeTags.views(sellerId, storeId)]);

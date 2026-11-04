@@ -1,5 +1,6 @@
 "use server"
 
+import { crossSellForCart } from "@workspace/lib/orders/cross-sell/server"
 import { unstable_cache, revalidateTag } from "next/cache"
 import { couponTags } from "@workspace/cache"
 import { db, carts, cartItems, coupons, couponUsage, userAddresses, eq, and, sql, gte, lte, desc, or, isNull } from "@workspace/db"
@@ -193,16 +194,18 @@ export async function validateCoupon(
     }
 
     // Calculate cart totals
-    const cartItemsForCoupon: CartItemForCoupon[] = cart.cartItems.map(item => ({
+    // A coupon stacks on the net price of a cross-sell line, as place-order does.
+    const crossSell = await crossSellForCart((await getCartScope())?.storeId, cart.cartItems)
+    const cartItemsForCoupon: CartItemForCoupon[] = cart.cartItems.map((item, index) => ({
       id: item.id,
       productId: item.productId,
       sellerId: item.sellerId,
       categoryId: item.product?.categoryId,
       quantity: item.quantity,
-      price: item.price
+      price: Number(item.price) - (crossSell.lines[index]?.discountPiastres ?? 0) / 100 / item.quantity
     }))
 
-    const subtotal = cartItemsForCoupon.reduce(
+    const subtotal = cart.cartItems.reduce(
       (sum, item) => sum + Number(item.price) * item.quantity,
       0
     )
@@ -262,6 +265,7 @@ export async function validateCoupon(
       itemCount: cart.cartItems.reduce((sum, i) => sum + i.quantity, 0),
       sellerFreeDeliveryDiscount,
       storeShipping,
+      crossSellDiscount: crossSell.totalPiastres / 100,
     }
 
     const summary = buildSummaryWithCoupon(
@@ -419,6 +423,7 @@ export async function removeCouponFromCart(data?: {
       await getCheckoutShipping(cart.cartItems, address, scope)
     const billedShipping = shippingCost ?? 0
     const total = subtotal + tax + billedShipping
+    const crossSell = await crossSellForCart(cart.storeId, cart.cartItems)
 
     const summary = buildSummaryWithCoupon(
       {
@@ -429,6 +434,7 @@ export async function removeCouponFromCart(data?: {
         itemCount: cart.cartItems.reduce((sum, i) => sum + i.quantity, 0),
         sellerFreeDeliveryDiscount,
         storeShipping,
+        crossSellDiscount: crossSell.totalPiastres / 100,
       },
       null,
       null,

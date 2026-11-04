@@ -2347,6 +2347,15 @@
     "backHome": "Back to the store"
   },
   "storefront": {
+    "crossSell": {
+      "title": "Frequently bought together",
+      "add": "Add",
+      "added": "Added to your cart",
+      "failed": "Couldn't add it. Try again.",
+      "chooseOption": "Choose an option",
+      "percentOff": "{value}% off",
+      "amountOff": "{value} off"
+    },
     "policy": {
       "heading": "Store policies",
       "whatsapp": "Message on WhatsApp",

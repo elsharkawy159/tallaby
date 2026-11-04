@@ -1,3 +1,4 @@
+import { CrossSellOffers } from "@/components/storefront/cross-sell-offers.client";
 import type { ReactNode } from "react";
 import { formatPricePlain } from "@workspace/lib";
 import { getPublicStoreForms } from "@workspace/lib/store-forms/server";
@@ -85,14 +86,18 @@ const PRODUCT_HOOKS: Pick<
   renderProductStock: (_product, props) => <StoreProductStock alertElsewhere={props[STOCK_ALERT_ELSEWHERE_PROP] === true} />,
   renderProductStockBadge: () => <StoreProductStockBadge />,
   renderProductVariants: () => <StoreProductVariants />,
-  renderProductBuyBox: (_product, props) => (
-    <StoreProductBuyBox
-      buyNow={props.buyNow !== false}
-      stickyMobile={props.stickyMobile !== false}
-      variant={props.variant === "outline" ? "outline" : "solid"}
-      addLabel={textProp(props.addLabel)}
-      buyLabel={textProp(props.buyLabel)}
-    />
+  renderProductBuyBox: (product, props) => (
+    <>
+      <StoreProductBuyBox
+        buyNow={props.buyNow !== false}
+        stickyMobile={props.stickyMobile !== false}
+        variant={props.variant === "outline" ? "outline" : "solid"}
+        addLabel={textProp(props.addLabel)}
+        buyLabel={textProp(props.buyLabel)}
+      />
+      {/* Offers under the buy box on every store page; nothing when there are none (F-32). */}
+      <CrossSellOffers mainProductIds={[product.id]} />
+    </>
   ),
   renderProductReviews: () => <StoreProductReviews />,
 };

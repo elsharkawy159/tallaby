@@ -340,7 +340,7 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 
 **Why:** Much of the sales happen in chat. Sellers want those orders in the same list, shipped the same way.
 **What:** "Create order" in the dashboard: pick products/variants, customer name, phone, address, shipping zone, discount, payment (COD or already paid). The order is tagged `source = manual` and follows the normal stages, shipping and fee rules.
-**Status:** [Approved] Owner approved the design note 2026-11-04; building.
+**Status:** [Built, not deployed] 2026-11-04 (§7).
 
 - **F-05a · P0 · deps: owner approval** Design note: how a manual order goes through the existing order creation (`place-order.ts`) without changing money logic; fee and wallet behaviour equal to a storefront COD order. Get the owner's OK.
 - **F-05b · P0 · deps: F-05a** Migration if needed (an order `source` value), then the create-order form and server action (`requireStore`, stock check).
@@ -565,7 +565,7 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 - Offers show only for active, in-stock products of the same store (and in that store's catalog).
 - Fits the builder: a `cross-sell` element in the product-page template (tree element, CLAUDE.md rule 17), with a fallback placement for stores whose product page lacks it.
 - **Decided (owner, 2026-10-29): when the seller has set no offer for a product, show nothing.** No automatic suggestions; the cross-sell block renders only when the product has at least one active offer whose product is active and in stock.
-  **Status:** [Approved] Owner approved the design note 2026-11-04; building.
+  **Status:** [Built, not deployed] 2026-11-04, except the builder element and the F-32f report (§7).
 
 - **F-32a · P1 · deps: —** Design note: the discount as an order-item line adjustment computed in piastres at checkout (`place-order.ts` behaviour kept for orders without offers), how it shows on the order and invoice, and the fee base (PLAN.md §13 unchanged: flat EGP 5 per delivered order, so no fee change). Owner OK on the note.
 - **F-32b · P1 · deps: F-32a** Migration `product_cross_sells`: `store_id`, `product_id`, `offer_product_id`, `offer_variant_id`, `discount_type` ('percent' | 'fixed'), `discount_value`, `is_active`, `sort_order`; unique per store + product + offer; RLS on, no policies. Plus `stores.cross_sell_enabled boolean NOT NULL DEFAULT true`. The cart item keeps the accepted `offer_id` so checkout can re-check it. Mirror in `schema.ts` / `relations.ts`.
@@ -1136,10 +1136,10 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-25b Thank-you page settings (2026-10-30, uncommitted; browser E2E pending)
 - [ ] F-07f Bundles
 - [x] F-32a Cross-sell design note (owner approved 2026-11-04)
-- [ ] F-32b Offers migration (`product_cross_sells`, `stores.cross_sell_enabled` default on)
-- [ ] F-32c Cross-sell in product form + store switch
-- [ ] F-32d Cross-sell on the store product page and cart
-- [ ] F-32e Cross-sell discount at checkout
+- [x] F-32b Offers migration (2026-11-04; 0145 on staging)
+- [x] F-32c Cross-sell in product form + store switch (2026-11-04; not seen in a browser)
+- [~] F-32d Cross-sell on the store product page and cart (2026-11-04; shows under the buy box and in the cart; the builder element waits for the template work in `packages/store-sections`)
+- [x] F-32e Cross-sell discount at checkout (2026-11-04; integration tests on staging)
 - [x] F-34a Low-stock badge migration (`show_low_stock_badge`, `low_stock_threshold`) (2026-10-30, uncommitted; 0122 on staging)
 - [x] F-34b Checkbox + threshold in the product form (2026-10-30, uncommitted)
 - [x] F-34c Badge on the store product page and cards (2026-10-30, uncommitted; browser E2E pending)
@@ -1333,6 +1333,17 @@ Add each new request here first, with the date and the owner's words, then turn 
 ---
 
 ## 7. Log
+
+### 2026-11-04 — F-32 Cross-sell offers
+
+- **Built:** "Frequently bought with" on the product edit page, with a discount (10% prefilled, or a fixed amount) and on/off for each offer. A store-wide switch is in Store settings › Checkout, on by default. Offers show under the buy box on every store product page and in the cart sheet, and nothing shows when there are none.
+- **Money:** the discount is worked out in piastres in `placeOrderFromCart`, from the database, only for a store order with the main product in it. `cart_items.price` stays full, and a line only carries the offer id. The seller pays for it: the line's `total` goes down, `orders.discounts` gets a `cross_sell` line and `order_items.metadata.crossSell` keeps the snapshot. The fee code is unchanged. Without an offer, no number changes.
+- **Coupons:** a coupon now stacks on the net price, in `place-order` and in the checkout summary, which use the same function.
+- **Calls, from the note's open questions:** offers belong to the seller and apply in every store (the `store_id` column exists; the form doesn't set it). One discounted unit per main unit. A coupon stacks on top. 1 to 90 percent, or a fixed amount below the price, with no free gifts. Store websites only. Affiliate commission stays on the gross subtotal. A switched-off offer charges full price, and the summary shows that before the order is placed.
+- **Differs from the note:** the card fetches its offers from a server action on the client, because the buy box hook can't be assumed to run on the server. There is no `productCrossSell` builder element yet, and no template change: `packages/store-sections` has uncommitted template work. The block under the buy box is the note's fallback, and it covers every store. A line carries one accepted offer, so two main products offering the same item aren't compared. Order and invoice lines show the offer inside the existing discount total, with no separate "Bundle offer" row yet. The cart sheet offers items but doesn't show the discount on a line already added; checkout does.
+- **Migration:** `0145`, staging only. Apply on production before deploying, because `stores` and `cart_items` queries select every column.
+- **Not built:** F-32f report (later).
+- **Not seen in a browser.**
 
 ### 2026-11-04 — F-05 Manual orders
 

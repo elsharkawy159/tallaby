@@ -406,6 +406,14 @@
       "types": "./src/platform-blog/platform-blog.server.ts",
       "default": "./src/platform-blog/platform-blog.server.ts"
     },
+    "./orders/cross-sell": {
+      "types": "./src/orders/cross-sell.lib.ts",
+      "default": "./src/orders/cross-sell.lib.ts"
+    },
+    "./orders/cross-sell/server": {
+      "types": "./src/orders/cross-sell.server.ts",
+      "default": "./src/orders/cross-sell.server.ts"
+    },
     "./orders/manual": {
       "types": "./src/orders/manual-order.lib.ts",
       "default": "./src/orders/manual-order.lib.ts"

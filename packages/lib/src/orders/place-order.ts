@@ -58,6 +58,8 @@ import { sendOrderConfirmationEmail, sendOrderEventEmail } from './notify'
 import { computeOrderLineFees, type PlatformFeeSnapshot } from './platform-fee.lib'
 import { detectFeeHolds } from './fee-hold.server'
 import { getBillingState } from '../billing/billing.server'
+import { CROSS_SELL_LABEL, type CrossSellSnapshot } from './cross-sell.lib'
+import { crossSellForCart } from './cross-sell.server'
 import { isCodEligibleForShipping, parseWalletPartialPaymentMethod } from './payment.lib'
 import {
   isStorefrontCheckoutMethodAllowed,
@@ -470,13 +472,37 @@ export async function placeOrderFromCart(
       commissionRate: 0,
       commissionAmount: '0.00',
       sellerEarning: formatDecimal(itemSubtotal),
-      metadata: null as { platformFee: PlatformFeeSnapshot } | null,
+      metadata: null as { platformFee?: PlatformFeeSnapshot; crossSell?: CrossSellSnapshot } | null,
       currency: cart.currency || 'EGP',
       condition: item.product.condition,
       fulfillmentType: item.product.fulfillmentType,
       status: 'pending' as const,
     }
   })
+
+  // Line discounts sit beside the coupon's on orders.discounts.
+  const lineDiscountLines: OrderDiscountLine[] = []
+
+  // Cross-sell offers (ROADMAP.md F-32): worked out here from the database,
+  // never from the client. They come out of the seller's own line, and without
+  // an offer every number stays as it was.
+  if (orderSource === 'storefront' && cart.storeId) {
+    const crossSell = await crossSellForCart(cart.storeId, cart.cartItems)
+    crossSell.lines.forEach((result, index) => {
+      if (result.discountPiastres <= 0 || !result.snapshot) return
+      const item = orderItemsData[index]!
+      item.discountAmount = formatDecimal(result.discountPiastres / 100)
+      item.total = formatDecimal(Number(item.subtotal) - result.discountPiastres / 100)
+      item.metadata = { crossSell: result.snapshot }
+    })
+    if (crossSell.totalPiastres > 0) {
+      lineDiscountLines.push({
+        type: 'cross_sell',
+        label: CROSS_SELL_LABEL,
+        amount: formatDecimal(crossSell.totalPiastres / 100),
+      })
+    }
+  }
 
   let merchandiseDiscount = 0
   // Tallaby's cart threshold is a platform promotion; a zone has its own free-over.
@@ -519,8 +545,9 @@ export async function placeOrderFromCart(
       const eligibleItems = orderItemsData.filter((item) =>
         isLineEligibleForCoupon(coupon, item),
       )
+      // On the net price: a coupon stacks on top of a cross-sell offer.
       const eligibleSubtotal = eligibleItems.reduce(
-        (sum, item) => sum + Number(item.subtotal),
+        (sum, item) => sum + Number(item.total),
         0,
       )
 
@@ -568,13 +595,12 @@ export async function placeOrderFromCart(
       if (coupon.sellerId && merchandiseDiscount > 0) {
         const shares = allocateDiscountAcrossLines(
           merchandiseDiscount,
-          eligibleItems.map((item) => Number(item.subtotal)),
+          eligibleItems.map((item) => Number(item.total)),
         )
         eligibleItems.forEach((item, index) => {
-          const lineDiscount = shares[index] ?? 0
-          const net = Number(item.subtotal) - lineDiscount
+          const lineDiscount = Number(item.discountAmount) + (shares[index] ?? 0)
           item.discountAmount = formatDecimal(lineDiscount)
-          item.total = formatDecimal(net)
+          item.total = formatDecimal(Number(item.subtotal) - lineDiscount)
         })
       }
 
@@ -584,7 +610,6 @@ export async function placeOrderFromCart(
 
   // The seller's own discount comes out of the lines like a seller coupon, so
   // the fee and the delivery credit both see what the customer really pays.
-  const lineDiscountLines: OrderDiscountLine[] = []
   if (sellerDiscount && sellerDiscount.amountPiastres > 0) {
     const nets = orderItemsData.map((item) => Number(item.total))
     const goods = nets.reduce((sum, value) => sum + value, 0)
@@ -632,7 +657,7 @@ export async function placeOrderFromCart(
     item.commissionRate = fee.commissionRate
     item.commissionAmount = fee.commissionAmount
     item.sellerEarning = fee.sellerEarning
-    item.metadata = { platformFee: fee.platformFee }
+    item.metadata = { ...item.metadata, platformFee: fee.platformFee }
   })
 
   const {

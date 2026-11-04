@@ -322,11 +322,18 @@ export function buildSummaryWithCoupon(
     /** Shipping waived by sellers flagged sellers.free_delivery. */
     sellerFreeDeliveryDiscount?: number
     storeShipping?: CheckoutStoreShipping
+    /** Cross-sell offers on this cart (F-32), worked out from the database. */
+    crossSellDiscount?: number
   },
   coupon: CouponData | null,
   calculationResult: CouponCalculationResult | null
 ): CheckoutSummary {
   const shippingCost = baseSummary.shippingCost ?? 0
+  const crossSellDiscount = Math.max(0, baseSummary.crossSellDiscount ?? 0)
+  const crossSellLines: OrderDiscountLine[] =
+    crossSellDiscount > 0
+      ? [{ type: 'cross_sell', label: 'Bundle offer', amount: crossSellDiscount.toFixed(2) }]
+      : []
   // A seller zone has its own free-over; Tallaby's cart threshold does not apply.
   const thresholdShippingDiscount =
     baseSummary.storeShipping?.kind === 'zone'
@@ -357,15 +364,15 @@ export function buildSummaryWithCoupon(
     })
     const totalAfterDiscount = Math.max(
       0,
-      baseSummary.total - totalDiscount
+      baseSummary.total - totalDiscount - crossSellDiscount
     )
 
     return {
       ...baseSummary,
-      discountAmount: 0,
+      discountAmount: crossSellDiscount,
       shippingDiscount: baseShippingDiscount,
       totalAfterDiscount,
-      discounts: lines,
+      discounts: [...lines, ...crossSellLines],
       appliedCoupon: null
     }
   }
@@ -395,15 +402,16 @@ export function buildSummaryWithCoupon(
     baseSummary.subtotal +
       baseSummary.tax +
       shippingCost -
-      totalDiscount
+      totalDiscount -
+      crossSellDiscount
   )
 
   return {
     ...baseSummary,
-    discountAmount: calculationResult.discountAmount,
+    discountAmount: calculationResult.discountAmount + crossSellDiscount,
     shippingDiscount,
     totalAfterDiscount,
-    discounts: lines,
+    discounts: [...lines, ...crossSellLines],
     appliedCoupon: {
       code: coupon.code,
       name: coupon.name,

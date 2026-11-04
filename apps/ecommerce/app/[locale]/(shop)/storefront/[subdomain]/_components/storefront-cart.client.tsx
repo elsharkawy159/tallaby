@@ -1,5 +1,6 @@
 "use client";
 
+import { CrossSellOffers } from "@/components/storefront/cross-sell-offers.client";
 import { useCurrencyLabel } from "@/lib/currency-label.client";
 import { ShoppingBag } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
@@ -126,6 +127,11 @@ export function StorefrontCart({
           );
         })}
       </ul>
+      <CrossSellOffers
+        compact
+        mainProductIds={items.map((item) => item.productId)}
+        excludeProductIds={items.map((item) => item.productId)}
+      />
 
       <div className="space-y-3 border-t border-(--sf-line) pt-4">
         <div className="flex items-baseline justify-between">

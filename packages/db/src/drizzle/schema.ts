@@ -69,6 +69,8 @@ export type OrderDiscountType =
 	| 'manual_adjustment'
 	/** A seller's own discount on a manual order; lowers the seller's line totals. */
 	| 'seller_discount'
+	/** A cross-sell offer (F-32); lowers the offer line's total. */
+	| 'cross_sell'
 
 export type OrderCouponDiscountType =
 	| 'percentage'
@@ -781,6 +783,8 @@ export const cartItems = pgTable("cart_items", {
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 	variant: jsonb(),
+	/** The cross-sell offer the customer took (0145). The price stays full; checkout works out the discount. */
+	crossSellId: uuid("cross_sell_id"),
 }, (table) => [
 	index("cart_items_cart_id_idx").using("btree", table.cartId.asc().nullsLast().op("uuid_ops")),
 	index("cart_items_product_id_idx").using("btree", table.productId.asc().nullsLast().op("uuid_ops")),
@@ -2601,6 +2605,8 @@ export const adCampaignRequests = pgTable("ad_campaign_requests", {
 
 /** The tenant: one storefront. A seller owns up to plan.maxStores stores (0050). */
 export const stores = pgTable("stores", {
+	/** Store-wide switch for cross-sell offers (0145, F-32). */
+	crossSellEnabled: boolean("cross_sell_enabled").default(true).notNull(),
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	sellerId: uuid("seller_id").notNull(),
 	name: text().notNull(),
@@ -4247,4 +4253,29 @@ export const storeBuildClaims = pgTable("store_build_claims", {
 	index("store_build_claims_ip_idx").using("btree", table.ipHash, table.createdAt.desc()).where(sql`ip_hash IS NOT NULL`),
 	foreignKey({ columns: [table.sellerId], foreignColumns: [sellers.id], name: "store_build_claims_seller_id_fkey" }).onDelete("cascade"),
 	foreignKey({ columns: [table.buildId], foreignColumns: [storeBuilds.id], name: "store_build_claims_build_id_fkey" }).onDelete("set null"),
+]);
+
+/** Cross-sell offers (0145, ROADMAP.md F-32). Server-only: RLS on, no policies. */
+export const productCrossSells = pgTable("product_cross_sells", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	sellerId: uuid("seller_id").notNull(),
+	/** Null: every store of the seller. */
+	storeId: uuid("store_id"),
+	productId: uuid("product_id").notNull(),
+	offerProductId: uuid("offer_product_id").notNull(),
+	/** Null: any variant of the offer product. */
+	offerVariantId: uuid("offer_variant_id"),
+	discountType: text("discount_type").notNull(),
+	discountValue: numeric("discount_value", { precision: 10, scale: 2 }).notNull(),
+	isActive: boolean("is_active").default(true).notNull(),
+	sortOrder: integer("sort_order").default(0).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("product_cross_sells_product_idx").using("btree", table.productId.asc().nullsLast().op("uuid_ops")).where(sql`is_active`),
+	foreignKey({ columns: [table.sellerId], foreignColumns: [sellers.id], name: "product_cross_sells_seller_id_fkey" }).onDelete("cascade"),
+	foreignKey({ columns: [table.storeId], foreignColumns: [stores.id], name: "product_cross_sells_store_id_fkey" }).onDelete("cascade"),
+	foreignKey({ columns: [table.productId], foreignColumns: [products.id], name: "product_cross_sells_product_id_fkey" }).onDelete("cascade"),
+	foreignKey({ columns: [table.offerProductId], foreignColumns: [products.id], name: "product_cross_sells_offer_product_id_fkey" }).onDelete("cascade"),
+	foreignKey({ columns: [table.offerVariantId], foreignColumns: [productVariants.id], name: "product_cross_sells_offer_variant_id_fkey" }).onDelete("cascade"),
 ]);
