@@ -1,1 +1,94 @@
-{}
+{
+  "meta": {
+    "feature-custom-domain": {
+      "title": "Connect your own domain to your store",
+      "description": "Connect your own domain to your Tallaby store so customers see your brand. Connecting is free on both plans, with a free security certificate."
+    }
+  },
+  "contentPages": {
+    "createStore": "Create your store for free",
+    "pricing": "Pricing",
+    "whatsapp": "Message us on WhatsApp",
+    "noCode": "Ready to connect, no code",
+    "faqKicker": "Common questions",
+    "faqTitle": "Questions and answers",
+    "faqLead": "Can't find your answer? Message us on WhatsApp.",
+    "benefitsKicker": "Benefits",
+    "benefitsTitle": "Why it matters",
+    "usesKicker": "What it's for",
+    "stepsKicker": "Step by step",
+    "requirementsLead": "Have these ready before you start.",
+    "closingBody": "Start with no monthly subscription and no credit card.",
+    "freeTerms": "The Free plan has no monthly subscription, and you pay $0.03 per order. To see orders and send campaigns, you need a first wallet top-up of $5. Order emails to your customers need the Order Notifications app, at 1 cent per order.",
+    "dashMock": {
+      "home": "Home",
+      "products": "Products",
+      "orders": "Orders",
+      "shipping": "Shipping and delivery",
+      "website": "Website",
+      "apps": "Apps and integrations"
+    }
+  },
+  "detailPages": {
+    "custom-domain": {
+      "crumbHub": "Features",
+      "crumb": "Custom domain",
+      "title": "Connect your own domain to your store",
+      "lead": "Put your store on an address with your brand's name, like glowskin.com, in a few steps.",
+      "whatTitle": "What is it?",
+      "what": [
+        "Every Tallaby store starts on a free address like glow.tallaby.com. When you're ready, you can connect a domain you own, so customers reach your store at an address with your brand's name.",
+        "You do this in the dashboard under Website › Domain & SEO: enter the domain, add the records shown to the DNS settings where you bought it, and follow its status on the same page. For now it's available on your main store, with one domain per account."
+      ],
+      "benefits": [
+        { "title": "More customer trust", "body": "An address with your brand's name looks more professional in ads and messages." },
+        { "title": "One link for every campaign", "body": "Use the same domain in your posts, ads and WhatsApp messages." },
+        { "title": "Your name in search results", "body": "Your store shows up on Google under your own domain and brand." }
+      ],
+      "stepsTitle": "How to set it up",
+      "steps": [
+        { "title": "Buy a domain, or use yours", "body": "Buy one from any domain registrar, such as GoDaddy or Namecheap, or use a domain you already own." },
+        { "title": "Add it in the dashboard", "body": "Open Website › Domain & SEO, enter the domain and press Connect domain. We connect the domain and its www version together." },
+        { "title": "Add the DNS records", "body": "Copy the records shown and add them to your domain's DNS settings. Remove any other A or CNAME records for @ and www." },
+        { "title": "Wait for the check", "body": "It usually takes a few minutes and can take up to 48 hours. We check automatically every day, and you can press Check now at any time." }
+      ],
+      "relatedTitle": "Related pages",
+      "related": [
+        { "title": "Templates", "body": "Ready-made designs for what you sell." },
+        { "title": "Drag-and-drop editor", "body": "Design your store's pages without code." },
+        { "title": "Tallaby AI", "body": "Product titles and descriptions in Arabic and English." },
+        { "title": "Meta Pixel", "body": "Measure your Facebook and Instagram ads." }
+      ],
+      "faq": [
+        { "q": "Is connecting a custom domain free?", "a": "Yes. Connecting is free on both Free and Pro. You buy the domain from a registrar, at their price." },
+        { "q": "Where do I buy a domain?", "a": "From any domain registrar, such as GoDaddy or Namecheap. After you buy it, you'll open its DNS settings there to add the records." },
+        { "q": "How long does it take?", "a": "Usually a few minutes. DNS changes can take up to 48 hours, depending on your provider. We check automatically every day, and you can press Check now." },
+        { "q": "Does my store get a security certificate?", "a": "Yes. Your store runs on your domain with a free security certificate once it's connected." },
+        { "q": "Does my tallaby.com address keep working?", "a": "Yes, and it forwards visitors to your domain. If you disconnect the domain, your store goes back to its Tallaby address." },
+        { "q": "Can I connect more than one domain?", "a": "No. For now you can connect one domain per account, on your main store only." },
+        { "q": "I use Cloudflare. What should I do?", "a": "Set the records to DNS only (the grey cloud), or the security certificate can't be issued." }
+      ],
+      "closingTitle": "Connect your domain and sell under your own name",
+      "mock": {
+        "title": "Domain & SEO",
+        "path": "Website › Domain",
+        "live": "Live",
+        "pending": "Waiting for DNS",
+        "available": "Available",
+        "ownTitle": "Your own domain",
+        "ownHint": "Customers see it instead of the free address",
+        "check": "Check now",
+        "connect": "Connect domain",
+        "ssl": "Free security certificate",
+        "dnsTitle": "DNS records",
+        "dnsHint": "Add them at your domain provider",
+        "type": "Type",
+        "name": "Name",
+        "value": "Value",
+        "freeTitle": "Free address",
+        "freeHint": "Forwards visitors to your domain",
+        "registrarLabel": "Search for a domain at a registrar"
+      }
+    }
+  }
+}
