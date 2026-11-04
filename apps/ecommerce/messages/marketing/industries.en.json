@@ -1,1 +1,124 @@
-{}
+{
+  "meta": {
+    "industry-clothing-store": {
+      "title": "Create a professional online clothing store",
+      "description": "Create an online clothing store with sizes and colours, several photos per product, countdown offers and a catalog for Instagram, with no monthly subscription."
+    }
+  },
+  "storeKinds": {
+    "clothing": "Clothing store",
+    "beauty": "Perfume and beauty store",
+    "electronics": "Electronics store",
+    "home": "Homeware store",
+    "food": "Food store",
+    "jewelry": "Jewellery store",
+    "kids": "Kids' store",
+    "shoes": "Shoes and bags store",
+    "gifts": "Gift store"
+  },
+  "industryPages": {
+    "shared": {
+      "crumbHub": "Industries",
+      "createStore": "Create your store for free",
+      "browseTemplates": "Browse templates",
+      "needsKicker": "Made for your business",
+      "templatesKicker": "Templates",
+      "templatesLead": "Every template works in Arabic and English, and you can change template at any time without losing your products.",
+      "preview": "Preview",
+      "allTemplates": "All templates",
+      "showKicker": "An illustration",
+      "showLead": "A made-up store to show the idea, not a real one.",
+      "stepsKicker": "4 steps",
+      "othersTitle": "Other kinds of store",
+      "hours": "hours",
+      "minutes": "min",
+      "seconds": "sec"
+    },
+    "clothing-store": {
+      "crumb": "Clothing store",
+      "tag": "For clothing and fashion stores",
+      "title": "Create a <em>professional</em> online clothing store",
+      "lead": "Show your collection in every size and colour, take orders with cash on delivery, and connect your products to a Meta catalog, with no developer.",
+      "checks": ["Sizes and colours per product", "Cash on delivery", "A catalog for Instagram and Facebook"],
+      "floats": ["Size L · Navy", "20% off for a limited time"],
+      "store": {
+        "brand": "NOMAD",
+        "announcement": "20% off the winter collection",
+        "nav": ["New", "Shirts", "Trousers", "Jackets"],
+        "heroSmall": "Winter collection",
+        "hero": "Everyday style, made to last",
+        "cta": "Shop now",
+        "categories": ["All", "Shirts", "T-shirts", "Trousers", "Jackets", "Shoes"],
+        "products": [
+          { "name": "Oxford shirt", "price": "650", "was": "820" },
+          { "name": "Denim jacket", "price": "1,250" },
+          { "name": "Chinos", "price": "780" },
+          { "name": "Cotton T-shirt", "price": "320", "was": "400" }
+        ],
+        "currency": "EGP",
+        "sale": "SALE",
+        "addToCart": "Add to cart",
+        "sizeLabel": "Size",
+        "colorLabel": "Colour",
+        "sizes": ["S", "M", "L", "XL", "XXL"],
+        "selectedSize": 2
+      },
+      "needsTitle": "What a clothing store needs",
+      "needs": [
+        {
+          "title": "Sizes and colours for each product",
+          "pain": "Customers ask which size and colour you have before they order.",
+          "solution": "Add sizes and colours to the same product, and set a price and quantity for each choice.",
+          "stock": "In stock: 12 items"
+        },
+        {
+          "title": "A photo gallery for each product",
+          "pain": "People buy clothes with their eyes, and one photo isn't enough.",
+          "solution": "Upload several photos for each product and each choice, so customers can see the fabric and details from every angle."
+        },
+        {
+          "title": "Offers with a countdown",
+          "pain": "Sale seasons and holidays are short, and customers put off deciding.",
+          "solution": "Create discount codes and offers with a clear end date, shown in your store with a countdown.",
+          "offer": "20% off",
+          "lead": "Offer ends in"
+        },
+        {
+          "title": "A Meta catalog for Instagram and Facebook",
+          "pain": "Many clothing customers find products on Instagram.",
+          "solution": "Copy your product feed link and add it in Meta's Commerce Manager, so you can use your products in ads, and in product tags if Meta offers them on your account.",
+          "handle": "nomad.eg",
+          "tag": "Oxford shirt · EGP 650",
+          "viewProducts": "View products"
+        }
+      ],
+      "templatesTitle": "Templates for clothing stores",
+      "showTitle": "What a clothing store on Tallaby can look like",
+      "showUrl": "nomad.tallaby.com",
+      "callouts": [
+        { "title": "Offers bar", "body": "Announce a discount or free shipping at the top of every page." },
+        { "title": "Collection banner", "body": "A large photo and a clear button for your latest collection." },
+        { "title": "Browse by category", "body": "Shirts, trousers and jackets, each category with its own page." },
+        { "title": "Price before and after", "body": "The original price is crossed out beside the offer price." },
+        { "title": "Available colours", "body": "Colour dots on the product card, before it's opened." }
+      ],
+      "stepsTitle": "Launching your clothing store",
+      "steps": [
+        { "title": "Create your store and pick a fashion template", "body": "Sign up with email or a Google account, and choose a template made for clothing stores." },
+        { "title": "Add your products with sizes and colours", "body": "Upload photos, and set the sizes, colours and quantity for each choice." },
+        { "title": "Turn on payment and shipping", "body": "Cash on delivery is on, and you can connect Paymob or Kashier and Bosta whenever you like." },
+        { "title": "Connect your ads", "body": "Add your product feed to a Meta catalog, and connect Meta Pixel to measure your ads." }
+      ],
+      "faqTitle": "Clothing store questions",
+      "faq": [
+        { "q": "How do I add sizes and colours to one product?", "a": "On the product page, add sizes and colours as options, and set a price and quantity for each choice." },
+        { "q": "Can customers pay on delivery?", "a": "Yes. Cash on delivery is on from the start. You can also connect Paymob or Kashier for cards and wallets, and take InstaPay straight to your account." },
+        { "q": "How do I handle exchanges and returns?", "a": "Write your returns and exchange policy in your store settings so customers can see it, and change an order's status to returned from the Orders page." },
+        { "q": "Can I show my products on Instagram and Facebook?", "a": "Yes. Copy your product feed link from the Apps and integrations page and add it in Meta's Commerce Manager, then connect Meta Pixel to measure sales." },
+        { "q": "Can I run seasonal discounts?", "a": "Yes. Create discount codes and offers with an end date, and the offer shows in your store with a countdown." },
+        { "q": "I only sell on a Facebook page. Can I bring my products over?", "a": "Yes. Import your products from an Excel file or a product link, and message us on WhatsApp if you need a hand." }
+      ],
+      "closingTitle": "Launch your clothing store today"
+    }
+  }
+}
