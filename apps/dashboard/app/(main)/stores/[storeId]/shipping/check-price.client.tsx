@@ -68,7 +68,9 @@ export function CheckPrice({
     } else if ((money.currency ?? DEFAULT_CURRENCY) !== DEFAULT_CURRENCY) {
       result = t("checkPrice.notCovered", { place: label });
     } else if (!place.startsWith(`${lib.EGYPT}/`) && place !== lib.EGYPT) {
-      result = t("checkPrice.outsideEgypt", { place: label });
+      // "Egypt only" is said only by a store that really has nothing abroad, as at checkout.
+      const abroad = zones.some((z) => z.enabled && z.places.some((p) => p !== lib.EGYPT && !p.startsWith(`${lib.EGYPT}/`)));
+      result = abroad ? t("checkPrice.notCovered", { place: label }) : t("checkPrice.outsideEgypt", { place: label });
     } else if (!zones.some((z) => z.enabled)) {
       result = t("checkPrice.noZones", { place: label });
     } else {

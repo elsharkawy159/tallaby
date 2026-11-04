@@ -300,7 +300,7 @@ function TemplateDialog({
             link: store.link,
           })
         : "",
-    [store, text, t],
+    [store, text, t, locale, storeMoney],
   );
 
   const save = (template: string | null) =>
