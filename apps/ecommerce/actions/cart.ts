@@ -26,6 +26,7 @@ import {
 import { getPriceFinal } from "@workspace/lib";
 import { storeSellsProduct } from "@workspace/lib/stores/server";
 import { cartLineHasStock } from "@/lib/cart-stock.lib";
+import { touchCartActivity } from "@/lib/cart-activity.server";
 
 type ProductPrice = {
   base: number;
@@ -364,6 +365,7 @@ export async function addToCart(
         .returning();
 
   const cartItem = result[0];
+  await touchCartActivity(cart.id);
   const metaEventId = cartItem?.id
     ? `${cartItem.id}_${Date.now()}`
     : undefined;
@@ -441,6 +443,7 @@ export async function updateCartItem(itemId: string, quantity: number) {
     .set({ quantity, updatedAt: new Date().toISOString() })
     .where(eq(cartItems.id, itemId))
     .returning();
+  await touchCartActivity(cart.id);
 
   return { success: true, data: updated };
 }
@@ -449,9 +452,11 @@ export async function removeFromCart(itemId: string) {
   const cart = await ensureCart();
   if (!cart) return { success: false, error: "No cart found" };
 
-  await db
+  const removed = await db
     .delete(cartItems)
-    .where(and(eq(cartItems.id, itemId), eq(cartItems.cartId, cart.id)));
+    .where(and(eq(cartItems.id, itemId), eq(cartItems.cartId, cart.id)))
+    .returning({ id: cartItems.id });
+  if (removed.length > 0) await touchCartActivity(cart.id);
 
   return { success: true, message: "Item removed" };
 }
@@ -460,7 +465,11 @@ export async function clearCart() {
   const cart = await ensureCart();
   if (!cart) return { success: false, error: "No cart found" };
 
-  await db.delete(cartItems).where(eq(cartItems.cartId, cart.id));
+  const removed = await db
+    .delete(cartItems)
+    .where(eq(cartItems.cartId, cart.id))
+    .returning({ id: cartItems.id });
+  if (removed.length > 0) await touchCartActivity(cart.id);
 
   return { success: true, message: "Cart cleared" };
 }

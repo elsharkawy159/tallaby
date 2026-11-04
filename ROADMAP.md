@@ -1344,6 +1344,16 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 ## 7. Log
 
+### 2026-11-04 — A cart's last activity now moves when the customer changes it (bug fix)
+
+- **Problem:** `carts.last_activity` kept its creation time for ever. On staging, none of the 82 carts had a later value, and 15 had lines changed after it. Admin's Pending carts and the abandoned-cart job read it, so both treated a cart as older than it was.
+- **Fix:** adding, changing, removing or clearing lines in the cart now updates it, and so does merging a guest cart at login. Reorder and the checkout cross-sell go through add to cart, so they count too. A request that changes nothing, or is refused, doesn't move it.
+- **Our call:** one small helper at those points (`touchCartActivity`), not a database trigger. A trigger can't tell a customer from the system: placing an order removes lines while the cart is still active, and a seller trashing a product removes lines from many customers' carts. Neither is the customer coming back, and the first would have changed checkout. So no migration.
+- **Safety:** it runs after the write, is a single update by cart id (under 1 ms of database time, plus one round trip), and a failure is only logged. A completed cart is never changed.
+- **Existing carts:** not backfilled, so they keep their old value until the customer next changes them. Seller Pending carts keeps its own workaround because of those old rows.
+- **Abandoned-cart email (still paused):** this can't suddenly email a large group. The job only looks at carts idle for 1 to 7 days, 200 a day, once per cart, so old carts stay out until a customer really changes them. A backfill could have brought them back, which is another reason not to run one. Found, not changed: guests and customers who opted out never get marked as reminded, and the job takes the oldest first, so they use up the 200 until they age out.
+- **Checked:** integration tests on staging through the real actions (11 pass, and 7 failed before the fix), the ecommerce tests and types. Production's carts weren't read. Not seen in a browser.
+
 ### 2026-11-04 — Two products of one seller no longer get the same link (bug fix)
 
 - **Problem:** the product form and Admin saved a product's link with no check. If a seller reused a title, two of their products shared one link, the older one opened for both, and only the older appeared in the sitemap.

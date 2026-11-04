@@ -20,6 +20,7 @@ import {
 import { getUser } from "./auth";
 import { getGuestUID, clearGuestUID } from "@/lib/guest-user";
 import { activeCartWhere } from "@/lib/storefront.server";
+import { touchCartActivity } from "@/lib/cart-activity.server";
 
 /**
  * Merge guest account data into authenticated account
@@ -78,6 +79,7 @@ export async function mergeGuestAccount(): Promise<{
     }
 
     const guestUserId = guestUser.id;
+    const changedCartIds: string[] = [];
 
     const merged = await db.transaction(async (tx) => {
       let mergedCartItems = 0;
@@ -171,6 +173,7 @@ export async function mergeGuestAccount(): Promise<{
 
         // Delete guest cart items
         await tx.delete(cartItems).where(eq(cartItems.cartId, guestCart.id));
+        changedCartIds.push(authCart!.id);
       }
 
       // 2. Reassign orders to authenticated user
@@ -219,6 +222,9 @@ export async function mergeGuestAccount(): Promise<{
         addresses: mergedAddresses,
       };
     });
+
+    // After the commit, so it can't undo the merge.
+    for (const cartId of changedCartIds) await touchCartActivity(cartId);
 
     // 5. Clear guest UID cookie
     await clearGuestUID();
