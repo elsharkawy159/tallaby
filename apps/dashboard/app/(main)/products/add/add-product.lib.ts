@@ -329,7 +329,7 @@ const STOP_WORDS = new Set([
   "من", "مع", "في", "على", "او", "و", "ل", "قطعه", "قطع", "جديد",
 ]);
 
-function tokenize(value: string | null | undefined): string[] {
+export function tokenize(value: string | null | undefined): string[] {
   if (!value) return [];
   return normalizeSearchText(value)
     .split(" ")

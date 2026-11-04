@@ -26,6 +26,9 @@ export function aiUsageRangeStart(range: AiUsageRange, now = new Date()): Date |
 /** The AI features that log usage; an unknown one shows its raw key. */
 export const AI_FEATURE_LABELS: Record<string, string> = {
   product_autofill: "Product autofill",
+  product_bulk_map: "Bulk products: columns",
+  product_bulk_pdf: "Bulk products: PDF reading",
+  product_bulk_copy: "Bulk products: copy",
   shipping_zones: "Delivery areas",
   store_builder_chat: "Store builder: chat",
   store_builder_brief: "Store builder: brief",

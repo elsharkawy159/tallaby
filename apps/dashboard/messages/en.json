@@ -190,6 +190,159 @@
     "left": "{count, plural, =0 {No AI credits left.} one {# AI credit left.} other {# AI credits left.}}",
     "buy": "Get more"
   },
+  "bulkFileImport": {
+    "title": "Add many products from a file",
+    "subtitle": "Upload your product sheet in any layout. AI reads it, and every product is added at once.",
+    "back": "Back to add product",
+    "entryTitle": "Have many products in a file?",
+    "entryBody": "Excel, CSV or a PDF catalogue, in any layout and language.",
+    "aiOff": "AI is not available right now. A file that already has names and descriptions in both Arabic and English can still be added.",
+    "pickTitle": "Drop your file here",
+    "pickBody": "Your own columns are fine: AI works out which is which. Excel, CSV, TSV or a PDF catalogue.",
+    "pickButton": "Choose a file",
+    "limits": "Up to {bytes} MB and {products} products per file. A PDF can have up to {pages} pages.",
+    "reading": "Reading your file…",
+    "readingPdf": "AI is reading your catalogue…",
+    "running": "Adding your products…",
+    "runningCount": "{done} of {total} done",
+    "runningNote": "Products are saved as they are added. If you close this page, nothing already added is lost: upload the same file to carry on.",
+    "found": "Products found",
+    "ready": "Ready to add",
+    "problemsCount": "Have problems",
+    "willBeDrafts": "At least this many will be drafts",
+    "firstSheetOnly": "This workbook has several sheets. Only the first sheet with data is read.",
+    "alreadyAdded": "Already added from this file or using the same code: {count}. They are left out.",
+    "draftsNote": "Products with no photo link, no stock count or an unusual name are saved as hidden drafts, for you to finish. So are products whose category we are not sure of; you will see those after adding.",
+    "costNotSaved": "Cost prices are not saved: products have no cost field yet.",
+    "variantRowsWarning": "{count} rows look like the same product in different sizes or colors. They will be added as separate products.",
+    "check": {
+      "title": "Please check these products",
+      "body": "They are saved as hidden drafts because we are not sure of the category or the name. Open each one, correct it, and publish it.",
+      "fix": "Check and fix"
+    },
+    "mappingNeeded": "We could not tell which column holds the product name or price. Choose them below.",
+    "mappingTitle": "Which column holds what",
+    "notInFile": "Not in this file",
+    "columnNumber": "Column {number}",
+    "mappingSource": {
+      "template": "This is the Tallaby template, so the columns are already known.",
+      "dictionary": "We recognised your column names. Change anything that looks wrong.",
+      "ai": "AI matched your columns. Change anything that looks wrong.",
+      "fallback": "AI could not check your columns right now. Please review them below."
+    },
+    "fields": {
+      "name": "Product name",
+      "nameAr": "Name in Arabic",
+      "nameEn": "Name in English",
+      "description": "Description",
+      "descriptionAr": "Description in Arabic",
+      "descriptionEn": "Description in English",
+      "price": "Price",
+      "salePrice": "Sale price",
+      "cost": "Cost (not saved)",
+      "stock": "Stock",
+      "sku": "SKU or code",
+      "category": "Category",
+      "brand": "Brand",
+      "images": "Photo links",
+      "colors": "Colors",
+      "sizes": "Sizes"
+    },
+    "estimate": {
+      "none": "No AI credits needed: every product already has its name and description in both languages.",
+      "credits": "AI will write Arabic and English copy for {rows} products, using {credits} credits ({each} per product). You have {left} credits.",
+      "free": "AI will write Arabic and English copy for {rows} products.",
+      "short": "Your credits cover {covered} products. The rest stay waiting, and you can continue after getting more.",
+      "dailyShort": "Today's AI limit covers {covered} products. You can add the rest tomorrow by uploading the same file."
+    },
+    "problemsTitle": "Rows that won't be added",
+    "problemLine": "Row {row}: {reason}",
+    "problems": {
+      "noName": "no product name",
+      "noPrice": "no price",
+      "badPrice": "the price is not clear (it must be one number above zero; write 1200 rather than 1.200)",
+      "badSku": "the SKU is too long",
+      "duplicateSku": "the same SKU as an earlier row",
+      "duplicateRow": "the same product as an earlier row",
+      "noCategory": "no matching category was found",
+      "failed": "could not be saved; please try again",
+      "notAdded": "not added yet"
+    },
+    "sample": {
+      "row": "Row",
+      "name": "Name",
+      "price": "Price",
+      "stock": "Stock",
+      "photos": "Photos",
+      "copy": "Copy",
+      "ai": "Written by AI",
+      "fromFile": "From your file",
+      "flagged": "Kept as written; needs checking"
+    },
+    "addAll": "Add all {count} products",
+    "doneTitle": "Your products have been added",
+    "stopped": {
+      "noCredits": {
+        "title": "You ran out of AI credits",
+        "body": "Everything added so far is saved. {remaining} products are still waiting. Get more credits, then press Continue, or upload the same file later."
+      },
+      "dailyLimit": {
+        "title": "Today's AI limit has been reached",
+        "body": "Everything added so far is saved. {remaining} products are still waiting. Upload the same file tomorrow to carry on."
+      },
+      "disabled": {
+        "title": "AI is not available right now",
+        "body": "Everything added so far is saved. {remaining} products need AI and are still waiting. Please try again later."
+      }
+    },
+    "paused": {
+      "title": "Adding has paused",
+      "body": "Everything added so far is saved. {remaining} products are still waiting. {reason}"
+    },
+    "result": {
+      "live": "Live now",
+      "drafts": "Saved as drafts",
+      "skipped": "Skipped",
+      "credits": "Credits used",
+      "already": "Already there from before: {count}.",
+      "notesTitle": "Worth checking"
+    },
+    "notes": {
+      "noImage": "No photo, so saved as a draft: {count}",
+      "imageFailed": "A photo link could not be downloaded: {count}",
+      "imageNotHttps": "A photo link was not https and was left out: {count}",
+      "noStock": "No stock count, so saved as a draft: {count}",
+      "checkCategory": "We are not sure of the category, so saved as a draft: {count}",
+      "checkName": "The name needs checking, so saved as a draft: {count}",
+      "saleIgnored": "The sale price was not below the price and was ignored: {count}",
+      "variantsIgnored": "Too many color and size options, so they were left out: {count}",
+      "accountRestricted": "Your account can't publish right now, so saved as a draft: {count}"
+    },
+    "continue": "Continue ({count} left)",
+    "getCredits": "Get more credits",
+    "viewProducts": "View products",
+    "downloadProblems": "Download rows to fix",
+    "anotherFile": "Use another file",
+    "download": {
+      "row": "Row",
+      "reason": "Reason"
+    },
+    "errors": {
+      "unauthorized": "Please sign in again to continue.",
+      "disabled": "AI is not available right now. Please try again later.",
+      "invalid": "This file could not be read. It may be damaged or locked with a password.",
+      "tooLarge": "The file is larger than 5 MB. Please split it into smaller files.",
+      "tooManyProducts": "The file has more than 500 products. Please split it into smaller files.",
+      "pdfTooLong": "The PDF has more than 20 pages. Please split it into smaller files.",
+      "rateLimited": "Too many requests in a short time. Please wait a minute and try again.",
+      "dailyLimit": "Today's AI limit has been reached. Please try again tomorrow.",
+      "busy": "The AI service is busy right now. Please try again shortly.",
+      "timeout": "This took too long. Please try again.",
+      "failed": "Something went wrong. Please try again.",
+      "empty": "No products were found in this file.",
+      "unsupported": "Please upload an Excel, CSV, TSV or PDF file."
+    }
+  },
   "nav": {
     "dashboard": "Dashboard",
     "products": "Products",

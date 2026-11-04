@@ -75,6 +75,7 @@ import {
 import { ProductLinkHostProvider } from "./product-link-host.client";
 import { AiAutofillCard } from "./ai/ai-autofill.client";
 import { markProductAiAssisted } from "./ai/ai-source.server";
+import { FromFileEntry } from "./from-file/from-file-entry.client";
 import type { SellerTaxonomyOption } from "../categories-brands/categories-brands.dto";
 
 interface AddProductProps {
@@ -487,6 +488,7 @@ function AddProductForm({
                     }}
                   />
                 )}
+                {aiEnabled && !isEdit && <FromFileEntry />}
                 <BasicSection
                   categories={categories}
                   activeLocale={activeLocale}

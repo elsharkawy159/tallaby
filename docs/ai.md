@@ -62,3 +62,21 @@ Measured on the autofill (production `ai_usage_logs` and live calls, 2026-10-29)
 | Cost per call | ~$0.0073 | ~$0.0015–0.0022 |
 
 What changed: no category list (`categoryHint` matched in code), SEO title and description made in code, 8–10 keywords instead of 10–15, thinking `minimal`, text 4,000 → 1,500 characters with a counter, images 6 → 4, PDFs up to 5 pages, edit-mode listing 12,000 → 6,000 characters, long description on edit only when asked, a 10-minute result cache, one retry of the cheap model when busy.
+
+## 5. Add many products from a file (`PLAN.md` AI-3, numbers 2026-11-04)
+
+Live on staging with `gemini-3.1-flash-lite`, thinking `minimal`, on a messy Arabic sheet (19 rows, 16 written by AI; headers such as "البتاع", "بكام", "فاضل كام"):
+
+| Call (`feature`) | When | Tokens in / out | Cost |
+|---|---|---|---|
+| Column mapping (`product_bulk_map`) | Once per file, and not at all for our template or headers the code knows | 443 / 125 | $0.0003 a file |
+| Copy (`product_bulk_copy`) | Per batch of 10 rows that need copy | ~65 / ~215 a product | **~$0.00031–0.00034 a product** |
+| PDF reading (`product_bulk_pdf`) | Per batch of 5 pages, `mediaResolution: "medium"` (it reads small prices) | 1,224 / 710 for 2 pages, 8 products | ~$0.0007 a page |
+
+A file of 500 products that all need copy costs about $0.17 to write. That is a fifth of one autofill call per product ($0.0015–0.0022), because the copy is short (two lines, up to 3 feature lines, 5 keywords a language, no long article) and all the rules are shared by the 10 products in a call.
+
+What keeps it cheap: the code reads the file and every price, stock count and SKU, the model sees only the words it needs and has no field to write a number to, each cell is capped (name 150 characters, description 400, hint 60), the mapping reads headers plus 3 samples of 60 characters and never the sheet, a PDF is split in the browser so a page is billed once, rows with good copy in both languages skip AI, and the category is matched in code from a short hint. A retry within 10 minutes is free (`cacheMs`).
+
+**Checks on what the model can't be trusted with:** the code rates the category match, and only a strong one can go live (`matchCategory`; on a 24-row test 3 went live, all right, and 11 of 14 correct products became drafts). A name that doesn't look like a product never reaches the model (`looksLikeProductName`), a name the seller gave is never replaced, and a translation that looks taken from another row is held back (`findBorrowedTitles`). None of this adds a model call.
+
+**Credits (F-57):** 1 credit per product AI writes copy for (`BULK_CREDITS_PER_AI_PRODUCT`); rows needing no AI, the mapping and PDF reading cost none. This is a default the owner has not decided. **Daily caps** per Cairo day, in model calls, ×10 on Pro: 100 copy calls (`AI_PRODUCT_BULK_DAILY_LIMIT`, about 1,000 products), 20 mappings (`AI_PRODUCT_BULK_MAP_DAILY_LIMIT`), 40 PDF batches (`AI_PRODUCT_BULK_PDF_DAILY_LIMIT`).

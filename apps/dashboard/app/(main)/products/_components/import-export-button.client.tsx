@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@workspace/ui/components/button";
 import {
@@ -8,6 +9,7 @@ import {
   FileSpreadsheet,
   LoaderIcon,
   RefreshCw,
+  Sparkles,
   Upload,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -54,6 +56,7 @@ export function ImportExportButton({
   const router = useRouter();
   const tToast = useTranslations("toast");
   const t = useTranslations("products.importExport");
+  const tBulk = useTranslations("bulkFileImport");
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [open, setOpen] = useState(false);
@@ -206,7 +209,13 @@ export function ImportExportButton({
             {t("trigger")}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-56 p-1" align="end">
+        <PopoverContent className="w-64 p-1" align="end">
+          <Button asChild variant="ghost" className="w-full justify-start font-normal">
+            <Link href="/products/add/from-file">
+              <Sparkles className="text-primary" size={16} aria-hidden="true" />
+              {tBulk("title")}
+            </Link>
+          </Button>
           <Button
             variant="ghost"
             className="w-full justify-start font-normal"
