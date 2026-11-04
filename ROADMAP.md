@@ -684,6 +684,7 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 - **F-39d · P1 · deps: F-39a** Backend webhook route `/api/webhooks/store-payments/:integrationId` (paid → digital fulfilment and seller emails, same as Tallaby's routes).
 - **F-39e · P1 · deps: 0130 on staging** Manual E2E with Paymob and Kashier test keys: connect, wrong keys, pay, fail, replayed webhook, webhook signed by another store's keys, disconnect mid-payment. Record in §7.
 - **F-39f · P2** Later: Tallaby Pay (internal), PayPal (USD), refunds from Tallaby, unpaid card orders auto-cancel (shared with Tallaby's card checkout today).
+- **F-39g · P1 · deps: F-39a, F-61b · owner request** More seller gateways on the same connect-your-own-account model: PayPal, Tabby, Moyasar, PayTabs and Paylink. Each is checked against its own API docs first. Design note before building.
 - Acceptance: no key in client code, config, logs or responses; a webhook for store A's integration can never change store B's order; a paid amount that differs from the order total never confirms it.
 
 ### F-41 One store apps catalog (Apps, Shipping companies, Payment methods) — P1 · owner request · Built 2026-10-30
@@ -961,7 +962,7 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 **Why:** Stores can only sell inside Egypt in EGP today. The owner wants a store to sell in any country and currency, and to detect the shopper's country and currency.
 **What:** Every currency, every country on the Shipping page, and the store detects the shopper's country and currency, which the shopper can change. Today's limits, checked in code 2026-11-04: shipping place keys start at `EG`, phones are validated as Egyptian mobiles, and orders, prices and customer wallets are EGP. The USD work (F-56) kept those in EGP on purpose.
-**Status:** [In progress] Owner, 2026-11-04: F-61b, F-61d and F-61e start now, so a seller in Egypt can run a store that sells in KSA. F-61c stays delayed.
+**Status:** [Built, not deployed] 2026-11-04 (§7): F-61b, F-61d and F-61e, so a seller in Egypt can run a store that sells in KSA. F-61c stays delayed.
 **Decided (owner, 2026-11-04):** the store's currency is the default on the shipping page, in carts and on the dashboard. Top-ups stay in EGP against USD. SAR shows the Saudi Riyal symbol.
 **Our calls, 2026-11-04:** one currency per store, and amounts are never converted, so no exchange rates and no shopper switcher. The server sets the order's currency from the store when the order is placed. Tallaby's fee, the store wallet, plans and top-ups don't follow the store's currency. Customer wallets stay EGP, so they are unavailable on a non-EGP store. Egyptian payment methods and card payment stay off on a non-EGP store until tested with a real gateway account.
 
@@ -1059,6 +1060,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 | Date       | Request (owner's words)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Feature ID                                                                                       | Status                                                                                 |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- |
+| 2026-11-04 | "Work on adding the below Payment methods for sellers so seller can make an account for the service needed and provide us the API key and merchant code or any required data from the payment method gateway service provider: Paypal Tabby Moyasar paytabs paylink / check each service API Docs" (F-39g) |
 | 2026-11-04 | "Make the shipping page currency to be the store currency by default to avoid mismatching / Carts same / Dashboard same / But keep the top-up in EGP ~ USD / So a seller from Egypt can make his store sells in KSA normally" (F-61b, F-61d, F-61e) and the Saudi Riyal symbol for SAR |
 | 2026-11-04 | "yes we can add that for sellers who subscriped in the Orders Notification but keep the Email field Optional" / variant stock: "Yes fix but keep committed on main don't push to live"                                                                                                                                                                                                                                                                                                                                                                                                                        | F-64                                                                                             |
 | 2026-11-04 | "No, we can keep the email campaign / 500 Emails for Free plan (Seller can send email after the first top-up (activation) / 10000 Emails for the Pro plan / Update the pricing plans too / Extra: $1.50 per 1,000 emails"                                                                                                                                                                                                                                                                                                                                                                                     | F-69                                                                                             |
@@ -1143,6 +1145,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-39d Backend webhook route (2026-10-30, uncommitted)
 - [ ] F-39e Manual E2E with Paymob and Kashier test accounts (needs 0130 on staging) (delayed by owner 2026-11-04)
 - [ ] F-39f Tallaby Pay, PayPal, refunds, unpaid card order auto-cancel (delayed by owner 2026-11-04)
+- [~] F-39g PayPal, Tabby, Moyasar, PayTabs, Paylink (2026-11-04, main; docs research first)
 - [x] F-41 One store apps catalog for Apps, Shipping companies and Payment methods (2026-10-30, local `main`)
 - [x] F-12c Wassalha (Egypt Post) settings + Excel export (2026-10-30, local `main`; 0130 applied 2026-10-30)
 - [x] F-12d Shipping › Shipping companies card (2026-10-30, local `main`)
@@ -1331,10 +1334,10 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-62b Admin requests list and Enable (2026-11-04; not seen in a browser)
 - [ ] F-62c SMS for enabled stores (after F-38) (delayed by owner 2026-11-04)
 - [x] F-61a Design decisions (2026-11-04; owner's rules in F-61)
-- [~] F-61b Store base currency (2026-11-04, main)
+- [x] F-61b Store base currency (2026-11-04; `71adf7fe`, `722d9112`–`810dcc5e`; 0150 on staging)
 - [ ] F-61c Detect country and currency, with a switcher (delayed by owner 2026-11-04)
-- [~] F-61d All countries on the Shipping page (2026-11-04, main)
-- [~] F-61e International checkout (2026-11-04, main)
+- [x] F-61d All countries on the Shipping page (2026-11-04; `71adf7fe`, `722d9112`; no Saudi template)
+- [x] F-61e International checkout (2026-11-04; `fc465887`, `070225d6`; cash on delivery only abroad, card untested)
 
 **Owner requests 2026-11-04 (checkout and dashboard)**
 
@@ -1361,6 +1364,16 @@ Add each new request here first, with the date and the owner's words, then turn 
 ---
 
 ## 7. Log
+
+### 2026-11-04 — Store currency and selling abroad (F-61b, d, e); Saudi Riyal symbol
+
+- **Built, not deployed:** a store's currency now applies to the shipping page, carts, orders, checkout, emails, the dashboard and Admin, with no conversion. The server sets an order's currency from the store. SAR shows the Riyal symbol by default (`4821847f`, `adec4ef9`); stores that saved another SAR label keep it.
+- **Migration:** `0150` widens the currency checks on carts, orders, order_items and payments, and the two phone checks. Staging only. Production needs it before deploy.
+- **Unchanged:** top-ups, store wallet, plans and Tallaby's fee. The fee posts in the wallet's EGP or USD. `order_items.commission_amount` holds that fee even on a SAR row, and `seller_earning` is the line total in the order's currency.
+- **Non-EGP stores:** cash on delivery or seller-collected only. Customer wallets, Egyptian wallets, InstaPay, Paymob, Kashier, Tallaby coupons and affiliate commissions are refused. A cancelled order credits no customer wallet. No Tallaby rates. Bosta and Egypt Post refuse the order. Hidden from Tallaby's Meta catalog, with all of that seller's products.
+- **Also changed for EGP stores:** a store not using its own shipping now refuses a foreign address, and checkout shows the store's chosen label instead of "EGP".
+- **Known limits:** manual orders still take Egyptian addresses and phones only; AI shipping zones are hidden on non-EGP stores; `apps/shipping` still says EGP; a customer's total spent mixes currencies after a store changes currency; a store's report counts only its current currency; KWD, BHD and OMR keep 2 decimals.
+- **Nothing was seen on screen.**
 
 ### 2026-11-04 — Offers, tracking and clean-up batch; a test wrote to production
 

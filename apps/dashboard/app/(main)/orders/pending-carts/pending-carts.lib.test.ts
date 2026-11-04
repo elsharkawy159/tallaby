@@ -44,10 +44,10 @@ describe("resolvePendingCartContact", () => {
     expect(result.phone).toBe("01012345678");
   });
 
-  it("calls but doesn't offer WhatsApp for a phone that isn't an Egyptian mobile", () => {
+  it("offers WhatsApp and a call for a foreign mobile, in international form", () => {
     const result = contact({ userPhone: "+971 50 123 4567" });
-    expect(result.whatsappPhone).toBeNull();
-    expect(result.phone).toBe("+971 50 123 4567");
+    expect(result.whatsappPhone).toBe("+971501234567");
+    expect(result.phone).toBe("+971501234567");
     expect(result.callPhone).toBe("+971501234567");
   });
 });
