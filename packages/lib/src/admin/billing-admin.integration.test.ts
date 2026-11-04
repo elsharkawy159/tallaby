@@ -160,14 +160,14 @@ describe.skipIf(!TEST_DATABASE_URL)("admin billing (integration)", { timeout: 60
 
   it("the settings write is audited, refuses a repeat and non-admins, and the dry run only reads", async () => {
     await rolledBack(async (tx) => {
-      const input = { marginPercent: 3.5, rateOverride: 51.25, taxEnabled: true };
+      const input = { rateOverride: 51.25, taxEnabled: true };
       expect(await updateBillingSettingsByAdmin(sellerId, input, tx)).toEqual({ success: false, error: "not_admin" });
       expect(await updateBillingSettingsByAdmin(adminId, { ...input, rateOverride: 5 }, tx)).toEqual({ success: false, error: "invalid_input" });
       expect(await updateBillingSettingsByAdmin(adminId, input, tx)).toMatchObject({ success: true });
       expect(await updateBillingSettingsByAdmin(adminId, input, tx)).toEqual({ success: false, error: "no_change" });
 
       const [settings] = await tx.select().from(s.billingSettings);
-      expect(settings).toMatchObject({ marginBps: 350, taxEnabled: true, usdLive: false });
+      expect(settings).toMatchObject({ taxEnabled: true, usdLive: false });
       expect(Number(settings!.rateOverride)).toBe(51.25);
 
       const audit = await tx.select().from(s.adminAuditLog).where(eq(s.adminAuditLog.actorId, adminId));

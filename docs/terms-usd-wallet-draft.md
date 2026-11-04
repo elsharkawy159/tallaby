@@ -16,7 +16,7 @@
 
 **Your wallet.** Your account has one Tallaby wallet, held in US dollars. You use it to pay Tallaby for order fees, Pro, AI credits and other paid services. It is for spending on Tallaby only: wallet money is not a bank balance, earns no interest, and can't be withdrawn, refunded in cash or moved to another account. Order money doesn't pass through the wallet, because your customers pay you directly.
 
-**Topping up.** You choose an amount in US dollars and pay the equivalent in Egyptian pounds. We show the exchange rate and the total before you pay, and that rate includes a margin over the market rate. If tax applies, it is added to the pounds you pay and shown as its own line. The wallet is credited with the dollar amount shown when you started the top-up. A manual transfer is credited once we confirm it.
+**Topping up.** You choose an amount in US dollars and pay the equivalent in Egyptian pounds. We show the exchange rate and the total before you pay. We add no margin to that rate, and the total is rounded down to a whole pound. If tax applies, it is added to the pounds you pay and shown as its own line. The wallet is credited with the dollar amount shown when you started the top-up. A manual transfer is credited once we confirm it.
 
 **Order fees.** On the Free plan, the fee is taken from your wallet when a new order is placed, or when payment is confirmed for a card order. An order that looks like a test or a duplicate is charged only if it is delivered. The fee doesn't depend on the order's value, and we take no percentage of your sales.
 
@@ -24,7 +24,7 @@
 
 **Pro renewal.** Pro renews every month from your wallet, for as long as it stays on. If your balance can't cover a renewal, you get 3 days to top up, and you keep Pro during that time. After that, your account moves to Free. You can cancel at any time: Pro continues until the end of the month you paid for, with no refund for the unused part.
 
-**Campaign emails.** Free includes 500 campaign emails a month and Pro includes 10,000, shared across your stores. Monthly emails reset on the 1st and don't carry over. You can buy more at $1.50 per 1,000 from your wallet; bought emails don't expire. You can send campaigns after your first approved top-up.
+**Campaign emails.** Free includes 500 campaign emails a month and Pro includes 10,000, shared across your stores. Monthly emails reset on the 1st and don't carry over. You can buy more at $1.50 per 1,000 from your wallet; bought emails don't expire. You can send campaigns once your account is activated.
 
 **AI credits.** AI features use credits. Free includes 100 credits a month and Pro includes 2,000 a month. Monthly credits reset and don't carry over. You can buy more at $1 per 100 from your wallet; bought credits don't expire and are used after your monthly credits. Credits have no cash value and can't be refunded or transferred.
 
@@ -48,7 +48,7 @@
 
 **تجديد باقة Pro.** تتجدد باقة Pro كل شهر من محفظتك ما دامت مفعّلة. إذا لم يكفِ الرصيد للتجديد، يكون أمامك 3 أيام لشحن المحفظة وتبقى باقة Pro خلالها، وبعدها ينتقل حسابك إلى الباقة المجانية. يمكنك الإلغاء في أي وقت، وتستمر باقة Pro حتى نهاية الشهر المدفوع، دون استرداد للجزء غير المستخدم.
 
-**إيميلات الحملات.** تشمل الباقة المجانية 500 إيميل حملات شهريًا وباقة Pro تشمل 10,000، مشتركة بين متاجرك. تتجدد الإيميلات الشهرية في أول كل شهر ولا تُرحَّل. يمكنك شراء المزيد بسعر 1.50 دولار لكل 1,000 من محفظتك، والإيميلات المشتراة لا تنتهي. يمكنك إرسال الحملات بعد أول عملية شحن معتمدة.
+**إيميلات الحملات.** تشمل الباقة المجانية 500 إيميل حملات شهريًا وباقة Pro تشمل 10,000، مشتركة بين متاجرك. تتجدد الإيميلات الشهرية في أول كل شهر ولا تُرحَّل. يمكنك شراء المزيد بسعر 1.50 دولار لكل 1,000 من محفظتك، والإيميلات المشتراة لا تنتهي. يمكنك إرسال الحملات بعد تفعيل حسابك.
 
 **رصيد الذكاء الاصطناعي.** تستخدم مزايا الذكاء الاصطناعي رصيدًا من النقاط. تشمل الباقة المجانية 100 نقطة شهريًا وباقة Pro تشمل 2,000 نقطة شهريًا. يتجدد الرصيد الشهري ولا يُرحَّل. يمكنك شراء المزيد بسعر دولار واحد لكل 100 نقطة من محفظتك، والنقاط المشتراة لا تنتهي وتُستخدم بعد الرصيد الشهري. ليس للنقاط قيمة نقدية، ولا يمكن استردادها أو نقلها.
 

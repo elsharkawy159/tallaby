@@ -16,7 +16,6 @@ export async function getBillingState(): Promise<BillingState> {
   return {
     usdLive: settings?.usdLive === true,
     marketRate: override ?? fetched ?? (settings?.conversionRate ? Number(settings.conversionRate) : null),
-    marginBps: settings?.marginBps ?? 200,
     taxEnabled: settings?.taxEnabled === true,
     taxRateBps: settings?.taxRateBps ?? 1400,
     rateFetchedAt: latest?.fetchedAt ?? null,
@@ -24,9 +23,9 @@ export async function getBillingState(): Promise<BillingState> {
 }
 
 /**
- * Saves today's market rate. Only the daily cron calls this; everything else
- * reads the saved row, so the provider gets one call a day. A failed or
- * implausible fetch saves nothing, so the last good rate stays in use and the
+ * Saves the current market rate. Only the cron calls this, every 3 hours;
+ * everything else reads the saved row, so no page calls the provider. A failed
+ * or implausible fetch saves nothing, so the last good rate stays in use and the
  * caller can alert the Admin. Never log the URL: it can hold the API key.
  */
 export async function refreshExchangeRate(
@@ -45,10 +44,9 @@ export async function refreshExchangeRate(
   }
 }
 
-/** Admin › Billing: margin, tax switch and an optional fixed rate. Numbers already validated by the caller. */
+/** Admin › Billing: tax switch and an optional fixed rate. Numbers already validated by the caller. */
 export async function updateBillingSettings(
   input: {
-    marginBps: number;
     rateOverride: number | null;
     taxEnabled: boolean;
     updatedBy: string;
@@ -58,7 +56,6 @@ export async function updateBillingSettings(
   await q
     .update(billingSettings)
     .set({
-      marginBps: input.marginBps,
       rateOverride: input.rateOverride === null ? null : input.rateOverride.toFixed(4),
       taxEnabled: input.taxEnabled,
       updatedBy: input.updatedBy,

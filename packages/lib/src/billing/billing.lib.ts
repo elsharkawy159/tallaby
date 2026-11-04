@@ -20,7 +20,6 @@ export type BillingState = {
   usdLive: boolean;
   /** EGP per USD: the Admin override, else the latest fetch. Null before the first fetch. */
   marketRate: number | null;
-  marginBps: number;
   taxEnabled: boolean;
   taxRateBps: number;
   /** When the latest market rate was fetched. */
@@ -29,12 +28,7 @@ export type BillingState = {
 
 const rateUnits = (rate: number) => Math.round(rate * 10_000);
 
-/** Market rate plus margin, to 4 decimals. */
-export function topUpRate(marketRate: number, marginBps: number): number {
-  return Math.ceil((rateUnits(marketRate) * (10_000 + marginBps)) / 10_000) / 10_000;
-}
-
-/** US cents at this rate, in piastres. Rounds up, so a quote never falls short. */
+/** US cents at this rate, in piastres. Rounds up, so a fee estimate never falls short. */
 export function usdCentsToPiastres(usdCents: number, rate: number): number {
   return Math.ceil((usdCents * rateUnits(rate)) / 10_000);
 }
@@ -54,14 +48,18 @@ export type TopUpQuote = {
   totalPiastres: number;
 };
 
+/** Down to a whole pound: 1471.57 EGP is 1471 EGP (owner, 2026-11-04). */
+const wholePounds = (piastres: number) => Math.floor(piastres / 100) * 100;
+
+/** A top-up at the market rate, no margin (owner, 2026-11-04). Every EGP amount is whole pounds. */
 export function quoteTopUp(
   usdCents: number,
-  state: Pick<BillingState, "marketRate" | "marginBps" | "taxEnabled" | "taxRateBps">,
+  state: Pick<BillingState, "marketRate" | "taxEnabled" | "taxRateBps">,
 ): TopUpQuote | null {
   if (!state.marketRate) return null;
-  const rate = topUpRate(state.marketRate, state.marginBps);
-  const basePiastres = usdCentsToPiastres(usdCents, rate);
-  const taxPiastres = state.taxEnabled ? Math.ceil((basePiastres * state.taxRateBps) / 10_000) : 0;
+  const rate = state.marketRate;
+  const basePiastres = wholePounds(usdCentsToPiastres(usdCents, rate));
+  const taxPiastres = state.taxEnabled ? wholePounds((basePiastres * state.taxRateBps) / 10_000) : 0;
   return { usdCents, rate, basePiastres, taxPiastres, totalPiastres: basePiastres + taxPiastres };
 }
 
@@ -86,7 +84,7 @@ export function minorToAmount(minor: number): string {
 
 /** Sanity range for a fetched or typed EGP-per-USD rate. */
 /**
- * Where the daily rate comes from. With a key: ExchangeRate-API's keyed endpoint.
+ * Where the market rate comes from. With a key: ExchangeRate-API's keyed endpoint.
  * Without one: its open endpoint, whose terms require a visible attribution link.
  */
 export function exchangeRateSource(apiKey?: string): { url: string; source: string } {

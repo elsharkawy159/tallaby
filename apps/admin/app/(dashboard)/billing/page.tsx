@@ -1,5 +1,5 @@
 import { TriangleAlert } from "lucide-react";
-import { PRO_MONTHLY_USD_CENTS, topUpRate } from "@workspace/lib/billing";
+import { PRO_MONTHLY_USD_CENTS } from "@workspace/lib/billing";
 import { RATE_STALE_HOURS, isRateStale, rateAgeHours } from "@workspace/lib/admin";
 import { Badge } from "@workspace/ui/components/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/components/card";
@@ -44,7 +44,7 @@ export default async function BillingPage() {
           <TriangleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
           <span>
             {age === null
-              ? "No market rate has been fetched yet. Check the daily exchange-rate job."
+              ? "No market rate has been fetched yet. Check the exchange-rate job."
               : `The last market rate is ${age} hours old (over ${RATE_STALE_HOURS}). Check the daily exchange-rate job, or set a fixed rate below.`}
           </span>
         </div>
@@ -86,8 +86,8 @@ export default async function BillingPage() {
             >
               {rateText(state.marketRate)}
             </Fact>
-            <Fact label={`Top-up rate (${state.marginBps / 100}% margin)`} hint={state.taxEnabled ? `Plus ${state.taxRateBps / 100}% tax on the EGP paid` : "No tax"}>
-              {rateText(state.marketRate ? topUpRate(state.marketRate, state.marginBps) : null)}
+            <Fact label="Top-up rate (no margin)" hint={state.taxEnabled ? `Plus ${state.taxRateBps / 100}% tax on the EGP paid` : "No tax"}>
+              {rateText(state.marketRate)}
             </Fact>
           </CardContent>
         </Card>
@@ -119,7 +119,6 @@ export default async function BillingPage() {
           </CardHeader>
           <CardContent>
             <BillingSettingsForm
-              marginPercent={state.marginBps / 100}
               rateOverride={rateOverride}
               taxEnabled={state.taxEnabled}
               taxRatePercent={state.taxRateBps / 100}

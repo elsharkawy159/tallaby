@@ -29,8 +29,6 @@ export type StoreWalletOverview = {
   negativeLimit: string | null;
   /** Sum of all entries; equals `balance` (shown so sellers can check it). */
   ledgerTotal: string;
-  feesThisMonth: string;
-  salesThisMonth: string;
   trial: { eligible: boolean; startedAt: string | null; endsAt: string | null };
 };
 
@@ -53,8 +51,6 @@ export async function getStoreWalletOverview(sellerId: string): Promise<StoreWal
   const [totals] = await db
     .select({
       ledgerTotal: sql<string>`coalesce(sum(${walletTransactions.amount}), 0)::text`,
-      feesThisMonth: sql<string>`coalesce(-sum(${walletTransactions.amount}) FILTER (WHERE ${walletTransactions.type} IN ('fee', 'fee_reversal') AND ${walletTransactions.createdAt} >= date_trunc('month', now() AT TIME ZONE 'Africa/Cairo') AT TIME ZONE 'Africa/Cairo'), 0)::text`,
-      salesThisMonth: sql<string>`coalesce(sum(${walletTransactions.amount}) FILTER (WHERE ${walletTransactions.type} = 'sale' AND ${walletTransactions.createdAt} >= date_trunc('month', now() AT TIME ZONE 'Africa/Cairo') AT TIME ZONE 'Africa/Cairo'), 0)::text`,
     })
     .from(walletTransactions)
     // Only this currency's entries: older EGP rows net to zero after the switch (0136).
@@ -66,8 +62,6 @@ export async function getStoreWalletOverview(sellerId: string): Promise<StoreWal
     status: row.status,
     negativeLimit: row.negativeLimit,
     ledgerTotal: totals?.ledgerTotal ?? "0",
-    feesThisMonth: totals?.feesThisMonth ?? "0",
-    salesThisMonth: totals?.salesThisMonth ?? "0",
     trial: { eligible: row.trialEligible, startedAt: row.trialStartedAt, endsAt: row.trialEndsAt },
   };
 }

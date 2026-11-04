@@ -155,12 +155,6 @@ export async function StoreWalletSection({
                   })}
                 </p>
               )}
-              <p className="text-xs text-muted-foreground">
-                {t("thisMonth", {
-                  sales: money(Number(overview.salesThisMonth)),
-                  fees: money(Number(overview.feesThisMonth)),
-                })}
-              </p>
             </div>
           </CardContent>
           {balance < 0 && (

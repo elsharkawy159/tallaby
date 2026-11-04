@@ -26,10 +26,10 @@ A zero amount skips its entry. Old rows are never changed and keep their EGP lab
 
 ## Rates
 
-- `exchange_rates`: history of daily market rates (EGP per USD), from a server cron. A failed fetch keeps the last rate.
-- `billing_settings`: margin (2% to start), optional Admin override, tax switch (off, 14%).
-- **Market rate** = override, else the latest fetch. Used for estimates and the conversion.
-- **Top-up rate** = market rate plus margin.
+- `exchange_rates`: history of market rates (EGP per USD), from a server cron every 3 hours. A failed fetch keeps the last rate.
+- `billing_settings`: optional Admin override, tax switch (off, 14%). `margin_bps` is no longer read (owner, 2026-11-04).
+- **Market rate** = override, else the latest fetch. Used for estimates, the conversion and top-ups.
+- **Top-up rate** = market rate, no margin. The EGP total is rounded down to a whole pound (owner, 2026-11-04).
 
 ## Top-ups
 

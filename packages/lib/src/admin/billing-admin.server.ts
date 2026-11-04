@@ -7,7 +7,7 @@
 import { billingSettings, db, desc, eq, exchangeRates, sql } from "@workspace/db";
 import { getBillingState, updateBillingSettings } from "../billing/billing.server";
 import type { BillingState } from "../billing/billing.lib";
-import { billingSettingsSchema, percentToBps } from "./billing-admin.lib";
+import { billingSettingsSchema } from "./billing-admin.lib";
 import type { AdminResult } from "./admin.lib";
 import { AdminActorError, assertAdminActor, writeAdminAudit, type Queryable } from "./guard.server";
 
@@ -147,7 +147,7 @@ export async function getBillingOverview(q: Queryable = db): Promise<BillingOver
 
 export type BillingSettingsError = "not_admin" | "invalid_input" | "no_change";
 
-/** Margin, fixed rate and tax switch, with one audit row, in one transaction. Can't touch the switch itself. */
+/** Fixed rate and tax switch, with one audit row, in one transaction. Can't touch the switch itself. */
 export async function updateBillingSettingsByAdmin(
   actorId: string,
   input: unknown,
@@ -155,7 +155,6 @@ export async function updateBillingSettingsByAdmin(
 ): Promise<AdminResult<{ auditId: string }, BillingSettingsError>> {
   const parsed = billingSettingsSchema.safeParse(input);
   if (!parsed.success) return { success: false, error: "invalid_input" };
-  const marginBps = percentToBps(parsed.data.marginPercent);
   const { rateOverride, taxEnabled } = parsed.data;
 
   try {
@@ -163,7 +162,6 @@ export async function updateBillingSettingsByAdmin(
       await assertAdminActor(tx, actorId);
       const [row] = await tx
         .select({
-          marginBps: billingSettings.marginBps,
           rateOverride: billingSettings.rateOverride,
           taxEnabled: billingSettings.taxEnabled,
         })
@@ -171,14 +169,13 @@ export async function updateBillingSettingsByAdmin(
         .where(eq(billingSettings.id, true))
         .for("update");
       const before = {
-        marginBps: row?.marginBps ?? null,
         rateOverride: row?.rateOverride ? Number(row.rateOverride) : null,
         taxEnabled: row?.taxEnabled ?? null,
       };
-      const after = { marginBps, rateOverride, taxEnabled };
+      const after = { rateOverride, taxEnabled };
       if (JSON.stringify(before) === JSON.stringify(after)) return null;
 
-      await updateBillingSettings({ marginBps, rateOverride, taxEnabled, updatedBy: actorId }, tx);
+      await updateBillingSettings({ rateOverride, taxEnabled, updatedBy: actorId }, tx);
       return writeAdminAudit(tx, {
         actorId,
         sellerId: null,

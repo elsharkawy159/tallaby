@@ -10,19 +10,12 @@ import {
   parseUsdTopUp,
   piastresToUsdCents,
   quoteTopUp,
-  topUpRate,
   usdCentsToPiastres,
 } from "./billing.lib";
 
-const state = { marketRate: 50, marginBps: 200, taxEnabled: false, taxRateBps: 1400 };
+const state = { marketRate: 50, taxEnabled: false, taxRateBps: 1400 };
 
 describe("rates", () => {
-  it("adds the margin to the market rate", () => {
-    expect(topUpRate(50, 200)).toBe(51);
-    expect(topUpRate(48.3512, 200)).toBeCloseTo(49.3183, 4);
-    expect(topUpRate(50, 0)).toBe(50);
-  });
-
   it("converts without floats drifting", () => {
     expect(usdCentsToPiastres(500, 51)).toBe(25_500);
     expect(usdCentsToPiastres(3, 50)).toBe(150);
@@ -39,20 +32,25 @@ describe("rates", () => {
 });
 
 describe("top-up quote", () => {
-  it("prices $5 with the margin and no tax while tax is off", () => {
+  it("prices $5 at the market rate, with no margin and no tax while tax is off", () => {
     expect(quoteTopUp(500, state)).toEqual({
       usdCents: 500,
-      rate: 51,
-      basePiastres: 25_500,
+      rate: 50,
+      basePiastres: 25_000,
       taxPiastres: 0,
-      totalPiastres: 25_500,
+      totalPiastres: 25_000,
     });
   });
 
-  it("adds 14% once when tax is on", () => {
+  it("rounds the EGP down to a whole pound, never up", () => {
+    // $30 at 49.0523 is 1471.57 EGP.
+    expect(quoteTopUp(3000, { ...state, marketRate: 49.0523 })!.totalPiastres).toBe(147_100);
+  });
+
+  it("adds 14% once when tax is on, in whole pounds", () => {
     const quote = quoteTopUp(500, { ...state, taxEnabled: true })!;
-    expect(quote.taxPiastres).toBe(3570);
-    expect(quote.totalPiastres).toBe(29_070);
+    expect(quote.taxPiastres).toBe(3500);
+    expect(quote.totalPiastres).toBe(28_500);
   });
 
   it("can't quote before there is a rate", () => {

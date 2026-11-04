@@ -4,7 +4,7 @@ import { refreshExchangeRate } from "@workspace/lib/billing/server";
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
 
-/** Daily EGP-per-USD rate (ROADMAP.md F-56b). A failure keeps the last rate; Admin › Billing shows its age. */
+/** EGP-per-USD rate, every 3 hours (ROADMAP.md F-56b). A failure keeps the last rate; Admin › Billing shows its age. */
 async function run(request: Request) {
   const secret = process.env.CRON_SECRET;
   if (!secret || request.headers.get("authorization") !== `Bearer ${secret}`) {
