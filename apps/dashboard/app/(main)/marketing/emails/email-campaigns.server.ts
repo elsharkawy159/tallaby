@@ -20,6 +20,8 @@ import {
   deleteCampaignDraft,
   getStoreCampaign,
   previewCampaignAudience,
+  buyEmailPacks,
+  getEmailAllowance,
   queueCampaign,
   releaseCampaignTestSend,
   saveCampaignDraft,
@@ -27,7 +29,7 @@ import {
   type AudiencePreview,
 } from "@workspace/lib/email-campaigns/server";
 import { renderCampaignPreview, runEmailCampaignCron, sendCampaignTestEmail } from "@workspace/lib/email-campaigns/send";
-import { isAccessError, requireStore } from "@/lib/auth/require-seller.server";
+import { isAccessError, requireSeller, requireStore } from "@/lib/auth/require-seller.server";
 import type { CampaignActionError, CampaignActionResult } from "./email-campaigns.types";
 
 /**
@@ -118,13 +120,31 @@ export async function previewAudience(input: {
   try {
     const { seller, store } = await requireStore(String(input?.storeId ?? ""));
     const audience = parseCampaignAudience(input?.audience);
+    const allowance = await getEmailAllowance(seller.sellerId);
     const preview = await previewCampaignAudience(seller.sellerId, store.id, audience, {
       inactiveDays: audience === "inactive" ? clampInactiveDays(input?.inactiveDays) : null,
-      plan: seller.plan,
+      plan: allowance.live ? allowance.plan : seller.plan,
+      remaining: allowance.live ? allowance.remaining : null,
     });
     return { success: true, data: preview };
   } catch (error) {
     return failure(error, "audience");
+  }
+}
+
+/** Buys extra campaign emails from the wallet. The account comes from the session. */
+export async function buyEmails(input: { packs: number }): Promise<CampaignActionResult<{ emails: number }>> {
+  try {
+    const { sellerId, userId } = await requireSeller({ forWrite: true });
+    const allowance = await getEmailAllowance(sellerId);
+    if (!allowance.live) return fail("generic");
+    if (allowance.locked) return fail("activationRequired");
+    const result = await buyEmailPacks(sellerId, userId, Number(input?.packs));
+    if (!result.success) return fail(result.error === "insufficient_balance" ? "insufficientBalance" : "generic");
+    revalidatePath(PATH);
+    return { success: true, data: { emails: result.emails } };
+  } catch (error) {
+    return failure(error, "buy");
   }
 }
 
@@ -140,6 +160,8 @@ export async function sendCampaign(input: {
 }): Promise<CampaignActionResult<{ recipients: number; scheduled: boolean }>> {
   try {
     const { seller, store } = await requireStore(String(input?.storeId ?? ""), { forWrite: true });
+    const allowance = await getEmailAllowance(seller.sellerId);
+    if (allowance.locked) return fail("activationRequired");
     const campaignId = String(input?.campaignId ?? "");
     const content = parseContent(input?.content);
     if (!content.ok) return fail(content.error);
@@ -147,7 +169,11 @@ export async function sendCampaign(input: {
     if (scheduledAt === "invalid") return fail("scheduleInvalid");
 
     if (!(await saveCampaignDraft(seller.sellerId, store.id, campaignId, content.value))) return fail("notDraft");
-    const result = await queueCampaign(seller.sellerId, store.id, campaignId, { plan: seller.plan, scheduledAt });
+    const result = await queueCampaign(seller.sellerId, store.id, campaignId, {
+      plan: allowance.live ? allowance.plan : seller.plan,
+      scheduledAt,
+      monthlyAllowance: allowance.live ? allowance.monthly : null,
+    });
     if (!result.ok) return fail(result.error);
 
     if (!scheduledAt) {

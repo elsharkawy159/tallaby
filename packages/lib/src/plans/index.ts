@@ -15,22 +15,26 @@ export type PlanFeatures = {
 export type PlanLimits = PlanFeatures & {
   maxStores: number;
   aiCreditsMonthly: number;
+  /** Campaign emails a month, shared across the seller's stores (owner, 2026-11-04). */
+  emailsMonthly: number;
 };
 
 export const PLANS = {
   free: {
     maxStores: 3,
     aiCreditsMonthly: 100,
+    emailsMonthly: 500,
     ai: true,
     advancedSettings: false,
     // Custom domains are already available to every seller today.
     customDomain: true,
     removeTallabyBadge: false,
   },
-  // Owner, 2026-11-03: credits and the order fee are the only differences.
+  // Owner: credits, campaign emails and the order fee are the only differences.
   pro: {
     maxStores: 3,
     aiCreditsMonthly: 2000,
+    emailsMonthly: 10000,
     ai: true,
     advancedSettings: false,
     customDomain: true,

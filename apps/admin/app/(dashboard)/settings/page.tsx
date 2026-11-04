@@ -23,6 +23,7 @@ const PLAN_COLUMNS: AdminTableColumn[] = [
   { id: "plan", header: "Plan" },
   { id: "maxStores", header: "Stores", align: "end" },
   { id: "aiCredits", header: "AI credits / month", align: "end" },
+  { id: "emails", header: "Campaign emails / month", align: "end" },
   { id: "features", header: "Features" },
 ];
 
@@ -199,6 +200,7 @@ export default async function SettingsPage() {
                   ),
                   maxStores: <span className="tabular-nums">{plan.maxStores}</span>,
                   aiCredits: <span className="tabular-nums">{plan.aiCreditsMonthly}</span>,
+                  emails: <span className="tabular-nums">{plan.emailsMonthly.toLocaleString()}</span>,
                   features: (
                     <div className="flex flex-wrap gap-1">
                       {features.length

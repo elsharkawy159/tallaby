@@ -55,6 +55,8 @@ describe("hasFeature", () => {
     expect(hasFeature("free", "advancedSettings")).toBe(false);
     expect(getPlanLimits("free").aiCreditsMonthly).toBe(100);
     expect(getPlanLimits("pro").aiCreditsMonthly).toBe(2000);
+    expect(getPlanLimits("free").emailsMonthly).toBe(500);
+    expect(getPlanLimits("pro").emailsMonthly).toBe(10000);
     expect(getPlanLimits("pro").maxStores).toBe(getPlanLimits("free").maxStores);
     expect(hasFeature("pro", "removeTallabyBadge")).toBe(false);
   });

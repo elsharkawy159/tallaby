@@ -1032,6 +1032,13 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 - **F-68a · P1 · deps: —** The rule, the message, the sidebar warning and the blurred Orders page, enforced on the server.
 
+### F-69 Campaign email allowance — P1 · owner request
+
+**What:** Free includes 500 campaign emails a month and Pro 10,000. Extra emails cost $1.50 per 1,000 from the wallet. Sending needs the first approved top-up (F-68).
+**Status:** [Built, not deployed] 2026-11-04 (§7). Applies from the USD switch.
+
+- **F-69a · P1 · deps: F-68** Monthly allowance per account, top-up check, buying extra emails, usage on the emails page, and plan and pricing copy.
+
 ---
 
 ## 5. Owner feature requests (intake)
@@ -1040,6 +1047,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 | Date       | Request (owner's words)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | Feature ID                                                                                       | Status                                                                                 |
 | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- |
+| 2026-11-04 | "No, we can keep the email campaign / 500 Emails for Free plan (Seller can send email after the first top-up (activation) / 10000 Emails for the Pro plan / Update the pricing plans too / Extra: $1.50 per 1,000 emails" | F-69 |
 | 2026-11-04 | "Seller should know that he can't receive any order until Top-up with 5$ first, show it as a simple message on dashboard main page and make warning icon ⚠️ on the Orders page on side bar so when user enter the Orders page should find like blurred with a message to Top-up to see your orders" | F-68 |
 | 2026-11-04 | "Approve Manual orders and Cross-sell … Approved. Approve the free-shipping threshold … Approved. Delay the MersalSMS for now, write Soon on it on the dashboard. Delay the AI Assistants MCP for now. Yes keep the For later list to be delayed for later. Yes drop the gifts" | F-05, F-32, F-13b, F-38, F-29 |
 | 2026-11-04 | "Make the checkout to be just a simple form contains full name, mobile number, Country, Full address, Note), with a simple location icon button beside the Full Address to automatically write the customer address onClick, in that field (only 1 field full address one line) and show a loading icon while searching about the customer location, and these info to be saved to the user so auto fill, also, make customer able to change the items count on checkout, for customers who have saved address, make autofill with the default address and Edit Address button to select the other addresses" | F-64 |
@@ -1329,10 +1337,18 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [ ] F-66b Easier emails page
 - [ ] F-67a Pending carts on the seller dashboard
 - [x] F-68a First top-up: message, sidebar warning, blurred Orders page (2026-11-04; off until the USD switch; not seen in a browser)
+- [x] F-69a Campaign email allowance by plan, with extra emails (2026-11-04; 0146 on staging; not seen in a browser)
 
 ---
 
 ## 7. Log
+
+### 2026-11-04 — F-69 Campaign email allowance (owner)
+
+- **Rule:** Free 500 and Pro 10,000 campaign emails a month, extra emails $1.50 per 1,000, and sending needs the first approved top-up. Before the USD switch nothing changes.
+- **Our calls:** the allowance is per calendar month in Cairo time, shared across the seller's stores. Bought emails don't expire and are used after the monthly ones. Only campaigns count; test sends to the seller's own address don't, and don't need the top-up. A campaign over what's left is cut, newest customers first. A cancelled campaign counts what it sent, and bought emails it used aren't returned. Pro's per-campaign cap rises to 10,000; Free stays at 500; both keep 1 campaign a day.
+- **Updated:** plans module, emails page, Plan page, Admin settings, Terms draft, `PLAN.md`, `PROJECT.md`, `PROJECT_DESCRIPTION.md`, `MARKETING_PROJECT.md`. The public pricing page (F-55g) is with the owner.
+- **Migration:** `0146`, staging only.
 
 ### 2026-11-04 — F-32 Cross-sell offers
 

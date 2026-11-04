@@ -23,6 +23,7 @@ import {
   statusAfterFailure,
   WINBACK_DEFAULTS,
 } from "./email-campaigns.lib";
+import { campaignRecipientCap, emailsRemaining, purchasedEmailsUsed } from "./email-campaigns.lib";
 
 const NOW = new Date("2026-10-30T10:00:00Z");
 const daysAgo = (n: number) => new Date(NOW.getTime() - n * 86_400_000).toISOString();
@@ -193,5 +194,26 @@ describe("unsubscribe", () => {
     expect(emailUnsubscribeUrl("https://s.tallaby.com/", "ab".repeat(16))).toBe(
       `https://s.tallaby.com/api/email/unsubscribe?token=${"ab".repeat(16)}`,
     );
+  });
+});
+
+describe("monthly email allowance", () => {
+  it("never goes below zero", () => {
+    expect(emailsRemaining(500, 120)).toBe(380);
+    expect(emailsRemaining(500, 900)).toBe(0);
+  });
+
+  it("caps a campaign at what's left, and leaves it alone before the switch", () => {
+    expect(campaignRecipientCap(500, 80)).toBe(80);
+    expect(campaignRecipientCap(10_000, 10_000)).toBe(10_000);
+    expect(campaignRecipientCap(500, null)).toBe(500);
+  });
+});
+
+describe("bought emails", () => {
+  it("are used only after the monthly allowance", () => {
+    expect(purchasedEmailsUsed(100, 200)).toBe(0);
+    expect(purchasedEmailsUsed(400, 200)).toBe(200);
+    expect(purchasedEmailsUsed(300, 0)).toBe(300);
   });
 });

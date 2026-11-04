@@ -49,8 +49,23 @@ export type EmailCampaignLimits = {
 
 export const EMAIL_CAMPAIGN_LIMITS: Record<PlanId, EmailCampaignLimits> = {
   free: { campaignsPerDay: 1, maxRecipients: 500, testSendsPerCampaign: 5, winbackPerStorePerDay: 50 },
-  pro: { campaignsPerDay: 1, maxRecipients: 500, testSendsPerCampaign: 5, winbackPerStorePerDay: 50 },
+  pro: { campaignsPerDay: 1, maxRecipients: 10_000, testSendsPerCampaign: 5, winbackPerStorePerDay: 50 },
 };
+
+/** How many of a month's campaign emails are left; never below zero. */
+export function emailsRemaining(monthly: number, used: number): number {
+  return Math.max(0, monthly - Math.max(0, used));
+}
+
+/** Bought emails a campaign of this size uses: the monthly allowance goes first. */
+export function purchasedEmailsUsed(recipients: number, monthlyLeft: number): number {
+  return Math.max(0, recipients - Math.max(0, monthlyLeft));
+}
+
+/** A campaign's recipient cap: the plan's per-campaign cap, and what's left this month once that applies. */
+export function campaignRecipientCap(maxRecipients: number, remaining: number | null): number {
+  return remaining === null ? maxRecipients : Math.min(maxRecipients, remaining);
+}
 
 export function emailCampaignLimits(plan: string | null | undefined): EmailCampaignLimits {
   return EMAIL_CAMPAIGN_LIMITS[resolvePlanId(plan)];

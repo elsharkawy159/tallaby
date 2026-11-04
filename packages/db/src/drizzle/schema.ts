@@ -3916,6 +3916,14 @@ export const sellerCategoryProductPositions = pgTable("seller_category_product_p
  * snapshots the recipients and queues it (status 'scheduled'); the
  * email-campaigns cron sends it. Server-only (RLS on, no policies).
  */
+export const sellerEmailCredits = pgTable("seller_email_credits", {
+	sellerId: uuid("seller_id").primaryKey().notNull().references(() => sellers.id, { onDelete: "cascade" }),
+	purchasedRemaining: integer("purchased_remaining").default(0).notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, () => [
+	check("seller_email_credits_purchased_remaining_check", sql`purchased_remaining >= 0`),
+]);
+
 export const storeEmailCampaigns = pgTable("store_email_campaigns", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	storeId: uuid("store_id").notNull(),

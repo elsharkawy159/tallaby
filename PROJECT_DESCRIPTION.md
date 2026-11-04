@@ -89,6 +89,8 @@ Each seller's tracking runs only on that seller's store, never on the marketplac
 | Monthly price | $0 | $29, paid from the store wallet |
 | Order fee | $0.03 per order | None |
 | AI credits per month | 100 | 2,000 |
+| Campaign emails per month | 500 | 10,000 |
+| Extra campaign emails | $1.50 per 1,000 | $1.50 per 1,000 |
 | Products and orders | Unlimited | Unlimited |
 
 - 1 AI credit = 1 action, shared across the seller's account. Extra credits cost $1 per 100, from the wallet.

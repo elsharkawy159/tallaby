@@ -5,6 +5,9 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
+import { EMAIL_PACK_EMAILS, EMAIL_PACK_USD_CENTS } from "@workspace/lib/billing";
+import type { EmailAllowance } from "@workspace/lib/email-campaigns/server";
+import { ConfirmActionDialog } from "@/components/layout/confirm-action-dialog.client";
 import { Ban, Eye, LoaderCircle, Mail, Pencil, Plus, Send, SendHorizonal, Trash2, Users } from "lucide-react";
 import {
   AlertDialog,
@@ -47,7 +50,7 @@ import type {
 } from "@workspace/lib/email-campaigns/server";
 import { formatDateTime, formatNumber } from "@/lib/i18n/format";
 import {
-  cancelCampaignAction,
+  buyEmails, cancelCampaignAction,
   createCampaign,
   deleteCampaign,
   previewAudience,
@@ -73,6 +76,7 @@ type Props = {
   storeId: string | null;
   storeLive: boolean;
   limits: EmailCampaignLimits;
+  allowance: EmailAllowance;
   data: Data | null;
 };
 
@@ -110,7 +114,7 @@ const toContent = (d: Draft) => ({
 });
 
 /** Marketing › Email campaigns: store picker, stats, campaign list and composer, win-back card. */
-export function EmailCampaignsView({ stores, storeId, storeLive, limits, data }: Props) {
+export function EmailCampaignsView({ stores, storeId, storeLive, limits, allowance, data }: Props) {
   const t = useTranslations("emailCampaigns");
   const locale = useLocale();
   const pathname = usePathname();
@@ -174,6 +178,19 @@ export function EmailCampaignsView({ stores, storeId, storeLive, limits, data }:
         </div>
       )}
 
+      {allowance.locked ? (
+        <p className="rounded-xl border bg-accent-soft px-4 py-3 text-sm">
+          {t(allowance.pendingReview ? "allowance.pending" : "allowance.locked")}{" "}
+          {!allowance.pendingReview && (
+            <Link href="/wallet" className="font-semibold underline underline-offset-2">
+              {t("allowance.topUp")}
+            </Link>
+          )}
+        </p>
+      ) : (
+        allowance.live && <EmailAllowanceLine allowance={allowance} />
+      )}
+
       <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:max-w-2xl">
         <Stat label={t("stats.sent")} value={formatNumber(sentTotal, locale)} />
         <Stat label={t("stats.unsubscribed")} value={formatNumber(data.unsubscribed, locale)} />
@@ -193,7 +210,7 @@ export function EmailCampaignsView({ stores, storeId, storeLive, limits, data }:
           campaign={editing}
           products={data.products}
           limits={limits}
-          canQueue={storeLive && data.queuedToday < limits.campaignsPerDay}
+          canQueue={storeLive && data.queuedToday < limits.campaignsPerDay && !allowance.locked && (!allowance.live || allowance.remaining > 0)}
           onClose={() => setEditingId(null)}
           onPreview={setPreview}
         />
@@ -835,5 +852,52 @@ function EmptyCard({ title, body }: { title: string; body: string }) {
         <p className="max-w-md text-pretty text-sm text-muted-foreground">{body}</p>
       </CardContent>
     </Card>
+  );
+}
+
+/** What's left this month, and buying more from the wallet (ROADMAP.md F-69). */
+function EmailAllowanceLine({ allowance }: { allowance: EmailAllowance }) {
+  const t = useTranslations("emailCampaigns.allowance");
+  const tErrors = useTranslations("emailCampaigns.errors");
+  const locale = useLocale();
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [pending, startTransition] = useTransition();
+  const values = {
+    emails: new Intl.NumberFormat(locale).format(EMAIL_PACK_EMAILS),
+    price: new Intl.NumberFormat(locale, { style: "currency", currency: "USD" }).format(EMAIL_PACK_USD_CENTS / 100),
+  };
+  const buy = () =>
+    startTransition(async () => {
+      const result = await buyEmails({ packs: 1 });
+      if (!result.success) {
+        toast.error(tErrors(result.error));
+        return;
+      }
+      toast.success(t("bought", { emails: values.emails }));
+      setOpen(false);
+      router.refresh();
+    });
+  return (
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
+      <p>
+        {t("left", {
+          left: new Intl.NumberFormat(locale).format(allowance.remaining),
+          monthly: new Intl.NumberFormat(locale).format(allowance.monthly),
+        })}
+      </p>
+      <button type="button" className="font-semibold text-foreground underline underline-offset-2" onClick={() => setOpen(true)}>
+        {t("buy", values)}
+      </button>
+      <ConfirmActionDialog
+        open={open}
+        onOpenChange={setOpen}
+        title={t("buyTitle", values)}
+        description={t("buyBody", values)}
+        confirmLabel={t("buyConfirm", values)}
+        pending={pending}
+        onConfirm={buy}
+      />
+    </div>
   );
 }

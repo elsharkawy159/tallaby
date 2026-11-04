@@ -8,6 +8,8 @@ import { Check, LoaderCircle, Minus, Plus, Sparkles } from "lucide-react";
 import {
   CREDIT_PACK_CREDITS,
   CREDIT_PACK_USD_CENTS,
+  EMAIL_PACK_EMAILS,
+  EMAIL_PACK_USD_CENTS,
   FREE_ORDER_FEE_USD_CENTS,
   PRO_MONTHLY_USD_CENTS,
 } from "@workspace/lib/billing";
@@ -49,6 +51,7 @@ export function PlanLive(props: PlanLiveProps) {
   const canAffordPro = walletBalance * 100 >= PRO_MONTHLY_USD_CENTS;
   const packCost = packs * CREDIT_PACK_USD_CENTS;
   const canAffordPacks = walletBalance * 100 >= packCost;
+  const format1000 = formatNumber(EMAIL_PACK_EMAILS, locale);
   const monthlyUsed = credits.monthlyAllowance - credits.monthlyRemaining;
   const monthlyShare = credits.monthlyAllowance > 0 ? Math.min(100, (credits.monthlyRemaining / credits.monthlyAllowance) * 100) : 0;
 
@@ -96,8 +99,8 @@ export function PlanLive(props: PlanLiveProps) {
       <div className="grid gap-3 sm:grid-cols-2">
         {(
           [
-            { id: "free", price: t("freePrice"), fee: usd(FREE_ORDER_FEE_USD_CENTS), credits: 100, current: !isPro },
-            { id: "pro", price: t("proPrice", { amount: usd(PRO_MONTHLY_USD_CENTS) }), fee: t("noFee"), credits: 2000, current: isPro },
+            { id: "free", price: t("freePrice"), fee: usd(FREE_ORDER_FEE_USD_CENTS), credits: 100, emails: 500, current: !isPro },
+            { id: "pro", price: t("proPrice", { amount: usd(PRO_MONTHLY_USD_CENTS) }), fee: t("noFee"), credits: 2000, emails: 10000, current: isPro },
           ] as const
         ).map((plan) => (
           <article
@@ -112,7 +115,7 @@ export function PlanLive(props: PlanLiveProps) {
               <bdi>{plan.price}</bdi>
             </p>
             <ul className="mt-4 flex-1 space-y-2.5 text-sm">
-              {[t("feeLine", { fee: plan.fee }), t("creditsLine", { count: plan.credits }), t("unlimited"), t("everythingElse")].map((line) => (
+              {[t("feeLine", { fee: plan.fee }), t("creditsLine", { count: plan.credits }), t("emailsLine", { count: plan.emails }), t("emailsExtra", { price: usd(EMAIL_PACK_USD_CENTS), emails: format1000 }), t("unlimited"), t("everythingElse")].map((line) => (
                 <li key={line} className="flex items-start gap-2">
                   <Check className="mt-0.5 size-4 shrink-0 text-success" aria-hidden />
                   <span>{line}</span>

@@ -3,6 +3,7 @@ import { emailCampaignLimits } from "@workspace/lib/email-campaigns";
 import {
   countCampaignsQueuedToday,
   countStoreUnsubscribed,
+  getEmailAllowance,
   getStoreWinback,
   listCampaignProductOptions,
   listStoreCampaigns,
@@ -25,6 +26,7 @@ export async function EmailCampaignsData(props: { storeId: string | null }) {
     getLocale(),
   ]);
   const store = stores.find((s) => s.id === props.storeId) ?? selected;
+  const allowance = await getEmailAllowance(seller.sellerId);
 
   const data = store
     ? await Promise.all([
@@ -44,7 +46,8 @@ export async function EmailCampaignsData(props: { storeId: string | null }) {
         stores={stores.map((s) => ({ id: s.id, name: s.name }))}
         storeId={store?.id ?? null}
         storeLive={store ? store.status === "active" && store.siteStatus === "published" : false}
-        limits={emailCampaignLimits(seller.plan)}
+        limits={emailCampaignLimits(allowance.live ? allowance.plan : seller.plan)}
+        allowance={allowance}
         data={
           data
             ? {

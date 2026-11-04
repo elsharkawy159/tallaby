@@ -24,6 +24,8 @@
 
 **Pro renewal.** Pro renews every month from your wallet, for as long as it stays on. If your balance can't cover a renewal, you get 3 days to top up, and you keep Pro during that time. After that, your account moves to Free. You can cancel at any time: Pro continues until the end of the month you paid for, with no refund for the unused part.
 
+**Campaign emails.** Free includes 500 campaign emails a month and Pro includes 10,000, shared across your stores. Monthly emails reset on the 1st and don't carry over. You can buy more at $1.50 per 1,000 from your wallet; bought emails don't expire. You can send campaigns after your first approved top-up.
+
 **AI credits.** AI features use credits. Free includes 100 credits a month and Pro includes 2,000 a month. Monthly credits reset and don't carry over. You can buy more at $1 per 100 from your wallet; bought credits don't expire and are used after your monthly credits. Credits have no cash value and can't be refunded or transferred.
 
 **Amounts already taken.** Amounts deducted from your wallet are non-refundable, except where we correct a mistake or where the law requires otherwise. If we cancel a paid service before it starts, such as a rejected ad, the amount goes back to your wallet.
@@ -45,6 +47,8 @@
 **الرصيد السالب.** قد تجعل رسوم الطلبات رصيدك أقل من صفر. الرصيد السالب مبلغ مستحق عليك لطلبي، وتسدده بشحن المحفظة. أما المشتريات الاختيارية مثل باقة Pro ورصيد الذكاء الاصطناعي والإعلانات فلا يمكن دفعها بمبلغ غير موجود في المحفظة.
 
 **تجديد باقة Pro.** تتجدد باقة Pro كل شهر من محفظتك ما دامت مفعّلة. إذا لم يكفِ الرصيد للتجديد، يكون أمامك 3 أيام لشحن المحفظة وتبقى باقة Pro خلالها، وبعدها ينتقل حسابك إلى الباقة المجانية. يمكنك الإلغاء في أي وقت، وتستمر باقة Pro حتى نهاية الشهر المدفوع، دون استرداد للجزء غير المستخدم.
+
+**إيميلات الحملات.** تشمل الباقة المجانية 500 إيميل حملات شهريًا وباقة Pro تشمل 10,000، مشتركة بين متاجرك. تتجدد الإيميلات الشهرية في أول كل شهر ولا تُرحَّل. يمكنك شراء المزيد بسعر 1.50 دولار لكل 1,000 من محفظتك، والإيميلات المشتراة لا تنتهي. يمكنك إرسال الحملات بعد أول عملية شحن معتمدة.
 
 **رصيد الذكاء الاصطناعي.** تستخدم مزايا الذكاء الاصطناعي رصيدًا من النقاط. تشمل الباقة المجانية 100 نقطة شهريًا وباقة Pro تشمل 2,000 نقطة شهريًا. يتجدد الرصيد الشهري ولا يُرحَّل. يمكنك شراء المزيد بسعر دولار واحد لكل 100 نقطة من محفظتك، والنقاط المشتراة لا تنتهي وتُستخدم بعد الرصيد الشهري. ليس للنقاط قيمة نقدية، ولا يمكن استردادها أو نقلها.
 

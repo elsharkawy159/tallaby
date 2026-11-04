@@ -8,6 +8,9 @@ export const FREE_ORDER_FEE_USD_CENTS = 3;
 export const PRO_MONTHLY_USD_CENTS = 2900;
 export const CREDIT_PACK_CREDITS = 100;
 export const CREDIT_PACK_USD_CENTS = 100;
+/** Extra campaign emails from the wallet (owner, 2026-11-04). */
+export const EMAIL_PACK_EMAILS = 1000;
+export const EMAIL_PACK_USD_CENTS = 150;
 export const TOP_UP_MIN_USD_CENTS = 500;
 export const TOP_UP_MAX_USD_CENTS = 100_000;
 /** Days a Pro seller keeps Pro after a renewal the wallet couldn't pay. */

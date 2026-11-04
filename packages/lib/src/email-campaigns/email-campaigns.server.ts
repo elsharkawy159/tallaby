@@ -8,7 +8,13 @@
  * store or campaign reads as not found. Cron functions (claim / mark /
  * release / plan) work across stores and never take input from a browser.
  */
-import { and, db, desc, eq, isNull, sql, storeEmailCampaigns, stores } from "@workspace/db";
+import { randomUUID } from "node:crypto";
+import { and, db, desc, eq, isNull, sellerEmailCredits, sellers, sql, storeEmailCampaigns, stores } from "@workspace/db";
+import { postStoreWalletEntry, STORE_WALLET_REFERENCE_TYPES, StoreWalletLimitError } from "@workspace/db/wallet";
+import { getBillingState } from "../billing/billing.server";
+import { EMAIL_PACK_EMAILS, EMAIL_PACK_USD_CENTS, isProActive, minorToAmount } from "../billing/billing.lib";
+import { getOrderLock } from "../billing/order-lock.server";
+import { getPlanLimits } from "../plans";
 import { listStoreCustomers } from "../customers/customers.server";
 import { listAllStoreSubscribers } from "../store-forms/subscribers.server";
 import { listStoreBlockedPhones } from "../stores/blocked-phones.server";
@@ -20,7 +26,10 @@ import {
   customersForAudience,
   EMAIL_CLAIM_STALE_MINUTES,
   EMAIL_SEND_MAX_ATTEMPTS,
+  campaignRecipientCap,
   emailCampaignLimits,
+  emailsRemaining,
+  purchasedEmailsUsed,
   isEmailUnsubscribeToken,
   isUuid,
   parseWinbackSettings,
@@ -313,10 +322,10 @@ export async function previewCampaignAudience(
   sellerId: string,
   storeId: string,
   audience: CampaignAudience,
-  options: { inactiveDays?: number | null; plan?: string | null },
+  options: { inactiveDays?: number | null; plan?: string | null; remaining?: number | null },
   q: Queryable = db,
 ): Promise<AudiencePreview> {
-  const max = emailCampaignLimits(options.plan).maxRecipients;
+  const max = campaignRecipientCap(emailCampaignLimits(options.plan).maxRecipients, options.remaining ?? null);
   const [raw, unsubscribed] = await Promise.all([
     loadAudienceEmails(sellerId, storeId, audience, { inactiveDays: options.inactiveDays }, q),
     loadStoreUnsubscribed(sellerId, storeId, q),
@@ -336,9 +345,107 @@ export async function countCampaignsQueuedToday(sellerId: string, storeId: strin
   return rows[0]?.n ?? 0;
 }
 
+/** Campaign emails this account used this Cairo month, across its stores. A cancelled campaign counts what it sent. */
+export async function countEmailsUsedThisMonth(sellerId: string, q: Queryable = db): Promise<number> {
+  const rows = rowsOf<{ n: number }>(
+    await q.execute(sql`
+      SELECT coalesce(sum(CASE WHEN status = 'cancelled' THEN sent_count ELSE recipient_count END), 0)::int AS n
+        FROM store_email_campaigns
+       WHERE seller_id = ${sellerId}
+         AND queued_at >= date_trunc('month', now() AT TIME ZONE 'Africa/Cairo') AT TIME ZONE 'Africa/Cairo'
+    `),
+  );
+  return rows[0]?.n ?? 0;
+}
+
+async function purchasedEmails(sellerId: string, q: Queryable): Promise<number> {
+  const rows = rowsOf<{ n: number }>(
+    await q.execute(sql`SELECT purchased_remaining AS n FROM seller_email_credits WHERE seller_id = ${sellerId}`),
+  );
+  return rows[0]?.n ?? 0;
+}
+
+export type BuyEmailsResult = { success: true; emails: number } | { success: false; error: "insufficient_balance" | "invalid" };
+
+/** Buys 1,000 extra emails a pack ($1.50). The charge and the emails commit together; it can't take the wallet below zero. */
+export async function buyEmailPacks(sellerId: string, actorId: string, packs: number, q: typeof db = db): Promise<BuyEmailsResult> {
+  if (!Number.isInteger(packs) || packs < 1 || packs > 20) return { success: false, error: "invalid" };
+  const emails = packs * EMAIL_PACK_EMAILS;
+  try {
+    await q.transaction(async (tx) => {
+      await postStoreWalletEntry(tx, {
+        sellerId,
+        type: "service_charge",
+        amount: `-${minorToAmount(packs * EMAIL_PACK_USD_CENTS)}`,
+        currency: "USD",
+        referenceType: STORE_WALLET_REFERENCE_TYPES.emailPack,
+        referenceId: randomUUID(),
+        description: `Campaign emails: ${emails}`,
+        metadata: { packs, emails },
+        createdBy: actorId,
+        enforceNegativeLimit: true,
+      });
+      await tx
+        .insert(sellerEmailCredits)
+        .values({ sellerId, purchasedRemaining: emails })
+        .onConflictDoUpdate({
+          target: sellerEmailCredits.sellerId,
+          set: { purchasedRemaining: sql`${sellerEmailCredits.purchasedRemaining} + ${emails}`, updatedAt: sql`now()` },
+        });
+    });
+    return { success: true, emails };
+  } catch (error) {
+    if (error instanceof StoreWalletLimitError) return { success: false, error: "insufficient_balance" };
+    throw error;
+  }
+}
+
+export type EmailAllowance = {
+  /** False before the USD switch: no monthly limit and no top-up needed yet. */
+  live: boolean;
+  plan: "free" | "pro";
+  monthly: number;
+  /** Monthly left plus bought emails. */
+  remaining: number;
+  purchased: number;
+  /** No approved top-up yet, so campaigns can't be sent (owner, 2026-11-04). */
+  locked: boolean;
+  pendingReview: boolean;
+};
+
+/** What this account may send now. Read fresh; the server decides, and queueCampaign re-checks under a lock. */
+export async function getEmailAllowance(sellerId: string, q: Queryable = db): Promise<EmailAllowance> {
+  const { usdLive } = await getBillingState();
+  if (!usdLive) {
+    const monthly = getPlanLimits("free").emailsMonthly;
+    return { live: false, plan: "free", monthly, remaining: monthly, purchased: 0, locked: false, pendingReview: false };
+  }
+  const [[seller], lock, used, purchased] = await Promise.all([
+    db
+      .select({ plan: sellers.plan, planExpiresAt: sellers.planExpiresAt, planGraceUntil: sellers.planGraceUntil })
+      .from(sellers)
+      .where(eq(sellers.id, sellerId))
+      .limit(1),
+    getOrderLock(sellerId),
+    countEmailsUsedThisMonth(sellerId, q),
+    purchasedEmails(sellerId, q),
+  ]);
+  const plan = seller && isProActive(seller) ? "pro" : "free";
+  const monthly = getPlanLimits(plan).emailsMonthly;
+  return {
+    live: true,
+    plan,
+    monthly,
+    remaining: emailsRemaining(monthly, used) + purchased,
+    purchased,
+    locked: lock.locked,
+    pendingReview: lock.pendingReview,
+  };
+}
+
 export type QueueCampaignResult =
   | { ok: true; recipients: number }
-  | { ok: false; error: "notFound" | "notDraft" | "storeOffline" | "dailyLimit" | "noRecipients" | CampaignSendError };
+  | { ok: false; error: "notFound" | "notDraft" | "storeOffline" | "dailyLimit" | "monthlyLimit" | "noRecipients" | CampaignSendError };
 
 /**
  * "Send now": checks the draft, the store (published and active) and the
@@ -349,7 +456,7 @@ export async function queueCampaign(
   sellerId: string,
   storeId: string,
   campaignId: string,
-  options: { plan?: string | null; now?: Date; scheduledAt?: Date | null } = {},
+  options: { plan?: string | null; now?: Date; scheduledAt?: Date | null; monthlyAllowance?: number | null } = {},
   q: typeof db = db,
 ): Promise<QueueCampaignResult> {
   const scheduledAt = options.scheduledAt ? options.scheduledAt.toISOString() : null;
@@ -375,12 +482,30 @@ export async function queueCampaign(
       return { ok: false, error: "dailyLimit" } as const;
     }
 
+    // The allowance is per account: this lock stops two stores spending the same emails at once.
+    let remaining: number | null = null;
+    let monthlyLeft = 0;
+    if (options.monthlyAllowance != null) {
+      await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtextextended(${`email-allowance:${sellerId}`}, 0))`);
+      monthlyLeft = emailsRemaining(options.monthlyAllowance, await countEmailsUsedThisMonth(sellerId, tx));
+      remaining = monthlyLeft + (await purchasedEmails(sellerId, tx));
+      if (remaining === 0) return { ok: false, error: "monthlyLimit" } as const;
+    }
+
     const [raw, unsubscribed] = await Promise.all([
       loadAudienceEmails(sellerId, storeId, campaign.audience, { inactiveDays: campaign.inactiveDays, now: options.now }, tx),
       loadStoreUnsubscribed(sellerId, storeId, tx),
     ]);
-    const { emails } = buildRecipientList(raw, { unsubscribed, max: limits.maxRecipients });
+    const { emails } = buildRecipientList(raw, { unsubscribed, max: campaignRecipientCap(limits.maxRecipients, remaining) });
     if (!emails.length) return { ok: false, error: "noRecipients" } as const;
+
+    const bought = remaining === null ? 0 : purchasedEmailsUsed(emails.length, monthlyLeft);
+    if (bought > 0) {
+      await tx.execute(sql`
+        UPDATE seller_email_credits SET purchased_remaining = purchased_remaining - ${bought}, updated_at = now()
+         WHERE seller_id = ${sellerId}
+      `);
+    }
 
     for (let i = 0; i < emails.length; i += 250) {
       const chunk = emails.slice(i, i + 250);
