@@ -55,6 +55,27 @@ describe("store host routing (P5-01)", () => {
     expect(rewriteOf("/products/bag")).not.toContain("/cms/");
   });
 
+  it("keeps the tallaby.com content routes off store hosts: the store's own page or 404", () => {
+    // Hubs are one slug: that store's builder page of the slug, else its 404.
+    expect(rewriteOf("/integrations")).toContain("/ar/storefront/sara/pages/integrations");
+    expect(rewriteOf("/compare")).toContain("/ar/storefront/sara/pages/compare");
+    // Detail pages are two: that store's CMS item, else its 404.
+    for (const path of [
+      "/features/custom-domain",
+      "/integrations/meta-pixel",
+      "/compare/tallaby-vs-shopify",
+      "/tools/profit-margin-calculator",
+      "/industries/clothing-store",
+      "/solutions/create-online-store",
+    ]) {
+      expect(rewriteOf(path)).toContain(`/ar/storefront/sara/cms${path}`);
+      expect(rewriteOf(`/en${path}`)).toContain(`/en/storefront/sara/cms${path}`);
+      expect(routeStorefrontRequest(req(path), "sara")?.headers.get("location")).toBeFalsy();
+    }
+    // Ranking articles are three segments deep: nothing on a store matches.
+    expect(rewriteOf("/blog/ranking/best-platforms")).toContain("/ar/storefront/sara/pages/_missing");
+  });
+
   it("lets shared pages through untouched", () => {
     expect(routeStorefrontRequest(req("/cart/checkout"), "sara")).toBeNull();
     expect(routeStorefrontRequest(req("/orders/123"), "sara")).toBeNull();

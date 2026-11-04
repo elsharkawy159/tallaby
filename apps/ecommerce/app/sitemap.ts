@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { routing } from "@/i18n/routing";
 import { getMarketingPosts } from "@/lib/marketing/blog.server";
+import { contentPagePaths } from "@/lib/marketing/content-routes.lib";
 import { sitemapEntries } from "@/lib/marketing/seo.lib";
 import { getTemplateGallery } from "@/lib/marketing/templates.server";
 
@@ -29,6 +30,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [
     ...STATIC_PATHS.flatMap((path) => sitemapEntries(path)),
+    ...contentPagePaths().flatMap((path) => sitemapEntries(path)),
     ...gallery.flatMap((t) => sitemapEntries(`/templates/${t.id}`)),
     ...[...posts].flatMap(([id, { locales, lastModified }]) => sitemapEntries(`/blog/${id}`, locales, lastModified)),
   ];
