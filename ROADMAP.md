@@ -424,7 +424,7 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 ### F-13 Automatic discounts — P2 · Needs approval
 
 **What:** Store-wide rules without a code: free shipping over X, buy X get Y, % off a category, time-limited sale.
-**Status:** [In progress] F-13b minimum order built 2026-10-30 (uncommitted, Store settings › Checkout; no migration). Free-shipping threshold waits for owner approval. F-13a/F-13c need F-07a.
+**Status:** [In progress] F-13b is built and checked (owner approved 2026-11-04). F-13a and F-13c need F-07a.
 
 - **F-13a · P2 · deps: F-07a** Rules model + checkout application (server-side, one engine with coupons).
 - **F-13b · P1 · deps: —** Store-wide minimum order value (checkout refuses below it, with a clear message) and a store-wide free-shipping threshold on top of the per-zone free-over that exists. **Free-shipping part built 2026-10-30 (owner asked):** Shipping › Delivery settings › Free delivery = none / free over an amount / free on every order (`settings.shipping.freeShippingOver`: null / X / 0), applied in `resolveStorefrontShipping` to zones without their own free-over (a zone's own amount wins; Tallaby's rates for uncovered places are never made free). No store had the old field set (checked on production). The minimum order value is still to do.
@@ -1024,13 +1024,13 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 - **F-67a · P2 · deps: —** A Pending carts page in the seller's dashboard, for one store at a time: customer, items, value and last activity. It filters by `carts.store_id` for a store the session's seller owns (CLAUDE.md rule 5), with server paging. Contact details show only where the customer gave them. Check the overlap with Orders › Not completed (F-03) and decide whether to link or merge them.
 
-### F-68 First top-up before orders — P1 · owner request · Needs owner answers
+### F-68 First top-up before orders — P1 · owner request
 
 **Why:** A seller should know that they need a $5 top-up first, before orders work for them.
-**What:** A simple message on the dashboard home, a ⚠️ on Orders in the sidebar, and the Orders page blurred with a message to top up. What the rule blocks, what counts as topped up and who it covers are waiting on the owner.
-**Status:** [Planned]
+**What:** A simple message on the dashboard home, a ⚠️ on Orders in the sidebar, and the Orders page blurred with a message to top up. Orders still arrive and checkout doesn't change; the seller can't see them until the first approved top-up, which unlocks for good. Pro is exempt.
+**Status:** [Built, off until the USD switch] 2026-11-04 (§7).
 
-- **F-68a · P1 · deps: owner** Build the rule, the message, the sidebar warning and the blurred Orders page once the owner has answered.
+- **F-68a · P1 · deps: —** The rule, the message, the sidebar warning and the blurred Orders page, enforced on the server.
 
 ---
 
@@ -1157,7 +1157,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-37d Commission on succeeded top-ups
 - [x] F-37e "اربح معنا" dashboard page
 - [x] F-37f Admin referrals + payouts
-- [~] F-13b Minimum order + store free-shipping threshold (owner approved 2026-11-04; check the built parts against this)
+- [x] F-13b Minimum order + store free-shipping threshold (owner approved 2026-11-04; both already built, checked against `place-order.ts` and checkout; no code change)
 - [x] F-22a Recent orders endpoint (2026-10-30, uncommitted; server-side feed, no public endpoint)
 - [x] F-22b Sales pop-up on the store (2026-10-30, uncommitted; browser E2E pending)
 - [x] F-24a Bulk edit server action (2026-10-30, uncommitted; no migration)
@@ -1328,11 +1328,21 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [ ] F-66a Email preview while editing
 - [ ] F-66b Easier emails page
 - [ ] F-67a Pending carts on the seller dashboard
-- [ ] F-68a First top-up: message, sidebar warning, blurred Orders page (owner answers needed)
+- [x] F-68a First top-up: message, sidebar warning, blurred Orders page (2026-11-04; off until the USD switch; not seen in a browser)
 
 ---
 
 ## 7. Log
+
+### 2026-11-04 — F-68 First top-up before orders; F-13b checked
+
+- **Owner's rule:** orders still arrive and checkout is unchanged. A seller who has never topped up can't see them. One approved top-up unlocks for good, and later low balances stay with the negative-balance warning. It covers new and existing sellers. Active Pro is exempt, including admin-granted Pro. A pending manual top-up stays locked, and the message says it's being reviewed.
+- **Calls:** unlocked means a `succeeded` row in `seller_wallet_top_ups` (any provider, old EGP ones too) or any `top_up` ledger entry; a gift or admin adjustment doesn't count. It only locks when `usd_live` is true, so a deploy before the switch changes nothing. If the check fails, it doesn't lock. Rule in `packages/lib/src/billing/order-lock.{lib,server}.ts`, read per request.
+- **Gated on the server:** the Orders, Not completed, Customers, Delivery and Riders pages show placeholder rows and send no order data. Also gated: order details and row loading, exports, picking list and print, every order, customer, lead, Bosta and Wassalha action, Bosta labels, shipments and riders actions, the older `actions/orders.ts`, order results in the header search, recent orders on the home page, the sidebar order count, and Google Sheets exports (manual and the daily job, which appends what it skipped after the first top-up).
+- **Left visible on purpose, no customer details:** totals and counts on the home page and in Reports and Financial, the pending count under Attention, order numbers on wallet lines, and the bell and push for a new order (order number, and the amount in push). Email campaigns still work, showing only recipient counts.
+- **For the owner:** the platform fee still charges on hidden orders, and a shipped-order email can still reach a customer if the store has Order Notifications.
+- **F-13b:** the minimum order and store-wide free delivery are both built. `place-order.ts` and checkout use `resolveStorefrontShipping` (a zone's own free-over, else the store-wide offer), and `createOrder` enforces the minimum on the server. No code change. The store-wide offer applies to zones only, not to places priced by the Tallaby rate fallback.
+- **Checks:** 3 integration tests on staging and 7 unit tests for the rule; 93 dashboard tests under Orders and the sidebar; `tsc` clean in dashboard (apart from `catalog.ts` from the template work and older errors in `sidebar.config.test.ts`) and backend. **Not seen in a browser.**
 
 ### 2026-11-04 — Owner decisions: approvals and delays
 

@@ -31,7 +31,7 @@ import {
 import { WALLET_REFERENCE_TYPES } from "@workspace/db/wallet";
 import { sendOrderEventEmail } from "@workspace/lib/orders";
 import { autoShipOrderWithBosta } from "@workspace/lib/shipping/bosta-ship";
-import { AccessError, requireSeller } from "@/lib/auth/require-seller.server";
+import { AccessError, requireOrdersSeller } from "@/lib/auth/require-seller.server";
 import { applySellerShipmentStatus } from "@/lib/shipping/apply-seller-shipment";
 import { isShippingStatus, type ShippingStatus } from "@/lib/shipping/shipping-status";
 import {
@@ -524,7 +524,7 @@ async function loadStockShortage(orderId: string, sellerId: string): Promise<Sto
 export async function updateSellerOrder(input: unknown): Promise<ActionResult> {
   const t = await getTranslations("orders.errors");
   try {
-    const { sellerId } = await requireSeller();
+    const { sellerId } = await requireOrdersSeller();
     const { orderId, action, reason, restock, addMissingStock } = inputSchema.parse(input);
     try {
       await runSellerOrderAction(sellerId, orderId, action, reason, {
@@ -558,7 +558,7 @@ export async function updateSellerOrder(input: unknown): Promise<ActionResult> {
 export async function restockReturnedOrder(input: unknown): Promise<ActionResult> {
   const t = await getTranslations("orders.errors");
   try {
-    const { sellerId } = await requireSeller();
+    const { sellerId } = await requireOrdersSeller();
     const { orderId } = z.object({ orderId: z.uuid() }).parse(input);
     const loaded = await loadOrder(orderId, sellerId);
     const { order, flow } = loaded;
@@ -606,7 +606,7 @@ type BulkResult = { success: true; done: number; skipped: number } | { success: 
 export async function bulkUpdateSellerOrders(input: unknown): Promise<BulkResult> {
   const t = await getTranslations("orders.errors");
   try {
-    const { sellerId } = await requireSeller();
+    const { sellerId } = await requireOrdersSeller();
     const { orderIds, action } = bulkInputSchema.parse(input);
 
     let done = 0;

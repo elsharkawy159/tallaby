@@ -1,5 +1,6 @@
 "use server";
 
+import { getOrderLock } from "@workspace/lib/billing/order-lock";
 import { db } from "@workspace/db";
 import { orders, orderItems, shipments } from "@workspace/db";
 import { eq, and, desc, sql, gte, lte } from "drizzle-orm";
@@ -14,7 +15,7 @@ export async function getSellerOrders(params?: {
 }) {
   try {
     const session = await getUser();
-    if (!session?.user?.id) {
+    if (!session?.user?.id || (await getOrderLock(session.user.id)).locked) {
       throw new Error("Unauthorized");
     }
 
@@ -107,7 +108,7 @@ export async function getSellerOrders(params?: {
 export async function getOrderDetails(orderId: string) {
   try {
     const session = await getUser();
-    if (!session?.user?.id) {
+    if (!session?.user?.id || (await getOrderLock(session.user.id)).locked) {
       throw new Error("Unauthorized");
     }
 
@@ -170,7 +171,7 @@ export async function updateOrderItemStatus(
 ) {
   try {
     const session = await getUser();
-    if (!session?.user?.id) {
+    if (!session?.user?.id || (await getOrderLock(session.user.id)).locked) {
       throw new Error("Unauthorized");
     }
 
@@ -214,7 +215,7 @@ export async function updateOrderItemStatus(
 export async function getOrderStats() {
   try {
     const session = await getUser();
-    if (!session?.user?.id) {
+    if (!session?.user?.id || (await getOrderLock(session.user.id)).locked) {
       throw new Error("Unauthorized");
     }
 
@@ -265,7 +266,7 @@ export async function processRefund(data: {
 }) {
   try {
     const session = await getUser();
-    if (!session?.user?.id) {
+    if (!session?.user?.id || (await getOrderLock(session.user.id)).locked) {
       throw new Error("Unauthorized");
     }
 

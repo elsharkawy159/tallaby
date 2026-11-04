@@ -1,4 +1,4 @@
-import { requireSeller } from "@/lib/auth/require-seller.server";
+import { loadOrderLock, requireSeller } from "@/lib/auth/require-seller.server";
 import { getSellerStores } from "@/lib/stores/current-store.server";
 import { Sidebar } from "./Sidebar";
 import { storeBuilderEnabled } from "./sidebar.config";
@@ -12,9 +12,12 @@ export async function SidebarData() {
     getSellerStores(),
   ]);
 
+  const ordersLocked = (await loadOrderLock(seller.sellerId)).locked;
+
   return (
     <Sidebar
-      counts={counts}
+      ordersLocked={ordersLocked}
+      counts={ordersLocked ? { ...counts, orders: 0 } : counts}
       stores={stores.map(({ id, name, subdomain, isPrimary, status, logoUrl, siteStatus }) => ({
         id,
         name,

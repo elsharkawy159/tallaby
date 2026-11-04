@@ -1,4 +1,6 @@
 import { Suspense } from "react";
+import { currentOrderLock } from "@/lib/auth/require-seller.server";
+import { OrdersLocked } from "@/components/orders/orders-locked";
 import { parseLeadRange, parseLeadStatus } from "@workspace/lib/checkout-leads";
 import { MissedOrdersData } from "./missed-orders.data";
 
@@ -11,6 +13,8 @@ export default async function MissedOrdersPage({
 }: {
   searchParams: Promise<{ store?: string; range?: string; status?: string }>;
 }) {
+  const lock = await currentOrderLock();
+  if (lock.locked) return <OrdersLocked lock={lock} />;
   const params = await searchParams;
   return (
     <div className="min-h-screen p-4 sm:p-6">

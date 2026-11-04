@@ -27,6 +27,8 @@ import {
 import { StoreSwitcher, type SwitcherStore } from "./store-switcher.client";
 
 interface SidebarProps {
+  /** No first top-up yet: Orders shows a warning (F-68). */
+  ordersLocked: boolean;
   counts: SidebarCounts;
   stores: SwitcherStore[];
   selectedStoreId: string | null;
@@ -52,7 +54,7 @@ const ICON_BUTTON =
 const groupActive = (activeHref: string | null, group: ResolvedGroup) =>
   group.items.some((item) => item.href === activeHref);
 
-export const Sidebar = ({ counts, stores, selectedStoreId, maxStores, features }: SidebarProps) => {
+export const Sidebar = ({ ordersLocked, counts, stores, selectedStoreId, maxStores, features }: SidebarProps) => {
   const t = useTranslations();
   const { seller } = useSiteData();
   const { isCollapsed, toggleCollapse, isMobileOpen, setMobileOpen } = useSidebarStore();
@@ -86,6 +88,7 @@ export const Sidebar = ({ counts, stores, selectedStoreId, maxStores, features }
   );
 
   const content = {
+    ordersLocked,
     counts,
     entries,
     stores,
@@ -149,6 +152,7 @@ const SidebarLogo = ({ compact = false }: { compact?: boolean }) => (
 );
 
 interface SidebarContentProps {
+  ordersLocked: boolean;
   counts: SidebarCounts;
   entries: ResolvedEntry[];
   stores: SwitcherStore[];
@@ -164,6 +168,7 @@ interface SidebarContentProps {
 }
 
 const SidebarContent = ({
+  ordersLocked,
   counts,
   entries,
   stores,
@@ -204,6 +209,7 @@ const SidebarContent = ({
         >
           {Icon && <Icon className={cn(SIDEBAR_ICON, isActive && SIDEBAR_ICON_ACTIVE)} />}
           {!isCollapsed && <span className="min-w-0 flex-1 truncate">{label}</span>}
+          {ordersLocked && link.href === "/orders" && <OrdersWarning />}
           {!isCollapsed && (link.disabled ? <SoonBadge /> : <CountBadge count={link.countKey ? counts[link.countKey] : 0} />)}
         </Link>
       </li>
@@ -222,6 +228,7 @@ const SidebarContent = ({
             title={label}
           >
             <group.icon className={cn(SIDEBAR_ICON, active && SIDEBAR_ICON_ACTIVE)} />
+            {ordersLocked && group.key === "ordersGroup" && <OrdersWarning />}
           </Link>
         </li>
       );
@@ -234,6 +241,7 @@ const SidebarContent = ({
         active={active}
         activeHref={activeHref}
         counts={counts}
+        ordersLocked={ordersLocked}
         open={openGroupKey === group.key}
         onOpenChange={(open) => setOpenGroupKey(open ? group.key : null)}
       />
@@ -328,6 +336,15 @@ const SidebarContent = ({
   );
 };
 
+function OrdersWarning() {
+  const t = useTranslations("orderLock");
+  return (
+    <span role="img" aria-label={t("sidebar")} title={t("sidebar")} className="shrink-0 text-sm leading-none">
+      ⚠️
+    </span>
+  );
+}
+
 function CountBadge({ count }: { count: number }) {
   const format = useFormatter();
   return count > 0 ? <Badge variant="count">{format.number(count)}</Badge> : null;
@@ -349,6 +366,7 @@ function SidebarGroup({
   active,
   activeHref,
   counts,
+  ordersLocked,
   open,
   onOpenChange,
 }: {
@@ -357,6 +375,7 @@ function SidebarGroup({
   active: boolean;
   activeHref: string | null;
   counts: SidebarCounts;
+  ordersLocked: boolean;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
@@ -368,6 +387,7 @@ function SidebarGroup({
         <CollapsibleTrigger className={cn(SIDEBAR_LINK, "w-full", active && "font-medium text-primary-ink")}>
           <group.icon className={cn(SIDEBAR_ICON, active && SIDEBAR_ICON_ACTIVE)} />
           <span className="min-w-0 flex-1 truncate text-start">{label}</span>
+          {ordersLocked && group.key === "ordersGroup" && <OrdersWarning />}
           <ChevronDown className={cn("size-4 shrink-0 text-muted-foreground transition-transform", open && "rotate-180")} />
         </CollapsibleTrigger>
         <CollapsibleContent className="pt-0.5 pb-1">
@@ -387,6 +407,7 @@ function SidebarGroup({
                     aria-current={isActive ? "page" : undefined}
                   >
                     <span className="min-w-0 flex-1 truncate">{t(item.key)}</span>
+                    {ordersLocked && item.href === "/orders" && <OrdersWarning />}
                     {item.disabled ? <SoonBadge /> : <CountBadge count={item.countKey ? counts[item.countKey] : 0} />}
                   </Link>
                 </li>

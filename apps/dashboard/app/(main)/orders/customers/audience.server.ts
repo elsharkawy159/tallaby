@@ -8,7 +8,7 @@ import {
   parseAudienceSegment,
 } from "@workspace/lib/audiences";
 import { loadStoreAudience } from "@workspace/lib/audiences/server";
-import { isAccessError, requireStore } from "@/lib/auth/require-seller.server";
+import { isAccessError, requireOrdersStore } from "@/lib/auth/require-seller.server";
 
 /**
  * Orders › Customers › Export audience (ROADMAP.md F-16b): one segment of the
@@ -26,7 +26,7 @@ export async function exportAudience(input: { storeId: string; segment: string; 
     const segment = parseAudienceSegment(input?.segment);
     const format = parseAudienceFormat(input?.format);
     if (!segment || !format) return { success: false, error: "invalid" };
-    const { seller, store } = await requireStore(String(input?.storeId ?? ""));
+    const { seller, store } = await requireOrdersStore(String(input?.storeId ?? ""));
     const rows = await loadStoreAudience(seller.sellerId, store.id, segment);
     const count = audienceFileCount(rows, format);
     if (count === 0) return { success: false, error: "empty" };

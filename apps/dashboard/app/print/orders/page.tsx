@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createTranslator, type AbstractIntlMessages } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
-import { isAccessError, requireSeller } from "@/lib/auth/require-seller.server";
+import { isAccessError, requireOrdersSeller } from "@/lib/auth/require-seller.server";
 import ar from "@/messages/ar.json";
 import en from "@/messages/en.json";
 import { InvoiceDocument, PickingDocument, SlipDocument, type PrintT } from "./print-documents";
@@ -39,7 +39,7 @@ export default async function PrintOrdersPage({
 }) {
   let sellerId: string;
   try {
-    ({ sellerId } = await requireSeller());
+    ({ sellerId } = await requireOrdersSeller());
   } catch (error) {
     if (isAccessError(error)) redirect("/");
     throw error;

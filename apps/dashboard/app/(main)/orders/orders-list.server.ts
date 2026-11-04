@@ -1,6 +1,6 @@
 "use server";
 
-import { isAccessError, requireSeller } from "@/lib/auth/require-seller.server";
+import { isAccessError, requireOrdersSeller } from "@/lib/auth/require-seller.server";
 import { listFilteredOrderIds } from "./orders-list.query";
 import { loadOrderRowContext } from "./orders-row-context.data";
 import { loadOrderSummaries, loadSellerOrders } from "./orders.query";
@@ -31,7 +31,7 @@ export async function listFilteredOrderIdsAction(
   filters: unknown,
 ): Promise<{ success: true; ids: string[] } | { success: false }> {
   try {
-    const { sellerId } = await requireSeller();
+    const { sellerId } = await requireOrdersSeller();
     return { success: true, ids: await listFilteredOrderIds(sellerId, parseFilters(filters)) };
   } catch (error) {
     return failure(error, "list ids");
@@ -43,7 +43,7 @@ export async function selectFilteredOrdersAction(
   filters: unknown,
 ): Promise<{ success: true; orders: OrderSummary[]; capped: boolean } | { success: false }> {
   try {
-    const { sellerId } = await requireSeller();
+    const { sellerId } = await requireOrdersSeller();
     const ids = await listFilteredOrderIds(sellerId, parseFilters(filters), SELECT_ALL_MAX + 1);
     const context = await loadOrderRowContext(sellerId);
     return {
@@ -61,7 +61,7 @@ export async function loadOrdersForExportAction(
   ids: unknown,
 ): Promise<{ success: true; orders: SellerOrderRow[] } | { success: false }> {
   try {
-    const { sellerId } = await requireSeller();
+    const { sellerId } = await requireOrdersSeller();
     const wanted = Array.isArray(ids) ? ids.filter(isOrderId).slice(0, EXPORT_CHUNK_MAX) : [];
     const context = await loadOrderRowContext(sellerId);
     return { success: true, orders: await loadSellerOrders(sellerId, wanted, context, { withRisks: false }) };
@@ -77,7 +77,7 @@ export async function loadOrdersForExportAction(
 export async function loadOrderRowAction(id: unknown): Promise<SellerOrderRow | null> {
   try {
     if (!isOrderId(id)) return null;
-    const { sellerId } = await requireSeller();
+    const { sellerId } = await requireOrdersSeller();
     const [row] = await loadSellerOrders(sellerId, [id], await loadOrderRowContext(sellerId));
     return row ?? null;
   } catch (error) {

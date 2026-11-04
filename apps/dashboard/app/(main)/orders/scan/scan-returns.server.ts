@@ -1,7 +1,7 @@
 "use server";
 
 import { and, db, eq, inArray, orderItems, orders } from "@workspace/db";
-import { AccessError, requireSeller } from "@/lib/auth/require-seller.server";
+import { AccessError, requireOrdersSeller } from "@/lib/auth/require-seller.server";
 import { isSellerHandledLine, resolveSellerOrderFlow } from "../order-flow.lib";
 import { parseScannedOrderNumber } from "./scan-returns.lib";
 import type { ScanLookupResult } from "./scan-returns.types";
@@ -18,7 +18,7 @@ export async function findOrderForReturnScan(code: unknown): Promise<ScanLookupR
   const orderNumber = parseScannedOrderNumber(code);
   if (!orderNumber) return { ok: false, error: "invalid" };
   try {
-    const { sellerId } = await requireSeller();
+    const { sellerId } = await requireOrdersSeller();
     const order = await db.query.orders.findFirst({
       where: and(
         eq(orders.orderNumber, orderNumber),

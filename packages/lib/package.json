@@ -418,6 +418,10 @@
       "types": "./src/emails/email-policy.server.ts",
       "default": "./src/emails/email-policy.server.ts"
     },
+    "./billing/order-lock": {
+      "types": "./src/billing/order-lock.server.ts",
+      "default": "./src/billing/order-lock.server.ts"
+    },
     "./billing/apps": {
       "types": "./src/billing/app-billing.server.ts",
       "default": "./src/billing/app-billing.server.ts"

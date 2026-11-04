@@ -7,7 +7,7 @@ import {
   exportStoreOrdersToSheet,
   type ExportSummary,
 } from "@workspace/lib/integrations/server";
-import { requireStore } from "@/lib/auth/require-seller.server";
+import { requireOrdersStore, requireStore } from "@/lib/auth/require-seller.server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
 import { afterAppChange, appsAccessError } from "./apps-action.lib";
 import type { StoreAppsErrorKey, StoreAppsResult } from "./apps.dto";
@@ -62,7 +62,7 @@ export async function exportOrdersToGoogleSheet(storeId: string): Promise<StoreA
   try {
     const client = readGoogleClientEnv();
     if (!client) return { success: false, error: "notAvailable" };
-    const { seller, store } = await requireStore(String(storeId));
+    const { seller, store } = await requireOrdersStore(String(storeId));
     if (!limiter.check(`google:${seller.sellerId}`)) return { success: false, error: "rateLimited" };
 
     const result = await exportStoreOrdersToSheet(seller.sellerId, store.id, client);

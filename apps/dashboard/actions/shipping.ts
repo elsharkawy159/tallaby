@@ -1,5 +1,6 @@
 "use server";
 
+import { getOrderLock } from "@workspace/lib/billing/order-lock";
 import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { getTranslations } from "next-intl/server";
@@ -57,6 +58,8 @@ async function requireSellerId(): Promise<string> {
   const session = await getUser();
   const id = session?.user?.id;
   if (!id) throw new ShippingError("unauthorized");
+  // Shipments carry customer names and addresses: hidden until the first top-up (F-68).
+  if ((await getOrderLock(id)).locked) throw new ShippingError("unauthorized");
   return id;
 }
 

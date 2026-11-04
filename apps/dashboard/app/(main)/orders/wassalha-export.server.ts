@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { exportWassalhaOrders } from "@workspace/lib/shipping/wassalha-export";
 import type { EgyptPostRow } from "@workspace/lib/shipping";
 import type { WassalhaSkipReason } from "@workspace/lib/shipping/wassalha-export";
-import { isAccessError, requireStore } from "@/lib/auth/require-seller.server";
+import { isAccessError, requireOrdersStore } from "@/lib/auth/require-seller.server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
 
 /**
@@ -26,7 +26,7 @@ const ERRORS = { not_set_up: "notSetUp", no_orders: "noOrders", too_many: "tooMa
 
 export async function exportForWassalha(storeId: string, orderIds: string[]): Promise<WassalhaExportActionResult> {
   try {
-    const { seller, store } = await requireStore(String(storeId), { forWrite: true });
+    const { seller, store } = await requireOrdersStore(String(storeId), { forWrite: true });
     if (!exportLimiter.check(`wassalha-export:${store.id}`)) return { success: false, error: "rateLimited" };
 
     const ids = Array.isArray(orderIds) ? orderIds.filter((id): id is string => typeof id === "string") : [];

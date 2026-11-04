@@ -10,6 +10,7 @@ import {
   resolveCustomerName,
   resolveVendorOrderStatus,
 } from "../orders/orders.lib";
+import { currentOrderLock } from "@/lib/auth/require-seller.server";
 import { getRecentOrders } from "./home.queries";
 import { EmptyState, HeaderLink, HomeCard, HomeCardHeader } from "./home-ui";
 
@@ -34,6 +35,8 @@ const STATUS_TONE: Record<string, StatusTone> = {
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
 export async function RecentOrdersData() {
+  // Names and totals stay hidden until the first top-up (F-68).
+  if ((await currentOrderLock()).locked) return null;
   const locale = await getLocale();
   const [orders, t, tStatus, now] = await Promise.all([
     getRecentOrders(locale),

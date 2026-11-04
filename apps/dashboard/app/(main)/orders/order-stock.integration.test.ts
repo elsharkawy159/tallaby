@@ -18,6 +18,7 @@ vi.mock("@/lib/auth/require-seller.server", () => {
     AccessError,
     isAccessError: () => false,
     requireSeller: async () => ({ userId: session.sellerId, sellerId: session.sellerId, status: "approved", plan: "free" }),
+    requireOrdersSeller: async () => ({ userId: session.sellerId, sellerId: session.sellerId, status: "approved", plan: "free" }),
   };
 });
 vi.mock("@workspace/cache", async (importOriginal) => ({

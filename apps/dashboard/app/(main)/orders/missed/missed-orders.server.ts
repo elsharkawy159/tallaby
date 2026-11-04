@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { saveStoreLeadTemplate, setStoreCheckoutLeadContacted } from "@workspace/lib/checkout-leads/server";
-import { isAccessError, requireStore } from "@/lib/auth/require-seller.server";
+import { isAccessError, requireOrdersStore } from "@/lib/auth/require-seller.server";
 
 /**
  * Orders › Not completed actions (0120, ROADMAP.md F-03). Every action takes
@@ -22,7 +22,7 @@ const accessResult = (error: unknown): MissedOrdersResult => {
 
 export async function setLeadContacted(input: { storeId: string; leadId: string; contacted: boolean }): Promise<MissedOrdersResult> {
   try {
-    const { seller, store } = await requireStore(String(input?.storeId ?? ""), { forWrite: true });
+    const { seller, store } = await requireOrdersStore(String(input?.storeId ?? ""), { forWrite: true });
     const ok = await setStoreCheckoutLeadContacted(seller.sellerId, {
       storeId: store.id,
       leadId: String(input?.leadId ?? ""),
@@ -39,7 +39,7 @@ export async function setLeadContacted(input: { storeId: string; leadId: string;
 
 export async function saveLeadTemplate(input: { storeId: string; template: string | null }): Promise<MissedOrdersResult> {
   try {
-    const { seller, store } = await requireStore(String(input?.storeId ?? ""), { forWrite: true });
+    const { seller, store } = await requireOrdersStore(String(input?.storeId ?? ""), { forWrite: true });
     const template = typeof input?.template === "string" ? input.template : null;
     const result = await saveStoreLeadTemplate(seller.sellerId, { storeId: store.id, template });
     if (!result.success) return { success: false, error: result.error === "too_long" ? "tooLong" : "notFound" };

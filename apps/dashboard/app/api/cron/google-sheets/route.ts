@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { getOrderLock } from "@workspace/lib/billing/order-lock";
 import { readGoogleClientEnv } from "@workspace/lib/integrations";
 import { exportStoreOrdersToSheet, listStoresForDailySheetExport } from "@workspace/lib/integrations/server";
 
@@ -22,6 +23,8 @@ export async function GET(request: NextRequest) {
   const targets = await listStoresForDailySheetExport();
   const summary = { stores: targets.length, ok: 0, errors: 0, appended: 0 };
   for (const { sellerId, storeId } of targets) {
+    // Hidden until the first top-up (F-68). A later run appends what this one skipped.
+    if ((await getOrderLock(sellerId)).locked) continue;
     const result = await exportStoreOrdersToSheet(sellerId, storeId, client).catch(() => null);
     if (result?.success) {
       summary.ok++;

@@ -1,5 +1,6 @@
 "use server";
 
+import { getOrderLock } from "@workspace/lib/billing/order-lock";
 import {
   db,
   orderItems,
@@ -37,6 +38,7 @@ export async function searchDashboard(
 
     const pattern = likePattern(trimmed);
     const locale = await getLocale();
+    const ordersLocked = (await getOrderLock(sellerId)).locked;
 
     const [productRows, orderRows] = await Promise.all([
       // One row per translation, so over-fetch and collapse to one per product.
@@ -65,7 +67,9 @@ export async function searchDashboard(
         .orderBy(desc(products.createdAt))
         .limit(RESULT_LIMIT * 4),
       // An order can hold several of this seller's items; collapse below too.
-      db
+      ordersLocked
+        ? []
+        : db
         .select({
           id: orders.id,
           orderNumber: orders.orderNumber,

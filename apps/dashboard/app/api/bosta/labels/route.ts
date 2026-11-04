@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { getBostaLabels } from "@workspace/lib/shipping/bosta-orders";
-import { isAccessError, requireStore } from "@/lib/auth/require-seller.server";
+import { isAccessError, requireOrdersStore } from "@/lib/auth/require-seller.server";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
   if (!UUID.test(storeId) || orderIds.length === 0) return new NextResponse("Bad request", { status: 400 });
 
   try {
-    const { seller, store } = await requireStore(storeId);
+    const { seller, store } = await requireOrdersStore(storeId);
     const result = await getBostaLabels(seller.sellerId, store.id, orderIds, { type, lang });
     if (!result.ok) {
       const status = result.error === "not_found" || result.error === "not_connected" ? 404 : result.error === "too_many" ? 400 : 502;

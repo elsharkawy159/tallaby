@@ -1,4 +1,13 @@
 {
+  "orderLock": {
+    "title": "Top up $5 to see your orders",
+    "body": "Customers can order from your store as usual, but their orders stay hidden until your first top-up.",
+    "reviewTitle": "Your top-up is being reviewed",
+    "reviewBody": "Your orders will open as soon as we approve it.",
+    "topUp": "Top up",
+    "viewWallet": "View wallet",
+    "sidebar": "Top up to see your orders"
+  },
   "aiCredits": {
     "left": "{count, plural, =0 {No AI credits left.} one {# AI credit left.} other {# AI credits left.}}",
     "buy": "Get more"

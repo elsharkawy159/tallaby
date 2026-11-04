@@ -1,4 +1,6 @@
 import { Suspense } from "react";
+import { currentOrderLock } from "@/lib/auth/require-seller.server";
+import { OrdersLocked } from "@/components/orders/orders-locked";
 import { VendorOrdersData } from "./vendor-orders.data";
 import { VendorOrdersSkeleton } from "./orders-chunks";
 import type { OrdersListFilters } from "./orders-view.lib";
@@ -12,6 +14,8 @@ export default async function OrdersPage({
   // Filters and paging live in the URL. `order` (from the header search) opens that order on load.
   searchParams: Promise<Partial<Record<keyof OrdersListFilters | "order", string | string[] | undefined>>>;
 }) {
+  const lock = await currentOrderLock();
+  if (lock.locked) return <OrdersLocked lock={lock} />;
   const params = await searchParams;
 
   return (

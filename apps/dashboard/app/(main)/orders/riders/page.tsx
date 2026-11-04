@@ -1,4 +1,6 @@
 import { Suspense } from "react";
+import { currentOrderLock } from "@/lib/auth/require-seller.server";
+import { OrdersLocked } from "@/components/orders/orders-locked";
 import { ShippingData } from "../delivery/shipping.data";
 import { ShippingSkeleton } from "../delivery/shipping.skeleton";
 
@@ -6,7 +8,9 @@ import { ShippingSkeleton } from "../delivery/shipping.skeleton";
 export const dynamic = "force-dynamic";
 
 /** Riders (PLAN.md §7.2, P3-06): the delivery workspace opened on its riders view. */
-export default function RidersPage() {
+export default async function RidersPage() {
+  const lock = await currentOrderLock();
+  if (lock.locked) return <OrdersLocked lock={lock} />;
   return (
     <div className="min-h-screen p-4 sm:p-6">
       <Suspense fallback={<ShippingSkeleton />}>

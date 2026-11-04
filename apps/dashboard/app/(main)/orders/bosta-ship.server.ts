@@ -15,7 +15,7 @@ import {
   type BostaTimelineEvent,
   type CancelBostaError,
 } from "@workspace/lib/shipping/bosta-orders";
-import { requireStore, isAccessError } from "@/lib/auth/require-seller.server";
+import { requireOrdersStore, isAccessError } from "@/lib/auth/require-seller.server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
 
 /**
@@ -42,7 +42,7 @@ export async function previewShipWithBosta(
   districtId?: string | null,
 ): Promise<BostaActionResult<BostaShipPreview>> {
   try {
-    const { seller, store } = await requireStore(String(storeId));
+    const { seller, store } = await requireOrdersStore(String(storeId));
     const result = await previewBostaShipment(seller.sellerId, store.id, String(orderId), {
       districtId: typeof districtId === "string" ? districtId : null,
       locale: await getLocale(),
@@ -62,7 +62,7 @@ export async function shipWithBosta(
   overrides: { districtId?: string | null; size?: "SMALL" | "MEDIUM" | "LARGE" | null } = {},
 ): Promise<BostaActionResult<{ trackingNumber: string }>> {
   try {
-    const { seller, store } = await requireStore(String(storeId), { forWrite: true });
+    const { seller, store } = await requireOrdersStore(String(storeId), { forWrite: true });
     if (!shipLimiter.check(`bosta-ship:${seller.sellerId}`)) return { success: false, error: "rate_limited" };
 
     const size = overrides.size === "SMALL" || overrides.size === "MEDIUM" || overrides.size === "LARGE" ? overrides.size : null;
@@ -86,7 +86,7 @@ export async function shipWithBosta(
 
 export async function loadBostaTimeline(storeId: string, orderId: string): Promise<BostaActionResult<BostaTimelineEvent[]>> {
   try {
-    const { seller, store } = await requireStore(String(storeId));
+    const { seller, store } = await requireOrdersStore(String(storeId));
     const events = await listBostaTimeline(seller.sellerId, store.id, String(orderId));
     return events ? { success: true, data: events } : { success: false, error: "not_found" };
   } catch (error) {
@@ -100,7 +100,7 @@ export async function loadBostaTimeline(storeId: string, orderId: string): Promi
 /** Cancels the Bosta delivery before pickup (Full access keys only); the order goes back to "to ship". */
 export async function cancelShipmentWithBosta(storeId: string, orderId: string): Promise<BostaActionResult<null>> {
   try {
-    const { seller, store } = await requireStore(String(storeId), { forWrite: true });
+    const { seller, store } = await requireOrdersStore(String(storeId), { forWrite: true });
     if (!shipLimiter.check(`bosta-ship:${seller.sellerId}`)) return { success: false, error: "rate_limited" };
     const result = await cancelBostaShipment(seller.sellerId, store.id, String(orderId));
     revalidatePath("/orders", "layout");

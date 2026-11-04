@@ -1,3 +1,4 @@
+import { getOrderLock, type OrderLock } from "@workspace/lib/billing/order-lock";
 import { cache } from "react";
 import { and, db, eq, isNull, sellers, stores } from "@workspace/db";
 import { getSessionUser } from "./session.server";
@@ -109,6 +110,32 @@ export async function requireStore(
 
   const { deletedAt: _deletedAt, ...store } = row!;
   return { seller, store };
+}
+
+/** This seller's first top-up state, once per request (ROADMAP.md F-68). Never cached across requests. */
+export const loadOrderLock = cache((sellerId: string) => getOrderLock(sellerId));
+
+/** The session seller's first top-up state, for a page deciding what to show. */
+export async function currentOrderLock(): Promise<OrderLock> {
+  const { sellerId } = await requireSeller();
+  return loadOrderLock(sellerId);
+}
+
+/** `requireSeller` for anything that reads or changes orders: hiding a page isn't authorization. */
+export async function requireOrdersSeller(options: AccessOptions = {}): Promise<SellerContext> {
+  const seller = await requireSeller(options);
+  if ((await loadOrderLock(seller.sellerId)).locked) throw new AccessError("orders_locked");
+  return seller;
+}
+
+/** `requireStore` for anything that reads or changes orders. */
+export async function requireOrdersStore(
+  storeId: string,
+  options: AccessOptions = {},
+): Promise<{ seller: SellerContext; store: StoreContext }> {
+  const result = await requireStore(storeId, options);
+  if ((await loadOrderLock(result.seller.sellerId)).locked) throw new AccessError("orders_locked");
+  return result;
 }
 
 export function isAccessError(error: unknown): error is AccessError {

@@ -9,6 +9,8 @@ import { CustomerJourneyData } from "./_components/customer-journey.data";
 import { TrafficSourcesData } from "./_components/traffic-sources.data";
 import { ChannelSelect, HomeRangeProvider, RangePending, RangeSelect } from "./_components/home-range.client";
 import { parseHomeChannel, parseHomeRange, resolveHomeChannel } from "./_components/home.shared";
+import { currentOrderLock } from "@/lib/auth/require-seller.server";
+import { OrdersLockedNotice } from "@/components/orders/orders-locked";
 import { getSellerStores } from "@/lib/stores/current-store.server";
 import {
   ChartSkeleton,
@@ -39,10 +41,11 @@ export default async function VendorDashboardPage({
 }: {
   searchParams: Promise<{ range?: string | string[]; channel?: string | string[]; welcome?: string | string[]; signup?: string | string[] }>;
 }) {
-  const [{ range: rawRange, channel: rawChannel, welcome, signup }, t, { stores }] = await Promise.all([
+  const [{ range: rawRange, channel: rawChannel, welcome, signup }, t, { stores }, orderLock] = await Promise.all([
     searchParams,
     getTranslations("home.header"),
     getSellerStores(),
+    currentOrderLock(),
   ]);
   const range = parseHomeRange(rawRange);
   // A store channel must be one of the seller's own stores (never trust the URL).
@@ -77,6 +80,7 @@ export default async function VendorDashboardPage({
         }
         setup={
           <>
+            <OrdersLockedNotice lock={orderLock} />
             {welcome === "1" && <WelcomeBanner />}
             {welcome === "1" && signup && (
               <Suspense fallback={null}>

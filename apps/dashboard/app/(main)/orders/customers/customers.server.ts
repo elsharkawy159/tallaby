@@ -14,7 +14,7 @@ import {
   listStoreCustomerNotes,
   saveStoreCustomerNote,
 } from "@workspace/lib/customers/server";
-import { isAccessError, requireStore } from "@/lib/auth/require-seller.server";
+import { isAccessError, requireOrdersStore } from "@/lib/auth/require-seller.server";
 
 /**
  * Orders › Customers drawer (ROADMAP.md F-01b). Takes an explicit storeId,
@@ -39,7 +39,7 @@ export async function loadCustomerOrders(input: { storeId: string; key: string }
   try {
     const key = String(input?.key ?? "");
     if (!parseCustomerKey(key)) return { success: false, error: "notFound" };
-    const { seller, store } = await requireStore(String(input?.storeId ?? ""));
+    const { seller, store } = await requireOrdersStore(String(input?.storeId ?? ""));
     const result = await getStoreCustomer(seller.sellerId, store.id, key);
     if (!result) return { success: false, error: "notFound" };
     return {
@@ -71,7 +71,7 @@ export type ExportCustomersResult =
  */
 export async function exportFilteredCustomers(input: { storeId: string; filters: unknown }): Promise<ExportCustomersResult> {
   try {
-    const { seller, store } = await requireStore(String(input?.storeId ?? ""));
+    const { seller, store } = await requireOrdersStore(String(input?.storeId ?? ""));
     const filters = parseCustomersListFilters((input?.filters ?? {}) as Parameters<typeof parseCustomersListFilters>[0]);
     const [customers, notes] = await Promise.all([
       listFilteredStoreCustomers(seller.sellerId, store.id, filters),
@@ -102,7 +102,7 @@ export async function saveCustomerNote(input: {
   try {
     const key = String(input?.key ?? "");
     if (!parseCustomerKey(key)) return { success: false, error: "notFound" };
-    const { seller, store } = await requireStore(String(input?.storeId ?? ""), { forWrite: true });
+    const { seller, store } = await requireOrdersStore(String(input?.storeId ?? ""), { forWrite: true });
     const result = await saveStoreCustomerNote(seller.sellerId, {
       storeId: store.id,
       key,
