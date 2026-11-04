@@ -10,6 +10,7 @@ import {
 } from "@/lib/contact";
 import { SocialBrandLinks } from "./social-brand-icons";
 import { PaymentMethodIcons } from "./payment-method-icons";
+import { CookieSettingsButton } from "./tracking-consent-banner.client";
 
 const Footer = async () => {
   const t = await getTranslations("footer");
@@ -156,6 +157,9 @@ const Footer = async () => {
                   </Link>
                 </li>
               ))}
+              <li>
+                <CookieSettingsButton className="text-gray-400 hover:text-gray-200 transition-colors duration-200" />
+              </li>
             </ul>
           </div>
         </div>

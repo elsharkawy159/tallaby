@@ -6,6 +6,7 @@ import { DirectionProvider } from "@workspace/ui/components/direction";
 import { ANIMATIONS_INIT_SCRIPT } from "@workspace/motion/init-script";
 import { notFound } from "next/navigation";
 import { GoogleAnalytics } from "@/components/layout/google-analytics";
+import { TrackingConsentBanner } from "@/components/layout/tracking-consent-banner.client";
 import { routing } from "@/i18n/routing";
 import { BASE_URL } from "@/lib/constants";
 
@@ -73,11 +74,13 @@ export default async function RootLayout({
           locale === "ar" ? `${notoKufiArabic.variable} ${montserrat.variable}` : montserrat.variable
         } antialiased`}
       >
-        {/* Tallaby's GA4 skips seller storefronts (P5-05). Tallaby's Meta Pixel is
+        {/* Tallaby's GA4 skips seller storefronts (P5-05) and waits for the banner's
+            Accept (F-70a); the banner too is tallaby.com only. Tallaby's Meta Pixel is
             mounted only in the tallaby.com layouts, never here: this layout also
             wraps every storefront (docs/meta-pixel.md). */}
         <GoogleAnalytics />
         <NextIntlClientProvider messages={messages}>
+          <TrackingConsentBanner />
           <DirectionProvider dir={direction}>{children}</DirectionProvider>
         </NextIntlClientProvider>
       </body>

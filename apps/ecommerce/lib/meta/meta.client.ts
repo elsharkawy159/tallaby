@@ -1,4 +1,5 @@
 import { trackTallabySignup, type SignupMethod } from '@workspace/lib/integrations'
+import { readTrackingConsent } from '@/lib/tracking-consent.client'
 import type {
   MetaContentParams,
   MetaStandardEvent,
@@ -38,8 +39,10 @@ export function trackMetaEvent (
 /**
  * Tallaby's CompleteRegistration for a new seller account that finished
  * signup in the tallaby.com dialog (same event id as the server CAPI event,
- * so Meta keeps one). No email or phone is sent to the pixel.
+ * so Meta keeps one). No email or phone is sent to the pixel. The helper would
+ * load the pixel, so it runs only after the visitor accepted (F-70a).
  */
 export function trackSignupComplete (eventId: string, method: SignupMethod): void {
+  if (readTrackingConsent() !== 'granted') return
   trackTallabySignup(process.env.NEXT_PUBLIC_META_PIXEL_ID, eventId, method)
 }

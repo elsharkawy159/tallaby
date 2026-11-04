@@ -1528,9 +1528,9 @@
       "heading": "Cookie Policy",
       "intro": "Cookies are small files stored on your device that help websites work. Here's how Tallaby uses them.",
       "whatTitle": "What we use cookies for",
-      "whatBody": "Tallaby uses cookies to keep you signed in, remember your language preference, and maintain your shopping cart between visits.",
+      "whatBody": "Tallaby uses essential cookies to keep you signed in, remember your language preference, and maintain your shopping cart between visits. On tallaby.com, analytics and advertising cookies from Google Analytics and the Meta Pixel are set only if you accept them.",
       "controlTitle": "Managing cookies",
-      "controlBody": "You can control or delete cookies through your browser settings. Note that blocking essential cookies may prevent you from staying signed in or using your cart."
+      "controlBody": "You can change your choice at any time through the Cookie settings link in the footer. You can also control or delete cookies through your browser settings. Note that blocking essential cookies may prevent you from staying signed in or using your cart."
     },
     "payment": {
       "title": "Payment Methods | Tallaby",
@@ -3906,6 +3906,14 @@
       "title": "Your link is ready in your dashboard",
       "body": "Create a free seller account, or sign in and open “Earn with us”."
     }
+  },
+  "trackingConsent": {
+    "label": "Cookie choice",
+    "text": "We use essential cookies to run this site. If you accept, we also use Google Analytics and the Meta Pixel to measure visits and ads.",
+    "learnMore": "Learn more",
+    "accept": "Accept",
+    "decline": "Decline",
+    "settings": "Cookie settings"
   },
   "followUs": {
     "title": "Follow us for <em>promotions</em> and <em>discounts</em>",

@@ -1,66 +1,24 @@
 "use client";
 
-import { useEffect, useSyncExternalStore } from "react";
+import { useEffect } from "react";
 import Script from "next/script";
 import { useTranslations } from "next-intl";
 import { isValidIntegrationId, type StorefrontTrackingConfig } from "@workspace/lib/integrations";
 import { markStoreTrackingReady, setStoreMetaBlockedEvents } from "@/lib/storefront-events.client";
 import { STORE_TRACKING_CONSENT_COOKIE } from "@/lib/storefront-consent";
+import { mirrorTrackingConsentCookie, useTrackingConsent, writeTrackingConsent } from "@/lib/tracking-consent.client";
 
 /**
  * The store's own tracking apps (PLAN.md §9, P7-03), loaded only after the
- * visitor accepts (D19). The choice is kept per store host in localStorage.
+ * visitor accepts (D19). The choice is kept per store host in localStorage
+ * (tracking-consent.client.ts, shared with tallaby.com's banner).
  * Scripts are fixed templates; each id is checked again here before it is
  * written into one.
  */
 
-const CONSENT_KEY = "tallaby-store-tracking-consent:v1";
-const CONSENT_EVENT = "tallaby-store-tracking-consent";
-
-type Consent = "granted" | "denied" | "unset";
-
-function readConsent(): Consent {
-  try {
-    const value = window.localStorage.getItem(CONSENT_KEY);
-    return value === "granted" || value === "denied" ? value : "unset";
-  } catch {
-    return "unset";
-  }
-}
-
-/**
- * Mirrors the choice into a host-only cookie so the server follows it too
- * (the store's Meta CAPI Purchase, P7-05). No Domain attribute: it never
- * reaches the marketplace or another store's host.
- */
-function mirrorConsentCookie(value: "granted" | "denied") {
-  const secure = window.location.protocol === "https:" ? "; Secure" : "";
-  document.cookie = `${STORE_TRACKING_CONSENT_COOKIE}=${value}; Path=/; Max-Age=31536000; SameSite=Lax${secure}`;
-}
-
-function writeConsent(value: "granted" | "denied") {
-  try {
-    window.localStorage.setItem(CONSENT_KEY, value);
-  } catch {
-    // Private mode: the choice lasts for this page only.
-  }
-  mirrorConsentCookie(value);
-  window.dispatchEvent(new Event(CONSENT_EVENT));
-}
-
-function subscribe(onChange: () => void) {
-  window.addEventListener(CONSENT_EVENT, onChange);
-  window.addEventListener("storage", onChange);
-  return () => {
-    window.removeEventListener(CONSENT_EVENT, onChange);
-    window.removeEventListener("storage", onChange);
-  };
-}
-
 export function SellerTracking({ config }: { config: StorefrontTrackingConfig }) {
   const t = useTranslations("storefront.consent");
-  // "pending" on the server and first paint: nothing renders until the browser knows.
-  const consent = useSyncExternalStore<Consent | "pending">(subscribe, readConsent, () => "pending");
+  const consent = useTrackingConsent();
 
   const pixelId = isValidIntegrationId("meta_pixel", config.metaPixelId) ? config.metaPixelId : null;
   const ga4Id = isValidIntegrationId("google_analytics", config.ga4MeasurementId) ? config.ga4MeasurementId : null;
@@ -72,7 +30,7 @@ export function SellerTracking({ config }: { config: StorefrontTrackingConfig })
   // Choices made before the cookie existed (localStorage only) are mirrored once.
   useEffect(() => {
     if ((consent === "granted" || consent === "denied") && !document.cookie.includes(`${STORE_TRACKING_CONSENT_COOKIE}=${consent}`)) {
-      mirrorConsentCookie(consent);
+      mirrorTrackingConsentCookie(consent);
     }
   }, [consent]);
 
@@ -113,14 +71,14 @@ export function SellerTracking({ config }: { config: StorefrontTrackingConfig })
           <button
             type="button"
             className="rounded-xl border px-4 py-2 font-medium"
-            onClick={() => writeConsent("denied")}
+            onClick={() => writeTrackingConsent("denied")}
           >
             {t("decline")}
           </button>
           <button
             type="button"
             className="rounded-xl bg-foreground px-4 py-2 font-medium text-background"
-            onClick={() => writeConsent("granted")}
+            onClick={() => writeTrackingConsent("granted")}
           >
             {t("accept")}
           </button>

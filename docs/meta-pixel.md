@@ -13,7 +13,8 @@ Tallaby's own Pixel, used by our Meta ads, on tallaby.com and dashboard.tallaby.
 - **PageView** on the first load and on every client-side route change (keyed on the pathname, so a strict-mode re-run or a query-only change does not send a second one). Meta's automatic history tracking is off (`fbq.disablePushState = true`), so nothing is counted twice.
 - Tallaby's server events (AddToCart, InitiateCheckout, Purchase through `sendMetaCapiEvent` without store credentials) follow the same rule: skipped unless the request host is one of the three hosts and the event's page URL is on one of them.
 - A seller's own pixel is separate: `seller-tracking.client.tsx` loads only the ID the seller connected (`store_integrations.meta_pixel`), and the store CAPI uses only the store's credentials.
-- No cookie banner exists on tallaby.com or the dashboard, so the pixel loads without one (the storefront consent banner only governs the seller's pixels).
+- **Consent (F-70a):** on tallaby.com the pixel, GA4 and Tallaby's server events (including the signup CAPI copy sent from tallaby.com) wait for Accept in `tracking-consent-banner.client.tsx`. A decline is remembered (`lib/tracking-consent.client.ts`, per host), revokes a loaded pixel, sets GA's off switch and expires `_ga*`, `_gid`, `_gat*`, `_fbp`, `_fbc`. "Cookie settings" in the footer reopens the banner. Seller stores keep their own banner for the seller's pixels.
+- **The dashboard has no banner:** `dashboard.tallaby.com` still loads the pixel and fires CompleteRegistration without asking, and a choice made on tallaby.com doesn't reach it (the choice is per host).
 
 ## CompleteRegistration
 

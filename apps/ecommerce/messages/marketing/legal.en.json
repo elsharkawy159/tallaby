@@ -252,7 +252,7 @@
           "id": "cookies",
           "title": "Cookies",
           "paragraphs": [
-            "We use essential cookies to keep you signed in and remember your cart and language. On tallaby.com, Google Analytics and the Meta Pixel load without asking first and can set analytics and advertising cookies, and there is no setting to turn them off. On seller stores, the seller's own tracking waits until the visitor accepts it, while Tallaby's own page-view measurement doesn't wait."
+            "We use essential cookies to keep you signed in and remember your cart and language. On tallaby.com, Google Analytics and the Meta Pixel load only after you accept them in the cookie banner. If you decline or don't choose, they don't load and don't set analytics or advertising cookies, and we don't send your visit to Meta from our servers. You can change your choice at any time through the Cookie settings link in the footer. In the seller dashboard (dashboard.tallaby.com), Tallaby's Meta Pixel loads without asking. On seller stores, the seller's own tracking waits until the visitor accepts it, while Tallaby's own page-view measurement doesn't wait."
           ]
         },
         {

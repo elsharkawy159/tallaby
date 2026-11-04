@@ -3,6 +3,7 @@ import { Mail, MapPin, Phone } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { type PaymentMethod, PaymentMethodIcons } from "@/components/layout/payment-method-icons";
+import { CookieSettingsButton } from "@/components/layout/tracking-consent-banner.client";
 import { COMPARE_PUBLIC } from "@/lib/marketing/compare.lib";
 import { CONTACT, DASHBOARD_URL, LOGIN_URL, SOCIAL_LINKS } from "@/lib/marketing/site.lib";
 import { BrandIcon, type BrandIconName } from "./brand-icon";
@@ -127,6 +128,7 @@ export async function SiteFooter() {
             <Link href="/privacy#cookies" className={link}>
               {t("cookies")}
             </Link>
+            <CookieSettingsButton className={link} />
           </div>
           <div className="flex flex-col items-start gap-3.5 min-[861px]:items-end">
             <div className="flex flex-wrap gap-2" aria-label={t("social")} role="list">

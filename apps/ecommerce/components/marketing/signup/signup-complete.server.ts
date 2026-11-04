@@ -7,6 +7,7 @@ import { ensureSellerAccount, type EnsureSellerAccountResult } from "@workspace/
 import { sendStoreCreatedEmail } from "@workspace/lib/orders";
 import { REFERRAL_COOKIE, normalizeReferralCode } from "@workspace/lib/referrals";
 import { storeUrl } from "@workspace/lib/storefront";
+import { hasStoreTrackingConsent, STORE_TRACKING_CONSENT_COOKIE } from "@/lib/storefront-consent";
 import { createClient } from "@/supabase/server";
 import type { SignupIntent } from "./signup-intent.lib";
 import { clearSignupIntentCookie } from "./signup-intent.server";
@@ -47,10 +48,13 @@ export async function completeSignup(
   if (!result.data.created) return { ...result, storeUrl: storeUrl(result.data.subdomain) };
   // Tallaby's Meta CompleteRegistration (CAPI), once per new account, after
   // the response so signup never waits on Meta. `signup` tells the page that
-  // shows the result to fire the matching browser event.
+  // shows the result to fire the matching browser event. Only if the visitor
+  // accepted on tallaby.com (F-70a).
   const method = signupMethodOf(user);
   after(async () => {
-    const context = signupRequestContext(await headers(), await cookies());
+    const cookieStore = await cookies();
+    if (!hasStoreTrackingConsent(cookieStore.get(STORE_TRACKING_CONSENT_COOKIE)?.value)) return;
+    const context = signupRequestContext(await headers(), cookieStore);
     await sendSignupCapiEvent({ userId: user.id, email: user.email, phone: intent.phone, method, context });
   });
   return { ...result, storeUrl: storeUrl(result.data.subdomain), signup: method };

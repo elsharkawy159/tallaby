@@ -1,10 +1,11 @@
-import { headers } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 import {
   isTallabyPixelHost,
   isTallabyPixelUrl,
   postMetaCapiEvents,
   type MetaCapiCredentials,
 } from '@workspace/lib/integrations'
+import { hasStoreTrackingConsent, STORE_TRACKING_CONSENT_COOKIE } from '@/lib/storefront-consent'
 import { hashMetaPhone, hashMetaPii } from './meta.hash'
 import type {
   MetaCapiUserDataInput,
@@ -65,10 +66,11 @@ export function buildMetaCapiEvent (
   }
 }
 
-/** The request host and the event's page are both on Tallaby's pixel allow-list. */
+/** The request host and the event's page are both on Tallaby's pixel allow-list, and the visitor accepted (F-70a). */
 async function isTallabyCapiRequest (eventSourceUrl: string | undefined): Promise<boolean> {
   try {
     if (!isTallabyPixelHost((await headers()).get('host'))) return false
+    if (!hasStoreTrackingConsent((await cookies()).get(STORE_TRACKING_CONSENT_COOKIE)?.value)) return false
   } catch {
     return false // outside a request: no host to check, so send nothing
   }
