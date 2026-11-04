@@ -18,7 +18,7 @@ import { CROSS_SELL_ELSEWHERE_PROP } from "../core/cross-sell";
 import { DEMO_PRODUCT } from "../core/demo-product";
 import { STOCK_ALERT_ELSEWHERE_PROP, lowStockAlertText, lowStockLeft } from "../core/low-stock";
 import { decodeTextEntities } from "../core/text";
-import { IMAGE_SIZES, imageSource, type ProductDetail, type ProductElementHook, type RenderContext } from "../core/types";
+import { IMAGE_SIZES, imageSource, priceNode, type ProductDetail, type ProductElementHook, type RenderContext } from "../core/types";
 import { cn, SmartLink } from "../sections/_primitives";
 import type { ComponentNode } from "../config/schema";
 import { walkNodes, type DataRecord } from "./data";
@@ -217,16 +217,18 @@ function Price({ product, props, attrs, ctx }: StillProps) {
   const list = listPrice(product);
   const percent = props.showDiscount !== false ? discountOf(product) : null;
   const endsAt = props.showCountdown !== false && list && product.discountEndsAt && Date.parse(product.discountEndsAt) > Date.now() ? product.discountEndsAt : null;
+  // Split around the amount: the price can be markup.
+  const saveCopy = sectionText("saveAmount", ctx.locale, { amount: "\0" }).split("\0");
   return (
     <div {...attrs} className="flex min-w-0 flex-col gap-2">
       <ProductFlags product={product} ctx={ctx} />
       {/* Design `.pd-price`: the price, the struck list price, then what the shopper saves. */}
       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-2">
-        {product.price != null && <span className="text-[28px] font-extrabold leading-none tabular-nums text-(--sf-ink) md:text-[32px]">{ctx.formatPrice(product.price)}</span>}
-        {list != null && <s className="text-base tabular-nums text-(--sf-muted)">{ctx.formatPrice(list)}</s>}
+        {product.price != null && <span className="text-[28px] font-extrabold leading-none tabular-nums text-(--sf-ink) md:text-[32px]">{priceNode(ctx, product.price)}</span>}
+        {list != null && <s className="text-base tabular-nums text-(--sf-muted)">{priceNode(ctx, list)}</s>}
         {percent != null && list != null && product.price != null && (
           <span className="rounded-full bg-[#dc2626]/10 px-2.5 py-1 text-[13px] font-bold leading-none text-[#dc2626]">
-            {sectionText("saveAmount", ctx.locale, { amount: ctx.formatPrice(Math.round((list - product.price) * 100) / 100) })}
+            {saveCopy[0]}{priceNode(ctx, Math.round((list - product.price) * 100) / 100)}{saveCopy[1]}
           </span>
         )}
       </div>

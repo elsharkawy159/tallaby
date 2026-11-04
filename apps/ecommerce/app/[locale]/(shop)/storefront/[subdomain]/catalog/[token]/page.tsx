@@ -2,10 +2,11 @@ import { cache } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { formatPricePlain } from "@workspace/lib";
+import { formatPriceMarked } from "@workspace/lib";
 import { storeUrl } from "@workspace/lib/storefront";
 import { cn } from "@workspace/ui/lib/utils";
 import { Link } from "@/i18n/navigation";
+import { PriceText } from "@/components/storefront/price-text";
 import { resolveSharedCatalog } from "@/lib/catalog-share/catalog-share.server";
 import { resolveStorefront } from "@/lib/storefront.server";
 import { isStoreOfflineForRequest, STORE_OFFLINE_ROBOTS } from "@/lib/store-site/offline.server";
@@ -76,7 +77,7 @@ export default async function SharedCatalogPage({ params, searchParams }: Catalo
   const heading = catalogHeading(t, catalog);
   const autoPrint = (Array.isArray(print) ? print[0] : print) === "1";
   const today = new Intl.DateTimeFormat(locale === "ar" ? "ar-EG" : "en-GB", { dateStyle: "long", timeZone: "Africa/Cairo" }).format(new Date());
-  const price = (value: number) => formatPricePlain(value, locale, store.currencyLabel);
+  const price = (value: number) => <PriceText locale={locale}>{formatPriceMarked(value, locale, store.currencyLabel)}</PriceText>;
   const contact = store.supportWhatsapp || store.supportPhone;
   const host = storeUrl(store.subdomain, store.customDomain).replace(/^https?:\/\//, "").replace(/\/$/, "");
 

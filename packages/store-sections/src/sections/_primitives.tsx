@@ -6,7 +6,7 @@
 import { Fragment, type ReactNode } from "react";
 import { z } from "zod";
 import { isExternalHref, safeHref } from "../core/links";
-import { IMAGE_SIZES, imageSource, type ProductSummary, type RenderContext } from "../core/types";
+import { IMAGE_SIZES, imageSource, priceNode, type ProductSummary, type RenderContext } from "../core/types";
 import { sectionText } from "../core/copy";
 
 // ---------------------------------------------------------------------------
@@ -263,12 +263,12 @@ export function ProductCardView({ product, ctx }: { product: ProductSummary; ctx
         <div className="mt-auto flex flex-wrap items-baseline gap-2">
           {product.price != null && (
             <span className="font-bold tabular-nums" dir="ltr">
-              {ctx.formatPrice(product.price)}
+              {priceNode(ctx, product.price)}
             </span>
           )}
           {onSale && (
             <s className="text-xs text-(--sf-muted) tabular-nums" dir="ltr">
-              {ctx.formatPrice(product.compareAtPrice!)}
+              {priceNode(ctx, product.compareAtPrice!)}
             </s>
           )}
         </div>

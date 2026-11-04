@@ -158,6 +158,10 @@ function scopedProps(node: ComponentNode, ctx: RenderContext, scope: DataRecord 
   const value = boundValue(scope, props.bind, ctx);
   if (value === null) return null;
   const next: Record<string, unknown> = { ...props, [target]: value };
+  // A currency drawn as an icon can't travel in the text prop: the text node draws this instead.
+  if (props.bind === "price" && ctx.renderPrice && (scope.kind === "product" || scope.kind === "productList") && scope.record.price != null) {
+    next.priceNode = ctx.renderPrice(scope.record.price);
+  }
   if (node.type === "image") next.alt = scope.kind === "categoryList" ? scope.record.name : scope.record.title;
   // A product card's photo fades to the product's second photo on hover (storefront only).
   if (node.type === "image" && props.bind === "image" && scope.kind === "productList" && scope.hoverImage !== false && ctx.mode === "public" && scope.record.secondImage) {
@@ -590,27 +594,27 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
       const Tag = level;
       return (
         <Tag {...attrs} className={cn("text-balance", HEADING_CLASS[level])}>
-          {str(props.text, 200)}
+          {(props.priceNode as ReactNode) ?? str(props.text, 200)}
         </Tag>
       );
     }
     case "paragraph":
       return (
         <p {...attrs} className="whitespace-pre-line text-pretty leading-relaxed text-(--sf-muted)">
-          {str(props.text, 2000)}
+          {(props.priceNode as ReactNode) ?? str(props.text, 2000)}
         </p>
       );
     case "text":
       // The price before a discount is always struck through (owner, 2026-10-29).
       return (
         <p {...attrs} className={cn("text-sm", props.bind === "compareAtPrice" && "line-through")}>
-          {str(props.text, 300)}
+          {(props.priceNode as ReactNode) ?? str(props.text, 300)}
         </p>
       );
     case "blockQuote":
       return (
         <blockquote {...attrs} className="border-s-4 border-(--sf-brand) ps-4 text-lg italic leading-relaxed">
-          {str(props.text, 600)}
+          {(props.priceNode as ReactNode) ?? str(props.text, 600)}
         </blockquote>
       );
     case "button": {
@@ -713,7 +717,7 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
     case "badge":
       return (
         <span {...attrs} className="inline-flex w-fit items-center rounded-full bg-(--sf-shelf) px-3 py-1 text-xs font-semibold">
-          {str(props.text, 40)}
+          {(props.priceNode as ReactNode) ?? str(props.text, 40)}
         </span>
       );
     case "list": {

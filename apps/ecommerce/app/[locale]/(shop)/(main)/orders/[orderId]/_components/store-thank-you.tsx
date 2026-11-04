@@ -1,7 +1,8 @@
 import Image from "next/image";
 import { MessageCircle } from "lucide-react";
 import { getTranslations } from "next-intl/server";
-import { formatPricePlain } from "@workspace/lib";
+import { formatPriceMarked } from "@workspace/lib";
+import { PriceText } from "@/components/storefront/price-text";
 import { Card, CardContent, CardTitle } from "@workspace/ui/components/card";
 import { Link } from "@/i18n/navigation";
 import type { StoreThankYouView } from "./store-thank-you.server";
@@ -68,7 +69,7 @@ export async function StoreThankYou({
                     <p className="line-clamp-2 text-xs md:text-sm font-medium text-foreground">{product.title}</p>
                     {product.price != null && (
                       <p className="text-xs md:text-sm font-semibold text-foreground">
-                        {formatPricePlain(product.price, locale, view.currencyLabel)}
+                        <PriceText locale={locale}>{formatPriceMarked(product.price, locale, view.currencyLabel)}</PriceText>
                       </p>
                     )}
                   </div>

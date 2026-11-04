@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Globe, ImagePlus, LoaderCircle, Palette, Search, Share2, Store, Trash2, type LucideIcon } from "lucide-react";
 import { MEDIA_BUCKET } from "@workspace/lib/media";
-import { REGIONAL_CURRENCY_CODES, STORE_CURRENCIES, STORE_CURRENCY_CODES, type CurrencyLabel, type StoreCurrency } from "@workspace/lib";
+import { REGIONAL_CURRENCY_CODES, STORE_CURRENCIES, STORE_CURRENCY_CODES, currencyLabelHtml, currencyLabelText, type CurrencyLabel, type StoreCurrency } from "@workspace/lib";
 import { COLOR_FIELDS, PALETTE_PRESETS, RADIUS_OPTIONS, SPACING_OPTIONS, WIDTH_OPTIONS, applyPairing, applyPreset, isHexColor, matchPreset } from "@workspace/store-editor/lib/design.lib";
 import { FONT_PAIRINGS, findFontPairing, storeFontFamily } from "@workspace/store-sections/fonts";
 import { SOCIAL_PLATFORMS, getSocialPlatform, normalizeSocialLink } from "@workspace/store-sections/social";
@@ -471,8 +471,9 @@ function DetailsForm({ storeId, value, onChange }: { storeId: string; value: Det
                 </SelectTrigger>
                 <SelectContent>
                   {STORE_CURRENCIES[value.currency].map((label) => (
-                    <SelectItem key={label} value={label}>
-                      {label}
+                    <SelectItem key={label} value={label} textValue={currencyLabelText(label, "en")}>
+                      {/* Fixed list, never free text; one label is an icon. */}
+                      <span dangerouslySetInnerHTML={{ __html: currencyLabelHtml(label, "en") }} />
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -812,7 +813,7 @@ function StorePreview({
   const links = social.filter((row) => row.enabled && row.value.trim() && normalizeSocialLink(row.platform, row.value));
   const name = details.name.trim() || "Store";
   const category = (rtl ? details.storeCategoryAr : details.storeCategory) || (rtl ? details.storeCategory : details.storeCategoryAr);
-  const price = `${rtl ? "٤٥٠" : "450"} ${details.currencyLabel}`;
+  const amount = rtl ? "٤٥٠" : "450";
   const style = { fontFamily: body, background: c("background"), color: c("foreground") } satisfies CSSProperties;
   const ring = (on: boolean) => (on ? "outline outline-2 outline-offset-2 outline-amber-400/80" : "");
 
@@ -882,7 +883,7 @@ function StorePreview({
                 {rtl ? (i ? "حقيبة جلد" : "قميص قطن") : i ? "Leather bag" : "Cotton shirt"}
               </p>
               <p className="text-[11px] font-semibold" style={{ color: c("primary") }}>
-                {price}
+                {amount} <span dangerouslySetInnerHTML={{ __html: currencyLabelHtml(details.currencyLabel, rtl ? "ar" : "en") }} />
               </p>
             </div>
           </div>

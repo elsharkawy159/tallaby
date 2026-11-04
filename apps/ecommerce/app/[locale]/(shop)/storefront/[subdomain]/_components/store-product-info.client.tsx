@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { Flame, Truck } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { formatPrice, formatPricePlain } from "@workspace/lib";
+import { formatPrice, formatPriceMarked } from "@workspace/lib";
+import { PriceText } from "@/components/storefront/price-text";
 import { LIVE_VIEWS_TICK_MS, liveViewsBase, nextLiveViews } from "@/components/product-page/live-views.lib";
 import { DealCountdown } from "@/components/storefront/deal-countdown.client";
 import { useCurrencyLabel } from "@/lib/currency-label.client";
@@ -59,7 +60,7 @@ export function StorePriceBlock({
             className="self-center rounded-full px-2.5 py-1 text-[13px] font-bold leading-none"
             style={{ color: DANGER, background: `color-mix(in srgb, ${DANGER} 10%, transparent)` }}
           >
-            {t("save", { amount: formatPricePlain(listPrice - price, locale, currencyLabel) })}
+            <PriceText locale={locale}>{t("save", { amount: formatPriceMarked(listPrice - price, locale, currencyLabel) })}</PriceText>
           </span>
         )}
         {discountPercent != null && (

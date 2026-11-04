@@ -14,7 +14,8 @@ import {
   REGIONAL_CURRENCY_CODES,
   STORE_CURRENCIES,
   STORE_CURRENCY_CODES,
-  formatPricePlain,
+  currencyLabelHtml,
+  formatPrice,
   isCurrencyLabelFor,
   isStoreCurrency,
   type StoreCurrency,
@@ -316,7 +317,7 @@ export function StoreGeneralForm({
                   onValueChange={(value) => {
                     if (!isStoreCurrency(value)) return;
                     field.onChange(value);
-                    // A new currency starts on its code; the seller then picks the symbol.
+                    // A new currency starts on its first symbol; the seller can pick another.
                     form.setValue("currencyLabel", STORE_CURRENCIES[value][0], { shouldDirty: true });
                   }}
                 >
@@ -357,7 +358,7 @@ export function StoreGeneralForm({
             render={({ field }) => (
               <FormItem className="gap-2">
                 <FormLabel className="text-[13px] font-semibold">{t("currency.symbol")}</FormLabel>
-                <div role="radiogroup" aria-label={t("currency.symbol")} className="grid gap-2 sm:grid-cols-3">
+                <div role="radiogroup" aria-label={t("currency.symbol")} className={cn("grid gap-2", STORE_CURRENCIES[currency].length > 3 ? "sm:grid-cols-2" : "sm:grid-cols-3")}>
                   {STORE_CURRENCIES[currency].map((label) => (
                     <label
                       key={label}
@@ -374,8 +375,9 @@ export function StoreGeneralForm({
                         disabled={disabled}
                         onChange={() => field.onChange(label)}
                       />
-                      <span className="font-medium">{label}</span>
-                      <span className="ms-auto text-xs text-muted-foreground">{formatPricePlain(300, uiLocale, label)}</span>
+                      {/* Fixed list, never free text; one label is an icon. */}
+                      <span className="font-medium" dangerouslySetInnerHTML={{ __html: currencyLabelHtml(label, uiLocale) }} />
+                      <span className="ms-auto text-xs text-muted-foreground" dangerouslySetInnerHTML={{ __html: formatPrice(300, uiLocale, "sm", label) }} />
                     </label>
                   ))}
                 </div>

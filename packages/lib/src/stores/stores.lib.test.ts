@@ -8,6 +8,7 @@ import {
   subdomainCandidates,
 } from "./stores.lib";
 import { validateSubdomain } from "../storefront";
+import { SAUDI_RIYAL_LABEL } from "../utils/formatPrice";
 
 describe("subdomainCandidates", () => {
   it("suggests valid alternatives derived from the base", () => {
@@ -60,6 +61,9 @@ describe("storeGeneralSettingsSchema", () => {
   it("saves a currency together with one of its own symbols", () => {
     const ok = (v: object) => storeGeneralSettingsSchema.safeParse(v).success;
     expect(ok({ currency: "SAR", currencyLabel: "ر.س" })).toBe(true);
+    expect(ok({ currency: "SAR", currencyLabel: "SAR" })).toBe(true);
+    expect(ok({ currency: "SAR", currencyLabel: SAUDI_RIYAL_LABEL })).toBe(true);
+    expect(ok({ currency: "EGP", currencyLabel: SAUDI_RIYAL_LABEL })).toBe(false);
     expect(ok({ currency: "EGP", currencyLabel: "جنيهاً" })).toBe(true);
     expect(ok({ currency: "SAR", currencyLabel: "ج.م" })).toBe(false);
     expect(ok({ currencyLabel: "ج.م" })).toBe(false);

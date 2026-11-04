@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Check, Copy, Gift } from "lucide-react";
-import { formatPricePlain } from "@workspace/lib";
+import { formatPriceMarked } from "@workspace/lib";
+import { PriceText } from "@/components/storefront/price-text";
 import { Button } from "@workspace/ui/components/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@workspace/ui/components/dialog";
 import { cn } from "@workspace/ui/lib/utils";
@@ -98,7 +99,7 @@ export function CouponOfferPopup({ fontClassName }: { fontClassName: string }) {
   const discount =
     offer.discountType === "percentage"
       ? t("percentOff", { value: offer.discountValue })
-      : t("amountOff", { value: formatPricePlain(offer.discountValue, locale, currency) });
+      : t("amountOff", { value: formatPriceMarked(offer.discountValue, locale, currency) });
 
   const copy = async () => {
     try {
@@ -120,7 +121,7 @@ export function CouponOfferPopup({ fontClassName }: { fontClassName: string }) {
           <Gift className="size-7" aria-hidden />
         </span>
         <DialogTitle className="text-xl font-bold">{t("title")}</DialogTitle>
-        <DialogDescription className="mt-2 text-base text-(--sf-ink)">{discount}</DialogDescription>
+        <DialogDescription className="mt-2 text-base text-(--sf-ink)"><PriceText locale={locale}>{discount}</PriceText></DialogDescription>
 
         <div className="mt-5 flex items-center justify-between gap-2 rounded-xl border-2 border-dashed border-(--sf-brand) bg-(--sf-shelf) py-2 ps-4 pe-2">
           <span dir="ltr" className="min-w-0 truncate font-mono text-lg font-bold tracking-wider select-all">

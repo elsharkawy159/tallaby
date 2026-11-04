@@ -1,6 +1,7 @@
 import { CrossSellOffers } from "@/components/storefront/cross-sell-offers.client";
 import type { ReactNode } from "react";
-import { formatPricePlain } from "@workspace/lib";
+import { formatPriceMarked, formatPricePlain, SAUDI_RIYAL_LABEL } from "@workspace/lib";
+import { PriceText } from "@/components/storefront/price-text";
 import { getPublicStoreForms } from "@workspace/lib/store-forms/server";
 import { storeUrl } from "@workspace/lib/storefront";
 import type { SectionInstance, SiteConfig } from "@workspace/store-sections";
@@ -174,6 +175,9 @@ async function buildContext(
     imageUrl: (src) => (src ? getPublicUrl(src, "sellers") || null : null),
     optimizeImage: optimizeStoreImage,
     formatPrice: (amount) => formatPricePlain(amount, locale, store.currencyLabel),
+    ...(store.currencyLabel === SAUDI_RIYAL_LABEL && {
+      renderPrice: (amount: number) => <PriceText locale={locale}>{formatPriceMarked(amount, locale, store.currencyLabel)}</PriceText>,
+    }),
     renderCartButton: () => <CartSheet />,
     renderCartBadge: () => <StoreCartBadge />,
     renderSearch: ({ placeholder, icon, iconFirst }) =>

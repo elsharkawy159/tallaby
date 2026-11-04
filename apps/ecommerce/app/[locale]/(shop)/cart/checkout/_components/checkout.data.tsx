@@ -45,7 +45,8 @@ import { Label } from "@workspace/ui/components/label";
 import { Textarea } from "@workspace/ui/components/textarea";
 import type { CheckoutSummary } from "@/lib/coupon-utils";
 import { useCart } from "@/providers/cart-provider";
-import { formatPricePlain } from "@workspace/lib";
+import { formatPriceMarked, formatPricePlain } from "@workspace/lib";
+import { PriceText } from "@/components/storefront/price-text";
 import {
   getPaymentGroupForMethod,
   isCodEligibleForShipping,
@@ -227,8 +228,8 @@ export const CheckoutData = ({
   const minOrderMessage = minOrderCheck.ok
     ? null
     : t("minOrderAddMore", {
-        amount: formatPricePlain(minOrderCheck.shortPiastres / 100, locale, currencyLabel),
-        minimum: formatPricePlain(minOrderCheck.minimumPiastres / 100, locale, currencyLabel),
+        amount: formatPriceMarked(minOrderCheck.shortPiastres / 100, locale, currencyLabel),
+        minimum: formatPriceMarked(minOrderCheck.minimumPiastres / 100, locale, currencyLabel),
       });
 
   // The address is checked and saved when the button is pressed, so its errors show then.
@@ -862,7 +863,7 @@ export const CheckoutData = ({
               ) : null}
               {minOrderMessage && (
                 <p role="alert" className="text-xs md:text-sm text-orange-600">
-                  {minOrderMessage}
+                  <PriceText locale={locale}>{minOrderMessage}</PriceText>
                 </p>
               )}
               <Button

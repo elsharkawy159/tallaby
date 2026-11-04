@@ -3,7 +3,8 @@
 import { useCurrencyLabel } from "@/lib/currency-label.client";
 import { Truck } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { formatPrice, formatPricePlain } from "@workspace/lib";
+import { formatPrice, formatPriceMarked } from "@workspace/lib";
+import { PriceText } from "@/components/storefront/price-text";
 
 import { DiscountPercentBadge } from "@/components/product";
 import type { ProductLocale } from "@/lib/product-translations";
@@ -59,9 +60,11 @@ export function PriceTicket({
         )}
         {hasDiscount && (
           <p className="basis-full pt-1.5 text-sm font-semibold text-[#9a5800]">
-            {t("youSave", {
-              amount: formatPricePlain(listPrice - price, locale, currencyLabel),
-            })}
+            <PriceText locale={locale}>
+              {t("youSave", {
+                amount: formatPriceMarked(listPrice - price, locale, currencyLabel),
+              })}
+            </PriceText>
           </p>
         )}
       </div>

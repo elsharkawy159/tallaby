@@ -447,6 +447,8 @@ export interface RenderContext {
    */
   optimizeImage?: (url: string, sizes: string) => OptimizedImage;
   formatPrice: (amount: number) => string;
+  /** The price as markup, when the store's currency label is an icon (the Saudi Riyal symbol). Without it, `formatPrice`'s text. */
+  renderPrice?: (amount: number) => ReactNode;
   /** The link to another page of the current page's paginated product lists (`?page=N`). Without it, no page links. */
   productPageHref?: (page: number) => string;
   /** Host-provided interactive pieces (the storefront cart, or editor placeholders). */
@@ -548,3 +550,8 @@ export interface SectionDefinition<P extends Record<string, unknown> = Record<st
 // Definitions are stored heterogeneously; the renderer validates props first.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type AnySectionDefinition = SectionDefinition<any>;
+
+/** A price for a React surface: the host's markup when it has one, else its text. */
+export function priceNode(ctx: Pick<RenderContext, "formatPrice" | "renderPrice">, amount: number): ReactNode {
+  return ctx.renderPrice?.(amount) ?? ctx.formatPrice(amount);
+}

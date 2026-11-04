@@ -4,7 +4,8 @@ import { useState, useTransition } from "react";
 import { Gift, Ticket } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { formatPricePlain } from "@workspace/lib";
+import { formatPriceMarked } from "@workspace/lib";
+import { PriceText } from "@/components/storefront/price-text";
 import { Button } from "@workspace/ui/components/button";
 import { ImageWithFallback } from "@/components/shared/image-with-fallback";
 import { chooseFreeGift, type CartCouponCard, type CartGiftChoice, type CartOffersView } from "@/actions/cart-offers";
@@ -21,7 +22,7 @@ export function CartOffers({ view, onChange }: { view: CartOffersView; onChange:
   const t = useTranslations("storefront.cartOffers");
   const locale = useLocale();
   const currencyLabel = useCurrencyLabel();
-  const money = (piastres: number) => formatPricePlain(piastres / 100, locale, currencyLabel);
+  const money = (piastres: number) => formatPriceMarked(piastres / 100, locale, currencyLabel);
   if (view.coupons.length === 0 && view.gifts.length === 0 && !view.nextGift) return null;
 
   return (
@@ -29,7 +30,7 @@ export function CartOffers({ view, onChange }: { view: CartOffersView; onChange:
       {view.nextGift && (
         <p className="flex items-center gap-2 text-sm text-(--sf-muted)">
           <Gift className="size-4 shrink-0 text-(--sf-brand)" aria-hidden />
-          {t("giftAddMore", { amount: money(view.nextGift.shortPiastres), name: view.nextGift.ruleName })}
+          <span><PriceText locale={locale}>{t("giftAddMore", { amount: money(view.nextGift.shortPiastres), name: view.nextGift.ruleName })}</PriceText></span>
         </p>
       )}
       {view.gifts.map((gift) => (
@@ -51,6 +52,7 @@ export function CartOffers({ view, onChange }: { view: CartOffersView; onChange:
 
 function CouponRow({ coupon, applied, onChange, money }: { coupon: CartCouponCard; applied: boolean; onChange: () => void; money: (piastres: number) => string }) {
   const t = useTranslations("storefront.cartOffers");
+  const locale = useLocale();
   const [pending, startTransition] = useTransition();
   const value =
     coupon.discountType === "percentage"
@@ -75,9 +77,9 @@ function CouponRow({ coupon, applied, onChange, money }: { coupon: CartCouponCar
       <Ticket className="size-4 shrink-0 text-(--sf-brand)" aria-hidden />
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium">
-          <span dir="ltr" className="font-mono">{coupon.code}</span> · {value}
+          <span dir="ltr" className="font-mono">{coupon.code}</span> · <PriceText locale={locale}>{value}</PriceText>
         </p>
-        {coupon.minimumPurchase !== null && <p className="text-xs text-(--sf-muted)">{t("minimum", { amount: money(Math.round(coupon.minimumPurchase * 100)) })}</p>}
+        {coupon.minimumPurchase !== null && <p className="text-xs text-(--sf-muted)"><PriceText locale={locale}>{t("minimum", { amount: money(Math.round(coupon.minimumPurchase * 100)) })}</PriceText></p>}
       </div>
       <Button type="button" size="sm" variant="outline" disabled={pending || (!coupon.usable && !applied)} onClick={toggle}>
         {t(applied ? "remove" : "apply")}

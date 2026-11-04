@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { formatPricePlain } from "@workspace/lib";
+import { formatPriceMarked } from "@workspace/lib";
+import { PriceText } from "@/components/storefront/price-text";
 import { pickQuantityTier, quantityOfferUnitDiscountPiastres } from "@workspace/lib/orders/quantity-offers";
 import { getQuantityTiers, type QuantityTierCard } from "@/actions/cart-offers";
 import { useCurrencyLabel } from "@/lib/currency-label.client";
@@ -51,7 +52,7 @@ export function StoreQuantityOffers({
   if (visible.length === 0 || stock < 1) return null;
 
   const active = pickQuantityTier(visible.map((tier) => ({ ...tier, isActive: true })), quantity);
-  const money = (piastres: number) => formatPricePlain(piastres / 100, locale, currencyLabel);
+  const money = (piastres: number) => formatPriceMarked(piastres / 100, locale, currencyLabel);
   const rows = [
     { minQuantity: 1, unitPiastres: unit, saving: null as string | null },
     ...visible.map((tier) => ({
@@ -84,9 +85,9 @@ export function StoreQuantityOffers({
           >
             <span className="min-w-0">
               <span className="block text-sm font-semibold text-(--sf-ink)">{t("buy", { count: row.minQuantity })}</span>
-              {row.saving && <span className="block text-xs font-medium text-(--sf-brand)">{row.saving}</span>}
+              {row.saving && <span className="block text-xs font-medium text-(--sf-brand)"><PriceText locale={locale}>{row.saving}</PriceText></span>}
             </span>
-            <span className="shrink-0 text-sm font-bold tabular-nums text-(--sf-ink)">{t("each", { price: money(row.unitPiastres) })}</span>
+            <span className="shrink-0 text-sm font-bold tabular-nums text-(--sf-ink)"><PriceText locale={locale}>{t("each", { price: money(row.unitPiastres) })}</PriceText></span>
           </button>
         );
       })}

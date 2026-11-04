@@ -2,7 +2,8 @@
 
 import { useCurrencyLabel } from "@/lib/currency-label.client";
 import { useLocale, useTranslations } from "next-intl";
-import { formatPricePlain } from "@workspace/lib";
+import { formatPriceMarked } from "@workspace/lib";
+import { PriceText } from "@/components/storefront/price-text";
 import { Link, usePathname } from "@/i18n/navigation";
 import { useCart } from "@/providers/cart-provider";
 import s from "../storefront.module.css";
@@ -32,7 +33,7 @@ export function MobileCartBar() {
       <div className={s.cartBar}>
         <span className="flex flex-col leading-tight">
           <span className="text-xs opacity-75">{t("itemCount", { count })}</span>
-          <span className="font-bold tabular-nums">{formatPricePlain(subtotal, locale, currencyLabel)}</span>
+          <span className="font-bold tabular-nums"><PriceText locale={locale}>{formatPriceMarked(subtotal, locale, currencyLabel)}</PriceText></span>
         </span>
         <Link href="/cart" className={s.cartBarButton}>
           {t("viewCart")}

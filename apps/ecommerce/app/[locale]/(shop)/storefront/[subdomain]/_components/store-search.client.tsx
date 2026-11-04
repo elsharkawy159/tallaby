@@ -3,7 +3,8 @@
 import { useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { Loader2, PackageSearch } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { formatPricePlain } from "@workspace/lib";
+import { formatPriceMarked } from "@workspace/lib";
+import { PriceText } from "@/components/storefront/price-text";
 import { cn } from "@workspace/ui/lib/utils";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@workspace/ui/components/sheet";
 import { searchStorefrontProducts, type StorefrontSearchResult } from "@/actions/storefront-search";
@@ -85,7 +86,7 @@ function SearchResults({ state, onNavigate, id }: { state: SearchState; onNaviga
                 <ImageWithFallback src={product.image} alt="" fill sizes="44px" className="object-contain p-1 mix-blend-multiply" />
               </span>
               <span className="line-clamp-2 min-w-0 flex-1 text-sm font-medium leading-snug">{product.title}</span>
-              <span className="shrink-0 text-sm font-semibold tabular-nums">{formatPricePlain(product.price, locale, currencyLabel)}</span>
+              <span className="shrink-0 text-sm font-semibold tabular-nums"><PriceText locale={locale}>{formatPriceMarked(product.price, locale, currencyLabel)}</PriceText></span>
             </Link>
           </li>
         ))}

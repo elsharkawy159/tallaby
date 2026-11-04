@@ -8,7 +8,8 @@ import { Trash2 } from "lucide-react";
 import { useCurrencyLabel } from "@/lib/currency-label.client";
 import { ShoppingBag } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { formatPricePlain } from "@workspace/lib";
+import { formatPriceMarked } from "@workspace/lib";
+import { PriceText } from "@/components/storefront/price-text";
 import { checkMinOrder, itemsSubtotalPiastres, type StoreMinOrder } from "@workspace/lib/stores/min-order";
 import { Button } from "@workspace/ui/components/button";
 import { Skeleton } from "@workspace/ui/components/skeleton";
@@ -134,7 +135,7 @@ export function StorefrontCart({
                 )}
                 {offers.lines[item.id] && (
                   <p className="text-xs font-medium text-(--sf-brand)">
-                    {t(
+                    <PriceText locale={locale}>{t(
                       offers.lines[item.id]!.kind === "automatic_discount"
                         ? "automaticSaving"
                         : offers.lines[item.id]!.kind === "quantity_offer"
@@ -142,9 +143,9 @@ export function StorefrontCart({
                           : "bundleOfferSaving",
                       {
                         name: offers.lines[item.id]!.label ?? "",
-                        amount: formatPricePlain(offers.lines[item.id]!.discountPiastres / 100, locale, currencyLabel),
+                        amount: formatPriceMarked(offers.lines[item.id]!.discountPiastres / 100, locale, currencyLabel),
                       },
-                    )}
+                    )}</PriceText>
                   </p>
                 )}
                 <div className="mt-auto flex items-center justify-between gap-2 pt-1">
@@ -168,7 +169,7 @@ export function StorefrontCart({
                   <span className="text-sm font-semibold tabular-nums">
                     {item.giftRuleId
                       ? t("freeGift")
-                      : formatPricePlain(Number(item.price) * item.quantity, locale, currencyLabel)}
+                      : <PriceText locale={locale}>{formatPriceMarked(Number(item.price) * item.quantity, locale, currencyLabel)}</PriceText>}
                   </span>
                 </div>
               </div>
@@ -189,13 +190,13 @@ export function StorefrontCart({
             {t("subtotal")} <span className="text-sm">({t("itemCount", { count })})</span>
           </span>
           <span className="text-xl font-bold tabular-nums">
-            {formatPricePlain(subtotal, locale, currencyLabel)}
+            <PriceText locale={locale}>{formatPriceMarked(subtotal, locale, currencyLabel)}</PriceText>
           </span>
         </div>
         {offers.totalPiastres > 0 && (
           <div className="flex items-baseline justify-between text-sm font-medium text-(--sf-brand)">
             <span>{t("offersTotal")}</span>
-            <span className="tabular-nums">-{formatPricePlain(offers.totalPiastres / 100, locale, currencyLabel)}</span>
+            <span className="tabular-nums">-<PriceText locale={locale}>{formatPriceMarked(offers.totalPiastres / 100, locale, currencyLabel)}</PriceText></span>
           </div>
         )}
         <p className="text-xs text-(--sf-muted)">{t("shippingNote")}</p>
@@ -208,10 +209,10 @@ export function StorefrontCart({
         ) : (
           <>
             <p role="status" className="text-sm font-medium text-orange-600">
-              {t("minOrderAddMore", {
-                amount: formatPricePlain(minOrderCheck.shortPiastres / 100, locale, currencyLabel),
-                minimum: formatPricePlain(minOrderCheck.minimumPiastres / 100, locale, currencyLabel),
-              })}
+              <PriceText locale={locale}>{t("minOrderAddMore", {
+                amount: formatPriceMarked(minOrderCheck.shortPiastres / 100, locale, currencyLabel),
+                minimum: formatPriceMarked(minOrderCheck.minimumPiastres / 100, locale, currencyLabel),
+              })}</PriceText>
             </p>
             <Button type="button" disabled className={cn("h-12 w-full rounded-full text-base font-semibold", STORE_SOLID_BUTTON)}>
               {t("checkout")}
