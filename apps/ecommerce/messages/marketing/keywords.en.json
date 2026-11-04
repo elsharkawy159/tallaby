@@ -1,1 +1,150 @@
-{}
+{
+  "meta": {
+    "solution-create-online-store": {
+      "title": "Create an online store without a developer",
+      "description": "Create your online store with Tallaby: ready-made templates, cash on delivery and shipping connections, with no monthly subscription on the Free plan and no developer."
+    }
+  },
+  "solutionPages": {
+    "shared": {
+      "createStore": "Create your store for free",
+      "browseTemplates": "Browse templates",
+      "illustration": "An illustration, with made-up numbers and names.",
+      "stepsKicker": "4 steps",
+      "linkAvailable": "Type the link you want",
+      "aiDraft": "Described in Arabic and English",
+      "publishTags": ["Cash on delivery", "Paymob", "Bosta"],
+      "publish": "Publish store",
+      "featuresKicker": "Features",
+      "featuresTitle": "Everything your store needs, in one place",
+      "templatesKicker": "Store templates",
+      "templatesTitle": "Start with a design made for what you sell",
+      "templatesLead": "Browse templates by category, and change template at any time without losing your products.",
+      "preview": "Preview",
+      "allTemplates": "All templates",
+      "categories": {
+        "fa": "Fashion",
+        "be": "Beauty and perfume",
+        "el": "Electronics",
+        "ho": "Home",
+        "fo": "Food",
+        "jw": "Jewellery",
+        "ki": "Kids",
+        "sp": "Sports",
+        "au": "Automotive",
+        "ac": "Accessories"
+      },
+      "costKicker": "Cost",
+      "costLead": "Starting on Tallaby, compared with building a store with a developer, hosting and a monthly subscription.",
+      "costOther": "Developer + hosting + monthly subscription",
+      "costNote": "The cost of the alternative depends on the developer and the hosting provider.",
+      "costPricing": "Tallaby pricing in detail",
+      "kindsKicker": "For every business",
+      "kindsTitle": "Who is it for?",
+      "kindsLead": "Any seller who sells products and wants a store under their own name, whatever they sell.",
+      "relatedTitle": "Related pages"
+    },
+    "create-online-store": {
+      "crumb": "Create an online store",
+      "title": "Create an online store <em>without a developer</em>",
+      "lead": "Type your store's name, pick a ready-made template, add your products and start selling from one dashboard.",
+      "dashboard": {
+        "title": "Home",
+        "greeting": "Good morning, Nour",
+        "sub": "You have 3 new orders to review.",
+        "kpis": [
+          { "label": "Sales", "value": "48,320", "unit": "EGP" },
+          { "label": "Orders", "value": "212", "unit": "orders" },
+          { "label": "Visits", "value": "9,410", "unit": "visits" },
+          { "label": "Conversion", "value": "2.3", "unit": "%" }
+        ],
+        "ordersTitle": "Latest orders",
+        "ordersHead": ["Order", "Customer", "Total", "Status"],
+        "orders": [
+          ["#2481", "Mariam", "420 EGP", "New"],
+          ["#2480", "Ahmed", "260 EGP", "Shipping"],
+          ["#2479", "Salma", "310 EGP", "Delivered"]
+        ]
+      },
+      "trust": ["No monthly subscription on Free", "$0.03 per order", "No developer needed", "A store in Arabic and English"],
+      "introTitle": "What is an online store, and why do you need one?",
+      "intro": [
+        "An online store is a website that shows your products with their photos and prices, and takes orders from your customers at any time. A customer picks a product, adds it to the cart and pays on delivery or by card, and the order reaches you with the customer's details and address.",
+        "Many sellers in Egypt start on Facebook, Instagram and WhatsApp. That's a good start, but orders can get lost in messages, you answer the same questions about price and size again and again, and it's hard to measure your ads. An online store gives you one link with your brand's name to put in every post and ad, a page for each product that can show up on Google, and a dashboard for your orders, shipping and payments.",
+        "You don't need a developer or a big budget to create one. On Tallaby, you type your store's name and pick a ready-made template, then add your products and publish."
+      ],
+      "stepsTitle": "How to create your online store",
+      "steps": [
+        { "title": "Type your store's name and claim its link", "body": "Sign up with email or a Google account and get a free link for your store." },
+        { "title": "Pick a ready-made template", "body": "Start with a template made for what you sell, and edit the text and photos with drag and drop." },
+        { "title": "Add your products", "body": "From an Excel file or a product link, and Tallaby AI helps you write titles and descriptions in Arabic and English." },
+        { "title": "Turn on payment and shipping, then publish", "body": "Cash on delivery is on from the start, and you can connect Paymob or Kashier and Bosta whenever you like." }
+      ],
+      "features": [
+        { "title": "Tallaby AI for product copy", "body": "Titles and descriptions in Arabic and English, for you to review before publishing." },
+        { "title": "Templates for each category", "body": "Templates for fashion, beauty, electronics and the home, and you can change at any time." },
+        { "title": "Drag-and-drop editor", "body": "Edit any text or photo with a click, and preview your store on a phone before publishing." },
+        { "title": "Your own domain", "body": "Start on a free yourbrand.tallaby.com link, and connect your domain whenever you like." },
+        { "title": "Online payment and cash on delivery", "body": "Cards and wallets through your own Paymob or Kashier account, and InstaPay straight to your account." },
+        { "title": "Shipping connections", "body": "Issue Bosta waybills and tracking numbers from your dashboard, or use your own riders." },
+        { "title": "Meta Pixel and ad measurement", "body": "Connect Meta Pixel, the Conversions API, GA4 and Google Tag Manager without code." },
+        { "title": "Search engine settings", "body": "A title and description for each page and product, so your store is easier to find on Google." }
+      ],
+      "costTitle": "How much does it cost to create an online store?",
+      "cost": [
+        { "label": "Setup cost", "tallaby": "EGP 0", "other": "The developer's fee, which varies by project" },
+        { "label": "Monthly subscription", "tallaby": "None on Free, $29 on Pro", "other": "Depends on the platform" },
+        { "label": "Hosting", "tallaby": "Included", "other": "Paid to your hosting provider" },
+        { "label": "Order fees", "tallaby": "$0.03 per order on Free, none on Pro", "other": "Depends on the platform" },
+        { "label": "Maintenance and updates", "tallaby": "Included", "other": "At your cost, with your developer" },
+        { "label": "Time to launch", "tallaby": "You can publish the same day", "other": "Weeks to months" },
+        { "label": "Payment and shipping", "tallaby": "Ready to connect from your dashboard", "other": "Each connection needs development" }
+      ],
+      "faqTitle": "Questions about creating an online store",
+      "faq": [
+        { "q": "How long does it take to create an online store on Tallaby?", "a": "You can sign up, pick a template and add your products in a day, then publish when you're ready." },
+        { "q": "Is creating a store free?", "a": "Creating a store is free. The Free plan has no monthly subscription, you don't need a credit card to sign up, and you pay $0.03 per order. To see orders and send campaigns, you need a first wallet top-up of $5. Order emails to your customers need the Order Notifications app, at 1 cent per order." },
+        { "q": "Do I need a developer or technical experience?", "a": "No. Every step happens visually in your dashboard, from picking a template to connecting payment and shipping." },
+        { "q": "Can I use my own domain?", "a": "Yes. Your store starts on a free link like yourbrand.tallaby.com, and you can connect a domain you own to your main store by adding its DNS records." },
+        { "q": "How can my customers pay?", "a": "Cash on delivery is on from the start. You can connect Paymob or Kashier for cards and wallets, and take InstaPay and wallet transfers straight to your account." },
+        { "q": "How do I ship orders?", "a": "Tallaby doesn't deliver orders itself. Connect your Bosta account and issue waybills from your dashboard, download the Wassalha sheet or use your own riders, and set shipping rates by area." },
+        { "q": "Can I bring products over from another store or page?", "a": "Yes. Import your products from an Excel file, a product link or Shopify." }
+      ],
+      "related": [
+        { "title": "Integrations", "body": "Shipping, payments and measurement tools." },
+        { "title": "Templates", "body": "Browse templates by category." },
+        { "title": "Pricing", "body": "Plans and fees in detail." },
+        { "title": "Profit margin calculator", "body": "Work out what you make on each order." }
+      ],
+      "closingTitle": "Create your online store now"
+    }
+  },
+  "blogRanking": {
+    "crumb": "Blog",
+    "published": "Published {date}",
+    "updated": "Updated {date}",
+    "minutes": "{count} min read",
+    "share": "Share",
+    "copyLink": "Copy link",
+    "copied": "Copied",
+    "contents": "In this article",
+    "inArticle": "In this article",
+    "summaryTitle": "The short version",
+    "summaryHint": "Press a platform to jump to its details.",
+    "columns": { "rank": "Rank", "platform": "Platform", "bestFor": "Best for", "price": "Starting price", "rating": "Rating" },
+    "methodTitle": "How we chose these platforms",
+    "ourPick": "Our pick",
+    "bestFor": "Best for:",
+    "pros": "Pros",
+    "cons": "Cons",
+    "startingPrice": "Starting price",
+    "readComparison": "Read the full comparison",
+    "createStore": "Create your store for free",
+    "midTitle": "Want to try it yourself?",
+    "midBody": "Create your store on Tallaby with no monthly subscription, and compare for yourself.",
+    "midCta": "Start now",
+    "chooseTitle": "How to choose the right platform",
+    "faqTitle": "Common questions",
+    "readAlso": "Read next"
+  }
+}
