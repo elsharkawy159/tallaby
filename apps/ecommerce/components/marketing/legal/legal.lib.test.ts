@@ -30,7 +30,7 @@ describe("legal messages", () => {
     const legal = load(locale);
     expect(legal.privacy?.sections.map((s) => s.id)).toContain("cookies");
     const fees = legal.terms?.sections.find((s) => s.id === "fees");
-    expect(fees?.clauses).toHaveLength(10);
+    expect(fees?.clauses).toHaveLength(13);
     const published = publishedClauses(fees?.clauses ?? [], null)
       .map((c) => c.body)
       .join(" ");
