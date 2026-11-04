@@ -1,1 +1,384 @@
-{}
+{
+  "meta": {
+    "home": {
+      "title": "Tallaby | Create your online store in minutes. Free.",
+      "description": "Type a name and claim your link, and you have a real online store under your brand. Design it visually and publish whenever you're ready. No code."
+    }
+  },
+  "home": {
+    "hero": {
+      "title": "Create your online store <em>in minutes.</em> Free.",
+      "lead": "Type a name and claim your link, and you have a real online store under your brand. Design it visually and publish whenever you're ready. No code.",
+      "cta": "Create your store now",
+      "check1": "Free plan, no card",
+      "check2": "Signup in under a minute",
+      "check3": "Cash on delivery built in",
+      "plainly": "You'll need a first $5 top-up before you can see orders and send campaigns. Customer order emails need the Order Notifications app, at 1 cent per order.",
+      "sample": "Sample data from a demo store.",
+      "marquee": [
+        "Email campaigns",
+        "WhatsApp follow-up",
+        "Unfinished orders",
+        "Conversions API",
+        "Discount codes",
+        "Sales pop-up",
+        "Fake order protection",
+        "Meta and Google catalogs",
+        "Cash on delivery",
+        "Tallaby AI",
+        "Your own domain"
+      ]
+    },
+    "features": {
+      "kicker": "What's new in Tallaby",
+      "title": "Built for how Egypt sells today",
+      "mcpTag": "New",
+      "mcpTitle": "Manage your products by chatting with <claude>Claude</claude> or <chatgpt>ChatGPT</chatgpt>",
+      "mcpBody": "Connect your Tallaby account once. Then ask your AI assistant to add products, change prices or hide items, and it does it in your store.",
+      "aiTitle": "Tallaby AI writes for you",
+      "aiBody": "Product titles and descriptions in Arabic and English, category and SEO in one click.",
+      "aiLink": "See it work",
+      "shipTitle": "Ship with your own Bosta account",
+      "shipBody": "Shipping labels and tracking numbers go out from your dashboard, at your own rates.",
+      "importTitle": "Bring your products in minutes",
+      "importBody": "From Excel, from a product link, or straight from Shopify.",
+      "adsTitle": "Ads that measure right",
+      "adsBody": "Meta Pixel and Conversions API, TikTok, Snapchat and GA4, plus product feeds for Meta and Google catalogs."
+    },
+    "ai": {
+      "kicker": "Tallaby AI",
+      "title": "Add a product in seconds. AI fills in the rest.",
+      "body": "Add photos, a PDF or a few lines about the product. Tallaby AI prepares everything a product page needs, and you review it before publishing.",
+      "services": {
+        "inputTitle": "From photos, a PDF or text",
+        "inputBody": "Start with what you have, without filling in the form by hand.",
+        "copyTitle": "Titles and descriptions, AR + EN",
+        "copyBody": "Clear copy that sells, in both languages.",
+        "categoryTitle": "Category suggestion",
+        "categoryBody": "Picks the most specific category for search.",
+        "seoTitle": "SEO ready",
+        "seoBody": "Page title and description for Google."
+      }
+    },
+    "builder": {
+      "kicker": "Drag and drop builder",
+      "title": "Design your store the way you picture it",
+      "body": "Drag a section in, click any text or photo to change it, and preview on mobile before you publish."
+    },
+    "templates": {
+      "kicker": "Store templates",
+      "title": "Start from a design made for what you sell",
+      "body": "Swipe through one template per category, out of {count, plural, one {{count} template} other {{count} templates}}. Switch any time without losing your products."
+    },
+    "marketing": {
+      "kicker": "Marketing tools",
+      "title": "Everything you need to bring customers back",
+      "body": "Reach your customers by email and WhatsApp, follow up on unfinished orders, and measure your ads, all from one dashboard.",
+      "tabs": {
+        "email": { "title": "Email campaigns", "body": "Targeted emails to customers and subscribers" },
+        "whatsapp": { "title": "WhatsApp follow-up", "body": "A ready message, one click from your orders" },
+        "carts": { "title": "Unfinished orders", "body": "Reach the customer before the order is lost" },
+        "coupon": { "title": "Discount codes", "body": "Percentage or fixed-amount offers" },
+        "pixel": { "title": "Pixels and tracking", "body": "Meta, TikTok, Snapchat and GA4" }
+      },
+      "extras": {
+        "popups": "Live sales pop-ups",
+        "subscribers": "Newsletter subscribers",
+        "catalog": "Shareable product catalog",
+        "fake": "Fake order protection",
+        "reviews": "Product reviews"
+      },
+      "email": {
+        "title": "Campaign: End of season sale",
+        "badge": "Sent",
+        "toLabel": "To",
+        "to": "Customers and subscribers",
+        "subjectLabel": "Subject",
+        "subject": "20% off for our valued customers",
+        "heading": "Thank you for shopping with us",
+        "body": "Use code VIP20 for 20% off until the end of the week.",
+        "button": "Shop now",
+        "sent": "Sent",
+        "left": "Left this month",
+        "unsubscribed": "Unsubscribed"
+      },
+      "whatsapp": {
+        "title": "Order confirmation message",
+        "badge": "One click from you",
+        "customer": "Mariam Ahmed",
+        "order": "Order 2481",
+        "message": "Hi Mariam, we received your order 2481 for 1,290 EGP. Please confirm it so we can ship today.",
+        "reply": "Confirmed, thank you",
+        "note": "The button opens WhatsApp with a ready message that you edit and send yourself. Tallaby doesn't send WhatsApp messages automatically."
+      },
+      "carts": {
+        "title": "Unfinished orders today",
+        "badge": "EGP to follow up",
+        "egp": "EGP",
+        "whatsapp": "WhatsApp",
+        "contacted": "Contacted",
+        "note": "Tallaby keeps the shopper's details once they enter a phone number, even if they leave.",
+        "rows": [
+          { "name": "Hana Samy", "when": "12 min ago", "total": "1,240" },
+          { "name": "Omar Tarek", "when": "40 min ago", "total": "860" },
+          { "name": "Laila Hassan", "when": "2 hrs ago", "total": "2,760" }
+        ]
+      },
+      "coupon": {
+        "title": "New discount code",
+        "badge": "Active",
+        "codeLabel": "Code",
+        "offer": "15% off the first order",
+        "minimum": "Minimum",
+        "minimumValue": "500 EGP",
+        "uses": "Uses",
+        "ends": "Ends in",
+        "popupTitle": "A gift for your first visit",
+        "popupBody": "15% off, ends in",
+        "popupButton": "Copy code"
+      },
+      "pixel": {
+        "title": "Tracking and ads",
+        "badge": "4 connected",
+        "connected": "Connected",
+        "sent": "sent to 4 platforms"
+      }
+    },
+    "shipping": {
+      "kicker": "Shipping",
+      "title": "Ship with the company you trust",
+      "body": "Tallaby doesn't deliver orders itself. Connect your Bosta account, set prices by area, and send every order with a tracking number from the same screen. Or use your own riders.",
+      "bostaNote": "Direct link to your account",
+      "wassalhaNote": "Sheet ready to upload",
+      "ridersName": "Your riders",
+      "ridersNote": "Delivery by your team"
+    },
+    "payments": {
+      "kicker": "Payments",
+      "title": "The ways your customers like to pay",
+      "body": "Cash on delivery works from day one. You can take InstaPay and wallet transfers, or connect your Paymob or Kashier account to accept cards.",
+      "cod": "Cash on delivery",
+      "note": "Payments go straight to your own accounts, and Tallaby takes no percentage of your sales. Your payment gateway charges its own fees.",
+      "groups": {
+        "cod": "On delivery",
+        "transfer": "Instant transfer and wallets",
+        "cards": "Cards through your gateway"
+      }
+    },
+    "pricing": {
+      "kicker": "Pricing",
+      "title": "Two simple plans. Switch any time.",
+      "body": "Start free and pay a few cents per order, or go Pro for a flat monthly price."
+    },
+    "how": {
+      "kicker": "How it works",
+      "title": "Three steps from idea to first order",
+      "s1Title": "Create your account",
+      "s1Body": "Pick your store link, add your email and a password, or continue with Google. That's all signup asks for.",
+      "s1Tag": "Under a minute",
+      "s2Title": "Customize your store",
+      "s2Body": "Choose a template, add your logo, colors and products, and arrange sections with the visual editor.",
+      "s2Tag": "No code",
+      "s3Title": "Start selling",
+      "s3Body": "Publish with one click, share your link, and top up your wallet from $5 to follow your orders in the dashboard.",
+      "s3Tag": "One-click publish"
+    },
+    "faq": {
+      "kicker": "FAQ",
+      "title": "Questions before you start",
+      "desc": "Can't find your answer? <link>Message us on WhatsApp.</link>",
+      "items": [
+        {
+          "q": "What does an order cost on the free plan?",
+          "a": "$0.03 per created order, whatever its value. No monthly fee and no percentage. You'll need a first $5 top-up before you can see orders and send campaigns."
+        },
+        {
+          "q": "When is Pro worth it?",
+          "a": "From about 1,000 orders a month, the flat $29 costs less than per-order fees. Pro also gives you 2,000 AI credits."
+        },
+        {
+          "q": "What is an AI credit?",
+          "a": "Each AI action, like preparing a product from photos or text, uses one credit. Credits are shared across your whole account, not per team member."
+        },
+        {
+          "q": "Can I manage my store from ChatGPT or Claude?",
+          "a": "Yes, for products today. Connect your Tallaby account once, then ask the assistant to add, edit, publish or hide products."
+        },
+        {
+          "q": "Can I use my own domain?",
+          "a": "Your store starts on yourbrand.tallaby.com. Connect a domain you own from Website › Domain."
+        },
+        {
+          "q": "Do I need to know how to code?",
+          "a": "No. Design, products, payments and shipping are all set up from your dashboard."
+        }
+      ]
+    },
+    "final": {
+      "title": "Your store link is waiting",
+      "body": "Claim it now. Design and publish whenever you're ready."
+    },
+    "demo": {
+      "hero": {
+        "egp": "EGP",
+        "greeting": "Good morning, Nour",
+        "newOrders": "{count, plural, one {You have 1 new order to review.} other {You have {count} new orders to review.}}",
+        "search": "Search",
+        "allStores": "All stores",
+        "last30": "Last 30 days",
+        "latest": "Latest orders",
+        "lastFive": "Last 5 orders",
+        "viewAll": "View all",
+        "newOrder": "New order",
+        "addToCart": "Add to cart",
+        "summary": "Order summary",
+        "shipping": "Shipping",
+        "total": "Total",
+        "cod": "Cash on delivery",
+        "placeOrder": "Place order",
+        "received": "Order received",
+        "willCall": "We will call you to confirm",
+        "nav": {
+          "home": "Dashboard",
+          "products": "Products",
+          "orders": "Orders",
+          "shipping": "Shipping",
+          "finance": "Finance",
+          "website": "Website",
+          "marketing": "Marketing",
+          "apps": "Apps"
+        },
+        "kpi": {
+          "sales": "Sales",
+          "orders": "Orders",
+          "ordersUnit": "orders",
+          "visits": "Visits",
+          "visitsUnit": "visits",
+          "conversion": "Conversion",
+          "previous": "vs previous period",
+          "perVisit": "Orders per visit"
+        },
+        "col": {
+          "order": "Order",
+          "customer": "Customer",
+          "product": "Product",
+          "date": "Date",
+          "total": "Total",
+          "status": "Status"
+        },
+        "status": {
+          "pending": "Pending",
+          "shipped": "Shipped",
+          "delivered": "Delivered"
+        },
+        "when": {
+          "justNow": "just now",
+          "minuteAgo": "1 min ago",
+          "min6": "6 min ago",
+          "min18": "18 min ago",
+          "hr1": "1 hr ago",
+          "hr2": "2 hrs ago",
+          "hr3": "3 hrs ago"
+        },
+        "customers": ["Mariam Ahmed", "Youssef Khaled", "Hana Samy", "Omar Tarek"],
+        "products": ["Oud Rose perfume 50ml", "Vitamin C serum", "Watch 6 smartwatch"],
+        "orders": [
+          { "customer": "Youssef Khaled", "product": "Vitamin C serum", "when": "min6", "total": 890, "status": "pending" },
+          { "customer": "Hana Samy", "product": "Skincare set", "when": "min18", "total": 2150, "status": "pending" },
+          { "customer": "Omar Tarek", "product": "Daily moisturizer", "when": "hr1", "total": 560, "status": "shipped" },
+          { "customer": "Mariam Ahmed", "product": "Oud Rose perfume 50ml", "when": "hr2", "total": 1320, "status": "delivered" },
+          { "customer": "Hana Samy", "product": "Rose toner", "when": "hr3", "total": 780, "status": "delivered" }
+        ]
+      },
+      "mcp": {
+        "connected": "Connected to glow store",
+        "user1": "Add a new product: brown leather bag, 950 EGP, here is the photo",
+        "ai1": "Done. \"Brown leather bag\" is live on your store at 950 EGP, in Arabic and English.",
+        "user2": "Cut all T-shirt prices by 10%",
+        "ai2": "Lowered 12 T-shirts by 10%. You can review them on your Products page."
+      },
+      "ai": {
+        "title": "New product",
+        "creditsUnit": "credits",
+        "credits": "100 AI credits a month on the free plan, 2,000 on Pro.",
+        "generate": "Generate",
+        "input": "Oud Rose perfume 50ml, 1,240 EGP",
+        "nameArLabel": "Name (Arabic)",
+        "nameEnLabel": "Name (English)",
+        "nameAr": "عطر عود روز ‏50 مل",
+        "nameEn": "Oud Rose Eau de Parfum 50ml",
+        "descLabel": "Description",
+        "desc": "A warm oriental scent blending oud and Taif rose that lasts all day. Made for evenings and occasions.",
+        "categoryLabel": "Category",
+        "category": "Beauty › Perfume",
+        "priceLabel": "Price",
+        "seoTitle": "Oud Rose Eau de Parfum 50ml | glow",
+        "seoDesc": "Oriental oud and Taif rose, lasts all day. Cash on delivery."
+      },
+      "builder": {
+        "home": "Home",
+        "saving": "Saving…",
+        "saved": "Saved",
+        "publish": "Publish changes",
+        "published": "Published",
+        "searchSections": "Search sections",
+        "rail": {
+          "add": "Add",
+          "layers": "Layers",
+          "images": "Images",
+          "explore": "Explore",
+          "forms": "Forms",
+          "pages": "Pages",
+          "brand": "Brand"
+        },
+        "tabs": { "sections": "Sections", "elements": "Elements", "templates": "Templates" },
+        "library": {
+          "hero": "Hero banner",
+          "announcement": "Announcement",
+          "products": "Products",
+          "reviews": "Reviews",
+          "countdown": "Countdown",
+          "faq": "FAQ"
+        },
+        "props": {
+          "content": "Content",
+          "style": "Style",
+          "page": "Home page",
+          "heading": "Heading",
+          "button": "Button",
+          "buttonColor": "Button color",
+          "layout": "Layout",
+          "split": "Split",
+          "image": "Image",
+          "center": "Center"
+        }
+      },
+      "shipping": {
+        "customer": "Mariam · Heliopolis, Cairo",
+        "shipWith": "Ship with",
+        "tracking": "Tracking number",
+        "label": "Print label",
+        "status": { "ready": "Ready to ship", "shipped": "Shipped", "delivered": "Delivered" },
+        "stage": { "picked": "Picked up", "onTheWay": "On the way", "delivered": "Delivered" },
+        "options": [
+          { "name": "Bosta", "body": "Through your Bosta account", "price": "55 EGP", "latin": true },
+          { "name": "Your riders", "body": "Ahmed Samir · available", "price": "40 EGP" },
+          { "name": "Wassalha", "body": "Sheet ready to upload", "price": "60 EGP", "latin": true }
+        ]
+      },
+      "payment": {
+        "title": "Checkout",
+        "egp": "EGP",
+        "method": "Payment method",
+        "place": "Place order",
+        "secure": "Secure payment",
+        "methods": [
+          { "name": "Cash on delivery" },
+          { "name": "Bank card", "note": "VISA · MC" },
+          { "name": "InstaPay" },
+          { "name": "Vodafone Cash" }
+        ]
+      }
+    }
+  }
+}

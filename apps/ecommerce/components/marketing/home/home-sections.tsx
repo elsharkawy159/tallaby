@@ -1,78 +1,298 @@
-import {
-  ChartColumn,
-  Check,
-  FileSpreadsheet,
-  FileText,
-  Images,
-  Languages,
-  LayoutPanelTop,
-  LayoutTemplate,
-  MonitorSmartphone,
-  MousePointerClick,
-  Newspaper,
-  Package,
-  Palette,
-  Rocket,
-  ShoppingBag,
-  Sparkles,
-  Star,
-  Store,
-  TicketPercent,
-  Timer,
-  Users,
-} from "lucide-react";
-import type { CSSProperties } from "react";
+import * as React from "react";
+import { BellRing, Bike, BookOpen, Check, ChartNoAxesCombined, FileUp, ShieldCheck, Sparkles, Star, Timer, Palette, Rocket, Truck, Users } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
-import { Intro, IntroWords, Reveal, StaggerChildren } from "@workspace/motion";
-import { Link } from "@/i18n/navigation";
-import { CtaButton } from "@/components/marketing/site/cta-button";
-import { ForwardArrow } from "@/components/marketing/site/direction-icons";
+import { CtaBand } from "@/components/marketing/site/cta-band";
 import { FaqAccordion, type FaqEntry } from "@/components/marketing/site/faq-accordion";
-import { Container, Eyebrow, Section, SectionHeading } from "@/components/marketing/site/layout-primitives";
+import { Container, Kicker, Ltr, Section, SectionHeading } from "@/components/marketing/site/layout-primitives";
+import { Reveal } from "@/components/marketing/site/reveal.client";
 import { richTags } from "@/components/marketing/site/rich-text";
+import { IconTile, SiteCard } from "@/components/marketing/site/site-card";
 import { SignupTrigger, SlugClaimForm } from "@/components/marketing/signup/signup-trigger.client";
-import { TemplateCategories } from "@/components/marketing/templates/template-categories";
+import { PlanCards } from "@/components/marketing/pricing/plan-cards";
+import { TemplateCarousel } from "@/components/marketing/templates/template-carousel.client";
 import { CONTACT } from "@/lib/marketing/site.lib";
-import { getShowcaseStores } from "@/lib/marketing/stores.server";
 import { getTemplateGallery } from "@/lib/marketing/templates.server";
-import { BuilderStudio } from "./builder-studio.client";
-import { FeatureTour } from "./feature-tour.client";
-import { HeroStory } from "./hero-story.client";
+import type { GalleryEntry } from "@/lib/marketing/templates.lib";
+import { AiDemo } from "./ai-demo.client";
+import { BuilderDemo } from "./builder-demo.client";
+import { HeroDemo } from "./hero-demo.client";
+import { MarketingTools } from "./marketing-tools.client";
+import { McpChatDemo } from "./mcp-chat-demo.client";
+import { PaymentDemo, ShippingDemo } from "./shipping-payment-demos.client";
+
+/** A heading plus the small lead used in the home page's split sections. */
+function SplitHeading({ id, kicker, title, body }: { id: string; kicker: string; title: string; body: string }) {
+  return (
+    <>
+      <Kicker>{kicker}</Kicker>
+      <h2 id={id} className="text-[clamp(28px,4vw,44px)] leading-[1.3] font-bold text-balance text-teal-900 en:leading-[1.15] en:tracking-[-0.01em]">
+        {title}
+      </h2>
+      <p className="max-w-[620px] text-[17px] text-pretty text-[#5a6d72]">{body}</p>
+    </>
+  );
+}
 
 export async function HomeHero() {
   const t = await getTranslations("home.hero");
-  const points = [t("point1"), t("point2"), t("point3")];
+  const features = t.raw("marquee") as string[];
+  const checks = [t("check1"), t("check2"), t("check3")];
 
   return (
-    <section id="top" aria-labelledby="hero-title" className="relative overflow-hidden bg-teal-900 pt-[calc(44px+68px)] pb-[72px] text-white sm:pt-[calc(76px+68px)]">
-      {/* The top padding includes the 68px home header, which overlays the hero. */}
-      <div aria-hidden className="hero-glow-center pointer-events-none absolute inset-0" />
-      {/* Intro: plain CSS from the first paint, so the headline (LCP) never waits for JavaScript. */}
+    <section id="top" aria-labelledby="home-h1" className="relative overflow-hidden pt-10 pb-24 min-[641px]:pt-16">
       <Container className="relative flex flex-col items-center text-center">
-        <Eyebrow data-intro="fade" className="mb-5 after:h-0.5 after:w-[22px] after:rounded-sm after:bg-amber-600 after:content-['']">
-          {t("eyebrow")}
-        </Eyebrow>
         <h1
-          id="hero-title"
-          className="display-tight max-w-[900px] text-[clamp(36px,5vw,64px)] leading-[1.2] font-extrabold text-balance text-white en:leading-[1.02]"
+          id="home-h1"
+          className="max-w-[900px] text-[clamp(34px,6.2vw,68px)] leading-[1.25] font-bold text-balance text-teal-900 en:leading-[1.08] en:tracking-[-0.02em] [&_em]:text-amber-700 [&_em]:not-italic"
         >
-          <IntroWords delay={0.05}>{t.rich("title", richTags)}</IntroWords>
+          {t.rich("title", richTags)}
         </h1>
-        <Intro as="p" delay={0.3} className="mx-auto mt-5 mb-8 max-w-[600px] text-base text-pretty text-mist sm:text-lg">
-          {t("lead")}
-        </Intro>
-        <HeroStory>
-          <div className="mt-5 flex flex-wrap justify-center gap-x-[22px] gap-y-2.5 text-[13.5px] text-haze">
-            {points.map((p, i) => (
-              <Intro as="span" key={p} delay={0.5 + i * 0.07} className="flex items-center gap-[7px]">
-                <Check className="size-[15px] text-amber-300" aria-hidden />
-                {p}
-              </Intro>
-            ))}
-          </div>
-        </HeroStory>
+        <p className="mx-auto mt-4 mb-6 max-w-[640px] text-[clamp(16px,2vw,19px)] text-pretty text-[#56696e] min-[641px]:mt-5 min-[641px]:mb-8">{t("lead")}</p>
+        <SignupTrigger className="h-[58px] px-10 text-[17px]">{t("cta")}</SignupTrigger>
+        <ul className="m-0 mt-[18px] flex list-none flex-wrap justify-center gap-x-3.5 gap-y-1.5 p-0 text-[13px] text-[#56696e] min-[641px]:gap-x-[22px] min-[641px]:gap-y-2 min-[641px]:text-sm">
+          {checks.map((check) => (
+            <li key={check} className="flex items-center gap-1.5">
+              <Check className="size-4 text-[#16a34a]" aria-hidden />
+              {check}
+            </li>
+          ))}
+        </ul>
+        <p className="mt-3 max-w-[640px] text-[13px] text-pretty text-ink-500">{t("plainly")}</p>
+      </Container>
+
+      <div aria-hidden className="store-marquee mt-5 overflow-hidden min-[641px]:mt-7" dir="ltr">
+        <div className="store-marquee-track flex w-max">
+          {[0, 1].map((copy) => (
+            <div key={copy} data-marquee-copy={copy === 1 ? "" : undefined} className="flex flex-none gap-2.5 pe-2.5">
+              {features.map((label) => (
+                <span key={label} dir="auto" className="inline-flex h-[38px] items-center gap-2 rounded-full border border-line bg-white/75 px-4 text-[13.5px] font-semibold whitespace-nowrap text-[#33464b]">
+                  <i className="size-[7px] rounded-full bg-amber-600" />
+                  {label}
+                </span>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <Container>
+        <HeroDemo />
+        <p className="mt-[76px] text-center text-xs text-ink-400 min-[641px]:mt-16">{t("sample")}</p>
       </Container>
     </section>
+  );
+}
+
+export async function FeaturesSection() {
+  const t = await getTranslations("home.features");
+  const cards = [
+    { icon: Sparkles, title: t("aiTitle"), body: t("aiBody"), link: { href: "#ai", label: t("aiLink") } },
+    { icon: Truck, title: t("shipTitle"), body: t("shipBody") },
+    { icon: FileUp, title: t("importTitle"), body: t("importBody") },
+    { icon: ChartNoAxesCombined, title: t("adsTitle"), body: t("adsBody") },
+  ];
+
+  return (
+    <Section id="features" aria-labelledby="features-title">
+      <Container>
+        <Reveal>
+          <SectionHeading id="features-title" kicker={t("kicker")} title={t("title")} centered />
+        </Reveal>
+        <div className="grid gap-3 min-[641px]:grid-cols-2 min-[641px]:gap-4 min-[1081px]:grid-cols-4 min-[1081px]:grid-rows-[272px_272px]">
+          <Reveal as="article" className="flex h-[540px] min-h-0 flex-col gap-5 overflow-hidden rounded-[26px] border border-[#e6eef0] bg-[linear-gradient(160deg,#f3f8f9_0%,#fff_60%)] p-5 min-[641px]:col-span-2 min-[641px]:p-[26px] min-[1081px]:row-span-2 min-[1081px]:h-auto">
+            <div className="flex flex-col items-start gap-2.5">
+              <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-[11.5px] font-bold text-[#8a5300]">{t("mcpTag")}</span>
+              <h3 className="text-[clamp(20px,2.4vw,26px)] leading-[1.4] font-bold text-teal-900">
+                {t.rich("mcpTitle", { claude: () => <Ltr className="font-latin">Claude</Ltr>, chatgpt: () => <Ltr className="font-latin">ChatGPT</Ltr> })}
+              </h3>
+              <p className="text-[15px] text-pretty text-[#5f7277]">{t("mcpBody")}</p>
+            </div>
+            <McpChatDemo />
+          </Reveal>
+          {cards.map((card) => (
+            <Reveal key={card.title} as="article" className="grid grid-cols-[38px_minmax(0,1fr)] content-start gap-x-3 gap-y-0.5 rounded-[26px] border border-[#e6eef0] bg-white/85 px-4 py-3.5 transition-[transform,box-shadow] duration-200 hover:-translate-y-[3px] hover:shadow-[0_18px_40px_rgba(13,55,67,0.08)] min-[641px]:flex min-[641px]:flex-col min-[641px]:gap-2.5 min-[641px]:p-[26px]">
+              <IconTile className="row-span-3 size-[38px] rounded-xl min-[641px]:mb-1.5 min-[641px]:size-11 min-[641px]:rounded-[14px]">
+                <card.icon aria-hidden />
+              </IconTile>
+              <h3 className="text-[15.5px] leading-normal font-bold text-teal-900 min-[641px]:text-[17px]">{card.title}</h3>
+              <p className="text-sm text-pretty text-[#5f7277]">{card.body}</p>
+              {card.link ? (
+                <a href={card.link.href} className="mt-1 text-sm font-bold text-teal-700 min-[641px]:mt-auto">
+                  {card.link.label}
+                </a>
+              ) : null}
+            </Reveal>
+          ))}
+        </div>
+      </Container>
+    </Section>
+  );
+}
+
+export async function AiSection() {
+  const t = await getTranslations("home.ai");
+  return (
+    <Section id="ai" aria-labelledby="ai-title">
+      <Container>
+        <AiDemo>
+          <SplitHeading id="ai-title" kicker={t("kicker")} title={t("title")} body={t("body")} />
+        </AiDemo>
+      </Container>
+    </Section>
+  );
+}
+
+export async function BuilderSection() {
+  const t = await getTranslations("home.builder");
+  return (
+    <Section id="builder" aria-labelledby="builder-title">
+      <Container>
+        <Reveal>
+          <SectionHeading id="builder-title" kicker={t("kicker")} title={t("title")} description={t("body")} centered />
+        </Reveal>
+        <Reveal>
+          <BuilderDemo />
+        </Reveal>
+      </Container>
+    </Section>
+  );
+}
+
+/** One template per category, in the catalog's order. */
+function onePerCategory(entries: readonly GalleryEntry[]): GalleryEntry[] {
+  const seen = new Set<string>();
+  return entries.filter((entry) => {
+    if (seen.has(entry.category)) return false;
+    seen.add(entry.category);
+    return true;
+  });
+}
+
+export async function TemplatesSection() {
+  const locale = await getLocale();
+  const [t, entries] = await Promise.all([getTranslations("home.templates"), getTemplateGallery(locale)]);
+  return (
+    <section id="templates" aria-labelledby="templates-title" className="py-14 min-[861px]:py-[72px]">
+      <Container>
+        <Reveal>
+          <SectionHeading id="templates-title" kicker={t("kicker")} title={t("title")} description={t("body", { count: entries.length })} centered />
+        </Reveal>
+      </Container>
+      <TemplateCarousel entries={onePerCategory(entries)} />
+    </section>
+  );
+}
+
+export async function MarketingSection() {
+  const t = await getTranslations("home.marketing");
+  const extras = [
+    { icon: BellRing, label: t("extras.popups") },
+    { icon: Users, label: t("extras.subscribers") },
+    { icon: BookOpen, label: t("extras.catalog") },
+    { icon: ShieldCheck, label: t("extras.fake") },
+    { icon: Star, label: t("extras.reviews") },
+  ];
+  return (
+    <Section id="marketing" aria-labelledby="marketing-title">
+      <Container>
+        <Reveal>
+          <SectionHeading id="marketing-title" kicker={t("kicker")} title={t("title")} description={t("body")} centered />
+        </Reveal>
+        <Reveal>
+          <MarketingTools />
+        </Reveal>
+        <Reveal className="mt-7 flex flex-wrap justify-center gap-2.5">
+          {extras.map((extra) => (
+            <span key={extra.label} className="inline-flex h-[42px] items-center gap-2 rounded-full border border-line bg-white/80 px-4 text-sm font-semibold text-[#33464b]">
+              <extra.icon className="size-4 text-teal-700" aria-hidden />
+              {extra.label}
+            </span>
+          ))}
+        </Reveal>
+      </Container>
+    </Section>
+  );
+}
+
+export async function ShippingSection() {
+  const t = await getTranslations("home.shipping");
+  const carriers = [
+    { name: "Bosta", note: t("bostaNote"), latin: true, dot: "#e30613" },
+    { name: "Wassalha", note: t("wassalhaNote"), latin: true, dot: "#0f9d58" },
+    { name: t("ridersName"), note: t("ridersNote"), icon: Bike },
+  ];
+  return (
+    <Section id="shipping" aria-labelledby="shipping-title">
+      <Container className="grid items-center gap-12 min-[1081px]:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] min-[1081px]:gap-[72px]">
+        <Reveal className="flex flex-col items-start gap-[18px]">
+          <SplitHeading id="shipping-title" kicker={t("kicker")} title={t("title")} body={t("body")} />
+          <div className="mt-1.5 grid w-full gap-2.5 min-[641px]:grid-cols-3">
+            {carriers.map((carrier) => (
+              <div key={carrier.name} className="flex flex-col items-center justify-center gap-1 rounded-2xl border border-[#e6eef0] bg-white px-2.5 py-3 text-center">
+                <span className="flex items-center gap-2">
+                  {carrier.icon ? <carrier.icon className="size-4 text-teal-700" aria-hidden /> : <span className="size-2.5 flex-none rounded-[3px]" style={{ background: carrier.dot }} />}
+                  <b className={carrier.latin ? "font-latin text-[15px] font-extrabold text-[#26393e]" : "text-[13.5px] font-bold text-[#26393e]"}>{carrier.name}</b>
+                </span>
+                <small className="text-xs text-[#5f7277]">{carrier.note}</small>
+              </div>
+            ))}
+          </div>
+        </Reveal>
+        <Reveal className="flex justify-center">
+          <ShippingDemo />
+        </Reveal>
+      </Container>
+    </Section>
+  );
+}
+
+export async function PaymentsSection() {
+  const t = await getTranslations("home.payments");
+  const groups = [
+    { label: t("groups.cod"), items: [t("cod")] },
+    { label: t("groups.transfer"), items: ["InstaPay", "Vodafone Cash", "e& Cash"] },
+    { label: t("groups.cards"), items: ["Paymob", "Kashier"] },
+  ];
+  return (
+    <Section id="payments" aria-labelledby="payments-title">
+      <Container className="grid items-center gap-12 min-[1081px]:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] min-[1081px]:gap-[72px]">
+        <Reveal className="order-2 flex justify-center min-[1081px]:order-1">
+          <PaymentDemo />
+        </Reveal>
+        <Reveal className="order-1 flex flex-col items-start gap-[18px] min-[1081px]:order-2">
+          <SplitHeading id="payments-title" kicker={t("kicker")} title={t("title")} body={t("body")} />
+          <div className="mt-1.5 flex w-full flex-col gap-3.5">
+            {groups.map((group) => (
+              <div key={group.label}>
+                <small className="mb-1.5 block text-xs font-semibold text-ink-500">{group.label}</small>
+                <div className="flex flex-wrap gap-2">
+                  {group.items.map((item) => (
+                    <span key={item} className="inline-flex h-10 items-center rounded-xl border border-[#e6eef0] bg-white px-3.5 text-[13.5px] font-bold text-[#26393e]" dir="auto">
+                      {item}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="text-[13px] text-pretty text-ink-500">{t("note")}</p>
+        </Reveal>
+      </Container>
+    </Section>
+  );
+}
+
+export async function PricingTeaser() {
+  const t = await getTranslations("home.pricing");
+  return (
+    <Section id="pricing" aria-labelledby="pricing-title">
+      <Container>
+        <Reveal>
+          <SectionHeading id="pricing-title" kicker={t("kicker")} title={t("title")} description={t("body")} centered />
+        </Reveal>
+        <PlanCards />
+      </Container>
+    </Section>
   );
 }
 
@@ -83,274 +303,27 @@ export async function HowItWorks() {
     { title: t("s2Title"), body: t("s2Body"), tag: t("s2Tag"), icon: Palette },
     { title: t("s3Title"), body: t("s3Body"), tag: t("s3Tag"), icon: Rocket },
   ];
-
   return (
     <Section id="how" aria-labelledby="how-title">
-      {/* The steps simply fade up in turn (owner, 2026-10-29: no pinning). */}
       <Container>
         <Reveal>
-          <SectionHeading id="how-title" kicker={t("kicker")} title={t("title")} />
+          <SectionHeading id="how-title" kicker={t("kicker")} title={t("title")} centered />
         </Reveal>
-        <div className="relative">
-          <StaggerChildren as="ol" className="relative m-0 grid list-none gap-7 p-0 md:grid-cols-3 md:gap-10 md:before:absolute md:before:inset-x-14 md:before:top-[27px] md:before:h-0.5 md:before:bg-[repeating-linear-gradient(90deg,var(--color-teal-100)_0_8px,transparent_8px_14px)] md:before:content-['']">
-            {steps.map((step, i) => (
-              <li key={step.title} className="relative z-[2]">
-                <span
-                  className={`relative mb-[22px] grid size-14 place-items-center rounded-2xl font-latin text-[22px] font-extrabold ${
-                    i === 0 ? "bg-amber-600 text-teal-900" : "bg-teal-900 text-white"
-                  }`}
-                >
-                  {i + 1}
+        <ol className="m-0 grid list-none gap-4 p-0 min-[861px]:grid-cols-3">
+          {steps.map((step, i) => (
+            <Reveal as="li" key={step.title}>
+              <SiteCard className="flex h-full flex-col items-start gap-2.5 p-[26px]">
+                <span className="grid size-11 place-items-center rounded-[14px] bg-teal-900 font-latin text-lg font-extrabold text-white">{i + 1}</span>
+                <h3 className="text-[19px] font-bold text-teal-900">{step.title}</h3>
+                <p className="text-[15px] text-pretty text-[#5f7277]">{step.body}</p>
+                <span className="mt-auto inline-flex items-center gap-1.5 rounded-full bg-teal-50 px-3 py-1 text-[13px] font-semibold text-teal-700">
+                  <step.icon className="size-3.5" aria-hidden />
+                  {step.tag}
                 </span>
-                <div>
-                  <h3 className="mb-2 text-[21px] font-bold text-teal-900">{step.title}</h3>
-                  <p className="text-[15px] text-slate-ink">{step.body}</p>
-                  <span className="mt-3.5 inline-flex items-center gap-1.5 rounded-full bg-teal-50 px-3 py-1 text-[13px] font-semibold text-teal-700">
-                    <step.icon className="size-3.5" aria-hidden />
-                    {step.tag}
-                  </span>
-                </div>
-              </li>
-            ))}
-          </StaggerChildren>
-        </div>
-        <Reveal className="mt-12 flex flex-wrap items-center gap-4">
-          <SignupTrigger tone="teal" />
-          <small className="text-sm text-neutral-600">{t("note")}</small>
-        </Reveal>
-      </Container>
-    </Section>
-  );
-}
-
-/** Below this many stores the wall would look empty, so it stays hidden. */
-const STORE_SHOWCASE_MIN = 4;
-/** One copy of the moving row repeats the stores up to at least this many tiles, so it is wider than the screen. */
-const STORE_MARQUEE_TILES = 12;
-
-type ShowcaseStore = Awaited<ReturnType<typeof getShowcaseStores>>[number];
-
-/** One copy of the store row. The second copy (`hidden`) only makes the loop seamless. */
-function StoreMarqueeRow({ stores, hidden }: { stores: (ShowcaseStore & { key: string })[]; hidden?: boolean }) {
-  return (
-    <ul
-      aria-hidden={hidden || undefined}
-      data-marquee-copy={hidden ? "" : undefined}
-      className="m-0 flex shrink-0 list-none p-0"
-    >
-      {stores.map((store) => (
-        <li key={store.key} className="w-[148px] shrink-0 pe-3 sm:w-[176px] sm:pe-4">
-          <a
-            href={store.url}
-            target="_blank"
-            rel="noopener"
-            tabIndex={hidden ? -1 : undefined}
-            className="group flex flex-col items-center gap-3 rounded-2xl border border-neutral-200 bg-white px-3 pt-5 pb-4 text-center transition-[border-color,box-shadow] duration-300 hover:border-teal-100 hover:shadow-soft focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-teal-700"
-          >
-            <span className="grid size-[72px] place-items-center overflow-hidden rounded-2xl bg-paper ring-1 ring-neutral-100 sm:size-20">
-              {store.logoUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element -- seller logos can live on any host
-                <img src={store.logoUrl} alt="" loading="lazy" decoding="async" className="size-full object-contain p-2" />
-              ) : (
-                <span aria-hidden className="grid size-full place-items-center bg-teal-900 text-[28px] font-extrabold text-amber-300">
-                  {store.name.trim().charAt(0).toUpperCase()}
-                </span>
-              )}
-            </span>
-            <b dir="auto" className="block w-full truncate text-[14.5px] text-teal-900 group-hover:text-teal-700">
-              {store.name}
-            </b>
-          </a>
-        </li>
-      ))}
-    </ul>
-  );
-}
-
-/**
- * "Stores already selling on Tallaby": published stores' logos and names, most products
- * first (getShowcaseStores), in an auto-playing row that pauses on hover or focus.
- * Social proof for new visitors; each tile opens the store.
- */
-export async function StoresShowcase() {
-  const [t, stores] = await Promise.all([getTranslations("home.stores"), getShowcaseStores()]);
-  if (stores.length < STORE_SHOWCASE_MIN) return null;
-  const repeats = Math.ceil(STORE_MARQUEE_TILES / stores.length);
-  const tiles = Array.from({ length: repeats }, (_, r) => stores.map((store) => ({ ...store, key: `${r}-${store.id}` }))).flat();
-
-  return (
-    <Section id="stores" aria-labelledby="stores-title" className="relative overflow-hidden">
-      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[260px] bg-[radial-gradient(60%_100%_at_50%_0%,var(--color-teal-50),transparent)]" />
-      <Container className="relative">
-        <Reveal>
-          <SectionHeading id="stores-title" centered kicker={t("kicker")} title={t("title")} description={t("desc")} />
-        </Reveal>
-      </Container>
-      {/* Full-bleed row. dir="ltr" keeps the -50% loop math the same in Arabic; names keep dir="auto". */}
-      <Reveal className="relative">
-        <div dir="ltr" className="store-marquee overflow-hidden py-1">
-          <div className="store-marquee-track flex w-max" style={{ "--marquee-duration": `${tiles.length * 3}s` } as CSSProperties}>
-            <StoreMarqueeRow stores={tiles} />
-            <StoreMarqueeRow stores={tiles} hidden />
-          </div>
-        </div>
-      </Reveal>
-      <Container className="relative">
-        <Reveal className="mt-10 flex flex-col items-center gap-3 text-center">
-          <p className="text-[15px] text-slate-ink">{t("join")}</p>
-          <SignupTrigger tone="teal" />
-        </Reveal>
-      </Container>
-    </Section>
-  );
-}
-
-export async function TemplatesShowcase() {
-  const locale = await getLocale();
-  const [t, entries] = await Promise.all([getTranslations("home.templates"), getTemplateGallery(locale)]);
-  return (
-    <Section id="templates" aria-labelledby="tpl-title" className="border-y border-neutral-100 bg-white">
-      <Container>
-        <Reveal>
-          <SectionHeading id="tpl-title" kicker={t("kicker")} title={t("title")} description={t("desc")} />
-        </Reveal>
-        <TemplateCategories entries={entries} />
-      </Container>
-    </Section>
-  );
-}
-
-export async function BuilderSection() {
-  const t = await getTranslations("home.builder");
-  const features = [
-    { icon: LayoutPanelTop, title: t("f1Title"), body: t("f1Body") },
-    { icon: MousePointerClick, title: t("f2Title"), body: t("f2Body") },
-    { icon: Languages, title: t("f3Title"), body: t("f3Body") },
-    { icon: MonitorSmartphone, title: t("f4Title"), body: t("f4Body") },
-    { icon: Sparkles, title: t("f5Title"), body: t("f5Body") },
-  ];
-
-  return (
-    <Section id="builder" aria-labelledby="builder-title">
-      <Container className="grid items-center gap-14 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
-        <div>
-          <Reveal>
-            <SectionHeading id="builder-title" kicker={t("kicker")} title={t("title")} description={t("desc")} className="mb-7" />
-          </Reveal>
-          <StaggerChildren as="ul" className="m-0 grid list-none gap-1 p-0">
-            {features.map((f) => (
-              <li key={f.title} className="grid grid-cols-[40px_1fr] gap-3.5 border-t border-neutral-200 py-4 last:border-b">
-                <span className="grid size-10 place-items-center rounded-xl bg-teal-50 text-teal-700">
-                  <f.icon className="size-[18px]" aria-hidden />
-                </span>
-                <div>
-                  <b className="block text-base text-teal-900">{f.title}</b>
-                  <span className="text-sm text-slate-ink">{f.body}</span>
-                </div>
-              </li>
-            ))}
-          </StaggerChildren>
-        </div>
-        <Reveal variant="scale-in">
-          <BuilderStudio />
-        </Reveal>
-      </Container>
-    </Section>
-  );
-}
-
-/** "Also in your dashboard": the areas the tour above doesn't act out. */
-const MORE = [
-  { key: "coupons", icon: TicketPercent },
-  { key: "reviews", icon: Star },
-  { key: "templates", icon: LayoutTemplate },
-  { key: "forms", icon: FileText },
-  { key: "blog", icon: Newspaper },
-  { key: "media", icon: Images },
-  { key: "reports", icon: FileSpreadsheet },
-  { key: "stores", icon: Store },
-] as const;
-
-export async function FeaturesSection() {
-  const t = await getTranslations("home.features");
-  return (
-    <Section id="features" aria-labelledby="features-title" className="border-y border-neutral-100 bg-white">
-      <Container>
-        <Reveal>
-          <SectionHeading id="features-title" kicker={t("kicker")} title={t("title")} description={t("desc")} />
-        </Reveal>
-        <Reveal>
-          <FeatureTour />
-        </Reveal>
-        <div className="mt-16">
-          <Reveal as="h3" className="mb-[18px] text-xl font-bold text-teal-900">
-            {t("moreTitle")}
-          </Reveal>
-          {/* Two columns from phone width: icon over the text on phones, beside it from sm. */}
-          <StaggerChildren as="ul" stagger={0.06} className="m-0 grid list-none grid-cols-2 gap-2.5 p-0 sm:gap-3 lg:grid-cols-4">
-            {MORE.map((m) => (
-              <li
-                key={m.key}
-                className="flex flex-col gap-2.5 rounded-2xl border border-neutral-200 bg-paper p-3.5 transition-[border-color,box-shadow] duration-300 hover:border-teal-100 hover:shadow-soft sm:flex-row sm:items-start sm:gap-3.5 sm:p-[18px]"
-              >
-                <span className="grid size-9 flex-none place-items-center rounded-xl bg-white text-teal-700 shadow-card ring-1 ring-teal-50 sm:size-10">
-                  <m.icon className="size-[17px] sm:size-[18px]" aria-hidden />
-                </span>
-                <div className="min-w-0">
-                  <b className="block text-[14px] leading-snug text-teal-900 sm:text-[15px]">{t(`more.${m.key}.title`)}</b>
-                  <span className="mt-1 block text-[12.5px] leading-relaxed text-slate-ink sm:text-[13.5px]">{t(`more.${m.key}.body`)}</span>
-                </div>
-              </li>
-            ))}
-          </StaggerChildren>
-        </div>
-      </Container>
-    </Section>
-  );
-}
-
-export async function PricingTeaser() {
-  const t = await getTranslations("home.pricing");
-  const items = [
-    { icon: Users, label: t("i1") },
-    { icon: Package, label: t("i2") },
-    { icon: ShoppingBag, label: t("i3") },
-    { icon: MousePointerClick, label: t("i4") },
-    { icon: LayoutTemplate, label: t("i5") },
-    { icon: TicketPercent, label: t("i6") },
-    { icon: Sparkles, label: t("i7") },
-    { icon: ChartColumn, label: t("i8") },
-    { icon: Star, label: t("i9") },
-  ];
-
-  return (
-    <Section id="pricing" aria-labelledby="pricing-title">
-      <Container>
-        <Reveal>
-          <SectionHeading id="pricing-title" centered kicker={t("kicker")} title={t("title")} />
-        </Reveal>
-        <Reveal variant="scale-in" className="mx-auto max-w-[460px] overflow-hidden rounded-[28px] border border-neutral-200 bg-white text-center shadow-lift">
-          <div className="relative overflow-hidden bg-teal-900 px-[22px] pt-7 pb-8 text-white sm:px-8 sm:pt-9">
-            <div aria-hidden className="absolute -top-[120px] size-[260px] rounded-full border-[40px] border-amber-600/10 ltr:-right-[110px] rtl:-left-[110px]" />
-            <span className="relative inline-block rounded-full bg-amber-600/15 px-3.5 py-[5px] text-[13px] font-bold text-amber-300">{t("tag")}</span>
-            <p className="relative mt-[18px] text-[64px] leading-none font-extrabold tracking-[-0.03em] text-amber-600 sm:text-[80px]">{t("price")}</p>
-            <p className="relative mt-3.5 mb-3 inline-block rounded-full bg-white/10 px-3.5 py-1 text-[14px] font-semibold text-white">{t("commission")}</p>
-            <p className="relative mx-auto max-w-[340px] text-[15px] text-mist">{t("desc")}</p>
-          </div>
-          <StaggerChildren as="ul" stagger={0.06} className="m-0 grid list-none px-[22px] pt-[18px] pb-1 text-start sm:px-8 sm:pt-6 sm:pb-2">
-            {items.map((item) => (
-              <li key={item.label} className="flex items-center gap-2.5 border-b border-neutral-100 py-2 text-[13.5px] font-semibold text-[#2a3a3f] last:border-0">
-                <span className="grid size-[26px] flex-none place-items-center rounded-lg bg-teal-50 text-teal-700">
-                  <item.icon className="size-3.5" aria-hidden />
-                </span>
-                {item.label}
-              </li>
-            ))}
-          </StaggerChildren>
-          <div className="px-[22px] pt-3.5 pb-[22px] sm:px-8 sm:pt-4 sm:pb-7">
-            <SignupTrigger size="lg" className="h-[54px] w-full rounded-[14px] text-base" />
-          </div>
-        </Reveal>
+              </SiteCard>
+            </Reveal>
+          ))}
+        </ol>
       </Container>
     </Section>
   );
@@ -358,22 +331,14 @@ export async function PricingTeaser() {
 
 export async function HomeFaq() {
   const t = await getTranslations("home.faq");
-  const tf = await getTranslations("faq");
-  const tc = await getTranslations("common");
-  const items = tf.raw("home") as FaqEntry[];
-
   return (
-    <Section aria-labelledby="faq-title" className="pt-6 md:pt-6">
-      <Container className="grid items-start gap-14 lg:grid-cols-[minmax(0,0.7fr)_minmax(0,1.3fr)]">
-        <Reveal variant="fade" className="lg:sticky lg:top-[100px]">
-          <SectionHeading id="faq-title" kicker={t("kicker")} title={t("title")} description={t("desc", { email: CONTACT.email })} className="mb-0">
-            <CtaButton asChild tone="outline" size="sm" className="mt-5">
-              <Link href="/faq">{tc("allQuestions")}</Link>
-            </CtaButton>
-          </SectionHeading>
+    <Section id="faq" aria-labelledby="faq-title">
+      <Container className="grid gap-7 min-[1081px]:grid-cols-[minmax(0,0.7fr)_minmax(0,1.3fr)] min-[1081px]:gap-14">
+        <Reveal>
+          <SectionHeading id="faq-title" kicker={t("kicker")} title={t("title")} className="mb-0" description={t.rich("desc", { link: (chunks) => <a href={CONTACT.whatsapp} target="_blank" rel="noopener noreferrer" className="font-semibold text-teal-700 underline-offset-2 hover:underline">{chunks}</a> })} />
         </Reveal>
-        <Reveal variant="fade" delay={0.1}>
-          <FaqAccordion items={items} />
+        <Reveal>
+          <FaqAccordion items={t.raw("items") as FaqEntry[]} />
         </Reveal>
       </Container>
     </Section>
@@ -382,34 +347,9 @@ export async function HomeFaq() {
 
 export async function FinalCta() {
   const t = await getTranslations("home.final");
-  const tc = await getTranslations("common");
   return (
-    <section id="final" aria-labelledby="final-title" className="pb-24">
-      <Container>
-        <Reveal className="relative grid grid-cols-1 items-center gap-12 overflow-hidden rounded-[22px] bg-amber-600 px-[22px] py-9 text-teal-900 sm:rounded-[28px] md:p-16 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
-          <div aria-hidden className="absolute -bottom-[280px] size-[520px] rounded-full bg-amber-500 ltr:-right-[200px] rtl:-left-[200px]" />
-          <div aria-hidden className="absolute -top-[140px] size-[300px] rounded-full border-[48px] border-teal-900/10 ltr:-left-[120px] rtl:-right-[120px]" />
-          <div className="relative">
-            <span className="mb-2.5 block text-[13px] font-bold text-teal-800 en:text-xs en:tracking-[0.1em] en:uppercase">{t("kicker")}</span>
-            <h2 id="final-title" className="display-tight text-[clamp(30px,4.2vw,50px)] leading-[1.2] font-extrabold en:leading-[1.06] en:tracking-[-0.025em]">
-              {t("title")}
-            </h2>
-            <p className="mt-3.5 max-w-[460px] text-[17px] text-amber-ink">{t("desc")}</p>
-          </div>
-          <div className="relative rounded-[22px] bg-teal-900 p-5 text-white sm:p-7">
-            <h3 className="mb-4 text-[17px] font-bold">{t("boxTitle")}</h3>
-            <SlugClaimForm flat className="max-w-none" submitLabel={tc("createStore")} />
-            <ul className="m-0 mt-[18px] grid list-none gap-2.5 p-0 text-sm text-mist">
-              {[t("b1"), t("b2"), t("b3")].map((b) => (
-                <li key={b} className="flex items-center gap-2.5">
-                  <Check className="size-4 text-amber-600" aria-hidden />
-                  {b}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </Reveal>
-      </Container>
-    </section>
+    <div id="final">
+      <CtaBand title={t("title")} body={t("body")} action={<SlugClaimForm className="w-full sm:w-[420px]" />} />
+    </div>
   );
 }

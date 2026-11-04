@@ -1,15 +1,17 @@
 import type { Metadata } from "next";
-import { MotionScope } from "@workspace/motion";
 import {
+  AiSection,
   BuilderSection,
   FeaturesSection,
   FinalCta,
   HomeFaq,
   HomeHero,
   HowItWorks,
+  MarketingSection,
+  PaymentsSection,
   PricingTeaser,
-  StoresShowcase,
-  TemplatesShowcase,
+  ShippingSection,
+  TemplatesSection,
 } from "@/components/marketing/home/home-sections";
 import { StickyCta } from "@/components/marketing/home/sticky-cta.client";
 import { ProductJsonLd } from "@/components/marketing/site/json-ld";
@@ -20,22 +22,22 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return pageMetadata({ locale, page: "home", path: "/", absoluteTitle: true });
 }
 
-/** Scroll motion (@workspace/motion) is a home page pilot. Native scrolling only; a smooth-scroll library felt laggy (owner, 2026-10-29). */
 export default function HomePage() {
   return (
     <>
       <ProductJsonLd page="home" path="/" />
-      <MotionScope>
-        <HomeHero />
-        <StoresShowcase />
-        <HowItWorks />
-        <TemplatesShowcase />
-        <BuilderSection />
-        <FeaturesSection />
-        <PricingTeaser />
-        <HomeFaq />
-        <FinalCta />
-      </MotionScope>
+      <HomeHero />
+      <FeaturesSection />
+      <AiSection />
+      <BuilderSection />
+      <TemplatesSection />
+      <MarketingSection />
+      <ShippingSection />
+      <PaymentsSection />
+      <PricingTeaser />
+      <HowItWorks />
+      <HomeFaq />
+      <FinalCta />
       <StickyCta />
     </>
   );

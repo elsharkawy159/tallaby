@@ -2,10 +2,9 @@ import { routing } from "@/i18n/routing";
 import type { TemplateCategory } from "./templates.data";
 
 /**
- * The template gallery lists the active templates of the `templates` table
- * with a valid current version (owner, 2026-10-19). A card shows the
- * template's thumbnail, or a live render of its home page when it has none
- * (/template-preview, components/marketing/templates/template-live-thumb).
+ * The template gallery lists every template in the code catalog with a valid
+ * config. A card shows the template's thumbnail, or a live render of its home
+ * page when it has none (/template-preview, components/marketing/templates/template-live-thumb).
  */
 
 /** A page of a template version, with its name in both languages when the code template has one. */
@@ -115,36 +114,4 @@ export function buildGallery(rows: readonly CatalogTemplate[], locale: string): 
         .map((page) => ({ slug: page.slug, isHome: page.isHome, name: localized(page.names, locale) ?? page.name })),
       sortOrder: row.sortOrder,
     }));
-}
-
-/** A card's picture: the template key and thumbnail, small enough to hand to a client component. */
-export type CoverPick = { id: string; thumbnailUrl: string | null };
-
-export type CategoryCard = { category: Exclude<TemplateCategory, "all">; count: number; covers: CoverPick[] };
-
-/**
- * The templates a card may be shown by (one is picked at random per visit):
- * all but the newest (highest sort order), since the newest ones of a niche
- * look alike (owner, 2026-10-29). A lone template is kept.
- */
-function coverPool(entries: readonly GalleryEntry[]): CoverPick[] {
-  const newest = entries.reduce<GalleryEntry | undefined>((best, e) => (!best || e.sortOrder > best.sortOrder ? e : best), undefined);
-  const pool = entries.length > 1 ? entries.filter((e) => e !== newest) : entries;
-  return pool.map((e) => ({ id: e.id, thumbnailUrl: e.thumbnailUrl }));
-}
-
-/**
- * The home page's category cards: one per `featured` code that has templates,
- * plus a "more" card for every other template. `more` is null when nothing is left.
- */
-export function categoryShowcase(
-  entries: readonly GalleryEntry[],
-  featured: readonly Exclude<TemplateCategory, "all">[],
-): { cards: CategoryCard[]; more: { count: number; covers: CoverPick[] } | null } {
-  const cards = featured.flatMap((category) => {
-    const matching = entries.filter((e) => e.category === category);
-    return matching.length ? [{ category, count: matching.length, covers: coverPool(matching) }] : [];
-  });
-  const rest = entries.filter((e) => !featured.includes(e.category));
-  return { cards, more: rest.length ? { count: rest.length, covers: coverPool(rest) } : null };
 }
