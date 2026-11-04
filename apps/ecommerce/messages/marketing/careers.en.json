@@ -1,1 +1,54 @@
-{}
+{
+  "careers": {
+    "openCount": "{count, plural, one {open role} other {open roles}} across the team.",
+    "openCta": "See open roles",
+    "noneTitle": "No open roles right now",
+    "noneBody": "We aren't hiring for specific roles at the moment, but we always want to hear from people who care about Egyptian brands. Send us your CV or portfolio.",
+    "band": "Want to work with us? Write to us anyway.",
+    "bandBody": "Tell us what you'd do at Tallaby.",
+    "titleStart": "Come help us",
+    "titleEnd": "Egyptian commerce.",
+    "words": [
+      "build",
+      "design",
+      "grow",
+      "support"
+    ],
+    "lead": "We're a small team in Cairo building the tools that put local brands online. Every person here has a direct line to sellers and to the product.",
+    "perksKicker": "Working here",
+    "perksTitle": "What you get, besides the work",
+    "perkBig": "You'll talk to sellers every week",
+    "perkBigBody": "Everyone, engineers included, spends time with the brands using Tallaby. It's how we decide what to build.",
+    "perkHybridBody": "Office days in Cairo, the rest from wherever you work best.",
+    "perkHealthBody": "Private medical cover for you from day one.",
+    "perkLearnBody": "Courses, books and conferences you choose.",
+    "perkSetup": "Your setup",
+    "perkSetupBody": "A laptop and gear that fit your role.",
+    "departments": {
+      "ss": "Seller success"
+    },
+    "youBring": "You bring",
+    "apply": "Apply",
+    "empty": "No roles in this team right now",
+    "processTitle": "Four steps, about two weeks",
+    "steps": [
+      {
+        "title": "Apply",
+        "body": "Send your CV or portfolio and a few lines about why Tallaby."
+      },
+      {
+        "title": "Intro call",
+        "body": "30 minutes with the hiring manager."
+      },
+      {
+        "title": "Work sample",
+        "body": "A short, paid task close to the real job."
+      },
+      {
+        "title": "Meet the team",
+        "body": "Meet the people you'll work with, then an offer."
+      }
+    ],
+    "emailUs": "Email Us"
+  }
+}
