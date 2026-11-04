@@ -1143,7 +1143,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-41 One store apps catalog for Apps, Shipping companies and Payment methods (2026-10-30, local `main`)
 - [x] F-12c Wassalha (Egypt Post) settings + Excel export (2026-10-30, local `main`; 0130 applied 2026-10-30)
 - [x] F-12d Shipping › Shipping companies card (2026-10-30, local `main`)
-- [ ] F-12e Wassalha tracking numbers (result file upload, tracking link)
+- [x] F-12e Wassalha tracking numbers (result file upload, tracking link) (2026-11-04; `92914c78`; needs a real Wassalha result file)
 - [x] F-13b Store-wide free delivery (none / over an amount / every order) (2026-10-30, local `main`; minimum order value still open)
 - [x] F-03e Missed-order reminders (2026-10-29; one-click WhatsApp + the existing daily store cart email shown on the lead; automatic WhatsApp with F-14)
 - [x] F-04c Orders bulk actions (2026-10-30, uncommitted; selection bar on /orders; browser E2E pending)
@@ -1158,7 +1158,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-32a Cross-sell design note (owner approved 2026-11-04)
 - [x] F-32b Offers migration (2026-11-04; 0145 on staging)
 - [x] F-32c Cross-sell in product form + store switch (2026-11-04; not seen in a browser)
-- [~] F-32d Cross-sell on the store product page and cart (2026-11-04; shows under the buy box and in the cart; the builder element waits for the template work in `packages/store-sections`)
+- [x] F-32d Cross-sell on the store product page and cart (2026-11-04; `cc6923a9`)
 - [x] F-32e Cross-sell discount at checkout (2026-11-04; integration tests on staging)
 - [x] F-34a Low-stock badge migration (`show_low_stock_badge`, `low_stock_threshold`) (2026-10-30, uncommitted; 0122 on staging)
 - [x] F-34b Checkbox + threshold in the product form (2026-10-30, uncommitted)
@@ -1190,9 +1190,9 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-06d Push every seller notification type (2026-10-30, uncommitted; 0131 on staging)
 - [x] F-06e Admin browser/PWA push (2026-10-30, uncommitted; 0131 on staging; needs admin VAPID env + DB webhook)
 - [x] F-06f Admin sends a notification to one seller (2026-10-30, uncommitted; 0131 on staging)
-- [ ] F-07a Quantity offers design (owner approval)
-- [ ] F-07b Quantity offers in product form
-- [ ] F-07c Quantity offers on storefront
+- [x] F-07a Quantity offers design (owner approval) (2026-11-04; `49d25746`; `docs/superpowers/specs/2026-11-04-quantity-offers-design.md`)
+- [x] F-07b Quantity offers in product form (2026-11-04; `81882172`; 0147 on staging)
+- [x] F-07c Quantity offers on storefront (2026-11-04; `1f227bf8`; inside the buy box, not a builder element)
 - [ ] F-08a Inline order form (owner approval) (delayed by owner 2026-11-04)
 - [ ] F-08b Landing page designs (delayed by owner 2026-11-04)
 - [x] F-09a Staff design + security review (2026-10-30, note written; owner answers pending)
@@ -1214,8 +1214,8 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [ ] F-08c Funnel steps (delayed by owner 2026-11-04)
 - [x] F-10c Inventory page (2026-10-30, uncommitted; `/products/inventory`; browser E2E pending)
 - [x] F-11c Shareable catalog (2026-10-30, uncommitted; Marketing › Shareable catalog + "Share catalog" on selected products; browser E2E pending)
-- [ ] F-13a Automatic discounts
-- [ ] F-13c Coupons in cart + free gift
+- [x] F-13a Automatic discounts (2026-11-04; `e6455214`; 0148 on staging)
+- [x] F-13c Coupons in cart + free gift (2026-11-04; `cf4b9c50`; 0149 on staging)
 - [ ] F-14a / F-14b Customer notifications (delayed by owner 2026-11-04)
 - [x] F-15a Reports upgrade (2026-10-30, uncommitted; `/reports`; browser E2E pending)
 - [x] F-16a Email campaigns (2026-10-30, uncommitted; 0129 on staging; `/marketing/emails`; dashboard backend env + real-send E2E pending)
@@ -1253,7 +1253,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-30a Purchase on delivery (CAPI) (2026-10-30, uncommitted; real Meta test event pending)
 - [x] F-30b Pixel event toggles (2026-10-30, uncommitted; Store › Apps › Meta Pixel)
 - [ ] F-31 POS and cashier (delayed by owner 2026-11-04)
-- [ ] F-32f Cross-sell report
+- [x] F-32f Cross-sell report (2026-11-04; `2f2357e5`; orders only, offers shown and added aren't recorded)
 - [x] F-34d Stock badge builder element (2026-10-30, uncommitted; `productStockBadge`, editor E2E pending)
 
 **Business update 2026-11-03 (nothing built yet; order in §3.1)**
@@ -1349,15 +1349,24 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-67a Pending carts on the seller dashboard (2026-11-04; no migration; not seen in a browser)
 - [x] F-68a First top-up: message, sidebar warning, blurred Orders page (2026-11-04; off until the USD switch; not seen in a browser)
 - [x] F-69a Campaign email allowance by plan, with extra emails (2026-11-04; 0146 on staging; not seen in a browser)
-- [ ] F-70a Consent banner on tallaby.com
-- [ ] F-70b Dashboard text fixes
-- [ ] F-70c Lint errors on this batch's code
+- [x] F-70a Consent banner on tallaby.com (2026-11-04; `d3648d7d`)
+- [x] F-70b Dashboard text fixes (2026-11-04; `ed224d60`)
+- [x] F-70c Lint errors on this batch's code (2026-11-04; `9666b9a6`)
 - [ ] F-70d Fix the 6 duplicate addresses at launch (needs owner's go-ahead)
 - [ ] F-70e Compare research and go public (owner)
 
 ---
 
 ## 7. Log
+
+### 2026-11-04 — Offers, tracking and clean-up batch; a test wrote to production
+
+- **Incident:** `store-offers-summary.integration.test.ts` imported the database before setting DATABASE_URL, so `dotenv` used `apps/ecommerce/.env`, which is production. It ran twice and left test rows on production: 2 sellers (`subdomain LIKE 'qs-%'`, `support_email = 'x@example.com'`) with their auth, users and store rows, 2 guest buyers ("QA Buyer", `@temp.local`) with addresses, and possibly Admin bell rows. No orders, products or money. **Not cleaned up yet: waiting on the owner.**
+- **Fix:** `4e43a225`: under Vitest the database client refuses any address but staging. Checked from `apps/ecommerce`: a query failed to connect there. Production behaviour is unchanged.
+- **Built, not deployed:** quantity offers (F-07a–c), automatic discounts (F-13a), coupons in the cart and free gifts (F-13c), Wassalha tracking (F-12e), the cross-sell builder element and report (F-32d, F-32f), the consent banner, dashboard text and lint fixes (F-70a–c).
+- **Migrations:** `0147`, `0148`, `0149`, staging only. Production needs them before deploy.
+- **Rules:** each line gets its single biggest offer among tier, cross-sell and automatic rule, and a seller coupon applies on the net. The flat fee is unchanged. A free gift that stops qualifying leaves the order.
+- **Checks:** order tests on staging, 240 in `packages/lib/src/orders` plus 4 summary tests, rerun after the guard. **Nothing from this batch but the consent banner was seen on screen.**
 
 ### 2026-11-04 — Roadmap triage (owner)
 
