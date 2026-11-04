@@ -1,1 +1,47 @@
-{}
+{
+  "blog": {
+    "index": {
+      "lead": "Practical guides and product updates for Egyptian brands.",
+      "newsTitle": "New guides, straight to your email",
+      "newsBody": "Practical guides and product updates. No spam, unsubscribe anytime.",
+      "subscribed": "Subscribed. Thanks for joining.",
+      "byEmail": "Get it by email"
+    },
+    "post": {
+      "breadcrumb": "Breadcrumb",
+      "ctaBody": "Create your store free and add your first product in minutes. The Free plan costs $0.03 per order, and you need a first $5 top-up before you can see orders.",
+      "copy": "Copy link",
+      "keepReading": "Keep reading",
+      "ctaTitle": "Ready to put a price on it?"
+    },
+    "article": {
+      "s2List": [
+        "Shipping, if you offer free delivery.",
+        "Payment processing for online payments.",
+        "Platform fee: $0.03 per order on the Tallaby Free plan, or none on Pro.",
+        "A small buffer for returns and damaged items."
+      ],
+      "toolBody": "Enter your numbers in EGP. The suggested price already includes the Tallaby Free plan fee of $0.03, about 1.5 EGP.",
+      "fee": "Tallaby fee, about",
+      "lede": "Pricing is the decision most new sellers get wrong, usually by charging too little. A low price feels safe, but it leaves no room for shipping surprises, returns or a discount code when you need one. Here's a simple way to get it right.",
+      "s1": "1. Start from your real cost",
+      "s1Body": "Add up everything it takes to get one unit ready to ship: materials or wholesale price, packaging, labels and any printing. If you make the product yourself, include your time.",
+      "s2": "2. Add the costs you don't see",
+      "s3": "3. Choose a margin you can live with",
+      "s3Body": "For most handmade and small-batch goods, a margin between 50% and 100% on top of cost leaves room to grow. Lower margins can work for high-volume items, but only if your orders really are high volume.",
+      "quote": "If a 10% discount would make you lose money, your price is too low.",
+      "s4Body": "Look at three or four brands selling something similar. You don't need to be the cheapest; you need to be clearly worth it. Then round to a clean number: 449 or 450 reads better than 437.",
+      "tip": "Tip: test a price for two weeks before changing it. Small samples move around a lot.",
+      "shipping": "Shipping you cover"
+    },
+    "categories": {
+      "stories": "Seller stories"
+    },
+    "posts": {
+      "pricing-products": {
+        "title": "How to price your products for online sales",
+        "excerpt": "A simple way to account for cost, shipping and fees, and land on a price that earns without scaring customers off."
+      }
+    }
+  }
+}

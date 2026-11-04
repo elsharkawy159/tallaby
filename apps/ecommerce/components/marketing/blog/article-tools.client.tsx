@@ -6,7 +6,8 @@ import { useTranslations } from "next-intl";
 import { cn } from "@workspace/ui/lib/utils";
 import { BrandIcon } from "@/components/marketing/site/brand-icon";
 import { useScrollSpy } from "@/components/marketing/site/use-scroll-spy.client";
-import { formatNumber, suggestedPrice } from "@/lib/marketing/pricing.lib";
+import { suggestedProductPrice } from "@/lib/marketing/blog-calculator.lib";
+import { formatNumber } from "@/lib/marketing/pricing.lib";
 
 /** Thin amber bar under the header that fills as the article is read. */
 export function ReadingProgress({ targetId }: { targetId: string }) {
@@ -58,30 +59,27 @@ export function ShareBar({ title }: { title: string }) {
   const [url, setUrl] = React.useState("");
   React.useEffect(() => setUrl(window.location.href), []);
 
-  const btn = "grid size-10 place-items-center rounded-xl border border-neutral-200 bg-white text-teal-700 hover:bg-teal-50";
+  const btn = "grid size-10 place-items-center rounded-full border border-line-strong bg-white text-teal-700 hover:bg-teal-50";
   const enc = encodeURIComponent;
 
   return (
     <aside
       data-print="hide"
-      className="col-span-full flex items-center gap-2 lg:sticky lg:top-[110px] lg:col-span-1 lg:grid lg:justify-items-start lg:self-start"
+      className="col-span-full flex flex-wrap items-center gap-2 lg:sticky lg:top-[110px] lg:col-span-1 lg:grid lg:justify-items-start lg:self-start"
     >
       <small className="text-xs font-semibold text-neutral-500 lg:mb-1">{t("share")}</small>
+      <a className={btn} aria-label="Facebook" target="_blank" rel="noopener noreferrer" href={`https://www.facebook.com/sharer/sharer.php?u=${enc(url)}`}>
+        <BrandIcon name="facebook" className="size-4" />
+      </a>
+      <a className={btn} aria-label="LinkedIn" target="_blank" rel="noopener noreferrer" href={`https://www.linkedin.com/sharing/share-offsite/?url=${enc(url)}`}>
+        <BrandIcon name="linkedin" className="size-4" />
+      </a>
       <a className={btn} aria-label="WhatsApp" target="_blank" rel="noopener noreferrer" href={`https://wa.me/?text=${enc(`${title} ${url}`)}`}>
         <MessageCircle className="size-[18px]" aria-hidden />
       </a>
-      <a
-        className={btn}
-        aria-label="X"
-        target="_blank"
-        rel="noopener noreferrer"
-        href={`https://x.com/intent/post?text=${enc(title)}&url=${enc(url)}`}
-      >
-        <BrandIcon name="x" className="size-4" />
-      </a>
       <button
         type="button"
-        className={cn(btn, "flex w-auto gap-1.5 px-3 text-[13px] font-semibold")}
+        className={cn(btn, "flex w-auto gap-1.5 px-3.5 text-[13px] font-semibold")}
         onClick={() => {
           void navigator.clipboard?.writeText(window.location.href);
           setCopied(true);
@@ -100,7 +98,7 @@ export function PriceCalculator() {
   const tc = useTranslations("common");
   const [values, setValues] = React.useState({ unitCost: "180", packaging: "15", shipping: "45", marginPct: "60" });
   const n = (v: string) => Math.max(0, parseFloat(v) || 0);
-  const result = suggestedPrice({
+  const result = suggestedProductPrice({
     unitCost: n(values.unitCost),
     packaging: n(values.packaging),
     shipping: n(values.shipping),
@@ -115,7 +113,7 @@ export function PriceCalculator() {
   ] as const;
 
   return (
-    <div className="my-9 rounded-[22px] bg-teal-900 p-7 text-[15px] leading-[1.6] text-white">
+    <div className="my-9 rounded-card-lg bg-teal-900 p-7 text-[15px] leading-[1.6] text-white">
       <h3 className="mb-1 flex items-center gap-2 text-lg font-bold">
         <Calculator className="size-[18px] text-amber-600" aria-hidden />
         {t("toolTitle")}

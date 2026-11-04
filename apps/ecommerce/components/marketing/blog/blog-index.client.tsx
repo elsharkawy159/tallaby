@@ -25,6 +25,8 @@ export function BlogIndex({ posts: all }: { posts: MarketingPost[] }) {
     return `${p.title} ${p.excerpt}`.toLowerCase().includes(q);
   });
   const browsing = category === "all" && !q;
+  // A category with no posts isn't offered, so the chips never promise content that doesn't exist.
+  const categories = BLOG_CATEGORIES.filter((c) => c === "all" || all.some((p) => p.category === c));
 
   return (
     <>
@@ -33,9 +35,9 @@ export function BlogIndex({ posts: all }: { posts: MarketingPost[] }) {
           value={category}
           onChange={setCategory}
           label={t("index.search")}
-          options={BLOG_CATEGORIES.map((c) => ({ value: c, label: t(`categories.${c}`) }))}
+          options={categories.map((c) => ({ value: c, label: t(`categories.${c}`) }))}
         />
-        <label className="flex h-[42px] w-full items-center gap-2 rounded-full border border-neutral-200 bg-white px-4 text-neutral-500 sm:w-auto sm:min-w-60">
+        <label className="flex h-[42px] w-full items-center gap-2 rounded-full border border-line-strong bg-white px-4 text-neutral-500 transition-[border-color,box-shadow] duration-150 focus-within:border-teal-700 focus-within:shadow-[var(--ring-focus)] sm:w-auto sm:min-w-60">
           <Search className="size-[18px]" aria-hidden />
           <span className="sr-only">{t("index.search")}</span>
           <input
@@ -48,11 +50,11 @@ export function BlogIndex({ posts: all }: { posts: MarketingPost[] }) {
         </label>
       </div>
 
-      <div className="grid gap-x-7 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {posts.length ? (
           posts.map((post, i) => <PostCard key={post.id} post={post} locale={locale} wide={browsing && i === 0} />)
         ) : (
-          <div className="col-span-full rounded-[20px] border border-dashed border-neutral-300 p-12 text-center text-neutral-600">{t("index.none")}</div>
+          <div className="col-span-full rounded-[20px] border border-dashed border-line-strong p-12 text-center text-neutral-600">{t("index.none")}</div>
         )}
       </div>
     </>
@@ -63,15 +65,18 @@ function PostCard({ post, locale, wide }: { post: MarketingPost; locale: string;
   return (
     <Link
       href={`/blog/${post.id}`}
-      className={cn("group flex flex-col gap-3 text-inherit hover:no-underline", wide && "sm:col-span-2 sm:grid sm:grid-cols-[1.1fr_1fr] sm:items-center sm:gap-6")}
+      className={cn(
+        "group flex flex-col gap-3 rounded-card border border-line bg-white px-3 pt-3 pb-5 text-inherit shadow-[0_14px_36px_rgba(13,55,67,0.05)] transition-[transform,box-shadow] duration-200 hover:-translate-y-[3px] hover:no-underline hover:shadow-raise",
+        wide && "sm:col-span-2 sm:grid sm:grid-cols-[1.1fr_1fr] sm:items-center sm:gap-6",
+      )}
     >
       <div className="relative aspect-[16/10] overflow-hidden rounded-2xl">
         <Image src={post.image} alt="" fill sizes="(min-width: 1024px) 400px, 100vw" unoptimized={!isOptimizableImage(post.image)} className="object-cover" />
         <span className="absolute inset-0 bg-teal-900 opacity-0 transition-opacity duration-200 group-hover:opacity-15" />
       </div>
-      <div className="grid gap-2.5">
+      <div className="grid gap-2.5 px-2">
         <PostMeta post={post} locale={locale} />
-        <h3 className="text-xl leading-[1.4] font-bold text-teal-900 transition-colors group-hover:text-teal-700 en:leading-[1.25] en:tracking-[-0.01em]">
+        <h3 className="text-[19px] leading-[1.5] font-bold text-teal-900 transition-colors group-hover:text-teal-700 en:leading-[1.25] en:tracking-[-0.01em]">
           {post.title}
         </h3>
         <p className="text-[15px] text-slate-ink">{post.excerpt}</p>

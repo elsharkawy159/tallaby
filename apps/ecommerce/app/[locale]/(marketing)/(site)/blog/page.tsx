@@ -28,18 +28,17 @@ export default async function BlogPage() {
 
   return (
     <>
-      <section className="relative overflow-hidden bg-teal-900 pt-16 pb-[72px] text-white">
-        <div aria-hidden className="hero-glow pointer-events-none absolute inset-0" />
-        <Container className="relative">
+      <section className="pt-11 pb-6 sm:pt-16">
+        <Container>
           <div className="mb-10 flex flex-wrap items-end justify-between gap-6">
             <div>
               <Eyebrow>{t("index.eyebrow")}</Eyebrow>
-              <h1 className="display-tight text-[clamp(40px,6vw,80px)] leading-[1.22] font-extrabold en:leading-[1.05]">
+              <h1 className="text-[clamp(40px,6vw,80px)] leading-[1.25] font-bold text-balance text-teal-900 en:leading-[1.1] en:tracking-[-0.02em] [&_em]:text-amber-700 [&_em]:not-italic">
                 {t.rich("index.title", richTags)}
               </h1>
-              <p className="mt-2.5 max-w-[560px] text-base text-mist sm:text-lg">{t("index.lead")}</p>
+              <p className="mt-2.5 max-w-[600px] text-[clamp(16px,2vw,19px)] text-pretty text-[#56696e]">{t("index.lead")}</p>
             </div>
-            <CtaButton asChild tone="ghost">
+            <CtaButton asChild tone="outline">
               <a href="#news">
                 <Mail />
                 {t("index.byEmail")}
@@ -50,7 +49,7 @@ export default async function BlogPage() {
           {featured ? (
             <Link
               href={`/blog/${featured.id}`}
-              className="grid overflow-hidden rounded-3xl bg-white text-body transition-transform duration-200 hover:-translate-y-1 hover:no-underline lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]"
+              className="grid overflow-hidden rounded-card-lg border border-line bg-white text-body shadow-[0_20px_50px_rgba(13,55,67,0.08)] transition-[transform,box-shadow] duration-200 hover:-translate-y-1 hover:text-body hover:no-underline hover:shadow-[0_28px_60px_rgba(13,55,67,0.12)] lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]"
             >
               <div className="relative min-h-60 lg:min-h-[380px]">
                 <Image src={featured.image} alt="" fill priority unoptimized={!isOptimizableImage(featured.image)} sizes="(min-width: 1024px) 700px, 100vw" className="object-cover" />
@@ -60,7 +59,7 @@ export default async function BlogPage() {
               </div>
               <div className="flex flex-col justify-center gap-3.5 p-[26px] lg:p-11">
                 <PostMeta post={featured} locale={locale} />
-                <h2 className="text-[clamp(24px,2.8vw,36px)] leading-[1.3] font-extrabold text-teal-900 en:leading-[1.15] en:tracking-[-0.02em]">
+                <h2 className="text-[clamp(24px,2.8vw,36px)] leading-[1.35] font-bold text-teal-900 en:leading-[1.15] en:tracking-[-0.02em]">
                   {featured.title}
                 </h2>
                 <p className="text-base text-slate-ink">{featured.excerpt}</p>
@@ -84,13 +83,13 @@ export default async function BlogPage() {
         <div className="h-24" />
       )}
 
-      <section id="news" className="pb-24">
+      <section id="news" className="scroll-mt-20 pb-20">
         <Container>
-          <Reveal className="relative grid items-center gap-10 overflow-hidden rounded-[28px] bg-teal-900 p-[26px] text-white md:p-14 lg:grid-cols-2">
+          <Reveal className="relative grid items-center gap-10 overflow-hidden rounded-[28px] bg-teal-900 p-[26px] text-white md:p-14 min-[861px]:rounded-band lg:grid-cols-2">
             <div aria-hidden className="absolute -top-40 size-[360px] rounded-full border-[56px] border-amber-600/10 ltr:-right-[120px] rtl:-left-[120px]" />
             <div className="relative">
-              <h2 className="text-[clamp(26px,3vw,38px)] leading-[1.3] font-extrabold">{t("index.newsTitle")}</h2>
-              <p className="mt-2.5 text-mist">{t("index.newsBody")}</p>
+              <h2 className="text-[clamp(26px,3vw,38px)] leading-[1.35] font-bold">{t("index.newsTitle")}</h2>
+              <p className="mt-2.5 text-ink-on-dark">{t("index.newsBody")}</p>
             </div>
             <NewsletterForm />
           </Reveal>

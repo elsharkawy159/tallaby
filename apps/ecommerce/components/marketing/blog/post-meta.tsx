@@ -10,11 +10,15 @@ export function PostMeta({ post, locale, className }: { post: BlogPost; locale: 
   const dot = <i aria-hidden className="block size-1 rounded-full bg-neutral-300" />;
   return (
     <div className={cn("flex flex-wrap items-center gap-3.5 text-[13px] text-neutral-600", className)}>
-      <span className="font-bold text-amber-700">{t(`categories.${post.category}`)}</span>
+      <span className="rounded-full bg-teal-50 px-2.5 py-px font-bold text-teal-700">{t(`categories.${post.category}`)}</span>
       {dot}
       <time dateTime={post.date}>{formatLongDate(post.date, locale)}</time>
-      {dot}
-      <span>{tc("minRead", { minutes: post.minutes })}</span>
+      {post.hasArticle ? (
+        <>
+          {dot}
+          <span>{tc("minRead", { minutes: post.minutes })}</span>
+        </>
+      ) : null}
     </div>
   );
 }
