@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import type { ReactNode } from "react";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { CtaButton } from "@/components/marketing/site/cta-button";
-import { Container, Eyebrow, Section, SectionHeading } from "@/components/marketing/site/layout-primitives";
+import { Container, Eyebrow, Kicker, Ltr, Section, SectionHeading } from "@/components/marketing/site/layout-primitives";
 import { Reveal } from "@/components/marketing/site/reveal.client";
 import { richTags } from "@/components/marketing/site/rich-text";
+import { SiteCard } from "@/components/marketing/site/site-card";
 import { pageMetadata } from "@/lib/marketing/metadata.lib";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -22,29 +24,34 @@ export default async function AboutPage() {
   const facts = [
     { value: "2026", label: t("f1"), latin: true },
     { value: t("f2Value"), label: t("f2") },
-    { value: "5", label: t("f3"), latin: true },
+    { value: "$0.03", label: t("f3"), latin: true },
     { value: "2", label: t("f4"), latin: true },
   ];
 
   return (
     <>
-      <section className="relative overflow-hidden bg-teal-900 pt-24 text-white">
-        <div aria-hidden className="hero-glow pointer-events-none absolute inset-0" />
-        <Container className="relative">
+      <section className="pt-11 sm:pt-20">
+        <Container>
           <Eyebrow>{t("eyebrow")}</Eyebrow>
-          <h1 className="display-tight max-w-[1000px] text-[clamp(40px,7vw,96px)] leading-[1.15] font-extrabold en:leading-none en:tracking-[-0.04em]">
-            {t.rich("title", richTags)}
+          <h1 className="max-w-[1000px] text-[clamp(40px,6.4vw,84px)] leading-[1.2] font-bold text-balance text-teal-900 en:leading-none en:tracking-[-0.04em]">
+            {t.rich("title", {
+              ...richTags,
+              u: (chunks: ReactNode) => <span className="text-amber-700 sm:whitespace-nowrap">{chunks}</span>,
+            })}
           </h1>
           <div className="mt-10 flex flex-wrap items-end justify-between gap-10 pb-16">
-            <p className="max-w-[520px] text-lg text-mist">{t("lead")}</p>
-            <div className="flex items-center gap-4 text-sm text-mist">
-              <b className="font-noto-kufi-arabic text-[44px] leading-none font-extrabold text-white">طلبي</b>
-              <span className="border-s border-white/20 ps-4 leading-normal">{t.rich("word", richTags)}</span>
+            <p className="max-w-[520px] text-lg text-pretty text-[#56696e]">{t("lead")}</p>
+            <div className="flex items-center gap-4 text-sm text-ink-500">
+              <b className="font-noto-kufi-arabic text-[44px] leading-none font-bold text-teal-900">طلبي</b>
+              <span className="border-s border-line-strong ps-4 leading-normal">{t.rich("word", richTags)}</span>
             </div>
           </div>
           <div aria-hidden className="relative z-[1] -mb-[120px] grid grid-cols-2 gap-3.5 sm:h-60 sm:grid-cols-[2fr_1fr_1.3fr] lg:h-[340px]">
             {MOSAIC.map((src, i) => (
-              <div key={src} className={`relative h-40 overflow-hidden rounded-[20px] bg-[#f4efe6] sm:h-auto ${i === 0 ? "col-span-2 sm:col-span-1" : ""}`}>
+              <div
+                key={src}
+                className={`relative h-40 overflow-hidden rounded-card bg-[#f4efe6] shadow-[0_20px_50px_rgba(13,55,67,0.12)] sm:h-auto ${i === 0 ? "col-span-2 sm:col-span-1" : ""}`}
+              >
                 <Image src={src} alt="" fill sizes="(min-width: 640px) 40vw, 100vw" className="object-cover" priority={i === 0} />
               </div>
             ))}
@@ -52,10 +59,10 @@ export default async function AboutPage() {
         </Container>
       </section>
 
-      <section className="pt-[200px] pb-24">
+      <section className="pt-[200px] pb-14 min-[861px]:pb-[72px]">
         <Container className="grid gap-7 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:gap-16">
           <Reveal>
-            <span className="block text-[13px] font-bold text-amber-700 en:text-xs en:tracking-[0.1em] en:uppercase">{t("storyKicker")}</span>
+            <Kicker>{t("storyKicker")}</Kicker>
           </Reveal>
           <Reveal>
             <p className="text-[clamp(22px,2.4vw,30px)] leading-[1.6] font-semibold text-teal-900 en:leading-[1.4] en:tracking-[-0.01em]">
@@ -71,7 +78,7 @@ export default async function AboutPage() {
         </Container>
       </section>
 
-      <Section className="pt-0 md:pt-0">
+      <Section className="pt-0 min-[861px]:pt-0">
         <Container>
           <Reveal>
             <SectionHeading kicker={t("principlesKicker")} title={t("principlesTitle")} />
@@ -81,7 +88,7 @@ export default async function AboutPage() {
               <Reveal
                 as="li"
                 key={p.title}
-                className="group grid grid-cols-[70px_1fr] items-baseline gap-x-5 gap-y-3 border-t border-neutral-200 py-9 last:border-b lg:grid-cols-[120px_minmax(0,1fr)_minmax(0,1.2fr)] lg:gap-8"
+                className="group grid grid-cols-[70px_1fr] items-baseline gap-x-5 gap-y-3 border-t border-line py-9 last:border-b lg:grid-cols-[120px_minmax(0,1fr)_minmax(0,1.2fr)] lg:gap-8"
               >
                 <span className="row-span-2 font-latin text-[40px] leading-none font-extrabold tracking-[-0.04em] text-teal-100 transition-colors group-hover:text-amber-600 lg:row-span-1 lg:text-[56px]">
                   0{i + 1}
@@ -94,34 +101,38 @@ export default async function AboutPage() {
         </Container>
       </Section>
 
-      <Section className="bg-teal-900 text-white">
-        <Container className="grid grid-cols-2 gap-7 lg:grid-cols-4 lg:gap-0">
-          {facts.map((f, i) => (
-            <Reveal key={f.label} className={i === 0 ? "" : "lg:border-s lg:border-white/10 lg:px-7"}>
-              <b className={`block text-[clamp(36px,4vw,52px)] leading-[1.1] font-extrabold tracking-[-0.03em] text-amber-600 ${f.latin ? "font-latin" : ""}`}>
-                {f.value}
-              </b>
-              <span className="text-sm text-mist">{f.label}</span>
-            </Reveal>
-          ))}
+      <section>
+        <Container>
+          <div className="cta-glow relative grid grid-cols-2 gap-7 overflow-hidden rounded-[28px] bg-teal-900 px-6 py-8 text-white min-[861px]:rounded-band lg:grid-cols-4 lg:gap-0 lg:px-10 lg:py-12">
+            {facts.map((f, i) => (
+              <Reveal key={f.label} className={`relative ${i === 0 ? "" : "lg:border-s lg:border-white/10 lg:px-7"}`}>
+                <b className={`block text-[clamp(36px,4vw,52px)] leading-[1.1] font-extrabold tracking-[-0.03em] text-amber-600 ${f.latin ? "font-latin" : ""}`}>
+                  {f.latin ? <Ltr>{f.value}</Ltr> : f.value}
+                </b>
+                <span className="text-sm text-ink-on-dark">{f.label}</span>
+              </Reveal>
+            ))}
+          </div>
         </Container>
-      </Section>
+      </section>
 
       <Section>
         <Container>
-          <Reveal className="grid items-center gap-8 rounded-3xl border border-neutral-200 bg-white p-[26px] sm:grid-cols-[minmax(0,1fr)_auto] sm:p-10">
-            <div>
-              <h3 className="text-2xl font-bold text-teal-900">{t("hiring")}</h3>
-              <p className="mt-1.5 text-slate-ink">{t("hiringBody")}</p>
-            </div>
-            <div className="flex flex-wrap gap-2.5">
-              <CtaButton asChild tone="teal">
-                <Link href="/careers">{t("roles")}</Link>
-              </CtaButton>
-              <CtaButton asChild tone="outline">
-                <Link href="/contact">{t("hello")}</Link>
-              </CtaButton>
-            </div>
+          <Reveal>
+            <SiteCard size="lg" glass className="grid items-center gap-8 p-[26px] sm:grid-cols-[minmax(0,1fr)_auto] sm:p-10">
+              <div>
+                <h2 className="text-2xl font-bold text-teal-900">{t("hiring")}</h2>
+                <p className="mt-1.5 text-slate-ink">{t("hiringBody")}</p>
+              </div>
+              <div className="flex flex-wrap gap-2.5">
+                <CtaButton asChild tone="dark">
+                  <Link href="/careers">{t("roles")}</Link>
+                </CtaButton>
+                <CtaButton asChild tone="outline">
+                  <Link href="/contact">{t("hello")}</Link>
+                </CtaButton>
+              </div>
+            </SiteCard>
           </Reveal>
         </Container>
       </Section>
