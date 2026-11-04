@@ -1,3 +1,4 @@
+import { whatsAppDigits } from "../address/phone.lib";
 import { normalizeLeadPhone } from "../checkout-leads/checkout-leads.lib";
 
 /**
@@ -225,7 +226,7 @@ export const THANK_YOU_WHATSAPP_DEFAULTS = {
   en: "Hi {store}, I placed order #{number} and would like to confirm it.",
 } as const;
 
-/** wa.me link with the order number, or null when the store has no Egyptian mobile for WhatsApp. */
+/** wa.me link with the order number, or null when the store has no mobile for WhatsApp. */
 export function thankYouWhatsAppUrl(input: {
   storePhone: string | null | undefined;
   storeName: string;
@@ -239,5 +240,5 @@ export function thankYouWhatsAppUrl(input: {
   const message = template.replace(/\{(store|number)\}/g, (_match, key: string) =>
     key === "store" ? input.storeName : input.orderNumber,
   );
-  return `https://wa.me/20${phone.slice(1)}?text=${encodeURIComponent(message)}`;
+  return `https://wa.me/${whatsAppDigits(phone)}?text=${encodeURIComponent(message)}`;
 }

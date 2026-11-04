@@ -4,9 +4,11 @@
  * Every spelling of an Egyptian mobile (`010…`, `+2010…`, `2010…`, `002010…`,
  * spaces, dashes, Arabic digits) becomes `01XXXXXXXXX`, the form stored in
  * `store_blocked_phones.phone`, so a blocked number matches however the
- * customer types it at checkout.
+ * customer types it at checkout. A foreign number is stored as `+9665XXXXXXXX`
+ * (F-61e).
  */
 import { z } from "zod";
+import { normalizeForeignPhone } from "../address/phone.lib";
 
 const EG_MOBILE_RE = /^01[0125][0-9]{8}$/;
 
@@ -16,12 +18,22 @@ function asciiDigits(input: string): string {
 }
 
 /** `+20 101 234 5678` → `01012345678`; null when it is not an Egyptian mobile. */
-export function normalizeBlockedPhone(input: string): string | null {
+export function normalizeEgyptianMobile(input: string): string | null {
   let digits = asciiDigits(input).replace(/\D/g, "");
   if (digits.startsWith("0020")) digits = digits.slice(4);
   else if (digits.startsWith("20") && digits.length === 12) digits = digits.slice(2);
   if (digits.length === 10 && digits.startsWith("1")) digits = `0${digits}`;
   return EG_MOBILE_RE.test(digits) ? digits : null;
+}
+
+/** The form a blocked number is stored in: `01XXXXXXXXX` or `+9665XXXXXXXX`; null when it can't be read. */
+export function normalizeBlockedPhone(input: string): string | null {
+  return normalizeEgyptianMobile(input) ?? normalizeForeignPhone(input);
+}
+
+/** A stored blocked number as `customerPhone` writes the same number (digits only for a foreign one). */
+export function blockedPhoneCustomerKey(phone: string): string {
+  return phone.replace(/^\+/, "");
 }
 
 export const BLOCKED_PHONE_REASON_MAX = 300;

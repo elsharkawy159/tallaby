@@ -219,3 +219,37 @@ describe('computeOrderLineFees (D22)', () => {
     expect(computeOrderLineFees([], new Map())).toEqual([])
   })
 })
+
+describe("a foreign order's fee (F-61)", () => {
+  const line = (total: string) => ({ sellerId: "s1", total });
+
+  it("is not capped by amounts in another currency, and the parts still add up", () => {
+    const fees = computeOrderLineFees([line("1.00"), line("2.00")], new Map(), new Date(), undefined, true);
+    expect(fees.map((f) => f.commissionAmount)).toEqual(["1.67", "3.33"]);
+    expect(fees.map((f) => f.sellerEarning)).toEqual(["1.00", "2.00"]);
+    expect(fees[0]!.commissionRate).toBe(0);
+  });
+
+  it("is the same on a big order, and nothing is taken from the seller's amount", () => {
+    const [fee] = computeOrderLineFees([line("10000.00")], new Map(), new Date(), undefined, true);
+    expect(fee).toMatchObject({ commissionAmount: "5.00", sellerEarning: "10000.00" });
+  });
+
+  it("stays free for an empty order, and for an exempt seller", () => {
+    expect(computeOrderLineFees([line("0.00")], new Map(), new Date(), undefined, true)[0]!.commissionAmount).toBe("0.00");
+    const exempt = new Map([["s1", { isCommissionExempt: true }]]);
+    expect(computeOrderLineFees([line("100.00")], exempt, new Date(), undefined, true)[0]!.commissionAmount).toBe("0.00");
+  });
+
+  it("takes the USD fee in full", () => {
+    const [fee] = computeOrderLineFees([line("1.00")], new Map(), new Date(), { usdLive: true, marketRate: 50 }, true);
+    expect(fee!.platformFee.feeUsdCents).toBe(3);
+    expect(fee!.commissionAmount).toBe("1.50");
+    expect(fee!.sellerEarning).toBe("1.00");
+  });
+
+  it("changes nothing on an EGP order", () => {
+    const [small] = computeOrderLineFees([line("2.00")], new Map());
+    expect(small).toMatchObject({ commissionAmount: "2.00", sellerEarning: "0.00" });
+  });
+});

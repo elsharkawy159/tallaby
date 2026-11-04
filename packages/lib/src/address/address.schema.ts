@@ -1,5 +1,9 @@
 import { z } from 'zod'
+import { EGYPT, resolveAddressPlace } from '../places'
 import { CAIRO_ORIGIN_RATES } from '../shipping/shipping-rates'
+import { normalizeCountryPhone, normalizeForeignPhone } from './phone.lib'
+
+const EGYPT_MOBILE_RE = /^(?:\+20|20|0)?1[0125][0-9]{8}$/
 
 export const addressTypeEnum = z.enum(['shipping', 'billing', 'both'])
 
@@ -26,8 +30,8 @@ export const addressSchema = z
     phone: z
       .string()
       .min(1, 'Phone number is required')
-      .regex(
-        /^(?:\+20|20|0)?1[0125][0-9]{8}$/,
+      .refine(
+        (value) => EGYPT_MOBILE_RE.test(value) || normalizeForeignPhone(value) !== null,
         'Please enter a valid Egyptian mobile number',
       ),
 
@@ -75,6 +79,18 @@ export const addressSchema = z
     latitude: z.number().optional(),
     longitude: z.number().optional(),
   })
+  .refine(
+    (data) => {
+      // The number must belong to the address's country.
+      const place = resolveAddressPlace({ country: data.country })
+      if (place === null || place === EGYPT) return EGYPT_MOBILE_RE.test(data.phone)
+      return normalizeCountryPhone(place, data.phone) !== null
+    },
+    {
+      message: 'Please enter a valid mobile number for this country',
+      path: ['phone'],
+    },
+  )
   .refine(
     (data) => {
       if (

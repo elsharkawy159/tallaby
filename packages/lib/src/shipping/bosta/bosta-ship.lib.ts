@@ -23,7 +23,7 @@ export function bostaCollection(order: { paymentStatus: string | null; paymentMe
   return { ok: false, error: "awaiting_payment" };
 }
 
-export type BostaShipBlocker = "not_shippable" | "awaiting_payment" | "already_shipped" | "other_carrier";
+export type BostaShipBlocker = "not_shippable" | "awaiting_payment" | "already_shipped" | "other_carrier" | "foreign_order";
 
 /**
  * Why this order can't be sent to Bosta right now, or null. A shipment may

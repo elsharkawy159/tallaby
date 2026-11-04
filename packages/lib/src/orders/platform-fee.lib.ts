@@ -66,6 +66,19 @@ export function allocateFeeAcrossLines (feePiastres: number, linePiastres: numbe
     .map(toPiastres)
 }
 
+/** The same split with no cap at the totals: a foreign order's lines are in another currency. */
+function allocateForeignFee (feePiastres: number, linePiastres: number[]): number[] {
+  const total = linePiastres.reduce((sum, value) => sum + value, 0)
+  if (feePiastres <= 0 || total <= 0) return linePiastres.map(() => 0)
+  let remaining = feePiastres
+  return linePiastres.map((value, index) => {
+    if (index === linePiastres.length - 1) return remaining
+    const share = Math.min(remaining, Math.round((feePiastres * value) / total))
+    remaining -= share
+    return share
+  })
+}
+
 /** When the USD wallet is live (0136), the fee is in US cents by plan (owner, 2026-11-03). */
 export type FeeBilling = { usdLive: boolean; marketRate: number | null }
 
@@ -121,6 +134,8 @@ export function computeSellerPlatformFee (
   lines: ReadonlyArray<{ total: number | string }>,
   at: Date = new Date(),
   billing?: FeeBilling,
+  /** The order's currency isn't EGP: line totals can't cap an EGP or USD fee (F-61). */
+  foreignOrder = false,
 ): SellerPlatformFee {
   const linePiastres = lines.map((line) => Math.max(0, toPiastres(line.total)))
   const eligiblePiastres = linePiastres.reduce((sum, value) => sum + value, 0)
@@ -131,17 +146,23 @@ export function computeSellerPlatformFee (
   const pro = usd && isProActive(seller, at)
   const feeUsdCents = usd && !exempt && !trial && !pro && eligiblePiastres > 0 ? FREE_ORDER_FEE_USD_CENTS : 0
   // The line amounts stay in EGP for order reports; the wallet is charged feeUsdCents.
+  // On a foreign order the amounts are in another currency, so nothing is capped at them.
+  const cap = foreignOrder ? Number.MAX_SAFE_INTEGER : eligiblePiastres
   const feePiastres = usd
-    ? Math.min(eligiblePiastres, usdCentsToPiastres(feeUsdCents, billing!.marketRate!))
+    ? Math.min(cap, usdCentsToPiastres(feeUsdCents, billing!.marketRate!))
     : exempt || trial
       ? 0
-      : computePlatformFeePiastres(eligiblePiastres, plan)
+      : eligiblePiastres > 0
+        ? computePlatformFeePiastres(cap, plan)
+        : 0
 
   return {
     feePiastres,
-    lineFeesPiastres: allocateFeeAcrossLines(feePiastres, linePiastres),
+    lineFeesPiastres: foreignOrder
+      ? allocateForeignFee(feePiastres, linePiastres)
+      : allocateFeeAcrossLines(feePiastres, linePiastres),
     effectiveRate:
-      eligiblePiastres > 0 ? Math.round((feePiastres / eligiblePiastres) * 10_000) / 10_000 : 0,
+      eligiblePiastres > 0 && !foreignOrder ? Math.round((feePiastres / eligiblePiastres) * 10_000) / 10_000 : 0,
     snapshot: {
       plan,
       rateBps: FEE_PLANS[plan].rateBps,
@@ -173,6 +194,12 @@ export function computeOrderLineFees (
   profiles: ReadonlyMap<string, SellerFeeProfile>,
   at: Date = new Date(),
   billing?: FeeBilling,
+  /**
+   * The order's currency isn't EGP (F-61). `commissionAmount` stays what the
+   * wallet is charged, and `sellerEarning` stays the line's total in the order's
+   * currency, since a fee in another currency can't be taken out of it.
+   */
+  foreignOrder = false,
 ): OrderLineFee[] {
   const groups = new Map<string, number[]>()
   lines.forEach((line, index) => {
@@ -183,14 +210,14 @@ export function computeOrderLineFees (
 
   const result = new Array<OrderLineFee>(lines.length)
   for (const [sellerId, indexes] of groups) {
-    const fee = computeSellerPlatformFee(profiles.get(sellerId) ?? {}, indexes.map((i) => lines[i]!), at, billing)
+    const fee = computeSellerPlatformFee(profiles.get(sellerId) ?? {}, indexes.map((i) => lines[i]!), at, billing, foreignOrder)
     indexes.forEach((lineIndex, position) => {
       const total = Math.max(0, toPiastres(lines[lineIndex]!.total))
       const lineFee = fee.lineFeesPiastres[position] ?? 0
       result[lineIndex] = {
         commissionAmount: (lineFee / 100).toFixed(2),
         commissionRate: fee.effectiveRate,
-        sellerEarning: ((total - lineFee) / 100).toFixed(2),
+        sellerEarning: ((foreignOrder ? total : total - lineFee) / 100).toFixed(2),
         platformFee: fee.snapshot,
       }
     })

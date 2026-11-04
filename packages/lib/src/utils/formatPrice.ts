@@ -55,6 +55,11 @@ export function parseStoreCurrency(settings: unknown): { currency: StoreCurrency
   return { currency, label };
 }
 
+/** The label an order's amounts show in: its currency's first symbol (an order may outlive the store's settings). */
+export function currencyDefaultLabel(currency: string | null | undefined): CurrencyLabel {
+  return isStoreCurrency(currency) ? STORE_CURRENCIES[currency][0] : DEFAULT_CURRENCY;
+}
+
 /** A label as text, for places that can't draw markup: <option>, titles, meta tags, messages. */
 export function currencyLabelText(label: CurrencyLabel, locale: string): string {
   if (label !== SAUDI_RIYAL_LABEL) return label;

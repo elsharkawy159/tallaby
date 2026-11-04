@@ -27,7 +27,7 @@ import {
   calculateSellerFreeDeliveryDiscount,
   getThresholdShippingDiscount,
 } from "../shipping/shipping.lib";
-import { resolveStorefrontShipping, zoneSellerFreeDeliveryDiscount } from "../shipping/store-quote";
+import { resolveStoreOrderShipping, zoneSellerFreeDeliveryDiscount } from "../shipping/store-quote";
 import { getPriceFinal } from "../utils/parse-price-json";
 import {
   capManualDiscountPiastres,
@@ -152,18 +152,16 @@ export async function previewManualOrder(actor: Actor, input: ManualOrderInput):
     calculateSellerFreeDeliveryDiscount({ items, destinationState, cartSubtotal }),
   );
   const context = await getStorefrontShippingContext(actor.storeId);
-  if (context?.settings.method === "own") {
-    const quote = resolveStorefrontShipping({
-      settings: context.settings,
-      zones: context.zones,
+  if (context) {
+    const quote = resolveStoreOrderShipping(context, {
       address: { state, city: input.address.city, country: "Egypt", addressLine1: input.address.addressLine1 },
       items,
       subtotal: cartSubtotal,
       tallabyRate: () => rate,
     });
-    if (quote.kind === "not_covered") return { success: false, error: "notCovered" };
-    if (quote.kind === "outside_egypt") return { success: false, error: "outsideEgypt" };
-    if (quote.kind === "zone") {
+    if (quote?.kind === "not_covered") return { success: false, error: "notCovered" };
+    if (quote?.kind === "outside_egypt") return { success: false, error: "outsideEgypt" };
+    if (quote?.kind === "zone") {
       if (input.payment === "cod" && !quote.codEnabled) return { success: false, error: "noCod" };
       shippingCost = quote.shippingCost;
       waived = Math.min(shippingCost, zoneSellerFreeDeliveryDiscount(quote, items));

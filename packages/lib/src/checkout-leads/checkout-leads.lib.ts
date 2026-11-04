@@ -3,6 +3,7 @@
  * storefront capture, the dashboard list and their tests. The server side is
  * checkout-leads.server.ts.
  */
+import { normalizeForeignPhone, whatsAppDigits } from "../address/phone.lib";
 import { normalizeEgyptianPhone } from "../referrals/referrals.lib";
 
 const EG_MOBILE_RE = /^01[0125][0-9]{8}$/;
@@ -14,11 +15,11 @@ export const LEAD_TEMPLATE_MAX = 1000;
 /** Product names listed in the message before "+N more". */
 const MESSAGE_PRODUCTS_MAX = 3;
 
-/** `+20 101 234 5678` → `01012345678`, or null when it is not an Egyptian mobile. */
+/** `+20 101 234 5678` → `01012345678`, a foreign number → `+9665XXXXXXXX`, or null when it can't be read. */
 export function normalizeLeadPhone(input: string | null | undefined): string | null {
   if (!input) return null;
   const phone = normalizeEgyptianPhone(input);
-  return EG_MOBILE_RE.test(phone) ? phone : null;
+  return EG_MOBILE_RE.test(phone) ? phone : normalizeForeignPhone(input);
 }
 
 /** One line of the cart snapshot stored on the lead. */
@@ -71,10 +72,9 @@ export function renderLeadMessage(
   return template.replace(/\{(name|products|total|store|link)\}/g, (match) => map[match] ?? match);
 }
 
-/** wa.me link for an Egyptian mobile (`010…` → `2010…`) with the message. */
+/** wa.me link for a stored lead phone (`010…` → `2010…`, `+9665…` → `9665…`) with the message. */
 export function leadWhatsAppUrl(phone: string, message: string): string {
-  const international = `20${phone.replace(/^0/, "")}`;
-  return `https://wa.me/${international}?text=${encodeURIComponent(message)}`;
+  return `https://wa.me/${whatsAppDigits(phone)}?text=${encodeURIComponent(message)}`;
 }
 
 export const LEAD_RANGES = ["today", "7d", "30d"] as const;

@@ -4,6 +4,7 @@ export {
   formatPrice,
   formatPricePlain,
   formatPriceMarked,
+  currencyDefaultLabel,
   currencyLabelText,
   currencyLabelHtml,
   saudiRiyalSvg,

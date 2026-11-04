@@ -5,6 +5,7 @@
  */
 import { and, asc, db, eq, storeShippingZones, stores } from "@workspace/db";
 import { parseStoreShipping, type StoreShippingSettings, type ZoneForQuote } from "../shipping/store-zones";
+import { parseStoreCurrency, type StoreCurrency } from "../utils/formatPrice";
 
 type Queryable = Parameters<Parameters<typeof db.transaction>[0]>[0] | typeof db;
 
@@ -36,7 +37,7 @@ export function toShippingZone(row: typeof storeShippingZones.$inferSelect): Sto
 export async function getStorefrontShippingContext(
   storeId: string,
   q: Queryable = db,
-): Promise<{ settings: StoreShippingSettings; zones: StoreShippingZone[] } | null> {
+): Promise<{ settings: StoreShippingSettings; zones: StoreShippingZone[]; currency: StoreCurrency } | null> {
   if (!UUID_RE.test(storeId)) return null;
   const [store] = await q.select({ settings: stores.settings }).from(stores).where(eq(stores.id, storeId)).limit(1);
   if (!store) return null;
@@ -48,5 +49,6 @@ export async function getStorefrontShippingContext(
   return {
     settings: parseStoreShipping((store.settings as Record<string, unknown> | null)?.shipping),
     zones: rows.map(toShippingZone),
+    currency: parseStoreCurrency(store.settings).currency,
   };
 }

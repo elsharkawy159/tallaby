@@ -17,6 +17,7 @@ import { getOrderLock } from "../billing/order-lock.server";
 import { getPlanLimits } from "../plans";
 import { listStoreCustomers } from "../customers/customers.server";
 import { listAllStoreSubscribers } from "../store-forms/subscribers.server";
+import { blockedPhoneCustomerKey } from "../stores/blocked-phones.lib";
 import { listStoreBlockedPhones } from "../stores/blocked-phones.server";
 import {
   buildRecipientList,
@@ -309,7 +310,7 @@ export async function loadAudienceEmails(
   }
   const customers = await listStoreCustomers(sellerId, storeId, q);
   if (!customers.length) return [];
-  const blocked = new Set((await listStoreBlockedPhones(storeId)).map((b) => b.phone));
+  const blocked = new Set((await listStoreBlockedPhones(storeId)).map((b) => blockedPhoneCustomerKey(b.phone)));
   return customersForAudience(customers, audience, { now: options.now ?? new Date(), inactiveDays: options.inactiveDays })
     .filter((c) => !(c.phone && blocked.has(c.phone)))
     .map((c) => c.email);
@@ -749,7 +750,7 @@ export async function planWinbackSends(options: { now?: Date; plan?: string | nu
       now,
       days: settings.days,
       unsubscribed,
-      blockedPhones: new Set(blocked.map((b) => b.phone)),
+      blockedPhones: new Set(blocked.map((b) => blockedPhoneCustomerKey(b.phone))),
       max: room,
     });
     if (!picked.length) continue;

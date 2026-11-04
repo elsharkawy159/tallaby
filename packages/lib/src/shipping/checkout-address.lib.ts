@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { normalizeCountryPhone } from '../address/phone.lib'
 import { childrenOf, EGYPT, getPlace, normalizePlaceText } from '../places'
 import { GOVERNORATE_NAME_ALIASES, normalizeGovernorate } from './governorate.lib'
 
@@ -165,13 +166,18 @@ export const checkoutAddressInputSchema = z.object({
   phone: z.string(),
   address: z.string(),
   governorate: z.string().nullish(),
+  /** ISO code, only from the country choice of a store selling abroad (F-61e). Empty means Egypt. */
+  country: z.string().max(2).nullish(),
+  /** Outside Egypt: the picked place keys (`SA/RIYADH`, `SA/RIYADH/riyadh`). */
+  regionKey: z.string().max(120).nullish(),
+  cityKey: z.string().max(160).nullish(),
   locationState: z.string().max(100).nullish(),
   latitude: z.number().min(-90).max(90).nullish(),
   longitude: z.number().min(-180).max(180).nullish(),
 })
 export type CheckoutAddressInput = z.input<typeof checkoutAddressInputSchema>
 
-export type CheckoutAddressField = 'fullName' | 'phone' | 'address' | 'governorate'
+export type CheckoutAddressField = 'fullName' | 'phone' | 'address' | 'governorate' | 'region'
 
 export type ParsedCheckoutAddress =
   | {
@@ -182,7 +188,8 @@ export type ParsedCheckoutAddress =
         addressLine1: string
         state: string
         city: string
-        country: 'Egypt'
+        /** "Egypt", or the country's English name, which `resolveAddressPlace` reads back. */
+        country: string
         latitude: number | null
         longitude: number | null
       }
@@ -196,11 +203,59 @@ function placeName(key: string, locale: string): string {
   return locale === 'ar' ? place.nameAr : place.nameEn
 }
 
+/**
+ * The address of a store selling abroad (F-61e): the customer picks the region
+ * and city from the places data. The names saved are the place's own, so
+ * `resolveAddressPlace` finds the same place when the order is priced.
+ */
+function parseForeignAddress(
+  input: z.output<typeof checkoutAddressInputSchema>,
+  countryCode: string,
+  locale: string,
+): ParsedCheckoutAddress {
+  const errors: CheckoutAddressField[] = []
+  const country = getPlace(countryCode)
+  const fullName = input.fullName.trim().replace(/\s+/g, ' ')
+  if (fullName.length > NAME_MAX || (fullName.match(/\p{L}/gu) ?? []).length < NAME_MIN_LETTERS) errors.push('fullName')
+
+  const phone = normalizeCountryPhone(countryCode, input.phone)
+  if (!phone) errors.push('phone')
+
+  const addressLine1 = input.address.trim().replace(/\s+/g, ' ')
+  if (addressLine1.length < CHECKOUT_ADDRESS_MIN || addressLine1.length > CHECKOUT_ADDRESS_MAX) errors.push('address')
+
+  // A country with no regions in the data has only its address line.
+  const regions = childrenOf(countryCode)
+  const region = regions.find((r) => r.key === input.regionKey) ?? null
+  const city = region ? (childrenOf(region.key).find((c) => c.key === input.cityKey) ?? null) : null
+  if (!country || country.level !== 'country') errors.push('address')
+  if (regions.length > 0 && !region) errors.push('region')
+  if (errors.length > 0 || !phone) return { ok: false, errors, needsGovernorate: false }
+
+  const name = (key: string | undefined) => (key ? placeName(key, locale) : '')
+  const state = name(region?.key) || name(countryCode)
+  return {
+    ok: true,
+    value: {
+      fullName,
+      phone,
+      addressLine1,
+      state,
+      city: name(city?.key) || state,
+      country: country!.nameEn,
+      latitude: input.latitude ?? null,
+      longitude: input.longitude ?? null,
+    },
+  }
+}
+
 /** Checks the form and works out the columns `user_addresses` needs. */
 export function parseCheckoutAddress(raw: unknown, locale: string): ParsedCheckoutAddress {
   const parsed = checkoutAddressInputSchema.safeParse(raw)
   if (!parsed.success) return { ok: false, errors: ['fullName', 'phone', 'address'], needsGovernorate: false }
   const input = parsed.data
+  const countryCode = input.country?.toUpperCase() || EGYPT
+  if (countryCode !== EGYPT) return parseForeignAddress(input, countryCode, locale)
 
   const errors: CheckoutAddressField[] = []
   const fullName = input.fullName.trim().replace(/\s+/g, ' ')

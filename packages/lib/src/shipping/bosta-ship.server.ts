@@ -33,6 +33,7 @@ import {
   type BostaOrderInput,
   type BostaPayloadError,
 } from "./bosta/bosta-payload.lib";
+import { isEgyptianCarrierOrder } from "./store-quote";
 import { bostaCollection, bostaShipBlocker, bostaWebhookUrl, type BostaShipBlocker } from "./bosta/bosta-ship.lib";
 import type { BostaPackageSize } from "./bosta/bosta.types";
 
@@ -97,6 +98,7 @@ async function loadOrder(storeId: string, sellerId: string, orderId: string) {
       paymentMethod: true,
       totalAmount: true,
       subtotal: true,
+      currency: true,
       notes: true,
       shippingAddressId: true,
       userId: true,
@@ -230,7 +232,7 @@ export async function previewBostaShipment(
       allowToOpenPackage: account.settings.allowToOpenPackage,
       pickupLocationName: account.settings.pickupLocationName,
       autoShip: account.settings.autoShip,
-      blocker: bostaShipBlocker(loaded.order, loaded.shipment),
+      blocker: isEgyptianCarrierOrder(loaded.order, loaded.address) ? bostaShipBlocker(loaded.order, loaded.shipment) : "foreign_order",
       destination: match.ok
         ? { ok: true, city: match.destination.city, districtId: match.destination.districtId ?? null, via: match.via }
         : { ok: false, reason: match.reason },
@@ -394,7 +396,7 @@ export async function shipOrderWithBosta(
   const loaded = await loadOrder(storeId, account.sellerId, orderId);
   if (!loaded) return { ok: false, error: "not_found" };
 
-  const blocker = bostaShipBlocker(loaded.order, loaded.shipment);
+  const blocker = isEgyptianCarrierOrder(loaded.order, loaded.address) ? bostaShipBlocker(loaded.order, loaded.shipment) : "foreign_order";
   if (blocker) return { ok: false, error: blocker };
   const collection = bostaCollection(loaded.order);
   if (!collection.ok) return { ok: false, error: collection.error };

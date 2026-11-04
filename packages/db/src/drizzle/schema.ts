@@ -3651,7 +3651,7 @@ export const storeCheckoutLeads = pgTable("store_checkout_leads", {
 	foreignKey({ columns: [table.cartId], foreignColumns: [carts.id], name: "store_checkout_leads_cart_id_fkey" }).onDelete("set null"),
 	foreignKey({ columns: [table.orderId], foreignColumns: [orders.id], name: "store_checkout_leads_order_id_fkey" }).onDelete("set null"),
 	foreignKey({ columns: [table.contactedBy], foreignColumns: [users.id], name: "store_checkout_leads_contacted_by_fkey" }).onDelete("set null"),
-	check("store_checkout_leads_phone_format", sql`phone ~ '^01[0125][0-9]{8}$'`),
+	check("store_checkout_leads_phone_format", sql`phone ~ '^(01[0125][0-9]{8}|\+[1-9][0-9]{7,14})$'`),
 	check("store_checkout_leads_items_array", sql`jsonb_typeof(items) = 'array'`),
 	check("store_checkout_leads_amounts", sql`subtotal >= 0 AND (shipping IS NULL OR shipping >= 0) AND (total IS NULL OR total >= 0)`),
 ]);
@@ -3736,7 +3736,7 @@ export const storeBlockedPhones = pgTable("store_blocked_phones", {
 	index("store_blocked_phones_store_created_idx").using("btree", table.storeId, table.createdAt.desc()),
 	foreignKey({ columns: [table.storeId], foreignColumns: [stores.id], name: "store_blocked_phones_store_id_fkey" }).onDelete("cascade"),
 	foreignKey({ columns: [table.createdBy], foreignColumns: [users.id], name: "store_blocked_phones_created_by_fkey" }).onDelete("set null"),
-	check("store_blocked_phones_phone_check", sql`phone ~ '^01[0-9]{9}$'`),
+	check("store_blocked_phones_phone_check", sql`phone ~ '^(01[0-9]{9}|\+[1-9][0-9]{7,14})$'`),
 	check("store_blocked_phones_reason_check", sql`reason IS NULL OR char_length(reason) <= 300`),
 ]);
 

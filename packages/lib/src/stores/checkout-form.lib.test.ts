@@ -126,7 +126,8 @@ describe("thank-you settings", () => {
   it("builds the WhatsApp link with the order number", () => {
     const url = thankYouWhatsAppUrl({ storePhone: "010 1234 5678", storeName: "Nour $1", orderNumber: "TB-123", locale: "en" });
     expect(url).toBe(`https://wa.me/201012345678?text=${encodeURIComponent("Hi Nour $1, I placed order #TB-123 and would like to confirm it.")}`);
-    expect(thankYouWhatsAppUrl({ storePhone: "+44 20 1234", storeName: "x", orderNumber: "1", locale: "ar" })).toBeNull();
+    expect(thankYouWhatsAppUrl({ storePhone: "+966 51 234 5678", storeName: "x", orderNumber: "1", locale: "en" })).toContain("https://wa.me/966512345678?text=");
+    expect(thankYouWhatsAppUrl({ storePhone: "+44 20", storeName: "x", orderNumber: "1", locale: "ar" })).toBeNull();
     expect(thankYouWhatsAppUrl({ storePhone: null, storeName: "x", orderNumber: "1", locale: "ar" })).toBeNull();
   });
 });

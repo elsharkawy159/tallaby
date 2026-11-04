@@ -17,9 +17,16 @@ describe("normalizeBlockedPhone", () => {
     }
   });
 
-  it("returns null for anything that is not an Egyptian mobile", () => {
-    for (const input of ["", "0101234567", "0221234567", "+447700900123", "abc", "013123456789"]) {
+  it("returns null for anything that can't be read as a mobile", () => {
+    for (const input of ["", "0101234567", "0221234567", "abc", "013123456789"]) {
       expect(normalizeBlockedPhone(input)).toBeNull();
+    }
+  });
+
+  it("stores a foreign number in international form", () => {
+    expect(normalizeBlockedPhone("+447700900123")).toBe("+447700900123");
+    for (const input of ["0512345678", "+966 51 234 5678", "966512345678", "00966512345678"]) {
+      expect(normalizeBlockedPhone(input)).toBe("+966512345678");
     }
   });
 });

@@ -88,7 +88,7 @@ function loadStoreOrderRows(sellerId: string, storeId: string, q: Queryable): Pr
 const WS = String.raw`E' \t\n\r\f\u000B '`;
 const trimmedSql = (col: string) => `NULLIF(btrim(${col}, ${WS}), '')`;
 
-/** normalizeBlockedPhone(): every spelling of an Egyptian mobile becomes 01XXXXXXXXX, else NULL. */
+/** normalizeEgyptianMobile(): every spelling of an Egyptian mobile becomes 01XXXXXXXXX, else NULL. */
 const mobileSql = (col: string) => `(
   SELECT CASE WHEN s2 ~ '^01[0125][0-9]{8}$' THEN s2 END FROM (
     SELECT CASE WHEN length(s1) = 10 AND s1 LIKE '1%' THEN '0' || s1 ELSE s1 END AS s2 FROM (

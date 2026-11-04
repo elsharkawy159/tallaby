@@ -116,6 +116,7 @@ export function manualOrderErrorKey(error: string): ManualOrderErrorKey {
   if (error === "storeCustomerBlocked") return "customerBlocked";
   if (error === "storeShippingNotCovered") return "notCovered";
   if (error === "storeShippingOutsideEgypt") return "outsideEgypt";
+  if (error === "storePaymentNotInCurrency") return "notCovered";
   if (error === "storeShippingNoCod" || error.startsWith("Cash on delivery")) return "noCod";
   if (error.startsWith("Insufficient stock")) return "insufficientStock";
   if (error.startsWith("Product is no longer")) return "productUnavailable";

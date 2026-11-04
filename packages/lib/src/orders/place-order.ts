@@ -3,6 +3,7 @@ import {
   orders,
   sellers,
   orderItems,
+  stores,
   userAddresses,
   couponUsage,
   coupons,
@@ -61,18 +62,20 @@ import { getBillingState } from '../billing/billing.server'
 import { storeCartDiscounts } from './line-discounts.server'
 import { isCodEligibleForShipping, parseWalletPartialPaymentMethod } from './payment.lib'
 import {
+  isMethodAllowedForCurrency,
   isStorefrontCheckoutMethodAllowed,
   sellerTransferFor,
   storeShippingCollector,
   type StorefrontCheckoutPayments,
 } from '../payments/store-methods'
 import {
-  resolveStorefrontShipping,
+  resolveStoreOrderShipping,
   zoneSellerFreeDeliveryDiscount,
   type StorefrontShipping,
 } from '../shipping/store-quote'
 import { getStorefrontShippingContext } from '../stores/shipping-context.server'
 import { isStorePhoneBlocked } from '../stores/blocked-phones.server'
+import { DEFAULT_CURRENCY, parseStoreCurrency } from '../utils/formatPrice'
 
 /**
  * Snapshot on every store-website order placed while the store delivers itself
@@ -294,6 +297,24 @@ export async function placeOrderFromCart(
     return { success: false, error: 'Cart is empty' }
   }
 
+  // The order's currency is the store's, read here: never from the client or a
+  // stale cart. No conversion, the amounts are the same numbers (ROADMAP.md F-61).
+  // Marketplace carts have no store and stay in EGP.
+  let orderCurrency: string = DEFAULT_CURRENCY
+  if (cart.storeId) {
+    const [store] = await db
+      .select({ settings: stores.settings })
+      .from(stores)
+      .where(eq(stores.id, cart.storeId))
+      .limit(1)
+    orderCurrency = parseStoreCurrency(store?.settings).currency
+  }
+  const isForeignCurrency = orderCurrency !== DEFAULT_CURRENCY
+  // Only a store's own rules can price this cart: refuse it on any other flow.
+  if (isForeignCurrency && !isStoreOrder) {
+    return { success: false, error: 'storePaymentNotInCurrency' }
+  }
+
   // Store offers, worked out here from the database, never from the client.
   // A free gift that no longer qualifies leaves the order and is never charged;
   // one on its own leaves an empty cart. Marketplace and manual carts get none.
@@ -407,21 +428,19 @@ export async function placeOrderFromCart(
     shippingAddress
   ) {
     const context = await getStorefrontShippingContext(cart.storeId)
-    if (context && context.settings.method === 'own') {
-      storeQuote = resolveStorefrontShipping({
-        settings: context.settings,
-        zones: context.zones,
-        address: shippingAddress,
-        items: shippingItems,
-        subtotal: cartSubtotal,
-        tallabyRate: () => tallabyShippingCost,
-      })
-      if (storeQuote.kind === 'not_covered') {
-        return { success: false, error: 'storeShippingNotCovered' }
-      }
-      if (storeQuote.kind === 'outside_egypt') {
-        return { success: false, error: 'storeShippingOutsideEgypt' }
-      }
+    storeQuote = context
+      ? resolveStoreOrderShipping(context, {
+          address: shippingAddress,
+          items: shippingItems,
+          subtotal: cartSubtotal,
+          tallabyRate: () => tallabyShippingCost,
+        })
+      : null
+    if (storeQuote?.kind === 'not_covered') {
+      return { success: false, error: 'storeShippingNotCovered' }
+    }
+    if (storeQuote?.kind === 'outside_egypt') {
+      return { success: false, error: 'storeShippingOutsideEgypt' }
     }
   }
   const zoneQuote = storeQuote?.kind === 'zone' ? storeQuote : null
@@ -493,7 +512,7 @@ export async function placeOrderFromCart(
       commissionAmount: '0.00',
       sellerEarning: formatDecimal(itemSubtotal),
       metadata: null as ({ platformFee?: PlatformFeeSnapshot } & Record<string, unknown>) | null,
-      currency: cart.currency || 'EGP',
+      currency: orderCurrency,
       condition: item.product.condition,
       fulfillmentType: item.product.fulfillmentType,
       status: 'pending' as const,
@@ -549,6 +568,10 @@ export async function placeOrderFromCart(
 
       const channel = orderSource === 'storefront' ? 'storefront' : 'marketplace'
       if (!isCouponAllowedOnChannel(coupon, channel)) {
+        return { success: false, error: 'couponNotForThisStore' }
+      }
+      // A Tallaby coupon is priced in EGP, so it can't take money off another currency.
+      if (isForeignCurrency && !coupon.sellerId) {
         return { success: false, error: 'couponNotForThisStore' }
       }
 
@@ -663,6 +686,7 @@ export async function placeOrderFromCart(
     new Map(feeProfiles.map((profile) => [profile.id, profile])),
     new Date(),
     await getBillingState(),
+    isForeignCurrency,
   )
   orderItemsData.forEach((item, index) => {
     const fee = lineFees[index]!
@@ -727,6 +751,12 @@ export async function placeOrderFromCart(
       ? Math.min(shippingDiscount, totalDiscount)
       : shippingDiscount
   const billedShipping = Math.max(0, shippingCost - effectiveShippingDiscount)
+
+  // Wallets and Egyptian payment methods are EGP only (ROADMAP.md F-61), whatever
+  // the client sent.
+  if (!isMethodAllowedForCurrency(orderCurrency, resolvedPaymentMethod)) {
+    return { success: false, error: 'storePaymentNotInCurrency' }
+  }
 
   // The 90 EGP cap is a Tallaby-rider rule; a seller zone decides COD itself.
   if (resolvedPaymentMethod === 'cash_on_delivery') {
@@ -887,7 +917,7 @@ export async function placeOrderFromCart(
           discountAmount: formatDecimal(totalDiscount),
           discounts: discountLines,
           totalAmount: formatDecimal(totalAmount),
-          currency: cart.currency || 'EGP',
+          currency: orderCurrency,
           status: resolvedStatus,
           paymentStatus: resolvedPaymentStatus,
           paymentMethod: insertPaymentMethod,
@@ -927,7 +957,10 @@ export async function placeOrderFromCart(
         // order's own transaction, rather than left to be inferred later from
         // the coupon table — see packages/db/src/affiliates/commission.ts for
         // why the commission is based on the pre-discount `subtotal`.
-        const affiliate = await resolveAffiliateForCoupon(tx, appliedCoupon.id, userId)
+        // Commissions are paid into EGP customer wallets, so only EGP orders earn them.
+        const affiliate = isForeignCurrency
+          ? null
+          : await resolveAffiliateForCoupon(tx, appliedCoupon.id, userId)
         if (affiliate) {
           await createPendingAffiliateCommission(tx, {
             affiliate,
@@ -970,7 +1003,7 @@ export async function placeOrderFromCart(
           orderId: newOrder!.id,
           amount: formatDecimal(totalAmount),
           method: 'wallet',
-          currency: cart.currency || 'EGP',
+          currency: orderCurrency,
           status: 'paid',
           capturedAt: paidNow,
         })
@@ -991,7 +1024,7 @@ export async function placeOrderFromCart(
           orderId: newOrder!.id,
           amount: partialWalletAmount,
           method: 'wallet',
-          currency: cart.currency || 'EGP',
+          currency: orderCurrency,
           status: 'paid',
           capturedAt,
         })
@@ -1002,7 +1035,7 @@ export async function placeOrderFromCart(
           orderId: newOrder!.id,
           amount: formatDecimal(totalAmount),
           method: resolvedPaymentMethod,
-          currency: cart.currency || 'EGP',
+          currency: orderCurrency,
           status: resolvedPaymentStatus,
           capturedAt: paymentOverrides.paidAt ?? new Date().toISOString(),
         })
@@ -1027,6 +1060,7 @@ export async function placeOrderFromCart(
         .update(carts)
         .set({
           status: 'completed',
+          currency: orderCurrency,
           updatedAt: new Date().toISOString(),
         })
         .where(eq(carts.id, cartId))

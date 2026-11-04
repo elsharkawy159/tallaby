@@ -49,7 +49,7 @@ const clip = (value: string | null | undefined, max: number) => (value ? value.t
 
 /**
  * Creates or refreshes the store's open lead for this phone. Returns false
- * (and writes nothing) when the phone is not an Egyptian mobile or the cart is
+ * (and writes nothing) when the phone can't be read or the cart is
  * empty. The caller resolved every id from the host and session.
  */
 export async function saveStoreCheckoutLead(input: SaveCheckoutLeadInput, q: Queryable = db): Promise<boolean> {

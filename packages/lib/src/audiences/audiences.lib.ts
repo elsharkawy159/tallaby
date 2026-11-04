@@ -65,7 +65,7 @@ const asciiDigits = (input: string) =>
 export function toE164Phone(raw: string | null | undefined): string | null {
   if (!raw) return null;
   const mobile = normalizeBlockedPhone(raw);
-  if (mobile) return `+20${mobile.slice(1)}`;
+  if (mobile) return mobile.startsWith("+") ? mobile : `+20${mobile.slice(1)}`;
   const text = asciiDigits(raw).trim();
   const international = /^(\+|00)/.test(text);
   if (!international) return null;

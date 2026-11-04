@@ -5,7 +5,7 @@
  * set of a store's orders with the same phone (or, with no usable phone, the
  * same signed-in user).
  */
-import { normalizeBlockedPhone } from "../stores/blocked-phones.lib";
+import { normalizeEgyptianMobile } from "../stores/blocked-phones.lib";
 
 /** One store order, as the customers query reads it. */
 export type CustomerOrderRow = {
@@ -77,7 +77,7 @@ export function customerPhone(row: Pick<CustomerOrderRow, "addressPhone" | "user
   for (const raw of [row.addressPhone, row.userPhone]) {
     const value = trimmed(raw);
     if (!value) continue;
-    const mobile = normalizeBlockedPhone(value);
+    const mobile = normalizeEgyptianMobile(value);
     if (mobile) return mobile;
     const digits = value.replace(/\D/g, "");
     if (digits.length >= 6) return digits;

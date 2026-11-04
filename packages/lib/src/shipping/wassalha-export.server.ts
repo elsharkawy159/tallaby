@@ -8,6 +8,7 @@ import {
   type EgyptPostOrderInput,
   type EgyptPostRow,
 } from "./egypt-post.lib";
+import { isEgyptianCarrierOrder } from "./store-quote";
 
 /**
  * Store orders → Wassalha (Egypt Post) upload sheet (ROADMAP.md F-12c).
@@ -25,7 +26,7 @@ const MAX_ORDERS = 500;
 /** Orders in these stages can still be handed to a carrier. */
 const EXPORTABLE_STATUSES = ["pending", "confirmed", "shipping_soon"] as const;
 
-export type WassalhaSkipReason = "not_found" | "not_ready" | "other_carrier" | "has_tracking" | "bad_phone" | "bad_governorate";
+export type WassalhaSkipReason = "not_found" | "not_ready" | "other_carrier" | "has_tracking" | "bad_phone" | "bad_governorate" | "foreign_order";
 
 export type WassalhaExportIssue = { orderId: string; orderNumber: string; reason: WassalhaSkipReason };
 
@@ -82,6 +83,11 @@ export async function exportWassalhaOrders(sellerId: string, storeId: string, or
       continue;
     }
     const address = order.userAddress_shippingAddressId;
+    // Egypt Post takes Egyptian addresses, and COD_Value would read a riyal as a pound.
+    if (!isEgyptianCarrierOrder(order, address)) {
+      skipped.push({ orderId: order.id, orderNumber, reason: "foreign_order" });
+      continue;
+    }
     const weight =
       (shipment?.packageWeight ? Number(shipment.packageWeight) : null) ??
       itemsWeightKg(

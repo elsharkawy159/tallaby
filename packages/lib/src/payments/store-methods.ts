@@ -10,6 +10,7 @@
  */
 import { z } from "zod";
 import { EGYPT_MOBILE_REGEX } from "../fulfillment/validate";
+import { parseStoreCurrency } from "../utils/formatPrice";
 import type { OrderGatewayMeta } from "./store-gateways.lib";
 
 export type PaymentCollector = "seller" | "tallaby" | "delivery";
@@ -249,6 +250,18 @@ export function validateMethodChange(
   return { success: true, data: result.data };
 }
 
+/**
+ * What may pay an order in a currency other than EGP (ROADMAP.md F-61): cash on
+ * delivery, and on a manual order what the seller already holds. Egyptian
+ * transfers and card gateways are off until tested abroad, and the customer
+ * wallet is EGP only.
+ */
+const NON_EGP_ORDER_METHODS: readonly string[] = ["cash_on_delivery", "seller_collected"];
+
+export function isMethodAllowedForCurrency(currency: string, method: string): boolean {
+  return currency === "EGP" || NON_EGP_ORDER_METHODS.includes(method);
+}
+
 /** Checkout values (orders.payment_method) a storefront may offer. */
 export type StorefrontCheckoutMethod =
   | "cash_on_delivery"
@@ -308,12 +321,14 @@ export type StorefrontCheckoutPayments = {
 export function storefrontCheckoutMethods(
   payments: StorePayments,
   gateway: OrderGatewayMeta | null = null,
+  currency: string = "EGP",
 ): StorefrontCheckoutPayments {
   const methods: StorefrontCheckoutMethod[] = [];
   const transfers: StorefrontCheckoutPayments["transfers"] = {};
+  const egp = currency === "EGP";
   if (payments.cod?.enabled) methods.push("cash_on_delivery");
-  if (gateway) methods.push("online_payment");
-  for (const method of SELLER_TRANSFER_METHODS) {
+  if (gateway && egp) methods.push("online_payment");
+  for (const method of egp ? SELLER_TRANSFER_METHODS : []) {
     const entry = payments[method];
     // Enabling requires details (storePaymentsSchema), so this always has them.
     if (!entry?.enabled || !entry.details) continue;
@@ -327,7 +342,7 @@ export function storefrontCheckoutMethods(
   }
   return {
     methods,
-    gateway,
+    gateway: egp ? gateway : null,
     codMaxOrder: payments.cod?.enabled ? (payments.cod.maxOrder ?? null) : null,
     codNote: payments.cod?.enabled ? (payments.cod.note ?? null) : null,
     transfers,
@@ -387,5 +402,5 @@ export function maskPaymentDetails(details: unknown): Record<string, unknown> | 
  */
 export function storeProfilePaymentMethods(settings: unknown): { key: StorefrontCheckoutMethod }[] {
   const payments = settings && typeof settings === "object" ? (settings as Record<string, unknown>).payments : undefined;
-  return storefrontCheckoutMethods(parseStorePayments(payments)).methods.map((key) => ({ key }));
+  return storefrontCheckoutMethods(parseStorePayments(payments), null, parseStoreCurrency(settings).currency).methods.map((key) => ({ key }));
 }

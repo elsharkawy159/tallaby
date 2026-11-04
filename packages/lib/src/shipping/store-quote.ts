@@ -7,6 +7,11 @@ import { EGYPT, resolveAddressPlace } from "../places";
 import { cartFullyCoveredBySellerFreeDelivery, type calculateLocationShippingCost } from "./shipping.lib";
 import { findZoneForPlace, quoteZone, type StoreShippingSettings, type ZoneForQuote } from "./store-zones";
 
+/** The country a currency is first sold in, for the checkout's default. */
+const CURRENCY_COUNTRY: Readonly<Record<string, string>> = {
+  SAR: "SA", AED: "AE", KWD: "KW", QAR: "QA", BHD: "BH", OMR: "OM",
+};
+
 export type ShippingCartItem = Parameters<typeof calculateLocationShippingCost>[0]["items"][number];
 
 export type ShippingAddress = {
@@ -39,20 +44,31 @@ export function resolveStorefrontShipping(input: {
   items: ShippingCartItem[];
   subtotal: number;
   tallabyRate: (state: string | null) => number;
+  /** The store's currency. Tallaby's rates are in EGP, so another currency never gets them. */
+  currency?: string;
 }): StorefrontShipping {
-  const { settings, zones, address, subtotal, tallabyRate } = input;
+  const { settings, zones, address, subtotal, tallabyRate, currency = "EGP" } = input;
   const place = resolveAddressPlace(address);
+  const found = findZoneForPlace(zones, place);
+  const inEgypt = place?.split("/")[0] === EGYPT;
 
-  // An unrecognised, non-empty country text is a foreign address (an empty one resolves to Egypt).
-  if (place === null) return { kind: "outside_egypt", place: "" };
-  if (place.split("/")[0] !== EGYPT) return { kind: "outside_egypt", place };
+  // A foreign address no zone covers. An unrecognised, non-empty country text is
+  // foreign too (an empty one resolves to Egypt). "Egypt only" is said only by a
+  // store that really has nothing abroad.
+  if (!found && !inEgypt) {
+    if (storeSellsAbroad(zones, currency)) return { kind: "not_covered", place };
+    return { kind: "outside_egypt", place: place ?? "" };
+  }
+  if (place === null) return { kind: "not_covered", place };
 
   const state = address.state ?? null;
+  // Tallaby's rates are for Egypt, in EGP.
+  const ratesApply = currency === "EGP";
   if (!zones.some((z) => z.enabled)) {
+    if (!ratesApply) return { kind: "not_covered", place };
     return { kind: "tallaby_rates", shippingCost: tallabyRate(state), place };
   }
 
-  const found = findZoneForPlace(zones, place);
   if (found) {
     const { zone } = found;
     // A zone's own free-over wins; otherwise the store-wide offer (Shipping ›
@@ -74,8 +90,67 @@ export function resolveStorefrontShipping(input: {
     };
   }
 
-  if (settings.otherPlaces === "refuse") return { kind: "not_covered", place };
+  if (settings.otherPlaces === "refuse" || !ratesApply) return { kind: "not_covered", place };
   return { kind: "tallaby_rates", shippingCost: tallabyRate(state), place };
+}
+
+/** Bosta and Egypt Post take Egyptian addresses and collect EGP, nothing else. */
+export function isEgyptianCarrierOrder(order: { currency?: string | null }, address: ShippingAddress | null | undefined): boolean {
+  if ((order.currency || "EGP") !== "EGP") return false;
+  return !address || resolveAddressPlace(address)?.split("/")[0] === EGYPT;
+}
+
+/** Countries the store's enabled zones reach, in zone order. */
+export function zoneCountries(zones: Pick<ZoneForQuote, "places" | "enabled">[]): string[] {
+  return [...new Set(zones.filter((z) => z.enabled).flatMap((z) => z.places.map((p) => p.split("/")[0]!)))];
+}
+
+/**
+ * The countries a checkout offers, or null for the plain Egypt form. Shown when
+ * the store has a zone abroad or isn't in EGP. Its own currency's country comes
+ * first when a zone reaches it, so a SAR store opens on Saudi Arabia. An EGP store
+ * always offers Egypt, which Tallaby's rates cover.
+ */
+export function checkoutCountries(
+  currency: string,
+  zones: Pick<ZoneForQuote, "places" | "enabled">[],
+): { options: string[]; default: string } | null {
+  const reached = zoneCountries(zones);
+  const egp = currency === "EGP";
+  if (egp && reached.every((code) => code === EGYPT)) return null;
+  const home = CURRENCY_COUNTRY[currency] ?? (egp ? EGYPT : null);
+  const list = egp ? [EGYPT, ...reached.filter((code) => code !== EGYPT)] : reached;
+  // A store in another currency with no zones yet: its country, and every address is refused.
+  const options = list.length > 0 ? list : [home ?? EGYPT];
+  const first = home && options.includes(home) ? home : options[0]!;
+  return { options: [first, ...options.filter((code) => code !== first)], default: first };
+}
+
+/** Whether a saved address is in one of the offered countries. */
+export function isAddressInCountries(address: ShippingAddress, options: string[]): boolean {
+  const country = resolveAddressPlace(address)?.split("/")[0];
+  return country != null && options.includes(country);
+}
+
+/** Whether "we only deliver in Egypt" would be wrong: the store has a zone abroad, or isn't in EGP. */
+function storeSellsAbroad(zones: Pick<ZoneForQuote, "places" | "enabled">[], currency: string): boolean {
+  return currency !== "EGP" || zoneCountries(zones).some((code) => code !== EGYPT);
+}
+
+/**
+ * The quote for a store order, or null when Tallaby delivers an Egyptian address
+ * in EGP (its rate table then applies, as on the marketplace). The one place that
+ * decides this for checkout, the summary and manual orders.
+ */
+export function resolveStoreOrderShipping(
+  context: { settings: StoreShippingSettings; zones: ZoneForQuote[]; currency: string },
+  input: Omit<Parameters<typeof resolveStorefrontShipping>[0], "settings" | "zones" | "currency">,
+): StorefrontShipping | null {
+  if (context.settings.method === "own") {
+    return resolveStorefrontShipping({ ...input, settings: context.settings, zones: context.zones, currency: context.currency });
+  }
+  const place = resolveAddressPlace(input.address);
+  return context.currency === "EGP" && place?.split("/")[0] === EGYPT ? null : { kind: "not_covered", place };
 }
 
 /**

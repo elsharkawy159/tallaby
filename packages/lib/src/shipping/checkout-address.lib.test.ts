@@ -6,6 +6,7 @@ import {
   savedAddressLine,
   validGovernorate,
 } from './checkout-address.lib'
+import { childrenOf, resolveAddressPlace } from '../places'
 
 const one = (text: string) => {
   const match = matchGovernorateInText(text)
@@ -157,3 +158,48 @@ describe('savedAddressLine', () => {
     expect(savedAddressLine({ addressLine1: 'x' })).toBe('x')
   })
 })
+
+describe("parseCheckoutAddress abroad (F-61e)", () => {
+  const base = { fullName: "Sara Ahmed", phone: "0512345678", address: "12 King Fahd Road", country: "SA" };
+
+  it("saves the picked place's names, which resolve back to the same place", () => {
+    const result = parseCheckoutAddress({ ...base, regionKey: "SA/RIYADH", cityKey: "SA/RIYADH/riyadh" }, "en");
+    expect(result).toMatchObject({ ok: true, value: { phone: "+966512345678", country: "Saudi Arabia", state: "Riyadh", city: "Riyadh" } });
+    if (result.ok) expect(resolveAddressPlace(result.value)).toBe("SA/RIYADH/riyadh");
+  });
+
+  it("resolves every Saudi region and city back to itself, in both languages", () => {
+    for (const locale of ["ar", "en"]) {
+      for (const region of childrenOf("SA")) {
+        const regionOnly = parseCheckoutAddress({ ...base, regionKey: region.key }, locale);
+        if (!regionOnly.ok) throw new Error(region.key);
+        expect(resolveAddressPlace(regionOnly.value)?.startsWith(region.key)).toBe(true);
+        for (const city of childrenOf(region.key)) {
+          const parsed = parseCheckoutAddress({ ...base, regionKey: region.key, cityKey: city.key }, locale);
+          if (!parsed.ok) throw new Error(city.key);
+          expect(resolveAddressPlace(parsed.value)).toBe(city.key);
+        }
+      }
+    }
+  });
+
+  it("asks for a region where the country has them, and checks the phone by country", () => {
+    expect(parseCheckoutAddress(base, "en")).toMatchObject({ ok: false, errors: ["region"] });
+    expect(parseCheckoutAddress({ ...base, phone: "01012345678", regionKey: "SA/RIYADH" }, "en")).toMatchObject({ ok: false, errors: ["phone"] });
+    expect(parseCheckoutAddress({ ...base, regionKey: "EG/CAIRO" }, "en")).toMatchObject({ ok: false, errors: ["region"] });
+    expect(parseCheckoutAddress({ ...base, regionKey: "SA/RIYADH", cityKey: "EG/CAIRO/nasr-city" }, "en")).toMatchObject({ ok: true, value: { city: "Riyadh" } });
+  });
+
+  it("takes a country with no regions in the data on its address line", () => {
+    const result = parseCheckoutAddress({ ...base, country: "FR", phone: "+33 6 12 34 56 78" }, "en");
+    expect(result).toMatchObject({ ok: true, value: { country: "France", phone: "+33612345678" } });
+    if (result.ok) expect(resolveAddressPlace(result.value)).toBe("FR");
+  });
+
+  it("leaves the Egyptian form exactly as it was", () => {
+    const plain = { fullName: "Sara Ahmed", phone: "01012345678", address: "شارع التحرير، القاهرة" };
+    expect(parseCheckoutAddress({ ...plain, country: "EG" }, "ar")).toEqual(parseCheckoutAddress(plain, "ar"));
+    expect(parseCheckoutAddress(plain, "ar")).toMatchObject({ ok: true, value: { country: "Egypt", state: "CAIRO", phone: "01012345678" } });
+    expect(parseCheckoutAddress({ ...plain, phone: "0512345678" }, "ar")).toMatchObject({ ok: false, errors: ["phone"] });
+  });
+});
