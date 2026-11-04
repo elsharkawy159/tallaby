@@ -315,7 +315,7 @@ describe.skipIf(!isStaging)("store offers at checkout (integration)", { timeout:
       const { db, storeDiscountRules } = await load();
       const [row] = await db
         .insert(storeDiscountRules)
-        .values({ sellerId, storeId, name: "Sale", ruleType: "percent_off", discountPercent: "10.00", ...extra } as never)
+        .values({ sellerId, storeId, name: "Sale", ruleType: "percent_off", discountPercent: "10.00", startsAt: new Date(Date.now() - 3_600_000).toISOString(), ...extra } as never)
         .returning({ id: storeDiscountRules.id });
       return row!.id;
     }
@@ -422,6 +422,172 @@ describe.skipIf(!isStaging)("store offers at checkout (integration)", { timeout:
       expect(Number(manual.line(productId).discountAmount)).toBe(0);
       const sent = await place([{ productId, price: "100.00", quantity: 1 }], { extra: { automaticDiscount: { discountPercent: 90 }, ruleId: "x" } });
       expect(Number(sent.line(productId).discountAmount)).toBe(10);
+    });
+  });
+
+  describe("free gifts", () => {
+    async function addGiftRule(giftProductIds: string[], minSubtotal = "300.00") {
+      const { db, storeDiscountRules } = await load();
+      const [row] = await db
+        .insert(storeDiscountRules)
+        .values({ sellerId, storeId, name: "Gift", ruleType: "free_gift", minSubtotal, giftProductIds, startsAt: new Date(Date.now() - 3_600_000).toISOString() })
+        .returning({ id: storeDiscountRules.id });
+      return row!.id;
+    }
+    const stockOf = async (productId: string) => {
+      const { db, products, eq } = await load();
+      const [row] = await db.select({ quantity: products.quantity }).from(products).where(eq(products.id, productId));
+      return Number(row!.quantity);
+    };
+
+    afterEach(async () => {
+      const { db, sql } = await load();
+      await db.execute(sql`DELETE FROM store_discount_rules WHERE store_id = ${storeId}`);
+    });
+
+    it("costs nothing, takes stock, and leaves the fee and totals alone", async () => {
+      const paid = await addProduct("g-paid", 400);
+      const giftId = await addProduct("g-gift", 90);
+      const ruleId = await addGiftRule([giftId]);
+      const before = await stockOf(giftId);
+      const placed = await place([
+        { productId: paid, price: "400.00", quantity: 1 },
+        { productId: giftId, price: "0.00", quantity: 1, giftRuleId: ruleId },
+      ]);
+      const line = placed.line(giftId);
+      expect(Number(line.price)).toBe(0);
+      expect(Number(line.total)).toBe(0);
+      expect(Number(line.commissionAmount)).toBe(0);
+      expect((line.metadata as { freeGift: { ruleId: string } }).freeGift.ruleId).toBe(ruleId);
+      expect(Number(placed.order.subtotal)).toBe(400);
+      expect(Number(placed.line(paid).sellerEarning)).toBe(395);
+      expect(await stockOf(giftId)).toBe(before - 1);
+      invariants(placed);
+    });
+
+    it("forces the price to 0 and one unit, whatever the row says", async () => {
+      const paid = await addProduct("g-paid2", 400);
+      const giftId = await addProduct("g-gift2", 90);
+      const ruleId = await addGiftRule([giftId]);
+      const placed = await place([
+        { productId: paid, price: "400.00", quantity: 1 },
+        { productId: giftId, price: "55.00", quantity: 1, giftRuleId: ruleId },
+      ]);
+      expect(Number(placed.line(giftId).price)).toBe(0);
+      expect(Number(placed.order.subtotal)).toBe(400);
+    });
+
+    it("can't be sold on its own: the order is refused and nothing is taken", async () => {
+      const giftId = await addProduct("g-alone", 90);
+      const ruleId = await addGiftRule([giftId], "0.00");
+      const before = await stockOf(giftId);
+      const result = await placeCart(await makeCart([{ productId: giftId, price: "0.00", quantity: 1, giftRuleId: ruleId }]));
+      expect(result.success).toBe(false);
+      expect(await stockOf(giftId)).toBe(before);
+    });
+
+    it("drops a gift below the amount, a tampered one, a second one, or one from a rule turned off", async () => {
+      const { db, storeDiscountRules, eq } = await load();
+      const paid = await addProduct("g-paid3", 100);
+      const giftId = await addProduct("g-gift3", 90);
+      const other = await addProduct("g-other", 900);
+      const ruleId = await addGiftRule([giftId]);
+
+      const below = await place([
+        { productId: paid, price: "100.00", quantity: 1 },
+        { productId: giftId, price: "0.00", quantity: 1, giftRuleId: ruleId },
+      ]);
+      expect(below.items.map((item) => item.productId)).toEqual([paid]);
+
+      const line = { productId: paid, price: "100.00", quantity: 3 };
+      const notAGift = await place([line, { productId: other, price: "0.00", quantity: 1, giftRuleId: ruleId }]);
+      expect(notAGift.items.map((item) => item.productId)).toEqual([paid]);
+
+      const many = await place([line, { productId: giftId, price: "0.00", quantity: 5, giftRuleId: ruleId }]);
+      expect(many.items.map((item) => item.productId)).toEqual([paid]);
+
+      const two = await place([
+        line,
+        { productId: giftId, price: "0.00", quantity: 1, giftRuleId: ruleId },
+        { productId: giftId, price: "0.00", quantity: 1, giftRuleId: ruleId },
+      ]);
+      expect(two.items.filter((item) => item.productId === giftId)).toHaveLength(1);
+
+      const cart = await makeCart([line, { productId: giftId, price: "0.00", quantity: 1, giftRuleId: ruleId }]);
+      await db.update(storeDiscountRules).set({ isActive: false }).where(eq(storeDiscountRules.id, ruleId));
+      const off = await read(await placeCart(cart));
+      expect(off.items.map((item) => item.productId)).toEqual([paid]);
+    });
+
+    it("measures the amount on the net, doesn't count towards tiers, and takes no coupon share", async () => {
+      const { storeCartDiscounts } = await load();
+      const paid = await addProduct("g-net", 200);
+      await addTier(paid, 2, "50.00");
+      const giftId = await addProduct("g-gift4", 90);
+      const ruleId = await addGiftRule([giftId]);
+      // 2 × 200 is 400 gross but 200 net, below the 300 the rule asks for.
+      const low = await place([
+        { productId: paid, price: "200.00", quantity: 2 },
+        { productId: giftId, price: "0.00", quantity: 1, giftRuleId: ruleId },
+      ]);
+      expect(low.items.map((item) => item.productId)).toEqual([paid]);
+
+      // The gift of the same product is not a second unit for the tier.
+      const same = await addProduct("g-same", 400);
+      await addTier(same, 2, "50.00");
+      const sameRule = await addGiftRule([same]);
+      const lines = [
+        { productId: same, price: "400.00", quantity: 1 },
+        { productId: same, price: "0.00", quantity: 1, giftRuleId: sameRule },
+      ];
+      const offers = await storeCartDiscounts(storeId, lines);
+      expect(offers.totalPiastres).toBe(0);
+      expect(offers.invalidGiftIndexes).toEqual([]);
+
+      const couponed = await place(lines, { couponCode: await addCoupon("10") });
+      invariants(couponed);
+      expect(Number(couponed.lines.find((entry) => entry.type === "coupon")?.amount)).toBeCloseTo(40, 2);
+    });
+
+    it("drops a gift on a marketplace or manual order, and when the gift is out of stock", async () => {
+      const paid = await addProduct("g-paid5", 400);
+      const giftId = await addProduct("g-gift5", 90);
+      const empty = await addProduct("g-empty", 90, { quantity: "0" });
+      const ruleId = await addGiftRule([giftId, empty]);
+      const line = { productId: paid, price: "400.00", quantity: 1 };
+      const manual = await place([line, { productId: giftId, price: "0.00", quantity: 1, giftRuleId: ruleId }], { orderSource: "manual" });
+      expect(manual.items.map((item) => item.productId)).toEqual([paid]);
+      const noStock = await place([line, { productId: empty, price: "0.00", quantity: 1, giftRuleId: ruleId }]);
+      expect(noStock.items.map((item) => item.productId)).toEqual([paid]);
+    });
+
+    it("takes a gift line out of the cart when it stops qualifying", async () => {
+      const { db, cartItems, eq, removeInvalidCartGifts } = await load();
+      const paid = await addProduct("g-sync", 100);
+      const giftId = await addProduct("g-gift6", 90);
+      const ruleId = await addGiftRule([giftId]);
+      const cartId = await makeCart([
+        { productId: paid, price: "100.00", quantity: 1 },
+        { productId: giftId, price: "0.00", quantity: 1, giftRuleId: ruleId },
+      ]);
+      const removed = await removeInvalidCartGifts({ id: cartId, storeId });
+      expect(removed).toHaveLength(1);
+      const left = await db.select().from(cartItems).where(eq(cartItems.cartId, cartId));
+      expect(left.map((item) => item.productId)).toEqual([paid]);
+    });
+
+    it("deletes the gift line with its rule, so it can never stay at price 0", async () => {
+      const { db, cartItems, storeDiscountRules, eq } = await load();
+      const paid = await addProduct("g-del", 400);
+      const giftId = await addProduct("g-gift7", 90);
+      const ruleId = await addGiftRule([giftId]);
+      const cartId = await makeCart([
+        { productId: paid, price: "400.00", quantity: 1 },
+        { productId: giftId, price: "0.00", quantity: 1, giftRuleId: ruleId },
+      ]);
+      await db.delete(storeDiscountRules).where(eq(storeDiscountRules.id, ruleId));
+      const left = await db.select().from(cartItems).where(eq(cartItems.cartId, cartId));
+      expect(left.map((item) => item.productId)).toEqual([paid]);
     });
   });
 });

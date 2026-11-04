@@ -72,7 +72,22 @@ export function OrderSummaryLineItems ({ items, onQuantityChange, busyItemId }: 
                   {variantTitle}
                 </p>
               )}
-              {onQuantityChange ? (
+              {item.giftRuleId ? (
+                <div className='mt-1.5 flex items-center gap-2 text-xs text-green-700'>
+                  {onQuantityChange && (
+                    <button
+                      type='button'
+                      className='flex size-8 items-center justify-center rounded-md border text-muted-foreground outline-none hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50'
+                      disabled={busyItemId === item.id}
+                      aria-label={tSimple('removeItem')}
+                      onClick={() => onQuantityChange(item, 0)}
+                    >
+                      <Trash2 className='size-3.5' aria-hidden />
+                    </button>
+                  )}
+                  <span className='font-medium'>{tSimple('freeGift')}</span>
+                </div>
+              ) : onQuantityChange ? (
                 <div className='mt-1.5 flex items-center gap-2 text-xs text-muted-foreground'>
                   <div className='inline-flex items-center rounded-md border' role='group' aria-label={tCommon('quantity')}>
                     <button

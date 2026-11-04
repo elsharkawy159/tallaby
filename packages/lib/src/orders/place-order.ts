@@ -294,6 +294,27 @@ export async function placeOrderFromCart(
     return { success: false, error: 'Cart is empty' }
   }
 
+  // Store offers, worked out here from the database, never from the client.
+  // A free gift that no longer qualifies leaves the order and is never charged;
+  // one on its own leaves an empty cart. Marketplace and manual carts get none.
+  const storeOffers = await storeCartDiscounts(
+    orderSource === 'storefront' ? cart.storeId : null,
+    cart.cartItems,
+  )
+  const keptLines = cart.cartItems
+    .map((item, index) => ({
+      item,
+      offer: storeOffers.lines[index] ?? null,
+      gift: storeOffers.gifts[index] ?? null,
+    }))
+    .filter((_, index) => !storeOffers.invalidGiftIndexes.includes(index))
+  cart.cartItems = keptLines.map(({ item }) =>
+    item.giftRuleId ? { ...item, price: '0.00', quantity: 1 } : item,
+  )
+  if (cart.cartItems.length === 0) {
+    return { success: false, error: 'Cart is empty' }
+  }
+
   const isDigitalOnlyCart = cart.cartItems.every(
     (item) => item.product.productType === 'digital',
   )
@@ -482,20 +503,18 @@ export async function placeOrderFromCart(
   // Line discounts sit beside the coupon's on orders.discounts.
   const lineDiscountLines: OrderDiscountLine[] = []
 
-  // Line offers (quantity tiers F-07, cross-sell F-32): the biggest one per
-  // line, worked out here from the database, never from the client. They come
-  // out of the seller's own line, and without an offer every number stays as it was.
-  if (orderSource === 'storefront' && cart.storeId) {
-    const offers = await storeCartDiscounts(cart.storeId, cart.cartItems)
-    offers.lines.forEach((offer, index) => {
-      if (!offer || offer.discountPiastres <= 0) return
-      const item = orderItemsData[index]!
-      item.discountAmount = formatDecimal(offer.discountPiastres / 100)
-      item.total = formatDecimal(Number(item.subtotal) - offer.discountPiastres / 100)
-      item.metadata = { ...offer.metadata }
-    })
-    lineDiscountLines.push(...offers.discountLines)
-  }
+  // Line offers (quantity tiers F-07, cross-sell F-32, automatic rules F-13a):
+  // the biggest one per line. They come out of the seller's own line, and without
+  // an offer every number stays as it was.
+  keptLines.forEach(({ offer, gift }, index) => {
+    const item = orderItemsData[index]!
+    if (gift) item.metadata = { freeGift: gift }
+    if (!offer || offer.discountPiastres <= 0) return
+    item.discountAmount = formatDecimal(offer.discountPiastres / 100)
+    item.total = formatDecimal(Number(item.subtotal) - offer.discountPiastres / 100)
+    item.metadata = { ...offer.metadata }
+  })
+  lineDiscountLines.push(...storeOffers.discountLines)
 
   let merchandiseDiscount = 0
   // Tallaby's cart threshold is a platform promotion; a zone has its own free-over.

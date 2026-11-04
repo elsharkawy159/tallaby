@@ -33,7 +33,7 @@ import {
   type CheckoutStoreShipping,
   type CheckoutSummary,
 } from "@/lib/coupon-utils";
-import { storeCartDiscounts } from "@workspace/lib/orders/line-discounts/server";
+import { removeInvalidCartGifts, storeCartDiscounts } from "@workspace/lib/orders/line-discounts/server";
 import type { OrderDiscountLine } from "@workspace/lib/orders";
 import type { ShippingAddress } from "@workspace/lib/shipping/store-quote";
 import { getUserWalletSummary } from "@workspace/db/wallet";
@@ -217,6 +217,9 @@ export async function getCheckoutData() {
     }
 
     const scope = await getCartScope();
+    // A free gift that no longer qualifies is gone before anything is shown.
+    const current = await db.query.carts.findFirst({ where: activeCartWhere(userId, scope) });
+    if (current) await removeInvalidCartGifts(current);
     const cart = await db.query.carts.findFirst({
       where: activeCartWhere(userId, scope),
       with: cartWithShippingItems,

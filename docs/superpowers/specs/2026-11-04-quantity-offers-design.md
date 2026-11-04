@@ -76,3 +76,20 @@ Store-wide rules with no code, set per store in Marketing › Automatic discount
 **Money:** seller-funded, same as a coupon. `orders.discounts` gets one `{ type: 'automatic_discount', label: <rule name>, amount }` per rule, `order_items.metadata.automaticDiscount` keeps a snapshot, and §3's order and §4's fee, seller earning and affiliate rules are unchanged. The rule's name is the seller's text, so the customer sees it as typed.
 
 **Not in this version:** the store's product cards and product page still show the normal price. The discount first shows in the cart. Showing a rule's price on listings is a catalog change, for later.
+
+## 9. Coupons in the cart and free gifts (ROADMAP.md F-13c)
+
+**Coupons in the cart.** Only coupons the seller turned on with `coupons.show_in_cart` (0149, off by default). Today's codes stay private, because a seller may share a code with one customer or an affiliate. A coupon is listed only when it is active, in its window, under its limits for this customer, allowed on the store and has an eligible line. Below its minimum it shows greyed out with the minimum. Apply stores the code for checkout the way an affiliate link does, and checkout validates it again. The list is read fresh, never cached.
+
+**Free gift.** A `free_gift` rule has an amount and up to 10 of the seller's products. Once the cart reaches the amount, the customer picks one.
+
+- **The amount** is what the paid lines come to after their line offers, before a coupon. A later coupon does not remove the gift.
+- **The line** is a normal cart line with `gift_rule_id`, `price` 0 and quantity 1, so `orders.subtotal`, shipping thresholds, the minimum order and affiliate commission are untouched. **It takes stock** through `decrementStock` like any line, and a later cancel restores it the same way.
+- **It counts for nothing:** not a tier, a cross-sell's main product, a rule's units, or the amount itself. A coupon's share on it is 0. The fee has nothing to take from it, and the flat fee is unchanged.
+- **It can't be sold on its own:** a cart with only a gift doesn't reach any amount, so the gift is dropped and the order is refused as an empty cart.
+- **Checked three times, on the server:** when it is chosen (`chooseFreeGift`), when the cart changes or checkout opens (`removeInvalidCartGifts`), and at placement, where `placeOrderFromCart` forces price 0 and one unit. A gift that stopped qualifying **leaves the order and is never charged**. We don't charge full price for something shown as free. The order goes through without it.
+- **One gift per rule.** Picking another replaces the first. A customer can remove it. Buying the same product stays a separate line, and the product page ignores the gift line when it asks whether the product is in the cart.
+- **Deleting a rule deletes its gift lines** (`ON DELETE CASCADE`), so a line can't lose its rule and stay in a cart at price 0. Merging a guest's cart at login skips gift lines; the customer picks again.
+- Store orders only. A manual or marketplace order drops any gift line.
+
+`order_items.metadata.freeGift = { ruleId, name }` keeps which rule gave it. The dashboard shows the line at EGP 0.

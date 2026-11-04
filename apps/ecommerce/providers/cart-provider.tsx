@@ -186,13 +186,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
     updateQuantity,
     removeFromCart,
     clearCart,
+    // A free gift (0149) doesn't count as buying the product.
     isInCart: (productId: string) =>
-      cartItems.some((i) => i.productId === productId && !i.savedForLater),
+      cartItems.some((i) => i.productId === productId && !i.savedForLater && !i.giftRuleId),
     getItemQuantity: (productId: string) =>
-      cartItems.find((i) => i.productId === productId && !i.savedForLater)
+      cartItems.find((i) => i.productId === productId && !i.savedForLater && !i.giftRuleId)
         ?.quantity || 0,
     getCartItem: (productId: string) =>
-      cartItems.find((i) => i.productId === productId && !i.savedForLater),
+      cartItems.find((i) => i.productId === productId && !i.savedForLater && !i.giftRuleId),
     getCartItemById: (cartItemId: string) =>
       cartItems.find((i) => i.id === cartItemId),
     refreshCart,

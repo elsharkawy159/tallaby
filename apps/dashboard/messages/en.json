@@ -18,6 +18,7 @@
     "type": "Type",
     "types": {
       "percent_off": "Percent off",
+      "free_gift": "Free gift over an amount",
       "buy_x_get_y": "Buy X get Y"
     },
     "percent": "Percent off (1 to 90)",
@@ -34,6 +35,11 @@
     "endsAt": "Ends",
     "endsHint": "Set an end for a time-limited sale, or leave empty.",
     "stackingNote": "Each product line gets one offer only: the biggest of its quantity offer, its bundle offer and your automatic discounts. A coupon still applies on what's left. The free-delivery amount is under Shipping.",
+    "minSubtotal": "Order amount (EGP)",
+    "minSubtotalHint": "What the items come to after their offers, before a coupon.",
+    "giftProducts": "Gifts the customer can choose from",
+    "giftProductsHint": "Pick 1 to 10 of your products. The customer takes one for free, and it comes out of your stock.",
+    "summaryGift": "Free gift over {amount}, {count, plural, one {# choice} other {# choices}}",
     "summaryPercent": "{percent}% off",
     "summaryBuyGetFree": "Buy {buy}, get {get} free",
     "summaryBuyGetPercent": "Buy {buy}, get {get} at {percent}% off",
@@ -3149,6 +3155,8 @@
       "scope": "Only your products in the cart get this discount. Other sellers' items stay full price.",
       "worksOn": "Works on {places}",
       "validUntil": "Until {date}",
+      "showInCart": "Show in the cart",
+      "showInCartHint": "Anyone shopping in your store sees this code in their cart and can apply it. Leave it off for a code you only share with some people.",
       "popup": "Show as a pop-up on your store",
       "popupHint": "Visitors see a \"special offer for you\" pop-up with this code. Each visitor sees it once.",
       "popupTriggers": {

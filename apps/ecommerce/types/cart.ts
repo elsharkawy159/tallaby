@@ -7,6 +7,8 @@ export interface CartItem {
   price: string | number;
   variant?: any;
   savedForLater?: boolean | null;
+  /** A free gift (0149): one unit at price 0. */
+  giftRuleId?: string | null;
   sellerId: string;
   cartId: string;
   createdAt?: string | null;

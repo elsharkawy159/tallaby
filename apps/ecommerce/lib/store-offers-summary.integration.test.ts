@@ -101,7 +101,7 @@ describe.skipIf(!isStaging)("checkout summary matches the order (integration)", 
 
   it("agrees with an automatic rule and a coupon", async () => {
     const { db, sql, storeDiscountRules, placeOrderFromCart } = await load();
-    await db.insert(storeDiscountRules).values({ sellerId, storeId, name: "Sale", ruleType: "percent_off", discountPercent: "33.00" });
+    await db.insert(storeDiscountRules).values({ sellerId, storeId, name: "Sale", ruleType: "percent_off", discountPercent: "33.00", startsAt: new Date(Date.now() - 3_600_000).toISOString() });
     try {
       const { cartId, items } = await cartWith(2);
       const result = await placeOrderFromCart({

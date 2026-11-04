@@ -549,10 +549,13 @@ export const CheckoutData = ({
         return;
       }
       await refreshCart();
-      const next =
+      // Fewer items can take the cart below a free gift's amount: the server removed it.
+      const removedGifts = (result as { removedGiftIds?: string[] }).removedGiftIds ?? [];
+      const next = (
         quantity <= 0
           ? cartLines.filter((line) => line.id !== item.id)
-          : cartLines.map((line) => (line.id === item.id ? { ...line, quantity } : line));
+          : cartLines.map((line) => (line.id === item.id ? { ...line, quantity } : line))
+      ).filter((line) => !removedGifts.includes(line.id));
       if (next.length === 0) {
         router.push("/cart");
         return;

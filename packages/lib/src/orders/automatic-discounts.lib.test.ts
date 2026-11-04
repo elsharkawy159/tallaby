@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { applyDiscountRules, isRuleLive, parseDiscountRule, type DiscountRule, type RuleLine } from "./automatic-discounts.lib";
+import { applyDiscountRules, giftRuleReached, invalidGiftLineIndexes, isRuleLive, parseDiscountRule, type DiscountRule, type GiftLine, type RuleLine } from "./automatic-discounts.lib";
 
 const NOW = new Date("2026-11-04T12:00:00Z");
 const store = { sellerId: "s1", storeId: "st1" };
@@ -89,6 +89,41 @@ describe("the best single rule per line", () => {
   it("ignores free-gift rules, which take nothing off a line", () => {
     const gift = rule({ ruleType: "free_gift", giftProductIds: ["g"], minSubtotalPiastres: 0 });
     expect(amounts([line(1)], [gift])).toEqual([0]);
+  });
+});
+
+describe("free gifts", () => {
+  const giftRule = (extra: Partial<DiscountRule> = {}) => rule({ ruleType: "free_gift", giftProductIds: ["g1", "g2"], minSubtotalPiastres: 50000, ...extra });
+  const gift = (extra: Partial<GiftLine> = {}): GiftLine => ({ ruleId: "r1", productId: "g1", quantity: 1, available: true, ...extra });
+  const enough = { netPiastres: 50000, paidUnits: 1 };
+  const check = (gifts: GiftLine[], rules: DiscountRule[] = [giftRule()], cart = enough) => invalidGiftLineIndexes(gifts, rules, store, cart, NOW);
+
+  it("reaches its amount only with paid units", () => {
+    expect(giftRuleReached({ minSubtotalPiastres: 50000 }, enough)).toBe(true);
+    expect(giftRuleReached({ minSubtotalPiastres: 50000 }, { netPiastres: 49999, paidUnits: 1 })).toBe(false);
+    expect(giftRuleReached({ minSubtotalPiastres: 0 }, { netPiastres: 0, paidUnits: 0 })).toBe(false);
+  });
+  it("lets a good gift through", () => {
+    expect(check([gift()])).toEqual([]);
+  });
+  it("refuses a gift below the amount, on its own, or with no rule", () => {
+    expect(check([gift()], [giftRule()], { netPiastres: 100, paidUnits: 1 })).toEqual([0]);
+    expect(check([gift()], [giftRule({ minSubtotalPiastres: 0 })], { netPiastres: 0, paidUnits: 0 })).toEqual([0]);
+    expect(check([gift({ ruleId: "gone" })])).toEqual([0]);
+  });
+  it("refuses a rule that is off, ended, another store's or not a gift rule", () => {
+    expect(check([gift()], [giftRule({ isActive: false })])).toEqual([0]);
+    expect(check([gift()], [giftRule({ endsAt: "2026-11-04T00:00:00Z" })])).toEqual([0]);
+    expect(check([gift()], [giftRule({ sellerId: "other" })])).toEqual([0]);
+    expect(check([gift()], [giftRule({ ruleType: "percent_off" })])).toEqual([0]);
+  });
+  it("refuses a product that isn't a gift, can't be handed over, or more than one unit", () => {
+    expect(check([gift({ productId: "paid" })])).toEqual([0]);
+    expect(check([gift({ available: false })])).toEqual([0]);
+    expect(check([gift({ quantity: 2 })])).toEqual([0]);
+  });
+  it("allows one gift per rule", () => {
+    expect(check([gift(), gift({ productId: "g2" })])).toEqual([1]);
   });
 });
 

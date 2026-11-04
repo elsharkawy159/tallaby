@@ -237,6 +237,8 @@ export const coupons = pgTable("coupons", {
 	// 0114: storefront pop-up ('enter' | 'exit' | 'random') and the visitor's minutes to use it.
 	popupTrigger: text("popup_trigger"),
 	popupDurationMinutes: integer("popup_duration_minutes"),
+	// 0149: the seller chose to list this coupon in the store's cart.
+	showInCart: boolean("show_in_cart").default(false).notNull(),
 	startsAt: timestamp("starts_at", { withTimezone: true, mode: 'string' }).notNull(),
 	expiresAt: timestamp("expires_at", { withTimezone: true, mode: 'string' }).notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
@@ -789,6 +791,8 @@ export const cartItems = pgTable("cart_items", {
 	variant: jsonb(),
 	/** The cross-sell offer the customer took (0145). The price stays full; checkout works out the discount. */
 	crossSellId: uuid("cross_sell_id"),
+	/** A free gift the customer picked (0149): price 0, rechecked at checkout, deleted with its rule. */
+	giftRuleId: uuid("gift_rule_id"),
 }, (table) => [
 	index("cart_items_cart_id_idx").using("btree", table.cartId.asc().nullsLast().op("uuid_ops")),
 	index("cart_items_product_id_idx").using("btree", table.productId.asc().nullsLast().op("uuid_ops")),

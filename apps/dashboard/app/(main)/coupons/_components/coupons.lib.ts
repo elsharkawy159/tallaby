@@ -46,6 +46,8 @@ export type CouponFormState = {
   /** How long the visitor has to use the code, in `popupUnit`s. */
   popupDuration: string;
   popupUnit: PopupUnit;
+  /** List this coupon in the store's cart (F-13c). */
+  showInCart: boolean;
 };
 
 export type PopupUnit = "minutes" | "hours" | "days";
@@ -99,6 +101,7 @@ export function emptyCouponForm(): CouponFormState {
     popupTrigger: "off",
     popupDuration: "1",
     popupUnit: "hours",
+    showInCart: false,
   };
 }
 
@@ -119,6 +122,7 @@ export function couponToForm(coupon: SellerCouponRow): CouponFormState {
     channels: ["storefront"],
     startDate: toDateInput(coupon.startsAt),
     endDate: toDateInput(coupon.expiresAt),
+    showInCart: coupon.showInCart,
     ...(coupon.popup
       ? { popupTrigger: coupon.popup.trigger, ...minutesToDuration(coupon.popup.durationMinutes) }
       : { popupTrigger: "off" as const, popupDuration: "1", popupUnit: "hours" as const }),
@@ -184,6 +188,7 @@ export function validateCouponForm(
       perUserLimit: toCount(form.perUserLimit),
       productIds: form.productScope === "selected" ? form.productIds : null,
       channels: ["storefront"],
+      showInCart: form.showInCart,
       popup:
         form.popupTrigger === "off" ? null : { trigger: form.popupTrigger, durationMinutes: popupMinutes! },
       // Whole days in the seller's timezone: from the first moment of the

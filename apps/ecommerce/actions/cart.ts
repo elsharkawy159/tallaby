@@ -27,6 +27,7 @@ import { getPriceFinal } from "@workspace/lib";
 import { storeSellsProduct } from "@workspace/lib/stores/server";
 import { cartLineHasStock } from "@/lib/cart-stock.lib";
 import { touchCartActivity } from "@/lib/cart-activity.server";
+import { removeInvalidCartGifts } from "@workspace/lib/orders/line-discounts/server";
 
 type ProductPrice = {
   base: number;
@@ -186,7 +187,8 @@ export const getCartItems = async () => {
       };
     }
 
-    if (Number(nextItem.price) === 0) {
+    // A free gift (0149) really is 0.
+    if (Number(nextItem.price) === 0 && !item.giftRuleId) {
       const variantFinal = getPriceFinal(
         (nextItem.variant as { price?: unknown } | null)?.price
       );
@@ -334,6 +336,8 @@ export async function addToCart(
 
   // Find matching item - match by variant ID if variantId is provided, otherwise match items without variants
   const existing = allItems.find((item) => {
+    // A free gift is its own line (0149): buying the same product stays separate.
+    if (item.giftRuleId) return false;
     if (varId) {
       // Match items with the same variant ID
       return (item.variant as any)?.id === varId;
@@ -417,6 +421,8 @@ export async function updateCartItem(itemId: string, quantity: number) {
   if (!item) return { success: false, error: "Item not found" };
 
   if (quantity <= 0) return removeFromCart(itemId);
+  // A free gift is always one unit (0149).
+  if (item.giftRuleId) return { success: false, error: "Item not found" };
 
   // The variant's own stock, as placing the order checks it (F-64).
   const variantId = (item.variant as { id?: string } | null)?.id;
@@ -444,8 +450,10 @@ export async function updateCartItem(itemId: string, quantity: number) {
     .where(eq(cartItems.id, itemId))
     .returning();
   await touchCartActivity(cart.id);
+  // Fewer items can take the cart below a free gift's amount.
+  const removedGiftIds = await removeInvalidCartGifts(cart);
 
-  return { success: true, data: updated };
+  return { success: true, data: updated, removedGiftIds };
 }
 
 export async function removeFromCart(itemId: string) {
@@ -457,8 +465,9 @@ export async function removeFromCart(itemId: string) {
     .where(and(eq(cartItems.id, itemId), eq(cartItems.cartId, cart.id)))
     .returning({ id: cartItems.id });
   if (removed.length > 0) await touchCartActivity(cart.id);
+  const removedGiftIds = await removeInvalidCartGifts(cart);
 
-  return { success: true, message: "Item removed" };
+  return { success: true, message: "Item removed", removedGiftIds };
 }
 
 export async function clearCart() {

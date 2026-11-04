@@ -125,6 +125,53 @@ export function applyDiscountRules(
   return best;
 }
 
+export type GiftSnapshot = { ruleId: string; name: string };
+
+export type GiftLine = {
+  ruleId: string;
+  productId: string;
+  quantity: number;
+  /** Active, in this store's catalog and in stock. */
+  available: boolean;
+};
+
+/** The cart has paid units and reaches the rule's amount. A gift is never sold on its own. */
+export function giftRuleReached(rule: Pick<DiscountRule, "minSubtotalPiastres">, cart: { netPiastres: number; paidUnits: number }): boolean {
+  return cart.paidUnits > 0 && cart.netPiastres > 0 && cart.netPiastres >= (rule.minSubtotalPiastres ?? 0);
+}
+
+/**
+ * The positions of gift lines that may not go through: the rule is off, ended or
+ * another store's, the cart doesn't reach its amount, the product isn't one of its
+ * gifts or can't be handed over, the quantity isn't 1, or it's a second gift for
+ * the same rule.
+ */
+export function invalidGiftLineIndexes(
+  gifts: readonly GiftLine[],
+  rules: readonly DiscountRule[],
+  store: { sellerId: string | null; storeId: string },
+  cart: { netPiastres: number; paidUnits: number },
+  now: Date,
+): number[] {
+  const taken = new Set<string>();
+  const invalid: number[] = [];
+  gifts.forEach((gift, index) => {
+    const rule = rules.find((candidate) => candidate.id === gift.ruleId);
+    const ok =
+      rule &&
+      rule.ruleType === "free_gift" &&
+      isRuleLive(rule, store, now) &&
+      giftRuleReached(rule, cart) &&
+      rule.giftProductIds.includes(gift.productId) &&
+      gift.available &&
+      gift.quantity === 1 &&
+      !taken.has(gift.ruleId);
+    if (ok) taken.add(gift.ruleId);
+    else invalid.push(index);
+  });
+  return invalid;
+}
+
 export type DiscountRuleInput = {
   name: string;
   ruleType: DiscountRuleType;

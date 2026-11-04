@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { CrossSellOffers } from "@/components/storefront/cross-sell-offers.client";
+import { CartOffers } from "@/components/storefront/cart-offers.client";
 import { getCartOffers, type CartOffersView } from "@/actions/cart-offers";
+import { Trash2 } from "lucide-react";
 import { useCurrencyLabel } from "@/lib/currency-label.client";
 import { ShoppingBag } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
@@ -35,25 +37,29 @@ export function StorefrontCart({
   const t = useTranslations("storefront");
   const locale = useLocale();
   const currencyLabel = useCurrencyLabel();
-  const { cartItems, loading } = useCart();
+  const { cartItems, loading, refreshCart, removeFromCart } = useCart();
   const items = cartItems.filter((item) => !item.savedForLater);
   const subtotal = items.reduce((sum, i) => sum + Number(i.price) * i.quantity, 0);
   const count = items.reduce((sum, i) => sum + i.quantity, 0);
   // The store's minimum order (F-13b): items subtotal before shipping and coupons, in piastres.
   const minOrderCheck = checkMinOrder(minOrder, itemsSubtotalPiastres(items));
   // The offers on these lines (F-07, F-32), priced on the server like the order.
-  const [offers, setOffers] = useState<CartOffersView>({ lines: {}, totalPiastres: 0 });
+  const [offers, setOffers] = useState<CartOffersView>({ lines: {}, totalPiastres: 0, coupons: [], appliedCouponCode: null, gifts: [], nextGift: null, removedGifts: false });
+  const [offersRevision, setOffersRevision] = useState(0);
   const offersKey = items.map((item) => `${item.id}:${item.quantity}`).join(",");
   useEffect(() => {
     if (!offersKey) return;
     let stale = false;
     getCartOffers().then((view) => {
-      if (!stale) setOffers(view);
+      if (stale) return;
+      setOffers(view);
+      // A gift line this cart no longer earns was just taken out on the server.
+      if (view.removedGifts) void refreshCart();
     });
     return () => {
       stale = true;
     };
-  }, [offersKey]);
+  }, [offersKey, offersRevision, refreshCart]);
 
   if (loading) {
     return (
@@ -142,14 +148,27 @@ export function StorefrontCart({
                   </p>
                 )}
                 <div className="mt-auto flex items-center justify-between gap-2 pt-1">
-                  <QuantitySelector
-                    size="sm"
-                    cartItemId={item.id}
-                    initialQuantity={item.quantity}
-                    productStock={stock}
-                  />
+                  {item.giftRuleId ? (
+                    <button
+                      type="button"
+                      aria-label={t("removeGift")}
+                      className="grid size-9 place-items-center rounded-full text-(--sf-muted) hover:text-(--sf-ink)"
+                      onClick={() => void removeFromCart(item.id)}
+                    >
+                      <Trash2 className="size-4" aria-hidden />
+                    </button>
+                  ) : (
+                    <QuantitySelector
+                      size="sm"
+                      cartItemId={item.id}
+                      initialQuantity={item.quantity}
+                      productStock={stock}
+                    />
+                  )}
                   <span className="text-sm font-semibold tabular-nums">
-                    {formatPricePlain(Number(item.price) * item.quantity, locale, currencyLabel)}
+                    {item.giftRuleId
+                      ? t("freeGift")
+                      : formatPricePlain(Number(item.price) * item.quantity, locale, currencyLabel)}
                   </span>
                 </div>
               </div>
@@ -157,6 +176,7 @@ export function StorefrontCart({
           );
         })}
       </ul>
+      <CartOffers view={offers} onChange={() => setOffersRevision((n) => n + 1)} />
       <CrossSellOffers
         compact
         mainProductIds={items.map((item) => item.productId)}

@@ -38,6 +38,7 @@ export type SellerCouponRow = {
   channels: CouponChannel[];
   /** Store pop-up (0114): when it opens, and the visitor's minutes to use the code. */
   popup: { trigger: CouponPopupTrigger; durationMinutes: number } | null;
+  showInCart: boolean;
   isActive: boolean;
   startsAt: string;
   expiresAt: string;
@@ -91,6 +92,7 @@ const couponInputSchema = z
     // Seller coupons work on the seller's own store(s) only (owner,
     // 2026-10-21): a marketplace channel is refused, not silently kept.
     channels: z.array(z.literal("storefront")).min(1),
+    showInCart: z.boolean().default(false),
     popup: z
       .object({
         trigger: z.enum(COUPON_POPUP_TRIGGERS),
@@ -148,6 +150,7 @@ function toRow(
       isCouponPopupTrigger(coupon.popupTrigger) && coupon.popupDurationMinutes
         ? { trigger: coupon.popupTrigger, durationMinutes: coupon.popupDurationMinutes }
         : null,
+    showInCart: coupon.showInCart,
     isActive: coupon.isActive ?? false,
     startsAt: coupon.startsAt,
     expiresAt: coupon.expiresAt,
@@ -312,6 +315,7 @@ export async function saveSellerCoupon(
     },
     popupTrigger: v.popup?.trigger ?? null,
     popupDurationMinutes: v.popup?.durationMinutes ?? null,
+    showInCart: v.showInCart,
     startsAt: new Date(v.startsAt).toISOString(),
     expiresAt: new Date(v.expiresAt).toISOString(),
   };

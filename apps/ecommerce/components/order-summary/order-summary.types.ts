@@ -5,6 +5,8 @@ export interface OrderSummaryItem {
   id: string
   quantity: number
   price: string | number
+  /** A free gift (0149): one unit at price 0. */
+  giftRuleId?: string | null
   variant?: {
     option1?: string | null
     option2?: string | null

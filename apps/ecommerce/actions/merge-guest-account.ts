@@ -131,8 +131,11 @@ export async function mergeGuestAccount(): Promise<{
         });
 
         for (const guestItem of guestCart.cartItems) {
+          // A free gift (0149) belongs to that cart's offer; the customer picks again.
+          if (guestItem.giftRuleId) continue;
           const guestVariantId = (guestItem.variant as any)?.id ?? null;
           const existingItem = authItems.find((item) => {
+            if (item.giftRuleId) return false;
             const itemVariantId = (item.variant as any)?.id ?? null;
             return (
               item.productId === guestItem.productId &&

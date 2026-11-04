@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
+import { Switch } from "@workspace/ui/components/switch";
 import { RadioGroup, RadioGroupItem } from "@workspace/ui/components/radio-group";
 import {
   Sheet,
@@ -350,6 +351,15 @@ export function CouponEditor({ open, onOpenChange, coupon, onSaved }: Props) {
               </div>
               {fieldError("dates")}
             </fieldset>
+
+            {/* Listed in the store's cart (0149, F-13c) */}
+            <div className="flex items-start justify-between gap-3 rounded-xl border p-3">
+              <div className="min-w-0">
+                <Label htmlFor={`${ids}-show-in-cart`}>{t("showInCart")}</Label>
+                <p className="mt-1 text-pretty text-xs text-muted-foreground">{t("showInCartHint")}</p>
+              </div>
+              <Switch id={`${ids}-show-in-cart`} checked={form.showInCart} onCheckedChange={(checked) => set("showInCart", checked)} />
+            </div>
 
             {/* Store pop-up (0114) */}
             <fieldset className="space-y-3">

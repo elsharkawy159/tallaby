@@ -12,9 +12,10 @@ import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
 import { Switch } from "@workspace/ui/components/switch";
 import { cn } from "@workspace/ui/lib/utils";
+import { CouponProductPicker } from "../../coupons/_components/coupon-product-picker";
 import { deleteDiscountRule, saveDiscountRule, setDiscountRuleActive, type RuleResult } from "./discount-rules.server";
 
-const RULE_TYPES: DiscountRuleType[] = ["percent_off", "buy_x_get_y"];
+const RULE_TYPES: DiscountRuleType[] = ["percent_off", "buy_x_get_y", "free_gift"];
 
 type Draft = {
   id: string | null;
@@ -25,6 +26,8 @@ type Draft = {
   discountPercent: string;
   buyQuantity: string;
   getQuantity: string;
+  minSubtotal: string;
+  giftProductIds: string[];
   startsAt: string;
   endsAt: string;
 };
@@ -38,6 +41,8 @@ const EMPTY: Draft = {
   discountPercent: "10",
   buyQuantity: "2",
   getQuantity: "1",
+  minSubtotal: "500",
+  giftProductIds: [],
   startsAt: "",
   endsAt: "",
 };
@@ -60,6 +65,8 @@ function toDraft(rule: DiscountRule): Draft {
     discountPercent: String(rule.discountPercent ?? 10),
     buyQuantity: String(rule.buyQuantity ?? 2),
     getQuantity: String(rule.getQuantity ?? 1),
+    minSubtotal: String((rule.minSubtotalPiastres ?? 50000) / 100),
+    giftProductIds: rule.giftProductIds,
     startsAt: toLocalInput(rule.startsAt),
     endsAt: toLocalInput(rule.endsAt),
   };
@@ -111,6 +118,8 @@ export function DiscountRulesView({
             discountPercent: Number(draft.discountPercent),
             buyQuantity: Number(draft.buyQuantity),
             getQuantity: Number(draft.getQuantity),
+            minSubtotal: Number(draft.minSubtotal),
+            giftProductIds: draft.giftProductIds,
             startsAt: toIso(draft.startsAt),
             endsAt: toIso(draft.endsAt),
           },
@@ -123,7 +132,9 @@ export function DiscountRulesView({
   };
 
   const summary = (rule: DiscountRule) =>
-    rule.ruleType === "buy_x_get_y"
+    rule.ruleType === "free_gift"
+      ? t("summaryGift", { amount: format.number((rule.minSubtotalPiastres ?? 0) / 100, { style: "currency", currency: "EGP" }), count: rule.giftProductIds.length })
+      : rule.ruleType === "buy_x_get_y"
       ? rule.discountPercent === 100
         ? t("summaryBuyGetFree", { buy: rule.buyQuantity ?? 0, get: rule.getQuantity ?? 0 })
         : t("summaryBuyGetPercent", { buy: rule.buyQuantity ?? 0, get: rule.getQuantity ?? 0, percent: rule.discountPercent ?? 0 })
@@ -176,7 +187,8 @@ export function DiscountRulesView({
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium">{rule.name}</p>
                     <p className="text-xs text-muted-foreground">
-                      {summary(rule)} · {rule.scope === "all" ? t("scopeAll") : t("scopeCategoriesCount", { count: rule.categoryIds.length })}
+                      {summary(rule)}
+                      {rule.ruleType !== "free_gift" && <> · {rule.scope === "all" ? t("scopeAll") : t("scopeCategoriesCount", { count: rule.categoryIds.length })}</>}
                     </p>
                     <Badge variant={status.live && rule.isActive ? "secondary" : "outline"} className="mt-1 font-normal">
                       {status.label}
@@ -228,10 +240,25 @@ export function DiscountRulesView({
             </select>
           </div>
 
-          <div className="grid gap-1.5">
-            <Label htmlFor="rule-percent">{t(draft.ruleType === "buy_x_get_y" ? "getPercent" : "percent")}</Label>
-            <Input id="rule-percent" inputMode="decimal" dir="ltr" value={draft.discountPercent} onChange={(event) => setDraft({ ...draft, discountPercent: event.target.value })} />
-          </div>
+          {draft.ruleType === "free_gift" ? (
+            <>
+              <div className="grid gap-1.5">
+                <Label htmlFor="rule-min">{t("minSubtotal")}</Label>
+                <Input id="rule-min" inputMode="decimal" dir="ltr" value={draft.minSubtotal} onChange={(event) => setDraft({ ...draft, minSubtotal: event.target.value })} />
+                <p className="text-xs text-muted-foreground">{t("minSubtotalHint")}</p>
+              </div>
+              <div className="grid gap-1.5 sm:col-span-2">
+                <Label>{t("giftProducts")}</Label>
+                <p className="text-xs text-muted-foreground">{t("giftProductsHint")}</p>
+                <CouponProductPicker selectedIds={draft.giftProductIds} onChange={(giftProductIds) => setDraft({ ...draft, giftProductIds })} />
+              </div>
+            </>
+          ) : (
+            <div className="grid gap-1.5">
+              <Label htmlFor="rule-percent">{t(draft.ruleType === "buy_x_get_y" ? "getPercent" : "percent")}</Label>
+              <Input id="rule-percent" inputMode="decimal" dir="ltr" value={draft.discountPercent} onChange={(event) => setDraft({ ...draft, discountPercent: event.target.value })} />
+            </div>
+          )}
 
           {draft.ruleType === "buy_x_get_y" && (
             <>
@@ -246,6 +273,7 @@ export function DiscountRulesView({
             </>
           )}
 
+          {draft.ruleType !== "free_gift" && (
           <div className="grid gap-1.5 sm:col-span-2">
             <Label htmlFor="rule-scope">{t("scope")}</Label>
             <select
@@ -284,6 +312,7 @@ export function DiscountRulesView({
                 </div>
               ))}
           </div>
+          )}
 
           <div className="grid gap-1.5">
             <Label htmlFor="rule-start">{t("startsAt")}</Label>
