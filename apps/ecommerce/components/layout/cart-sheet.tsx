@@ -50,6 +50,7 @@ export function CartSheet({
   const currencyLabel = useCurrencyLabel();
   const tToast = useTranslations("toast");
   const t = useTranslations("cart");
+  const tCheckout = useTranslations("checkout.simpleForm");
 
   const updateQuantity = async (itemId: string, quantity: number) => {
     setLoadingItems((prev) => new Set(prev).add(itemId));
@@ -58,7 +59,7 @@ export function CartSheet({
       if (result.success) {
         router.refresh();
       } else {
-        toast.error(result.error || tToast("failedToUpdateCart"));
+        toast.error(result.error === "Insufficient stock" ? tCheckout("notEnoughStock") : tToast("failedToUpdateCart"));
       }
     } catch (error) {
       toast.error(tToast("failedToUpdateCart"));
