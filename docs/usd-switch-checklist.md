@@ -4,7 +4,7 @@ Turns on the USD store wallet, Free and Pro plans and AI credits together (`ROAD
 
 ## Steps, in order
 
-1. **Apply the migrations on production**, after staging: `0136_billing_usd.sql`, `0137_plans_and_ai_credits.sql`. Also apply these if they aren't on production yet: `0136_guest_users_without_auth_fk.sql`, `0138_products_track_stock.sql`, `0139_store_app_installs.sql` and any `0140`/`0141`. They are additive; the code reads the new columns, so they go first.
+1. **Apply the migrations on production**, after staging: `0136_billing_usd.sql`, `0137_plans_and_ai_credits.sql`. Also apply these if they aren't on production yet: `0136_guest_users_without_auth_fk.sql`, `0138_products_track_stock.sql`, `0139_store_app_installs.sql` and any `0140`/`0141`. They are additive; the code reads the new columns, so they go first. Also `0144_order_source_manual.sql`, `0145_cross_sell.sql`, `0146_email_packs.sql`: all are on staging only, and `0145` must land before the deploy, because store and cart queries read it.
 2. **Deploy every app that reads billing:** dashboard, admin, ecommerce and backend. Check the backend separately, as it can deploy on its own schedule. Deploying with `usd_live` false changes nothing for sellers.
 3. **Confirm these are set:**
    - `CRON_SECRET` on the dashboard, for `/api/cron/exchange-rate` and `/api/cron/plan-renewals` (`apps/dashboard/vercel.json`).
@@ -36,7 +36,7 @@ Turns on the USD store wallet, Free and Pro plans and AI credits together (`ROAD
    Admin › Wallets should show no ledger mismatches.
 9. **Smoke checks**, with a test seller:
    - **Dashboard:** the header, home wallet KPI, `/wallet`, `/financial` and the negative-balance pop-up all show `$`. Old ledger rows keep their EGP label.
-   - **Top-up:** the Kashier top-up shows USD and the EGP total, and the return page and email show the USD credit. A manual top-up approved in Admin shows the USD credit in the bell and the email.
+   - **Top-up:** card top-ups stay Soon, so test a manual InstaPay or Vodafone Cash top-up: it shows USD and the EGP total, and once approved in Admin the bell and the email show the USD credit.
    - **Order:** a Free store order takes `$0.03`, and `order_items.metadata.platformFee` has `feeUsdCents`. On Pro it takes nothing.
    - **Plans:** upgrade charges `$29`. An AI autofill uses credits. Buying 100 credits charges `$1`.
    - **Copy:** the product form's "you receive" takes about `$0.03` in EGP, and Help shows the new fee and top-up answers.
