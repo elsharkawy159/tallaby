@@ -3,12 +3,13 @@ import "dotenv/config";
 import postgres from "postgres";
 import { drizzle } from "drizzle-orm/postgres-js";
 
+import { connectionStringForEnv } from "./connection-guard";
 import * as DB_SCHEMA from "./schema";
 import * as DB_RELATIONS from "./relations";
 
 export const schema = { ...DB_SCHEMA, ...DB_RELATIONS };
 
-const connectionString = process.env.DATABASE_URL!;
+const connectionString = connectionStringForEnv(process.env);
 
 /**
  * Supabase's transaction-mode pooler (port 6543, pgbouncer) does not support
