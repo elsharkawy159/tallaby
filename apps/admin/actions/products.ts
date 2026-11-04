@@ -25,6 +25,7 @@ import {
   syncCategoryProductCountOnDelete,
 } from "@workspace/db/categories";
 import { syncProductVariants } from "@workspace/db/products";
+import { resolveProductSlug } from "@workspace/lib/products/slug/server";
 import {
   normalizeNullablePrice,
   normalizePrice,
@@ -519,6 +520,14 @@ export async function updateProduct(productId: string, data: UpdateProductInput)
       }
 
       if (hasTranslationChanges) {
+        // Scoped to the product's own seller, never one sent by the form.
+        if (data.slug !== undefined) {
+          translationUpdate.slug = await resolveProductSlug(tx, {
+            sellerId: before.sellerId,
+            productId,
+            desired: data.slug,
+          });
+        }
         const existingTranslation = await tx.query.productTranslations.findFirst({
           where: and(
             eq(productTranslations.productId, productId),
@@ -536,7 +545,7 @@ export async function updateProduct(productId: string, data: UpdateProductInput)
             productId,
             locale: "en",
             title: (data.title as string | undefined) ?? "Untitled",
-            slug: data.slug ?? null,
+            slug: (translationUpdate.slug as string | undefined) ?? null,
             description: data.description ?? null,
             bulletPoints: data.bulletPoints ?? [],
             metaTitle: data.metaTitle ?? null,
@@ -611,7 +620,11 @@ export async function updateProduct(productId: string, data: UpdateProductInput)
       where: eq(products.id, productId),
     });
 
-    return { success: true, data: updatedProduct };
+    return {
+      success: true,
+      data: updatedProduct,
+      slug: after?.slugs.find((row) => row.locale === "en")?.slug ?? null,
+    };
   } catch (error) {
     console.error("Error updating product:", error);
     return {

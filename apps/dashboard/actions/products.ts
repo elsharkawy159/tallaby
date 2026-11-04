@@ -30,6 +30,7 @@ import {
 import { syncProductVariants } from "@workspace/db/products";
 import { setStockContext } from "@workspace/db/inventory";
 import { normalizePrice } from "@workspace/lib";
+import { resolveProductSlug } from "@workspace/lib/products/slug/server";
 import { getSellerAccess } from "@/lib/auth/seller-access";
 import {
   hasProductImage,
@@ -1221,12 +1222,16 @@ export async function createProduct(
 
       if (localizedData) {
         const enTitle = (localizedData.en.title ?? "").trim() || "Untitled";
-        const enSlug =
-          (localizedData.en.slug ?? "").trim() ||
-          slugify(localizedData.en.title ?? "untitled", {
-            lower: true,
-            strict: true,
-          });
+        const enSlug = await resolveProductSlug(tx, {
+          sellerId: session.user.id,
+          productId: created.id,
+          desired:
+            (localizedData.en.slug ?? "").trim() ||
+            slugify(localizedData.en.title ?? "untitled", {
+              lower: true,
+              strict: true,
+            }),
+        });
         const enRow = {
           productId: created.id,
           locale: "en" as const,
@@ -1461,12 +1466,16 @@ export async function updateProduct(
       // Update product_translations for en and ar when localized is provided
       if (localizedData) {
         const enTitle = (localizedData.en?.title ?? "").trim() || "Untitled";
-        const enSlug =
-          (localizedData.en?.slug ?? "").trim() ||
-          slugify(localizedData.en?.title ?? "untitled", {
-            lower: true,
-            strict: true,
-          });
+        const enSlug = await resolveProductSlug(tx, {
+          sellerId: session.user.id,
+          productId,
+          desired:
+            (localizedData.en?.slug ?? "").trim() ||
+            slugify(localizedData.en?.title ?? "untitled", {
+              lower: true,
+              strict: true,
+            }),
+        });
         await tx
           .update(productTranslations)
           .set({

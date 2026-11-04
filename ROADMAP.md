@@ -1344,6 +1344,14 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 ## 7. Log
 
+### 2026-11-04 — Two products of one seller no longer get the same link (bug fix)
+
+- **Problem:** the product form and Admin saved a product's link with no check. If a seller reused a title, two of their products shared one link, the older one opened for both, and only the older appeared in the sitemap.
+- **Fix:** a new or edited product now gets a link no other product of that seller uses. If it's taken, it gets `-2`, `-3` and so on, also when the seller typed the link. Another seller using the same link doesn't matter. Two saves at the same moment take turns (a lock per seller). The new helper is `packages/lib/src/products/product-slug.server.ts`; bulk upload and URL import get it through `createProduct`.
+- **Our calls:** drafts and products in Trash keep their link, because publishing and restoring don't check again; a permanently deleted product gives it up. A link used in either language counts, because a store falls back to the other language. Saving a product whose link is unchanged keeps it, even if it's a duplicate, and renaming alone doesn't change a link: the seller has to edit the link.
+- **Not changed:** existing duplicate products in the database (the owner decides on cleanup) and the MCP and Shopify paths, which already avoid links used by anyone. No migration.
+- **Checked:** unit tests, and integration tests on staging for the dashboard and Admin. Not seen in a browser.
+
 ### 2026-11-04 — F-67 Pending carts for sellers (owner)
 
 - **Built:** Orders › Pending carts (`/orders/pending-carts`), one store at a time: customer, products, item count, value and last activity, newest first, paged on the server. It uses the sidebar's selected store, and a `?store=` link counts only if it's the seller's own.

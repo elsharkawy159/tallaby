@@ -150,7 +150,8 @@ export function ProductForm({
       return;
     }
 
-    form.reset({ ...data, bulletPoints, images, brandId: data.brandId ?? "" });
+    // The saved slug can differ from the typed one when that seller already uses it.
+    form.reset({ ...data, slug: result.slug ?? data.slug, bulletPoints, images, brandId: data.brandId ?? "" });
     toast.success("Changes saved", {
       action: {
         label: "View product",

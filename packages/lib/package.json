@@ -298,6 +298,10 @@
       "types": "./src/products/trash.server.ts",
       "default": "./src/products/trash.server.ts"
     },
+    "./products/slug/server": {
+      "types": "./src/products/product-slug.server.ts",
+      "default": "./src/products/product-slug.server.ts"
+    },
     "./products/agent": {
       "types": "./src/products/agent-products.dto.ts",
       "default": "./src/products/agent-products.dto.ts"
