@@ -63,6 +63,8 @@ describe("social platforms (P4-15)", () => {
     expect(normalizeSocialLink("whatsapp", "12")).toBeNull();
     expect(normalizeSocialLink("whatsapp", "https://evil.com/201012345678")).toBeNull();
     expect(whatsappDigits("0101-234-5678")).toBe("201012345678");
+    // How a customer's foreign number is stored (F-61e).
+    expect(whatsappDigits("+966512345678")).toBe("966512345678");
   });
 
   it("takes WhatsApp usernames as https://wa.me/@<username>", () => {

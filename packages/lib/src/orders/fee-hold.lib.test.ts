@@ -88,3 +88,16 @@ describe('orderJunkReasons', () => {
     expect(orderJunkReasons(null)).toEqual([])
   })
 })
+
+describe('foreign phones (F-61e)', () => {
+  it('spots a repeat from the same foreign number on another guest account', () => {
+    const recent = [{ userId: 'guest-1', phone: '+966512345678', fingerprint: 'p1x1' }]
+    expect(isDuplicateOrder({ userId: 'guest-2', phone: '0512345678', fingerprint: 'p1x1' }, recent)).toBe(true)
+    expect(isDuplicateOrder({ userId: 'guest-2', phone: '+966512345679', fingerprint: 'p1x1' }, recent)).toBe(false)
+  })
+
+  it('spots a seller testing with their own foreign number', () => {
+    const seller = { sellerId: 's1', phones: ['+966512345678'], emails: [] }
+    expect(isOwnAccount({ userId: 'guest', phone: '966512345678' }, seller)).toBe(true)
+  })
+})

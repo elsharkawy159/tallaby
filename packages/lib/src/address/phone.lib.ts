@@ -12,7 +12,8 @@ const CALLING_CODES: Readonly<Record<string, string>> = {
   US: "1", CA: "1", AU: "61",
 };
 
-const KNOWN_CODES = [...new Set(Object.values(CALLING_CODES))].filter((code) => code.length === 3);
+// A bare number can only be read from a code it can't be confused with; "1" could start anything.
+const KNOWN_CODES = [...new Set(Object.values(CALLING_CODES))].filter((code) => code !== "1");
 
 const latinDigits = (input: string) =>
   input
@@ -24,7 +25,7 @@ const LOOKS_LIKE_PHONE = /^[+()\d\s.-]+$/;
 
 /**
  * A foreign number when the input says which country it is in: `+` or `00`, a
- * bare `966…` from a three-digit country code, or a Saudi mobile written locally
+ * bare `966…` from a listed country code, or a Saudi mobile written locally
  * (`05XXXXXXXX`). Null for an Egyptian code and for anything else.
  */
 export function normalizeForeignPhone(input: string | null | undefined): string | null {

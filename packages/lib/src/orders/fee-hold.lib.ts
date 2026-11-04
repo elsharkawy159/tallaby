@@ -7,6 +7,8 @@
  * order that ships still pays once and a charged order never pays twice).
  */
 
+import { normalizeForeignPhone } from '../address/phone.lib'
+
 export const DUPLICATE_WINDOW_MINUTES = 120
 
 export type FeeHoldReason =
@@ -95,6 +97,11 @@ export function normalizeEgMobile (input: string | null | undefined): string | n
   return /^01[0125]\d{8}$/.test(digits) ? digits : null
 }
 
+/** A number to compare customers by: an Egyptian mobile, or a foreign one in international form. */
+function phoneKey (input: string | null | undefined): string | null {
+  return normalizeEgMobile(input) ?? normalizeForeignPhone(input)
+}
+
 /** 01000000000, 01111111111, 01234567890, 01087654321: the last 8 digits are all one digit or a run. */
 export function isFakePhone (phone: string | null | undefined): boolean {
   const mobile = normalizeEgMobile(phone)
@@ -118,8 +125,8 @@ export function isOwnAccount (
   seller: SellerContacts,
 ): boolean {
   if (customer.userId === seller.sellerId) return true
-  const phone = normalizeEgMobile(customer.phone)
-  if (phone && seller.phones.some((p) => normalizeEgMobile(p) === phone)) return true
+  const phone = phoneKey(customer.phone)
+  if (phone && seller.phones.some((p) => phoneKey(p) === phone)) return true
   const email = normEmail(customer.email)
   return email != null && seller.emails.some((e) => normEmail(e) === email)
 }
@@ -147,11 +154,11 @@ export function isDuplicateOrder (
   current: { userId: string; phone?: string | null; fingerprint: string },
   recent: ReadonlyArray<RecentSellerOrder>,
 ): boolean {
-  const phone = normalizeEgMobile(current.phone)
+  const phone = phoneKey(current.phone)
   return recent.some(
     (order) =>
       order.fingerprint === current.fingerprint &&
-      (order.userId === current.userId || (phone != null && normalizeEgMobile(order.phone) === phone)),
+      (order.userId === current.userId || (phone != null && phoneKey(order.phone) === phone)),
   )
 }
 

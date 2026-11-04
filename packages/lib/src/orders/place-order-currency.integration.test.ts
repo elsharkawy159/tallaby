@@ -289,6 +289,29 @@ describe.skipIf(!TEST_DATABASE_URL)('order currency follows the store (integrati
     expect(result).toMatchObject({ success: false, error: 'storePaymentNotInCurrency' })
   })
 
+  it('the checkout form saves a Saudi address that prices on the zone', async () => {
+    const { parseCheckoutAddress } = await import('../shipping/checkout-address.lib')
+    const { saveCheckoutAddressRow } = await import('../shipping/checkout-address.server')
+    const parsed = parseCheckoutAddress(
+      {
+        fullName: 'Sara Ahmed',
+        phone: '0512345670',
+        address: '7 Olaya Street',
+        country: 'SA',
+        regionKey: 'SA/RIYADH',
+        cityKey: 'SA/RIYADH/riyadh',
+      },
+      'ar',
+    )
+    if (!parsed.ok) throw new Error('address refused')
+    const { id } = await saveCheckoutAddressRow(buyer, parsed.value, null, db as never)
+    const [saved] = await db.select().from(s.userAddresses).where(eq(s.userAddresses.id, id))
+    expect(saved).toMatchObject({ phone: '+966512345670', country: 'Saudi Arabia' })
+    const orderId = await placeOk(await cart(sarStore, '100.00', 'EGP', 3), id)
+    const [order] = await db.select().from(s.orders).where(eq(s.orders.id, orderId))
+    expect(order).toMatchObject({ currency: 'SAR', shippingCost: '30.00', totalAmount: '330.00' })
+  })
+
   it('blocks a foreign number however it is typed', async () => {
     const { blockStorePhone, unblockStorePhone } = await import('../stores/blocked-phones.server')
     await blockStorePhone({ storeId: sarStore, phone: '+966512345678', createdBy: w.a.sellerId })
