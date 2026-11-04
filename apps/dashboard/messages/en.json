@@ -2198,7 +2198,7 @@
       },
       "payout": {
         "title": "Payout account",
-        "description": "Where Tallaby sends your earnings.",
+        "description": "Optional. Our team can see this account if we ever need to send you money. Order money goes straight to you, your wallet balance isn't paid out, and affiliate withdrawals ask for an account each time.",
         "method": "Payout method",
         "accountHolder": "Account holder name",
         "bankName": "Bank name",
@@ -2335,8 +2335,8 @@
     },
     "notes": {
       "readOnly": {
-        "multi_seller": "This order has items from other sellers too, so Tallaby handles its delivery.",
-        "tallaby": "Tallaby delivers this order.",
+        "multi_seller": "This order has items from other sellers too, so you can't change its delivery here.",
+        "tallaby": "This order's delivery isn't managed from your account.",
         "digital": "Digital order. There's nothing to ship."
       },
       "awaitingPayment": "Waiting for the customer's online payment.",
@@ -2350,8 +2350,8 @@
       "outOfStock": "Not enough stock to put this order back on its way. Add stock first.",
       "notAllowed": "This step isn't available for this order right now.",
       "readOnly": {
-        "multi_seller": "This order has items from other sellers, so Tallaby handles it.",
-        "tallaby": "Tallaby delivers this order, so you can't change its status.",
+        "multi_seller": "This order has items from other sellers, so you can't change it here.",
+        "tallaby": "This order's delivery isn't managed from your account, so you can't change its status.",
         "digital": "Digital orders have no delivery to update."
       },
       "unauthorized": "Sign in again to update orders.",
@@ -2817,7 +2817,7 @@
       "generic": "Something went wrong. Please try again.",
       "unauthorized": "Your session has expired. Please sign in again.",
       "orderNotFound": "Order not found",
-      "handledByTallaby": "This order is being delivered by Tallaby — you can't change it.",
+      "handledByTallaby": "This order's delivery isn't managed from your account.",
       "assignFirst": "Assign a rider before updating the delivery status.",
       "invalidTransition": "This shipment can't be moved to that status.",
       "reasonRequired": "Please give a reason for the failed delivery.",
@@ -3162,7 +3162,7 @@
       },
       "paymentMethods": {
         "question": "Which payment methods can my store offer?",
-        "answer": "Cash on delivery is on for every store. In Payment methods you can also save your Vodafone Cash, e& Cash, WE Pay, Orange Cash or InstaPay details. Card payments, Fawry and installments are coming soon."
+        "answer": "Cash on delivery is on for every store. In Payment methods you can also save your Vodafone Cash, e& Cash, WE Pay, Orange Cash or InstaPay details, or connect your own Paymob or Kashier account to take card payments. Fawry and installments are coming soon."
       },
       "builder": {
         "question": "How do I design my store's website?",
@@ -4213,7 +4213,7 @@
     "otherPlaces": {
       "title": "Other places",
       "tallabyRates": "Use Tallaby's rates",
-      "tallabyRatesDescription": "Customers in places none of your zones cover pay Tallaby's delivery rate.",
+      "tallabyRatesDescription": "Customers in places none of your zones cover pay Tallaby's standard rates, and you deliver those orders yourself.",
       "refuse": "Don't deliver there",
       "refuseDescription": "Customers there see \"We don't deliver here yet\" and can't place the order.",
       "note": "This applies once you have a zone that's on. Until then, every place in Egypt uses Tallaby's rates."
@@ -4224,8 +4224,8 @@
       "place": "Customer's place",
       "total": "Order total",
       "zone": "{place} → <b>{zone}</b>: <b>{amount}</b>, arrives in {min}–{max} days (with your preparation time).",
-      "noZones": "You have no zone that's on, so a customer in {place} pays Tallaby's delivery rate.",
-      "tallabyRates": "No zone covers {place}, so the customer pays Tallaby's delivery rate.",
+      "noZones": "You have no zone that's on, so a customer in {place} pays Tallaby's standard rate, and you deliver the order.",
+      "tallabyRates": "No zone covers {place}, so the customer pays Tallaby's standard rate, and you deliver the order.",
       "refused": "No zone covers {place}, so the customer sees \"We don't deliver here yet\".",
       "outsideEgypt": "{place} is outside Egypt. Your website delivers inside Egypt only for now."
     },
@@ -4260,7 +4260,7 @@
       "notFound": "Not found.",
       "rateLimited": "Too many changes. Please wait a few minutes and try again.",
       "generic": "Couldn't save. Please try again.",
-      "tallabyUnavailable": "Tallaby delivery isn't available yet. Use your own delivery.",
+      "tallabyUnavailable": "Tallaby doesn't deliver orders. Use your own delivery.",
       "zonesExist": "This store already has delivery zones. Refresh the page."
     },
     "tallabyTitle": "Tallaby delivery",
@@ -4987,7 +4987,6 @@
     "topUp": {
       "button": "Top up",
       "title": "Top up your store wallet",
-      "description": "Add money to cover fees and paid services. You pay on Kashier by card or mobile wallet.",
       "amount": "Amount",
       "limits": "From 100 to 20,000 EGP.",
       "continue": "Continue to payment",
@@ -5009,7 +5008,7 @@
         },
         "processing": {
           "title": "Payment is being confirmed",
-          "description": "We'll add {amount} as soon as Kashier confirms the payment. This usually takes a few seconds."
+          "description": "We'll add {amount} as soon as your payment is confirmed."
         },
         "failed": {
           "title": "Top-up didn't go through",

@@ -119,7 +119,8 @@ export function TopUpPanel({
   const account = TALLABY_TOP_UP_ACCOUNTS[method];
   const methodLabel = t(`methods.${method}.name`);
   // Only a typed amount gets an error; an empty field just shows the limits.
-  const amountError = !parsed.success && value > 0 && parsed.error !== "invalid" ? tErrors(parsed.error) : null;
+  // The shared errors name EGP limits; in USD mode the limits line says it right.
+  const amountError = !parsed.success && value > 0 && parsed.error !== "invalid" ? (usd ? t("limitsUsd") : tErrors(parsed.error)) : null;
   const canStart = parsed.success && !disabled;
 
   useEffect(() => () => void (preview && URL.revokeObjectURL(preview)), [preview]);
