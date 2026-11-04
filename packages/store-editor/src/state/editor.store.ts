@@ -64,6 +64,8 @@ export type EditorState = {
   defaultLocale: SiteLocale;
   /** Store industry id (Store settings › General); picks the default photos of inserted sections. */
   industry?: string;
+  /** The store's name; a header or footer design chosen in the editor shows it instead of its placeholder. */
+  storeName?: string;
   /** Add › Sections presets (`library_sections`, Task 10); the built-in library when unset. */
   presets?: readonly SectionPreset[];
   /** Most sections the page may hold (the section editor: 1); MAX_SECTIONS_PER_PAGE when unset. */
@@ -155,7 +157,7 @@ function restore(state: EditorState, snap: Snapshot): Partial<EditorState> {
   };
 }
 
-export function createEditorStore(initial: Pick<EditorState, "pages" | "header" | "footer" | "designSystem" | "designVersion" | "chromeVersion" | "defaultLocale" | "industry" | "presets" | "maxSections">) {
+export function createEditorStore(initial: Pick<EditorState, "pages" | "header" | "footer" | "designSystem" | "designVersion" | "chromeVersion" | "defaultLocale" | "industry" | "storeName" | "presets" | "maxSections">) {
   const home = initial.pages.find((p) => p.isHome) ?? initial.pages[0]!;
   return createStore<EditorState & EditorActions>()((set, get) => {
     /** Applies an undoable change; the same `coalesceKey` in quick succession reuses the last undo step. */

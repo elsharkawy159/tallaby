@@ -86,6 +86,10 @@ function markerOf(plan: DropPlan, sample: CanvasSample): DropMarker | null {
       const rect = geometry.images[plan.candidate];
       return rect ? { kind: "image", rect } : null;
     }
+    case "replace-chrome": {
+      const rect = geometry.chrome?.[plan.part];
+      return rect ? { kind: "image", rect } : null;
+    }
     case "invalid":
       return plan.reason === "noop" ? null : { kind: "invalid", line: geometry.sectionLine, reason: plan.reason };
   }
@@ -122,6 +126,7 @@ export function EditorDndProvider({
   const exploreApi = useEditorAdapter().explore;
   const t = useTranslations("storeEditor.dnd");
   const tExplore = useTranslations("storeEditor.explore");
+  const tLibrary = useTranslations("storeEditor.add.library");
   const [value] = useState<EditorDndValue>(() => ({
     dnd: createStore<DndState>()(() => ({ active: null, plan: null, marker: null })),
     canvas: { current: null },
@@ -354,6 +359,8 @@ export function EditorDndProvider({
         return t("announce.movePart", { position: plan.to + 1 });
       case "replace-image":
         return t("announce.replaceImage");
+      case "replace-chrome":
+        return tLibrary("useChrome");
       case "invalid":
         return plan.reason === "noop" ? t("announce.noop") : t("announce.invalid");
     }

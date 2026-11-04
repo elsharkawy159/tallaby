@@ -73,6 +73,8 @@ export type CanvasProbe = {
 
 export type DropPlan =
   | { kind: "insert-section"; index: number }
+  /** A header or footer design: takes the place of the shared one, wherever it is dropped. */
+  | { kind: "replace-chrome"; part: "header" | "footer" }
   | { kind: "move-section"; instanceId: string; to: number }
   /** New element(s), or a photo as an Image element, inside a custom section. */
   | { kind: "insert-nodes"; sectionInstanceId: string; parentId: string | null; index: number; slot: number }

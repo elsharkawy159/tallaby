@@ -27,7 +27,7 @@ import { useEditorAdapter } from "../../adapter.client";
 import { useDragData } from "../../dnd/editor-dnd.client";
 import type { EditorCommands } from "../../lib/editor-commands.lib";
 import { LIBRARY_ICONS } from "../../lib/editor-icons.lib";
-import { acceptsCardPreset, presetDataStatus, presetInstance } from "../../lib/editor-library.lib";
+import { acceptsCardPreset, presetChromePart, presetDataStatus, presetInstance } from "../../lib/editor-library.lib";
 import { recordUse } from "../../lib/editor-palette.lib";
 import { offeredPresets, offersProductParts } from "../../lib/editor-pages.lib";
 import { getInstance, refOf } from "../../lib/editor-selection.lib";
@@ -45,7 +45,8 @@ const pick = (value: { ar: string; en: string }, locale: string) => (locale === 
  * as live previews drawn exactly like the canvas (store theme and element
  * styles). Searching opens every category with a match. Click adds after the
  * selection, drag places it on the canvas; every insert is an ordinary
- * section instance (one undo step).
+ * section instance (one undo step). A header or footer design replaces the
+ * store's shared one instead, by click or by drop.
  */
 export function SectionLibrary({
   store,
@@ -70,12 +71,12 @@ export function SectionLibrary({
   const defaultLocale = useStore(store, (s) => s.defaultLocale);
   const industry = useStore(store, (s) => s.industry);
   const allPresets = useStore(store, (s) => s.presets) ?? SECTION_PRESETS;
-  // Header/footer presets replace the shared chrome: only for hosts that save it.
+  // Header/footer designs replace the shared ones: only for hosts that save them.
   const keepsChrome = useEditorAdapter().capabilities.designSystem;
   // The product page category draws the page's product: offered on the product page only.
   const productParts = useStore(store, (s) => offersProductParts(s.pages.find((p) => p.id === s.activePageId) ?? s.pages[0]));
   const presets = useMemo(
-    () => offeredPresets(keepsChrome ? allPresets : allPresets.filter((p) => !storeSectionRegistry.get(p.sectionId)?.chrome), productParts),
+    () => offeredPresets(keepsChrome ? allPresets : allPresets.filter((p) => !presetChromePart(p)), productParts),
     [allPresets, keepsChrome, productParts],
   );
   const selection = useStore(store, (s) => s.selection);
@@ -121,9 +122,9 @@ export function SectionLibrary({
     if (done) recordUse(`section:${preset.id}`);
   };
   const inUse = (preset: SectionPreset) => {
-    const chrome = storeSectionRegistry.get(preset.sectionId)?.chrome;
+    const chrome = presetChromePart(preset);
     const current = chrome === "header" ? header : chrome === "footer" ? footer : null;
-    return Boolean(current && current.sectionId === preset.sectionId);
+    return Boolean(current?.source && preset.designId && current.source.split("@")[0] === preset.designId);
   };
   const thumb = (preset: SectionPreset, maxHeight: number) => {
     const instance = instances.get(preset.id);
@@ -140,7 +141,7 @@ export function SectionLibrary({
   };
   const cardTarget = (preset: SectionPreset) => preset.kind === "card" && selection !== null && acceptsCardPreset(selectedInstance, preset);
   const actionLabel = (preset: SectionPreset) =>
-    storeSectionRegistry.get(preset.sectionId)?.chrome ? t("useChrome") : cardTarget(preset) ? t("applyCard") : t("add");
+    presetChromePart(preset) ? t("useChrome") : cardTarget(preset) ? t("applyCard") : t("add");
 
   const matches = useMemo(() => filterPresets({ query }, presets), [query, presets]);
   const searching = query.trim() !== "";
@@ -295,8 +296,8 @@ function DataChip({ status }: { status: { need: DataNeed; count: number | null }
 
 /**
  * One library card: the live preview, its name and what it shows. Click adds
- * it; drag places it on the canvas (not header/footer, which are shared by
- * every page and set with a click).
+ * it; drag places it on the canvas (a header or footer design replaces the
+ * shared one either way).
  */
 function PresetCard({
   preset,
@@ -320,8 +321,7 @@ function PresetCard({
   onZoom: () => void;
 }) {
   const t = useTranslations("storeEditor.add");
-  const definition = storeSectionRegistry.get(preset.sectionId);
-  const draggable = Boolean(definition && !definition.chrome);
+  const draggable = Boolean(storeSectionRegistry.get(preset.sectionId));
   const label = pick(preset.name, uiLocale);
   const data = useDragData({ kind: "section", sectionId: preset.sectionId, presetId: preset.id }, label);
   const { setNodeRef, listeners, attributes, isDragging } = useDraggable({ id: `library:${preset.id}`, data, disabled: !draggable });
@@ -336,7 +336,7 @@ function PresetCard({
         {...pointer}
         onClick={onAdd}
         aria-label={`${label}. ${actionLabel}`}
-        title={draggable ? t("dragHint") : actionLabel}
+        title={draggable && !presetChromePart(preset) ? t("dragHint") : actionLabel}
         className={cn(
           "flex w-full flex-col gap-2 rounded-lg text-start focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
           draggable && "cursor-grab active:cursor-grabbing",

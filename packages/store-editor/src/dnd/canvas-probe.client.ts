@@ -22,6 +22,8 @@ export type CanvasGeometry = {
   images: Rect[];
   /** The marker for a dragged part or item (P4B-16). */
   part?: { line: Line; container: Rect } | null;
+  /** The marker for a dragged library section that replaces the header or footer. */
+  chrome?: { header: Rect; footer: Rect };
 };
 
 export type CanvasSample = { probe: CanvasProbe; geometry: CanvasGeometry };
@@ -38,6 +40,18 @@ const visible = (el: Element) => {
   const r = el.getBoundingClientRect();
   return r.width > 0 || r.height > 0;
 };
+
+/** Least height of the header/footer marker, so it still shows at the frame's edge when that part is scrolled away or absent. */
+const CHROME_BAND = 48;
+
+/** The header or footer's box, kept inside the frame's view. */
+function chromeBox(doc: Document, part: "header" | "footer"): Rect {
+  const view = doc.documentElement.clientHeight;
+  const el = doc.querySelector(`[data-editor-chrome="${part}"]`);
+  const box = el && visible(el) ? rectOf(el) : { top: part === "header" ? 0 : view, bottom: part === "header" ? 0 : view, left: 0, right: doc.documentElement.clientWidth };
+  const top = Math.max(0, Math.min(box.top, view - CHROME_BAND));
+  return { ...box, top, bottom: Math.max(Math.min(box.bottom, view), top + CHROME_BAND) };
+}
 
 /** Top-level page sections in order (header and footer are outside `main`). */
 function pageSections(doc: Document): HTMLElement[] {
@@ -139,7 +153,9 @@ export function sampleCanvas(doc: Document, point: Point, payload?: CanvasPayloa
 
   const probe: CanvasProbe = { sectionIndex, overSectionId: overSection?.dataset.sectionId ?? null, images, slots };
   const geometry: CanvasGeometry = { sectionLine, slots: slotGeometry, images: imageRects };
-  if (payload?.kind === "move-part") {
+  if (payload?.kind === "section") {
+    geometry.chrome = { header: chromeBox(doc, "header"), footer: chromeBox(doc, "footer") };
+  } else if (payload?.kind === "move-part") {
     const target = probePartSlot(doc, payload.ref, point);
     probe.part = target?.hit ?? null;
     geometry.part = target && { line: target.line, container: target.container };

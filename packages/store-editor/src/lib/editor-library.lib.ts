@@ -8,6 +8,7 @@
  */
 import type { ComponentNode, SectionInstance, SiteLocale } from "@workspace/store-sections";
 import {
+  CHROME_OPTIONS,
   getDesign,
   getPreset,
   instantiateDesign,
@@ -168,12 +169,52 @@ export function applyPresetDesign(instance: SectionInstance, preset: SectionPres
 }
 
 /**
- * The header or footer after choosing a preset: the same section keeps its
- * content and takes the preset's design; another section starts fresh.
+ * The shared part a library preset is for. Header and footer designs are
+ * ordinary `custom-section` trees, so their library category says it.
  */
-export function chromeFromPreset(current: SectionInstance | null, preset: SectionPreset, id: string): SectionInstance | null {
-  if (current && current.sectionId === preset.sectionId) return applyPresetDesign(current, preset);
-  return presetInstance(preset, id);
+export function presetChromePart(preset: Pick<SectionPreset, "category">): "header" | "footer" | null {
+  return preset.category === "headers" ? "header" : preset.category === "footers" ? "footer" : null;
+}
+
+/** The library designs' placeholder store name, in both languages. */
+const PLACEHOLDER_STORE_NAMES = ["اسم متجرك", "Your store"];
+
+/** The tree with the placeholder store name swapped for the real one, in every language (templates get this on apply). */
+function withStoreName(nodes: readonly ComponentNode[], name: string): ComponentNode[] {
+  const fill = (text: unknown) => (typeof text === "string" ? PLACEHOLDER_STORE_NAMES.reduce((out, placeholder) => out.split(placeholder).join(name), text) : text);
+  return nodes.map((node) => {
+    const props = { ...node.props } as Record<string, unknown> & { translations?: Record<string, Record<string, unknown>> };
+    if ("text" in props) props.text = fill(props.text);
+    if (props.translations) {
+      props.translations = Object.fromEntries(
+        Object.entries(props.translations).map(([locale, values]) => [locale, "text" in values ? { ...values, text: fill(values.text) } : values]),
+      );
+    }
+    return { ...node, props, children: withStoreName(node.children, name) };
+  });
+}
+
+/**
+ * The header or footer after choosing a preset. A design replaces the current
+ * tree (fitted to the store, keeping the seller's header/footer options and
+ * the instance id); a coded preset of the same section only restyles it.
+ */
+export function chromeFromPreset(
+  current: SectionInstance | null,
+  preset: SectionPreset,
+  id: string,
+  store: { defaultLocale?: SiteLocale; industry?: string; storeName?: string } = {},
+): SectionInstance | null {
+  if (current && current.sectionId === preset.sectionId && !preset.designId && !preset.tree) return applyPresetDesign(current, preset);
+  const next = presetInstance(preset, current?.id ?? id, store.defaultLocale, store.industry);
+  if (!next) return null;
+  const options = Object.fromEntries(CHROME_OPTIONS.filter((option) => current && option in current.props).map((option) => [option, current!.props[option]]));
+  const name = store.storeName?.trim().slice(0, 80);
+  return {
+    ...next,
+    props: { ...next.props, ...options },
+    ...(name && next.componentTree && { componentTree: withStoreName(next.componentTree, name) }),
+  };
 }
 
 /** Whether a card preset can restyle this instance (its section has the card prop). */

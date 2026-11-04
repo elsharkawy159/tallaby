@@ -33,6 +33,7 @@ import {
   chromeFromPreset,
   formSectionInstance,
   payloadPreset,
+  presetChromePart,
   presetInstance,
 } from "./editor-library.lib";
 import { copyStyle, pasteStyle, readOwnStyle, setStyle, type StyleClip, type StyleTarget } from "./editor-style.lib";
@@ -192,6 +193,16 @@ export function createEditorCommands(store: EditorStore) {
     return true;
   }
 
+  /** A header or footer design takes the place of the current one (draft only, one undo step); the page is not touched. */
+  function replaceChrome(part: "header" | "footer", preset: SectionPreset): boolean {
+    const s = state();
+    const next = chromeFromPreset(s[part], preset, part === "header" ? "hdr" : "ftr", { defaultLocale: s.defaultLocale, industry: s.industry, storeName: s.storeName });
+    if (!next) return false;
+    s.editChrome(part, next);
+    state().select({ target: part });
+    return true;
+  }
+
   function editTree(ref: SectionRef, update: (nodes: ComponentNode[]) => ComponentNode[]) {
     state().editSection(ref, (instance) => withTree(instance, update));
   }
@@ -256,23 +267,17 @@ export function createEditorCommands(store: EditorStore) {
     },
 
     /**
-     * Add › Sections (P4B-05): a library preset. Header/footer presets restyle
-     * the shared chrome (keeping its content) and select it; a product-card
-     * design restyles the selected product section, or adds a product grid
-     * with that card; anything else is inserted after the selection. One
-     * undo step. Returns what happened, or false when nothing changed.
+     * Add › Sections (P4B-05): a library preset. Header/footer designs replace
+     * the shared header or footer and select it; a product-card design
+     * restyles the selected product section, or adds a product grid with that
+     * card; anything else is inserted after the selection. One undo step.
+     * Returns what happened, or false when nothing changed.
      */
     addLibraryPreset(preset: SectionPreset): "inserted" | "restyled" | "chrome" | false {
       const definition = storeSectionRegistry.get(preset.sectionId);
       if (!definition) return false;
-      if (definition.chrome) {
-        const part = definition.chrome;
-        const next = chromeFromPreset(state()[part], preset, part === "header" ? "hdr" : "ftr");
-        if (!next) return false;
-        state().editChrome(part, next);
-        state().select({ target: part });
-        return "chrome";
-      }
+      const part = presetChromePart(preset);
+      if (part) return replaceChrome(part, preset) ? "chrome" : false;
       if (preset.kind === "card") {
         const sel = state().selection;
         const instance = selected();
@@ -490,6 +495,10 @@ export function createEditorCommands(store: EditorStore) {
      */
     applyDrop(payload: CanvasPayload, plan: DropPlan, options: { src?: string; pageId?: string } = {}): boolean {
       const pageId = options.pageId ?? state().activePageId;
+      if (plan.kind === "replace-chrome") {
+        const preset = payload.kind === "section" ? payloadPreset(payload.sectionId, payload.presetId, state().presets) : undefined;
+        return Boolean(preset && presetChromePart(preset) === plan.part && replaceChrome(plan.part, preset));
+      }
       if (plan.kind === "move-part" || plan.kind === "move-item") {
         // Parts and items move inside one section of the active page (or the header/footer).
         if (pageId !== state().activePageId) return false;

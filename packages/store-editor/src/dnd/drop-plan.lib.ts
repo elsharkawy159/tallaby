@@ -23,7 +23,7 @@ import {
   type MakeId,
   type SectionPreset,
 } from "@workspace/store-sections/render";
-import { payloadPreset } from "../lib/editor-library.lib";
+import { payloadPreset, presetChromePart } from "../lib/editor-library.lib";
 import { getInstance, partField } from "../lib/editor-selection.lib";
 import type { Selection } from "../state/editor.store";
 import type { CanvasPayload, CanvasProbe, DropPlan, ImageCandidate, NodeSlot } from "./dnd.types";
@@ -125,9 +125,12 @@ export function planDrop(payload: CanvasPayload, probe: CanvasProbe | null, sour
 
   if (payload.kind === "section") {
     const definition = storeSectionRegistry.get(payload.sectionId);
+    const preset = payloadPreset(payload.sectionId, payload.presetId, source.presets);
+    // Header and footer designs replace the shared one, wherever they are dropped: never a page section.
+    const chrome = preset && presetChromePart(preset);
+    if (chrome) return { kind: "replace-chrome", part: chrome };
     // A library preset may start from a section hidden from the old list (contact details).
-    const listed = definition?.insertable !== false || Boolean(payloadPreset(payload.sectionId, payload.presetId, source.presets));
-    // Header and footer belong to every page; they are chosen with a click, not dropped.
+    const listed = definition?.insertable !== false || Boolean(preset);
     if (!definition || definition.chrome || !listed) return { kind: "invalid", reason: "unsupported", index: at };
     return full ? { kind: "invalid", reason: limit, index: at } : { kind: "insert-section", index: at };
   }

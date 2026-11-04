@@ -138,6 +138,7 @@ function EditorRoot({ initial }: { initial: EditorInitial }) {
       chromeVersion: initial.chromeVersion,
       defaultLocale: initial.defaultLocale,
       industry: initial.industry ?? findIndustry(initial.category)?.id,
+      storeName: initial.store.name,
       presets: initial.presets,
       maxSections: initial.maxSections,
     });

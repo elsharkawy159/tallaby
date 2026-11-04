@@ -1061,6 +1061,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 | Date       | Request (owner's words)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Feature ID                                                                                       | Status                                                                                 |
 | ---------- | -----------------------------------------------------------------------------------------------
+| 2026-11-04 | "If user wants to change the shared section (Header or Footer), on dragging the Header or Footer from the sections list should be REPLACED with the current in the canvas, as it's a shared section and cannot be added twice." Same on the Admin editor. | Fix (§7) | Built |
 | 2026-11-04 | "Sellers should be able to upload an Excel sheet or other data file holding many products, have AI analyse it, and add all the products at once." Add all of them directly, with no review per product. Built as `PLAN.md` AI-3 (§7).                                                                                                                                                  |
 | 2026-11-04 | "The seller's shipping page is too busy; make it clear and simple." Remove "استخدم أسعار طلبي" and "احسب سعر التوصيل", rename "صف مناطق التوصيل" to "أضف منطقة توصيل بالذكاء الاصطناعي" with an AI icon, and improve the page. (relayed) | F-45 | Built, not deployed. "استخدم أسعار طلبي" kept: live checkout setting, needs an owner decision (§7) |
 | 2026-11-04 | "A wallet balance above zero, such as a gift, activates a seller for good, just like an approved top-up, even after it runs out." Win-back emails wait for activation, and gifts unlock marketing emails. (from the owner's decisions, relayed) | F-68 |
@@ -1370,6 +1371,12 @@ Add each new request here first, with the date and the owner's words, then turn 
 ---
 
 ## 7. Log
+
+### 2026-11-04 — Header and footer designs replace the current one (owner, urgent)
+
+- **Bug:** library header and footer designs are `custom-section` trees, so the editor's `definition.chrome` check missed them and Add › Sections could put one in the page body as a second header or footer.
+- **Fix (`packages/store-editor`, seller and Admin store editors):** `presetChromePart` knows them by library category. A click or a drop anywhere replaces the store's one, as a draft with one undo step; Publish still puts it live. It keeps the instance id, the seller's header and footer options and the store name. Text and links the seller customised in the old design go with it. No migration; sections already placed in a page body are not cleaned up.
+- **Checked:** `store-editor` tests 166/166 (23 new), `tsc` clean there. Not checked in a browser; dashboard and admin typecheck and ESLint not completed.
 
 ### 2026-11-04 — Add many products from a file (`PLAN.md` AI-3, owner request)
 
