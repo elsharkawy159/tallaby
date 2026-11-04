@@ -1,1 +1,50 @@
-{}
+{
+  "contact": {
+    "title": "Talk to a person, <em>not a bot.</em>",
+    "lead": "Questions about setting up, payments, shipping or a partnership. Pick the channel that suits you.",
+    "live": "Real people reply, not bots",
+    "whatsappBody": "Fastest for store and order questions. Send screenshots, voice notes, anything.",
+    "emailBody": "For detailed requests, documents and partnerships.",
+    "phoneBody": "Prefer to talk it through? Give us a call.",
+    "formBody": "Tell us a bit about you and we'll route it to the right person.",
+    "who": {
+      "seller": "Seller",
+      "new": "Starting out",
+      "shopper": "Shopper",
+      "partner": "Partner or press"
+    },
+    "topics": {
+      "seller": [
+        "My store",
+        "Orders",
+        "Payments and payouts",
+        "Domain",
+        "Something else"
+      ],
+      "new": [
+        "Pricing",
+        "Templates",
+        "Moving an existing store",
+        "Something else"
+      ],
+      "shopper": [
+        "An order I placed",
+        "A return",
+        "Something else"
+      ],
+      "partner": [
+        "Partnership",
+        "Shipping or payments",
+        "Press",
+        "Something else"
+      ]
+    },
+    "send": "Send Message",
+    "errName": "Enter your name",
+    "errEmail": "Enter a valid email",
+    "errMessage": "Add a little more detail",
+    "sent": "Message sent",
+    "sentBody": "We'll get back to you by email. For anything urgent, message us on WhatsApp.",
+    "again": "Send another"
+  }
+}

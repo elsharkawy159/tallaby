@@ -23,7 +23,7 @@ const ROLE_ICONS: Record<ContactRole, React.ComponentType<{ className?: string }
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const fieldClass =
-  "h-[50px] rounded-xl border-neutral-200 bg-white px-3.5 text-[15px] shadow-none focus-visible:border-teal-700 focus-visible:ring-[3px] focus-visible:ring-teal-700/12";
+  "h-[50px] rounded-[14px] border-[1.5px] border-line-strong bg-white px-3.5 text-[15px] shadow-none focus-visible:border-teal-700 focus-visible:ring-[4px] focus-visible:ring-teal-700/10";
 
 type Errors = Partial<Record<"name" | "email" | "message" | "form", string>>;
 
@@ -122,7 +122,7 @@ export function ContactForm() {
             <ToggleGroupItem
               key={r}
               value={r}
-              className="group h-auto flex-col gap-1.5 rounded-[14px]! border border-neutral-200 px-2.5 py-3.5 text-[13px] font-semibold whitespace-normal text-neutral-700 hover:bg-white data-[state=on]:border-teal-900 data-[state=on]:bg-teal-900 data-[state=on]:text-white"
+              className="group h-auto flex-col gap-1.5 rounded-card-sm! border-[1.5px] border-[#e6eef0] px-2.5 py-3.5 text-[13px] font-semibold whitespace-normal text-neutral-700 hover:bg-white data-[state=on]:border-teal-900 data-[state=on]:bg-teal-900 data-[state=on]:text-white"
             >
               <Icon className="size-[22px]! text-teal-500 group-data-[state=on]:text-amber-600" />
               {t(`who.${r}`)}
@@ -152,7 +152,7 @@ export function ContactForm() {
 
       {role === "seller" ? (
         <Field id="contact-store" label={t("storeLink")}>
-          <div dir="ltr" className={cn("flex items-center border", fieldClass, "focus-within:border-teal-700 focus-within:ring-[3px] focus-within:ring-teal-700/12")}>
+          <div dir="ltr" className={cn("flex items-center border", fieldClass, "focus-within:border-teal-700 focus-within:ring-[4px] focus-within:ring-teal-700/10")}>
             <input id="contact-store" name="store" placeholder="yourbrand" className="min-w-0 flex-1 bg-transparent font-latin font-semibold outline-none" />
             <span className="font-latin text-neutral-500">.{ROOT_DOMAIN}</span>
           </div>
@@ -187,7 +187,7 @@ export function ContactForm() {
         </p>
       ) : null}
 
-      <CtaButton type="submit" size="lg" disabled={pending} className="mt-1.5 w-full rounded-[14px]">
+      <CtaButton type="submit" size="lg" disabled={pending} className="mt-1.5 h-[54px] w-full rounded-[14px]">
         {pending ? t("sending") : t("send")}
       </CtaButton>
     </form>
