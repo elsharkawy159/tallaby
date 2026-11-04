@@ -4,6 +4,7 @@ import { useEffect, useState, useTransition } from "react";
 import { useFormatter, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button } from "@workspace/ui/components/button";
+import { cn } from "@/lib/utils";
 import { ImageWithFallback } from "@/components/shared/image-with-fallback";
 import { addCrossSellToCart, getCrossSellOffers, type CrossSellCard } from "@/actions/cross-sell";
 import { useCart } from "@/providers/cart-provider";
@@ -17,10 +18,13 @@ export function CrossSellOffers({
   mainProductIds,
   excludeProductIds = [],
   compact = false,
+  placed = false,
 }: {
   mainProductIds: string[];
   excludeProductIds?: string[];
   compact?: boolean;
+  /** In the builder element, where the seller sets the space around it. */
+  placed?: boolean;
 }) {
   const key = [...mainProductIds].sort().join(",");
   const [offers, setOffers] = useState<CrossSellCard[]>([]);
@@ -43,7 +47,7 @@ export function CrossSellOffers({
   const t = useTranslations("storefront.crossSell");
   if (visible.length === 0) return null;
   return (
-    <section className={compact ? "border-t border-(--sf-line) py-3" : "mt-5 rounded-2xl border border-(--sf-line) p-4"} aria-label={t("title")}>
+    <section className={compact ? "border-t border-(--sf-line) py-3" : cn("rounded-2xl border border-(--sf-line) p-4", !placed && "mt-5")} aria-label={t("title")}>
       <h2 className="mb-2 text-sm font-semibold">{t("title")}</h2>
       <ul className="space-y-2.5">
         {visible.map((offer) => (

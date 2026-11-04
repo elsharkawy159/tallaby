@@ -60,6 +60,8 @@ describe("library sections seed", () => {
     ...["header-icons", "hero-carousel-panel", "categories-panels", "categories-counts", "products-category-tabs", "products-centered-row", "features-columns", "footer-dark-bar"],
     // Void Fashion look, Vella template (2026-10-30).
     ...["header-announcement-strip", "categories-portrait-labels", "text-big-marquee"],
+    // Cross-sell offers element (F-32d, 2026-11-04).
+    ...["product-cross-sell"],
   ]);
 
   it("every design from before 0109 was seeded by some migration", () => {

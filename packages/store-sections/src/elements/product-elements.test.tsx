@@ -51,6 +51,7 @@ const PRODUCT_TYPES = [
   "productContent",
   "productSeller",
   "productReviews",
+  "productCrossSell",
 ];
 
 describe("product elements", () => {
@@ -67,12 +68,41 @@ describe("product elements", () => {
   it("interactive product parts never go inside a link", () => {
     const link = { ...node("linkBlock", { href: "/" }), id: "link" };
     const tree = [{ ...node("section"), id: "root", children: [link] }];
-    for (const type of ["productBreadcrumbs", "productGallery", "productRating", "productVariants", "productBuyBox", "productDetails", "productContent", "productReviews"]) {
+    for (const type of ["productBreadcrumbs", "productGallery", "productRating", "productVariants", "productBuyBox", "productDetails", "productContent", "productReviews", "productCrossSell"]) {
       expect(canContain(tree, "link", node(type)), type).toBe(false);
       expect(canContain(tree, "root", node(type)), type).toBe(true);
     }
     // Plain text parts may sit in a link card.
     for (const type of ["productPrice", "productStock", "productStockBadge", "productSeller"]) expect(canContain(tree, "link", node(type)), type).toBe(true);
+  });
+
+  it("productCrossSell is a marked sample in the editor and draws nothing publicly without a host (F-32d)", () => {
+    const sample = draw(node("productCrossSell"));
+    expect(sample).toContain('data-node-type="productCrossSell"');
+    expect(sample).toContain("data-sample");
+    expect(draw(node("productCrossSell"), product, { mode: "public" })).toBe("");
+    expect(draw(node("productCrossSell"), null, { mode: "public" })).toBe("");
+  });
+
+  it("productCrossSell uses the storefront hook, and hides with no offers (F-32d)", () => {
+    const html = draw(node("productCrossSell"), product, {
+      mode: "public",
+      renderProductCrossSell: (p) => <p>offers-of-{p.id}</p>,
+    });
+    expect(html).toContain(`offers-of-${product.id}`);
+    expect(html).toContain('data-node-type="productCrossSell"');
+    expect(html).toContain("empty:hidden");
+    // A host with no offers leaves an empty box, which takes no room.
+    expect(draw(node("productCrossSell"), product, { mode: "public", renderProductCrossSell: () => null })).toContain("empty:hidden");
+  });
+
+  it("the buy box is told to leave the offers out only while the page has the element (F-32d)", () => {
+    const seen: Record<string, unknown>[] = [];
+    const hook = { mode: "public" as const, renderProductBuyBox: (_p: ProductDetail, props: Record<string, unknown>) => (seen.push(props), <p>box</p>) };
+    draw(node("productBuyBox"), product, hook);
+    draw(node("productBuyBox"), product, { ...hook, crossSellOnPage: true });
+    expect(seen[0]?.crossSellElsewhere).toBeUndefined();
+    expect(seen[1]?.crossSellElsewhere).toBe(true);
   });
 
   it("productStockBadge shows the seller's alert only when it applies (F-34d)", () => {

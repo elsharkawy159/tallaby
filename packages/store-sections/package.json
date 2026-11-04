@@ -47,6 +47,10 @@
       "types": "./src/elements/image-size.ts",
       "default": "./src/elements/image-size.ts"
     },
+    "./cross-sell": {
+      "types": "./src/core/cross-sell.ts",
+      "default": "./src/core/cross-sell.ts"
+    },
     "./low-stock": {
       "types": "./src/core/low-stock.ts",
       "default": "./src/core/low-stock.ts"

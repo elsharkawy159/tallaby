@@ -40,7 +40,7 @@ const EXPECTED = [
   ...["track-ask", "track-steps", "track-returns", "track-reschedule", "track-rate", "track-problem"],
   ...["text-policy", "text-centered", "text-callout", "text-columns", "text-quote", "text-steps", "text-lead", "text-statement", "text-terms", "text-note", "text-brand-statement", "text-big-marquee"],
   ...["page-header", "page-banner", "page-image", "page-subcategories", "page-promo", "page-toolbar", "page-brand", "page-split", "page-centered", "page-count"],
-  ...["product-main", "product-content", "product-reviews", "product-related", "product-perks", "product-shipping"],
+  ...["product-main", "product-cross-sell", "product-content", "product-reviews", "product-related", "product-perks", "product-shipping"],
   ...["cart-extras", "cart-empty", "cart-free-delivery", "cart-coupon"],
   ...["footer-classic", "footer-line", "footer-wordmark", "footer-signup", "footer-centered", "footer-ruled", "footer-signoff", "footer-panel", "footer-help", "footer-links", "footer-columns-signup", "footer-centered-light", "footer-dark-bar"],
 ];

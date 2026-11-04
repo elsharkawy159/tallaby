@@ -147,6 +147,7 @@ describe("search and filters", () => {
     expect(filterPresets({ category: "hero", subcategory: "split" }).map((p) => p.id)).toEqual(["hero.classic", "hero.halves", "hero.split"]);
     expect(filterPresets({ category: "product-page" }).map((p) => p.id)).toEqual([
       "product-page.main",
+      "product-page.cross-sell",
       "product-page.content",
       "product-page.reviews",
       "product-page.related",

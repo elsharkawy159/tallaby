@@ -394,6 +394,7 @@ const REVEAL_SKIP = new Set([
   "productContent",
   "productSeller",
   "productReviews",
+  "productCrossSell",
 ]);
 /** Revealed whole with `fade-up` (when not inside a revealed node). */
 const REVEAL_FADE_UP = new Set(["paragraph", "button", "badge", "blockQuote", "accordion", "linkBlock", "list", "countdown"]);
@@ -1023,6 +1024,7 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
     case "productContent":
     case "productSeller":
     case "productReviews":
+    case "productCrossSell":
       return renderProductElement(definition.type, props, attrs, ctx, scope);
   }
 }

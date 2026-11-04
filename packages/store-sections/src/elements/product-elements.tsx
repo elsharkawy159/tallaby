@@ -14,6 +14,7 @@
 import type { ReactNode } from "react";
 import { BadgeCheck, Banknote, Check, ChevronDown, ChevronRight, Flame, Image as ImageIcon, Minus, Plus, ShieldCheck, ShoppingBag, Star, Truck, Zap } from "lucide-react";
 import { sectionText, type SectionCopyKey } from "../core/copy";
+import { CROSS_SELL_ELSEWHERE_PROP } from "../core/cross-sell";
 import { DEMO_PRODUCT } from "../core/demo-product";
 import { STOCK_ALERT_ELSEWHERE_PROP, lowStockAlertText, lowStockLeft } from "../core/low-stock";
 import { decodeTextEntities } from "../core/text";
@@ -37,6 +38,7 @@ export const PRODUCT_ELEMENT_TYPES = [
   "productContent",
   "productSeller",
   "productReviews",
+  "productCrossSell",
 ] as const satisfies readonly ElementType[];
 export type ProductElementType = (typeof PRODUCT_ELEMENT_TYPES)[number];
 
@@ -47,7 +49,8 @@ type HookKey =
   | "renderProductStockBadge"
   | "renderProductVariants"
   | "renderProductBuyBox"
-  | "renderProductReviews";
+  | "renderProductReviews"
+  | "renderProductCrossSell";
 
 /** The interactive elements and the host hook that draws each on the storefront. */
 const HOOKS: Partial<Record<ProductElementType, HookKey>> = {
@@ -58,6 +61,7 @@ const HOOKS: Partial<Record<ProductElementType, HookKey>> = {
   productVariants: "renderProductVariants",
   productBuyBox: "renderProductBuyBox",
   productReviews: "renderProductReviews",
+  productCrossSell: "renderProductCrossSell",
 };
 
 type Attrs = Record<string, string>;
@@ -686,6 +690,29 @@ function Reviews({ product, attrs, ctx }: StillProps) {
   );
 }
 
+/**
+ * Offers come from the host on the storefront. In the editor this is a sample, marked as one; with
+ * no host, a public page draws nothing, so it never shows an offer that doesn't exist.
+ */
+function CrossSell({ attrs, ctx }: StillProps) {
+  if (ctx.mode !== "edit") return null;
+  return (
+    <div {...attrs} data-sample="" title={sectionText("crossSellSample", ctx.locale)} className="min-w-0 rounded-(--sf-radius,12px) border border-(--sf-line) p-4">
+      <p className="mb-2 text-sm font-semibold text-(--sf-ink)">{sectionText("crossSellTitle", ctx.locale)}</p>
+      <div className="flex items-center gap-3">
+        <span className="grid size-14 shrink-0 place-items-center rounded-lg bg-(--sf-shelf) text-(--sf-muted)">
+          <ImageIcon className="size-5" aria-hidden />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-medium text-(--sf-ink)">{sectionText("crossSellSampleName", ctx.locale)}</p>
+          <p className="text-xs text-(--sf-brand)">{sectionText("crossSellSampleOff", ctx.locale)}</p>
+        </div>
+        <span className="rounded-md border border-(--sf-line) px-3 py-1.5 text-sm font-medium text-(--sf-ink)">{sectionText("crossSellAdd", ctx.locale)}</span>
+      </div>
+    </div>
+  );
+}
+
 const isProductElement = (type: string): type is ProductElementType => (PRODUCT_ELEMENT_TYPES as readonly string[]).includes(type);
 
 /** Hidden on desktop, tablet and phone alike (`hidden` is per device, style.ts). */
@@ -769,6 +796,7 @@ const STILLS: Record<ProductElementType, (p: StillProps) => ReactNode> = {
   productContent: Content,
   productSeller: Seller,
   productReviews: Reviews,
+  productCrossSell: CrossSell,
 };
 
 /**
@@ -780,7 +808,13 @@ export function renderProductElement(type: ProductElementType, rawProps: Record<
   // In a product list card the badge is the card's "N left" tag (the list's record, not the page's product).
   if (type === "productStockBadge" && scope?.kind === "productList") return <CardStockBadge left={scope.record.stockLeft} attrs={nodeAttrs} ctx={ctx} />;
   // The page has its own low-stock badge element (F-34d): the stock line leaves the alert to it.
-  const props = type === "productStock" && ctx.stockBadgeOnPage ? { ...rawProps, [STOCK_ALERT_ELSEWHERE_PROP]: true } : rawProps;
+  // Likewise the offers (F-32d): the buy box leaves them to the page's own element, so they never show twice.
+  const props =
+    type === "productStock" && ctx.stockBadgeOnPage
+      ? { ...rawProps, [STOCK_ALERT_ELSEWHERE_PROP]: true }
+      : type === "productBuyBox" && ctx.crossSellOnPage
+        ? { ...rawProps, [CROSS_SELL_ELSEWHERE_PROP]: true }
+        : rawProps;
   const product = productOf(ctx, scope);
   if (!product) return null;
   // The rating links to the reviews (one per page). A part of the page's own product (not a list
@@ -809,8 +843,8 @@ export function renderProductElement(type: ProductElementType, rawProps: Record<
   if (hook) {
     // The host's live price has no badges of its own: the trending / seasonal chips sit above it.
     return (
-      // The badge's host part draws nothing while no alert applies: its box then takes no room either.
-      <div {...attrs} className={cn("min-w-0", type === "productPrice" && "flex flex-col gap-2", type === "productStockBadge" && "w-fit empty:hidden")}>
+      // The badge's host part draws nothing while no alert applies: its box then takes no room either. Same for a product with no offers.
+      <div {...attrs} className={cn("min-w-0", type === "productPrice" && "flex flex-col gap-2", type === "productStockBadge" && "w-fit empty:hidden", type === "productCrossSell" && "empty:hidden")}>
         {type === "productPrice" && <ProductFlags product={product} ctx={ctx} />}
         {hook(product, props)}
       </div>

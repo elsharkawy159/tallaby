@@ -18,6 +18,7 @@ import {
   type ProductDetail,
   type RenderContext,
 } from "@workspace/store-sections/render";
+import { CROSS_SELL_ELSEWHERE_PROP, pageHasCrossSell } from "@workspace/store-sections/cross-sell";
 import { STOCK_ALERT_ELSEWHERE_PROP, pageHasStockBadge } from "@workspace/store-sections/low-stock";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
 import { Link } from "@/i18n/navigation";
@@ -74,6 +75,7 @@ const PRODUCT_HOOKS: Pick<
   | "renderProductVariants"
   | "renderProductBuyBox"
   | "renderProductReviews"
+  | "renderProductCrossSell"
   | "renderLiveViews"
   | "renderOfferCountdown"
 > = {
@@ -95,11 +97,12 @@ const PRODUCT_HOOKS: Pick<
         addLabel={textProp(props.addLabel)}
         buyLabel={textProp(props.buyLabel)}
       />
-      {/* Offers under the buy box on every store page; nothing when there are none (F-32). */}
-      <CrossSellOffers mainProductIds={[product.id]} />
+      {/* Offers under the buy box, unless the page places them itself (F-32d); nothing when there are none. */}
+      {props[CROSS_SELL_ELSEWHERE_PROP] !== true && <CrossSellOffers mainProductIds={[product.id]} />}
     </>
   ),
   renderProductReviews: () => <StoreProductReviews />,
+  renderProductCrossSell: (product) => <CrossSellOffers mainProductIds={[product.id]} placed />,
 };
 
 async function buildContext(
@@ -191,7 +194,7 @@ async function buildContext(
     forms,
     renderForm: (form, instanceId) => <StoreForm form={form} instanceId={instanceId} />,
     // A seller-placed low-stock badge (F-34d) takes the alert over from the stock line.
-    ...(product && { product, ...PRODUCT_HOOKS, stockBadgeOnPage: pageHasStockBadge(sections) }),
+    ...(product && { product, ...PRODUCT_HOOKS, stockBadgeOnPage: pageHasStockBadge(sections), crossSellOnPage: pageHasCrossSell(sections) }),
   };
 }
 

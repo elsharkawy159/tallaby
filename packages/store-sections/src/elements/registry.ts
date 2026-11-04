@@ -114,6 +114,7 @@ export type ElementType =
   | "productContent"
   | "productSeller"
   | "productReviews"
+  | "productCrossSell"
   | "marquee"
   | "countdown";
 
@@ -211,6 +212,7 @@ export const LINK_TYPES: readonly ElementType[] = [
   "productDetails",
   "productContent",
   "productReviews",
+  "productCrossSell",
 ];
 
 const SOURCE_LABELS: Record<(typeof PRODUCT_SOURCES)[number], Localized> = {
@@ -1142,6 +1144,17 @@ const DEFINITIONS: readonly ElementDefinition[] = [
     group: "product",
     label: L("آراء العملاء", "Reviews"),
     keywords: ["reviews", "questions", "ratings", "آراء", "تقييمات", "أسئلة"],
+    container: false,
+    defaultProps: {},
+    fields: [],
+  },
+  // The seller's cross-sell offers as their own element (ROADMAP.md F-32d). While the page has one,
+  // the buy box no longer shows them under itself; a product with no offers draws nothing.
+  {
+    type: "productCrossSell",
+    group: "product",
+    label: L("عروض مع المنتج", "Offers with the product"),
+    keywords: ["cross-sell", "offers", "upsell", "bought together", "bundle", "عروض", "بيتشتري مع", "اشتري معاه", "خصم"],
     container: false,
     defaultProps: {},
     fields: [],

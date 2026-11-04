@@ -381,6 +381,16 @@ const ELEMENT_PREVIEWS: Record<ElementType, () => ReactNode> = {
       </Col>
     </Row>
   ),
+  productCrossSell: () => (
+    <Row className="w-full items-center">
+      <span className="size-3 shrink-0 rounded-sm bg-muted-foreground/30" />
+      <Col className="flex-1">
+        <Line className="w-full" />
+        <Line className="w-1/2" />
+      </Col>
+      <span className="rounded-sm border px-1 text-[8px] leading-none">+</span>
+    </Row>
+  ),
   productReviews: () => (
     <Col className="w-full">
       <span className="text-[8px] leading-none text-amber-500">★★★★★</span>

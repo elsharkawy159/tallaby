@@ -1,5 +1,6 @@
 /** Palette and layer icons for elements, presets and section groups (editor only). */
 import {
+  BadgePercent,
   Heart,
   Flame,
   Languages,
@@ -133,6 +134,7 @@ export const ELEMENT_ICONS: Record<ElementType, LucideIcon> = {
   productContent: FileText,
   productSeller: Store,
   productReviews: MessageSquareQuote,
+  productCrossSell: BadgePercent,
 };
 
 export const PRESET_ICONS: Record<string, LucideIcon> = {

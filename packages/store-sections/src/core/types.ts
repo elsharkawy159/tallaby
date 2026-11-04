@@ -398,6 +398,11 @@ export interface RenderContext {
    * low-stock alert is drawn there only, and the stock element no longer shows it itself.
    */
   stockBadgeOnPage?: boolean;
+  /**
+   * The product page holds a `productCrossSell` element (F-32d, `pageHasCrossSell`): offers are
+   * drawn there only, and the buy box no longer shows them under itself.
+   */
+  crossSellOnPage?: boolean;
   /** Store industry; picks the photos for library photo slots (`designs/photo-slots.ts`). Editor only. */
   industry?: string;
   locale: SiteLocale;
@@ -469,6 +474,8 @@ export interface RenderContext {
   renderProductVariants?: ProductElementHook;
   renderProductBuyBox?: ProductElementHook;
   renderProductReviews?: ProductElementHook;
+  /** The cross-sell offers element (F-32d); draws nothing when the product has no offers. */
+  renderProductCrossSell?: ProductElementHook;
   /** The live "N people viewing now" line, drawn above the buy box when the product has `liveViews` (storefront only). */
   renderLiveViews?: (product: ProductDetail) => ReactNode;
   /** The store coupon pop-up's countdown, drawn above the live views line and the buy box (storefront only; draws nothing until the visitor saw the pop-up). */

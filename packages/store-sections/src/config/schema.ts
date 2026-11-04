@@ -59,6 +59,8 @@ export const ALLOWED_NODE_TYPES = [
   "productBreadcrumbs",
   // Low-stock badge of the product page (ROADMAP.md F-34d, 2026-10-30); additive.
   "productStockBadge",
+  // Cross-sell offers of the product page (ROADMAP.md F-32d, 2026-11-04); additive.
+  "productCrossSell",
   // Scrolling marquee and live countdown (Claude Design premium sections, 2026-10-27); additive.
   "marquee", "countdown",
 ] as const;

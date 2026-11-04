@@ -219,6 +219,7 @@ export function createTreeBuilder(industry?: string, photos?: DesignPhotos, opts
     productContent: (opts?: NodeOptions) => make("productContent", {}, opts),
     productSeller: (opts?: NodeOptions) => make("productSeller", {}, opts),
     productReviews: (opts?: NodeOptions) => make("productReviews", {}, opts),
+    productCrossSell: (opts?: NodeOptions) => make("productCrossSell", {}, opts),
     card: (children: NodeTemplate[], opts?: NodeOptions) => make("card", {}, withDefaults("card", opts), children),
     box: (children: NodeTemplate[], opts?: NodeOptions) => make("div", {}, opts, children),
     pattern: (variant: PatternVariant, opts?: NodeOptions) => make("pattern", { variant }, opts),
