@@ -376,7 +376,7 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 
 **Why:** COD sellers run ads to one product page with the order form on the page (no cart). EasyOrders is built around this.
 **What:** A landing page type in the builder with an inline order form (name, phone, governorate, address, quantity/offer) that creates the order in one step.
-**Status:** [Planned]
+**Status:** [Delayed] Owner, 2026-11-04: big task, later.
 
 - **F-08a · P1 · deps: F-02b, owner approval** Inline order form element (tree element, `defineDesign` rules) posting to the store checkout with a one-item cart.
 - **F-08b · P1 · deps: F-08a** Landing page designs (code-only, CLAUDE.md rule 17) and "Create landing page from product".
@@ -433,7 +433,7 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 ### F-14 Customer order notifications (WhatsApp/SMS) — P2
 
 **What:** Automatic messages to the buyer: order received (with confirm link, helps F-02), shipped, out for delivery. Needs a WhatsApp Business API / SMS provider and a cost model.
-**Status:** [Planned]
+**Status:** [Delayed] Owner, 2026-11-04: needs a messaging provider.
 
 - **F-14a · P2 · deps: F-38b (SMS via MersalSMS); WhatsApp provider still open** Provider integration and message templates.
 - **F-14b · P2 · deps: F-14a** Per-store settings and a message log table.
@@ -460,7 +460,7 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 ### F-17 Public API & webhooks — P2
 
 **What:** Per-store API keys (hashed) and webhooks (order created/updated) for sellers' own tools.
-**Status:** [Planned]
+**Status:** [Delayed] Owner, 2026-11-04: big task, later.
 
 - **F-17a · P2 · deps: F-09a, F-29b** Key model, scopes, rate limits, signed webhooks; security review. Keys reuse F-29's `agent_tokens` (personal access tokens) and scopes (2026-10-30).
 
@@ -485,7 +485,7 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 **What:** Per store (and optionally per product): require X % (or a fixed amount) paid before the order ships. The customer pays the deposit with the store's wallet payments (Vodafone Cash, InstaPay … with a transfer-receipt upload) or a card when available; the rest is collected on delivery. The order waits in "awaiting deposit" until the seller confirms; the COD amount sent to the carrier is the remainder.
 
 - **Rounding (owner, 2026-10-29): a percentage deposit is always rounded UP to the nearest EGP 5**, so customers transfer a clean amount. Examples at 20 %: order 1,200 → 240; 1,199 → 239.80 → 240; 1,213 → 242.60 → 245; 1,226 → 245.20 → 250. Computed in integer piastres (`ceil(piastres / 500) * 500`), never more than the order total; the remainder is total − deposit. A fixed-amount deposit is used as the seller typed it.
-  **Status:** [Planned]
+  **Status:** [Delayed] Owner, 2026-11-04: big task, later.
 
 - **Found in code (2026-10-29):** storefront InstaPay / Vodafone Cash / e& Cash payments are a filter on methods that still pay **Tallaby's** accounts (`storefrontCheckoutMethods` in `packages/lib/src/payments/store-methods.ts`); seller-collected payment with seller confirmation is PLAN.md **P3-07 Part B**, waiting for owner approval. Checkout already supports split payments (customer wallet + manual-transfer remainder, `payment.lib.ts`) and a COD-collector rule, which the deposit can reuse. **Decided (owner, 2026-10-29): the deposit goes to the seller's own number** (Vodafone Cash / e& Cash / WE Pay / Orange Cash / InstaPay set in Store settings › Payment methods), and the seller confirms it. So **PLAN.md P3-07 Part B is built first, as part of F-21** (task F-21p below); its design is PLAN.md §8.6 "Customer flow on the store host" and "Money flow".
 - **F-21p · P1 · deps: —** PLAN.md P3-07 Part B, as written in §8.6: storefront checkout shows the store's own payment details (snapshot in `orders.metadata`, `paymentCollector: 'seller'`), the customer taps "I've paid" with an optional reference and a transfer screenshot, the seller confirms in the dashboard (`confirmManualPayment(storeId, orderId)`, store-scoped, status-guarded, idempotent), unpaid orders auto-cancel after 48 h (D32), every change to payment details is audited, emailed and rate-limited. Money: seller-collected payments post only the EGP 5 `fee` on delivery, no `sale` (PLAN.md §13.4). Existing stores keep Tallaby-collected methods until the owner decides D30. Full-amount transfers work with this alone; the deposit builds on it.
@@ -854,7 +854,7 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 ### F-49 Storefront animation system — P1 · owner request
 
-**Status:** [Planned]
+**Status:** [Delayed] Owner, 2026-11-04: big task, later.
 
 - **F-49a · P1 · deps: —** Audit current animations (including rise on scroll) and define a small shared set: reveals, section transitions, hover and press. Keep them CSS-first and honour `prefers-reduced-motion`.
 - **F-49b · P1 · deps: F-49a** Add them to the element-tree system (CLAUDE.md rule 17), and check phone performance. Published stores change only when the seller republishes. A change to the default template's design needs owner approval (rule 12).
@@ -879,7 +879,6 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 **Status:** [Planned]
 
 - **F-52a · P1 · deps: —** New hierarchy, clearer value and stronger calls to action, responsive and on brand.
-- **F-52b · P1 · deps: F-52a** Real dashboard screenshots from a demo store with fictional data, with no real sellers or customers. Arabic and English.
 - **F-52c · P1 · deps: F-55h** Show the new pricing once it is live.
 
 ### F-53 tallaby.com SEO — P1 · owner request
@@ -962,7 +961,7 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 **Why:** Stores can only sell inside Egypt in EGP today. The owner wants a store to sell in any country and currency, and to detect the shopper's country and currency.
 **What:** Every currency, every country on the Shipping page, and the store detects the shopper's country and currency, which the shopper can change. Today's limits, checked in code 2026-11-04: shipping place keys start at `EG`, phones are validated as Egyptian mobiles, and orders, prices and customer wallets are EGP. The USD work (F-56) kept those in EGP on purpose.
-**Status:** [Planned]
+**Status:** [Delayed] Owner, 2026-11-04: big task, after launch.
 
 - **F-61a · P2 · deps: F-55h** Design note, owner approval first (rule 4): each store's base currency, what the shopper sees and what is actually charged, where rates come from (the daily saved rate, F-56b, widened to all currencies), rounding, what order and wallet records store, and how the fee and each payment method behave.
 - **F-61b · P2 · deps: F-61a** Store currency: choose the base currency, and show prices, carts, orders, emails and structured data in it.
@@ -1038,6 +1037,17 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 **Status:** [Built, not deployed] 2026-11-04 (§7). Applies from the USD switch.
 
 - **F-69a · P1 · deps: F-68** Monthly allowance per account, top-up check, buying extra emails, usage on the emails page, and plan and pricing copy.
+
+### F-70 Launch clean-up from the site review — P1
+
+**Why:** Found while reviewing the tallaby.com rebuild (§7, 2026-11-04).
+**Status:** [Planned]
+
+- **F-70a · P1 · deps: —** Consent banner on tallaby.com: analytics and advertising tags wait for the visitor's choice; update Privacy to match.
+- **F-70b · P1 · deps: —** Dashboard text that still mentions Tallaby delivery or wrong payment facts.
+- **F-70c · P2 · deps: —** The 8 lint errors on this batch's code, plus the `rules-of-hooks` warning in `ui` and the `useMemo` in `variant-picker.tsx`.
+- **F-70d · P1 · deps: owner, launch** Give the 6 newer duplicate product addresses on production a new address (one-time, read-only count taken 2026-11-04).
+- **F-70e · P2 · deps: owner** Add the owner's competitor research to Compare, then turn on `COMPARE_PUBLIC`.
 
 ---
 
@@ -1119,17 +1129,17 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-01d Customers export (2026-10-30, uncommitted; .xlsx of the filtered list)
 - [x] F-02d Risk badge (2026-10-30, uncommitted; card, table and order panel)
 - [x] F-02g Confirm by WhatsApp link (no API) — P0 (2026-10-29, uncommitted; thank-you page link added with F-25b on 2026-10-30)
-- [ ] F-02f Checkout OTP (SMS via MersalSMS, after F-38b)
-- [ ] F-38a MersalSMS account, price and who pays (owner)
-- [ ] F-38b MersalSMS client + `sms_messages` log migration
-- [ ] F-38c Order confirmation SMS with confirm link
-- [ ] F-38d Hook up F-02f and F-14a
+- [ ] F-02f Checkout OTP (SMS via MersalSMS, after F-38b) (delayed by owner 2026-11-04)
+- [ ] F-38a MersalSMS account, price and who pays (owner) (delayed by owner 2026-11-04)
+- [ ] F-38b MersalSMS client + `sms_messages` log migration (delayed by owner 2026-11-04)
+- [ ] F-38c Order confirmation SMS with confirm link (delayed by owner 2026-11-04)
+- [ ] F-38d Hook up F-02f and F-14a (delayed by owner 2026-11-04)
 - [x] F-39a Gateway library, migration 0130 (not applied), tests (2026-10-30, uncommitted)
 - [x] F-39b Payment methods › Online card payments (2026-10-30, uncommitted)
 - [x] F-39c Storefront card checkout on the seller's gateway (2026-10-30, uncommitted)
 - [x] F-39d Backend webhook route (2026-10-30, uncommitted)
-- [ ] F-39e Manual E2E with Paymob and Kashier test accounts (needs 0130 on staging)
-- [ ] F-39f Tallaby Pay, PayPal, refunds, unpaid card order auto-cancel
+- [ ] F-39e Manual E2E with Paymob and Kashier test accounts (needs 0130 on staging) (delayed by owner 2026-11-04)
+- [ ] F-39f Tallaby Pay, PayPal, refunds, unpaid card order auto-cancel (delayed by owner 2026-11-04)
 - [x] F-41 One store apps catalog for Apps, Shipping companies and Payment methods (2026-10-30, local `main`)
 - [x] F-12c Wassalha (Egypt Post) settings + Excel export (2026-10-30, local `main`; 0130 applied 2026-10-30)
 - [x] F-12d Shipping › Shipping companies card (2026-10-30, local `main`)
@@ -1138,13 +1148,13 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-03e Missed-order reminders (2026-10-29; one-click WhatsApp + the existing daily store cart email shown on the lead; automatic WhatsApp with F-14)
 - [x] F-04c Orders bulk actions (2026-10-30, uncommitted; selection bar on /orders; browser E2E pending)
 - [x] F-05c Send order link (2026-11-04; not seen in a browser; needs `ORDER_ACCESS_SECRET` on the dashboard)
-- [~] F-21p Seller-collected payments (PLAN.md P3-07 Part B) — needed by the deposit. **2026-10-31 (owner request):** storefront InstaPay / Vodafone Cash / e& Cash pay the seller's own details (snapshot + `paymentCollector: 'seller'`, fee-only on delivery), new payment page, InstaPay "receive by" dropdown. **Also 2026-10-31:** transfer screenshot (payment page + order page, seller sees it on the order; `0132`) and WE Pay / Orange Cash at storefront checkout. Left: a seller "payment received" action, D32 auto-cancel, change email.
-- [ ] F-21a Deposit design (owner approval)
-- [ ] F-21b Deposit migration + settings
-- [ ] F-21c Deposit checkout + seller confirm
+- [~] F-21p Seller-collected payments (PLAN.md P3-07 Part B) — needed by the deposit. **2026-10-31 (owner request):** storefront InstaPay / Vodafone Cash / e& Cash pay the seller's own details (snapshot + `paymentCollector: 'seller'`, fee-only on delivery), new payment page, InstaPay "receive by" dropdown. **Also 2026-10-31:** transfer screenshot (payment page + order page, seller sees it on the order; `0132`) and WE Pay / Orange Cash at storefront checkout. Left: a seller "payment received" action, D32 auto-cancel, change email. (delayed by owner 2026-11-04)
+- [ ] F-21a Deposit design (owner approval) (delayed by owner 2026-11-04)
+- [ ] F-21b Deposit migration + settings (delayed by owner 2026-11-04)
+- [ ] F-21c Deposit checkout + seller confirm (delayed by owner 2026-11-04)
 - [x] F-25a Checkout form settings (2026-10-30, uncommitted; no migration; browser E2E pending)
 - [x] F-25b Thank-you page settings (2026-10-30, uncommitted; browser E2E pending)
-- [ ] F-07f Bundles
+- [ ] F-07f Bundles (delayed by owner 2026-11-04)
 - [x] F-32a Cross-sell design note (owner approved 2026-11-04)
 - [x] F-32b Offers migration (2026-11-04; 0145 on staging)
 - [x] F-32c Cross-sell in product form + store switch (2026-11-04; not seen in a browser)
@@ -1183,56 +1193,56 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [ ] F-07a Quantity offers design (owner approval)
 - [ ] F-07b Quantity offers in product form
 - [ ] F-07c Quantity offers on storefront
-- [ ] F-08a Inline order form (owner approval)
-- [ ] F-08b Landing page designs
+- [ ] F-08a Inline order form (owner approval) (delayed by owner 2026-11-04)
+- [ ] F-08b Landing page designs (delayed by owner 2026-11-04)
 - [x] F-09a Staff design + security review (2026-10-30, note written; owner answers pending)
-- [ ] F-09b Staff migration
-- [ ] F-09c Staff invite + roles
+- [ ] F-09b Staff migration (delayed by owner 2026-11-04)
+- [ ] F-09c Staff invite + roles (delayed by owner 2026-11-04)
 - [x] F-10a Inventory migration (2026-10-30, uncommitted; 0125 on staging)
 - [x] F-10b Stock movements + low-stock alert (2026-10-30, uncommitted)
 - [x] F-11a Product feed route (2026-10-30, uncommitted; `/api/feeds/products.{xml,csv}`)
 - [x] F-11b Feed apps cards (2026-10-30, uncommitted; browser E2E pending)
-- [ ] F-12a Next carrier chosen
-- [ ] F-12b Carrier integration
+- [ ] F-12a Next carrier chosen (delayed by owner 2026-11-04)
+- [ ] F-12b Carrier integration (delayed by owner 2026-11-04)
 
 **P2 / P3**
 
 - [x] F-02e Checkout rate limit (2026-10-30, uncommitted; in-memory per server instance, Upstash left)
 - [x] F-03d Lead cleanup cron (2026-10-29; `/api/cron/checkout-leads`)
 - [x] F-01e Repeat order (2026-10-30, uncommitted; store "Order again" button; the dashboard half waits on F-05)
-- [ ] F-07d Upsell / cross-sell
-- [ ] F-08c Funnel steps
+- [ ] F-07d Upsell / cross-sell (delayed by owner 2026-11-04)
+- [ ] F-08c Funnel steps (delayed by owner 2026-11-04)
 - [x] F-10c Inventory page (2026-10-30, uncommitted; `/products/inventory`; browser E2E pending)
 - [x] F-11c Shareable catalog (2026-10-30, uncommitted; Marketing › Shareable catalog + "Share catalog" on selected products; browser E2E pending)
 - [ ] F-13a Automatic discounts
 - [ ] F-13c Coupons in cart + free gift
-- [ ] F-14a / F-14b Customer notifications
+- [ ] F-14a / F-14b Customer notifications (delayed by owner 2026-11-04)
 - [x] F-15a Reports upgrade (2026-10-30, uncommitted; `/reports`; browser E2E pending)
 - [x] F-16a Email campaigns (2026-10-30, uncommitted; 0129 on staging; `/marketing/emails`; dashboard backend env + real-send E2E pending)
 - [x] F-16b Retargeting audiences (2026-10-30, uncommitted; Meta/TikTok upload test pending)
-- [ ] F-16c WhatsApp broadcasts
+- [ ] F-16c WhatsApp broadcasts (delayed by owner 2026-11-04)
 - [x] F-16d Subscribers list (2026-10-30, uncommitted; `/marketing/subscribers`; browser E2E pending)
-- [ ] F-17a Public API & webhooks
+- [ ] F-17a Public API & webhooks (delayed by owner 2026-11-04)
 - [x] F-23a Back-in-stock alerts (2026-10-30, uncommitted; 0126 on staging; email E2E pending)
 - [ ] F-23b Pre-orders (delayed by owner 2026-11-04)
 - [x] F-26a Campaign tracking (UTM) (2026-10-30, uncommitted; `orders.metadata.utm`, no migration; Reports › Campaigns)
-- [ ] F-18 Store affiliates / referral links
-- [ ] F-19 Gift cards & store credit
-- [ ] F-20 Loyalty points
-- [ ] F-27 A/B tests
-- [ ] F-28 Wholesale pricing
+- [ ] F-18 Store affiliates / referral links (delayed by owner 2026-11-04)
+- [ ] F-19 Gift cards & store credit (delayed by owner 2026-11-04)
+- [ ] F-20 Loyalty points (delayed by owner 2026-11-04)
+- [ ] F-27 A/B tests (delayed by owner 2026-11-04)
+- [ ] F-28 Wholesale pricing (delayed by owner 2026-11-04)
 - [x] F-29a MCP design note (2026-10-30, written; owner answers recorded the same day)
-- [ ] F-29l Store setup by AI (create store, theme, info, social, shipping)
+- [ ] F-29l Store setup by AI (create store, theme, info, social, shipping) (delayed by owner 2026-11-04)
 - [x] F-29b MCP OAuth server + migration 0133 (2026-10-31, uncommitted; 0133 on staging; storage E2E on staging passed; real Claude/ChatGPT connect waits for F-29c)
-- [~] F-29c MCP endpoint + read-only tools (2026-11-01, `d215f7c1`: `/mcp` endpoint, protected-resource metadata, rate limits, activity log, idempotency, `whoami`/`list_stores`; read-only tools for orders, customers, coupons, reports, site outline and notifications left; confirm tokens left)
-- [~] F-29d AI assistants page (2026-10-31: app card + "how to connect" tabs built; connections list, revoke, activity, personal tokens and the bell left)
-- [ ] F-29e Order commands + tools
+- [~] F-29c MCP endpoint + read-only tools (2026-11-01, `d215f7c1`: `/mcp` endpoint, protected-resource metadata, rate limits, activity log, idempotency, `whoami`/`list_stores`; read-only tools for orders, customers, coupons, reports, site outline and notifications left; confirm tokens left) (delayed by owner 2026-11-04)
+- [~] F-29d AI assistants page (2026-10-31: app card + "how to connect" tabs built; connections list, revoke, activity, personal tokens and the bell left) (delayed by owner 2026-11-04)
+- [ ] F-29e Order commands + tools (delayed by owner 2026-11-04)
 - [x] F-29f Product commands + tools (2026-11-01, uncommitted: 9 product tools, server-side zod, image import from URL; staging E2E passed; real Claude connect after deploy)
-- [ ] F-29g Coupons, bulk prices, Q&A tools
-- [ ] F-29h Builder and theme tools
-- [ ] F-29i Publish and revisions tools
-- [ ] F-29j Settings tools + prompts
-- [ ] F-29k MCP hardening and directory listings
+- [ ] F-29g Coupons, bulk prices, Q&A tools (delayed by owner 2026-11-04)
+- [ ] F-29h Builder and theme tools (delayed by owner 2026-11-04)
+- [ ] F-29i Publish and revisions tools (delayed by owner 2026-11-04)
+- [ ] F-29j Settings tools + prompts (delayed by owner 2026-11-04)
+- [ ] F-29k MCP hardening and directory listings (delayed by owner 2026-11-04)
 - [x] F-04e Returns barcode scan (2026-10-30, uncommitted; `/orders/scan`; camera needs BarcodeDetector, typing elsewhere)
 - [x] F-36d Store service worker + offline page (2026-10-29, uncommitted)
 - [x] F-36e Store settings › App (2026-10-29, uncommitted; switch + preview only)
@@ -1242,7 +1252,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-24d Product order in category (2026-10-30, uncommitted; 0128 on staging; browser E2E pending)
 - [x] F-30a Purchase on delivery (CAPI) (2026-10-30, uncommitted; real Meta test event pending)
 - [x] F-30b Pixel event toggles (2026-10-30, uncommitted; Store › Apps › Meta Pixel)
-- [ ] F-31 POS and cashier
+- [ ] F-31 POS and cashier (delayed by owner 2026-11-04)
 - [ ] F-32f Cross-sell report
 - [x] F-34d Stock badge builder element (2026-10-30, uncommitted; `productStockBadge`, editor E2E pending)
 
@@ -1268,14 +1278,13 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-47b Installed and Explore page (2026-11-03; `38199f33`; not seen in a browser)
 - [~] F-47c Paid app charges from the USD wallet (2026-11-03; `1aa34f49`; monthly renewals run, per-order and usage charges have no callers until a paid app exists)
 - [x] F-48a Store SEO fallback title and description (2026-11-03; `f6974eaa`)
-- [ ] F-49a Animation audit and shared set (owner, on Claude Design)
-- [ ] F-49b Add animations to element trees; phone performance check
+- [ ] F-49a Animation audit and shared set (owner, on Claude Design) (delayed by owner 2026-11-04)
+- [ ] F-49b Add animations to element trees; phone performance check (delayed by owner 2026-11-04)
 - [x] F-50a Fix banner sizing across screens and templates (2026-11-03; `eb853ea7`; phone view of 21:9 banners not checked)
 - [x] F-51a Unlimited stock design note (every stock reader) (2026-11-03; `docs/superpowers/specs/2026-11-03-unlimited-stock-design.md`)
 - [x] F-51b Unlimited stock migration, form and readers (2026-11-03; `891604f7`; 0138 on staging)
-- [~] F-52a Homepage redesign (2026-11-04; design from the owner's Claude Design project, foundation built, pages in progress)
-- [ ] F-52b Real dashboard screenshots from a fictional demo store
-- [ ] F-52c Homepage shows new pricing once live
+- [x] F-52a Homepage redesign (2026-11-04; from the owner's Claude Design project; not seen on a real phone)
+- [x] F-52c Homepage shows new pricing (2026-11-04; goes live with the USD switch)
 - [x] F-53a Public-site SEO audit (2026-11-03; `docs/seo-audit-tallaby-com.md`)
 - [x] F-53b Public-site SEO fixes (2026-11-03; `c17c3c53`; the main canonical host fix needs an owner setting)
 - [x] F-54a AI Store Builder cost study (2026-11-03; `docs/ai-store-builder-cost-study.md`; estimates, no live measurement)
@@ -1288,7 +1297,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-55d Upgrade, downgrade and renewal job (2026-11-03; integration tests on staging)
 - [x] F-55e Dashboard Plan page (2026-11-03; not seen in a browser)
 - [x] F-55f Admin plan management (2026-11-03; `9496a9a0`)
-- [ ] F-55g Public pricing page and fee calculators (owner, on Claude Design)
+- [x] F-55g Public pricing page and fee calculators (2026-11-04; from the owner's Claude Design project)
 - [~] F-55h Pricing launch: Terms, copy, seller notice, §13 rewrite (2026-11-03; Terms draft and go-live checklist `926a6831`; launch not run)
 - [x] F-56a USD wallet design note and staging dry run (2026-11-03; `docs/superpowers/specs/2026-11-03-usd-wallet-and-plans-design.md`; dry run script added, owner still approves before production)
 - [x] F-56b Exchange-rate service (2026-11-03; server, cron and Admin settings `abb55584`)
@@ -1314,15 +1323,15 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 - [x] F-63a Order notifications app in the catalog (1 cent per order, off by default) (2026-11-04; not seen in a browser)
 - [x] F-63b Customer order emails only for subscribed stores, the charge, and the pause on other automatic emails (2026-11-04; off until the USD switch)
-- [ ] F-63c SMS through the same subscription (after F-38)
+- [ ] F-63c SMS through the same subscription (after F-38) (delayed by owner 2026-11-04)
 - [x] F-62a SMS card: Soon, with a Request button (2026-11-04; 0143 on staging; not seen in a browser)
 - [x] F-62b Admin requests list and Enable (2026-11-04; not seen in a browser)
-- [ ] F-62c SMS for enabled stores (after F-38)
-- [ ] F-61a International design note (owner approval)
-- [ ] F-61b Store base currency
-- [ ] F-61c Detect country and currency, with a switcher
-- [ ] F-61d All countries on the Shipping page
-- [ ] F-61e International checkout
+- [ ] F-62c SMS for enabled stores (after F-38) (delayed by owner 2026-11-04)
+- [ ] F-61a International design note (owner approval) (delayed by owner 2026-11-04)
+- [ ] F-61b Store base currency (delayed by owner 2026-11-04)
+- [ ] F-61c Detect country and currency, with a switcher (delayed by owner 2026-11-04)
+- [ ] F-61d All countries on the Shipping page (delayed by owner 2026-11-04)
+- [ ] F-61e International checkout (delayed by owner 2026-11-04)
 
 **Owner requests 2026-11-04 (checkout and dashboard)**
 
@@ -1340,10 +1349,21 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-67a Pending carts on the seller dashboard (2026-11-04; no migration; not seen in a browser)
 - [x] F-68a First top-up: message, sidebar warning, blurred Orders page (2026-11-04; off until the USD switch; not seen in a browser)
 - [x] F-69a Campaign email allowance by plan, with extra emails (2026-11-04; 0146 on staging; not seen in a browser)
+- [ ] F-70a Consent banner on tallaby.com
+- [ ] F-70b Dashboard text fixes
+- [ ] F-70c Lint errors on this batch's code
+- [ ] F-70d Fix the 6 duplicate addresses at launch (needs owner's go-ahead)
+- [ ] F-70e Compare research and go public (owner)
 
 ---
 
 ## 7. Log
+
+### 2026-11-04 — Roadmap triage (owner)
+
+- **Removed:** F-52b. **Marked done:** F-52a, F-52c, F-55g.
+- **Delayed by the owner:** SMS, MCP upgrades, staff, F-18, F-20, F-23b, F-27, F-28, F-31, and any big task or one that needs configuration. Sorted into that group by us: F-21 Deposits, F-08 landing pages and funnels, F-07d upsell, F-07f bundles, F-19 gift cards, F-17 public API, F-49 animations, F-12a/b next carrier, F-39e/f gateway testing and refunds, F-14 and F-16c messages, F-61 international.
+- **To work on now:** F-07a–c quantity offers, F-13a and F-13c automatic discounts, F-12e, F-32d, F-32f, F-70a–c.
 
 ### 2026-11-04 — tallaby.com rebuilt from the Claude Design project (owner)
 
