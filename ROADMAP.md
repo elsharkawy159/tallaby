@@ -1344,6 +1344,15 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 ## 7. Log
 
+### 2026-11-04 — `pnpm lint` works again
+
+- **Why it crashed:** the apps pinned ESLint 10.9.1, but the installed `typescript-eslint` 8.50.1 and the React plugins only support ESLint up to 9. The apps now pin 9.39.2, the version `packages/eslint-config` already used. npm marks ESLint 9.39.2 as deprecated, so moving to 10 later means upgrading those plugins too.
+- **Also fixed:** `packages/ui` and `packages/tiptap` had a lint script but no ESLint (tiptap had no config either), the shared config now skips `.next`, and `turbo lint` uses `--continue` so one failing package doesn't skip the apps that depend on it.
+- **Results now:** lint runs to the end and still fails, on real findings. Errors: dashboard 41, admin 6, shipping 3. Warnings: dashboard 1,835, admin 1,324, ecommerce 395, ui 38, shipping 19; most in dashboard and admin are the `semi` style rule. Ecommerce and ui turn every error into a warning (`only-warn`), so "0 errors" there doesn't mean clean. ui also fails on `--max-warnings 0`.
+- **Cleaned up:** unused imports and `let` that should be `const` in files changed since the last push. No behaviour change.
+- **Left for the owner to decide:** all React hook errors, because fixing them can change behaviour, and the old findings across the codebase. No rules were turned off.
+- **Not linted:** `apps/backend` and `packages/ai`, `cache`, `db`, `emails`, `lib`, `motion`, `store-editor` and `store-sections` have no lint script, so checkout and wallet code in `packages/lib` and `packages/db` isn't checked.
+
 ### 2026-11-04 — F-66 Email editor with live preview (owner)
 
 - **Preview while writing:** the campaign editor now shows the email beside the form on wide screens, and Edit and Preview buttons switch between them on phones and tablets. The subject and sender show above it. It's the real email from the backend, in the same sandboxed frame with no scripts, and links in it don't open anything.
