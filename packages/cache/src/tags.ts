@@ -115,9 +115,9 @@ export const marketingBlogTags = {
   posts: () => "marketing-blog:posts",
 } as const;
 
-/** The tallaby.com home "stores on Tallaby" wall: published stores, logos and product counts. Public data only. */
+/** The tallaby.com home live line: the newest published stores across sellers. Public names and times only. */
 export const marketingStoreTags = {
-  showcase: () => "marketing-stores:showcase",
+  recent: () => "marketing-stores:recent",
 } as const;
 
 /** The Tallaby fulfillment plan catalog. No seller data; seller requests are never cached. */

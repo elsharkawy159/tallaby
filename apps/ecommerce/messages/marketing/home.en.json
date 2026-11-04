@@ -15,6 +15,14 @@
       "check3": "Cash on delivery built in",
       "plainly": "You'll need a first $5 top-up before you can see orders and send campaigns. Customer order emails need the Order Notifications app, at 1 cent per order.",
       "sample": "Sample data from a demo store.",
+      "live": {
+        "recent": "New store: <store>{name}</store>, <age></age>",
+        "latest": "Latest store: <store>{name}</store>, <age></age>",
+        "now": "just now",
+        "minutes": "{count, plural, one {a minute ago} other {<num>{count}</num> minutes ago}}",
+        "hours": "{count, plural, one {an hour ago} other {<num>{count}</num> hours ago}}",
+        "days": "{count, plural, one {a day ago} other {<num>{count}</num> days ago}}"
+      },
       "marquee": [
         "Email campaigns",
         "WhatsApp follow-up",

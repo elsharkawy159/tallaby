@@ -10,12 +10,15 @@ import { IconTile, SiteCard } from "@/components/marketing/site/site-card";
 import { SignupTrigger, SlugClaimForm } from "@/components/marketing/signup/signup-trigger.client";
 import { PlanCards } from "@/components/marketing/pricing/plan-cards";
 import { TemplateCarousel } from "@/components/marketing/templates/template-carousel.client";
+import { selectStoreLine } from "@/lib/marketing/recent-stores.lib";
 import { CONTACT } from "@/lib/marketing/site.lib";
+import { getRecentStores } from "@/lib/marketing/stores.server";
 import { getTemplateGallery } from "@/lib/marketing/templates.server";
 import type { GalleryEntry } from "@/lib/marketing/templates.lib";
 import { AiDemo } from "./ai-demo.client";
 import { BuilderDemo } from "./builder-demo.client";
 import { HeroDemo } from "./hero-demo.client";
+import { LiveStoreLine } from "./live-store-line.client";
 import { MarketingTools } from "./marketing-tools.client";
 import { McpChatDemo } from "./mcp-chat-demo.client";
 import { PaymentDemo, ShippingDemo } from "./shipping-payment-demos.client";
@@ -37,10 +40,12 @@ export async function HomeHero() {
   const t = await getTranslations("home.hero");
   const features = t.raw("marquee") as string[];
   const checks = [t("check1"), t("check2"), t("check3")];
+  const recent = await getRecentStores();
 
   return (
     <section id="top" aria-labelledby="home-h1" className="relative overflow-hidden pt-10 pb-24 min-[641px]:pt-16">
       <Container className="relative flex flex-col items-center text-center">
+        {selectStoreLine(recent.stores, recent.readAt).kind === "none" ? null : <LiveStoreLine stores={recent.stores} readAt={recent.readAt} />}
         <h1
           id="home-h1"
           className="max-w-[900px] text-[clamp(34px,6.2vw,68px)] leading-[1.25] font-bold text-balance text-teal-900 en:leading-[1.08] en:tracking-[-0.02em] [&_em]:text-amber-700 [&_em]:not-italic"

@@ -15,6 +15,14 @@
       "check3": "الدفع عند الاستلام مُفعّل",
       "plainly": "تحتاج إلى شحن أول بقيمة 5 دولارات قبل عرض الطلبات وإرسال الحملات، وتتطلب رسائل الطلبات للعملاء تطبيق إشعارات الطلبات بسنت واحد لكل طلب.",
       "sample": "بيانات توضيحية لمتجر تجريبي.",
+      "live": {
+        "recent": "تم إنشاء متجر <store>{name}</store> <age></age>",
+        "latest": "آخر متجر: <store>{name}</store>، <age></age>",
+        "now": "قبل لحظات",
+        "minutes": "{count, plural, one {قبل دقيقة} two {قبل دقيقتين} few {قبل <num>{count}</num> دقائق} other {قبل <num>{count}</num> دقيقة}}",
+        "hours": "{count, plural, one {قبل ساعة} two {قبل ساعتين} few {قبل <num>{count}</num> ساعات} other {قبل <num>{count}</num> ساعة}}",
+        "days": "{count, plural, one {قبل يوم} two {قبل يومين} few {قبل <num>{count}</num> أيام} other {قبل <num>{count}</num> يومًا}}"
+      },
       "marquee": [
         "حملات البريد الإلكتروني",
         "متابعة العملاء عبر واتساب",

@@ -1,83 +1,64 @@
 import { cache } from "react";
-import { cacheProfiles, createCachedQuery, marketingStoreTags } from "@workspace/cache";
+import { createCachedQuery, marketingStoreTags } from "@workspace/cache";
 import { db, sql } from "@workspace/db";
-import { storeUrl } from "@workspace/lib/storefront";
-import { getPublicUrl } from "@workspace/ui/lib/utils";
+import { RECENT_STORES_LIMIT, type RecentStore } from "./recent-stores.lib";
 
-/** How many stores the home page wall shows at most. */
-export const STORE_SHOWCASE_LIMIT = 18;
-
-export type ShowcaseStore = {
-  id: string;
-  name: string;
-  logoUrl: string | null;
-  url: string;
-  productCount: number;
-};
-
-type ShowcaseRow = Omit<ShowcaseStore, "url" | "logoUrl"> & {
-  subdomain: string;
-  logoUrl: string | null;
-  domain: string | null;
-};
+/** The line is optional: past this, the page renders without it rather than wait for the database. */
+const READ_TIMEOUT_MS = 3000;
 
 /**
- * Published stores of approved sellers, most active products first (the same
- * count as Admin › Stores: a "selected" catalog counts its listed products).
- * Stores with no product or no logo are left out: an empty shop is no proof. Public
- * fields only (name, logo, link), read once per hour for every visitor.
+ * The newest stores that are really open to visitors: published, active and not
+ * deleted, of an approved seller, by first publish (a republish keeps that time,
+ * and a draft has none). The schema doesn't mark test or demo stores, so any
+ * store that passes these checks can show. Only the public name leaves this
+ * function, and nothing about the seller.
  */
-const getCachedShowcase = createCachedQuery({
-  name: "marketing:store-showcase:v2",
-  ttl: cacheProfiles.seller,
-  tags: () => [marketingStoreTags.showcase()],
-  query: async (): Promise<ShowcaseRow[]> => {
-    const result = await db.execute(sql`
-      SELECT id, name, subdomain, logo_url, domain, product_count FROM (
-        SELECT
-          st.id, st.name, st.subdomain, st.logo_url, st.created_at,
-          (SELECT cd.domain FROM seller_custom_domains cd
-            WHERE cd.store_id = st.id AND cd.status = 'active'
-            ORDER BY cd.created_at LIMIT 1) AS domain,
-          CASE WHEN st.catalog_mode = 'selected'
-            THEN (SELECT count(*) FROM store_products sp JOIN products p ON p.id = sp.product_id
-                  WHERE sp.store_id = st.id AND p.status = 'active')
-            ELSE (SELECT count(*) FROM products p WHERE p.seller_id = st.seller_id AND p.status = 'active')
-          END::int AS product_count
-        FROM stores st
-        JOIN sellers s ON s.id = st.seller_id
-        WHERE st.site_status = 'published' AND st.status = 'active' AND st.deleted_at IS NULL
-          AND s.status = 'approved'
-          AND st.logo_url IS NOT NULL AND btrim(st.logo_url) <> ''
-      ) ranked
-      WHERE product_count > 0
-      ORDER BY product_count DESC, created_at
-      LIMIT ${STORE_SHOWCASE_LIMIT}
-    `);
-    return ([...result] as Record<string, unknown>[]).map((row) => ({
-      id: String(row.id),
-      name: String(row.name),
-      subdomain: String(row.subdomain),
-      logoUrl: (row.logo_url as string | null) || null,
-      domain: (row.domain as string | null) || null,
-      productCount: Number(row.product_count ?? 0),
-    }));
-  },
+export async function readRecentStores(windowDays = 7): Promise<RecentStore[]> {
+  const result = await db.execute(sql`
+    SELECT st.name, st.first_published_at
+    FROM stores st
+    JOIN sellers s ON s.id = st.seller_id
+    WHERE st.status = 'active' AND st.site_status = 'published' AND st.deleted_at IS NULL
+      AND s.status = 'approved'
+      AND btrim(st.name) <> ''
+      AND st.first_published_at <= now()
+      AND st.first_published_at >= now() - make_interval(days => ${windowDays})
+    ORDER BY st.first_published_at DESC
+    LIMIT ${RECENT_STORES_LIMIT}
+  `);
+  return ([...result] as Record<string, unknown>[]).map((row) => ({
+    name: String(row.name),
+    publishedAt: row.first_published_at ? new Date(row.first_published_at as string | Date).toISOString() : null,
+  }));
+}
+
+/** One short-lived read for every visitor. It holds no customer or seller data. */
+const getCachedRecentStores = createCachedQuery({
+  name: "marketing:recent-stores:v1",
+  ttl: 60,
+  tags: () => [marketingStoreTags.recent()],
+  query: () => readRecentStores(),
 });
 
-/** The wall's stores; empty (the section hides) if the database cannot be read. */
-export const getShowcaseStores = cache(async (): Promise<ShowcaseStore[]> => {
+/**
+ * The stores for the home page's live line, and when they were read, which the
+ * page and the browser both start from so their first render matches. Empty (the
+ * line hides) if the database cannot be read.
+ */
+export const getRecentStores = cache(async (): Promise<{ stores: RecentStore[]; readAt: number }> => {
+  let timer: ReturnType<typeof setTimeout> | undefined;
   try {
-    const rows = await getCachedShowcase();
-    return rows.map((row) => ({
-      id: row.id,
-      name: row.name,
-      logoUrl: row.logoUrl ? getPublicUrl(row.logoUrl, "sellers") || null : null,
-      url: storeUrl(row.subdomain, row.domain),
-      productCount: row.productCount,
-    }));
+    const stores = await Promise.race([
+      getCachedRecentStores(),
+      new Promise<never>((_, reject) => {
+        timer = setTimeout(() => reject(new Error(`no answer in ${READ_TIMEOUT_MS} ms`)), READ_TIMEOUT_MS);
+      }),
+    ]);
+    return { stores, readAt: Date.now() };
   } catch (error) {
-    console.error("[marketing] store showcase failed", error);
-    return [];
+    console.error("[marketing] recent stores failed", error);
+    return { stores: [], readAt: Date.now() };
+  } finally {
+    clearTimeout(timer);
   }
 });
