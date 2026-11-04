@@ -1,1 +1,109 @@
-{}
+{
+  "meta": {
+    "templates": {
+      "title": "Free online store templates",
+      "description": "Free store templates for every category, with a home page, product pages, cart and checkout. Change colors and sections any time without losing your products."
+    },
+    "template": {
+      "title": "{name} store template: {category}",
+      "description": "{desc}. Free, fully editable and mobile-ready."
+    }
+  },
+  "templates": {
+    "categories": {
+      "all": "All",
+      "ho": "Home",
+      "fo": "Food and drinks"
+    },
+    "hero": {
+      "eyebrow": "Store templates",
+      "title": "Pick a design. <em>Make it yours.</em>",
+      "lead": "Every template comes with a home page, product pages, cart and checkout. Change colors and sections any time without losing your products.",
+      "cta": "Start with a free template",
+      "browse": "Browse {count, plural, one {the template} other {{count} templates}}",
+      "checkFree": "All templates are free",
+      "checkLanguages": "Arabic and English",
+      "checkMobile": "Designed for mobile first"
+    },
+    "gallery": {
+      "kicker": "All templates",
+      "title": "A design made for what you sell",
+      "body": "Pick a category and preview a template. Every template can be edited in the builder after you pick it."
+    },
+    "included": {
+      "kicker": "In every template",
+      "title": "Ready to sell from the first day",
+      "pagesTitle": "Every page your store needs",
+      "pages": ["Home", "Product", "Category", "Cart", "Checkout"],
+      "phoneTitle": "Built for phones",
+      "phoneBody": "Most orders come from mobile, so every layout starts there.",
+      "langTitle": "Arabic and English",
+      "langBody": "Every template works right-to-left and left-to-right.",
+      "switchTitle": "Switch any time",
+      "switchBody": "Products, orders and settings stay as they are when you change templates."
+    },
+    "faq": {
+      "kicker": "FAQ",
+      "title": "About templates",
+      "desc": "Can't find your answer? <link>Message us on WhatsApp.</link>",
+      "items": [
+        {
+          "q": "Do templates cost extra?",
+          "a": "No. Every template is free on both the Free and Pro plans."
+        },
+        {
+          "q": "Will I lose my products if I change templates?",
+          "a": "No. Products, orders, customers and settings are separate from the design."
+        },
+        {
+          "q": "Can I edit a template?",
+          "a": "Yes. Open it in the builder to change colors, fonts, text and photos, or add and remove sections."
+        },
+        {
+          "q": "Can I use a template from a different category?",
+          "a": "Yes. Categories are only a starting suggestion. Any template works with any products."
+        }
+      ]
+    },
+    "final": {
+      "title": "Pick a template and start today",
+      "body": "Claim your store link. You can change the template later."
+    },
+    "count": "{count, plural, one {{count} template} other {{count} templates}}",
+    "showMore": "Show more ({count} left)",
+    "colors": "Colors:",
+    "use": "Use template",
+    "preview": "Preview",
+    "previewTemplate": "Preview template",
+    "previewNamed": "Preview {name}",
+    "fullPreview": "Full preview",
+    "pickerLabel": "Templates",
+    "categoriesLabel": "Template categories",
+    "carouselLabel": "Templates",
+    "previous": "Previous",
+    "next": "Next",
+    "blankTitle": "Still not sure?",
+    "blankBody": "Start with Tallaby Classic, and change the template any time from your dashboard.",
+    "blankCta": "Create my store",
+    "detail": {
+      "use": "Use this template",
+      "startWith": "Start with this look",
+      "useHint": "Your store starts on Tallaby Classic. You can apply {name} any time from the Templates page in your dashboard.",
+      "breadcrumb": "Breadcrumb",
+      "metaFallback": "The {name} store template from Tallaby",
+      "demo": "Live demo",
+      "device": "Device",
+      "desktop": "Desktop",
+      "mobile": "Mobile",
+      "about": "About this template",
+      "pages": "Pages included",
+      "details": "Details",
+      "bestFor": "Best for",
+      "price": "Price",
+      "free": "Free",
+      "more": "More templates",
+      "pageCount": "Pages",
+      "colors": "Colors"
+    }
+  }
+}
