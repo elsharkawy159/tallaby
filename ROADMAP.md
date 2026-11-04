@@ -1047,6 +1047,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 | Date       | Request (owner's words)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | Feature ID                                                                                       | Status                                                                                 |
 | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- |
+| 2026-11-04 | "yes we can add that for sellers who subscriped in the Orders Notification but keep the Email field Optional" / variant stock: "Yes fix but keep committed on main don't push to live" | F-64 |
 | 2026-11-04 | "No, we can keep the email campaign / 500 Emails for Free plan (Seller can send email after the first top-up (activation) / 10000 Emails for the Pro plan / Update the pricing plans too / Extra: $1.50 per 1,000 emails" | F-69 |
 | 2026-11-04 | "Seller should know that he can't receive any order until Top-up with 5$ first, show it as a simple message on dashboard main page and make warning icon ⚠️ on the Orders page on side bar so when user enter the Orders page should find like blurred with a message to Top-up to see your orders" | F-68 |
 | 2026-11-04 | "Approve Manual orders and Cross-sell … Approved. Approve the free-shipping threshold … Approved. Delay the MersalSMS for now, write Soon on it on the dashboard. Delay the AI Assistants MCP for now. Yes keep the For later list to be delayed for later. Yes drop the gifts" | F-05, F-32, F-13b, F-38, F-29 |
@@ -1342,6 +1343,15 @@ Add each new request here first, with the date and the owner's words, then turn 
 ---
 
 ## 7. Log
+
+### 2026-11-04 — F-64 Optional email and variant stock (owner)
+
+- **Optional email:** a store subscribed to Order notifications shows an optional Email field to guests and to signed-in customers with no real email. Blank never blocks an order; a filled value is validated on the server. The server decides who sees it, from the host's store and the session.
+- **Where it's kept:** `orders.metadata.notificationEmail`, never on `users`, because a typed address proves nothing and must not change an account or who gets another person's mail. Order emails read it first, then the account's real email. Next time, the form fills it in from the same user's last order at that store. No migration.
+- **Marketing:** it doesn't reach campaigns or the customers list, which read `users.email`.
+- **Stores with their own checkout form (F-25):** if that form asks for an email, the new field stays hidden and that answer is used.
+- **Variant stock (`2bbb557b`):** changing a count now checks the variant's stock, as placing the order does, on checkout, the cart page and the sheet. A product that doesn't track stock has no limit, and products without variants behave as before.
+- **Checks:** unit tests and staging integration tests. **Not seen in a browser**, and the `createOrder` wiring and backend recipient line have no direct test.
 
 ### 2026-11-04 — F-64 Simple one-page checkout built
 

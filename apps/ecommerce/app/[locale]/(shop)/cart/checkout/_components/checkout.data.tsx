@@ -28,6 +28,7 @@ import {
   createCheckoutFormSchema,
 } from "./checkout-form.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { parseOptionalOrderEmail } from "@workspace/lib/orders/notification-email";
 import { createOrder } from "@/actions/order";
 import { recalculateCheckoutSummary } from "@/actions/checkout";
 import { saveCheckoutLead } from "@/actions/checkout-lead";
@@ -108,6 +109,9 @@ export const CheckoutData = ({
   const [savedAddresses, setSavedAddresses] = useState<SavedCheckoutAddress[]>(initialAddresses);
   const [cartLines, setCartLines] = useState<any[]>(cart?.cartItems ?? []);
   const [busyItemId, setBusyItemId] = useState<string | null>(null);
+  const orderEmailField: { lastEmail: string | null } | null = checkoutData.orderEmail ?? null;
+  const [orderEmail, setOrderEmail] = useState<string>(orderEmailField?.lastEmail ?? "");
+  const [orderEmailInvalid, setOrderEmailInvalid] = useState(false);
   // Bumped when the saved address or the cart changes, to price the order again.
   const [priceRevision, setPriceRevision] = useState(0);
 
@@ -474,6 +478,11 @@ export const CheckoutData = ({
   };
 
   const handleSubmit = (data: CheckoutFormData) => {
+    if (orderEmailField && !parseOptionalOrderEmail(orderEmail).ok) {
+      setOrderEmailInvalid(true);
+      toast.error(t("simpleForm.fixForm"));
+      return;
+    }
     if (storeCheckoutForm) {
       // The same check the server runs, for an instant message.
       const checked = applyCheckoutAnswers(storeCheckoutForm, { ...checkoutAnswers, notes: data.notes });
@@ -501,6 +510,7 @@ export const CheckoutData = ({
           isGift: data.isGift,
           giftMessage: data.giftMessage,
           ...(storeCheckoutForm && { checkoutAnswers }),
+          ...(orderEmailField && { notificationEmail: orderEmail }),
         });
 
         if (result.success) {
@@ -610,7 +620,22 @@ export const CheckoutData = ({
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-4 md:gap-8 lg:gap-12">
           {/* Shipping Information */}
           <div className="space-y-4 md:space-y-6">
-            <SimpleCheckoutForm address={address} saved={savedAddresses}>
+            <SimpleCheckoutForm
+              address={address}
+              saved={savedAddresses}
+              email={
+                orderEmailField
+                  ? {
+                      value: orderEmail,
+                      invalid: orderEmailInvalid,
+                      onChange: (value) => {
+                        setOrderEmail(value);
+                        setOrderEmailInvalid(false);
+                      },
+                    }
+                  : null
+              }
+            >
               {!storeCheckoutForm && noteField}
             </SimpleCheckoutForm>
             {isStorefront && (

@@ -10,6 +10,7 @@ import {
   type EmailLocale,
 } from "@workspace/emails";
 import { buildOrderPagePath } from "@workspace/lib/orders";
+import { orderEmailRecipient } from "@workspace/lib/orders/notification-email";
 import { DEFAULT_CURRENCY, formatMoney, joinUrl, resolveImageUrl, SITE_URL } from "./format";
 import { loadStoreEmailContext, type StoreEmailContext } from "./store-brand";
 
@@ -84,8 +85,8 @@ export async function loadOrderEmailContext(orderId: string): Promise<OrderEmail
     order,
     locale,
     currency,
-    // Guests and manual orders carry a placeholder address: nothing to send to.
-    recipient: order.user?.email?.trim() && !order.user.email.includes("@temp.local") ? order.user.email.trim() : null,
+    // The address given at checkout, else the account's. A guest's placeholder never counts.
+    recipient: orderEmailRecipient({ metadata: order.metadata, accountEmail: order.user?.email }),
     customerName: address?.fullName || order.user?.fullName || "",
     store: brandStore,
     brand: brandStore?.brand ?? PLATFORM_BRAND,

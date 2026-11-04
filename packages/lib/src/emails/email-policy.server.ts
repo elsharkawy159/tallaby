@@ -20,6 +20,22 @@ export type { AutomaticEmailType, EmailDecision, EmailSendDecision } from "./ema
 /** The catalog key of the Order notifications app. */
 export const ORDER_NOTIFICATIONS_APP = "customer_notifications";
 
+/** Does this store have a live Order notifications install? */
+export async function isOrderNotificationsSubscribed(storeId: string): Promise<boolean> {
+  const [install] = await db
+    .select({ id: storeAppInstalls.id })
+    .from(storeAppInstalls)
+    .where(
+      and(
+        eq(storeAppInstalls.storeId, storeId),
+        eq(storeAppInstalls.appKey, ORDER_NOTIFICATIONS_APP),
+        isNull(storeAppInstalls.uninstalledAt),
+      ),
+    )
+    .limit(1);
+  return Boolean(install);
+}
+
 /**
  * Asks before any send. "keep" and "manual" read nothing, so they can't fail. Any
  * other email doesn't send if the check throws.
@@ -30,20 +46,7 @@ export async function decideEmail(type: AutomaticEmailType, storeId: string | nu
   try {
     const { usdLive } = await getBillingState();
     let subscribed = false;
-    if (usdLive && rule === "order_app" && storeId) {
-      const [install] = await db
-        .select({ id: storeAppInstalls.id })
-        .from(storeAppInstalls)
-        .where(
-          and(
-            eq(storeAppInstalls.storeId, storeId),
-            eq(storeAppInstalls.appKey, ORDER_NOTIFICATIONS_APP),
-            isNull(storeAppInstalls.uninstalledAt),
-          ),
-        )
-        .limit(1);
-      subscribed = Boolean(install);
-    }
+    if (usdLive && rule === "order_app" && storeId) subscribed = await isOrderNotificationsSubscribed(storeId);
     return emailDecision({ type, storeId, usdLive, subscribed });
   } catch (error) {
     logServerError("email", "email policy check failed", { type, storeId }, error);

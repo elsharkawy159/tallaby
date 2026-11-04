@@ -215,6 +215,8 @@
       "governorate": "Governorate",
       "governoratePlaceholder": "Choose your governorate",
       "governorateHint": "We use it to work out your delivery price.",
+      "email": "Email (optional)",
+      "emailHint": "Only for updates about this order.",
       "editAddress": "Edit Address",
       "chooseAddress": "Choose an address",
       "newAddress": "Add a new address",
@@ -231,7 +233,8 @@
         "fullName": "Enter your full name.",
         "phone": "Enter a valid mobile number, like 01012345678.",
         "address": "Enter your full address.",
-        "governorate": "Choose your governorate."
+        "governorate": "Choose your governorate.",
+        "email": "Enter a valid email, or leave it empty."
       }
     },
     "checkout": "Checkout",

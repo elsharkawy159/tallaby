@@ -37,6 +37,8 @@ import { crossSellForCart } from "@workspace/lib/orders/cross-sell/server";
 import type { ShippingAddress } from "@workspace/lib/shipping/store-quote";
 import { getUserWalletSummary } from "@workspace/db/wallet";
 import { getPendingCouponCode } from "@/lib/affiliate-coupon-cookie";
+import { getOrderEmailField } from "@workspace/lib/orders/notification-email/server";
+import { visibleCheckoutFields } from "@workspace/lib/stores/checkout-form";
 
 const cartWithShippingItems = {
   cartItems: {
@@ -304,6 +306,10 @@ export async function getCheckoutData() {
     const storeCheckoutForm = storePayments ? await getStorefrontCheckoutForm() : null;
     // Store websites: the store's minimum order (F-13b); createOrder checks it again.
     const storeMinOrder = storePayments ? await getStorefrontMinOrder() : null;
+    // Store websites on Order notifications: an optional email (F-64), unless the
+    // store's own checkout form already asks for one.
+    const emailField = storePayments && scope ? await getOrderEmailField(userId, scope.storeId) : null;
+    const formAsksEmail = storeCheckoutForm ? visibleCheckoutFields(storeCheckoutForm).some((f) => f.key === "email") : false;
 
     return {
       success: true,
@@ -327,6 +333,7 @@ export async function getCheckoutData() {
           : null,
         storeCheckoutForm,
         storeMinOrder,
+        orderEmail: emailField?.show && !formAsksEmail ? { lastEmail: emailField.lastEmail } : null,
       },
     };
   } catch (error) {

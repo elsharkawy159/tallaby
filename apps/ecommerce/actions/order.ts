@@ -63,6 +63,7 @@ import {
 import { revalidateCartCheckout } from "@/lib/revalidate-cart-checkout";
 import { clearPendingCouponCode } from "@/lib/affiliate-coupon-cookie";
 import { getStorefrontCheckoutForm, getStorefrontMinOrder } from "@/lib/storefront-checkout-form.server";
+import { resolveOrderNotificationEmail } from "@workspace/lib/orders/notification-email/server";
 import { applyCheckoutAnswers } from "@workspace/lib/stores/checkout-form";
 import { isStoreOrderAllowed, recordStoreOrder, storeOrderRateKeys } from "@/lib/order-rate-limit.server";
 import type { OrderRateKeys } from "@/lib/order-rate-limit.lib";
@@ -100,6 +101,8 @@ export async function createOrder(data: {
   variantId?: string;
   /** Store websites (F-25): the extra checkout fields; checked against the store's form. */
   checkoutAnswers?: { email?: string; secondPhone?: string; customAnswer?: string };
+  /** Optional, for this order's updates (F-64). Only kept where the store offers the field. */
+  notificationEmail?: string;
 }) {
   try {
     const userId = await getCurrentUserId();
@@ -146,6 +149,7 @@ export async function createOrder(data: {
     // fields are dropped, required ones enforced, and the answers go into the
     // order notes. Without saved settings the notes pass through unchanged.
     let notes = data.notes;
+    let notificationEmail: string | null = null;
     // Store websites: orders per IP, phone and user (ROADMAP.md F-02e).
     let orderRateKeys: OrderRateKeys | null = null;
     if (storefrontPayments) {
@@ -190,6 +194,18 @@ export async function createOrder(data: {
         }
         notes = checked.notes;
       }
+
+      // The store comes from the host and the user from the session. A store whose
+      // own checkout form asks for an email uses that answer.
+      if (rateScope) {
+        const typed = data.notificationEmail?.trim() || data.checkoutAnswers?.email;
+        const email = await resolveOrderNotificationEmail(userId, rateScope.storeId, typed);
+        if (!email.ok) {
+          const t = await getTranslations("checkout.simpleForm.errors");
+          return { success: false, error: t("email") };
+        }
+        notificationEmail = email.email;
+      }
     }
 
     const result = await placeOrderFromCart({
@@ -205,6 +221,7 @@ export async function createOrder(data: {
       orderSource: storefrontPayments ? "storefront" : "website",
       locale: "en",
       storefrontPayments: storefrontPayments ?? undefined,
+      ...(notificationEmail && { orderMetadata: { notificationEmail } }),
     });
 
     if (!result.success) {

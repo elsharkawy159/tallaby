@@ -22,6 +22,7 @@ import {
 } from "@workspace/ui/components/select";
 import { CHECKOUT_ADDRESS_MAX, savedAddressLine } from "@workspace/lib/shipping/checkout-address";
 import { EGYPT_GOVERNORATES, getGovernorateLabel } from "@workspace/lib/shipping/governorate";
+import { ORDER_EMAIL_MAX } from "@workspace/lib/orders/notification-email";
 import { cn } from "@workspace/ui/lib/utils";
 import type { SavedCheckoutAddress, useCheckoutAddress } from "./use-checkout-address.client";
 
@@ -33,10 +34,13 @@ import type { SavedCheckoutAddress, useCheckoutAddress } from "./use-checkout-ad
 export function SimpleCheckoutForm({
   address,
   saved,
+  email,
   children,
 }: {
   address: ReturnType<typeof useCheckoutAddress>;
   saved: SavedCheckoutAddress[];
+  /** Only on a store subscribed to Order notifications, for a customer with no real email. */
+  email?: { value: string; invalid: boolean; onChange: (value: string) => void } | null;
   children?: ReactNode;
 }) {
   const t = useTranslations("checkout.simpleForm");
@@ -107,6 +111,30 @@ export function SimpleCheckoutForm({
             <Input id="checkout-country" value={t("egypt")} readOnly aria-readonly className="bg-muted/40" />
           </div>
         </div>
+
+        {email && (
+          <div className="grid gap-1.5">
+            <Label htmlFor="checkout-email">{t("email")}</Label>
+            <Input
+              id="checkout-email"
+              type="email"
+              inputMode="email"
+              autoComplete="email"
+              dir="ltr"
+              maxLength={ORDER_EMAIL_MAX}
+              className="text-start rtl:text-end"
+              value={email.value}
+              aria-invalid={email.invalid || undefined}
+              onChange={(e) => email.onChange(e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">{t("emailHint")}</p>
+            {email.invalid && (
+              <p role="alert" className="text-xs text-red-500">
+                {t("errors.email")}
+              </p>
+            )}
+          </div>
+        )}
 
         <div className="grid gap-1.5">
           <Label htmlFor="checkout-address">{t("address")}</Label>

@@ -126,6 +126,14 @@
       "types": "./src/payments/store-gateways.server.ts",
       "default": "./src/payments/store-gateways.server.ts"
     },
+    "./orders/notification-email": {
+      "types": "./src/orders/order-notification-email.lib.ts",
+      "default": "./src/orders/order-notification-email.lib.ts"
+    },
+    "./orders/notification-email/server": {
+      "types": "./src/orders/order-notification-email.server.ts",
+      "default": "./src/orders/order-notification-email.server.ts"
+    },
     "./orders": {
       "types": "./src/orders/index.ts",
       "default": "./src/orders/index.ts"
