@@ -8,7 +8,6 @@ import { getSellerStores } from "@/lib/stores/current-store.server";
 import { EmptyState, HomeCard } from "../_components/home-ui";
 import { ReportsShell } from "./reports.client";
 import { StoreReportData } from "./reports.data";
-import { ReportsTabs } from "./campaigns/campaigns.client";
 import { parseReportRange, pickReportStore } from "./reports.lib";
 
 // Per-seller data read from the session cookie.
@@ -39,10 +38,6 @@ export default async function ReportsPage({
 
   return (
     <ReportsShell stores={stores.map(({ id, name }) => ({ id, name }))} storeId={storeId} range={range}>
-      {/* Overview | Campaigns (ROADMAP.md F-26a). */}
-      <div className="mb-4">
-        <ReportsTabs />
-      </div>
       {storeId ? (
         <Suspense key={`${storeId}:${range}`} fallback={<ReportSkeleton />}>
           <StoreReportData storeId={storeId} range={range} />

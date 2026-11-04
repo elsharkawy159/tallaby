@@ -67,9 +67,10 @@ export async function RecentOrdersData() {
           icon={ShoppingBag}
           title={t("emptyTitle")}
           description={t("emptyDescription")}
+          // No orders means nobody to email yet, so this opens the shareable catalog (F-65a).
           action={
             <Button asChild variant="neutral" size="sm" className="rounded-[9px]">
-              <Link href="/marketing">
+              <Link href="/marketing/catalog">
                 <Megaphone aria-hidden />
                 {t("promote")}
               </Link>

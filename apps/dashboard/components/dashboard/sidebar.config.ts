@@ -2,7 +2,7 @@ import type { LucideIcon } from "lucide-react";
 import {
   AppWindow,
   BarChart3,
-  ChartLine,
+  // ChartLine, // Store views hidden from the sidebar (F-65c)
   CircleUserRound,
   Globe,
   Megaphone,
@@ -145,19 +145,18 @@ export const SIDEBAR_CONFIG: NavEntry[] = [
     icon: Megaphone,
     items: [
       { key: "coupons", href: "/coupons", countKey: "promotions", status: "live" },
-      { key: "campaigns", href: "/marketing", countKey: "marketing", status: "live" },
+      // Paid ads hidden: none are running and this kind of ad will be removed (owner, 2026-11-04, F-65a). The page still opens directly.
+      // { key: "campaigns", href: "/marketing", countKey: "marketing", status: "live" },
       // Newsletter sign-ups from the store's sign-up forms (ROADMAP.md F-16d).
       { key: "subscribers", href: "/marketing/subscribers", status: "live" },
       // Store email campaigns + win-back (ROADMAP.md F-16a, F-16e).
       { key: "emailCampaigns", href: "/marketing/emails", status: "live" },
       // Shareable product catalog link / PDF for WhatsApp (ROADMAP.md F-11c).
       { key: "catalogShare", href: "/marketing/catalog", status: "live" },
-      // UTM link builder + orders per campaign (ROADMAP.md F-26a), a tab of Reports.
-      { key: "campaignTracking", href: "/reports/campaigns", status: "live" },
     ],
   },
-  // Store views from Tallaby's GA4 (SA-01).
-  { kind: "link", key: "storeAnalytics", href: "/stores/[storeId]/analytics", icon: ChartLine, status: "live" },
+  // Store views (SA-01) hidden: its numbers are on the home page, which links to it (owner, 2026-11-04, F-65c).
+  // { kind: "link", key: "storeAnalytics", href: "/stores/[storeId]/analytics", icon: ChartLine, status: "live" },
   { kind: "link", key: "apps", href: "/stores/[storeId]/apps", icon: AppWindow, status: "live" },
   {
     kind: "group",

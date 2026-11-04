@@ -104,7 +104,6 @@ export type NavKey =
   | "subscribers"
   | "emailCampaigns"
   | "catalogShare"
-  | "campaignTracking"
   | "accountHelp"
   | "sellerCategories"
   | "productTrash"
@@ -122,11 +121,14 @@ export interface DashboardRoute {
   parent?: NavKey;
   parentHref?: string;
   icon: LucideIcon;
+  /** Keeps its header title but stays out of the command palette. */
+  hiddenFromPalette?: boolean;
 }
 
 /**
  * Every dashboard page, in sidebar order. Used by the command palette and the
  * header title; the sidebar config test checks every sidebar link is here.
+ * /marketing and Store views have no sidebar link but keep their header title.
  */
 export const DASHBOARD_ROUTES: DashboardRoute[] = [
   { href: "/", title: "dashboard", icon: BarChart3 },
@@ -162,11 +164,11 @@ export const DASHBOARD_ROUTES: DashboardRoute[] = [
   { href: "/stores/[storeId]/website/forms", title: "forms", parent: "websiteContent", icon: ClipboardList },
   { href: "/stores/[storeId]/website/media", title: "mediaLibrary", parent: "websiteContent", icon: Images },
   { href: "/coupons", title: "coupons", parent: "marketing", icon: Gift },
-  { href: "/marketing", title: "campaigns", parent: "marketing", icon: TrendingUp },
+  // Paid ads: reachable only by its URL for now (owner, 2026-11-04, F-65a).
+  { href: "/marketing", title: "campaigns", parent: "marketing", icon: TrendingUp, hiddenFromPalette: true },
   { href: "/marketing/subscribers", title: "subscribers", parent: "marketing", icon: MailCheck },
   { href: "/marketing/emails", title: "emailCampaigns", parent: "marketing", icon: Mail },
   { href: "/marketing/catalog", title: "catalogShare", parent: "marketing", icon: Share2 },
-  { href: "/reports/campaigns", title: "campaignTracking", parent: "marketing", icon: TrendingUp },
   { href: "/stores/[storeId]/analytics", title: "storeAnalytics", icon: ChartLine },
   { href: "/stores/[storeId]/apps", title: "apps", icon: AppWindow },
   { href: "/stores/[storeId]/settings", title: "general", parent: "settingsGroup", icon: Store },
@@ -203,6 +205,11 @@ function routeRegex(href: string, prefix: boolean): RegExp {
 
 /** True for store-scoped route patterns such as `/stores/[storeId]/settings`. */
 export const isStoreScopedHref = (href: string) => href.includes("[storeId]");
+
+/** The pages the command palette lists. */
+export const COMMAND_PALETTE_ROUTES = DASHBOARD_ROUTES.filter(
+  (route) => !isStoreScopedHref(route.href) && !route.hiddenFromPalette,
+);
 
 /** Resolve the header title for a pathname; falls back to the closest section. */
 export function resolveDashboardRoute(pathname: string): DashboardRoute {

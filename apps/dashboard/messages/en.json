@@ -185,7 +185,6 @@
     "campaigns": "Marketing campaigns",
     "subscribers": "Newsletter subscribers",
     "emailCampaigns": "Email campaigns",
-    "campaignTracking": "Campaign tracking",
     "accountHelp": "Account & help",
     "sellerCategories": "Categories",
     "sellerBrands": "Brands",
@@ -280,77 +279,6 @@
     "usesValue": "Uses: {uses} / {limit}",
     "expiresValue": "Expires: {date}",
     "usage": "Usage"
-  },
-  "campaignReport": {
-    "currency": "EGP",
-    "tabs": {
-      "label": "Report sections",
-      "overview": "Overview",
-      "campaigns": "Campaigns"
-    },
-    "builder": {
-      "title": "Make a campaign link",
-      "description": "Put this link in your ad or send it to an influencer, and see where every order came from.",
-      "preset": "Platform",
-      "presets": {
-        "facebook": "Facebook",
-        "instagram": "Instagram",
-        "tiktok": "TikTok",
-        "whatsapp": "WhatsApp",
-        "influencer": "Influencer"
-      },
-      "page": "Link opens",
-      "storeHome": "Store home page",
-      "source": "Source (utm_source)",
-      "influencerName": "Influencer name",
-      "influencerPlaceholder": "e.g. sara_style",
-      "medium": "Medium (utm_medium)",
-      "campaign": "Campaign name (utm_campaign)",
-      "campaignPlaceholder": "e.g. eid-sale",
-      "content": "Ad name (optional)",
-      "contentPlaceholder": "e.g. video-1",
-      "result": "Campaign link",
-      "copy": "Copy link",
-      "copied": "Link copied",
-      "errors": {
-        "missingSource": "Enter a source first",
-        "missingInfluencer": "Enter the influencer's name first",
-        "missingCampaign": "Enter a campaign name to get the link",
-        "invalidUrl": "This link isn't valid"
-      }
-    },
-    "kpi": {
-      "orders": "Orders from campaigns",
-      "delivered": "Delivered",
-      "revenue": "Campaign sales",
-      "trackedShare": "Tracked orders"
-    },
-    "table": {
-      "title": "Orders by source and campaign",
-      "description": "Store website orders only, by where the customer first came from.",
-      "source": "Source / campaign",
-      "orders": "Orders",
-      "delivered": "Delivered",
-      "deliveryRate": "Delivery rate",
-      "revenue": "Sales",
-      "noCampaign": "No campaign name",
-      "emptyTitle": "No orders in this period",
-      "emptyDescription": "Make a campaign link above and put it in your ad; orders will show up here.",
-      "note": "We keep where the customer first came from for 30 days on the same device. Orders from before this feature or direct visits show as \"Direct\". Sales leave out cancelled and returned orders."
-    },
-    "sources": {
-      "facebook": "Facebook",
-      "instagram": "Instagram",
-      "tiktok": "TikTok",
-      "whatsapp": "WhatsApp",
-      "google": "Google",
-      "youtube": "YouTube",
-      "snapchat": "Snapchat",
-      "x": "X (Twitter)",
-      "telegram": "Telegram",
-      "bing": "Bing",
-      "direct": "Direct / not tracked"
-    }
   },
   "reports": {
     "title": "Reports & Analytics",

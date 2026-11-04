@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import ar from "../../messages/ar.json";
 import en from "../../messages/en.json";
-import { DASHBOARD_ROUTES, resolveDashboardRoute } from "../layout/dashboard-routes.lib";
+import { COMMAND_PALETTE_ROUTES, DASHBOARD_ROUTES, resolveDashboardRoute } from "../layout/dashboard-routes.lib";
 import {
   SIDEBAR_CONFIG,
   findActiveHref,
@@ -56,15 +56,15 @@ describe("SIDEBAR_CONFIG", () => {
 
   it("keeps every existing page reachable", () => {
     const hrefs = allLinks(resolveSidebar(SIDEBAR_CONFIG, { storeId: STORE, features: {} })).map((l) => l.href);
-    for (const href of ["/", "/orders", "/orders/delivery", "/orders/riders", "/products", "/products/add", "/products/categories", "/reviews", "/coupons", "/marketing", "/wallet", "/financial", "/stores", "/settings", "/settings/plan", "/help"]) {
+    for (const href of ["/", "/orders", "/orders/delivery", "/orders/riders", "/products", "/products/add", "/products/categories", "/reviews", "/coupons", "/marketing/subscribers", "/marketing/emails", "/marketing/catalog", "/wallet", "/financial", "/stores", "/settings", "/settings/plan", "/help"]) {
       expect(hrefs, href).toContain(href);
     }
   });
 
   it("puts every store-scoped page in the sidebar once a store exists", () => {
     const linked = new Set(allLinks(SIDEBAR_CONFIG).map((l) => l.href));
-    // /reports is hidden from the sidebar until the page has content.
-    const hidden = new Set(["/reports"]);
+    // Hidden from the sidebar, still open by URL (F-65a, F-65c).
+    const hidden = new Set(["/marketing", "/stores/[storeId]/analytics"]);
     for (const route of DASHBOARD_ROUTES) {
       if (hidden.has(route.href)) continue;
       expect(linked.has(route.href), route.href).toBe(true);
@@ -86,7 +86,6 @@ describe("SIDEBAR_CONFIG", () => {
       "|",
       "websiteContent",
       "marketing",
-      "storeAnalytics",
       "apps",
       "settingsGroup",
       "|",
@@ -130,6 +129,51 @@ describe("SIDEBAR_CONFIG", () => {
         expect(route?.parent, item.href).toBe(group.key);
       }
     }
+  });
+});
+
+describe("hidden campaign and store views pages (F-65)", () => {
+  const hrefs = allLinks(resolveSidebar(SIDEBAR_CONFIG, { storeId: STORE, features: { storeBuilder: true } })).map(
+    (l) => l.href,
+  );
+
+  it("leaves the sidebar without paid ads, campaign tracking or store views", () => {
+    expect(hrefs).not.toContain("/marketing");
+    expect(hrefs).not.toContain("/reports/campaigns");
+    expect(hrefs).not.toContain(`/stores/${STORE}/analytics`);
+  });
+
+  it("keeps the Marketing group, opening on a page that is still listed", () => {
+    const group = SIDEBAR_CONFIG.find((e) => e.kind === "group" && e.key === "marketing");
+    expect(group?.kind === "group" && group.items.map((i) => i.href)).toEqual([
+      "/coupons",
+      "/marketing/subscribers",
+      "/marketing/emails",
+      "/marketing/catalog",
+    ]);
+  });
+
+  it("keeps the header title of the hidden pages", () => {
+    expect(resolveDashboardRoute("/marketing").title).toBe("campaigns");
+    expect(resolveDashboardRoute(`/stores/${STORE}/analytics`).title).toBe("storeAnalytics");
+  });
+
+  it("removes campaign tracking from the routes", () => {
+    expect(DASHBOARD_ROUTES.some((r) => r.href === "/reports/campaigns")).toBe(false);
+    expect(resolveDashboardRoute("/reports").title).toBe("reports");
+  });
+
+  it("keeps paid ads out of the command palette, and the rest of Marketing in it", () => {
+    const palette = COMMAND_PALETTE_ROUTES.map((r) => r.href);
+    expect(palette).not.toContain("/marketing");
+    expect(palette).toContain("/marketing/emails");
+  });
+
+  it("has no active sidebar link on the hidden pages, and the right one in the group", () => {
+    const entries = resolveSidebar(SIDEBAR_CONFIG, { storeId: STORE, features: { storeBuilder: true } });
+    expect(findActiveHref(entries, "/marketing")).toBeNull();
+    expect(findActiveHref(entries, `/stores/${STORE}/analytics`)).toBeNull();
+    expect(findActiveHref(entries, "/marketing/emails")).toBe("/marketing/emails");
   });
 });
 

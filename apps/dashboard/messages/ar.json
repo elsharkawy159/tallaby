@@ -185,7 +185,6 @@
     "campaigns": "الحملات التسويقية",
     "subscribers": "المشتركين في النشرة",
     "emailCampaigns": "حملات الإيميل",
-    "campaignTracking": "تتبع الحملات",
     "accountHelp": "الحساب والمساعدة",
     "sellerCategories": "الفئات",
     "sellerBrands": "الماركات",
@@ -280,77 +279,6 @@
     "usesValue": "مرات الاستخدام: {uses} / {limit}",
     "expiresValue": "ينتهي في: {date}",
     "usage": "الاستخدام"
-  },
-  "campaignReport": {
-    "currency": "ج.م",
-    "tabs": {
-      "label": "أقسام التقارير",
-      "overview": "نظرة عامة",
-      "campaigns": "الحملات"
-    },
-    "builder": {
-      "title": "اعمل لينك لحملتك",
-      "description": "حط اللينك ده في إعلانك أو ابعته للإنفلونسر، وهتعرف كل طلب جه منين.",
-      "preset": "المنصة",
-      "presets": {
-        "facebook": "فيسبوك",
-        "instagram": "إنستجرام",
-        "tiktok": "تيك توك",
-        "whatsapp": "واتساب",
-        "influencer": "إنفلونسر"
-      },
-      "page": "اللينك يفتح على",
-      "storeHome": "الصفحة الرئيسية للمتجر",
-      "source": "المصدر (utm_source)",
-      "influencerName": "اسم الإنفلونسر",
-      "influencerPlaceholder": "مثلاً sara_style",
-      "medium": "النوع (utm_medium)",
-      "campaign": "اسم الحملة (utm_campaign)",
-      "campaignPlaceholder": "مثلاً عرض-العيد",
-      "content": "اسم الإعلان (اختياري)",
-      "contentPlaceholder": "مثلاً فيديو-1",
-      "result": "لينك الحملة",
-      "copy": "انسخ اللينك",
-      "copied": "اتنسخ اللينك",
-      "errors": {
-        "missingSource": "اكتب المصدر الأول",
-        "missingInfluencer": "اكتب اسم الإنفلونسر الأول",
-        "missingCampaign": "اكتب اسم الحملة عشان يطلعلك اللينك",
-        "invalidUrl": "اللينك مش صحيح"
-      }
-    },
-    "kpi": {
-      "orders": "طلبات من الحملات",
-      "delivered": "اتسلمت",
-      "revenue": "مبيعات الحملات",
-      "trackedShare": "نسبة الطلبات المتتبعة"
-    },
-    "table": {
-      "title": "الطلبات حسب المصدر والحملة",
-      "description": "طلبات موقع المتجر بس، حسب أول مكان جه منه العميل.",
-      "source": "المصدر / الحملة",
-      "orders": "الطلبات",
-      "delivered": "اتسلمت",
-      "deliveryRate": "نسبة التسليم",
-      "revenue": "المبيعات",
-      "noCampaign": "من غير اسم حملة",
-      "emptyTitle": "مفيش طلبات في الفترة دي",
-      "emptyDescription": "اعمل لينك لحملتك من فوق وحطه في إعلانك، والطلبات هتظهر هنا.",
-      "note": "بنحفظ أول مصدر جه منه العميل لمدة 30 يوم على نفس الجهاز. الطلبات اللي قبل الميزة دي أو اللي جت مباشرة بتظهر في «مباشر». المبيعات من غير الطلبات الملغية والمرتجعة."
-    },
-    "sources": {
-      "facebook": "فيسبوك",
-      "instagram": "إنستجرام",
-      "tiktok": "تيك توك",
-      "whatsapp": "واتساب",
-      "google": "جوجل",
-      "youtube": "يوتيوب",
-      "snapchat": "سناب شات",
-      "x": "إكس (تويتر)",
-      "telegram": "تيليجرام",
-      "bing": "بينج",
-      "direct": "مباشر / من غير تتبع"
-    }
   },
   "reports": {
     "title": "التقارير والتحليلات",

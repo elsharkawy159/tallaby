@@ -1,7 +1,8 @@
 /**
  * Campaign tracking (ROADMAP.md F-26a). Pure helpers shared by the storefront
  * (first-touch capture into a host-only cookie), checkout (copy it onto the
- * order as `orders.metadata.utm`) and the dashboard (link builder, report).
+ * order as `orders.metadata.utm`). The dashboard's report and link builder were
+ * removed (F-65b); the data keeps being stored.
  *
  * The value comes from the shopper's browser, so it is only ever used for
  * reporting: every field is re-sanitized when read, length-capped, and never
@@ -15,7 +16,6 @@ export const CAMPAIGN_COOKIE_MAX_AGE_SECONDS = 30 * 24 * 60 * 60;
 export const CAMPAIGN_COOKIE_MAX_LENGTH = 1500;
 
 export const UTM_FIELDS = ["source", "medium", "campaign", "content", "term"] as const;
-export type UtmField = (typeof UTM_FIELDS)[number];
 
 /** Ad click ids we record as present or not (never their value). */
 export const CLICK_ID_PARAMS = ["fbclid", "ttclid", "gclid"] as const;
@@ -40,9 +40,6 @@ export type CampaignTouch = {
   /** When it was captured (ISO). */
   at?: string;
 };
-
-/** Orders without any touch (direct visits, or placed before F-26a). */
-export const DIRECT_SOURCE = "direct";
 
 /* ---------------------------------------------------------------- sanitizing */
 
@@ -101,8 +98,8 @@ export function hasCampaignSignal(touch: CampaignTouch | null | undefined): touc
 
 /**
  * Rebuilds a touch from untrusted input (a decoded cookie), keeping only
- * known keys with safe values. Source and medium are lower-cased so the
- * report groups `Facebook` and `facebook` together.
+ * known keys with safe values. Source and medium are lower-cased, so
+ * `Facebook` and `facebook` are stored the same.
  */
 export function sanitizeCampaignTouch(input: unknown): CampaignTouch | null {
   if (!input || typeof input !== "object" || Array.isArray(input)) return null;
@@ -190,143 +187,4 @@ export function decodeCampaignCookie(value: string | null | undefined): Campaign
   } catch {
     return null;
   }
-}
-
-/* --------------------------------------------------------------- attribution */
-
-/** Common spellings of a source → one name. */
-const SOURCE_ALIASES: Record<string, string> = {
-  fb: "facebook",
-  "facebook.com": "facebook",
-  meta: "facebook",
-  ig: "instagram",
-  insta: "instagram",
-  "instagram.com": "instagram",
-  tt: "tiktok",
-  "tik tok": "tiktok",
-  "tiktok.com": "tiktok",
-  wa: "whatsapp",
-  "whats app": "whatsapp",
-  "whatsapp.com": "whatsapp",
-  "google.com": "google",
-  yt: "youtube",
-  "youtube.com": "youtube",
-  snap: "snapchat",
-  twitter: "x",
-};
-
-/** Referrer hosts (and their subdomains) that mean a known source. */
-const REFERRER_SOURCES: [suffix: string, source: string][] = [
-  ["facebook.com", "facebook"],
-  ["fb.com", "facebook"],
-  ["fb.me", "facebook"],
-  ["messenger.com", "facebook"],
-  ["instagram.com", "instagram"],
-  ["tiktok.com", "tiktok"],
-  ["whatsapp.com", "whatsapp"],
-  ["wa.me", "whatsapp"],
-  ["youtube.com", "youtube"],
-  ["youtu.be", "youtube"],
-  ["snapchat.com", "snapchat"],
-  ["x.com", "x"],
-  ["t.co", "x"],
-  ["twitter.com", "x"],
-  ["bing.com", "bing"],
-  ["telegram.org", "telegram"],
-  ["t.me", "telegram"],
-];
-
-const CLICK_ID_SOURCES: Record<ClickIdParam, string> = {
-  fbclid: "facebook",
-  ttclid: "tiktok",
-  gclid: "google",
-};
-
-function sourceFromHost(host: string): string {
-  if (/(^|\.)google\.[a-z.]+$/.test(host)) return "google";
-  for (const [suffix, source] of REFERRER_SOURCES) {
-    if (host === suffix || host.endsWith(`.${suffix}`)) return source;
-  }
-  return host;
-}
-
-/**
- * Where an order came from for the report: utm_source (aliases merged), else
- * the ad click id, else the referrer site, else "direct".
- */
-export function campaignSource(touch: CampaignTouch | null | undefined): string {
-  if (!touch) return DIRECT_SOURCE;
-  if (touch.source) {
-    const key = touch.source.toLowerCase();
-    return SOURCE_ALIASES[key] ?? sourceFromHost(key);
-  }
-  const clickId = touch.clickIds?.[0];
-  if (clickId) return CLICK_ID_SOURCES[clickId];
-  if (touch.referrerHost) return sourceFromHost(touch.referrerHost);
-  return DIRECT_SOURCE;
-}
-
-/* ------------------------------------------------------------- link builder */
-
-export const CAMPAIGN_PRESETS = {
-  facebook: { source: "facebook", medium: "paid_social" },
-  instagram: { source: "instagram", medium: "paid_social" },
-  tiktok: { source: "tiktok", medium: "paid_social" },
-  whatsapp: { source: "whatsapp", medium: "chat" },
-  influencer: { source: "", medium: "influencer" },
-} as const;
-export type CampaignPreset = keyof typeof CAMPAIGN_PRESETS;
-export const CAMPAIGN_PRESET_KEYS = Object.keys(CAMPAIGN_PRESETS) as CampaignPreset[];
-
-/** `Eid Sale 2026!` → `eid-sale-2026` (Arabic letters kept). */
-export function slugifyCampaignValue(value: string): string {
-  return (sanitizeCampaignValue(value) ?? "")
-    .toLowerCase()
-    .replace(/[\s/|#~()+:@]+/g, "-")
-    .replace(/-{2,}/g, "-")
-    .replace(/^[-.]+|[-.]+$/g, "");
-}
-
-export type CampaignLinkInput = {
-  source: string;
-  medium?: string;
-  campaign: string;
-  content?: string;
-  term?: string;
-};
-
-export type CampaignLinkResult =
-  | { ok: true; url: string }
-  | { ok: false; error: "invalidUrl" | "missingSource" | "missingCampaign" };
-
-/**
- * The page URL with utm_* parameters (old utm_* replaced, other parameters
- * kept). Values are slugified, so what the report shows matches the link.
- */
-export function buildCampaignUrl(base: string, input: CampaignLinkInput): CampaignLinkResult {
-  let url: URL;
-  try {
-    url = new URL(base.trim());
-  } catch {
-    return { ok: false, error: "invalidUrl" };
-  }
-  if (url.protocol !== "https:" && url.protocol !== "http:") return { ok: false, error: "invalidUrl" };
-  const source = slugifyCampaignValue(input.source);
-  if (!source) return { ok: false, error: "missingSource" };
-  const campaign = slugifyCampaignValue(input.campaign);
-  if (!campaign) return { ok: false, error: "missingCampaign" };
-
-  for (const field of UTM_FIELDS) url.searchParams.delete(`utm_${field}`);
-  const values: Record<UtmField, string> = {
-    source,
-    medium: slugifyCampaignValue(input.medium ?? ""),
-    campaign,
-    content: slugifyCampaignValue(input.content ?? ""),
-    term: slugifyCampaignValue(input.term ?? ""),
-  };
-  for (const field of UTM_FIELDS) {
-    if (values[field]) url.searchParams.set(`utm_${field}`, values[field]);
-  }
-  url.hash = "";
-  return { ok: true, url: url.toString() };
 }

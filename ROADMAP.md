@@ -533,7 +533,7 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 ### F-26 Campaign tracking (UTM links) — P2
 
 **What:** A link builder for ads and influencers (`utm_source/medium/campaign`), store the first-touch UTM on the order, and show orders and revenue per campaign.
-**Status:** [Live] F-26a built 2026-10-30 (no migration): first-touch UTM cookie on the store host, stored in `orders.metadata.utm` (not a new column), Reports › Campaigns link builder and report.
+**Status:** [Live] F-26a built 2026-10-30 (no migration): first-touch UTM cookie on the store host, stored in `orders.metadata.utm` (not a new column), Reports › Campaigns link builder and report. **Page removed 2026-11-04 (F-65b):** orders still save the UTM, but no page shows it.
 
 - **F-26a · P2 · deps: —** Additive order column (`utm jsonb`), capture on the storefront, link builder page, report by campaign.
 
@@ -1004,7 +1004,7 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 ### F-65 Hide campaign pages and store visits link — P1 · owner request
 
-**Status:** [Planned]
+**Status:** [Built, not deployed] 2026-11-04 (§7). Not seen in a browser.
 
 - **F-65a · P1 · deps: —** Hide "الحملات التسويقية" (`/marketing`, where sellers buy paid ads from the wallet: `advertise.data`, `actions/ads.ts`) from the dashboard for now. **Owner, 2026-11-04:** there are no running or pending ads, this kind of ad will be removed, and media buyers will help sellers create ads later. The code and Admin › Ad requests stay until then. It is the parent of Marketing's other pages, so choose where Marketing lands, and check nothing else links to it.
 - **F-65b · P1 · deps: —** Remove "تتبع الحملات" (`/reports/campaigns`). Check other pages and links that lead to it.
@@ -1331,9 +1331,9 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-64d Save details and fill in automatically (2026-11-04)
 - [x] F-64e Default address and Edit Address (2026-11-04; not seen in a browser)
 - [x] F-64f Change item counts on checkout (2026-11-04; not seen in a browser)
-- [ ] F-65a Hide الحملات التسويقية (paid ads to be removed later; media buyers planned)
-- [ ] F-65b Remove تتبع الحملات
-- [ ] F-65c Hide زيارات المتجر from the sidebar
+- [x] F-65a Hide الحملات التسويقية (paid ads to be removed later; media buyers planned) (2026-11-04; not seen in a browser)
+- [x] F-65b Remove تتبع الحملات (2026-11-04; not seen in a browser)
+- [x] F-65c Hide زيارات المتجر from the sidebar (2026-11-04; not seen in a browser)
 - [ ] F-66a Email preview while editing
 - [ ] F-66b Easier emails page
 - [ ] F-67a Pending carts on the seller dashboard
@@ -1343,6 +1343,16 @@ Add each new request here first, with the date and the owner's words, then turn 
 ---
 
 ## 7. Log
+
+### 2026-11-04 — F-65 Campaign pages and store views link (owner)
+
+- **Paid ads (F-65a):** "الحملات التسويقية" is gone from the sidebar and the search palette. `/marketing` still opens by its URL, and its code and Admin › Ad requests stay.
+- **Where Marketing lands:** the group has no page of its own, and in the collapsed sidebar its icon opens the first link, Coupons, as it did before. The header's Marketing label was never a link.
+- **Home page:** the "Promote your products" button on the empty orders card pointed at `/marketing`. It now opens Share catalog, because a seller with no orders has nobody to email yet. It was the only link to `/marketing`.
+- **Campaign tracking (F-65b):** the `/reports/campaigns` page, its link builder and report, the Overview | Campaigns tabs on Reports, their strings, and the UTM helpers only they used are removed. The old address now shows not found. The store website keeps saving where each order came from in `orders.metadata.utm`, so nothing is lost, but no page shows it now.
+- **Store views (F-65c):** "زيارات المتجر" is gone from the sidebar only. The page and the home and Reports links to it still work.
+- **Left for the owner:** the public `/roadmap` card for campaign tracking links (seeded in `0115`) can be changed in Admin › Seller roadmap, and the video topic in `TALLABY_VIDEO_TOPICS.md` that shows Reports › Campaigns should not be used.
+- **Checks:** no migration. Not seen in a browser.
 
 ### 2026-11-04 — F-64 Optional email and variant stock (owner)
 

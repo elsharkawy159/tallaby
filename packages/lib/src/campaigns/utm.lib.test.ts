@@ -1,9 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
   CAMPAIGN_COOKIE_MAX_LENGTH,
-  DIRECT_SOURCE,
-  buildCampaignUrl,
-  campaignSource,
   decodeCampaignCookie,
   encodeCampaignCookie,
   parseCampaignTouch,
@@ -11,7 +8,6 @@ import {
   sanitizeCampaignValue,
   sanitizeHost,
   sanitizePath,
-  slugifyCampaignValue,
 } from "./utm.lib";
 
 const NOW = new Date("2026-10-30T10:00:00.000Z");
@@ -108,53 +104,5 @@ describe("cookie round trip", () => {
   });
   it("sanitizeCampaignTouch needs a signal", () => {
     expect(sanitizeCampaignTouch({ landingPath: "/", at: NOW.toISOString() })).toBeNull();
-  });
-});
-
-describe("campaignSource", () => {
-  it("uses utm_source with aliases merged", () => {
-    expect(campaignSource({ source: "fb" })).toBe("facebook");
-    expect(campaignSource({ source: "ig" })).toBe("instagram");
-    expect(campaignSource({ source: "m.facebook.com" })).toBe("facebook");
-    expect(campaignSource({ source: "sara_influencer" })).toBe("sara_influencer");
-  });
-  it("falls back to click ids, then the referrer", () => {
-    expect(campaignSource({ clickIds: ["ttclid"] })).toBe("tiktok");
-    expect(campaignSource({ referrerHost: "l.instagram.com" })).toBe("instagram");
-    expect(campaignSource({ referrerHost: "google.com.eg" })).toBe("google");
-    expect(campaignSource({ referrerHost: "wa.me" })).toBe("whatsapp");
-    expect(campaignSource({ referrerHost: "blog.example.com" })).toBe("blog.example.com");
-  });
-  it("no touch is direct", () => {
-    expect(campaignSource(null)).toBe(DIRECT_SOURCE);
-    expect(campaignSource({})).toBe(DIRECT_SOURCE);
-  });
-});
-
-describe("buildCampaignUrl", () => {
-  it("adds slugified utm params and keeps other params", () => {
-    const result = buildCampaignUrl("https://shop.tallaby.com/products/shoe?color=red&utm_source=old#x", {
-      source: "Facebook",
-      medium: "paid_social",
-      campaign: "Eid Sale 2026!",
-      content: "Video 1",
-    });
-    expect(result).toEqual({
-      ok: true,
-      url: "https://shop.tallaby.com/products/shoe?color=red&utm_source=facebook&utm_medium=paid_social&utm_campaign=eid-sale-2026&utm_content=video-1",
-    });
-  });
-  it("keeps Arabic campaign names", () => {
-    const result = buildCampaignUrl("https://shop.tallaby.com", { source: "whatsapp", campaign: "عرض العيد" });
-    expect(result.ok && new URL(result.url).searchParams.get("utm_campaign")).toBe("عرض-العيد");
-  });
-  it("validates input", () => {
-    expect(buildCampaignUrl("javascript:alert(1)", { source: "a", campaign: "b" })).toEqual({ ok: false, error: "invalidUrl" });
-    expect(buildCampaignUrl("not a url", { source: "a", campaign: "b" })).toEqual({ ok: false, error: "invalidUrl" });
-    expect(buildCampaignUrl("https://a.com", { source: " ", campaign: "b" })).toEqual({ ok: false, error: "missingSource" });
-    expect(buildCampaignUrl("https://a.com", { source: "a", campaign: "!!" })).toEqual({ ok: false, error: "missingCampaign" });
-  });
-  it("slugifies", () => {
-    expect(slugifyCampaignValue("  Black Friday / 50% ")).toBe("black-friday-50");
   });
 });
