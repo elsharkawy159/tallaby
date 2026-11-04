@@ -36,8 +36,8 @@ For anyone building a page in `apps/ecommerce/app/[locale]/(marketing)`. The des
 ## Facts: check the code before keeping a claim
 
 - Tallaby doesn't deliver. Sellers use their own riders or a shipping company.
-- **Live:** Bosta; Wassalha as an upload sheet export (never "send directly"); cash on delivery; the seller's own Paymob and Kashier gateways; Meta Pixel and Conversions API; GA4; GTM; TikTok and Snapchat pixels; Google Sheets; Shopify import; product feeds.
-- **Never present as live:** SMS, automated WhatsApp messages unless the code proves them, Aramex, J&T, Mylerz, PayPal, Tallaby Pay, digital products, AI assistants' deeper tools, international selling. The AI Store Builder is off behind a flag. Paid ads are being removed.
+- **Live:** Bosta; Wassalha as an upload sheet export (never "send directly"); cash on delivery; the seller's own Paymob and Kashier gateways; Meta Pixel and Conversions API; GA4; GTM; Google Sheets; Shopify import; product feeds.
+- **Never present as live:** TikTok and Snapchat pixels (`availability: "soon"` in `packages/lib/src/integrations/registry.ts`), SMS, automated WhatsApp messages unless the code proves them, Aramex, J&T, Mylerz, PayPal, Tallaby Pay, digital products, AI assistants' deeper tools, international selling. The AI Store Builder is off behind a flag. Paid ads are being removed.
 - **Prices:** Free is $0.03 per order, 100 AI credits and 500 campaign emails a month. Pro is $29 a month, no order fee, 2,000 credits and 10,000 emails. Extra emails are $1.50 per 1,000, and 100 AI credits cost $1. Top-ups are $5 to $1,000, paid in EGP.
 - **Say plainly wherever pricing or "free" comes up:** a seller needs a first $5 top-up before seeing orders and sending campaigns, and customer order emails need the Order Notifications app at 1 cent per order.
 - Don't sell on store counts or other limits without checking `packages/lib/src/plans`. Check `ROADMAP.md` for anything else.

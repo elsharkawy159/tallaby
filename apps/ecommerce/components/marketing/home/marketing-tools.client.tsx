@@ -295,7 +295,7 @@ function PixelPane({ running }: { running: boolean }) {
     <>
       <PaneHead title={t("title")} badge={t("badge")} />
       <div className="grid gap-2 min-[641px]:grid-cols-2">
-        {["Meta Pixel + CAPI", "TikTok Pixel", "Snapchat Pixel", "Google Analytics 4"].map((name) => (
+        {["Meta Pixel", "Conversions API", "Google Analytics 4", "Google Tag Manager"].map((name) => (
           <div key={name} className="flex items-center gap-2 rounded-xl border border-[#edf1f2] p-2.5">
             <b dir="ltr" className="flex-1 text-start font-latin text-[12.5px] whitespace-nowrap text-[#26393e]">{name}</b>
             <span className="rounded-full bg-[#e5f6ea] px-2 py-px text-[11px] font-bold text-[#15803d]">{t("connected")}</span>

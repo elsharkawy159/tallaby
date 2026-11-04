@@ -51,7 +51,7 @@
       "importTitle": "Bring your products in minutes",
       "importBody": "From Excel, from a product link, or straight from Shopify.",
       "adsTitle": "Ads that measure right",
-      "adsBody": "Meta Pixel and Conversions API, TikTok, Snapchat and GA4, plus product feeds for Meta and Google catalogs."
+      "adsBody": "Meta Pixel and Conversions API, GA4 and GTM, plus product feeds for Meta and Google catalogs."
     },
     "ai": {
       "kicker": "Tallaby AI",
@@ -87,7 +87,7 @@
         "whatsapp": { "title": "WhatsApp follow-up", "body": "A ready message, one click from your orders" },
         "carts": { "title": "Unfinished orders", "body": "Reach the customer before the order is lost" },
         "coupon": { "title": "Discount codes", "body": "Percentage or fixed-amount offers" },
-        "pixel": { "title": "Pixels and tracking", "body": "Meta, TikTok, Snapchat and GA4" }
+        "pixel": { "title": "Pixels and tracking", "body": "Meta, GA4 and GTM" }
       },
       "extras": {
         "popups": "Live sales pop-ups",
@@ -149,7 +149,7 @@
         "title": "Tracking and ads",
         "badge": "4 connected",
         "connected": "Connected",
-        "sent": "sent to 4 platforms"
+        "sent": "sent to 4 tools"
       }
     },
     "shipping": {

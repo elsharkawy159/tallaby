@@ -51,7 +51,7 @@
       "importTitle": "انقل منتجاتك في دقائق",
       "importBody": "من ملف Excel، أو من رابط منتج، أو مباشرةً من Shopify.",
       "adsTitle": "قياس دقيق لأداء إعلاناتك",
-      "adsBody": "Meta Pixel وConversions API وTikTok وSnapchat وGA4، إضافةً إلى كتالوج منتجات جاهز لـMeta وGoogle."
+      "adsBody": "Meta Pixel وConversions API وGA4 وGTM، إضافةً إلى كتالوج منتجات جاهز لـMeta وGoogle."
     },
     "ai": {
       "kicker": "طلبي AI",
@@ -87,7 +87,7 @@
         "whatsapp": { "title": "متابعة عبر واتساب", "body": "رسالة جاهزة بنقرة من صفحة الطلبات" },
         "carts": { "title": "الطلبات غير المكتملة", "body": "تواصل مع العميل قبل أن تخسر الطلب" },
         "coupon": { "title": "أكواد الخصم", "body": "عروض بنسبة أو مبلغ ثابت" },
-        "pixel": { "title": "البكسل والتتبع", "body": "Meta وTikTok وSnapchat وGA4" }
+        "pixel": { "title": "البكسل والتتبع", "body": "Meta وGA4 وGTM" }
       },
       "extras": {
         "popups": "نافذة المبيعات الحية",
@@ -149,7 +149,7 @@
         "title": "التتبع والإعلانات",
         "badge": "4 متصلة",
         "connected": "متصل",
-        "sent": "أُرسل إلى 4 منصات"
+        "sent": "أُرسل إلى 4 أدوات"
       }
     },
     "shipping": {
