@@ -8,17 +8,17 @@ const VendorRecruitment = () => {
       icon: TrendingUp,
       title: "Grow Your Business",
       description:
-        "Reach millions of customers and expand your market presence",
+        "Create your own online store and sell under your own name",
     },
     {
       icon: Users,
-      title: "Large Customer Base",
-      description: "Access to our growing community of active shoppers",
+      title: "Your Own Customers",
+      description: "Your customers buy from your store, under your brand",
     },
     {
       icon: DollarSign,
-      title: "Competitive Fees",
-      description: "Low commission rates and transparent pricing structure",
+      title: "Clear Pricing",
+      description: "No commission on your sales",
     },
   ];
 
@@ -31,8 +31,8 @@ const VendorRecruitment = () => {
             <span className="text-yellow-300">Grow Together</span>
           </h2>
           <p className="text-base sm:text-lg lg:text-xl text-white/90 max-w-3xl mx-auto">
-            Join thousands of successful vendors on our platform and take your
-            business to the next level
+            Create your own online store and take your business to the next
+            level
           </p>
         </div>
 
@@ -61,7 +61,7 @@ const VendorRecruitment = () => {
               size="lg"
               className="bg-white text-gray-900 hover:bg-white/90 font-semibold px-8 sm:px-12 py-3 sm:py-4 text-base sm:text-lg rounded-full shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all"
             >
-              Become a Partner
+              Create your store
             </Button>
           </Link>
         </div>

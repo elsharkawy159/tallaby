@@ -61,7 +61,7 @@ const fallbackLabels: Record<string, string> = {
   register: "Register",
   "reset-password": "Reset Password",
   unauthorized: "Unauthorized",
-  sell: "Sell on Tallaby",
+  sell: "Create your store",
 };
 
 function formatLabel(

@@ -1,11 +1,10 @@
-import { BadgeCheck } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { loadTopCategories } from "@/lib/top-categories";
 import { AllCategoriesMenu } from "./category-nav.client";
 
 // White second row of the desktop header: the all-categories menu, the
-// busiest categories as quick links, and the verified-sellers note.
+// busiest categories as quick links.
 export async function CategoryNav() {
   const locale = await getLocale();
   const [t, categories] = await Promise.all([
@@ -35,11 +34,6 @@ export async function CategoryNav() {
             </Link>
           ))}
         </div>
-
-        <span className="hidden shrink-0 items-center gap-1.5 whitespace-nowrap text-xs text-neutral-600 lg:flex">
-          <BadgeCheck className="size-4 text-green-600" aria-hidden />
-          {t("verifiedSellers")}
-        </span>
       </div>
     </nav>
   );

@@ -1062,6 +1062,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 | Date       | Request (owner's words)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Feature ID                                                                                       | Status                                                                                 |
 | ---------- | -----------------------------------------------------------------------------------------------
+| 2026-11-04 | "we shouldn't show anything says that we're a marketplace" (Tallaby is a SaaS: sellers build their own store under their own name; delete the `/about` sentence "Tallaby began as a marketplace connecting shoppers with independent vendors", don't reword it) | Copy only, no feature | Built, not deployed (§7) |
 | 2026-11-04 | "on banner sections on website builder, desktop size is good but on mobile keep it banner to show the image fit good" | F-50b | Built, not deployed (§7) |
 | 2026-11-04 | "If user wants to change the shared section (Header or Footer), on dragging the Header or Footer from the sections list should be REPLACED with the current in the canvas, as it's a shared section and cannot be added twice." Same on the Admin editor. | Fix (§7) | Built |
 | 2026-11-04 | "Sellers should be able to upload an Excel sheet or other data file holding many products, have AI analyse it, and add all the products at once." Add all of them directly, with no review per product. Built as `PLAN.md` AI-3 (§7).                                                                                                                                                  |
@@ -1374,6 +1375,15 @@ Add each new request here first, with the date and the owner's words, then turn 
 ---
 
 ## 7. Log
+
+### 2026-11-04 — No marketplace positioning on tallaby.com or store pages (owner request, §5)
+
+- **Owner:** "we shouldn't show anything says that we're a marketplace". Tallaby is a SaaS: sellers build their own store under their own name; it doesn't sell products, list products from many sellers, or deliver.
+- **`apps/ecommerce` copy:** rewrote the shell metadata and keywords, the manifest, the JSON-LD description, the footer description, the top bar, `/shipping`, `/returns` and `/payment` wording, the store not-found page and the store footer link ("Shop more stores" is now "Create your own store with Tallaby"), and the share text. On `/about`, deleted `story1` in both languages (not reworded) and made `story2` stand alone in a single paragraph.
+- **Removed:** 386 message keys per language, each checked as unused, including `affiliateLanding` and the old `pages.{sell,about,faq,terms,privacy,help,...}`. Removed the footer's Categories and Stores links, and pointed the store not-found button at tallaby.com; both went to pages that return 404.
+- **Not changed:** code identifiers and routes (`isMarketplace`, `lib/marketplace/`), legal text, money logic. No migration.
+- **Checked:** `apps/ecommerce` tests 427 passed, 29 skipped; `tsc` only the known `profile.chunks.tsx` errors; ar/en key sets match (2739 base, 17 about). Dev server on staging values: `/`, `/about`, `/shipping`, `/returns`, `/cookies`, `/payment`, `/terms`, `/privacy`, `/follow-us` in both languages, source scanned. Store footer and store not-found page not viewed.
+- **Open, for the owner:** the old header on `/shipping`, `/returns`, `/cookies`, `/payment` (product search, "Shopping" tab); `onboarding.*` and `pages.home.*` copy still in page source, read only by unreachable components; dashboard, Admin and email copy that still says marketplace; the F-48 fallback title ending "| Tallaby" on stores.
 
 ### 2026-11-04 — Banners stay banners on phones (F-50b, owner request)
 

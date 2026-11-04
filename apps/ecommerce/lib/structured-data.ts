@@ -147,7 +147,7 @@ export function generateCategoryStructuredData(
     "@type": "CollectionPage",
     name: `${category.name} Products`,
     description:
-      category.description || `Shop ${category.name} products on Tallaby.com`,
+      category.description || `Shop ${category.name} products`,
     url: categoryUrl,
     mainEntity: {
       "@type": "ItemList",
@@ -204,7 +204,7 @@ export function generateWebsiteStructuredData() {
     alternateName: "Tallaby",
     url: BASE_URL,
     description:
-      "Tallaby is an Egypt-first multi-vendor marketplace offering products across categories from independent sellers.",
+      "Tallaby is a platform for creating your own online store. Sellers build and run their store under their own name.",
     potentialAction: {
       "@type": "SearchAction",
       target: {
@@ -233,7 +233,7 @@ export function generateOrganizationStructuredData() {
     url: BASE_URL,
     logo: SITE_LOGO_URL,
     description:
-      "Tallaby is an Egypt-first multi-vendor marketplace offering products across categories from independent sellers.",
+      "Tallaby is a platform for creating your own online store. Sellers build and run their store under their own name.",
     contactPoint: {
       "@type": "ContactPoint",
       email: TALLABY_CONTACT_EMAIL,

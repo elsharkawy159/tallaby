@@ -91,8 +91,6 @@ const Footer = async () => {
               {[
                 { href: "/about", label: t("aboutUs") },
                 { href: "/contact", label: t("contactUs") },
-                { href: "/categories", label: t("categories") },
-                { href: "/stores", label: t("storeLocator") },
                 { href: "/careers", label: t("careers") },
                 // Affiliate program is off for now (AFFILIATE_PROGRAM_ENABLED).
                 // { href: "/affiliate", label: t("affiliateProgram") },

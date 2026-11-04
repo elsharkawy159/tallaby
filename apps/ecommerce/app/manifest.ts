@@ -5,10 +5,10 @@ import { getRequestStoreApp } from "@/lib/store-app.server";
 
 /** tallaby.com (and any host that is not a published store). */
 const TALLABY_MANIFEST: MetadataRoute.Manifest = {
-  name: "Tallaby.com – Online Shopping in Egypt",
+  name: "Tallaby – Create your online store",
   short_name: "Tallaby",
   description:
-    "Tallaby is a multi-vendor marketplace in Egypt — shop accessories, beauty, fashion and home products from verified sellers, with cash on delivery.",
+    "Tallaby is a platform for creating your own online store. Sellers build and run their store under their own name.",
   start_url: "/",
   display: "standalone",
   background_color: "#ffffff",
@@ -21,7 +21,7 @@ const TALLABY_MANIFEST: MetadataRoute.Manifest = {
     { src: "/logo/logo.png", sizes: "192x192", type: "image/png" },
     { src: "/logo/logo.png", sizes: "512x512", type: "image/png" },
   ],
-  categories: ["shopping", "ecommerce", "marketplace"],
+  categories: ["business", "ecommerce"],
   // The manifest is served once at /manifest.webmanifest, outside the
   // `[locale]` segment, so it can only describe the default locale.
   lang: routing.defaultLocale,

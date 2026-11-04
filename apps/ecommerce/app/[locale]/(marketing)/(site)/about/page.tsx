@@ -70,10 +70,7 @@ export default async function AboutPage() {
                 em: (chunks) => <em className="bg-[linear-gradient(transparent_62%,var(--color-amber-100)_62%)] not-italic">{chunks}</em>,
               })}
             </p>
-            <div className="mt-9 grid gap-7 text-[15px] text-slate-ink sm:grid-cols-2">
-              <p>{t("story1")}</p>
-              <p>{t("story2")}</p>
-            </div>
+            <p className="mt-9 text-[15px] text-slate-ink">{t("story2")}</p>
           </Reveal>
         </Container>
       </section>
