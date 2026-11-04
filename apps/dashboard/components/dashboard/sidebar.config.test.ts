@@ -147,6 +147,7 @@ describe("hidden campaign and store views pages (F-65)", () => {
     const group = SIDEBAR_CONFIG.find((e) => e.kind === "group" && e.key === "marketing");
     expect(group?.kind === "group" && group.items.map((i) => i.href)).toEqual([
       "/coupons",
+      "/marketing/discounts",
       "/marketing/subscribers",
       "/marketing/emails",
       "/marketing/catalog",

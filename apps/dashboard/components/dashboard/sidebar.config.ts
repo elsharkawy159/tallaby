@@ -86,6 +86,8 @@ export const SIDEBAR_CONFIG: NavEntry[] = [
       { key: "missedOrders", href: "/orders/missed", status: "live" },
       // Customers with items in a store's cart who haven't ordered (F-67).
       { key: "pendingCarts", href: "/orders/pending-carts", status: "live" },
+      // What each cross-sell offer of a store sold (F-32f).
+      { key: "crossSellReport", href: "/orders/cross-sell", status: "live" },
       // Customers of a store, grouped from its orders by phone (F-01).
       { key: "customers", href: "/orders/customers", status: "live" },
       // Scan returns (F-04e) hidden for now: the /orders search finds the order (owner, 2026-10-31).
@@ -147,6 +149,8 @@ export const SIDEBAR_CONFIG: NavEntry[] = [
     icon: Megaphone,
     items: [
       { key: "coupons", href: "/coupons", countKey: "promotions", status: "live" },
+      // Store-wide discounts with no code (ROADMAP.md F-13a).
+      { key: "automaticDiscounts", href: "/marketing/discounts", status: "live" },
       // Paid ads hidden: none are running and this kind of ad will be removed (owner, 2026-11-04, F-65a). The page still opens directly.
       // { key: "campaigns", href: "/marketing", countKey: "marketing", status: "live" },
       // Newsletter sign-ups from the store's sign-up forms (ROADMAP.md F-16d).

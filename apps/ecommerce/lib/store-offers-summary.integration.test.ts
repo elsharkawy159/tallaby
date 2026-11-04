@@ -99,6 +99,29 @@ describe.skipIf(!isStaging)("checkout summary matches the order (integration)", 
     return buildSummaryWithCoupon(base, coupon, calculateCouponDiscount(coupon, net, shipping, true));
   }
 
+  it("agrees with an automatic rule and a coupon", async () => {
+    const { db, sql, storeDiscountRules, placeOrderFromCart } = await load();
+    await db.insert(storeDiscountRules).values({ sellerId, storeId, name: "Sale", ruleType: "percent_off", discountPercent: "33.00" });
+    try {
+      const { cartId, items } = await cartWith(2);
+      const result = await placeOrderFromCart({
+        userId: buyer,
+        cartId,
+        shippingAddressId: addressId,
+        paymentMethod: "cash_on_delivery",
+        orderSource: "storefront",
+        couponCode: coupon.code,
+        sendConfirmationEmail: false,
+      });
+      if (!result.success) throw new Error(result.error);
+      const summary = await summaryFor(items, Number(result.data.order.shippingCost), true);
+      expect(summary.totalAfterDiscount).toBeCloseTo(Number(result.data.order.totalAmount), 2);
+      expect((result.data.order.discounts as { type: string }[]).map((line) => line.type)).toContain("automatic_discount");
+    } finally {
+      await db.execute(sql`DELETE FROM store_discount_rules WHERE store_id = ${storeId}`);
+    }
+  });
+
   it.each([
     { name: "a tier", quantity: 4, withCoupon: false },
     { name: "a tier and a coupon", quantity: 4, withCoupon: true },
@@ -121,7 +144,7 @@ describe.skipIf(!isStaging)("checkout summary matches the order (integration)", 
     expect(summary.totalAfterDiscount).toBeCloseTo(Number(order.totalAmount), 2);
     expect(summary.discountAmount).toBeCloseTo(
       (order.discounts as { type: string; amount: string }[])
-        .filter((line) => line.type === "coupon" || line.type === "quantity_offer" || line.type === "cross_sell")
+        .filter((line) => ["coupon", "quantity_offer", "cross_sell", "automatic_discount"].includes(line.type))
         .reduce((sum, line) => sum + Number(line.amount), 0),
       2,
     );

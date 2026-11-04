@@ -1,5 +1,6 @@
 import type { LucideIcon } from "lucide-react";
-import { TALLABY_SERVICES_ENABLED } from "@workspace/lib/fulfillment";
+import {
+  BadgePercent, TALLABY_SERVICES_ENABLED } from "@workspace/lib/fulfillment";
 import {
   AppWindow,
   PhoneMissed,
@@ -24,6 +25,7 @@ import {
   Gem,
   Globe,
   Gift,
+  Percent,
   HandCoins,
   Images,
   Mail,
@@ -67,6 +69,7 @@ export type NavKey =
   | "ordersGroup"
   | "missedOrders"
   | "pendingCarts"
+  | "crossSellReport"
   | "customers"
   | "scanReturns"
   | "deliveryTracking"
@@ -104,6 +107,7 @@ export type NavKey =
   | "coupons"
   | "campaigns"
   | "subscribers"
+  | "automaticDiscounts"
   | "emailCampaigns"
   | "catalogShare"
   | "accountHelp"
@@ -143,6 +147,7 @@ export const DASHBOARD_ROUTES: DashboardRoute[] = [
   { href: "/orders", title: "orders", parent: "ordersGroup", icon: ShoppingBag },
   { href: "/orders/missed", title: "missedOrders", parent: "ordersGroup", icon: PhoneMissed },
   { href: "/orders/pending-carts", title: "pendingCarts", parent: "ordersGroup", icon: ShoppingCart },
+  { href: "/orders/cross-sell", title: "crossSellReport", parent: "ordersGroup", icon: BadgePercent },
   { href: "/orders/customers", title: "customers", parent: "ordersGroup", icon: Users },
   // Scan returns hidden for now (owner, 2026-10-31).
   // { href: "/orders/scan", title: "scanReturns", parent: "ordersGroup", icon: ScanBarcode },
@@ -167,6 +172,7 @@ export const DASHBOARD_ROUTES: DashboardRoute[] = [
   { href: "/stores/[storeId]/website/forms", title: "forms", parent: "websiteContent", icon: ClipboardList },
   { href: "/stores/[storeId]/website/media", title: "mediaLibrary", parent: "websiteContent", icon: Images },
   { href: "/coupons", title: "coupons", parent: "marketing", icon: Gift },
+  { href: "/marketing/discounts", title: "automaticDiscounts", parent: "marketing", icon: Percent },
   // Paid ads: reachable only by its URL for now (owner, 2026-11-04, F-65a).
   { href: "/marketing", title: "campaigns", parent: "marketing", icon: TrendingUp, hiddenFromPalette: true },
   { href: "/marketing/subscribers", title: "subscribers", parent: "marketing", icon: MailCheck },

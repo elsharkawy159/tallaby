@@ -2396,6 +2396,7 @@
     "quantityOfferSaving": "عرض الكمية: هتوفر {amount}",
     "bundleOfferSaving": "عرض مع المنتج: هتوفر {amount}",
     "offersTotal": "العروض",
+    "automaticSaving": "{name}: هتوفر {amount}",
     "crossSell": {
       "title": "بيتشتري مع بعض",
       "add": "أضف",

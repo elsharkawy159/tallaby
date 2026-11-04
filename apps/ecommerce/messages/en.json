@@ -2399,6 +2399,7 @@
     "quantityOfferSaving": "Quantity offer: you save {amount}",
     "bundleOfferSaving": "Bundle offer: you save {amount}",
     "offersTotal": "Offers",
+    "automaticSaving": "{name}: you save {amount}",
     "crossSell": {
       "title": "Frequently bought together",
       "add": "Add",

@@ -128,9 +128,17 @@ export function StorefrontCart({
                 )}
                 {offers.lines[item.id] && (
                   <p className="text-xs font-medium text-(--sf-brand)">
-                    {t(offers.lines[item.id]!.kind === "quantity_offer" ? "quantityOfferSaving" : "bundleOfferSaving", {
-                      amount: formatPricePlain(offers.lines[item.id]!.discountPiastres / 100, locale, currencyLabel),
-                    })}
+                    {t(
+                      offers.lines[item.id]!.kind === "automatic_discount"
+                        ? "automaticSaving"
+                        : offers.lines[item.id]!.kind === "quantity_offer"
+                          ? "quantityOfferSaving"
+                          : "bundleOfferSaving",
+                      {
+                        name: offers.lines[item.id]!.label ?? "",
+                        amount: formatPricePlain(offers.lines[item.id]!.discountPiastres / 100, locale, currencyLabel),
+                      },
+                    )}
                   </p>
                 )}
                 <div className="mt-auto flex items-center justify-between gap-2 pt-1">

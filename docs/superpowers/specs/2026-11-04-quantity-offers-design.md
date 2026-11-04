@@ -51,3 +51,28 @@ Migration `0147_product_quantity_offers.sql`: `product_quantity_offers` (`seller
 ## 7. Tests
 
 Pure: tier choice, validation, unit discount, best-of with cross-sell. Integration on staging through the real `placeOrderFromCart`: no offer gives the same numbers, a tier applies, a tampered client value, a foreign seller's tier, a coupon on top, a changed tier, a tier off, unlimited stock, and an order total that matches the summary for the same cart.
+
+## 8. Automatic discounts (ROADMAP.md F-13a)
+
+Store-wide rules with no code, set per store in Marketing › Automatic discounts (`/marketing/discounts`). The free-delivery amount stays in Shipping (F-13b) and is not a rule here.
+
+**Rules** (`store_discount_rules`, 0148, server-only):
+
+- **Percent off**, 1 to 90, on all products or on some of the seller's own categories (`products.seller_category_id`). A unit never reaches 0.
+- **A time-limited sale** is a percent-off rule with an end date. It is not a separate type. Every rule has a start and an optional end, checked against the server's clock at every summary and at placement.
+- **Buy X get Y:** units in scope pool across lines and variants. Every complete X + Y earns Y units at the rule's percent off (up to 100, which is free), and those are always the **cheapest** units in scope. Buy 2 get 1 needs 3 units; 5 units still earn only one.
+- **Free gift** over an amount: §9.
+
+**One engine:** rules run in `storeCartDiscounts`, the same function as tiers and cross-sell, and write the same line fields. Seller coupons run after it, unchanged, on the net. Rules never change `cart_items.price`.
+
+**The stacking rule, in one sentence:** each line gets its single biggest offer among its quantity tier, its cross-sell and its best automatic rule, and a seller coupon then applies on what is left.
+
+- Offers never add up on a line. Two automatic rules never add up either, and each line picks its own best rule, so two lines of one order can use different rules.
+- A tie goes to the quantity tier, then cross-sell, then the rule listed first.
+- A buy X get Y rule is worked out on its own, on all its units, before lines choose. A line that picks another offer simply does not use its share of it; the free units do not move to another line. Simple and never more generous than what the seller set.
+- A rule takes percent off the current price, including when the product already has its own sale price. That is the seller's choice when they set the rule.
+- Store orders only, like §2. **Manual orders get no rules.**
+
+**Money:** seller-funded, same as a coupon. `orders.discounts` gets one `{ type: 'automatic_discount', label: <rule name>, amount }` per rule, `order_items.metadata.automaticDiscount` keeps a snapshot, and §3's order and §4's fee, seller earning and affiliate rules are unchanged. The rule's name is the seller's text, so the customer sees it as typed.
+
+**Not in this version:** the store's product cards and product page still show the normal price. The discount first shows in the cart. Showing a rule's price on listings is a catalog change, for later.

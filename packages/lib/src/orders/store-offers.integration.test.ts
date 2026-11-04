@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
 /**
  * Store offers (ROADMAP.md F-07, F-13) through the real `placeOrderFromCart` on
@@ -307,6 +307,121 @@ describe.skipIf(!isStaging)("store offers at checkout (integration)", { timeout:
       const placed = await read(await placeCart(cartId));
       expect(Number(placed.order.discountAmount)).toBeCloseTo(summary.totalPiastres / 100, 2);
       expect(placed.lines).toEqual(expect.arrayContaining(summary.discountLines));
+    });
+  });
+
+  describe("automatic discount rules", () => {
+    async function addRule(extra: Record<string, unknown>) {
+      const { db, storeDiscountRules } = await load();
+      const [row] = await db
+        .insert(storeDiscountRules)
+        .values({ sellerId, storeId, name: "Sale", ruleType: "percent_off", discountPercent: "10.00", ...extra } as never)
+        .returning({ id: storeDiscountRules.id });
+      return row!.id;
+    }
+
+    afterEach(async () => {
+      const { db, sql } = await load();
+      await db.execute(sql`DELETE FROM store_discount_rules WHERE store_id = ${storeId}`);
+    });
+
+    it("takes a percent off every product, in its name, with the fee unchanged", async () => {
+      const productId = await addProduct("rule-all", 100);
+      const ruleId = await addRule({ name: "Summer sale", discountPercent: "15.00" });
+      const placed = await place([{ productId, price: "100.00", quantity: 2 }]);
+      expect(Number(placed.line(productId).discountAmount)).toBe(30);
+      expect(placed.lines.find((entry) => entry.type === "automatic_discount")).toEqual({ type: "automatic_discount", label: "Summer sale", amount: "30.00" });
+      invariants(placed);
+      const meta = placed.line(productId).metadata as { automaticDiscount: { ruleId: string }; platformFee: { feePiastres: number } };
+      expect(meta.automaticDiscount.ruleId).toBe(ruleId);
+      expect(meta.platformFee.feePiastres).toBe(500);
+    });
+
+    it("covers only the rule's own categories", async () => {
+      const { db, sellerProductCategories } = await load();
+      const [category] = await db.insert(sellerProductCategories).values({ sellerId, name: `c-${tag}`, slug: `c-${tag}` } as never).returning({ id: sellerProductCategories.id });
+      const inside = await addProduct("rule-in", 100, { sellerCategoryId: category!.id });
+      const outside = await addProduct("rule-out", 100);
+      await addRule({ scope: "categories", categoryIds: [category!.id] });
+      const placed = await place([
+        { productId: inside, price: "100.00", quantity: 1 },
+        { productId: outside, price: "100.00", quantity: 1 },
+      ]);
+      expect(Number(placed.line(inside).discountAmount)).toBe(10);
+      expect(Number(placed.line(outside).discountAmount)).toBe(0);
+    });
+
+    it("keeps to its time window and its on switch", async () => {
+      const { db, storeDiscountRules, eq } = await load();
+      const productId = await addProduct("rule-time", 100);
+      const line = { productId, price: "100.00", quantity: 1 };
+      await addRule({ startsAt: new Date(Date.now() - 86_400_000).toISOString(), endsAt: new Date(Date.now() - 3_600_000).toISOString() });
+      await addRule({ startsAt: new Date(Date.now() + 3_600_000).toISOString() });
+      expect(Number((await place([line])).line(productId).discountAmount)).toBe(0);
+
+      const live = await addRule({ endsAt: new Date(Date.now() + 3_600_000).toISOString() });
+      const cart = await makeCart([line]);
+      await db.update(storeDiscountRules).set({ isActive: false }).where(eq(storeDiscountRules.id, live));
+      expect(Number((await read(await placeCart(cart))).line(productId).discountAmount)).toBe(0);
+    });
+
+    it("buy 2 get 1 free takes the cheapest unit, and never the whole line", async () => {
+      const dear = await addProduct("bogo-dear", 300);
+      const cheap = await addProduct("bogo-cheap", 100);
+      await addRule({ name: "B2G1", ruleType: "buy_x_get_y", discountPercent: "100.00", buyQuantity: 2, getQuantity: 1 });
+      const placed = await place([
+        { productId: dear, price: "300.00", quantity: 2 },
+        { productId: cheap, price: "100.00", quantity: 1 },
+      ]);
+      expect(Number(placed.line(cheap).total)).toBe(0);
+      expect(Number(placed.line(cheap).discountAmount)).toBe(100);
+      expect(Number(placed.line(dear).total)).toBe(600);
+      invariants(placed);
+      const short = await place([{ productId: dear, price: "300.00", quantity: 2 }]);
+      expect(Number(short.line(dear).discountAmount)).toBe(0);
+    });
+
+    it("gives each line its single best offer, and a coupon on the net", async () => {
+      const tiered = await addProduct("best-tier", 100);
+      await addTier(tiered, 2, "30.00");
+      const plain = await addProduct("best-plain", 100);
+      await addRule({ name: "Small", discountPercent: "10.00" });
+      await addRule({ name: "Bigger", discountPercent: "20.00" });
+      const placed = await place(
+        [
+          { productId: tiered, price: "100.00", quantity: 2 },
+          { productId: plain, price: "100.00", quantity: 1 },
+        ],
+        { couponCode: await addCoupon("10") },
+      );
+      // Tier 30% beats the rules on the first line (60); the 20% rule wins on the second (20).
+      const types = placed.lines.map((entry) => entry.type);
+      expect(types).toEqual(expect.arrayContaining(["quantity_offer", "automatic_discount", "coupon"]));
+      expect(placed.lines.find((entry) => entry.type === "automatic_discount")).toMatchObject({ label: "Bigger", amount: "20.00" });
+      // The net is 300 - 80 = 220, so a 10% coupon is 22.
+      expect(Number(placed.lines.find((entry) => entry.type === "coupon")?.amount)).toBeCloseTo(22, 2);
+      invariants(placed);
+    });
+
+    it("ignores a rule of another seller or store", async () => {
+      const { db, sql, storeDiscountRules } = await load();
+      const productId = await addProduct("rule-foreign", 100);
+      const [other] = await db.execute(sql`SELECT id FROM stores WHERE seller_id = ${otherSeller} LIMIT 1`);
+      await db.insert(storeDiscountRules).values([
+        { sellerId: otherSeller, storeId, name: "Foreign seller", ruleType: "percent_off", discountPercent: "50.00" },
+        { sellerId: otherSeller, storeId: (other as { id: string }).id, name: "Foreign store", ruleType: "percent_off", discountPercent: "50.00" },
+      ]);
+      const placed = await place([{ productId, price: "100.00", quantity: 1 }]);
+      expect(Number(placed.line(productId).discountAmount)).toBe(0);
+    });
+
+    it("gives a manual order no rule, and ignores a value from a client", async () => {
+      const productId = await addProduct("rule-manual", 100);
+      await addRule({});
+      const manual = await place([{ productId, price: "100.00", quantity: 1 }], { orderSource: "manual" });
+      expect(Number(manual.line(productId).discountAmount)).toBe(0);
+      const sent = await place([{ productId, price: "100.00", quantity: 1 }], { extra: { automaticDiscount: { discountPercent: 90 }, ruleId: "x" } });
+      expect(Number(sent.line(productId).discountAmount)).toBe(10);
     });
   });
 });

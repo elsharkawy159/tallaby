@@ -47,7 +47,7 @@ export async function getQuantityTiers(productId: string): Promise<QuantityTierC
 
 export type CartOffersView = {
   /** Per cart item id: what its offer takes off, in piastres. */
-  lines: Record<string, { kind: LineOfferKind; discountPiastres: number }>;
+  lines: Record<string, { kind: LineOfferKind; discountPiastres: number; label?: string }>;
   totalPiastres: number;
 };
 
@@ -70,7 +70,7 @@ export async function getCartOffers(): Promise<CartOffersView> {
     const lines: CartOffersView["lines"] = {};
     cart.cartItems.forEach((item, index) => {
       const offer = offers.lines[index];
-      if (offer) lines[item.id] = { kind: offer.kind, discountPiastres: offer.discountPiastres };
+      if (offer) lines[item.id] = { kind: offer.kind, discountPiastres: offer.discountPiastres, label: offer.label };
     });
     return { lines, totalPiastres: offers.totalPiastres };
   } catch (error) {

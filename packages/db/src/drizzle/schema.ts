@@ -73,6 +73,8 @@ export type OrderDiscountType =
 	| 'cross_sell'
 	/** A quantity tier (F-07); lowers the product's line totals. */
 	| 'quantity_offer'
+	/** An automatic store discount (F-13a); the label is the rule's own name. */
+	| 'automatic_discount'
 
 export type OrderCouponDiscountType =
 	| 'percentage'
@@ -4263,6 +4265,35 @@ export const storeBuildClaims = pgTable("store_build_claims", {
 	index("store_build_claims_ip_idx").using("btree", table.ipHash, table.createdAt.desc()).where(sql`ip_hash IS NOT NULL`),
 	foreignKey({ columns: [table.sellerId], foreignColumns: [sellers.id], name: "store_build_claims_seller_id_fkey" }).onDelete("cascade"),
 	foreignKey({ columns: [table.buildId], foreignColumns: [storeBuilds.id], name: "store_build_claims_build_id_fkey" }).onDelete("set null"),
+]);
+
+/** Automatic store discounts (0148, ROADMAP.md F-13a). Server-only: RLS on, no policies. */
+export const storeDiscountRules = pgTable("store_discount_rules", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	sellerId: uuid("seller_id").notNull(),
+	storeId: uuid("store_id").notNull(),
+	name: text().notNull(),
+	/** 'percent_off' | 'buy_x_get_y' | 'free_gift' */
+	ruleType: text("rule_type").notNull(),
+	/** 'all' | 'categories' */
+	scope: text().default("all").notNull(),
+	/** seller_product_categories ids. */
+	categoryIds: uuid("category_ids").array().default(sql`'{}'`).notNull(),
+	discountPercent: numeric("discount_percent", { precision: 5, scale: 2 }),
+	buyQuantity: integer("buy_quantity"),
+	getQuantity: integer("get_quantity"),
+	minSubtotal: numeric("min_subtotal", { precision: 10, scale: 2 }),
+	giftProductIds: uuid("gift_product_ids").array().default(sql`'{}'`).notNull(),
+	startsAt: timestamp("starts_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	endsAt: timestamp("ends_at", { withTimezone: true, mode: 'string' }),
+	isActive: boolean("is_active").default(true).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("store_discount_rules_store_idx").using("btree", table.storeId.asc().nullsLast().op("uuid_ops")).where(sql`is_active`),
+	foreignKey({ columns: [table.sellerId], foreignColumns: [sellers.id], name: "store_discount_rules_seller_id_fkey" }).onDelete("cascade"),
+	foreignKey({ columns: [table.storeId], foreignColumns: [stores.id], name: "store_discount_rules_store_id_fkey" }).onDelete("cascade"),
+	check("store_discount_rules_window", sql`ends_at IS NULL OR ends_at > starts_at`),
 ]);
 
 /** Quantity offers (0147, ROADMAP.md F-07): "buy 2, save 10%". Server-only: RLS on, no policies. */

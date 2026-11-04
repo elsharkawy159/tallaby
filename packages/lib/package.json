@@ -438,6 +438,10 @@
       "types": "./src/platform-blog/platform-blog.server.ts",
       "default": "./src/platform-blog/platform-blog.server.ts"
     },
+    "./orders/automatic-discounts": {
+      "types": "./src/orders/automatic-discounts.lib.ts",
+      "default": "./src/orders/automatic-discounts.lib.ts"
+    },
     "./orders/line-discounts": {
       "types": "./src/orders/line-discounts.lib.ts",
       "default": "./src/orders/line-discounts.lib.ts"
