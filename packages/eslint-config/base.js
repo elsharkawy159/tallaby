@@ -42,6 +42,6 @@ export const config = [
     },
   },
   {
-    ignores: ["dist/**"],
+    ignores: ["dist/**", ".next/**", "next-env.d.ts"],
   },
 ]

@@ -6,7 +6,7 @@
     "build": "turbo build --concurrency=2",
     "dev": "turbo dev",
     "start": "turbo start --filter=ecommerce --filter=admin --filter=dashboard --filter=shipping",
-    "lint": "turbo lint",
+    "lint": "turbo lint --continue",
     "typecheck": "turbo typecheck",
     "test": "turbo test",
     "format": "prettier --write \"**/*.{ts,tsx,md}\""

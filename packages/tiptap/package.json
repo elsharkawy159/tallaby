@@ -32,7 +32,9 @@
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.5",
     "@types/sanitize-html": "^2.16.0",
+    "@workspace/eslint-config": "workspace:*",
     "@workspace/typescript-config": "workspace:*",
+    "eslint": "9.39.2",
     "typescript": "^5.9.3"
   },
   "exports": {
