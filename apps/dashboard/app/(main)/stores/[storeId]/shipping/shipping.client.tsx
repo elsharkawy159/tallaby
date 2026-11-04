@@ -35,7 +35,6 @@ import { Label } from "@workspace/ui/components/label";
 import { BUTTON_CLASS, FIELD_CLASS, LabelNote, SectionCard, SMALL_BUTTON_CLASS } from "@/components/form/form-ui";
 import { PageActionBar } from "@/components/layout/page-action-bar";
 import { cn } from "@/lib/utils";
-import { CheckPrice } from "./check-price.client";
 import { ShippingCompaniesCard } from "./shipping-companies.client";
 import { ShippingCoverage } from "./shipping-coverage";
 import { DescribeZonesSheet } from "./ai/ai-zones.client";
@@ -48,6 +47,9 @@ type StoreMoney = { currency: StoreCurrency; label: CurrencyLabel };
 
 /** Chips shown per zone before "+N". */
 const CHIP_LIMIT = 8;
+
+/** Small buttons stay easy to tap on a phone. */
+const TOUCH_TARGET_CLASS = "h-11 sm:h-[34px]";
 
 export function StoreShippingSettings({
   storeId,
@@ -121,13 +123,80 @@ export function StoreShippingSettings({
     },
   };
 
+  // The two ways to add an area, the same with or without zones.
+  const addActions = (
+    <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
+      <Button type="button" className={cn(BUTTON_CLASS, "sm:flex-1")} disabled={disabled} onClick={() => setEditing("new")}>
+        <Plus />
+        {t("addZone")}
+      </Button>
+      {/* AI zones only match Egyptian place names, so another currency would pay for an empty answer. */}
+      {egyptian && (
+        <Button
+          type="button"
+          variant="outline"
+          className={cn(BUTTON_CLASS, "h-auto min-h-[42px] py-2 whitespace-normal sm:flex-1")}
+          disabled={disabled}
+          onClick={() => setDescribing(true)}
+        >
+          <Sparkles className="text-primary" aria-hidden />
+          {t("describe.button")}
+        </Button>
+      )}
+    </div>
+  );
+
   return (
     <div className="space-y-5">
       <PageActionBar>
         <SettingsSaveButton form={settingsForm} readOnly={readOnly} />
       </PageActionBar>
       {readOnly && <p className="rounded-lg border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">{t("readOnly")}</p>}
-      <p className="text-sm text-pretty text-muted-foreground">{t("checkoutNotice")}</p>
+
+      <SectionCard
+        id="shipping-zones"
+        icon={MapPinned}
+        title={t("zonesTitle")}
+        description={t("checkoutNotice")}
+        action={
+          egyptian && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className={cn(SMALL_BUTTON_CLASS, TOUCH_TARGET_CLASS)}
+              disabled={disabled}
+              onClick={() => setTemplatesOpen(true)}
+            >
+              <LayoutTemplate />
+              {zones.length > 0 ? t("templates.button") : t("templates.startTitle")}
+            </Button>
+          )
+        }
+      >
+        {zones.length === 0 ? (
+          <div className="space-y-4 rounded-xl border border-dashed p-4 sm:p-6">
+            <p className="text-center text-sm text-pretty text-muted-foreground">{t("noZones")}</p>
+            {addActions}
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {addActions}
+            <ul className="divide-y border-t">
+              {zones.map((view) => (
+                <ZoneRow
+                  key={view.zone.id}
+                  view={view}
+                  money={money}
+                  disabled={disabled}
+                  onEdit={() => setEditing(view)}
+                  onDelete={() => setDeleting(view.zone)}
+                />
+              ))}
+            </ul>
+          </div>
+        )}
+      </SectionCard>
 
       {zones.length > 0 && coverage.length > 0 && (
         <ShippingCoverage
@@ -139,79 +208,11 @@ export function StoreShippingSettings({
         />
       )}
 
-      {zones.length === 0 && (
-        <SectionCard id="shipping-templates" icon={LayoutTemplate} title={t("templates.startTitle")} description={t("templates.description")}>
-          <ShippingTemplates {...templateProps} />
-        </SectionCard>
-      )}
-
-      <SectionCard
-        id="shipping-zones"
-        icon={MapPinned}
-        title={t("zonesTitle")}
-        description={t("zonesDescription")}
-        action={
-          <div className="flex flex-wrap items-center gap-2">
-            {zones.length > 0 && egyptian && (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className={SMALL_BUTTON_CLASS}
-                disabled={disabled}
-                onClick={() => setTemplatesOpen(true)}
-              >
-                <LayoutTemplate />
-                {t("templates.button")}
-              </Button>
-            )}
-            {egyptian && (
-              <Button type="button" variant="outline" size="sm" className={SMALL_BUTTON_CLASS} disabled={disabled} onClick={() => setDescribing(true)}>
-                <Sparkles />
-                {t("describe.button")}
-              </Button>
-            )}
-            <Button type="button" size="sm" className={SMALL_BUTTON_CLASS} disabled={disabled} onClick={() => setEditing("new")}>
-              <Plus />
-              {t("addZone")}
-            </Button>
-          </div>
-        }
-      >
-        {zones.length === 0 ? (
-          <div className="space-y-3">
-            <p className="text-sm text-muted-foreground">{t("noZones")}</p>
-            {/* AI zones only match Egyptian place names, so another currency would pay for an empty answer. */}
-            {egyptian && (
-              <Button type="button" variant="outline" className={BUTTON_CLASS} disabled={disabled} onClick={() => setDescribing(true)}>
-                <Sparkles />
-                {t("describe.button")}
-              </Button>
-            )}
-          </div>
-        ) : (
-          <ul className="divide-y">
-            {zones.map((view) => (
-              <ZoneRow
-                key={view.zone.id}
-                view={view}
-                money={money}
-                disabled={disabled}
-                onEdit={() => setEditing(view)}
-                onDelete={() => setDeleting(view.zone)}
-              />
-            ))}
-          </ul>
-        )}
-      </SectionCard>
-
-      <CheckPrice zones={raw} settings={settings} money={money} country={country} />
-
       <ShippingCompaniesCard storeId={storeId} bosta={bosta} wassalha={wassalha} readOnly={readOnly} />
 
       <SettingsCard form={settingsForm} readOnly={readOnly} money={money} />
 
-      {zones.length > 0 && egyptian && <TemplatesSheet open={templatesOpen} onOpenChange={setTemplatesOpen} {...templateProps} />}
+      {egyptian && <TemplatesSheet open={templatesOpen} onOpenChange={setTemplatesOpen} {...templateProps} />}
 
       {editing && (
         <ZoneSheet
@@ -285,26 +286,26 @@ function ZoneRow({
   ].filter(Boolean);
 
   return (
-    <li className={cn("grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-3 py-4 first:pt-0 last:pb-0 sm:grid-cols-[6rem_minmax(0,1fr)_auto]", !zone.enabled && "opacity-70")}>
-      <p className="text-lg leading-tight font-bold whitespace-nowrap tabular-nums sm:text-xl">
+    <li className={cn("grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 gap-y-2 py-4 last:pb-0 sm:grid-cols-[minmax(0,1fr)_auto_auto]", !zone.enabled && "opacity-70")}>
+      <p className="flex min-w-0 flex-wrap items-center gap-2 font-semibold">
+        <span className="min-w-0 break-words">{name}</span>
+        {!zone.enabled && (
+          <Badge variant="outline" className="text-[11px] font-normal">
+            {t("disabled")}
+          </Badge>
+        )}
+        {overrides && (
+          <Badge variant="outline" className="max-w-full text-[11px] font-normal text-muted-foreground">
+            <span className="truncate">{t("overrides", { zone: overrides })}</span>
+          </Badge>
+        )}
+      </p>
+      <p className="text-lg leading-tight font-bold whitespace-nowrap tabular-nums sm:col-start-2 sm:row-span-2 sm:row-start-1">
         <MoneyText locale={locale}>
           {zone.price === 0 ? t("free") : t("egp", { amount: formatEgp(locale, zone.price), unit: moneyUnitMarked(locale, money) })}
         </MoneyText>
       </p>
-      <div className="min-w-0 space-y-1.5">
-        <p className="flex flex-wrap items-center gap-2 font-semibold">
-          <span className="min-w-0 break-words">{name}</span>
-          {!zone.enabled && (
-            <Badge variant="outline" className="text-[11px] font-normal">
-              {t("disabled")}
-            </Badge>
-          )}
-          {overrides && (
-            <Badge variant="outline" className="max-w-full text-[11px] font-normal text-muted-foreground">
-              <span className="truncate">{t("overrides", { zone: overrides })}</span>
-            </Badge>
-          )}
-        </p>
+      <div className="col-span-2 min-w-0 space-y-1.5 sm:col-span-1 sm:col-start-1 sm:row-start-2">
         <ul className="flex flex-wrap gap-1.5">
           {visible.map((c) => (
             <li key={c.key} className="max-w-full truncate rounded-full bg-muted px-2.5 py-0.5 text-xs">
@@ -315,7 +316,8 @@ function ZoneRow({
             <li>
               <button
                 type="button"
-                className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-primary hover:bg-muted/70"
+                className="inline-flex min-h-6 items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-primary outline-none hover:bg-muted/70 focus-visible:ring-2 focus-visible:ring-ring"
+                aria-label={t("morePlacesLabel", { count: hidden })}
                 onClick={() => setShowAll(true)}
               >
                 {t("morePlaces", { count: hidden })}
@@ -327,24 +329,22 @@ function ZoneRow({
           <MoneyText locale={locale}>{meta.join(" · ")}</MoneyText>
         </LabelNote>
       </div>
-      <div className="col-span-2 sm:col-span-1">
-        <div className="flex items-center justify-end gap-2">
-          <Button type="button" variant="outline" size="sm" className={SMALL_BUTTON_CLASS} disabled={disabled} onClick={onEdit}>
-            <Pencil />
-            {t("edit")}
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className={cn(SMALL_BUTTON_CLASS, "text-destructive")}
-            disabled={disabled}
-            onClick={onDelete}
-            aria-label={t("deleteTitle", { name: zone.nameAr })}
-          >
-            <Trash2 />
-          </Button>
-        </div>
+      <div className="col-span-2 flex items-center justify-end gap-2 sm:col-span-1 sm:col-start-3 sm:row-span-2 sm:row-start-1 sm:items-start">
+        <Button type="button" variant="outline" size="sm" className={cn(SMALL_BUTTON_CLASS, TOUCH_TARGET_CLASS)} disabled={disabled} onClick={onEdit}>
+          <Pencil />
+          {t("edit")}
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className={cn(SMALL_BUTTON_CLASS, TOUCH_TARGET_CLASS, "w-11 text-destructive sm:w-auto")}
+          disabled={disabled}
+          onClick={onDelete}
+          aria-label={t("deleteTitle", { name })}
+        >
+          <Trash2 />
+        </Button>
       </div>
     </li>
   );

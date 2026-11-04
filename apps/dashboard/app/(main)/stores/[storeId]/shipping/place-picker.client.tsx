@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 
 /**
  * The place data and the zone helpers that depend on it are large, so the browser
- * loads them only when a zone sheet or "Check a price" needs them.
+ * loads them only when a zone sheet needs them.
  */
 const loadLib = () =>
   Promise.all([import("@workspace/lib/places"), import("@workspace/lib/shipping/store-zones")]).then(
@@ -23,11 +23,11 @@ export type ShippingLib = Awaited<ReturnType<typeof loadLib>>;
 
 let libPromise: Promise<ShippingLib> | null = null;
 
-/** The lazily loaded place + zone helpers; `enabled = false` defers loading (e.g. until first focus). */
-export function useShippingLib(enabled = true): ShippingLib | null {
+/** The lazily loaded place + zone helpers. */
+export function useShippingLib(): ShippingLib | null {
   const [lib, setLib] = useState<ShippingLib | null>(null);
   useEffect(() => {
-    if (!enabled || lib) return;
+    if (lib) return;
     let alive = true;
     libPromise ??= loadLib().catch((error) => {
       libPromise = null;
@@ -37,7 +37,7 @@ export function useShippingLib(enabled = true): ShippingLib | null {
     return () => {
       alive = false;
     };
-  }, [enabled, lib]);
+  }, [lib]);
   return lib;
 }
 
@@ -50,30 +50,25 @@ const isIn = (country: string | null, key: string) => !!country && (key === coun
  * `country` is the store's likely country: Egypt unless its currency says otherwise,
  * null when the currency has no one country (no list; search still finds every place).
  * `takenBy` labels places already in another enabled zone; `blockTaken` makes them unpickable.
- * `single` keeps at most one place (picking another replaces it).
- * The parent owns the lazily loaded `lib`; `onNeedLib` asks it to start loading.
+ * The parent owns the lazily loaded `lib`.
  */
 export function PlacePicker({
   lib,
   country = "EG",
-  onNeedLib,
   value,
   onChange,
   takenBy,
   blockTaken = false,
-  single = false,
   labels,
   invalid = false,
   id,
 }: {
   lib: ShippingLib | null;
   country?: string | null;
-  onNeedLib?: () => void;
   value: string[];
   onChange: (keys: string[]) => void;
   takenBy?: Map<string, string>;
   blockTaken?: boolean;
-  single?: boolean;
   /** Labels known before the place data loads (the server-rendered chips). */
   labels?: Record<string, string>;
   invalid?: boolean;
@@ -108,11 +103,11 @@ export function PlacePicker({
 
   const toggle = (key: string) => {
     if (value.includes(key)) onChange(value.filter((k) => k !== key));
-    else onChange(single ? [key] : [...value, key]);
+    else onChange([...value, key]);
   };
   const pick = (key: string) => {
     toggle(key);
-    if (single || !value.includes(key)) setQuery("");
+    if (!value.includes(key)) setQuery("");
   };
 
   const row = (p: Place) => {
@@ -144,7 +139,7 @@ export function PlacePicker({
             !blocked && (
               <span className="flex shrink-0 items-center gap-1 text-xs text-muted-foreground">
                 <Plus className="size-3.5" aria-hidden />
-                {single ? t("choose") : t("add")}
+                {t("add")}
               </span>
             )
           )}
@@ -173,7 +168,6 @@ export function PlacePicker({
           className={cn(FIELD_CLASS, "ps-10", invalid && "border-destructive")}
           placeholder={t("search")}
           value={query}
-          onFocus={onNeedLib}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
@@ -231,10 +225,7 @@ export function PlacePicker({
           type="button"
           className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
           aria-expanded={browse}
-          onClick={() => {
-            onNeedLib?.();
-            setBrowse((b) => !b);
-          }}
+          onClick={() => setBrowse((b) => !b)}
         >
           {egyptian ? t("browse") : lib ? t("browseCountry", { country: countryName }) : t("browseRegions")}
           <ChevronDown className={cn("size-4 transition-transform", browse && "rotate-180")} aria-hidden />

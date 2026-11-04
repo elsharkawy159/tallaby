@@ -38,7 +38,7 @@ export function ShippingCoverage({
     <section aria-labelledby="shipping-coverage-title" className="rounded-2xl border bg-card p-4 sm:p-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div className="min-w-0">
-          <h2 id="shipping-coverage-title" className="text-lg font-bold text-balance sm:text-xl">
+          <h2 id="shipping-coverage-title" className="text-base font-semibold text-balance">
             {countryName ? t("summaryCountry", { covered, total: items.length, country: countryName }) : t("summary", { covered, total: items.length })}
           </h2>
           <p className="mt-1 text-sm text-pretty text-muted-foreground">
@@ -54,7 +54,7 @@ export function ShippingCoverage({
           </p>
         </div>
         {gaps > 0 && (
-          <Button type="button" size="sm" className={SMALL_BUTTON_CLASS} disabled={disabled} onClick={onAddZone}>
+          <Button type="button" variant="outline" size="sm" className={cn(SMALL_BUTTON_CLASS, "h-11 sm:h-[34px]")} disabled={disabled} onClick={onAddZone}>
             <Plus />
             {t("closeGaps")}
           </Button>

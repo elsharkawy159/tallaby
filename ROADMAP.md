@@ -1061,6 +1061,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 | Date       | Request (owner's words)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Feature ID                                                                                       | Status                                                                                 |
 | ---------- | -----------------------------------------------------------------------------------------------
+| 2026-11-04 | "The seller's shipping page is too busy; make it clear and simple." Remove "استخدم أسعار طلبي" and "احسب سعر التوصيل", rename "صف مناطق التوصيل" to "أضف منطقة توصيل بالذكاء الاصطناعي" with an AI icon, and improve the page. (relayed) | F-45 | Built, not deployed. "استخدم أسعار طلبي" kept: live checkout setting, needs an owner decision (§7) |
 | 2026-11-04 | "A wallet balance above zero, such as a gift, activates a seller for good, just like an approved top-up, even after it runs out." Win-back emails wait for activation, and gifts unlock marketing emails. (from the owner's decisions, relayed) | F-68 |
 | 2026-11-04 | "A seller is activated by a top-up or a positive wallet balance such as a $2 gift. Message: Kindly top up your wallet, starting from $5 only. 20 AI requests a month and no marketing emails until activated." (from the owner's decisions, relayed) | F-68-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- |
 | 2026-11-04 | "Work on adding the below Payment methods for sellers so seller can make an account for the service needed and provide us the API key and merchant code or any required data from the payment method gateway service provider: Paypal Tabby Moyasar paytabs paylink / check each service API Docs" (F-39g) |
@@ -1368,6 +1369,22 @@ Add each new request here first, with the date and the owner's words, then turn 
 ---
 
 ## 7. Log
+
+### 2026-11-04 — Wallet cards, جنيه, riders label (owner request)
+
+- **Preset cards:** square, filling each row with flex-wrap (4 or 8 across, 3 + 3 + 2 on a phone, where the last two are wider than tall). A gray circle animates to the checkmark on selection.
+- **Copy:** /wallet shows جنيه instead of EGP in Arabic. The fee line says سنت, and the fee explanation no longer mentions a negative balance.
+- **Riders:** the sidebar and tab label is مندوبون خاصون (Your own riders).
+- No migration.
+
+### 2026-11-04 — Simpler shipping page (F-45, owner request)
+
+- **Removed:** the "Check a price" calculator (`check-price.client.tsx`, the `checkPrice` messages and the picker's `single` mode, which only it used). It only read data, so checkout is unchanged.
+- **Kept, needs an owner decision:** "استخدم أسعار طلبي" (`otherPlaces.tallabyRates`) was **not** removed. It is a live setting and the default for every EGP store: customers in places no zone covers pay Tallaby's rates at checkout (`resolveStorefrontShipping`). The other choice refuses those orders. Without the card, a seller on it couldn't see or change the rate customers are charged.
+- **AI action:** renamed "أضف منطقة توصيل بالذكاء الاصطناعي" / "Add delivery area with AI", with the sparkles icon other AI buttons use. It still costs 1 credit once USD is live, given back on failure or a cached answer, so the credits note stays true.
+- **Page:** areas and prices come first, with add manually and add with AI side by side (stacked on phones). The empty state offers the same two and says what an area is. Templates moved to a sheet, and the coverage board moved below the list. Rows read name, price, places, then actions, and small buttons are 44px tall on phones.
+- **English:** page-level text says "area". "Zone" remains inside the zone and AI sheets' field labels.
+- No migration, no server action changed.
 
 ### 2026-11-04 — Formal Arabic, smooth scrolling, home cards, pending count (owner request)
 
