@@ -65,7 +65,6 @@ export type NavKey =
   // Sidebar groups and items added with the multi-store sitemap (PLAN.md §7.2)
   | "ordersGroup"
   | "missedOrders"
-  | "createOrder"
   | "customers"
   | "scanReturns"
   | "deliveryTracking"
@@ -138,7 +137,6 @@ export const DASHBOARD_ROUTES: DashboardRoute[] = [
   { href: "/products/trash", title: "productTrash", parent: "products", parentHref: "/products", icon: Trash2 },
   { href: "/reviews", title: "reviews", parent: "products", icon: Star },
   { href: "/orders", title: "orders", parent: "ordersGroup", icon: ShoppingBag },
-  { href: "/orders/new", title: "createOrder", parent: "ordersGroup", icon: ShoppingBag },
   { href: "/orders/missed", title: "missedOrders", parent: "ordersGroup", icon: PhoneMissed },
   { href: "/orders/customers", title: "customers", parent: "ordersGroup", icon: Users },
   // Scan returns hidden for now (owner, 2026-10-31).
