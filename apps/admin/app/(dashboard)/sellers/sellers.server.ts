@@ -26,13 +26,11 @@ import {
   inArray,
 } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import { getCurrentAdminUser } from "@/lib/auth/admin-auth";
 import { applyInvalidation, invalidateSeller } from "@workspace/cache";
 import { applySellerOverride } from "@workspace/lib/admin/server";
 import {
   sellerStatusUpdateSchema,
-  sellerFiltersSchema,
   sellerUpdateSchema,
 } from "./sellers.dto";
 import { buildSellersWhere } from "./sellers.query";
@@ -41,7 +39,6 @@ import type {
   Seller,
   SellerDetail,
   SellerStats,
-  SellerStatus,
   SellerStoreSummary,
 } from "./sellers.types";
 

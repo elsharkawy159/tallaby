@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@workspace/db";
-import { orders, orderItems, users, products, sellers } from "@workspace/db";
+import { orders, orderItems, sellers } from "@workspace/db";
 import { eq, and, desc, sql, gte, lte, like, or, inArray, notInArray } from "drizzle-orm";
 import { creditSellerOnDelivery } from "@workspace/db/wallet";
 import { fulfillDigitalOrderItems } from "@workspace/lib/digital";

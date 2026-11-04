@@ -3,7 +3,7 @@
 import { crossSellForCart } from "@workspace/lib/orders/cross-sell/server"
 import { unstable_cache, revalidateTag } from "next/cache"
 import { couponTags } from "@workspace/cache"
-import { db, carts, cartItems, coupons, couponUsage, userAddresses, eq, and, sql, gte, lte, desc, or, isNull } from "@workspace/db"
+import { db, cartItems, coupons, couponUsage, userAddresses, eq, and, sql, gte, lte, desc, isNull } from "@workspace/db"
 import { getUser } from "./auth"
 import { getCurrentUserId } from "@/lib/get-current-user-id"
 import { activeCartWhere, getCartScope } from "@/lib/storefront.server"

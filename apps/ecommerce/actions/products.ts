@@ -17,7 +17,6 @@ import {
   and,
   or,
   gte,
-  like,
   sql,
   desc,
   asc,
@@ -235,7 +234,7 @@ export const getProducts = createCachedQuery({
       }
 
       // Determine ordering
-      let orderBy = [];
+      const orderBy = [];
       switch (filters.sortBy) {
         case "price_asc":
           orderBy.push(asc(sql`(${products.price}->>'final')::numeric`));

@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useForm, useWatch, type Control, type Resolver } from 'react-hook-form'
+import { useForm, useWatch, type Resolver } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -22,7 +22,6 @@ import {
   LoaderCircle,
   Mail,
   Phone,
-  Store,
   Wallet,
   Warehouse,
   type LucideIcon,
@@ -63,7 +62,6 @@ import {
   SMALL_BUTTON_CLASS,
   SectionCard,
   SectionIcon,
-  FieldHint,
 } from './settings-ui'
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'

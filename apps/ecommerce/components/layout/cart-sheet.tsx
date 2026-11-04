@@ -18,7 +18,7 @@ import { getPublicUrl } from "@workspace/ui/lib/utils";
 import { useLocale } from "next-intl";
 import { formatPrice } from "@workspace/lib";
 import { cn } from "@/lib/utils";
-import React, { useState, useTransition } from "react";
+import React, { useState } from "react";
 import {
   updateCartItem,
   removeFromCart as removeFromCartAction,

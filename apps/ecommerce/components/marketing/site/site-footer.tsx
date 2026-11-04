@@ -6,7 +6,7 @@ import { type PaymentMethod, PaymentMethodIcons } from "@/components/layout/paym
 import { CONTACT, DASHBOARD_URL, LOGIN_URL, SOCIAL_LINKS } from "@/lib/marketing/site.lib";
 import { BrandIcon, type BrandIconName } from "./brand-icon";
 import { FooterClaim } from "./footer-claim.client";
-import { Container, Ltr } from "./layout-primitives";
+import { Container } from "./layout-primitives";
 
 const PAYMENT_METHODS: PaymentMethod[] = ["visa", "mastercard", "meeza", "apple-pay", "google-pay"];
 

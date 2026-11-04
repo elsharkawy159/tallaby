@@ -155,7 +155,7 @@ export async function searchProducts(filters: SearchFilters) {
     }
 
     // Determine ordering
-    let orderBy = [];
+    const orderBy = [];
     switch (filters.sortBy) {
       case "price_asc":
         orderBy.push(asc(sql`(${products.price}->>'current')::numeric`));

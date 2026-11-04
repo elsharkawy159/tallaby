@@ -8,21 +8,17 @@ import {
 import {
   Card,
   CardContent,
-  CardHeader,
   CardTitle,
 } from "@workspace/ui/components/card";
 import { Badge } from "@workspace/ui/components/badge";
-import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import type { OrderConfirmationData } from "./order-confirmation.types";
 import {
   formatDate,
   getOrderStatusStyle,
-  getPaymentStatusStyle,
   isCancelOrderEnabled,
 } from "./order-confirmation.lib";
 import { Button } from "@workspace/ui/components/button";
-import { getPublicUrl } from "@workspace/ui/lib/utils";
 import { formatPrice } from "@workspace/lib";
 import { OrderStatusTracker } from "./order-status-tracker";
 import { DeliveryTimeline } from "./delivery-timeline";

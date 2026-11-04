@@ -2086,7 +2086,7 @@ export async function getSellerQuestions(params?: {
       .offset(offset);
 
     const qids = rows.map((r) => r.id);
-    let answersByQuestion: Record<string, any[]> = {};
+    const answersByQuestion: Record<string, any[]> = {};
     if (qids.length > 0) {
       const answers = await db
         .select({
