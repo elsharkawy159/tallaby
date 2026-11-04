@@ -25,6 +25,7 @@ import {
 } from "@/lib/product-translations";
 import { getPriceFinal } from "@workspace/lib";
 import { storeSellsProduct } from "@workspace/lib/stores/server";
+import { cartLineHasStock } from "@/lib/cart-stock.lib";
 
 type ProductPrice = {
   base: number;
@@ -413,9 +414,27 @@ export async function updateCartItem(itemId: string, quantity: number) {
   });
   if (!item) return { success: false, error: "Item not found" };
 
-  if (item.product.trackStock !== false && Number(item.product.quantity) < quantity)
-    return { success: false, error: "Insufficient stock" };
   if (quantity <= 0) return removeFromCart(itemId);
+
+  // The variant's own stock, as placing the order checks it (F-64).
+  const variantId = (item.variant as { id?: string } | null)?.id;
+  const variant = variantId
+    ? await db.query.productVariants.findFirst({
+        where: and(eq(productVariants.id, variantId), eq(productVariants.productId, item.productId)),
+        columns: { stock: true },
+      })
+    : null;
+  if (
+    !cartLineHasStock({
+      quantity,
+      trackStock: item.product.trackStock,
+      productQuantity: item.product.quantity,
+      hasVariant: Boolean(variantId),
+      variantStock: variant?.stock,
+    })
+  ) {
+    return { success: false, error: "Insufficient stock" };
+  }
 
   const [updated] = await db
     .update(cartItems)
