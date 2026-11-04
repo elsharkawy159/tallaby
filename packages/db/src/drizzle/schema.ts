@@ -8,7 +8,7 @@ export const fulfillmentType = pgEnum("fulfillment_type", ['seller_fulfilled', '
 export const itemCondition = pgEnum("item_condition", ['new', 'renewed', 'refurbished', 'used_like_new', 'used_very_good', 'used_good', 'used_acceptable'])
 export const notificationType = pgEnum("notification_type", ['order_update', 'shipment_update', 'price_drop', 'review_response', 'marketing'])
 export const orderStatus = pgEnum("order_status", ['pending', 'payment_processing', 'confirmed', 'shipping_soon', 'shipped', 'out_for_delivery', 'delivered', 'cancelled', 'refund_requested', 'refunded', 'returned'])
-export const orderSource = pgEnum("order_source", ['website', 'external', 'storefront'])
+export const orderSource = pgEnum("order_source", ['website', 'external', 'storefront', 'manual'])
 export const paymentStatus = pgEnum("payment_status", ['pending', 'authorized', 'paid', 'failed', 'refunded', 'partially_refunded', 'collected'])
 export const promotionType = pgEnum("promotion_type", ['percentage', 'fixed_amount', 'buy_x_get_y', 'free_shipping'])
 export const returnReason = pgEnum("return_reason", ['defective', 'damaged', 'wrong_item', 'not_as_described', 'better_price', 'no_longer_needed', 'unauthorized_purchase', 'other'])
@@ -67,6 +67,8 @@ export type OrderDiscountType =
 	| 'seller_free_shipping'
 	/** Admin-entered discount (external-order pricing, or an order price edit). */
 	| 'manual_adjustment'
+	/** A seller's own discount on a manual order; lowers the seller's line totals. */
+	| 'seller_discount'
 
 export type OrderCouponDiscountType =
 	| 'percentage'

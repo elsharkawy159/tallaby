@@ -1,3 +1,6 @@
+import { db, eq, orders } from "@workspace/db";
+import { isAwaitingCustomer } from "@workspace/lib/orders/manual";
+import { OrderLinkConfirm } from "./order-link-confirm.client";
 import { redirect } from "@/i18n/navigation";
 import { getOrderConfirmationData } from "./order-confirmation.server";
 import { OrderConfirmationContent } from "./order-confirmation.chunks";
@@ -87,8 +90,15 @@ export async function OrderConfirmationData({
     .then(Boolean)
     .catch(() => false);
 
+  // An order the store created, waiting for this customer (F-05c). Only with a valid link.
+  const validToken = accessToken && verifyOrderAccess(orderId, accessToken) ? accessToken : null;
+  const waiting = validToken
+    ? await db.query.orders.findFirst({ where: eq(orders.id, orderId), columns: { status: true, metadata: true } })
+    : null;
+
   return (
     <>
+      {validToken && waiting && isAwaitingCustomer(waiting) && <OrderLinkConfirm orderId={orderId} accessToken={validToken} />}
       {canSubscribe && <OrderRealtime orderId={orderId} />}
       {shouldPoll && <OrderPolling enabled />}
       <OrderConfirmationContent

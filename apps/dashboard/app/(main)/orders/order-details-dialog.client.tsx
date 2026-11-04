@@ -271,6 +271,7 @@ export function OrderDetailsDialog({
 
                 <Section title={t("payment")}>
                   <div className="space-y-2 rounded-lg border p-3">
+                    {order.isManual && <Row label={t("source")} value={t("sourceManual")} />}
                     <Row
                       label={t("paymentMethod")}
                       value={

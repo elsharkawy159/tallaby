@@ -1,4 +1,69 @@
 {
+  "manualOrder": {
+    "title": "Create order",
+    "subtitle": "A new order for {store}, taken by phone or chat.",
+    "chooseStore": "Choose the store this order belongs to.",
+    "products": "Products",
+    "searchProducts": "Search your products",
+    "noProducts": "No products found in this store.",
+    "outOfStock": "Out of stock",
+    "inStock": "{count} in stock",
+    "quantity": "Quantity",
+    "removeProduct": "Remove product",
+    "customer": "Customer",
+    "searchCustomers": "Find a customer of this store by name or phone",
+    "name": "Full name",
+    "phone": "Mobile number",
+    "governorate": "Governorate",
+    "governoratePlaceholder": "Choose a governorate",
+    "city": "City or area",
+    "address": "Address",
+    "notes": "Notes",
+    "payment": "Payment",
+    "paymentOptions": {
+      "cod": "Cash on delivery",
+      "paid": "Already paid to me"
+    },
+    "paidVia": "Paid by",
+    "paidViaOptions": {
+      "instapay": "InstaPay",
+      "vodafone_cash": "Vodafone Cash",
+      "e_cash": "e& Cash",
+      "bank_transfer": "Bank transfer",
+      "cash": "Cash"
+    },
+    "paidHint": "You already hold this money, so nothing is collected on delivery.",
+    "discount": "Discount (EGP)",
+    "discountHint": "Comes out of your own sale. It doesn't apply to shipping.",
+    "goods": "Products",
+    "discountLine": "Discount",
+    "shipping": "Shipping",
+    "total": "Total",
+    "totalsHint": "Add products and an address to see the total.",
+    "create": "Create order",
+    "sendLink": "Create and send a link",
+    "sendLinkHint": "The customer confirms from the link. If they don't confirm within 48 hours, the order is cancelled and the stock returns. The fee is only taken once they confirm.",
+    "created": "Order {number} created",
+    "linkReadyTitle": "Order {number} is waiting for the customer",
+    "linkReadyBody": "Send this link so they can confirm it.",
+    "sendWhatsapp": "Send on WhatsApp",
+    "copyLink": "Copy link",
+    "linkCopied": "Link copied",
+    "backToOrders": "Back to orders",
+    "linkMessage": "Hi, this is {store}. Please confirm your order {number} from this link: {link}",
+    "errors": {
+      "invalid": "Check the fields and try again.",
+      "productUnavailable": "One of the products isn't available in this store.",
+      "insufficientStock": "There isn't enough stock for one of the products.",
+      "customerBlocked": "You blocked this phone number. Unblock it first to create an order.",
+      "notCovered": "Your shipping zones don't cover this address.",
+      "outsideEgypt": "This address is outside Egypt.",
+      "noCod": "Cash on delivery isn't available for this address.",
+      "alreadySubmitted": "This order was already submitted. Check your orders.",
+      "readOnly": "This store can't take changes right now.",
+      "generic": "Something went wrong. Try again."
+    }
+  },
   "orderLock": {
     "title": "Top up $5 to see your orders",
     "body": "Customers can order from your store as usual, but their orders stay hidden until your first top-up.",
@@ -13,6 +78,7 @@
     "buy": "Get more"
   },
   "nav": {
+    "createOrder": "Create order",
     "dashboard": "Dashboard",
     "products": "Products",
     "manageProducts": "Manage products",
@@ -2183,6 +2249,7 @@
     }
   },
   "orders": {
+    "createOrder": "Create order",
     "subtitle": "Confirm new orders, send them out and mark them delivered. You handle the delivery.",
     "sort": {
       "label": "Sort",
@@ -2331,8 +2398,11 @@
       "items": "Items ({count})",
       "itemLine": "{quantity} × {price}",
       "summary": "Summary",
+      "source": "Source",
+      "sourceManual": "Entered by you",
       "paymentMethod": "Payment method",
       "paymentMethods": {
+        "seller_collected": "Paid to you directly",
         "cod": "Cash on delivery",
         "cash_on_delivery": "Cash on delivery",
         "card": "Card",

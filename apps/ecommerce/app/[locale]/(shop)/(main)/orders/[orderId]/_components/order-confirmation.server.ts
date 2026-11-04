@@ -38,9 +38,11 @@ export async function getOrderConfirmationData(
     const locale = (await getLocale()) as ProductLocale;
 
     const order = await db.query.orders.findFirst({
-      where: userId
-        ? and(eq(orders.id, orderId), eq(orders.userId, userId))
-        : eq(orders.id, orderId),
+      // A valid signed link opens this order, even with a guest session on the store host.
+      where:
+        userId && !hasValidAccessToken
+          ? and(eq(orders.id, orderId), eq(orders.userId, userId))
+          : eq(orders.id, orderId),
       with: {
         orderItems: {
           with: {

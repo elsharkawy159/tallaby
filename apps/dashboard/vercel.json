@@ -6,6 +6,7 @@
     { "path": "/api/cron/bosta-sync", "schedule": "15 4 * * *" },
     { "path": "/api/cron/seller-push", "schedule": "45 4 * * *" },
     { "path": "/api/cron/exchange-rate", "schedule": "5 5 * * *" },
-    { "path": "/api/cron/plan-renewals", "schedule": "20 5 * * *" }
+    { "path": "/api/cron/plan-renewals", "schedule": "20 5 * * *" },
+    { "path": "/api/cron/manual-order-links", "schedule": "35 5 * * *" }
   ]
 }

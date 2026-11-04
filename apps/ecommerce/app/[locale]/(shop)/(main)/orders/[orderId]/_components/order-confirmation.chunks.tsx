@@ -95,6 +95,7 @@ export async function OrderConfirmationContent({
     // Map payment method to translation key
     const paymentMethodMap: Record<string, string> = {
       cash_on_delivery: "cashOnDelivery",
+      seller_collected: "paidToStore",
       cash: "cashOnDelivery",
       online_payment: "payByCard",
       card: "payByCard",

@@ -84,6 +84,8 @@ export interface SellerOrderRow {
   wassalhaExported: boolean;
   flow: SellerOrderFlow;
   /** A returned order whose items can still go back in stock (ROADMAP.md F-42a). */
+  /** The seller entered this order by hand (F-05). */
+  isManual: boolean;
   canRestockReturn: boolean;
   /** Prefilled WhatsApp "please confirm" text for a new store order (ROADMAP.md F-02g). */
   confirmMessage: string | null;

@@ -10,6 +10,7 @@ Turns on the USD store wallet, Free and Pro plans and AI credits together (`ROAD
    - `CRON_SECRET` on the dashboard, for `/api/cron/exchange-rate` and `/api/cron/plan-renewals` (`apps/dashboard/vercel.json`).
    - `EXCHANGE_RATE_API_KEY` on the dashboard: a free ExchangeRate-API key. Without it the job uses the open endpoint, whose terms require a visible attribution link, and no such link exists.
    - **The backend must be deployed for the email pause to apply** (F-63, `docs/email-inventory.md`). After the switch, automatic emails stop except "your store is ready", and customer order emails send only for stores subscribed to Order notifications. `0142` and `0143` must be on production before deploying.
+   - `ORDER_ACCESS_SECRET` on the dashboard, the same value as ecommerce: the Create order page signs the customer's confirm link with it (F-05c).
    - Card top-ups stay "Soon" (`CARD_TOP_UPS_ENABLED = false`, owner 2026-11-04). Only before turning them on: confirm Kashier's real maximum for an EGP payment. `$1,000` must fit (F-56d).
 4. **Confirm a fresh rate exists.** Admin › Billing shows the latest rate and when it was fetched. If there is none, trigger the exchange-rate cron once, then check it again. Staging had no rate rows on 2026-11-03, so its cron hasn't run yet.
 5. **Dry run.** Admin › Billing shows it, or run `packages/db/scripts/billing-usd-dry-run.sql` (read-only) with the rate on its first line. Review:

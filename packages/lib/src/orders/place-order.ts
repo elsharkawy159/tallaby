@@ -19,6 +19,7 @@ import {
   InsufficientStockError,
   type StockLine,
 } from '@workspace/db/inventory'
+import type { StockContext } from '@workspace/db/inventory'
 import { claimCouponUsage } from '@workspace/db/coupons'
 import {
   chargeOrderPlacementFee,
@@ -95,7 +96,7 @@ export interface StoreShippingSnapshot {
 /** Internal control-flow signal: coupon lost a concurrent usage-limit race. */
 class CouponClaimFailedError extends Error {}
 
-export type OrderSource = 'website' | 'external' | 'storefront'
+export type OrderSource = 'website' | 'external' | 'storefront' | 'manual'
 
 export interface PaymentOverrides {
   paymentMethod: string
@@ -155,6 +156,18 @@ export interface PlaceOrderFromCartInput {
    * is refused. Omit for the marketplace and admin flows.
    */
   storefrontPayments?: StorefrontCheckoutPayments
+  /**
+   * A seller's own discount on a manual order (ROADMAP.md F-05). Unlike
+   * `pricingOverrides.discountAmount`, it lowers the seller's line totals, so
+   * the seller pays for it.
+   */
+  sellerDiscount?: { amountPiastres: number; label: string }
+  /** Who and where, for the stock history. */
+  stockContext?: StockContext
+  /** Extra keys for `orders.metadata`. */
+  orderMetadata?: Record<string, unknown>
+  /** The order waits for the customer: the fee comes when they confirm. */
+  deferPlacementFee?: boolean
 }
 
 export interface PlaceOrderInventoryItem {
@@ -247,7 +260,13 @@ export async function placeOrderFromCart(
     skipCoupons = false,
     sendConfirmationEmail = true,
     storefrontPayments,
+    sellerDiscount,
+    stockContext,
+    orderMetadata,
+    deferPlacementFee = false,
   } = input
+  // Manual orders follow the store's rules: blocklist, zones and catalog.
+  const isStoreOrder = orderSource === 'storefront' || orderSource === 'manual'
 
   const cart = await db.query.carts.findFirst({
     where: and(eq(carts.id, cartId), eq(carts.userId, userId)),
@@ -310,7 +329,7 @@ export async function placeOrderFromCart(
   // Store websites: the seller blocked this shipping phone on the store
   // (ROADMAP.md F-02). Refused before any stock, coupon or money is touched.
   if (
-    orderSource === 'storefront' &&
+    isStoreOrder &&
     cart.storeId &&
     shippingAddress &&
     (await isStorePhoneBlocked(cart.storeId, shippingAddress.phone))
@@ -359,7 +378,7 @@ export async function placeOrderFromCart(
   // digital-only carts keep the rate table untouched.
   let storeQuote: StorefrontShipping | null = null
   if (
-    orderSource === 'storefront' &&
+    isStoreOrder &&
     cart.storeId &&
     pricingOverrides?.shippingCost == null &&
     !isDigitalOnlyCart &&
@@ -563,6 +582,28 @@ export async function placeOrderFromCart(
     }
   }
 
+  // The seller's own discount comes out of the lines like a seller coupon, so
+  // the fee and the delivery credit both see what the customer really pays.
+  const lineDiscountLines: OrderDiscountLine[] = []
+  if (sellerDiscount && sellerDiscount.amountPiastres > 0) {
+    const nets = orderItemsData.map((item) => Number(item.total))
+    const goods = nets.reduce((sum, value) => sum + value, 0)
+    const amount = Math.min(sellerDiscount.amountPiastres / 100, goods)
+    const shares = allocateDiscountAcrossLines(amount, nets)
+    orderItemsData.forEach((item, index) => {
+      const share = shares[index] ?? 0
+      item.discountAmount = formatDecimal(Number(item.discountAmount) + share)
+      item.total = formatDecimal(Number(item.subtotal) - Number(item.discountAmount))
+    })
+    if (amount > 0) {
+      lineDiscountLines.push({
+        type: 'seller_discount',
+        label: sellerDiscount.label,
+        amount: formatDecimal(amount),
+      })
+    }
+  }
+
   // Platform fee (PLAN.md §13.2, D1/D2/D22): a flat EGP 5 per seller, capped at
   // its line totals after its own coupon, 0 during the seller's 7-day trial
   // or when exempt. Snapshotted per line; never recomputed.
@@ -614,12 +655,16 @@ export async function placeOrderFromCart(
       : null,
   })
 
-  const { lines: discountLines, totalDiscount } = applyDiscountOverride(
+  const { lines: overriddenLines, totalDiscount: overriddenDiscount } = applyDiscountOverride(
     builtDiscountLines,
     builtTotalDiscount,
     pricingOverrides?.discountAmount,
     subtotal + shippingCost,
   )
+  // Line discounts sit beside the coupon's; "sum of discounts = discount_amount" still holds.
+  const discountLines = [...overriddenLines, ...lineDiscountLines]
+  const totalDiscount =
+    overriddenDiscount + lineDiscountLines.reduce((sum, line) => sum + Number(line.amount), 0)
 
   const totalAmount = subtotal + shippingCost + tax - totalDiscount
   const orderNumber = generateOrderNumber()
@@ -700,8 +745,9 @@ export async function placeOrderFromCart(
   const hasFeeHolds = Object.keys(feeHolds).length > 0
 
   const baseOrderMetadata: Record<string, unknown> | null =
-    storeShipping || sellerCollected || hasFeeHolds
+    storeShipping || sellerCollected || hasFeeHolds || orderMetadata
       ? {
+          ...orderMetadata,
           ...(hasFeeHolds && { feeHolds }),
           ...(storeShipping && { storeShipping }),
           ...(sellerCollected && { paymentCollector: 'seller' }),
@@ -741,7 +787,7 @@ export async function placeOrderFromCart(
 
   try {
     await db.transaction(async (tx) => {
-      stockResults = await decrementStock(tx, stockLines)
+      stockResults = await decrementStock(tx, stockLines, stockContext)
 
       if (appliedCoupon) {
         const claimed = await claimCouponUsage(tx, appliedCoupon.id)
@@ -927,7 +973,7 @@ export async function placeOrderFromCart(
 
       // Card orders still waiting for their payment are charged when the
       // payment webhook confirms them; an abandoned payment costs nothing.
-      if (newOrder!.status !== 'payment_processing') {
+      if (newOrder!.status !== 'payment_processing' && !deferPlacementFee) {
         await chargeOrderPlacementFee(tx, newOrder!.id)
       }
 

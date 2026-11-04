@@ -1,4 +1,11 @@
 {
+  "orderLinkConfirm": {
+    "title": "من فضلك أكد طلبك",
+    "body": "المتجر عمل لك الطلب ده. راجع التفاصيل تحت وبعدين أكده.",
+    "confirm": "تأكيد طلبي",
+    "confirmed": "شكرًا، تم تأكيد طلبك.",
+    "failed": "مش ممكن تأكيد الطلب ده دلوقتي."
+  },
   "catalogShare": {
     "defaultTitle": "الكتالوج بتاعنا",
     "newestTitle": "أحدث منتجاتنا",
@@ -711,6 +718,7 @@
     "orderNotFound": "الطلب غير موجود",
     "orderNotFoundDescription": "لم نتمكن من العثور على الطلب الذي تبحث عنه.",
     "viewAllOrders": "عرض جميع الطلبات",
+    "paidToStore": "مدفوع للمتجر",
     "orderPlaced": "تم تأكيد الطلب!",
     "thankYouForPurchase": "شكراً لشرائك. تم تأكيد طلبك بنجاح.",
     "orderPlacedOn": "تم تأكيد الطلب في",

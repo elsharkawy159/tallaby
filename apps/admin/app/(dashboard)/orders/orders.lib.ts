@@ -85,6 +85,7 @@ const PAYMENT_METHOD_LABELS: Record<string, string> = {
   online_payment: "Online Payment",
   online: "Online Payment",
   cash_on_delivery: "Cash on Delivery",
+  seller_collected: "Paid to the seller",
   wallet: "Wallet",
   cash: "Cash",
 };

@@ -83,7 +83,7 @@ async function sources(sellerId: string, storeId: string, start: string) {
   // order_items.seller_id scopes every row to this seller, whatever the store.
   const result = await db.execute(sql`
     SELECT CASE
-             WHEN o.order_source = 'external' THEN 'manual'
+             WHEN o.order_source IN ('external', 'manual') THEN 'manual'
              WHEN o.store_id = ${storeId}::uuid THEN 'store'
              WHEN o.store_id IS NOT NULL THEN 'otherStores'
              ELSE 'marketplace'

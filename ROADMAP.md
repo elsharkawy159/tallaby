@@ -1101,7 +1101,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-04a Invoice + packing slip print (2026-10-30, uncommitted; `/print/orders`; browser E2E pending)
 - [x] F-04b Orders export (2026-10-30, uncommitted; .xlsx of the orders on screen; browser E2E pending)
 - [x] F-05a Manual orders design (owner approved 2026-11-04)
-- [ ] F-05b Create order form
+- [x] F-05b Create order form (2026-11-04; 0144 on staging; not seen in a browser)
 
 **P1**
 
@@ -1127,7 +1127,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-13b Store-wide free delivery (none / over an amount / every order) (2026-10-30, local `main`; minimum order value still open)
 - [x] F-03e Missed-order reminders (2026-10-29; one-click WhatsApp + the existing daily store cart email shown on the lead; automatic WhatsApp with F-14)
 - [x] F-04c Orders bulk actions (2026-10-30, uncommitted; selection bar on /orders; browser E2E pending)
-- [ ] F-05c Send order link
+- [x] F-05c Send order link (2026-11-04; not seen in a browser; needs `ORDER_ACCESS_SECRET` on the dashboard)
 - [~] F-21p Seller-collected payments (PLAN.md P3-07 Part B) — needed by the deposit. **2026-10-31 (owner request):** storefront InstaPay / Vodafone Cash / e& Cash pay the seller's own details (snapshot + `paymentCollector: 'seller'`, fee-only on delivery), new payment page, InstaPay "receive by" dropdown. **Also 2026-10-31:** transfer screenshot (payment page + order page, seller sees it on the order; `0132`) and WE Pay / Orange Cash at storefront checkout. Left: a seller "payment received" action, D32 auto-cancel, change email.
 - [ ] F-21a Deposit design (owner approval)
 - [ ] F-21b Deposit migration + settings
@@ -1333,6 +1333,19 @@ Add each new request here first, with the date and the owner's words, then turn 
 ---
 
 ## 7. Log
+
+### 2026-11-04 — F-05 Manual orders
+
+- **Built:** Orders › Create order. It goes through `placeOrderFromCart`, so stock, shipping zones, blocklist and the fee are the normal ones. The customer is a new guest row per order, so a seller never reaches another seller's or Tallaby's accounts. Prices come from the database. It sits behind the first top-up lock (F-68).
+- **Discount:** a new `sellerDiscount` input lowers the seller's line totals, unlike the admin override, so the seller pays for it. It's capped at the goods and never touches shipping.
+- **Already paid:** stored as `seller_collected` with `paymentCollector: 'seller'`, so delivery posts the fee only, never a sale.
+- **Send a link (F-05c):** creates a pending order with stock held, and the customer confirms from a signed link on the store. A daily job, `/api/cron/manual-order-links`, cancels links not confirmed after 48 hours and restores stock.
+- **Calls, from the note's open questions:** a new `manual` order source (0144). Shipping is the zone or rate price only. A blocked phone is refused. Payment is cash on delivery or already paid. A manual order starts Confirmed, so Bosta's auto-ship on confirm doesn't run and the seller ships it from the queue. The seller still gets the bell and push. The link is a pending order rather than a cart link, so the discount travels with it.
+- **Fee, call to check:** a link order takes the fee when the customer confirms, like a card order when paid, so a link nobody confirms costs nothing. It follows the wallet's currency through the normal fee code.
+- **Also fixed:** a guest's placeholder `@temp.local` address no longer counts as an email recipient, so no mail and no Order Notifications charge goes to it. A valid signed order link now opens the order even with a guest session on the store host.
+- **Migrations:** `0144` on staging only. `0136_guest_users_without_auth_fk` was missing on staging and blocked every guest row, so it was applied there too. Production needs both.
+- **Env:** `ORDER_ACCESS_SECRET` on the dashboard, the same as ecommerce.
+- **Checks:** 8 integration tests on staging plus 6 unit tests; 33 existing place-order and USD switch tests pass; `tsc` clean apart from the known outside errors. **Not seen in a browser, and no real WhatsApp link was opened.**
 
 ### 2026-11-04 — F-68 First top-up before orders; F-13b checked
 

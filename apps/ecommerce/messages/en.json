@@ -1,4 +1,11 @@
 {
+  "orderLinkConfirm": {
+    "title": "Please confirm your order",
+    "body": "The store created this order for you. Check the details below, then confirm it.",
+    "confirm": "Confirm my order",
+    "confirmed": "Thanks, your order is confirmed.",
+    "failed": "This order can't be confirmed anymore."
+  },
   "catalogShare": {
     "defaultTitle": "Our catalog",
     "newestTitle": "Our latest products",
@@ -711,6 +718,7 @@
     "orderNotFound": "Order Not Found",
     "orderNotFoundDescription": "We couldn't find the order you're looking for.",
     "viewAllOrders": "View All Orders",
+    "paidToStore": "Paid to the store",
     "orderPlaced": "Order Placed!",
     "thankYouForPurchase": "Thank you for your purchase. Your order has been successfully placed.",
     "orderPlacedOn": "Order placed on",

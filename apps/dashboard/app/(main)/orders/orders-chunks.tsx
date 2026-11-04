@@ -3,11 +3,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import type { RowSelectionState } from "@tanstack/react-table";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useLocale, useTranslations } from "next-intl";
 import type { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, CircleAlert, LayoutGrid, List, PackageSearch, Search, Store } from "lucide-react";
+import { Button } from "@workspace/ui/components/button";
 import { Checkbox } from "@workspace/ui/components/checkbox";
 import { Input } from "@workspace/ui/components/input";
 import {
@@ -489,7 +491,10 @@ export function VendorOrdersTable({
             {t("bosta.attentionFilter", { count: overview.attention })}
           </button>
         )}
-        <ExportOrdersButton filters={filters} count={total} className="ms-auto h-10" />
+        <Button asChild className="ms-auto h-10">
+          <Link href={storeChannel ? `/orders/new?store=${filters.channel}` : "/orders/new"}>{t("createOrder")}</Link>
+        </Button>
+        <ExportOrdersButton filters={filters} count={total} className="h-10" />
         {storeChannel && shipQueue.wassalha && (
           <WassalhaExportButton storeId={filters.channel} orders={shipQueue.orders} showCount className="h-10" />
         )}

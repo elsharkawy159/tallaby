@@ -406,6 +406,14 @@
       "types": "./src/platform-blog/platform-blog.server.ts",
       "default": "./src/platform-blog/platform-blog.server.ts"
     },
+    "./orders/manual": {
+      "types": "./src/orders/manual-order.lib.ts",
+      "default": "./src/orders/manual-order.lib.ts"
+    },
+    "./orders/manual/server": {
+      "types": "./src/orders/manual-order.server.ts",
+      "default": "./src/orders/manual-order.server.ts"
+    },
     "./billing": {
       "types": "./src/billing/billing.lib.ts",
       "default": "./src/billing/billing.lib.ts"

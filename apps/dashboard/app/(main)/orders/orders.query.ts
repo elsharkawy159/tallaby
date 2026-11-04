@@ -170,6 +170,7 @@ export async function loadSellerOrders(
       isDigitalOnly: true,
       storeId: true,
       metadata: true,
+      orderSource: true,
       createdAt: true,
       shippedAt: true,
       deliveredAt: true,
@@ -395,6 +396,7 @@ export async function loadSellerOrders(
             }
           : null,
       flow,
+      isManual: o.orderSource === "manual",
       canRestockReturn: canRestockReturn(flow.stage, o.metadata, Boolean(flow.readOnly)),
       confirmMessage:
         store && confirm && customerPhone && flow.stage === "new"

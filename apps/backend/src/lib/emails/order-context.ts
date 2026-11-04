@@ -84,7 +84,8 @@ export async function loadOrderEmailContext(orderId: string): Promise<OrderEmail
     order,
     locale,
     currency,
-    recipient: order.user?.email?.trim() || null,
+    // Guests and manual orders carry a placeholder address: nothing to send to.
+    recipient: order.user?.email?.trim() && !order.user.email.includes("@temp.local") ? order.user.email.trim() : null,
     customerName: address?.fullName || order.user?.fullName || "",
     store: brandStore,
     brand: brandStore?.brand ?? PLATFORM_BRAND,
