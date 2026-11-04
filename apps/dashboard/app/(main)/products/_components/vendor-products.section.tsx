@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState, useTransition } from "react";
+import { useCallback, useEffect, useState, useSyncExternalStore, useTransition } from "react";
 import { toast } from "sonner";
 import { useLocale, useTranslations } from "next-intl";
 import {
@@ -79,6 +79,16 @@ export type VendorProduct = {
   reviewCount?: number | null;
 };
 
+const noViewUpdates = () => () => {};
+function readSavedView(): ProductsViewMode | null {
+  try {
+    const saved = localStorage.getItem(VIEW_STORAGE_KEY);
+    return saved === "grid" || saved === "table" ? saved : null;
+  } catch {
+    return null;
+  }
+}
+
 const VIEW_STORAGE_KEY = "tl-prod-view";
 const SEARCH_DEBOUNCE_MS = 300;
 const ALL_CATEGORIES = "__all__";
@@ -109,7 +119,10 @@ export function VendorProductsSection({
   const locale = useLocale();
   const router = useRouter();
 
-  const [view, setView] = useState<ProductsViewMode>("grid");
+  // The saved view is read after hydration, so the server and first client render agree.
+  const [chosenView, setView] = useState<ProductsViewMode | null>(null);
+  const savedView = useSyncExternalStore(noViewUpdates, readSavedView, () => null);
+  const view = chosenView ?? savedView ?? "grid";
   // The typed search; the URL follows it after a short pause.
   const [query, setQuery] = useState(filters.q);
   const [selected, setSelected] = useState<Set<string>>(() => new Set());
@@ -124,14 +137,6 @@ export function VendorProductsSection({
   const [isPending, startTransition] = useTransition();
   // A filter or page change: the current rows stay on screen until the next arrive.
   const [isNavigating, startNavigation] = useTransition();
-
-  // Read the saved view after mount so the server and first client render agree.
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(VIEW_STORAGE_KEY);
-      if (saved === "grid" || saved === "table") setView(saved);
-    } catch {}
-  }, []);
 
   const navigate = useCallback(
     (over: Partial<ProductsListFilters>, options?: { replace?: boolean }) => {
@@ -151,23 +156,25 @@ export function VendorProductsSection({
   };
 
   // Typing searches after a short pause. Back and forward restore the box.
-  const lastPushedQuery = useRef(filters.q);
-  useEffect(() => {
-    if (filters.q !== lastPushedQuery.current) {
-      lastPushedQuery.current = filters.q;
+  const [lastPushedQuery, setLastPushedQuery] = useState(filters.q);
+  const [seenQuery, setSeenQuery] = useState(filters.q);
+  if (filters.q !== seenQuery) {
+    setSeenQuery(filters.q);
+    if (filters.q !== lastPushedQuery) {
+      setLastPushedQuery(filters.q);
       setQuery(filters.q);
     }
-  }, [filters.q]);
+  }
   useEffect(() => {
     const next = query.trim();
-    if (next === lastPushedQuery.current) return;
+    if (next === lastPushedQuery) return;
     const timer = setTimeout(() => {
-      lastPushedQuery.current = next;
+      setLastPushedQuery(next);
       setSelected(new Set());
       navigate({ q: next, page: 1 }, { replace: true });
     }, SEARCH_DEBOUNCE_MS);
     return () => clearTimeout(timer);
-  }, [query, navigate]);
+  }, [query, lastPushedQuery, navigate]);
 
   const changeView = (next: ProductsViewMode) => {
     setView(next);
@@ -179,7 +186,7 @@ export function VendorProductsSection({
 
   const clearFilters = () => {
     setQuery("");
-    lastPushedQuery.current = "";
+    setLastPushedQuery("");
     applyFilter({ tab: "all", q: "", category: "" });
   };
 

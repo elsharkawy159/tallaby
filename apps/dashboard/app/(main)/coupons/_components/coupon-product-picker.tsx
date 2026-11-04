@@ -29,7 +29,9 @@ export function CouponProductPicker({ selectedIds, onChange, invalid }: Props) {
   const [showSearch, setShowSearch] = useState(false);
   const firstLoad = useRef(true);
   const selectedRef = useRef(selectedIds);
-  selectedRef.current = selectedIds;
+  useEffect(() => {
+    selectedRef.current = selectedIds;
+  }, [selectedIds]);
   const search = query.trim();
 
   useEffect(() => {

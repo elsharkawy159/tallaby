@@ -33,23 +33,23 @@ export function SetupPrompts() {
   const latestRequest = useRef(0);
   const toastFired = useRef(false);
 
-  const sync = useCallback(async (event?: SetupPromptEvent) => {
-    if (finished.current && !event) return;
+  const sync = useCallback((event?: SetupPromptEvent): Promise<void> => {
+    if (finished.current && !event) return Promise.resolve();
     const request = ++latestRequest.current;
-    try {
-      const response = await fetch("/api/setup-prompts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(event ? { event } : {}),
+    return fetch("/api/setup-prompts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(event ? { event } : {}),
+    })
+      .then((response) => (response.ok ? (response.json() as Promise<SetupPromptSync>) : null))
+      .then((data) => {
+        if (!data || request !== latestRequest.current) return;
+        finished.current = data.finished;
+        setPrompt(data.prompt);
+      })
+      .catch(() => {
+        // Offline or a hiccup: no prompt now, the next page change tries again.
       });
-      if (!response.ok) return;
-      const data = (await response.json()) as SetupPromptSync;
-      if (request !== latestRequest.current) return;
-      finished.current = data.finished;
-      setPrompt(data.prompt);
-    } catch {
-      // Offline or a hiccup: no prompt now, the next page change tries again.
-    }
   }, []);
 
   useEffect(() => {

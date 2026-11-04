@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
@@ -112,22 +112,24 @@ export function CustomersView({
   );
 
   // Typing searches after a short pause. Back and forward restore the box.
-  const lastPushedQuery = useRef(filters.q);
-  useEffect(() => {
-    if (filters.q !== lastPushedQuery.current) {
-      lastPushedQuery.current = filters.q;
+  const [lastPushedQuery, setLastPushedQuery] = useState(filters.q);
+  const [seenQuery, setSeenQuery] = useState(filters.q);
+  if (filters.q !== seenQuery) {
+    setSeenQuery(filters.q);
+    if (filters.q !== lastPushedQuery) {
+      setLastPushedQuery(filters.q);
       setQuery(filters.q);
     }
-  }, [filters.q]);
+  }
   useEffect(() => {
     const next = query.trim();
-    if (next === lastPushedQuery.current) return;
+    if (next === lastPushedQuery) return;
     const timer = setTimeout(() => {
-      lastPushedQuery.current = next;
+      setLastPushedQuery(next);
       navigate({ q: next, page: 1 }, { replace: true });
     }, SEARCH_DEBOUNCE_MS);
     return () => clearTimeout(timer);
-  }, [query, navigate]);
+  }, [query, lastPushedQuery, navigate]);
 
   // F-01d: every customer matching the filters as .xlsx. The server reads them
   // again for the session's seller, since only one page is in the browser.

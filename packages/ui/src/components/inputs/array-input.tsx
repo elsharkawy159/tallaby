@@ -29,6 +29,14 @@ export interface ArrayInputProps extends Omit<BaseFieldProps, "children"> {
   showToast?: boolean; // Show toast notifications
 }
 
+/** Runs the "add one empty item" effect; a hook can't live in the Controller's render callback. */
+function EnsureOneItem({ isEmpty, addItem }: { isEmpty: boolean; addItem: () => void }) {
+  React.useEffect(() => {
+    if (isEmpty) addItem();
+  });
+  return null;
+}
+
 export const ArrayInput = React.forwardRef<HTMLDivElement, ArrayInputProps>(
   (
     {
@@ -312,15 +320,13 @@ export const ArrayInput = React.forwardRef<HTMLDivElement, ArrayInputProps>(
               onChange?.(newItems);
             };
 
-            // Ensure we always have at least one empty field for input when autoAddEmpty is enabled
-            React.useEffect(() => {
-              if (autoAddEmpty && items.length === 0) {
-                field.onChange([itemType === "number" ? 0 : ""]);
-              }
-            }, [items.length, autoAddEmpty, field, itemType]);
-
             return (
               <div className="space-y-3">
+                {/* Ensure we always have at least one empty field for input when autoAddEmpty is enabled */}
+                <EnsureOneItem
+                  isEmpty={autoAddEmpty && items.length === 0}
+                  addItem={() => field.onChange([itemType === "number" ? 0 : ""])}
+                />
                 {/* Items List */}
                 <div className="space-y-2 relative">
                   {items.map((item, index) => {

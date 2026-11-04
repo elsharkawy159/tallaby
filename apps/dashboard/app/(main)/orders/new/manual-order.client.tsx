@@ -443,12 +443,11 @@ function CustomerSearch({ storeId, onPick }: { storeId: string; onPick: (custome
   const [query, setQuery] = useState("");
   const [options, setOptions] = useState<ManualCustomerOption[]>([]);
   const debounced = useDebounced(query, 300);
+  const searching = debounced.trim().length >= 2;
+  const shown = searching ? options : [];
 
   useEffect(() => {
-    if (debounced.trim().length < 2) {
-      setOptions([]);
-      return;
-    }
+    if (!searching) return;
     let stale = false;
     searchManualOrderCustomers(storeId, debounced).then((rows) => {
       if (!stale) setOptions(rows);
@@ -456,14 +455,14 @@ function CustomerSearch({ storeId, onPick }: { storeId: string; onPick: (custome
     return () => {
       stale = true;
     };
-  }, [debounced, storeId]);
+  }, [debounced, searching, storeId]);
 
   return (
     <div className="relative">
       <Input placeholder={t("searchCustomers")} aria-label={t("searchCustomers")} value={query} onChange={(e) => setQuery(e.target.value)} />
-      {options.length > 0 && (
+      {shown.length > 0 && (
         <ul className="absolute z-20 mt-1 max-h-60 w-full overflow-y-auto rounded-xl border bg-popover p-1 shadow-lg">
-          {options.map((customer) => (
+          {shown.map((customer) => (
             <li key={customer.key}>
               <button
                 type="button"

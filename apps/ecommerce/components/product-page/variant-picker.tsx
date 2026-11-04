@@ -75,7 +75,7 @@ export const VariantPicker = ({
     return t("selectOption", {
       option: Array.from(optionNames).join(" / "),
     });
-  }, [product.productVariants, t]);
+  }, [locale, product.productVariants, t]);
   const selectedVariantLabel = selectedVariant
     ? getVariantDisplayFields(selectedVariant, locale).title ||
       selectedVariant.title

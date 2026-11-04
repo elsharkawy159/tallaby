@@ -22,12 +22,12 @@ export function CrossSellSection({ productId, initial }: { productId: string; in
   const [value, setValue] = useState("10");
   const [pending, startTransition] = useTransition();
 
+  const text = query.trim();
+  const searching = text.length >= 2 && !chosen;
+  const shown = searching ? options : [];
+
   useEffect(() => {
-    const text = query.trim();
-    if (text.length < 2 || chosen) {
-      setOptions([]);
-      return;
-    }
+    if (!searching) return;
     let stale = false;
     const timer = setTimeout(() => {
       searchCouponProducts({ query: text }).then((rows) => {
@@ -38,7 +38,7 @@ export function CrossSellSection({ productId, initial }: { productId: string; in
       stale = true;
       clearTimeout(timer);
     };
-  }, [query, chosen, productId]);
+  }, [text, searching, productId]);
 
   const run = (action: () => Promise<CrossSellResult>, after?: () => void) =>
     startTransition(async () => {
@@ -115,9 +115,9 @@ export function CrossSellSection({ productId, initial }: { productId: string; in
               setQuery(event.target.value);
             }}
           />
-          {options.length > 0 && (
+          {shown.length > 0 && (
             <ul className="absolute z-20 mt-1 max-h-60 w-full overflow-y-auto rounded-xl border bg-popover p-1 shadow-lg">
-              {options.map((option) => (
+              {shown.map((option) => (
                 <li key={option.id}>
                   <button
                     type="button"
