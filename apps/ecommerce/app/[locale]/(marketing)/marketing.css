@@ -4,13 +4,68 @@
 
 /*
  * Marketing site tokens. The palette mirrors the Tallaby design system
- * (Claude Design project "colors_and_type.css"); shadcn tokens come from
- * @workspace/ui/globals.css.
+ * (Claude Design project "colors_and_type.css", Home v4 language); shadcn tokens
+ * come from @workspace/ui/globals.css. This file loads only under (marketing).
  */
 /* English type is tighter and tracked in; `en:` scopes those tweaks. */
 @custom-variant en (&:where(html[lang="en"] *));
 
+:root {
+  --ink-900: #0d3743;
+  --ink-700: #33464b;
+  --ink-600: #43575c;
+  --ink-500: #5a6d72;
+  --ink-400: #7b8f94;
+  --ink-on-dark: #c6d8dc;
+
+  --line: #e3ebed;
+  --line-strong: #dfe8ea;
+  --line-soft: #edf1f2;
+  --line-kick: #e1eaec;
+  --surface: #ffffff;
+  --surface-glass: rgb(255 255 255 / 0.85);
+  --surface-nav: rgb(255 255 255 / 0.8);
+  --surface-dark: #0d3743;
+  --footer-top: #0f3a46;
+  --footer-bar: #082a33;
+
+  --btn-h: 52px;
+  --btn-h-sm: 42px;
+  --ring-focus: 0 0 0 4px rgb(20 81 99 / 0.1);
+  --bg-fog:
+    radial-gradient(1100px 760px at 50% -120px, rgb(20 81 99 / 0.2), rgb(20 81 99 / 0.06) 55%, transparent 78%),
+    radial-gradient(700px 600px at 92% 9%, rgb(253 173 40 / 0.13), transparent 70%),
+    radial-gradient(900px 900px at 0% 30%, rgb(20 81 99 / 0.1), transparent 70%),
+    radial-gradient(800px 800px at 100% 55%, rgb(20 81 99 / 0.09), transparent 70%),
+    radial-gradient(700px 700px at 6% 78%, rgb(253 173 40 / 0.08), transparent 70%),
+    radial-gradient(1000px 700px at 50% 98%, rgb(20 81 99 / 0.1), transparent 72%),
+    linear-gradient(180deg, rgb(20 81 99 / 0.07) 0, transparent 900px);
+  --bg-cta-glow: radial-gradient(50% 50% at 50% 0%, rgb(253 173 40 / 0.18), transparent 70%);
+}
+
 @theme inline {
+  --color-ink-900: var(--ink-900);
+  --color-ink-700: var(--ink-700);
+  --color-ink-600: var(--ink-600);
+  --color-ink-500: var(--ink-500);
+  --color-ink-400: var(--ink-400);
+  --color-ink-on-dark: var(--ink-on-dark);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-line-soft: var(--line-soft);
+  --color-line-kick: var(--line-kick);
+  --color-surface: var(--surface);
+  --color-surface-glass: var(--surface-glass);
+  --color-surface-nav: var(--surface-nav);
+  --color-surface-dark: var(--surface-dark);
+  --color-footer-top: var(--footer-top);
+  --color-footer-bar: var(--footer-bar);
+
+  --radius-card-sm: 18px;
+  --radius-card: 24px;
+  --radius-card-lg: 28px;
+  --radius-band: 36px;
+
   --color-teal-50: #eef3f4;
   --color-teal-100: #cfdde1;
   --color-teal-300: #89a8b1;
@@ -35,7 +90,11 @@
   --color-haze: #a9c0c6;
 
   --shadow-card: 0 1px 3px rgba(20, 81, 99, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-soft: 0 4px 12px rgba(20, 81, 99, 0.08), 0 2px 4px rgba(20, 81, 99, 0.05);
+  --shadow-soft: 0 14px 36px rgba(13, 55, 67, 0.06);
+  --shadow-raise: 0 18px 40px rgba(13, 55, 67, 0.08);
+  --shadow-stage: 0 40px 90px rgba(13, 55, 67, 0.16);
+  --shadow-cta: 0 6px 18px rgba(253, 173, 40, 0.35);
+  --shadow-cta-hover: 0 10px 24px rgba(253, 173, 40, 0.45);
   --shadow-lift: 0 10px 30px rgba(20, 81, 99, 0.12), 0 4px 10px rgba(20, 81, 99, 0.06);
 
   --font-latin: var(--font-montserrat), system-ui, sans-serif;
@@ -122,19 +181,21 @@
   }
   html[lang="ar"] body {
     font-family: var(--font-noto-kufi-arabic), var(--font-montserrat), system-ui, sans-serif;
-    line-height: 1.7;
+    line-height: 1.75;
   }
   html[lang="en"] body {
     font-family: var(--font-montserrat), system-ui, sans-serif;
     line-height: 1.6;
   }
   body {
-    background: var(--color-paper);
-    color: var(--color-body);
+    background: #fff;
+    color: var(--ink-700);
+    -webkit-font-smoothing: antialiased;
   }
   :focus-visible {
     outline: 3px solid rgb(253 173 40 / 0.7);
     outline-offset: 2px;
+    border-radius: 8px;
   }
 }
 
@@ -159,9 +220,32 @@
       opacity 0.7s cubic-bezier(0.2, 0.6, 0.2, 1),
       transform 0.7s cubic-bezier(0.2, 0.6, 0.2, 1);
   }
-  .reveal[data-shown="true"] {
+  .reveal[data-shown="true"],
+  html:not(.js-animations) .reveal {
     opacity: 1;
     transform: none;
+  }
+  /* Every tallaby.com page sits on this soft teal and amber fog. */
+  .site-fog {
+    position: relative;
+    isolation: isolate;
+    background: #fff;
+  }
+  .site-fog::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: var(--bg-fog);
+  }
+  .cta-glow::before {
+    content: "";
+    position: absolute;
+    inset: -40% -10% auto;
+    height: 120%;
+    pointer-events: none;
+    background: var(--bg-cta-glow);
   }
   .hero-glow {
     background:
@@ -254,8 +338,4 @@
       scale 0.15s ease,
       visibility 0s;
   }
-}
-/* The home page ends with its own claim box, right above the footer. */
-body:has([data-sticky-cta]) [data-footer-claim] {
-  display: none;
 }

@@ -14,12 +14,14 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       <JsonLd data={siteGraph()} />
       <a
         href="#main"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:z-[60] focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:text-teal-900"
+        className="absolute -top-[60px] start-3 z-[200] rounded-[10px] bg-teal-900 px-3.5 py-2 text-white focus:top-3"
       >
         {t("skip")}
       </a>
-      <SiteHeader />
-      <main id="main">{children}</main>
+      <div className="site-fog">
+        <SiteHeader />
+        <main id="main">{children}</main>
+      </div>
       <SiteFooter />
       <WhatsAppButton label={t("whatsapp")} />
     </SignupProvider>

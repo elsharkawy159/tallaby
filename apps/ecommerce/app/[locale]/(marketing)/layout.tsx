@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { getTranslations } from "next-intl/server";
 import { AnimationObserver } from "@workspace/motion";
 import { MetaPixel } from "@/components/meta/meta-pixel";
+import { MarketingMessages } from "@/components/marketing/site/marketing-messages.client";
+import { loadMarketingMessages } from "@/i18n/messages";
 import { SITE_URL } from "@/lib/marketing/site.lib";
 import "./marketing.css";
 
@@ -19,15 +21,22 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   };
 }
 
-export const viewport: Viewport = { themeColor: "#0d3743" };
+export const viewport: Viewport = { themeColor: "#ffffff" };
 
 /** One AnimationObserver plays every `data-animate` element on the tallaby.com pages (@workspace/motion). */
-export default function MarketingLayout({ children }: { children: React.ReactNode }) {
+export default async function MarketingLayout({
+  children,
+  params,
+}: {
+  children: React.ReactNode;
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
   return (
-    <>
+    <MarketingMessages messages={await loadMarketingMessages(locale)}>
       {children}
       <AnimationObserver />
       <MetaPixel />
-    </>
+    </MarketingMessages>
   );
 }

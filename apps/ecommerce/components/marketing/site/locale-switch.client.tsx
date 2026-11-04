@@ -32,7 +32,7 @@ export function LocaleSwitch({ className }: { className?: string }) {
         });
       }}
       className={cn(
-        "flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-sm font-semibold whitespace-nowrap text-[#c9d9dd] hover:text-white hover:no-underline aria-disabled:opacity-60",
+        "flex h-[42px] items-center gap-1.5 rounded-[10px] px-3 text-sm font-semibold whitespace-nowrap text-ink-600 hover:bg-teal-50 hover:text-teal-900 hover:no-underline hover:no-underline aria-disabled:opacity-60",
         className,
       )}
     >

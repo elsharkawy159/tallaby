@@ -1,0 +1,20 @@
+{
+  "nav": {
+    "features": "المميزات",
+    "ai": "طلبي AI",
+    "marketing": "التسويق",
+    "faq": "الأسئلة",
+    "cta": "ابدأ مجانًا",
+    "ctaMobile": "أنشئ متجرك مجانًا",
+    "closeMenu": "إغلاق القائمة",
+    "mobile": "قائمة الجوال"
+  },
+  "siteFooter": {
+    "integrations": "التكاملات",
+    "compare": "المقارنات"
+  },
+  "site": {
+    "breadcrumb": "مسار التنقل",
+    "home": "الرئيسية"
+  }
+}

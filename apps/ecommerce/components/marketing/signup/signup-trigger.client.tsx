@@ -61,7 +61,7 @@ export function SlugClaimForm({
       }}
       className={cn(
         "flex max-w-[540px] flex-col items-stretch gap-1.5 rounded-[18px] bg-white p-1.5 sm:flex-row sm:items-center sm:gap-0 sm:rounded-full",
-        !flat && "shadow-[0_10px_30px_rgba(0,0,0,0.25)]",
+        !flat && "border-[1.5px] border-line-strong shadow-[0_10px_30px_rgba(20,81,99,0.08)]",
         className,
       )}
     >

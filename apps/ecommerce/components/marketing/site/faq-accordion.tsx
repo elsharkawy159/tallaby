@@ -5,10 +5,7 @@ import { cn } from "@workspace/ui/lib/utils";
 
 export type FaqEntry = { q: React.ReactNode; a: React.ReactNode; id?: string };
 
-/**
- * Question list on the shadcn Accordion, styled like the design: hairline
- * rows and a round "+" that turns into an amber "×" when open.
- */
+/** Question list on the shadcn Accordion: white rows, and a "+" that turns as a row opens. */
 export function FaqAccordion({
   items,
   defaultOpen,
@@ -25,21 +22,21 @@ export function FaqAccordion({
       type="multiple"
       defaultValue={defaultOpen ? values : undefined}
       key={defaultOpen ? values.join("|") : "closed"}
-      className={cn("border-t border-neutral-200", className)}
+      className={cn("flex flex-col gap-2.5", className)}
     >
       {items.map((item, i) => (
-        <AccordionItem key={values[i]} value={values[i]!} 
-          className="border-b! border-neutral-200 [&_[data-slot=accordion-content]]:p-0"
+        <AccordionItem
+          key={values[i]}
+          value={values[i]!}
+          className="rounded-card-sm border! border-[#e6eef0] bg-white transition-shadow duration-300 data-[state=open]:shadow-[0_10px_30px_rgba(13,55,67,0.06)] [&_[data-slot=accordion-content]]:p-0"
         >
-          <AccordionTrigger className="group items-center rounded-none bg-transparent px-0 py-[22px]! text-[17px] font-bold text-teal-900 hover:no-underline [&>svg:last-child]:hidden">
+          <AccordionTrigger className="group items-center gap-4 rounded-card-sm bg-transparent px-[22px] py-[18px]! text-[15.5px] font-semibold text-teal-900 hover:no-underline [&>svg:last-child]:hidden">
             <span>{item.q}</span>
-            <span className="grid size-8 flex-none place-items-center rounded-full bg-teal-50 transition-[transform,background-color] duration-200 group-data-[state=open]:rotate-45 group-data-[state=open]:bg-amber-600">
+            <span className="grid size-7 flex-none place-items-center text-teal-700 transition-transform duration-200 group-data-[state=open]:rotate-45">
               <Plus className="size-[18px]" aria-hidden />
             </span>
           </AccordionTrigger>
-          <AccordionContent className="max-w-[680px] pb-[22px] text-[15px] text-slate-ink">
-            {item.a}
-          </AccordionContent>
+          <AccordionContent className="px-[22px] pb-5 text-[15px] text-pretty text-[#56696e]">{item.a}</AccordionContent>
         </AccordionItem>
       ))}
     </Accordion>

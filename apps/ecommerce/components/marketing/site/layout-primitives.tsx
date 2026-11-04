@@ -1,22 +1,22 @@
 import * as React from "react";
 import { cn } from "@workspace/ui/lib/utils";
 
-/** Page-width wrapper (1240px, 24px gutters, 18px on phones). */
+/** Page-width wrapper (1200px, 20px gutters, 16px on phones). */
 export function Container({ className, ...props }: React.ComponentProps<"div">) {
-  return <div className={cn("mx-auto w-full max-w-[1240px] px-[18px] sm:px-6", className)} {...props} />;
+  return <div className={cn("mx-auto w-full max-w-[1200px] px-4 sm:px-5", className)} {...props} />;
 }
 
-/** Standard vertical rhythm for page sections. */
+/** Standard vertical rhythm for page sections: 72px, 56px on small screens. */
 export function Section({ className, ...props }: React.ComponentProps<"section">) {
-  return <section className={cn("py-[72px] md:py-24", className)} {...props} />;
+  return <section className={cn("py-14 min-[861px]:py-[72px]", className)} {...props} />;
 }
 
-/** Small amber label with a leading rule, used above hero titles. */
-export function Eyebrow({ className, ...props }: React.ComponentProps<"span">) {
+/** The small pill above a heading. */
+export function Kicker({ className, ...props }: React.ComponentProps<"span">) {
   return (
     <span
       className={cn(
-        "mb-[18px] inline-flex items-center gap-2 text-[13px] font-semibold text-amber-300 before:h-0.5 before:w-[22px] before:rounded-sm before:bg-amber-600 before:content-['']",
+        "inline-flex w-max max-w-full items-center gap-1.5 rounded-full border border-line-kick bg-teal-50 px-3 py-1 text-[13px] font-bold whitespace-nowrap text-teal-700",
         className,
       )}
       {...props}
@@ -24,7 +24,12 @@ export function Eyebrow({ className, ...props }: React.ComponentProps<"span">) {
   );
 }
 
-/** Section heading block: kicker, title, optional description. */
+/** A kicker above a page title. */
+export function Eyebrow({ className, ...props }: React.ComponentProps<"span">) {
+  return <Kicker className={cn("mb-[18px]", className)} {...props} />;
+}
+
+/** Section header: kicker pill, title, description. Start-aligned unless centered. */
 export function SectionHeading({
   kicker,
   title,
@@ -43,19 +48,15 @@ export function SectionHeading({
   children?: React.ReactNode;
 }) {
   return (
-    <div className={cn("mb-11 max-w-[680px]", centered && "mx-auto text-center", className)}>
-      {kicker ? (
-        <span className="mb-2.5 block text-[13px] font-bold text-amber-700 en:text-xs en:tracking-[0.1em] en:uppercase">
-          {kicker}
-        </span>
-      ) : null}
+    <div className={cn("mb-11 flex max-w-[720px] flex-col items-start gap-3.5", centered && "mx-auto items-center text-center", className)}>
+      {kicker ? <Kicker>{kicker}</Kicker> : null}
       <h2
         id={id}
-        className="display-tight text-[clamp(28px,3.6vw,42px)] leading-[1.25] font-extrabold text-teal-900 en:leading-[1.12] en:tracking-[-0.02em]"
+        className="text-[clamp(28px,4vw,44px)] leading-[1.3] font-bold text-balance text-teal-900 en:leading-[1.15] en:tracking-[-0.01em] [&_em]:text-amber-700 [&_em]:not-italic"
       >
         {title}
       </h2>
-      {description ? <p className="mt-3.5 text-[17px] text-pretty text-slate-ink">{description}</p> : null}
+      {description ? <p className="text-[17px] text-pretty text-ink-500">{description}</p> : null}
       {children}
     </div>
   );

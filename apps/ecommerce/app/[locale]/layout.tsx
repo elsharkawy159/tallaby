@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Montserrat, Noto_Kufi_Arabic } from "next/font/google";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
-import { getMessages } from "next-intl/server";
+import { loadBaseMessages } from "@/i18n/messages";
 import { DirectionProvider } from "@workspace/ui/components/direction";
 import { ANIMATIONS_INIT_SCRIPT } from "@workspace/motion/init-script";
 import { notFound } from "next/navigation";
@@ -55,7 +55,8 @@ export default async function RootLayout({
     notFound();
   }
 
-  const messages = await getMessages();
+  // Base strings only: tallaby.com adds its own, so store pages don't carry them.
+  const messages = await loadBaseMessages(locale);
   const direction = locale === "ar" ? "rtl" : "ltr";
 
   return (

@@ -1272,7 +1272,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-50a Fix banner sizing across screens and templates (2026-11-03; `eb853ea7`; phone view of 21:9 banners not checked)
 - [x] F-51a Unlimited stock design note (every stock reader) (2026-11-03; `docs/superpowers/specs/2026-11-03-unlimited-stock-design.md`)
 - [x] F-51b Unlimited stock migration, form and readers (2026-11-03; `891604f7`; 0138 on staging)
-- [ ] F-52a Homepage redesign (owner, on Claude Design)
+- [~] F-52a Homepage redesign (2026-11-04; design from the owner's Claude Design project, foundation built, pages in progress)
 - [ ] F-52b Real dashboard screenshots from a fictional demo store
 - [ ] F-52c Homepage shows new pricing once live
 - [x] F-53a Public-site SEO audit (2026-11-03; `docs/seo-audit-tallaby-com.md`)
@@ -1343,6 +1343,14 @@ Add each new request here first, with the date and the owner's words, then turn 
 ---
 
 ## 7. Log
+
+### 2026-11-04 — tallaby.com redesign: foundation (owner, F-52a)
+
+- **Instruction:** the owner asked to build the Claude Design "Marketing Website" pages in `apps/ecommerce` and match the design system.
+- **Built:** marketing tokens, the light glass header with a drop-down phone menu, the two-tier footer, buttons, kicker, section header, page hero, cards, chips, FAQ rows, closing band, breadcrumb and form fields. Rules for page work are in `docs/marketing-site-rules.md`.
+- **Messages:** strings can now live in `messages/marketing/<group>.<locale>.json`. Only tallaby.com sends these to the browser, so store pages don't grow.
+- **Removed from the shell:** the store-link claim box in the footer, because the design ends pages with the closing band. The claim form stays on the page sections that use it.
+- **Header links now point at** `/#features`, `/#ai` and `/#marketing`, and the footer at `/integrations` and `/compare`, which the page work makes real. Until then these don't resolve.
 
 ### 2026-11-04 — `pnpm lint` works again
 

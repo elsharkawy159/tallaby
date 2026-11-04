@@ -5,7 +5,6 @@ import { Link } from "@/i18n/navigation";
 import { type PaymentMethod, PaymentMethodIcons } from "@/components/layout/payment-method-icons";
 import { CONTACT, DASHBOARD_URL, LOGIN_URL, SOCIAL_LINKS } from "@/lib/marketing/site.lib";
 import { BrandIcon, type BrandIconName } from "./brand-icon";
-import { FooterClaim } from "./footer-claim.client";
 import { Container } from "./layout-primitives";
 
 const PAYMENT_METHODS: PaymentMethod[] = ["visa", "mastercard", "meeza", "apple-pay", "google-pay"];
@@ -13,8 +12,8 @@ const PAYMENT_METHODS: PaymentMethod[] = ["visa", "mastercard", "meeza", "apple-
 type FooterLink = { href: string; label: string; external?: boolean };
 
 /**
- * Dark teal like the header and heroes, so every page is bookended. Opens
- * with the store-link claim; links and legal stay quiet underneath.
+ * Two tiers: the link grid, then a darker bar with the legal links, social
+ * buttons and payment marks.
  */
 export async function SiteFooter() {
   const t = await getTranslations("siteFooter");
@@ -26,6 +25,8 @@ export async function SiteFooter() {
         { href: "/templates", label: t("templates") },
         { href: "/#builder", label: t("builder") },
         { href: "/pricing", label: t("pricing") },
+        { href: "/integrations", label: t("integrations") },
+        { href: "/compare", label: t("compare") },
         // The AI Store Builder's entry (F-54): signup, then the chat. Hidden behind its switch.
         ...(process.env.STORE_BUILDER_AI_ENABLED === "1" ? [{ href: `${DASHBOARD_URL}signup?next=/ai-builder`, label: t("aiBuilder"), external: true }] : []),
         { href: "/affiliates", label: t("affiliates") },
@@ -58,33 +59,29 @@ export async function SiteFooter() {
     ...(CONTACT.whatsapp ? [{ id: "whatsapp" as const, href: CONTACT.whatsapp, label: "WhatsApp" }] : []),
   ];
 
-  const link = "text-mist transition-colors hover:text-white hover:no-underline";
+  const link = "text-[#c6d6da] transition-colors duration-150 hover:text-amber-600 hover:no-underline";
 
   return (
-    <footer data-print="hide" className="bg-teal-900 text-sm text-mist">
-      <Container className="pt-16 pb-12">
-        <div data-footer-claim className="mb-14 border-b border-white/10 pb-12">
-          <FooterClaim />
-        </div>
-
-        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1fr_1fr]">
-          <div className="sm:col-span-2 lg:col-span-1">
-            <Image src="/logo-white.png" alt="طلبي" width={118} height={30} className="h-[30px] w-auto" />
-            <p className="mt-4 max-w-[320px] leading-relaxed">{t("about")}</p>
-            <ul className="mt-5 grid gap-2.5 [&_svg]:size-4 [&_svg]:flex-none [&_svg]:text-amber-600">
+    <footer data-print="hide" className="text-sm text-[#c6d6da]">
+      <div className="bg-footer-top pt-14 pb-12">
+        <Container className="grid grid-cols-2 gap-x-6 gap-y-8 min-[861px]:grid-cols-[1.4fr_1fr_1fr_1fr] min-[861px]:gap-10">
+          <div className="col-span-2 min-[861px]:col-span-1">
+            <Image src="/logo-white.png" alt="طلبي" width={118} height={30} className="mb-[18px] block h-[30px] w-auto" />
+            <p className="max-w-[330px] leading-[1.85] text-[#d5e2e5]">{t("about")}</p>
+            <ul className="mt-5 grid gap-3 [&_svg]:size-[17px] [&_svg]:flex-none [&_svg]:text-amber-600">
               <li className="flex items-center gap-2.5">
                 <MapPin aria-hidden />
                 <span>{t("location")}</span>
               </li>
               <li className="flex items-center gap-2.5">
                 <Mail aria-hidden />
-                <a href={`mailto:${CONTACT.email}`} className={`font-latin ${link}`}>
+                <a href={`mailto:${CONTACT.email}`} dir="ltr" className={`font-latin ${link}`}>
                   {CONTACT.email}
                 </a>
               </li>
               <li className="flex items-center gap-2.5">
                 <Phone aria-hidden />
-                <a href={`tel:${CONTACT.phone}`} dir="ltr" className={`font-latin ${link}`}>
+                <a href={`tel:${CONTACT.phone}`} dir="ltr" className={`font-latin tabular-nums ${link}`}>
                   {CONTACT.phone}
                 </a>
               </li>
@@ -92,7 +89,7 @@ export async function SiteFooter() {
           </div>
           {columns.map((col) => (
             <nav key={col.title} aria-label={col.title}>
-              <h2 className="mb-4 text-[15px] font-bold text-white">{col.title}</h2>
+              <h2 className="mb-4 text-base font-bold text-white">{col.title}</h2>
               <ul className="grid gap-2.5">
                 {col.links.map((item) => (
                   <li key={item.label}>
@@ -110,25 +107,27 @@ export async function SiteFooter() {
               </ul>
             </nav>
           ))}
-        </div>
-      </Container>
+        </Container>
+      </div>
 
-      <div className="bg-teal-950">
-        <Container className="flex flex-col gap-5 py-6 text-[12.5px] lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-            <span className="font-latin">{t("rights", { year: new Date().getFullYear() })}</span>
-            <Link href="/terms" className={link}>
-              {t("terms")}
-            </Link>
-            <Link href="/privacy" className={link}>
-              {t("privacy")}
-            </Link>
+      <div className="bg-footer-bar py-[22px]">
+        <Container className="flex flex-col items-start justify-between gap-6 min-[861px]:flex-row min-[861px]:items-center">
+          <div className="flex flex-col gap-1.5 text-[13px]">
+            <div className="flex flex-wrap items-center gap-x-[22px] gap-y-1.5">
+              <span className="font-latin">{t("rights", { year: new Date().getFullYear() })}</span>
+              <Link href="/terms" className={link}>
+                {t("terms")}
+              </Link>
+              <Link href="/privacy" className={link}>
+                {t("privacy")}
+              </Link>
+            </div>
             <Link href="/privacy#cookies" className={link}>
               {t("cookies")}
             </Link>
           </div>
-          <div className="flex flex-wrap items-center gap-5">
-            <div className="flex gap-2" aria-label={t("social")} role="list">
+          <div className="flex flex-col items-start gap-3.5 min-[861px]:items-end">
+            <div className="flex flex-wrap gap-2" aria-label={t("social")} role="list">
               {socials.map((s) => (
                 <a
                   key={s.id}
@@ -137,14 +136,14 @@ export async function SiteFooter() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={s.label}
-                  className="grid size-9 place-items-center rounded-full border border-white/15 text-white transition-colors hover:border-amber-600 hover:bg-amber-600 hover:text-teal-900"
+                  className="grid size-[38px] place-items-center rounded-full border border-white/15 text-white transition-colors duration-150 hover:border-amber-600 hover:bg-amber-600 hover:text-teal-900"
                 >
-                  <BrandIcon name={s.id} className="size-4" />
+                  <BrandIcon name={s.id} className="size-[17px]" />
                 </a>
               ))}
             </div>
             <div dir="ltr" aria-label={t("paymentMethods")} role="group">
-              <PaymentMethodIcons methods={PAYMENT_METHODS} className="gap-1.5" iconClassName="h-7 ring-1 ring-white/10" />
+              <PaymentMethodIcons methods={PAYMENT_METHODS} className="gap-1.5" iconClassName="h-[30px]" />
             </div>
           </div>
         </Container>

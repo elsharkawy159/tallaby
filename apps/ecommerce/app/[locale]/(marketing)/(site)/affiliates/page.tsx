@@ -60,7 +60,7 @@ export default async function AffiliatesPage() {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
-      <PageHero
+      <PageHero tone="dark"
         eyebrow={t("hero.eyebrow")}
         title={t.rich("hero.title", richTags)}
         lead={t("hero.lead")}

@@ -1,0 +1,20 @@
+{
+  "nav": {
+    "features": "Features",
+    "ai": "Tallaby AI",
+    "marketing": "Marketing",
+    "faq": "FAQ",
+    "cta": "Start free",
+    "ctaMobile": "Create your store free",
+    "closeMenu": "Close menu",
+    "mobile": "Mobile menu"
+  },
+  "siteFooter": {
+    "integrations": "Integrations",
+    "compare": "Compare"
+  },
+  "site": {
+    "breadcrumb": "Breadcrumb",
+    "home": "Home"
+  }
+}

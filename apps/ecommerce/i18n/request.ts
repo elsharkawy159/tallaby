@@ -1,6 +1,7 @@
 import * as rootParams from "next/root-params";
 import { getRequestConfig } from "next-intl/server";
 import { hasLocale } from "next-intl";
+import { loadAllMessages } from "./messages";
 import { routing } from "./routing";
 
 // NOTE: `params` is deliberately not destructured. `requestLocale` is a lazy
@@ -36,6 +37,6 @@ export default getRequestConfig(async (params) => {
 
   return {
     locale: activeLocale,
-    messages: (await import(`../messages/${activeLocale}.json`)).default,
+    messages: await loadAllMessages(activeLocale),
   };
 });
