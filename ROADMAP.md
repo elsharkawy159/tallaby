@@ -1345,6 +1345,18 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 ## 7. Log
 
+### 2026-11-04 — tallaby.com rebuilt from the Claude Design project (owner)
+
+- **Built, not deployed:** shared tokens and shell (`45e5d7dc`); Home, Pricing, Templates, Template detail; About, Blog, Blog Post, Careers, Contact, FAQ, Follow Us, Privacy, Terms; new `/integrations`, `/integrations/meta-pixel`, `/features/custom-domain`, `/tools/profit-margin-calculator`, `/industries/clothing-store`, `/solutions/create-online-store`. Rules: `docs/marketing-site-rules.md`. Marketing strings live in `messages/marketing/`.
+- **Hidden until the owner's research is done:** `/compare` pages are noindex, out of the sitemap and menus, behind `COMPARE_PUBLIC` in `lib/marketing/compare.lib.ts`. Salla, Zid, YouCan and ExpandCart have no page yet. The Blog Ranking layout is built but has no route: it needs sourced facts.
+- **Latest store line on Home:** real published stores only: last 60 minutes, else the latest within 7 days with its real age, else nothing. The owner asked for fake fallback stores; they were not built, because that would be deceptive to visitors.
+- **Content changed from the design so it's true:** invented testimonials and live-activity lines removed, integrations corrected against the code, TikTok and Snapchat pixels marked Soon, and the first $5 top-up and Order Notifications stated wherever "free" is discussed.
+- **Terms and Privacy corrected:** spend-only wallet, ads removed, first top-up and Order Notifications added. Privacy now says tallaby.com's analytics and Meta Pixel load without consent, because the code does that. Owner to decide on a consent banner and have a lawyer read both. The 14-day notice line is unchanged, owner to decide.
+- **Template removal committed** (`f4174e82`): 140 to 118.
+- **Lint works again** (`1b68c63f`): real findings remain, listed in the entry below.
+- **Checks:** type checks and marketing tests pass. Every route answered 200 in both languages on staging settings, with Compare noindex and unknown slugs 404. Seen as screenshots in headless Chrome: Home, Pricing, Templates, Terms and the Industry page on desktop, plus Home, Pricing and the Tool page at 390px. **Not seen:** the other pages, a real phone, the signup dialog on the new header, the location of animated demos in motion, and a production build. Chrome's extension was disconnected.
+- **Left:** dashboard strings that still mention Tallaby delivery and "coming soon" card payments outside the two fixed Help answers; `template-fan.client.tsx` looks unused; more feature, integration, tool and industry pages are one entry each.
+
 ### 2026-11-04 — tallaby.com redesign: foundation (owner, F-52a)
 
 - **Instruction:** the owner asked to build the Claude Design "Marketing Website" pages in `apps/ecommerce` and match the design system.
