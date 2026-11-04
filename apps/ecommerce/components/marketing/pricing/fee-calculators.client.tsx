@@ -3,110 +3,80 @@
 import * as React from "react";
 import { useTranslations } from "next-intl";
 import { Slider } from "@workspace/ui/components/slider";
+import { Switch } from "@workspace/ui/components/switch";
 import { cn } from "@workspace/ui/lib/utils";
-import { FLAT_FEE_EGP, feeShareOfOrder, formatNumber, monthlyEstimate } from "@/lib/marketing/pricing.lib";
+import { APPROX_EGP_PER_USD, PLAN_PRICES, estimatePlans, formatNumber, formatUsd, proBreakEvenOrders } from "@/lib/marketing/pricing.lib";
 
-/** Slider skins: the shadcn Slider exposes its parts through data-slot. */
-const darkSlider =
-  "[&_[data-slot=slider-track]]:h-2.5 [&_[data-slot=slider-track]]:bg-white/15 [&_[data-slot=slider-range]]:bg-amber-600 [&_[data-slot=slider-thumb]]:size-7 [&_[data-slot=slider-thumb]]:border-0 [&_[data-slot=slider-thumb]]:bg-white [&_[data-slot=slider-thumb]]:shadow-[0_0_0_6px_rgba(253,173,40,0.3)] [&_[data-slot=slider-thumb]]:cursor-grab";
 const lightSlider =
   "[&_[data-slot=slider-track]]:h-1.5 [&_[data-slot=slider-track]]:bg-neutral-200 [&_[data-slot=slider-range]]:bg-teal-700 [&_[data-slot=slider-thumb]]:size-5 [&_[data-slot=slider-thumb]]:border-teal-700";
 
-/** Hero dial: the fee stays 5 EGP whatever the order value. */
-export function FeeDial() {
-  const t = useTranslations("pricing.hero");
-  const tc = useTranslations("common");
-  const [value, setValue] = React.useState(400);
-
-  return (
-    <div className="rounded-[28px] border border-white/10 bg-white/5 p-6 sm:p-9">
-      <div className="text-[clamp(96px,13vw,168px)] leading-[0.9] font-extrabold tracking-[-0.05em] text-amber-600">
-        <span className="font-latin">{FLAT_FEE_EGP}</span>
-        <small className="ms-2.5 text-[0.3em] tracking-normal">{tc("egp")}</small>
-      </div>
-      {/* Only the result is announced, not the whole card, on each slider step. */}
-      <div aria-live="polite" aria-atomic>
-        <div className="mt-2.5 min-h-[30px] text-lg font-bold">{t("onOrder", { value: formatNumber(value) })}</div>
-        <div className="min-h-6 text-sm text-haze">{t("share", { pct: feeShareOfOrder(value) })}</div>
-      </div>
-      <div className="mt-[30px]">
-        <Slider
-          dir="ltr"
-          aria-label={t("orderValue")}
-          min={50}
-          max={10_000}
-          step={50}
-          value={[value]}
-          onValueChange={([v]) => setValue(v ?? 50)}
-          className={darkSlider}
-        />
-        <div dir="ltr" className="mt-2.5 flex justify-between font-latin text-xs font-semibold text-haze">
-          <span>50</span>
-          <span>2,500</span>
-          <span>5,000</span>
-          <span>10,000</span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/** "What would a month cost you?" estimator. */
+/** "What would a month cost you?": orders, campaign emails and Order Notifications, on both plans. */
 export function FeeEstimator() {
   const t = useTranslations("pricing.estimate");
-  const tc = useTranslations("common");
-  const [orders, setOrders] = React.useState(120);
-  const [aov, setAov] = React.useState(450);
-  const est = monthlyEstimate(orders, aov);
-  const egp = (n: number) => `${formatNumber(n)} ${tc("egp")}`;
+  const [orders, setOrders] = React.useState(300);
+  const [emails, setEmails] = React.useState(500);
+  const [notifications, setNotifications] = React.useState(false);
+  const estimate = estimatePlans({ orders, emails, orderNotifications: notifications });
+  const switchId = React.useId();
 
-  const bars = Array.from({ length: 30 }, (_, i) =>
-    Math.round((30 + 70 * Math.min(1, orders / 1000 + 0.25)) * (0.55 + 0.45 * Math.sin(i * 0.7 + 1) ** 2)),
-  );
+  const egp = (cents: number) => formatNumber((cents / 100) * APPROX_EGP_PER_USD);
+  const plans = [
+    { id: "free" as const, name: t("free"), cents: estimate.freeCents },
+    { id: "pro" as const, name: "Pro", cents: estimate.proCents },
+  ];
 
   return (
-    <div className="grid overflow-hidden rounded-3xl border border-neutral-200 bg-white lg:grid-cols-2">
-      <div className="grid gap-7 p-6 sm:p-9">
+    <div className="grid overflow-hidden rounded-card border border-line bg-white shadow-soft min-[861px]:grid-cols-2 min-[641px]:rounded-card-lg">
+      <div className="grid content-start gap-7 p-6 min-[641px]:p-9">
         <RangeField label={t("orders")} value={formatNumber(orders)}>
-          <Slider dir="ltr" min={10} max={1000} step={10} value={[orders]} onValueChange={([v]) => setOrders(v ?? 10)} aria-label={t("orders")} className={lightSlider} />
+          <Slider dir="ltr" min={10} max={3000} step={10} value={[orders]} onValueChange={([v]) => setOrders(v ?? 10)} aria-label={t("orders")} className={lightSlider} />
         </RangeField>
-        <RangeField label={t("aov")} value={egp(aov)}>
-          <Slider dir="ltr" min={100} max={5000} step={50} value={[aov]} onValueChange={([v]) => setAov(v ?? 100)} aria-label={t("aov")} className={lightSlider} />
+        <RangeField label={t("emails")} value={formatNumber(emails)}>
+          <Slider dir="ltr" min={0} max={20_000} step={100} value={[emails]} onValueChange={([v]) => setEmails(v ?? 0)} aria-label={t("emails")} className={lightSlider} />
         </RangeField>
-        <div aria-hidden dir="ltr" className="flex h-24 items-end gap-1 border-b border-neutral-200 pt-3">
-          {bars.map((h, i) => (
-            <i key={i} className="block flex-1 rounded-t bg-teal-100 transition-[height] duration-200" style={{ height: `${h}%` }} />
-          ))}
-        </div>
+        <label htmlFor={switchId} className="flex cursor-pointer items-start justify-between gap-4 rounded-card-sm border border-line p-4">
+          <span>
+            <b className="block text-sm text-teal-900">{t("notifications")}</b>
+            <small className="text-[13px] text-[#5f7277]">{t("notificationsBody", { price: formatUsd(PLAN_PRICES.orderNotificationCents) })}</small>
+          </span>
+          <Switch id={switchId} dir="ltr" checked={notifications} onCheckedChange={setNotifications} />
+        </label>
       </div>
-      <div className="flex flex-col gap-[18px] bg-amber-50 p-6 sm:p-9">
-        <span className="text-sm font-semibold text-[#6b5a3a]">{t("monthlyFee")}</span>
-        <div aria-live="polite" aria-atomic className="font-latin text-[clamp(44px,5vw,60px)] leading-none font-extrabold tracking-[-0.03em] text-teal-900">
-          {formatNumber(est.fee)}
-          <small className="ms-1.5 text-lg font-semibold tracking-normal">{tc("egp")}</small>
+      <div className="flex flex-col gap-3.5 bg-amber-50 p-6 min-[641px]:p-9">
+        <span className="text-sm font-semibold text-[#6b5a3a]">{t("monthly")}</span>
+        <div aria-live="polite" aria-atomic className="grid gap-3">
+          {plans.map((plan) => {
+            const best = estimate.cheaper === plan.id;
+            return (
+              <div key={plan.id} className={cn("flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-card-sm border bg-white p-4", best ? "border-teal-700 shadow-soft" : "border-[#8a5300]/15")}>
+                <span className="flex items-center gap-2">
+                  <b className={cn("text-[15px] text-teal-900", plan.id === "pro" && "font-latin")}>{plan.name}</b>
+                  {best ? <span className="rounded-full bg-teal-900 px-2 py-0.5 text-[11px] font-bold text-white">{t("cheaper")}</span> : null}
+                </span>
+                <span className="text-end">
+                  <b dir="ltr" className="block font-latin text-[28px] leading-none font-extrabold text-teal-900">{formatUsd(plan.cents)}</b>
+                  <small className="text-xs text-[#6b5a3a]">{t("approx", { egp: egp(plan.cents) })}</small>
+                </span>
+              </div>
+            );
+          })}
+          {estimate.savingCents > 0 ? (
+            <p className="text-sm font-semibold text-[#5b4a2c]">
+              {t(estimate.cheaper === "pro" ? "savingPro" : "savingFree", { amount: formatUsd(estimate.savingCents) })}
+            </p>
+          ) : null}
         </div>
-        <div>
-          {[
-            [t("perOrder"), egp(est.perOrder)],
-            [t("sales"), egp(est.sales)],
-            [t("keep"), egp(est.keep)],
-          ].map(([label, value]) => (
-            <div key={label} className="flex justify-between border-t border-[#8a5300]/15 py-3 text-sm text-[#5b4a2c]">
-              <span>{label}</span>
-              <b className="font-latin text-teal-900">{value}</b>
-            </div>
-          ))}
-        </div>
-        <p className="text-[13px] text-[#6b5a3a]">{t("note")}</p>
+        <p className="text-[13px] text-pretty text-[#6b5a3a]">{t("breakEven", { orders: formatNumber(proBreakEvenOrders()), price: formatUsd(PLAN_PRICES.pro.monthlyCents) })}</p>
+        <p className="mt-auto text-[13px] text-pretty text-[#6b5a3a]">{t("note")}</p>
       </div>
     </div>
   );
 }
 
-function RangeField({ label, value, children, className }: { label: string; value: string; children: React.ReactNode; className?: string }) {
+function RangeField({ label, value, children }: { label: string; value: string; children: React.ReactNode }) {
   return (
-    <div className={cn(className)}>
-      <div className="mb-2.5 flex items-baseline justify-between gap-3 text-sm font-semibold whitespace-nowrap text-[#33454a]">
+    <div>
+      <div className="mb-2.5 flex items-baseline justify-between gap-3 text-sm font-semibold text-[#33454a]">
         <span>{label}</span>
         <b className="font-latin text-xl font-extrabold text-teal-900">{value}</b>
       </div>

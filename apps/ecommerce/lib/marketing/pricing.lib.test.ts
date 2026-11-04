@@ -1,24 +1,83 @@
 import { describe, expect, it } from "vitest";
-import { feeShareOfOrder, monthlyEstimate, orderFee, suggestedPrice } from "./pricing.lib";
+import { estimatePlans, extraEmailsCents, formatUsd, orderFee, PLAN_PRICES, proBreakEvenOrders, suggestedPrice } from "./pricing.lib";
+
+describe("PLAN_PRICES", () => {
+  it("matches the agreed prices", () => {
+    expect(PLAN_PRICES.free).toEqual({ orderFeeCents: 3, aiCredits: 100, emails: 500 });
+    expect(PLAN_PRICES.pro).toEqual({ monthlyCents: 2900, aiCredits: 2000, emails: 10_000 });
+    expect(PLAN_PRICES.emailPack).toEqual({ emails: 1000, cents: 150 });
+    expect(PLAN_PRICES.creditPack).toEqual({ credits: 100, cents: 100 });
+    expect(PLAN_PRICES.topUp).toEqual({ minCents: 500, maxCents: 100_000 });
+    expect(PLAN_PRICES.orderNotificationCents).toBe(1);
+  });
+});
+
+describe("formatUsd", () => {
+  it("shows cents only when there are any", () => {
+    expect(formatUsd(3)).toBe("$0.03");
+    expect(formatUsd(150)).toBe("$1.50");
+    expect(formatUsd(2900)).toBe("$29");
+    expect(formatUsd(100_000)).toBe("$1,000");
+  });
+});
+
+describe("proBreakEvenOrders", () => {
+  it("is where the order fees reach Pro's price", () => {
+    expect(proBreakEvenOrders()).toBe(967);
+  });
+});
+
+describe("extraEmailsCents", () => {
+  it("is free inside the allowance", () => {
+    expect(extraEmailsCents(500, 500)).toBe(0);
+    expect(extraEmailsCents(0, 500)).toBe(0);
+  });
+
+  it("sells whole packs", () => {
+    expect(extraEmailsCents(501, 500)).toBe(150);
+    expect(extraEmailsCents(1500, 500)).toBe(150);
+    expect(extraEmailsCents(1501, 500)).toBe(300);
+  });
+});
+
+describe("estimatePlans", () => {
+  it("charges Free per order and Pro a flat price", () => {
+    expect(estimatePlans({ orders: 100, emails: 0, orderNotifications: false })).toEqual({
+      freeCents: 300,
+      proCents: 2900,
+      cheaper: "free",
+      savingCents: 2600,
+    });
+  });
+
+  it("makes Pro cheaper past the break-even", () => {
+    const estimate = estimatePlans({ orders: 2000, emails: 0, orderNotifications: false });
+    expect(estimate.cheaper).toBe("pro");
+    expect(estimate.freeCents).toBe(6000);
+    expect(estimate.savingCents).toBe(3100);
+  });
+
+  it("adds Order Notifications to both plans at one cent per order", () => {
+    const estimate = estimatePlans({ orders: 100, emails: 0, orderNotifications: true });
+    expect(estimate.freeCents).toBe(400);
+    expect(estimate.proCents).toBe(3000);
+  });
+
+  it("uses each plan's own email allowance", () => {
+    const estimate = estimatePlans({ orders: 0, emails: 2000, orderNotifications: false });
+    expect(estimate.freeCents).toBe(300);
+    expect(estimate.proCents).toBe(2900);
+  });
+
+  it("treats a negative order count as none", () => {
+    expect(estimatePlans({ orders: -5, emails: 0, orderNotifications: false }).freeCents).toBe(0);
+  });
+});
 
 describe("orderFee", () => {
   it("is flat for any positive order and zero for none", () => {
     expect(orderFee(150)).toBe(5);
-    expect(orderFee(10_000)).toBe(5);
     expect(orderFee(0)).toBe(0);
-  });
-});
-
-describe("feeShareOfOrder", () => {
-  it("uses one decimal below 1,000 EGP and two above", () => {
-    expect(feeShareOfOrder(400)).toBe("1.3");
-    expect(feeShareOfOrder(2500)).toBe("0.20");
-  });
-});
-
-describe("monthlyEstimate", () => {
-  it("multiplies the flat fee by the order count", () => {
-    expect(monthlyEstimate(120, 450)).toEqual({ perOrder: 5, fee: 600, sales: 54_000, keep: 53_400 });
   });
 });
 

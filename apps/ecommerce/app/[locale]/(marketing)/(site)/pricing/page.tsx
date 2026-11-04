@@ -1,18 +1,19 @@
 import type { Metadata } from "next";
-import { Check, CreditCard, Globe, Headset, Infinity as InfinityIcon, LayoutTemplate, Link2, ShoppingBag, TicketPercent, Truck, Users } from "lucide-react";
+import { CreditCard, Mail, MailCheck, Percent, Repeat, Sparkles, Truck, Wallet, WalletCards } from "lucide-react";
 import { getTranslations } from "next-intl/server";
-import { Link } from "@/i18n/navigation";
 import { CtaBand } from "@/components/marketing/site/cta-band";
-import { CtaButton } from "@/components/marketing/site/cta-button";
 import { FaqAccordion, type FaqEntry } from "@/components/marketing/site/faq-accordion";
 import { ProductJsonLd } from "@/components/marketing/site/json-ld";
-import { Container, Num, Section, SectionHeading } from "@/components/marketing/site/layout-primitives";
+import { Container, Section, SectionHeading } from "@/components/marketing/site/layout-primitives";
 import { PageHero } from "@/components/marketing/site/page-hero";
 import { Reveal } from "@/components/marketing/site/reveal.client";
-import { richTags } from "@/components/marketing/site/rich-text";
-import { SignupTrigger } from "@/components/marketing/signup/signup-trigger.client";
-import { FeeDial, FeeEstimator } from "@/components/marketing/pricing/fee-calculators.client";
+import { IconTile, SiteCard } from "@/components/marketing/site/site-card";
+import { SlugClaimForm } from "@/components/marketing/signup/signup-trigger.client";
+import { FeeEstimator } from "@/components/marketing/pricing/fee-calculators.client";
+import { PlanCards } from "@/components/marketing/pricing/plan-cards";
 import { pageMetadata } from "@/lib/marketing/metadata.lib";
+import { PLAN_PRICES, formatNumber, formatUsd, proBreakEvenOrders } from "@/lib/marketing/pricing.lib";
+import { CONTACT } from "@/lib/marketing/site.lib";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -21,84 +22,63 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 export default async function PricingPage() {
   const t = await getTranslations("pricing");
-  const tc = await getTranslations("common");
+  const prices = {
+    topUpMin: formatUsd(PLAN_PRICES.topUp.minCents),
+    topUpMax: formatUsd(PLAN_PRICES.topUp.maxCents),
+    notification: formatUsd(PLAN_PRICES.orderNotificationCents),
+    emailPack: formatUsd(PLAN_PRICES.emailPack.cents),
+    emailCount: formatNumber(PLAN_PRICES.emailPack.emails),
+    creditPack: formatUsd(PLAN_PRICES.creditPack.cents),
+    creditCount: formatNumber(PLAN_PRICES.creditPack.credits),
+    orderFee: formatUsd(PLAN_PRICES.free.orderFeeCents),
+    pro: formatUsd(PLAN_PRICES.pro.monthlyCents),
+    proCredits: formatNumber(PLAN_PRICES.pro.aiCredits),
+    breakEven: formatNumber(proBreakEvenOrders()),
+  };
 
-  const zero = [
-    { value: "0%", label: t("plan.commission") },
-    { value: "0", label: t("plan.monthly") },
-    { value: "0", label: t("plan.setup") },
-    { value: "0", label: t("plan.cancel") },
-  ];
   const included = [
-    { icon: InfinityIcon, title: t("included.products"), body: t("included.productsBody") },
-    { icon: ShoppingBag, title: t("included.orders"), body: t("included.ordersBody") },
-    { icon: Users, title: t("included.visitors"), body: t("included.visitorsBody") },
-    { icon: Link2, title: t("included.payLink"), body: t("included.payLinkBody") },
-    { icon: LayoutTemplate, title: t("included.templates"), body: t("included.templatesBody") },
-    { icon: Globe, title: t("included.domain"), body: t("included.domainBody") },
-    { icon: TicketPercent, title: t("included.codes"), body: t("included.codesBody") },
-    { icon: Headset, title: t("included.support"), body: t("included.supportBody") },
+    { icon: CreditCard, label: t("hero.noCard") },
+    { icon: Repeat, label: t("hero.switch") },
+    { icon: Percent, label: t("hero.noPercent") },
+  ];
+  const extras = [
+    { icon: Wallet, title: t("extras.topUpTitle"), body: t("extras.topUpBody", prices) },
+    { icon: MailCheck, title: t("extras.notificationsTitle"), body: t("extras.notificationsBody", prices) },
+    { icon: Mail, title: t("extras.emailsTitle"), body: t("extras.emailsBody", prices) },
+    { icon: Sparkles, title: t("extras.creditsTitle"), body: t("extras.creditsBody", prices) },
   ];
   const separate = [
-    { icon: CreditCard, title: t("included.processing"), body: t("included.processingBody") },
-    { icon: Truck, title: t("included.shipping"), body: t("included.shippingBody") },
+    { icon: WalletCards, title: t("extras.processingTitle"), body: t("extras.processingBody") },
+    { icon: Truck, title: t("extras.shippingTitle"), body: t("extras.shippingBody") },
   ];
+  const faq = (t.raw("faq.items") as FaqEntry[]).map((item) => ({
+    q: item.q,
+    a: replaceTokens(String(item.a), prices),
+  }));
 
   return (
     <>
       <ProductJsonLd page="pricing" path="/pricing" />
-      <PageHero eyebrow={t("hero.eyebrow")} title={t.rich("hero.title", richTags)} lead={t("hero.lead")} aside={<FeeDial />}>
-        <div className="mt-[30px] flex flex-wrap gap-2.5">
-          <SignupTrigger />
-          <CtaButton asChild tone="ghost">
-            <a href="#estimate">{t("hero.estimate")}</a>
-          </CtaButton>
-        </div>
-      </PageHero>
-
-      <Section>
-        <Container>
-          <Reveal>
-            <SectionHeading kicker={t("plan.kicker")} title={t("plan.title")} />
+      <div id="plans">
+        <PageHero eyebrow={t("hero.eyebrow")} title={t("hero.title")} lead={t("hero.lead")} centered className="pb-10 sm:pb-12" />
+        <Container className="pb-14 min-[861px]:pb-[72px]">
+          <h2 className="sr-only">{t("plans.heading")}</h2>
+          <PlanCards />
+          <Reveal className="mx-auto mt-7 flex max-w-[880px] flex-wrap justify-center gap-x-[22px] gap-y-2.5 text-sm text-[#3f5358]">
+            {included.map((item) => (
+              <span key={item.label} className="inline-flex items-center gap-1.5">
+                <item.icon className="size-4 text-teal-700" aria-hidden />
+                {item.label}
+              </span>
+            ))}
           </Reveal>
-          <div className="grid gap-6 lg:grid-cols-2">
-            <Reveal className="rounded-3xl bg-teal-900 p-6 text-white sm:p-9">
-              <h3 className="mb-3.5 text-base font-bold text-amber-300">{t("plan.freePlan")}</h3>
-              <div className="leading-none">
-                <Num className="text-[64px] font-extrabold tracking-[-0.03em]">5</Num>
-                <small className="ms-2 text-lg font-semibold text-haze">{t("plan.perOrder")}</small>
-              </div>
-              <p className="mt-3.5 text-[15px] text-mist">{t("plan.flat")}</p>
-              <ul className="m-0 mt-6 grid list-none gap-2.5 p-0 text-[15px]">
-                {[t("plan.i1"), t("plan.i2"), t("plan.i3"), t("plan.i4"), t("plan.i5"), t("plan.i6")].map((item) => (
-                  <li key={item} className="flex items-center gap-2.5">
-                    <Check className="size-[17px] text-amber-600" aria-hidden />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-              <SignupTrigger className="mt-[26px]" />
-            </Reveal>
-            <Reveal className="rounded-3xl border border-neutral-200 bg-white p-6 sm:p-9">
-              <h3 className="mb-3.5 text-base font-bold text-teal-700">{t("plan.wontPay")}</h3>
-              <div className="grid grid-cols-2 gap-2.5">
-                {zero.map((z) => (
-                  <div key={z.label} className="grid gap-0.5 rounded-[14px] bg-neutral-50 p-4">
-                    <Num className="text-[34px] leading-[1.1] font-extrabold text-teal-900">{z.value}</Num>
-                    <span className="text-[13px] text-slate-ink">{z.label}</span>
-                  </div>
-                ))}
-              </div>
-              <p className="mt-3.5 text-[15px] text-slate-ink">{t("plan.noCard")}</p>
-            </Reveal>
-          </div>
         </Container>
-      </Section>
+      </div>
 
-      <Section id="estimate" className="pt-0 md:pt-0">
+      <Section id="estimate" className="pt-0 min-[861px]:pt-0">
         <Container>
           <Reveal>
-            <SectionHeading kicker={t("estimate.kicker")} title={t("estimate.title")} description={t("estimate.desc")} />
+            <SectionHeading kicker={t("estimate.kicker")} title={t("estimate.title")} description={t("estimate.desc")} centered />
           </Reveal>
           <Reveal>
             <FeeEstimator />
@@ -106,29 +86,31 @@ export default async function PricingPage() {
         </Container>
       </Section>
 
-      <Section className="pt-0 md:pt-0">
+      <Section id="extras" className="pt-0 min-[861px]:pt-0">
         <Container>
           <Reveal>
-            <SectionHeading kicker={t("included.kicker")} title={t("included.title")} />
+            <SectionHeading kicker={t("extras.kicker")} title={t("extras.title")} description={t("extras.desc")} centered />
           </Reveal>
-          <Reveal className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {included.map((item) => (
-              <div key={item.title} className="grid gap-2 rounded-[18px] border border-neutral-200 bg-white p-[22px]">
-                <span className="grid size-[42px] place-items-center rounded-xl bg-teal-50 text-teal-700">
-                  <item.icon className="size-[18px]" aria-hidden />
-                </span>
-                <b className="text-teal-900">{item.title}</b>
-                <span className="text-sm text-slate-ink">{item.body}</span>
-              </div>
+          <div className="grid gap-4 min-[641px]:grid-cols-2 min-[1081px]:grid-cols-4">
+            {extras.map((item) => (
+              <Reveal key={item.title}>
+                <SiteCard glass className="flex h-full flex-col gap-2.5 p-[26px]">
+                  <IconTile className="mb-1">
+                    <item.icon aria-hidden />
+                  </IconTile>
+                  <h3 className="text-[17px] leading-normal font-bold text-teal-900">{item.title}</h3>
+                  <p className="text-sm text-pretty text-[#5f7277]">{item.body}</p>
+                </SiteCard>
+              </Reveal>
             ))}
-          </Reveal>
-          <Reveal className="mt-4 grid gap-4 sm:grid-cols-2">
+          </div>
+          <Reveal className="mt-4 grid gap-4 min-[641px]:grid-cols-2">
             {separate.map((item) => (
-              <div key={item.title} className="flex gap-3.5 rounded-[18px] border border-dashed border-neutral-300 p-[22px]">
-                <item.icon className="mt-1 size-[18px] flex-none text-neutral-600" aria-hidden />
+              <div key={item.title} className="flex gap-3.5 rounded-card-sm border border-dashed border-line-strong p-[22px]">
+                <item.icon className="mt-1 size-[18px] flex-none text-ink-500" aria-hidden />
                 <div className="min-w-0 flex-1">
                   <b className="block text-teal-900">{item.title}</b>
-                  <span className="text-sm text-slate-ink">{item.body}</span>
+                  <span className="text-sm text-[#5f7277]">{item.body}</span>
                 </div>
               </div>
             ))}
@@ -136,24 +118,35 @@ export default async function PricingPage() {
         </Container>
       </Section>
 
-      <Section className="pt-0 md:pt-0">
-        <Container className="grid gap-14 lg:grid-cols-[minmax(0,0.7fr)_minmax(0,1.3fr)]">
+      <Section id="faq" aria-labelledby="pricing-faq-title" className="pt-0 min-[861px]:pt-0">
+        <Container className="grid gap-7 min-[1081px]:grid-cols-[minmax(0,0.7fr)_minmax(0,1.3fr)] min-[1081px]:gap-14">
           <Reveal>
-            <SectionHeading kicker={t("faq.kicker")} title={t("faq.title")} className="mb-0">
-              <p className="mt-3.5">
-                <Link href="/faq" className="text-teal-700 hover:underline">
-                  {tc("seeAllQuestions")}
-                </Link>
-              </p>
-            </SectionHeading>
+            <SectionHeading
+              id="pricing-faq-title"
+              kicker={t("faq.kicker")}
+              title={t("faq.title")}
+              className="mb-0"
+              description={t.rich("faq.desc", {
+                link: (chunks) => (
+                  <a href={CONTACT.whatsapp} target="_blank" rel="noopener noreferrer" className="font-semibold text-teal-700 underline-offset-2 hover:underline">
+                    {chunks}
+                  </a>
+                ),
+              })}
+            />
           </Reveal>
           <Reveal>
-            <FaqAccordion items={t.raw("faq.items") as FaqEntry[]} />
+            <FaqAccordion items={faq} />
           </Reveal>
         </Container>
       </Section>
 
-      <CtaBand title={t("band")} action={<SignupTrigger tone="dark" />} />
+      <CtaBand title={t("final.title")} body={t("final.body")} action={<SlugClaimForm className="w-full sm:w-[420px]" />} />
     </>
   );
+}
+
+/** FAQ answers are read raw (an array), so their prices are filled in here. */
+function replaceTokens(text: string, values: Record<string, string>): string {
+  return text.replace(/\{(\w+)\}/g, (match, key: string) => values[key] ?? match);
 }

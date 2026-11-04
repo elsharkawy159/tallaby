@@ -1,1 +1,110 @@
-{}
+{
+  "meta": {
+    "pricing": {
+      "title": "Pricing | Two simple plans, no percentage of sales",
+      "description": "Two simple plans. Start free and pay $0.03 per order, or go Pro for $29 a month with no order fee."
+    }
+  },
+  "pricing": {
+    "hero": {
+      "eyebrow": "Pricing",
+      "title": "Two simple plans. Switch any time.",
+      "lead": "Start free and pay a few cents per order, or go Pro for a flat monthly price.",
+      "noCard": "No card to start",
+      "switch": "Switch plans any time",
+      "noPercent": "No percentage of your sales"
+    },
+    "plans": {
+      "heading": "Plans",
+      "freeName": "Free",
+      "freeTagline": "For starting out and growing.",
+      "perOrder": "per order",
+      "freeApprox": "≈ {egp} EGP per order · no monthly fee",
+      "freeCta": "Start free",
+      "proTagline": "For stores with steady orders.",
+      "perMonth": "per month",
+      "proApprox": "≈ {egp} EGP a month · zero per-order fee",
+      "proCta": "Go Pro",
+      "proRibbon": "Best for busy stores",
+      "featureUnlimited": "Unlimited products and orders",
+      "featureVisits": "Unlimited visits",
+      "featureCredits": "{count} AI credits a month",
+      "featureEmails": "{count} campaign emails a month",
+      "featureShared": "AI credits shared across your whole account",
+      "featureAll": "All store features",
+      "featureEverything": "Everything in Free",
+      "featureNoFee": "Zero platform fee on orders",
+      "plainly": "On the free plan, you'll need a first {topUp} top-up before you can see orders and send campaigns. On both plans, customer order emails need the Order Notifications app, at {notification} per order.",
+      "fx": "EGP amounts are approximate, at 1 USD ≈ {rate} EGP."
+    },
+    "estimate": {
+      "kicker": "Estimate",
+      "title": "What would a month cost you?",
+      "desc": "Move the sliders to match your store and compare both plans.",
+      "orders": "Orders a month",
+      "emails": "Campaign emails a month",
+      "notifications": "Order Notifications app",
+      "notificationsBody": "Customer order emails, at {price} per order.",
+      "monthly": "Estimated cost a month",
+      "free": "Free",
+      "cheaper": "Cheaper",
+      "approx": "≈ {egp} EGP",
+      "savingFree": "You save {amount} a month on the free plan.",
+      "savingPro": "You save {amount} a month on Pro.",
+      "breakEven": "From about {orders} orders a month, Pro at {price} costs less than order fees.",
+      "note": "Payment gateway fees and shipping are separate and aren't included here."
+    },
+    "extras": {
+      "kicker": "Other costs",
+      "title": "Everything you might pay, plainly",
+      "desc": "These come out of your store wallet in dollars, and you top it up in Egyptian pounds.",
+      "topUpTitle": "Wallet top-ups",
+      "topUpBody": "From {topUpMin} to {topUpMax}, paid in EGP. On the free plan, a first {topUpMin} top-up is needed before you can see orders and send campaigns.",
+      "notificationsTitle": "Order Notifications",
+      "notificationsBody": "Customer order emails go out through this app, at {notification} per order. It's optional and set per store.",
+      "emailsTitle": "Extra campaign emails",
+      "emailsBody": "{emailPack} per {emailCount} emails once your monthly allowance runs out.",
+      "creditsTitle": "Extra AI credits",
+      "creditsBody": "{creditPack} per {creditCount} credits. Credits you buy never expire.",
+      "processingTitle": "Payment gateway",
+      "processingBody": "If you connect your Paymob or Kashier account, the gateway charges its fees to you directly.",
+      "shippingTitle": "Shipping",
+      "shippingBody": "Tallaby doesn't deliver. You pay your shipping company or riders directly."
+    },
+    "faq": {
+      "kicker": "FAQ",
+      "title": "Pricing questions",
+      "desc": "Can't find your answer? <link>Message us on WhatsApp.</link>",
+      "items": [
+        {
+          "q": "What does an order cost on the free plan?",
+          "a": "{orderFee} per created order, whatever its value. No monthly fee and no percentage."
+        },
+        {
+          "q": "Is the free plan completely free?",
+          "a": "There's no subscription and no card to start. You do need a first {topUpMin} top-up before you can see orders and send campaigns, and {orderFee} per order comes out of your wallet."
+        },
+        {
+          "q": "When is Pro worth it?",
+          "a": "From about {breakEven} orders a month, the flat {pro} costs less than per-order fees. Pro also gives you {proCredits} AI credits."
+        },
+        {
+          "q": "Do my customers get order emails automatically?",
+          "a": "Only with the Order Notifications app on, at {notification} per order. It's off by default."
+        },
+        {
+          "q": "What is an AI credit?",
+          "a": "Each AI action, like preparing a product from photos or text, uses one credit. Credits are shared across your whole account, not per team member."
+        },
+        {
+          "q": "How do I pay in dollars from Egypt?",
+          "a": "You choose a top-up in dollars, from {topUpMin} to {topUpMax}, and pay it in Egyptian pounds. You see the EGP amount before you pay."
+        }
+      ]
+    },
+    "final": {
+      "title": "Your store link is waiting",
+      "body": "Claim it now. Design and publish whenever you're ready."
+    }
+  }
+}
