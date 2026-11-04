@@ -16,7 +16,8 @@ import {
 } from "@workspace/ui/components/table";
 import { Badge } from "@workspace/ui/components/badge";
 import { useLocale, useTranslations } from "next-intl";
-import { formatDate, formatMoney, formatNumber, formatWalletMoney } from "@/lib/i18n/format";
+import { formatDate, formatMoney, formatNumber, formatWalletMoney, splitHeadline } from "@/lib/i18n/format";
+import { Money, MoneyLines } from "@/components/money";
 import { humanizeStatus, translateStatus } from "@/lib/i18n/status";
 import type { SalesSources } from "./financial.lib";
 import { SalesSourcesCard } from "./sales-sources.client";
@@ -30,7 +31,8 @@ interface FinancialDashboardContentProps {
     lastPayoutAmount?: string | null;
   } | null;
   pending: {
-    pendingAmount?: number;
+    /** Per currency, EGP first. */
+    byCurrency?: { currency: string; total: number }[];
     orderCount?: number;
   } | null;
   payouts: Array<{
@@ -59,11 +61,11 @@ interface FinancialDashboardContentProps {
     createdAt?: string | null;
     order?: { orderNumber?: string | null } | null;
   }>;
-  analytics: {
-    thisMonthSales?: number;
-    lastMonthSales?: number;
-  } | null;
-  sources: { month: SalesSources; allTime: SalesSources } | null;
+  /** One row per currency. */
+  analytics: { currency: string; thisMonthSales: number; lastMonthSales: number }[] | null;
+  sources: Record<"month" | "allTime", { currency: string; data: SalesSources }[]> | null;
+  /** What an empty card is in: the seller's one currency, or EGP. */
+  fallbackCurrency: string;
 }
 
 export function FinancialDashboardContent({
@@ -74,6 +76,7 @@ export function FinancialDashboardContent({
   transactions,
   analytics,
   sources,
+  fallbackCurrency,
 }: FinancialDashboardContentProps) {
   const t = useTranslations("financial");
   const tStatus = useTranslations("status");
@@ -81,11 +84,17 @@ export function FinancialDashboardContent({
   const formatCurrency = (value?: string | number | null) =>
     formatMoney(value, locale);
   const walletBalance = wallet?.walletBalance ?? "0";
-  const pendingAmount = pending?.pendingAmount ?? 0;
+  const fallback = fallbackCurrency;
+  const pendingAmount = splitHeadline(pending?.byCurrency ?? [], { fallback });
   const pendingCount = pending?.orderCount ?? 0;
   const totalPaid = stats?.total?.totalPaid ?? 0;
-  const thisMonth = analytics?.thisMonthSales ?? 0;
-  const lastMonth = analytics?.lastMonthSales ?? 0;
+  // The lead currency's own months: a percentage across currencies would mean nothing.
+  const monthly = splitHeadline(
+    (analytics ?? []).map((row) => ({ currency: row.currency, total: row.thisMonthSales })),
+    { fallback },
+  );
+  const thisMonth = monthly.total;
+  const lastMonth = analytics?.find((row) => row.currency === monthly.currency)?.lastMonthSales ?? 0;
   const growth =
     lastMonth > 0 ? ((thisMonth - lastMonth) / lastMonth) * 100 : 0;
 
@@ -104,8 +113,9 @@ export function FinancialDashboardContent({
               <div>
                 <p className="text-sm text-muted-foreground">{t("thisMonthSales")}</p>
                 <p className="text-2xl font-bold text-foreground">
-                  {formatCurrency(thisMonth)}
+                  <Money value={thisMonth} locale={locale} unit={{ currency: monthly.currency }} />
                 </p>
+                <MoneyLines totals={monthly.others} locale={locale} className="text-sm font-medium text-muted-foreground" />
                 {/* No sales last month: a percentage would read "+0.0%", so say nothing. */}
                 {lastMonth > 0 && (
                   <p
@@ -152,8 +162,9 @@ export function FinancialDashboardContent({
               <div>
                 <p className="text-sm text-muted-foreground">{t("pendingEarnings")}</p>
                 <p className="text-2xl font-bold text-foreground">
-                  {formatCurrency(pendingAmount)}
+                  <Money value={pendingAmount.total} locale={locale} unit={{ currency: pendingAmount.currency }} />
                 </p>
+                <MoneyLines totals={pendingAmount.others} locale={locale} className="text-sm font-medium text-muted-foreground" />
                 <p className="text-sm text-yellow-600 dark:text-yellow-400">
                   {t("deliveredItems", { count: pendingCount })}
                 </p>

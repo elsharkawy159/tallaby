@@ -89,6 +89,26 @@ export function moneyParams(locale: string, unit?: MoneyUnit) {
   return { code: unit?.currency || DEFAULT_CURRENCY, unit: moneyUnitText(locale, unit) };
 }
 
+/**
+ * Totals per currency → the one a summary leads with and the rest. A store's own
+ * currency leads when it is given (`preferred`), else EGP, else the first; with
+ * no totals at all it is `fallback`, so an empty card still names the right unit.
+ */
+export function splitHeadline(
+  totals: readonly { currency: string; total: number }[],
+  { preferred, fallback }: { preferred?: string | null; fallback?: string | null } = {},
+): { currency: string; total: number; others: { currency: string; total: number }[] } {
+  const lead =
+    totals.find((t) => t.currency === preferred) ??
+    totals.find((t) => t.currency === DEFAULT_CURRENCY) ??
+    totals[0];
+  return {
+    currency: lead?.currency ?? preferred ?? fallback ?? DEFAULT_CURRENCY,
+    total: lead?.total ?? 0,
+    others: totals.filter((t) => t !== lead),
+  };
+}
+
 /** Options for next-intl's `format.number` where a screen uses it for money. EGP stays as it was. */
 export function moneyNumberOptions(unit?: MoneyUnit) {
   if (unit?.currency === MIXED_CURRENCIES) return { maximumFractionDigits: 2 };

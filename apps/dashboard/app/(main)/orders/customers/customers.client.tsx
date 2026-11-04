@@ -33,7 +33,7 @@ import {
   type CustomerSort,
   type StoreCustomer,
 } from "@workspace/lib/customers";
-import { formatDate, formatDateTime, formatMoney, formatNumber, formatRelativeTime, moneyParams, type MoneyUnit } from "@/lib/i18n/format";
+import { formatDate, formatDateTime, formatNumber, formatRelativeTime, moneyParams, type MoneyUnit } from "@/lib/i18n/format";
 import { Money } from "@/components/money";
 import { downloadXlsx, todayStamp } from "@/lib/product-excel";
 import { blockCustomerPhone, unblockCustomerPhone } from "../../stores/[storeId]/settings/protection/protection.server";

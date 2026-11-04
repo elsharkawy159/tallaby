@@ -79,8 +79,9 @@ async function governorates(sellerId: string, storeId: string, start: string): P
   }));
 }
 
-async function sources(sellerId: string, storeId: string, start: string) {
+async function sources(sellerId: string, storeId: string, start: string, currency: string) {
   // order_items.seller_id scopes every row to this seller, whatever the store.
+  // Only this store's currency: another store's sales in another currency can't share a chart.
   const result = await db.execute(sql`
     SELECT CASE
              WHEN o.order_source IN ('external', 'manual') THEN 'manual'
@@ -96,6 +97,7 @@ async function sources(sellerId: string, storeId: string, start: string) {
        AND oi.created_at >= ${start}::timestamptz
        AND oi.status NOT IN ${NON_REVENUE}
        AND coalesce(oi.is_refunded, false) = false
+       AND coalesce(o.currency, 'EGP') = ${currency}
      GROUP BY 1
   `);
   return rowsOf(result).map((r) => ({
@@ -119,7 +121,7 @@ async function abandonedCheckouts(sellerId: string, storeId: string, start: stri
 }
 
 /** Units and revenue per product sold on this store's website in the period. */
-const soldCte = (sellerId: string, storeId: string, start: string) => sql`
+const soldCte = (sellerId: string, storeId: string, start: string, currency: string) => sql`
   sold AS (
     SELECT oi.product_id,
            sum(oi.quantity)::int AS units,
@@ -129,6 +131,7 @@ const soldCte = (sellerId: string, storeId: string, start: string) => sql`
       JOIN orders o ON o.id = oi.order_id
      WHERE oi.seller_id = ${sellerId}
        AND o.store_id = ${storeId}::uuid
+       AND coalesce(o.currency, 'EGP') = ${currency}
        AND oi.created_at >= ${start}::timestamptz
        AND oi.status NOT IN ${NON_REVENUE}
        AND coalesce(oi.is_refunded, false) = false
@@ -149,10 +152,10 @@ const toProduct = (r: Record<string, unknown>): ReportProduct => ({
   revenuePiastres: toInt(r.piastres),
 });
 
-async function bestProducts(sellerId: string, storeId: string, start: string, locale: string): Promise<ReportProduct[]> {
+async function bestProducts(sellerId: string, storeId: string, start: string, locale: string, currency: string): Promise<ReportProduct[]> {
   // Trashed products (0123) are left out of every list.
   const result = await db.execute(sql`
-    WITH ${soldCte(sellerId, storeId, start)}
+    WITH ${soldCte(sellerId, storeId, start, currency)}
     SELECT p.id, ${productTitle(locale)} AS title, p.images->>0 AS image,
            s.units, s.orders, s.piastres::text AS piastres
       FROM sold s
@@ -163,10 +166,10 @@ async function bestProducts(sellerId: string, storeId: string, start: string, lo
   return rowsOf(result).map(toProduct);
 }
 
-async function worstCandidates(sellerId: string, storeId: string, start: string, locale: string): Promise<ReportProduct[]> {
+async function worstCandidates(sellerId: string, storeId: string, start: string, locale: string, currency: string): Promise<ReportProduct[]> {
   // Active, not trashed products this store shows (catalog 'all' or its selection), fewest sales first.
   const result = await db.execute(sql`
-    WITH ${soldCte(sellerId, storeId, start)}
+    WITH ${soldCte(sellerId, storeId, start, currency)}
     SELECT p.id, ${productTitle(locale)} AS title, p.images->>0 AS image,
            coalesce(s.units, 0) AS units, coalesce(s.orders, 0) AS orders, coalesce(s.piastres, 0)::text AS piastres
       FROM products p
@@ -183,21 +186,21 @@ async function worstCandidates(sellerId: string, storeId: string, start: string,
   return rowsOf(result).map(toProduct);
 }
 
-async function loadStoreReport(sellerId: string, storeId: string, start: string, locale: string): Promise<StoreReportData> {
+async function loadStoreReport(sellerId: string, storeId: string, start: string, locale: string, currency: string): Promise<StoreReportData> {
   const [govs, srcs, abandoned, best, worst] = await Promise.all([
     governorates(sellerId, storeId, start),
-    sources(sellerId, storeId, start),
+    sources(sellerId, storeId, start, currency),
     abandonedCheckouts(sellerId, storeId, start),
-    bestProducts(sellerId, storeId, start, locale),
-    worstCandidates(sellerId, storeId, start, locale),
+    bestProducts(sellerId, storeId, start, locale, currency),
+    worstCandidates(sellerId, storeId, start, locale, currency),
   ]);
   return { governorates: govs, sources: srcs, abandonedCheckouts: abandoned, best, worstCandidates: worst };
 }
 
 const getCachedStoreReport = createCachedQuery({
-  name: "dashboard:store-report:v1",
+  name: "dashboard:store-report:v2",
   ttl: REPORT_TTL_SECONDS,
-  tags: (sellerId: string, storeId: string, _start: string, _locale: string) => [storeTags.reports(sellerId, storeId)],
+  tags: (sellerId: string, storeId: string, _start: string, _locale: string, _currency: string) => [storeTags.reports(sellerId, storeId)],
   query: loadStoreReport,
 });
 
@@ -210,7 +213,9 @@ export async function getStoreReport(
   storeId: string,
   start: string,
   locale: string,
+  /** The store's currency: the report's money counts only orders in it. */
+  currency: string,
 ): Promise<StoreReportData | null> {
   if (!UUID_RE.test(sellerId) || !UUID_RE.test(storeId) || Number.isNaN(Date.parse(start))) return null;
-  return getCachedStoreReport(sellerId, storeId, start, locale.startsWith("ar") ? "ar" : "en");
+  return getCachedStoreReport(sellerId, storeId, start, locale.startsWith("ar") ? "ar" : "en", currency);
 }

@@ -24,8 +24,11 @@ const ORDERS = "var(--accent)";
 export function SalesChart({
   data,
   hasOrders,
+  unit,
 }: {
   data: SalesChartPoint[];
+  /** The currency the revenue line is in. */
+  unit: string;
   /** Whether the store has ever had an order (picks the empty-state copy). */
   hasOrders: boolean;
 }) {
@@ -78,7 +81,7 @@ export function SalesChart({
               return (
                 <div className="rounded-[10px] bg-foreground px-2.5 py-2 text-xs leading-normal text-background shadow-lg">
                   <div>{labelOf(point.day)}</div>
-                  <b className="font-montserrat">{number.format(point.revenue)}</b> {t("currency")} ·{" "}
+                  <b className="font-montserrat">{number.format(point.revenue)}</b> {unit} ·{" "}
                   <b className="font-montserrat">{number.format(point.orders)}</b>{" "}
                   {t("ordersShort", { count: point.orders })}
                 </div>

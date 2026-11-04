@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { PRICE_SYMBOL_MARK, SAUDI_RIYAL_LABEL } from "@workspace/lib";
-import { formatMoney, formatMoneyMarked, moneyLabel, moneyParams, moneyUnitMarked, moneyUnitText, totalsByCurrency } from "./format";
+import { formatMoney, formatMoneyMarked, moneyLabel, moneyParams, moneyUnitMarked, moneyUnitText, splitHeadline, totalsByCurrency } from "./format";
 
 describe("formatMoney", () => {
   it("reads the same as before with no currency, a null one and EGP", () => {
@@ -71,5 +71,30 @@ describe("totalsByCurrency", () => {
 
   it("is empty with no rows", () => {
     expect(totalsByCurrency([], read)).toEqual([]);
+  });
+});
+
+describe("splitHeadline", () => {
+  const totals = [
+    { currency: "AED", total: 5 },
+    { currency: "EGP", total: 300 },
+    { currency: "SAR", total: 100 },
+  ];
+
+  it("leads with the store's currency when it has one", () => {
+    const { currency, total, others } = splitHeadline(totals, { preferred: "SAR" });
+    expect([currency, total]).toEqual(["SAR", 100]);
+    expect(others.map((o) => o.currency)).toEqual(["AED", "EGP"]);
+  });
+
+  it("leads with EGP across stores, else the first", () => {
+    expect(splitHeadline(totals).currency).toBe("EGP");
+    expect(splitHeadline([{ currency: "SAR", total: 1 }]).currency).toBe("SAR");
+  });
+
+  it("names the right unit with no sales", () => {
+    expect(splitHeadline([], { fallback: "SAR" })).toEqual({ currency: "SAR", total: 0, others: [] });
+    expect(splitHeadline([], { preferred: "AED", fallback: "SAR" }).currency).toBe("AED");
+    expect(splitHeadline([]).currency).toBe("EGP");
   });
 });

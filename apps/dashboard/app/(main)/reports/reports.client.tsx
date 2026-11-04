@@ -160,7 +160,7 @@ const SOURCE_COLORS: Record<SourceRow["source"], string> = {
 };
 
 /** Revenue share per sales source as a donut, with a legend list beside it. */
-export function SourcesChart({ rows }: { rows: SourceRow[] }) {
+export function SourcesChart({ rows, unit }: { rows: SourceRow[]; unit: string }) {
   const t = useTranslations("reports.sources");
   const locale = useLocale();
   const data = rows.filter((r) => r.revenuePiastres > 0);
@@ -184,7 +184,7 @@ export function SourcesChart({ rows }: { rows: SourceRow[] }) {
                   return (
                     <ChartTooltip>
                       <div>{t(row.source)}</div>
-                      <b className="font-montserrat">{money(row.revenuePiastres)}</b> {t("currency")} · {pct(row.share, locale)}
+                      <b className="font-montserrat">{money(row.revenuePiastres)}</b> {unit} · {pct(row.share, locale)}
                     </ChartTooltip>
                   );
                 }}
@@ -201,7 +201,7 @@ export function SourcesChart({ rows }: { rows: SourceRow[] }) {
             <i className="size-2.5 shrink-0 rounded-full" style={{ background: SOURCE_COLORS[r.source] }} aria-hidden />
             <span className="min-w-0 flex-1 truncate">{t(r.source)}</span>
             <span className="text-end text-xs text-muted-foreground tabular-nums">
-              <b className="font-montserrat text-sm text-foreground">{money(r.revenuePiastres)}</b> {t("currency")}
+              <b className="font-montserrat text-sm text-foreground">{money(r.revenuePiastres)}</b> {unit}
               <span className="block">
                 {t("orders", { count: r.orders })} · {pct(r.share, locale)}
               </span>

@@ -25,8 +25,8 @@ import { TableSection } from "@workspace/ui/components/table-section";
 import { Tabs, TabsList, TabsTrigger } from "@workspace/ui/components/tabs";
 import { bulkUpdateShipmentStatus, setSellerRiderActive, setSellerRiderAvailable } from "@/actions/shipping";
 import { cn } from "@/lib/utils";
-import { formatDateTime, formatMoneyMarked, totalsByCurrency } from "@/lib/i18n/format";
-import { Money, MoneyText } from "@/components/money";
+import { formatDateTime, totalsByCurrency } from "@/lib/i18n/format";
+import { Money, MoneyLines } from "@/components/money";
 import { SHIPPING_STATUS_BADGE } from "@/lib/shipping/shipping-status";
 import type { SellerRider, ShippingOrderRow } from "@/lib/shipping/shipping.types";
 import { AssignRiderDialog } from "./assign-rider-dialog.client";
@@ -321,11 +321,7 @@ export function ShippingWorkspace({
             stats.cod.length === 0 ? (
               <Money value={0} locale={locale} />
             ) : (
-              stats.cod.map(({ currency, total }) => (
-                <span key={currency} className="block">
-                  <MoneyText locale={locale}>{formatMoneyMarked(total, locale, { currency })}</MoneyText>
-                </span>
-              ))
+              <MoneyLines totals={stats.cod} locale={locale} />
             )
           }
           hint={t("stats.cashHint")}

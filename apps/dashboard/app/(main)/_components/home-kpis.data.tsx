@@ -3,7 +3,8 @@ import type { LucideIcon } from "lucide-react";
 import { Banknote, Eye, Percent, Receipt, ShoppingBag, Star, UserPlus, Wallet } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { cn } from "@workspace/ui/lib/utils";
-import { formatNumber, formatWalletMoney } from "@/lib/i18n/format";
+import { formatNumber, formatWalletMoney, moneyUnitMarked } from "@/lib/i18n/format";
+import { MoneyLines, MoneyText } from "@/components/money";
 import {
   getHomeChannelStores,
   getHomeSnapshot,
@@ -49,7 +50,8 @@ export async function HomeKpisData({ range, channel = "all" }: { range: HomeRang
         label={t("sales")}
         icon={Banknote}
         value={num(sales.revenue)}
-        unit={t("currency")}
+        unit={<MoneyText locale={locale}>{moneyUnitMarked(locale, { currency: sales.currency })}</MoneyText>}
+        also={sales.otherTotals.length > 0 && <MoneyLines totals={sales.otherTotals} locale={locale} />}
         trend={sales.series.map((p) => p.revenue)}
         footer={hasSales ? t("vsPrevious") : t("noSales")}
         delta={hasSales ? percentChange(sales.revenue, sales.previousRevenue) : null}
@@ -113,8 +115,8 @@ export async function HomeMetricsData({ range, channel = "all" }: { range: HomeR
         href="/orders"
         icon={Receipt}
         label={tm("aov")}
-        value={sales.orders > 0 ? num(sales.revenue / sales.orders) : "0"}
-        unit={t("currency")}
+        value={sales.currencyOrders > 0 ? num(sales.revenue / sales.currencyOrders) : "0"}
+        unit={<MoneyText locale={locale}>{moneyUnitMarked(locale, { currency: sales.currency })}</MoneyText>}
       />
       <Metric href="/orders" icon={UserPlus} tone="accent" label={tm("newCustomers")} value={num(newCustomers)} unit={tm("customersUnit")} />
       <Metric
@@ -157,6 +159,7 @@ export function KpiCard({
   icon,
   value,
   unit,
+  also,
   trend,
   footer,
   delta,
@@ -165,7 +168,9 @@ export function KpiCard({
   label: string;
   icon: LucideIcon;
   value: string;
-  unit?: string;
+  unit?: React.ReactNode;
+  /** The same figure in other currencies, one per line. */
+  also?: React.ReactNode;
   trend: number[];
   footer?: React.ReactNode;
   /** Omit for metrics that are not period-based. */
@@ -184,6 +189,7 @@ export function KpiCard({
         <b className="font-montserrat text-[22px] font-semibold leading-none tabular-nums sm:text-[28px]">{value}</b>
         {unit && <span className="text-[13px] text-muted-foreground">{unit}</span>}
       </div>
+      {also && <div className="text-xs font-medium text-muted-foreground tabular-nums">{also}</div>}
       <Sparkline values={trend} />
       <div className="flex min-h-[22px] items-center justify-between gap-2 text-xs text-muted-foreground">
         <span className="min-w-0">{footer}</span>
@@ -219,7 +225,7 @@ function Metric({
   tone?: Tone;
   label: string;
   value: string;
-  unit?: string;
+  unit?: React.ReactNode;
   note?: React.ReactNode;
 }) {
   return (

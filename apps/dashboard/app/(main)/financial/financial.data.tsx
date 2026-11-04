@@ -12,7 +12,8 @@ import { requireSeller } from "@/lib/auth/require-seller.server";
 import { getSellerStores } from "@/lib/stores/current-store.server";
 import { FinancialDashboardContent } from "./financial.chunks";
 import { FinancialSkeleton } from "./financial.skeleton";
-import { buildSalesSources, startOfMonth, type SalesSourceRow } from "./financial.lib";
+import { loadAccountMoney } from "@/lib/stores/account-money.server";
+import { salesSourcesByCurrency, startOfMonth, type SalesSourceRow } from "./financial.lib";
 
 /**
  * The seller's earnings grouped by store (NULL = marketplace) and payment
@@ -28,6 +29,7 @@ async function getSalesSources() {
     .select({
       storeId: orders.storeId,
       paymentMethod: orders.paymentMethod,
+      currency: orders.currency,
       monthEarning: sql<string>`coalesce(sum(${orderItems.sellerEarning}) filter (where ${inMonth}), 0)`,
       monthOrders: sql<string>`count(distinct ${orderItems.orderId}) filter (where ${inMonth})`,
       allEarning: sql<string>`coalesce(sum(${orderItems.sellerEarning}), 0)`,
@@ -36,7 +38,7 @@ async function getSalesSources() {
     .from(orderItems)
     .innerJoin(orders, eq(orderItems.orderId, orders.id))
     .where(eq(orderItems.sellerId, seller.sellerId))
-    .groupBy(orders.storeId, orders.paymentMethod);
+    .groupBy(orders.storeId, orders.paymentMethod, orders.currency);
 
   const pick = (earning: "monthEarning" | "allEarning", count: "monthOrders" | "allOrders") =>
     rows.map<SalesSourceRow>((r) => ({
@@ -44,17 +46,19 @@ async function getSalesSources() {
       paymentMethod: r.paymentMethod,
       earning: r[earning],
       orders: r[count],
+      currency: r.currency,
     }));
   const names = stores.map((s) => ({ id: s.id, name: s.name }));
 
   return {
-    month: buildSalesSources(pick("monthEarning", "monthOrders"), names),
-    allTime: buildSalesSources(pick("allEarning", "allOrders"), names),
+    month: salesSourcesByCurrency(pick("monthEarning", "monthOrders"), names),
+    allTime: salesSourcesByCurrency(pick("allEarning", "allOrders"), names),
   };
 }
 
 export async function FinancialData() {
-  const [walletRes, pendingRes, payoutsRes, statsRes, txRes, analyticsRes, sources] =
+  const seller = await requireSeller();
+  const [walletRes, pendingRes, payoutsRes, statsRes, txRes, analyticsRes, sources, accountMoney] =
     await Promise.all([
       getWalletBalance(),
       getPendingEarnings(),
@@ -66,6 +70,7 @@ export async function FinancialData() {
         console.error("[financial] sales sources failed", error);
         return null;
       }),
+      loadAccountMoney(seller.sellerId),
     ]);
 
   return (
@@ -77,6 +82,7 @@ export async function FinancialData() {
       transactions={txRes.success ? (txRes.data ?? []) : []}
       analytics={analyticsRes.success ? (analyticsRes.data?.sales ?? null) : null}
       sources={sources}
+      fallbackCurrency={accountMoney.mixed ? "EGP" : (accountMoney.unit.currency ?? "EGP")}
     />
   );
 }

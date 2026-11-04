@@ -10,6 +10,8 @@ export type SalesSourceRow = {
   paymentMethod: string | null;
   earning: string | number | null;
   orders: string | number | null;
+  /** The orders' currency. Missing means EGP. */
+  currency?: string | null;
 };
 
 export type SalesSourceLine = {
@@ -55,6 +57,22 @@ const toCount = (value: string | number | null) => {
   const num = typeof value === "string" ? parseInt(value, 10) : (value ?? 0);
   return Number.isFinite(num) ? num : 0;
 };
+
+/** One block of sources per currency, EGP first: earnings in different currencies are never added. */
+export function salesSourcesByCurrency(
+  rows: SalesSourceRow[],
+  stores: { id: string; name: string }[],
+): { currency: string; data: SalesSources }[] {
+  const groups = new Map<string, SalesSourceRow[]>();
+  for (const row of rows) {
+    if (!toPiastres(row.earning) && !toCount(row.orders)) continue;
+    const code = row.currency || "EGP";
+    groups.set(code, [...(groups.get(code) ?? []), row]);
+  }
+  return [...groups.entries()]
+    .sort(([a], [b]) => (a === "EGP" ? -1 : b === "EGP" ? 1 : a.localeCompare(b)))
+    .map(([currency, group]) => ({ currency, data: buildSalesSources(group, stores) }));
+}
 
 export function buildSalesSources(
   rows: SalesSourceRow[],

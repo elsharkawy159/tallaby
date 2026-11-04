@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildSalesSources, normalizePaymentMethod, startOfMonth } from "./financial.lib";
+import { buildSalesSources, normalizePaymentMethod, salesSourcesByCurrency, startOfMonth } from "./financial.lib";
 import en from "../../../messages/en.json";
 import ar from "../../../messages/ar.json";
 
@@ -61,5 +61,31 @@ describe("helpers", () => {
     const keys = (o: object): string[] =>
       Object.entries(o).flatMap(([k, v]) => (typeof v === "object" ? keys(v).map((s) => `${k}.${s}`) : [k]));
     expect(keys(ar.financial.sources).sort()).toEqual(keys(en.financial.sources).sort());
+  });
+});
+
+describe("salesSourcesByCurrency", () => {
+  const stores = [{ id: "s1", name: "Cairo" }, { id: "s2", name: "Riyadh" }];
+
+  it("keeps each currency's earnings apart, EGP first", () => {
+    const blocks = salesSourcesByCurrency(
+      [
+        { storeId: "s2", paymentMethod: "cod", earning: "500", orders: 2, currency: "SAR" },
+        { storeId: "s1", paymentMethod: "cod", earning: "300", orders: 3, currency: "EGP" },
+        { storeId: null, paymentMethod: "card", earning: "100", orders: 1, currency: null },
+      ],
+      stores,
+    );
+    expect(blocks.map((b) => [b.currency, b.data.total, b.data.orders])).toEqual([
+      ["EGP", 400, 4],
+      ["SAR", 500, 2],
+    ]);
+  });
+
+  it("gives one block for a seller in one currency, and none with no sales", () => {
+    const row = { storeId: "s1", paymentMethod: "cod", earning: "300", orders: 3, currency: "EGP" };
+    expect(salesSourcesByCurrency([row], stores)).toHaveLength(1);
+    expect(salesSourcesByCurrency([], stores)).toEqual([]);
+    expect(salesSourcesByCurrency([{ ...row, earning: 0, orders: 0 }], stores)).toEqual([]);
   });
 });

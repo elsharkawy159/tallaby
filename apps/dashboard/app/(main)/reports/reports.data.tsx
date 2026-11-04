@@ -10,6 +10,9 @@ import { LEAD_RETENTION_DAYS } from "@workspace/lib/checkout-leads";
 import { EmptyState, HeaderLink, HomeCard, HomeCardHeader, IconTile, ProductThumb, type Tone } from "../_components/home-ui";
 import type { LucideIcon } from "lucide-react";
 import { getStoreReport } from "./reports.server";
+import { MoneyText } from "@/components/money";
+import { moneyUnitMarked, moneyUnitText } from "@/lib/i18n/format";
+import { loadStoreMoney } from "@/lib/stores/account-money.server";
 import {
   averageOrderPiastres,
   funnelSteps,
@@ -40,10 +43,12 @@ export async function StoreReportData({ storeId, range }: { storeId: string; ran
     throw error;
   }
   const { seller, store } = access;
-  const [locale, t] = await Promise.all([getLocale(), getTranslations("reports")]);
+  const [locale, t, storeMoney] = await Promise.all([getLocale(), getTranslations("reports"), loadStoreMoney(seller.sellerId)]);
+  const storeUnit = { currency: storeMoney[store.id]?.currency ?? "EGP", label: storeMoney[store.id]?.label };
+  const unit = <MoneyText locale={locale}>{moneyUnitMarked(locale, storeUnit)}</MoneyText>;
   const period = reportPeriod(range);
   const [report, traffic] = await Promise.all([
-    getStoreReport(seller.sellerId, store.id, period.start, locale),
+    getStoreReport(seller.sellerId, store.id, period.start, locale, storeUnit.currency),
     getHomeTraffic(seller.sellerId, [store.id], range),
   ]);
   if (!report) notFound();
@@ -70,9 +75,9 @@ export async function StoreReportData({ storeId, range }: { storeId: string; ran
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-2.5 sm:gap-3.5 lg:grid-cols-3 xl:grid-cols-6">
-        <Kpi icon={Wallet} label={t("kpi.revenue")} value={money(storeSales.revenuePiastres)} unit={t("currency")} />
+        <Kpi icon={Wallet} label={t("kpi.revenue")} value={money(storeSales.revenuePiastres)} unit={unit} />
         <Kpi icon={ShoppingBag} label={t("kpi.orders")} value={formatNumber(totals.orders, locale)} />
-        <Kpi icon={ReceiptText} label={t("kpi.aov")} value={aov === null ? "—" : money(aov)} unit={aov === null ? undefined : t("currency")} />
+        <Kpi icon={ReceiptText} label={t("kpi.aov")} value={aov === null ? "—" : money(aov)} unit={aov === null ? undefined : unit} />
         <Kpi icon={Truck} tone="success" label={t("kpi.deliveryRate")} value={pct(rates.deliveryRate)} />
         <Kpi icon={Percent} tone="danger" label={t("kpi.refusalRate")} value={pct(rates.refusalRate)} />
         <Kpi icon={Ban} tone="accent" label={t("kpi.cancelRate")} value={pct(rates.cancelRate)} />
@@ -107,7 +112,7 @@ export async function StoreReportData({ storeId, range }: { storeId: string; ran
         <HomeCard aria-labelledby="sources-title" className="flex flex-col pb-5">
           <HomeCardHeader id="sources-title" title={t("sources.title")} description={t("sources.description")} />
           <div className="px-5 pt-4">
-            <SourcesChart rows={sources} />
+            <SourcesChart rows={sources} unit={moneyUnitText(locale, storeUnit)} />
           </div>
         </HomeCard>
       </div>
@@ -159,6 +164,7 @@ export async function StoreReportData({ storeId, range }: { storeId: string; ran
           products={report.best}
           empty={t("products.bestEmpty")}
           money={money}
+          unit={unit}
           t={t}
         />
         <ProductsCard
@@ -169,6 +175,7 @@ export async function StoreReportData({ storeId, range }: { storeId: string; ran
           products={worst}
           empty={t("products.worstEmpty")}
           money={money}
+          unit={unit}
           t={t}
         />
       </div>
@@ -186,7 +193,7 @@ function Kpi({
   icon: LucideIcon;
   label: string;
   value: string;
-  unit?: string;
+  unit?: React.ReactNode;
   tone?: Tone;
 }) {
   return (
@@ -220,6 +227,7 @@ function ProductsCard({
   products,
   empty,
   money,
+  unit,
   t,
 }: {
   id: string;
@@ -229,6 +237,7 @@ function ProductsCard({
   products: ReportProduct[];
   empty: string;
   money: (piastres: number) => string;
+  unit: React.ReactNode;
   t: Awaited<ReturnType<typeof getTranslations<"reports">>>;
 }) {
   return (
@@ -245,7 +254,7 @@ function ProductsCard({
                 <b className="min-w-0 flex-1 truncate text-[13px] font-semibold">{p.title || "—"}</b>
                 <span className="whitespace-nowrap text-end text-xs text-muted-foreground">
                   <b className="block font-montserrat text-sm text-foreground tabular-nums">
-                    {money(p.revenuePiastres)} {t("currency")}
+                    {money(p.revenuePiastres)} {unit}
                   </b>
                   {t("products.units", { count: p.units })}
                 </span>

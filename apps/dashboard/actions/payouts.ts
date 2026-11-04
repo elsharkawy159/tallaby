@@ -1,7 +1,8 @@
 "use server";
 
-import { db, sellerPayouts, sellerPayoutItems, sellerWallet, orderItems, sellers, walletTransactions } from "@workspace/db";
+import { db, orders, sellerPayouts, sellerPayoutItems, sellerWallet, orderItems, sellers, walletTransactions } from "@workspace/db";
 import { eq, and, desc, sql, gte, between } from "drizzle-orm";
+import { totalsByCurrency } from "@/lib/i18n/format";
 import { getUser } from "./auth";
 
 export async function getSellerPayouts(params?: {
@@ -100,13 +101,15 @@ export async function getPendingEarnings() {
       throw new Error("Unauthorized");
     }
 
-    // Get delivered orders not yet paid out
+    // Get delivered orders not yet paid out, per currency: amounts in different currencies are never added.
     const pendingEarnings = await db
       .select({
+        currency: sql<string>`coalesce(${orders.currency}, 'EGP')`,
         totalAmount: sql<number>`sum(${orderItems.sellerEarning})`,
         count: sql<number>`count(*)`,
       })
       .from(orderItems)
+      .leftJoin(orders, eq(orders.id, orderItems.orderId))
       .where(
         and(
           eq(orderItems.sellerId, session.user.id),
@@ -116,13 +119,14 @@ export async function getPendingEarnings() {
             SELECT order_item_id FROM ${sellerPayoutItems}
           )`
         )
-      );
+      )
+      .groupBy(sql`1`);
 
     return { 
       success: true, 
       data: {
-        pendingAmount: pendingEarnings[0]?.totalAmount || 0,
-        orderCount: pendingEarnings[0]?.count || 0,
+        byCurrency: totalsByCurrency(pendingEarnings, (row) => ({ currency: row.currency, amount: row.totalAmount })),
+        orderCount: pendingEarnings.reduce((sum, row) => sum + Number(row.count), 0),
       }
     };
   } catch (error) {
@@ -270,8 +274,10 @@ export async function getDashboardAnalytics() {
     const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
 
+    // One row per currency: amounts in different currencies are never added. Counts don't care, so they add up below.
     const salesStats = await db
       .select({
+        currency: sql<string>`coalesce(${orders.currency}, 'EGP')`,
         todaySales: sql<number>`sum(case when DATE(${orderItems.createdAt}) = CURRENT_DATE then ${orderItems.sellerEarning} else 0 end)`,
         thisMonthSales: sql<number>`sum(case when ${orderItems.createdAt} >= ${thisMonth.toISOString()} then ${orderItems.sellerEarning} else 0 end)`,
         lastMonthSales: sql<number>`sum(case when ${orderItems.createdAt} >= ${lastMonth.toISOString()} and ${orderItems.createdAt} < ${thisMonth.toISOString()} then ${orderItems.sellerEarning} else 0 end)`,
@@ -279,12 +285,18 @@ export async function getDashboardAnalytics() {
         thisMonthOrders: sql<number>`count(case when ${orderItems.createdAt} >= ${thisMonth.toISOString()} then 1 end)`,
       })
       .from(orderItems)
-      .where(eq(orderItems.sellerId, session.user.id));
+      .leftJoin(orders, eq(orders.id, orderItems.orderId))
+      .where(eq(orderItems.sellerId, session.user.id))
+      .groupBy(sql`1`);
 
     return {
       success: true,
       data: {
-        sales: salesStats[0],
+        sales: salesStats.map((row) => ({
+          currency: row.currency,
+          thisMonthSales: Number(row.thisMonthSales) || 0,
+          lastMonthSales: Number(row.lastMonthSales) || 0,
+        })),
       },
     };
   } catch (error) {

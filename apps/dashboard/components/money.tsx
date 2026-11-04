@@ -1,6 +1,7 @@
 import { Children, Fragment, type ReactNode } from "react";
 import { PRICE_SYMBOL_MARK, saudiRiyalSvg } from "@workspace/lib";
 import { formatMoneyMarked, type MoneyUnit } from "@/lib/i18n/format";
+import { cn } from "@workspace/ui/lib/utils";
 
 /** The Saudi Riyal symbol (a fixed string, so safe as HTML), sized to the text around it. */
 export function RiyalSymbol({ locale }: { locale: string }) {
@@ -26,6 +27,23 @@ export function MoneyText({ children, locale }: { children: ReactNode; locale: s
       })}
     </>
   );
+}
+
+/** One amount per currency, one per line: totals across stores never add different currencies. */
+export function MoneyLines({
+  totals,
+  locale,
+  className,
+}: {
+  totals: readonly { currency: string; total: number }[];
+  locale: string;
+  className?: string;
+}) {
+  return totals.map(({ currency, total }) => (
+    <span key={currency} className={cn("block", className)}>
+      <Money value={total} locale={locale} unit={{ currency }} />
+    </span>
+  ));
 }
 
 /** One amount with its currency, as the screen shows it. Server or client. */

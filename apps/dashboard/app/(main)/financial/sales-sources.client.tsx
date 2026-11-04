@@ -5,17 +5,18 @@ import { CreditCard, ShoppingBag, Store } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/components/card";
 import { useLocale, useTranslations } from "next-intl";
 import { formatMoney, formatNumber } from "@/lib/i18n/format";
+import { Money } from "@/components/money";
 import { humanizeStatus } from "@/lib/i18n/status";
 import { MARKETPLACE_CHANNEL, type SalesSourceLine, type SalesSources } from "./financial.lib";
 
 type Period = "month" | "allTime";
 
 /** "Where your sales came from": earnings by sales channel and payment method. */
-export function SalesSourcesCard({ sources }: { sources: Record<Period, SalesSources> }) {
+export function SalesSourcesCard({ sources }: { sources: Record<Period, { currency: string; data: SalesSources }[]> }) {
   const t = useTranslations("financial.sources");
   const locale = useLocale();
   const [period, setPeriod] = useState<Period>("month");
-  const data = sources[period];
+  const blocks = sources[period];
 
   const channelLabel = (line: SalesSourceLine) =>
     line.key === MARKETPLACE_CHANNEL ? t("marketplace") : (line.name ?? t("unknownStore"));
@@ -49,15 +50,16 @@ export function SalesSourcesCard({ sources }: { sources: Record<Period, SalesSou
         </div>
       </CardHeader>
       <CardContent>
-        {data.channels.length === 0 ? (
+        {blocks.length === 0 ? (
           <p className="py-8 text-center text-sm text-muted-foreground">
             {period === "month" ? t("emptyMonth") : t("empty")}
           </p>
         ) : (
-          <>
+          blocks.map(({ currency, data }) => (
+          <div key={currency} className="not-first:mt-8 not-first:border-t not-first:pt-6">
             <p className="mb-6 text-sm text-muted-foreground">
               {t.rich("total", {
-                amount: formatMoney(data.total, locale),
+                amount: formatMoney(data.total, locale, { currency }),
                 count: data.orders,
                 strong: (chunks) => <span className="font-semibold text-foreground">{chunks}</span>,
               })}
@@ -65,6 +67,7 @@ export function SalesSourcesCard({ sources }: { sources: Record<Period, SalesSou
             <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
               <SourceList
                 title={t("byChannel")}
+                currency={currency}
                 lines={data.channels}
                 label={channelLabel}
                 hint={(line) => (line.key === MARKETPLACE_CHANNEL ? t("marketplaceHint") : t("storeHint"))}
@@ -72,12 +75,14 @@ export function SalesSourcesCard({ sources }: { sources: Record<Period, SalesSou
               />
               <SourceList
                 title={t("byPaymentMethod")}
+                currency={currency}
                 lines={data.paymentMethods}
                 label={methodLabel}
                 icon={() => CreditCard}
               />
             </div>
-          </>
+          </div>
+          ))
         )}
       </CardContent>
     </Card>
@@ -86,12 +91,14 @@ export function SalesSourcesCard({ sources }: { sources: Record<Period, SalesSou
 
 function SourceList({
   title,
+  currency,
   lines,
   label,
   hint,
   icon,
 }: {
   title: string;
+  currency: string;
   lines: SalesSourceLine[];
   label: (line: SalesSourceLine) => string;
   hint?: (line: SalesSourceLine) => string;
@@ -122,7 +129,7 @@ function SourceList({
                 </div>
                 <div className="shrink-0 text-end">
                   <p className="text-sm font-semibold text-foreground" dir="ltr">
-                    {formatMoney(line.amount, locale)}
+                    <Money value={line.amount} locale={locale} unit={{ currency }} />
                   </p>
                   <p className="text-xs text-muted-foreground">{t("share", { value: share })}</p>
                 </div>

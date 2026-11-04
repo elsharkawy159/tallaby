@@ -2,7 +2,8 @@ import Link from "next/link";
 import { FileText } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Button } from "@workspace/ui/components/button";
-import { formatNumber } from "@/lib/i18n/format";
+import { formatNumber, moneyUnitMarked, moneyUnitText } from "@/lib/i18n/format";
+import { MoneyLines, MoneyText } from "@/components/money";
 import { getHomeSnapshot, getSalesOverview } from "./home.queries";
 import type { HomeChannel, HomeRange } from "./home.shared";
 import { HomeCard, HomeCardHeader } from "./home-ui";
@@ -27,8 +28,13 @@ export async function SalesChartData({ range, channel = "all" }: { range: HomeRa
           label={t("revenue")}
           swatch="bg-primary"
           value={formatNumber(sales.revenue, locale, { maximumFractionDigits: 0 })}
-          unit={t("currency")}
+          unit={<MoneyText locale={locale}>{moneyUnitMarked(locale, { currency: sales.currency })}</MoneyText>}
         />
+        {sales.otherTotals.length > 0 && (
+          <div className="self-end text-xs font-medium text-muted-foreground tabular-nums">
+            <MoneyLines totals={sales.otherTotals} locale={locale} />
+          </div>
+        )}
         <ChartSummary
           label={t("orders")}
           swatch="bg-accent"
@@ -36,7 +42,7 @@ export async function SalesChartData({ range, channel = "all" }: { range: HomeRa
         />
       </div>
       <div className="px-5 pb-[18px] pt-2">
-        <SalesChart data={sales.series} hasOrders={snapshot?.hasOrders ?? false} />
+        <SalesChart data={sales.series} unit={moneyUnitText(locale, { currency: sales.currency })} hasOrders={snapshot?.hasOrders ?? false} />
       </div>
     </SalesChartCard>
   );
@@ -83,7 +89,7 @@ function ChartSummary({
   label: string;
   swatch: string;
   value: string;
-  unit?: string;
+  unit?: React.ReactNode;
 }) {
   return (
     <div className="flex flex-col">

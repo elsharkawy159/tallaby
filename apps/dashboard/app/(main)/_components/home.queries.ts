@@ -7,6 +7,8 @@ import type { SetupFlags } from "./setup-checklist.lib";
 import type { FeeTrialFields } from "@workspace/lib/sellers";
 import { getSellerStores } from "@/lib/stores/current-store.server";
 import { getHomeTraffic } from "@/lib/analytics/home-traffic.server";
+import { MIXED_CURRENCIES, splitHeadline } from "@/lib/i18n/format";
+import { loadAccountMoney, loadStoreMoney } from "@/lib/stores/account-money.server";
 
 /**
  * Read-only loaders for the dashboard home. Kept out of `actions/` on purpose:
@@ -187,6 +189,12 @@ export type SalesOverview = {
   orders: number;
   previousRevenue: number;
   previousOrders: number;
+  /** The currency revenue, series and previousRevenue are in. Orders count every currency. */
+  currency: string;
+  /** Orders in `currency`, for the average order. */
+  currencyOrders: number;
+  /** Other currencies' totals for the range. Never added to `revenue`. */
+  otherTotals: { currency: string; total: number }[];
 };
 
 /**
@@ -204,8 +212,28 @@ function channelFilter(channel: HomeChannel) {
 
 export const getSalesOverview = cache(async (range: HomeRange, channel: HomeChannel = "all"): Promise<SalesOverview> => {
   const sellerId = await getHomeSellerId();
-  const empty = { series: [], revenue: 0, orders: 0, previousRevenue: 0, previousOrders: 0 };
+  const empty = { series: [], revenue: 0, orders: 0, previousRevenue: 0, previousOrders: 0, currency: "EGP", currencyOrders: 0, otherTotals: [] };
   if (!sellerId) return empty;
+
+  // A store leads with its own currency, the others with EGP. Revenue is only ever summed within one.
+  const [{ unit: accountUnit }, storeMoney] = await Promise.all([loadAccountMoney(sellerId), loadStoreMoney(sellerId)]);
+  const totalsResult = await db.execute(sql`
+    SELECT coalesce(o.currency, 'EGP') AS currency, sum(oi.total)::float8 AS total
+    FROM order_items oi
+    JOIN orders o ON o.id = oi.order_id
+    WHERE oi.seller_id = ${sellerId}
+      AND oi.status NOT IN ${NON_REVENUE}
+      AND coalesce(oi.is_refunded, false) = false
+      AND oi.created_at >= (${rangeStartLocal(range)} AT TIME ZONE 'Africa/Cairo')
+      ${channelFilter(channel)}
+    GROUP BY 1
+  `);
+  const totals = rowsOf<{ currency: string; total: number }>(totalsResult).map((r) => ({ currency: String(r.currency), total: Number(r.total) }));
+  const headline = splitHeadline(totals, {
+    preferred: storeMoney[channel]?.currency,
+    fallback: channel === "marketplace" || accountUnit.currency === MIXED_CURRENCIES ? "EGP" : accountUnit.currency,
+  });
+  const inCurrency = sql`i.currency = ${headline.currency}`;
 
   const result = await db.execute(sql`
     WITH bounds AS (SELECT ${rangeStartLocal(range)} AS start_local),
@@ -214,7 +242,8 @@ export const getSalesOverview = cache(async (range: HomeRange, channel: HomeChan
       FROM bounds b
     ),
     items AS (
-      SELECT (oi.created_at AT TIME ZONE 'Africa/Cairo')::date AS day, oi.order_id, oi.total
+      SELECT (oi.created_at AT TIME ZONE 'Africa/Cairo')::date AS day, oi.order_id, oi.total,
+        coalesce((SELECT o.currency FROM orders o WHERE o.id = oi.order_id), 'EGP') AS currency
       FROM order_items oi, bounds b
       WHERE oi.seller_id = ${sellerId}
         AND oi.status NOT IN ${NON_REVENUE}
@@ -226,11 +255,12 @@ export const getSalesOverview = cache(async (range: HomeRange, channel: HomeChan
     prev AS (SELECT i.* FROM items i, bounds b WHERE i.day < b.start_local::date)
     SELECT
       d.day::text AS day,
-      coalesce(sum(c.total), 0)::float8 AS revenue,
+      coalesce(sum(c.total) FILTER (WHERE c.currency = ${headline.currency}), 0)::float8 AS revenue,
       count(DISTINCT c.order_id)::int AS orders,
-      (SELECT coalesce(sum(total), 0)::float8 FROM cur) AS total_revenue,
+      (SELECT coalesce(sum(i.total), 0)::float8 FROM cur i WHERE ${inCurrency}) AS total_revenue,
       (SELECT count(DISTINCT order_id)::int FROM cur) AS total_orders,
-      (SELECT coalesce(sum(total), 0)::float8 FROM prev) AS prev_revenue,
+      (SELECT count(DISTINCT i.order_id)::int FROM cur i WHERE ${inCurrency}) AS currency_orders,
+      (SELECT coalesce(sum(i.total), 0)::float8 FROM prev i WHERE ${inCurrency}) AS prev_revenue,
       (SELECT count(DISTINCT order_id)::int FROM prev) AS prev_orders
     FROM days d
     LEFT JOIN cur c ON c.day = d.day
@@ -251,6 +281,9 @@ export const getSalesOverview = cache(async (range: HomeRange, channel: HomeChan
     orders: Number(rows[0].total_orders),
     previousRevenue: Number(rows[0].prev_revenue),
     previousOrders: Number(rows[0].prev_orders),
+    currency: headline.currency,
+    currencyOrders: Number(rows[0].currency_orders),
+    otherTotals: headline.others,
   };
 });
 
@@ -270,6 +303,8 @@ export const getTopProducts = cache(
   async (range: HomeRange, locale: string, channel: HomeChannel = "all"): Promise<TopProduct[]> => {
     const sellerId = await getHomeSellerId();
     if (!sellerId) return [];
+    // Ranked in the currency the sales card leads with: no product's revenue adds two currencies.
+    const { currency } = await getSalesOverview(range, channel);
 
     const result = await db.execute(sql`
       SELECT
@@ -287,6 +322,7 @@ export const getTopProducts = cache(
         AND oi.status NOT IN ${NON_REVENUE}
         AND coalesce(oi.is_refunded, false) = false
         AND oi.created_at >= (${rangeStartLocal(range)} AT TIME ZONE 'Africa/Cairo')
+        AND EXISTS (SELECT 1 FROM orders o WHERE o.id = oi.order_id AND coalesce(o.currency, 'EGP') = ${currency})
         ${channelFilter(channel)}
       GROUP BY oi.product_id
       ORDER BY revenue DESC
