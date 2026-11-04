@@ -1344,6 +1344,14 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 ## 7. Log
 
+### 2026-11-04 — Same product title on two stores no longer sends shoppers home (bug fix)
+
+- **The bug:** a product's link is made from its title, and two sellers can have the same one. A store looked the link up across all sellers, found the older seller's product, saw it wasn't its own and sent the shopper to the store's home. That product was also left out of the store's sitemap and its product feed links, and the language button could open the wrong seller's link.
+- **The fix:** a store now looks a link up only among its own seller's products, and the seller comes from the web address, never from the shopper. The page, its language links, the language button, the sitemap and the feed all follow this. A link this store doesn't have still goes to its home, and a store with selected products still shows only its picks.
+- **Cache:** the product page is now saved per seller and cleared by any change to that seller's products, a link change included. A change never clears another seller's pages.
+- **Not fixed yet:** the product form still doesn't stop one seller using the same link twice (no check, and the database allows it). The second product's link opens the first, older one, and only the first is in the sitemap. Staging has 11 such links. The fix belongs in `apps/dashboard/actions/products.ts`, left out of this change. Existing duplicates aren't changed.
+- **Checked:** a new test against staging with two sellers. No migration. Not seen in a browser.
+
 ### 2026-11-04 — F-65 Campaign pages and store views link (owner)
 
 - **Paid ads (F-65a):** "الحملات التسويقية" is gone from the sidebar and the search palette. `/marketing` still opens by its URL, and its code and Admin › Ad requests stay.

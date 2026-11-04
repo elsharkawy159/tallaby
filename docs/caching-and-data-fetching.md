@@ -137,7 +137,7 @@ covered by `packages/cache/src/invalidate.test.ts`.
 | Price change | `detail`, `listing`, both old/new `category`, both old/new `brand` — **not** `filterOptions`/`all` |
 | Category A → B | `category(A)` **and** `category(B)`, plus the structural set |
 | Brand change | `brand(old)` **and** `brand(new)` |
-| Slug change | `slug(old)` **and** `slug(new)` — and note `slug(current)` is emitted on **every** mutation, not just renames, which is what lets `getProductBySlug`'s cache (tagged only by slug, since the id isn't known until the lookup runs) get purged by any change |
+| Slug change | `slug(old)` **and** `slug(new)` — and `seller` on every mutation, which is what purges `getProductBySlug`'s cache: it is keyed by seller, slug and locale and tagged by seller, since slugs repeat across sellers and the id isn't known until the lookup runs |
 | Featured / best-selling / deal toggle | Only the specific collection tag (`featured`/`bestSelling`/`deals`) — never the general `listing` tag |
 | Inventory decrement/restore | `inventory(id)`, `detail(id)` always; `listing`/`category`/`brand` **only** when the atomic decrement's `RETURNING` value shows the in-stock boundary was actually crossed |
 | Category/Brand/Seller admin mutations | Their own `*Tags.all()`/`detail()`/`slug()` |

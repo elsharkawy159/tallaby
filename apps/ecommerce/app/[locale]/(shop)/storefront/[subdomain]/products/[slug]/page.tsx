@@ -31,29 +31,31 @@ type StorefrontProductPageProps = {
 
 /**
  * The product's path in each language with a real translation, under the rule
- * the sitemap lists it: slugs differ per language, and a slug another product
- * holds would open that product. A page opened through the other language's
- * slug names the real one as canonical, so a product has one URL per language.
+ * the sitemap lists it: slugs differ per language, and a slug another product of
+ * this seller holds would open that product. A page opened through the other
+ * language's slug names the real one as canonical, so a product has one URL per language.
  */
-async function storeProductPaths(productId: string, slug: string, locale: string) {
+async function storeProductPaths(sellerId: string, productId: string, slug: string, locale: string) {
   const paths: Partial<Record<ProductLocale, string>> = {};
   await Promise.all(
     (["ar", "en"] as const).map(async (l) => {
       const own = await getProductSlugForLocaleStrict(productId, l);
-      if (own && (await getProductIdBySlug(own, l)) === productId) paths[l] = `/products/${encodeURIComponent(own)}`;
+      if (own && (await getProductIdBySlug(own, l, sellerId)) === productId) paths[l] = `/products/${encodeURIComponent(own)}`;
     }),
   );
   return Object.keys(paths).length ? paths : { [locale === "en" ? "en" : "ar"]: `/products/${slug}` };
 }
 
 /**
- * Only this seller's products open inside their storefront; another seller's
- * product (an old link, a related item) or an unknown one sends the shopper to
- * the store's home, never to tallaby.com (owner, 2026-11-03).
+ * Only this seller's products open inside their storefront: the slug is looked
+ * up among the products of the seller behind this store (the subdomain proxy.ts
+ * took from the request host), as slugs repeat across sellers. A slug this seller
+ * doesn't have (an old link, another seller's product) sends the shopper to the
+ * store's home, never to tallaby.com (owner, 2026-11-03).
  */
 async function resolveStoreProduct(locale: string, subdomain: string, slug: string) {
   const store = await resolveStorefront(subdomain);
-  const result = await getProductBySlug(slug, locale as ProductLocale);
+  const result = await getProductBySlug(store.id, slug, locale as ProductLocale);
   const product = result.success ? (result.data as Product | undefined) : undefined;
 
   if (!product) redirect(locale === "ar" ? "/" : `/${locale}`);
@@ -77,7 +79,7 @@ export async function generateMetadata({
   return {
     // The store's own page is the real copy: there are no marketplace product pages.
     ...storePageMetadata(store, locale, {
-      paths: await storeProductPaths(product.id, slug, locale),
+      paths: await storeProductPaths(store.id, product.id, slug, locale),
       title: seo?.metaTitle?.trim() || product.title,
       description: seo?.metaDescription?.trim() || product.description,
       image: firstImage ? socialShareImageUrl(firstImage) : null,

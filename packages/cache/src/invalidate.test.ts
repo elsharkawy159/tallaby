@@ -190,6 +190,14 @@ describe("invalidateProduct", () => {
     expect(tags).toContain(productTags.slug("en", "new-slug"));
   });
 
+  it("slug change: clears the seller tag the store product page is cached under", () => {
+    const before = snapshot({ slugs: [{ locale: "en", slug: "old-slug" }] });
+    const after = snapshot({ slugs: [{ locale: "en", slug: "new-slug" }] });
+    expect(invalidateProduct(before, after).tags).toContain(productTags.seller(after.sellerId));
+    expect(invalidateProduct(before, null).tags).toContain(productTags.seller(before.sellerId));
+    expect(invalidateProduct(null, after).tags).toContain(productTags.seller(after.sellerId));
+  });
+
   it("featured toggle: tags featured() only, not the general listing tag", () => {
     const before = snapshot({ isFeatured: false });
     const after = snapshot({ isFeatured: true });

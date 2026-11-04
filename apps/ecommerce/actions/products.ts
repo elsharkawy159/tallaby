@@ -324,14 +324,15 @@ export const getProducts = createCachedQuery({
 export const getProductBySlug = createCachedQuery({
   name: "ecommerce:products:by-slug",
   ttl: cacheProfiles.detail,
-  // The product id isn't known until the slug lookup runs, so this can only
-  // be tagged by slug — but invalidateProduct() always includes the
-  // CURRENT slug tag on every mutation (not just slug changes), so this is
-  // still purged by every create/update/delete/price/visibility change.
-  tags: (slug: string, locale: ProductLocale = "en") => [productTags.slug(locale, slug)],
-  query: async (slug: string, locale: ProductLocale = "en") => {
+  // One store's product: `sellerId` is the store the request host resolved,
+  // and slugs repeat across sellers, so it is in the key and in every condition.
+  // The product id isn't known until the slug lookup runs, so this is tagged by
+  // seller: invalidateProduct() always includes that tag (old and new slug alike,
+  // every create/update/delete/price/visibility change), and it only clears this seller.
+  tags: (sellerId: string, _slug: string, _locale: ProductLocale = "en") => [productTags.seller(sellerId)],
+  query: async (sellerId: string, slug: string, locale: ProductLocale = "en") => {
       try {
-        const productId = await getProductIdBySlug(slug, locale)
+        const productId = await getProductIdBySlug(slug, locale, sellerId)
         if (!productId) {
           return { success: false, error: "Product not found" }
         }
@@ -339,6 +340,7 @@ export const getProductBySlug = createCachedQuery({
         const product = await db.query.products.findFirst({
           where: and(
             eq(products.id, productId),
+            eq(products.sellerId, sellerId),
             eq(products.status, "active"),
           ),
           with: {
@@ -407,6 +409,7 @@ export const getProductBySlug = createCachedQuery({
         const relatedProductsRaw = await db.query.products.findMany({
           where: and(
             eq(products.categoryId, product.categoryId),
+            eq(products.sellerId, sellerId),
             eq(products.status, "active"),
             sql`${products.id} != ${product.id}`
           ),

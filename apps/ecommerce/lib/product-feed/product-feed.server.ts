@@ -169,19 +169,6 @@ export async function loadFeedPage(sellerId: string, selectedStoreId: string | n
         title: productTranslations.title,
         description: productTranslations.description,
         slug: productTranslations.slug,
-        // As the store sitemap: a slug an older active product of ANOTHER seller
-        // also uses opens that product on the store host, so it is no link here.
-        // Nested sql keeps the table name on outer columns; a no-join select strips it from a bare field (outer-column.test.ts).
-        claimedElsewhere: sql<boolean>`${sql`EXISTS (
-          SELECT 1 FROM product_translations t2
-          JOIN products p2 ON p2.id = t2.product_id
-          JOIN products p1 ON p1.id = ${productTranslations.productId}
-          WHERE t2.locale = ${productTranslations.locale} AND t2.slug = ${productTranslations.slug}
-            AND p2.status = 'active' AND p2.seller_id <> ${sellerId}
-            AND (p2.created_at < p1.created_at
-                 OR (p2.created_at = p1.created_at AND p2.id < p1.id)
-                 OR (p1.created_at IS NULL AND p2.created_at IS NOT NULL))
-        )`}`,
       })
       .from(productTranslations)
       .where(inArray(productTranslations.productId, ids)),
@@ -209,7 +196,7 @@ export async function loadFeedPage(sellerId: string, selectedStoreId: string | n
     const byLocale: PageRaw["translations"] = {};
     for (const t of translations) {
       if (t.productId !== row.id || (t.locale !== "ar" && t.locale !== "en")) continue;
-      const slug = t.slug?.trim() && !/[\s/\\?#%]/.test(t.slug) && !t.claimedElsewhere ? t.slug : null;
+      const slug = t.slug?.trim() && !/[\s/\\?#%]/.test(t.slug) ? t.slug : null;
       const translation: FeedTranslation = {
         title: t.title ?? "",
         description: richTextToPlainText(t.description).replace(/\s+/g, " ").trim().slice(0, DESCRIPTION_CACHE_MAX),
@@ -255,7 +242,7 @@ export async function loadFeedPage(sellerId: string, selectedStoreId: string | n
 }
 
 const getCachedFeedPage = createCachedQuery({
-  name: "store-feed:page:v1",
+  name: "store-feed:page:v2",
   ttl: cacheProfiles.seller,
   tags: (sellerId: string, storeId: string, _selectedStoreId: string | null, _page: number) => [
     productTags.seller(sellerId),

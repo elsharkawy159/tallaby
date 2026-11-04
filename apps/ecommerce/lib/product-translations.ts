@@ -50,18 +50,23 @@ export interface ProductTranslationRow {
  * Finds product id by slug from product_translations.
  * Searches in the requested locale first, then falls back to the other locale.
  * For ar: tries AR slug first, then EN. For en: tries EN first, then AR.
+ *
+ * Slugs repeat across sellers, so a store passes its seller (from the store the
+ * request host resolved, never a client value) and only sees that seller's
+ * products. Without one it looks across every seller: tallaby.com only.
  */
 export async function getProductIdBySlug(
   slug: string,
-  locale: ProductLocale = "en"
+  locale: ProductLocale = "en",
+  sellerId?: string
 ): Promise<string | null> {
   const firstLocale = locale
   const fallbackLocale = locale === "ar" ? "en" : "ar"
 
-  const first = await findActiveProductIdBySlug(slug, firstLocale)
+  const first = await findActiveProductIdBySlug(slug, firstLocale, sellerId)
   if (first) return first
 
-  return findActiveProductIdBySlug(slug, fallbackLocale)
+  return findActiveProductIdBySlug(slug, fallbackLocale, sellerId)
 }
 
 /**
@@ -73,7 +78,8 @@ export async function getProductIdBySlug(
  */
 async function findActiveProductIdBySlug(
   slug: string,
-  locale: ProductLocale
+  locale: ProductLocale,
+  sellerId?: string
 ): Promise<string | null> {
   const [row] = await db
     .select({ productId: productTranslations.productId })
@@ -83,7 +89,8 @@ async function findActiveProductIdBySlug(
       and(
         eq(productTranslations.slug, slug),
         eq(productTranslations.locale, locale),
-        eq(products.status, "active")
+        eq(products.status, "active"),
+        sellerId ? eq(products.sellerId, sellerId) : undefined
       )
     )
     .orderBy(asc(products.createdAt), asc(products.id))

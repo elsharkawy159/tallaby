@@ -26,10 +26,8 @@ export interface ProductScope {
 }
 
 /**
- * Store scope: the store's own products, minus any (locale, slug) that an
- * older active product of ANOTHER seller claims. The store host resolves a
- * product slug marketplace-wide (compareSlugClaim order) and sends other
- * sellers' products to tallaby.com, so such a URL would not render here.
+ * Store scope: the store's own products. The store host looks a slug up among
+ * its seller's products only, so another seller's use of a slug changes nothing here.
  */
 function productScopeFilter(scope: ProductScope | undefined) {
   if (!scope) return undefined;
@@ -38,15 +36,6 @@ function productScopeFilter(scope: ProductScope | undefined) {
     scope.selectedStoreId
       ? sql`EXISTS (SELECT 1 FROM store_products sp WHERE sp.store_id = ${scope.selectedStoreId} AND sp.product_id = ${products.id})`
       : undefined,
-    sql`NOT EXISTS (
-      SELECT 1 FROM product_translations t2
-      JOIN products p2 ON p2.id = t2.product_id
-      WHERE t2.locale = ${productTranslations.locale} AND t2.slug = ${productTranslations.slug}
-        AND p2.status = 'active' AND p2.seller_id <> ${scope.sellerId}
-        AND (p2.created_at < ${products.createdAt}
-             OR (p2.created_at = ${products.createdAt} AND p2.id < ${products.id})
-             OR (${products.createdAt} IS NULL AND p2.created_at IS NOT NULL))
-    )`,
   );
 }
 
