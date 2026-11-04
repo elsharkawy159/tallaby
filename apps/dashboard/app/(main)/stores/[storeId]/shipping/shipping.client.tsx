@@ -10,7 +10,10 @@ import { LayoutTemplate, LoaderCircle, MapPinned, Pencil, Plus, Save, Settings2,
 // import { TALLABY_SERVICES_ENABLED } from "@workspace/lib/fulfillment";
 // import { applyShippingFeesAndRound, getBaseRateForGovernorate, getGovernorateLabel } from "@workspace/lib/shipping";
 // import { ZONE_GOVERNORATES } from "@workspace/lib/shipping/store-zones";
+import { DEFAULT_CURRENCY, type CurrencyLabel, type StoreCurrency } from "@workspace/lib";
 import { CurrencyInput } from "@/components/form/currency-input";
+import { MoneyText } from "@/components/money";
+import { moneyParams, moneyUnitMarked, moneyUnitText } from "@/lib/i18n/format";
 import type { StoreShippingSettings as Settings } from "@workspace/lib/shipping/store-zones";
 import type { StoreShippingZone } from "@workspace/lib/stores/server";
 import type { BostaOverview, WassalhaOverview } from "@workspace/lib/integrations/server";
@@ -41,11 +44,16 @@ import type { CoverageItem, TemplateOption, ZoneView } from "./shipping.dto";
 import { ShippingTemplates, TemplatesSheet } from "./templates.client";
 import { formatEgp, ZoneSheet } from "./zone-sheet.client";
 
+type StoreMoney = { currency: StoreCurrency; label: CurrencyLabel };
+
 /** Chips shown per zone before "+N". */
 const CHIP_LIMIT = 8;
 
 export function StoreShippingSettings({
   storeId,
+  money,
+  country,
+  countryName,
   settings,
   zones,
   coverage,
@@ -55,6 +63,12 @@ export function StoreShippingSettings({
   readOnly,
 }: {
   storeId: string;
+  /** The store's currency: every amount on this page is in it. */
+  money: StoreMoney;
+  /** Where the place picker starts ("EG", "SA"…), or null when the currency has no one country. */
+  country: string | null;
+  /** The coverage board's country when it isn't Egypt. */
+  countryName: string | null;
   settings: Settings;
   /** Saved zones with server-computed place labels and override hints. */
   zones: ZoneView[];
@@ -75,6 +89,7 @@ export function StoreShippingSettings({
   const [describing, setDescribing] = useState(false);
   const [isPending, startTransition] = useTransition();
   const settingsForm = useSettingsForm(storeId, settings);
+  const egyptian = money.currency === DEFAULT_CURRENCY;
   const raw = zones.map((z) => z.zone);
   const disabled = readOnly || isPending;
 
@@ -92,6 +107,7 @@ export function StoreShippingSettings({
 
   const templateProps = {
     storeId,
+    money,
     templates,
     zoneCount: zones.length,
     disabled: readOnly,
@@ -113,10 +129,11 @@ export function StoreShippingSettings({
       {readOnly && <p className="rounded-lg border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">{t("readOnly")}</p>}
       <p className="text-sm text-pretty text-muted-foreground">{t("checkoutNotice")}</p>
 
-      {zones.length > 0 && (
+      {zones.length > 0 && coverage.length > 0 && (
         <ShippingCoverage
           items={coverage}
-          refuseElsewhere={settings.otherPlaces === "refuse"}
+          countryName={countryName}
+          refuseElsewhere={!egyptian || settings.otherPlaces === "refuse"}
           disabled={disabled}
           onAddZone={() => setEditing("new")}
         />
@@ -135,7 +152,7 @@ export function StoreShippingSettings({
         description={t("zonesDescription")}
         action={
           <div className="flex flex-wrap items-center gap-2">
-            {zones.length > 0 && (
+            {zones.length > 0 && egyptian && (
               <Button
                 type="button"
                 variant="outline"
@@ -148,10 +165,12 @@ export function StoreShippingSettings({
                 {t("templates.button")}
               </Button>
             )}
-            <Button type="button" variant="outline" size="sm" className={SMALL_BUTTON_CLASS} disabled={disabled} onClick={() => setDescribing(true)}>
-              <Sparkles />
-              {t("describe.button")}
-            </Button>
+            {egyptian && (
+              <Button type="button" variant="outline" size="sm" className={SMALL_BUTTON_CLASS} disabled={disabled} onClick={() => setDescribing(true)}>
+                <Sparkles />
+                {t("describe.button")}
+              </Button>
+            )}
             <Button type="button" size="sm" className={SMALL_BUTTON_CLASS} disabled={disabled} onClick={() => setEditing("new")}>
               <Plus />
               {t("addZone")}
@@ -162,10 +181,13 @@ export function StoreShippingSettings({
         {zones.length === 0 ? (
           <div className="space-y-3">
             <p className="text-sm text-muted-foreground">{t("noZones")}</p>
-            <Button type="button" variant="outline" className={BUTTON_CLASS} disabled={disabled} onClick={() => setDescribing(true)}>
-              <Sparkles />
-              {t("describe.button")}
-            </Button>
+            {/* AI zones only match Egyptian place names, so another currency would pay for an empty answer. */}
+            {egyptian && (
+              <Button type="button" variant="outline" className={BUTTON_CLASS} disabled={disabled} onClick={() => setDescribing(true)}>
+                <Sparkles />
+                {t("describe.button")}
+              </Button>
+            )}
           </div>
         ) : (
           <ul className="divide-y">
@@ -173,6 +195,7 @@ export function StoreShippingSettings({
               <ZoneRow
                 key={view.zone.id}
                 view={view}
+                money={money}
                 disabled={disabled}
                 onEdit={() => setEditing(view)}
                 onDelete={() => setDeleting(view.zone)}
@@ -182,18 +205,20 @@ export function StoreShippingSettings({
         )}
       </SectionCard>
 
-      <CheckPrice zones={raw} settings={settings} />
+      <CheckPrice zones={raw} settings={settings} money={money} country={country} />
 
       <ShippingCompaniesCard storeId={storeId} bosta={bosta} wassalha={wassalha} readOnly={readOnly} />
 
-      <SettingsCard form={settingsForm} readOnly={readOnly} />
+      <SettingsCard form={settingsForm} readOnly={readOnly} money={money} />
 
-      {zones.length > 0 && <TemplatesSheet open={templatesOpen} onOpenChange={setTemplatesOpen} {...templateProps} />}
+      {zones.length > 0 && egyptian && <TemplatesSheet open={templatesOpen} onOpenChange={setTemplatesOpen} {...templateProps} />}
 
       {editing && (
         <ZoneSheet
           key={editing === "new" ? "new" : editing.zone.id}
           storeId={storeId}
+          money={money}
+          country={country}
           zone={editing === "new" ? null : editing.zone}
           labels={editing === "new" ? undefined : Object.fromEntries(editing.chips.map((c) => [c.key, c.label]))}
           otherZones={raw.filter((z) => editing === "new" || z.id !== editing.zone.id)}
@@ -235,11 +260,13 @@ export function StoreShippingSettings({
 
 function ZoneRow({
   view,
+  money,
   disabled,
   onEdit,
   onDelete,
 }: {
   view: ZoneView;
+  money: StoreMoney;
   disabled: boolean;
   onEdit: () => void;
   onDelete: () => void;
@@ -253,14 +280,16 @@ function ZoneRow({
   const hidden = chips.length - visible.length;
   const meta = [
     t("daysRange", { min: zone.deliveryDaysMin, max: zone.deliveryDaysMax }),
-    zone.freeOver !== null && t("freeOverSummary", { amount: formatEgp(locale, zone.freeOver) }),
+    zone.freeOver !== null && t("freeOverSummary", { amount: formatEgp(locale, zone.freeOver), unit: moneyUnitMarked(locale, money) }),
     zone.codEnabled ? t("cod") : t("noCod"),
   ].filter(Boolean);
 
   return (
     <li className={cn("grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-3 py-4 first:pt-0 last:pb-0 sm:grid-cols-[6rem_minmax(0,1fr)_auto]", !zone.enabled && "opacity-70")}>
       <p className="text-lg leading-tight font-bold whitespace-nowrap tabular-nums sm:text-xl">
-        {zone.price === 0 ? t("free") : t("egp", { amount: formatEgp(locale, zone.price) })}
+        <MoneyText locale={locale}>
+          {zone.price === 0 ? t("free") : t("egp", { amount: formatEgp(locale, zone.price), unit: moneyUnitMarked(locale, money) })}
+        </MoneyText>
       </p>
       <div className="min-w-0 space-y-1.5">
         <p className="flex flex-wrap items-center gap-2 font-semibold">
@@ -294,7 +323,9 @@ function ZoneRow({
             </li>
           )}
         </ul>
-        <LabelNote>{meta.join(" · ")}</LabelNote>
+        <LabelNote>
+          <MoneyText locale={locale}>{meta.join(" · ")}</MoneyText>
+        </LabelNote>
       </div>
       <div className="col-span-2 sm:col-span-1">
         <div className="flex items-center justify-end gap-2">
@@ -413,8 +444,9 @@ function SettingsSaveButton({ form, readOnly }: { form: SettingsForm; readOnly: 
   );
 }
 
-function SettingsCard({ form, readOnly }: { form: SettingsForm; readOnly: boolean }) {
+function SettingsCard({ form, readOnly, money }: { form: SettingsForm; readOnly: boolean; money: StoreMoney }) {
   const t = useTranslations("storeShipping");
+  const locale = useLocale();
   const { handlingDays, setHandlingDays, otherPlaces, setOtherPlaces, freeMode, setFreeMode, freeOver, setFreeOver, freeOverValid } = form;
 
   return (
@@ -455,8 +487,9 @@ function SettingsCard({ form, readOnly }: { form: SettingsForm; readOnly: boolea
           </ChoiceGroup>
           {freeMode === "over" && (
             <div className="grid max-w-xs gap-1.5 pt-1">
-              <Label htmlFor="free-over">{t("freeDelivery.amount")}</Label>
+              <Label htmlFor="free-over">{t("freeDelivery.amount", moneyParams(locale, money))}</Label>
               <CurrencyInput
+                {...money}
                 id="free-over"
                 disabled={readOnly}
                 placeholder="500"
@@ -471,22 +504,29 @@ function SettingsCard({ form, readOnly }: { form: SettingsForm; readOnly: boolea
 
         <fieldset className="space-y-2">
           <legend className="mb-1 text-sm font-medium">{t("otherPlaces.title")}</legend>
-          <ChoiceGroup
-            value={otherPlaces}
-            onValueChange={(v) => setOtherPlaces(v as Settings["otherPlaces"])}
-            columns={2}
-            stack
-            disabled={readOnly}
-          >
-            <ChoiceCard
-              value="tallaby_rates"
-              indicator
-              title={t("otherPlaces.tallabyRates")}
-              description={t("otherPlaces.tallabyRatesDescription")}
-            />
-            <ChoiceCard value="refuse" indicator title={t("otherPlaces.refuse")} description={t("otherPlaces.refuseDescription")} />
-          </ChoiceGroup>
-          <LabelNote>{t("otherPlaces.note")}</LabelNote>
+          {money.currency === DEFAULT_CURRENCY ? (
+            <>
+              <ChoiceGroup
+                value={otherPlaces}
+                onValueChange={(v) => setOtherPlaces(v as Settings["otherPlaces"])}
+                columns={2}
+                stack
+                disabled={readOnly}
+              >
+                <ChoiceCard
+                  value="tallaby_rates"
+                  indicator
+                  title={t("otherPlaces.tallabyRates")}
+                  description={t("otherPlaces.tallabyRatesDescription")}
+                />
+                <ChoiceCard value="refuse" indicator title={t("otherPlaces.refuse")} description={t("otherPlaces.refuseDescription")} />
+              </ChoiceGroup>
+              <LabelNote>{t("otherPlaces.note")}</LabelNote>
+            </>
+          ) : (
+            // Tallaby's rates are Egyptian pounds; the saved choice is kept in case the store goes back to EGP.
+            <p className="rounded-xl border bg-muted/30 p-3 text-sm text-pretty">{t("otherPlaces.notCovered", { unit: moneyUnitText(locale, money) })}</p>
+          )}
         </fieldset>
 
         <div className="grid gap-1.5">

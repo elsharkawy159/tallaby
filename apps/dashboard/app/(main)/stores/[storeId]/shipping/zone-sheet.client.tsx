@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { LoaderCircle, Save } from "lucide-react";
 
 import type { StoreShippingZone } from "@workspace/lib/stores/server";
+import { DEFAULT_CURRENCY } from "@workspace/lib";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
@@ -13,6 +14,8 @@ import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetT
 import { Switch } from "@workspace/ui/components/switch";
 import { BUTTON_CLASS, FIELD_CLASS, LabelNote } from "@/components/form/form-ui";
 import { CurrencyInput } from "@/components/form/currency-input";
+import { MoneyText } from "@/components/money";
+import { moneyUnitMarked, type MoneyUnit } from "@/lib/i18n/format";
 import { cn } from "@/lib/utils";
 import { PlacePicker, useShippingLib, type ShippingLib } from "./place-picker.client";
 import { saveShippingZone } from "./shipping.server";
@@ -50,6 +53,8 @@ function tallabyRateFor(lib: ShippingLib, places: string[]): number | null {
 
 export function ZoneSheet({
   storeId,
+  money,
+  country,
   zone,
   labels,
   otherZones,
@@ -57,6 +62,10 @@ export function ZoneSheet({
   onSaved,
 }: {
   storeId: string;
+  /** The store's currency; its zone prices are in it. */
+  money: MoneyUnit;
+  /** Where the place picker starts. */
+  country: string | null;
   /** The zone being edited, or null for a new one. */
   zone: StoreShippingZone | null;
   /** Server-rendered labels for the zone's places, shown until the place data loads. */
@@ -104,20 +113,24 @@ export function ZoneSheet({
   const parsed = lib?.zoneInputSchema.safeParse(input);
   const issues = new Set(parsed && !parsed.success ? parsed.error.issues.map((i) => String(i.path[0] ?? "")) : []);
   const overlap = values.enabled && values.places.some((p) => takenBy.has(p));
-  const suggested = lib ? tallabyRateFor(lib, values.places) : null;
-  // Live example for the first chosen place and an EGP 300 order.
-  let example: { place: string; total: string; amount: string } | null = null;
+  // Tallaby's rates are in pounds, so they mean nothing on a store in another currency.
+  const egyptian = (money.currency ?? DEFAULT_CURRENCY) === DEFAULT_CURRENCY;
+  const unit = moneyUnitMarked(locale, money);
+  const suggested = lib && egyptian ? tallabyRateFor(lib, values.places) : null;
+  // Live example for the first chosen place and an order of 300.
+  let example: { place: string; total: string; unit: string; amount: string } | null = null;
   if (lib && parsed?.success && values.places[0]) {
     const { amountPiastres, free } = lib.quoteZone(parsed.data, 300);
     example = {
       place: lib.placeLabel(values.places[0], locale),
       total: formatEgp(locale, 300),
-      amount: free ? t("free") : t("egp", { amount: formatEgp(locale, amountPiastres / 100) }),
+      unit,
+      amount: free ? t("free") : t("egp", { amount: formatEgp(locale, amountPiastres / 100), unit }),
     };
   }
 
   const setPlaces = (places: string[]) => {
-    if (!priceTouched && lib) {
+    if (!priceTouched && lib && egyptian) {
       const rate = tallabyRateFor(lib, places);
       setValues((v) => ({ ...v, places, price: rate === null ? "" : String(rate) }));
     } else {
@@ -179,6 +192,7 @@ export function ZoneSheet({
             <Label htmlFor="zone-places">{t("fields.places")}</Label>
             <PlacePicker
               id="zone-places"
+              country={country}
               lib={lib}
               value={values.places}
               onChange={setPlaces}
@@ -195,6 +209,7 @@ export function ZoneSheet({
           <div className="grid gap-1.5">
             <Label htmlFor="zone-price">{t("fields.price")}</Label>
             <CurrencyInput
+              {...money}
               id="zone-price"
               invalid={invalid("price")}
               value={values.price}
@@ -203,12 +218,13 @@ export function ZoneSheet({
                 set("price", v);
               }}
             />
-            {suggested !== null && <LabelNote>{t("fields.priceHelp", { amount: formatEgp(locale, suggested) })}</LabelNote>}
+            {suggested !== null && <LabelNote>{t("fields.priceHelp", { amount: formatEgp(locale, suggested), unit })}</LabelNote>}
           </div>
 
           <div className="grid gap-1.5">
             <Label htmlFor="zone-freeOver">{t("fields.freeOver")}</Label>
             <CurrencyInput
+              {...money}
               id="zone-freeOver"
               invalid={invalid("freeOver")}
               placeholder={t("freeOverPlaceholder")}
@@ -272,7 +288,20 @@ export function ZoneSheet({
             </label>
           </div>
 
-          {example && <p className="rounded-xl border bg-muted/30 p-3 text-sm">{t.rich("example", { ...example, b: (c) => <b>{c}</b> })}</p>}
+          {example && (
+            <p className="rounded-xl border bg-muted/30 p-3 text-sm">
+              <MoneyText locale={locale}>
+                {t.rich("example", {
+                  ...example,
+                  b: (c) => (
+                    <b>
+                      <MoneyText locale={locale}>{c}</MoneyText>
+                    </b>
+                  ),
+                })}
+              </MoneyText>
+            </p>
+          )}
         </form>
 
         <SheetFooter className="flex-row justify-end gap-2 border-t px-5 py-4 sm:px-6">

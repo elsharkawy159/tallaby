@@ -1,6 +1,7 @@
+import { DEFAULT_CURRENCY, parseStoreCurrency } from "@workspace/lib";
 import { getStoreShipping } from "@workspace/lib/stores/server";
 import { getBostaOverview, getWassalhaOverview } from "@workspace/lib/integrations/server";
-import { placeChain, placeLabel } from "@workspace/lib/places";
+import { childrenOf, EGYPT, placeChain, placeLabel } from "@workspace/lib/places";
 import {
   findZoneForPlace,
   templateZones,
@@ -12,7 +13,7 @@ import { notFound } from "next/navigation";
 import { loadStorePage } from "@/lib/stores/store-page.server";
 import { StorePageHeader } from "@/components/stores/store-page-header";
 import { StoreShippingSettings } from "./shipping.client";
-import type { CoverageItem, TemplateOption, ZoneView } from "./shipping.dto";
+import { currencyCountry, type CoverageItem, type TemplateOption, type ZoneView } from "./shipping.dto";
 
 export default async function StoreShippingPage({ params }: { params: Promise<{ storeId: string }> }) {
   const { storeId } = await params;
@@ -25,13 +26,17 @@ export default async function StoreShippingPage({ params }: { params: Promise<{ 
   if (!shipping) notFound();
 
   const locale = await getLocale();
+  const money = parseStoreCurrency(store.settings);
+  // Egypt's governorates and Tallaby's rates are Egyptian: another currency starts from its own country.
+  const egyptian = money.currency === DEFAULT_CURRENCY;
+  const country = currencyCountry(money.currency);
   // Template zone names are saved in both languages, so build them with both translators.
   const [tAr, tEn] = await Promise.all([
     getTranslations({ locale: "ar", namespace: "storeShipping" }),
     getTranslations({ locale: "en", namespace: "storeShipping" }),
   ]);
 
-  const templates: TemplateOption[] = (["tallaby_rates", "egypt_flat", "cairo_giza"] as const satisfies ShippingTemplate[]).map(
+  const templates: TemplateOption[] = (egyptian ? (["tallaby_rates", "egypt_flat", "cairo_giza"] as const satisfies ShippingTemplate[]) : []).map(
     (id) => {
       if (id === "egypt_flat") {
         return { id, names: [{ nameAr: tAr("templates.egyptFlat.zoneName"), nameEn: tEn("templates.egyptFlat.zoneName") }], prices: null };
@@ -65,8 +70,8 @@ export default async function StoreShippingPage({ params }: { params: Promise<{ 
   });
 
   const enabledZones = shipping.zones.filter((z) => z.enabled);
-  const coverage: CoverageItem[] = ZONE_GOVERNORATES.map((g) => {
-    const key = `EG/${g}`;
+  const coverageKeys = egyptian ? ZONE_GOVERNORATES.map((g) => `${EGYPT}/${g}`) : country ? childrenOf(country).map((p) => p.key) : [];
+  const coverage: CoverageItem[] = coverageKeys.map((key) => {
     const found = findZoneForPlace(enabledZones, key);
     return {
       key,
@@ -83,6 +88,9 @@ export default async function StoreShippingPage({ params }: { params: Promise<{ 
       <StoreShippingSettings
         storeId={store.id}
         settings={shipping.settings}
+        money={money}
+        country={country}
+        countryName={country && !egyptian ? placeLabel(country, locale) : null}
         zones={zones}
         coverage={coverage}
         templates={templates}

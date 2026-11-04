@@ -11,15 +11,18 @@ import { formatEgp } from "./zone-sheet.client";
 /**
  * Egypt at a glance (ROADMAP.md F-45a): every governorate as a tile with what a
  * customer there pays. The gaps are the point, so they look unfinished and the
- * way to close them sits right beside the count.
+ * way to close them sits right beside the count. A store in another currency
+ * sees its own country's regions instead (`countryName`).
  */
 export function ShippingCoverage({
   items,
+  countryName = null,
   refuseElsewhere,
   disabled,
   onAddZone,
 }: {
   items: CoverageItem[];
+  countryName?: string | null;
   /** Places outside every zone can't order (else they pay Tallaby's rates). */
   refuseElsewhere: boolean;
   disabled: boolean;
@@ -36,10 +39,18 @@ export function ShippingCoverage({
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div className="min-w-0">
           <h2 id="shipping-coverage-title" className="text-lg font-bold text-balance sm:text-xl">
-            {t("summary", { covered, total: items.length })}
+            {countryName ? t("summaryCountry", { covered, total: items.length, country: countryName }) : t("summary", { covered, total: items.length })}
           </h2>
           <p className="mt-1 text-sm text-pretty text-muted-foreground">
-            {gaps === 0 ? t("allCovered") : refuseElsewhere ? t("gapsRefuse") : t("gapsRates")}
+            {countryName
+              ? gaps === 0
+                ? t("allCoveredCountry", { country: countryName })
+                : t("gapsNotCovered")
+              : gaps === 0
+                ? t("allCovered")
+                : refuseElsewhere
+                  ? t("gapsRefuse")
+                  : t("gapsRates")}
           </p>
         </div>
         {gaps > 0 && (

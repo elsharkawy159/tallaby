@@ -4231,6 +4231,9 @@
       }
     },
     "coverage": {
+      "gapsNotCovered": "Customers in the dashed regions can't order yet. Add a zone to reach them.",
+      "allCoveredCountry": "Customers anywhere in {country} see a delivery price at checkout.",
+      "summaryCountry": "You deliver to {covered} of {total} regions in {country}",
       "summary": "You deliver to {covered} of {total} governorates",
       "allCovered": "Customers anywhere in Egypt see a delivery price at checkout.",
       "gapsRefuse": "Customers in the dashed governorates can't order yet. Add a zone to reach them.",
@@ -4250,7 +4253,7 @@
     "handlingDaysUnit": "days before you hand the order to delivery",
     "handlingDaysHelp": "Added to each zone's delivery time in the estimate customers see.",
     "freeOverPlaceholder": "No free delivery",
-    "egp": "EGP {amount}",
+    "egp": "{unit} {amount}",
     "free": "Free",
     "zonesTitle": "Delivery zones",
     "zonesDescription": "The most specific place wins. A New Cairo zone beats a Cairo zone.",
@@ -4264,7 +4267,7 @@
     "cod": "Cash on delivery",
     "noCod": "No cash on delivery",
     "daysRange": "{min}–{max} days",
-    "freeOverSummary": "Free over EGP {amount}",
+    "freeOverSummary": "Free over {unit} {amount}",
     "overrides": "Overrides {zone}",
     "morePlaces": "+{count}",
     "uncovered": "Not covered ({count}):",
@@ -4277,8 +4280,10 @@
     "save": "Save",
     "deleteTitle": "Delete zone \"{name}\"?",
     "deleteDescription": "Its places will follow your \"Other places\" setting, unless another zone covers them.",
-    "example": "A customer in {place} with an order of EGP {total} pays <b>{amount}</b>.",
+    "example": "A customer in {place} with an order of {unit} {total} pays <b>{amount}</b>.",
     "picker": {
+      "browseRegions": "Browse regions",
+      "browseCountry": "Browse the regions of {country}",
       "search": "Search a country, governorate, city or area",
       "egypt": "Egypt",
       "otherCountries": "Other countries",
@@ -4312,7 +4317,7 @@
       "replace": "Replace zones",
       "tallabyRates": {
         "title": "Tallaby's rates",
-        "description": "{count} zones covering all 27 governorates, EGP {min}–{max}"
+        "description": "{count} zones covering all 27 governorates, {unit} {min}–{max}"
       },
       "egyptFlat": {
         "title": "One price for all Egypt",
@@ -4332,6 +4337,7 @@
       }
     },
     "otherPlaces": {
+      "notCovered": "Places outside your zones aren't covered: a customer there sees \"We don't deliver here yet\" and can't place the order. Tallaby's rates are Egyptian and in pounds, so they don't apply to a store in {unit}. Add a zone for every place you deliver to.",
       "title": "Other places",
       "tallabyRates": "Use Tallaby's rates",
       "tallabyRatesDescription": "Customers in places none of your zones cover pay Tallaby's standard rates, and you deliver those orders yourself.",
@@ -4340,6 +4346,7 @@
       "note": "This applies once you have a zone that's on. Until then, every place in Egypt uses Tallaby's rates."
     },
     "checkPrice": {
+      "notCovered": "No zone covers {place}, so the customer sees \"We don't deliver here yet\".",
       "title": "Check a price",
       "description": "See what a customer pays for delivery at checkout.",
       "place": "Customer's place",
@@ -4356,7 +4363,7 @@
       "places": "Places this zone covers",
       "placesHelp": "A governorate covers all its cities and areas. A country covers all of it.",
       "price": "Delivery price",
-      "priceHelp": "Tallaby charges EGP {amount} for these places. Use it or type your own.",
+      "priceHelp": "Tallaby charges {unit} {amount} for these places. Use it or type your own.",
       "freeOver": "Free delivery when the order is over (optional)",
       "freeOverHelp": "Orders at or over this amount ship free.",
       "deliveryTime": "Delivery time",
@@ -4373,6 +4380,7 @@
       "generic": "Check the highlighted fields. Prices use up to 2 decimals."
     },
     "errors": {
+      "egyptTemplateOnly": "These templates are for Egypt, in pounds. Add your own zones for this store.",
       "invalidInput": "Some values are not valid. Please check them.",
       "overlap": "A place you chose is already in another zone that's on.",
       "tooManyZones": "You've reached the maximum of 30 zones.",
@@ -4436,7 +4444,7 @@
       "overDescription": "Free delivery for orders at or over the amount you set.",
       "all": "Free on every order",
       "allDescription": "You pay the delivery on every order.",
-      "amount": "Free delivery for orders of (EGP) or more",
+      "amount": "Free delivery for orders of ({unit}) or more",
       "note": "Applies to your zones. A zone with its own free-delivery amount keeps it, and places your zones don't cover keep Tallaby's rates."
     }
   },

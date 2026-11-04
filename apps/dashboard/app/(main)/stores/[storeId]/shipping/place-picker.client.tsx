@@ -42,16 +42,20 @@ export function useShippingLib(enabled = true): ShippingLib | null {
 }
 
 const isEgypt = (key: string) => key === "EG" || key.startsWith("EG/");
+const isIn = (country: string | null, key: string) => !!country && (key === country || key.startsWith(`${country}/`));
 
 /**
- * Search-and-pick for place keys: one search box (Egypt first, then other
- * countries), selected chips, and a checkable list of Egypt's governorates.
+ * Search-and-pick for place keys: one search box (the store's country first, then
+ * other countries), selected chips, and a checkable list of that country's regions.
+ * `country` is the store's likely country: Egypt unless its currency says otherwise,
+ * null when the currency has no one country (no list; search still finds every place).
  * `takenBy` labels places already in another enabled zone; `blockTaken` makes them unpickable.
  * `single` keeps at most one place (picking another replaces it).
  * The parent owns the lazily loaded `lib`; `onNeedLib` asks it to start loading.
  */
 export function PlacePicker({
   lib,
+  country = "EG",
   onNeedLib,
   value,
   onChange,
@@ -63,6 +67,7 @@ export function PlacePicker({
   id,
 }: {
   lib: ShippingLib | null;
+  country?: string | null;
   onNeedLib?: () => void;
   value: string[];
   onChange: (keys: string[]) => void;
@@ -87,10 +92,19 @@ export function PlacePicker({
   const results = useMemo(() => {
     if (!lib || !debounced.trim()) return null;
     const found = lib.searchPlaces(debounced, { limit: 20 });
-    return { egypt: found.filter((p) => isEgypt(p.key)), other: found.filter((p) => !isEgypt(p.key)) };
-  }, [lib, debounced]);
+    return { home: found.filter((p) => isIn(country, p.key)), other: found.filter((p) => !isIn(country, p.key)) };
+  }, [lib, debounced, country]);
 
-  const governorates = useMemo(() => (lib && browse ? lib.childrenOf("EG") : []), [lib, browse]);
+  const egyptian = country === "EG";
+  const countryPlace = lib && country && !egyptian ? lib.getPlace(country) : undefined;
+  const countryName = lib && country ? lib.placeLabel(country, locale) : "";
+
+  // Egypt lists its governorates; another country also offers itself, so one zone can cover all of it.
+  const governorates = useMemo(() => {
+    if (!lib || !browse || !country) return [];
+    const regions = lib.childrenOf(country);
+    return countryPlace ? [countryPlace, ...regions] : regions;
+  }, [lib, browse, country, countryPlace]);
 
   const toggle = (key: string) => {
     if (value.includes(key)) onChange(value.filter((k) => k !== key));
@@ -164,7 +178,7 @@ export function PlacePicker({
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               e.preventDefault();
-              const first = results && [...results.egypt, ...results.other].find((p) => !(blockTaken && takenBy?.has(p.key)));
+              const first = results && [...results.home, ...results.other].find((p) => !(blockTaken && takenBy?.has(p.key)));
               if (first) pick(first.key);
             }
             if (e.key === "Escape" && query) {
@@ -180,11 +194,11 @@ export function PlacePicker({
 
       {results && (
         <ul className="max-h-64 divide-y overflow-y-auto rounded-xl border">
-          {results.egypt.length + results.other.length === 0 ? (
+          {results.home.length + results.other.length === 0 ? (
             <li className="px-3 py-3 text-sm text-muted-foreground">{t("noResults")}</li>
           ) : (
             <>
-              {group(t("egypt"), results.egypt)}
+              {group(egyptian ? t("egypt") : countryName, results.home)}
               {group(t("otherCountries"), results.other)}
             </>
           )}
@@ -212,7 +226,7 @@ export function PlacePicker({
         </ul>
       )}
 
-      <div>
+      {country && <div>
         <button
           type="button"
           className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
@@ -222,7 +236,7 @@ export function PlacePicker({
             setBrowse((b) => !b);
           }}
         >
-          {t("browse")}
+          {egyptian ? t("browse") : lib ? t("browseCountry", { country: countryName }) : t("browseRegions")}
           <ChevronDown className={cn("size-4 transition-transform", browse && "rotate-180")} aria-hidden />
         </button>
         {browse && (
@@ -259,7 +273,7 @@ export function PlacePicker({
             )}
           </div>
         )}
-      </div>
+      </div>}
     </div>
   );
 }

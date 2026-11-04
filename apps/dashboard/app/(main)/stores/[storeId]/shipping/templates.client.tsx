@@ -22,6 +22,7 @@ import { Label } from "@workspace/ui/components/label";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@workspace/ui/components/sheet";
 import { CurrencyInput } from "@/components/form/currency-input";
 import { LabelNote, SMALL_BUTTON_CLASS } from "@/components/form/form-ui";
+import { moneyUnitText, type MoneyUnit } from "@/lib/i18n/format";
 import { applyShippingTemplate } from "./shipping.server";
 import type { TemplateOption } from "./shipping.dto";
 import { formatEgp } from "./zone-sheet.client";
@@ -39,10 +40,12 @@ const KEY: Record<Choice, "tallabyRates" | "egyptFlat" | "cairoGiza" | "scratch"
  * The shipping templates. Tallaby's rates, one price for all Egypt, and Cairo &
  * Giza are built on the server from the template id; "start from scratch" opens
  * an empty zone sheet. With zones already saved, applying one replaces them
- * after a confirmation.
+ * after a confirmation. The three templates are Egyptian, so a store in another
+ * currency gets none from the server and only "start from scratch" shows.
  */
 export function ShippingTemplates({
   storeId,
+  money,
   templates,
   zoneCount,
   disabled,
@@ -50,6 +53,7 @@ export function ShippingTemplates({
   onApplied,
 }: {
   storeId: string;
+  money: MoneyUnit;
   templates: TemplateOption[];
   zoneCount: number;
   disabled: boolean;
@@ -58,13 +62,14 @@ export function ShippingTemplates({
 }) {
   const t = useTranslations("storeShipping");
   const locale = useLocale();
-  const [choice, setChoice] = useState<Choice>("tallaby_rates");
+  const [choice, setChoice] = useState<Choice>(templates.length > 0 ? "tallaby_rates" : "scratch");
   const [price, setPrice] = useState("");
   const [priceError, setPriceError] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [isPending, startTransition] = useTransition();
 
-  const egp = (n: number) => t("egp", { amount: formatEgp(locale, n) });
+  const unit = moneyUnitText(locale, money);
+  const egp = (n: number) => t("egp", { amount: formatEgp(locale, n), unit });
   const option = (id: ShippingTemplate) => templates.find((x) => x.id === id);
 
   const description = (id: Choice) => {
@@ -72,6 +77,7 @@ export function ShippingTemplates({
     switch (id) {
       case "tallaby_rates":
         return t("templates.tallabyRates.description", {
+          unit,
           count: tpl?.names.length ?? 0,
           min: formatEgp(locale, tpl?.prices?.min ?? 0),
           max: formatEgp(locale, tpl?.prices?.max ?? 0),
@@ -125,7 +131,7 @@ export function ShippingTemplates({
         disabled={disabled}
         aria-label={t("templates.title")}
       >
-        {(["tallaby_rates", "egypt_flat", "cairo_giza", "scratch"] as const).map((id) => (
+        {([...templates.map((x) => x.id), "scratch"] as const).map((id) => (
           <ChoiceCard key={id} value={id} indicator title={t(`templates.${KEY[id]}.title`)} description={description(id)} />
         ))}
       </ChoiceGroup>
@@ -134,6 +140,7 @@ export function ShippingTemplates({
         <div className="grid gap-1.5">
           <Label htmlFor="template-price">{t("templates.egyptFlat.priceLabel")}</Label>
           <CurrencyInput
+            {...money}
             id="template-price"
             invalid={priceError && !flatValid}
             value={price}

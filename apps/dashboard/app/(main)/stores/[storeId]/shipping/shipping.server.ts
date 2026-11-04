@@ -1,9 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { DEFAULT_CURRENCY, parseStoreCurrency } from "@workspace/lib";
 import type { ShippingTemplate, StoreShippingSettings as Settings } from "@workspace/lib/shipping/store-zones";
 import {
   deleteStoreShippingZone,
+  getStore,
   saveStoreShippingZone,
   applyStoreShippingTemplate,
   updateStoreShippingSettings,
@@ -28,6 +30,7 @@ const ERRORS: Record<string, StoreShippingErrorKey> = {
   no_zones: "noZones",
   tallaby_unavailable: "tallabyUnavailable",
   zones_exist: "zonesExist",
+  egypt_template_only: "egyptTemplateOnly",
   store_read_only: "readOnly",
   not_found: "notFound",
 };
@@ -69,6 +72,7 @@ export async function saveShippingZone(
  * Places and prices are built server-side; the client sends the template id, the
  * zone names, the price for "one price" only, and `replace` once the seller confirmed
  * deleting the current zones. Without `replace`, a store that has zones gets `zonesExist`.
+ * Every template is Egyptian and priced in pounds, so only an EGP store can use one.
  */
 export async function applyShippingTemplate(
   storeId: string,
@@ -77,7 +81,11 @@ export async function applyShippingTemplate(
   const raw = (input ?? {}) as Record<string, unknown>;
   // Pass only the known fields on; the library schema validates each one strictly.
   const payload = { template: raw.template, names: raw.names, price: raw.price, replace: raw.replace };
-  return run(storeId, (sellerId, actorId, id) => applyStoreShippingTemplate(sellerId, actorId, id, payload));
+  return run(storeId, async (sellerId, actorId, id) => {
+    const store = await getStore(sellerId, id);
+    if (parseStoreCurrency(store?.settings).currency !== DEFAULT_CURRENCY) return { success: false, error: "egypt_template_only" };
+    return applyStoreShippingTemplate(sellerId, actorId, id, payload);
+  });
 }
 
 export async function deleteShippingZone(storeId: string, zoneId: string): Promise<StoreShippingResult<{ id: string }>> {

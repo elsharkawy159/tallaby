@@ -1,4 +1,5 @@
 import type { ShippingTemplate } from "@workspace/lib/shipping/store-zones";
+import type { StoreCurrency } from "@workspace/lib";
 import type { StoreShippingZone } from "@workspace/lib/stores/server";
 
 /** Error keys live under `storeShipping.errors`. */
@@ -9,6 +10,7 @@ export type StoreShippingErrorKey =
   | "noZones"
   | "tallabyUnavailable"
   | "zonesExist"
+  | "egyptTemplateOnly"
   | "readOnly"
   | "notFound"
   | "rateLimited"
@@ -29,6 +31,24 @@ export type ZoneFormValues = {
   codEnabled: boolean;
   enabled: boolean;
 };
+
+/**
+ * The country a store in this currency most likely sells in: the place picker
+ * and the coverage board start there. Null when a currency has no one country.
+ */
+const CURRENCY_COUNTRY: Partial<Record<StoreCurrency, string>> = {
+  EGP: "EG",
+  SAR: "SA",
+  AED: "AE",
+  KWD: "KW",
+  QAR: "QA",
+  BHD: "BH",
+  OMR: "OM",
+};
+
+export function currencyCountry(currency: StoreCurrency): string | null {
+  return CURRENCY_COUNTRY[currency] ?? null;
+}
 
 const num = (v: string) => (v.trim() === "" ? NaN : Number(v.replace(",", ".")));
 
