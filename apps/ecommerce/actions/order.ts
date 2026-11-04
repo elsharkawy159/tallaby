@@ -46,7 +46,8 @@ import {
 } from "@/lib/storefront.server";
 import { hasStoreTrackingConsent, STORE_TRACKING_CONSENT_COOKIE } from "@/lib/storefront-consent";
 import { cookies } from "next/headers";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
+import { currencyDefaultLabel, formatPricePlain } from "@workspace/lib";
 import { after } from "next/server";
 import { isMarketplaceRequest } from "@/lib/marketplace/marketplace-host.server";
 import { buildOrderPagePath, verifyOrderAccess } from "@/lib/order-access-token";
@@ -71,8 +72,9 @@ import { activeMinOrderPiastres, checkMinOrder, itemsSubtotalPiastres, piastresT
 import { CAMPAIGN_COOKIE, decodeCampaignCookie } from "@workspace/lib/campaigns/utm";
 
 /** placeOrderFromCart's store-shipping refusals → checkout message keys. */
-const STORE_SHIPPING_ERRORS: Record<string, "notDeliveredHere" | "egyptOnly" | "zoneNoCod" | "orderNotAccepted"> = {
+const STORE_SHIPPING_ERRORS: Record<string, "notDeliveredHere" | "egyptOnly" | "zoneNoCod" | "orderNotAccepted" | "paymentNotInCurrency"> = {
   storeShippingNotCovered: "notDeliveredHere",
+  storePaymentNotInCurrency: "paymentNotInCurrency",
   storeShippingOutsideEgypt: "egyptOnly",
   storeShippingNoCod: "zoneNoCod",
   // A phone the seller blocked (ROADMAP.md F-02): neutral, never "you are blocked".
@@ -175,6 +177,17 @@ export async function createOrder(data: {
         const minCheck = checkMinOrder(minOrder, itemsSubtotalPiastres(lines));
         if (!minCheck.ok) {
           const t = await getTranslations("checkout");
+          if (rateScope && rateScope.currency !== "EGP") {
+            const label = currencyDefaultLabel(rateScope.currency);
+            const locale = await getLocale();
+            return {
+              success: false,
+              error: t("minOrderNotReachedIn", {
+                minimum: formatPricePlain(minCheck.minimumPiastres / 100, locale, label),
+                missing: formatPricePlain(minCheck.shortPiastres / 100, locale, label),
+              }),
+            };
+          }
           return {
             success: false,
             error: t("minOrderNotReached", {
@@ -728,7 +741,9 @@ export async function cancelOrder(orderId: string, reason?: string, accessToken?
             },
           });
 
-        if (orderPaymentDebit) {
+        // A customer wallet is EGP only: an order in another currency never pays with it
+        // (place-order refuses that), so it never refunds to it.
+        if (orderPaymentDebit && (order.currency || "EGP") === "EGP") {
           const refundAmount = Math.abs(Number(orderPaymentDebit.amount));
           if (refundAmount > 0) {
             try {

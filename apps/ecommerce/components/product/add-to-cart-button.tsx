@@ -7,7 +7,7 @@ import { useTranslations } from "next-intl";
 import { notifyCartItemAdded, useCart } from "@/providers/cart-provider";
 import { trackCommerceEvent } from "@/lib/storefront-events.client";
 import { toMetaContentIds } from "@/lib/meta/meta.product";
-import { DEFAULT_CURRENCY } from "@/lib/constants";
+import { useCurrencyCode } from "@/lib/currency-label.client";
 import { useRouter } from "@/i18n/navigation";
 
 const sizeStyles = {
@@ -42,6 +42,7 @@ export const AddToCartButton = ({
 }: AddToCartButtonProps) => {
   const { addToCart, isProductLoading } = useCart();
   const router = useRouter();
+  const currency = useCurrencyCode();
   const tProduct = useTranslations("product");
   const isLoading = isProductLoading(productId);
 
@@ -62,7 +63,7 @@ export const AddToCartButton = ({
           content_ids: toMetaContentIds([productId]),
           content_type: "product",
           value,
-          currency: DEFAULT_CURRENCY,
+          currency,
         },
         result.metaEventId ? { eventId: result.metaEventId } : undefined
       );

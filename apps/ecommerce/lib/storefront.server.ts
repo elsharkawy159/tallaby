@@ -9,7 +9,7 @@
  */
 
 import { headers } from "next/headers";
-import { parseStoreCurrency } from "@workspace/lib";
+import { parseStoreCurrency, type CurrencyLabel, type StoreCurrency } from "@workspace/lib";
 import { unstable_cache } from "next/cache";
 import { notFound, redirect } from "next/navigation";
 import {
@@ -199,6 +199,8 @@ export function getStorefrontBySubdomain(subdomain: string) {
         seo: parseStoreSeo(row.seo),
         /** Store settings › General: the label (symbol) of the store's website currency, "EGP" by default. */
         currencyLabel: parseStoreCurrency(row.settings).label,
+        /** The store's currency: what its orders are placed in (ROADMAP.md F-61). */
+        currency: parseStoreCurrency(row.settings).currency,
         governorate: normalizeGovernorate(state),
         /** The store's own domain once live (faster-eg.com), else null. */
         customDomain: domain?.domain ?? null,
@@ -211,7 +213,7 @@ export function getStorefrontBySubdomain(subdomain: string) {
         salesPopup: parseStoreSalesPopup(row.settings),
         /** Store settings › Checkout › Minimum order (ROADMAP.md F-13b), for the cart's "add X more". Checkout reads it fresh. */
         minOrder: parseStoreMinOrder(row.settings),
-        paymentMethods: storefrontCheckoutMethods(parseStorePayments((row.settings as Record<string, unknown> | null)?.payments)).methods,
+        paymentMethods: storefrontCheckoutMethods(parseStorePayments((row.settings as Record<string, unknown> | null)?.payments), null, parseStoreCurrency(row.settings).currency).methods,
         /**
          * Builder site state: "draft" (never published), "published", or
          * "unpublished" (the seller took the website offline). Both "draft"
@@ -222,8 +224,8 @@ export function getStorefrontBySubdomain(subdomain: string) {
         supportedLocales: row.supportedLocales,
       };
     },
-    // v14: + minOrder (F-13b). v13: + salesPopup (F-22). v12: + app (store app download button). v11: + paymentMethods (footer payment rows). v10: + supportedLocales (header language switcher). v9: + siteStatus (offline stores). v6: + seo (P4-14) and social links (P4-15). v4: resolves through stores (P5-00).
-    [`storefront-v14-${subdomain}`],
+    // v15: + currency. v14: + minOrder (F-13b). v13: + salesPopup (F-22). v12: + app (store app download button). v11: + paymentMethods (footer payment rows). v10: + supportedLocales (header language switcher). v9: + siteStatus (offline stores). v6: + seo (P4-14) and social links (P4-15). v4: resolves through stores (P5-00).
+    [`storefront-v15-${subdomain}`],
     { tags: ["sellers", sellerTags.subdomain(subdomain)], revalidate: 3600 },
   )();
 }
@@ -246,7 +248,7 @@ export function getRenamedStoreSubdomain(oldSubdomain: string) {
 }
 
 /** The storefront a cart belongs to: the store, and the seller who owns it. */
-export type CartScope = { storeId: string; sellerId: string };
+export type CartScope = { storeId: string; sellerId: string; currency: StoreCurrency };
 
 /**
  * The store whose cart the current request uses, or null for the marketplace
@@ -257,7 +259,7 @@ export async function getCartScope(): Promise<CartScope | null> {
   const subdomain = await getRequestStoreSubdomain();
   if (!subdomain) return null;
   const store = await getStorefrontBySubdomain(subdomain);
-  return store ? { storeId: store.storeId, sellerId: store.id } : null;
+  return store ? { storeId: store.storeId, sellerId: store.id, currency: store.currency } : null;
 }
 
 /**
@@ -310,7 +312,13 @@ export async function getStorefrontCheckoutPayments(): Promise<StorefrontCheckou
   const settings = row?.settings as Record<string, unknown> | null | undefined;
   // The seller's own card gateway, when connected (ROADMAP.md F-39).
   const gateway = row ? await getStorefrontGateway(scope.storeId, scope.sellerId) : null;
-  return storefrontCheckoutMethods(parseStorePayments(settings?.payments), gateway);
+  return storefrontCheckoutMethods(parseStorePayments(settings?.payments), gateway, parseStoreCurrency(settings).currency);
+}
+
+/** The label a store's checkout shows prices with, read fresh. */
+export async function getStoreCurrencyLabel(storeId: string): Promise<CurrencyLabel> {
+  const [row] = await db.select({ settings: stores.settings }).from(stores).where(eq(stores.id, storeId)).limit(1);
+  return parseStoreCurrency(row?.settings).label;
 }
 
 /**
@@ -318,7 +326,7 @@ export async function getStorefrontCheckoutPayments(): Promise<StorefrontCheckou
  * STORE has its own cart (a seller's two stores do not share one); the
  * marketplace cart has no store.
  */
-export function activeCartWhere(userId: string, scope: CartScope | null) {
+export function activeCartWhere(userId: string, scope: { storeId: string; sellerId?: string } | null) {
   return and(
     eq(carts.userId, userId),
     eq(carts.status, "active"),

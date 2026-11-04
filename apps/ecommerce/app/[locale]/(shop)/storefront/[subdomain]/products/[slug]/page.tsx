@@ -111,7 +111,7 @@ export default async function StorefrontProductPage({ params }: StorefrontProduc
           product={product}
           locale={locale as ProductLocale}
           homeLabel={tBreadcrumb("home")}
-          store={{ url: storeUrl(store.subdomain, store.customDomain), name: store.displayName }}
+          store={{ url: storeUrl(store.subdomain, store.customDomain), name: store.displayName, currency: store.currency }}
         />
         <MetaViewContent productId={product.id} value={price} />
         <ProductPageDeepLink />
@@ -126,7 +126,7 @@ export default async function StorefrontProductPage({ params }: StorefrontProduc
         product={product}
         locale={locale as ProductLocale}
         homeLabel={tBreadcrumb("home")}
-        store={{ url: storeUrl(store.subdomain, store.customDomain), name: store.displayName }}
+        store={{ url: storeUrl(store.subdomain, store.customDomain), name: store.displayName, currency: store.currency }}
       />
       <div className={cn(s.wrap, "pt-6 pb-10")}>
         <Link

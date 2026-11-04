@@ -13,6 +13,7 @@ import {
   OrderSummaryLineItems,
   OrderSummaryTotalRow,
 } from './order-summary.chunks'
+import { useCurrencyCode } from '@/lib/currency-label.client'
 import type { OrderSummaryProps } from './order-summary.types'
 
 export type { OrderSummaryProps, OrderSummaryItem, OrderSummaryTotals } from './order-summary.types'
@@ -34,10 +35,13 @@ export function OrderSummary ({
 }: OrderSummaryProps) {
   const t = useTranslations('checkout')
 
+  const currencyCode = useCurrencyCode()
   const subtotal = summary.subtotal ?? 0
   // Sellers flagged free_delivery already waive shipping in full, so the
   // "spend more to unlock" nudge would contradict the totals below it.
+  // Tallaby's free delivery is in EGP.
   const showFreeDeliveryProgress =
+    currencyCode === 'EGP' &&
     FREE_DELIVERY_THRESHOLD_ENABLED &&
     cartHasPhysicalItems(items) &&
     !cartFullyCoveredBySellerFreeDelivery(items)

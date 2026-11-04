@@ -3,6 +3,7 @@ import { Button } from "@workspace/ui/components/button";
 import { Link } from "@/i18n/navigation";
 import { getCheckoutData } from "@/actions/checkout";
 import { CheckoutData } from "./_components/checkout.data";
+import { CurrencyLabelProvider } from "@/lib/currency-label.client";
 import { generateNoIndexMetadata } from "@/lib/metadata";
 import type { Metadata } from "next";
 import { getAddresses } from "@/actions/customer";
@@ -110,12 +111,14 @@ export default async function Checkout() {
 
         <HostStoreTracking />
 
-        <CheckoutData
-          checkoutData={checkoutData}
-          addresses={addresses}
-          defaultAddress={defaultAddress}
-          isLoggedIn={isLoggedIn}
-        />
+        <CurrencyLabelProvider label={checkoutData.currencyLabel} currency={checkoutData.currency}>
+          <CheckoutData
+            checkoutData={checkoutData}
+            addresses={addresses}
+            defaultAddress={defaultAddress}
+            isLoggedIn={isLoggedIn}
+          />
+        </CurrencyLabelProvider>
       </main>
     </div>
   );

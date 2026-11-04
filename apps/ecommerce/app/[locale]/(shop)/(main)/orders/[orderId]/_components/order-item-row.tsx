@@ -7,7 +7,7 @@ import { OrderItemReviewForm } from "./order-item-review-form";
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
-import { formatPrice } from "@workspace/lib";
+import { currencyDefaultLabel, formatPrice } from "@workspace/lib";
 import { Package } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { OrderConfirmationData } from "./order-confirmation.types";
@@ -17,6 +17,7 @@ interface OrderItemRowProps {
   orderId: string;
   orderStatus: string;
   locale: string;
+  currency?: string | null;
   autoExpandReview?: boolean;
 }
 
@@ -25,8 +26,10 @@ export function OrderItemRow({
   orderId,
   orderStatus,
   locale,
+  currency,
   autoExpandReview = false,
 }: OrderItemRowProps) {
+  const currencyLabel = currencyDefaultLabel(currency);
   const t = useTranslations("orders");
   const tCommon = useTranslations("common");
   const [showReviewForm, setShowReviewForm] = useState(autoExpandReview);
@@ -92,7 +95,7 @@ export function OrderItemRow({
           <p
             className="text-xs md:text-sm font-medium text-foreground"
             dangerouslySetInnerHTML={{
-              __html: formatPrice(Number(item.price), locale),
+              __html: formatPrice(Number(item.price), locale, "sm", currencyLabel),
             }}
           />
           <p className="text-xs text-muted-foreground">
@@ -101,7 +104,7 @@ export function OrderItemRow({
           <p
             className="text-xs md:text-sm font-semibold text-foreground"
             dangerouslySetInnerHTML={{
-              __html: formatPrice(Number(item.subtotal), locale),
+              __html: formatPrice(Number(item.subtotal), locale, "sm", currencyLabel),
             }}
           />
         </div>

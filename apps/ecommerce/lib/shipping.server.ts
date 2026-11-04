@@ -5,7 +5,7 @@
  * spec §6.5). Never cached (rule 8).
  */
 import {
-  resolveStorefrontShipping,
+  resolveStoreOrderShipping,
   zoneSellerFreeDeliveryDiscount,
   type ShippingAddress,
   type StorefrontShipping,
@@ -34,11 +34,9 @@ export async function getStorefrontShippingQuote(
   // A digital-only cart ships nothing: placeOrderFromCart skips the quote too.
   if (!address || !cartHasPhysicalItems(items)) return null;
   const context = await getStorefrontShippingContext(storeId);
-  if (!context || context.settings.method !== "own") return null;
+  if (!context) return null;
   const subtotal = resolveCartSubtotal(items);
-  return resolveStorefrontShipping({
-    settings: context.settings,
-    zones: context.zones,
+  return resolveStoreOrderShipping(context, {
     address,
     items,
     subtotal,

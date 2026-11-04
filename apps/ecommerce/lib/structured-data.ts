@@ -78,7 +78,7 @@ function schemaItemCondition(condition?: string | null): string {
  */
 export function generateProductStructuredData(
   product: Product,
-  store: { home: string; sellerName: string },
+  store: { home: string; sellerName: string; currency?: string },
 ) {
   const productUrl = `${store.home}/products/${product.slug}`;
   const images = (product.images ?? [])
@@ -88,7 +88,7 @@ export function generateProductStructuredData(
   const offers = {
     "@type": "Offer",
     price: product.price.final,
-    priceCurrency: DEFAULT_CURRENCY,
+    priceCurrency: store.currency ?? DEFAULT_CURRENCY,
     availability:
       product.status === "active" && (product.unlimitedStock || (product.stockCount || 0) > 0)
         ? "https://schema.org/InStock"

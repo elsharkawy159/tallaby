@@ -314,7 +314,7 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
         const date = new Date(iso);
         return Number.isNaN(date.getTime()) ? "" : new Intl.DateTimeFormat(locale === "en" ? "en-GB" : "ar-EG", { day: "numeric", month: "long", year: "numeric" }).format(date);
       },
-      formatPrice: (amount) => new Intl.NumberFormat(locale === "ar" ? "ar-EG" : "en-EG", { style: "currency", currency: "EGP", maximumFractionDigits: 0 }).format(amount),
+      formatPrice: (amount) => new Intl.NumberFormat(locale === "ar" ? "ar-EG" : "en-EG", { style: "currency", currency: profile.currency ?? "EGP", maximumFractionDigits: 0 }).format(amount),
       renderCartButton: () => <span className="inline-flex h-9 items-center rounded-full border border-(--sf-line) px-3 text-sm">🛒</span>,
       renderAddToCart: () => <span className="inline-flex h-8 items-center justify-center rounded-md bg-(--sf-brand) px-3 text-xs font-semibold text-white">{t("canvas.addToCart")}</span>,
       renderWishlistButton: () => <span aria-hidden className="inline-flex size-8 items-center justify-center rounded-full border border-(--sf-line) bg-(--sf-paper) text-sm">♡</span>,

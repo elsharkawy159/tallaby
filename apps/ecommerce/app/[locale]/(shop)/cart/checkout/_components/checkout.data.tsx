@@ -37,7 +37,8 @@ import { toast } from "sonner";
 import { useLocale, useTranslations } from "next-intl";
 import { updateCartItem } from "@/actions/cart";
 import { SimpleCheckoutForm } from "./simple-checkout-form.client";
-import { useCheckoutAddress, type SavedCheckoutAddress } from "./use-checkout-address.client";
+import { useCheckoutAddress, type CheckoutCountries, type SavedCheckoutAddress } from "./use-checkout-address.client";
+import { isAddressInCountries } from "@workspace/lib/shipping/store-quote";
 import { CreditCard, ArrowLeft } from "lucide-react";
 import { OrderSummary } from "@/components/order-summary";
 import { Button } from "@workspace/ui/components/button";
@@ -107,7 +108,15 @@ export const CheckoutData = ({
   } | null>(initialSummary.appliedCoupon ?? null);
   const [isRecalculatingShipping, setIsRecalculatingShipping] = useState(false);
 
-  const [savedAddresses, setSavedAddresses] = useState<SavedCheckoutAddress[]>(initialAddresses);
+  // A store selling abroad: only addresses in the countries it offers apply.
+  const addressCountries: CheckoutCountries = checkoutData.addressCountries ?? null;
+  const usableAddresses: any[] = addressCountries
+    ? initialAddresses.filter((a) => isAddressInCountries(a, addressCountries.options))
+    : initialAddresses;
+  const usableDefault = addressCountries
+    ? (usableAddresses.find((a) => a.isDefault) ?? null)
+    : initialDefaultAddress;
+  const [savedAddresses, setSavedAddresses] = useState<SavedCheckoutAddress[]>(usableAddresses);
   const [cartLines, setCartLines] = useState<any[]>(cart?.cartItems ?? []);
   const [busyItemId, setBusyItemId] = useState<string | null>(null);
   const orderEmailField: { lastEmail: string | null } | null = checkoutData.orderEmail ?? null;
@@ -118,7 +127,7 @@ export const CheckoutData = ({
 
   // The default address fills the form, else the newest one saved.
   const activeAddress: SavedCheckoutAddress | null =
-    initialDefaultAddress || initialAddresses[0] || null;
+    usableDefault || usableAddresses[0] || null;
 
   const t = useTranslations("checkout");
   const tToast = useTranslations("toast");
@@ -181,6 +190,7 @@ export const CheckoutData = ({
 
   const address = useCheckoutAddress({
     initial: activeAddress,
+    countries: addressCountries,
     prefill: { fullName: checkoutData.customer?.fullName, phone: checkoutData.customer?.phone },
     onSaved: (saved) => {
       form.setValue("shippingAddressId", saved.id, { shouldDirty: true });
@@ -218,6 +228,7 @@ export const CheckoutData = ({
         ? t("egyptOnly")
         : null;
   const isZoneShipping = storeShipping?.kind === "zone";
+  const isForeignCurrency = (checkoutData.currency ?? "EGP") !== "EGP";
 
   // Store websites: the store's minimum order (F-13b), on the items subtotal
   // before shipping and coupons, in piastres (createOrder checks it again).
@@ -233,8 +244,10 @@ export const CheckoutData = ({
       });
 
   // The address is checked and saved when the button is pressed, so its errors show then.
+  // The same check as `noMethodInCurrency` below, before the shipping rules are worked out.
+  const noMethodInCurrencyEarly = !codAllowed || (isZoneShipping && storeShipping?.codEnabled !== true);
   const canPlaceOrder = Boolean(
-    paymentMethod?.trim() && !shippingRefusal && minOrderCheck.ok && !busyItemId
+    paymentMethod?.trim() && !shippingRefusal && minOrderCheck.ok && !busyItemId && (!isForeignCurrency || !noMethodInCurrencyEarly)
   );
 
   useEffect(() => {
@@ -316,6 +329,8 @@ export const CheckoutData = ({
     storePayments?.codMaxOrder == null ||
     (summary.totalAfterDiscount ?? summary.total) <= storePayments.codMaxOrder;
   const isCodEligible = isCodEligibleShipping && isCodWithinStoreMax;
+  // In another currency only cash on delivery can pay (ROADMAP.md F-61).
+  const noMethodInCurrency = isForeignCurrency && (!codAllowed || !isCodEligible);
 
   const walletAvailableBalance =
     checkoutData.walletAvailableBalance != null
@@ -864,6 +879,11 @@ export const CheckoutData = ({
               {minOrderMessage && (
                 <p role="alert" className="text-xs md:text-sm text-orange-600">
                   <PriceText locale={locale}>{minOrderMessage}</PriceText>
+                </p>
+              )}
+              {!shippingRefusal && noMethodInCurrency && (
+                <p role="alert" className="text-xs md:text-sm text-orange-600">
+                  {t("noPaymentInCurrency")}
                 </p>
               )}
               <Button

@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react'
 import { trackCommerceEvent } from '@/lib/storefront-events.client'
 import { toMetaContentIds } from '@/lib/meta/meta.product'
-import { DEFAULT_CURRENCY } from '@/lib/constants'
+import { useCurrencyCode } from '@/lib/currency-label.client'
 
 interface MetaViewContentProps {
   productId: string
@@ -17,8 +17,10 @@ interface MetaViewContentProps {
 export function MetaViewContent ({
   productId,
   value,
-  currency = DEFAULT_CURRENCY,
+  currency: currencyProp,
 }: MetaViewContentProps) {
+  const storeCurrency = useCurrencyCode()
+  const currency = currencyProp ?? storeCurrency
   const firedRef = useRef(false)
 
   useEffect(() => {

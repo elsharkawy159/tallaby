@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { ImageWithFallback } from "@/components/shared/image-with-fallback";
 import { addCrossSellToCart, getCrossSellOffers, type CrossSellCard } from "@/actions/cross-sell";
 import { useCart } from "@/providers/cart-provider";
+import { useCurrencyCode } from "@/lib/currency-label.client";
 
 /**
  * "Frequently bought with" on a store's product page and in its cart (ROADMAP.md
@@ -61,11 +62,12 @@ export function CrossSellOffers({
 function OfferRow({ offer }: { offer: CrossSellCard }) {
   const t = useTranslations("storefront.crossSell");
   const format = useFormatter();
+  const currencyCode = useCurrencyCode();
   const { refreshCart } = useCart();
   const [variantId, setVariantId] = useState(offer.variants[0]?.id);
   const [pending, startTransition] = useTransition();
   const chosen = offer.variants.find((variant) => variant.id === variantId) ?? offer;
-  const money = (piastres: number) => format.number(piastres / 100, { style: "currency", currency: "EGP" });
+  const money = (piastres: number) => format.number(piastres / 100, { style: "currency", currency: currencyCode });
   const badge =
     offer.discountType === "percent"
       ? t("percentOff", { value: offer.discountValue })

@@ -19,7 +19,7 @@ import {
   isCancelOrderEnabled,
 } from "./order-confirmation.lib";
 import { Button } from "@workspace/ui/components/button";
-import { formatPrice } from "@workspace/lib";
+import { currencyDefaultLabel, formatPrice } from "@workspace/lib";
 import { OrderStatusTracker } from "./order-status-tracker";
 import { DeliveryTimeline } from "./delivery-timeline";
 import { OrderItemsList } from "./order-items-list";
@@ -58,6 +58,7 @@ export async function OrderConfirmationContent({
   const tCheckout = await getTranslations("checkout");
   const { order, orderItems, storeSellers, shipments, shippingAddress, summary } = data;
   const metaProductIds = orderItems.map((item) => item.productId);
+  const currencyLabel = currencyDefaultLabel(order.currency);
 
   const getStatusLabel = (status: string): string => {
     // Map status to translation key format
@@ -312,6 +313,7 @@ export async function OrderConfirmationContent({
             orderId={order.id}
             orderStatus={order.status}
             locale={locale}
+            currency={order.currency}
             autoExpandReviewItemId={autoExpandReviewItemId}
           />
 
@@ -322,7 +324,7 @@ export async function OrderConfirmationContent({
                 <span
                   className="text-foreground font-medium"
                   dangerouslySetInnerHTML={{
-                    __html: formatPrice(summary.subtotal, locale),
+                    __html: formatPrice(summary.subtotal, locale, "sm", currencyLabel),
                   }}
                 />
               </div>
@@ -333,7 +335,7 @@ export async function OrderConfirmationContent({
                   <span
                     className="text-foreground font-medium"
                     dangerouslySetInnerHTML={{
-                      __html: formatPrice(summary.shippingCost, locale),
+                      __html: formatPrice(summary.shippingCost, locale, "sm", currencyLabel),
                     }}
                   />
                 </div>
@@ -345,7 +347,7 @@ export async function OrderConfirmationContent({
                   <span
                     className="text-foreground font-medium"
                     dangerouslySetInnerHTML={{
-                      __html: formatPrice(summary.tax, locale),
+                      __html: formatPrice(summary.tax, locale, "sm", currencyLabel),
                     }}
                   />
                 </div>
@@ -361,7 +363,7 @@ export async function OrderConfirmationContent({
                       <span
                         className="text-green-600 font-medium"
                         dangerouslySetInnerHTML={{
-                          __html: `-${formatPrice(Number(line.amount), locale)}`,
+                          __html: `-${formatPrice(Number(line.amount), locale, "sm", currencyLabel)}`,
                         }}
                       />
                     </div>
@@ -372,7 +374,7 @@ export async function OrderConfirmationContent({
                       <span
                         className="text-green-600 font-medium"
                         dangerouslySetInnerHTML={{
-                          __html: `-${formatPrice(summary.discountAmount, locale)}`,
+                          __html: `-${formatPrice(summary.discountAmount, locale, "sm", currencyLabel)}`,
                         }}
                       />
                     </div>
@@ -385,7 +387,7 @@ export async function OrderConfirmationContent({
                 <span
                   className="text-base md:text-lg font-bold text-foreground"
                   dangerouslySetInnerHTML={{
-                    __html: formatPrice(summary.totalAmount, locale),
+                    __html: formatPrice(summary.totalAmount, locale, "sm", currencyLabel),
                   }}
                 />
               </div>

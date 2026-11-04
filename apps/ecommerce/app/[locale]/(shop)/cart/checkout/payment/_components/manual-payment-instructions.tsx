@@ -8,7 +8,7 @@ import { BadgeCheck, Check, Copy, ExternalLink, LoaderCircle, Store, UserRound }
 import { Card, CardContent } from "@workspace/ui/components/card";
 import { Button } from "@workspace/ui/components/button";
 import { useRouter } from "@/i18n/navigation";
-import { formatPrice } from "@workspace/lib";
+import { currencyDefaultLabel, formatPrice } from "@workspace/lib";
 import { reportManualPaymentSent } from "@/actions/order";
 import { compressImage } from "@/lib/compress-image.client";
 import { PaymentProofPicker } from "./payment-proof-picker";
@@ -72,6 +72,7 @@ export function ManualPaymentInstructions({
   orderNumber,
   method,
   amount,
+  currency,
   recipient,
 }: ManualPaymentInstructionsProps) {
   const t = useTranslations("checkout");
@@ -125,7 +126,7 @@ export function ManualPaymentInstructions({
             <p className="text-xs text-gray-600">{t("amountToSend")}</p>
             <p
               className="text-xl md:text-2xl font-bold text-primary"
-              dangerouslySetInnerHTML={{ __html: formatPrice(Number(amount), locale, "lg") }}
+              dangerouslySetInnerHTML={{ __html: formatPrice(Number(amount), locale, "lg", currencyDefaultLabel(currency)) }}
             />
           </div>
           {orderNumber && (

@@ -16,6 +16,7 @@ import { getCurrentUserId } from "@/lib/get-current-user-id";
 import {
   activeCartWhere,
   getCartScope,
+  getStoreCurrencyLabel,
   getStorefrontCheckoutPayments,
 } from "@/lib/storefront.server";
 import {
@@ -27,6 +28,8 @@ import { validateCoupon } from "./coupons";
 import { isOnlineCardPaymentEnabled } from "@workspace/lib/payments";
 import { ONLINE_CARD_PAYMENT_ENABLED } from "@/lib/constants";
 import { getCheckoutShipping } from "@/lib/shipping.server";
+import { getStorefrontShippingContext } from "@workspace/lib/stores/server";
+import { checkoutCountries, isAddressInCountries } from "@workspace/lib/shipping/store-quote";
 import { getStorefrontCheckoutForm, getStorefrontMinOrder } from "@/lib/storefront-checkout-form.server";
 import {
   buildSummaryWithCoupon,
@@ -229,9 +232,14 @@ export async function getCheckoutData() {
       return { success: false, error: "Cart is empty" };
     }
 
+    // The seller changed the store's currency since this cart was made.
+    if (scope && cart.currency !== scope.currency) {
+      await db.update(carts).set({ currency: scope.currency }).where(eq(carts.id, cart.id));
+    }
+
     const locale = (await getLocale()) as ProductLocale;
     const localizedCartItems = localizeCartItems(cart.cartItems, locale);
-    const localizedCart = { ...cart, cartItems: localizedCartItems };
+    const localizedCart = { ...cart, currency: scope?.currency ?? cart.currency, cartItems: localizedCartItems };
 
     const addresses = await db.query.userAddresses.findMany({
       where: eq(userAddresses.userId, userId),
@@ -266,8 +274,14 @@ export async function getCheckoutData() {
       {} as Record<string, any>,
     );
 
+    // A store selling abroad offers its countries; an address elsewhere doesn't apply.
+    const shippingContext = scope ? await getStorefrontShippingContext(scope.storeId) : null;
+    const addressCountries = shippingContext ? checkoutCountries(shippingContext.currency, shippingContext.zones) : null;
+    const usableAddresses = addressCountries
+      ? addresses.filter((address) => isAddressInCountries(address, addressCountries.options))
+      : addresses;
     const defaultAddress =
-      addresses.find((address) => address.isDefault) ?? addresses[0] ?? null;
+      usableAddresses.find((address) => address.isDefault) ?? usableAddresses[0] ?? null;
 
     const { shippingCost, sellerFreeDeliveryDiscount, storeShipping } =
       await getCheckoutShipping(localizedCartItems, defaultAddress, scope);
@@ -337,6 +351,9 @@ export async function getCheckoutData() {
           : null,
         storeCheckoutForm,
         storeMinOrder,
+        addressCountries,
+        currency: scope?.currency ?? "EGP",
+        currencyLabel: scope ? (await getStoreCurrencyLabel(scope.storeId)) : "EGP",
         orderEmail: emailField?.show && !formAsksEmail ? { lastEmail: emailField.lastEmail } : null,
       },
     };

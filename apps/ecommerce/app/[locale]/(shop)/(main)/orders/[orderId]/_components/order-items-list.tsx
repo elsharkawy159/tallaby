@@ -8,6 +8,7 @@ interface OrderItemsListProps {
   orderId: string;
   orderStatus: string;
   locale: string;
+  currency?: string | null;
   autoExpandReviewItemId?: string;
 }
 
@@ -16,6 +17,7 @@ export function OrderItemsList({
   orderId,
   orderStatus,
   locale,
+  currency,
   autoExpandReviewItemId,
 }: OrderItemsListProps) {
   return (
@@ -27,6 +29,7 @@ export function OrderItemsList({
           orderId={orderId}
           orderStatus={orderStatus}
           locale={locale}
+          currency={currency}
           autoExpandReview={
             autoExpandReviewItemId != null &&
             autoExpandReviewItemId === item.id

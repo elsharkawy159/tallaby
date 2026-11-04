@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from "@workspace/ui/components/select";
 import { CHECKOUT_ADDRESS_MAX, savedAddressLine } from "@workspace/lib/shipping/checkout-address";
+import { childrenOf, EGYPT, getPlace } from "@workspace/lib/places";
 import { EGYPT_GOVERNORATES, getGovernorateLabel } from "@workspace/lib/shipping/governorate";
 import { ORDER_EMAIL_MAX } from "@workspace/lib/orders/notification-email";
 import { cn } from "@workspace/ui/lib/utils";
@@ -48,11 +49,20 @@ export function SimpleCheckoutForm({
   const [choosing, setChoosing] = useState(false);
   const { values, location } = address;
   const locating = location === "locating";
+  const abroad = values.country !== EGYPT;
+  const placeName = (key: string) => {
+    const place = getPlace(key);
+    return place ? (locale === "ar" ? place.nameAr : place.nameEn) : key;
+  };
+  const regions = abroad ? childrenOf(values.country) : [];
+  const cities = values.regionKey ? childrenOf(values.regionKey) : [];
 
-  const fieldError = (field: "fullName" | "phone" | "address" | "governorate") =>
+  const fieldError = (field: "fullName" | "phone" | "address" | "governorate" | "region") =>
     address.errorFor(field) ? (
       <p role="alert" className="text-xs text-red-500">
-        {t(`errors.${field}`)}
+        {field === "phone" && abroad
+          ? t(values.country === "SA" ? "errors.phoneSaudi" : "errors.phoneInternational")
+          : t(`errors.${field}`)}
       </p>
     ) : null;
 
@@ -96,7 +106,7 @@ export function SimpleCheckoutForm({
               autoComplete="tel"
               dir="ltr"
               maxLength={20}
-              placeholder="01XXXXXXXXX"
+              placeholder={!abroad ? "01XXXXXXXXX" : values.country === "SA" ? "05XXXXXXXX" : "+XXXXXXXXXXX"}
               className="text-start rtl:text-end"
               value={values.phone}
               aria-invalid={address.errorFor("phone") || undefined}
@@ -107,8 +117,27 @@ export function SimpleCheckoutForm({
           </div>
           <div className="grid gap-1.5">
             <Label htmlFor="checkout-country">{t("country")}</Label>
-            {/* Only Egypt can be delivered to and validated until ROADMAP.md F-61. */}
-            <Input id="checkout-country" value={t("egypt")} readOnly aria-readonly className="bg-muted/40" />
+            {/* The plain Egypt form, unless the store sells abroad (ROADMAP.md F-61e). */}
+            {address.countries ? (
+              <Select
+                value={values.country}
+                disabled={address.countries.options.length === 1}
+                onValueChange={(value) => address.setField("country", value)}
+              >
+                <SelectTrigger id="checkout-country" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {address.countries.options.map((code) => (
+                    <SelectItem key={code} value={code}>
+                      {placeName(code)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              <Input id="checkout-country" value={t("egypt")} readOnly aria-readonly className="bg-muted/40" />
+            )}
           </div>
         </div>
 
@@ -136,6 +165,44 @@ export function SimpleCheckoutForm({
           </div>
         )}
 
+        {regions.length > 0 && (
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-1.5">
+              <Label htmlFor="checkout-region">{t("region")}</Label>
+              <Select value={values.regionKey} onValueChange={(value) => address.setField("regionKey", value)}>
+                <SelectTrigger id="checkout-region" className="w-full">
+                  <SelectValue placeholder={t("regionPlaceholder")} />
+                </SelectTrigger>
+                <SelectContent>
+                  {regions.map((region) => (
+                    <SelectItem key={region.key} value={region.key}>
+                      {placeName(region.key)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {fieldError("region")}
+            </div>
+            {cities.length > 0 && (
+              <div className="grid gap-1.5">
+                <Label htmlFor="checkout-city">{t("city")}</Label>
+                <Select value={values.cityKey} onValueChange={(value) => address.setField("cityKey", value)}>
+                  <SelectTrigger id="checkout-city" className="w-full">
+                    <SelectValue placeholder={t("cityPlaceholder")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {cities.map((city) => (
+                      <SelectItem key={city.key} value={city.key}>
+                        {placeName(city.key)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="grid gap-1.5">
           <Label htmlFor="checkout-address">{t("address")}</Label>
           <div className="relative">
@@ -144,7 +211,7 @@ export function SimpleCheckoutForm({
               autoComplete="street-address"
               dir="auto"
               maxLength={CHECKOUT_ADDRESS_MAX}
-              placeholder={t("addressPlaceholder")}
+              placeholder={t(abroad ? "addressPlaceholderAbroad" : "addressPlaceholder")}
               className="pe-11"
               value={values.address}
               aria-invalid={address.errorFor("address") || undefined}

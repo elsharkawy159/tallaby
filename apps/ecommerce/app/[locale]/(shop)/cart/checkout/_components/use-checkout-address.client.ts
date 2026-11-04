@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { savedAddressLine, type CheckoutAddressField } from "@workspace/lib/shipping/checkout-address";
+import { EGYPT, resolveAddressPlace } from "@workspace/lib/places";
 import { reverseGeocode } from "@/components/shared/address-dialog-steps/map-location-step.lib";
 import { saveCheckoutAddress } from "@/actions/checkout-address";
 
@@ -13,22 +14,45 @@ export type SavedCheckoutAddress = {
   addressLine2?: string | null;
   city?: string | null;
   state?: string | null;
+  country?: string | null;
   isDefault?: boolean | null;
 };
 
-type Values = { fullName: string; phone: string; address: string; governorate: string };
+type Values = {
+  fullName: string;
+  phone: string;
+  address: string;
+  governorate: string;
+  /** Only used when the store offers a country choice (F-61e). */
+  country: string;
+  regionKey: string;
+  cityKey: string;
+};
 type Prefill = { fullName?: string | null; phone?: string | null };
+/** The store's countries (`checkoutCountries`), or null for the plain Egypt form. */
+export type CheckoutCountries = { options: string[]; default: string } | null;
 
 export type LocationState = "idle" | "locating" | "denied" | "failed";
 
 const SAVE_AFTER_MS = 900;
 
-const fromSaved = (a: SavedCheckoutAddress): Values => ({
-  fullName: a.fullName ?? "",
-  phone: a.phone ?? "",
-  address: savedAddressLine(a),
-  governorate: a.state ?? "",
-});
+const blankPlace = (countries: CheckoutCountries) => ({ country: countries?.default ?? EGYPT, regionKey: "", cityKey: "" });
+
+/** A saved address outside Egypt is shown by its place keys, and only its own line in the address box. */
+function fromSaved(a: SavedCheckoutAddress, countries: CheckoutCountries): Values {
+  const parts = countries ? (resolveAddressPlace(a)?.split("/") ?? []) : [];
+  const country = parts[0] ?? countries?.default ?? EGYPT;
+  const abroad = country !== EGYPT;
+  return {
+    fullName: a.fullName ?? "",
+    phone: a.phone ?? "",
+    address: abroad ? (a.addressLine1 ?? "") : savedAddressLine(a),
+    governorate: abroad ? "" : (a.state ?? ""),
+    country,
+    regionKey: abroad && parts[1] ? parts.slice(0, 2).join("/") : "",
+    cityKey: abroad && parts[2] ? parts.join("/") : "",
+  };
+}
 
 /**
  * The simple checkout form's state (ROADMAP.md F-64). The customer's details are
@@ -38,14 +62,16 @@ const fromSaved = (a: SavedCheckoutAddress): Values => ({
 export function useCheckoutAddress(input: {
   initial: SavedCheckoutAddress | null;
   prefill: Prefill;
+  countries?: CheckoutCountries;
   onSaved: (address: SavedCheckoutAddress) => void;
   /** A new address was started, so no saved row applies until it's saved. */
   onCleared: () => void;
 }) {
+  const countries = input.countries ?? null;
   const [values, setValues] = useState<Values>(() =>
     input.initial
-      ? fromSaved(input.initial)
-      : { fullName: input.prefill.fullName ?? "", phone: input.prefill.phone ?? "", address: "", governorate: "" },
+      ? fromSaved(input.initial, countries)
+      : { fullName: input.prefill.fullName ?? "", phone: input.prefill.phone ?? "", address: "", governorate: "", ...blankPlace(countries) },
   );
   const [addressId, setAddressId] = useState<string | null>(input.initial?.id ?? null);
   const [dirty, setDirty] = useState(false);
@@ -59,6 +85,8 @@ export function useCheckoutAddress(input: {
   // Hints from the location button, cleared when the customer rewrites the address.
   const locationRef = useRef<{ state: string | null; latitude: number; longitude: number } | null>(null);
 
+  const countriesRef = useRef(countries);
+  countriesRef.current = countries;
   const stateRef = useRef({ values, addressId, dirty });
   stateRef.current = { values, addressId, dirty };
   const onSavedRef = useRef(input.onSaved);
@@ -86,6 +114,7 @@ export function useCheckoutAddress(input: {
           phone: v.phone,
           address: v.address,
           governorate: v.governorate || null,
+          ...(countriesRef.current ? { country: v.country, regionKey: v.regionKey || null, cityKey: v.cityKey || null } : {}),
           locationState: hint?.state ?? null,
           latitude: hint?.latitude ?? null,
           longitude: hint?.longitude ?? null,
@@ -124,7 +153,14 @@ export function useCheckoutAddress(input: {
     // A saved address's governorate says nothing about newly written text: only
     // the picker, while it's showing, may keep deciding it.
     const dropGovernorate = field === "address" && !pickerOpen.current;
-    setValues((prev) => ({ ...prev, [field]: value, ...(dropGovernorate ? { governorate: "" } : {}) }));
+    setValues((prev) => ({
+      ...prev,
+      [field]: value,
+      ...(dropGovernorate ? { governorate: "" } : {}),
+      // A place below the one changed no longer applies.
+      ...(field === "country" ? { regionKey: "", cityKey: "", governorate: "" } : {}),
+      ...(field === "regionKey" ? { cityKey: "" } : {}),
+    }));
     setDirty(true);
     stateRef.current.dirty = true;
     if (field === "address" && location !== "locating") setLocation("idle");
@@ -149,9 +185,10 @@ export function useCheckoutAddress(input: {
   const selectSaved = useCallback((address: SavedCheckoutAddress) => {
     editCount.current += 1;
     locationRef.current = null;
-    setValues(fromSaved(address));
+    const next = fromSaved(address, countriesRef.current);
+    setValues(next);
     setAddressId(address.id);
-    stateRef.current = { values: fromSaved(address), addressId: address.id, dirty: false };
+    stateRef.current = { values: next, addressId: address.id, dirty: false };
     setDirty(false);
     setErrors([]);
     setNeedsGovernorate(false);
@@ -165,7 +202,15 @@ export function useCheckoutAddress(input: {
   const startNew = useCallback(() => {
     editCount.current += 1;
     locationRef.current = null;
-    setValues((prev) => ({ fullName: prev.fullName, phone: prev.phone, address: "", governorate: "" }));
+    setValues((prev) => ({
+      fullName: prev.fullName,
+      phone: prev.phone,
+      address: "",
+      governorate: "",
+      country: prev.country,
+      regionKey: "",
+      cityKey: "",
+    }));
     setAddressId(null);
     stateRef.current.addressId = null;
     setDirty(true);
@@ -212,6 +257,7 @@ export function useCheckoutAddress(input: {
 
   return {
     values,
+    countries,
     addressId,
     saving,
     saveFailed,

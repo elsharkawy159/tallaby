@@ -12,7 +12,7 @@ const fired = new Set<string>()
  * browser. The store bus drops it unless the seller switched Lead on, and
  * it reaches only the store's Meta Pixel (GA4 / GTM have no Lead mapping).
  */
-export function trackStoreLead (lead: { eventId: string; value: number } | null | undefined): void {
+export function trackStoreLead (lead: { eventId: string; value: number; currency?: string } | null | undefined): void {
   if (!lead?.eventId || fired.has(lead.eventId)) return
   fired.add(lead.eventId)
   try {
@@ -24,7 +24,7 @@ export function trackStoreLead (lead: { eventId: string; value: number } | null 
   }
   trackCommerceEvent(
     'Lead',
-    { value: Number.isFinite(lead.value) ? lead.value : 0, currency: DEFAULT_CURRENCY },
+    { value: Number.isFinite(lead.value) ? lead.value : 0, currency: lead.currency || DEFAULT_CURRENCY },
     { eventId: lead.eventId }
   )
 }

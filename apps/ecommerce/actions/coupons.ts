@@ -212,7 +212,9 @@ export async function validateCoupon(
 
     const scope = await getCartScope()
     const channel = scope ? "storefront" : "marketplace"
-    if (!isCouponAllowedOnChannel(coupon, channel)) {
+    // A Tallaby coupon is priced in EGP (place-order refuses it too).
+    const wrongCurrency = !coupon.sellerId && scope != null && scope.currency !== "EGP"
+    if (wrongCurrency || !isCouponAllowedOnChannel(coupon, channel)) {
       return { success: false, error: "couponNotForThisStore" }
     }
 

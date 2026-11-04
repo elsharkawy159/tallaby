@@ -299,6 +299,8 @@ export type StoreProfile = {
   policies?: { key: "return" | "shipping" | "privacy" | "terms"; href: string }[];
   /** Payment methods this store's checkout offers (footer `role: "payments"` rows); omitted, those rows stay as authored. */
   paymentMethods?: PaymentMethodSummary[];
+  /** The store's currency code, for the builder's preview prices; EGP when omitted. */
+  currency?: string;
 };
 
 /**

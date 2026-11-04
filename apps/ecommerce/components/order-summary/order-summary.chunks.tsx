@@ -6,8 +6,9 @@ import { Badge } from '@workspace/ui/components/badge'
 import { Button } from '@workspace/ui/components/button'
 import { Input } from '@workspace/ui/components/input'
 import { Separator } from '@workspace/ui/components/separator'
-import { formatPrice, FREE_DELIVERY_MIN_SUBTOTAL } from '@workspace/lib'
+import { formatPrice, formatPricePlain, FREE_DELIVERY_MIN_SUBTOTAL } from '@workspace/lib'
 import { useLocale, useTranslations } from 'next-intl'
+import { useCurrencyLabel } from '@/lib/currency-label.client'
 import { Ticket, X, Loader2, LogIn, Minus, Plus, Trash2, Truck, Sparkles, PartyPopper } from 'lucide-react'
 import { applyCouponToCart, removeCouponFromCart } from '@/actions/coupons'
 import { toast } from 'sonner'
@@ -43,6 +44,7 @@ interface OrderSummaryLineItemsProps {
 
 export function OrderSummaryLineItems ({ items, onQuantityChange, busyItemId }: OrderSummaryLineItemsProps) {
   const locale = useLocale()
+  const currencyLabel = useCurrencyLabel()
   const tCommon = useTranslations('common')
   const tSimple = useTranslations('checkout.simpleForm')
 
@@ -114,7 +116,7 @@ export function OrderSummaryLineItems ({ items, onQuantityChange, busyItemId }: 
                   </div>
                   <span
                     dangerouslySetInnerHTML={{
-                      __html: formatPrice(unit, locale),
+                      __html: formatPrice(unit, locale, 'sm', currencyLabel),
                     }}
                   />
                 </div>
@@ -124,7 +126,7 @@ export function OrderSummaryLineItems ({ items, onQuantityChange, busyItemId }: 
                   {' × '}
                   <span
                     dangerouslySetInnerHTML={{
-                      __html: formatPrice(unit, locale),
+                      __html: formatPrice(unit, locale, 'sm', currencyLabel),
                     }}
                   />
                 </p>
@@ -133,7 +135,7 @@ export function OrderSummaryLineItems ({ items, onQuantityChange, busyItemId }: 
             <div
               className='text-xs md:text-sm font-semibold text-gray-900 whitespace-nowrap'
               dangerouslySetInnerHTML={{
-                __html: formatPrice(lineTotal, locale),
+                __html: formatPrice(lineTotal, locale, 'sm', currencyLabel),
               }}
             />
           </div>
@@ -155,7 +157,7 @@ export function FreeDeliveryProgress ({ subtotal }: FreeDeliveryProgressProps) {
   const progress = Math.min(100, Math.max(0, (subtotal / threshold) * 100))
   const isUnlocked = subtotal >= threshold
   const remaining = Math.max(0, threshold - subtotal)
-  const remainingLabel = formatPrice(remaining, locale).replace(/<[^>]*>/g, '')
+  const remainingLabel = formatPricePlain(remaining, locale)
 
   return (
     <div
@@ -269,6 +271,7 @@ export function OrderSummaryCostRows ({
   isRecalculatingShipping = false,
 }: OrderSummaryCostRowsProps) {
   const locale = useLocale()
+  const currencyLabel = useCurrencyLabel()
   const t = useTranslations('checkout')
 
   const tax = summary.tax ?? 0
@@ -283,7 +286,7 @@ export function OrderSummaryCostRows ({
         <span
           className='font-medium text-gray-900'
           dangerouslySetInnerHTML={{
-            __html: formatPrice(summary.subtotal ?? 0, locale),
+            __html: formatPrice(summary.subtotal ?? 0, locale, 'sm', currencyLabel),
           }}
         />
       </div>
@@ -299,7 +302,7 @@ export function OrderSummaryCostRows ({
               <span
                 className='font-medium text-gray-900'
                 dangerouslySetInnerHTML={{
-                  __html: formatPrice(summary.shippingCost ?? 0, locale),
+                  __html: formatPrice(summary.shippingCost ?? 0, locale, 'sm', currencyLabel),
                 }}
               />
             )}
@@ -312,7 +315,7 @@ export function OrderSummaryCostRows ({
           <span
             className='font-medium text-gray-900'
             dangerouslySetInnerHTML={{
-              __html: formatPrice(tax, locale),
+              __html: formatPrice(tax, locale, 'sm', currencyLabel),
             }}
           />
         </div>
@@ -357,7 +360,7 @@ export function OrderSummaryCostRows ({
               <span
                 className='font-medium text-green-600'
                 dangerouslySetInnerHTML={{
-                  __html: `-${formatPrice(Number(line.amount), locale)}`,
+                  __html: `-${formatPrice(Number(line.amount), locale, 'sm', currencyLabel)}`,
                 }}
               />
             </div>
@@ -385,7 +388,7 @@ export function OrderSummaryCostRows ({
                 <span
                   className='font-medium text-green-600'
                   dangerouslySetInnerHTML={{
-                    __html: `-${formatPrice(discountAmount, locale)}`,
+                    __html: `-${formatPrice(discountAmount, locale, 'sm', currencyLabel)}`,
                   }}
                 />
               </div>
@@ -397,7 +400,7 @@ export function OrderSummaryCostRows ({
                 <span
                   className='font-medium text-green-600'
                   dangerouslySetInnerHTML={{
-                    __html: `-${formatPrice(shippingDiscount, locale)}`,
+                    __html: `-${formatPrice(shippingDiscount, locale, 'sm', currencyLabel)}`,
                   }}
                 />
               </div>
@@ -414,6 +417,7 @@ interface OrderSummaryTotalRowProps {
 
 export function OrderSummaryTotalRow ({ total }: OrderSummaryTotalRowProps) {
   const locale = useLocale()
+  const currencyLabel = useCurrencyLabel()
   const t = useTranslations('checkout')
 
   return (
@@ -426,7 +430,7 @@ export function OrderSummaryTotalRow ({ total }: OrderSummaryTotalRowProps) {
         <span
           className='text-base md:text-xl font-bold text-primary'
           dangerouslySetInnerHTML={{
-            __html: formatPrice(total, locale),
+            __html: formatPrice(total, locale, 'sm', currencyLabel),
           }}
         />
       </div>
@@ -457,6 +461,7 @@ export function OrderSummaryCoupon ({
   const t = useTranslations('checkout')
   const tCommon = useTranslations('common')
   const locale = useLocale()
+  const currencyLabel = useCurrencyLabel()
 
   const [code, setCode] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -488,8 +493,7 @@ export function OrderSummaryCoupon ({
           'minimumPurchase' in result &&
           result.minimumPurchase
         ) {
-          const formattedAmount = formatPrice(result.minimumPurchase, locale)
-          const rawText = formattedAmount.replace(/<[^>]*>/g, '')
+          const rawText = formatPricePlain(result.minimumPurchase, locale, currencyLabel)
           setError(t('minPurchaseWithAmount', { amount: rawText }))
         } else {
           setError(t(errorKey))

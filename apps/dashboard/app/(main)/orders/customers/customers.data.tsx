@@ -7,7 +7,9 @@ import {
   type CustomersListFilters,
 } from "@workspace/lib/customers";
 import { listStoreCustomerNotes, listStoreCustomersPage } from "@workspace/lib/customers/server";
+import { blockedPhoneCustomerKey } from "@workspace/lib/stores/blocked-phones";
 import { listStoreBlockedPhones } from "@workspace/lib/stores/blocked-phones/server";
+import { loadStoreMoney } from "@/lib/stores/account-money.server";
 import { requireSeller } from "@/lib/auth/require-seller.server";
 import { getSellerStores } from "@/lib/stores/current-store.server";
 import { CustomersView } from "./customers.client";
@@ -34,6 +36,7 @@ export async function CustomersData({
   const store = stores.find((s) => s.id === storeId) ?? selected;
   const parsed = parseCustomersListFilters(searchParams, cookieStore.get(CUSTOMER_PAGE_SIZE_COOKIE)?.value);
 
+  const money = store ? (await loadStoreMoney(seller.sellerId))[store.id] : undefined;
   const [blocked, allNotes] = store
     ? await Promise.all([listStoreBlockedPhones(store.id), listStoreCustomerNotes(seller.sellerId, store.id)])
     : [[], new Map()];
@@ -51,13 +54,14 @@ export async function CustomersData({
       {/* No page title: the header breadcrumb already names the page. */}
       <p className="text-pretty text-sm text-muted-foreground">{t("description")}</p>
       <CustomersView
+        money={money}
         key={store?.id ?? "none"}
         customers={list.customers}
         stats={list.stats}
         matched={list.matched}
         pages={list.pages}
         filters={{ ...filters, page: list.page }}
-        blockedPhones={blocked.map((b) => b.phone)}
+        blockedPhones={blocked.map((b) => blockedPhoneCustomerKey(b.phone))}
         notes={Object.fromEntries(
           list.customers.flatMap((c) => {
             const note = allNotes.get(c.key);

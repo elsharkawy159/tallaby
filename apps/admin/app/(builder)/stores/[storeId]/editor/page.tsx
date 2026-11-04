@@ -1,4 +1,5 @@
 import { storeProfilePaymentMethods } from "@workspace/lib/payments/store-methods";
+import { parseStoreCurrency } from "@workspace/lib";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { resolveStoreForAdmin } from "@workspace/lib/admin/server";
@@ -73,6 +74,7 @@ export default async function AdminStoreEditorPage({ params }: { params: Promise
       contact: { phone: contact.phone ?? null, email: contact.email ?? null, whatsapp: contact.whatsapp ?? null },
       social: publicStoreSocialLinks(store.contact),
       paymentMethods: storeProfilePaymentMethods(store.settings),
+      currency: parseStoreCurrency(store.settings).currency,
       policies: [],
     },
     pages: editor.pages.map((page) => ({

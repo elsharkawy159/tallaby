@@ -16,7 +16,7 @@ import { CheckCircle, ShoppingBag, MoreVertical, Truck, Star } from "lucide-reac
 import { Link } from "@/i18n/navigation";
 import Image from "next/image";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
-import { formatPrice } from "@workspace/lib";
+import { currencyDefaultLabel, formatPrice } from "@workspace/lib";
 import { useLocale, useTranslations } from "next-intl";
 import {
   DropdownMenu,
@@ -166,7 +166,9 @@ export function OrdersClient({
                           dangerouslySetInnerHTML={{
                             __html: formatPrice(
                               Number(order.totalAmount),
-                              locale || "en-US"
+                              locale || "en-US",
+                              "sm",
+                              currencyDefaultLabel(order.currency)
                             ),
                           }}
                         />
@@ -281,7 +283,9 @@ export function OrdersClient({
                                   dangerouslySetInnerHTML={{
                                     __html: formatPrice(
                                       Number(item.price),
-                                      locale || "en-US"
+                                      locale || "en-US",
+                                      "sm",
+                                      currencyDefaultLabel(order.currency)
                                     ),
                                   }}
                                 />

@@ -13,7 +13,7 @@ interface ProductStructuredDataProps {
   /** Localized "Home" label for the breadcrumb trail. */
   homeLabel: string;
   /** The store this page belongs to: every URL and the seller name come from it. */
-  store: { url: string; name: string };
+  store: { url: string; name: string; currency?: string };
 }
 
 export function ProductStructuredData({
@@ -67,7 +67,7 @@ export function ProductStructuredData({
     stockCount,
     unlimitedStock: product.trackStock === false,
     status: product.status,
-  }, { home, sellerName: store.name });
+  }, { home, sellerName: store.name, currency: store.currency });
 
   const breadcrumbData = generateBreadcrumbStructuredData([
     { name: homeLabel, url: home },

@@ -58,7 +58,7 @@ export async function StorefrontShell({
   // draft preview still renders the store below.
   if (await isStoreOfflineForRequest(store)) {
     return (
-      <CurrencyLabelProvider label={store.currencyLabel}>
+      <CurrencyLabelProvider label={store.currencyLabel} currency={store.currency}>
         <div className={cn(storefrontFont.variable, s.root)}>
           {preview && <StorePreviewBanner state={preview} />}
           {shared ? <main className="flex-1">{children}</main> : <StoreOffline store={store} />}
@@ -82,7 +82,7 @@ export async function StorefrontShell({
   const salesFeed = shared || preview ? [] : await loadStoreSalesFeed(store, locale);
 
   return (
-    <CurrencyLabelProvider label={store.currencyLabel}>
+    <CurrencyLabelProvider label={store.currencyLabel} currency={store.currency}>
     <StoreOfferProvider offer={offer}>
       {/* The theme toggle's init script may set `data-sf-theme` before hydration. */}
       <div className={cn(storefrontFont.variable, s.root, site && [SITE_ROOT_CLASS, storeFontVariables])}

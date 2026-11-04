@@ -38,7 +38,7 @@ const firstImage = (images: unknown): string | null => {
  * sent only when the seller switched Lead on; `event_id` is per cart), or
  * null when no lead was saved.
  */
-export async function saveCheckoutLead(input: { addressId: string }): Promise<{ eventId: string; value: number } | null> {
+export async function saveCheckoutLead(input: { addressId: string }): Promise<{ eventId: string; value: number; currency: string } | null> {
   try {
     const addressId = String(input?.addressId ?? "");
     if (!UUID_RE.test(addressId)) return null;
@@ -109,7 +109,7 @@ export async function saveCheckoutLead(input: { addressId: string }): Promise<{ 
       shipping: shippingCost,
       total: shippingCost == null ? null : subtotal + shippingCost,
     });
-    return saved ? { eventId: `lead-${cart.id}`, value: subtotal } : null;
+    return saved ? { eventId: `lead-${cart.id}`, value: subtotal, currency: scope.currency } : null;
   } catch {
     // Never log the phone; never let a lead break the checkout.
     console.error("[checkout-lead] save failed");

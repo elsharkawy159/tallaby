@@ -20,7 +20,7 @@ import { createRateLimiter } from "@/lib/rate-limit.lib";
 const saveLimiter = createRateLimiter({ limit: 40, windowMs: 60_000 });
 
 export type SaveCheckoutAddressResult =
-  | { success: true; data: { id: string; state: string; city: string; addressLine1: string; fullName: string; phone: string } }
+  | { success: true; data: { id: string; state: string; city: string; country: string; addressLine1: string; fullName: string; phone: string } }
   | { success: false; errors: CheckoutAddressField[]; needsGovernorate: boolean; failed?: "rateLimited" | "generic" };
 
 export async function saveCheckoutAddress(
@@ -37,8 +37,8 @@ export async function saveCheckoutAddress(
     }
 
     const { id } = await saveCheckoutAddressRow(userId, parsed.value, input?.addressId ?? null);
-    const { state, city, addressLine1, fullName, phone } = parsed.value;
-    return { success: true, data: { id, state, city, addressLine1, fullName, phone } };
+    const { state, city, country, addressLine1, fullName, phone } = parsed.value;
+    return { success: true, data: { id, state, city, country, addressLine1, fullName, phone } };
   } catch {
     // No customer details in the logs.
     console.error("[checkout] address save failed");

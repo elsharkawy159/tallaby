@@ -21,12 +21,13 @@ export function isCancelOrderEnabled(status: string): boolean {
  */
 export function formatCurrency(
   amount: number,
-  locale: string = "en-EG"
+  locale: string = "en-EG",
+  currency: string = "EGP"
 ): string {
   const isArabic = locale.startsWith("ar");
   return new Intl.NumberFormat(isArabic ? "ar-EG" : "en-EG", {
     style: "currency",
-    currency: "EGP",
+    currency,
     minimumFractionDigits: 2,
     ...(isArabic && { numberingSystem: "latn" }),
   }).format(amount);

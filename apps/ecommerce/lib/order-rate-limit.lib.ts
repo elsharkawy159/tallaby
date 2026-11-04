@@ -23,7 +23,7 @@ export type OrderRateKeys = Partial<Record<OrderRateKind, string>>;
 export function orderRatePhone(phone: string | null | undefined): string | null {
   if (!phone) return null;
   const normalized = normalizeBlockedPhone(phone);
-  if (normalized) return normalized;
+  if (normalized) return normalized.replace(/^+/, "");
   const digits = phone.replace(/\D/g, "");
   return digits.length >= 6 ? digits : null;
 }

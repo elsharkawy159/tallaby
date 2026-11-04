@@ -1,4 +1,4 @@
-import { formatPrice } from "@workspace/lib";
+import { currencyDefaultLabel, formatPrice } from "@workspace/lib";
 import {
   computeManualRemainderAmount,
   getWalletPaidAmountFromMetadata,
@@ -52,6 +52,7 @@ export async function PaymentOrderSummary({ order }: PaymentOrderSummaryProps) {
   const tCommon = await getTranslations("common");
   const tAuth = await getTranslations("auth");
 
+  const currencyLabel = currencyDefaultLabel(order.currency);
   const shippingAddress = order.userAddress_shippingAddressId;
   const contactName =
     shippingAddress?.fullName || order.user?.fullName || null;
@@ -143,7 +144,7 @@ export async function PaymentOrderSummary({ order }: PaymentOrderSummaryProps) {
                 <span
                   className="shrink-0 font-medium text-gray-900"
                   dangerouslySetInnerHTML={{
-                    __html: formatPrice(Number(item.total), locale),
+                    __html: formatPrice(Number(item.total), locale, "sm", currencyLabel),
                   }}
                 />
               </li>
@@ -216,7 +217,7 @@ export async function PaymentOrderSummary({ order }: PaymentOrderSummaryProps) {
           <span
             className="font-medium text-gray-900"
             dangerouslySetInnerHTML={{
-              __html: formatPrice(subtotal, locale),
+              __html: formatPrice(subtotal, locale, "sm", currencyLabel),
             }}
           />
         </span>
@@ -226,7 +227,7 @@ export async function PaymentOrderSummary({ order }: PaymentOrderSummaryProps) {
             <span
               className="font-medium text-gray-900"
               dangerouslySetInnerHTML={{
-                __html: formatPrice(shippingCost, locale),
+                __html: formatPrice(shippingCost, locale, "sm", currencyLabel),
               }}
             />
           </span>
@@ -237,7 +238,7 @@ export async function PaymentOrderSummary({ order }: PaymentOrderSummaryProps) {
             <span
               className="font-medium text-gray-900"
               dangerouslySetInnerHTML={{
-                __html: formatPrice(tax, locale),
+                __html: formatPrice(tax, locale, "sm", currencyLabel),
               }}
             />
           </span>
@@ -252,7 +253,7 @@ export async function PaymentOrderSummary({ order }: PaymentOrderSummaryProps) {
                 <span
                   className="font-medium"
                   dangerouslySetInnerHTML={{
-                    __html: `-${formatPrice(Number(line.amount), locale)}`,
+                    __html: `-${formatPrice(Number(line.amount), locale, "sm", currencyLabel)}`,
                   }}
                 />
               </span>
@@ -263,7 +264,7 @@ export async function PaymentOrderSummary({ order }: PaymentOrderSummaryProps) {
                 <span
                   className="font-medium"
                   dangerouslySetInnerHTML={{
-                    __html: `-${formatPrice(discountAmount, locale)}`,
+                    __html: `-${formatPrice(discountAmount, locale, "sm", currencyLabel)}`,
                   }}
                 />
               </span>
@@ -274,7 +275,7 @@ export async function PaymentOrderSummary({ order }: PaymentOrderSummaryProps) {
             <span
               className="font-medium"
               dangerouslySetInnerHTML={{
-                __html: `-${formatPrice(walletPaidAmount, locale)}`,
+                __html: `-${formatPrice(walletPaidAmount, locale, "sm", currencyLabel)}`,
               }}
             />
           </span>
@@ -283,7 +284,7 @@ export async function PaymentOrderSummary({ order }: PaymentOrderSummaryProps) {
           {tCheckout("total")}:{" "}
           <span
             dangerouslySetInnerHTML={{
-              __html: formatPrice(totalAmount, locale),
+              __html: formatPrice(totalAmount, locale, "sm", currencyLabel),
             }}
           />
         </span>
@@ -292,7 +293,7 @@ export async function PaymentOrderSummary({ order }: PaymentOrderSummaryProps) {
             {tCheckout("remainingToPay")}:{" "}
             <span
               dangerouslySetInnerHTML={{
-                __html: formatPrice(remainingAmount, locale),
+                __html: formatPrice(remainingAmount, locale, "sm", currencyLabel),
               }}
             />
           </span>

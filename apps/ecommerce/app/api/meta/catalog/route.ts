@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { db, products, eq } from '@workspace/db'
+import { and, db, products, eq, sql } from '@workspace/db'
 import { getPublicUrl } from '@workspace/ui/lib/utils'
 import { richTextToPlainText } from '@workspace/tiptap/plain-text'
 import { BASE_URL, DEFAULT_CURRENCY } from '@/lib/constants'
@@ -29,7 +29,11 @@ export async function GET () {
     }
 
     const rows = await db.query.products.findMany({
-      where: eq(products.status, 'active'),
+      // Prices here read as EGP, so a seller selling in another currency stays out (F-61).
+      where: and(
+        eq(products.status, 'active'),
+        sql`NOT EXISTS (SELECT 1 FROM stores st WHERE st.seller_id = ${products.sellerId} AND st.deleted_at IS NULL AND coalesce(st.settings->>'currency', 'EGP') <> 'EGP')`,
+      ),
       columns: {
         id: true,
         price: true,

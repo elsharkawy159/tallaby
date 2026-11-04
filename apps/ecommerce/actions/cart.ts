@@ -92,7 +92,7 @@ async function ensureCart() {
             storeId: scope?.storeId ?? null,
             storeSellerId: scope?.sellerId ?? null,
             status: "active",
-            currency: "EGP",
+            currency: scope?.currency ?? "EGP",
           })
           .returning();
 
@@ -117,6 +117,13 @@ async function ensureCart() {
           return null;
         }
       }
+    }
+
+    // The seller changed the store's currency since this cart was made.
+    if (scope && cart.currency !== scope.currency) {
+      const currency = scope.currency;
+      await db.update(carts).set({ currency }).where(eq(carts.id, cart.id));
+      cart = { ...cart, currency };
     }
 
     return cart;

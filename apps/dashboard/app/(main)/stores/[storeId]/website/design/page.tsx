@@ -1,4 +1,5 @@
 import { storeProfilePaymentMethods } from "@workspace/lib/payments/store-methods";
+import { parseStoreCurrency } from "@workspace/lib";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
@@ -74,6 +75,7 @@ export default async function WebsiteDesignPage({ params }: { params: Promise<{ 
           contact: { phone: contact.phone ?? null, email: contact.email ?? null },
           social: publicStoreSocialLinks(store.contact),
           paymentMethods: storeProfilePaymentMethods(store.settings),
+          currency: parseStoreCurrency(store.settings).currency,
           policies: [],
         }}
         defaultLocale={store.defaultLocale === "en" ? "en" : "ar"}
