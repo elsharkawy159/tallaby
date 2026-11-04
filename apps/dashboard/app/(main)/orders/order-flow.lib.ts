@@ -139,6 +139,23 @@ export function resolveSellerOrderStage(input: SellerOrderFlowInput): SellerOrde
   }
 }
 
+/** Order statuses the seller still has to prepare (home "waiting to be prepared" count). */
+export const AWAITING_PREP_ORDER_STATUSES = ["pending", "confirmed"] as const;
+/** A shipment can move an order past these while orders.status still says pending or confirmed. */
+export const AWAITING_PREP_STAGES = ["new", "to_ship"] as const satisfies readonly SellerOrderStage[];
+
+/**
+ * Whether an order counts as waiting to be prepared. Reads the order, like the
+ * Orders page, never order_items.status: a card order still being paid has
+ * pending lines. countOrdersAwaitingPrep() is this rule in SQL.
+ */
+export function isAwaitingPrep(orderStatus: string | null, stage: SellerOrderStage): boolean {
+  return (
+    (AWAITING_PREP_ORDER_STATUSES as readonly string[]).includes(orderStatus ?? "pending") &&
+    (AWAITING_PREP_STAGES as readonly SellerOrderStage[]).includes(stage)
+  );
+}
+
 function readOnlyReason(input: SellerOrderFlowInput): ReadOnlyReason | null {
   if (input.isDigitalOnly) return "digital";
   if (!input.allLinesOwned) return "multi_seller";

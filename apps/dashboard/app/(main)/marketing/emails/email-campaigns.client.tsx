@@ -151,7 +151,9 @@ export function EmailCampaignsView({ stores, storeId, storeLive, limits, allowan
     return false;
   };
 
-  const editing = editingId ? data.campaigns.find((c) => c.id === editingId && c.status === "draft") ?? null : null;
+  // Not activated (F-68): nothing to compose or send. Drafts stay; they can be deleted.
+  const locked = allowance.locked;
+  const editing = !locked && editingId ? data.campaigns.find((c) => c.id === editingId && c.status === "draft") ?? null : null;
   const sentTotal = data.campaigns.reduce((n, c) => n + c.sentCount, 0);
   const hasHistory = data.campaigns.some((c) => c.status !== "draft") || data.unsubscribed > 0;
   const blocker = queueBlocker({ storeLive, queuedToday: data.queuedToday, campaignsPerDay: limits.campaignsPerDay, allowance });
@@ -245,7 +247,7 @@ export function EmailCampaignsView({ stores, storeId, storeLive, limits, allowan
               </CardDescription>
             </div>
             {data.campaigns.length > 0 && (
-              <Button type="button" size="sm" disabled={pending} onClick={newCampaign}>
+              <Button type="button" size="sm" disabled={pending || locked} onClick={newCampaign}>
                 {pending ? <LoaderCircle className="animate-spin" aria-hidden /> : <Plus aria-hidden />}
                 {t("list.new")}
               </Button>
@@ -265,7 +267,7 @@ export function EmailCampaignsView({ stores, storeId, storeLive, limits, allowan
                     <li>{t("list.emptyStep3")}</li>
                   </ol>
                 </div>
-                <Button type="button" disabled={pending} onClick={newCampaign}>
+                <Button type="button" disabled={pending || locked} onClick={newCampaign}>
                   {pending ? <LoaderCircle className="animate-spin" aria-hidden /> : <Plus aria-hidden />}
                   {t("list.emptyAction")}
                 </Button>
@@ -306,7 +308,7 @@ export function EmailCampaignsView({ stores, storeId, storeLive, limits, allowan
                     <div className="flex gap-1.5">
                       {c.status === "draft" && (
                         <>
-                          <Button type="button" size="sm" variant="neutral" onClick={() => setEditingId(c.id)}>
+                          <Button type="button" size="sm" variant="neutral" disabled={locked} onClick={() => setEditingId(c.id)}>
                             <Pencil aria-hidden />
                             {t("actions.edit")}
                           </Button>
@@ -337,7 +339,7 @@ export function EmailCampaignsView({ stores, storeId, storeLive, limits, allowan
       )}
 
       {!editing && data.winback && (
-        <WinbackCard storeId={storeId} winback={data.winback} limits={limits} paused={winbackPaused} onPreview={setPreview} />
+        <WinbackCard storeId={storeId} winback={data.winback} limits={limits} paused={winbackPaused} locked={locked} onPreview={setPreview} />
       )}
 
       <AlertDialog open={confirm !== null} onOpenChange={(open) => !open && setConfirm(null)}>
@@ -856,12 +858,14 @@ function WinbackCard({
   winback,
   limits,
   paused,
+  locked,
   onPreview,
 }: {
   storeId: string;
   winback: WinbackOverview;
   limits: EmailCampaignLimits;
   paused: boolean;
+  locked: boolean;
   onPreview: (value: { subject: string; html: string }) => void;
 }) {
   const t = useTranslations("emailCampaigns");
@@ -918,7 +922,7 @@ function WinbackCard({
           <Label htmlFor="winback-enabled" className="text-sm">
             {value.enabled ? t("winback.on") : t("winback.off")}
           </Label>
-          <Switch id="winback-enabled" checked={value.enabled} onCheckedChange={(on) => setValue((v) => ({ ...v, enabled: on }))} />
+          <Switch id="winback-enabled" checked={value.enabled} disabled={locked && !value.enabled} onCheckedChange={(on) => setValue((v) => ({ ...v, enabled: on }))} />
         </div>
       </CardHeader>
       {(value.enabled || winback.enabled) && (
@@ -967,7 +971,7 @@ function WinbackCard({
             <Button
               type="button"
               variant="neutral"
-              disabled={pending}
+              disabled={pending || (locked && value.enabled)}
               onClick={() =>
                 act("save", async () => {
                   const res = await saveWinback({ storeId, settings: value });
@@ -997,7 +1001,7 @@ function WinbackCard({
             <Button
               type="button"
               variant="neutral"
-              disabled={pending}
+              disabled={pending || locked}
               onClick={() =>
                 act("test", async () => {
                   const res = await sendWinbackTest({ storeId, settings: value });

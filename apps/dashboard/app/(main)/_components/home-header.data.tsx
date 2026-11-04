@@ -3,7 +3,8 @@ import { ExternalLink, Plus } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { getSelectedStoreLink } from "@/lib/stores/store-link.server";
 import { Button } from "@workspace/ui/components/button";
-import { getHomeSnapshot } from "./home.queries";
+import { getHomeSnapshot, getPendingOrdersCount } from "./home.queries";
+import type { HomeChannel } from "./home.shared";
 import { isSetupComplete } from "./setup-checklist.data";
 
 /**
@@ -38,9 +39,12 @@ export async function HomeGreeting() {
 }
 
 /** One line on what needs doing first. */
-export async function HomeSubtitle() {
-  const [snapshot, t] = await Promise.all([getHomeSnapshot(), getTranslations("home.header")]);
-  const pending = snapshot?.attention.pendingOrders ?? 0;
+export async function HomeSubtitle({ channel }: { channel: HomeChannel }) {
+  const [snapshot, pending, t] = await Promise.all([
+    getHomeSnapshot(),
+    getPendingOrdersCount(channel),
+    getTranslations("home.header"),
+  ]);
   if (pending > 0) return <>{t("pendingOrders", { count: pending })}</>;
   if (snapshot && !snapshot.hasOrders && !isSetupComplete(snapshot)) return <>{t("almostReady")}</>;
   return <>{t("summary")}</>;

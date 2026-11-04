@@ -42,6 +42,12 @@ export const PLANS = {
   },
 } as const satisfies Record<string, PlanLimits>;
 
+/**
+ * AI requests a month for a Free seller who isn't activated yet (order lock,
+ * ROADMAP.md F-68), in place of Free's `aiCreditsMonthly`. Pro is never locked.
+ */
+export const AI_CREDITS_MONTHLY_NOT_ACTIVATED = 20;
+
 export type PlanId = keyof typeof PLANS;
 
 export const DEFAULT_PLAN: PlanId = "free";

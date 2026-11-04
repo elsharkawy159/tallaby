@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
 /**
- * The first top-up rule against the staging database (ROADMAP.md F-68). The USD
+ * The activation rule against the staging database (ROADMAP.md F-68). The USD
  * switch stays off on staging, so `getBillingState` is stubbed to live for this
  * file only. Runs only when TEST_DATABASE_URL is set; never point it at production.
  */
@@ -69,34 +69,164 @@ describe.skipIf(!TEST_DATABASE_URL)("order lock (integration)", { timeout: 90_00
     await db.execute(sql`DELETE FROM seller_wallet_top_ups WHERE seller_id = ${sellerId}`);
   });
 
-  it("doesn't count a gift or admin adjustment, and does count a top_up ledger entry", async () => {
-    const { getOrderLock, db, postStoreWalletEntry } = {
-      ...(await load()),
-      ...(await import("@workspace/db/wallet")),
-    };
-    await db.transaction((tx) =>
-      postStoreWalletEntry(tx, {
-        sellerId,
-        type: "adjustment",
-        amount: "5.00",
-        referenceType: "qa",
-        referenceId: randomUUID(),
-        description: "QA gift",
-      }),
-    );
-    expect((await getOrderLock(sellerId)).locked).toBe(true);
+  describe("a balance above zero", () => {
+    const made: string[] = [];
 
-    await db.transaction((tx) =>
-      postStoreWalletEntry(tx, {
-        sellerId,
-        type: "top_up",
-        amount: "5.00",
-        referenceType: "top_up",
-        referenceId: randomUUID(),
-        description: "QA top-up",
-      }),
-    );
-    expect((await getOrderLock(sellerId)).locked).toBe(false);
+    afterAll(async () => {
+      const { db, sql } = await load();
+      for (const id of made) await db.execute(sql`DELETE FROM auth.users WHERE id = ${id}`);
+    }, 90_000);
+
+    // A throwaway seller per test: activation can't be undone, so they can't share one.
+    const walletSeller = async (currency: "EGP" | "USD") => {
+      const { db, sql, sellerWallet } = await load();
+      const id = randomUUID();
+      const code = `lock-${id.slice(0, 8)}`;
+      made.push(id);
+      await db.execute(sql`INSERT INTO auth.users (id) VALUES (${id})`);
+      await db.execute(sql`UPDATE users SET is_guest = false, role = 'seller' WHERE id = ${id}`);
+      await db.execute(sql`
+        INSERT INTO sellers (id, business_name, display_name, slug, subdomain, business_type, legal_address, support_email, support_phone)
+        VALUES (${id}, ${code}, ${code}, ${code}, ${code}, 'individual', '{"country":"EG"}'::jsonb, 'l3@example.com', '01000000000')`);
+      await db.insert(sellerWallet).values({ sellerId: id, balance: "0", currency });
+      return id;
+    };
+    const post = async (id: string, type: "adjustment" | "fee" | "top_up", amount: string) => {
+      const { db } = await load();
+      const { postStoreWalletEntry } = await import("@workspace/db/wallet");
+      await db.transaction((tx) =>
+        postStoreWalletEntry(tx, {
+          sellerId: id,
+          type,
+          amount,
+          referenceType: type === "top_up" ? "top_up" : "admin",
+          referenceId: randomUUID(),
+          description: "QA",
+        }),
+      );
+    };
+    const locked = async (id: string) => (await (await load()).getOrderLock(id)).locked;
+
+    it("activates for good, even at zero or below", async () => {
+      const id = await walletSeller("USD");
+      expect(await locked(id)).toBe(true);
+      await post(id, "adjustment", "2.00");
+      expect(await locked(id)).toBe(false);
+      await post(id, "adjustment", "-2.00");
+      expect(await locked(id)).toBe(false);
+      await post(id, "fee", "-0.03");
+      expect(await locked(id)).toBe(false);
+    });
+
+    it("doesn't count an EGP history with no USD entry above zero", async () => {
+      const { db, sellerWallet, eq } = await load();
+      const id = await walletSeller("EGP");
+      await post(id, "adjustment", "100.00");
+      await post(id, "adjustment", "-100.00");
+      expect(await locked(id)).toBe(true);
+      await db.update(sellerWallet).set({ currency: "USD" }).where(eq(sellerWallet.sellerId, id));
+      expect(await locked(id)).toBe(true);
+    });
+
+    it("counts money that was in the wallet at the switch, once it's spent", async () => {
+      const { db, walletTransactions } = await load();
+      const id = await walletSeller("USD");
+      // The row billing_switch_to_usd writes (0136). The balance stays 0, as if spent since.
+      await db.insert(walletTransactions).values({
+        sellerId: id,
+        type: "adjustment",
+        amount: "2.00",
+        currency: "USD",
+        description: "QA",
+        referenceType: "usd_conversion",
+        referenceId: `${id}:usd`,
+        balanceBefore: "0",
+        balanceAfter: "2.00",
+      });
+      expect(await locked(id)).toBe(false);
+    });
+
+    it("stays locked for a negative balance that never went above zero", async () => {
+      const id = await walletSeller("USD");
+      await post(id, "fee", "-0.03");
+      expect(await locked(id)).toBe(true);
+      // Back to exactly zero isn't above zero.
+      await post(id, "adjustment", "0.03");
+      expect(await locked(id)).toBe(true);
+      await post(id, "fee", "-0.03");
+      expect(await locked(id)).toBe(true);
+
+      await post(id, "adjustment", "0.04");
+      expect(await locked(id)).toBe(false);
+      await post(id, "fee", "-0.03");
+      expect(await locked(id)).toBe(false);
+    });
+
+    it("leaves a top_up ledger entry activating for good, in EGP too", async () => {
+      const id = await walletSeller("EGP");
+      await post(id, "top_up", "6.00");
+      expect(await locked(id)).toBe(false);
+      await post(id, "adjustment", "-11.00");
+      expect(await locked(id)).toBe(false);
+    });
+  });
+
+  it("the email cron holds a locked seller's queue and sends it after activation", async () => {
+    const { db, sql, sellerWallet, eq } = await load();
+    const { lockedEmailSellers, startDueCampaigns, claimCampaignRecipients } = await import("../email-campaigns/email-campaigns.server");
+    const lockedSeller = randomUUID();
+    const code = `lock-${lockedSeller.slice(0, 8)}`;
+    const storeId = randomUUID();
+    const campaignId = randomUUID();
+    await db.execute(sql`INSERT INTO auth.users (id) VALUES (${lockedSeller})`);
+    try {
+      await db.execute(sql`UPDATE users SET is_guest = false, role = 'seller' WHERE id = ${lockedSeller}`);
+      await db.execute(sql`
+        INSERT INTO sellers (id, business_name, display_name, slug, subdomain, business_type, legal_address, support_email, support_phone)
+        VALUES (${lockedSeller}, ${code}, ${code}, ${code}, ${code}, 'individual', '{"country":"EG"}'::jsonb, 'l2@example.com', '01000000000')`);
+      await db.execute(sql`
+        INSERT INTO stores (id, seller_id, name, subdomain, status) VALUES (${storeId}, ${lockedSeller}, 'QA lock', ${`qa-${code}`}, 'active')`);
+      await db.execute(sql`
+        INSERT INTO store_email_campaigns (id, store_id, seller_id, locale, subject, body, status, scheduled_at)
+        VALUES (${campaignId}, ${storeId}, ${lockedSeller}, 'en', 'QA', 'QA', 'scheduled', now() - interval '1 minute')`);
+      await db.execute(sql`
+        INSERT INTO store_email_campaign_recipients (campaign_id, store_id, email) VALUES (${campaignId}, ${storeId}, 'qa-lock@example.test')`);
+
+      const status = async () => {
+        const rows = await db.execute(sql`SELECT status FROM store_email_campaigns WHERE id = ${campaignId}`);
+        return String((Array.isArray(rows) ? rows : (rows as unknown as { rows: { status: string }[] }).rows)[0]!.status);
+      };
+
+      // Locked: another seller's due campaigns may start, this one can't.
+      const excluded = await lockedEmailSellers();
+      expect(excluded).toContain(lockedSeller);
+      // Rolled back: startDueCampaigns is global and must not start other sellers' campaigns on a shared database.
+      const rollback = new Error("rollback");
+      await db
+        .transaction(async (tx) => {
+          await startDueCampaigns(tx, excluded);
+          const rows = await tx.execute(sql`SELECT status FROM store_email_campaigns WHERE id = ${campaignId}`);
+          expect(String((Array.isArray(rows) ? rows : (rows as unknown as { rows: { status: string }[] }).rows)[0]!.status)).toBe("scheduled");
+          throw rollback;
+        })
+        .catch((error) => {
+          if (error !== rollback) throw error;
+        });
+      expect(await status()).toBe("scheduled");
+
+      // Even if it was already sending, its recipients aren't claimed.
+      await db.execute(sql`UPDATE store_email_campaigns SET status = 'sending' WHERE id = ${campaignId}`);
+      expect(await claimCampaignRecipients({ limit: 5, campaignId, excludeSellerIds: excluded })).toEqual([]);
+
+      // A positive balance activates: the seller leaves the list and the recipient can be claimed.
+      await db.insert(sellerWallet).values({ sellerId: lockedSeller, balance: "2.00", currency: "USD" }).onConflictDoUpdate({ target: sellerWallet.sellerId, set: { balance: "2.00" } });
+      expect(await db.select({ b: sellerWallet.balance }).from(sellerWallet).where(eq(sellerWallet.sellerId, lockedSeller))).toHaveLength(1);
+      const after = await lockedEmailSellers();
+      expect(after).not.toContain(lockedSeller);
+      expect(await claimCampaignRecipients({ limit: 5, campaignId, excludeSellerIds: after })).toHaveLength(1);
+    } finally {
+      await db.execute(sql`DELETE FROM auth.users WHERE id = ${lockedSeller}`);
+    }
   });
 
   it("never locks before the switch, or when the check fails", async () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { canCreateStore, getPlanLimits, hasFeature, resolvePlanId } from "./index";
+import { AI_CREDITS_MONTHLY_NOT_ACTIVATED, canCreateStore, getPlanLimits, hasFeature, resolvePlanId } from "./index";
 
 describe("getPlanLimits", () => {
   it("gives the Free plan a limit of 3 stores", () => {
@@ -55,6 +55,7 @@ describe("hasFeature", () => {
     expect(hasFeature("free", "advancedSettings")).toBe(false);
     expect(getPlanLimits("free").aiCreditsMonthly).toBe(100);
     expect(getPlanLimits("pro").aiCreditsMonthly).toBe(2000);
+    expect(AI_CREDITS_MONTHLY_NOT_ACTIVATED).toBe(20);
     expect(getPlanLimits("free").emailsMonthly).toBe(500);
     expect(getPlanLimits("pro").emailsMonthly).toBe(10000);
     expect(getPlanLimits("pro").maxStores).toBe(getPlanLimits("free").maxStores);

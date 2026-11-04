@@ -69,11 +69,11 @@
             },
             {
               "title": "Topping up",
-              "body": "You choose an amount in US dollars and pay the equivalent in Egyptian pounds. We show the exchange rate and the total before you pay, and that rate includes a margin over the market rate. If tax applies, it is added to the pounds you pay and shown as its own line. The wallet is credited with the dollar amount shown when you started the top-up. A manual transfer is credited once we confirm it."
+              "body": "You choose an amount in US dollars and pay the equivalent in Egyptian pounds. We show the exchange rate and the total before you pay. We add no margin to that rate, and the total is rounded down to a whole pound. If tax applies, it is added to the pounds you pay and shown as its own line. The wallet is credited with the dollar amount shown when you started the top-up. A manual transfer is credited once we confirm it."
             },
             {
-              "title": "Your first top-up",
-              "body": "On the Free plan, you need one approved top-up of at least $5 before you can see your orders and send campaigns. Orders still arrive during this time, and the order fee still applies to them. After that first top-up, this no longer applies."
+              "title": "Activating your account",
+              "body": "On the Free plan, you need an approved top-up, starting from $5, or a wallet balance above zero before you can see your orders and send campaigns. Until then, AI features are limited to 20 requests a month. Orders still arrive during this time, and the order fee still applies to them. Once your account is activated, this no longer applies."
             },
             {
               "title": "Order fees",
@@ -93,7 +93,7 @@
             },
             {
               "title": "Campaign emails",
-              "body": "Free includes 500 campaign emails a month and Pro includes 10,000, shared across your stores. Monthly emails reset on the 1st and don't carry over. You can buy more at $1.50 per 1,000 from your wallet; bought emails don't expire. You can send campaigns after your first approved top-up."
+              "body": "Free includes 500 campaign emails a month and Pro includes 10,000, shared across your stores. Monthly emails reset on the 1st and don't carry over. You can buy more at $1.50 per 1,000 from your wallet; bought emails don't expire. You can send campaigns once your account is activated."
             },
             {
               "title": "Customer order emails",

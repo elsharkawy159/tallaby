@@ -10,6 +10,7 @@ import {
   claimCampaignRecipients,
   claimWinbackSends,
   finalizeCampaigns,
+  lockedEmailSellers,
   markCampaignRecipient,
   markWinbackSend,
   planWinbackSends,
@@ -92,12 +93,15 @@ export async function runEmailCampaignCron(
   // Planning and claiming use up the win-back queue, so a paused email stops before both (F-63).
   const winbackPaused = await isAutomaticEmailPaused("store_winback");
 
+  // A seller who isn't activated sends nothing; their queue waits (F-68).
+  const excludeSellerIds = await lockedEmailSellers();
+
   if (options.winback && !options.campaignId && !winbackPaused) {
-    const plan = await planWinbackSends();
+    const plan = await planWinbackSends({ excludeSellerIds });
     summary.winbackStores = plan.stores;
     summary.winbackPlanned = plan.planned;
   }
-  summary.campaignsStarted = await startDueCampaigns();
+  summary.campaignsStarted = await startDueCampaigns(undefined, excludeSellerIds);
 
   const count = (status: BackendSendStatus | null) => {
     if (status === "sent" || status === "duplicate") summary.sent++;
@@ -110,6 +114,7 @@ export async function runEmailCampaignCron(
     const ids = await claimCampaignRecipients({
       limit: Math.min(EMAIL_CRON_BATCH, EMAIL_CRON_MAX_PER_RUN - total()),
       campaignId: options.campaignId,
+      excludeSellerIds,
     });
     if (!ids.length) break;
     const releasedBefore = summary.released;
@@ -126,7 +131,7 @@ export async function runEmailCampaignCron(
   // Win-back emails.
   if (!options.campaignId && !winbackPaused) {
     while (timeLeft() && total() < EMAIL_CRON_MAX_PER_RUN) {
-      const ids = await claimWinbackSends({ limit: Math.min(EMAIL_CRON_BATCH, EMAIL_CRON_MAX_PER_RUN - total()) });
+      const ids = await claimWinbackSends({ limit: Math.min(EMAIL_CRON_BATCH, EMAIL_CRON_MAX_PER_RUN - total()), excludeSellerIds });
       if (!ids.length) break;
       const releasedBefore = summary.released;
       await inParallel(ids, EMAIL_CRON_CONCURRENCY, async (id) => {

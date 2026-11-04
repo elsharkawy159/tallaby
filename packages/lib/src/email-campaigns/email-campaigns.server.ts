@@ -9,6 +9,7 @@
  * release / plan) work across stores and never take input from a browser.
  */
 import { randomUUID } from "node:crypto";
+import { logServerError } from "@workspace/db/log";
 import { and, db, desc, eq, isNull, sellerEmailCredits, sellers, sql, storeEmailCampaigns, stores } from "@workspace/db";
 import { postStoreWalletEntry, STORE_WALLET_REFERENCE_TYPES, StoreWalletLimitError } from "@workspace/db/wallet";
 import { getBillingState } from "../billing/billing.server";
@@ -598,12 +599,52 @@ export async function saveStoreWinback(sellerId: string, storeId: string, value:
 // ---------------------------------------------------------------------------
 // Cron: campaigns
 
-/** Moves due 'scheduled' campaigns to 'sending'. */
-export async function startDueCampaigns(q: Queryable = db): Promise<number> {
+const notFromSellers = (column: ReturnType<typeof sql.raw>, sellerIds: readonly string[]) =>
+  sellerIds.length ? sql`AND ${column} <> ALL(${uuidArray(sellerIds)})` : sql``;
+
+/**
+ * Sellers the cron must not send for: not activated now (the order lock, one
+ * definition, F-68). Their queued campaigns and win-back emails wait untouched and
+ * go out after activation. No queries beyond the switch before the USD switch, and
+ * an error locks nobody, as with the orders.
+ */
+export async function lockedEmailSellers(q: Queryable = db): Promise<string[]> {
+  try {
+    if (!(await getBillingState()).usdLive) return [];
+    const rows = rowsOf<{ seller_id: string }>(
+      await q.execute(sql`
+        SELECT seller_id FROM store_email_campaigns WHERE status IN ('scheduled', 'sending')
+        UNION
+        SELECT seller_id FROM store_winback_sends WHERE status IN ('pending', 'sending')
+        UNION
+        SELECT seller_id FROM stores
+         WHERE deleted_at IS NULL AND status = 'active' AND site_status = 'published'
+           AND (settings -> 'winback' ->> 'enabled') = 'true'
+      `),
+    );
+    const sellerIds = rows.map((row) => String(row.seller_id));
+    const locked: string[] = [];
+    for (let i = 0; i < sellerIds.length; i += 10) {
+      const batch = sellerIds.slice(i, i + 10);
+      const locks = await Promise.all(batch.map((id) => getOrderLock(id)));
+      batch.forEach((id, index) => {
+        if (locks[index]!.locked) locked.push(id);
+      });
+    }
+    return locked;
+  } catch (error) {
+    logServerError("email", "locked sellers check failed", {}, error);
+    return [];
+  }
+}
+
+/** Moves due 'scheduled' campaigns to 'sending', except those of `excludeSellerIds`. */
+export async function startDueCampaigns(q: Queryable = db, excludeSellerIds: readonly string[] = []): Promise<number> {
   return rowsOf<{ id: string }>(
     await q.execute(sql`
       UPDATE store_email_campaigns SET status = 'sending', started_at = coalesce(started_at, now()), updated_at = now()
        WHERE status = 'scheduled' AND (scheduled_at IS NULL OR scheduled_at <= now())
+         ${notFromSellers(sql.raw("seller_id"), excludeSellerIds)}
       RETURNING id
     `),
   ).length;
@@ -615,7 +656,7 @@ export async function startDueCampaigns(q: Queryable = db): Promise<number> {
  * status 'sending' + claimed_at + attempts + 1, under FOR UPDATE SKIP LOCKED.
  */
 export async function claimCampaignRecipients(
-  { limit, campaignId }: { limit: number; campaignId?: string | null },
+  { limit, campaignId, excludeSellerIds = [] }: { limit: number; campaignId?: string | null; excludeSellerIds?: readonly string[] },
   q: Queryable = db,
 ): Promise<string[]> {
   const n = Math.max(1, Math.min(500, Math.floor(limit)));
@@ -632,6 +673,7 @@ export async function claimCampaignRecipients(
                  OR (x.status = 'sending' AND x.claimed_at < now() - make_interval(mins => ${EMAIL_CLAIM_STALE_MINUTES})))
             AND x.attempts < ${EMAIL_SEND_MAX_ATTEMPTS}
             ${only}
+            ${notFromSellers(sql.raw("c.seller_id"), excludeSellerIds)}
           ORDER BY c.started_at NULLS LAST, x.created_at
           LIMIT ${n}
           FOR UPDATE OF x SKIP LOCKED
@@ -704,7 +746,7 @@ export type WinbackPlanSummary = { stores: number; planned: number };
  * already-planned ones, up to the store's daily cap. One row per email and
  * inactivity period (unique), so a customer is written to once per period.
  */
-export async function planWinbackSends(options: { now?: Date; plan?: string | null } = {}, q: typeof db = db): Promise<WinbackPlanSummary> {
+export async function planWinbackSends(options: { now?: Date; plan?: string | null; excludeSellerIds?: readonly string[] } = {}, q: typeof db = db): Promise<WinbackPlanSummary> {
   const now = options.now ?? new Date();
   const storesOn = rowsOf<{ id: string; seller_id: string; settings: unknown; default_locale: string; plan: string | null }>(
     await q.execute(sql`
@@ -713,6 +755,7 @@ export async function planWinbackSends(options: { now?: Date; plan?: string | nu
         JOIN sellers se ON se.id = st.seller_id
        WHERE st.deleted_at IS NULL AND st.status = 'active' AND st.site_status = 'published'
          AND (st.settings -> 'winback' ->> 'enabled') = 'true'
+         ${notFromSellers(sql.raw("st.seller_id"), options.excludeSellerIds ?? [])}
        ORDER BY st.id
        LIMIT ${WINBACK_STORES_PER_RUN}
     `),
@@ -772,7 +815,7 @@ export async function planWinbackSends(options: { now?: Date; plan?: string | nu
 }
 
 /** Claims up to `limit` planned win-back emails of stores that still have win-back on. */
-export async function claimWinbackSends({ limit }: { limit: number }, q: Queryable = db): Promise<string[]> {
+export async function claimWinbackSends({ limit, excludeSellerIds = [] }: { limit: number; excludeSellerIds?: readonly string[] }, q: Queryable = db): Promise<string[]> {
   const n = Math.max(1, Math.min(500, Math.floor(limit)));
   return rowsOf<{ id: string }>(
     await q.execute(sql`
@@ -783,6 +826,7 @@ export async function claimWinbackSends({ limit }: { limit: number }, q: Queryab
           WHERE ((x.status = 'pending' AND (x.claimed_at IS NULL OR x.claimed_at < now() - interval '10 minutes'))
                  OR (x.status = 'sending' AND x.claimed_at < now() - make_interval(mins => ${EMAIL_CLAIM_STALE_MINUTES})))
             AND x.attempts < ${EMAIL_SEND_MAX_ATTEMPTS}
+            ${notFromSellers(sql.raw("x.seller_id"), excludeSellerIds)}
           ORDER BY x.created_at
           LIMIT ${n}
           FOR UPDATE OF x SKIP LOCKED

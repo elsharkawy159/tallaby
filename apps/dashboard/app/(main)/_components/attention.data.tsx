@@ -4,7 +4,8 @@ import { CheckCircle2, ChevronLeft, MessageCircleQuestion, PackageCheck, Package
 import { getLocale, getTranslations } from "next-intl/server";
 import { cn } from "@workspace/ui/lib/utils";
 import { formatNumber } from "@/lib/i18n/format";
-import { getHomeSnapshot, LOW_STOCK_THRESHOLD } from "./home.queries";
+import { getHomeSnapshot, getPendingOrdersCount, LOW_STOCK_THRESHOLD } from "./home.queries";
+import type { HomeChannel } from "./home.shared";
 import { HomeCard, HomeCardHeader, IconTile, type Tone } from "./home-ui";
 
 type Item = {
@@ -22,14 +23,17 @@ const ITEMS: Item[] = [
 ];
 
 /** Open tasks the seller should act on, each linking to where it gets done. */
-export async function AttentionData() {
-  const [snapshot, t, locale] = await Promise.all([
+export async function AttentionData({ channel }: { channel: HomeChannel }) {
+  const [snapshot, pendingOrders, t, locale] = await Promise.all([
     getHomeSnapshot(),
+    getPendingOrdersCount(channel),
     getTranslations("home.attention"),
     getLocale(),
   ]);
-  const counts = snapshot?.attention;
+  const counts = snapshot ? { ...snapshot.attention, pendingOrders } : null;
   const allClear = !counts || Object.values(counts).every((n) => n === 0);
+  // The orders behind the count: the same store as the home page's filter.
+  const ordersHref = channel === "all" ? "/orders" : `/orders?channel=${channel}`;
 
   return (
     <HomeCard aria-labelledby="attention-title">
@@ -40,7 +44,7 @@ export async function AttentionData() {
           return (
             <li key={item.key}>
               <Link
-                href={item.href}
+                href={item.key === "pendingOrders" ? ordersHref : item.href}
                 className="flex items-center gap-3 rounded-xl px-2 py-2.5 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
               >
                 <IconTile icon={item.icon} tone={item.tone} />

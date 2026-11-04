@@ -66,7 +66,7 @@ export default async function VendorDashboardPage({
             }
             subtitle={
               <Suspense fallback={<Skeleton className="mt-2 h-4 w-64" />}>
-                <HomeSubtitle />
+                <HomeSubtitle channel={channel} />
               </Suspense>
             }
             addLabel={t("addProduct")}
@@ -125,7 +125,7 @@ export default async function VendorDashboardPage({
         }
         attention={
           <Suspense fallback={<ListCardSkeleton />}>
-            <AttentionData />
+            <AttentionData channel={channel} />
           </Suspense>
         }
         topProducts={

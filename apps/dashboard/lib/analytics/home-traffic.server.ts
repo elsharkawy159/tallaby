@@ -1,6 +1,6 @@
 import { createCachedQuery, storeTags } from "@workspace/cache";
 import { logServerError } from "@workspace/db/log";
-import { STORE_VIEWS_TIME_ZONE, STORE_VIEWS_TTL_SECONDS, dayInZone } from "./store-views.lib";
+import { STORE_VIEWS_TTL_SECONDS } from "./store-views.lib";
 import { isStoreViewsConfigured, runGa4Report } from "./store-views.server";
 import {
   homeSourcesReportBody,
@@ -24,7 +24,7 @@ async function fetchHomeTraffic(storeIds: string[], days: number): Promise<HomeT
     runGa4Report(homeSourcesReportBody(storeIds, days)),
   ]);
   return {
-    ...parseHomeVisits(visits, days, dayInZone(new Date(), STORE_VIEWS_TIME_ZONE)),
+    ...parseHomeVisits(visits),
     sources: parseHomeSources(sources),
   };
 }

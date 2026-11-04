@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
+  AWAITING_PREP_ORDER_STATUSES,
+  isAwaitingPrep,
   isSellerHandledLine,
   progressIndex,
   resolveSellerOrderFlow,
+  resolveSellerOrderStage,
   type SellerOrderFlowInput,
 } from "./order-flow.lib";
 
@@ -17,6 +20,47 @@ const base: SellerOrderFlowInput = {
 };
 
 const flow = (patch: Partial<SellerOrderFlowInput>) => resolveSellerOrderFlow({ ...base, ...patch });
+
+describe("isAwaitingPrep", () => {
+  const counts = (patch: Partial<SellerOrderFlowInput>) => {
+    const input = { ...base, ...patch };
+    return isAwaitingPrep(input.orderStatus, resolveSellerOrderStage(input));
+  };
+
+  it("lists only pending and confirmed", () => {
+    expect(AWAITING_PREP_ORDER_STATUSES).toEqual(["pending", "confirmed"]);
+  });
+
+  it("counts pending and confirmed orders, paid or not, and a missing status as pending", () => {
+    expect(counts({ orderStatus: "pending" })).toBe(true);
+    expect(counts({ orderStatus: "pending", paymentStatus: "paid" })).toBe(true);
+    expect(counts({ orderStatus: "confirmed" })).toBe(true);
+    expect(counts({ orderStatus: null })).toBe(true);
+  });
+
+  it.each([
+    "payment_processing",
+    "shipping_soon",
+    "shipped",
+    "out_for_delivery",
+    "delivered",
+    "cancelled",
+    "refund_requested",
+    "refunded",
+    "returned",
+  ])("leaves out %s", (orderStatus) => {
+    expect(counts({ orderStatus })).toBe(false);
+  });
+
+  it("follows the shipment: still counted before it leaves, not after", () => {
+    const shipment = (status: string) => ({ status, ownedBySeller: true });
+    expect(counts({ orderStatus: "confirmed", shipment: shipment("pending") })).toBe(true);
+    expect(counts({ orderStatus: "confirmed", shipment: shipment("assigned") })).toBe(true);
+    for (const status of ["out_for_delivery", "failed", "delivered", "returned", "cancelled"]) {
+      expect(counts({ orderStatus: "confirmed", shipment: shipment(status) }), status).toBe(false);
+    }
+  });
+});
 
 describe("resolveSellerOrderFlow", () => {
   it("a new cash-on-delivery order is confirmed or cancelled", () => {

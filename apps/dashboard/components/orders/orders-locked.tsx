@@ -7,7 +7,7 @@ import { Button } from "@workspace/ui/components/button";
 const PLACEHOLDER_ROWS = ["w-3/4", "w-2/3", "w-4/5", "w-1/2", "w-3/5", "w-2/3"];
 
 /**
- * What a seller sees in Orders before their first top-up (ROADMAP.md F-68). The
+ * What a seller who isn't activated sees in Orders (ROADMAP.md F-68). The
  * blurred rows are placeholders: no order data is loaded or sent to the browser.
  */
 export async function OrdersLocked({ lock }: { lock: OrderLock }) {

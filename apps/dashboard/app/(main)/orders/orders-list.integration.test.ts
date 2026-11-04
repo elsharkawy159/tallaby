@@ -183,6 +183,23 @@ describe.skipIf(!TEST_DATABASE_URL)("orders list (integration)", { timeout: 180_
     }
   });
 
+  it("counts orders waiting to be prepared per channel, as isAwaitingPrep reads the same orders", async () => {
+    const { countOrdersAwaitingPrep, db, inArray, orders, isAwaitingPrep } = {
+      ...(await load()),
+      ...(await import("./order-flow.lib")),
+    };
+    const rows = await allRows();
+    const statuses = await db.select({ id: orders.id, status: orders.status }).from(orders).where(inArray(orders.id, ids));
+    const statusOf = new Map(statuses.map((o) => [o.id, o.status]));
+    const waiting = rows.filter((r) => isAwaitingPrep(statusOf.get(r.id) ?? null, r.flow.stage));
+    expect(waiting.length).toBeGreaterThan(0);
+    expect(await countOrdersAwaitingPrep(sellerId, "all")).toBe(waiting.length);
+    expect(await countOrdersAwaitingPrep(sellerId, storeA)).toBe(waiting.filter((r) => r.storeId === storeA).length);
+    expect(await countOrdersAwaitingPrep(sellerId, "marketplace")).toBe(waiting.filter((r) => r.storeId === null).length);
+    // The other seller has their one waiting order, and none of this seller's.
+    expect(await countOrdersAwaitingPrep(otherSellerId, "all")).toBe(1);
+  });
+
   it("searches number, name and phone as the rows do, older orders included", async () => {
     const { countOrdersByTab, listFilteredOrderIds, matchesQuery } = await load();
     const rows = await allRows();

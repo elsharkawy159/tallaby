@@ -61,9 +61,15 @@ export default async function RootLayout({
   const direction = locale === "ar" ? "rtl" : "ltr";
 
   return (
-    // Smooth in-page scrolling on store sites (MOTION_CSS); Next turns it off during route changes.
+    // Smooth in-page scrolling everywhere; Next turns it off during route changes.
     // suppressHydrationWarning: the head script adds `js-animations` to the class before React hydrates.
-    <html lang={locale} dir={direction} data-scroll-behavior="smooth" suppressHydrationWarning>
+    <html
+      lang={locale}
+      dir={direction}
+      className="scroll-smooth motion-reduce:scroll-auto"
+      data-scroll-behavior="smooth"
+      suppressHydrationWarning
+    >
       <head>
         {/* Scroll animations (@workspace/motion): on before the first paint; without JS nothing is ever hidden. */}
         <script dangerouslySetInnerHTML={{ __html: ANIMATIONS_INIT_SCRIPT }} />

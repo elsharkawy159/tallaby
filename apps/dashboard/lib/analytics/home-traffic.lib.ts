@@ -1,4 +1,4 @@
-import { STORE_ID_DIMENSION, rangeDays } from "./store-views.lib";
+import { STORE_ID_DIMENSION } from "./store-views.lib";
 
 /**
  * Store-website traffic for the dashboard home (visits, conversion, traffic
@@ -50,15 +50,13 @@ const toInt = (value: string | undefined) => {
   return Number.isFinite(n) && n > 0 ? n : 0;
 };
 
-export type HomeVisits = { visits: number; previousVisits: number; daily: number[] };
+export type HomeVisits = { visits: number; previousVisits: number };
 
-/** Sessions per day (oldest first, zero-filled) and the two period totals. */
-export function parseHomeVisits(json: unknown, days: number, today: string): HomeVisits {
-  const byDay = new Map<string, number>();
+/** The two period totals. */
+export function parseHomeVisits(json: unknown): HomeVisits {
   let visits = 0;
   let previousVisits = 0;
   for (const row of (json as Ga4Response | null)?.rows ?? []) {
-    const raw = row.dimensionValues?.[0]?.value ?? "";
     const range = row.dimensionValues?.[1]?.value;
     const sessions = toInt(row.metricValues?.[0]?.value);
     if (range === "previous") {
@@ -66,10 +64,8 @@ export function parseHomeVisits(json: unknown, days: number, today: string): Hom
       continue;
     }
     visits += sessions;
-    if (/^\d{8}$/.test(raw)) byDay.set(`${raw.slice(0, 4)}-${raw.slice(4, 6)}-${raw.slice(6, 8)}`, sessions);
   }
-  const daily = rangeDays(today, days).map((day) => byDay.get(day) ?? 0);
-  return { visits, previousVisits, daily };
+  return { visits, previousVisits };
 }
 
 /** Known platforms get one row each whatever the referrer host (l.instagram.com, m.facebook.com…). */

@@ -15,8 +15,10 @@ export const POPULAR_TOP_UP = 500;
 export const TOP_UP_STEP_EGP = 50;
 
 /** USD wallet (0136): one-tap top-ups in dollars, and the +/- step. */
-export const TOP_UP_PRESETS_USD = [5, 10, 25, 50, 100] as const;
+export const TOP_UP_PRESETS_USD = [5, 10, 20, 50, 100, 200, 500, 1000] as const;
 export const POPULAR_TOP_UP_USD = 10;
+/** The card already chosen when the page opens. */
+export const DEFAULT_TOP_UP_USD = 5;
 export const TOP_UP_STEP_USD = 5;
 export const FEE_PER_ORDER_USD = FREE_ORDER_FEE_USD_CENTS / 100;
 

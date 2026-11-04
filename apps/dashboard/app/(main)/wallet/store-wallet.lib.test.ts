@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { FEE_PER_ORDER_EGP, ordersCovered, stepTopUpAmount } from "./store-wallet.lib";
+import { parseUsdTopUp } from "@workspace/lib/billing";
+import { DEFAULT_TOP_UP_USD, FEE_PER_ORDER_EGP, POPULAR_TOP_UP_USD, TOP_UP_PRESETS_USD, ordersCovered, stepTopUpAmount } from "./store-wallet.lib";
 
 describe("ordersCovered", () => {
   it("divides by the flat fee and rounds down", () => {
@@ -11,6 +12,18 @@ describe("ordersCovered", () => {
   it("covers nothing at zero or below", () => {
     expect(ordersCovered(0)).toBe(0);
     expect(ordersCovered(-40)).toBe(0);
+  });
+});
+
+describe("USD presets", () => {
+  it("are all valid top-ups, and the default and popular cards are among them", () => {
+    expect(TOP_UP_PRESETS_USD).toEqual([5, 10, 20, 50, 100, 200, 500, 1000]);
+    for (const preset of TOP_UP_PRESETS_USD) {
+      expect(parseUsdTopUp(String(preset))).toEqual({ success: true, usdCents: preset * 100 });
+    }
+    expect(TOP_UP_PRESETS_USD).toContain(DEFAULT_TOP_UP_USD);
+    expect(TOP_UP_PRESETS_USD).toContain(POPULAR_TOP_UP_USD);
+    expect(DEFAULT_TOP_UP_USD).toBe(5);
   });
 });
 

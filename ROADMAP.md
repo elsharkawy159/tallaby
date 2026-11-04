@@ -734,7 +734,7 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 | Extra credits                | When credits run out, the seller can buy **100 credits for $1** from the wallet.                                                                                                                                             |
 | Paying for Pro               | **From the store wallet**: at the start and on each renewal. If the balance is too low, the seller gets a few days' notice, then drops to Free.                                                                              |
 | Wallet currency              | The seller store wallet moves to **USD**. Top-ups are priced in USD, **$5 minimum, $1,000 maximum**, and paid in EGP.                                                                                                        |
-| Exchange rate                | Fetched automatically every day, plus a **2% margin** that can be changed in Admin, with an Admin override. Each top-up saves the rate it used.                                                                              |
+| Exchange rate                | Fetched automatically every 3 hours, with **no margin** and an Admin override. The EGP total is rounded down to a whole pound. Each top-up saves the rate it used (owner, 2026-11-04; was daily plus a 2% margin).              |
 | Existing balances            | Converted once, including negative balances, at **that day's market rate with no margin**. Old EGP history stays viewable.                                                                                                   |
 | Welcome gift                 | **Removed** for new sellers. This replaces the EGP 100 gift decision of 2026-10-29.                                                                                                                                          |
 | Launch                       | **Everything goes live on one day**, behind one switch: USD wallet, fee, Pro, credits, Terms and copy. **No fixed date:** switch when it's ready. Sellers already know, so no separate notice is needed (owner, 2026-11-03). |
@@ -918,10 +918,10 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 **Why:** Foundation for plans, credit packs and paid apps. The wallet is EGP today (`seller_wallet.currency`, piastres in `top-up.lib.ts`), and no exchange rate exists in the code.
 **Must ship together:** all of F-55, F-56 and F-57 go live behind one switch on one day (owner, 2026-11-03). The balance conversion runs as part of that switch. Otherwise EGP 5 could be deducted from a USD balance, or a top-up could credit the wrong currency.
-**Status:** [Built, off until the USD switch] 2026-11-03: 0136 on staging, switch not run. Kashier's maximum and the rate source still need confirming (§7).
+**Status:** [Built, off until the USD switch] 2026-11-03: 0136 on staging. Switch run on staging only, 2026-11-04 (§7); production still EGP. Kashier's maximum and the rate source still need confirming (§7).
 
 - **F-56a · P1 · deps: —** Design note: how append-only `wallet_transactions` marks each row's currency, the conversion entry per seller (rounding, negative balances, idempotency), what happens to `sellers.wallet_balance`, the negative limit, and EGP-priced ads and service charges. Include manual proofs awaiting review and open Kashier sessions, credited at the switch-day market rate. Dry-run totals on a staging copy, reporting positive and negative balances and how much of the positive total came from old `sale` entries, for the owner's information before approval. The owner approves it before any production migration (CLAUDE.md rule 4).
-- **F-56b · P1 · deps: —** Exchange-rate service: one server-side module and table with rate history, a daily fetch, Admin margin and override, and a stale-rate alert. If a fetch fails, keep the last rate. The market rate and the top-up rate (market rate + 2% to start) are separate values. Add one tax setting beside it: `tax = false`, rate 14%. Provider chosen in the design note; any key stays server-only.
+- **F-56b · P1 · deps: —** Exchange-rate service: one server-side module and table with rate history, a fetch every 3 hours, an Admin override, and a stale-rate alert (owner, 2026-11-04: no margin). If a fetch fails, keep the last rate. The market rate and the top-up rate (market rate + 2% to start) are separate values. Add one tax setting beside it: `tax = false`, rate 14%. Provider chosen in the design note; any key stays server-only.
 - **F-56c · P1 · deps: F-56a, F-56b** Migration and code switch to USD cents through `postStoreWalletEntry`. The conversion runs once and writes one entry per seller. Applied to staging first, then production when everything is ready, with the owner's go-ahead (CLAUDE.md rule 4).
 - **F-56d · P1 · deps: F-56b, F-56c** Kashier top-ups: seller picks $5–$1,000, sees the EGP total, and the rate and both amounts are saved on the `seller_wallet_top_ups` row. Tax support is built and tested but off: while `tax = false`, nothing is added or shown; when true, 14% is added to the EGP total as its own line and saved on the row. The webhook checks the saved EGP amount and credits the saved USD amount, so a late payment can't change it. Confirm Kashier's maximum first.
 - **F-56e · P1 · deps: F-56d** Manual top-ups: same quote and limits. Admin approves the EGP proof and the saved USD amount is credited.
@@ -1026,13 +1026,14 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 - **F-67a · P2 · deps: —** A Pending carts page in the seller's dashboard, for one store at a time: customer, items, value and last activity. It filters by `carts.store_id` for a store the session's seller owns (CLAUDE.md rule 5), with server paging. Contact details show only where the customer gave them. Check the overlap with Orders › Not completed (F-03) and decide whether to link or merge them.
 
-### F-68 First top-up before orders — P1 · owner request
+### F-68 Activation before orders — P1 · owner request
 
-**Why:** A seller should know that they need a $5 top-up first, before orders work for them.
-**What:** A simple message on the dashboard home, a ⚠️ on Orders in the sidebar, and the Orders page blurred with a message to top up. Orders still arrive and checkout doesn't change; the seller can't see them until the first approved top-up, which unlocks for good. Pro is exempt.
+**Why:** A seller should know that they need money in the wallet, starting from $5, before orders work for them.
+**What:** A simple message on the dashboard home, a ⚠️ on Orders in the sidebar, and the Orders page blurred with a message to top up. Orders still arrive and checkout doesn't change. A seller is activated for good by an approved top-up or by ever having a wallet balance above zero (a gift or admin credit), even after it runs out. Until then: no orders on screen, no campaign or win-back emails, and 20 AI requests a month instead of 100. Pro is exempt.
 **Status:** [Built, off until the USD switch] 2026-11-04 (§7).
 
 - **F-68a · P1 · deps: —** The rule, the message, the sidebar warning and the blurred Orders page, enforced on the server.
+- **F-68b · P1 · deps: F-68a** A positive balance activates, new message wording, 20 AI requests a month while locked, and emails off end to end, cron included.
 
 ### F-69 Campaign email allowance — P1 · owner request
 
@@ -1059,7 +1060,9 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 Add each new request here first, with the date and the owner's words, then turn it into a §4 feature and place it in §3.
 
 | Date       | Request (owner's words)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Feature ID                                                                                       | Status                                                                                 |
-| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- |
+| ---------- | -----------------------------------------------------------------------------------------------
+| 2026-11-04 | "A wallet balance above zero, such as a gift, activates a seller for good, just like an approved top-up, even after it runs out." Win-back emails wait for activation, and gifts unlock marketing emails. (from the owner's decisions, relayed) | F-68 |
+| 2026-11-04 | "A seller is activated by a top-up or a positive wallet balance such as a $2 gift. Message: Kindly top up your wallet, starting from $5 only. 20 AI requests a month and no marketing emails until activated." (from the owner's decisions, relayed) | F-68-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- |
 | 2026-11-04 | "Work on adding the below Payment methods for sellers so seller can make an account for the service needed and provide us the API key and merchant code or any required data from the payment method gateway service provider: Paypal Tabby Moyasar paytabs paylink / check each service API Docs" (F-39g) |
 | 2026-11-04 | "Make the shipping page currency to be the store currency by default to avoid mismatching / Carts same / Dashboard same / But keep the top-up in EGP ~ USD / So a seller from Egypt can make his store sells in KSA normally" (F-61b, F-61d, F-61e) and the Saudi Riyal symbol for SAR |
 | 2026-11-04 | "yes we can add that for sellers who subscriped in the Orders Notification but keep the Email field Optional" / variant stock: "Yes fix but keep committed on main don't push to live"                                                                                                                                                                                                                                                                                                                                                                                                                        | F-64                                                                                             |
@@ -1354,6 +1357,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-66b Easier emails page (2026-11-04; no migration; not seen in a browser)
 - [x] F-67a Pending carts on the seller dashboard (2026-11-04; no migration; not seen in a browser)
 - [x] F-68a First top-up: message, sidebar warning, blurred Orders page (2026-11-04; off until the USD switch; not seen in a browser)
+- [x] F-68b Positive balance activates, new wording, 20 AI requests while locked, emails off including the cron (2026-11-04; no migration; off until the USD switch; not seen in a browser)
 - [x] F-69a Campaign email allowance by plan, with extra emails (2026-11-04; 0146 on staging; not seen in a browser)
 - [x] F-70a Consent banner on tallaby.com (2026-11-04; `d3648d7d`)
 - [x] F-70b Dashboard text fixes (2026-11-04; `ed224d60`)
@@ -1364,6 +1368,39 @@ Add each new request here first, with the date and the owner's words, then turn 
 ---
 
 ## 7. Log
+
+### 2026-11-04 — Formal Arabic, smooth scrolling, home cards, pending count (owner request)
+
+- **Dashboard Arabic:** `apps/dashboard/messages/ar.json` moved from street dialect to formal Arabic. All 5,712 Arabic strings reviewed, 773 changed by the merge (placeholders, plurals and tags checked by script); no keys added or removed for this.
+- **Smooth scrolling:** `scroll-smooth` on `<html>` in dashboard and ecommerce, off for reduced motion. Route changes still jump (`data-scroll-behavior`).
+- **Home cards:** the small chart is gone from Sales, Orders, Visits and Conversion rate; the percent change with its green or red icon stays. The daily data used only by the chart is removed.
+- **Pending count:** the home line and the Attention card now count orders with `orders.status` pending or confirmed in stage new or to_ship, in the selected channel, using the Orders page's scope. It used to count `order_items.status`, ignoring the store filter, so unpaid card orders and stale lines were counted.
+- No migration.
+
+### 2026-11-04 — No top-up margin, whole-pound totals, 3-hourly rate (F-56b, F-56d, owner request)
+
+- **Rate:** top-ups now use the market rate with no margin. The Admin margin field is gone. The `margin_bps` column stays but nothing reads it, so no migration.
+- **Rounding:** the EGP total is rounded down to a whole pound (1471.57 → 1471), and the wallet is still credited the full USD amount. The tax line rounds down too.
+- **Cron:** `/api/cron/exchange-rate` runs every 3 hours, and the Admin stale warning moved from 48 to 12 hours. The current provider only updates its rate once a day, so most fetches save the same number.
+- **Fixed:** the transfer slip's copy button copied the USD amount in USD mode; it now copies the EGP to send.
+- **Wallet page:** removed the "this month" line and shortened the fee explanation. The Terms top-up clause and its draft now say no margin and whole pounds.
+
+### 2026-11-04 — USD switch run on staging (F-56c, owner request)
+
+- The owner asked for the wallet on the local dashboard (staging) to show USD. Ran `billing_switch_to_usd(55.3706)` on staging, with the rate from `/api/cron/exchange-rate` (`exchangerate-api.com`, the first rate row on staging).
+- **Result:** 12 wallets converted, 0 top-ups priced. The one non-zero balance went from EGP 538.20 to $9.72. Checklist step 9 is clean: all wallets USD, no mirror mismatch, 2 conversion ledger rows, no gift-eligible sellers.
+- **One-way on staging:** there is no reverse function, so staging can no longer test EGP-wallet behaviour or rehearse the switch on real rows. **Production is untouched and stays in EGP.**
+- **Not seen on screen.** The checklist step 10 smoke checks are still open.
+
+### 2026-11-04 — F-68b Activation rule, AI limit and emails while locked (owner)
+
+- **Rule (owner, 2026-11-04):** activation is for good. It comes from an approved top-up, or from ever having a store wallet balance above zero: the balance now, or a USD ledger entry with `balance_after` above zero. It stays after the balance reaches zero or goes negative. USD only, so an old EGP gift spent before the switch doesn't count, while a wallet with money at the switch has a positive USD conversion entry and does. A seller who only ever went negative stays locked. Read fresh in `getOrderLock`, and before the USD switch nothing changes.
+- **Owner approved (2026-11-04):** the lifetime balance rule above, holding win-back emails until activation, and gifts unlocking marketing emails.
+- **AI:** a locked Free seller gets 20 requests a month (`AI_CREDITS_MONTHLY_NOT_ACTIVATED`) under the key `free-locked:<month>`. Activating mid-month loads Free's 100 straight away. Going locked in the same month gives `LEAST(remaining, 20)`, which now only happens when a failed lock check (it fails open) recovers. Activating again in that month doesn't refill: it gives 100 minus what was used since Free first loaded. Bought credits don't change. The ledger now records the real change in `monthly_delta`, and a repeated key gets its own reference. No migration.
+- **Emails:** new drafts, editing, test sends and turning win-back on are refused on the server and disabled on the page. The cron skips locked sellers (`lockedEmailSellers`): their queued campaigns and win-back emails wait and go out after activation. Sellers can still delete drafts, cancel a queued campaign and turn win-back off.
+- **Copy:** the dashboard now says "starting from $5 only" and no longer promises a "first top-up". tallaby.com marketing pages are unchanged and still say "first $5 top-up". The Terms section changed too, and the owner should read it (`legal.*.json`). The Plan page reads its numbers from the plans module and shows 20 with a note while locked.
+- **Not changed:** F-69's text still says "first approved top-up"; it now means this rule.
+- **Not seen in a browser.**
 
 ### 2026-11-04 — New gateways shown as Soon (F-39g)
 

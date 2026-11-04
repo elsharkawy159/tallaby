@@ -31,7 +31,7 @@ export function KpisSkeleton() {
   return (
     <div className="grid grid-cols-2 gap-2.5 sm:gap-3.5 xl:grid-cols-4">
       {Array.from({ length: 4 }, (_, i) => (
-        <HomeCard key={i} className="flex flex-col gap-3.5 p-3.5 sm:px-5 sm:py-[18px]">
+        <HomeCard key={i} className="flex flex-col gap-2.5 p-3.5 sm:px-5 sm:pb-3.5 sm:pt-[18px]">
           <div className="flex items-center justify-between">
             <Skeleton className="h-4 w-20" />
             <Skeleton className="size-9 rounded-[10px]" />

@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import {
   ArrowLeft,
   Check,
+  Coins,
   Copy,
   ImageUp,
   Infinity as InfinityIcon,
@@ -41,8 +42,8 @@ import { uploadOwnFolderFile } from "@/components/inputs/use-seller-upload";
 import { PaymentMethodLogo } from "@/components/payments/payment-method-logo";
 import { formatMoney, formatWalletMoney } from "@/lib/i18n/format";
 import { cn } from "@/lib/utils";
-import { minorToAmount, parseUsdTopUp, quoteTopUp, type BillingState } from "@workspace/lib/billing";
-import { POPULAR_TOP_UP, POPULAR_TOP_UP_USD, TOP_UP_PRESETS, TOP_UP_PRESETS_USD, TOP_UP_STEP_EGP, TOP_UP_STEP_USD, ordersCovered, stepTopUpAmount, stepUsdTopUp } from "./store-wallet.lib";
+import { FREE_ORDER_FEE_USD_CENTS, minorToAmount, parseUsdTopUp, quoteTopUp, type BillingState } from "@workspace/lib/billing";
+import { DEFAULT_TOP_UP_USD, POPULAR_TOP_UP, POPULAR_TOP_UP_USD, TOP_UP_PRESETS, TOP_UP_PRESETS_USD, TOP_UP_STEP_EGP, TOP_UP_STEP_USD, ordersCovered, stepTopUpAmount, stepUsdTopUp } from "./store-wallet.lib";
 import { submitManualTopUp } from "./top-up.server";
 
 const STEPS = ["method", "transfer", "receipt"] as const;
@@ -94,7 +95,7 @@ export function TopUpPanel({
   const [open, setOpen] = useState(Boolean(defaultOpen) && !disabled);
   const [step, setStep] = useState<Step>("method");
   const usd = Boolean(billing?.usdLive);
-  const [amount, setAmount] = useState(usd ? "10" : "250");
+  const [amount, setAmount] = useState(usd ? String(DEFAULT_TOP_UP_USD) : "250");
   const [method, setMethod] = useState<ManualTopUpMethod>(MANUAL_TOP_UP_METHODS[0]);
   const [senderPhone, setSenderPhone] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -217,9 +218,12 @@ export function TopUpPanel({
 
           <fieldset disabled={disabled}>
             <legend className="mb-2 text-[13px] font-semibold">{t("panel.presets")}</legend>
-            <div className="grid grid-cols-2 gap-2 pt-2 sm:grid-cols-3 xl:grid-cols-5 sm:gap-2.5">
+            {/* USD: 8 cards in even rows. At lg the summary column squeezes this one, so back to 2 until xl. */}
+            <div className={cn("grid grid-cols-2 gap-2 pt-2 sm:gap-2.5", usd ? "sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4" : "sm:grid-cols-3 xl:grid-cols-5")}>
               {(usd ? TOP_UP_PRESETS_USD : TOP_UP_PRESETS).map((preset) => {
                 const selected = value === preset;
+                // What the seller pays for this card, the same figure as the summary's total.
+                const presetQuote = usd && billing ? quoteTopUp(preset * 100, billing) : null;
                 return (
                   <button
                     key={preset}
@@ -227,7 +231,8 @@ export function TopUpPanel({
                     aria-pressed={selected}
                     onClick={() => setAmount(String(preset))}
                     className={cn(
-                      "relative flex h-[72px] flex-col items-center justify-center gap-0.5 rounded-2xl border-[1.5px] bg-card transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 active:scale-[0.98] disabled:opacity-60 sm:h-[84px]",
+                      "relative flex flex-col items-center justify-center gap-0.5 rounded-2xl border-[1.5px] bg-card transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 active:scale-[0.98] disabled:opacity-60",
+                      usd ? "min-h-[92px] min-w-0 px-1 pb-2 pt-[18px]" : "h-[72px] sm:h-[84px]",
                       selected ? "border-primary bg-primary-soft" : "hover:border-input hover:bg-muted/40",
                     )}
                   >
@@ -237,16 +242,21 @@ export function TopUpPanel({
                       </span>
                     )}
                     {selected && (
-                      <span className="absolute end-2 top-2 grid size-[18px] place-items-center rounded-full bg-primary text-primary-foreground">
+                      <span className={cn("absolute grid place-items-center rounded-full bg-primary text-primary-foreground", usd ? "end-1.5 top-1.5 size-4" : "end-2 top-2 size-[18px]")}>
                         <Check className="size-3 stroke-3" aria-hidden />
                       </span>
                     )}
-                    <bdi dir="ltr" className={cn("text-lg font-extrabold tabular-nums sm:text-xl", selected && "text-primary-ink")}>
+                    <bdi dir="ltr" className={cn("text-lg font-extrabold tabular-nums", !usd && "sm:text-xl", selected && "text-primary-ink")}>
                       {usd ? "$" : ""}{preset.toLocaleString("en-US")}
                     </bdi>
                     <span className="text-[11.5px] text-muted-foreground">
                       {t("panel.approxOrders", { count: ordersCovered(preset, usd ? "USD" : "EGP") })}
                     </span>
+                    {presetQuote && (
+                      <span className="text-[11.5px] text-muted-foreground">
+                        ≈ <bdi dir="ltr" className="tabular-nums">{formatMoney(presetQuote.totalPiastres / 100, locale)}</bdi>
+                      </span>
+                    )}
                   </button>
                 );
               })}
@@ -350,8 +360,14 @@ export function TopUpPanel({
             </li>
             <li className="flex items-center gap-2">
               <InfinityIcon className="size-[15px] shrink-0 text-success" aria-hidden />
-              {t("panel.trust.noExpiry")}
+              {usd ? t("panel.trust.noExpiry") : t("panel.trust.noExpiryEgp")}
             </li>
+            {usd && (
+              <li className="flex items-center gap-2">
+                <Coins className="size-[15px] shrink-0 text-success" aria-hidden />
+                {t("panel.trust.feeUsd", { cents: FREE_ORDER_FEE_USD_CENTS })}
+              </li>
+            )}
           </ul>
         </aside>
       </section>
@@ -483,7 +499,7 @@ export function TopUpPanel({
                     <CopyButton
                       label={t("slip.copyAmount")}
                       done={copied === "amount"}
-                      onClick={() => parsed.success && copy(String(Number(parsed.amount)), "amount")}
+                      onClick={() => parsed.success && copy(String(quote ? quote.totalPiastres / 100 : Number(parsed.amount)), "amount")}
                     />
                   </div>
                   <div aria-hidden className="relative h-0 border-t border-dashed">

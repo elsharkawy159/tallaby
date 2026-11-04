@@ -14,6 +14,7 @@ import {
   PRO_MONTHLY_USD_CENTS,
 } from "@workspace/lib/billing";
 import type { AiCreditStatus } from "@workspace/lib/billing/credits";
+import { AI_CREDITS_MONTHLY_NOT_ACTIVATED, PLANS } from "@workspace/lib/plans";
 import { Button } from "@workspace/ui/components/button";
 import { ConfirmActionDialog } from "@/components/layout/confirm-action-dialog.client";
 import { formatDate, formatNumber, formatWalletMoney } from "@/lib/i18n/format";
@@ -99,8 +100,8 @@ export function PlanLive(props: PlanLiveProps) {
       <div className="grid gap-3 sm:grid-cols-2">
         {(
           [
-            { id: "free", price: t("freePrice"), fee: usd(FREE_ORDER_FEE_USD_CENTS), credits: 100, emails: 500, current: !isPro },
-            { id: "pro", price: t("proPrice", { amount: usd(PRO_MONTHLY_USD_CENTS) }), fee: t("noFee"), credits: 2000, emails: 10000, current: isPro },
+            { id: "free", price: t("freePrice"), fee: usd(FREE_ORDER_FEE_USD_CENTS), credits: credits.notActivated ? credits.monthlyAllowance : PLANS.free.aiCreditsMonthly, emails: PLANS.free.emailsMonthly, current: !isPro },
+            { id: "pro", price: t("proPrice", { amount: usd(PRO_MONTHLY_USD_CENTS) }), fee: t("noFee"), credits: PLANS.pro.aiCreditsMonthly, emails: PLANS.pro.emailsMonthly, current: isPro },
           ] as const
         ).map((plan) => (
           <article
@@ -191,6 +192,14 @@ export function PlanLive(props: PlanLiveProps) {
           {credits.purchasedRemaining > 0 && <> {t("purchasedLeft", { count: credits.purchasedRemaining })}</>}
           {monthlyUsed > 0 && credits.plan === "free" && <> {t("resetsFree")}</>}
         </p>
+        {credits.notActivated && (
+          <p className="mt-2 text-sm">
+            {t("creditsNotActivated", { locked: AI_CREDITS_MONTHLY_NOT_ACTIVATED, full: PLANS.free.aiCreditsMonthly })}{" "}
+            <Link href="/wallet" className="font-semibold underline underline-offset-2">
+              {t("topUpFirst")}
+            </Link>
+          </p>
+        )}
 
         <div className="mt-5 flex flex-wrap items-center gap-3 border-t pt-5">
           <div className="inline-flex items-center rounded-xl border">

@@ -9,6 +9,7 @@ import { getSellerStores } from "@/lib/stores/current-store.server";
 import { getHomeTraffic } from "@/lib/analytics/home-traffic.server";
 import { MIXED_CURRENCIES, splitHeadline } from "@/lib/i18n/format";
 import { loadAccountMoney, loadStoreMoney } from "@/lib/stores/account-money.server";
+import { countOrdersAwaitingPrep } from "../orders/orders-list.query";
 
 /**
  * Read-only loaders for the dashboard home. Kept out of `actions/` on purpose:
@@ -21,8 +22,6 @@ import { loadAccountMoney, loadStoreMoney } from "@/lib/stores/account-money.ser
 
 /** Line items that never turned into revenue. */
 const NON_REVENUE = sql`('cancelled', 'refunded', 'returned')`;
-/** Line items the seller still has to prepare. */
-const AWAITING_PREP = sql`('pending', 'confirmed')`;
 export const LOW_STOCK_THRESHOLD = 10;
 
 const rowsOf = <T,>(result: unknown): T[] =>
@@ -85,7 +84,6 @@ export type HomeSnapshot = {
   feeTrial: FeeTrialFields;
   hasOrders: boolean;
   attention: {
-    pendingOrders: number;
     lowStock: number;
     unansweredQuestions: number;
     newReviews: number;
@@ -130,8 +128,6 @@ export const getHomeSnapshot = cache(async (): Promise<HomeSnapshot | null> => {
       s.fee_trial_ends_at,
       ${SETUP_FLAG_COLUMNS},
       EXISTS (SELECT 1 FROM order_items oi WHERE oi.seller_id = s.id) AS has_orders,
-      (SELECT count(DISTINCT oi.order_id)::int FROM order_items oi
-        WHERE oi.seller_id = s.id AND oi.status IN ${AWAITING_PREP}) AS pending_orders,
       (SELECT count(*)::int FROM products p
         WHERE p.seller_id = s.id AND p.status = 'active' AND p.track_stock AND p.quantity < ${LOW_STOCK_THRESHOLD}) AS low_stock,
       (SELECT count(*)::int FROM product_questions q JOIN products p ON p.id = q.product_id
@@ -166,12 +162,17 @@ export const getHomeSnapshot = cache(async (): Promise<HomeSnapshot | null> => {
     },
     hasOrders: Boolean(row.has_orders),
     attention: {
-      pendingOrders: Number(row.pending_orders),
       lowStock: Number(row.low_stock),
       unansweredQuestions: Number(row.unanswered_questions),
       newReviews: Number(row.new_reviews),
     },
   };
+});
+
+/** Orders still to prepare in the channel, counted like the Orders page (isAwaitingPrep). */
+export const getPendingOrdersCount = cache(async (channel: HomeChannel): Promise<number> => {
+  const sellerId = await getHomeSellerId();
+  return sellerId ? countOrdersAwaitingPrep(sellerId, channel) : 0;
 });
 
 // ---------------------------------------------------------------------------
@@ -463,22 +464,16 @@ export type StoreFunnel = {
   carts: number;
   orders: number;
   previousOrders: number;
-  /** Store orders per day, oldest first. */
-  dailyOrders: number[];
 };
 
 /** Carts and orders of the seller's store websites, for the customer journey and conversion. */
 export const getStoreFunnel = cache(async (range: HomeRange, channel: HomeChannel): Promise<StoreFunnel> => {
   const [sellerId, { storeIds }] = await Promise.all([getHomeSellerId(), getHomeChannelStores(channel)]);
-  const empty = { carts: 0, orders: 0, previousOrders: 0, dailyOrders: Array<number>(range).fill(0) };
+  const empty = { carts: 0, orders: 0, previousOrders: 0 };
   if (!sellerId || storeIds.length === 0) return empty;
 
   const result = await db.execute(sql`
     WITH bounds AS (SELECT ${rangeStartLocal(range)} AS start_local),
-    days AS (
-      SELECT generate_series(b.start_local, b.start_local + make_interval(days => ${range - 1}::int), interval '1 day')::date AS day
-      FROM bounds b
-    ),
     items AS (
       SELECT DISTINCT (oi.created_at AT TIME ZONE 'Africa/Cairo')::date AS day, oi.order_id
       FROM order_items oi
@@ -490,8 +485,6 @@ export const getStoreFunnel = cache(async (range: HomeRange, channel: HomeChanne
         AND oi.created_at >= ((b.start_local - make_interval(days => ${range}::int)) AT TIME ZONE 'Africa/Cairo')
     )
     SELECT
-      d.day::text AS day,
-      count(DISTINCT i.order_id)::int AS orders,
       (SELECT count(DISTINCT x.order_id)::int FROM items x, bounds b WHERE x.day >= b.start_local::date) AS total_orders,
       (SELECT count(DISTINCT x.order_id)::int FROM items x, bounds b WHERE x.day < b.start_local::date) AS prev_orders,
       (SELECT count(*)::int FROM carts c, bounds b
@@ -501,19 +494,14 @@ export const getStoreFunnel = cache(async (range: HomeRange, channel: HomeChanne
             OR EXISTS (SELECT 1 FROM cart_items ci
               WHERE ci.cart_id = c.id AND ci.created_at >= (b.start_local AT TIME ZONE 'Africa/Cairo'))
           )) AS carts
-    FROM days d
-    LEFT JOIN items i ON i.day = d.day
-    GROUP BY d.day
-    ORDER BY d.day
   `);
 
-  const rows = rowsOf<Record<string, any>>(result);
-  if (rows.length === 0) return empty;
+  const row = rowsOf<Record<string, any>>(result)[0];
+  if (!row) return empty;
   return {
-    carts: Number(rows[0].carts),
-    orders: Number(rows[0].total_orders),
-    previousOrders: Number(rows[0].prev_orders),
-    dailyOrders: rows.map((r) => Number(r.orders)),
+    carts: Number(row.carts),
+    orders: Number(row.total_orders),
+    previousOrders: Number(row.prev_orders),
   };
 });
 

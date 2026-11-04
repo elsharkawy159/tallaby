@@ -1,10 +1,11 @@
 import { and, asc, db, desc, eq, ilike, inArray, isNull, or, orderItems, orders, shipments, sql, users, userAddresses } from "@workspace/db";
 import type { SQL } from "drizzle-orm";
 import { likePattern } from "../products/_components/products-view.lib";
-import type { SellerOrderStage } from "./order-flow.lib";
+import { AWAITING_PREP_ORDER_STATUSES, AWAITING_PREP_STAGES, type SellerOrderStage } from "./order-flow.lib";
 import {
   ORDERS_TABS,
   TAB_STAGES,
+  type OrdersChannel,
   type OrdersListFilters,
   type OrdersSort,
   type OrdersTab,
@@ -164,6 +165,21 @@ export async function countOrdersByTab(sellerId: string, filters: OrdersScope): 
     }
   }
   return counts;
+}
+
+/** isAwaitingPrep() in SQL: orders, not lines, in a store or marketplace channel or "all". */
+export async function countOrdersAwaitingPrep(sellerId: string, channel: OrdersChannel): Promise<number> {
+  const [row] = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(orders)
+    .where(
+      and(
+        ...scopeConditions(sellerId, { channel, q: "", attention: false }),
+        inArray(sql`COALESCE(${orders.status}::text, 'pending')`, [...AWAITING_PREP_ORDER_STATUSES]),
+        stagesCondition(AWAITING_PREP_STAGES),
+      ),
+    );
+  return row?.count ?? 0;
 }
 
 /** Facts about all the seller's orders, whatever the filters: any orders at all, and Bosta problems. */

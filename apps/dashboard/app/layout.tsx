@@ -63,7 +63,14 @@ export default async function RootLayout({
   const direction = locale === "ar" ? "rtl" : "ltr";
 
   return (
-    <html lang={locale} dir={direction} suppressHydrationWarning>
+    // Smooth in-page scrolling; data-scroll-behavior makes Next jump instantly on route changes.
+    <html
+      lang={locale}
+      dir={direction}
+      className="scroll-smooth motion-reduce:scroll-auto"
+      data-scroll-behavior="smooth"
+      suppressHydrationWarning
+    >
       <head>
         <meta name="robots" content="noindex, nofollow" />
       </head>

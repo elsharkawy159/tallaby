@@ -1,8 +1,9 @@
 import { randomUUID } from "node:crypto";
 import { aiCreditLedger, db, eq, sellerAiCredits, sellers, sql } from "@workspace/db";
 import { postStoreWalletEntry, STORE_WALLET_REFERENCE_TYPES, StoreWalletLimitError } from "@workspace/db/wallet";
-import { getPlanLimits } from "../plans";
+import { aiCreditAllowance, nextMonthlyCredits } from "./ai-credits.lib";
 import { cairoMonthKey, CREDIT_PACK_CREDITS, CREDIT_PACK_USD_CENTS, isProActive, minorToAmount } from "./billing.lib";
+import { getOrderLock } from "./order-lock.server";
 
 /**
  * AI credits (ROADMAP.md F-57). One balance per seller account, shared by
@@ -22,49 +23,79 @@ export type AiCreditStatus = {
   total: number;
   /** When the monthly credits next reset, if known: a Pro renewal. Free resets on the 1st. */
   plan: "free" | "pro";
+  /** A Free seller on the smaller allowance until activated (order lock, F-68). */
+  notActivated: boolean;
 };
 
-/** Which allowance applies now, and the key that loads it once per period. */
-function currentAllowance(seller: {
-  plan: string | null;
-  planExpiresAt: string | null;
-  planGraceUntil: string | null;
-}): { plan: "free" | "pro"; allowance: number; period: string } {
-  const plan = isProActive(seller) ? "pro" : "free";
-  return {
-    plan,
-    allowance: getPlanLimits(plan).aiCreditsMonthly,
-    period: plan === "pro" ? `pro:${seller.planExpiresAt ?? "open"}` : `free:${cairoMonthKey()}`,
-  };
-}
-
-/** Loads this period's allowance once: replaces what's left of the last one (no carry-over). */
-async function ensureCurrentPeriod(tx: Tx, sellerId: string) {
+/**
+ * Moves the seller to the period that applies now, once (`nextMonthlyCredits` has the
+ * rules). `locked` comes from getOrderLock, read before the transaction so it never
+ * needs a second connection while this one is held.
+ */
+async function ensureCurrentPeriod(tx: Tx, sellerId: string, locked: boolean) {
   const [seller] = await tx
     .select({ plan: sellers.plan, planExpiresAt: sellers.planExpiresAt, planGraceUntil: sellers.planGraceUntil })
     .from(sellers)
     .where(eq(sellers.id, sellerId));
   if (!seller) throw new Error("Seller not found");
-  const { plan, allowance, period } = currentAllowance(seller);
+  const { plan, allowance, period, notActivated } = aiCreditAllowance({
+    isPro: isProActive(seller),
+    planExpiresAt: seller.planExpiresAt,
+    locked,
+    month: cairoMonthKey(),
+  });
+  const result = { plan, allowance, notActivated };
 
   await tx.insert(sellerAiCredits).values({ sellerId }).onConflictDoNothing();
-  const loaded = await tx
-    .update(sellerAiCredits)
-    .set({ monthlyRemaining: allowance, monthlyPeriod: period, updatedAt: sql`now()` })
-    .where(sql`${sellerAiCredits.sellerId} = ${sellerId} AND ${sellerAiCredits.monthlyPeriod} IS DISTINCT FROM ${period}`)
-    .returning({ id: sellerAiCredits.sellerId });
-  if (loaded.length) {
-    await tx
-      .insert(aiCreditLedger)
-      .values({ sellerId, kind: "monthly_grant", monthlyDelta: allowance, reference: period })
-      .onConflictDoNothing();
+  const own = eq(sellerAiCredits.sellerId, sellerId);
+  const [seen] = await tx.select({ period: sellerAiCredits.monthlyPeriod }).from(sellerAiCredits).where(own);
+  if (seen?.period === period) return result;
+
+  // Only on a change: the row lock makes one caller do the move, and the rest see it done.
+  const [row] = await tx.select().from(sellerAiCredits).where(own).for("update");
+  if (!row || row.monthlyPeriod === period) return result;
+
+  const next = nextMonthlyCredits({
+    previousPeriod: row.monthlyPeriod,
+    remaining: row.monthlyRemaining,
+    nextPeriod: period,
+    allowance,
+    usedSinceGrant: await usedSinceFirstGrant(tx, sellerId, period),
+  });
+  await tx.update(sellerAiCredits).set({ monthlyRemaining: next, monthlyPeriod: period, updatedAt: sql`now()` }).where(own);
+
+  // A key can come back in one month (a lock check failed open, then recovered). The row
+  // lock already makes this move happen once, so a repeat only needs its own reference.
+  const monthlyDelta = next - row.monthlyRemaining;
+  const claimed = await tx
+    .insert(aiCreditLedger)
+    .values({ sellerId, kind: "monthly_grant", monthlyDelta, reference: period })
+    .onConflictDoNothing()
+    .returning({ id: aiCreditLedger.id });
+  if (claimed.length === 0) {
+    await tx.insert(aiCreditLedger).values({ sellerId, kind: "monthly_grant", monthlyDelta, reference: `${period}#${randomUUID()}` });
   }
-  return { plan, allowance };
+  return result;
+}
+
+/** Monthly credits used since this period key first loaded; null if it never has. */
+async function usedSinceFirstGrant(tx: Tx, sellerId: string, period: string): Promise<number | null> {
+  const [grant] = await tx
+    .select({ at: aiCreditLedger.createdAt })
+    .from(aiCreditLedger)
+    .where(sql`${aiCreditLedger.sellerId} = ${sellerId} AND ${aiCreditLedger.kind} = 'monthly_grant' AND ${aiCreditLedger.reference} = ${period}`);
+  if (!grant) return null;
+  const [usage] = await tx
+    .select({ used: sql<number>`coalesce(sum(-${aiCreditLedger.monthlyDelta}), 0)::int` })
+    .from(aiCreditLedger)
+    .where(sql`${aiCreditLedger.sellerId} = ${sellerId} AND ${aiCreditLedger.kind} IN ('use', 'refund') AND ${aiCreditLedger.createdAt} >= ${grant.at}`);
+  return usage?.used ?? 0;
 }
 
 export async function getAiCreditStatus(sellerId: string): Promise<AiCreditStatus> {
+  const { locked } = await getOrderLock(sellerId);
   return db.transaction(async (tx) => {
-    const { plan, allowance } = await ensureCurrentPeriod(tx, sellerId);
+    const { plan, allowance, notActivated } = await ensureCurrentPeriod(tx, sellerId, locked);
     const [row] = await tx.select().from(sellerAiCredits).where(eq(sellerAiCredits.sellerId, sellerId));
     const monthly = row?.monthlyRemaining ?? 0;
     const purchased = row?.purchasedRemaining ?? 0;
@@ -74,6 +105,7 @@ export async function getAiCreditStatus(sellerId: string): Promise<AiCreditStatu
       purchasedRemaining: purchased,
       total: monthly + purchased,
       plan,
+      notActivated,
     };
   });
 }
@@ -82,8 +114,9 @@ export type AiCreditClaim = { ok: true; reference: string } | { ok: false; error
 
 /** Takes 1 credit before an AI call. Give it back with refundAiCredit if the call doesn't complete. */
 export async function claimAiCredit(sellerId: string, feature: string): Promise<AiCreditClaim> {
+  const { locked } = await getOrderLock(sellerId);
   return db.transaction(async (tx) => {
-    await ensureCurrentPeriod(tx, sellerId);
+    await ensureCurrentPeriod(tx, sellerId, locked);
     const monthly = await tx
       .update(sellerAiCredits)
       .set({ monthlyRemaining: sql`${sellerAiCredits.monthlyRemaining} - 1`, updatedAt: sql`now()` })

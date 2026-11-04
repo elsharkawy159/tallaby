@@ -14,7 +14,7 @@ import {
   getStoreFunnel,
 } from "./home.queries";
 import type { HomeChannel, HomeRange } from "./home.shared";
-import { DeltaBadge, HomeCard, IconTile, Sparkline, StarRating, percentChange, type Tone } from "./home-ui";
+import { DeltaBadge, HomeCard, IconTile, StarRating, percentChange, type Tone } from "./home-ui";
 import { walletKpiState } from "./wallet-kpi.lib";
 
 /** Sales, orders, store-website visits and conversion for the period, each linking to its page. */
@@ -39,9 +39,6 @@ export async function HomeKpisData({ range, channel = "all" }: { range: HomeRang
   const conversion = visits > 0 ? (funnel.orders / visits) * 100 : null;
   const previousConversion =
     traffic && traffic.previousVisits > 0 ? (funnel.previousOrders / traffic.previousVisits) * 100 : null;
-  const dailyConversion = traffic
-    ? traffic.daily.map((v, i) => (v > 0 ? (funnel.dailyOrders[i] ?? 0) / v : 0))
-    : [];
 
   return (
     <KpiGrid>
@@ -52,7 +49,6 @@ export async function HomeKpisData({ range, channel = "all" }: { range: HomeRang
         value={num(sales.revenue)}
         unit={<MoneyText locale={locale}>{moneyUnitMarked(locale, { currency: sales.currency })}</MoneyText>}
         also={sales.otherTotals.length > 0 && <MoneyLines totals={sales.otherTotals} locale={locale} />}
-        trend={sales.series.map((p) => p.revenue)}
         footer={hasSales ? t("vsPrevious") : t("noSales")}
         delta={hasSales ? percentChange(sales.revenue, sales.previousRevenue) : null}
       />
@@ -62,7 +58,6 @@ export async function HomeKpisData({ range, channel = "all" }: { range: HomeRang
         icon={ShoppingBag}
         value={num(sales.orders)}
         unit={t("ordersUnit")}
-        trend={sales.series.map((p) => p.orders)}
         footer={hasSales ? t("vsPrevious") : t("noOrders")}
         delta={hasSales ? percentChange(sales.orders, sales.previousOrders) : null}
       />
@@ -72,7 +67,6 @@ export async function HomeKpisData({ range, channel = "all" }: { range: HomeRang
         icon={Eye}
         value={traffic ? num(visits) : "—"}
         unit={traffic ? t("visitsUnit") : undefined}
-        trend={traffic?.daily ?? []}
         footer={storesOnly ? t("visitsStoresOnly") : hasVisits ? t("vsPrevious") : t("noVisits")}
         delta={hasVisits ? percentChange(visits, traffic?.previousVisits ?? 0) : null}
       />
@@ -82,7 +76,6 @@ export async function HomeKpisData({ range, channel = "all" }: { range: HomeRang
         icon={Percent}
         value={conversion === null ? "—" : num(conversion, 1)}
         unit={conversion === null ? undefined : "%"}
-        trend={dailyConversion}
         footer={storesOnly ? t("visitsStoresOnly") : conversion === null ? t("noVisits") : t("conversionHint")}
         delta={
           conversion !== null && previousConversion !== null ? percentChange(conversion, previousConversion) : null
@@ -152,7 +145,7 @@ export function KpiGrid({ children }: { children: React.ReactNode }) {
   return <div className="grid grid-cols-2 gap-2.5 sm:gap-3.5 xl:grid-cols-4">{children}</div>;
 }
 
-/** One headline number with its icon, unit, trend line, footnote and period delta. The card opens `href`. */
+/** One headline number with its icon, unit, footnote and period delta. The card opens `href`. */
 export function KpiCard({
   href,
   label,
@@ -160,7 +153,6 @@ export function KpiCard({
   value,
   unit,
   also,
-  trend,
   footer,
   delta,
 }: {
@@ -171,7 +163,6 @@ export function KpiCard({
   unit?: React.ReactNode;
   /** The same figure in other currencies, one per line. */
   also?: React.ReactNode;
-  trend: number[];
   footer?: React.ReactNode;
   /** Omit for metrics that are not period-based. */
   delta?: number | null;
@@ -190,8 +181,8 @@ export function KpiCard({
         {unit && <span className="text-[13px] text-muted-foreground">{unit}</span>}
       </div>
       {also && <div className="text-xs font-medium text-muted-foreground tabular-nums">{also}</div>}
-      <Sparkline values={trend} />
-      <div className="flex min-h-[22px] items-center justify-between gap-2 text-xs text-muted-foreground">
+      {/* mt-auto: a card with extra currency lines keeps its footer level with the others. */}
+      <div className="mt-auto flex min-h-[22px] items-center justify-between gap-2 text-xs text-muted-foreground">
         <span className="min-w-0">{footer}</span>
         {delta !== undefined && <DeltaBadge value={delta} />}
       </div>

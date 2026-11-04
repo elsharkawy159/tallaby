@@ -178,13 +178,13 @@
     }
   },
   "orderLock": {
-    "title": "Top up $5 to see your orders",
-    "body": "Customers can order from your store as usual, but their orders stay hidden until your first top-up.",
+    "title": "Kindly top up your wallet, starting from $5 only",
+    "body": "Customers can still order from your store as usual, but their orders stay hidden until you top up your wallet.",
     "reviewTitle": "Your top-up is being reviewed",
     "reviewBody": "Your orders will open as soon as we approve it.",
     "topUp": "Top up",
     "viewWallet": "View wallet",
-    "sidebar": "Top up to see your orders"
+    "sidebar": "Kindly top up your wallet, starting from $5 only, to see your orders"
   },
   "aiCredits": {
     "left": "{count, plural, =0 {No AI credits left.} one {# AI credit left.} other {# AI credits left.}}",
@@ -3931,6 +3931,7 @@
     "monthlyLeft": "{left, number} of {total, number} monthly credits left.",
     "purchasedLeft": "Plus {count, number} bought credits, which don't expire.",
     "resetsFree": "Monthly credits reset on the 1st.",
+    "creditsNotActivated": "You have {locked, number} AI requests a month until you top up your wallet, starting from $5 only. Then you have {full, number} a month.",
     "fewerPacks": "Fewer credits",
     "morePacks": "More credits",
     "creditsCount": "{count, number} credits",
@@ -5138,7 +5139,7 @@
     }
   },
   "storeWallet": {
-    "pageDescriptionUsd": "Your wallet pays Tallaby's {fee} fee on each order on the Free plan, and Pro and AI credits. Top up any time, paid in EGP.",
+    "pageDescriptionUsd": "Your wallet pays Tallaby's {fee} fee on each order on the Free plan, and Pro. Top up any time, paid in EGP.",
     "topUp": {
       "button": "Top up",
       "title": "Top up your store wallet",
@@ -5174,11 +5175,10 @@
     "title": "Store wallet",
     "pageDescription": "EGP {fee} is taken from your balance for every new order. Top up ahead so orders keep coming in.",
     "runway": "Covers about {count, plural, one {# order} other {# orders}}",
-    "thisMonth": "This month: {sales} in sales, {fees} in fees",
     "negative": "Your balance is below zero. New sales pay it back automatically, or you can top up at any time.",
     "negativeStrong": "Your balance is well below zero. Top up soon: until it recovers, ads and other paid services can't be paid from the wallet.",
     "howTitle": "How the platform fee works",
-    "howUsd": "On the Free plan, Tallaby takes {fee} from your wallet for each new order, whatever the total; the Pro plan has no order fee. An order that looks like a test (a name like \"test\" or a phone like 01000000000) or a duplicate (same customer and same products within 2 hours) is charged only if it is delivered. The order amount is never added to the wallet. If your balance is zero or less, it goes below zero.",
+    "howUsd": "On the Free plan, Tallaby takes {fee} from your wallet for each new order; the Pro plan has no order fee. A test or duplicate order is charged only if it is delivered. The order amount is never added to the wallet, and your balance can go below zero.",
     "how": "For each new order, Tallaby takes a flat EGP 5 from your wallet when the order is placed, whatever the total. An order that looks like a test (a name like \"test\" or a phone like 01000000000) or a duplicate (same customer and same products within 2 hours) is charged only if it is delivered. The order amount is never added to the wallet. If your balance is zero or less, it goes below zero.",
     "trialActive": "Free trial: {days, plural, one {# day} other {# days}} left, no fee on orders placed until {date}.",
     "trialNotStarted": "Your 7-day free trial starts when your first store is created.",
@@ -5244,7 +5244,9 @@
         "cta": "Top up now",
         "trust": {
           "review": "Added once we check the receipt",
-          "noExpiry": "Your balance never expires"
+          "noExpiry": "Lifetime balance, it never expires",
+          "noExpiryEgp": "Your balance never expires",
+          "feeUsd": "Only {cents} cents per order"
         }
       },
       "changeAmount": "Change amount",
@@ -6947,7 +6949,7 @@
   "emailCampaigns": {
     "allowance": {
       "left": "{left} campaign emails left. Your plan includes {monthly} a month.",
-      "locked": "Top up your wallet with at least $5 to start sending emails.",
+      "locked": "Kindly top up your wallet, starting from $5 only, to send campaign emails.",
       "pending": "Your top-up is being reviewed. You can send emails once it's approved.",
       "topUp": "Top up",
       "buy": "Buy {emails} more for {price}",
@@ -7129,7 +7131,7 @@
       "storeOffline": "Publish your website before sending a campaign.",
       "dailyLimit": "You can send one campaign every 24 hours, and you already did. Try again tomorrow.",
       "monthlyLimit": "You've used this month's campaign emails. Buy more, or wait until the 1st.",
-      "activationRequired": "Top up your wallet with at least $5 to start sending emails.",
+      "activationRequired": "Kindly top up your wallet, starting from $5 only, to send campaign emails.",
       "insufficientBalance": "Your wallet doesn't have enough balance. Top up and try again.",
       "noRecipients": "Nobody to send to in this audience. Pick another audience.",
       "subjectRequired": "Write a subject first.",

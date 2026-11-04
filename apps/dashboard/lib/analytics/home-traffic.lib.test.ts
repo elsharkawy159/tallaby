@@ -18,7 +18,7 @@ describe("homeVisitsReportBody", () => {
 });
 
 describe("parseHomeVisits", () => {
-  it("zero-fills days and splits the two periods", () => {
+  it("adds up each of the two periods", () => {
     const json = {
       rows: [
         row(["20261028", "current"], "4"),
@@ -27,11 +27,11 @@ describe("parseHomeVisits", () => {
         row(["20261021", "previous"], "2"),
       ],
     };
-    expect(parseHomeVisits(json, 3, "2026-10-29")).toEqual({ visits: 10, previousVisits: 5, daily: [0, 4, 6] });
+    expect(parseHomeVisits(json)).toEqual({ visits: 10, previousVisits: 5 });
   });
 
   it("handles an empty response", () => {
-    expect(parseHomeVisits({}, 2, "2026-10-29")).toEqual({ visits: 0, previousVisits: 0, daily: [0, 0] });
+    expect(parseHomeVisits({})).toEqual({ visits: 0, previousVisits: 0 });
   });
 });
 

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { ORDERS_UNLOCKED, orderLockState } from "./order-lock.lib";
 
 const free = { plan: "free", planExpiresAt: null, planGraceUntil: null };
-const base = { usdLive: true, seller: free, hasTopUp: false, hasPendingManualTopUp: false };
+const base = { usdLive: true, seller: free, hasTopUp: false, hasHadPositiveBalance: false, hasPendingManualTopUp: false };
 const at = new Date("2026-11-04T12:00:00Z");
 
 describe("order lock", () => {
@@ -17,6 +17,16 @@ describe("order lock", () => {
   it("unlocks for good after one approved top-up", () => {
     expect(orderLockState({ ...base, hasTopUp: true })).toEqual(ORDERS_UNLOCKED);
     expect(orderLockState({ ...base, hasTopUp: true, hasPendingManualTopUp: true })).toEqual(ORDERS_UNLOCKED);
+  });
+
+  it("unlocks for good once the balance has been above zero, with no top-up", () => {
+    expect(orderLockState({ ...base, hasHadPositiveBalance: true })).toEqual(ORDERS_UNLOCKED);
+    expect(orderLockState({ ...base, hasHadPositiveBalance: true, hasPendingManualTopUp: true })).toEqual(ORDERS_UNLOCKED);
+  });
+
+  it("stays locked with neither a top-up nor a balance ever above zero", () => {
+    expect(orderLockState({ ...base, hasHadPositiveBalance: false }).locked).toBe(true);
+    expect(orderLockState({ ...base, hasHadPositiveBalance: false, hasTopUp: true }).locked).toBe(false);
   });
 
   it("stays locked while a manual top-up waits, and says so", () => {
