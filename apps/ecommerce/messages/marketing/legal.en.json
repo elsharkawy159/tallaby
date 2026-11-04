@@ -161,7 +161,7 @@
         },
         {
           "title": "Yours to take",
-          "body": "Export or delete your data from Settings."
+          "body": "Email us for a copy of your data or to delete it."
         }
       ],
       "table": {
@@ -187,7 +187,7 @@
         ],
         [
           "Payout details",
-          "To send you your earnings",
+          "To pay the affiliate commissions you withdraw",
           "While your account is open"
         ],
         [
@@ -234,7 +234,7 @@
           "id": "use",
           "title": "How we use it",
           "list": [
-            "Running your store, checkout and payouts.",
+            "Running your store and checkout, and paying affiliate commissions.",
             "Preventing fraud and keeping accounts secure.",
             "Sending service messages about orders, fees and changes.",
             "Marketing emails, only if you opt in. You can unsubscribe anytime."
@@ -252,7 +252,7 @@
           "id": "cookies",
           "title": "Cookies",
           "paragraphs": [
-            "We use essential cookies to keep you signed in and remember your cart and language. Analytics cookies are optional and off until you accept them."
+            "We use essential cookies to keep you signed in and remember your cart and language. On tallaby.com, Google Analytics and the Meta Pixel load without asking first and can set analytics and advertising cookies, and there is no setting to turn them off. On seller stores, the seller's own tracking waits until the visitor accepts it, while Tallaby's own page-view measurement doesn't wait."
           ]
         },
         {
