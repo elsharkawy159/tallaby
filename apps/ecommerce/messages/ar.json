@@ -200,6 +200,10 @@
     "suggestedTitle": "قد يعجبك أيضًا"
   },
   "checkout": {
+    "offerLines": {
+      "crossSell": "عرض مع المنتج",
+      "quantityOffer": "عرض الكمية"
+    },
     "simpleForm": {
       "title": "بيانات التوصيل",
       "fullName": "الاسم بالكامل",
@@ -441,6 +445,14 @@
     "invalid": "اللينك ده مش شغال أو انتهى."
   },
   "storeProduct": {
+    "quantityOffers": {
+      "title": "اشتري أكتر ووفر أكتر",
+      "buy": "{count, plural, one {اشتري قطعة واحدة} two {اشتري قطعتين} few {اشتري # قطع} many {اشتري # قطعة} other {اشتري # قطعة}}",
+      "each": "{price} للقطعة",
+      "percentOff": "وفر {value}%",
+      "amountOff": "وفر {value} في القطعة",
+      "changeInCart": "المنتج في عربيتك. غير العدد من هناك."
+    },
     "restock": {
       "title": "بلّغني لما يرجع",
       "description": "سيب إيميلك وهنبعتلك رسالة أول ما المنتج ده يرجع متوفر.",
@@ -2381,6 +2393,9 @@
     "backHome": "العودة إلى المتجر"
   },
   "storefront": {
+    "quantityOfferSaving": "عرض الكمية: هتوفر {amount}",
+    "bundleOfferSaving": "عرض مع المنتج: هتوفر {amount}",
+    "offersTotal": "العروض",
     "crossSell": {
       "title": "بيتشتري مع بعض",
       "add": "أضف",

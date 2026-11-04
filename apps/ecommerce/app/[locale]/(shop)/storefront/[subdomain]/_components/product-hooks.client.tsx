@@ -21,6 +21,7 @@ import { StoreGallery } from "./store-product-gallery.client";
 import { StoreLiveViews, StoreLowStockAlert, StorePriceBlock, StoreStockLine } from "./store-product-info.client";
 import { StoreVariantPicker } from "./store-variant-picker.client";
 import { StoreRestockForm } from "./store-restock-form.client";
+import { StoreQuantityOffers } from "./store-quantity-offers.client";
 
 /**
  * The interactive parts of a store product page (template product page spec
@@ -140,7 +141,7 @@ export function StoreProductBuyBox({
   buyLabel?: string;
 }) {
   const { product, variantId, inCart, cartQuantity } = useProductPage();
-  const { stock } = useSelectedPricing();
+  const { stock, price } = useSelectedPricing();
   // As ProductActions: starts at the cart's quantity (or 1). Shared by the in-page box and the phone dock.
   const [quantity, setQuantity] = useState(cartQuantity || 1);
   const hasStock = product.status === "active" && stock > 0;
@@ -167,8 +168,19 @@ export function StoreProductBuyBox({
     !hasStock && product.status === "active" ? (
       <StoreRestockForm key={variantId ?? "product"} productId={product.id} variantId={variantId} />
     ) : null;
+  // Sets the same quantity as the stepper (F-07c), so it lives with the box.
+  const tiers = hasStock ? (
+    <StoreQuantityOffers productId={product.id} price={price} stock={stock} quantity={quantity} readOnly={inCart} onSelect={setQuantity} />
+  ) : null;
   if (!stickyMobile) {
-    if (!restock) return box("inline");
+    if (!restock) {
+      return (
+        <>
+          {tiers}
+          {box("inline")}
+        </>
+      );
+    }
     return (
       <div className="grid min-w-0 gap-3">
         {box("inline")}
@@ -183,6 +195,7 @@ export function StoreProductBuyBox({
   return (
     <>
       <HideBottomNavOnScroll />
+      {tiers}
       <div className="hidden md:block">{box("inline")}</div>
       {restock && <div className="md:mt-3">{restock}</div>}
       {twoButtons && (

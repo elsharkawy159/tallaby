@@ -322,18 +322,15 @@ export function buildSummaryWithCoupon(
     /** Shipping waived by sellers flagged sellers.free_delivery. */
     sellerFreeDeliveryDiscount?: number
     storeShipping?: CheckoutStoreShipping
-    /** Cross-sell offers on this cart (F-32), worked out from the database. */
-    crossSellDiscount?: number
+    /** Line offers on this cart (F-07, F-32), worked out from the database. */
+    lineOffers?: OrderDiscountLine[]
   },
   coupon: CouponData | null,
   calculationResult: CouponCalculationResult | null
 ): CheckoutSummary {
   const shippingCost = baseSummary.shippingCost ?? 0
-  const crossSellDiscount = Math.max(0, baseSummary.crossSellDiscount ?? 0)
-  const crossSellLines: OrderDiscountLine[] =
-    crossSellDiscount > 0
-      ? [{ type: 'cross_sell', label: 'Bundle offer', amount: crossSellDiscount.toFixed(2) }]
-      : []
+  const lineOfferLines = baseSummary.lineOffers ?? []
+  const lineOfferDiscount = lineOfferLines.reduce((sum, line) => sum + Number(line.amount), 0)
   // A seller zone has its own free-over; Tallaby's cart threshold does not apply.
   const thresholdShippingDiscount =
     baseSummary.storeShipping?.kind === 'zone'
@@ -364,15 +361,15 @@ export function buildSummaryWithCoupon(
     })
     const totalAfterDiscount = Math.max(
       0,
-      baseSummary.total - totalDiscount - crossSellDiscount
+      baseSummary.total - totalDiscount - lineOfferDiscount
     )
 
     return {
       ...baseSummary,
-      discountAmount: crossSellDiscount,
+      discountAmount: lineOfferDiscount,
       shippingDiscount: baseShippingDiscount,
       totalAfterDiscount,
-      discounts: [...lines, ...crossSellLines],
+      discounts: [...lines, ...lineOfferLines],
       appliedCoupon: null
     }
   }
@@ -403,15 +400,15 @@ export function buildSummaryWithCoupon(
       baseSummary.tax +
       shippingCost -
       totalDiscount -
-      crossSellDiscount
+      lineOfferDiscount
   )
 
   return {
     ...baseSummary,
-    discountAmount: calculationResult.discountAmount + crossSellDiscount,
+    discountAmount: calculationResult.discountAmount + lineOfferDiscount,
     shippingDiscount,
     totalAfterDiscount,
-    discounts: [...lines, ...crossSellLines],
+    discounts: [...lines, ...lineOfferLines],
     appliedCoupon: {
       code: coupon.code,
       name: coupon.name,

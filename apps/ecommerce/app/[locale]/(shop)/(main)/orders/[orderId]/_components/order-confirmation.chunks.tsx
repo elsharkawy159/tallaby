@@ -26,6 +26,7 @@ import { OrderItemsList } from "./order-items-list";
 import { OrderStoreReviewCard } from "./order-store-review-card";
 import { OrderCancelButton } from "./order-cancel-button";
 import { cn } from "@/lib/utils";
+import { orderDiscountLabel } from "@/lib/order-discount-label";
 import { getTranslations } from "next-intl/server";
 import { MetaPurchase } from "@/components/meta/meta-purchase.client";
 import { OrderPaymentProof } from "./order-payment-proof";
@@ -54,6 +55,7 @@ export async function OrderConfirmationContent({
   reorder,
 }: OrderConfirmationContentProps) {
   const t = await getTranslations("orders");
+  const tCheckout = await getTranslations("checkout");
   const { order, orderItems, storeSellers, shipments, shippingAddress, summary } = data;
   const metaProductIds = orderItems.map((item) => item.productId);
 
@@ -355,7 +357,7 @@ export async function OrderConfirmationContent({
                       key={`${line.type}-${line.code ?? line.label}-${index}`}
                       className="flex justify-between text-xs md:text-sm"
                     >
-                      <span className="text-muted-foreground">{line.label}:</span>
+                      <span className="text-muted-foreground">{orderDiscountLabel(line, tCheckout)}:</span>
                       <span
                         className="text-green-600 font-medium"
                         dangerouslySetInnerHTML={{

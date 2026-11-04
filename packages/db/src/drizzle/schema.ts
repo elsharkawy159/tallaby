@@ -71,6 +71,8 @@ export type OrderDiscountType =
 	| 'seller_discount'
 	/** A cross-sell offer (F-32); lowers the offer line's total. */
 	| 'cross_sell'
+	/** A quantity tier (F-07); lowers the product's line totals. */
+	| 'quantity_offer'
 
 export type OrderCouponDiscountType =
 	| 'percentage'

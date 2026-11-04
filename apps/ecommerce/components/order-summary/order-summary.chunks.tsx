@@ -13,6 +13,7 @@ import { applyCouponToCart, removeCouponFromCart } from '@/actions/coupons'
 import { toast } from 'sonner'
 import { formatVariantTitle } from '@/lib/variant-utils'
 import { cn } from '@workspace/ui/lib/utils'
+import { orderDiscountLabel } from '@/lib/order-discount-label'
 import type {
   AppliedCouponInfo,
   OrderSummaryItem,
@@ -336,7 +337,7 @@ export function OrderSummaryCostRows ({
                       )}
                     </>
                   )
-                  : line.label}
+                  : orderDiscountLabel(line, t)}
               </span>
               <span
                 className='font-medium text-green-600'

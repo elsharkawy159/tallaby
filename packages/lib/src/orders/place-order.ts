@@ -58,8 +58,7 @@ import { sendOrderConfirmationEmail, sendOrderEventEmail } from './notify'
 import { computeOrderLineFees, type PlatformFeeSnapshot } from './platform-fee.lib'
 import { detectFeeHolds } from './fee-hold.server'
 import { getBillingState } from '../billing/billing.server'
-import { CROSS_SELL_LABEL, type CrossSellSnapshot } from './cross-sell.lib'
-import { crossSellForCart } from './cross-sell.server'
+import { storeCartDiscounts } from './line-discounts.server'
 import { isCodEligibleForShipping, parseWalletPartialPaymentMethod } from './payment.lib'
 import {
   isStorefrontCheckoutMethodAllowed,
@@ -472,7 +471,7 @@ export async function placeOrderFromCart(
       commissionRate: 0,
       commissionAmount: '0.00',
       sellerEarning: formatDecimal(itemSubtotal),
-      metadata: null as { platformFee?: PlatformFeeSnapshot; crossSell?: CrossSellSnapshot } | null,
+      metadata: null as ({ platformFee?: PlatformFeeSnapshot } & Record<string, unknown>) | null,
       currency: cart.currency || 'EGP',
       condition: item.product.condition,
       fulfillmentType: item.product.fulfillmentType,
@@ -483,25 +482,19 @@ export async function placeOrderFromCart(
   // Line discounts sit beside the coupon's on orders.discounts.
   const lineDiscountLines: OrderDiscountLine[] = []
 
-  // Cross-sell offers (ROADMAP.md F-32): worked out here from the database,
-  // never from the client. They come out of the seller's own line, and without
-  // an offer every number stays as it was.
+  // Line offers (quantity tiers F-07, cross-sell F-32): the biggest one per
+  // line, worked out here from the database, never from the client. They come
+  // out of the seller's own line, and without an offer every number stays as it was.
   if (orderSource === 'storefront' && cart.storeId) {
-    const crossSell = await crossSellForCart(cart.storeId, cart.cartItems)
-    crossSell.lines.forEach((result, index) => {
-      if (result.discountPiastres <= 0 || !result.snapshot) return
+    const offers = await storeCartDiscounts(cart.storeId, cart.cartItems)
+    offers.lines.forEach((offer, index) => {
+      if (!offer || offer.discountPiastres <= 0) return
       const item = orderItemsData[index]!
-      item.discountAmount = formatDecimal(result.discountPiastres / 100)
-      item.total = formatDecimal(Number(item.subtotal) - result.discountPiastres / 100)
-      item.metadata = { crossSell: result.snapshot }
+      item.discountAmount = formatDecimal(offer.discountPiastres / 100)
+      item.total = formatDecimal(Number(item.subtotal) - offer.discountPiastres / 100)
+      item.metadata = { ...offer.metadata }
     })
-    if (crossSell.totalPiastres > 0) {
-      lineDiscountLines.push({
-        type: 'cross_sell',
-        label: CROSS_SELL_LABEL,
-        amount: formatDecimal(crossSell.totalPiastres / 100),
-      })
-    }
+    lineDiscountLines.push(...offers.discountLines)
   }
 
   let merchandiseDiscount = 0

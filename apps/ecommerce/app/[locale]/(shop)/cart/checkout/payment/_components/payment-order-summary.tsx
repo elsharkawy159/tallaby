@@ -3,6 +3,7 @@ import {
   computeManualRemainderAmount,
   getWalletPaidAmountFromMetadata,
 } from "@workspace/lib/orders/payment";
+import { orderDiscountLabel } from "@/lib/order-discount-label";
 import { parseOrderDiscountLines } from "@workspace/lib/orders";
 import { getLocale, getTranslations } from "next-intl/server";
 import type { getPaymobPaymentOrder } from "@/actions/paymob";
@@ -247,7 +248,7 @@ export async function PaymentOrderSummary({ order }: PaymentOrderSummaryProps) {
                 key={`${line.type}-${line.code ?? line.label}-${index}`}
                 className="text-green-600"
               >
-                {line.label}:{" "}
+                {orderDiscountLabel(line, tCheckout)}:{" "}
                 <span
                   className="font-medium"
                   dangerouslySetInnerHTML={{

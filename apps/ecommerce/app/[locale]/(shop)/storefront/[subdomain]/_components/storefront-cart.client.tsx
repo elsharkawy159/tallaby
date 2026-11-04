@@ -1,6 +1,8 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { CrossSellOffers } from "@/components/storefront/cross-sell-offers.client";
+import { getCartOffers, type CartOffersView } from "@/actions/cart-offers";
 import { useCurrencyLabel } from "@/lib/currency-label.client";
 import { ShoppingBag } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
@@ -39,6 +41,19 @@ export function StorefrontCart({
   const count = items.reduce((sum, i) => sum + i.quantity, 0);
   // The store's minimum order (F-13b): items subtotal before shipping and coupons, in piastres.
   const minOrderCheck = checkMinOrder(minOrder, itemsSubtotalPiastres(items));
+  // The offers on these lines (F-07, F-32), priced on the server like the order.
+  const [offers, setOffers] = useState<CartOffersView>({ lines: {}, totalPiastres: 0 });
+  const offersKey = items.map((item) => `${item.id}:${item.quantity}`).join(",");
+  useEffect(() => {
+    if (!offersKey) return;
+    let stale = false;
+    getCartOffers().then((view) => {
+      if (!stale) setOffers(view);
+    });
+    return () => {
+      stale = true;
+    };
+  }, [offersKey]);
 
   if (loading) {
     return (
@@ -111,6 +126,13 @@ export function StorefrontCart({
                     {t("variant", { name: variantTitle })}
                   </p>
                 )}
+                {offers.lines[item.id] && (
+                  <p className="text-xs font-medium text-(--sf-brand)">
+                    {t(offers.lines[item.id]!.kind === "quantity_offer" ? "quantityOfferSaving" : "bundleOfferSaving", {
+                      amount: formatPricePlain(offers.lines[item.id]!.discountPiastres / 100, locale, currencyLabel),
+                    })}
+                  </p>
+                )}
                 <div className="mt-auto flex items-center justify-between gap-2 pt-1">
                   <QuantitySelector
                     size="sm"
@@ -142,6 +164,12 @@ export function StorefrontCart({
             {formatPricePlain(subtotal, locale, currencyLabel)}
           </span>
         </div>
+        {offers.totalPiastres > 0 && (
+          <div className="flex items-baseline justify-between text-sm font-medium text-(--sf-brand)">
+            <span>{t("offersTotal")}</span>
+            <span className="tabular-nums">-{formatPricePlain(offers.totalPiastres / 100, locale, currencyLabel)}</span>
+          </div>
+        )}
         <p className="text-xs text-(--sf-muted)">{t("shippingNote")}</p>
         {minOrderCheck.ok ? (
           <Button asChild className={cn("h-12 w-full rounded-full text-base font-semibold", STORE_SOLID_BUTTON)}>

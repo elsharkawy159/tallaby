@@ -10,6 +10,8 @@ const base = {
   storeShipping: { kind: "zone" as const },
 };
 
+const offerLine = { type: "cross_sell" as const, label: "Bundle offer", amount: "10.00" };
+
 describe("checkout summary with a cross-sell offer", () => {
   it("shows the same numbers as before with no offer", () => {
     const summary = buildSummaryWithCoupon(base, null, null);
@@ -19,7 +21,7 @@ describe("checkout summary with a cross-sell offer", () => {
   });
 
   it("takes the offer off the total and lists it", () => {
-    const summary = buildSummaryWithCoupon({ ...base, crossSellDiscount: 10 }, null, null);
+    const summary = buildSummaryWithCoupon({ ...base, lineOffers: [offerLine] }, null, null);
     expect(summary.discountAmount).toBe(10);
     expect(summary.totalAfterDiscount).toBe(640);
     expect(summary.discounts).toEqual([{ type: "cross_sell", label: "Bundle offer", amount: "10.00" }]);
@@ -28,7 +30,7 @@ describe("checkout summary with a cross-sell offer", () => {
   it("adds to a coupon's discount", () => {
     const coupon = { id: "c", code: "X", name: "X", discountType: "percentage", discountValue: "10" };
     const summary = buildSummaryWithCoupon(
-      { ...base, crossSellDiscount: 10 },
+      { ...base, lineOffers: [offerLine] },
       coupon as never,
       { discountAmount: 59, shippingDiscount: 0, applicableSubtotal: 590, totalAfterDiscount: 0 },
     );

@@ -33,7 +33,8 @@ import {
   type CheckoutStoreShipping,
   type CheckoutSummary,
 } from "@/lib/coupon-utils";
-import { crossSellForCart } from "@workspace/lib/orders/cross-sell/server";
+import { storeCartDiscounts } from "@workspace/lib/orders/line-discounts/server";
+import type { OrderDiscountLine } from "@workspace/lib/orders";
 import type { ShippingAddress } from "@workspace/lib/shipping/store-quote";
 import { getUserWalletSummary } from "@workspace/db/wallet";
 import { getPendingCouponCode } from "@/lib/affiliate-coupon-cookie";
@@ -129,7 +130,7 @@ function buildBaseSummary(
   shippingCost: number | null,
   sellerFreeDeliveryDiscount = 0,
   storeShipping: CheckoutStoreShipping = null,
-  crossSellDiscount = 0,
+  lineOffers: OrderDiscountLine[] = [],
 ): CheckoutSummary {
   const subtotal = cartItems.reduce(
     (sum, item) => sum + Number(item.price) * item.quantity,
@@ -148,7 +149,7 @@ function buildBaseSummary(
       itemCount: cartItems.reduce((sum, item) => sum + item.quantity, 0),
       sellerFreeDeliveryDiscount,
       storeShipping,
-      crossSellDiscount,
+      lineOffers,
     },
     null,
     null,
@@ -179,13 +180,13 @@ export async function recalculateCheckoutSummary(data: {
     const { shippingCost, sellerFreeDeliveryDiscount, storeShipping } =
       await getCheckoutShipping(cart.cartItems, address, scope);
 
-    const crossSell = await crossSellForCart(cart.storeId, cart.cartItems);
+    const offers = await storeCartDiscounts(cart.storeId, cart.cartItems);
     const baseSummary = buildBaseSummary(
       cart.cartItems,
       shippingCost,
       sellerFreeDeliveryDiscount,
       storeShipping,
-      crossSell.totalPiastres / 100,
+      offers.discountLines,
     );
 
     if (data.couponCode?.trim()) {
@@ -268,13 +269,13 @@ export async function getCheckoutData() {
     const { shippingCost, sellerFreeDeliveryDiscount, storeShipping } =
       await getCheckoutShipping(localizedCartItems, defaultAddress, scope);
 
-    const crossSell = await crossSellForCart(cart.storeId, cart.cartItems);
+    const offers = await storeCartDiscounts(cart.storeId, cart.cartItems);
     let summary = buildBaseSummary(
       localizedCartItems,
       shippingCost,
       sellerFreeDeliveryDiscount,
       storeShipping,
-      crossSell.totalPiastres / 100,
+      offers.discountLines,
     );
 
     // Auto-apply a pending coupon captured from `?coupon=` (affiliate share)

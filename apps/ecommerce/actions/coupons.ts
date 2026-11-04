@@ -1,6 +1,6 @@
 "use server"
 
-import { crossSellForCart } from "@workspace/lib/orders/cross-sell/server"
+import { storeCartDiscounts } from "@workspace/lib/orders/line-discounts/server"
 import { unstable_cache, revalidateTag } from "next/cache"
 import { couponTags } from "@workspace/cache"
 import { db, cartItems, coupons, couponUsage, userAddresses, eq, and, sql, gte, lte, desc, isNull } from "@workspace/db"
@@ -194,15 +194,15 @@ export async function validateCoupon(
     }
 
     // Calculate cart totals
-    // A coupon stacks on the net price of a cross-sell line, as place-order does.
-    const crossSell = await crossSellForCart((await getCartScope())?.storeId, cart.cartItems)
+    // A coupon stacks on the net price of a line with an offer, as place-order does.
+    const offers = await storeCartDiscounts((await getCartScope())?.storeId, cart.cartItems)
     const cartItemsForCoupon: CartItemForCoupon[] = cart.cartItems.map((item, index) => ({
       id: item.id,
       productId: item.productId,
       sellerId: item.sellerId,
       categoryId: item.product?.categoryId,
       quantity: item.quantity,
-      price: Number(item.price) - (crossSell.lines[index]?.discountPiastres ?? 0) / 100 / item.quantity
+      price: Number(item.price) - (offers.lines[index]?.discountPiastres ?? 0) / 100 / item.quantity
     }))
 
     const subtotal = cart.cartItems.reduce(
@@ -265,7 +265,7 @@ export async function validateCoupon(
       itemCount: cart.cartItems.reduce((sum, i) => sum + i.quantity, 0),
       sellerFreeDeliveryDiscount,
       storeShipping,
-      crossSellDiscount: crossSell.totalPiastres / 100,
+      lineOffers: offers.discountLines,
     }
 
     const summary = buildSummaryWithCoupon(
@@ -423,7 +423,7 @@ export async function removeCouponFromCart(data?: {
       await getCheckoutShipping(cart.cartItems, address, scope)
     const billedShipping = shippingCost ?? 0
     const total = subtotal + tax + billedShipping
-    const crossSell = await crossSellForCart(cart.storeId, cart.cartItems)
+    const offers = await storeCartDiscounts(cart.storeId, cart.cartItems)
 
     const summary = buildSummaryWithCoupon(
       {
@@ -434,7 +434,7 @@ export async function removeCouponFromCart(data?: {
         itemCount: cart.cartItems.reduce((sum, i) => sum + i.quantity, 0),
         sellerFreeDeliveryDiscount,
         storeShipping,
-        crossSellDiscount: crossSell.totalPiastres / 100,
+        lineOffers: offers.discountLines,
       },
       null,
       null,
