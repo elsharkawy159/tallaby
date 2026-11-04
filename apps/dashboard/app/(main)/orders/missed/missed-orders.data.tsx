@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { listStoreCheckoutLeads, listStoreLeadSettings } from "@workspace/lib/checkout-leads/server";
 import type { LeadRange, LeadStatus } from "@workspace/lib/checkout-leads";
@@ -28,6 +29,15 @@ export async function MissedOrdersData({
     <section aria-label={t("title")} className="space-y-5">
       {/* No page title: the header breadcrumb already names the page. */}
       <p className="text-pretty text-sm text-muted-foreground">{t("description")}</p>
+      <p className="text-pretty text-sm text-muted-foreground">
+        {t("pendingCartsHint")}{" "}
+        <Link
+          href={selectedStore ? `/orders/pending-carts?store=${selectedStore}` : "/orders/pending-carts"}
+          className="font-medium text-primary underline-offset-4 hover:underline"
+        >
+          {t("pendingCartsLink")}
+        </Link>
+      </p>
       <MissedOrdersView leads={leads} stores={stores} storeId={selectedStore} range={range} status={status} />
     </section>
   );

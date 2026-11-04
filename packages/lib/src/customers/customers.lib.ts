@@ -61,13 +61,13 @@ export type StoreCustomer = {
 const trimmed = (value: string | null | undefined) => value?.trim() || null;
 
 /** Guest checkouts get a synthetic `guest_<uuid>@temp.local` address — never show it. */
-const realEmail = (email: string | null | undefined) => {
+export const realEmail = (email: string | null | undefined) => {
   const value = trimmed(email);
   return value && !value.includes("@temp.local") ? value : null;
 };
 
 /** Guests are users named "Guest User"; that placeholder is not a name. */
-const realName = (name: string | null | undefined) => {
+export const realName = (name: string | null | undefined) => {
   const value = trimmed(name);
   return value && value !== "Guest User" ? value : null;
 };

@@ -1020,7 +1020,7 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 ### F-67 Pending carts for sellers — P2 · owner request
 
 **Why:** Sellers can follow up with customers who have items in a cart but haven't ordered. Admin already has this page across all stores (`apps/admin/.../pending-carts`).
-**Status:** [Planned]
+**Status:** [Built, not deployed] 2026-11-04 (§7). Not seen in a browser.
 
 - **F-67a · P2 · deps: —** A Pending carts page in the seller's dashboard, for one store at a time: customer, items, value and last activity. It filters by `carts.store_id` for a store the session's seller owns (CLAUDE.md rule 5), with server paging. Contact details show only where the customer gave them. Check the overlap with Orders › Not completed (F-03) and decide whether to link or merge them.
 
@@ -1336,13 +1336,24 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-65c Hide زيارات المتجر from the sidebar (2026-11-04; not seen in a browser)
 - [ ] F-66a Email preview while editing
 - [ ] F-66b Easier emails page
-- [ ] F-67a Pending carts on the seller dashboard
+- [x] F-67a Pending carts on the seller dashboard (2026-11-04; no migration; not seen in a browser)
 - [x] F-68a First top-up: message, sidebar warning, blurred Orders page (2026-11-04; off until the USD switch; not seen in a browser)
 - [x] F-69a Campaign email allowance by plan, with extra emails (2026-11-04; 0146 on staging; not seen in a browser)
 
 ---
 
 ## 7. Log
+
+### 2026-11-04 — F-67 Pending carts for sellers (owner)
+
+- **Built:** Orders › Pending carts (`/orders/pending-carts`), one store at a time: customer, products, item count, value and last activity, newest first, paged on the server. It uses the sidebar's selected store, and a `?store=` link counts only if it's the seller's own.
+- **What's listed:** active carts of that store with at least one line not saved for later, active in the last 30 days. Same limit as Not completed, and a guest's cart cookie also lasts 30 days. Empty, completed and deleted-store carts stay out.
+- **Contact details:** what the customer typed at this store's checkout (`store_checkout_leads` linked by cart or user), then their account's name, phone and email. "Guest User" and `@temp.local` never show. A guest's name and phone in their account come from their own checkout. A customer with neither shows as Guest. WhatsApp (with the store's Not completed message) and Call appear only where a phone exists.
+- **Not completed:** kept separate, with one line and a link on each page. One person can be on both.
+- **Top-up lock (F-68):** the page shows the blurred placeholders and loads nothing, and the data uses `requireOrdersStore`. There are no server actions.
+- **Found:** `carts.last_activity` never changes after a cart is created, so this page also counts the lines' times. Admin's Pending carts and the paused abandoned-cart job still read the old value, so both treat a cart as older than it is. Not changed here.
+- **Index:** none needed. With 52,000 active carts (2,000 in the store) in a rolled-back staging test, it uses `carts_user_store_id_status_idx`, and the count and the page take about 15 ms each. No migration.
+- **Not seen in a browser.**
 
 ### 2026-11-04 — Same product title on two stores no longer sends shoppers home (bug fix)
 

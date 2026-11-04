@@ -36,6 +36,7 @@ import {
   ShieldCheck,
   Smartphone,
   ShoppingBag,
+  ShoppingCart,
   Star,
   Store,
   TrendingUp,
@@ -65,6 +66,7 @@ export type NavKey =
   // Sidebar groups and items added with the multi-store sitemap (PLAN.md §7.2)
   | "ordersGroup"
   | "missedOrders"
+  | "pendingCarts"
   | "customers"
   | "scanReturns"
   | "deliveryTracking"
@@ -140,6 +142,7 @@ export const DASHBOARD_ROUTES: DashboardRoute[] = [
   { href: "/reviews", title: "reviews", parent: "products", icon: Star },
   { href: "/orders", title: "orders", parent: "ordersGroup", icon: ShoppingBag },
   { href: "/orders/missed", title: "missedOrders", parent: "ordersGroup", icon: PhoneMissed },
+  { href: "/orders/pending-carts", title: "pendingCarts", parent: "ordersGroup", icon: ShoppingCart },
   { href: "/orders/customers", title: "customers", parent: "ordersGroup", icon: Users },
   // Scan returns hidden for now (owner, 2026-10-31).
   // { href: "/orders/scan", title: "scanReturns", parent: "ordersGroup", icon: ScanBarcode },

@@ -84,6 +84,8 @@ export const SIDEBAR_CONFIG: NavEntry[] = [
       { key: "orders", href: "/orders", countKey: "orders", status: "live", exact: true },
       // Missed orders: store checkouts with an address but no order (F-03).
       { key: "missedOrders", href: "/orders/missed", status: "live" },
+      // Customers with items in a store's cart who haven't ordered (F-67).
+      { key: "pendingCarts", href: "/orders/pending-carts", status: "live" },
       // Customers of a store, grouped from its orders by phone (F-01).
       { key: "customers", href: "/orders/customers", status: "live" },
       // Scan returns (F-04e) hidden for now: the /orders search finds the order (owner, 2026-10-31).

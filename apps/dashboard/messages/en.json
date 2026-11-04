@@ -193,6 +193,7 @@
     "storeApp": "Store app",
     "salesPopup": "Sales pop-up",
     "missedOrders": "Not completed",
+    "pendingCarts": "Pending carts",
     "customers": "Customers",
     "scanReturns": "Scan returns",
     "productTrash": "Trash",
@@ -6450,6 +6451,8 @@
       "title": "No missed orders",
       "body": "When a customer adds an address at your store's checkout and leaves without ordering, they show up here."
     },
+    "pendingCartsHint": "Customers who added items but haven't reached this step are listed in",
+    "pendingCartsLink": "Pending carts",
     "leftAgo": "Left {time}",
     "items": "{count, plural, one {# item} other {# items}}",
     "subtotal": "Subtotal",
@@ -6484,6 +6487,26 @@
       "readOnly": "This store is read-only.",
       "tooLong": "The message is too long (1,000 characters max).",
       "generic": "Something went wrong. Try again."
+    }
+  },
+  "pendingCarts": {
+    "title": "Pending carts",
+    "description": "Customers who have items in their cart on your store but haven't ordered. A cart leaves this list once they order, or after {days} days with no activity.",
+    "notCompletedHint": "Customers who also entered a shipping address at checkout are listed in",
+    "notCompletedLink": "Not completed",
+    "storeLabel": "Store: {name}",
+    "guest": "Guest",
+    "unnamedProduct": "Product",
+    "moreLines": "{count, plural, one {+# more product} other {+# more products}}",
+    "itemsLabel": "Items",
+    "items": "{count, plural, one {# item} other {# items}}",
+    "value": "Value",
+    "whatsapp": "WhatsApp",
+    "call": "Call",
+    "noContact": "No contact details yet",
+    "empty": {
+      "title": "No pending carts",
+      "body": "When a customer adds products to their cart on your store and doesn't order, they show up here. Share your store's link to bring in more visitors."
     }
   },
   "subscribers": {
