@@ -27,14 +27,14 @@ describe("store apps catalog", () => {
     expect(isStoreAppLive(getStoreApp("bosta")!)).toBe(true);
     expect(isStoreAppLive(getStoreApp("wassalha")!)).toBe(true);
     expect(isStoreAppLive(getStoreApp("tiktok_pixel")!)).toBe(false);
-    for (const key of ["mylerz", "jt_express", "aramex", "paypal", "tallaby_pay"]) {
+    for (const key of ["mylerz", "jt_express", "aramex", "paytabs", "moyasar", "paylink", "tabby", "paypal", "tallaby_pay"]) {
       expect(isStoreAppLive(getStoreApp(key)!), key).toBe(false);
     }
   });
 
   it("groups carriers and gateways for the Shipping and Payment methods pages", () => {
     expect(storeAppsInGroup("shipping").map((a) => a.key)).toEqual(["bosta", "wassalha", "mylerz", "jt_express", "aramex"]);
-    expect(storeAppsInGroup("payments").map((a) => a.key)).toEqual(["paymob", "kashier", "paypal", "tallaby_pay"]);
+    expect(storeAppsInGroup("payments").map((a) => a.key)).toEqual(["paymob", "kashier", "paytabs", "moyasar", "paylink", "tabby", "paypal", "tallaby_pay"]);
   });
 
   it("links apps with their own page", () => {

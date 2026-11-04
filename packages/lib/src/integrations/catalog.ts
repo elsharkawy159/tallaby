@@ -59,6 +59,10 @@ export const STORE_APPS = [
 
   { key: "paymob", group: "payments", kind: "gateway", provider: "paymob", page: "settings/payments", pricing: FREE },
   { key: "kashier", group: "payments", kind: "gateway", provider: "kashier", page: "settings/payments", pricing: FREE },
+  { key: "paytabs", group: "payments", kind: "gateway", pricing: FREE },
+  { key: "moyasar", group: "payments", kind: "gateway", pricing: FREE },
+  { key: "paylink", group: "payments", kind: "gateway", pricing: FREE },
+  { key: "tabby", group: "payments", kind: "gateway", pricing: FREE },
   { key: "paypal", group: "payments", kind: "gateway", pricing: FREE },
   { key: "tallaby_pay", group: "payments", kind: "gateway", pricing: FREE },
 

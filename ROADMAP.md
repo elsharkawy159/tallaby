@@ -1145,7 +1145,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-39d Backend webhook route (2026-10-30, uncommitted)
 - [ ] F-39e Manual E2E with Paymob and Kashier test accounts (needs 0130 on staging) (delayed by owner 2026-11-04)
 - [ ] F-39f Tallaby Pay, PayPal, refunds, unpaid card order auto-cancel (delayed by owner 2026-11-04)
-- [~] F-39g PayPal, Tabby, Moyasar, PayTabs, Paylink (2026-11-04, main; docs research first)
+- [ ] F-39g PayPal, Tabby, Moyasar, PayTabs, Paylink: shown as Soon (2026-11-04); design note `docs/superpowers/specs/2026-11-04-seller-gateways-design.md`; build waits for owner
 - [x] F-41 One store apps catalog for Apps, Shipping companies and Payment methods (2026-10-30, local `main`)
 - [x] F-12c Wassalha (Egypt Post) settings + Excel export (2026-10-30, local `main`; 0130 applied 2026-10-30)
 - [x] F-12d Shipping › Shipping companies card (2026-10-30, local `main`)
@@ -1364,6 +1364,10 @@ Add each new request here first, with the date and the owner's words, then turn 
 ---
 
 ## 7. Log
+
+### 2026-11-04 — New gateways shown as Soon (F-39g)
+
+- PayTabs, Moyasar, Paylink and Tabby join PayPal as Soon cards on Apps and Payment methods, so a seller can't connect them. Docs researched in `d5add365`. Nothing else is built. Non-EGP stores still take no online payment.
 
 ### 2026-11-04 — Store currency and selling abroad (F-61b, d, e); Saudi Riyal symbol
 

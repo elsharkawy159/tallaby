@@ -4807,6 +4807,26 @@
         "vendor": "Kashier",
         "description": "Card and mobile wallet payments on your store, paid straight to your own Kashier account."
       },
+      "paytabs": {
+        "name": "PayTabs",
+        "vendor": "PayTabs",
+        "description": "Card payments in several currencies, paid straight to your own PayTabs account. Coming soon."
+      },
+      "moyasar": {
+        "name": "Moyasar",
+        "vendor": "Moyasar",
+        "description": "Card payments for businesses registered in Saudi Arabia, paid to your own Moyasar account. Coming soon."
+      },
+      "paylink": {
+        "name": "Paylink",
+        "vendor": "Paylink",
+        "description": "Online payments for businesses in Saudi Arabia, paid to your own Paylink account. Coming soon."
+      },
+      "tabby": {
+        "name": "Tabby",
+        "vendor": "Tabby",
+        "description": "Customers pay in installments. For businesses in Saudi Arabia and the UAE, with your own Tabby account. Coming soon."
+      },
       "paypal": {
         "name": "PayPal",
         "vendor": "PayPal",

@@ -75,6 +75,10 @@ export const APP_BRANDS: Record<StoreAppKey, AppBrand> = {
   aramex: { icon: PARCEL_ICON, bg: "#DC291E", fg: "#FFFFFF", image: "/app-logos/aramex.png" },
   paymob: { icon: CARD_ICON, bg: "#1863DC", fg: "#FFFFFF", image: "/app-logos/paymob.png" },
   kashier: { icon: CARD_ICON, bg: "#5B2BE0", fg: "#FFFFFF", image: "/app-logos/kashier.png" },
+  paytabs: { icon: CARD_ICON, bg: "#1F3A5F", fg: "#FFFFFF", dark: true },
+  moyasar: { icon: CARD_ICON, bg: "#0E7C66", fg: "#FFFFFF", dark: true },
+  paylink: { icon: CARD_ICON, bg: "#2B4C9B", fg: "#FFFFFF", dark: true },
+  tabby: { icon: CARD_ICON, bg: "#3BFFC1", fg: "#292929" },
   paypal: { icon: siPaypal, bg: "#003087", fg: "#FFFFFF", dark: true },
   tallaby_pay: { icon: CARD_ICON, bg: "#0A5C4F", fg: "#FFFFFF", dark: true, image: "/logo/logo.png" },
 };
