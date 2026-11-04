@@ -7,7 +7,7 @@ import { getStoreTopUp } from "@workspace/lib/store-wallet/server";
 import { Button } from "@workspace/ui/components/button";
 import { Card, CardContent } from "@workspace/ui/components/card";
 import { isAccessError, requireSeller } from "@/lib/auth/require-seller.server";
-import { formatWalletMoney } from "@/lib/i18n/format";
+import { walletMoney } from "../store-wallet.lib";
 
 export const dynamic = "force-dynamic";
 
@@ -44,7 +44,7 @@ export default async function TopUpReturnPage({
           />
           <h1 className="text-lg font-bold">{t(`result.${state}.title`)}</h1>
           <p className="text-pretty text-sm text-muted-foreground">
-            {t(`result.${state}.description`, { amount: formatWalletMoney(Number(credit.amount), credit.currency, locale) })}
+            {t(`result.${state}.description`, { amount: walletMoney(Number(credit.amount), credit.currency, locale) })}
           </p>
           <div className="flex gap-2">
             {state === "processing" && (

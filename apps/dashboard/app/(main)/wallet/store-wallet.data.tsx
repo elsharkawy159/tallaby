@@ -28,7 +28,7 @@ import {
 } from "@workspace/ui/components/table";
 import { cn } from "@workspace/ui/lib/utils";
 import { getBillingState } from "@workspace/lib/billing/server";
-import { formatDate, formatMoney, formatWalletMoney } from "@/lib/i18n/format";
+import { formatDate } from "@/lib/i18n/format";
 import { translateStatus } from "@/lib/i18n/status";
 import {
   ENTRIES_PAGE_SIZE,
@@ -38,7 +38,7 @@ import {
   listStoreWalletEntries,
   type EntryFilter,
 } from "./store-wallet.server";
-import { FEE_PER_ORDER_EGP, FEE_PER_ORDER_USD, ordersCovered } from "./store-wallet.lib";
+import { FEE_PER_ORDER_EGP, FEE_PER_ORDER_USD, ordersCovered, walletMoney } from "./store-wallet.lib";
 import { TopUpPanel } from "./top-up.client";
 
 /** The runway bar is full at this many orders. */
@@ -84,7 +84,7 @@ export async function StoreWalletSection({
   ]);
   if (!overview) return null;
   const usd = overview.currency === "USD";
-  const money = (value: string | number) => formatWalletMoney(value, overview.currency, locale);
+  const money = (value: string | number) => walletMoney(value, overview.currency, locale);
 
   const balance = Number(overview.balance);
   const trial = getFeeTrialStatus({
@@ -139,19 +139,18 @@ export async function StoreWalletSection({
                 )}
               </h2>
               <p
-                dir="ltr"
                 className={cn(
-                  "text-start text-3xl font-bold tabular-nums rtl:text-end",
+                  "text-start text-3xl font-bold tabular-nums",
                   signedClass(balance),
                 )}
               >
-                {money(balance)}
+                <bdi>{money(balance)}</bdi>
               </p>
               {pendingTotal > 0 && (
                 <p className="mb-1 inline-flex items-center gap-1.5 rounded-full bg-accent-soft px-2.5 py-0.5 text-xs font-medium text-accent-ink">
                   <Clock className="size-3.5" aria-hidden />
                   {t("pendingTopUps", {
-                    amount: formatMoney(pendingTotal, locale),
+                    amount: walletMoney(pendingTotal, "EGP", locale),
                   })}
                 </p>
               )}
@@ -268,8 +267,8 @@ export async function StoreWalletSection({
                         )}
                       </p>
                     </div>
-                    <p dir="ltr" className="font-semibold tabular-nums">
-                      {formatMoney(Number(r.amount), locale)}
+                    <p className="font-semibold tabular-nums">
+                      <bdi>{walletMoney(Number(r.amount), "EGP", locale)}</bdi>
                     </p>
                   </li>
                 );
@@ -370,17 +369,17 @@ export async function StoreWalletSection({
                           signedClass(amount),
                         )}
                       >
-                        <bdi dir="ltr">
+                        <bdi>
                           {amount > 0 ? "+" : ""}
-                          {formatWalletMoney(amount, entry.currency, locale)}
+                          {walletMoney(amount, entry.currency, locale)}
                         </bdi>
                       </TableCell>
                       <TableCell className="text-end tabular-nums text-muted-foreground">
                         {entry.balanceAfter == null ? (
                           "—"
                         ) : (
-                          <bdi dir="ltr">
-                            {formatWalletMoney(Number(entry.balanceAfter), entry.currency, locale)}
+                          <bdi>
+                            {walletMoney(Number(entry.balanceAfter), entry.currency, locale)}
                           </bdi>
                         )}
                       </TableCell>

@@ -234,7 +234,7 @@
     "settingsGroup": "Store settings",
     "ordersGroup": "Orders",
     "deliveryTracking": "Delivery tracking",
-    "riders": "Riders",
+    "riders": "Your own riders",
     "shippingSettings": "Shipping settings",
     "websiteContent": "Online Store",
     "websiteOverview": "Overview",
@@ -2842,7 +2842,7 @@
       "cashHint": "COD on open deliveries"
     },
     "deliveries": "Deliveries ({count})",
-    "riders": "Riders ({count})",
+    "riders": "Your own riders ({count})",
     "tabs": {
       "all": "All",
       "ready": "Ready to ship",
@@ -5178,7 +5178,7 @@
     "negative": "Your balance is below zero. New sales pay it back automatically, or you can top up at any time.",
     "negativeStrong": "Your balance is well below zero. Top up soon: until it recovers, ads and other paid services can't be paid from the wallet.",
     "howTitle": "How the platform fee works",
-    "howUsd": "On the Free plan, Tallaby takes {fee} from your wallet for each new order; the Pro plan has no order fee. A test or duplicate order is charged only if it is delivered. The order amount is never added to the wallet, and your balance can go below zero.",
+    "howUsd": "On the Free plan, Tallaby takes {fee} from your wallet for each new order; the Pro plan has no order fee. A test or duplicate order is charged only if it is delivered. The order amount is never added to the wallet.",
     "how": "For each new order, Tallaby takes a flat EGP 5 from your wallet when the order is placed, whatever the total. An order that looks like a test (a name like \"test\" or a phone like 01000000000) or a duplicate (same customer and same products within 2 hours) is charged only if it is delivered. The order amount is never added to the wallet. If your balance is zero or less, it goes below zero.",
     "trialActive": "Free trial: {days, plural, one {# day} other {# days}} left, no fee on orders placed until {date}.",
     "trialNotStarted": "Your 7-day free trial starts when your first store is created.",
@@ -5218,7 +5218,7 @@
       }
     },
     "manualTopUp": {
-    "limitsUsd": "From $5 to $1,000. You pay in EGP at the rate shown.",
+      "limitsUsd": "From $5 to $1,000. You pay in EGP at the rate shown.",
       "button": "Top up wallet",
       "title": "Top up wallet",
       "description": "Transfer the amount from your wallet or bank, then upload a picture of the receipt.",

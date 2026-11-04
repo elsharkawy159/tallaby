@@ -37,13 +37,11 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
 import { BUTTON_CLASS, FIELD_CLASS } from "@/components/form/form-ui";
-import { CURRENCY_CODE } from "@/components/form/currency-input";
 import { uploadOwnFolderFile } from "@/components/inputs/use-seller-upload";
 import { PaymentMethodLogo } from "@/components/payments/payment-method-logo";
-import { formatMoney, formatWalletMoney } from "@/lib/i18n/format";
 import { cn } from "@/lib/utils";
 import { FREE_ORDER_FEE_USD_CENTS, minorToAmount, parseUsdTopUp, quoteTopUp, type BillingState } from "@workspace/lib/billing";
-import { DEFAULT_TOP_UP_USD, POPULAR_TOP_UP, POPULAR_TOP_UP_USD, TOP_UP_PRESETS, TOP_UP_PRESETS_USD, TOP_UP_STEP_EGP, TOP_UP_STEP_USD, ordersCovered, stepTopUpAmount, stepUsdTopUp } from "./store-wallet.lib";
+import { DEFAULT_TOP_UP_USD, POPULAR_TOP_UP, POPULAR_TOP_UP_USD, TOP_UP_PRESETS, TOP_UP_PRESETS_USD, TOP_UP_STEP_EGP, TOP_UP_STEP_USD, ordersCovered, stepTopUpAmount, stepUsdTopUp, walletMoney, walletPoundLabel } from "./store-wallet.lib";
 import { submitManualTopUp } from "./top-up.server";
 
 const STEPS = ["method", "transfer", "receipt"] as const;
@@ -53,6 +51,20 @@ type Step = (typeof STEPS)[number] | "done";
 const METHOD_COLOR: Record<ManualTopUpMethod, string> = {
   instapay: "#3D1F73",
   vodafone_cash: "#E60000",
+};
+
+/**
+ * How a preset card sizes itself, by how many presets there are. The columns follow the space the
+ * cards really get (the summary column squeezes it at lg), so the wrapper's parent is a @container.
+ * Each basis is (100% - the gaps) / columns, taken at the larger 10px gap; flex-1 fills the rest.
+ * Thresholds are the narrowest width where the longest English line and the badge still fit. Where the columns
+ * don't divide the cards evenly, min-h keeps a full row square and the short last row wider than tall.
+ */
+const PRESET_CARD_LAYOUT: Record<number, string> = {
+  // 2 square, then 3 + 3 + 2, then 4 + 4 square, then 8 square.
+  8: "aspect-square basis-[calc((100%-10px)/2)] @[290px]:aspect-auto @[290px]:min-h-[calc((100cqw-20px)/3)] @[290px]:basis-[calc((100%-20px)/3)] @[400px]:aspect-square @[400px]:min-h-auto @[400px]:basis-[calc((100%-30px)/4)] @[820px]:basis-[calc((100%-70px)/8)]",
+  // 3 + 2, then 5 square.
+  5: "min-h-[calc((100cqw-20px)/3)] basis-[calc((100%-20px)/3)] @[480px]:aspect-square @[480px]:min-h-auto @[480px]:basis-[calc((100%-40px)/5)]",
 };
 
 /** "01003272830" → "0100 327 2830", easier to read off a screen and type into a wallet app. */
@@ -95,6 +107,7 @@ export function TopUpPanel({
   const [open, setOpen] = useState(Boolean(defaultOpen) && !disabled);
   const [step, setStep] = useState<Step>("method");
   const usd = Boolean(billing?.usdLive);
+  const presets = usd ? TOP_UP_PRESETS_USD : TOP_UP_PRESETS;
   const [amount, setAmount] = useState(usd ? String(DEFAULT_TOP_UP_USD) : "250");
   const [method, setMethod] = useState<ManualTopUpMethod>(MANUAL_TOP_UP_METHODS[0]);
   const [senderPhone, setSenderPhone] = useState("");
@@ -115,8 +128,8 @@ export function TopUpPanel({
         : { success: false, error: "invalid" }
       : { success: false, error: usdParsed?.error ?? "invalid" };
   const value = Number(amount) || 0;
-  const money = !parsed.success ? "" : quote ? formatMoney(quote.totalPiastres / 100, locale) : formatMoney(parsed.amount, locale);
-  const credited = parsed.success ? formatWalletMoney(parsed.amount, usd ? "USD" : "EGP", locale) : "—";
+  const money = !parsed.success ? "" : walletMoney(quote ? quote.totalPiastres / 100 : parsed.amount, "EGP", locale);
+  const credited = parsed.success ? walletMoney(parsed.amount, usd ? "USD" : "EGP", locale) : "—";
   const account = TALLABY_TOP_UP_ACCOUNTS[method];
   const methodLabel = t(`methods.${method}.name`);
   // Only a typed amount gets an error; an empty field just shows the limits.
@@ -218,48 +231,61 @@ export function TopUpPanel({
 
           <fieldset disabled={disabled}>
             <legend className="mb-2 text-[13px] font-semibold">{t("panel.presets")}</legend>
-            {/* USD: 8 cards in even rows. At lg the summary column squeezes this one, so back to 2 until xl. */}
-            <div className={cn("grid grid-cols-2 gap-2 pt-2 sm:gap-2.5", usd ? "sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4" : "sm:grid-cols-3 xl:grid-cols-5")}>
-              {(usd ? TOP_UP_PRESETS_USD : TOP_UP_PRESETS).map((preset) => {
-                const selected = value === preset;
-                // What the seller pays for this card, the same figure as the summary's total.
-                const presetQuote = usd && billing ? quoteTopUp(preset * 100, billing) : null;
-                return (
-                  <button
-                    key={preset}
-                    type="button"
-                    aria-pressed={selected}
-                    onClick={() => setAmount(String(preset))}
-                    className={cn(
-                      "relative flex flex-col items-center justify-center gap-0.5 rounded-2xl border-[1.5px] bg-card transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 active:scale-[0.98] disabled:opacity-60",
-                      usd ? "min-h-[92px] min-w-0 px-1 pb-2 pt-[18px]" : "h-[72px] sm:h-[84px]",
-                      selected ? "border-primary bg-primary-soft" : "hover:border-input hover:bg-muted/40",
-                    )}
-                  >
-                    {preset === (usd ? POPULAR_TOP_UP_USD : POPULAR_TOP_UP) && (
-                      <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-accent px-2 text-[10.5px] font-bold leading-5 text-accent-foreground">
-                        {t("panel.popular")}
+            <div className="@container">
+              {/* gap-y-3 clears the popular badge, which sticks up 10px when its card wraps to a lower row. */}
+              <div className="flex flex-wrap gap-x-2 gap-y-3 pt-2 sm:gap-x-2.5">
+                {presets.map((preset) => {
+                  const selected = value === preset;
+                  // What the seller pays for this card, the same figure as the summary's total.
+                  const presetQuote = usd && billing ? quoteTopUp(preset * 100, billing) : null;
+                  return (
+                    <button
+                      key={preset}
+                      type="button"
+                      aria-pressed={selected}
+                      onClick={() => setAmount(String(preset))}
+                      className={cn(
+                        // pt-[22px] is the circle's top-1.5 + size-4, so the amount always starts below it.
+                        "relative flex flex-1 flex-col items-center justify-center gap-0.5 rounded-2xl border-[1.5px] bg-card px-0.5 pb-1.5 pt-[22px] text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 active:scale-[0.98] disabled:opacity-60",
+                        PRESET_CARD_LAYOUT[presets.length],
+                        selected ? "border-primary bg-primary-soft" : "hover:border-input hover:bg-muted/40",
+                      )}
+                    >
+                      {preset === (usd ? POPULAR_TOP_UP_USD : POPULAR_TOP_UP) && (
+                        // leading-4 ends the badge exactly where the circle starts, so the two never touch on a narrow card.
+                        <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-accent px-1 text-[10.5px] @[290px]:px-2 font-bold leading-4 text-accent-foreground">
+                          {t("panel.popular")}
+                        </span>
+                      )}
+                      <span
+                        className={cn(
+                          "absolute end-1.5 top-1.5 grid size-4 place-items-center rounded-full border-[1.5px] text-primary-foreground transition-colors duration-200 motion-reduce:transition-none",
+                          selected ? "border-primary bg-primary" : "border-muted-foreground/40 bg-card",
+                        )}
+                      >
+                        <Check
+                          className={cn(
+                            "size-3 stroke-3 transition-[opacity,scale] duration-200 motion-reduce:transition-none",
+                            selected ? "scale-100 opacity-100" : "scale-50 opacity-0",
+                          )}
+                          aria-hidden
+                        />
                       </span>
-                    )}
-                    {selected && (
-                      <span className={cn("absolute grid place-items-center rounded-full bg-primary text-primary-foreground", usd ? "end-1.5 top-1.5 size-4" : "end-2 top-2 size-[18px]")}>
-                        <Check className="size-3 stroke-3" aria-hidden />
+                      <bdi dir="ltr" className={cn("text-lg/6 font-extrabold tabular-nums", selected && "text-primary-ink")}>
+                        {usd ? "$" : ""}{preset.toLocaleString("en-US")}
+                      </bdi>
+                      <span className="whitespace-nowrap text-[11.5px]/4 text-muted-foreground">
+                        {t("panel.approxOrders", { count: ordersCovered(preset, usd ? "USD" : "EGP") })}
                       </span>
-                    )}
-                    <bdi dir="ltr" className={cn("text-lg font-extrabold tabular-nums", !usd && "sm:text-xl", selected && "text-primary-ink")}>
-                      {usd ? "$" : ""}{preset.toLocaleString("en-US")}
-                    </bdi>
-                    <span className="text-[11.5px] text-muted-foreground">
-                      {t("panel.approxOrders", { count: ordersCovered(preset, usd ? "USD" : "EGP") })}
-                    </span>
-                    {presetQuote && (
-                      <span className="text-[11.5px] text-muted-foreground">
-                        ≈ <bdi dir="ltr" className="tabular-nums">{formatMoney(presetQuote.totalPiastres / 100, locale)}</bdi>
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
+                      {presetQuote && (
+                        <span className="whitespace-nowrap text-[11.5px]/4 text-muted-foreground">
+                          ≈ <bdi className="tabular-nums">{walletMoney(presetQuote.totalPiastres / 100, "EGP", locale)}</bdi>
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </fieldset>
 
@@ -276,7 +302,7 @@ export function TopUpPanel({
               )}
             >
               <span className="flex items-center border-e bg-muted/40 px-4 font-mono text-sm font-semibold text-muted-foreground">
-                {usd ? "USD" : CURRENCY_CODE}
+                {usd ? "USD" : walletPoundLabel(locale)}
               </span>
               <input
                 ref={amountInput}
@@ -329,24 +355,24 @@ export function TopUpPanel({
           {quote && (
             <SummaryRow
               label={t("panel.summary.rate")}
-              value={`$1 = ${formatMoney(quote.rate, locale)}`}
+              value={`$1 = ${walletMoney(quote.rate, "EGP", locale)}`}
             />
           )}
           {quote && quote.taxPiastres > 0 && (
-            <SummaryRow label={t("panel.summary.tax")} value={formatMoney(quote.taxPiastres / 100, locale)} />
+            <SummaryRow label={t("panel.summary.tax")} value={walletMoney(quote.taxPiastres / 100, "EGP", locale)} />
           )}
           {!usd && <SummaryRow label={t("panel.summary.fee")} value={t("panel.summary.free")} />}
           <div className="flex items-baseline justify-between gap-3 border-t border-dashed pt-3 font-semibold">
             <span className="whitespace-nowrap">{t("panel.summary.total")}</span>
-            <bdi dir="ltr" className="whitespace-nowrap text-[22px] font-extrabold tabular-nums">
+            <bdi className="whitespace-nowrap text-[22px] font-extrabold tabular-nums">
               {total}
             </bdi>
           </div>
           <p className="flex items-center gap-1.5 text-[12.5px] text-muted-foreground">
             <TrendingUp className="size-[15px] shrink-0" aria-hidden />
             {t("panel.summary.after")}
-            <bdi dir="ltr" className="font-semibold text-success tabular-nums">
-              {parsed.success ? formatWalletMoney(balance + Number(parsed.amount), usd ? "USD" : "EGP", locale) : "—"}
+            <bdi className="font-semibold text-success tabular-nums">
+              {parsed.success ? walletMoney(balance + Number(parsed.amount), usd ? "USD" : "EGP", locale) : "—"}
             </bdi>
           </p>
           <Button type="button" variant="accent" className="h-[50px] w-full rounded-[14px] text-[15px] font-semibold" disabled={!canStart} onClick={start}>
@@ -377,7 +403,7 @@ export function TopUpPanel({
       <div className="fixed inset-x-0 bottom-0 z-30 mb-0 flex items-center gap-3 border-t bg-card px-4 py-3 shadow-[0_-6px_20px_rgba(20,81,99,0.08)] lg:hidden">
         <div className="min-w-0 flex-1">
           <p className="text-xs leading-snug text-muted-foreground">{t("panel.summary.amount")}</p>
-          <bdi dir="ltr" className="text-[19px] font-extrabold tabular-nums">
+          <bdi className="text-[19px] font-extrabold tabular-nums">
             {total}
           </bdi>
         </div>
@@ -426,8 +452,8 @@ export function TopUpPanel({
                 <div className="flex items-center justify-between gap-3 rounded-xl bg-primary-soft px-3.5 py-3 text-primary-ink">
                   <div>
                     <p className="text-xs opacity-85">{t("panel.summary.amount")}</p>
-                    <p dir="ltr" className="text-start text-xl font-extrabold tabular-nums rtl:text-end">
-                      {money}
+                    <p className="text-start text-xl font-extrabold tabular-nums">
+                      <bdi>{money}</bdi>
                     </p>
                   </div>
                   <button type="button" onClick={changeAmount} className="text-[12.5px] underline underline-offset-2">
@@ -492,8 +518,8 @@ export function TopUpPanel({
                   <div className="flex items-start justify-between gap-3 px-4 pb-3 pt-4">
                     <div className="min-w-0">
                       <p className="text-xs text-muted-foreground">{t("slip.sendExactly")}</p>
-                      <p dir="ltr" className="mt-1 text-start text-[28px] font-bold leading-none tabular-nums rtl:text-end">
-                        {money}
+                      <p className="mt-1 text-start text-[28px] font-bold leading-none tabular-nums">
+                        <bdi>{money}</bdi>
                       </p>
                     </div>
                     <CopyButton
@@ -621,7 +647,7 @@ export function TopUpPanel({
                 <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 rounded-xl bg-muted/40 px-3.5 py-3 text-[13px]">
                   <dt className="text-muted-foreground">{t("recap.amount")}</dt>
                   <dd className="text-end font-semibold">
-                    <bdi dir="ltr">{money}</bdi>
+                    <bdi>{money}</bdi>
                   </dd>
                   <dt className="text-muted-foreground">{t("recap.method")}</dt>
                   <dd className="text-end font-semibold">{methodLabel}</dd>
@@ -646,8 +672,8 @@ export function TopUpPanel({
                 <span className="grid size-16 place-items-center rounded-full bg-success-soft text-success">
                   <Check className="size-7" aria-hidden />
                 </span>
-                <p dir="ltr" className="text-3xl font-bold tabular-nums">
-                  {money}
+                <p className="text-3xl font-bold tabular-nums">
+                  <bdi>{money}</bdi>
                 </p>
                 <p className="max-w-sm text-pretty text-sm text-muted-foreground">{t("done.body", { method: methodLabel })}</p>
               </div>
@@ -705,7 +731,7 @@ function SummaryRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-baseline justify-between gap-3 text-[13.5px] text-muted-foreground">
       <span className="whitespace-nowrap">{label}</span>
-      <bdi dir="ltr" className="whitespace-nowrap font-semibold text-foreground tabular-nums">
+      <bdi className="whitespace-nowrap font-semibold text-foreground tabular-nums">
         {value}
       </bdi>
     </div>
