@@ -11,7 +11,7 @@ export const BLOCKED_TEST_DATABASE_URL = "postgres://blocked:blocked@127.0.0.1:1
  * (2026-11-04). So under Vitest anything but staging becomes an address that
  * can't connect. Outside tests this returns the address unchanged.
  */
-export function connectionStringForEnv(env: { DATABASE_URL?: string; VITEST?: string }): string {
+export function connectionStringForEnv(env: Record<string, string | undefined>): string {
   const url = env.DATABASE_URL!;
   if (!env.VITEST) return url;
   return url?.includes(STAGING_REF) ? url : BLOCKED_TEST_DATABASE_URL;

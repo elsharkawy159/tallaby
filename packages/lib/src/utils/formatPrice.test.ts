@@ -51,7 +51,7 @@ describe("price formatting", () => {
       expect(html).toContain('aria-label="ريال سعودي"');
       expect(html).toContain('width="1em"');
       expect(html).toContain('stroke="currentColor"');
-      expect(html).toContain('d="M14.5 4v11.22a1 1 0 0 0 1.242.97L20 15.2"');
+      expect(html).toContain('d="M14 4v9.523a1 1 0 001.371.928L19 13"');
       expect(html).not.toContain(SAUDI_RIYAL_LABEL);
       expect(formatPrice(300, "en", "sm", SAUDI_RIYAL_LABEL)).toContain('aria-label="Saudi riyal"');
     });
