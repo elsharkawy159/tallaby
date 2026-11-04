@@ -3121,7 +3121,7 @@
       },
       "delivery": {
         "question": "Who delivers my orders?",
-        "answer": "By default Tallaby delivers, and customers pay Tallaby's shipping rate for their governorate. You can also add your own riders, and set your store's shipping options in Shipping settings."
+        "answer": "You do. Tallaby doesn't deliver orders. Use your own riders or your own shipping company (you can connect your Bosta account from Apps & integrations), and set your store's shipping areas and rates in Shipping settings."
       },
       "fulfillment": {
         "question": "Can Tallaby store, pack or handle returns for me?",
@@ -3133,7 +3133,7 @@
       },
       "topUp": {
         "question": "How do I top up my wallet?",
-        "answerUsd": "Open Balance & top-ups and choose Top up. Pick an amount from $5 to $1,000; you see the total in EGP before you pay. Pay by card or mobile wallet on Kashier, or send it by Vodafone Cash or InstaPay and upload the transfer receipt. A receipt is credited once our team confirms the transfer.",
+        "answerUsd": "Open Balance & top-ups and choose Top up. Pick an amount from $5 to $1,000; you see the total in EGP before you pay. Send it by Vodafone Cash or InstaPay and upload the transfer receipt. Your balance is credited once our team confirms the transfer. Card top-ups are coming soon.",
         "answer": "Open Balance & top-ups and choose Top up. Send between EGP 100 and EGP 20,000 by Vodafone Cash or InstaPay, then upload the transfer receipt. Your balance updates once our team confirms the transfer."
       },
       "paymentMethods": {
