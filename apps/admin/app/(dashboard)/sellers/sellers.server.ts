@@ -599,9 +599,11 @@ export async function getSellerDetail(
           orders: countDistinct(orderItems.orderId),
           customers: countDistinct(orders.userId),
           itemsSold: sum(orderItems.quantity),
-          grossSales: sum(orderItems.total),
-          commission: sum(orderItems.commissionAmount),
-          earnings: sum(orderItems.sellerEarning),
+          // EGP orders only, so a total never adds two currencies (F-61).
+          grossSales: sql<string>`sum(${orderItems.total}) filter (where coalesce(${orders.currency}, 'EGP') = 'EGP')`,
+          commission: sql<string>`sum(${orderItems.commissionAmount}) filter (where coalesce(${orders.currency}, 'EGP') = 'EGP')`,
+          earnings: sql<string>`sum(${orderItems.sellerEarning}) filter (where coalesce(${orders.currency}, 'EGP') = 'EGP')`,
+          egpOrders: sql<number>`count(distinct ${orderItems.orderId}) filter (where coalesce(${orders.currency}, 'EGP') = 'EGP')`,
           refundedItems: sql<number>`count(*) filter (where ${orderItems.isRefunded} or ${orderItems.isReturned})`,
         })
         .from(orderItems)
@@ -614,7 +616,7 @@ export async function getSellerDetail(
           fullName: users.fullName,
           email: users.email,
           orders: countDistinct(orderItems.orderId),
-          totalSpent: sum(orderItems.total),
+          totalSpent: sql<string>`sum(${orderItems.total}) filter (where coalesce(${orders.currency}, 'EGP') = 'EGP')`,
           lastOrderAt: max(orders.createdAt),
         })
         .from(orderItems)
@@ -630,12 +632,13 @@ export async function getSellerDetail(
           productId: orderItems.productId,
           name: max(orderItems.productName),
           unitsSold: sum(orderItems.quantity),
-          revenue: sum(orderItems.total),
+          revenue: sql<string>`sum(${orderItems.total}) filter (where coalesce(${orders.currency}, 'EGP') = 'EGP')`,
         })
         .from(orderItems)
+        .innerJoin(orders, eq(orders.id, orderItems.orderId))
         .where(liveItems)
         .groupBy(orderItems.productId)
-        .orderBy(desc(sum(orderItems.total)))
+        .orderBy(desc(sql`sum(${orderItems.total}) filter (where coalesce(${orders.currency}, 'EGP') = 'EGP')`))
         .limit(5),
 
       db
@@ -645,6 +648,7 @@ export async function getSellerDetail(
           customerName: users.fullName,
           status: orders.status,
           total: sum(orderItems.total),
+          currency: orders.currency,
           createdAt: orders.createdAt,
         })
         .from(orderItems)
@@ -656,7 +660,8 @@ export async function getSellerDetail(
           orders.orderNumber,
           users.fullName,
           orders.status,
-          orders.createdAt
+          orders.createdAt,
+          orders.currency
         )
         .orderBy(desc(orders.createdAt))
         .limit(5),
@@ -715,7 +720,7 @@ export async function getSellerDetail(
         commission: Number(s?.commission ?? 0),
         earnings: Number(s?.earnings ?? 0),
         refundedItems: Number(s?.refundedItems ?? 0),
-        averageOrderValue: orderCount > 0 ? grossSales / orderCount : 0,
+        averageOrderValue: Number(s?.egpOrders ?? 0) > 0 ? grossSales / Number(s?.egpOrders) : 0,
       },
       topCustomers: customerRows.map((r) => ({
         id: r.id,
@@ -737,6 +742,7 @@ export async function getSellerDetail(
         customerName: r.customerName,
         status: r.status,
         total: Number(r.total ?? 0),
+        currency: r.currency,
         createdAt: r.createdAt,
       })),
     };

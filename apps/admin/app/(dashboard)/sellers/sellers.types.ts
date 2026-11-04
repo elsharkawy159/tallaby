@@ -184,6 +184,7 @@ export interface SellerRecentOrderRow {
   customerName: string | null;
   status: string | null;
   total: number;
+  currency?: string | null;
   createdAt: string | null;
 }
 

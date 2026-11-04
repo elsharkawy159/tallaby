@@ -3,7 +3,7 @@ import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@workspace/ui/components/card";
 import { logServerError } from "@workspace/db/log";
-import { formatCurrency } from "@workspace/lib";
+import { formatCurrency, type CurrencyLabel } from "@workspace/lib";
 import { getPaymentsOverviewForAdmin, type AdminPaymentsOverview } from "@workspace/lib/admin/server";
 import { getCurrentAdminUser } from "@/lib/auth/admin-auth";
 import { AdminTable, type AdminTableColumn } from "../_components/admin-table/admin-table";
@@ -15,10 +15,10 @@ import { summarizePayments, type PaymentGroup } from "./payments.lib";
 export const dynamic = "force-dynamic";
 
 const GROUP_CARDS: { group: PaymentGroup; title: string; help: string }[] = [
-  { group: "received", title: "Received", help: "Paid online or collected on delivery" },
-  { group: "pending", title: "Awaiting payment", help: "Pending or authorized" },
-  { group: "failed", title: "Failed", help: "Payment attempts that failed" },
-  { group: "refunded", title: "Refunded", help: "Fully or partly refunded" },
+  { group: "received", title: "Received", help: "Paid online or collected on delivery, EGP orders" },
+  { group: "pending", title: "Awaiting payment", help: "Pending or authorized, EGP orders" },
+  { group: "failed", title: "Failed", help: "Payment attempts that failed, EGP orders" },
+  { group: "refunded", title: "Refunded", help: "Fully or partly refunded, EGP orders" },
 ];
 
 const METHOD_COLUMNS: AdminTableColumn[] = [
@@ -27,7 +27,7 @@ const METHOD_COLUMNS: AdminTableColumn[] = [
   { id: "received", header: "Received", sortable: true, descFirst: true, align: "end" },
   { id: "pending", header: "Awaiting", sortable: true, descFirst: true, align: "end" },
   { id: "failed", header: "Failed / refunded", sortable: true, descFirst: true, align: "end" },
-  { id: "amount", header: "Order value", sortable: true, descFirst: true, align: "end" },
+  { id: "amount", header: "Order value (EGP)", sortable: true, descFirst: true, align: "end" },
 ];
 
 const TRANSACTION_COLUMNS: AdminTableColumn[] = [
@@ -66,7 +66,8 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
-const money = (amount: number) => formatCurrency(amount);
+const money = (amount: number, currency?: string | null) =>
+  formatCurrency(amount, undefined, undefined, (currency || "EGP") as CurrencyLabel);
 
 /**
  * Money coming in, from the database: customer payments as recorded on
@@ -185,7 +186,7 @@ export default async function PaymentsPage() {
                     {tx.transactionId ?? "—"}
                   </span>
                 ),
-                amount: <span className="tabular-nums">{money(tx.amount)}</span>,
+                amount: <span className="tabular-nums">{money(tx.amount, tx.currency)}</span>,
               },
             }))}
           />

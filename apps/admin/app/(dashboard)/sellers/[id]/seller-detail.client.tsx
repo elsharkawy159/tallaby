@@ -245,13 +245,13 @@ export function SellerDetailContent({
           icon={Users}
         />
         <Metric
-          label="Gross sales"
+          label="Gross sales (EGP orders)"
           value={formatCurrency(sales.grossSales)}
           hint={`Avg order ${formatCurrency(sales.averageOrderValue)}`}
           icon={TrendingUp}
         />
         <Metric
-          label="Seller earnings"
+          label="Seller earnings (EGP orders)"
           value={formatCurrency(sales.earnings)}
           hint="After platform fees"
           icon={Banknote}
@@ -418,7 +418,7 @@ export function SellerDetailContent({
                       </span>
                     </div>
                     <span className="font-medium">
-                      {formatCurrency(o.total)}
+                      {formatCurrency(o.total, o.currency)}
                     </span>
                   </li>
                 ))}

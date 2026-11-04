@@ -23,7 +23,9 @@ export async function getPaymentsOverviewForAdmin(q: Queryable = db) {
   const [byMethod, transactions, topUps] = await Promise.all([
     q.execute(sql`
       SELECT payment_method, payment_status::text AS payment_status,
-             count(*)::int AS orders, coalesce(sum(total_amount), 0)::text AS amount
+             count(*)::int AS orders,
+             -- EGP orders only, so a total never adds two currencies (F-61).
+             coalesce(sum(total_amount) FILTER (WHERE coalesce(currency, 'EGP') = 'EGP'), 0)::text AS amount
       FROM orders
       GROUP BY 1, 2
     `),

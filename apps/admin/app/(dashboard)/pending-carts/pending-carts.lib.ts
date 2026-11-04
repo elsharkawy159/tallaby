@@ -1,9 +1,10 @@
 import type { PendingCart } from "./pending-carts.types";
-import { formatCurrency as formatCurrencyValue } from "@workspace/lib";
+import { formatCurrency as formatCurrencyValue, type CurrencyLabel } from "@workspace/lib";
 import { getStorefrontBaseUrl } from "../products/products.lib";
 
-export const formatCurrency = (amount: number): string => {
-  return formatCurrencyValue(amount);
+/** An amount in its cart's own currency; missing means EGP. */
+export const formatCurrency = (amount: number, currency?: string | null): string => {
+  return formatCurrencyValue(amount, undefined, undefined, (currency || "EGP") as CurrencyLabel);
 };
 
 export const formatDate = (dateString: string | null | undefined): string => {

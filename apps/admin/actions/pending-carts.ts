@@ -588,7 +588,7 @@ export async function getPendingCartStats() {
           SELECT coalesce(sum(${cartItems.quantity} * ${cartItems.price}::numeric), 0)::float
           FROM ${cartItems}
           INNER JOIN ${carts} ON ${carts.id} = ${cartItems.cartId}
-          WHERE ${carts.status} = 'active'
+          WHERE ${carts.status} = 'active' AND coalesce(${carts.currency}, 'EGP') = 'EGP'
         ) AS cart_value,
         (
           SELECT count(DISTINCT ${carts.id})::int

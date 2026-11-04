@@ -55,7 +55,7 @@ export async function getAllCustomers(params?: {
           db
             .select({
               totalOrders: sql<number>`count(*)`,
-              totalSpent: sql<number>`sum(${orders.totalAmount})`,
+              totalSpent: sql<number>`sum(${orders.totalAmount}) filter (where coalesce(${orders.currency}, 'EGP') = 'EGP')`,
               lastOrderDate: sql<string>`max(${orders.createdAt})`,
             })
             .from(orders)
@@ -134,8 +134,8 @@ export async function getCustomerById(customerId: string) {
     const orderStats = await db
       .select({
         totalOrders: sql<number>`count(*)`,
-        totalSpent: sql<number>`sum(${orders.totalAmount})`,
-        averageOrderValue: sql<number>`avg(${orders.totalAmount})`,
+        totalSpent: sql<number>`sum(${orders.totalAmount}) filter (where coalesce(${orders.currency}, 'EGP') = 'EGP')`,
+        averageOrderValue: sql<number>`avg(${orders.totalAmount}) filter (where coalesce(${orders.currency}, 'EGP') = 'EGP')`,
       })
       .from(orders)
       .where(eq(orders.userId, customerId));

@@ -135,6 +135,7 @@ export async function getAdminOrders(query: AdminOrdersQuery = {}) {
         id: orders.id,
         orderNumber: orders.orderNumber,
         totalAmount: orders.totalAmount,
+        currency: orders.currency,
         status: orders.status,
         paymentStatus: orders.paymentStatus,
         paymentMethod: orders.paymentMethod,

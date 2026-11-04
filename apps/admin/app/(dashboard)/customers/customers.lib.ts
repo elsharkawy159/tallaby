@@ -1,8 +1,9 @@
 import type { Customer } from "./customers.types";
-import { formatCurrency as formatCurrencyValue } from "@workspace/lib";
+import { formatCurrency as formatCurrencyValue, type CurrencyLabel } from "@workspace/lib";
 
-export function formatCurrency(amount: number): string {
-  return formatCurrencyValue(amount);
+/** An amount in its order's own currency; missing means EGP. */
+export function formatCurrency(amount: number, currency?: string | null): string {
+  return formatCurrencyValue(amount, undefined, undefined, (currency || "EGP") as CurrencyLabel);
 }
 
 export function formatDate(date: string | null | undefined): string {

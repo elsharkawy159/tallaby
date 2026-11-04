@@ -50,7 +50,7 @@ export const OrderStatsCards = ({ stats }: OrderStatsCardsProps) => {
             {totalOrders.toLocaleString()}
           </div>
           <p className="text-xs text-muted-foreground">
-            {formatCurrency(totalRevenue)} total revenue
+            {formatCurrency(totalRevenue)} total revenue (EGP orders)
           </p>
         </CardContent>
       </Card>
@@ -119,7 +119,7 @@ export const OrderRow = ({ order }: OrderRowProps) => {
           </div>
           <div className="text-right">
             <div className="font-medium">
-              {formatCurrency(order.totalAmount)}
+              {formatCurrency(order.totalAmount, order.currency)}
             </div>
             <div className="text-sm text-gray-500 flex items-center gap-1">
               <Package className="h-3 w-3" />

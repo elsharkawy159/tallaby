@@ -584,14 +584,14 @@ export async function getOrderStats() {
       .select({
         status: orders.status,
         count: sql<number>`count(*)`,
-        totalRevenue: sql<number>`sum(${orders.totalAmount})`,
+        totalRevenue: sql<number>`sum(${orders.totalAmount}) filter (where coalesce(${orders.currency}, 'EGP') = 'EGP')`,
       })
       .from(orders)
       .groupBy(orders.status);
 
     const todayStats = await db
       .select({
-        revenue: sql<number>`sum(${orders.totalAmount})`,
+        revenue: sql<number>`sum(${orders.totalAmount}) filter (where coalesce(${orders.currency}, 'EGP') = 'EGP')`,
         orders: sql<number>`count(*)`,
       })
       .from(orders)
@@ -599,7 +599,7 @@ export async function getOrderStats() {
 
     const monthlyStats = await db
       .select({
-        revenue: sql<number>`sum(${orders.totalAmount})`,
+        revenue: sql<number>`sum(${orders.totalAmount}) filter (where coalesce(${orders.currency}, 'EGP') = 'EGP')`,
         orders: sql<number>`count(*)`,
       })
       .from(orders)

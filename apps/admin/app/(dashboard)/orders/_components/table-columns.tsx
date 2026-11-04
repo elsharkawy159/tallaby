@@ -177,7 +177,7 @@ export function getOrdersColumns(
       meta: { label: "Total" },
       cell: ({ row }) => {
         const amount = row.original.totalAmount;
-        return <div className="font-medium">{formatCurrency(amount)}</div>;
+        return <div className="font-medium">{formatCurrency(amount, row.original.currency)}</div>;
       },
     },
     {

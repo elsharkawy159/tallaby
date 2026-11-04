@@ -24,6 +24,7 @@ export interface RawOverviewDay {
   i: number
   date: string
   gmv: unknown
+  gmv_orders?: unknown
   orders: unknown
   delivered: unknown
   fees: unknown
@@ -40,6 +41,7 @@ export function splitDays (rows: RawOverviewDay[], range: number) {
   const days: OverviewDay[] = sorted.map((row) => ({
     date: row.date,
     gmv: toNumber(row.gmv),
+    gmvOrders: toNumber(row.gmv_orders),
     orders: toNumber(row.orders),
     fees: toNumber(row.fees),
     newStores: toNumber(row.new_stores)
@@ -55,6 +57,7 @@ export function splitDays (rows: RawOverviewDay[], range: number) {
     days: current,
     gmv: kpi(sum(current, 'gmv'), sum(previous, 'gmv')),
     orders: kpi(sum(current, 'orders'), sum(previous, 'orders')),
+    gmvOrders: sum(current, 'gmvOrders'),
     fees: kpi(sum(current, 'fees'), sum(previous, 'fees')),
     newStores: kpi(sum(current, 'newStores'), sum(previous, 'newStores')),
     deliveredOrders: sumRaw('delivered'),

@@ -132,7 +132,7 @@ export function CartQuickViewDialog({
             </div>
             <div>
               <p className="text-muted-foreground">Value</p>
-              <p className="font-medium">{formatCurrency(cart.totalValue)}</p>
+              <p className="font-medium">{formatCurrency(cart.totalValue, cart.currency)}</p>
             </div>
             <div>
               <p className="text-muted-foreground">Currency</p>
@@ -263,7 +263,7 @@ export function CartQuickViewDialog({
             ) : (
               <ul className="divide-y rounded-lg border">
                 {cart.items.map((item) => (
-                  <CartItemRow key={item.id} item={item} />
+                  <CartItemRow key={item.id} item={item} currency={cart.currency} />
                 ))}
               </ul>
             )}
@@ -360,7 +360,7 @@ function ReminderButton({
   );
 }
 
-function CartItemRow({ item }: { item: PendingCartItem }) {
+function CartItemRow({ item, currency }: { item: PendingCartItem; currency: string | null | undefined }) {
   const imageSrc = resolveProductImageUrl(item.productImage);
   const storefrontUrl = getStorefrontProductUrl(item.productSlug);
   const sku = item.variantSku ?? item.productSku;
@@ -427,9 +427,9 @@ function CartItemRow({ item }: { item: PendingCartItem }) {
             )}
           </div>
           <div className="shrink-0 text-right">
-            <p className="font-semibold">{formatCurrency(item.lineTotal)}</p>
+            <p className="font-semibold">{formatCurrency(item.lineTotal, currency)}</p>
             <p className="text-xs text-muted-foreground whitespace-nowrap">
-              {item.quantity} × {formatCurrency(item.price)}
+              {item.quantity} × {formatCurrency(item.price, currency)}
             </p>
           </div>
         </div>

@@ -10,6 +10,8 @@ export interface Order {
   /** The store it was placed in (orders.store_id). */
   store?: { id: string; name: string };
   totalAmount: number;
+  /** The order's own currency; missing means EGP. */
+  currency?: string | null;
   status:
     | "pending"
     | "payment_processing"
@@ -52,6 +54,7 @@ export interface Order {
   updatedAt: string;
 }
 
+/** Revenue fields count EGP orders only. */
 export interface OrderStats {
   byStatus: Array<{
     status: string | null;

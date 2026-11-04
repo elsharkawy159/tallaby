@@ -6,6 +6,7 @@ export interface CustomerOrder {
   id: string;
   orderNumber: string;
   totalAmount: string | number;
+  currency?: string | null;
   status: string | null;
   paymentStatus?: string | null;
   createdAt: string | null;

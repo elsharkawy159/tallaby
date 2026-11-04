@@ -57,13 +57,13 @@ export function CustomersContent({
           hint={`${percentOf(stats.customersFromStores, stats.buyers)} of buyers, from ${stats.originStoreCount.toLocaleString("en-EG")} ${stats.originStoreCount === 1 ? "store" : "stores"}`}
         />
         <KpiCard
-          label="Avg. spend per customer"
+          label="Avg. spend per customer (EGP orders)"
           value={formatCurrency(stats.averageSpendPerCustomer)}
           icon={<Wallet />}
           hint={`Across ${stats.buyers.toLocaleString("en-EG")} customers who ordered`}
         />
         <KpiCard
-          label="Avg. order value"
+          label="Avg. order value (EGP orders)"
           value={formatCurrency(stats.averageOrderValue)}
           icon={<ShoppingBag />}
           hint={`${stats.highValueCustomers.toLocaleString("en-EG")} customers spent over EGP 1,000`}

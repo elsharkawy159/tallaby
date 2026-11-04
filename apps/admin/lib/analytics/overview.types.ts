@@ -6,7 +6,10 @@ export type OverviewRange = (typeof OVERVIEW_RANGES)[number]
 /** One Cairo calendar day of the current window. */
 export interface OverviewDay {
   date: string
+  /** EGP orders only: other currencies are never added in. */
   gmv: number
+  /** Orders counted in `gmv`, for the average order. */
+  gmvOrders: number
   orders: number
   fees: number
   newStores: number
@@ -20,8 +23,11 @@ export interface OverviewKpi {
 
 export interface OverviewTrend {
   range: OverviewRange
+  /** EGP orders only: other currencies are never added in. */
   gmv: OverviewKpi
   orders: OverviewKpi
+  /** EGP orders in the current window, for the average order. */
+  gmvOrders: number
   /** Net platform fees (fees minus fee reversals) taken from store wallets. */
   fees: OverviewKpi
   /** Stores with at least one counted order in the window. */

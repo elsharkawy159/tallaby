@@ -46,7 +46,8 @@ const STATUS_COLORS: Record<string, string> = {
   returned: '#78716c'
 }
 
-const countedOrders = notInArray(orders.status, EXCLUDED_REVENUE_STATUSES)
+/** Counts EGP orders only, so revenue never adds two currencies (F-61). */
+const countedOrders = and(notInArray(orders.status, EXCLUDED_REVENUE_STATUSES), sql`coalesce(${orders.currency}, 'EGP') = 'EGP'`)
 
 /** Inline LIMIT so postgres.js never binds a JS number for int8. */
 const TOP_N = sql.raw('8') as unknown as number

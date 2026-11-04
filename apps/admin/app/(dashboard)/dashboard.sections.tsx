@@ -191,7 +191,7 @@ export async function KpiSection ({ range }: { range: OverviewRange }) {
   return (
     <section className="grid grid-cols-2 gap-5 lg:grid-cols-3 xl:grid-cols-5">
       <KpiTile
-        title="GMV"
+        title="GMV (EGP orders)"
         icon={Banknote}
         value={num(trend.gmv.current)}
         unit="EGP"
@@ -245,13 +245,13 @@ export async function TrendSection ({ range }: { range: OverviewRange }) {
   const summary: Array<[string, string]> = [
     ['Platform fees', money(trend.fees.current)],
     ['Delivered orders', num(trend.deliveredOrders)],
-    ['Average order', money(trend.orders.current > 0 ? trend.gmv.current / trend.orders.current : 0)],
+    ['Average order', money(trend.gmvOrders > 0 ? trend.gmv.current / trend.gmvOrders : 0)],
     ['Wallet top-ups', money(trend.topUps)]
   ]
   return (
     <Panel>
       <PanelHeader
-        title="GMV and platform fees"
+        title="GMV (EGP orders) and platform fees"
         description="Merchant sales processed vs. what Tallaby earned"
         action={
           <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
@@ -505,7 +505,7 @@ export async function StoresSection ({ range }: { range: OverviewRange }) {
                     <th className={th}>Store</th>
                     <th className={th}>Website</th>
                     <th className={cn(th, 'text-right')}>Orders</th>
-                    <th className={cn(th, 'text-right')}>GMV</th>
+                    <th className={cn(th, 'text-right')}>GMV (EGP)</th>
                     <th className={cn(th, 'text-right')}>Growth</th>
                     <th className={cn(th, 'text-right')}>Delivery rate</th>
                     <th className={cn(th, 'text-right')}>Wallet</th>

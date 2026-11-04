@@ -5,6 +5,7 @@
  * selects integration credentials, form submission contents or payment
  * method details.
  */
+import { parseStoreCurrency } from "../utils/formatPrice";
 import {
   and,
   cmsCollections,
@@ -164,7 +165,8 @@ export async function getStoreDirectoryStats(q: Queryable = db): Promise<AdminSt
         WHERE o.store_id IS NOT NULL AND o.created_at >= now() - interval '30 days') AS orders_30d,
       (SELECT coalesce(sum(o.total_amount), 0)::float FROM orders o
         WHERE o.store_id IS NOT NULL AND o.created_at >= now() - interval '30 days'
-          AND coalesce(o.status::text, '') NOT IN ('cancelled', 'refunded', 'returned')) AS revenue_30d,
+          AND coalesce(o.status::text, '') NOT IN ('cancelled', 'refunded', 'returned')
+          AND coalesce(o.currency, 'EGP') = 'EGP') AS revenue_30d,
       (SELECT count(DISTINCT o.store_id)::int FROM orders o
         WHERE o.store_id IS NOT NULL AND o.created_at >= now() - interval '30 days') AS stores_with_orders
     FROM stores st
@@ -353,7 +355,8 @@ export async function getStoreCommerceForAdmin(storeId: string, q: Queryable = d
     enabled: Boolean((entry as { enabled?: boolean } | undefined)?.enabled),
     codFee: key === "cod" ? ((entry as { fee?: number }).fee ?? 0) : null,
   }));
-  return { methods, zones };
+  return { currency: parseStoreCurrency(store?.settings).currency,
+    methods, zones };
 }
 
 /** Integrations tab and hub rows: public config only, never credentials. */

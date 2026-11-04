@@ -111,7 +111,7 @@ function orderAggregates() {
       userId: orders.userId,
       totalOrders: sql<number>`count(*)::int`.as("total_orders"),
       totalSpent:
-        sql<number>`coalesce(sum(${orders.totalAmount}), 0)::float`.as(
+        sql<number>`coalesce(sum(${orders.totalAmount}) filter (where coalesce(${orders.currency}, 'EGP') = 'EGP'), 0)::float`.as(
           "total_spent"
         ),
       lastOrderDate: sql<string>`max(${orders.createdAt})`.as(
@@ -315,7 +315,8 @@ export async function getCustomerListStats() {
       spend as (
         select ${orders.userId} as user_id,
                count(*)::int as order_count,
-               coalesce(sum(${orders.totalAmount}), 0)::float as spent
+               coalesce(sum(${orders.totalAmount}) filter (where coalesce(${orders.currency}, 'EGP') = 'EGP'), 0)::float as spent,
+               (count(*) filter (where coalesce(${orders.currency}, 'EGP') = 'EGP'))::int as egp_orders
         from ${orders}
         join customers c on c.id = ${orders.userId}
         group by ${orders.userId}
@@ -336,7 +337,7 @@ export async function getCustomerListStats() {
           join spend s on s.user_id = c.id) as origin_store_count,
         (select count(*)::int from spend where spent > ${HIGH_VALUE_THRESHOLD}) as high_value,
         (select coalesce(sum(spent), 0)::float from spend) as revenue,
-        (select coalesce(sum(order_count), 0)::int from spend) as order_count,
+        (select coalesce(sum(egp_orders), 0)::int from spend) as order_count,
         (select count(*)::int from spend) as buyers
     `);
 

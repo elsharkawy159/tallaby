@@ -59,6 +59,7 @@ function stockStatus(quantity: number) {
 export function AnalyticsDashboard({ data: commerce }: { data: CommerceAnalytics }) {
   return (
     <>
+      <p className="mb-3 text-xs text-muted-foreground">Money and order counts here cover EGP orders only.</p>
       <div className="mb-6 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">

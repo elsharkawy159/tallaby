@@ -212,9 +212,9 @@ export function getCustomersColumns({
     {
       accessorKey: "totalSpent",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Total Spent" />
+        <DataTableColumnHeader column={column} title="Total Spent (EGP)" />
       ),
-      meta: { label: "Total spent" },
+      meta: { label: "Total spent (EGP)" },
       cell: ({ row }) => {
         const amount = Number(row.getValue("totalSpent")) || 0;
         const formatted = new Intl.NumberFormat("en-EG", {

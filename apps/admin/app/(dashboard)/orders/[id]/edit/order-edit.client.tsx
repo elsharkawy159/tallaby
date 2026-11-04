@@ -287,7 +287,7 @@ export function OrderEditContent({ order }: OrderEditContentProps) {
                             }))
                           }
                         >
-                          Was {formatCurrency(originalPrice)}
+                          Was {formatCurrency(originalPrice, order.currency)}
                         </button>
                       )}
                     </div>
@@ -297,7 +297,7 @@ export function OrderEditContent({ order }: OrderEditContentProps) {
                         Line total
                       </p>
                       <p className="font-semibold">
-                        {formatCurrency(price * item.quantity)}
+                        {formatCurrency(price * item.quantity, order.currency)}
                       </p>
                     </div>
                   </div>
@@ -336,7 +336,7 @@ export function OrderEditContent({ order }: OrderEditContentProps) {
             <CardContent className="space-y-4 text-sm">
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">Subtotal</span>
-                <span className="font-medium">{formatCurrency(subtotal)}</span>
+                <span className="font-medium">{formatCurrency(subtotal, order.currency)}</span>
               </div>
 
               <div className="space-y-1">
@@ -381,7 +381,7 @@ export function OrderEditContent({ order }: OrderEditContentProps) {
                 />
                 {couponDiscountFloor > 0 && (
                   <p className="text-xs text-muted-foreground">
-                    {formatCurrency(couponDiscountFloor)} of this comes from a
+                    {formatCurrency(couponDiscountFloor, order.currency)} of this comes from a
                     coupon and is kept even if you enter less.
                   </p>
                 )}
@@ -424,18 +424,18 @@ export function OrderEditContent({ order }: OrderEditContentProps) {
                     onChange={(e) => setManualTotal(e.target.value)}
                   />
                   <p className="text-xs text-muted-foreground">
-                    Calculated total is {formatCurrency(computedTotal)}.
+                    Calculated total is {formatCurrency(computedTotal, order.currency)}.
                   </p>
                 </div>
               ) : null}
 
               <div className="flex items-center justify-between border-t pt-3 text-lg font-semibold">
                 <span>Total</span>
-                <span>{formatCurrency(finalTotal)}</span>
+                <span>{formatCurrency(finalTotal, order.currency)}</span>
               </div>
 
               <div className="flex items-center justify-between text-xs text-muted-foreground">
-                <span>Was {formatCurrency(originalTotal)}</span>
+                <span>Was {formatCurrency(originalTotal, order.currency)}</span>
                 {Math.abs(totalDelta) >= 0.01 && (
                   <span
                     className={
@@ -443,7 +443,7 @@ export function OrderEditContent({ order }: OrderEditContentProps) {
                     }
                   >
                     {totalDelta > 0 ? "+" : ""}
-                    {formatCurrency(totalDelta)}
+                    {formatCurrency(totalDelta, order.currency)}
                   </span>
                 )}
               </div>

@@ -1,8 +1,9 @@
 import { Order } from "./orders.types";
-import { formatCurrency as formatCurrencyValue } from "@workspace/lib";
+import { formatCurrency as formatCurrencyValue, type CurrencyLabel } from "@workspace/lib";
 
-export const formatCurrency = (amount: number): string => {
-  return formatCurrencyValue(amount);
+/** An amount in its order's own currency; missing means EGP. Admin is English text, so the code is the label. */
+export const formatCurrency = (amount: number, currency?: string | null): string => {
+  return formatCurrencyValue(amount, undefined, undefined, (currency || "EGP") as CurrencyLabel);
 };
 
 export const formatDate = (dateString: string): string => {

@@ -132,7 +132,7 @@ export function getPendingCartsColumns(
       meta: { label: "Value" },
       cell: ({ row }) => (
         <div className="font-medium">
-          {formatCurrency(row.original.totalValue)}
+          {formatCurrency(row.original.totalValue, row.original.currency)}
         </div>
       ),
     },

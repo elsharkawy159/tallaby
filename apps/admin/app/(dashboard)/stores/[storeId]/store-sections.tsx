@@ -491,7 +491,7 @@ export async function StoreCatalogSection({ store }: SectionProps) {
 }
 
 export async function StoreCommerceSection({ store }: SectionProps) {
-  const { methods, zones } = await getStoreCommerceForAdmin(store.id);
+  const { methods, zones, currency: storeLabel } = await getStoreCommerceForAdmin(store.id);
   return (
     <div className="grid gap-6 lg:grid-cols-3">
       <Card>
@@ -504,7 +504,7 @@ export async function StoreCommerceSection({ store }: SectionProps) {
               <li key={method.key} className="flex items-center justify-between">
                 <span>{PAYMENT_METHOD_LABELS[method.key] ?? method.key}</span>
                 <Badge variant={method.enabled ? "default" : "secondary"}>
-                  {method.enabled ? (method.codFee ? `On · fee ${method.codFee} EGP` : "On") : "Off"}
+                  {method.enabled ? (method.codFee ? `On · fee ${method.codFee} ${storeLabel}` : "On") : "Off"}
                 </Badge>
               </li>
             ))}
@@ -538,8 +538,8 @@ export async function StoreCommerceSection({ store }: SectionProps) {
                 ),
                 price: (
                   <span className="tabular-nums">
-                    {formatCurrency(Number(zone.price))}
-                    {zone.freeOver && <span className="block text-xs text-muted-foreground">free over {formatCurrency(Number(zone.freeOver))}</span>}
+                    {formatCurrency(Number(zone.price), undefined, undefined, storeLabel)}
+                    {zone.freeOver && <span className="block text-xs text-muted-foreground">free over {formatCurrency(Number(zone.freeOver), undefined, undefined, storeLabel)}</span>}
                   </span>
                 ),
                 days: (

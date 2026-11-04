@@ -65,7 +65,9 @@ export const getOverviewTrend = cache(async function getOverviewTrend (
       o AS (
         SELECT ((o.created_at AT TIME ZONE 'Africa/Cairo')::date - w.start_local::date) AS i,
           count(*) FILTER (WHERE o.status NOT IN ${EXCLUDED}) AS orders,
-          coalesce(sum(o.total_amount) FILTER (WHERE o.status NOT IN ${EXCLUDED}), 0) AS gmv,
+          -- EGP only, so the figure never adds two currencies (F-61).
+          coalesce(sum(o.total_amount) FILTER (WHERE o.status NOT IN ${EXCLUDED} AND coalesce(o.currency, 'EGP') = 'EGP'), 0) AS gmv,
+          count(*) FILTER (WHERE o.status NOT IN ${EXCLUDED} AND coalesce(o.currency, 'EGP') = 'EGP') AS gmv_orders,
           count(*) FILTER (WHERE o.status = 'delivered') AS delivered
         FROM orders o, w WHERE o.created_at >= w.start_at GROUP BY 1
       ),
@@ -94,6 +96,7 @@ export const getOverviewTrend = cache(async function getOverviewTrend (
       SELECT idx.i,
         to_char(w.start_local + idx.i * interval '1 day', 'YYYY-MM-DD') AS date,
         coalesce(o.gmv, 0)::numeric(14,2)::text AS gmv,
+        coalesce(o.gmv_orders, 0)::int AS gmv_orders,
         coalesce(o.orders, 0)::int AS orders,
         coalesce(o.delivered, 0)::int AS delivered,
         coalesce(f.fees, 0)::numeric(14,2)::text AS fees,
@@ -192,7 +195,7 @@ export async function getOverviewStores (range: OverviewRange): Promise<{
       cur AS (
         SELECT o.store_id,
           count(*) FILTER (WHERE o.status NOT IN ${EXCLUDED})::int AS orders,
-          coalesce(sum(o.total_amount) FILTER (WHERE o.status NOT IN ${EXCLUDED}), 0) AS gmv,
+          coalesce(sum(o.total_amount) FILTER (WHERE o.status NOT IN ${EXCLUDED} AND coalesce(o.currency, 'EGP') = 'EGP'), 0) AS gmv,
           count(*) FILTER (WHERE o.status = 'delivered')::int AS delivered,
           count(*) FILTER (WHERE o.status = 'returned')::int AS returned
         FROM orders o, w WHERE o.store_id IS NOT NULL AND o.created_at >= w.mid_at GROUP BY o.store_id
@@ -201,7 +204,7 @@ export async function getOverviewStores (range: OverviewRange): Promise<{
         SELECT o.store_id, coalesce(sum(o.total_amount), 0) AS gmv
         FROM orders o, w
         WHERE o.store_id IS NOT NULL AND o.created_at >= w.start_at AND o.created_at < w.mid_at
-          AND o.status NOT IN ${EXCLUDED}
+          AND o.status NOT IN ${EXCLUDED} AND coalesce(o.currency, 'EGP') = 'EGP'
         GROUP BY o.store_id
       )
       SELECT st.id, st.name, st.subdomain, st.logo_url, st.site_status,

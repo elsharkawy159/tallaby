@@ -169,7 +169,7 @@ export function CustomerProfileContent({
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center">
               <DollarSign className="h-4 w-4 mr-2 text-gray-500" />
-              Total Spent
+              Total Spent (EGP orders)
             </CardTitle>
           </CardHeader>
           <CardContent>

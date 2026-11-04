@@ -376,10 +376,10 @@ export function OrderDetailContent({ order, header, customerCard }: OrderDetailC
                         <div className="flex items-center gap-4 pt-2">
                           <span className="text-sm">Qty: {item.quantity}</span>
                           <span className="font-medium">
-                            {formatCurrency(Number(item.price))} each
+                            {formatCurrency(Number(item.price), order.currency)} each
                           </span>
                           <span className="font-semibold">
-                            {formatCurrency(Number(item.total))}
+                            {formatCurrency(Number(item.total), order.currency)}
                           </span>
                         </div>
                       </div>
@@ -392,18 +392,18 @@ export function OrderDetailContent({ order, header, customerCard }: OrderDetailC
               <div className="mt-6 pt-6 border-t space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Subtotal</span>
-                  <span>{formatCurrency(subtotal)}</span>
+                  <span>{formatCurrency(subtotal, order.currency)}</span>
                 </div>
                 {shippingCost > 0 && (
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Shipping</span>
-                    <span>{formatCurrency(shippingCost)}</span>
+                    <span>{formatCurrency(shippingCost, order.currency)}</span>
                   </div>
                 )}
                 {tax > 0 && (
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Tax</span>
-                    <span>{formatCurrency(tax)}</span>
+                    <span>{formatCurrency(tax, order.currency)}</span>
                   </div>
                 )}
                 {discountLines.length > 0 ? (
@@ -415,7 +415,7 @@ export function OrderDetailContent({ order, header, customerCard }: OrderDetailC
                           ? ` (${discountLines.length})`
                           : ""}
                       </span>
-                      <span>-{formatCurrency(discountAmount)}</span>
+                      <span>-{formatCurrency(discountAmount, order.currency)}</span>
                     </div>
                     <div className="space-y-1.5 rounded-md border border-green-100 bg-green-50/60 p-2">
                       {discountLines.map((line, index) => {
@@ -454,7 +454,7 @@ export function OrderDetailContent({ order, header, customerCard }: OrderDetailC
                               </p>
                             </div>
                             <span className="shrink-0 font-medium">
-                              -{formatCurrency(Number(line.amount))}
+                              -{formatCurrency(Number(line.amount), order.currency)}
                             </span>
                           </div>
                         );
@@ -465,13 +465,13 @@ export function OrderDetailContent({ order, header, customerCard }: OrderDetailC
                   discountAmount > 0 && (
                     <div className="flex justify-between text-sm text-green-600">
                       <span>Discount</span>
-                      <span>-{formatCurrency(discountAmount)}</span>
+                      <span>-{formatCurrency(discountAmount, order.currency)}</span>
                     </div>
                   )
                 )}
                 <div className="flex justify-between pt-2 border-t font-semibold text-lg">
                   <span>Total</span>
-                  <span>{formatCurrency(totalAmount)}</span>
+                  <span>{formatCurrency(totalAmount, order.currency)}</span>
                 </div>
               </div>
             </CardContent>
@@ -630,7 +630,7 @@ export function OrderDetailContent({ order, header, customerCard }: OrderDetailC
                       <div className="flex justify-between">
                         <span>Amount</span>
                         <span className="font-medium">
-                          {formatCurrency(Number(payment.amount))}
+                          {formatCurrency(Number(payment.amount), order.currency)}
                         </span>
                       </div>
                       <div className="flex justify-between">

@@ -93,7 +93,7 @@ export function CustomerOrdersList({ orders }: CustomerOrdersListProps) {
           <div className="flex items-center gap-4">
             <div className="text-right">
               <div className="font-semibold">
-                {formatCurrency(Number(order.totalAmount))}
+                {formatCurrency(Number(order.totalAmount), order.currency)}
               </div>
             </div>
             <Link href={orderHref(order.id)}>

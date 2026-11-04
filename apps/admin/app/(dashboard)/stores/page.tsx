@@ -273,7 +273,7 @@ async function StoreKpis() {
         label="Store orders (last 30 days)"
         value={stats.orders30d}
         icon={<ShoppingBag />}
-        hint={`${formatCurrency(stats.revenue30d)} from ${stats.storesWithOrders30d.toLocaleString("en-EG")} ${stats.storesWithOrders30d === 1 ? "store" : "stores"}`}
+        hint={`${formatCurrency(stats.revenue30d)} (EGP orders) from ${stats.storesWithOrders30d.toLocaleString("en-EG")} ${stats.storesWithOrders30d === 1 ? "store" : "stores"}`}
       />
     </KpiGrid>
   );

@@ -51,7 +51,7 @@ export const CartStatsCards = ({ stats }: CartStatsCardsProps) => {
             {formatCurrency(stats.cartValue)}
           </div>
           <p className="text-xs text-muted-foreground">
-            Sum of active cart line items
+            Sum of active cart line items, EGP carts only
           </p>
         </CardContent>
       </Card>
