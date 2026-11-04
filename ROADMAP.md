@@ -1012,7 +1012,7 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 ### F-66 Email editor with live preview — P2 · owner request
 
-**Status:** [Planned]
+**Status:** [Built, not deployed] 2026-11-04 (§7).
 
 - **F-66a · P2 · deps: —** On `/marketing/emails`, show the email preview beside the editor, updating as the seller types. On a phone, switch between Edit and Preview.
 - **F-66b · P2 · deps: F-66a** Make the page easier to use: review the steps from creating an email to sending it, and simplify them.
@@ -1334,8 +1334,8 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-65a Hide الحملات التسويقية (paid ads to be removed later; media buyers planned) (2026-11-04; not seen in a browser)
 - [x] F-65b Remove تتبع الحملات (2026-11-04; not seen in a browser)
 - [x] F-65c Hide زيارات المتجر from the sidebar (2026-11-04; not seen in a browser)
-- [ ] F-66a Email preview while editing
-- [ ] F-66b Easier emails page
+- [x] F-66a Email preview while editing (2026-11-04; no migration; not seen in a browser)
+- [x] F-66b Easier emails page (2026-11-04; no migration; not seen in a browser)
 - [x] F-67a Pending carts on the seller dashboard (2026-11-04; no migration; not seen in a browser)
 - [x] F-68a First top-up: message, sidebar warning, blurred Orders page (2026-11-04; off until the USD switch; not seen in a browser)
 - [x] F-69a Campaign email allowance by plan, with extra emails (2026-11-04; 0146 on staging; not seen in a browser)
@@ -1343,6 +1343,15 @@ Add each new request here first, with the date and the owner's words, then turn 
 ---
 
 ## 7. Log
+
+### 2026-11-04 — F-66 Email editor with live preview (owner)
+
+- **Preview while writing:** the campaign editor now shows the email beside the form on wide screens, and Edit and Preview buttons switch between them on phones and tablets. The subject and sender show above it. It's the real email from the backend, in the same sandboxed frame with no scripts, and links in it don't open anything.
+- **Cost:** typing calls nothing. 0.8 seconds after the seller stops, one call renders the email: no AI and no email sent. Empty text, a link, or content that renders the same makes no call, and a phone on the Edit tab makes none. Only one call runs at a time, because Server Actions queue and a stuck preview would hold up Save and Send; the preview's backend timeout went from 20 to 10 seconds. If a call fails, the last good preview stays with a small message and Try again.
+- **Easier page:** a first-time empty state with three steps and one button; stats appear only once there's history; store switcher, stats and the automatic email are hidden while writing; products open on demand; the send button says what to fix when it can't be used; link errors show under the field while typing; sending and scheduling are explained before confirming; going back with unsaved changes asks first.
+- **Automatic win-back email:** after the USD switch the email policy pauses it, so the card then says it's paused and points to a campaign for those customers, instead of showing a switch that does nothing. Saved settings aren't touched. Before the switch it works as before, with its form shown only when it's on.
+- **Left for a redesign (owner, Claude Design):** a device-size toggle, a real multi-step flow, and campaign result reports. The preview jumps back to the top each time it updates, because the sandbox lets no script keep the scroll position.
+- **Not seen in a browser:** checked by typecheck, unit tests and reading the code. No migration.
 
 ### 2026-11-04 — A cart's last activity now moves when the customer changes it (bug fix)
 

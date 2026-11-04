@@ -8,6 +8,7 @@ import {
   listCampaignProductOptions,
   listStoreCampaigns,
 } from "@workspace/lib/email-campaigns/server";
+import { isAutomaticEmailPaused } from "@workspace/lib/emails/policy";
 import { requireSeller } from "@/lib/auth/require-seller.server";
 import { getSellerStores } from "@/lib/stores/current-store.server";
 import { EmailCampaignsView } from "./email-campaigns.client";
@@ -26,7 +27,7 @@ export async function EmailCampaignsData(props: { storeId: string | null }) {
     getLocale(),
   ]);
   const store = stores.find((s) => s.id === props.storeId) ?? selected;
-  const allowance = await getEmailAllowance(seller.sellerId);
+  const [allowance, winbackPaused] = await Promise.all([getEmailAllowance(seller.sellerId), isAutomaticEmailPaused("store_winback")]);
 
   const data = store
     ? await Promise.all([
@@ -48,6 +49,7 @@ export async function EmailCampaignsData(props: { storeId: string | null }) {
         storeLive={store ? store.status === "active" && store.siteStatus === "published" : false}
         limits={emailCampaignLimits(allowance.live ? allowance.plan : seller.plan)}
         allowance={allowance}
+        winbackPaused={winbackPaused}
         data={
           data
             ? {

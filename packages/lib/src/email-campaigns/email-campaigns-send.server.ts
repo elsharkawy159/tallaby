@@ -161,7 +161,8 @@ export async function renderCampaignPreview(input: {
   kind: "campaign" | "winback";
   draft: CampaignEmailDraft;
 }): Promise<{ ok: true; subject: string; html: string } | { ok: false; error: string }> {
-  const res = await callEmailBackend<{ subject?: string; html?: string }>("store-campaign-preview", input, 20_000);
+  // Short: Server Actions run one at a time, so a stuck preview would hold up Save and Send behind it (F-66).
+  const res = await callEmailBackend<{ subject?: string; html?: string }>("store-campaign-preview", input, 10_000);
   if (!res.ok) return res;
   if (typeof res.data.html !== "string") return { ok: false, error: "bad_response" };
   return { ok: true, subject: String(res.data.subject ?? ""), html: res.data.html };

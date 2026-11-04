@@ -6769,6 +6769,7 @@
     "description": "Send an email from your store to your customers and newsletter subscribers: a sale, new products or news. Emails go out under your store's name and colours, and every email has an unsubscribe link.",
     "store": "Store",
     "offline": "Your website is offline. Publish it (Website live) before you send a campaign: the email buttons lead to your site.",
+    "offlineAction": "Open your stores",
     "noStore": {
       "title": "No store yet",
       "body": "Create a store first, then come back to email your customers."
@@ -6783,12 +6784,18 @@
       "title": "Your campaigns",
       "limits": "Up to {recipients} recipients per campaign, {perDay} campaign per day.",
       "new": "New campaign",
-      "empty": "No campaigns yet. Write your first email to your customers.",
+      "emptyTitle": "Send your first email to your customers",
+      "emptyStep1": "Write your message and watch the email as you type.",
+      "emptyStep2": "Choose who gets it.",
+      "emptyStep3": "Send yourself a test, then send or schedule it.",
+      "emptyAction": "Write your first email",
       "untitled": "(No subject)",
       "scheduledFor": "Scheduled for {date}",
       "sentOn": "Finished {date}",
       "createdOn": "Created {date}",
-      "counts": "Sent {sent} of {total} · failed {failed} · skipped {skipped}"
+      "countsSent": "Sent {sent} of {total}",
+      "countsFailed": "failed {count}",
+      "countsSkipped": "skipped {count}"
     },
     "status": {
       "draft": "Draft",
@@ -6821,6 +6828,7 @@
       "delete": "Delete",
       "cancel": "Stop sending",
       "save": "Save",
+      "saveDraft": "Save draft",
       "preview": "Preview",
       "test": "Send me a test ({count} left)",
       "sendNow": "Send now",
@@ -6834,7 +6842,7 @@
       "testSent": "Test email sent to your account email.",
       "scheduled": "Scheduled for {count, plural, one {# recipient} other {# recipients}}.",
       "sending": "Sending to {count, plural, one {# recipient} other {# recipients}}. This can take a few minutes.",
-      "winbackSaved": "Win-back settings saved."
+      "winbackSaved": "Automatic email settings saved."
     },
     "deleteDialog": {
       "title": "Delete this draft?",
@@ -6846,16 +6854,34 @@
       "body": "Emails already sent stay sent. The rest will not go out, and it still counts toward today's limit.",
       "confirm": "Stop sending"
     },
+    "leaveDialog": {
+      "title": "Save your changes?",
+      "body": "You changed this email since you last saved it.",
+      "stay": "Keep editing",
+      "discard": "Don't save",
+      "save": "Save and go back"
+    },
     "dialog": {
       "back": "Back"
     },
     "preview": {
-      "title": "Email preview"
+      "title": "Email preview",
+      "from": "From:",
+      "subject": "Subject:",
+      "updating": "Updating…",
+      "loading": "Getting the preview ready…",
+      "needsText": "Write a subject and a message, and you'll see the email here the way your customers will.",
+      "needsTextKept": "This is the last version. Write a subject and a message to update the preview.",
+      "failed": "We couldn't show the preview.",
+      "failedKept": "We couldn't update the preview, so this is the last version.",
+      "retry": "Try again"
     },
     "composer": {
       "title": "Write your email",
-      "description": "Plain text only. The email gets your store's logo, colours and a button to your website.",
+      "description": "The preview updates as you type. The email gets your store's logo, colours and a button to your website.",
       "back": "Back to campaigns",
+      "editTab": "Edit",
+      "previewTab": "Preview",
       "subject": "Subject",
       "subjectPlaceholder": "e.g. End-of-season sale is here",
       "body": "Message",
@@ -6864,31 +6890,38 @@
       "cta": "Button text (optional)",
       "ctaPlaceholder": "Shop now",
       "ctaHint": "The button opens your website's home page.",
-      "products": "Products in the email ({count} of {max})",
+      "products": "Products in the email, optional ({count} of {max})",
+      "addProducts": "Add products",
       "noProducts": "You have no live products to add.",
       "productSearch": "Search your products",
       "audience": "Who gets it",
       "inactiveDays": "No order in the last (days)",
       "recipients": "{formatted} {count, plural, one {recipient} other {recipients}}",
       "counting": "Counting recipients…",
+      "countFailed": "We couldn't count the recipients.",
       "overCap": "(only the newest {max})",
       "excluded": "Left out: {unsubscribed} unsubscribed, {noEmail} with no email (guest orders have no email).",
       "when": "When",
       "now": "Send now",
       "schedule": "Schedule for later",
+      "nowHint": "Sending starts as soon as you confirm, and can take a few minutes.",
       "scheduleAt": "Send on",
-      "scheduleHint": "Scheduled campaigns go out in the first daily send after this time (every day around 10:00 Cairo time), up to 30 days ahead.",
-      "cannotQueue": "You can send one campaign per day, and only while your website is live."
+      "scheduleHint": "Scheduled campaigns go out in the first daily send after this time (every day around 10:00 Cairo time), up to 30 days ahead."
     },
     "sendDialog": {
       "title": "Send to {count, plural, one {# recipient} other {# recipients}}?",
-      "body": "After sending you can stop the emails that did not go out yet, but you can't take back the ones already sent. Each customer gets the email once."
+      "body": "After sending you can stop the emails that did not go out yet, but you can't take back the ones already sent. Each customer gets the email once.",
+      "scheduleTitle": "Schedule for {count, plural, one {# recipient} other {# recipients}}?",
+      "audience": "Audience: {audience}.",
+      "scheduleBody": "It goes out in the first daily send after {date} (every day around 10:00 Cairo time). You can stop it before then from your campaigns list."
     },
     "winback": {
-      "title": "Win-back email",
+      "title": "Automatic email for customers who stopped ordering",
       "description": "An automatic email to customers who bought from you before and have not ordered for a while. Each customer gets it once per quiet period, up to {perDay} emails a day.",
       "on": "On",
       "off": "Off",
+      "paused": "Paused",
+      "pausedBody": "This automatic email is paused for now, so it doesn't go out even if you turned it on. To reach these customers, send a campaign and choose \"Customers who stopped ordering\". Your settings are kept.",
       "stats": "Sent in the last 30 days: {sent} · waiting to send: {pending}",
       "days": "Send after no order for (days)",
       "subject": "Subject (optional)",
@@ -6898,22 +6931,24 @@
       "hint": "Leave them empty to use the default text in your store's language. Links are not allowed."
     },
     "errors": {
-      "notFound": "This store or campaign was not found.",
+      "notFound": "This store or campaign was not found. Refresh the page and try again.",
       "readOnly": "This store is read-only right now.",
       "generic": "Something went wrong. Please try again.",
       "notDraft": "This campaign was already sent or scheduled and can't be changed.",
       "storeOffline": "Publish your website before sending a campaign.",
-      "dailyLimit": "You already sent a campaign in the last 24 hours. Try again tomorrow.",
+      "dailyLimit": "You can send one campaign every 24 hours, and you already did. Try again tomorrow.",
       "monthlyLimit": "You've used this month's campaign emails. Buy more, or wait until the 1st.",
       "activationRequired": "Top up your wallet with at least $5 to start sending emails.",
       "insufficientBalance": "Your wallet doesn't have enough balance. Top up and try again.",
-      "noRecipients": "Nobody to send to in this audience.",
+      "noRecipients": "Nobody to send to in this audience. Pick another audience.",
       "subjectRequired": "Write a subject first.",
       "bodyRequired": "Write a message first.",
       "subjectLink": "Remove the link from the subject.",
       "bodyLink": "Remove the link from the message. The button and products already link to your website.",
       "ctaLink": "Remove the link from the button text.",
       "scheduleInvalid": "Pick a time at least 5 minutes from now and within 30 days.",
+      "scheduleMissing": "Pick the day and time to send.",
+      "pendingReview": "Your top-up is being reviewed. You can send emails once it's approved.",
       "testLimit": "You reached the test email limit. Try again later.",
       "noEmail": "Your account has no email to send the test to.",
       "notConfigured": "Email sending is not available right now. Please try again later.",

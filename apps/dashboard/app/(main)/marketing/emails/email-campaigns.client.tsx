@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { EMAIL_PACK_EMAILS, EMAIL_PACK_USD_CENTS } from "@workspace/lib/billing";
 import type { EmailAllowance } from "@workspace/lib/email-campaigns/server";
 import { ConfirmActionDialog } from "@/components/layout/confirm-action-dialog.client";
-import { Ban, Eye, LoaderCircle, Mail, Pencil, Plus, Send, SendHorizonal, Trash2, Users } from "lucide-react";
+import { ArrowLeft, Ban, Eye, LoaderCircle, Mail, Pencil, Plus, Send, SendHorizonal, Trash2, Users } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,6 +34,7 @@ import {
   CAMPAIGN_CTA_MAX,
   CAMPAIGN_PRODUCTS_MAX,
   CAMPAIGN_SUBJECT_MAX,
+  CAMPAIGN_SCHEDULE_MAX_DAYS,
   INACTIVE_DAYS_DEFAULT,
   INACTIVE_DAYS_MAX,
   INACTIVE_DAYS_MIN,
@@ -62,6 +63,17 @@ import {
   sendWinbackTest,
 } from "./email-campaigns.server";
 import type { CampaignActionResult } from "./email-campaigns.types";
+import { EmailCampaignPreview, useWideLayout } from "./email-campaign-preview.client";
+import {
+  previewRequest,
+  queueBlocker,
+  readSchedule,
+  sendBlocker,
+  toLocalInputValue,
+  withInertLinks,
+  type QueueBlocker,
+  type ScheduleState,
+} from "./email-campaigns.lib";
 
 type Data = {
   campaigns: StoreCampaign[];
@@ -77,6 +89,8 @@ type Props = {
   storeLive: boolean;
   limits: EmailCampaignLimits;
   allowance: EmailAllowance;
+  /** Automatic win-back emails don't go out (the email policy, after the USD switch). */
+  winbackPaused: boolean;
   data: Data | null;
 };
 
@@ -114,7 +128,7 @@ const toContent = (d: Draft) => ({
 });
 
 /** Marketing › Email campaigns: store picker, stats, campaign list and composer, win-back card. */
-export function EmailCampaignsView({ stores, storeId, storeLive, limits, allowance, data }: Props) {
+export function EmailCampaignsView({ stores, storeId, storeLive, limits, allowance, winbackPaused, data }: Props) {
   const t = useTranslations("emailCampaigns");
   const locale = useLocale();
   const pathname = usePathname();
@@ -139,6 +153,8 @@ export function EmailCampaignsView({ stores, storeId, storeLive, limits, allowan
 
   const editing = editingId ? data.campaigns.find((c) => c.id === editingId && c.status === "draft") ?? null : null;
   const sentTotal = data.campaigns.reduce((n, c) => n + c.sentCount, 0);
+  const hasHistory = data.campaigns.some((c) => c.status !== "draft") || data.unsubscribed > 0;
+  const blocker = queueBlocker({ storeLive, queuedToday: data.queuedToday, campaignsPerDay: limits.campaignsPerDay, allowance });
 
   const newCampaign = () =>
     startTransition(async () => {
@@ -162,7 +178,7 @@ export function EmailCampaignsView({ stores, storeId, storeLive, limits, allowan
 
   return (
     <div className="space-y-4">
-      {stores.length > 1 && (
+      {stores.length > 1 && !editing && (
         <nav aria-label={t("store")} className="flex flex-wrap gap-1.5">
           {stores.map((s) => (
             <Link key={s.id} href={`${pathname}?store=${s.id}`} className={chip(storeId === s.id)} scroll={false}>
@@ -174,7 +190,10 @@ export function EmailCampaignsView({ stores, storeId, storeLive, limits, allowan
 
       {!storeLive && (
         <div role="status" className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 text-sm text-amber-900 dark:text-amber-200">
-          {t("offline")}
+          {t("offline")}{" "}
+          <Link href="/stores" className="font-semibold underline underline-offset-2">
+            {t("offlineAction")}
+          </Link>
         </div>
       )}
 
@@ -191,28 +210,30 @@ export function EmailCampaignsView({ stores, storeId, storeLive, limits, allowan
         allowance.live && <EmailAllowanceLine allowance={allowance} />
       )}
 
-      <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:max-w-2xl">
-        <Stat label={t("stats.sent")} value={formatNumber(sentTotal, locale)} />
-        <Stat label={t("stats.unsubscribed")} value={formatNumber(data.unsubscribed, locale)} />
-        <Stat
-          label={t("stats.today")}
-          value={t("stats.todayValue", {
-            used: formatNumber(Math.min(data.queuedToday, limits.campaignsPerDay), locale),
-            max: formatNumber(limits.campaignsPerDay, locale),
-          })}
-        />
-      </dl>
+      {!editing && hasHistory && (
+        <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:max-w-2xl">
+          <Stat label={t("stats.sent")} value={formatNumber(sentTotal, locale)} />
+          <Stat label={t("stats.unsubscribed")} value={formatNumber(data.unsubscribed, locale)} />
+          <Stat
+            label={t("stats.today")}
+            value={t("stats.todayValue", {
+              used: formatNumber(Math.min(data.queuedToday, limits.campaignsPerDay), locale),
+              max: formatNumber(limits.campaignsPerDay, locale),
+            })}
+          />
+        </dl>
+      )}
 
       {editing ? (
         <Composer
           key={editing.id}
           storeId={storeId}
+          storeName={stores.find((s) => s.id === storeId)?.name ?? ""}
           campaign={editing}
           products={data.products}
           limits={limits}
-          canQueue={storeLive && data.queuedToday < limits.campaignsPerDay && !allowance.locked && (!allowance.live || allowance.remaining > 0)}
+          blocker={blocker}
           onClose={() => setEditingId(null)}
-          onPreview={setPreview}
         />
       ) : (
         <Card>
@@ -223,14 +244,32 @@ export function EmailCampaignsView({ stores, storeId, storeLive, limits, allowan
                 {t("list.limits", { recipients: formatNumber(limits.maxRecipients, locale), perDay: formatNumber(limits.campaignsPerDay, locale) })}
               </CardDescription>
             </div>
-            <Button type="button" size="sm" disabled={pending} onClick={newCampaign}>
-              {pending ? <LoaderCircle className="animate-spin" aria-hidden /> : <Plus aria-hidden />}
-              {t("list.new")}
-            </Button>
+            {data.campaigns.length > 0 && (
+              <Button type="button" size="sm" disabled={pending} onClick={newCampaign}>
+                {pending ? <LoaderCircle className="animate-spin" aria-hidden /> : <Plus aria-hidden />}
+                {t("list.new")}
+              </Button>
+            )}
           </CardHeader>
           <CardContent>
             {data.campaigns.length === 0 ? (
-              <p className="py-8 text-center text-sm text-muted-foreground">{t("list.empty")}</p>
+              <div className="flex flex-col items-center gap-4 py-8 text-center">
+                <span className="flex size-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
+                  <Mail className="size-6" aria-hidden />
+                </span>
+                <div className="space-y-1">
+                  <p className="font-semibold">{t("list.emptyTitle")}</p>
+                  <ol className="list-inside list-decimal text-pretty text-sm text-muted-foreground">
+                    <li>{t("list.emptyStep1")}</li>
+                    <li>{t("list.emptyStep2")}</li>
+                    <li>{t("list.emptyStep3")}</li>
+                  </ol>
+                </div>
+                <Button type="button" disabled={pending} onClick={newCampaign}>
+                  {pending ? <LoaderCircle className="animate-spin" aria-hidden /> : <Plus aria-hidden />}
+                  {t("list.emptyAction")}
+                </Button>
+              </div>
             ) : (
               <ul className="divide-y">
                 {data.campaigns.map((c) => (
@@ -254,12 +293,13 @@ export function EmailCampaignsView({ stores, storeId, storeLive, limits, allowan
                       </p>
                       {c.status !== "draft" && (
                         <p className="text-xs tabular-nums text-muted-foreground">
-                          {t("list.counts", {
-                            sent: formatNumber(c.sentCount, locale),
-                            total: formatNumber(c.recipientCount, locale),
-                            failed: formatNumber(c.failedCount, locale),
-                            skipped: formatNumber(c.skippedCount, locale),
-                          })}
+                          {[
+                            t("list.countsSent", { sent: formatNumber(c.sentCount, locale), total: formatNumber(c.recipientCount, locale) }),
+                            c.failedCount > 0 && t("list.countsFailed", { count: formatNumber(c.failedCount, locale) }),
+                            c.skippedCount > 0 && t("list.countsSkipped", { count: formatNumber(c.skippedCount, locale) }),
+                          ]
+                            .filter(Boolean)
+                            .join(" · ")}
                         </p>
                       )}
                     </div>
@@ -296,7 +336,9 @@ export function EmailCampaignsView({ stores, storeId, storeLive, limits, allowan
         </Card>
       )}
 
-      {data.winback && <WinbackCard storeId={storeId} winback={data.winback} limits={limits} onPreview={setPreview} />}
+      {!editing && data.winback && (
+        <WinbackCard storeId={storeId} winback={data.winback} limits={limits} paused={winbackPaused} onPreview={setPreview} />
+      )}
 
       <AlertDialog open={confirm !== null} onOpenChange={(open) => !open && setConfirm(null)}>
         <AlertDialogContent>
@@ -318,7 +360,7 @@ export function EmailCampaignsView({ stores, storeId, storeLive, limits, allowan
           </DialogHeader>
           {preview && (
             // Rendered by the backend from escaped React text; sandboxed with no scripts.
-            <iframe title={t("preview.title")} sandbox="" srcDoc={preview.html} className="h-[70vh] w-full rounded-lg border bg-white" />
+            <iframe title={t("preview.title")} sandbox="" srcDoc={withInertLinks(preview.html)} className="h-[70vh] w-full rounded-lg border bg-white" />
           )}
         </DialogContent>
       </Dialog>
@@ -328,32 +370,41 @@ export function EmailCampaignsView({ stores, storeId, storeLive, limits, allowan
 
 function Composer({
   storeId,
+  storeName,
   campaign,
   products,
   limits,
-  canQueue,
+  blocker,
   onClose,
-  onPreview,
 }: {
   storeId: string;
+  storeName: string;
   campaign: StoreCampaign;
   products: CampaignProductOption[];
   limits: EmailCampaignLimits;
-  canQueue: boolean;
+  blocker: QueueBlocker | null;
   onClose: () => void;
-  onPreview: (value: { subject: string; html: string }) => void;
 }) {
   const t = useTranslations("emailCampaigns");
   const locale = useLocale();
   const router = useRouter();
+  const wide = useWideLayout();
+  const [pane, setPane] = useState<"edit" | "preview">("edit");
   const [draft, setDraft] = useState<Draft>(() => toDraft(campaign));
+  const [savedKey, setSavedKey] = useState(() => JSON.stringify(toContent(toDraft(campaign))));
   const [productQuery, setProductQuery] = useState("");
+  const [pickerOpen, setPickerOpen] = useState(false);
   const [audience, setAudience] = useState<AudiencePreview | null>(null);
+  const [audienceFailed, setAudienceFailed] = useState(false);
+  const [audienceAttempt, setAudienceAttempt] = useState(0);
   const [mode, setMode] = useState<"now" | "schedule">("now");
   const [scheduleAt, setScheduleAt] = useState("");
+  const [schedule, setSchedule] = useState<ScheduleState>("missing");
+  const [scheduleBounds, setScheduleBounds] = useState({ min: "", max: "" });
   const [confirmSend, setConfirmSend] = useState(false);
+  const [confirmLeave, setConfirmLeave] = useState(false);
   const [pending, startTransition] = useTransition();
-  const [busy, setBusy] = useState<null | "save" | "test" | "preview" | "send">(null);
+  const [busy, setBusy] = useState<null | "save" | "test" | "send">(null);
 
   const set = <K extends keyof Draft>(key: K, value: Draft[K]) => setDraft((d) => ({ ...d, [key]: value }));
 
@@ -361,14 +412,16 @@ function Composer({
   useEffect(() => {
     let alive = true;
     const timer = setTimeout(async () => {
-      const res = await previewAudience({ storeId, audience: draft.audience, inactiveDays: draft.inactiveDays });
-      if (alive) setAudience(res.success ? res.data : null);
+      const res = await previewAudience({ storeId, audience: draft.audience, inactiveDays: draft.inactiveDays }).catch(() => null);
+      if (!alive) return;
+      setAudience(res?.success ? res.data : null);
+      setAudienceFailed(!res?.success);
     }, 300);
     return () => {
       alive = false;
       clearTimeout(timer);
     };
-  }, [storeId, draft.audience, draft.inactiveDays]);
+  }, [storeId, draft.audience, draft.inactiveDays, audienceAttempt]);
 
   const shownProducts = useMemo(() => {
     const q = productQuery.trim().toLowerCase();
@@ -402,31 +455,52 @@ function Composer({
     return !res.success;
   };
 
-  const save = () =>
+  const content = toContent(draft);
+  const currentKey = JSON.stringify(content);
+
+  const save = (after?: () => void) =>
     act("save", async () => {
-      const res = await saveCampaign({ storeId, campaignId: campaign.id, content: toContent(draft) });
+      const res = await saveCampaign({ storeId, campaignId: campaign.id, content });
       if (fail(res)) return;
+      setSavedKey(currentKey);
       toast.success(t("toasts.saved"));
+      after?.();
       router.refresh();
     });
 
+  const leave = () => {
+    if (currentKey === savedKey) onClose();
+    else setConfirmLeave(true);
+  };
+
+  const pickMode = (next: "now" | "schedule") => {
+    setMode(next);
+    if (next === "schedule") {
+      const now = Date.now();
+      setScheduleBounds({
+        min: toLocalInputValue(new Date(now + 6 * 60_000)),
+        max: toLocalInputValue(new Date(now + CAMPAIGN_SCHEDULE_MAX_DAYS * 86_400_000)),
+      });
+      setSchedule(readSchedule(scheduleAt, new Date(now)));
+    }
+  };
+
+  const pickSchedule = (value: string) => {
+    setScheduleAt(value);
+    setSchedule(readSchedule(value, new Date()));
+  };
+
   const test = () =>
     act("test", async () => {
-      const res = await sendCampaignTest({ storeId, campaignId: campaign.id, content: toContent(draft) });
+      const res = await sendCampaignTest({ storeId, campaignId: campaign.id, content });
       if (!fail(res)) toast.success(t("toasts.testSent"));
-    });
-
-  const showPreview = () =>
-    act("preview", async () => {
-      const res = await previewCampaignEmail({ storeId, kind: "campaign", content: toContent(draft) });
-      if (!fail(res) && res.success) onPreview(res.data);
     });
 
   const send = () =>
     act("send", async () => {
       setConfirmSend(false);
-      const scheduledAt = mode === "schedule" && scheduleAt ? new Date(scheduleAt).toISOString() : null;
-      const res = await sendCampaign({ storeId, campaignId: campaign.id, content: toContent(draft), scheduledAt });
+      const scheduledAt = mode === "schedule" && typeof schedule === "object" ? schedule.iso : null;
+      const res = await sendCampaign({ storeId, campaignId: campaign.id, content, scheduledAt });
       if (fail(res) || !res.success) return;
       toast.success(
         res.data.scheduled
@@ -437,231 +511,316 @@ function Composer({
       router.refresh();
     });
 
-  const ready = draft.subject.trim() && draft.body.trim() && (mode === "now" || scheduleAt);
   const testsLeft = Math.max(0, limits.testSendsPerCampaign - campaign.testSendCount);
+  const request = previewRequest(content);
+  const linkProblem = request.kind === "blocked" ? request.problem : null;
+  const stop = sendBlocker({
+    queue: blocker,
+    content,
+    schedule: mode === "schedule" ? schedule : null,
+    recipients: audience?.recipients ?? null,
+  });
+  const audienceName =
+    draft.audience === "inactive"
+      ? t("audience.inactiveShort", { days: formatNumber(draft.inactiveDays, locale) })
+      : t(`audience.${draft.audience}.label`);
+  const scheduledDate = typeof schedule === "object" ? formatDateTime(schedule.iso, locale) : "";
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">
-        <div className="space-y-1">
-          <CardTitle>{t("composer.title")}</CardTitle>
-          <CardDescription>{t("composer.description")}</CardDescription>
-        </div>
-        <Button type="button" size="sm" variant="ghost" onClick={onClose}>
-          {t("composer.back")}
-        </Button>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="space-y-2">
-          <Label htmlFor="campaign-subject">{t("composer.subject")}</Label>
-          <Input
-            id="campaign-subject"
-            value={draft.subject}
-            maxLength={CAMPAIGN_SUBJECT_MAX}
-            onChange={(e) => set("subject", e.target.value)}
-            placeholder={t("composer.subjectPlaceholder")}
-          />
-        </div>
+    <div className="space-y-4">
+      <Button type="button" size="sm" variant="ghost" onClick={leave}>
+        <ArrowLeft className="rtl:rotate-180" aria-hidden />
+        {t("composer.back")}
+      </Button>
 
-        <div className="space-y-2">
-          <Label htmlFor="campaign-body">{t("composer.body")}</Label>
-          <Textarea
-            id="campaign-body"
-            value={draft.body}
-            maxLength={CAMPAIGN_BODY_MAX}
-            rows={9}
-            onChange={(e) => set("body", e.target.value)}
-            placeholder={t("composer.bodyPlaceholder")}
-          />
-          <p className="text-xs text-muted-foreground">{t("composer.bodyHint")}</p>
-        </div>
+      <div className="flex gap-1.5 xl:hidden">
+        <button type="button" className={chip(pane === "edit")} aria-pressed={pane === "edit"} onClick={() => setPane("edit")}>
+          <Pencil className="me-1.5 size-3.5" aria-hidden />
+          {t("composer.editTab")}
+        </button>
+        <button type="button" className={chip(pane === "preview")} aria-pressed={pane === "preview"} onClick={() => setPane("preview")}>
+          <Eye className="me-1.5 size-3.5" aria-hidden />
+          {t("composer.previewTab")}
+        </button>
+      </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="campaign-cta">{t("composer.cta")}</Label>
-          <Input
-            id="campaign-cta"
-            value={draft.ctaLabel}
-            maxLength={CAMPAIGN_CTA_MAX}
-            onChange={(e) => set("ctaLabel", e.target.value)}
-            placeholder={t("composer.ctaPlaceholder")}
-            className="sm:max-w-xs"
-          />
-          <p className="text-xs text-muted-foreground">{t("composer.ctaHint")}</p>
-        </div>
-
-        <fieldset className="space-y-2">
-          <legend className="text-sm font-medium">
-            {t("composer.products", { count: draft.productIds.length, max: CAMPAIGN_PRODUCTS_MAX })}
-          </legend>
-          {selectedProducts.length > 0 && (
-            <div className="flex flex-wrap gap-1.5">
-              {selectedProducts.map((p) => (
-                <button key={p.id} type="button" className={chip(true)} onClick={() => toggleProduct(p.id)}>
-                  {p.title} ×
-                </button>
-              ))}
-            </div>
-          )}
-          {products.length === 0 ? (
-            <p className="text-xs text-muted-foreground">{t("composer.noProducts")}</p>
-          ) : (
-            <>
-              <Input
-                type="search"
-                value={productQuery}
-                onChange={(e) => setProductQuery(e.target.value)}
-                placeholder={t("composer.productSearch")}
-                aria-label={t("composer.productSearch")}
-                className="sm:max-w-xs"
-              />
-              <ul className="grid max-h-60 gap-1 overflow-y-auto rounded-lg border p-1 sm:grid-cols-2">
-                {shownProducts.map((p) => {
-                  const on = draft.productIds.includes(p.id);
-                  return (
-                    <li key={p.id}>
-                      <button
-                        type="button"
-                        onClick={() => toggleProduct(p.id)}
-                        aria-pressed={on}
-                        disabled={!on && draft.productIds.length >= CAMPAIGN_PRODUCTS_MAX}
-                        className={cn(
-                          "flex w-full items-center gap-2 rounded-md p-1.5 text-start text-sm hover:bg-muted disabled:opacity-50",
-                          on && "bg-primary/10",
-                        )}
-                      >
-                        {p.image ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={p.image} alt="" className="size-8 shrink-0 rounded object-cover" />
-                        ) : (
-                          <span className="size-8 shrink-0 rounded bg-muted" />
-                        )}
-                        <span className="truncate">{p.title}</span>
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
-            </>
-          )}
-        </fieldset>
-
-        <fieldset className="space-y-2">
-          <legend className="text-sm font-medium">{t("composer.audience")}</legend>
-          <div className="grid gap-2 sm:grid-cols-2">
-            {CAMPAIGN_AUDIENCES.map((a) => (
-              <label
-                key={a}
-                className={cn(
-                  "flex cursor-pointer gap-3 rounded-xl border p-3 text-sm transition-colors",
-                  draft.audience === a ? "border-primary bg-primary/5" : "hover:bg-muted/50",
-                )}
-              >
-                <input
-                  type="radio"
-                  name="campaign-audience"
-                  value={a}
-                  checked={draft.audience === a}
-                  onChange={() => set("audience", a)}
-                  className="mt-1 accent-[var(--primary)]"
-                />
-                <span>
-                  <span className="block font-medium">{t(`audience.${a}.label`)}</span>
-                  <span className="block text-xs text-muted-foreground">{t(`audience.${a}.body`)}</span>
-                </span>
-              </label>
-            ))}
-          </div>
-          {draft.audience === "inactive" && (
-            <div className="flex items-center gap-2 text-sm">
-              <Label htmlFor="campaign-days">{t("composer.inactiveDays")}</Label>
-              <Input
-                id="campaign-days"
-                type="number"
-                min={INACTIVE_DAYS_MIN}
-                max={INACTIVE_DAYS_MAX}
-                value={draft.inactiveDays}
-                onChange={(e) => set("inactiveDays", Number(e.target.value) || INACTIVE_DAYS_DEFAULT)}
-                className="w-24"
-              />
-            </div>
-          )}
-          <p className="flex items-center gap-1.5 text-sm text-muted-foreground" aria-live="polite">
-            <Users className="size-4" aria-hidden />
-            {audience
-              ? t("composer.recipients", {
-                  count: audience.recipients,
-                  formatted: formatNumber(audience.recipients, locale),
-                })
-              : t("composer.counting")}
-            {audience && audience.overCap > 0 && (
-              <span className="text-xs">{t("composer.overCap", { max: formatNumber(audience.max, locale) })}</span>
-            )}
-          </p>
-          {audience && (audience.unsubscribed > 0 || audience.noEmail > 0) && (
-            <p className="text-xs text-muted-foreground">
-              {t("composer.excluded", {
-                unsubscribed: formatNumber(audience.unsubscribed, locale),
-                noEmail: formatNumber(audience.noEmail, locale),
-              })}
-            </p>
-          )}
-        </fieldset>
-
-        <fieldset className="space-y-2">
-          <legend className="text-sm font-medium">{t("composer.when")}</legend>
-          <div className="flex flex-wrap gap-1.5">
-            <button type="button" className={chip(mode === "now")} onClick={() => setMode("now")}>
-              {t("composer.now")}
-            </button>
-            <button type="button" className={chip(mode === "schedule")} onClick={() => setMode("schedule")}>
-              {t("composer.schedule")}
-            </button>
-          </div>
-          {mode === "schedule" && (
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,28rem)] xl:items-start">
+        <Card className={cn(pane !== "edit" && "hidden xl:flex")}>
+          <CardHeader>
             <div className="space-y-1">
-              <Input
-                type="datetime-local"
-                value={scheduleAt}
-                onChange={(e) => setScheduleAt(e.target.value)}
-                aria-label={t("composer.scheduleAt")}
-                className="sm:max-w-xs"
-              />
-              <p className="text-xs text-muted-foreground">{t("composer.scheduleHint")}</p>
+              <CardTitle>{t("composer.title")}</CardTitle>
+              <CardDescription>{t("composer.description")}</CardDescription>
             </div>
-          )}
-        </fieldset>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="campaign-subject">{t("composer.subject")}</Label>
+              <Input
+                id="campaign-subject"
+                value={draft.subject}
+                maxLength={CAMPAIGN_SUBJECT_MAX}
+                onChange={(e) => set("subject", e.target.value)}
+                placeholder={t("composer.subjectPlaceholder")}
+                aria-invalid={linkProblem === "subjectLink"}
+                aria-describedby={linkProblem === "subjectLink" ? "campaign-subject-error" : undefined}
+              />
+              {linkProblem === "subjectLink" && (
+                <p id="campaign-subject-error" className="text-xs text-destructive">
+                  {t("errors.subjectLink")}
+                </p>
+              )}
+            </div>
 
-        <div className="flex flex-wrap items-center gap-2 border-t pt-4">
-          <Button type="button" variant="neutral" disabled={pending} onClick={save}>
-            {busy === "save" && <LoaderCircle className="animate-spin" aria-hidden />}
-            {t("actions.save")}
-          </Button>
-          <Button type="button" variant="neutral" disabled={pending} onClick={showPreview}>
-            {busy === "preview" ? <LoaderCircle className="animate-spin" aria-hidden /> : <Eye aria-hidden />}
-            {t("actions.preview")}
-          </Button>
-          <Button type="button" variant="neutral" disabled={pending || testsLeft === 0} onClick={test}>
-            {busy === "test" ? <LoaderCircle className="animate-spin" aria-hidden /> : <Mail aria-hidden />}
-            {t("actions.test", { count: testsLeft })}
-          </Button>
-          <Button
-            type="button"
-            className="ms-auto"
-            disabled={pending || !ready || !canQueue || !audience?.recipients}
-            onClick={() => setConfirmSend(true)}
-          >
-            {busy === "send" ? <LoaderCircle className="animate-spin" aria-hidden /> : <Send aria-hidden />}
-            {mode === "schedule" ? t("actions.schedule") : t("actions.sendNow")}
-          </Button>
+            <div className="space-y-2">
+              <Label htmlFor="campaign-body">{t("composer.body")}</Label>
+              <Textarea
+                id="campaign-body"
+                value={draft.body}
+                maxLength={CAMPAIGN_BODY_MAX}
+                rows={9}
+                onChange={(e) => set("body", e.target.value)}
+                placeholder={t("composer.bodyPlaceholder")}
+                aria-invalid={linkProblem === "bodyLink"}
+                aria-describedby={linkProblem === "bodyLink" ? "campaign-body-error" : undefined}
+              />
+              {linkProblem === "bodyLink" && (
+                <p id="campaign-body-error" className="text-xs text-destructive">
+                  {t("errors.bodyLink")}
+                </p>
+              )}
+              <p className="text-xs text-muted-foreground">{t("composer.bodyHint")}</p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="campaign-cta">{t("composer.cta")}</Label>
+              <Input
+                id="campaign-cta"
+                value={draft.ctaLabel}
+                maxLength={CAMPAIGN_CTA_MAX}
+                onChange={(e) => set("ctaLabel", e.target.value)}
+                placeholder={t("composer.ctaPlaceholder")}
+                className="sm:max-w-xs"
+                aria-invalid={linkProblem === "ctaLink"}
+                aria-describedby={linkProblem === "ctaLink" ? "campaign-cta-error" : undefined}
+              />
+              {linkProblem === "ctaLink" && (
+                <p id="campaign-cta-error" className="text-xs text-destructive">
+                  {t("errors.ctaLink")}
+                </p>
+              )}
+              <p className="text-xs text-muted-foreground">{t("composer.ctaHint")}</p>
+            </div>
+
+            <fieldset className="space-y-2">
+              <legend className="text-sm font-medium">
+                {t("composer.products", { count: draft.productIds.length, max: CAMPAIGN_PRODUCTS_MAX })}
+              </legend>
+              {selectedProducts.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {selectedProducts.map((p) => (
+                    <button key={p.id} type="button" className={chip(true)} onClick={() => toggleProduct(p.id)}>
+                      {p.title} ×
+                    </button>
+                  ))}
+                </div>
+              )}
+              {products.length === 0 ? (
+                <p className="text-xs text-muted-foreground">{t("composer.noProducts")}</p>
+              ) : !pickerOpen ? (
+                <Button type="button" size="sm" variant="neutral" onClick={() => setPickerOpen(true)}>
+                  <Plus aria-hidden />
+                  {t("composer.addProducts")}
+                </Button>
+              ) : (
+                <>
+                  <Input
+                    type="search"
+                    value={productQuery}
+                    onChange={(e) => setProductQuery(e.target.value)}
+                    placeholder={t("composer.productSearch")}
+                    aria-label={t("composer.productSearch")}
+                    className="sm:max-w-xs"
+                  />
+                  <ul className="grid max-h-60 gap-1 overflow-y-auto rounded-lg border p-1 sm:grid-cols-2">
+                    {shownProducts.map((p) => {
+                      const on = draft.productIds.includes(p.id);
+                      return (
+                        <li key={p.id}>
+                          <button
+                            type="button"
+                            onClick={() => toggleProduct(p.id)}
+                            aria-pressed={on}
+                            disabled={!on && draft.productIds.length >= CAMPAIGN_PRODUCTS_MAX}
+                            className={cn(
+                              "flex w-full items-center gap-2 rounded-md p-1.5 text-start text-sm hover:bg-muted disabled:opacity-50",
+                              on && "bg-primary/10",
+                            )}
+                          >
+                            {p.image ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img src={p.image} alt="" className="size-8 shrink-0 rounded object-cover" />
+                            ) : (
+                              <span className="size-8 shrink-0 rounded bg-muted" />
+                            )}
+                            <span className="truncate">{p.title}</span>
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </>
+              )}
+            </fieldset>
+
+            <fieldset className="space-y-2">
+              <legend className="text-sm font-medium">{t("composer.audience")}</legend>
+              <div className="grid gap-2 sm:grid-cols-2">
+                {CAMPAIGN_AUDIENCES.map((a) => (
+                  <label
+                    key={a}
+                    className={cn(
+                      "flex cursor-pointer gap-3 rounded-xl border p-3 text-sm transition-colors",
+                      draft.audience === a ? "border-primary bg-primary/5" : "hover:bg-muted/50",
+                    )}
+                  >
+                    <input
+                      type="radio"
+                      name="campaign-audience"
+                      value={a}
+                      checked={draft.audience === a}
+                      onChange={() => set("audience", a)}
+                      className="mt-1 accent-[var(--primary)]"
+                    />
+                    <span>
+                      <span className="block font-medium">{t(`audience.${a}.label`)}</span>
+                      <span className="block text-xs text-muted-foreground">{t(`audience.${a}.body`)}</span>
+                    </span>
+                  </label>
+                ))}
+              </div>
+              {draft.audience === "inactive" && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Label htmlFor="campaign-days">{t("composer.inactiveDays")}</Label>
+                  <Input
+                    id="campaign-days"
+                    type="number"
+                    min={INACTIVE_DAYS_MIN}
+                    max={INACTIVE_DAYS_MAX}
+                    value={draft.inactiveDays}
+                    onChange={(e) => set("inactiveDays", Number(e.target.value) || INACTIVE_DAYS_DEFAULT)}
+                    className="w-24"
+                  />
+                </div>
+              )}
+              <p className="flex items-center gap-1.5 text-sm text-muted-foreground" aria-live="polite">
+                <Users className="size-4" aria-hidden />
+                {audience
+                  ? t("composer.recipients", {
+                      count: audience.recipients,
+                      formatted: formatNumber(audience.recipients, locale),
+                    })
+                  : audienceFailed
+                    ? t("composer.countFailed")
+                    : t("composer.counting")}
+                {audienceFailed && (
+                  <button
+                    type="button"
+                    className="font-semibold text-foreground underline underline-offset-2"
+                    onClick={() => {
+                      setAudienceFailed(false);
+                      setAudienceAttempt((n) => n + 1);
+                    }}
+                  >
+                    {t("preview.retry")}
+                  </button>
+                )}
+                {audience && audience.overCap > 0 && (
+                  <span className="text-xs">{t("composer.overCap", { max: formatNumber(audience.max, locale) })}</span>
+                )}
+              </p>
+              {audience && (audience.unsubscribed > 0 || audience.noEmail > 0) && (
+                <p className="text-xs text-muted-foreground">
+                  {t("composer.excluded", {
+                    unsubscribed: formatNumber(audience.unsubscribed, locale),
+                    noEmail: formatNumber(audience.noEmail, locale),
+                  })}
+                </p>
+              )}
+            </fieldset>
+
+            <fieldset className="space-y-2">
+              <legend className="text-sm font-medium">{t("composer.when")}</legend>
+              <div className="flex flex-wrap gap-1.5">
+                <button type="button" className={chip(mode === "now")} aria-pressed={mode === "now"} onClick={() => pickMode("now")}>
+                  {t("composer.now")}
+                </button>
+                <button type="button" className={chip(mode === "schedule")} aria-pressed={mode === "schedule"} onClick={() => pickMode("schedule")}>
+                  {t("composer.schedule")}
+                </button>
+              </div>
+              {mode === "now" && <p className="text-xs text-muted-foreground">{t("composer.nowHint")}</p>}
+              {mode === "schedule" && (
+                <div className="space-y-1">
+                  <Input
+                    type="datetime-local"
+                    value={scheduleAt}
+                    min={scheduleBounds.min}
+                    max={scheduleBounds.max}
+                    onChange={(e) => pickSchedule(e.target.value)}
+                    aria-label={t("composer.scheduleAt")}
+                    aria-invalid={schedule === "invalid"}
+                    className="sm:max-w-xs"
+                  />
+                  <p className="text-xs text-muted-foreground">{t("composer.scheduleHint")}</p>
+                </div>
+              )}
+            </fieldset>
+
+            <div className="space-y-2 border-t pt-4">
+              <div className="flex flex-wrap items-center gap-2">
+                <Button type="button" variant="neutral" disabled={pending} onClick={() => save()}>
+                  {busy === "save" && <LoaderCircle className="animate-spin" aria-hidden />}
+                  {t("actions.saveDraft")}
+                </Button>
+                <Button type="button" variant="neutral" disabled={pending || testsLeft === 0} onClick={test}>
+                  {busy === "test" ? <LoaderCircle className="animate-spin" aria-hidden /> : <Mail aria-hidden />}
+                  {t("actions.test", { count: testsLeft })}
+                </Button>
+                <Button type="button" className="ms-auto" disabled={pending || stop !== null} onClick={() => setConfirmSend(true)}>
+                  {busy === "send" ? <LoaderCircle className="animate-spin" aria-hidden /> : <Send aria-hidden />}
+                  {mode === "schedule" ? t("actions.schedule") : t("actions.sendNow")}
+                </Button>
+              </div>
+              {stop && stop !== "recipientsUnknown" && (
+                <p className="text-xs text-muted-foreground" role="status">
+                  {t(`errors.${stop}`)}
+                </p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className={cn("xl:sticky xl:top-20", pane !== "preview" && "hidden xl:block")}>
+          <EmailCampaignPreview
+            storeId={storeId}
+            storeName={storeName}
+            subject={draft.subject}
+            content={content}
+            enabled={wide || pane === "preview"}
+          />
         </div>
-        {!canQueue && <p className="text-xs text-muted-foreground">{t("composer.cannotQueue")}</p>}
-      </CardContent>
+      </div>
 
       <AlertDialog open={confirmSend} onOpenChange={setConfirmSend}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t("sendDialog.title", { count: audience?.recipients ?? 0 })}</AlertDialogTitle>
-            <AlertDialogDescription>{t("sendDialog.body")}</AlertDialogDescription>
+            <AlertDialogTitle>
+              {t(mode === "schedule" ? "sendDialog.scheduleTitle" : "sendDialog.title", { count: audience?.recipients ?? 0 })}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("sendDialog.audience", { audience: audienceName })}{" "}
+              {mode === "schedule" ? t("sendDialog.scheduleBody", { date: scheduledDate }) : t("sendDialog.body")}
+            </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{t("dialog.back")}</AlertDialogCancel>
@@ -672,7 +831,23 @@ function Composer({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </Card>
+
+      <AlertDialog open={confirmLeave} onOpenChange={setConfirmLeave}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("leaveDialog.title")}</AlertDialogTitle>
+            <AlertDialogDescription>{t("leaveDialog.body")}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("leaveDialog.stay")}</AlertDialogCancel>
+            <Button type="button" variant="neutral" onClick={onClose}>
+              {t("leaveDialog.discard")}
+            </Button>
+            <AlertDialogAction onClick={() => save(onClose)}>{t("leaveDialog.save")}</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
   );
 }
 
@@ -680,11 +855,13 @@ function WinbackCard({
   storeId,
   winback,
   limits,
+  paused,
   onPreview,
 }: {
   storeId: string;
   winback: WinbackOverview;
   limits: EmailCampaignLimits;
+  paused: boolean;
   onPreview: (value: { subject: string; html: string }) => void;
 }) {
   const t = useTranslations("emailCampaigns");
@@ -711,6 +888,23 @@ function WinbackCard({
 
   const content = { subject: value.subject, body: value.body, ctaLabel: null, productIds: [], audience: "buyers" };
 
+  // Paused by the email policy: nothing goes out, so the switch and form would promise what doesn't happen. The saved settings stay.
+  if (paused) {
+    return (
+      <Card>
+        <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">
+          <div className="space-y-1">
+            <CardTitle>{t("winback.title")}</CardTitle>
+            <CardDescription>{t("winback.pausedBody")}</CardDescription>
+          </div>
+          <Badge variant="outline" className="text-muted-foreground">
+            {t("winback.paused")}
+          </Badge>
+        </CardHeader>
+      </Card>
+    );
+  }
+
   return (
     <Card>
       <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">
@@ -727,93 +921,96 @@ function WinbackCard({
           <Switch id="winback-enabled" checked={value.enabled} onCheckedChange={(on) => setValue((v) => ({ ...v, enabled: on }))} />
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <p className="text-xs text-muted-foreground">
-          {t("winback.stats", {
-            sent: formatNumber(winback.sentLast30Days, locale),
-            pending: formatNumber(winback.pending, locale),
-          })}
-        </p>
-        <div className="flex items-center gap-2 text-sm">
-          <Label htmlFor="winback-days">{t("winback.days")}</Label>
-          <Input
-            id="winback-days"
-            type="number"
-            min={WINBACK_DAYS_MIN}
-            max={WINBACK_DAYS_MAX}
-            value={value.days}
-            onChange={(e) => setValue((v) => ({ ...v, days: Number(e.target.value) || WINBACK_DAYS_MIN }))}
-            className="w-24"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="winback-subject">{t("winback.subject")}</Label>
-          <Input
-            id="winback-subject"
-            value={value.subject}
-            maxLength={CAMPAIGN_SUBJECT_MAX}
-            onChange={(e) => setValue((v) => ({ ...v, subject: e.target.value }))}
-            placeholder={t("winback.subjectPlaceholder")}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="winback-body">{t("winback.body")}</Label>
-          <Textarea
-            id="winback-body"
-            value={value.body}
-            maxLength={CAMPAIGN_BODY_MAX}
-            rows={5}
-            onChange={(e) => setValue((v) => ({ ...v, body: e.target.value }))}
-            placeholder={t("winback.bodyPlaceholder")}
-          />
-          <p className="text-xs text-muted-foreground">{t("winback.hint")}</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button
-            type="button"
-            disabled={pending}
-            onClick={() =>
-              act("save", async () => {
-                const res = await saveWinback({ storeId, settings: value });
-                if (fail(res)) return;
-                toast.success(t("toasts.winbackSaved"));
-                router.refresh();
-              })
-            }
-          >
-            {busy === "save" && <LoaderCircle className="animate-spin" aria-hidden />}
-            {t("actions.save")}
-          </Button>
-          <Button
-            type="button"
-            variant="neutral"
-            disabled={pending}
-            onClick={() =>
-              act("preview", async () => {
-                const res = await previewCampaignEmail({ storeId, kind: "winback", content });
-                if (!fail(res) && res.success) onPreview(res.data);
-              })
-            }
-          >
-            {busy === "preview" ? <LoaderCircle className="animate-spin" aria-hidden /> : <Eye aria-hidden />}
-            {t("actions.preview")}
-          </Button>
-          <Button
-            type="button"
-            variant="neutral"
-            disabled={pending}
-            onClick={() =>
-              act("test", async () => {
-                const res = await sendWinbackTest({ storeId, settings: value });
-                if (!fail(res)) toast.success(t("toasts.testSent"));
-              })
-            }
-          >
-            {busy === "test" ? <LoaderCircle className="animate-spin" aria-hidden /> : <Mail aria-hidden />}
-            {t("actions.testWinback")}
-          </Button>
-        </div>
-      </CardContent>
+      {(value.enabled || winback.enabled) && (
+        <CardContent className="space-y-4">
+          <p className="text-xs text-muted-foreground">
+            {t("winback.stats", {
+              sent: formatNumber(winback.sentLast30Days, locale),
+              pending: formatNumber(winback.pending, locale),
+            })}
+          </p>
+          <div className="flex items-center gap-2 text-sm">
+            <Label htmlFor="winback-days">{t("winback.days")}</Label>
+            <Input
+              id="winback-days"
+              type="number"
+              min={WINBACK_DAYS_MIN}
+              max={WINBACK_DAYS_MAX}
+              value={value.days}
+              onChange={(e) => setValue((v) => ({ ...v, days: Number(e.target.value) || WINBACK_DAYS_MIN }))}
+              className="w-24"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="winback-subject">{t("winback.subject")}</Label>
+            <Input
+              id="winback-subject"
+              value={value.subject}
+              maxLength={CAMPAIGN_SUBJECT_MAX}
+              onChange={(e) => setValue((v) => ({ ...v, subject: e.target.value }))}
+              placeholder={t("winback.subjectPlaceholder")}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="winback-body">{t("winback.body")}</Label>
+            <Textarea
+              id="winback-body"
+              value={value.body}
+              maxLength={CAMPAIGN_BODY_MAX}
+              rows={5}
+              onChange={(e) => setValue((v) => ({ ...v, body: e.target.value }))}
+              placeholder={t("winback.bodyPlaceholder")}
+            />
+            <p className="text-xs text-muted-foreground">{t("winback.hint")}</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              variant="neutral"
+              disabled={pending}
+              onClick={() =>
+                act("save", async () => {
+                  const res = await saveWinback({ storeId, settings: value });
+                  if (fail(res)) return;
+                  toast.success(t("toasts.winbackSaved"));
+                  router.refresh();
+                })
+              }
+            >
+              {busy === "save" && <LoaderCircle className="animate-spin" aria-hidden />}
+              {t("actions.save")}
+            </Button>
+            <Button
+              type="button"
+              variant="neutral"
+              disabled={pending}
+              onClick={() =>
+                act("preview", async () => {
+                  const res = await previewCampaignEmail({ storeId, kind: "winback", content });
+                  if (!fail(res) && res.success) onPreview(res.data);
+                })
+              }
+            >
+              {busy === "preview" ? <LoaderCircle className="animate-spin" aria-hidden /> : <Eye aria-hidden />}
+              {t("actions.preview")}
+            </Button>
+            <Button
+              type="button"
+              variant="neutral"
+              disabled={pending}
+              onClick={() =>
+                act("test", async () => {
+                  const res = await sendWinbackTest({ storeId, settings: value });
+                  if (!fail(res)) toast.success(t("toasts.testSent"));
+                })
+              }
+            >
+              {busy === "test" ? <LoaderCircle className="animate-spin" aria-hidden /> : <Mail aria-hidden />}
+              {t("actions.testWinback")}
+            </Button>
+          </div>
+        </CardContent>
+      )}
     </Card>
   );
 }
