@@ -96,6 +96,22 @@ describe("selection helpers", () => {
 describe("responsive overrides", () => {
   const padding = ["paddingTop"] as const;
 
+  it("shows a banner photo's phone ratio as the phone draws it, and keeps a ratio the seller picks", () => {
+    const node = { kind: "node", nodeId: "photo" } as const;
+    const section: SectionInstance = {
+      id: "c1",
+      sectionId: "custom-section",
+      version: 1,
+      props: {},
+      componentTree: [{ id: "photo", type: "image", props: {}, style: { aspectRatio: "banner" }, breakpointStyles: { mobile: { aspectRatio: "portrait" } }, children: [] }],
+    };
+    expect(readEffectiveStyle(section, node, "desktop").aspectRatio).toBe("banner");
+    expect(readEffectiveStyle(section, node, "mobile").aspectRatio).toBe("banner");
+    const picked = setStyle(section, node, "mobile", { aspectRatio: "portrait", keepRatio: true });
+    expect(readEffectiveStyle(picked, node, "mobile").aspectRatio).toBe("portrait");
+    expect(readEffectiveStyle(setStyle(picked, node, "mobile", { aspectRatio: undefined, keepRatio: undefined }), node, "mobile").aspectRatio).toBe("banner");
+  });
+
   it("reports the device's own value and smaller devices that keep theirs", () => {
     let s = setStyle(hero(), { kind: "section" }, "desktop", { paddingTop: 80 });
     expect(overrideState(s, { kind: "section" }, "desktop", padding)).toEqual({ own: false, below: [] });

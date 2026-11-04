@@ -174,11 +174,11 @@ export function ImageControls({ style, set, fit = true }: GroupProps & { fit?: b
   const t = useTranslations("storeEditor.style");
   return (
     <div className="space-y-2.5">
-      <ControlRow label={t("ratio")} keys={["aspectRatio"]}>
+      <ControlRow label={t("ratio")} keys={["aspectRatio", "keepRatio"]}>
         <Segmented
           label={t("ratio")}
           value={style.aspectRatio}
-          onChange={(aspectRatio) => set({ aspectRatio })}
+          onChange={(aspectRatio) => set({ aspectRatio, keepRatio: aspectRatio ? true : undefined })}
           options={(["square", "landscape", "wide", "banner", "portrait", "story"] as const).map((v) => ({ value: v, label: t(`ratios.${v}`) }))}
         />
       </ControlRow>

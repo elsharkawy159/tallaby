@@ -112,6 +112,8 @@ export type StyleValues = {
   maxWidth?: string;
   minHeight?: number;
   aspectRatio?: Enum<typeof ASPECT_RATIOS>;
+  /** The seller picked this ratio in the builder, so a banner photo keeps it on phones (`keepsBannerOnPhones`). Writes no CSS. */
+  keepRatio?: boolean;
   objectFit?: "cover" | "contain";
   borderWidth?: number;
   borderColor?: string;
@@ -186,6 +188,7 @@ const RULES: Record<StyleKey, Rule> = {
   maxWidth: { kind: "length" },
   minHeight: num(0, 2000),
   aspectRatio: oneOf(ASPECT_RATIOS),
+  keepRatio: { kind: "bool" },
   objectFit: oneOf(["cover", "contain"]),
   borderWidth: num(0, 20),
   borderColor: { kind: "color" },
@@ -491,6 +494,57 @@ export function isBannerPhoto(node: Pick<ComponentNode, "type" | "style">): bool
 
 const BANNER_MAX_HEIGHT = "max-height:100vh;max-height:100svh";
 
+/** The phone frames the library designs gave banner photos until 2026-11-04; stores keep them in their saved trees. */
+const DESIGN_PHONE_RATIOS: ReadonlySet<string> = new Set(["portrait", "story", "landscape"]);
+
+/**
+ * On phones a banner stays a 21:9 banner, so the whole photo shows as on
+ * desktop (owner, 2026-11-04). Saved trees can't say whether a phone frame came
+ * from the design or from the seller, so a frame the seller picks from now on
+ * carries `keepRatio`. Any other ratio or height set for phones is the seller's
+ * and is kept. An image with a minimum height (newsletter-banner) is not a
+ * plain banner and is left alone.
+ */
+export function keepsBannerOnPhones(node: Pick<ComponentNode, "type" | "style" | "breakpointStyles">): boolean {
+  if (!isBannerPhoto(node) || normalizeStyle(node.style).minHeight) return false;
+  const phone = normalizeStyle(node.breakpointStyles?.mobile);
+  if (phone.minHeight) return false;
+  if (!phone.aspectRatio || phone.aspectRatio === "banner") return true;
+  return !phone.keepRatio && DESIGN_PHONE_RATIOS.has(phone.aspectRatio);
+}
+
+const COPY_TYPES = new Set(["heading", "paragraph", "text", "button"]);
+const holdsCopy = (node: ComponentNode): boolean => COPY_TYPES.has(node.type) || (node.children ?? []).some(holdsCopy);
+
+/**
+ * What a phone banner's sibling needs: 21:9 is about 150px tall on a phone, too
+ * short for copy laid over the photo, which the frame would clip. So the copy
+ * flows under the photo, on the frame's colour (its text is written for a dark
+ * photo), and the dim and shade layers go, leaving the photo's true colours.
+ * Anything else over the photo stays, as does a layer the seller moved for phones.
+ */
+function overBannerOnPhones(node: ComponentNode, frame: ComponentNode, base: StyleValues, phone: StyleValues | undefined): StyleValues | undefined {
+  if (base.position !== "absolute" || phone?.position || !frame.children?.some(keepsBannerOnPhones)) return undefined;
+  if (holdsCopy(node)) {
+    const frameStyle = normalizeStyle(frame.style);
+    const framePhone = normalizeStyle(frame.breakpointStyles?.mobile);
+    return {
+      paddingTop: 20,
+      // The space the copy kept under it on the photo: the carousel's dots sit there.
+      paddingBottom: Number.parseInt(phone?.insetBottom ?? "", 10) || 24,
+      ...(!frameStyle.background && !framePhone.background && { background: "black" }),
+      ...phone,
+      position: "relative",
+      insetTop: "auto",
+      insetBottom: "auto",
+      insetStart: "auto",
+      insetEnd: "auto",
+    };
+  }
+  const fills = base.insetTop === "0px" && base.insetBottom === "0px" && !node.children?.length;
+  return fills ? { ...phone, opacity: 0 } : undefined;
+}
+
 /**
  * An image framed by a ratio or a height but given no fit would stretch (the
  * browser's default is `fill`), so it crops instead. Any fit it sets is kept.
@@ -500,7 +554,7 @@ function fallbackObjectFit(node: Pick<ComponentNode, "type">, styles: readonly (
   return styles.some((style) => style?.aspectRatio || style?.minHeight) ? "cover" : undefined;
 }
 
-function collectNodes(target: Map<string, Responsive>, sectionId: string, nodes: ComponentNode[] | undefined, depth = 0) {
+function collectNodes(target: Map<string, Responsive>, sectionId: string, nodes: ComponentNode[] | undefined, depth = 0, parent?: ComponentNode) {
   for (const node of nodes ?? []) {
     if (ID_RE.test(node.id)) {
       const selector = nodeSelector(sectionId, node);
@@ -512,12 +566,15 @@ function collectNodes(target: Map<string, Responsive>, sectionId: string, nodes:
       if (tabletColumns) bps.tablet = { ...bps.tablet, columns: tabletColumns };
       const banner = isBannerPhoto(node);
       if (banner && !bps.tablet?.aspectRatio) bps.tablet = { ...bps.tablet, aspectRatio: "wide" };
+      if (keepsBannerOnPhones(node)) bps.mobile = { ...bps.mobile, aspectRatio: "banner" };
+      const overBanner = parent && overBannerOnPhones(node, parent, base, bps.mobile);
+      if (overBanner) bps.mobile = overBanner;
       for (const bp of STYLE_BREAKPOINTS) collect(target, selector, bp, bps[bp]);
       const entry = target.get(selector);
       if (entry && depth === 0 && node.type === "section") entry.sectionRoot = true;
       if (entry && banner) entry.capHeight = true;
     }
-    collectNodes(target, sectionId, node.children, depth + 1);
+    collectNodes(target, sectionId, node.children, depth + 1, node);
   }
 }
 

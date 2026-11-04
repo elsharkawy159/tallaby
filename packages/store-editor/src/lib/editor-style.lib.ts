@@ -5,7 +5,7 @@
  * styles on the node. Every write goes through the package whitelist.
  */
 import type { ComponentNode, SectionInstance } from "@workspace/store-sections";
-import { findNode, normalizeStyle, updateNode, type StyleKey, type StyleValues } from "@workspace/store-sections/render";
+import { findNode, keepsBannerOnPhones, normalizeStyle, updateNode, type StyleKey, type StyleValues } from "@workspace/store-sections/render";
 import type { Device } from "../state/editor.store";
 
 export type StyleTarget = { kind: "section" } | { kind: "part"; part: string } | { kind: "node"; nodeId: string };
@@ -50,6 +50,11 @@ export function readEffectiveStyle(instance: SectionInstance, target: StyleTarge
   for (const d of order) Object.assign(merged, readOwnStyle(instance, target, d));
   const own = readOwnStyle(instance, target, device);
   if (own.hidden === undefined) delete merged.hidden;
+  // Show the ratio the phone really draws: a banner stays a banner whatever frame its saved tree holds.
+  if (device === "mobile" && target.kind === "node") {
+    const node = findNode(instance.componentTree ?? [], target.nodeId);
+    if (node && keepsBannerOnPhones(node)) merged.aspectRatio = "banner";
+  }
   return merged;
 }
 

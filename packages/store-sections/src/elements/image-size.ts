@@ -3,6 +3,7 @@
  * (ROADMAP.md F-50a). No React here: the builder and Website › Design read it.
  */
 import type { ComponentNode } from "../config/schema";
+import { keepsBannerOnPhones } from "./style";
 
 const SIZES = {
   square: [1200, 1200],
@@ -31,7 +32,8 @@ export function recommendedImageSize(node: Pick<ComponentNode, "style" | "breakp
   const ratio = ratioOf(node.style);
   if (!ratio) return null;
   const [width, height] = SIZES[ratio];
-  const phone = ratioOf(node.breakpointStyles?.mobile) ?? ratioOf(node.breakpointStyles?.tablet);
+  const staysBanner = keepsBannerOnPhones({ type: "image", ...node });
+  const phone = staysBanner ? null : (ratioOf(node.breakpointStyles?.mobile) ?? ratioOf(node.breakpointStyles?.tablet));
   const narrower = phone ? SIZES[phone][0] / SIZES[phone][1] < width / height : false;
-  return { width, height, cropsOnPhones: narrower || ratio === "banner" };
+  return { width, height, cropsOnPhones: narrower };
 }

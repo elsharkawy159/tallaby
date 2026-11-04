@@ -862,9 +862,10 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 ### F-50 Storefront banner sizing — P1 · owner request
 
-**Status:** [Built, not deployed] 2026-11-03 (§7).
+**Status:** [Built, not deployed] 2026-11-03, phones 2026-11-04 (§7).
 
 - **F-50a · P1 · deps: —** Fix the banner's dimensions and aspect ratios across screen sizes and templates, with no distortion or unexpected cropping. The store banner is the home hero's photos (§7, 2026-10-31). Tell sellers the recommended image size.
+- **F-50b · P1 · deps: F-50a** Keep banner photos 21:9 on phones instead of a tall frame, on existing stores too, with their copy under the photo. The seller can still pick another phone ratio in the builder (§7, 2026-11-04).
 
 ### F-51 Unlimited stock — P2 · owner request
 
@@ -1061,6 +1062,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 | Date       | Request (owner's words)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Feature ID                                                                                       | Status                                                                                 |
 | ---------- | -----------------------------------------------------------------------------------------------
+| 2026-11-04 | "on banner sections on website builder, desktop size is good but on mobile keep it banner to show the image fit good" | F-50b | Built, not deployed (§7) |
 | 2026-11-04 | "If user wants to change the shared section (Header or Footer), on dragging the Header or Footer from the sections list should be REPLACED with the current in the canvas, as it's a shared section and cannot be added twice." Same on the Admin editor. | Fix (§7) | Built |
 | 2026-11-04 | "Sellers should be able to upload an Excel sheet or other data file holding many products, have AI analyse it, and add all the products at once." Add all of them directly, with no review per product. Built as `PLAN.md` AI-3 (§7).                                                                                                                                                  |
 | 2026-11-04 | "The seller's shipping page is too busy; make it clear and simple." Remove "استخدم أسعار طلبي" and "احسب سعر التوصيل", rename "صف مناطق التوصيل" to "أضف منطقة توصيل بالذكاء الاصطناعي" with an AI icon, and improve the page. (relayed) | F-45 | Built, not deployed. "استخدم أسعار طلبي" kept: live checkout setting, needs an owner decision (§7) |
@@ -1293,6 +1295,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [ ] F-49a Animation audit and shared set (owner, on Claude Design) (delayed by owner 2026-11-04)
 - [ ] F-49b Add animations to element trees; phone performance check (delayed by owner 2026-11-04)
 - [x] F-50a Fix banner sizing across screens and templates (2026-11-03; `eb853ea7`; phone view of 21:9 banners not checked)
+- [x] F-50b Banners stay banners on phones (2026-11-04; checked on a static render of the real section code, not on a running store)
 - [x] F-51a Unlimited stock design note (every stock reader) (2026-11-03; `docs/superpowers/specs/2026-11-03-unlimited-stock-design.md`)
 - [x] F-51b Unlimited stock migration, form and readers (2026-11-03; `891604f7`; 0138 on staging)
 - [x] F-52a Homepage redesign (2026-11-04; from the owner's Claude Design project; not seen on a real phone)
@@ -1371,6 +1374,16 @@ Add each new request here first, with the date and the owner's words, then turn 
 ---
 
 ## 7. Log
+
+### 2026-11-04 — Banners stay banners on phones (F-50b, owner request)
+
+- **Cause:** F-50a only added a tablet ratio and a height cap. The designs still set a tall phone frame (`portrait`, `story` on `hero-fullbleed`, `landscape` on `hero-carousel-panel`), so a 21:9 photo lost its sides on phones.
+- **Built:** in `collectPageCss`, a banner photo draws 21:9 on phones, whatever frame its saved tree holds. Live revisions and drafts stay as saved, and existing stores get the fix on deploy, with no republish. The same code draws the builder and the store. No design file and no migration changed.
+- **Copy moves:** 21:9 is about 150px tall on a phone, too short for copy on the photo. On phones the copy now sits under the photo on the frame's colour, and the dim and shade layers go. This is a visible change to existing hero sections on phones.
+- **Seller control:** a ratio picked in the builder now saves `keepRatio`, so it stays, and the copy returns to the photo for a tall frame. A portrait, story or landscape phone frame a seller picked before today can't be told from the design's, so it becomes a banner until they pick it again.
+- **Designs:** `hero-banner`, `hero-carousel`, `hero-carousel-images`, `hero-carousel-panel`, `hero-fullbleed`, `hero-thumbs`, `promo-banner-fullbleed`, `promo-countdown`, and any image a seller set to 21:9. Left alone: `hero-video` (a video) and `newsletter-banner` (has a minimum height).
+- **Size hint:** the "phones show a narrower part of the photo" note no longer shows on these banners. A tall or square photo still loses its top and bottom in a 21:9 frame, as on desktop.
+- **Not checked:** a running store or the builder on a real phone; the carousel script.
 
 ### 2026-11-04 — Header and footer designs replace the current one (owner, urgent)
 
