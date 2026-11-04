@@ -12,7 +12,7 @@ describe("resolveTemplateMeta (templates.meta → gallery data, code fallback pe
   });
 
   it("prefers the database values over the code copy", () => {
-    const meta = { pageNames: { home: { ar: "بيت", en: "House" } }, demo: getCodeTemplate("atelier")!.demo, palette: ["#000000"] };
+    const meta = { pageNames: { home: { ar: "بيت", en: "House" } }, demo: getCodeTemplate("kasr")!.demo, palette: ["#000000"] };
     const resolved = resolveTemplateMeta(meta, "tallaby-classic");
     expect(resolved.pageNames).toEqual({ home: { ar: "بيت", en: "House" } });
     expect(resolved.palette).toEqual(["#000000"]);
@@ -20,8 +20,8 @@ describe("resolveTemplateMeta (templates.meta → gallery data, code fallback pe
   });
 
   it("falls back to the code template for each missing or broken field", () => {
-    const code = getCodeTemplate("atelier")!;
-    const resolved = resolveTemplateMeta({ palette: ["#111111"], demo: { store: "broken" } }, "atelier");
+    const code = getCodeTemplate("kasr")!;
+    const resolved = resolveTemplateMeta({ palette: ["#111111"], demo: { store: "broken" } }, "kasr");
     expect(resolved.palette).toEqual(["#111111"]);
     expect(resolved.pageNames).toEqual(code.pageNames);
     expect(resolved.demo).toBe(code.demo);

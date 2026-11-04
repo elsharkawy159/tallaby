@@ -5,7 +5,7 @@ import { validateSiteConfig } from "../config/validate";
 import { nodeCatalogQuery, walkNodes } from "../elements/data";
 import { SECTION_PRESETS } from "../library";
 import { CODE_TEMPLATES, LIBRARY_TEMPLATES, getCodeTemplate } from "./catalog";
-import { HOME_GRID_PAGE_SIZE, sectionCategory, templateEssentials } from "./essentials";
+import { HOME_GRID_PAGE_SIZE, sectionCategory, sourceDesignId, templateEssentials } from "./essentials";
 import { preferTemplatePresets, templateLibraryKeys } from "./library-order";
 import { templateFormNeeds } from "./prepare";
 
@@ -48,7 +48,7 @@ describe("templateEssentials (owner, 2026-10-23)", () => {
   }
 
   it("keeps the contact form and drops the home newsletter", () => {
-    const essentials = templateEssentials(getCodeTemplate("mode")!.config());
+    const essentials = templateEssentials(getCodeTemplate("kasr")!.config());
     const contact = essentials.pages.find((p) => p.slug === "contact")!;
     expect(contact.content.sections.some((s) => nodesOf(s).some((n) => n.type === "storeForm"))).toBe(true);
     expect(essentials.pages.find((p) => p.slug === "about")!.content.sections.every((s) => sectionCategory(s) === "page-header")).toBe(true);
@@ -82,11 +82,15 @@ describe("templateEssentials keeps the product page's product sections", () => {
 
 describe("Add › Sections in template order", () => {
   it("names the library designs a template is built from, first use first", () => {
-    const keys = templateLibraryKeys(getCodeTemplate("mode")!.config(), "mode");
-    const home = keys.indexOf("hero-ticket");
-    expect(home).toBeGreaterThan(-1);
-    expect(keys.indexOf("promo-ticker")).toBeLessThan(home);
-    expect(keys.some((key) => key.startsWith("mode-"))).toBe(false);
+    const template = getCodeTemplate("kasr")!;
+    const config = template.config();
+    const keys = templateLibraryKeys(config, "kasr");
+    const libraryIdOf = (id: string | null) => template.designs.find((d) => d.id === id)?.libraryId;
+    const header = libraryIdOf(sourceDesignId(config.header!))!;
+    const hero = libraryIdOf(sourceDesignId(config.pages.find((p) => p.isHome)!.content.sections[0]!))!;
+    expect(keys[0]).toBe(header);
+    expect(keys.indexOf(hero)).toBeGreaterThan(0);
+    expect(keys.some((key) => key.startsWith("kasr-"))).toBe(false);
   });
 
   it("lists those presets first in each category, the rest in library order", () => {

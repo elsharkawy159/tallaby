@@ -1,5 +1,5 @@
 /**
- * The niche templates (2026-10-28): three per niche, each with the fixed
+ * The niche templates (2026-10-28): three per niche (two for beauty), each with the fixed
  * 12-slot home (top bar and header, hero, categories, products, about, four
  * "products by category" rows, newsletter, footer). Checks what the brief
  * asks that the shared template tests don't: the slot order, the four rows
@@ -18,7 +18,8 @@ const NICHES: Record<string, readonly string[]> = {
   fashion: ["fashion-luxe", "fashion-bold", "fashion-warm"],
   electronics: ["electronics-luxe", "electronics-bold", "electronics-warm"],
   kids: ["kids-luxe", "kids-bold", "kids-warm"],
-  beauty: ["beauty-luxe", "beauty-bold", "beauty-warm"],
+  // beauty-warm removed by the owner (2026-11-03).
+  beauty: ["beauty-luxe", "beauty-bold"],
   grocery: ["grocery-luxe", "grocery-bold", "grocery-warm"],
   perfumes: ["perfumes-luxe", "perfumes-bold", "perfumes-warm"],
   jewelry: ["jewelry-luxe", "jewelry-bold", "jewelry-warm"],
@@ -86,7 +87,7 @@ describe.each(Object.entries(NICHES))("niche %s", (_niche, keys) => {
       pick((x) => libraryIdOf(x.t, homeOf(x)[0]!.id)),
       pick((x) => libraryIdOf(x.t, homeOf(x)[1]!.id)),
     ]) {
-      expect(new Set(ids).size, ids.join(", ")).toBe(3);
+      expect(new Set(ids).size, ids.join(", ")).toBe(keys.length);
     }
     const heroes = pick((x) => libraryIdOf(x.t, homeOf(x)[0]!.id));
     expect(heroes).toContain("hero-video");

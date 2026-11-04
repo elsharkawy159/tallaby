@@ -72,11 +72,12 @@ describe("library sections seed", () => {
     ).toEqual([]);
   }, 60_000);
 
-  it("0105 seeds the Classic and Atelier designs hidden, with named trees", () => {
+  it("0105 seeds the Classic designs (and the since-removed Atelier's) hidden, with named trees", () => {
     const sql = readFileSync(join(MIGRATIONS, "0105_template_library_sections.sql"), "utf8").replace(/\r\n/g, "\n");
-    expect(seededSectionKeys([sql])).toEqual(new Set(TEMPLATE_OWN_DESIGNS.map((design) => design.id)));
-    expect(sql.split("ON CONFLICT (key) DO NOTHING;").length - 1).toBe(TEMPLATE_OWN_DESIGNS.length);
-    expect(sql.match(/,\n  true\n\)\nON CONFLICT/g)?.length).toBe(TEMPLATE_OWN_DESIGNS.length);
+    const keys = seededSectionKeys([sql]);
+    for (const design of TEMPLATE_OWN_DESIGNS) expect(keys.has(design.id), design.id).toBe(true);
+    expect(sql.split("ON CONFLICT (key) DO NOTHING;").length - 1).toBe(keys.size);
+    expect(sql.match(/,\n  true\n\)\nON CONFLICT/g)?.length).toBe(keys.size);
     expect(sql).toContain('"field":"section"');
     expect(sql.replace(/^--.*$/gm, "")).not.toMatch(/\b(UPDATE|DELETE|DROP|TRUNCATE)\b/);
   });

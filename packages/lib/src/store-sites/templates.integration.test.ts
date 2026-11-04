@@ -59,11 +59,11 @@ describe.skipIf(!TEST_DATABASE_URL)("store templates (integration)", { timeout: 
   });
 
   it("gallery, previews and meta come from the code catalog; unknown keys are refused", async () => {
-    const card = (await listStoreTemplates(w.a.sellerId, w.a.a2, db))!.templates.find((t) => t.key === "atelier")!;
+    const card = (await listStoreTemplates(w.a.sellerId, w.a.a2, db))!.templates.find((t) => t.key === "kasr")!;
     expect(card.palette.length).toBeGreaterThan(0);
     expect(card.formKinds).toEqual(expect.any(Array));
-    expect((await getTemplateMeta("atelier", db))?.demo.products.length).toBeGreaterThan(0);
-    expect((await getPublicTemplate("atelier", db))?.meta.palette).toEqual(card.palette);
+    expect((await getTemplateMeta("kasr", db))?.demo.products.length).toBeGreaterThan(0);
+    expect((await getPublicTemplate("kasr", db))?.meta.palette).toEqual(card.palette);
     expect(await getPublicTemplateConfig("no-such-template", db)).toBeNull();
     expect(await getTemplateMeta("no-such-template", db)).toBeNull();
   });
@@ -152,24 +152,23 @@ describe.skipIf(!TEST_DATABASE_URL)("store templates (integration)", { timeout: 
     expect(await applyStoreTemplate(w.a.sellerId, w.a.a2, "Bad Key!", w.a.sellerId, OPTIONS, db)).toMatchObject({ error: "template_not_found" });
   });
 
-  // Needs 0070 (Atelier seed) on the test database; skipped until it is applied.
-  it("Atelier: creates and binds the forms of the sections it keeps, names the pages, fills in the store name; a re-apply reuses the forms", async (t) => {
+  it("Kasr: creates and binds the forms of the sections it keeps, names the pages, fills in the store name; a re-apply reuses the forms", async (t) => {
     const form = (name: string) => ({ name, fields: [{ id: "email", key: "email", type: "email" as const, label: "Email", required: true, width: "full" as const }], settings: { submitLabel: "Send", successMessage: "Thanks" } });
-    const forms = { ...OPTIONS, formInput: (kind: string) => (kind === "newsletter" ? form("Atelier newsletter test") : kind === "contact" ? form("Atelier contact test") : undefined) };
+    const forms = { ...OPTIONS, formInput: (kind: string) => (kind === "newsletter" ? form("Kasr newsletter test") : kind === "contact" ? form("Kasr contact test") : undefined) };
 
-    const applied = await applyStoreTemplate(w.b.sellerId, w.b.b1, "atelier", w.b.sellerId, forms, db);
-    // B1 started from Tallaby Classic, which already has About, Contact and FAQ: Atelier fills those.
-    expect(applied).toMatchObject({ success: true, data: { templateKey: "atelier", pagesCreated: 0 } });
+    const applied = await applyStoreTemplate(w.b.sellerId, w.b.b1, "kasr", w.b.sellerId, forms, db);
+    // B1 started from Tallaby Classic, which already has About, Contact and FAQ: Kasr fills those.
+    expect(applied).toMatchObject({ success: true, data: { templateKey: "kasr", pagesCreated: 0 } });
 
     const storeForms = await db.select({ id: s.storeForms.id, name: s.storeForms.name }).from(s.storeForms).where(eq(s.storeForms.storeId, w.b.b1));
     const ids = Object.fromEntries(storeForms.map((f) => [f.name, f.id]));
     // The home newsletter is not applied (owner, 2026-10-23), so no newsletter form is made.
-    expect(ids["Atelier newsletter test"]).toBeUndefined();
-    expect(ids["Atelier contact test"]).toBeTruthy();
+    expect(ids["Kasr newsletter test"]).toBeUndefined();
+    expect(ids["Kasr contact test"]).toBeTruthy();
 
     const editor = (await getStoreForEditor(w.b.sellerId, w.b.b1, db))!;
     const json = JSON.stringify(editor.pages.map((p) => p.draftContent));
-    expect(json).toContain(ids["Atelier contact test"]!);
+    expect(json).toContain(ids["Kasr contact test"]!);
     expect(json).not.toContain("formTemplate");
     const about = editor.pages.find((p) => p.slug === "about")!;
     // An existing page keeps its name; only its content changes.
@@ -177,7 +176,7 @@ describe.skipIf(!TEST_DATABASE_URL)("store templates (integration)", { timeout: 
     const [store] = await db.select({ name: s.stores.name, header: s.stores.sharedHeader }).from(s.stores).where(eq(s.stores.id, w.b.b1));
     expect(JSON.stringify(store!.header)).toContain(store!.name);
 
-    expect(await applyStoreTemplate(w.b.sellerId, w.b.b1, "atelier", w.b.sellerId, forms, db)).toMatchObject({ success: true });
+    expect(await applyStoreTemplate(w.b.sellerId, w.b.b1, "kasr", w.b.sellerId, forms, db)).toMatchObject({ success: true });
     const again = await db.select({ id: s.storeForms.id }).from(s.storeForms).where(eq(s.storeForms.storeId, w.b.b1));
     expect(again).toHaveLength(storeForms.length);
   });

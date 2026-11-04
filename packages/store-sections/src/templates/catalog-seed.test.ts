@@ -12,7 +12,7 @@ const statements = (sql: string) => sql.split("\n").filter((line) => !line.trimS
 
 describe("template seeds are insert-only", () => {
   // Policy from 0087 on. The applied seeds (0071 ... 0084) are frozen and were not regenerated.
-  it.each(["tallaby-classic", "atelier", "mode"])("%s: newly generated SQL never updates an existing template", (key) => {
+  it.each(["tallaby-classic", "kasr", "streetwear"])("%s: newly generated SQL never updates an existing template", (key) => {
     const sql = statements(templateSeedSql(getCodeTemplate(key)!, "x"));
     expect(sql).not.toMatch(/DO UPDATE/i);
     expect(sql).toContain("ON CONFLICT (key) DO NOTHING");

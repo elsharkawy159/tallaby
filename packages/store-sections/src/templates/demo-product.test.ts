@@ -6,7 +6,7 @@ import type { TemplateDemo } from "./types";
 
 describe("templateDemoProduct", () => {
   it("builds the product from the template's own demo catalog", () => {
-    const demo = getCodeTemplate("mode")!.demo;
+    const demo = getCodeTemplate("kasr")!.demo;
     const first = demo.products.find((p) => p.image)!;
     const product = templateDemoProduct(demo, { locale: "en" });
     expect(product.title).toBe(first.title.en);
@@ -23,7 +23,7 @@ describe("templateDemoProduct", () => {
   });
 
   it("uses the given store name and the Arabic copy by default", () => {
-    const demo = getCodeTemplate("mode")!.demo;
+    const demo = getCodeTemplate("kasr")!.demo;
     const product = templateDemoProduct(demo, { storeName: "My shop" });
     expect(product.seller.name).toBe("My shop");
     expect(product.title).toBe((demo.products.find((p) => p.image) ?? demo.products[0]!).title.ar);

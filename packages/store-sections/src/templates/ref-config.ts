@@ -20,7 +20,7 @@ import type { TemplateDefinition } from "./types";
 
 const codeTrees = new Map<string, LibraryTreeRow | null>();
 
-/** A library key's code design: a section-library design, or a Classic / Atelier design. */
+/** A library key's code design: a section-library design, or a Classic design. */
 export function codeLibraryDesign(key: string): Design | undefined {
   const design = getDesign(key);
   return design && !design.libraryId ? design : getTemplateOwnDesign(key);

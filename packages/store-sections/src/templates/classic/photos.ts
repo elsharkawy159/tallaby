@@ -5,7 +5,7 @@
  * is every new store's starting site, so the section photos stay generic
  * (gifts, parcels, a shop) and fit any kind of store; the seller replaces them.
  */
-import { pexels } from "../atelier/photos";
+import { pexels } from "../library-template";
 
 export { pexels };
 

@@ -6,7 +6,7 @@ import { resolveDemoCatalog } from "./demo-catalog";
 
 describe("resolveDemoCatalog", () => {
   it("fills every product list of a template's home page from its demo store", () => {
-    const template = getCodeTemplate("atelier")!;
+    const template = getCodeTemplate("kasr")!;
     const home = template.config().pages.find((p) => p.isHome)!;
     const queries = collectCatalogQueries(home.content.sections, storeSectionRegistry);
     const catalog = resolveDemoCatalog(queries, template.demo, "en");

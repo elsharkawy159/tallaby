@@ -11,9 +11,7 @@ import { sanitizeSiteConfig } from "../config/sanitize";
 import { validateSiteConfig } from "../config/validate";
 import type { Localized } from "../core/types";
 import type { Design } from "../designs/builder";
-import { ATELIER } from "./atelier";
 import { CLASSIC } from "./classic";
-import { MODE } from "./mode";
 import { STREETWEAR } from "./streetwear";
 import { KASR } from "./kasr";
 import { TECHHUB } from "./techhub";
@@ -21,24 +19,15 @@ import { VOLT } from "./volt";
 import { ARCADE } from "./arcade";
 import { ARENA } from "./arena";
 import { PURE } from "./pure";
-import { GLOW } from "./glow";
-import { ELIXIR } from "./elixir";
 import { BOTANICA } from "./botanica";
-import { NEST } from "./nest";
 import { DAILY } from "./daily";
-import { HEARTH } from "./hearth";
 import { SIZZLE } from "./sizzle";
 import { HARVEST } from "./harvest";
 import { LOAF } from "./loaf";
 import { ROAST } from "./roast";
-import { VERDANT } from "./verdant";
-import { LOFT } from "./loft";
-import { OAK } from "./oak";
 import { SAKAN } from "./sakan";
-import { LUMIERE } from "./lumiere";
 import { KARAT } from "./karat";
 import { FADDA } from "./fadda";
-import { PLAYROOM } from "./playroom";
 import { BAMBINO } from "./bambino";
 import { DOODLE } from "./doodle";
 import { HEKAYA } from "./hekaya";
@@ -55,14 +44,11 @@ import { SITARA } from "./sitara";
 import { SHANTA } from "./shanta";
 import { TASFYA } from "./tasfya";
 import { KABL } from "./kabl";
-import { SADA } from "./sada";
 import { ZAKI } from "./zaki";
 import { SAA } from "./saa";
 import { TANY } from "./tany";
 import { NADA } from "./nada";
 import { KOHL } from "./kohl";
-import { OUD } from "./oud";
-import { SABON } from "./sabon";
 import { BARBER } from "./barber";
 import { MATBAKH } from "./matbakh";
 import { FOKHAR } from "./fokhar";
@@ -73,7 +59,6 @@ import { KHODAR } from "./khodar";
 import { LAHMA } from "./lahma";
 import { HALAWA } from "./halawa";
 import { ATARA } from "./atara";
-import { DOKAN } from "./dokan";
 import { BUNN } from "./bunn";
 import { MOBILIA } from "./mobilia";
 import { ZAREA } from "./zarea";
@@ -81,15 +66,10 @@ import { NOUR } from "./nour";
 import { MAFRASH } from "./mafrash";
 import { ROKN } from "./rokn";
 import { ZAHRA } from "./zahra";
-import { NUQRA } from "./nuqra";
 import { LULU } from "./lulu";
 import { SAAT } from "./saat";
 import { MAHR } from "./mahr";
-import { LEGO } from "./lego";
 import { MAMA } from "./mama";
-import { MADRASA } from "./madrasa";
-import { HIKAYA } from "./hikaya";
-import { AHLAM } from "./ahlam";
 import { YOGA } from "./yoga";
 import { KOORA } from "./koora";
 import { DARRAGA } from "./darraga";
@@ -104,7 +84,6 @@ import { BASHRA } from "./bashra";
 import { SUFRA } from "./sufra";
 import { SABAHO } from "./sabaho";
 import { DAR } from "./dar";
-import { SHABKA } from "./shabka";
 import { HADAYA } from "./hadaya";
 import { REP } from "./rep";
 import { PITSTOP } from "./pitstop";
@@ -133,7 +112,6 @@ import { KIDS_LUXE } from "./kids-luxe";
 import { KIDS_WARM } from "./kids-warm";
 import { BEAUTY_BOLD } from "./beauty-bold";
 import { BEAUTY_LUXE } from "./beauty-luxe";
-import { BEAUTY_WARM } from "./beauty-warm";
 import { GROCERY_BOLD } from "./grocery-bold";
 import { GROCERY_LUXE } from "./grocery-luxe";
 import { GROCERY_WARM } from "./grocery-warm";
@@ -155,16 +133,16 @@ import { templateRefConfig } from "./ref-config";
 import type { TemplateDefinition, TemplateDemo } from "./types";
 
 /** Templates 02–110, built from section-library designs (`library-template.ts`), in registry order. */
-export const LIBRARY_TEMPLATES: readonly TemplateDefinition[] = [MODE, STREETWEAR, KASR, TECHHUB, VOLT, ARCADE, ARENA, PURE, GLOW, ELIXIR, BOTANICA, NEST, DAILY, HEARTH, SIZZLE, HARVEST, LOAF, ROAST, VERDANT, LOFT, OAK, SAKAN, LUMIERE, KARAT, FADDA, PLAYROOM, BAMBINO, DOODLE, HEKAYA, PACE, STRIDE, CORE, BASECAMP, GARAGE, DRIVE, MOTO,
-  BASHRA, SUFRA, SABAHO, DAR, SHABKA, HADAYA, REP, PITSTOP, GHORZA,
-  KETTAN, ZAY, SITARA, SHANTA, TASFYA, KABL, SADA, ZAKI, SAA, TANY, NADA, KOHL, OUD, SABON, BARBER, MATBAKH, FOKHAR, TAWLA, TANZIM, QAHWA, KHODAR, LAHMA, HALAWA, ATARA, DOKAN, BUNN, MOBILIA, ZAREA, NOUR, MAFRASH, ROKN, ZAHRA, NUQRA, LULU, SAAT, MAHR, LEGO, MAMA, MADRASA, HIKAYA, AHLAM, YOGA, KOORA, DARRAGA, SABAHA, BOXING, TYRE, ZEINA, KAHRABA, SAFAR, GARAGY,
+export const LIBRARY_TEMPLATES: readonly TemplateDefinition[] = [STREETWEAR, KASR, TECHHUB, VOLT, ARCADE, ARENA, PURE, BOTANICA, DAILY, SIZZLE, HARVEST, LOAF, ROAST, SAKAN, KARAT, FADDA, BAMBINO, DOODLE, HEKAYA, PACE, STRIDE, CORE, BASECAMP, GARAGE, DRIVE, MOTO,
+  BASHRA, SUFRA, SABAHO, DAR, HADAYA, REP, PITSTOP, GHORZA,
+  KETTAN, ZAY, SITARA, SHANTA, TASFYA, KABL, ZAKI, SAA, TANY, NADA, KOHL, BARBER, MATBAKH, FOKHAR, TAWLA, TANZIM, QAHWA, KHODAR, LAHMA, HALAWA, ATARA, BUNN, MOBILIA, ZAREA, NOUR, MAFRASH, ROKN, ZAHRA, LULU, SAAT, MAHR, MAMA, YOGA, KOORA, DARRAGA, SABAHA, BOXING, TYRE, ZEINA, KAHRABA, SAFAR, GARAGY,
   MAWSEM, SHASHA, WARD, BEITY, SOUQ, SALON, KHOLKHAL, FARHA, NASHAT, TARIK,
-  // Niche templates (2026-10-28): three per niche, with the 12-slot home (top bar to footer).
+  // Niche templates (2026-10-28): up to three per niche, with the 12-slot home (top bar to footer).
   FURNITURE_LUXE, FURNITURE_BOLD, FURNITURE_WARM,
   FASHION_LUXE, FASHION_BOLD, FASHION_WARM,
   ELECTRONICS_LUXE, ELECTRONICS_BOLD, ELECTRONICS_WARM,
   KIDS_LUXE, KIDS_BOLD, KIDS_WARM,
-  BEAUTY_LUXE, BEAUTY_BOLD, BEAUTY_WARM,
+  BEAUTY_LUXE, BEAUTY_BOLD,
   GROCERY_LUXE, GROCERY_BOLD, GROCERY_WARM,
   PERFUMES_LUXE, PERFUMES_BOLD, PERFUMES_WARM,
   JEWELRY_LUXE, JEWELRY_BOLD, JEWELRY_WARM,
@@ -176,7 +154,7 @@ export const LIBRARY_TEMPLATES: readonly TemplateDefinition[] = [MODE, STREETWEA
   VELLA,
 ];
 
-export const CODE_TEMPLATES: readonly TemplateDefinition[] = [CLASSIC, ATELIER, ...LIBRARY_TEMPLATES];
+export const CODE_TEMPLATES: readonly TemplateDefinition[] = [CLASSIC, ...LIBRARY_TEMPLATES];
 
 /** The default template: a new store's starting site (`templates.is_default`). */
 export const DEFAULT_TEMPLATE: TemplateDefinition = CLASSIC;
@@ -195,16 +173,16 @@ export function getTemplateDesign(id: string): Design | undefined {
 }
 
 /**
- * The hand-built templates' own designs (Classic, Atelier), which are library
- * sections too (owner, 2026-10-26; hidden from the sellers' Add palette, 0105),
- * so these templates are stored as refs like the others. Their library key is
+ * The hand-built template's own designs (Classic; Atelier was removed
+ * 2026-11-03), which are library sections too (owner, 2026-10-26; hidden from
+ * the sellers' Add palette, 0105), so it is stored as refs like the others. Their library key is
  * the design id.
  */
-export const TEMPLATE_OWN_DESIGNS: readonly Design[] = [...CLASSIC.designs, ...ATELIER.designs];
+export const TEMPLATE_OWN_DESIGNS: readonly Design[] = [...CLASSIC.designs];
 
 const OWN = new Map(TEMPLATE_OWN_DESIGNS.map((design) => [design.id, design]));
 
-/** A Classic / Atelier design by its library key. */
+/** A Classic design by its library key. */
 export function getTemplateOwnDesign(key: string): Design | undefined {
   return OWN.get(key);
 }

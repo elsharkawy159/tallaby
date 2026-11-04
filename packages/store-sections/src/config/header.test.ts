@@ -306,7 +306,7 @@ describe("header and footer options (drawChrome)", () => {
       const classic = accountLinks("tallaby-classic");
       expect(classic.length).toBeGreaterThan(0);
       expect(classic.every((node) => node.breakpointStyles?.mobile?.hidden !== true)).toBe(true);
-      expect(accountLinks("glow").every((node) => node.breakpointStyles?.mobile?.hidden === true)).toBe(true);
+      expect(accountLinks("kasr").every((node) => node.breakpointStyles?.mobile?.hidden === true)).toBe(true);
     });
 
     it("is never added to a footer", () => {
