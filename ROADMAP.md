@@ -992,7 +992,7 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 **Why:** A shorter form means fewer customers give up at checkout.
 **What:** The checkout is one simple form: full name, mobile number, country, full address (one line) and a note. Saved details fill in next time, and the customer can change item counts on the checkout page.
-**Status:** [Planned]
+**Status:** [Built, not deployed] 2026-11-04 (§7). The owner tests it locally first.
 
 - **F-64a · P1 · deps: —** Design note. **Decided (owner, 2026-11-04):** shipping prices, zones and Bosta use a governorate today (`shippingAddress.state`, `store_shipping_zones.places`), and a one-line address has none, so read the governorate from the address in code and ask for it only when it can't be read. The location button reuses the existing map detector (`components/address/location-map.tsx`, `address-dialog-steps/map-location-step`): browser location, then OpenStreetMap Nominatim, which also returns the governorate. Check Nominatim's usage limits for production traffic before launch; its search is limited to Egypt today (`countrycodes=eg`), which matters for F-61.
 - **F-64b · P1 · deps: F-64a** The form: full name, mobile number, country, full address on one line, and note. Replaces `shipping-information.tsx` and `store-checkout-fields.client.tsx` in both languages, with phone-only ordering and blocked-phone checks kept.
@@ -1324,12 +1324,12 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 **Owner requests 2026-11-04 (checkout and dashboard)**
 
-- [ ] F-64a Simple checkout design note (shipping price, location provider)
-- [ ] F-64b Simple checkout form
-- [ ] F-64c Location button with loading icon
-- [ ] F-64d Save details and fill in automatically
-- [ ] F-64e Default address and Edit Address
-- [ ] F-64f Change item counts on checkout
+- [x] F-64a Simple checkout design note (shipping price, location provider) (2026-11-04; `docs/superpowers/specs/2026-11-04-simple-checkout-design.md`)
+- [x] F-64b Simple checkout form (2026-11-04; not seen in a browser)
+- [x] F-64c Location button with loading icon (2026-11-04; not tried in a browser)
+- [x] F-64d Save details and fill in automatically (2026-11-04)
+- [x] F-64e Default address and Edit Address (2026-11-04; not seen in a browser)
+- [x] F-64f Change item counts on checkout (2026-11-04; not seen in a browser)
 - [ ] F-65a Hide الحملات التسويقية (paid ads to be removed later; media buyers planned)
 - [ ] F-65b Remove تتبع الحملات
 - [ ] F-65c Hide زيارات المتجر from the sidebar
@@ -1342,6 +1342,17 @@ Add each new request here first, with the date and the owner's words, then turn 
 ---
 
 ## 7. Log
+
+### 2026-11-04 — F-64 Simple one-page checkout built
+
+- **What:** one form with full name, mobile, country, one line of address and note. A location button fills in the address with a loading icon, details save for next time, the default address fills in with an Edit Address button, and item counts change on the checkout page. Design: `docs/superpowers/specs/2026-11-04-simple-checkout-design.md`.
+- **How:** the form saves a normal row in `user_addresses` and passes its id on, so `place-order.ts`, zones, rates, blocked phones and leads are unchanged. No migration.
+- **Governorate:** read from the address on the server, in Arabic or English, or from a city name. "شارع الجيزة" isn't Giza. Anything unclear shows one picker. A form without a real governorate can't save, so it can't reach the `__missing_state__` rate.
+- **Our calls:** editing an address a past order uses creates a new row, so the order's address doesn't change. Country is read-only Egypt until F-61. A coupon that stops applying after a count change is removed with a message. A store with its own checkout form (F-25) keeps its card, with the note in it.
+- **Bosta:** an address with no recognised district stays in the seller's queue with `district_needed`, and the seller picks one. That path already exists; it may happen more now that customers don't pick a city.
+- **Email:** the form never asked for one. Guests have only a placeholder address, so they get no customer emails, which limits Order Notifications for stores with mostly guest customers.
+- **Limits:** the location button calls Nominatim's public service from the browser; check its limits before launch. `updateCartItem` checks product stock, not variant stock; placing the order still checks both.
+- **Checks:** 24 unit and 8 staging integration tests pass, including real orders at the right zone price and another user's address. `tsc` shows only the known errors. **The screen hasn't been seen in a browser, and the location button, Edit Address and count buttons haven't been used.**
 
 ### 2026-11-04 — F-69 Campaign email allowance (owner)
 

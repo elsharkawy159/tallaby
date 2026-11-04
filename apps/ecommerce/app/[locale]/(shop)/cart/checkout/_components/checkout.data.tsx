@@ -34,9 +34,10 @@ import { saveCheckoutLead } from "@/actions/checkout-lead";
 import { trackStoreLead } from "@/components/meta/meta-lead.client";
 import { toast } from "sonner";
 import { useLocale, useTranslations } from "next-intl";
-import type { AddressData } from "@/components/address/address.schema";
-import { ShippingInformation } from "./shipping-information";
-import { CreditCard, ArrowLeft, Info } from "lucide-react";
+import { updateCartItem } from "@/actions/cart";
+import { SimpleCheckoutForm } from "./simple-checkout-form.client";
+import { useCheckoutAddress, type SavedCheckoutAddress } from "./use-checkout-address.client";
+import { CreditCard, ArrowLeft } from "lucide-react";
 import { OrderSummary } from "@/components/order-summary";
 import { Button } from "@workspace/ui/components/button";
 import { Label } from "@workspace/ui/components/label";
@@ -80,11 +81,10 @@ export const CheckoutData = ({
   defaultAddress?: any;
   isLoggedIn?: boolean;
 }) => {
-  const { cart, user, summary: initialSummary } = checkoutData;
+  const { cart, summary: initialSummary } = checkoutData;
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
   const { refreshCart } = useCart();
-  const [selectedAddress, setSelectedAddress] = useState<any>(null);
   const [summary, setSummary] = useState<CheckoutSummary>({
     ...initialSummary,
     discountAmount: initialSummary.discountAmount ?? 0,
@@ -105,13 +105,15 @@ export const CheckoutData = ({
   } | null>(initialSummary.appliedCoupon ?? null);
   const [isRecalculatingShipping, setIsRecalculatingShipping] = useState(false);
 
-  const addresses = initialAddresses;
-  const defaultAddress = initialDefaultAddress;
-  const isLoadingAddresses = false;
+  const [savedAddresses, setSavedAddresses] = useState<SavedCheckoutAddress[]>(initialAddresses);
+  const [cartLines, setCartLines] = useState<any[]>(cart?.cartItems ?? []);
+  const [busyItemId, setBusyItemId] = useState<string | null>(null);
+  // Bumped when the saved address or the cart changes, to price the order again.
+  const [priceRevision, setPriceRevision] = useState(0);
 
-  // Determine which address to use: selectedAddress > defaultAddress > first address
-  const activeAddress =
-    selectedAddress || defaultAddress || addresses[0] || null;
+  // The default address fills the form, else the newest one saved.
+  const activeAddress: SavedCheckoutAddress | null =
+    initialDefaultAddress || initialAddresses[0] || null;
 
   const t = useTranslations("checkout");
   const tToast = useTranslations("toast");
@@ -172,6 +174,24 @@ export const CheckoutData = ({
   const shippingAddressId = form.watch("shippingAddressId");
   const paymentMethod = form.watch("paymentMethod");
 
+  const address = useCheckoutAddress({
+    initial: activeAddress,
+    prefill: { fullName: checkoutData.customer?.fullName, phone: checkoutData.customer?.phone },
+    onSaved: (saved) => {
+      form.setValue("shippingAddressId", saved.id, { shouldDirty: true });
+      setSavedAddresses((list) => {
+        const current = list.find((a) => a.id === saved.id);
+        const merged = { ...current, ...saved, addressLine2: saved.addressLine2 ?? null };
+        return current ? list.map((a) => (a.id === saved.id ? merged : a)) : [merged, ...list];
+      });
+      setPriceRevision((n) => n + 1);
+    },
+    onCleared: () => {
+      form.setValue("shippingAddressId", "", { shouldDirty: true });
+      setPriceRevision((n) => n + 1);
+    },
+  });
+
   // Store websites: once there is a shipping address, save it as a missed
   // order lead (F-03) so the seller can follow up if no order is placed.
   // The server takes the store from the host and the cart from the session.
@@ -182,7 +202,7 @@ export const CheckoutData = ({
       void saveCheckoutLead({ addressId: shippingAddressId }).then(trackStoreLead, () => {});
     }, 1000);
     return () => clearTimeout(timer);
-  }, [isStorefront, shippingAddressId]);
+  }, [isStorefront, shippingAddressId, priceRevision]);
 
   // Store websites: the seller's zones may not cover the chosen address.
   const storeShipping = summary.storeShipping ?? null;
@@ -198,7 +218,7 @@ export const CheckoutData = ({
   // before shipping and coupons, in piastres (createOrder checks it again).
   const minOrderCheck = checkMinOrder(
     (checkoutData.storeMinOrder as StoreMinOrder | null | undefined) ?? null,
-    itemsSubtotalPiastres(cart?.cartItems ?? []),
+    itemsSubtotalPiastres(cartLines),
   );
   const minOrderMessage = minOrderCheck.ok
     ? null
@@ -207,28 +227,14 @@ export const CheckoutData = ({
         minimum: formatPricePlain(minOrderCheck.minimumPiastres / 100, locale, currencyLabel),
       });
 
+  // The address is checked and saved when the button is pressed, so its errors show then.
   const canPlaceOrder = Boolean(
-    shippingAddressId?.trim() && paymentMethod?.trim() && !shippingRefusal && minOrderCheck.ok
+    paymentMethod?.trim() && !shippingRefusal && minOrderCheck.ok && !busyItemId
   );
 
-  // Sync form with address changes from hook
-  // Update form when selectedAddress, defaultAddress, or addresses change
   useEffect(() => {
-    if (activeAddress?.id) {
-      const currentAddressId = form.getValues("shippingAddressId");
-      // Only update if different to avoid unnecessary re-renders
-      if (currentAddressId !== activeAddress.id) {
-        form.setValue("shippingAddressId", activeAddress.id, {
-          shouldValidate: true,
-          shouldDirty: true,
-        });
-      }
-    }
-  }, [selectedAddress?.id, defaultAddress?.id, addresses, form, activeAddress]);
-
-  useEffect(() => {
-    const addressId = shippingAddressId || activeAddress?.id;
-    if (!addressId) {
+    const addressId = shippingAddressId;
+    if (!addressId && priceRevision === 0) {
       setSummary((prev) => {
         const billedShipping = 0;
         const total = prev.subtotal + prev.tax + billedShipping;
@@ -269,6 +275,11 @@ export const CheckoutData = ({
         if (result.data.summary.appliedCoupon) {
           setAppliedCoupon(result.data.summary.appliedCoupon);
           form.setValue("couponCode", result.data.summary.appliedCoupon.code);
+        } else if (appliedCoupon?.code) {
+          // A changed count can take the order out of the coupon's rules.
+          setAppliedCoupon(null);
+          form.setValue("couponCode", "");
+          toast.info(t("simpleForm.couponRemoved"));
         }
       } catch (error) {
         console.error("Failed to recalculate shipping:", error);
@@ -284,7 +295,7 @@ export const CheckoutData = ({
     return () => {
       cancelled = true;
     };
-  }, [shippingAddressId, activeAddress?.id, appliedCoupon?.code, form]);
+  }, [shippingAddressId, priceRevision, appliedCoupon?.code, form, t]);
 
   const billedShipping = Math.max(
     0,
@@ -474,10 +485,16 @@ export const CheckoutData = ({
     }
     startTransition(async () => {
       try {
+        // The address goes in first; everything after this works from its row.
+        const addressId = await address.ensureSaved();
+        if (!addressId) {
+          toast.error(t("simpleForm.fixForm"));
+          return;
+        }
         const result = await createOrder({
           cartId: cart.id,
-          shippingAddressId: data.shippingAddressId,
-          billingAddressId: data.billingAddressId || data.shippingAddressId,
+          shippingAddressId: addressId,
+          billingAddressId: addressId,
           paymentMethod: data.paymentMethod,
           couponCode: data.couponCode,
           notes: data.notes,
@@ -511,15 +528,55 @@ export const CheckoutData = ({
     });
   };
 
-  const handleAddressSelect = (address: AddressData) => {
-    setSelectedAddress(address);
-    if (address?.id) {
-      form.setValue("shippingAddressId", address.id, {
-        shouldValidate: true,
-        shouldDirty: true,
-      });
+  // Item counts: the server checks stock and the summary is priced again.
+  const handleQuantityChange = async (item: { id: string }, quantity: number) => {
+    if (busyItemId) return;
+    setBusyItemId(item.id);
+    try {
+      const result = await updateCartItem(item.id, quantity);
+      if (!result.success) {
+        toast.error(t(result.error === "Insufficient stock" ? "simpleForm.notEnoughStock" : "simpleForm.itemNotSaved"));
+        return;
+      }
+      await refreshCart();
+      const next =
+        quantity <= 0
+          ? cartLines.filter((line) => line.id !== item.id)
+          : cartLines.map((line) => (line.id === item.id ? { ...line, quantity } : line));
+      if (next.length === 0) {
+        router.push("/cart");
+        return;
+      }
+      setCartLines(next);
+      setPriceRevision((n) => n + 1);
+    } catch {
+      toast.error(t("simpleForm.itemNotSaved"));
+    } finally {
+      setBusyItemId(null);
     }
   };
+
+  const noteField = (
+    <div className="grid gap-1.5">
+      <Label htmlFor="notes">{t("orderNotes")}</Label>
+      <FormField
+        control={form.control as any}
+        name="notes"
+        render={({ field }) => (
+          <Textarea
+            {...field}
+            id="notes"
+            placeholder={t("specialInstructions")}
+            rows={2}
+            className="w-full resize-none"
+          />
+        )}
+      />
+      {form.formState.errors.notes && (
+        <p className="text-xs md:text-sm text-red-500">{form.formState.errors.notes.message}</p>
+      )}
+    </div>
+  );
 
   const handleCouponApplied = useCallback(
     (data: {
@@ -553,15 +610,9 @@ export const CheckoutData = ({
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-4 md:gap-8 lg:gap-12">
           {/* Shipping Information */}
           <div className="space-y-4 md:space-y-6">
-            <ShippingInformation
-              addresses={addresses || []}
-              userId={user?.id || ""}
-              selectedAddressId={
-                form.watch("shippingAddressId") || activeAddress?.id
-              }
-              onAddressSelect={handleAddressSelect}
-              isLoading={isLoadingAddresses}
-            />
+            <SimpleCheckoutForm address={address} saved={savedAddresses}>
+              {!storeCheckoutForm && noteField}
+            </SimpleCheckoutForm>
             {isStorefront && (
               <p className="-mt-2 px-1 text-xs text-gray-500 md:-mt-4">{t("leadConsent")}</p>
             )}
@@ -737,7 +788,7 @@ export const CheckoutData = ({
               </CardContent>
             </Card>
 
-            {storeCheckoutForm ? (
+            {storeCheckoutForm && (
               <StoreCheckoutFields
                 form={form}
                 checkoutForm={storeCheckoutForm}
@@ -748,56 +799,20 @@ export const CheckoutData = ({
                 }}
                 error={checkoutAnswersError}
               />
-            ) : (
-            <Card className="rounded-xl md:rounded-2xl border border-gray-200 overflow-hidden pt-0">
-              <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-4 md:px-6 py-3 md:py-5 border-b border-gray-200">
-                <CardTitle className="flex items-center gap-2 text-sm md:text-xl font-bold text-gray-900">
-                  <Info className="h-4 w-4 md:h-5 md:w-5" />
-                  {t("orderDetails")}
-                </CardTitle>
-              </div>
-              <CardContent>
-                {/* Order Notes */}
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="notes"
-                    className="text-xs md:text-sm font-medium text-gray-700"
-                  >
-                    {t("orderNotes")}
-                  </Label>
-                  <FormField
-                    control={form.control as any}
-                    name="notes"
-                    render={({ field }) => (
-                      <Textarea
-                        {...field}
-                        id="notes"
-                        placeholder={t("specialInstructions")}
-                        rows={4}
-                        className="w-full resize-none"
-                      />
-                    )}
-                  />
-                  {form.formState.errors.notes && (
-                    <p className="text-xs md:text-sm text-red-500">
-                      {form.formState.errors.notes.message}
-                    </p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
             )}
           </div>
 
           {/* Order Summary Sidebar */}
           <div className="lg:sticky lg:top-8 h-fit order-2 lg:order-2">
             <OrderSummary
-              items={cart.cartItems}
+              items={cartLines}
+              onQuantityChange={handleQuantityChange}
+              busyItemId={busyItemId}
               summary={summary}
               showShipping
               enableCoupons
               isLoggedIn={isLoggedIn}
-              shippingAddressId={shippingAddressId || activeAddress?.id}
+              shippingAddressId={shippingAddressId}
               isRecalculatingShipping={isRecalculatingShipping}
               onCouponApplied={handleCouponApplied}
               onCouponRemoved={handleCouponRemoved}

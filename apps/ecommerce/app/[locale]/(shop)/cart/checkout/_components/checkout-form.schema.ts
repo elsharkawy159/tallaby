@@ -1,7 +1,8 @@
 import { z } from "zod";
 
 export const createCheckoutFormSchema = (t: (key: string) => string) => z.object({
-  shippingAddressId: z.string().min(1, t("shippingAddressRequired")),
+  // Saved from the simple form just before the order is placed (F-64).
+  shippingAddressId: z.string().optional(),
   billingAddressId: z.string().optional(),
   paymentMethod: z.string().min(1, t("paymentMethodRequired")),
   couponCode: z.string().optional(),

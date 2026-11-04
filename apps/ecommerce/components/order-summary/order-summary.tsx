@@ -29,6 +29,8 @@ export function OrderSummary ({
   appliedCoupon,
   onCouponApplied,
   onCouponRemoved,
+  onQuantityChange,
+  busyItemId,
 }: OrderSummaryProps) {
   const t = useTranslations('checkout')
 
@@ -52,7 +54,7 @@ export function OrderSummary ({
       </div>
 
       <div className='p-3 md:p-5 pt-2 md:pt-3'>
-        <OrderSummaryLineItems items={items} />
+        <OrderSummaryLineItems items={items} onQuantityChange={onQuantityChange} busyItemId={busyItemId} />
 
         <div className='space-y-2 md:space-y-3 pt-3 md:pt-4 border-t-2 border-gray-200'>
           {showFreeDeliveryProgress && (

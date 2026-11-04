@@ -5,6 +5,7 @@ import {
   carts,
   cartItems,
   userAddresses,
+  users,
   paymentMethods,
   eq,
   and,
@@ -231,6 +232,12 @@ export async function getCheckoutData() {
       orderBy: [desc(userAddresses.isDefault)],
     });
 
+    // Fills an empty checkout form (F-64). Never the guest's placeholder email.
+    const customer = await db.query.users.findFirst({
+      where: eq(users.id, userId),
+      columns: { fullName: true, phone: true },
+    });
+
     const paymentMethodsList = await db.query.paymentMethods.findMany({
       where: eq(paymentMethods.userId, userId),
       orderBy: [desc(paymentMethods.isDefault)],
@@ -303,6 +310,7 @@ export async function getCheckoutData() {
       data: {
         cart: localizedCart,
         addresses,
+        customer: customer ?? null,
         paymentMethods: paymentMethodsList,
         itemsBySeller,
         summary,

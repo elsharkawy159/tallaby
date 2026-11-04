@@ -70,4 +70,8 @@ export interface OrderSummaryProps {
     summary: CheckoutSummary
   }) => void
   onCouponRemoved?: (summary: CheckoutSummary) => void
+  /** Checkout: change a line's count; 0 removes it. The caller saves and re-prices. */
+  onQuantityChange?: (item: OrderSummaryItem, quantity: number) => void
+  /** The line being saved, whose buttons are disabled. */
+  busyItemId?: string | null
 }

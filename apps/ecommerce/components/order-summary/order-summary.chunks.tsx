@@ -8,7 +8,7 @@ import { Input } from '@workspace/ui/components/input'
 import { Separator } from '@workspace/ui/components/separator'
 import { formatPrice, FREE_DELIVERY_MIN_SUBTOTAL } from '@workspace/lib'
 import { useLocale, useTranslations } from 'next-intl'
-import { Ticket, X, Loader2, LogIn, Truck, Sparkles, PartyPopper } from 'lucide-react'
+import { Ticket, X, Loader2, LogIn, Minus, Plus, Trash2, Truck, Sparkles, PartyPopper } from 'lucide-react'
 import { applyCouponToCart, removeCouponFromCart } from '@/actions/coupons'
 import { toast } from 'sonner'
 import { formatVariantTitle } from '@/lib/variant-utils'
@@ -36,11 +36,14 @@ function formatCouponCodeBadge (
 
 interface OrderSummaryLineItemsProps {
   items: OrderSummaryItem[]
+  onQuantityChange?: (item: OrderSummaryItem, quantity: number) => void
+  busyItemId?: string | null
 }
 
-export function OrderSummaryLineItems ({ items }: OrderSummaryLineItemsProps) {
+export function OrderSummaryLineItems ({ items, onQuantityChange, busyItemId }: OrderSummaryLineItemsProps) {
   const locale = useLocale()
   const tCommon = useTranslations('common')
+  const tSimple = useTranslations('checkout.simpleForm')
 
   return (
     <div className='space-y-0 mb-2 md:mb-3'>
@@ -68,15 +71,48 @@ export function OrderSummaryLineItems ({ items }: OrderSummaryLineItemsProps) {
                   {variantTitle}
                 </p>
               )}
-              <p className='text-xs text-muted-foreground mt-0.5'>
-                {tCommon('quantity')}: {item.quantity}
-                {' × '}
-                <span
-                  dangerouslySetInnerHTML={{
-                    __html: formatPrice(unit, locale),
-                  }}
-                />
-              </p>
+              {onQuantityChange ? (
+                <div className='mt-1.5 flex items-center gap-2 text-xs text-muted-foreground'>
+                  <div className='inline-flex items-center rounded-md border' role='group' aria-label={tCommon('quantity')}>
+                    <button
+                      type='button'
+                      className='flex size-8 items-center justify-center rounded-s-md outline-none hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50'
+                      disabled={busyItemId === item.id}
+                      aria-label={item.quantity === 1 ? tSimple('removeItem') : tSimple('decreaseQuantity')}
+                      onClick={() => onQuantityChange(item, item.quantity - 1)}
+                    >
+                      {item.quantity === 1 ? <Trash2 className='size-3.5' aria-hidden /> : <Minus className='size-3.5' aria-hidden />}
+                    </button>
+                    <span className='min-w-7 text-center text-sm font-medium tabular-nums text-gray-900' aria-live='polite'>
+                      {busyItemId === item.id ? <Loader2 className='mx-auto size-3.5 animate-spin' aria-hidden /> : item.quantity}
+                    </span>
+                    <button
+                      type='button'
+                      className='flex size-8 items-center justify-center rounded-e-md outline-none hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50'
+                      disabled={busyItemId === item.id}
+                      aria-label={tSimple('increaseQuantity')}
+                      onClick={() => onQuantityChange(item, item.quantity + 1)}
+                    >
+                      <Plus className='size-3.5' aria-hidden />
+                    </button>
+                  </div>
+                  <span
+                    dangerouslySetInnerHTML={{
+                      __html: formatPrice(unit, locale),
+                    }}
+                  />
+                </div>
+              ) : (
+                <p className='text-xs text-muted-foreground mt-0.5'>
+                  {tCommon('quantity')}: {item.quantity}
+                  {' × '}
+                  <span
+                    dangerouslySetInnerHTML={{
+                      __html: formatPrice(unit, locale),
+                    }}
+                  />
+                </p>
+              )}
             </div>
             <div
               className='text-xs md:text-sm font-semibold text-gray-900 whitespace-nowrap'
