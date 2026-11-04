@@ -48,6 +48,7 @@ import { ExportOrdersButton } from "./export-orders-button.client";
 import type { OrderSummary, SellerOrderRow } from "./orders.types";
 import { PrintOrdersButton } from "./print-orders-button.client";
 import { WassalhaExportButton } from "./wassalha-export.client";
+import { WassalhaTrackingUpload } from "./wassalha-tracking.client";
 
 const VIEW_STORAGE_KEY = "tl-orders-view";
 
@@ -498,6 +499,7 @@ export function VendorOrdersTable({
         {storeChannel && shipQueue.wassalha && (
           <WassalhaExportButton storeId={filters.channel} orders={shipQueue.orders} showCount className="h-10" />
         )}
+        {storeChannel && shipQueue.wassalha && <WassalhaTrackingUpload storeId={filters.channel} className="h-10" />}
         <PrintOrdersButton orderIds={printIds} total={total} showCount className="h-10" />
         <div
           className={cn(

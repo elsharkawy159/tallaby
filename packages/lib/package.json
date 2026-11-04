@@ -481,6 +481,14 @@
     "./billing/credits": {
       "types": "./src/billing/ai-credits.server.ts",
       "default": "./src/billing/ai-credits.server.ts"
+    },
+    "./shipping/wassalha-tracking": {
+      "types": "./src/shipping/wassalha-tracking.lib.ts",
+      "default": "./src/shipping/wassalha-tracking.lib.ts"
+    },
+    "./shipping/wassalha-tracking/server": {
+      "types": "./src/shipping/wassalha-tracking.server.ts",
+      "default": "./src/shipping/wassalha-tracking.server.ts"
     }
   },
   "devDependencies": {

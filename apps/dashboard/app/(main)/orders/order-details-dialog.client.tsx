@@ -26,6 +26,7 @@ import { OrderPaymentProof } from "./payment-proof.client";
 import type { SellerOrderRow } from "./orders.types";
 import { PrintOrdersButton } from "./print-orders-button.client";
 import { canExportForWassalha, WassalhaExportButton } from "./wassalha-export.client";
+import { WassalhaTrackingCard } from "./wassalha-tracking.client";
 
 function Row({ label, value }: { label: string; value?: string | null }) {
   return (
@@ -217,6 +218,7 @@ export function OrderDetailsDialog({
               <OrderRiskNote order={order} />
               <FlowNote order={order} />
               <BostaDeliveryCard order={order} />
+              <WassalhaTrackingCard order={order} />
             </div>
 
             <div className="grid gap-6 md:grid-cols-5">

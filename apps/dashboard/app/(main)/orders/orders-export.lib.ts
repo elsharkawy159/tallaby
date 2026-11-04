@@ -94,7 +94,7 @@ export function orderExportRow(
     paymentMethod: order.paymentMethod ? labels.paymentMethod(order.paymentMethod) : "",
     paymentStatus: order.paymentStatus ? labels.paymentStatus(order.paymentStatus) : "",
     collect: collect === null ? 0 : egp(collect),
-    tracking: order.bosta?.trackingNumber ?? "",
+    tracking: order.bosta?.trackingNumber ?? order.wassalhaTracking ?? "",
     notes: order.notes ?? "",
   };
 }

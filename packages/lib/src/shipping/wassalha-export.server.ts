@@ -25,7 +25,7 @@ const MAX_ORDERS = 500;
 /** Orders in these stages can still be handed to a carrier. */
 const EXPORTABLE_STATUSES = ["pending", "confirmed", "shipping_soon"] as const;
 
-export type WassalhaSkipReason = "not_found" | "not_ready" | "other_carrier" | "bad_phone" | "bad_governorate";
+export type WassalhaSkipReason = "not_found" | "not_ready" | "other_carrier" | "has_tracking" | "bad_phone" | "bad_governorate";
 
 export type WassalhaExportIssue = { orderId: string; orderNumber: string; reason: WassalhaSkipReason };
 
@@ -72,6 +72,11 @@ export async function exportWassalhaOrders(sellerId: string, storeId: string, or
       continue;
     }
     const shipment = order.shipments[0];
+    // Wassalha already took it and gave a number (F-12e): a second row would ship it twice.
+    if (shipment?.carrier === CARRIER && shipment.trackingNumber) {
+      skipped.push({ orderId: order.id, orderNumber, reason: "has_tracking" });
+      continue;
+    }
     if (shipment && !canTakeShipment(shipment, sellerId)) {
       skipped.push({ orderId: order.id, orderNumber, reason: "other_carrier" });
       continue;

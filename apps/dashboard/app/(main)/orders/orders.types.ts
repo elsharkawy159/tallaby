@@ -82,6 +82,8 @@ export interface SellerOrderRow {
   wassalhaConnected: boolean;
   /** The order is already in a Wassalha sheet (its shipment carrier is `wassalha`). */
   wassalhaExported: boolean;
+  /** Wassalha's number for it, once the seller saved one (F-12e). */
+  wassalhaTracking: string | null;
   flow: SellerOrderFlow;
   /** A returned order whose items can still go back in stock (ROADMAP.md F-42a). */
   /** The seller entered this order by hand (F-05). */
@@ -102,7 +104,7 @@ export interface SellerOrderRow {
  */
 export type OrderSummary = Pick<
   SellerOrderRow,
-  "id" | "storeId" | "flow" | "bostaConnected" | "wassalhaConnected" | "wassalhaExported"
+  "id" | "storeId" | "flow" | "bostaConnected" | "wassalhaConnected" | "wassalhaExported" | "wassalhaTracking"
 > & { bosta: Pick<SellerOrderBosta, "trackingNumber"> | null };
 
 /** An order line there isn't enough stock for. */

@@ -2675,6 +2675,7 @@
         "not_found": "not on this store",
         "not_ready": "not waiting to ship",
         "other_carrier": "already with another carrier",
+        "has_tracking": "already has a tracking number",
         "bad_phone": "no valid Egyptian mobile number",
         "bad_governorate": "governorate not recognised"
       },
@@ -2686,6 +2687,60 @@
         "readOnly": "This store is read-only.",
         "notFound": "Store not found.",
         "generic": "Couldn't export. Please try again."
+      },
+      "tracking": {
+        "uploadButton": "Upload Wassalha results",
+        "uploadTitle": "Wassalha tracking numbers",
+        "uploadDescription": "Upload Wassalha's result file (Excel or CSV). It needs an order number column (such as \"Package_Ref. Number\" or \"رقم الطلب\") and a tracking number column (such as \"Tracking Number\", \"Barcode\" or \"رقم التتبع\"). Only orders of this store that you exported for Wassalha are filled.",
+        "chooseFile": "Choose a file",
+        "reading": "Reading the file…",
+        "savedCount": "{count, plural, =0 {No numbers saved} one {# number saved} other {# numbers saved}}",
+        "unchangedCount": "{count, plural, one {# already saved} other {# already saved}}",
+        "problemsCount": "{count, plural, one {# row wasn't saved} other {# rows weren't saved}}",
+        "columns": {
+          "row": "Row",
+          "order": "Order",
+          "tracking": "Tracking number",
+          "reason": "Why"
+        },
+        "reasons": {
+          "missing_order_number": "No order number on this row",
+          "missing_tracking": "No tracking number on this row",
+          "bad_order_number": "This doesn't look like an order number",
+          "bad_tracking": "This doesn't look like a tracking number. If it reads like 1.23E+12, Excel cut the digits off.",
+          "order_repeated": "This order has two different numbers in the file",
+          "tracking_repeated": "This number is on more than one order in the file",
+          "not_found": "No order with this number on this store",
+          "not_exported": "This order wasn't exported for Wassalha",
+          "other_carrier": "This order is with another carrier",
+          "has_other_number": "This order already has a different number. Change it on the order itself if it's wrong.",
+          "tracking_in_use": "This number is already on another of your orders"
+        },
+        "fileErrors": {
+          "empty": "This file has no rows to read.",
+          "no_order_column": "No order number column found. Name it \"Package_Ref. Number\", \"Order Number\" or \"رقم الطلب\".",
+          "no_tracking_column": "No tracking number column found. Name it \"Tracking Number\", \"Barcode\" or \"رقم التتبع\".",
+          "ambiguous_columns": "This file has more than one order number or tracking number column. Keep one of each and upload it again.",
+          "too_many": "Too many rows. Upload at most 2,000 at a time.",
+          "too_big": "This file is too big. The limit is 5 MB.",
+          "unreadable": "Couldn't read this file. Save it as .xlsx or .csv and try again."
+        },
+        "errors": {
+          "tooMany": "Too many rows. Upload at most 2,000 at a time.",
+          "rateLimited": "Too many uploads. Please wait a few minutes.",
+          "readOnly": "This store is read-only.",
+          "notFound": "Store not found.",
+          "locked": "Top up your wallet first to work with orders.",
+          "generic": "Couldn't save. Please try again."
+        },
+        "cardTitle": "Wassalha (Egypt Post)",
+        "number": "Tracking number",
+        "placeholder": "Paste the tracking number",
+        "copy": "Copy the number",
+        "edit": "Change the number",
+        "save": "Save",
+        "cancel": "Cancel",
+        "saved": "Tracking number saved."
       }
     }
   },

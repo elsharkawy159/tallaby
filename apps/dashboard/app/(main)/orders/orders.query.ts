@@ -129,6 +129,7 @@ export async function loadOrderSummaries(
         bostaConnected: Boolean(o.storeId && bostaStores.has(o.storeId)),
         wassalhaConnected: Boolean(o.storeId && wassalhaStores.has(o.storeId)),
         wassalhaExported: shipment?.carrier === "wassalha" && shipment.sellerId === sellerId,
+        wassalhaTracking: shipment?.carrier === "wassalha" && shipment.sellerId === sellerId ? shipment.trackingNumber : null,
         bosta:
           shipment?.carrier === "bosta" && shipment.sellerId === sellerId
             ? { trackingNumber: shipment.trackingNumber }
@@ -383,6 +384,7 @@ export async function loadSellerOrders(
       bostaCanCancel: Boolean(o.storeId && bostaStores.get(o.storeId)?.canCancel),
       wassalhaConnected: Boolean(o.storeId && wassalhaStores.has(o.storeId)),
       wassalhaExported: shipment?.carrier === "wassalha" && shipment.sellerId === sellerId,
+      wassalhaTracking: shipment?.carrier === "wassalha" && shipment.sellerId === sellerId ? shipment.trackingNumber : null,
       bosta:
         shipment?.carrier === "bosta" && shipment.sellerId === sellerId
           ? {

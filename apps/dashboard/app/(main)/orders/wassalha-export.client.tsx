@@ -19,6 +19,7 @@ export function canExportForWassalha(order: OrderSummary): boolean {
     !order.flow.readOnly &&
     !order.flow.carrierManaged &&
     !order.bosta?.trackingNumber &&
+    !order.wassalhaTracking &&
     (order.flow.stage === "new" || order.flow.stage === "to_ship")
   );
 }
