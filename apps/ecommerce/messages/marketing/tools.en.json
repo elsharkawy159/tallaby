@@ -1,1 +1,125 @@
-{}
+{
+  "meta": {
+    "tool-profit-margin-calculator": {
+      "title": "Profit margin calculator for online stores",
+      "description": "Work out your net profit per order, your margin and a suggested selling price for your online store. Free, in Egyptian pounds."
+    }
+  },
+  "toolPages": {
+    "profit-margin-calculator": {
+      "name": "Profit margin calculator for online stores",
+      "crumbHub": "Free tools",
+      "crumb": "Profit margin calculator",
+      "eyebrow": "Free tool",
+      "title": "Profit margin calculator <em>for online stores</em>",
+      "lead": "Enter your costs and selling price, and see what you really keep from each order before you start advertising.",
+      "calculator": {
+        "title": "Costs and selling price",
+        "reset": "Reset",
+        "currency": "EGP",
+        "fields": {
+          "buy": "Purchase price",
+          "buyHint": "per item",
+          "ship": "Shipping cost",
+          "shipHint": "the part you pay",
+          "ad": "Ad cost per order",
+          "adHint": "spend ÷ orders",
+          "plan": "Your Tallaby plan",
+          "planFree": "Free",
+          "planPro": "Pro",
+          "planFreeNote": "Free plan: $0.03 per order, taken from your store wallet.",
+          "planProNote": "Pro plan: $29 a month with no order fee, so it doesn't count against a single order.",
+          "rate": "USD rate",
+          "rateHint": "change it to today's rate",
+          "sell": "Selling price",
+          "sellHint": "what the customer pays"
+        },
+        "note": "Online payment fees aren't included. If your customers pay by card, add those fees to the shipping cost.",
+        "results": {
+          "profit": "Net profit per order",
+          "feeLine": "Tallaby fee included:",
+          "margin": "Profit margin",
+          "marginHint": "of the selling price",
+          "suggested": "Suggested price for a 30% margin",
+          "suggestedHint": "EGP per item"
+        },
+        "segments": {
+          "buy": "Purchase",
+          "ship": "Shipping",
+          "ad": "Ads",
+          "fee": "Tallaby fee",
+          "profit": "Profit"
+        },
+        "messages": {
+          "needsPrice": "Enter a selling price to see your profit.",
+          "loss": "You lose EGP {loss} on every order. Raise the price to at least EGP {price} to cover your costs.",
+          "low": "Your margin is under 30%. A price of EGP {price} leaves room for a discount code or a return.",
+          "good": "You make EGP {profit} on every order, at a {margin}% margin."
+        }
+      },
+      "soft": {
+        "title": "Done the sums? Start selling from your own store",
+        "body": "No monthly subscription on the Free plan, and cash on delivery from day one.",
+        "cta": "Create your store for free"
+      },
+      "how": {
+        "title": "How to use the calculator",
+        "steps": [
+          { "title": "Enter your item costs", "body": "What you pay to buy or make the item, and the shipping cost if you cover it." },
+          { "title": "Add your ad cost per order", "body": "Divide what you spent on ads over a period by the orders from the same period." },
+          { "title": "Try different selling prices", "body": "The results update as you type, so you can find the price that gives you the margin you want." }
+        ]
+      },
+      "formula": {
+        "title": "How profit margin is calculated",
+        "body": "Your profit margin is the share of the selling price left after all the costs of an order. Add up the costs, subtract them from the selling price to get net profit, then divide net profit by the selling price.",
+        "cost": { "result": "Total costs", "expression": "purchase price + shipping + ads + Tallaby fee" },
+        "profit": { "result": "Net profit", "expression": "selling price − total costs" },
+        "margin": { "result": "Profit margin", "expression": "net profit ÷ selling price × 100" },
+        "suggested": { "result": "Suggested price", "expression": "total costs ÷ (1 − target margin)" }
+      },
+      "example": {
+        "title": "Example: a cotton shirt",
+        "buy": "Purchase price",
+        "ship": "Shipping cost",
+        "ad": "Ad cost per order",
+        "fee": "Tallaby fee ($0.03, with the dollar at EGP {rate})",
+        "cost": "Total costs",
+        "sell": "Selling price",
+        "profit": "Net profit ({sell} − {cost})",
+        "margin": "Profit margin ({profit} ÷ {sell})",
+        "suggested": "Suggested price for a 30% margin ({cost} ÷ {keep})"
+      },
+      "faq": {
+        "markup": {
+          "q": "What's the difference between margin and markup?",
+          "a": "Margin is measured against the selling price, and markup against the cost. In the example above the profit is EGP {profit}: that's a {margin} margin on the selling price and a {markup} markup on the cost."
+        },
+        "healthy": {
+          "q": "What's a good profit margin for an online store?",
+          "a": "It depends on your category and ad costs. What matters is that the margin stays positive after every cost, with room for a discount code or a return without making a loss."
+        },
+        "shipping": {
+          "q": "Do I include shipping if the customer pays for it?",
+          "a": "No. Enter only the part you cover, such as free delivery or the gap between what the customer pays and what you pay the shipping company."
+        },
+        "ads": {
+          "q": "How do I work out my ad cost per order?",
+          "a": "Divide your total ad spend over a period by the orders from the same period. For example, EGP 3,000 ÷ 50 orders = EGP 60 per order."
+        },
+        "saved": {
+          "q": "Are the numbers I enter saved?",
+          "a": "Only on your device, so they're there when you come back. Nothing is sent to a server. Press Reset to go back to the example figures."
+        },
+        "fee": {
+          "q": "Why is the Tallaby fee in dollars?",
+          "a": "The Free plan's fee is $0.03 per order, taken from your store wallet in dollars, while your orders and prices stay in pounds. The example starts with the dollar at EGP {rate}, which makes EGP {fee} per order, and you can change the rate. Pro costs $29 a month with no order fee."
+        }
+      },
+      "closing": {
+        "title": "Turn your numbers into a store that sells",
+        "body": "No monthly subscription on the Free plan, and $0.03 per order."
+      }
+    }
+  }
+}
