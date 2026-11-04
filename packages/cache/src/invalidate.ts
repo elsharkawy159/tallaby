@@ -285,6 +285,11 @@ export function invalidateStoreIntegrations(sellerId: string, storeId: string): 
   return inv([storeTags.integrations(sellerId, storeId)]);
 }
 
+/** A product's quantity tiers changed (F-07). */
+export function invalidateProductQuantityOffers(sellerId: string, productId: string): CacheInvalidation {
+  return inv([productTags.quantityOffers(sellerId, productId)]);
+}
+
 /** Offers or the store's switch changed (F-32). An offer can apply in every store of the seller. */
 export function invalidateStoreCrossSells(sellerId: string, storeIds: readonly string[]): CacheInvalidation {
   return inv(storeIds.map((storeId) => storeTags.crossSells(sellerId, storeId)));

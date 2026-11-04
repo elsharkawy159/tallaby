@@ -17,6 +17,8 @@ export const productTags = {
   /** Bump on any structural catalog change (create/delete, visibility flip). */
   all: () => "product:all",
   detail: (id: string) => `product:id:${id}`,
+  /** The tiers a product page shows (F-07); the checkout reads them fresh. */
+  quantityOffers: (sellerId: string, id: string) => `product:quantity-offers:${sellerId}:${id}`,
   slug: (locale: string, slug: string) => `product:slug:${locale}:${slug}`,
   /** Stock/availability only — never bundle with listing/category/brand tags. */
   inventory: (id: string) => `product:inventory:${id}`,

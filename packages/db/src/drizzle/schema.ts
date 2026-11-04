@@ -4263,6 +4263,26 @@ export const storeBuildClaims = pgTable("store_build_claims", {
 	foreignKey({ columns: [table.buildId], foreignColumns: [storeBuilds.id], name: "store_build_claims_build_id_fkey" }).onDelete("set null"),
 ]);
 
+/** Quantity offers (0147, ROADMAP.md F-07): "buy 2, save 10%". Server-only: RLS on, no policies. */
+export const productQuantityOffers = pgTable("product_quantity_offers", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	sellerId: uuid("seller_id").notNull(),
+	productId: uuid("product_id").notNull(),
+	minQuantity: integer("min_quantity").notNull(),
+	discountType: text("discount_type").notNull(),
+	discountValue: numeric("discount_value", { precision: 10, scale: 2 }).notNull(),
+	isActive: boolean("is_active").default(true).notNull(),
+	sortOrder: integer("sort_order").default(0).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex("product_quantity_offers_unique").using("btree", table.sellerId.asc().nullsLast().op("uuid_ops"), table.productId.asc().nullsLast().op("uuid_ops"), table.minQuantity.asc().nullsLast().op("int4_ops")),
+	index("product_quantity_offers_product_idx").using("btree", table.productId.asc().nullsLast().op("uuid_ops")).where(sql`is_active`),
+	foreignKey({ columns: [table.sellerId], foreignColumns: [sellers.id], name: "product_quantity_offers_seller_id_fkey" }).onDelete("cascade"),
+	foreignKey({ columns: [table.productId], foreignColumns: [products.id], name: "product_quantity_offers_product_id_fkey" }).onDelete("cascade"),
+	check("product_quantity_offers_percent", sql`discount_type <> 'percent' OR discount_value BETWEEN 1 AND 90`),
+]);
+
 /** Cross-sell offers (0145, ROADMAP.md F-32). Server-only: RLS on, no policies. */
 export const productCrossSells = pgTable("product_cross_sells", {
 	id: uuid().defaultRandom().primaryKey().notNull(),

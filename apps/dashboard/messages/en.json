@@ -1,4 +1,28 @@
 {
+  "quantityOffers": {
+    "title": "Quantity offers",
+    "description": "Lower the price when a customer buys more, like 2 for 10% off and 3 for 20% off. The offer covers every unit, shows on this product's page on your stores, and comes out of your own sale.",
+    "quantity": "Quantity",
+    "discountType": "Discount type",
+    "percent": "Percent",
+    "fixed": "Amount per unit (EGP)",
+    "discountValue": "Discount",
+    "active": "Offer on or off",
+    "remove": "Remove offer",
+    "add": "Add a tier",
+    "save": "Save offers",
+    "saved": "Offers saved",
+    "errors": {
+      "tooMany": "You can add up to 6 tiers.",
+      "quantity": "Each quantity must be a whole number, 2 or more.",
+      "ascending": "Put the quantities in order, each bigger than the one before.",
+      "percent": "A percent discount must be between 1 and 90.",
+      "fixed": "An amount must be above zero and below this product's lowest price.",
+      "notFound": "That product isn't available.",
+      "rateLimited": "Too many changes. Try again in a few minutes.",
+      "generic": "Something went wrong. Try again."
+    }
+  },
   "crossSell": {
     "title": "Frequently bought with",
     "description": "Offer another product with this one at a discount. It shows under this product on your stores, and the discount only applies while both are in the order. It comes out of your own sale.",
