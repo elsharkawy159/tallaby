@@ -1,1 +1,135 @@
-{}
+{
+  "meta": {
+    "integrations": {
+      "title": "Tallaby integrations: shipping, payments and marketing",
+      "description": "Connect your Tallaby store to shipping companies, payment gateways, measurement tools and product feeds, without code."
+    },
+    "integration-meta-pixel": {
+      "title": "Connect your store to Meta Pixel",
+      "description": "Connect Meta Pixel and the Conversions API to your Tallaby store and measure your Facebook and Instagram ads."
+    }
+  },
+  "integrationsHub": {
+    "crumb": "Integrations",
+    "eyebrow": "Integrations",
+    "title": "Tallaby <em>integrations</em>",
+    "lead": "Connect your store to shipping companies, payment gateways, ad tools and analytics from your dashboard, without code.",
+    "search": "Search",
+    "searchPlaceholder": "Search integrations, for example Bosta",
+    "categoriesLabel": "Categories",
+    "categories": {
+      "all": "All",
+      "ship": "Shipping",
+      "pay": "Payments",
+      "ads": "Ads and analytics",
+      "catalog": "Product feeds",
+      "data": "Data",
+      "messaging": "Messaging"
+    },
+    "soon": "Soon",
+    "featured": "Featured",
+    "featuredCta": "See the integration",
+    "count": "{count} integrations",
+    "noneTitle": "No results",
+    "noneBody": "Try another word or pick a different category.",
+    "items": {
+      "bosta": { "name": "Bosta", "description": "Waybills and tracking numbers from your dashboard, at your own Bosta account's rates." },
+      "wassalha": { "name": "Wassalha", "description": "Download a ready-made orders sheet, then upload it to your Wassalha account yourself." },
+      "riders": { "name": "Your own riders", "description": "Add your riders and assign orders to them from your dashboard." },
+      "aramex": { "name": "Aramex", "description": "A direct connection to Aramex." },
+      "jt": { "name": "J&T Express", "description": "A direct connection to J&T Express." },
+      "mylerz": { "name": "Mylerz", "description": "A direct connection to Mylerz." },
+      "paymob": { "name": "Paymob", "description": "Your own gateway: cards and mobile wallets, on your Paymob account." },
+      "kashier": { "name": "Kashier", "description": "Your own gateway: cards and mobile wallets, on your Kashier account." },
+      "cod": { "name": "Cash on delivery", "description": "On for every store from the start. You can turn it off if another payment method is on." },
+      "transfer": { "name": "InstaPay and wallets", "description": "Your customer transfers straight to your account and uploads a screenshot with the order." },
+      "meta-pixel": { "name": "Meta Pixel", "description": "Measure your Facebook and Instagram ads, with the Conversions API." },
+      "ga4": { "name": "Google Analytics 4", "description": "Reports on visits, traffic sources and e-commerce events." },
+      "gtm": { "name": "Google Tag Manager", "description": "Manage your store's tracking tags from one container." },
+      "tiktok-pixel": { "name": "TikTok Pixel", "description": "Measuring your TikTok ads." },
+      "snap-pixel": { "name": "Snapchat Pixel", "description": "Measuring your Snapchat campaigns." },
+      "meta-catalog": { "name": "Meta catalog", "description": "A link to your store's product feed, to add as a scheduled feed in Commerce Manager." },
+      "gmc": { "name": "Google Merchant Center", "description": "A link to your store's product feed, to add as a scheduled feed in your Merchant Center account." },
+      "tiktok-catalog": { "name": "TikTok catalog", "description": "A link to your store's product feed, to add as a scheduled feed in your TikTok catalog." },
+      "sheets": { "name": "Google Sheets", "description": "A daily export of your orders to a sheet on your account." },
+      "shopify": { "name": "Shopify import", "description": "Bring your products over from your Shopify store. They arrive as drafts for you to review." },
+      "whatsapp": { "name": "Automated WhatsApp messages", "description": "Automatic customer messages. Today you can confirm an order with a ready-made message that you open and send yourself." }
+    },
+    "explainerTitle": "What are online store integrations?",
+    "explainer": "Integrations are the services you connect to your online store so it works with the tools you already use. Shipping companies help you issue waybills and follow shipments, payment gateways let your customers pay by card or wallet into your account, and measurement tools like Meta Pixel and Google Analytics 4 show you which campaigns really bring in sales. On Tallaby you connect most of them from the Apps and integrations page in your dashboard, and payment gateways from your payment settings, with no code and no developer.",
+    "closingTitle": "Connect your tools to one store",
+    "closingBody": "Start with no monthly subscription, then turn on the integrations you need."
+  },
+  "detailPages": {
+    "meta-pixel": {
+      "crumbHub": "Integrations",
+      "crumb": "Meta Pixel",
+      "title": "Connect your store to Meta Pixel",
+      "lead": "Measure your Facebook and Instagram ads and see which campaigns really bring in sales, without code.",
+      "whatTitle": "What is Meta Pixel?",
+      "what": [
+        "Meta Pixel is a Meta tool that records what visitors do in your store after clicking your ad: viewing a product, adding it to the cart or placing an order. Meta uses this data to measure your campaigns and improve who sees your ads.",
+        "On Tallaby, you paste your Pixel ID into the Apps and integrations page, and store events are sent automatically once a visitor accepts cookies. You can also connect the Conversions API to send purchases from the server, and choose whether Purchase is sent when the order is placed or when it's delivered."
+      ],
+      "usesTitle": "What you can do",
+      "uses": [
+        { "title": "Measure sales from each campaign", "body": "See in Meta how many orders each ad brought in, and their value." },
+        { "title": "Build retargeting audiences", "body": "Reach people who viewed a product or left their cart." },
+        { "title": "Optimise ads for purchases", "body": "Let Meta show your ads to the people most likely to buy." },
+        { "title": "More accurate purchases with the Conversions API", "body": "Sending purchases from the server means fewer are lost to browser blocking." }
+      ],
+      "eventsLabel": "Events the Pixel sends:",
+      "events": {
+        "PageView": "page view",
+        "ViewContent": "product view",
+        "AddToCart": "add to cart",
+        "InitiateCheckout": "start checkout",
+        "Purchase": "completed order",
+        "Lead": "address entered at checkout"
+      },
+      "eventsNote": "You can turn off any event in the settings except PageView. Lead stays off until you turn it on.",
+      "requirementsTitle": "What you need",
+      "requirements": [
+        { "title": "A Meta Business account", "body": "With access to Events Manager." },
+        { "title": "Your Meta Pixel ID", "body": "15 or 16 digits, in Events Manager › Data sources." },
+        { "title": "A store on Tallaby", "body": "Every step happens in your dashboard." },
+        { "title": "A Conversions API access token", "body": "Optional, to send purchases from the server." }
+      ],
+      "stepsTitle": "How to connect it",
+      "steps": [
+        { "title": "Copy your Pixel ID", "body": "In Events Manager on your Meta Business account, copy the Pixel ID." },
+        { "title": "Open Apps and integrations", "body": "In your Tallaby dashboard, open the Apps and integrations page and choose Meta Pixel." },
+        { "title": "Paste the ID and save", "body": "Paste your Pixel ID. If you want the Conversions API, open its app and add your access token." },
+        { "title": "Test the events", "body": "Open your store, accept cookies and add a product to the cart, then check that the events appear in Test Events." }
+      ],
+      "relatedTitle": "Related pages",
+      "related": [
+        { "title": "All integrations", "body": "Shipping, payments, product feeds and measurement tools." },
+        { "title": "Custom domain", "body": "You need your own domain to verify it with Meta." },
+        { "title": "Profit margin calculator", "body": "See what your ad cost does to the profit on each order." },
+        { "title": "Pricing", "body": "Plans and fees in detail." }
+      ],
+      "faq": [
+        { "q": "Where do I find my Meta Pixel ID?", "a": "In Events Manager on your Meta Business account, under Data sources." },
+        { "q": "Do I need the Conversions API?", "a": "It's not required, but it also sends purchases from the server, so your data stays more accurate when a browser blocks the Pixel. Sending Purchase on delivery needs it." },
+        { "q": "When is the Purchase event sent?", "a": "You choose in the settings: when the order is placed, or when it's delivered. Sending on delivery needs the Conversions API." },
+        { "q": "Does the Pixel work with a product catalog?", "a": "Yes, separately. Copy your product feed link from the Apps and integrations page and add it as a scheduled feed in Meta's Commerce Manager." },
+        { "q": "How do I check the Pixel is working?", "a": "Open Test Events in Events Manager, then browse your store, accept cookies and add a product to the cart, and the events will appear. You can also add a test code in the Conversions API settings." },
+        { "q": "Can I connect more than one Pixel?", "a": "No. You can connect one Pixel per store." }
+      ],
+      "closingTitle": "Connect Meta Pixel and measure your ads",
+      "mock": {
+        "apps": "Apps and integrations",
+        "path": "Apps › Meta Pixel",
+        "connected": "Connected",
+        "connect": "Connect",
+        "idTitle": "Pixel ID",
+        "idHint": "From Events Manager",
+        "capiHint": "Send purchases from the server",
+        "eventsTitle": "Meta events",
+        "eventsHint": "Choose which events the Pixel sends",
+        "appHint": "Measure your ads"
+      }
+    }
+  }
+}
