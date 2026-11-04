@@ -1,1 +1,183 @@
-{}
+{
+  "faq": {
+    "popularTerms": [
+      "domain",
+      "pay",
+      "Pro",
+      "shipping"
+    ],
+    "groups": {
+      "start": {
+        "title": "Getting started",
+        "sub": "Signup and first publish",
+        "items": [
+          {
+            "q": "How long does it take to set up a store?",
+            "a": "Signup takes under a minute: your store link, email and password, or Google. After that you pick a template, add products and publish whenever you're ready."
+          },
+          {
+            "q": "Do I need to know how to code?",
+            "a": "No. Everything from design to publishing is visual. If you can use a phone, you can run your store."
+          },
+          {
+            "q": "Can I move products from another store?",
+            "a": "Yes. Import from Excel, from a product link, or straight from Shopify, or ask support to help with the move."
+          }
+        ]
+      },
+      "pricing": {
+        "title": "Pricing and fees",
+        "sub": "Plans, wallet and limits",
+        "items": [
+          {
+            "q": "How much does Tallaby cost?",
+            "a": "There are two plans. Free has no monthly fee and costs $0.03 per order, with 100 AI credits and 500 campaign emails a month. Pro costs $29 a month with no order fee, 2,000 AI credits and 10,000 campaign emails a month."
+          },
+          {
+            "q": "What do I need to pay before I can start?",
+            "a": "Creating and publishing a store costs nothing. On the Free plan, you need a first top-up of $5 before you can see orders and send campaigns. Orders still arrive while you wait, and the first approved top-up unlocks them for good."
+          },
+          {
+            "q": "How do wallet top-ups work?",
+            "a": "Your Tallaby wallet is held in US dollars. Choose an amount from $5 to $1,000 and pay the equivalent in Egyptian pounds. You see the exchange rate and the total before you pay. Pay by Vodafone Cash or InstaPay and upload the receipt, and we credit the wallet once we confirm the transfer. Wallet money is for Tallaby services only and can't be withdrawn."
+          },
+          {
+            "q": "Does the fee change with order value?",
+            "a": "No. The fee is the same for every order, whatever its value, and we never take a percentage of sales."
+          },
+          {
+            "q": "When is the order fee charged?",
+            "a": "When a new order is placed, or when payment is confirmed for a card order. An order that looks like a test or a duplicate is charged only if it is delivered. The fee can take your balance below zero, and you settle it by topping up."
+          },
+          {
+            "q": "Do customers get order emails on the Free plan?",
+            "a": "Customer order emails, such as confirmation and shipping updates, need the Order Notifications app at 1 cent per order on any plan. You turn it on per store."
+          },
+          {
+            "q": "How many campaign emails can I send?",
+            "a": "Free includes 500 a month and Pro includes 10,000, shared across your stores. Monthly emails reset on the 1st and don't carry over. Extra emails cost $1.50 per 1,000 from your wallet and don't expire. You can send campaigns after your first approved top-up."
+          },
+          {
+            "q": "How do AI credits work?",
+            "a": "AI features use credits. Free includes 100 a month and Pro includes 2,000 a month. Extra credits cost $1 per 100 from your wallet and don't expire."
+          },
+          {
+            "q": "Is there a limit on products or orders?",
+            "a": "No. Products, orders and visitors are unlimited on both plans. Each account can have up to 3 stores."
+          }
+        ]
+      },
+      "payments": {
+        "title": "Payments",
+        "sub": "Methods and payouts",
+        "items": [
+          {
+            "q": "How do my customers pay?",
+            "a": "Cash on delivery works from day one. You can also save your Vodafone Cash, e& Cash, WE Pay, Orange Cash or InstaPay details, and connect your own Paymob or Kashier account to accept cards."
+          },
+          {
+            "q": "When do I get paid?",
+            "a": "Your customers pay you directly. Cash and transfers come straight to you, and card payments are paid out under the terms of the provider you connect. Order money never passes through your Tallaby wallet."
+          },
+          {
+            "q": "Do Tallaby fees include payment processing?",
+            "a": "No. Payment processing is charged separately by the payment provider and depends on the method."
+          }
+        ]
+      },
+      "shipping": {
+        "title": "Shipping",
+        "sub": "Delivery and returns",
+        "items": [
+          {
+            "q": "Who ships my orders?",
+            "a": "You do: Tallaby doesn't deliver. Use your own riders, connect your Bosta account and create shipments from your dashboard, or download a Wassalha sheet to upload on their dashboard."
+          },
+          {
+            "q": "How is shipping priced?",
+            "a": "You set shipping prices for customers by area, and you pay the courier at your own account's rates."
+          },
+          {
+            "q": "How do returns work?",
+            "a": "You set your return policy in Settings, it appears on your store, and you track returns from the Orders page."
+          }
+        ]
+      },
+      "design": {
+        "title": "Design and templates",
+        "sub": "Templates and editor",
+        "items": [
+          {
+            "q": "Can I change templates after publishing?",
+            "a": "Yes, anytime. Your products, orders and settings stay the same, and visitors see the new design after you publish it."
+          },
+          {
+            "q": "Does my store support Arabic and English?",
+            "a": "Yes. Every template supports both directions, and you can add product details in both languages."
+          }
+        ]
+      },
+      "domain": {
+        "title": "Domains",
+        "sub": "Links and custom domains",
+        "items": [
+          {
+            "q": "Can I use my own domain?",
+            "a": "Your store starts on a free address like yourbrand.tallaby.com. You can connect a domain you own from Domain & SEO, then update its DNS records."
+          },
+          {
+            "q": "Can I change my store link?",
+            "a": "Yes, from Domain & SEO, if the new link is available. Visitors who open the old link are sent to the new one."
+          }
+        ]
+      }
+    },
+    "home": [
+      {
+        "q": "How long does it take to set up a store?",
+        "a": "Signup takes under a minute: your store link, email and password, or Google. After that you pick a template, add products and publish whenever you're ready."
+      },
+      {
+        "q": "How much does Tallaby cost?",
+        "a": "Free has no monthly fee and costs $0.03 per order. Pro costs $29 a month with no order fee. You need a first $5 top-up before you can see orders on Free, and customer order emails need the Order Notifications app at 1 cent per order."
+      },
+      {
+        "q": "Does the fee change with the order value?",
+        "a": "No. The fee is the same for every order, whatever its value, and we never take a percentage of sales."
+      },
+      {
+        "q": "How is the fee collected?",
+        "a": "Your account has one wallet, held in US dollars. On Free, $0.03 comes out when a new order is placed. The fee can take your balance below zero, and you settle it by topping up."
+      },
+      {
+        "q": "Can I use my own couriers?",
+        "a": "Yes. Add your riders, assign them to orders and track each delivery. You can also connect your Bosta account. Tallaby doesn't deliver orders itself."
+      },
+      {
+        "q": "Can I connect Meta Pixel or Google Analytics?",
+        "a": "Yes. From Apps and integrations you can connect Meta Pixel, the Meta Conversions API, Google Analytics 4, Google Tag Manager and TikTok and Snapchat pixels without touching code."
+      },
+      {
+        "q": "Is there a limit on products or orders?",
+        "a": "No. Products, orders and visitors are unlimited on both plans. Each account can have up to 3 stores."
+      },
+      {
+        "q": "Can I use my own domain?",
+        "a": "Your store starts on a free address like yourbrand.tallaby.com. You can connect a domain you own from Domain & SEO, then update its DNS records."
+      },
+      {
+        "q": "How do my customers pay?",
+        "a": "Cash on delivery works from day one. You can also save your wallet or InstaPay details, and connect your own Paymob or Kashier account to accept cards."
+      },
+      {
+        "q": "Do I need to know how to code?",
+        "a": "No. Everything from design to publishing is visual. If you can use a phone, you can run your store."
+      }
+    ],
+    "title": "How can we <em>help?</em>",
+    "placeholder": "Search for a question, e.g. domain",
+    "noResults": "No results",
+    "stillTitle": "Still stuck?",
+    "whatsapp": "WhatsApp Us"
+  }
+}

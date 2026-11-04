@@ -40,18 +40,18 @@ export default async function FaqPage() {
         eyebrow={t("eyebrow")}
         title={t.rich("title", richTags)}
         lead={t("lead")}
-        className="pb-[110px] text-center sm:pb-[110px]"
-        containerClassName="[&_p]:mx-auto"
+        centered
+        className="pb-[110px] sm:pb-[110px]"
       >
         <HelpSearch />
       </PageHero>
       <Container>
         <HelpResults
           still={
-            <Reveal className="mt-6 grid items-center gap-6 rounded-3xl bg-teal-900 p-9 text-white md:grid-cols-[1fr_auto]">
+            <Reveal className="mt-6 grid items-center gap-6 rounded-card-lg bg-teal-900 p-9 text-white md:grid-cols-[1fr_auto]">
               <div>
                 <h3 className="text-[22px] font-bold">{t("stillTitle")}</h3>
-                <p className="mt-1 text-mist">{t("stillBody")}</p>
+                <p className="mt-1 text-ink-on-dark">{t("stillBody")}</p>
               </div>
               <div className="flex flex-wrap gap-2.5">
                 {CONTACT.whatsapp ? (

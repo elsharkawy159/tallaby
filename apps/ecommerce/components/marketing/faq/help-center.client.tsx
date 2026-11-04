@@ -74,7 +74,7 @@ export function HelpSearch() {
 
   return (
     <>
-      <label className="mx-auto mt-8 flex h-16 max-w-[640px] items-center gap-2.5 rounded-[18px] bg-white px-[18px] text-neutral-600 shadow-[0_14px_40px_rgba(0,0,0,0.25)]">
+      <label className="mt-8 flex h-[62px] w-full max-w-[640px] items-center gap-2.5 rounded-full border-[1.5px] border-line-strong bg-white px-[22px] text-ink-400 shadow-[0_10px_30px_rgba(20,81,99,0.08)] transition-[border-color,box-shadow] duration-150 focus-within:border-teal-700 focus-within:shadow-[var(--ring-focus),0_10px_30px_rgba(20,81,99,0.08)]">
         <Search className="size-5" aria-hidden />
         <span className="sr-only">{t("search")}</span>
         <input
@@ -88,7 +88,7 @@ export function HelpSearch() {
         />
         <kbd className="hidden rounded-md border border-neutral-200 px-2 py-0.5 font-latin text-xs font-semibold text-neutral-500 sm:inline">/</kbd>
       </label>
-      <div className="mt-[18px] flex flex-wrap justify-center gap-2 text-[13px] text-haze">
+      <div className="mt-[18px] flex flex-wrap items-center justify-center gap-2 text-[13px] text-ink-400">
         <span>{t("popular")}</span>
         {popular.map((term) => (
           <button
@@ -98,7 +98,7 @@ export function HelpSearch() {
               setQuery(term);
               setGroup(null);
             }}
-            className="rounded-full bg-white/10 px-3.5 py-[5px] text-[13px] text-white hover:bg-white/15"
+            className="rounded-full border border-line-strong bg-white px-3.5 py-1 text-[13px] font-semibold text-ink-600 transition-colors hover:border-teal-300 hover:text-teal-900"
           >
             {term}
           </button>
@@ -125,14 +125,14 @@ export function HelpResults({ still }: { still: React.ReactNode }) {
 
   return (
     <>
-      <div className="relative -mt-[70px] grid grid-cols-2 gap-3.5 lg:grid-cols-4">
+      <div className="relative -mt-[60px] grid grid-cols-2 gap-3.5 lg:grid-cols-4">
         {GROUPS.slice(0, 4).map((g) => (
           <button
             key={g.id}
             type="button"
             aria-pressed={group === g.id}
             onClick={() => setGroup(group === g.id ? null : g.id)}
-            className="group grid gap-1 rounded-[20px] border border-neutral-200 bg-white p-[22px] text-start shadow-soft transition-[transform,border-color] duration-200 hover:-translate-y-0.5 hover:border-teal-300 aria-pressed:border-teal-900 aria-pressed:shadow-[0_0_0_1px_var(--color-teal-900)]"
+            className="group grid content-start gap-1 rounded-card border border-line bg-surface-glass p-[22px] text-start shadow-soft transition-[transform,border-color] duration-200 hover:-translate-y-[3px] hover:border-teal-300 aria-pressed:border-teal-700 aria-pressed:shadow-[0_0_0_1px_var(--color-teal-700)]"
           >
             <span className="mb-2 grid size-[42px] place-items-center rounded-xl bg-teal-50 text-teal-700 group-aria-pressed:bg-amber-600 group-aria-pressed:text-teal-900">
               <g.icon className="size-[18px]" aria-hidden />
@@ -179,7 +179,7 @@ export function HelpResults({ still }: { still: React.ReactNode }) {
               ) : null,
             )
           ) : (
-            <div className="rounded-[20px] border border-dashed border-neutral-300 p-12 text-center text-slate-ink">
+            <div className="rounded-card border border-dashed border-line-strong p-12 text-center text-slate-ink">
               <b className="mb-1 block text-lg text-teal-900">{t("noResults")}</b>
               {t("noResultsBody")}
             </div>
