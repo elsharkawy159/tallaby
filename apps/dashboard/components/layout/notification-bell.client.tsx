@@ -3,8 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
-import { Bell, BellRing, CheckCheck } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@workspace/ui/components/popover";
+import { Bell, BellOff, BellRing, Check, CheckCheck, Settings2, X } from "lucide-react";
+import { AnchoredSheet, IconButton, IconTile } from "@/components/seller-ui";
 import {
   notificationText,
   sellerNotificationHref,
@@ -17,6 +17,7 @@ import { getSellerNotificationFeed, markSellerNotificationsReadAction } from "@/
 import { formatRelativeTime, formatWalletMoney } from "@/lib/i18n/format";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/supabase/client";
+import { NOTIFICATION_LOOK, notificationDay } from "./notification-look.lib";
 
 type Feed = NotificationFeed<SellerNotificationType>;
 
@@ -84,7 +85,8 @@ function useSellerNotificationFeed() {
   return { feed, setFeed, refresh };
 }
 
-export function NotificationBell({ className }: { className?: string }) {
+/** The bell and its panel (`.ntf`): anchored on desktop, a bottom sheet on phones. */
+export function NotificationBell() {
   const t = useTranslations("notifications");
   const { feed, setFeed, refresh } = useSellerNotificationFeed();
   const tPush = useTranslations("pushAlerts");
@@ -124,85 +126,107 @@ export function NotificationBell({ className }: { className?: string }) {
     [refresh, setFeed],
   );
 
+  const groups = (["today", "yesterday", "older"] as const)
+    .map((day) => ({ day, items: (feed?.items ?? []).filter((item) => notificationDay(item.createdAt) === day) }))
+    .filter((group) => group.items.length > 0);
+
   return (
-    <Popover
+    <AnchoredSheet
       open={open}
       onOpenChange={(next) => {
         setOpen(next);
         if (next) void refresh();
       }}
+      label={t("title")}
+      className="max-h-[min(620px,calc(100dvh-90px))] w-[400px]"
+      trigger={
+        <IconButton aria-label={unread > 0 ? t("openUnread", { count: unread }) : t("open")}>
+          <Bell />
+          {unread > 0 && (
+            <b className="absolute -end-0.5 top-0.5 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-accent px-[5px] font-montserrat text-[10.5px] font-extrabold text-(--tallaby-teal-900) shadow-[0_0_0_2px_var(--background)] tabular-nums">
+              {unread > 9 ? "9+" : unread}
+            </b>
+          )}
+        </IconButton>
+      }
     >
-      <PopoverTrigger asChild>
+      <div className="flex shrink-0 items-center gap-1 pb-2 pe-2.5 ps-[18px] pt-3.5">
+        <b className="min-w-0 flex-1 text-base font-bold text-(--s-ink)">{t("title")}</b>
         <button
           type="button"
-          className={cn("relative", className)}
-          aria-label={unread > 0 ? t("openUnread", { count: unread }) : t("open")}
+          disabled={unread === 0}
+          onClick={() => void markRead()}
+          className="inline-flex h-8 cursor-pointer items-center gap-[5px] whitespace-nowrap rounded-[10px] px-2.5 text-xs font-bold text-(--s-link) transition-colors duration-150 hover:bg-(--s-hover) disabled:pointer-events-none disabled:opacity-40"
         >
-          <Bell className="size-[18px]" />
-          {unread > 0 && (
-            <span className="absolute -top-0.5 -end-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-semibold leading-none text-white tabular-nums">
-              {unread > 99 ? "99+" : unread}
-            </span>
-          )}
+          <CheckCheck aria-hidden className="size-[15px]" />
+          {t("markAllRead")}
         </button>
-      </PopoverTrigger>
-      <PopoverContent align="end" className="w-[min(24rem,calc(100vw-1.5rem))] p-0">
-        <div className="flex items-center justify-between gap-2 border-b px-4 py-3">
-          <p className="text-sm font-semibold">{t("title")}</p>
-          {unread > 0 && (
-            <button
-              type="button"
-              onClick={() => void markRead()}
-              className="flex h-7 items-center gap-1.5 rounded-md px-2 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            >
-              <CheckCheck className="size-3.5" />
-              {t("markAllRead")}
-            </button>
-          )}
-        </div>
-        <div className="max-h-[min(28rem,70vh)] overflow-y-auto overscroll-contain">
-          {feed === null ? (
-            <p className="px-4 py-8 text-center text-sm text-muted-foreground">{t("loading")}</p>
-          ) : feed.items.length === 0 ? (
-            <p className="px-4 py-8 text-center text-sm text-muted-foreground">{t("empty")}</p>
-          ) : (
-            <ul className="divide-y">
-              {feed.items.map((item) => (
-                <NotificationRow
-                  key={item.id}
-                  item={item}
-                  onOpen={() => {
-                    setOpen(false);
-                    if (!item.readAt) void markRead([item.id]);
-                  }}
-                />
-              ))}
-            </ul>
-          )}
-        </div>
-        {canAskPush && (
-          <Link
-            href="/settings#push-alerts"
-            onClick={() => setOpen(false)}
-            className="flex items-center gap-2 border-t px-4 py-2.5 text-xs font-medium text-primary transition-colors hover:bg-muted/60"
-          >
-            <BellRing className="size-3.5" />
-            {tPush("bellPrompt")}
+        <IconButton asChild aria-label={t("settings")}>
+          <Link href="/settings#push-alerts" onClick={() => setOpen(false)}>
+            <Settings2 />
           </Link>
+        </IconButton>
+        <IconButton aria-label={t("close")} onClick={() => setOpen(false)} className="min-[601px]:hidden">
+          <X />
+        </IconButton>
+      </div>
+      <div className="flex min-h-0 flex-1 flex-col gap-[3px] overflow-y-auto overscroll-contain px-2 pb-2 pt-1 [scrollbar-width:thin]">
+        {feed === null ? (
+          <p className="px-4 py-10 text-center text-[13px] text-(--s-subtle)">{t("loading")}</p>
+        ) : feed.items.length === 0 ? (
+          <div className="flex flex-col items-center gap-1.5 px-5 py-10 text-center">
+            <span className="grid size-12 place-items-center rounded-2xl bg-(--s-fill) text-(--s-faint)">
+              <BellOff aria-hidden className="size-5" />
+            </span>
+            <b className="mt-1 text-sm font-bold text-(--s-ink)">{t("emptyTitle")}</b>
+            <p className="text-[12.5px] text-(--s-subtle)">{t("empty")}</p>
+          </div>
+        ) : (
+          groups.map((group) => (
+            <div key={group.day} className="flex flex-col gap-[3px]">
+              <p className="px-2.5 pb-1 pt-2.5 text-[11.5px] font-bold text-(--s-faint)">{t(group.day)}</p>
+              <ul className="flex flex-col gap-[3px]">
+                {group.items.map((item) => (
+                  <NotificationRow
+                    key={item.id}
+                    item={item}
+                    onOpen={() => {
+                      setOpen(false);
+                      if (!item.readAt) void markRead([item.id]);
+                    }}
+                    onMarkRead={() => void markRead([item.id])}
+                  />
+                ))}
+              </ul>
+            </div>
+          ))
         )}
-      </PopoverContent>
-    </Popover>
+      </div>
+      {canAskPush && (
+        <Link
+          href="/settings#push-alerts"
+          onClick={() => setOpen(false)}
+          className="flex shrink-0 items-center gap-2 border-t border-(--s-line-soft) bg-(--s-surface-2) px-[18px] py-2.5 text-xs font-bold text-(--s-link) no-underline transition-colors duration-150 hover:bg-(--s-hover)"
+        >
+          <BellRing aria-hidden className="size-3.5" />
+          {tPush("bellPrompt")}
+        </Link>
+      )}
+    </AnchoredSheet>
   );
 }
 
 function NotificationRow({
   item,
   onOpen,
+  onMarkRead,
 }: {
   item: NotificationItem<SellerNotificationType>;
   onOpen: () => void;
+  onMarkRead: () => void;
 }) {
   const t = useTranslations("notifications.types");
+  const tBell = useTranslations("notifications");
   const locale = useLocale();
   const values = sellerNotificationValues(item.data, (amount, currency) => formatWalletMoney(amount, currency, locale));
   const href = sellerNotificationHref(item);
@@ -215,40 +239,57 @@ function NotificationRow({
       ? t(`${item.type}.title`)
       : item.type;
   const body = isMessage ? notificationText(item.data, "body") : known ? t(`${item.type}.body`, values) : "";
-  const content = (
-    <>
-      <span
-        aria-hidden
-        className={cn("mt-1.5 size-2 shrink-0 rounded-full", item.readAt ? "bg-transparent" : "bg-primary")}
-      />
-      <span className="min-w-0 flex-1">
-        {isMessage && (
-          <span className="mb-0.5 block text-[11px] font-medium text-primary">{t("admin_message.from")}</span>
-        )}
-        <span className={cn("block text-sm", !item.readAt && "font-semibold")}>{title}</span>
-        {body && (
-          <span className={cn("block text-xs text-muted-foreground", isMessage && "whitespace-pre-line break-words")}>
-            {body}
-          </span>
-        )}
-        <time dateTime={item.createdAt} className="mt-0.5 block text-[11px] text-muted-foreground">
-          {formatRelativeTime(item.createdAt, locale)}
-        </time>
-      </span>
-    </>
-  );
-  const className = "flex w-full gap-3 px-4 py-3 text-start transition-colors hover:bg-muted/60";
+  const unread = !item.readAt;
+  const look = NOTIFICATION_LOOK[item.type] ?? { icon: Bell, tone: "primary" as const };
+  // The whole row opens it; the link stretches over the row, under the mark-read button.
+  const stretch = "text-start after:absolute after:inset-0 after:rounded-2xl";
 
   return (
-    <li>
-      {href ? (
-        <Link href={href} onClick={onOpen} className={className}>
-          {content}
-        </Link>
-      ) : (
-        <button type="button" onClick={onOpen} className={className}>
-          {content}
-        </button>
+    <li
+      className={cn(
+        "group/row relative flex gap-3 rounded-2xl p-2.5 transition-colors duration-150 max-[600px]:px-2.5 max-[600px]:py-3",
+        unread
+          ? "bg-accent-soft/60 hover:bg-accent-soft before:absolute before:start-0.5 before:top-[18px] before:size-1.5 before:rounded-full before:bg-accent"
+          : "hover:bg-(--s-tint)",
+      )}
+    >
+      <IconTile icon={look.icon} tone={look.tone} className="size-10 rounded-[13px] [&_svg]:size-[18px]" />
+      <div className="min-w-0 flex-1">
+        {isMessage && <span className="block text-[11px] font-bold text-(--s-link)">{t("admin_message.from")}</span>}
+        {href ? (
+          <Link
+            href={href}
+            onClick={onOpen}
+            className={cn("block text-[13.5px] leading-normal text-(--s-text) no-underline hover:text-(--s-ink)", unread ? "font-bold" : "font-semibold", stretch)}
+          >
+            {title}
+          </Link>
+        ) : (
+          <button
+            type="button"
+            onClick={onOpen}
+            className={cn("block w-full cursor-pointer text-[13.5px] leading-normal text-(--s-text)", unread ? "font-bold" : "font-semibold", stretch)}
+          >
+            {title}
+          </button>
+        )}
+        {body && (
+          <p className={cn("mt-px text-pretty text-[12.5px] leading-[1.6] text-(--s-muted)", isMessage && "whitespace-pre-line break-words")}>
+            {body}
+          </p>
+        )}
+        <time dateTime={item.createdAt} className="mt-1.5 block text-[11.5px] text-(--s-faint)">
+          {formatRelativeTime(item.createdAt, locale)}
+        </time>
+      </div>
+      {unread && (
+        <IconButton
+          aria-label={tBell("markRead")}
+          onClick={onMarkRead}
+          className="z-[1] size-[30px] rounded-[9px] text-(--s-faint) opacity-0 focus-visible:opacity-100 group-hover/row:opacity-100 pointer-coarse:opacity-100 max-[600px]:size-10 [&_svg]:size-[15px]"
+        >
+          <Check />
+        </IconButton>
       )}
     </li>
   );

@@ -71,10 +71,10 @@ export default async function VendorDashboardPage({
             }
             addLabel={t("addProduct")}
             rangeControl={
-              <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:items-center">
-                <ChannelSelect stores={stores.map(({ id, name }) => ({ id, name }))} />
+              <>
                 <RangeSelect />
-              </div>
+                <ChannelSelect stores={stores.map(({ id, name }) => ({ id, name }))} />
+              </>
             }
           />
         }

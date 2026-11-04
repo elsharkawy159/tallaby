@@ -1,10 +1,10 @@
 import type { LucideIcon } from "lucide-react";
 import {
   AppWindow,
-  BarChart3,
   // ChartLine, // Store views hidden from the sidebar (F-65c)
   CircleUserRound,
   Globe,
+  LayoutDashboard,
   Megaphone,
   Package,
   Settings,
@@ -52,14 +52,15 @@ export type NavGroupConfig = {
   items: NavLinkConfig[];
 };
 
-/** A thin rule between sidebar sections. */
-export type NavDivider = { kind: "divider" };
+/** Starts a sidebar section; `label` is its small heading (`.ng` in the design). */
+export type NavDivider = { kind: "divider"; label?: NavKey };
 
 export type NavEntry = ({ kind: "link" } & NavLinkConfig) | NavGroupConfig | NavDivider;
 
 export const SIDEBAR_CONFIG: NavEntry[] = [
+  { kind: "link", key: "dashboard", href: "/", icon: LayoutDashboard, countKey: "dashboard", status: "live" },
   // Daily operations.
-  { kind: "link", key: "dashboard", href: "/", icon: BarChart3, countKey: "dashboard", status: "live" },
+  { kind: "divider", label: "sectionSell" },
   {
     kind: "group",
     key: "products",
@@ -92,8 +93,6 @@ export const SIDEBAR_CONFIG: NavEntry[] = [
       { key: "customers", href: "/orders/customers", status: "live" },
       // Scan returns (F-04e) hidden for now: the /orders search finds the order (owner, 2026-10-31).
       // { key: "scanReturns", href: "/orders/scan", status: "live" },
-      // Tracking individual orders; /shipping redirects here (P3-06).
-      { key: "deliveryTracking", href: "/orders/delivery", countKey: "shipping", status: "live" },
     ],
   },
   // How orders get shipped: riders, shipping zones and rates, the fulfillment service.
@@ -102,6 +101,8 @@ export const SIDEBAR_CONFIG: NavEntry[] = [
     key: "fulfillmentShipping",
     icon: Truck,
     items: [
+      // Tracking individual orders; /shipping redirects here (P3-06).
+      { key: "deliveryTracking", href: "/orders/delivery", countKey: "shipping", status: "live" },
       { key: "riders", href: "/orders/riders", status: "live" },
       { key: "shippingSettings", href: "/stores/[storeId]/shipping", status: "live" },
       // Hidden while Tallaby offers no storage, packing or delivery (owner, 2026-10-31).
@@ -122,8 +123,8 @@ export const SIDEBAR_CONFIG: NavEntry[] = [
       { key: "reports", href: "/reports", status: "live", exact: true },
     ],
   },
-  { kind: "divider" },
   // Growing and configuring the selected store.
+  { kind: "divider", label: "sectionStore" },
   // The store builder: the site itself, then what goes on it.
   {
     kind: "group",
@@ -181,8 +182,8 @@ export const SIDEBAR_CONFIG: NavEntry[] = [
       { key: "salesPopup", href: "/stores/[storeId]/settings/sales-popup", status: "live" },
     ],
   },
-  { kind: "divider" },
   // Account-wide, not tied to the selected store.
+  { kind: "divider", label: "sectionAccount" },
   {
     kind: "group",
     key: "accountHelp",
@@ -237,8 +238,9 @@ export function resolveSidebar(config: NavEntry[], ctx: SidebarContext): Resolve
   const out: ResolvedEntry[] = [];
   for (const entry of config) {
     if (entry.kind === "divider") {
-      // Never first or doubled (a whole section can resolve to nothing).
-      if (out.length && out.at(-1)!.kind !== "divider") out.push(entry);
+      // Never first or doubled (a whole section can resolve to nothing): the later section's heading wins.
+      if (out.at(-1)?.kind === "divider") out.pop();
+      if (out.length) out.push(entry);
       continue;
     }
     if (entry.kind === "link") {

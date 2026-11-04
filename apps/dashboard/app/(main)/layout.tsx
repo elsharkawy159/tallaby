@@ -11,6 +11,7 @@ import { loadWelcomeGiftWatch } from "@/components/layout/welcome-gift.data";
 import { SellerAccessBlocked } from "@/components/layout/seller-access-blocked";
 import { getSellerAccess } from "@/lib/auth/seller-access";
 import { getSelectedStoreLink } from "@/lib/stores/store-link.server";
+import { getSellerStores } from "@/lib/stores/current-store.server";
 import { SetupPrompts } from "./_components/setup-prompts.client";
 import { getStoreWalletBalance } from "./wallet/store-wallet.server";
 import { getSessionUser } from "@/lib/auth/session.server";
@@ -44,24 +45,26 @@ export default async function DashboardLayout({
   }
 
   // sellers.id = users.id; the header shows the store wallet balance.
-  const [wallet, askHeardAboutUs, welcomeGift, storeLink, accountMoney] = await Promise.all([
+  const [wallet, askHeardAboutUs, welcomeGift, storeLink, accountMoney, { selected }] = await Promise.all([
     user ? getStoreWalletBalance(user.id) : null,
     user ? needsHeardAboutUs(user.id) : false,
     user ? loadWelcomeGiftWatch(user.id) : ({ state: "none" } as const),
     getSelectedStoreLink().catch(() => null),
     user ? loadAccountMoney(user.id).catch(() => EGP_ACCOUNT) : EGP_ACCOUNT,
+    getSellerStores(),
   ]);
   const walletBalance = wallet?.balance ?? null;
 
   return (
-    <div className="min-h-screen flex w-full overflow-x-clip bg-background">
+    // .seller-shell switches on the design system (app/globals.css). Only this layout has it, so (builder) is untouched.
+    <div className="seller-shell flex min-h-screen w-full overflow-x-clip bg-background">
       <SidebarData />
 
       {/* Main Content Area */}
       <MainContentWrapper>
-        <DashboardHeader walletBalance={walletBalance} walletCurrency={wallet?.currency ?? "EGP"} storeLink={storeLink} />
+        <DashboardHeader walletBalance={walletBalance} walletCurrency={wallet?.currency ?? "EGP"} storeLink={storeLink} siteLive={selected?.siteStatus === "published"} />
         {access.status === "restricted" && (
-          <div className="border-b border-amber-200 bg-amber-50 px-6 py-3 text-sm text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-200">
+          <div className="border-b border-(--s-line) bg-accent-soft px-7 py-3 text-sm text-accent-ink max-[1020px]:px-4">
             <strong>{t("sellerStatus.restricted.title")}.</strong>{" "}
             {t("sellerStatus.restricted.message")}
           </div>

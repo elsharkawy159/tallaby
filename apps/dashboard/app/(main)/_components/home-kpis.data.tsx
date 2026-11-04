@@ -1,10 +1,8 @@
-import Link from "next/link";
-import type { LucideIcon } from "lucide-react";
 import { Banknote, Eye, Percent, Receipt, ShoppingBag, Star, UserPlus, Wallet } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
-import { cn } from "@workspace/ui/lib/utils";
 import { formatNumber, formatWalletMoney, moneyUnitMarked } from "@/lib/i18n/format";
 import { MoneyLines, MoneyText } from "@/components/money";
+import { KpiCard, KpiGrid, StatItem, StatStrip } from "@/components/seller-ui";
 import {
   getHomeChannelStores,
   getHomeSnapshot,
@@ -14,7 +12,7 @@ import {
   getStoreFunnel,
 } from "./home.queries";
 import type { HomeChannel, HomeRange } from "./home.shared";
-import { DeltaBadge, HomeCard, IconTile, StarRating, percentChange, type Tone } from "./home-ui";
+import { StarRating, percentChange } from "./home-ui";
 import { walletKpiState } from "./wallet-kpi.lib";
 
 /** Sales, orders, store-website visits and conversion for the period, each linking to its page. */
@@ -32,7 +30,7 @@ export async function HomeKpisData({ range, channel = "all" }: { range: HomeRang
   const hasSales = sales.orders > 0 || sales.previousOrders > 0;
   const analyticsHref = analyticsStoreId ? `/stores/${analyticsStoreId}/analytics` : "/stores";
 
-  // Visits only exist for store websites (GA4); marketplace sales have none.
+  // Visits only exist for store websites (GA4), not for orders outside a store.
   const storesOnly = storeIds.length === 0;
   const visits = traffic?.visits ?? 0;
   const hasVisits = visits > 0 || (traffic?.previousVisits ?? 0) > 0;
@@ -103,140 +101,34 @@ export async function HomeMetricsData({ range, channel = "all" }: { range: HomeR
   const hasRating = rating != null && (snapshot?.totalRatings ?? 0) > 0;
 
   return (
-    <MetricsStrip label={tm("label")}>
-      <Metric
+    <StatStrip aria-label={tm("label")}>
+      <StatItem
         href="/orders"
         icon={Receipt}
         label={tm("aov")}
         value={sales.currencyOrders > 0 ? num(sales.revenue / sales.currencyOrders) : "0"}
         unit={<MoneyText locale={locale}>{moneyUnitMarked(locale, { currency: sales.currency })}</MoneyText>}
       />
-      <Metric href="/orders" icon={UserPlus} tone="accent" label={tm("newCustomers")} value={num(newCustomers)} unit={tm("customersUnit")} />
-      <Metric
+      <StatItem href="/orders" icon={UserPlus} label={tm("newCustomers")} value={num(newCustomers)} unit={tm("customersUnit")} />
+      <StatItem
         // sellers.wallet_balance mirrors the store wallet, which pays platform fees (no withdrawals).
         href={walletState === "negative" ? "/wallet?topup=1" : "/wallet"}
         icon={Wallet}
-        tone={walletState === "negative" ? "danger" : "success"}
+        tone={walletState === "negative" ? "danger" : "accent"}
         label={t("storeWallet")}
-        value={usdWallet ? formatWalletMoney(wallet, "USD", locale) : num(wallet, 2)}
+        value={usdWallet ? <bdi dir="ltr">{formatWalletMoney(wallet, "USD", locale)}</bdi> : num(wallet, 2)}
         unit={usdWallet ? undefined : t("currency")}
         note={walletState === "negative" ? t("walletNegative") : undefined}
+        noteTone={walletState === "negative" ? "danger" : undefined}
       />
-      <Metric
+      <StatItem
         href="/reviews"
         icon={Star}
-        tone="accent"
         label={t("rating")}
         value={hasRating ? num(rating!, 1) : "—"}
         unit={hasRating ? "/ 5" : undefined}
-        note={
-          hasRating ? (
-            <StarRating value={rating!} label={t("ratingLabel", { rating: num(rating!, 1) })} />
-          ) : (
-            t("noRatings")
-          )
-        }
+        note={hasRating ? <StarRating value={rating!} label={t("ratingLabel", { rating: num(rating!, 1) })} /> : t("noRatings")}
       />
-    </MetricsStrip>
-  );
-}
-
-export function KpiGrid({ children }: { children: React.ReactNode }) {
-  return <div className="grid grid-cols-2 gap-2.5 sm:gap-3.5 xl:grid-cols-4">{children}</div>;
-}
-
-/** One headline number with its icon, unit, footnote and period delta. The card opens `href`. */
-export function KpiCard({
-  href,
-  label,
-  icon,
-  value,
-  unit,
-  also,
-  footer,
-  delta,
-}: {
-  href: string;
-  label: string;
-  icon: LucideIcon;
-  value: string;
-  unit?: React.ReactNode;
-  /** The same figure in other currencies, one per line. */
-  also?: React.ReactNode;
-  footer?: React.ReactNode;
-  /** Omit for metrics that are not period-based. */
-  delta?: number | null;
-}) {
-  return (
-    <Link
-      href={href}
-      className="group flex min-w-0 flex-col gap-2.5 rounded-2xl border bg-card p-3.5 text-card-foreground shadow-xs transition-colors hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 sm:px-5 sm:pb-3.5 sm:pt-[18px]"
-    >
-      <div className="flex items-center justify-between gap-2 text-[13px] text-muted-foreground">
-        <span className="group-hover:text-primary-ink">{label}</span>
-        <IconTile icon={icon} />
-      </div>
-      <div className="flex flex-wrap items-baseline gap-1.5">
-        <b className="font-montserrat text-[22px] font-semibold leading-none tabular-nums sm:text-[28px]">{value}</b>
-        {unit && <span className="text-[13px] text-muted-foreground">{unit}</span>}
-      </div>
-      {also && <div className="text-xs font-medium text-muted-foreground tabular-nums">{also}</div>}
-      {/* mt-auto: a card with extra currency lines keeps its footer level with the others. */}
-      <div className="mt-auto flex min-h-[22px] items-center justify-between gap-2 text-xs text-muted-foreground">
-        <span className="min-w-0">{footer}</span>
-        {delta !== undefined && <DeltaBadge value={delta} />}
-      </div>
-    </Link>
-  );
-}
-
-export function MetricsStrip({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <HomeCard
-      aria-label={label}
-      // 1px gaps over a border-coloured background draw the dividers at every breakpoint.
-      className="grid grid-cols-1 gap-px overflow-hidden bg-border sm:grid-cols-2 xl:grid-cols-4"
-    >
-      {children}
-    </HomeCard>
-  );
-}
-
-function Metric({
-  href,
-  icon,
-  tone = "primary",
-  label,
-  value,
-  unit,
-  note,
-}: {
-  href: string;
-  icon: LucideIcon;
-  tone?: Tone;
-  label: string;
-  value: string;
-  unit?: React.ReactNode;
-  note?: React.ReactNode;
-}) {
-  return (
-    <Link
-      href={href}
-      className="group flex items-center gap-3 bg-card px-5 py-4 transition-colors hover:bg-muted focus-visible:bg-muted focus-visible:outline-none"
-    >
-      <IconTile icon={icon} tone={tone} />
-      <span className="min-w-0 flex-1">
-        <small className="block text-xs text-muted-foreground group-hover:text-primary-ink">{label}</small>
-        <b className="font-montserrat text-lg font-semibold leading-snug tabular-nums">
-          {value}
-          {unit && <span className="ms-1 font-noto-kufi-arabic text-xs font-medium text-muted-foreground">{unit}</span>}
-        </b>
-        {note && (
-          <small className={cn("block text-[11px]", tone === "danger" ? "font-medium text-destructive" : "text-muted-foreground")}>
-            {note}
-          </small>
-        )}
-      </span>
-    </Link>
+    </StatStrip>
   );
 }

@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { ChevronRight, Ellipsis, ExternalLink, Menu, Search, Wallet } from "lucide-react";
+import { ChevronRight, ExternalLink, Menu, Plus, Search } from "lucide-react";
+import { IconButton } from "@/components/seller-ui";
 import { cn } from "@/lib/utils";
 import { formatWalletMoney } from "@/lib/i18n/format";
 import { useSidebarStore } from "@/stores";
@@ -15,21 +16,22 @@ import { LanguageToggle } from "./language-toggle.client";
 import { NotificationBell } from "./notification-bell.client";
 import { ThemeToggle } from "./theme-toggle.client";
 
-// Phone "⋯" menu rows: full width, icon then label. From sm up they stay icon buttons.
-const MENU_ITEM =
-  "max-sm:h-10 max-sm:w-full max-sm:justify-start max-sm:gap-2.5 max-sm:px-3 max-sm:text-sm max-sm:text-sidebar-foreground";
-
-const ICON_BUTTON =
-  "flex size-9.5 shrink-0 items-center justify-center rounded-[10px] border border-transparent text-muted-foreground transition-colors hover:border-sidebar-border hover:bg-sidebar-accent hover:text-sidebar-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40";
-
+/**
+ * The top bar (`.top`). It follows the design's widths: up to 1020px the host
+ * pill and labels go, up to 720px the title goes, and at 600px and below the
+ * language, theme and install buttons move into the sidebar drawer.
+ */
 export function DashboardHeader({
   walletBalance,
   walletCurrency,
   storeLink,
+  siteLive,
 }: {
   walletBalance: number | null;
   walletCurrency: string;
   storeLink: { url: string; host: string } | null;
+  /** The selected store's site is published. */
+  siteLive: boolean;
 }) {
   const t = useTranslations("header");
   const locale = useLocale();
@@ -40,10 +42,6 @@ export function DashboardHeader({
   const [paletteOpen, setPaletteOpen] = useState(false);
   // The shortcut hint depends on the OS; resolve after mount to keep SSR markup stable.
   const [isMac, setIsMac] = useState(false);
-  const tCommon = useTranslations("common");
-  const [toolsOpen, setToolsOpen] = useState(false);
-  const toolsRef = useRef<HTMLDivElement>(null);
-  const toolsId = useId();
 
   useEffect(() => {
     setIsMac(/Mac|iPhone|iPad/.test(navigator.userAgent));
@@ -57,147 +55,105 @@ export function DashboardHeader({
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
-  // The phone "⋯" tools menu closes on navigation, outside taps and Escape.
-  useEffect(() => {
-    setToolsOpen(false);
-  }, [pathname]);
-
-  useEffect(() => {
-    if (!toolsOpen) return;
-    const onPointerDown = (event: PointerEvent) => {
-      if (!toolsRef.current?.contains(event.target as Node)) setToolsOpen(false);
-    };
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setToolsOpen(false);
-    };
-    document.addEventListener("pointerdown", onPointerDown);
-    window.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.removeEventListener("pointerdown", onPointerDown);
-      window.removeEventListener("keydown", onKeyDown);
-    };
-  }, [toolsOpen]);
+  const siteLabel = t(siteLive ? "siteLive" : "siteOffline");
 
   return (
-    <header className="sticky top-0 z-40 flex h-16 items-center gap-1 border-b border-sidebar-border bg-sidebar/90 px-3 text-sidebar-foreground backdrop-blur-md sm:gap-3 sm:px-6">
-      <button
-        type="button"
-        onClick={() => setMobileOpen(true)}
-        className={`${ICON_BUTTON} -ms-1 lg:hidden`}
-        aria-label={t("openMenu")}
-      >
-        <Menu className="size-5" />
-      </button>
+    <header className="sticky top-0 z-30 flex h-[68px] items-center gap-2.5 border-b border-(--s-topbar-line) bg-(--s-topbar) px-7 backdrop-blur-[14px] backdrop-saturate-[1.4] max-[1020px]:px-4 max-[600px]:h-[60px] max-[600px]:gap-1.5 max-[600px]:px-2.5 print:hidden">
+      <IconButton onClick={() => setMobileOpen(true)} aria-label={t("openMenu")} className="min-[1021px]:hidden">
+        <Menu />
+      </IconButton>
 
-      <div className="flex min-w-0 flex-1 items-center gap-1.5">
+      <div className="flex min-w-0 items-center gap-2.5 whitespace-nowrap max-[720px]:hidden">
         {route.parent && (
-          <>
+          <span className="flex items-center gap-1.5 text-[13px] text-(--s-subtle) max-[1020px]:hidden">
             {route.parentHref ? (
-              <Link
-                href={route.parentHref}
-                className="hidden shrink-0 text-[13px] text-muted-foreground transition-colors hover:text-sidebar-foreground sm:inline"
-              >
+              <Link href={route.parentHref} className="text-(--s-subtle) no-underline hover:text-(--s-ink)">
                 {tNav(route.parent)}
               </Link>
             ) : (
-              <span className="hidden shrink-0 text-[13px] text-muted-foreground sm:inline">{tNav(route.parent)}</span>
+              tNav(route.parent)
             )}
-            <ChevronRight
-              aria-hidden="true"
-              className="hidden size-3.5 shrink-0 text-muted-foreground sm:block rtl:rotate-180"
-            />
-          </>
+            <ChevronRight aria-hidden className="size-3.5 rtl:rotate-180" />
+          </span>
         )}
-        <h1 className="truncate text-[15px] font-semibold text-sidebar-foreground">{tNav(route.title)}</h1>
-        {/* Desktop: the selected store's live address. Phones see it beside the home greeting. */}
+        <b className="truncate text-[15px] font-bold text-(--s-ink)">{tNav(route.title)}</b>
         {storeLink && (
           <a
             href={storeLink.url}
             target="_blank"
             rel="noopener noreferrer"
-            title={t("openStore")}
-            className="ms-2 hidden min-w-0 items-center gap-1 text-[13px] text-muted-foreground transition-colors hover:text-primary md:inline-flex"
+            title={siteLabel}
+            className="inline-flex items-center gap-[7px] rounded-full border border-(--s-field) bg-(--s-surface) px-2.5 py-1 font-montserrat text-xs font-medium text-(--s-subtle) no-underline transition-colors duration-150 hover:border-(--s-outline) hover:text-(--s-ink) max-[1020px]:hidden"
           >
-            <bdi dir="ltr" className="truncate">{storeLink.host}</bdi>
-            <ExternalLink className="size-3.5 shrink-0" aria-hidden />
+            <span
+              role="img"
+              aria-label={siteLabel}
+              className={cn(
+                "relative size-2 shrink-0 rounded-full",
+                siteLive
+                  ? "sui-live-dot bg-[#16a34a] text-[#16a34a] shadow-[0_0_0_3px_rgb(22_163_74/0.15)]"
+                  : "bg-[#dc2626] shadow-[0_0_0_3px_rgb(220_38_38/0.15)]",
+              )}
+            />
+            <bdi dir="ltr" className="max-w-[220px] truncate">
+              {storeLink.host}
+            </bdi>
+            <ExternalLink aria-hidden className="size-[13px] shrink-0" />
           </a>
         )}
       </div>
 
-      {/* Desktop: title, search and actions share the width equally, so the search sits in the middle. */}
-      <div className="hidden min-w-0 flex-1 justify-center md:flex">
-        <button
-          type="button"
-          onClick={() => setPaletteOpen(true)}
-          className="flex h-9.5 w-full max-w-[360px] items-center gap-2 rounded-[10px] border border-sidebar-border bg-sidebar-accent px-3 text-sm text-muted-foreground transition-colors hover:border-input hover:text-sidebar-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+      <button
+        type="button"
+        onClick={() => setPaletteOpen(true)}
+        aria-label={t("searchHint")}
+        className="mx-auto flex h-[42px] min-w-0 max-w-[420px] flex-[1_1_0] cursor-pointer items-center gap-2.5 rounded-full border-[1.5px] border-(--s-field) bg-(--s-surface) pe-2 ps-3.5 text-[#8aa0a6] transition-[border-color,box-shadow] duration-150 hover:border-(--s-outline) max-[720px]:max-w-none max-[600px]:h-10 max-[600px]:px-3"
+      >
+        <Search aria-hidden className="size-[18px] shrink-0" />
+        <span className="min-w-0 flex-1 truncate text-start text-[13.5px] max-[600px]:hidden">{t("searchHint")}</span>
+        <kbd
+          dir="ltr"
+          className="whitespace-nowrap rounded-lg border border-(--s-field) bg-(--s-fill) px-2 py-0.5 font-montserrat text-[11px] font-semibold text-(--s-subtle) max-[720px]:hidden"
         >
-          <Search className="size-4 shrink-0" />
-          <span className="flex-1 truncate text-start">{t("search")}</span>
-          <kbd
-            dir="ltr"
-            className="rounded-[5px] border border-input px-1.5 font-mono text-[11px] text-muted-foreground"
-          >
-            {isMac ? "⌘" : "Ctrl"} K
-          </kbd>
-        </button>
-      </div>
+          {isMac ? "⌘" : "Ctrl"} K
+        </kbd>
+      </button>
 
-      <div className="flex shrink-0 items-center justify-end gap-1 sm:gap-3 md:min-w-0 md:flex-1">
-        <button
-          type="button"
-          onClick={() => setPaletteOpen(true)}
-          className={`${ICON_BUTTON} md:hidden`}
-          aria-label={t("search")}
-        >
-          <Search className="size-[18px]" />
-        </button>
-
-        <NotificationBell className={ICON_BUTTON} />
-
+      <div className="flex shrink-0 items-center gap-1 max-[600px]:gap-0">
         {walletBalance != null && (
-          <Link
-            href="/wallet"
-            title={t("walletBalance", { amount: formatWalletMoney(walletBalance, walletCurrency, locale) })}
-            aria-current={pathname === "/wallet" ? "page" : undefined}
+          <span
             className={cn(
-              "flex h-9.5 shrink-0 items-center gap-2 rounded-[10px] border border-sidebar-border bg-sidebar-accent px-2.5 text-[13px] transition-colors hover:border-input focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
-              pathname === "/wallet" && "border-primary/40 bg-primary-soft text-primary-ink",
+              "inline-flex h-10 items-center gap-2 whitespace-nowrap rounded-full border border-(--s-field) bg-(--s-surface) pe-1.5 ps-3.5 text-[12.5px] text-(--s-muted) max-[600px]:h-9 max-[600px]:pe-1 max-[600px]:ps-2.5",
+              pathname === "/wallet" && "border-(--s-primary)",
             )}
           >
-            <Wallet className="size-4 shrink-0 text-muted-foreground" aria-hidden />
-            <span className="hidden text-muted-foreground lg:inline">{t("walletLabel")}</span>
-            <bdi dir="ltr" className={cn("font-semibold tabular-nums", walletBalance < 0 && "text-destructive")}>
-              {formatWalletMoney(walletBalance, walletCurrency, locale)}
-            </bdi>
-          </Link>
+            <Link
+              href="/wallet"
+              title={t("walletBalance", { amount: formatWalletMoney(walletBalance, walletCurrency, locale) })}
+              className="inline-flex items-center gap-2 text-(--s-muted) no-underline hover:text-(--s-ink)"
+            >
+              <span className="max-[1020px]:hidden">{t("walletLabel")}</span>
+              <bdi dir="ltr" className={cn("font-montserrat text-[13px] font-bold text-(--s-ink) tabular-nums", walletBalance < 0 && "text-destructive")}>
+                {formatWalletMoney(walletBalance, walletCurrency, locale)}
+              </bdi>
+            </Link>
+            <Link
+              href="/wallet?topup=1"
+              aria-label={t("topUp")}
+              title={t("topUp")}
+              className="relative grid size-7 place-items-center rounded-full bg-(--s-hover) text-(--s-link) transition-colors duration-150 after:absolute after:-inset-1.5 hover:bg-primary hover:text-primary-foreground"
+            >
+              <Plus aria-hidden className="size-[15px]" />
+            </Link>
+          </span>
         )}
 
-        {/* Install, language and theme: inline from sm up; on phones they sit
-            behind a "⋯" button so the page title keeps its width. One set of
-            buttons serves both layouts, so the install prompt is caught once. */}
-        <div ref={toolsRef} className="relative flex shrink-0 items-center">
-          <button
-            type="button"
-            onClick={() => setToolsOpen((open) => !open)}
-            className={`${ICON_BUTTON} sm:hidden`}
-            aria-label={tCommon("actions")}
-            aria-expanded={toolsOpen}
-            aria-controls={toolsId}
-          >
-            <Ellipsis className="size-[18px]" />
-          </button>
-          <div
-            id={toolsId}
-            className={cn(
-              "flex items-center gap-1 sm:gap-3",
-              "max-sm:absolute max-sm:end-0 max-sm:top-full max-sm:mt-2 max-sm:min-w-48 max-sm:flex-col max-sm:items-stretch max-sm:gap-0.5 max-sm:rounded-xl max-sm:border max-sm:border-sidebar-border max-sm:bg-popover max-sm:p-1 max-sm:shadow-lg",
-              !toolsOpen && "max-sm:hidden"
-            )}
-          >
-            <InstallAppButton className={MENU_ITEM} />
-            <LanguageToggle className={MENU_ITEM} />
-            <ThemeToggle className={MENU_ITEM} />
-          </div>
+        <NotificationBell />
+
+        <div className="flex items-center gap-1 max-[600px]:hidden">
+          <InstallAppButton />
+          <LanguageToggle />
+          <ThemeToggle />
         </div>
       </div>
 

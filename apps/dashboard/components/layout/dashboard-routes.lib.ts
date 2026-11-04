@@ -10,7 +10,7 @@ import {
   Share2,
   LayoutTemplate,
   Map as MapIcon,
-  BarChart3,
+  LayoutDashboard,
   Bike,
   ChartLine,
   CircleHelp,
@@ -117,7 +117,11 @@ export type NavKey =
   | "storeAnalytics"
   | "roadmap"
   // Affiliate program (F-37)
-  | "earn";
+  | "earn"
+  // Sidebar section headings
+  | "sectionSell"
+  | "sectionStore"
+  | "sectionAccount";
 
 export interface DashboardRoute {
   /** A path, or a pattern with `[storeId]` for store-scoped pages. */
@@ -137,7 +141,7 @@ export interface DashboardRoute {
  * /marketing and Store views have no sidebar link but keep their header title.
  */
 export const DASHBOARD_ROUTES: DashboardRoute[] = [
-  { href: "/", title: "dashboard", icon: BarChart3 },
+  { href: "/", title: "dashboard", icon: LayoutDashboard },
   { href: "/products", title: "manageProducts", parent: "products", parentHref: "/products", icon: Package },
   { href: "/products/add", title: "addProducts", parent: "products", parentHref: "/products", icon: PackagePlus },
   { href: "/products/categories", title: "sellerCategories", parent: "products", parentHref: "/products", icon: FolderTree },
@@ -151,7 +155,7 @@ export const DASHBOARD_ROUTES: DashboardRoute[] = [
   { href: "/orders/customers", title: "customers", parent: "ordersGroup", icon: Users },
   // Scan returns hidden for now (owner, 2026-10-31).
   // { href: "/orders/scan", title: "scanReturns", parent: "ordersGroup", icon: ScanBarcode },
-  { href: "/orders/delivery", title: "deliveryTracking", parent: "ordersGroup", icon: Truck },
+  { href: "/orders/delivery", title: "deliveryTracking", parent: "fulfillmentShipping", icon: Truck },
   { href: "/orders/riders", title: "riders", parent: "fulfillmentShipping", icon: Bike },
   { href: "/stores/[storeId]/shipping", title: "shippingSettings", parent: "fulfillmentShipping", icon: MapPinned },
   // Hidden while Tallaby offers no storage, packing or delivery (owner, 2026-10-31).

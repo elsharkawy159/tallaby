@@ -13,11 +13,12 @@ import {
   YAxis,
 } from "recharts";
 import { formatCompactNumber, formatDate, formatNumber } from "@/lib/i18n/format";
-import { IconTile } from "./home-ui";
+import { IconTile, SellerButton } from "@/components/seller-ui";
+import { useRange } from "./home-range.client";
 
 export type SalesChartPoint = { day: string; revenue: number; orders: number };
 
-const REVENUE = "var(--primary)";
+const REVENUE = "var(--s-primary)";
 const ORDERS = "var(--accent)";
 
 /** Revenue line over daily order bars. RTL puts the newest day on the left. */
@@ -34,6 +35,7 @@ export function SalesChart({
 }) {
   const t = useTranslations("home.chart");
   const locale = useLocale();
+  const { range, setRange } = useRange();
   const rtl = locale.startsWith("ar");
   const labelOf = (day: string) =>
     formatDate(`${day}T00:00:00`, locale, { day: "numeric", month: "short" });
@@ -50,7 +52,7 @@ export function SalesChart({
       <div className="h-[240px] w-full text-xs [&_.recharts-cartesian-axis-tick_text]:fill-faint [&_.recharts-surface]:outline-hidden">
         <ResponsiveContainer width="100%" height="100%">
         <ComposedChart data={data} margin={{ top: 10, right: 4, left: 4, bottom: 0 }}>
-          <CartesianGrid vertical={false} strokeDasharray="3 4" className="stroke-border" />
+          <CartesianGrid vertical={false} strokeDasharray="3 4" className="stroke-(--s-line-soft)" />
           <XAxis
             dataKey="day"
             reversed={rtl}
@@ -113,11 +115,16 @@ export function SalesChart({
       </div>
 
       {empty && (
-        <div className="absolute inset-0 grid place-items-center text-center text-[13px] text-muted-foreground">
-          <div className="flex flex-col items-center gap-1.5 rounded-xl border bg-card px-[18px] py-3">
-            <IconTile icon={LineChart} />
-            <b className="text-foreground">{t(hasOrders ? "emptyRangeTitle" : "emptyTitle")}</b>
-            <span>{t(hasOrders ? "emptyRangeDescription" : "emptyDescription")}</span>
+        <div className="pointer-events-none absolute inset-x-0 bottom-10 top-0 grid place-items-center text-center">
+          <div className="pointer-events-auto flex flex-col items-center gap-1.5 rounded-[20px] border border-(--s-line) bg-(--s-surface) px-[22px] py-4 shadow-[0_14px_34px_rgb(13_55_67/0.08)]">
+            <IconTile icon={LineChart} className="size-10 rounded-[13px]" />
+            <b className="text-sm font-bold text-(--s-ink)">{t(hasOrders ? "emptyRangeTitle" : "emptyTitle")}</b>
+            <span className="text-[12.5px] text-(--s-subtle)">{t(hasOrders ? "emptyRangeDescription" : "emptyDescription")}</span>
+            {hasOrders && range < 30 && (
+              <SellerButton variant="mini" size="xs" className="mt-1.5" onClick={() => setRange(30)}>
+                {t("try30")}
+              </SellerButton>
+            )}
           </div>
         </div>
       )}

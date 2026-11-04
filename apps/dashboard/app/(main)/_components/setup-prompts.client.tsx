@@ -6,7 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Rocket, X } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@workspace/ui/components/button";
+import { SellerButton } from "@/components/seller-ui";
 import { WELCOME_GIFT_CHECK_EVENT } from "@/components/layout/welcome-gift.lib";
 import type { SetupKey } from "./setup-checklist.lib";
 import {
@@ -108,12 +108,12 @@ export function SetupPrompts() {
   };
 
   return (
-    <div role="status" className="flex items-center gap-2.5 border-b bg-primary/10 px-4 py-1.5 text-sm sm:px-6">
+    <div role="status" className="flex items-center gap-2.5 border-b border-(--s-line) bg-primary-soft px-7 py-1.5 text-[13px] text-(--s-text) max-[1020px]:px-4">
       <Rocket className="size-4 shrink-0 text-primary-ink" aria-hidden />
       <p className="min-w-0 flex-1 text-pretty">{t("prompts.banner", { step: t(`tasks.${bannerKey}.title`) })}</p>
-      <Button asChild size="sm" variant="secondary" className="shrink-0 rounded-[9px]">
+      <SellerButton asChild variant="solid" size="xs">
         <Link href={prompt.href}>{t("prompts.start")}</Link>
-      </Button>
+      </SellerButton>
       <button
         type="button"
         onClick={dismiss}

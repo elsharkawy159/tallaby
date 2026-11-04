@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { Package, Plus } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
-import { Button } from "@workspace/ui/components/button";
+import { EmptyState, SellerButton, SellerCard, SellerCardHeader } from "@/components/seller-ui";
 import { formatNumber } from "@/lib/i18n/format";
 import { getTopProducts } from "./home.queries";
 import type { HomeChannel, HomeRange } from "./home.shared";
-import { EmptyState, HeaderLink, HomeCard, HomeCardHeader, ProductThumb } from "./home-ui";
+import { HeaderLink, ProductThumb } from "./home-ui";
 
 export async function TopProductsData({ range, channel = "all" }: { range: HomeRange; channel?: HomeChannel }) {
   const locale = await getLocale();
@@ -16,8 +16,8 @@ export async function TopProductsData({ range, channel = "all" }: { range: HomeR
   const max = products[0]?.revenue || 1;
 
   return (
-    <HomeCard aria-labelledby="top-title">
-      <HomeCardHeader
+    <SellerCard aria-labelledby="top-title">
+      <SellerCardHeader
         id="top-title"
         title={t("title")}
         description={t("description")}
@@ -29,30 +29,27 @@ export async function TopProductsData({ range, channel = "all" }: { range: HomeR
           title={t("emptyTitle")}
           description={t("emptyDescription")}
           action={
-            <Button asChild variant="secondary" size="sm" className="rounded-[9px]">
+            <SellerButton asChild variant="solid" size="sm">
               <Link href="/products/add">
                 <Plus aria-hidden />
                 {t("addProduct")}
               </Link>
-            </Button>
+            </SellerButton>
           }
         />
       ) : (
-        <ul className="flex flex-col gap-3.5 px-5 pb-[18px] pt-3">
+        <ul className="flex flex-col gap-3.5 px-[22px] pb-[18px] pt-3 max-[600px]:px-4">
           {products.map((p) => (
             <li key={p.productId} className="flex items-center gap-3">
               <ProductThumb src={p.image} />
               <span className="flex min-w-0 flex-1 flex-col gap-[5px]">
-                <b className="truncate text-[13px] font-semibold">{p.title}</b>
-                <span className="h-[5px] overflow-hidden rounded-full bg-muted">
-                  <i
-                    className="block h-full rounded-full bg-primary"
-                    style={{ width: `${(p.revenue / max) * 100}%` }}
-                  />
+                <b className="truncate text-[13px] font-semibold text-(--s-text)">{p.title}</b>
+                <span className="h-[5px] overflow-hidden rounded-full bg-(--s-fill)">
+                  <i className="block h-full rounded-full bg-(--s-primary)" style={{ width: `${(p.revenue / max) * 100}%` }} />
                 </span>
               </span>
-              <span className="whitespace-nowrap text-end text-xs text-muted-foreground">
-                <b className="block font-montserrat text-sm text-foreground tabular-nums">
+              <span className="whitespace-nowrap text-end text-xs text-(--s-subtle)">
+                <b className="block font-montserrat text-sm font-bold text-(--s-ink) tabular-nums">
                   {formatNumber(p.revenue, locale, { maximumFractionDigits: 0 })}
                 </b>
                 {t("sold", { count: p.units })}
@@ -61,6 +58,6 @@ export async function TopProductsData({ range, channel = "all" }: { range: HomeR
           ))}
         </ul>
       )}
-    </HomeCard>
+    </SellerCard>
   );
 }

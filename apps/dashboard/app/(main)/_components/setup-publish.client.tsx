@@ -4,8 +4,8 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { LoaderCircle } from "lucide-react";
-import { Button } from "@workspace/ui/components/button";
+import { LoaderCircle, Lock } from "lucide-react";
+import { SellerButton } from "@/components/seller-ui";
 import { cn } from "@workspace/ui/lib/utils";
 import { PublishCelebration, type LiveSite } from "./publish-celebration.client";
 import { publishStoreFromHome } from "./setup-publish.server";
@@ -19,14 +19,15 @@ export function SetupPublishButton({
   storeId,
   ready,
   lockedLabel,
-  variant,
+  next,
 }: {
   storeId: string;
   /** A product and a chosen template are in place (publishReady). */
   ready: boolean;
   /** Why the button is locked (publishLockReason), shown as its tooltip. */
   lockedLabel?: string;
-  variant: "secondary" | "neutral";
+  /** It is the step to do now: the amber button. Otherwise the quiet one on the dark card. */
+  next: boolean;
 }) {
   const t = useTranslations("home.setup.publish");
   const te = useTranslations("storeEditor");
@@ -56,18 +57,30 @@ export function SetupPublishButton({
 
   return (
     <>
-      <Button
-        type="button"
-        size="sm"
-        variant={variant}
-        className={cn("rounded-[9px]", ready && !pending && "publish-attention")}
-        disabled={!ready || pending}
-        title={ready ? undefined : (lockedLabel ?? t("locked"))}
-        onClick={run}
-      >
-        {pending && <LoaderCircle className="animate-spin" aria-hidden />}
-        {t("cta")}
-      </Button>
+      {next && ready ? (
+        <SellerButton size="sm" className={cn(!pending && "publish-attention")} disabled={pending} onClick={run}>
+          {pending && <LoaderCircle className="animate-spin" aria-hidden />}
+          {t("cta")}
+        </SellerButton>
+      ) : (
+        <button
+          type="button"
+          disabled={!ready || pending}
+          title={ready ? undefined : (lockedLabel ?? t("locked"))}
+          onClick={run}
+          className={cn(
+            "inline-flex h-[34px] cursor-pointer items-center gap-1 whitespace-nowrap rounded-full border border-white/20 px-2.5 text-[12.5px] font-bold text-white transition-colors duration-150 hover:bg-white/8 disabled:cursor-not-allowed disabled:opacity-45 max-[600px]:h-10",
+            ready && !pending && "publish-attention",
+          )}
+        >
+          {pending ? (
+            <LoaderCircle className="size-[15px] animate-spin" aria-hidden />
+          ) : (
+            !ready && <Lock className="size-[15px]" aria-hidden />
+          )}
+          {t("cta")}
+        </button>
+      )}
 
       <PublishCelebration live={live} onClose={close} />
     </>

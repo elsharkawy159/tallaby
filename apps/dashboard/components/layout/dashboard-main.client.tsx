@@ -8,5 +8,5 @@ import { fabClearanceFor } from "@/components/dashboard/support-fab.lib";
 export function DashboardMain({ children }: { children: React.ReactNode }) {
   const clearance = fabClearanceFor(usePathname() ?? "");
 
-  return <main className={cn("min-w-0", clearance)}>{children}</main>;
+  return <main className={cn("min-w-0 flex-1", clearance)}>{children}</main>;
 }

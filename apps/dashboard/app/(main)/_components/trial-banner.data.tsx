@@ -4,7 +4,7 @@ import { getFeeTrialStatus } from "@workspace/lib/sellers";
 import { FEE_PER_ORDER_USD } from "../wallet/store-wallet.lib";
 import { formatDate, formatWalletMoney } from "@/lib/i18n/format";
 import { getHomeSnapshot } from "./home.queries";
-import { HomeCard, IconTile } from "./home-ui";
+import { IconTile, SellerCard } from "@/components/seller-ui";
 
 /**
  * Platform fee trial (PLAN.md §13.5, P6-07): days left while it runs, or how
@@ -25,16 +25,13 @@ export async function TrialBannerData() {
   const endingSoon = active && status.daysLeft <= 7;
 
   return (
-    <HomeCard
-      aria-labelledby="trial-title"
-      className="flex items-center gap-3 px-4 py-3 sm:gap-3.5 sm:px-5 sm:py-4"
-    >
+    <SellerCard aria-labelledby="trial-title" className="flex items-center gap-3.5 px-5 py-4 max-[600px]:gap-3 max-[600px]:px-4 max-[600px]:py-3">
       <IconTile icon={Gift} tone={endingSoon ? "accent" : "success"} />
       <div className="min-w-0 flex-1">
-        <h2 id="trial-title" className="text-[15px] font-bold leading-normal">
+        <h2 id="trial-title" className="text-[15px] font-bold leading-normal text-(--s-ink)">
           {active ? t("activeTitle", { days: status.daysLeft }) : t("notStartedTitle")}
         </h2>
-        <p className="text-pretty text-[13px] text-muted-foreground">
+        <p className="text-pretty text-[13px] text-(--s-muted)">
           {!active
             ? t("notStarted")
             : snapshot.walletCurrency === "USD"
@@ -42,6 +39,6 @@ export async function TrialBannerData() {
               : t("active", { date: formatDate(status.endsAt, locale) })}
         </p>
       </div>
-    </HomeCard>
+    </SellerCard>
   );
 }

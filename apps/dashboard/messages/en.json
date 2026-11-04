@@ -346,8 +346,8 @@
   "nav": {
     "dashboard": "Dashboard",
     "products": "Products",
-    "manageProducts": "Manage products",
-    "addProducts": "Add products",
+    "manageProducts": "All products",
+    "addProducts": "Add product",
     "orders": "Orders",
     "reviews": "Reviews & Q&A",
     "promotions": "Promotions",
@@ -357,7 +357,7 @@
     "settings": "Business & account",
     "fulfillment": "Fulfillment setup",
     "financial": "Financial Dashboard",
-    "marketing": "Promotions & Discounts",
+    "marketing": "Offers & discounts",
     "shipping": "Shipping & Logistics",
     "reports": "Reports & Analytics",
     "help": "Help & Support",
@@ -404,7 +404,7 @@
     "storeAnalytics": "Store views",
     "roadmap": "Roadmap & ideas",
     "finance": "Wallet",
-    "fulfillmentShipping": "Shipping & Fulfillment",
+    "fulfillmentShipping": "Shipping & delivery",
     "storeSettings": "Store settings",
     "general": "General",
     "paymentMethods": "Payment methods",
@@ -439,7 +439,15 @@
     "scanReturns": "Scan returns",
     "productTrash": "Trash",
     "inventory": "Inventory",
-    "catalogShare": "Shareable catalog"
+    "catalogShare": "Shareable catalog",
+    "mainMenu": "Main menu",
+    "sectionSell": "Selling",
+    "sectionStore": "Store",
+    "sectionAccount": "Account",
+    "helpCardTitle": "WhatsApp support",
+    "helpCardHint": "Need help? Talk to us",
+    "storeLive": "Live",
+    "manageStores": "Manage my stores"
   },
   "common": {
     "mixedCurrencyNote": "Your stores use different currencies. The same number is used in every store and isn't converted.",
@@ -560,7 +568,7 @@
       "description": "Your sales in this period by where the order was placed",
       "store": "This store's website",
       "otherStores": "Your other stores",
-      "marketplace": "Tallaby marketplace",
+      "marketplace": "tallaby.com",
       "manual": "Manual orders",
       "orders": "{count, plural, =0 {No orders} one {# order} other {# orders}}",
       "currency": "EGP"
@@ -947,7 +955,7 @@
     "panel": {
       "pill": "Tallaby for Sellers",
       "title": "Sell to more customers, <em>run it all from one place.</em>",
-      "description": "Tallaby is a multi-vendor marketplace. Open your store, list your products and let shoppers across the platform find you.",
+      "description": "Tallaby gives you your own online store. Add your products, share your link and receive orders.",
       "storefrontTitle": "Your own storefront",
       "storefrontText": "Brand your store with a logo, cover and custom page.",
       "ordersTitle": "Products & orders",
@@ -1186,7 +1194,8 @@
       "emptyTitle": "Your sales performance will show here",
       "emptyDescription": "after the first order on your store",
       "emptyRangeTitle": "No sales in this period",
-      "emptyRangeDescription": "Try a longer period"
+      "emptyRangeDescription": "Try a longer period",
+      "try30": "Show the last 30 days"
     },
     "attention": {
       "title": "Needs your attention",
@@ -1248,7 +1257,7 @@
     "channel": {
       "label": "Sales channel",
       "all": "All sales",
-      "marketplace": "Tallaby marketplace"
+      "marketplace": "tallaby.com"
     },
     "welcome": {
       "title": "Welcome to Tallaby! Your store is ready",
@@ -1357,7 +1366,7 @@
       "delete": "Delete",
       "addNew": "Add new product",
       "deleteTitle": "Delete \"{title}\"?",
-      "deleteDescription": "It disappears from your stores and the marketplace and stays in Trash for 30 days, where you can restore it.",
+      "deleteDescription": "It disappears from your stores and stays in Trash for 30 days, where you can restore it.",
       "deleted": "\"{title}\" moved to Trash",
       "deleteFailed": "Couldn't delete the product. Try again.",
       "bulkDeleted": "{count, plural, one {# product moved to Trash} other {# products moved to Trash}}",
@@ -2642,7 +2651,7 @@
     "channel": {
       "label": "Sales channel",
       "all": "All orders",
-      "marketplace": "Tallaby marketplace"
+      "marketplace": "tallaby.com"
     },
     "searchPlaceholder": "Search by order number, name or phone",
     "searchLabel": "Search orders",
@@ -3195,8 +3204,8 @@
       "total": "<strong>{amount}</strong> from {count, plural, one {# order} other {# orders}}",
       "byChannel": "By sales channel",
       "byPaymentMethod": "By payment method",
-      "marketplace": "Tallaby marketplace",
-      "marketplaceHint": "tallaby.com",
+      "marketplace": "tallaby.com",
+      "marketplaceHint": "Orders not tied to one of your stores",
       "storeHint": "Your website",
       "unknownStore": "Removed store",
       "orders": "{count, plural, one {# order} other {# orders}}",
@@ -3483,8 +3492,12 @@
     "menuLanguage": "Language",
     "menuDarkMode": "Dark mode",
     "walletBalance": "Wallet Balance: {amount}",
-    "walletLabel": "Wallet Balance:",
-    "openStore": "Open your store"
+    "walletLabel": "Wallet balance",
+    "openStore": "Open your store",
+    "searchHint": "Search pages, products or orders",
+    "topUp": "Top up",
+    "siteLive": "Your website is open to visitors",
+    "siteOffline": "Your website is not open to visitors"
   },
   "negativeWalletDialog": {
     "descriptionUsd": "Tallaby takes its order fee from your wallet for each new order on the Free plan. Top up to clear the amount you owe.",
@@ -4646,7 +4659,7 @@
     "disconnect": "Disconnect",
     "saved": "App saved",
     "removed": "App disconnected",
-    "onlyThisStore": "This app runs only on this store's website, not on the Tallaby marketplace or your other stores.",
+    "onlyThisStore": "This app runs only on this store's website, not on your other stores.",
     "gtmWarning": "Google Tag Manager runs whatever tags you add to your container. You are responsible for those tags and for any visitor consent they need.",
     "errors": {
       "invalidId": "Check the ID and try again.",
@@ -5358,7 +5371,7 @@
       }
     },
     "manualTopUp": {
-      "limitsUsd": "From $5 to $1,000. You pay in EGP at the rate shown.",
+    "limitsUsd": "From $5 to $1,000. You pay in EGP at the rate shown.",
       "button": "Top up wallet",
       "title": "Top up wallet",
       "description": "Transfer the amount from your wallet or bank, then upload a picture of the receipt.",
@@ -5537,7 +5550,7 @@
     "discardedToast": "Changes discarded",
     "unpublish": "Take offline",
     "unpublishTitle": "Take your website offline?",
-    "unpublishBody": "Shoppers will see a \"store unavailable\" page and can't place orders until you turn it back on. Your pages and drafts are kept, and your products stay on the Tallaby marketplace.",
+    "unpublishBody": "Shoppers will see a \"store unavailable\" page and can't place orders until you turn it back on. Your pages, drafts and products are kept.",
     "unpublishedToast": "Your website is offline",
     "liveSwitchOnline": "Website is Online",
     "liveSwitchOffline": "Website is Offline",
@@ -6116,7 +6129,14 @@
     "open": "Notifications",
     "openUnread": "Notifications ({count} unread)",
     "markAllRead": "Mark all read",
-    "empty": "You're all caught up.",
+    "markRead": "Mark as read",
+    "settings": "Notification settings",
+    "close": "Close",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "older": "Earlier",
+    "emptyTitle": "No notifications yet",
+    "empty": "We'll let you know as soon as something new happens.",
     "loading": "Loading…",
     "types": {
       "order_created": {
@@ -6624,7 +6644,7 @@
     "enabled": "Require a minimum order",
     "amountLabel": "Minimum order ({unit})",
     "amountPlaceholder": "e.g. 300",
-    "amountHint": "The cart and checkout tell the customer how much more to add. Marketplace orders are not affected.",
+    "amountHint": "The cart and checkout tell the customer how much more to add. This applies only to orders from this store.",
     "save": "Save minimum order",
     "saved": "Minimum order saved",
     "errors": {
@@ -7438,6 +7458,13 @@
       "blocked": "Your seller account is paused, so you can't connect apps right now. Contact Tallaby support.",
       "noStores": "You don't have a store yet. Create one in the dashboard first.",
       "back": "Go to the dashboard"
+    }
+  },
+  "sellerUi": {
+    "saveBar": {
+      "message": "You have unsaved changes",
+      "save": "Save changes",
+      "discard": "Discard"
     }
   }
 }

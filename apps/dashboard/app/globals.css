@@ -157,3 +157,483 @@
     font-size: 16px;
   }
 }
+
+/*
+ * ─────────────────────────────────────────────────────────────────────────────
+ * Seller dashboard design system (Claude Design, "Seller Dashboard" v3).
+ * docs/seller-dashboard-design.md explains how to use it.
+ *
+ * The raw brand scales are safe everywhere. Everything that restyles something
+ * only applies while `.seller-shell` is on the page, which is the (main) layout
+ * root: the builder, its store preview, /login, /signup and /roadmap keep the
+ * palette above. `:root:has()` and not a wrapper rule because dialogs, menus
+ * and toasts portal to <body>, outside the shell.
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+
+:root {
+  --tallaby-teal-50: #eaf2f4;
+  --tallaby-teal-100: #cfe0e4;
+  --tallaby-teal-300: #8fb4bd;
+  --tallaby-teal-500: #3a7a8c;
+  --tallaby-teal-700: #145163;
+  --tallaby-teal-900: #0d3743;
+  --tallaby-amber-50: #fff6e3;
+  --tallaby-amber-100: #ffe9bf;
+  --tallaby-amber-600: #fdad28;
+  --tallaby-amber-700: #ec9c17;
+
+  --t-fast: 0.15s cubic-bezier(0.2, 0.7, 0.2, 1);
+  --t-base: 0.25s cubic-bezier(0.2, 0.7, 0.2, 1);
+  --t-slow: 0.35s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+:root:has(.seller-shell) {
+  /* Semantic tokens the seller-ui primitives use: `text-(--s-ink)`. */
+  --s-ink: var(--tallaby-teal-900);
+  --s-text: #26393e;
+  --s-body: #33464b;
+  --s-muted: #5f7277;
+  --s-subtle: #7b8f94;
+  --s-faint: #8a9ca1;
+  --s-placeholder: #a7b6ba;
+  --s-line: #e6eef0;
+  --s-line-soft: #edf1f2;
+  --s-field: #e3ebed;
+  --s-field-strong: #cfdde1;
+  --s-outline: var(--tallaby-teal-100);
+  --s-outline-hover: var(--tallaby-teal-700);
+  --s-surface: #ffffff;
+  --s-surface-2: #f8fafa;
+  --s-tint: #f6fafb;
+  --s-fill: #f1f5f6;
+  --s-hover: var(--tallaby-teal-50);
+  --s-primary: var(--tallaby-teal-700);
+  --s-link: var(--tallaby-teal-700);
+  --s-solid: var(--tallaby-teal-900);
+  --s-solid-hover: #0a2c36;
+  --s-solid-fg: #ffffff;
+  --s-amber-hover: var(--tallaby-amber-700);
+  --s-glass: rgb(255 255 255 / 0.92);
+  --s-glass-nav: rgb(255 255 255 / 0.86);
+  --s-topbar: rgb(250 250 248 / 0.78);
+  --s-topbar-line: rgb(20 81 99 / 0.07);
+  --s-info: #1d5fa8;
+  --s-info-soft: #e8f1fb;
+  --s-whatsapp: #16a34a;
+  --s-whatsapp-hover: #15803d;
+  --s-whatsapp-soft: #f1fbf4;
+  --s-whatsapp-line: #d3efdc;
+  --s-whatsapp-ink: #14532d;
+  --s-whatsapp-sub: #3f7a52;
+  --s-setup: var(--tallaby-teal-900);
+  --s-focus: rgb(253 173 40 / 0.7);
+  --s-focus-soft: rgb(20 81 99 / 0.08);
+  --s-scrim: rgb(13 55 67 / 0.35);
+  --s-scrim-strong: rgb(13 55 67 / 0.42);
+  --s-shadow-card: 0 1px 2px rgb(13 55 67 / 0.03);
+  --s-shadow-hover: 0 14px 32px rgb(13 55 67 / 0.07);
+  --s-shadow-pop: 0 24px 60px rgb(13 55 67 / 0.18);
+  --s-shadow-menu: 0 18px 40px rgb(13 55 67 / 0.14);
+  --s-shadow-bar: 0 18px 40px rgb(13 55 67 / 0.3);
+  --s-shadow-nav: 0 6px 16px rgb(20 81 99 / 0.22);
+  --s-shadow-amber: 0 6px 18px rgb(253 173 40 / 0.32);
+  --s-wash:
+    radial-gradient(900px 560px at 70% -180px, rgb(20 81 99 / 0.14), transparent 72%),
+    radial-gradient(600px 500px at 6% 4%, rgb(253 173 40 / 0.1), transparent 70%),
+    radial-gradient(800px 700px at 100% 70%, rgb(20 81 99 / 0.06), transparent 70%);
+
+  /* The same design mapped onto shadcn, so pages not converted yet come close. */
+  --background: #fafaf8;
+  --foreground: var(--s-text);
+  --card: #ffffff;
+  --card-foreground: var(--s-text);
+  --popover: #ffffff;
+  --popover-foreground: var(--s-text);
+  --primary: var(--tallaby-teal-700);
+  --primary-foreground: #ffffff;
+  --muted: var(--s-fill);
+  --muted-foreground: var(--s-muted);
+  --accent: var(--tallaby-amber-600);
+  --accent-foreground: var(--tallaby-teal-900);
+  --destructive: #b42318;
+  --border: var(--s-line);
+  --input: var(--s-field);
+  --ring: var(--tallaby-teal-700);
+  /* sm 12 · md 14 (fields) · lg 16 (option cards) · xl 20 (buttons read as pills, rows) */
+  --radius: 1rem;
+
+  --sidebar: #ffffff;
+  --sidebar-foreground: var(--s-text);
+  --sidebar-primary: var(--tallaby-teal-700);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: var(--tallaby-teal-50);
+  --sidebar-accent-foreground: var(--tallaby-teal-900);
+  --sidebar-border: var(--s-line);
+  --sidebar-ring: var(--tallaby-teal-700);
+
+  --faint: var(--s-faint);
+  --primary-soft: var(--tallaby-teal-50);
+  --primary-ink: var(--tallaby-teal-700);
+  --accent-soft: var(--tallaby-amber-50);
+  --accent-ink: #8a5300;
+  --success: #15803d;
+  --success-soft: #e5f6ea;
+  --destructive-soft: #fdecec;
+}
+
+/* After the block above, same specificity: both match in dark mode. */
+.dark:has(.seller-shell) {
+  --s-ink: #e3ebed;
+  --s-text: #dbe5e8;
+  --s-body: #c6d3d7;
+  --s-muted: #9aaab0;
+  --s-subtle: #88999f;
+  --s-faint: #6f8389;
+  --s-placeholder: #5f7277;
+  --s-line: #22343b;
+  --s-line-soft: #1c2c32;
+  --s-field: #2c434b;
+  --s-field-strong: #38525b;
+  --s-outline: #2c434b;
+  --s-outline-hover: #4fa3b8;
+  --s-surface: #142126;
+  --s-surface-2: #18272d;
+  --s-tint: #18272d;
+  --s-fill: #1c2c32;
+  --s-hover: #1a3038;
+  --s-primary: #4fa3b8;
+  --s-link: #8cc9d8;
+  --s-solid: #1f6f85;
+  --s-solid-hover: #268198;
+  --s-solid-fg: #ffffff;
+  --s-amber-hover: #ffbd52;
+  --s-glass: rgb(20 33 38 / 0.92);
+  --s-glass-nav: rgb(20 33 38 / 0.86);
+  --s-topbar: rgb(14 23 26 / 0.78);
+  --s-topbar-line: rgb(79 163 184 / 0.12);
+  --s-info: #8fc1f5;
+  --s-info-soft: #16283d;
+  --s-whatsapp: #22a55a;
+  --s-whatsapp-hover: #1f9651;
+  --s-whatsapp-soft: #13261c;
+  --s-whatsapp-line: #1e3d2c;
+  --s-whatsapp-ink: #bbf0cd;
+  --s-whatsapp-sub: #7dbf95;
+  --s-setup: #12323d;
+  --s-focus-soft: rgb(79 163 184 / 0.2);
+  --s-scrim: rgb(0 0 0 / 0.55);
+  --s-scrim-strong: rgb(0 0 0 / 0.6);
+  --s-shadow-card: none;
+  --s-shadow-hover: 0 14px 32px rgb(0 0 0 / 0.35);
+  --s-shadow-pop: 0 24px 60px rgb(0 0 0 / 0.5);
+  --s-shadow-menu: 0 18px 40px rgb(0 0 0 / 0.45);
+  --s-shadow-bar: 0 18px 40px rgb(0 0 0 / 0.5);
+  --s-shadow-nav: 0 6px 16px rgb(0 0 0 / 0.3);
+  --s-shadow-amber: 0 6px 18px rgb(253 173 40 / 0.18);
+  --s-wash:
+    radial-gradient(900px 560px at 70% -180px, rgb(79 163 184 / 0.13), transparent 72%),
+    radial-gradient(600px 500px at 6% 4%, rgb(253 173 40 / 0.05), transparent 70%),
+    radial-gradient(800px 700px at 100% 70%, rgb(79 163 184 / 0.05), transparent 70%);
+
+  --background: #0e171a;
+  --foreground: var(--s-text);
+  --card: #142126;
+  --card-foreground: var(--s-text);
+  --popover: #142126;
+  --popover-foreground: var(--s-text);
+  --primary: #4fa3b8;
+  --primary-foreground: #0e171a;
+  --muted: var(--s-fill);
+  --muted-foreground: var(--s-muted);
+  --accent: var(--tallaby-amber-600);
+  --accent-foreground: #2b1d00;
+  --destructive: #f87171;
+  --border: var(--s-line);
+  --input: var(--s-field);
+  --ring: #4fa3b8;
+
+  --sidebar: #142126;
+  --sidebar-foreground: var(--s-text);
+  --sidebar-primary: #4fa3b8;
+  --sidebar-primary-foreground: #0e171a;
+  --sidebar-accent: var(--s-hover);
+  --sidebar-accent-foreground: var(--s-ink);
+  --sidebar-border: var(--s-line);
+  --sidebar-ring: #4fa3b8;
+
+  --faint: var(--s-faint);
+  --primary-soft: #1a3038;
+  --primary-ink: #8cc9d8;
+  --accent-soft: #33290f;
+  --accent-ink: #ffcf7a;
+  --success: #4ade80;
+  --success-soft: #173226;
+  --destructive-soft: #3a1d1d;
+}
+
+/* In base so `focus-visible:outline-none` and the like still win. */
+@layer base {
+  :root:has(.seller-shell) :focus-visible:not([role="dialog"], [role="alertdialog"], [role="menu"], [role="listbox"], [tabindex="-1"]) {
+    outline: 3px solid var(--s-focus);
+    outline-offset: 2px;
+  }
+}
+
+/* Arabic with Montserrat for Latin and digits, as in the design. */
+:root:has(.seller-shell) body {
+  font-family:
+    var(--font-noto-kufi-arabic, var(--font-montserrat, sans-serif)), var(--font-montserrat, sans-serif), Tahoma, sans-serif;
+}
+
+.seller-shell {
+  position: relative;
+  isolation: isolate;
+  color: var(--s-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* The page's background wash (body::before in the design). */
+.seller-shell::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: var(--s-wash);
+}
+
+/* ── Bridges: shadcn parts on pages not converted to seller-ui yet ─────────── */
+
+.seller-shell [data-slot="card"]:not(.rounded-none) {
+  border-radius: 24px;
+  border-color: var(--s-line);
+  box-shadow: var(--s-shadow-card);
+}
+
+/* White on amber fails contrast; the design uses dark ink. */
+:root:has(.seller-shell) [data-slot="button"].bg-accent {
+  color: var(--accent-foreground);
+}
+
+.seller-shell [data-slot="tabs-list"] {
+  height: auto;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--s-field);
+  border-radius: 999px;
+  background: var(--s-surface);
+  color: var(--s-muted);
+  scrollbar-width: none;
+}
+
+.seller-shell [data-slot="tabs-trigger"] {
+  height: 38px;
+  padding-inline: 16px;
+  border: 0;
+  border-radius: 999px;
+  color: var(--s-muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.seller-shell [data-slot="tabs-trigger"]:hover {
+  color: var(--s-ink);
+}
+
+.seller-shell [data-slot="tabs-trigger"][data-state="active"] {
+  background: var(--s-solid);
+  color: var(--s-solid-fg);
+}
+
+.seller-shell [data-slot="table-head"] {
+  background: var(--s-surface-2);
+  color: var(--s-subtle);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+:root:has(.seller-shell) [data-slot="dialog-overlay"],
+:root:has(.seller-shell) [data-slot="alert-dialog-overlay"] {
+  background: var(--s-scrim-strong);
+}
+
+:root:has(.seller-shell) [data-slot="dialog-content"],
+:root:has(.seller-shell) [data-slot="alert-dialog-content"] {
+  border-radius: 28px;
+  border-color: var(--s-line);
+  background: var(--s-surface);
+  box-shadow: var(--s-shadow-pop);
+}
+
+:root:has(.seller-shell) [data-slot="dropdown-menu-content"],
+:root:has(.seller-shell) [data-slot="popover-content"],
+:root:has(.seller-shell) [data-slot="select-content"] {
+  border-radius: 18px;
+  border-color: var(--s-field);
+  box-shadow: var(--s-shadow-menu);
+}
+
+:root:has(.seller-shell) [data-slot="dropdown-menu-content"],
+:root:has(.seller-shell) [data-slot="select-content"] {
+  padding: 2px;
+}
+
+:root:has(.seller-shell) [data-slot="dropdown-menu-item"],
+:root:has(.seller-shell) [data-slot="select-item"],
+:root:has(.seller-shell) [data-slot="command-item"] {
+  border-radius: 11px;
+}
+
+/* The highlighted option is a soft tint here, never full amber. */
+:root:has(.seller-shell) [data-slot="dropdown-menu-item"]:not([data-variant="destructive"]):focus,
+:root:has(.seller-shell) [data-slot="select-item"]:focus,
+:root:has(.seller-shell) [data-slot="command-item"][data-selected="true"] {
+  background: var(--s-hover);
+  color: var(--s-ink);
+}
+
+/* Dialogs become bottom sheets on phones. The command palette opts out (the keyboard would cover it). */
+@keyframes sui-sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+@media (max-width: 480px) {
+  :root:has(.seller-shell) [data-slot="dialog-content"]:not(.sui-no-sheet),
+  :root:has(.seller-shell) [data-slot="alert-dialog-content"]:not(.sui-no-sheet) {
+    inset: auto 0 0 0;
+    width: 100%;
+    max-width: none !important;
+    max-height: 92dvh;
+    translate: none;
+    padding: 18px;
+    padding-bottom: calc(18px + env(safe-area-inset-bottom));
+    border-width: 0;
+    border-radius: 24px 24px 0 0;
+  }
+
+  :root:has(.seller-shell) [data-slot="dialog-content"]:not(.sui-no-sheet)[data-state="open"],
+  :root:has(.seller-shell) [data-slot="alert-dialog-content"]:not(.sui-no-sheet)[data-state="open"] {
+    animation: sui-sheet-up 0.28s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+}
+
+/* Anchored panels (notifications, store switcher) become bottom sheets at the design's 600px. */
+@media (max-width: 600px) {
+  [data-radix-popper-content-wrapper]:has(> [data-sui-sheet]) {
+    position: fixed !important;
+    inset: auto 0 0 0 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    transform: none !important;
+  }
+
+  [data-sui-sheet] {
+    width: 100% !important;
+    max-width: none !important;
+    max-height: 88dvh !important;
+    border-width: 0 !important;
+    border-radius: 24px 24px 0 0 !important;
+    padding-bottom: env(safe-area-inset-bottom);
+    animation: sui-sheet-up 0.28s cubic-bezier(0.2, 0.7, 0.2, 1) !important;
+  }
+}
+
+/* Toasts: Sonner, styled as the design's white pill. Its look is set inline on the toaster. */
+:root:has(.seller-shell) [data-sonner-toaster] {
+  --normal-bg: var(--s-surface) !important;
+  --normal-text: var(--s-text) !important;
+  --normal-border: var(--s-field) !important;
+  --border-radius: 22px !important;
+}
+
+:root:has(.seller-shell) [data-sonner-toast] {
+  box-shadow: var(--s-shadow-menu) !important;
+  font-weight: 600;
+}
+
+:root:has(.seller-shell) [data-sonner-toast] [data-description] {
+  color: var(--s-muted) !important;
+}
+
+:root:has(.seller-shell) [data-sonner-toast][data-type="success"] [data-title],
+:root:has(.seller-shell) [data-sonner-toast][data-type="success"] [data-icon] {
+  color: var(--success) !important;
+}
+
+:root:has(.seller-shell) [data-sonner-toast][data-type="error"] [data-title],
+:root:has(.seller-shell) [data-sonner-toast][data-type="error"] [data-icon] {
+  color: var(--destructive) !important;
+}
+
+/* The shared Toaster sets these with important utilities. For !important, an earlier layer wins. */
+@layer base {
+  :root:has(.seller-shell) [data-sonner-toast] [data-button] {
+    background: var(--s-solid) !important;
+    color: var(--s-solid-fg) !important;
+    border-radius: 999px !important;
+  }
+}
+
+/* The floating support button clears an open save bar. */
+:root:has([data-save-bar][data-open]) [data-support-fab] {
+  bottom: 84px;
+}
+
+/* ── Motion ───────────────────────────────────────────────────────────────── */
+
+/* A section's entrance. `backwards` so nothing stays promoted once it ends. */
+@keyframes sui-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+.sui-rise {
+  animation: sui-rise 0.6s cubic-bezier(0.2, 0.6, 0.2, 1) backwards;
+}
+
+@keyframes sui-ring {
+  from {
+    stroke-dashoffset: var(--sui-ring-empty);
+  }
+}
+
+.sui-ring-fill {
+  animation: sui-ring 1s cubic-bezier(0.2, 0.7, 0.2, 1) 0.3s backwards;
+}
+
+@keyframes sui-live-pulse {
+  0% {
+    transform: scale(0.5);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+.sui-live-dot::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  opacity: 0;
+  animation: sui-live-pulse 2s infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .seller-shell *,
+  :root:has(.seller-shell) [data-sui-sheet],
+  :root:has(.seller-shell) [data-slot="dialog-content"],
+  :root:has(.seller-shell) [data-slot="alert-dialog-content"] {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -24,7 +24,7 @@ export function PageActionBar({
   return (
     <div
       className={cn(
-        "sticky top-16 z-20 -mx-4 flex flex-wrap items-center gap-x-4 gap-y-2 border-b bg-background/95 px-4 py-3 backdrop-blur-md sm:-mx-6 sm:px-6",
+        "sticky top-[68px] z-20 max-[600px]:top-[60px] -mx-4 flex flex-wrap items-center gap-x-4 gap-y-2 border-b bg-background/95 px-4 py-3 backdrop-blur-md sm:-mx-6 sm:px-6",
         className
       )}
     >

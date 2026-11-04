@@ -65,9 +65,8 @@ export const SupportChatLink = ({ isCollapsed, className }: SupportChatLinkProps
 };
 
 /**
- * Floating WhatsApp support button, a circle in the bottom inline-end corner
- * of every dashboard page: bottom-left in RTL, bottom-right in LTR. The
- * sidebar sits on the inline-start side, so the button never overlaps it.
+ * Floating WhatsApp support button in the bottom inline-start corner, for
+ * widths with no visible sidebar. From 1021px the sidebar's help card replaces it.
  */
 export const SupportWhatsAppButton = () => {
   const t = useTranslations("nav");
@@ -79,14 +78,15 @@ export const SupportWhatsAppButton = () => {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
+      data-support-fab
       title={t("chatWithSupportHint")}
       aria-label={t("chatWithSupport")}
       className={cn(
-        "fixed end-5 z-40 flex size-14 items-center justify-center rounded-full bg-[#25d366] text-white shadow-lg shadow-black/15 transition-[transform,background-color] duration-300 hover:scale-105 hover:bg-[#1fb855] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#25d366] focus-visible:ring-offset-2 focus-visible:ring-offset-background print:hidden",
+        "fixed start-4 z-40 flex size-[54px] items-center justify-center rounded-full bg-(--s-whatsapp) text-white shadow-[0_10px_26px_rgb(22_163_74/0.35)] transition-[transform,background-color] duration-150 hover:scale-105 hover:bg-(--s-whatsapp-hover) max-[480px]:size-12 min-[1021px]:hidden print:hidden",
         offset
       )}
     >
-      <WhatsAppIcon className="size-7" />
+      <WhatsAppIcon className="size-6" />
     </a>
   );
 };

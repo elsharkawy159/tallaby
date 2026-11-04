@@ -16,8 +16,8 @@ export function MainContentWrapper({ children }: MainContentWrapperProps) {
     // DashboardHeader, rendered as this wrapper's first child.
     <div
       className={cn(
-        "flex min-w-0 flex-1 flex-col transition-all duration-300 ease-in-out",
-        isCollapsed ? "lg:ms-20" : "lg:ms-[280px]"
+        "flex min-h-screen min-w-0 flex-1 flex-col transition-[margin] duration-300 ease-[cubic-bezier(.2,.7,.2,1)]",
+        isCollapsed ? "min-[1021px]:ms-[76px]" : "min-[1021px]:ms-[264px]"
       )}
     >
       {children}

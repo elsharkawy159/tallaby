@@ -3,6 +3,7 @@
 import { createContext, useContext, useOptimistic, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { Calendar, Store } from "lucide-react";
 import { cn } from "@workspace/ui/lib/utils";
 import {
   Select,
@@ -21,8 +22,9 @@ type RangeContext = {
   setChannel: (channel: HomeChannel) => void;
 };
 
-/** Shared look of the header dropdowns: full width in the phone grid, fixed width from sm. */
-const CONTROL_TRIGGER = "h-[40px] w-full rounded-[11px] bg-card text-[13px]";
+/** The design's `.sel` pill. It shares the row with its neighbours up to 720px. */
+const CONTROL_TRIGGER =
+  "w-auto min-w-0 gap-2 rounded-full border border-(--s-field) bg-(--s-surface) px-3.5 text-[13px] font-semibold text-(--s-body) shadow-none transition-colors duration-150 hover:border-(--s-outline) !h-[42px] data-[state=open]:border-(--s-primary) max-[720px]:flex-[1_1_auto] [&>svg:last-child]:ms-auto";
 
 const Ctx = createContext<RangeContext | null>(null);
 
@@ -80,7 +82,7 @@ export function HomeRangeProvider({
   );
 }
 
-function useRange() {
+export function useRange() {
   const ctx = useContext(Ctx);
   if (!ctx) throw new Error("useRange must be used inside <HomeRangeProvider>");
   return ctx;
@@ -93,8 +95,9 @@ export function RangeSelect() {
 
   return (
     <Select value={String(range)} onValueChange={(value) => setRange(Number(value) as HomeRange)}>
-      <SelectTrigger className={cn(CONTROL_TRIGGER, "sm:w-[140px]")} aria-label={t("label")}>
-        <SelectValue />
+      <SelectTrigger className={CONTROL_TRIGGER} aria-label={t("label")}>
+        <Calendar aria-hidden className="size-[15px] text-(--s-subtle)" />
+        <SelectValue>{t("days", { count: range })}</SelectValue>
       </SelectTrigger>
       <SelectContent>
         {HOME_RANGES.map((r) => (
@@ -120,15 +123,20 @@ export function RangePending({ children, className }: { children: React.ReactNod
   );
 }
 
-/** All sales / marketplace / one store. Options come from the server (the seller's own stores). */
+/** All sales / orders outside a store (tallaby.com) / one store. Options come from the server (the seller's own stores). */
 export function ChannelSelect({ stores }: { stores: { id: string; name: string }[] }) {
   const t = useTranslations("home.channel");
   const { channel, setChannel } = useRange();
 
   return (
     <Select value={channel} onValueChange={(value) => setChannel(value as HomeChannel)}>
-      <SelectTrigger className={cn(CONTROL_TRIGGER, "sm:w-[180px]")} aria-label={t("label")}>
-        <SelectValue />
+      <SelectTrigger className={CONTROL_TRIGGER} aria-label={t("label")}>
+        <Store aria-hidden className="size-[15px] text-(--s-subtle)" />
+        <SelectValue>
+          {channel === "all" || channel === "marketplace"
+            ? t(channel)
+            : (stores.find((store) => store.id === channel)?.name ?? t("all"))}
+        </SelectValue>
       </SelectTrigger>
       <SelectContent>
         <SelectItem value="all">{t("all")}</SelectItem>

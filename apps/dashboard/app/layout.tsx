@@ -75,7 +75,7 @@ export default async function RootLayout({
         <meta name="robots" content="noindex, nofollow" />
       </head>
       <body
-        className={`${locale === "ar" ? notoKufiArabic.variable : montserrat.variable} antialiased`}
+        className={`${locale === "ar" ? `${notoKufiArabic.variable} ${montserrat.variable}` : montserrat.variable} antialiased`}
       >
         <MetaPixel />
         <DirectionProvider dir={direction}>

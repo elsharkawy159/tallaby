@@ -1,8 +1,15 @@
 import Link from "next/link";
 import { Megaphone, ShoppingBag } from "lucide-react";
 import { getLocale, getNow, getTranslations } from "next-intl/server";
-import { Badge } from "@workspace/ui/components/badge";
-import { Button } from "@workspace/ui/components/button";
+import {
+  EmptyState,
+  ResponsiveTable,
+  SellerButton,
+  SellerCard,
+  SellerCardHeader,
+  StatusBadge,
+  type BadgeTone,
+} from "@/components/seller-ui";
 import { formatDate, formatRelativeTime } from "@/lib/i18n/format";
 import { Money } from "@/components/money";
 import { translateStatus } from "@/lib/i18n/status";
@@ -13,11 +20,9 @@ import {
 } from "../orders/orders.lib";
 import { currentOrderLock } from "@/lib/auth/require-seller.server";
 import { getRecentOrders } from "./home.queries";
-import { EmptyState, HeaderLink, HomeCard, HomeCardHeader } from "./home-ui";
+import { HeaderLink } from "./home-ui";
 
-type StatusTone = "warning" | "info" | "success" | "danger" | "muted";
-
-const STATUS_TONE: Record<string, StatusTone> = {
+const STATUS_TONE: Record<string, BadgeTone> = {
   pending: "warning",
   payment_processing: "warning",
   confirmed: "warning",
@@ -56,8 +61,8 @@ export async function RecentOrdersData() {
   };
 
   return (
-    <HomeCard aria-labelledby="orders-title" className="overflow-hidden">
-      <HomeCardHeader
+    <SellerCard aria-labelledby="orders-title" className="overflow-hidden">
+      <SellerCardHeader
         id="orders-title"
         title={t("title")}
         description={orders.length ? t("description", { count: orders.length }) : undefined}
@@ -70,78 +75,103 @@ export async function RecentOrdersData() {
           description={t("emptyDescription")}
           // No orders means nobody to email yet, so this opens the shareable catalog (F-65a).
           action={
-            <Button asChild variant="neutral" size="sm" className="rounded-[9px]">
+            <SellerButton asChild variant="outline" size="sm">
               <Link href="/marketing/catalog">
                 <Megaphone aria-hidden />
                 {t("promote")}
               </Link>
-            </Button>
+            </SellerButton>
           }
         />
       ) : (
-        <div className="mt-3.5 overflow-x-auto">
-          <table className="w-full border-collapse text-[13px]">
-            <thead>
-              <tr className="bg-muted/60 text-xs text-muted-foreground">
-                <th className="whitespace-nowrap border-y px-5 py-2.5 text-start font-medium">{t("table.order")}</th>
-                <th className="whitespace-nowrap border-y px-5 py-2.5 text-start font-medium">{t("table.customer")}</th>
-                <th className="whitespace-nowrap border-y px-5 py-2.5 text-start font-medium max-sm:hidden">{t("table.product")}</th>
-                <th className="whitespace-nowrap border-y px-5 py-2.5 text-start font-medium max-sm:hidden">{t("table.date")}</th>
-                <th className="whitespace-nowrap border-y px-5 py-2.5 text-start font-medium">{t("table.total")}</th>
-                <th className="whitespace-nowrap border-y px-5 py-2.5 text-start font-medium">{t("table.status")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {orders.map((item) => {
-                const status = resolveVendorOrderStatus(item);
-                const customer = resolveCustomerName(item.order, t("guest"));
-                const href = `/orders?order=${item.orderId}`;
-                return (
-                  <tr key={item.id} className="relative border-b last:border-b-0 hover:bg-muted/60">
-                    <td className="whitespace-nowrap px-5 py-3">
-                      {/* The order number link covers the row for pointer users. */}
-                      <Link
-                        href={href}
-                        dir="ltr"
-                        className="font-mono text-xs text-foreground after:absolute after:inset-0 hover:text-primary-ink focus-visible:underline focus-visible:outline-none"
+        <div className="mt-3.5 max-[720px]:mt-2 max-[720px]:border-t max-[720px]:border-(--s-line-soft)">
+          <ResponsiveTable
+            label={t("title")}
+            rows={orders}
+            rowKey={(item) => item.id}
+            rowHref={(item) => `/orders?order=${item.orderId}`}
+            rowLabel={(item) => getOrderDisplayNumber(item)}
+            columns={[
+              {
+                key: "order",
+                header: t("table.order"),
+                phone: "sub",
+                className: "whitespace-nowrap",
+                cell: (item) => (
+                  <span dir="ltr" className="font-mono text-xs font-semibold text-(--s-link)">
+                    {getOrderDisplayNumber(item)}
+                  </span>
+                ),
+              },
+              {
+                key: "customer",
+                header: t("table.customer"),
+                phone: "title",
+                className: "whitespace-nowrap",
+                cell: (item) => {
+                  const customer = resolveCustomerName(item.order, t("guest"));
+                  return (
+                    <span className="flex min-w-0 items-center gap-2.5">
+                      <span
+                        aria-hidden
+                        className="grid size-[30px] shrink-0 place-items-center rounded-full bg-primary-soft text-xs font-bold text-primary-ink"
                       >
-                        {getOrderDisplayNumber(item)}
-                      </Link>
-                    </td>
-                    <td className="whitespace-nowrap px-5 py-3">
-                      <span className="flex items-center gap-2.5">
-                        <span
-                          className="flex size-[30px] shrink-0 items-center justify-center rounded-full bg-primary-soft text-xs font-bold text-primary-ink"
-                          aria-hidden
-                        >
-                          {customer.trim().charAt(0).toUpperCase()}
-                        </span>
-                        {customer}
+                        {customer.trim().charAt(0).toUpperCase()}
                       </span>
-                    </td>
-                    <td className="max-w-[220px] truncate whitespace-nowrap px-5 py-3 max-sm:hidden">
-                      {item.productTitle}
-                      {item.quantity > 1 && <span className="text-muted-foreground"> × {item.quantity}</span>}
-                    </td>
-                    <td className="whitespace-nowrap px-5 py-3 text-muted-foreground max-sm:hidden">
-                      {when(item.createdAt)}
-                    </td>
-                    <td className="whitespace-nowrap px-5 py-3 font-semibold tabular-nums" dir="ltr">
-                      <Money value={item.total} locale={locale} unit={{ currency: item.order?.currency }} />
-                    </td>
-                    <td className="whitespace-nowrap px-5 py-3">
-                      <Badge variant={STATUS_TONE[status] ?? "muted"} className="h-6 gap-1.5 px-2.5 font-medium">
-                        <i className="size-1.5 rounded-full bg-current" aria-hidden />
-                        {translateStatus(tStatus, "order", status)}
-                      </Badge>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                      <span className="min-w-0 truncate min-[721px]:max-w-[190px]">{customer}</span>
+                    </span>
+                  );
+                },
+              },
+              {
+                key: "product",
+                header: t("table.product"),
+                phone: "hide",
+                wideOnly: true,
+                className: "max-w-[240px] truncate whitespace-nowrap text-(--s-muted)",
+                cell: (item) => (
+                  <>
+                    {item.productTitle}
+                    {item.quantity > 1 && <span className="text-(--s-subtle)"> × {item.quantity}</span>}
+                  </>
+                ),
+              },
+              {
+                key: "date",
+                header: t("table.date"),
+                phone: "hide",
+                className: "whitespace-nowrap text-(--s-subtle)",
+                cell: (item) => when(item.createdAt),
+              },
+              {
+                key: "total",
+                header: t("table.total"),
+                phone: "end",
+                className: "whitespace-nowrap font-bold text-(--s-ink) tabular-nums",
+                cell: (item) => (
+                  <span dir="ltr">
+                    <Money value={item.total} locale={locale} unit={{ currency: item.order?.currency }} />
+                  </span>
+                ),
+              },
+              {
+                key: "status",
+                header: t("table.status"),
+                phone: "endSub",
+                className: "whitespace-nowrap",
+                cell: (item) => {
+                  const status = resolveVendorOrderStatus(item);
+                  return (
+                    <StatusBadge tone={STATUS_TONE[status] ?? "muted"}>
+                      {translateStatus(tStatus, "order", status)}
+                    </StatusBadge>
+                  );
+                },
+              },
+            ]}
+          />
         </div>
       )}
-    </HomeCard>
+    </SellerCard>
   );
 }

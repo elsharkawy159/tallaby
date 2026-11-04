@@ -1,23 +1,15 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
-import { Check, ChevronsUpDown, ExternalLink, Plus } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
+import { Check, ChevronsUpDown, ExternalLink, Plus, Store } from "lucide-react";
 import { storeHostname, storeUrl } from "@workspace/lib/storefront";
-import { Badge } from "@workspace/ui/components/badge";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@workspace/ui/components/dropdown-menu";
+import { AnchoredSheet, Tag } from "@/components/seller-ui";
 import { cn } from "@/lib/utils";
 import { StoreLogo } from "@/components/stores/store-logo.client";
-import { StoreSiteStatusNote } from "@/components/stores/store-site-status-note";
+import { useSidebarStore } from "@/stores";
 import { selectStore } from "./store-switcher.server";
 
 export type SwitcherStore = {
@@ -30,10 +22,22 @@ export type SwitcherStore = {
   siteStatus: string;
 };
 
+/** Published, unpublished or never published, as a small pill. */
+function SiteStatusTag({ siteStatus }: { siteStatus: string }) {
+  const t = useTranslations("storeSiteStatus");
+  const tNav = useTranslations("nav");
+  if (siteStatus === "published") return <Tag tone="success">{tNav("storeLive")}</Tag>;
+  if (siteStatus === "unpublished") return <Tag tone="danger">{t("offlineShort")}</Tag>;
+  return <Tag tone="warning">{t("draftShort")}</Tag>;
+}
+
+const ACTION =
+  "flex min-h-10 items-center gap-2.5 rounded-xl px-2.5 py-2 text-[13px] font-semibold text-(--s-body) no-underline transition-colors duration-150 hover:bg-(--s-tint) hover:text-(--s-ink) [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:text-(--s-subtle)";
+
 /**
- * Store switcher at the bottom of the sidebar (PLAN.md §7.2). Picking a store only changes
- * which store the store-scoped links open; on a store page it moves to the
- * same page of the new store.
+ * Store switcher at the top of the sidebar (PLAN.md §7.2). Picking a store only
+ * changes which store the store-scoped links open; on a store page it moves to
+ * the same page of the new store.
  */
 export function StoreSwitcher({
   stores,
@@ -49,11 +53,20 @@ export function StoreSwitcher({
   const t = useTranslations("nav");
   const router = useRouter();
   const pathname = usePathname();
+  const rtl = useLocale().startsWith("ar");
+  const setMobileOpen = useSidebarStore((state) => state.setMobileOpen);
+  const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const selected = stores.find((s) => s.id === selectedId) ?? stores[0];
   if (!selected) return null;
 
+  const close = () => {
+    setOpen(false);
+    setMobileOpen(false);
+  };
+
   const switchTo = (store: SwitcherStore) => {
+    setOpen(false);
     if (store.id === selected.id) return;
     startTransition(async () => {
       const result = await selectStore(store.id);
@@ -70,69 +83,95 @@ export function StoreSwitcher({
   const canCreate = stores.length < maxStores;
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger
-        disabled={isPending}
-        className={cn(
-          "flex w-full items-center gap-2.5 rounded-xl border border-sidebar-border bg-background/60 p-2 text-start transition-colors hover:bg-sidebar-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring/40",
-          isCollapsed && "justify-center border-transparent bg-transparent p-1",
-        )}
-        aria-label={t("switchStore")}
-        title={isCollapsed ? selected.name : undefined}
-      >
-        <StoreLogo name={selected.name} logoUrl={selected.logoUrl} />
-        {!isCollapsed && (
-          <>
-            <span className="min-w-0 flex-1">
-              <span className="block truncate text-[13px] font-semibold text-sidebar-foreground">{selected.name}</span>
-              <span dir="ltr" className="block truncate text-start text-xs text-muted-foreground rtl:text-end">
-                {storeHostname(selected.subdomain)}
+    <AnchoredSheet
+      open={open}
+      onOpenChange={setOpen}
+      label={t("switchStore")}
+      side={isCollapsed ? (rtl ? "left" : "right") : "bottom"}
+      align="start"
+      className="w-[300px] gap-0"
+      trigger={
+        <button
+          type="button"
+          disabled={isPending}
+          aria-label={t("switchStore")}
+          title={isCollapsed ? selected.name : undefined}
+          className={cn(
+            "flex w-full cursor-pointer items-center gap-2.5 rounded-2xl border border-(--s-field) bg-(--s-surface) p-2.5 text-start transition-[border-color,box-shadow] duration-150 hover:border-(--s-outline) hover:shadow-[0_6px_18px_rgb(13_55_67/0.06)] aria-expanded:border-(--s-primary) aria-expanded:shadow-[0_0_0_3px_var(--s-focus-soft)] disabled:opacity-60",
+            isCollapsed && "justify-center p-1.5",
+          )}
+        >
+          <StoreLogo name={selected.name} logoUrl={selected.logoUrl} className="size-9 rounded-[11px]" />
+          {!isCollapsed && (
+            <>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-[13.5px] font-bold leading-snug text-(--s-ink)">{selected.name}</span>
+                <span dir="ltr" className="block truncate text-start font-montserrat text-[11px] font-medium text-(--s-subtle) rtl:text-end">
+                  {storeHostname(selected.subdomain)}
+                </span>
               </span>
-              <StoreSiteStatusNote siteStatus={selected.siteStatus} compact />
-            </span>
-            <ChevronsUpDown className="size-4 shrink-0 text-muted-foreground" />
-          </>
-        )}
-      </DropdownMenuTrigger>
-      <DropdownMenuContent side="top" align="start" className="w-[264px]">
-        <DropdownMenuLabel className="text-xs text-muted-foreground">{t("yourStores")}</DropdownMenuLabel>
-        {stores.map((store) => (
-          <DropdownMenuItem
-            key={store.id}
-            onSelect={() => switchTo(store)}
-            disabled={store.status === "archived"}
-            className="gap-2.5"
-          >
-            <StoreLogo name={store.name} logoUrl={store.logoUrl} className="size-7" />
-            <span className="min-w-0 flex-1">
-              <span className="block truncate text-sm">{store.name}</span>
-              <span dir="ltr" className="block truncate text-start text-xs text-muted-foreground rtl:text-end">
-                {storeHostname(store.subdomain)}
+              <ChevronsUpDown aria-hidden className="size-[15px] shrink-0 text-(--s-faint)" />
+            </>
+          )}
+        </button>
+      }
+    >
+      <div className="max-h-[60dvh] overflow-y-auto p-2 pb-1">
+        <p className="px-2.5 pb-1 pt-1.5 text-[11.5px] font-bold text-(--s-faint)">{t("yourStores")}</p>
+        {stores.map((store) => {
+          const current = store.id === selected.id;
+          const archived = store.status === "archived";
+          return (
+            <button
+              key={store.id}
+              type="button"
+              disabled={archived}
+              onClick={() => switchTo(store)}
+              aria-current={current || undefined}
+              className={cn(
+                "flex w-full cursor-pointer items-center gap-2.5 rounded-[14px] px-2.5 py-[9px] text-start transition-colors duration-150 hover:bg-(--s-tint) disabled:cursor-not-allowed disabled:opacity-60",
+                current && "bg-(--s-hover) hover:bg-(--s-hover)",
+              )}
+            >
+              <StoreLogo name={store.name} logoUrl={store.logoUrl} className="size-[34px] rounded-[11px]" />
+              <span className="min-w-0 flex-1">
+                <b className="block truncate text-[13.5px] font-bold text-(--s-ink)">{store.name}</b>
+                <span dir="ltr" className="block truncate text-start font-montserrat text-[11px] font-medium text-(--s-subtle) rtl:text-end">
+                  {storeHostname(store.subdomain)}
+                </span>
+                <span className="mt-1 flex flex-wrap gap-1">
+                  {archived ? <Tag>{t("archived")}</Tag> : <SiteStatusTag siteStatus={store.siteStatus} />}
+                  {store.isPrimary && <Tag tone="info">{t("primaryStore")}</Tag>}
+                </span>
               </span>
-              {store.status !== "archived" && <StoreSiteStatusNote siteStatus={store.siteStatus} compact />}
-            </span>
-            {store.isPrimary && <Badge variant="secondary">{t("primaryStore")}</Badge>}
-            {store.status === "archived" && <Badge variant="outline">{t("archived")}</Badge>}
-            {store.id === selected.id && <Check className="size-4 text-primary" />}
-          </DropdownMenuItem>
-        ))}
-        <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <a href={storeUrl(selected.subdomain)} target="_blank" rel="noopener noreferrer" className="gap-2">
-            <ExternalLink className="size-4" />
-            {t("viewStore")}
-          </a>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild disabled={!canCreate}>
-          <Link href={canCreate ? "/stores?create=1" : "/stores"} className="gap-2">
-            <Plus className="size-4" />
-            <span className="flex-1">{t("createStore")}</span>
-            <span className="text-xs text-muted-foreground">
-              {t("storeUsage", { count: stores.length, max: maxStores })}
-            </span>
-          </Link>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+              {current && <Check aria-hidden className="size-4 shrink-0 text-(--s-primary)" />}
+            </button>
+          );
+        })}
+      </div>
+      <hr className="mx-3 border-(--s-line-soft)" />
+      <div className="flex flex-col p-2 pt-1">
+        <a href={storeUrl(selected.subdomain)} target="_blank" rel="noopener noreferrer" className={ACTION} onClick={close}>
+          <ExternalLink aria-hidden />
+          {t("viewStore")}
+        </a>
+        <Link
+          href={canCreate ? "/stores?create=1" : "/stores"}
+          aria-disabled={!canCreate || undefined}
+          className={cn(ACTION, !canCreate && "pointer-events-none opacity-60")}
+          onClick={close}
+        >
+          <Plus aria-hidden />
+          <span className="flex-1">{t("createStore")}</span>
+          <span className="font-montserrat text-xs font-medium text-(--s-subtle)">
+            {t("storeUsage", { count: stores.length, max: maxStores })}
+          </span>
+        </Link>
+        <Link href="/stores" className={ACTION} onClick={close}>
+          <Store aria-hidden />
+          {t("manageStores")}
+        </Link>
+      </div>
+    </AnchoredSheet>
   );
 }

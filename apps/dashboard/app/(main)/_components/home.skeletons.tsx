@@ -1,27 +1,19 @@
 import { Skeleton } from "@workspace/ui/components/skeleton";
-import { HomeCard } from "./home-ui";
+import { KpiGrid, PageContainer, SellerCard } from "@/components/seller-ui";
 
 /* Placeholders shaped like each home section, so streaming in causes no layout shift. */
 
-export function RangeTabsSkeleton() {
-  return (
-    <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto">
-      <Skeleton className="h-[40px] rounded-[11px] sm:w-[180px]" />
-      <Skeleton className="h-[40px] rounded-[11px] sm:w-[140px]" />
-    </div>
-  );
-}
-
 export function HomeHeaderSkeleton() {
   return (
-    <div className="flex flex-wrap items-end justify-between gap-4">
+    <div className="flex flex-wrap items-end justify-between gap-4 max-[720px]:items-stretch">
       <div className="space-y-2">
-        <Skeleton className="h-7 w-48" />
-        <Skeleton className="h-4 w-64" />
+        <Skeleton className="h-8 w-56" />
+        <Skeleton className="h-4 w-72 max-w-full" />
       </div>
-      <div className="flex w-full flex-col gap-2.5 sm:w-auto sm:flex-row">
-        <RangeTabsSkeleton />
-        <Skeleton className="h-[42px] w-full rounded-xl sm:w-32" />
+      <div className="flex flex-wrap items-center gap-2 max-[720px]:w-full">
+        <Skeleton className="h-[42px] w-36 rounded-full max-[720px]:flex-1" />
+        <Skeleton className="h-[42px] w-36 rounded-full max-[720px]:flex-1" />
+        <Skeleton className="h-[42px] w-32 rounded-full max-[720px]:w-full" />
       </div>
     </div>
   );
@@ -29,24 +21,24 @@ export function HomeHeaderSkeleton() {
 
 export function KpisSkeleton() {
   return (
-    <div className="grid grid-cols-2 gap-2.5 sm:gap-3.5 xl:grid-cols-4">
+    <KpiGrid>
       {Array.from({ length: 4 }, (_, i) => (
-        <HomeCard key={i} className="flex flex-col gap-2.5 p-3.5 sm:px-5 sm:pb-3.5 sm:pt-[18px]">
+        <SellerCard key={i} className="flex flex-col gap-2 px-5 pb-4 pt-[18px] max-[480px]:p-3.5">
           <div className="flex items-center justify-between">
             <Skeleton className="h-4 w-20" />
-            <Skeleton className="size-9 rounded-[10px]" />
+            <Skeleton className="size-9 rounded-xl" />
           </div>
-          <Skeleton className="h-7 w-28" />
-          <Skeleton className="h-[22px] w-36" />
-        </HomeCard>
+          <Skeleton className="h-8 w-24" />
+          <Skeleton className="h-[22px] w-32 max-w-full" />
+        </SellerCard>
       ))}
-    </div>
+    </KpiGrid>
   );
 }
 
 function CardHeaderSkeleton() {
   return (
-    <div className="space-y-1.5 px-5 pt-[18px]">
+    <div className="space-y-1.5 px-[22px] pt-5 max-[600px]:px-4 max-[600px]:pt-4">
       <Skeleton className="h-5 w-32" />
       <Skeleton className="h-3 w-24" />
     </div>
@@ -55,27 +47,27 @@ function CardHeaderSkeleton() {
 
 export function ChartSkeleton() {
   return (
-    <HomeCard>
+    <SellerCard>
       <CardHeaderSkeleton />
-      <div className="flex gap-7 px-5 pt-3.5">
+      <div className="flex gap-[18px] px-[22px] pt-3.5 max-[600px]:px-4">
         <Skeleton className="h-10 w-28" />
         <Skeleton className="h-10 w-20" />
       </div>
-      <div className="px-5 pb-[18px] pt-2">
-        <Skeleton className="h-[240px] w-full rounded-xl" />
+      <div className="px-[22px] pb-[18px] pt-2 max-[600px]:px-4">
+        <Skeleton className="h-[230px] w-full rounded-2xl" />
       </div>
-    </HomeCard>
+    </SellerCard>
   );
 }
 
 export function ListCardSkeleton({ rows = 4 }: { rows?: number }) {
   return (
-    <HomeCard>
+    <SellerCard>
       <CardHeaderSkeleton />
-      <div className="flex flex-col gap-4 px-5 pb-5 pt-4">
+      <div className="flex flex-col gap-4 px-[22px] pb-5 pt-4 max-[600px]:px-4">
         {Array.from({ length: rows }, (_, i) => (
           <div key={i} className="flex items-center gap-3">
-            <Skeleton className="size-10 shrink-0 rounded-[10px]" />
+            <Skeleton className="size-9 shrink-0 rounded-xl" />
             <div className="flex-1 space-y-1.5">
               <Skeleton className="h-4 w-3/5" />
               <Skeleton className="h-3 w-2/5" />
@@ -84,17 +76,17 @@ export function ListCardSkeleton({ rows = 4 }: { rows?: number }) {
           </div>
         ))}
       </div>
-    </HomeCard>
+    </SellerCard>
   );
 }
 
 export function TableCardSkeleton() {
   return (
-    <HomeCard className="overflow-hidden">
+    <SellerCard className="overflow-hidden">
       <CardHeaderSkeleton />
-      <div className="mt-3.5 border-t">
+      <div className="mt-3.5 border-t border-(--s-line-soft)">
         {Array.from({ length: 6 }, (_, i) => (
-          <div key={i} className="flex items-center gap-4 border-b px-5 py-3.5 last:border-b-0">
+          <div key={i} className="flex items-center gap-4 border-b border-(--s-line-soft) px-[22px] py-3.5 last:border-b-0 max-[600px]:px-4">
             <Skeleton className="h-4 w-20" />
             <Skeleton className="size-[30px] rounded-full" />
             <Skeleton className="h-4 flex-1" />
@@ -102,23 +94,23 @@ export function TableCardSkeleton() {
           </div>
         ))}
       </div>
-    </HomeCard>
+    </SellerCard>
   );
 }
 
 export function MetricsSkeleton() {
   return (
-    <HomeCard className="grid grid-cols-1 gap-px overflow-hidden bg-border sm:grid-cols-2 xl:grid-cols-4">
+    <SellerCard className="grid grid-cols-4 gap-px overflow-hidden bg-(--s-line-soft) max-[1180px]:grid-cols-2 max-[480px]:grid-cols-1">
       {Array.from({ length: 4 }, (_, i) => (
-        <div key={i} className="flex items-center gap-3 bg-card px-5 py-4">
-          <Skeleton className="size-9 rounded-[10px]" />
+        <div key={i} className="flex items-center gap-3 bg-(--s-surface) px-5 py-3.5">
+          <Skeleton className="size-9 rounded-xl" />
           <div className="flex-1 space-y-1.5">
             <Skeleton className="h-3 w-24" />
             <Skeleton className="h-5 w-16" />
           </div>
         </div>
       ))}
-    </HomeCard>
+    </SellerCard>
   );
 }
 
@@ -139,7 +131,10 @@ export function HomeSkeleton() {
   );
 }
 
-/** Grid shared by the page and its skeleton (Seller Dashboard v2 design). */
+/** Stretches cards to their row's height; some are wrapped in a range-pending div. */
+const STRETCH = "[&>*]:min-w-0 [&>section]:h-full [&>div>section]:h-full";
+
+/** Grid shared by the page and its skeleton (Seller Home v3). */
 export function HomeLayout(slots: {
   header: React.ReactNode;
   setup?: React.ReactNode;
@@ -155,23 +150,25 @@ export function HomeLayout(slots: {
   community?: React.ReactNode;
 }) {
   return (
-    <div className="mx-auto flex w-full flex-col gap-5 px-3.5 pb-20 pt-5 sm:px-6 sm:pb-[72px] sm:pt-7">
-      {slots.header}
+    <PageContainer>
+      <div className="sui-rise">{slots.header}</div>
       {slots.setup}
-      {slots.kpis}
-      {slots.metrics}
-      <div className="grid grid-cols-1 items-stretch gap-5 lg:grid-cols-[minmax(0,1.75fr)_minmax(0,1fr)] [&>*]:min-w-0">
+      <div className="sui-rise [animation-delay:.1s]">{slots.kpis}</div>
+      <div className="sui-rise [animation-delay:.14s]">{slots.metrics}</div>
+      <div className={`sui-rise grid grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)] gap-3.5 [animation-delay:.18s] max-[1180px]:grid-cols-1 ${STRETCH}`}>
         {slots.chart}
-        {slots.journey}
-      </div>
-      <div className="grid grid-cols-1 items-stretch gap-5 md:grid-cols-2 xl:grid-cols-3 [&>*]:min-w-0 md:[&>*:last-child]:col-span-2 xl:[&>*:last-child]:col-span-1">
         {slots.attention}
+      </div>
+      <div
+        className={`sui-rise grid grid-cols-3 gap-3.5 [animation-delay:.22s] max-[1180px]:grid-cols-2 max-[1180px]:[&>:last-child]:col-span-full max-[720px]:grid-cols-1 ${STRETCH}`}
+      >
+        {slots.journey}
         {slots.topProducts}
         {slots.sources}
       </div>
-      {slots.orders}
+      <div className="sui-rise [animation-delay:.26s]">{slots.orders}</div>
       {slots.questions}
-      {slots.community}
-    </div>
+      {slots.community && <div className="sui-rise [animation-delay:.3s]">{slots.community}</div>}
+    </PageContainer>
   );
 }

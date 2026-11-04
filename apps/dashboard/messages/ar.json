@@ -346,8 +346,8 @@
   "nav": {
     "dashboard": "لوحة التحكم",
     "products": "المنتجات",
-    "manageProducts": "إدارة المنتجات",
-    "addProducts": "إضافة منتجات",
+    "manageProducts": "كل المنتجات",
+    "addProducts": "إضافة منتج",
     "orders": "الطلبات",
     "reviews": "التقييمات والأسئلة",
     "promotions": "العروض الترويجية",
@@ -404,7 +404,7 @@
     "storeAnalytics": "زيارات المتجر",
     "roadmap": "خارطة الطريق والأفكار",
     "finance": "المحفظة",
-    "fulfillmentShipping": "الشحن وتنفيذ الطلبات",
+    "fulfillmentShipping": "الشحن والتوصيل",
     "storeSettings": "إعدادات المتجر",
     "general": "عام",
     "paymentMethods": "طرق الدفع",
@@ -426,7 +426,7 @@
     "automaticDiscounts": "خصومات تلقائية",
     "emailCampaigns": "حملات البريد الإلكتروني",
     "accountHelp": "الحساب والمساعدة",
-    "sellerCategories": "الفئات",
+    "sellerCategories": "التصنيفات",
     "sellerBrands": "الماركات",
     "earn": "اربح معنا",
     "orderProtection": "حماية الطلبات",
@@ -439,7 +439,15 @@
     "scanReturns": "مسح المرتجعات",
     "productTrash": "سلة المحذوفات",
     "inventory": "المخزون",
-    "catalogShare": "كتالوج للمشاركة"
+    "catalogShare": "كتالوج للمشاركة",
+    "mainMenu": "القائمة الرئيسية",
+    "sectionSell": "البيع",
+    "sectionStore": "المتجر",
+    "sectionAccount": "الحساب",
+    "helpCardTitle": "الدعم على واتساب",
+    "helpCardHint": "هل تحتاج إلى مساعدة؟ تواصل معنا",
+    "storeLive": "متاح",
+    "manageStores": "إدارة متاجري"
   },
   "common": {
     "mixedCurrencyNote": "متاجرك بعملات مختلفة. نفس الرقم يُستخدم في كل متجر ولا يتم تحويله.",
@@ -560,7 +568,7 @@
       "description": "مبيعاتك في هذه الفترة حسب مكان الطلب",
       "store": "موقع هذا المتجر",
       "otherStores": "متاجرك الأخرى",
-      "marketplace": "سوق طلبي",
+      "marketplace": "tallaby.com",
       "manual": "طلبات يدوية",
       "orders": "{count, plural, =0 {لا توجد طلبات} one {طلب واحد} two {طلبان} few {# طلبات} other {# طلب}}",
       "currency": "ج.م"
@@ -947,7 +955,7 @@
     "panel": {
       "pill": "طلبي للبائعين",
       "title": "بِع لعملاء أكثر، <em>وأدِر كل شيء من مكان واحد.</em>",
-      "description": "طلبي سوق إلكتروني متعدد البائعين. افتح متجرك، واعرض منتجاتك، ودع المتسوقين على المنصة يصلون إليك.",
+      "description": "طلبي يمنحك متجرك الإلكتروني الخاص. أضف منتجاتك، وشارك رابط متجرك، واستقبل الطلبات.",
       "storefrontTitle": "متجرك الخاص",
       "storefrontText": "ميّز متجرك بشعار وغلاف وصفحة مخصصة.",
       "ordersTitle": "المنتجات والطلبات",
@@ -1186,7 +1194,8 @@
       "emptyTitle": "سيظهر أداء مبيعاتك هنا",
       "emptyDescription": "بعد أول طلب على متجرك",
       "emptyRangeTitle": "لا توجد مبيعات في هذه الفترة",
-      "emptyRangeDescription": "جرّب فترة أطول"
+      "emptyRangeDescription": "جرّب فترة أطول",
+      "try30": "عرض آخر 30 يومًا"
     },
     "attention": {
       "title": "يحتاج انتباهك",
@@ -1248,7 +1257,7 @@
     "channel": {
       "label": "قناة البيع",
       "all": "كل المبيعات",
-      "marketplace": "سوق طلبي"
+      "marketplace": "tallaby.com"
     },
     "welcome": {
       "title": "أهلًا بك في طلبي! متجرك جاهز",
@@ -1357,7 +1366,7 @@
       "delete": "حذف",
       "addNew": "إضافة منتج جديد",
       "deleteTitle": "حذف \"{title}\"؟",
-      "deleteDescription": "سيختفي من متاجرك ومن السوق، ويبقى في سلة المحذوفات 30 يومًا يمكنك استرجاعه منها.",
+      "deleteDescription": "سيختفي من متاجرك، ويبقى في سلة المحذوفات 30 يومًا يمكنك استرجاعه منها.",
       "deleted": "تم نقل \"{title}\" إلى سلة المحذوفات",
       "deleteFailed": "تعذّر حذف المنتج. حاول مرة أخرى.",
       "bulkDeleted": "{count, plural, one {تم نقل منتج واحد إلى سلة المحذوفات} two {تم نقل منتجين إلى سلة المحذوفات} few {تم نقل # منتجات إلى سلة المحذوفات} many {تم نقل # منتجًا إلى سلة المحذوفات} other {تم نقل # منتج إلى سلة المحذوفات}}",
@@ -2642,7 +2651,7 @@
     "channel": {
       "label": "قناة البيع",
       "all": "كل الطلبات",
-      "marketplace": "سوق طلبي"
+      "marketplace": "tallaby.com"
     },
     "searchPlaceholder": "ابحث برقم الطلب أو الاسم أو الهاتف",
     "searchLabel": "البحث في الطلبات",
@@ -3195,8 +3204,8 @@
       "total": "<strong>{amount}</strong> من {count, plural, zero {# طلب} one {طلب واحد} two {طلبين} few {# طلبات} many {# طلبًا} other {# طلب}}",
       "byChannel": "حسب قناة البيع",
       "byPaymentMethod": "حسب طريقة الدفع",
-      "marketplace": "سوق طلبي",
-      "marketplaceHint": "tallaby.com",
+      "marketplace": "tallaby.com",
+      "marketplaceHint": "طلبات غير مرتبطة بأحد متاجرك",
       "storeHint": "موقعك",
       "unknownStore": "متجر محذوف",
       "orders": "{count, plural, zero {# طلب} one {طلب واحد} two {طلبين} few {# طلبات} many {# طلبًا} other {# طلب}}",
@@ -3483,8 +3492,12 @@
     "menuLanguage": "اللغة",
     "menuDarkMode": "الوضع الداكن",
     "walletBalance": "رصيد المحفظة: {amount}",
-    "walletLabel": "رصيد المحفظة:",
-    "openStore": "افتح متجرك"
+    "walletLabel": "رصيد المحفظة",
+    "openStore": "افتح متجرك",
+    "searchHint": "ابحث عن صفحة أو منتج أو طلب",
+    "topUp": "شحن الرصيد",
+    "siteLive": "الموقع متاح للزوار",
+    "siteOffline": "الموقع غير متاح للزوار"
   },
   "negativeWalletDialog": {
     "descriptionUsd": "يخصم طلبي رسوم الطلب من محفظتك عن كل طلب جديد في الباقة المجانية. اشحن محفظتك لسداد المبلغ المستحق.",
@@ -4646,7 +4659,7 @@
     "disconnect": "إلغاء الربط",
     "saved": "تم حفظ التطبيق",
     "removed": "تم إلغاء ربط التطبيق",
-    "onlyThisStore": "يعمل هذا التطبيق على موقع هذا المتجر فقط، وليس على سوق طلبي أو على متاجرك الأخرى.",
+    "onlyThisStore": "يعمل هذا التطبيق على موقع هذا المتجر فقط، وليس على متاجرك الأخرى.",
     "gtmWarning": "يشغّل Google Tag Manager أي وسوم تضيفها إلى الحاوية الخاصة بك. أنت مسؤول عن هذه الوسوم وعن أي موافقة يحتاجها زوار متجرك.",
     "errors": {
       "invalidId": "راجع المعرّف وحاول مرة أخرى.",
@@ -5537,7 +5550,7 @@
     "discardedToast": "تم تجاهل التغييرات",
     "unpublish": "إيقاف الموقع",
     "unpublishTitle": "إيقاف موقعك؟",
-    "unpublishBody": "سيرى المتسوقون صفحة \"المتجر غير متاح\" ولن يتمكنوا من الطلب حتى تعيد تشغيله. ستبقى صفحاتك ومسوداتك محفوظة، وتبقى منتجاتك على سوق طلبي.",
+    "unpublishBody": "سيرى المتسوقون صفحة \"المتجر غير متاح\" ولن يتمكنوا من الطلب حتى تعيد تشغيله. ستبقى صفحاتك ومسوداتك ومنتجاتك محفوظة.",
     "unpublishedToast": "موقعك متوقف الآن",
     "liveSwitchOnline": "الموقع متاح الآن",
     "liveSwitchOffline": "الموقع غير متاح",
@@ -6116,7 +6129,14 @@
     "open": "الإشعارات",
     "openUnread": "الإشعارات ({count} غير مقروءة)",
     "markAllRead": "تحديد الكل كمقروء",
-    "empty": "لا توجد إشعارات جديدة.",
+    "markRead": "تحديد كمقروء",
+    "settings": "إعدادات الإشعارات",
+    "close": "إغلاق",
+    "today": "اليوم",
+    "yesterday": "أمس",
+    "older": "الأقدم",
+    "emptyTitle": "لا توجد إشعارات",
+    "empty": "سنُعلمك فور وصول أي جديد.",
     "loading": "جارٍ التحميل…",
     "types": {
       "order_created": {
@@ -6624,7 +6644,7 @@
     "enabled": "اطلب حد أدنى للطلب",
     "amountLabel": "الحد الأدنى للطلب ({code, select, EGP {جنيه} other {{unit}}})",
     "amountPlaceholder": "مثلًا 300",
-    "amountHint": "ستعرض السلة وصفحة الطلب للعميل المبلغ الذي يحتاج إلى إضافته. لا تتأثر طلبات السوق.",
+    "amountHint": "ستعرض السلة وصفحة الطلب للعميل المبلغ الذي يحتاج إلى إضافته. لا يسري ذلك إلا على طلبات هذا المتجر.",
     "save": "احفظ الحد الأدنى",
     "saved": "تم حفظ الحد الأدنى للطلب",
     "errors": {
@@ -7438,6 +7458,13 @@
       "blocked": "حساب البائع الخاص بك موقوف، لذلك لا يمكنك ربط التطبيقات حاليًا. تواصل مع دعم طلبي.",
       "noStores": "ليس لديك متجر بعد. أنشئ متجرًا من لوحة التحكم أولًا.",
       "back": "الذهاب إلى لوحة التحكم"
+    }
+  },
+  "sellerUi": {
+    "saveBar": {
+      "message": "لديك تغييرات غير محفوظة",
+      "save": "حفظ التغييرات",
+      "discard": "تجاهل"
     }
   }
 }

@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { Info, Lightbulb } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
+import { Note, SellerCard, SellerCardHeader } from "@/components/seller-ui";
 import { cn } from "@workspace/ui/lib/utils";
 import { formatNumber } from "@/lib/i18n/format";
 import { getHomeChannelStores, getHomeTrafficFor, getStoreFunnel } from "./home.queries";
 import type { HomeChannel, HomeRange } from "./home.shared";
-import { HeaderLink, HomeCard, HomeCardHeader } from "./home-ui";
+import { HeaderLink } from "./home-ui";
 
 /** Show the drop-off tip only when enough shoppers left their cart. */
 const DROPOFF_TIP_MIN = 0.3;
@@ -25,8 +26,8 @@ export async function CustomerJourneyData({ range, channel = "all" }: { range: H
   const carts = Math.max(funnel.carts, funnel.orders);
   const top = Math.max(visits, carts, 1);
   const steps = [
-    { key: "visits", value: visits, bar: "bg-primary" },
-    { key: "carts", value: carts, bar: "bg-primary/75" },
+    { key: "visits", value: visits, bar: "bg-(--s-primary)" },
+    { key: "carts", value: carts, bar: "bg-(--tallaby-teal-500)" },
     { key: "orders", value: funnel.orders, bar: "bg-accent" },
   ] as const;
   const hasData = visits > 0 || carts > 0;
@@ -45,7 +46,7 @@ export async function CustomerJourneyData({ range, channel = "all" }: { range: H
               text: (
                 <>
                   {t("dropoff", { percent: percent(dropoff, 0) })}{" "}
-                  <Link href="/coupons" className="font-medium text-primary-ink hover:underline">
+                  <Link href="/coupons" className="text-(--s-link) hover:underline">
                     {t("dropoffCta")}
                   </Link>
                 </>
@@ -54,8 +55,8 @@ export async function CustomerJourneyData({ range, channel = "all" }: { range: H
           : null;
 
   return (
-    <HomeCard aria-labelledby="journey-title" className="flex flex-col">
-      <HomeCardHeader
+    <SellerCard aria-labelledby="journey-title" className="flex flex-col">
+      <SellerCardHeader
         id="journey-title"
         title={t("title")}
         description={t("description")}
@@ -65,35 +66,38 @@ export async function CustomerJourneyData({ range, channel = "all" }: { range: H
           ) : undefined
         }
       />
-      <ol className="flex flex-col gap-3.5 px-5 pb-5 pt-4">
+      <ol className="flex flex-col gap-3.5 px-[22px] pb-5 pt-4 max-[600px]:px-4">
         {steps.map((step, i) => (
           <li key={step.key} className="flex flex-col gap-1.5">
             <div className="flex items-baseline justify-between gap-2 text-[13px]">
               <span>{t(step.key)}</span>
               <span>
-                <b className="font-montserrat text-sm font-semibold tabular-nums">{formatNumber(step.value, locale)}</b>
+                <b className="font-montserrat text-sm font-bold text-(--s-ink) tabular-nums">
+                  {formatNumber(step.value, locale)}
+                </b>
                 {i > 0 && hasData && (
-                  <em className="ms-1.5 font-montserrat text-xs not-italic text-muted-foreground tabular-nums">
+                  <em className="ms-1.5 font-montserrat text-xs not-italic text-(--s-subtle) tabular-nums">
                     {percent(step.value / top)}
                   </em>
                 )}
               </span>
             </div>
-            <div className="h-2.5 overflow-hidden rounded-full bg-muted">
+            <div className="h-2.5 overflow-hidden rounded-full bg-(--s-fill)">
               <i
                 className={cn("block h-full rounded-full transition-[width] duration-500", step.bar)}
-                style={{ width: hasData ? `${Math.max(2, (step.value / top) * 100)}%` : "0%" }}
+                style={{ width: hasData ? `${Math.max(2, (step.value / top) * 100)}%` : "2%" }}
               />
             </div>
           </li>
         ))}
+        {note && (
+          <li>
+            <Note icon={note.icon} className="text-xs">
+              {note.text}
+            </Note>
+          </li>
+        )}
       </ol>
-      {note && (
-        <div className="mx-5 mb-[18px] mt-auto flex items-start gap-2 rounded-[10px] bg-muted/70 px-3 py-2.5 text-xs text-muted-foreground">
-          <note.icon className="mt-0.5 size-[15px] shrink-0 text-primary-ink" aria-hidden />
-          <span>{note.text}</span>
-        </div>
-      )}
-    </HomeCard>
+    </SellerCard>
   );
 }

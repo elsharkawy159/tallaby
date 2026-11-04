@@ -4,8 +4,7 @@ import { useOptimistic, useState, useTransition } from "react";
 import { Reply } from "lucide-react";
 import { useLocale, useNow, useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Button } from "@workspace/ui/components/button";
-import { Input } from "@workspace/ui/components/input";
+import { SellerButton, TextInput } from "@/components/seller-ui";
 import { formatRelativeTime } from "@/lib/i18n/format";
 import type { HomeQuestion } from "./home.queries";
 import { ProductThumb } from "./home-ui";
@@ -50,24 +49,24 @@ export function UnansweredQuestionsClient({ questions }: { questions: HomeQuesti
 
   if (rows.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-1.5 px-5 pb-7 pt-6 text-center text-[13px] text-muted-foreground">
-        <b className="text-sm text-foreground">{t("emptyTitle")}</b>
+      <div className="flex flex-col items-center gap-1.5 px-5 pb-7 pt-6 text-center text-[12.5px] text-(--s-subtle)">
+        <b className="text-sm font-bold text-(--s-ink)">{t("emptyTitle")}</b>
         <span>{t("emptyDescription")}</span>
       </div>
     );
   }
 
   return (
-    <ul className="flex flex-col px-5 pb-3.5 pt-1.5">
+    <ul className="flex flex-col px-[22px] pb-3.5 pt-1.5 max-[600px]:px-4">
       {rows.map((q) => {
         const open = openId === q.id;
         const inputId = `answer-${q.id}`;
         return (
-          <li key={q.id} className="flex items-start gap-3.5 border-b py-3.5 last:border-b-0">
+          <li key={q.id} className="flex flex-wrap items-start gap-3 border-b border-(--s-line-soft) py-3.5 last:border-b-0">
             <ProductThumb src={q.image} />
-            <div className="min-w-0 flex-1">
-              <b className="block font-semibold leading-relaxed">{q.question}</b>
-              <small className="text-xs text-muted-foreground">
+            <div className="min-w-0 flex-1 basis-40">
+              <b className="block text-[13.5px] font-bold leading-relaxed text-(--s-text)">{q.question}</b>
+              <small className="text-xs text-(--s-subtle)">
                 {q.productTitle}
                 {q.createdAt && <> · {formatRelativeTime(q.createdAt, locale, now)}</>}
               </small>
@@ -82,39 +81,37 @@ export function UnansweredQuestionsClient({ questions }: { questions: HomeQuesti
                   <label htmlFor={inputId} className="sr-only">
                     {t("answerPlaceholder")}
                   </label>
-                  <Input
+                  <TextInput
                     id={inputId}
                     autoFocus
                     maxLength={2000}
                     placeholder={t("answerPlaceholder")}
                     value={answers[q.id] ?? ""}
                     onChange={(e) => setAnswers((s) => ({ ...s, [q.id]: e.target.value }))}
-                    className="h-[38px] rounded-[10px]"
+                    className="h-10 min-w-0 flex-1"
                   />
-                  <Button
+                  <SellerButton
                     type="submit"
-                    variant="secondary"
+                    variant="solid"
                     size="sm"
-                    className="h-[38px] rounded-[9px]"
+                    className="h-10"
                     disabled={pendingId === q.id || !answers[q.id]?.trim()}
                   >
                     {t("send")}
-                  </Button>
+                  </SellerButton>
                 </form>
               )}
             </div>
-            <Button
-              type="button"
-              variant="neutral"
-              size="sm"
-              className="rounded-[9px]"
+            <SellerButton
+              variant="mini"
+              size="xs"
               aria-expanded={open}
               aria-controls={open ? inputId : undefined}
               onClick={() => setOpenId(open ? null : q.id)}
             >
               <Reply aria-hidden />
               {t("reply")}
-            </Button>
+            </SellerButton>
           </li>
         );
       })}

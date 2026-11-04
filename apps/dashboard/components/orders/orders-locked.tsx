@@ -46,7 +46,7 @@ export async function OrdersLockedNotice({ lock }: { lock: OrderLock }) {
   if (!lock.locked) return null;
   const t = await getTranslations("orderLock");
   return (
-    <div className="flex flex-wrap items-center gap-3 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-100">
+    <div className="flex flex-wrap items-center gap-3 rounded-[20px] border border-(--tallaby-amber-100) bg-accent-soft px-4 py-3 text-[13.5px] text-accent-ink dark:border-transparent">
       <span aria-hidden>⚠️</span>
       <div className="min-w-0 flex-1">
         <p className="font-semibold">{t(lock.pendingReview ? "reviewTitle" : "title")}</p>

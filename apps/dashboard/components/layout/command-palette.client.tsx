@@ -77,7 +77,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
       onOpenChange={handleOpenChange}
       title={t("search")}
       description={t("paletteDescription")}
-      className="sm:max-w-xl"
+      className="sui-no-sheet sm:max-w-xl"
     >
       <CommandInput
         value={query}

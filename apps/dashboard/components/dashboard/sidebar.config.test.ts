@@ -28,9 +28,11 @@ describe("storeBuilderEnabled", () => {
   });
 });
 
-const allLinks = <L, G extends { kind: "group"; items: L[] }>(
-  entries: (G | ({ kind: "link" } & L) | { kind: "divider" })[],
-): L[] => entries.flatMap((e) => (e.kind === "group" ? (e as G).items : e.kind === "link" ? [e as L] : []));
+type AnyLink = { href: string; key: string; status?: string };
+const allLinks = (entries: readonly { kind: string }[]): AnyLink[] =>
+  entries.flatMap((e) =>
+    e.kind === "group" ? (e as unknown as { items: AnyLink[] }).items : e.kind === "link" ? [e as unknown as AnyLink] : [],
+  );
 
 /** Top-level keys, with dividers shown as "|". */
 const topLevel = (entries: { kind: string; key?: string }[]) => entries.map((e) => (e.kind === "divider" ? "|" : e.key));
@@ -79,6 +81,7 @@ describe("SIDEBAR_CONFIG", () => {
   it("keeps the agreed top-level order: operations | grow & configure | account & help", () => {
     expect(topLevel(SIDEBAR_CONFIG)).toEqual([
       "dashboard",
+      "|",
       "products",
       "ordersGroup",
       "fulfillmentShipping",
@@ -110,6 +113,7 @@ describe("SIDEBAR_CONFIG", () => {
   it("keeps the dividers tidy when a store-less seller loses store-scoped sections", () => {
     expect(topLevel(resolveSidebar(SIDEBAR_CONFIG, { storeId: null, features: { storeBuilder: true } }))).toEqual([
       "dashboard",
+      "|",
       "products",
       "ordersGroup",
       "fulfillmentShipping",

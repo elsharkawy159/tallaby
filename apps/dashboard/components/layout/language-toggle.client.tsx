@@ -13,7 +13,8 @@ const TARGET = {
   en: { value: "ar", label: "العربية" },
 } as const;
 
-export function LanguageToggle({ className }: { className?: string }) {
+/** `.lang` in the top bar (the name goes up to 1020px); with `row`, a labelled line for the phone drawer. */
+export function LanguageToggle({ row = false }: { row?: boolean }) {
   const t = useTranslations("header");
   const locale = useLocale() === "ar" ? "ar" : "en";
   const router = useRouter();
@@ -35,18 +36,21 @@ export function LanguageToggle({ className }: { className?: string }) {
       title={t("language")}
       aria-label={`${t("language")}: ${target.label}`}
       className={cn(
-        "flex h-9.5 shrink-0 items-center gap-1.5 rounded-[10px] px-2.5 text-[13px] text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60",
-        className
+        "flex shrink-0 cursor-pointer items-center transition-colors duration-150 hover:bg-(--s-hover) hover:text-(--s-ink) disabled:opacity-60",
+        row
+          ? "min-h-10 gap-[11px] rounded-xl px-3 text-[13px] font-medium text-(--s-muted)"
+          : "h-9 gap-1.5 rounded-[11px] px-2.5 text-[12.5px] font-semibold text-(--s-muted) max-[1020px]:w-9 max-[1020px]:justify-center max-[1020px]:px-0",
       )}
     >
-      {isPending ? (
-        <Loader2 className="size-[18px] animate-spin" />
+      {isPending ? <Loader2 className="size-[18px] animate-spin" /> : <Languages className="size-[18px]" />}
+      {row ? (
+        <>
+          <span>{t("menuLanguage")}</span>
+          <span className="ms-auto font-montserrat text-xs">{target.label}</span>
+        </>
       ) : (
-        <Languages className="size-[18px]" />
+        <span className="font-montserrat max-[1020px]:hidden">{target.label}</span>
       )}
-      {/* Phones (the "⋯" menu): "Language" plus the target language at the row's end. */}
-      <span className="sm:hidden">{t("menuLanguage")}</span>
-      <span className="font-montserrat max-sm:ms-auto max-sm:text-xs">{target.label}</span>
     </button>
   );
 }
