@@ -73,7 +73,7 @@ function CollectBox({ order, t, locale, large = false }: DocProps & { large?: bo
         <>
           <p className="text-xs font-semibold">{t("print.collect")}</p>
           <p className={large ? "text-2xl font-extrabold tabular-nums" : "text-xl font-extrabold tabular-nums"} dir="ltr">
-            {formatMoney(order.collect, locale)}
+            {formatMoney(order.collect, locale, order)}
           </p>
         </>
       ) : (
@@ -115,7 +115,7 @@ function TotalRow({ label, value, strong = false }: { label: string; value: stri
 
 /** A4 invoice: sender, customer, every line with prices, totals and the door amount. */
 export function InvoiceDocument({ order, t, locale }: DocProps) {
-  const money = (value: string) => formatMoney(value, locale);
+  const money = (value: string) => formatMoney(value, locale, order);
   const discount = Number(order.discountAmount) || 0;
   return (
     <article className="print-sheet print-sheet-a4 flex flex-col gap-6 text-[13px]">

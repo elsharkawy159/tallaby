@@ -55,6 +55,7 @@ export async function loadPrintOrders(
       shippingCost: true,
       discountAmount: true,
       totalAmount: true,
+      currency: true,
     },
     with: {
       user: { columns: { email: true, fullName: true, phone: true, isGuest: true } },
@@ -176,6 +177,7 @@ export async function loadPrintOrders(
       shippingCost: o.shippingCost ?? "0",
       discountAmount: o.discountAmount ?? "0",
       totalAmount,
+      currency: o.currency ?? "EGP",
       // Another seller's lines share this order: the door amount is not this seller's to print.
       collect: wholeOrder
         ? amountToCollect({ paymentMethod: o.paymentMethod, paymentStatus: o.paymentStatus, totalAmount })

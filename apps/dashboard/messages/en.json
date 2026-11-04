@@ -146,7 +146,7 @@
       "cash": "Cash"
     },
     "paidHint": "You already hold this money, so nothing is collected on delivery.",
-    "discount": "Discount (EGP)",
+    "discount": "Discount ({unit})",
     "discountHint": "Comes out of your own sale. It doesn't apply to shipping.",
     "goods": "Products",
     "discountLine": "Discount",
@@ -2680,6 +2680,7 @@
       "sheet": "Orders",
       "failed": "Couldn't export the orders. Try again.",
       "columns": {
+        "currency": "Currency",
         "orderNumber": "Order number",
         "date": "Date",
         "channel": "Sales channel",
@@ -2691,13 +2692,13 @@
         "area": "Area",
         "items": "Items",
         "quantity": "Quantity",
-        "itemsTotal": "Your items total (EGP)",
-        "shipping": "Shipping (EGP)",
-        "discount": "Discount (EGP)",
-        "total": "Order total (EGP)",
+        "itemsTotal": "Your items total",
+        "shipping": "Shipping",
+        "discount": "Discount",
+        "total": "Order total",
         "paymentMethod": "Payment method",
         "paymentStatus": "Payment status",
-        "collect": "To collect (EGP)",
+        "collect": "To collect",
         "tracking": "Bosta tracking number",
         "notes": "Notes"
       }
@@ -6636,7 +6637,7 @@
       "sample": {
         "name": "Mona",
         "products": "Power bank 10,000 mAh",
-        "total": "EGP 450"
+        "total": "{unit} 450"
       }
     },
     "errors": {
@@ -6914,7 +6915,7 @@
         "delivered": "Delivered",
         "refused": "Refused or returned",
         "cancelled": "Cancelled",
-        "spent": "Spent (EGP)",
+        "spent": "Spent ({unit})",
         "successRate": "Delivered %",
         "firstOrder": "First order",
         "lastOrder": "Last order",

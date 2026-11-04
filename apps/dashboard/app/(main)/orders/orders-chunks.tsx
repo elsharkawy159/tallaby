@@ -21,7 +21,8 @@ import {
 } from "@workspace/ui/components/select";
 import { TableSection } from "@workspace/ui/components/table-section";
 import { cn, getPublicUrl } from "@/lib/utils";
-import { formatDateTime, formatMoney, formatNumber } from "@/lib/i18n/format";
+import { formatDateTime, formatNumber } from "@/lib/i18n/format";
+import { Money } from "@/components/money";
 import { useTableSectionLabels } from "@/lib/i18n/table-labels";
 import { BostaBulkBar } from "./bosta-bulk.client";
 import { BostaChip, ShipWithBostaButton } from "./bosta-ship.client";
@@ -167,7 +168,7 @@ function OrdersTable({
         cell: ({ row }) => (
           <div>
             <div className="font-medium tabular-nums" dir="ltr">
-              {formatMoney(row.original.totalAmount, locale)}
+              <Money value={row.original.totalAmount} locale={locale} unit={row.original} />
             </div>
             {row.original.paymentMethod && tPayment.has(row.original.paymentMethod) && (
               <div className="text-xs text-muted-foreground">{tPayment(row.original.paymentMethod)}</div>

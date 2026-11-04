@@ -40,6 +40,7 @@ const order = (patch: Partial<SellerOrderRow> = {}): SellerOrderRow =>
     shippingCost: "50.00",
     discountAmount: "0.00",
     totalAmount: "350.00",
+    currency: "EGP",
     lines: [line("a", "100.10", 2), line("b", "199.90")],
     itemCount: 3,
     bosta: null,
@@ -67,6 +68,7 @@ describe("orders export", () => {
       paymentMethod: "pm:cod",
       paymentStatus: "ps:pending",
       collect: 350,
+      currency: "EGP",
     });
   });
 

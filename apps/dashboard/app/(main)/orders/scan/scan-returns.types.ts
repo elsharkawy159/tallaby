@@ -12,6 +12,8 @@ export interface ScannedOrder {
   itemCount: number;
   /** Sum of this seller's lines. */
   total: string;
+  /** The order's own currency. */
+  currency: string;
   storeName: string | null;
   /** The existing "Mark returned" step (updateSellerOrder, action "return") is open right now. */
   canReturn: boolean;

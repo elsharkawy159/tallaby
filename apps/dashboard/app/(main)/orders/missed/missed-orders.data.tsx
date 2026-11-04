@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { listStoreCheckoutLeads, listStoreLeadSettings } from "@workspace/lib/checkout-leads/server";
 import type { LeadRange, LeadStatus } from "@workspace/lib/checkout-leads";
+import { loadStoreMoney } from "@/lib/stores/account-money.server";
 import { requireSeller } from "@/lib/auth/require-seller.server";
 import { MissedOrdersView } from "./missed-orders.client";
 
@@ -20,7 +21,7 @@ export async function MissedOrdersData({
   status: LeadStatus;
 }) {
   const [seller, t] = await Promise.all([requireSeller(), getTranslations("missedOrders")]);
-  const stores = await listStoreLeadSettings(seller.sellerId);
+  const [stores, storeMoney] = await Promise.all([listStoreLeadSettings(seller.sellerId), loadStoreMoney(seller.sellerId)]);
   // A store id from the URL counts only if it is one of this seller's stores.
   const selectedStore = storeId && stores.some((s) => s.storeId === storeId) ? storeId : null;
   const leads = await listStoreCheckoutLeads(seller.sellerId, { storeId: selectedStore, range, status });
@@ -38,7 +39,7 @@ export async function MissedOrdersData({
           {t("pendingCartsLink")}
         </Link>
       </p>
-      <MissedOrdersView leads={leads} stores={stores} storeId={selectedStore} range={range} status={status} />
+      <MissedOrdersView storeMoney={storeMoney} leads={leads} stores={stores} storeId={selectedStore} range={range} status={status} />
     </section>
   );
 }

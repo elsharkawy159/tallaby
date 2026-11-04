@@ -3,7 +3,8 @@ import { Megaphone, ShoppingBag } from "lucide-react";
 import { getLocale, getNow, getTranslations } from "next-intl/server";
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
-import { formatDate, formatMoney, formatRelativeTime } from "@/lib/i18n/format";
+import { formatDate, formatRelativeTime } from "@/lib/i18n/format";
+import { Money } from "@/components/money";
 import { translateStatus } from "@/lib/i18n/status";
 import {
   getOrderDisplayNumber,
@@ -126,7 +127,7 @@ export async function RecentOrdersData() {
                       {when(item.createdAt)}
                     </td>
                     <td className="whitespace-nowrap px-5 py-3 font-semibold tabular-nums" dir="ltr">
-                      {formatMoney(item.total, locale)}
+                      <Money value={item.total} locale={locale} unit={{ currency: item.order?.currency }} />
                     </td>
                     <td className="whitespace-nowrap px-5 py-3">
                       <Badge variant={STATUS_TONE[status] ?? "muted"} className="h-6 gap-1.5 px-2.5 font-medium">

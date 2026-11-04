@@ -6,6 +6,9 @@
  * store's language is used. Pure, safe on the client.
  */
 
+import { DEFAULT_CURRENCY } from "@workspace/lib";
+import { moneyUnitText } from "@/lib/i18n/format";
+
 export const ORDER_CONFIRM_PLACEHOLDERS = ["name", "number", "items", "total", "address", "store"] as const;
 export const ORDER_CONFIRM_TEMPLATE_MAX = 1000;
 /** A new order not confirmed for this long is highlighted on /orders. */
@@ -22,14 +25,18 @@ export interface OrderConfirmSource {
   customerName: string;
   orderNumber: string;
   totalAmount: string;
+  /** The order's currency; missing means EGP. */
+  currency?: string | null;
   lines: { productName: string; variantName: string | null; quantity: number }[];
   address: { line: string; area: string } | null;
 }
 
-function money(amount: string, locale: OrderConfirmLocale): string {
+/** A WhatsApp message is plain text: the Riyal reads "ر.س" or "SAR". */
+function money(amount: string, locale: OrderConfirmLocale, currency?: string | null): string {
   const value = Number(amount);
   const fixed = Number.isFinite(value) ? value.toFixed(2) : amount;
-  return locale === "ar" ? `${fixed} ج.م` : `EGP ${fixed}`;
+  const unit = !currency || currency === DEFAULT_CURRENCY ? (locale === "ar" ? "ج.م" : DEFAULT_CURRENCY) : moneyUnitText(locale, { currency });
+  return locale === "ar" ? `${fixed} ${unit}` : `${unit} ${fixed}`;
 }
 
 /** Fills the template (or the default); unknown `{keys}` stay as typed. */
@@ -45,7 +52,7 @@ export function renderOrderConfirmMessage(
     items: order.lines
       .map((line) => `• ${line.productName}${line.variantName ? ` (${line.variantName})` : ""} × ${line.quantity}`)
       .join("\n"),
-    total: money(order.totalAmount, locale),
+    total: money(order.totalAmount, locale, order.currency),
     address: order.address
       ? [order.address.line, order.address.area].filter(Boolean).join(ar ? "، " : ", ") || "—"
       : "—",

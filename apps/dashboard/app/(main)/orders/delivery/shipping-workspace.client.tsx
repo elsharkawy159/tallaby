@@ -25,7 +25,8 @@ import { TableSection } from "@workspace/ui/components/table-section";
 import { Tabs, TabsList, TabsTrigger } from "@workspace/ui/components/tabs";
 import { bulkUpdateShipmentStatus, setSellerRiderActive, setSellerRiderAvailable } from "@/actions/shipping";
 import { cn } from "@/lib/utils";
-import { formatDateTime, formatMoney } from "@/lib/i18n/format";
+import { formatDateTime, formatMoneyMarked, totalsByCurrency } from "@/lib/i18n/format";
+import { Money, MoneyText } from "@/components/money";
 import { SHIPPING_STATUS_BADGE } from "@/lib/shipping/shipping-status";
 import type { SellerRider, ShippingOrderRow } from "@/lib/shipping/shipping.types";
 import { AssignRiderDialog } from "./assign-rider-dialog.client";
@@ -56,7 +57,7 @@ function StatCard({
   tone,
 }: {
   label: string;
-  value: string | number;
+  value: React.ReactNode;
   hint: string;
   icon: React.ComponentType<{ className?: string }>;
   tone: string;
@@ -124,7 +125,8 @@ export function ShippingWorkspace({
       deliveredToday: orders.filter((o) => o.status === "delivered" && isToday(o.deliveredAt))
         .length,
       issues: orders.filter((o) => o.status === "failed").length,
-      cod: active.reduce((sum, o) => sum + o.codDue, 0),
+      // Never one sum across currencies: EGP, then one line per other currency.
+      cod: totalsByCurrency(active, (o) => ({ currency: o.currency, amount: o.codDue })),
     };
   }, [orders]);
 
@@ -217,7 +219,7 @@ export function ShippingWorkspace({
                 {t("cod")}
               </Badge>
               <div className="mt-1 text-sm font-medium tabular-nums">
-                {formatMoney(r.codDue, locale)}
+                <Money value={r.codDue} locale={locale} unit={r} />
               </div>
             </div>
           ) : (
@@ -315,7 +317,17 @@ export function ShippingWorkspace({
         />
         <StatCard
           label={t("stats.cashWithRiders")}
-          value={formatMoney(stats.cod, locale)}
+          value={
+            stats.cod.length === 0 ? (
+              <Money value={0} locale={locale} />
+            ) : (
+              stats.cod.map(({ currency, total }) => (
+                <span key={currency} className="block">
+                  <MoneyText locale={locale}>{formatMoneyMarked(total, locale, { currency })}</MoneyText>
+                </span>
+              ))
+            )
+          }
           hint={t("stats.cashHint")}
           icon={Banknote}
           tone="bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300"

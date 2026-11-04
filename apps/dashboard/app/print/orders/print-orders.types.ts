@@ -41,6 +41,8 @@ export interface PrintOrder {
   giftMessage: string | null;
   paymentMethod: string | null;
   paymentStatus: string | null;
+  /** The order's own currency: every amount printed is in it. */
+  currency: string;
   lines: PrintOrderLine[];
   itemCount: number;
   /** Every line of the order is this seller's, so the order totals apply to the printout. */

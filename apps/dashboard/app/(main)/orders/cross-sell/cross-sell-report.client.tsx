@@ -5,17 +5,20 @@ import { useLocale, useTranslations } from "next-intl";
 import { BadgePercent } from "lucide-react";
 import { Button } from "@workspace/ui/components/button";
 import { Card, CardContent } from "@workspace/ui/components/card";
-import { formatMoney, formatNumber } from "@/lib/i18n/format";
+import { formatMoney, formatNumber, type MoneyUnit } from "@/lib/i18n/format";
 import { ListPager } from "../list-pager.client";
 import { CROSS_SELL_REPORT_DAYS, CROSS_SELL_REPORT_PAGE_SIZES, type CrossSellReportDays } from "./cross-sell-report.lib";
 import type { CrossSellReport } from "./cross-sell-report.query";
 
 /** Orders › Cross-sell report: the period's totals and one card per offer, paged by the URL. */
 export function CrossSellReportView({
+  money,
   report,
   days,
   storeName,
 }: {
+  /** The store's currency. */
+  money?: MoneyUnit;
   report: CrossSellReport;
   days: CrossSellReportDays;
   /** Shown when the seller has several stores. */
@@ -39,7 +42,7 @@ export function CrossSellReportView({
   const stats = [
     { label: t("orders"), value: formatNumber(report.totals.orders, locale) },
     { label: t("units"), value: formatNumber(report.totals.units, locale) },
-    { label: t("discount"), value: formatMoney(report.totals.discount, locale) },
+    { label: t("discount"), value: formatMoney(report.totals.discount, locale, money) },
   ];
 
   return (
@@ -98,7 +101,7 @@ export function CrossSellReportView({
                       <div>
                         <dt className="text-xs text-muted-foreground">{t("discount")}</dt>
                         <dd className="font-semibold tabular-nums" dir="ltr">
-                          {formatMoney(row.discount, locale)}
+                          {formatMoney(row.discount, locale, money)}
                         </dd>
                       </div>
                     </dl>

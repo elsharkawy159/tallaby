@@ -324,7 +324,7 @@ export const getRecentOrders = cache(async (locale: string) => {
     },
     with: {
       order: {
-        columns: { id: true, orderNumber: true, status: true },
+        columns: { id: true, orderNumber: true, status: true, currency: true },
         with: {
           user: { columns: { email: true, fullName: true, isGuest: true } },
           shipments: { columns: { status: true } },

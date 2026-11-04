@@ -15,6 +15,7 @@ import {
 import { MapsLinkButton } from "@workspace/ui/components/maps-link-button";
 import { getPublicUrl, cn } from "@/lib/utils";
 import { formatDateTime, formatMoney } from "@/lib/i18n/format";
+import { Money } from "@/components/money";
 import { humanizeStatus, translateStatus } from "@/lib/i18n/status";
 import { BlockCustomerButton } from "./block-customer.client";
 import { BostaDeliveryCard, canShipWithBosta, ShipWithBostaButton } from "./bosta-ship.client";
@@ -150,7 +151,7 @@ export function OrderDetailsDialog({
   const tChannel = useTranslations("orders.channel");
   const tStatus = useTranslations("status");
   const locale = useLocale();
-  const money = (value: string | number | null | undefined) => formatMoney(value, locale);
+  const unit = { currency: order?.currency };
 
   return (
     <Dialog open={Boolean(order)} onOpenChange={(open) => !open && onClose()}>
@@ -258,13 +259,13 @@ export function OrderDetailsDialog({
                           <div className="text-xs text-muted-foreground" dir="auto">
                             {t("itemLine", {
                               quantity: line.quantity,
-                              price: money(line.price),
+                              price: formatMoney(line.price, locale, unit),
                             })}
                             {line.sku && <span> · {t("sku", { sku: line.sku })}</span>}
                           </div>
                         </div>
                         <div className="shrink-0 text-end text-sm font-medium tabular-nums" dir="ltr">
-                          {money(line.total)}
+                          <Money value={line.total} locale={locale} unit={unit} />
                         </div>
                       </li>
                     ))}
@@ -292,7 +293,7 @@ export function OrderDetailsDialog({
                     <div className="flex items-baseline justify-between gap-4 border-t pt-2">
                       <span className="text-sm font-semibold">{t("orderTotal")}</span>
                       <span className="text-lg font-bold tabular-nums" dir="ltr">
-                        {money(order.totalAmount)}
+                        <Money value={order.totalAmount} locale={locale} unit={unit} />
                       </span>
                     </div>
                   </div>

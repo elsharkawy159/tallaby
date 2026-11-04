@@ -227,6 +227,7 @@ export async function getShippingOverview(): Promise<ActionResult<ShippingOvervi
               orderNumber: true,
               status: true,
               totalAmount: true,
+              currency: true,
               paymentMethod: true,
               paymentStatus: true,
               createdAt: true,
@@ -306,6 +307,7 @@ export async function getShippingOverview(): Promise<ActionResult<ShippingOvervi
         paymentMethod: o.paymentMethod ?? null,
         paymentStatus: o.paymentStatus ?? null,
         codDue: isSettled(o.paymentStatus) ? 0 : Number(o.totalAmount ?? total),
+        currency: o.currency ?? "EGP",
         assignedAt: shipment?.assignedAt ?? null,
         deliveredAt: shipment?.deliveredAt ?? null,
       };

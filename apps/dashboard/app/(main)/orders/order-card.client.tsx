@@ -7,7 +7,8 @@ import { Checkbox } from "@workspace/ui/components/checkbox";
 import { WhatsAppButton } from "@workspace/ui/components/contact-buttons";
 import { cn } from "@workspace/ui/lib/utils";
 import { getPublicUrl } from "@/lib/utils";
-import { formatDateTime, formatMoney } from "@/lib/i18n/format";
+import { formatDateTime } from "@/lib/i18n/format";
+import { Money } from "@/components/money";
 import { BostaChip, canShipWithBosta, ShipWithBostaButton } from "./bosta-ship.client";
 import { OrderActions } from "./order-actions.client";
 import { OrderRiskBadges } from "./order-risk.client";
@@ -148,7 +149,7 @@ export function OrderCard({
         <div className="mt-auto flex items-end justify-between gap-2 pt-1">
           <div>
             <p className="text-[17px] font-extrabold tabular-nums" dir="ltr">
-              {formatMoney(order.totalAmount, locale)}
+              <Money value={order.totalAmount} locale={locale} unit={order} />
             </p>
             {order.paymentMethod && tPayment.has(order.paymentMethod) && (
               <p className="text-xs text-muted-foreground">{tPayment(order.paymentMethod)}</p>

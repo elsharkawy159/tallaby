@@ -30,6 +30,7 @@ const order = (orderNumber: string, quantity: number, storeName = "Nour Store"):
   shippingCost: "0",
   discountAmount: "0",
   totalAmount: "100.00",
+  currency: "EGP",
   collect: "100.00",
 });
 

@@ -27,7 +27,7 @@ export async function findOrderForReturnScan(code: unknown): Promise<ScanLookupR
           db.select({ id: orderItems.orderId }).from(orderItems).where(eq(orderItems.sellerId, sellerId)),
         ),
       ),
-      columns: { id: true, orderNumber: true, createdAt: true, status: true, paymentStatus: true, isDigitalOnly: true },
+      columns: { id: true, orderNumber: true, createdAt: true, status: true, paymentStatus: true, isDigitalOnly: true, currency: true },
       with: {
         user: { columns: { fullName: true, phone: true } },
         userAddress_shippingAddressId: { columns: { fullName: true, phone: true } },
@@ -67,6 +67,7 @@ export async function findOrderForReturnScan(code: unknown): Promise<ScanLookupR
         itemsSummary: mine.map((i) => `${i.quantity ?? 1}× ${i.productName}`).join(" · "),
         itemCount: mine.reduce((n, i) => n + (i.quantity ?? 1), 0),
         total: (total / 100).toFixed(2),
+        currency: order.currency ?? "EGP",
         // The store name only when the store is this seller's (marketplace orders have none).
         storeName: order.store && order.store.sellerId === sellerId ? order.store.name : null,
         canReturn: flow.actions.includes("return"),

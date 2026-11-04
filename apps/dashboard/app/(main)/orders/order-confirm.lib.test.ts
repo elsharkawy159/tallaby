@@ -72,3 +72,14 @@ describe("unconfirmedHours", () => {
 it("ships a default in both languages", () => {
   expect(Object.keys(ORDER_CONFIRM_DEFAULTS).sort()).toEqual(["ar", "en"]);
 });
+
+it("writes the order's own currency in the message", () => {
+  const render = (locale: "ar" | "en", currency?: string | null) =>
+    renderOrderConfirmMessage("{total}", { order: { ...order, currency }, storeName: "S", locale });
+  expect(render("en", "SAR")).toBe("SAR 355.50");
+  expect(render("ar", "SAR")).toBe("355.50 ر.س");
+  expect(render("en", "AED")).toBe("AED 355.50");
+  // An EGP order, or one with no currency, reads as it always did.
+  expect(render("en", "EGP")).toBe("EGP 355.50");
+  expect(render("ar", null)).toBe("355.50 ج.م");
+});

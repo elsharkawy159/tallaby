@@ -13,6 +13,7 @@ import {
 } from "@workspace/lib/checkout-leads";
 import type { StoreLeadSettings } from "@workspace/lib/checkout-leads/server";
 import { formatDateTime, formatMoney, formatNumber, formatRelativeTime } from "@/lib/i18n/format";
+import { Money } from "@/components/money";
 import { ListPager } from "../list-pager.client";
 import { linesForMessage, PENDING_CART_PAGE_SIZES } from "./pending-carts.lib";
 import type { PendingCartRow, PendingCartsPage } from "./pending-carts.query";
@@ -92,7 +93,7 @@ function PendingCartCard({ cart, store }: { cart: PendingCartRow; store: StoreLe
     const message = renderLeadMessage(store.template ?? DEFAULT_LEAD_TEMPLATES[store.locale], {
       name: cart.name?.split(/\s+/)[0] ?? "",
       products: leadProductsText(linesForMessage(cart.lines.map((line) => line.storeTitle), cart.lineCount), store.locale),
-      total: formatMoney(cart.value, store.locale),
+      total: formatMoney(cart.value, store.locale, cart),
       store: store.name,
       link: store.link,
     }).replace(/ {2,}/g, " ");
@@ -151,7 +152,7 @@ function PendingCartCard({ cart, store }: { cart: PendingCartRow; store: StoreLe
           </div>
           <div>
             <dt className="text-muted-foreground">{t("value")}</dt>
-            <dd className="font-semibold tabular-nums">{formatMoney(cart.value, locale)}</dd>
+            <dd className="font-semibold tabular-nums"><Money value={cart.value} locale={locale} unit={cart} /></dd>
           </div>
         </dl>
 

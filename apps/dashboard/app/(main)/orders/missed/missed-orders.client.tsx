@@ -32,10 +32,13 @@ import {
   type LeadStatus,
 } from "@workspace/lib/checkout-leads";
 import type { CheckoutLeadRow, StoreLeadSettings } from "@workspace/lib/checkout-leads/server";
-import { formatDateTime, formatMoney, formatRelativeTime } from "@/lib/i18n/format";
+import { formatDateTime, formatMoney, formatRelativeTime, moneyParams, type MoneyUnit } from "@/lib/i18n/format";
+import { Money } from "@/components/money";
 import { saveLeadTemplate, setLeadContacted } from "./missed-orders.server";
 
 type Props = {
+  /** Store id → its currency. A lead has no currency of its own; its amounts are its store's. */
+  storeMoney: Record<string, MoneyUnit>;
   leads: CheckoutLeadRow[];
   stores: StoreLeadSettings[];
   storeId: string | null;
@@ -44,7 +47,7 @@ type Props = {
 };
 
 /** Orders › Not completed: filters, the lead cards and the WhatsApp message editor. */
-export function MissedOrdersView({ leads, stores, storeId, range, status }: Props) {
+export function MissedOrdersView({ storeMoney, leads, stores, storeId, range, status }: Props) {
   const t = useTranslations("missedOrders");
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -115,24 +118,24 @@ export function MissedOrdersView({ leads, stores, storeId, range, status }: Prop
         <ul className="grid gap-3 lg:grid-cols-2">
           {leads.map((lead) => (
             <li key={lead.id}>
-              <LeadCard lead={lead} showStore={stores.length > 1} />
+              <LeadCard lead={lead} money={storeMoney[lead.storeId]} showStore={stores.length > 1} />
             </li>
           ))}
         </ul>
       )}
 
-      <TemplateDialog open={editing} onOpenChange={setEditing} stores={stores} initialStoreId={storeId} />
+      <TemplateDialog storeMoney={storeMoney} open={editing} onOpenChange={setEditing} stores={stores} initialStoreId={storeId} />
     </div>
   );
 }
 
-function LeadCard({ lead, showStore }: { lead: CheckoutLeadRow; showStore: boolean }) {
+function LeadCard({ lead, money, showStore }: { lead: CheckoutLeadRow; money?: MoneyUnit; showStore: boolean }) {
   const t = useTranslations("missedOrders");
   const locale = useLocale();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
 
-  const totalText = formatMoney(lead.total ?? lead.subtotal, lead.storeLocale);
+  const totalText = formatMoney(lead.total ?? lead.subtotal, lead.storeLocale, money);
   const message = renderLeadMessage(lead.template ?? DEFAULT_LEAD_TEMPLATES[lead.storeLocale], {
     name: lead.fullName.split(/\s+/)[0] ?? lead.fullName,
     products: leadProductsText(lead.items, lead.storeLocale),
@@ -199,15 +202,15 @@ function LeadCard({ lead, showStore }: { lead: CheckoutLeadRow; showStore: boole
         <dl className="grid grid-cols-3 gap-2 rounded-lg bg-muted/50 p-2 text-xs">
           <div>
             <dt className="text-muted-foreground">{t("subtotal")}</dt>
-            <dd className="font-medium tabular-nums">{formatMoney(lead.subtotal, locale)}</dd>
+            <dd className="font-medium tabular-nums"><Money value={lead.subtotal} locale={locale} unit={money} /></dd>
           </div>
           <div>
             <dt className="text-muted-foreground">{t("shipping")}</dt>
-            <dd className="font-medium tabular-nums">{lead.shipping == null ? "—" : formatMoney(lead.shipping, locale)}</dd>
+            <dd className="font-medium tabular-nums">{lead.shipping == null ? "—" : <Money value={lead.shipping} locale={locale} unit={money} />}</dd>
           </div>
           <div>
             <dt className="text-muted-foreground">{t("total")}</dt>
-            <dd className="font-semibold tabular-nums">{lead.total == null ? "—" : formatMoney(lead.total, locale)}</dd>
+            <dd className="font-semibold tabular-nums">{lead.total == null ? "—" : <Money value={lead.total} locale={locale} unit={money} />}</dd>
           </div>
         </dl>
 
@@ -263,13 +266,16 @@ function TemplateDialog({
   onOpenChange,
   stores,
   initialStoreId,
+  storeMoney,
 }: {
+  storeMoney: Record<string, MoneyUnit>;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   stores: StoreLeadSettings[];
   initialStoreId: string | null;
 }) {
   const t = useTranslations("missedOrders.template");
+  const locale = useLocale();
   const tErr = useTranslations("missedOrders.errors");
   const router = useRouter();
   const [storeId, setStoreId] = useState(initialStoreId ?? stores[0]?.storeId ?? "");
@@ -289,7 +295,7 @@ function TemplateDialog({
         ? renderLeadMessage(text, {
             name: t("sample.name"),
             products: t("sample.products"),
-            total: t("sample.total"),
+            total: t("sample.total", moneyParams(locale, storeMoney[store.storeId])),
             store: store.name,
             link: store.link,
           })

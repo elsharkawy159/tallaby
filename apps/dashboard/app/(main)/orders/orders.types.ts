@@ -66,6 +66,8 @@ export interface SellerOrderRow {
   discountAmount: string;
   /** What the customer pays for the whole order. */
   totalAmount: string;
+  /** The order's own currency: every amount on this row is in it. */
+  currency: string;
   lines: SellerOrderLine[];
   itemCount: number;
   failureReason: string | null;

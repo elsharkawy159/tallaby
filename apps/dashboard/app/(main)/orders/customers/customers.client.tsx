@@ -33,7 +33,8 @@ import {
   type CustomerSort,
   type StoreCustomer,
 } from "@workspace/lib/customers";
-import { formatDate, formatDateTime, formatMoney, formatNumber, formatRelativeTime } from "@/lib/i18n/format";
+import { formatDate, formatDateTime, formatMoney, formatNumber, formatRelativeTime, moneyParams, type MoneyUnit } from "@/lib/i18n/format";
+import { Money } from "@/components/money";
 import { downloadXlsx, todayStamp } from "@/lib/product-excel";
 import { blockCustomerPhone, unblockCustomerPhone } from "../../stores/[storeId]/settings/protection/protection.server";
 import { ListPager } from "../list-pager.client";
@@ -41,6 +42,8 @@ import { exportFilteredCustomers, loadCustomerOrders, saveCustomerNote, type Cus
 import { AudienceExportButton } from "./audience-export.client";
 
 type Props = {
+  /** The store's currency: every amount on this page is in it. */
+  money?: MoneyUnit;
   /** One page of the filtered customers. */
   customers: StoreCustomer[];
   /** The whole store, whatever the filters (F-43e). */
@@ -68,6 +71,7 @@ const chip = (active: boolean) =>
 
 /** Orders › Customers: store picker, search, filters, the table and the customer drawer. */
 export function CustomersView({
+  money,
   customers,
   stats,
   matched,
@@ -143,7 +147,7 @@ export function CustomersView({
           toast.error(t("export.failed"));
           return;
         }
-        const header = CUSTOMER_EXPORT_COLUMNS.map((column) => t(`export.columns.${column}`));
+        const header = CUSTOMER_EXPORT_COLUMNS.map((column) => t(`export.columns.${column}`, moneyParams(locale, money)));
         const sheet = res.customers.map((c) => {
           const values = customerExportRow(c, savedNotes[c.key] ?? res.notes[c.key]);
           return Object.fromEntries(CUSTOMER_EXPORT_COLUMNS.map((column, i) => [header[i], values[column]]));
@@ -292,7 +296,7 @@ export function CustomersView({
                         {[c.city, c.governorate].filter(Boolean).join("، ") || "—"}
                       </TableCell>
                       <TableCell className="text-end tabular-nums">{formatNumber(c.orderCount, locale)}</TableCell>
-                      <TableCell className="text-end tabular-nums">{formatMoney(c.totalSpent, locale)}</TableCell>
+                      <TableCell className="text-end tabular-nums"><Money value={c.totalSpent} locale={locale} unit={money} /></TableCell>
                       <TableCell className="text-end">
                         <SuccessRate customer={c} />
                       </TableCell>
@@ -324,6 +328,7 @@ export function CustomersView({
 
       {open && (
         <CustomerSheet
+          money={money}
           customer={open}
           storeId={storeId}
           blocked={Boolean(open.phone && blocked.has(open.phone))}
@@ -362,7 +367,7 @@ function RowNotes({ note }: { note: CustomerNote | undefined }) {
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+function Stat({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="rounded-xl border bg-card p-3">
       <dt className="text-xs text-muted-foreground">{label}</dt>
@@ -413,6 +418,7 @@ const OUTCOME_TONE: Record<CustomerOrderOutcome, string> = {
 };
 
 function CustomerSheet({
+  money,
   customer,
   storeId,
   blocked,
@@ -421,6 +427,7 @@ function CustomerSheet({
   onNoteSaved,
   onClose,
 }: {
+  money?: MoneyUnit;
   customer: StoreCustomer;
   storeId: string;
   blocked: boolean;
@@ -489,7 +496,7 @@ function CustomerSheet({
 
           <dl className="grid grid-cols-2 gap-2 text-xs">
             <Stat label={t("columns.orders")} value={formatNumber(customer.orderCount, locale)} />
-            <Stat label={t("columns.spent")} value={formatMoney(customer.totalSpent, locale)} />
+            <Stat label={t("columns.spent")} value={<Money value={customer.totalSpent} locale={locale} unit={money} />} />
             <Stat
               label={t("columns.success")}
               value={customer.successRate == null ? "—" : `${customer.successRate}%`}
@@ -569,7 +576,7 @@ function CustomerSheet({
                         <span className="block text-xs text-muted-foreground">{formatDateTime(o.createdAt, locale)}</span>
                       </span>
                       <span className="flex shrink-0 flex-col items-end gap-1">
-                        <span className="text-sm font-medium tabular-nums">{formatMoney(o.totalAmount, locale)}</span>
+                        <span className="text-sm font-medium tabular-nums"><Money value={o.totalAmount} locale={locale} unit={money} /></span>
                         <Badge variant="outline" className={cn("font-medium", OUTCOME_TONE[o.outcome])}>
                           {t(`outcome.${o.outcome}`)}
                         </Badge>

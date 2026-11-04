@@ -27,6 +27,8 @@ export interface ShippingOrderRow {
   paymentStatus: string | null;
   /** Amount the rider has to collect in cash; 0 when prepaid/collected. */
   codDue: number;
+  /** The order's own currency: total and codDue are in it. */
+  currency: string;
   assignedAt: string | null;
   deliveredAt: string | null;
 }

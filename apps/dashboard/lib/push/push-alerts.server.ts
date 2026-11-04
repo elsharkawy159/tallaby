@@ -160,15 +160,15 @@ async function loadPrefs(sellerIds: string[]): Promise<Map<string, PushPrefs>> {
 }
 
 /** Store order totals by order id (the caller checks the order is the notified store's). */
-async function loadOrderAmounts(rows: PushCandidate[]): Promise<Map<string, { storeId: string | null; total: string }>> {
+async function loadOrderAmounts(rows: PushCandidate[]): Promise<Map<string, { storeId: string | null; currency: string | null; total: string }>> {
   const ids = orderIdsNeedingAmount(rows);
-  const map = new Map<string, { storeId: string | null; total: string }>();
+  const map = new Map<string, { storeId: string | null; currency: string | null; total: string }>();
   if (ids.length === 0) return map;
   const found = await db
-    .select({ id: orders.id, storeId: orders.storeId, total: orders.totalAmount })
+    .select({ id: orders.id, storeId: orders.storeId, currency: orders.currency, total: orders.totalAmount })
     .from(orders)
     .where(inArray(orders.id, ids));
-  for (const row of found) map.set(row.id, { storeId: row.storeId, total: row.total });
+  for (const row of found) map.set(row.id, { storeId: row.storeId, currency: row.currency, total: row.total });
   return map;
 }
 
@@ -289,7 +289,7 @@ export async function dispatchSellerPushes(limit: number = PUSH_CLAIM_LIMIT): Pr
     const orderId = typeof row.data.orderId === "string" ? row.data.orderId : null;
     const order = orderId ? amounts.get(orderId) : undefined;
     // Only the notified store's own order shows its amount.
-    const amount = order && row.storeId && order.storeId === row.storeId ? formatMoney(order.total, device.locale) : null;
+    const amount = order && row.storeId && order.storeId === row.storeId ? formatMoney(order.total, device.locale, { currency: order.currency }) : null;
     const bell = BELL_TEXT_TYPES.has(row.type)
       ? {
           t: BELL_TRANSLATORS[device.locale],

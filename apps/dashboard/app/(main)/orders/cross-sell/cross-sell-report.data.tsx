@@ -1,6 +1,8 @@
 import { getTranslations } from "next-intl/server";
 import { requireOrdersStore } from "@/lib/auth/require-seller.server";
 import { getSellerStores } from "@/lib/stores/current-store.server";
+import { loadStoreMoney } from "@/lib/stores/account-money.server";
+import type { MoneyUnit } from "@/lib/i18n/format";
 import { CrossSellReportView } from "./cross-sell-report.client";
 import { parseCrossSellReportFilters } from "./cross-sell-report.lib";
 import { loadCrossSellReport, type CrossSellReport } from "./cross-sell-report.query";
@@ -25,9 +27,11 @@ export async function CrossSellReportData({
 
   let report = EMPTY;
   let storeName: string | null = null;
+  let money: MoneyUnit | undefined;
   if (picked) {
     const { seller, store } = await requireOrdersStore(picked.id);
     report = await loadCrossSellReport(seller.sellerId, store.id, filters);
+    money = (await loadStoreMoney(seller.sellerId))[store.id];
     storeName = stores.length > 1 ? store.name : null;
   }
 
@@ -35,7 +39,7 @@ export async function CrossSellReportData({
     <section aria-label={t("title")} className="space-y-5">
       {/* No page title: the header breadcrumb already names the page. */}
       <p className="text-pretty text-sm text-muted-foreground">{t("description")}</p>
-      <CrossSellReportView key={picked?.id ?? "none"} report={report} days={filters.days} storeName={storeName} />
+      <CrossSellReportView key={picked?.id ?? "none"} money={money} report={report} days={filters.days} storeName={storeName} />
     </section>
   );
 }

@@ -146,7 +146,7 @@
       "cash": "كاش"
     },
     "paidHint": "الفلوس معاك بالفعل، فمفيش تحصيل عند التوصيل.",
-    "discount": "الخصم (جنيه)",
+    "discount": "الخصم ({code, select, EGP {جنيه} other {{unit}}})",
     "discountHint": "بيتخصم من بيعتك انت، ومش بيطبق على الشحن.",
     "goods": "المنتجات",
     "discountLine": "الخصم",
@@ -2680,6 +2680,7 @@
       "sheet": "الطلبات",
       "failed": "معرفناش نصدّر الطلبات. جرّب تاني.",
       "columns": {
+        "currency": "العملة",
         "orderNumber": "رقم الطلب",
         "date": "التاريخ",
         "channel": "قناة البيع",
@@ -2691,13 +2692,13 @@
         "area": "المنطقة",
         "items": "المنتجات",
         "quantity": "عدد القطع",
-        "itemsTotal": "إجمالي منتجاتك (ج.م)",
-        "shipping": "الشحن (ج.م)",
-        "discount": "الخصم (ج.م)",
-        "total": "إجمالي الطلب (ج.م)",
+        "itemsTotal": "إجمالي منتجاتك",
+        "shipping": "الشحن",
+        "discount": "الخصم",
+        "total": "إجمالي الطلب",
         "paymentMethod": "طريقة الدفع",
         "paymentStatus": "حالة الدفع",
-        "collect": "المطلوب تحصيله (ج.م)",
+        "collect": "المطلوب تحصيله",
         "tracking": "رقم تتبع بوسطة",
         "notes": "ملاحظات"
       }
@@ -6636,7 +6637,7 @@
       "sample": {
         "name": "منى",
         "products": "باور بانك 10000 مللي أمبير",
-        "total": "450 جنيه"
+        "total": "{code, select, EGP {450 جنيه} other {450 {unit}}}"
       }
     },
     "errors": {
@@ -6914,7 +6915,7 @@
         "delivered": "اتسلّمت",
         "refused": "اترفضت أو رجعت",
         "cancelled": "اتلغت",
-        "spent": "صرف (جنيه)",
+        "spent": "صرف ({code, select, EGP {جنيه} other {{unit}}})",
         "successRate": "نسبة الاستلام %",
         "firstOrder": "أول طلب",
         "lastOrder": "آخر طلب",

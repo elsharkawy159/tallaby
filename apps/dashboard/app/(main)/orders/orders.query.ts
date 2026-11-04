@@ -25,6 +25,7 @@ import {
   renderOrderConfirmMessage,
   unconfirmedHours,
 } from "./order-confirm.lib";
+import { DEFAULT_CURRENCY } from "@workspace/lib";
 import {
   pickProductSlug,
   resolveCustomerEmail,
@@ -165,6 +166,7 @@ export async function loadSellerOrders(
       shippingCost: true,
       discountAmount: true,
       totalAmount: true,
+      currency: true,
       notes: true,
       isGift: true,
       giftMessage: true,
@@ -365,6 +367,7 @@ export async function loadSellerOrders(
       shippingCost: o.shippingCost ?? "0",
       discountAmount: o.discountAmount ?? "0",
       totalAmount: o.totalAmount ?? "0",
+      currency: o.currency ?? DEFAULT_CURRENCY,
       lines: mine.map((i) => ({
         id: i.id,
         productName: i.productName,
@@ -407,6 +410,7 @@ export async function loadSellerOrders(
                 customerName: resolveCustomerName(o, ""),
                 orderNumber: o.orderNumber,
                 totalAmount: o.totalAmount ?? "0",
+                currency: o.currency,
                 lines: mine.map((i) => ({ productName: i.productName, variantName: i.variantName, quantity: i.quantity ?? 1 })),
                 address: addr
                   ? {

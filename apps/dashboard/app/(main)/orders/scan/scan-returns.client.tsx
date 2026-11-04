@@ -9,7 +9,8 @@ import { Button, buttonVariants } from "@workspace/ui/components/button";
 import { Card, CardContent } from "@workspace/ui/components/card";
 import { Input } from "@workspace/ui/components/input";
 import { ConfirmActionDialog } from "@/components/layout/confirm-action-dialog.client";
-import { formatDateTime, formatMoney } from "@/lib/i18n/format";
+import { formatDateTime } from "@/lib/i18n/format";
+import { Money } from "@/components/money";
 import { cn } from "@/lib/utils";
 import { OrderStageBadge } from "../order-stage-badge";
 import { updateSellerOrder } from "../orders.server";
@@ -280,7 +281,7 @@ export function ScanReturnsView() {
               <div className="flex justify-between gap-3">
                 <dt className="text-muted-foreground">{t("total")}</dt>
                 <dd className="font-medium tabular-nums" dir="ltr">
-                  {formatMoney(order.total, locale)}
+                  <Money value={order.total} locale={locale} unit={order} />
                 </dd>
               </div>
             </dl>

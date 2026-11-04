@@ -2,7 +2,8 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { ChevronRight } from "lucide-react";
 import { OrdersLocked } from "@/components/orders/orders-locked";
-import { currentOrderLock } from "@/lib/auth/require-seller.server";
+import { currentOrderLock, requireSeller } from "@/lib/auth/require-seller.server";
+import { loadStoreMoney } from "@/lib/stores/account-money.server";
 import { getSellerStores } from "@/lib/stores/current-store.server";
 import { ManualOrderForm } from "./manual-order.client";
 
@@ -13,11 +14,13 @@ export default async function NewManualOrderPage({ searchParams }: { searchParam
   const lock = await currentOrderLock();
   if (lock.locked) return <OrdersLocked lock={lock} />;
 
-  const [{ store: storeParam }, { stores }, t] = await Promise.all([
+  const [seller, { store: storeParam }, { stores }, t] = await Promise.all([
+    requireSeller(),
     searchParams,
     getSellerStores(),
     getTranslations("manualOrder"),
   ]);
+  const storeMoney = stores.length > 0 ? await loadStoreMoney(seller.sellerId) : {};
   const wanted = Array.isArray(storeParam) ? storeParam[0] : storeParam;
   const store = stores.find((s) => s.id === wanted) ?? (stores.length === 1 ? stores[0] : null);
 
@@ -28,7 +31,7 @@ export default async function NewManualOrderPage({ searchParams }: { searchParam
         <p className="mt-1 text-sm text-muted-foreground">{store ? t("subtitle", { store: store.name }) : t("chooseStore")}</p>
       </div>
       {store ? (
-        <ManualOrderForm storeId={store.id} storeName={store.name} />
+        <ManualOrderForm money={storeMoney[store.id]} storeId={store.id} storeName={store.name} />
       ) : (
         <ul className="mx-auto w-full max-w-5xl space-y-2">
           {stores.map((s) => (

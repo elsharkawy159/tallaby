@@ -31,6 +31,8 @@ export type PendingCartRow = PendingCartContact & {
   lineCount: number;
   /** Sum of the lines, 2 dp decimal string. */
   value: string;
+  /** The cart's own currency. */
+  currency: string;
   lastActivity: string;
   lines: PendingCartLine[];
 };
@@ -65,13 +67,13 @@ const pendingCartsFrom = (sellerId: string, storeId: string) => sql`
 
 /** One page of rows; the contact and line lookups run only for these. */
 const pendingCartsPageSql = (sellerId: string, storeId: string, limit: number, offset: number) => sql`
-  SELECT p.id, p.item_count, p.line_count, p.value,
+  SELECT p.id, p.item_count, p.line_count, p.value, p.currency,
          to_json(p.activity) #>> '{}' AS last_activity,
          u.is_guest, u.full_name AS user_name, u.phone AS user_phone, u.email AS user_email,
          lead.full_name AS lead_name, lead.phone AS lead_phone,
          lines.lines
     FROM (
-      SELECT c.id, c.user_id, c.store_id, st.default_locale, a.item_count, a.line_count, a.value,
+      SELECT c.id, c.user_id, c.store_id, c.currency, st.default_locale, a.item_count, a.line_count, a.value,
              GREATEST(c.created_at, c.updated_at, c.last_activity, a.touched) AS activity
         ${pendingCartsFrom(sellerId, storeId)}
        ORDER BY activity DESC, c.id DESC
@@ -133,6 +135,7 @@ export async function listStorePendingCarts(
       itemCount: Number(r.item_count),
       lineCount: Number(r.line_count),
       value: String(r.value ?? "0"),
+      currency: str(r.currency) ?? "EGP",
       lastActivity: String(r.last_activity),
       lines: ((r.lines as RawLine[] | null) ?? []).map((line) => {
         const title = pickProductTitle(line.titles, locale);

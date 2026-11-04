@@ -22,6 +22,7 @@ export const ORDER_EXPORT_COLUMNS = [
   "paymentMethod",
   "paymentStatus",
   "collect",
+  "currency",
   "tracking",
   "notes",
 ] as const;
@@ -56,7 +57,7 @@ const cairoStamp = (iso: string) => {
 };
 
 const toPiastres = (value: string | null | undefined) => Math.round((Number(value) || 0) * 100);
-/** EGP as a number, so the sheet can sum it. */
+/** An amount as a number, so the sheet can sum it; the `currency` column says what it is in. */
 const egp = (value: string | null | undefined) => toPiastres(value) / 100;
 
 /**
@@ -94,6 +95,7 @@ export function orderExportRow(
     paymentMethod: order.paymentMethod ? labels.paymentMethod(order.paymentMethod) : "",
     paymentStatus: order.paymentStatus ? labels.paymentStatus(order.paymentStatus) : "",
     collect: collect === null ? 0 : egp(collect),
+    currency: order.currency,
     tracking: order.bosta?.trackingNumber ?? order.wassalhaTracking ?? "",
     notes: order.notes ?? "",
   };

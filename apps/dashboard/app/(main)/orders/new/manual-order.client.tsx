@@ -4,6 +4,7 @@ import { useEffect, useId, useRef, useState, useTransition } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
+import { moneyNumberOptions, moneyParams, type MoneyUnit } from "@/lib/i18n/format";
 import { LoaderCircle, MessageCircle, Search, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { MANUAL_PAID_VIA, type ManualOrderTotals, type ManualPaidVia } from "@workspace/lib/orders/manual";
@@ -45,7 +46,7 @@ function useDebounced<T>(value: T, ms: number): T {
   return debounced;
 }
 
-export function ManualOrderForm({ storeId, storeName }: { storeId: string; storeName: string }) {
+export function ManualOrderForm({ money: unit, storeId, storeName }: { money?: MoneyUnit; storeId: string; storeName: string }) {
   const t = useTranslations("manualOrder");
   const format = useFormatter();
   const locale = useLocale();
@@ -69,7 +70,7 @@ export function ManualOrderForm({ storeId, storeName }: { storeId: string; store
   // One id per attempt, so a double click can't make two orders.
   const requestId = useRef(crypto.randomUUID());
 
-  const money = (piastres: number) => format.number(piastres / 100, { style: "currency", currency: "EGP" });
+  const money = (piastres: number) => format.number(piastres / 100, moneyNumberOptions(unit));
 
   const buildInput = (sendLink: boolean) => ({
     requestId: requestId.current,
@@ -316,7 +317,7 @@ export function ManualOrderForm({ storeId, storeName }: { storeId: string; store
         </fieldset>
 
         <div className="grid gap-1.5">
-          <Label htmlFor={`${ids}-discount`}>{t("discount")}</Label>
+          <Label htmlFor={`${ids}-discount`}>{t("discount", moneyParams(locale, unit))}</Label>
           <Input id={`${ids}-discount`} inputMode="decimal" dir="ltr" value={discount} onChange={(e) => setDiscount(e.target.value)} placeholder="0" />
           <p className="text-xs text-muted-foreground">{t("discountHint")}</p>
         </div>
