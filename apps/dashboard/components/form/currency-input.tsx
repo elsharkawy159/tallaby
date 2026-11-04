@@ -1,7 +1,8 @@
 import { useLocale } from "next-intl";
+import { Banknote } from "lucide-react";
 import { SAUDI_RIYAL_LABEL, currencyLabelText } from "@workspace/lib";
 import { RiyalSymbol } from "@/components/money";
-import { moneyLabel, type MoneyUnit } from "@/lib/i18n/format";
+import { MIXED_CURRENCIES, moneyLabel, type MoneyUnit } from "@/lib/i18n/format";
 import { cn } from "@/lib/utils";
 import { GroupInput, InputAddon, InputGroup } from "./form-ui";
 
@@ -9,6 +10,12 @@ import { GroupInput, InputAddon, InputGroup } from "./form-ui";
 export const CURRENCY_CODE = "EGP";
 
 function AddonLabel({ unit }: { unit: MoneyUnit }) {
+  // Stores in different currencies share this amount: no label is the only honest one.
+  if (unit.currency === MIXED_CURRENCIES) return <Banknote className="size-4" aria-hidden />;
+  return <StoreLabel unit={unit} />;
+}
+
+function StoreLabel({ unit }: { unit: MoneyUnit }) {
   const locale = useLocale();
   const label = moneyLabel(unit);
   return label === SAUDI_RIYAL_LABEL ? <RiyalSymbol locale={locale} /> : currencyLabelText(label, locale);

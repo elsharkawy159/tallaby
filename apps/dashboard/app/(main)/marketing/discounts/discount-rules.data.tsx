@@ -1,4 +1,6 @@
 import { getLocale, getTranslations } from "next-intl/server";
+import { parseStoreCurrency } from "@workspace/lib";
+import { getStore } from "@workspace/lib/stores/server";
 import { asc, db, eq, sellerProductCategories } from "@workspace/db";
 import { requireSeller } from "@/lib/auth/require-seller.server";
 import { getSellerStores } from "@/lib/stores/current-store.server";
@@ -17,8 +19,9 @@ export async function DiscountRulesData(props: { storeId: string | null }) {
     getLocale(),
   ]);
   const store = stores.find((s) => s.id === props.storeId) ?? selected;
-  const [rules, categories] = await Promise.all([
+  const [rules, storeRow, categories] = await Promise.all([
     store ? listDiscountRules(store.id) : [],
+    store ? getStore(seller.sellerId, store.id) : null,
     db
       .select({ id: sellerProductCategories.id, name: sellerProductCategories.name, nameAr: sellerProductCategories.nameAr })
       .from(sellerProductCategories)
@@ -33,6 +36,7 @@ export async function DiscountRulesData(props: { storeId: string | null }) {
         key={store?.id ?? "none"}
         stores={stores.map((s) => ({ id: s.id, name: s.name }))}
         storeId={store?.id ?? null}
+        money={parseStoreCurrency(storeRow?.settings)}
         initial={rules}
         categories={categories.map((c) => ({ id: c.id, name: (locale === "ar" ? c.nameAr : c.name) || c.name || c.nameAr || "" }))}
       />

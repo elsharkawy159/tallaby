@@ -57,11 +57,13 @@ export function useStoreCatalog(storeId: string, { initialMode, initialSelected,
 export type StoreCatalogState = ReturnType<typeof useStoreCatalog>;
 
 export function StoreCatalogSections({
+  money,
   catalog,
   products,
   maxProducts,
   disabled,
 }: {
+  money: { currency: string };
   catalog: StoreCatalogState;
   products: CatalogProduct[];
   maxProducts: number;
@@ -186,7 +188,7 @@ export function StoreCatalogSections({
                             <span className="block truncate text-sm font-medium">{title}</span>
                             {product.price != null && (
                               <span className="block text-xs text-muted-foreground tabular-nums">
-                                {new Intl.NumberFormat(locale === "ar" ? "ar-EG" : "en-EG", { style: "currency", currency: "EGP" }).format(product.price)}
+                                {new Intl.NumberFormat(locale === "ar" ? "ar-EG" : "en-EG", { style: "currency", currency: money.currency }).format(product.price)}
                               </span>
                             )}
                           </span>

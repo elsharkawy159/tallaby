@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { useFormatter, useTranslations } from "next-intl";
+import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { searchCouponProducts, type CouponProductOption } from "@/actions/coupons";
+import { useAccountMoney } from "@/components/account-money.client";
+import { moneyNumberOptions, moneyParams } from "@/lib/i18n/format";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import { Switch } from "@workspace/ui/components/switch";
@@ -12,6 +14,8 @@ import { addCrossSell, removeCrossSell, setCrossSellActive, type CrossSellResult
 
 /** "Frequently bought with": offers shown under this product on the seller's stores (ROADMAP.md F-32c). */
 export function CrossSellSection({ productId, initial }: { productId: string; initial: CrossSellRow[] }) {
+  const { unit } = useAccountMoney();
+  const locale = useLocale();
   const t = useTranslations("crossSell");
   const format = useFormatter();
   const [offers, setOffers] = useState(initial);
@@ -68,7 +72,7 @@ export function CrossSellSection({ productId, initial }: { productId: string; in
   const label = (offer: CrossSellRow) =>
     offer.discountType === "percent"
       ? t("percentOff", { value: offer.discountValue })
-      : t("amountOff", { value: format.number(offer.discountValue, { style: "currency", currency: "EGP" }) });
+      : t("amountOff", { value: format.number(offer.discountValue, moneyNumberOptions(unit)) });
 
   return (
     <section className="mx-auto mt-5 w-full max-w-5xl rounded-2xl border bg-card p-4 sm:p-5">
@@ -141,7 +145,7 @@ export function CrossSellSection({ productId, initial }: { productId: string; in
           onChange={(event) => setType(event.target.value === "fixed" ? "fixed" : "percent")}
         >
           <option value="percent">{t("percent")}</option>
-          <option value="fixed">{t("fixed")}</option>
+          <option value="fixed">{t("fixed", moneyParams(locale, unit))}</option>
         </select>
         <Input aria-label={t("discountValue")} inputMode="decimal" dir="ltr" value={value} onChange={(event) => setValue(event.target.value)} />
         <Button type="button" disabled={!chosen || pending} onClick={add}>

@@ -5,7 +5,9 @@ import { useFormContext, useWatch } from "react-hook-form";
 import { useLocale, useTranslations } from "next-intl";
 import { Banknote } from "lucide-react";
 import { Switch } from "@workspace/ui/components/switch";
-import { formatMoney } from "@/lib/i18n/format";
+import { formatMoneyMarked } from "@/lib/i18n/format";
+import { MixedCurrencyNote, useAccountMoney } from "@/components/account-money.client";
+import { MoneyText } from "@/components/money";
 import type { SellerPricingSettings } from "@/lib/utils/product-pricing.lib";
 import { cn } from "@/lib/utils";
 import { FieldError, FieldHint, FieldLabel, SectionCard } from "@/components/form/form-ui";
@@ -30,6 +32,7 @@ export function PricingSection({
 }) {
   const t = useTranslations("productForm.sections.pricing");
   const locale = useLocale();
+  const { unit } = useAccountMoney();
   const form = useFormContext<AddProductFormData>();
   const [listPrice, finalPrice, discountValue, discountEndsAt] = useWatch({
     control: form.control,
@@ -95,6 +98,7 @@ export function PricingSection({
       divided={false}
       invalid={Boolean(listError || finalError)}
     >
+      <MixedCurrencyNote className="mb-3.5" />
       <div className="grid grid-cols-1 items-start gap-3.5 sm:grid-cols-2">
         <div className="flex flex-col gap-1.5">
           <FieldLabel htmlFor="price-list" required>
@@ -142,7 +146,7 @@ export function PricingSection({
           ) : (
             <FieldHint className="text-faint">
               {hasSale
-                ? t("customerSaves", { amount: formatMoney(listPrice - finalPrice, locale) })
+                ? <MoneyText locale={locale}>{t("customerSaves", { amount: formatMoneyMarked(listPrice - finalPrice, locale, unit) })}</MoneyText>
                 : t("salePriceHint")}
             </FieldHint>
           )}

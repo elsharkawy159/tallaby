@@ -15,7 +15,9 @@ import {
 } from "@workspace/ui/components/dropdown-menu";
 import { cn } from "@workspace/ui/lib/utils";
 import { getPublicUrl } from "@/lib/utils";
-import { formatMoney, formatNumber } from "@/lib/i18n/format";
+import { formatNumber } from "@/lib/i18n/format";
+import { useAccountMoney } from "@/components/account-money.client";
+import { Money } from "@/components/money";
 import { ProductPublishSwitch } from "./product-publish-toggle.client";
 import { discountPercent, effectivePrice, stockLevel } from "./products-view.lib";
 import type { VendorProduct } from "./vendor-products.section";
@@ -68,16 +70,17 @@ export function DiscountBadge({ percent }: { percent: number }) {
 
 export function ProductPrice({ product }: { product: VendorProduct }) {
   const locale = useLocale();
+  const { unit } = useAccountMoney();
   const discounted = discountPercent(product) > 0;
 
   return (
     <span className="flex flex-wrap items-baseline gap-x-2">
       <b className="text-[17px] font-extrabold tabular-nums">
-        {formatMoney(effectivePrice(product), locale)}
+        <Money value={effectivePrice(product)} locale={locale} unit={unit} />
       </b>
       {discounted && (
         <s className="text-xs text-faint tabular-nums">
-          {formatMoney(product.basePrice, locale)}
+          <Money value={product.basePrice} locale={locale} unit={unit} />
         </s>
       )}
     </span>

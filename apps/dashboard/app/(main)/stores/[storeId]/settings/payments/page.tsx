@@ -1,3 +1,4 @@
+import { parseStoreCurrency } from "@workspace/lib";
 import { getBillingState } from "@workspace/lib/billing/server";
 import { parseStorePayments } from "@workspace/lib/payments/store-methods";
 import { getStoreGatewayOverview } from "@workspace/lib/payments/store-gateways/server";
@@ -14,5 +15,5 @@ export default async function StorePaymentsPage({ params }: { params: Promise<{ 
   const { usdLive } = await getBillingState();
   const gateways = (await getStoreGatewayOverview(seller.sellerId, store.id)) ?? { connected: null, webhooksReady: false };
 
-  return <StorePaymentsSettings usdLive={usdLive} storeId={store.id} initial={payments} gateways={gateways} readOnly={store.status !== "active"} />;
+  return <StorePaymentsSettings money={parseStoreCurrency(store.settings)} usdLive={usdLive} storeId={store.id} initial={payments} gateways={gateways} readOnly={store.status !== "active"} />;
 }

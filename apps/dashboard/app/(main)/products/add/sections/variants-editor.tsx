@@ -8,7 +8,8 @@ import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import { cn, getPublicUrl } from "@/lib/utils";
 import { contentDirClass } from "@/lib/i18n/content-dir";
-import { formatMoney } from "@/lib/i18n/format";
+import { useAccountMoney } from "@/components/account-money.client";
+import { Money } from "@/components/money";
 import {
   calculateProductFinalPrice,
   type SellerPricingSettings,
@@ -677,6 +678,7 @@ function VariantsTable({
   const tPricing = useTranslations("productForm.variantPricing");
   const tStock = useTranslations("productForm.sections.stock");
   const locale = useLocale();
+  const { unit } = useAccountMoney();
   const form = useFormContext<AddProductFormData>();
   // Phones: one card open at a time, so a long list stays easy to scan.
   const [openIndex, setOpenIndex] = useState<number | null>(null);
@@ -762,7 +764,7 @@ function VariantsTable({
                             </span>
                           )}
                           <span className="font-sans text-xs font-semibold tabular-nums text-muted-foreground sm:hidden">
-                            {cardPrice > 0 ? formatMoney(cardPrice, locale) : "—"}
+                            {cardPrice > 0 ? <Money value={cardPrice} locale={locale} unit={unit} /> : "—"}
                           </span>
                         </span>
                       </div>
@@ -806,7 +808,7 @@ function VariantsTable({
                       <div className="min-w-[180px]">
                         <p className="text-xs text-muted-foreground">{tPricing("usesMainPrice")}</p>
                         <p className="font-sans font-semibold tabular-nums">
-                          {mainFinalPrice > 0 ? formatMoney(mainFinalPrice, locale) : "—"}
+                          {mainFinalPrice > 0 ? <Money value={mainFinalPrice} locale={locale} unit={unit} /> : "—"}
                         </p>
                       </div>
                     ) : (

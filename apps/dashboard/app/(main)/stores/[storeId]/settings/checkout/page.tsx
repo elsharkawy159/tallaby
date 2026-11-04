@@ -1,4 +1,5 @@
 import { parseStoreCheckoutForm, parseStoreThankYou } from "@workspace/lib/stores/checkout-form";
+import { parseStoreCurrency } from "@workspace/lib";
 import { parseStoreMinOrder } from "@workspace/lib/stores/min-order";
 import { storeUrl } from "@workspace/lib/storefront";
 import { loadStorePage } from "@/lib/stores/store-page.server";
@@ -16,7 +17,7 @@ export default async function StoreCheckoutSettingsPage({ params }: { params: Pr
   return (
     <div className="space-y-5">
       <StoreCrossSellSwitch storeId={store.id} initial={store.crossSellEnabled} readOnly={readOnly} />
-      <StoreMinOrderForm storeId={store.id} initial={parseStoreMinOrder(store.settings)} readOnly={readOnly} />
+      <StoreMinOrderForm money={parseStoreCurrency(store.settings)} storeId={store.id} initial={parseStoreMinOrder(store.settings)} readOnly={readOnly} />
       <StoreCheckoutSettingsForm
         storeId={store.id}
         siteUrl={storeUrl(store.subdomain, null)}

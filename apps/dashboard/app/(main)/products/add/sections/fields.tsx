@@ -2,10 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { Controller, useFormContext, useFormState } from "react-hook-form";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { normalizePrice } from "@/lib/utils/product-pricing.lib";
 import { GroupInput, InputGroup, toAsciiDigits } from "@/components/form/form-ui";
-import { CURRENCY_CODE, CurrencyAddon } from "@/components/form/currency-input";
+import { SAUDI_RIYAL_LABEL } from "@workspace/lib";
+import { CurrencyAddon } from "@/components/form/currency-input";
+import { useAccountMoney } from "@/components/account-money.client";
+import { RiyalSymbol } from "@/components/money";
+import { moneyLabel, moneyParams, moneyUnitText } from "@/lib/i18n/format";
 import { cn } from "@/lib/utils";
 import { getErrorAtPath } from "../add-product.lib";
 import type { AddProductFormData } from "../add-product.schema";
@@ -123,7 +127,7 @@ function DecimalText({
   );
 }
 
-/** Price input with the static EGP addon. */
+/** Price input with the account's static currency addon. */
 export function MoneyField({
   id,
   name,
@@ -137,10 +141,10 @@ export function MoneyField({
   placeholder?: string;
   disabled?: boolean;
 }) {
-  const t = useTranslations("productForm.sections.pricing");
+  const { unit } = useAccountMoney();
   return (
     <InputGroup dir="ltr" invalid={invalid}>
-      <CurrencyAddon />
+      <CurrencyAddon {...unit} />
       <NumberInput id={id} name={name} placeholder={placeholder} roundOnBlur disabled={disabled} />
     </InputGroup>
   );
@@ -148,7 +152,7 @@ export function MoneyField({
 
 const DISCOUNT_TYPES = ["percent", "amount"] as const;
 
-/** Discount amount with a %/EGP segmented switch at the end of the group. */
+/** Discount amount with a %/currency segmented switch at the end of the group. */
 export function DiscountField({
   id,
   valueName,
@@ -159,6 +163,8 @@ export function DiscountField({
   typeName: string;
 }) {
   const t = useTranslations("productForm.sections.pricing");
+  const locale = useLocale();
+  const { unit } = useAccountMoney();
   const { control } = useFormContext<AddProductFormData>();
   return (
     <InputGroup>
@@ -183,7 +189,7 @@ export function DiscountField({
                     type="button"
                     role="radio"
                     aria-checked={checked}
-                    title={type === "percent" ? t("discountPercent") : t("discountAmount")}
+                    title={type === "percent" ? t("discountPercent") : t("discountAmount", moneyParams(locale, unit))}
                     onClick={() => field.onChange(type)}
                     className={cn(
                       "h-full min-w-10 cursor-pointer rounded-md px-2.5 text-xs font-semibold transition-[color,background-color,box-shadow] outline-none focus-visible:ring-[3px] focus-visible:ring-primary/30",
@@ -192,7 +198,7 @@ export function DiscountField({
                         : "text-muted-foreground hover:text-foreground"
                     )}
                   >
-                    {type === "percent" ? "%" : CURRENCY_CODE}
+                    {type === "percent" ? "%" : moneyLabel(unit) === SAUDI_RIYAL_LABEL ? <RiyalSymbol locale={locale} /> : moneyUnitText(locale, unit)}
                   </button>
                 );
               })}

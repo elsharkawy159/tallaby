@@ -25,7 +25,9 @@ import {
   SelectValue,
 } from "@workspace/ui/components/select";
 import { cn } from "@workspace/ui/lib/utils";
-import { formatMoney, formatNumber } from "@/lib/i18n/format";
+import { formatNumber, moneyParams } from "@/lib/i18n/format";
+import { MixedCurrencyNote, useAccountMoney } from "@/components/account-money.client";
+import { Money } from "@/components/money";
 import {
   BULK_EDIT_MAX_PRODUCTS,
   bulkChangeSchema,
@@ -135,13 +137,20 @@ function Choice<T extends string>({
 function LineValue({ line, side }: { line: BulkPreviewLine; side: "before" | "after" }) {
   const t = useTranslations("products.bulkEdit");
   const locale = useLocale();
+  const { unit } = useAccountMoney();
   const value = line[side];
   if (line.field === "price") {
     const list = side === "before" ? line.beforeList : line.afterList;
     return (
       <span className="inline-flex flex-wrap items-baseline gap-1 tabular-nums">
-        <span>{formatMoney(value, locale)}</span>
-        {list != null && <s className="text-xs text-faint">{formatMoney(list, locale)}</s>}
+        <span>
+          <Money value={value} locale={locale} unit={unit} />
+        </span>
+        {list != null && (
+          <s className="text-xs text-faint">
+            <Money value={list} locale={locale} unit={unit} />
+          </s>
+        )}
       </span>
     );
   }
@@ -226,6 +235,7 @@ export function BulkEditDialog({
 }) {
   const t = useTranslations("products.bulkEdit");
   const locale = useLocale();
+  const { unit } = useAccountMoney();
   const [form, setForm] = useState<FormState>(initialForm);
   const [preview, setPreview] = useState<{ rows: BulkPreviewRow[]; changeCount: number; skipCount: number } | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -279,7 +289,7 @@ export function BulkEditDialog({
       ? t("unitPieces")
       : (form.kind === "price" ? form.priceMode : form.discountMode) === "percent"
         ? "%"
-        : t("unitPounds");
+        : t("unitPounds", moneyParams(locale, unit));
 
   return (
     <Dialog open={open} onOpenChange={(next) => !isPending && onOpenChange(next)}>
@@ -288,6 +298,7 @@ export function BulkEditDialog({
           <DialogTitle>{t("title", { count: ids.length })}</DialogTitle>
           <DialogDescription>{t("description")}</DialogDescription>
         </DialogHeader>
+        <MixedCurrencyNote />
 
         {tooMany ? (
           <p className="rounded-lg bg-destructive-soft px-3 py-2 text-sm text-destructive">
@@ -333,7 +344,7 @@ export function BulkEditDialog({
                   onChange={(v) => set("priceMode", v)}
                   options={[
                     ["percent", t("byPercent")],
-                    ["amount", t("byAmount")],
+                    ["amount", t("byAmount", moneyParams(locale, unit))],
                   ]}
                 />
               </>
@@ -345,7 +356,7 @@ export function BulkEditDialog({
                 onChange={(v) => set("discountMode", v)}
                 options={[
                   ["percent", t("discountPercent")],
-                  ["amount", t("discountAmount")],
+                  ["amount", t("discountAmount", moneyParams(locale, unit))],
                   ["none", t("discountNone")],
                 ]}
               />
@@ -400,7 +411,7 @@ export function BulkEditDialog({
             {(form.kind === "price" || (form.kind === "discount" && form.discountMode !== "none")) && (
               <label className="flex cursor-pointer items-center gap-2 text-sm sm:col-span-2">
                 <Checkbox checked={form.roundWhole} onCheckedChange={(v) => set("roundWhole", v === true)} />
-                {t("roundWhole")}
+                {t("roundWhole", moneyParams(locale, unit))}
               </label>
             )}
             <p className="text-xs text-muted-foreground sm:col-span-2">{t(`hint.${form.kind}`)}</p>

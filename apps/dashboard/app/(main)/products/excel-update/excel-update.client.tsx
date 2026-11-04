@@ -15,7 +15,8 @@ import {
   DialogTitle,
 } from "@workspace/ui/components/dialog";
 import { cn } from "@workspace/ui/lib/utils";
-import { formatMoney, formatNumber } from "@/lib/i18n/format";
+import { formatMoney, formatNumber, moneyParams } from "@/lib/i18n/format";
+import { MixedCurrencyNote, useAccountMoney } from "@/components/account-money.client";
 import { downloadXlsx, todayStamp } from "@/lib/product-excel";
 import {
   EXCEL_UPDATE_MAX_BYTES,
@@ -44,6 +45,7 @@ export function ExcelUpdateDialog({
 }) {
   const t = useTranslations("excelUpdate");
   const locale = useLocale();
+  const { unit } = useAccountMoney();
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [file, setFile] = useState<File | null>(null);
@@ -122,7 +124,7 @@ export function ExcelUpdateDialog({
   const value = (line: ExcelPreviewLine, side: "before" | "after") => {
     const v = line[side];
     if (v == null || v === "") return "—";
-    if (line.field === "price" || line.field === "salePrice") return formatMoney(v, locale);
+    if (line.field === "price" || line.field === "salePrice") return formatMoney(v, locale, unit);
     if (line.field === "stock") return formatNumber(Number(v), locale);
     if (line.field === "status") return t(`statusValue.${v as "active" | "draft" | "rejected"}`);
     return String(v);
@@ -135,6 +137,7 @@ export function ExcelUpdateDialog({
           <DialogTitle>{t("title")}</DialogTitle>
           <DialogDescription>{preview ? t("previewDescription") : t("description")}</DialogDescription>
         </DialogHeader>
+        <MixedCurrencyNote />
 
         <input ref={inputRef} type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={onFile} />
 
@@ -156,7 +159,7 @@ export function ExcelUpdateDialog({
               <div className="min-w-0 flex-1 space-y-1">
                 <p className="font-medium">{t("step2")}</p>
                 <ul className="list-disc space-y-1 ps-4 text-xs text-muted-foreground">
-                  <li>{t("rulePrices")}</li>
+                  <li>{t("rulePrices", moneyParams(locale, unit))}</li>
                   <li>{t("ruleBlank")}</li>
                   <li>{t("ruleStatus")}</li>
                   <li>{t("ruleKeys")}</li>

@@ -2,10 +2,11 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { useFormatter, useTranslations } from "next-intl";
+import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import type { DiscountRule, DiscountRuleType } from "@workspace/lib/orders/automatic-discounts";
+import { moneyNumberOptions, moneyParams, type MoneyUnit } from "@/lib/i18n/format";
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
@@ -73,6 +74,7 @@ function toDraft(rule: DiscountRule): Draft {
 }
 
 export function DiscountRulesView({
+  money,
   stores,
   storeId,
   initial,
@@ -80,11 +82,14 @@ export function DiscountRulesView({
 }: {
   stores: { id: string; name: string }[];
   storeId: string | null;
+  /** The store's currency: the order amount is in it. */
+  money: MoneyUnit;
   initial: DiscountRule[];
   categories: { id: string; name: string }[];
 }) {
   const t = useTranslations("discountRules");
   const format = useFormatter();
+  const locale = useLocale();
   const [rules, setRules] = useState(initial);
   const [draft, setDraft] = useState<Draft | null>(null);
   const [pending, startTransition] = useTransition();
@@ -133,7 +138,7 @@ export function DiscountRulesView({
 
   const summary = (rule: DiscountRule) =>
     rule.ruleType === "free_gift"
-      ? t("summaryGift", { amount: format.number((rule.minSubtotalPiastres ?? 0) / 100, { style: "currency", currency: "EGP" }), count: rule.giftProductIds.length })
+      ? t("summaryGift", { amount: format.number((rule.minSubtotalPiastres ?? 0) / 100, moneyNumberOptions(money)), count: rule.giftProductIds.length })
       : rule.ruleType === "buy_x_get_y"
       ? rule.discountPercent === 100
         ? t("summaryBuyGetFree", { buy: rule.buyQuantity ?? 0, get: rule.getQuantity ?? 0 })
@@ -243,7 +248,7 @@ export function DiscountRulesView({
           {draft.ruleType === "free_gift" ? (
             <>
               <div className="grid gap-1.5">
-                <Label htmlFor="rule-min">{t("minSubtotal")}</Label>
+                <Label htmlFor="rule-min">{t("minSubtotal", moneyParams(locale, money))}</Label>
                 <Input id="rule-min" inputMode="decimal" dir="ltr" value={draft.minSubtotal} onChange={(event) => setDraft({ ...draft, minSubtotal: event.target.value })} />
                 <p className="text-xs text-muted-foreground">{t("minSubtotalHint")}</p>
               </div>

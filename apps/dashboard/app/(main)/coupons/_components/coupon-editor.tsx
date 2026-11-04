@@ -25,6 +25,7 @@ import {
 } from "@/actions/coupons";
 import { formatDate } from "@/lib/i18n/format";
 import { CurrencyInput } from "@/components/form/currency-input";
+import { MixedCurrencyNote, useAccountMoney } from "@/components/account-money.client";
 import { CouponProductPicker } from "./coupon-product-picker";
 import { CouponTicketStub } from "./coupon-ticket";
 import {
@@ -51,6 +52,7 @@ type Props = {
 };
 
 export function CouponEditor({ open, onOpenChange, coupon, onSaved }: Props) {
+  const { unit } = useAccountMoney();
   const t = useTranslations("coupons.form");
   const tErrors = useTranslations("coupons.errors");
   const tRow = useTranslations("coupons.row");
@@ -232,6 +234,7 @@ export function CouponEditor({ open, onOpenChange, coupon, onSaved }: Props) {
                     />
                   ) : (
                     <CurrencyInput
+                      {...unit}
                       id={`${ids}-value`}
                       value={form.discountValue}
                       onChange={(v) => set("discountValue", v)}
@@ -245,6 +248,7 @@ export function CouponEditor({ open, onOpenChange, coupon, onSaved }: Props) {
                   <div className="space-y-2">
                     <Label htmlFor={`${ids}-max`}>{t("maxDiscount")}</Label>
                     <CurrencyInput
+                      {...unit}
                       id={`${ids}-max`}
                       value={form.maximumDiscount}
                       onChange={(v) => set("maximumDiscount", v)}
@@ -256,6 +260,7 @@ export function CouponEditor({ open, onOpenChange, coupon, onSaved }: Props) {
                   </div>
                 )}
               </div>
+              <MixedCurrencyNote />
             </fieldset>
 
             {/* Products */}
@@ -542,14 +547,15 @@ function NumberField({
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
-  /** An EGP amount (static currency addon) rather than a count. */
+  /** An amount (static currency addon) rather than a count. */
   decimal?: boolean;
 }) {
+  const { unit } = useAccountMoney();
   return (
     <div className="space-y-2">
       <Label htmlFor={id}>{label}</Label>
       {decimal ? (
-        <CurrencyInput id={id} value={value} onChange={onChange} placeholder={placeholder} />
+        <CurrencyInput {...unit} id={id} value={value} onChange={onChange} placeholder={placeholder} />
       ) : (
         <Input
           id={id}

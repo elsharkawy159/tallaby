@@ -31,7 +31,9 @@ import {
   type SellerCouponRow,
   type SellerCouponsPage,
 } from "@/actions/coupons";
-import { formatDate, formatMoney, formatNumber } from "@/lib/i18n/format";
+import { formatDate, formatMoney, formatMoneyMarked, formatNumber } from "@/lib/i18n/format";
+import { MixedCurrencyNote, useAccountMoney } from "@/components/account-money.client";
+import { MoneyText } from "@/components/money";
 import { CouponEditor } from "./coupon-editor";
 import { CouponTicketStub } from "./coupon-ticket";
 import {
@@ -102,6 +104,7 @@ export function CouponsView({ coupons: initialCoupons, storeHost }: SellerCoupon
 
   return (
     <div className="space-y-6">
+      <MixedCurrencyNote />
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <p className="max-w-2xl text-muted-foreground">{t("intro")}</p>
         <Button onClick={() => openEditor(null)} className="shrink-0">
@@ -181,6 +184,7 @@ function CouponRow({
 }) {
   const t = useTranslations("coupons");
   const locale = useLocale();
+  const { unit } = useAccountMoney();
   const [isToggling, startToggle] = useTransition();
 
   const copyCode = async () => {
@@ -238,7 +242,7 @@ function CouponRow({
                 : t("row.allProducts"),
               t(`row.channels.${channelsKey(coupon.channels)}`),
               coupon.minimumPurchase != null
-                ? t("row.minPurchase", { amount: formatMoney(coupon.minimumPurchase, locale) })
+                ? t("row.minPurchase", { amount: formatMoney(coupon.minimumPurchase, locale, unit) })
                 : null,
             ].filter((part): part is string => part !== null)
           )}
@@ -268,7 +272,7 @@ function CouponRow({
         )}
         {coupon.discountGiven > 0 && (
           <p className="text-xs text-muted-foreground">
-            {t("row.saved", { amount: formatMoney(coupon.discountGiven, locale) })}
+            <MoneyText locale={locale}>{t("row.saved", { amount: formatMoneyMarked(coupon.discountGiven, locale, unit) })}</MoneyText>
           </p>
         )}
       </div>

@@ -26,7 +26,9 @@ import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetT
 import { Switch } from "@workspace/ui/components/switch";
 import { Textarea } from "@workspace/ui/components/textarea";
 import { BUTTON_CLASS, FIELD_CLASS, SMALL_BUTTON_CLASS, TEXTAREA_CLASS } from "@/components/form/form-ui";
-import { CURRENCY_CODE, CurrencyInput } from "@/components/form/currency-input";
+import { DEFAULT_CURRENCY } from "@workspace/lib";
+import { CurrencyInput } from "@/components/form/currency-input";
+import { moneyUnitText, type MoneyUnit } from "@/lib/i18n/format";
 import { PaymentMethodLogo } from "@/components/payments/payment-method-logo";
 import { cn } from "@/lib/utils";
 import { saveStorePaymentMethod } from "./payments.server";
@@ -90,12 +92,15 @@ const maskNumber = (n: string) => (n.length > 7 ? `${n.slice(0, 3)} ••••
  * COD is always set up; a wallet is "not set up" until it has details.
  */
 export function StorePaymentsSettings({
+  money,
   storeId,
   initial,
   gateways,
   readOnly,
   usdLive,
 }: {
+  /** The store's currency: the cash fee and maximum are in it. */
+  money: MoneyUnit;
   storeId: string;
   initial: StorePayments;
   gateways: StoreGatewayOverview;
@@ -104,13 +109,17 @@ export function StorePaymentsSettings({
   usdLive: boolean;
 }) {
   const t = useTranslations("storePayments");
+  const locale = useLocale();
   const router = useRouter();
   const [payments, setPayments] = useState<StorePayments>(initial);
   const [editing, setEditing] = useState<LiveKey | null>(null);
   const [isPending, startTransition] = useTransition();
   const entry = (key: LiveKey) => payments[key] as Entry | undefined;
   const isSetUp = (key: LiveKey) => key === "cod" || !!entry(key)?.details;
-  const enabledCount = LIVE.filter((m) => entry(m.key as LiveKey)?.enabled).length;
+  // Egyptian wallets, InstaPay and card payment work only in pounds. The saved settings stay, in case the store goes back to EGP.
+  const egyptian = (money.currency ?? DEFAULT_CURRENCY) === DEFAULT_CURRENCY;
+  const egyptOnly = (key: LiveKey) => !egyptian && key !== "cod";
+  const enabledCount = LIVE.filter((m) => entry(m.key as LiveKey)?.enabled && !egyptOnly(m.key as LiveKey)).length;
 
   const save = (key: LiveKey, change: Change, onDone?: () => void) =>
     startTransition(async () => {
@@ -137,7 +146,8 @@ export function StorePaymentsSettings({
   const row = (key: LiveKey) => {
     const e = entry(key);
     const setUp = isSetUp(key);
-    const on = !!e?.enabled;
+    const off = egyptOnly(key);
+    const on = !!e?.enabled && !off;
     const locked = on && enabledCount <= 1;
     const label = t(`methods.${key}.name`);
     return (
@@ -149,7 +159,7 @@ export function StorePaymentsSettings({
             <StatusTag setUp={setUp} on={on} />
           </p>
           <p className="text-[13px] leading-relaxed text-muted-foreground">{t(`methods.${key}.description`)}</p>
-          <DetailsLine methodKey={key} entry={e} />
+          <DetailsLine methodKey={key} entry={e} money={money} />
         </div>
         <div className="flex w-full items-center justify-between gap-2.5 ps-[58px] sm:w-auto sm:justify-end sm:ps-0">
           {setUp ? (
@@ -158,7 +168,7 @@ export function StorePaymentsSettings({
                 type="button"
                 variant="ghost"
                 className={cn(SMALL_BUTTON_CLASS, "text-muted-foreground hover:bg-muted hover:text-foreground")}
-                disabled={readOnly || isPending}
+                disabled={readOnly || isPending || off}
                 onClick={() => setEditing(key)}
               >
                 <Pencil />
@@ -166,7 +176,7 @@ export function StorePaymentsSettings({
               </Button>
               <Switch
                 checked={on}
-                disabled={readOnly || isPending}
+                disabled={readOnly || isPending || off}
                 aria-disabled={locked || undefined}
                 className={cn(locked && "opacity-55")}
                 title={locked ? t("lastMethodLocked") : undefined}
@@ -179,7 +189,7 @@ export function StorePaymentsSettings({
               type="button"
               variant="accent"
               className={SMALL_BUTTON_CLASS}
-              disabled={readOnly || isPending}
+              disabled={readOnly || isPending || off}
               onClick={() => setEditing(key)}
             >
               <Plus />
@@ -194,6 +204,12 @@ export function StorePaymentsSettings({
   return (
     <div className="space-y-5">
       {readOnly && <p className="rounded-xl border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">{t("readOnly")}</p>}
+      {!egyptian && (
+        <p className="flex items-start gap-2.5 rounded-xl border border-accent-ink/30 bg-accent-soft px-4 py-3 text-[13px] text-pretty text-accent-ink">
+          <Info className="mt-0.5 size-4 shrink-0" aria-hidden />
+          <span>{t("currencyNotice", { unit: moneyUnitText(locale, money) })}</span>
+        </p>
+      )}
       <p className="flex items-start gap-2.5 rounded-xl bg-primary-soft px-4 py-3 text-[13px] text-primary-ink">
         <Info className="mt-0.5 size-4 shrink-0" aria-hidden />
         <span>{t(usdLive ? "checkoutNoticeUsd" : "checkoutNotice")}</span>
@@ -214,7 +230,7 @@ export function StorePaymentsSettings({
         <ul>{WALLETS.map(row)}</ul>
       </PaymentCard>
 
-      <StoreGatewaysCard storeId={storeId} initial={gateways} readOnly={readOnly} usdLive={usdLive} />
+      <StoreGatewaysCard storeId={storeId} initial={gateways} readOnly={readOnly || !egyptian} usdLive={usdLive} />
 
       <PaymentCard title={t("soonTitle")} description={t("soonDescription")}>
         <ul className="grid gap-3 p-4 sm:grid-cols-2 sm:p-6">
@@ -237,6 +253,7 @@ export function StorePaymentsSettings({
         <MethodSheet
           key={editing}
           methodKey={editing}
+          money={money}
           entry={entry(editing)}
           pending={isPending}
           onClose={() => setEditing(null)}
@@ -294,13 +311,15 @@ function StatusTag({ setUp, on }: { setUp: boolean; on: boolean }) {
   return <span className={cn(base, "border bg-muted text-muted-foreground")}>{t("status.off")}</span>;
 }
 
-function DetailsLine({ methodKey, entry }: { methodKey: LiveKey; entry?: Entry }) {
+function DetailsLine({ methodKey, entry, money }: { methodKey: LiveKey; entry?: Entry; money: MoneyUnit }) {
   const t = useTranslations("storePayments");
+  const locale = useLocale();
+  const unit = moneyUnitText(locale, money);
   const line = "mt-0.5 flex flex-wrap items-center gap-1.5 text-[12.5px]";
   const icon = "size-3.5 text-faint";
   if (methodKey === "cod") {
-    const parts = [entry?.fee ? t("codFeeLine", { fee: entry.fee, currency: CURRENCY_CODE }) : t("codNoFee")];
-    if (entry?.maxOrder) parts.push(t("codMaxSummary", { max: entry.maxOrder, currency: CURRENCY_CODE }));
+    const parts = [entry?.fee ? t("codFeeLine", { fee: entry.fee, currency: unit }) : t("codNoFee")];
+    if (entry?.maxOrder) parts.push(t("codMaxSummary", { max: entry.maxOrder, currency: unit }));
     return (
       <p className={line}>
         <Settings2 className={icon} aria-hidden />
@@ -330,12 +349,14 @@ function DetailsLine({ methodKey, entry }: { methodKey: LiveKey; entry?: Entry }
 
 function MethodSheet({
   methodKey,
+  money,
   entry,
   pending,
   onClose,
   onSave,
 }: {
   methodKey: LiveKey;
+  money: MoneyUnit;
   entry?: Entry;
   pending: boolean;
   onClose: () => void;
@@ -423,7 +444,7 @@ function MethodSheet({
                   {t("fields.codFeeLabel")}
                   {optional}
                 </Label>
-                <CurrencyInput id="pm-fee" placeholder="0" decimals={false} value={fee} onChange={setFee} invalid={submitted && !feeValid} />
+                <CurrencyInput {...money} id="pm-fee" placeholder="0" decimals={false} value={fee} onChange={setFee} invalid={submitted && !feeValid} />
                 <p className={cn("text-xs leading-relaxed", submitted && !feeValid ? "text-destructive" : "text-muted-foreground")}>
                   {submitted && !feeValid ? t("fieldErrors.codInvalid") : t("fields.codFeeHelp")}
                 </p>
@@ -434,6 +455,7 @@ function MethodSheet({
                   {optional}
                 </Label>
                 <CurrencyInput
+                  {...money}
                   id="pm-max"
                   placeholder={t("fields.codMaxPlaceholder")}
                   decimals={false}

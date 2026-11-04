@@ -44,6 +44,12 @@ export function moneyLabel({ currency, label }: MoneyUnit = {}): CurrencyLabel {
   return isCurrencyLabelFor(code, label) ? label : STORE_CURRENCIES[code][0];
 }
 
+/**
+ * An account-level amount when the seller's stores use different currencies. It
+ * has no one currency, so it shows the number alone and never a guessed label.
+ */
+export const MIXED_CURRENCIES = "MIXED";
+
 const toAmount = (value: string | number | null | undefined) => {
   const num = value == null ? 0 : typeof value === "string" ? parseFloat(value) : value;
   return Number.isFinite(num) ? num : 0;
@@ -51,21 +57,25 @@ const toAmount = (value: string | number | null | undefined) => {
 
 /** An amount as plain text ("300 EGP"), for <option>, titles, toasts, exports and push alerts. */
 export function formatMoney(value: string | number | null | undefined, locale: string, unit?: MoneyUnit) {
+  if (unit?.currency === MIXED_CURRENCIES) return formatNumber(toAmount(value), locale, { maximumFractionDigits: 2 });
   return formatPricePlain(toAmount(value), locale, moneyLabel(unit));
 }
 
 /** `formatMoney` for the screen: SAR carries a mark that <MoneyText> draws as the symbol. Never an attribute or a title. */
 export function formatMoneyMarked(value: string | number | null | undefined, locale: string, unit?: MoneyUnit) {
+  if (unit?.currency === MIXED_CURRENCIES) return formatMoney(value, locale, unit);
   return formatPriceMarked(toAmount(value), locale, moneyLabel(unit));
 }
 
 /** The unit alone as text, for a label or an export column. */
 export function moneyUnitText(locale: string, unit?: MoneyUnit) {
+  if (unit?.currency === MIXED_CURRENCIES) return locale.startsWith("ar") ? "عملة المتجر" : "store currency";
   return currencyLabelText(moneyLabel(unit), locale);
 }
 
 /** The unit alone for a sentence drawn through <MoneyText>. */
 export function moneyUnitMarked(locale: string, unit?: MoneyUnit) {
+  if (unit?.currency === MIXED_CURRENCIES) return moneyUnitText(locale, unit);
   const label = moneyLabel(unit);
   return label === SAUDI_RIYAL_LABEL ? PRICE_SYMBOL_MARK : currencyLabelText(label, locale);
 }
@@ -77,6 +87,12 @@ export function moneyUnitMarked(locale: string, unit?: MoneyUnit) {
  */
 export function moneyParams(locale: string, unit?: MoneyUnit) {
   return { code: unit?.currency || DEFAULT_CURRENCY, unit: moneyUnitText(locale, unit) };
+}
+
+/** Options for next-intl's `format.number` where a screen uses it for money. EGP stays as it was. */
+export function moneyNumberOptions(unit?: MoneyUnit) {
+  if (unit?.currency === MIXED_CURRENCIES) return { maximumFractionDigits: 2 };
+  return { style: "currency" as const, currency: unit?.currency || DEFAULT_CURRENCY };
 }
 
 /**

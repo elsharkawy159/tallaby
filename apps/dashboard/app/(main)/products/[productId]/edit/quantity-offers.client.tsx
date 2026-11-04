@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { useAccountMoney } from "@/components/account-money.client";
+import { moneyParams } from "@/lib/i18n/format";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import { Switch } from "@workspace/ui/components/switch";
@@ -25,6 +27,8 @@ function toDrafts(rows: QuantityOfferRow[]): Draft[] {
 
 /** Quantity offers: "buy 2, save 10%", shown on this product's page on the seller's stores (ROADMAP.md F-07b). */
 export function QuantityOffersSection({ productId, initial }: { productId: string; initial: QuantityOfferRow[] }) {
+  const { unit } = useAccountMoney();
+  const locale = useLocale();
   const t = useTranslations("quantityOffers");
   const [tiers, setTiers] = useState<Draft[]>(() => toDrafts(initial));
   const [nextKey, setNextKey] = useState(initial.length);
@@ -92,7 +96,7 @@ export function QuantityOffersSection({ productId, initial }: { productId: strin
                 onChange={(event) => patch(tier.key, { discountType: event.target.value === "fixed" ? "fixed" : "percent" })}
               >
                 <option value="percent">{t("percent")}</option>
-                <option value="fixed">{t("fixed")}</option>
+                <option value="fixed">{t("fixed", moneyParams(locale, unit))}</option>
               </select>
               <Input
                 aria-label={t("discountValue")}

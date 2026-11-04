@@ -35,7 +35,7 @@
     "endsAt": "Ends",
     "endsHint": "Set an end for a time-limited sale, or leave empty.",
     "stackingNote": "Each product line gets one offer only: the biggest of its quantity offer, its bundle offer and your automatic discounts. A coupon still applies on what's left. The free-delivery amount is under Shipping.",
-    "minSubtotal": "Order amount (EGP)",
+    "minSubtotal": "Order amount ({unit})",
     "minSubtotalHint": "What the items come to after their offers, before a coupon.",
     "giftProducts": "Gifts the customer can choose from",
     "giftProductsHint": "Pick 1 to 10 of your products. The customer takes one for free, and it comes out of your stock.",
@@ -67,7 +67,7 @@
     "quantity": "Quantity",
     "discountType": "Discount type",
     "percent": "Percent",
-    "fixed": "Amount per unit (EGP)",
+    "fixed": "Amount per unit ({unit})",
     "discountValue": "Discount",
     "active": "Offer on or off",
     "remove": "Remove offer",
@@ -91,7 +91,7 @@
     "search": "Search your products",
     "discountType": "Discount type",
     "percent": "Percent",
-    "fixed": "Amount (EGP)",
+    "fixed": "Amount ({unit})",
     "discountValue": "Discount",
     "add": "Add offer",
     "added": "Offer added",
@@ -289,6 +289,7 @@
     "catalogShare": "Shareable catalog"
   },
   "common": {
+    "mixedCurrencyNote": "Your stores use different currencies. The same number is used in every store and isn't converted.",
     "loading": "Loading...",
     "save": "Save",
     "cancel": "Cancel",
@@ -1331,10 +1332,10 @@
       "decrease": "Lower",
       "by": "By",
       "byPercent": "Percent (%)",
-      "byAmount": "Amount (EGP)",
+      "byAmount": "Amount ({unit})",
       "discountType": "Discount",
       "discountPercent": "Percent off",
-      "discountAmount": "Amount off (EGP)",
+      "discountAmount": "Amount off ({unit})",
       "discountNone": "Remove the discount",
       "endsAt": "Discount ends on (optional)",
       "stockMode": "Stock",
@@ -1344,9 +1345,9 @@
       "publish": "Publish",
       "unpublish": "Move to drafts",
       "value": "Value",
-      "unitPounds": "EGP",
+      "unitPounds": "{unit}",
       "unitPieces": "pcs",
-      "roundWhole": "Round new prices to whole pounds",
+      "roundWhole": "Round new prices to whole {code, select, EGP {pounds} other {numbers}}",
       "hint": {
         "price": "The regular and sale prices (and every variant's own price) move together, so discounts stay. A product whose price would reach 0 is skipped.",
         "discount": "The discount is taken from each product's regular price, variants included.",
@@ -1855,7 +1856,7 @@
         "currency": "EGP",
         "discountType": "Discount type",
         "discountPercent": "Percentage off",
-        "discountAmount": "Fixed amount off (EGP)",
+        "discountAmount": "Fixed amount off ({unit})",
         "finalForCustomer": "Final price for customers",
         "save": "Save {amount}",
         "percentOff": "{percent}% off",
@@ -2554,6 +2555,7 @@
         "not_found": "Order not found.",
         "not_shippable": "This order can't be shipped anymore.",
         "awaiting_payment": "This order isn't paid yet. It can go to Bosta once the payment lands.",
+        "foreign_order": "This order is outside Egypt or isn't in EGP, and Bosta only delivers in Egypt.",
         "already_shipped": "This order already has a shipment.",
         "other_carrier": "This order is already with another delivery method.",
         "in_progress": "The Bosta shipment is being created. Wait a moment and refresh.",
@@ -2741,7 +2743,8 @@
         "other_carrier": "already with another carrier",
         "has_tracking": "already has a tracking number",
         "bad_phone": "no valid Egyptian mobile number",
-        "bad_governorate": "governorate not recognised"
+        "bad_governorate": "governorate not recognised",
+        "foreign_order": "outside Egypt or not in EGP"
       },
       "errors": {
         "notSetUp": "Set up Wassalha first: Store › Apps › Wassalha.",
@@ -3862,12 +3865,13 @@
       "saved": "Catalog saved"
     },
     "currency": {
+      "changeWarning": "Amounts aren't converted: 100 {from} becomes 100 {to}. Check your product prices and coupons, and add delivery zones for the new country on the Shipping page.",
       "title": "Website currency",
       "description": "The currency your prices are shown in on your store's website, and how its symbol looks.",
       "currency": "Currency",
       "symbol": "Currency symbol",
-      "hintUsd": "Prices are not converted: the amounts you enter are shown with this currency. The dashboard and shipping fees stay in EGP. Your Tallaby wallet is in US dollars.",
-      "hint": "Prices are not converted: the amounts you enter are shown with this currency. The dashboard, wallet and shipping fees stay in EGP.",
+      "hintUsd": "Prices are not converted: the amounts you enter are shown with this currency. This store's orders and delivery prices use it too. Your Tallaby wallet is in US dollars.",
+      "hint": "Prices are not converted: the amounts you enter are shown with this currency. This store's orders and delivery prices use it too. Your Tallaby wallet stays in EGP.",
       "groups": {
         "regional": "Egypt and the Gulf",
         "international": "International"
@@ -3973,6 +3977,7 @@
     "viewWallet": "View store wallet"
   },
   "storePayments": {
+    "currencyNotice": "This store sells in {unit}. Egyptian wallets, InstaPay and card payment only work in EGP, so they're off for this store. Tallaby's default delivery rates don't apply either, so the store needs its own zones on the Shipping page.",
     "receiveBy": {
       "label": "Customers send the money to",
       "ipa": "InstaPay address (email)",
@@ -4638,7 +4643,7 @@
       "importedSoFar": "{count} products imported so far",
       "preview": "Check products",
       "previewCount": "{count} products in Shopify",
-      "currencyWarning": "Your Shopify prices are in {currency}. They are imported as numbers, as if they were EGP. Review them before publishing.",
+      "currencyWarning": "Your Shopify prices are in {currency}. They are imported as numbers, as if they were {unit}. Review them before publishing.",
       "draftNote": "Products are imported as drafts, so nothing appears on your store until you review and submit them. Products imported before are skipped.",
       "defaultCategory": "Category for imported products",
       "chooseCategory": "Choose a category",
@@ -6454,7 +6459,7 @@
     "title": "Minimum order",
     "description": "Customers on your store website can't place an order until the products in the cart add up to this amount. Shipping and coupons don't count toward it.",
     "enabled": "Require a minimum order",
-    "amountLabel": "Minimum order (EGP)",
+    "amountLabel": "Minimum order ({unit})",
     "amountPlaceholder": "e.g. 300",
     "amountHint": "The cart and checkout tell the customer how much more to add. Marketplace orders are not affected.",
     "save": "Save minimum order",
@@ -6463,9 +6468,9 @@
       "readOnly": "This store is not active, so its settings can't be changed.",
       "notFound": "Store not found.",
       "rateLimited": "Too many saves. Try again in a few minutes.",
-      "invalid": "Enter the amount in EGP, like 300 or 299.50.",
+      "invalid": "Enter the amount in {unit}, like 300 or 299.50.",
       "amountRequired": "Enter a minimum order above zero.",
-      "amountTooHigh": "The minimum order can't be more than EGP 1,000,000.",
+      "amountTooHigh": "The minimum order can't be more than {unit} 1,000,000.",
       "generic": "Couldn't save. Try again."
     }
   },
@@ -7166,7 +7171,7 @@
     "step1Hint": "{count, plural, =0 {All your live products} one {The # product on screen} other {The # products on screen}}, with their variants.",
     "download": "Download sheet",
     "step2": "2. Edit it in Excel",
-    "rulePrices": "Prices are in EGP. Leave the sale price empty to remove a discount.",
+    "rulePrices": "Prices are in {unit}. Leave the sale price empty to remove a discount.",
     "ruleBlank": "An empty cell leaves that value as it is.",
     "ruleStatus": "Status is active or draft.",
     "ruleKeys": "Do not change the product id, variant id or SKU columns used to find each row.",

@@ -2,7 +2,9 @@
 
 import { useLocale, useTranslations } from "next-intl";
 import { cn } from "@workspace/ui/lib/utils";
-import { formatMoney, formatNumber } from "@/lib/i18n/format";
+import { formatNumber } from "@/lib/i18n/format";
+import { useAccountMoney } from "@/components/account-money.client";
+import { Money } from "@/components/money";
 import type { CouponStatus } from "./coupons.lib";
 
 type Props = {
@@ -31,11 +33,12 @@ export function CouponTicketStub({
 }: Props) {
   const t = useTranslations("coupons.row");
   const locale = useLocale();
+  const { unit } = useAccountMoney();
 
   const figure =
     discountType === "percentage"
       ? `${formatNumber(discountValue, locale, { maximumFractionDigits: 2 })}%`
-      : formatMoney(discountValue, locale);
+      : <Money value={discountValue} locale={locale} unit={unit} />;
 
   return (
     <div

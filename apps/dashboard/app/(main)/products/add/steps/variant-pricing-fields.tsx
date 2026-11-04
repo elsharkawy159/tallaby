@@ -1,7 +1,9 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import { formatMoney } from "@/lib/i18n/format";
+import { formatMoneyMarked } from "@/lib/i18n/format";
+import { useAccountMoney } from "@/components/account-money.client";
+import { MoneyText } from "@/components/money";
 
 import { useEffect, useRef } from "react";
 import { useFormContext, useWatch } from "react-hook-form";
@@ -26,6 +28,7 @@ export function VariantPricingFields({ index, sellerPricing }: VariantPricingFie
   const t = useTranslations("productForm.variantPricing");
   const tVariants = useTranslations("productForm.variants");
   const locale = useLocale();
+  const { unit } = useAccountMoney();
   const priceError = useFieldError(`variants.${index}.price`);
 
   const [listPrice, discountValue, discountType, finalPrice] = useWatch({
@@ -101,10 +104,10 @@ export function VariantPricingFields({ index, sellerPricing }: VariantPricingFie
         {typeof sellingPrice === "number" && sellingPrice > 0 ? (
           <>
             <span className="font-semibold text-foreground">
-              {tVariants("finalPrice", { amount: formatMoney(sellingPrice, locale) })}
+              <MoneyText locale={locale}>{tVariants("finalPrice", { amount: formatMoneyMarked(sellingPrice, locale, unit) })}</MoneyText>
             </span>
             {sellerEarning > 0 && (
-              <> · {t("youReceive", { amount: formatMoney(sellerEarning, locale) })}</>
+              <> · <MoneyText locale={locale}>{t("youReceive", { amount: formatMoneyMarked(sellerEarning, locale, unit) })}</MoneyText></>
             )}
           </>
         ) : (

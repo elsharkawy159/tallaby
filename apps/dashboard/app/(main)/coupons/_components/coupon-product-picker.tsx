@@ -7,6 +7,7 @@ import { Input } from "@workspace/ui/components/input";
 import { cn } from "@workspace/ui/lib/utils";
 import { searchCouponProducts, type CouponProductOption } from "@/actions/coupons";
 import { formatMoney } from "@/lib/i18n/format";
+import { useAccountMoney } from "@/components/account-money.client";
 import { RemoteImage } from "@/components/media/remote-image";
 
 type Props = {
@@ -21,6 +22,7 @@ const SEARCH_DEBOUNCE_MS = 300;
 export function CouponProductPicker({ selectedIds, onChange, invalid }: Props) {
   const t = useTranslations("coupons.form");
   const locale = useLocale();
+  const { unit } = useAccountMoney();
   const [query, setQuery] = useState("");
   const selected = useMemo(() => new Set(selectedIds), [selectedIds]);
 
@@ -129,7 +131,7 @@ export function CouponProductPicker({ selectedIds, onChange, invalid }: Props) {
                       {!p.isActive
                         ? t("notActive")
                         : p.price != null
-                          ? formatMoney(p.price, locale)
+                          ? formatMoney(p.price, locale, unit)
                           : null}
                     </span>
                   </span>

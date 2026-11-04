@@ -14,6 +14,9 @@ import { getSelectedStoreLink } from "@/lib/stores/store-link.server";
 import { SetupPrompts } from "./_components/setup-prompts.client";
 import { getStoreWalletBalance } from "./wallet/store-wallet.server";
 import { getSessionUser } from "@/lib/auth/session.server";
+import { AccountMoneyProvider } from "@/components/account-money.client";
+import { loadAccountMoney } from "@/lib/stores/account-money.server";
+import { EGP_ACCOUNT } from "@/lib/stores/account-money.lib";
 import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 
@@ -41,11 +44,12 @@ export default async function DashboardLayout({
   }
 
   // sellers.id = users.id; the header shows the store wallet balance.
-  const [wallet, askHeardAboutUs, welcomeGift, storeLink] = await Promise.all([
+  const [wallet, askHeardAboutUs, welcomeGift, storeLink, accountMoney] = await Promise.all([
     user ? getStoreWalletBalance(user.id) : null,
     user ? needsHeardAboutUs(user.id) : false,
     user ? loadWelcomeGiftWatch(user.id) : ({ state: "none" } as const),
     getSelectedStoreLink().catch(() => null),
+    user ? loadAccountMoney(user.id).catch(() => EGP_ACCOUNT) : EGP_ACCOUNT,
   ]);
   const walletBalance = wallet?.balance ?? null;
 
@@ -63,7 +67,9 @@ export default async function DashboardLayout({
           </div>
         )}
         <SetupPrompts />
-        <DashboardMain>{children}</DashboardMain>
+        <AccountMoneyProvider value={accountMoney}>
+          <DashboardMain>{children}</DashboardMain>
+        </AccountMoneyProvider>
       </MainContentWrapper>
       <SupportWhatsAppButton />
       <NegativeWalletDialog balance={walletBalance} currency={wallet?.currency ?? "EGP"} />

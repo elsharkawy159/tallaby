@@ -8,7 +8,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { z } from "zod";
 import Link from "next/link";
-import { Banknote, Headphones, Languages, LoaderCircle, Palette, Save, Store } from "lucide-react";
+import { Banknote, Headphones, Languages, LoaderCircle, Palette, Save, Store, TriangleAlert } from "lucide-react";
 import {
   CURRENCY_LABELS,
   REGIONAL_CURRENCY_CODES,
@@ -385,12 +385,19 @@ export function StoreGeneralForm({
               </FormItem>
             )}
           />
+          {currency !== initial.currency && (
+            // Said where the change happens: the numbers stay, only their meaning changes.
+            <p role="alert" className="flex gap-2 rounded-xl border border-accent-ink/30 bg-accent-soft p-3 text-[13px] text-pretty text-accent-ink">
+              <TriangleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
+              <span>{t("currency.changeWarning", { from: initial.currency, to: currency })}</span>
+            </p>
+          )}
           <FieldHint>{t(usdLive ? "currency.hintUsd" : "currency.hint")}</FieldHint>
         </SectionCard>
         </div>
         </div>
 
-        <StoreCatalogSections catalog={catalog} products={catalogProps.products} maxProducts={catalogProps.maxProducts} disabled={disabled} />
+        <StoreCatalogSections money={{ currency: initial.currency }} catalog={catalog} products={catalogProps.products} maxProducts={catalogProps.maxProducts} disabled={disabled} />
 
       </form>
     </Form>

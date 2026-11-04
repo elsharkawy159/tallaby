@@ -2,7 +2,9 @@
 
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { useAccountMoney } from "@/components/account-money.client";
+import { moneyParams } from "@/lib/i18n/format";
 import { toast } from "sonner";
 import { LoaderCircle, TriangleAlert } from "lucide-react";
 
@@ -47,6 +49,8 @@ export function ShopifyImportPanel({
   onClose: () => void;
 }) {
   const t = useTranslations("storeApps");
+  const locale = useLocale();
+  const { unit } = useAccountMoney();
   const router = useRouter();
   const [shopDomain, setShopDomain] = useState(current?.details.shopDomain ?? "");
   const [token, setToken] = useState("");
@@ -201,10 +205,10 @@ export function ShopifyImportPanel({
             {preview && (
               <div className="flex flex-col gap-3 rounded-xl border p-3">
                 <p className="text-sm font-medium">{t("shopify.previewCount", { count: preview.count })}</p>
-                {preview.currency !== "EGP" && (
+                {preview.currency !== (unit.currency ?? "EGP") && (
                   <p className="flex gap-2 text-[13px] text-accent-ink">
                     <TriangleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
-                    {t("shopify.currencyWarning", { currency: preview.currency })}
+                    {t("shopify.currencyWarning", { currency: preview.currency, ...moneyParams(locale, unit) })}
                   </p>
                 )}
                 <p className="text-xs text-muted-foreground">{t("shopify.draftNote")}</p>
