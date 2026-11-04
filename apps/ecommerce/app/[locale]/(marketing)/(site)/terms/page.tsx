@@ -8,6 +8,12 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return pageMetadata({ locale, page: "terms", path: "/terms" });
 }
 
+/**
+ * Set on the day of the USD switch (docs/usd-switch-checklist.md). Until then the
+ * clause "The move to US dollars" stays hidden, because it has no date to name.
+ */
+const USD_SWITCH_DATE: string | null = null;
+
 export default function TermsPage() {
-  return <LegalPage doc="terms" summaryIcons={[Store, BadgePercent, DoorOpen]} updated="2026-10-29" minutes={6} />;
+  return <LegalPage doc="terms" summaryIcons={[Store, BadgePercent, DoorOpen]} updated="2026-11-04" minutes={8} usdSwitchDate={USD_SWITCH_DATE} />;
 }

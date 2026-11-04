@@ -1,1 +1,269 @@
-{}
+{
+  "legal": {
+    "terms": {
+      "summary": [
+        {
+          "title": "Your store is yours",
+          "body": "You own your brand, products and customer relationships."
+        },
+        {
+          "title": "Fees are simple",
+          "body": "Free plan at $0.03 per order, or Pro at $29 a month. No percentage of sales."
+        },
+        {
+          "title": "Leave anytime",
+          "body": "Close your store whenever you want, with no cancellation fee."
+        }
+      ],
+      "sections": [
+        {
+          "id": "accept",
+          "title": "Accepting these terms",
+          "paragraphs": [
+            "By creating an account or using Tallaby, you agree to these terms. If you use Tallaby on behalf of a business, you confirm you can accept them for that business.",
+            "You must be at least 18 years old and able to enter a binding contract under Egyptian law."
+          ]
+        },
+        {
+          "id": "account",
+          "title": "Your account",
+          "paragraphs": [
+            "Keep your login details private and tell us right away if you think someone else has accessed your account. You're responsible for activity under your account."
+          ],
+          "list": [
+            "Use accurate information when signing up.",
+            "One person or business per account.",
+            "Store links must not impersonate another brand."
+          ]
+        },
+        {
+          "id": "store",
+          "title": "Your store and content",
+          "paragraphs": [
+            "You keep ownership of everything you upload: product photos, descriptions, logos and brand assets. You give Tallaby permission to host and display that content so your store can work."
+          ],
+          "note": "We never sell your products or content to anyone else."
+        },
+        {
+          "id": "selling",
+          "title": "Selling rules",
+          "paragraphs": [
+            "You're responsible for the products you sell, their descriptions, pricing, stock and delivery to your customers. You may not sell:"
+          ],
+          "list": [
+            "Items that are illegal in Egypt.",
+            "Counterfeit goods or items that infringe someone's rights."
+          ]
+        },
+        {
+          "id": "fees",
+          "title": "Fees, plans and your wallet",
+          "clauses": [
+            {
+              "title": "Plans",
+              "body": "Tallaby has two plans. Free costs nothing each month and has an order fee of $0.03 per new order. Pro costs $29 a month and has no order fee. Each account can have up to 3 stores, on either plan. Prices are in US dollars and may change; we will tell you before a change applies to you."
+            },
+            {
+              "title": "Your wallet",
+              "body": "Your account has one Tallaby wallet, held in US dollars. You use it to pay Tallaby for order fees, Pro, AI credits and other paid services. It is for spending on Tallaby only: wallet money is not a bank balance, earns no interest, and can't be withdrawn, refunded in cash or moved to another account. Order money doesn't pass through the wallet, because your customers pay you directly."
+            },
+            {
+              "title": "Topping up",
+              "body": "You choose an amount in US dollars and pay the equivalent in Egyptian pounds. We show the exchange rate and the total before you pay, and that rate includes a margin over the market rate. If tax applies, it is added to the pounds you pay and shown as its own line. The wallet is credited with the dollar amount shown when you started the top-up. A manual transfer is credited once we confirm it."
+            },
+            {
+              "title": "Order fees",
+              "body": "On the Free plan, the fee is taken from your wallet when a new order is placed, or when payment is confirmed for a card order. An order that looks like a test or a duplicate is charged only if it is delivered. The fee doesn't depend on the order's value, and we take no percentage of your sales."
+            },
+            {
+              "title": "Negative balance",
+              "body": "Order fees can take your balance below zero. A negative balance is an amount you owe Tallaby, and you settle it by topping up. Optional purchases such as Pro, AI credits and ads can't be paid for with money you don't have in the wallet."
+            },
+            {
+              "title": "Pro renewal",
+              "body": "Pro renews every month from your wallet, for as long as it stays on. If your balance can't cover a renewal, you get 3 days to top up, and you keep Pro during that time. After that, your account moves to Free. You can cancel at any time: Pro continues until the end of the month you paid for, with no refund for the unused part."
+            },
+            {
+              "title": "Campaign emails",
+              "body": "Free includes 500 campaign emails a month and Pro includes 10,000, shared across your stores. Monthly emails reset on the 1st and don't carry over. You can buy more at $1.50 per 1,000 from your wallet; bought emails don't expire. You can send campaigns after your first approved top-up."
+            },
+            {
+              "title": "AI credits",
+              "body": "AI features use credits. Free includes 100 credits a month and Pro includes 2,000 a month. Monthly credits reset and don't carry over. You can buy more at $1 per 100 from your wallet; bought credits don't expire and are used after your monthly credits. Credits have no cash value and can't be refunded or transferred."
+            },
+            {
+              "title": "Amounts already taken",
+              "body": "Amounts deducted from your wallet are non-refundable, except where we correct a mistake or where the law requires otherwise. If we cancel a paid service before it starts, such as a rejected ad, the amount goes back to your wallet."
+            },
+            {
+              "title": "The move to US dollars",
+              "body": "On {date}, wallet balances held in Egyptian pounds were converted to US dollars at the market rate of that day, with no margin, and the conversion is listed in your wallet history. Fees from before that date that had not been charged were cancelled.",
+              "needsSwitchDate": true
+            }
+          ]
+        },
+        {
+          "id": "customers",
+          "title": "Orders and customers",
+          "paragraphs": [
+            "Each sale is a contract between you and your customer. You set your own return and refund policy, and it must be visible on your store. Tallaby may help resolve disputes but is not a party to the sale."
+          ]
+        },
+        {
+          "id": "ending",
+          "title": "Closing or suspending a store",
+          "paragraphs": [
+            "You can close your store at any time from Settings. We may suspend a store that breaks these terms, after notifying you where possible. Your store wallet balance, positive or negative, is settled after any open orders are completed."
+          ]
+        },
+        {
+          "id": "liability",
+          "title": "Liability",
+          "paragraphs": [
+            "We work hard to keep Tallaby available and secure, but we provide the service as is. To the extent the law allows, Tallaby isn't liable for indirect losses such as lost profits."
+          ]
+        },
+        {
+          "id": "changes",
+          "title": "Changes and contact",
+          "paragraphs": [
+            "If we change these terms in a meaningful way, we'll tell you by email or in your dashboard at least 14 days before the change applies. These terms are governed by the laws of Egypt."
+          ],
+          "contact": "Questions? Email"
+        }
+      ],
+      "lead": "The agreement between you and Tallaby when you create a store or shop on one."
+    },
+    "print": "Print or save PDF",
+    "readTime": "About {minutes} minutes to read",
+    "privacy": {
+      "lead": "What we collect, why we collect it, and the choices you have.",
+      "summary": [
+        {
+          "title": "We don't sell your data",
+          "body": "Not to advertisers, not to anyone."
+        },
+        {
+          "title": "Encrypted by default",
+          "body": "Data is encrypted in transit and at rest."
+        },
+        {
+          "title": "Yours to take",
+          "body": "Export or delete your data from Settings."
+        }
+      ],
+      "table": {
+        "data": "Data",
+        "why": "Why",
+        "kept": "Kept for"
+      },
+      "rows": [
+        [
+          "Account details",
+          "To sign you in and contact you about your store",
+          "While your account is open"
+        ],
+        [
+          "Store content",
+          "To host and display your products",
+          "Until you delete it"
+        ],
+        [
+          "Order details",
+          "To deliver orders and handle returns",
+          "5 years, for tax records"
+        ],
+        [
+          "Payout details",
+          "To send you your earnings",
+          "While your account is open"
+        ],
+        [
+          "Usage data",
+          "To fix bugs and improve the product",
+          "13 months"
+        ]
+      ],
+      "rights": [
+        {
+          "title": "Access",
+          "body": "See the data we hold about you."
+        },
+        {
+          "title": "Correct",
+          "body": "Fix anything that's wrong."
+        },
+        {
+          "title": "Export",
+          "body": "Download your data in a standard format."
+        },
+        {
+          "title": "Delete",
+          "body": "Close your account and erase your data."
+        }
+      ],
+      "sections": [
+        {
+          "id": "who",
+          "title": "Who we are",
+          "paragraphs": [
+            "Tallaby operates the store builder at tallaby.com and the stores hosted on it. This policy covers sellers who use Tallaby and shoppers who buy from Tallaby stores."
+          ]
+        },
+        {
+          "id": "collect",
+          "title": "What we collect",
+          "paragraphs": [
+            "We only collect what we need to run your store and process orders."
+          ],
+          "table": true
+        },
+        {
+          "id": "use",
+          "title": "How we use it",
+          "list": [
+            "Running your store, checkout and payouts.",
+            "Preventing fraud and keeping accounts secure.",
+            "Sending service messages about orders, fees and changes.",
+            "Marketing emails, only if you opt in. You can unsubscribe anytime."
+          ]
+        },
+        {
+          "id": "share",
+          "title": "Who we share it with",
+          "paragraphs": [
+            "We share data only with service providers who help us run Tallaby, such as payment processors, couriers and hosting providers, and only what they need to do that job. We may also share data if the law requires it."
+          ],
+          "note": "Shopper data belongs to the seller's store. Sellers can use it to fulfil orders, not to resell it."
+        },
+        {
+          "id": "cookies",
+          "title": "Cookies",
+          "paragraphs": [
+            "We use essential cookies to keep you signed in and remember your cart and language. Analytics cookies are optional and off until you accept them."
+          ]
+        },
+        {
+          "id": "rights",
+          "title": "Your rights",
+          "rights": true
+        },
+        {
+          "id": "security",
+          "title": "Security",
+          "paragraphs": [
+            "Data is encrypted in transit and at rest, access is limited to staff who need it, and card details are handled by certified payment providers. Tallaby never stores full card numbers."
+          ]
+        },
+        {
+          "id": "contact",
+          "title": "Contact",
+          "paragraphs": [
+            "To use any of your rights or ask a question, email us. We reply within 30 days."
+          ],
+          "contact": ""
+        }
+      ]
+    }
+  }
+}

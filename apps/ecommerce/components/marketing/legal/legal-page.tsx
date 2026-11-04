@@ -7,12 +7,15 @@ import { ReadingProgress } from "@/components/marketing/blog/article-tools.clien
 import { Container, Eyebrow } from "@/components/marketing/site/layout-primitives";
 import { formatLongDate } from "@/lib/marketing/format.lib";
 import { CONTACT } from "@/lib/marketing/site.lib";
+import { publishedClauses, type LegalClause } from "./legal.lib";
 import { LegalToc } from "./legal-toc.client";
 
 type LegalSection = {
   id: string;
   title: string;
   paragraphs?: string[];
+  /** Titled paragraphs ("Plans. Tallaby has two plans…"). */
+  clauses?: LegalClause[];
   list?: string[];
   note?: string;
   /** Show the contact email; the string is the lead-in text (may be empty). */
@@ -27,7 +30,7 @@ type SummaryItem = { title: string; body: string };
 const RIGHT_ICONS = [Eye, Pencil, Download, Trash2];
 
 /**
- * Terms and Privacy share this layout: dark header with a Terms/Privacy
+ * Terms and Privacy share this layout: a header on the page fog with a Terms/Privacy
  * switch, three summary cards, contents and numbered sections. All copy
  * comes from `legal.<doc>` in the messages.
  */
@@ -36,18 +39,22 @@ export async function LegalPage({
   summaryIcons,
   updated,
   minutes,
+  usdSwitchDate = null,
 }: {
   doc: "terms" | "privacy";
   summaryIcons: ComponentType<{ className?: string }>[];
   /** ISO date of the last revision. */
   updated: string;
   minutes: number;
+  /** ISO date of the USD switch. A clause that names it stays hidden until it is set. */
+  usdSwitchDate?: string | null;
 }) {
   const t = await getTranslations("legal");
   const tm = await getTranslations("meta");
   const sections = t.raw(`${doc}.sections`) as LegalSection[];
   const summary = t.raw(`${doc}.summary`) as SummaryItem[];
   const locale = await getLocale();
+  const switchDate = usdSwitchDate ? formatLongDate(usdSwitchDate, locale) : null;
 
   const swap = [
     { href: "/terms", label: tm("terms.title"), current: doc === "terms" },
@@ -57,29 +64,28 @@ export async function LegalPage({
   return (
     <>
       <ReadingProgress targetId="legal-doc" />
-      <div className="relative overflow-hidden bg-teal-900 pt-[72px] pb-16 text-white print:bg-transparent print:text-black">
-        <div aria-hidden className="hero-glow pointer-events-none absolute inset-0 print:hidden" />
-        <Container className="relative">
+      <div className="pt-11 pb-16 sm:pt-[72px]">
+        <Container>
           <Eyebrow>{t("eyebrow")}</Eyebrow>
-          <h1 className="display-tight text-[clamp(34px,5vw,60px)] leading-[1.22] font-extrabold en:leading-[1.05]">{t(`${doc}.title`)}</h1>
-          <p className="mt-5 max-w-[560px] text-lg text-mist">{t(`${doc}.lead`)}</p>
-          <div className="mt-[22px] flex flex-wrap gap-[18px] text-sm text-haze">
+          <h1 className="text-[clamp(34px,5.6vw,60px)] leading-[1.25] font-bold text-balance text-teal-900 en:leading-[1.1] en:tracking-[-0.02em]">{t(`${doc}.title`)}</h1>
+          <p className="mt-5 max-w-[600px] text-[clamp(16px,2vw,19px)] text-pretty text-[#56696e]">{t(`${doc}.lead`)}</p>
+          <div className="mt-[22px] flex flex-wrap gap-[18px] text-sm text-ink-400">
             <span className="flex items-center gap-1.5">
-              <Calendar className="size-[15px] text-amber-300" aria-hidden />
+              <Calendar className="size-[15px] text-teal-500" aria-hidden />
               {t("updated", { date: formatLongDate(updated, locale) })}
             </span>
             <span className="flex items-center gap-1.5">
-              <Clock className="size-[15px] text-amber-300" aria-hidden />
+              <Clock className="size-[15px] text-teal-500" aria-hidden />
               {t("readTime", { minutes })}
             </span>
           </div>
-          <div className="mt-7 flex gap-2" data-print="hide">
+          <div className="mt-7 flex flex-wrap gap-2" data-print="hide">
             {swap.map((s) => (
               <Link
                 key={s.href}
                 href={s.href}
                 aria-current={s.current ? "page" : undefined}
-                className="rounded-full border border-white/20 px-4 py-2 text-sm font-semibold text-[#c9d9dd] hover:text-white hover:no-underline aria-[current=page]:border-white aria-[current=page]:bg-white aria-[current=page]:text-teal-900"
+                className="inline-flex h-10 items-center rounded-full border border-line-strong bg-white px-[18px] text-sm font-semibold text-ink-600 hover:border-teal-300 hover:text-teal-900 hover:no-underline aria-[current=page]:border-teal-900 aria-[current=page]:bg-teal-900 aria-[current=page]:text-white aria-[current=page]:hover:text-white"
               >
                 {s.label}
               </Link>
@@ -93,8 +99,8 @@ export async function LegalPage({
           {summary.map((item, i) => {
             const Icon = summaryIcons[i] ?? Info;
             return (
-              <div key={item.title} className="grid gap-1.5 rounded-[18px] border border-neutral-200 bg-white p-5 shadow-soft">
-                <span className="grid size-[38px] place-items-center rounded-[11px] bg-amber-50 text-[#8a5300]">
+              <div key={item.title} className="grid content-start gap-1.5 rounded-card border border-line bg-surface-glass p-[22px] shadow-[0_14px_36px_rgba(13,55,67,0.07)]">
+                <span className="grid size-10 place-items-center rounded-xl bg-teal-50 text-teal-700">
                   <Icon className="size-[18px]" />
                 </span>
                 <b className="text-[15px] text-teal-900">{item.title}</b>
@@ -108,13 +114,18 @@ export async function LegalPage({
           <LegalToc sections={sections.map((s) => ({ id: s.id, title: s.title }))} />
           <article id="legal-doc">
             {sections.map((s, i) => (
-              <section key={s.id} id={s.id} className="mb-10 scroll-mt-[100px] border-b border-neutral-200 pb-10 last:border-0">
+              <section key={s.id} id={s.id} className="mb-10 scroll-mt-[100px] border-b border-line pb-10 last:border-0">
                 <h2 className="mb-3.5 flex items-baseline gap-3.5 text-2xl font-bold text-teal-900">
                   <span className="font-latin text-[15px] font-extrabold text-amber-700">{String(i + 1).padStart(2, "0")}</span>
                   {s.title}
                 </h2>
                 <div className="space-y-3 text-base leading-[1.85] text-[#33454a] en:leading-[1.7]">
                   {s.paragraphs?.map((p) => <p key={p}>{p}</p>)}
+                  {publishedClauses(s.clauses ?? [], switchDate).map((c) => (
+                    <p key={c.title}>
+                      <b className="font-bold text-teal-900">{c.title}.</b> {c.body}
+                    </p>
+                  ))}
                 </div>
                 {s.list ? (
                   <ul className="mt-3 grid list-disc gap-1.5 ps-5 text-base leading-[1.85] text-[#33454a] en:leading-[1.7]">
