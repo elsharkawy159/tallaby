@@ -1,1 +1,206 @@
-{}
+{
+  "meta": {
+    "compare": {
+      "title": "Tallaby compared with other platforms",
+      "description": "Fair comparisons between Tallaby and other online store platforms on pricing, payments, shipping and support."
+    },
+    "compare-entry": {
+      "title": "Tallaby vs {name}",
+      "description": "A fair comparison of Tallaby and {name} on pricing, payments, shipping, templates and support, so you can pick what suits your store."
+    }
+  },
+  "compareHub": {
+    "crumb": "Compare",
+    "eyebrow": "Compare",
+    "title": "Tallaby <em>compared</em> with other platforms",
+    "lead": "Fair comparisons on pricing, payments, shipping, templates and support, so you can pick the right platform for your store.",
+    "search": "Search",
+    "searchPlaceholder": "Search platforms, for example Shopify",
+    "categoriesLabel": "Categories",
+    "categories": {
+      "all": "All",
+      "eg": "Egyptian platforms",
+      "global": "Global platforms",
+      "other": "Other options"
+    },
+    "featured": "Featured",
+    "featuredCta": "Read the comparison",
+    "count": "{count} comparisons",
+    "noneTitle": "No results",
+    "noneBody": "Try another word or pick a different category.",
+    "cardBody": "How Tallaby and {name} differ, on what we could verify.",
+    "explainerTitle": "How to compare online store platforms",
+    "explainer": "Online store platforms price differently: some charge a monthly subscription, others a fee per order or a share of your sales. They also differ on cash on delivery, connections to local shipping companies, the language of their templates and dashboard, and how you reach support in Arabic. In each comparison here we only show the differences we could verify, say what each platform does well and give the date we last checked, so you can decide based on what your store needs.",
+    "closingTitle": "Try Tallaby alongside your current store",
+    "closingBody": "Start with no monthly subscription, and move your products when you're ready."
+  },
+  "comparePage": {
+    "crumb": "Compare",
+    "vs": "vs",
+    "vsLabel": "Tallaby vs {name}",
+    "title": "Tallaby or {name}: which suits your store?",
+    "checkedOn": "We last checked the other platform's details on {date}",
+    "byTeam": "By the Tallaby team",
+    "verdictTitle": "The short version",
+    "chooseTallaby": "Choose Tallaby if...",
+    "chooseCompetitor": "Choose {name} if...",
+    "verdictTallaby": [
+      "You sell in Egypt and need cash on delivery, Bosta and Paymob or Kashier in one dashboard.",
+      "You want to start with no monthly subscription and pay $0.03 per order.",
+      "You want a store under your own name, with ready-made Arabic and English templates and no code."
+    ],
+    "tableTitle": "Tallaby and {name} in detail",
+    "tableNote": "We only show what we could verify about {name}. Its numbers and plans can change, so check its own pages before you decide.",
+    "legend": { "y": "Available", "p": "Partly available", "n": "Not available" },
+    "groups": {
+      "pricing": "Pricing and fees",
+      "setup": "Setting up your store",
+      "design": "Templates and design",
+      "payments": "Payment methods",
+      "shipping": "Shipping",
+      "marketing": "Marketing and integrations",
+      "support": "Support",
+      "language": "Language and currency"
+    },
+    "rows": {
+      "freePlan": { "label": "Free plan", "tallaby": "No monthly subscription, and $0.03 per order. You need a first $5 wallet top-up to see orders." },
+      "monthly": { "label": "Monthly subscription", "tallaby": "Pro at $29 a month, with no order fee" },
+      "salesShare": { "label": "Share of sales", "tallaby": "We take no share of the order value" },
+      "limits": { "label": "Product and order limits", "tallaby": "No limit on either plan, and up to 3 stores" },
+      "signup": { "label": "Sign-up", "tallaby": "With email or a Google account" },
+      "noCode": { "label": "No code", "tallaby": "Every step is visual, from design to publishing" },
+      "import": { "label": "Product import", "tallaby": "From Excel, a product link or Shopify" },
+      "domain": { "label": "Address and custom domain", "tallaby": "A free address, and free connection of your own domain on your main store" },
+      "templates": { "label": "Ready-made templates", "tallaby": "Templates for each category, each in Arabic and English" },
+      "changeTemplate": { "label": "Changing template after publishing", "tallaby": "Any time, without losing products or orders" },
+      "bilingual": { "label": "Arabic and English", "tallaby": "Templates work in both directions" },
+      "cod": { "label": "Cash on delivery", "tallaby": "On for every store from the start" },
+      "cards": { "label": "Cards and wallets", "tallaby": "Through your own Paymob or Kashier account, with fees charged by the provider" },
+      "transfer": { "label": "InstaPay and transfers", "tallaby": "The customer transfers to your account and uploads a screenshot" },
+      "installments": { "label": "Installments", "tallaby": "Not available yet" },
+      "carriers": { "label": "Shipping company connections", "tallaby": "Bosta with waybills from the dashboard, and a ready-made sheet for Wassalha" },
+      "riders": { "label": "Your own riders", "tallaby": "Manage riders and assign orders" },
+      "zones": { "label": "Shipping rates by area", "tallaby": "You set them for each area" },
+      "email": { "label": "Email campaigns", "tallaby": "500 emails a month on Free, 10,000 on Pro" },
+      "feeds": { "label": "Catalog product feed", "tallaby": "One link for Meta, Google Merchant Center and TikTok" },
+      "apps": { "label": "Third-party app store", "tallaby": "No. Integrations are ready to connect from the Apps page" },
+      "support": { "label": "Support channels", "tallaby": "WhatsApp and email" },
+      "language": { "label": "Store language", "tallaby": "Arabic and English" },
+      "currencies": { "label": "International selling and currencies", "tallaby": "One currency per store, Egyptian pounds by default" }
+    },
+    "strengthsTitle": "What each platform does well",
+    "strengthsOfTallaby": "What Tallaby does well",
+    "strengthsOfCompetitor": "What {name} does well",
+    "strengthsTallaby": [
+      { "title": "Start without a subscription", "body": "The Free plan has no monthly fee. You pay $0.03 per order, with no share of your sales." },
+      { "title": "Built for selling in Egypt", "body": "Cash on delivery, Paymob, Kashier and InstaPay, with Bosta and your own riders in one dashboard." },
+      { "title": "A store under your name", "body": "Ready-made templates and your own domain, and you can change template any time without losing your products." },
+      { "title": "Support close to you", "body": "Reach the support team on WhatsApp and by email." }
+    ],
+    "moveTitle": "How to move to Tallaby",
+    "moveProducts": "Move your products from {name}",
+    "steps": [
+      { "title": "Create your store", "body": "You don't need to stop your current store while you set up on Tallaby.", "link": "Start now" },
+      { "title": "Move your products", "body": "Export your products to Excel and import them, add them by product link, or import directly from Shopify.", "link": "Ask us about moving" },
+      { "title": "Connect payments and shipping, then publish", "body": "Cash on delivery is on, and you can connect Paymob or Kashier and Bosta, then connect your domain and publish.", "link": "How do I connect my domain?" }
+    ],
+    "faq": {
+      "price": { "q": "Is Tallaby cheaper than {name}?", "a": "On Tallaby you start on the Free plan with no monthly subscription and pay $0.03 per order, or choose Pro at $29 a month with no order fee." },
+      "move": { "q": "Can I move my products from {name} to Tallaby?", "a": "Yes. You can import from an Excel file or a product link, and Shopify stores have a direct import." },
+      "domain": { "q": "Will I lose my domain if I move?", "a": "No. You can connect a domain you own to your main Tallaby store and update its DNS records. The domain stays yours." },
+      "try": { "q": "Can I try Tallaby before closing my current store?", "a": "Yes. You can set up and test your store on Tallaby with no monthly subscription, then move when you're ready. To see orders, you need a first $5 wallet top-up." },
+      "methods": { "q": "What payment and shipping options does Tallaby have?", "a": "Cash on delivery is on from the start. You can connect Paymob or Kashier for cards and wallets, and take InstaPay and wallet transfers straight to your account. For shipping, connect your Bosta account, download the Wassalha sheet or use your own riders." },
+      "how": { "q": "How did you put this comparison together?", "a": "We used information published up to the date shown, and we only show what we could verify. If you find something wrong about {name}, email {email} and we'll correct it." }
+    },
+    "othersTitle": "Other comparisons",
+    "closingTitle": "Try Tallaby alongside your current store",
+    "closingBody": "Start with no monthly subscription, and move your products when you're ready."
+  },
+  "competitors": {
+    "easyorders": {
+      "name": "EasyOrders",
+      "priceNote": "When we checked, EasyOrders advertised a free plan at $0.04 per order and a Pro plan at $100 a month. Compare the cost for your monthly order count.",
+      "verdict": [
+        "You need many shipping companies: it advertises more than 100.",
+        "You sell outside Egypt: it advertises more than 10 countries.",
+        "Your store runs well there and you don't need anything it lacks. Moving takes time, so don't move without a clear reason."
+      ],
+      "strengths": [
+        { "title": "A wide shipping and payment network", "body": "It advertises more than 100 shipping companies and more than 15 payment gateways." },
+        { "title": "Offers inside the order", "body": "Upsell and quantity offers are a core part of the platform." },
+        { "title": "Selling in several countries", "body": "It advertises support for more than 10 countries." }
+      ],
+      "cells": {
+        "freePlan": "A free plan at $0.04 per order",
+        "monthly": "A Pro plan at $100 a month",
+        "noCode": "Advertises a store in under 10 minutes, with no code",
+        "cards": "Advertises more than 15 payment gateways",
+        "carriers": "Advertises more than 100 shipping companies",
+        "feeds": "Meta catalog and Google Shopping",
+        "currencies": "Advertises selling in more than 10 countries"
+      }
+    },
+    "shopify": {
+      "name": "Shopify",
+      "priceNote": "When we checked, Shopify's plans ran from $5 to $399 a month, and transaction fees and paid apps can come on top. Compare the cost for your monthly order count.",
+      "verdict": [
+        "You sell in more than one market and need more than one currency.",
+        "You need many apps from a large app store.",
+        "Your store runs well there and you don't need anything it lacks. Moving takes time, so don't move without a clear reason."
+      ],
+      "strengths": [
+        { "title": "A large app store", "body": "You can add a lot through apps, some of them paid." },
+        { "title": "Selling across markets", "body": "Its Markets feature lets you sell in more than one country and currency." },
+        { "title": "Email campaigns and catalogs", "body": "Email and product feeds are available on the platform." }
+      ],
+      "cells": {
+        "monthly": "Plans from $5 to $399 a month",
+        "salesShare": "Transaction fees can apply, depending on the plan",
+        "email": "Available",
+        "feeds": "Available",
+        "apps": "A large app store, with some paid apps",
+        "currencies": "Available through Markets"
+      }
+    },
+    "woocommerce": {
+      "name": "WooCommerce",
+      "priceNote": "The WooCommerce plugin itself is free, but you pay for hosting, a domain, a theme, plugins and maintenance. Compare the cost for what you need.",
+      "verdict": [
+        "You want full control of your site and hosting, and have someone to run it.",
+        "You already have a WordPress site and want to add a store to it.",
+        "Your store runs well there and you don't need anything it lacks. Moving takes time, so don't move without a clear reason."
+      ],
+      "strengths": [
+        { "title": "An open-source plugin", "body": "It runs on WordPress, and a developer can change it as needed." },
+        { "title": "Full control", "body": "You choose your own hosting, theme and plugins." },
+        { "title": "Many plugins", "body": "You can extend your store with plugins, some of them paid." }
+      ],
+      "cells": {
+        "freePlan": "The plugin is free, and you pay for hosting, a domain, a theme and plugins",
+        "noCode": "Needs WordPress setup, hosting and maintenance, and often a developer",
+        "domain": "You buy your own domain and hosting",
+        "apps": "Many plugins, some of them paid"
+      }
+    },
+    "facebook-only": {
+      "name": "a Facebook page",
+      "priceNote": "A Facebook page is free, but your orders stay in your messages with no store of your own. Weigh that against the time you spend replying and writing orders down.",
+      "verdict": [
+        "You're just starting with a few orders and can follow them in your messages.",
+        "All your customers are on Facebook and you don't need your own store link yet."
+      ],
+      "strengths": [
+        { "title": "No setup", "body": "Create the page and start posting straight away." },
+        { "title": "An audience already there", "body": "Your customers are already browsing Facebook." },
+        { "title": "Free", "body": "Creating the page costs nothing." }
+      ],
+      "cells": {
+        "freePlan": "The page itself is free",
+        "domain": "No store link of your own",
+        "templates": "One page layout, set by Facebook",
+        "carriers": "No shipping company connections",
+        "zones": "You agree shipping with each customer in messages"
+      }
+    }
+  }
+}
