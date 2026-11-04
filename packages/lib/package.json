@@ -86,6 +86,18 @@
       "types": "./src/shipping/wassalha-export.server.ts",
       "default": "./src/shipping/wassalha-export.server.ts"
     },
+    "./shipping/checkout-address": {
+      "types": "./src/shipping/checkout-address.lib.ts",
+      "default": "./src/shipping/checkout-address.lib.ts"
+    },
+    "./shipping/checkout-address/server": {
+      "types": "./src/shipping/checkout-address.server.ts",
+      "default": "./src/shipping/checkout-address.server.ts"
+    },
+    "./shipping/governorate": {
+      "types": "./src/shipping/governorate.lib.ts",
+      "default": "./src/shipping/governorate.lib.ts"
+    },
     "./places": {
       "types": "./src/places/index.ts",
       "default": "./src/places/index.ts"

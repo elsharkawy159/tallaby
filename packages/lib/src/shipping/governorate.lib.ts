@@ -282,4 +282,7 @@ export function getGovernorateLabel(code: string, locale: string): string {
 }
 
 /** Canonical governorate keys, in rate-table order. */
+/** Every spelling above, for finding a governorate inside free text (`checkout-address.lib`). */
+export const GOVERNORATE_NAME_ALIASES: Readonly<Record<string, string>> = GOVERNORATE_ALIASES
+
 export const EGYPT_GOVERNORATES = CANONICAL_GOVERNORATES
