@@ -275,6 +275,7 @@
     "salesPopup": "Sales pop-up",
     "missedOrders": "Not completed",
     "pendingCarts": "Pending carts",
+    "crossSellReport": "Cross-sell report",
     "customers": "Customers",
     "scanReturns": "Scan returns",
     "productTrash": "Trash",
@@ -6623,6 +6624,19 @@
       "tooLong": "The message is too long (1,000 characters max).",
       "generic": "Something went wrong. Try again."
     }
+  },
+  "crossSellReport": {
+    "title": "Cross-sell report",
+    "description": "What each \"Frequently bought with\" offer of this store sold, from your orders. Cancelled, returned and refunded orders and unpaid card orders aren't counted.",
+    "storeLabel": "Store: {name}",
+    "period": "Period",
+    "lastDays": "Last {days} days",
+    "orders": "Orders",
+    "units": "Units",
+    "discount": "Discount given",
+    "withProduct": "With {name}",
+    "emptyTitle": "No offers ordered in this period",
+    "emptyBody": "When a customer orders a product with one of your offers, it shows up here. You set offers on the product's edit page."
   },
   "pendingCarts": {
     "title": "Pending carts",

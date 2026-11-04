@@ -1,8 +1,8 @@
 import type { LucideIcon } from "lucide-react";
-import {
-  BadgePercent, TALLABY_SERVICES_ENABLED } from "@workspace/lib/fulfillment";
+import { TALLABY_SERVICES_ENABLED } from "@workspace/lib/fulfillment";
 import {
   AppWindow,
+  BadgePercent,
   PhoneMissed,
   // ScanBarcode, // scan returns hidden (owner, 2026-10-31)
   LayoutGrid,
