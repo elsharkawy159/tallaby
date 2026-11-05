@@ -23,7 +23,8 @@ export function AgentDock({ store, uiLocale }: { store: EditorStore; uiLocale: s
   const header = useStore(store, (s) => s.header);
   const footer = useStore(store, (s) => s.footer);
   const [draft, setDraft] = useState("");
-  const [open, setOpen] = useState(true);
+  // Folded to one line (Claude Design): the panel keeps its height for the real controls.
+  const [open, setOpen] = useState(false);
   // The mention the seller removed; a new selection brings one back.
   const [dismissed, setDismissed] = useState<string | null>(null);
 
@@ -33,22 +34,22 @@ export function AgentDock({ store, uiLocale }: { store: EditorStore; uiLocale: s
   const shown = mention && mention.key !== dismissed ? mention : null;
 
   return (
-    <div className="shrink-0 border-t bg-muted/30">
+    <div className="shrink-0 border-t border-(--s-line-soft) p-2.5 pb-[calc(0.625rem+env(safe-area-inset-bottom))] lg:pb-2.5">
       <button
         type="button"
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center gap-2 px-4 py-2 text-start text-xs font-semibold"
+        className="flex h-10 w-full items-center gap-2 rounded-[14px] border-[1.5px] border-(--s-field) px-2.5 text-start text-[12.5px] text-(--s-muted)"
       >
-        <Sparkles className="size-3.5 text-primary" aria-hidden />
-        <span className="flex-1">{t("title")}</span>
-        <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">{t("soon")}</span>
-        <ChevronDown className={cn("size-3.5 text-muted-foreground transition-transform", !open && "rotate-180")} aria-hidden />
+        <Sparkles className="size-[17px] text-(--tallaby-amber-700)" aria-hidden />
+        <span className="flex-1 truncate">{t("title")}</span>
+        <span className="rounded-full bg-accent-soft px-2 py-px text-[10.5px] font-bold text-accent-ink">{t("soon")}</span>
+        <ChevronDown className={cn("size-3.5 text-(--s-subtle) transition-transform", !open && "rotate-180")} aria-hidden />
       </button>
 
       {open && (
-        <div className="px-3 pb-3">
-          <div className="rounded-xl border bg-background shadow-xs focus-within:ring-2 focus-within:ring-ring/40">
+        <div className="pt-2">
+          <div className="rounded-[14px] border-[1.5px] border-(--s-field) bg-(--s-surface) focus-within:border-(--tallaby-amber-600)">
             {shown && (
               <div className="flex px-2 pt-2">
                 <span

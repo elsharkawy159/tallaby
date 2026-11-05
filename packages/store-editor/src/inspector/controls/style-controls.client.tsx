@@ -40,7 +40,7 @@ export function Segmented<T extends string>({
   label: string;
 }) {
   return (
-    <div role="radiogroup" aria-label={label} className="inline-flex flex-wrap rounded-md border bg-background p-0.5">
+    <div role="radiogroup" aria-label={label} className="inline-flex flex-wrap gap-0.5 rounded-[11px] bg-(--s-fill) p-[3px]">
       {options.map((option) => {
         const active = option.value === value;
         return (
@@ -53,8 +53,8 @@ export function Segmented<T extends string>({
             aria-label={option.title}
             onClick={() => onChange(active ? undefined : option.value)}
             className={cn(
-              "inline-flex h-7 min-w-7 items-center justify-center rounded px-1.5 text-xs font-medium transition-colors",
-              active ? "bg-primary/10 text-primary ring-1 ring-primary/30" : "text-muted-foreground hover:bg-muted hover:text-foreground",
+              "inline-flex h-7 min-w-7 items-center justify-center rounded-lg px-1.5 text-xs font-semibold transition-colors max-lg:h-9 max-lg:min-w-9",
+              active ? "bg-(--s-surface) text-(--s-ink) shadow-[0_1px_3px_rgb(13_55_67/0.1)]" : "text-(--s-subtle) hover:text-(--s-ink)",
             )}
           >
             {option.label}
@@ -74,8 +74,8 @@ export function ToggleButton({ pressed, onChange, label, children }: { pressed: 
       title={label}
       onClick={() => onChange(!pressed)}
       className={cn(
-        "inline-flex size-7 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
-        pressed && "bg-primary/10 text-primary",
+        "inline-flex size-7 items-center justify-center rounded-lg text-(--s-subtle) transition-colors hover:bg-(--s-hover) hover:text-(--s-ink) max-lg:size-9",
+        pressed && "bg-(--s-hover) text-(--s-ink)",
       )}
     >
       {children}

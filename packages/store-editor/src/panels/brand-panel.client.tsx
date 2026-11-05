@@ -88,11 +88,8 @@ export function BrandPanel({ store, storeId, readOnly }: { store: EditorStore; s
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="flex items-center justify-between gap-2 border-b p-3">
-        <div className="min-w-0">
-          <p className="text-sm font-semibold">{t("title")}</p>
-          <p className="truncate text-xs text-muted-foreground">{t("description")}</p>
-        </div>
+      <div className="flex items-center justify-between gap-2 border-b border-(--s-line-soft) px-3.5 pb-2">
+        <p className="min-w-0 truncate text-xs text-(--s-subtle)">{t("description")}</p>
         <Button
           type="button"
           variant="ghost"

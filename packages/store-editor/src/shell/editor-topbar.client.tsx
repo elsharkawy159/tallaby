@@ -7,9 +7,11 @@ import {
   Check,
   ChevronsUpDown,
   CircleHelp,
+  CloudCheck,
   Ellipsis,
   ExternalLink,
   Eye,
+  FileText,
   Grid3x3,
   LoaderCircle,
   Monitor,
@@ -51,10 +53,10 @@ const DEVICES = [
 ] as const;
 
 /**
- * Top bar (P4B-03, like the reference navbar): back, page switcher and store
- * address; device sizes in the middle; history, language, grid, preview,
- * help, save state and publish on the end side. Below sm, language, grid,
- * preview, store link and help move into a "More" menu.
+ * Top bar (P4B-03, Claude Design "Seller Editor v3"): back, page switcher and
+ * store address; device sizes in the middle; history, language, preview, More,
+ * save state and publish on the end side. Grid, motion, store link and help
+ * live in the More menu; below sm, language and preview join them.
  */
 export function EditorTopbar({
   store,
@@ -108,8 +110,8 @@ export function EditorTopbar({
   const hasStore = capabilities.publishLabel === "site";
 
   return (
-    <header className="flex h-12 shrink-0 items-center gap-1.5 border-b bg-background px-2">
-      <div className="flex min-w-0 flex-1 items-center gap-3">
+    <header className="relative z-30 flex h-14 min-w-0 shrink-0 items-center gap-2 border-b border-(--s-field) bg-(--s-surface) px-2.5 max-md:h-[52px] max-md:gap-1 max-md:px-1.5">
+      <div className="flex min-w-0 flex-1 items-center gap-1.5">
         {links.back && (
           <IconAction label={t("back")} asChild>
             <Link href={links.back}>
@@ -119,10 +121,15 @@ export function EditorTopbar({
         )}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="h-8 max-w-44 gap-1.5 px-2.5 max-sm:max-w-28" aria-label={t("pageLabel")}>
+            <button
+              type="button"
+              aria-label={t("pageLabel")}
+              className="flex h-[38px] max-w-[200px] min-w-0 items-center gap-2 rounded-xl border border-(--s-field) bg-(--s-surface) px-3 text-[13px] font-bold whitespace-nowrap text-(--s-ink) transition-colors hover:bg-(--s-hover) max-md:h-9 max-md:max-w-[120px] max-md:gap-1.5 max-md:px-2.5 max-md:text-[12.5px]"
+            >
+              <FileText className="size-[15px] shrink-0 text-(--s-subtle) max-md:hidden" aria-hidden />
               <span className="truncate">{nameOf(page.name, uiLocale) || page.slug}</span>
-              <ChevronsUpDown className="size-3.5 opacity-60" aria-hidden />
-            </Button>
+              <ChevronsUpDown className="size-[15px] shrink-0 text-(--s-subtle)" aria-hidden />
+            </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-56">
             {pagesPanelOrder(pages).map((p) => (
@@ -147,7 +154,7 @@ export function EditorTopbar({
             target="_blank"
             rel="noopener noreferrer"
             dir="ltr"
-            className="hidden min-w-0 items-center gap-1 truncate text-sm text-muted-foreground hover:text-foreground lg:inline-flex"
+            className="ms-1.5 hidden min-w-0 items-center gap-1 truncate font-montserrat text-xs font-medium text-(--s-subtle) hover:text-(--s-ink) min-[1281px]:inline-flex"
           >
             <span className="truncate">{host}</span>
             <ExternalLink className="size-3.5 shrink-0" aria-hidden />
@@ -156,7 +163,7 @@ export function EditorTopbar({
         {capabilities.industrySwitcher && <IndustrySwitcher store={store} uiLocale={uiLocale} />}
       </div>
 
-      <div role="group" aria-label={t("device")} className="hidden items-center rounded-lg border bg-muted/40 p-0.5 sm:flex">
+      <div role="group" aria-label={t("device")} className="hidden shrink-0 items-center gap-0.5 rounded-xl bg-(--s-fill) p-[3px] sm:flex">
         {DEVICES.map(([value, Icon]) => (
           <Tooltip key={value}>
             <TooltipTrigger asChild>
@@ -165,7 +172,7 @@ export function EditorTopbar({
                 aria-pressed={device === value}
                 aria-label={t(`devices.${value}`)}
                 onClick={() => state.setDevice(value)}
-                className={cn("grid h-7 w-8 place-items-center rounded-md text-muted-foreground", device === value && cn("shadow-sm", DEVICE_TONE[value].pill))}
+                className={cn("grid h-8 w-[38px] place-items-center rounded-[9px] text-(--s-subtle) transition-colors hover:text-(--s-ink)", device === value && cn("shadow-sm", DEVICE_TONE[value].pill))}
               >
                 <Icon className="size-4" aria-hidden />
               </button>
@@ -175,7 +182,7 @@ export function EditorTopbar({
         ))}
       </div>
 
-      <div className="flex flex-1 items-center justify-end gap-1">
+      <div className="flex shrink-0 items-center justify-end gap-1.5 sm:flex-1 max-md:gap-0.5">
         <IconAction label={t("undo")} onClick={() => state.undo()} disabled={!canUndo}>
           <Undo2 className="size-4" />
         </IconAction>
@@ -183,53 +190,37 @@ export function EditorTopbar({
           <Redo2 className="size-4" />
         </IconAction>
         <Divider />
-        <div className="hidden items-center gap-1 sm:flex">
+        <div className="hidden items-center gap-1.5 sm:flex">
           {locales.length > 1 && (
-            <div role="group" aria-label={t("editingLanguage")} className="flex rounded-md border p-0.5">
+            <div role="group" aria-label={t("editingLanguage")} className="flex shrink-0 rounded-[10px] border border-(--s-field) p-0.5">
               {locales.map((value) => (
                 <button
                   key={value}
                   type="button"
                   aria-pressed={locale === value}
                   onClick={() => state.setLocale(value)}
-                  className={cn("rounded px-1.5 py-0.5 text-xs font-semibold uppercase text-muted-foreground", locale === value && "bg-muted text-foreground")}
+                  className={cn("h-7 rounded-lg px-[9px] font-montserrat text-[11px] font-bold uppercase text-(--s-subtle)", locale === value && "bg-(--s-solid) text-(--s-solid-fg)")}
                 >
                   {value}
                 </button>
               ))}
             </div>
           )}
-          <IconAction label={t("gridOverlay")} onClick={() => state.toggleGridOverlay()} pressed={gridOverlay}>
-            <Grid3x3 className="size-4" />
-          </IconAction>
-          <IconAction label={t("previewMotion")} onClick={() => state.togglePreviewMotion()} pressed={previewMotion}>
-            <Sparkles className="size-4" />
-          </IconAction>
           {previewEnabled && capabilities.preview && (
             <IconAction label={t("previewOnStore")} onClick={preview.open} disabled={preview.opening || readOnly || saveStatus === "conflict"}>
               {preview.opening ? <LoaderCircle className="size-4 animate-spin" /> : <Eye className="size-4" />}
             </IconAction>
           )}
-          {hasStore && (
-            <IconAction label={t("viewStore")} asChild>
-              <a href={storeUrl} target="_blank" rel="noopener noreferrer">
-                <ExternalLink className="size-4" aria-hidden />
-              </a>
-            </IconAction>
-          )}
-          <IconAction label={t("shortcuts.title")} onClick={onShowShortcuts}>
-            <CircleHelp className="size-4" />
-          </IconAction>
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="size-8 sm:hidden" aria-label={t("more")}>
-              <Ellipsis className="size-4" aria-hidden />
+            <Button variant="ghost" size="icon" className={ICON_ACTION} aria-label={t("more")}>
+              <Ellipsis className="size-[17px]" aria-hidden />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
             {locales.length > 1 && (
-              <>
+              <div className="sm:hidden">
                 <DropdownMenuLabel className="text-xs text-muted-foreground">{t("editingLanguage")}</DropdownMenuLabel>
                 <DropdownMenuRadioGroup value={locale} onValueChange={(value) => state.setLocale(value as SiteLocale)}>
                   {locales.map((value) => (
@@ -239,7 +230,7 @@ export function EditorTopbar({
                   ))}
                 </DropdownMenuRadioGroup>
                 <DropdownMenuSeparator />
-              </>
+              </div>
             )}
             <DropdownMenuCheckboxItem checked={gridOverlay} onCheckedChange={() => state.toggleGridOverlay()}>
               <Grid3x3 aria-hidden />
@@ -250,7 +241,7 @@ export function EditorTopbar({
               {t("previewMotion")}
             </DropdownMenuCheckboxItem>
             {previewEnabled && capabilities.preview && (
-              <DropdownMenuItem onSelect={preview.open} disabled={preview.opening || readOnly || saveStatus === "conflict"}>
+              <DropdownMenuItem className="sm:hidden" onSelect={preview.open} disabled={preview.opening || readOnly || saveStatus === "conflict"}>
                 {preview.opening ? <LoaderCircle className="animate-spin" aria-hidden /> : <Eye aria-hidden />}
                 {t("previewOnStore")}
               </DropdownMenuItem>
@@ -271,7 +262,12 @@ export function EditorTopbar({
         </DropdownMenu>
         <Divider />
         <SaveState status={saveStatus} onRetry={onRetrySave} />
-        <Button size="sm" className="h-8" onClick={onPublish} disabled={publishing || readOnly || !hasChanges || saveStatus === "conflict"}>
+        <Button
+          size="sm"
+          className="h-[38px] rounded-full bg-accent px-4 text-[13px] font-bold text-(--tallaby-teal-900) shadow-(--s-shadow-amber) transition-[background-color,transform] hover:bg-(--s-amber-hover) active:scale-[.97] motion-reduce:active:scale-100 max-md:h-9 max-md:px-3.5"
+          onClick={onPublish}
+          disabled={publishing || readOnly || !hasChanges || saveStatus === "conflict"}
+        >
           {publishing ? <LoaderCircle className="animate-spin" aria-hidden /> : <UploadCloud aria-hidden />}
           <span className={cn(isLive && capabilities.publishLabel !== "section" && "max-sm:hidden")}>
             {t(capabilities.publishLabel === "section" ? "publishSection" : isLive ? "publishChanges" : "publish")}
@@ -317,8 +313,10 @@ function IndustrySwitcher({ store, uiLocale }: { store: EditorStore; uiLocale: s
 }
 
 function Divider() {
-  return <span aria-hidden className="mx-0.5 hidden h-5 w-px bg-border md:block" />;
+  return <span aria-hidden className="hidden h-[22px] w-px shrink-0 bg-(--s-field) md:block" />;
 }
+
+const ICON_ACTION = "size-9 rounded-[11px] text-(--s-muted) hover:bg-(--s-hover) hover:text-(--s-ink) max-md:size-[34px]";
 
 function IconAction({
   label,
@@ -341,7 +339,7 @@ function IconAction({
         <Button
           variant="ghost"
           size="icon"
-          className={cn("size-8", pressed && "bg-muted text-foreground")}
+          className={cn(ICON_ACTION, pressed && "bg-(--s-hover) text-(--s-ink)")}
           aria-label={label}
           aria-pressed={pressed}
           onClick={onClick}
@@ -360,7 +358,7 @@ function SaveState({ status, onRetry }: { status: SaveStatus; onRetry: () => voi
   const t = useTranslations("storeEditor.save");
   if (status === "error") {
     return (
-      <Button variant="ghost" size="sm" className="h-8 text-destructive" onClick={onRetry}>
+      <Button variant="ghost" size="sm" className="h-9 text-destructive" onClick={onRetry}>
         <RotateCw aria-hidden />
         {t("retry")}
       </Button>
@@ -370,12 +368,12 @@ function SaveState({ status, onRetry }: { status: SaveStatus; onRetry: () => voi
     <span
       role="status"
       className={cn(
-        "inline-flex items-center gap-1 whitespace-nowrap px-1 text-xs",
-        status === "conflict" ? "text-destructive" : "text-muted-foreground",
+        "inline-flex items-center gap-[5px] whitespace-nowrap px-1 text-xs",
+        status === "conflict" ? "text-destructive" : "text-(--s-subtle)",
       )}
     >
-      {status === "saving" && <LoaderCircle className="size-3 animate-spin" aria-hidden />}
-      {status === "saved" && <Check className="size-3" aria-hidden />}
+      {status === "saving" && <LoaderCircle className="size-3.5 animate-spin motion-reduce:animate-none" aria-hidden />}
+      {status === "saved" && <CloudCheck className="size-3.5 text-success" aria-hidden />}
       <span className="max-sm:sr-only">{t(status)}</span>
     </span>
   );

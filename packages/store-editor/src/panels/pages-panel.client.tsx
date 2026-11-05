@@ -66,10 +66,10 @@ export function PagesPanel({ store, uiLocale }: { store: EditorStore; uiLocale: 
     <div className="space-y-4">
       <ul className="space-y-1">
         {pagesPanelOrder(state.pages).map((page) => (
-          <li key={page.id} className={cn("flex items-center gap-2 rounded-md border px-2 py-1.5 text-sm", page.id === state.activePageId && "border-primary")}>
-            <button type="button" className="min-w-0 flex-1 truncate text-start" onClick={() => state.setActivePage(page.id)}>
-              {nameOf(page.name, uiLocale) || page.slug}
-              <span dir="ltr" className="ms-1 text-xs text-muted-foreground">
+          <li key={page.id} className={cn("flex min-h-11 items-center gap-2 rounded-[14px] border border-(--s-line) px-3 py-2 text-[13px] transition-colors hover:border-(--tallaby-teal-100)", page.id === state.activePageId && "border-(--s-primary) bg-(--s-tint) hover:border-(--s-primary)")}>
+            <button type="button" className="flex min-w-0 flex-1 flex-col items-start text-start font-semibold text-(--s-text)" onClick={() => state.setActivePage(page.id)}>
+              <span className="max-w-full truncate">{nameOf(page.name, uiLocale) || page.slug}</span>
+              <span dir="ltr" className="max-w-full truncate font-montserrat text-[11px] font-medium text-(--s-subtle)">
                 {/* The product page draws every product, at /products/<slug>. */}
                 /{page.isHome ? "" : isProductPage(page) ? "products/…" : page.slug}
               </span>
@@ -94,13 +94,13 @@ export function PagesPanel({ store, uiLocale }: { store: EditorStore; uiLocale: 
         ))}
       </ul>
       <form
-        className="space-y-2 rounded-lg border p-2"
+        className="space-y-2.5 rounded-[14px] border border-(--s-line) p-3"
         onSubmit={(event) => {
           event.preventDefault();
           void add();
         }}
       >
-        <p className="text-sm font-semibold">{t("new")}</p>
+        <p className="text-[12.5px] font-bold text-(--s-body)">{t("new")}</p>
         <div className="space-y-1">
           <Label htmlFor="new-page-name">{t("name")}</Label>
           <Input id="new-page-name" value={name} maxLength={80} onChange={(e) => setName(e.target.value)} />

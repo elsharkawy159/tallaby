@@ -15,6 +15,9 @@
     "redo": "إعادة",
     "viewStore": "عرض المتجر",
     "more": "المزيد",
+    "closePanel": "إغلاق اللوحة",
+    "sheetGrow": "تكبير اللوحة",
+    "sheetShrink": "تصغير اللوحة",
     "publish": "نشر",
     "publishChanges": "نشر التغييرات",
     "published": "تم النشر (الإصدار {number}). يظهر الآن في متجرك.",
@@ -190,7 +193,8 @@
       "brand": "الهوية",
       "explore": "استكشف",
       "templates": "القوالب",
-      "forms": "النماذج"
+      "forms": "النماذج",
+      "shortcuts": "اختصارات"
     },
     "add": {
       "tabs": {
@@ -350,6 +354,7 @@
         }
       },
       "emptyTitle": "لم تحدد شيئًا",
+    "addSection": "أضف قسمًا",
       "edit": "تعديل",
       "path": "مكان العنصر",
       "actions": {

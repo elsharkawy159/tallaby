@@ -152,7 +152,8 @@ export function ElementPopover({
       ref={ref}
       role="dialog"
       aria-label={title}
-      className="pointer-events-auto absolute z-20 overflow-y-auto overscroll-contain rounded-xl border bg-background p-3 shadow-xl"
+      // Below lg the inspector sheet and the action bar do this job (Claude Design mobile).
+      className="pointer-events-auto absolute z-20 overflow-y-auto overscroll-contain rounded-2xl border bg-background p-3 shadow-(--s-shadow-menu) max-lg:hidden"
       style={{ top: position.top, left: position.left, width: placed.width, maxHeight: Math.max(160, bounds.height - 16) }}
     >
       <div className="mb-2.5 flex items-center gap-1 border-b pb-2">

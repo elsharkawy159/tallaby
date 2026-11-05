@@ -459,7 +459,7 @@ const PRESET_PREVIEWS: Record<string, () => ReactNode> = {
 /** The preview box shown above a palette tile's label. */
 export function PalettePreview({ children }: { children: ReactNode }) {
   return (
-    <span aria-hidden className="flex h-12 w-full items-center justify-center overflow-hidden rounded-md bg-muted/50 px-2.5">
+    <span aria-hidden className="flex h-[54px] w-full items-center justify-center overflow-hidden rounded-[9px] bg-(--s-tint) px-2.5">
       {children}
     </span>
   );

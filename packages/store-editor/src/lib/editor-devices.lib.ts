@@ -10,7 +10,7 @@ export const DEVICE_TONE: Record<Device, { ring: string; strip: string; dot: str
     ring: "",
     strip: "bg-muted/60",
     dot: "bg-muted-foreground",
-    pill: "bg-background text-foreground",
+    pill: "bg-(--s-surface) text-(--s-ink)",
     text: "text-muted-foreground",
     field: "",
     fieldBelow: "",

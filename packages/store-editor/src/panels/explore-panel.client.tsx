@@ -111,14 +111,13 @@ export function ExplorePanel({
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="space-y-2.5 border-b p-3">
+      <div className="space-y-2.5 border-b border-(--s-line-soft) px-3.5 pb-3">
         <div>
-          <p className="text-sm font-semibold">{t("title")}</p>
-          <p className="text-xs text-muted-foreground">{categoryLabel ? t("forIndustry", { industry: categoryLabel }) : t("intro")}</p>
+          <p className="text-xs text-(--s-subtle)">{categoryLabel ? t("forIndustry", { industry: categoryLabel }) : t("intro")}</p>
         </div>
         <div className="relative">
           <Search className="pointer-events-none absolute start-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
-          <Input dir="auto" value={input} onChange={(e) => setInput(e.target.value)} placeholder={t("search")} aria-label={t("search")} className="ps-8" />
+          <Input dir="auto" value={input} onChange={(e) => setInput(e.target.value)} placeholder={t("search")} aria-label={t("search")} className="px-8" />
         </div>
         <div className="flex flex-wrap gap-1.5">
           {suggestions.map((s) => (

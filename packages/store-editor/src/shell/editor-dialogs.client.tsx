@@ -117,13 +117,13 @@ export function ShortcutsDialog({ open, onOpenChange }: { open: boolean; onOpenC
           <DialogTitle>{t("title")}</DialogTitle>
           <DialogDescription>{t("description")}</DialogDescription>
         </DialogHeader>
-        <ul className="divide-y text-sm">
+        <ul className="flex max-h-[60dvh] flex-col gap-1.5 overflow-y-auto text-xs">
           {SHORTCUTS.map((shortcut) => (
-            <li key={shortcut.action} className="flex items-center justify-between gap-4 py-2">
+            <li key={shortcut.action} className="flex items-center justify-between gap-4 rounded-[10px] bg-(--s-tint) px-2.5 py-2 text-(--s-muted)">
               <span>{t(`actions.${shortcut.action}`)}</span>
               <span dir="ltr" className="flex gap-1">
                 {shortcut.keys.map((key) => (
-                  <kbd key={key} className="rounded border bg-muted px-1.5 py-0.5 font-mono text-[11px]">
+                  <kbd key={key} className="whitespace-nowrap rounded-md border border-(--s-line) bg-(--s-surface) px-1.5 font-montserrat text-[10.5px] font-semibold text-(--s-text)">
                     {key === "Mod" ? (mac ? "⌘" : "Ctrl") : key}
                   </kbd>
                 ))}

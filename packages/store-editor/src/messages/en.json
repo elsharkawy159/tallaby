@@ -15,6 +15,9 @@
     "redo": "Redo",
     "viewStore": "View store",
     "more": "More",
+    "closePanel": "Close panel",
+    "sheetGrow": "Make the sheet taller",
+    "sheetShrink": "Make the sheet shorter",
     "publish": "Publish",
     "publishChanges": "Publish changes",
     "published": "Published (version {number}). Your store shows it now.",
@@ -190,7 +193,8 @@
       "brand": "Brand",
       "explore": "Explore",
       "templates": "Templates",
-      "forms": "Forms"
+      "forms": "Forms",
+      "shortcuts": "Keys"
     },
     "add": {
       "tabs": {
@@ -350,6 +354,7 @@
         }
       },
       "emptyTitle": "Nothing selected",
+      "addSection": "Add a section",
       "edit": "Edit",
       "path": "Where it sits",
       "actions": {

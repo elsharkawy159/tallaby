@@ -96,8 +96,7 @@ export function LayersPanel({ store, commands, uiLocale }: { store: EditorStore;
   };
 
   return (
-    <div className="min-h-0 flex-1 overflow-y-auto p-2">
-      <h2 className="px-1 pb-2 pt-1 text-sm font-semibold">{t("title")}</h2>
+    <div className="min-h-0 flex-1 overflow-y-auto p-2.5">
       <div role="tree" aria-label={t("title")} className="space-y-0.5">
         {chromeRow("header", header)}
         <SortableContext id="layers:sections" items={page.content.sections.map((s) => layerId("section", s.id))} strategy={verticalListSortingStrategy}>
@@ -393,8 +392,8 @@ function Row({
   return (
     <div
       className={cn(
-        "group flex h-8 items-center gap-1 rounded-md pe-1 text-sm",
-        active ? "bg-primary/10 text-primary" : "hover:bg-muted",
+        "group flex h-8 items-center gap-1 rounded-[10px] pe-1 text-[12.5px] text-(--s-body) max-lg:h-11",
+        active ? "bg-(--s-hover) font-bold text-(--s-ink)" : "hover:bg-(--s-tint)",
         hidden && "opacity-50",
       )}
       style={{ paddingInlineStart: 4 + depth * 14 }}
@@ -450,7 +449,8 @@ function Row({
           <span className="sr-only">{marks.hidden}</span>
         </span>
       )}
-      <span className="flex opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">{actions}</span>
+      {/* Takes room only when shown, so invisible buttons don't squeeze the name. */}
+      <span className="hidden shrink-0 group-focus-within:flex group-hover:flex">{actions}</span>
     </div>
   );
 }
@@ -466,7 +466,7 @@ function RowAction({ label, onClick, disabled, children }: { label: string; onCl
         e.stopPropagation();
         onClick();
       }}
-      className="grid size-6 place-items-center rounded text-muted-foreground hover:bg-background hover:text-foreground disabled:opacity-30"
+      className="grid size-6 place-items-center rounded-md text-(--s-muted) hover:bg-(--s-hover) hover:text-(--s-ink) disabled:opacity-30 max-lg:size-9"
     >
       {children}
     </button>

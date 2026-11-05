@@ -66,14 +66,14 @@ export function SidebarHeader({
   const shownCrumbs = crumbs.length > 4 ? [crumbs[0]!, null, ...crumbs.slice(-2)] : crumbs;
 
   return (
-    <div className="border-b px-4 py-3">
-      <div className="flex items-start gap-2.5">
-        <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
-          <Icon className="size-4" aria-hidden />
+    <div data-sidebar-header="" className="border-b border-(--s-line-soft) px-3.5 py-3 max-lg:pt-1">
+      <div className="flex items-center gap-2.5">
+        <span className="grid size-9 shrink-0 place-items-center rounded-[11px] bg-(--s-hover) text-(--s-primary)">
+          <Icon className="size-[17px]" aria-hidden />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{node && title !== info.title ? info.title : t(info.kind)}</p>
-          <h2 className="truncate font-semibold leading-tight">{title}</h2>
+          <h2 className="truncate text-sm font-bold leading-tight text-(--s-ink)">{title}</h2>
+          <p className="truncate text-[11.5px] text-(--s-subtle)">{node && title !== info.title ? info.title : t(info.kind)}</p>
         </div>
         <div className="flex shrink-0 items-center">
           {canParent && (
@@ -99,12 +99,12 @@ export function SidebarHeader({
         </div>
       </div>
       {(node || selection.part) && (
-        <nav aria-label={t("path")} className="mt-2 flex min-w-0 items-center gap-0.5 text-xs text-muted-foreground">
+        <nav aria-label={t("path")} className="mt-2 flex min-w-0 items-center gap-0.5 text-[11.5px] text-(--s-subtle)">
           {shownCrumbs.map((crumb, index) => (
             <Fragment key={crumb?.key ?? "gap"}>
               {index > 0 && <ChevronLeft className="size-3 shrink-0 opacity-60 ltr:rotate-180" aria-hidden />}
               {crumb ? (
-                <button type="button" onClick={crumb.select} className="min-w-0 max-w-28 truncate rounded px-1 py-0.5 hover:bg-muted hover:text-foreground">
+                <button type="button" onClick={crumb.select} className="min-w-0 max-w-28 truncate rounded px-1 py-0.5 hover:text-(--s-primary) hover:underline">
                   {crumb.label}
                 </button>
               ) : (
@@ -140,8 +140,8 @@ function HeaderAction({
           aria-pressed={pressed}
           onClick={onClick}
           className={cn(
-            "grid size-7 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
-            pressed && "bg-muted text-foreground",
+            "grid size-8 place-items-center rounded-[9px] text-(--s-muted) transition-colors hover:bg-(--s-hover) hover:text-(--s-ink) max-lg:size-9",
+            pressed && "bg-(--s-hover) text-(--s-ink)",
             destructive && "hover:bg-destructive/10 hover:text-destructive",
           )}
         >

@@ -21,9 +21,8 @@ export function MediaPanel({ readOnly, commands }: { readOnly: boolean; commands
   // No hover preview outlives the panel.
   useEffect(() => () => commands.previewImage(null), [commands]);
   return (
-    <div className="min-h-0 flex-1 overflow-y-auto p-3">
-      <h2 className="text-sm font-semibold">{t("title")}</h2>
-      <p className="mb-3 text-xs text-muted-foreground">{t("intro")}</p>
+    <div className="min-h-0 flex-1 overflow-y-auto p-3.5 pt-1">
+      <p className="mb-3 text-xs text-(--s-subtle)">{t("intro")}</p>
       <div>
         <MediaLibrary
           mode="pick"

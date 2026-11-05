@@ -272,7 +272,7 @@ function SectionToolbar({
   const top = Math.max(box.top - frame.top, 0) + 4;
   return (
     <div
-      className={cn("pointer-events-auto absolute flex items-center gap-0.5 rounded-md border bg-background p-0.5 shadow-md", dragging && "invisible")}
+      className={cn("pointer-events-auto absolute flex items-center gap-0.5 rounded-xl bg-(--tallaby-teal-900) p-1 text-white shadow-(--s-shadow-bar) max-md:hidden", dragging && "invisible")}
       style={{ top, insetInlineEnd: frame.width - (box.left - frame.left + box.width) + 4 }}
       onPointerEnter={() => onPointer(true)}
       onPointerLeave={() => onPointer(false)}
@@ -316,7 +316,7 @@ function DragHandle({ label, payload, title }: { label: string; payload: DragPay
       {...attributes}
       {...pointer}
       tabIndex={-1}
-      className="grid size-7 cursor-grab touch-none place-items-center rounded text-muted-foreground hover:bg-muted hover:text-foreground active:cursor-grabbing"
+      className="grid h-[30px] w-8 cursor-grab touch-none place-items-center rounded-lg text-white/80 hover:bg-white/12 hover:text-white active:cursor-grabbing"
     >
       <GripVertical className="size-3.5" />
     </button>
@@ -331,7 +331,7 @@ function ToolButton({ label, onClick, disabled, children }: { label: string; onC
       title={label}
       onClick={onClick}
       disabled={disabled}
-      className="grid size-7 place-items-center rounded text-muted-foreground hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
+      className="grid h-[30px] w-8 place-items-center rounded-lg text-white hover:bg-white/12 disabled:pointer-events-none disabled:opacity-40"
     >
       {children}
     </button>

@@ -1,0 +1,377 @@
+/*
+ * The website editor's chrome: panels, toolbars, sheets and dialogs (Claude Design
+ * "Seller Editor v3"). The one place the editor gets its look from, in every host
+ * (seller dashboard and Admin), because (builder) sits outside `.seller-shell`.
+ *
+ * How it stays off the store:
+ * - It switches on while `.store-editor-chrome` (the editor's root) is on the page.
+ *   Tokens go on `body`, not on the root element, so portalled menus, dialogs, sheets
+ *   and toasts get them, and `:root` keeps the app's values to hand back below.
+ * - The canvas is an iframe: nothing inherits into it, and although syncStyles copies
+ *   this file there, `.store-editor-chrome` is never in that document, so no rule matches.
+ * - Thumbnails in the panels render store sections in this document. `.sf-site` takes
+ *   the app's own values back, so they draw as they did.
+ *
+ * Token values mirror `:root:has(.seller-shell)` in apps/dashboard/app/globals.css.
+ * Admin does not have that block, so this file defines everything it uses.
+ */
+
+:root:has(.store-editor-chrome) {
+  --tallaby-teal-50: #eaf2f4;
+  --tallaby-teal-100: #cfe0e4;
+  --tallaby-teal-300: #8fb4bd;
+  --tallaby-teal-500: #3a7a8c;
+  --tallaby-teal-700: #145163;
+  --tallaby-teal-900: #0d3743;
+  --tallaby-amber-50: #fff6e3;
+  --tallaby-amber-100: #ffe9bf;
+  --tallaby-amber-600: #fdad28;
+  --tallaby-amber-700: #ec9c17;
+
+  /* What store thumbnails get back (resolved here, before body overrides them). */
+  --ed-app-background: var(--background);
+  --ed-app-foreground: var(--foreground);
+  --ed-app-card: var(--card);
+  --ed-app-card-foreground: var(--card-foreground);
+  --ed-app-popover: var(--popover);
+  --ed-app-popover-foreground: var(--popover-foreground);
+  --ed-app-primary: var(--primary);
+  --ed-app-primary-foreground: var(--primary-foreground);
+  --ed-app-muted: var(--muted);
+  --ed-app-muted-foreground: var(--muted-foreground);
+  --ed-app-accent: var(--accent);
+  --ed-app-accent-foreground: var(--accent-foreground);
+  --ed-app-destructive: var(--destructive);
+  --ed-app-border: var(--border);
+  --ed-app-input: var(--input);
+  --ed-app-ring: var(--ring);
+  --ed-app-radius: var(--radius);
+}
+
+:root:has(.store-editor-chrome) body {
+  --s-ink: var(--tallaby-teal-900);
+  --s-text: #26393e;
+  --s-body: #33464b;
+  --s-muted: #5f7277;
+  --s-subtle: #7b8f94;
+  --s-faint: #8a9ca1;
+  --s-placeholder: #a7b6ba;
+  --s-line: #e6eef0;
+  --s-line-soft: #edf1f2;
+  --s-field: #e3ebed;
+  --s-field-strong: #cfdde1;
+  --s-surface: #ffffff;
+  --s-surface-2: #f8fafa;
+  --s-tint: #f6fafb;
+  --s-fill: #f1f5f6;
+  --s-hover: var(--tallaby-teal-50);
+  --s-primary: var(--tallaby-teal-700);
+  --s-link: var(--tallaby-teal-700);
+  --s-solid: var(--tallaby-teal-900);
+  --s-solid-hover: #0a2c36;
+  --s-solid-fg: #ffffff;
+  --s-amber-hover: var(--tallaby-amber-700);
+  --s-focus: rgb(253 173 40 / 0.7);
+  --s-focus-soft: rgb(20 81 99 / 0.08);
+  --s-scrim-strong: rgb(13 55 67 / 0.42);
+  --s-shadow-pop: 0 24px 60px rgb(13 55 67 / 0.18);
+  --s-shadow-menu: 0 18px 40px rgb(13 55 67 / 0.14);
+  --s-shadow-bar: 0 14px 30px rgb(13 55 67 / 0.3);
+  --s-shadow-amber: 0 4px 14px rgb(253 173 40 / 0.32);
+  --ed-canvas: #e9eef0;
+  --ed-canvas-dot: #d9e1e3;
+  --ed-frame-shadow: 0 18px 44px rgb(13 55 67 / 0.12);
+
+  --background: #ffffff;
+  --foreground: var(--s-text);
+  --card: #ffffff;
+  --card-foreground: var(--s-text);
+  --popover: #ffffff;
+  --popover-foreground: var(--s-text);
+  --primary: var(--tallaby-teal-700);
+  --primary-foreground: #ffffff;
+  --muted: var(--s-fill);
+  --muted-foreground: var(--s-muted);
+  --accent: var(--tallaby-amber-600);
+  --accent-foreground: var(--tallaby-teal-900);
+  --destructive: #b42318;
+  --border: var(--s-line);
+  --input: var(--s-field);
+  --ring: var(--tallaby-teal-700);
+  --radius: 1rem;
+  --accent-soft: var(--tallaby-amber-50);
+  --accent-ink: #8a5300;
+  --success: #15803d;
+}
+
+/* After the block above, same specificity: both match in dark mode. */
+.dark:has(.store-editor-chrome) body {
+  --s-ink: #e3ebed;
+  --s-text: #dbe5e8;
+  --s-body: #c6d3d7;
+  --s-muted: #9aaab0;
+  --s-subtle: #88999f;
+  --s-faint: #6f8389;
+  --s-placeholder: #5f7277;
+  --s-line: #22343b;
+  --s-line-soft: #1c2c32;
+  --s-field: #2c434b;
+  --s-field-strong: #38525b;
+  --s-surface: #142126;
+  --s-surface-2: #18272d;
+  --s-tint: #18272d;
+  --s-fill: #1c2c32;
+  --s-hover: #1a3038;
+  --s-primary: #4fa3b8;
+  --s-link: #8cc9d8;
+  --s-solid: #1f6f85;
+  --s-solid-hover: #268198;
+  --s-amber-hover: #ffbd52;
+  --s-focus-soft: rgb(79 163 184 / 0.2);
+  --s-scrim-strong: rgb(0 0 0 / 0.6);
+  --s-shadow-pop: 0 24px 60px rgb(0 0 0 / 0.5);
+  --s-shadow-menu: 0 18px 40px rgb(0 0 0 / 0.45);
+  --s-shadow-bar: 0 14px 30px rgb(0 0 0 / 0.5);
+  --s-shadow-amber: 0 4px 14px rgb(253 173 40 / 0.18);
+  --ed-canvas: #0e171a;
+  --ed-canvas-dot: #1c2c32;
+  --ed-frame-shadow: 0 18px 44px rgb(0 0 0 / 0.4);
+
+  --background: #142126;
+  --card: #142126;
+  --popover: #142126;
+  --primary: #4fa3b8;
+  --primary-foreground: #0e171a;
+  --accent-foreground: #2b1d00;
+  --destructive: #f87171;
+  --ring: #4fa3b8;
+  --accent-soft: #33290f;
+  --accent-ink: #ffcf7a;
+  --success: #4ade80;
+}
+
+/* Store sections drawn in this document (panel thumbnails, drag previews): the app's own values. */
+:root:has(.store-editor-chrome) .sf-site {
+  --background: var(--ed-app-background);
+  --foreground: var(--ed-app-foreground);
+  --card: var(--ed-app-card);
+  --card-foreground: var(--ed-app-card-foreground);
+  --popover: var(--ed-app-popover);
+  --popover-foreground: var(--ed-app-popover-foreground);
+  --primary: var(--ed-app-primary);
+  --primary-foreground: var(--ed-app-primary-foreground);
+  --muted: var(--ed-app-muted);
+  --muted-foreground: var(--ed-app-muted-foreground);
+  --accent: var(--ed-app-accent);
+  --accent-foreground: var(--ed-app-accent-foreground);
+  --destructive: var(--ed-app-destructive);
+  --border: var(--ed-app-border);
+  --input: var(--ed-app-input);
+  --ring: var(--ed-app-ring);
+  --radius: var(--ed-app-radius);
+}
+
+/* The area around the frame. */
+.store-editor-chrome .ed-canvas {
+  background-color: var(--ed-canvas);
+  background-image: radial-gradient(var(--ed-canvas-dot) 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+
+.store-editor-chrome .ed-frame {
+  box-shadow: var(--ed-frame-shadow);
+}
+
+/* Thin scrollbars in the chrome. Thumbnails scroll nothing. */
+.store-editor-chrome aside,
+.store-editor-chrome aside *,
+[data-editor-sheet],
+[data-editor-sheet] * {
+  scrollbar-width: thin;
+}
+
+/* In base so `focus-visible:outline-none` and the like still win. */
+@layer base {
+  :root:has(.store-editor-chrome) :focus-visible:not([role="dialog"], [role="alertdialog"], [role="menu"], [role="listbox"], [tabindex="-1"]) {
+    outline: 3px solid var(--s-focus);
+    outline-offset: 2px;
+  }
+}
+
+/* Fields. */
+:root:has(.store-editor-chrome) [data-slot="input"]:not(.sf-site *),
+:root:has(.store-editor-chrome) [data-slot="textarea"]:not(.sf-site *),
+:root:has(.store-editor-chrome) [data-slot="select-trigger"]:not(.sf-site *) {
+  border-width: 1.5px;
+  border-radius: 12px;
+  box-shadow: none;
+}
+
+:root:has(.store-editor-chrome) [data-slot="input"]:not(.sf-site *):focus-visible,
+:root:has(.store-editor-chrome) [data-slot="textarea"]:not(.sf-site *):focus-visible {
+  border-color: var(--s-primary);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--s-focus-soft);
+}
+
+/* Quiet buttons hover to a soft tint here, never full amber. */
+:root:has(.store-editor-chrome) [data-slot="button"][class*="hover:bg-accent"]:not(:disabled, .sf-site *):hover {
+  background: var(--s-hover);
+  color: var(--s-ink);
+}
+
+:root:has(.store-editor-chrome) [data-slot="button"].bg-accent:not(.sf-site *) {
+  color: var(--tallaby-teal-900);
+}
+
+/* Portalled surfaces. */
+:root:has(.store-editor-chrome) [data-slot="dialog-overlay"],
+:root:has(.store-editor-chrome) [data-slot="alert-dialog-overlay"],
+:root:has(.store-editor-chrome) [data-slot="sheet-overlay"] {
+  background: var(--s-scrim-strong);
+}
+
+:root:has(.store-editor-chrome) [data-slot="dialog-content"],
+:root:has(.store-editor-chrome) [data-slot="alert-dialog-content"] {
+  border-radius: 24px;
+  border-color: var(--s-line);
+  background: var(--s-surface);
+  box-shadow: var(--s-shadow-pop);
+}
+
+:root:has(.store-editor-chrome) [data-slot="dropdown-menu-content"],
+:root:has(.store-editor-chrome) [data-slot="popover-content"],
+:root:has(.store-editor-chrome) [data-slot="select-content"] {
+  border-radius: 16px;
+  border-color: var(--s-field);
+  box-shadow: var(--s-shadow-menu);
+}
+
+:root:has(.store-editor-chrome) [data-slot="dropdown-menu-item"],
+:root:has(.store-editor-chrome) [data-slot="dropdown-menu-checkbox-item"],
+:root:has(.store-editor-chrome) [data-slot="dropdown-menu-radio-item"],
+:root:has(.store-editor-chrome) [data-slot="select-item"],
+:root:has(.store-editor-chrome) [data-slot="command-item"] {
+  border-radius: 10px;
+}
+
+/* The highlighted option is a soft tint here, never full amber. */
+:root:has(.store-editor-chrome) [data-slot="dropdown-menu-item"]:not([data-variant="destructive"]):focus,
+:root:has(.store-editor-chrome) [data-slot="dropdown-menu-checkbox-item"]:focus,
+:root:has(.store-editor-chrome) [data-slot="dropdown-menu-radio-item"]:focus,
+:root:has(.store-editor-chrome) [data-slot="select-item"]:focus,
+:root:has(.store-editor-chrome) [data-slot="command-item"][data-selected="true"] {
+  background: var(--s-hover);
+  color: var(--s-ink);
+}
+
+:root:has(.store-editor-chrome) [data-slot="tooltip-content"] {
+  border-radius: 8px;
+  background: var(--tallaby-teal-900);
+  color: #ffffff;
+  font-size: 11.5px;
+}
+
+/* Tooltip's arrow is a filled square behind the bubble. */
+:root:has(.store-editor-chrome) [data-slot="tooltip-content"] svg {
+  background: var(--tallaby-teal-900);
+  fill: var(--tallaby-teal-900);
+}
+
+/* Dialogs become bottom sheets on phones. The quick-insert palette stays centred (a keyboard would cover it). */
+@keyframes ed-sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+@media (max-width: 480px) {
+  :root:has(.store-editor-chrome) [data-slot="dialog-content"]:not(:has([data-slot="command"])),
+  :root:has(.store-editor-chrome) [data-slot="alert-dialog-content"] {
+    inset: auto 0 0 0;
+    width: 100%;
+    max-width: none !important;
+    max-height: 92dvh;
+    translate: none;
+    border-width: 0;
+    border-radius: 24px 24px 0 0;
+  }
+
+  :root:has(.store-editor-chrome) [data-slot="dialog-content"]:not(:has([data-slot="command"]), .p-0),
+  :root:has(.store-editor-chrome) [data-slot="alert-dialog-content"] {
+    padding: 18px;
+    padding-bottom: calc(18px + env(safe-area-inset-bottom));
+  }
+
+  :root:has(.store-editor-chrome) [data-slot="dialog-content"]:not(:has([data-slot="command"]))[data-state="open"],
+  :root:has(.store-editor-chrome) [data-slot="alert-dialog-content"][data-state="open"] {
+    animation: ed-sheet-up 0.28s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+}
+
+/* Toasts. */
+:root:has(.store-editor-chrome) [data-sonner-toaster] {
+  --normal-bg: var(--s-surface) !important;
+  --normal-text: var(--s-text) !important;
+  --normal-border: var(--s-field) !important;
+  --border-radius: 22px !important;
+}
+
+:root:has(.store-editor-chrome) [data-sonner-toast] {
+  box-shadow: var(--s-shadow-menu) !important;
+  font-weight: 600;
+}
+
+:root:has(.store-editor-chrome) [data-sonner-toast][data-type="success"] [data-title],
+:root:has(.store-editor-chrome) [data-sonner-toast][data-type="success"] [data-icon] {
+  color: var(--success) !important;
+}
+
+:root:has(.store-editor-chrome) [data-sonner-toast][data-type="error"] [data-title],
+:root:has(.store-editor-chrome) [data-sonner-toast][data-type="error"] [data-icon] {
+  color: var(--destructive) !important;
+}
+
+/* The sheet's own close button (last child of the sheet): a 36px icon button, never amber. */
+[data-editor-sheet] > button:last-child {
+  top: 10px;
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border-radius: 11px;
+  background: transparent;
+  color: var(--s-muted);
+  opacity: 1;
+}
+
+[data-editor-sheet] > button:last-child:hover {
+  background: var(--s-hover);
+  color: var(--s-ink);
+}
+
+[data-editor-sheet] > button:last-child svg {
+  width: 17px;
+  height: 17px;
+}
+
+/* Inside a bottom sheet: bigger fields, and 16px text on touch so iOS does not zoom. */
+[data-editor-sheet] [data-slot="input"]:not(.sf-site *) {
+  height: 46px;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  [data-editor-sheet] [data-slot="input"]:not(.sf-site *),
+  [data-editor-sheet] [data-slot="textarea"]:not(.sf-site *),
+  [data-editor-sheet] [data-slot="select-trigger"]:not(.sf-site *),
+  [data-editor-sheet] textarea:not(.sf-site *) {
+    font-size: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root:has(.store-editor-chrome) [data-slot="dialog-content"],
+  :root:has(.store-editor-chrome) [data-slot="alert-dialog-content"] {
+    animation-duration: 0.01ms !important;
+  }
+}

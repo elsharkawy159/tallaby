@@ -240,12 +240,9 @@ export function FormsPanel({
     <div className="flex h-full min-h-0 flex-col">
       {/* Headings in the previews use the store's heading font, like the storefront. */}
       <style>{`.${SITE_ROOT_CLASS} :where(h1,h2,h3,h4){font-family:var(--sf-font-heading,var(--sf-font-body,var(--font-storefront))),system-ui,sans-serif}`}</style>
-      <div className="space-y-2 border-b p-3">
+      <div className="space-y-2 border-b border-(--s-line-soft) px-3.5 pb-3">
         <div className="flex items-center justify-between gap-2">
-          <div className="min-w-0">
-            <p className="text-sm font-semibold">{t("title")}</p>
-            <p className="truncate text-xs text-muted-foreground">{t("description")}</p>
-          </div>
+          <p className="min-w-0 truncate text-xs text-(--s-subtle)">{t("description")}</p>
           <div className="flex shrink-0 items-center gap-1">
             <Button type="button" variant="ghost" size="icon" className="size-7" disabled={loading} onClick={() => void reload()} aria-label={t("refresh")} title={t("refresh")}>
               <RefreshCw className={cn("size-3.5", loading && "animate-spin")} />

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { MousePointerClick, Paintbrush, PenLine } from "lucide-react";
+import { FileText, MousePointerClick, Paintbrush, PenLine, Plus } from "lucide-react";
 import { useStore } from "zustand";
 import type { ComponentNode } from "@workspace/store-sections";
 import { getElementDefinition, storeSectionRegistry, updateNode } from "@workspace/store-sections/render";
@@ -20,6 +20,15 @@ import type { EditorStore } from "../state/editor.store";
 import { StylePanel } from "./style-panel.client";
 import { readShell, setShell } from "../lib/editor-library.lib";
 import { hasCarousel } from "../lib/section-settings.lib";
+import { isProductPage } from "@workspace/store-sections";
+import { nameOf } from "../panels/pages-panel.client";
+
+/** Three everyday shortcuts under the empty state (the full list is in the shortcuts dialog). */
+const EMPTY_TIPS = [
+  { action: "undo", keys: "Ctrl Z" },
+  { action: "duplicate", keys: "Ctrl D" },
+  { action: "quickInsert", keys: "Ctrl K" },
+] as const;
 
 type Catalog = { products: EditorProduct[]; categories: EditorCategory[]; forms: EditorForm[] };
 
@@ -38,6 +47,7 @@ export function EditorSidebar({
   commands,
   translated = false,
   hasLogo = false,
+  onAddSection,
 }: {
   store: EditorStore;
   commands: EditorCommands;
@@ -49,8 +59,11 @@ export function EditorSidebar({
   translated?: boolean;
   /** The store uploaded a logo: header and footer show it (unless hidden). */
   hasLogo?: boolean;
+  /** Opens the Add panel from the empty state (when adding is allowed). */
+  onAddSection?: () => void;
 }) {
   const t = useTranslations("storeEditor.sidebar");
+  const tShortcut = useTranslations("storeEditor.shortcuts");
   const selection = useStore(store, (s) => s.selection);
   const pages = useStore(store, (s) => s.pages);
   const activePageId = useStore(store, (s) => s.activePageId);
@@ -72,12 +85,44 @@ export function EditorSidebar({
   if (!selection || !instance || !definition || !info) {
     return (
       <div className="flex h-full min-h-0 flex-col">
-        <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-2 p-6 text-center">
-          <span className="grid size-12 place-items-center rounded-full bg-muted">
-            <MousePointerClick className="size-5 text-muted-foreground" aria-hidden />
+        {/* Nothing selected: the page being edited heads the panel (Claude Design). */}
+        <div data-sidebar-header="" className="flex items-center gap-2.5 border-b border-(--s-line-soft) px-3.5 py-3 max-lg:pt-1">
+          <span className="grid size-9 shrink-0 place-items-center rounded-[11px] bg-(--s-hover) text-(--s-primary)">
+            <FileText className="size-[17px]" aria-hidden />
           </span>
-          <p className="text-sm font-medium">{t("emptyTitle")}</p>
-          <p className="max-w-56 text-xs text-muted-foreground">{t("empty")}</p>
+          <div className="min-w-0 flex-1">
+            <h2 className="truncate text-sm font-bold leading-tight text-(--s-ink)">{nameOf(page.name, uiLocale) || page.slug}</h2>
+            <p className="truncate font-montserrat text-[11.5px] text-(--s-subtle)">
+              <span dir="ltr">/{page.isHome ? "" : isProductPage(page) ? "products/…" : page.slug}</span>
+            </p>
+          </div>
+        </div>
+        <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-2.5 overflow-y-auto p-6 text-center">
+          <span className="grid size-[52px] place-items-center rounded-2xl bg-(--s-hover) text-(--s-primary)">
+            <MousePointerClick className="size-6" aria-hidden />
+          </span>
+          <p className="text-sm font-bold text-(--s-ink)">{t("emptyTitle")}</p>
+          <p className="max-w-56 text-[12.5px] text-(--s-subtle)">{t("empty")}</p>
+          <ul className="mt-1.5 flex w-full flex-col gap-1.5 max-lg:hidden">
+            {EMPTY_TIPS.map(({ action, keys }) => (
+              <li key={action} className="flex items-center gap-2 rounded-[10px] bg-(--s-tint) px-2.5 py-2 text-start text-xs text-(--s-muted)">
+                {tShortcut(`actions.${action}`)}
+                <kbd dir="ltr" className="ms-auto whitespace-nowrap rounded-md border border-(--s-line) bg-(--s-surface) px-1.5 font-montserrat text-[10.5px] font-semibold">
+                  {keys}
+                </kbd>
+              </li>
+            ))}
+          </ul>
+          {onAddSection && !readOnly && (
+            <button
+              type="button"
+              onClick={onAddSection}
+              className="mt-1 inline-flex h-8 items-center gap-1.5 rounded-full bg-(--s-solid) px-3 text-[12.5px] font-bold text-(--s-solid-fg) transition-colors hover:bg-(--s-solid-hover)"
+            >
+              <Plus className="size-4" aria-hidden />
+              {t("addSection")}
+            </button>
+          )}
         </div>
         <AgentDock store={store} uiLocale={uiLocale} />
       </div>
@@ -124,7 +169,7 @@ export function EditorSidebar({
         readOnly={readOnly}
         device={device}
       />
-      <div role="tablist" className="mx-4 mt-3 grid grid-cols-2 rounded-lg bg-muted p-1">
+      <div role="tablist" className="mx-3.5 mt-3 grid grid-cols-2 gap-0.5 rounded-xl bg-(--s-fill) p-[3px]">
         {(["content", "style"] as const).map((key) => {
           const TabIcon = key === "content" ? PenLine : Paintbrush;
           return (
@@ -135,8 +180,8 @@ export function EditorSidebar({
               aria-selected={tab === key}
               onClick={() => openTab(key)}
               className={cn(
-                "inline-flex items-center justify-center gap-1.5 rounded-md py-1.5 text-sm font-medium transition-colors",
-                tab === key ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground",
+                "inline-flex h-8 items-center justify-center gap-1.5 rounded-[9px] text-[12.5px] font-semibold transition-colors max-lg:h-[38px]",
+                tab === key ? "bg-(--s-surface) text-(--s-ink) shadow-[0_1px_3px_rgb(13_55_67/0.1)]" : "text-(--s-subtle) hover:text-(--s-ink)",
               )}
             >
               <TabIcon className="size-3.5" aria-hidden />
@@ -146,7 +191,7 @@ export function EditorSidebar({
         })}
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto p-4">
+      <div className="min-h-0 flex-1 overflow-y-auto p-3.5">
         {tab === "content" && ref.target !== "page" && !selection.part && (!node || node.type === "section") && (
           // The whole header or footer is selected: its logo and tools (drawn, never saved into the tree).
           <ChromeOptions
@@ -180,12 +225,12 @@ export function EditorSidebar({
           ) : (
             <div className="space-y-4">
               {field && (
-                <div className="flex items-center justify-between rounded-md border px-2.5 py-1.5 text-xs">
+                <div className="flex items-center justify-between rounded-xl border border-(--s-line) px-2.5 py-1.5 text-xs">
                   <button
                     type="button"
                     aria-pressed={focusSelected}
                     onClick={() => state.setFocusSelected(true)}
-                    className={cn("rounded px-1.5 py-0.5", focusSelected ? "bg-muted font-medium" : "text-muted-foreground")}
+                    className={cn("rounded-lg px-2 py-1", focusSelected ? "bg-(--s-fill) font-semibold text-(--s-ink)" : "text-(--s-subtle)")}
                   >
                     {t("selectedOnly")}
                   </button>
@@ -193,7 +238,7 @@ export function EditorSidebar({
                     type="button"
                     aria-pressed={!focusSelected}
                     onClick={() => state.setFocusSelected(false)}
-                    className={cn("rounded px-1.5 py-0.5", !focusSelected ? "bg-muted font-medium" : "text-muted-foreground")}
+                    className={cn("rounded-lg px-2 py-1", !focusSelected ? "bg-(--s-fill) font-semibold text-(--s-ink)" : "text-(--s-subtle)")}
                   >
                     {t("showAll")}
                   </button>
@@ -201,7 +246,7 @@ export function EditorSidebar({
               )}
               {instance.sectionId === "custom-section" && !selection.part && (
                 <>
-                  <p className="rounded-md bg-muted/60 p-2.5 text-xs text-muted-foreground">{t("customHint")}</p>
+                  <p className="rounded-xl bg-(--s-tint) p-2.5 text-xs text-(--s-muted)">{t("customHint")}</p>
                   <SectionSettings
                     key={instance.id}
                     tree={instance.componentTree ?? []}

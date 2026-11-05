@@ -551,14 +551,14 @@ export function EditorCanvas({
         container.current = el;
         setDropRef(el);
       }}
-      className="relative flex h-full justify-center overflow-hidden bg-muted/40 p-3 max-sm:p-1.5"
+      className="ed-canvas relative flex h-full justify-center overflow-hidden p-5 max-lg:p-3 max-sm:p-0"
       // While dragging the frame takes no pointer events, so the wheel still scrolls the page.
       onWheel={canvasDrag ? (event) => doc?.defaultView?.scrollBy(0, event.deltaY) : undefined}
     >
       <iframe
         ref={frame}
         title="canvas"
-        className={cn("h-full rounded-lg border bg-white shadow-sm transition-[width]", DEVICE_TONE[device].ring)}
+        className={cn("ed-frame h-full rounded-2xl border bg-white transition-[width] max-sm:rounded-none max-sm:border-0", DEVICE_TONE[device].ring)}
         style={{ width: DEVICE_WIDTH[device], maxWidth: "100%", pointerEvents: canvasDrag ? "none" : undefined }}
       />
       {doc &&

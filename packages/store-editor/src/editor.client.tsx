@@ -1,5 +1,6 @@
 "use client";
 
+import "./editor-chrome.css";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
@@ -17,9 +18,9 @@ import {
   type SectionPreset,
   type StoreProfile,
 } from "@workspace/store-sections/render";
-import { PenLine } from "lucide-react";
+import { X } from "lucide-react";
 import { Button } from "@workspace/ui/components/button";
-import { Sheet, SheetContent, SheetTitle } from "@workspace/ui/components/sheet";
+import { SheetTitle } from "@workspace/ui/components/sheet";
 import { cn } from "@workspace/ui/lib/utils";
 import { MediaPicker } from "./media/media-picker.client";
 import { findIndustry } from "./lib/industries.lib";
@@ -34,6 +35,8 @@ import { useLogoUpload } from "./media/use-logo-upload.client";
 import { createEditorCommands } from "./lib/editor-commands.lib";
 import { QuickInsertDialog, ShortcutsDialog } from "./shell/editor-dialogs.client";
 import { EditorRail } from "./shell/editor-rail.client";
+import { EditorSheet } from "./shell/editor-sheet.client";
+import { PhoneActionBar } from "./shell/phone-action-bar.client";
 import { EditorSidebar } from "./inspector/editor-sidebar.client";
 import { EditorTopbar } from "./shell/editor-topbar.client";
 import type { EditorCatalogSnapshot } from "./editor.dto";
@@ -189,8 +192,6 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
   // Below lg (phones, small tablets) the panel and the inspector are bottom sheets.
   const compact = useIsBelowLg();
   const [inspectorOpen, setInspectorOpen] = useState(false);
-  // An insert from a sheet selects what it added: the canvas shows it, the inspector stays shut.
-  const insertingRef = useRef(false);
   const [quickInsert, setQuickInsert] = useState<{ open: boolean; index: number | null }>({ open: false, index: null });
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [imagePickerOpen, setImagePickerOpen] = useState(false);
@@ -206,31 +207,24 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
     if (compact) setPanelOpen(false);
     else setInspectorOpen(false);
   }, [compact]);
-  // Small screens: selecting on the canvas opens the inspector sheet (a selection made from a
-  // panel sheet, e.g. Layers, leaves it to the Edit button); clearing the selection closes it.
+  // Small screens (Claude Design mobile): a selection shows the action bar, and its Edit button
+  // opens the inspector sheet; clearing the selection closes the sheet.
   const panelSheetOpen = compact && panelOpen && railEnabled(rail, capabilities);
   useEffect(() => {
     if (!compact) return;
     return store.subscribe((s, prev) => {
-      if (s.selection === prev.selection) return;
-      if (!s.selection) setInspectorOpen(false);
-      else if (!insertingRef.current && !panelSheetOpen) setInspectorOpen(true);
+      if (s.selection !== prev.selection && !s.selection) setInspectorOpen(false);
     });
-  }, [store, compact, panelSheetOpen]);
+  }, [store, compact]);
   // Small screens: a tap that inserts from a panel sheet closes the sheet.
   const panelCommands = useMemo(() => {
     if (!compact) return commands;
     const closeAfter =
       <A extends unknown[], R>(run: (...args: A) => R) =>
       (...args: A): R => {
-        insertingRef.current = true;
-        try {
-          const result = run(...args);
-          if (result !== false) setPanelOpen(false);
-          return result;
-        } finally {
-          insertingRef.current = false;
-        }
+        const result = run(...args);
+        if (result !== false) setPanelOpen(false);
+        return result;
       };
     return {
       ...commands,
@@ -445,7 +439,7 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
       {rail === "layers" && <LayersPanel store={store} commands={panelCommands} uiLocale={uiLocale} />}
       {rail === "media" && <MediaPanel readOnly={initial.readOnly} commands={panelCommands} />}
       {rail === "pages" && (
-        <div className="min-h-0 flex-1 overflow-y-auto p-3">
+        <div className="min-h-0 flex-1 overflow-y-auto px-3.5 pt-1 pb-4">
           <PagesPanel store={store} uiLocale={uiLocale} />
         </div>
       )}
@@ -462,12 +456,17 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
       uiLocale={uiLocale}
       translated={new Set(initial.locales).size > 1}
       hasLogo={Boolean(logo.logoUrl)}
+      onAddSection={railEnabled("add", capabilities) ? () => {
+        store.getState().setRail("add");
+        setPanelOpen(true);
+        setInspectorOpen(false);
+      } : undefined}
     />
   );
   const hasSelection = selection !== null;
 
   return (
-    <div className={`flex h-dvh flex-col bg-background ${initial.fontClassName}`} style={themeVars as React.CSSProperties}>
+    <div className={`store-editor-chrome flex h-dvh flex-col overflow-x-clip bg-background ${initial.fontClassName}`} style={themeVars as React.CSSProperties}>
       <EditorTopbar
         store={store}
         storeId={initial.storeId}
@@ -487,7 +486,7 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
       />
 
       {saveStatus === "conflict" && (
-        <div role="alert" className="flex items-center justify-between gap-3 bg-amber-50 px-4 py-2 text-sm text-amber-900">
+        <div role="alert" className="flex items-center justify-between gap-3 bg-accent-soft px-4 py-2 text-sm text-accent-ink">
           {changedByAdmin ? (
             <span>
               <strong className="font-semibold">{t("adminUpdated.title")}</strong> {t("adminUpdated.body")}
@@ -503,36 +502,39 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
 
       <EditorDndProvider store={store} commands={commands} readOnly={initial.readOnly}>
       <div className="flex min-h-0 flex-1">
-        <EditorRail store={store} panelOpen={panelOpen} onToggle={toggleRail} />
+        <EditorRail store={store} panelOpen={panelOpen} onToggle={toggleRail} onShowShortcuts={() => setShortcutsOpen(true)} />
         {!compact && panelOpen && railEnabled(rail, capabilities) && (
           <aside
             aria-label={t(`rail.${rail}`)}
             className={cn(
-              "flex shrink-0 flex-col border-e bg-background transition-[width] duration-200 ease-out max-lg:hidden motion-reduce:transition-none",
-              libraryWide ? "w-[min(560px,calc(100vw-30rem))]" : "w-[300px]",
+              "flex shrink-0 flex-col border-e border-(--s-field) bg-(--s-surface) transition-[width] duration-200 ease-out max-lg:hidden motion-reduce:transition-none",
+              libraryWide ? "w-[min(560px,calc(100vw-30rem))]" : "w-[280px] max-[1280px]:w-[260px]",
             )}
           >
-            {panelBody}
+            <div className="flex shrink-0 items-center justify-between gap-2 px-3.5 pt-3 pb-1">
+              <h2 className="text-[15px] font-bold text-(--s-ink)">{t(`rail.${rail}`)}</h2>
+              <button
+                type="button"
+                aria-label={t("closePanel")}
+                onClick={() => setPanelOpen(false)}
+                className="grid size-9 place-items-center rounded-[11px] text-(--s-muted) transition-colors hover:bg-(--s-hover) hover:text-(--s-ink)"
+              >
+                <X className="size-[17px]" aria-hidden />
+              </button>
+            </div>
+            <div className="flex min-h-0 flex-1 flex-col">{panelBody}</div>
           </aside>
         )}
         {compact && (
-          <Sheet open={panelSheetOpen} onOpenChange={setPanelOpen}>
-            <SheetContent
-              side="bottom"
-              aria-describedby={undefined}
-              onOpenAutoFocus={(event) => event.preventDefault()}
-              className={cn("h-[85dvh] gap-0 rounded-t-xl p-0", initial.fontClassName)}
-              style={themeVars as React.CSSProperties}
-            >
-              <div className="flex h-12 shrink-0 items-center border-b px-4 pe-12">
-                <SheetTitle className="text-sm">{t(`rail.${rail}`)}</SheetTitle>
-              </div>
-              <div className="flex min-h-0 flex-1 flex-col pb-[env(safe-area-inset-bottom)]">{panelBody}</div>
-            </SheetContent>
-          </Sheet>
+          <EditorSheet open={panelSheetOpen} onOpenChange={setPanelOpen} height="h-[78dvh]" className={initial.fontClassName} style={themeVars as React.CSSProperties}>
+            <div className="flex h-10 shrink-0 items-center px-4 pe-12">
+              <SheetTitle className="text-[15px] font-bold text-(--s-ink)">{t(`rail.${rail}`)}</SheetTitle>
+            </div>
+            <div className="flex min-h-0 flex-1 flex-col pb-[env(safe-area-inset-bottom)]">{panelBody}</div>
+          </EditorSheet>
         )}
 
-        <main className="flex min-w-0 flex-1 flex-col max-md:pb-[calc(3.5rem+env(safe-area-inset-bottom))]">
+        <main className="flex min-w-0 flex-1 flex-col max-md:pb-[calc(62px+env(safe-area-inset-bottom))]">
           <DeviceBanner store={store} />
           {productPage && (
             <PreviewProductPicker
@@ -565,35 +567,26 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
         </main>
 
         {!compact && (
-          <aside aria-label={t("sidebar.label")} className="hidden w-[320px] shrink-0 border-s bg-background lg:block">
+          <aside aria-label={t("sidebar.label")} className="z-20 hidden w-[300px] shrink-0 border-s border-(--s-field) bg-(--s-surface) max-[1280px]:w-[280px] lg:block">
             {sidebar}
           </aside>
         )}
         {compact && (
           // Not modal: the canvas above stays usable, and a tap there selects something else.
-          <Sheet open={inspectorOpen && hasSelection} onOpenChange={setInspectorOpen} modal={false}>
-            <SheetContent
-              side="bottom"
-              aria-describedby={undefined}
-              onOpenAutoFocus={(event) => event.preventDefault()}
-              onInteractOutside={(event) => event.preventDefault()}
-              className={cn("h-[65dvh] gap-0 rounded-t-xl p-0 pt-2 shadow-[0_-8px_30px_rgb(0_0_0/0.12)]", initial.fontClassName)}
-              style={themeVars as React.CSSProperties}
-            >
-              <SheetTitle className="sr-only">{t("sidebar.label")}</SheetTitle>
-              <div className="min-h-0 flex-1 pb-[env(safe-area-inset-bottom)]">{sidebar}</div>
-            </SheetContent>
-          </Sheet>
+          <EditorSheet
+            open={inspectorOpen && hasSelection}
+            onOpenChange={setInspectorOpen}
+            modal={false}
+            height="h-[65dvh]"
+            className={cn("[&_[data-sidebar-header]]:pe-12", initial.fontClassName)}
+            style={themeVars as React.CSSProperties}
+          >
+            <SheetTitle className="sr-only">{t("sidebar.label")}</SheetTitle>
+            <div className="min-h-0 flex-1">{sidebar}</div>
+          </EditorSheet>
         )}
         {compact && hasSelection && !inspectorOpen && !panelSheetOpen && (
-          <Button
-            type="button"
-            className="fixed end-4 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-40 h-11 rounded-full px-4 shadow-lg md:bottom-6"
-            onClick={() => setInspectorOpen(true)}
-          >
-            <PenLine aria-hidden />
-            {t("sidebar.edit")}
-          </Button>
+          <PhoneActionBar store={store} commands={commands} uiLocale={uiLocale} readOnly={initial.readOnly} onEdit={() => setInspectorOpen(true)} />
         )}
       </div>
       </EditorDndProvider>

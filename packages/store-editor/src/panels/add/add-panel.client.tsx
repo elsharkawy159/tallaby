@@ -69,7 +69,7 @@ export function AddPanel({
   const productParts = useStore(store, (s) => offersProductParts(s.pages.find((p) => p.id === s.activePageId) ?? s.pages[0]));
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div role="tablist" className={cn("m-3 mb-0 grid rounded-lg bg-muted p-1", tabs.length === 3 ? "grid-cols-3" : "grid-cols-2")}>
+      <div role="tablist" className={cn("mx-3.5 mt-1 grid gap-0.5 rounded-xl bg-(--s-fill) p-[3px]", tabs.length === 3 ? "grid-cols-3" : "grid-cols-2")}>
         {tabs.map((key) => (
           <button
             key={key}
@@ -78,8 +78,8 @@ export function AddPanel({
             aria-selected={tab === key}
             onClick={() => setTab(key)}
             className={cn(
-              "rounded-md py-1.5 text-sm font-medium transition-colors",
-              tab === key ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground",
+              "h-8 rounded-[9px] text-[12.5px] font-semibold transition-colors max-lg:h-[38px]",
+              tab === key ? "bg-(--s-surface) text-(--s-ink) shadow-[0_1px_3px_rgb(13_55_67/0.1)]" : "text-(--s-subtle) hover:text-(--s-ink)",
             )}
           >
             {t(`tabs.${key}`)}
@@ -153,8 +153,8 @@ function ElementsTab({ commands, uiLocale, productParts }: { commands: EditorCom
   const empty = groups.every((g) => g.items.length === 0);
 
   return (
-    <div className="min-h-0 flex-1 overflow-y-auto p-3">
-      <h2 className="mb-2 text-sm font-semibold">{t("elementsTitle")}</h2>
+    <div className="min-h-0 flex-1 overflow-y-auto p-3.5">
+      <h3 className="mb-2 text-[12.5px] font-bold text-(--s-body)">{t("elementsTitle")}</h3>
       <div className="relative mb-3">
         <Search className="pointer-events-none absolute start-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
         <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t("search")} className="ps-8" aria-label={t("search")} />
@@ -171,10 +171,10 @@ function PaletteGroup({ groupKey, title, icon, items, compact }: { groupKey: str
   const [open, setOpen] = useState(true);
   return (
     <section className="mb-4">
-      <button type="button" onClick={() => setOpen(!open)} aria-expanded={open} className="mb-2 flex w-full items-center gap-2 text-sm">
+      <button type="button" onClick={() => setOpen(!open)} aria-expanded={open} className="mb-2 flex w-full items-center gap-2 text-xs font-bold text-(--s-subtle)">
         {icon}
-        <span className="flex-1 text-start font-medium">{title}</span>
-        <span className="rounded bg-muted px-1.5 text-xs tabular-nums text-muted-foreground">{items.length}</span>
+        <span className="flex-1 text-start">{title}</span>
+        <span className="font-montserrat text-xs tabular-nums">{items.length}</span>
         <ChevronDown className={cn("size-4 text-muted-foreground transition-transform", !open && "-rotate-90 rtl:rotate-90")} aria-hidden />
       </button>
       {open && (
@@ -211,7 +211,7 @@ function PaletteItem({ id, item, compact }: { id: string; item: Item; compact?: 
       onClick={item.run}
       title={t("dragElementHint")}
       className={cn(
-        "flex w-full cursor-grab rounded-lg border bg-background text-start text-sm shadow-xs transition-colors hover:border-primary/50 hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:cursor-grabbing",
+        "flex w-full cursor-grab rounded-[14px] border border-(--s-line) bg-(--s-surface) text-start text-xs font-semibold text-(--s-body) transition-[border-color,box-shadow] hover:border-(--s-primary) hover:shadow-[0_8px_18px_rgb(13_55_67/0.08)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:cursor-grabbing",
         item.preview ? "flex-col gap-1.5 p-1.5" : cn("items-center gap-2 px-2.5", compact ? "py-2" : "py-3"),
         isDragging && "opacity-50",
       )}
