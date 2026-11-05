@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { storeBuilderEnabled } from "@/components/dashboard/sidebar.config";
-import { MediaLibrary } from "@/components/media/media-adapter.client";
-import { StorePageHeader } from "@/components/stores/store-page-header";
+import { MediaAdapterProvider } from "@/components/media/media-adapter.client";
+import { PageContainer } from "@/components/seller-ui";
 import { loadStorePage } from "@/lib/stores/store-page.server";
+import { SiteOfflineNote } from "../_components/site-offline-note";
 import { loadMediaLibrary } from "./media.data";
+import { MediaManager } from "./media-manager.client";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("mediaLibrary");
@@ -15,23 +17,23 @@ export async function generateMetadata(): Promise<Metadata> {
 /**
  * Media library of one store (PLAN.md P4-09): this store's images plus the
  * seller's shared ones. The store id is checked by loadStorePage (404 for a
- * foreign store); every action checks it again.
+ * foreign store); every action checks it again. The picker and the editor's
+ * panel keep the shared `MediaLibrary` from @workspace/store-editor.
  */
 export default async function StoreMediaPage({ params }: { params: Promise<{ storeId: string }> }) {
   const { storeId } = await params;
   const store = await loadStorePage(storeId);
   if (!storeBuilderEnabled(store.sellerId)) notFound();
-  const [library, t] = await Promise.all([loadMediaLibrary(store.sellerId, store.id), getTranslations("mediaLibrary")]);
+  const library = await loadMediaLibrary(store.sellerId, store.id);
   if (!library) notFound();
 
   return (
-    <section className="mx-auto w-full max-w-5xl space-y-5 p-4 sm:p-6">
-      <StorePageHeader store={store} />
-      <div>
-        <h2 className="text-base font-semibold">{t("title")}</h2>
-        <p className="text-sm text-muted-foreground">{t("description")}</p>
-      </div>
-      <MediaLibrary storeId={store.id} initial={library} readOnly={store.status !== "active"} />
-    </section>
+    <PageContainer>
+      <MediaAdapterProvider storeId={store.id}>
+        <MediaManager initial={library} readOnly={store.status !== "active"}>
+          <SiteOfflineNote storeId={store.id} siteStatus={store.siteStatus} />
+        </MediaManager>
+      </MediaAdapterProvider>
+    </PageContainer>
   );
 }

@@ -41,6 +41,20 @@ export function cleanSeo(seo: { title: string; description: string; ogImage: str
   return out;
 }
 
+/**
+ * Common pages: a name and an address to start from. The page itself starts empty, in the editor.
+ * `name` is data, not UI text: choosing a preset writes BOTH languages into the store page's
+ * `store_pages.name` whatever the dashboard language, and the browser only has the current
+ * locale's messages. The chip's label comes from `sellerWebsite.pages.presetNames`.
+ */
+export const PAGE_PRESETS = [
+  { id: "about", slug: "about-us", name: { ar: "عن المتجر", en: "About us" } },
+  { id: "returns", slug: "returns", name: { ar: "سياسة الاسترجاع", en: "Return policy" } },
+  { id: "shipping", slug: "shipping", name: { ar: "سياسة الشحن", en: "Shipping policy" } },
+  { id: "sizes", slug: "size-guide", name: { ar: "دليل المقاسات", en: "Size guide" } },
+  { id: "offers", slug: "offers", name: { ar: "العروض", en: "Offers" } },
+] as const;
+
 /** `ids` with the item at `index` moved one step up (-1) or down (+1). */
 export function moveItem<T>(items: T[], index: number, direction: -1 | 1): T[] {
   const target = index + direction;

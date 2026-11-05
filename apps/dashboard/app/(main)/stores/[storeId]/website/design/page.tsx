@@ -8,9 +8,10 @@ import { publicStoreSocialLinks } from "@workspace/lib/stores";
 import { storeUrl } from "@workspace/lib/storefront";
 import { designSystemSchema, sectionInstanceSchema, type SectionInstance } from "@workspace/store-sections";
 import { getDesign } from "@workspace/store-sections/render";
-import { StorePageHeader } from "@/components/stores/store-page-header";
+import { PageContainer } from "@/components/seller-ui";
 import { loadWebsiteStorePage } from "@/lib/stores/website-page.server";
 import { loadEditorCatalog } from "@/app/(builder)/stores/[storeId]/editor/server/editor.data";
+import { SiteOfflineNote } from "../_components/site-offline-note";
 import { storeFontVariables } from "../_components/store-fonts";
 import { DesignSystemEditor } from "./design.client";
 import { findHeroBanners } from "./hero-banners.lib";
@@ -56,8 +57,8 @@ export default async function WebsiteDesignPage({ params }: { params: Promise<{ 
 
   return (
     // Full width: the settings and a tall live preview side by side on one screen.
-    <section className="mx-auto w-full max-w-screen-2xl space-y-5 p-4 sm:p-6">
-      <StorePageHeader store={store} />
+    <PageContainer className="max-w-[1536px]">
+      <SiteOfflineNote storeId={store.id} siteStatus={store.siteStatus} />
       <DesignSystemEditor
         storeId={store.id}
         readOnly={store.status !== "active"}
@@ -93,6 +94,6 @@ export default async function WebsiteDesignPage({ params }: { params: Promise<{ 
         fontClassName={storeFontVariables}
         translated={new Set(store.supportedLocales).size > 1}
       />
-    </section>
+    </PageContainer>
   );
 }

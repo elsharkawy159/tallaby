@@ -1,15 +1,13 @@
 "use client";
 
 import { useTransition } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Eye, LineChart, RefreshCw, Users } from "lucide-react";
 import { Area, CartesianGrid, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { Button } from "@workspace/ui/components/button";
-import { cn } from "@workspace/ui/lib/utils";
-import { EmptyState, HomeCard, HomeCardHeader, IconTile } from "@/app/(main)/_components/home-ui";
+import { EmptyState, KpiCard, Note, PageTabs, SellerButton, SellerCard, SellerCardHeader } from "@/components/seller-ui";
+import { cn } from "@/lib/utils";
 import { formatCompactNumber, formatDate, formatNumber, formatRelativeTime } from "@/lib/i18n/format";
 import { useAutoRefresh } from "@/hooks/use-auto-refresh";
 import { STORE_VIEWS_AUTO_REFRESH_MS, STORE_VIEWS_RANGES, type StoreViewsRange, type StoreViewsReport } from "@/lib/analytics/store-views.lib";
@@ -51,90 +49,51 @@ export function StoreViews({
 
   if (state === "notConfigured") {
     return (
-      <HomeCard>
+      <SellerCard className="sui-rise">
         <EmptyState icon={LineChart} title={t("notConfiguredTitle")} description={t("notConfiguredDescription")} />
-      </HomeCard>
+      </SellerCard>
     );
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <nav aria-label={t("rangeLabel")} className="flex gap-1 rounded-xl border bg-card p-1">
-          {STORE_VIEWS_RANGES.map((days) => (
-            <Link
-              key={days}
-              href={`/stores/${storeId}/analytics?range=${days}`}
-              aria-current={days === range ? "page" : undefined}
-              className={cn(
-                "rounded-lg px-3 py-1.5 text-[13px] font-medium text-muted-foreground",
-                days === range && "bg-primary-soft text-primary-ink",
-              )}
-            >
-              {t("range", { days })}
-            </Link>
-          ))}
-        </nav>
-        <div className="flex items-center gap-3">
-          {report && (
-            <span className="text-xs text-muted-foreground">
-              {t("updated", { time: formatRelativeTime(report.fetchedAt, locale) })}
-            </span>
-          )}
-          <Button variant="outline" size="sm" onClick={refresh} disabled={isPending}>
+    <>
+      <div className="sui-rise flex flex-wrap items-center justify-between gap-3">
+        <PageTabs
+          sticky={false}
+          label={t("rangeLabel")}
+          value={String(range)}
+          className="max-[600px]:w-full"
+          tabs={STORE_VIEWS_RANGES.map((days) => ({ key: String(days), label: t("range", { days }), href: `/stores/${storeId}/analytics?range=${days}` }))}
+        />
+        <div className="flex items-center gap-3 max-[600px]:w-full max-[600px]:justify-between">
+          {report && <span className="text-xs text-(--s-subtle)">{t("updated", { time: formatRelativeTime(report.fetchedAt, locale) })}</span>}
+          <SellerButton variant="mini" size="sm" onClick={refresh} disabled={isPending}>
             <RefreshCw className={cn(isPending && "animate-spin")} aria-hidden />
             {t("refresh")}
-          </Button>
+          </SellerButton>
         </div>
       </div>
 
-      {offline && <p className="rounded-xl border bg-muted px-4 py-3 text-[13px] text-muted-foreground">{t("offline")}</p>}
+      {offline && <Note tone="amber">{t("offline")}</Note>}
 
       {state === "error" || !report ? (
-        <HomeCard>
+        <SellerCard className="sui-rise">
           <EmptyState icon={LineChart} title={t("errorTitle")} description={t("errorDescription")} />
-        </HomeCard>
+        </SellerCard>
       ) : (
         <>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Stat icon={Eye} label={t("views")} hint={t("viewsHint")} value={report.views} locale={locale} />
-            <Stat icon={Users} label={t("visitors")} hint={t("visitorsHint")} value={report.visitors} locale={locale} tone="accent" />
+          <div className="sui-rise grid grid-cols-2 gap-3.5 [animation-delay:.05s] max-[480px]:gap-2.5">
+            <KpiCard icon={Eye} label={t("views")} footer={t("viewsHint")} value={formatNumber(report.views, locale, { maximumFractionDigits: 0 })} />
+            <KpiCard icon={Users} tone="accent" label={t("visitors")} footer={t("visitorsHint")} value={formatNumber(report.visitors, locale, { maximumFractionDigits: 0 })} />
           </div>
-          <HomeCard className="pb-4">
-            <HomeCardHeader title={t("chartTitle")} description={t("chartDescription")} />
+          <SellerCard className="sui-rise pb-4 [animation-delay:.1s]">
+            <SellerCardHeader title={t("chartTitle")} description={t("chartDescription")} />
             <ViewsChart data={report.daily} />
-          </HomeCard>
-          <p className="text-xs text-muted-foreground">{t("delayNote")}</p>
+          </SellerCard>
+          <p className="text-pretty text-xs text-(--s-faint)">{t("delayNote")}</p>
         </>
       )}
-    </div>
-  );
-}
-
-function Stat({
-  icon,
-  label,
-  hint,
-  value,
-  locale,
-  tone = "primary",
-}: {
-  icon: typeof Eye;
-  label: string;
-  hint: string;
-  value: number;
-  locale: string;
-  tone?: "primary" | "accent";
-}) {
-  return (
-    <HomeCard className="flex items-center gap-3 p-5">
-      <IconTile icon={icon} tone={tone} />
-      <div className="min-w-0">
-        <p className="text-xs text-muted-foreground">{label}</p>
-        <p className="font-montserrat text-2xl font-bold tabular-nums">{formatNumber(value, locale, { maximumFractionDigits: 0 })}</p>
-        <p className="text-[11px] text-faint">{hint}</p>
-      </div>
-    </HomeCard>
+    </>
   );
 }
 
@@ -150,10 +109,10 @@ function ViewsChart({ data }: { data: StoreViewsReport["daily"] }) {
 
   return (
     <div className="relative px-3 pt-3">
-      <div className="h-[260px] w-full text-xs [&_.recharts-cartesian-axis-tick_text]:fill-faint [&_.recharts-surface]:outline-hidden">
+      <div className="h-[260px] w-full text-xs [&_.recharts-cartesian-axis-tick_text]:fill-(--s-faint) [&_.recharts-surface]:outline-hidden">
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={data} margin={{ top: 10, right: 4, left: 4, bottom: 0 }}>
-            <CartesianGrid vertical={false} strokeDasharray="3 4" className="stroke-border" />
+            <CartesianGrid vertical={false} strokeDasharray="3 4" className="stroke-(--s-line-soft)" />
             <XAxis
               dataKey="day"
               reversed={rtl}
@@ -175,12 +134,12 @@ function ViewsChart({ data }: { data: StoreViewsReport["daily"] }) {
               className="font-montserrat text-[11px]"
             />
             <Tooltip
-              cursor={{ stroke: "var(--border)" }}
+              cursor={{ stroke: "var(--s-line)" }}
               content={({ active, payload }) => {
                 const point = payload?.[0]?.payload as StoreViewsReport["daily"][number] | undefined;
                 if (!active || !point) return null;
                 return (
-                  <div className="rounded-[10px] bg-foreground px-2.5 py-2 text-xs leading-normal text-background shadow-lg">
+                  <div className="rounded-[10px] bg-(--s-solid) px-2.5 py-2 text-xs leading-normal text-(--s-solid-fg) shadow-(--s-shadow-menu)">
                     <div>{labelOf(point.day)}</div>
                     <b className="font-montserrat">{formatNumber(point.views, locale)}</b> {t("views")} ·{" "}
                     <b className="font-montserrat">{formatNumber(point.visitors, locale)}</b> {t("visitors")}
@@ -203,9 +162,9 @@ function ViewsChart({ data }: { data: StoreViewsReport["daily"] }) {
         </ResponsiveContainer>
       </div>
       {empty && (
-        <div className="absolute inset-0 grid place-items-center text-center text-[13px] text-muted-foreground">
-          <div className="flex flex-col items-center gap-1.5 rounded-xl border bg-card px-[18px] py-3">
-            <b className="text-foreground">{t("emptyTitle")}</b>
+        <div className="absolute inset-0 grid place-items-center text-center text-[13px] text-(--s-muted)">
+          <div className="flex flex-col items-center gap-1.5 rounded-2xl border border-(--s-line) bg-(--s-surface) px-[18px] py-3">
+            <b className="font-bold text-(--s-ink)">{t("emptyTitle")}</b>
             <span>{t("emptyDescription")}</span>
           </div>
         </div>

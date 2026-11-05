@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { logServerError } from "@workspace/db/log";
+import { PageContainer, PageHeader } from "@/components/seller-ui";
 import { loadStorePage } from "@/lib/stores/store-page.server";
 import { parseStoreViewsRange, type StoreViewsReport } from "@/lib/analytics/store-views.lib";
 import { getStoreViews, isStoreViewsConfigured } from "@/lib/analytics/store-views.server";
@@ -32,18 +33,9 @@ export default async function StoreAnalyticsPage({
   }
 
   return (
-    <section className="mx-auto w-full max-w-[1120px] px-3.5 pt-[22px] pb-20 sm:px-6 sm:pt-8 sm:pb-24">
-      <header className="mb-5">
-        <h1 className="text-xl font-bold">{t("title")}</h1>
-        <p className="text-sm text-muted-foreground">{t("description", { store: store.name })}</p>
-      </header>
-      <StoreViews
-        storeId={store.id}
-        range={range}
-        report={report}
-        state={state}
-        offline={store.siteStatus !== "published"}
-      />
-    </section>
+    <PageContainer>
+      <PageHeader className="sui-rise" title={t("title")} description={t("description", { store: store.name })} />
+      <StoreViews storeId={store.id} range={range} report={report} state={state} offline={store.siteStatus !== "published"} />
+    </PageContainer>
   );
 }

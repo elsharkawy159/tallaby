@@ -122,6 +122,14 @@ export function parseTemplatesPage(value: unknown): number {
   return Number.isSafeInteger(page) && page >= 1 ? page : 1;
 }
 
+/** Does a gallery search match this template? Name and description, either language. */
+export function matchesTemplateSearch(template: { name: { ar?: string; en?: string }; description?: { ar?: string; en?: string } | null }, q: string): boolean {
+  const needle = q.trim().toLowerCase();
+  if (!needle) return true;
+  const { name, description } = template;
+  return [name.ar, name.en, description?.ar, description?.en].some((text) => text?.toLowerCase().includes(needle));
+}
+
 /** `?category=` → a category id, or `all`. */
 export function parseTemplatesCategory(value: unknown): string {
   return typeof value === "string" && /^[a-z0-9_-]{1,64}$/i.test(value) ? value : "all";

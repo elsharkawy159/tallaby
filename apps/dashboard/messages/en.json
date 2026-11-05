@@ -7609,6 +7609,52 @@
       "back": "Go to the dashboard"
     }
   },
+  "storeSetup": {
+    "settingsTitle": "Store settings",
+    "settingsDescription": "Everything about your store in one place.",
+    "policiesTab": "Policies and verification",
+    "whatsappSame": "Same as the phone number",
+    "fixedFieldsLabel": "Fixed fields, always required",
+    "fixedName": "Name",
+    "fixedPhone": "Phone number",
+    "fixedPlace": "Governorate and area",
+    "fixedAddress": "Street and address",
+    "thanksPreviewTitle": "Your order was received",
+    "customerSeesTitle": "What your customer sees",
+    "customerSeesDescription": "Updates with every change you save.",
+    "customerSeesHeading": "Payment method",
+    "editName": "Edit name",
+    "shareOn": "Share on:",
+    "codeCopied": "Code copied",
+    "copyCode": "Copy code",
+    "perTopUp": "of every top-up",
+    "howTitle": "How you earn",
+    "how": {
+      "share": {
+        "title": "Share your link",
+        "body": "Send it to anyone who sells online or wants to start."
+      },
+      "topUp": {
+        "title": "They create a store and top up",
+        "body": "A referral counts as successful when the seller's first wallet top-up succeeds."
+      },
+      "earn": {
+        "title": "You earn your commission",
+        "body": "You get {percent}% of every amount they top up, for life, paid to you in cash."
+      }
+    },
+    "accountTitle": "Account settings",
+    "accountDescription": "Your business details, payout account, policies and verification documents.",
+    "appsTitle": "Apps and connections",
+    "installedCount": "Installed apps",
+    "feedsReadyCount": "Catalog links ready",
+    "yourApps": "Your apps",
+    "addApp": "Add an app",
+    "suggestedTitle": "Suggested for your store",
+    "featuredTitle": "Take payments and ship orders from one place",
+    "featuredBody": "Connect Paymob or Kashier to accept cards and wallets, and Bosta to ship your orders in one click.",
+    "paidAfterSwitch": "Available after the wallet moves to USD"
+  },
   "sellerUi": {
     "saveBar": {
       "message": "You have unsaved changes",

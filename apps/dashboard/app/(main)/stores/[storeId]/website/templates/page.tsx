@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { StorePageHeader } from "@/components/stores/store-page-header";
+import { PageContainer } from "@/components/seller-ui";
 import { loadWebsiteStorePage } from "@/lib/stores/website-page.server";
+import { SiteOfflineNote } from "../_components/site-offline-note";
 import { storeFontVariables } from "../_components/store-fonts";
 import { TemplateGallery } from "./templates.client";
 
@@ -25,9 +26,10 @@ export default async function WebsiteTemplatesPage({ params }: { params: Promise
   const store = await loadWebsiteStorePage(storeId);
 
   return (
-    <section className="mx-auto w-full space-y-5 p-4 sm:p-6">
-      <StorePageHeader store={store} />
-      <TemplateGallery storeId={store.id} readOnly={store.status !== "active"} fontClassName={storeFontVariables} />
-    </section>
+    <PageContainer>
+      <TemplateGallery storeId={store.id} readOnly={store.status !== "active"} fontClassName={storeFontVariables}>
+        <SiteOfflineNote storeId={store.id} siteStatus={store.siteStatus} />
+      </TemplateGallery>
+    </PageContainer>
   );
 }

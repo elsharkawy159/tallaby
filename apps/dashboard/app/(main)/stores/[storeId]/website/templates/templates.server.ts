@@ -18,7 +18,7 @@ import {
   type TemplatesPageQuery,
   type TemplatesPageView,
 } from "./templates.dto";
-import { pageTemplates, parseTemplatesCategory, parseTemplatesPage, TEMPLATES_PAGE_SIZE, toTemplateCardView } from "./templates.lib";
+import { pageTemplates, parseTemplatesCategory, parseTemplatesPage, TEMPLATES_PAGE_SIZE, toTemplateCardView, matchesTemplateSearch } from "./templates.lib";
 
 /**
  * Website › Templates actions (PLAN.md §8.1, P4-05). Applying also creates the
@@ -87,12 +87,16 @@ export async function listTemplatesPage(storeId: string, query: Partial<Template
     if (!row || !gallery) return { success: false, error: "notFound" };
 
     const industry = findIndustry({ en: row.storeCategory, ar: row.storeCategoryAr });
-    const paged = pageTemplates(gallery.templates, {
+    // A search looks through every category; the tabs always list the whole gallery.
+    const q = typeof query?.q === "string" ? query.q.trim().slice(0, 60) : "";
+    const paged = pageTemplates(q ? gallery.templates.filter((tpl) => matchesTemplateSearch(tpl, q)) : gallery.templates, {
       page: parseTemplatesPage(query?.page),
-      category: query?.category == null ? null : parseTemplatesCategory(query.category),
+      category: q ? "all" : query?.category == null ? null : parseTemplatesCategory(query.category),
       industryId: industry?.id,
       seed: store.id,
     });
+    const categories = q ? pageTemplates(gallery.templates, { page: 1, category: "all", industryId: industry?.id, seed: store.id }).categories : paged.categories;
+    const currentKey = gallery.templateChosen ? gallery.currentKey : "";
     const install = gallery.lastInstall;
     return {
       success: true,
@@ -102,11 +106,12 @@ export async function listTemplatesPage(storeId: string, query: Partial<Template
         pageCount: paged.pageCount,
         pageSize: TEMPLATES_PAGE_SIZE,
         total: paged.total,
-        categories: paged.categories,
+        categories,
         category: paged.category,
         // A new store's placeholder Tallaby Classic drafts are not the seller's
         // choice (owner 2026-10-27): no "current" template until one is picked.
-        currentKey: gallery.templateChosen ? gallery.currentKey : "",
+        currentKey,
+        currentName: gallery.templates.find((tpl) => tpl.key === currentKey)?.name ?? null,
         lastInstall: install
           ? {
               templateKey: install.templateKey,

@@ -1,32 +1,39 @@
 "use client";
 
-import { useState, useTransition, type ReactNode } from "react";
+import { useEffect, useRef, useState, useTransition, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useFormatter, useTranslations } from "next-intl";
+import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import {
-  ArrowUpRight,
   ChevronDown,
+  ChevronLeft,
   ChevronUp,
+  CircleCheck,
+  ClipboardList,
   Clock,
   Copy,
   ExternalLink,
   Eye,
   EyeOff,
+  Facebook,
   FileText,
-  FormInput,
+  Files,
   Globe,
-  ImageIcon,
+  Images,
+  Instagram,
   LayoutTemplate,
   Link2,
   LoaderCircle,
+  Lock,
+  MessageCircle,
+  Monitor,
   Newspaper,
   Palette,
   Pencil,
-  Radio,
   RotateCcw,
   Share2,
+  Smartphone,
   Undo2,
   UploadCloud,
   type LucideIcon,
@@ -43,25 +50,35 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@workspace/ui/components/alert-dialog";
-import { Button } from "@workspace/ui/components/button";
-import { Switch } from "@workspace/ui/components/switch";
-import { BUTTON_CLASS, SMALL_BUTTON_CLASS } from "@/components/form/form-ui";
+import { IconButton, IconTile, Note, PageHeader, Segmented, SellerButton, SellerCard, StatusBadge, Tag, Toggle } from "@/components/seller-ui";
 import { cn } from "@/lib/utils";
 import { discardDraft, publish, restoreRevision, unpublish } from "@/app/(builder)/stores/[storeId]/editor/server/editor.server";
 import { useStorePreview } from "@/app/(builder)/stores/[storeId]/editor/use-store-preview.client";
 import { PublishCelebration, type LiveSite } from "@/app/(main)/_components/publish-celebration.client";
 import type { WebsiteOverviewData } from "./website.types";
 
-/** The other Website pages (PLAN.md §7.2), in the design's order. */
-const WEBSITE_LINKS: { key: string; path: string; icon: LucideIcon }[] = [
-  { key: "design", path: "website/design", icon: Palette },
-  { key: "templates", path: "website/templates", icon: LayoutTemplate },
-  { key: "pages", path: "website/pages", icon: FileText },
-  { key: "domain", path: "website/domain", icon: Globe },
-  { key: "blog", path: "website/blog", icon: Newspaper },
-  { key: "media", path: "website/media", icon: ImageIcon },
-  { key: "forms", path: "website/forms", icon: FormInput },
-  { key: "social", path: "website/social", icon: Share2 },
+type ManageLink = { key: string; path: string; icon: LucideIcon };
+
+/** The other Website pages (PLAN.md §7.2), grouped as in the design. */
+const LINK_GROUPS: { group: "look" | "reach"; links: ManageLink[] }[] = [
+  {
+    group: "look",
+    links: [
+      { key: "design", path: "website/design", icon: Palette },
+      { key: "templates", path: "website/templates", icon: LayoutTemplate },
+      { key: "pages", path: "website/pages", icon: Files },
+      { key: "media", path: "website/media", icon: Images },
+    ],
+  },
+  {
+    group: "reach",
+    links: [
+      { key: "domain", path: "website/domain", icon: Globe },
+      { key: "social", path: "website/social", icon: Share2 },
+      { key: "blog", path: "website/blog", icon: Newspaper },
+      { key: "forms", path: "website/forms", icon: ClipboardList },
+    ],
+  },
 ];
 
 /** Versions shown before "Show all". */
@@ -71,22 +88,24 @@ const REVISIONS_SHOWN = 5;
 type NextStep = "template" | "goLive" | "changes";
 
 /**
- * Website › Overview (PLAN.md P4-12; Claude Design "Seller Website", owner
- * 2026-10-28): address, publish state and the next step, a live thumbnail,
- * links to the other Website pages and the version history. On phones the
- * next step moves to a bar stuck to the bottom of the screen and dialogs open
- * as bottom sheets. Every button calls the store-scoped editor actions, which
- * re-check the store.
+ * Website › Overview (PLAN.md P4-12; Claude Design "Seller Website" v3):
+ * address, publish state and the next step, the store as shoppers see it, links
+ * to the other Website pages and the version history. Going live only ever
+ * happens through the Publish action here. Every button calls the store-scoped
+ * editor actions, which re-check the store.
  */
 export function WebsiteOverview({ data }: { data: WebsiteOverviewData }) {
   const t = useTranslations("websiteOverview");
   const te = useTranslations("storeEditor");
   const ts = useTranslations("storeSettings");
+  const tw = useTranslations("sellerWebsite.overview");
+  const tl = useTranslations("settings.storeLink");
   const format = useFormatter();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [busy, setBusy] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
+  const [device, setDevice] = useState<"desktop" | "mobile">("desktop");
   const [celebrate, setCelebrate] = useState<LiveSite | null>(null);
   const preview = useStorePreview(data.storeId);
   const base = `/stores/${data.storeId}`;
@@ -124,10 +143,10 @@ export function WebsiteOverview({ data }: { data: WebsiteOverviewData }) {
     });
   };
 
-  const copy = async () => {
+  const copy = async (message = t("copied")) => {
     try {
       await navigator.clipboard.writeText(data.liveUrl);
-      toast.success(t("copied"));
+      toast.success(message);
     } catch {
       toast.error(t("copyFailed"));
     }
@@ -180,281 +199,291 @@ export function WebsiteOverview({ data }: { data: WebsiteOverviewData }) {
         ? t(data.siteStatus === "unpublished" ? "statusHint.unpublished" : "statusHint.draft")
         : t("statusHint.changes");
 
-  /** The next step's buttons, shared by the card panel and the phone bar. */
-  const nextActions = (size: "sm" | "lg") => {
-    const cls = size === "sm" ? SMALL_BUTTON_CLASS : cn(BUTTON_CLASS, "h-[46px] px-4");
-    if (next === "template")
-      return (
-        <Button asChild variant="accent" className={cn(cls, "publish-attention")}>
-          <Link href={`${base}/website/templates`}>
-            <LayoutTemplate aria-hidden />
-            {t("chooseTemplate")}
-          </Link>
-        </Button>
-      );
-    const publishing = busy === "publish";
-    return (
-      <>
-        {next === "changes" && (
-          <ConfirmAction
-            trigger={
-              <Button type="button" variant="soft" className={cls} disabled={working}>
-                {busy === "discard" ? <LoaderCircle className="animate-spin" aria-hidden /> : <Undo2 aria-hidden />}
-                {/* The phone bar has room for the icon only. */}
-                {size === "sm" ? t("discard") : <span className="sr-only">{t("discard")}</span>}
-              </Button>
-            }
-            icon={Undo2}
-            title={t("discardTitle")}
-            description={t("discardBody")}
-            confirm={t("discard")}
-            destructive
-            onConfirm={discard}
-          />
-        )}
-        <Button
-          type="button"
-          variant="accent"
-          // Soft ring and sheen (globals.css `publish-attention`) so the next step is hard to miss.
-          className={cn(cls, !working && "publish-attention")}
-          disabled={working}
-          onClick={next === "goLive" ? goLive : publishChanges}
-        >
-          {publishing ? <LoaderCircle className="animate-spin" aria-hidden /> : <UploadCloud aria-hidden />}
-          {next === "goLive" ? t("publish") : size === "sm" ? t("publishChanges") : t("publish")}
-        </Button>
-      </>
-    );
-  };
-
   const revisions = showAll ? data.revisions : data.revisions.slice(0, REVISIONS_SHOWN);
+  const shareText = encodeURIComponent(data.liveUrl);
+  const shareClass =
+    "grid size-[34px] place-items-center rounded-full bg-(--s-fill) text-(--s-muted) transition-colors duration-150 hover:bg-(--s-hover) hover:text-(--s-ink) max-[600px]:size-10 [&_svg]:size-4";
 
   return (
-    <div className={cn("space-y-4 sm:space-y-5", next && "max-sm:pb-24")}>
-      <div className="max-sm:hidden">
-        <h1 className="text-2xl font-bold">{t("heading")}</h1>
-        <p className="text-pretty text-muted-foreground">{t("description")}</p>
-      </div>
+    <>
+      <PageHeader title={t("heading")} description={t("description")} className="sui-rise" />
 
-      <section className="grid overflow-hidden rounded-2xl border bg-card shadow-xs md:grid-cols-[minmax(0,1fr)_280px] lg:grid-cols-[minmax(0,1fr)_360px] xl:grid-cols-[minmax(0,1fr)_420px]">
-        <div className="flex min-w-0 flex-col gap-4 p-[18px] sm:gap-5 sm:p-7">
-          <div className="flex flex-wrap items-center gap-2.5">
-            <StatusPill tone={live ? "ok" : "off"}>
+      <SellerCard
+        aria-label={tw("statusLabel")}
+        className="sui-rise grid grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] overflow-hidden rounded-[28px] [animation-delay:.05s] max-[1180px]:grid-cols-1"
+      >
+        <div className="flex min-w-0 flex-col gap-[18px] px-7 py-[26px] max-[720px]:px-[18px] max-[720px]:py-5">
+          <div className="flex flex-wrap items-center gap-2">
+            <StatusBadge tone={live ? "success" : "muted"} className="h-7 px-3 text-[12.5px] font-bold">
               {live ? t("liveSwitchOnline") : t(data.siteStatus === "unpublished" ? "status.unpublished" : "status.draft")}
-            </StatusPill>
-            {live && data.hasUnpublishedChanges && <StatusPill tone="warn">{t("status.changes")}</StatusPill>}
-            {data.readOnly && <StatusPill tone="off">{ts("readOnlyBadge")}</StatusPill>}
+            </StatusBadge>
+            {live && data.hasUnpublishedChanges && (
+              <StatusBadge tone="warning" className="h-7 px-3 text-[12.5px] font-bold">
+                {t("status.changes")}
+              </StatusBadge>
+            )}
+            {data.readOnly && <Tag>{ts("readOnlyBadge")}</Tag>}
           </div>
 
-          <div className="space-y-1">
-            <div className="flex items-center justify-between gap-2 sm:justify-start">
+          <div className="flex flex-col gap-1.5">
+            <small className="text-[12.5px] text-(--s-subtle)">{t("liveUrl")}</small>
+            <div className="flex min-w-0 items-center gap-1.5">
               <a
                 href={data.liveUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 dir="ltr"
-                className="min-w-0 font-sans text-xl leading-snug font-bold [overflow-wrap:anywhere] text-foreground hover:text-primary sm:text-[26px]"
+                className="min-w-0 truncate font-montserrat text-[clamp(17px,1.8vw,22px)] font-bold leading-[1.3] text-(--s-ink) no-underline hover:text-(--s-link) max-[600px]:py-2.5"
               >
                 {data.hostname}
               </a>
-              <span className="flex shrink-0 gap-1">
-                <IconButton label={t("copy")} onClick={copy}>
-                  <Copy />
-                </IconButton>
-                <IconButton label={t("open")} href={data.liveUrl}>
-                  <ExternalLink />
-                </IconButton>
-              </span>
+              <IconButton aria-label={t("copy")} title={t("copy")} onClick={() => void copy()}>
+                <Copy aria-hidden />
+              </IconButton>
+              <IconButton asChild aria-label={t("open")} title={t("open")}>
+                <a href={data.liveUrl} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink aria-hidden className="rtl:-scale-x-100" />
+                </a>
+              </IconButton>
             </div>
-            <div className="flex flex-wrap gap-x-[18px] gap-y-1 text-[13px] text-muted-foreground">
-              <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
-                <Clock className="size-[15px]" aria-hidden />
+            <div className="flex flex-wrap gap-x-4 gap-y-1 text-[12.5px] text-(--s-subtle) [&_svg]:size-[15px] [&_svg]:shrink-0">
+              <span className="inline-flex items-center gap-1.5">
+                <Clock aria-hidden />
                 {t("lastPublished")}: {data.lastPublishedAt ? date(data.lastPublishedAt) : t("never")}
               </span>
-              <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
-                <FileText className="size-[15px]" aria-hidden />
+              <span className="inline-flex items-center gap-1.5">
+                <FileText aria-hidden />
                 {t("pageCount", { count: data.pageCount })}
               </span>
-              {data.defaultHostname !== data.hostname && (
-                <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
-                  <Link2 className="size-[15px]" aria-hidden />
-                  <span dir="ltr" className="font-sans">
+              {data.defaultHostname !== data.hostname ? (
+                <span className="inline-flex items-center gap-1.5">
+                  <Link2 aria-hidden />
+                  <bdi dir="ltr" className="font-montserrat">
                     {data.defaultHostname}
-                  </span>
+                  </bdi>
                 </span>
+              ) : (
+                <Link href={`${base}/website/domain#custom-domain`} className="inline-flex items-center gap-1.5 font-semibold text-(--s-link) no-underline hover:underline max-[600px]:min-h-10">
+                  <Globe aria-hidden />
+                  {tw("connectDomain")}
+                </Link>
               )}
             </div>
           </div>
 
-          {next && (
-            <div className="flex flex-wrap items-center gap-3.5 rounded-[14px] border border-accent/35 bg-accent-soft px-4 py-3.5 max-sm:hidden">
-              <span className="grid size-[38px] shrink-0 place-items-center rounded-[11px] bg-card text-accent-ink" aria-hidden>
-                {next === "template" ? <LayoutTemplate className="size-[18px]" /> : <UploadCloud className="size-[18px]" />}
-              </span>
-              <div className="min-w-[220px] flex-1">
-                <b className="block text-sm">{nextTitle}</b>
-                <small className="text-[12.5px] text-muted-foreground">{nextBody}</small>
+          {next ? (
+            <div className="flex flex-wrap items-center gap-3.5 rounded-[20px] border border-accent/30 bg-accent-soft px-4 py-3.5">
+              <IconTile icon={next === "template" ? LayoutTemplate : UploadCloud} tone="accent" className="bg-(--s-surface)" />
+              <div className="min-w-[180px] flex-1">
+                <b className="block text-sm font-bold text-(--s-ink)">{nextTitle}</b>
+                <small className="block text-pretty text-[12.5px] leading-[1.6] text-(--s-muted)">{nextBody}</small>
               </div>
-              <div className="ms-auto flex shrink-0 gap-1.5">{nextActions("sm")}</div>
+              <div className="flex flex-wrap items-center gap-1.5 max-[480px]:w-full max-[480px]:[&>*]:basis-full">
+                {next === "template" ? (
+                  <SellerButton asChild size="sm" className="publish-attention">
+                    <Link href={`${base}/website/templates`}>
+                      <LayoutTemplate aria-hidden />
+                      {t("chooseTemplate")}
+                    </Link>
+                  </SellerButton>
+                ) : (
+                  <>
+                    {next === "changes" && (
+                      <ConfirmAction
+                        trigger={
+                          <SellerButton variant="mini" size="sm" disabled={working}>
+                            {busy === "discard" ? <LoaderCircle className="animate-spin" aria-hidden /> : <Undo2 aria-hidden />}
+                            {t("discard")}
+                          </SellerButton>
+                        }
+                        icon={Undo2}
+                        title={t("discardTitle")}
+                        description={t("discardBody")}
+                        confirm={t("discard")}
+                        destructive
+                        onConfirm={discard}
+                      />
+                    )}
+                    <SellerButton
+                      size="sm"
+                      // Soft ring and sheen (globals.css `publish-attention`) so the next step is hard to miss.
+                      className={cn(!working && "publish-attention")}
+                      disabled={working}
+                      onClick={next === "goLive" ? goLive : publishChanges}
+                    >
+                      {busy === "publish" ? <LoaderCircle className="animate-spin" aria-hidden /> : <UploadCloud aria-hidden />}
+                      {next === "goLive" ? t("publish") : t("publishChanges")}
+                    </SellerButton>
+                  </>
+                )}
+              </div>
             </div>
-          )}
+          ) : live && !data.readOnly ? (
+            <Note tone="success" icon={CircleCheck}>
+              {t("statusHint.published")}
+            </Note>
+          ) : null}
 
-          <div className="grid grid-cols-2 gap-2.5 sm:flex sm:flex-wrap">
-            <Button asChild variant="secondary" className={cn(BUTTON_CLASS, "h-[46px] px-3 sm:px-5")}>
+          <div className="flex flex-wrap gap-2 max-[720px]:[&>*]:flex-1">
+            <SellerButton asChild variant="solid" className="h-[46px]">
               <Link href={`${base}/editor`}>
                 <Pencil aria-hidden />
                 {t("edit")}
               </Link>
-            </Button>
-            <Button
-              type="button"
-              variant="neutral"
-              className={cn(BUTTON_CLASS, "h-[46px] px-3 sm:px-5")}
+            </SellerButton>
+            <SellerButton
+              variant="outline"
+              className="h-[46px]"
               onClick={preview.open}
               disabled={!data.previewEnabled || preview.opening || data.readOnly}
               title={data.previewEnabled ? undefined : t("previewUnavailable")}
             >
               {preview.opening ? <LoaderCircle className="animate-spin" aria-hidden /> : <Eye aria-hidden />}
               {t("preview")}
-            </Button>
+            </SellerButton>
           </div>
 
-          <div className="mt-auto flex items-center gap-3 border-t pt-[18px]">
-            <div className="min-w-0 flex-1">
-              <label htmlFor="website-live" className="block text-[13.5px] font-semibold">
-                {t("visibility")}
-              </label>
-              <p id="website-live-hint" className="text-[12.5px] text-muted-foreground">
-                {t(switchHint)}
-              </p>
-            </div>
-            {(busy === "publish" || busy === "unpublish") && (
-              <LoaderCircle className="size-4 animate-spin text-muted-foreground" aria-hidden />
-            )}
-            <Switch
-              id="website-live"
-              aria-describedby="website-live-hint"
-              checked={live}
-              disabled={data.readOnly || working || needsTemplate}
-              className="data-[state=checked]:bg-success"
-              onCheckedChange={(checked) => (checked ? goLive() : setConfirmOffline(true))}
-            />
-            <ConfirmAction
-              open={confirmOffline}
-              onOpenChange={setConfirmOffline}
-              icon={EyeOff}
-              title={t("unpublishTitle")}
-              description={t("unpublishBody")}
-              confirm={t("unpublish")}
-              destructive
-              onConfirm={goOffline}
-            />
-          </div>
-        </div>
-
-        {/* What shoppers see right now (scripts off, not clickable). On phones it leads the card. */}
-        <div className="order-first flex items-center justify-center border-b bg-muted p-4 md:order-none md:border-b-0 md:border-s md:p-6" aria-hidden>
-          <div className="w-full max-w-[420px] overflow-hidden rounded-xl border border-input bg-white shadow-[0_10px_30px_rgba(20,81,99,0.10)] md:max-w-none">
-            <div dir="ltr" className="flex h-7 items-center gap-[5px] border-b border-[#e3e6e5] bg-[#f1f3f2] px-2.5">
-              <i className="size-2 rounded-full bg-[#d5dad8]" />
-              <i className="size-2 rounded-full bg-[#d5dad8]" />
-              <i className="size-2 rounded-full bg-[#d5dad8]" />
-              <span className="ms-2 flex h-4 min-w-0 flex-1 items-center truncate rounded-[5px] bg-white px-2 font-sans text-[10px] text-[#7b878c]">
-                {data.hostname}
-              </span>
-            </div>
-            <div className="relative aspect-[4/3] overflow-hidden">
-              <iframe
-                src={data.liveUrl}
-                title={t("thumbnail")}
-                tabIndex={-1}
-                loading="lazy"
-                sandbox=""
-                className="pointer-events-none absolute start-0 top-0 h-[400%] w-[400%] origin-top-left scale-25 rtl:origin-top-right"
+          <div className="mt-auto flex flex-col gap-3 border-t border-(--s-line-soft) pt-4">
+            <div className="flex items-center gap-3">
+              <div className="min-w-0 flex-1">
+                <p id="website-live-label" className="text-[13.5px] font-bold text-(--s-text)">
+                  {t("visibility")}
+                </p>
+                <p id="website-live-hint" className="text-pretty text-[12.5px] text-(--s-subtle)">
+                  {t(switchHint)}
+                </p>
+              </div>
+              {(busy === "publish" || busy === "unpublish") && <LoaderCircle className="size-4 animate-spin text-(--s-subtle)" aria-hidden />}
+              <Toggle
+                aria-labelledby="website-live-label"
+                aria-describedby="website-live-hint"
+                checked={live}
+                disabled={data.readOnly || working || needsTemplate}
+                onCheckedChange={(checked) => (checked ? goLive() : setConfirmOffline(true))}
+              />
+              <ConfirmAction
+                open={confirmOffline}
+                onOpenChange={setConfirmOffline}
+                icon={EyeOff}
+                title={t("unpublishTitle")}
+                description={t("unpublishBody")}
+                confirm={t("unpublish")}
+                destructive
+                onConfirm={goOffline}
               />
             </div>
+            <div className="flex flex-wrap items-center gap-2.5 text-[12.5px] text-(--s-subtle)">
+              <span>{tw("share")}</span>
+              <div className="flex gap-1.5">
+                <a className={shareClass} href={`https://wa.me/?text=${shareText}`} target="_blank" rel="noopener noreferrer" aria-label={tl("whatsapp")}>
+                  <MessageCircle aria-hidden />
+                </a>
+                <a className={shareClass} href={`https://www.facebook.com/sharer/sharer.php?u=${shareText}`} target="_blank" rel="noopener noreferrer" aria-label={tl("facebook")}>
+                  <Facebook aria-hidden />
+                </a>
+                {/* Instagram has no share URL: copy the link for the seller's bio or story. */}
+                <button type="button" className={cn(shareClass, "cursor-pointer")} onClick={() => void copy(tl("instagramCopied"))} aria-label={tl("instagram")}>
+                  <Instagram aria-hidden />
+                </button>
+              </div>
+            </div>
           </div>
         </div>
-      </section>
 
-      <div className="grid items-start gap-4 sm:gap-5 xl:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)]">
-        <section aria-labelledby="website-links">
-          <h2 id="website-links" className="mb-3 text-base font-bold">
+        <div className="flex min-w-0 flex-col gap-3 border-s border-(--s-line) bg-linear-[160deg,var(--s-fill),var(--s-surface-2)] px-[22px] pt-5 max-[1180px]:border-s-0 max-[1180px]:border-t max-[720px]:px-3.5 max-[720px]:pt-3.5">
+          <div className="flex flex-wrap items-center justify-between gap-2.5">
+            <b className="text-[13px] font-bold text-(--s-text)">{t("thumbnail")}</b>
+            <Segmented
+              label={tw("deviceLabel")}
+              value={device}
+              onChange={setDevice}
+              options={[
+                { value: "desktop", label: <DeviceLabel icon={Monitor} text={tw("deviceDesktop")} /> },
+                { value: "mobile", label: <DeviceLabel icon={Smartphone} text={tw("deviceMobile")} /> },
+              ]}
+            />
+          </div>
+          <LiveFrame url={data.liveUrl} hostname={data.hostname} device={device} title={t("thumbnail")} />
+        </div>
+      </SellerCard>
+
+      <div className="grid grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)] items-start gap-4 max-[1180px]:grid-cols-1">
+        <SellerCard aria-labelledby="website-links" className="sui-rise flex flex-col gap-[18px] px-6 pb-6 pt-[22px] [animation-delay:.1s] max-[720px]:px-4 max-[720px]:pb-5 max-[720px]:pt-[18px]">
+          <h2 id="website-links" className="text-[17px] font-bold text-(--s-ink)">
             {t("manage")}
           </h2>
-          <ul className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
-            {WEBSITE_LINKS.map(({ key, path, icon: Icon }) => (
-              <li key={key} className="min-w-0">
-                <Link
-                  href={`${base}/${path}`}
-                  className="group flex h-full min-w-0 items-center gap-2.5 rounded-[14px] border bg-card p-3 transition-[border-color,box-shadow,translate] hover:border-input hover:shadow-[0_6px_18px_rgba(20,81,99,0.08)] motion-safe:hover:-translate-y-px sm:flex-col sm:items-stretch sm:gap-3 sm:p-[18px]"
-                >
-                  <span className="grid size-9 shrink-0 place-items-center rounded-[11px] bg-primary-soft text-primary-ink sm:size-10">
-                    <Icon className="size-[18px]" aria-hidden />
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block text-[13.5px] leading-normal font-semibold sm:text-[14.5px]">{t(`links.${key}.title`)}</span>
-                    <span className="block text-pretty text-[12.5px] text-muted-foreground max-sm:hidden">{t(`links.${key}.body`)}</span>
-                  </span>
-                  <ArrowUpRight
-                    className="mt-auto size-[18px] self-end text-faint group-hover:text-primary-ink max-sm:hidden rtl:-scale-x-100"
-                    aria-hidden
-                  />
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
+          {LINK_GROUPS.map(({ group, links }) => (
+            <div key={group} className="flex flex-col gap-2.5">
+              <small className="text-xs font-bold text-(--s-faint)">{tw(`groups.${group}`)}</small>
+              <div className="grid grid-cols-2 gap-2.5 max-[720px]:grid-cols-1">
+                {links.map(({ key, path, icon }) => (
+                  <Link
+                    key={key}
+                    href={`${base}/${path}`}
+                    className="group flex items-center gap-3.5 rounded-[18px] border border-(--s-line) bg-(--s-surface) p-3.5 text-inherit no-underline transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-(--s-outline) hover:shadow-(--s-shadow-hover) motion-reduce:hover:translate-y-0"
+                  >
+                    <IconTile icon={icon} className="size-11 rounded-[14px] transition-colors duration-200 group-hover:bg-(--s-primary) group-hover:text-(--s-solid-fg) [&_svg]:size-[19px]" />
+                    <span className="min-w-0 flex-1">
+                      <b className="flex items-center gap-1.5 text-sm font-bold text-(--s-ink)">
+                        {t(`links.${key}.title`)}
+                        {key === "pages" && (
+                          <Tag tone="info" className="font-montserrat tabular-nums">
+                            {data.pageCount}
+                          </Tag>
+                        )}
+                      </b>
+                      <small className="block text-xs leading-[1.6] text-(--s-subtle)">{key === "pages" ? tw("pagesBody") : t(`links.${key}.body`)}</small>
+                    </span>
+                    <ChevronLeft aria-hidden className="size-4 shrink-0 text-(--s-field-strong) transition-[color,transform] duration-150 group-hover:text-(--s-primary) ltr:rotate-180" />
+                  </Link>
+                ))}
+              </div>
+            </div>
+          ))}
+        </SellerCard>
 
-        <section aria-labelledby="website-revisions" className="rounded-2xl border bg-card shadow-xs">
-          <div className="border-b px-4 py-[18px] sm:px-5">
-            <h2 id="website-revisions" className="text-base font-bold">
+        <SellerCard aria-labelledby="website-revisions" className="sui-rise [animation-delay:.15s]">
+          <div className="px-[22px] pt-5 max-[600px]:px-4 max-[600px]:pt-4">
+            <h3 id="website-revisions" className="text-[15.5px] font-bold text-(--s-ink)">
               {t("revisions")}
-            </h2>
-            <p className="text-[12.5px] text-muted-foreground max-sm:hidden">{t("revisionsHint")}</p>
+            </h3>
+            <p className="mt-0.5 text-pretty text-[12.5px] text-(--s-subtle)">{t("revisionsHint")}</p>
           </div>
           {data.revisions.length === 0 ? (
-            <p className="px-4 py-5 text-sm text-muted-foreground sm:px-5">{t("noRevisions")}</p>
+            <p className="px-[22px] py-5 text-[13px] text-(--s-subtle) max-[600px]:px-4">{t("noRevisions")}</p>
           ) : (
-            <ul className="py-1.5">
+            <ol className="flex flex-col px-4 pb-1.5 pt-3.5">
               {revisions.map((revision, index) => (
-                <li key={revision.id} className="group relative flex items-center gap-3 px-4 py-2.5 sm:px-5">
-                  {index > 0 && <span className="absolute -top-2.5 start-[31px] h-5 w-px bg-border sm:start-[35px]" aria-hidden />}
+                <li key={revision.id} className="group relative grid grid-cols-[32px_minmax(0,1fr)_auto] items-center gap-3 rounded-[14px] px-2 py-2.5 transition-colors duration-150 hover:bg-(--s-tint)">
+                  {index < revisions.length - 1 && <span aria-hidden className="absolute -bottom-2.5 start-[23px] top-[42px] w-[1.5px] bg-(--s-line)" />}
                   <span
-                    className={cn(
-                      "relative z-[1] grid size-[31px] shrink-0 place-items-center rounded-full border font-sans text-[11px] font-bold",
-                      revision.isLive ? "border-transparent bg-success-soft text-success" : "bg-muted text-muted-foreground",
-                    )}
                     aria-hidden
+                    className={cn(
+                      "relative z-[1] grid size-8 place-items-center rounded-full border-[1.5px] font-montserrat text-[11.5px] font-bold tabular-nums",
+                      revision.isLive ? "border-(--s-primary) bg-(--s-primary) text-(--s-solid-fg)" : "border-(--s-field) bg-(--s-surface) text-(--s-muted)",
+                    )}
                   >
-                    {revision.isLive ? <Radio className="size-[15px]" /> : revision.revisionNumber}
+                    {revision.revisionNumber}
                   </span>
-                  <div className="min-w-0 flex-1">
-                    <b className="flex items-center gap-2 text-[13.5px] font-semibold">
+                  <div className="min-w-0">
+                    <b className="flex flex-wrap items-center gap-2 text-[13.5px] font-bold text-(--s-text)">
                       {t("version", { number: revision.revisionNumber })}
-                      {revision.isLive && (
-                        <span className="inline-flex h-5 items-center rounded-full bg-success-soft px-2 text-[11px] font-semibold text-success">
-                          {t("live")}
-                        </span>
-                      )}
+                      {revision.isLive && <Tag tone="success">{t("live")}</Tag>}
                     </b>
-                    <small className="block text-xs text-muted-foreground">{date(revision.createdAt)}</small>
+                    <small className="block text-xs text-(--s-subtle)">{date(revision.createdAt)}</small>
                   </div>
                   {!data.readOnly && !revision.isLive && (
                     <ConfirmAction
                       trigger={
-                        <Button
-                          type="button"
-                          variant="neutral"
-                          className={cn(
-                            SMALL_BUTTON_CLASS,
-                            "transition-opacity md:opacity-0 md:group-hover:opacity-100 md:focus-visible:opacity-100",
-                          )}
+                        <SellerButton
+                          variant="mini"
+                          size="xs"
+                          className="transition-opacity group-hover:opacity-100 focus-visible:opacity-100 min-[721px]:[@media(hover:hover)]:opacity-0"
                           disabled={working}
                         >
                           {busy === `restore:${revision.id}` ? <LoaderCircle className="animate-spin" aria-hidden /> : <RotateCcw aria-hidden />}
                           {t("restore")}
-                        </Button>
+                        </SellerButton>
                       }
                       icon={RotateCcw}
                       title={t("restoreTitle", { number: revision.revisionNumber })}
@@ -465,64 +494,95 @@ export function WebsiteOverview({ data }: { data: WebsiteOverviewData }) {
                   )}
                 </li>
               ))}
-            </ul>
+            </ol>
           )}
-          {data.revisions.length > REVISIONS_SHOWN && (
-            <div className="border-t px-4 pt-2.5 pb-4 sm:px-5">
-              <Button type="button" variant="soft" className={cn(SMALL_BUTTON_CLASS, "w-full")} onClick={() => setShowAll((v) => !v)}>
-                {showAll ? t("showLess") : t("showAll", { count: data.revisions.length })}
+          {data.revisions.length > REVISIONS_SHOWN ? (
+            <div className="flex justify-center pb-[18px] pt-1.5">
+              <SellerButton variant="mini" size="xs" onClick={() => setShowAll((v) => !v)}>
                 {showAll ? <ChevronUp aria-hidden /> : <ChevronDown aria-hidden />}
-              </Button>
+                {showAll ? t("showLess") : t("showAll", { count: data.revisions.length })}
+              </SellerButton>
             </div>
+          ) : (
+            <div className="h-3" />
           )}
-        </section>
+        </SellerCard>
       </div>
 
-      {/* Phones: the next step stays in reach at the bottom of the screen. */}
-      {next && (
-        <div className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-2.5 border-t bg-card px-3.5 pt-3 pb-[calc(12px+env(safe-area-inset-bottom))] shadow-[0_-6px_20px_rgba(20,81,99,0.08)] sm:hidden">
-          <div className="min-w-0 flex-1">
-            <b className="block truncate text-[13.5px] leading-snug">{nextTitle}</b>
-            <small className="line-clamp-1 text-xs leading-snug text-muted-foreground">{nextBody}</small>
-          </div>
-          {nextActions("lg")}
-        </div>
-      )}
-
       <PublishCelebration live={celebrate} onClose={() => setCelebrate(null)} />
-    </div>
+    </>
   );
 }
 
-function StatusPill({ tone, children }: { tone: "ok" | "off" | "warn"; children: ReactNode }) {
+function DeviceLabel({ icon: Icon, text }: { icon: LucideIcon; text: string }) {
   return (
-    <span
-      className={cn(
-        "inline-flex h-7 items-center gap-1.5 rounded-full px-3 text-[12.5px] font-semibold whitespace-nowrap",
-        tone === "ok" && "bg-success-soft text-success",
-        tone === "off" && "border bg-muted text-muted-foreground",
-        tone === "warn" && "bg-accent-soft text-accent-ink",
-      )}
-    >
-      {tone !== "warn" && (
-        <i className="size-2 rounded-full bg-current shadow-[0_0_0_3px_color-mix(in_oklab,currentColor_22%,transparent)]" aria-hidden />
-      )}
-      {children}
+    <span className="grid place-items-center">
+      <Icon aria-hidden className="size-[15px]" />
+      <span className="sr-only">{text}</span>
     </span>
   );
 }
 
-function IconButton({ label, onClick, href, children }: { label: string; onClick?: () => void; href?: string; children: ReactNode }) {
-  const cls =
-    "grid size-[38px] place-items-center rounded-[10px] border border-transparent text-muted-foreground hover:border-border hover:bg-muted hover:text-foreground [&_svg]:size-[18px]";
-  return href ? (
-    <a href={href} target="_blank" rel="noopener noreferrer" className={cls} aria-label={label} title={label}>
-      {children}
-    </a>
-  ) : (
-    <button type="button" onClick={onClick} className={cls} aria-label={label} title={label}>
-      {children}
-    </button>
+/** Width the live page is drawn at, before it is scaled to fit the frame. */
+const FRAME_WIDTH = { desktop: 1280, mobile: 390 } as const;
+
+/**
+ * The real storefront in a scaled, inert browser window (scripts off, not
+ * clickable), so an offline store shows its real "store unavailable" page.
+ */
+function LiveFrame({ url, hostname, device, title }: { url: string; hostname: string; device: "desktop" | "mobile"; title: string }) {
+  const locale = useLocale();
+  const ref = useRef<HTMLDivElement>(null);
+  const [size, setSize] = useState({ width: 0, height: 0 });
+
+  useEffect(() => {
+    const element = ref.current;
+    if (!element) return;
+    const observer = new ResizeObserver(([entry]) => {
+      if (entry) setSize({ width: entry.contentRect.width, height: entry.contentRect.height });
+    });
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+
+  const scale = size.width ? size.width / FRAME_WIDTH[device] : 0;
+
+  return (
+    <div
+      aria-hidden
+      className={cn(
+        "mx-auto flex w-full flex-1 flex-col overflow-hidden rounded-t-[18px] border border-b-0 border-(--s-field) bg-(--s-surface) shadow-[0_-6px_30px_rgb(13_55_67/0.08)] transition-[max-width] duration-[450ms] ease-[cubic-bezier(.2,.7,.2,1)] motion-reduce:transition-none",
+        device === "mobile" ? "max-w-[260px]" : "max-w-full",
+      )}
+    >
+      <div dir="ltr" className="flex h-9 shrink-0 items-center gap-2 border-b border-(--s-line-soft) bg-(--s-surface-2) px-3">
+        <i className="size-[9px] shrink-0 rounded-full bg-(--s-field-strong)" />
+        <i className="size-[9px] shrink-0 rounded-full bg-(--s-field-strong)" />
+        <i className="size-[9px] shrink-0 rounded-full bg-(--s-field-strong)" />
+        <span className="flex h-[22px] min-w-0 flex-1 items-center justify-center gap-[5px] overflow-hidden whitespace-nowrap rounded-full bg-(--s-fill) px-2 font-montserrat text-[11px] font-medium text-(--s-subtle)">
+          <Lock className="size-[11px] shrink-0" />
+          <span className="truncate">{hostname}</span>
+        </span>
+      </div>
+      <div ref={ref} className="relative min-h-[330px] flex-1 overflow-hidden">
+        {scale > 0 && (
+          <iframe
+            src={url}
+            title={title}
+            tabIndex={-1}
+            loading="lazy"
+            sandbox=""
+            className="pointer-events-none absolute start-0 top-0 border-0"
+            style={{
+              width: FRAME_WIDTH[device],
+              height: size.height / scale,
+              transform: `scale(${scale})`,
+              transformOrigin: locale === "en" ? "top left" : "top right",
+            }}
+          />
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -552,19 +612,9 @@ function ConfirmAction({
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       {trigger && <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>}
-      {/* A bottom sheet on phones, a centred dialog from sm up. */}
-      <AlertDialogContent className="max-sm:top-auto max-sm:bottom-0 max-sm:max-w-full max-sm:translate-y-0 max-sm:rounded-none max-sm:rounded-t-[22px] max-sm:border-x-0 max-sm:border-b-0 max-sm:pb-[calc(18px+env(safe-area-inset-bottom))] sm:max-w-[440px] sm:rounded-[20px]">
-        <span className="mx-auto -mt-2 mb-1 block h-1 w-10 rounded-full bg-input sm:hidden" aria-hidden />
+      <AlertDialogContent className="sm:max-w-[440px]">
         <AlertDialogHeader className="text-start">
-          <span
-            className={cn(
-              "mb-1 grid size-11 place-items-center rounded-xl",
-              destructive ? "bg-destructive-soft text-destructive" : "bg-primary-soft text-primary-ink",
-            )}
-            aria-hidden
-          >
-            <Icon className="size-5" />
-          </span>
+          <IconTile icon={Icon} tone={destructive ? "danger" : "primary"} className="mb-1 size-11 [&_svg]:size-5" />
           <AlertDialogTitle>{title}</AlertDialogTitle>
           <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>

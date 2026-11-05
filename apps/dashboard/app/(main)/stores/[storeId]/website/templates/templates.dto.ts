@@ -9,7 +9,7 @@ export type TemplateInstallView = { templateKey: string; installedAt: string; ca
 
 /** Gallery filters, mirrored in the URL (`?page=`, `?category=`). */
 /** `category` left out: the store's industry tab when it has templates, else `all`. */
-export type TemplatesPageQuery = { page: number; category: string };
+export type TemplatesPageQuery = { page: number; category: string; /** Search over every template's name and description; it looks in all categories. */ q: string };
 
 /** One page of the gallery (`listTemplatesPage`). */
 export type TemplatesPageView = {
@@ -25,6 +25,8 @@ export type TemplatesPageView = {
   /** The category tab served (the store's industry by default). */
   category: string;
   currentKey: string;
+  /** The current template's name (it may be on another page). */
+  currentName: Localized | null;
   /** The last install, with its template's name (it may be on another page). */
   lastInstall: (TemplateInstallView & { name: Localized | null }) | null;
 };

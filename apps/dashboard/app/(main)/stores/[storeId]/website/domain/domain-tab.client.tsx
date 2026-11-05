@@ -2,14 +2,12 @@
 
 import Link from "next/link";
 import { useFormatter, useTranslations } from "next-intl";
-import { ArrowRight, CornerDownLeft, Globe, History, Link2 } from "lucide-react";
-
-import { Badge } from "@workspace/ui/components/badge";
+import { ArrowRight, BadgeCheck, CornerDownLeft, History, Link2 } from "lucide-react";
 import { storeHostname } from "@workspace/lib/storefront";
-import { FieldHint, SectionCard } from "@/components/form/form-ui";
-import { StoreLinkSection } from "@/app/(main)/settings/store-link.client";
-import { CustomDomainSection } from "@/app/(main)/settings/custom-domain.client";
+import { EmptyState, IconTile, Note, Row, Rows, SectionCard, Tag } from "@/components/seller-ui";
 import type { CustomDomainView } from "@/actions/custom-domain";
+import { CustomDomainCard } from "./custom-domain-card.client";
+import { StoreAddressCard } from "./store-address-card.client";
 
 /**
  * Website › Domain & SEO › Domain (P4-14): the store's Tallaby address (any
@@ -33,67 +31,67 @@ export function DomainTab({
   const format = useFormatter();
 
   return (
-    <div className="space-y-5">
-      {store.readOnly && (
-        <p className="rounded-lg border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">{t("readOnly")}</p>
-      )}
+    <>
+      {store.readOnly && <Note>{t("readOnly")}</Note>}
 
       <SectionCard id="address" icon={Link2} title={t("address.title")} description={t("address.description")}>
-        <StoreLinkSection
-          storeId={store.id}
-          initialSubdomain={store.subdomain}
-          customDomain={liveDomain}
-          readOnly={store.readOnly}
-        />
+        <StoreAddressCard storeId={store.id} initialSubdomain={store.subdomain} customDomain={liveDomain} readOnly={store.readOnly} />
       </SectionCard>
 
-      <SectionCard
-        id="custom-domain"
-        icon={Globe}
-        title={t("custom.title")}
-        description={t("custom.description")}
-        tag={store.isPrimary ? undefined : <Badge variant="muted">{t("custom.primaryOnlyBadge")}</Badge>}
-      >
-        {store.isPrimary ? (
-          <CustomDomainSection storeId={store.id} initial={customDomain} />
-        ) : (
-          <div className="flex flex-col gap-2">
-            <FieldHint>{t("custom.primaryOnly")}</FieldHint>
+      {store.isPrimary ? (
+        <CustomDomainCard storeId={store.id} initial={customDomain} readOnly={store.readOnly} />
+      ) : (
+        <SectionCard
+          id="custom-domain"
+          icon={BadgeCheck}
+          title={
+            <>
+              {t("custom.title")}
+              <Tag>{t("custom.primaryOnlyBadge")}</Tag>
+            </>
+          }
+          description={t("custom.description")}
+        >
+          <Note>
+            {t("custom.primaryOnly")}
             {primaryStore && (
-              <Link
-                href={`/stores/${primaryStore.id}/website/domain`}
-                className="inline-flex items-center gap-1 self-start text-xs font-medium text-primary-ink hover:underline"
-              >
+              <Link href={`/stores/${primaryStore.id}/website/domain`} className="ms-1.5 inline-flex items-center gap-1 text-(--s-link)">
                 {t("custom.openPrimary", { store: primaryStore.name })}
                 <ArrowRight className="size-3.5 rtl:-scale-x-100" aria-hidden />
               </Link>
             )}
-          </div>
-        )}
-      </SectionCard>
+          </Note>
+        </SectionCard>
+      )}
 
       <SectionCard id="redirects" icon={History} title={t("redirects.title")} description={t("redirects.description")}>
-        {redirects.length === 0 ? (
-          <FieldHint>{t("redirects.empty")}</FieldHint>
-        ) : (
-          <ul className="divide-y rounded-xl border">
-            {redirects.map((r) => (
-              <li key={r.subdomain} className="flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-3 text-[13px]">
-                <span dir="ltr" className="font-mono text-muted-foreground line-through decoration-muted-foreground/40">
-                  {storeHostname(r.subdomain)}
-                </span>
-                <CornerDownLeft className="size-3.5 text-muted-foreground rtl:-scale-x-100" aria-hidden />
-                <span dir="ltr" className="font-mono">
-                  {storeHostname(store.subdomain, liveDomain)}
-                </span>
-                <span className="ms-auto text-xs text-muted-foreground">
-                  {t("redirects.since", { date: format.dateTime(new Date(r.createdAt), { dateStyle: "medium" }) })}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
+        <Rows>
+          {redirects.length === 0 ? (
+            <EmptyState description={t("redirects.empty")} title="" className="py-[18px]" />
+          ) : (
+            redirects.map((r) => (
+              <Row
+                key={r.subdomain}
+                start={<IconTile icon={CornerDownLeft} className="size-[34px]" />}
+                title={
+                  <bdi dir="ltr" className="min-w-0 truncate font-montserrat text-[13px]">
+                    {storeHostname(r.subdomain)}
+                  </bdi>
+                }
+                description={
+                  <>
+                    <bdi dir="ltr" className="font-montserrat">
+                      {storeHostname(store.subdomain, liveDomain)}
+                    </bdi>
+                    {" · "}
+                    {t("redirects.since", { date: format.dateTime(new Date(r.createdAt), { dateStyle: "medium" }) })}
+                  </>
+                }
+              />
+            ))
+          )}
+        </Rows>
       </SectionCard>
-    </div>
+    </>
   );
 }

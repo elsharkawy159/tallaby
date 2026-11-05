@@ -15,10 +15,8 @@ import {
   ChevronsUpDown,
   ClipboardList,
   ListPlus,
-  LoaderCircle,
   Mail,
   Phone,
-  Save,
   Settings2,
   Trash2,
   Type,
@@ -35,13 +33,7 @@ import {
   type FormSettings,
   type FormStatus,
 } from "@workspace/lib/store-forms";
-import { Button } from "@workspace/ui/components/button";
-import { Input } from "@workspace/ui/components/input";
-import { Label } from "@workspace/ui/components/label";
-import { Textarea } from "@workspace/ui/components/textarea";
-import { BUTTON_CLASS, FIELD_CLASS, SectionCard, SMALL_BUTTON_CLASS, TEXTAREA_CLASS, ToggleRow } from "@/components/form/form-ui";
-import { PageActionBar } from "@/components/layout/page-action-bar";
-import { cn } from "@/lib/utils";
+import { CheckRow, Field, FieldRow, IconButton, NativeSelect, Note, PageHeader, SaveBar, SectionCard, SellerButton, TextArea, TextAction, TextInput, Toggle } from "@/components/seller-ui";
 import { saveForm } from "../forms.server";
 
 const FIELD_ICONS: Record<FormFieldType, LucideIcon> = {
@@ -61,8 +53,6 @@ const DEFAULT_KEYS: Record<FormFieldType, string> = {
   select: "choice",
   checkbox: "consent",
 };
-
-const SELECT_CLASS = cn(FIELD_CLASS, "w-full rounded-md border bg-background px-2 text-sm");
 
 type EditorState = {
   name: string;
@@ -158,112 +148,98 @@ export function FormEditor({
   };
 
   return (
-    <div className="space-y-5">
-      <PageActionBar
-        title={
-          <Button asChild variant="ghost" size="sm" className={SMALL_BUTTON_CLASS}>
-            <Link href={`/stores/${storeId}/website/forms`}>
-              <ArrowRight className="hidden rtl:block" />
-              <ArrowLeft className="rtl:hidden" />
-              {t("editor.back")}
-            </Link>
-          </Button>
-        }
-      >
-        {dirty && <span className="text-xs text-muted-foreground">{t("editor.unsaved")}</span>}
-        <Button type="button" className={BUTTON_CLASS} disabled={disabled || !dirty} onClick={onSave}>
-          {isPending ? <LoaderCircle className="animate-spin" /> : <Save />}
-          {t("editor.save")}
-        </Button>
-      </PageActionBar>
-      {readOnly && <p className="rounded-lg border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">{t("readOnly")}</p>}
+    <>
+      <TextAction asChild className="sui-rise -mb-3 self-start">
+        <Link href={`/stores/${storeId}/website/forms`}>
+          <ArrowRight className="hidden rtl:block" aria-hidden />
+          <ArrowLeft className="rtl:hidden" aria-hidden />
+          {t("editor.back")}
+        </Link>
+      </TextAction>
+      <PageHeader className="sui-rise" title={state.name || t("editor.title")} description={t("editor.settingsDescription")} />
+      {readOnly && <Note>{t("readOnly")}</Note>}
 
-      <SectionCard id="form-settings" icon={Settings2} title={t("editor.settingsTitle")} description={t("editor.settingsDescription")}>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-1.5">
-            <Label htmlFor="form-name">{t("editor.name")}</Label>
-            <Input id="form-name" className={FIELD_CLASS} value={state.name} maxLength={120} disabled={disabled} onChange={(e) => setState((s) => ({ ...s, name: e.target.value }))} />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="form-submit">{t("editor.submitLabel")}</Label>
-            <Input
+      <SectionCard id="form-settings" icon={Settings2} title={t("editor.settingsTitle")}>
+        <FieldRow>
+          <Field label={t("editor.name")} htmlFor="form-name">
+            <TextInput id="form-name" value={state.name} maxLength={120} disabled={disabled} onChange={(e) => setState((s) => ({ ...s, name: e.target.value }))} />
+          </Field>
+          <Field label={t("editor.submitLabel")} htmlFor="form-submit">
+            <TextInput
               id="form-submit"
-              className={FIELD_CLASS}
               value={state.settings.submitLabel}
               placeholder={t("editor.submitLabelPlaceholder")}
               maxLength={60}
               disabled={disabled}
               onChange={(e) => setState((s) => ({ ...s, settings: { ...s.settings, submitLabel: e.target.value } }))}
             />
-          </div>
-          <div className="space-y-1.5 sm:col-span-2">
-            <Label htmlFor="form-success">{t("editor.successMessage")}</Label>
-            <Textarea
-              id="form-success"
-              className={TEXTAREA_CLASS}
-              value={state.settings.successMessage}
-              placeholder={t("editor.successMessagePlaceholder")}
-              maxLength={300}
-              disabled={disabled}
-              onChange={(e) => setState((s) => ({ ...s, settings: { ...s.settings, successMessage: e.target.value } }))}
-            />
-          </div>
-          <div className="space-y-1.5 sm:col-span-2">
-            <Label htmlFor="form-description">{t("editor.description")}</Label>
-            <Input
-              id="form-description"
-              className={FIELD_CLASS}
-              value={state.description}
-              placeholder={t("editor.descriptionPlaceholder")}
-              maxLength={500}
-              disabled={disabled}
-              onChange={(e) => setState((s) => ({ ...s, description: e.target.value }))}
-            />
+          </Field>
+        </FieldRow>
+        <Field label={t("editor.successMessage")} htmlFor="form-success">
+          <TextArea
+            id="form-success"
+            value={state.settings.successMessage}
+            placeholder={t("editor.successMessagePlaceholder")}
+            maxLength={300}
+            disabled={disabled}
+            onChange={(e) => setState((s) => ({ ...s, settings: { ...s.settings, successMessage: e.target.value } }))}
+          />
+        </Field>
+        <Field label={t("editor.description")} htmlFor="form-description">
+          <TextInput
+            id="form-description"
+            value={state.description}
+            placeholder={t("editor.descriptionPlaceholder")}
+            maxLength={500}
+            disabled={disabled}
+            onChange={(e) => setState((s) => ({ ...s, description: e.target.value }))}
+          />
+        </Field>
+        <div className="flex items-center gap-3.5 rounded-[18px] border border-(--s-line) bg-(--s-tint) px-4 py-3.5">
+          <Toggle
+            aria-labelledby="form-active-title"
+            checked={state.status === "active"}
+            disabled={disabled}
+            onCheckedChange={(checked) => setState((s) => ({ ...s, status: checked ? "active" : "disabled" }))}
+          />
+          <div className="min-w-0 flex-1">
+            <b id="form-active-title" className="block text-sm font-bold text-(--s-text)">
+              {t("editor.active")}
+            </b>
+            <small className="block text-pretty text-[12.5px] text-(--s-subtle)">{t("editor.activeHint")}</small>
           </div>
         </div>
-        <ToggleRow
-          id="form-active"
-          boxed
-          checked={state.status === "active"}
-          disabled={disabled}
-          onCheckedChange={(checked) => setState((s) => ({ ...s, status: checked ? "active" : "disabled" }))}
-          title={t("editor.active")}
-          description={t("editor.activeHint")}
-        />
       </SectionCard>
 
       <SectionCard id="form-fields" icon={ClipboardList} title={t("editor.fieldsTitle")} description={t("editor.fieldsDescription", { max: FORM_LIMITS.maxFields })}>
-        {state.fields.length === 0 && <p className="py-4 text-center text-sm text-muted-foreground">{t("editor.errorNoFields")}</p>}
-        <ol className="space-y-3">
+        {state.fields.length === 0 && <Note tone="amber">{t("editor.errorNoFields")}</Note>}
+        <ol className="flex flex-col gap-3">
           {state.fields.map((field, index) => {
             const Icon = FIELD_ICONS[field.type];
             return (
-              <li key={field.id} className="space-y-3 rounded-xl border p-3 sm:p-4">
+              <li key={field.id} className="flex flex-col gap-3 rounded-[20px] border border-(--s-line) bg-(--s-surface) p-4 max-[600px]:p-3">
                 <div className="flex items-center gap-2">
-                  <Icon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
-                  <span className="text-xs font-medium text-muted-foreground">{t(`types.${field.type}`)}</span>
-                  <div className="ms-auto flex gap-1">
-                    <Button type="button" variant="ghost" size="icon" className="size-8" disabled={disabled || index === 0} onClick={() => moveField(index, -1)} aria-label={t("editor.moveUp")}>
-                      <ArrowUp />
-                    </Button>
-                    <Button type="button" variant="ghost" size="icon" className="size-8" disabled={disabled || index === state.fields.length - 1} onClick={() => moveField(index, 1)} aria-label={t("editor.moveDown")}>
-                      <ArrowDown />
-                    </Button>
-                    <Button type="button" variant="ghost" size="icon" className="size-8" disabled={disabled} onClick={() => removeField(index)} aria-label={t("editor.removeField")}>
-                      <Trash2 />
-                    </Button>
+                  <Icon className="size-4 shrink-0 text-(--s-subtle)" aria-hidden />
+                  <span className="text-xs font-semibold text-(--s-subtle)">{t(`types.${field.type}`)}</span>
+                  <div className="ms-auto flex gap-0.5">
+                    <IconButton disabled={disabled || index === 0} onClick={() => moveField(index, -1)} aria-label={t("editor.moveUp")}>
+                      <ArrowUp aria-hidden />
+                    </IconButton>
+                    <IconButton disabled={disabled || index === state.fields.length - 1} onClick={() => moveField(index, 1)} aria-label={t("editor.moveDown")}>
+                      <ArrowDown aria-hidden />
+                    </IconButton>
+                    <IconButton className="text-destructive hover:text-destructive" disabled={disabled} onClick={() => removeField(index)} aria-label={t("editor.removeField")}>
+                      <Trash2 aria-hidden />
+                    </IconButton>
                   </div>
                 </div>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div className="space-y-1.5">
-                    <Label htmlFor={`${field.id}-label`}>{t("editor.label")}</Label>
-                    <Input id={`${field.id}-label`} className={FIELD_CLASS} value={field.label} maxLength={FORM_LIMITS.maxLabel} disabled={disabled} onChange={(e) => setField(index, { label: e.target.value })} />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor={`${field.id}-type`}>{t("editor.type")}</Label>
-                    <select
+                <FieldRow>
+                  <Field label={t("editor.label")} htmlFor={`${field.id}-label`}>
+                    <TextInput id={`${field.id}-label`} value={field.label} maxLength={FORM_LIMITS.maxLabel} disabled={disabled} onChange={(e) => setField(index, { label: e.target.value })} />
+                  </Field>
+                  <Field label={t("editor.type")} htmlFor={`${field.id}-type`}>
+                    <NativeSelect
                       id={`${field.id}-type`}
-                      className={SELECT_CLASS}
                       value={field.type}
                       disabled={disabled}
                       onChange={(e) => {
@@ -276,60 +252,52 @@ export function FormEditor({
                           {t(`types.${type}`)}
                         </option>
                       ))}
-                    </select>
-                  </div>
+                    </NativeSelect>
+                  </Field>
                   {field.type !== "checkbox" && (
-                    <div className="space-y-1.5">
-                      <Label htmlFor={`${field.id}-placeholder`}>{t("editor.placeholder")}</Label>
-                      <Input id={`${field.id}-placeholder`} className={FIELD_CLASS} value={field.placeholder ?? ""} maxLength={200} disabled={disabled} onChange={(e) => setField(index, { placeholder: e.target.value })} />
-                    </div>
+                    <Field label={t("editor.placeholder")} htmlFor={`${field.id}-placeholder`}>
+                      <TextInput id={`${field.id}-placeholder`} value={field.placeholder ?? ""} maxLength={200} disabled={disabled} onChange={(e) => setField(index, { placeholder: e.target.value })} />
+                    </Field>
                   )}
-                  <div className="space-y-1.5">
-                    <Label htmlFor={`${field.id}-help`}>{t("editor.helpText")}</Label>
-                    <Input id={`${field.id}-help`} className={FIELD_CLASS} value={field.helpText ?? ""} maxLength={300} disabled={disabled} onChange={(e) => setField(index, { helpText: e.target.value })} />
-                  </div>
+                  <Field label={t("editor.helpText")} htmlFor={`${field.id}-help`}>
+                    <TextInput id={`${field.id}-help`} value={field.helpText ?? ""} maxLength={300} disabled={disabled} onChange={(e) => setField(index, { helpText: e.target.value })} />
+                  </Field>
                   {field.type === "select" && (
-                    <div className="space-y-1.5 sm:col-span-2">
-                      <Label htmlFor={`${field.id}-options`}>{t("editor.options")}</Label>
-                      <Textarea
+                    <Field className="col-span-full" label={t("editor.options")} htmlFor={`${field.id}-options`} note={t("editor.optionsHint")}>
+                      <TextArea
                         id={`${field.id}-options`}
-                        className={TEXTAREA_CLASS}
                         value={(field.options ?? []).join("\n")}
                         disabled={disabled}
                         onChange={(e) => setField(index, { options: e.target.value.split("\n").slice(0, FORM_LIMITS.maxOptions) })}
                       />
-                      <p className="text-xs text-muted-foreground">{t("editor.optionsHint")}</p>
-                    </div>
+                    </Field>
                   )}
-                  <div className="space-y-1.5">
-                    <Label htmlFor={`${field.id}-width`}>{t("editor.width")}</Label>
-                    <select id={`${field.id}-width`} className={SELECT_CLASS} value={field.width} disabled={disabled} onChange={(e) => setField(index, { width: e.target.value === "half" ? "half" : "full" })}>
+                  <Field label={t("editor.width")} htmlFor={`${field.id}-width`}>
+                    <NativeSelect id={`${field.id}-width`} value={field.width} disabled={disabled} onChange={(e) => setField(index, { width: e.target.value === "half" ? "half" : "full" })}>
                       <option value="full">{t("editor.widthFull")}</option>
                       <option value="half">{t("editor.widthHalf")}</option>
-                    </select>
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor={`${field.id}-key`}>{t("editor.key")}</Label>
-                    <Input
+                    </NativeSelect>
+                  </Field>
+                  <Field label={t("editor.key")} htmlFor={`${field.id}-key`} note={t("editor.keyHint")}>
+                    <TextInput
                       id={`${field.id}-key`}
                       dir="ltr"
-                      className={cn(FIELD_CLASS, "font-mono text-xs")}
+                      className="font-mono text-xs"
                       value={field.key}
                       maxLength={60}
                       disabled={disabled}
                       onChange={(e) => setField(index, { key: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, "_") })}
                     />
-                    <p className="text-xs text-muted-foreground">{t("editor.keyHint")}</p>
-                  </div>
-                </div>
-                <ToggleRow id={`${field.id}-required`} checked={field.required} disabled={disabled} onCheckedChange={(required) => setField(index, { required })} title={t("editor.required")} />
+                  </Field>
+                </FieldRow>
+                <CheckRow label={t("editor.required")} checked={field.required} disabled={disabled} onChange={(e) => setField(index, { required: e.target.checked })} />
               </li>
             );
           })}
         </ol>
 
-        <div className="space-y-2">
-          <p className="flex items-center gap-1.5 text-sm font-medium">
+        <div className="flex flex-col gap-2">
+          <p className="flex items-center gap-1.5 text-[13.5px] font-bold text-(--s-text)">
             <ListPlus className="size-4" aria-hidden />
             {t("editor.addField")}
           </p>
@@ -337,15 +305,17 @@ export function FormEditor({
             {FORM_FIELD_TYPES.map((type) => {
               const Icon = FIELD_ICONS[type];
               return (
-                <Button key={type} type="button" variant="outline" size="sm" className={SMALL_BUTTON_CLASS} disabled={disabled || state.fields.length >= FORM_LIMITS.maxFields} onClick={() => addField(type)}>
-                  <Icon />
+                <SellerButton key={type} variant="mini" size="xs" disabled={disabled || state.fields.length >= FORM_LIMITS.maxFields} onClick={() => addField(type)}>
+                  <Icon aria-hidden />
                   {t(`types.${type}`)}
-                </Button>
+                </SellerButton>
               );
             })}
           </div>
         </div>
       </SectionCard>
-    </div>
+
+      <SaveBar dirty={dirty} saving={isPending} saveDisabled={disabled} onSave={onSave} onDiscard={() => setState(JSON.parse(saved) as EditorState)} message={t("editor.unsaved")} saveLabel={t("editor.save")} />
+    </>
   );
 }

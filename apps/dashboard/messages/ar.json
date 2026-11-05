@@ -7609,6 +7609,52 @@
       "back": "الذهاب إلى لوحة التحكم"
     }
   },
+  "storeSetup": {
+    "settingsTitle": "إعدادات المتجر",
+    "settingsDescription": "كل ما يخص متجرك في مكان واحد.",
+    "policiesTab": "السياسات والتوثيق",
+    "whatsappSame": "نفس رقم الهاتف",
+    "fixedFieldsLabel": "خانات ثابتة ومطلوبة دائمًا",
+    "fixedName": "الاسم",
+    "fixedPhone": "رقم الهاتف",
+    "fixedPlace": "المحافظة والمنطقة",
+    "fixedAddress": "الشارع والعنوان",
+    "thanksPreviewTitle": "تم استلام طلبك",
+    "customerSeesTitle": "ما يراه عميلك",
+    "customerSeesDescription": "يتحدث مع كل تغيير تحفظه.",
+    "customerSeesHeading": "طريقة الدفع",
+    "editName": "تعديل الاسم",
+    "shareOn": "شارك عبر:",
+    "codeCopied": "تم نسخ الكود",
+    "copyCode": "انسخ الكود",
+    "perTopUp": "من كل شحن",
+    "howTitle": "كيف تربح",
+    "how": {
+      "share": {
+        "title": "شارك رابطك",
+        "body": "أرسله إلى من يبيع عبر الإنترنت أو يرغب في البدء."
+      },
+      "topUp": {
+        "title": "ينشئ متجره ويشحن محفظته",
+        "body": "تُحتسب الإحالة ناجحة عند نجاح أول شحن لمحفظة التاجر."
+      },
+      "earn": {
+        "title": "تربح عمولتك",
+        "body": "تحصل على {percent}% من كل مبلغ يشحنه، مدى الحياة، وتُصرف لك نقدًا."
+      }
+    },
+    "accountTitle": "إعدادات الحساب",
+    "accountDescription": "بيانات نشاطك وحساب استلام الأرباح والسياسات ومستندات التحقق.",
+    "appsTitle": "التطبيقات والربط",
+    "installedCount": "تطبيقات مثبّتة",
+    "feedsReadyCount": "روابط كتالوج جاهزة",
+    "yourApps": "تطبيقاتك",
+    "addApp": "أضف تطبيقًا",
+    "suggestedTitle": "مقترحة لمتجرك",
+    "featuredTitle": "اقبل المدفوعات واشحن طلباتك من مكان واحد",
+    "featuredBody": "اربط باي موب أو كاشير لقبول البطاقات والمحافظ، وبوسطة لشحن طلباتك بضغطة واحدة.",
+    "paidAfterSwitch": "يتوفر بعد تحويل المحفظة إلى الدولار"
+  },
   "sellerUi": {
     "saveBar": {
       "message": "لديك تغييرات غير محفوظة",

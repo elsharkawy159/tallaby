@@ -1,14 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getFormatter, getTranslations } from "next-intl/server";
-import { FileText, ImageOff, Plus, Search } from "lucide-react";
+import { ExternalLink, FileText, ImageOff, Pencil, Plus, Search, X } from "lucide-react";
 import { listBlogPosts } from "@workspace/lib/cms/server";
 import { storeUrl } from "@workspace/lib/storefront";
-import { Badge } from "@workspace/ui/components/badge";
-import { Button } from "@workspace/ui/components/button";
-import { Input } from "@workspace/ui/components/input";
+import { EmptyState, IconButton, PageHeader, SellerButton, SellerCard, StatusBadge, type BadgeTone } from "@/components/seller-ui";
 import { loadStorePage } from "@/lib/stores/store-page.server";
 import { cn } from "@/lib/utils";
+import { SiteOfflineNote } from "../_components/site-offline-note";
 import type { BlogPostListItem, BlogPostState } from "./blog.dto";
 import { DeletePostButton } from "./delete-post-button.client";
 import { RemoteImage } from "@/components/media/remote-image";
@@ -16,10 +15,10 @@ import { RemoteImage } from "@/components/media/remote-image";
 const STATES = ["all", "published", "scheduled", "draft"] as const;
 type StateFilter = (typeof STATES)[number];
 
-const STATE_BADGE: Record<BlogPostState, string> = {
-  published: "border-success/30 bg-success/10 text-success",
-  scheduled: "border-accent/40 bg-accent/10 text-accent-ink",
-  draft: "",
+const STATE_TONE: Record<BlogPostState, BadgeTone> = {
+  published: "success",
+  scheduled: "warning",
+  draft: "muted",
 };
 
 function first(value: string | string[] | undefined) {
@@ -76,117 +75,134 @@ export default async function StoreBlogPage({
   };
   const liveBase = storeUrl(store.subdomain);
   const readOnly = store.status !== "active";
+  const untouched = list.total === 0 && state === "all" && !tag && !q;
+  const chip =
+    "inline-flex h-9 items-center gap-1.5 whitespace-nowrap rounded-full border border-(--s-field) bg-(--s-surface) px-3.5 text-[13px] font-semibold text-(--s-muted) no-underline transition-colors duration-150 hover:border-(--tallaby-teal-300) aria-[current=page]:border-(--s-solid) aria-[current=page]:bg-(--s-solid) aria-[current=page]:text-(--s-solid-fg) max-[600px]:h-10";
 
   return (
-    <div className="space-y-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="text-xl font-bold">{t("title")}</h2>
-          <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button asChild variant="outline" className="h-[42px] rtl:flex-row">
-            <a href={`${liveBase}/blog`} target="_blank" rel="noopener noreferrer">
-              {t("viewBlog")}
-            </a>
-          </Button>
-          {!readOnly && (
-            <Button asChild className="h-[42px] rtl:flex-row">
-              <Link href={`${base}/new`}>
-                <Plus className="size-4" />
-                {t("newPost")}
-              </Link>
-            </Button>
+    <>
+      <PageHeader
+        className="sui-rise"
+        title={t("title")}
+        description={t("subtitle")}
+        actions={
+          <>
+            <SellerButton asChild variant="outline">
+              <a href={`${liveBase}/blog`} target="_blank" rel="noopener noreferrer">
+                <ExternalLink aria-hidden className="rtl:-scale-x-100" />
+                {t("viewBlog")}
+              </a>
+            </SellerButton>
+            {!readOnly && (
+              <SellerButton asChild>
+                <Link href={`${base}/new`}>
+                  <Plus aria-hidden />
+                  {t("newPost")}
+                </Link>
+              </SellerButton>
+            )}
+          </>
+        }
+      />
+      <SiteOfflineNote storeId={store.id} siteStatus={store.siteStatus} />
+
+      <div className="sui-rise flex flex-wrap items-center gap-2">
+        <div className="-mx-1 flex max-w-full gap-1.5 overflow-x-auto px-1 py-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {STATES.map((value) => (
+            <Link key={value} href={filterHref({ state: value })} aria-current={state === value ? "page" : undefined} className={chip}>
+              {t(`states.${value}`)}
+            </Link>
+          ))}
+          {tag && (
+            <Link href={filterHref({ tag: undefined })} className={cn(chip, "border-dashed")}>
+              {t("tagFilter", { tag })}
+              <X className="size-3.5" aria-hidden />
+            </Link>
           )}
         </div>
-      </div>
-
-      <div className="flex flex-wrap items-center gap-2">
-        {STATES.map((value) => (
-          <Link
-            key={value}
-            href={filterHref({ state: value })}
-            aria-current={state === value ? "page" : undefined}
-            className={cn(
-              "rounded-full border px-3 py-1.5 text-sm transition-colors",
-              state === value ? "border-primary bg-primary text-primary-foreground" : "hover:bg-muted",
-            )}
-          >
-            {t(`states.${value}`)}
-          </Link>
-        ))}
-        {tag && (
-          <Link href={filterHref({ tag: undefined })} className="rounded-full border border-dashed px-3 py-1.5 text-sm">
-            {t("tagFilter", { tag })} ✕
-          </Link>
-        )}
-        <form action={base} className="ms-auto flex items-center gap-2">
+        <form action={base} className="ms-auto max-[600px]:ms-0 max-[600px]:w-full">
           {state !== "all" && <input type="hidden" name="state" value={state} />}
           {tag && <input type="hidden" name="tag" value={tag} />}
-          <div className="relative">
-            <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-            <Input name="q" defaultValue={q} placeholder={t("search")} className="h-10 w-56 ps-9" />
-          </div>
+          <label className="flex h-10 w-[240px] items-center gap-2 rounded-full border-[1.5px] border-(--s-field) bg-(--s-surface) px-3.5 text-(--s-subtle) focus-within:border-(--s-primary) max-[600px]:w-full">
+            <Search className="size-4 shrink-0" aria-hidden />
+            <input
+              name="q"
+              type="search"
+              defaultValue={q}
+              placeholder={t("search")}
+              aria-label={t("search")}
+              className="min-w-0 flex-1 bg-transparent text-[13px] text-(--s-text) outline-none placeholder:text-(--s-placeholder)"
+            />
+          </label>
         </form>
       </div>
 
       {posts.length === 0 ? (
-        <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed p-10 text-center">
-          <FileText className="size-8 text-muted-foreground" />
-          <p className="font-semibold">{list.total === 0 && state === "all" && !tag && !q ? t("emptyTitle") : t("noMatches")}</p>
-          {list.total === 0 && state === "all" && !tag && !q && <p className="max-w-md text-sm text-muted-foreground">{t("emptyText")}</p>}
-        </div>
+        <SellerCard className="sui-rise">
+          <EmptyState
+            icon={FileText}
+            title={untouched ? t("emptyTitle") : t("noMatches")}
+            description={untouched ? t("emptyText") : undefined}
+            action={
+              untouched && !readOnly ? (
+                <SellerButton asChild size="sm">
+                  <Link href={`${base}/new`}>
+                    <Plus aria-hidden />
+                    {t("newPost")}
+                  </Link>
+                </SellerButton>
+              ) : undefined
+            }
+          />
+        </SellerCard>
       ) : (
-        <ul className="divide-y rounded-2xl border bg-card">
+        <ul className="sui-rise flex flex-col overflow-hidden rounded-[20px] border border-(--s-line) bg-(--s-surface)">
           {posts.map((post) => (
-            <li key={post.id} className="flex items-center gap-3 p-3 sm:p-4">
-              <div className="grid size-14 shrink-0 place-items-center overflow-hidden rounded-lg bg-muted">
-                {post.coverImage ? (
-                  <RemoteImage src={post.coverImage} alt="" width={56} height={56} className="size-full object-cover" />
-                ) : (
-                  <ImageOff className="size-5 text-muted-foreground" />
-                )}
+            <li key={post.id} className="flex flex-wrap items-center gap-3 px-3.5 py-3 transition-colors duration-150 hover:bg-(--s-tint) [&+&]:border-t [&+&]:border-(--s-line-soft)">
+              <div className="relative grid size-14 shrink-0 place-items-center overflow-hidden rounded-xl bg-(--s-fill) text-(--s-subtle)">
+                {post.coverImage ? <RemoteImage src={post.coverImage} alt="" width={56} height={56} className="size-full object-cover" /> : <ImageOff className="size-5" aria-hidden />}
               </div>
-              <div className="min-w-0 flex-1">
-                <Link href={`${base}/${post.id}`} className="block truncate font-semibold hover:underline">
+              <div className="min-w-[180px] flex-1">
+                <Link href={`${base}/${post.id}`} className="block truncate text-sm font-bold text-(--s-text) no-underline hover:underline">
                   {post.title}
                 </Link>
-                <p className="truncate text-xs text-muted-foreground" dir="ltr">
+                <bdi dir="ltr" className="block truncate font-mono text-xs text-(--s-subtle)">
                   /blog/{post.slug}
-                </p>
+                </bdi>
                 <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                  <Badge variant="outline" className={STATE_BADGE[post.state]}>
-                    {t(`states.${post.state}`)}
-                  </Badge>
+                  <StatusBadge tone={STATE_TONE[post.state]}>{t(`states.${post.state}`)}</StatusBadge>
                   {post.publishedAt && post.state !== "draft" && (
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs text-(--s-subtle)">
                       {format.dateTime(new Date(post.publishedAt), { dateStyle: "medium", timeStyle: post.state === "scheduled" ? "short" : undefined })}
                     </span>
                   )}
                   {post.tags.slice(0, 4).map((value) => (
-                    <Link key={value} href={filterHref({ tag: value })} className="rounded bg-muted px-1.5 text-xs text-muted-foreground hover:text-foreground">
+                    <Link key={value} href={filterHref({ tag: value })} className="rounded-full bg-(--s-fill) px-2 py-0.5 text-[11px] font-semibold text-(--s-muted) no-underline hover:text-(--s-ink)">
                       #{value}
                     </Link>
                   ))}
                 </div>
               </div>
-              <div className="flex shrink-0 items-center gap-1">
+              <div className="flex shrink-0 items-center gap-1 max-[600px]:ms-auto">
                 {post.state === "published" && (
-                  <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
+                  <IconButton asChild aria-label={t("view")} title={t("view")}>
                     <a href={`${liveBase}/blog/${post.slug}`} target="_blank" rel="noopener noreferrer">
-                      {t("view")}
+                      <ExternalLink aria-hidden className="rtl:-scale-x-100" />
                     </a>
-                  </Button>
+                  </IconButton>
                 )}
-                <Button asChild variant="outline" size="sm">
-                  <Link href={`${base}/${post.id}`}>{t("edit")}</Link>
-                </Button>
+                <SellerButton asChild variant="mini" size="xs">
+                  <Link href={`${base}/${post.id}`}>
+                    <Pencil aria-hidden />
+                    {t("edit")}
+                  </Link>
+                </SellerButton>
                 {!readOnly && <DeletePostButton storeId={store.id} postId={post.id} title={post.title} />}
               </div>
             </li>
           ))}
         </ul>
       )}
-    </div>
+    </>
   );
 }

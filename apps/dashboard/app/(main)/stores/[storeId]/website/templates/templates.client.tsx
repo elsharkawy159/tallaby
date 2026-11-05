@@ -6,7 +6,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, ChevronLeft, ChevronRight, Eye, LayoutTemplate, LoaderCircle, Lock, Pencil, RotateCcw, Sparkles } from "lucide-react";
+import { Check, CircleCheck, ChevronLeft, ChevronRight, Eye, Info, LayoutTemplate, LoaderCircle, Lock, Pencil, RotateCcw, Search, Sparkles } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,16 +17,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@workspace/ui/components/alert-dialog";
-import { Badge } from "@workspace/ui/components/badge";
-import { Button } from "@workspace/ui/components/button";
 import { Skeleton } from "@workspace/ui/components/skeleton";
-import { BUTTON_CLASS, SMALL_BUTTON_CLASS } from "@/components/form/form-ui";
+import { Chip, EmptyState, Modal, Note, PageHeader, SellerButton, SellerCard, Tag } from "@/components/seller-ui";
 import { cn } from "@/lib/utils";
+import { RemoteImage } from "@/components/media/remote-image";
 import { TemplateLiveThumbnail, TemplatePreview } from "./template-preview.client";
 import { applyTemplate, listTemplatesPage, undoTemplate } from "./templates.server";
 import type { TemplateCardView, TemplatesPageView } from "./templates.dto";
 import { parseTemplatesCategory, parseTemplatesPage, TEMPLATES_PAGE_SIZE } from "./templates.lib";
-import { RemoteImage } from "@/components/media/remote-image";
 
 type Localized = { ar?: string; en?: string };
 
@@ -34,34 +32,39 @@ type Localized = { ar?: string; en?: string };
  * Query key of one gallery page; `["store-templates", storeId]` matches every
  * page of the store. A `null` category is the store's default tab (its industry).
  */
-const templatesKey = (storeId: string, page?: number, category?: string | null) =>
-  page === undefined ? ["store-templates", storeId] : ["store-templates", storeId, page, { category }];
+const templatesKey = (storeId: string, page?: number, category?: string | null, q = "") =>
+  page === undefined ? ["store-templates", storeId] : ["store-templates", storeId, page, { category, q }];
 
-async function fetchTemplatesPage(storeId: string, page: number, category: string | null): Promise<TemplatesPageView> {
-  const result = await listTemplatesPage(storeId, category === null ? { page } : { page, category });
+async function fetchTemplatesPage(storeId: string, page: number, category: string | null, q: string): Promise<TemplatesPageView> {
+  const result = await listTemplatesPage(storeId, { page, ...(category !== null && { category }), ...(q && { q }) });
   if (!result.success) throw new Error(result.error);
   return result.data;
 }
 
 /**
- * Website › Templates gallery (PLAN.md §8.1, P4-05). Works with a single
- * template too. Each card shows the template's home page live, and Preview
- * opens every page with the template's demo store (storefront templates).
- * Templates load one page at a time (`listTemplatesPage`, React Query); the
- * page and category live in the URL (`?page=2&category=fashion`), and the
- * next page is prefetched (owner request 2026-10-24).
+ * Website › Templates gallery (PLAN.md §8.1, P4-05; Claude Design "Seller
+ * Templates" v3 with the recommended card, 1c "Gallery tile" from Theme Card
+ * Variants). Each tile shows the template's home page live; on a touch screen a
+ * tap opens the preview, where "Use template" lives. Using a template only
+ * changes the drafts: the live site changes on Publish. Templates load one page
+ * at a time (`listTemplatesPage`, React Query); the page and category live in
+ * the URL (`?page=2&category=fashion`), and the next page is prefetched.
  */
 export function TemplateGallery({
   storeId,
   readOnly,
   fontClassName,
+  children,
 }: {
   storeId: string;
   readOnly: boolean;
   /** Class names defining the store font variables (store-fonts.ts). */
   fontClassName: string;
+  /** Rendered under the title (the offline note). */
+  children?: React.ReactNode;
 }) {
   const t = useTranslations("websiteTemplates");
+  const tw = useTranslations("sellerWebsite.templates");
   const locale = useLocale() === "en" ? "en" : "ar";
   const format = useFormatter();
   const router = useRouter();
@@ -73,21 +76,29 @@ export function TemplateGallery({
   const categoryParam = searchParams.get("category");
   const requestedCategory = categoryParam === null ? null : parseTemplatesCategory(categoryParam);
   const listRef = useRef<HTMLDivElement>(null);
+  const [search, setSearch] = useState("");
+  const [q, setQ] = useState("");
   const [confirming, setConfirming] = useState<TemplateCardView | null>(null);
   const [previewing, setPreviewing] = useState<TemplateCardView | null>(null);
   const [confirmUndo, setConfirmUndo] = useState(false);
   const [isPending, startTransition] = useTransition();
 
+  // The search runs on the server, over every template, a moment after typing stops.
+  useEffect(() => {
+    const timer = setTimeout(() => setQ(search.trim()), 300);
+    return () => clearTimeout(timer);
+  }, [search]);
+
   const query = useQuery({
-    queryKey: templatesKey(storeId, page, requestedCategory),
-    queryFn: () => fetchTemplatesPage(storeId, page, requestedCategory),
+    queryKey: templatesKey(storeId, page, requestedCategory, q),
+    queryFn: () => fetchTemplatesPage(storeId, page, requestedCategory, q),
     placeholderData: keepPreviousData,
     // One retry, then the error state with its own retry button.
     retry: 1,
   });
   const data = query.data;
   // The tab shown: the one asked for in the URL, else the default the server served.
-  const category = requestedCategory ?? data?.category ?? "all";
+  const category = data?.category ?? requestedCategory ?? "all";
   const currentKey = data?.currentKey ?? "";
   const lastInstall = data?.lastInstall ?? null;
   const categories = data?.categories ?? [];
@@ -103,10 +114,10 @@ export function TemplateGallery({
     if (!data || query.isPlaceholderData || data.page >= data.pageCount) return;
     const next = data.page + 1;
     void queryClient.prefetchQuery({
-      queryKey: templatesKey(storeId, next, category),
-      queryFn: () => fetchTemplatesPage(storeId, next, category),
+      queryKey: templatesKey(storeId, next, requestedCategory, q),
+      queryFn: () => fetchTemplatesPage(storeId, next, requestedCategory, q),
     });
-  }, [data, query.isPlaceholderData, queryClient, storeId, category]);
+  }, [data, query.isPlaceholderData, queryClient, storeId, requestedCategory, q]);
 
   /**
    * Writes the filters to the URL (client-side only: no server round trip, the
@@ -126,22 +137,28 @@ export function TemplateGallery({
   useEffect(() => {
     if (data && !query.isPlaceholderData && data.page !== page) {
       // Seed the clamped page's key so the URL change doesn't fetch it again.
-      queryClient.setQueryData(templatesKey(storeId, data.page, requestedCategory), data);
+      queryClient.setQueryData(templatesKey(storeId, data.page, requestedCategory, q), data);
       const params = new URLSearchParams(searchParams.toString());
       if (data.page > 1) params.set("page", String(data.page));
       else params.delete("page");
       const qs = params.toString();
       window.history.replaceState(null, "", qs ? `${pathname}?${qs}` : pathname);
     }
-  }, [data, query.isPlaceholderData, page, pathname, searchParams, queryClient, storeId, requestedCategory]);
+  }, [data, query.isPlaceholderData, page, pathname, searchParams, queryClient, storeId, requestedCategory, q]);
 
   const goToPage = (next: number) => {
     setFilters({ page: next, category });
     listRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
+  const onSearch = (value: string) => {
+    setSearch(value);
+    if (page > 1) setFilters({ page: 1, category });
+  };
+
   const text = (value: Localized) => value[locale] || value.ar || value.en || "";
   const nameOf = (key: string, name: Localized | null) => (name ? text(name) : "") || key;
+  const categoryName = (value: string) => (value === "all" ? t("categories.all") : t.has(`categories.${value}`) ? t(`categories.${value}`) : value);
 
   /** After apply/undo: every cached page of this store is stale (current badge, last install). */
   const refreshGallery = () => {
@@ -175,186 +192,249 @@ export function TemplateGallery({
       refreshGallery();
     });
 
+  const showCurrent = Boolean(currentKey);
+  const installOfCurrent = lastInstall?.templateKey === currentKey ? lastInstall : null;
+
   return (
-    <div className="space-y-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="text-lg font-bold">{t("title")}</h2>
-          <p className="text-sm text-muted-foreground">{t("description")}</p>
-        </div>
-        <Button asChild variant="outline" className={cn(BUTTON_CLASS, "max-sm:w-full")}>
-          <Link href={`/stores/${storeId}/editor`}>
-            <Pencil />
-            {t("openEditor")}
-          </Link>
-        </Button>
-      </div>
+    <>
+      <PageHeader
+        className="sui-rise"
+        title={t("title")}
+        description={t("description")}
+        actions={
+          data &&
+          !showCurrent && (
+            <SellerButton asChild variant="outline">
+              <Link href={`/stores/${storeId}/editor`}>
+                <Pencil aria-hidden />
+                {t("openEditor")}
+              </Link>
+            </SellerButton>
+          )
+        }
+      />
+      {children}
+      {readOnly && <Note>{t("readOnly")}</Note>}
 
-      {readOnly && <p className="rounded-lg border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">{t("readOnly")}</p>}
+      {showCurrent && (
+        <SellerCard
+          aria-label={tw("currentLabel")}
+          className="sui-rise grid grid-cols-[220px_minmax(0,1fr)_auto] items-center gap-[22px] rounded-[26px] p-4 [animation-delay:.05s] max-[900px]:grid-cols-1 max-[900px]:gap-3.5"
+        >
+          <div className="h-[140px] overflow-hidden rounded-2xl border border-(--s-line) max-[900px]:h-40">
+            <TemplateLiveThumbnail storeId={storeId} templateKey={currentKey} fontClassName={fontClassName} fallback={<ThumbnailFallback />} />
+          </div>
+          <div className="flex min-w-0 flex-col gap-1.5">
+            <small className="flex items-center gap-1.5 text-[12.5px] text-(--s-subtle)">
+              <CircleCheck className="size-3.5" aria-hidden />
+              {tw("currentLabel")}
+            </small>
+            <h2 className="flex flex-wrap items-center gap-2.5 text-xl font-bold text-(--s-ink)">
+              {nameOf(currentKey, data?.currentName ?? null)}
+              <Tag tone="success">{tw("applied")}</Tag>
+            </h2>
+            {installOfCurrent && (
+              <p className="text-[13px] text-(--s-muted)">
+                {t("lastApplied", {
+                  name: nameOf(installOfCurrent.templateKey, installOfCurrent.name),
+                  date: format.dateTime(new Date(installOfCurrent.installedAt), { dateStyle: "medium", timeStyle: "short" }),
+                })}
+              </p>
+            )}
+          </div>
+          <div className="flex flex-col items-stretch gap-2 max-[900px]:flex-row max-[900px]:flex-wrap max-[900px]:[&>*]:flex-1">
+            <SellerButton asChild variant="solid">
+              <Link href={`/stores/${storeId}/editor`}>
+                <Pencil aria-hidden />
+                {t("openEditor")}
+              </Link>
+            </SellerButton>
+            {lastInstall?.canUndo && (
+              <SellerButton variant="outline" disabled={readOnly || isPending} onClick={() => setConfirmUndo(true)}>
+                <RotateCcw aria-hidden />
+                {t("undo")}
+              </SellerButton>
+            )}
+          </div>
+        </SellerCard>
+      )}
 
-      {lastInstall?.canUndo && (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-muted/40 px-4 py-3 text-sm">
-          <span>
+      {/* An undo left over when no template is current (the placeholder drafts came back). */}
+      {!showCurrent && lastInstall?.canUndo && (
+        <Note>
+          <span className="flex flex-wrap items-center justify-between gap-2">
             {t("lastApplied", {
               name: nameOf(lastInstall.templateKey, lastInstall.name),
               date: format.dateTime(new Date(lastInstall.installedAt), { dateStyle: "medium", timeStyle: "short" }),
             })}
+            <SellerButton variant="mini" size="xs" disabled={readOnly || isPending} onClick={() => setConfirmUndo(true)}>
+              <RotateCcw aria-hidden />
+              {t("undo")}
+            </SellerButton>
           </span>
-          <Button type="button" variant="neutral" className={SMALL_BUTTON_CLASS} disabled={readOnly || isPending} onClick={() => setConfirmUndo(true)}>
-            <RotateCcw />
-            {t("undo")}
-          </Button>
-        </div>
+        </Note>
       )}
 
-      {categories.length > 1 && (
-        <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0" role="tablist" aria-label={t("categories.label")}>
-          {["all", ...categories].map((value) => (
-            <button
-              key={value}
-              type="button"
-              role="tab"
-              aria-selected={category === value}
-              onClick={() => setFilters({ page: 1, category: value })}
-              className={cn(
-                "shrink-0 whitespace-nowrap rounded-full border px-3 py-1.5 text-sm transition-colors",
-                category === value ? "border-primary bg-primary text-primary-foreground" : "hover:bg-muted",
-              )}
-            >
-              {value === "all" ? t("categories.all") : t.has(`categories.${value}`) ? t(`categories.${value}`) : value}
-            </button>
-          ))}
+      <div className="sui-rise flex flex-wrap items-center gap-3 [animation-delay:.1s]">
+        <div
+          role="group"
+          aria-label={t("categories.label")}
+          className="-mx-1 flex min-w-0 flex-1 gap-1.5 overflow-x-auto px-1 py-0.5 [scrollbar-width:none] max-[900px]:basis-full [&::-webkit-scrollbar]:hidden"
+        >
+          {!data && query.isPending
+            ? Array.from({ length: 6 }, (_, index) => <Skeleton key={index} className="h-9 w-20 shrink-0 rounded-full" />)
+            : categories.length > 1 &&
+              ["all", ...categories].map((value) => (
+                <Chip
+                  key={value}
+                  className="shrink-0"
+                  pressed={category === value}
+                  onClick={() => {
+                    setSearch("");
+                    setQ("");
+                    setFilters({ page: 1, category: value });
+                  }}
+                >
+                  {categoryName(value)}
+                </Chip>
+              ))}
         </div>
-      )}
+        <label className="flex h-10 w-[220px] items-center gap-2 rounded-full border-[1.5px] border-(--s-field) bg-(--s-surface) px-3.5 text-(--s-subtle) focus-within:border-(--s-primary) max-[900px]:w-full">
+          <Search className="size-4 shrink-0" aria-hidden />
+          <input
+            type="search"
+            value={search}
+            onChange={(e) => onSearch(e.target.value)}
+            placeholder={tw("search")}
+            aria-label={tw("search")}
+            className="min-w-0 flex-1 bg-transparent text-[13px] text-(--s-text) outline-none placeholder:text-(--s-placeholder)"
+          />
+        </label>
+      </div>
 
-      {!data && query.isPending && (
-        <>
-          <div className="flex gap-2 overflow-hidden pb-1" aria-hidden>
-            {Array.from({ length: 6 }, (_, index) => (
-              <Skeleton key={index} className="h-8 w-20 shrink-0 rounded-full" />
-            ))}
-          </div>
-          <TemplateGridSkeleton label={t("loading")} />
-        </>
-      )}
+      {!data && query.isPending && <TemplateGridSkeleton label={t("loading")} />}
 
       {!data && query.isError && (
-        <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed p-10 text-center text-sm text-muted-foreground">
-          <p>{t("loadFailed")}</p>
-          <Button type="button" variant="outline" className={SMALL_BUTTON_CLASS} onClick={() => void query.refetch()}>
-            <RotateCcw />
-            {t("retry")}
-          </Button>
-        </div>
+        <SellerCard>
+          <EmptyState
+            icon={LayoutTemplate}
+            title={t("loadFailed")}
+            action={
+              <SellerButton variant="mini" size="sm" onClick={() => void query.refetch()}>
+                <RotateCcw aria-hidden />
+                {t("retry")}
+              </SellerButton>
+            }
+          />
+        </SellerCard>
       )}
 
       {!data ? null : shown.length === 0 ? (
-        <p className="rounded-2xl border border-dashed p-10 text-center text-sm text-muted-foreground">{t("empty")}</p>
+        <SellerCard>
+          <EmptyState
+            icon={LayoutTemplate}
+            title={q ? tw("noMatches") : t("empty")}
+            action={
+              <SellerButton
+                variant="mini"
+                size="sm"
+                onClick={() => {
+                  setSearch("");
+                  setQ("");
+                  setFilters({ page: 1, category: "all" });
+                }}
+              >
+                {tw("showAll")}
+              </SellerButton>
+            }
+          />
+        </SellerCard>
       ) : (
-        <div ref={listRef} className="scroll-mt-4 space-y-4" aria-busy={switching}>
-        <ul className={cn("grid grid-cols-1 gap-4 transition-opacity sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4", switching && "pointer-events-none opacity-60")}>
-          {shown.map((template) => {
-            const current = template.key === currentKey;
-            return (
-              <li key={template.key} className={cn("flex flex-col overflow-hidden rounded-2xl border bg-card", current && "border-primary")}>
-                <button
-                  type="button"
-                  className="block w-full text-start focus-visible:outline-2 focus-visible:outline-primary"
-                  onClick={() => setPreviewing(template)}
-                  aria-label={t("preview.open", { name: text(template.name) })}
-                >
-                  {template.thumbnailUrl ? (
-                    <TemplateThumbnail template={template} text={text} />
-                  ) : (
-                    <TemplateLiveThumbnail
-                      storeId={storeId}
-                      template={template}
-                      fontClassName={fontClassName}
-                      fallback={<TemplateThumbnail template={template} text={text} />}
-                    />
-                  )}
-                </button>
-                <div className="flex min-w-0 flex-1 flex-col gap-2 p-3">
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    <h3 className="min-w-0 truncate font-bold">{text(template.name)}</h3>
-                    {current && (
-                      <Badge className="gap-1">
-                        <Check className="size-3" />
-                        {t("current")}
-                      </Badge>
+        <div ref={listRef} className="flex scroll-mt-24 flex-col gap-4" aria-busy={switching}>
+          <ul className={cn("grid grid-cols-[repeat(auto-fill,minmax(270px,1fr))] gap-x-4 gap-y-6 transition-opacity", switching && "pointer-events-none opacity-60")}>
+            {shown.map((template) => {
+              const current = template.key === currentKey;
+              const name = text(template.name);
+              return (
+                <li key={template.key} className="group flex min-w-0 flex-col gap-3">
+                  {/* Card 1c "Gallery tile": the preview fills the tile; actions appear on hover or keyboard focus. */}
+                  <div className={cn("relative overflow-hidden rounded-2xl border border-(--s-line) bg-(--s-surface) shadow-(--s-shadow-card) transition-shadow duration-200 group-hover:shadow-(--s-shadow-hover)", current && "outline-2 outline-offset-2 outline-(--s-primary)")}>
+                    <button type="button" className="block w-full cursor-pointer text-start" onClick={() => setPreviewing(template)} aria-label={t("preview.open", { name })}>
+                      {template.thumbnailUrl ? (
+                        <span className="relative block aspect-[380/398] w-full">
+                          <RemoteImage src={template.thumbnailUrl} alt="" fill sizes="(min-width: 1280px) 25vw, (min-width: 768px) 33vw, 100vw" className="object-cover object-top" />
+                        </span>
+                      ) : (
+                        <TemplateLiveThumbnail storeId={storeId} templateKey={template.key} fontClassName={fontClassName} fallback={<ThumbnailFallback />} tall />
+                      )}
+                    </button>
+                    {(current || template.isPremium) && (
+                      <span className="pointer-events-none absolute start-2.5 top-2.5 z-[2] flex gap-1.5">
+                        {current && (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-(--s-solid) px-2.5 py-1 text-[11.5px] font-bold text-(--s-solid-fg)">
+                            <Check className="size-3.5" aria-hidden />
+                            {t("current")}
+                          </span>
+                        )}
+                        {template.isPremium && (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-(--s-surface) px-2.5 py-1 text-[11.5px] font-bold text-(--s-muted)">
+                            <Lock className="size-3" aria-hidden />
+                            {t("soon")}
+                          </span>
+                        )}
+                      </span>
                     )}
-                    {template.isDefault && !current && <Badge variant="outline">{t("default")}</Badge>}
-                    {template.isPremium && (
-                      <Badge variant="outline" className="gap-1">
-                        <Lock className="size-3" />
-                        {t("soon")}
-                      </Badge>
-                    )}
-                  </div>
-                  {text(template.description) && <p className="line-clamp-2 text-sm text-muted-foreground">{text(template.description)}</p>}
-                  {template.palette.length > 0 && (
-                    <div className="flex h-5 w-28 overflow-hidden rounded-md border" aria-hidden>
-                      {template.palette.map((color) => (
-                        <span key={color} className="flex-1" style={{ background: color }} />
-                      ))}
+                    <div className="pointer-events-none absolute inset-0 z-[1] flex flex-col items-center justify-center gap-2.5 bg-[rgb(13_55_67/0.62)] opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100 has-[:focus-visible]:opacity-100 [@media(hover:none)]:hidden">
+                      <SellerButton
+                        className="pointer-events-auto w-[190px] whitespace-normal"
+                        disabled={readOnly || isPending || template.isPremium}
+                        onClick={() => setConfirming(template)}
+                      >
+                        {current ? <RotateCcw aria-hidden /> : <Sparkles aria-hidden />}
+                        {current ? tw("reapplyShort") : t("use")}
+                      </SellerButton>
+                      <SellerButton variant="outline" className="pointer-events-auto w-[190px]" onClick={() => setPreviewing(template)}>
+                        <Eye aria-hidden />
+                        {t("preview.action")}
+                      </SellerButton>
                     </div>
-                  )}
-                  <p className="text-xs text-muted-foreground">
-                    {t("pagesCount", { count: template.pages.length })} · {t("version", { number: template.version })}
-                  </p>
-                  <div className="mt-auto grid grid-cols-2 gap-2 pt-1">
-                    <Button type="button" variant="outline" className={cn(SMALL_BUTTON_CLASS, "w-full")} onClick={() => setPreviewing(template)}>
-                      <Eye />
-                      {t("preview.action")}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant={current ? "neutral" : "default"}
-                      className={cn(SMALL_BUTTON_CLASS, "w-full")}
-                      disabled={readOnly || isPending || template.isPremium}
-                      onClick={() => setConfirming(template)}
-                    >
-                      {current ? <RotateCcw /> : <Sparkles />}
-                      {current ? t("reapply") : t("use")}
-                    </Button>
                   </div>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
-        {pageCount > 1 && (
-          <nav className="flex items-center justify-center gap-3" aria-label={t("pagination.label")}>
-            <Button
-              type="button"
-              variant="outline"
-              className={SMALL_BUTTON_CLASS}
-              disabled={currentPage <= 1}
-              onClick={() => goToPage(currentPage - 1)}
-            >
-              <ChevronLeft className="rtl:rotate-180" />
-              {t("pagination.previous")}
-            </Button>
-            <span className="text-sm text-muted-foreground" aria-live="polite">
-              {switching && <LoaderCircle className="me-1.5 inline size-3.5 animate-spin" />}
-              {t("pagination.page", { page: currentPage, pageCount })}
-            </span>
-            <Button
-              type="button"
-              variant="outline"
-              className={SMALL_BUTTON_CLASS}
-              disabled={currentPage >= pageCount}
-              onClick={() => goToPage(currentPage + 1)}
-            >
-              {t("pagination.next")}
-              <ChevronRight className="rtl:rotate-180" />
-            </Button>
-          </nav>
-        )}
+                  <div className="flex items-start justify-between gap-3 px-0.5">
+                    <div className="min-w-0">
+                      <h3 className="flex flex-wrap items-center gap-1.5 text-[15.5px] font-bold text-(--s-ink)">
+                        <span className="min-w-0 truncate">{name}</span>
+                        {template.isDefault && !current && <Tag>{t("default")}</Tag>}
+                      </h3>
+                      <p className="text-[12.5px] text-(--s-subtle)">
+                        {categoryName(template.category)} · {t("pagesCount", { count: template.pages.length })}
+                      </p>
+                    </div>
+                    <Swatches colors={template.palette} />
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+          {pageCount > 1 && (
+            <nav className="flex items-center justify-center gap-3" aria-label={t("pagination.label")}>
+              <SellerButton variant="mini" size="sm" disabled={currentPage <= 1} onClick={() => goToPage(currentPage - 1)}>
+                <ChevronLeft className="rtl:rotate-180" aria-hidden />
+                {t("pagination.previous")}
+              </SellerButton>
+              <span className="text-[13px] text-(--s-muted)" aria-live="polite">
+                {switching && <LoaderCircle className="me-1.5 inline size-3.5 animate-spin" aria-hidden />}
+                {t("pagination.page", { page: currentPage, pageCount })}
+              </span>
+              <SellerButton variant="mini" size="sm" disabled={currentPage >= pageCount} onClick={() => goToPage(currentPage + 1)}>
+                {t("pagination.next")}
+                <ChevronRight className="rtl:rotate-180" aria-hidden />
+              </SellerButton>
+            </nav>
+          )}
         </div>
       )}
 
-      <p className="text-xs text-muted-foreground">{t("moreSoon")}</p>
+      <p className="text-xs text-(--s-faint)">{t("moreSoon")}</p>
 
       <TemplatePreview
         storeId={storeId}
@@ -363,6 +443,7 @@ export function TemplateGallery({
         disabled={readOnly || isPending || Boolean(previewing?.isPremium)}
         uiLocale={locale}
         fontClassName={fontClassName}
+        categoryName={previewing ? categoryName(previewing.category) : ""}
         onUse={(template) => {
           setPreviewing(null);
           setConfirming(template);
@@ -370,33 +451,44 @@ export function TemplateGallery({
         onOpenChange={(open) => !open && setPreviewing(null)}
       />
 
-      <AlertDialog open={confirming !== null} onOpenChange={(open) => !open && !isPending && setConfirming(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t("confirm.title", { name: text(confirming?.name ?? {}) })}</AlertDialogTitle>
-            <AlertDialogDescription>{t("confirm.description")}</AlertDialogDescription>
-          </AlertDialogHeader>
-          <ul className="list-disc space-y-1 ps-5 text-sm text-muted-foreground">
-            <li>{t("confirm.keeps")}</li>
-            <li>{t("confirm.draft")}</li>
-            <li>{t("confirm.untouched")}</li>
-            {(confirming?.formKinds.length ?? 0) > 0 && <li>{t("confirm.forms")}</li>}
-          </ul>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isPending}>{t("cancel")}</AlertDialogCancel>
-            <AlertDialogAction
-              disabled={isPending}
-              onClick={(event) => {
-                event.preventDefault();
-                if (confirming) onApply(confirming);
-              }}
-            >
-              {isPending && <LoaderCircle className="animate-spin" />}
+      <Modal
+        open={confirming !== null}
+        onOpenChange={(open) => !open && !isPending && setConfirming(null)}
+        title={t("confirm.title", { name: text(confirming?.name ?? {}) })}
+        description={t("confirm.description")}
+        footer={
+          <>
+            <SellerButton variant="outline" disabled={isPending} onClick={() => setConfirming(null)}>
+              {t("cancel")}
+            </SellerButton>
+            <SellerButton disabled={isPending} onClick={() => confirming && onApply(confirming)}>
+              {isPending ? <LoaderCircle className="animate-spin" aria-hidden /> : <Sparkles aria-hidden />}
               {t("confirm.action")}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+            </SellerButton>
+          </>
+        }
+      >
+        {confirming && (
+          <div className="h-[200px] overflow-hidden rounded-2xl border border-(--s-line)">
+            {confirming.thumbnailUrl ? (
+              <span className="relative block h-full w-full">
+                <RemoteImage src={confirming.thumbnailUrl} alt="" fill sizes="460px" className="object-cover object-top" />
+              </span>
+            ) : (
+              <TemplateLiveThumbnail storeId={storeId} templateKey={confirming.key} fontClassName={fontClassName} fallback={<ThumbnailFallback />} />
+            )}
+          </div>
+        )}
+        <ul className="flex flex-col gap-1.5 text-[13px] text-(--s-muted)">
+          {[t("confirm.keeps"), t("confirm.untouched"), ...((confirming?.formKinds.length ?? 0) > 0 ? [t("confirm.forms")] : [])].map((line) => (
+            <li key={line} className="flex items-start gap-2">
+              <Check className="mt-1 size-3.5 shrink-0 text-success" aria-hidden />
+              {line}
+            </li>
+          ))}
+        </ul>
+        <Note icon={Info}>{t("confirm.draft")}</Note>
+      </Modal>
 
       <AlertDialog open={confirmUndo} onOpenChange={(open) => !open && !isPending && setConfirmUndo(false)}>
         <AlertDialogContent>
@@ -413,65 +505,46 @@ export function TemplateGallery({
                 onUndo();
               }}
             >
-              {isPending && <LoaderCircle className="animate-spin" />}
+              {isPending && <LoaderCircle className="animate-spin" aria-hidden />}
               {t("undoConfirm.action")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </>
   );
 }
 
-/** The template's image, or an outline of its pages and sections when it has none. */
-function TemplateThumbnail({ template, text }: { template: TemplateCardView; text: (value: Localized) => string }) {
-  if (template.thumbnailUrl) {
-    return (
-      <div className="relative aspect-[7/6] w-full border-b">
-        <RemoteImage
-          src={template.thumbnailUrl}
-          alt=""
-          fill
-          sizes="(min-width: 1280px) 25vw, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-          className="object-cover"
-        />
-      </div>
-    );
-  }
+/** Colour swatches overlapping each other (`.sws`). */
+export function Swatches({ colors }: { colors: readonly string[] }) {
+  if (colors.length === 0) return null;
   return (
-    <div className="flex aspect-[16/9] w-full flex-col gap-1.5 overflow-hidden border-b bg-muted/50 p-4">
-      <span className="mb-1 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
-        <LayoutTemplate className="size-3.5" />
-        {template.pages.find((page) => page.isHome)?.name ?? template.pages[0]?.name}
-      </span>
-      {(template.pages.find((page) => page.isHome) ?? template.pages[0])?.sections.slice(0, 5).map((section, index) => (
-        <span key={index} className="truncate rounded-md border bg-background px-2.5 py-1.5 text-xs">
-          {text(section)}
-        </span>
+    <span aria-hidden className="flex shrink-0 pt-1.5">
+      {colors.slice(0, 4).map((color, index) => (
+        <i key={`${color}-${index}`} className={cn("size-[18px] rounded-full border-2 border-(--s-surface) shadow-[0_0_0_1px_var(--s-field)]", index > 0 && "-ms-1.5")} style={{ background: color }} />
       ))}
-    </div>
+    </span>
   );
 }
 
-/** Placeholder cards while the first page loads: same grid, card shape and thumbnail ratio as the real cards. */
+function ThumbnailFallback() {
+  return (
+    <span className="grid aspect-[380/398] w-full place-items-center bg-(--s-fill) text-(--s-subtle)">
+      <LayoutTemplate className="size-6" aria-hidden />
+    </span>
+  );
+}
+
+/** Placeholder tiles while the first page loads: same grid and proportions as the real ones. */
 function TemplateGridSkeleton({ label }: { label: string }) {
   return (
     <div role="status" aria-label={label}>
-      <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" aria-hidden>
+      <ul className="grid grid-cols-[repeat(auto-fill,minmax(270px,1fr))] gap-x-4 gap-y-6" aria-hidden>
         {Array.from({ length: TEMPLATES_PAGE_SIZE }, (_, index) => (
-          <li key={index} className="flex flex-col overflow-hidden rounded-2xl border bg-card">
-            <Skeleton className="aspect-[16/10] w-full rounded-none border-b" />
-            <div className="flex flex-1 flex-col gap-2 p-3">
-              <Skeleton className="h-5 w-2/3" />
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-4/5" />
-              <Skeleton className="h-5 w-28 rounded-md" />
-              <Skeleton className="h-3 w-1/2" />
-              <div className="mt-auto grid grid-cols-2 gap-2 pt-1">
-                <Skeleton className="h-[34px] w-full rounded-[10px]" />
-                <Skeleton className="h-[34px] w-full rounded-[10px]" />
-              </div>
-            </div>
+          <li key={index} className="flex flex-col gap-3">
+            <Skeleton className="aspect-[380/398] w-full rounded-2xl" />
+            <Skeleton className="h-5 w-2/3" />
+            <Skeleton className="h-3.5 w-1/2" />
           </li>
         ))}
       </ul>

@@ -6,6 +6,7 @@ import { findActiveCustomDomainForSubdomain } from "@workspace/lib/storefront/se
 import type { StoreRow } from "@workspace/lib/stores/server";
 import { storeBuilderEnabled } from "@/components/dashboard/sidebar.config";
 import { loadStorePage } from "@/lib/stores/store-page.server";
+import { designSystemSchema, sectionInstanceSchema, type DesignSystem, type SectionInstance } from "@workspace/store-sections";
 import type { WebsiteOverviewData, WebsitePageRow } from "./website.types";
 
 /**
@@ -22,10 +23,9 @@ export async function loadWebsiteStore(storeId: string): Promise<StoreRow> {
 const toIso = (value: Date | string | null | undefined) =>
   value ? (value instanceof Date ? value.toISOString() : new Date(value).toISOString()) : null;
 
-/** The store's draft pages, in menu order (seeds the scaffold for a new store). */
-export async function loadWebsitePages(store: StoreRow): Promise<WebsitePageRow[]> {
-  const editor = await getStoreForEditor(store.sellerId, store.id);
-  if (!editor) notFound();
+type EditorSnapshot = NonNullable<Awaited<ReturnType<typeof getStoreForEditor>>>;
+
+function toPageRows(editor: EditorSnapshot): WebsitePageRow[] {
   return editor.pages.map((page) => ({
     id: page.id,
     slug: page.slug,
@@ -36,6 +36,30 @@ export async function loadWebsitePages(store: StoreRow): Promise<WebsitePageRow[
     showInNav: page.showInNav,
     updatedAt: toIso(page.updatedAt),
   }));
+}
+
+/** The store's draft pages, in menu order (seeds the scaffold for a new store). */
+export async function loadWebsitePages(store: StoreRow): Promise<WebsitePageRow[]> {
+  const editor = await getStoreForEditor(store.sellerId, store.id);
+  if (!editor) notFound();
+  return toPageRows(editor);
+}
+
+/** Website › Pages: the draft pages plus the draft header, footer and look, for their real previews. */
+export async function loadWebsitePagesScreen(
+  store: StoreRow,
+): Promise<{ pages: WebsitePageRow[]; header: SectionInstance | null; footer: SectionInstance | null; designSystem: DesignSystem }> {
+  const editor = await getStoreForEditor(store.sellerId, store.id);
+  if (!editor) notFound();
+  const header = sectionInstanceSchema.safeParse(editor.store.sharedHeader);
+  const footer = sectionInstanceSchema.safeParse(editor.store.sharedFooter);
+  const designSystem = designSystemSchema.safeParse(editor.designSystem);
+  return {
+    pages: toPageRows(editor),
+    header: header.success ? (header.data as SectionInstance) : null,
+    footer: footer.success ? (footer.data as SectionInstance) : null,
+    designSystem: designSystem.success ? designSystem.data : { colors: {}, typography: {}, spacing: {} },
+  };
 }
 
 export async function loadWebsiteOverview(store: StoreRow): Promise<WebsiteOverviewData> {

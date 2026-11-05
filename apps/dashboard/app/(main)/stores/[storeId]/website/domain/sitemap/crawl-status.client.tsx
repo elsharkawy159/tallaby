@@ -3,11 +3,8 @@
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { CircleAlert, CircleCheck, Copy, ExternalLink, FileText, Map as MapIcon } from "lucide-react";
-
-import { Badge } from "@workspace/ui/components/badge";
-import { Button } from "@workspace/ui/components/button";
-import { FieldHint, SectionCard, SMALL_BUTTON_CLASS } from "@/components/form/form-ui";
+import { Activity, Copy, ExternalLink, FileCode, Lightbulb } from "lucide-react";
+import { Field, Note, SectionCard, SellerButton, StatusBadge, TextInput } from "@/components/seller-ui";
 import type { CrawlStatus, NoindexReason } from "../domain-seo.data";
 
 /** Where the seller fixes each reason. */
@@ -32,71 +29,59 @@ export function CrawlStatusView({ storeId, status }: { storeId: string; status: 
   };
 
   const urlRow = (label: string, url: string) => (
-    <div className="flex flex-col gap-1.5">
-      <p className="text-[13px] font-semibold">{label}</p>
-      <div className="flex flex-wrap items-stretch gap-2">
-        <span
-          dir="ltr"
-          className="flex h-[34px] min-w-[220px] flex-1 items-center truncate rounded-[10px] border border-input bg-muted px-3 font-mono text-[13px]"
-        >
-          {url}
-        </span>
-        <Button type="button" variant="neutral" className={SMALL_BUTTON_CLASS} onClick={() => void copy(url)}>
-          <Copy />
+    <Field label={label}>
+      <div className="flex flex-wrap items-center gap-2 max-[720px]:[&>button]:flex-1 max-[720px]:[&>a]:flex-1">
+        <TextInput readOnly dir="ltr" value={url} aria-label={label} className="min-w-[220px] flex-1 font-mono text-[13px] max-[720px]:basis-full" />
+        <SellerButton variant="mini" size="sm" onClick={() => void copy(url)}>
+          <Copy aria-hidden />
           {t("copy")}
-        </Button>
-        <Button variant="neutral" className={SMALL_BUTTON_CLASS} asChild>
+        </SellerButton>
+        <SellerButton asChild variant="mini" size="sm">
           <a href={url} target="_blank" rel="noopener noreferrer">
-            <ExternalLink className="rtl:-scale-x-100" />
+            <ExternalLink aria-hidden className="rtl:-scale-x-100" />
             {t("open")}
           </a>
-        </Button>
+        </SellerButton>
       </div>
-    </div>
+    </Field>
   );
 
   return (
-    <div className="space-y-5">
+    <>
       <SectionCard
         id="status"
-        icon={indexed ? CircleCheck : CircleAlert}
-        title={t("status.title")}
-        description={indexed ? t("status.indexed") : t("status.notIndexed")}
-        tag={
-          indexed ? (
-            <Badge variant="success">{t("status.indexedBadge")}</Badge>
-          ) : (
-            <Badge variant="warning">{t("status.notIndexedBadge")}</Badge>
-          )
+        icon={Activity}
+        title={
+          <>
+            {t("status.title")}
+            <StatusBadge tone={indexed ? "success" : "warning"}>{indexed ? t("status.indexedBadge") : t("status.notIndexedBadge")}</StatusBadge>
+          </>
         }
+        description={indexed ? t("status.indexed") : t("status.notIndexed")}
       >
         {indexed ? (
-          <FieldHint>{t("status.indexedHint")}</FieldHint>
+          <Note>{t("status.indexedHint")}</Note>
         ) : (
           <ul className="flex flex-col gap-2">
             {status.reasons.map((reason) => (
-              <li key={reason} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border bg-muted/40 px-4 py-3">
-                <span className="text-[13px]">{t(`reasons.${reason}`)}</span>
-                <Link href={reasonHref(storeId, reason)} className="text-xs font-medium text-primary-ink hover:underline">
-                  {t(`fix.${reason}`)}
-                </Link>
+              <li key={reason} className="flex flex-wrap items-center justify-between gap-2.5 rounded-[18px] border border-(--s-line) bg-(--s-tint) px-4 py-3">
+                <b className="min-w-0 text-[13.5px] font-bold text-(--s-text)">{t(`reasons.${reason}`)}</b>
+                <SellerButton asChild variant="mini" size="xs">
+                  <Link href={reasonHref(storeId, reason)}>{t(`fix.${reason}`)}</Link>
+                </SellerButton>
               </li>
             ))}
           </ul>
         )}
       </SectionCard>
 
-      <SectionCard id="sitemap-files" icon={MapIcon} title={t("files.title")} description={t("files.description")}>
+      <SectionCard id="sitemap-files" icon={FileCode} title={t("files.title")} description={t("files.description")}>
         {urlRow(t("files.sitemap"), status.sitemapUrl)}
         {urlRow(t("files.robots"), status.robotsUrl)}
-        <FieldHint>{t("files.contents")}</FieldHint>
-        <FieldHint>{t("files.searchConsole")}</FieldHint>
+        <Note icon={Lightbulb}>
+          {t("files.contents")} {t("files.searchConsole")} {t("pagesNote")}
+        </Note>
       </SectionCard>
-
-      <p className="flex items-start gap-2 text-xs text-muted-foreground">
-        <FileText className="mt-0.5 size-3.5 shrink-0" aria-hidden />
-        {t("pagesNote")}
-      </p>
-    </div>
+    </>
   );
 }

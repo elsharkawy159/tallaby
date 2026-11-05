@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { storeBuilderEnabled } from "@/components/dashboard/sidebar.config";
-import { StorePageHeader } from "@/components/stores/store-page-header";
+import { PageContainer } from "@/components/seller-ui";
 import { loadStorePage } from "@/lib/stores/store-page.server";
 
 /** Website › Forms (PLAN.md §8.4, P4-10): one page with the forms list and the submissions inbox, plus the form editor. */
@@ -16,10 +16,5 @@ export default async function StoreFormsLayout({
   // Same rollout gate as the website editor (forms are placed with it).
   if (!storeBuilderEnabled(store.sellerId)) notFound();
 
-  return (
-    <section className="mx-auto w-full max-w-5xl space-y-5 p-4 sm:p-6">
-      <StorePageHeader store={store} />
-      {children}
-    </section>
-  );
+  return <PageContainer narrow>{children}</PageContainer>;
 }

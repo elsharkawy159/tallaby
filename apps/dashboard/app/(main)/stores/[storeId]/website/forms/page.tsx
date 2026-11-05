@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { Inbox, LayoutList } from "lucide-react";
 import { listFormSubmissions, listStoreFormDefinitions, listStoreForms } from "@workspace/lib/store-forms/server";
+import { PageHeader } from "@/components/seller-ui";
 import { loadStorePage } from "@/lib/stores/store-page.server";
+import { SiteOfflineNote } from "../_components/site-offline-note";
 import { InPageNav } from "../domain/section-group";
 import { INBOX_STATUSES, type InboxFilter } from "./forms.dto";
 import { FormsList } from "./forms-list.client";
@@ -31,10 +33,12 @@ export default async function StoreFormsPage({
 }) {
   const [{ storeId }, query] = await Promise.all([params, searchParams]);
   const store = await loadStorePage(storeId);
-  const [forms, definitions, t] = await Promise.all([
+  const [forms, definitions, t, tNav, tw] = await Promise.all([
     listStoreForms(store.sellerId, store.id),
     listStoreFormDefinitions(store.sellerId, store.id),
     getTranslations("storeForms.sections"),
+    getTranslations("nav"),
+    getTranslations("sellerWebsite.forms"),
   ]);
 
   const filter: InboxFilter = {
@@ -50,6 +54,8 @@ export default async function StoreFormsPage({
 
   return (
     <>
+      <PageHeader className="sui-rise" title={tNav("forms")} description={tw("description")} />
+      <SiteOfflineNote storeId={store.id} siteStatus={store.siteStatus} />
       <InPageNav
         label={t("label")}
         items={[
@@ -57,10 +63,10 @@ export default async function StoreFormsPage({
           { id: "submissions", label: t("submissions"), icon: Inbox },
         ]}
       />
-      <div id="forms" className="scroll-mt-[136px] md:scroll-mt-[88px]">
+      <div id="forms" className="flex scroll-mt-24 flex-col gap-3.5">
         <FormsList storeId={store.id} forms={forms} readOnly={store.status !== "active"} />
       </div>
-      <div id="submissions" className="scroll-mt-[136px] md:scroll-mt-[88px]">
+      <div id="submissions" className="flex scroll-mt-24 flex-col gap-3.5">
         <SubmissionsInbox
           storeId={store.id}
           forms={definitions.map((f) => ({ id: f.id, name: f.name, fields: f.fields.map((x) => ({ key: x.key, label: x.label })) }))}

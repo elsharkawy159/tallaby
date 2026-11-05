@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { readStoreSocialLinks } from "@workspace/lib/stores";
 import { SOCIAL_PLATFORMS } from "@workspace/store-sections/social";
-import { StorePageHeader } from "@/components/stores/store-page-header";
+import { PageContainer } from "@/components/seller-ui";
 import { loadWebsiteStorePage } from "@/lib/stores/website-page.server";
+import { SiteOfflineNote } from "../_components/site-offline-note";
 import { StoreSocialLinks } from "./social.client";
 import type { SocialRow } from "./social.dto";
 
@@ -25,15 +26,16 @@ export default async function WebsiteSocialPage({ params }: { params: Promise<{ 
   const contact = (store.contact ?? {}) as { whatsapp?: string; phone?: string };
 
   return (
-    <section className="mx-auto w-full max-w-4xl space-y-5 p-4 sm:p-6">
-      <StorePageHeader store={store} />
+    <PageContainer>
       <StoreSocialLinks
         storeId={store.id}
         storeName={store.name}
         initial={rows}
         suggestedWhatsapp={contact.whatsapp || contact.phone || ""}
         readOnly={store.status !== "active"}
-      />
-    </section>
+      >
+        <SiteOfflineNote storeId={store.id} siteStatus={store.siteStatus} />
+      </StoreSocialLinks>
+    </PageContainer>
   );
 }

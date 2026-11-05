@@ -16,7 +16,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@workspace/ui/components/alert-dialog";
-import { Button } from "@workspace/ui/components/button";
+import { IconButton } from "@/components/seller-ui";
 import { deletePost } from "./blog.server";
 
 export function DeletePostButton({
@@ -50,9 +50,9 @@ export function DeletePostButton({
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="ghost" size="sm" aria-label={t("delete")} disabled={isPending}>
-          <Trash2 className="size-4" />
-        </Button>
+        <IconButton className="text-destructive hover:text-destructive" aria-label={t("delete")} disabled={isPending}>
+          <Trash2 aria-hidden />
+        </IconButton>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
@@ -61,7 +61,7 @@ export function DeletePostButton({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
-          <AlertDialogAction onClick={onDelete}>{t("delete")}</AlertDialogAction>
+          <AlertDialogAction onClick={onDelete} className="bg-destructive text-white hover:bg-destructive/90">{t("delete")}</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

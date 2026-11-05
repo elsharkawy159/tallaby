@@ -19,16 +19,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@workspace/ui/components/alert-dialog";
-import { Badge } from "@workspace/ui/components/badge";
-import { Button } from "@workspace/ui/components/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from "@workspace/ui/components/dropdown-menu";
-import { SectionCard, SMALL_BUTTON_CLASS } from "@/components/form/form-ui";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@workspace/ui/components/dropdown-menu";
+import { CountPill, EmptyState, IconButton, IconTile, Note, Row, Rows, SectionCard, SellerButton, Tag } from "@/components/seller-ui";
 import { createFormFromTemplate, deleteForm } from "./forms.server";
 
 const formatDate = (iso: string, locale: string) =>
@@ -63,8 +55,8 @@ export function FormsList({ storeId, forms, readOnly }: { storeId: string; forms
     });
 
   return (
-    <div className="space-y-5">
-      {readOnly && <p className="rounded-lg border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">{t("readOnly")}</p>}
+    <>
+      {readOnly && <Note>{t("readOnly")}</Note>}
       <SectionCard
         id="store-forms"
         icon={ClipboardList}
@@ -73,11 +65,11 @@ export function FormsList({ storeId, forms, readOnly }: { storeId: string; forms
         action={
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button type="button" size="sm" className={SMALL_BUTTON_CLASS} disabled={readOnly || isPending}>
-                {isPending ? <LoaderCircle className="animate-spin" /> : <Plus />}
+              <SellerButton size="sm" disabled={readOnly || isPending}>
+                {isPending ? <LoaderCircle className="animate-spin" aria-hidden /> : <Plus aria-hidden />}
                 {t("list.create")}
-                <ChevronDown />
-              </Button>
+                <ChevronDown aria-hidden />
+              </SellerButton>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-72">
               <DropdownMenuLabel>{t("list.templates")}</DropdownMenuLabel>
@@ -92,57 +84,55 @@ export function FormsList({ storeId, forms, readOnly }: { storeId: string; forms
         }
       >
         {forms.length === 0 ? (
-          <div className="py-8 text-center">
-            <p className="font-medium">{t("list.emptyTitle")}</p>
-            <p className="mt-1 text-sm text-muted-foreground">{t("list.emptyBody")}</p>
-          </div>
+          <Rows>
+            <EmptyState icon={ClipboardList} title={t("list.emptyTitle")} description={t("list.emptyBody")} />
+          </Rows>
         ) : (
-          <ul className="divide-y">
+          <Rows>
             {forms.map((form) => (
-              <li key={form.id} className="flex flex-wrap items-center gap-3 py-3">
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Link href={`${base}/${form.id}`} className="truncate font-medium hover:underline">
+              <Row
+                key={form.id}
+                className="flex-wrap max-[600px]:[&>.min-w-0]:basis-full"
+                start={<IconTile icon={ClipboardList} className="max-[600px]:hidden" />}
+                title={
+                  <>
+                    <Link href={`${base}/${form.id}`} className="min-w-0 truncate text-inherit no-underline hover:underline">
                       {form.name}
                     </Link>
-                    {form.status === "disabled" && <Badge variant="secondary">{t("status.disabled")}</Badge>}
-                    {form.newCount > 0 && <Badge>{t("list.newCount", { count: form.newCount })}</Badge>}
-                  </div>
-                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {form.status === "disabled" && <Tag>{t("status.disabled")}</Tag>}
+                    {form.newCount > 0 && <CountPill value={t("list.newCount", { count: form.newCount })} />}
+                  </>
+                }
+                description={
+                  <>
                     {t("list.meta", { fields: form.fieldCount, submissions: form.submissionCount })}
                     {form.lastSubmissionAt && ` · ${t("list.lastSubmission", { date: formatDate(form.lastSubmissionAt, locale) })}`}
-                  </p>
-                </div>
-                <div className="flex gap-1.5">
-                  <Button asChild variant="outline" size="sm" className={SMALL_BUTTON_CLASS}>
-                    <Link href={`${base}?form=${form.id}#submissions`}>
-                      <Inbox />
-                      {t("list.submissions")}
-                    </Link>
-                  </Button>
-                  <Button asChild variant="outline" size="sm" className={SMALL_BUTTON_CLASS}>
-                    <Link href={`${base}/${form.id}`}>
-                      <Pencil />
-                      {t("list.edit")}
-                    </Link>
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="size-[34px]"
-                    disabled={readOnly || isPending}
-                    onClick={() => setDeleting(form)}
-                    aria-label={t("list.delete")}
-                  >
-                    <Trash2 />
-                  </Button>
-                </div>
-              </li>
+                  </>
+                }
+                end={
+                  <>
+                    <SellerButton asChild variant="mini" size="xs">
+                      <Link href={`${base}?form=${form.id}#submissions`}>
+                        <Inbox aria-hidden />
+                        {t("list.submissions")}
+                      </Link>
+                    </SellerButton>
+                    <SellerButton asChild variant="mini" size="xs">
+                      <Link href={`${base}/${form.id}`}>
+                        <Pencil aria-hidden />
+                        {t("list.edit")}
+                      </Link>
+                    </SellerButton>
+                    <IconButton className="text-destructive hover:text-destructive" disabled={readOnly || isPending} onClick={() => setDeleting(form)} aria-label={t("list.delete")}>
+                      <Trash2 aria-hidden />
+                    </IconButton>
+                  </>
+                }
+              />
             ))}
-          </ul>
+          </Rows>
         )}
-        <p className="text-xs text-muted-foreground">{t("list.placeHint")}</p>
+        <Note>{t("list.placeHint")}</Note>
       </SectionCard>
 
       <AlertDialog open={!!deleting} onOpenChange={(open) => !open && setDeleting(null)}>
@@ -155,6 +145,7 @@ export function FormsList({ storeId, forms, readOnly }: { storeId: string; forms
             <AlertDialogCancel disabled={isPending}>{t("cancel")}</AlertDialogCancel>
             <AlertDialogAction
               disabled={isPending}
+              className="bg-destructive text-white hover:bg-destructive/90"
               onClick={(e) => {
                 e.preventDefault();
                 if (deleting) onDelete(deleting);
@@ -165,6 +156,6 @@ export function FormsList({ storeId, forms, readOnly }: { storeId: string; forms
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </>
   );
 }
