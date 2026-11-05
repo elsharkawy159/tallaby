@@ -4,14 +4,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { useDropzone } from "react-dropzone";
-import { CircleAlert, CircleCheck, Download, FileSpreadsheet, LoaderCircle, RotateCcw, Sparkles, Upload } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@workspace/ui/components/alert";
-import { Button } from "@workspace/ui/components/button";
-import { Progress } from "@workspace/ui/components/progress";
+import { ArrowLeft, ChevronDown, Download, FileSpreadsheet, HardDrive, RotateCcw, Sparkles, UploadCloud, X } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select";
 import { cn } from "@workspace/ui/lib/utils";
 import { formatNumber } from "@/lib/i18n/format";
-import { downloadXlsx, todayStamp } from "@/lib/product-excel";
+import { downloadXlsx, PRODUCT_EXCEL_COLUMNS, PRODUCT_EXCEL_TEMPLATE_ROW, todayStamp } from "@/lib/product-excel";
+import { IconButton, Note, SellerButton } from "@/components/seller-ui";
+import { BackIcon, backClassName, FlowIntro, FlowOrb, FlowStage, GenCard, GenFoot, PILL_BUTTON_CLASS, type GenStep } from "../add-flow.client";
 import {
   BULK_CREDITS_PER_AI_PRODUCT,
   BULK_FIELDS,
@@ -74,25 +73,32 @@ const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 const REVIEWED_FIELDS: readonly BulkField[] = ["name", "price", "salePrice", "stock", "sku", "category", "brand", "description", "images"];
 const OTHER_FIELDS = BULK_FIELDS.filter((field) => !REVIEWED_FIELDS.includes(field));
 
-function Tile({ label, value, tone }: { label: string; value: string; tone?: "good" | "warn" | "bad" }) {
+function Stat({ label, value, tone }: { label: string; value: string; tone?: "good" | "warn" | "bad" }) {
   return (
-    <div className="rounded-2xl border border-(--s-line) bg-(--s-surface) p-3">
-      <div className="text-xs text-muted-foreground">{label}</div>
-      <div
+    <div className="bg-(--s-surface) px-[18px] py-3.5 max-[640px]:p-3">
+      <b
         className={cn(
-          "mt-1 text-2xl font-semibold tabular-nums",
-          tone === "good" && "text-emerald-600 dark:text-emerald-400",
-          tone === "warn" && "text-amber-600 dark:text-amber-400",
+          "block font-montserrat text-[22px] leading-[1.3] font-extrabold tabular-nums text-(--s-ink) max-[640px]:text-lg",
+          tone === "good" && "text-success",
+          tone === "warn" && "text-accent-ink",
           tone === "bad" && "text-destructive",
         )}
       >
         {value}
-      </div>
+      </b>
+      <small className="text-xs text-(--s-muted)">{label}</small>
     </div>
   );
 }
 
+const fileSize = (bytes: number) => (bytes > 1e6 ? `${(bytes / 1e6).toFixed(1)} MB` : `${Math.max(1, Math.round(bytes / 1e3))} KB`);
+
 const NONE = "none";
+
+/** A <details> summary in the design's look: the label, then a chevron that turns when open. */
+const SUMMARY_CLASS =
+  "flex min-h-10 cursor-pointer list-none items-center justify-between gap-2 text-sm font-medium text-(--s-ink) [&::-webkit-details-marker]:hidden";
+const SUMMARY_CHEVRON_CLASS = "size-4 shrink-0 text-(--s-faint) transition-transform duration-200 group-open/details:rotate-180";
 
 function FieldSelect({
   field,
@@ -139,6 +145,8 @@ export function FromFile({ aiEnabled }: { aiEnabled: boolean }) {
   const [stage, setStage] = useState<Stage>("pick");
   const [readError, setReadError] = useState<string | null>(null);
   const [pdfProgress, setPdfProgress] = useState<PdfProgress | null>(null);
+  const [picked, setPicked] = useState<{ name: string; bytes: number } | null>(null);
+  const [readPhase, setReadPhase] = useState<"read" | "map">("read");
 
   const [file, setFile] = useState<FileInfo | null>(null);
   const [model, setModel] = useState<SheetModel | null>(null);
@@ -194,6 +202,8 @@ export function FromFile({ aiEnabled }: { aiEnabled: boolean }) {
     setStage("pick");
     setReadError(null);
     setPdfProgress(null);
+    setPicked(null);
+    setReadPhase("read");
     setFile(null);
     setModel(null);
     setPdfRows([]);
@@ -210,32 +220,35 @@ export function FromFile({ aiEnabled }: { aiEnabled: boolean }) {
     tries.current = new Map();
   };
 
-  const readFile = async (picked: File) => {
+  const readFile = async (chosen: File) => {
     setReadError(null);
     try {
-      checkPickedFile(picked);
+      checkPickedFile(chosen);
+      setPicked({ name: chosen.name, bytes: chosen.size });
+      setReadPhase("read");
       setStage("reading");
-      const buffer = await picked.arrayBuffer();
+      const buffer = await chosen.arrayBuffer();
       const key = await hashFile(buffer);
       const loaded = await getBulkStatusAction();
       if (loaded.ok) setStatus(loaded);
 
-      if (isPdfFile(picked)) {
-        const read = await readPdfRows(picked, buffer, setPdfProgress);
-        setFile({ name: picked.name, bytes: picked.size, key, source: "pdf", sheetCount: 1 });
+      if (isPdfFile(chosen)) {
+        const read = await readPdfRows(chosen, buffer, setPdfProgress);
+        setFile({ name: chosen.name, bytes: chosen.size, key, source: "pdf", sheetCount: 1 });
         setPdfRows(read);
         setStage("confirm");
         return;
       }
 
-      const sheet = await readSheetFile(picked, buffer);
+      const sheet = await readSheetFile(chosen, buffer);
+      setReadPhase("map");
       const mapped = await mapColumnsAction({
-        fileBytes: picked.size,
+        fileBytes: chosen.size,
         totalRows: sheet.model.rows.length,
         columns: columnSamples(sheet.model),
       });
       if (!mapped.ok) throw new PdfReadFailure(mapped.error);
-      setFile({ name: picked.name, bytes: picked.size, key, source: "sheet", sheetCount: sheet.sheetCount });
+      setFile({ name: chosen.name, bytes: chosen.size, key, source: "sheet", sheetCount: sheet.sheetCount });
       setModel(sheet.model);
       setMapping(mapped.mapping);
       setMappingSource(mapped.source);
@@ -385,278 +398,429 @@ export function FromFile({ aiEnabled }: { aiEnabled: boolean }) {
   const dailyShort = status && !status.creditsLive && Math.ceil(aiRows / BULK_LIMITS.batchSize) > status.callsLeftToday;
   const canAddProducts = toAdd.length > 0 && (aiEnabled || aiRows === 0);
 
+  const shown = file ?? picked;
+  const fileRow = shown && (
+    <div className="flex items-center gap-3 rounded-2xl border border-(--s-line) bg-(--s-surface) px-3.5 py-3 shadow-(--s-shadow-card) motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2">
+      <span className="grid size-10 shrink-0 place-items-center rounded-[10px] bg-success-soft text-success">
+        <FileSpreadsheet className="size-[18px]" aria-hidden />
+      </span>
+      <div className="min-w-0 flex-1">
+        <b className="block truncate font-sans text-sm text-(--s-ink) rtl:text-right" dir="ltr">
+          {shown.name}
+        </b>
+        <small className="text-xs text-(--s-muted)">
+          <span dir="ltr">{fileSize(shown.bytes)}</span>
+          {stage !== "reading" && <> · {t("stage.rowCount", { count: rows.length })}</>}
+        </small>
+      </div>
+      {stage !== "reading" && stage !== "running" && (
+        <IconButton type="button" onClick={reset} aria-label={t("anotherFile")} title={t("anotherFile")}>
+          <X aria-hidden />
+        </IconButton>
+      )}
+    </div>
+  );
+
+  const stageShell = (children: React.ReactNode, running = true) => (
+    <FlowStage
+      back={
+        <Link href="/products/add?method=choose" className={backClassName}>
+          <BackIcon />
+          {t("stage.back")}
+        </Link>
+      }
+      icon={FileSpreadsheet}
+      label={t("stage.mode")}
+      running={running}
+    >
+      {children}
+    </FlowStage>
+  );
+
   if (stage === "pick") {
-    return (
-      <div className="flex flex-col gap-4">
-        {!aiEnabled && (
-          <Alert>
-            <CircleAlert />
-            <AlertDescription>{t("aiOff")}</AlertDescription>
-          </Alert>
-        )}
+    return stageShell(
+      <>
+        <FlowIntro orb={<FlowOrb icon={FileSpreadsheet} />} title={t("stage.title")}>
+          <ul className="mt-0.5 flex flex-col gap-1 text-sm text-pretty text-(--s-muted)">
+            <li>
+              <Sparkles className="me-2 inline size-4 align-[-3px] text-primary-ink" aria-hidden />
+              {t("stage.noteAi")}
+            </li>
+            <li>
+              <HardDrive className="me-2 inline size-4 align-[-3px] text-primary-ink" aria-hidden />
+              {t("stage.noteLimit", { bytes: BULK_LIMITS.maxFileBytes / (1024 * 1024), products: BULK_LIMITS.maxProducts })}
+            </li>
+          </ul>
+        </FlowIntro>
+        {!aiEnabled && <Note>{t("aiOff")}</Note>}
         <div
           {...dropzone.getRootProps()}
           className={cn(
-            "flex cursor-pointer flex-col items-center gap-3 rounded-[24px] border-[1.5px] border-dashed border-(--s-field-strong) bg-(--s-glass) p-10 max-[600px]:p-6 text-center transition-colors hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:outline-none",
-            dropzone.isDragActive && "border-primary bg-primary/5",
+            "flex cursor-pointer flex-col items-center gap-2 rounded-[24px] border-2 border-dashed border-(--s-field-strong) bg-(--s-surface) px-6 py-11 text-center transition-colors duration-150 hover:border-(--s-primary) hover:bg-primary-soft focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-(--s-focus) max-[640px]:py-8 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 motion-safe:duration-500",
+            dropzone.isDragActive && "border-(--s-primary) bg-primary-soft",
+            readError && "border-destructive bg-destructive-soft",
           )}
         >
           <input {...dropzone.getInputProps()} accept={ACCEPTED_FILE_TYPES} aria-label={t("pickButton")} />
-          <FileSpreadsheet className="size-10 text-muted-foreground" aria-hidden />
-          <div className="font-medium">{t("pickTitle")}</div>
-          <p className="max-w-md text-sm text-muted-foreground">{t("pickBody")}</p>
-          <Button type="button" variant="default" className="mt-1">
-            <Upload aria-hidden />
+          <span className={cn("mb-1.5 grid size-14 place-items-center rounded-2xl bg-primary-soft text-primary-ink", dropzone.isDragActive && "bg-(--s-surface)")}>
+            <UploadCloud className="size-[26px]" aria-hidden />
+          </span>
+          <b className="text-base font-semibold text-(--s-ink)">{t("stage.drop")}</b>
+          <small className="text-xs text-(--s-faint)">{t("stage.dropTypes", { pages: BULK_LIMITS.maxPdfPages })}</small>
+          {readError && (
+            <span className="text-[13px] font-medium text-destructive" role="alert">
+              {readError}
+            </span>
+          )}
+          <SellerButton type="button" variant="outline" className="pointer-events-none mt-2" tabIndex={-1}>
             {t("pickButton")}
-          </Button>
-          <p className="text-xs text-muted-foreground">
-            {t("limits", { bytes: BULK_LIMITS.maxFileBytes / (1024 * 1024), products: BULK_LIMITS.maxProducts, pages: BULK_LIMITS.maxPdfPages })}
-          </p>
+          </SellerButton>
         </div>
-        {readError && (
-          <Alert variant="destructive">
-            <CircleAlert />
-            <AlertDescription>{readError}</AlertDescription>
-          </Alert>
-        )}
-      </div>
+        <div className="flex flex-wrap justify-center gap-2">
+          <button type="button" className={PILL_BUTTON_CLASS} onClick={() => void downloadXlsx([PRODUCT_EXCEL_TEMPLATE_ROW], { fileName: "tallaby-products-template.xlsx", header: PRODUCT_EXCEL_COLUMNS })}>
+            <Download aria-hidden />
+            {t("stage.template")}
+          </button>
+        </div>
+      </>,
+      false,
     );
   }
 
+  // What the file showed once read; the same list stays on every later screen.
+  const matched = mapping ? BULK_FIELDS.filter((field) => mapping[field] !== null).map((field) => t(`fields.${field}`)) : [];
+  const analysis: GenStep[] = [
+    {
+      key: "read",
+      label: t("stage.read"),
+      state: "done",
+      output: model
+        ? t("stage.readDone", { rows: model.rows.length, cols: columnSamples(model).length })
+        : t("stage.readDonePdf", { rows: pdfRows.length }),
+    },
+    ...(model
+      ? [{ key: "map", label: t("stage.map"), state: "done" as const, output: matched.join(locale === "ar" ? "، " : ", ") || t("mappingNeeded") }]
+      : []),
+    {
+      key: "check",
+      label: t("stage.check"),
+      state: "done",
+      output: summary.problems.length
+        ? t("stage.checkProblems", { ready: number(toAdd.length), problems: number(summary.problems.length) })
+        : t("stage.checkDone", { ready: number(toAdd.length) }),
+    },
+  ];
+
   if (stage === "reading") {
-    return (
-      <div className="flex flex-col items-center gap-3 rounded-[24px] border border-(--s-line) bg-(--s-glass) p-10 text-center shadow-(--s-shadow-card)" role="status">
-        <LoaderCircle className="size-8 animate-spin text-primary" aria-hidden />
-        <div className="font-medium">{pdfProgress ? t("readingPdf") : t("reading")}</div>
-        {pdfProgress && <Progress value={(pdfProgress.doneCalls / Math.max(1, pdfProgress.totalCalls)) * 100} className="h-2 w-64 max-w-full" />}
-      </div>
+    const pdfPercent = pdfProgress ? Math.round((pdfProgress.doneCalls / Math.max(1, pdfProgress.totalCalls)) * 100) : null;
+    return stageShell(
+      <div className="flex flex-col gap-4">
+        {fileRow}
+        <GenCard
+          icon={Sparkles}
+          title={t("stage.analyzing")}
+          subtitle={pdfProgress ? t("readingPdf") : t("reading")}
+          percent={pdfPercent}
+          steps={[
+            { key: "read", label: t("stage.read"), state: readPhase === "read" ? "run" : "done" },
+            ...(pdfProgress ? [] : [{ key: "map", label: t("stage.map"), state: readPhase === "map" ? ("run" as const) : ("wait" as const) }]),
+            { key: "check", label: t("stage.check"), state: "wait" },
+          ]}
+        />
+      </div>,
     );
   }
 
   if (stage === "running") {
-    const done = processed;
-    return (
-      <div className="flex flex-col gap-4 rounded-[24px] border border-(--s-line) bg-(--s-glass) p-[22px] shadow-(--s-shadow-card) max-[600px]:rounded-[20px] max-[600px]:p-4">
-        <div className="flex items-center gap-2 font-medium">
-          <LoaderCircle className="size-5 animate-spin text-primary" aria-hidden />
-          {t("running")}
-        </div>
-        <Progress value={(done / Math.max(1, total)) * 100} className="h-3" aria-label={t("running")} />
-        <div className="text-sm text-muted-foreground tabular-nums">{t("runningCount", { done: number(done), total: number(total) })}</div>
-        <p className="text-xs text-muted-foreground">{t("runningNote")}</p>
-      </div>
+    const percent = Math.round((processed / Math.max(1, total)) * 100);
+    return stageShell(
+      <div className="flex flex-col gap-4">
+        {fileRow}
+        <GenCard
+          icon={Sparkles}
+          title={t("running")}
+          subtitle={t("runningCount", { done: number(processed), total: number(total) })}
+          percent={percent}
+          steps={[...analysis, { key: "add", label: t("stage.add"), state: "run" }]}
+        >
+          <p className="border-t border-(--s-line) px-[18px] py-3 text-xs text-(--s-muted)">{t("runningNote")}</p>
+        </GenCard>
+      </div>,
     );
   }
 
   if (stage === "done") {
     const live = count("live");
     const draft = count("draft");
-    return (
-      <div className="flex flex-col gap-4">
-        <Alert variant={stop || pausedOn ? "default" : undefined}>
-          {stop || pausedOn ? <CircleAlert /> : <CircleCheck />}
-          <AlertTitle>{stop ? t(`stopped.${stop}.title`) : pausedOn ? t("paused.title") : t("doneTitle")}</AlertTitle>
-          {(stop || pausedOn) && (
-            <AlertDescription>
-              {stop ? t(`stopped.${stop}.body`, { remaining: number(remaining) }) : t("paused.body", { remaining: number(remaining), reason: t(`errors.${pausedOn!}`) })}
-            </AlertDescription>
-          )}
-        </Alert>
-
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <Tile label={t("result.live")} value={number(live)} tone="good" />
-          <Tile label={t("result.drafts")} value={number(draft)} tone={draft ? "warn" : undefined} />
-          <Tile label={t("result.skipped")} value={number(skipped.length + count("already"))} tone={skipped.length ? "bad" : undefined} />
-          <Tile label={t("result.credits")} value={number(creditsUsed)} />
-        </div>
-
-        {count("already") > 0 && <p className="text-sm text-muted-foreground">{t("result.already", { count: number(count("already")) })}</p>}
-
-        {noteCounts.length > 0 && (
-          <div className="rounded-2xl border border-(--s-line) bg-(--s-surface) p-3 text-sm">
-            <div className="mb-1 font-medium">{t("result.notesTitle")}</div>
-            <ul className="list-inside list-disc space-y-0.5 text-muted-foreground">
-              {noteCounts.map(([note, total]) => (
-                <li key={note}>{t(`notes.${note}`, { count: number(total) })}</li>
-              ))}
-            </ul>
-          </div>
+    const added = live + draft;
+    const interrupted = Boolean(stop || pausedOn);
+    const actions = (
+      <div className="flex flex-wrap gap-2">
+        {interrupted && remaining > 0 && (
+          <SellerButton type="button" onClick={() => void run()}>
+            <RotateCcw aria-hidden />
+            {t("continue", { count: number(remaining) })}
+          </SellerButton>
         )}
-
-        {toCheck.length > 0 && (
-          <div className="rounded-2xl border border-accent/50 bg-accent-soft p-3 text-sm">
-            <div className="mb-1 font-medium">{t("check.title")}</div>
-            <p className="mb-2 text-xs text-muted-foreground">{t("check.body")}</p>
-            <ul className="max-h-72 space-y-1.5 overflow-auto">
-              {toCheck.slice(0, 100).map((result) => (
-                <li key={result.row} className="flex flex-wrap items-center justify-between gap-x-3 gap-y-0.5">
-                  <span className="min-w-0 truncate" dir="auto">
-                    {result.title}
-                  </span>
-                  <span className="flex shrink-0 items-center gap-3 text-xs text-muted-foreground">
-                    {result.categoryName && <span dir="auto">{result.categoryName}</span>}
-                    <Link href={`/products/${result.productId}/edit`} target="_blank" className="font-medium text-primary underline underline-offset-2">
-                      {t("check.fix")}
-                    </Link>
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
+        {stop === "noCredits" && (
+          <SellerButton variant="outline" asChild>
+            <Link href="/settings/plan" target="_blank">
+              {t("getCredits")}
+            </Link>
+          </SellerButton>
         )}
-
-        {skipped.length > 0 && (
-          <div className="rounded-2xl border border-(--s-line) bg-(--s-surface) p-3 text-sm">
-            <div className="mb-1 font-medium">{t("problemsTitle")}</div>
-            <ul className="max-h-48 space-y-0.5 overflow-auto text-muted-foreground">
-              {skipped.slice(0, 100).map(({ row, reason }) => (
-                <li key={`${row}-${reason}`}>{t("problemLine", { row: number(row), reason })}</li>
-              ))}
-            </ul>
-          </div>
+        {(skipped.length > 0 || remaining > 0) && (
+          <SellerButton type="button" variant="outline" onClick={() => void downloadSkipped()}>
+            <Download aria-hidden />
+            {t("downloadProblems")}
+          </SellerButton>
         )}
-
-        <div className="flex flex-wrap gap-2">
-          {(stop || pausedOn) && remaining > 0 && (
-            <Button onClick={() => void run()}>
-              <RotateCcw aria-hidden />
-              {t("continue", { count: number(remaining) })}
-            </Button>
-          )}
-          {stop === "noCredits" && (
-            <Button asChild variant="outline">
-              <Link href="/settings/plan" target="_blank">
-                {t("getCredits")}
-              </Link>
-            </Button>
-          )}
-          <Button asChild variant={stop || pausedOn ? "outline" : "default"}>
-            <Link href="/products">{t("viewProducts")}</Link>
-          </Button>
-          {(skipped.length > 0 || remaining > 0) && (
-            <Button variant="outline" onClick={() => void downloadSkipped()}>
-              <Download aria-hidden />
-              {t("downloadProblems")}
-            </Button>
-          )}
-          <Button variant="ghost" onClick={reset}>
-            {t("anotherFile")}
-          </Button>
-        </div>
+        <SellerButton type="button" variant="outline" onClick={reset}>
+          {t("anotherFile")}
+        </SellerButton>
+        <SellerButton variant={interrupted ? "outline" : "amber"} asChild>
+          <Link href="/products">
+            {t("viewProducts")}
+            <ArrowLeft className="ltr:rotate-180" aria-hidden />
+          </Link>
+        </SellerButton>
       </div>
+    );
+
+    return stageShell(
+      <div className="flex flex-col gap-4">
+        {fileRow}
+        <GenCard
+          icon={Sparkles}
+          title={stop ? t(`stopped.${stop}.title`) : pausedOn ? t("paused.title") : t("doneTitle")}
+          subtitle={interrupted ? undefined : t("stage.doneBody")}
+          percent={interrupted ? Math.round((processed / Math.max(1, total)) * 100) : 100}
+          finished={!interrupted}
+          steps={[
+            ...analysis,
+            interrupted
+              ? { key: "add", label: t("stage.add"), state: "skip", output: t("stage.addPartly", { count: added, remaining }) }
+              : { key: "add", label: t("stage.add"), state: "done", output: t("stage.addDone", { count: added }) },
+          ]}
+        >
+          <div className="grid grid-cols-2 gap-px border-t border-(--s-line) bg-(--s-line) sm:grid-cols-4">
+            <Stat label={t("result.live")} value={number(live)} tone="good" />
+            <Stat label={t("result.drafts")} value={number(draft)} tone={draft ? "warn" : undefined} />
+            <Stat label={t("result.skipped")} value={number(skipped.length + count("already"))} tone={skipped.length ? "bad" : undefined} />
+            <Stat label={t("result.credits")} value={number(creditsUsed)} />
+          </div>
+
+          {interrupted && (
+            <div className="border-t border-(--s-line) p-[18px]">
+              <Note tone="amber">
+                {stop ? t(`stopped.${stop}.body`, { remaining: number(remaining) }) : t("paused.body", { remaining: number(remaining), reason: t(`errors.${pausedOn!}`) })}
+              </Note>
+            </div>
+          )}
+
+          {count("already") > 0 && <p className="border-t border-(--s-line) px-[18px] py-3 text-sm text-(--s-muted)">{t("result.already", { count: number(count("already")) })}</p>}
+
+          {noteCounts.length > 0 && (
+            <div className="border-t border-(--s-line) px-[18px] py-3.5 text-sm">
+              <div className="mb-1 text-[13px] font-bold text-(--s-ink)">{t("result.notesTitle")}</div>
+              <ul className="list-inside list-disc space-y-0.5 text-(--s-muted)">
+                {noteCounts.map(([note, total]) => (
+                  <li key={note}>{t(`notes.${note}`, { count: number(total) })}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {toCheck.length > 0 && (
+            <div className="border-t border-(--s-line) bg-accent-soft/60 px-[18px] py-3.5 text-sm">
+              <div className="mb-1 text-[13px] font-bold text-(--s-ink)">{t("check.title")}</div>
+              <p className="mb-2 text-xs text-(--s-muted)">{t("check.body")}</p>
+              <ul className="max-h-72 space-y-1.5 overflow-auto">
+                {toCheck.slice(0, 100).map((result) => (
+                  <li key={result.row} className="flex flex-wrap items-center justify-between gap-x-3 gap-y-0.5">
+                    <span className="min-w-0 truncate" dir="auto">
+                      {result.title}
+                    </span>
+                    <span className="flex shrink-0 items-center gap-3 text-xs text-(--s-muted)">
+                      {result.categoryName && <span dir="auto">{result.categoryName}</span>}
+                      <Link href={`/products/${result.productId}/edit`} target="_blank" className="font-medium text-primary-ink underline underline-offset-2">
+                        {t("check.fix")}
+                      </Link>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {skipped.length > 0 && (
+            <div className="border-t border-(--s-line)">
+              <div className="px-[18px] pt-3.5 text-[13px] font-bold text-(--s-ink)">{t("problemsTitle")}</div>
+              <ul className="flex max-h-72 flex-col overflow-auto px-[18px] pt-1.5 pb-3.5">
+                {skipped.slice(0, 100).map(({ row, reason }) => {
+                  const source = rowByNumber.get(row);
+                  return (
+                    <li key={`${row}-${reason}`} className="flex flex-wrap items-center gap-2.5 border-b border-(--s-line) py-2.5 text-[13px] last:border-b-0">
+                      <span className="shrink-0 rounded-md border border-(--s-line) bg-(--s-surface-2) px-1.5 font-sans text-[11px] text-(--s-faint)" dir="ltr">
+                        #{row}
+                      </span>
+                      <span className="min-w-0 flex-1 truncate" dir="auto">
+                        {source?.name ?? source?.nameAr ?? source?.nameEn ?? ""}
+                      </span>
+                      <span className="max-w-full rounded-full bg-accent-soft px-2.5 text-xs leading-[22px] text-accent-ink">{reason}</span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          )}
+
+          {interrupted ? (
+            <div className="border-t border-(--s-line) px-[18px] py-3.5">{actions}</div>
+          ) : (
+            <GenFoot title={t("stage.footTitle", { count: added })} body={t("stage.footBody")}>
+              {actions}
+            </GenFoot>
+          )}
+        </GenCard>
+      </div>,
     );
   }
 
   // Confirm
   const hasName = !model || (mapping && (mapping.name !== null || mapping.nameAr !== null || mapping.nameEn !== null));
   const hasPrice = !model || (mapping && (mapping.price !== null || mapping.salePrice !== null));
-  return (
+  return stageShell(
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
-        <div className="flex min-w-0 items-center gap-2">
-          <FileSpreadsheet className="size-4 shrink-0 text-muted-foreground" aria-hidden />
-          <span className="truncate font-medium" dir="auto">
-            {file?.name}
-          </span>
+      {fileRow}
+      <GenCard icon={Sparkles} title={t("stage.confirmTitle")} subtitle={t("stage.confirmBody")} percent={null} finished steps={analysis}>
+        <div className="grid grid-cols-2 gap-px border-t border-(--s-line) bg-(--s-line) sm:grid-cols-4">
+          <Stat label={t("found")} value={number(summary.found)} />
+          <Stat label={t("ready")} value={number(toAdd.length)} tone="good" />
+          <Stat label={t("problemsCount")} value={number(summary.problems.length)} tone={summary.problems.length ? "bad" : undefined} />
+          <Stat label={t("willBeDrafts")} value={number(drafts)} tone={drafts ? "warn" : undefined} />
         </div>
-        <Button variant="ghost" size="sm" onClick={reset}>
-          {t("anotherFile")}
-        </Button>
-      </div>
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Tile label={t("found")} value={number(summary.found)} />
-        <Tile label={t("ready")} value={number(toAdd.length)} tone="good" />
-        <Tile label={t("problemsCount")} value={number(summary.problems.length)} tone={summary.problems.length ? "bad" : undefined} />
-        <Tile label={t("willBeDrafts")} value={number(drafts)} tone={drafts ? "warn" : undefined} />
-      </div>
+        <div className="flex flex-col gap-3 border-t border-(--s-line) p-[18px] max-[600px]:p-3.5">
+          {file && file.sheetCount > 1 && <p className="text-xs text-(--s-muted)">{t("firstSheetOnly")}</p>}
+          {alreadyAdded > 0 && <p className="text-sm text-(--s-muted)">{t("alreadyAdded", { count: number(alreadyAdded) })}</p>}
+          {drafts > 0 && <p className="text-sm text-(--s-muted)">{t("draftsNote")}</p>}
+          {model && mapping && mapping.cost !== null && <p className="text-sm text-(--s-muted)">{t("costNotSaved")}</p>}
+          {variantLikeRows > 0 && <p className="text-sm text-accent-ink">{t("variantRowsWarning", { count: number(variantLikeRows) })}</p>}
 
-      {file && file.sheetCount > 1 && <p className="text-xs text-muted-foreground">{t("firstSheetOnly")}</p>}
-      {alreadyAdded > 0 && <p className="text-sm text-muted-foreground">{t("alreadyAdded", { count: number(alreadyAdded) })}</p>}
-      {drafts > 0 && <p className="text-sm text-muted-foreground">{t("draftsNote")}</p>}
-      {model && mapping && mapping.cost !== null && <p className="text-sm text-muted-foreground">{t("costNotSaved")}</p>}
-      {variantLikeRows > 0 && <p className="text-sm text-amber-700 dark:text-amber-400">{t("variantRowsWarning", { count: number(variantLikeRows) })}</p>}
+          {(!hasName || !hasPrice) && <Note tone="danger">{t("mappingNeeded")}</Note>}
 
-      {(!hasName || !hasPrice) && (
-        <Alert variant="destructive">
-          <CircleAlert />
-          <AlertDescription>{t("mappingNeeded")}</AlertDescription>
-        </Alert>
-      )}
-
-      <div className="flex items-start gap-2 rounded-2xl border border-(--s-line) bg-(--s-tint) p-3 text-sm">
-        <Sparkles className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
-        <div>
-          {aiRows === 0
-            ? t("estimate.none")
-            : status?.creditsLive
-              ? t("estimate.credits", { rows: number(aiRows), credits: number(credits), left: number(status.creditsLeft ?? 0), each: number(BULK_CREDITS_PER_AI_PRODUCT) })
-              : t("estimate.free", { rows: number(aiRows) })}
-          {creditsShort && <div className="mt-1 text-destructive">{t("estimate.short", { covered: number(Math.floor((status?.creditsLeft ?? 0) / BULK_CREDITS_PER_AI_PRODUCT)) })}</div>}
-          {dailyShort && <div className="mt-1 text-destructive">{t("estimate.dailyShort", { covered: number((status?.callsLeftToday ?? 0) * BULK_LIMITS.batchSize) })}</div>}
-        </div>
-      </div>
-
-      {summary.problems.length > 0 && (
-        <details className="rounded-2xl border border-(--s-line) bg-(--s-surface) p-3 text-sm">
-          <summary className="cursor-pointer font-medium">{t("problemsTitle")}</summary>
-          <ul className="mt-2 max-h-48 space-y-0.5 overflow-auto text-muted-foreground">
-            {summary.problems.slice(0, 100).map(({ row, problem }) => (
-              <li key={`${row}-${problem}`}>{t("problemLine", { row: number(row), reason: t(`problems.${problem}`) })}</li>
-            ))}
-          </ul>
-        </details>
-      )}
-
-      {model && mapping && (
-        <details className="rounded-2xl border border-(--s-line) bg-(--s-surface) p-3" open={mappingSource === "fallback" || !hasName || !hasPrice}>
-          <summary className="cursor-pointer text-sm font-medium">{t("mappingTitle")}</summary>
-          {mappingSource && <p className="mt-2 text-xs text-muted-foreground">{t(`mappingSource.${mappingSource}`)}</p>}
-          <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {[...REVIEWED_FIELDS, ...OTHER_FIELDS].map((field) => (
-              <FieldSelect key={field} field={field} mapping={mapping} model={model} onChange={changeMapping} />
-            ))}
+          <div className="flex items-start gap-2 rounded-2xl border border-(--s-line) bg-(--s-tint) p-3 text-sm">
+            <Sparkles className="mt-0.5 size-4 shrink-0 text-primary-ink" aria-hidden />
+            <div>
+              {aiRows === 0
+                ? t("estimate.none")
+                : status?.creditsLive
+                  ? t("estimate.credits", { rows: number(aiRows), credits: number(credits), left: number(status.creditsLeft ?? 0), each: number(BULK_CREDITS_PER_AI_PRODUCT) })
+                  : t("estimate.free", { rows: number(aiRows) })}
+              {creditsShort && <div className="mt-1 text-destructive">{t("estimate.short", { covered: number(Math.floor((status?.creditsLeft ?? 0) / BULK_CREDITS_PER_AI_PRODUCT)) })}</div>}
+              {dailyShort && <div className="mt-1 text-destructive">{t("estimate.dailyShort", { covered: number((status?.callsLeftToday ?? 0) * BULK_LIMITS.batchSize) })}</div>}
+            </div>
           </div>
-        </details>
-      )}
 
-      {toAdd.length > 0 && (
-        <div className="overflow-x-auto rounded-2xl border border-(--s-line) bg-(--s-surface)">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-muted text-start">
-                <th className="p-2 text-start font-medium">{t("sample.row")}</th>
-                <th className="p-2 text-start font-medium">{t("sample.name")}</th>
-                <th className="p-2 text-start font-medium">{t("sample.price")}</th>
-                <th className="p-2 text-start font-medium">{t("sample.stock")}</th>
-                <th className="p-2 text-start font-medium">{t("sample.photos")}</th>
-                <th className="p-2 text-start font-medium">{t("sample.copy")}</th>
-              </tr>
-            </thead>
-            <tbody>
+          {summary.problems.length > 0 && (
+            <details className="group/details rounded-2xl border border-(--s-line) bg-(--s-surface) px-3 py-1 text-sm">
+              <summary className={SUMMARY_CLASS}>
+                {t("problemsTitle")}
+                <ChevronDown className={SUMMARY_CHEVRON_CLASS} aria-hidden />
+              </summary>
+              <ul className="mb-2 max-h-48 space-y-0.5 overflow-auto text-(--s-muted)">
+                {summary.problems.slice(0, 100).map(({ row, problem }) => (
+                  <li key={`${row}-${problem}`}>{t("problemLine", { row: number(row), reason: t(`problems.${problem}`) })}</li>
+                ))}
+              </ul>
+            </details>
+          )}
+
+          {model && mapping && (
+            <details className="group/details rounded-2xl border border-(--s-line) bg-(--s-surface) px-3 py-1" open={mappingSource === "fallback" || !hasName || !hasPrice}>
+              <summary className={SUMMARY_CLASS}>
+                {t("mappingTitle")}
+                <ChevronDown className={SUMMARY_CHEVRON_CLASS} aria-hidden />
+              </summary>
+              {mappingSource && <p className="text-xs text-(--s-muted)">{t(`mappingSource.${mappingSource}`)}</p>}
+              <div className="mt-3 mb-2 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {[...REVIEWED_FIELDS, ...OTHER_FIELDS].map((field) => (
+                  <FieldSelect key={field} field={field} mapping={mapping} model={model} onChange={changeMapping} />
+                ))}
+              </div>
+            </details>
+          )}
+
+          {toAdd.length > 0 && (
+            <>
+            {/* Phones: rows, not a table that scrolls sideways. */}
+            <ul className="hidden flex-col rounded-2xl border border-(--s-line) bg-(--s-surface) max-[600px]:flex">
               {toAdd.slice(0, 5).map((row) => (
-                <tr key={row.row} className="border-t">
-                  <td className="p-2 tabular-nums">{number(row.row)}</td>
-                  <td className="max-w-56 truncate p-2" dir="auto">
-                    {row.name.ar ?? row.name.en}
-                  </td>
-                  <td className="p-2 tabular-nums">{number((row.salePiastres ?? row.listPiastres) / 100)}</td>
-                  <td className="p-2 tabular-nums">{row.stock === null ? "—" : number(row.stock)}</td>
-                  <td className="p-2 tabular-nums">{number(row.images.length)}</td>
-                  <td className="p-2 text-xs text-muted-foreground">{row.flagged ? t("sample.flagged") : needsAiCopy(row) ? t("sample.ai") : t("sample.fromFile")}</td>
-                </tr>
+                <li key={row.row} className="flex items-start gap-2.5 border-b border-(--s-line) px-3 py-2.5 text-[13px] last:border-b-0">
+                  <span className="mt-0.5 shrink-0 rounded-md border border-(--s-line) bg-(--s-surface-2) px-1.5 font-montserrat text-[11px] text-(--s-faint) tabular-nums" dir="ltr">
+                    #{row.row}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <b className="block truncate font-medium text-(--s-ink)" dir="auto">
+                      {row.name.ar ?? row.name.en}
+                    </b>
+                    <small className="block text-xs text-(--s-muted)">
+                      {t("sample.price")} <span className="tabular-nums">{number((row.salePiastres ?? row.listPiastres) / 100)}</span>
+                      {" · "}
+                      {t("sample.stock")} <span className="tabular-nums">{row.stock === null ? "—" : number(row.stock)}</span>
+                      {" · "}
+                      {t("sample.photos")} <span className="tabular-nums">{number(row.images.length)}</span>
+                    </small>
+                    <small className="block text-xs text-(--s-faint)">
+                      {row.flagged ? t("sample.flagged") : needsAiCopy(row) ? t("sample.ai") : t("sample.fromFile")}
+                    </small>
+                  </div>
+                </li>
               ))}
-            </tbody>
-          </table>
+            </ul>
+            <div className="overflow-x-auto rounded-2xl border border-(--s-line) bg-(--s-surface) max-[600px]:hidden">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-(--s-surface-2) text-start">
+                    <th className="p-2 text-start text-xs font-medium whitespace-nowrap text-(--s-muted)">{t("sample.row")}</th>
+                    <th className="p-2 text-start text-xs font-medium whitespace-nowrap text-(--s-muted)">{t("sample.name")}</th>
+                    <th className="p-2 text-start text-xs font-medium whitespace-nowrap text-(--s-muted)">{t("sample.price")}</th>
+                    <th className="p-2 text-start text-xs font-medium whitespace-nowrap text-(--s-muted)">{t("sample.stock")}</th>
+                    <th className="p-2 text-start text-xs font-medium whitespace-nowrap text-(--s-muted)">{t("sample.photos")}</th>
+                    <th className="p-2 text-start text-xs font-medium whitespace-nowrap text-(--s-muted)">{t("sample.copy")}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {toAdd.slice(0, 5).map((row) => (
+                    <tr key={row.row} className="border-t border-(--s-line)">
+                      <td className="p-2 tabular-nums">{number(row.row)}</td>
+                      <td className="max-w-56 truncate p-2" dir="auto">
+                        {row.name.ar ?? row.name.en}
+                      </td>
+                      <td className="p-2 tabular-nums">{number((row.salePiastres ?? row.listPiastres) / 100)}</td>
+                      <td className="p-2 tabular-nums">{row.stock === null ? "—" : number(row.stock)}</td>
+                      <td className="p-2 tabular-nums">{number(row.images.length)}</td>
+                      <td className="p-2 text-xs whitespace-nowrap text-(--s-muted)">{row.flagged ? t("sample.flagged") : needsAiCopy(row) ? t("sample.ai") : t("sample.fromFile")}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            </>
+          )}
         </div>
-      )}
 
-      <div>
-        <Button size="lg" onClick={start} disabled={!canAddProducts}>
-          <Sparkles aria-hidden />
-          {t("addAll", { count: number(toAdd.length) })}
-        </Button>
-      </div>
-    </div>
+        <div className="flex flex-wrap items-center gap-2 border-t border-(--s-line) bg-(--s-surface-2) px-[18px] py-3.5 max-[600px]:p-3.5">
+          <SellerButton type="button" onClick={start} disabled={!canAddProducts} className="max-[600px]:w-full">
+            <Sparkles aria-hidden />
+            {t("addAll", { count: number(toAdd.length) })}
+          </SellerButton>
+          <SellerButton type="button" variant="outline" onClick={reset} className="max-[600px]:w-full">
+            {t("anotherFile")}
+          </SellerButton>
+        </div>
+      </GenCard>
+    </div>,
   );
 }

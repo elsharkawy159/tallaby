@@ -6,6 +6,7 @@ import { QuantitySelector } from "./quantity-selector";
 import type { ProductCardProps } from "./product-card.types";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/providers/cart-provider";
+import { normalizeMinOrderQuantity } from "@workspace/lib/orders/min-order-quantity";
 
 interface ProductCardActionsProps {
   product: ProductCardProps;
@@ -23,8 +24,13 @@ export const ProductCardActions = ({
   wishlistItemId,
 }: ProductCardActionsProps) => {
   const productId = product.id || "";
-  // Unlimited stock (0138, F-51) has no limit.
-  const stock = product.trackStock === false ? Number.POSITIVE_INFINITY : product.quantity || 0;
+  // Unlimited stock (0138, F-51) has no limit. Stock below the seller's minimum (0151) can't be ordered; adding brings the minimum.
+  const stock =
+    product.trackStock === false
+      ? Number.POSITIVE_INFINITY
+      : Number(product.quantity || 0) >= normalizeMinOrderQuantity(product.minOrderQuantity)
+        ? product.quantity || 0
+        : 0;
   const { getCartItem } = useCart();
   const cartItem = productId ? getCartItem(productId) : undefined;
   const isInCartStatus = !!cartItem;

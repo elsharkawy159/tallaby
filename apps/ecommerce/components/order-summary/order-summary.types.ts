@@ -7,6 +7,8 @@ export interface OrderSummaryItem {
   price: string | number
   /** A free gift (0149): one unit at price 0. */
   giftRuleId?: string | null
+  /** A cross-sell line (0145): outside the product's minimum (0151). */
+  crossSellId?: string | null
   variant?: {
     option1?: string | null
     option2?: string | null
@@ -16,6 +18,8 @@ export interface OrderSummaryItem {
   product: {
     id: string
     title: string
+    /** The seller's minimum per order (0151). */
+    minOrderQuantity?: number | null
     productType?: string | null
     freeDelivery?: boolean | null
     seller?: {

@@ -1,10 +1,7 @@
 "use client"
 
-import { useRef, useState } from "react"
-import { useForm, useFormContext, useWatch } from "react-hook-form"
-import { useDropzone } from "react-dropzone"
+import { useFormContext } from "react-hook-form"
 import { useTranslations } from "next-intl"
-import { toast } from "sonner"
 import { ArrowUp, CircleHelp, FileText, ImagePlus, LoaderCircle, Paperclip, Sparkles, Undo2, X } from "lucide-react"
 import { Button } from "@workspace/ui/components/button"
 import { AiCreditsNote } from "@/components/ai/ai-credits-note.client"
@@ -18,94 +15,19 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@workspace/ui/components/dialog"
-import { createClient } from "@/supabase/client"
-import { cn, generateImageName, getPublicUrl } from "@/lib/utils"
+import { cn } from "@/lib/utils"
 import { useIsMobile } from "@/hooks/use-mobile"
 import type { SellerPricingSettings } from "@/lib/utils/product-pricing.lib"
 import { SMALL_BUTTON_CLASS } from "@/app/(main)/products/add/form-kit"
-import type { AddProductFormData, CategoryOption, SupportedLocale } from "../add-product.schema"
-import { buildFormValuesFromImport } from "../build-form-values-from-import.lib"
-import { OPEN_SECTION_EVENT } from "../add-product.lib"
-import {
-  AUTOFILL_IMAGE_TYPES,
-  AUTOFILL_LIMITS,
-  AUTOFILL_PDF_TYPE,
-  type AutofillErrorCode,
-  type MissingField,
-  type ProductAutofillOutput,
-  type ProductAutofillResponse,
-} from "./ai-autofill.dto"
-import {
-  contentBlocksToHtml,
-  describeCurrentListing,
-  pickAutofillCategory,
-  planAutofillChanges,
-  sectionForPath,
-  toParsedImport,
-  type AutofillChange,
-} from "./ai-autofill.lib"
+import type { AddProductFormData, CategoryOption } from "../add-product.schema"
+import { AUTOFILL_LIMITS } from "./ai-autofill.dto"
+import { useAiAutofill } from "./use-ai-autofill"
 
 /**
- * "Add your product with AI" (PLAN.md AI-1): photos, a PDF and/or a short
- * description fill the product form. On the edit page the same box takes a
- * change request ("make the description longer") for the product as it is.
- * The seller reviews and saves; nothing is saved here. Product photos also
- * become the product's images; screenshots (of reviews, chats) do not.
+ * The edit page's AI box: a change request ("make the description longer") for the
+ * product as it is. A new product uses the full-screen AiAddStage instead; both run
+ * on useAiAutofill. The seller reviews and saves; nothing is saved here.
  */
-
-/** Matches the form's image limit (basic-section MAX_PRODUCT_IMAGES). */
-const MAX_PRODUCT_IMAGES = 8
-/** Longest side of the copy sent to the model. */
-const AI_IMAGE_MAX_SIDE = 1536
-/** Product images the existing uploader accepts as they are. */
-const UPLOADABLE_TYPES = ["image/jpeg", "image/png"]
-const LOCALES: SupportedLocale[] = ["ar", "en"]
-
-type Picked = { id: string; file: File; preview: string }
-
-type Review = {
-  filled: number
-  missing: MissingField[]
-  warnings: string[]
-  undo: AutofillChange[]
-}
-
-type PromptValues = { prompt: string }
-
-function loadImage (file: File): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    const url = URL.createObjectURL(file)
-    const image = new Image()
-    image.onload = () => {
-      URL.revokeObjectURL(url)
-      resolve(image)
-    }
-    image.onerror = () => {
-      URL.revokeObjectURL(url)
-      reject(new Error("image"))
-    }
-    image.src = url
-  })
-}
-
-/** A JPEG copy whose longest side is at most `maxSide` (white behind transparency). */
-async function toJpeg (file: File, maxSide: number, quality = 0.85): Promise<Blob> {
-  const image = await loadImage(file)
-  const scale = Math.min(1, maxSide / Math.max(image.naturalWidth, image.naturalHeight))
-  const canvas = document.createElement("canvas")
-  canvas.width = Math.max(1, Math.round(image.naturalWidth * scale))
-  canvas.height = Math.max(1, Math.round(image.naturalHeight * scale))
-  const context = canvas.getContext("2d")
-  if (!context) throw new Error("canvas")
-  context.fillStyle = "#fff"
-  context.fillRect(0, 0, canvas.width, canvas.height)
-  context.drawImage(image, 0, 0, canvas.width, canvas.height)
-  return new Promise((resolve, reject) =>
-    canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error("blob"))), "image/jpeg", quality)
-  )
-}
-
-const renamed = (name: string, ext: string) => `${name.replace(/\.[^.]+$/, "") || "photo"}.${ext}`
 
 /** The help text: a tooltip on the `?` with a pointer, a dialog on touch screens. */
 function AiHelp ({ title, text }: { title: string; text: string }) {
@@ -163,223 +85,28 @@ export function AiAutofillCard ({
 }) {
   const t = useTranslations("productForm.ai")
   const form = useFormContext<AddProductFormData>()
-  const isEdit = mode === "edit"
-  // The prompt has its own small form: registered (uncontrolled), so typing
-  // never re-renders the product form and no keystroke is lost.
-  const promptForm = useForm<PromptValues>({ defaultValues: { prompt: "" } })
-  const prompt = useWatch({ control: promptForm.control, name: "prompt" }) ?? ""
-  const [images, setImages] = useState<Picked[]>([])
-  const [pdf, setPdf] = useState<File | null>(null)
-  const [replace, setReplace] = useState(false)
-  const [running, setRunning] = useState(false)
-  const [review, setReview] = useState<Review | null>(null)
-  const [remaining, setRemaining] = useState<number | null>(null)
-  const idSeq = useRef(0)
-
-  const hasInput = prompt.trim().length > 0 || images.length > 0 || pdf !== null
-  const [arTitle, enTitle] = useWatch({ control: form.control, name: ["localized.ar.title", "localized.en.title"] })
-  const formHasContent = Boolean(arTitle?.trim() || enTitle?.trim())
-
-  const addFiles = (files: File[]) => {
-    const nextImages = [...images]
-    let nextPdf = pdf
-    for (const file of files) {
-      if (file.type === AUTOFILL_PDF_TYPE) {
-        if (file.size > AUTOFILL_LIMITS.maxPdfBytes) toast.error(t("errors.pdfTooLarge"))
-        else nextPdf = file
-      } else if ((AUTOFILL_IMAGE_TYPES as readonly string[]).includes(file.type)) {
-        if (nextImages.length >= AUTOFILL_LIMITS.maxImages) {
-          toast.error(t("errors.tooManyImages", { max: AUTOFILL_LIMITS.maxImages }))
-          break
-        }
-        nextImages.push({ id: `ai-${idSeq.current++}`, file, preview: URL.createObjectURL(file) })
-      } else {
-        toast.error(t("errors.badFile"))
-      }
-    }
-    setImages(nextImages)
-    setPdf(nextPdf)
-  }
-
-  const removeImage = (id: string) =>
-    setImages((current) => {
-      const gone = current.find((item) => item.id === id)
-      if (gone) URL.revokeObjectURL(gone.preview)
-      return current.filter((item) => item.id !== id)
-    })
-
-  const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
-    onDrop: addFiles,
-    noClick: true,
-    noKeyboard: true,
-    disabled: running,
-    accept: {
-      "image/jpeg": [".jpg", ".jpeg"],
-      "image/png": [".png"],
-      "image/webp": [".webp"],
-      [AUTOFILL_PDF_TYPE]: [".pdf"],
-    },
-  })
-
-  /** Product photos join the product's images (up to the form limit); webp is stored as JPEG. */
-  const uploadProductImages = async (picked: Picked[]) => {
-    const current = form.getValues("images") ?? []
-    const room = Math.max(0, MAX_PRODUCT_IMAGES - current.length)
-    if (room === 0 || picked.length === 0) return
-    const supabase = createClient()
-    const paths = await Promise.all(
-      picked.slice(0, room).map(async ({ file }) => {
-        try {
-          const upload = UPLOADABLE_TYPES.includes(file.type)
-            ? file
-            : new File([await toJpeg(file, 2400, 0.9)], renamed(file.name, "jpg"), { type: "image/jpeg" })
-          const { data, error } = await supabase.storage
-            .from("products")
-            .upload(generateImageName(upload), upload, { cacheControl: "31536000", upsert: false })
-          return error ? null : data.path
-        } catch {
-          return null
-        }
-      })
-    )
-    const added = paths.filter((path): path is string => Boolean(path))
-    if (added.length) {
-      form.setValue("images", [...(form.getValues("images") ?? []), ...added].slice(0, MAX_PRODUCT_IMAGES), {
-        shouldDirty: true,
-        shouldValidate: true,
-      })
-    }
-    if (added.length < Math.min(room, picked.length)) toast.warning(t("errors.photoUploadFailed"))
-  }
-
-  /** Sends the prompt and files; `sent` lists the images in the order the model numbers them. */
-  const requestAutofill = async (text: string, sent: Picked[]): Promise<ProductAutofillResponse> => {
-    const body = new FormData()
-    body.set("text", text)
-    for (const item of images) {
-      const jpeg = await toJpeg(item.file, AI_IMAGE_MAX_SIDE).catch(() => null)
-      if (!jpeg) continue
-      body.append("images", jpeg, renamed(item.file.name, "jpg"))
-      sent.push(item)
-    }
-    if (pdf) body.set("pdf", pdf, pdf.name)
-    if (isEdit) body.set("current", describeCurrentListing(form.getValues(), AUTOFILL_LIMITS.maxCurrentLength))
-    const response = await fetch("/api/ai/product-autofill", { method: "POST", body })
-    try {
-      return (await response.json()) as ProductAutofillResponse
-    } catch {
-      // A non-JSON body comes from the platform (size limit or the 60 s cut-off), not the route.
-      const error = response.status === 413 ? "tooLarge" : response.status === 504 ? "timeout" : "failed"
-      return { ok: false, error }
-    }
-  }
-
-  /** The model's picks; when it marked none and found no reviews, every image counts as a product photo. */
-  const productPhotos = (output: ProductAutofillOutput, sent: Picked[]) =>
-    output.productPhotos.length || output.reviews.length
-      ? output.productPhotos.map((index) => sent[index]).filter((item): item is Picked => Boolean(item))
-      : sent
-
-  const run = async ({ prompt: text }: PromptValues) => {
-    if (!hasInput || running) return
-    setRunning(true)
-    setReview(null)
-    try {
-      const sent: Picked[] = []
-      const response = await requestAutofill(text.trim(), sent)
-      if (!response.ok) {
-        if (response.error === "dailyLimit") setRemaining(0)
-        toast.error(t(`errors.${response.error satisfies AutofillErrorCode}`, { max: AUTOFILL_LIMITS.maxPdfPages }))
-        return
-      }
-
-      const { output, remainingToday } = response.result
-      setRemaining(remainingToday)
-      await uploadProductImages(productPhotos(output, sent))
-
-      // existingImages stops the import builder from fetching remote images.
-      const built = await buildFormValuesFromImport(
-        toParsedImport(output),
-        { sellerPricing, categories },
-        { existingImages: ["-"] }
-      )
-      const current = form.getValues()
-      const photoUrls = (current.images ?? []).map((path) => getPublicUrl(path, "products"))
-      const contentHtml = Object.fromEntries(
-        LOCALES.map((locale) => [
-          locale,
-          contentBlocksToHtml(
-            output.localized[locale].contentBlocks,
-            photoUrls,
-            output.localized[locale].title || current.localized?.[locale]?.title || ""
-          ),
-        ])
-      ) as Record<SupportedLocale, string>
-      // Matched here from the AI's titles and hint; the prompt carries no category list (docs/ai.md).
-      const categoryId = pickAutofillCategory(categories, output) ?? (built.categoryMatched ? built.values.categoryId : null)
-      const missing: MissingField[] = categoryId || current.categoryId ? output.missing : [...output.missing, "category"]
-      const changes = planAutofillChanges(
-        current,
-        built.values,
-        output,
-        isEdit ? "edit" : replace ? "replace" : "empty",
-        {
-          categoryId,
-          brandId: built.brandMatched ? built.values.brandId : undefined,
-          storeCategoryName: output.storeCategoryName,
-          contentHtml,
-        }
-      )
-
-      // The variants editor builds rows from the types; undo must restore the
-      // rows first, else it rebuilds types from the generated rows.
-      const undoPaths = changes.map(({ path }) => path)
-      if (undoPaths.includes("variantTypes")) undoPaths.unshift("variants")
-      const undo = undoPaths.map((path) => ({
-        path,
-        value: structuredClone(form.getValues(path as never)),
-      }))
-      for (const { path, value } of changes) {
-        form.setValue(path as never, value as never, { shouldDirty: true, shouldValidate: true })
-      }
-      // Open every folded section the AI wrote into, so the seller sees it.
-      for (const section of new Set(changes.map(({ path }) => sectionForPath(path)))) {
-        document.dispatchEvent(new CustomEvent(OPEN_SECTION_EVENT, { detail: section }))
-      }
-
-      setReview({ filled: changes.length, missing: isEdit ? [] : missing, warnings: output.warnings, undo })
-      if (changes.length) onAppliedChange?.(1)
-      promptForm.reset({ prompt: "" })
-      images.forEach((item) => URL.revokeObjectURL(item.preview))
-      setImages([])
-      setPdf(null)
-      if (changes.length) toast.success(t("filledToast", { count: changes.length }))
-      else toast.message(t(isEdit ? "nothingChanged" : "nothingFilled"))
-    } catch (error) {
-      console.error("AI autofill failed", error)
-      toast.error(t("errors.failed"))
-    } finally {
-      setRunning(false)
-    }
-  }
-
-  const submit = promptForm.handleSubmit(run)
-
-  const undoFill = () => {
-    if (!review) return
-    for (const { path, value } of review.undo) {
-      form.setValue(path as never, value as never, { shouldDirty: true, shouldValidate: true })
-    }
-    if (review.undo.length) onAppliedChange?.(-1)
-    setReview(null)
-    toast.message(t("undone"))
-  }
-
-  const outOfCalls = remaining === 0
+  const {
+    isEdit,
+    promptField,
+    prompt,
+    images,
+    pdf,
+    clearPdf,
+    replace,
+    setReplace,
+    running,
+    review,
+    dismissReview,
+    undoFill,
+    remaining,
+    outOfCalls,
+    hasInput,
+    formHasContent,
+    removeImage,
+    dropzone: { getRootProps, getInputProps, isDragActive, open },
+    submit,
+  } = useAiAutofill({ form, categories, sellerPricing, mode, onAppliedChange })
   const title = isEdit ? t("editTitle") : t("title")
-  const promptField = promptForm.register("prompt", {
-    setValueAs: (value: string) => value.slice(0, AUTOFILL_LIMITS.maxTextLength),
-  })
 
   return (
     <section
@@ -431,7 +158,7 @@ export function AiAutofillCard ({
               <li className="flex h-11 max-w-[200px] items-center gap-1.5 rounded-lg border bg-muted px-2.5 text-xs">
                 <FileText className="size-4 shrink-0 text-primary" aria-hidden />
                 <span className="truncate" dir="auto">{pdf.name}</span>
-                <button type="button" onClick={() => setPdf(null)} disabled={running} aria-label={t("remove")}>
+                <button type="button" onClick={clearPdf} disabled={running} aria-label={t("remove")}>
                   <X className="size-3" />
                 </button>
               </li>
@@ -525,7 +252,7 @@ export function AiAutofillCard ({
                   {t("undo")}
                 </Button>
               )}
-              <Button type="button" variant="ghost" className={cn(SMALL_BUTTON_CLASS, "h-7 px-2 text-xs")} onClick={() => setReview(null)}>
+              <Button type="button" variant="ghost" className={cn(SMALL_BUTTON_CLASS, "h-7 px-2 text-xs")} onClick={dismissReview}>
                 {t("dismiss")}
               </Button>
             </div>

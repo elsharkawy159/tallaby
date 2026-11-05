@@ -9,11 +9,12 @@ export async function loadProductSocialProof(sellerId: string, productId: string
       trackStock: products.trackStock,
       showLowStockBadge: products.showLowStockBadge,
       lowStockThreshold: products.lowStockThreshold,
+      minOrderQuantity: products.minOrderQuantity,
     })
     .from(products)
     .where(and(eq(products.id, productId), eq(products.sellerId, sellerId)))
     .limit(1);
-  if (!product) return { showLiveViews: false, trackStock: true, showLowStockBadge: false, lowStockThreshold: null, reviews: [] };
+  if (!product) return { showLiveViews: false, trackStock: true, showLowStockBadge: false, lowStockThreshold: null, minOrderQuantity: 1, reviews: [] };
 
   const rows = await db
     .select({ id: reviews.id, reviewerName: reviews.reviewerName, rating: reviews.rating, comment: reviews.comment })
@@ -26,6 +27,7 @@ export async function loadProductSocialProof(sellerId: string, productId: string
     trackStock: product.trackStock,
     showLowStockBadge: product.showLowStockBadge,
     lowStockThreshold: product.lowStockThreshold,
+    minOrderQuantity: product.minOrderQuantity,
     reviews: rows.map((row) => ({ id: row.id, reviewerName: row.reviewerName ?? "", rating: row.rating, comment: row.comment ?? "" })),
   };
 }

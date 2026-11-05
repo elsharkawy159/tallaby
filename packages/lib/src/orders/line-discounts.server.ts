@@ -25,6 +25,8 @@ export type StoreCartDiscounts = {
   gifts: Array<GiftSnapshot | null>;
   /** Gift lines that no longer qualify. They are never charged: the order drops them. */
   invalidGiftIndexes: number[];
+  /** Input lines whose cross-sell offer really applies: only they stay outside a product's minimum (0151). */
+  crossSellIndexes: number[];
   /** What the paid lines come to after their offers, before a coupon. */
   netPiastres: number;
   paidUnits: number;
@@ -102,6 +104,7 @@ export async function storeCartDiscounts(
       discountLines: [],
       gifts: items.map(() => null),
       invalidGiftIndexes: items.flatMap((item, index) => (item.giftRuleId ? [index] : [])),
+      crossSellIndexes: [],
       netPiastres: 0,
       paidUnits: 0,
       rules: [],
@@ -206,6 +209,7 @@ export async function storeCartDiscounts(
     discountLines: lineOfferDiscountLines(paidLines),
     gifts,
     invalidGiftIndexes,
+    crossSellIndexes: paid.flatMap(({ index }, position) => (crossSell.lines[position]?.snapshot ? [index] : [])),
     netPiastres,
     paidUnits,
     rules,

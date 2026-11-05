@@ -6,6 +6,9 @@ import type { QuantitySelectorProps } from "./product-card.types";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/providers/cart-provider";
 import { useTranslations } from "next-intl";
+import { toast } from "sonner";
+import { normalizeMinOrderQuantity } from "@workspace/lib/orders/min-order-quantity";
+import { cartItemFloor } from "@/lib/cart-min-order.lib";
 
 const sizeStyles = {
   sm: {
@@ -44,7 +47,7 @@ export const QuantitySelector = ({
   maxOrderQuantity,
 }: QuantitySelectorProps) => {
   const t = useTranslations("common");
-  const { getCartItemById, updateQuantity, removeFromCart, isItemLoading } =
+  const { cartItems, getCartItemById, updateQuantity, removeFromCart, isItemLoading } =
     useCart();
 
   const cartItem = cartItemId ? getCartItemById(cartItemId) : undefined;
@@ -54,6 +57,11 @@ export const QuantitySelector = ({
   if (!cartItemId || quantity === 0) return null;
 
   const styles = sizeStyles[size] || sizeStyles.default;
+
+  // The seller's minimum (0151): down is refused with a message at the line's
+  // floor, and removing gets its own button. A single unit keeps its trash icon.
+  const floor = cartItem ? cartItemFloor(cartItem, cartItems) : 1;
+  const atFloor = floor > 1 && quantity > 1 && quantity <= floor;
 
   const maxOrderQty =
     maxOrderQuantity != null
@@ -75,6 +83,11 @@ export const QuantitySelector = ({
       return;
     }
 
+    if (atFloor && newQuantity < quantity) {
+      toast.error(t("minOrderLine", { count: normalizeMinOrderQuantity(cartItem?.product?.minOrderQuantity) }));
+      return;
+    }
+
     await updateQuantity(cartItemId, newQuantity);
   };
 
@@ -85,6 +98,18 @@ export const QuantitySelector = ({
         className
       )}
     >
+      {atFloor && (
+        <Button
+          variant="ghost"
+          size="icon"
+          className={cn("shrink-0 rounded-none p-0", styles.button)}
+          onClick={() => removeFromCart(cartItemId)}
+          disabled={isLoading}
+          aria-label={t("minOrderRemove")}
+        >
+          <Trash className={cn(styles.icon, "size-4 shrink-0")} />
+        </Button>
+      )}
       <Button
         variant="ghost"
         size="icon"

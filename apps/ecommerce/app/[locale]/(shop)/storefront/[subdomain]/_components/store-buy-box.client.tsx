@@ -28,6 +28,8 @@ export function StoreBuyBox({
   selectedVariantId,
   isInCart,
   quantity,
+  minQuantity = 1,
+  belowMinimum = false,
   onQuantityChange,
   addLabel,
   buyLabel,
@@ -42,6 +44,10 @@ export function StoreBuyBox({
   selectedVariantId: string | null;
   isInCart: boolean;
   quantity: number;
+  /** The lowest the quantity can go (the seller's minimum, 0151). */
+  minQuantity?: number;
+  /** All the product's stock can't reach its minimum: it can't be ordered (0151). */
+  belowMinimum?: boolean;
   onQuantityChange: (quantity: number) => void;
   addLabel?: string;
   buyLabel?: string;
@@ -53,7 +59,8 @@ export function StoreBuyBox({
   hideQuantity?: boolean;
 }) {
   const t = useTranslations("storeProduct");
-  const hasStock = product.status === "active" && stock > 0;
+  const tCommon = useTranslations("common");
+  const hasStock = product.status === "active" && stock > 0 && !belowMinimum;
   const directCheckout = product.directCheckout === true;
   const dock = layout === "dock";
   const size = dock ? "h-12 text-[15px]" : "h-[54px] text-base";
@@ -62,12 +69,12 @@ export function StoreBuyBox({
   if (!hasStock) {
     return (
       <div className={cn("flex items-center gap-2.5", dock && "gap-2")}>
-        {!hideQuantity && !dock && <StoreQuantity value={quantity} max={0} disabled onChange={onQuantityChange} />}
+        {!hideQuantity && !dock && !belowMinimum && <StoreQuantity value={quantity} max={0} disabled onChange={onQuantityChange} />}
         <p
-          className={cn("flex-1 rounded-full px-4 text-center font-bold leading-none", dock ? "py-4 text-sm" : "py-5 text-base")}
+          className={cn("flex-1 rounded-full px-4 text-center font-bold", belowMinimum ? "py-3 text-sm leading-snug" : cn("leading-none", dock ? "py-4 text-sm" : "py-5 text-base"))}
           style={{ color: "var(--destructive,#dc2626)", background: "color-mix(in srgb, var(--destructive,#dc2626) 10%, transparent)" }}
         >
-          {t("outOfStock")}
+          {belowMinimum ? tCommon("minOrderUnavailable") : t("outOfStock")}
         </p>
       </div>
     );
@@ -118,7 +125,7 @@ export function StoreBuyBox({
     ) : null;
 
   const stepper = hideQuantity ? null : (
-    <StoreQuantity value={quantity} max={stock} compact={dock} onChange={onQuantityChange} />
+    <StoreQuantity value={quantity} min={minQuantity} max={stock} compact={dock} onChange={onQuantityChange} />
   );
 
   if (dock) {
@@ -144,6 +151,7 @@ export function StoreBuyBox({
 /** The quantity pill: − N +, 48px tall, 1.5px border. */
 export function StoreQuantity({
   value,
+  min = 1,
   max,
   disabled = false,
   compact = false,
@@ -151,6 +159,7 @@ export function StoreQuantity({
   className,
 }: {
   value: number;
+  min?: number;
   max?: number;
   disabled?: boolean;
   compact?: boolean;
@@ -158,7 +167,7 @@ export function StoreQuantity({
   className?: string;
 }) {
   const t = useTranslations("common");
-  const canDecrease = !disabled && value > 1;
+  const canDecrease = !disabled && value > min;
   const canIncrease = !disabled && (max == null || value < max);
   const step = cn(
     "grid h-full shrink-0 place-items-center text-(--sf-ink) transition-opacity disabled:opacity-35 motion-reduce:transition-none",
@@ -172,7 +181,7 @@ export function StoreQuantity({
         className,
       )}
     >
-      <button type="button" className={step} disabled={!canDecrease} onClick={() => onChange(Math.max(1, value - 1))} aria-label={t("decreaseQuantity")}>
+      <button type="button" className={step} disabled={!canDecrease} onClick={() => onChange(Math.max(min, value - 1))} aria-label={t("decreaseQuantity")}>
         <Minus className="size-4" aria-hidden />
       </button>
       <span className={cn("text-center text-base font-bold tabular-nums text-(--sf-ink)", compact ? "min-w-6" : "min-w-8")} aria-live="polite">

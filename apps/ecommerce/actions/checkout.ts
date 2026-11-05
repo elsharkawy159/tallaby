@@ -55,6 +55,7 @@ const cartWithShippingItems = {
           productType: true,
           freeDelivery: true,
           dimensions: true,
+          minOrderQuantity: true,
         },
         with: {
           productTranslations: {
@@ -338,6 +339,8 @@ export async function getCheckoutData() {
         paymentMethods: paymentMethodsList,
         itemsBySeller,
         summary,
+        // Lines outside a product's minimum (0151): their cross-sell offer applies.
+        crossSellLineIds: offers.crossSellIndexes.flatMap((index) => cart.cartItems[index]?.id ?? []),
         pendingCouponCode,
         walletAvailableBalance: walletSummary?.availableBalance ?? null,
         walletCurrency: walletSummary?.currency ?? null,

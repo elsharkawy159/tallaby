@@ -10,7 +10,7 @@ const subscribeNever = () => () => {};
 /** Where focus lands after each change of view; the page also returns to the top. */
 const FOCUS_TARGET = {
   choose: "add-method-title",
-  ai: "sec-ai-title",
+  ai: "ai-stage-title",
   manual: "add-product-title",
 } as const;
 

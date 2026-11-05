@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { useCart } from "@/providers/cart-provider";
 import { HideBottomNavOnScroll } from "@/components/layout/hide-bottom-nav-on-scroll.client";
 import { ProductTabsWrapper } from "@/components/product-page/product-tabs-wrapper.client";
 import { useProductPage } from "@/components/product-page/product-page-provider.client";
@@ -10,7 +11,9 @@ import {
   LOW_STOCK_THRESHOLD,
   discountExpiryDate,
   pricingDiscountPercent,
+  productBelowMinimum,
   productHasFreeDelivery,
+  productMinOrder,
   productPricing,
 } from "@/components/product-page/product-page.lib";
 import { lowStockLeft } from "@workspace/store-sections/low-stock";
@@ -94,7 +97,7 @@ export function StoreProductPrice({ showDiscount, showCountdown }: { showDiscoun
 function useLowStockLeft() {
   const { product } = useProductPage();
   const { stock } = useSelectedPricing();
-  const hasStock = product.status === "active" && stock > 0;
+  const hasStock = product.status === "active" && stock > 0 && !productBelowMinimum(product);
   const left = hasStock ? lowStockLeft(stock, { show: product.showLowStockBadge === true, threshold: product.lowStockThreshold }) : null;
   return { hasStock, stock, left };
 }
@@ -142,9 +145,14 @@ export function StoreProductBuyBox({
 }) {
   const { product, variantId, inCart, cartQuantity } = useProductPage();
   const { stock, price } = useSelectedPricing();
+  const tCommon = useTranslations("common");
+  const { cartItems } = useCart();
   // As ProductActions: starts at the cart's quantity (or 1). Shared by the in-page box and the phone dock.
-  const [quantity, setQuantity] = useState(cartQuantity || 1);
-  const hasStock = product.status === "active" && stock > 0;
+  const [picked, setQuantity] = useState(cartQuantity || 1);
+  // The seller's minimum (0151): the quantity never goes below it.
+  const minOrder = productMinOrder(product, cartItems, variantId, stock);
+  const quantity = Math.max(minOrder.floor, picked);
+  const hasStock = product.status === "active" && stock > 0 && !minOrder.unavailable;
   const twoButtons = buyNow && product.directCheckout !== true && hasStock;
 
   const box = (layout: "inline" | "dock", hideQuantity = false) => (
@@ -154,6 +162,8 @@ export function StoreProductBuyBox({
       selectedVariantId={variantId}
       isInCart={inCart}
       quantity={quantity}
+      minQuantity={minOrder.floor}
+      belowMinimum={minOrder.unavailable}
       onQuantityChange={setQuantity}
       addLabel={addLabel}
       buyLabel={buyLabel}
@@ -165,12 +175,15 @@ export function StoreProductBuyBox({
   );
   // Out of stock: "Notify me when it's back" (F-23a), per selected variant.
   const restock =
-    !hasStock && product.status === "active" ? (
+    stock <= 0 && product.status === "active" ? (
       <StoreRestockForm key={variantId ?? "product"} productId={product.id} variantId={variantId} />
     ) : null;
   // Sets the same quantity as the stepper (F-07c), so it lives with the box.
   const tiers = hasStock ? (
-    <StoreQuantityOffers productId={product.id} price={price} stock={stock} quantity={quantity} readOnly={inCart} onSelect={setQuantity} />
+    <>
+      {minOrder.minimum > 1 && <p className="mb-3 text-sm font-semibold text-(--sf-ink)">{tCommon("minOrderLine", { count: minOrder.minimum })}</p>}
+      <StoreQuantityOffers productId={product.id} price={price} stock={stock} quantity={quantity} floor={minOrder.floor} readOnly={inCart} onSelect={setQuantity} />
+    </>
   ) : null;
   if (!stickyMobile) {
     if (!restock) {
@@ -200,7 +213,7 @@ export function StoreProductBuyBox({
       {restock && <div className="md:mt-3">{restock}</div>}
       {twoButtons && (
         <div className="md:hidden">
-          <StoreQuantity value={quantity} max={stock} onChange={setQuantity} />
+          <StoreQuantity value={quantity} min={minOrder.floor} max={stock} onChange={setQuantity} />
         </div>
       )}
       <SiteDock>

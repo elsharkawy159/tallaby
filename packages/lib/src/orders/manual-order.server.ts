@@ -40,6 +40,7 @@ import {
   type ManualOrderMeta,
   type ManualOrderTotals,
 } from "./manual-order.lib";
+import { minOrderShortfalls } from "./min-order-quantity.lib";
 import { placeOrderFromCart, type PlaceOrderInventoryItem } from "./place-order";
 
 type Actor = { sellerId: string; actorId: string; storeId: string };
@@ -53,6 +54,7 @@ type ResolvedLine = {
   freeDelivery: boolean | null;
   dimensions: unknown;
   sellerFreeDelivery: boolean | null;
+  minOrderQuantity: number;
 };
 
 /**
@@ -111,6 +113,7 @@ async function resolveLines(
       freeDelivery: product.freeDelivery,
       dimensions: product.dimensions,
       sellerFreeDelivery: product.seller?.freeDelivery ?? null,
+      minOrderQuantity: product.minOrderQuantity,
     });
   }
   return { ok: true, lines: resolved };
@@ -219,6 +222,11 @@ export async function createManualOrder(actor: Actor, input: ManualOrderInput): 
   const resolved = await resolveLines(actor, input.lines);
   if (!resolved.ok) return { success: false, error: resolved.error };
 
+  // The form warned the seller; going under the minimum takes their explicit yes.
+  if (!input.allowBelowMinimum && minOrderShortfalls(resolved.lines).length > 0) {
+    return { success: false, error: "belowMinimum" };
+  }
+
   const guestId = randomUUID();
   let addressId = "";
   try {
@@ -306,6 +314,7 @@ export async function createManualOrder(actor: Actor, input: ManualOrderInput): 
     stockContext: { reason: "order", actorId, storeId },
     orderMetadata: { manualOrder, ...(paid ? { paymentCollector: "seller" } : {}) },
     deferPlacementFee: input.sendLink,
+    allowBelowMinOrderQuantity: input.allowBelowMinimum,
   });
 
   if (!result.success) {

@@ -1,4 +1,5 @@
 import { getPriceList, parsePriceJson } from "@workspace/lib";
+import { availableUnits, normalUnitsInCart, normalizeMinOrderQuantity, productPageFloor } from "@workspace/lib/orders/min-order-quantity";
 import type { ProductLocale } from "@/lib/product-translations";
 import { getDiscountPercent } from "@/lib/utils";
 import { findVariantIdByToken } from "@/lib/variant-colors";
@@ -34,6 +35,32 @@ export function stickyBuyBarClass(desktop?: string, { bottomNav = true }: { bott
 /** Whether a variant can be bought: its own stock, or an unlimited product (0138, F-51; variants inherit it). */
 export function variantHasStock(product: Pick<Product, "trackStock">, variant: Pick<ProductVariant, "stock">): boolean {
   return product.trackStock === false || Number(variant.stock ?? 0) > 0;
+}
+
+type MinOrderProduct = Pick<Product, "id" | "minOrderQuantity" | "trackStock" | "quantity" | "productVariants">;
+
+/** All of the product's stock can't reach the seller's minimum (0151), so it can't be ordered. */
+export function productBelowMinimum(product: Omit<MinOrderProduct, "id">): boolean {
+  const minimum = normalizeMinOrderQuantity(product.minOrderQuantity);
+  if (minimum <= 1) return false;
+  return availableUnits({ trackStock: product.trackStock, productQuantity: product.quantity, variantStocks: product.productVariants?.map((variant) => variant.stock) }) < minimum;
+}
+
+/**
+ * The product page's quantity rule (0151): it starts at what the minimum still
+ * needs. Other variants already in the cart count, and the selected variant's stock
+ * caps it so another variant can make up the rest.
+ */
+export function productMinOrder(
+  product: MinOrderProduct,
+  cartItems: readonly Pick<CartItem, "productId" | "quantity" | "savedForLater" | "variant" | "giftRuleId" | "crossSellId">[],
+  selectedVariantId: string | null,
+  stock: number,
+): { minimum: number; floor: number; unavailable: boolean } {
+  const minimum = normalizeMinOrderQuantity(product.minOrderQuantity);
+  if (minimum <= 1) return { minimum: 1, floor: 1, unavailable: false };
+  const otherUnits = normalUnitsInCart(product.id, cartItems, (line) => ((line.variant as { id?: string } | null)?.id ?? null) === selectedVariantId);
+  return { minimum, floor: productPageFloor({ minimum, otherUnits, stock }), unavailable: productBelowMinimum(product) };
 }
 
 export type ProductPricing = {

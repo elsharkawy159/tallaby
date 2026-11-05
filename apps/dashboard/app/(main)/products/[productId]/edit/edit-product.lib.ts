@@ -227,6 +227,7 @@ export function buildEditDefaultValues(
     trackStock: true,
     showLowStockBadge: false,
     lowStockThreshold: null,
+    minOrderQuantity: 1,
     sellerReviews: [],
     variantTypes,
     variants,

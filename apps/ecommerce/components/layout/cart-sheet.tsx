@@ -59,7 +59,7 @@ export function CartSheet({
       if (result.success) {
         router.refresh();
       } else {
-        toast.error(result.error === "Insufficient stock" ? tCheckout("notEnoughStock") : tToast("failedToUpdateCart"));
+        toast.error("minimum" in result ? result.error : result.error === "Insufficient stock" ? tCheckout("notEnoughStock") : tToast("failedToUpdateCart"));
       }
     } catch (error) {
       toast.error(tToast("failedToUpdateCart"));

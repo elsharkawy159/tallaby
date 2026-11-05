@@ -12,8 +12,9 @@ import { STORE_SOLID_BUTTON } from "./store-buttons.lib";
 
 /**
  * The add-to-cart button of a builder product card (`addToCart` node). It is
- * always there, as in the editor: a product with variants links to its page,
- * where the shopper picks one, and a sold-out product shows a disabled button.
+ * always there, as in the editor: a product with variants or a minimum above 1
+ * (0151; `hasVariants` covers both) links to its page, where the shopper picks
+ * one or sees the minimum, and a sold-out product shows a disabled button.
  * Once a product (without variants) is in the cart, the button turns into the
  * quantity stepper, so the card can add and remove without leaving the page.
  * Both follow the store's brand color, not Tallaby's.

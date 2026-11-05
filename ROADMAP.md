@@ -1056,18 +1056,30 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 ---
 
+### F-71 Add product flows from the v4 design — P1 · owner request
+
+**Why:** The owner's Claude Design file `Seller Dashboard/Seller Add Product v4.html`: a choice of method, a chat-style AI screen and a file screen with visible steps, then the same product form.
+**Status:** [Built, not deployed] 2026-11-05 (§7). No migration, no new server action or AI call.
+
+- **F-71a · P1 · deps: —** Choice of method: centred heading, three cards with a "fastest" badge and a meta line.
+- **F-71b · P1 · deps: F-71a** AI screen: live checklist, composer, the seller's message and step-by-step progress from the real answer, then the form with a banner (undo, what is missing). The edit page keeps its compact AI box.
+- **F-71c · P1 · deps: F-71a** File screen: drop zone, template download, file row, steps, the existing confirm step inside the card, stats and rows to fix.
+- **F-71d · P2 · deps: F-71b** Form: icon back button, import button in the header, reviews before search, compact review row.
+
+---
+
 ## 5. Owner feature requests (intake)
 
 Add each new request here first, with the date and the owner's words, then turn it into a §4 feature and place it in §3.
 
 | Date       | Request (owner's words)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Feature ID                                                                                       | Status                                                                                 |
 | ---------- | ---- | ---- | ---- |
-| 2026-11-05 | "Remove "Add Product" button from the dashboard homepage as user may no need to add more items" | Redesign follow-up | Queued |
-| 2026-11-05 | "Hide the bottom right Whatsapp static fixed icon as we have the whatsapp button already on the sheet" | Redesign follow-up | Queued |
-| 2026-11-05 | "Add minimum order allowed of item on the product adding/editing page" | New feature, needs a migration and a cart and checkout check | Queued |
-| 2026-11-05 | "Remove any apps pricing cost on tallaby.com ecommerce project (e.g Notification Whatsapp/email costs 1 cent), as we may have many apps with cost of each one so we only show the 3 cent per order and the pro plan price on tallaby.com and leave the apps prices on dashboard" | Copy only | Queued |
-| 2026-11-05 | "Regarding the "جهّز متجرك لأول طلب" section on mobile, I see it's very tall, so I suggest if we can show only the next step card and collabse the other steps to save space so seller don't have to scroll a lot" | Redesign follow-up | Queued |
-| 2026-11-05 | "on the dashboard add product, we need to add a step which allows user to choose between 3 steps ai or file or manual"; implement Claude Design `Seller Dashboard/Seller Add Product v4.html` | Redesign follow-up | Queued, waiting for the v4 file (§7) |
+| 2026-11-05 | "Remove "Add Product" button from the dashboard homepage as user may no need to add more items" | Redesign follow-up | Built (§7), not deployed |
+| 2026-11-05 | "Hide the bottom right Whatsapp static fixed icon as we have the whatsapp button already on the sheet" | Redesign follow-up | Built (§7), not deployed |
+| 2026-11-05 | "Add minimum order allowed of item on the product adding/editing page" | New feature, needs a migration and a cart and checkout check | Built as F-72 (2026-11-05; 0151 staging only) |
+| 2026-11-05 | "Remove any apps pricing cost on tallaby.com ecommerce project (e.g Notification Whatsapp/email costs 1 cent), as we may have many apps with cost of each one so we only show the 3 cent per order and the pro plan price on tallaby.com and leave the apps prices on dashboard" | Copy only | Built (§7), not deployed |
+| 2026-11-05 | "Regarding the "جهّز متجرك لأول طلب" section on mobile, I see it's very tall, so I suggest if we can show only the next step card and collabse the other steps to save space so seller don't have to scroll a lot" | Redesign follow-up | Built (§7), not deployed |
+| 2026-11-05 | "on the dashboard add product, we need to add a step which allows user to choose between 3 steps ai or file or manual"; implement Claude Design `Seller Dashboard/Seller Add Product v4.html` | F-71 | Built, not deployed (§7) |
 | 2026-11-05 | "keep roadmap hidden, use جنيه everywhere, hide sales totals before top-up" (the public `/roadmap` stays noindex; Arabic dashboard amounts in EGP read جنيه; a seller who has not topped up sees no sales totals) | F-68, copy | In progress (§7) |
 | 2026-11-04 | "we shouldn't show anything says that we're a marketplace" (Tallaby is a SaaS: sellers build their own store under their own name; delete the `/about` sentence "Tallaby began as a marketplace connecting shoppers with independent vendors", don't reword it) | Copy only, no feature | Built, not deployed (§7) |
 | 2026-11-04 | "on banner sections on website builder, desktop size is good but on mobile keep it banner to show the image fit good" | F-50b | Built, not deployed (§7) |
@@ -1378,6 +1390,14 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-70c Lint errors on this batch's code (2026-11-04; `9666b9a6`)
 - [ ] F-70d Fix the 6 duplicate addresses at launch (needs owner's go-ahead)
 - [ ] F-70e Compare research and go public (owner)
+
+**Add product v4 (owner, 2026-11-05)**
+
+- [x] F-71a Choice of method (2026-11-05)
+- [x] F-71b AI screen (2026-11-05; real calls on staging, no iPhone test)
+- [x] F-71c File screen (2026-11-05; real import on staging, PDF not run)
+- [x] F-71d Form header and reviews (2026-11-05)
+- [x] F-72 Minimum order quantity per product (2026-11-05; 0151 staging only, no browser test)
 
 ---
 
@@ -2331,6 +2351,32 @@ Removed the Add Product button from the dashboard home (the setup checklist's st
 ### 2026-11-05 — Security: passwords could reach the URL on a slow login (found in QA)
 
 The login, signup and reset forms in the dashboard and Admin had no `method`, so a submit before the page hydrated sent `GET /login?email=…&password=…`, putting the password in the URL, browser history and request logs. Seen in a QA server log; also live. The forms now use POST (checked: the served HTML has `method="post"`, POST returns 200 and the password isn't logged). Not seen in a slow-browser run. Owner to check production request logs for `password=`. The ecommerce auth dialogs only open after hydration, so they aren't affected.
+
+### 2026-11-05 — Follow-up: last home Add Product button, per-email and per-credit prices (owner)
+
+Checked the four owner requests against `cd529998`: the header button, the fixed WhatsApp button and the phone checklist were already done. Two gaps closed. The Best sellers empty state on the home page still had an Add product button, and it showed to any seller with no sales in the period; the button is gone and its text no longer tells the seller to add products. tallaby.com still stated extra email pack ($1.50 per 1,000) and AI credit pack ($1 per 100) prices on Pricing, FAQ and the Terms; they now say the price shows in the dashboard before buying (owner to confirm the Terms wording, and these packs aren't apps, so owner may prefer them back). Kept on purpose: the $5 first top-up and the $5 to $1,000 range (`docs/marketing-site-rules.md` requires the first), competitor prices on the compare pages, and the Pricing estimator, which still includes extra emails in its total so the number stays true. tallaby.com's own floating WhatsApp button is unchanged. No migration.
+
+### 2026-11-05 — F-71 Add product: AI, File and Manual from the v4 design (owner)
+
+Built `Seller Add Product v4.html`; this replaces the note above that the file could not be reached. No migration, no new server action, no new AI call. The form's saving and validation are unchanged, and the edit page keeps its AI box, now on the shared `use-ai-autofill.ts`.
+
+- **Choice:** centred heading and three cards, using the design's copy. Left out the design's "you review everything before publishing": complete rows from a file go live without review.
+- **AI:** one call writes everything, so its steps tick off only once the answer is in, each showing what the answer really holds; before that the card says it is waiting and shows no percentage. The design's timings per step are left out. Send now needs a description, a photo and a price, as in the design; a PDF alone also passes, and the server rules are unchanged. Limit shown is the real 4 photos, not the design's 8. "Try an example" fills the text only: the design's made-up result would not be real, and a sample photo would become a product photo.
+- **File:** keeps the confirm step before anything is added, so the credit estimate and column mapping stay, and shows live, draft, skipped and credits. Accepts CSV, XLSX, XLS, TSV and PDF. The template download uses the existing sheet; left out "try a sample file", which would create real products.
+- **Form:** icon back button, import button in the header, reviews before search, compact review row, AI banner. Weight stays optional and the description stays required, as the schema has them; the design has it the other way round.
+- **Review fixes:** the price check no longer blocks "500 جنية", "500ج", "ب500" or a bare "500", needs a real signal before showing a sale, and a description now needs 2 words, not 4; the AI card reports what landed in the form, so a resumed draft says what it kept, and a fill that changed nothing says so and doesn't move on.
+- **Owner decisions (2026-11-05):** complete file rows stay live, AI keeps requiring a description, photo and price, and weight stays optional. The file screen is now "رفع ملف منتجات" ("Upload a products file"). Extra email and AI credit pack prices stay off tallaby.com, the new Terms wording stays, and tallaby.com keeps its floating WhatsApp button.
+- **Checked:** on the local dashboard against staging with the QA seller, Arabic and English, 360 and 1280: no horizontal scroll, no console errors. Three real AI calls, one failed send (kept the message and photo), undo, the back button, a stored draft, the template's columns, a wrong file type and one real import (two draft products, `QA File Product One` and `Two`, left on staging, plus two photos in its bucket). Dark mode seen on the AI and File screens. **Not checked:** a real phone, publishing a product from the new flow, a PDF file, out-of-credits, and the paused or stopped file run.
+- **Second pass against the current design (same day):** the design's `seller-add-product-flow.js` had changed after v4, so every screen was compared again at 360, 390, 768 and 1440 (Arabic; English at 390 and 1440; dark at 1440). Three gaps fixed: the hidden phone publish bar no longer pads the page (the empty AI screen scrolled 96px at 1440; `publish-progress.tsx`); the description editor's toolbar is one line that scrolls sideways on phones instead of three rows (`EDITOR_PHONE_TOOLBAR_CLASS` in `sections/fields.tsx`, `packages/tiptap` untouched); the file review shows rows instead of a sideways-scrolling table up to 600px, and its two collapsible sections have a chevron and a 40px tap height. Still different: four result numbers instead of three, the breadcrumb stays "إضافة منتج" (shared top bar), and no "من رسالتك" tag on reviews the AI pulled (the form doesn't record where a review came from). Not seen this pass: the AI progress and result card (no staging AI key) and a running file import. Seen twice right after a recompile: the 390px manual form loaded with no description editor and a React "not mounted yet" warning; not seen in 4 later loads, so watch for it on slow phones.
+
+### 2026-11-05 — F-72 Minimum order quantity per product (owner)
+
+A seller sets the fewest units a customer can buy of a product in one order, in the product form's Inventory section (1 = no minimum). Migration `0151` adds `products.min_order_quantity` (default 1, CHECK 1–10000); applied on staging only (checked read-only), apply on production before deploying, since the product queries select every column and checkout reads it.
+
+- **Rule:** one product's lines add up across its variants. Free gifts don't count, nor a cross-sell line whose offer applies. `placeOrderFromCart` refuses an order under the minimum before stock, coupon or money (`belowMinOrderQuantity`). Only a manual order can go under it, after the seller ticks a confirmation; storefront and marketplace orders enforce it even if the client sends the flag, and an external order is never refused. Fee and ledger logic unchanged.
+- **Store:** cards with a minimum open the product page. The buy box, quantity offers and steppers start at the minimum and can't go below it. Adding to the cart brings the minimum, and checkout lists each product under it with an "Add N" button. Stock below the minimum shows "can't be ordered".
+- **Also in this change:** deleting a discount rule (Marketing › Discounts) now asks for confirmation first.
+- **Tests:** lib 1201, dashboard 962 and ecommerce 430 unit tests pass; `place-order-min-quantity.integration.test.ts` passed 9/9 on staging. The test used to pick the first store on staging (a real seller's) and leave its cross-sell switch on; it now uses the QA store `qa-f9de6575` (or `MOQ_TEST_STORE`), refuses to run without it and restores the switch. Staging was checked clean afterwards. **Not checked:** any screen in a browser. Known edges: an MCP `max_order_quantity` below the minimum stops the cart's + at the max; the manual order form caps a line at 99; MCP `get_product` doesn't return the minimum yet. Leftover on staging: products `moq-s`, `moq-v`, `moq-low` under QA seller `98e0b041` (no orders, safe to delete).
 
 ### 2026-11-05 — Seller dashboard redesign: website editor (batch G, owner)
 

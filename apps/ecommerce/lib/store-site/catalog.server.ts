@@ -9,6 +9,7 @@ import type {
   ReviewStats,
   ReviewSummary,
 } from "@workspace/store-sections/render";
+import { normalizeMinOrderQuantity } from "@workspace/lib/orders/min-order-quantity";
 import { lowStockLeft } from "@workspace/store-sections/low-stock";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
 import { getProducts } from "@/actions/products";
@@ -39,12 +40,13 @@ type RawProduct = Record<string, unknown> & {
   isSeasonal?: boolean | null;
   showLowStockBadge?: boolean | null;
   lowStockThreshold?: number | null;
+  minOrderQuantity?: number | null;
 };
 
 export type ResolvedCatalog = {
   products: Record<string, ProductSummary[]>;
   categories: CategorySummary[];
-  /** Products that need a variant choice: the card links to the product page instead of adding. */
+  /** Products that need a choice (a variant, or a minimum above 1; 0151): the card links to the product page instead of adding. */
   withVariants: Set<string>;
   brands?: BrandSummary[];
   reviews?: Record<string, ReviewSummary[]>;
@@ -53,6 +55,9 @@ export type ResolvedCatalog = {
   /** The page each paginated product list shows (`paginate` queries). */
   productPages?: Record<string, { page: number; totalPages: number }>;
 };
+
+/** The card opens the product page: to pick a variant, or to see the seller's minimum (0151). */
+const needsProductPage = (row: RawProduct) => (row.productVariants?.length ?? 0) > 0 || normalizeMinOrderQuantity(row.minOrderQuantity) > 1;
 
 function nthImage(images: unknown, index: number): string | null {
   if (!Array.isArray(images)) return null;
@@ -77,7 +82,8 @@ function toSummary(product: RawProduct): ProductSummary {
     price: final,
     compareAtPrice: list != null && final != null && list > final ? list : null,
     rating: product.averageRating ?? null,
-    inStock: stock > 0,
+    // With variants, the product page decides; its own count can be 0. Below the seller's minimum (0151) it can't be ordered.
+    inStock: stock >= ((product.productVariants?.length ?? 0) > 0 ? 1 : normalizeMinOrderQuantity(product.minOrderQuantity)),
     // The seller's low-stock alert (0122, F-34): the card says "N left", from the real stock.
     stockLeft: lowStockLeft(stock, { show: product.showLowStockBadge === true, threshold: product.lowStockThreshold }),
     trending: product.isTrending === true,
@@ -90,7 +96,7 @@ export function toProductSummaries(rows: readonly unknown[]): { products: Produc
   const list = rows as RawProduct[];
   return {
     products: list.map(toSummary),
-    withVariants: new Set(list.filter((row) => (row.productVariants?.length ?? 0) > 0).map((row) => row.id)),
+    withVariants: new Set(list.filter(needsProductPage).map((row) => row.id)),
   };
 }
 
@@ -152,7 +158,7 @@ export async function resolveStoreCatalog(
       ...filters,
     });
     const rows = (result.success ? (result.data ?? []) : []) as unknown as RawProduct[];
-    for (const row of rows) if ((row.productVariants?.length ?? 0) > 0) withVariants.add(row.id);
+    for (const row of rows) if (needsProductPage(row)) withVariants.add(row.id);
     return { summaries: rows.map(toSummary), total: result.success ? Number(result.totalCount ?? 0) : 0 };
   };
   await Promise.all(

@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { normalizePrice } from "@/lib/utils/product-pricing.lib";
 import { META_KEYWORD_MAX_LENGTH, META_KEYWORDS_MAX } from "./meta-keywords.lib";
-import { lowStockThresholdSchema, SELLER_REVIEWS_MAX, sellerReviewSchema } from "../social-proof/social-proof.dto";
+import { lowStockThresholdSchema, minOrderQuantitySchema, SELLER_REVIEWS_MAX, sellerReviewSchema } from "../social-proof/social-proof.dto";
 
 export const SUPPORTED_LOCALES = ["en", "ar"] as const
 export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number]
@@ -194,6 +194,8 @@ export const addProductFormSchema = z
     trackStock: z.boolean().default(true),
     showLowStockBadge: z.boolean().default(false),
     lowStockThreshold: lowStockThresholdSchema.default(null),
+    /** Empty means no minimum: it saves as 1. */
+    minOrderQuantity: minOrderQuantitySchema,
     sellerReviews: z.array(sellerReviewSchema).max(SELLER_REVIEWS_MAX).default([]),
 
     // localized: Record<locale, { title, description, bullet_points, slug, meta_title, meta_description }>
@@ -321,6 +323,7 @@ export const defaultValues = {
   trackStock: true,
   showLowStockBadge: false,
   lowStockThreshold: null,
+  minOrderQuantity: 1,
   sellerReviews: [],
   variantTypes: [],
   variants: [],

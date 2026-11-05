@@ -15,7 +15,7 @@ import {
   getCurrentUserId,
   getOrCreateCurrentUserId,
 } from "@/lib/get-current-user-id";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { activeCartWhere, getCartScope } from "@/lib/storefront.server";
 import { isMarketplaceRequest } from "@/lib/marketplace/marketplace-host.server";
 import {
@@ -25,6 +25,13 @@ import {
 } from "@/lib/product-translations";
 import { getPriceFinal } from "@workspace/lib";
 import { storeSellsProduct } from "@workspace/lib/stores/server";
+import {
+  addQuantityForMinimum,
+  availableUnits,
+  isQuantityChangeRefused,
+  normalUnitsInCart,
+  normalizeMinOrderQuantity,
+} from "@workspace/lib/orders/min-order-quantity";
 import { cartLineHasStock } from "@/lib/cart-stock.lib";
 import { touchCartActivity } from "@/lib/cart-activity.server";
 import { removeInvalidCartGifts } from "@workspace/lib/orders/line-discounts/server";
@@ -235,7 +242,13 @@ export const getCartItems = async () => {
 export async function addToCart(
   productIdOrData:
     | string
-    | { productId: string; quantity?: number; variantId?: string },
+    | {
+        productId: string;
+        quantity?: number;
+        variantId?: string;
+        /** A cross-sell unit: stays one unit, outside the product's minimum. */
+        exactQuantity?: boolean;
+      },
   quantity = 1,
   variantId?: string
 ) {
@@ -243,6 +256,7 @@ export async function addToCart(
   let productId: string;
   let qty: number;
   let varId: string | undefined;
+  let exactQuantity = false;
 
   if (typeof productIdOrData === "string") {
     productId = productIdOrData;
@@ -252,6 +266,7 @@ export async function addToCart(
     productId = productIdOrData.productId;
     qty = productIdOrData.quantity ?? 1;
     varId = productIdOrData.variantId;
+    exactQuantity = productIdOrData.exactQuantity === true;
   }
 
   const cart = await ensureCart();
@@ -283,6 +298,26 @@ export async function addToCart(
   // ...and, for a store with a selected catalog (D24), only its picks.
   if (cart.storeId && !(await storeSellsProduct(cart.storeId, productId))) {
     return { success: false, error: "This product isn't sold in this store" };
+  }
+
+  // The seller's minimum (0151): a card's single unit becomes the minimum, and a
+  // product that can't reach it can't be added. The order checks it again.
+  const minimum = normalizeMinOrderQuantity(product.minOrderQuantity);
+  if (minimum > 1 && !exactQuantity) {
+    const [variantRows, lines] = await Promise.all([
+      db.select({ id: productVariants.id, stock: productVariants.stock }).from(productVariants).where(eq(productVariants.productId, productId)),
+      db.select().from(cartItems).where(and(eq(cartItems.cartId, cart.id), eq(cartItems.productId, productId))),
+    ]);
+    const tracked = product.trackStock !== false;
+    const total = availableUnits({ trackStock: product.trackStock, productQuantity: product.quantity, variantStocks: variantRows.map((row) => row.stock) });
+    if (total < minimum) return { success: false, error: "Insufficient stock" };
+    const lineStock = varId ? variantRows.find((row) => row.id === varId)?.stock : product.quantity;
+    qty = addQuantityForMinimum({
+      requested: qty,
+      minimum,
+      unitsInCart: normalUnitsInCart(productId, lines),
+      lineAvailable: tracked ? Number(lineStock ?? 0) : Number.POSITIVE_INFINITY,
+    });
   }
 
   // Fetch variant if variantId is provided
@@ -430,6 +465,21 @@ export async function updateCartItem(itemId: string, quantity: number) {
   if (quantity <= 0) return removeFromCart(itemId);
   // A free gift is always one unit (0149).
   if (item.giftRuleId) return { success: false, error: "Item not found" };
+
+  // Going below the seller's minimum (0151) is refused; removing the line never is.
+  const minimum = normalizeMinOrderQuantity(item.product.minOrderQuantity);
+  if (minimum > 1 && quantity < item.quantity) {
+    const lines = await db
+      .select()
+      .from(cartItems)
+      .where(and(eq(cartItems.cartId, cart.id), eq(cartItems.productId, item.productId)));
+    const withMinimum = lines.map((line) => ({ ...line, minOrderQuantity: minimum }));
+    const self = withMinimum.find((line) => line.id === itemId);
+    if (self && isQuantityChangeRefused(self, quantity, withMinimum)) {
+      const t = await getTranslations("common");
+      return { success: false, error: t("minOrderLine", { count: minimum }), minimum };
+    }
+  }
 
   // The variant's own stock, as placing the order checks it (F-64).
   const variantId = (item.variant as { id?: string } | null)?.id;

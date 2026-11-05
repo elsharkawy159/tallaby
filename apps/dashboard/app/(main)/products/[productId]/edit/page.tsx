@@ -75,6 +75,7 @@ export default async function EditProductPage({
     trackStock: socialProof.trackStock,
     showLowStockBadge: socialProof.showLowStockBadge,
     lowStockThreshold: socialProof.lowStockThreshold,
+    minOrderQuantity: socialProof.minOrderQuantity,
     sellerReviews: socialProof.reviews,
   };
 

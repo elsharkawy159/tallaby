@@ -454,6 +454,10 @@
       "types": "./src/orders/quantity-offers.lib.ts",
       "default": "./src/orders/quantity-offers.lib.ts"
     },
+    "./orders/min-order-quantity": {
+      "types": "./src/orders/min-order-quantity.lib.ts",
+      "default": "./src/orders/min-order-quantity.lib.ts"
+    },
     "./orders/cross-sell": {
       "types": "./src/orders/cross-sell.lib.ts",
       "default": "./src/orders/cross-sell.lib.ts"

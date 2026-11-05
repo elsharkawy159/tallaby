@@ -76,6 +76,7 @@ import {
 import { getStorefrontShippingContext } from '../stores/shipping-context.server'
 import { isStorePhoneBlocked } from '../stores/blocked-phones.server'
 import { DEFAULT_CURRENCY, parseStoreCurrency } from '../utils/formatPrice'
+import { minOrderShortfalls, shouldEnforceMinOrder, type MinOrderShortfall } from './min-order-quantity.lib'
 
 /**
  * Snapshot on every store-website order placed while the store delivers itself
@@ -172,6 +173,11 @@ export interface PlaceOrderFromCartInput {
   orderMetadata?: Record<string, unknown>
   /** The order waits for the customer: the fee comes when they confirm. */
   deferPlacementFee?: boolean
+  /**
+   * Only `createManualOrder` sets this, after the seller saw the warning. It means
+   * nothing unless `orderSource` is 'manual', and no customer path passes it (0151).
+   */
+  allowBelowMinOrderQuantity?: boolean
 }
 
 export interface PlaceOrderInventoryItem {
@@ -197,6 +203,8 @@ export type PlaceOrderFromCartResult =
       success: false
       error: string
       minimumPurchase?: number
+      /** With error 'belowMinOrderQuantity': each product under its minimum, every seller's. */
+      minOrderShortfalls?: (MinOrderShortfall & { title: string; sellerId: string })[]
     }
 
 /**
@@ -268,6 +276,7 @@ export async function placeOrderFromCart(
     stockContext,
     orderMetadata,
     deferPlacementFee = false,
+    allowBelowMinOrderQuantity,
   } = input
   // Manual orders follow the store's rules: blocklist, zones and catalog.
   const isStoreOrder = orderSource === 'storefront' || orderSource === 'manual'
@@ -327,6 +336,7 @@ export async function placeOrderFromCart(
       item,
       offer: storeOffers.lines[index] ?? null,
       gift: storeOffers.gifts[index] ?? null,
+      crossSellApplies: storeOffers.crossSellIndexes.includes(index),
     }))
     .filter((_, index) => !storeOffers.invalidGiftIndexes.includes(index))
   cart.cartItems = keptLines.map(({ item }) =>
@@ -365,6 +375,33 @@ export async function placeOrderFromCart(
       return {
         success: false,
         error: `Product is no longer available: ${item.product.sku ?? item.productId}`,
+      }
+    }
+  }
+
+  // The seller's minimum per product (0151), summed across variants. Before any
+  // stock, coupon or money. Gifts and cross-sell lines whose offer applies stay outside.
+  if (shouldEnforceMinOrder(orderSource, allowBelowMinOrderQuantity)) {
+    const shortfalls = minOrderShortfalls(
+      keptLines.map(({ item, crossSellApplies }) => ({
+        ...item,
+        minOrderQuantity: item.product.minOrderQuantity,
+        crossSellApplies,
+      })),
+      { isExempt: (line) => line.crossSellApplies },
+    )
+    if (shortfalls.length > 0) {
+      return {
+        success: false,
+        error: 'belowMinOrderQuantity',
+        minOrderShortfalls: shortfalls.map((shortfall) => {
+          const item = cart.cartItems.find((line) => line.productId === shortfall.productId)!
+          return {
+            ...shortfall,
+            sellerId: item.sellerId,
+            title: pickProductTitle(item.product.productTranslations, locale, item.product.sku, item.productId),
+          }
+        }),
       }
     }
   }

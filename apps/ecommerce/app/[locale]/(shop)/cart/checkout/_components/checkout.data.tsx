@@ -35,6 +35,7 @@ import { saveCheckoutLead } from "@/actions/checkout-lead";
 import { trackStoreLead } from "@/components/meta/meta-lead.client";
 import { toast } from "sonner";
 import { useLocale, useTranslations } from "next-intl";
+import { cartMinOrderIssues } from "@/lib/cart-min-order.lib";
 import { updateCartItem } from "@/actions/cart";
 import { SimpleCheckoutForm } from "./simple-checkout-form.client";
 import { useCheckoutAddress, type CheckoutCountries, type SavedCheckoutAddress } from "./use-checkout-address.client";
@@ -246,8 +247,10 @@ export const CheckoutData = ({
   // The address is checked and saved when the button is pressed, so its errors show then.
   // The same check as `noMethodInCurrency` below, before the shipping rules are worked out.
   const noMethodInCurrencyEarly = !codAllowed || (isZoneShipping && storeShipping?.codEnabled !== true);
+  // Under a product's minimum (0151): named here, and refused again by the order.
+  const minOrderIssues = cartMinOrderIssues(cartLines, checkoutData.crossSellLineIds ?? []);
   const canPlaceOrder = Boolean(
-    paymentMethod?.trim() && !shippingRefusal && minOrderCheck.ok && !busyItemId && (!isForeignCurrency || !noMethodInCurrencyEarly)
+    paymentMethod?.trim() && !shippingRefusal && minOrderCheck.ok && minOrderIssues.length === 0 && !busyItemId && (!isForeignCurrency || !noMethodInCurrencyEarly)
   );
 
   useEffect(() => {
@@ -561,7 +564,8 @@ export const CheckoutData = ({
     try {
       const result = await updateCartItem(item.id, quantity);
       if (!result.success) {
-        toast.error(t(result.error === "Insufficient stock" ? "simpleForm.notEnoughStock" : "simpleForm.itemNotSaved"));
+        if ("minimum" in result) toast.error(result.error);
+        else toast.error(t(result.error === "Insufficient stock" ? "simpleForm.notEnoughStock" : "simpleForm.itemNotSaved"));
         return;
       }
       await refreshCart();
@@ -880,6 +884,27 @@ export const CheckoutData = ({
                 <p role="alert" className="text-xs md:text-sm text-orange-600">
                   <PriceText locale={locale}>{minOrderMessage}</PriceText>
                 </p>
+              )}
+              {minOrderIssues.length > 0 && (
+                <div role="alert" className="mb-2 space-y-2 rounded-lg border border-orange-200 bg-orange-50 p-3 text-xs md:text-sm text-orange-800">
+                  <p className="font-semibold">{t("minOrderQuantityTitle")}</p>
+                  <ul className="space-y-2">
+                    {minOrderIssues.map((issue) => (
+                      <li key={issue.productId} className="flex flex-wrap items-center justify-between gap-2">
+                        <span className="min-w-0 flex-1">{t("minOrderQuantityErrorItem", { title: issue.title, minimum: issue.minimum, current: issue.current })}</span>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          disabled={Boolean(busyItemId)}
+                          onClick={() => void handleQuantityChange({ id: issue.lineId }, issue.lineQuantity + issue.missing)}
+                        >
+                          {t("minOrderQuantityFix", { missing: issue.missing })}
+                        </Button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               )}
               {!shippingRefusal && noMethodInCurrency && (
                 <p role="alert" className="text-xs md:text-sm text-orange-600">

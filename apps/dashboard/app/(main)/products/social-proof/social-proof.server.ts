@@ -58,12 +58,12 @@ export async function saveProductSocialProof(productId: string, input: unknown):
     const seller = await requireSeller({ forWrite: true });
     const parsed = productSocialProofSchema.safeParse(input);
     if (!parsed.success || typeof productId !== "string") return { success: false, error: "invalidInput" };
-    const { showLiveViews, trackStock, showLowStockBadge, lowStockThreshold, reviews: list } = parsed.data;
+    const { showLiveViews, trackStock, showLowStockBadge, lowStockThreshold, minOrderQuantity, reviews: list } = parsed.data;
 
     const owned = await db.transaction(async (tx) => {
       const updated = await tx
         .update(products)
-        .set({ showLiveViews, trackStock, showLowStockBadge, lowStockThreshold })
+        .set({ showLiveViews, trackStock, showLowStockBadge, lowStockThreshold, ...(minOrderQuantity !== undefined && { minOrderQuantity }) })
         .where(and(eq(products.id, productId), eq(products.sellerId, seller.sellerId)))
         .returning({ id: products.id });
       if (!updated.length) return false;

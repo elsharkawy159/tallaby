@@ -23,7 +23,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@workspace/ui/components/alert-dialog";
-import { SellerButton, TextAction } from "@/components/seller-ui";
+import { IconButton, SellerButton } from "@/components/seller-ui";
 import { Form } from "@workspace/ui/components/form";
 import { createProduct, updateProduct } from "@/actions/products";
 import { cn } from "@/lib/utils";
@@ -73,6 +73,9 @@ import {
 } from "../categories-brands/seller-taxonomy-fields.client";
 import { ProductLinkHostProvider } from "./product-link-host.client";
 import { AiAutofillCard } from "./ai/ai-autofill.client";
+import { AiAddStage } from "./ai/ai-add-stage.client";
+import { AiFillBanner } from "./ai/ai-fill-banner.client";
+import { undoAutofill, type AutofillReview } from "./ai/use-ai-autofill";
 import { markProductAiAssisted } from "./ai/ai-source.server";
 import { AddMethodChooser } from "./add-method-chooser.client";
 import { AddMethodSkeleton } from "./add-method-skeleton";
@@ -127,7 +130,7 @@ function NewProduct(props: AddProductProps) {
       )}
       {formOpened && (
         <div className={cn((view === "choose" || view === "pending") && "hidden")}>
-          <AddProductForm {...props} showAiBox={view === "ai"} onChangeMethod={() => pick("choose")} />
+          <AddProductForm {...props} aiStageOpen={view === "ai"} onPickMethod={pick} />
         </div>
       )}
     </>
@@ -142,13 +145,13 @@ function AddProductForm({
   headerActions,
   aiEnabled = false,
   afterForm,
-  showAiBox = true,
-  onChangeMethod,
+  aiStageOpen = false,
+  onPickMethod,
 }: AddProductProps & {
-  /** New products show the AI box only on the AI method; it stays mounted so a fill and its undo survive. */
-  showAiBox?: boolean;
-  /** "Change method" in the header, for a new product. */
-  onChangeMethod?: () => void;
+  /** The AI screen shows instead of the form; both stay mounted, so a running fill and its result survive. */
+  aiStageOpen?: boolean;
+  /** Back to the choice, or on to the form, for a new product. */
+  onPickMethod?: (method: "choose" | "manual") => void;
 }) {
   const isEdit = Boolean(edit);
   const router = useRouter();
@@ -164,6 +167,7 @@ function AddProductForm({
   const t = useTranslations("productForm.page");
   const tForm = useTranslations("productForm");
   const tMethod = useTranslations("productForm.method");
+  const tAi = useTranslations("productForm.ai");
   const tBasic = useTranslations("productForm.sections.basic");
   const tTaxonomy = useTranslations("categoriesBrands.productForm");
   const tSocialProof = useTranslations("productForm.sections.socialProof");
@@ -174,6 +178,7 @@ function AddProductForm({
   const taxonomyContext = useSellerTaxonomy();
   // AI fills still in the form (applied minus undone): the saved product is marked for the admin.
   const aiFills = useRef(0);
+  const [aiReview, setAiReview] = useState<AutofillReview | null>(null);
 
   const form = useForm<AddProductFormData>({
     resolver: resolver as any,
@@ -257,6 +262,7 @@ function AddProductForm({
       trackStock: _trackStock,
       showLowStockBadge: _lowStockBadge,
       lowStockThreshold: _lowStockThreshold,
+      minOrderQuantity: _minOrderQuantity,
       sellerReviews: _reviews,
       ...payload
     } = rest;
@@ -272,6 +278,7 @@ function AddProductForm({
       trackStock: data.trackStock ?? true,
       showLowStockBadge: data.showLowStockBadge ?? false,
       lowStockThreshold: data.lowStockThreshold ?? null,
+      minOrderQuantity: data.minOrderQuantity ?? 1,
       reviews: data.sellerReviews ?? [],
     });
     if (!saved.success) toast.warning(tSocialProof("saveFailed"));
@@ -400,6 +407,7 @@ function AddProductForm({
     draft.clear();
     form.reset(defaultValues as any);
     aiFills.current = 0;
+    setAiReview(null);
     toast.success(t("draftCleared"));
   };
 
@@ -418,6 +426,33 @@ function AddProductForm({
       </WithoutSellerTaxonomy>
     );
   }
+
+  /** Banner's undo: puts back what the AI filled. */
+  const undoAiFill = () => {
+    if (!aiReview) return;
+    undoAutofill(form, aiReview);
+    if (aiReview.undo.length) aiFills.current = Math.max(0, aiFills.current - 1);
+    setAiReview(null);
+    toast.message(tAi("undone"));
+  };
+
+  /** From the AI screen to the form, with a short glow on the two cards the seller checks first. */
+  const reviewAiFill = () => {
+    onPickMethod?.("manual");
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    requestAnimationFrame(() => {
+      for (const id of ["sec-basic", "sec-price"]) {
+        document.getElementById(id)?.animate(
+          [
+            { boxShadow: "0 0 0 0 rgba(253,173,40,0)" },
+            { boxShadow: "0 0 0 4px rgba(253,173,40,.35)", offset: 0.2 },
+            { boxShadow: "0 0 0 0 rgba(253,173,40,0)" },
+          ],
+          { duration: 1800, easing: "ease-out" },
+        );
+      }
+    });
+  };
 
   const publishButton = (compact = false) => (
     <SellerButton
@@ -449,26 +484,42 @@ function AddProductForm({
   return (
     <ProductLinkHostProvider value={linkHost}>
       <Form {...form}>
-        <div className="pb-32 lg:pb-24">
+        {!isEdit && aiEnabled && (
+          <div className={cn(!aiStageOpen && "hidden")}>
+            <AiAddStage
+              active={aiStageOpen}
+              categories={categories}
+              sellerPricing={sellerPricing}
+              onAppliedChange={(delta) => {
+                aiFills.current = Math.max(0, aiFills.current + delta);
+              }}
+              onBack={() => onPickMethod?.("choose")}
+              onFilled={setAiReview}
+              onReview={reviewAiFill}
+            />
+          </div>
+        )}
+        <div className={cn("pb-32 lg:pb-24", aiStageOpen && "hidden")}>
           {/* Page header. Sits under the top bar: 68px tall, 60px on phones. */}
           <div
             data-sticky-head
             className="sticky top-[68px] z-20 border-b border-(--s-line) bg-(--s-glass) backdrop-blur-md max-[600px]:top-[60px]"
           >
             <div className={cn(COLUMN, "flex flex-wrap items-center gap-x-4 gap-y-2.5 py-3.5 max-[600px]:py-2.5")}>
-              {onChangeMethod && (
-                <TextAction
+              {onPickMethod && (
+                <IconButton
                   type="button"
-                  className="-ms-2.5 max-[600px]:min-h-10"
+                  className="-me-1.5"
+                  aria-label={tMethod("change")}
+                  title={tMethod("change")}
                   onClick={() => {
                     draft.saveNow();
                     toast.dismiss(); // "Start over" on the restored-draft toast would act on a hidden form.
-                    onChangeMethod();
+                    onPickMethod("choose");
                   }}
                 >
                   <ArrowRight className="ltr:rotate-180" aria-hidden />
-                  {tMethod("change")}
-                </TextAction>
+                </IconButton>
               )}
               <h1
                 id="add-product-title"
@@ -479,14 +530,25 @@ function AddProductForm({
               </h1>
               {!isEdit && <SaveStatus status={draft.status} />}
               <div className="ms-auto flex flex-wrap items-center gap-2 max-[600px]:contents">
-                <LocaleSwitch value={activeLocale} onChange={setActiveLocale} />
+                <LocaleSwitch value={activeLocale} onChange={setActiveLocale} className={cn(!isEdit && "max-[600px]:order-1 max-[600px]:basis-[calc(100%-56px)]")} />
+                {!isEdit && (
+                  <IconButton
+                    type="button"
+                    className="max-[600px]:order-1"
+                    aria-label={t("importProduct")}
+                    title={t("importProduct")}
+                    onClick={() => setImportOpen(true)}
+                  >
+                    <FileDown aria-hidden />
+                  </IconButton>
+                )}
                 {!isEdit && (
                   <SellerButton type="button" variant="outline" className="hidden lg:inline-flex" onClick={saveDraft}>
                     {t("saveDraft")}
                   </SellerButton>
                 )}
                 {!isEdit && draft.hasDraft && (
-                  <ClearDraftButton className="inline-flex sm:max-lg:hidden" disabled={isPending} onConfirm={clearDraft} />
+                  <ClearDraftButton className="inline-flex max-[600px]:ms-auto sm:max-lg:hidden" disabled={isPending} onConfirm={clearDraft} />
                 )}
                 {/* One scrolling line on phones: this bar is sticky, and two rows of buttons cost a quarter of the screen. */}
                 {headerActions && (
@@ -514,17 +576,18 @@ function AddProductForm({
                 }}
                 className="flex min-w-0 flex-col gap-4"
               >
-                {aiEnabled && (
-                  <div className={cn(!showAiBox && "hidden")}>
-                    <AiAutofillCard
-                      categories={categories}
-                      sellerPricing={sellerPricing}
-                      mode={isEdit ? "edit" : "add"}
-                      onAppliedChange={(delta) => {
-                        aiFills.current = Math.max(0, aiFills.current + delta);
-                      }}
-                    />
-                  </div>
+                {aiEnabled && isEdit && (
+                  <AiAutofillCard
+                    categories={categories}
+                    sellerPricing={sellerPricing}
+                    mode="edit"
+                    onAppliedChange={(delta) => {
+                      aiFills.current = Math.max(0, aiFills.current + delta);
+                    }}
+                  />
+                )}
+                {aiReview && (
+                  <AiFillBanner review={aiReview} onUndo={undoAiFill} onDismiss={() => setAiReview(null)} />
                 )}
                 <BasicSection
                   categories={categories}
@@ -542,8 +605,8 @@ function AddProductForm({
                 <ContentSection activeLocale={activeLocale} />
                 <InventorySection sellerPricing={sellerPricing} activeLocale={activeLocale} />
                 <ShippingSection sellerPricing={sellerPricing} />
-                <VisibilitySection activeLocale={activeLocale} />
                 <SocialProofSection />
+                <VisibilitySection activeLocale={activeLocale} />
               </form>
               {afterForm}
             </div>
@@ -719,9 +782,11 @@ function SaveStatus({ status }: { status: DraftStatus }) {
 function LocaleSwitch({
   value,
   onChange,
+  className,
 }: {
   value: SupportedLocale;
   onChange: (locale: SupportedLocale) => void;
+  className?: string;
 }) {
   const t = useTranslations("productForm");
   const form = useFormContext<AddProductFormData>();
@@ -736,7 +801,7 @@ function LocaleSwitch({
 
   return (
     <div
-      className="flex flex-1 items-center gap-1 rounded-full border border-(--s-field) bg-(--s-surface) p-[3px] min-[601px]:flex-none"
+      className={cn("flex flex-1 items-center gap-1 rounded-full border border-(--s-field) bg-(--s-surface) p-[3px] min-[601px]:flex-none", className)}
       title={t("page.contentLanguageHint")}
       role="radiogroup"
       aria-label={t("contentLanguage")}

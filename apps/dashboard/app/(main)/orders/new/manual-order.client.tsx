@@ -8,6 +8,8 @@ import { formatMoney, moneyParams, type MoneyUnit } from "@/lib/i18n/format";
 import { LoaderCircle, MessageCircle, Package, Search, Trash2, User } from "lucide-react";
 import { toast } from "sonner";
 import { MANUAL_PAID_VIA, type ManualOrderTotals, type ManualPaidVia } from "@workspace/lib/orders/manual";
+import { minOrderShortfalls, normalUnitsInCart } from "@workspace/lib/orders/min-order-quantity";
+import { Checkbox } from "@workspace/ui/components/checkbox";
 import { EGYPT_GOVERNORATES, getGovernorateLabel } from "@workspace/lib/shipping";
 import { Field, FieldRow, IconButton, NativeSelect, OptionCard, OptionCards, SectionCard, SellerButton, SellerCard, TextArea, TextInput } from "@/components/seller-ui";
 import { cn } from "@/lib/utils";
@@ -30,6 +32,7 @@ type Line = {
   price: number;
   stock: number | null;
   quantity: number;
+  minOrderQuantity: number;
 };
 
 function useDebounced<T>(value: T, ms: number): T {
@@ -66,6 +69,13 @@ export function ManualOrderForm({ money: unit, storeId, storeName }: { money?: M
 
   const money = (piastres: number) => formatMoney(piastres / 100, locale, unit);
 
+  // The seller's minimum (0151): a warning, and their explicit yes for exactly these
+  // numbers lets the order through. The server asks for the same yes.
+  const shortfalls = minOrderShortfalls(lines);
+  const shortfallKey = JSON.stringify(shortfalls);
+  const [allowedKey, setAllowedKey] = useState<string | null>(null);
+  const belowMinimumAllowed = shortfalls.length > 0 && allowedKey === shortfallKey;
+
   const buildInput = (sendLink: boolean) => ({
     requestId: requestId.current,
     lines: lines.map(({ productId, variantId, quantity }) => ({ productId, ...(variantId ? { variantId } : {}), quantity })),
@@ -76,6 +86,7 @@ export function ManualOrderForm({ money: unit, storeId, storeName }: { money?: M
     ...(!sendLink && payment === "paid" ? { paidVia } : {}),
     notes: notes.trim() || undefined,
     sendLink,
+    allowBelowMinimum: belowMinimumAllowed,
   });
 
   // The totals come from the server, from the same shipping rules the order uses.
@@ -111,6 +122,10 @@ export function ManualOrderForm({ money: unit, storeId, storeName }: { money?: M
 
   const addProduct = (product: ManualProductOption, variant?: ManualProductOption["variants"][number]) => {
     const key = `${product.id}:${variant?.id ?? ""}`;
+    const stock = variant ? variant.stock : product.stock;
+    // A new line starts at what the minimum still needs, as far as the stock goes.
+    const firstQuantity = (current: Line[]) =>
+      Math.max(1, Math.min(99, stock ?? 99, product.minOrderQuantity - normalUnitsInCart(product.id, current)));
     setLines((current) =>
       current.some((line) => line.key === key)
         ? current.map((line) => (line.key === key ? { ...line, quantity: Math.min(99, line.quantity + 1) } : line))
@@ -124,8 +139,9 @@ export function ManualOrderForm({ money: unit, storeId, storeName }: { money?: M
               variantTitle: variant?.title,
               image: product.image,
               price: variant?.price ?? product.price,
-              stock: variant ? variant.stock : product.stock,
-              quantity: 1,
+              stock,
+              quantity: firstQuantity(current),
+              minOrderQuantity: product.minOrderQuantity,
             },
           ],
     );
@@ -187,7 +203,7 @@ export function ManualOrderForm({ money: unit, storeId, storeName }: { money?: M
   }
 
   const canSubmit =
-    lines.length > 0 && name.trim().length >= 2 && phone.trim() !== "" && state && city.trim() && addressLine1.trim().length >= 3;
+    (shortfalls.length === 0 || belowMinimumAllowed) && lines.length > 0 && name.trim().length >= 2 && phone.trim() !== "" && state && city.trim() && addressLine1.trim().length >= 3;
 
   return (
     <div className="grid grid-cols-[minmax(0,1fr)_340px] items-start gap-3.5 max-[1020px]:grid-cols-1">
@@ -314,6 +330,27 @@ export function ManualOrderForm({ money: unit, storeId, storeName }: { money?: M
             </p>
           )}
         </dl>
+
+        {shortfalls.length > 0 && (
+          <div role="alert" className="flex flex-col gap-2 rounded-2xl bg-accent-soft p-3 text-[13px] text-accent-ink">
+            <p className="font-bold">{t("belowMinimumTitle")}</p>
+            <ul className="flex flex-col gap-1">
+              {shortfalls.map((shortfall) => (
+                <li key={shortfall.productId} className="break-words">
+                  {t("belowMinimumLine", {
+                    title: lines.find((line) => line.productId === shortfall.productId)?.title ?? "",
+                    minimum: shortfall.minimum,
+                    current: shortfall.current,
+                  })}
+                </li>
+              ))}
+            </ul>
+            <label className="flex cursor-pointer items-start gap-2 font-semibold">
+              <Checkbox className="mt-0.5" checked={belowMinimumAllowed} onCheckedChange={(checked) => setAllowedKey(checked === true ? shortfallKey : null)} />
+              <span>{t("belowMinimumConfirm")}</span>
+            </label>
+          </div>
+        )}
 
         <div className="flex flex-col gap-2">
           <SellerButton disabled={!canSubmit || pending} onClick={() => submit(false)}>

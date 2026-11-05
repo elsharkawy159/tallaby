@@ -135,7 +135,7 @@ export async function addCrossSellToCart(offerId: string, variantId?: string): P
     if (!offer) return { success: false };
     const chosen = offer.offerVariantId ?? (typeof variantId === "string" ? variantId : undefined);
 
-    const result = await addToCart({ productId: offer.offerProductId, quantity: 1, variantId: chosen });
+    const result = await addToCart({ productId: offer.offerProductId, quantity: 1, variantId: chosen, exactQuantity: true });
     if (!result.success || !("data" in result) || !result.data) {
       return { success: false, error: "error" in result ? (result.error as string) : undefined };
     }

@@ -24,7 +24,7 @@ import { Star } from "lucide-react";
 import { PriceTicket } from "./price-ticket";
 import { getDiscountPercent } from "@/lib/utils";
 import { MetaViewContent } from "@/components/meta/meta-view-content.client";
-import { LOW_STOCK_THRESHOLD, discountExpiryDate as offerExpiryDate, productPricing, stickyBuyBarClass } from "./product-page.lib";
+import { LOW_STOCK_THRESHOLD, discountExpiryDate as offerExpiryDate, productBelowMinimum, productPricing, stickyBuyBarClass } from "./product-page.lib";
 import { ProductStockBadge } from "./product-stock-badge";
 import { VariantPicker } from "./variant-picker";
 import { LiveViews } from "./live-views.client";
@@ -90,7 +90,7 @@ export const ProductDetails = ({
   const hasVariants =
     product.productVariants && product.productVariants.length > 0;
 
-  const hasStock = product.status === "active" && stock > 0;
+  const hasStock = product.status === "active" && stock > 0 && !productBelowMinimum(product);
   const isLowStock = hasStock && stock <= LOW_STOCK_THRESHOLD;
   const isPhysicalProduct = product.productType !== "digital";
   const hasFreeDelivery =

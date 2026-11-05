@@ -26,6 +26,8 @@ export type ManualProductOption = {
   title: string;
   image: string | null;
   price: number;
+  /** The seller's minimum per order (0151). */
+  minOrderQuantity: number;
   /** Null when the product doesn't track stock. */
   stock: number | null;
   variants: { id: string; title: string; price: number; stock: number | null }[];
@@ -45,6 +47,7 @@ export async function searchManualOrderProducts(storeId: string, query: string):
         price: products.price,
         quantity: products.quantity,
         trackStock: products.trackStock,
+        minOrderQuantity: products.minOrderQuantity,
         image: sql<string | null>`${products.images}->>0`,
         // Nested: a one-table select strips the table name from a field's top-level columns.
         title: sql<string | null>`${sql`(SELECT t.title FROM ${productTranslations} t WHERE t.product_id = ${products.id} ORDER BY (t.locale = ${locale}) DESC LIMIT 1)`}`,
@@ -87,6 +90,7 @@ export async function searchManualOrderProducts(storeId: string, query: string):
         title: row.title ?? "",
         image: row.image,
         price: getPriceFinal(row.price),
+        minOrderQuantity: row.minOrderQuantity,
         stock: tracked ? Number(row.quantity ?? 0) : null,
         variants: variants
           .filter((variant) => variant.productId === row.id)

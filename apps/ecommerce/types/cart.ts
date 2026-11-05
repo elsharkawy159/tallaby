@@ -9,6 +9,8 @@ export interface CartItem {
   savedForLater?: boolean | null;
   /** A free gift (0149): one unit at price 0. */
   giftRuleId?: string | null;
+  /** A cross-sell line (0145). */
+  crossSellId?: string | null;
   sellerId: string;
   cartId: string;
   createdAt?: string | null;
@@ -21,6 +23,8 @@ export interface CartItem {
     sellerId: string;
     productType?: string | null;
     freeDelivery?: boolean | null;
+    /** The seller's minimum per order (0151). */
+    minOrderQuantity?: number | null;
     brand?: {
       name: string;
     } | null;

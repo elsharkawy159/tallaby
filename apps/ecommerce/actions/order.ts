@@ -245,6 +245,17 @@ export async function createOrder(data: {
           minimumPurchase: result.minimumPurchase,
         };
       }
+      // Under a product's minimum (0151): names what to fix, for every product.
+      if (result.error === "belowMinOrderQuantity" && result.minOrderShortfalls?.length) {
+        const t = await getTranslations("checkout");
+        return {
+          success: false,
+          error: t("minOrderQuantityError", {
+            items: result.minOrderShortfalls.map((s) => t("minOrderQuantityErrorItem", { title: s.title, minimum: s.minimum, current: s.current })).join(" · "),
+          }),
+          minOrderShortfalls: result.minOrderShortfalls,
+        };
+      }
       const shippingKey = STORE_SHIPPING_ERRORS[result.error];
       if (shippingKey) {
         const t = await getTranslations("checkout");

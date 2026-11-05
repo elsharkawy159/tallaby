@@ -49,6 +49,8 @@ export const manualOrderInputSchema = z
     notes: z.string().trim().max(1000).optional(),
     /** Create the order and let the customer confirm it from a link. */
     sendLink: z.boolean().default(false),
+    /** The seller saw the minimum order warning and goes ahead (0151). */
+    allowBelowMinimum: z.boolean().default(false),
   })
   .refine((input) => input.payment !== "paid" || Boolean(input.paidVia), { path: ["paidVia"] })
   .refine((input) => !(input.sendLink && input.payment === "paid"), { path: ["sendLink"] });
@@ -109,11 +111,13 @@ export type ManualOrderErrorKey =
   | "outsideEgypt"
   | "noCod"
   | "alreadySubmitted"
+  | "belowMinimum"
   | "generic";
 
 /** Turns an order error from `placeOrderFromCart` into a key the form translates. */
 export function manualOrderErrorKey(error: string): ManualOrderErrorKey {
   if (error === "storeCustomerBlocked") return "customerBlocked";
+  if (error === "belowMinOrderQuantity") return "belowMinimum";
   if (error === "storeShippingNotCovered") return "notCovered";
   if (error === "storeShippingOutsideEgypt") return "outsideEgypt";
   if (error === "storePaymentNotInCurrency") return "notCovered";

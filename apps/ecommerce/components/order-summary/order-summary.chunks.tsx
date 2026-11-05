@@ -13,6 +13,7 @@ import { Ticket, X, Loader2, LogIn, Minus, Plus, Trash2, Truck, Sparkles, PartyP
 import { applyCouponToCart, removeCouponFromCart } from '@/actions/coupons'
 import { toast } from 'sonner'
 import { formatVariantTitle } from '@/lib/variant-utils'
+import { cartItemFloor } from '@/lib/cart-min-order.lib'
 import { cn } from '@workspace/ui/lib/utils'
 import { orderDiscountLabel } from '@/lib/order-discount-label'
 import type {
@@ -47,6 +48,7 @@ export function OrderSummaryLineItems ({ items, onQuantityChange, busyItemId }: 
   const currencyLabel = useCurrencyLabel()
   const tCommon = useTranslations('common')
   const tSimple = useTranslations('checkout.simpleForm')
+  const minOrderLines = items.map((item) => ({ ...item, productId: item.product?.id ?? item.id }))
 
   return (
     <div className='space-y-0 mb-2 md:mb-3'>
@@ -57,6 +59,8 @@ export function OrderSummaryLineItems ({ items, onQuantityChange, busyItemId }: 
         const variantTitle = item.variant
           ? formatVariantTitle(item.variant)
           : null
+        // At the seller's minimum (0151) minus is refused, so removing gets its own button.
+        const floor = cartItemFloor({ ...item, productId: item.product?.id ?? item.id }, minOrderLines)
 
         return (
           <div
@@ -114,6 +118,17 @@ export function OrderSummaryLineItems ({ items, onQuantityChange, busyItemId }: 
                       <Plus className='size-3.5' aria-hidden />
                     </button>
                   </div>
+                  {floor > 1 && item.quantity > 1 && item.quantity <= floor && (
+                    <button
+                      type='button'
+                      className='flex size-8 items-center justify-center rounded-md border text-muted-foreground outline-none hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50'
+                      disabled={busyItemId === item.id}
+                      aria-label={tSimple('removeItem')}
+                      onClick={() => onQuantityChange(item, 0)}
+                    >
+                      <Trash2 className='size-3.5' aria-hidden />
+                    </button>
+                  )}
                   <span
                     dangerouslySetInnerHTML={{
                       __html: formatPrice(unit, locale, 'sm', currencyLabel),

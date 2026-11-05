@@ -19,6 +19,7 @@ export function StoreQuantityOffers({
   price,
   stock,
   quantity,
+  floor = 1,
   readOnly,
   onSelect,
 }: {
@@ -28,6 +29,8 @@ export function StoreQuantityOffers({
   /** Infinity for an unlimited product. */
   stock: number;
   quantity: number;
+  /** The lowest quantity (the seller's minimum, 0151): no row goes below it. */
+  floor?: number;
   /** Already in the cart: the count is changed there. */
   readOnly: boolean;
   onSelect: (quantity: number) => void;
@@ -53,23 +56,24 @@ export function StoreQuantityOffers({
 
   const active = pickQuantityTier(visible.map((tier) => ({ ...tier, isActive: true })), quantity);
   const money = (piastres: number) => formatPriceMarked(piastres / 100, locale, currencyLabel);
-  const rows = [
-    { minQuantity: 1, unitPiastres: unit, saving: null as string | null },
-    ...visible.map((tier) => ({
-      minQuantity: tier.minQuantity,
-      unitPiastres: unit - quantityOfferUnitDiscountPiastres(unit, tier.discountType, tier.discountValue),
-      saving:
-        tier.discountType === "percent"
-          ? t("percentOff", { value: tier.discountValue })
-          : t("amountOff", { value: money(Math.round(tier.discountValue * 100)) }),
-    })),
-  ];
+  const row = (minQuantity: number, tier: QuantityTierCard | null) => ({
+    minQuantity,
+    unitPiastres: tier ? unit - quantityOfferUnitDiscountPiastres(unit, tier.discountType, tier.discountValue) : unit,
+    saving: !tier
+      ? null
+      : tier.discountType === "percent"
+        ? t("percentOff", { value: tier.discountValue })
+        : t("amountOff", { value: money(Math.round(tier.discountValue * 100)) }),
+  });
+  // The first row is the lowest allowed quantity, at whatever tier it already reaches.
+  const atFloor = pickQuantityTier(visible.map((tier) => ({ ...tier, isActive: true })), floor);
+  const rows = [row(floor, atFloor), ...visible.filter((tier) => tier.minQuantity > floor).map((tier) => row(tier.minQuantity, tier))];
 
   return (
     <div role="group" aria-label={t("title")} className="mb-3 grid gap-2">
       <p className="text-sm font-semibold text-(--sf-ink)">{t("title")}</p>
       {rows.map((row) => {
-        const selected = (active?.minQuantity ?? 1) === row.minQuantity;
+        const selected = Math.max(floor, active?.minQuantity ?? floor) === row.minQuantity;
         return (
           <button
             key={row.minQuantity}

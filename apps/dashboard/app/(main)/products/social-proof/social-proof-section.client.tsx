@@ -8,6 +8,7 @@ import { Button } from "@workspace/ui/components/button";
 import { Checkbox } from "@workspace/ui/components/checkbox";
 import { Input } from "@workspace/ui/components/input";
 import { Textarea } from "@workspace/ui/components/textarea";
+import { IconButton } from "@/components/seller-ui";
 import { cn } from "@/lib/utils";
 import { FIELD_CLASS, FieldError, FieldHint, FieldLabel, SMALL_BUTTON_CLASS, SubHeading, TEXTAREA_CLASS } from "@/app/(main)/products/add/form-kit";
 import { CollapsibleSection } from "../add/sections/collapsible-section";
@@ -92,29 +93,13 @@ function ReviewRow({ index, onRemove }: { index: number; onRemove: () => void })
   const nameError = useFieldError(`sellerReviews.${index}.reviewerName`);
 
   return (
-    <div className="flex flex-col gap-3 rounded-2xl border border-(--s-line) bg-(--s-surface-2) p-4">
-      <div className="flex flex-col gap-1.5">
-        <FieldLabel htmlFor={`review-name-${index}`} required>
-          {t("reviewerName")}
-        </FieldLabel>
-        <Input
-          id={`review-name-${index}`}
-          {...form.register(`sellerReviews.${index}.reviewerName`)}
-          maxLength={REVIEWER_NAME_MAX}
-          placeholder={t("reviewerNamePlaceholder")}
-          aria-invalid={Boolean(nameError)}
-          className={cn(FIELD_CLASS, "max-md:text-base")}
-        />
-        <FieldError>{nameError}</FieldError>
-      </div>
-
-      <Controller
-        control={form.control}
-        name={`sellerReviews.${index}.rating`}
-        render={({ field }) => (
-          <div className="flex flex-col gap-1.5">
-            <FieldLabel>{t("rating")}</FieldLabel>
-            <div role="radiogroup" aria-label={t("rating")} className="flex gap-1">
+    <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-2.5 gap-y-2 rounded-2xl border border-(--s-line) bg-(--s-surface-2) p-3">
+      <div className="flex min-w-0 flex-wrap items-center gap-2.5">
+        <Controller
+          control={form.control}
+          name={`sellerReviews.${index}.rating`}
+          render={({ field }) => (
+            <div role="radiogroup" aria-label={t("rating")} dir="ltr" className="flex">
               {[1, 2, 3, 4, 5].map((n) => (
                 <button
                   key={n}
@@ -123,34 +108,39 @@ function ReviewRow({ index, onRemove }: { index: number; onRemove: () => void })
                   aria-checked={field.value === n}
                   aria-label={t("stars", { count: n })}
                   onClick={() => field.onChange(n)}
-                  className="rounded-md p-0.5 focus-visible:outline-2 focus-visible:outline-ring"
+                  className="cursor-pointer rounded-md p-0.5 focus-visible:outline-2 focus-visible:outline-ring"
                 >
-                  <Star className={cn("size-6", n <= (field.value ?? 0) ? "fill-amber-400 text-amber-400" : "text-muted-foreground/40")} aria-hidden />
+                  <Star className={cn("size-[18px] max-[600px]:size-6", n <= (field.value ?? 0) ? "fill-amber-400 text-amber-400" : "text-(--s-field-strong)")} aria-hidden />
                 </button>
               ))}
             </div>
-          </div>
-        )}
-      />
-
-      <div className="flex flex-col gap-1.5">
-        <FieldLabel htmlFor={`review-comment-${index}`} note={t("optional")}>
-          {t("comment")}
-        </FieldLabel>
-        <Textarea
-          id={`review-comment-${index}`}
-          {...form.register(`sellerReviews.${index}.comment`)}
-          rows={2}
-          maxLength={REVIEW_COMMENT_MAX}
-          placeholder={t("commentPlaceholder")}
-          className={cn(TEXTAREA_CLASS, "min-h-[72px] max-md:text-base")}
+          )}
+        />
+        <Input
+          id={`review-name-${index}`}
+          {...form.register(`sellerReviews.${index}.reviewerName`)}
+          maxLength={REVIEWER_NAME_MAX}
+          placeholder={t("reviewerNamePlaceholder")}
+          aria-label={t("reviewerName")}
+          aria-invalid={Boolean(nameError)}
+          className={cn(FIELD_CLASS, "h-9 min-w-0 flex-1 basis-40 sm:max-w-[220px] max-md:text-base")}
         />
       </div>
-
-      <Button type="button" variant="ghost" className={cn(SMALL_BUTTON_CLASS, "w-fit text-destructive hover:text-destructive")} onClick={onRemove}>
-        <Trash2 />
-        {t("removeReview")}
-      </Button>
+      <IconButton type="button" onClick={onRemove} aria-label={t("removeReview")} title={t("removeReview")} className="hover:text-destructive">
+        <Trash2 aria-hidden />
+      </IconButton>
+      <div className="col-span-2 empty:hidden">
+        <FieldError>{nameError}</FieldError>
+      </div>
+      <Textarea
+        id={`review-comment-${index}`}
+        {...form.register(`sellerReviews.${index}.comment`)}
+        rows={2}
+        maxLength={REVIEW_COMMENT_MAX}
+        placeholder={t("commentPlaceholder")}
+        aria-label={t("comment")}
+        className={cn(TEXTAREA_CLASS, "col-span-2 min-h-[60px] max-md:text-base")}
+      />
     </div>
   );
 }

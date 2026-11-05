@@ -9,6 +9,8 @@ import { ProductQuantitySelector } from "./product-quantity-selector";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
+import { useCart } from "@/providers/cart-provider";
+import { productMinOrder } from "./product-page.lib";
 
 interface ProductActionsProps {
   product: Product;
@@ -43,9 +45,14 @@ export const ProductActions = ({
   showBuyNow = false,
 }: ProductActionsProps) => {
   const t = useTranslations("product");
-  const [quantity, setQuantity] = useState(cartItemQuantity || 1);
+  const tCommon = useTranslations("common");
+  const { cartItems } = useCart();
+  const [picked, setQuantity] = useState(cartItemQuantity || 1);
   const stockCount = product.quantity ? Number(product.quantity) : 0;
-  const hasStock = product.status === "active" && stockCount > 0;
+  // The seller's minimum (0151): the quantity never goes below it.
+  const minOrder = productMinOrder(product, cartItems, selectedVariantId ?? null, stockCount);
+  const quantity = Math.max(minOrder.floor, picked);
+  const hasStock = product.status === "active" && stockCount > 0 && !minOrder.unavailable;
   const buyNow = product.directCheckout;
 
   const handleQuantityChange = (newQuantity: number) => {
@@ -54,21 +61,21 @@ export const ProductActions = ({
 
   const row = (
     <div className={cn("flex min-w-0 items-center gap-3", showBuyNow ? undefined : className)}>
-      <ProductQuantitySelector
+      {!minOrder.unavailable && <ProductQuantitySelector
         initialQuantity={quantity}
-        min={1}
+        min={minOrder.floor}
         max={stockCount > 0 ? stockCount : undefined}
         disabled={!hasStock}
         onQuantityChange={handleQuantityChange}
         className="shrink-0"
-      />
+      />}
 
       {!hasStock && (
         <div className="flex-1 rounded-lg border border-red-200 bg-red-50 p-3 text-center">
           <p className="text-sm font-medium text-red-600">
-            {t("currentlyOutOfStock")}
+            {minOrder.unavailable ? tCommon("minOrderUnavailable") : t("currentlyOutOfStock")}
           </p>
-          <p className="text-xs text-red-500">{t("notifyWhenBack")}</p>
+          {!minOrder.unavailable && <p className="text-xs text-red-500">{t("notifyWhenBack")}</p>}
         </div>
       )}
 
@@ -104,12 +111,26 @@ export const ProductActions = ({
     </div>
   );
 
-  if (!showBuyNow) return row;
+  const minLine = hasStock && minOrder.minimum > 1 && (
+    <p className="mb-2 text-sm font-medium text-gray-700">{tCommon("minOrderLine", { count: minOrder.minimum })}</p>
+  );
+
+  if (!showBuyNow) {
+    return minLine ? (
+      <div className="min-w-0">
+        {minLine}
+        {row}
+      </div>
+    ) : (
+      row
+    );
+  }
 
   // The second button is drawn in the other style, so the two stay apart.
   const buyVariant = buttonVariant === "outline" ? "default" : "outline";
   return (
     <div className={cn("flex min-w-0 flex-col gap-3", className)}>
+      {minLine}
       {row}
       {hasStock && !buyNow && (
         isInCartStatus ? (

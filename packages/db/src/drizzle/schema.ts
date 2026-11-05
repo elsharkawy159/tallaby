@@ -1534,6 +1534,8 @@ export const products = pgTable("products", {
 	fulfillmentType: fulfillmentType("fulfillment_type").default('seller_fulfilled'),
 	handlingTime: numeric("handling_time").default('1'),
 	maxOrderQuantity: integer("max_order_quantity"),
+	/** Fewest units of this product in one order, across its variants (0151; 1 = no minimum). */
+	minOrderQuantity: integer("min_order_quantity").default(1).notNull(),
 	isFeatured: boolean("is_featured").default(false),
 	isTrending: boolean("is_trending").default(false).notNull(),
 	isSeasonal: boolean("is_seasonal").default(false).notNull(),
@@ -1570,6 +1572,7 @@ export const products = pgTable("products", {
 	index("product_ai_source_idx").using("btree", table.aiSource).where(sql`ai_source IS NOT NULL`),
 	index("products_trashed_idx").using("btree", table.sellerId.asc().nullsLast().op("uuid_ops"), table.deletedAt.asc().nullsLast().op("timestamptz_ops")).where(sql`(deleted_at IS NOT NULL AND purged_at IS NULL)`),
 	check("products_low_stock_threshold_check", sql`low_stock_threshold IS NULL OR low_stock_threshold BETWEEN 1 AND 99`),
+	check("products_min_order_quantity_check", sql`min_order_quantity BETWEEN 1 AND 10000`),
 	check("products_ai_source_check", sql`ai_source IS NULL OR ai_source IN ('autofill_add', 'autofill_edit')`),
 	foreignKey({
 			columns: [table.sellerCategoryId],

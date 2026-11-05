@@ -26,6 +26,7 @@ export interface ProductCardProps {
   /** False: unlimited stock (0138, F-51). */
   trackStock?: boolean | null;
   maxOrderQuantity?: number | string;
+  minOrderQuantity?: number | string | null;
   /** Seller flags (product form › Visibility): a badge on the card. */
   isTrending?: boolean | null;
   isSeasonal?: boolean | null;

@@ -16,6 +16,7 @@ import {
   SMALL_BUTTON_CLASS,
 } from "@/app/(main)/products/add/form-kit";
 import { CollapsibleSection } from "./collapsible-section";
+import { EDITOR_PHONE_TOOLBAR_CLASS } from "./fields";
 import { useContentImageUpload } from "./use-content-image-upload";
 import { isEmptyHtml } from "../prepare-product-submit.lib";
 import type { AddProductFormData, SupportedLocale } from "../add-product.schema";
@@ -86,6 +87,7 @@ export function ContentSection({
                   // count as Arabic content needing an Arabic title.
                   onChange={(html: string) => field.onChange(isEmptyHtml(html) ? "" : html)}
                   placeholder={t("bodyPlaceholder")}
+                  className={EDITOR_PHONE_TOOLBAR_CLASS}
                   dir={loc === "ar" ? "rtl" : "ltr"}
                   onImageUpload={uploadContentImage}
                 />

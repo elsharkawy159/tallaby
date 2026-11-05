@@ -15,6 +15,7 @@ import { Button } from "@workspace/ui/components/button";
 import { Skeleton } from "@workspace/ui/components/skeleton";
 import { Link } from "@/i18n/navigation";
 import { QuantitySelector } from "@/components/product";
+import { cartItemMinimum } from "@/lib/cart-min-order.lib";
 import { ImageWithFallback } from "@/components/shared/image-with-fallback";
 import { cn, resolvePrimaryImage } from "@/lib/utils";
 import { useCart } from "@/providers/cart-provider";
@@ -36,6 +37,7 @@ export function StorefrontCart({
   onNavigate?: () => void;
 }) {
   const t = useTranslations("storefront");
+  const tCommon = useTranslations("common");
   const locale = useLocale();
   const currencyLabel = useCurrencyLabel();
   const { cartItems, loading, refreshCart, removeFromCart } = useCart();
@@ -132,6 +134,9 @@ export function StorefrontCart({
                   <p className="text-xs text-(--sf-muted)">
                     {t("variant", { name: variantTitle })}
                   </p>
+                )}
+                {cartItemMinimum(item) != null && (
+                  <p className="text-xs text-(--sf-muted)">{tCommon("minOrderLine", { count: cartItemMinimum(item)! })}</p>
                 )}
                 {offers.lines[item.id] && (
                   <p className="text-xs font-medium text-(--sf-brand)">

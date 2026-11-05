@@ -4739,3 +4739,7 @@ Owner asked to keep only the current version of each template in `template_versi
 
 - The owner's `Roadmap_new.md` and answers were recorded: Free ($0.03 per order, 100 AI credits), Pro ($29 a month from the wallet, no fee, 2,000 credits), USD store wallet, daily rate plus margin, welcome gift ended. See §13.1 note, D35 and `ROADMAP.md` §4, §7.
 - Planning only: no migration, code or live pricing changed. The fee remains EGP 5 until F-55 ships.
+
+### 2026-11-05 — Add product v4: manual E2E (ROADMAP.md F-71)
+
+- Local dashboard against staging, QA seller, headless Chrome at 360 and 1280, Arabic and English: AI (three real calls, a failed send, undo, back) and File (one real import, two draft products left on staging). The QA seller got a fresh random password for this. Not run: a real phone, publishing from the new flow, a PDF file, out-of-credits.

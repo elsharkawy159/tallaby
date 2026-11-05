@@ -15,6 +15,7 @@ import {
   NumberStepper,
   SubHeading,
 } from "@/app/(main)/products/add/form-kit";
+import { MIN_ORDER_QUANTITY_MAX } from "@workspace/lib/orders/min-order-quantity";
 import { generateSku } from "../add-product.lib";
 import { useFieldError } from "./fields";
 import { VariantsEditor } from "./variants-editor";
@@ -36,7 +37,7 @@ export function InventorySection({
   const form = useFormContext<AddProductFormData>();
   const quantityError = useFieldError("quantity");
   const variantsError = useFieldError("variants");
-  const [variants, quantity, sku, trackStockValue] = useWatch({ control: form.control, name: ["variants", "quantity", "sku", "trackStock"] });
+  const [variants, quantity, sku, trackStockValue, minOrderQuantity] = useWatch({ control: form.control, name: ["variants", "quantity", "sku", "trackStock", "minOrderQuantity"] });
   // Unlimited stock (0138, F-51): the count is hidden, and stays saved as it was.
   const trackStock = trackStockValue !== false;
   const variantCount = (variants ?? []).length;
@@ -64,7 +65,7 @@ export function InventorySection({
       summary={summary}
       summaryTone={!trackStock || stock > 0 ? "ok" : submitCount > 0 ? "bad" : "need"}
       invalid={Boolean(quantityError || variantsError)}
-      filled={hasVariants || !trackStock || Boolean(sku?.trim()) || quantity !== defaultValues.quantity}
+      filled={hasVariants || !trackStock || Boolean(sku?.trim()) || quantity !== defaultValues.quantity || (minOrderQuantity ?? 1) > 1}
     >
       <Controller
         control={form.control}
@@ -144,6 +145,30 @@ export function InventorySection({
           />
           <FieldError>{quantityError}</FieldError>
         </div>}
+
+        <div className="flex flex-col gap-1.5">
+          <FieldLabel htmlFor="min-order-quantity" note={tPage("optional")}>
+            {t("minOrder")}
+          </FieldLabel>
+          <Controller
+            control={form.control}
+            name="minOrderQuantity"
+            render={({ field }) => (
+              <NumberStepper
+                id="min-order-quantity"
+                min={1}
+                max={MIN_ORDER_QUANTITY_MAX}
+                value={field.value}
+                onChange={field.onChange}
+                onBlur={field.onBlur}
+                decrementLabel={t("decrease")}
+                incrementLabel={t("increase")}
+              />
+            )}
+          />
+          <FieldHint>{t("minOrderHint")}</FieldHint>
+          {trackStock && (minOrderQuantity ?? 1) > stock && stock > 0 && <p className="text-xs text-(--s-subtle)">{t("minOrderAboveStock")}</p>}
+        </div>
       </div>
 
       <SubHeading>{t("variantsHeading")}</SubHeading>

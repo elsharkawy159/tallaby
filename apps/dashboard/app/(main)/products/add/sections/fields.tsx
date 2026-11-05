@@ -15,6 +15,13 @@ import { getErrorAtPath } from "../add-product.lib";
 import type { AddProductFormData } from "../add-product.schema";
 
 /**
+ * For the shared RichTextEditor (its first div is the toolbar): one line that scrolls
+ * sideways on phones, as in the design, instead of three wrapped rows.
+ */
+export const EDITOR_PHONE_TOOLBAR_CLASS =
+  "max-[640px]:[&>div:first-of-type]:flex-nowrap max-[640px]:[&>div:first-of-type]:overflow-x-auto max-[640px]:[&>div:first-of-type]:[scrollbar-width:none] max-[640px]:[&>div:first-of-type>*]:shrink-0";
+
+/**
  * A field's error message, once it's worth showing: after a publish attempt,
  * or after the seller has touched that field. Messages are already localized
  * by the form resolver.

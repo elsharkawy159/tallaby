@@ -185,7 +185,9 @@ export function MobilePublishBar({
   const { percent, left } = summarize(sections);
 
   return (
-    <div data-save-bar data-open className="fixed inset-x-0 bottom-0 z-30 flex items-center gap-2.5 border-t border-(--s-line) bg-(--s-surface) px-4 py-3 shadow-(--s-shadow-bar) lg:hidden">
+    // No data-save-bar marker: the form pads its own end (pb-32), and the marker padded <main>
+    // even while this bar was hidden (desktop, or the form hidden behind the AI screen or the choice).
+    <div className="fixed inset-x-0 bottom-0 z-30 flex items-center gap-2.5 border-t border-(--s-line) bg-(--s-surface) px-4 py-3 shadow-(--s-shadow-bar) lg:hidden">
       <ProgressRing percent={percent} small />
       <div className="min-w-0 flex-1">
         <small className="block text-[11px] text-(--s-muted)">{t("readiness")}</small>

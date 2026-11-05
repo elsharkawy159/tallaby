@@ -5,6 +5,16 @@ import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { BadgePercent, Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import type { DiscountRule, DiscountRuleType } from "@workspace/lib/orders/automatic-discounts";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@workspace/ui/components/alert-dialog";
 import { formatMoney, isArabicPound, moneyNumberOptions, moneyParams, type MoneyUnit } from "@/lib/i18n/format";
 import {
   Chip,
@@ -102,6 +112,7 @@ export function DiscountRulesView({
   const locale = useLocale();
   const [rules, setRules] = useState(initial);
   const [draft, setDraft] = useState<Draft | null>(null);
+  const [toRemove, setToRemove] = useState<DiscountRule | null>(null);
   const [pending, startTransition] = useTransition();
   const [now] = useState(() => Date.now());
 
@@ -337,7 +348,7 @@ export function DiscountRulesView({
                       <IconButton aria-label={t("edit")} onClick={() => setDraft(toDraft(rule))}>
                         <Pencil aria-hidden />
                       </IconButton>
-                      <IconButton aria-label={t("remove")} disabled={pending} onClick={() => run(() => deleteDiscountRule({ storeId, id: rule.id }))}>
+                      <IconButton aria-label={t("remove")} disabled={pending} onClick={() => setToRemove(rule)}>
                         <Trash2 aria-hidden />
                       </IconButton>
                     </>
@@ -348,6 +359,28 @@ export function DiscountRulesView({
           </Rows>
         )}
       </SectionCard>
+
+      <AlertDialog open={!!toRemove} onOpenChange={(open) => !open && setToRemove(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("removeTitle", { name: toRemove?.name ?? "" })}</AlertDialogTitle>
+            <AlertDialogDescription>{t("removeBody")}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={pending}>{t("cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={pending}
+              className="bg-destructive text-white hover:bg-destructive/90"
+              onClick={() => {
+                const id = toRemove?.id;
+                if (id) run(() => deleteDiscountRule({ storeId, id }));
+              }}
+            >
+              {t("remove")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

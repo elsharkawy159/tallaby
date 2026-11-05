@@ -15,7 +15,7 @@ import { useProductLinkHost } from "../product-link-host.client";
 import { FIELD_CLASS, FieldError, FieldHint, FieldLabel, SectionCard } from "@/app/(main)/products/add/form-kit";
 import { CategoryField } from "../category-field";
 import { isEmptyHtml } from "../prepare-product-submit.lib";
-import { useFieldError } from "./fields";
+import { EDITOR_PHONE_TOOLBAR_CLASS, useFieldError } from "./fields";
 import { useContentImageUpload } from "./use-content-image-upload";
 import type { AddProductFormData, CategoryOption, SupportedLocale } from "../add-product.schema";
 
@@ -147,6 +147,7 @@ export function BasicSection({ id = "sec-basic", categories, activeLocale, actio
                   // count as Arabic content needing an Arabic title.
                   onChange={(html: string) => field.onChange(isEmptyHtml(html) ? "" : html)}
                   placeholder={t("shortDescriptionPlaceholder")}
+                  className={EDITOR_PHONE_TOOLBAR_CLASS}
                   dir={loc === "ar" ? "rtl" : "ltr"}
                   onImageUpload={uploadContentImage}
                 />
