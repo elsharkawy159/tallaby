@@ -590,9 +590,15 @@
   }
 }
 
-/* The floating support button clears an open save bar. */
-:root:has([data-save-bar][data-open]) [data-support-fab] {
-  bottom: 84px;
+/* A page's end stays clear of an open save or bulk bar. */
+:root:has([data-save-bar][data-open]) .seller-shell main {
+  padding-bottom: 96px;
+}
+/* The orders bulk bar wraps to about 145px on a phone. */
+@media (max-width: 720px) {
+  :root:has([data-save-bar][data-open]) .seller-shell main {
+    padding-bottom: 170px;
+  }
 }
 
 /* ── Motion ───────────────────────────────────────────────────────────────── */

@@ -3,21 +3,18 @@
 import * as React from "react";
 import { useTranslations } from "next-intl";
 import { Slider } from "@workspace/ui/components/slider";
-import { Switch } from "@workspace/ui/components/switch";
 import { cn } from "@workspace/ui/lib/utils";
 import { APPROX_EGP_PER_USD, PLAN_PRICES, estimatePlans, formatNumber, formatUsd, proBreakEvenOrders } from "@/lib/marketing/pricing.lib";
 
 const lightSlider =
   "[&_[data-slot=slider-track]]:h-1.5 [&_[data-slot=slider-track]]:bg-neutral-200 [&_[data-slot=slider-range]]:bg-teal-700 [&_[data-slot=slider-thumb]]:size-5 [&_[data-slot=slider-thumb]]:border-teal-700";
 
-/** "What would a month cost you?": orders, campaign emails and Order Notifications, on both plans. */
+/** "What would a month cost you?": orders and campaign emails, on both plans. */
 export function FeeEstimator() {
   const t = useTranslations("pricing.estimate");
   const [orders, setOrders] = React.useState(300);
   const [emails, setEmails] = React.useState(500);
-  const [notifications, setNotifications] = React.useState(false);
-  const estimate = estimatePlans({ orders, emails, orderNotifications: notifications });
-  const switchId = React.useId();
+  const estimate = estimatePlans({ orders, emails });
 
   const egp = (cents: number) => formatNumber((cents / 100) * APPROX_EGP_PER_USD);
   const plans = [
@@ -34,13 +31,6 @@ export function FeeEstimator() {
         <RangeField label={t("emails")} value={formatNumber(emails)}>
           <Slider dir="ltr" min={0} max={20_000} step={100} value={[emails]} onValueChange={([v]) => setEmails(v ?? 0)} aria-label={t("emails")} className={lightSlider} />
         </RangeField>
-        <label htmlFor={switchId} className="flex cursor-pointer items-start justify-between gap-4 rounded-card-sm border border-line p-4">
-          <span>
-            <b className="block text-sm text-teal-900">{t("notifications")}</b>
-            <small className="text-[13px] text-[#5f7277]">{t("notificationsBody", { price: formatUsd(PLAN_PRICES.orderNotificationCents) })}</small>
-          </span>
-          <Switch id={switchId} dir="ltr" checked={notifications} onCheckedChange={setNotifications} />
-        </label>
       </div>
       <div className="flex flex-col gap-3.5 bg-amber-50 p-6 min-[641px]:p-9">
         <span className="text-sm font-semibold text-[#6b5a3a]">{t("monthly")}</span>

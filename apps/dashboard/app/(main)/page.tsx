@@ -1,5 +1,4 @@
 import { Suspense } from "react";
-import { getTranslations } from "next-intl/server";
 import { Skeleton } from "@workspace/ui/components/skeleton";
 import { AttentionData } from "./_components/attention.data";
 import { HomeGreeting, HomeHeaderView, HomeSubtitle } from "./_components/home-header.data";
@@ -42,9 +41,8 @@ export default async function VendorDashboardPage({
 }: {
   searchParams: Promise<{ range?: string | string[]; channel?: string | string[]; welcome?: string | string[]; signup?: string | string[] }>;
 }) {
-  const [{ range: rawRange, channel: rawChannel, welcome, signup }, t, { stores }, orderLock] = await Promise.all([
+  const [{ range: rawRange, channel: rawChannel, welcome, signup }, { stores }, orderLock] = await Promise.all([
     searchParams,
-    getTranslations("home.header"),
     getSellerStores(),
     currentOrderLock(),
   ]);
@@ -67,7 +65,6 @@ export default async function VendorDashboardPage({
           <HomeSubtitle channel={channel} />
         </Suspense>
       }
-      addLabel={t("addProduct")}
       rangeControl={
         <>
           <RangeSelect />

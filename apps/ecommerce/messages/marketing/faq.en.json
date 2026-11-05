@@ -51,7 +51,7 @@
           },
           {
             "q": "Do customers get order emails on the Free plan?",
-            "a": "Customer order emails, such as confirmation and shipping updates, need the Order Notifications app at 1 cent per order on any plan. You turn it on per store."
+            "a": "Customer order emails, such as confirmation and shipping updates, need the Order Notifications app on any plan. You turn it on per store, and you see its cost in your dashboard first."
           },
           {
             "q": "How many campaign emails can I send?",
@@ -139,7 +139,7 @@
       },
       {
         "q": "How much does Tallaby cost?",
-        "a": "Free has no monthly fee and costs $0.03 per order. Pro costs $29 a month with no order fee. You need a first $5 top-up before you can see orders on Free, and customer order emails need the Order Notifications app at 1 cent per order."
+        "a": "Free has no monthly fee and costs $0.03 per order. Pro costs $29 a month with no order fee. You need a first $5 top-up before you can see orders on Free, and customer order emails need the Order Notifications app, whose cost you see in your dashboard before you turn it on."
       },
       {
         "q": "Does the fee change with the order value?",

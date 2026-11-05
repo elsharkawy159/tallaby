@@ -1,9 +1,8 @@
-import Link from "next/link";
-import { ExternalLink, Plus } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { currentOrderLock } from "@/lib/auth/require-seller.server";
 import { getSelectedStoreLink } from "@/lib/stores/store-link.server";
-import { PageHeader, SellerButton } from "@/components/seller-ui";
+import { PageHeader } from "@/components/seller-ui";
 import { getHomeSnapshot, getPendingOrdersCount } from "./home.queries";
 import type { HomeChannel } from "./home.shared";
 import { isSetupComplete } from "./setup-checklist.data";
@@ -59,29 +58,17 @@ export async function HomeSubtitle({ channel }: { channel: HomeChannel }) {
 export function HomeHeaderView({
   title,
   subtitle,
-  addLabel,
   rangeControl,
 }: {
   title: React.ReactNode;
   subtitle: React.ReactNode;
-  addLabel: string;
   rangeControl: React.ReactNode;
 }) {
   return (
     <PageHeader
       title={title}
       description={subtitle}
-      actions={
-        <>
-          {rangeControl}
-          <SellerButton asChild>
-            <Link href="/products/add">
-              <Plus aria-hidden />
-              {addLabel}
-            </Link>
-          </SellerButton>
-        </>
-      }
+      actions={rangeControl}
     />
   );
 }

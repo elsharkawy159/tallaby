@@ -1096,8 +1096,7 @@
       "evening": "Good evening, {name}",
       "pendingOrders": "You have {count, plural, one {# new order} other {# new orders}} waiting to be prepared.",
       "almostReady": "Your store is almost ready. Finish setup to receive your first order.",
-      "summary": "Here's how your store is doing.",
-      "addProduct": "Add product"
+      "summary": "Here's how your store is doing."
     },
     "setup": {
       "title": "Get your store ready for its first order",
@@ -1675,6 +1674,21 @@
     }
   },
   "productForm": {
+    "method": {
+      "label": "Ways to add a product",
+      "description": "Choose how you would like to add your product.",
+      "aiTitle": "With AI",
+      "aiBody": "Write a short description or attach product photos, and AI fills in the form for you to review before publishing.",
+      "aiOffTag": "Not available now",
+      "aiOffBody": "AI is not available right now. You can add the product manually or from a file.",
+      "fileTitle": "From a file",
+      "fileBody": "Add many products at once from an Excel, CSV or PDF file.",
+      "manualTitle": "Manually",
+      "manualBody": "Enter the product details yourself in the form.",
+      "change": "Change method",
+      "draftNote": "You have a saved product draft. Choosing AI or manual opens this draft, and you can finish or clear it from the form.",
+      "draftContinue": "Continue draft"
+    },
     "ai": {
       "title": "Add your product with AI",
       "description": "Add photos, a spec sheet (PDF) or a short description, and AI fills in the form in Arabic and English. Review it before you publish.",

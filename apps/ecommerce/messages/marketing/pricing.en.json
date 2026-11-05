@@ -34,7 +34,7 @@
       "featureAll": "All store features",
       "featureEverything": "Everything in Free",
       "featureNoFee": "Zero platform fee on orders",
-      "plainly": "On the free plan, you'll need a first {topUp} top-up before you can see orders and send campaigns. On both plans, customer order emails need the Order Notifications app, at {notification} per order.",
+      "plainly": "On the free plan, you'll need a first {topUp} top-up before you can see orders and send campaigns. On both plans, customer order emails need the Order Notifications app, whose cost you see in your dashboard before you turn it on.",
       "fx": "EGP amounts are approximate, at 1 USD ≈ {rate} EGP."
     },
     "estimate": {
@@ -43,8 +43,6 @@
       "desc": "Move the sliders to match your store and compare both plans.",
       "orders": "Orders a month",
       "emails": "Campaign emails a month",
-      "notifications": "Order Notifications app",
-      "notificationsBody": "Customer order emails, at {price} per order.",
       "monthly": "Estimated cost a month",
       "free": "Free",
       "cheaper": "Cheaper",
@@ -52,7 +50,7 @@
       "savingFree": "You save {amount} a month on the free plan.",
       "savingPro": "You save {amount} a month on Pro.",
       "breakEven": "From about {orders} orders a month, Pro at {price} costs less than order fees.",
-      "note": "Payment gateway fees and shipping are separate and aren't included here."
+      "note": "Payment gateway fees, shipping and apps are separate and aren't included here."
     },
     "extras": {
       "kicker": "Other costs",
@@ -60,8 +58,8 @@
       "desc": "These come out of your store wallet in dollars, and you top it up in Egyptian pounds.",
       "topUpTitle": "Wallet top-ups",
       "topUpBody": "From {topUpMin} to {topUpMax}, paid in EGP. On the free plan, a first {topUpMin} top-up is needed before you can see orders and send campaigns.",
-      "notificationsTitle": "Order Notifications",
-      "notificationsBody": "Customer order emails go out through this app, at {notification} per order. It's optional and set per store.",
+      "appsTitle": "Apps",
+      "appsBody": "Some apps have a small cost, shown in your dashboard before you turn them on. One is Order Notifications, which sends customer order emails. It's optional and set per store.",
       "emailsTitle": "Extra campaign emails",
       "emailsBody": "{emailPack} per {emailCount} emails once your monthly allowance runs out.",
       "creditsTitle": "Extra AI credits",
@@ -90,7 +88,7 @@
         },
         {
           "q": "Do my customers get order emails automatically?",
-          "a": "Only with the Order Notifications app on, at {notification} per order. It's off by default."
+          "a": "Only with the Order Notifications app on. It's off by default, and you see its cost in your dashboard before you turn it on."
         },
         {
           "q": "What is an AI credit?",

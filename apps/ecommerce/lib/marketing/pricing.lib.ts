@@ -16,9 +16,6 @@ import { PLANS } from "@workspace/lib/plans";
  * is computed in `@workspace/lib/orders/platform-fee` and `billing`.
  */
 
-/** The Order Notifications app: one cent per order (ROADMAP.md F-63). */
-const ORDER_NOTIFICATION_USD_CENTS = 1;
-
 /** Only for the "≈" EGP figures on the site. Top-ups use the live rate at the time. */
 export const APPROX_EGP_PER_USD = 50;
 
@@ -28,7 +25,6 @@ export const PLAN_PRICES = {
   emailPack: { emails: EMAIL_PACK_EMAILS, cents: EMAIL_PACK_USD_CENTS },
   creditPack: { credits: CREDIT_PACK_CREDITS, cents: CREDIT_PACK_USD_CENTS },
   topUp: { minCents: TOP_UP_MIN_USD_CENTS, maxCents: TOP_UP_MAX_USD_CENTS },
-  orderNotificationCents: ORDER_NOTIFICATION_USD_CENTS,
 } as const;
 
 /** $0.03, $29, $1.50, $1,000: cents only when there are any. */
@@ -48,7 +44,7 @@ export function extraEmailsCents(emails: number, allowance: number): number {
   return Math.ceil(extra / EMAIL_PACK_EMAILS) * EMAIL_PACK_USD_CENTS;
 }
 
-export type PlanEstimateInput = { orders: number; emails: number; orderNotifications: boolean };
+export type PlanEstimateInput = { orders: number; emails: number };
 
 export type PlanEstimate = {
   freeCents: number;
@@ -58,12 +54,11 @@ export type PlanEstimate = {
   savingCents: number;
 };
 
-/** A month on each plan. Order Notifications cost the same on both. */
-export function estimatePlans({ orders, emails, orderNotifications }: PlanEstimateInput): PlanEstimate {
+/** A month on each plan, before any apps: app prices live in the dashboard. */
+export function estimatePlans({ orders, emails }: PlanEstimateInput): PlanEstimate {
   const count = Math.max(0, Math.floor(orders));
-  const notifications = orderNotifications ? count * ORDER_NOTIFICATION_USD_CENTS : 0;
-  const freeCents = count * FREE_ORDER_FEE_USD_CENTS + extraEmailsCents(emails, PLANS.free.emailsMonthly) + notifications;
-  const proCents = PRO_MONTHLY_USD_CENTS + extraEmailsCents(emails, PLANS.pro.emailsMonthly) + notifications;
+  const freeCents = count * FREE_ORDER_FEE_USD_CENTS + extraEmailsCents(emails, PLANS.free.emailsMonthly);
+  const proCents = PRO_MONTHLY_USD_CENTS + extraEmailsCents(emails, PLANS.pro.emailsMonthly);
   return {
     freeCents,
     proCents,

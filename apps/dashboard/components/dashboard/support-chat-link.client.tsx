@@ -1,11 +1,9 @@
 "use client";
 
-import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { getSupportWhatsAppUrl } from "@/lib/constants";
 import { useSiteData } from "@/providers/site-data";
-import { fabOffsetFor } from "./support-fab.lib";
 
 interface SupportChatLinkProps {
   isCollapsed?: boolean;
@@ -60,33 +58,6 @@ export const SupportChatLink = ({ isCollapsed, className }: SupportChatLinkProps
     >
       <WhatsAppIcon className="h-5 w-5 shrink-0" />
       {!isCollapsed && <span className="truncate">{t("chatWithSupport")}</span>}
-    </a>
-  );
-};
-
-/**
- * Floating WhatsApp support button in the bottom inline-start corner, for
- * widths with no visible sidebar. From 1021px the sidebar's help card replaces it.
- */
-export const SupportWhatsAppButton = () => {
-  const t = useTranslations("nav");
-  const href = useSupportWhatsAppUrl();
-  const offset = fabOffsetFor(usePathname() ?? "");
-
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      data-support-fab
-      title={t("chatWithSupportHint")}
-      aria-label={t("chatWithSupport")}
-      className={cn(
-        "fixed start-4 z-40 flex size-[54px] items-center justify-center rounded-full bg-(--s-whatsapp) text-white shadow-[0_10px_26px_rgb(22_163_74/0.35)] transition-[transform,background-color] duration-150 hover:scale-105 hover:bg-(--s-whatsapp-hover) max-[480px]:size-12 min-[1021px]:hidden print:hidden",
-        offset
-      )}
-    >
-      <WhatsAppIcon className="size-6" />
     </a>
   );
 };

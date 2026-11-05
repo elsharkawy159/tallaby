@@ -96,7 +96,7 @@ export async function PlanCards() {
         ))}
       </div>
       <p className="mx-auto mt-6 max-w-[720px] text-center text-[13.5px] text-pretty text-[#56696e]">
-        {t("plainly", { topUp: formatUsd(PLAN_PRICES.topUp.minCents), notification: formatUsd(PLAN_PRICES.orderNotificationCents) })}
+        {t("plainly", { topUp: formatUsd(PLAN_PRICES.topUp.minCents) })}
       </p>
       <p className="mt-2 text-center text-xs text-ink-400">{t("fx", { rate: APPROX_EGP_PER_USD })}</p>
     </>

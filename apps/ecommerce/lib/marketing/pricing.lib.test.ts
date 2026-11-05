@@ -8,7 +8,6 @@ describe("PLAN_PRICES", () => {
     expect(PLAN_PRICES.emailPack).toEqual({ emails: 1000, cents: 150 });
     expect(PLAN_PRICES.creditPack).toEqual({ credits: 100, cents: 100 });
     expect(PLAN_PRICES.topUp).toEqual({ minCents: 500, maxCents: 100_000 });
-    expect(PLAN_PRICES.orderNotificationCents).toBe(1);
   });
 });
 
@@ -42,7 +41,7 @@ describe("extraEmailsCents", () => {
 
 describe("estimatePlans", () => {
   it("charges Free per order and Pro a flat price", () => {
-    expect(estimatePlans({ orders: 100, emails: 0, orderNotifications: false })).toEqual({
+    expect(estimatePlans({ orders: 100, emails: 0 })).toEqual({
       freeCents: 300,
       proCents: 2900,
       cheaper: "free",
@@ -51,26 +50,20 @@ describe("estimatePlans", () => {
   });
 
   it("makes Pro cheaper past the break-even", () => {
-    const estimate = estimatePlans({ orders: 2000, emails: 0, orderNotifications: false });
+    const estimate = estimatePlans({ orders: 2000, emails: 0 });
     expect(estimate.cheaper).toBe("pro");
     expect(estimate.freeCents).toBe(6000);
     expect(estimate.savingCents).toBe(3100);
   });
 
-  it("adds Order Notifications to both plans at one cent per order", () => {
-    const estimate = estimatePlans({ orders: 100, emails: 0, orderNotifications: true });
-    expect(estimate.freeCents).toBe(400);
-    expect(estimate.proCents).toBe(3000);
-  });
-
   it("uses each plan's own email allowance", () => {
-    const estimate = estimatePlans({ orders: 0, emails: 2000, orderNotifications: false });
+    const estimate = estimatePlans({ orders: 0, emails: 2000 });
     expect(estimate.freeCents).toBe(300);
     expect(estimate.proCents).toBe(2900);
   });
 
   it("treats a negative order count as none", () => {
-    expect(estimatePlans({ orders: -5, emails: 0, orderNotifications: false }).freeCents).toBe(0);
+    expect(estimatePlans({ orders: -5, emails: 0 }).freeCents).toBe(0);
   });
 });
 

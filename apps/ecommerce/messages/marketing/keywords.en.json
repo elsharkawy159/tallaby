@@ -103,7 +103,7 @@
       "faqTitle": "Questions about creating an online store",
       "faq": [
         { "q": "How long does it take to create an online store on Tallaby?", "a": "You can sign up, pick a template and add your products in a day, then publish when you're ready." },
-        { "q": "Is creating a store free?", "a": "Creating a store is free. The Free plan has no monthly subscription, you don't need a credit card to sign up, and you pay $0.03 per order. To see orders and send campaigns, you need a first wallet top-up of $5. Order emails to your customers need the Order Notifications app, at 1 cent per order." },
+        { "q": "Is creating a store free?", "a": "Creating a store is free. The Free plan has no monthly subscription, you don't need a credit card to sign up, and you pay $0.03 per order. To see orders and send campaigns, you need a first wallet top-up of $5. Order emails to your customers need the Order Notifications app, whose cost you see in your dashboard before you turn it on." },
         { "q": "Do I need a developer or technical experience?", "a": "No. Every step happens visually in your dashboard, from picking a template to connecting payment and shipping." },
         { "q": "Can I use my own domain?", "a": "Yes. Your store starts on a free link like yourbrand.tallaby.com, and you can connect a domain you own to your main store by adding its DNS records." },
         { "q": "How can my customers pay?", "a": "Cash on delivery is on from the start. You can connect Paymob or Kashier for cards and wallets, and take InstaPay and wallet transfers straight to your account." },

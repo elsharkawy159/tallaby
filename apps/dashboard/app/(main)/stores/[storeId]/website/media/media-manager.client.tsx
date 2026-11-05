@@ -479,6 +479,8 @@ export function MediaManager({ initial, readOnly, children }: { initial: MediaLi
 
       {/* Bulk actions, floating like the save bar. */}
       <div
+        data-save-bar
+        data-open={selected.size > 0 || undefined}
         inert={selected.size === 0}
         className={cn(
           "fixed bottom-5 left-1/2 z-[60] flex max-w-[calc(100vw-24px)] -translate-x-1/2 items-center gap-1 rounded-full bg-(--tallaby-teal-900) py-2 pe-2 ps-4 text-white shadow-(--s-shadow-bar) transition-transform duration-[350ms] ease-[cubic-bezier(.2,.7,.2,1)] dark:bg-[#1b4b5a]",

@@ -86,7 +86,7 @@ export async function FaqBlock({ items, title }: { items: FaqItem[]; title?: str
 
 /**
  * The plain statement every "start free" claim needs: the first top-up and
- * the Order Notifications app.
+ * the Order Notifications app (no app prices on tallaby.com).
  */
 export async function FreeTermsNote({ className }: { className?: string }) {
   const t = await getTranslations("contentPages");

@@ -1,7 +1,5 @@
 import { SidebarData } from "@/components/dashboard/sidebar.data";
-import { SupportWhatsAppButton } from "@/components/dashboard/support-chat-link.client";
 import { DashboardHeader } from "@/components/layout/dashboard-header.client";
-import { DashboardMain } from "@/components/layout/dashboard-main.client";
 import { MainContentWrapper } from "@/components/layout/main-content-wrapper";
 import { NegativeWalletDialog } from "@/components/layout/negative-wallet-dialog.client";
 import { HeardAboutUsDialog } from "@/components/layout/heard-about-us-dialog.client";
@@ -71,10 +69,9 @@ export default async function DashboardLayout({
         )}
         <SetupPrompts />
         <AccountMoneyProvider value={accountMoney}>
-          <DashboardMain>{children}</DashboardMain>
+          <main className="min-w-0 flex-1">{children}</main>
         </AccountMoneyProvider>
       </MainContentWrapper>
-      <SupportWhatsAppButton />
       <NegativeWalletDialog balance={walletBalance} currency={wallet?.currency ?? "EGP"} />
       {/* One pop-up at a time: a negative wallet is the more urgent one, then the welcome gift. */}
       <HeardAboutUsDialog

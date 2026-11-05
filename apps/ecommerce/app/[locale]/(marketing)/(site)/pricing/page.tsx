@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { CreditCard, Mail, MailCheck, Percent, Repeat, Sparkles, Truck, Wallet, WalletCards } from "lucide-react";
+import { Blocks, CreditCard, Mail, Percent, Repeat, Sparkles, Truck, Wallet, WalletCards } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { CtaBand } from "@/components/marketing/site/cta-band";
 import { FaqAccordion, type FaqEntry } from "@/components/marketing/site/faq-accordion";
@@ -25,7 +25,6 @@ export default async function PricingPage() {
   const prices = {
     topUpMin: formatUsd(PLAN_PRICES.topUp.minCents),
     topUpMax: formatUsd(PLAN_PRICES.topUp.maxCents),
-    notification: formatUsd(PLAN_PRICES.orderNotificationCents),
     emailPack: formatUsd(PLAN_PRICES.emailPack.cents),
     emailCount: formatNumber(PLAN_PRICES.emailPack.emails),
     creditPack: formatUsd(PLAN_PRICES.creditPack.cents),
@@ -43,7 +42,7 @@ export default async function PricingPage() {
   ];
   const extras = [
     { icon: Wallet, title: t("extras.topUpTitle"), body: t("extras.topUpBody", prices) },
-    { icon: MailCheck, title: t("extras.notificationsTitle"), body: t("extras.notificationsBody", prices) },
+    { icon: Blocks, title: t("extras.appsTitle"), body: t("extras.appsBody") },
     { icon: Mail, title: t("extras.emailsTitle"), body: t("extras.emailsBody", prices) },
     { icon: Sparkles, title: t("extras.creditsTitle"), body: t("extras.creditsBody", prices) },
   ];

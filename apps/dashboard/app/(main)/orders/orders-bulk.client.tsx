@@ -74,8 +74,6 @@ export function OrdersBulkBar({ orders, onClear }: { orders: OrderSummary[]; onC
       data-open
       className="fixed bottom-5 left-1/2 z-40 flex w-max max-w-[calc(100vw-20px)] -translate-x-1/2 flex-wrap items-center gap-1 rounded-[26px] bg-(--tallaby-teal-900) p-2 text-white shadow-(--s-shadow-bar) max-[720px]:inset-x-2.5 max-[720px]:bottom-3 max-[720px]:w-auto max-[720px]:max-w-none max-[720px]:translate-x-0 max-[720px]:rounded-[20px]"
     >
-      {/* The bar is taller than the room the support button leaves on a phone, and selecting is brief. */}
-      <style>{"@media (max-width:720px){[data-support-fab]{display:none}}"}</style>
       <span className="px-3 text-[13.5px] font-bold">{t("selected", { count: orders.length })}</span>
       {actions.map(({ action, count }, index) => {
         const Icon = ICON[action];

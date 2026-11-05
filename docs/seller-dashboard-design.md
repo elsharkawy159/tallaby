@@ -124,14 +124,14 @@ All from `@/components/seller-ui`.
 
 - Grids between cards use `gap-3.5`. Breakpoints come from the design: 1180, 1020, 720, 600, 480. Write them as `max-[720px]:` rather than `md:`.
 - Saving: forms that hold unsaved state use `SaveBar`. `PageActionBar` still exists for pages not converted yet; don't use it in new work.
-- `DashboardMain` already adds bottom padding for the floating support button.
+- `<main>` adds bottom padding while a bar marked `data-save-bar data-open` is showing, so the page end stays clear of it.
 - Sticky things sit under the top bar: 68px tall, 60px at ≤600. `PageTabs` handles its own offset.
 - Add every string to both `ar.json` and `en.json`. Arabic stays formal even where the mockup is colloquial.
 
 ## Mobile
 
 - The sidebar is a drawer up to 1020px; language, theme and install move into it at ≤600px. The top bar then holds menu, search, wallet and bell.
-- The WhatsApp button floats only up to 1020px (the sidebar card replaces it on desktop) and rises above an open `SaveBar`.
+- WhatsApp support lives on the sidebar card, which is in the drawer up to 1020px. There is no floating button (owner, 2026-11-05).
 - Touch targets are at least 40px: the primitives switch at ≤600px. Check anything custom.
 - Dialogs and alert dialogs become bottom sheets at ≤480px, on every page, with no extra code. To opt out, add `className="sui-no-sheet"` (the command palette does, because a keyboard would cover it).
 - Tables never scroll the page sideways: use `ResponsiveTable`.
