@@ -10,11 +10,11 @@ export function formatLongDate(date: string, locale: string): string {
   });
 }
 
-/** "EGP 250" / "٢٥٠ ج.م." for a whole or decimal amount in pounds. */
+/** "EGP 250" / "٢٥٠ جنيه" for a whole or decimal amount in pounds (Arabic says جنيه, never ج.م). */
 export function formatMoney(amount: number, locale: string): string {
-  return new Intl.NumberFormat(locale === "en" ? "en-EG" : "ar-EG", {
-    style: "currency",
-    currency: "EGP",
-    maximumFractionDigits: Number.isInteger(amount) ? 0 : 2,
-  }).format(amount);
+  const maximumFractionDigits = Number.isInteger(amount) ? 0 : 2;
+  if (locale === "en") {
+    return new Intl.NumberFormat("en-EG", { style: "currency", currency: "EGP", maximumFractionDigits }).format(amount);
+  }
+  return `${new Intl.NumberFormat("ar-EG", { maximumFractionDigits }).format(amount)} جنيه`;
 }

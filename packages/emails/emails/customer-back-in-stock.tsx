@@ -6,7 +6,7 @@ export default function CustomerBackInStock() {
     locale: "ar",
     brand: sampleStore,
     storeName: sampleStore.name,
-    product: { name: "قميص كتان", variant: "أبيض / L", price: "450 ج.م", imageUrl: null },
+    product: { name: "قميص كتان", variant: "أبيض / L", price: "450 جنيه", imageUrl: null },
     links: { product: "https://shop.tallaby.com/products/linen-shirt", unsubscribe: "https://shop.tallaby.com/api/stock-alerts/unsubscribe?token=x" },
   });
 }

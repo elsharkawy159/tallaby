@@ -12,7 +12,7 @@ export default function CustomerOrderShipped() {
     items: items.slice(0, 1),
     shippingAddress: address,
     paymentMethod: "الدفع عند الاستلام",
-    amountDue: "410 ج.م",
+    amountDue: "410 جنيه",
     links: { trackOrder: "https://tallaby.com/orders/1" },
   });
 }

@@ -60,8 +60,16 @@ export function currencyDefaultLabel(currency: string | null | undefined): Curre
   return isStoreCurrency(currency) ? STORE_CURRENCIES[currency][0] : DEFAULT_CURRENCY;
 }
 
+/**
+ * The saved EGP label "ج.م" reads "جنيه" (owner, 2026-11-06: money is written
+ * جنيه). Stores keep "ج.م" in their settings; only what people see changes.
+ */
+const EGP_ABBREVIATION = "ج.م";
+const EGP_WORD = "جنيه";
+
 /** A label as text, for places that can't draw markup: <option>, titles, meta tags, messages. */
 export function currencyLabelText(label: CurrencyLabel, locale: string): string {
+  if (label === EGP_ABBREVIATION) return EGP_WORD;
   if (label !== SAUDI_RIYAL_LABEL) return label;
   return locale.startsWith("ar") ? "ر.س" : "SAR";
 }
@@ -77,6 +85,7 @@ export function saudiRiyalSvg(locale: string): string {
 
 /** A label as HTML: the symbol's SVG, or the label itself (a fixed list, so safe). */
 export function currencyLabelHtml(label: CurrencyLabel, locale: string): string {
+  if (label === EGP_ABBREVIATION) return EGP_WORD;
   return label === SAUDI_RIYAL_LABEL ? saudiRiyalSvg(locale) : label;
 }
 

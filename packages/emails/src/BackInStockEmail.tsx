@@ -8,7 +8,7 @@ export interface BackInStockEmailProps extends BaseEmailProps {
   product: {
     name: string;
     variant?: string | null | undefined;
-    /** Pre-formatted price, e.g. "350 ج.م". */
+    /** Pre-formatted price, e.g. "350 جنيه". */
     price?: string | null | undefined;
     imageUrl?: string | null | undefined;
   };

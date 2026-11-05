@@ -10,7 +10,7 @@ export default function SellerOrderCancelled() {
     cancelledAt: "13 أكتوبر 2026، 9:15 ص",
     byCustomer: true,
     reason: "غيّر رأيه",
-    value: "410 ج.م",
+    value: "410 جنيه",
     stockRestored: true,
     items: items.slice(0, 1),
     links: { order: "https://dashboard.tallaby.com/orders/1" },

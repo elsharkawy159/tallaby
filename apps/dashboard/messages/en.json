@@ -482,6 +482,14 @@
     "storeLive": "Live",
     "manageStores": "Manage my stores"
   },
+  "errorPages": {
+    "notFoundTitle": "This page doesn't exist",
+    "notFoundBody": "The link may be old, or what you're looking for was deleted.",
+    "errorTitle": "This page couldn't load",
+    "errorBody": "Something unexpected went wrong. Try again, and if it keeps happening, contact support.",
+    "retry": "Try again",
+    "home": "Back to the dashboard"
+  },
   "common": {
     "mixedCurrencyNote": "Your stores use different currencies. The same number is used in every store and isn't converted.",
     "loading": "Loading...",
@@ -737,7 +745,7 @@
     "ownRiders": "Your own riders",
     "externalCourier": "External courier",
     "pendingNotice": "Some requested services are awaiting setup. Our team will contact you to confirm the details and pricing. Until then, your orders continue to work as they do today.",
-    "noSetup": "You handle your own fulfillment: you store, pack and deliver your orders and answer your customers. Tallaby fulfillment services are coming soon.",
+    "noSetup": "You handle your own fulfillment: you store, pack and deliver your orders and answer your customers. Tallaby doesn't store products or deliver orders.",
     "changeNote": "Need to change something? Send a new request below. Changes are reviewed by our team first so your active orders are never interrupted.",
     "pricingDiscussed": "Pricing will be discussed with our team.",
     "agreementTitle": "Agreed terms",
@@ -909,7 +917,7 @@
     },
     "sellerOnly": {
       "title": "Your fulfillment setup",
-      "description": "Tallaby doesn't offer fulfillment services yet, so you handle storage, packaging, delivery, customer service and returns for your orders. Tell us how you deliver.",
+      "description": "Tallaby doesn't offer fulfillment services, so you handle storage, packaging, delivery, customer service and returns for your orders. Tell us how you deliver.",
       "manageDescription": "You store, pack and deliver your orders and look after your customers. Tallaby services are coming soon.",
       "edit": "Edit setup",
       "submit": "Save"
@@ -3973,7 +3981,7 @@
       "build": "Set up the store",
       "none": "No returns",
       "logo": "Logo uploaded",
-      "tallaby_rates": "Tallaby's rates for all governorates",
+      "tallaby_rates": "Default rates for all governorates",
       "egypt_flat": "One price for all Egypt",
       "cairo_giza": "Cairo and Giza only"
     },
@@ -4112,7 +4120,7 @@
     "archiveDescription": "The store goes offline for customers and becomes read-only. You can restore it any time. It still counts toward your store limit.",
     "cancel": "Cancel",
     "createTitle": "Create a new store",
-    "createDescription": "It goes live right away with the default theme. You can change everything later.",
+    "createDescription": "The store starts as a draft. Pick a template and publish its website so customers can visit and order.",
     "name": "Store name",
     "namePlaceholder": "e.g. My second store",
     "createdToast": "{name} is live",
@@ -4597,7 +4605,7 @@
       "summary": "You deliver to {covered} of {total} governorates",
       "allCovered": "Customers anywhere in Egypt see a delivery price at checkout.",
       "gapsRefuse": "Customers in the dashed governorates can't order yet. Add an area to reach them.",
-      "gapsRates": "Customers in the dashed governorates pay Tallaby's rates. Add an area to set your own price.",
+      "gapsRates": "Customers in the dashed governorates pay the default rates. Add an area to set your own price.",
       "closeGaps": "Add an area",
       "partial": "Some areas"
     },
@@ -4639,7 +4647,6 @@
     "morePlacesLabel": "{count, plural, one {Show # more place} other {Show # more places}}",
     "uncovered": "Not covered ({count}):",
     "listSeparator": ", ",
-    "uncoveredTallabyRates": "These use Tallaby's rates.",
     "uncoveredRefuse": "You don't deliver here.",
     "edit": "Edit",
     "delete": "Delete",
@@ -4682,7 +4689,7 @@
       "replaceDescription": "Your current {count, plural, one {zone is} other {# zones are}} deleted and replaced with this template's zones. This can't be undone.",
       "replace": "Replace zones",
       "tallabyRates": {
-        "title": "Tallaby's rates",
+        "title": "Default rates",
         "description": "{count} zones covering all 27 governorates, {unit} {min}–{max}"
       },
       "egyptFlat": {
@@ -4703,13 +4710,13 @@
       }
     },
     "otherPlaces": {
-      "notCovered": "Places outside your zones aren't covered: a customer there sees \"We don't deliver here yet\" and can't place the order. Tallaby's rates are Egyptian and in pounds, so they don't apply to a store in {unit}. Add a zone for every place you deliver to.",
+      "notCovered": "Places outside your zones aren't covered: a customer there sees \"We don't deliver here yet\" and can't place the order. The default rates are Egyptian and in pounds, so they don't apply to a store in {unit}. Add a zone for every place you deliver to.",
       "title": "Other places",
-      "tallabyRates": "Use Tallaby's rates",
-      "tallabyRatesDescription": "Customers in places none of your zones cover pay Tallaby's standard rates, and you deliver those orders yourself.",
+      "tallabyRates": "Use the default rates",
+      "tallabyRatesDescription": "Customers in places none of your zones cover pay the default rates, and you deliver those orders yourself.",
       "refuse": "Don't deliver there",
       "refuseDescription": "Customers there see \"We don't deliver here yet\" and can't place the order.",
-      "note": "This applies once you have a zone that's on. Until then, every place in Egypt uses Tallaby's rates."
+      "note": "This applies once you have a zone that's on. Until then, every place in Egypt uses the default rates."
     },
     "fields": {
       "nameAr": "Zone name (Arabic)",
@@ -4746,18 +4753,13 @@
       "tallabyUnavailable": "Tallaby doesn't deliver orders. Use your own delivery.",
       "zonesExist": "This store already has delivery zones. Refresh the page."
     },
-    "tallabyTitle": "Tallaby delivery",
-    "tallabyDescription": "Tallaby's couriers deliver. Customers pay Tallaby's rates.",
     "ownTitle": "My own delivery",
     "ownDescription": "You deliver with your own riders or courier, at your zone prices.",
     "freeOver": "Free delivery over (optional)",
     "freeOverHelp": "You pay the delivery cost for orders at or over this amount.",
-    "showRates": "Show Tallaby's delivery rates",
     "hideRates": "Hide delivery rates",
     "governorate": "Governorate",
     "soon": "Soon",
-    "tallabyLegacy": "Your store still uses Tallaby's rates. Tallaby delivery is coming soon, so add your own zones and switch to own delivery.",
-    "tallabySoonDescription": "Tallaby's couriers will deliver your orders. Coming soon.",
     "partner": {
       "title": "Shipping companies",
       "description": "Hand your orders to a shipping company instead of delivering them yourself.",
@@ -4804,7 +4806,7 @@
       "all": "Free on every order",
       "allDescription": "You pay the delivery on every order.",
       "amount": "Free delivery for orders of ({unit}) or more",
-      "note": "Applies to your zones. A zone with its own free-delivery amount keeps it, and places your zones don't cover keep Tallaby's rates."
+      "note": "Applies to your zones. A zone with its own free-delivery amount keeps it, and places your zones don't cover keep the default rates."
     }
   },
   "productFeeds": {

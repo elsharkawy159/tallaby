@@ -22,7 +22,12 @@ describe("price formatting", () => {
 
   it("uses a store's chosen label", () => {
     expect(formatPricePlain(300, "ar", "جنيهاً")).toBe("300 جنيهاً");
-    expect(formatPrice(300, "ar", "sm", "ج.م")).toBe('300 <span class="text-xs">ج.م</span>');
+    expect(formatPrice(300, "ar", "sm", "ج.م")).toBe('300 <span class="text-xs">جنيه</span>');
+  });
+
+  it("shows the saved ج.م label as جنيه", () => {
+    expect(formatPricePlain(300, "ar", "ج.م")).toBe("300 جنيه");
+    expect(formatPricePlain(300, "en", "ج.م")).toBe("300 جنيه");
   });
 
   it("reads a store's currency and label from its settings", () => {

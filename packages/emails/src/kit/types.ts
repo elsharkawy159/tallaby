@@ -6,7 +6,7 @@ export interface EmailLineItem {
   name: string;
   variant?: string | null | undefined;
   quantity: number;
-  /** Pre-formatted line total, e.g. "350 ج.م". */
+  /** Pre-formatted line total, e.g. "350 جنيه". */
   price?: string | null | undefined;
   imageUrl?: string | null | undefined;
   sellerName?: string | null | undefined;

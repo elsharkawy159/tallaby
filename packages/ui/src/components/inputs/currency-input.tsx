@@ -16,7 +16,7 @@ export interface CurrencyInputProps extends Omit<BaseFieldProps, "children"> {
   value?: number;
 }
 
-const EGP_SYMBOL = "ج.م";
+const EGP_SYMBOL = "جنيه";
 
 export const CurrencyInput = React.forwardRef<
   HTMLDivElement,
