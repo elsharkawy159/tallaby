@@ -1,8 +1,9 @@
 import { Suspense } from "react";
 import { currentOrderLock } from "@/lib/auth/require-seller.server";
 import { OrdersLocked } from "@/components/orders/orders-locked";
+import { PageContainer } from "@/components/seller-ui";
 import { VendorOrdersData } from "./vendor-orders.data";
-import { VendorOrdersSkeleton } from "./orders-chunks";
+import { ListPageSkeleton } from "./orders-page-frame";
 import type { OrdersListFilters } from "./orders-view.lib";
 
 // Force dynamic rendering since this page uses cookies for authentication
@@ -19,10 +20,10 @@ export default async function OrdersPage({
   const params = await searchParams;
 
   return (
-    <div className="min-h-screen p-4 sm:p-6">
-      <Suspense fallback={<VendorOrdersSkeleton />}>
+    <PageContainer>
+      <Suspense fallback={<ListPageSkeleton />}>
         <VendorOrdersData searchParams={params} />
       </Suspense>
-    </div>
+    </PageContainer>
   );
 }

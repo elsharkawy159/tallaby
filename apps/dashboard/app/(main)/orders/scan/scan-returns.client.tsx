@@ -5,12 +5,10 @@ import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Camera, CameraOff, ExternalLink, LoaderCircle, PackageX, ScanLine, Search } from "lucide-react";
-import { Button, buttonVariants } from "@workspace/ui/components/button";
-import { Card, CardContent } from "@workspace/ui/components/card";
-import { Input } from "@workspace/ui/components/input";
 import { ConfirmActionDialog } from "@/components/layout/confirm-action-dialog.client";
 import { formatDateTime } from "@/lib/i18n/format";
 import { Money } from "@/components/money";
+import { Note, SellerButton, SellerCard, TextInput } from "@/components/seller-ui";
 import { cn } from "@/lib/utils";
 import { OrderStageBadge } from "../order-stage-badge";
 import { updateSellerOrder } from "../orders.server";
@@ -165,15 +163,14 @@ export function ScanReturnsView() {
   };
 
   return (
-    <div className="mx-auto w-full max-w-md space-y-4">
-      <p className="text-pretty text-sm text-muted-foreground">{t("description")}</p>
+    <div className="mx-auto flex w-full max-w-md flex-col gap-3.5">
+      <p className="text-pretty text-[13.5px] text-(--s-muted)">{t("description")}</p>
 
       {/* Camera */}
-      <Card>
-        <CardContent className="space-y-3 p-4">
+      <SellerCard className="flex flex-col gap-3 p-4">
           <div
             className={cn(
-              "relative aspect-[4/3] w-full overflow-hidden rounded-lg bg-black",
+              "relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-black",
               phase !== "scanning" && "hidden",
             )}
           >
@@ -185,21 +182,21 @@ export function ScanReturnsView() {
 
           {phase === "scanning" ? (
             <>
-              <p className="text-center text-sm text-muted-foreground">{t("aim")}</p>
-              <Button variant="outline" className="h-11 w-full" onClick={cancelScan}>
-                <CameraOff className="size-4" />
+              <p className="text-center text-[13px] text-(--s-muted)">{t("aim")}</p>
+              <SellerButton variant="outline" className="w-full" onClick={cancelScan}>
+                <CameraOff aria-hidden />
                 {t("stopCamera")}
-              </Button>
+              </SellerButton>
             </>
           ) : canScan ? (
-            <Button className="h-12 w-full text-base" onClick={startCamera} disabled={phase === "looking"}>
-              {order || lookupError ? <ScanLine className="size-5" /> : <Camera className="size-5" />}
+            <SellerButton className="w-full" onClick={startCamera} disabled={phase === "looking"}>
+              {order || lookupError ? <ScanLine aria-hidden /> : <Camera aria-hidden />}
               {order || lookupError ? t("scanNext") : t("startCamera")}
-            </Button>
+            </SellerButton>
           ) : (
-            <p className="rounded-md bg-muted p-3 text-sm text-muted-foreground">{t("noCamera")}</p>
+            <Note>{t("noCamera")}</Note>
           )}
-          {cameraError && <p className="text-sm text-destructive">{cameraError}</p>}
+          {cameraError && <Note tone="danger">{cameraError}</Note>}
 
           {/* Typed, or a USB/Bluetooth scanner (types the code and presses Enter). */}
           <form
@@ -210,7 +207,7 @@ export function ScanReturnsView() {
               void lookup(manual);
             }}
           >
-            <Input
+            <TextInput
               value={manual}
               onChange={(e) => setManual(e.target.value)}
               placeholder={t("manualPlaceholder")}
@@ -220,98 +217,86 @@ export function ScanReturnsView() {
               autoCorrect="off"
               spellCheck={false}
               enterKeyHint="search"
-              className="h-11 uppercase"
+              className="font-montserrat uppercase"
             />
-            <Button type="submit" variant="secondary" className="h-11 shrink-0" disabled={phase === "looking"}>
-              <Search className="size-4" />
+            <SellerButton type="submit" variant="solid" className="h-[46px]" disabled={phase === "looking"}>
+              <Search aria-hidden />
               {t("find")}
-            </Button>
+            </SellerButton>
           </form>
-        </CardContent>
-      </Card>
+      </SellerCard>
 
       {phase === "looking" && (
-        <p className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+        <p className="flex items-center justify-center gap-2 text-[13px] text-(--s-muted)">
           <LoaderCircle className="size-4 animate-spin" />
           {t("looking")}
         </p>
       )}
 
       {lookupError && phase !== "looking" && (
-        <Card className="border-destructive/40">
-          <CardContent className="flex items-start gap-3 p-4 text-sm">
-            <PackageX className="mt-0.5 size-5 shrink-0 text-destructive" />
-            <p>{lookupError}</p>
-          </CardContent>
-        </Card>
+        <Note tone="danger" icon={PackageX}>
+          {lookupError}
+        </Note>
       )}
 
       {order && phase !== "looking" && (
-        <Card>
-          <CardContent className="space-y-3 p-4">
+        <SellerCard className="flex flex-col gap-3 p-4">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-lg font-bold" dir="ltr">
+                <p className="font-montserrat text-lg font-bold text-(--s-ink)" dir="ltr">
                   #{order.orderNumber}
                 </p>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-(--s-subtle)">
                   {[order.storeName, order.createdAt ? formatDateTime(order.createdAt, locale) : null]
                     .filter(Boolean)
-                    .join(" · ")}
+                    .join("، ")}
                 </p>
               </div>
               <OrderStageBadge stage={order.stage} className="shrink-0" />
             </div>
 
-            <dl className="space-y-1.5 text-sm">
+            <dl className="flex flex-col gap-1.5 text-[13px]">
               {order.customerName && (
                 <div className="flex justify-between gap-3">
-                  <dt className="text-muted-foreground">{t("customer")}</dt>
-                  <dd className="text-end font-medium">{order.customerName}</dd>
+                  <dt className="text-(--s-subtle)">{t("customer")}</dt>
+                  <dd className="min-w-0 break-words text-end font-semibold text-(--s-text)">{order.customerName}</dd>
                 </div>
               )}
               {order.customerPhone && (
                 <div className="flex justify-between gap-3">
-                  <dt className="text-muted-foreground">{t("phone")}</dt>
-                  <dd className="font-medium" dir="ltr">
+                  <dt className="text-(--s-subtle)">{t("phone")}</dt>
+                  <dd className="font-montserrat font-semibold text-(--s-text) tabular-nums" dir="ltr">
                     {order.customerPhone}
                   </dd>
                 </div>
               )}
               <div className="flex justify-between gap-3">
-                <dt className="text-muted-foreground">{t("total")}</dt>
-                <dd className="font-medium tabular-nums" dir="ltr">
+                <dt className="text-(--s-subtle)">{t("total")}</dt>
+                <dd className="font-montserrat font-bold text-(--s-ink) tabular-nums" dir="ltr">
                   <Money value={order.total} locale={locale} unit={order} />
                 </dd>
               </div>
             </dl>
-            <p className="rounded-md bg-muted/60 p-2 text-sm">
-              <span className="font-medium">{t("items", { count: order.itemCount })}: </span>
+            <p className="break-words rounded-2xl bg-(--s-tint) p-3 text-[13px] text-(--s-body)">
+              <span className="font-semibold">{t("items", { count: order.itemCount })}: </span>
               {order.itemsSummary}
             </p>
 
             {order.canReturn ? (
-              <Button
-                variant="destructive"
-                className="h-12 w-full text-base"
-                disabled={isPending}
-                onClick={() => setConfirming(true)}
-              >
+              <SellerButton variant="danger" className="w-full" disabled={isPending} onClick={() => setConfirming(true)}>
                 {tActions("return")}
-              </Button>
+              </SellerButton>
             ) : (
-              <p className="rounded-md border border-dashed p-2 text-sm text-muted-foreground">{whyNot(order)}</p>
+              <Note>{whyNot(order)}</Note>
             )}
 
-            <Link
-              href={`/orders?order=${encodeURIComponent(order.id)}`}
-              className={cn(buttonVariants({ variant: "outline" }), "h-11 w-full")}
-            >
-              <ExternalLink className="size-4" />
-              {t("openOrder")}
-            </Link>
-          </CardContent>
-        </Card>
+            <SellerButton asChild variant="outline" className="w-full">
+              <Link href={`/orders?order=${encodeURIComponent(order.id)}`}>
+                <ExternalLink aria-hidden />
+                {t("openOrder")}
+              </Link>
+            </SellerButton>
+        </SellerCard>
       )}
 
       <ConfirmActionDialog

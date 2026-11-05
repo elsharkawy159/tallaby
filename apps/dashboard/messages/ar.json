@@ -537,7 +537,7 @@
     "store": "المتجر",
     "period": "الفترة",
     "days": "{count, plural, few {آخر # أيام} other {آخر # يوم}}",
-    "currency": "ج.م",
+    "currency": "جنيه",
     "noStoreTitle": "ليس لديك متجر بعد",
     "noStoreDescription": "تظهر التقارير لكل متجر على حدة. أنشئ متجرك الأول وابدأ باستقبال الطلبات.",
     "noStoreCta": "متاجري",
@@ -571,7 +571,7 @@
       "marketplace": "tallaby.com",
       "manual": "طلبات يدوية",
       "orders": "{count, plural, =0 {لا توجد طلبات} one {طلب واحد} two {طلبان} few {# طلبات} other {# طلب}}",
-      "currency": "ج.م"
+      "currency": "جنيه"
     },
     "governorates": {
       "title": "الرفض والإلغاء حسب المحافظة",
@@ -730,7 +730,7 @@
       "quarter": "ربع سنة",
       "year": "سنة"
     },
-    "rateAmount": "{amount} EGP",
+    "rateAmount": "{amount} جنيه",
     "noRates": "لم يتم تحديد الأسعار بعد",
     "openEnded": "مفتوحة المدة",
     "notStarted": "سيتم تأكيد تاريخ البدء"
@@ -1163,7 +1163,7 @@
       "later": "لاحقًا"
     },
     "kpis": {
-      "currency": "EGP",
+      "currency": "جنيه",
       "sales": "المبيعات",
       "orders": "الطلبات",
       "ordersUnit": "طلب",
@@ -1196,7 +1196,7 @@
       "statement": "كشف الحساب",
       "revenue": "الإيرادات",
       "orders": "عدد الطلبات",
-      "currency": "EGP",
+      "currency": "جنيه",
       "ordersShort": "{count, plural, few {طلبات} other {طلب}}",
       "emptyTitle": "سيظهر أداء مبيعاتك هنا",
       "emptyDescription": "بعد أول طلب على متجرك",
@@ -1508,10 +1508,10 @@
       "decrease": "تخفيض",
       "by": "بمقدار",
       "byPercent": "نسبة (%)",
-      "byAmount": "مبلغ ({code, select, EGP {ج.م} other {{unit}}})",
+      "byAmount": "مبلغ ({code, select, EGP {جنيه} other {{unit}}})",
       "discountType": "الخصم",
       "discountPercent": "خصم بنسبة",
-      "discountAmount": "خصم بمبلغ ({code, select, EGP {ج.م} other {{unit}}})",
+      "discountAmount": "خصم بمبلغ ({code, select, EGP {جنيه} other {{unit}}})",
       "discountNone": "إلغاء الخصم",
       "endsAt": "ينتهي الخصم يوم (اختياري)",
       "stockMode": "المخزون",
@@ -1521,7 +1521,7 @@
       "publish": "نشر",
       "unpublish": "نقل إلى المسودات",
       "value": "القيمة",
-      "unitPounds": "{code, select, EGP {ج.م} other {{unit}}}",
+      "unitPounds": "{code, select, EGP {جنيه} other {{unit}}}",
       "unitPieces": "قطعة",
       "roundWhole": "قرّب الأسعار الجديدة لأقرب {code, select, EGP {جنيه} other {رقم صحيح}}",
       "hint": {
@@ -2048,7 +2048,7 @@
         "description": "فعّل الخصم لعرض سعر مخفّض مع شطب السعر الأصلي.",
         "productPrice": "سعر المنتج",
         "discount": "خصم",
-        "currency": "EGP",
+        "currency": "جنيه",
         "discountType": "نوع الخصم",
         "discountPercent": "نسبة مئوية",
         "discountAmount": "مبلغ ثابت ({code, select, EGP {جنيه} other {{unit}}})",
@@ -2490,6 +2490,7 @@
     }
   },
   "orders": {
+    "pageTitle": "الطلبات",
     "createOrder": "إنشاء طلب",
     "subtitle": "أكّد الطلبات الجديدة، وأرسلها للتوصيل، وسجّل تسليمها. التوصيل مسؤوليتك.",
     "sort": {
@@ -2686,7 +2687,7 @@
     "channel": {
       "label": "قناة البيع",
       "all": "كل الطلبات",
-      "marketplace": "tallaby.com"
+      "marketplace": "بدون متجر"
     },
     "searchPlaceholder": "ابحث برقم الطلب أو الاسم أو الهاتف",
     "searchLabel": "البحث في الطلبات",
@@ -3582,7 +3583,7 @@
         "summary": "أكبر حملة لدينا: شهر إعلانات مع فيديو جديد بالذكاء الاصطناعي كل أسبوع:"
       },
       "days": "{count, plural, =7 {7 أيام} other {# يومًا}}",
-      "currency": "EGP",
+      "currency": "جنيه",
       "day": "يوم {day}",
       "features": {
         "video_social": "فيديو إعلاني للمنتج من محتوى السوشيال ميديا مع تعليق صوتي يشرح مزايا المنتج",
@@ -3603,7 +3604,7 @@
         "purchases": "عمليات الشراء",
         "disclaimer": "تقديرات مبنية على حملاتنا السابقة. النتائج الفعلية تختلف حسب المنتج والسعر."
       },
-      "perDay": "{amount} EGP / يوم",
+      "perDay": "{amount} جنيه / يوم",
       "plan": {
         "title": "خطة الحملة · {name}",
         "subtitle": "ما يحدث لمنتجك على مدار {days}",
@@ -3635,7 +3636,7 @@
       "howTo": {
         "one": "افتح تطبيق أنا فودافون أو اطلب *9*7#",
         "two": "اختر تحويل أموال وأدخل الرقم {number}",
-        "three": "حوّل {amount} EGP بالضبط واحتفظ برسالة التأكيد"
+        "three": "حوّل {amount} جنيه بالضبط واحتفظ برسالة التأكيد"
       },
       "payerPhone": "الرقم الذي حوّلت منه",
       "payerPhonePlaceholder": "01xxxxxxxxx",
@@ -4477,7 +4478,7 @@
     "rulesDescription": "التوصيل المجاني، ووقت تجهيز الطلب، والأماكن التي لا تغطيها مناطقك.",
     "handlingDaysLess": "يوم أقل",
     "handlingDaysMore": "يوم أكثر",
-    "defaultZoneName": "توصيل {price} EGP",
+    "defaultZoneName": "توصيل {price} جنيه",
     "addZone": "أضف منطقة توصيل",
     "editZone": "تعديل المنطقة",
     "saveZone": "حفظ المنطقة",
@@ -6990,10 +6991,11 @@
   },
   "crossSellReport": {
     "title": "تقرير العروض مع المنتج",
-    "description": "ما حققته عروض «بيتشتري مع» في هذا المتجر، من طلباتك. لا تُحتسب الطلبات الملغاة والمرتجعة والمستردة، ولا طلبات البطاقة غير المدفوعة.",
+    "description": "ما حققته عروض «يُشترى عادةً مع» في هذا المتجر، من طلباتك. لا تُحتسب الطلبات الملغاة والمرتجعة والمستردة، ولا طلبات البطاقة غير المدفوعة.",
     "storeLabel": "المتجر: {name}",
     "period": "الفترة",
     "lastDays": "آخر {days} يوم",
+    "offer": "العرض",
     "orders": "الطلبات",
     "units": "القطع",
     "discount": "الخصم الممنوح",

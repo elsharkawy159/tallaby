@@ -9,6 +9,7 @@ import {
   customerExportRow,
   normalizeCustomerNote,
   normalizeCustomerTags,
+  parseCustomerTags,
   customerPhone,
   customerWhatsAppUrl,
   orderOutcome,
@@ -244,5 +245,22 @@ describe("customerExportRow", () => {
     const [customer] = aggregateStoreCustomers([row({ addressPhone: null, userPhone: null, status: "pending" })]);
     const out = customerExportRow(customer!, undefined);
     expect(out).toMatchObject({ phone: "", successRate: "", tags: "", note: "" });
+  });
+});
+
+describe("parseCustomerTags", () => {
+  // The app's database client has fetch_types off, so a text[] from a raw query arrives as Postgres array text.
+  it("reads the text form a raw query returns", () => {
+    expect(parseCustomerTags('{"عميل مميز"}')).toEqual(["عميل مميز"]);
+    expect(parseCustomerTags("{vip,wholesale}")).toEqual(["vip", "wholesale"]);
+    expect(parseCustomerTags('{"a, b","say \\"hi\\"","back\\slash"}')).toEqual(["a, b", 'say "hi"', "back\slash"]);
+    expect(parseCustomerTags("{}")).toEqual([]);
+  });
+
+  it("keeps a real array and refuses anything else", () => {
+    expect(parseCustomerTags(["vip"])).toEqual(["vip"]);
+    expect(parseCustomerTags(null)).toEqual([]);
+    expect(parseCustomerTags("not an array")).toEqual([]);
+    expect(parseCustomerTags("{NULL,vip}")).toEqual(["vip"]);
   });
 });

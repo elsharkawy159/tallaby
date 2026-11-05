@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import { listStoreLeadSettings } from "@workspace/lib/checkout-leads/server";
+import { Note, PageHeader } from "@/components/seller-ui";
 import { requireOrdersStore } from "@/lib/auth/require-seller.server";
 import { getSellerStores } from "@/lib/stores/current-store.server";
 import { PendingCartsView } from "./pending-carts.client";
@@ -29,23 +30,22 @@ export async function PendingCartsData({
 
   const header = (
     <>
-      {/* No page title: the header breadcrumb already names the page. */}
-      <p className="text-pretty text-sm text-muted-foreground">{t("description", { days: PENDING_CART_MAX_AGE_DAYS })}</p>
-      <p className="text-pretty text-sm text-muted-foreground">
+      <PageHeader title={t("title")} description={t("description", { days: PENDING_CART_MAX_AGE_DAYS })} />
+      <Note>
         {t("notCompletedHint")}{" "}
-        <Link href={missedHref} className="font-medium text-primary underline-offset-4 hover:underline">
+        <Link href={missedHref} className="text-(--s-link) underline-offset-4 hover:underline max-[600px]:inline-flex max-[600px]:min-h-10 max-[600px]:items-center">
           {t("notCompletedLink")}
         </Link>
-      </p>
+      </Note>
     </>
   );
 
   if (!picked) {
     return (
-      <section aria-label={t("title")} className="space-y-5">
+      <>
         {header}
         <PendingCartsView list={{ carts: [], total: 0, page: 1, pages: 1, size: 20 }} store={null} storeName={null} />
-      </section>
+      </>
     );
   }
 
@@ -56,7 +56,7 @@ export async function PendingCartsData({
   const settings = list.total > 0 ? await listStoreLeadSettings(seller.sellerId) : [];
 
   return (
-    <section aria-label={t("title")} className="space-y-5">
+    <>
       {header}
       <PendingCartsView
         key={store.id}
@@ -64,6 +64,6 @@ export async function PendingCartsData({
         store={settings.find((s) => s.storeId === store.id) ?? null}
         storeName={stores.length > 1 ? store.name : null}
       />
-    </section>
+    </>
   );
 }

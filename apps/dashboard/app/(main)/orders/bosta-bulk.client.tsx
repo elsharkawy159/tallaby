@@ -6,11 +6,12 @@ import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { LoaderCircle, Printer, Truck } from "lucide-react";
 
-import { Button } from "@workspace/ui/components/button";
 import { ConfirmActionDialog } from "@/components/layout/confirm-action-dialog.client";
+import { SellerButton, SellerCard } from "@/components/seller-ui";
 import { bostaLabelsUrl, canShipWithBosta } from "./bosta-ship.client";
 import { shipWithBosta } from "./bosta-ship.server";
 import type { OrderSummary } from "./orders.types";
+import { BOSTA_BUTTON } from "./orders-ui";
 
 /** Bosta prints at most 50 labels in one PDF. */
 const LABELS_MAX = 50;
@@ -53,17 +54,17 @@ export function BostaBulkBar({ storeId, orders }: { storeId: string; orders: Ord
     });
 
   return (
-    <div className="flex flex-wrap items-center gap-2 rounded-xl border border-[#E30613]/20 bg-[#E30613]/5 px-3 py-2">
-      <Truck className="size-4 text-[#E30613]" aria-hidden />
-      <span className="me-auto text-[13px] font-medium">{t("title")}</span>
+    <SellerCard className="flex flex-wrap items-center gap-2 px-4 py-3">
+      <Truck className="size-4 shrink-0 text-[#E30613]" aria-hidden />
+      <span className="me-auto min-w-0 text-[13px] font-semibold text-(--s-text)">{t("title")}</span>
       {toShip.length > 0 && (
-        <Button size="sm" className="bg-[#E30613] text-white hover:bg-[#c00510]" disabled={isPending} onClick={() => setConfirming(true)}>
-          {isPending ? <LoaderCircle className="size-4 animate-spin" aria-hidden /> : <Truck className="size-4" aria-hidden />}
+        <SellerButton variant="solid" size="sm" className={BOSTA_BUTTON} disabled={isPending} onClick={() => setConfirming(true)}>
+          {isPending ? <LoaderCircle className="animate-spin" aria-hidden /> : <Truck aria-hidden />}
           {progress ? t("progress", progress) : t("ship", { count: toShip.length })}
-        </Button>
+        </SellerButton>
       )}
       {printable.length > 0 && (
-        <Button asChild size="sm" variant="outline">
+        <SellerButton asChild variant="outline" size="sm">
           <a
             href={bostaLabelsUrl(
               storeId,
@@ -74,10 +75,10 @@ export function BostaBulkBar({ storeId, orders }: { storeId: string; orders: Ord
             target="_blank"
             rel="noopener noreferrer"
           >
-            <Printer className="size-4" aria-hidden />
+            <Printer aria-hidden />
             {t("print", { count: printable.length })}
           </a>
-        </Button>
+        </SellerButton>
       )}
       <ConfirmActionDialog
         open={confirming}
@@ -89,6 +90,6 @@ export function BostaBulkBar({ storeId, orders }: { storeId: string; orders: Ord
         pending={isPending}
         onConfirm={shipAll}
       />
-    </div>
+    </SellerCard>
   );
 }

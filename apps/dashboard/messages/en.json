@@ -2490,6 +2490,7 @@
     }
   },
   "orders": {
+    "pageTitle": "Orders",
     "createOrder": "Create order",
     "subtitle": "Confirm new orders, send them out and mark them delivered. You handle the delivery.",
     "sort": {
@@ -2686,7 +2687,7 @@
     "channel": {
       "label": "Sales channel",
       "all": "All orders",
-      "marketplace": "tallaby.com"
+      "marketplace": "No store"
     },
     "searchPlaceholder": "Search by order number, name or phone",
     "searchLabel": "Search orders",
@@ -6994,6 +6995,7 @@
     "storeLabel": "Store: {name}",
     "period": "Period",
     "lastDays": "Last {days} days",
+    "offer": "Offer",
     "orders": "Orders",
     "units": "Units",
     "discount": "Discount given",

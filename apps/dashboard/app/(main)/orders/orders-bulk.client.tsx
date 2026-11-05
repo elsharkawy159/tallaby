@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Ban, Check, LoaderCircle, PackageCheck, Truck, X } from "lucide-react";
-import { Button } from "@workspace/ui/components/button";
 import { ConfirmActionDialog } from "@/components/layout/confirm-action-dialog.client";
+import { cn } from "@/lib/utils";
 import { ExportOrdersButton } from "./export-orders-button.client";
 import {
   BULK_MAX_ORDERS,
@@ -17,6 +17,7 @@ import {
 } from "./orders-bulk.lib";
 import { bulkUpdateSellerOrders } from "./orders.server";
 import type { OrderSummary } from "./orders.types";
+import { BAR_BUTTON } from "./orders-ui";
 import { PrintOrdersButton } from "./print-orders-button.client";
 
 const ICON: Record<BulkOrderAction, React.ComponentType<{ className?: string }>> = {
@@ -28,7 +29,8 @@ const ICON: Record<BulkOrderAction, React.ComponentType<{ className?: string }>>
 
 /**
  * Actions on the selected orders (ROADMAP.md F-04c): stage moves each order
- * already allows, print and export. Shows only while something is selected.
+ * already allows, print and export. Floats over the list while something is
+ * selected, so it stays in reach on a phone; it wraps instead of scrolling.
  */
 export function OrdersBulkBar({ orders, onClear }: { orders: OrderSummary[]; onClear: () => void }) {
   const t = useTranslations("orders.bulk");
@@ -67,36 +69,40 @@ export function OrdersBulkBar({ orders, onClear }: { orders: OrderSummary[]; onC
     });
 
   return (
-    <div className="flex flex-wrap items-center gap-2 rounded-xl border border-primary/30 bg-primary-soft/60 px-3 py-2">
-      <span className="text-[13px] font-semibold text-primary-ink">{t("selected", { count: orders.length })}</span>
-      <Button size="sm" variant="ghost" className="h-8 px-2" onClick={onClear} disabled={isPending}>
-        <X className="size-4" aria-hidden />
+    <div
+      data-save-bar
+      data-open
+      className="fixed bottom-5 left-1/2 z-40 flex w-max max-w-[calc(100vw-20px)] -translate-x-1/2 flex-wrap items-center gap-1 rounded-[26px] bg-(--tallaby-teal-900) p-2 text-white shadow-(--s-shadow-bar) max-[720px]:inset-x-2.5 max-[720px]:bottom-3 max-[720px]:w-auto max-[720px]:max-w-none max-[720px]:translate-x-0 max-[720px]:rounded-[20px]"
+    >
+      {/* The bar is taller than the room the support button leaves on a phone, and selecting is brief. */}
+      <style>{"@media (max-width:720px){[data-support-fab]{display:none}}"}</style>
+      <span className="px-3 text-[13.5px] font-bold">{t("selected", { count: orders.length })}</span>
+      {actions.map(({ action, count }, index) => {
+        const Icon = ICON[action];
+        const main = index === 0 && action !== "cancel";
+        return (
+          <button
+            key={action}
+            type="button"
+            className={cn(
+              BAR_BUTTON,
+              main && "bg-accent text-accent-foreground hover:bg-accent hover:text-accent-foreground",
+              action === "cancel" && "text-[#fca5a5]",
+            )}
+            disabled={isPending}
+            onClick={() => setConfirming(action)}
+          >
+            {isPending && confirming === action ? <LoaderCircle className="animate-spin" aria-hidden /> : <Icon aria-hidden />}
+            {isPending && confirming === action && progress ? t("progress", progress) : t(`actions.${action}`, { count })}
+          </button>
+        );
+      })}
+      <PrintOrdersButton orderIds={orders.map((o) => o.id)} showCount onBar />
+      <ExportOrdersButton ids={orders.map((o) => o.id)} count={orders.length} onBar />
+      <button type="button" className={cn(BAR_BUTTON, "ms-auto")} onClick={onClear} disabled={isPending}>
+        <X aria-hidden />
         {t("clear")}
-      </Button>
-      <div className="ms-auto flex flex-wrap items-center gap-2">
-        {actions.map(({ action, count }) => {
-          const Icon = ICON[action];
-          return (
-            <Button
-              key={action}
-              size="sm"
-              variant={action === "cancel" ? "outline" : "default"}
-              className={action === "cancel" ? "text-destructive hover:text-destructive" : undefined}
-              disabled={isPending}
-              onClick={() => setConfirming(action)}
-            >
-              {isPending && confirming === action ? (
-                <LoaderCircle className="size-4 animate-spin" aria-hidden />
-              ) : (
-                <Icon className="size-4" aria-hidden />
-              )}
-              {isPending && confirming === action && progress ? t("progress", progress) : t(`actions.${action}`, { count })}
-            </Button>
-          );
-        })}
-        <PrintOrdersButton orderIds={orders.map((o) => o.id)} showCount className="h-8 bg-card" />
-        <ExportOrdersButton ids={orders.map((o) => o.id)} count={orders.length} className="h-8" />
-      </div>
+      </button>
       <ConfirmActionDialog
         open={confirming !== null}
         onOpenChange={(open) => !open && !isPending && setConfirming(null)}

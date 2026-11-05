@@ -3,16 +3,13 @@
 import { useEffect, useId, useRef, useState, useTransition } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useFormatter, useLocale, useTranslations } from "next-intl";
-import { moneyNumberOptions, moneyParams, type MoneyUnit } from "@/lib/i18n/format";
-import { LoaderCircle, MessageCircle, Search, Trash2 } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
+import { formatMoney, moneyParams, type MoneyUnit } from "@/lib/i18n/format";
+import { LoaderCircle, MessageCircle, Package, Search, Trash2, User } from "lucide-react";
 import { toast } from "sonner";
 import { MANUAL_PAID_VIA, type ManualOrderTotals, type ManualPaidVia } from "@workspace/lib/orders/manual";
 import { EGYPT_GOVERNORATES, getGovernorateLabel } from "@workspace/lib/shipping";
-import { Button } from "@workspace/ui/components/button";
-import { Input } from "@workspace/ui/components/input";
-import { Label } from "@workspace/ui/components/label";
-import { Textarea } from "@workspace/ui/components/textarea";
+import { Field, FieldRow, IconButton, NativeSelect, OptionCard, OptionCards, SectionCard, SellerButton, SellerCard, TextArea, TextInput } from "@/components/seller-ui";
 import { cn } from "@/lib/utils";
 import {
   createManualOrderAction,
@@ -35,8 +32,6 @@ type Line = {
   quantity: number;
 };
 
-const FIELD = "h-10 w-full rounded-[10px] border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring";
-
 function useDebounced<T>(value: T, ms: number): T {
   const [debounced, setDebounced] = useState(value);
   useEffect(() => {
@@ -48,7 +43,6 @@ function useDebounced<T>(value: T, ms: number): T {
 
 export function ManualOrderForm({ money: unit, storeId, storeName }: { money?: MoneyUnit; storeId: string; storeName: string }) {
   const t = useTranslations("manualOrder");
-  const format = useFormatter();
   const locale = useLocale();
   const router = useRouter();
   const ids = useId();
@@ -70,7 +64,7 @@ export function ManualOrderForm({ money: unit, storeId, storeName }: { money?: M
   // One id per attempt, so a double click can't make two orders.
   const requestId = useRef(crypto.randomUUID());
 
-  const money = (piastres: number) => format.number(piastres / 100, moneyNumberOptions(unit));
+  const money = (piastres: number) => formatMoney(piastres / 100, locale, unit);
 
   const buildInput = (sendLink: boolean) => ({
     requestId: requestId.current,
@@ -165,17 +159,17 @@ export function ManualOrderForm({ money: unit, storeId, storeName }: { money?: M
     const message = t("linkMessage", { store: storeName, number: link.orderNumber, link: link.url });
     const whatsapp = `https://wa.me/2${link.phone}?text=${encodeURIComponent(message)}`;
     return (
-      <div className="mx-auto max-w-lg rounded-2xl border bg-card p-6 text-center">
-        <h1 className="text-lg font-bold">{t("linkReadyTitle", { number: link.orderNumber })}</h1>
-        <p className="mt-2 text-pretty text-sm text-muted-foreground">{t("linkReadyBody")}</p>
+      <SellerCard className="mx-auto w-full max-w-lg p-6 text-center">
+        <h2 className="text-lg font-bold text-(--s-ink)">{t("linkReadyTitle", { number: link.orderNumber })}</h2>
+        <p className="mt-2 text-pretty text-[13.5px] text-(--s-muted)">{t("linkReadyBody")}</p>
         <div className="mt-4 flex flex-wrap justify-center gap-2">
-          <Button asChild>
+          <SellerButton asChild variant="whatsapp">
             <a href={whatsapp} target="_blank" rel="noopener noreferrer">
-              <MessageCircle className="size-4" aria-hidden />
+              <MessageCircle aria-hidden />
               {t("sendWhatsapp")}
             </a>
-          </Button>
-          <Button
+          </SellerButton>
+          <SellerButton
             variant="outline"
             onClick={() => {
               void navigator.clipboard?.writeText(link.url);
@@ -183,12 +177,12 @@ export function ManualOrderForm({ money: unit, storeId, storeName }: { money?: M
             }}
           >
             {t("copyLink")}
-          </Button>
-          <Button variant="ghost" onClick={() => router.push("/orders")}>
+          </SellerButton>
+          <SellerButton variant="mini" onClick={() => router.push("/orders")}>
             {t("backToOrders")}
-          </Button>
+          </SellerButton>
         </div>
-      </div>
+      </SellerCard>
     );
   }
 
@@ -196,70 +190,62 @@ export function ManualOrderForm({ money: unit, storeId, storeName }: { money?: M
     lines.length > 0 && name.trim().length >= 2 && phone.trim() !== "" && state && city.trim() && addressLine1.trim().length >= 3;
 
   return (
-    <div className="mx-auto grid w-full max-w-5xl gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
-      <div className="min-w-0 space-y-5">
-        <section className="rounded-2xl border bg-card p-4 sm:p-5">
-          <h2 className="mb-3 font-semibold">{t("products")}</h2>
+    <div className="grid grid-cols-[minmax(0,1fr)_340px] items-start gap-3.5 max-[1020px]:grid-cols-1">
+      <div className="flex min-w-0 flex-col gap-3.5">
+        <SectionCard icon={Package} title={t("products")}>
           <ProductSearch storeId={storeId} onPick={addProduct} />
           {lines.length > 0 && (
-            <ul className="mt-3 divide-y">
+            <ul className="divide-y divide-(--s-line-soft)">
               {lines.map((line) => (
-                <li key={line.key} className="flex items-center gap-3 py-3">
+                <li key={line.key} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
                   {line.image ? (
-                    <Image src={line.image} alt="" width={44} height={44} className="size-11 shrink-0 rounded-lg object-cover" />
+                    <Image src={line.image} alt="" width={44} height={44} className="size-11 shrink-0 rounded-xl object-cover" />
                   ) : (
-                    <div className="size-11 shrink-0 rounded-lg bg-muted" />
+                    <div className="size-11 shrink-0 rounded-xl bg-(--s-fill)" />
                   )}
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium">{line.title}</p>
-                    <p className="truncate text-xs text-muted-foreground">
-                      {line.variantTitle ? `${line.variantTitle} · ` : ""}
-                      {money(Math.round(line.price * 100))}
+                    <p className="line-clamp-2 break-words text-[13.5px] font-semibold text-(--s-text)">{line.title}</p>
+                    <p className="break-words text-xs text-(--s-subtle)">
+                      {line.variantTitle ? `${line.variantTitle}: ` : ""}
+                      <bdi>{money(Math.round(line.price * 100))}</bdi>
                     </p>
                   </div>
-                  <Input
+                  <TextInput
                     type="number"
                     inputMode="numeric"
                     min={1}
                     max={99}
                     aria-label={t("quantity")}
-                    className="h-9 w-16 text-center"
+                    className="h-10 w-16 shrink-0 px-1 text-center font-montserrat"
                     value={line.quantity}
                     onChange={(event) => {
                       const quantity = Math.max(1, Math.min(99, Number(event.target.value) || 1));
                       setLines((current) => current.map((l) => (l.key === line.key ? { ...l, quantity } : l)));
                     }}
                   />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
+                  <IconButton
                     aria-label={t("removeProduct")}
                     onClick={() => setLines((current) => current.filter((l) => l.key !== line.key))}
                   >
-                    <Trash2 className="size-4" aria-hidden />
-                  </Button>
+                    <Trash2 aria-hidden />
+                  </IconButton>
                 </li>
               ))}
             </ul>
           )}
-        </section>
+        </SectionCard>
 
-        <section className="space-y-3 rounded-2xl border bg-card p-4 sm:p-5">
-          <h2 className="font-semibold">{t("customer")}</h2>
+        <SectionCard icon={User} title={t("customer")}>
           <CustomerSearch storeId={storeId} onPick={fillCustomer} />
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="grid gap-1.5">
-              <Label htmlFor={`${ids}-name`}>{t("name")}</Label>
-              <Input id={`${ids}-name`} value={name} maxLength={120} onChange={(e) => setName(e.target.value)} />
-            </div>
-            <div className="grid gap-1.5">
-              <Label htmlFor={`${ids}-phone`}>{t("phone")}</Label>
-              <Input id={`${ids}-phone`} dir="ltr" inputMode="tel" value={phone} onChange={(e) => setPhone(e.target.value)} />
-            </div>
-            <div className="grid gap-1.5">
-              <Label htmlFor={`${ids}-state`}>{t("governorate")}</Label>
-              <select id={`${ids}-state`} className={FIELD} value={state} onChange={(e) => setState(e.target.value)}>
+          <FieldRow>
+            <Field label={t("name")} htmlFor={`${ids}-name`}>
+              <TextInput id={`${ids}-name`} value={name} maxLength={120} onChange={(e) => setName(e.target.value)} />
+            </Field>
+            <Field label={t("phone")} htmlFor={`${ids}-phone`}>
+              <TextInput id={`${ids}-phone`} dir="ltr" inputMode="tel" className="font-montserrat" value={phone} onChange={(e) => setPhone(e.target.value)} />
+            </Field>
+            <Field label={t("governorate")} htmlFor={`${ids}-state`}>
+              <NativeSelect id={`${ids}-state`} value={state} onChange={(e) => setState(e.target.value)}>
                 <option value="" disabled>
                   {t("governoratePlaceholder")}
                 </option>
@@ -268,61 +254,53 @@ export function ManualOrderForm({ money: unit, storeId, storeName }: { money?: M
                     {getGovernorateLabel(code, locale)}
                   </option>
                 ))}
-              </select>
-            </div>
-            <div className="grid gap-1.5">
-              <Label htmlFor={`${ids}-city`}>{t("city")}</Label>
-              <Input id={`${ids}-city`} value={city} maxLength={120} onChange={(e) => setCity(e.target.value)} />
-            </div>
-          </div>
-          <div className="grid gap-1.5">
-            <Label htmlFor={`${ids}-address`}>{t("address")}</Label>
-            <Input id={`${ids}-address`} value={addressLine1} maxLength={300} onChange={(e) => setAddressLine1(e.target.value)} />
-          </div>
-          <div className="grid gap-1.5">
-            <Label htmlFor={`${ids}-notes`}>{t("notes")}</Label>
-            <Textarea id={`${ids}-notes`} rows={2} value={notes} maxLength={1000} onChange={(e) => setNotes(e.target.value)} />
-          </div>
-        </section>
+              </NativeSelect>
+            </Field>
+            <Field label={t("city")} htmlFor={`${ids}-city`}>
+              <TextInput id={`${ids}-city`} value={city} maxLength={120} onChange={(e) => setCity(e.target.value)} />
+            </Field>
+          </FieldRow>
+          <Field label={t("address")} htmlFor={`${ids}-address`}>
+            <TextInput id={`${ids}-address`} value={addressLine1} maxLength={300} onChange={(e) => setAddressLine1(e.target.value)} />
+          </Field>
+          <Field label={t("notes")} htmlFor={`${ids}-notes`}>
+            <TextArea id={`${ids}-notes`} rows={2} value={notes} maxLength={1000} onChange={(e) => setNotes(e.target.value)} />
+          </Field>
+        </SectionCard>
       </div>
 
-      <aside className="h-fit space-y-4 rounded-2xl border bg-card p-4 sm:p-5 lg:sticky lg:top-20">
-        <fieldset className="space-y-2">
-          <legend className="mb-1.5 text-sm font-semibold">{t("payment")}</legend>
-          {(["cod", "paid"] as const).map((value) => (
-            <label
-              key={value}
-              className={cn(
-                "flex cursor-pointer items-center gap-2.5 rounded-[10px] border p-3 text-sm focus-within:ring-2 focus-within:ring-ring",
-                payment === value && "border-primary bg-primary/5",
-              )}
-            >
-              <input type="radio" name={`${ids}-payment`} checked={payment === value} onChange={() => setPayment(value)} />
-              {t(`paymentOptions.${value}`)}
-            </label>
-          ))}
+      <SellerCard className="sticky top-[84px] flex flex-col gap-4 p-5 max-[1020px]:static max-[720px]:p-4">
+        <fieldset className="flex flex-col gap-2">
+          <legend className="mb-2 text-[13.5px] font-bold text-(--s-text)">{t("payment")}</legend>
+          <OptionCards className="grid-cols-1">
+            {(["cod", "paid"] as const).map((value) => (
+              <OptionCard
+                key={value}
+                name={`${ids}-payment`}
+                title={t(`paymentOptions.${value}`)}
+                checked={payment === value}
+                onChange={() => setPayment(value)}
+              />
+            ))}
+          </OptionCards>
           {payment === "paid" && (
-            <div className="grid gap-1.5 pt-1">
-              <Label htmlFor={`${ids}-via`}>{t("paidVia")}</Label>
-              <select id={`${ids}-via`} className={FIELD} value={paidVia} onChange={(e) => setPaidVia(e.target.value as ManualPaidVia)}>
+            <Field label={t("paidVia")} htmlFor={`${ids}-via`} note={t("paidHint")} className="pt-1">
+              <NativeSelect id={`${ids}-via`} value={paidVia} onChange={(e) => setPaidVia(e.target.value as ManualPaidVia)}>
                 {MANUAL_PAID_VIA.map((via) => (
                   <option key={via} value={via}>
                     {t(`paidViaOptions.${via}`)}
                   </option>
                 ))}
-              </select>
-              <p className="text-xs text-muted-foreground">{t("paidHint")}</p>
-            </div>
+              </NativeSelect>
+            </Field>
           )}
         </fieldset>
 
-        <div className="grid gap-1.5">
-          <Label htmlFor={`${ids}-discount`}>{t("discount", moneyParams(locale, unit))}</Label>
-          <Input id={`${ids}-discount`} inputMode="decimal" dir="ltr" value={discount} onChange={(e) => setDiscount(e.target.value)} placeholder="0" />
-          <p className="text-xs text-muted-foreground">{t("discountHint")}</p>
-        </div>
+        <Field label={t("discount", moneyParams(locale, unit))} htmlFor={`${ids}-discount`} note={t("discountHint")}>
+          <TextInput id={`${ids}-discount`} inputMode="decimal" dir="ltr" className="font-montserrat" value={discount} onChange={(e) => setDiscount(e.target.value)} placeholder="0" />
+        </Field>
 
-        <dl className="space-y-1.5 border-t pt-3 text-sm">
+        <dl className="flex flex-col gap-1.5 border-t border-(--s-line-soft) pt-3 text-[13px]">
           {totals ? (
             <>
               <Row label={t("goods")} value={money(totals.goodsPiastres)} />
@@ -331,34 +309,34 @@ export function ManualOrderForm({ money: unit, storeId, storeName }: { money?: M
               <Row label={t("total")} value={money(totals.totalPiastres)} strong />
             </>
           ) : (
-            <p className={cn("text-xs", previewError ? "text-destructive" : "text-muted-foreground")}>
+            <p className={cn("text-xs", previewError ? "text-destructive" : "text-(--s-subtle)")}>
               {previewError ?? t("totalsHint")}
             </p>
           )}
         </dl>
 
-        <div className="grid gap-2">
-          <Button type="button" disabled={!canSubmit || pending} onClick={() => submit(false)}>
-            {pending && <LoaderCircle className="size-4 animate-spin" aria-hidden />}
+        <div className="flex flex-col gap-2">
+          <SellerButton disabled={!canSubmit || pending} onClick={() => submit(false)}>
+            {pending && <LoaderCircle className="animate-spin" aria-hidden />}
             {t("create")}
-          </Button>
+          </SellerButton>
           {payment === "cod" && (
-            <Button type="button" variant="outline" disabled={!canSubmit || pending} onClick={() => submit(true)}>
+            <SellerButton variant="outline" disabled={!canSubmit || pending} onClick={() => submit(true)}>
               {t("sendLink")}
-            </Button>
+            </SellerButton>
           )}
-          {payment === "cod" && <p className="text-xs text-muted-foreground">{t("sendLinkHint")}</p>}
+          {payment === "cod" && <p className="text-pretty text-xs text-(--s-subtle)">{t("sendLinkHint")}</p>}
         </div>
-      </aside>
+      </SellerCard>
     </div>
   );
 }
 
 function Row({ label, value, strong }: { label: string; value: string; strong?: boolean }) {
   return (
-    <div className={cn("flex justify-between gap-3", strong && "border-t pt-1.5 font-bold")}>
-      <dt className={strong ? undefined : "text-muted-foreground"}>{label}</dt>
-      <dd className="tabular-nums" dir="ltr">
+    <div className={cn("flex flex-wrap justify-between gap-x-3", strong && "border-t border-(--s-line-soft) pt-1.5")}>
+      <dt className={strong ? "font-bold text-(--s-ink)" : "text-(--s-subtle)"}>{label}</dt>
+      <dd className={cn("font-montserrat tabular-nums", strong ? "text-base font-bold text-(--s-ink)" : "font-semibold text-(--s-text)")} dir="ltr">
         {value}
       </dd>
     </div>
@@ -391,9 +369,9 @@ function ProductSearch({
 
   return (
     <div className="relative">
-      <Search className="pointer-events-none absolute start-3 top-3 size-4 text-muted-foreground" aria-hidden />
-      <Input
-        className="ps-9"
+      <Search className="pointer-events-none absolute start-3.5 top-[15px] size-4 text-(--s-subtle)" aria-hidden />
+      <TextInput
+        className="ps-10"
         placeholder={t("searchProducts")}
         aria-label={t("searchProducts")}
         value={query}
@@ -402,8 +380,8 @@ function ProductSearch({
         onChange={(event) => setQuery(event.target.value)}
       />
       {open && (
-        <ul className="absolute z-20 mt-1 max-h-72 w-full overflow-y-auto rounded-xl border bg-popover p-1 shadow-lg">
-          {options.length === 0 && <li className="p-3 text-sm text-muted-foreground">{t("noProducts")}</li>}
+        <ul className="absolute z-20 mt-1 max-h-72 w-full overflow-y-auto rounded-[18px] border border-(--s-field) bg-(--s-surface) p-1 shadow-(--s-shadow-menu)">
+          {options.length === 0 && <li className="p-3 text-[13px] text-(--s-subtle)">{t("noProducts")}</li>}
           {options.flatMap((product) =>
             (product.variants.length ? product.variants : [null]).map((variant) => {
               const stock = variant ? variant.stock : product.stock;
@@ -413,7 +391,7 @@ function ProductSearch({
                   <button
                     type="button"
                     disabled={out}
-                    className="flex w-full items-center justify-between gap-3 rounded-lg p-2 text-start text-sm hover:bg-muted disabled:opacity-50"
+                    className="flex min-h-10 w-full cursor-pointer items-center justify-between gap-3 rounded-[11px] p-2 text-start text-[13px] text-(--s-text) hover:bg-(--s-hover) disabled:cursor-not-allowed disabled:opacity-50"
                     onMouseDown={(event) => event.preventDefault()}
                     onClick={() => {
                       onPick(product, variant ?? undefined);
@@ -421,11 +399,11 @@ function ProductSearch({
                       setOpen(false);
                     }}
                   >
-                    <span className="min-w-0 truncate">
+                    <span className="min-w-0 break-words">
                       {product.title}
-                      {variant?.title ? ` · ${variant.title}` : ""}
+                      {variant?.title ? ` (${variant.title})` : ""}
                     </span>
-                    <span className="shrink-0 text-xs text-muted-foreground">
+                    <span className="shrink-0 text-xs text-(--s-subtle)">
                       {out ? t("outOfStock") : stock === null ? "" : t("inStock", { count: stock })}
                     </span>
                   </button>
@@ -460,24 +438,24 @@ function CustomerSearch({ storeId, onPick }: { storeId: string; onPick: (custome
 
   return (
     <div className="relative">
-      <Input placeholder={t("searchCustomers")} aria-label={t("searchCustomers")} value={query} onChange={(e) => setQuery(e.target.value)} />
+      <TextInput placeholder={t("searchCustomers")} aria-label={t("searchCustomers")} value={query} onChange={(e) => setQuery(e.target.value)} />
       {shown.length > 0 && (
-        <ul className="absolute z-20 mt-1 max-h-60 w-full overflow-y-auto rounded-xl border bg-popover p-1 shadow-lg">
+        <ul className="absolute z-20 mt-1 max-h-60 w-full overflow-y-auto rounded-[18px] border border-(--s-field) bg-(--s-surface) p-1 shadow-(--s-shadow-menu)">
           {shown.map((customer) => (
             <li key={customer.key}>
               <button
                 type="button"
-                className="flex w-full justify-between gap-3 rounded-lg p-2 text-start text-sm hover:bg-muted"
+                className="flex min-h-10 w-full cursor-pointer items-center justify-between gap-3 rounded-[11px] p-2 text-start text-[13px] text-(--s-text) hover:bg-(--s-hover)"
                 onClick={() => {
                   onPick(customer);
                   setQuery("");
                   setOptions([]);
                 }}
               >
-                <span className="min-w-0 truncate">{customer.name}</span>
-                <span dir="ltr" className="shrink-0 text-xs text-muted-foreground">
+                <span className="min-w-0 break-words">{customer.name}</span>
+                <bdi dir="ltr" className="shrink-0 font-montserrat text-xs text-(--s-subtle) tabular-nums">
                   {customer.phone}
-                </span>
+                </bdi>
               </button>
             </li>
           ))}

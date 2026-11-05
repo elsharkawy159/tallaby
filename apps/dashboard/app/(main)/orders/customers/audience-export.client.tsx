@@ -4,17 +4,8 @@ import { useState, useTransition } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { LoaderCircle, Target } from "lucide-react";
-import { Button } from "@workspace/ui/components/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@workspace/ui/components/dialog";
-import { cn } from "@workspace/ui/lib/utils";
 import { AUDIENCE_FORMATS, AUDIENCE_SEGMENTS, type AudienceFormat, type AudienceSegment } from "@workspace/lib/audiences";
+import { Modal, OptionCard, OptionCards, SellerButton } from "@/components/seller-ui";
 import { formatNumber } from "@/lib/i18n/format";
 import { exportAudience } from "./audience.server";
 
@@ -33,12 +24,6 @@ function downloadText(text: string, fileName: string) {
   document.body.removeChild(anchor);
   URL.revokeObjectURL(url);
 }
-
-const option = (active: boolean) =>
-  cn(
-    "flex w-full flex-col items-start gap-0.5 rounded-lg border p-3 text-start transition-colors",
-    active ? "border-primary bg-primary/5 ring-1 ring-primary" : "hover:bg-muted",
-  );
 
 /**
  * "Export audience" on Orders › Customers (ROADMAP.md F-16b): pick a segment
@@ -66,52 +51,57 @@ export function AudienceExportButton({ storeId }: { storeId: string }) {
 
   return (
     <>
-      <Button type="button" size="sm" variant="neutral" onClick={() => setOpen(true)}>
+      <SellerButton variant="outline" size="sm" onClick={() => setOpen(true)}>
         <Target aria-hidden />
         {t("button")}
-      </Button>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>{t("title")}</DialogTitle>
-            <DialogDescription>{t("description")}</DialogDescription>
-          </DialogHeader>
-
-          <fieldset className="space-y-2">
-            <legend className="mb-2 text-sm font-medium">{t("segmentLabel")}</legend>
-            {AUDIENCE_SEGMENTS.map((s) => (
-              <button key={s} type="button" className={option(segment === s)} aria-pressed={segment === s} onClick={() => setSegment(s)}>
-                <span className="text-sm font-medium">{t(`segments.${s}.title`)}</span>
-                <span className="text-xs text-muted-foreground">{t(`segments.${s}.body`)}</span>
-              </button>
-            ))}
-          </fieldset>
-
-          <fieldset className="space-y-2">
-            <legend className="mb-2 text-sm font-medium">{t("formatLabel")}</legend>
-            <div className="grid gap-2 sm:grid-cols-3">
-              {AUDIENCE_FORMATS.map((f) => (
-                <button key={f} type="button" className={option(format === f)} aria-pressed={format === f} onClick={() => setFormat(f)}>
-                  <span className="text-sm font-medium">{t(`formats.${f}`)}</span>
-                </button>
-              ))}
-            </div>
-            <p className="text-xs text-muted-foreground">{t(`formatHints.${format}`)}</p>
-          </fieldset>
-
-          <p className="text-xs text-muted-foreground">{t("privacy")}</p>
-
-          <DialogFooter>
-            <Button type="button" variant="neutral" onClick={() => setOpen(false)} disabled={pending}>
+      </SellerButton>
+      <Modal
+        open={open}
+        onOpenChange={setOpen}
+        width={512}
+        className="max-h-[90dvh] overflow-y-auto"
+        title={t("title")}
+        description={t("description")}
+        footer={
+          <>
+            <SellerButton variant="outline" onClick={() => setOpen(false)} disabled={pending}>
               {t("cancel")}
-            </Button>
-            <Button type="button" onClick={download} disabled={pending}>
+            </SellerButton>
+            <SellerButton variant="solid" onClick={download} disabled={pending}>
               {pending && <LoaderCircle className="animate-spin" aria-hidden />}
               {t("download")}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            </SellerButton>
+          </>
+        }
+      >
+        <fieldset className="flex flex-col gap-2">
+          <legend className="mb-2 text-[13.5px] font-bold text-(--s-text)">{t("segmentLabel")}</legend>
+          <OptionCards className="grid-cols-1">
+            {AUDIENCE_SEGMENTS.map((s) => (
+              <OptionCard
+                key={s}
+                name="audience-segment"
+                title={t(`segments.${s}.title`)}
+                description={t(`segments.${s}.body`)}
+                checked={segment === s}
+                onChange={() => setSegment(s)}
+              />
+            ))}
+          </OptionCards>
+        </fieldset>
+
+        <fieldset className="flex flex-col gap-2">
+          <legend className="mb-2 text-[13.5px] font-bold text-(--s-text)">{t("formatLabel")}</legend>
+          <OptionCards>
+            {AUDIENCE_FORMATS.map((f) => (
+              <OptionCard key={f} name="audience-format" title={t(`formats.${f}`)} checked={format === f} onChange={() => setFormat(f)} />
+            ))}
+          </OptionCards>
+          <p className="text-xs text-(--s-subtle)">{t(`formatHints.${format}`)}</p>
+        </fieldset>
+
+        <p className="text-xs text-(--s-subtle)">{t("privacy")}</p>
+      </Modal>
     </>
   );
 }

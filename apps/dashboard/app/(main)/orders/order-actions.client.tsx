@@ -5,25 +5,14 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Check, ChevronDown, PackageCheck, PackagePlus, RefreshCw, Truck } from "lucide-react";
-import { Button } from "@workspace/ui/components/button";
-import { Checkbox } from "@workspace/ui/components/checkbox";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@workspace/ui/components/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu";
-import { Label } from "@workspace/ui/components/label";
-import { Textarea } from "@workspace/ui/components/textarea";
 import { ConfirmActionDialog } from "@/components/layout/confirm-action-dialog.client";
+import { CheckRow, Field, Modal, SellerButton, TextArea } from "@/components/seller-ui";
 import { cn } from "@/lib/utils";
 import type { SellerOrderAction } from "./order-flow.lib";
 import type { SellerOrderRow, StockShortage } from "./orders.types";
@@ -53,7 +42,7 @@ export function OrderActions({
   className,
 }: {
   order: SellerOrderRow;
-  /** Table rows: the main button only, the rest in the menu. */
+  /** Table rows and cards: the main button only, the rest in the menu. */
   compact?: boolean;
   className?: string;
 }) {
@@ -128,49 +117,63 @@ export function OrderActions({
   };
 
   const PrimaryIcon = primary ? ICON[primary] : undefined;
+  const destructiveItem = (action: SellerOrderAction) =>
+    DESTRUCTIVE.includes(action) ? "text-destructive focus:text-destructive" : undefined;
 
   return (
     <>
-      <div className={cn("flex items-center gap-1.5", className)}>
-        {order.canRestockReturn && (
-          <Button
+      <div className={cn("flex flex-wrap items-center gap-1.5", className)}>
+        {primary && (
+          <SellerButton
+            variant="solid"
             size="sm"
+            className="flex-1"
+            disabled={isPending}
+            onClick={(e) => {
+              e.stopPropagation();
+              pick(primary);
+            }}
+          >
+            {PrimaryIcon && <PrimaryIcon aria-hidden />}
+            {t(actionLabelKey(order, primary))}
+          </SellerButton>
+        )}
+
+        {order.canRestockReturn && (
+          <SellerButton
             variant="outline"
-            className={compact ? undefined : "flex-1 sm:flex-none"}
+            size="sm"
+            className="flex-1"
             disabled={isPending}
             onClick={(e) => {
               e.stopPropagation();
               restockNow();
             }}
           >
-            <PackagePlus className="size-4" />
+            <PackagePlus aria-hidden />
             {t("restock")}
-          </Button>
+          </SellerButton>
         )}
 
         {/* A closed order (delivered, returned, cancelled) can still move to another status. */}
         {!primary && corrections.length > 0 && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
-                size="sm"
+              <SellerButton
                 variant="outline"
-                className={compact ? undefined : "flex-1 sm:flex-none"}
+                size="sm"
+                className="flex-1"
                 disabled={isPending}
                 onClick={(e) => e.stopPropagation()}
               >
-                <RefreshCw className="size-4" />
+                <RefreshCw aria-hidden />
                 {t("changeStatus")}
-                <ChevronDown className="size-4" />
-              </Button>
+                <ChevronDown aria-hidden />
+              </SellerButton>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
               {corrections.map((action) => (
-                <DropdownMenuItem
-                  key={action}
-                  className={DESTRUCTIVE.includes(action) ? "text-destructive focus:text-destructive" : undefined}
-                  onSelect={() => pick(action)}
-                >
+                <DropdownMenuItem key={action} className={destructiveItem(action)} onSelect={() => pick(action)}>
                   {t(actionLabelKey(order, action))}
                 </DropdownMenuItem>
               ))}
@@ -178,43 +181,24 @@ export function OrderActions({
           </DropdownMenu>
         )}
 
-        {primary && (
-          <Button
-            size="sm"
-            className={compact ? undefined : "flex-1 sm:flex-none"}
-            disabled={isPending}
-            onClick={(e) => {
-              e.stopPropagation();
-              pick(primary);
-            }}
-          >
-            {PrimaryIcon && <PrimaryIcon className="size-4" />}
-            {t(actionLabelKey(order, primary))}
-          </Button>
-        )}
-
         {secondary.length > 0 &&
           (compact ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button
-                  size="sm"
+                <SellerButton
                   variant="outline"
-                  className="px-2"
+                  size="sm"
+                  className="w-10 px-0"
                   disabled={isPending}
                   aria-label={t("more")}
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <ChevronDown className="size-4" />
-                </Button>
+                  <ChevronDown aria-hidden />
+                </SellerButton>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 {secondary.map((action) => (
-                  <DropdownMenuItem
-                    key={action}
-                    className={DESTRUCTIVE.includes(action) ? "text-destructive focus:text-destructive" : undefined}
-                    onSelect={() => pick(action)}
-                  >
+                  <DropdownMenuItem key={action} className={destructiveItem(action)} onSelect={() => pick(action)}>
                     {t(actionLabelKey(order, action))}
                   </DropdownMenuItem>
                 ))}
@@ -222,16 +206,16 @@ export function OrderActions({
             </DropdownMenu>
           ) : (
             secondary.map((action) => (
-              <Button
+              <SellerButton
                 key={action}
-                size="sm"
                 variant="outline"
+                size="sm"
                 disabled={isPending}
-                className={DESTRUCTIVE.includes(action) ? "text-destructive hover:text-destructive" : undefined}
+                className={cn("max-[720px]:flex-1", DESTRUCTIVE.includes(action) && "text-destructive")}
                 onClick={() => pick(action)}
               >
                 {t(actionLabelKey(order, action))}
-              </Button>
+              </SellerButton>
             ))
           ))}
       </div>
@@ -248,96 +232,96 @@ export function OrderActions({
         onConfirm={() => confirming && run(confirming)}
       />
 
-      <Dialog open={failing} onOpenChange={(open) => !open && !isPending && setFailing(false)}>
-        <DialogContent className="sm:max-w-md" onClick={(e) => e.stopPropagation()}>
-          <DialogHeader>
-            <DialogTitle>{t("failDialog.title", { number: order.orderNumber })}</DialogTitle>
-            <DialogDescription>{t("failDialog.description")}</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-2">
-            <Label htmlFor={`fail-${order.id}`}>{t("failDialog.reason")}</Label>
-            <Textarea
-              id={`fail-${order.id}`}
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
-              placeholder={t("failDialog.placeholder")}
-              maxLength={500}
-              rows={3}
-            />
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setFailing(false)} disabled={isPending}>
+      <Modal
+        open={failing}
+        onOpenChange={(open) => !open && !isPending && setFailing(false)}
+        title={t("failDialog.title", { number: order.orderNumber })}
+        description={t("failDialog.description")}
+        footer={
+          <>
+            <SellerButton variant="outline" onClick={() => setFailing(false)} disabled={isPending}>
               {t("dialog.back")}
-            </Button>
-            <Button
-              variant="destructive"
+            </SellerButton>
+            <SellerButton
+              variant="danger"
               disabled={isPending || !reason.trim()}
               onClick={() => run("fail", { failureReason: reason.trim() })}
             >
               {t("failDialog.save")}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            </SellerButton>
+          </>
+        }
+      >
+        <Field label={t("failDialog.reason")} htmlFor={`fail-${order.id}`}>
+          <TextArea
+            id={`fail-${order.id}`}
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            placeholder={t("failDialog.placeholder")}
+            maxLength={500}
+            rows={3}
+          />
+        </Field>
+      </Modal>
 
-      <Dialog open={returning} onOpenChange={(open) => !open && !isPending && setReturning(false)}>
-        <DialogContent className="sm:max-w-md" onClick={(e) => e.stopPropagation()}>
-          <DialogHeader>
-            <DialogTitle>{t("dialog.returnTitle", { number: order.orderNumber })}</DialogTitle>
-            <DialogDescription>{t("dialog.returnDescription")}</DialogDescription>
-          </DialogHeader>
-          <Label className="flex cursor-pointer items-start gap-3 rounded-lg border p-3 font-normal">
-            <Checkbox
-              className="mt-0.5"
-              checked={restock}
-              onCheckedChange={(value) => setRestock(value === true)}
-            />
-            <span className="space-y-0.5">
-              <span className="block text-sm font-medium">{t("dialog.returnRestock")}</span>
-              <span className="block text-xs text-muted-foreground">{t("dialog.returnRestockHint")}</span>
-            </span>
-          </Label>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setReturning(false)} disabled={isPending}>
+      <Modal
+        open={returning}
+        onOpenChange={(open) => !open && !isPending && setReturning(false)}
+        title={t("dialog.returnTitle", { number: order.orderNumber })}
+        description={t("dialog.returnDescription")}
+        footer={
+          <>
+            <SellerButton variant="outline" onClick={() => setReturning(false)} disabled={isPending}>
               {t("dialog.back")}
-            </Button>
-            <Button variant="destructive" disabled={isPending} onClick={() => run("return", { restock })}>
+            </SellerButton>
+            <SellerButton variant="danger" disabled={isPending} onClick={() => run("return", { restock })}>
               {t("return")}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            </SellerButton>
+          </>
+        }
+      >
+        <CheckRow
+          className="rounded-2xl border border-(--s-field) p-3.5"
+          label={t("dialog.returnRestock")}
+          description={t("dialog.returnRestockHint")}
+          checked={restock}
+          onChange={(e) => setRestock(e.target.checked)}
+        />
+      </Modal>
 
-      <Dialog open={short !== null} onOpenChange={(open) => !open && !isPending && setShort(null)}>
-        <DialogContent className="sm:max-w-md" onClick={(e) => e.stopPropagation()}>
-          <DialogHeader>
-            <DialogTitle>{t("shortage.title")}</DialogTitle>
-            <DialogDescription>{t("shortage.description")}</DialogDescription>
-          </DialogHeader>
-          <ul className="divide-y rounded-lg border text-sm">
-            {short?.items.map((item) => (
-              <li key={item.title} className="flex items-center justify-between gap-3 p-3">
-                <span className="min-w-0 truncate">{item.title}</span>
-                <span className="shrink-0 tabular-nums text-muted-foreground">
-                  {t("shortage.counts", { need: item.need, have: item.have })}
-                </span>
-              </li>
-            ))}
-          </ul>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShort(null)} disabled={isPending}>
+      <Modal
+        open={short !== null}
+        onOpenChange={(open) => !open && !isPending && setShort(null)}
+        title={t("shortage.title")}
+        description={t("shortage.description")}
+        footer={
+          <>
+            <SellerButton variant="outline" onClick={() => setShort(null)} disabled={isPending}>
               {t("dialog.back")}
-            </Button>
-            <Button
+            </SellerButton>
+            <SellerButton
+              variant="solid"
+              className="h-auto min-h-[42px] min-w-0 shrink whitespace-normal py-1.5 leading-tight"
               disabled={isPending || !short}
               onClick={() => short && run(short.action, { addMissingStock: true })}
             >
-              <PackagePlus className="size-4" />
+              <PackagePlus aria-hidden />
               {t("shortage.addAndContinue")}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            </SellerButton>
+          </>
+        }
+      >
+        <ul className="divide-y divide-(--s-line-soft) rounded-2xl border border-(--s-line) text-[13px]">
+          {short?.items.map((item) => (
+            <li key={item.title} className="flex items-center justify-between gap-3 p-3">
+              <span className="min-w-0 break-words text-(--s-text)">{item.title}</span>
+              <span className="shrink-0 text-(--s-subtle) tabular-nums">
+                {t("shortage.counts", { need: item.need, have: item.have })}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </Modal>
     </>
   );
 }

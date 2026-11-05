@@ -23,18 +23,9 @@ import {
 
 import { bostaTrackingUrl } from "@workspace/lib/integrations";
 import type { BostaShipPreview } from "@workspace/lib/shipping/bosta-ship";
-import { Button } from "@workspace/ui/components/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@workspace/ui/components/dialog";
-import { SegmentedControl, SegmentedControlItem } from "@workspace/ui/components/segmented-control";
 import { Skeleton } from "@workspace/ui/components/skeleton";
 import { ConfirmActionDialog } from "@/components/layout/confirm-action-dialog.client";
+import { IconButton, Modal, Note, Segmented, SellerButton, Tag, TextAction } from "@/components/seller-ui";
 import { formatDateTime, formatMoney } from "@/lib/i18n/format";
 import { cn } from "@/lib/utils";
 import type { BostaTimelineEvent } from "@workspace/lib/shipping/bosta-orders";
@@ -46,6 +37,7 @@ import {
   type BostaActionError,
 } from "./bosta-ship.server";
 import type { OrderSummary, SellerOrderRow } from "./orders.types";
+import { BOSTA_BUTTON, PhoneText } from "./orders-ui";
 
 type Size = "SMALL" | "MEDIUM" | "LARGE";
 
@@ -83,16 +75,14 @@ export function BostaChip({ order, className }: { order: SellerOrderRow; classNa
   return (
     <span
       className={cn(
-        "inline-flex max-w-full items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold",
-        bosta.needsAttention
-          ? "border-destructive/30 bg-destructive/10 text-destructive"
-          : "border-[#E30613]/25 bg-[#E30613]/5 text-[#b0040f] dark:text-[#ff6b73]",
+        "inline-flex max-w-full items-center gap-1 rounded-full px-[9px] py-0.5 text-[11px] font-bold",
+        bosta.needsAttention ? "bg-destructive-soft text-destructive" : "bg-[#E30613]/10 text-[#b0040f] dark:text-[#ff6b73]",
         className,
       )}
     >
       <Truck className="size-3 shrink-0" aria-hidden />
       <span className="truncate">
-        {t("chipPrefix")} · {label}
+        {t("chipPrefix")}: {label}
       </span>
     </span>
   );
@@ -128,10 +118,10 @@ export function ShipWithBostaButton({ order, className }: { order: SellerOrderRo
   const retry = Boolean(order.bosta?.lastError);
   return (
     <>
-      <Button size="sm" className={cn("bg-[#E30613] text-white hover:bg-[#c00510]", className)} onClick={() => setOpen(true)}>
-        {retry ? <RotateCw className="size-4" aria-hidden /> : <Truck className="size-4" aria-hidden />}
+      <SellerButton variant="solid" size="sm" className={cn(BOSTA_BUTTON, className)} onClick={() => setOpen(true)}>
+        {retry ? <RotateCw aria-hidden /> : <Truck aria-hidden />}
         {retry ? t("retry") : t("ship")}
-      </Button>
+      </SellerButton>
       {open && <BostaShipDialog order={order} storeId={order.storeId} onClose={() => setOpen(false)} />}
     </>
   );
@@ -190,58 +180,66 @@ function BostaShipDialog({ order, storeId, onClose }: { order: SellerOrderRow; s
   const pickedLabel = districtId ? preview?.districtOptions.find((o) => o.districtId === districtId)?.label : null;
 
   return (
-    <Dialog open onOpenChange={(next) => !next && !isPending && onClose()}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg" onClick={(e) => e.stopPropagation()}>
-        <DialogHeader>
-          <DialogTitle>{t("dialogTitle", { number: order.orderNumber })}</DialogTitle>
-          <DialogDescription>{t("dialogDescription")}</DialogDescription>
-        </DialogHeader>
-
+    <Modal
+      open
+      onOpenChange={(next) => !next && !isPending && onClose()}
+      width={512}
+      className="max-h-[90dvh] overflow-y-auto"
+      title={t("dialogTitle", { number: order.orderNumber })}
+      description={t("dialogDescription")}
+      footer={
+        <>
+          <SellerButton variant="outline" onClick={onClose} disabled={isPending}>
+            {t("back")}
+          </SellerButton>
+          <SellerButton variant="solid" className={BOSTA_BUTTON} disabled={!canSend} onClick={send}>
+            {isPending ? <LoaderCircle className="animate-spin" aria-hidden /> : <Truck aria-hidden />}
+            {isPending ? t("sending") : t("send")}
+          </SellerButton>
+        </>
+      }
+    >
         {loadError ? (
-          <p className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">{loadError}</p>
+          <Note tone="danger">{loadError}</Note>
         ) : !preview ? (
-          <div className="space-y-3">
-            <Skeleton className="h-20 rounded-lg" />
-            <Skeleton className="h-14 rounded-lg" />
-            <Skeleton className="h-14 rounded-lg" />
+          <div className="flex flex-col gap-3">
+            <Skeleton className="h-20 rounded-2xl" />
+            <Skeleton className="h-14 rounded-2xl" />
+            <Skeleton className="h-14 rounded-2xl" />
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="flex flex-col gap-4">
             {preview.blocker && (
-              <p className="flex gap-2 rounded-lg bg-accent-soft p-3 text-sm text-accent-ink">
-                <CircleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
+              <Note tone="amber" icon={CircleAlert}>
                 {errorText(preview.blocker)}
-              </p>
+              </Note>
             )}
             {preview.lastError && !error && (
-              <p className="flex gap-2 rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
-                <CircleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
-                <span>
-                  {t("lastAttempt")} {errorText(preview.lastError.split(":")[0]!, preview.lastError.split(":").slice(1).join(":").trim() || undefined)}
-                </span>
-              </p>
+              <Note tone="danger" icon={CircleAlert}>
+                {t("lastAttempt")} {errorText(preview.lastError.split(":")[0]!, preview.lastError.split(":").slice(1).join(":").trim() || undefined)}
+              </Note>
             )}
 
-            <div className="rounded-lg border p-3 text-sm">
-              <p className="font-medium">{preview.receiver.name || "—"}</p>
+            <div className="rounded-2xl border border-(--s-line) p-3.5 text-[13px]">
+              <p className="break-words font-bold text-(--s-text)">{preview.receiver.name || "—"}</p>
               {preview.receiver.phone && (
-                <p className="text-muted-foreground" dir="ltr">
-                  {preview.receiver.phone}
+                <p className="text-(--s-muted)">
+                  <PhoneText phone={preview.receiver.phone} />
                 </p>
               )}
               {preview.address && (
-                <p className="mt-1 text-muted-foreground" dir="auto">
+                <p className="mt-1 break-words text-(--s-muted)" dir="auto">
                   {[preview.address.line1, preview.address.line2, preview.address.city, preview.address.state].filter(Boolean).join("، ")}
                 </p>
               )}
             </div>
 
-            <div className="rounded-lg border p-3">
-              <div className="flex items-start gap-2 text-sm">
+            <div className="rounded-2xl border border-(--s-line) p-3.5">
+              <div className="flex items-start gap-2 text-[13px]">
                 <MapPin className={cn("mt-0.5 size-4 shrink-0", destinationOk ? "text-success" : "text-destructive")} aria-hidden />
                 <div className="min-w-0 flex-1">
-                  <p className="font-medium">{t("bostaArea")}</p>
-                  <p className={cn("text-muted-foreground", !destinationOk && "text-destructive")}>
+                  <p className="font-bold text-(--s-text)">{t("bostaArea")}</p>
+                  <p className={cn("break-words text-(--s-muted)", !destinationOk && "text-destructive")}>
                     {pickedLabel
                       ? pickedLabel
                       : preview.destination.ok
@@ -254,9 +252,9 @@ function BostaShipDialog({ order, storeId, onClose }: { order: SellerOrderRow; s
                   </p>
                 </div>
                 {!picking && preview.districtOptions.length > 0 && (
-                  <Button type="button" size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={() => setPicking(true)}>
+                  <TextAction type="button" className="max-[600px]:min-h-10" onClick={() => setPicking(true)}>
                     {t("change")}
-                  </Button>
+                  </TextAction>
                 )}
               </div>
               {picking && preview.districtOptions.length > 0 && (
@@ -272,51 +270,45 @@ function BostaShipDialog({ order, storeId, onClose }: { order: SellerOrderRow; s
               )}
             </div>
 
-            <dl className="grid grid-cols-2 gap-2 text-sm">
-              <div className="rounded-lg border p-3">
-                <dt className="text-xs text-muted-foreground">{t("cod")}</dt>
-                <dd className="mt-0.5 font-semibold tabular-nums" dir="auto">
+            <dl className="grid grid-cols-2 gap-2 text-[13px]">
+              <div className="min-w-0 rounded-2xl border border-(--s-line) p-3.5">
+                <dt className="text-xs text-(--s-subtle)">{t("cod")}</dt>
+                <dd className="mt-0.5 break-words font-montserrat font-bold text-(--s-ink) tabular-nums" dir="auto">
                   {preview.prepaid ? t("prepaid") : formatMoney(preview.cod, locale)}
                 </dd>
               </div>
-              <div className="rounded-lg border p-3">
-                <dt className="text-xs text-muted-foreground">{t("items")}</dt>
-                <dd className="mt-0.5 flex items-center gap-1.5 font-semibold">
-                  <Package className="size-4 text-muted-foreground" aria-hidden />
+              <div className="min-w-0 rounded-2xl border border-(--s-line) p-3.5">
+                <dt className="text-xs text-(--s-subtle)">{t("items")}</dt>
+                <dd className="mt-0.5 flex items-center gap-1.5 font-montserrat font-bold text-(--s-ink)">
+                  <Package className="size-4 text-(--s-subtle)" aria-hidden />
                   {preview.itemsCount}
                 </dd>
               </div>
             </dl>
 
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="text-sm font-medium">{t("size")}</span>
-              <SegmentedControl value={size} onValueChange={(value) => setSize(value as Size)} aria-label={t("size")}>
-                <SegmentedControlItem value="SMALL">{t("sizes.SMALL")}</SegmentedControlItem>
-                <SegmentedControlItem value="MEDIUM">{t("sizes.MEDIUM")}</SegmentedControlItem>
-                <SegmentedControlItem value="LARGE">{t("sizes.LARGE")}</SegmentedControlItem>
-              </SegmentedControl>
+              <span className="text-[13px] font-bold text-(--s-text)">{t("size")}</span>
+              <Segmented<Size>
+                value={size}
+                onChange={setSize}
+                label={t("size")}
+                options={[
+                  { value: "SMALL", label: t("sizes.SMALL") },
+                  { value: "MEDIUM", label: t("sizes.MEDIUM") },
+                  { value: "LARGE", label: t("sizes.LARGE") },
+                ]}
+              />
             </div>
 
             {preview.pickupLocationName && (
-              <p className="text-xs text-muted-foreground" dir="auto">
+              <p className="text-xs text-(--s-subtle)" dir="auto">
                 {t("pickupFrom", { name: preview.pickupLocationName })}
               </p>
             )}
-            {error && <p className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">{error}</p>}
+            {error && <Note tone="danger">{error}</Note>}
           </div>
         )}
-
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose} disabled={isPending}>
-            {t("back")}
-          </Button>
-          <Button className="bg-[#E30613] text-white hover:bg-[#c00510]" disabled={!canSend} onClick={send}>
-            {isPending ? <LoaderCircle className="size-4 animate-spin" aria-hidden /> : <Truck className="size-4" aria-hidden />}
-            {isPending ? t("sending") : t("send")}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    </Modal>
   );
 }
 
@@ -337,8 +329,8 @@ function DistrictPicker({
   }, [options, query]);
 
   return (
-    <div className="mt-3 space-y-2 border-t pt-3">
-      <label className="flex h-9 items-center gap-2 rounded-md border px-2.5 text-muted-foreground focus-within:border-primary">
+    <div className="mt-3 flex flex-col gap-2 border-t border-(--s-line-soft) pt-3">
+      <label className="flex h-10 items-center gap-2 rounded-full border-[1.5px] border-(--s-field) px-3 text-(--s-subtle) focus-within:border-(--s-primary)">
         <Search className="size-4 shrink-0" aria-hidden />
         <input
           autoFocus
@@ -346,28 +338,28 @@ function DistrictPicker({
           onChange={(e) => setQuery(e.target.value)}
           placeholder={t("searchArea")}
           aria-label={t("searchArea")}
-          className="min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none"
+          className="min-w-0 flex-1 bg-transparent text-[13.5px] text-(--s-text) outline-none"
         />
       </label>
-      <ul role="listbox" aria-label={t("bostaArea")} className="max-h-56 overflow-y-auto rounded-md border">
+      <ul role="listbox" aria-label={t("bostaArea")} className="max-h-56 overflow-y-auto rounded-2xl border border-(--s-line)">
         {filtered.slice(0, 200).map((option) => (
           <li key={option.districtId} role="option" aria-selected={option.districtId === value}>
             <button
               type="button"
               onClick={() => onChange(option.districtId)}
               className={cn(
-                "flex w-full items-center justify-between gap-2 px-3 py-2 text-start text-sm hover:bg-muted",
-                option.districtId === value && "bg-primary/10 font-medium",
+                "flex min-h-10 w-full cursor-pointer items-center justify-between gap-2 px-3 py-2 text-start text-[13px] text-(--s-text) hover:bg-(--s-hover)",
+                option.districtId === value && "bg-(--s-hover) font-semibold",
               )}
             >
               <span className="min-w-0 truncate" dir="auto">
                 {option.label}
               </span>
-              <span className="shrink-0 text-xs text-muted-foreground">{option.cityName}</span>
+              <span className="shrink-0 text-xs text-(--s-subtle)">{option.cityName}</span>
             </button>
           </li>
         ))}
-        {filtered.length === 0 && <li className="px-3 py-4 text-center text-sm text-muted-foreground">{t("noArea")}</li>}
+        {filtered.length === 0 && <li className="px-3 py-4 text-center text-[13px] text-(--s-subtle)">{t("noArea")}</li>}
       </ul>
     </div>
   );
@@ -434,35 +426,33 @@ export function BostaDeliveryCard({ order }: { order: SellerOrderRow }) {
   };
 
   return (
-    <div className="space-y-3 rounded-lg border p-3 text-sm">
+    <div className="flex flex-col gap-3 rounded-2xl border border-(--s-line) p-3.5 text-[13px]">
       <div className="flex items-center gap-2">
-        <span className="grid size-7 place-items-center rounded-md bg-[#E30613] text-white">
+        <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-[#E30613] text-white">
           <Truck className="size-4" aria-hidden />
         </span>
-        <p className="font-semibold">{t("cardTitle")}</p>
-        {bosta.trackingNumber && (
-          <span className="ms-auto rounded-full bg-muted px-2 py-0.5 text-xs font-medium">{stateLabel}</span>
-        )}
+        <p className="font-bold text-(--s-ink)">{t("cardTitle")}</p>
+        {bosta.trackingNumber && <Tag className="ms-auto whitespace-normal">{stateLabel}</Tag>}
       </div>
       {bosta.creating ? (
-        <p className="flex items-center gap-2 text-muted-foreground">
+        <p className="flex items-center gap-2 text-(--s-muted)">
           <LoaderCircle className="size-4 animate-spin" aria-hidden />
           {t("creating")}
         </p>
       ) : bosta.trackingNumber ? (
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-muted-foreground">{t("tracking")}</span>
-          <span className="font-mono font-medium" dir="ltr">
+          <span className="text-(--s-subtle)">{t("tracking")}</span>
+          <bdi className="break-all font-montserrat font-semibold text-(--s-text)" dir="ltr">
             {bosta.trackingNumber}
-          </span>
-          <Button type="button" size="icon" variant="ghost" className="size-7" onClick={copy} aria-label={t("copy")}>
-            {copied ? <Check className="size-3.5" aria-hidden /> : <Copy className="size-3.5" aria-hidden />}
-          </Button>
+          </bdi>
+          <IconButton onClick={copy} aria-label={t("copy")}>
+            {copied ? <Check aria-hidden /> : <Copy aria-hidden />}
+          </IconButton>
           <a
             href={bostaTrackingUrl(bosta.trackingNumber)}
             target="_blank"
             rel="noopener noreferrer"
-            className="ms-auto inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+            className="ms-auto inline-flex items-center gap-1 text-xs font-bold text-(--s-link) hover:underline max-[600px]:min-h-10"
           >
             {t("track")}
             <ExternalLink className="size-3.5" aria-hidden />
@@ -470,67 +460,65 @@ export function BostaDeliveryCard({ order }: { order: SellerOrderRow }) {
         </div>
       ) : null}
       {bosta.needsAttention && bosta.lastError && (
-        <p className="flex gap-2 rounded-md bg-destructive/10 p-2 text-xs text-destructive">
-          <CircleAlert className="mt-px size-3.5 shrink-0" aria-hidden />
+        <Note tone="danger" icon={CircleAlert}>
           {errorText(reason!, rest.join(":").trim() || undefined)}
-        </p>
+        </Note>
       )}
       {bosta.trackingNumber && order.storeId && (
-        <div className="flex flex-wrap items-center gap-1.5 border-t pt-3">
-          <Button asChild size="sm" variant="outline" className="h-8">
+        <div className="flex flex-wrap items-center gap-1.5 border-t border-(--s-line-soft) pt-3">
+          <SellerButton asChild variant="outline" size="xs">
             <a href={bostaLabelsUrl(order.storeId, [order.id], "A6", locale)} target="_blank" rel="noopener noreferrer">
-              <Printer className="size-3.5" aria-hidden />
+              <Printer aria-hidden />
               {t("printA6")}
             </a>
-          </Button>
-          <Button asChild size="sm" variant="ghost" className="h-8">
+          </SellerButton>
+          <SellerButton asChild variant="mini" size="xs">
             <a href={bostaLabelsUrl(order.storeId, [order.id], "A4", locale)} target="_blank" rel="noopener noreferrer">
               {t("printA4")}
             </a>
-          </Button>
-          <Button type="button" size="sm" variant="ghost" className="h-8" aria-expanded={historyOpen} onClick={openHistory}>
-            <History className="size-3.5" aria-hidden />
+          </SellerButton>
+          <SellerButton variant="mini" size="xs" aria-expanded={historyOpen} onClick={openHistory}>
+            <History aria-hidden />
             {t("history")}
-            <ChevronDown className={cn("size-3.5 transition-transform", historyOpen && "rotate-180")} aria-hidden />
-          </Button>
+            <ChevronDown className={cn("transition-transform", historyOpen && "rotate-180")} aria-hidden />
+          </SellerButton>
           {prePickup &&
             (order.bostaCanCancel ? (
-              <Button
-                type="button"
-                size="sm"
-                variant="ghost"
-                className="ms-auto h-8 text-destructive hover:text-destructive"
+              <SellerButton
+                variant="mini"
+                size="xs"
+                className="ms-auto border-destructive/40 text-destructive [&_svg]:text-destructive"
                 disabled={isCancelling}
                 onClick={() => setConfirmCancel(true)}
               >
-                <XCircle className="size-3.5" aria-hidden />
+                <XCircle aria-hidden />
                 {t("cancel")}
-              </Button>
+              </SellerButton>
             ) : (
-              <span className="ms-auto text-[11px] text-muted-foreground">{t("cancelInBosta")}</span>
+              <span className="ms-auto text-[11px] text-(--s-subtle)">{t("cancelInBosta")}</span>
             ))}
         </div>
       )}
       {historyOpen && (
-        <ol className="space-y-2 border-t pt-3">
+        <ol className="flex flex-col gap-2 border-t border-(--s-line-soft) pt-3">
           {history === null ? (
-            <li className="flex items-center gap-2 text-xs text-muted-foreground">
+            <li className="flex items-center gap-2 text-xs text-(--s-subtle)">
               <LoaderCircle className="size-3.5 animate-spin" aria-hidden />
             </li>
           ) : history.length === 0 ? (
-            <li className="text-xs text-muted-foreground">{t("historyEmpty")}</li>
+            <li className="text-xs text-(--s-subtle)">{t("historyEmpty")}</li>
           ) : (
             [...history].reverse().map((event) => (
               <li key={`${event.stateCode}-${event.occurredAt}`} className="flex gap-2.5 text-xs">
                 <span className="mt-1 size-2 shrink-0 rounded-full bg-[#E30613]" aria-hidden />
                 <div className="min-w-0">
-                  <p className="font-medium">{stateLabelOf(event.stateCode, event.stateText)}</p>
+                  <p className="font-semibold text-(--s-text)">{stateLabelOf(event.stateCode, event.stateText)}</p>
                   {event.exceptionReason && (
-                    <p className="text-muted-foreground" dir="auto">
+                    <p className="text-(--s-subtle)" dir="auto">
                       {event.exceptionReason}
                     </p>
                   )}
-                  <p className="text-muted-foreground">{formatDateTime(event.occurredAt, locale)}</p>
+                  <p className="text-(--s-subtle)">{formatDateTime(event.occurredAt, locale)}</p>
                 </div>
               </li>
             ))

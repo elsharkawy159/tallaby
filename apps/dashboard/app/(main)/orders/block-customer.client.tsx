@@ -5,8 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Ban, LoaderCircle, ShieldCheck } from "lucide-react";
-import { Button } from "@workspace/ui/components/button";
-import { SMALL_BUTTON_CLASS } from "@/components/form/form-ui";
+import { SellerButton } from "@/components/seller-ui";
 import { cn } from "@/lib/utils";
 import { blockCustomerPhone, unblockCustomerPhone } from "../stores/[storeId]/settings/protection/protection.server";
 import type { SellerOrderRow } from "./orders.types";
@@ -42,28 +41,18 @@ export function BlockCustomerButton({ order }: { order: SellerOrderRow }) {
   };
 
   return (
-    <div className="space-y-1.5 border-t pt-3">
-      {blocked && <p className="text-xs font-medium text-destructive">{t("blockedNote")}</p>}
-      <Button
-        type="button"
-        variant="ghost"
+    <div className="flex flex-col items-start gap-1.5 border-t border-(--s-line-soft) pt-3">
+      {blocked && <p className="text-xs font-semibold text-destructive">{t("blockedNote")}</p>}
+      <SellerButton
+        variant="mini"
+        size="xs"
         disabled={isPending}
         onClick={toggle}
-        className={cn(
-          SMALL_BUTTON_CLASS,
-          "-ms-2",
-          blocked ? "text-muted-foreground" : "text-destructive hover:bg-destructive/10 hover:text-destructive",
-        )}
+        className={cn(!blocked && "border-destructive/40 text-destructive [&_svg]:text-destructive")}
       >
-        {isPending ? (
-          <LoaderCircle className="size-3.5 animate-spin" />
-        ) : blocked ? (
-          <ShieldCheck className="size-3.5" />
-        ) : (
-          <Ban className="size-3.5" />
-        )}
+        {isPending ? <LoaderCircle className="animate-spin" aria-hidden /> : blocked ? <ShieldCheck aria-hidden /> : <Ban aria-hidden />}
         {blocked ? t("unblockCustomer") : t("blockCustomer")}
-      </Button>
+      </SellerButton>
     </div>
   );
 }

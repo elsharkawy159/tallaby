@@ -3,8 +3,6 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { Mail, MessageCircle, Phone, ShoppingCart } from "lucide-react";
-import { Button } from "@workspace/ui/components/button";
-import { Card, CardContent } from "@workspace/ui/components/card";
 import {
   DEFAULT_LEAD_TEMPLATES,
   leadProductsText,
@@ -12,9 +10,11 @@ import {
   renderLeadMessage,
 } from "@workspace/lib/checkout-leads";
 import type { StoreLeadSettings } from "@workspace/lib/checkout-leads/server";
+import { EmptyState, SellerButton, SellerCard } from "@/components/seller-ui";
 import { formatDateTime, formatMoney, formatNumber, formatRelativeTime } from "@/lib/i18n/format";
 import { Money } from "@/components/money";
 import { ListPager } from "../list-pager.client";
+import { PhoneText } from "../orders-ui";
 import { linesForMessage, PENDING_CART_PAGE_SIZES } from "./pending-carts.lib";
 import type { PendingCartRow, PendingCartsPage } from "./pending-carts.query";
 
@@ -45,23 +45,17 @@ export function PendingCartsView({
   };
 
   return (
-    <div className="space-y-4">
-      {storeName && <p className="text-xs font-medium text-muted-foreground">{t("storeLabel", { name: storeName })}</p>}
+    <>
+      {storeName && <p className="text-xs font-semibold text-(--s-subtle)">{t("storeLabel", { name: storeName })}</p>}
 
       {list.carts.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center gap-2 py-12 text-center">
-            <span className="flex size-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
-              <ShoppingCart className="size-6" aria-hidden />
-            </span>
-            <p className="font-semibold">{t("empty.title")}</p>
-            <p className="max-w-md text-pretty text-sm text-muted-foreground">{t("empty.body")}</p>
-          </CardContent>
-        </Card>
+        <SellerCard>
+          <EmptyState icon={ShoppingCart} title={t("empty.title")} description={t("empty.body")} />
+        </SellerCard>
       ) : (
-        <ul className="grid gap-3 lg:grid-cols-2">
+        <ul className="grid grid-cols-2 gap-3.5 max-[1020px]:grid-cols-1 max-[600px]:gap-2.5">
           {list.carts.map((cart) => (
-            <li key={cart.id}>
+            <li key={cart.id} className="min-w-0">
               <PendingCartCard cart={cart} store={store} />
             </li>
           ))}
@@ -79,7 +73,7 @@ export function PendingCartsView({
           onSize={(size) => go({ size })}
         />
       )}
-    </div>
+    </>
   );
 }
 
@@ -102,80 +96,77 @@ function PendingCartCard({ cart, store }: { cart: PendingCartRow; store: StoreLe
   const whatsapp = whatsappUrl();
 
   return (
-    <Card className="h-full">
-      <CardContent className="flex h-full flex-col gap-3">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <p className="truncate font-semibold">{cart.name ?? t("guest")}</p>
-            {cart.phone && (
-              <p dir="ltr" className="text-start text-sm tabular-nums text-muted-foreground rtl:text-end">
-                {cart.phone}
-              </p>
-            )}
-            {cart.email && (
-              <a
-                href={`mailto:${cart.email}`}
-                dir="ltr"
-                className="flex items-center gap-1 truncate text-xs text-muted-foreground hover:underline rtl:justify-end"
-              >
-                <Mail className="size-3 shrink-0" aria-hidden />
-                <span className="truncate">{cart.email}</span>
-              </a>
-            )}
-          </div>
-          <time
-            dateTime={cart.lastActivity}
-            title={formatDateTime(cart.lastActivity, locale)}
-            className="shrink-0 text-xs text-muted-foreground"
-          >
-            {formatRelativeTime(cart.lastActivity, locale)}
-          </time>
-        </div>
-
-        <ul className="space-y-1 text-sm">
-          {cart.lines.map((line, index) => (
-            <li key={index} className="flex items-baseline gap-2">
-              <span className="shrink-0 text-xs tabular-nums text-muted-foreground">×{formatNumber(line.quantity, locale)}</span>
-              <span className="min-w-0 truncate">
-                {line.title ?? t("unnamedProduct")}
-                {line.variant && <span className="text-muted-foreground"> · {line.variant}</span>}
-              </span>
-            </li>
-          ))}
-          {moreLines > 0 && <li className="text-xs text-muted-foreground">{t("moreLines", { count: moreLines })}</li>}
-        </ul>
-
-        <dl className="grid grid-cols-2 gap-2 rounded-lg bg-muted/50 p-2 text-xs">
-          <div>
-            <dt className="text-muted-foreground">{t("itemsLabel")}</dt>
-            <dd className="font-medium tabular-nums">{t("items", { count: cart.itemCount })}</dd>
-          </div>
-          <div>
-            <dt className="text-muted-foreground">{t("value")}</dt>
-            <dd className="font-semibold tabular-nums"><Money value={cart.value} locale={locale} unit={cart} /></dd>
-          </div>
-        </dl>
-
-        <div className="mt-auto flex flex-wrap items-center gap-2 pt-1">
-          {whatsapp && (
-            <Button asChild size="sm">
-              <a href={whatsapp} target="_blank" rel="noopener noreferrer">
-                <MessageCircle aria-hidden />
-                {t("whatsapp")}
-              </a>
-            </Button>
+    <SellerCard className="flex h-full flex-col gap-3 p-[18px] max-[600px]:p-3.5">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="break-words text-sm font-bold text-(--s-text)">{cart.name ?? t("guest")}</p>
+          {cart.phone && (
+            <p className="text-[13px] text-(--s-muted)">
+              <PhoneText phone={cart.phone} />
+            </p>
           )}
-          {cart.callPhone && (
-            <Button asChild size="sm" variant="neutral">
-              <a href={`tel:${cart.callPhone}`}>
-                <Phone aria-hidden />
-                {t("call")}
-              </a>
-            </Button>
+          {cart.email && (
+            <a
+              href={`mailto:${cart.email}`}
+              className="flex items-center gap-1 text-xs text-(--s-subtle) hover:underline max-[600px]:min-h-10"
+            >
+              <Mail className="size-3 shrink-0" aria-hidden />
+              <bdi dir="ltr" className="min-w-0 break-all">
+                {cart.email}
+              </bdi>
+            </a>
           )}
-          {!cart.phone && !cart.email && <p className="text-xs text-muted-foreground">{t("noContact")}</p>}
         </div>
-      </CardContent>
-    </Card>
+        <time dateTime={cart.lastActivity} title={formatDateTime(cart.lastActivity, locale)} className="shrink-0 text-xs text-(--s-subtle)" suppressHydrationWarning>
+          {formatRelativeTime(cart.lastActivity, locale)}
+        </time>
+      </div>
+
+      <ul className="flex flex-col gap-1 text-[13px] text-(--s-text)">
+        {cart.lines.map((line, index) => (
+          <li key={index} className="flex items-baseline gap-2">
+            <span className="shrink-0 font-montserrat text-xs text-(--s-subtle) tabular-nums">×{formatNumber(line.quantity, locale)}</span>
+            <span className="min-w-0 break-words">
+              {line.title ?? t("unnamedProduct")}
+              {line.variant && <span className="text-(--s-subtle)"> ({line.variant})</span>}
+            </span>
+          </li>
+        ))}
+        {moreLines > 0 && <li className="text-xs text-(--s-subtle)">{t("moreLines", { count: moreLines })}</li>}
+      </ul>
+
+      <dl className="grid grid-cols-2 gap-2 rounded-2xl bg-(--s-tint) p-3 text-xs">
+        <div className="min-w-0">
+          <dt className="text-(--s-subtle)">{t("itemsLabel")}</dt>
+          <dd className="font-semibold text-(--s-text)">{t("items", { count: cart.itemCount })}</dd>
+        </div>
+        <div className="min-w-0">
+          <dt className="text-(--s-subtle)">{t("value")}</dt>
+          <dd className="break-words font-montserrat font-bold text-(--s-ink) tabular-nums">
+            <Money value={cart.value} locale={locale} unit={cart} />
+          </dd>
+        </div>
+      </dl>
+
+      <div className="mt-auto flex flex-wrap items-center gap-2 pt-1">
+        {whatsapp && (
+          <SellerButton asChild variant="whatsapp" size="sm" className="flex-1">
+            <a href={whatsapp} target="_blank" rel="noopener noreferrer">
+              <MessageCircle aria-hidden />
+              {t("whatsapp")}
+            </a>
+          </SellerButton>
+        )}
+        {cart.callPhone && (
+          <SellerButton asChild variant="outline" size="sm" className="flex-1">
+            <a href={`tel:${cart.callPhone}`}>
+              <Phone aria-hidden />
+              {t("call")}
+            </a>
+          </SellerButton>
+        )}
+        {!cart.phone && !cart.email && <p className="text-xs text-(--s-subtle)">{t("noContact")}</p>}
+      </div>
+    </SellerCard>
   );
 }

@@ -4,14 +4,14 @@ import { useTransition } from "react";
 import { Download } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Button } from "@workspace/ui/components/button";
-import { cn } from "@/lib/utils";
+import { SellerButton } from "@/components/seller-ui";
 import { translateStatus } from "@/lib/i18n/status";
 import { downloadXlsx, todayStamp } from "@/lib/product-excel";
 import { chunk } from "./orders-bulk.lib";
 import { listFilteredOrderIdsAction, loadOrdersForExportAction } from "./orders-list.server";
 import { ORDER_EXPORT_COLUMNS, orderExportRow } from "./orders-export.lib";
 import type { SellerOrderRow } from "./orders.types";
+import { BAR_BUTTON } from "./orders-ui";
 import type { OrdersListFilters } from "./orders-view.lib";
 
 const EXPORT_CHUNK = 200;
@@ -25,11 +25,14 @@ export function ExportOrdersButton({
   ids,
   filters,
   count,
+  onBar = false,
   className,
 }: {
   ids?: readonly string[];
   filters?: OrdersListFilters;
   count: number;
+  /** Sits on the dark selection bar. */
+  onBar?: boolean;
   className?: string;
 }) {
   const t = useTranslations("orders");
@@ -75,10 +78,19 @@ export function ExportOrdersButton({
       }
     });
 
-  return (
-    <Button variant="outline" className={cn("rounded-[10px] bg-card", className)} onClick={exportRows} disabled={exporting}>
-      <Download className="size-4" aria-hidden />
+  const label = (
+    <>
+      <Download aria-hidden />
       {t("export.button", { count })}
-    </Button>
+    </>
+  );
+  return onBar ? (
+    <button type="button" className={BAR_BUTTON} onClick={exportRows} disabled={exporting}>
+      {label}
+    </button>
+  ) : (
+    <SellerButton variant="outline" className={className} onClick={exportRows} disabled={exporting}>
+      {label}
+    </SellerButton>
   );
 }

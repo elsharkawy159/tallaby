@@ -2293,3 +2293,11 @@ Website overview, brand, domain, media, pages, social, templates, forms, blog an
 ### 2026-11-05 — Seller dashboard redesign: store setup batch (owner)
 
 Account settings, store settings (checkout, payments, protection, sales pop-up, app), Apps and Earn moved to the new design system; no migration, no server code changed. Checked on staging through the real UI, by query and reload: store description, checkout options, cross-sell, blocked phones, WhatsApp template, sales pop-up, a manual wallet (masked on screen), an SMS app request, Meta Pixel, Wassalha and Bosta's bad-key message. Checkout's three parts now share one save bar and save in sequence, so if the second fails the first stays saved. Not checked: `settings/fulfillment` (hidden while `TALLABY_SERVICES_ENABLED` is off), the Paymob and Kashier drawer (needs the webhook env), the paid-app locked state, read-only stores and document upload (needs the service key).
+
+### 2026-11-05 — Seller dashboard redesign: orders batch, and lost customer tags fixed (owner)
+
+Orders list and panel, Customers, Missed orders, New order, Pending carts and the Cross-sell report moved to the new design system; no migration. Checked on staging through the real UI at phone width: a status change, a bulk move, the picking list, blocking a phone, a note and tag, a manual order with its stock and fee, exports and print. The locked screen shows on the list, Customers, Missed, New, Pending carts, Cross-sell, Delivery and Riders in Arabic. Not checked: Bosta and Wassalha dialogs and cards, payment proof, the stock shortage dialog, restock, and the Scan view (its route returns 404 on purpose).
+
+**Bug fixed (also live):** customer tags (F-01c) disappeared after a reload, and saving a note then deleted them, because the database client returns a raw `text[]` as text. `parseCustomerTags` now reads it. Tags already lost that way can't be restored.
+
+Open: a product with no SKU can't be ordered (`order_items.sku` is required, `products.sku` is not) and shows a generic error; governorate codes like "CAIRO" show untranslated on order addresses; manual orders accept only Egyptian phones and governorates; street Egyptian in the default customer messages (`order-confirm.lib.ts:18`, missed-order template).

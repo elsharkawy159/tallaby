@@ -24,13 +24,13 @@ export function OrderPaymentProof({ orderId }: { orderId: string }) {
 
   if (!proof) return null;
   return (
-    <div className="border-t pt-2">
-      <p className="mb-2 flex items-center gap-1.5 text-sm font-medium">
-        <ImageIcon className="size-4 text-muted-foreground" aria-hidden />
+    <div className="border-t border-(--s-line-soft) pt-2">
+      <p className="mb-2 flex flex-wrap items-center gap-x-1.5 text-[13px] font-semibold text-(--s-text)">
+        <ImageIcon className="size-4 text-(--s-subtle)" aria-hidden />
         {t("title")}
         {proof.uploadedAt && (
-          <span className="text-xs font-normal text-muted-foreground">
-            · {format.dateTime(new Date(proof.uploadedAt), { dateStyle: "medium", timeStyle: "short" })}
+          <span className="text-xs font-normal text-(--s-subtle)">
+            {format.dateTime(new Date(proof.uploadedAt), { dateStyle: "medium", timeStyle: "short" })}
           </span>
         )}
       </p>
@@ -38,17 +38,17 @@ export function OrderPaymentProof({ orderId }: { orderId: string }) {
         href={proof.url}
         target="_blank"
         rel="noopener noreferrer"
-        className="group block overflow-hidden rounded-lg border bg-muted/40"
+        className="group block overflow-hidden rounded-2xl border border-(--s-line) bg-(--s-tint)"
         title={t("open")}
       >
         {/* eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL from a private bucket */}
         <img src={proof.url} alt={t("alt")} className="max-h-72 w-full object-contain" />
-        <span className="flex items-center justify-center gap-1.5 border-t px-3 py-2 text-xs font-medium text-primary group-hover:underline">
+        <span className="flex min-h-10 items-center justify-center gap-1.5 border-t border-(--s-line-soft) px-3 py-2 text-xs font-semibold text-(--s-link) group-hover:underline">
           <ExternalLink className="size-3.5" aria-hidden />
           {t("open")}
         </span>
       </a>
-      <p className="mt-1.5 text-xs text-muted-foreground">{t("hint")}</p>
+      <p className="mt-1.5 text-xs text-(--s-subtle)">{t("hint")}</p>
     </div>
   );
 }

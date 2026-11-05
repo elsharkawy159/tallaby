@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+import { PageHeader } from "@/components/seller-ui";
 import { requireOrdersStore } from "@/lib/auth/require-seller.server";
 import { getSellerStores } from "@/lib/stores/current-store.server";
 import { loadStoreMoney } from "@/lib/stores/account-money.server";
@@ -36,10 +37,9 @@ export async function CrossSellReportData({
   }
 
   return (
-    <section aria-label={t("title")} className="space-y-5">
-      {/* No page title: the header breadcrumb already names the page. */}
-      <p className="text-pretty text-sm text-muted-foreground">{t("description")}</p>
+    <>
+      <PageHeader title={t("title")} description={t("description")} />
       <CrossSellReportView key={picked?.id ?? "none"} money={money} report={report} days={filters.days} storeName={storeName} />
-    </section>
+    </>
   );
 }

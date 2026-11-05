@@ -298,6 +298,37 @@ export function normalizeCustomerTags(tags: readonly unknown[]): string[] {
   return out;
 }
 
+/**
+ * The tags column of a raw query. The database client runs with fetch_types off,
+ * so a text[] arrives as Postgres array text ('{"a b",c}'), not as an array.
+ */
+export function parseCustomerTags(value: unknown): string[] {
+  if (Array.isArray(value)) return value.filter((tag): tag is string => typeof tag === "string");
+  if (typeof value !== "string" || !value.startsWith("{") || !value.endsWith("}")) return [];
+  const tags: string[] = [];
+  const body = value.slice(1, -1);
+  let current = "";
+  let quoted = false;
+  let wasQuoted = false;
+  const push = () => {
+    // Only an unquoted NULL is a null element; a quoted "NULL" is the word.
+    if (wasQuoted || (current && current.toUpperCase() !== "NULL")) tags.push(current);
+    current = "";
+    wasQuoted = false;
+  };
+  for (let i = 0; i < body.length; i += 1) {
+    const char = body[i]!;
+    if (quoted && char === "\\") current += body[(i += 1)] ?? "";
+    else if (char === '"') {
+      quoted = !quoted;
+      wasQuoted = true;
+    } else if (char === "," && !quoted) push();
+    else current += char;
+  }
+  push();
+  return tags;
+}
+
 /** The saved form of a note: trimmed text (null when empty) and clean tags. */
 export function normalizeCustomerNote(input: { note?: unknown; tags?: unknown }): CustomerNote {
   const note = typeof input.note === "string" ? input.note.trim().slice(0, CUSTOMER_NOTE_MAX) : "";

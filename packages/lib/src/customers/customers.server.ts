@@ -8,6 +8,7 @@ import {
   customerSearchDigits,
   normalizeCustomerNote,
   parseCustomerKey,
+  parseCustomerTags,
   type CustomerNote,
   type CustomerOrderRow,
   type CustomersListFilters,
@@ -362,7 +363,7 @@ export async function listStoreCustomerNotes(
   return new Map(
     rows.map((r) => [
       String(r.customer_key),
-      { note: str(r.note), tags: Array.isArray(r.tags) ? (r.tags as string[]) : [] },
+      { note: str(r.note), tags: parseCustomerTags(r.tags) },
     ]),
   );
 }

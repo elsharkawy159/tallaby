@@ -3,14 +3,15 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { BadgePercent } from "lucide-react";
-import { Button } from "@workspace/ui/components/button";
-import { Card, CardContent } from "@workspace/ui/components/card";
-import { formatMoney, formatNumber, type MoneyUnit } from "@/lib/i18n/format";
+import { Chip, Chips, EmptyState, ResponsiveTable, SellerCard } from "@/components/seller-ui";
+import { formatNumber, type MoneyUnit } from "@/lib/i18n/format";
+import { Money } from "@/components/money";
 import { ListPager } from "../list-pager.client";
+import { MiniStats } from "../orders-ui";
 import { CROSS_SELL_REPORT_DAYS, CROSS_SELL_REPORT_PAGE_SIZES, type CrossSellReportDays } from "./cross-sell-report.lib";
 import type { CrossSellReport } from "./cross-sell-report.query";
 
-/** Orders › Cross-sell report: the period's totals and one card per offer, paged by the URL. */
+/** Orders › Cross-sell report: the period's totals and one row per offer, paged by the URL. */
 export function CrossSellReportView({
   money,
   report,
@@ -39,77 +40,63 @@ export function CrossSellReportView({
     router.push(`${pathname}?${params.toString()}`);
   };
 
-  const stats = [
-    { label: t("orders"), value: formatNumber(report.totals.orders, locale) },
-    { label: t("units"), value: formatNumber(report.totals.units, locale) },
-    { label: t("discount"), value: formatMoney(report.totals.discount, locale, money) },
-  ];
-
   return (
-    <div className="space-y-4">
-      {storeName && <p className="text-xs font-medium text-muted-foreground">{t("storeLabel", { name: storeName })}</p>}
+    <>
+      {storeName && <p className="text-xs font-semibold text-(--s-subtle)">{t("storeLabel", { name: storeName })}</p>}
 
-      <div className="flex flex-wrap gap-1.5" role="group" aria-label={t("period")}>
+      <Chips role="group" aria-label={t("period")}>
         {CROSS_SELL_REPORT_DAYS.map((option) => (
-          <Button key={option} type="button" size="sm" variant={option === days ? "default" : "outline"} aria-pressed={option === days} onClick={() => go({ days: option })}>
+          <Chip key={option} pressed={option === days} onClick={() => go({ days: option })}>
             {t("lastDays", { days: option })}
-          </Button>
+          </Chip>
         ))}
-      </div>
+      </Chips>
 
-      <div className="grid gap-3 sm:grid-cols-3">
-        {stats.map((stat) => (
-          <Card key={stat.label}>
-            <CardContent className="space-y-1 p-4">
-              <p className="text-xs text-muted-foreground">{stat.label}</p>
-              <p className="text-xl font-bold tabular-nums" dir="ltr">
-                {stat.value}
-              </p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      <MiniStats
+        items={[
+          { label: t("orders"), value: formatNumber(report.totals.orders, locale) },
+          { label: t("units"), value: formatNumber(report.totals.units, locale) },
+          { label: t("discount"), value: <Money value={report.totals.discount} locale={locale} unit={money} /> },
+        ]}
+      />
 
       {report.rows.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center gap-2 p-10 text-center">
-            <BadgePercent className="size-8 text-muted-foreground" aria-hidden />
-            <p className="font-medium">{t("emptyTitle")}</p>
-            <p className="text-pretty text-sm text-muted-foreground">{t("emptyBody")}</p>
-          </CardContent>
-        </Card>
+        <SellerCard>
+          <EmptyState icon={BadgePercent} title={t("emptyTitle")} description={t("emptyBody")} />
+        </SellerCard>
       ) : (
         <>
-          <ul className="space-y-3">
-            {report.rows.map((row) => (
-              <li key={row.offerId}>
-                <Card>
-                  <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <SellerCard className="overflow-hidden">
+            <ResponsiveTable
+              label={t("title")}
+              rows={report.rows}
+              rowKey={(row) => row.offerId}
+              columns={[
+                {
+                  key: "offer",
+                  header: t("offer"),
+                  phone: "title",
+                  cell: (row) => (
                     <div className="min-w-0">
-                      <p className="truncate font-medium">{row.offerName}</p>
-                      {row.mainName && <p className="truncate text-xs text-muted-foreground">{t("withProduct", { name: row.mainName })}</p>}
+                      <p className="break-words font-semibold text-(--s-text)">{row.offerName}</p>
+                      {row.mainName && <p className="break-words text-xs font-normal text-(--s-subtle)">{t("withProduct", { name: row.mainName })}</p>}
                     </div>
-                    <dl className="grid shrink-0 grid-cols-3 gap-4 text-sm sm:gap-8">
-                      <div>
-                        <dt className="text-xs text-muted-foreground">{t("orders")}</dt>
-                        <dd className="font-semibold tabular-nums">{formatNumber(row.orders, locale)}</dd>
-                      </div>
-                      <div>
-                        <dt className="text-xs text-muted-foreground">{t("units")}</dt>
-                        <dd className="font-semibold tabular-nums">{formatNumber(row.units, locale)}</dd>
-                      </div>
-                      <div>
-                        <dt className="text-xs text-muted-foreground">{t("discount")}</dt>
-                        <dd className="font-semibold tabular-nums" dir="ltr">
-                          {formatMoney(row.discount, locale, money)}
-                        </dd>
-                      </div>
-                    </dl>
-                  </CardContent>
-                </Card>
-              </li>
-            ))}
-          </ul>
+                  ),
+                },
+                { key: "orders", header: t("orders"), cell: (row) => <b className="font-montserrat font-semibold tabular-nums">{formatNumber(row.orders, locale)}</b> },
+                { key: "units", header: t("units"), cell: (row) => <b className="font-montserrat font-semibold tabular-nums">{formatNumber(row.units, locale)}</b> },
+                {
+                  key: "discount",
+                  header: t("discount"),
+                  cell: (row) => (
+                    <b className="font-montserrat font-semibold tabular-nums" dir="ltr">
+                      <Money value={row.discount} locale={locale} unit={money} />
+                    </b>
+                  ),
+                },
+              ]}
+            />
+          </SellerCard>
           <ListPager
             page={report.page}
             pages={report.pages}
@@ -121,6 +108,6 @@ export function CrossSellReportView({
           />
         </>
       )}
-    </div>
+    </>
   );
 }

@@ -6,8 +6,7 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { FileSpreadsheet, LoaderCircle } from "lucide-react";
 
-import { Button } from "@workspace/ui/components/button";
-import { cn } from "@/lib/utils";
+import { SellerButton } from "@/components/seller-ui";
 import { downloadXlsx } from "@/lib/product-excel";
 import type { OrderSummary } from "./orders.types";
 import { exportForWassalha } from "./wassalha-export.server";
@@ -74,9 +73,9 @@ export function WassalhaExportButton({
     });
 
   return (
-    <Button type="button" variant="outline" size="sm" className={cn("gap-1.5", className)} disabled={pending} onClick={run}>
-      {pending ? <LoaderCircle className="size-4 animate-spin" aria-hidden /> : <FileSpreadsheet className="size-4" aria-hidden />}
+    <SellerButton variant="outline" size="sm" className={className} disabled={pending} onClick={run}>
+      {pending ? <LoaderCircle className="animate-spin" aria-hidden /> : <FileSpreadsheet aria-hidden />}
       {again ? t("exportAgain") : showCount ? t("exportMany", { count: ids.length }) : t("export")}
-    </Button>
+    </SellerButton>
   );
 }

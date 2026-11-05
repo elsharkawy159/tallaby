@@ -2,7 +2,6 @@
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { Button } from "@workspace/ui/components/button";
 import {
   Select,
   SelectContent,
@@ -11,7 +10,11 @@ import {
   SelectValue,
 } from "@workspace/ui/components/select";
 import { formatNumber } from "@/lib/i18n/format";
+import { cn } from "@/lib/utils";
 import { pageList } from "../products/_components/products-view.lib";
+
+const PAGE_BUTTON =
+  "grid h-10 min-w-10 cursor-pointer place-items-center rounded-xl border border-(--s-field) bg-(--s-surface) px-2.5 font-montserrat text-[13px] font-bold tabular-nums text-(--s-body) transition-colors duration-150 hover:border-(--s-outline-hover) disabled:cursor-not-allowed disabled:opacity-40";
 
 /** Range, page size and page numbers under a server-paged list (same look as /products). */
 export function ListPager({
@@ -37,7 +40,7 @@ export function ListPager({
   const to = Math.min(page * size, total);
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 text-[13px] text-muted-foreground">
+    <div className="flex flex-wrap items-center justify-between gap-3 text-[13px] text-(--s-muted)">
       <div className="flex flex-wrap items-center gap-3">
         <span className="tabular-nums">
           {t("range", {
@@ -49,7 +52,7 @@ export function ListPager({
         <div className="flex items-center gap-2">
           <span>{t("perPage")}</span>
           <Select value={String(size)} onValueChange={(value) => onSize(Number(value))}>
-            <SelectTrigger className="h-9 w-20 rounded-[9px] bg-card" aria-label={t("perPage")}>
+            <SelectTrigger className="h-10 w-20 rounded-xl border-(--s-field) bg-(--s-surface) shadow-none" aria-label={t("perPage")}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -63,46 +66,31 @@ export function ListPager({
         </div>
       </div>
       {pages > 1 && (
-        <nav className="flex gap-1">
-          <Button
-            variant="outline"
-            size="icon"
-            className="size-9 rounded-[9px]"
-            disabled={page === 1}
-            onClick={() => onPage(page - 1)}
-            aria-label={t("previousPage")}
-          >
+        <nav className="flex flex-wrap gap-1">
+          <button type="button" className={PAGE_BUTTON} disabled={page === 1} onClick={() => onPage(page - 1)} aria-label={t("previousPage")}>
             <ChevronRight className="size-4 ltr:rotate-180" />
-          </Button>
+          </button>
           {pageList(page, pages).map((p, i) =>
             p === "gap" ? (
-              <span key={`gap-${i}`} className="grid h-9 min-w-6 place-items-center">
+              <span key={`gap-${i}`} className="grid h-10 min-w-6 place-items-center">
                 …
               </span>
             ) : (
-              <Button
+              <button
                 key={p}
-                variant={p === page ? "default" : "outline"}
-                size="icon"
-                className="size-9 rounded-[9px] text-[13px] tabular-nums"
+                type="button"
+                className={cn(PAGE_BUTTON, p === page && "border-(--s-solid) bg-(--s-solid) text-(--s-solid-fg)")}
                 onClick={() => onPage(p)}
                 aria-label={t("pageN", { page: p })}
                 aria-current={p === page ? "page" : undefined}
               >
                 {formatNumber(p, locale)}
-              </Button>
+              </button>
             ),
           )}
-          <Button
-            variant="outline"
-            size="icon"
-            className="size-9 rounded-[9px]"
-            disabled={page === pages}
-            onClick={() => onPage(page + 1)}
-            aria-label={t("nextPage")}
-          >
+          <button type="button" className={PAGE_BUTTON} disabled={page === pages} onClick={() => onPage(page + 1)} aria-label={t("nextPage")}>
             <ChevronLeft className="size-4 ltr:rotate-180" />
-          </Button>
+          </button>
         </nav>
       )}
     </div>

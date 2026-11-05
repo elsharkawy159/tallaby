@@ -2,7 +2,6 @@
 
 import { ClipboardList, FileText, Package, Printer } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Button } from "@workspace/ui/components/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,8 +9,9 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu";
-import { cn } from "@/lib/utils";
+import { SellerButton, type SellerButtonSize } from "@/components/seller-ui";
 import { PRINT_MAX_ORDERS, printOrdersHref, type PrintDoc } from "@/app/print/orders/print-orders.lib";
+import { BAR_BUTTON } from "./orders-ui";
 
 /**
  * Print an invoice or packing slip for these orders (ROADMAP.md F-04a). Opens
@@ -21,6 +21,8 @@ export function PrintOrdersButton({
   orderIds,
   total = orderIds.length,
   showCount = false,
+  onBar = false,
+  size,
   className,
 }: {
   orderIds: readonly string[];
@@ -28,24 +30,38 @@ export function PrintOrdersButton({
   total?: number;
   /** "Print (N)" for a list; plain "Print" for one order. */
   showCount?: boolean;
+  /** Sits on the dark selection bar. */
+  onBar?: boolean;
+  size?: SellerButtonSize;
   className?: string;
 }) {
   const t = useTranslations("orders.printActions");
   if (orderIds.length === 0) return null;
   const ids = orderIds.slice(0, PRINT_MAX_ORDERS);
   const open = (doc: PrintDoc) => window.open(printOrdersHref(doc, ids, true), "_blank", "noopener");
+  const label = (
+    <>
+      <Printer aria-hidden />
+      {showCount ? t("printCount", { count: ids.length }) : t("print")}
+    </>
+  );
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" className={cn("rounded-[10px] bg-card", className)}>
-          <Printer className="size-4" aria-hidden />
-          {showCount ? t("printCount", { count: ids.length }) : t("print")}
-        </Button>
+        {onBar ? (
+          <button type="button" className={BAR_BUTTON}>
+            {label}
+          </button>
+        ) : (
+          <SellerButton variant="outline" size={size} className={className}>
+            {label}
+          </SellerButton>
+        )}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         {total > PRINT_MAX_ORDERS && (
-          <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
+          <DropdownMenuLabel className="text-xs font-normal text-(--s-subtle)">
             {t("capped", { max: PRINT_MAX_ORDERS })}
           </DropdownMenuLabel>
         )}

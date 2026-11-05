@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { currentOrderLock } from "@/lib/auth/require-seller.server";
 import { OrdersLocked } from "@/components/orders/orders-locked";
+import { ListPageSkeleton, OrdersPageFrame } from "../orders-page-frame";
 import { PendingCartsData } from "./pending-carts.data";
 
 // Per-seller data read from the session cookie; personal data, never cached.
@@ -14,10 +15,10 @@ export default async function PendingCartsPage({ searchParams }: { searchParams:
   if (lock.locked) return <OrdersLocked lock={lock} />;
   const params = await searchParams;
   return (
-    <div className="min-h-screen p-4 sm:p-6">
-      <Suspense fallback={<div className="h-40 animate-pulse rounded-xl bg-muted" />}>
+    <OrdersPageFrame>
+      <Suspense fallback={<ListPageSkeleton />}>
         <PendingCartsData storeId={typeof params.store === "string" ? params.store : null} searchParams={params} />
       </Suspense>
-    </div>
+    </OrdersPageFrame>
   );
 }

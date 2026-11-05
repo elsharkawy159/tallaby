@@ -9,6 +9,7 @@ import {
 import { listStoreCustomerNotes, listStoreCustomersPage } from "@workspace/lib/customers/server";
 import { blockedPhoneCustomerKey } from "@workspace/lib/stores/blocked-phones";
 import { listStoreBlockedPhones } from "@workspace/lib/stores/blocked-phones/server";
+import { PageHeader } from "@/components/seller-ui";
 import { loadStoreMoney } from "@/lib/stores/account-money.server";
 import { requireSeller } from "@/lib/auth/require-seller.server";
 import { getSellerStores } from "@/lib/stores/current-store.server";
@@ -50,9 +51,8 @@ export async function CustomersData({
     : { customers: [], stats: { customers: 0, repeat: 0, refused: 0 }, matched: 0, page: 1, pages: 1 };
 
   return (
-    <section aria-label={t("title")} className="space-y-5">
-      {/* No page title: the header breadcrumb already names the page. */}
-      <p className="text-pretty text-sm text-muted-foreground">{t("description")}</p>
+    <>
+      <PageHeader title={t("title")} description={t("description")} />
       <CustomersView
         money={money}
         key={store?.id ?? "none"}
@@ -72,6 +72,6 @@ export async function CustomersData({
         stores={stores.map((s) => ({ id: s.id, name: s.name }))}
         storeId={store?.id ?? null}
       />
-    </section>
+    </>
   );
 }

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { listStoreCheckoutLeads, listStoreLeadSettings } from "@workspace/lib/checkout-leads/server";
 import type { LeadRange, LeadStatus } from "@workspace/lib/checkout-leads";
+import { Note, PageHeader } from "@/components/seller-ui";
 import { loadStoreMoney } from "@/lib/stores/account-money.server";
 import { requireSeller } from "@/lib/auth/require-seller.server";
 import { MissedOrdersView } from "./missed-orders.client";
@@ -27,19 +28,18 @@ export async function MissedOrdersData({
   const leads = await listStoreCheckoutLeads(seller.sellerId, { storeId: selectedStore, range, status });
 
   return (
-    <section aria-label={t("title")} className="space-y-5">
-      {/* No page title: the header breadcrumb already names the page. */}
-      <p className="text-pretty text-sm text-muted-foreground">{t("description")}</p>
-      <p className="text-pretty text-sm text-muted-foreground">
+    <>
+      <PageHeader title={t("title")} description={t("description")} />
+      <Note>
         {t("pendingCartsHint")}{" "}
         <Link
           href={selectedStore ? `/orders/pending-carts?store=${selectedStore}` : "/orders/pending-carts"}
-          className="font-medium text-primary underline-offset-4 hover:underline"
+          className="text-(--s-link) underline-offset-4 hover:underline max-[600px]:inline-flex max-[600px]:min-h-10 max-[600px]:items-center"
         >
           {t("pendingCartsLink")}
         </Link>
-      </p>
+      </Note>
       <MissedOrdersView storeMoney={storeMoney} leads={leads} stores={stores} storeId={selectedStore} range={range} status={status} />
-    </section>
+    </>
   );
 }

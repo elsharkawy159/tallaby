@@ -6,11 +6,8 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Check, Copy, LoaderCircle, Mailbox, Pencil, Upload } from "lucide-react";
 
-import { Button } from "@workspace/ui/components/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@workspace/ui/components/dialog";
-import { Input } from "@workspace/ui/components/input";
 import { extractTrackingRows, type TrackingFileError } from "@workspace/lib/shipping/wassalha-tracking";
-import { cn } from "@/lib/utils";
+import { IconButton, Modal, Note, SellerButton, TextInput } from "@/components/seller-ui";
 import type { SellerOrderRow } from "./orders.types";
 import { readSpreadsheetRows, WASSALHA_TRACKING_MAX_BYTES } from "./wassalha-tracking-file.lib";
 import { saveWassalhaTrackingNumber, uploadWassalhaTracking, type WassalhaTrackingProblem } from "./wassalha-tracking.server";
@@ -62,27 +59,25 @@ export function WassalhaTrackingUpload({ storeId, className }: { storeId: string
   };
 
   return (
-    <Dialog
+    <Modal
+      width={576}
+      className="max-h-[85dvh] overflow-y-auto"
+      title={t("uploadTitle")}
+      description={t("uploadDescription")}
       onOpenChange={(open) => {
         if (!open) {
           setFileError(null);
           setResult(null);
         }
       }}
-    >
-      <DialogTrigger asChild>
-        <Button type="button" variant="outline" size="sm" className={cn("gap-1.5", className)}>
-          <Upload className="size-4" aria-hidden />
+      trigger={
+        <SellerButton variant="outline" className={className}>
+          <Upload aria-hidden />
           {t("uploadButton")}
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-xl">
-        <DialogHeader>
-          <DialogTitle>{t("uploadTitle")}</DialogTitle>
-          <DialogDescription>{t("uploadDescription")}</DialogDescription>
-        </DialogHeader>
-
-        <div className="space-y-4 text-sm">
+        </SellerButton>
+      }
+    >
+        <div className="flex flex-col gap-4 text-[13px] text-(--s-body)">
           <input
             ref={input}
             type="file"
@@ -94,29 +89,29 @@ export function WassalhaTrackingUpload({ storeId, className }: { storeId: string
               event.target.value = "";
             }}
           />
-          <Button type="button" variant="outline" className="w-full gap-2" disabled={pending} onClick={() => input.current?.click()}>
-            {pending ? <LoaderCircle className="size-4 animate-spin" aria-hidden /> : <Upload className="size-4" aria-hidden />}
+          <SellerButton variant="outline" className="w-full" disabled={pending} onClick={() => input.current?.click()}>
+            {pending ? <LoaderCircle className="animate-spin" aria-hidden /> : <Upload aria-hidden />}
             {pending ? t("reading") : t("chooseFile")}
-          </Button>
+          </SellerButton>
 
           {fileError && (
-            <p role="alert" className="rounded-md bg-destructive/10 p-3 text-destructive">
-              {t(`fileErrors.${fileError}`)}
-            </p>
+            <div role="alert">
+              <Note tone="danger">{t(`fileErrors.${fileError}`)}</Note>
+            </div>
           )}
 
           {result && (
             <div className="space-y-3" role="status">
-              <p className="font-medium">
+              <p className="font-semibold text-(--s-text)">
                 {t("savedCount", { count: result.saved })}
-                {result.unchanged > 0 && <span className="font-normal text-muted-foreground"> · {t("unchangedCount", { count: result.unchanged })}</span>}
+                {result.unchanged > 0 && <span className="ms-1.5 font-normal text-(--s-subtle)">{t("unchangedCount", { count: result.unchanged })}</span>}
               </p>
               {result.problems.length > 0 && (
                 <div className="space-y-2">
-                  <p className="font-medium text-destructive">{t("problemsCount", { count: result.problems.length })}</p>
-                  <div className="overflow-x-auto rounded-md border">
+                  <p className="font-semibold text-destructive">{t("problemsCount", { count: result.problems.length })}</p>
+                  <div className="overflow-x-auto rounded-2xl border border-(--s-line)">
                     <table className="w-full text-start text-xs">
-                      <thead className="bg-muted/50 text-muted-foreground">
+                      <thead className="bg-(--s-surface-2) text-(--s-subtle)">
                         <tr>
                           <th scope="col" className="p-2 text-start font-medium">{t("columns.row")}</th>
                           <th scope="col" className="p-2 text-start font-medium">{t("columns.order")}</th>
@@ -124,12 +119,12 @@ export function WassalhaTrackingUpload({ storeId, className }: { storeId: string
                           <th scope="col" className="p-2 text-start font-medium">{t("columns.reason")}</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y">
+                      <tbody className="divide-y divide-(--s-line-soft)">
                         {result.problems.map((problem) => (
                           <tr key={`${problem.row}-${problem.orderNumber}-${problem.trackingNumber}`}>
                             <td className="p-2 tabular-nums">{problem.row}</td>
-                            <td className="p-2 font-mono" dir="ltr">{problem.orderNumber || "-"}</td>
-                            <td className="p-2 font-mono" dir="ltr">{problem.trackingNumber || "-"}</td>
+                            <td className="p-2 font-montserrat" dir="ltr">{problem.orderNumber || "-"}</td>
+                            <td className="p-2 font-montserrat" dir="ltr">{problem.trackingNumber || "-"}</td>
                             <td className="p-2">{t(`reasons.${problem.reason}`)}</td>
                           </tr>
                         ))}
@@ -141,8 +136,7 @@ export function WassalhaTrackingUpload({ storeId, className }: { storeId: string
             </div>
           )}
         </div>
-      </DialogContent>
-    </Dialog>
+    </Modal>
   );
 }
 
@@ -195,56 +189,52 @@ export function WassalhaTrackingCard({ order }: { order: SellerOrderRow }) {
   };
 
   return (
-    <div className="space-y-3 rounded-lg border p-3 text-sm">
+    <div className="flex flex-col gap-3 rounded-2xl border border-(--s-line) p-3.5 text-[13px]">
       <div className="flex items-center gap-2">
-        <span className="grid size-7 place-items-center rounded-md bg-muted">
+        <span className="grid size-7 place-items-center rounded-lg bg-(--s-fill) text-(--s-subtle)">
           <Mailbox className="size-4" aria-hidden />
         </span>
-        <p className="font-semibold">{t("cardTitle")}</p>
+        <p className="font-bold text-(--s-ink)">{t("cardTitle")}</p>
       </div>
       {number && !editing && (
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-muted-foreground">{t("number")}</span>
-          <span className="font-mono font-medium" dir="ltr">
+          <span className="text-(--s-subtle)">{t("number")}</span>
+          <bdi className="break-all font-montserrat font-semibold text-(--s-text)" dir="ltr">
             {number}
-          </span>
-          <Button type="button" size="icon" variant="ghost" className="size-7" onClick={copy} aria-label={t("copy")}>
-            {copied ? <Check className="size-3.5" aria-hidden /> : <Copy className="size-3.5" aria-hidden />}
-          </Button>
-          <Button
-            type="button"
-            size="icon"
-            variant="ghost"
-            className="size-7"
+          </bdi>
+          <IconButton onClick={copy} aria-label={t("copy")}>
+            {copied ? <Check aria-hidden /> : <Copy aria-hidden />}
+          </IconButton>
+          <IconButton
             aria-label={t("edit")}
             onClick={() => {
               setValue(number);
               setEditing(true);
             }}
           >
-            <Pencil className="size-3.5" aria-hidden />
-          </Button>
+            <Pencil aria-hidden />
+          </IconButton>
         </div>
       )}
       {(!number || editing) && (
         <form className="flex flex-wrap items-center gap-2" onSubmit={submit}>
-          <Input
+          <TextInput
             value={value}
             onChange={(event) => setValue(event.target.value)}
             placeholder={t("placeholder")}
             aria-label={t("number")}
             dir="ltr"
             maxLength={60}
-            className="h-9 min-w-40 flex-1 font-mono"
+            className="h-10 min-w-40 flex-1 font-montserrat"
           />
-          <Button type="submit" size="sm" className="h-9" disabled={pending || !value.trim()}>
-            {pending && <LoaderCircle className="size-4 animate-spin" aria-hidden />}
+          <SellerButton type="submit" variant="solid" size="sm" disabled={pending || !value.trim()}>
+            {pending && <LoaderCircle className="animate-spin" aria-hidden />}
             {t("save")}
-          </Button>
+          </SellerButton>
           {editing && (
-            <Button type="button" size="sm" variant="ghost" className="h-9" disabled={pending} onClick={() => setEditing(false)}>
+            <SellerButton variant="mini" size="sm" disabled={pending} onClick={() => setEditing(false)}>
               {t("cancel")}
-            </Button>
+            </SellerButton>
           )}
         </form>
       )}
