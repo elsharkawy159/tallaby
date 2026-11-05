@@ -5,6 +5,7 @@ import { Star, Loader2, Image as ImageIcon, X, Upload, Video } from "lucide-reac
 import { Button } from "@workspace/ui/components/button";
 import { Textarea, Input, Checkbox } from "@workspace/ui/components";
 import { createReview, updateReview } from "@/actions/reviews";
+import { createReviewUploadUrl } from "@/actions/review-upload";
 import { useRouter } from "@/i18n/navigation";
 import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
@@ -61,13 +62,11 @@ export function OrderItemReviewForm({
   const router = useRouter();
   const supabase = createClient();
 
-  // Generate unique filename for uploads
-  const generateFileName = (file: File): string => {
-    const fileExt = file.name.split(".").pop();
-    const timestamp = Date.now();
-    const randomStr = Math.random().toString(36).substring(2, 9);
-    return `reviews/${timestamp}-${randomStr}.${fileExt}`;
-  };
+  // The server picks the path (`reviews/<userId>/...`) and signs the upload: the bucket refuses direct writes (0153).
+  const fileExtension = (file: File): string =>
+    (file.name.includes(".") ? file.name.split(".").pop() ?? "" : "").toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 8) ||
+    (file.type.split("/")[1] ?? "").toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 8) ||
+    "bin";
 
   // Handle file upload
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -107,15 +106,18 @@ export function OrderItemReviewForm({
           return null;
         }
 
-        // Generate unique filename
-        const fileName = generateFileName(file);
-        
-        // Upload to Supabase Storage
-        const { data, error } = await supabase.storage
+        // Signed upload into the customer's own folder
+        const signed = await createReviewUploadUrl(fileExtension(file));
+        if (!signed.success) {
+          toast.error(tToast("failedToUploadFile", { fileName: file.name }));
+          return null;
+        }
+        const fileName = signed.path;
+        const { error } = await supabase.storage
           .from("products")
-          .upload(fileName, file, {
+          .uploadToSignedUrl(fileName, signed.token, file, {
             cacheControl: "31536000",
-            upsert: false,
+            contentType: file.type || undefined,
           });
 
         if (error) {

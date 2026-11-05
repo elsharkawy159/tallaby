@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
-import { createClient } from "@/supabase/server";
+import { getServiceClient } from "@workspace/db/supabase/service";
+import { isAccessError, requireSeller } from "@/lib/auth/require-seller.server";
 
 const bodySchema = z.object({
   urls: z.array(z.string().url()).min(1),
@@ -43,11 +44,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const supabase = await createClient();
-    const { data: userData } = await supabase.auth.getUser();
-    if (!userData?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // The products bucket has no write policies (0153): a signed-in seller only, then the service role.
+    try {
+      await requireSeller({ forWrite: true });
+    } catch (error) {
+      if (isAccessError(error)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      throw error;
     }
+    const supabase = getServiceClient();
 
     const urls = uniq(parsed.data.urls).slice(0, 5);
     const uploadedPaths: string[] = [];

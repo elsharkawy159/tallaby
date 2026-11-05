@@ -7,8 +7,8 @@ import { UseFormReturn } from "react-hook-form";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 
-import { createClient } from "@/supabase/client";
-import { cn, generateImageName, getPublicUrl, validateImage } from "@/lib/utils";
+import { uploadProductImage } from "@/components/inputs/use-seller-upload";
+import { cn, getPublicUrl, validateImage } from "@/lib/utils";
 import { RemoteImage } from "@/components/media/remote-image";
 
 interface FileToUpload {
@@ -23,7 +23,8 @@ interface ImageUploadProps {
   value: string[];
   /** Kept for call-site compatibility; uploads don't touch other fields. */
   form?: UseFormReturn<any>;
-  bucket: string;
+  /** Uploads always go to the seller's folder of `products` (uploadProductImage). */
+  bucket: "products";
   maxImages?: number;
   /** Compact square layout for tight spaces (e.g. a table cell). */
   compact?: boolean;
@@ -45,7 +46,6 @@ export function ImageUpload({
   compact = false,
   footer,
 }: ImageUploadProps) {
-  const supabase = createClient();
   const tToast = useTranslations("toast");
   const t = useTranslations("inputs.imageUpload");
 
@@ -92,23 +92,21 @@ export function ImageUpload({
   const uploadFile = useCallback(
     async (file: File): Promise<string | null> => {
       try {
-        const { data, error } = await supabase.storage
-          .from(bucket)
-          .upload(generateImageName(file), file, { cacheControl: "31536000", upsert: false });
-        if (error) throw error;
+        // Signed upload into the seller's own folder (the bucket refuses direct writes, 0153).
+        const path = await uploadProductImage(file);
         setFiles((prev) =>
           prev.map((item) =>
-            item.file === file ? { ...item, liveSource: data.path, isUploaded: true } : item
+            item.file === file ? { ...item, liveSource: path, isUploaded: true } : item
           )
         );
-        return data.path;
+        return path;
       } catch {
         setFiles((prev) => prev.filter((item) => item.file !== file));
         toast.error(tToast("uploadError", { fileName: file.name }));
         return null;
       }
     },
-    [bucket, supabase, tToast]
+    [tToast]
   );
 
   const onDrop = useCallback(

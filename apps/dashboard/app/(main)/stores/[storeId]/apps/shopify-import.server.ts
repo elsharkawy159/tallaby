@@ -11,7 +11,7 @@ import {
 } from "@workspace/lib/integrations/server";
 import { requireStore } from "@/lib/auth/require-seller.server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
-import { createClient } from "@/supabase/server";
+import { getServiceClient } from "@workspace/db/supabase/service";
 import { afterAppChange, appsAccessError, appsSaveLimiter } from "./apps-action.lib";
 import type { StoreAppsErrorKey, StoreAppsResult } from "./apps.dto";
 
@@ -106,7 +106,8 @@ export async function importShopifyBatch(
       }
     }
 
-    const supabase = await createClient();
+    // The products bucket has no write policies (0153); requireStore checked the seller above.
+    const supabase = getServiceClient();
     const result = await importShopifyChunk(
       seller.sellerId,
       store.id,

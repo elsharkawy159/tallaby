@@ -6,7 +6,7 @@ import { isProActive } from "@workspace/lib/billing";
 import { claimAiCredit, getAiCreditStatus, refundAiCredit } from "@workspace/lib/billing/credits";
 import { getBillingState } from "@workspace/lib/billing/server";
 import { createProduct, setProductPublished } from "@/actions/products";
-import { createClient } from "@/supabase/server";
+import { getServiceClient } from "@workspace/db/supabase/service";
 import { ensureTaxonomyItem } from "../../categories-brands/categories-brands.server";
 import { loadAllCategories } from "./from-file-categories.server";
 import {
@@ -281,7 +281,8 @@ async function claimRows(sellerId: string, rows: readonly ValidRow[]): Promise<{
 
 const todayFolder = () => new Date().toISOString().slice(0, 10);
 
-type SessionStorage = Awaited<ReturnType<typeof createClient>>;
+// The products bucket has no write policies (0153): the service role, after the seller check.
+type SessionStorage = ReturnType<typeof getServiceClient>;
 
 /**
  * The photo links of every row, stored the way the dashboard's image import
@@ -508,7 +509,7 @@ export async function runBulkBatch(sellerId: string, input: AddBatchInput): Prom
   const ready = todo.filter(({ row }) => !needsAiCopy(row) || toWrite.has(row.row));
   if (ready.length > 0) {
     const tree = await loadAllCategories();
-    const storage = await createClient();
+    const storage = getServiceClient();
     const images = await importRowImages(storage, ready.map((entry) => entry.row));
     const storeCategory = taxonomyResolver("category");
     const storeBrand = taxonomyResolver("brand");

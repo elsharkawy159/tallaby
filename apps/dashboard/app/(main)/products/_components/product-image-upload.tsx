@@ -8,8 +8,8 @@ import { getPublicUrl } from "@/lib/utils";
 import { updateProduct } from "@/actions/products";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-import { createClient } from "@/supabase/client";
-import { generateImageName, getTodayDate, validateImage } from "@/lib/utils";
+import { validateImage } from "@/lib/utils";
+import { uploadProductImage } from "@/components/inputs/use-seller-upload";
 
 interface ProductImageUploadProps {
   productId: string;
@@ -23,7 +23,6 @@ export function ProductImageUpload({
   productTitle,
 }: ProductImageUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
-  const supabase = createClient();
   const tToast = useTranslations("toast");
   const t = useTranslations("products.imageUpload");
 
@@ -33,30 +32,15 @@ export function ProductImageUpload({
         // Validate image
         await validateImage(file);
 
-        const imageName = generateImageName(file);
-        const filePath = imageName; // generateImageName already includes the date folder
-
-        const { data, error } = await supabase.storage
-          .from("products")
-          .upload(filePath, file, {
-            cacheControl: "31536000",
-            upsert: false,
-          });
-
-        if (error) {
-          console.error("Upload error:", error);
-          toast.error(tToast("failedToUploadImage"));
-          return null;
-        }
-
-        return filePath;
+        // Signed upload into the seller's own folder (the bucket refuses direct writes, 0153).
+        return await uploadProductImage(file);
       } catch (error) {
         console.error("File upload error:", error);
         toast.error(tToast("failedToUploadImage"));
         return null;
       }
     },
-    [supabase, tToast]
+    [tToast]
   );
 
   const onDrop = useCallback(

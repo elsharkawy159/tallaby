@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl'
 
 import { createClient } from '@/supabase/client'
 import { generateImageName, getPublicUrl } from '@/lib/utils'
-import { createSellerUploadUrl, createSellersBucketUploadUrl } from './seller-upload.server'
+import { createProductImageUploadUrl, createSellerUploadUrl, createSellersBucketUploadUrl } from './seller-upload.server'
 
 const MAX_SIZE = 5 * 1024 * 1024
 
@@ -29,6 +29,23 @@ async function uploadToSellersBucket (file: File, folder: string, fileName: stri
   if (!signed.success) throw new Error(`upload not signed: ${signed.error}`)
   const { data, error } = await createClient()
     .storage.from('sellers')
+    .uploadToSignedUrl(signed.path, signed.token, file, { cacheControl: '31536000', contentType: file.type || undefined })
+  if (error) throw error
+  return data.path
+}
+
+/**
+ * Uploads one product photo into `<sellerId>/<YYYY-MM-DD>/` of the public
+ * `products` bucket through a signed upload URL (the bucket has no write
+ * policies, 0153). Resolves to the stored path (what `products.images`
+ * holds); throws on failure.
+ */
+export async function uploadProductImage (file: File): Promise<string> {
+  const fileName = generateImageName(file).split('/').pop() ?? ''
+  const signed = await createProductImageUploadUrl(fileName)
+  if (!signed.success) throw new Error(`upload not signed: ${signed.error}`)
+  const { data, error } = await createClient()
+    .storage.from('products')
     .uploadToSignedUrl(signed.path, signed.token, file, { cacheControl: '31536000', contentType: file.type || undefined })
   if (error) throw error
   return data.path

@@ -5,8 +5,8 @@ import { useForm, useWatch, type UseFormReturn } from "react-hook-form"
 import { useDropzone } from "react-dropzone"
 import { useTranslations } from "next-intl"
 import { toast } from "sonner"
-import { createClient } from "@/supabase/client"
-import { generateImageName, getPublicUrl } from "@/lib/utils"
+import { getPublicUrl } from "@/lib/utils"
+import { uploadProductImage } from "@/components/inputs/use-seller-upload"
 import type { SellerPricingSettings } from "@/lib/utils/product-pricing.lib"
 import type { AddProductFormData, CategoryOption, SupportedLocale } from "../add-product.schema"
 import { buildFormValuesFromImport } from "../build-form-values-from-import.lib"
@@ -193,7 +193,6 @@ export function useAiAutofill ({
     const current = form.getValues("images") ?? []
     const room = Math.max(0, MAX_PRODUCT_IMAGES - current.length)
     if (room === 0 || picked.length === 0) return []
-    const supabase = createClient()
     const taken = picked.slice(0, room)
     const paths = await Promise.all(
       taken.map(async ({ file }) => {
@@ -201,10 +200,8 @@ export function useAiAutofill ({
           const upload = UPLOADABLE_TYPES.includes(file.type)
             ? file
             : new File([await toJpeg(file, 2400, 0.9)], renamed(file.name, "jpg"), { type: "image/jpeg" })
-          const { data, error } = await supabase.storage
-            .from("products")
-            .upload(generateImageName(upload), upload, { cacheControl: "31536000", upsert: false })
-          return error ? null : data.path
+          // Signed upload into the seller's own folder (the bucket refuses direct writes, 0153).
+          return await uploadProductImage(upload)
         } catch {
           return null
         }

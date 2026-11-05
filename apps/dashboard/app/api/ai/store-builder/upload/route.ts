@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
 import { isAccessError, requireSeller } from "@/lib/auth/require-seller.server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
-import { createClient } from "@/supabase/server";
+import { getServiceClient } from "@workspace/db/supabase/service";
 import { builderEnabled } from "@/app/(main)/ai-builder/builder-access.server";
 import { toView, withShortlist } from "@/app/(main)/ai-builder/builder-chat.server";
 import { BUILDER_IMAGE_TYPES, BUILDER_LIMITS, type BuilderChatResponse, type BuilderErrorCode } from "@/app/(main)/ai-builder/builder.dto";
@@ -71,8 +71,8 @@ export async function POST(request: NextRequest) {
   if (!type) return fail("badFile");
 
   const path = `ai-builder/${sellerId}/${build.id}/${randomUUID()}.${EXTENSION[type]}`;
-  const supabase = await createClient();
-  const { error } = await supabase.storage.from("products").upload(path, bytes, { contentType: type, cacheControl: "31536000", upsert: false });
+  // The products bucket has no write policies (0153); the seller was checked above.
+  const { error } = await getServiceClient().storage.from("products").upload(path, bytes, { contentType: type, cacheControl: "31536000", upsert: false });
   if (error) {
     console.error("[ai-builder] upload failed", error.message);
     return fail("failed");

@@ -347,9 +347,10 @@ export async function uploadAvatar(file: File) {
     const supabase = await createClient();
 
     // Generate unique filename
-    const fileExt = file.name.split(".").pop();
-    const fileName = `${user.user.id}-${Date.now()}.${fileExt}`;
-    const filePath = `avatars/${fileName}`;
+    // `<userId>/<file>`: the avatars bucket accepts writes only into the
+    // signed-in user's own folder (0153). Older `avatars/<id>-<ts>` files stay readable.
+    const fileExt = (file.name.split(".").pop() ?? "").toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 8) || "jpg";
+    const filePath = `${user.user.id.toLowerCase()}/${Date.now()}.${fileExt}`;
 
     // Upload file to Supabase Storage
     const { data, error } = await supabase.storage

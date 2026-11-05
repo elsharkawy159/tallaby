@@ -64,6 +64,32 @@ export async function createSellersBucketUploadUrl(folder: string, fileName: str
   }
 }
 
+/**
+ * Signs an upload of one product photo into the session seller's own folder
+ * of the public `products` bucket: `<sellerId>/<YYYY-MM-DD>/<file>`. The bucket
+ * has no write policies (0153), so the browser can only write the exact path
+ * the server signed here. Older flat `<YYYY-MM-DD>/<file>` paths stay readable.
+ */
+export async function createProductImageUploadUrl(fileName: string): Promise<SellersBucketUploadResult> {
+  try {
+    const seller = await requireSeller({ forWrite: true });
+    if (!SELLERS_FILE_NAME_RE.test(String(fileName))) return { success: false, error: "invalidPath" };
+    if (!limiter.check(`upload:${seller.sellerId}`)) return { success: false, error: "notAllowed" };
+
+    const path = `${seller.sellerId.toLowerCase()}/${new Date().toISOString().slice(0, 10)}/${fileName}`;
+    const { data, error } = await getServiceClient().storage.from("products").createSignedUploadUrl(path);
+    if (error || !data) {
+      console.error("[seller-upload] sign failed", error?.message);
+      return { success: false, error: "generic" };
+    }
+    return { success: true, token: data.token, path };
+  } catch (error) {
+    if (isAccessError(error)) return { success: false, error: "notAllowed" };
+    console.error("[seller-upload] sign failed", (error as Error)?.message);
+    return { success: false, error: "generic" };
+  }
+}
+
 export async function createSellerUploadUrl(bucket: string, path: string): Promise<SignedUploadResult> {
   try {
     const seller = await requireSeller({ forWrite: true });

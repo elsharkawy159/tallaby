@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useCallback, useState, useRef } from "react";
+import React, { useCallback, useState } from "react";
 import Image from "next/image";
 import { useDropzone } from "react-dropzone";
 import { Upload, LoaderCircle, X } from "lucide-react";
-import { createClient } from "@/supabase/client";
-import { generateImageName, getPublicUrl } from "@/lib/utils";
+import { uploadAdminImage } from "@/lib/admin-image-upload.client";
+import { getPublicUrl } from "@/lib/utils";
 import { toast } from "sonner";
 import { cn } from "@workspace/ui/lib/utils";
 
@@ -23,7 +23,7 @@ function validateFile(file: File): void {
 
 export interface ImageUploadCellProps {
   value: string | null;
-  bucket: string;
+  bucket: "products" | "brands" | "categories";
   onSave: (path: string | null) => Promise<{ success: boolean; error?: string }>;
   onSuccess?: () => void;
   alt?: string;
@@ -44,8 +44,6 @@ export function ImageUploadCell({
   size = "sm",
   className,
 }: ImageUploadCellProps) {
-  const supabaseRef = useRef(createClient());
-  const supabase = supabaseRef.current;
   const [isUploading, setIsUploading] = useState(false);
 
   const sizeClasses =
@@ -55,29 +53,15 @@ export function ImageUploadCell({
     async (file: File): Promise<string | null> => {
       try {
         validateFile(file);
-        const filePath = generateImageName(file);
-
-        const { data, error } = await supabase.storage
-          .from(bucket)
-          .upload(filePath, file, {
-            cacheControl: "31536000",
-            upsert: false,
-          });
-
-        if (error) {
-          console.error("Upload error:", error);
-          toast.error(`Failed to upload: ${error.message}`);
-          return null;
-        }
-
-        return data.path;
+        // Signed upload from the server (the bucket refuses direct writes, 0153).
+        return await uploadAdminImage(bucket, file);
       } catch (error) {
         console.error("Upload error:", error);
         toast.error(error instanceof Error ? error.message : "Failed to upload");
         return null;
       }
     },
-    [supabase, bucket],
+    [bucket],
   );
 
   const onDrop = useCallback(

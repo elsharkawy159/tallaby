@@ -12,15 +12,13 @@ import {
 } from "@hello-pangea/dnd";
 import { UseFormReturn } from "react-hook-form";
 
-import { createClient } from "@/supabase/client";
+import { uploadAdminImage } from "@/lib/admin-image-upload.client";
 
 import { Input } from "@workspace/ui/components/input";
 import { AspectRatio } from "@workspace/ui/components/aspect-ratio";
 import { RadioGroup } from "@workspace/ui/components/radio-group";
 import {
-  generateImageName,
   getPublicUrl,
-  getTodayDate,
   validateImage,
 } from "@/lib/utils";
 import { toast } from "sonner";
@@ -38,7 +36,8 @@ interface ImageUploadProps {
   onChange: (value: string[]) => void;
   value: string[];
   form: UseFormReturn<any>;
-  bucket: string;
+  /** Uploads are signed by the server for these buckets (0153). */
+  bucket: "products" | "brands" | "categories";
   maxImages?: number;
 }
 
@@ -49,7 +48,6 @@ export function ImageUpload({
   bucket,
   maxImages = 5,
 }: ImageUploadProps) {
-  const supabase = createClient();
 
   const [filesToUpload, setFilesToUpload] = useState<FileToUpload[]>(() =>
     value.map((file) => ({
@@ -103,25 +101,19 @@ export function ImageUpload({
 
   const handleFileUpload = useCallback(
     async (file: File): Promise<string | null> => {
-      const folderName = getTodayDate();
-      const uniqueFileName = generateImageName(file);
-
       try {
-        const { data, error } = await supabase.storage
-          .from(bucket)
-          .upload(uniqueFileName, file, { cacheControl: "31536000", upsert: false });
-
-        if (error) throw error;
+        // Signed upload from the server (the bucket refuses direct writes, 0153).
+        const path = await uploadAdminImage(bucket, file);
 
         setFilesToUpload((prev) =>
           prev.map((item) =>
             item.file?.name === file.name
-              ? { ...item, liveSource: data.path, isUploaded: true }
+              ? { ...item, liveSource: path, isUploaded: true }
               : item
           )
         );
 
-        return data.path;
+        return path;
       } catch (error) {
         setFilesToUpload((prev) =>
           prev.filter((item) => item.file?.name !== file.name)
@@ -130,7 +122,7 @@ export function ImageUpload({
         return null;
       }
     },
-    [supabase]
+    [bucket]
   );
 
   const onDrop = useCallback(

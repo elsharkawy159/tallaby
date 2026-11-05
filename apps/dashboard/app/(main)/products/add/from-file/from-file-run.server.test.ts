@@ -59,8 +59,8 @@ vi.mock("@workspace/lib/billing/credits", () => ({
 vi.mock("@workspace/lib/billing/server", () => ({ getBillingState: mocks.getBillingState }));
 vi.mock("@/actions/products", () => ({ createProduct: mocks.createProduct, setProductPublished: mocks.setProductPublished }));
 vi.mock("./from-file-categories.server", () => ({ loadAllCategories: mocks.loadAllCategories }));
-vi.mock("@/supabase/server", () => ({
-  createClient: async () => ({ storage: { from: () => ({ upload: mocks.upload, remove: mocks.remove }) } }),
+vi.mock("@workspace/db/supabase/service", () => ({
+  getServiceClient: () => ({ storage: { from: () => ({ upload: mocks.upload, remove: mocks.remove }) } }),
 }));
 vi.mock("../../categories-brands/categories-brands.server", () => ({ ensureTaxonomyItem: mocks.ensureTaxonomyItem }));
 
