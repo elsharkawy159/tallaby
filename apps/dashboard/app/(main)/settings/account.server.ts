@@ -1,6 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { applyInvalidation, invalidateStorefront } from "@workspace/cache";
+import { listStores } from "@workspace/lib/stores/server";
 import { updateSellerLegalDetails, updateSellerPayoutDetails } from "@workspace/lib/sellers/server";
 import { isAccessError, requireSeller } from "@/lib/auth/require-seller.server";
 
@@ -28,9 +30,15 @@ async function run(action: (sellerId: string) => Promise<{ success: boolean; err
 }
 
 export async function saveLegalDetails(input: { businessType: unknown; legalAddress: unknown }): Promise<AccountActionResult> {
-  return run((sellerId) =>
-    updateSellerLegalDetails(sellerId, { businessType: input?.businessType, legalAddress: input?.legalAddress }),
-  );
+  return run(async (sellerId) => {
+    const result = await updateSellerLegalDetails(sellerId, { businessType: input?.businessType, legalAddress: input?.legalAddress });
+    // The store footer and hero show the governorate from the cached store profile (by subdomain).
+    if (result.success) {
+      const stores = await listStores(sellerId).catch(() => []);
+      await applyInvalidation(invalidateStorefront(stores.map((store) => store.subdomain)), { from: "dashboard", mode: "action" });
+    }
+    return result;
+  });
 }
 
 export async function savePayoutDetails(input: unknown): Promise<AccountActionResult> {

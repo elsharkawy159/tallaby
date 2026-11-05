@@ -27,8 +27,16 @@ import {
 } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { getCurrentAdminUser } from "@/lib/auth/admin-auth";
-import { applyInvalidation, invalidateSeller } from "@workspace/cache";
+import {
+  applyInvalidation,
+  invalidateSeller,
+  invalidateSellerProducts,
+  invalidateStorefront,
+  mergeInvalidations,
+  type CacheInvalidation,
+} from "@workspace/cache";
 import { applySellerOverride } from "@workspace/lib/admin/server";
+import { listStores } from "@workspace/lib/stores/server";
 import {
   sellerStatusUpdateSchema,
   sellerUpdateSchema,
@@ -322,6 +330,21 @@ export async function getSellerStats(): Promise<{
   }
 }
 
+/**
+ * The seller row plus every store of theirs on the storefront side: the store
+ * profile (cached by subdomain) only resolves for an approved seller and
+ * carries free delivery, and product pages carry the seller too. Read the
+ * subdomains BEFORE a delete (the stores go with the seller).
+ */
+async function sellerStorefrontsInvalidation(sellerId: string): Promise<CacheInvalidation> {
+  const stores = await listStores(sellerId).catch(() => []);
+  return mergeInvalidations(
+    invalidateSeller(sellerId),
+    invalidateSellerProducts(sellerId),
+    invalidateStorefront(stores.map((store) => store.subdomain)),
+  );
+}
+
 export async function updateSellerStatus(
   sellerId: string,
   status: "pending" | "approved" | "suspended" | "restricted",
@@ -347,7 +370,7 @@ export async function updateSellerStatus(
       .where(eq(sellers.id, validatedData.sellerId));
 
     revalidatePath("/sellers");
-    await applyInvalidation(invalidateSeller(validatedData.sellerId), {
+    await applyInvalidation(await sellerStorefrontsInvalidation(validatedData.sellerId), {
       from: "admin",
       mode: "action",
     });
@@ -498,7 +521,7 @@ export async function updateSellerFreeDelivery(
       .where(eq(sellers.id, sellerId));
 
     revalidatePath("/sellers");
-    await applyInvalidation(invalidateSeller(sellerId), {
+    await applyInvalidation(await sellerStorefrontsInvalidation(sellerId), {
       from: "admin",
       mode: "action",
     });
@@ -521,10 +544,11 @@ export async function deleteSeller(sellerId: string) {
   try {
     await getCurrentAdminUser();
 
+    const invalidation = await sellerStorefrontsInvalidation(sellerId);
     await db.delete(sellers).where(eq(sellers.id, sellerId));
 
     revalidatePath("/sellers");
-    await applyInvalidation(invalidateSeller(sellerId), {
+    await applyInvalidation(invalidation, {
       from: "admin",
       mode: "action",
     });

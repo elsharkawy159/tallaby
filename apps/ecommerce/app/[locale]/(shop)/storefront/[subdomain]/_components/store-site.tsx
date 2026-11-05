@@ -2,7 +2,6 @@ import { CrossSellOffers } from "@/components/storefront/cross-sell-offers.clien
 import type { ReactNode } from "react";
 import { formatPriceMarked, formatPricePlain, SAUDI_RIYAL_LABEL } from "@workspace/lib";
 import { PriceText } from "@/components/storefront/price-text";
-import { getPublicStoreForms } from "@workspace/lib/store-forms/server";
 import { storeUrl } from "@workspace/lib/storefront";
 import type { SectionInstance, SiteConfig } from "@workspace/store-sections";
 import {
@@ -25,6 +24,7 @@ import { getPublicUrl } from "@workspace/ui/lib/utils";
 import { Link } from "@/i18n/navigation";
 import { formatContentDate, toContentSummary } from "@/lib/store-cms/cms.lib";
 import { getCachedSectionContent } from "@/lib/store-cms/cms.server";
+import { getCachedPublicStoreForms } from "@/lib/store-forms/public-forms.server";
 import { resolveStoreCatalog, toProductSummaries, type ResolvedCatalog } from "@/lib/store-site/catalog.server";
 import { optimizeStoreImage } from "@/lib/store-site/optimize-image.lib";
 import { siteNavPages } from "@/lib/store-site/site-nav.lib";
@@ -125,7 +125,7 @@ async function buildContext(
       ? resolveStoreCatalog(store.id, store.storeId, catalogStoreId(store), queries, locale)
       : ({ products: {}, categories: [], withVariants: new Set<string>() } as ResolvedCatalog),
     // Forms of THIS host's store only (P4-10); another store's form id resolves to nothing.
-    formIds.length ? getPublicStoreForms(store.storeId, formIds) : {},
+    formIds.length ? getCachedPublicStoreForms(store.id, store.storeId, store.subdomain, [...new Set(formIds)].sort()) : {},
     // Blog/CMS sections (P4-16, P4-11): only this store's published items.
     Object.keys(contentQueries).length ? getCachedSectionContent(store.id, store.storeId, contentQueries) : null,
   ]);

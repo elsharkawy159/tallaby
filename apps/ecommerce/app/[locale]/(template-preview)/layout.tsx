@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "@workspace/ui/globals.css";
 import "../(shop)/globals.css";
+import { BaseMessagesProvider } from "@/components/layout/base-messages-provider";
 
 /**
  * Template preview frames for the tallaby.com gallery (lib/marketing,
@@ -10,5 +11,5 @@ import "../(shop)/globals.css";
 export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 export default function TemplatePreviewLayout({ children }: { children: React.ReactNode }) {
-  return children;
+  return <BaseMessagesProvider>{children}</BaseMessagesProvider>;
 }

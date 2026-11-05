@@ -154,7 +154,8 @@ export async function addTaxonomyItem(kind: TaxonomyKind, input: unknown): Promi
 
     revalidatePath(TAXONOMY_PAGE_HREF[kind]);
     // A category picked from a Tallaby one takes in that category's unlinked products on the storefront (storeCategoryGroups).
-    if (kind === "category" && values.sourceId) await applyInvalidation(invalidateSellerProducts(seller.sellerId), { from: "dashboard", mode: "action" });
+    // A new brand shows in the store's brands section at once.
+    if (kind === "brand" || values.sourceId) await applyInvalidation(invalidateSellerProducts(seller.sellerId), { from: "dashboard", mode: "action" });
     return { success: true, data: { id: row!.id, ...values, productCount: 0 } };
   } catch (error) {
     return failure(error, "add");
@@ -259,7 +260,8 @@ export async function updateTaxonomyItem(kind: TaxonomyKind, id: string, input: 
     if (!updated.length) return { success: false, error: "notFound" };
     revalidatePath(TAXONOMY_PAGE_HREF[kind]);
     // Storefront category tiles show this image (getStorefrontCategories is tagged by the seller products tag).
-    if (kind === "category") await applyInvalidation(invalidateSellerProducts(seller.sellerId), { from: "dashboard", mode: "action" });
+    // Brands show too (the store's brands section, getCachedSellerBrands), cached under the seller products tag.
+    await applyInvalidation(invalidateSellerProducts(seller.sellerId), { from: "dashboard", mode: "action" });
     return { success: true };
   } catch (error) {
     return failure(error, "update");
@@ -278,7 +280,8 @@ export async function deleteTaxonomyItem(kind: TaxonomyKind, id: string): Promis
       .returning({ id: table.id });
     if (!deleted.length) return { success: false, error: "notFound" };
     revalidatePath(TAXONOMY_PAGE_HREF[kind]);
-    if (kind === "category") await applyInvalidation(invalidateSellerProducts(seller.sellerId), { from: "dashboard", mode: "action" });
+    // Brands show too (the store's brands section, getCachedSellerBrands), cached under the seller products tag.
+    await applyInvalidation(invalidateSellerProducts(seller.sellerId), { from: "dashboard", mode: "action" });
     return { success: true };
   } catch (error) {
     return failure(error, "delete");
@@ -313,7 +316,8 @@ export async function reorderTaxonomyItems(kind: TaxonomyKind, ids: unknown): Pr
 
     revalidatePath(TAXONOMY_PAGE_HREF[kind]);
     // The first category photo by position is the storefront tile photo.
-    if (kind === "category") await applyInvalidation(invalidateSellerProducts(seller.sellerId), { from: "dashboard", mode: "action" });
+    // Brands show too (the store's brands section, getCachedSellerBrands), cached under the seller products tag.
+    await applyInvalidation(invalidateSellerProducts(seller.sellerId), { from: "dashboard", mode: "action" });
     return { success: true };
   } catch (error) {
     return failure(error, "reorder");

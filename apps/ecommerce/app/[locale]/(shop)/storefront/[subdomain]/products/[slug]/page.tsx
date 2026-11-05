@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cacheProfiles, createCachedQuery, productTags } from "@workspace/cache";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { ChevronLeft } from "lucide-react";
@@ -35,7 +36,18 @@ type StorefrontProductPageProps = {
  * this seller holds would open that product. A page opened through the other
  * language's slug names the real one as canonical, so a product has one URL per language.
  */
-async function storeProductPaths(sellerId: string, productId: string, slug: string, locale: string) {
+/**
+ * Cached per seller (every product write bumps `productTags.seller`): it runs
+ * in the metadata of every product page view and is up to six slug queries.
+ */
+const storeProductPaths = createCachedQuery({
+  name: "storefront:product-paths:v1",
+  ttl: cacheProfiles.detail,
+  tags: (sellerId: string, _productId: string, _slug: string, _locale: string) => [productTags.seller(sellerId)],
+  query: loadStoreProductPaths,
+});
+
+async function loadStoreProductPaths(sellerId: string, productId: string, slug: string, locale: string) {
   const paths: Partial<Record<ProductLocale, string>> = {};
   await Promise.all(
     (["ar", "en"] as const).map(async (l) => {

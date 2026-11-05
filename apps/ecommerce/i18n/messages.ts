@@ -4,7 +4,8 @@ import { deepMergeMessages, type Messages } from "./merge-messages.lib";
  * Marketing site strings live in messages/marketing/<group>.<locale>.json, so
  * pages can be worked on separately. To add a group, add its name here and both
  * files. Server code sees them through i18n/request.ts. Only tallaby.com sends
- * them to the browser ((marketing)/layout.tsx), so store pages don't carry them.
+ * them to the browser ((marketing)/layout.tsx), and only the namespaces its
+ * client components use (MARKETING_CLIENT_NAMESPACES in client-messages.lib.ts).
  */
 const MARKETING_GROUPS = [
   "site",

@@ -69,17 +69,19 @@ export async function StorefrontShell({
 
   const storeViewsGtmId = readStoreViewsGtmId();
   // The seller's coupon pop-up (0114); a failed read only loses the pop-up.
-  const offer = shared
-    ? null
-    : pickStoreCouponOffer(
-        await getCachedSellerPopupCoupons(store.id).catch((error) => {
+  // Sales pop-up (F-22): real recent orders of this store. Not on shared pages
+  // (checkout, orders, account) and never in a builder draft preview.
+  // Both reads are independent, so they run together.
+  const [popupCoupons, salesFeed] = await Promise.all([
+    shared
+      ? null
+      : getCachedSellerPopupCoupons(store.id).catch((error) => {
           console.error("Store coupon pop-up failed to load:", error);
           return [];
         }),
-      );
-  // Sales pop-up (F-22): real recent orders of this store. Not on shared pages
-  // (checkout, orders, account) and never in a builder draft preview.
-  const salesFeed = shared || preview ? [] : await loadStoreSalesFeed(store, locale);
+    shared || preview ? [] : loadStoreSalesFeed(store, locale),
+  ]);
+  const offer = popupCoupons ? pickStoreCouponOffer(popupCoupons) : null;
 
   return (
     <CurrencyLabelProvider label={store.currencyLabel} currency={store.currency}>

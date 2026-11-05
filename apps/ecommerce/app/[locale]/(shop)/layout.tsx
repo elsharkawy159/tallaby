@@ -9,6 +9,7 @@ import { routing } from "@/i18n/routing";
 import { BASE_URL } from "@/lib/constants";
 import { buildLanguageAlternates, localizedUrl } from "@/lib/metadata";
 import { contentParams } from "@/lib/content-params";
+import { BaseMessagesProvider } from "@/components/layout/base-messages-provider";
 
 export async function generateMetadata({
   params,
@@ -83,7 +84,7 @@ export async function generateMetadata({
  */
 export default function ShopLayout({ children }: { children: React.ReactNode }) {
   return (
-    <>
+    <BaseMessagesProvider>
       <NextTopLoader
         color="var(--accent)"
         crawlSpeed={200}
@@ -94,6 +95,6 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
       />
       <Providers>{children}</Providers>
       <Toaster />
-    </>
+    </BaseMessagesProvider>
   );
 }

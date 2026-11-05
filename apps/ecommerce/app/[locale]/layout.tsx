@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Montserrat, Noto_Kufi_Arabic } from "next/font/google";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { loadBaseMessages } from "@/i18n/messages";
+import { pickMessages, ROOT_CLIENT_NAMESPACES } from "@/i18n/client-messages.lib";
 import { DirectionProvider } from "@workspace/ui/components/direction";
 import { ANIMATIONS_INIT_SCRIPT } from "@workspace/motion/init-script";
 import { notFound } from "next/navigation";
@@ -56,8 +57,9 @@ export default async function RootLayout({
     notFound();
   }
 
-  // Base strings only: tallaby.com adds its own, so store pages don't carry them.
-  const messages = await loadBaseMessages(locale);
+  // Only the cookie banner's strings: each route group sends its own
+  // (BaseMessagesProvider, or tallaby.com's pick), so no page carries all of them twice.
+  const messages = pickMessages(await loadBaseMessages(locale), ROOT_CLIENT_NAMESPACES);
   const direction = locale === "ar" ? "rtl" : "ltr";
 
   return (

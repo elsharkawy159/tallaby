@@ -2,8 +2,9 @@ import type { Metadata, Viewport } from "next";
 import { getTranslations } from "next-intl/server";
 import { AnimationObserver } from "@workspace/motion";
 import { MetaPixel } from "@/components/meta/meta-pixel";
-import { MarketingMessages } from "@/components/marketing/site/marketing-messages.client";
-import { loadMarketingMessages } from "@/i18n/messages";
+import { NextIntlClientProvider } from "next-intl";
+import { loadAllMessages } from "@/i18n/messages";
+import { MARKETING_CLIENT_NAMESPACES, pickMessages } from "@/i18n/client-messages.lib";
 import { SITE_URL } from "@/lib/marketing/site.lib";
 import "./marketing.css";
 
@@ -33,10 +34,11 @@ export default async function MarketingLayout({
 }) {
   const { locale } = await params;
   return (
-    <MarketingMessages messages={await loadMarketingMessages(locale)}>
+    // Only what client components read (i18n/client-messages.lib.ts), not all of ar.json and every marketing group.
+    <NextIntlClientProvider messages={pickMessages(await loadAllMessages(locale), MARKETING_CLIENT_NAMESPACES)}>
       {children}
       <AnimationObserver />
       <MetaPixel />
-    </MarketingMessages>
+    </NextIntlClientProvider>
   );
 }

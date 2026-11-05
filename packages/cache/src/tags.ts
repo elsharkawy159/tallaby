@@ -72,6 +72,8 @@ export const storeTags = {
   integrations: (sellerId: string, storeId: string) => `store:integrations:${sellerId}:${storeId}`,
   /** The store's published builder site (P5-01, P5-03). */
   site: (sellerId: string, storeId: string) => `store:site:${sellerId}:${storeId}`,
+  /** The store's active forms (fields and labels) its published pages embed. Never submissions. */
+  forms: (sellerId: string, storeId: string) => `store:forms:${sellerId}:${storeId}`,
   /** The store's cross-sell offers (F-32). */
   crossSells: (sellerId: string, storeId: string) => `store:cross-sells:${sellerId}:${storeId}`,
   /** The store's catalog mode and selected products (D24, P4-07). */

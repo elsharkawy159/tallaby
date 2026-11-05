@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { applyInvalidation, invalidateStoreForms } from "@workspace/cache";
 import { getTranslations } from "next-intl/server";
 import {
   createStoreForm,
@@ -39,6 +40,10 @@ function accessError(error: unknown): FormsErrorKey | null {
 
 const formsPath = (storeId: string) => `/stores/${storeId}/website/forms`;
 
+/** The storefront caches the store's active forms (fields, labels): refresh them after an edit. */
+const refreshPublicForms = (sellerId: string, storeId: string) =>
+  applyInvalidation(invalidateStoreForms(sellerId, storeId), { from: "dashboard", mode: "action" });
+
 export async function createForm(storeId: string, input: unknown): Promise<FormsActionResult<{ id: string }>> {
   try {
     const { seller, store } = await requireStore(String(storeId), { forWrite: true });
@@ -73,6 +78,7 @@ export async function saveForm(storeId: string, formId: string, input: unknown):
     const result = await updateStoreForm(seller.sellerId, store.id, String(formId), input as never);
     if (!result.success) return { success: false, error: ERRORS[result.error] ?? "generic" };
     revalidatePath(formsPath(store.id));
+    await refreshPublicForms(seller.sellerId, store.id);
     return { success: true, data: undefined };
   } catch (error) {
     const key = accessError(error);
@@ -88,6 +94,7 @@ export async function deleteForm(storeId: string, formId: string): Promise<Forms
     const result = await deleteStoreForm(seller.sellerId, store.id, String(formId));
     if (!result.success) return { success: false, error: ERRORS[result.error] ?? "generic" };
     revalidatePath(formsPath(store.id));
+    await refreshPublicForms(seller.sellerId, store.id);
     return { success: true, data: undefined };
   } catch (error) {
     const key = accessError(error);

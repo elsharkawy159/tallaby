@@ -280,6 +280,11 @@ export function invalidateStoreCms(sellerId: string, storeId: string): CacheInva
   return inv([storeTags.cms(sellerId, storeId)]);
 }
 
+/** A store form was edited, switched on or off, or deleted: that store's public forms only. */
+export function invalidateStoreForms(sellerId: string, storeId: string): CacheInvalidation {
+  return inv([storeTags.forms(sellerId, storeId)]);
+}
+
 /** A store connected, changed or removed a tracking app (P7-02/P7-03). Only that store. */
 export function invalidateStoreIntegrations(sellerId: string, storeId: string): CacheInvalidation {
   return inv([storeTags.integrations(sellerId, storeId)]);
