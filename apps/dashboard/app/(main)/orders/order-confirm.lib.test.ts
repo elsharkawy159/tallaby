@@ -25,7 +25,9 @@ describe("renderOrderConfirmMessage", () => {
     expect(text).toContain("#1042");
     expect(text).toContain("• باور بانك (أسود) × 1");
     expect(text).toContain("• وصلة شاحن × 2");
-    expect(text).toContain("355.50 ج.م");
+    expect(text).toContain("355.50 جنيه");
+    expect(text).toContain("مع حضرتك متجر سارة.");
+    expect(text).not.toContain("معاك");
     expect(text).toContain("12 شارع النصر، مدينة نصر, القاهرة");
     expect(text).toContain("متجر سارة");
     expect(text).not.toMatch(/\{\w+\}/);
@@ -79,7 +81,8 @@ it("writes the order's own currency in the message", () => {
   expect(render("en", "SAR")).toBe("SAR 355.50");
   expect(render("ar", "SAR")).toBe("355.50 ر.س");
   expect(render("en", "AED")).toBe("AED 355.50");
-  // An EGP order, or one with no currency, reads as it always did.
+  // An EGP order, or one with no currency, names the pound the way the dashboard does.
   expect(render("en", "EGP")).toBe("EGP 355.50");
-  expect(render("ar", null)).toBe("355.50 ج.م");
+  expect(render("ar", null)).toBe("355.50 جنيه");
+  expect(render("ar", "EGP")).toBe("355.50 جنيه");
 });

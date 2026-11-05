@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { ImageOff, LayoutGrid, ListChecks, Search } from "lucide-react";
 
 import { EmptyState, InputGroup, OptionCard, OptionCards, Rows, SectionCard, SellerButton, Tag } from "@/components/seller-ui";
+import { formatMoney } from "@/lib/i18n/format";
 import { cn } from "@/lib/utils";
 import { saveStoreCatalog } from "./catalog.server";
 import type { CatalogMode, CatalogProduct } from "./catalog.dto";
@@ -185,7 +186,7 @@ export function StoreCatalogSections({
                           <b className="block truncate text-sm font-bold text-(--s-text)">{title}</b>
                           {product.price != null && (
                             <small className="block font-montserrat text-xs text-(--s-subtle) tabular-nums">
-                              {new Intl.NumberFormat(locale === "ar" ? "ar-EG" : "en-EG", { style: "currency", currency: money.currency }).format(product.price)}
+                              {formatMoney(product.price, locale, money)}
                             </small>
                           )}
                         </span>

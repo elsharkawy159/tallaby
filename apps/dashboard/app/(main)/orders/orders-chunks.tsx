@@ -20,7 +20,7 @@ import {
 import { TableSection } from "@workspace/ui/components/table-section";
 import { Chip, EmptyState, PageHeader, SellerButton, SellerCard } from "@/components/seller-ui";
 import { cn, getPublicUrl } from "@/lib/utils";
-import { formatDateTime, formatNumber } from "@/lib/i18n/format";
+import { formatDateTime, formatNumber, moneyDir } from "@/lib/i18n/format";
 import { Money } from "@/components/money";
 import { useTableSectionLabels } from "@/lib/i18n/table-labels";
 import { BostaBulkBar } from "./bosta-bulk.client";
@@ -172,7 +172,7 @@ function OrdersTable({
         accessorFn: (row) => Number(row.totalAmount),
         cell: ({ row }) => (
           <div>
-            <div className="font-montserrat font-bold text-(--s-ink) tabular-nums" dir="ltr">
+            <div className="font-montserrat font-bold text-(--s-ink) tabular-nums" dir={moneyDir(locale, row.original)}>
               <Money value={row.original.totalAmount} locale={locale} unit={row.original} />
             </div>
             {row.original.paymentMethod && tPayment.has(row.original.paymentMethod) && (

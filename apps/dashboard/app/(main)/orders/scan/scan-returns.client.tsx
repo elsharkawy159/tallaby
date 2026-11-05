@@ -6,7 +6,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Camera, CameraOff, ExternalLink, LoaderCircle, PackageX, ScanLine, Search } from "lucide-react";
 import { ConfirmActionDialog } from "@/components/layout/confirm-action-dialog.client";
-import { formatDateTime } from "@/lib/i18n/format";
+import { formatDateTime, moneyDir } from "@/lib/i18n/format";
 import { Money } from "@/components/money";
 import { Note, SellerButton, SellerCard, TextInput } from "@/components/seller-ui";
 import { cn } from "@/lib/utils";
@@ -272,7 +272,7 @@ export function ScanReturnsView() {
               )}
               <div className="flex justify-between gap-3">
                 <dt className="text-(--s-subtle)">{t("total")}</dt>
-                <dd className="font-montserrat font-bold text-(--s-ink) tabular-nums" dir="ltr">
+                <dd className="font-montserrat font-bold text-(--s-ink) tabular-nums" dir={moneyDir(locale, order)}>
                   <Money value={order.total} locale={locale} unit={order} />
                 </dd>
               </div>

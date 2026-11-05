@@ -6,7 +6,6 @@
  * store's language is used. Pure, safe on the client.
  */
 
-import { DEFAULT_CURRENCY } from "@workspace/lib";
 import { moneyUnitText } from "@/lib/i18n/format";
 
 export const ORDER_CONFIRM_PLACEHOLDERS = ["name", "number", "items", "total", "address", "store"] as const;
@@ -15,7 +14,7 @@ export const ORDER_CONFIRM_TEMPLATE_MAX = 1000;
 export const UNCONFIRMED_AFTER_HOURS = 24;
 
 export const ORDER_CONFIRM_DEFAULTS = {
-  ar: "أهلًا {name} 👋\nمعاك {store}. وصلنا طلبك رقم #{number}:\n{items}\nالإجمالي: {total}\nالعنوان: {address}\n\nممكن تأكد الطلب بالرد بكلمة \"تأكيد\"؟ شكرًا لك 🙏",
+  ar: "أهلًا {name} 👋\nمع حضرتك {store}. وصلنا طلبك رقم #{number}:\n{items}\nالإجمالي: {total}\nالعنوان: {address}\n\nبرجاء تأكيد الطلب بالرد بكلمة \"تأكيد\". شكرًا لك 🙏",
   en: "Hi {name} 👋\nThis is {store}. We received your order #{number}:\n{items}\nTotal: {total}\nAddress: {address}\n\nCould you confirm the order by replying \"Confirm\"? Thank you 🙏",
 } as const;
 
@@ -35,7 +34,7 @@ export interface OrderConfirmSource {
 function money(amount: string, locale: OrderConfirmLocale, currency?: string | null): string {
   const value = Number(amount);
   const fixed = Number.isFinite(value) ? value.toFixed(2) : amount;
-  const unit = !currency || currency === DEFAULT_CURRENCY ? (locale === "ar" ? "ج.م" : DEFAULT_CURRENCY) : moneyUnitText(locale, { currency });
+  const unit = moneyUnitText(locale, { currency });
   return locale === "ar" ? `${fixed} ${unit}` : `${unit} ${fixed}`;
 }
 

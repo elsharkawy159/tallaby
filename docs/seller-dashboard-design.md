@@ -66,7 +66,7 @@ All from `@/components/seller-ui`.
 | `PageTabs` | `<PageTabs tabs={[{ key, label, icon, href }]} />` for links, or `value` + `onChange` for buttons. Sticky under the top bar; scrolls sideways on phones. |
 | `Field` | `<Field label="…" hint="…" note="…" error="…" htmlFor="x"><TextInput id="x" /></Field>` |
 | `TextInput`, `TextArea`, `NativeSelect` | Plain elements with the design's look; `ref` works with react-hook-form. |
-| `InputGroup` | `<InputGroup start="https://" end="ج.م" value=… />` for a fixed part. |
+| `InputGroup` | `<InputGroup start="https://" end="جنيه" value=… />` for a fixed part. |
 | `fieldClass` | The same look for anything else: `<SelectTrigger className={fieldClass} />`. |
 | `FieldRow` | Two fields, one column at ≤720px. |
 | `Toggle` | `<Toggle checked={on} onCheckedChange={setOn} label="…" />` or `name` + `defaultChecked` in a plain form. |

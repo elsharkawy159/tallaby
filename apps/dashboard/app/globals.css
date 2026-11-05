@@ -520,6 +520,19 @@
   }
 }
 
+/* The dialog's X keeps its small icon and gets a 40px hit area on phones. Only the built-in, absolutely placed one. */
+@media (max-width: 600px) {
+  :root:has(.seller-shell) [data-slot="dialog-content"] > [data-slot="dialog-close"].absolute::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 40px;
+    height: 40px;
+    translate: -50% -50%;
+  }
+}
+
 /* Anchored panels (notifications, store switcher) become bottom sheets at the design's 600px. */
 @media (max-width: 600px) {
   [data-radix-popper-content-wrapper]:has(> [data-sui-sheet]) {

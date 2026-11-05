@@ -129,7 +129,8 @@ export function Toggle({
   onCheckedChange?: (checked: boolean) => void;
 }) {
   return (
-    <label className={cn("relative inline-flex cursor-pointer items-center gap-2.5 text-[13px] text-(--s-muted)", className)}>
+    // The ::before is the 40px phone touch target: it takes clicks without moving the layout.
+    <label className={cn("relative inline-flex cursor-pointer items-center gap-2.5 text-[13px] text-(--s-muted) max-[600px]:before:absolute max-[600px]:before:inset-x-0 max-[600px]:before:top-1/2 max-[600px]:before:h-10 max-[600px]:before:-translate-y-1/2", className)}>
       <input
         type="checkbox"
         role="switch"

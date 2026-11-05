@@ -4,7 +4,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { BadgePercent } from "lucide-react";
 import { Chip, Chips, EmptyState, ResponsiveTable, SellerCard } from "@/components/seller-ui";
-import { formatNumber, type MoneyUnit } from "@/lib/i18n/format";
+import { formatNumber, moneyDir, type MoneyUnit } from "@/lib/i18n/format";
 import { Money } from "@/components/money";
 import { ListPager } from "../list-pager.client";
 import { MiniStats } from "../orders-ui";
@@ -89,7 +89,7 @@ export function CrossSellReportView({
                   key: "discount",
                   header: t("discount"),
                   cell: (row) => (
-                    <b className="font-montserrat font-semibold tabular-nums" dir="ltr">
+                    <b className="font-montserrat font-semibold tabular-nums" dir={moneyDir(locale, money)}>
                       <Money value={row.discount} locale={locale} unit={money} />
                     </b>
                   ),

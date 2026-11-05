@@ -60,7 +60,7 @@ export function SaveBar({
             type="button"
             onClick={onDiscard}
             disabled={saving}
-            className="h-[38px] cursor-pointer rounded-full px-3.5 text-[13px] font-semibold text-[#c6d8dc] transition-colors duration-150 hover:bg-white/10 hover:text-white disabled:opacity-50"
+            className="h-[38px] cursor-pointer rounded-full px-3.5 max-[600px]:h-10 text-[13px] font-semibold text-[#c6d8dc] transition-colors duration-150 hover:bg-white/10 hover:text-white disabled:opacity-50"
           >
             {discardLabel ?? t("discard")}
           </button>
@@ -69,7 +69,7 @@ export function SaveBar({
           type={onSave ? "button" : "submit"}
           onClick={onSave}
           disabled={saving || saveDisabled}
-          className="h-[38px]"
+          className="h-[38px] max-[600px]:h-10"
         >
           {saving && <LoaderCircle className="animate-spin" aria-hidden />}
           {saveLabel ?? t("save")}

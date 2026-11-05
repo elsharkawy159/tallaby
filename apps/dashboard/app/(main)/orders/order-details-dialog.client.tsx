@@ -9,7 +9,7 @@ import { buildTelUrl, buildWhatsAppUrl } from "@workspace/ui/lib/contact";
 import { MapsLinkButton } from "@workspace/ui/components/maps-link-button";
 import { Note, SellerButton } from "@/components/seller-ui";
 import { getPublicUrl, cn } from "@/lib/utils";
-import { formatDateTime, formatMoney } from "@/lib/i18n/format";
+import { formatDateTime, formatMoney, moneyDir } from "@/lib/i18n/format";
 import { Money } from "@/components/money";
 import { humanizeStatus, translateStatus } from "@/lib/i18n/status";
 import { BlockCustomerButton } from "./block-customer.client";
@@ -262,7 +262,7 @@ export function OrderDetailsDialog({
                               {line.sku && <span> ({t("sku", { sku: line.sku })})</span>}
                             </div>
                           </div>
-                          <div className="shrink-0 text-end font-montserrat text-[13px] font-bold text-(--s-ink) tabular-nums" dir="ltr">
+                          <div className="shrink-0 text-end font-montserrat text-[13px] font-bold text-(--s-ink) tabular-nums" dir={moneyDir(locale, unit)}>
                             <Money value={line.total} locale={locale} unit={unit} />
                           </div>
                         </li>
@@ -290,7 +290,7 @@ export function OrderDetailsDialog({
                       <OrderPaymentProof orderId={order.id} />
                       <div className="flex flex-wrap items-baseline justify-between gap-x-4 border-t border-(--s-line-soft) pt-2">
                         <span className="text-[13px] font-bold text-(--s-text)">{t("orderTotal")}</span>
-                        <span className="break-words font-montserrat text-lg font-bold text-(--s-ink) tabular-nums" dir="ltr">
+                        <span className="break-words font-montserrat text-lg font-bold text-(--s-ink) tabular-nums" dir={moneyDir(locale, unit)}>
                           <Money value={order.totalAmount} locale={locale} unit={unit} />
                         </span>
                       </div>

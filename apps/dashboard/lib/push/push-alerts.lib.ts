@@ -157,6 +157,20 @@ export function planPushDeliveries(
   return deliveries;
 }
 
+/** Bell and push rows that name an order: a seller who isn't activated doesn't get them (ROADMAP.md F-68). */
+export const ORDER_LOCKED_TYPES = ["order_created", "carrier_shipment_failed", "carrier_needs_attention"] as const;
+const ORDER_LOCKED: ReadonlySet<string> = new Set(ORDER_LOCKED_TYPES);
+
+/** Sellers whose activation decides whether one of these rows is pushed. */
+export function sellersWithOrderRows(rows: Pick<PushCandidate, "sellerId" | "type">[]): string[] {
+  return [...new Set(rows.filter((row) => ORDER_LOCKED.has(row.type)).map((row) => row.sellerId))];
+}
+
+/** Claimed rows minus the order rows of sellers who aren't activated. Those rows stay claimed, so they never go out later. */
+export function withoutLockedOrderRows<T extends Pick<PushCandidate, "sellerId" | "type">>(rows: T[], lockedSellers: ReadonlySet<string>): T[] {
+  return rows.filter((row) => !(ORDER_LOCKED.has(row.type) && lockedSellers.has(row.sellerId)));
+}
+
 /** Translator for one namespace of one locale. */
 export type PushTranslate = (key: string, values?: Record<string, string | number>) => string;
 

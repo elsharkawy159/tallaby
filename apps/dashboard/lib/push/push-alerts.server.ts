@@ -14,6 +14,7 @@ import {
   sellerPushSubscriptions,
   sql,
 } from "@workspace/db";
+import { getOrderLock } from "@workspace/lib/billing/order-lock";
 import { sellerNotificationValues } from "@workspace/lib/notifications";
 import { sendWebPushes, type WebPushJob } from "@workspace/lib/push/server";
 import arMessages from "@/messages/ar.json";
@@ -30,6 +31,8 @@ import {
   pushLocale,
   PUSH_CLAIM_LIMIT,
   PUSH_WINDOW_MINUTES,
+  sellersWithOrderRows,
+  withoutLockedOrderRows,
   type PushCandidate,
   type PushDevice,
   type PushLocale,
@@ -159,6 +162,13 @@ async function loadPrefs(sellerIds: string[]): Promise<Map<string, PushPrefs>> {
   return map;
 }
 
+/** Sellers among these rows who aren't activated yet (ROADMAP.md F-68). */
+async function loadLockedSellers(rows: PushCandidate[]): Promise<Set<string>> {
+  const ids = sellersWithOrderRows(rows);
+  const locks = await Promise.all(ids.map((id) => getOrderLock(id)));
+  return new Set(ids.filter((_, index) => locks[index]!.locked));
+}
+
 /** Store order totals by order id (the caller checks the order is the notified store's). */
 async function loadOrderAmounts(rows: PushCandidate[]): Promise<Map<string, { storeId: string | null; currency: string | null; total: string }>> {
   const ids = orderIdsNeedingAmount(rows);
@@ -276,13 +286,16 @@ export async function dispatchSellerPushes(limit: number = PUSH_CLAIM_LIMIT): Pr
   const empty = { expired: 0, claimed: 0, deliveries: 0, sent: 0, failed: 0, removed: 0 };
   if (!config) return { enabled: false, ...empty };
 
-  const { expired, rows } = await claimPendingRows(limit);
-  if (rows.length === 0) return { enabled: true, ...empty, expired };
+  const { expired, rows: claimed } = await claimPendingRows(limit);
+  if (claimed.length === 0) return { enabled: true, ...empty, expired };
 
+  // Filtered after the claim: pushed_at is already set, so a locked seller's order
+  // alert is neither retried nor sent in a burst once they activate.
+  const rows = withoutLockedOrderRows(claimed, await loadLockedSellers(claimed));
   const sellerIds = [...new Set(rows.map((row) => row.sellerId))];
   const [devices, prefs] = await Promise.all([loadDevices(sellerIds), loadPrefs(sellerIds)]);
   const deliveries = planPushDeliveries(rows, prefs, devices, new Date());
-  if (deliveries.length === 0) return { enabled: true, ...empty, expired, claimed: rows.length };
+  if (deliveries.length === 0) return { enabled: true, ...empty, expired, claimed: claimed.length };
 
   const amounts = await loadOrderAmounts(deliveries.map((d) => d.row));
   const jobs = deliveries.map(({ row, category, device }) => {
@@ -304,7 +317,7 @@ export async function dispatchSellerPushes(limit: number = PUSH_CLAIM_LIMIT): Pr
   });
 
   const result = await sendAll(config, jobs);
-  return { enabled: true, expired, claimed: rows.length, deliveries: jobs.length, ...result };
+  return { enabled: true, expired, claimed: claimed.length, deliveries: jobs.length, ...result };
 }
 
 /** A test alert to the seller's own devices (settings "Send a test alert"). */

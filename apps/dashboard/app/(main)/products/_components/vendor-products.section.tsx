@@ -567,7 +567,7 @@ export function VendorProductsSection({
         <div
           data-save-bar
           data-open
-          className="fixed bottom-5 left-1/2 z-[60] flex max-w-[calc(100vw-20px)] -translate-x-1/2 items-center gap-1 overflow-x-auto whitespace-nowrap rounded-full bg-(--tallaby-teal-900) p-2 text-white shadow-(--s-shadow-bar) [scrollbar-width:none] max-[720px]:inset-x-2.5 max-[720px]:max-w-none max-[720px]:translate-x-0"
+          className="fixed bottom-5 left-1/2 z-40 flex max-w-[calc(100vw-20px)] -translate-x-1/2 items-center gap-1 overflow-x-auto whitespace-nowrap rounded-full bg-(--tallaby-teal-900) p-2 text-white shadow-(--s-shadow-bar) [scrollbar-width:none] max-[720px]:inset-x-2.5 max-[720px]:max-w-none max-[720px]:translate-x-0"
         >
           <span className="px-3 text-[13.5px] font-bold">{t("selected", { count: selected.size })}</span>
           {selected.size < total && (

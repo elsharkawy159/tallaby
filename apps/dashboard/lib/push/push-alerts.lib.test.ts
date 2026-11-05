@@ -13,10 +13,13 @@ import {
   normalizePushPrefs,
   orderIdsNeedingAmount,
   parseVapidConfig,
+  ORDER_LOCKED_TYPES,
   planPushDeliveries,
   pushCategoryOf,
   PUSHED_NOTIFICATION_TYPES,
   safePushPath,
+  sellersWithOrderRows,
+  withoutLockedOrderRows,
   type PushCandidate,
   type PushDevice,
 } from "./push-alerts.lib";
@@ -38,6 +41,26 @@ function row(over: Partial<PushCandidate> = {}): PushCandidate {
     ...over,
   };
 }
+
+describe("order alerts before activation", () => {
+  const locked = new Set([SELLER_A]);
+
+  it("drops every order type for a locked seller and nothing else", () => {
+    const rows = [...ORDER_LOCKED_TYPES, "low_stock", "top_up_approved", "admin_message"].map((type) => row({ type }));
+    expect(withoutLockedOrderRows(rows, locked).map((r) => r.type)).toEqual(["low_stock", "top_up_approved", "admin_message"]);
+  });
+
+  it("keeps the same order rows for an activated seller", () => {
+    const rows = ORDER_LOCKED_TYPES.map((type) => row({ type, sellerId: SELLER_B }));
+    expect(withoutLockedOrderRows(rows, locked)).toEqual(rows);
+    expect(withoutLockedOrderRows(rows, new Set())).toEqual(rows);
+  });
+
+  it("only checks sellers who have an order row, once each", () => {
+    const rows = [row(), row({ type: "carrier_needs_attention" }), row({ sellerId: SELLER_B, type: "low_stock" })];
+    expect(sellersWithOrderRows(rows)).toEqual([SELLER_A]);
+  });
+});
 
 function device(sellerId: string, id = `dev-${sellerId.slice(0, 4)}`): PushDevice {
   return { id, sellerId, endpoint: "https://fcm.googleapis.com/fcm/send/abc", p256dh: "k", auth: "a", locale: "ar" };

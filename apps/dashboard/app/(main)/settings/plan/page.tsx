@@ -9,8 +9,8 @@ import { FEE_TRIAL_DAYS, STANDARD_FEE_MIN_PIASTRES } from "@workspace/lib/orders
 import { getPlanLimits, resolvePlanId, type PlanFeatures } from "@workspace/lib/plans";
 import { getFeeTrialStatus, type FeeTrialStatus } from "@workspace/lib/sellers";
 import { PageContainer, PageHeader, Row, Rows, SectionCard, SellerButton, Tag } from "@/components/seller-ui";
-import { formatDate, formatMoney } from "@/lib/i18n/format";
-import { requireSeller } from "@/lib/auth/require-seller.server";
+import { formatDate, formatMoney, moneyDir } from "@/lib/i18n/format";
+import { loadOrderLock, requireSeller } from "@/lib/auth/require-seller.server";
 import { getSellerStores } from "@/lib/stores/current-store.server";
 import { getStoreWalletBalance } from "../../wallet/store-wallet.server";
 import { PlanLive } from "./plan-live.client";
@@ -106,7 +106,7 @@ export default async function PlanPage() {
           <Row
             title={<span className="font-semibold">{t("feeLine")}</span>}
             end={
-              <bdi dir="ltr" className="font-montserrat text-sm font-bold text-(--s-ink) tabular-nums">
+              <bdi dir={moneyDir(locale)} className="font-montserrat text-sm font-bold text-(--s-ink) tabular-nums">
                 {formatMoney(STANDARD_FEE_MIN_PIASTRES / 100, locale)}
               </bdi>
             }
@@ -132,7 +132,9 @@ export default async function PlanPage() {
 async function LivePlanPage() {
   const seller = await requireSeller();
   const since = new Date(Date.now() - 30 * 86_400_000).toISOString();
-  const [[row], credits, wallet, [orderCount]] = await Promise.all([
+  // A seller who isn't activated doesn't see order numbers (ROADMAP.md F-68), so this one isn't even read.
+  const { locked } = await loadOrderLock(seller.sellerId);
+  const [[row], credits, wallet, orderCount] = await Promise.all([
     db
       .select({
         plan: sellers.plan,
@@ -145,10 +147,13 @@ async function LivePlanPage() {
       .where(eq(sellers.id, seller.sellerId)),
     getAiCreditStatus(seller.sellerId),
     getStoreWalletBalance(seller.sellerId),
-    db
-      .select({ count: sql<number>`count(DISTINCT ${orderItems.orderId})::int` })
-      .from(orderItems)
-      .where(and(eq(orderItems.sellerId, seller.sellerId), gte(orderItems.createdAt, since))),
+    locked
+      ? null
+      : db
+          .select({ count: sql<number>`count(DISTINCT ${orderItems.orderId})::int` })
+          .from(orderItems)
+          .where(and(eq(orderItems.sellerId, seller.sellerId), gte(orderItems.createdAt, since)))
+          .then(([result]) => result?.count ?? 0),
   ]);
   return (
     <PlanLive
@@ -159,7 +164,7 @@ async function LivePlanPage() {
       adminGranted={row?.planAdminGranted ?? false}
       credits={credits}
       walletBalance={wallet?.balance ?? 0}
-      ordersLast30Days={orderCount?.count ?? 0}
+      ordersLast30Days={orderCount}
     />
   );
 }

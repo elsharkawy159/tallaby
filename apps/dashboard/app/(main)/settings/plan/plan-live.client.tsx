@@ -29,7 +29,8 @@ export type PlanLiveProps = {
   adminGranted: boolean;
   credits: AiCreditStatus;
   walletBalance: number;
-  ordersLast30Days: number;
+  /** Null for a seller who isn't activated: no order numbers yet (ROADMAP.md F-68). */
+  ordersLast30Days: number | null;
 };
 
 const usd = (cents: number) => formatWalletMoney(cents / 100, "USD", "en");
@@ -47,7 +48,7 @@ export function PlanLive(props: PlanLiveProps) {
   const [confirm, setConfirm] = useState<"upgrade" | "cancel" | null>(null);
   const [packs, setPacks] = useState(1);
 
-  const freeCost = ordersLast30Days * FREE_ORDER_FEE_USD_CENTS;
+  const freeCost = (ordersLast30Days ?? 0) * FREE_ORDER_FEE_USD_CENTS;
   const proSaves = freeCost > PRO_MONTHLY_USD_CENTS;
   const canAffordPro = walletBalance * 100 >= PRO_MONTHLY_USD_CENTS;
   const packCost = packs * CREDIT_PACK_USD_CENTS;
@@ -63,6 +64,16 @@ export function PlanLive(props: PlanLiveProps) {
       if (result.success) toast.success(done);
       else toast.error(t(`errors.${result.error}`));
     });
+
+  const planLine = (
+    <>
+      {isPro ? t("yourPlanPro") : t("yourPlanFree")}
+      {isPro && periodEnd && !adminGranted && (
+        <> {cancelAtPeriodEnd ? t("endsOn", { date: formatDate(periodEnd, locale) }) : t("renewsOn", { date: formatDate(periodEnd, locale) })}</>
+      )}
+      {isPro && adminGranted && <> {periodEnd ? t("grantedUntil", { date: formatDate(periodEnd, locale) }) : t("granted")}</>}
+    </>
+  );
 
   return (
     <PageContainer narrow>
@@ -82,23 +93,23 @@ export function PlanLive(props: PlanLiveProps) {
       {/* The seller's own numbers come first; they decide which plan makes sense. */}
       <section className="sui-rise relative overflow-hidden rounded-[28px] bg-(--s-setup) px-7 py-[26px] text-white before:pointer-events-none before:absolute before:inset-x-[40%_-10%] before:-top-[70%] before:h-[170%] before:bg-[radial-gradient(50%_50%_at_50%_40%,rgb(253_173_40/0.2),transparent_70%)] max-[720px]:rounded-[24px] max-[720px]:px-[18px] max-[720px]:py-[22px]">
         <div className="relative">
-          <p className="text-[13px] text-white/70">
-            {isPro ? t("yourPlanPro") : t("yourPlanFree")}
-            {isPro && periodEnd && !adminGranted && (
-              <> {cancelAtPeriodEnd ? t("endsOn", { date: formatDate(periodEnd, locale) }) : t("renewsOn", { date: formatDate(periodEnd, locale) })}</>
-            )}
-            {isPro && adminGranted && <> {periodEnd ? t("grantedUntil", { date: formatDate(periodEnd, locale) }) : t("granted")}</>}
-          </p>
-          <h2 className="mt-1.5 text-balance text-[clamp(20px,2.4vw,26px)] font-bold leading-snug text-white">
-            {t("ordersHeadline", { count: ordersLast30Days })}
-          </h2>
-          <p className="mt-1.5 max-w-prose text-pretty text-sm text-white/75">
-            {isPro
-              ? t("proSummary", { fees: usd(freeCost) })
-              : proSaves
-                ? t("freeButProSaves", { fees: usd(freeCost), saves: usd(freeCost - PRO_MONTHLY_USD_CENTS) })
-                : t("freeIsRight", { fees: usd(freeCost) })}
-          </p>
+          {ordersLast30Days === null ? (
+            <h2 className="text-balance text-[clamp(20px,2.4vw,26px)] font-bold leading-snug text-white">{planLine}</h2>
+          ) : (
+            <>
+              <p className="text-[13px] text-white/70">{planLine}</p>
+              <h2 className="mt-1.5 text-balance text-[clamp(20px,2.4vw,26px)] font-bold leading-snug text-white">
+                {t("ordersHeadline", { count: ordersLast30Days })}
+              </h2>
+              <p className="mt-1.5 max-w-prose text-pretty text-sm text-white/75">
+                {isPro
+                  ? t("proSummary", { fees: usd(freeCost) })
+                  : proSaves
+                    ? t("freeButProSaves", { fees: usd(freeCost), saves: usd(freeCost - PRO_MONTHLY_USD_CENTS) })
+                    : t("freeIsRight", { fees: usd(freeCost) })}
+              </p>
+            </>
+          )}
         </div>
       </section>
 

@@ -7,7 +7,7 @@ import { Checkbox } from "@workspace/ui/components/checkbox";
 import { buildTelUrl, buildWhatsAppUrl } from "@workspace/ui/lib/contact";
 import { SellerButton } from "@/components/seller-ui";
 import { cn, getPublicUrl } from "@/lib/utils";
-import { formatDateTime } from "@/lib/i18n/format";
+import { formatDateTime, moneyDir } from "@/lib/i18n/format";
 import { Money } from "@/components/money";
 import { BostaChip, canShipWithBosta, ShipWithBostaButton } from "./bosta-ship.client";
 import { OrderActions } from "./order-actions.client";
@@ -156,7 +156,7 @@ export function OrderCard({
         )}
 
         <div className="mt-auto pt-1">
-          <p className="break-words font-montserrat text-[17px] font-extrabold text-(--s-ink) tabular-nums" dir="ltr">
+          <p className="break-words font-montserrat text-[17px] font-extrabold text-(--s-ink) tabular-nums" dir={moneyDir(locale, order)}>
             <bdi>
               <Money value={order.totalAmount} locale={locale} unit={order} />
             </bdi>
