@@ -21,8 +21,6 @@ import {
 } from "lucide-react";
 
 import { storeHostname, storeUrl, subdomainFromName } from "@workspace/lib/storefront";
-import { Badge } from "@workspace/ui/components/badge";
-import { Button } from "@workspace/ui/components/button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -49,30 +47,16 @@ import {
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu";
 import { Form } from "@workspace/ui/components/form";
-import { Progress } from "@workspace/ui/components/progress";
 import { TextInput } from "@workspace/ui/components/inputs/text-input";
 
 import { SubdomainField } from "@/components/stores/subdomain-field.client";
 import { StoreSiteStatusNote } from "@/components/stores/store-site-status-note";
 import { StoreLogo } from "@/components/stores/store-logo.client";
 import { selectStore } from "@/components/dashboard/store-switcher.server";
+import { IconButton, Note, PageHeader, SellerButton, SellerCard, Tag } from "@/components/seller-ui";
 import { cn } from "@/lib/utils";
 import { archiveStoreAction, checkNewStoreSubdomain, createStoreAction, restoreStoreAction } from "./stores.server";
 import type { StoreCardData, StoreErrorKey } from "./stores.dto";
-
-const GRADIENTS = [
-  "from-emerald-500/20 to-teal-500/20",
-  "from-sky-500/20 to-cyan-500/20",
-  "from-amber-500/20 to-orange-500/20",
-  "from-rose-500/20 to-pink-500/20",
-  "from-violet-500/20 to-indigo-500/20",
-];
-
-function gradientFor(seed: string) {
-  let hash = 0;
-  for (let i = 0; i < seed.length; i++) hash = (hash * 31 + seed.charCodeAt(i)) | 0;
-  return GRADIENTS[Math.abs(hash) % GRADIENTS.length]!;
-}
 
 export function StoresView({
   stores,
@@ -94,43 +78,57 @@ export function StoresView({
   const atLimit = stores.length >= maxStores;
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div className="space-y-2">
-          <p className="text-muted-foreground">{t("description")}</p>
-          <div className="flex max-w-xs items-center gap-3">
-            <Progress value={(stores.length / Math.max(maxStores, 1)) * 100} className="h-1.5" />
-            <span className="shrink-0 text-xs text-muted-foreground">
-              {t("usage", { count: stores.length, max: maxStores })}
-            </span>
-          </div>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {aiBuilder && (
-            <Button variant="outline" asChild>
-              <Link href="/ai-builder">
-                <Sparkles className="size-4" />
-                {tBuilder("entry")}
-              </Link>
-            </Button>
-          )}
-          <Button onClick={() => setCreateOpen(true)} disabled={atLimit} title={atLimit ? t("limitHint") : undefined}>
-            <Plus className="size-4" />
-            {t("create")}
-          </Button>
-        </div>
-      </div>
+    <>
+      <PageHeader
+        title={t("title")}
+        description={
+          <>
+            {t("description")}
+            <div className="mt-2 flex max-w-xs items-center gap-3">
+              <div
+                className="h-1.5 flex-1 overflow-hidden rounded-full bg-(--s-fill)"
+                role="progressbar"
+                aria-valuemin={0}
+                aria-valuemax={maxStores}
+                aria-valuenow={stores.length}
+              >
+                <div
+                  className="h-full rounded-full bg-(--s-primary)"
+                  style={{ width: `${Math.min(100, (stores.length / Math.max(maxStores, 1)) * 100)}%` }}
+                />
+              </div>
+              <span className="shrink-0 text-xs text-(--s-subtle)">{t("usage", { count: stores.length, max: maxStores })}</span>
+            </div>
+          </>
+        }
+        actions={
+          <>
+            {aiBuilder && (
+              <SellerButton variant="outline" asChild>
+                <Link href="/ai-builder">
+                  <Sparkles aria-hidden />
+                  {tBuilder("entry")}
+                </Link>
+              </SellerButton>
+            )}
+            <SellerButton onClick={() => setCreateOpen(true)} disabled={atLimit} title={atLimit ? t("limitHint") : undefined}>
+              <Plus aria-hidden />
+              {t("create")}
+            </SellerButton>
+          </>
+        }
+      />
 
-      {atLimit && <p className="rounded-lg border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">{t("limitHint")}</p>}
+      {atLimit && <Note tone="amber">{t("limitHint")}</Note>}
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,300px),1fr))] gap-3.5">
         {stores.map((store) => (
           <StoreCard key={store.id} store={store} isSelected={store.id === selectedId} />
         ))}
       </div>
 
       <CreateStoreDialog open={createOpen} onOpenChange={setCreateOpen} />
-    </div>
+    </>
   );
 }
 
@@ -185,48 +183,26 @@ function StoreCard({ store, isSelected }: { store: StoreCardData; isSelected: bo
     });
 
   return (
-    <div
+    <SellerCard
       className={cn(
-        "group overflow-hidden rounded-2xl border bg-card shadow-sm transition-shadow hover:shadow-md",
-        isSelected && "ring-2 ring-primary/40",
+        "flex flex-col gap-3 p-5 transition-shadow duration-200 hover:shadow-(--s-shadow-hover) max-[600px]:p-4",
+        isSelected && "border-(--s-primary) shadow-[0_0_0_3px_var(--s-focus-soft)]",
         archived && "opacity-70",
       )}
     >
-      <div className={cn("relative flex h-32 items-center justify-center bg-gradient-to-br", gradientFor(store.subdomain))}>
-        <StoreLogo name={store.name} logoUrl={store.logoUrl} className="size-14 rounded-2xl border-background shadow-sm" />
-        <div className="absolute start-3 top-3 flex gap-1.5">
-          {store.isPrimary && <Badge variant="secondary">{tNav("primaryStore")}</Badge>}
-          {archived && <Badge variant="outline">{tNav("archived")}</Badge>}
-          {store.status === "suspended" && <Badge variant="destructive">{t("suspended")}</Badge>}
-        </div>
-        {!archived && (
-          <a
-            href={url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="absolute end-3 top-3 flex size-9 items-center justify-center rounded-lg bg-background/80 shadow-sm transition-opacity focus-visible:opacity-100 group-hover:opacity-100 sm:opacity-0"
-            aria-label={tNav("viewStore")}
-          >
-            <ExternalLink className="size-4" />
-          </a>
-        )}
-      </div>
-      <div className="flex items-start justify-between gap-2 p-4">
-        <div className="min-w-0 space-y-1">
-          <h3 className="truncate font-semibold leading-tight">{store.name}</h3>
-          <p dir="ltr" className="truncate text-start text-sm text-muted-foreground rtl:text-end">
+      <div className="flex items-start gap-3">
+        <StoreLogo name={store.name} logoUrl={store.logoUrl} className="size-12 shrink-0 rounded-2xl border-(--s-line)" />
+        <div className="min-w-0 flex-1">
+          <h2 className="truncate text-[15.5px] font-bold leading-snug text-(--s-ink)">{store.name}</h2>
+          <bdi dir="ltr" className="block truncate font-montserrat text-[12.5px] text-(--s-subtle)">
             {host}
-          </p>
-          {!archived && <StoreSiteStatusNote siteStatus={store.siteStatus} />}
-          <p className="text-xs text-muted-foreground">
-            {t("createdOn", { date: format.dateTime(new Date(store.createdAt), { dateStyle: "medium" }) })}
-          </p>
+          </bdi>
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="size-8 shrink-0" disabled={isPending} aria-label={t("actions")}>
-              {isPending ? <Loader2 className="size-4 animate-spin" /> : <MoreHorizontal className="size-4" />}
-            </Button>
+            <IconButton disabled={isPending} aria-label={t("actions")}>
+              {isPending ? <Loader2 className="animate-spin" aria-hidden /> : <MoreHorizontal aria-hidden />}
+            </IconButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             {!archived && (
@@ -266,11 +242,32 @@ function StoreCard({ store, isSelected }: { store: StoreCardData; isSelected: bo
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      {(store.isPrimary || archived || store.status === "suspended") && (
+        <div className="flex flex-wrap gap-1.5">
+          {store.isPrimary && <Tag tone="info">{tNav("primaryStore")}</Tag>}
+          {archived && <Tag>{tNav("archived")}</Tag>}
+          {store.status === "suspended" && <Tag tone="danger">{t("suspended")}</Tag>}
+        </div>
+      )}
+
+      <div className="flex min-w-0 flex-col gap-1">
+        {!archived && <StoreSiteStatusNote siteStatus={store.siteStatus} />}
+        <p className="text-xs text-(--s-subtle)">
+          {t("createdOn", { date: format.dateTime(new Date(store.createdAt), { dateStyle: "medium" }) })}
+        </p>
+      </div>
+
       {!archived && (
-        <div className="px-4 pb-4">
-          <Button type="button" variant="outline" className="w-full" disabled={isPending} onClick={manage}>
+        <div className="mt-auto flex items-center gap-2">
+          <SellerButton type="button" variant="outline" className="flex-1" disabled={isPending} onClick={manage}>
             {t("manage")}
-          </Button>
+          </SellerButton>
+          <IconButton asChild aria-label={tNav("viewStore")} className="size-[42px] border-[1.5px] border-(--s-outline)">
+            <a href={url} target="_blank" rel="noopener noreferrer">
+              <ExternalLink aria-hidden />
+            </a>
+          </IconButton>
         </div>
       )}
 
@@ -288,7 +285,7 @@ function StoreCard({ store, isSelected }: { store: StoreCardData; isSelected: bo
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </SellerCard>
   );
 }
 
@@ -357,13 +354,13 @@ function CreateStoreDialog({ open, onOpenChange }: { open: boolean; onOpenChange
               disabled={isPending}
             />
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
+              <SellerButton type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
                 {t("cancel")}
-              </Button>
-              <Button type="submit" disabled={isPending}>
-                {isPending && <Loader2 className="size-4 animate-spin" />}
+              </SellerButton>
+              <SellerButton type="submit" disabled={isPending}>
+                {isPending && <Loader2 className="animate-spin" aria-hidden />}
                 {t("create")}
-              </Button>
+              </SellerButton>
             </DialogFooter>
           </form>
         </Form>

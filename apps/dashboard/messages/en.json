@@ -3170,6 +3170,19 @@
   },
   "reviews": {
     "title": "Reviews",
+    "description": "Follow what customers say about your products and store, and answer their questions.",
+    "search": "Search reviews",
+    "sortLabel": "Sort reviews",
+    "sort": {
+      "newest": "Newest first",
+      "oldest": "Oldest first",
+      "lowest": "Lowest rating",
+      "highest": "Highest rating"
+    },
+    "empty": "No reviews yet.",
+    "noMatch": "No reviews match your search.",
+    "showMore": "Show more",
+    "sellerAdded": "Added by you",
     "productTab": "Product Reviews ({count})",
     "storeTab": "Store Reviews ({count})",
     "customer": "Customer",
@@ -3950,6 +3963,7 @@
     }
   },
   "stores": {
+    "title": "Your stores",
     "description": "Each store has its own address, design and settings. Your products, wallet and plan are shared.",
     "usage": "{count} of {max} stores",
     "create": "Create store",

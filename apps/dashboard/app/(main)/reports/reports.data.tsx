@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Ban, Info, PackageX, Percent, ReceiptText, ShoppingBag, Trophy, Truck, Wallet } from "lucide-react";
+import { Ban, PackageX, Percent, ReceiptText, ShoppingBag, Trophy, Truck, Wallet } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { formatNumber } from "@/lib/i18n/format";
 import { isAccessError, requireOrdersStore } from "@/lib/auth/require-seller.server";
 import { getHomeTraffic } from "@/lib/analytics/home-traffic.server";
 import { isStoreViewsConfigured } from "@/lib/analytics/store-views.server";
 import { LEAD_RETENTION_DAYS } from "@workspace/lib/checkout-leads";
-import { EmptyState, HeaderLink, HomeCard, HomeCardHeader, IconTile, ProductThumb, type Tone } from "../_components/home-ui";
+import { EmptyState, HeaderLink, HomeCard, HomeCardHeader, ProductThumb } from "../_components/home-ui";
+import { KpiCard, KpiGrid, Note as SellerNote, ResponsiveTable } from "@/components/seller-ui";
 import type { LucideIcon } from "lucide-react";
 import { getStoreReport } from "./reports.server";
 import { MoneyText } from "@/components/money";
@@ -56,7 +57,8 @@ export async function StoreReportData({ storeId, range }: { storeId: string; ran
   const governorates = governorateRows(report.governorates, locale, t("governorates.unknown"));
   const totals = sumOutcomes(governorates);
   const rates = outcomeRates(totals);
-  const sources = sourceRows(report.sources);
+  // Old orders from before the seller's own store may come from tallaby.com; the row shows only when they exist.
+  const sources = sourceRows(report.sources).filter((s) => s.source !== "marketplace" || s.orders > 0);
   const storeSales = sources.find((s) => s.source === "store") ?? { orders: 0, revenuePiastres: 0 };
   const aov = averageOrderPiastres(storeSales.revenuePiastres, storeSales.orders);
   const steps = funnelSteps({
@@ -73,17 +75,17 @@ export async function StoreReportData({ storeId, range }: { storeId: string; ran
   const ga4 = isStoreViewsConfigured();
 
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-2.5 sm:gap-3.5 lg:grid-cols-3 xl:grid-cols-6">
-        <Kpi icon={Wallet} label={t("kpi.revenue")} value={money(storeSales.revenuePiastres)} unit={unit} />
-        <Kpi icon={ShoppingBag} label={t("kpi.orders")} value={formatNumber(totals.orders, locale)} />
-        <Kpi icon={ReceiptText} label={t("kpi.aov")} value={aov === null ? "—" : money(aov)} unit={aov === null ? undefined : unit} />
-        <Kpi icon={Truck} tone="success" label={t("kpi.deliveryRate")} value={pct(rates.deliveryRate)} />
-        <Kpi icon={Percent} tone="danger" label={t("kpi.refusalRate")} value={pct(rates.refusalRate)} />
-        <Kpi icon={Ban} tone="accent" label={t("kpi.cancelRate")} value={pct(rates.cancelRate)} />
-      </div>
+    <div className="flex flex-col gap-3.5">
+      <KpiGrid className="grid-cols-3 max-[1180px]:grid-cols-2 [&>*>div:last-child]:hidden">
+        <KpiCard icon={Wallet} label={t("kpi.revenue")} value={money(storeSales.revenuePiastres)} unit={unit} />
+        <KpiCard icon={ShoppingBag} label={t("kpi.orders")} value={formatNumber(totals.orders, locale)} />
+        <KpiCard icon={ReceiptText} label={t("kpi.aov")} value={aov === null ? "—" : money(aov)} unit={aov === null ? undefined : unit} />
+        <KpiCard icon={Truck} tone="success" label={t("kpi.deliveryRate")} value={pct(rates.deliveryRate)} />
+        <KpiCard icon={Percent} tone="danger" label={t("kpi.refusalRate")} value={pct(rates.refusalRate)} />
+        <KpiCard icon={Ban} tone="accent" label={t("kpi.cancelRate")} value={pct(rates.cancelRate)} />
+      </KpiGrid>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-2 gap-3.5 max-[1020px]:grid-cols-1">
         <HomeCard aria-labelledby="funnel-title" className="flex flex-col pb-4">
           <HomeCardHeader
             id="funnel-title"
@@ -94,11 +96,11 @@ export async function StoreReportData({ storeId, range }: { storeId: string; ran
           <div className="px-3 pt-3">
             <FunnelChart steps={steps} />
           </div>
-          <ul className="mx-5 grid grid-cols-2 gap-2 text-xs text-muted-foreground sm:grid-cols-4">
+          <ul className="mx-5 grid grid-cols-2 gap-2 text-xs text-(--s-subtle) max-[600px]:mx-4 sm:grid-cols-4">
             {steps.map((s) => (
-              <li key={s.key} className="rounded-[10px] bg-muted/60 px-2.5 py-2">
+              <li key={s.key} className="rounded-xl bg-(--s-tint) px-2.5 py-2">
                 <span className="block truncate">{t(`funnel.${s.key}`)}</span>
-                <b className="font-montserrat text-sm text-foreground tabular-nums">{formatNumber(s.value, locale)}</b>
+                <b className="font-montserrat text-sm text-(--s-ink) tabular-nums">{formatNumber(s.value, locale)}</b>
                 {s.fromPrevious !== null && <span className="ms-1 tabular-nums">({pct(s.fromPrevious)})</span>}
               </li>
             ))}
@@ -111,7 +113,7 @@ export async function StoreReportData({ storeId, range }: { storeId: string; ran
 
         <HomeCard aria-labelledby="sources-title" className="flex flex-col pb-5">
           <HomeCardHeader id="sources-title" title={t("sources.title")} description={t("sources.description")} />
-          <div className="px-5 pt-4">
+          <div className="px-5 pt-4 max-[600px]:px-4">
             <SourcesChart rows={sources} unit={moneyUnitText(locale, storeUnit)} />
           </div>
         </HomeCard>
@@ -122,40 +124,27 @@ export async function StoreReportData({ storeId, range }: { storeId: string; ran
         {governorates.length === 0 ? (
           <EmptyState icon={Truck} title={t("governorates.emptyTitle")} description={t("governorates.emptyDescription")} />
         ) : (
-          <div className="grid gap-5 px-5 pt-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
+          <div className="grid gap-5 px-5 pt-4 max-[600px]:px-4 min-[1500px]:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
             <GovernorateChart rows={governorates.slice(0, CHART_GOVERNORATES)} />
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[460px] text-[13px]">
-                <thead className="text-xs text-muted-foreground">
-                  <tr className="border-b">
-                    <th className="py-2 text-start font-medium">{t("governorates.governorate")}</th>
-                    <th className="py-2 text-end font-medium">{t("governorates.orders")}</th>
-                    <th className="py-2 text-end font-medium">{t("governorates.delivered")}</th>
-                    <th className="py-2 text-end font-medium">{t("governorates.refused")}</th>
-                    <th className="py-2 text-end font-medium">{t("governorates.refusalRate")}</th>
-                    <th className="py-2 text-end font-medium">{t("governorates.cancelRate")}</th>
-                  </tr>
-                </thead>
-                <tbody className="tabular-nums">
-                  {governorates.map((g) => (
-                    <tr key={g.key} className="border-b last:border-0">
-                      <td className="py-2">{g.label}</td>
-                      <td className="py-2 text-end font-montserrat">{formatNumber(g.orders, locale)}</td>
-                      <td className="py-2 text-end font-montserrat">{formatNumber(g.delivered, locale)}</td>
-                      <td className="py-2 text-end font-montserrat">{formatNumber(g.refused, locale)}</td>
-                      <td className="py-2 text-end font-montserrat">{pct(g.refusalRate)}</td>
-                      <td className="py-2 text-end font-montserrat">{pct(g.cancelRate)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <ResponsiveTable
+              label={t("governorates.title")}
+              rows={governorates}
+              rowKey={(g) => g.key}
+              columns={[
+                { key: "name", header: t("governorates.governorate"), phone: "title", cell: (g) => g.label },
+                { key: "orders", header: t("governorates.orders"), phone: "end", className: "font-montserrat tabular-nums", cell: (g) => formatNumber(g.orders, locale) },
+                { key: "delivered", header: t("governorates.delivered"), className: "font-montserrat tabular-nums", cell: (g) => formatNumber(g.delivered, locale) },
+                { key: "refused", header: t("governorates.refused"), className: "font-montserrat tabular-nums", cell: (g) => formatNumber(g.refused, locale) },
+                { key: "refusalRate", header: t("governorates.refusalRate"), className: "font-montserrat tabular-nums", cell: (g) => pct(g.refusalRate) },
+                { key: "cancelRate", header: t("governorates.cancelRate"), className: "font-montserrat tabular-nums", cell: (g) => pct(g.cancelRate) },
+              ]}
+            />
           </div>
         )}
         <Note>{t("governorates.note")}</Note>
       </HomeCard>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-2 gap-3.5 max-[1020px]:grid-cols-1">
         <ProductsCard
           id="best-title"
           title={t("products.bestTitle")}
@@ -183,40 +172,8 @@ export async function StoreReportData({ storeId, range }: { storeId: string; ran
   );
 }
 
-function Kpi({
-  icon,
-  label,
-  value,
-  unit,
-  tone,
-}: {
-  icon: LucideIcon;
-  label: string;
-  value: string;
-  unit?: React.ReactNode;
-  tone?: Tone;
-}) {
-  return (
-    <div className="flex min-w-0 flex-col gap-2.5 rounded-2xl border bg-card p-3.5 text-card-foreground shadow-xs sm:px-4">
-      <div className="flex items-center justify-between gap-2 text-[13px] text-muted-foreground">
-        <span className="truncate">{label}</span>
-        <IconTile icon={icon} tone={tone} className="size-8" />
-      </div>
-      <div className="flex flex-wrap items-baseline gap-1.5">
-        <b className="font-montserrat text-[22px] font-semibold leading-none tabular-nums">{value}</b>
-        {unit && <span className="text-xs text-muted-foreground">{unit}</span>}
-      </div>
-    </div>
-  );
-}
-
 function Note({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="mx-5 mt-4 flex items-start gap-2 rounded-[10px] bg-muted/70 px-3 py-2.5 text-xs text-muted-foreground">
-      <Info className="mt-0.5 size-[15px] shrink-0 text-primary-ink" aria-hidden />
-      <span>{children}</span>
-    </div>
-  );
+  return <SellerNote className="mx-5 mt-4 max-[600px]:mx-4">{children}</SellerNote>;
 }
 
 function ProductsCard({
@@ -246,14 +203,14 @@ function ProductsCard({
       {products.length === 0 ? (
         <EmptyState icon={icon} title={empty} description={t("products.emptyDescription")} />
       ) : (
-        <ul className="flex flex-col gap-3.5 px-5 pb-[18px] pt-3">
+        <ul className="flex flex-col gap-1.5 px-3 pb-3 pt-2">
           {products.map((p) => (
             <li key={p.productId}>
-              <Link href={`/products/${p.productId}/edit`} className="flex items-center gap-3 rounded-lg hover:bg-muted/50">
+              <Link href={`/products/${p.productId}/edit`} className="flex min-h-14 items-center gap-3 rounded-2xl px-2 py-1.5 transition-colors duration-150 hover:bg-(--s-tint)">
                 <ProductThumb src={p.image} />
-                <b className="min-w-0 flex-1 truncate text-[13px] font-semibold">{p.title || "—"}</b>
-                <span className="whitespace-nowrap text-end text-xs text-muted-foreground">
-                  <b className="block font-montserrat text-sm text-foreground tabular-nums">
+                <b className="min-w-0 flex-1 truncate text-[13px] font-semibold text-(--s-text)">{p.title || "—"}</b>
+                <span className="whitespace-nowrap text-end text-xs text-(--s-subtle)">
+                  <b className="block font-montserrat text-sm text-(--s-ink) tabular-nums">
                     {money(p.revenuePiastres)} {unit}
                   </b>
                   {t("products.units", { count: p.units })}

@@ -1,4 +1,6 @@
 import { Suspense } from "react";
+import { Skeleton } from "@workspace/ui/components/skeleton";
+import { PageContainer } from "@/components/seller-ui";
 import { SubscribersData } from "./subscribers.data";
 
 // Per-seller data read from the session cookie; personal data, never cached.
@@ -13,8 +15,8 @@ export default async function SubscribersPage({
   const params = await searchParams;
   const one = (value: unknown) => (typeof value === "string" ? value : null);
   return (
-    <div className="min-h-screen p-4 sm:p-6">
-      <Suspense fallback={<div className="h-40 animate-pulse rounded-xl bg-muted" />}>
+    <PageContainer>
+      <Suspense fallback={<Skeleton className="h-48 rounded-[24px]" />}>
         <SubscribersData
           storeId={one(params.store)}
           query={one(params.q)}
@@ -22,6 +24,6 @@ export default async function SubscribersPage({
           page={one(params.page)}
         />
       </Suspense>
-    </div>
+    </PageContainer>
   );
 }

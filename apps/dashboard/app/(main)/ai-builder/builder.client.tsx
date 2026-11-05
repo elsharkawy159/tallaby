@@ -4,11 +4,8 @@ import { ArrowRight, Check, ImagePlus, Loader2, Plus, Sparkles, Trash2 } from "l
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Badge } from "@workspace/ui/components/badge";
-import { Button } from "@workspace/ui/components/button";
-import { Input } from "@workspace/ui/components/input";
 import { Progress } from "@workspace/ui/components/progress";
-import { Textarea } from "@workspace/ui/components/textarea";
+import { CheckRow, EmptyState, IconButton, Note, PageHeader, SellerButton, SellerCard, Tag, TextAction, TextArea, TextInput } from "@/components/seller-ui";
 import { STORE_INDUSTRIES } from "@/lib/stores/industries.lib";
 import { BuilderReviewPanel } from "./builder-review.client";
 import {
@@ -26,9 +23,9 @@ import {
 } from "./builder.dto";
 
 /**
- * The AI Store Builder's chat (ROADMAP.md F-54c). Plain on purpose: the owner
- * designs the look later. Everything shown comes back from the server, so a
- * reload lands in the same place. Every question is an i18n string.
+ * The AI Store Builder's chat (ROADMAP.md F-54c). Everything shown comes back
+ * from the server, so a reload lands in the same place. Every question is an
+ * i18n string.
  */
 
 const STEPS_WITH_TEXT = new Set(["name", "about", "contact", "social", "brief", "products", "shipping", "returns"]);
@@ -216,25 +213,28 @@ export function BuilderChat({
     return [...STORE_INDUSTRIES].sort((a, b) => Number(b.id === suggestion) - Number(a.id === suggestion));
   }, [view?.state.industrySuggestion]);
 
-  if (!aiReady) return <p className="rounded-lg border bg-muted/40 p-4 text-sm text-muted-foreground">{t("errors.disabled")}</p>;
+  if (!aiReady) {
+    return (
+      <SellerCard>
+        <EmptyState icon={Sparkles} title={t("title")} description={t("errors.disabled")} />
+      </SellerCard>
+    );
+  }
 
   if (!view || view.status === "abandoned") {
     return (
-      <div className="mx-auto max-w-xl space-y-4 rounded-xl border p-6">
-        <h1 className="flex items-center gap-2 text-lg font-semibold">
-          <Sparkles className="size-5 text-primary" aria-hidden />
-          {t("title")}
-        </h1>
-        <p className="text-sm text-muted-foreground">{t("intro")}</p>
-        <p className="text-xs text-muted-foreground">
-          {t("limits", { products: BUILDER_LIMITS.products, photos: BUILDER_LIMITS.photos })}
-        </p>
-        {error && <p className="text-sm text-destructive">{t(`errors.${error}`)}</p>}
-        <Button onClick={() => void send({ action: "start" })} disabled={busy}>
-          {busy && <Loader2 className="size-4 animate-spin" aria-hidden />}
-          {t("start")}
-        </Button>
-      </div>
+      <>
+        <PageHeader title={t("title")} description={t("intro")} />
+        <SellerCard className="flex flex-col gap-4 p-6 max-[720px]:p-4">
+          <p className="text-[13.5px] leading-[1.7] text-(--s-body)">{t("limits", { products: BUILDER_LIMITS.products, photos: BUILDER_LIMITS.photos })}</p>
+          {error && <Note tone="danger">{t(`errors.${error}`)}</Note>}
+          <SellerButton className="self-start max-[600px]:w-full" onClick={() => void send({ action: "start" })} disabled={busy}>
+            {busy && <Loader2 className="animate-spin" aria-hidden />}
+            <Sparkles aria-hidden />
+            {t("start")}
+          </SellerButton>
+        </SellerCard>
+      </>
     );
   }
 
@@ -259,16 +259,16 @@ export function BuilderChat({
     const percent = progress && progress.total ? Math.round((progress.done / progress.total) * 100) : 0;
     const current = progress?.current?.split(":")[0];
     return (
-      <div className="mx-auto max-w-xl space-y-4 rounded-xl border p-6" aria-live="polite">
-        <h1 className="flex items-center gap-2 text-lg font-semibold">
-          <Loader2 className="size-5 animate-spin text-primary" aria-hidden />
-          {t("buildingTitle")}
-        </h1>
-        <Progress value={percent} className="h-2" />
-        <p className="text-sm text-muted-foreground">{current && t.has(`steps.${current}`) ? t(`steps.${current}` as never) : t("buildingHint")}</p>
-        <p className="text-xs text-muted-foreground">{t("buildingResume")}</p>
-        {error && <p className="text-sm text-destructive">{t(`errors.${error}`)}</p>}
-      </div>
+      <>
+        <PageHeader title={t("buildingTitle")} />
+        <SellerCard className="flex flex-col gap-3 p-6 max-[720px]:p-4" aria-live="polite">
+          <Loader2 className="size-5 animate-spin text-(--s-primary)" aria-hidden />
+          <Progress value={percent} className="h-2" />
+          <p className="text-[13.5px] text-(--s-muted)">{current && t.has(`steps.${current}`) ? t(`steps.${current}` as never) : t("buildingHint")}</p>
+          <p className="text-xs text-(--s-faint)">{t("buildingResume")}</p>
+          {error && <Note tone="danger">{t(`errors.${error}`)}</Note>}
+        </SellerCard>
+      </>
     );
   }
 
@@ -276,25 +276,25 @@ export function BuilderChat({
   const textMax = step === "shipping" ? BUILDER_LIMITS.shippingTextMax : BUILDER_LIMITS.textMax;
 
   return (
-    <div className="mx-auto flex max-w-2xl flex-col gap-4">
-      <div className="flex items-center justify-between gap-2">
-        <h1 className="flex items-center gap-2 text-lg font-semibold">
-          <Sparkles className="size-5 text-primary" aria-hidden />
-          {t("title")}
-        </h1>
-        <Button variant="ghost" size="sm" onClick={() => void send({ action: "restart" })} disabled={busy}>
-          {t("restart")}
-        </Button>
-      </div>
+    <>
+      <PageHeader
+        title={t("title")}
+        actions={
+          <SellerButton variant="mini" size="sm" onClick={() => void send({ action: "restart" })} disabled={busy}>
+            {t("restart")}
+          </SellerButton>
+        }
+      />
 
+      <SellerCard className="flex flex-col gap-4 p-5 max-[720px]:p-4">
       <ol className="flex flex-col gap-3" aria-live="polite">
         {state.messages.map((message, index) =>
           message.role === "assistant" ? (
-            <li key={index} className="max-w-[85%] text-sm">
+            <li key={index} className="max-w-[85%] self-start rounded-[16px] bg-(--s-tint) px-3.5 py-2.5 text-[13.5px] leading-[1.7] text-(--s-text)">
               {t.has(`q.${message.key}`) ? t(`q.${message.key}` as never) : message.key}
             </li>
           ) : (
-            <li key={index} className="max-w-[85%] self-end whitespace-pre-wrap rounded-lg bg-muted px-3 py-2 text-sm">
+            <li key={index} className="max-w-[85%] self-end whitespace-pre-wrap rounded-[16px] bg-(--s-solid) px-3.5 py-2.5 text-[13.5px] leading-[1.7] text-(--s-solid-fg)">
               {message.text.startsWith("chip:") ? chipLabel(message.text.slice(5)) : message.text}
             </li>
           ),
@@ -304,19 +304,19 @@ export function BuilderChat({
       {step === "industry" && (
         <div className="flex flex-wrap gap-2">
           {industries.map((industry) => (
-            <Button key={industry.id} variant="outline" size="sm" disabled={busy} onClick={() => void answer({ type: "chip", value: industry.id })}>
+            <SellerButton key={industry.id} variant="mini" size="sm" disabled={busy} onClick={() => void answer({ type: "chip", value: industry.id })}>
               {locale === "en" ? industry.en : industry.ar}
-              {industry.id === state.industrySuggestion && <Badge variant="secondary">{t("recommended")}</Badge>}
-            </Button>
+              {industry.id === state.industrySuggestion && <Tag tone="warning">{t("recommended")}</Tag>}
+            </SellerButton>
           ))}
-          <Button variant="outline" size="sm" disabled={busy} onClick={() => void answer({ type: "chip", value: OTHER_INDUSTRY })}>
+          <SellerButton variant="mini" size="sm" disabled={busy} onClick={() => void answer({ type: "chip", value: OTHER_INDUSTRY })}>
             {t("chips.other")}
-          </Button>
+          </SellerButton>
         </div>
       )}
 
       {step === "brief" && state.brief && (
-        <div className="space-y-3 rounded-xl border p-4 text-sm">
+        <div className="flex flex-col gap-3 rounded-2xl border border-(--s-line) bg-(--s-surface) p-4 text-[13.5px] text-(--s-body)">
           <dl className="space-y-1">
             <div>
               <dt className="inline font-medium">{t("brief.tagline")}: </dt>
@@ -331,17 +331,17 @@ export function BuilderChat({
               <dd className="inline">{state.brief.tone}</dd>
             </div>
           </dl>
-          <Button disabled={busy} onClick={() => void answer({ type: "chip", value: "confirm" })}>
-            <Check className="size-4" aria-hidden />
+          <SellerButton className="self-start" disabled={busy} onClick={() => void answer({ type: "chip", value: "confirm" })}>
+            <Check aria-hidden />
             {t("chips.confirm")}
-          </Button>
-          <p className="text-xs text-muted-foreground">{t("brief.changeHint")}</p>
+          </SellerButton>
+          <p className="text-xs text-(--s-faint)">{t("brief.changeHint")}</p>
         </div>
       )}
       {step === "brief" && !state.brief && (
-        <Button variant="outline" disabled={busy} onClick={() => void send({ action: "start" })}>
+        <SellerButton variant="outline" className="self-start" disabled={busy} onClick={() => void send({ action: "start" })}>
           {t("retry")}
-        </Button>
+        </SellerButton>
       )}
 
       {step === "logo" && (
@@ -357,33 +357,35 @@ export function BuilderChat({
               event.target.value = "";
             }}
           />
-          <Button disabled={busy} onClick={() => logoInput.current?.click()}>
-            <ImagePlus className="size-4" aria-hidden />
+          <SellerButton disabled={busy} onClick={() => logoInput.current?.click()}>
+            <ImagePlus aria-hidden />
             {t("logoUpload")}
-          </Button>
-          <Button variant="outline" disabled={busy} onClick={() => void answer({ type: "skip" })}>
+          </SellerButton>
+          <SellerButton variant="outline" disabled={busy} onClick={() => void answer({ type: "skip" })}>
             {t("logoSkip")}
-          </Button>
+          </SellerButton>
         </div>
       )}
 
       {step === "template" && (
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid grid-cols-3 gap-2.5 max-[720px]:grid-cols-1">
           {view.templates.map((template) => (
-            <div key={template.key} className="flex flex-col gap-2 rounded-xl border p-3 text-sm">
-              <div className="font-medium">{locale === "en" ? template.name.en : template.name.ar}</div>
-              <p className="line-clamp-3 text-xs text-muted-foreground">{locale === "en" ? template.description.en : template.description.ar}</p>
+            <div key={template.key} className="flex flex-col gap-2 rounded-2xl border border-(--s-line) bg-(--s-surface) p-3.5 text-[13.5px]">
+              <div className="font-bold text-(--s-ink)">{locale === "en" ? template.name.en : template.name.ar}</div>
+              <p className="line-clamp-3 text-xs text-(--s-subtle)">{locale === "en" ? template.description.en : template.description.ar}</p>
               <div className="flex gap-1">
                 {template.palette.slice(0, 5).map((color) => (
-                  <span key={color} className="size-4 rounded-full border" style={{ backgroundColor: color }} />
+                  <span key={color} className="size-4 rounded-full border border-(--s-line)" style={{ backgroundColor: color }} />
                 ))}
               </div>
-              <a href={`${templatesBaseUrl}/${template.key}`} target="_blank" rel="noreferrer" className="text-xs text-primary underline">
-                {t("templatePreview")}
-              </a>
-              <Button size="sm" disabled={busy} onClick={() => void answer({ type: "chip", value: template.key })}>
+              <TextAction asChild className="min-h-10 self-start">
+                <a href={`${templatesBaseUrl}/${template.key}`} target="_blank" rel="noreferrer">
+                  {t("templatePreview")}
+                </a>
+              </TextAction>
+              <SellerButton variant="solid" size="sm" className="mt-auto" disabled={busy} onClick={() => void answer({ type: "chip", value: template.key })}>
                 {t("templateUse")}
-              </Button>
+              </SellerButton>
             </div>
           ))}
         </div>
@@ -404,55 +406,55 @@ export function BuilderChat({
 
       {step === "social" && (
         <div>
-          <Button variant="outline" size="sm" disabled={busy} onClick={() => void answer({ type: "skip" })}>
+          <SellerButton variant="mini" size="sm" disabled={busy} onClick={() => void answer({ type: "skip" })}>
             {t("chips.skip")}
-          </Button>
+          </SellerButton>
         </div>
       )}
 
       {step === "shipping" && !state.shippingAwaitingPrice && (
         <div className="flex flex-wrap gap-2">
           {(["tallaby_rates", "egypt_flat", "cairo_giza"] as const).map((value) => (
-            <Button key={value} variant="outline" size="sm" disabled={busy} onClick={() => void answer({ type: "chip", value })}>
+            <SellerButton key={value} variant="mini" size="sm" disabled={busy} onClick={() => void answer({ type: "chip", value })}>
               {t(`chips.${value}`)}
-            </Button>
+            </SellerButton>
           ))}
-          <Button variant="outline" size="sm" disabled={busy} onClick={() => void answer({ type: "skip" })}>
+          <SellerButton variant="mini" size="sm" disabled={busy} onClick={() => void answer({ type: "skip" })}>
             {t("chips.skip")}
-          </Button>
+          </SellerButton>
         </div>
       )}
-      {step === "shipping" && state.shippingAwaitingPrice && <p className="text-sm">{t("shippingPrice")}</p>}
+      {step === "shipping" && state.shippingAwaitingPrice && <p className="text-[13.5px] text-(--s-body)">{t("shippingPrice")}</p>}
 
       {step === "returns" && (
         <div className="flex flex-wrap gap-2">
           {RETURN_DAYS.map((days) => (
-            <Button key={days} variant="outline" size="sm" disabled={busy} onClick={() => void answer({ type: "chip", value: `days:${days}` })}>
+            <SellerButton key={days} variant="mini" size="sm" disabled={busy} onClick={() => void answer({ type: "chip", value: `days:${days}` })}>
               {t("returnsDays", { days })}
-            </Button>
+            </SellerButton>
           ))}
-          <Button variant="outline" size="sm" disabled={busy} onClick={() => void answer({ type: "chip", value: "none" })}>
+          <SellerButton variant="mini" size="sm" disabled={busy} onClick={() => void answer({ type: "chip", value: "none" })}>
             {t("chips.none")}
-          </Button>
-          <Button variant="outline" size="sm" disabled={busy} onClick={() => void answer({ type: "skip" })}>
+          </SellerButton>
+          <SellerButton variant="mini" size="sm" disabled={busy} onClick={() => void answer({ type: "skip" })}>
             {t("chips.skip")}
-          </Button>
+          </SellerButton>
         </div>
       )}
 
       {step === "summary" && (
-        <div className="space-y-3 rounded-xl border p-4 text-sm">
+        <div className="flex flex-col gap-3 rounded-2xl border border-(--s-line) bg-(--s-surface) p-4 text-[13.5px] text-(--s-body)">
           <p>{t("summary.store", { name: state.name ?? "" })}</p>
           <p>{t("summary.products", { count: state.products.length })}</p>
-          <p className="text-xs text-muted-foreground">{t("summary.note")}</p>
-          <Button disabled={busy} onClick={() => void answer({ type: "chip", value: "build" })}>
-            <Sparkles className="size-4" aria-hidden />
+          <p className="text-xs text-(--s-faint)">{t("summary.note")}</p>
+          <SellerButton className="self-start" disabled={busy} onClick={() => void answer({ type: "chip", value: "build" })}>
+            <Sparkles aria-hidden />
             {t("chips.build")}
-          </Button>
+          </SellerButton>
         </div>
       )}
 
-      {error && <p className="text-sm text-destructive">{t(`errors.${error}`)}</p>}
+      {error && <Note tone="danger">{t(`errors.${error}`)}</Note>}
 
       {STEPS_WITH_TEXT.has(step) && (
         <form
@@ -463,7 +465,8 @@ export function BuilderChat({
           }}
         >
           <div className="flex items-end gap-2">
-            <Textarea
+            <TextArea
+              className="min-h-[46px] flex-1"
               value={text}
               rows={2}
               maxLength={textMax}
@@ -477,16 +480,17 @@ export function BuilderChat({
                 }
               }}
             />
-            <Button type="submit" size="icon" disabled={busy || !text.trim()} aria-label={t("send")}>
-              {busy ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <ArrowRight className="size-4 rtl:rotate-180" aria-hidden />}
-            </Button>
+            <SellerButton type="submit" className="w-[46px] px-0" disabled={busy || !text.trim()} aria-label={t("send")}>
+              {busy ? <Loader2 className="animate-spin" aria-hidden /> : <ArrowRight className="rtl:rotate-180" aria-hidden />}
+            </SellerButton>
           </div>
-          <p className="text-end text-xs text-muted-foreground">
+          <p className="text-end font-montserrat text-xs text-(--s-faint) tabular-nums">
             {text.length} / {textMax}
           </p>
         </form>
       )}
-    </div>
+      </SellerCard>
+    </>
   );
 }
 
@@ -531,17 +535,17 @@ function ProductsEditor({
           void onSave({ name: value, details: "", price: null, compareAtPrice: null, stock: null, unlimited: false }).then((ok) => ok && setName(""));
         }}
       >
-        <Input value={name} maxLength={120} onChange={(event) => setName(event.target.value)} placeholder={t("product.name")} aria-label={t("product.name")} />
-        <Button type="submit" variant="outline" disabled={busy || !name.trim() || products.length >= BUILDER_LIMITS.products}>
-          <Plus className="size-4" aria-hidden />
+        <TextInput className="min-w-0 flex-1" value={name} maxLength={120} onChange={(event) => setName(event.target.value)} placeholder={t("product.name")} aria-label={t("product.name")} />
+        <SellerButton type="submit" variant="outline" className="h-[46px]" disabled={busy || !name.trim() || products.length >= BUILDER_LIMITS.products}>
+          <Plus aria-hidden />
           {t("product.add")}
-        </Button>
+        </SellerButton>
       </form>
       <div className="flex items-center justify-between gap-2">
-        <p className="text-xs text-muted-foreground">{t("product.count", { count: products.length, max: BUILDER_LIMITS.products })}</p>
-        <Button disabled={busy || !products.length} onClick={onDone}>
+        <p className="text-xs text-(--s-subtle)">{t("product.count", { count: products.length, max: BUILDER_LIMITS.products })}</p>
+        <SellerButton disabled={busy || !products.length} onClick={onDone}>
           {t("chips.done")}
-        </Button>
+        </SellerButton>
       </div>
     </div>
   );
@@ -590,36 +594,34 @@ function ProductRow({
   const missing = !(num(price) ?? 0) || (!unlimited && num(stock) === null);
 
   return (
-    <div className="space-y-2 rounded-xl border p-3">
+    <div className="flex flex-col gap-2 rounded-2xl border border-(--s-line) bg-(--s-surface) p-3.5">
       <div className="flex items-center gap-2">
-        <Input value={name} maxLength={120} aria-label={t("product.name")} onChange={(event) => setName(event.target.value)} onBlur={() => save()} />
-        <Button variant="ghost" size="icon" disabled={busy} aria-label={t("product.remove")} onClick={() => onRemove(product.id)}>
-          <Trash2 className="size-4" aria-hidden />
-        </Button>
+        <TextInput className="min-w-0 flex-1" value={name} maxLength={120} aria-label={t("product.name")} onChange={(event) => setName(event.target.value)} onBlur={() => save()} />
+        <IconButton disabled={busy} aria-label={t("product.remove")} onClick={() => onRemove(product.id)}>
+          <Trash2 aria-hidden />
+        </IconButton>
       </div>
-      <Textarea value={details} rows={2} maxLength={BUILDER_LIMITS.textMax} placeholder={t("product.details")} aria-label={t("product.details")} onChange={(event) => setDetails(event.target.value)} onBlur={() => save()} />
+      <TextArea value={details} rows={2} maxLength={BUILDER_LIMITS.textMax} placeholder={t("product.details")} aria-label={t("product.details")} onChange={(event) => setDetails(event.target.value)} onBlur={() => save()} />
       <div className="flex flex-wrap items-center gap-2">
-        <Input className="w-28" inputMode="decimal" value={price} placeholder={t("product.price")} aria-label={t("product.price")} onChange={(event) => setPrice(event.target.value)} onBlur={() => save()} />
-        <Input className="w-28" inputMode="numeric" value={stock} disabled={unlimited} placeholder={t("product.stock")} aria-label={t("product.stock")} onChange={(event) => setStock(event.target.value)} onBlur={() => save()} />
-        <label className="flex items-center gap-1 text-xs">
-          <input
-            type="checkbox"
-            checked={unlimited}
-            onChange={(event) => {
-              setUnlimited(event.target.checked);
-              save({ unlimited: event.target.checked });
-            }}
-          />
-          {t("product.unlimited")}
-        </label>
-        {missing && <span className="text-xs text-destructive">{t("product.missing")}</span>}
+        <TextInput className="w-28" inputMode="decimal" value={price} placeholder={t("product.price")} aria-label={t("product.price")} onChange={(event) => setPrice(event.target.value)} onBlur={() => save()} />
+        <TextInput className="w-28" inputMode="numeric" value={stock} disabled={unlimited} placeholder={t("product.stock")} aria-label={t("product.stock")} onChange={(event) => setStock(event.target.value)} onBlur={() => save()} />
+        <CheckRow
+          className="min-h-10 items-center"
+          label={t("product.unlimited")}
+          checked={unlimited}
+          onChange={(event) => {
+            setUnlimited(event.target.checked);
+            save({ unlimited: event.target.checked });
+          }}
+        />
+        {missing && <span className="text-xs font-semibold text-destructive">{t("product.missing")}</span>}
       </div>
       <div className="flex flex-wrap items-center gap-2">
         {product.photos.map((path) => (
           <button
             key={path}
             type="button"
-            className="relative size-14 overflow-hidden rounded-md border"
+            className="relative size-14 overflow-hidden rounded-xl border border-(--s-line)"
             aria-label={t("product.removePhoto")}
             disabled={busy}
             onClick={() => onRemovePhoto(product.id, path)}
@@ -638,10 +640,10 @@ function ProductRow({
             event.target.value = "";
           }}
         />
-        <Button variant="outline" size="sm" disabled={busy || product.photos.length >= BUILDER_LIMITS.photosPerProduct} onClick={() => fileInput.current?.click()}>
-          <ImagePlus className="size-4" aria-hidden />
+        <SellerButton variant="mini" size="sm" disabled={busy || product.photos.length >= BUILDER_LIMITS.photosPerProduct} onClick={() => fileInput.current?.click()}>
+          <ImagePlus aria-hidden />
           {t("product.addPhoto", { count: product.photos.length, max: BUILDER_LIMITS.photosPerProduct })}
-        </Button>
+        </SellerButton>
       </div>
     </div>
   );

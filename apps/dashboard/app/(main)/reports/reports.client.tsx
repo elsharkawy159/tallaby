@@ -6,12 +6,12 @@ import { useLocale, useTranslations } from "next-intl";
 import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { cn } from "@workspace/ui/lib/utils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select";
+import { PageContainer, PageHeader } from "@/components/seller-ui";
 import { formatNumber } from "@/lib/i18n/format";
+import { PILL_SELECT } from "../orders/orders-ui";
 import { REPORT_RANGES, type FunnelStep, type ReportRange, type SourceRow } from "./reports.lib";
 
 /* Dashboard › Reports controls and charts (ROADMAP.md F-15a). Data comes from the server. */
-
-const CONTROL = "h-[40px] w-full rounded-[11px] bg-card text-[13px]";
 
 /**
  * Store + period pickers. Both live in the URL (`?store=…&range=30`) so the
@@ -50,16 +50,15 @@ export function ReportsShell({
   };
 
   return (
-    <div className="mx-auto w-full max-w-[1200px] space-y-5 px-3.5 pt-[22px] pb-20 sm:px-6 sm:pt-8">
-      <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div className="min-w-0">
-          <h1 className="text-xl font-bold">{t("title")}</h1>
-          <p className="text-pretty text-sm text-muted-foreground">{t("subtitle")}</p>
-        </div>
-        {stores.length > 0 && (
-          <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto">
+    <PageContainer>
+      <PageHeader
+        title={t("title")}
+        description={t("subtitle")}
+        actions={
+          stores.length > 0 && (
+            <>
             <Select value={view.storeId ?? ""} onValueChange={(id) => go({ storeId: id, range: view.range })}>
-              <SelectTrigger className={cn(CONTROL, "sm:w-[200px]")} aria-label={t("store")}>
+              <SelectTrigger className={cn(PILL_SELECT, "min-[721px]:w-[200px]")} aria-label={t("store")}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -74,7 +73,7 @@ export function ReportsShell({
               value={String(view.range)}
               onValueChange={(r) => go({ storeId: view.storeId, range: Number(r) as ReportRange })}
             >
-              <SelectTrigger className={cn(CONTROL, "sm:w-[150px]")} aria-label={t("period")}>
+              <SelectTrigger className={cn(PILL_SELECT, "min-[721px]:w-[150px]")} aria-label={t("period")}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -85,13 +84,14 @@ export function ReportsShell({
                 ))}
               </SelectContent>
             </Select>
-          </div>
-        )}
-      </header>
+            </>
+          )
+        }
+      />
       <div aria-busy={pending} className={cn("transition-opacity duration-200", pending && "pointer-events-none opacity-60")}>
         {children}
       </div>
-    </div>
+    </PageContainer>
   );
 }
 
@@ -114,7 +114,8 @@ export function FunnelChart({ steps }: { steps: FunnelStep[] }) {
   const offset = 4 - steps.length;
 
   return (
-    <div className="h-[220px] w-full text-xs [&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground [&_.recharts-surface]:outline-hidden">
+    // LTR box: in an RTL document the axis's text-anchor flips and the labels land on the bars.
+    <div dir="ltr" className="h-[220px] w-full text-xs [&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground [&_.recharts-surface]:outline-hidden">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} layout="vertical" margin={{ top: 4, right: 12, left: 12, bottom: 4 }}>
           <XAxis type="number" hide reversed={rtl} />
@@ -230,6 +231,7 @@ export function GovernorateChart({ rows }: { rows: GovernorateChartRow[] }) {
   return (
     <div>
       <div
+        dir="ltr"
         className="w-full text-xs [&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground [&_.recharts-surface]:outline-hidden"
         style={{ height: Math.max(120, rows.length * 34 + 20) }}
       >

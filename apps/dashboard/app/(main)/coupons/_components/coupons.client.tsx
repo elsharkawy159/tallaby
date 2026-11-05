@@ -15,7 +15,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@workspace/ui/components/alert-dialog";
-import { Button } from "@workspace/ui/components/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,8 +22,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu";
-import { Switch } from "@workspace/ui/components/switch";
-import { cn } from "@workspace/ui/lib/utils";
 import {
   deleteSellerCoupon,
   setSellerCouponActive,
@@ -34,6 +31,18 @@ import {
 import { formatDate, formatMoney, formatMoneyMarked, formatNumber } from "@/lib/i18n/format";
 import { MixedCurrencyNote, useAccountMoney } from "@/components/account-money.client";
 import { MoneyText } from "@/components/money";
+import {
+  Chip,
+  Chips,
+  EmptyState,
+  IconButton,
+  PageHeader,
+  SellerButton,
+  SellerCard,
+  StatusBadge,
+  Toggle,
+  type BadgeTone,
+} from "@/components/seller-ui";
 import { CouponEditor } from "./coupon-editor";
 import { CouponTicketStub } from "./coupon-ticket";
 import {
@@ -47,6 +56,7 @@ import {
 
 export function CouponsView({ coupons: initialCoupons, storeHost }: SellerCouponsPage) {
   const t = useTranslations("coupons");
+  const locale = useLocale();
   const router = useRouter();
   const [coupons, setCoupons] = useState(initialCoupons);
   const [filter, setFilter] = useState<CouponFilter>("all");
@@ -88,61 +98,54 @@ export function CouponsView({ coupons: initialCoupons, storeHost }: SellerCoupon
   if (coupons.length === 0) {
     return (
       <>
-        <div className="flex max-w-xl flex-col items-start gap-4 py-10">
-          <TicketPercent className="size-10 text-primary" aria-hidden />
-          <h2 className="text-xl font-semibold">{t("empty.title")}</h2>
-          <p className="text-muted-foreground">{t("empty.body")}</p>
-          <Button onClick={() => openEditor(null)}>
-            <Plus className="size-4" aria-hidden />
-            {t("empty.action")}
-          </Button>
-        </div>
+        <PageHeader title={t("title")} description={t("intro")} />
+        <SellerCard>
+          <EmptyState
+            icon={TicketPercent}
+            title={t("empty.title")}
+            description={t("empty.body")}
+            action={
+              <SellerButton onClick={() => openEditor(null)}>
+                <Plus aria-hidden />
+                {t("empty.action")}
+              </SellerButton>
+            }
+          />
+        </SellerCard>
         {editor}
       </>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <>
+      <PageHeader
+        title={t("title")}
+        description={t("intro")}
+        actions={
+          <SellerButton onClick={() => openEditor(null)}>
+            <Plus aria-hidden />
+            {t("create")}
+          </SellerButton>
+        }
+      />
       <MixedCurrencyNote />
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <p className="max-w-2xl text-muted-foreground">{t("intro")}</p>
-        <Button onClick={() => openEditor(null)} className="shrink-0">
-          <Plus className="size-4" aria-hidden />
-          {t("create")}
-        </Button>
-      </div>
 
-      <div
-        role="group"
-        aria-label={t("title")}
-        className="-mx-1 flex gap-1 overflow-x-auto px-1 pb-1"
-      >
+      <Chips role="group" aria-label={t("title")}>
         {COUPON_FILTERS.map((f) => (
-          <button
-            key={f}
-            type="button"
-            aria-pressed={filter === f}
-            onClick={() => setFilter(f)}
-            className={cn(
-              "flex shrink-0 items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-              filter === f
-                ? "border-foreground bg-foreground text-background"
-                : "text-muted-foreground hover:border-foreground/40 hover:text-foreground"
-            )}
-          >
+          <Chip key={f} pressed={filter === f} onClick={() => setFilter(f)}>
             {t(`filters.${f}`)}
-            <span className="tabular-nums opacity-70">{counts[f]}</span>
-          </button>
+            <span className="font-montserrat tabular-nums opacity-70">{formatNumber(counts[f], locale)}</span>
+          </Chip>
         ))}
-      </div>
+      </Chips>
 
       {visible.length === 0 ? (
-        <p className="rounded-xl border border-dashed py-10 text-center text-sm text-muted-foreground">
-          {t("emptyFilter")}
-        </p>
+        <SellerCard>
+          <EmptyState icon={TicketPercent} title={t("emptyFilter")} />
+        </SellerCard>
       ) : (
-        <ul className="divide-y rounded-xl border bg-card">
+        <ul className="overflow-hidden rounded-[20px] border border-(--s-line) bg-(--s-surface)">
           {visible.map(({ coupon, status }) => (
             <CouponRow
               key={coupon.id}
@@ -165,7 +168,7 @@ export function CouponsView({ coupons: initialCoupons, storeHost }: SellerCoupon
         onClose={() => setDeleting(null)}
         onDeleted={() => router.refresh()}
       />
-    </div>
+    </>
   );
 }
 
@@ -209,32 +212,26 @@ function CouponRow({
     coupon.usageLimit != null ? Math.min(1, coupon.usageCount / coupon.usageLimit) : null;
 
   return (
-    <li className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-4 gap-y-3 p-4 md:grid-cols-[auto_minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)_auto]">
+    <li className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-4 gap-y-3 p-4 transition-colors duration-150 hover:bg-(--s-tint) min-[721px]:grid-cols-[auto_minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)_auto] [&+&]:border-t [&+&]:border-(--s-line-soft) max-[600px]:gap-x-3">
       <CouponTicketStub
         discountType={coupon.discountType}
         discountValue={coupon.discountValue}
         status={status}
-        notchClassName="bg-card"
+        notchClassName="bg-(--s-surface)"
       />
 
       {/* Code, name and what it covers */}
       <div className="min-w-0 space-y-1">
         <div className="flex items-center gap-1.5">
-          <span dir="ltr" className="truncate font-mono text-base font-semibold tracking-wider">
+          <bdi dir="ltr" className="truncate font-montserrat text-[15px] font-bold tracking-wider text-(--s-ink)">
             {coupon.code}
-          </span>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="size-7 text-muted-foreground"
-            onClick={copyCode}
-            aria-label={t("row.copy")}
-          >
-            <Copy className="size-3.5" aria-hidden />
-          </Button>
+          </bdi>
+          <IconButton onClick={copyCode} aria-label={t("row.copy")} className="[&_svg]:size-3.5">
+            <Copy aria-hidden />
+          </IconButton>
         </div>
-        <p className="truncate text-sm">{coupon.name}</p>
-        <p className="text-xs text-muted-foreground">
+        <p className="truncate text-[13.5px] font-semibold text-(--s-text)">{coupon.name}</p>
+        <p className="text-xs text-(--s-subtle)">
           {new Intl.ListFormat(locale, { type: "unit", style: "short" }).format(
             [
               coupon.productIds
@@ -250,8 +247,8 @@ function CouponRow({
       </div>
 
       {/* Usage */}
-      <div className="col-span-3 col-start-1 min-w-0 space-y-1.5 md:col-span-1 md:col-start-auto">
-        <p className="text-sm tabular-nums">
+      <div className="col-span-2 col-start-1 min-w-0 space-y-1.5 min-[721px]:col-span-1 min-[721px]:col-start-auto">
+        <p className="text-[13px] tabular-nums text-(--s-body)">
           {coupon.usageLimit != null
             ? t("row.usesOf", {
                 count: formatNumber(coupon.usageCount, locale),
@@ -261,26 +258,26 @@ function CouponRow({
         </p>
         {usedRatio != null && (
           <div
-            className="h-1.5 w-full max-w-40 overflow-hidden rounded-full bg-muted"
+            className="h-1.5 w-full max-w-40 overflow-hidden rounded-full bg-(--s-fill)"
             role="progressbar"
             aria-valuemin={0}
             aria-valuemax={coupon.usageLimit!}
             aria-valuenow={coupon.usageCount}
           >
-            <div className="h-full rounded-full bg-primary" style={{ width: `${usedRatio * 100}%` }} />
+            <div className="h-full rounded-full bg-(--s-primary)" style={{ width: `${usedRatio * 100}%` }} />
           </div>
         )}
         {coupon.discountGiven > 0 && (
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-(--s-subtle)">
             <MoneyText locale={locale}>{t("row.saved", { amount: formatMoneyMarked(coupon.discountGiven, locale, unit) })}</MoneyText>
           </p>
         )}
       </div>
 
       {/* Status and dates */}
-      <div className="col-span-2 col-start-1 min-w-0 space-y-1 md:col-span-1 md:col-start-auto">
+      <div className="col-span-2 col-start-1 min-w-0 space-y-1 min-[721px]:col-span-1 min-[721px]:col-start-auto">
         <StatusLabel status={status} />
-        <p className="text-xs text-muted-foreground tabular-nums">
+        <p className="text-xs text-(--s-subtle) tabular-nums">
           {t("row.dates", {
             start: formatDate(coupon.startsAt, locale),
             end: formatDate(coupon.expiresAt, locale),
@@ -288,8 +285,8 @@ function CouponRow({
         </p>
       </div>
 
-      <div className="col-start-3 row-start-1 flex items-center gap-1 md:col-start-auto md:row-start-auto">
-        <Switch
+      <div className="flex items-center justify-end gap-1 max-[720px]:col-span-2 max-[720px]:justify-between max-[720px]:border-t max-[720px]:border-(--s-line-soft) max-[720px]:pt-2">
+        <Toggle
           checked={coupon.isActive}
           onCheckedChange={toggle}
           disabled={isToggling}
@@ -297,9 +294,9 @@ function CouponRow({
         />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="size-8" aria-label={t("row.actions")}>
-              <MoreHorizontal className="size-4" aria-hidden />
-            </Button>
+            <IconButton aria-label={t("row.actions")}>
+              <MoreHorizontal aria-hidden />
+            </IconButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={onEdit}>
@@ -322,22 +319,17 @@ function CouponRow({
   );
 }
 
+const STATUS_TONE: Record<CouponStatus, BadgeTone> = {
+  running: "success",
+  scheduled: "info",
+  off: "muted",
+  ended: "muted",
+  usedUp: "warning",
+};
+
 function StatusLabel({ status }: { status: CouponStatus }) {
   const t = useTranslations("coupons.status");
-  return (
-    <p className="flex items-center gap-1.5 text-sm font-medium">
-      <span
-        aria-hidden
-        className={cn(
-          "size-2 rounded-full",
-          status === "running" && "bg-emerald-500",
-          status === "scheduled" && "bg-primary",
-          status !== "running" && status !== "scheduled" && "bg-muted-foreground/50"
-        )}
-      />
-      {t(status)}
-    </p>
-  );
+  return <StatusBadge tone={STATUS_TONE[status]}>{t(status)}</StatusBadge>;
 }
 
 function DeleteCouponDialog({

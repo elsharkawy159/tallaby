@@ -1,13 +1,14 @@
 import { Suspense } from "react";
+import { PageContainer } from "@/components/seller-ui";
 import { CouponsData } from "./_components/coupons.data";
 import { CouponsSkeleton } from "./_components/coupons.skeleton";
 
 export default function CouponsPage() {
   return (
-    <section className="p-4 sm:p-6">
+    <PageContainer>
       <Suspense fallback={<CouponsSkeleton />}>
         <CouponsData />
       </Suspense>
-    </section>
+    </PageContainer>
   );
 }

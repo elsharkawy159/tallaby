@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { Store } from "lucide-react";
 import { getTranslations } from "next-intl/server";
-import { Button } from "@workspace/ui/components/button";
+import { SellerButton } from "@/components/seller-ui";
 import { Skeleton } from "@workspace/ui/components/skeleton";
 import { OrdersLocked } from "@/components/orders/orders-locked";
 import { currentOrderLock } from "@/lib/auth/require-seller.server";
@@ -55,9 +55,9 @@ export default async function ReportsPage({
             title={t("noStoreTitle")}
             description={t("noStoreDescription")}
             action={
-              <Button asChild size="sm">
+              <SellerButton asChild size="sm">
                 <Link href="/stores">{t("noStoreCta")}</Link>
-              </Button>
+              </SellerButton>
             }
           />
         </HomeCard>
@@ -68,17 +68,17 @@ export default async function ReportsPage({
 
 function ReportSkeleton() {
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-6">
+    <div className="flex flex-col gap-3.5">
+      <div className="grid grid-cols-3 gap-3.5 max-[1180px]:grid-cols-2">
         {Array.from({ length: 6 }).map((_, i) => (
-          <Skeleton key={i} className="h-[92px] rounded-2xl" />
+          <Skeleton key={i} className="h-[104px] rounded-[24px]" />
         ))}
       </div>
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Skeleton className="h-[340px] rounded-2xl" />
-        <Skeleton className="h-[340px] rounded-2xl" />
+      <div className="grid grid-cols-2 gap-3.5 max-[1020px]:grid-cols-1">
+        <Skeleton className="h-[340px] rounded-[24px]" />
+        <Skeleton className="h-[340px] rounded-[24px]" />
       </div>
-      <Skeleton className="h-[320px] rounded-2xl" />
+      <Skeleton className="h-[320px] rounded-[24px]" />
     </div>
   );
 }

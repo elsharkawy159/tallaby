@@ -3,12 +3,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Check, ImageOff, Search } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { Input } from "@workspace/ui/components/input";
 import { cn } from "@workspace/ui/lib/utils";
 import { searchCouponProducts, type CouponProductOption } from "@/actions/coupons";
 import { formatMoney } from "@/lib/i18n/format";
 import { useAccountMoney } from "@/components/account-money.client";
 import { RemoteImage } from "@/components/media/remote-image";
+import { fieldClass } from "@/components/seller-ui";
 
 type Props = {
   selectedIds: string[];
@@ -61,12 +61,12 @@ export function CouponProductPicker({ selectedIds, onChange, invalid }: Props) {
     onChange(selected.has(id) ? selectedIds.filter((x) => x !== id) : [...selectedIds, id]);
 
   if (visible === null) {
-    return <div className="h-32 animate-pulse rounded-lg bg-muted" aria-busy />;
+    return <div className="h-32 animate-pulse rounded-2xl bg-(--s-fill)" aria-busy />;
   }
 
   if (visible.length === 0 && !search && !showSearch) {
     return (
-      <p className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
+      <p className="rounded-2xl border border-dashed border-(--s-field-strong) p-4 text-[13px] text-(--s-muted)">
         {t("noProducts")}
       </p>
     );
@@ -75,32 +75,32 @@ export function CouponProductPicker({ selectedIds, onChange, invalid }: Props) {
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className={cn("text-sm", invalid ? "text-destructive" : "text-muted-foreground")}>
+        <p className={cn("text-[13px]", invalid ? "text-destructive" : "text-(--s-muted)")}>
           {selectedIds.length > 0
             ? t("selectedCount", { count: selectedIds.length })
             : t("selectedProductsHint")}
         </p>
         {showSearch && (
           <div className="relative w-full sm:w-56">
-            <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
+            <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-(--s-subtle)" />
+            <input
               type="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={t("search")}
               aria-label={t("search")}
-              className="h-9 ps-9"
+              className={cn(fieldClass, "h-10 ps-9")}
             />
           </div>
         )}
       </div>
 
       {visible.length === 0 ? (
-        <p className="py-4 text-center text-sm text-muted-foreground">{t("noResults")}</p>
+        <p className="py-4 text-center text-[13px] text-(--s-muted)">{t("noResults")}</p>
       ) : (
         <ul
           aria-label={t("selectedProducts")}
-          className="grid max-h-80 grid-cols-1 gap-1.5 overflow-y-auto rounded-lg border p-1.5 sm:grid-cols-2"
+          className="grid max-h-80 grid-cols-1 gap-1.5 overflow-y-auto rounded-2xl border border-(--s-line) bg-(--s-surface) p-1.5 sm:grid-cols-2"
         >
           {visible.map((p) => {
             const isSelected = selected.has(p.id);
@@ -111,23 +111,23 @@ export function CouponProductPicker({ selectedIds, onChange, invalid }: Props) {
                   aria-pressed={isSelected}
                   onClick={() => toggle(p.id)}
                   className={cn(
-                    "flex w-full items-center gap-3 rounded-md p-1.5 text-start transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                    isSelected ? "bg-primary/10" : "hover:bg-muted"
+                    "flex w-full items-center gap-3 rounded-xl p-1.5 text-start transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    isSelected ? "bg-(--s-focus-soft)" : "hover:bg-(--s-hover)"
                   )}
                 >
-                  <span className="relative size-11 shrink-0 overflow-hidden rounded-md bg-muted">
+                  <span className="relative size-11 shrink-0 overflow-hidden rounded-xl bg-(--s-fill)">
                     {p.image ? (
                       // Imported product images can be on any host; RemoteImage serves those as is.
                       <RemoteImage src={p.image} alt="" fill sizes="44px" className="object-cover" />
                     ) : (
-                      <span className="flex size-full items-center justify-center text-muted-foreground">
+                      <span className="flex size-full items-center justify-center text-(--s-subtle)">
                         <ImageOff className="size-4" aria-hidden />
                       </span>
                     )}
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="line-clamp-1 text-sm font-medium">{p.title}</span>
-                    <span className="block text-xs text-muted-foreground tabular-nums">
+                    <span className="line-clamp-1 text-[13px] font-semibold text-(--s-text)">{p.title}</span>
+                    <span className="block text-xs text-(--s-subtle) tabular-nums">
                       {!p.isActive
                         ? t("notActive")
                         : p.price != null
@@ -140,8 +140,8 @@ export function CouponProductPicker({ selectedIds, onChange, invalid }: Props) {
                     className={cn(
                       "flex size-5 shrink-0 items-center justify-center rounded border transition-colors",
                       isSelected
-                        ? "border-primary bg-primary text-primary-foreground"
-                        : "border-input bg-background"
+                        ? "border-(--s-primary) bg-(--s-primary) text-white"
+                        : "border-(--s-field-strong) bg-(--s-surface)"
                     )}
                   >
                     {isSelected && <Check className="size-3.5" />}

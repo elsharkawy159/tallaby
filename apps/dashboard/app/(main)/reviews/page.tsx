@@ -1,13 +1,14 @@
 import { Suspense } from "react";
+import { PageContainer } from "@/components/seller-ui";
 import { VendorReviewsData } from "./vendor-reviews.data";
 import { VendorReviewsSkeleton } from "./reviews.chunks";
 
 export default function ReviewsPage() {
   return (
-    <div className="min-h-screen p-4 sm:p-6">
+    <PageContainer>
       <Suspense fallback={<VendorReviewsSkeleton />}>
         <VendorReviewsData />
       </Suspense>
-    </div>
+    </PageContainer>
   );
 }

@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useTranslations } from "next-intl";
 import { LoaderCircle, Mail } from "lucide-react";
-import { Card } from "@workspace/ui/components/card";
+import { IconTile, SellerCard, TextAction } from "@/components/seller-ui";
 import { previewCampaignEmail } from "./email-campaigns.server";
 import { createPreviewRunner, PREVIEW_DEBOUNCE_MS, previewRequest, withInertLinks } from "./email-campaigns.lib";
 import type { CampaignActionError, CampaignActionResult } from "./email-campaigns.types";
@@ -112,22 +112,22 @@ export function EmailCampaignPreview({
   const needsText = problem === "subjectRequired" || problem === "bodyRequired";
 
   return (
-    <Card className="gap-0 overflow-hidden p-0">
-      <div className="space-y-1 border-b px-4 py-3 text-sm">
+    <SellerCard className="overflow-hidden">
+      <div className="space-y-1 border-b border-(--s-line-soft) px-4 py-3 text-[13px]">
         <div className="flex items-center justify-between gap-2">
-          <p className="min-w-0 truncate text-muted-foreground">
-            {t("preview.from")} <span dir="auto" className="text-foreground">{storeName}</span>
+          <p className="min-w-0 truncate text-(--s-subtle)">
+            {t("preview.from")} <span dir="auto" className="font-semibold text-(--s-text)">{storeName}</span>
           </p>
           {busy && (
-            <span className="flex shrink-0 items-center gap-1 text-xs text-muted-foreground">
+            <span className="flex shrink-0 items-center gap-1 text-xs text-(--s-subtle)">
               <LoaderCircle className="size-3 animate-spin motion-reduce:hidden" aria-hidden />
               {t("preview.updating")}
             </span>
           )}
         </div>
-        <p className="min-w-0 truncate text-muted-foreground">
+        <p className="min-w-0 truncate text-(--s-subtle)">
           {t("preview.subject")}{" "}
-          <span dir="auto" className="font-medium text-foreground">
+          <span dir="auto" className="font-semibold text-(--s-text)">
             {subject.trim() || t("list.untitled")}
           </span>
         </p>
@@ -137,23 +137,21 @@ export function EmailCampaignPreview({
         <iframe title={t("preview.title")} sandbox="" srcDoc={html} className="h-[70vh] min-h-96 w-full bg-white" />
       ) : (
         <div className="flex h-[70vh] min-h-96 flex-col items-center justify-center gap-2 p-6 text-center">
-          <span className="flex size-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
-            <Mail className="size-6" aria-hidden />
-          </span>
-          <p className="max-w-xs text-pretty text-sm text-muted-foreground">
+          <IconTile icon={Mail} tone="neutral" size="lg" />
+          <p className="max-w-xs text-pretty text-[13px] text-(--s-muted)">
             {needsText ? t("preview.needsText") : problem || failed ? "" : t("preview.loading")}
           </p>
         </div>
       )}
 
       {(problem || failed) && (
-        <p className="border-t px-4 py-2 text-xs text-muted-foreground" role="status">
+        <p className="border-t border-(--s-line-soft) px-4 py-2 text-xs text-(--s-muted)" role="status">
           {failed ? (
             <>
               {t(html ? "preview.failedKept" : "preview.failed")}{" "}
-              <button type="button" className="font-semibold text-foreground underline underline-offset-2" onClick={retry}>
+              <TextAction type="button" className="min-h-10" onClick={retry}>
                 {t("preview.retry")}
-              </button>
+              </TextAction>
             </>
           ) : needsText ? (
             html && t("preview.needsTextKept")
@@ -162,6 +160,6 @@ export function EmailCampaignPreview({
           )}
         </p>
       )}
-    </Card>
+    </SellerCard>
   );
 }

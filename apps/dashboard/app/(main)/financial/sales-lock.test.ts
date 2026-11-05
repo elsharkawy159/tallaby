@@ -18,6 +18,7 @@ vi.mock("@/lib/stores/current-store.server", () => ({ getSellerStores: touchDb }
 vi.mock("next-intl/server", () => ({ getTranslations: async () => () => "" }));
 vi.mock("../reports/reports.data", () => ({ StoreReportData: () => null }));
 vi.mock("../reports/reports.client", () => ({ ReportsShell: () => null }));
+vi.mock("@/components/seller-ui", () => ({ SellerButton: () => null }));
 vi.mock("../_components/home-ui", () => ({ EmptyState: () => null, HomeCard: () => null }));
 vi.mock("../../../actions/auth", () => ({ getUser: async () => ({ user: { id: "seller-1" } }) }));
 vi.mock("@workspace/db", () => {

@@ -1,9 +1,10 @@
+import { PageContainer } from "@/components/seller-ui";
 import { VendorReviewsSkeleton } from "./reviews.chunks";
 
 export default function Loading() {
   return (
-    <div className="min-h-screen p-4 sm:p-6">
+    <PageContainer>
       <VendorReviewsSkeleton />
-    </div>
+    </PageContainer>
   );
 }

@@ -1,18 +1,28 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import Link from "next/link";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { BadgePercent, Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import type { DiscountRule, DiscountRuleType } from "@workspace/lib/orders/automatic-discounts";
 import { formatMoney, isArabicPound, moneyNumberOptions, moneyParams, type MoneyUnit } from "@/lib/i18n/format";
-import { Badge } from "@workspace/ui/components/badge";
-import { Button } from "@workspace/ui/components/button";
-import { Input } from "@workspace/ui/components/input";
-import { Label } from "@workspace/ui/components/label";
-import { Switch } from "@workspace/ui/components/switch";
-import { cn } from "@workspace/ui/lib/utils";
+import {
+  Chip,
+  Chips,
+  EmptyState,
+  Field,
+  FieldRow,
+  IconButton,
+  NativeSelect,
+  Row,
+  Rows,
+  SectionCard,
+  SellerButton,
+  StatusBadge,
+  TextInput,
+  Toggle,
+} from "@/components/seller-ui";
+import { ChipLink } from "../../orders/orders-ui";
 import { CouponProductPicker } from "../../coupons/_components/coupon-product-picker";
 import { deleteDiscountRule, saveDiscountRule, setDiscountRuleActive, type RuleResult } from "./discount-rules.server";
 
@@ -106,7 +116,7 @@ export function DiscountRulesView({
       }
     });
 
-  if (!storeId) return <p className="text-sm text-muted-foreground">{t("noStore")}</p>;
+  if (!storeId) return <EmptyState icon={BadgePercent} title={t("noStore")} />;
 
   const save = () => {
     if (!draft) return;
@@ -153,194 +163,191 @@ export function DiscountRulesView({
   };
 
   return (
-    <div className="space-y-4">
+    <>
       {stores.length > 1 && (
-        <nav aria-label={t("chooseStore")} className="flex flex-wrap gap-2">
+        <nav aria-label={t("chooseStore")} className="flex flex-wrap gap-1.5">
           {stores.map((store) => (
-            <Link
-              key={store.id}
-              href={`/marketing/discounts?store=${store.id}`}
-              scroll={false}
-              aria-current={store.id === storeId ? "page" : undefined}
-              className={cn("rounded-full border px-3 py-1.5 text-sm", store.id === storeId && "border-primary bg-primary/10 font-medium")}
-            >
+            <ChipLink key={store.id} href={`/marketing/discounts?store=${store.id}`} active={store.id === storeId}>
               {store.name}
-            </Link>
+            </ChipLink>
           ))}
         </nav>
       )}
 
-      <div className="rounded-2xl border bg-card p-4 sm:p-5">
-        <div className="flex items-center justify-between gap-3">
-          <h2 className="font-semibold">{t("title")}</h2>
-          {!draft && (
-            <Button type="button" onClick={() => setDraft(EMPTY)}>
-              <Plus className="size-4" aria-hidden />
-              {t("add")}
-            </Button>
-          )}
-        </div>
-
-        {rules.length === 0 && !draft && <p className="mt-3 text-sm text-muted-foreground">{t("empty")}</p>}
-
-        {rules.length > 0 && (
-          <ul className="mt-3 divide-y">
-            {rules.map((rule) => {
-              const status = when(rule);
-              return (
-                <li key={rule.id} className="flex items-center gap-3 py-3">
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium">{rule.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {summary(rule)}
-                      {rule.ruleType !== "free_gift" && <> · {rule.scope === "all" ? t("scopeAll") : t("scopeCategoriesCount", { count: rule.categoryIds.length })}</>}
-                    </p>
-                    <Badge variant={status.live && rule.isActive ? "secondary" : "outline"} className="mt-1 font-normal">
-                      {status.label}
-                    </Badge>
-                  </div>
-                  <Switch
-                    aria-label={t("active")}
-                    checked={rule.isActive}
-                    disabled={pending}
-                    onCheckedChange={(isActive) => run(() => setDiscountRuleActive({ storeId, id: rule.id, isActive }))}
-                  />
-                  <Button type="button" variant="ghost" size="icon" aria-label={t("edit")} onClick={() => setDraft(toDraft(rule))}>
-                    <Pencil className="size-4" aria-hidden />
-                  </Button>
-                  <Button type="button" variant="ghost" size="icon" aria-label={t("remove")} disabled={pending} onClick={() => run(() => deleteDiscountRule({ storeId, id: rule.id }))}>
-                    <Trash2 className="size-4" aria-hidden />
-                  </Button>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </div>
-
       {draft && (
-        <div className="grid gap-4 rounded-2xl border bg-card p-4 sm:grid-cols-2 sm:p-5">
-          <div className="grid gap-1.5 sm:col-span-2">
-            <Label htmlFor="rule-name">{t("name")}</Label>
-            <Input id="rule-name" maxLength={80} placeholder={t("namePlaceholder")} value={draft.name} onChange={(event) => setDraft({ ...draft, name: event.target.value })} />
-            <p className="text-xs text-muted-foreground">{t("nameHint")}</p>
-          </div>
+        <SectionCard icon={BadgePercent} title={draft.id ? t("edit") : t("add")}>
+          <Field label={t("name")} htmlFor="rule-name" note={t("nameHint")}>
+            <TextInput id="rule-name" maxLength={80} placeholder={t("namePlaceholder")} value={draft.name} onChange={(event) => setDraft({ ...draft, name: event.target.value })} />
+          </Field>
 
-          <div className="grid gap-1.5">
-            <Label htmlFor="rule-type">{t("type")}</Label>
-            <select
-              id="rule-type"
-              className="h-10 rounded-[10px] border bg-background px-2 text-sm"
-              value={draft.ruleType}
-              onChange={(event) => {
-                const ruleType = event.target.value as DiscountRuleType;
-                setDraft({ ...draft, ruleType, discountPercent: ruleType === "buy_x_get_y" ? "100" : "10" });
-              }}
-            >
-              {RULE_TYPES.map((type) => (
-                <option key={type} value={type}>
-                  {t(`types.${type}`)}
-                </option>
-              ))}
-            </select>
-          </div>
+          <FieldRow>
+            <Field label={t("type")} htmlFor="rule-type">
+              <NativeSelect
+                id="rule-type"
+                value={draft.ruleType}
+                onChange={(event) => {
+                  const ruleType = event.target.value as DiscountRuleType;
+                  setDraft({ ...draft, ruleType, discountPercent: ruleType === "buy_x_get_y" ? "100" : "10" });
+                }}
+              >
+                {RULE_TYPES.map((type) => (
+                  <option key={type} value={type}>
+                    {t(`types.${type}`)}
+                  </option>
+                ))}
+              </NativeSelect>
+            </Field>
 
-          {draft.ruleType === "free_gift" ? (
-            <>
-              <div className="grid gap-1.5">
-                <Label htmlFor="rule-min">{t("minSubtotal", moneyParams(locale, money))}</Label>
-                <Input id="rule-min" inputMode="decimal" dir="ltr" value={draft.minSubtotal} onChange={(event) => setDraft({ ...draft, minSubtotal: event.target.value })} />
-                <p className="text-xs text-muted-foreground">{t("minSubtotalHint")}</p>
-              </div>
-              <div className="grid gap-1.5 sm:col-span-2">
-                <Label>{t("giftProducts")}</Label>
-                <p className="text-xs text-muted-foreground">{t("giftProductsHint")}</p>
-                <CouponProductPicker selectedIds={draft.giftProductIds} onChange={(giftProductIds) => setDraft({ ...draft, giftProductIds })} />
-              </div>
-            </>
-          ) : (
-            <div className="grid gap-1.5">
-              <Label htmlFor="rule-percent">{t(draft.ruleType === "buy_x_get_y" ? "getPercent" : "percent")}</Label>
-              <Input id="rule-percent" inputMode="decimal" dir="ltr" value={draft.discountPercent} onChange={(event) => setDraft({ ...draft, discountPercent: event.target.value })} />
-            </div>
+            {draft.ruleType === "free_gift" ? (
+              <Field label={t("minSubtotal", moneyParams(locale, money))} htmlFor="rule-min" note={t("minSubtotalHint")}>
+                <TextInput id="rule-min" inputMode="decimal" dir="ltr" value={draft.minSubtotal} onChange={(event) => setDraft({ ...draft, minSubtotal: event.target.value })} />
+              </Field>
+            ) : (
+              <Field label={t(draft.ruleType === "buy_x_get_y" ? "getPercent" : "percent")} htmlFor="rule-percent">
+                <TextInput id="rule-percent" inputMode="decimal" dir="ltr" value={draft.discountPercent} onChange={(event) => setDraft({ ...draft, discountPercent: event.target.value })} />
+              </Field>
+            )}
+          </FieldRow>
+
+          {draft.ruleType === "free_gift" && (
+            <Field label={t("giftProducts")} note={t("giftProductsHint")}>
+              <CouponProductPicker selectedIds={draft.giftProductIds} onChange={(giftProductIds) => setDraft({ ...draft, giftProductIds })} />
+            </Field>
           )}
 
           {draft.ruleType === "buy_x_get_y" && (
-            <>
-              <div className="grid gap-1.5">
-                <Label htmlFor="rule-buy">{t("buyQuantity")}</Label>
-                <Input id="rule-buy" inputMode="numeric" dir="ltr" value={draft.buyQuantity} onChange={(event) => setDraft({ ...draft, buyQuantity: event.target.value })} />
-              </div>
-              <div className="grid gap-1.5">
-                <Label htmlFor="rule-get">{t("getQuantity")}</Label>
-                <Input id="rule-get" inputMode="numeric" dir="ltr" value={draft.getQuantity} onChange={(event) => setDraft({ ...draft, getQuantity: event.target.value })} />
-              </div>
-            </>
+            <FieldRow>
+              <Field label={t("buyQuantity")} htmlFor="rule-buy">
+                <TextInput id="rule-buy" inputMode="numeric" dir="ltr" value={draft.buyQuantity} onChange={(event) => setDraft({ ...draft, buyQuantity: event.target.value })} />
+              </Field>
+              <Field label={t("getQuantity")} htmlFor="rule-get">
+                <TextInput id="rule-get" inputMode="numeric" dir="ltr" value={draft.getQuantity} onChange={(event) => setDraft({ ...draft, getQuantity: event.target.value })} />
+              </Field>
+            </FieldRow>
           )}
 
           {draft.ruleType !== "free_gift" && (
-          <div className="grid gap-1.5 sm:col-span-2">
-            <Label htmlFor="rule-scope">{t("scope")}</Label>
-            <select
-              id="rule-scope"
-              className="h-10 rounded-[10px] border bg-background px-2 text-sm"
-              value={draft.scope}
-              onChange={(event) => setDraft({ ...draft, scope: event.target.value === "categories" ? "categories" : "all" })}
-            >
-              <option value="all">{t("scopeAll")}</option>
-              <option value="categories">{t("scopeCategories")}</option>
-            </select>
-            {draft.scope === "categories" &&
-              (categories.length === 0 ? (
-                <p className="text-xs text-muted-foreground">{t("noCategories")}</p>
-              ) : (
-                <div className="mt-1 flex flex-wrap gap-2">
-                  {categories.map((category) => {
-                    const on = draft.categoryIds.includes(category.id);
-                    return (
-                      <button
-                        key={category.id}
-                        type="button"
-                        aria-pressed={on}
-                        className={cn("rounded-full border px-3 py-1.5 text-sm", on && "border-primary bg-primary/10 font-medium")}
-                        onClick={() =>
-                          setDraft({
-                            ...draft,
-                            categoryIds: on ? draft.categoryIds.filter((id) => id !== category.id) : [...draft.categoryIds, category.id],
-                          })
-                        }
-                      >
-                        {category.name}
-                      </button>
-                    );
-                  })}
-                </div>
-              ))}
-          </div>
+            <Field label={t("scope")} htmlFor="rule-scope">
+              <NativeSelect
+                id="rule-scope"
+                value={draft.scope}
+                onChange={(event) => setDraft({ ...draft, scope: event.target.value === "categories" ? "categories" : "all" })}
+              >
+                <option value="all">{t("scopeAll")}</option>
+                <option value="categories">{t("scopeCategories")}</option>
+              </NativeSelect>
+              {draft.scope === "categories" &&
+                (categories.length === 0 ? (
+                  <p className="text-xs text-(--s-faint)">{t("noCategories")}</p>
+                ) : (
+                  <Chips>
+                    {categories.map((category) => {
+                      const on = draft.categoryIds.includes(category.id);
+                      return (
+                        <Chip
+                          key={category.id}
+                          pressed={on}
+                          onClick={() =>
+                            setDraft({
+                              ...draft,
+                              categoryIds: on ? draft.categoryIds.filter((id) => id !== category.id) : [...draft.categoryIds, category.id],
+                            })
+                          }
+                        >
+                          {category.name}
+                        </Chip>
+                      );
+                    })}
+                  </Chips>
+                ))}
+            </Field>
           )}
 
-          <div className="grid gap-1.5">
-            <Label htmlFor="rule-start">{t("startsAt")}</Label>
-            <Input id="rule-start" type="datetime-local" dir="ltr" value={draft.startsAt} onChange={(event) => setDraft({ ...draft, startsAt: event.target.value })} />
-            <p className="text-xs text-muted-foreground">{t("startsHint")}</p>
-          </div>
-          <div className="grid gap-1.5">
-            <Label htmlFor="rule-end">{t("endsAt")}</Label>
-            <Input id="rule-end" type="datetime-local" dir="ltr" value={draft.endsAt} onChange={(event) => setDraft({ ...draft, endsAt: event.target.value })} />
-            <p className="text-xs text-muted-foreground">{t("endsHint")}</p>
-          </div>
+          <FieldRow>
+            <Field label={t("startsAt")} htmlFor="rule-start" note={t("startsHint")}>
+              <TextInput id="rule-start" type="datetime-local" dir="ltr" value={draft.startsAt} onChange={(event) => setDraft({ ...draft, startsAt: event.target.value })} />
+            </Field>
+            <Field label={t("endsAt")} htmlFor="rule-end" note={t("endsHint")}>
+              <TextInput id="rule-end" type="datetime-local" dir="ltr" value={draft.endsAt} onChange={(event) => setDraft({ ...draft, endsAt: event.target.value })} />
+            </Field>
+          </FieldRow>
 
-          <p className="text-pretty text-xs text-muted-foreground sm:col-span-2">{t("stackingNote")}</p>
-          <div className="flex flex-wrap gap-2 sm:col-span-2">
-            <Button type="button" disabled={pending} onClick={save}>
+          <p className="text-pretty text-xs text-(--s-faint)">{t("stackingNote")}</p>
+          <div className="flex flex-wrap gap-2">
+            <SellerButton type="button" disabled={pending} onClick={save}>
               {t("save")}
-            </Button>
-            <Button type="button" variant="outline" onClick={() => setDraft(null)}>
+            </SellerButton>
+            <SellerButton type="button" variant="outline" onClick={() => setDraft(null)}>
               {t("cancel")}
-            </Button>
+            </SellerButton>
           </div>
-        </div>
+        </SectionCard>
       )}
-    </div>
+
+      <SectionCard
+        icon={BadgePercent}
+        title={t("title")}
+        action={
+          !draft && rules.length > 0 ? (
+            <SellerButton type="button" size="sm" onClick={() => setDraft(EMPTY)}>
+              <Plus aria-hidden />
+              {t("add")}
+            </SellerButton>
+          ) : undefined
+        }
+      >
+        {rules.length === 0 ? (
+          <EmptyState
+            title={t("empty")}
+            action={
+              !draft ? (
+                <SellerButton type="button" onClick={() => setDraft(EMPTY)}>
+                  <Plus aria-hidden />
+                  {t("add")}
+                </SellerButton>
+              ) : undefined
+            }
+          />
+        ) : (
+          <Rows>
+            {rules.map((rule) => {
+              const status = when(rule);
+              return (
+                <Row
+                  key={rule.id}
+                  className="flex-wrap"
+                  title={rule.name}
+                  description={
+                    <>
+                      {summary(rule)}
+                      {rule.ruleType !== "free_gift" && <> · {rule.scope === "all" ? t("scopeAll") : t("scopeCategoriesCount", { count: rule.categoryIds.length })}</>}
+                      <StatusBadge tone={status.live && rule.isActive ? "success" : "muted"} className="mt-1.5 flex w-fit">
+                        {status.label}
+                      </StatusBadge>
+                    </>
+                  }
+                  end={
+                    <>
+                      <Toggle
+                        aria-label={t("active")}
+                        checked={rule.isActive}
+                        disabled={pending}
+                        onCheckedChange={(isActive) => run(() => setDiscountRuleActive({ storeId, id: rule.id, isActive }))}
+                      />
+                      <IconButton aria-label={t("edit")} onClick={() => setDraft(toDraft(rule))}>
+                        <Pencil aria-hidden />
+                      </IconButton>
+                      <IconButton aria-label={t("remove")} disabled={pending} onClick={() => run(() => deleteDiscountRule({ storeId, id: rule.id }))}>
+                        <Trash2 aria-hidden />
+                      </IconButton>
+                    </>
+                  }
+                />
+              );
+            })}
+          </Rows>
+        )}
+      </SectionCard>
+    </>
   );
 }

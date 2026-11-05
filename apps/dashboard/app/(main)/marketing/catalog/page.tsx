@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import { Share2 } from "lucide-react";
 import { getTranslations } from "next-intl/server";
+import { PageContainer, PageHeader, SectionCard } from "@/components/seller-ui";
 import { CatalogShareForm } from "./catalog-share.client";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -15,12 +17,11 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function CatalogSharePage() {
   const t = await getTranslations("catalogShare");
   return (
-    <section className="mx-auto w-full max-w-[560px] px-3.5 pt-[22px] pb-20 sm:px-6 sm:pt-8">
-      <h1 className="text-xl font-bold">{t("title")}</h1>
-      <p className="text-muted-foreground mt-1 mb-6 text-sm">{t("pageDescription")}</p>
-      <div className="bg-card rounded-2xl border p-4 sm:p-6">
+    <PageContainer narrow>
+      <PageHeader title={t("title")} description={t("pageDescription")} />
+      <SectionCard icon={Share2} title={t("title")} className="w-full max-w-[640px]">
         <CatalogShareForm />
-      </div>
-    </section>
+      </SectionCard>
+    </PageContainer>
   );
 }

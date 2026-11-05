@@ -1,6 +1,7 @@
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { getSellerReviews } from "@/actions/reviews";
 import { getSellerQuestions } from "@/actions/products";
+import { PageHeader } from "@/components/seller-ui";
 import {
   VendorReviewsTabs,
   VendorQASection,
@@ -9,16 +10,19 @@ import {
 
 type Translate = Awaited<ReturnType<typeof getTranslations>>;
 
-function mapReviewRows(reviews: any[], t: Translate): VendorReviewRow[] {
+function mapReviewRows(reviews: any[], t: Translate, locale: string): VendorReviewRow[] {
   return reviews.map((r: any) => {
     const user = r.user || {};
     const product = r.product || {};
     const order = r.order || {};
+    const translations: any[] = product.productTranslations ?? [];
+    const translation = translations.find((x) => x.locale === locale && x.title) ?? translations.find((x) => x.title);
 
     const customerName =
       user.fullName ||
       [user.firstName, user.lastName].filter(Boolean).join(" ") ||
       user.email ||
+      r.reviewerName ||
       t("customer");
 
     return {
@@ -29,23 +33,25 @@ function mapReviewRows(reviews: any[], t: Translate): VendorReviewRow[] {
       content: r.content ?? r.comment ?? null,
       customerName,
       customerEmail: user.email ?? null,
-      customerAvatar: user.avatar ?? null,
-      productTitle: product.title ?? order.orderNumber ?? t("storeReview"),
+      customerAvatar: user.avatarUrl ?? null,
+      productTitle: translation?.title ?? order.orderNumber ?? t("storeReview"),
       productImage: product.images?.[0] ?? null,
-      productSlug: product.slug ?? null,
+      productSlug: translation?.slug ?? null,
       orderNumber: order.orderNumber ?? null,
       reviewType: r.reviewType ?? "product",
       replied: Array.isArray(r.reviewComments) && r.reviewComments.length > 0,
+      sellerAdded: r.source === "seller",
     } satisfies VendorReviewRow;
   });
 }
 
 export async function VendorReviewsData() {
-  const [productRes, storeRes, qres, t] = await Promise.all([
+  const [productRes, storeRes, qres, t, locale] = await Promise.all([
     getSellerReviews({ limit: 100, offset: 0, reviewType: "product" }),
     getSellerReviews({ limit: 100, offset: 0, reviewType: "store" }),
     getSellerQuestions({ limit: 100, offset: 0 }),
     getTranslations("reviews"),
+    getLocale(),
   ]);
 
   const productReviews: any[] = Array.isArray((productRes as any)?.data)
@@ -59,10 +65,11 @@ export async function VendorReviewsData() {
     : [];
 
   return (
-    <div className="space-y-6">
+    <>
+      <PageHeader title={t("title")} description={t("description")} />
       <VendorReviewsTabs
-        productRows={mapReviewRows(productReviews, t)}
-        storeRows={mapReviewRows(storeReviews, t)}
+        productRows={mapReviewRows(productReviews, t, locale)}
+        storeRows={mapReviewRows(storeReviews, t, locale)}
       />
       <VendorQASection
         questions={questionsRaw.map((q: any) => ({
@@ -78,6 +85,6 @@ export async function VendorReviewsData() {
           answers: Array.isArray(q.answers) ? q.answers : [],
         }))}
       />
-    </div>
+    </>
   );
 }

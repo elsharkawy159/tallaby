@@ -4,6 +4,7 @@ import { getStore } from "@workspace/lib/stores/server";
 import { asc, db, eq, sellerProductCategories } from "@workspace/db";
 import { requireSeller } from "@/lib/auth/require-seller.server";
 import { getSellerStores } from "@/lib/stores/current-store.server";
+import { PageHeader } from "@/components/seller-ui";
 import { DiscountRulesView } from "./discount-rules.client";
 import { listDiscountRules } from "./discount-rules.server";
 
@@ -30,8 +31,8 @@ export async function DiscountRulesData(props: { storeId: string | null }) {
   ]);
 
   return (
-    <section aria-label={t("title")} className="mx-auto w-full max-w-5xl space-y-5">
-      <p className="text-pretty text-sm text-muted-foreground">{t("description")}</p>
+    <>
+      <PageHeader title={t("title")} description={t("description")} />
       <DiscountRulesView
         key={store?.id ?? "none"}
         stores={stores.map((s) => ({ id: s.id, name: s.name }))}
@@ -40,6 +41,6 @@ export async function DiscountRulesData(props: { storeId: string | null }) {
         initial={rules}
         categories={categories.map((c) => ({ id: c.id, name: (locale === "ar" ? c.nameAr : c.name) || c.name || c.nameAr || "" }))}
       />
-    </section>
+    </>
   );
 }

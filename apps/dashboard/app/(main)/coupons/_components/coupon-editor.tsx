@@ -4,11 +4,6 @@ import { useEffect, useId, useState, useTransition } from "react";
 import { Shuffle } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Button } from "@workspace/ui/components/button";
-import { Input } from "@workspace/ui/components/input";
-import { Label } from "@workspace/ui/components/label";
-import { Switch } from "@workspace/ui/components/switch";
-import { RadioGroup, RadioGroupItem } from "@workspace/ui/components/radio-group";
 import {
   Sheet,
   SheetContent,
@@ -18,7 +13,6 @@ import {
   SheetTitle,
 } from "@workspace/ui/components/sheet";
 import { Spinner } from "@workspace/ui/components/spinner";
-import { cn } from "@workspace/ui/lib/utils";
 import {
   saveSellerCoupon,
   type SellerCouponRow,
@@ -26,6 +20,7 @@ import {
 import { formatDate } from "@/lib/i18n/format";
 import { CurrencyInput } from "@/components/form/currency-input";
 import { MixedCurrencyNote, useAccountMoney } from "@/components/account-money.client";
+import { Field, FieldRow, OptionCard, OptionCards, Segmented, SellerButton, TextInput, Toggle } from "@/components/seller-ui";
 import { CouponProductPicker } from "./coupon-product-picker";
 import { CouponTicketStub } from "./coupon-ticket";
 import {
@@ -100,16 +95,7 @@ export function CouponEditor({ open, onOpenChange, coupon, onSaved }: Props) {
     });
   };
 
-  const fieldError = (key: keyof CouponFormErrors) =>
-    errors[key] ? (
-      <p id={`${ids}-${key}-error`} className="text-sm text-destructive">
-        {tErrors(errors[key]!)}
-      </p>
-    ) : null;
-
-  const describedBy = (key: keyof CouponFormErrors, hint?: boolean) =>
-    [errors[key] && `${ids}-${key}-error`, hint && `${ids}-${key}-hint`].filter(Boolean).join(" ") ||
-    undefined;
+  const fieldError = (key: keyof CouponFormErrors) => (errors[key] ? tErrors(errors[key]!) : undefined);
 
   const isPercent = form.discountType === "percentage";
   const previewValue = Number(form.discountValue.replace(",", ".")) || 0;
@@ -122,24 +108,23 @@ export function CouponEditor({ open, onOpenChange, coupon, onSaved }: Props) {
         side={locale.startsWith("ar") ? "left" : "right"}
         className="flex w-full flex-col gap-0 p-0 sm:max-w-4xl"
       >
-        <SheetHeader className="border-b px-6 py-4">
-          <SheetTitle>{coupon ? t("editTitle") : t("createTitle")}</SheetTitle>
-          <SheetDescription>{t("description")}</SheetDescription>
+        <SheetHeader className="border-b border-(--s-line-soft) px-6 py-4 max-[600px]:px-4">
+          <SheetTitle className="text-lg font-bold text-(--s-ink)">{coupon ? t("editTitle") : t("createTitle")}</SheetTitle>
+          <SheetDescription className="text-[13px] text-(--s-muted)">{t("description")}</SheetDescription>
         </SheetHeader>
 
         <form
           id={`${ids}-form`}
           onSubmit={submit}
           noValidate
-          className="grid flex-1 gap-8 overflow-y-auto px-6 py-6 lg:grid-cols-[minmax(0,1fr)_18rem]"
+          className="grid flex-1 content-start gap-8 overflow-y-auto px-6 py-6 max-[600px]:px-4 lg:grid-cols-[minmax(0,1fr)_18rem]"
         >
-          <div className="space-y-8 lg:order-none">
+          <div className="flex min-w-0 flex-col gap-7">
             {/* Code and name */}
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor={`${ids}-code`}>{t("code")}</Label>
+            <FieldRow>
+              <Field label={t("code")} htmlFor={`${ids}-code`} note={t("codeHint")} error={fieldError("code")}>
                 <div className="flex gap-2">
-                  <Input
+                  <TextInput
                     id={`${ids}-code`}
                     value={form.code}
                     onChange={(e) => set("code", normalizeCode(e.target.value))}
@@ -148,78 +133,45 @@ export function CouponEditor({ open, onOpenChange, coupon, onSaved }: Props) {
                     spellCheck={false}
                     dir="ltr"
                     aria-invalid={!!errors.code}
-                    aria-describedby={describedBy("code", true)}
-                    className="font-mono uppercase tracking-wider"
+                    className="min-w-0 flex-1 font-montserrat uppercase tracking-wider"
                     placeholder="EID15"
                   />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => set("code", generateCode(form.name))}
-                  >
-                    <Shuffle className="size-4" aria-hidden />
+                  <SellerButton type="button" variant="mini" className="h-[46px]" onClick={() => set("code", generateCode(form.name))}>
+                    <Shuffle aria-hidden />
                     {t("generate")}
-                  </Button>
+                  </SellerButton>
                 </div>
-                {fieldError("code") ?? (
-                  <p id={`${ids}-code-hint`} className="text-xs text-muted-foreground">
-                    {t("codeHint")}
-                  </p>
-                )}
-              </div>
+              </Field>
 
-              <div className="space-y-2">
-                <Label htmlFor={`${ids}-name`}>{t("name")}</Label>
-                <Input
+              <Field label={t("name")} htmlFor={`${ids}-name`} note={t("nameHint")} error={fieldError("name")}>
+                <TextInput
                   id={`${ids}-name`}
                   value={form.name}
                   onChange={(e) => set("name", e.target.value)}
                   maxLength={80}
                   placeholder={t("namePlaceholder")}
                   aria-invalid={!!errors.name}
-                  aria-describedby={describedBy("name", true)}
                 />
-                {fieldError("name") ?? (
-                  <p id={`${ids}-name-hint`} className="text-xs text-muted-foreground">
-                    {t("nameHint")}
-                  </p>
-                )}
-              </div>
-            </div>
+              </Field>
+            </FieldRow>
 
             {/* Discount */}
-            <fieldset className="space-y-3">
-              <legend className="mb-3 text-sm font-semibold">{t("discount")}</legend>
-              <div
-                role="radiogroup"
-                aria-label={t("discount")}
-                className="inline-flex rounded-lg border bg-muted p-1"
-              >
-                {(["percentage", "fixed_amount"] as const).map((type) => (
-                  <button
-                    key={type}
-                    type="button"
-                    role="radio"
-                    aria-checked={form.discountType === type}
-                    onClick={() => set("discountType", type)}
-                    className={cn(
-                      "rounded-md px-4 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                      form.discountType === type
-                        ? "bg-background text-foreground shadow-sm"
-                        : "text-muted-foreground hover:text-foreground"
-                    )}
-                  >
-                    {type === "percentage" ? t("percentage") : t("fixed")}
-                  </button>
-                ))}
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor={`${ids}-value`}>
-                    {isPercent ? t("percentValue") : t("amountValue")}
-                  </Label>
+            <fieldset className="flex min-w-0 flex-col gap-3">
+              <legend className="mb-3 text-[14.5px] font-bold text-(--s-ink)">{t("discount")}</legend>
+              <Segmented
+                label={t("discount")}
+                value={form.discountType}
+                onChange={(type) => set("discountType", type)}
+                options={[
+                  { value: "percentage", label: t("percentage") },
+                  { value: "fixed_amount", label: t("fixed") },
+                ]}
+                className="self-start max-[600px]:w-full"
+              />
+              <FieldRow>
+                <Field label={isPercent ? t("percentValue") : t("amountValue")} htmlFor={`${ids}-value`} error={fieldError("discountValue")}>
                   {isPercent ? (
-                    <Input
+                    <TextInput
                       id={`${ids}-value`}
                       type="number"
                       inputMode="decimal"
@@ -230,7 +182,6 @@ export function CouponEditor({ open, onOpenChange, coupon, onSaved }: Props) {
                       value={form.discountValue}
                       onChange={(e) => set("discountValue", e.target.value)}
                       aria-invalid={!!errors.discountValue}
-                      aria-describedby={describedBy("discountValue")}
                     />
                   ) : (
                     <CurrencyInput
@@ -239,53 +190,44 @@ export function CouponEditor({ open, onOpenChange, coupon, onSaved }: Props) {
                       value={form.discountValue}
                       onChange={(v) => set("discountValue", v)}
                       invalid={!!errors.discountValue}
-                      aria-describedby={describedBy("discountValue")}
                     />
                   )}
-                  {fieldError("discountValue")}
-                </div>
+                </Field>
                 {isPercent && (
-                  <div className="space-y-2">
-                    <Label htmlFor={`${ids}-max`}>{t("maxDiscount")}</Label>
+                  <Field label={t("maxDiscount")} htmlFor={`${ids}-max`} note={t("maxDiscountHint")}>
                     <CurrencyInput
                       {...unit}
                       id={`${ids}-max`}
                       value={form.maximumDiscount}
                       onChange={(v) => set("maximumDiscount", v)}
-                      aria-describedby={`${ids}-max-hint`}
                     />
-                    <p id={`${ids}-max-hint`} className="text-xs text-muted-foreground">
-                      {t("maxDiscountHint")}
-                    </p>
-                  </div>
+                  </Field>
                 )}
-              </div>
+              </FieldRow>
               <MixedCurrencyNote />
             </fieldset>
 
             {/* Products */}
-            <fieldset className="space-y-3">
-              <legend className="mb-3 text-sm font-semibold">{t("products")}</legend>
-              <RadioGroup
-                value={form.productScope}
-                onValueChange={(v) => set("productScope", v as CouponFormState["productScope"])}
-                className="grid gap-2 sm:grid-cols-2"
-              >
-                <ChoiceCard
-                  id={`${ids}-scope-all`}
+            <fieldset className="flex min-w-0 flex-col gap-3">
+              <legend className="mb-3 text-[14.5px] font-bold text-(--s-ink)">{t("products")}</legend>
+              <OptionCards>
+                <OptionCard
+                  name={`${ids}-scope`}
+                  value="all"
                   title={t("allProducts")}
-                  hint={t("allProductsHint")}
+                  description={t("allProductsHint")}
                   checked={form.productScope === "all"}
-                  control={<RadioGroupItem id={`${ids}-scope-all`} value="all" />}
+                  onChange={() => set("productScope", "all")}
                 />
-                <ChoiceCard
-                  id={`${ids}-scope-selected`}
+                <OptionCard
+                  name={`${ids}-scope`}
+                  value="selected"
                   title={t("selectedProducts")}
-                  hint={t("selectedProductsHint")}
+                  description={t("selectedProductsHint")}
                   checked={form.productScope === "selected"}
-                  control={<RadioGroupItem id={`${ids}-scope-selected`} value="selected" />}
+                  onChange={() => set("productScope", "selected")}
                 />
-              </RadioGroup>
+              </OptionCards>
               {form.productScope === "selected" && (
                 <CouponProductPicker
                   selectedIds={form.productIds}
@@ -293,13 +235,17 @@ export function CouponEditor({ open, onOpenChange, coupon, onSaved }: Props) {
                   invalid={!!errors.productIds}
                 />
               )}
-              {fieldError("productIds")}
+              {errors.productIds && (
+                <p role="alert" className="text-xs font-semibold text-destructive">
+                  {fieldError("productIds")}
+                </p>
+              )}
             </fieldset>
 
             {/* Conditions */}
-            <fieldset className="space-y-3">
-              <legend className="mb-3 text-sm font-semibold">{t("limits")}</legend>
-              <div className="grid gap-4 sm:grid-cols-3">
+            <fieldset className="flex min-w-0 flex-col gap-3">
+              <legend className="mb-3 text-[14.5px] font-bold text-(--s-ink)">{t("limits")}</legend>
+              <div className="grid grid-cols-3 gap-3 max-[720px]:grid-cols-1">
                 <NumberField
                   id={`${ids}-min`}
                   label={t("minPurchase")}
@@ -323,74 +269,72 @@ export function CouponEditor({ open, onOpenChange, coupon, onSaved }: Props) {
                   placeholder={t("unlimited")}
                 />
               </div>
-              <p className="text-xs text-muted-foreground">{t("minPurchaseHint")}</p>
+              <p className="text-pretty text-xs text-(--s-faint)">{t("minPurchaseHint")}</p>
             </fieldset>
 
             {/* Active dates */}
-            <fieldset className="space-y-3">
-              <legend className="mb-3 text-sm font-semibold">{t("dates")}</legend>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor={`${ids}-start`}>{t("startsAt")}</Label>
-                  <Input
+            <fieldset className="flex min-w-0 flex-col gap-3">
+              <legend className="mb-3 text-[14.5px] font-bold text-(--s-ink)">{t("dates")}</legend>
+              <FieldRow>
+                <Field label={t("startsAt")} htmlFor={`${ids}-start`}>
+                  <TextInput
                     id={`${ids}-start`}
                     type="date"
                     value={form.startDate}
                     onChange={(e) => set("startDate", e.target.value)}
                     aria-invalid={!!errors.dates}
-                    aria-describedby={describedBy("dates")}
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor={`${ids}-end`}>{t("expiresAt")}</Label>
-                  <Input
+                </Field>
+                <Field label={t("expiresAt")} htmlFor={`${ids}-end`}>
+                  <TextInput
                     id={`${ids}-end`}
                     type="date"
                     min={form.startDate || undefined}
                     value={form.endDate}
                     onChange={(e) => set("endDate", e.target.value)}
                     aria-invalid={!!errors.dates}
-                    aria-describedby={describedBy("dates")}
                   />
-                </div>
-              </div>
-              {fieldError("dates")}
+                </Field>
+              </FieldRow>
+              {errors.dates && (
+                <p role="alert" className="text-xs font-semibold text-destructive">
+                  {fieldError("dates")}
+                </p>
+              )}
             </fieldset>
 
             {/* Listed in the store's cart (0149, F-13c) */}
-            <div className="flex items-start justify-between gap-3 rounded-xl border p-3">
+            <div className="flex items-start justify-between gap-3 rounded-2xl border-[1.5px] border-(--s-field) bg-(--s-surface) p-3.5">
               <div className="min-w-0">
-                <Label htmlFor={`${ids}-show-in-cart`}>{t("showInCart")}</Label>
-                <p className="mt-1 text-pretty text-xs text-muted-foreground">{t("showInCartHint")}</p>
+                <label htmlFor={`${ids}-show-in-cart`} className="text-[13.5px] font-bold text-(--s-text)">
+                  {t("showInCart")}
+                </label>
+                <p className="mt-1 text-pretty text-xs text-(--s-subtle)">{t("showInCartHint")}</p>
               </div>
-              <Switch id={`${ids}-show-in-cart`} checked={form.showInCart} onCheckedChange={(checked) => set("showInCart", checked)} />
+              <Toggle id={`${ids}-show-in-cart`} checked={form.showInCart} onCheckedChange={(checked) => set("showInCart", checked)} />
             </div>
 
             {/* Store pop-up (0114) */}
-            <fieldset className="space-y-3">
-              <legend className="mb-1 text-sm font-semibold">{t("popup")}</legend>
-              <p className="text-xs text-muted-foreground">{t("popupHint")}</p>
-              <RadioGroup
-                value={form.popupTrigger}
-                onValueChange={(v) => set("popupTrigger", v as CouponFormState["popupTrigger"])}
-                className="grid gap-2 sm:grid-cols-2"
-              >
+            <fieldset className="flex min-w-0 flex-col gap-3">
+              <legend className="mb-1 text-[14.5px] font-bold text-(--s-ink)">{t("popup")}</legend>
+              <p className="text-xs text-(--s-subtle)">{t("popupHint")}</p>
+              <OptionCards className="grid-cols-2 max-[600px]:grid-cols-1">
                 {(["off", "enter", "exit", "random"] as const).map((trigger) => (
-                  <ChoiceCard
+                  <OptionCard
                     key={trigger}
-                    id={`${ids}-popup-${trigger}`}
+                    name={`${ids}-popup`}
+                    value={trigger}
                     title={t(`popupTriggers.${trigger}`)}
-                    hint={t(`popupTriggers.${trigger}Hint`)}
+                    description={t(`popupTriggers.${trigger}Hint`)}
                     checked={form.popupTrigger === trigger}
-                    control={<RadioGroupItem id={`${ids}-popup-${trigger}`} value={trigger} />}
+                    onChange={() => set("popupTrigger", trigger)}
                   />
                 ))}
-              </RadioGroup>
+              </OptionCards>
               {form.popupTrigger !== "off" && (
-                <div className="space-y-2">
-                  <Label htmlFor={`${ids}-popup-duration`}>{t("popupDuration")}</Label>
-                  <div className="flex flex-wrap gap-2">
-                    <Input
+                <Field label={t("popupDuration")} htmlFor={`${ids}-popup-duration`} note={t("popupDurationHint")} error={fieldError("popupDuration")}>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <TextInput
                       id={`${ids}-popup-duration`}
                       type="number"
                       inputMode="numeric"
@@ -400,69 +344,43 @@ export function CouponEditor({ open, onOpenChange, coupon, onSaved }: Props) {
                       value={form.popupDuration}
                       onChange={(e) => set("popupDuration", e.target.value)}
                       aria-invalid={!!errors.popupDuration}
-                      aria-describedby={describedBy("popupDuration", true)}
                       className="w-28"
                     />
-                    <div
-                      role="radiogroup"
-                      aria-label={t("popupDuration")}
-                      className="inline-flex rounded-lg border bg-muted p-1"
-                    >
-                      {POPUP_UNITS.map((unit) => (
-                        <button
-                          key={unit}
-                          type="button"
-                          role="radio"
-                          aria-checked={form.popupUnit === unit}
-                          onClick={() => set("popupUnit", unit)}
-                          className={cn(
-                            "rounded-md px-3 py-1 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                            form.popupUnit === unit
-                              ? "bg-background text-foreground shadow-sm"
-                              : "text-muted-foreground hover:text-foreground"
-                          )}
-                        >
-                          {t(`popupUnits.${unit}`)}
-                        </button>
-                      ))}
-                    </div>
+                    <Segmented
+                      label={t("popupDuration")}
+                      value={form.popupUnit}
+                      onChange={(value) => set("popupUnit", value)}
+                      options={POPUP_UNITS.map((value) => ({ value, label: t(`popupUnits.${value}`) }))}
+                    />
                   </div>
-                  {fieldError("popupDuration") ?? (
-                    <p id={`${ids}-popupDuration-hint`} className="text-xs text-muted-foreground">
-                      {t("popupDurationHint")}
-                    </p>
-                  )}
-                </div>
+                </Field>
               )}
             </fieldset>
           </div>
 
           {/* Live preview: what the customer is handed. */}
           <aside className="order-first lg:order-none">
-            <div className="space-y-3 lg:sticky lg:top-0">
-              <p className="text-sm font-semibold">{t("previewLabel")}</p>
-              <div className="rounded-xl bg-muted p-4">
+            <div className="flex flex-col gap-3 lg:sticky lg:top-0">
+              <p className="text-[14.5px] font-bold text-(--s-ink)">{t("previewLabel")}</p>
+              <div className="rounded-2xl bg-(--s-fill) p-4">
                 <div className="flex overflow-visible rounded-lg shadow-sm">
                   <CouponTicketStub
                     discountType={form.discountType}
                     discountValue={previewValue}
                     status={previewStatus}
-                    notchClassName="bg-muted"
+                    notchClassName="bg-(--s-fill)"
                     className="w-28 rounded-e-none py-5"
                   />
-                  <div className="flex min-w-0 flex-1 flex-col justify-center gap-1 rounded-e-lg bg-card px-4 py-3">
-                    <span
-                      dir="ltr"
-                      className="truncate font-mono text-lg font-semibold tracking-wider text-foreground"
-                    >
+                  <div className="flex min-w-0 flex-1 flex-col justify-center gap-1 rounded-e-lg bg-(--s-surface) px-4 py-3">
+                    <bdi dir="ltr" className="truncate font-montserrat text-lg font-bold tracking-wider text-(--s-ink)">
                       {normalizeCode(form.code) || "CODE"}
-                    </span>
-                    <span className="truncate text-sm text-muted-foreground">
+                    </bdi>
+                    <span className="truncate text-[13px] text-(--s-muted)">
                       {form.name.trim() || t("previewName")}
                     </span>
                   </div>
                 </div>
-                <dl className="mt-4 space-y-1 text-xs text-muted-foreground">
+                <dl className="mt-4 space-y-1 text-xs text-(--s-muted)">
                   {form.channels.length > 0 && (
                     <div>
                       <dt className="sr-only">{t("channels")}</dt>
@@ -481,56 +399,22 @@ export function CouponEditor({ open, onOpenChange, coupon, onSaved }: Props) {
                   )}
                 </dl>
               </div>
-              <p className="text-sm leading-relaxed text-muted-foreground">{t("scope")}</p>
+              <p className="text-[13px] leading-relaxed text-(--s-muted)">{t("scope")}</p>
             </div>
           </aside>
         </form>
 
-        <SheetFooter className="flex-row justify-end gap-2 border-t px-6 py-4">
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+        <SheetFooter className="flex-row justify-end gap-2 border-t border-(--s-line-soft) px-6 py-4 max-[600px]:px-4">
+          <SellerButton type="button" variant="outline" onClick={() => onOpenChange(false)}>
             {t("cancel")}
-          </Button>
-          <Button type="submit" form={`${ids}-form`} disabled={isSaving}>
+          </SellerButton>
+          <SellerButton type="submit" form={`${ids}-form`} disabled={isSaving}>
             {isSaving && <Spinner className="size-4" />}
             {coupon ? t("save") : t("createAction")}
-          </Button>
+          </SellerButton>
         </SheetFooter>
       </SheetContent>
     </Sheet>
-  );
-}
-
-function ChoiceCard({
-  id,
-  title,
-  hint,
-  hintDir,
-  checked,
-  control,
-}: {
-  id: string;
-  title: string;
-  hint: string;
-  hintDir?: "ltr";
-  checked: boolean;
-  control: React.ReactNode;
-}) {
-  return (
-    <label
-      htmlFor={id}
-      className={cn(
-        "flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-colors",
-        checked ? "border-primary bg-primary/5" : "hover:bg-muted/60"
-      )}
-    >
-      <span className="pt-0.5">{control}</span>
-      <span className="min-w-0">
-        <span className="block text-sm font-medium">{title}</span>
-        <span dir={hintDir} className="block truncate text-xs text-muted-foreground">
-          {hint}
-        </span>
-      </span>
-    </label>
   );
 }
 
@@ -552,12 +436,11 @@ function NumberField({
 }) {
   const { unit } = useAccountMoney();
   return (
-    <div className="space-y-2">
-      <Label htmlFor={id}>{label}</Label>
+    <Field label={label} htmlFor={id}>
       {decimal ? (
         <CurrencyInput {...unit} id={id} value={value} onChange={onChange} placeholder={placeholder} />
       ) : (
-        <Input
+        <TextInput
           id={id}
           type="number"
           inputMode="numeric"
@@ -569,6 +452,6 @@ function NumberField({
           placeholder={placeholder}
         />
       )}
-    </div>
+    </Field>
   );
 }

@@ -1,4 +1,6 @@
 import { Suspense } from "react";
+import { Skeleton } from "@workspace/ui/components/skeleton";
+import { PageContainer } from "@/components/seller-ui";
 import { EmailCampaignsData } from "./email-campaigns.data";
 
 // Per-seller data read from the session cookie; personal data, never cached.
@@ -10,10 +12,10 @@ export const maxDuration = 300;
 export default async function EmailCampaignsPage({ searchParams }: { searchParams: Promise<{ store?: string }> }) {
   const params = await searchParams;
   return (
-    <div className="min-h-screen p-4 sm:p-6">
-      <Suspense fallback={<div className="h-40 animate-pulse rounded-xl bg-muted" />}>
+    <PageContainer>
+      <Suspense fallback={<Skeleton className="h-48 rounded-[24px]" />}>
         <EmailCampaignsData storeId={typeof params.store === "string" ? params.store : null} />
       </Suspense>
-    </div>
+    </PageContainer>
   );
 }

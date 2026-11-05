@@ -4,7 +4,6 @@ import { useEffect, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Check, Copy, ExternalLink, FileDown, Link2, Loader2, MessageCircle } from "lucide-react";
-import { Button } from "@workspace/ui/components/button";
 import {
   Dialog,
   DialogContent,
@@ -12,8 +11,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@workspace/ui/components/dialog";
-import { Input } from "@workspace/ui/components/input";
-import { Label } from "@workspace/ui/components/label";
 import {
   Select,
   SelectContent,
@@ -21,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@workspace/ui/components/select";
-import { cn } from "@workspace/ui/lib/utils";
+import { Field, IconButton, Note, OptionCard, OptionCards, SellerButton, TextAction, TextInput, fieldClass } from "@/components/seller-ui";
 import {
   createCatalogLinkAction,
   listCatalogShareCategoriesAction,
@@ -102,16 +99,15 @@ export function CatalogShareForm({ productIds }: { productIds?: string[] }) {
   if (created) return <CatalogLinkView created={created} title={title} onBack={() => setCreated(null)} />;
 
   return (
-    <div className="space-y-4">
-      <div className="space-y-1.5">
-        <Label>{t("store")}</Label>
+    <div className="flex flex-col gap-4">
+      <Field label={t("store")}>
         {stores === null ? (
-          <div className="bg-muted h-9 animate-pulse rounded-md" />
+          <div className="h-[46px] animate-pulse rounded-[14px] bg-(--s-fill)" />
         ) : stores.length === 0 ? (
-          <p className="text-muted-foreground text-sm">{t("noStores")}</p>
+          <p className="text-[13px] text-(--s-muted)">{t("noStores")}</p>
         ) : (
           <Select value={storeId} onValueChange={(value) => { setStoreId(value); setCreated(null); }}>
-            <SelectTrigger className="w-full">
+            <SelectTrigger className={fieldClass} aria-label={t("store")}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -124,37 +120,33 @@ export function CatalogShareForm({ productIds }: { productIds?: string[] }) {
             </SelectContent>
           </Select>
         )}
-        {store && !store.published && <p className="text-xs text-amber-700 dark:text-amber-400">{t("offlineWarning")}</p>}
-        {store?.selectedCatalog && <p className="text-muted-foreground text-xs">{t("selectedCatalogNote")}</p>}
-      </div>
+        {store && !store.published && <Note tone="amber">{t("offlineWarning")}</Note>}
+        {store?.selectedCatalog && <p className="text-xs text-(--s-faint)">{t("selectedCatalogNote")}</p>}
+      </Field>
 
       {picking ? (
-        <p className="bg-muted/60 rounded-lg px-3 py-2 text-sm">{t("pickedProducts", { count: productIds!.length })}</p>
+        <Note>{t("pickedProducts", { count: productIds!.length })}</Note>
       ) : (
-        <div className="space-y-2">
-          <Label>{t("show")}</Label>
-          <div className="grid grid-cols-2 gap-2">
+        <Field label={t("show")}>
+          <OptionCards>
             {(["category", "newest"] as const).map((value) => (
-              <button
+              <OptionCard
                 key={value}
-                type="button"
-                onClick={() => setMode(value)}
+                name="catalog-mode"
+                value={value}
+                title={t(value === "category" ? "modeCategory" : "modeNewest", { max: 48 })}
+                checked={mode === value}
+                onChange={() => setMode(value)}
                 disabled={value === "category" && categories !== null && categories.length === 0}
-                className={cn(
-                  "rounded-lg border px-3 py-2 text-start text-sm transition-colors disabled:opacity-50",
-                  mode === value ? "border-primary bg-primary-soft text-primary-ink" : "hover:bg-muted",
-                )}
-              >
-                {t(value === "category" ? "modeCategory" : "modeNewest", { max: 48 })}
-              </button>
+              />
             ))}
-          </div>
+          </OptionCards>
           {mode === "category" && (
             categories === null ? (
-              <div className="bg-muted h-9 animate-pulse rounded-md" />
+              <div className="h-[46px] animate-pulse rounded-[14px] bg-(--s-fill)" />
             ) : (
               <Select value={categoryKey} onValueChange={setCategoryKey}>
-                <SelectTrigger className="w-full">
+                <SelectTrigger className={fieldClass} aria-label={t("pickCategory")}>
                   <SelectValue placeholder={t("pickCategory")} />
                 </SelectTrigger>
                 <SelectContent>
@@ -167,18 +159,17 @@ export function CatalogShareForm({ productIds }: { productIds?: string[] }) {
               </Select>
             )
           )}
-        </div>
+        </Field>
       )}
 
-      <div className="space-y-1.5">
-        <Label htmlFor="catalog-title">{t("titleLabel")}</Label>
-        <Input id="catalog-title" value={title} maxLength={80} placeholder={t("titlePlaceholder")} onChange={(e) => setTitle(e.target.value)} />
-      </div>
+      <Field label={t("titleLabel")} htmlFor="catalog-title">
+        <TextInput id="catalog-title" value={title} maxLength={80} placeholder={t("titlePlaceholder")} onChange={(e) => setTitle(e.target.value)} />
+      </Field>
 
-      <Button type="button" className="w-full" disabled={!canCreate || pending} onClick={create}>
-        {pending ? <Loader2 className="size-4 animate-spin" /> : <Link2 className="size-4" />}
+      <SellerButton type="button" className="w-full" disabled={!canCreate || pending} onClick={create}>
+        {pending ? <Loader2 className="animate-spin" aria-hidden /> : <Link2 aria-hidden />}
         {t("create")}
-      </Button>
+      </SellerButton>
     </div>
   );
 }
@@ -201,49 +192,49 @@ function CatalogLinkView({ created, title, onBack }: { created: Created; title: 
   const message = title.trim() || t("whatsappMessage");
 
   return (
-    <div className="space-y-4">
-      {created.count > 0 && <p className="text-sm">{t("ready", { count: created.count })}</p>}
-      {created.skipped > 0 && <p className="text-xs text-amber-700 dark:text-amber-400">{t("skipped", { count: created.skipped, max: created.max })}</p>}
-      {!created.published && <p className="text-xs text-amber-700 dark:text-amber-400">{t("offlineWarning")}</p>}
+    <div className="flex flex-col gap-4">
+      {created.count > 0 && <p className="text-[13.5px] font-semibold text-(--s-text)">{t("ready", { count: created.count })}</p>}
+      {created.skipped > 0 && <Note tone="amber">{t("skipped", { count: created.skipped, max: created.max })}</Note>}
+      {!created.published && <Note tone="amber">{t("offlineWarning")}</Note>}
 
-      <div className="flex gap-2">
-        <Input readOnly dir="ltr" value={created.url} onFocus={(e) => e.currentTarget.select()} className="font-mono text-xs" />
-        <Button type="button" variant="outline" size="icon" aria-label={t("copy")} onClick={() => copy(created.url)}>
-          {copied === created.url ? <Check className="size-4" /> : <Copy className="size-4" />}
-        </Button>
+      <div className="flex items-center gap-2">
+        <TextInput readOnly dir="ltr" value={created.url} onFocus={(e) => e.currentTarget.select()} className="min-w-0 flex-1 font-montserrat text-xs" />
+        <IconButton aria-label={t("copy")} onClick={() => copy(created.url)}>
+          {copied === created.url ? <Check aria-hidden /> : <Copy aria-hidden />}
+        </IconButton>
       </div>
 
-      <div className="grid gap-2 sm:grid-cols-3">
-        <Button asChild className="bg-[#25D366] text-white hover:bg-[#1fb857]">
+      <div className="flex flex-wrap gap-2 [&>*]:flex-[1_1_auto]">
+        <SellerButton asChild variant="whatsapp">
           <a href={catalogWhatsAppHref(message, created.url)} target="_blank" rel="noopener noreferrer">
-            <MessageCircle className="size-4" />
+            <MessageCircle aria-hidden />
             {t("whatsapp")}
           </a>
-        </Button>
-        <Button asChild variant="outline">
+        </SellerButton>
+        <SellerButton asChild variant="outline">
           <a href={created.url} target="_blank" rel="noopener noreferrer">
-            <ExternalLink className="size-4" />
+            <ExternalLink aria-hidden />
             {t("open")}
           </a>
-        </Button>
-        <Button asChild variant="outline">
+        </SellerButton>
+        <SellerButton asChild variant="outline">
           <a href={created.printUrl} target="_blank" rel="noopener noreferrer">
-            <FileDown className="size-4" />
+            <FileDown aria-hidden />
             {t("pdf")}
           </a>
-        </Button>
+        </SellerButton>
       </div>
 
       {created.altUrl && created.altLocale && (
-        <button type="button" onClick={() => copy(created.altUrl!)} className="text-muted-foreground text-xs underline underline-offset-4">
+        <TextAction type="button" onClick={() => copy(created.altUrl!)} className="self-start">
           {t(created.altLocale === "en" ? "copyEnglish" : "copyArabic")}
-        </button>
+        </TextAction>
       )}
 
-      <p className="text-muted-foreground text-xs">{t("liveNote")}</p>
-      <Button type="button" variant="ghost" size="sm" onClick={onBack}>
+      <p className="text-xs text-(--s-faint)">{t("liveNote")}</p>
+      <SellerButton type="button" variant="mini" size="sm" onClick={onBack} className="self-start">
         {t("another")}
-      </Button>
+      </SellerButton>
     </div>
   );
 }

@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
-import { ChevronRight, PlayCircle } from "lucide-react";
+import { ChevronRight, Compass, PlayCircle } from "lucide-react";
 import { getBillingState } from "@workspace/lib/billing/server";
-import { Badge } from "@workspace/ui/components/badge";
+import { PageContainer, PageHeader, Row, Rows, SectionCard, Tag } from "@/components/seller-ui";
 import { requireSeller } from "@/lib/auth/require-seller.server";
 import { getSellerStores } from "@/lib/stores/current-store.server";
 import { storeBuilderEnabled } from "@/components/dashboard/sidebar.config";
@@ -43,52 +43,46 @@ export async function HelpData() {
   });
 
   return (
-    <div className="mx-auto max-w-6xl space-y-8 p-4 sm:p-6">
+    <PageContainer>
+      <PageHeader title={t("contactTitle")} description={t("contactSubtitle")} />
       <ContactDesk storeName={selected?.name ?? null} />
 
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_18rem]">
+      <div className="grid grid-cols-[minmax(0,1fr)_20rem] items-start gap-3.5 max-[1020px]:grid-cols-1">
         <FaqBrowser topics={topics} />
 
-        <aside className="space-y-8">
-          <nav aria-labelledby="help-shortcuts-title">
-            <h2 id="help-shortcuts-title" className="mb-1 text-base font-semibold">
-              {t("shortcutsTitle")}
-            </h2>
-            <p className="mb-3 text-[13px] text-muted-foreground">{t("shortcutsSubtitle")}</p>
-            <ul className="divide-y rounded-xl border bg-card">
+        <aside className="flex min-w-0 flex-col gap-3.5">
+          <SectionCard icon={Compass} title={t("shortcutsTitle")} description={t("shortcutsSubtitle")}>
+            <Rows>
               {shortcuts.map((s) => (
-                <li key={s.href + s.label}>
-                  <Link
-                    href={s.href}
-                    className="flex items-center justify-between gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset first:rounded-t-xl last:rounded-b-xl"
-                  >
-                    {s.label}
-                    <ChevronRight className="size-4 shrink-0 text-muted-foreground rtl:rotate-180" aria-hidden />
-                  </Link>
-                </li>
+                <Link key={s.href + s.label} href={s.href} className="no-underline [&+&]:border-t [&+&]:border-(--s-line-soft)">
+                  <Row title={s.label} end={<ChevronRight className="size-4 text-(--s-subtle) rtl:rotate-180" aria-hidden />} />
+                </Link>
               ))}
-            </ul>
-          </nav>
+            </Rows>
+          </SectionCard>
 
-          <section aria-labelledby="help-videos-title">
-            <div className="mb-1 flex items-center gap-2">
-              <h2 id="help-videos-title" className="text-base font-semibold">
+          <SectionCard
+            icon={PlayCircle}
+            tone="neutral"
+            title={
+              <>
                 {t("videosTitle")}
-              </h2>
-              <Badge variant="secondary">{t("comingSoon")}</Badge>
-            </div>
-            <p className="mb-3 text-pretty text-[13px] text-muted-foreground">{t("videosSubtitle")}</p>
-            <ul className="space-y-2" aria-label={t("videosPlanned")}>
+                <Tag>{t("comingSoon")}</Tag>
+              </>
+            }
+            description={t("videosSubtitle")}
+          >
+            <ul className="flex flex-col gap-2" aria-label={t("videosPlanned")}>
               {HELP_VIDEOS.map((key) => (
-                <li key={key} className="flex items-center gap-2.5 text-sm text-muted-foreground">
-                  <PlayCircle className="size-4 shrink-0 opacity-60" aria-hidden />
+                <li key={key} className="flex items-center gap-2.5 text-[13px] text-(--s-muted)">
+                  <PlayCircle className="size-4 shrink-0 text-(--s-faint)" aria-hidden />
                   {t(`videos.${key}`)}
                 </li>
               ))}
             </ul>
-          </section>
+          </SectionCard>
         </aside>
       </div>
-    </div>
+    </PageContainer>
   );
 }

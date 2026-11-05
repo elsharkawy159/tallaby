@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button } from "@workspace/ui/components/button";
 import { Tabs, TabsList, TabsTrigger } from "@workspace/ui/components/tabs";
+import { PageHeader } from "@/components/seller-ui";
 import type { AdRequestRow, AdWallet } from "@/actions/ads";
 import {
   AD_PACKAGE_PERIODS,
@@ -97,11 +98,11 @@ export function AdvertiseProducts({ products, requests, wallet }: Props) {
 
   return (
     <div className="mx-auto w-full pb-28 lg:pb-0">
-      <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-bold leading-snug sm:text-2xl">{tNav("advertiseProducts")}</h1>
-          <p className="mt-1 max-w-155 text-pretty text-muted-foreground">{t("intro")}</p>
-        </div>
+      <PageHeader
+        className="mb-5"
+        title={tNav("advertiseProducts")}
+        description={t("intro")}
+        actions={
         <div className="hidden flex-wrap gap-1.5 sm:flex">
           {(
             [
@@ -119,7 +120,8 @@ export function AdvertiseProducts({ products, requests, wallet }: Props) {
             </span>
           ))}
         </div>
-      </header>
+        }
+      />
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_17.5rem] xl:grid-cols-[minmax(0,1fr)_20rem]">
         <div className="flex min-w-0 flex-col gap-3.5">

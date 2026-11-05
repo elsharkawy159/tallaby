@@ -11,6 +11,7 @@ import {
 import { isAutomaticEmailPaused } from "@workspace/lib/emails/policy";
 import { requireSeller } from "@/lib/auth/require-seller.server";
 import { getSellerStores } from "@/lib/stores/current-store.server";
+import { PageHeader } from "@/components/seller-ui";
 import { EmailCampaignsView } from "./email-campaigns.client";
 
 /**
@@ -40,8 +41,8 @@ export async function EmailCampaignsData(props: { storeId: string | null }) {
     : null;
 
   return (
-    <section aria-label={t("title")} className="space-y-5">
-      <p className="text-pretty text-sm text-muted-foreground">{t("description")}</p>
+    <>
+      <PageHeader title={t("title")} description={t("description")} />
       <EmailCampaignsView
         key={store?.id ?? "none"}
         stores={stores.map((s) => ({ id: s.id, name: s.name }))}
@@ -62,6 +63,6 @@ export async function EmailCampaignsData(props: { storeId: string | null }) {
             : null
         }
       />
-    </section>
+    </>
   );
 }

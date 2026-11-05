@@ -3,31 +3,24 @@
 import { useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import Image from "next/image";
-import type { ColumnDef } from "@tanstack/react-table";
-import { TableSection } from "@workspace/ui/components/table-section";
+import { HelpCircle, Mail, Star } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@workspace/ui/components/avatar";
+import { Skeleton } from "@workspace/ui/components/skeleton";
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@workspace/ui/components/card";
-import { Badge } from "@workspace/ui/components/badge";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@workspace/ui/components/avatar";
+  EmptyState,
+  NativeSelect,
+  PageTabs,
+  SectionCard,
+  SellerButton,
+  SellerCard,
+  StatusBadge,
+  Tag,
+  TextArea,
+} from "@/components/seller-ui";
 import { getPublicUrl } from "@/lib/utils";
-import { useTableSectionLabels } from "@/lib/i18n/table-labels";
 import { formatDateTime, formatNumber } from "@/lib/i18n/format";
-import { Star } from "lucide-react";
-import { Button } from "@workspace/ui/components/button";
-import { Textarea } from "@workspace/ui/components/textarea";
-import { CardDescription } from "@workspace/ui/components/card";
-import {
-  answerProductQuestionAction,
-  updateProductAnswerAction,
-} from "@/actions/products";
+import { answerProductQuestionAction, updateProductAnswerAction } from "@/actions/products";
+import { SearchPill } from "../orders/orders-ui";
 
 export type VendorReviewRow = {
   id: string;
@@ -44,7 +37,14 @@ export type VendorReviewRow = {
   orderNumber?: string | null;
   reviewType?: "product" | "store";
   replied: boolean;
+  /** Added by the seller from the product form, not by a customer. */
+  sellerAdded?: boolean;
 };
+
+const REVIEW_SORTS = ["newest", "oldest", "lowest", "highest"] as const;
+type ReviewSort = (typeof REVIEW_SORTS)[number];
+
+const PAGE_STEP = 20;
 
 export function VendorReviewsTabs({
   productRows,
@@ -57,237 +57,183 @@ export function VendorReviewsTabs({
   const [activeTab, setActiveTab] = useState<"product" | "store">("product");
 
   return (
-    <div className="space-y-4">
-      <div className="flex gap-2">
-        <Button
-          variant={activeTab === "product" ? "default" : "outline"}
-          size="sm"
-          onClick={() => setActiveTab("product")}
-        >
-          {t("productTab", { count: productRows.length })}
-        </Button>
-        <Button
-          variant={activeTab === "store" ? "default" : "outline"}
-          size="sm"
-          onClick={() => setActiveTab("store")}
-        >
-          {t("storeTab", { count: storeRows.length })}
-        </Button>
-      </div>
-      <VendorReviewsTable
-        rows={activeTab === "product" ? productRows : storeRows}
-        reviewType={activeTab}
+    <>
+      <PageTabs
+        label={t("title")}
+        value={activeTab}
+        onChange={(key) => setActiveTab(key as "product" | "store")}
+        tabs={[
+          { key: "product", label: t("productTab", { count: productRows.length }) },
+          { key: "store", label: t("storeTab", { count: storeRows.length }) },
+        ]}
       />
-    </div>
+      <VendorReviewsList key={activeTab} rows={activeTab === "product" ? productRows : storeRows} reviewType={activeTab} />
+    </>
   );
 }
 
-export function VendorReviewsTable({
-  rows,
-  reviewType = "product",
-}: {
-  rows: VendorReviewRow[];
-  reviewType?: "product" | "store";
-}) {
+/** Reviews as rows that read the same on a phone and a desktop: search, sort and a "show more". */
+function VendorReviewsList({ rows, reviewType }: { rows: VendorReviewRow[]; reviewType: "product" | "store" }) {
   const t = useTranslations("reviews");
-  const locale = useLocale();
-  const tableLabels = useTableSectionLabels();
-  const columns = useMemo<ColumnDef<VendorReviewRow, any>[]>(
-    () => [
-      {
-        id: "created",
-        header: t("columns.date"),
-        size: 140,
-        accessorFn: (row) => row.createdAt,
-        cell: ({ row }) => (
-          <div className="text-sm text-muted-foreground">
-            {formatDateTime(row.original.createdAt, locale)}
-          </div>
-        ),
-      },
-      {
-        id: "customer",
-        header: t("columns.customer"),
-        size: 240,
-        cell: ({ row }) => (
-          <div className="flex items-center gap-3 min-w-0">
-            <Avatar className="h-8 w-8">
-              <AvatarImage
-                src={row.original.customerAvatar || undefined}
-                alt={row.original.customerName}
-              />
-              <AvatarFallback>
-                {initials(row.original.customerName)}
-              </AvatarFallback>
-            </Avatar>
-            <div className="min-w-0">
-              <div className="truncate font-medium">
-                {row.original.customerName}
-              </div>
-              {row.original.customerEmail && (
-                <a
-                  className="text-xs text-blue-600 dark:text-blue-400 hover:underline truncate"
-                  href={`mailto:${row.original.customerEmail}`}
-                  title={row.original.customerEmail}
-                >
-                  {row.original.customerEmail}
-                </a>
-              )}
-            </div>
-          </div>
-        ),
-      },
-      {
-        id: "product",
-        header: reviewType === "store" ? t("columns.order") : t("columns.product"),
-        size: 320,
-        cell: ({ row }) => {
-          if (reviewType === "store") {
-            return (
-              <div className="min-w-0">
-                <div className="truncate font-medium">
-                  {t("orderNumber", { number: row.original.orderNumber ?? "—" })}
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  {t("storeReview")}
-                </div>
-              </div>
-            );
-          }
+  const [query, setQuery] = useState("");
+  const [sort, setSort] = useState<ReviewSort>("newest");
+  const [shown, setShown] = useState(PAGE_STEP);
 
-          const image = row.original.productImage
-            ? getPublicUrl(row.original.productImage, "products")
-            : undefined;
-          return (
-            <div className="flex items-center gap-3">
-              {image ? (
-                <Image
-                  src={image}
-                  width={40}
-                  height={40}
-                  alt={row.original.productTitle}
-                  className="h-10 w-10 rounded object-cover border"
-                />
-              ) : (
-                <div className="h-10 w-10 rounded border bg-muted" />
-              )}
-              <div className="min-w-0">
-                <div className="truncate font-medium">
-                  {row.original.productTitle}
-                </div>
-              </div>
-            </div>
-          );
-        },
-      },
-      {
-        id: "rating",
-        header: t("columns.rating"),
-        size: 140,
-        accessorFn: (row) => row.rating,
-        cell: ({ row }) => (
-          <div className="flex items-center gap-1">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Star
-                key={i}
-                className={
-                  i < Math.round(row.original.rating)
-                    ? "text-yellow-500"
-                    : "text-muted-foreground/40"
-                }
-                size={16}
-                fill={
-                  i < Math.round(row.original.rating) ? "currentColor" : "none"
-                }
-              />
-            ))}
-            <span className="text-xs text-muted-foreground ms-1">
-              ({formatNumber(row.original.rating, locale, {
-                minimumFractionDigits: 1,
-                maximumFractionDigits: 1,
-              })})
-            </span>
-          </div>
-        ),
-      },
-      {
-        id: "review",
-        // The search box filters on this text: the review, its author and the product.
-        accessorFn: (r) => [r.title, r.content, r.customerName, r.productTitle].filter(Boolean).join(" "),
-        header: t("columns.review"),
-        size: 420,
-        cell: ({ row }) => (
-          <div className="space-y-1">
-            {row.original.title && (
-              <div className="font-medium truncate">{row.original.title}</div>
-            )}
-            {row.original.content && (
-              <div className="text-sm text-muted-foreground line-clamp-2">
-                {row.original.content}
-              </div>
-            )}
-          </div>
-        ),
-      },
-      {
-        id: "status",
-        header: t("columns.status"),
-        size: 120,
-        accessorFn: (row) => (row.replied ? t("replied") : t("unreplied")),
-        cell: ({ row }) => (
-          <Badge variant={row.original.replied ? "default" : "secondary"}>
-            {row.original.replied ? t("replied") : t("unreplied")}
-          </Badge>
-        ),
-      },
-      {
-        id: "contact",
-        header: t("columns.contact"),
-        size: 140,
-        cell: ({ row }) =>
-          row.original.customerEmail ? (
-            <a
-              className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
-              href={`mailto:${row.original.customerEmail}`}
-            >
-              {t("emailCustomer")}
-            </a>
-          ) : (
-            <span className="text-sm text-muted-foreground">{t("noEmail")}</span>
-          ),
-      },
-    ],
-    [reviewType, t, locale]
-  );
+  const visible = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    const found = q
+      ? rows.filter((r) =>
+          [r.title, r.content, r.customerName, r.productTitle].filter(Boolean).join(" ").toLowerCase().includes(q),
+        )
+      : rows;
+    const time = (r: VendorReviewRow) => new Date(r.createdAt).getTime();
+    return [...found].sort((a, b) =>
+      sort === "newest"
+        ? time(b) - time(a)
+        : sort === "oldest"
+          ? time(a) - time(b)
+          : sort === "lowest"
+            ? a.rating - b.rating
+            : b.rating - a.rating,
+    );
+  }, [rows, query, sort]);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t("title")}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <TableSection<VendorReviewRow>
-          rows={rows}
-          columns={columns}
-          searchColumnId="review"
-          labels={tableLabels}
+    <>
+      <div className="flex flex-wrap items-center gap-2">
+        <SearchPill
+          value={query}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setShown(PAGE_STEP);
+          }}
+          placeholder={t("search")}
+          aria-label={t("search")}
         />
-      </CardContent>
-    </Card>
+        <NativeSelect
+          aria-label={t("sortLabel")}
+          value={sort}
+          onChange={(e) => setSort(e.target.value as ReviewSort)}
+          className="h-[42px] w-auto rounded-full text-[13px] font-semibold max-[720px]:w-full"
+        >
+          {REVIEW_SORTS.map((key) => (
+            <option key={key} value={key}>
+              {t(`sort.${key}`)}
+            </option>
+          ))}
+        </NativeSelect>
+      </div>
+
+      {visible.length === 0 ? (
+        <SellerCard>
+          <EmptyState icon={Star} title={t(rows.length ? "noMatch" : "empty")} />
+        </SellerCard>
+      ) : (
+        <ul className="overflow-hidden rounded-[20px] border border-(--s-line) bg-(--s-surface)">
+          {visible.slice(0, shown).map((row) => (
+            <ReviewRow key={row.id} row={row} reviewType={reviewType} />
+          ))}
+        </ul>
+      )}
+
+      {visible.length > shown && (
+        <SellerButton type="button" variant="mini" className="self-center" onClick={() => setShown((n) => n + PAGE_STEP)}>
+          {t("showMore")}
+        </SellerButton>
+      )}
+    </>
+  );
+}
+
+function ReviewRow({ row, reviewType }: { row: VendorReviewRow; reviewType: "product" | "store" }) {
+  const t = useTranslations("reviews");
+  const locale = useLocale();
+  const image = row.productImage ? getPublicUrl(row.productImage, "products") : undefined;
+
+  return (
+    <li className="flex flex-col gap-3 p-4 transition-colors duration-150 hover:bg-(--s-tint) [&+&]:border-t [&+&]:border-(--s-line-soft)">
+      <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-2">
+        <div className="flex min-w-0 flex-[1_1_220px] items-center gap-3">
+          <Avatar className="size-9">
+            <AvatarImage src={row.customerAvatar || undefined} alt={row.customerName} />
+            <AvatarFallback>{initials(row.customerName)}</AvatarFallback>
+          </Avatar>
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <b className="truncate text-[13.5px] font-bold text-(--s-text)">{row.customerName}</b>
+              {row.sellerAdded && <Tag>{t("sellerAdded")}</Tag>}
+            </div>
+            <time dateTime={row.createdAt} className="block text-xs text-(--s-subtle)">
+              {formatDateTime(row.createdAt, locale)}
+            </time>
+          </div>
+        </div>
+        <StatusBadge tone={row.replied ? "success" : "muted"}>{row.replied ? t("replied") : t("unreplied")}</StatusBadge>
+      </div>
+
+      <div className="flex items-center gap-1" role="img" aria-label={`${t("columns.rating")}: ${row.rating}`}>
+        {Array.from({ length: 5 }).map((_, i) => (
+          <Star
+            key={i}
+            size={15}
+            className={i < Math.round(row.rating) ? "text-accent" : "text-(--s-field-strong)"}
+            fill={i < Math.round(row.rating) ? "currentColor" : "none"}
+            aria-hidden
+          />
+        ))}
+        <span className="ms-1 font-montserrat text-xs tabular-nums text-(--s-subtle)">
+          {formatNumber(row.rating, locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
+        </span>
+      </div>
+
+      {(row.title || row.content) && (
+        <div className="flex min-w-0 flex-col gap-0.5">
+          {row.title && <b className="text-[13.5px] font-bold text-(--s-text)">{row.title}</b>}
+          {row.content && <p className="whitespace-pre-line text-pretty text-[13.5px] leading-[1.7] text-(--s-body)">{row.content}</p>}
+        </div>
+      )}
+
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        {reviewType === "store" ? (
+          <div className="min-w-0 text-xs text-(--s-subtle)">
+            <b className="block font-semibold text-(--s-text)">{t("orderNumber", { number: row.orderNumber ?? "—" })}</b>
+            {t("storeReview")}
+          </div>
+        ) : (
+          <div className="flex min-w-0 flex-[1_1_180px] items-center gap-2.5">
+            {image ? (
+              <Image src={image} width={40} height={40} alt={row.productTitle} className="size-10 rounded-xl border border-(--s-line) object-cover" />
+            ) : (
+              <span className="size-10 shrink-0 rounded-xl border border-(--s-line) bg-(--s-fill)" />
+            )}
+            <span className="min-w-0 truncate text-[13px] font-semibold text-(--s-text)">{row.productTitle}</span>
+          </div>
+        )}
+        {row.customerEmail ? (
+          <SellerButton asChild variant="mini" size="xs">
+            <a href={`mailto:${row.customerEmail}`} title={row.customerEmail}>
+              <Mail aria-hidden />
+              {t("emailCustomer")}
+            </a>
+          </SellerButton>
+        ) : (
+          <span className="text-xs text-(--s-faint)">{t("noEmail")}</span>
+        )}
+      </div>
+    </li>
   );
 }
 
 export function VendorReviewsSkeleton() {
-  const t = useTranslations("reviews");
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t("title")}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="h-48 rounded-md border bg-muted" />
-      </CardContent>
-    </Card>
+    <>
+      <div className="flex flex-col gap-2">
+        <Skeleton className="h-8 w-48 max-w-full" />
+        <Skeleton className="h-4 w-80 max-w-full" />
+      </div>
+      <Skeleton className="h-[42px] w-full max-w-[420px] rounded-full" />
+      <Skeleton className="h-64 rounded-[20px]" />
+    </>
   );
 }
 
@@ -310,11 +256,7 @@ export type VendorQuestionRow = {
   answers: Array<{ id: string; answer: string; createdAt?: string }>;
 };
 
-export function VendorQASection({
-  questions,
-}: {
-  questions: VendorQuestionRow[];
-}) {
+export function VendorQASection({ questions }: { questions: VendorQuestionRow[] }) {
   const t = useTranslations("reviews.qa");
   const locale = useLocale();
   // Sort: unanswered first then latest by createdAt desc
@@ -354,93 +296,64 @@ export function VendorQASection({
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t("title")}</CardTitle>
-        <CardDescription>{t("description")}</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {sorted.length === 0 ? (
-          <div className="text-sm text-muted-foreground">
-            {t("empty")}
-          </div>
-        ) : (
-          sorted.map((q) => {
+    <SectionCard icon={HelpCircle} title={t("title")} description={t("description")}>
+      {sorted.length === 0 ? (
+        <EmptyState title={t("empty")} />
+      ) : (
+        <div className="flex flex-col gap-3">
+          {sorted.map((q) => {
             const existing = q.answers[0];
             const isEditing = editing === q.id && Boolean(existing);
-            const productImg = q.productImage
-              ? getPublicUrl(q.productImage, "products")
-              : undefined;
+            const productImg = q.productImage ? getPublicUrl(q.productImage, "products") : undefined;
             return (
-              <div key={q.id} className="rounded-md border p-4 space-y-3">
-                <div className="flex items-start justify-between gap-4">
+              <div key={q.id} className="flex flex-col gap-3 rounded-[20px] border border-(--s-line) bg-(--s-surface) p-4">
+                <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2.5">
                       {productImg ? (
-                        <Image
-                          src={productImg}
-                          alt={q.productTitle}
-                          className="h-10 w-10 rounded object-cover border"
-                          width={40}
-                          height={40}
-                        />
+                        <Image src={productImg} alt={q.productTitle} className="size-10 rounded-xl border border-(--s-line) object-cover" width={40} height={40} />
                       ) : (
-                        <div className="h-10 w-10 rounded border bg-muted" />
+                        <span className="size-10 shrink-0 rounded-xl border border-(--s-line) bg-(--s-fill)" />
                       )}
-                      <div className="truncate font-medium">
-                        {q.productTitle}
-                      </div>
+                      <span className="min-w-0 truncate text-[13px] font-semibold text-(--s-muted)">{q.productTitle}</span>
                     </div>
-                    <div className="mt-2 font-medium">{q.question}</div>
-                    {q.createdAt && (
-                      <div className="text-xs text-muted-foreground">
-                        {formatDateTime(q.createdAt, locale)}
-                      </div>
-                    )}
+                    <p className="mt-2 text-[14px] font-bold text-(--s-text)">{q.question}</p>
+                    {q.createdAt && <p className="text-xs text-(--s-subtle)">{formatDateTime(q.createdAt, locale)}</p>}
                   </div>
                   {existing && !isEditing && (
-                    <Button
-                      variant="outline"
-                      size="sm"
+                    <SellerButton
+                      variant="mini"
+                      size="xs"
                       onClick={() => {
                         setEditing(q.id);
                         setDrafts((s) => ({ ...s, [q.id]: existing.answer }));
                       }}
                     >
                       {t("editAnswer")}
-                    </Button>
+                    </SellerButton>
                   )}
                 </div>
 
                 {existing && !isEditing ? (
-                  <div className="rounded-md bg-muted p-3">
-                    <div className="text-sm">{existing.answer}</div>
-                  </div>
+                  <p className="rounded-[14px] bg-(--s-tint) px-3 py-2.5 text-[13.5px] leading-[1.7] text-(--s-body)">{existing.answer}</p>
                 ) : (
-                  <div className="space-y-2">
-                    <Textarea
-                      placeholder={
-                        existing ? t("updatePlaceholder") : t("writePlaceholder")
-                      }
+                  <div className="flex flex-col gap-2">
+                    <TextArea
+                      placeholder={existing ? t("updatePlaceholder") : t("writePlaceholder")}
+                      aria-label={existing ? t("updatePlaceholder") : t("writePlaceholder")}
                       value={drafts[q.id] ?? ""}
-                      onChange={(e) =>
-                        setDrafts((s) => ({ ...s, [q.id]: e.target.value }))
-                      }
+                      onChange={(e) => setDrafts((s) => ({ ...s, [q.id]: e.target.value }))}
                     />
                     <div className="flex gap-2">
-                      <Button
+                      <SellerButton
+                        variant="solid"
                         onClick={() => handleSubmit(q)}
                         disabled={busy === q.id || !(drafts[q.id] ?? "").trim()}
                       >
-                        {busy === q.id
-                          ? t("submitting")
-                          : existing
-                            ? t("save")
-                            : t("submit")}
-                      </Button>
+                        {busy === q.id ? t("submitting") : existing ? t("save") : t("submit")}
+                      </SellerButton>
                       {isEditing && (
-                        <Button
-                          type="button"
+                        <SellerButton
                           variant="outline"
                           onClick={() => {
                             setEditing(null);
@@ -448,16 +361,16 @@ export function VendorQASection({
                           }}
                         >
                           {t("cancel")}
-                        </Button>
+                        </SellerButton>
                       )}
                     </div>
                   </div>
                 )}
               </div>
             );
-          })
-        )}
-      </CardContent>
-    </Card>
+          })}
+        </div>
+      )}
+    </SectionCard>
   );
 }

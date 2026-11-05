@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { getTranslations } from "next-intl/server";
+import { PageContainer } from "@/components/seller-ui";
 import { requireSeller } from "@/lib/auth/require-seller.server";
 import { SignupPixelData } from "../_components/signup-pixel.data";
 import { WelcomeBanner } from "../_components/welcome-banner.client";
@@ -25,7 +26,7 @@ export default async function AiBuilderPage({ searchParams }: { searchParams: Pr
   const build = await loadLatestBuild(seller.sellerId);
   const review = build?.status === "review" ? await loadReview({ sellerId: seller.sellerId, userId: seller.userId, sellerStatus: seller.status }, build) : null;
   return (
-    <section className="flex flex-col gap-4 p-4 sm:p-6">
+    <PageContainer narrow>
       {/* A seller who signed up for the builder lands here instead of on the home page. */}
       {welcome === "1" && <WelcomeBanner />}
       {welcome === "1" && signup && (
@@ -39,6 +40,6 @@ export default async function AiBuilderPage({ searchParams }: { searchParams: Pr
         aiReady={aiConfigured()}
         templatesBaseUrl={`https://${process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "tallaby.com"}/template-preview`}
       />
-    </section>
+    </PageContainer>
   );
 }

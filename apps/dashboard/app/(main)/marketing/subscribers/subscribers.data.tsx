@@ -3,6 +3,7 @@ import { parseSubscriberFilter, parseSubscriberPage, SUBSCRIBERS_PAGE_SIZE } fro
 import { listStoreSubscribers } from "@workspace/lib/store-forms/subscribers/server";
 import { requireSeller } from "@/lib/auth/require-seller.server";
 import { getSellerStores } from "@/lib/stores/current-store.server";
+import { PageHeader } from "@/components/seller-ui";
 import { SubscribersView } from "./subscribers.client";
 
 /**
@@ -31,9 +32,8 @@ export async function SubscribersData(props: {
     : null;
 
   return (
-    <section aria-label={t("title")} className="space-y-5">
-      {/* No page title: the header breadcrumb already names the page. */}
-      <p className="text-pretty text-sm text-muted-foreground">{t("description")}</p>
+    <>
+      <PageHeader title={t("title")} description={t("description")} />
       <SubscribersView
         key={`${store?.id ?? "none"}|${status}|${query}|${page}`}
         stores={stores.map((s) => ({ id: s.id, name: s.name }))}
@@ -44,6 +44,6 @@ export async function SubscribersData(props: {
         pageSize={SUBSCRIBERS_PAGE_SIZE}
         result={result}
       />
-    </section>
+    </>
   );
 }

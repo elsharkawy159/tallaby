@@ -1,10 +1,9 @@
 "use client";
 
-import { Check, ExternalLink, Loader2, RefreshCw, TriangleAlert } from "lucide-react";
+import { Check, ClipboardCheck, ExternalLink, Loader2, Package, RefreshCw, TriangleAlert } from "lucide-react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { Badge } from "@workspace/ui/components/badge";
-import { Button } from "@workspace/ui/components/button";
+import { Note, PageHeader, SectionCard, SellerButton, StatusBadge, TextAction } from "@/components/seller-ui";
 import type { BuilderErrorCode, BuilderReview } from "./builder.dto";
 
 /**
@@ -32,91 +31,91 @@ export function BuilderReviewPanel({
 
   const editor = review.storeId ? `/stores/${review.storeId}/editor` : null;
   return (
-    <div className="mx-auto flex max-w-2xl flex-col gap-4">
-      <div>
-        <h1 className="text-lg font-semibold">{t("review.title")}</h1>
-        {review.storeName && <p className="text-sm text-muted-foreground">{t("review.subtitle", { name: review.storeName, address: review.subdomain ?? "" })}</p>}
-      </div>
+    <>
+      <PageHeader
+        title={t("review.title")}
+        description={review.storeName ? t("review.subtitle", { name: review.storeName, address: review.subdomain ?? "" }) : undefined}
+      />
 
-      {review.stopReason && <p className="rounded-lg border bg-muted/40 p-3 text-sm">{t.has(`stops.${review.stopReason}`) ? t(`stops.${review.stopReason}` as never) : t("stops.other")}</p>}
+      {review.stopReason && <Note tone="amber">{t.has(`stops.${review.stopReason}`) ? t(`stops.${review.stopReason}` as never) : t("stops.other")}</Note>}
 
-      <section className="space-y-2 rounded-xl border p-4">
-        <h2 className="text-sm font-semibold">{review.issues.length ? t("review.missing", { count: review.issues.length }) : t("review.nothingMissing")}</h2>
-        <ul className="space-y-2 text-sm">
-          {review.issues.map((issue, index) => (
-            <li key={index} className="flex items-start gap-2">
-              <TriangleAlert className="mt-0.5 size-4 shrink-0 text-amber-600" aria-hidden />
-              <span className="flex-1">{t(`issues.${issue.code}` as never, (issue.params ?? {}) as never)}</span>
-              {issue.href && (
-                <Link href={issue.href} className="shrink-0 text-primary underline">
-                  {t("review.fix")}
-                </Link>
-              )}
-            </li>
-          ))}
-        </ul>
+      <SectionCard icon={ClipboardCheck} title={review.issues.length ? t("review.missing", { count: review.issues.length }) : t("review.nothingMissing")}>
+        {review.issues.length > 0 && (
+          <ul className="flex flex-col gap-2 text-[13.5px] text-(--s-body)">
+            {review.issues.map((issue, index) => (
+              <li key={index} className="flex items-start gap-2">
+                <TriangleAlert className="mt-0.5 size-4 shrink-0 text-accent-ink" aria-hidden />
+                <span className="flex-1">{t(`issues.${issue.code}` as never, (issue.params ?? {}) as never)}</span>
+                {issue.href && (
+                  <TextAction asChild>
+                    <Link href={issue.href}>{t("review.fix")}</Link>
+                  </TextAction>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
         {review.notes.length > 0 && (
           <>
-            <h3 className="pt-2 text-sm font-medium">{t("review.notes")}</h3>
-            <ul className="list-disc space-y-1 ps-5 text-sm text-muted-foreground">
+            <h3 className="text-[13.5px] font-bold text-(--s-text)">{t("review.notes")}</h3>
+            <ul className="list-disc space-y-1 ps-5 text-[13px] text-(--s-muted)">
               {review.notes.map((note, index) => (
                 <li key={index}>{note}</li>
               ))}
             </ul>
           </>
         )}
-      </section>
+      </SectionCard>
 
       {review.products.length > 0 && (
-        <section className="space-y-2 rounded-xl border p-4">
-          <h2 className="text-sm font-semibold">{t("review.products", { count: review.products.length })}</h2>
-          <ul className="space-y-1 text-sm">
+        <SectionCard icon={Package} title={t("review.products", { count: review.products.length })}>
+          <ul className="flex flex-col gap-1.5 text-[13.5px]">
             {review.products.map((product) => (
-              <li key={product.id} className="flex items-center justify-between gap-2">
-                <Link href={`/products/${product.id}/edit`} className="truncate underline-offset-2 hover:underline">
+              <li key={product.id} className="flex min-h-10 items-center justify-between gap-2">
+                <Link href={`/products/${product.id}/edit`} className="truncate font-semibold text-(--s-text) underline-offset-2 hover:underline">
                   {product.title}
                 </Link>
-                <Badge variant={product.status === "active" ? "default" : "secondary"}>{product.status === "active" ? t("review.live") : t("review.draft")}</Badge>
+                <StatusBadge tone={product.status === "active" ? "success" : "muted"}>{product.status === "active" ? t("review.live") : t("review.draft")}</StatusBadge>
               </li>
             ))}
           </ul>
           {review.draftProducts > 0 && (
-            <div className="space-y-1 pt-1">
-              <Button variant="outline" size="sm" disabled={busy} onClick={onActivate}>
-                <Check className="size-4" aria-hidden />
+            <div className="flex flex-col gap-1">
+              <SellerButton variant="solid" size="sm" className="self-start" disabled={busy} onClick={onActivate}>
+                <Check aria-hidden />
                 {t("review.makeLive", { count: review.draftProducts })}
-              </Button>
-              {review.otherStoresShowAll > 0 && <p className="text-xs text-muted-foreground">{t("review.otherStores", { count: review.otherStoresShowAll })}</p>}
+              </SellerButton>
+              {review.otherStoresShowAll > 0 && <p className="text-xs text-(--s-faint)">{t("review.otherStores", { count: review.otherStoresShowAll })}</p>}
             </div>
           )}
-        </section>
+        </SectionCard>
       )}
 
-      {error && <p className="text-sm text-destructive">{t(`errors.${error}`)}</p>}
+      {error && <Note tone="danger">{t(`errors.${error}`)}</Note>}
 
       <div className="flex flex-wrap gap-2">
         {editor && (
-          <Button asChild>
+          <SellerButton asChild>
             <Link href={editor}>
-              <ExternalLink className="size-4" aria-hidden />
+              <ExternalLink aria-hidden />
               {t("review.openEditor")}
             </Link>
-          </Button>
+          </SellerButton>
         )}
         {review.storeId && (
-          <Button variant="outline" asChild>
+          <SellerButton variant="outline" asChild>
             <Link href={`/stores/${review.storeId}/settings/payments`}>{t("review.payments")}</Link>
-          </Button>
+          </SellerButton>
         )}
-        <Button variant="outline" disabled={busy || review.regenerationsLeft === 0 || !review.storeId} onClick={onRegenerate}>
-          {busy ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <RefreshCw className="size-4" aria-hidden />}
+        <SellerButton variant="outline" disabled={busy || review.regenerationsLeft === 0 || !review.storeId} onClick={onRegenerate}>
+          {busy ? <Loader2 className="animate-spin" aria-hidden /> : <RefreshCw aria-hidden />}
           {t("review.regenerate", { count: review.regenerationsLeft })}
-        </Button>
-        <Button variant="ghost" disabled={busy} onClick={onNew}>
+        </SellerButton>
+        <SellerButton variant="mini" disabled={busy} onClick={onNew}>
           {t("review.another")}
-        </Button>
+        </SellerButton>
       </div>
-      <p className="text-xs text-muted-foreground">{t("review.publishNote")}</p>
-    </div>
+      <p className="text-xs text-(--s-faint)">{t("review.publishNote")}</p>
+    </>
   );
 }

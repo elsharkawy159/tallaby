@@ -41,6 +41,8 @@ export async function getSellerReviews(params?: {
         title: true,
         comment: true,
         reviewType: true,
+        source: true,
+        reviewerName: true,
       },
       with: {
         user: {
@@ -53,7 +55,7 @@ export async function getSellerReviews(params?: {
         product: {
           with: {
             productTranslations: {
-              columns: { title: true, slug: true },
+              columns: { title: true, slug: true, locale: true },
             },
           },
           columns: {
