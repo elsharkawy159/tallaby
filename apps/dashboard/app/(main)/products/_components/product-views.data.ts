@@ -1,6 +1,6 @@
 import { and, db, eq, isNull, productTranslations, products, sql } from "@workspace/db";
 import { logServerError } from "@workspace/db/log";
-import { requireSeller } from "@/lib/auth/require-seller.server";
+import { loadOrderLock, requireSeller } from "@/lib/auth/require-seller.server";
 import { getSellerStores } from "@/lib/stores/current-store.server";
 import { getProductPathViews } from "@/lib/analytics/product-views.server";
 import {
@@ -35,6 +35,8 @@ export async function loadProductViewStats(productIds?: string[]): Promise<Produ
     const productFilter = productIds
       ? sql`AND oi.product_id IN (${sql.join(productIds.map((id) => sql`${id}::uuid`), sql`, `)})`
       : sql``;
+    // Orders per product wait for activation (ROADMAP.md F-68); views don't.
+    const { locked } = await loadOrderLock(sellerId);
     const [slugRows, orderResult] = await Promise.all([
       db
         .select({
@@ -46,7 +48,7 @@ export async function loadProductViewStats(productIds?: string[]): Promise<Produ
         .from(productTranslations)
         .innerJoin(products, eq(products.id, productTranslations.productId))
         .where(and(eq(products.sellerId, sellerId), isNull(products.deletedAt))),
-      db.execute(sql`
+      locked ? [] : db.execute(sql`
         SELECT oi.product_id::text AS product_id, count(DISTINCT oi.order_id)::int AS orders
         FROM order_items oi
         JOIN orders o ON o.id = oi.order_id
@@ -72,7 +74,7 @@ export async function loadProductViewStats(productIds?: string[]): Promise<Produ
       const entry = (byProduct[row.product_id] ??= { views: 0, orders: 0 });
       entry.orders = Number(row.orders) || 0;
     }
-    return { days, byProduct };
+    return { days, byProduct, ...(locked && { ordersHidden: true }) };
   } catch (error) {
     logServerError("integration", "product view stats load failed", { products: productIds?.length ?? "all" }, error);
     return null;

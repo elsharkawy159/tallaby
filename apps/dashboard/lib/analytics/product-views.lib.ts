@@ -121,4 +121,9 @@ export function viewsToOrdersPercent(views: number, orders: number): number | nu
 
 export type ProductViewStat = { views: number; orders: number };
 /** Per product id; null when GA4 is not set up or failed. */
-export type ProductViewStats = { days: number; byProduct: Record<string, ProductViewStat> } | null;
+export type ProductViewStats = {
+  days: number;
+  byProduct: Record<string, ProductViewStat>;
+  /** A seller who isn't activated: `orders` is 0 and says nothing, so it isn't shown. */
+  ordersHidden?: boolean;
+} | null;

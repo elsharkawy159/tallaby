@@ -8,7 +8,7 @@ import {
   getWalletTransactions,
   getDashboardAnalytics,
 } from "@/actions/payouts";
-import { requireSeller } from "@/lib/auth/require-seller.server";
+import { requireOrdersSeller, requireSeller } from "@/lib/auth/require-seller.server";
 import { getSellerStores } from "@/lib/stores/current-store.server";
 import { FinancialDashboardContent } from "./financial.chunks";
 import { FinancialSkeleton } from "./financial.skeleton";
@@ -22,7 +22,7 @@ import { salesSourcesByCurrency, startOfMonth, type SalesSourceRow } from "./fin
  * card (every order item of this seller, by created_at), so the totals match.
  */
 async function getSalesSources() {
-  const [seller, { stores }] = await Promise.all([requireSeller(), getSellerStores()]);
+  const [seller, { stores }] = await Promise.all([requireOrdersSeller(), getSellerStores()]);
   const monthStart = startOfMonth().toISOString();
   const inMonth = sql`${orderItems.createdAt} >= ${monthStart}`;
 

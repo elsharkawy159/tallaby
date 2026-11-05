@@ -1,4 +1,4 @@
-import { adminNotifications, and, db, desc, eq, inArray, isNull, sellerNotifications, sql } from "@workspace/db";
+import { adminNotifications, and, db, desc, eq, inArray, isNull, notInArray, sellerNotifications, sql } from "@workspace/db";
 import {
   clampNotificationLimit,
   type AdminNotificationType,
@@ -54,10 +54,13 @@ export async function markAdminNotificationsRead(actorId: string, ids?: string[]
     );
 }
 
+/** `hideTypes` leaves those rows out of both the feed and the unread count. */
 export async function listSellerNotifications(
   sellerId: string,
   limit?: number,
+  hideTypes: readonly SellerNotificationType[] = [],
 ): Promise<NotificationFeed<SellerNotificationType>> {
+  const shown = hideTypes.length > 0 ? notInArray(sellerNotifications.type, [...hideTypes]) : undefined;
   const [rows, [unread]] = await Promise.all([
     db
       .select({
@@ -70,13 +73,13 @@ export async function listSellerNotifications(
         createdAt: sellerNotifications.createdAt,
       })
       .from(sellerNotifications)
-      .where(eq(sellerNotifications.sellerId, sellerId))
+      .where(and(eq(sellerNotifications.sellerId, sellerId), shown))
       .orderBy(desc(sellerNotifications.createdAt))
       .limit(clampNotificationLimit(limit)),
     db
       .select({ count: sql<number>`count(*)::int` })
       .from(sellerNotifications)
-      .where(and(eq(sellerNotifications.sellerId, sellerId), isNull(sellerNotifications.readAt))),
+      .where(and(eq(sellerNotifications.sellerId, sellerId), isNull(sellerNotifications.readAt), shown)),
   ]);
 
   return {

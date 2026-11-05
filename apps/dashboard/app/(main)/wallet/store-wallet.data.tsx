@@ -20,6 +20,7 @@ import { getFeeTrialStatus } from "@workspace/lib/sellers";
 import { cn } from "@workspace/ui/lib/utils";
 import { getBillingState } from "@workspace/lib/billing/server";
 import { EmptyState, IconTile, Note, Row, Rows, SellerButton, SellerCard, SellerCardHeader } from "@/components/seller-ui";
+import { loadOrderLock } from "@/lib/auth/require-seller.server";
 import { formatDate } from "@/lib/i18n/format";
 import { translateStatus } from "@/lib/i18n/status";
 import {
@@ -56,9 +57,10 @@ export async function StoreWalletSection({
   before: string | null;
   openTopUp?: boolean;
 }) {
+  const { locked } = await loadOrderLock(sellerId);
   const [overview, rows, topUps, gift, t, tStatus, locale, billing] = await Promise.all([
     getStoreWalletOverview(sellerId),
-    listStoreWalletEntries(sellerId, { filter, before }),
+    listStoreWalletEntries(sellerId, { filter, before, hideSales: locked }),
     listManualStoreTopUps(sellerId),
     // The welcome gift (0119); a missing table before the migration shows nothing.
     getWelcomeGiftStatus(sellerId).catch(() => null),
@@ -221,7 +223,7 @@ export async function StoreWalletSection({
                 className="flex-wrap items-center"
                 action={
                   <nav aria-label={t("filterLabel")} className="flex flex-wrap gap-1.5">
-                    {ENTRY_FILTERS.map((key) => (
+                    {ENTRY_FILTERS.filter((key) => !locked || key !== "sales").map((key) => (
                       <Link
                         key={key}
                         href={href({ entries: key === "all" ? null : key })}

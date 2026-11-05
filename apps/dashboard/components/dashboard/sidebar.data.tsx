@@ -17,7 +17,7 @@ export async function SidebarData() {
   return (
     <Sidebar
       ordersLocked={ordersLocked}
-      counts={ordersLocked ? { ...counts, orders: 0 } : counts}
+      counts={counts}
       stores={stores.map(({ id, name, subdomain, isPrimary, status, logoUrl, siteStatus }) => ({
         id,
         name,

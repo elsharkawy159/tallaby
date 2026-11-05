@@ -22,6 +22,7 @@ import { revalidatePath } from "next/cache";
 import { getLocale } from "next-intl/server";
 import { z } from "zod";
 import { getUser } from "./auth";
+import { loadOrderLock } from "@/lib/auth/require-seller.server";
 
 export type SellerCouponRow = {
   id: string;
@@ -164,20 +165,24 @@ export async function getSellerCouponsPage(): Promise<SellerCouponsPage> {
   const sellerId = await getSellerId();
   if (!sellerId) return { coupons: [], storeHost: null };
 
+  // A coupon's uses and discount follow from orders: hidden until activation (ROADMAP.md F-68).
+  const { locked } = await loadOrderLock(sellerId);
   const [couponRows, discountRows, seller] = await Promise.all([
     db.query.coupons.findMany({
       where: eq(coupons.sellerId, sellerId),
       orderBy: [desc(coupons.createdAt)],
     }),
-    db
-      .select({
-        couponId: couponUsage.couponId,
-        total: sql<string>`coalesce(sum(${couponUsage.discountAmount}), 0)`,
-      })
-      .from(couponUsage)
-      .innerJoin(coupons, eq(coupons.id, couponUsage.couponId))
-      .where(eq(coupons.sellerId, sellerId))
-      .groupBy(couponUsage.couponId),
+    locked
+      ? []
+      : db
+          .select({
+            couponId: couponUsage.couponId,
+            total: sql<string>`coalesce(sum(${couponUsage.discountAmount}), 0)`,
+          })
+          .from(couponUsage)
+          .innerJoin(coupons, eq(coupons.id, couponUsage.couponId))
+          .where(eq(coupons.sellerId, sellerId))
+          .groupBy(couponUsage.couponId),
     db.query.sellers.findFirst({
       where: eq(sellers.id, sellerId),
       columns: { subdomain: true },
@@ -189,7 +194,10 @@ export async function getSellerCouponsPage(): Promise<SellerCouponsPage> {
   );
 
   return {
-    coupons: couponRows.map((c) => toRow(c, discountByCoupon.get(c.id) ?? 0)),
+    coupons: couponRows.map((c) => ({
+      ...toRow(c, discountByCoupon.get(c.id) ?? 0),
+      ...(locked && { usageCount: 0 }),
+    })),
     storeHost: seller?.subdomain
       ? `${seller.subdomain}.${STORE_ROOT_DOMAIN}`
       : null,

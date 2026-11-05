@@ -2,12 +2,9 @@ import { useLocale } from "next-intl";
 import { Banknote } from "lucide-react";
 import { SAUDI_RIYAL_LABEL, currencyLabelText } from "@workspace/lib";
 import { RiyalSymbol } from "@/components/money";
-import { MIXED_CURRENCIES, moneyLabel, type MoneyUnit } from "@/lib/i18n/format";
+import { MIXED_CURRENCIES, isArabicPound, moneyLabel, type MoneyUnit } from "@/lib/i18n/format";
 import { cn } from "@/lib/utils";
 import { GroupInput, InputAddon, InputGroup } from "./form-ui";
-
-/** The currency of Tallaby's own Egyptian screens (the top-up amount). A store's amounts use its own currency. */
-export const CURRENCY_CODE = "EGP";
 
 function AddonLabel({ unit }: { unit: MoneyUnit }) {
   // Stores in different currencies share this amount: no label is the only honest one.
@@ -17,7 +14,7 @@ function AddonLabel({ unit }: { unit: MoneyUnit }) {
 
 function StoreLabel({ unit }: { unit: MoneyUnit }) {
   const locale = useLocale();
-  const label = moneyLabel(unit);
+  const label = moneyLabel(unit, locale);
   return label === SAUDI_RIYAL_LABEL ? <RiyalSymbol locale={locale} /> : currencyLabelText(label, locale);
 }
 
@@ -27,9 +24,11 @@ function StoreLabel({ unit }: { unit: MoneyUnit }) {
  * leaving them out means EGP, which wallet screens rely on.
  */
 export function CurrencyAddon({ className, currency, label }: { className?: string } & MoneyUnit) {
+  // The Arabic word doesn't belong in the mono face codes use.
+  const pound = isArabicPound(useLocale(), { currency });
   return (
-    <InputAddon position="start" className={cn("font-mono text-[13px]", className)}>
-      {currency && currency !== CURRENCY_CODE ? <AddonLabel unit={{ currency, label }} /> : CURRENCY_CODE}
+    <InputAddon position="start" className={cn(pound ? "font-sans" : "font-mono", "text-[13px]", className)}>
+      <AddonLabel unit={{ currency, label }} />
     </InputAddon>
   );
 }

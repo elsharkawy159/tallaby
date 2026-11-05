@@ -202,7 +202,7 @@ export function DiscountField({
                         : "text-(--s-subtle) hover:text-(--s-text)"
                     )}
                   >
-                    {type === "percent" ? "%" : moneyLabel(unit) === SAUDI_RIYAL_LABEL ? <RiyalSymbol locale={locale} /> : moneyUnitText(locale, unit)}
+                    {type === "percent" ? "%" : moneyLabel(unit, locale) === SAUDI_RIYAL_LABEL ? <RiyalSymbol locale={locale} /> : moneyUnitText(locale, unit)}
                   </button>
                 );
               })}

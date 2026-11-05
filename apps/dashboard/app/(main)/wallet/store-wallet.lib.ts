@@ -1,26 +1,18 @@
 import { FREE_ORDER_FEE_USD_CENTS, TOP_UP_MAX_USD_CENTS, TOP_UP_MIN_USD_CENTS } from "@workspace/lib/billing";
 import { STANDARD_FEE_MIN_PIASTRES } from "@workspace/lib/orders/platform-fee";
 import { STORE_TOP_UP_MAX_PIASTRES, STORE_TOP_UP_MIN_EGP } from "@workspace/lib/store-wallet";
-import { formatNumber, formatWalletMoney } from "@/lib/i18n/format";
+import { formatNumber, formatWalletMoney, moneyUnitText } from "@/lib/i18n/format";
 
 /** The flat platform fee per delivered order, in EGP (PLAN.md §13). */
 export const FEE_PER_ORDER_EGP = STANDARD_FEE_MIN_PIASTRES / 100;
 
 export const TOP_UP_MAX_EGP = STORE_TOP_UP_MAX_PIASTRES / 100;
 
-/** What /wallet calls the pound: "جنيه" in Arabic, "EGP" in English (owner, 2026-11-04). */
-export const walletPoundLabel = (locale: string) => (locale.startsWith("ar") ? "جنيه" : "EGP");
+/** What /wallet calls the pound: the dashboard's word for it. */
+export const walletPoundLabel = (locale: string) => moneyUnitText(locale);
 
-/**
- * An amount on /wallet: formatWalletMoney with walletPoundLabel. Show it in a <bdi> with no dir, so
- * Arabic reads "277 جنيه" right to left. Intl starts a negative Arabic number with a left-to-right
- * mark, which would turn that <bdi> left to right, so the mark goes.
- */
-export function walletMoney(value: string | number | null | undefined, currency: string | null | undefined, locale: string) {
-  const text = formatWalletMoney(value, currency, locale);
-  if (currency === "USD" || !locale.startsWith("ar")) return text;
-  return text.replace(/\u200e/g, "").replace(/EGP$/, walletPoundLabel(locale));
-}
+/** An amount on /wallet. Show it in a <bdi> with no dir, so Arabic reads "277 جنيه" right to left. */
+export const walletMoney = formatWalletMoney;
 
 /** The amounts offered as one-tap choices; 500 is marked as the most chosen. */
 export const TOP_UP_PRESETS = [100, 250, 500, 1000, 2000] as const;

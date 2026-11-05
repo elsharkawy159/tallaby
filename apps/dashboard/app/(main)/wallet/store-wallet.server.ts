@@ -100,9 +100,11 @@ function parseCursor(value: string | null | undefined): { at: string; id: string
 /** Newest first, ENTRIES_PAGE_SIZE + 1 rows (the extra one says there is more). */
 export async function listStoreWalletEntries(
   sellerId: string,
-  options: { filter: EntryFilter; before?: string | null },
+  /** `hideSales`: a seller who isn't activated (ROADMAP.md F-68) gets no sale entries and no order behind an entry. */
+  options: { filter: EntryFilter; before?: string | null; hideSales?: boolean },
 ): Promise<StoreWalletEntryRow[]> {
   const conditions = [eq(walletTransactions.sellerId, sellerId)];
+  if (options.hideSales) conditions.push(sql`${walletTransactions.type}::text <> 'sale'`);
   if (options.filter !== "all") {
     conditions.push(
       inArray(walletTransactions.type, FILTER_TYPES[options.filter] as (typeof walletTransactions.type.enumValues)[number][]),
@@ -113,7 +115,7 @@ export async function listStoreWalletEntries(
     conditions.push(sql`(${walletTransactions.createdAt}, ${walletTransactions.id}) < (${cursor.at}::timestamptz, ${cursor.id}::uuid)`);
   }
 
-  return db
+  const rows = await db
     .select({
       id: walletTransactions.id,
       type: sql<string>`${walletTransactions.type}::text`,
@@ -133,6 +135,13 @@ export async function listStoreWalletEntries(
     .where(and(...conditions))
     .orderBy(desc(walletTransactions.createdAt), desc(walletTransactions.id))
     .limit(ENTRIES_PAGE_SIZE + 1);
+  if (!options.hideSales) return rows;
+  return rows.map((row) => ({
+    ...row,
+    orderId: null,
+    orderNumber: null,
+    description: row.orderId ? null : row.description,
+  }));
 }
 
 /** The header's wallet box: the balance and its currency, read fresh (never cached). */

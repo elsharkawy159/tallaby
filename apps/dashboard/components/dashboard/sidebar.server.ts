@@ -12,6 +12,7 @@ import {
 import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 import { countNewFormSubmissions } from "@workspace/lib/store-forms/server";
 import { getUser } from "@/actions/auth";
+import { loadOrderLock } from "@/lib/auth/require-seller.server";
 import {
   EMPTY_SIDEBAR_COUNTS,
   type SidebarCounts,
@@ -25,6 +26,9 @@ export async function getSidebarCounts(): Promise<SidebarCounts> {
     }
 
     const sellerId = session.user.id;
+    // A seller who isn't activated gets no count that follows from orders (ROADMAP.md F-68).
+    const locked = (await loadOrderLock(sellerId)).locked;
+    const hidden = [{ count: 0 }];
 
     const [
       orderCountResult,
@@ -35,10 +39,12 @@ export async function getSidebarCounts(): Promise<SidebarCounts> {
       shippingCountResult,
       formSubmissionCount,
     ] = await Promise.all([
-      db
-        .select({ count: sql<number>`count(*)` })
-        .from(orderItems)
-        .where(eq(orderItems.sellerId, sellerId)),
+      locked
+        ? hidden
+        : db
+            .select({ count: sql<number>`count(*)` })
+            .from(orderItems)
+            .where(eq(orderItems.sellerId, sellerId)),
       db
         .select({ count: sql<number>`count(*)` })
         .from(products)
@@ -51,20 +57,24 @@ export async function getSidebarCounts(): Promise<SidebarCounts> {
         .select({ count: sql<number>`count(*)` })
         .from(coupons)
         .where(eq(coupons.sellerId, sellerId)),
-      db
-        .select({ count: sql<number>`count(*)` })
-        .from(sellerPayouts)
-        .where(eq(sellerPayouts.sellerId, sellerId)),
+      locked
+        ? hidden
+        : db
+            .select({ count: sql<number>`count(*)` })
+            .from(sellerPayouts)
+            .where(eq(sellerPayouts.sellerId, sellerId)),
       // Deliveries the seller still has to see through (rider assigned or on the road).
-      db
-        .select({ count: sql<number>`count(*)` })
-        .from(shipments)
-        .where(
-          and(
-            eq(shipments.sellerId, sellerId),
-            inArray(shipments.status, ["assigned", "out_for_delivery"])
-          )
-        ),
+      locked
+        ? hidden
+        : db
+            .select({ count: sql<number>`count(*)` })
+            .from(shipments)
+            .where(
+              and(
+                eq(shipments.sellerId, sellerId),
+                inArray(shipments.status, ["assigned", "out_for_delivery"])
+              )
+            ),
       // New store form submissions across the seller's stores (Website › Forms, P4-10).
       countNewFormSubmissions(sellerId),
     ]);

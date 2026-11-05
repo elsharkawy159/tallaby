@@ -83,16 +83,9 @@ export async function HomeKpisData({ range, channel = "all" }: { range: HomeRang
   );
 }
 
-/** Secondary numbers under the KPIs: average order, new customers, store wallet and rating. */
-export async function HomeMetricsData({ range, channel = "all" }: { range: HomeRange; channel?: HomeChannel }) {
-  const [sales, newCustomers, snapshot, t, tm, locale] = await Promise.all([
-    getSalesOverview(range, channel),
-    getNewCustomers(range, channel),
-    getHomeSnapshot(),
-    getTranslations("home.kpis"),
-    getTranslations("home.metrics"),
-    getLocale(),
-  ]);
+/** The store wallet and rating items of the strip. Neither follows from orders. */
+async function WalletAndRatingItems() {
+  const [snapshot, t, locale] = await Promise.all([getHomeSnapshot(), getTranslations("home.kpis"), getLocale()]);
   const num = (value: number, digits = 0) => formatNumber(value, locale, { maximumFractionDigits: digits });
   const wallet = snapshot?.walletBalance ?? 0;
   const walletState = walletKpiState(wallet);
@@ -101,15 +94,7 @@ export async function HomeMetricsData({ range, channel = "all" }: { range: HomeR
   const hasRating = rating != null && (snapshot?.totalRatings ?? 0) > 0;
 
   return (
-    <StatStrip aria-label={tm("label")}>
-      <StatItem
-        href="/orders"
-        icon={Receipt}
-        label={tm("aov")}
-        value={sales.currencyOrders > 0 ? num(sales.revenue / sales.currencyOrders) : "0"}
-        unit={<MoneyText locale={locale}>{moneyUnitMarked(locale, { currency: sales.currency })}</MoneyText>}
-      />
-      <StatItem href="/orders" icon={UserPlus} label={tm("newCustomers")} value={num(newCustomers)} unit={tm("customersUnit")} />
+    <>
       <StatItem
         // sellers.wallet_balance mirrors the store wallet, which pays platform fees (no withdrawals).
         href={walletState === "negative" ? "/wallet?topup=1" : "/wallet"}
@@ -129,6 +114,59 @@ export async function HomeMetricsData({ range, channel = "all" }: { range: HomeR
         unit={hasRating ? "/ 5" : undefined}
         note={hasRating ? <StarRating value={rating!} label={t("ratingLabel", { rating: num(rating!, 1) })} /> : t("noRatings")}
       />
+    </>
+  );
+}
+
+/** Secondary numbers under the KPIs: average order, new customers, store wallet and rating. */
+export async function HomeMetricsData({ range, channel = "all" }: { range: HomeRange; channel?: HomeChannel }) {
+  const [sales, newCustomers, tm, locale] = await Promise.all([
+    getSalesOverview(range, channel),
+    getNewCustomers(range, channel),
+    getTranslations("home.metrics"),
+    getLocale(),
+  ]);
+  const num = (value: number, digits = 0) => formatNumber(value, locale, { maximumFractionDigits: digits });
+
+  return (
+    <StatStrip aria-label={tm("label")}>
+      <StatItem
+        href="/orders"
+        icon={Receipt}
+        label={tm("aov")}
+        value={sales.currencyOrders > 0 ? num(sales.revenue / sales.currencyOrders) : "0"}
+        unit={<MoneyText locale={locale}>{moneyUnitMarked(locale, { currency: sales.currency })}</MoneyText>}
+      />
+      <StatItem href="/orders" icon={UserPlus} label={tm("newCustomers")} value={num(newCustomers)} unit={tm("customersUnit")} />
+      <WalletAndRatingItems />
+    </StatStrip>
+  );
+}
+
+/**
+ * The strip for a seller who isn't activated (ROADMAP.md F-68): store visits, wallet
+ * and rating. It reads no order data, so nothing from sales reaches the browser.
+ */
+export async function HomeLockedMetricsData({ range, channel = "all" }: { range: HomeRange; channel?: HomeChannel }) {
+  const [traffic, { storeIds, analyticsStoreId }, t, tm, locale] = await Promise.all([
+    getHomeTrafficFor(range, channel),
+    getHomeChannelStores(channel),
+    getTranslations("home.kpis"),
+    getTranslations("home.metrics"),
+    getLocale(),
+  ]);
+
+  return (
+    <StatStrip aria-label={tm("label")} className="grid-cols-3 max-[1180px]:grid-cols-3 max-[720px]:grid-cols-1">
+      <StatItem
+        href={analyticsStoreId ? `/stores/${analyticsStoreId}/analytics` : "/stores"}
+        icon={Eye}
+        label={t("visits")}
+        value={traffic ? formatNumber(traffic.visits, locale) : "—"}
+        unit={traffic ? t("visitsUnit") : undefined}
+        note={storeIds.length === 0 ? t("visitsStoresOnly") : undefined}
+      />
+      <WalletAndRatingItems />
     </StatStrip>
   );
 }

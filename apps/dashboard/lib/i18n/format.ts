@@ -31,14 +31,32 @@ const toDate = (value: DateInput) => {
  */
 export type MoneyUnit = { currency?: string | null; label?: unknown };
 
+/** What every Arabic dashboard screen calls the pound (owner, 2026-11-05). */
+const ARABIC_POUND: string = "جنيه";
+
+/** Whether an amount reads "300 جنيه": Arabic, and in EGP. A missing currency means EGP. */
+export function isArabicPound(locale: string, unit?: MoneyUnit) {
+  return locale.startsWith("ar") && (unit?.currency || DEFAULT_CURRENCY) === DEFAULT_CURRENCY;
+}
+
+/**
+ * The direction for an element holding one formatted amount. Amounts and codes stay
+ * left to right; "300 جنيه" must not, or Arabic would read it with the word first.
+ */
+export function moneyDir(locale: string, unit?: MoneyUnit): "ltr" | undefined {
+  return isArabicPound(locale, unit) ? undefined : "ltr";
+}
+
 /**
  * The label the dashboard writes beside an amount. Missing currency means EGP, and
- * EGP always reads "EGP" here whatever the store shows its customers. Another
- * currency uses the store's label when given, else its default (SAR: the symbol).
+ * EGP reads "جنيه" in Arabic and "EGP" in English, whatever the store shows its
+ * customers. Another currency uses the store's label when given, else its default
+ * (SAR: the symbol).
  */
-export function moneyLabel({ currency, label }: MoneyUnit = {}): CurrencyLabel {
+export function moneyLabel(unit: MoneyUnit | undefined, locale: string): CurrencyLabel {
+  const { currency, label } = unit ?? {};
   const code = currency || DEFAULT_CURRENCY;
-  if (code === DEFAULT_CURRENCY) return DEFAULT_CURRENCY;
+  if (code === DEFAULT_CURRENCY) return isArabicPound(locale, unit) ? (ARABIC_POUND as CurrencyLabel) : DEFAULT_CURRENCY;
   // A code outside the list can only be shown as it is.
   if (!isStoreCurrency(code)) return code as CurrencyLabel;
   return isCurrencyLabelFor(code, label) ? label : STORE_CURRENCIES[code][0];
@@ -55,28 +73,35 @@ const toAmount = (value: string | number | null | undefined) => {
   return Number.isFinite(num) ? num : 0;
 };
 
-/** An amount as plain text ("300 EGP"), for <option>, titles, toasts, exports and push alerts. */
+/**
+ * Intl starts a negative Arabic number with a left-to-right mark, which would turn a
+ * <bdi> holding "-500 جنيه" left to right, so the mark goes.
+ */
+const withoutBidiMark = (text: string, locale: string, unit?: MoneyUnit) =>
+  isArabicPound(locale, unit) ? text.replace(/\u200e/g, "") : text;
+
+/** An amount as plain text ("300 EGP", "300 جنيه"), for <option>, titles, toasts and push alerts. */
 export function formatMoney(value: string | number | null | undefined, locale: string, unit?: MoneyUnit) {
   if (unit?.currency === MIXED_CURRENCIES) return formatNumber(toAmount(value), locale, { maximumFractionDigits: 2 });
-  return formatPricePlain(toAmount(value), locale, moneyLabel(unit));
+  return withoutBidiMark(formatPricePlain(toAmount(value), locale, moneyLabel(unit, locale)), locale, unit);
 }
 
 /** `formatMoney` for the screen: SAR carries a mark that <MoneyText> draws as the symbol. Never an attribute or a title. */
 export function formatMoneyMarked(value: string | number | null | undefined, locale: string, unit?: MoneyUnit) {
   if (unit?.currency === MIXED_CURRENCIES) return formatMoney(value, locale, unit);
-  return formatPriceMarked(toAmount(value), locale, moneyLabel(unit));
+  return withoutBidiMark(formatPriceMarked(toAmount(value), locale, moneyLabel(unit, locale)), locale, unit);
 }
 
-/** The unit alone as text, for a label or an export column. */
+/** The unit alone as text, for a label. */
 export function moneyUnitText(locale: string, unit?: MoneyUnit) {
   if (unit?.currency === MIXED_CURRENCIES) return locale.startsWith("ar") ? "عملة المتجر" : "store currency";
-  return currencyLabelText(moneyLabel(unit), locale);
+  return currencyLabelText(moneyLabel(unit, locale), locale);
 }
 
 /** The unit alone for a sentence drawn through <MoneyText>. */
 export function moneyUnitMarked(locale: string, unit?: MoneyUnit) {
   if (unit?.currency === MIXED_CURRENCIES) return moneyUnitText(locale, unit);
-  const label = moneyLabel(unit);
+  const label = moneyLabel(unit, locale);
   return label === SAUDI_RIYAL_LABEL ? PRICE_SYMBOL_MARK : currencyLabelText(label, locale);
 }
 
@@ -109,7 +134,7 @@ export function splitHeadline(
   };
 }
 
-/** Options for next-intl's `format.number` where a screen uses it for money. EGP stays as it was. */
+/** Options for next-intl's `format.number` where a screen uses it for money. Intl has no "جنيه": check `isArabicPound` and use `formatMoney` for it. */
 export function moneyNumberOptions(unit?: MoneyUnit) {
   if (unit?.currency === MIXED_CURRENCIES) return { maximumFractionDigits: 2 };
   return { style: "currency" as const, currency: unit?.currency || DEFAULT_CURRENCY };

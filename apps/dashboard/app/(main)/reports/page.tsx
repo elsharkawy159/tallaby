@@ -4,6 +4,8 @@ import { Store } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Button } from "@workspace/ui/components/button";
 import { Skeleton } from "@workspace/ui/components/skeleton";
+import { OrdersLocked } from "@/components/orders/orders-locked";
+import { currentOrderLock } from "@/lib/auth/require-seller.server";
 import { getSellerStores } from "@/lib/stores/current-store.server";
 import { EmptyState, HomeCard } from "../_components/home-ui";
 import { ReportsShell } from "./reports.client";
@@ -24,6 +26,10 @@ export default async function ReportsPage({
 }: {
   searchParams: Promise<{ store?: string | string[]; range?: string | string[] }>;
 }) {
+  // Sales totals wait for activation like the orders behind them (ROADMAP.md F-68).
+  const lock = await currentOrderLock();
+  if (lock.locked) return <OrdersLocked lock={lock} />;
+
   const [params, { stores, selected }, t] = await Promise.all([
     searchParams,
     getSellerStores(),

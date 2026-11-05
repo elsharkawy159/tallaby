@@ -10,7 +10,7 @@ import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
 import { createAdRequest, type AdPaymentMethod, type AdWallet } from "@/actions/ads";
 import { cn } from "@/lib/utils";
-import { formatWalletMoney } from "@/lib/i18n/format";
+import { formatWalletMoney, moneyDir } from "@/lib/i18n/format";
 import { adWalletAmount, EGYPT_MOBILE_REGEX, VODAFONE_CASH_NUMBER, type AdPackage } from "@/lib/ad-packages";
 
 /** Vodafone's brand red, used only to mark this as the Vodafone Cash step. */
@@ -115,6 +115,7 @@ export function PaymentPanel({ pkg, form }: { pkg: AdPackage; form: PaymentForm 
   const locale = useLocale();
   const walletFigure = (value: number) =>
     usdWallet ? formatWalletMoney(value, "USD", locale) : `${value.toLocaleString()} ${tPackage("currency")}`;
+  const figureDir = moneyDir(locale, { currency: usdWallet ? "USD" : "EGP" });
 
   const copy = async (value: string, message: string) => {
     try {
@@ -150,7 +151,7 @@ export function PaymentPanel({ pkg, form }: { pkg: AdPackage; form: PaymentForm 
             {key === "wallet" ? <Wallet className="size-4" aria-hidden /> : <Smartphone className="size-4" aria-hidden />}
             <span className="flex-1">{key === "wallet" ? tWallet("method") : t("brand")}</span>
             {key === "wallet" && wallet && (
-              <span dir="ltr" className="text-xs font-normal tabular-nums">
+              <span dir={figureDir} className="text-xs font-normal tabular-nums">
                 {walletFigure(wallet.balance)}
               </span>
             )}
@@ -162,21 +163,21 @@ export function PaymentPanel({ pkg, form }: { pkg: AdPackage; form: PaymentForm 
         <div className="flex flex-col gap-2 rounded-2xl border bg-muted/30 p-4 text-sm">
           <p className="flex justify-between gap-2">
             <span className="text-muted-foreground">{tWallet("balance")}</span>
-            <span dir="ltr" className="font-semibold tabular-nums">
+            <span dir={figureDir} className="font-semibold tabular-nums">
               {walletFigure(wallet?.balance ?? 0)}
             </span>
           </p>
           {usdWallet && (
             <p className="flex justify-between gap-2">
               <span className="text-muted-foreground">{tWallet("priceInWallet", { price: amount })}</span>
-              <span dir="ltr" className="font-semibold tabular-nums">
+              <span dir={figureDir} className="font-semibold tabular-nums">
                 {walletFigure(walletPrice)}
               </span>
             </p>
           )}
           <p className="flex justify-between gap-2">
             <span className="text-muted-foreground">{tWallet("after")}</span>
-            <span dir="ltr" className={cn("font-semibold tabular-nums", after < 0 && "text-destructive")}>
+            <span dir={figureDir} className={cn("font-semibold tabular-nums", after < 0 && "text-destructive")}>
               {walletFigure(after)}
             </span>
           </p>

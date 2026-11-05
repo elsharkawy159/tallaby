@@ -10,7 +10,7 @@ import {
   StatusBadge,
   type BadgeTone,
 } from "@/components/seller-ui";
-import { formatDate, formatRelativeTime } from "@/lib/i18n/format";
+import { formatDate, formatRelativeTime, moneyDir } from "@/lib/i18n/format";
 import { Money } from "@/components/money";
 import { translateStatus } from "@/lib/i18n/status";
 import {
@@ -149,7 +149,7 @@ export async function RecentOrdersData() {
                 phone: "end",
                 className: "whitespace-nowrap font-bold text-(--s-ink) tabular-nums",
                 cell: (item) => (
-                  <span dir="ltr">
+                  <span dir={moneyDir(locale, { currency: item.order?.currency })}>
                     <Money value={item.total} locale={locale} unit={{ currency: item.order?.currency }} />
                   </span>
                 ),

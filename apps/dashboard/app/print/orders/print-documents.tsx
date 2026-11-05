@@ -1,5 +1,5 @@
 import { isPaymentSettled } from "@/app/(main)/orders/order-flow.lib";
-import { formatDateTime, formatMoney } from "@/lib/i18n/format";
+import { formatDateTime, formatMoney, moneyDir } from "@/lib/i18n/format";
 import { pickingList } from "./print-orders.lib";
 import { OrderBarcode } from "./order-barcode";
 import type { PrintOrder, PrintSender } from "./print-orders.types";
@@ -72,7 +72,7 @@ function CollectBox({ order, t, locale, large = false }: DocProps & { large?: bo
       {order.collect ? (
         <>
           <p className="text-xs font-semibold">{t("print.collect")}</p>
-          <p className={large ? "text-2xl font-extrabold tabular-nums" : "text-xl font-extrabold tabular-nums"} dir="ltr">
+          <p className={large ? "text-2xl font-extrabold tabular-nums" : "text-xl font-extrabold tabular-nums"} dir={moneyDir(locale, order)}>
             {formatMoney(order.collect, locale, order)}
           </p>
         </>
@@ -102,11 +102,11 @@ function Notes({ order, t }: { order: PrintOrder; t: PrintT }) {
   );
 }
 
-function TotalRow({ label, value, strong = false }: { label: string; value: string; strong?: boolean }) {
+function TotalRow({ label, value, dir, strong = false }: { label: string; value: string; dir: "ltr" | undefined; strong?: boolean }) {
   return (
     <div className={strong ? "flex justify-between gap-6 border-t border-black pt-1.5 text-base font-bold" : "flex justify-between gap-6"}>
       <span>{label}</span>
-      <span className="tabular-nums" dir="ltr">
+      <span className="tabular-nums" dir={dir}>
         {value}
       </span>
     </div>
@@ -166,10 +166,10 @@ export function InvoiceDocument({ order, t, locale }: DocProps) {
                 )}
               </td>
               <td className="py-2 text-center tabular-nums">{line.quantity}</td>
-              <td className="py-2 text-end tabular-nums" dir="ltr">
+              <td className="py-2 text-end tabular-nums" dir={moneyDir(locale, order)}>
                 {money(line.price)}
               </td>
-              <td className="py-2 text-end font-medium tabular-nums" dir="ltr">
+              <td className="py-2 text-end font-medium tabular-nums" dir={moneyDir(locale, order)}>
                 {money(line.total)}
               </td>
             </tr>
@@ -185,16 +185,16 @@ export function InvoiceDocument({ order, t, locale }: DocProps) {
         <div className="w-64 shrink-0 space-y-1.5">
           {order.wholeOrder ? (
             <>
-              <TotalRow label={t("print.subtotal")} value={money(order.subtotal)} />
-              <TotalRow label={t("print.shipping")} value={money(order.shippingCost)} />
-              {discount > 0 && <TotalRow label={t("print.discount")} value={`- ${money(order.discountAmount)}`} />}
-              <TotalRow label={t("print.orderTotal")} value={money(order.totalAmount)} strong />
+              <TotalRow label={t("print.subtotal")} value={money(order.subtotal)} dir={moneyDir(locale, order)} />
+              <TotalRow label={t("print.shipping")} value={money(order.shippingCost)} dir={moneyDir(locale, order)} />
+              {discount > 0 && <TotalRow label={t("print.discount")} value={`- ${money(order.discountAmount)}`} dir={moneyDir(locale, order)} />}
+              <TotalRow label={t("print.orderTotal")} value={money(order.totalAmount)} dir={moneyDir(locale, order)} strong />
               <div className="pt-2">
                 <CollectBox order={order} t={t} locale={locale} />
               </div>
             </>
           ) : (
-            <TotalRow label={t("print.yourItems")} value={money(order.linesTotal)} strong />
+            <TotalRow label={t("print.yourItems")} value={money(order.linesTotal)} dir={moneyDir(locale, order)} strong />
           )}
         </div>
       </section>

@@ -4,6 +4,7 @@ import { ChevronLeft, CircleCheck, MessageCircleQuestion, PackageOpen, PackageX,
 import { getLocale, getTranslations } from "next-intl/server";
 import { IconTile, Note, SellerCard, SellerCardHeader, type Tone } from "@/components/seller-ui";
 import { cn } from "@workspace/ui/lib/utils";
+import { currentOrderLock } from "@/lib/auth/require-seller.server";
 import { formatNumber } from "@/lib/i18n/format";
 import { getHomeSnapshot, getPendingOrdersCount, LOW_STOCK_THRESHOLD } from "./home.queries";
 import type { HomeChannel } from "./home.shared";
@@ -24,9 +25,11 @@ const ITEMS: Item[] = [
 
 /** Open tasks the seller should act on, each linking to where it gets done. */
 export async function AttentionData({ channel }: { channel: HomeChannel }) {
+  // A seller who isn't activated doesn't see the orders line (ROADMAP.md F-68).
+  const { locked } = await currentOrderLock();
   const [snapshot, pendingOrders, t, locale] = await Promise.all([
     getHomeSnapshot(),
-    getPendingOrdersCount(channel),
+    locked ? 0 : getPendingOrdersCount(channel),
     getTranslations("home.attention"),
     getLocale(),
   ]);
@@ -39,7 +42,7 @@ export async function AttentionData({ channel }: { channel: HomeChannel }) {
     <SellerCard aria-labelledby="attention-title">
       <SellerCardHeader id="attention-title" title={t("title")} description={t("description")} />
       <ul className="flex flex-col gap-1 px-3 pb-4 pt-3.5">
-        {ITEMS.map((item) => {
+        {ITEMS.filter((item) => !locked || item.key !== "pendingOrders").map((item) => {
           const count = counts?.[item.key] ?? 0;
           // Nothing to answer means no questions card to jump to.
           const href = item.key === "pendingOrders" ? ordersHref : item.key === "unansweredQuestions" && !count ? "/reviews" : item.href;

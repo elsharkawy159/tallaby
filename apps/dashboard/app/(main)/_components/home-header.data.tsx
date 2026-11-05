@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ExternalLink, Plus } from "lucide-react";
 import { getTranslations } from "next-intl/server";
+import { currentOrderLock } from "@/lib/auth/require-seller.server";
 import { getSelectedStoreLink } from "@/lib/stores/store-link.server";
 import { PageHeader, SellerButton } from "@/components/seller-ui";
 import { getHomeSnapshot, getPendingOrdersCount } from "./home.queries";
@@ -42,13 +43,15 @@ export async function HomeGreeting() {
 
 /** One line on what needs doing first. */
 export async function HomeSubtitle({ channel }: { channel: HomeChannel }) {
+  // A seller who isn't activated gets no line that follows from orders (ROADMAP.md F-68).
+  const { locked } = await currentOrderLock();
   const [snapshot, pending, t] = await Promise.all([
     getHomeSnapshot(),
-    getPendingOrdersCount(channel),
+    locked ? 0 : getPendingOrdersCount(channel),
     getTranslations("home.header"),
   ]);
   if (pending > 0) return <>{t("pendingOrders", { count: pending })}</>;
-  if (snapshot && !snapshot.hasOrders && !isSetupComplete(snapshot)) return <>{t("almostReady")}</>;
+  if (snapshot && (locked || !snapshot.hasOrders) && !isSetupComplete(snapshot)) return <>{t("almostReady")}</>;
   return <>{t("summary")}</>;
 }
 

@@ -122,6 +122,8 @@ export async function previewAudience(input: {
 }): Promise<CampaignActionResult<AudiencePreview>> {
   try {
     const { seller, store } = await requireStore(String(input?.storeId ?? ""));
+    // The count is this store's customers, which follows from orders (ROADMAP.md F-68).
+    if ((await getOrderLock(seller.sellerId)).locked) return fail("activationRequired");
     const audience = parseCampaignAudience(input?.audience);
     const allowance = await getEmailAllowance(seller.sellerId);
     const preview = await previewCampaignAudience(seller.sellerId, store.id, audience, {

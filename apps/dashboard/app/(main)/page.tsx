@@ -3,7 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { Skeleton } from "@workspace/ui/components/skeleton";
 import { AttentionData } from "./_components/attention.data";
 import { HomeGreeting, HomeHeaderView, HomeSubtitle } from "./_components/home-header.data";
-import { HomeKpisData, HomeMetricsData } from "./_components/home-kpis.data";
+import { HomeKpisData, HomeLockedMetricsData, HomeMetricsData } from "./_components/home-kpis.data";
 import { CommunityCard } from "./_components/community-card";
 import { CustomerJourneyData } from "./_components/customer-journey.data";
 import { TrafficSourcesData } from "./_components/traffic-sources.data";
@@ -15,6 +15,7 @@ import { getSellerStores } from "@/lib/stores/current-store.server";
 import {
   ChartSkeleton,
   HomeLayout,
+  HomeLockedLayout,
   KpisSkeleton,
   MetricsSkeleton,
   ListCardSkeleton,
@@ -54,47 +55,90 @@ export default async function VendorDashboardPage({
     stores.map((store) => store.id),
   );
 
+  const header = (
+    <HomeHeaderView
+      title={
+        <Suspense fallback={<Skeleton className="h-8 w-48" />}>
+          <HomeGreeting />
+        </Suspense>
+      }
+      subtitle={
+        <Suspense fallback={<Skeleton className="mt-2 h-4 w-64" />}>
+          <HomeSubtitle channel={channel} />
+        </Suspense>
+      }
+      addLabel={t("addProduct")}
+      rangeControl={
+        <>
+          <RangeSelect />
+          <ChannelSelect stores={stores.map(({ id, name }) => ({ id, name }))} />
+        </>
+      }
+    />
+  );
+  const setup = (
+    <>
+      <OrdersLockedNotice lock={orderLock} />
+      {welcome === "1" && <WelcomeBanner />}
+      {welcome === "1" && signup && (
+        <Suspense fallback={null}>
+          <SignupPixelData signup={signup} />
+        </Suspense>
+      )}
+      <Suspense fallback={null}>
+        <TrialBannerData />
+      </Suspense>
+      <Suspense fallback={null}>
+        <SetupChecklistData />
+      </Suspense>
+    </>
+  );
+  const attention = (
+    <Suspense fallback={<ListCardSkeleton />}>
+      <AttentionData channel={channel} />
+    </Suspense>
+  );
+  const sources = (
+    <RangePending>
+      <Suspense fallback={<ListCardSkeleton />}>
+        <TrafficSourcesData range={range} channel={channel} />
+      </Suspense>
+    </RangePending>
+  );
+  const questions = (
+    <Suspense fallback={<ListCardSkeleton rows={2} />}>
+      <UnansweredQuestionsData />
+    </Suspense>
+  );
+
+  // Not activated: the sales sections aren't rendered, so their queries never run (ROADMAP.md F-68).
+  if (orderLock.locked) {
+    return (
+      <HomeRangeProvider range={range} channel={channel}>
+        <HomeLockedLayout
+          header={header}
+          setup={setup}
+          metrics={
+            <RangePending>
+              <Suspense fallback={<MetricsSkeleton />}>
+                <HomeLockedMetricsData range={range} channel={channel} />
+              </Suspense>
+            </RangePending>
+          }
+          attention={attention}
+          sources={sources}
+          questions={questions}
+          community={<CommunityCard />}
+        />
+      </HomeRangeProvider>
+    );
+  }
+
   return (
     <HomeRangeProvider range={range} channel={channel}>
       <HomeLayout
-        header={
-          <HomeHeaderView
-            title={
-              <Suspense fallback={<Skeleton className="h-8 w-48" />}>
-                <HomeGreeting />
-              </Suspense>
-            }
-            subtitle={
-              <Suspense fallback={<Skeleton className="mt-2 h-4 w-64" />}>
-                <HomeSubtitle channel={channel} />
-              </Suspense>
-            }
-            addLabel={t("addProduct")}
-            rangeControl={
-              <>
-                <RangeSelect />
-                <ChannelSelect stores={stores.map(({ id, name }) => ({ id, name }))} />
-              </>
-            }
-          />
-        }
-        setup={
-          <>
-            <OrdersLockedNotice lock={orderLock} />
-            {welcome === "1" && <WelcomeBanner />}
-            {welcome === "1" && signup && (
-              <Suspense fallback={null}>
-                <SignupPixelData signup={signup} />
-              </Suspense>
-            )}
-            <Suspense fallback={null}>
-              <TrialBannerData />
-            </Suspense>
-            <Suspense fallback={null}>
-              <SetupChecklistData />
-            </Suspense>
-          </>
-        }
+        header={header}
+        setup={setup}
         kpis={
           <RangePending>
             <Suspense fallback={<KpisSkeleton />}>
@@ -123,11 +167,7 @@ export default async function VendorDashboardPage({
             </Suspense>
           </RangePending>
         }
-        attention={
-          <Suspense fallback={<ListCardSkeleton />}>
-            <AttentionData channel={channel} />
-          </Suspense>
-        }
+        attention={attention}
         topProducts={
           <RangePending>
             <Suspense fallback={<ListCardSkeleton />}>
@@ -135,23 +175,13 @@ export default async function VendorDashboardPage({
             </Suspense>
           </RangePending>
         }
-        sources={
-          <RangePending>
-            <Suspense fallback={<ListCardSkeleton />}>
-              <TrafficSourcesData range={range} channel={channel} />
-            </Suspense>
-          </RangePending>
-        }
+        sources={sources}
         orders={
           <Suspense fallback={<TableCardSkeleton />}>
             <RecentOrdersData />
           </Suspense>
         }
-        questions={
-          <Suspense fallback={<ListCardSkeleton rows={2} />}>
-            <UnansweredQuestionsData />
-          </Suspense>
-        }
+        questions={questions}
         community={<CommunityCard />}
       />
     </HomeRangeProvider>

@@ -1,4 +1,5 @@
 import { db, sql } from "@workspace/db";
+import { loadOrderLock } from "@/lib/auth/require-seller.server";
 import { HISTORY_LIMIT, LOW_STOCK_LIMIT, lowStockThreshold, movementReason } from "./inventory.lib";
 import type { InventoryLine, ProductInventory, StockMovementRow } from "./inventory.types";
 
@@ -121,6 +122,10 @@ export async function getProductInventory(
   )[0];
   if (!owned) return null;
 
+  // Stock taken or returned by an order waits for activation, like the order (ROADMAP.md F-68).
+  const { locked } = await loadOrderLock(sellerId);
+  const hideOrders = locked ? sql`AND m.order_id IS NULL AND m.reason NOT IN ('order', 'cancel', 'return')` : sql``;
+
   // Scoped twice: the movement's own seller_id and the product id checked above.
   const history = rowsOf<MovementRowDb>(
     await db.execute(sql`
@@ -129,7 +134,7 @@ export async function getProductInventory(
       FROM stock_movements m
       LEFT JOIN product_variants v ON v.id = m.variant_id AND v.product_id = m.product_id
       LEFT JOIN orders o ON o.id = m.order_id
-      WHERE m.seller_id = ${sellerId} AND m.product_id = ${productId}
+      WHERE m.seller_id = ${sellerId} AND m.product_id = ${productId} ${hideOrders}
       ORDER BY m.created_at DESC, m.id DESC
       LIMIT ${HISTORY_LIMIT}
     `),

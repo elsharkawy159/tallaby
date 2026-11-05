@@ -218,7 +218,7 @@ const SidebarContent = ({
       >
         {Icon && <Icon className={cn(NAV_ICON, isActive && "text-current")} />}
         {!isCollapsed && <span className="min-w-0 flex-1 truncate">{label}</span>}
-        {ordersLocked && link.href === "/orders" && <OrdersWarning />}
+        {ordersLocked && LOCKED_HREFS.includes(link.href) && <OrdersWarning />}
         {!isCollapsed && (link.disabled ? <SoonBadge /> : null)}
       </Link>
     );
@@ -240,7 +240,7 @@ const SidebarContent = ({
               className={cn(NAV_ITEM, active && NAV_ITEM_ACTIVE, "relative justify-center px-0")}
             >
               <group.icon className={cn(NAV_ICON, active && "text-current")} />
-              {ordersLocked && group.key === "ordersGroup" && <OrdersWarning />}
+              {ordersLocked && LOCKED_GROUPS.includes(group.key) && <OrdersWarning />}
               {groupCount > 0 && (
                 <StrongCount
                   value={format.number(groupCount)}
@@ -395,6 +395,10 @@ function LogoutButton({ isCollapsed }: { isCollapsed: boolean }) {
   return isCollapsed ? <CollapsedTip label={t("logout")}>{button}</CollapsedTip> : button;
 }
 
+/** What a seller who isn't activated can't open yet, and the groups that hold it (ROADMAP.md F-68). */
+const LOCKED_HREFS = ["/orders", "/financial", "/reports"];
+const LOCKED_GROUPS = ["ordersGroup", "finance"];
+
 function OrdersWarning() {
   const t = useTranslations("orderLock");
   return (
@@ -472,7 +476,7 @@ function SidebarGroup({
       >
         <group.icon className={cn(NAV_ICON, active && "text-(--s-primary)")} />
         <span className="min-w-0 flex-1 truncate">{label}</span>
-        {ordersLocked && group.key === "ordersGroup" && <OrdersWarning />}
+        {ordersLocked && LOCKED_GROUPS.includes(group.key) && <OrdersWarning />}
         {groupCount > 0 && <StrongCount value={format.number(groupCount)} />}
         <ChevronDown
           aria-hidden
@@ -497,7 +501,7 @@ function SidebarGroup({
                   )}
                 >
                   <span className="min-w-0 flex-1 truncate">{t(item.key)}</span>
-                  {ordersLocked && item.href === "/orders" && <OrdersWarning />}
+                  {ordersLocked && LOCKED_HREFS.includes(item.href) && <OrdersWarning />}
                   {item.disabled ? (
                     <SoonBadge />
                   ) : (

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { CreditCard, ReceiptText, ShoppingBag, Store } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { EmptyState, IconTile, Segmented, SellerCard, SellerCardHeader } from "@/components/seller-ui";
-import { formatMoney, formatNumber } from "@/lib/i18n/format";
+import { formatMoney, formatNumber, moneyDir } from "@/lib/i18n/format";
 import { Money } from "@/components/money";
 import { humanizeStatus } from "@/lib/i18n/status";
 import { MARKETPLACE_CHANNEL, type SalesSourceLine, type SalesSources } from "./financial.lib";
@@ -115,7 +115,7 @@ function SourceList({
                   </div>
                 </div>
                 <div className="shrink-0 text-end">
-                  <p className="font-montserrat text-[13.5px] font-bold text-(--s-ink) tabular-nums" dir="ltr">
+                  <p className="font-montserrat text-[13.5px] font-bold text-(--s-ink) tabular-nums" dir={moneyDir(locale, { currency })}>
                     <Money value={line.amount} locale={locale} unit={{ currency }} />
                   </p>
                   <p className="text-xs text-(--s-subtle)">{t("share", { value: share })}</p>

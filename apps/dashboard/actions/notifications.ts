@@ -5,12 +5,16 @@ import {
   markSellerNotificationsRead,
 } from "@workspace/lib/notifications/server";
 import { parseNotificationIds } from "@workspace/lib/notifications";
-import { requireSeller } from "@/lib/auth/require-seller.server";
+import { loadOrderLock, requireSeller } from "@/lib/auth/require-seller.server";
+
+/** Bell rows that name an order: a seller who isn't activated doesn't get them (ROADMAP.md F-68). */
+const ORDER_TYPES = ["order_created", "carrier_shipment_failed", "carrier_needs_attention"] as const;
 
 /** The header bell's feed for the signed-in seller (seller id from the session only). */
 export async function getSellerNotificationFeed() {
   const { sellerId } = await requireSeller();
-  return listSellerNotifications(sellerId);
+  const { locked } = await loadOrderLock(sellerId);
+  return listSellerNotifications(sellerId, undefined, locked ? ORDER_TYPES : []);
 }
 
 /**

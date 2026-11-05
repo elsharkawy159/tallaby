@@ -7,7 +7,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { ChevronRight, ExternalLink, Menu, Plus, Search } from "lucide-react";
 import { IconButton } from "@/components/seller-ui";
 import { cn } from "@/lib/utils";
-import { formatWalletMoney } from "@/lib/i18n/format";
+import { formatWalletMoney, moneyDir } from "@/lib/i18n/format";
 import { useSidebarStore } from "@/stores";
 import { CommandPalette } from "./command-palette.client";
 import { resolveDashboardRoute } from "./dashboard-routes.lib";
@@ -133,7 +133,7 @@ export function DashboardHeader({
               className="inline-flex items-center gap-2 text-(--s-muted) no-underline hover:text-(--s-ink)"
             >
               <span className="max-[1020px]:hidden">{t("walletLabel")}</span>
-              <bdi dir="ltr" className={cn("font-montserrat text-[13px] font-bold text-(--s-ink) tabular-nums", walletBalance < 0 && "text-destructive")}>
+              <bdi dir={moneyDir(locale, { currency: walletCurrency })} className={cn("font-montserrat text-[13px] font-bold text-(--s-ink) tabular-nums", walletBalance < 0 && "text-destructive")}>
                 {formatWalletMoney(walletBalance, walletCurrency, locale)}
               </bdi>
             </Link>

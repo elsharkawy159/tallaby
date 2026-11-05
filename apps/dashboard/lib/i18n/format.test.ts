@@ -1,19 +1,52 @@
 import { describe, expect, it } from "vitest";
 import { PRICE_SYMBOL_MARK, SAUDI_RIYAL_LABEL } from "@workspace/lib";
-import { formatMoney, formatMoneyMarked, moneyLabel, moneyParams, moneyUnitMarked, moneyUnitText, splitHeadline, totalsByCurrency } from "./format";
+import { MIXED_CURRENCIES, formatMoney, formatMoneyMarked, formatWalletMoney, isArabicPound, moneyDir, moneyLabel, moneyParams, moneyUnitMarked, moneyUnitText, splitHeadline, totalsByCurrency } from "./format";
 
 describe("formatMoney", () => {
-  it("reads the same as before with no currency, a null one and EGP", () => {
+  it("reads EGP in English and جنيه in Arabic with no currency, a null one and EGP", () => {
     for (const unit of [undefined, {}, { currency: null }, { currency: "EGP" }]) {
       expect(formatMoney("1250.5", "en", unit)).toBe("1,250.5 EGP");
-      expect(formatMoney(300, "ar", unit)).toBe("300 EGP");
+      expect(formatMoney(300, "ar", unit)).toBe("300 جنيه");
+      expect(formatMoney(300, "ar-EG", unit)).toBe("300 جنيه");
+      expect(formatMoneyMarked(300, "ar", unit)).toBe("300 جنيه");
     }
     expect(formatMoney(null, "en")).toBe("0 EGP");
     expect(formatMoney("not a number", "en")).toBe("0 EGP");
   });
 
-  it("ignores a store's EGP label, so the dashboard always says EGP", () => {
-    expect(moneyLabel({ currency: "EGP", label: "جنيهاً" })).toBe("EGP");
+  it("drops Intl's left-to-right mark from a negative Arabic amount, so a <bdi> stays right to left", () => {
+    expect(formatMoney(-500, "ar")).toBe("-500 جنيه");
+    expect(formatMoneyMarked(-500, "ar")).toBe("-500 جنيه");
+  });
+
+  it("ignores a store's EGP label, so the dashboard always says the same word", () => {
+    expect(moneyLabel({ currency: "EGP", label: "جنيهاً" }, "en")).toBe("EGP");
+    expect(moneyLabel({ currency: "EGP", label: "ج.م" }, "ar")).toBe("جنيه");
+  });
+
+  it("gives the wallet the same word, and leaves USD in dollars", () => {
+    expect(formatWalletMoney(277, "EGP", "ar")).toBe("277 جنيه");
+    expect(formatWalletMoney(277, null, "ar")).toBe("277 جنيه");
+    expect(formatWalletMoney(277, "EGP", "en")).toBe("277 EGP");
+    expect(formatWalletMoney(5, "USD", "ar")).toBe("$5.00");
+  });
+
+  it("keeps a mixed amount a bare number", () => {
+    const mixed = { currency: MIXED_CURRENCIES };
+    expect(formatMoney(300, "ar", mixed)).toBe("300");
+    expect(formatMoney(300, "en", mixed)).toBe("300");
+    expect(formatMoneyMarked(300, "ar", mixed)).toBe("300");
+    expect(moneyUnitText("ar", mixed)).toBe("عملة المتجر");
+    expect(moneyUnitMarked("en", mixed)).toBe("store currency");
+    expect(isArabicPound("ar", mixed)).toBe(false);
+  });
+
+  it("leaves only an Arabic pound out of left-to-right", () => {
+    expect(moneyDir("ar")).toBeUndefined();
+    expect(moneyDir("ar", { currency: "EGP" })).toBeUndefined();
+    expect(moneyDir("en")).toBe("ltr");
+    expect(moneyDir("ar", { currency: "SAR" })).toBe("ltr");
+    expect(moneyDir("ar", { currency: "USD" })).toBe("ltr");
   });
 
   it("writes SAR as text in plain places", () => {
@@ -24,7 +57,7 @@ describe("formatMoney", () => {
   it("uses a store's label for its currency, and refuses another currency's label", () => {
     expect(formatMoney(100, "en", { currency: "AED", label: "د.إ" })).toBe("100 د.إ");
     expect(formatMoney(100, "en", { currency: "AED", label: "ر.س" })).toBe("100 AED");
-    expect(moneyLabel({ currency: "SAR", label: "EGP" })).toBe(SAUDI_RIYAL_LABEL);
+    expect(moneyLabel({ currency: "SAR", label: "EGP" }, "ar")).toBe(SAUDI_RIYAL_LABEL);
   });
 
   it("shows an unknown code as it is rather than calling it EGP", () => {
@@ -38,13 +71,17 @@ describe("marked money", () => {
     expect(formatMoneyMarked(100, "en", { currency: "SAR", label: "ر.س" })).toBe("100 ر.س");
     expect(formatMoneyMarked(100, "en")).toBe("100 EGP");
     expect(moneyUnitMarked("en", { currency: "SAR" })).toBe(PRICE_SYMBOL_MARK);
-    expect(moneyUnitMarked("ar", {})).toBe("EGP");
+    expect(moneyUnitMarked("ar", {})).toBe("جنيه");
+    expect(moneyUnitMarked("en", {})).toBe("EGP");
   });
 
   it("gives text for labels", () => {
     expect(moneyUnitText("ar", { currency: "SAR" })).toBe("ر.س");
     expect(moneyParams("en", { currency: "SAR" })).toEqual({ code: "SAR", unit: "SAR" });
-    expect(moneyParams("ar")).toEqual({ code: "EGP", unit: "EGP" });
+    expect(moneyParams("ar")).toEqual({ code: "EGP", unit: "جنيه" });
+    expect(moneyParams("en")).toEqual({ code: "EGP", unit: "EGP" });
+    expect(moneyUnitText("ar")).toBe("جنيه");
+    expect(moneyUnitText("en")).toBe("EGP");
   });
 });
 

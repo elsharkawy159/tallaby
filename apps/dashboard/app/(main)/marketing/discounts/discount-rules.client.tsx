@@ -6,7 +6,7 @@ import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import type { DiscountRule, DiscountRuleType } from "@workspace/lib/orders/automatic-discounts";
-import { moneyNumberOptions, moneyParams, type MoneyUnit } from "@/lib/i18n/format";
+import { formatMoney, isArabicPound, moneyNumberOptions, moneyParams, type MoneyUnit } from "@/lib/i18n/format";
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
@@ -138,7 +138,7 @@ export function DiscountRulesView({
 
   const summary = (rule: DiscountRule) =>
     rule.ruleType === "free_gift"
-      ? t("summaryGift", { amount: format.number((rule.minSubtotalPiastres ?? 0) / 100, moneyNumberOptions(money)), count: rule.giftProductIds.length })
+      ? t("summaryGift", { amount: isArabicPound(locale, money) ? formatMoney((rule.minSubtotalPiastres ?? 0) / 100, locale) : format.number((rule.minSubtotalPiastres ?? 0) / 100, moneyNumberOptions(money)), count: rule.giftProductIds.length })
       : rule.ruleType === "buy_x_get_y"
       ? rule.discountPercent === 100
         ? t("summaryBuyGetFree", { buy: rule.buyQuantity ?? 0, get: rule.getQuantity ?? 0 })

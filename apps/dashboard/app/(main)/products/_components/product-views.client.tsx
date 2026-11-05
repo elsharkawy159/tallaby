@@ -40,7 +40,7 @@ function ViewsCellInner({ stats, productId }: { stats: Promise<ProductViewStats>
   const locale = useLocale();
   if (!resolved) return <Dash />;
   const stat = resolved.byProduct[productId] ?? { views: 0, orders: 0 };
-  const percent = viewsToOrdersPercent(stat.views, stat.orders);
+  const percent = resolved.ordersHidden ? null : viewsToOrdersPercent(stat.views, stat.orders);
   return (
     <div className="text-sm leading-tight">
       <div className="flex items-center gap-1 text-foreground">
@@ -79,7 +79,7 @@ function ViewsBadgeInner({ stats, productId }: { stats: Promise<ProductViewStats
   const locale = useLocale();
   if (!resolved) return null;
   const stat = resolved.byProduct[productId] ?? { views: 0, orders: 0 };
-  const percent = viewsToOrdersPercent(stat.views, stat.orders);
+  const percent = resolved.ordersHidden ? null : viewsToOrdersPercent(stat.views, stat.orders);
   return (
     <div
       className="flex h-[42px] items-center gap-2 rounded-full border border-(--s-line) bg-(--s-surface-2) px-3.5 text-xs text-(--s-muted)"
@@ -87,8 +87,12 @@ function ViewsBadgeInner({ stats, productId }: { stats: Promise<ProductViewStats
     >
       <Eye className="h-3.5 w-3.5 shrink-0" aria-hidden />
       <span className="text-foreground">{t("views", { count: stat.views })}</span>
-      <span aria-hidden>·</span>
-      <span>{t("orders", { count: stat.orders })}</span>
+      {!resolved.ordersHidden && (
+        <>
+          <span aria-hidden>·</span>
+          <span>{t("orders", { count: stat.orders })}</span>
+        </>
+      )}
       {percent !== null ? (
         <>
           <span aria-hidden>·</span>

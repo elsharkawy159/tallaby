@@ -134,6 +134,34 @@ export function HomeSkeleton() {
 /** Stretches cards to their row's height; some are wrapped in a range-pending div. */
 const STRETCH = "[&>*]:min-w-0 [&>section]:h-full [&>div>section]:h-full";
 
+/**
+ * The home of a seller who isn't activated (ROADMAP.md F-68): no sales cards, so no
+ * empty rows either. What doesn't follow from orders moves up.
+ */
+export function HomeLockedLayout(slots: {
+  header: React.ReactNode;
+  setup: React.ReactNode;
+  metrics: React.ReactNode;
+  attention: React.ReactNode;
+  sources: React.ReactNode;
+  questions: React.ReactNode;
+  community: React.ReactNode;
+}) {
+  return (
+    <PageContainer>
+      <div className="sui-rise">{slots.header}</div>
+      {slots.setup}
+      <div className="sui-rise [animation-delay:.1s]">{slots.metrics}</div>
+      <div className={`sui-rise grid grid-cols-2 gap-3.5 [animation-delay:.14s] max-[1020px]:grid-cols-1 ${STRETCH}`}>
+        {slots.attention}
+        {slots.sources}
+      </div>
+      {slots.questions}
+      <div className="sui-rise [animation-delay:.18s]">{slots.community}</div>
+    </PageContainer>
+  );
+}
+
 /** Grid shared by the page and its skeleton (Seller Home v3). */
 export function HomeLayout(slots: {
   header: React.ReactNode;

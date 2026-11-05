@@ -2,9 +2,11 @@
 
 import { db, orders, sellerPayouts, sellerPayoutItems, sellerWallet, orderItems, sellers, walletTransactions } from "@workspace/db";
 import { eq, and, desc, sql, gte, between } from "drizzle-orm";
+import { loadOrderLock } from "@/lib/auth/require-seller.server";
 import { totalsByCurrency } from "@/lib/i18n/format";
 import { getUser } from "./auth";
 
+// Everything here feeds /financial, so a seller who isn't activated is refused (ROADMAP.md F-68).
 export async function getSellerPayouts(params?: {
   status?: string;
   limit?: number;
@@ -12,7 +14,7 @@ export async function getSellerPayouts(params?: {
 }) {
   try {
     const session = await getUser();
-    if (!session?.user?.id) {
+    if (!session?.user?.id || (await loadOrderLock(session.user.id)).locked) {
       throw new Error("Unauthorized");
     }
 
@@ -51,7 +53,7 @@ export async function getSellerPayouts(params?: {
 export async function getPayoutDetails(payoutId: string) {
   try {
     const session = await getUser();
-    if (!session?.user?.id) {
+    if (!session?.user?.id || (await loadOrderLock(session.user.id)).locked) {
       throw new Error("Unauthorized");
     }
 
@@ -97,7 +99,7 @@ export async function getPayoutDetails(payoutId: string) {
 export async function getPendingEarnings() {
   try {
     const session = await getUser();
-    if (!session?.user?.id) {
+    if (!session?.user?.id || (await loadOrderLock(session.user.id)).locked) {
       throw new Error("Unauthorized");
     }
 
@@ -138,7 +140,7 @@ export async function getPendingEarnings() {
 export async function getWalletBalance() {
   try {
     const session = await getUser();
-    if (!session?.user?.id) {
+    if (!session?.user?.id || (await loadOrderLock(session.user.id)).locked) {
       throw new Error("Unauthorized");
     }
 
@@ -168,7 +170,7 @@ export async function getWalletBalance() {
 export async function getWalletTransactions(params?: { limit?: number }) {
   try {
     const session = await getUser();
-    if (!session?.user?.id) {
+    if (!session?.user?.id || (await loadOrderLock(session.user.id)).locked) {
       throw new Error("Unauthorized");
     }
 
@@ -206,7 +208,7 @@ export async function getWalletTransactions(params?: { limit?: number }) {
 export async function getPayoutStats(year?: number) {
   try {
     const session = await getUser();
-    if (!session?.user?.id) {
+    if (!session?.user?.id || (await loadOrderLock(session.user.id)).locked) {
       throw new Error("Unauthorized");
     }
 
@@ -265,7 +267,7 @@ export async function getPayoutStats(year?: number) {
 export async function getDashboardAnalytics() {
   try {
      const session = await getUser();
-    if (!session?.user?.id) {
+    if (!session?.user?.id || (await loadOrderLock(session.user.id)).locked) {
       throw new Error("Unauthorized");
     }
 
@@ -308,7 +310,7 @@ export async function getDashboardAnalytics() {
 export async function getRevenueAnalytics(period: 'daily' | 'weekly' | 'monthly' | 'yearly' = 'monthly') {
   try {
     const session = await getUser();
-    if (!session?.user?.id) {
+    if (!session?.user?.id || (await loadOrderLock(session.user.id)).locked) {
       throw new Error("Unauthorized");
     }
 

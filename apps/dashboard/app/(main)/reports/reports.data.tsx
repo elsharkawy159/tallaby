@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { Ban, Info, PackageX, Percent, ReceiptText, ShoppingBag, Trophy, Truck, Wallet } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { formatNumber } from "@/lib/i18n/format";
-import { isAccessError, requireStore } from "@/lib/auth/require-seller.server";
+import { isAccessError, requireOrdersStore } from "@/lib/auth/require-seller.server";
 import { getHomeTraffic } from "@/lib/analytics/home-traffic.server";
 import { isStoreViewsConfigured } from "@/lib/analytics/store-views.server";
 import { LEAD_RETENTION_DAYS } from "@workspace/lib/checkout-leads";
@@ -32,12 +32,12 @@ const CHART_GOVERNORATES = 8;
 
 /**
  * One store's report (ROADMAP.md F-15a). The store id from the URL is checked
- * against the session's seller (requireStore) before any query runs.
+ * against the session's seller, and an activated one, before any query runs.
  */
 export async function StoreReportData({ storeId, range }: { storeId: string; range: ReportRange }) {
   let access;
   try {
-    access = await requireStore(storeId);
+    access = await requireOrdersStore(storeId);
   } catch (error) {
     if (isAccessError(error)) notFound();
     throw error;

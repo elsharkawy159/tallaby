@@ -6,7 +6,7 @@ import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { searchCouponProducts, type CouponProductOption } from "@/actions/coupons";
 import { useAccountMoney } from "@/components/account-money.client";
-import { moneyNumberOptions, moneyParams } from "@/lib/i18n/format";
+import { formatMoney, isArabicPound, moneyNumberOptions, moneyParams } from "@/lib/i18n/format";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import { Switch } from "@workspace/ui/components/switch";
@@ -72,7 +72,7 @@ export function CrossSellSection({ productId, initial }: { productId: string; in
   const label = (offer: CrossSellRow) =>
     offer.discountType === "percent"
       ? t("percentOff", { value: offer.discountValue })
-      : t("amountOff", { value: format.number(offer.discountValue, moneyNumberOptions(unit)) });
+      : t("amountOff", { value: isArabicPound(locale, unit) ? formatMoney(offer.discountValue, locale) : format.number(offer.discountValue, moneyNumberOptions(unit)) });
 
   return (
     <section className="rounded-[24px] border border-(--s-line) bg-(--s-glass) p-[22px] shadow-(--s-shadow-card) max-[600px]:rounded-[20px] max-[600px]:p-4">

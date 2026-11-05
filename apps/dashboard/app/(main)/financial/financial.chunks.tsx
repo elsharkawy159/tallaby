@@ -12,7 +12,7 @@ import {
   StatusBadge,
   TwoColumns,
 } from "@/components/seller-ui";
-import { formatDate, formatMoney, formatNumber, formatWalletMoney, moneyUnitMarked, splitHeadline } from "@/lib/i18n/format";
+import { formatDate, formatMoney, formatNumber, formatWalletMoney, moneyUnitMarked, splitHeadline, moneyDir } from "@/lib/i18n/format";
 import { MoneyLines, MoneyText } from "@/components/money";
 import { humanizeStatus, translateStatus } from "@/lib/i18n/status";
 import { cn } from "@/lib/utils";
@@ -205,7 +205,7 @@ export function FinancialDashboardContent({
                   header: t("columns.amount"),
                   phone: "title",
                   cell: (payout) => (
-                    <bdi dir="ltr" className="whitespace-nowrap font-montserrat font-semibold tabular-nums">
+                    <bdi dir={moneyDir(locale)} className="whitespace-nowrap font-montserrat font-semibold tabular-nums">
                       {formatCurrency(payout.netAmount)}
                     </bdi>
                   ),
