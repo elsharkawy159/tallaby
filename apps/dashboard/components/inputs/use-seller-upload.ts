@@ -61,9 +61,12 @@ export async function uploadOwnFolderFile (
 export function useSellerUpload ({
   folder,
   bucket = 'sellers',
+  subfolder,
 }: {
   folder: 'logos' | 'banners' | 'documents' | 'blog'
   bucket?: string
+  /** Extra folder under `folder`, e.g. the seller id for documents (the server checks it). */
+  subfolder?: string
 }) {
   const t = useTranslations('inputs.sellerImage')
   const [isUploading, setIsUploading] = useState(false)
@@ -81,7 +84,8 @@ export function useSellerUpload ({
 
       setIsUploading(true)
       try {
-        const fileName = `${folder}/${generateImageName(file).split('/').pop()}`
+        const dir = subfolder ? `${folder}/${subfolder}` : folder
+        const fileName = `${dir}/${generateImageName(file).split('/').pop()}`
         const path = await uploadSellerFile(file, { bucket, path: fileName })
         return getPublicUrl(path, bucket)
       } catch (error) {
@@ -92,7 +96,7 @@ export function useSellerUpload ({
         setIsUploading(false)
       }
     },
-    [bucket, folder, t]
+    [bucket, folder, subfolder, t]
   )
 
   return { upload, isUploading }

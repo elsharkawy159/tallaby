@@ -4,7 +4,6 @@ import { useFormContext } from "react-hook-form"
 import { useTranslations } from "next-intl"
 import { ArrowUp, CircleHelp, FileText, ImagePlus, LoaderCircle, Paperclip, Sparkles, Undo2, X } from "lucide-react"
 import { Button } from "@workspace/ui/components/button"
-import { AiCreditsNote } from "@/components/ai/ai-credits-note.client"
 import { Checkbox } from "@workspace/ui/components/checkbox"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@workspace/ui/components/tooltip"
 import {
@@ -235,7 +234,6 @@ export function AiAutofillCard ({
         </p>
       )}
       {outOfCalls && !running && <p className="mt-2 px-0.5 text-xs text-destructive">{t("errors.dailyLimit")}</p>}
-      <AiCreditsNote refreshKey={remaining} className="mt-2 px-0.5" />
       {remaining !== null && remaining > 0 && remaining <= 5 && !running && (
         <p className="mt-2 px-0.5 text-xs text-muted-foreground">{t("remaining", { count: remaining })}</p>
       )}

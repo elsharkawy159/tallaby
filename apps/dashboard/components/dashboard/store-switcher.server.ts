@@ -2,6 +2,7 @@
 
 import { cookies } from "next/headers";
 import { getStore } from "@workspace/lib/stores/server";
+import { isUuid } from "@/lib/auth/access.lib";
 import { requireSeller } from "@/lib/auth/require-seller.server";
 import { SELECTED_STORE_COOKIE } from "@/lib/stores/current-store.server";
 
@@ -11,7 +12,9 @@ import { SELECTED_STORE_COOKIE } from "@/lib/stores/current-store.server";
  */
 export async function selectStore(storeId: string): Promise<{ success: boolean }> {
   const seller = await requireSeller();
-  const store = await getStore(seller.sellerId, String(storeId));
+  // A non-uuid id would make Postgres throw on the uuid column; refuse it cleanly.
+  if (typeof storeId !== "string" || !isUuid(storeId)) return { success: false };
+  const store = await getStore(seller.sellerId, storeId);
   if (!store) return { success: false };
   (await cookies()).set(SELECTED_STORE_COOKIE, store.id, {
     httpOnly: true,

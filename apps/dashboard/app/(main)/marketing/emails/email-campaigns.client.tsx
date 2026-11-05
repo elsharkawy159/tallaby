@@ -66,6 +66,8 @@ import type {
   WinbackOverview,
 } from "@workspace/lib/email-campaigns/server";
 import { formatDateTime, formatNumber } from "@/lib/i18n/format";
+import { useWholeNumberInput } from "@/components/form/whole-number.client";
+import type { WholeNumberRange } from "@/components/form/whole-number.lib";
 import {
   buyEmails, cancelCampaignAction,
   createCampaign,
@@ -683,14 +685,11 @@ function Composer({
             </OptionCards>
             {draft.audience === "inactive" && (
               <Field label={t("composer.inactiveDays")} htmlFor="campaign-days">
-                <TextInput
+                <DaysInput
                   id="campaign-days"
-                  type="number"
-                  min={INACTIVE_DAYS_MIN}
-                  max={INACTIVE_DAYS_MAX}
                   value={draft.inactiveDays}
-                  onChange={(e) => set("inactiveDays", Number(e.target.value) || INACTIVE_DAYS_DEFAULT)}
-                  className="w-28"
+                  onCommit={(days) => set("inactiveDays", days)}
+                  range={{ min: INACTIVE_DAYS_MIN, max: INACTIVE_DAYS_MAX, fallback: INACTIVE_DAYS_DEFAULT }}
                 />
               </Field>
             )}
@@ -908,14 +907,11 @@ function WinbackCard({
             })}
           </p>
           <Field label={t("winback.days")} htmlFor="winback-days">
-            <TextInput
+            <DaysInput
               id="winback-days"
-              type="number"
-              min={WINBACK_DAYS_MIN}
-              max={WINBACK_DAYS_MAX}
               value={value.days}
-              onChange={(e) => setValue((v) => ({ ...v, days: Number(e.target.value) || WINBACK_DAYS_MIN }))}
-              className="w-28"
+              onCommit={(days) => setValue((v) => ({ ...v, days }))}
+              range={{ min: WINBACK_DAYS_MIN, max: WINBACK_DAYS_MAX, fallback: WINBACK_DAYS_MIN }}
             />
           </Field>
           <Field label={t("winback.subject")} htmlFor="winback-subject">
@@ -994,6 +990,12 @@ const STATUS_TONE: Partial<Record<StoreCampaign["status"], BadgeTone>> = {
   sending: "info",
   scheduled: "info",
 };
+
+/** A day count that accepts Arabic digits; it only ever commits an in-range number. */
+function DaysInput({ id, value, onCommit, range }: { id: string; value: number; onCommit: (days: number) => void; range: WholeNumberRange }) {
+  const input = useWholeNumberInput(value, onCommit, range);
+  return <TextInput id={id} dir="ltr" {...input} className="w-28" />;
+}
 
 function EmptyCard({ title, body }: { title: string; body: string }) {
   return (

@@ -196,7 +196,8 @@ export async function addCustomDomain(storeId: string, input: string): Promise<C
 
 /** Re-checks verification and DNS with Vercel (the seller's "Verify" button). */
 export async function verifyCustomDomain(storeId: string): Promise<CustomDomainResult> {
-  const store = await currentStore(storeId);
+  // It saves the refreshed status, so it is a write: a suspended seller is refused.
+  const store = await currentStore(storeId, { forWrite: true });
   if (!store) return { success: false, error: "unauthorized" };
   const row = await findRow(store);
   if (!row) return { success: true, domain: null };
@@ -212,7 +213,7 @@ export async function verifyCustomDomain(storeId: string): Promise<CustomDomainR
 
 /** Disconnects the domain; the store goes back to {subdomain}.tallaby.com. */
 export async function removeCustomDomain(storeId: string): Promise<CustomDomainResult> {
-  const store = await currentStore(storeId);
+  const store = await currentStore(storeId, { forWrite: true });
   if (!store) return { success: false, error: "unauthorized" };
   const row = await findRow(store);
   if (!row) return { success: true, domain: null };

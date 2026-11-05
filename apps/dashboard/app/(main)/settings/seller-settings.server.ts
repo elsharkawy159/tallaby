@@ -9,7 +9,9 @@ import {
   uploadSellerDocument,
   updateSellerProfile,
 } from "@/actions/seller";
+import { getSessionUser } from "@/lib/auth/session.server";
 import { sellerProfileSchema } from "./seller-settings.schema";
+import { isOwnSellerDocumentUrl } from "./seller-documents.lib";
 
 export async function fetchSellerSettings() {
   const [profileRes, docsRes] = await Promise.all([
@@ -71,6 +73,13 @@ export async function handleUploadDocument(input: unknown) {
   const t = await getTranslations("settings.messages");
   try {
     const data = uploadDocSchema.parse(input);
+    // The browser sends the file URL: accept only a file in this seller's own
+    // documents folder (no other seller's file, bucket, host or `..`).
+    const user = await getSessionUser();
+    if (!user) return { success: false, message: t("uploadFailed") } as const;
+    if (!isOwnSellerDocumentUrl(user.id, data.fileUrl, process.env.NEXT_PUBLIC_SUPABASE_URL ?? "")) {
+      return { success: false, message: t("uploadFailed") } as const;
+    }
     const res = await uploadSellerDocument({
       documentType: data.documentType,
       fileUrl: data.fileUrl,

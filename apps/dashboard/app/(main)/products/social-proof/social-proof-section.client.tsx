@@ -10,6 +10,7 @@ import { Input } from "@workspace/ui/components/input";
 import { Textarea } from "@workspace/ui/components/textarea";
 import { IconButton } from "@/components/seller-ui";
 import { cn } from "@/lib/utils";
+import { wholeNumberText } from "@/components/form/whole-number.lib";
 import { FIELD_CLASS, FieldError, FieldHint, FieldLabel, SMALL_BUTTON_CLASS, SubHeading, TEXTAREA_CLASS } from "@/app/(main)/products/add/form-kit";
 import { CollapsibleSection } from "../add/sections/collapsible-section";
 import { useFieldError } from "../add/sections/fields";
@@ -183,14 +184,16 @@ function LowStockAlert() {
               <FieldLabel htmlFor="low-stock-threshold">{t("lowStockThreshold")}</FieldLabel>
               <Input
                 id="low-stock-threshold"
-                type="number"
+                type="text"
                 inputMode="numeric"
-                min={LOW_STOCK_THRESHOLD_MIN}
-                max={LOW_STOCK_THRESHOLD_MAX}
-                step={1}
+                dir="ltr"
                 value={field.value ?? ""}
                 placeholder={String(LOW_STOCK_THRESHOLD_DEFAULT)}
-                onChange={(e) => field.onChange(e.target.value === "" ? null : Number(e.target.value))}
+                onChange={(e) => {
+                  // Arabic digits accepted; out-of-range values show the error below (form schema).
+                  const digits = wholeNumberText(e.target.value, LOW_STOCK_THRESHOLD_MAX);
+                  field.onChange(digits === "" ? null : Number(digits));
+                }}
                 onBlur={field.onBlur}
                 aria-invalid={Boolean(thresholdError)}
                 className={cn(FIELD_CLASS, "w-28 max-md:text-base")}

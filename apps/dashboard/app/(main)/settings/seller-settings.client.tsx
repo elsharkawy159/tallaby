@@ -306,7 +306,7 @@ export function SellerSettingsForm ({
 
           {pushAlertsSection}
 
-          <DocumentsSection initialDocuments={initialData.documents} onUploaded={() => router.refresh()} />
+          <DocumentsSection initialDocuments={initialData.documents} sellerId={initialData.profile.id ?? ''} onUploaded={() => router.refresh()} />
 
           {TALLABY_SERVICES_ENABLED && <FulfillmentLinkCard />}
         </div>

@@ -6,7 +6,6 @@ import { useLocale, useTranslations } from "next-intl"
 import { ArrowLeft, ArrowUp, Check, FileText, ImagePlus, Sparkles, Wand2, X } from "lucide-react"
 import { Checkbox } from "@workspace/ui/components/checkbox"
 import { useAccountMoney } from "@/components/account-money.client"
-import { AiCreditsNote } from "@/components/ai/ai-credits-note.client"
 import { MoneyText } from "@/components/money"
 import { SellerButton } from "@/components/seller-ui"
 import { cn } from "@/lib/utils"
@@ -441,16 +440,12 @@ export function AiAddStage ({
         )}
 
         <div className="-mt-2 flex flex-col items-center gap-1 text-center text-xs text-(--s-faint)">
-          <p>
-            {t("fineCredit")}
-            <span className="max-[640px]:hidden"> · {t("fineKeys")}</span>
-          </p>
+          <p className="max-[640px]:hidden">{t("fineKeys")}</p>
           {ai.prompt.length >= AUTOFILL_LIMITS.maxTextLength && (
             <p className="text-destructive">{ai.prompt.length} / {AUTOFILL_LIMITS.maxTextLength}</p>
           )}
           {ai.outOfCalls && <p className="text-destructive">{tAi("errors.dailyLimit")}</p>}
           {ai.remaining !== null && ai.remaining > 0 && ai.remaining <= 5 && <p>{tAi("remaining", { count: ai.remaining })}</p>}
-          <AiCreditsNote refreshKey={ai.remaining} />
         </div>
       </div>
 

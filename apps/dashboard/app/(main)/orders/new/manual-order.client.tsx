@@ -9,6 +9,7 @@ import { LoaderCircle, MessageCircle, Package, Search, Trash2, User } from "luci
 import { toast } from "sonner";
 import { MANUAL_PAID_VIA, type ManualOrderTotals, type ManualPaidVia } from "@workspace/lib/orders/manual";
 import { minOrderShortfalls, normalUnitsInCart } from "@workspace/lib/orders/min-order-quantity";
+import { useWholeNumberInput } from "@/components/form/whole-number.client";
 import { Checkbox } from "@workspace/ui/components/checkbox";
 import { EGYPT_GOVERNORATES, getGovernorateLabel } from "@workspace/lib/shipping";
 import { Field, FieldRow, IconButton, NativeSelect, OptionCard, OptionCards, SectionCard, SellerButton, SellerCard, TextArea, TextInput } from "@/components/seller-ui";
@@ -226,18 +227,10 @@ export function ManualOrderForm({ money: unit, storeId, storeName }: { money?: M
                       <bdi>{money(Math.round(line.price * 100))}</bdi>
                     </p>
                   </div>
-                  <TextInput
-                    type="number"
-                    inputMode="numeric"
-                    min={1}
-                    max={99}
-                    aria-label={t("quantity")}
-                    className="h-10 w-16 shrink-0 px-1 text-center font-montserrat"
+                  <QuantityInput
+                    label={t("quantity")}
                     value={line.quantity}
-                    onChange={(event) => {
-                      const quantity = Math.max(1, Math.min(99, Number(event.target.value) || 1));
-                      setLines((current) => current.map((l) => (l.key === line.key ? { ...l, quantity } : l)));
-                    }}
+                    onCommit={(quantity) => setLines((current) => current.map((l) => (l.key === line.key ? { ...l, quantity } : l)))}
                   />
                   <IconButton
                     aria-label={t("removeProduct")}
@@ -367,6 +360,14 @@ export function ManualOrderForm({ money: unit, storeId, storeName }: { money?: M
       </SellerCard>
     </div>
   );
+}
+
+const QUANTITY_RANGE = { min: 1, max: 99, fallback: 1 };
+
+/** 1–99, Arabic digits accepted; a cleared or half-typed field never sets 0 or NaN. */
+function QuantityInput({ label, value, onCommit }: { label: string; value: number; onCommit: (quantity: number) => void }) {
+  const input = useWholeNumberInput(value, onCommit, QUANTITY_RANGE);
+  return <TextInput dir="ltr" aria-label={label} className="h-10 w-16 shrink-0 px-1 text-center font-montserrat" {...input} />;
 }
 
 function Row({ label, value, strong }: { label: string; value: string; strong?: boolean }) {

@@ -49,9 +49,12 @@ function latestOf (documents: SellerDocument[], type: string) {
 
 export function DocumentsSection ({
   initialDocuments,
+  sellerId,
   onUploaded,
 }: {
   initialDocuments: SellerDocument[]
+  /** The session seller (sellers.id = users.id): the upload folder. */
+  sellerId: string
   onUploaded: () => void
 }) {
   const t = useTranslations('settings.documents')
@@ -100,6 +103,7 @@ export function DocumentsSection ({
             key={slot.type}
             {...slot}
             document={latestOf(documents, slot.type)}
+            sellerId={sellerId}
             onUploaded={(doc) => {
               setDocuments((prev) => [doc, ...prev])
               onUploaded()
@@ -115,17 +119,20 @@ function DocumentRow ({
   type,
   icon: Icon,
   document,
+  sellerId,
   onUploaded,
 }: {
   type: string
   icon: LucideIcon
   document: SellerDocument | undefined
+  sellerId: string
   onUploaded: (doc: SellerDocument) => void
 }) {
   const t = useTranslations('settings.documents')
   const locale = useLocale()
   const inputRef = useRef<HTMLInputElement>(null)
-  const { upload, isUploading } = useSellerUpload({ folder: 'documents' })
+  // documents/<sellerId>/…: handleUploadDocument accepts only that folder.
+  const { upload, isUploading } = useSellerUpload({ folder: 'documents', subfolder: sellerId.toLowerCase() })
   const [isSaving, startSaving] = useTransition()
   const busy = isUploading || isSaving
 

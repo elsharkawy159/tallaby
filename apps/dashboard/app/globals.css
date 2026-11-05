@@ -656,3 +656,20 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/*
+ * F-75: an input forced to dir="ltr" (phone, email, price, URL, code) keeps
+ * typing left to right, but its placeholder follows its own text: an Arabic
+ * placeholder sits on the right, a Latin one ("https://", "01XXXXXXXXX")
+ * stays on the left. Only the empty field changes; the typed value, the caret
+ * and explicit text-left/center/end classes keep working as before.
+ * ::placeholder covers Chrome/Edge, :placeholder-shown covers Firefox.
+ */
+@layer base {
+  input[dir="ltr"]::placeholder,
+  textarea[dir="ltr"]::placeholder,
+  input[dir="ltr"]:placeholder-shown,
+  textarea[dir="ltr"]:placeholder-shown {
+    unicode-bidi: plaintext;
+  }
+}
