@@ -1,7 +1,6 @@
-import Link from "next/link";
-import { Package, Plus } from "lucide-react";
+import { Package } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
-import { EmptyState, SellerButton, SellerCard, SellerCardHeader } from "@/components/seller-ui";
+import { EmptyState, SellerCard, SellerCardHeader } from "@/components/seller-ui";
 import { formatNumber } from "@/lib/i18n/format";
 import { getTopProducts } from "./home.queries";
 import type { HomeChannel, HomeRange } from "./home.shared";
@@ -28,14 +27,6 @@ export async function TopProductsData({ range, channel = "all" }: { range: HomeR
           icon={Package}
           title={t("emptyTitle")}
           description={t("emptyDescription")}
-          action={
-            <SellerButton asChild variant="solid" size="sm">
-              <Link href="/products/add">
-                <Plus aria-hidden />
-                {t("addProduct")}
-              </Link>
-            </SellerButton>
-          }
         />
       ) : (
         <ul className="flex flex-col gap-3.5 px-[22px] pb-[18px] pt-3 max-[600px]:px-4">

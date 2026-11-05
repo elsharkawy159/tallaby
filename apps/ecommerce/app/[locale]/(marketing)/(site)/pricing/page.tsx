@@ -25,10 +25,6 @@ export default async function PricingPage() {
   const prices = {
     topUpMin: formatUsd(PLAN_PRICES.topUp.minCents),
     topUpMax: formatUsd(PLAN_PRICES.topUp.maxCents),
-    emailPack: formatUsd(PLAN_PRICES.emailPack.cents),
-    emailCount: formatNumber(PLAN_PRICES.emailPack.emails),
-    creditPack: formatUsd(PLAN_PRICES.creditPack.cents),
-    creditCount: formatNumber(PLAN_PRICES.creditPack.credits),
     orderFee: formatUsd(PLAN_PRICES.free.orderFeeCents),
     pro: formatUsd(PLAN_PRICES.pro.monthlyCents),
     proCredits: formatNumber(PLAN_PRICES.pro.aiCredits),
