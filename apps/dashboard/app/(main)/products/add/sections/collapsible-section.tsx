@@ -2,9 +2,8 @@
 
 import { useEffect, useId, useState } from "react";
 import { ChevronDown } from "lucide-react";
-import { Card, CardContent } from "@workspace/ui/components/card";
 import { cn } from "@/lib/utils";
-import { SectionIcon, type SectionIconProp } from "@/components/form/form-ui";
+import { SectionIcon, type SectionIconProp } from "@/app/(main)/products/add/form-kit";
 import { OPEN_SECTION_EVENT } from "../add-product.lib";
 
 export type SectionSummaryTone = "ok" | "need" | "bad" | "muted";
@@ -13,7 +12,7 @@ const SUMMARY_TONE: Record<SectionSummaryTone, string> = {
   ok: "border-transparent bg-success-soft text-success",
   need: "border-transparent bg-accent-soft text-accent-ink",
   bad: "border-transparent bg-destructive/10 text-destructive",
-  muted: "border-border bg-muted text-muted-foreground",
+  muted: "border-(--s-line) bg-(--s-surface-2) text-(--s-muted)",
 };
 
 /**
@@ -68,11 +67,11 @@ export function CollapsibleSection({
   }, [id]);
 
   return (
-    <Card
+    <section
       id={id}
       className={cn(
-        "scroll-mt-[136px] gap-0 rounded-2xl py-0 transition-colors md:scroll-mt-[88px] dark:shadow-none",
-        invalid && "border-destructive/45"
+        "rounded-[24px] border border-(--s-line) bg-(--s-glass) shadow-(--s-shadow-card) transition-colors max-[600px]:rounded-[20px]",
+        invalid && "border-destructive/45",
       )}
     >
       <button
@@ -81,46 +80,38 @@ export function CollapsibleSection({
         aria-controls={bodyId}
         onClick={() => setOpen((o) => !o)}
         className={cn(
-          "group flex w-full items-center gap-2.5 rounded-2xl px-4 py-3.5 text-start sm:gap-3 sm:px-[22px] sm:py-[18px]",
-          open && "pb-0 sm:pb-0"
+          "group flex min-h-[60px] w-full cursor-pointer items-center gap-3 rounded-[24px] p-[22px] text-start max-[600px]:gap-2.5 max-[600px]:rounded-[20px] max-[600px]:p-4",
+          open && "pb-0 max-[600px]:pb-0",
         )}
       >
-        <SectionIcon icon={icon} compact />
+        <SectionIcon icon={icon} />
         <div className="min-w-0 flex-1">
-          <h2 className="text-[15px] leading-normal font-bold transition-colors group-hover:text-primary-ink sm:text-base">
+          <h2 className="text-[16.5px] font-bold leading-normal text-(--s-ink) transition-colors group-hover:text-(--s-link) max-[600px]:text-[15px]">
             {title}
           </h2>
-          <p className="mt-0.5 hidden text-xs leading-relaxed text-pretty text-muted-foreground sm:block">
-            {description}
-          </p>
+          <p className="mt-0.5 text-pretty text-[13px] leading-relaxed text-(--s-muted) max-[600px]:hidden">{description}</p>
         </div>
         {summary ? (
           <span
             className={cn(
-              "max-w-[46%] shrink-0 truncate rounded-full border px-2.5 text-xs leading-6 sm:max-w-[42%]",
-              SUMMARY_TONE[summaryTone]
+              "max-w-[46%] shrink-0 truncate rounded-full border px-2.5 text-xs font-medium leading-6 min-[601px]:max-w-[42%]",
+              SUMMARY_TONE[summaryTone],
             )}
           >
             {summary}
           </span>
         ) : null}
         <ChevronDown
-          className={cn(
-            "size-[18px] shrink-0 text-faint transition-transform duration-200",
-            open && "rotate-180"
-          )}
+          className={cn("size-[18px] shrink-0 text-(--s-faint) transition-transform duration-200", open && "rotate-180")}
           aria-hidden
         />
       </button>
-      <CardContent
+      <div
         id={bodyId}
-        className={cn(
-          "flex-col gap-4 p-4 sm:px-[22px] sm:pt-[18px] sm:pb-[22px]",
-          open ? "flex" : "hidden"
-        )}
+        className={cn("flex-col gap-4 p-[22px] pt-[18px] max-[600px]:p-4 max-[600px]:pt-3.5", open ? "flex" : "hidden")}
       >
         {children}
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   );
 }

@@ -14,7 +14,7 @@ import {
   type SellerPricingSettings,
 } from "@/lib/utils/product-pricing.lib";
 import type { AddProductFormData } from "../add-product.schema";
-import { DiscountField, MoneyField, useFieldError } from "../sections/fields";
+import { DiscountField } from "../sections/fields";
 import { DiscountExpiryField } from "./discount-expiry-field";
 
 interface VariantPricingFieldsProps {
@@ -22,14 +22,13 @@ interface VariantPricingFieldsProps {
   sellerPricing: SellerPricingSettings;
 }
 
-/** List price + discount for one variant row; the final price is derived. */
+/** One variant's discount; the final price comes from it and the row's price. */
 export function VariantPricingFields({ index, sellerPricing }: VariantPricingFieldsProps) {
   const form = useFormContext<AddProductFormData>();
   const t = useTranslations("productForm.variantPricing");
   const tVariants = useTranslations("productForm.variants");
   const locale = useLocale();
   const { unit } = useAccountMoney();
-  const priceError = useFieldError(`variants.${index}.price`);
 
   const [listPrice, discountValue, discountType, finalPrice] = useWatch({
     control: form.control,
@@ -88,22 +87,18 @@ export function VariantPricingFields({ index, sellerPricing }: VariantPricingFie
   const sellerEarning = calculateSellerEarning(sellingPrice, sellerPricing);
 
   return (
-    <div className="flex min-w-[260px] flex-col gap-2 max-sm:min-w-0">
-      <div className="grid grid-cols-2 gap-2 max-sm:grid-cols-1 [&_input]:text-[13px] [&_select]:h-full [&>div]:h-9 max-sm:[&>div]:h-11">
-        <MoneyField
-          name={`variants.${index}.listPrice`}
-          invalid={Boolean(priceError)}
-          placeholder={t("list")}
-        />
+    <div className="flex min-w-0 flex-col gap-2">
+      <div className="max-w-64">
         <DiscountField
           valueName={`variants.${index}.discountValue`}
           typeName={`variants.${index}.discountType`}
+          className="h-10"
         />
       </div>
-      <p className="text-xs text-muted-foreground">
+      <p className="text-xs text-(--s-muted)">
         {typeof sellingPrice === "number" && sellingPrice > 0 ? (
           <>
-            <span className="font-semibold text-foreground">
+            <span className="font-semibold text-(--s-text)">
               <MoneyText locale={locale}>{tVariants("finalPrice", { amount: formatMoneyMarked(sellingPrice, locale, unit) })}</MoneyText>
             </span>
             {sellerEarning > 0 && (
@@ -114,7 +109,6 @@ export function VariantPricingFields({ index, sellerPricing }: VariantPricingFie
           "—"
         )}
       </p>
-      {priceError && <p className="text-xs text-destructive">{priceError}</p>}
       <DiscountExpiryField name={`variants.${index}.discountEndsAt`} />
     </div>
   );

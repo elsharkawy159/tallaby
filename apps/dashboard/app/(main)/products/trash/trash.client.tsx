@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { ArrowLeft, RotateCcw, Trash2 } from "lucide-react";
-import { Button } from "@workspace/ui/components/button";
+import { EmptyState, PageHeader, Row, Rows, SellerButton, TextAction } from "@/components/seller-ui";
 import { Checkbox } from "@workspace/ui/components/checkbox";
 import { trashDaysLeft } from "@workspace/lib/products/trash";
 import type { TrashedProduct } from "@workspace/lib/products/trash/server";
@@ -65,27 +65,22 @@ export function ProductTrash({ items }: { items: TrashedProduct[] }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="min-w-0">
-        <Link href="/products" className="mb-1 inline-flex items-center gap-1 text-[13px] text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="size-4 rtl:rotate-180" aria-hidden />
-          {t("back")}
-        </Link>
-        <h1 className="text-xl font-bold">{t("pageTitle")}</h1>
-        <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
+      <div className="flex flex-col gap-1">
+        <TextAction asChild className="w-fit">
+          <Link href="/products">
+            <ArrowLeft className="rtl:rotate-180" aria-hidden />
+            {t("back")}
+          </Link>
+        </TextAction>
+        <PageHeader title={t("pageTitle")} description={t("subtitle")} />
       </div>
 
       {items.length === 0 ? (
-        <div className="flex flex-col items-center gap-1.5 rounded-2xl border border-dashed border-input bg-card px-5 py-14 text-center text-[13px] text-muted-foreground">
-          <span className="mb-1 grid size-12 place-items-center rounded-xl bg-primary-soft text-primary-ink">
-            <Trash2 className="size-5" aria-hidden />
-          </span>
-          <b className="text-[15px] text-foreground">{t("emptyTitle")}</b>
-          <span>{t("emptyDescription")}</span>
-        </div>
+        <EmptyState icon={Trash2} title={t("emptyTitle")} description={t("emptyDescription")} />
       ) : (
         <>
           <div className="flex flex-wrap items-center gap-2">
-            <label className="flex cursor-pointer items-center gap-2 text-[13px] text-muted-foreground">
+            <label className="flex min-h-10 cursor-pointer items-center gap-2 text-[13px] font-semibold text-(--s-muted)">
               <Checkbox
                 checked={allSelected ? true : visibleSelected.length > 0 ? "indeterminate" : false}
                 onCheckedChange={(value) => setSelected(value === true ? new Set(items.map((p) => p.id)) : new Set())}
@@ -93,50 +88,46 @@ export function ProductTrash({ items }: { items: TrashedProduct[] }) {
               {t("selectAll", { count: items.length })}
             </label>
             {visibleSelected.length > 0 && (
-              <div className="ms-auto flex flex-wrap gap-2">
-                <Button size="sm" variant="outline" disabled={isPending} onClick={() => restore(visibleSelected)}>
-                  <RotateCcw className="size-4" aria-hidden />
+              <div className="ms-auto flex flex-wrap gap-2 max-[600px]:ms-0 max-[600px]:w-full">
+                <SellerButton variant="outline" size="sm" className="max-[600px]:flex-1" disabled={isPending} onClick={() => restore(visibleSelected)}>
+                  <RotateCcw aria-hidden />
                   {t("restoreCount", { count: visibleSelected.length })}
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="text-destructive hover:text-destructive"
-                  disabled={isPending}
-                  onClick={() => setConfirming(visibleSelected)}
-                >
-                  <Trash2 className="size-4" aria-hidden />
+                </SellerButton>
+                <SellerButton variant="danger" size="sm" className="max-[600px]:flex-1" disabled={isPending} onClick={() => setConfirming(visibleSelected)}>
+                  <Trash2 aria-hidden />
                   {t("deleteCount", { count: visibleSelected.length })}
-                </Button>
+                </SellerButton>
               </div>
             )}
           </div>
 
-          <ul className="divide-y rounded-2xl border bg-card">
+          <Rows>
             {items.map((item) => {
               const daysLeft = trashDaysLeft(item.deletedAt);
               const title = item.title || t("untitled");
               return (
-                <li key={item.id} className="flex flex-wrap items-center gap-3 p-3 sm:flex-nowrap">
-                  <Checkbox
-                    checked={selected.has(item.id)}
-                    onCheckedChange={(value) => toggle(item.id, value === true)}
-                    aria-label={t("select", { title })}
-                  />
+                <Row key={item.id} className="flex-wrap min-[721px]:flex-nowrap">
+                  <label className="-ms-2 grid size-10 shrink-0 cursor-pointer place-items-center">
+                    <Checkbox
+                      checked={selected.has(item.id)}
+                      onCheckedChange={(value) => toggle(item.id, value === true)}
+                      aria-label={t("select", { title })}
+                    />
+                  </label>
                   {item.image ? (
                     <Image
                       src={getPublicUrl(item.image, "products")}
                       alt=""
                       width={48}
                       height={48}
-                      className="size-12 shrink-0 rounded-lg border object-cover"
+                      className="size-12 shrink-0 rounded-xl border border-(--s-line) object-cover"
                     />
                   ) : (
-                    <div className="size-12 shrink-0 rounded-lg border bg-muted" />
+                    <div className="size-12 shrink-0 rounded-xl border border-(--s-line) bg-(--s-fill)" />
                   )}
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate font-medium">{title}</p>
-                    <p className="text-xs text-muted-foreground">
+                  <div className="min-w-0 flex-1 basis-40">
+                    <p className="truncate text-sm font-bold text-(--s-text)">{title}</p>
+                    <p className="text-xs text-(--s-subtle)">
                       {t("deletedOn", { date: formatDateTime(item.deletedAt, locale) })}
                       {" · "}
                       <span className={cn(daysLeft <= 3 && "font-semibold text-destructive")}>
@@ -144,26 +135,20 @@ export function ProductTrash({ items }: { items: TrashedProduct[] }) {
                       </span>
                     </p>
                   </div>
-                  <div className="flex w-full gap-2 sm:w-auto">
-                    <Button size="sm" variant="outline" className="flex-1 sm:flex-none" disabled={isPending} onClick={() => restore([item.id])}>
-                      <RotateCcw className="size-4" aria-hidden />
+                  <div className="flex gap-2 max-[720px]:w-full">
+                    <SellerButton variant="mini" size="sm" className="max-[720px]:flex-1" disabled={isPending} onClick={() => restore([item.id])}>
+                      <RotateCcw aria-hidden />
                       {t("restore")}
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="flex-1 text-destructive hover:text-destructive sm:flex-none"
-                      disabled={isPending}
-                      onClick={() => setConfirming([item.id])}
-                    >
-                      <Trash2 className="size-4" aria-hidden />
+                    </SellerButton>
+                    <SellerButton variant="mini" size="sm" className="text-destructive max-[720px]:flex-1 [&_svg]:text-destructive" disabled={isPending} onClick={() => setConfirming([item.id])}>
+                      <Trash2 aria-hidden />
                       {t("deleteForever")}
-                    </Button>
+                    </SellerButton>
                   </div>
-                </li>
+                </Row>
               );
             })}
-          </ul>
+          </Rows>
         </>
       )}
 

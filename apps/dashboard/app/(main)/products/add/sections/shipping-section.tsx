@@ -15,7 +15,7 @@ import {
   InputGroup,
   NumberStepper,
   ToggleRow,
-} from "@/components/form/form-ui";
+} from "@/app/(main)/products/add/form-kit";
 import { NumberInput, useFieldError } from "./fields";
 import { CollapsibleSection } from "./collapsible-section";
 import type { AddProductFormData } from "../add-product.schema";
@@ -171,7 +171,7 @@ export function ShippingSection({
                 aria-label={t("dimensions")}
                 value={field.value ?? "cm"}
                 onChange={(e) => field.onChange(e.target.value)}
-                className={cn(FIELD_CLASS, "col-span-3 cursor-pointer border border-input sm:col-span-1")}
+                className={cn(FIELD_CLASS, "col-span-3 cursor-pointer sm:col-span-1")}
               >
                 <option value="cm">{tUnits("cm")}</option>
                 <option value="in">{tUnits("in")}</option>
@@ -182,7 +182,7 @@ export function ShippingSection({
       </div>
 
       {sellerPricing.sellerFreeDelivery ? (
-        <p className="flex items-center gap-2 rounded-xl border bg-muted px-4 py-3 text-xs text-muted-foreground">
+        <p className="flex items-center gap-2 rounded-2xl border border-(--s-line) bg-(--s-tint) px-4 py-3 text-xs text-(--s-muted)">
           <Info className="size-4 shrink-0 text-primary-ink" aria-hidden />
           {t("storeFreeDelivery")}
         </p>

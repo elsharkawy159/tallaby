@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Download, FileDown, LoaderCircle, X } from "lucide-react";
-import { Button } from "@workspace/ui/components/button";
+import { IconButton, SellerButton } from "@/components/seller-ui";
 import {
   Dialog,
   DialogClose,
@@ -12,7 +12,7 @@ import {
   DialogTitle,
 } from "@workspace/ui/components/dialog";
 import { cn } from "@/lib/utils";
-import { BUTTON_CLASS, SectionIcon, TEXTAREA_CLASS } from "@/components/form/form-ui";
+import { SectionIcon, TEXTAREA_CLASS } from "@/app/(main)/products/add/form-kit";
 import { Textarea } from "@workspace/ui/components/textarea";
 import type { SellerPricingSettings } from "@/lib/utils/product-pricing.lib";
 import { useProductImport } from "./use-product-import";
@@ -70,9 +70,9 @@ export function ImportDialog({
             </DialogDescription>
           </div>
           <DialogClose asChild>
-            <Button type="button" variant="soft" size="icon" className="size-9 rounded-[10px]" aria-label={t("close")}>
+            <IconButton type="button" aria-label={t("close")}>
               <X />
-            </Button>
+            </IconButton>
           </DialogClose>
         </div>
 
@@ -124,22 +124,21 @@ export function ImportDialog({
           <p className="text-xs text-faint">{t(`help.${tab}`)}</p>
         </div>
 
-        <div className="flex justify-end gap-2 border-t bg-muted px-[22px] py-3.5">
+        <div className="flex justify-end gap-2 border-t border-(--s-line-soft) bg-(--s-surface-2) px-[22px] py-3.5">
           <DialogClose asChild>
-            <Button type="button" variant="soft" className={BUTTON_CLASS}>
+            <SellerButton type="button" variant="outline">
               {t("cancel")}
-            </Button>
+            </SellerButton>
           </DialogClose>
-          <Button
+          <SellerButton
             type="button"
-            variant="secondary"
-            className={cn(BUTTON_CLASS, "rounded-xl")}
+            variant="solid"
             onClick={() => void submit()}
             disabled={isImporting || !value.trim()}
           >
             {isImporting ? <LoaderCircle className="animate-spin" /> : <Download />}
             {t("submit")}
-          </Button>
+          </SellerButton>
         </div>
       </DialogContent>
     </Dialog>

@@ -23,14 +23,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@workspace/ui/components/alert-dialog";
-import { Button } from "@workspace/ui/components/button";
+import { SellerButton } from "@/components/seller-ui";
 import { Form } from "@workspace/ui/components/form";
 import { createProduct, updateProduct } from "@/actions/products";
 import { cn } from "@/lib/utils";
 import { useLocalizedResolver } from "@/lib/i18n/localized-resolver";
 import { useUnsavedChangesGuard } from "@/hooks/use-unsaved-changes-guard";
 import type { SellerPricingSettings } from "@/lib/utils/product-pricing.lib";
-import { BUTTON_CLASS, SMALL_BUTTON_CLASS } from "@/components/form/form-ui";
 import {
   addProductFormSchema,
   defaultValues,
@@ -94,7 +93,12 @@ interface AddProductProps {
   headerActions?: React.ReactNode;
   /** Shows the AI box: fill a new product, or change an existing one (PLAN.md AI-1). */
   aiEnabled?: boolean;
+  /** Sections that save on their own, under the form in the same column (edit page). */
+  afterForm?: React.ReactNode;
 }
+
+/** The page's padding and width, shared by the sticky header and the form so they line up. */
+const COLUMN = "mx-auto w-full max-w-[1360px] px-7 max-[1020px]:px-4 max-[600px]:px-3";
 
 const LOCALE_LABELS: Record<SupportedLocale, string> = {
   ar: "العربية",
@@ -117,6 +121,7 @@ function AddProductForm({
   edit,
   headerActions,
   aiEnabled = false,
+  afterForm,
 }: AddProductProps) {
   const isEdit = Boolean(edit);
   const router = useRouter();
@@ -387,22 +392,17 @@ function AddProductForm({
   }
 
   const publishButton = (compact = false) => (
-    <Button
+    <SellerButton
       type="button"
-      variant="accent"
       onClick={publish}
       disabled={isPending}
       aria-busy={isPending}
-      className={cn(
-        BUTTON_CLASS,
-        "rounded-xl font-semibold",
-        compact && "px-4",
-      )}
+      className={cn(compact && "px-4")}
     >
       {isPending ? (
-        <LoaderCircle className="animate-spin" />
+        <LoaderCircle className="animate-spin" aria-hidden />
       ) : (
-        !compact && (isEdit ? <Save /> : <Rocket />)
+        !compact && (isEdit ? <Save aria-hidden /> : <Rocket aria-hidden />)
       )}
       {isEdit
         ? isPending
@@ -415,69 +415,59 @@ function AddProductForm({
           : compact
             ? t("publishShort")
             : t("publish")}
-    </Button>
+    </SellerButton>
   );
 
   return (
     <ProductLinkHostProvider value={linkHost}>
       <Form {...form}>
-        <div className="min-h-screen pb-32 lg:pb-24">
-          {/* Page header */}
+        <div className="pb-32 lg:pb-24">
+          {/* Page header. Sits under the top bar: 68px tall, 60px on phones. */}
           <div
             data-sticky-head
-            className="sticky top-16 z-20 border-b bg-background/95 backdrop-blur-md"
+            className="sticky top-[68px] z-20 border-b border-(--s-line) bg-(--s-glass) backdrop-blur-md max-[600px]:top-[60px]"
           >
-            {/* Same side padding as the form below, so the header lines up with it at every width. */}
-            <div className="flex w-full flex-wrap items-center gap-x-4 gap-y-2.5 px-3 py-3 sm:px-6 sm:py-3.5">
-              {/* <h1 className="text-base leading-snug font-bold sm:text-xl">{isEdit ? t("editTitle") : t("newTitle")}</h1> */}
+            <div className={cn(COLUMN, "flex flex-wrap items-center gap-x-4 gap-y-2.5 py-3.5 max-[600px]:py-2.5")}>
+              <h1 className="text-[20px] font-bold leading-[1.4] text-(--s-ink) max-[600px]:text-[17px]">
+                {isEdit ? t("editTitle") : t("newTitle")}
+              </h1>
               {!isEdit && <SaveStatus status={draft.status} />}
-              <div className="flex w-full flex-wrap items-center gap-2 sm:ms-auto sm:w-auto">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <LocaleSwitch
-                    value={activeLocale}
-                    onChange={setActiveLocale}
-                  />
-                  {/* Import lives in the Basics card ("Import from link"), not here. */}
-                  {!isEdit && (
-                    <Button
-                      type="button"
-                      variant="neutral"
-                      className={cn(
-                        BUTTON_CLASS,
-                        "hidden rounded-xl lg:inline-flex",
-                      )}
-                      onClick={saveDraft}
-                    >
-                      {t("saveDraft")}
-                    </Button>
-                  )}
-                  {!isEdit && draft.hasDraft && (
-                    <ClearDraftButton
-                      className="hidden lg:inline-flex"
-                      disabled={isPending}
-                      onConfirm={clearDraft}
-                    />
-                  )}
-                </div>
-                {headerActions}
+              <div className="ms-auto flex flex-wrap items-center gap-2 max-[600px]:contents">
+                <LocaleSwitch value={activeLocale} onChange={setActiveLocale} />
+                {!isEdit && (
+                  <SellerButton type="button" variant="outline" className="hidden lg:inline-flex" onClick={saveDraft}>
+                    {t("saveDraft")}
+                  </SellerButton>
+                )}
+                {!isEdit && draft.hasDraft && (
+                  <ClearDraftButton className="hidden lg:inline-flex" disabled={isPending} onConfirm={clearDraft} />
+                )}
+                {/* One scrolling line on phones: this bar is sticky, and two rows of buttons cost a quarter of the screen. */}
+                {headerActions && (
+                  <div className="contents max-[600px]:flex max-[600px]:w-full max-[600px]:gap-2 max-[600px]:overflow-x-auto max-[600px]:[scrollbar-width:none] max-[600px]:[&>*]:shrink-0">
+                    {headerActions}
+                  </div>
+                )}
                 <div className="hidden lg:block">{publishButton()}</div>
               </div>
             </div>
             <ProgressChips activeSection={activeSection} />
           </div>
 
-          <form
-            id={isEdit ? "edit-product-form" : "add-product-form"}
-            onInputCapture={markUserEdited}
-            onChangeCapture={markUserEdited}
-            onSubmit={(e) => {
-              e.preventDefault();
-              void publish();
-            }}
-            className="mx-auto w-full px-3 pt-4 sm:px-6 sm:pt-6"
-          >
-            <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_280px] xl:grid-cols-[minmax(0,1fr)_320px]">
-              <div className="flex min-w-0 flex-col gap-4">
+          <div className={cn(COLUMN, "grid grid-cols-1 items-start gap-6 pt-6 max-[600px]:pt-4 lg:grid-cols-[minmax(0,1fr)_280px] xl:grid-cols-[minmax(0,1fr)_320px]")}>
+            <div className="flex min-w-0 flex-col gap-4">
+              <form
+                id={isEdit ? "edit-product-form" : "add-product-form"}
+                // Bubble, not capture: a state update in the capture phase makes React put the
+                // controlled input's old value back before its onChange runs, losing the first character.
+                onInput={markUserEdited}
+                onChange={markUserEdited}
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  void publish();
+                }}
+                className="flex min-w-0 flex-col gap-4"
+              >
                 {aiEnabled && (
                   <AiAutofillCard
                     categories={categories}
@@ -494,53 +484,38 @@ function AddProductForm({
                   activeLocale={activeLocale}
                   action={
                     isEdit ? undefined : (
-                      <Button
-                        type="button"
-                        variant="default"
-                        className={cn(
-                          SMALL_BUTTON_CLASS,
-                          "h-9 px-3.5 text-[13px] font-semibold shadow-sm",
-                        )}
-                        onClick={() => setImportOpen(true)}
-                      >
-                        <FileDown />
+                      <SellerButton type="button" variant="mini" size="xs" onClick={() => setImportOpen(true)}>
+                        <FileDown aria-hidden />
                         {tBasic("importFromLink")}
-                      </Button>
+                      </SellerButton>
                     )
                   }
                 />
                 <PricingSection sellerPricing={sellerPricing} />
                 <ContentSection activeLocale={activeLocale} />
-                <InventorySection
-                  sellerPricing={sellerPricing}
-                  activeLocale={activeLocale}
-                />
+                <InventorySection sellerPricing={sellerPricing} activeLocale={activeLocale} />
                 <ShippingSection sellerPricing={sellerPricing} />
                 <VisibilitySection activeLocale={activeLocale} />
                 <SocialProofSection />
-              </div>
-
-              <aside
-                className="sticky hidden flex-col gap-3.5 lg:flex"
-                style={{ top: "var(--product-aside-top, 150px)" }}
-              >
-                <ProgressAside activeSection={activeSection} />
-              </aside>
+              </form>
+              {afterForm}
             </div>
-          </form>
+
+            <aside
+              className="sticky hidden flex-col gap-3.5 lg:flex"
+              style={{ top: "var(--product-aside-top, 150px)" }}
+            >
+              <ProgressAside activeSection={activeSection} />
+            </aside>
+          </div>
 
           <ProgressMobileBar
             actions={
               <>
                 {!isEdit && (
-                  <Button
-                    type="button"
-                    variant="soft"
-                    className={cn(BUTTON_CLASS, "hidden sm:inline-flex")}
-                    onClick={saveDraft}
-                  >
+                  <SellerButton type="button" variant="outline" className="hidden sm:inline-flex" onClick={saveDraft}>
                     {t("draftShort")}
-                  </Button>
+                  </SellerButton>
                 )}
                 {!isEdit && draft.hasDraft && (
                   <ClearDraftButton
@@ -642,15 +617,17 @@ function ClearDraftButton({
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button
+        <button
           type="button"
-          variant="ghost"
-          className={cn(BUTTON_CLASS, "rounded-xl text-destructive hover:text-destructive", className)}
+          className={cn(
+            "h-[42px] cursor-pointer items-center gap-1.5 rounded-full px-3.5 text-[13px] font-bold text-destructive transition-colors duration-150 hover:bg-destructive-soft disabled:opacity-50 [&_svg]:size-4",
+            className,
+          )}
           disabled={disabled}
         >
           <Trash2 aria-hidden />
           {t("clearDraft")}
-        </Button>
+        </button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
@@ -671,7 +648,7 @@ function ClearDraftButton({
 function SaveStatus({ status }: { status: DraftStatus }) {
   const t = useTranslations("productForm.page");
   return (
-    <span className="hidden items-center gap-1.5 text-xs whitespace-nowrap text-muted-foreground sm:flex">
+    <span className="hidden items-center gap-1.5 text-xs whitespace-nowrap text-(--s-muted) min-[601px]:flex">
       <i
         className={cn(
           "size-[7px] rounded-full",
@@ -679,7 +656,7 @@ function SaveStatus({ status }: { status: DraftStatus }) {
             ? "bg-success"
             : status === "pending"
               ? "bg-accent"
-              : "bg-faint",
+              : "bg-(--s-faint)",
         )}
       />
       {status === "saved"
@@ -712,12 +689,12 @@ function LocaleSwitch({
 
   return (
     <div
-      className="flex flex-1 items-center gap-1 rounded-xl border bg-card p-[3px] sm:flex-none"
+      className="flex flex-1 items-center gap-1 rounded-full border border-(--s-field) bg-(--s-surface) p-[3px] min-[601px]:flex-none"
       title={t("page.contentLanguageHint")}
       role="radiogroup"
       aria-label={t("contentLanguage")}
     >
-      <span className="hidden px-1 ps-2 text-xs whitespace-nowrap text-muted-foreground md:inline">
+      <span className="hidden px-1 ps-2 text-xs whitespace-nowrap text-(--s-muted) md:inline">
         {t("contentLanguage")}
       </span>
       {(["ar", "en"] as const).map((locale) => (
@@ -728,10 +705,10 @@ function LocaleSwitch({
           aria-checked={value === locale}
           onClick={() => onChange(locale)}
           className={cn(
-            "flex h-8 flex-1 items-center justify-center gap-1.5 rounded-[9px] px-3 text-[13px] transition-colors sm:flex-none",
+            "flex h-[34px] flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-full px-3 text-[13px] font-semibold transition-colors duration-150 max-[600px]:h-10 min-[601px]:flex-none",
             value === locale
-              ? "bg-primary text-primary-foreground"
-              : "text-muted-foreground hover:text-foreground",
+              ? "bg-(--s-solid) text-(--s-solid-fg)"
+              : "text-(--s-muted) hover:text-(--s-ink)",
           )}
         >
           <i
@@ -743,7 +720,7 @@ function LocaleSwitch({
                   : "bg-success"
                 : value === locale
                   ? "bg-white/50"
-                  : "bg-input",
+                  : "bg-(--s-field-strong)",
             )}
           />
           {LOCALE_LABELS[locale]}

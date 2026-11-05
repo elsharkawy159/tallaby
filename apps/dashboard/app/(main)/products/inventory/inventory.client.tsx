@@ -7,10 +7,9 @@ import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { ArrowLeft, BellRing, Boxes, History, PackagePlus, Pencil, X } from "lucide-react";
-import { Button } from "@workspace/ui/components/button";
-import { Input } from "@workspace/ui/components/input";
+import { EmptyState, PageHeader, Row, Rows, SellerButton, SellerCard, StatusBadge, TextAction, TextInput } from "@/components/seller-ui";
 import { formatDateTime, formatNumber } from "@/lib/i18n/format";
-import { cn, getPublicUrl } from "@/lib/utils";
+import { getPublicUrl } from "@/lib/utils";
 import { MAX_RESTOCK, stockLevel } from "./inventory.lib";
 import { restockAction } from "./inventory.server";
 import type { InventoryLine, ProductInventory, StockMovementRow } from "./inventory.types";
@@ -24,36 +23,33 @@ export function InventoryPage({ lowStock, selected }: { lowStock: InventoryLine[
   const t = useTranslations("products.inventory");
 
   return (
-    <div className="flex flex-col gap-5">
-      <div className="min-w-0">
-        <Link href="/products" className="mb-1 inline-flex items-center gap-1 text-[13px] text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="size-4 rtl:rotate-180" aria-hidden />
-          {t("back")}
-        </Link>
-        <h1 className="text-xl font-bold">{t("pageTitle")}</h1>
-        <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
+    <div className="flex flex-col gap-5 max-[600px]:gap-3.5">
+      <div className="flex flex-col gap-1">
+        <TextAction asChild className="w-fit">
+          <Link href="/products">
+            <ArrowLeft className="rtl:rotate-180" aria-hidden />
+            {t("back")}
+          </Link>
+        </TextAction>
+        <PageHeader title={t("pageTitle")} description={t("subtitle")} />
       </div>
 
       {selected && <ProductHistory product={selected} />}
 
-      <div className="flex flex-col gap-2">
-        <h2 className="text-base font-semibold">{t("lowStockTitle", { count: lowStock.length })}</h2>
+      <section className="flex flex-col gap-2.5" aria-labelledby="low-stock-title">
+        <h2 id="low-stock-title" className="text-[16.5px] font-bold text-(--s-ink)">
+          {t("lowStockTitle", { count: lowStock.length })}
+        </h2>
         {lowStock.length === 0 ? (
-          <div className="flex flex-col items-center gap-1.5 rounded-2xl border border-dashed border-input bg-card px-5 py-14 text-center text-[13px] text-muted-foreground">
-            <span className="mb-1 grid size-12 place-items-center rounded-xl bg-primary-soft text-primary-ink">
-              <Boxes className="size-5" aria-hidden />
-            </span>
-            <b className="text-[15px] text-foreground">{t("emptyTitle")}</b>
-            <span>{t("emptyDescription")}</span>
-          </div>
+          <EmptyState icon={Boxes} title={t("emptyTitle")} description={t("emptyDescription")} />
         ) : (
-          <ul className="divide-y rounded-2xl border bg-card">
+          <Rows>
             {lowStock.map((line) => (
               <LineRow key={`${line.productId}:${line.variantId ?? ""}`} line={line} showHistoryLink />
             ))}
-          </ul>
+          </Rows>
         )}
-      </div>
+      </section>
     </div>
   );
 }
@@ -68,16 +64,9 @@ function StockPill({ stock, threshold }: { stock: number; threshold: number }) {
   const locale = useLocale();
   const level = stockLevel(stock, threshold);
   return (
-    <span
-      className={cn(
-        "inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-xs font-semibold",
-        level === "out" && "bg-destructive/10 text-destructive",
-        level === "low" && "bg-amber-500/15 text-amber-700 dark:text-amber-300",
-        level === "ok" && "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300",
-      )}
-    >
+    <StatusBadge tone={level === "out" ? "danger" : level === "low" ? "warning" : "success"}>
       {level === "out" ? t("outOfStock") : t("inStock", { count: stock, stock: formatNumber(stock, locale) })}
-    </span>
+    </StatusBadge>
   );
 }
 
@@ -107,25 +96,25 @@ function LineRow({ line, showHistoryLink }: { line: InventoryLine; showHistoryLi
   };
 
   return (
-    <li className="flex flex-wrap items-center gap-3 p-3 sm:flex-nowrap">
+    <Row className="flex-wrap min-[721px]:flex-nowrap">
       {line.image ? (
         <Image
           src={getPublicUrl(line.image, "products")}
           alt=""
           width={48}
           height={48}
-          className="size-12 shrink-0 rounded-lg border object-cover"
+          className="size-12 shrink-0 rounded-xl border border-(--s-line) object-cover"
         />
       ) : (
-        <div className="size-12 shrink-0 rounded-lg border bg-muted" />
+        <div className="size-12 shrink-0 rounded-xl border border-(--s-line) bg-(--s-fill)" />
       )}
-      <div className="min-w-0 flex-1">
-        <p className="truncate font-medium">{title}</p>
-        <div className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+      <div className="min-w-0 flex-1 basis-40">
+        <p className="truncate text-sm font-bold text-(--s-text)">{title}</p>
+        <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-(--s-subtle)">
           <StockPill stock={line.stock} threshold={line.threshold} />
           <span>{t("threshold", { threshold: formatNumber(line.threshold, locale) })}</span>
           {line.waiting > 0 && (
-            <span className="inline-flex items-center gap-1 font-medium text-primary" title={t("waitingHint")}>
+            <span className="inline-flex items-center gap-1 font-semibold text-(--s-link)" title={t("waitingHint")}>
               <BellRing className="size-3.5" aria-hidden />
               {t("waiting", { count: line.waiting, n: formatNumber(line.waiting, locale) })}
             </span>
@@ -133,7 +122,7 @@ function LineRow({ line, showHistoryLink }: { line: InventoryLine; showHistoryLi
           {showHistoryLink && (
             <Link
               href={`/products/inventory?product=${encodeURIComponent(line.productId)}`}
-              className="inline-flex items-center gap-1 text-primary hover:underline"
+              className="inline-flex min-h-8 items-center gap-1 font-semibold text-(--s-link) hover:underline"
             >
               <History className="size-3.5" aria-hidden />
               {t("history")}
@@ -142,13 +131,13 @@ function LineRow({ line, showHistoryLink }: { line: InventoryLine; showHistoryLi
         </div>
       </div>
       <form
-        className="flex w-full items-center gap-2 sm:w-auto"
+        className="flex items-center gap-2 max-[720px]:w-full"
         onSubmit={(e) => {
           e.preventDefault();
           restock();
         }}
       >
-        <Input
+        <TextInput
           type="number"
           inputMode="numeric"
           min={1}
@@ -158,14 +147,14 @@ function LineRow({ line, showHistoryLink }: { line: InventoryLine; showHistoryLi
           onChange={(e) => setAmount(e.target.value)}
           placeholder={t("addPlaceholder")}
           aria-label={t("addLabel", { title })}
-          className="h-9 w-full sm:w-24"
+          className="h-10 w-24 font-montserrat tabular-nums max-[720px]:flex-1"
         />
-        <Button type="submit" size="sm" variant="outline" disabled={!valid || isPending}>
-          <PackagePlus className="size-4" aria-hidden />
+        <SellerButton type="submit" variant="mini" size="sm" className="h-10" disabled={!valid || isPending}>
+          <PackagePlus aria-hidden />
           {t("restock")}
-        </Button>
+        </SellerButton>
       </form>
-    </li>
+    </Row>
   );
 }
 
@@ -174,45 +163,45 @@ function ProductHistory({ product }: { product: ProductInventory }) {
   const title = product.title || t("untitled");
 
   return (
-    <div className="flex flex-col gap-3 rounded-2xl border bg-card p-4">
+    <SellerCard className="flex flex-col gap-3 p-[22px] max-[600px]:p-4" aria-label={t("historyFor")}>
       <div className="flex flex-wrap items-start gap-2">
-        <div className="min-w-0 flex-1">
-          <p className="text-xs text-muted-foreground">{t("historyFor")}</p>
-          <h2 className="truncate text-base font-semibold">{title}</h2>
+        <div className="min-w-0 flex-1 basis-40">
+          <p className="text-xs text-(--s-subtle)">{t("historyFor")}</p>
+          <h2 className="truncate text-[16.5px] font-bold text-(--s-ink)">{title}</h2>
         </div>
-        <Button asChild size="sm" variant="outline">
+        <SellerButton asChild variant="mini" size="sm">
           <Link href={`/products/${encodeURIComponent(product.productId)}/edit`}>
-            <Pencil className="size-4" aria-hidden />
+            <Pencil aria-hidden />
             {t("editProduct")}
           </Link>
-        </Button>
-        <Button asChild size="sm" variant="ghost">
+        </SellerButton>
+        <SellerButton asChild variant="mini" size="sm" className="w-9 px-0 max-[600px]:w-10">
           <Link href="/products/inventory" aria-label={t("closeHistory")}>
-            <X className="size-4" aria-hidden />
+            <X aria-hidden />
           </Link>
-        </Button>
+        </SellerButton>
       </div>
 
       {product.lines.length === 0 ? (
-        <p className="text-sm text-muted-foreground">{t("untracked")}</p>
+        <p className="text-sm text-(--s-muted)">{t("untracked")}</p>
       ) : (
-        <ul className="divide-y rounded-xl border">
+        <Rows>
           {product.lines.map((line) => (
             <LineRow key={`${line.productId}:${line.variantId ?? ""}`} line={line} />
           ))}
-        </ul>
+        </Rows>
       )}
 
       {product.history.length === 0 ? (
-        <p className="text-sm text-muted-foreground">{t("noHistory")}</p>
+        <p className="text-sm text-(--s-muted)">{t("noHistory")}</p>
       ) : (
-        <ul className="divide-y rounded-xl border">
+        <Rows>
           {product.history.map((row) => (
             <MovementRow key={row.id} row={row} />
           ))}
-        </ul>
+        </Rows>
       )}
-    </div>
+    </SellerCard>
   );
 }
 
@@ -221,38 +210,34 @@ function MovementRow({ row }: { row: StockMovementRow }) {
   const locale = useLocale();
   const positive = row.delta > 0;
   return (
-    <li className="flex items-center gap-3 px-3 py-2.5 text-sm">
-      <span
-        className={cn(
-          "w-16 shrink-0 text-center font-semibold tabular-nums",
-          positive ? "text-emerald-700 dark:text-emerald-300" : "text-destructive",
+    <Row
+      start={
+        <span
+          className={positive ? "w-14 shrink-0 text-center font-montserrat text-sm font-bold tabular-nums text-success" : "w-14 shrink-0 text-center font-montserrat text-sm font-bold tabular-nums text-destructive"}
+          dir="ltr"
+        >
+          {positive ? "+" : "−"}
+          {formatNumber(Math.abs(row.delta), locale)}
+        </span>
+      }
+      end={<span className="text-xs text-(--s-subtle)">{t("after", { stock: formatNumber(row.stockAfter, locale) })}</span>}
+    >
+      <p className="truncate text-[13.5px] text-(--s-text)">
+        {t(`reasons.${row.reason}`)}
+        {row.variantTitle && <span className="text-(--s-subtle)"> · {row.variantTitle}</span>}
+        {row.orderId && (
+          <>
+            {" · "}
+            <Link href={`/orders?order=${encodeURIComponent(row.orderId)}`} className="text-(--s-link) hover:underline">
+              {row.orderNumber ? t("order", { number: row.orderNumber }) : t("orderNoNumber")}
+            </Link>
+          </>
         )}
-        dir="ltr"
-      >
-        {positive ? "+" : "−"}
-        {formatNumber(Math.abs(row.delta), locale)}
-      </span>
-      <div className="min-w-0 flex-1">
-        <p className="truncate">
-          {t(`reasons.${row.reason}`)}
-          {row.variantTitle && <span className="text-muted-foreground"> · {row.variantTitle}</span>}
-          {row.orderId && (
-            <>
-              {" · "}
-              <Link href={`/orders?order=${encodeURIComponent(row.orderId)}`} className="text-primary hover:underline">
-                {row.orderNumber ? t("order", { number: row.orderNumber }) : t("orderNoNumber")}
-              </Link>
-            </>
-          )}
-        </p>
-        <p className="text-xs text-muted-foreground">
-          {formatDateTime(row.createdAt, locale)}
-          {row.bySeller && ` · ${t("byYou")}`}
-        </p>
-      </div>
-      <span className="shrink-0 text-xs text-muted-foreground">
-        {t("after", { stock: formatNumber(row.stockAfter, locale) })}
-      </span>
-    </li>
+      </p>
+      <p className="text-xs text-(--s-subtle)">
+        {formatDateTime(row.createdAt, locale)}
+        {row.bySeller && ` · ${t("byYou")}`}
+      </p>
+    </Row>
   );
 }

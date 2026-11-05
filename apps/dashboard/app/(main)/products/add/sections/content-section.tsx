@@ -14,7 +14,7 @@ import {
   FieldHint,
   FieldLabel,
   SMALL_BUTTON_CLASS,
-} from "@/components/form/form-ui";
+} from "@/app/(main)/products/add/form-kit";
 import { CollapsibleSection } from "./collapsible-section";
 import { useContentImageUpload } from "./use-content-image-upload";
 import { isEmptyHtml } from "../prepare-product-submit.lib";
@@ -152,7 +152,7 @@ function HighlightsInput({
       <div ref={listRef} className="flex flex-col gap-2">
         {rows.map((item, index) => (
           <div key={index} className="flex items-center gap-2">
-            <span className="grid size-[26px] shrink-0 place-items-center rounded-full bg-primary-soft font-sans text-xs font-bold text-primary-ink">
+            <span className="grid size-[26px] shrink-0 place-items-center rounded-full bg-primary-soft font-montserrat text-xs font-bold text-primary-ink">
               {index + 1}
             </span>
             <Input
@@ -174,7 +174,7 @@ function HighlightsInput({
                 type="button"
                 variant="soft"
                 size="icon"
-                className="size-9 shrink-0 rounded-[10px]"
+                className="size-10 shrink-0 rounded-full"
                 onClick={() => remove(index)}
                 aria-label={t("removeHighlight")}
               >

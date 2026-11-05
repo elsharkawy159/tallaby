@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { PageContainer, PageHeader, TextAction } from "@/components/seller-ui";
 import { getTranslations } from "next-intl/server";
 import { aiConfigured } from "@workspace/ai";
 import { requireSeller } from "@/lib/auth/require-seller.server";
@@ -20,16 +21,17 @@ export default async function FromFilePage() {
   await requireSeller();
   const t = await getTranslations("bulkFileImport");
   return (
-    <section className="mx-auto flex w-full max-w-4xl flex-col gap-4 p-4 sm:p-6">
-      <div>
-        <Link href="/products/add" className="mb-2 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-          <ArrowRight className="size-4 ltr:rotate-180" aria-hidden />
-          {t("back")}
-        </Link>
-        <h1 className="text-xl font-semibold">{t("title")}</h1>
-        <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
+    <PageContainer narrow>
+      <div className="flex flex-col gap-1">
+        <TextAction asChild className="w-fit">
+          <Link href="/products/add">
+            <ArrowRight className="ltr:rotate-180" aria-hidden />
+            {t("back")}
+          </Link>
+        </TextAction>
+        <PageHeader title={t("title")} description={t("subtitle")} />
       </div>
       <FromFile aiEnabled={aiConfigured()} />
-    </section>
+    </PageContainer>
   );
 }

@@ -57,7 +57,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@workspace/ui/components/alert-dialog";
-import { BUTTON_CLASS, FIELD_CLASS, FieldHint, SMALL_BUTTON_CLASS, SectionCard } from "@/components/form/form-ui";
+import { BUTTON_CLASS, FIELD_CLASS, FieldHint, SMALL_BUTTON_CLASS, SectionCard } from "@/app/(main)/products/add/form-kit";
 import { SELLER_IMAGE_ACCEPT_ATTR, useSellerUpload } from "@/components/inputs/use-seller-upload";
 import { useDebounce } from "@/hooks/use-debounce";
 import { cn, getPublicUrl } from "@/lib/utils";
@@ -98,10 +98,11 @@ export function TaxonomyManager({ kind, initialItems }: { kind: TaxonomyKind; in
   return (
     <div className="mx-auto w-full max-w-4xl space-y-5">
       <header>
-        <h1 className="flex items-center gap-2 text-xl font-bold sm:text-2xl">
-          {t(`${k}.pageTitle`)} <Badge variant="muted">{items.length}</Badge>
+        <h1 className="flex items-center gap-2.5 text-[clamp(22px,2.4vw,28px)] font-bold leading-[1.35] text-(--s-ink)">
+          {t(`${k}.pageTitle`)}
+          <span className="rounded-full bg-primary-soft px-2.5 py-0.5 font-montserrat text-sm font-bold tabular-nums text-primary-ink">{items.length}</span>
         </h1>
-        <p className="mt-1 text-sm text-muted-foreground text-pretty">{t(`${k}.pageSubtitle`)}</p>
+        <p className="mt-0.5 text-pretty text-[14.5px] leading-[1.7] text-(--s-muted) max-[600px]:text-[13.5px]">{t(`${k}.pageSubtitle`)}</p>
       </header>
       <TaxonomyList kind={kind} items={items} setItems={setItems} />
     </div>
@@ -271,7 +272,7 @@ function TaxonomyList({
           {items.length > 1 && <FieldHint>{filtering ? t("filteringHint") : t("reorderHint")}</FieldHint>}
           <DndContext id={`taxonomy-${kind}`} sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
             <SortableContext items={shown.map((i) => i.id)} strategy={verticalListSortingStrategy}>
-              <ul className="divide-y rounded-xl border">
+              <ul className="divide-y divide-(--s-line-soft) overflow-hidden rounded-[20px] border border-(--s-line) bg-(--s-surface)">
                 {shown.map((item) => (
                   <SortableRow
                     key={item.id}
@@ -280,13 +281,15 @@ function TaxonomyList({
                     handleLabel={t("dragHandle", { name: taxonomyLabel(item, locale) })}
                   >
                     <ItemImage kind={kind} item={item} />
-                    <div className="min-w-0 flex-1">
+                    {/* On a phone the actions take their own line, or the name is cut to a letter or two. */}
+                    <div className="min-w-0 flex-1 max-[480px]:basis-[calc(100%-116px)]">
                       <p className="truncate text-sm font-medium">{taxonomyLabel(item, locale)}</p>
                       <p className="truncate text-xs text-muted-foreground">
                         {t("productCount", { count: item.productCount })}
                         {item.sourceId ? ` · ${t("fromPack")}` : ""}
                       </p>
                     </div>
+                    <div className="flex shrink-0 items-center gap-3 max-[480px]:w-full max-[480px]:justify-end">
                     {kind === "category" && (
                       <Button
                         type="button"
@@ -312,6 +315,7 @@ function TaxonomyList({
                     >
                       <Trash2 className="size-4" />
                     </Button>
+                    </div>
                   </SortableRow>
                 ))}
                 {shown.length === 0 && <li className="px-3 py-6 text-center text-sm text-muted-foreground">{t("noMatches")}</li>}
@@ -405,7 +409,7 @@ function SortableRow({
     <li
       ref={setNodeRef}
       style={{ transform: CSS.Translate.toString(transform), transition }}
-      className={cn("flex items-center gap-3 bg-card px-3 py-2.5", isDragging && "relative z-10 rounded-lg shadow-md")}
+      className={cn("flex items-center gap-3 bg-(--s-surface) px-3.5 py-3 max-[480px]:flex-wrap transition-colors duration-150 hover:bg-(--s-tint)", isDragging && "relative z-10 rounded-xl shadow-(--s-shadow-menu)")}
     >
       <button
         type="button"
@@ -414,7 +418,7 @@ function SortableRow({
         {...listeners}
         disabled={disabled}
         aria-label={handleLabel}
-        className="-ms-1 flex size-8 shrink-0 touch-none items-center justify-center rounded-md text-muted-foreground outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring enabled:cursor-grab enabled:active:cursor-grabbing disabled:opacity-40"
+        className="-ms-1 flex size-10 shrink-0 touch-none items-center justify-center rounded-md text-muted-foreground outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring enabled:cursor-grab enabled:active:cursor-grabbing disabled:opacity-40"
       >
         <GripVertical className="size-4" />
       </button>

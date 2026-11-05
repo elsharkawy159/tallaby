@@ -73,14 +73,14 @@ export function QuantityOffersSection({ productId, initial }: { productId: strin
     });
 
   return (
-    <section className="mx-auto mt-5 w-full max-w-5xl rounded-2xl border bg-card p-4 sm:p-5">
-      <h2 className="font-semibold">{t("title")}</h2>
-      <p className="mt-1 text-pretty text-sm text-muted-foreground">{t("description")}</p>
+    <section className="rounded-[24px] border border-(--s-line) bg-(--s-glass) p-[22px] shadow-(--s-shadow-card) max-[600px]:rounded-[20px] max-[600px]:p-4">
+      <h2 className="text-[16.5px] font-bold text-(--s-ink)">{t("title")}</h2>
+      <p className="mt-0.5 text-pretty text-[13px] leading-relaxed text-(--s-muted)">{t("description")}</p>
 
       {tiers.length > 0 && (
         <ul className="mt-3 space-y-2">
           {tiers.map((tier) => (
-            <li key={tier.key} className="grid grid-cols-[88px_minmax(0,1fr)_88px_auto_auto] items-center gap-2">
+            <li key={tier.key} className="grid grid-cols-[72px_minmax(0,1fr)_72px_auto_auto] items-center gap-2 max-[420px]:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] [&>*:nth-child(2)]:max-[420px]:col-span-2 [&>*:nth-child(2)]:max-[420px]:row-start-1 [&>*:nth-child(1)]:max-[420px]:row-start-2 [&>*:nth-child(3)]:max-[420px]:row-start-2">
               <Input
                 aria-label={t("quantity")}
                 placeholder={t("quantity")}
@@ -91,7 +91,7 @@ export function QuantityOffersSection({ productId, initial }: { productId: strin
               />
               <select
                 aria-label={t("discountType")}
-                className="h-10 min-w-0 rounded-[10px] border bg-background px-2 text-sm"
+                className="h-10 min-w-0 rounded-[14px] border-[1.5px] border-(--s-field) bg-(--s-surface) px-2 text-sm text-(--s-text)"
                 value={tier.discountType}
                 onChange={(event) => patch(tier.key, { discountType: event.target.value === "fixed" ? "fixed" : "percent" })}
               >

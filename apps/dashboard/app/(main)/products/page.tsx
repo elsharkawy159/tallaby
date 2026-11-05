@@ -1,6 +1,7 @@
 import React, { Suspense } from "react";
 import { VendorProductsData } from "./_components/vendor-products.data";
 import { VendorProductsSkeleton } from "./_components/vendor-products.skeleton";
+import { PageContainer } from "@/components/seller-ui";
 
 // Force dynamic rendering since this page uses cookies for authentication
 
@@ -11,10 +12,10 @@ export default async function ProductsPage({
 }) {
   const params = await searchParams;
   return (
-    <section className="p-4 sm:p-6">
+    <PageContainer>
       <Suspense fallback={<VendorProductsSkeleton />}>
         <VendorProductsData searchParams={params} />
       </Suspense>
-    </section>
+    </PageContainer>
   );
 }

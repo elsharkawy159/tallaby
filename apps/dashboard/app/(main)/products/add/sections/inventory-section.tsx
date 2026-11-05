@@ -1,7 +1,8 @@
 "use client";
 
 import { Controller, useFormContext, useFormState, useWatch } from "react-hook-form";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { formatNumber } from "@/lib/i18n/format";
 import { Boxes, Wand2 } from "lucide-react";
 import { Switch } from "@workspace/ui/components/switch";
 import type { SellerPricingSettings } from "@/lib/utils/product-pricing.lib";
@@ -13,7 +14,7 @@ import {
   InputGroup,
   NumberStepper,
   SubHeading,
-} from "@/components/form/form-ui";
+} from "@/app/(main)/products/add/form-kit";
 import { generateSku } from "../add-product.lib";
 import { useFieldError } from "./fields";
 import { VariantsEditor } from "./variants-editor";
@@ -31,6 +32,7 @@ export function InventorySection({
 }) {
   const t = useTranslations("productForm.sections.stock");
   const tPage = useTranslations("productForm.page");
+  const locale = useLocale();
   const form = useFormContext<AddProductFormData>();
   const quantityError = useFieldError("quantity");
   const variantsError = useFieldError("variants");
@@ -68,10 +70,10 @@ export function InventorySection({
         control={form.control}
         name="trackStock"
         render={({ field }) => (
-          <label htmlFor="track-stock" className="flex cursor-pointer items-start justify-between gap-3 rounded-xl border bg-muted px-4 py-3.5">
+          <label htmlFor="track-stock" className="flex cursor-pointer items-start justify-between gap-3 rounded-2xl border-[1.5px] border-(--s-field) bg-(--s-surface) px-4 py-3.5">
             <span className="flex min-w-0 flex-col gap-0.5">
-              <span className="text-sm font-medium">{t("trackStock")}</span>
-              <span className="text-xs text-muted-foreground">{t(field.value === false ? "trackStockOff" : "trackStockOn")}</span>
+              <span className="text-[13.5px] font-bold text-(--s-ink)">{t("trackStock")}</span>
+              <span className="text-xs text-(--s-subtle)">{t(field.value === false ? "trackStockOff" : "trackStockOn")}</span>
             </span>
             <Switch id="track-stock" checked={field.value !== false} onCheckedChange={field.onChange} />
           </label>
@@ -94,14 +96,14 @@ export function InventorySection({
                   {...field}
                   value={field.value ?? ""}
                   placeholder="PROD-12345"
-                  className="font-sans rtl:text-right"
+                  className="font-montserrat rtl:text-right"
                 />
                 <button
                   type="button"
                   onClick={() =>
                     field.onChange(generateSku(form.getValues("localized.en.title")))
                   }
-                  className="flex items-center gap-1.5 border-s border-border bg-muted px-3 text-xs whitespace-nowrap text-muted-foreground transition-colors hover:text-primary-ink"
+                  className="flex items-center gap-1.5 cursor-pointer border-s border-(--s-line-soft) bg-(--s-surface-2) px-3 text-xs font-semibold whitespace-nowrap text-(--s-subtle) transition-colors hover:text-(--s-primary)"
                 >
                   <Wand2 className="size-3.5" />
                   {t("generate")}
@@ -111,7 +113,17 @@ export function InventorySection({
           />
         </div>
 
-        {trackStock && <div className="flex flex-col gap-1.5">
+        {/* With combinations, stock is set per combination below (the default one holds the product's quantity); this is the total. */}
+        {trackStock && hasVariants && <div className="flex flex-col gap-1.5">
+          <FieldLabel>{t("totalStock")}</FieldLabel>
+          <div className="flex h-[46px] items-center rounded-[14px] border-[1.5px] border-(--s-line) bg-(--s-surface-2) px-3.5 font-montserrat text-sm font-semibold tabular-nums text-(--s-text)">
+            {formatNumber(stock, locale)}
+          </div>
+          <FieldHint>{t("totalStockHint", { count: variantCount })}</FieldHint>
+          <FieldError>{quantityError}</FieldError>
+        </div>}
+
+        {trackStock && !hasVariants && <div className="flex flex-col gap-1.5">
           <FieldLabel htmlFor="quantity" required>
             {t("quantity")}
           </FieldLabel>
@@ -130,7 +142,6 @@ export function InventorySection({
               />
             )}
           />
-          {hasVariants && <FieldHint>{t("defaultVariantStock")}</FieldHint>}
           <FieldError>{quantityError}</FieldError>
         </div>}
       </div>

@@ -20,7 +20,7 @@ import {
   SubHeading,
   TEXTAREA_CLASS,
   ToggleRow,
-} from "@/components/form/form-ui";
+} from "@/app/(main)/products/add/form-kit";
 import { CollapsibleSection } from "./collapsible-section";
 import {
   META_DESCRIPTION,
@@ -281,8 +281,8 @@ function SearchPreview({ locale }: { locale: SupportedLocale }) {
   const body = (metaDescription ?? "").trim();
 
   return (
-    <div className="rounded-xl border bg-muted p-4" dir={locale === "ar" ? "rtl" : "ltr"}>
-      <div dir="ltr" className="truncate font-sans text-xs text-muted-foreground rtl:text-right">
+    <div className="rounded-2xl border border-(--s-line) bg-(--s-surface-2) p-4" dir={locale === "ar" ? "rtl" : "ltr"}>
+      <div dir="ltr" className="truncate font-montserrat text-xs text-(--s-muted) rtl:text-right">
         {linkHost} › products › {slug || "product"}
       </div>
       <div className="my-0.5 truncate text-[17px] leading-normal text-[#1a0dab] dark:text-[#8ab4f8]">

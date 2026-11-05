@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
+import { PageContainer } from "@/components/seller-ui";
 import { isAccessError, requireSeller } from "@/lib/auth/require-seller.server";
 import { getProductInventory, listLowStock } from "./inventory.data";
 import { selectedProductParam } from "./inventory.lib";
@@ -32,8 +33,8 @@ export default async function ProductInventoryPage({
   ]);
 
   return (
-    <section className="p-4 sm:p-6">
+    <PageContainer narrow>
       <InventoryPage lowStock={lowStock} selected={selected} />
-    </section>
+    </PageContainer>
   );
 }

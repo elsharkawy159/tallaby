@@ -75,9 +75,9 @@ export function CrossSellSection({ productId, initial }: { productId: string; in
       : t("amountOff", { value: format.number(offer.discountValue, moneyNumberOptions(unit)) });
 
   return (
-    <section className="mx-auto mt-5 w-full max-w-5xl rounded-2xl border bg-card p-4 sm:p-5">
-      <h2 className="font-semibold">{t("title")}</h2>
-      <p className="mt-1 text-pretty text-sm text-muted-foreground">{t("description")}</p>
+    <section className="rounded-[24px] border border-(--s-line) bg-(--s-glass) p-[22px] shadow-(--s-shadow-card) max-[600px]:rounded-[20px] max-[600px]:p-4">
+      <h2 className="text-[16.5px] font-bold text-(--s-ink)">{t("title")}</h2>
+      <p className="mt-0.5 text-pretty text-[13px] leading-relaxed text-(--s-muted)">{t("description")}</p>
 
       {offers.length > 0 && (
         <ul className="mt-3 divide-y">

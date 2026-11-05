@@ -20,14 +20,14 @@ export function ProgressRing({ percent, small = false }: { percent: number; smal
         small ? "size-10" : "size-[46px]"
       )}
       style={{
-        background: `conic-gradient(var(--primary) ${percent}%, var(--border) 0)`,
+        background: `conic-gradient(var(--s-primary) ${percent}%, var(--s-line) 0)`,
       }}
       role="img"
       aria-label={`${percent}%`}
     >
       <b
         className={cn(
-          "grid place-items-center rounded-full bg-card font-sans text-[11px] font-bold tabular-nums",
+          "grid place-items-center rounded-full bg-(--s-surface) font-montserrat text-[11px] font-bold tabular-nums text-(--s-ink)",
           small ? "size-[31px]" : "size-9"
         )}
       >
@@ -49,14 +49,14 @@ export function PublishChecklist({
   const { percent, left } = summarize(sections);
 
   return (
-    <div className="rounded-2xl border bg-card p-4 shadow-xs">
+    <div className="rounded-[24px] border border-(--s-line) bg-(--s-glass) p-[18px] shadow-(--s-shadow-card)">
       <div className="mb-3 flex items-center gap-3">
         <ProgressRing percent={percent} />
         <div className="min-w-0">
-          <strong className="block text-sm">
+          <strong className="block text-sm font-bold text-(--s-ink)">
             {percent === 0 ? t("startBasics") : left ? t("readiness") : t("ready")}
           </strong>
-          <small className="text-xs text-muted-foreground">
+          <small className="text-xs text-(--s-muted)">
             {left ? t("remaining", { count: left }) : t("allDone")}
           </small>
         </div>
@@ -71,10 +71,10 @@ export function PublishChecklist({
               scrollToSection(section.id);
             }}
             className={cn(
-              "flex items-center gap-2.5 rounded-[9px] px-2 py-[7px] text-[13px] transition-colors",
+              "flex min-h-9 items-center gap-2.5 rounded-xl px-2 py-[7px] text-[13px] transition-colors duration-150",
               activeId === section.id
                 ? "bg-primary-soft font-semibold text-primary-ink"
-                : "text-foreground hover:bg-muted"
+                : "text-(--s-text) hover:bg-(--s-hover)"
             )}
           >
             <StatusDot section={section} />
@@ -82,7 +82,7 @@ export function PublishChecklist({
             <em
               className={cn(
                 "ms-auto text-[11px] not-italic tabular-nums",
-                section.hasError ? "text-destructive" : "text-faint"
+                section.hasError ? "text-destructive" : "text-(--s-faint)"
               )}
             >
               {section.total ? `${section.done}/${section.total}` : t("optional")}
@@ -103,7 +103,7 @@ function StatusDot({ section }: { section: SectionProgress }) {
           ? "border-success bg-success text-white"
           : section.hasError
             ? "border-destructive bg-destructive-soft"
-            : "border-input"
+            : "border-(--s-field-strong)"
       )}
     >
       {section.complete && !section.hasError && <Check className="size-[11px] stroke-[3]" />}
@@ -136,7 +136,7 @@ export function SectionChips({
   return (
     <nav
       ref={navRef}
-      className="flex gap-1.5 overflow-x-auto px-3 pb-3 [scrollbar-width:none] sm:px-6 lg:hidden"
+      className="flex gap-1.5 overflow-x-auto px-4 pb-3 [scrollbar-width:none] max-[600px]:px-3 max-[600px]:pb-2.5 lg:hidden"
     >
       {sections.map((section) => (
         <a
@@ -148,10 +148,10 @@ export function SectionChips({
             scrollToSection(section.id);
           }}
           className={cn(
-            "flex h-8 shrink-0 items-center gap-1.5 rounded-full border px-3 text-xs whitespace-nowrap",
+            "flex h-8 shrink-0 items-center gap-1.5 rounded-full border px-3 text-xs font-semibold whitespace-nowrap",
             activeId === section.id
-              ? "border-primary bg-primary text-primary-foreground"
-              : "bg-card text-foreground"
+              ? "border-(--s-solid) bg-(--s-solid) text-(--s-solid-fg)"
+              : "border-(--s-field) bg-(--s-surface) text-(--s-text)"
           )}
         >
           <i
@@ -163,7 +163,7 @@ export function SectionChips({
                   ? "bg-success"
                   : activeId === section.id
                     ? "bg-white/50"
-                    : "bg-input"
+                    : "bg-(--s-field-strong)"
             )}
           />
           {t(`nav.${section.nav}`)}
@@ -185,11 +185,11 @@ export function MobilePublishBar({
   const { percent, left } = summarize(sections);
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-30 flex items-center gap-2.5 border-t bg-card px-4 py-3 shadow-[0_-6px_20px_rgba(20,81,99,0.08)] lg:hidden">
+    <div data-save-bar data-open className="fixed inset-x-0 bottom-0 z-30 flex items-center gap-2.5 border-t border-(--s-line) bg-(--s-surface) px-4 py-3 shadow-(--s-shadow-bar) lg:hidden">
       <ProgressRing percent={percent} small />
       <div className="min-w-0 flex-1">
-        <small className="block text-[11px] text-muted-foreground">{t("readiness")}</small>
-        <b className="block truncate text-[13px]">
+        <small className="block text-[11px] text-(--s-muted)">{t("readiness")}</small>
+        <b className="block truncate text-[13px] font-bold text-(--s-ink)">
           {left ? t("remaining", { count: left }) : t("ready")}
         </b>
       </div>

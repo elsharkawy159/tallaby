@@ -8,7 +8,7 @@ import { ar as arLocale } from "date-fns/locale";
 import { CalendarDays, ChevronDown, Clock } from "lucide-react";
 import { Calendar } from "@workspace/ui/components/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@workspace/ui/components/popover";
-import { InputGroup, ToggleRow } from "@/components/form/form-ui";
+import { InputGroup, ToggleRow } from "@/app/(main)/products/add/form-kit";
 import { cn } from "@/lib/utils";
 import type { AddProductFormData } from "../add-product.schema";
 

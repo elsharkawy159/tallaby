@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 import { contentDirClass } from "@/lib/i18n/content-dir";
 import { ImageUpload } from "@/components/inputs/image-upload";
 import { useProductLinkHost } from "../product-link-host.client";
-import { FIELD_CLASS, FieldError, FieldHint, FieldLabel, SectionCard } from "@/components/form/form-ui";
+import { FIELD_CLASS, FieldError, FieldHint, FieldLabel, SectionCard } from "@/app/(main)/products/add/form-kit";
 import { CategoryField } from "../category-field";
 import { isEmptyHtml } from "../prepare-product-submit.lib";
 import { useFieldError } from "./fields";

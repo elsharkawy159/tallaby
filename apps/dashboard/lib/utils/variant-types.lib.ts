@@ -92,24 +92,22 @@ export function buildVariantLocalizedFromCombo(
 
   for (const locale of VARIANT_LOCALES) {
     const titleParts: string[] = [];
-    const options: string[] = [];
+    // By position: a value not written in this language leaves its slot empty, so options keep their place.
+    const options: Array<string | undefined> = [];
 
     variantTypes.forEach((type, typeIndex) => {
       const valueIndex = valueIndexes[typeIndex];
       const typeName = type.localized[locale].name.trim();
-      let value = type.localized[locale].values[valueIndex]?.trim() ?? "";
+      const withUnit = (text: string) => (type.kind === "weight" && text && type.unit ? `${text} ${type.unit}` : text);
+      const value = withUnit(type.localized[locale].values[valueIndex]?.trim() ?? "");
+      // The title names the variant on orders and buttons, so an untranslated value shows in the language it has.
+      const titlePart = value || withUnit(type.localized[locale === "en" ? "ar" : "en"].values[valueIndex]?.trim() ?? "");
 
-      if (type.kind === "weight" && value && type.unit) {
-        value = `${value} ${type.unit}`;
+      if (titlePart) {
+        titleParts.push(titlePart);
       }
 
-      if (value) {
-        titleParts.push(value);
-      }
-
-      if (typeName && value) {
-        options.push(formatVariantOption(typeName, value));
-      }
+      options.push(typeName && value ? formatVariantOption(typeName, value) : undefined);
     });
 
     localized[locale] = {
@@ -165,6 +163,32 @@ function inferKindFromTypeName(name: string): VariantOptionKind {
   return preset?.kind ?? "custom";
 }
 
+/**
+ * One language's options of a stored variant, by option position. Older rows
+ * skipped an untranslated value, so a later option sat in the wrong slot; the
+ * saved option kinds put it back.
+ */
+function alignedOptions(
+  variant: { option1?: string | null; option2?: string | null; option3?: string | null; localized?: unknown },
+  locale: SupportedLocale
+): Array<{ typeName: string; value: string } | null> {
+  const record = variant.localized as (Record<string, VariantLocalizedFields | undefined> & { optionMeta?: VariantOptionMetaEntry[] }) | null;
+  const fields = record?.[locale] ?? (locale === "en" ? variant : undefined);
+  const raw = [fields?.option1, fields?.option2, fields?.option3].map((option) =>
+    typeof option === "string" ? parseVariantOption(option) : null
+  );
+  const meta = record?.optionMeta;
+  if (!meta?.length) return raw;
+  const aligned: Array<{ typeName: string; value: string } | null> = [null, null, null];
+  raw.forEach((option, position) => {
+    if (!option) return;
+    const kind = inferKindFromTypeName(option.typeName);
+    const home = kind === "custom" || meta[position]?.kind === kind ? position : meta.findIndex((entry) => entry.kind === kind);
+    aligned[home >= 0 && !aligned[home] ? home : position] = option;
+  });
+  return aligned;
+}
+
 export function reconstructVariantTypesFromVariants(
   variants: Array<{
     option1?: string | null;
@@ -184,25 +208,14 @@ export function reconstructVariantTypesFromVariants(
     typeof localizedFromDb === "object" &&
     !Array.isArray(localizedFromDb)
   ) {
-    const enVariants = variants.map((variant) => {
-      const loc =
-        typeof variant.localized === "object" && variant.localized
-          ? (variant.localized as Record<string, VariantLocalizedFields>)
-          : null;
-
-      return loc?.en ?? {
-        title: "",
-        option1: variant.option1 ?? undefined,
-        option2: variant.option2 ?? undefined,
-        option3: variant.option3 ?? undefined,
-      };
-    });
+    const rows = variants.map((variant) => ({
+      meta: (variant.localized as { optionMeta?: VariantOptionMetaEntry[] } | null)?.optionMeta,
+      en: alignedOptions(variant, "en"),
+      ar: alignedOptions(variant, "ar"),
+    }));
 
     const typeCount = Math.max(
-      ...enVariants.map(
-        (variant) =>
-          [variant.option1, variant.option2, variant.option3].filter(Boolean).length
-      ),
+      ...rows.flatMap((row) => [row.en, row.ar].map((options) => options.findLastIndex(Boolean) + 1)),
       0
     );
 
@@ -213,83 +226,46 @@ export function reconstructVariantTypesFromVariants(
     const types: VariantTypeFormValue[] = [];
 
     for (let typeIndex = 0; typeIndex < typeCount; typeIndex += 1) {
-      const optionKey = `option${typeIndex + 1}` as 'option1' | 'option2' | 'option3';
       const localized: Record<SupportedLocale, VariantTypeLocalizedFields> = {
         en: { name: "", values: [] },
         ar: { name: "", values: [] },
       };
-
       let kind: VariantOptionKind = "custom";
       let unit: string | undefined;
       const swatches: string[] = [];
+      // One entry per value (variant rows repeat it), its text in both languages kept together.
+      const seen = new Map<string, number>();
 
-      for (const locale of VARIANT_LOCALES) {
-        const sampleVariant = variants.find((variant) => {
-          if (!variant.localized || typeof variant.localized !== "object") {
-            return locale === "en";
-          }
+      for (const row of rows) {
+        const en = row.en[typeIndex];
+        const ar = row.ar[typeIndex];
+        localized.en.name ||= en?.typeName ?? "";
+        localized.ar.name ||= ar?.typeName ?? "";
+        const meta = row.meta?.[typeIndex];
+        if (meta?.kind && kind === "custom") kind = meta.kind;
+        if (meta?.unit) unit ??= meta.unit;
 
-          return Boolean(
-            (variant.localized as Record<string, VariantLocalizedFields>)[locale]
-          );
-        });
+        // Stored weights carry their unit, which the option adds back on save.
+        const strip = (value: string | undefined) => {
+          const suffix = meta?.unit ? ` ${meta.unit}` : "";
+          return value && suffix && value.endsWith(suffix) ? value.slice(0, -suffix.length) : (value ?? "");
+        };
+        const enValue = strip(en?.value);
+        const arValue = strip(ar?.value);
+        const key = (enValue || arValue).trim().toLowerCase();
+        if (!key) continue;
 
-        const sampleOption =
-          sampleVariant &&
-          typeof sampleVariant.localized === "object" &&
-          sampleVariant.localized
-            ? (sampleVariant.localized as Record<
-                string,
-                VariantLocalizedFields
-              >)[locale]?.[optionKey]
-            : locale === "en"
-              ? sampleVariant?.[optionKey]
-              : undefined;
-
-        const parsedSample = parseVariantOption(
-          typeof sampleOption === "string" ? sampleOption : undefined
-        );
-
-        localized[locale].name = parsedSample?.typeName ?? "";
-
-        localized[locale].values = variants.map((variant, variantIndex) => {
-          const loc =
-            typeof variant.localized === "object" && variant.localized
-              ? (variant.localized as Record<string, VariantLocalizedFields>)[
-                  locale
-                ]
-              : locale === "en"
-                ? {
-                    option1: variant.option1 ?? undefined,
-                    option2: variant.option2 ?? undefined,
-                    option3: variant.option3 ?? undefined,
-                  }
-                : undefined;
-
-          const optionValue = loc?.[optionKey];
-          const parsedValue = parseVariantOption(
-            typeof optionValue === "string" ? optionValue : undefined
-          );
-
-          if (locale === "en") {
-            const meta =
-              typeof variant.localized === "object" &&
-              variant.localized &&
-              Array.isArray(
-                (variant.localized as { optionMeta?: VariantOptionMetaEntry[] })
-                  .optionMeta
-              )
-                ? (variant.localized as { optionMeta: VariantOptionMetaEntry[] })
-                    .optionMeta[typeIndex]
-                : undefined;
-
-            if (meta?.kind) kind = meta.kind;
-            if (meta?.unit) unit = meta.unit;
-            swatches[variantIndex] = meta?.swatch ?? "";
-          }
-
-          return parsedValue?.value ?? "";
-        });
+        const known = seen.get(key);
+        if (known === undefined) {
+          seen.set(key, localized.en.values.length);
+          localized.en.values.push(enValue);
+          localized.ar.values.push(arValue);
+          swatches.push(meta?.swatch ?? "");
+        } else {
+          localized.en.values[known] ||= enValue;
+          localized.ar.values[known] ||= arValue;
+          swatches[known] ||= meta?.swatch ?? "";
+        }
       }
 
       if (kind === "custom") {
@@ -308,36 +284,37 @@ export function reconstructVariantTypesFromVariants(
     return types;
   }
 
-  const typeMap = new Map<string, Set<string>>();
+  // Keyed by option position. Shopify imports store bare values ("Red", "S") with no option name,
+  // so grouping by name made every value its own option and the rows collapsed into one.
+  const slots: Array<{ name: string; bare: boolean; values: Set<string> } | undefined> = [];
 
   variants.forEach((variant) => {
-    [variant.option1, variant.option2, variant.option3]
-      .filter(Boolean)
-      .forEach((option) => {
-        const parsed = parseVariantOption(option);
+    [variant.option1, variant.option2, variant.option3].forEach((option, position) => {
+      const parsed = parseVariantOption(option);
 
-        if (!parsed?.typeName) {
-          return;
-        }
+      if (!parsed?.value) {
+        return;
+      }
 
-        if (!typeMap.has(parsed.typeName)) {
-          typeMap.set(parsed.typeName, new Set());
-        }
-
-        if (parsed.value) {
-          typeMap.get(parsed.typeName)!.add(parsed.value);
-        }
-      });
+      const slot = (slots[position] ??= { name: option!.includes(":") ? parsed.typeName : "", bare: !option!.includes(":"), values: new Set() });
+      slot.values.add(parsed.value);
+    });
   });
 
-  return Array.from(typeMap.entries()).map(([name, valuesSet], index) => ({
-    id: `type-${index}`,
-    kind: inferKindFromTypeName(name),
-    localized: {
-      en: { name, values: Array.from(valuesSet) },
-      ar: { name: "", values: Array.from(valuesSet).map(() => "") },
-    },
-  }));
+  return slots.flatMap((slot, position) => {
+    if (!slot) return [];
+    const values = Array.from(slot.values);
+    return [
+      {
+        id: `type-${position}`,
+        kind: slot.bare ? ("custom" as const) : inferKindFromTypeName(slot.name),
+        localized: {
+          en: { name: slot.bare ? `Option ${position + 1}` : slot.name, values },
+          ar: { name: slot.bare ? `الخيار ${position + 1}` : "", values: values.map(() => "") },
+        },
+      },
+    ];
+  });
 }
 
 export function getVariantValueIndexes(

@@ -10,7 +10,7 @@ import { MixedCurrencyNote, useAccountMoney } from "@/components/account-money.c
 import { MoneyText } from "@/components/money";
 import type { SellerPricingSettings } from "@/lib/utils/product-pricing.lib";
 import { cn } from "@/lib/utils";
-import { FieldError, FieldHint, FieldLabel, SectionCard } from "@/components/form/form-ui";
+import { FieldError, FieldHint, FieldLabel, SectionCard } from "@/app/(main)/products/add/form-kit";
 import { DiscountExpiryField } from "../steps/discount-expiry-field";
 import { MoneyField, useFieldError } from "./fields";
 import type { AddProductFormData } from "../add-product.schema";
@@ -109,15 +109,15 @@ export function PricingSection({
         </div>
         <div className="flex flex-col gap-1.5">
           {/* Lines the switch up with the input beside it. */}
-          <span className="hidden text-[13px] leading-normal select-none sm:block" aria-hidden>
+          <span className="hidden text-[13.5px] leading-normal select-none sm:block" aria-hidden>
             &nbsp;
           </span>
           <label
             htmlFor="price-discount-on"
-            className="flex h-11 cursor-pointer items-center gap-3 rounded-[10px] border border-input bg-muted px-3.5"
+            className="flex h-[46px] cursor-pointer items-center gap-3 rounded-[14px] border-[1.5px] border-(--s-field) bg-(--s-surface) px-3.5"
           >
             <Switch id="price-discount-on" checked={discountOn} onCheckedChange={toggleDiscount} />
-            <span className="text-[13px] font-semibold">{t("discount")}</span>
+            <span className="text-[13.5px] font-bold text-(--s-ink)">{t("discount")}</span>
           </label>
         </div>
       </div>
@@ -134,8 +134,8 @@ export function PricingSection({
             </div>
             <span
               className={cn(
-                "inline-flex h-11 shrink-0 items-center rounded-[10px] border px-3.5 text-[13px] font-bold whitespace-nowrap",
-                hasSale ? "border-transparent bg-success-soft text-success" : "bg-muted text-faint"
+                "inline-flex h-[46px] shrink-0 items-center rounded-[14px] border px-3.5 text-[13px] font-bold whitespace-nowrap",
+                hasSale ? "border-transparent bg-success-soft text-success" : "border-(--s-line) bg-(--s-surface-2) text-(--s-faint)"
               )}
             >
               {hasSale ? t("percentOff", { percent }) : t("percentOffEmpty")}

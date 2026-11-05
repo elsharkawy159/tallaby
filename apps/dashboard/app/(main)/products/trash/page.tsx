@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
+import { PageContainer } from "@/components/seller-ui";
 import { listTrashedProducts } from "@workspace/lib/products/trash/server";
 import { isAccessError, requireSeller } from "@/lib/auth/require-seller.server";
 import { ProductTrash } from "./trash.client";
@@ -22,8 +23,8 @@ export default async function ProductTrashPage() {
   const items = await listTrashedProducts(seller.sellerId, locale);
 
   return (
-    <section className="p-4 sm:p-6">
+    <PageContainer narrow>
       <ProductTrash items={items} />
-    </section>
+    </PageContainer>
   );
 }

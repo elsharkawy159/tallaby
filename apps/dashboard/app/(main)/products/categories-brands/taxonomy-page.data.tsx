@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
+import { PageContainer } from "@/components/seller-ui";
 import { isAccessError, requireSeller } from "@/lib/auth/require-seller.server";
 import { loadSellerTaxonomyList } from "./categories-brands.data";
 import { TaxonomyManager } from "./categories-brands.client";
@@ -22,8 +23,8 @@ export async function TaxonomyPage({ kind }: { kind: TaxonomyKind }) {
   const items = await loadSellerTaxonomyList(seller.sellerId, kind);
 
   return (
-    <section className="p-4 sm:p-6">
+    <PageContainer narrow>
       <TaxonomyManager kind={kind} initialItems={items} />
-    </section>
+    </PageContainer>
   );
 }

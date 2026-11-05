@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { FileDown } from "lucide-react";
 import { Button } from "@workspace/ui/components/button";
 import { cn } from "@/lib/utils";
-import { SMALL_BUTTON_CLASS } from "@/components/form/form-ui";
+import { SMALL_BUTTON_CLASS } from "@/app/(main)/products/add/form-kit";
 import type { SellerPricingSettings } from "@/lib/utils/product-pricing.lib";
 import { BasicSection } from "../sections/basic-section";
 import { ContentSection } from "../sections/content-section";

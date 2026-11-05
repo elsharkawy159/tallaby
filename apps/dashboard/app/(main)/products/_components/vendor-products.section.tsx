@@ -6,25 +6,23 @@ import { useCallback, useEffect, useState, useSyncExternalStore, useTransition }
 import { toast } from "sonner";
 import { useLocale, useTranslations } from "next-intl";
 import {
-  ArrowUpDown,
   CheckCheck,
   ChevronLeft,
   ChevronRight,
   Eye,
   EyeOff,
   LayoutGrid,
-  Layers,
   List,
-  PackageSearch,
+  PackagePlus,
   PencilLine,
   PlusIcon,
   Search,
+  SearchX,
   Share2,
   Trash2,
   X,
 } from "lucide-react";
-import { Button } from "@workspace/ui/components/button";
-import { Input } from "@workspace/ui/components/input";
+import { EmptyState, PageHeader, SellerButton } from "@/components/seller-ui";
 import {
   Select,
   SelectContent,
@@ -39,7 +37,7 @@ import { BulkEditDialog, BulkEditUndoBar, type BulkEditUndo } from "../bulk-edit
 import { ShareCatalogDialog } from "../../marketing/catalog/catalog-share.client";
 import { formatNumber } from "@/lib/i18n/format";
 import { ImportExportButton } from "./import-export-button.client";
-import { ProductCard } from "./product-card.client";
+import { ProductCard, ProductPhoneRow } from "./product-card.client";
 import { VendorProductsTable } from "./vendor-products-table.client";
 import { bulkSetPublishedAction, listFilteredProductIdsAction } from "./products-list.server";
 import type { ProductsCategoryOption } from "./products-list.query";
@@ -94,9 +92,16 @@ const SEARCH_DEBOUNCE_MS = 300;
 const ALL_CATEGORIES = "__all__";
 
 const tabCountStyles: Partial<Record<ProductsTab, string>> = {
-  lowStock: "bg-accent-soft text-accent-ink border-transparent",
-  outOfStock: "bg-destructive-soft text-destructive border-transparent",
+  lowStock: "bg-accent-soft text-accent-ink",
+  outOfStock: "bg-destructive-soft text-destructive",
 };
+
+const PILL_SELECT =
+  "h-[42px] w-auto min-w-0 rounded-full border-[1.5px] border-(--s-field) bg-(--s-surface) px-3.5 text-[13px] font-semibold text-(--s-body) shadow-none max-[720px]:flex-1";
+const PAGE_BUTTON =
+  "grid h-10 min-w-10 cursor-pointer place-items-center rounded-xl border border-(--s-field) bg-(--s-surface) px-2.5 font-montserrat text-[13px] font-bold tabular-nums text-(--s-body) transition-colors duration-150 hover:border-(--s-outline-hover) disabled:cursor-not-allowed disabled:opacity-40";
+const BULK_BUTTON =
+  "inline-flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-full px-3 text-[13px] font-semibold text-[#c6d8dc] transition-colors duration-150 hover:bg-white/10 hover:text-white disabled:opacity-50 max-[600px]:h-10 [&_svg]:size-[15px]";
 
 export function VendorProductsSection({
   products,
@@ -277,78 +282,82 @@ export function VendorProductsSection({
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Status tabs + page actions */}
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div
-          className="-mb-px flex min-w-0 max-w-full gap-1 overflow-x-auto shadow-[inset_0_-1px_0_var(--border)] [scrollbar-width:none]"
-          role="tablist"
-          aria-label={t("columns.status")}
-        >
-          {PRODUCTS_TABS.map((key) => {
-            const on = filters.tab === key;
-            return (
-              <button
-                key={key}
-                type="button"
-                role="tab"
-                aria-selected={on}
-                onClick={() => applyFilter({ tab: key })}
+      <PageHeader
+        title={
+          <span className="flex items-center gap-2.5">
+            {t("pageTitle")}
+            <span className="rounded-full bg-primary-soft px-2.5 py-0.5 font-montserrat text-sm font-bold tabular-nums text-primary-ink">
+              {formatNumber(counts.all, locale)}
+            </span>
+          </span>
+        }
+        description={t("pageSubtitle")}
+        actions={
+          <>
+            <ImportExportButton filters={filters} total={total} />
+            <SellerButton asChild>
+              <Link href="/products/add" data-sui-button="amber">
+                <PlusIcon aria-hidden="true" />
+                {t("addNew")}
+              </Link>
+            </SellerButton>
+          </>
+        }
+      />
+
+      {/* Status tabs */}
+      <div
+        className="-mx-1 flex gap-1.5 overflow-x-auto px-1 [scrollbar-width:none]"
+        role="tablist"
+        aria-label={t("columns.status")}
+      >
+        {PRODUCTS_TABS.map((key) => {
+          const on = filters.tab === key;
+          return (
+            <button
+              key={key}
+              type="button"
+              role="tab"
+              aria-selected={on}
+              onClick={() => applyFilter({ tab: key })}
+              className={cn(
+                "inline-flex h-10 shrink-0 cursor-pointer items-center gap-2 rounded-full border border-(--s-field) bg-(--s-surface) px-4 text-[13.5px] font-semibold text-(--s-body) transition-colors duration-150 hover:border-(--s-outline-hover)",
+                on && "border-(--s-solid) bg-(--s-solid) text-(--s-solid-fg) hover:border-(--s-solid)",
+              )}
+            >
+              {t(`tabs.${key}`)}
+              <em
                 className={cn(
-                  "flex h-10.5 cursor-pointer items-center gap-2 whitespace-nowrap px-3.5 text-sm text-muted-foreground transition-colors hover:text-foreground",
-                  on && "font-semibold text-primary-ink shadow-[inset_0_-2px_0_var(--primary)]"
+                  "grid h-5 min-w-[22px] place-items-center rounded-full bg-(--s-fill) px-1.5 font-montserrat text-[11px] font-bold not-italic tabular-nums text-(--s-muted)",
+                  counts[key] > 0 && tabCountStyles[key],
+                  on && "bg-white/20 text-(--s-solid-fg)",
                 )}
               >
-                {t(`tabs.${key}`)}
-                <span
-                  className={cn(
-                    "inline-grid h-5 min-w-[22px] place-items-center rounded-full border bg-muted px-1.5 text-[11px] font-bold text-muted-foreground tabular-nums",
-                    on && "border-transparent bg-primary-soft text-primary-ink",
-                    counts[key] > 0 && tabCountStyles[key]
-                  )}
-                >
-                  {formatNumber(counts[key], locale)}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-        {/* On mobile the page actions come first, above the tabs. */}
-        <div className="flex flex-wrap items-center gap-2.5 pb-1 max-sm:order-first max-sm:grid max-sm:w-full max-sm:grid-cols-2 max-sm:pb-0 max-sm:[&>*]:w-full">
-          <ImportExportButton filters={filters} total={total} />
-          <Button asChild>
-            <Link href="/products/add">
-              <PlusIcon size={16} aria-hidden="true" />
-              {t("addNew")}
-            </Link>
-          </Button>
-        </div>
+                {formatNumber(counts[key], locale)}
+              </em>
+            </button>
+          );
+        })}
       </div>
 
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-2.5">
-        <div className="relative min-w-[220px] flex-1 basis-full sm:basis-auto sm:max-w-95">
-          <Search
-            className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
-            aria-hidden="true"
-          />
-          <Input
+      <div className="flex flex-wrap items-center gap-2">
+        <label className="flex h-[42px] min-w-0 flex-[1_1_260px] items-center gap-2 rounded-full border-[1.5px] border-(--s-field) bg-(--s-surface) px-3.5 text-(--s-subtle) transition-colors duration-150 focus-within:border-(--s-primary) max-[720px]:basis-full min-[721px]:max-w-[420px]">
+          <Search className="size-4 shrink-0" aria-hidden="true" />
+          <input
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={t("searchPlaceholder")}
             aria-label={t("searchLabel")}
-            className="h-10 rounded-[10px] bg-card ps-9"
+            className="min-w-0 flex-1 bg-transparent text-[13.5px] text-(--s-text) outline-none placeholder:text-(--s-placeholder)"
           />
-        </div>
+        </label>
         <Select
           value={filters.category || ALL_CATEGORIES}
           onValueChange={(value) => applyFilter({ category: value === ALL_CATEGORIES ? "" : value })}
         >
-          <SelectTrigger
-            className="rounded-[10px] bg-card max-sm:min-w-0 max-sm:flex-1"
-            aria-label={t("category")}
-          >
-            <Layers className="size-4 text-muted-foreground" aria-hidden="true" />
+          <SelectTrigger className={PILL_SELECT} aria-label={t("category")}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -364,11 +373,7 @@ export function VendorProductsSection({
           value={filters.sort}
           onValueChange={(value) => navigate({ sort: value as ProductsSort, page: 1 })}
         >
-          <SelectTrigger
-            className="rounded-[10px] bg-card max-sm:min-w-0 max-sm:flex-1"
-            aria-label={t("sortLabel")}
-          >
-            <ArrowUpDown className="size-4 text-muted-foreground" aria-hidden="true" />
+          <SelectTrigger className={PILL_SELECT} aria-label={t("sortLabel")}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -380,7 +385,7 @@ export function VendorProductsSection({
           </SelectContent>
         </Select>
         <div
-          className="ms-auto inline-flex gap-0.5 rounded-[11px] border bg-card p-[3px]"
+          className="ms-auto inline-flex rounded-full border border-(--s-field) bg-(--s-surface) p-[3px] max-[720px]:ms-0"
           role="group"
           aria-label={t("viewLabel")}
         >
@@ -398,11 +403,11 @@ export function VendorProductsSection({
               aria-pressed={view === mode}
               onClick={() => changeView(mode)}
               className={cn(
-                "grid h-8 w-9 cursor-pointer place-items-center rounded-lg text-muted-foreground transition-colors hover:text-foreground",
-                view === mode && "bg-primary-soft text-primary-ink hover:text-primary-ink"
+                "grid h-[34px] w-9 cursor-pointer place-items-center rounded-full text-(--s-subtle) transition-colors duration-150 hover:text-(--s-ink) max-[600px]:h-10 max-[600px]:w-10",
+                view === mode && "bg-primary-soft text-primary-ink hover:text-primary-ink",
               )}
             >
-              <Icon className="size-[17px]" />
+              <Icon className="size-4" />
             </button>
           ))}
         </div>
@@ -410,114 +415,84 @@ export function VendorProductsSection({
 
       {bulkUndo && <BulkEditUndoBar undo={bulkUndo} onClear={clearBulkUndo} />}
 
-      {/* Bulk actions (both views; the table keeps its own Delete button) */}
-      {selected.size > 0 && (
-        <div className="flex flex-wrap items-center gap-2.5 rounded-xl bg-primary py-2 ps-3.5 pe-2 text-[13px] text-primary-foreground">
-          <span>{t("selected", { count: selected.size })}</span>
-          {selected.size < total && (
-            <Button
-              size="sm"
-              disabled={isPending}
-              onClick={selectAllFiltered}
-              className="h-8 rounded-[9px] bg-white/12 text-white hover:bg-white/22"
-            >
-              <CheckCheck className="size-4" />
-              {t("selectAllFiltered", { count: total })}
-            </Button>
-          )}
-          <span className="flex-1" />
-          {(
-            [
-              [PencilLine, t("bulkEdit"), () => setBulkEditing(true)],
-              [Share2, t("shareCatalog"), () => setSharing(true)],
-              [Eye, t("bulkPublish"), () => bulkPublish(true)],
-              [EyeOff, t("bulkDraft"), () => bulkPublish(false)],
-              ...(view === "grid" ? ([[Trash2, t("delete"), () => setBulkDeleting(true)]] as const) : []),
-            ] as const
-          ).map(([Icon, label, onClick]) => (
-            <Button
-              key={label}
-              size="sm"
-              disabled={isPending}
-              onClick={onClick}
-              className="h-8 rounded-[9px] bg-white/12 text-white hover:bg-white/22"
-            >
-              <Icon className="size-4" />
-              {label}
-            </Button>
-          ))}
-          <Button
-            size="sm"
-            onClick={() => setSelected(new Set())}
-            aria-label={t("clearSelection")}
-            className="size-8 rounded-[9px] bg-white/12 p-0 text-white hover:bg-white/22"
-          >
-            <X className="size-4" />
-          </Button>
-        </div>
-      )}
-
       {/* Products */}
       {products.length === 0 ? (
-        <div className="flex flex-col items-center gap-1.5 rounded-2xl border border-dashed border-input bg-card px-5 py-14 text-center text-[13px] text-muted-foreground">
-          <span className="mb-1 grid size-12 place-items-center rounded-xl bg-primary-soft text-primary-ink">
-            <PackageSearch className="size-5" aria-hidden="true" />
-          </span>
-          {counts.all === 0 ? (
-            <>
-              <b className="text-[15px] text-foreground">{t("noProductsTitle")}</b>
-              <span>{t("noProductsDescription")}</span>
-              <Button asChild size="sm" className="mt-2">
+        counts.all === 0 ? (
+          <EmptyState
+            icon={PackagePlus}
+            title={t("noProductsTitle")}
+            description={t("noProductsDescription")}
+            action={
+              <SellerButton asChild size="sm">
                 <Link href="/products/add">
-                  <PlusIcon size={16} aria-hidden="true" />
+                  <PlusIcon aria-hidden="true" />
                   {t("addNew")}
                 </Link>
-              </Button>
-            </>
-          ) : (
-            <>
-              <b className="text-[15px] text-foreground">{t("emptyTitle")}</b>
-              <span>{t("emptyDescription")}</span>
-              <Button variant="outline" size="sm" className="mt-2" onClick={clearFilters}>
+              </SellerButton>
+            }
+          />
+        ) : (
+          <EmptyState
+            icon={SearchX}
+            title={t("emptyTitle")}
+            description={t("emptyDescription")}
+            action={
+              <SellerButton variant="outline" size="sm" onClick={clearFilters}>
                 {t("clearFilters")}
-              </Button>
-            </>
-          )}
-        </div>
+              </SellerButton>
+            }
+          />
+        )
       ) : (
         <>
           {view === "table" ? (
-            <VendorProductsTable
-              products={products}
-              rowIndexOffset={rangeFrom - 1}
-              onDelete={setDeleting}
-              selectedIds={selected}
-              onSelectedIdsChange={setSelected}
-            />
+            <>
+              <div className="max-[720px]:hidden">
+                <VendorProductsTable
+                  products={products}
+                  rowIndexOffset={rangeFrom - 1}
+                  onDelete={setDeleting}
+                  selectedIds={selected}
+                  onSelectedIdsChange={setSelected}
+                />
+              </div>
+              {/* A phone gets rows, never a table to scroll sideways. */}
+              <ul className="flex flex-col overflow-hidden rounded-[20px] border border-(--s-line) bg-(--s-surface) min-[721px]:hidden">
+                {products.map((product) => (
+                  <ProductPhoneRow
+                    key={product.id}
+                    product={product}
+                    selected={selected.has(product.id)}
+                    onSelectedChange={(on) => toggleSelected(product.id, on)}
+                    onDelete={setDeleting}
+                  />
+                ))}
+              </ul>
+            </>
           ) : (
-          <div
-            aria-busy={isNavigating}
-            className={cn(
-              "grid grid-cols-2 gap-2.5 transition-opacity sm:grid-cols-[repeat(auto-fill,minmax(220px,1fr))] sm:gap-4",
-              isNavigating && "opacity-60",
-            )}
-          >
-            {products.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                selected={selected.has(product.id)}
-                selecting={selected.size > 0}
-                onSelectedChange={(on) => toggleSelected(product.id, on)}
-                onDelete={setDeleting}
-              />
-            ))}
-          </div>
+            <div
+              aria-busy={isNavigating}
+              className={cn(
+                "grid grid-cols-[repeat(auto-fill,minmax(210px,1fr))] gap-3.5 transition-opacity max-[720px]:grid-cols-2 max-[720px]:gap-2.5",
+                isNavigating && "opacity-60",
+              )}
+            >
+              {products.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  selected={selected.has(product.id)}
+                  selecting={selected.size > 0}
+                  onSelectedChange={(on) => toggleSelected(product.id, on)}
+                  onDelete={setDeleting}
+                />
+              ))}
+            </div>
           )}
 
-          <div className="flex flex-wrap items-center justify-between gap-3 text-[13px] text-muted-foreground">
+          <div className="flex flex-wrap items-center justify-between gap-3 text-[13px] text-(--s-muted)">
             <div className="flex flex-wrap items-center gap-3">
-              <span className="tabular-nums">
+              <span className="font-montserrat tabular-nums">
                 {t("range", {
                   from: formatNumber(rangeFrom, locale),
                   to: formatNumber(rangeTo, locale),
@@ -527,7 +502,7 @@ export function VendorProductsSection({
               <div className="flex items-center gap-2">
                 <span>{t("perPage")}</span>
                 <Select value={String(filters.size)} onValueChange={(value) => changePageSize(Number(value))}>
-                  <SelectTrigger className="h-9 w-20 rounded-[9px] bg-card" aria-label={t("perPage")}>
+                  <SelectTrigger className="h-10 w-20 rounded-full border-(--s-field) bg-(--s-surface)" aria-label={t("perPage")}>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -541,50 +516,87 @@ export function VendorProductsSection({
               </div>
             </div>
             {pages > 1 && (
-              <nav className="flex gap-1">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="size-9 rounded-[9px]"
+              <nav className="flex flex-wrap gap-1.5">
+                <button
+                  type="button"
+                  className={PAGE_BUTTON}
                   disabled={currentPage === 1}
                   onClick={() => goToPage(currentPage - 1)}
                   aria-label={t("previousPage")}
                 >
                   <ChevronRight className="size-4 ltr:rotate-180" />
-                </Button>
+                </button>
                 {pageList(currentPage, pages).map((p, i) =>
                   p === "gap" ? (
-                    <span key={`gap-${i}`} className="grid h-9 min-w-6 place-items-center">
+                    <span key={`gap-${i}`} className="grid h-10 min-w-6 place-items-center">
                       …
                     </span>
                   ) : (
-                    <Button
+                    <button
                       key={p}
-                      variant={p === currentPage ? "default" : "outline"}
-                      size="icon"
-                      className="size-9 rounded-[9px] text-[13px] tabular-nums"
+                      type="button"
+                      className={cn(
+                        PAGE_BUTTON,
+                        p === currentPage && "border-(--s-solid) bg-(--s-solid) text-(--s-solid-fg) hover:border-(--s-solid)",
+                      )}
                       onClick={() => goToPage(p)}
                       aria-label={t("pageN", { page: p })}
                       aria-current={p === currentPage ? "page" : undefined}
                     >
                       {formatNumber(p, locale)}
-                    </Button>
-                  )
+                    </button>
+                  ),
                 )}
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="size-9 rounded-[9px]"
+                <button
+                  type="button"
+                  className={PAGE_BUTTON}
                   disabled={currentPage === pages}
                   onClick={() => goToPage(currentPage + 1)}
                   aria-label={t("nextPage")}
                 >
                   <ChevronLeft className="size-4 ltr:rotate-180" />
-                </Button>
+                </button>
               </nav>
             )}
           </div>
         </>
+      )}
+
+      {/* Bulk actions float over both views, like the design's selection bar. */}
+      {selected.size > 0 && (
+        <div
+          data-save-bar
+          data-open
+          className="fixed bottom-5 left-1/2 z-[60] flex max-w-[calc(100vw-20px)] -translate-x-1/2 items-center gap-1 overflow-x-auto whitespace-nowrap rounded-full bg-(--tallaby-teal-900) p-2 text-white shadow-(--s-shadow-bar) [scrollbar-width:none] max-[720px]:inset-x-2.5 max-[720px]:max-w-none max-[720px]:translate-x-0"
+        >
+          <span className="px-3 text-[13.5px] font-bold">{t("selected", { count: selected.size })}</span>
+          {selected.size < total && (
+            <button type="button" className={BULK_BUTTON} disabled={isPending} onClick={selectAllFiltered}>
+              <CheckCheck aria-hidden />
+              {t("selectAllFiltered", { count: total })}
+            </button>
+          )}
+          {(
+            [
+              [PencilLine, t("bulkEdit"), () => setBulkEditing(true)],
+              [Share2, t("shareCatalog"), () => setSharing(true)],
+              [Eye, t("bulkPublish"), () => bulkPublish(true)],
+              [EyeOff, t("bulkDraft"), () => bulkPublish(false)],
+            ] as const
+          ).map(([Icon, label, onClick]) => (
+            <button key={label} type="button" className={BULK_BUTTON} disabled={isPending} onClick={onClick}>
+              <Icon aria-hidden />
+              {label}
+            </button>
+          ))}
+          <button type="button" className={cn(BULK_BUTTON, "text-[#fca5a5]")} disabled={isPending} onClick={() => setBulkDeleting(true)}>
+            <Trash2 aria-hidden />
+            {t("delete")}
+          </button>
+          <button type="button" className={BULK_BUTTON} onClick={() => setSelected(new Set())} aria-label={t("clearSelection")}>
+            <X aria-hidden />
+          </button>
+        </div>
       )}
 
       <ConfirmActionDialog

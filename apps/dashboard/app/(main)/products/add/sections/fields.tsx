@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Controller, useFormContext, useFormState } from "react-hook-form";
 import { useLocale, useTranslations } from "next-intl";
 import { normalizePrice } from "@/lib/utils/product-pricing.lib";
-import { GroupInput, InputGroup, toAsciiDigits } from "@/components/form/form-ui";
+import { GroupInput, InputGroup, toAsciiDigits } from "@/app/(main)/products/add/form-kit";
 import { SAUDI_RIYAL_LABEL } from "@workspace/lib";
 import { CurrencyAddon } from "@/components/form/currency-input";
 import { useAccountMoney } from "@/components/account-money.client";
@@ -116,7 +116,7 @@ function DecimalText({
       value={text}
       placeholder={placeholder}
       disabled={disabled}
-      className={className ?? "text-start font-sans tabular-nums rtl:text-right"}
+      className={className ?? "text-start font-montserrat tabular-nums rtl:text-right"}
       onChange={(e) => {
         const next = toAsciiDigits(e.target.value).replace(/[^\d.]/g, "");
         setText(next);
@@ -134,16 +134,18 @@ export function MoneyField({
   invalid,
   placeholder = "0.00",
   disabled,
+  className,
 }: {
   id?: string;
   name: string;
   invalid?: boolean;
   placeholder?: string;
   disabled?: boolean;
+  className?: string;
 }) {
   const { unit } = useAccountMoney();
   return (
-    <InputGroup dir="ltr" invalid={invalid}>
+    <InputGroup dir="ltr" invalid={invalid} className={className}>
       <CurrencyAddon {...unit} />
       <NumberInput id={id} name={name} placeholder={placeholder} roundOnBlur disabled={disabled} />
     </InputGroup>
@@ -157,17 +159,19 @@ export function DiscountField({
   id,
   valueName,
   typeName,
+  className,
 }: {
   id?: string;
   valueName: string;
   typeName: string;
+  className?: string;
 }) {
   const t = useTranslations("productForm.sections.pricing");
   const locale = useLocale();
   const { unit } = useAccountMoney();
   const { control } = useFormContext<AddProductFormData>();
   return (
-    <InputGroup>
+    <InputGroup className={className}>
       <NumberInput id={id} name={valueName} placeholder="0" />
       <Controller
         control={control}
@@ -179,7 +183,7 @@ export function DiscountField({
               role="radiogroup"
               aria-label={t("discountType")}
               dir="ltr"
-              className="m-1.5 flex shrink-0 items-center rounded-lg bg-muted p-0.5"
+              className="m-1 flex shrink-0 items-center rounded-full bg-(--s-fill) p-0.5"
             >
               {DISCOUNT_TYPES.map((type) => {
                 const checked = current === type;
@@ -192,10 +196,10 @@ export function DiscountField({
                     title={type === "percent" ? t("discountPercent") : t("discountAmount", moneyParams(locale, unit))}
                     onClick={() => field.onChange(type)}
                     className={cn(
-                      "h-full min-w-10 cursor-pointer rounded-md px-2.5 text-xs font-semibold transition-[color,background-color,box-shadow] outline-none focus-visible:ring-[3px] focus-visible:ring-primary/30",
+                      "h-full min-w-10 cursor-pointer rounded-full px-2.5 text-xs font-semibold transition-[color,background-color,box-shadow] outline-none focus-visible:ring-[3px] focus-visible:ring-primary/30",
                       checked
-                        ? "bg-card text-primary-ink shadow-sm"
-                        : "text-muted-foreground hover:text-foreground"
+                        ? "bg-(--s-surface) text-primary-ink shadow-sm"
+                        : "text-(--s-subtle) hover:text-(--s-text)"
                     )}
                   >
                     {type === "percent" ? "%" : moneyLabel(unit) === SAUDI_RIYAL_LABEL ? <RiyalSymbol locale={locale} /> : moneyUnitText(locale, unit)}

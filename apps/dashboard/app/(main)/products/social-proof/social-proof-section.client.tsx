@@ -9,7 +9,7 @@ import { Checkbox } from "@workspace/ui/components/checkbox";
 import { Input } from "@workspace/ui/components/input";
 import { Textarea } from "@workspace/ui/components/textarea";
 import { cn } from "@/lib/utils";
-import { FIELD_CLASS, FieldError, FieldHint, FieldLabel, SMALL_BUTTON_CLASS, SubHeading, TEXTAREA_CLASS } from "@/components/form/form-ui";
+import { FIELD_CLASS, FieldError, FieldHint, FieldLabel, SMALL_BUTTON_CLASS, SubHeading, TEXTAREA_CLASS } from "@/app/(main)/products/add/form-kit";
 import { CollapsibleSection } from "../add/sections/collapsible-section";
 import { useFieldError } from "../add/sections/fields";
 import type { AddProductFormData } from "../add/add-product.schema";
@@ -49,7 +49,7 @@ export function SocialProofSection({ id = "sec-social-proof" }: { id?: string })
         control={form.control}
         name="showLiveViews"
         render={({ field }) => (
-          <label htmlFor="show-live-views" className="flex cursor-pointer items-start gap-3 rounded-xl border bg-muted px-4 py-3.5">
+          <label htmlFor="show-live-views" className="flex cursor-pointer items-start gap-3 rounded-2xl border-[1.5px] border-(--s-field) bg-(--s-surface) px-4 py-3.5">
             <Checkbox id="show-live-views" checked={!!field.value} onCheckedChange={(checked) => field.onChange(checked === true)} className="mt-0.5" />
             <span className="min-w-0">
               <span className="flex items-center gap-1.5 text-sm font-semibold">
@@ -92,7 +92,7 @@ function ReviewRow({ index, onRemove }: { index: number; onRemove: () => void })
   const nameError = useFieldError(`sellerReviews.${index}.reviewerName`);
 
   return (
-    <div className="flex flex-col gap-3 rounded-xl border p-4">
+    <div className="flex flex-col gap-3 rounded-2xl border border-(--s-line) bg-(--s-surface-2) p-4">
       <div className="flex flex-col gap-1.5">
         <FieldLabel htmlFor={`review-name-${index}`} required>
           {t("reviewerName")}
@@ -167,7 +167,7 @@ function LowStockAlert() {
   if (trackStock === false) return null;
 
   return (
-    <div className="flex flex-col gap-3 rounded-xl border bg-muted px-4 py-3.5">
+    <div className="flex flex-col gap-3 rounded-2xl border-[1.5px] border-(--s-field) bg-(--s-surface) px-4 py-3.5">
       <Controller
         control={form.control}
         name="showLowStockBadge"

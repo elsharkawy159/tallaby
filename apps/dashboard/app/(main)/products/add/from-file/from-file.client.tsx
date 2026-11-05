@@ -76,7 +76,7 @@ const OTHER_FIELDS = BULK_FIELDS.filter((field) => !REVIEWED_FIELDS.includes(fie
 
 function Tile({ label, value, tone }: { label: string; value: string; tone?: "good" | "warn" | "bad" }) {
   return (
-    <div className="rounded-lg border bg-card p-3">
+    <div className="rounded-2xl border border-(--s-line) bg-(--s-surface) p-3">
       <div className="text-xs text-muted-foreground">{label}</div>
       <div
         className={cn(
@@ -397,7 +397,7 @@ export function FromFile({ aiEnabled }: { aiEnabled: boolean }) {
         <div
           {...dropzone.getRootProps()}
           className={cn(
-            "flex cursor-pointer flex-col items-center gap-3 rounded-xl border-2 border-dashed p-10 text-center transition-colors hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:outline-none",
+            "flex cursor-pointer flex-col items-center gap-3 rounded-[24px] border-[1.5px] border-dashed border-(--s-field-strong) bg-(--s-glass) p-10 max-[600px]:p-6 text-center transition-colors hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:outline-none",
             dropzone.isDragActive && "border-primary bg-primary/5",
           )}
         >
@@ -425,7 +425,7 @@ export function FromFile({ aiEnabled }: { aiEnabled: boolean }) {
 
   if (stage === "reading") {
     return (
-      <div className="flex flex-col items-center gap-3 rounded-xl border p-10 text-center" role="status">
+      <div className="flex flex-col items-center gap-3 rounded-[24px] border border-(--s-line) bg-(--s-glass) p-10 text-center shadow-(--s-shadow-card)" role="status">
         <LoaderCircle className="size-8 animate-spin text-primary" aria-hidden />
         <div className="font-medium">{pdfProgress ? t("readingPdf") : t("reading")}</div>
         {pdfProgress && <Progress value={(pdfProgress.doneCalls / Math.max(1, pdfProgress.totalCalls)) * 100} className="h-2 w-64 max-w-full" />}
@@ -436,7 +436,7 @@ export function FromFile({ aiEnabled }: { aiEnabled: boolean }) {
   if (stage === "running") {
     const done = processed;
     return (
-      <div className="flex flex-col gap-4 rounded-xl border p-6">
+      <div className="flex flex-col gap-4 rounded-[24px] border border-(--s-line) bg-(--s-glass) p-[22px] shadow-(--s-shadow-card) max-[600px]:rounded-[20px] max-[600px]:p-4">
         <div className="flex items-center gap-2 font-medium">
           <LoaderCircle className="size-5 animate-spin text-primary" aria-hidden />
           {t("running")}
@@ -473,7 +473,7 @@ export function FromFile({ aiEnabled }: { aiEnabled: boolean }) {
         {count("already") > 0 && <p className="text-sm text-muted-foreground">{t("result.already", { count: number(count("already")) })}</p>}
 
         {noteCounts.length > 0 && (
-          <div className="rounded-lg border p-3 text-sm">
+          <div className="rounded-2xl border border-(--s-line) bg-(--s-surface) p-3 text-sm">
             <div className="mb-1 font-medium">{t("result.notesTitle")}</div>
             <ul className="list-inside list-disc space-y-0.5 text-muted-foreground">
               {noteCounts.map(([note, total]) => (
@@ -484,7 +484,7 @@ export function FromFile({ aiEnabled }: { aiEnabled: boolean }) {
         )}
 
         {toCheck.length > 0 && (
-          <div className="rounded-lg border border-amber-500/50 p-3 text-sm">
+          <div className="rounded-2xl border border-accent/50 bg-accent-soft p-3 text-sm">
             <div className="mb-1 font-medium">{t("check.title")}</div>
             <p className="mb-2 text-xs text-muted-foreground">{t("check.body")}</p>
             <ul className="max-h-72 space-y-1.5 overflow-auto">
@@ -506,7 +506,7 @@ export function FromFile({ aiEnabled }: { aiEnabled: boolean }) {
         )}
 
         {skipped.length > 0 && (
-          <div className="rounded-lg border p-3 text-sm">
+          <div className="rounded-2xl border border-(--s-line) bg-(--s-surface) p-3 text-sm">
             <div className="mb-1 font-medium">{t("problemsTitle")}</div>
             <ul className="max-h-48 space-y-0.5 overflow-auto text-muted-foreground">
               {skipped.slice(0, 100).map(({ row, reason }) => (
@@ -584,7 +584,7 @@ export function FromFile({ aiEnabled }: { aiEnabled: boolean }) {
         </Alert>
       )}
 
-      <div className="flex items-start gap-2 rounded-lg border bg-muted/30 p-3 text-sm">
+      <div className="flex items-start gap-2 rounded-2xl border border-(--s-line) bg-(--s-tint) p-3 text-sm">
         <Sparkles className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
         <div>
           {aiRows === 0
@@ -598,7 +598,7 @@ export function FromFile({ aiEnabled }: { aiEnabled: boolean }) {
       </div>
 
       {summary.problems.length > 0 && (
-        <details className="rounded-lg border p-3 text-sm">
+        <details className="rounded-2xl border border-(--s-line) bg-(--s-surface) p-3 text-sm">
           <summary className="cursor-pointer font-medium">{t("problemsTitle")}</summary>
           <ul className="mt-2 max-h-48 space-y-0.5 overflow-auto text-muted-foreground">
             {summary.problems.slice(0, 100).map(({ row, problem }) => (
@@ -609,7 +609,7 @@ export function FromFile({ aiEnabled }: { aiEnabled: boolean }) {
       )}
 
       {model && mapping && (
-        <details className="rounded-lg border p-3" open={mappingSource === "fallback" || !hasName || !hasPrice}>
+        <details className="rounded-2xl border border-(--s-line) bg-(--s-surface) p-3" open={mappingSource === "fallback" || !hasName || !hasPrice}>
           <summary className="cursor-pointer text-sm font-medium">{t("mappingTitle")}</summary>
           {mappingSource && <p className="mt-2 text-xs text-muted-foreground">{t(`mappingSource.${mappingSource}`)}</p>}
           <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -621,7 +621,7 @@ export function FromFile({ aiEnabled }: { aiEnabled: boolean }) {
       )}
 
       {toAdd.length > 0 && (
-        <div className="overflow-x-auto rounded-lg border">
+        <div className="overflow-x-auto rounded-2xl border border-(--s-line) bg-(--s-surface)">
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-muted text-start">

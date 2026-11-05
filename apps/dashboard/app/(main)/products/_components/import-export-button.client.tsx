@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@workspace/ui/components/button";
 import {
+  ArrowDownUp,
   Download,
   FileSpreadsheet,
   LoaderIcon,
@@ -26,11 +27,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@workspace/ui/components/dialog";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@workspace/ui/components/popover";
+import { IconTile, Modal, SellerButton } from "@/components/seller-ui";
 import {
   downloadXlsx,
   productsToExcelRows,
@@ -41,6 +38,9 @@ import {
 import { ExcelUpdateDialog } from "../excel-update/excel-update.client";
 import { exportFilteredProductsAction, listFilteredProductIdsAction } from "./products-list.server";
 import type { ProductsListFilters } from "./products-view.lib";
+
+const IO_CARD =
+  "flex cursor-pointer flex-col items-start gap-1 rounded-[18px] border-[1.5px] border-(--s-field) bg-(--s-surface) p-4 text-start no-underline transition-[border-color,box-shadow] duration-150 hover:border-(--s-primary) hover:shadow-(--s-shadow-card-hover) [&>*:first-child]:mb-1.5";
 
 export function ImportExportButton({
   filters,
@@ -194,66 +194,40 @@ export function ImportExportButton({
         onChange={handleFileChange}
       />
 
-      <Popover open={menuOpen} onOpenChange={setMenuOpen}>
-        <PopoverTrigger asChild>
-          <Button variant="outline" disabled={isPending}>
-            {isPending ? (
-              <LoaderIcon className="-ms-1 animate-spin" size={16} />
-            ) : (
-              <FileSpreadsheet
-                className="-ms-1 opacity-60"
-                size={16}
-                aria-hidden="true"
-              />
-            )}
-            {t("trigger")}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-64 p-1" align="end">
-          <Button asChild variant="ghost" className="w-full justify-start font-normal">
-            <Link href="/products/add/from-file">
-              <Sparkles className="text-primary" size={16} aria-hidden="true" />
-              {tBulk("title")}
-            </Link>
-          </Button>
-          <Button
-            variant="ghost"
-            className="w-full justify-start font-normal"
-            onClick={handleImportClick}
-          >
-            <Upload className="opacity-60" size={16} aria-hidden="true" />
-            {t("import")}
-          </Button>
-          <Button
-            variant="ghost"
-            className="w-full justify-start font-normal"
-            onClick={handleExport}
-          >
-            <Download className="opacity-60" size={16} aria-hidden="true" />
-            {t("export")}
-          </Button>
-          <Button
-            variant="ghost"
-            className="w-full justify-start font-normal"
-            onClick={handleDownloadTemplate}
-          >
-            <FileSpreadsheet
-              className="opacity-60"
-              size={16}
-              aria-hidden="true"
-            />
-            {t("downloadTemplate")}
-          </Button>
-          <Button
-            variant="ghost"
-            className="w-full justify-start font-normal"
-            onClick={handleOpenUpdate}
-          >
-            <RefreshCw className="opacity-60" size={16} aria-hidden="true" />
-            {t("updateFromExcel")}
-          </Button>
-        </PopoverContent>
-      </Popover>
+      <SellerButton variant="outline" disabled={isPending} onClick={() => setMenuOpen(true)}>
+        {isPending ? <LoaderIcon className="animate-spin" aria-hidden /> : <ArrowDownUp aria-hidden />}
+        {t("trigger")}
+      </SellerButton>
+
+      <Modal open={menuOpen} onOpenChange={setMenuOpen} title={t("trigger")} description={t("modalBody")} width={520}>
+        <div className="grid grid-cols-2 gap-2.5 max-[480px]:grid-cols-1">
+          <Link href="/products/add/from-file" className={IO_CARD}>
+            <IconTile icon={Sparkles} tone="accent" />
+            <b className="text-sm font-bold text-(--s-ink)">{tBulk("title")}</b>
+            <small className="text-xs leading-[1.6] text-(--s-subtle)">{tBulk("entryBody")}</small>
+          </Link>
+          <button type="button" className={IO_CARD} onClick={handleImportClick}>
+            <IconTile icon={Upload} tone="primary" />
+            <b className="text-sm font-bold text-(--s-ink)">{t("import")}</b>
+            <small className="text-xs leading-[1.6] text-(--s-subtle)">{t("importBody")}</small>
+          </button>
+          <button type="button" className={IO_CARD} onClick={handleExport}>
+            <IconTile icon={Download} tone="primary" />
+            <b className="text-sm font-bold text-(--s-ink)">{t("export")}</b>
+            <small className="text-xs leading-[1.6] text-(--s-subtle)">{t("exportBody")}</small>
+          </button>
+          <button type="button" className={IO_CARD} onClick={handleOpenUpdate}>
+            <IconTile icon={RefreshCw} tone="primary" />
+            <b className="text-sm font-bold text-(--s-ink)">{t("updateFromExcel")}</b>
+            <small className="text-xs leading-[1.6] text-(--s-subtle)">{t("updateBody")}</small>
+          </button>
+          <button type="button" className={IO_CARD} onClick={handleDownloadTemplate}>
+            <IconTile icon={FileSpreadsheet} tone="neutral" />
+            <b className="text-sm font-bold text-(--s-ink)">{t("downloadTemplate")}</b>
+            <small className="text-xs leading-[1.6] text-(--s-subtle)">{t("templateBody")}</small>
+          </button>
+        </div>
+      </Modal>
 
       <ExcelUpdateDialog
         open={updateOpen}

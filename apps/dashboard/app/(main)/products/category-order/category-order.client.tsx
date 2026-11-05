@@ -26,7 +26,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@workspace/ui/components/dialog";
-import { FieldHint } from "@/components/form/form-ui";
+import { FieldHint } from "@/app/(main)/products/add/form-kit";
 import { RemoteImage } from "@/components/media/remote-image";
 import { cn, getPublicUrl } from "@/lib/utils";
 import { CATEGORY_ORDER_MAX_PRODUCTS, type CategoryOrderError, type CategoryOrderProduct } from "./category-order.dto";

@@ -364,13 +364,13 @@ export function BulkUrlImport ({
   }
 
   return (
-    <div className="min-h-screen pb-36 sm:pb-24">
-      <div className="sticky top-16 z-20 bg-card border-b border-border shadow-sm">
-        <div className="container px-4 py-4 sm:px-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="pb-36 sm:pb-24">
+      <div className="sticky top-[68px] z-20 border-b border-(--s-line) bg-(--s-glass) backdrop-blur-md max-[600px]:top-[60px]">
+        <div className="mx-auto flex w-full max-w-[1360px] flex-col gap-3 px-7 py-4 max-[1020px]:px-4 max-[600px]:px-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-foreground">
+            <h1 className="text-[20px] font-bold text-(--s-ink)">
               {t("title")}
-            </h2>
+            </h1>
             <p className="text-sm text-muted-foreground mt-0.5">
               {isFetching
                 ? t("fetchingProgress", { done: fetchedCount, total: items.length })

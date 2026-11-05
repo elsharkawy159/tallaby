@@ -22,7 +22,7 @@ import { createClient } from "@/supabase/client"
 import { cn, generateImageName, getPublicUrl } from "@/lib/utils"
 import { useIsMobile } from "@/hooks/use-mobile"
 import type { SellerPricingSettings } from "@/lib/utils/product-pricing.lib"
-import { SMALL_BUTTON_CLASS } from "@/components/form/form-ui"
+import { SMALL_BUTTON_CLASS } from "@/app/(main)/products/add/form-kit"
 import type { AddProductFormData, CategoryOption, SupportedLocale } from "../add-product.schema"
 import { buildFormValuesFromImport } from "../build-form-values-from-import.lib"
 import { OPEN_SECTION_EVENT } from "../add-product.lib"
@@ -385,11 +385,11 @@ export function AiAutofillCard ({
     <section
       id="sec-ai"
       aria-labelledby="sec-ai-title"
-      className="scroll-mt-[136px] rounded-2xl border border-primary/25 bg-card p-3 md:scroll-mt-[88px] sm:p-3.5"
+      className="rounded-[24px] border border-(--s-primary)/25 bg-(--s-glass) p-[18px] shadow-(--s-shadow-card) max-[600px]:rounded-[20px] max-[600px]:p-3"
     >
       <div className="mb-2 flex items-center gap-1.5 px-0.5">
         <Sparkles className="size-4 shrink-0 text-primary" aria-hidden />
-        <h2 id="sec-ai-title" className="text-sm font-bold">
+        <h2 id="sec-ai-title" className="text-[15px] font-bold text-(--s-ink)">
           {title}
         </h2>
         <AiHelp title={title} text={isEdit ? t("editDescription") : t("description")} />
@@ -404,7 +404,7 @@ export function AiAutofillCard ({
       <div
         {...getRootProps()}
         className={cn(
-          "relative rounded-xl border bg-background transition-[border-color,box-shadow] focus-within:border-primary focus-within:ring-[3px] focus-within:ring-primary/15",
+          "relative rounded-2xl border-[1.5px] border-(--s-field) bg-(--s-surface) transition-[border-color,box-shadow] focus-within:border-(--s-primary) focus-within:ring-[3px] focus-within:ring-primary/15",
           isDragActive && "border-primary ring-[3px] ring-primary/15"
         )}
       >
@@ -444,7 +444,7 @@ export function AiAutofillCard ({
             type="button"
             variant="ghost"
             size="icon"
-            className="size-9 shrink-0 rounded-lg text-muted-foreground"
+            className="size-10 shrink-0 rounded-full text-(--s-subtle)"
             onClick={open}
             disabled={running}
             aria-label={t("attach")}
@@ -470,7 +470,7 @@ export function AiAutofillCard ({
           />
           <Button
             type="button"
-            className="h-9 shrink-0 gap-1.5 rounded-lg px-3 text-[13px] font-semibold"
+            className="h-10 shrink-0 gap-1.5 rounded-full px-3.5 text-[13px] font-bold"
             onClick={() => void submit()}
             disabled={!hasInput || running || outOfCalls}
             aria-busy={running}

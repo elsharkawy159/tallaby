@@ -108,11 +108,12 @@ export function ProductStatusCell({
   );
 }
 
-/** Card footer switch: green when published, labelled Published / Draft. */
+/** Card footer switch: green when published, labelled Published / Draft. A phone card shows the switch alone. */
 export function ProductPublishSwitch({
   productId,
   status,
-}: ProductStatusCellProps) {
+  showLabel = false,
+}: ProductStatusCellProps & { showLabel?: boolean }) {
   const t = useTranslations("products.publish");
   const tStatus = useTranslations("status");
   const { currentStatus, isPublished, canToggle, isPending, setPublished } =
@@ -127,7 +128,7 @@ export function ProductPublishSwitch({
   const control = (
     <label
       className={cn(
-        "inline-flex cursor-pointer select-none items-center gap-2 text-xs font-semibold text-muted-foreground",
+        "inline-flex min-h-10 cursor-pointer select-none items-center gap-2 text-[12.5px] font-semibold text-(--s-muted)",
         isPublished && "text-success",
         !canToggle && "cursor-not-allowed text-destructive"
       )}
@@ -140,7 +141,7 @@ export function ProductPublishSwitch({
         className="data-[state=checked]:bg-success disabled:opacity-60"
         aria-label={isPublished ? t("unpublishProduct") : t("publishProduct")}
       />
-      {label}
+      <span className={showLabel ? undefined : "max-[720px]:sr-only"}>{label}</span>
     </label>
   );
 

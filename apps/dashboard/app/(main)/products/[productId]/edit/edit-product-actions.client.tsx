@@ -5,10 +5,8 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { EyeOff, ExternalLink, LoaderCircle, Rocket } from "lucide-react";
-import { Button } from "@workspace/ui/components/button";
+import { SellerButton } from "@/components/seller-ui";
 import { setProductPublished } from "@/actions/products";
-import { BUTTON_CLASS } from "@/components/form/form-ui";
-import { cn } from "@/lib/utils";
 
 export type EditProductStatus = "draft" | "pending" | "active" | "rejected";
 
@@ -59,31 +57,30 @@ export function EditProductActions({
       {/* Wrapper keeps the hint on hover while the button is disabled. */}
       <span title={previewTitle} className="inline-flex">
         {canPreview ? (
-          <Button asChild variant="soft" className={cn(BUTTON_CLASS, "rounded-xl")}>
+          <SellerButton asChild variant="outline">
             <a href={previewUrl!} target="_blank" rel="noopener noreferrer">
               <ExternalLink />
               {t("previewOnStore")}
             </a>
-          </Button>
+          </SellerButton>
         ) : (
-          <Button type="button" variant="soft" className={cn(BUTTON_CLASS, "rounded-xl")} disabled>
+          <SellerButton type="button" variant="outline" disabled>
             <ExternalLink />
             {t("previewOnStore")}
-          </Button>
+          </SellerButton>
         )}
       </span>
       <span title={canToggle ? undefined : tPublish("onlyToggleable")} className="inline-flex">
-        <Button
+        <SellerButton
           type="button"
-          variant="neutral"
-          className={cn(BUTTON_CLASS, "rounded-xl")}
+          variant="outline"
           onClick={toggle}
           disabled={!canToggle || isPending}
           aria-busy={isPending}
         >
           {isPending ? <LoaderCircle className="animate-spin" /> : published ? <EyeOff /> : <Rocket />}
           {published ? tPublish("unpublish") : tPublish("publish")}
-        </Button>
+        </SellerButton>
       </span>
     </>
   );

@@ -86,7 +86,6 @@ export default async function EditProductPage({
   const [crossSells, quantityOffers] = await Promise.all([listCrossSells(productId), listQuantityOffers(productId)]);
 
   return (
-    <>
     <EditProduct
       productId={productId}
       status={(product.status ?? "draft") as EditProductStatus}
@@ -98,11 +97,9 @@ export default async function EditProductPage({
       linkHost={linkHost}
       aiEnabled={aiConfigured()}
       viewStats={viewStats}
-    />
-    <div className="px-4 pb-6 sm:px-6">
+    >
       <QuantityOffersSection productId={productId} initial={quantityOffers} />
       <CrossSellSection productId={productId} initial={crossSells} />
-    </div>
-    </>
+    </EditProduct>
   );
 }

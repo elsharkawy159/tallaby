@@ -98,7 +98,11 @@ export function buildEditDefaultValues(
       ? (product.dimensions as Record<string, unknown>)
       : {};
 
-  const rawVariants = product.productVariants ?? [];
+  // By position: the query has no order, and the database returns recently updated rows last,
+  // which moved the options' values and so the rows on each save.
+  const rawVariants = [...(product.productVariants ?? [])].sort(
+    (a, b) => (a.position ?? 0) - (b.position ?? 0)
+  );
   const variantTypes = reconstructVariantTypesFromVariants(rawVariants);
 
   const variants = rawVariants.map((v) => {

@@ -1,81 +1,75 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Controller, useFieldArray, useFormContext, useFormState, useWatch } from "react-hook-form";
 import { useLocale, useTranslations } from "next-intl";
-import { ChevronDown, Layers, Plus, Trash2, X } from "lucide-react";
-import { Button } from "@workspace/ui/components/button";
-import { Input } from "@workspace/ui/components/input";
+import { toast } from "sonner";
+import { ChevronDown, ImageIcon, Layers, Plus, RotateCcw, Star, Trash2, X } from "lucide-react";
+import { Chip, Chips, IconButton, NativeSelect, Note, SellerButton, Tag, TextInput } from "@/components/seller-ui";
 import { cn, getPublicUrl } from "@/lib/utils";
 import { contentDirClass } from "@/lib/i18n/content-dir";
 import { useAccountMoney } from "@/components/account-money.client";
 import { Money } from "@/components/money";
-import {
-  calculateProductFinalPrice,
-  type SellerPricingSettings,
-} from "@/lib/utils/product-pricing.lib";
+import { calculateProductFinalPrice, type SellerPricingSettings } from "@/lib/utils/product-pricing.lib";
 import {
   buildVariantLocalizedFromCombo,
   createEmptyVariantType,
-  getVariantValueIndexes,
   reconstructVariantTypesFromVariants,
   VARIANT_TYPE_PRESETS,
   WEIGHT_UNITS,
   type VariantTypeFormValue,
 } from "@/lib/utils/variant-types.lib";
 import { ImageUpload } from "@/components/inputs/image-upload";
-import { FIELD_CLASS, NumberStepper, SMALL_BUTTON_CLASS } from "@/components/form/form-ui";
-import { VariantPricingFields } from "../steps/variant-pricing-fields";
-import type {
-  AddProductFormData,
-  SupportedLocale,
-  VariantOptionKind,
-} from "../add-product.schema";
 import { RemoteImage } from "@/components/media/remote-image";
+import { FieldHint, NumberStepper } from "../form-kit";
+import { VariantPricingFields } from "../steps/variant-pricing-fields";
+import type { AddProductFormData, SupportedLocale, VariantOptionKind } from "../add-product.schema";
+import { MoneyField, useFieldError } from "./fields";
+import { isValidVariantType, missingComboCount, reconcileCombos, type ComboRow } from "./variant-combos.lib";
 
 const MAX_OPTION_TYPES = 3;
 const DEFAULT_KINDS: VariantOptionKind[] = ["color", "size", "material"];
+/** A list this long is slow to scan on a phone, so the seller is told. */
+const MANY_COMBINATIONS = 60;
 
-const SELECT_CLASS =
-  "h-11 w-full cursor-pointer appearance-none rounded-[10px] border border-input bg-card bg-[length:16px] bg-[position:right_12px_center] bg-no-repeat pe-9 ps-3.5 text-sm outline-none transition-[border-color,box-shadow] focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/20 rtl:bg-[position:left_12px_center]";
-const CHEVRON_BG =
-  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%2394a0a5' stroke-width='2' viewBox='0 0 24 24'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\")";
+type VariantRow = NonNullable<AddProductFormData["variants"]>[number];
+type Suggestion = { en: string; ar: string; hex?: string };
 
-// Seeds a swatch when a common color is typed, so most sellers never open the picker.
-const COLOR_GUESS: Record<string, string> = {
-  red: "#ef4444", أحمر: "#ef4444", blue: "#3b82f6", أزرق: "#3b82f6",
-  black: "#171717", أسود: "#171717", white: "#ffffff", أبيض: "#ffffff",
-  green: "#22c55e", أخضر: "#22c55e", yellow: "#eab308", أصفر: "#eab308",
-  gray: "#9ca3af", grey: "#9ca3af", رمادي: "#9ca3af", pink: "#ec4899",
-  وردي: "#ec4899", بمبي: "#ec4899", purple: "#a855f7", بنفسجي: "#a855f7",
-  orange: "#f97316", برتقالي: "#f97316", brown: "#92400e", بني: "#92400e",
-  beige: "#e7d7c1", بيج: "#e7d7c1", gold: "#d4af37", ذهبي: "#d4af37",
-  silver: "#c0c0c0", فضي: "#c0c0c0", navy: "#1e3a8a", كحلي: "#1e3a8a",
-};
+// One tap adds the value in both languages, so most sellers never have to translate it.
+const COLOR_SUGGESTIONS: Suggestion[] = [
+  { en: "Black", ar: "أسود", hex: "#171717" },
+  { en: "White", ar: "أبيض", hex: "#ffffff" },
+  { en: "Red", ar: "أحمر", hex: "#ef4444" },
+  { en: "Blue", ar: "أزرق", hex: "#3b82f6" },
+  { en: "Navy", ar: "كحلي", hex: "#1e3a8a" },
+  { en: "Green", ar: "أخضر", hex: "#22c55e" },
+  { en: "Gray", ar: "رمادي", hex: "#9ca3af" },
+  { en: "Beige", ar: "بيج", hex: "#e7d7c1" },
+  { en: "Brown", ar: "بني", hex: "#92400e" },
+  { en: "Pink", ar: "وردي", hex: "#ec4899" },
+  { en: "Yellow", ar: "أصفر", hex: "#eab308" },
+  { en: "Purple", ar: "بنفسجي", hex: "#a855f7" },
+  { en: "Orange", ar: "برتقالي", hex: "#f97316" },
+  { en: "Gold", ar: "ذهبي", hex: "#d4af37" },
+  { en: "Silver", ar: "فضي", hex: "#c0c0c0" },
+];
+const SIZE_SUGGESTIONS: Suggestion[] = ["XS", "S", "M", "L", "XL", "XXL", "3XL"].map((size) => ({ en: size, ar: size }));
+const SUGGESTIONS: Partial<Record<VariantOptionKind, Suggestion[]>> = { color: COLOR_SUGGESTIONS, size: SIZE_SUGGESTIONS };
 
-function generateValueIndexCombinations(types: VariantTypeFormValue[]): number[][] {
-  const valueCounts = types.map((type) =>
-    Math.max(type.localized.en.values.length, type.localized.ar.values.length, 0)
-  );
-  if (types.length === 0 || valueCounts.some((count) => count === 0)) return [];
-  return valueCounts.reduce<number[][]>(
-    (acc, count) =>
-      acc.flatMap((combo) => Array.from({ length: count }, (_, i) => [...combo, i])),
-    [[]]
-  );
+/** A typed common value is written in both languages too. */
+function knownValue(kind: VariantOptionKind, raw: string): Suggestion | undefined {
+  const value = raw.trim().toLowerCase();
+  return SUGGESTIONS[kind]?.find((item) => item.en.toLowerCase() === value || item.ar === raw.trim());
 }
 
-const isValidVariantType = (type: VariantTypeFormValue) =>
-  (["en", "ar"] as const).some(
-    (loc) =>
-      type.localized[loc].name.trim().length > 0 &&
-      type.localized[loc].values.some((value) => value.trim())
-  );
+const rowsSignature = (rows: { sku?: string }[]) => rows.map((row) => row.sku ?? "").join("|");
 
 /**
- * Option types (color, size…) as chip inputs, and the generated combinations
- * table. Values are index-aligned across languages: a value typed in Arabic
- * shows as "untranslated" in English until the seller fills it in.
+ * Options (color, size…) as chips with one-tap suggestions, and the combinations
+ * they make, each with its price, stock, SKU and photos. A combination can be
+ * removed for good, and every value in view can be changed at once. Values are
+ * index-aligned across languages; the default combination is the product's own
+ * price, stock and photos.
  */
 export function VariantsEditor({
   sellerPricing,
@@ -88,33 +82,30 @@ export function VariantsEditor({
   const t = useTranslations("productForm.variants");
   const { fields, replace } = useFieldArray({ control: form.control, name: "variants" });
 
-  const variantTypes = (useWatch({ control: form.control, name: "variantTypes" }) ??
-    []) as VariantTypeFormValue[];
-  const setVariantTypes = (next: VariantTypeFormValue[]) =>
+  const variantTypes = (useWatch({ control: form.control, name: "variantTypes" }) ?? []) as VariantTypeFormValue[];
+  // What the seller's edit started from. Empty: the change came from outside the editor.
+  const editedFrom = useRef<VariantTypeFormValue[] | null>(null);
+  const lastTypes = useRef<string | null>(null);
+  const lastRows = useRef<string | null>(null);
+
+  const setVariantTypes = (next: VariantTypeFormValue[]) => {
+    editedFrom.current = variantTypes;
     form.setValue("variantTypes", next, { shouldDirty: true });
+  };
 
   // Edit page / import: rebuild option types from stored variants.
   useEffect(() => {
     const currentTypes = form.getValues("variantTypes") ?? [];
     const currentVariants = form.getValues("variants") ?? [];
     if (currentTypes.length === 0 && currentVariants.length > 0) {
-      form.setValue("variantTypes", reconstructVariantTypesFromVariants(currentVariants), {
-        shouldDirty: false,
-      });
+      form.setValue("variantTypes", reconstructVariantTypesFromVariants(currentVariants), { shouldDirty: false });
     }
   }, [form]);
 
-  const [mainListPrice, mainDiscountValue, mainDiscountType, mainFinalPrice, mainQuantity] =
-    useWatch({
-      control: form.control,
-      name: [
-        "price.list",
-        "price.discountValue",
-        "price.discountType",
-        "price.final",
-        "quantity",
-      ],
-    });
+  const [mainListPrice, mainDiscountValue, mainDiscountType, mainFinalPrice, mainQuantity] = useWatch({
+    control: form.control,
+    name: ["price.list", "price.discountValue", "price.discountType", "price.final", "quantity"],
+  });
   const mainImages = useWatch({ control: form.control, name: "images" }) ?? [];
   const variants = useWatch({ control: form.control, name: "variants" }) ?? [];
   const defaultVariantIndex = variants.findIndex((variant) => variant?.isDefault);
@@ -133,14 +124,13 @@ export function VariantsEditor({
     const discountVal = mainDiscountValue ?? 0;
     const discountTyp = mainDiscountType ?? "percent";
     const syncedImages = (Array.isArray(mainImages) ? mainImages : []).filter(
-      (image): image is string => typeof image === "string" && image.length > 0
+      (image): image is string => typeof image === "string" && image.length > 0,
     );
     const syncedImageUrl = syncedImages[0];
     const current = form.getValues(`variants.${defaultVariantIndex}`);
     const currentImages = Array.isArray(current?.images) ? current.images : [];
     const imagesMatch =
-      currentImages.length === syncedImages.length &&
-      currentImages.every((image, index) => image === syncedImages[index]);
+      currentImages.length === syncedImages.length && currentImages.every((image, index) => image === syncedImages[index]);
 
     if (
       current?.listPrice === numericList &&
@@ -163,32 +153,19 @@ export function VariantsEditor({
     form.setValue(`${base}.stock`, numericQuantity, opts);
     form.setValue(`${base}.images`, syncedImages, opts);
     form.setValue(`${base}.imageUrl`, syncedImageUrl, opts);
-  }, [
-    defaultVariantIndex,
-    form,
-    mainDiscountType,
-    mainDiscountValue,
-    mainFinalPrice,
-    mainImages,
-    mainListPrice,
-    mainQuantity,
-    sellerPricing,
-  ]);
+  }, [defaultVariantIndex, form, mainDiscountType, mainDiscountValue, mainFinalPrice, mainImages, mainListPrice, mainQuantity, sellerPricing]);
 
-  // Rebuild the combinations whenever the option types change, keeping the
-  // price/stock/images already entered for combinations that still exist.
-  useEffect(() => {
-    // Types are still being reconstructed from stored variants (edit page):
-    // wait for them instead of wiping the variants.
-    if (variantTypes.length === 0 && (form.getValues("variantTypes")?.length ?? 0) > 0) return;
+  /** The product takes a combination's price and stock when it becomes the default, so they aren't overwritten. */
+  const adoptAsMain = (row: VariantRow | undefined) => {
+    if (!row) return;
+    const opts = { shouldDirty: true } as const;
+    if (typeof row.listPrice === "number" && row.listPrice > 0) form.setValue("price.list", row.listPrice, opts);
+    if (typeof row.price === "number" && row.price > 0) form.setValue("price.final", row.price, opts);
+    if (typeof row.stock === "number") form.setValue("quantity", row.stock, opts);
+  };
 
-    const validTypes = variantTypes.filter(isValidVariantType);
-    if (validTypes.length === 0) {
-      if ((form.getValues("variants") ?? []).length > 0) replace([]);
-      return;
-    }
-
-    const combinations = generateValueIndexCombinations(validTypes);
+  /** Writes the rows the combinations ask for, keeping what was entered for those that still exist. */
+  const writeRows = (types: VariantTypeFormValue[], combos: ComboRow<VariantRow>[]) => {
     const baseSku = form.getValues("sku") || "PROD";
     const listValue = form.getValues("price.list");
     const numericMainList = typeof listValue === "number" ? listValue : 0;
@@ -198,34 +175,23 @@ export function VariantsEditor({
       numericMainList > 0
         ? calculateProductFinalPrice(numericMainList, mainDiscount, mainDiscountTypeValue, sellerPricing)
         : 0;
-    // `fields` only refreshes on append/remove/replace, not setValue, so read
-    // live values to keep image uploads and stock edits.
-    const currentVariants = form.getValues("variants") ?? [];
-    const hasExistingDefault = currentVariants.some((variant) => variant?.isDefault);
+    const hasDefault = combos.some((combo) => combo.existing?.isDefault);
     const productImages = (form.getValues("images") || []).filter(
-      (image): image is string => typeof image === "string" && image.length > 0
+      (image): image is string => typeof image === "string" && image.length > 0,
     );
 
-    const next = combinations.map((valueIndexes, index) => {
-      const localized = buildVariantLocalizedFromCombo(validTypes, valueIndexes);
+    const next = combos.map(({ valueIndexes, existing }, index) => {
+      const localized = buildVariantLocalizedFromCombo(types, valueIndexes);
       const comboSlug = valueIndexes
         .map((valueIndex, typeIndex) =>
-          (validTypes[typeIndex]?.localized.en.values[valueIndex] ||
-            validTypes[typeIndex]?.localized.ar.values[valueIndex] ||
-            "value"
-          )
+          (types[typeIndex]?.localized.en.values[valueIndex] || types[typeIndex]?.localized.ar.values[valueIndex] || "value")
             .toLowerCase()
-            .replace(/\s+/g, "-")
+            .replace(/\s+/g, "-"),
         )
         .join("-");
 
-      const existing = currentVariants.find((variant) =>
-        getVariantValueIndexes(validTypes, variant as never).every(
-          (valueIndex, typeIndex) => valueIndex === valueIndexes[typeIndex]
-        )
-      );
-
-      const isDefault = existing?.isDefault ?? (!hasExistingDefault && index === 0);
+      const isDefault = hasDefault ? existing?.isDefault === true : index === 0;
+      if (isDefault && !hasDefault) adoptAsMain(existing);
       const images = isDefault
         ? productImages
         : existing?.images?.length
@@ -257,16 +223,44 @@ export function VariantsEditor({
       };
     });
 
+    lastRows.current = rowsSignature(next);
     replace(next as never);
+  };
+
+  // Rebuild the combinations whenever the options change.
+  useEffect(() => {
+    // Types are still being reconstructed from stored variants (edit page):
+    // wait for them instead of wiping the variants.
+    if (variantTypes.length === 0 && (form.getValues("variantTypes")?.length ?? 0) > 0) return;
+
+    const typesKey = JSON.stringify(variantTypes);
+    if (typesKey === lastTypes.current) return;
+    lastTypes.current = typesKey;
+
+    const validTypes = variantTypes.filter(isValidVariantType);
+    const prevTypes = editedFrom.current;
+    editedFrom.current = null;
+    // `fields` only refreshes on append/remove/replace, not setValue, so read live values.
+    const current = (form.getValues("variants") ?? []) as VariantRow[];
+
+    if (validTypes.length === 0) {
+      if (current.length > 0) replace([]);
+      lastRows.current = "";
+      return;
+    }
+
+    // Only the options were written from outside (the AI): new combinations join the rows.
+    const optionsOnly = !prevTypes && lastRows.current !== null && lastRows.current === rowsSignature(current);
+    writeRows(validTypes, reconcileCombos({ prevTypes, nextTypes: variantTypes, variants: current, fillMissing: optionsOnly }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [variantTypes, replace]);
 
   const updateType = (id: string, update: (type: VariantTypeFormValue) => VariantTypeFormValue) =>
     setVariantTypes(variantTypes.map((type) => (type.id === id ? update(type) : type)));
 
-  const addType = () => {
+  const addType = (wanted?: VariantOptionKind) => {
     const used = new Set(variantTypes.map((type) => type.kind));
-    const kind = DEFAULT_KINDS.find((k) => !used.has(k));
+    const kind = wanted ?? DEFAULT_KINDS.find((k) => !used.has(k));
     const preset = VARIANT_TYPE_PRESETS.find((p) => p.kind === kind);
     const type = createEmptyVariantType();
     setVariantTypes([
@@ -304,12 +298,13 @@ export function VariantsEditor({
 
   const otherLocale: SupportedLocale = activeLocale === "en" ? "ar" : "en";
 
-  const appendValue = (id: string, raw: string) =>
+  const appendValue = (id: string, raw: string, suggestion?: Suggestion) =>
     updateType(id, (type) => {
       const value = raw.trim();
       if (!value) return type;
       const existing = type.localized[activeLocale].values;
       if (existing.some((v) => v.trim().toLowerCase() === value.toLowerCase())) return type;
+      const known = suggestion ?? knownValue(type.kind, value);
       return {
         ...type,
         localized: {
@@ -317,13 +312,10 @@ export function VariantsEditor({
           [activeLocale]: { ...type.localized[activeLocale], values: [...existing, value] },
           [otherLocale]: {
             ...type.localized[otherLocale],
-            values: [...type.localized[otherLocale].values, ""],
+            values: [...type.localized[otherLocale].values, known?.[otherLocale] ?? ""],
           },
         } as VariantTypeFormValue["localized"],
-        swatches: [
-          ...(type.swatches ?? []),
-          type.kind === "color" ? (COLOR_GUESS[value.toLowerCase()] ?? "") : "",
-        ],
+        swatches: [...(type.swatches ?? []), type.kind === "color" ? (known?.hex ?? "") : ""],
       };
     });
 
@@ -331,14 +323,8 @@ export function VariantsEditor({
     updateType(id, (type) => ({
       ...type,
       localized: {
-        en: {
-          ...type.localized.en,
-          values: type.localized.en.values.filter((_, i) => i !== valueIndex),
-        },
-        ar: {
-          ...type.localized.ar,
-          values: type.localized.ar.values.filter((_, i) => i !== valueIndex),
-        },
+        en: { ...type.localized.en, values: type.localized.en.values.filter((_, i) => i !== valueIndex) },
+        ar: { ...type.localized.ar, values: type.localized.ar.values.filter((_, i) => i !== valueIndex) },
       },
       swatches: (type.swatches ?? []).filter((_, i) => i !== valueIndex),
     }));
@@ -364,25 +350,56 @@ export function VariantsEditor({
       return { ...type, swatches };
     });
 
-  const setDefault = (index: number) =>
-    (form.getValues("variants") ?? []).forEach((_, i) =>
-      form.setValue(`variants.${i}.isDefault`, i === index, { shouldDirty: true })
-    );
+  const setDefault = (index: number) => {
+    const rows = (form.getValues("variants") ?? []) as VariantRow[];
+    adoptAsMain(rows[index]);
+    rows.forEach((_, i) => form.setValue(`variants.${i}.isDefault`, i === index, { shouldDirty: true }));
+  };
+
+  const removeCombination = (index: number) => {
+    const rows = (form.getValues("variants") ?? []) as VariantRow[];
+    const kept = rows.filter((_, i) => i !== index);
+    if (rows[index]?.isDefault && kept[0]) {
+      adoptAsMain(kept[0]);
+      kept[0] = { ...kept[0], isDefault: true };
+    }
+    const next = kept.map((row, i) => ({ ...row, position: i + 1 }));
+    lastRows.current = rowsSignature(next);
+    replace(next as never);
+  };
+
+  const restoreCombinations = () => {
+    const current = (form.getValues("variants") ?? []) as VariantRow[];
+    const validTypes = variantTypes.filter(isValidVariantType);
+    writeRows(validTypes, reconcileCombos({ nextTypes: variantTypes, variants: current, fillMissing: true }));
+  };
+
+  const removedCount = missingComboCount(variantTypes, fields.length);
 
   if (variantTypes.length === 0) {
     return (
-      <div className="flex flex-wrap items-center gap-3.5 rounded-xl border-[1.5px] border-dashed border-input p-4 text-[13px] text-muted-foreground">
-        <span className="grid size-10 shrink-0 place-items-center rounded-[10px] bg-muted text-primary-ink">
-          <Layers className="size-[18px]" />
-        </span>
-        <div className="min-w-[180px] flex-1">
-          <b className="block text-sm font-semibold text-foreground">{t("emptyTitle")}</b>
-          {t("emptyBody")}
+      <div className="flex flex-col gap-3 rounded-2xl border-[1.5px] border-dashed border-(--s-field-strong) p-4 text-[13px] text-(--s-muted)">
+        <div className="flex items-start gap-3">
+          <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary-ink">
+            <Layers className="size-[18px]" aria-hidden />
+          </span>
+          <div className="min-w-0 flex-1">
+            <b className="block text-sm font-bold text-(--s-ink)">{t("emptyTitle")}</b>
+            {t("emptyBody")}
+          </div>
         </div>
-        <Button type="button" variant="neutral" className={SMALL_BUTTON_CLASS} onClick={addType}>
-          <Plus />
-          {t("addOption")}
-        </Button>
+        <Chips>
+          {(["color", "size"] as const).map((kind) => (
+            <Chip key={kind} onClick={() => addType(kind)}>
+              <Plus className="size-3.5" aria-hidden />
+              {VARIANT_TYPE_PRESETS.find((p) => p.kind === kind)?.[activeLocale]}
+            </Chip>
+          ))}
+          <Chip onClick={() => addType("custom")}>
+            <Plus className="size-3.5" aria-hidden />
+            {t("otherOption")}
+          </Chip>
+        </Chips>
       </div>
     );
   }
@@ -390,111 +407,176 @@ export function VariantsEditor({
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-col gap-2.5">
-        {variantTypes.map((type) => (
-          <div
+        {variantTypes.map((type, index) => (
+          <OptionCard
             key={type.id}
-            className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2.5 rounded-xl border bg-muted p-3 sm:grid-cols-[180px_minmax(0,1fr)_auto]"
-          >
-            <div className="flex flex-col gap-2">
-              <select
-                aria-label={t("optionName")}
-                value={type.kind}
-                onChange={(e) => selectKind(type.id, e.target.value as VariantOptionKind)}
-                className={SELECT_CLASS}
-                style={{ backgroundImage: CHEVRON_BG }}
-              >
-                {VARIANT_TYPE_PRESETS.map((preset) => (
-                  <option key={preset.kind} value={preset.kind}>
-                    {activeLocale === "en" ? preset.en : preset.ar}
-                  </option>
-                ))}
-                <option value="custom">{t("other")}</option>
-              </select>
-              {type.kind === "custom" && (
-                <Input
-                  aria-label={t("optionName")}
-                  value={type.localized[activeLocale].name}
-                  onChange={(e) =>
-                    updateType(type.id, (current) => ({
-                      ...current,
-                      localized: {
-                        ...current.localized,
-                        [activeLocale]: { ...current.localized[activeLocale], name: e.target.value },
-                      } as VariantTypeFormValue["localized"],
-                    }))
-                  }
-                  placeholder={
-                    activeLocale === "en" ? t("customNamePlaceholderEn") : t("customNamePlaceholderAr")
-                  }
-                  className={cn(FIELD_CLASS, contentDirClass(activeLocale))}
-                />
-              )}
-              {type.kind === "weight" && (
-                <select
-                  aria-label={t("unit")}
-                  value={type.unit ?? ""}
-                  onChange={(e) => updateType(type.id, (current) => ({ ...current, unit: e.target.value }))}
-                  className={SELECT_CLASS}
-                  style={{ backgroundImage: CHEVRON_BG }}
-                >
-                  <option value="" disabled>
-                    {t("unit")}
-                  </option>
-                  {WEIGHT_UNITS.map((unit) => (
-                    <option key={unit} value={unit}>
-                      {unit}
-                    </option>
-                  ))}
-                </select>
-              )}
-            </div>
-
-            <ValueChips
-              className="max-sm:order-last max-sm:col-span-2"
-              type={type}
-              activeLocale={activeLocale}
-              onAdd={(value) => appendValue(type.id, value)}
-              onRemove={(index) => removeValue(type.id, index)}
-              onRename={(index, value) => renameValue(type.id, index, value)}
-              onSwatch={(index, hex) => setSwatch(type.id, index, hex)}
-            />
-
-            <Button
-              type="button"
-              variant="soft"
-              size="icon"
-              className="size-11 rounded-[10px] hover:text-destructive"
-              onClick={() => setVariantTypes(variantTypes.filter((item) => item.id !== type.id))}
-              aria-label={t("removeOption")}
-            >
-              <Trash2 />
-            </Button>
-          </div>
+            type={type}
+            autoFocus={index === variantTypes.length - 1}
+            activeLocale={activeLocale}
+            onKind={(kind) => selectKind(type.id, kind)}
+            onName={(name) =>
+              updateType(type.id, (current) => ({
+                ...current,
+                localized: {
+                  ...current.localized,
+                  [activeLocale]: { ...current.localized[activeLocale], name },
+                } as VariantTypeFormValue["localized"],
+              }))
+            }
+            onUnit={(unit) => updateType(type.id, (current) => ({ ...current, unit }))}
+            onRemove={() => setVariantTypes(variantTypes.filter((item) => item.id !== type.id))}
+            onAdd={(value, suggestion) => appendValue(type.id, value, suggestion)}
+            onRemoveValue={(valueIndex) => removeValue(type.id, valueIndex)}
+            onRename={(valueIndex, value) => renameValue(type.id, valueIndex, value)}
+            onSwatch={(valueIndex, hex) => setSwatch(type.id, valueIndex, hex)}
+          />
         ))}
       </div>
 
       {variantTypes.length < MAX_OPTION_TYPES && (
-        <Button
-          type="button"
-          variant="neutral"
-          className={cn(SMALL_BUTTON_CLASS, "self-start")}
-          onClick={addType}
-        >
-          <Plus />
+        <SellerButton type="button" variant="mini" size="sm" className="self-start" onClick={() => addType()}>
+          <Plus aria-hidden />
           {t("addAnotherOption")}
-        </Button>
+        </SellerButton>
+      )}
+
+      {fields.length === 0 && removedCount === 0 && <FieldHint>{t("noValuesHint")}</FieldHint>}
+
+      {removedCount > 0 && (
+        <Note tone={fields.length === 0 ? "danger" : undefined}>
+          <span className="flex flex-wrap items-center justify-between gap-2">
+            {fields.length === 0 ? t("allRemoved") : t("removedNote", { count: removedCount })}
+            <button
+              type="button"
+              onClick={restoreCombinations}
+              className="inline-flex min-h-10 cursor-pointer items-center gap-1.5 font-bold text-(--s-link) hover:underline"
+            >
+              <RotateCcw className="size-3.5" aria-hidden />
+              {t("restore")}
+            </button>
+          </span>
+        </Note>
       )}
 
       {fields.length > 0 && (
-        <VariantsTable
+        <CombinationsList
           fieldIds={fields.map((field) => field.id)}
           variants={variants}
+          types={variantTypes.filter(isValidVariantType)}
           activeLocale={activeLocale}
           sellerPricing={sellerPricing}
           mainImages={mainImages}
-          mainFinalPrice={typeof mainFinalPrice === "number" ? mainFinalPrice : 0}
           onSetDefault={setDefault}
+          onRemove={removeCombination}
         />
+      )}
+    </div>
+  );
+}
+
+/** One option: its kind, its values as chips, and the common values one tap away. */
+function OptionCard({
+  type,
+  autoFocus,
+  activeLocale,
+  onKind,
+  onName,
+  onUnit,
+  onRemove,
+  onAdd,
+  onRemoveValue,
+  onRename,
+  onSwatch,
+}: {
+  type: VariantTypeFormValue;
+  autoFocus: boolean;
+  activeLocale: SupportedLocale;
+  onKind: (kind: VariantOptionKind) => void;
+  onName: (name: string) => void;
+  onUnit: (unit: string) => void;
+  onRemove: () => void;
+  onAdd: (value: string, suggestion?: Suggestion) => void;
+  onRemoveValue: (index: number) => void;
+  onRename: (index: number, value: string) => void;
+  onSwatch: (index: number, hex: string) => void;
+}) {
+  const t = useTranslations("productForm.variants");
+  const taken = new Set([...type.localized.en.values, ...type.localized.ar.values].map((value) => value.trim().toLowerCase()));
+  const suggestions = (SUGGESTIONS[type.kind] ?? []).filter(
+    (item) => !taken.has(item.en.toLowerCase()) && !taken.has(item.ar.toLowerCase()),
+  );
+
+  return (
+    <div className="flex flex-col gap-2.5 rounded-2xl border border-(--s-line) bg-(--s-surface-2) p-3">
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2.5 min-[721px]:grid-cols-[180px_minmax(0,1fr)_auto]">
+        <div className="flex min-w-0 flex-col gap-2">
+          <NativeSelect
+            aria-label={t("optionName")}
+            value={type.kind}
+            onChange={(e) => onKind(e.target.value as VariantOptionKind)}
+            className="cursor-pointer"
+          >
+            {VARIANT_TYPE_PRESETS.map((preset) => (
+              <option key={preset.kind} value={preset.kind}>
+                {activeLocale === "en" ? preset.en : preset.ar}
+              </option>
+            ))}
+            <option value="custom">{t("other")}</option>
+          </NativeSelect>
+          {type.kind === "custom" && (
+            <TextInput
+              aria-label={t("optionName")}
+              value={type.localized[activeLocale].name}
+              onChange={(e) => onName(e.target.value)}
+              placeholder={activeLocale === "en" ? t("customNamePlaceholderEn") : t("customNamePlaceholderAr")}
+              className={contentDirClass(activeLocale)}
+            />
+          )}
+          {type.kind === "weight" && (
+            <NativeSelect aria-label={t("unit")} value={type.unit ?? ""} onChange={(e) => onUnit(e.target.value)} className="cursor-pointer">
+              <option value="" disabled>
+                {t("unit")}
+              </option>
+              {WEIGHT_UNITS.map((unit) => (
+                <option key={unit} value={unit}>
+                  {unit}
+                </option>
+              ))}
+            </NativeSelect>
+          )}
+        </div>
+
+        <ValueChips
+          className="max-[720px]:order-last max-[720px]:col-span-2"
+          type={type}
+          autoFocus={autoFocus && type.localized.en.values.length === 0 && type.localized.ar.values.length === 0}
+          activeLocale={activeLocale}
+          onAdd={onAdd}
+          onRemove={onRemoveValue}
+          onRename={onRename}
+          onSwatch={onSwatch}
+        />
+
+        <IconButton type="button" onClick={onRemove} aria-label={t("removeOption")} className="mt-[3px] hover:text-destructive">
+          <Trash2 aria-hidden />
+        </IconButton>
+      </div>
+
+      {suggestions.length > 0 && (
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="text-xs font-medium text-(--s-faint)">{t("suggestionsLabel")}</span>
+          {suggestions.slice(0, 8).map((item) => (
+            <button
+              key={item.en}
+              type="button"
+              onClick={() => onAdd(item[activeLocale], item)}
+              className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-full border border-dashed border-(--s-field-strong) bg-(--s-surface) px-2.5 text-xs font-semibold text-(--s-body) transition-colors hover:border-(--s-primary) hover:text-(--s-primary) max-[600px]:h-10 max-[600px]:px-3 max-[600px]:text-[13px]"
+            >
+              {item.hex && <i aria-hidden className="size-3 rounded-full ring-1 ring-black/15" style={{ background: item.hex }} />}
+              {item[activeLocale]}
+            </button>
+          ))}
+        </div>
       )}
     </div>
   );
@@ -503,6 +585,7 @@ export function VariantsEditor({
 function ValueChips({
   className,
   type,
+  autoFocus,
   activeLocale,
   onAdd,
   onRemove,
@@ -511,6 +594,7 @@ function ValueChips({
 }: {
   className?: string;
   type: VariantTypeFormValue;
+  autoFocus?: boolean;
   activeLocale: SupportedLocale;
   onAdd: (value: string) => void;
   onRemove: (index: number) => void;
@@ -534,7 +618,7 @@ function ValueChips({
   return (
     <div
       className={cn(
-        "flex min-h-11 flex-wrap items-center gap-1.5 rounded-[10px] border border-input bg-card px-2 py-1.5 transition-[border-color,box-shadow] focus-within:border-primary focus-within:ring-[3px] focus-within:ring-primary/20",
+        "flex min-h-[46px] flex-wrap items-center gap-1.5 rounded-[14px] border-[1.5px] border-(--s-field) bg-(--s-surface) px-2 py-1.5 transition-[border-color,box-shadow] duration-150 focus-within:border-(--s-primary) focus-within:shadow-[0_0_0_3px_var(--s-focus-soft)]",
         className,
       )}
       onClick={(e) => {
@@ -566,7 +650,7 @@ function ValueChips({
                 }
                 if (e.key === "Escape") setEditing(null);
               }}
-              className="h-7 w-28 rounded-lg border border-primary bg-card px-2 text-xs outline-none"
+              className="h-8 w-28 rounded-full border border-(--s-primary) bg-(--s-surface) px-2.5 text-xs text-(--s-text) outline-none max-[600px]:h-10 max-[600px]:text-base"
             />
           );
         }
@@ -575,19 +659,15 @@ function ValueChips({
           <span
             key={index}
             className={cn(
-              "inline-flex h-7 items-center gap-1 rounded-lg ps-2.5 pe-1.5 text-xs font-semibold max-sm:h-9 max-sm:text-[13px]",
-              missing
-                ? "border border-dashed border-accent-ink/40 bg-accent-soft text-accent-ink"
-                : "bg-primary-soft text-primary-ink"
+              "inline-flex h-8 items-center gap-1 rounded-full ps-2.5 pe-1 text-xs font-semibold max-[600px]:h-10 max-[600px]:text-[13px]",
+              missing ? "border border-dashed border-accent-ink/40 bg-accent-soft text-accent-ink" : "bg-primary-soft text-primary-ink",
             )}
           >
             {type.kind === "color" && (
               <label
-                className="relative size-3.5 shrink-0 cursor-pointer overflow-hidden rounded-full ring-1 ring-black/15 max-sm:size-5"
+                className="relative size-4 shrink-0 cursor-pointer overflow-hidden rounded-full ring-1 ring-black/15 max-[600px]:size-5"
                 style={{
-                  background:
-                    type.swatches?.[index] ||
-                    "conic-gradient(#ef4444,#eab308,#22c55e,#3b82f6,#a855f7,#ef4444)",
+                  background: type.swatches?.[index] || "conic-gradient(#ef4444,#eab308,#22c55e,#3b82f6,#a855f7,#ef4444)",
                 }}
               >
                 <input
@@ -603,7 +683,7 @@ function ValueChips({
               type="button"
               onClick={() => setEditing(index)}
               title={missing ? t("missingTranslation") : undefined}
-              className="max-w-40 truncate"
+              className="max-w-40 cursor-pointer truncate"
             >
               {label}
             </button>
@@ -611,15 +691,16 @@ function ValueChips({
               type="button"
               onClick={() => onRemove(index)}
               aria-label={t("removeValue", { value: label })}
-              className="grid place-items-center rounded opacity-70 hover:opacity-100 max-sm:size-7"
+              className="grid size-6 cursor-pointer place-items-center rounded-full opacity-70 hover:opacity-100 max-[600px]:size-8"
             >
-              <X className="size-3.5" />
+              <X className="size-3.5" aria-hidden />
             </button>
           </span>
         );
       })}
       <input
         ref={inputRef}
+        autoFocus={autoFocus}
         value={draft}
         dir={activeLocale === "ar" ? "rtl" : "ltr"}
         onChange={(e) => setDraft(e.target.value.replace(/[,،]/g, ""))}
@@ -635,8 +716,9 @@ function ValueChips({
         }}
         onBlur={commitDraft}
         enterKeyHint="done"
+        aria-label={t("valueLabel")}
         placeholder={count > 0 ? t("valuesPlaceholder") : t("valuesPlaceholderFirst")}
-        className="h-7 min-w-[110px] flex-1 bg-transparent text-[13px] outline-none placeholder:text-faint max-sm:h-9"
+        className="h-8 min-w-[110px] flex-1 bg-transparent text-[13px] text-(--s-text) outline-none placeholder:text-(--s-placeholder) max-[600px]:h-10"
       />
       {/* Some phone keyboards don't report Enter, so the value needs a visible way in. */}
       {draft.trim() && (
@@ -648,31 +730,224 @@ function ValueChips({
             commitDraft();
             inputRef.current?.focus();
           }}
-          className="grid size-9 shrink-0 place-items-center rounded-lg bg-primary text-primary-foreground sm:hidden"
+          className="grid size-10 shrink-0 cursor-pointer place-items-center rounded-full bg-(--s-solid) text-(--s-solid-fg) min-[721px]:hidden"
         >
-          <Plus className="size-4" />
+          <Plus className="size-4" aria-hidden />
         </button>
       )}
     </div>
   );
 }
 
-function VariantsTable({
+const ROW_GRID =
+  "grid grid-cols-2 items-start gap-x-2.5 gap-y-2 min-[721px]:grid-cols-[minmax(0,1.5fr)_minmax(110px,1fr)_136px_minmax(110px,1fr)_84px] min-[721px]:items-center";
+
+function CombinationsList({
   fieldIds,
   variants,
+  types,
   activeLocale,
   sellerPricing,
   mainImages,
-  mainFinalPrice,
   onSetDefault,
+  onRemove,
 }: {
   fieldIds: string[];
-  variants: NonNullable<AddProductFormData["variants"]>;
+  variants: VariantRow[];
+  types: VariantTypeFormValue[];
   activeLocale: SupportedLocale;
   sellerPricing: SellerPricingSettings;
   mainImages: string[];
-  mainFinalPrice: number;
   onSetDefault: (index: number) => void;
+  onRemove: (index: number) => void;
+}) {
+  const t = useTranslations("productForm.variants");
+  const form = useFormContext<AddProductFormData>();
+  const { errors } = useFormState({ control: form.control, name: "variants" });
+  const variantErrors = errors.variants as unknown[] | undefined;
+  // Unlimited stock (0138, F-51): variants inherit it, so their counts are hidden and stay as saved.
+  const trackStock = useWatch({ control: form.control, name: "trackStock" }) !== false;
+  // One value per option picked here narrows the list, and what "apply" changes.
+  const [scope, setScope] = useState<Record<string, number>>({});
+  const [openKey, setOpenKey] = useState<string | null>(null);
+  const [bulkPrice, setBulkPrice] = useState("");
+  const [bulkStock, setBulkStock] = useState("");
+
+  const skuCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const row of variants) {
+      const sku = row?.sku?.trim().toLowerCase();
+      if (sku) counts.set(sku, (counts.get(sku) ?? 0) + 1);
+    }
+    return counts;
+  }, [variants]);
+
+  const inScope = (row: VariantRow | undefined) =>
+    types.every((type, typeIndex) => scope[type.id] === undefined || row?.optionValueIndexes?.[typeIndex] === scope[type.id]);
+  // A row with an error stays in view, or the seller never finds it.
+  const visible = fieldIds.flatMap((_, index) => (inScope(variants[index]) || variantErrors?.[index] ? [index] : []));
+  const scoped = Object.keys(scope).length > 0;
+
+  const valueLabel = (type: VariantTypeFormValue, valueIndex: number) => {
+    const other: SupportedLocale = activeLocale === "en" ? "ar" : "en";
+    const value = type.localized[activeLocale].values[valueIndex]?.trim() || type.localized[other].values[valueIndex]?.trim() || "";
+    return type.kind === "weight" && type.unit && value ? `${value} ${type.unit}` : value;
+  };
+
+  const applyBulk = () => {
+    const price = Number(bulkPrice);
+    const stock = Number(bulkStock);
+    const setPrice = bulkPrice.trim() !== "" && Number.isFinite(price) && price > 0;
+    const setStock = trackStock && bulkStock.trim() !== "" && Number.isInteger(stock) && stock >= 0;
+    if (!setPrice && !setStock) {
+      toast.error(t("bulkEmpty"));
+      return;
+    }
+    const opts = { shouldDirty: true, shouldValidate: true } as const;
+    for (const index of visible) {
+      const isDefault = variants[index]?.isDefault === true;
+      if (setPrice) form.setValue(isDefault ? "price.list" : `variants.${index}.listPrice`, price, opts);
+      if (setStock) form.setValue(isDefault ? "quantity" : `variants.${index}.stock`, stock, opts);
+    }
+    setBulkPrice("");
+    setBulkStock("");
+    toast.success(t("bulkApplied", { count: visible.length }));
+  };
+
+  return (
+    <div className="flex flex-col gap-2.5">
+      <div className="flex items-center gap-2 pt-1">
+        <b className="text-[13.5px] font-bold text-(--s-ink)">{t("combinations")}</b>
+        <Tag>{t("combinationsCount", { count: fieldIds.length })}</Tag>
+      </div>
+
+      {fieldIds.length > MANY_COMBINATIONS && <Note tone="amber">{t("tooMany", { count: fieldIds.length })}</Note>}
+
+      {fieldIds.length > 1 && (
+        <div className="flex flex-col gap-2.5 rounded-2xl bg-(--s-tint) p-3">
+          {types.map((type) => (
+            <Chips key={type.id} className="flex-nowrap overflow-x-auto [scrollbar-width:none]">
+              <Chip
+                className="h-8 shrink-0 px-3 text-xs max-[600px]:h-10"
+                pressed={scope[type.id] === undefined}
+                onClick={() => setScope(({ [type.id]: _cleared, ...rest }) => rest)}
+              >
+                {types.length > 1 ? t("allOf", { option: type.localized[activeLocale].name || type.localized.en.name || type.localized.ar.name }) : t("all")}
+              </Chip>
+              {Array.from({ length: Math.max(type.localized.en.values.length, type.localized.ar.values.length) }, (_, valueIndex) => (
+                <Chip
+                  key={valueIndex}
+                  className="h-8 shrink-0 px-3 text-xs max-[600px]:h-10"
+                  pressed={scope[type.id] === valueIndex}
+                  onClick={() => setScope((prev) => ({ ...prev, [type.id]: valueIndex }))}
+                >
+                  {valueLabel(type, valueIndex)}
+                </Chip>
+              ))}
+            </Chips>
+          ))}
+          <div className="flex flex-wrap items-end gap-2">
+            <label className="flex min-w-0 flex-[1_1_110px] flex-col gap-1 text-xs font-semibold text-(--s-muted)">
+              {t("columns.price")}
+              <TextInput
+                dir="ltr"
+                inputMode="decimal"
+                value={bulkPrice}
+                onChange={(e) => setBulkPrice(e.target.value.replace(/[^\d.]/g, ""))}
+                placeholder="0.00"
+                className="h-10 font-montserrat tabular-nums rtl:text-right"
+              />
+            </label>
+            {trackStock && (
+              <label className="flex min-w-0 flex-[1_1_90px] flex-col gap-1 text-xs font-semibold text-(--s-muted)">
+                {t("columns.stock")}
+                <TextInput
+                  dir="ltr"
+                  inputMode="numeric"
+                  value={bulkStock}
+                  onChange={(e) => setBulkStock(e.target.value.replace(/\D/g, ""))}
+                  placeholder="0"
+                  className="h-10 font-montserrat tabular-nums rtl:text-right"
+                />
+              </label>
+            )}
+            <SellerButton type="button" variant="solid" size="sm" className="h-10 flex-[1_1_auto] min-[721px]:flex-none" onClick={applyBulk}>
+              {scoped ? t("applyToShown", { count: visible.length }) : t("applyToAll", { count: visible.length })}
+            </SellerButton>
+          </div>
+        </div>
+      )}
+
+      <div className={cn(ROW_GRID, "px-3 text-xs font-semibold text-(--s-subtle) max-[720px]:hidden")} aria-hidden>
+        <span>{t("columns.variant")}</span>
+        <span>{t("columns.price")}</span>
+        <span>{trackStock ? t("columns.stock") : ""}</span>
+        <span>{t("columns.sku")}</span>
+        <span />
+      </div>
+
+      <ul className="flex flex-col gap-2">
+        {visible.map((index) => {
+          const row = variants[index];
+          const key = (row?.optionValueIndexes ?? [index]).join(".");
+          return (
+            <CombinationRow
+              key={fieldIds[index]}
+              index={index}
+              row={row}
+              chips={types.flatMap((type, typeIndex) => {
+                const valueIndex = row?.optionValueIndexes?.[typeIndex];
+                if (valueIndex === undefined) return [];
+                return [{ label: valueLabel(type, valueIndex), swatch: type.kind === "color" ? type.swatches?.[valueIndex] : undefined }];
+              })}
+              open={openKey === key || Boolean(variantErrors?.[index])}
+              onToggle={() => setOpenKey(openKey === key ? null : key)}
+              trackStock={trackStock}
+              canRemove={fieldIds.length > 1}
+              duplicateSku={(skuCounts.get(row?.sku?.trim().toLowerCase() ?? "") ?? 0) > 1}
+              sellerPricing={sellerPricing}
+              mainImages={mainImages}
+              onSetDefault={() => onSetDefault(index)}
+              onRemove={() => onRemove(index)}
+            />
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
+
+/**
+ * One combination. Price and stock are always in reach; photos, discount,
+ * barcode and (on phones) the SKU fold under it. The default row edits the
+ * product's own price and stock, the same fields the sections above use.
+ */
+function CombinationRow({
+  index,
+  row,
+  chips,
+  open,
+  onToggle,
+  trackStock,
+  canRemove,
+  duplicateSku,
+  sellerPricing,
+  mainImages,
+  onSetDefault,
+  onRemove,
+}: {
+  index: number;
+  row: VariantRow | undefined;
+  chips: { label: string; swatch?: string }[];
+  open: boolean;
+  onToggle: () => void;
+  trackStock: boolean;
+  canRemove: boolean;
+  duplicateSku: boolean;
+  sellerPricing: SellerPricingSettings;
+  mainImages: string[];
+  onSetDefault: () => void;
+  onRemove: () => void;
 }) {
   const t = useTranslations("productForm.variants");
   const tPricing = useTranslations("productForm.variantPricing");
@@ -680,200 +955,211 @@ function VariantsTable({
   const locale = useLocale();
   const { unit } = useAccountMoney();
   const form = useFormContext<AddProductFormData>();
-  // Phones: one card open at a time, so a long list stays easy to scan.
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
-  // A card with a price problem can't stay shut, or the seller never sees it.
-  const { errors } = useFormState({ control: form.control, name: "variants" });
-  const variantErrors = errors.variants as unknown[] | undefined;
-  // Unlimited stock (0138, F-51): variants inherit it, so their counts are hidden and stay as saved.
-  const trackStock = useWatch({ control: form.control, name: "trackStock" }) !== false;
+  const isDefault = row?.isDefault === true;
+  const name = chips.map((chip) => chip.label).join(" / ") || row?.title || "";
+  const priceName = isDefault ? "price.list" : `variants.${index}.listPrice`;
+  const listError = useFieldError(priceName);
+  const finalError = useFieldError(`variants.${index}.price`);
+  const priceError = listError ?? finalError;
+  const skuError = useFieldError(`variants.${index}.sku`);
+  const image = isDefault ? mainImages[0] : (row?.images?.[0] ?? row?.imageUrl);
+  const salePrice = Number(row?.price) || 0;
+  const onSale = salePrice > 0 && salePrice < (Number(row?.listPrice) || 0);
+  const priceId = `variant-price-${index}`;
+  const stockId = `variant-stock-${index}`;
+  const skuId = `variant-sku-${index}`;
+
+  const renderSku = (id?: string) => (
+    <Controller
+      name={`variants.${index}.sku`}
+      control={form.control}
+      render={({ field }) => (
+        <TextInput
+          {...field}
+          id={id}
+          value={field.value ?? ""}
+          dir="ltr"
+          placeholder="—"
+          aria-invalid={Boolean(skuError)}
+          className={cn("h-10 font-montserrat text-xs rtl:text-right", skuError && "border-destructive")}
+        />
+      )}
+    />
+  );
 
   return (
-    <div className="flex flex-col gap-2">
-      <p className="text-xs text-muted-foreground">
-        {t("combinationsHint", { count: fieldIds.length })}
-      </p>
-      <div className="sm:overflow-x-auto sm:rounded-xl sm:border">
-        <table className="w-full border-collapse text-[13px] max-sm:block">
-          <thead className="max-sm:hidden">
-            <tr>
-              {[
-                t("columns.variant"),
-                t("columns.images"),
-                t("columns.pricing"),
-                ...(trackStock ? [t("columns.stock")] : []),
-                t("columns.barcode"),
-              ].map((heading) => (
-                <th
-                  key={heading}
-                  className="border-b bg-muted px-3 py-2.5 text-start text-xs font-medium whitespace-nowrap text-muted-foreground"
+    <li
+      className={cn(
+        "relative rounded-2xl border border-(--s-line) bg-(--s-surface) p-3 transition-colors",
+        isDefault && "border-(--s-primary)/35",
+        (priceError || skuError) && "border-destructive/45",
+      )}
+    >
+      <div className={ROW_GRID}>
+        <div className="col-span-2 flex min-w-0 items-center gap-2.5 pe-[88px] min-[721px]:col-span-1 min-[721px]:pe-0">
+          <button
+            type="button"
+            onClick={onToggle}
+            aria-label={t("details")}
+            className="grid size-11 shrink-0 cursor-pointer place-items-center overflow-hidden rounded-xl border border-(--s-line) bg-(--s-fill) text-(--s-subtle)"
+          >
+            {image ? (
+              <RemoteImage src={getPublicUrl(image, "products")} alt="" width={44} height={44} className="size-11 object-cover" />
+            ) : (
+              <ImageIcon className="size-4" aria-hidden />
+            )}
+          </button>
+          <div className="flex min-w-0 flex-col gap-1">
+            <span className="flex flex-wrap items-center gap-1">
+              {chips.map((chip, chipIndex) => (
+                <span
+                  key={chipIndex}
+                  className="inline-flex items-center gap-1 rounded-full bg-(--s-fill) px-2 text-xs font-semibold leading-6 text-(--s-text)"
                 >
-                  {heading}
-                </th>
+                  {chip.swatch && <i aria-hidden className="size-2.5 rounded-full ring-1 ring-black/15" style={{ background: chip.swatch }} />}
+                  {chip.label}
+                </span>
               ))}
-            </tr>
-          </thead>
-          <tbody className="max-sm:flex max-sm:flex-col max-sm:gap-2">
-            {fieldIds.map((fieldId, index) => {
-              const variant = variants[index];
-              const isDefault = variant?.isDefault === true;
-              const localized = variant?.localized?.[activeLocale];
-              const options = [localized?.option1, localized?.option2, localized?.option3]
-                .filter(Boolean)
-                .map((option) => String(option).split(":").pop()?.trim() || String(option));
-              const isOpen = openIndex === index || Boolean(variantErrors?.[index]);
-              // Hidden on a phone until the card is opened; always shown in the desktop table.
-              const detailCell = cn("border-b px-3 py-3 max-sm:block max-sm:border-0 max-sm:px-0 max-sm:py-0", !isOpen && "max-sm:hidden");
-              const phoneLabel = "mb-1.5 block text-xs font-medium text-muted-foreground sm:hidden";
-              const cardPrice = isDefault ? mainFinalPrice : Number(variant?.price) || 0;
+            </span>
+            {isDefault && (
+              <Tag tone="info" className="w-fit">
+                {t("default")}
+              </Tag>
+            )}
+          </div>
+        </div>
 
-              return (
-                <tr
-                  key={fieldId}
-                  className="align-top max-sm:flex max-sm:flex-col max-sm:gap-3 max-sm:rounded-xl max-sm:border max-sm:bg-card max-sm:p-3 sm:[&:last-child>td]:border-b-0"
-                >
-                  <td className="border-b px-3 py-3 max-sm:block max-sm:border-0 max-sm:p-0">
-                    <div className="flex items-start gap-2">
-                      {/* The radio alone sets the default, so tapping a card to open it can't change it. */}
-                      <input
-                        type="radio"
-                        name="default-variant"
-                        checked={isDefault}
-                        onChange={() => onSetDefault(index)}
-                        className="mt-1 size-4 cursor-pointer accent-[var(--primary)] max-sm:size-5"
-                        aria-label={t("setDefault", { name: localized?.title || variant?.title || "" })}
-                      />
-                      <div
-                        className="flex min-w-0 flex-1 flex-col gap-1 max-sm:cursor-pointer"
-                        onClick={() => setOpenIndex(openIndex === index ? null : index)}
-                      >
-                        <span className="flex flex-wrap gap-1">
-                          {(options.length ? options : [variant?.title]).map((option) => (
-                            <span
-                              key={option}
-                              className="rounded-md border bg-muted px-1.5 text-xs whitespace-nowrap max-sm:px-2 max-sm:text-[13px] max-sm:leading-6"
-                            >
-                              {option}
-                            </span>
-                          ))}
-                        </span>
-                        <span className="flex flex-wrap items-center gap-1.5">
-                          {isDefault && (
-                            <span className="w-fit rounded-[5px] bg-primary-soft px-1.5 text-[10px] leading-[18px] font-bold text-primary-ink">
-                              {t("default")}
-                            </span>
-                          )}
-                          <span className="font-sans text-xs font-semibold tabular-nums text-muted-foreground sm:hidden">
-                            {cardPrice > 0 ? <Money value={cardPrice} locale={locale} unit={unit} /> : "—"}
-                          </span>
-                        </span>
-                      </div>
-                      <button
-                        type="button"
-                        aria-expanded={isOpen}
-                        aria-label={t("details")}
-                        onClick={() => setOpenIndex(openIndex === index ? null : index)}
-                        className="grid size-9 shrink-0 place-items-center rounded-lg text-muted-foreground sm:hidden"
-                      >
-                        <ChevronDown className={cn("size-[18px] transition-transform", isOpen && "rotate-180")} aria-hidden />
-                      </button>
-                    </div>
-                  </td>
-                  <td className={cn(detailCell, "max-sm:order-1")}>
-                    <span className={phoneLabel}>{t("columns.images")}</span>
-                    {isDefault ? (
-                      <MainImagesPreview images={mainImages} />
-                    ) : (
-                      <Controller
-                        name={`variants.${index}.images`}
-                        control={form.control}
-                        render={({ field }) => (
-                          <ImageUpload
-                            bucket="products"
-                            value={field.value || []}
-                            onChange={(images) => {
-                              field.onChange(images);
-                              form.setValue(`variants.${index}.imageUrl`, images[0] ?? undefined);
-                            }}
-                            maxImages={5}
-                            compact
-                          />
-                        )}
-                      />
-                    )}
-                  </td>
-                  <td className={cn(detailCell, "max-sm:order-2")}>
-                    <span className={phoneLabel}>{t("columns.pricing")}</span>
-                    {isDefault ? (
-                      <div className="min-w-[180px]">
-                        <p className="text-xs text-muted-foreground">{tPricing("usesMainPrice")}</p>
-                        <p className="font-sans font-semibold tabular-nums">
-                          {mainFinalPrice > 0 ? <Money value={mainFinalPrice} locale={locale} unit={unit} /> : "—"}
-                        </p>
-                      </div>
-                    ) : (
-                      <VariantPricingFields index={index} sellerPricing={sellerPricing} />
-                    )}
-                  </td>
-                  {trackStock && <td className="border-b px-3 py-3 max-sm:flex max-sm:items-center max-sm:justify-between max-sm:gap-3 max-sm:border-0 max-sm:p-0">
-                    <span className="text-xs font-medium text-muted-foreground sm:hidden">{t("columns.stock")}</span>
-                    <div className="w-32 max-sm:w-40">
-                      {/* The default variant's stock follows the main quantity. */}
-                      <Controller
-                        name={`variants.${index}.stock`}
-                        control={form.control}
-                        render={({ field }) => (
-                          <NumberStepper
-                            size="sm"
-                            value={field.value}
-                            onChange={(value) => field.onChange(value ?? 0)}
-                            onBlur={field.onBlur}
-                            disabled={isDefault}
-                            inputLabel={t("columns.stock")}
-                            decrementLabel={tStock("decrease")}
-                            incrementLabel={tStock("increase")}
-                          />
-                        )}
-                      />
-                    </div>
-                  </td>}
-                  <td className={cn(detailCell, "max-sm:order-3")}>
-                    <span className={phoneLabel}>{t("columns.barcode")}</span>
-                    <Controller
-                      name={`variants.${index}.barCode`}
-                      control={form.control}
-                      render={({ field }) => (
-                        <Input
-                          {...field}
-                          value={field.value ?? ""}
-                          dir="ltr"
-                          placeholder="—"
-                          className="h-9 w-32 rounded-[10px] text-[13px] max-sm:h-11 max-sm:w-full"
-                        />
-                      )}
-                    />
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+        <div className="flex min-w-0 flex-col gap-1">
+          <label htmlFor={priceId} className="text-xs font-semibold text-(--s-muted) min-[721px]:sr-only">
+            {t("columns.price")}
+          </label>
+          <MoneyField id={priceId} name={priceName} invalid={Boolean(priceError)} className="h-10" />
+          {onSale && (
+            <span className="font-montserrat text-[11px] font-semibold tabular-nums text-success">
+              <Money value={salePrice} locale={locale} unit={unit} />
+            </span>
+          )}
+        </div>
+
+        <div className={cn("flex min-w-0 flex-col gap-1", !trackStock && "invisible max-[720px]:hidden")}>
+          <label htmlFor={stockId} className="text-xs font-semibold text-(--s-muted) min-[721px]:sr-only">
+            {t("columns.stock")}
+          </label>
+          {trackStock && (
+            <Controller
+              name={isDefault ? "quantity" : `variants.${index}.stock`}
+              control={form.control}
+              render={({ field }) => (
+                <NumberStepper
+                  id={stockId}
+                  size="sm"
+                  value={field.value as number | undefined}
+                  onChange={(value) => field.onChange(value ?? 0)}
+                  onBlur={field.onBlur}
+                  decrementLabel={tStock("decrease")}
+                  incrementLabel={tStock("increase")}
+                />
+              )}
+            />
+          )}
+        </div>
+
+        <div className="flex min-w-0 flex-col gap-1 max-[720px]:hidden">
+          <label htmlFor={skuId} className="sr-only">
+            {t("columns.sku")}
+          </label>
+          {renderSku(skuId)}
+        </div>
+
+        <div className="absolute end-2 top-2 flex items-center justify-end gap-1 min-[721px]:static">
+          <IconButton type="button" onClick={onToggle} aria-expanded={open} aria-label={t("details")}>
+            <ChevronDown className={cn("transition-transform duration-150", open && "rotate-180")} aria-hidden />
+          </IconButton>
+          {canRemove && (
+            <IconButton type="button" onClick={onRemove} aria-label={t("removeCombination", { name })} className="hover:text-destructive">
+              <Trash2 aria-hidden />
+            </IconButton>
+          )}
+        </div>
       </div>
-    </div>
+
+      {priceError && <p className="mt-1.5 text-xs font-semibold text-destructive">{priceError}</p>}
+      {skuError && <p className="mt-1.5 text-xs font-semibold text-destructive">{skuError}</p>}
+      {duplicateSku && !skuError && <p className="mt-1.5 text-xs font-semibold text-accent-ink">{t("duplicateSku")}</p>}
+
+      {/* Stays mounted while folded: the discount fields keep this row's final price in step with its price. */}
+      <div className={cn("mt-3 flex-col gap-3.5 border-t border-(--s-line-soft) pt-3", open ? "flex" : "hidden")}>
+        <div className="flex flex-col gap-1.5 min-[721px]:hidden">
+          <label htmlFor={`${skuId}-phone`} className="text-xs font-semibold text-(--s-muted)">
+            {t("columns.sku")}
+          </label>
+          {renderSku(`${skuId}-phone`)}
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <span className="text-xs font-semibold text-(--s-muted)">{t("columns.images")}</span>
+          {isDefault ? (
+            <FieldHint>{tPricing("usesMainImages")}</FieldHint>
+          ) : (
+            open && (
+              <Controller
+                name={`variants.${index}.images`}
+                control={form.control}
+                render={({ field }) => (
+                  <ImageUpload
+                    bucket="products"
+                    value={field.value || []}
+                    onChange={(images) => {
+                      field.onChange(images);
+                      form.setValue(`variants.${index}.imageUrl`, images[0] ?? undefined);
+                    }}
+                    maxImages={5}
+                    compact
+                  />
+                )}
+              />
+            )
+          )}
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <span className="text-xs font-semibold text-(--s-muted)">{t("columns.discount")}</span>
+          {isDefault ? (
+            <FieldHint>{t("defaultDiscountHint")}</FieldHint>
+          ) : (
+            <VariantPricingFields index={index} sellerPricing={sellerPricing} />
+          )}
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor={`variant-barcode-${index}`} className="text-xs font-semibold text-(--s-muted)">
+            {t("columns.barcode")}
+          </label>
+          <Controller
+            name={`variants.${index}.barCode`}
+            control={form.control}
+            render={({ field }) => (
+              <TextInput
+                {...field}
+                id={`variant-barcode-${index}`}
+                value={field.value ?? ""}
+                dir="ltr"
+                placeholder="—"
+                className="h-10 max-w-64 font-montserrat text-xs rtl:text-right"
+              />
+            )}
+          />
+        </div>
+
+        {!isDefault && (
+          <div>
+            <SellerButton type="button" variant="mini" size="xs" onClick={onSetDefault}>
+              <Star aria-hidden />
+              {t("makeDefault")}
+            </SellerButton>
+          </div>
+        )}
+      </div>
+    </li>
   );
 }
-
-function MainImagesPreview({ images }: { images: string[] }) {
-  const tPricing = useTranslations("productForm.variantPricing");
-  return (
-    <div className="flex min-w-[120px] flex-col gap-1.5">
-      <span className="text-xs text-muted-foreground">{tPricing("usesMainImages")}</span>
-      <div className="flex flex-wrap gap-1">
-        {images.slice(0, 4).map((image) => (
-          <RemoteImage key={image} src={getPublicUrl(image, "products")} alt="" width={36} height={36} className="size-9 rounded-md border object-cover" />
-        ))}
-      </div>
-    </div>
-  );
-}
-

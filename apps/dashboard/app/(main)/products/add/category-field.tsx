@@ -7,7 +7,7 @@ import { Check, ChevronsUpDown, LayoutGrid, Plus, Search, Sparkles, Store, X } f
 import { cn } from "@/lib/utils";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { FieldError, FieldHint, FieldLabel } from "@/components/form/form-ui";
+import { FieldError, FieldHint, FieldLabel } from "@/app/(main)/products/add/form-kit";
 import { suggestCategories } from "./add-product.lib";
 import {
   highlightMatch,

@@ -27,6 +27,8 @@ interface EditProductProps {
   aiEnabled: boolean;
   /** Views and views → orders of this product (F-15b), streamed; resolves null without GA4. */
   viewStats?: Promise<ProductViewStats>;
+  /** Sections that save on their own, under the form. */
+  children?: React.ReactNode;
 }
 
 /** The add-product form in edit mode, so both pages look and behave the same. */
@@ -41,6 +43,7 @@ export function EditProduct({
   linkHost,
   aiEnabled,
   viewStats,
+  children,
 }: EditProductProps) {
   return (
     <AddProduct
@@ -50,6 +53,7 @@ export function EditProduct({
       linkHost={linkHost}
       aiEnabled={aiEnabled}
       edit={{ productId, defaultValues }}
+      afterForm={children}
       headerActions={
         <>
           {viewStats ? <ProductViewsBadge stats={viewStats} productId={productId} /> : null}
