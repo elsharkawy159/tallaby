@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -8,7 +8,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { z } from "zod";
 import Link from "next/link";
-import { Banknote, Headphones, Languages, LoaderCircle, Palette, Save, Store, TriangleAlert } from "lucide-react";
+import { Banknote, Headphones, Languages, Palette, Store, TriangleAlert } from "lucide-react";
 import {
   CURRENCY_LABELS,
   REGIONAL_CURRENCY_CODES,
@@ -22,10 +22,6 @@ import {
 } from "@workspace/lib";
 import { formatPhone } from "@workspace/store-sections/social";
 
-import { Button } from "@workspace/ui/components/button";
-import { Checkbox } from "@workspace/ui/components/checkbox";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@workspace/ui/components/form";
-import { Input } from "@workspace/ui/components/input";
 import {
   Select,
   SelectContent,
@@ -36,10 +32,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@workspace/ui/components/select";
-import { Separator } from "@workspace/ui/components/separator";
-import { Textarea } from "@workspace/ui/components/textarea";
-import { BUTTON_CLASS, FIELD_CLASS, FieldHint, LabelNote, SectionCard, TEXTAREA_CLASS } from "@/components/form/form-ui";
-import { PageActionBar } from "@/components/layout/page-action-bar";
+import {
+  CheckRow,
+  Chip,
+  Chips,
+  Field,
+  FieldRow,
+  Note,
+  OptionCard,
+  OptionCards,
+  SaveBar,
+  SectionCard,
+  TextArea,
+  TextInput,
+  TwoColumns,
+  fieldClass,
+} from "@/components/seller-ui";
 import { useUnsavedChangesGuard } from "@/hooks/use-unsaved-changes-guard";
 import { BannerField, LogoField } from "@/components/stores/brand-image-fields.client";
 import { STORE_INDUSTRIES, findIndustry } from "@/lib/stores/industries.lib";
@@ -71,6 +79,7 @@ export function StoreGeneralForm({
 }) {
   const t = useTranslations("storeSettings");
   const tCommon = useTranslations("common");
+  const tSetup = useTranslations("storeSetup");
   const uiLocale = useLocale();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -98,15 +107,25 @@ export function StoreGeneralForm({
     .refine((v) => isCurrencyLabelFor(v.currency, v.currencyLabel), { message: t("errors.invalidInput"), path: ["currencyLabel"] });
 
   const form = useForm<StoreGeneralFormValues>({ resolver: zodResolver(schema), defaultValues: initial });
+  const { errors } = form.formState;
   const name = useWatch({ control: form.control, name: "name" });
   const description = useWatch({ control: form.control, name: "description" });
   const [categoryEn, categoryAr] = useWatch({ control: form.control, name: ["storeCategory", "storeCategoryAr"] });
+  const phone = useWatch({ control: form.control, name: "phone" });
   const industry = findIndustry({ en: categoryEn, ar: categoryAr });
   const currency = useWatch({ control: form.control, name: "currency" });
   const catalog = useStoreCatalog(storeId, catalogProps);
   const disabled = readOnly || isPending;
   const dirty = form.formState.isDirty || catalog.dirty;
   useUnsavedChangesGuard(dirty && !readOnly, tCommon("unsavedChanges"));
+
+  // "Same as the phone": the WhatsApp number follows the phone while it is on.
+  const [whatsappSame, setWhatsappSame] = useState(Boolean(initial.phone) && initial.phone === initial.whatsapp);
+  useEffect(() => {
+    if (whatsappSame && form.getValues("whatsapp") !== phone) {
+      form.setValue("whatsapp", phone, { shouldDirty: true, shouldValidate: form.formState.isSubmitted });
+    }
+  }, [whatsappSame, phone, form]);
 
   const onSubmit = (values: StoreGeneralFormValues) =>
     startTransition(async () => {
@@ -129,277 +148,244 @@ export function StoreGeneralForm({
       router.refresh();
     });
 
-  const text = (field: keyof StoreGeneralFormValues, label: string, opts: { placeholder?: string; dir?: "ltr"; type?: string } = {}) => (
-    <FormField
-      control={form.control}
-      name={field}
-      render={({ field: f }) => (
-        <FormItem className="gap-1.5">
-          <FormLabel className="text-[13px] font-semibold">{label}</FormLabel>
-          <FormControl>
-            <Input
-              className={FIELD_CLASS}
-              disabled={disabled}
-              placeholder={opts.placeholder}
-              type={opts.type}
-              dir={opts.dir}
-              {...f}
-              value={String(f.value ?? "")}
-            />
-          </FormControl>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
+  const discard = () => {
+    form.reset();
+    catalog.reset();
+    setWhatsappSame(Boolean(initial.phone) && initial.phone === initial.whatsapp);
+  };
+
+  const text = (
+    field: "name" | "storeCategoryAr" | "storeCategory" | "phone" | "whatsapp" | "email",
+    label: string,
+    opts: { placeholder?: string; dir?: "ltr"; type?: string; locked?: boolean } = {},
+  ) => (
+    <Field label={label} htmlFor={`store-${field}`} error={errors[field]?.message}>
+      <TextInput
+        id={`store-${field}`}
+        disabled={disabled}
+        readOnly={opts.locked}
+        placeholder={opts.placeholder}
+        type={opts.type}
+        dir={opts.dir}
+        aria-invalid={errors[field] ? true : undefined}
+        className={cn(opts.dir === "ltr" && "font-montserrat rtl:text-end", opts.locked && "bg-(--s-surface-2) text-(--s-muted)")}
+        {...form.register(field)}
+      />
+    </Field>
   );
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5" noValidate>
-        <PageActionBar>
-          <Button type="submit" className={BUTTON_CLASS} disabled={disabled || !dirty}>
-            {isPending ? <LoaderCircle className="animate-spin" /> : <Save />}
-            {t("save")}
-          </Button>
-        </PageActionBar>
-        {readOnly && <p className="rounded-lg border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">{t("readOnly")}</p>}
+    <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4" noValidate>
+      {readOnly && <Note tone="amber">{t("readOnly")}</Note>}
 
-        {/* Two columns on desktop: the store's identity, then contact, languages and currency. */}
-        <div className="grid items-start gap-5 lg:grid-cols-2">
-        <SectionCard id="identity" icon={Store} title={t("identity.title")} description={t("identity.description")}>
-          {/* Builder sellers manage the logo in Website › Design (it shows in every header and footer). */}
-          {brandInSettings ? (
-            <Controller
-              control={form.control}
-              name="logoUrl"
-              render={({ field }) => <LogoField value={field.value} onChange={field.onChange} name={name} disabled={disabled} />}
-            />
-          ) : (
-            <Link
-              href={`/stores/${storeId}/website/design#brand`}
-              className="flex items-center gap-3 rounded-lg border border-dashed px-3 py-2.5 text-sm font-medium text-primary transition-colors hover:border-primary/50 hover:bg-primary/5"
-            >
-              <Palette className="size-4 shrink-0" aria-hidden />
+      <SectionCard id="identity" icon={Store} title={t("identity.title")} description={t("identity.description")}>
+        {/* Builder sellers manage the logo in Website › Design (it shows in every header and footer). */}
+        {brandInSettings ? (
+          <Controller
+            control={form.control}
+            name="logoUrl"
+            render={({ field }) => <LogoField value={field.value} onChange={field.onChange} name={name} disabled={disabled} />}
+          />
+        ) : (
+          <Note icon={Palette}>
+            <Link href={`/stores/${storeId}/website/design#brand`} className="inline-flex min-h-6 items-center text-(--s-link) max-[600px]:min-h-10">
               {t("identity.designLink")}
             </Link>
-          )}
-          <Separator className="my-1" />
-          {text("name", t("fields.name"), { placeholder: t("fields.namePlaceholder") })}
-          <FormField
-            control={form.control}
-            name="description"
-            render={({ field }) => (
-              <FormItem className="gap-1.5">
-                <FormLabel className="justify-between text-[13px] font-semibold">
-                  {t("fields.description")}
-                  <LabelNote>
-                    <span dir="ltr" className="tabular-nums">
-                      {description.length}/{DESCRIPTION_MAX}
-                    </span>
-                  </LabelNote>
-                </FormLabel>
-                <FormControl>
-                  <Textarea className={TEXTAREA_CLASS} maxLength={DESCRIPTION_MAX} disabled={disabled} placeholder={t("fields.descriptionPlaceholder")} {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+          </Note>
+        )}
+        {text("name", t("fields.name"), { placeholder: t("fields.namePlaceholder") })}
+        <Field
+          label={t("fields.description")}
+          htmlFor="store-description"
+          hint={
+            <bdi dir="ltr" className="font-montserrat tabular-nums">
+              {description.length}/{DESCRIPTION_MAX}
+            </bdi>
+          }
+          error={errors.description?.message}
+        >
+          <TextArea
+            id="store-description"
+            maxLength={DESCRIPTION_MAX}
+            disabled={disabled}
+            placeholder={t("fields.descriptionPlaceholder")}
+            {...form.register("description")}
           />
-          <div className="space-y-2">
-            <p className="text-[13px] font-semibold">{t("fields.industry")}</p>
-            <FieldHint>{t("fields.industryHint")}</FieldHint>
-            <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={t("fields.industry")}>
-              {STORE_INDUSTRIES.map((option) => (
-                <button
-                  key={option.id}
-                  type="button"
-                  role="radio"
-                  aria-checked={industry?.id === option.id}
-                  disabled={disabled}
-                  onClick={() => {
-                    form.setValue("storeCategory", option.en, { shouldDirty: true });
-                    form.setValue("storeCategoryAr", option.ar, { shouldDirty: true });
-                  }}
-                  className={cn(
-                    "rounded-full border px-3 py-1.5 text-xs transition-colors disabled:opacity-50",
-                    industry?.id === option.id ? "border-primary bg-primary/5 font-medium text-primary" : "hover:border-primary/40",
-                  )}
-                >
-                  {uiLocale === "en" ? option.en : option.ar}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5">
-            {text("storeCategoryAr", t("fields.categoryAr"), { placeholder: t("fields.categoryArPlaceholder") })}
-            {text("storeCategory", t("fields.categoryEn"), { placeholder: t("fields.categoryEnPlaceholder"), dir: "ltr" })}
-          </div>
-          {brandInSettings && (
-            <Controller
-              control={form.control}
-              name="bannerUrl"
-              render={({ field }) => <BannerField value={field.value} onChange={field.onChange} disabled={disabled} />}
-            />
-          )}
-        </SectionCard>
+        </Field>
+        <Field label={t("fields.industry")} note={t("fields.industryHint")}>
+          <Chips role="group" aria-label={t("fields.industry")}>
+            {STORE_INDUSTRIES.map((option) => (
+              <Chip
+                key={option.id}
+                pressed={industry?.id === option.id}
+                disabled={disabled}
+                className="disabled:opacity-50"
+                onClick={() => {
+                  form.setValue("storeCategory", option.en, { shouldDirty: true });
+                  form.setValue("storeCategoryAr", option.ar, { shouldDirty: true });
+                }}
+              >
+                {uiLocale === "en" ? option.en : option.ar}
+              </Chip>
+            ))}
+          </Chips>
+        </Field>
+        <FieldRow>
+          {text("storeCategoryAr", t("fields.categoryAr"), { placeholder: t("fields.categoryArPlaceholder") })}
+          {text("storeCategory", t("fields.categoryEn"), { placeholder: t("fields.categoryEnPlaceholder"), dir: "ltr" })}
+        </FieldRow>
+        {brandInSettings && (
+          <Controller
+            control={form.control}
+            name="bannerUrl"
+            render={({ field }) => <BannerField value={field.value} onChange={field.onChange} disabled={disabled} />}
+          />
+        )}
+      </SectionCard>
 
-        <div className="space-y-5">
+      <TwoColumns>
         <SectionCard id="contact" icon={Headphones} title={t("contact.title")} description={t("contact.description")}>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5">
-            {text("phone", t("fields.phone"), { placeholder: "01xxxxxxxxx", dir: "ltr", type: "tel" })}
-            {text("whatsapp", t("fields.whatsapp"), { placeholder: "01xxxxxxxxx", dir: "ltr", type: "tel" })}
+          {text("phone", t("fields.phone"), { placeholder: "01xxxxxxxxx", dir: "ltr", type: "tel" })}
+          <div className="flex flex-col gap-2">
+            {text("whatsapp", t("fields.whatsapp"), { placeholder: "01xxxxxxxxx", dir: "ltr", type: "tel", locked: whatsappSame })}
+            <CheckRow
+              label={tSetup("whatsappSame")}
+              checked={whatsappSame}
+              disabled={disabled}
+              className="max-[600px]:min-h-10 max-[600px]:items-center"
+              onChange={(event) => setWhatsappSame(event.target.checked)}
+            />
           </div>
           {text("email", t("fields.email"), { placeholder: "store@example.com", dir: "ltr", type: "email" })}
-          <FieldHint>{t("contact.hint")}</FieldHint>
+          <p className="text-pretty text-xs text-(--s-faint)">{t("contact.hint")}</p>
         </SectionCard>
 
-        <SectionCard id="languages" icon={Languages} title={t("languages.title")} description={t("languages.description")}>
-          <FormField
-            control={form.control}
-            name="supportedLocales"
-            render={({ field }) => (
-              <FormItem className="gap-2">
-                <FormLabel className="text-[13px] font-semibold">{t("fields.supportedLocales")}</FormLabel>
-                <div className="flex flex-wrap gap-4">
-                  {(["ar", "en"] as const).map((locale) => (
-                    <label key={locale} className="flex items-center gap-2 text-sm">
-                      <Checkbox
+        <div className="flex flex-col gap-4">
+          <SectionCard id="languages" icon={Languages} title={t("languages.title")} description={t("languages.description")}>
+            <Controller
+              control={form.control}
+              name="supportedLocales"
+              render={({ field }) => (
+                <Field label={t("fields.supportedLocales")} error={errors.supportedLocales?.message}>
+                  <div className="flex flex-wrap gap-x-5 gap-y-2">
+                    {(["ar", "en"] as const).map((locale) => (
+                      <CheckRow
+                        key={locale}
+                        label={t(`locales.${locale}`)}
                         checked={field.value.includes(locale)}
                         disabled={disabled}
-                        onCheckedChange={(checked) =>
-                          field.onChange(checked ? [...new Set([...field.value, locale])] : field.value.filter((l) => l !== locale))
+                        className="max-[600px]:min-h-10 max-[600px]:items-center"
+                        onChange={(event) =>
+                          field.onChange(event.target.checked ? [...new Set([...field.value, locale])] : field.value.filter((l) => l !== locale))
                         }
                       />
-                      {t(`locales.${locale}`)}
-                    </label>
-                  ))}
-                </div>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="defaultLocale"
-            render={({ field }) => (
-              <FormItem className="gap-2">
-                <FormLabel className="text-[13px] font-semibold">{t("fields.defaultLocale")}</FormLabel>
-                <div className="flex flex-wrap gap-4">
-                  {(["ar", "en"] as const).map((locale) => (
-                    <label key={locale} className="flex items-center gap-2 text-sm">
-                      <input
-                        type="radio"
-                        className="accent-primary"
+                    ))}
+                  </div>
+                </Field>
+              )}
+            />
+            <Controller
+              control={form.control}
+              name="defaultLocale"
+              render={({ field }) => (
+                <Field label={t("fields.defaultLocale")} error={errors.defaultLocale?.message}>
+                  <OptionCards className="grid-cols-2">
+                    {(["ar", "en"] as const).map((locale) => (
+                      <OptionCard
+                        key={locale}
+                        name="default-locale"
+                        title={t(`locales.${locale}`)}
                         checked={field.value === locale}
                         disabled={disabled}
                         onChange={() => field.onChange(locale)}
                       />
-                      {t(`locales.${locale}`)}
-                    </label>
-                  ))}
-                </div>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </SectionCard>
+                    ))}
+                  </OptionCards>
+                </Field>
+              )}
+            />
+          </SectionCard>
 
-        <SectionCard id="currency" icon={Banknote} title={t("currency.title")} description={t("currency.description")}>
-          <FormField
-            control={form.control}
-            name="currency"
-            render={({ field }) => (
-              <FormItem className="gap-1.5">
-                <FormLabel className="text-[13px] font-semibold">{t("currency.currency")}</FormLabel>
-                <Select
-                  value={field.value}
-                  disabled={disabled}
-                  onValueChange={(value) => {
-                    if (!isStoreCurrency(value)) return;
-                    field.onChange(value);
-                    // A new currency starts on its first symbol; the seller can pick another.
-                    form.setValue("currencyLabel", STORE_CURRENCIES[value][0], { shouldDirty: true });
-                  }}
-                >
-                  <FormControl>
-                    <SelectTrigger className="!h-11 w-full rounded-[10px] bg-card px-3.5 shadow-none dark:bg-card">
+          <SectionCard id="currency" icon={Banknote} title={t("currency.title")} description={t("currency.description")}>
+            <Controller
+              control={form.control}
+              name="currency"
+              render={({ field }) => (
+                <Field label={t("currency.currency")} htmlFor="store-currency" error={errors.currency?.message}>
+                  <Select
+                    value={field.value}
+                    disabled={disabled}
+                    onValueChange={(value) => {
+                      if (!isStoreCurrency(value)) return;
+                      field.onChange(value);
+                      // A new currency starts on its first symbol; the seller can pick another.
+                      form.setValue("currencyLabel", STORE_CURRENCIES[value][0], { shouldDirty: true });
+                    }}
+                  >
+                    <SelectTrigger id="store-currency" className={cn(fieldClass, "!h-[46px]")}>
                       <SelectValue />
                     </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {(
-                      [
-                        ["regional", REGIONAL_CURRENCY_CODES],
-                        ["international", INTERNATIONAL_CURRENCY_CODES],
-                      ] as const
-                    ).map(([group, codes], index) => (
-                      <SelectGroup key={group}>
-                        {index > 0 && <SelectSeparator />}
-                        <SelectLabel>{t(`currency.groups.${group}`)}</SelectLabel>
-                        {codes.map((code: StoreCurrency) => (
-                          <SelectItem key={code} value={code}>
-                            <span dir="ltr" className="w-9 font-mono text-xs text-muted-foreground">
-                              {code}
-                            </span>
-                            {t(`currency.names.${code}`)}
-                          </SelectItem>
-                        ))}
-                      </SelectGroup>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="currencyLabel"
-            render={({ field }) => (
-              <FormItem className="gap-2">
-                <FormLabel className="text-[13px] font-semibold">{t("currency.symbol")}</FormLabel>
-                <div role="radiogroup" aria-label={t("currency.symbol")} className={cn("grid gap-2", STORE_CURRENCIES[currency].length > 3 ? "sm:grid-cols-2" : "sm:grid-cols-3")}>
-                  {STORE_CURRENCIES[currency].map((label) => (
-                    <label
-                      key={label}
-                      className={cn(
-                        "flex cursor-pointer items-center gap-2.5 rounded-xl border px-3 py-2.5 text-sm transition-colors",
-                        field.value === label ? "border-primary bg-primary-soft" : "hover:bg-muted/50",
-                        disabled && "pointer-events-none opacity-60",
-                      )}
-                    >
-                      <input
-                        type="radio"
-                        className="accent-primary"
+                    <SelectContent>
+                      {(
+                        [
+                          ["regional", REGIONAL_CURRENCY_CODES],
+                          ["international", INTERNATIONAL_CURRENCY_CODES],
+                        ] as const
+                      ).map(([group, codes], index) => (
+                        <SelectGroup key={group}>
+                          {index > 0 && <SelectSeparator />}
+                          <SelectLabel>{t(`currency.groups.${group}`)}</SelectLabel>
+                          {codes.map((code: StoreCurrency) => (
+                            <SelectItem key={code} value={code}>
+                              <span dir="ltr" className="w-9 font-mono text-xs text-muted-foreground">
+                                {code}
+                              </span>
+                              {t(`currency.names.${code}`)}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
+              )}
+            />
+            <Controller
+              control={form.control}
+              name="currencyLabel"
+              render={({ field }) => (
+                <Field label={t("currency.symbol")} error={errors.currencyLabel?.message}>
+                  <OptionCards className="grid-cols-[repeat(auto-fit,minmax(min(100%,120px),1fr))]">
+                    {STORE_CURRENCIES[currency].map((label) => (
+                      <OptionCard
+                        key={label}
+                        name="currency-label"
                         checked={field.value === label}
                         disabled={disabled}
                         onChange={() => field.onChange(label)}
+                        // Fixed list, never free text; one label is an icon.
+                        title={<span dangerouslySetInnerHTML={{ __html: currencyLabelHtml(label, uiLocale) }} />}
+                        description={<span dangerouslySetInnerHTML={{ __html: formatPrice(300, uiLocale, "sm", label) }} />}
                       />
-                      {/* Fixed list, never free text; one label is an icon. */}
-                      <span className="font-medium" dangerouslySetInnerHTML={{ __html: currencyLabelHtml(label, uiLocale) }} />
-                      <span className="ms-auto text-xs text-muted-foreground" dangerouslySetInnerHTML={{ __html: formatPrice(300, uiLocale, "sm", label) }} />
-                    </label>
-                  ))}
-                </div>
-                <FormMessage />
-              </FormItem>
+                    ))}
+                  </OptionCards>
+                </Field>
+              )}
+            />
+            {currency !== initial.currency && (
+              // Said where the change happens: the numbers stay, only their meaning changes.
+              <Note tone="amber" icon={TriangleAlert}>
+                <span role="alert">{t("currency.changeWarning", { from: initial.currency, to: currency })}</span>
+              </Note>
             )}
-          />
-          {currency !== initial.currency && (
-            // Said where the change happens: the numbers stay, only their meaning changes.
-            <p role="alert" className="flex gap-2 rounded-xl border border-accent-ink/30 bg-accent-soft p-3 text-[13px] text-pretty text-accent-ink">
-              <TriangleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
-              <span>{t("currency.changeWarning", { from: initial.currency, to: currency })}</span>
-            </p>
-          )}
-          <FieldHint>{t(usdLive ? "currency.hintUsd" : "currency.hint")}</FieldHint>
-        </SectionCard>
+            <p className="text-pretty text-xs text-(--s-faint)">{t(usdLive ? "currency.hintUsd" : "currency.hint")}</p>
+          </SectionCard>
         </div>
-        </div>
+      </TwoColumns>
 
-        <StoreCatalogSections money={{ currency: initial.currency }} catalog={catalog} products={catalogProps.products} maxProducts={catalogProps.maxProducts} disabled={disabled} />
+      <StoreCatalogSections money={{ currency: initial.currency }} catalog={catalog} products={catalogProps.products} maxProducts={catalogProps.maxProducts} disabled={disabled} />
 
-      </form>
-    </Form>
+      {!readOnly && <SaveBar dirty={dirty} saving={isPending} onDiscard={discard} />}
+    </form>
   );
 }

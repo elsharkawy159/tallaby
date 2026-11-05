@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { AtSign, Check, CircleDashed, Info, Landmark, Link2, LoaderCircle, Pencil, Plus, Settings2, Smartphone, TriangleAlert } from "lucide-react";
+import { AtSign, Banknote, Check, CircleDashed, Clock, Eye, Landmark, Link2, LoaderCircle, Pencil, Plus, Settings2, Smartphone, TriangleAlert } from "lucide-react";
 
 import {
   INSTAPAY_RECEIVE_TYPES,
@@ -17,15 +17,9 @@ import {
   type InstapayReceiveType,
   type StorePayments,
 } from "@workspace/lib/payments/store-methods";
-import { Badge } from "@workspace/ui/components/badge";
-import { Button } from "@workspace/ui/components/button";
-import { Input } from "@workspace/ui/components/input";
-import { Label } from "@workspace/ui/components/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select";
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@workspace/ui/components/sheet";
-import { Switch } from "@workspace/ui/components/switch";
-import { Textarea } from "@workspace/ui/components/textarea";
-import { BUTTON_CLASS, FIELD_CLASS, SMALL_BUTTON_CLASS, TEXTAREA_CLASS } from "@/components/form/form-ui";
+import { Field, Note, Rows, SectionCard, SellerButton, Tag, TextArea, TextInput, Toggle, fieldClass } from "@/components/seller-ui";
 import { DEFAULT_CURRENCY } from "@workspace/lib";
 import { CurrencyInput } from "@/components/form/currency-input";
 import { moneyUnitText, type MoneyUnit } from "@/lib/i18n/format";
@@ -34,6 +28,7 @@ import { cn } from "@/lib/utils";
 import { saveStorePaymentMethod } from "./payments.server";
 import { toDetails, type PaymentDetailsFormValues } from "./payments.dto";
 import type { StoreGatewayOverview } from "@workspace/lib/payments/store-gateways/server";
+import { APP_DRAWER_CLASS, APP_DRAWER_FOOTER_CLASS } from "../../apps/app-drawer.lib";
 import { StoreGatewaysCard } from "./gateways.client";
 
 type LiveKey = "cod" | "vodafone_cash" | "e_cash" | "we_pay" | "orange_cash" | "instapay";
@@ -87,9 +82,10 @@ function fieldErrors(
 const maskNumber = (n: string) => (n.length > 7 ? `${n.slice(0, 3)} •••• ${n.slice(-4)}` : n);
 
 /**
- * Store settings › Payment methods (Claude design "Seller Payments"): a Cash
- * card and a Wallets & instant transfer card, then the methods coming soon.
- * COD is always set up; a wallet is "not set up" until it has details.
+ * Store settings › Payment methods: a Cash card and a Wallets & instant transfer
+ * card, the seller's card gateway, then the methods coming soon, beside what the
+ * customer sees at checkout. COD is always set up; a wallet is "not set up" until
+ * it has details. Each change saves at once, so this page has no save bar.
  */
 export function StorePaymentsSettings({
   money,
@@ -109,6 +105,8 @@ export function StorePaymentsSettings({
   usdLive: boolean;
 }) {
   const t = useTranslations("storePayments");
+  const tSetup = useTranslations("storeSetup");
+  const tApp = useTranslations("storeApps.providers");
   const locale = useLocale();
   const router = useRouter();
   const [payments, setPayments] = useState<StorePayments>(initial);
@@ -119,7 +117,8 @@ export function StorePaymentsSettings({
   // Egyptian wallets, InstaPay and card payment work only in pounds. The saved settings stay, in case the store goes back to EGP.
   const egyptian = (money.currency ?? DEFAULT_CURRENCY) === DEFAULT_CURRENCY;
   const egyptOnly = (key: LiveKey) => !egyptian && key !== "cod";
-  const enabledCount = LIVE.filter((m) => entry(m.key as LiveKey)?.enabled && !egyptOnly(m.key as LiveKey)).length;
+  const enabledKeys = LIVE.map((m) => m.key as LiveKey).filter((key) => entry(key)?.enabled && !egyptOnly(key));
+  const enabledCount = enabledKeys.length;
 
   const save = (key: LiveKey, change: Change, onDone?: () => void) =>
     startTransition(async () => {
@@ -151,103 +150,116 @@ export function StorePaymentsSettings({
     const locked = on && enabledCount <= 1;
     const label = t(`methods.${key}.name`);
     return (
-      <li key={key} className={cn("flex flex-wrap items-center gap-3.5 border-t px-4 py-4 first:border-t-0 sm:flex-nowrap sm:px-6", setUp && !on && "[&_.pm-logo]:opacity-90")}>
-        <PaymentMethodLogo method={key} label={label} className="pm-logo" />
-        <div className="min-w-0 flex-1">
-          <p className="flex flex-wrap items-center gap-2 text-[15px] font-semibold">
+      <div key={key} className="flex flex-wrap items-center gap-3 px-3.5 py-3 transition-colors duration-150 hover:bg-(--s-tint) [&+&]:border-t [&+&]:border-(--s-line-soft)">
+        <PaymentMethodLogo method={key} label={label} className="size-10 rounded-xl border-(--s-line)" />
+        <div className="min-w-0 flex-1 basis-[180px]">
+          <b className="flex flex-wrap items-center gap-2 text-sm font-bold text-(--s-text)">
             {label}
             <StatusTag setUp={setUp} on={on} />
-          </p>
-          <p className="text-[13px] leading-relaxed text-muted-foreground">{t(`methods.${key}.description`)}</p>
+          </b>
+          <small className="block text-xs leading-relaxed text-(--s-subtle)">{t(`methods.${key}.description`)}</small>
           <DetailsLine methodKey={key} entry={e} money={money} />
         </div>
-        <div className="flex w-full items-center justify-between gap-2.5 ps-[58px] sm:w-auto sm:justify-end sm:ps-0">
+        <div className="ms-auto flex items-center gap-2.5">
           {setUp ? (
             <>
-              <Button
-                type="button"
-                variant="ghost"
-                className={cn(SMALL_BUTTON_CLASS, "text-muted-foreground hover:bg-muted hover:text-foreground")}
-                disabled={readOnly || isPending || off}
-                onClick={() => setEditing(key)}
-              >
-                <Pencil />
+              <SellerButton variant="mini" size="xs" disabled={readOnly || isPending || off} onClick={() => setEditing(key)}>
+                <Pencil aria-hidden />
                 {t("edit")}
-              </Button>
-              <Switch
+              </SellerButton>
+              <Toggle
                 checked={on}
                 disabled={readOnly || isPending || off}
                 aria-disabled={locked || undefined}
-                className={cn(locked && "opacity-55")}
+                className={cn("max-[600px]:min-h-10", locked && "opacity-55")}
                 title={locked ? t("lastMethodLocked") : undefined}
                 onCheckedChange={(next) => toggle(key, next)}
                 aria-label={t("toggle", { method: label })}
               />
             </>
           ) : (
-            <Button
-              type="button"
-              variant="accent"
-              className={SMALL_BUTTON_CLASS}
-              disabled={readOnly || isPending || off}
-              onClick={() => setEditing(key)}
-            >
-              <Plus />
+            <SellerButton variant="solid" size="xs" disabled={readOnly || isPending || off} onClick={() => setEditing(key)}>
+              <Plus aria-hidden />
               {t("setUp")}
-            </Button>
+            </SellerButton>
           )}
         </div>
-      </li>
+      </div>
     );
   };
 
+  const connectedGateway = gateways.connected?.provider;
+  const codFee = entry("cod")?.fee;
+
   return (
-    <div className="space-y-5">
-      {readOnly && <p className="rounded-xl border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">{t("readOnly")}</p>}
-      {!egyptian && (
-        <p className="flex items-start gap-2.5 rounded-xl border border-accent-ink/30 bg-accent-soft px-4 py-3 text-[13px] text-pretty text-accent-ink">
-          <Info className="mt-0.5 size-4 shrink-0" aria-hidden />
-          <span>{t("currencyNotice", { unit: moneyUnitText(locale, money) })}</span>
-        </p>
-      )}
-      <p className="flex items-start gap-2.5 rounded-xl bg-primary-soft px-4 py-3 text-[13px] text-primary-ink">
-        <Info className="mt-0.5 size-4 shrink-0" aria-hidden />
-        <span>{t(usdLive ? "checkoutNoticeUsd" : "checkoutNotice")}</span>
-      </p>
+    <div className="grid grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] items-start gap-4 max-[860px]:grid-cols-1">
+      <div className="flex min-w-0 flex-col gap-4">
+        {readOnly && <Note tone="amber">{t("readOnly")}</Note>}
+        {!egyptian && <Note tone="amber">{t("currencyNotice", { unit: moneyUnitText(locale, money) })}</Note>}
+        <Note>{t(usdLive ? "checkoutNoticeUsd" : "checkoutNotice")}</Note>
 
-      <PaymentCard title={t("cashTitle")} description={t("cashDescription")}>
-        <ul>{row("cod")}</ul>
-      </PaymentCard>
+        <SectionCard icon={Banknote} tone="success" title={t("cashTitle")} description={t("cashDescription")}>
+          <Rows>{row("cod")}</Rows>
+        </SectionCard>
 
-      <PaymentCard
-        title={t("walletsTitle")}
-        description={t("walletsDescription")}
-        count={t("walletsCount", {
-          on: WALLETS.filter((k) => entry(k)?.enabled).length,
-          total: WALLETS.length,
-        })}
+        <SectionCard
+          icon={Smartphone}
+          title={
+            <>
+              {t("walletsTitle")}
+              <Tag>{t("walletsCount", { on: WALLETS.filter((k) => entry(k)?.enabled).length, total: WALLETS.length })}</Tag>
+            </>
+          }
+          description={t("walletsDescription")}
+        >
+          <Rows>{WALLETS.map(row)}</Rows>
+        </SectionCard>
+
+        <StoreGatewaysCard storeId={storeId} initial={gateways} readOnly={readOnly || !egyptian} usdLive={usdLive} />
+
+        <SectionCard icon={Clock} tone="accent" title={t("soonTitle")} description={t("soonDescription")}>
+          <ul className="flex flex-wrap gap-1.5">
+            {SOON.map((m) => {
+              const label = t(`methods.${m.key}.name`);
+              return (
+                <li key={m.key} className="inline-flex h-10 items-center gap-2 rounded-full border border-(--s-field) bg-(--s-surface) ps-1.5 pe-2.5 text-[13px] font-semibold text-(--s-muted)">
+                  <PaymentMethodLogo method={m.key} label={label} className="size-7 rounded-full border-(--s-line) text-[9px]" />
+                  {label}
+                  <Tag tone="warning">{t("soon")}</Tag>
+                </li>
+              );
+            })}
+          </ul>
+        </SectionCard>
+      </div>
+
+      {/* Follows every save; the store's real checkout list, with no sample amounts. */}
+      <SectionCard
+        icon={Eye}
+        title={tSetup("customerSeesTitle")}
+        description={tSetup("customerSeesDescription")}
+        className="sticky top-[140px] max-[860px]:static"
       >
-        <ul>{WALLETS.map(row)}</ul>
-      </PaymentCard>
-
-      <StoreGatewaysCard storeId={storeId} initial={gateways} readOnly={readOnly || !egyptian} usdLive={usdLive} />
-
-      <PaymentCard title={t("soonTitle")} description={t("soonDescription")}>
-        <ul className="grid gap-3 p-4 sm:grid-cols-2 sm:p-6">
-          {SOON.map((m) => {
-            const label = t(`methods.${m.key}.name`);
-            return (
-              <li key={m.key} aria-disabled="true" className="flex items-center gap-3 rounded-xl border p-3 opacity-70">
-                <PaymentMethodLogo method={m.key} label={label} className="size-9" />
-                <span className="min-w-0 flex-1 truncate text-sm font-medium">{label}</span>
-                <Badge variant="outline" className="text-[10px] font-normal">
-                  {t("soon")}
-                </Badge>
-              </li>
-            );
-          })}
-        </ul>
-      </PaymentCard>
+        <div aria-hidden className="flex flex-col gap-2 rounded-[18px] border border-(--s-line) bg-(--s-tint) p-3.5">
+          <b className="text-sm font-bold text-(--s-ink)">{tSetup("customerSeesHeading")}</b>
+          {enabledKeys.map((key, index) => (
+            <div key={key} className={cn("flex items-center gap-2.5 rounded-[14px] border-[1.5px] border-(--s-line) bg-(--s-surface) px-3 py-2.5", index === 0 && "border-(--s-primary)")}>
+              <span className={cn("size-4 shrink-0 rounded-full border-2 border-(--s-field-strong)", index === 0 && "border-[5px] border-(--s-primary)")} />
+              <PaymentMethodLogo method={key} label="" className="size-7 rounded-lg border-(--s-line) text-[9px]" />
+              <span className="min-w-0 flex-1 truncate text-[13px] font-semibold text-(--s-text)">{t(`methods.${key}.name`)}</span>
+              {key === "cod" && codFee ? (
+                <small className="text-[11.5px] whitespace-nowrap text-(--s-subtle)">{t("codFeeLine", { fee: codFee, currency: moneyUnitText(locale, money) })}</small>
+              ) : null}
+            </div>
+          ))}
+          {connectedGateway && (
+            <div className="flex items-center gap-2.5 rounded-[14px] border-[1.5px] border-(--s-line) bg-(--s-surface) px-3 py-2.5">
+              <span className="size-4 shrink-0 rounded-full border-2 border-(--s-field-strong)" />
+              <span className="min-w-0 flex-1 truncate text-[13px] font-semibold text-(--s-text)">{tApp(`${connectedGateway}.name`)}</span>
+            </div>
+          )}
+        </div>
+      </SectionCard>
 
       {editing && (
         <MethodSheet
@@ -264,59 +276,33 @@ export function StorePaymentsSettings({
   );
 }
 
-function PaymentCard({
-  title,
-  description,
-  count,
-  children,
-}: {
-  title: string;
-  description: string;
-  count?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="rounded-2xl border bg-card shadow-[0_1px_2px_rgba(20,81,99,0.05),0_1px_3px_rgba(20,81,99,0.04)] dark:shadow-none">
-      <div className="flex items-center gap-3 border-b px-4 py-[18px] sm:px-6">
-        <div className="min-w-0 flex-1">
-          <h2 className="text-base font-bold leading-normal">{title}</h2>
-          <p className="text-[13px] text-muted-foreground">{description}</p>
-        </div>
-        {count && <span className="hidden whitespace-nowrap text-xs text-muted-foreground sm:inline">{count}</span>}
-      </div>
-      {children}
-    </section>
-  );
-}
-
 function StatusTag({ setUp, on }: { setUp: boolean; on: boolean }) {
   const t = useTranslations("storePayments");
-  const base = "inline-flex h-[22px] items-center gap-1 whitespace-nowrap rounded-full px-2.5 text-[11.5px] font-medium";
   if (!setUp) {
     return (
-      <span className={cn(base, "bg-accent-soft text-accent-ink")}>
-        <CircleDashed className="size-3" aria-hidden />
+      <Tag tone="warning">
+        <CircleDashed aria-hidden />
         {t("status.notSetUp")}
-      </span>
+      </Tag>
     );
   }
   if (on) {
     return (
-      <span className={cn(base, "bg-success-soft text-success")}>
-        <Check className="size-3" aria-hidden />
+      <Tag tone="success">
+        <Check aria-hidden />
         {t("status.on")}
-      </span>
+      </Tag>
     );
   }
-  return <span className={cn(base, "border bg-muted text-muted-foreground")}>{t("status.off")}</span>;
+  return <Tag>{t("status.off")}</Tag>;
 }
 
 function DetailsLine({ methodKey, entry, money }: { methodKey: LiveKey; entry?: Entry; money: MoneyUnit }) {
   const t = useTranslations("storePayments");
   const locale = useLocale();
   const unit = moneyUnitText(locale, money);
-  const line = "mt-0.5 flex flex-wrap items-center gap-1.5 text-[12.5px]";
-  const icon = "size-3.5 text-faint";
+  const line = "mt-0.5 flex flex-wrap items-center gap-1.5 text-xs text-(--s-muted)";
+  const icon = "size-3.5 text-(--s-subtle)";
   if (methodKey === "cod") {
     const parts = [entry?.fee ? t("codFeeLine", { fee: entry.fee, currency: unit }) : t("codNoFee")];
     if (entry?.maxOrder) parts.push(t("codMaxSummary", { max: entry.maxOrder, currency: unit }));
@@ -339,7 +325,7 @@ function DetailsLine({ methodKey, entry, money }: { methodKey: LiveKey; entry?: 
   return (
     <p className={line}>
       <Icon className={icon} aria-hidden />
-      <bdi dir="ltr" className="font-mono">
+      <bdi dir="ltr" className="font-montserrat">
         {id}
       </bdi>
       · {t("holderSummary", { name: d.holderName })}
@@ -400,11 +386,15 @@ function MethodSheet({
   ) => {
     const error = submitted ? errors[name] : undefined;
     return (
-      <div className="grid gap-1.5">
-        <Label htmlFor={`pm-${name}`}>{opts.label ?? t(`fields.${name}`)}</Label>
-        <Input
+      <Field
+        label={opts.label ?? t(`fields.${name}`)}
+        htmlFor={`pm-${name}`}
+        note={opts.help}
+        error={error ? t(`fieldErrors.${error}`) : undefined}
+      >
+        <TextInput
           id={`pm-${name}`}
-          className={cn(FIELD_CLASS, opts.ltr && "text-start font-mono", error && "border-destructive")}
+          className={cn(opts.ltr && "text-start font-montserrat")}
           dir={opts.ltr ? "ltr" : undefined}
           inputMode={opts.inputMode}
           placeholder={opts.placeholder}
@@ -412,48 +402,42 @@ function MethodSheet({
           aria-invalid={!!error}
           onChange={(ev) => setValues((v) => ({ ...v, [name]: ev.target.value }))}
         />
-        {error ? (
-          <p className="text-xs text-destructive">{t(`fieldErrors.${error}`)}</p>
-        ) : (
-          opts.help && <p className="text-xs leading-relaxed text-muted-foreground">{opts.help}</p>
-        )}
-      </div>
+      </Field>
     );
   };
 
-  const optional = <span className="text-xs font-normal text-faint">{t("optional")}</span>;
-
   return (
     <Sheet open onOpenChange={(open) => !open && onClose()}>
-      <SheetContent side={locale.startsWith("ar") ? "left" : "right"} className="flex w-full flex-col gap-0 p-0 sm:max-w-[440px]">
-        <SheetHeader className="border-b px-5 py-[18px]">
+      <SheetContent side={locale.startsWith("ar") ? "left" : "right"} className={APP_DRAWER_CLASS}>
+        <SheetHeader className="border-b border-(--s-line-soft) px-[18px] py-4 pe-14">
           <div className="flex items-center gap-3">
-            <PaymentMethodLogo method={methodKey} label={label} />
+            <PaymentMethodLogo method={methodKey} label={label} className="border-(--s-line)" />
             <div className="min-w-0">
-              <SheetTitle className="text-base font-bold">{t(setUp ? "editTitle" : "setUpTitle", { method: label })}</SheetTitle>
-              <SheetDescription className="text-xs">{t(`methods.${methodKey}.setupHelp`)}</SheetDescription>
+              <SheetTitle className="text-[17px] font-bold text-(--s-ink)">{t(setUp ? "editTitle" : "setUpTitle", { method: label })}</SheetTitle>
+              <SheetDescription className="text-[12.5px] text-(--s-subtle)">{t(`methods.${methodKey}.setupHelp`)}</SheetDescription>
             </div>
           </div>
         </SheetHeader>
 
-        <form id="pm-form" onSubmit={submit} noValidate className="flex flex-1 flex-col gap-[18px] overflow-y-auto p-5">
+        <form id="pm-form" onSubmit={submit} noValidate className="flex flex-1 flex-col gap-4 overflow-y-auto p-[18px]">
           {kind === "cod" ? (
             <>
-              <div className="grid gap-1.5">
-                <Label htmlFor="pm-fee" className="justify-between">
-                  {t("fields.codFeeLabel")}
-                  {optional}
-                </Label>
+              <Field
+                label={t("fields.codFeeLabel")}
+                hint={t("optional")}
+                htmlFor="pm-fee"
+                note={t("fields.codFeeHelp")}
+                error={submitted && !feeValid ? t("fieldErrors.codInvalid") : undefined}
+              >
                 <CurrencyInput {...money} id="pm-fee" placeholder="0" decimals={false} value={fee} onChange={setFee} invalid={submitted && !feeValid} />
-                <p className={cn("text-xs leading-relaxed", submitted && !feeValid ? "text-destructive" : "text-muted-foreground")}>
-                  {submitted && !feeValid ? t("fieldErrors.codInvalid") : t("fields.codFeeHelp")}
-                </p>
-              </div>
-              <div className="grid gap-1.5">
-                <Label htmlFor="pm-max" className="justify-between">
-                  {t("fields.codMax")}
-                  {optional}
-                </Label>
+              </Field>
+              <Field
+                label={t("fields.codMax")}
+                hint={t("optional")}
+                htmlFor="pm-max"
+                note={t("fields.codMaxHelp")}
+                error={submitted && !maxValid ? t("fieldErrors.codMaxInvalid") : undefined}
+              >
                 <CurrencyInput
                   {...money}
                   id="pm-max"
@@ -463,34 +447,25 @@ function MethodSheet({
                   onChange={setMaxOrder}
                   invalid={submitted && !maxValid}
                 />
-                <p className={cn("text-xs leading-relaxed", submitted && !maxValid ? "text-destructive" : "text-muted-foreground")}>
-                  {submitted && !maxValid ? t("fieldErrors.codMaxInvalid") : t("fields.codMaxHelp")}
-                </p>
-              </div>
-              <div className="grid gap-1.5">
-                <Label htmlFor="pm-note" className="justify-between">
-                  {t("fields.noteLabel")}
-                  {optional}
-                </Label>
-                <Textarea
+              </Field>
+              <Field label={t("fields.noteLabel")} hint={t("optional")} htmlFor="pm-note">
+                <TextArea
                   id="pm-note"
-                  className={TEXTAREA_CLASS}
                   maxLength={300}
                   placeholder={t("fields.notePlaceholder")}
                   value={note}
                   onChange={(ev) => setNote(ev.target.value)}
                 />
-              </div>
+              </Field>
             </>
           ) : (
             <>
               {kind === "wallet" && field("phone", { ltr: true, inputMode: "tel", placeholder: "01XXXXXXXXX", help: t("fields.phoneHelp") })}
               {kind === "instapay" && (
                 <>
-                  <div className="grid gap-1.5">
-                    <Label htmlFor="pm-receive-by">{t("receiveBy.label")}</Label>
+                  <Field label={t("receiveBy.label")} htmlFor="pm-receive-by">
                     <Select value={receiveBy} onValueChange={(next) => setReceiveBy(next as InstapayReceiveType)}>
-                      <SelectTrigger id="pm-receive-by" className={cn(FIELD_CLASS, "w-full")}>
+                      <SelectTrigger id="pm-receive-by" className={cn(fieldClass, "!h-[46px]")}>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -505,7 +480,7 @@ function MethodSheet({
                         })}
                       </SelectContent>
                     </Select>
-                  </div>
+                  </Field>
                   {field(receiveBy, {
                     ltr: true,
                     label: t(`receiveBy.${receiveBy}Field`),
@@ -517,18 +492,15 @@ function MethodSheet({
               )}
               {field("holderName", { help: t("fields.holderHelp") })}
               {hintMismatch && (
-                <p className="flex gap-2 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2.5 text-sm">
-                  <TriangleAlert className="mt-0.5 size-4 shrink-0 text-amber-600" aria-hidden />
+                <Note tone="amber" icon={TriangleAlert}>
                   {t("operatorHint", { operator: t(`methods.${hint}.name`), method: label })}
-                </p>
+                </Note>
               )}
-              <ol className="flex flex-col gap-1.5 rounded-xl border bg-muted/40 px-4 py-3.5 text-[13px] text-muted-foreground">
+              <ol className="flex flex-col gap-2 rounded-2xl bg-(--s-tint) px-3.5 py-3 text-[12.5px] text-(--s-muted)">
                 {(["choose", "transfer", "confirm"] as const).map((step, i) => (
                   <li key={step} className="flex gap-2.5">
-                    <span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full border bg-card text-[11px] font-bold text-primary-ink">
-                      {i + 1}
-                    </span>
-                    {t(`howItWorks.${step}`, { method: label })}
+                    <span className="grid size-6 shrink-0 place-items-center rounded-full bg-primary-soft font-montserrat text-[11.5px] font-bold text-primary-ink">{i + 1}</span>
+                    <span className="min-w-0 pt-0.5">{t(`howItWorks.${step}`, { method: label })}</span>
                   </li>
                 ))}
               </ol>
@@ -536,14 +508,14 @@ function MethodSheet({
           )}
         </form>
 
-        <SheetFooter className="flex-row items-center gap-2 border-t px-5 py-3.5">
-          <Button type="submit" form="pm-form" variant="accent" className={BUTTON_CLASS} disabled={pending}>
-            {pending ? <LoaderCircle className="animate-spin" /> : <Check />}
-            {setUp ? t("save") : t("saveAndEnable")}
-          </Button>
-          <Button type="button" variant="ghost" className={cn(BUTTON_CLASS, "text-muted-foreground")} onClick={onClose} disabled={pending}>
+        <SheetFooter className={APP_DRAWER_FOOTER_CLASS}>
+          <SellerButton variant="outline" onClick={onClose} disabled={pending}>
             {t("cancel")}
-          </Button>
+          </SellerButton>
+          <SellerButton type="submit" form="pm-form" disabled={pending}>
+            {pending ? <LoaderCircle className="animate-spin" aria-hidden /> : <Check aria-hidden />}
+            {setUp ? t("save") : t("saveAndEnable")}
+          </SellerButton>
         </SheetFooter>
       </SheetContent>
     </Sheet>

@@ -19,16 +19,11 @@ import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 import { cn } from "@workspace/ui/lib/utils";
-import { Alert, AlertDescription, AlertTitle } from "@workspace/ui/components/alert";
-import { Button } from "@workspace/ui/components/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@workspace/ui/components/card";
 import { ChoiceCard, ChoiceGroup, ChoiceIndicator, ChoiceItem } from "@workspace/ui/components/choice-card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@workspace/ui/components/collapsible";
-import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
 import { SegmentedControl, SegmentedControlItem } from "@workspace/ui/components/segmented-control";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select";
-import { Textarea } from "@workspace/ui/components/textarea";
 import { Toggle } from "@workspace/ui/components/toggle";
 import {
   DAILY_ORDER_RANGES,
@@ -58,6 +53,7 @@ import {
   type ServiceChoice,
 } from "@workspace/lib/fulfillment";
 import { EGYPT_GOVERNORATES, getGovernorateLabel } from "@workspace/lib/shipping";
+import { Note, SectionCard, SellerButton, TextArea, TextInput } from "@/components/seller-ui";
 import { requestFulfillmentServices } from "./fulfillment.server";
 import {
   toFormPath,
@@ -175,23 +171,19 @@ export function FulfillmentRequestForm({
   const services = values.services;
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-start justify-between gap-3 space-y-0">
-        <div className="space-y-1">
-          <CardTitle className="text-base">{TALLABY_SERVICES_ENABLED ? t("title") : t("sellerOnly.title")}</CardTitle>
-          <CardDescription>
-            {TALLABY_SERVICES_ENABLED ? t("description") : t("sellerOnly.description")}
-          </CardDescription>
-        </div>
-        {!open && (
-          <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
+    <SectionCard
+      title={TALLABY_SERVICES_ENABLED ? t("title") : t("sellerOnly.title")}
+      description={TALLABY_SERVICES_ENABLED ? t("description") : t("sellerOnly.description")}
+      action={
+        !open ? (
+          <SellerButton variant="mini" size="xs" onClick={() => setOpen(true)}>
             {TALLABY_SERVICES_ENABLED ? (hasRequest ? t("change") : t("start")) : t("sellerOnly.edit")}
-          </Button>
-        )}
-      </CardHeader>
-
+          </SellerButton>
+        ) : undefined
+      }
+    >
       {open && (
-        <CardContent className="space-y-6">
+        <div className="space-y-6">
           <div className="space-y-2">
             <ChoiceGroup
               columns={2}
@@ -233,10 +225,7 @@ export function FulfillmentRequestForm({
           </div>
 
           {switchedNotice && (
-            <Alert variant="info">
-              <Info />
-              <AlertDescription>{t("model.switchedToManaged")}</AlertDescription>
-            </Alert>
+            <Note icon={Info}>{t("model.switchedToManaged")}</Note>
           )}
 
           <div className="space-y-3">
@@ -325,7 +314,7 @@ export function FulfillmentRequestForm({
 
             {services.packaging.provider === "tallaby" && (
               <Field label={t("details.packagingNotes")} optional={t("optional")} error={err("details.specialPackagingNotes")}>
-                <Textarea
+                <TextArea
                   rows={2}
                   maxLength={500}
                   placeholder={t("details.packagingNotesPlaceholder")}
@@ -344,11 +333,10 @@ export function FulfillmentRequestForm({
             )}
 
             {requiresInventoryDropOff(services) && (
-              <Alert variant="info">
-                <Warehouse />
-                <AlertTitle className="font-semibold">{t("details.dropOffTitle")}</AlertTitle>
-                <AlertDescription>{t("details.dropOffBody")}</AlertDescription>
-              </Alert>
+              <Note icon={Warehouse}>
+                <b className="block font-bold">{t("details.dropOffTitle")}</b>
+                {t("details.dropOffBody")}
+              </Note>
             )}
 
             {requiresPickupAddress(services) && (
@@ -356,15 +344,12 @@ export function FulfillmentRequestForm({
             )}
           </section>
 
-          <Alert variant="muted">
-            <CircleCheck />
-            <AlertDescription>{t("pricingNote")}</AlertDescription>
-          </Alert>
+          <Note icon={CircleCheck}>{t("pricingNote")}</Note>
 
           <div className="flex flex-wrap justify-end gap-2">
             {hasRequest && (
-              <Button
-                variant="ghost"
+              <SellerButton
+                variant="outline"
                 disabled={pending}
                 onClick={() => {
                   setValues(initial);
@@ -373,15 +358,15 @@ export function FulfillmentRequestForm({
                 }}
               >
                 {t("cancel")}
-              </Button>
+              </SellerButton>
             )}
-            <Button onClick={submit} disabled={pending}>
+            <SellerButton onClick={submit} disabled={pending}>
               {pending ? t("sending") : TALLABY_SERVICES_ENABLED ? t("submit") : t("sellerOnly.submit")}
-            </Button>
+            </SellerButton>
           </div>
-        </CardContent>
+        </div>
       )}
-    </Card>
+    </SectionCard>
   );
 }
 
@@ -631,7 +616,7 @@ function SellerDeliveryModeField({
           <Label htmlFor="courier-name" className="text-sm font-semibold">
             {t("courierName")}
           </Label>
-          <Input
+          <TextInput
             id="courier-name"
             placeholder={t("courierNamePlaceholder")}
             value={choice.config?.courierName ?? ""}
@@ -709,7 +694,7 @@ function PickupSection({
           <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">{t("optional")}</span>
         )}
       </Label>
-      <Input
+      <TextInput
         id={`pickup-${key}`}
         value={values[key]}
         aria-invalid={!!err(`pickup.${key}`)}

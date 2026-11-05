@@ -5,18 +5,13 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Check, ClipboardList, LoaderCircle } from "lucide-react";
+import { Check, ClipboardList, LoaderCircle, Mailbox } from "lucide-react";
 
 import { PACKAGE_VOLUMES } from "@workspace/lib/shipping";
 import { wassalhaSettingsSchema } from "@workspace/lib/integrations";
 import type { WassalhaOverview } from "@workspace/lib/integrations/server";
-import { Button } from "@workspace/ui/components/button";
-import { ChoiceCard, ChoiceGroup } from "@workspace/ui/components/choice-card";
-import { Input } from "@workspace/ui/components/input";
-import { Label } from "@workspace/ui/components/label";
-import { Switch } from "@workspace/ui/components/switch";
-import { cn } from "@workspace/ui/lib/utils";
-import { BUTTON_CLASS, FIELD_CLASS, SMALL_BUTTON_CLASS } from "@/components/form/form-ui";
+import { Field, FieldRow, Note, OptionCard, OptionCards, SectionCard, SellerButton, SellerCard, TextInput, Toggle } from "@/components/seller-ui";
+import { cn } from "@/lib/utils";
 import { AppPageHeader } from "../app-page-header";
 import { disconnectStoreApp } from "../apps.server";
 import { DisconnectAppButton } from "../disconnect-button.client";
@@ -90,7 +85,7 @@ export function WassalhaApp({
     });
 
   return (
-    <div className="flex flex-col gap-6">
+    <>
       <AppPageHeader
         storeId={storeId}
         app="wassalha"
@@ -99,104 +94,102 @@ export function WassalhaApp({
         subtitle={t("subtitle", { store: storeName })}
       />
 
-      {readOnly && <p className="rounded-xl bg-muted p-3.5 text-[13px] text-muted-foreground">{t("readOnly")}</p>}
+      {readOnly && <Note tone="amber">{t("readOnly")}</Note>}
 
-      <ol className="flex flex-col gap-2 rounded-2xl border bg-card p-4 text-[13px] text-muted-foreground sm:p-5">
+      <SellerCard>
+      <ol className="flex flex-col gap-2.5 p-[18px] text-[13px] text-(--s-muted)">
         {(["account", "export", "upload", "status"] as const).map((step, i) => (
           <li key={step} className="flex gap-2.5">
-            <span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full border bg-muted/40 text-[11px] font-bold text-primary-ink">
-              {i + 1}
-            </span>
-            {t(`steps.${step}`)}
+            <span className="grid size-6 shrink-0 place-items-center rounded-full bg-primary-soft font-montserrat text-[11.5px] font-bold text-primary-ink">{i + 1}</span>
+            <span className="min-w-0 pt-0.5">{t(`steps.${step}`)}</span>
           </li>
         ))}
       </ol>
+      </SellerCard>
 
-      <form onSubmit={submit} noValidate className="flex flex-col gap-5 rounded-2xl border bg-card p-4 sm:p-6">
-        <div>
-          <h2 className="text-base font-bold">{t("accountTitle")}</h2>
-          <p className="text-[13px] text-muted-foreground">{t("accountHelp")}</p>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2">
+      <form onSubmit={submit} noValidate>
+      <SectionCard icon={Mailbox} title={t("accountTitle")} description={t("accountHelp")}>
+        <FieldRow>
           {TEXT_FIELDS.map((name) => {
             const error = submitted && invalid.has(name);
             return (
-              <div key={name} className="grid gap-1.5">
-                <Label htmlFor={`ws-${name}`}>{t(`fields.${name}`)}</Label>
-                <Input
+              <Field
+                key={name}
+                label={t(`fields.${name}`)}
+                htmlFor={`ws-${name}`}
+                note={t(`help.${name}`)}
+                error={error ? t(`errors.${name}`) : undefined}
+              >
+                <TextInput
                   id={`ws-${name}`}
                   dir={name === "postId" ? "ltr" : "auto"}
-                  className={cn(FIELD_CLASS, name === "postId" && "text-start font-mono", error && "border-destructive")}
+                  className={cn(name === "postId" && "text-start font-montserrat")}
                   value={form[name]}
                   disabled={readOnly}
                   aria-invalid={error}
                   onChange={(ev) => set(name, ev.target.value)}
                 />
-                <p className={cn("text-xs", error ? "text-destructive" : "text-muted-foreground")}>
-                  {error ? t(`errors.${name}`) : t(`help.${name}`)}
-                </p>
-              </div>
+              </Field>
             );
           })}
-        </div>
+        </FieldRow>
 
-        <fieldset className="grid gap-2">
-          <legend className="mb-1 text-sm font-medium">{t("fields.volume")}</legend>
-          <ChoiceGroup value={form.volume} onValueChange={(v) => set("volume", v)} columns={3} disabled={readOnly}>
+        <Field label={t("fields.volume")} note={t("help.volume")}>
+          <OptionCards className="grid-cols-[repeat(auto-fit,minmax(min(100%,120px),1fr))]">
             {PACKAGE_VOLUMES.map((v) => (
-              <ChoiceCard key={v} value={v} indicator title={t(`volumes.${v.toLowerCase()}`)} />
+              <OptionCard
+                key={v}
+                name="wassalha-volume"
+                title={t(`volumes.${v.toLowerCase()}`)}
+                checked={form.volume === v}
+                disabled={readOnly}
+                onChange={() => set("volume", v)}
+              />
             ))}
-          </ChoiceGroup>
-          <p className="text-xs text-muted-foreground">{t("help.volume")}</p>
-        </fieldset>
+          </OptionCards>
+        </Field>
 
-        <div className="flex items-start justify-between gap-4 rounded-xl border p-3.5">
-          <div>
-            <Label htmlFor="ws-pod">{t("fields.hasPod")}</Label>
-            <p className="text-xs text-muted-foreground">{t("help.hasPod")}</p>
+        <div className="flex items-start justify-between gap-4 rounded-2xl border border-(--s-line) p-3.5">
+          <div className="min-w-0">
+            <b className="block text-[13.5px] font-bold text-(--s-text)">{t("fields.hasPod")}</b>
+            <small className="block text-xs text-(--s-subtle)">{t("help.hasPod")}</small>
           </div>
-          <Switch id="ws-pod" checked={form.hasPod} disabled={readOnly} onCheckedChange={(v) => set("hasPod", v)} />
+          <Toggle className="max-[600px]:min-h-10" id="ws-pod" aria-label={t("fields.hasPod")} checked={form.hasPod} disabled={readOnly} onCheckedChange={(v) => set("hasPod", v)} />
         </div>
 
-        <div className="grid gap-1.5">
-          <Label htmlFor="ws-note" className="justify-between">
-            {t("fields.note")}
-            <span className="text-xs font-normal text-faint">{t("optional")}</span>
-          </Label>
-          <Input
+        <Field label={t("fields.note")} hint={t("optional")} htmlFor="ws-note" note={t("help.note")}>
+          <TextInput
             id="ws-note"
             dir="auto"
             maxLength={200}
-            className={FIELD_CLASS}
             placeholder={t("notePlaceholder")}
             value={form.note}
             disabled={readOnly}
             onChange={(ev) => set("note", ev.target.value)}
           />
-          <p className="text-xs text-muted-foreground">{t("help.note")}</p>
-        </div>
+        </Field>
 
-        <p className="rounded-xl bg-muted/50 px-3.5 py-3 text-xs text-muted-foreground">{t("weightNote")}</p>
+        <Note>{t("weightNote")}</Note>
 
-        <div className="flex flex-wrap items-center gap-2 border-t pt-4">
-          <Button type="submit" variant="accent" className={BUTTON_CLASS} disabled={readOnly || pending}>
+        <div className="flex flex-wrap items-center gap-2 border-t border-(--s-line-soft) pt-4">
+          <SellerButton type="submit" disabled={readOnly || pending}>
             {pending ? <LoaderCircle className="animate-spin" /> : <Check />}
             {connected ? t("save") : t("connect")}
-          </Button>
+          </SellerButton>
           {connected && (
             <>
-              <Button asChild variant="outline" className={SMALL_BUTTON_CLASS}>
+              <SellerButton asChild variant="mini">
                 <Link href="/orders">
                   <ClipboardList className="size-4" aria-hidden />
                   {t("goToOrders")}
                 </Link>
-              </Button>
-              <DisconnectAppButton className={cn(SMALL_BUTTON_CLASS, "ms-auto")} disabled={readOnly} pending={pending} onConfirm={remove} />
+              </SellerButton>
+              <DisconnectAppButton className="ms-auto" disabled={readOnly} pending={pending} onConfirm={remove} />
             </>
           )}
         </div>
+      </SectionCard>
       </form>
-    </div>
+    </>
   );
 }

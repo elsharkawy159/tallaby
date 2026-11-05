@@ -1,15 +1,15 @@
-import { CircleCheck, Clock, CircleX, HandCoins, Lock, MessageCircle, Unlock } from "lucide-react";
+import { Banknote, CircleCheck, CircleX, Clock, Lock, MessageCircle, Route, TrendingUp, Unlock, UserPlus, Users, Wallet } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
-import { REFERRAL_MIN_PAYOUT_PIASTRES, fromPiastres, referralShareUrl } from "@workspace/lib/referrals";
+import { REFERRAL_MIN_PAYOUT_PIASTRES, REFERRAL_RATE_PERCENT, fromPiastres, referralShareUrl } from "@workspace/lib/referrals";
 import { getReferralOverview, type ReferralPayoutView } from "@workspace/lib/referrals/server";
-import { Badge } from "@workspace/ui/components/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/components/card";
-import { Progress } from "@workspace/ui/components/progress";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@workspace/ui/components/table";
-import { cn } from "@workspace/ui/lib/utils";
+import { EmptyState, Note, ResponsiveTable, Row, Rows, SectionCard, SellerButton, SellerCard, StatusBadge, TwoColumns } from "@/components/seller-ui";
 import { STOREFRONT_URL, getSupportWhatsAppUrl } from "@/lib/constants";
 import { formatDate, formatMoney } from "@/lib/i18n/format";
-import { ReferralLinkCard, WithdrawButton } from "./earn.client";
+import { cn } from "@/lib/utils";
+import { CopyLinkButton, ReferralLinkCard, WithdrawButton } from "./earn.client";
+
+const STAT_ICONS = { earned: TrendingUp, available: Wallet, paid: CircleCheck } as const;
+const HOW_STEPS = ["share", "topUp", "earn"] as const;
 
 /**
  * Earn with us (F-37): commission totals, the share link, progress to unlock
@@ -17,7 +17,12 @@ import { ReferralLinkCard, WithdrawButton } from "./earn.client";
  * read fresh on every request (CLAUDE.md rule 8).
  */
 export async function EarnSection({ sellerId }: { sellerId: string }) {
-  const [t, locale, overview] = await Promise.all([getTranslations("earn"), getLocale(), getReferralOverview(sellerId)]);
+  const [t, tSetup, locale, overview] = await Promise.all([
+    getTranslations("earn"),
+    getTranslations("storeSetup"),
+    getLocale(),
+    getReferralOverview(sellerId),
+  ]);
   if (!overview) return null;
 
   const minimum = formatMoney(fromPiastres(REFERRAL_MIN_PAYOUT_PIASTRES), locale);
@@ -25,140 +30,134 @@ export async function EarnSection({ sellerId }: { sellerId: string }) {
   const percent = (count: number, goal: number) => Math.min(100, Math.round((count / goal) * 100));
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
-      <header className="space-y-2">
-        <h1 className="flex items-center gap-2 text-2xl font-semibold">
-          <HandCoins className="size-6 text-primary" aria-hidden />
-          {t("title")}
-        </h1>
-        <p className="max-w-3xl text-sm text-muted-foreground">{t("intro")}</p>
-      </header>
+    <>
+      {/* The hero is always dark, in both themes. */}
+      <section className="sui-rise relative grid grid-cols-[minmax(0,1fr)_auto] items-center gap-5 overflow-hidden rounded-[28px] bg-(--tallaby-teal-900) p-7 text-white max-[600px]:grid-cols-1 max-[600px]:rounded-[24px] max-[600px]:p-5">
+        <span aria-hidden className="pointer-events-none absolute -inset-y-1/2 start-[45%] end-[-10%] bg-[radial-gradient(50%_50%_at_50%_40%,rgb(253_173_40/.24),transparent_70%)]" />
+        <div className="relative min-w-0">
+          <h1 className="text-[clamp(22px,3vw,30px)] font-bold leading-[1.35]">{t("title")}</h1>
+          <p className="mt-1.5 max-w-[560px] text-pretty text-sm text-[#c6d8dc]">{t("intro")}</p>
+        </div>
+        <div className="relative grid size-[120px] place-items-center rounded-full border border-white/10 bg-white/5 text-center max-[600px]:size-[96px]">
+          <div>
+            <b dir="ltr" className="block font-montserrat text-[34px] font-extrabold leading-none text-(--tallaby-amber-600) max-[600px]:text-[26px]">
+              {REFERRAL_RATE_PERCENT}%
+            </b>
+            <small className="text-[11.5px] text-[#c6d8dc]">{tSetup("perTopUp")}</small>
+          </div>
+        </div>
+      </section>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-3 gap-3 max-[720px]:grid-cols-1">
         {(
           [
             ["earned", overview.earned],
             ["available", overview.available],
             ["paid", overview.paid],
           ] as const
-        ).map(([key, value]) => (
-          <Card key={key} className={cn(key === "available" && "border-primary/40 bg-primary/5")}>
-            <CardHeader className="pb-1">
-              <CardTitle className="text-sm font-medium text-muted-foreground">{t(`stats.${key}`)}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-semibold tabular-nums">{formatMoney(value, locale)}</p>
-            </CardContent>
-          </Card>
-        ))}
+        ).map(([key, value]) => {
+          const Icon = STAT_ICONS[key];
+          return (
+            <SellerCard key={key} className={cn("flex flex-col gap-1 px-5 py-[18px]", key === "available" && "border-(--tallaby-teal-100) bg-(--s-tint) dark:border-(--s-line)")}>
+              <small className="flex items-center gap-1.5 text-[12.5px] text-(--s-subtle)">
+                <Icon className="size-[15px]" aria-hidden />
+                {t(`stats.${key}`)}
+              </small>
+              <b className="font-montserrat text-2xl font-extrabold text-(--s-ink) tabular-nums">{formatMoney(value, locale)}</b>
+            </SellerCard>
+          );
+        })}
       </div>
 
       <ReferralLinkCard url={shareUrl} code={overview.code} />
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              {overview.unlocked ? <Unlock className="size-4 text-primary" aria-hidden /> : <Lock className="size-4" aria-hidden />}
-              {overview.unlocked ? t("progress.unlocked") : t("progress.title")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {(
-              [
-                ["referrals", overview.counts.successfulReferrals, overview.goals.referrals],
-                ["stores", overview.counts.stores, overview.goals.stores],
-              ] as const
-            ).map(([key, count, goal]) => (
-              <div key={key} className="space-y-1.5">
-                <p className="text-sm font-medium tabular-nums">{t(`progress.${key}`, { count, goal })}</p>
-                <Progress value={percent(count, goal)} />
-              </div>
-            ))}
-            <p className="text-xs text-muted-foreground">{t("progress.rule")}</p>
-          </CardContent>
-        </Card>
+      <SectionCard icon={Route} title={tSetup("howTitle")}>
+        <ol className="grid grid-cols-3 gap-3 max-[720px]:grid-cols-1">
+          {HOW_STEPS.map((step, index) => (
+            <li key={step} className="flex flex-col gap-1.5 rounded-[18px] border border-(--s-line-soft) bg-(--s-tint) p-4">
+              <span className="grid size-[30px] place-items-center rounded-full bg-accent font-montserrat text-[13px] font-extrabold text-(--tallaby-teal-900)">{index + 1}</span>
+              <b className="text-sm font-bold text-(--s-ink)">{tSetup(`how.${step}.title`)}</b>
+              <small className="text-[12.5px] leading-[1.7] text-(--s-muted)">{tSetup(`how.${step}.body`, { percent: REFERRAL_RATE_PERCENT })}</small>
+            </li>
+          ))}
+        </ol>
+      </SectionCard>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">{t("withdraw.title")}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <p className="text-sm text-muted-foreground">{t("withdraw.minimum", { amount: minimum })}</p>
-            {overview.blockReason && (
-              <p className="rounded-md bg-muted p-3 text-sm">
-                {t(`withdraw.blocked.${overview.blockReason}`, { amount: minimum })}
-              </p>
-            )}
-            <div className="flex flex-wrap gap-2">
-              <WithdrawButton
-                disabled={overview.blockReason !== null}
-                amountLabel={formatMoney(overview.available, locale)}
-              />
-              <a
-                href={getSupportWhatsAppUrl(t("withdraw.supportMessage"))}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex h-9 items-center gap-2 rounded-md border px-3 text-sm hover:bg-muted"
-              >
-                <MessageCircle className="size-4" aria-hidden />
+      <TwoColumns>
+        <SectionCard
+          icon={overview.unlocked ? Unlock : Lock}
+          tone={overview.unlocked ? "success" : "accent"}
+          title={overview.unlocked ? t("progress.unlocked") : t("progress.title")}
+        >
+          {(
+            [
+              ["referrals", overview.counts.successfulReferrals, overview.goals.referrals],
+              ["stores", overview.counts.stores, overview.goals.stores],
+            ] as const
+          ).map(([key, count, goal]) => (
+            <div key={key} className="flex flex-col gap-1.5">
+              <p className="text-[13px] text-(--s-text) tabular-nums">{t(`progress.${key}`, { count, goal })}</p>
+              <span role="progressbar" aria-valuenow={count} aria-valuemin={0} aria-valuemax={goal} className="block h-2 overflow-hidden rounded-full bg-(--s-fill)">
+                <i className="block h-full rounded-full bg-(--s-primary)" style={{ width: `${percent(count, goal)}%` }} />
+              </span>
+            </div>
+          ))}
+          <p className="text-pretty text-xs text-(--s-faint)">{t("progress.rule")}</p>
+        </SectionCard>
+
+        <SectionCard icon={Banknote} title={t("withdraw.title")} description={t("withdraw.minimum", { amount: minimum })}>
+          {overview.blockReason && (
+            <Note icon={overview.blockReason === "locked" ? Lock : undefined}>{t(`withdraw.blocked.${overview.blockReason}`, { amount: minimum })}</Note>
+          )}
+          <div className="flex flex-wrap gap-2">
+            <WithdrawButton disabled={overview.blockReason !== null} amountLabel={formatMoney(overview.available, locale)} />
+            <SellerButton variant="mini" size="sm" asChild>
+              <a href={getSupportWhatsAppUrl(t("withdraw.supportMessage"))} target="_blank" rel="noreferrer">
+                <MessageCircle aria-hidden />
                 {t("withdraw.support")}
               </a>
-            </div>
-            {overview.payouts.length > 0 && (
-              <div className="space-y-2 pt-2">
-                <p className="text-sm font-medium">{t("payouts.title")}</p>
-                <ul className="space-y-2">
-                  {overview.payouts.map((p) => (
-                    <PayoutRow key={p.id} payout={p} locale={locale} t={t} />
-                  ))}
-                </ul>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">{t("referrals.title")}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {overview.referrals.length === 0 ? (
-            <p className="text-sm text-muted-foreground">{t("referrals.empty")}</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{t("referrals.store")}</TableHead>
-                    <TableHead>{t("referrals.signedUp")}</TableHead>
-                    <TableHead className="text-end">{t("referrals.stores")}</TableHead>
-                    <TableHead className="text-end">{t("referrals.toppedUp")}</TableHead>
-                    <TableHead className="text-end">{t("referrals.commission")}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {overview.referrals.map((r, i) => (
-                    <TableRow key={i}>
-                      <TableCell className="font-medium">{r.storeName ?? t("referrals.unnamed")}</TableCell>
-                      <TableCell>{r.signedUpAt ? formatDate(r.signedUpAt, locale) : "—"}</TableCell>
-                      <TableCell className="text-end tabular-nums">{r.stores}</TableCell>
-                      <TableCell className="text-end tabular-nums">{formatMoney(r.toppedUp, locale)}</TableCell>
-                      <TableCell className="text-end font-medium tabular-nums">{formatMoney(r.commission, locale)}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+            </SellerButton>
+          </div>
+          {overview.payouts.length > 0 && (
+            <div className="flex flex-col gap-2">
+              <p className="text-[13.5px] font-bold text-(--s-text)">{t("payouts.title")}</p>
+              <Rows>
+                {overview.payouts.map((p) => (
+                  <PayoutRow key={p.id} payout={p} locale={locale} t={t} />
+                ))}
+              </Rows>
             </div>
           )}
-        </CardContent>
-      </Card>
-    </div>
+        </SectionCard>
+      </TwoColumns>
+
+      <SectionCard icon={Users} title={t("referrals.title")}>
+        {overview.referrals.length === 0 ? (
+          <EmptyState icon={UserPlus} title={t("referrals.empty")} action={<CopyLinkButton url={shareUrl} />} />
+        ) : (
+          <ResponsiveTable
+            label={t("referrals.title")}
+            rows={overview.referrals.map((r, index) => ({ ...r, index }))}
+            rowKey={(r) => String(r.index)}
+            columns={[
+              { key: "store", header: t("referrals.store"), phone: "title", cell: (r) => r.storeName ?? t("referrals.unnamed") },
+              { key: "signedUp", header: t("referrals.signedUp"), phone: "sub", cell: (r) => (r.signedUpAt ? formatDate(r.signedUpAt, locale) : "—") },
+              { key: "stores", header: t("referrals.stores"), phone: "full", cell: (r) => <span className="tabular-nums">{r.stores}</span> },
+              { key: "toppedUp", header: t("referrals.toppedUp"), phone: "full", cell: (r) => <span className="tabular-nums">{formatMoney(r.toppedUp, locale)}</span> },
+              { key: "commission", header: t("referrals.commission"), phone: "end", cell: (r) => <b className="font-bold tabular-nums">{formatMoney(r.commission, locale)}</b> },
+            ]}
+          />
+        )}
+      </SectionCard>
+    </>
   );
 }
 
-const STATUS_ICON = { requested: Clock, paid: CircleCheck, rejected: CircleX } as const;
+const STATUS = {
+  requested: { icon: Clock, tone: "warning" },
+  paid: { icon: CircleCheck, tone: "success" },
+  rejected: { icon: CircleX, tone: "danger" },
+} as const;
 
 function PayoutRow({
   payout,
@@ -169,26 +168,22 @@ function PayoutRow({
   locale: string;
   t: Awaited<ReturnType<typeof getTranslations<"earn">>>;
 }) {
-  const Icon = STATUS_ICON[payout.status];
+  const { icon: Icon, tone } = STATUS[payout.status];
   return (
-    <li className="flex flex-wrap items-center justify-between gap-2 rounded-md border p-2 text-sm">
-      <span className="flex items-center gap-2">
-        <Icon className="size-4 text-muted-foreground" aria-hidden />
-        <span className="font-medium tabular-nums">{formatMoney(payout.amount, locale)}</span>
-        <span className="text-muted-foreground">{payout.destination}</span>
-      </span>
-      <span className="flex items-center gap-2 text-xs text-muted-foreground">
-        {formatDate(payout.createdAt, locale)}
-        <Badge variant={payout.status === "paid" ? "default" : payout.status === "rejected" ? "destructive" : "secondary"}>
-          {t(`payouts.status.${payout.status}`)}
-        </Badge>
-      </span>
-      {payout.status === "paid" && payout.reference && (
-        <span className="w-full text-xs text-muted-foreground">{t("payouts.reference", { reference: payout.reference })}</span>
-      )}
-      {payout.status === "rejected" && payout.rejectionReason && (
-        <span className="w-full text-xs text-muted-foreground">{t("payouts.reason", { reason: payout.rejectionReason })}</span>
-      )}
-    </li>
+    <Row
+      className="flex-wrap"
+      start={<Icon className="size-4 shrink-0 text-(--s-subtle)" aria-hidden />}
+      title={<span className="font-montserrat tabular-nums">{formatMoney(payout.amount, locale)}</span>}
+      description={
+        <>
+          <span className="block">
+            {payout.destination} · {formatDate(payout.createdAt, locale)}
+          </span>
+          {payout.status === "paid" && payout.reference && <span className="block">{t("payouts.reference", { reference: payout.reference })}</span>}
+          {payout.status === "rejected" && payout.rejectionReason && <span className="block">{t("payouts.reason", { reason: payout.rejectionReason })}</span>}
+        </>
+      }
+      end={<StatusBadge tone={tone}>{t(`payouts.status.${payout.status}`)}</StatusBadge>}
+    />
   );
 }

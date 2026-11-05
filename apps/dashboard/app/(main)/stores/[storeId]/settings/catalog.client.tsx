@@ -4,12 +4,7 @@ import { useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { ImageOff, LayoutGrid, ListChecks, Search } from "lucide-react";
 
-import { Badge } from "@workspace/ui/components/badge";
-import { Button } from "@workspace/ui/components/button";
-import { Checkbox } from "@workspace/ui/components/checkbox";
-import { Input } from "@workspace/ui/components/input";
-import { RadioGroup, RadioGroupItem } from "@workspace/ui/components/radio-group";
-import { FIELD_CLASS, LabelNote, SMALL_BUTTON_CLASS, SectionCard } from "@/components/form/form-ui";
+import { EmptyState, InputGroup, OptionCard, OptionCards, Rows, SectionCard, SellerButton, Tag } from "@/components/seller-ui";
 import { cn } from "@/lib/utils";
 import { saveStoreCatalog } from "./catalog.server";
 import type { CatalogMode, CatalogProduct } from "./catalog.dto";
@@ -51,7 +46,13 @@ export function useStoreCatalog(storeId: string, { initialMode, initialSelected,
     return null;
   };
 
-  return { mode, setMode, selected, setSelected, dirty, validate, save };
+  /** Back to the last saved choice (the save bar's Discard). */
+  const reset = () => {
+    setMode(saved.mode);
+    setSelected(saved.selected);
+  };
+
+  return { mode, setMode, selected, setSelected, dirty, validate, save, reset };
 }
 
 export type StoreCatalogState = ReturnType<typeof useStoreCatalog>;
@@ -99,111 +100,102 @@ export function StoreCatalogSections({
   return (
     <>
       <SectionCard id="catalog-mode" icon={LayoutGrid} title={t("catalog.title")} description={t("catalog.description")}>
-        <RadioGroup
-          value={mode}
-          onValueChange={(v) => setMode(v as CatalogMode)}
-          disabled={disabled}
-          className="grid gap-3 sm:grid-cols-2"
-        >
+        <OptionCards>
           {(["all", "selected"] as const).map((value) => (
-            <label
+            <OptionCard
               key={value}
-              className={cn(
-                "flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition-colors",
-                mode === value ? "border-primary bg-primary/5" : "hover:bg-muted/40",
-                disabled && "cursor-not-allowed opacity-70",
-              )}
-            >
-              <RadioGroupItem value={value} className="mt-0.5" />
-              <span className="space-y-1">
-                <span className="block text-sm font-semibold">{t(value === "all" ? "catalog.modeAll" : "catalog.modeSelected")}</span>
-                <span className="block text-xs leading-relaxed text-muted-foreground">
-                  {t(value === "all" ? "catalog.modeAllHint" : "catalog.modeSelectedHint")}
-                </span>
-              </span>
-            </label>
+              name="catalog-mode"
+              checked={mode === value}
+              disabled={disabled}
+              onChange={() => setMode(value)}
+              title={t(value === "all" ? "catalog.modeAll" : "catalog.modeSelected")}
+              description={t(value === "all" ? "catalog.modeAllHint" : "catalog.modeSelectedHint")}
+            />
           ))}
-        </RadioGroup>
+        </OptionCards>
       </SectionCard>
 
       {mode === "selected" && (
         <SectionCard
           id="catalog-products"
           icon={ListChecks}
-          title={t("catalog.pickTitle")}
+          title={
+            <>
+              {t("catalog.pickTitle")}
+              <Tag tone="info">{t("catalog.selectedCount", { count: selected.length })}</Tag>
+            </>
+          }
           description={t("catalog.pickDescription")}
-          tag={<LabelNote>{t("catalog.selectedCount", { count: selected.length })}</LabelNote>}
         >
           {products.length === 0 ? (
-            <p className="py-6 text-center text-sm text-muted-foreground">{t("catalog.noProducts")}</p>
+            <EmptyState icon={ListChecks} title={t("catalog.noProducts")} />
           ) : (
             <>
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                <div className="relative flex-1">
-                  <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
-                  <Input
-                    type="search"
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    placeholder={t("catalog.search")}
-                    aria-label={t("catalog.search")}
-                    className={cn(FIELD_CLASS, "ps-9")}
-                  />
-                </div>
-                <div className="flex gap-2">
-                  <Button type="button" variant="outline" className={SMALL_BUTTON_CLASS} onClick={selectShown} disabled={disabled}>
+              <div className="flex flex-wrap items-center gap-2">
+                <InputGroup
+                  type="search"
+                  className="min-w-[220px] flex-1"
+                  start={<Search className="size-4" aria-hidden />}
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder={t("catalog.search")}
+                  aria-label={t("catalog.search")}
+                />
+                <div className="flex gap-2 max-[600px]:w-full max-[600px]:[&>*]:flex-1">
+                  <SellerButton variant="mini" size="sm" onClick={selectShown} disabled={disabled}>
                     {t("catalog.selectShown")}
-                  </Button>
-                  <Button type="button" variant="ghost" className={SMALL_BUTTON_CLASS} onClick={clearShown} disabled={disabled}>
+                  </SellerButton>
+                  <SellerButton variant="mini" size="sm" onClick={clearShown} disabled={disabled}>
                     {t("catalog.clearShown")}
-                  </Button>
+                  </SellerButton>
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground sm:hidden">{t("catalog.selectedCount", { count: selected.length })}</p>
 
               {shown.length === 0 ? (
-                <p className="py-6 text-center text-sm text-muted-foreground">{t("catalog.noMatches")}</p>
+                <EmptyState icon={Search} title={t("catalog.noMatches")} />
               ) : (
-                <ul className="divide-y rounded-xl border">
+                <Rows>
                   {shown.map((product) => {
                     const checked = selectedSet.has(product.id);
                     const title = product.title[locale] || product.title.ar || product.title.en;
                     return (
-                      <li key={product.id}>
-                        <label className={cn("flex cursor-pointer items-center gap-3 px-3 py-2.5", disabled && "cursor-not-allowed")}>
-                          <Checkbox
-                            checked={checked}
-                            disabled={disabled}
-                            onCheckedChange={(v) => toggle(product.id, v === true)}
-                            aria-label={title}
-                          />
-                          {product.image ? (
-                            <RemoteImage src={product.image} alt="" width={40} height={40} className="size-10 shrink-0 rounded-md border object-cover" />
-                          ) : (
-                            <span className="flex size-10 shrink-0 items-center justify-center rounded-md border bg-muted">
-                              <ImageOff className="size-4 text-muted-foreground" aria-hidden />
-                            </span>
-                          )}
-                          <span className="min-w-0 flex-1">
-                            <span className="block truncate text-sm font-medium">{title}</span>
-                            {product.price != null && (
-                              <span className="block text-xs text-muted-foreground tabular-nums">
-                                {new Intl.NumberFormat(locale === "ar" ? "ar-EG" : "en-EG", { style: "currency", currency: money.currency }).format(product.price)}
-                              </span>
-                            )}
+                      <label
+                        key={product.id}
+                        className={cn(
+                          "flex cursor-pointer items-center gap-3 px-3.5 py-2.5 transition-colors duration-150 hover:bg-(--s-tint) [&+&]:border-t [&+&]:border-(--s-line-soft)",
+                          disabled && "cursor-not-allowed",
+                        )}
+                      >
+                        <input
+                          type="checkbox"
+                          className="size-5 shrink-0 accent-(--s-primary)"
+                          checked={checked}
+                          disabled={disabled}
+                          onChange={(event) => toggle(product.id, event.target.checked)}
+                          aria-label={title}
+                        />
+                        {product.image ? (
+                          <RemoteImage src={product.image} alt="" width={40} height={40} className="size-10 shrink-0 rounded-xl border border-(--s-line) object-cover" />
+                        ) : (
+                          <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-(--s-fill) text-(--s-subtle)">
+                            <ImageOff className="size-4" aria-hidden />
                           </span>
-                          {product.status !== "active" && (
-                            <Badge variant="secondary" className="shrink-0">
-                              {t(`catalog.status.${product.status}`)}
-                            </Badge>
+                        )}
+                        <span className="min-w-0 flex-1">
+                          <b className="block truncate text-sm font-bold text-(--s-text)">{title}</b>
+                          {product.price != null && (
+                            <small className="block font-montserrat text-xs text-(--s-subtle) tabular-nums">
+                              {new Intl.NumberFormat(locale === "ar" ? "ar-EG" : "en-EG", { style: "currency", currency: money.currency }).format(product.price)}
+                            </small>
                           )}
-                        </label>
-                      </li>
+                        </span>
+                        {product.status !== "active" && <Tag>{t(`catalog.status.${product.status}`)}</Tag>}
+                      </label>
                     );
                   })}
-                </ul>
+                </Rows>
               )}
-              {products.length >= maxProducts && <p className="text-xs text-muted-foreground">{t("catalog.shownLimit", { max: maxProducts })}</p>}
+              {products.length >= maxProducts && <p className="text-xs text-(--s-faint)">{t("catalog.shownLimit", { max: maxProducts })}</p>}
             </>
           )}
         </SectionCard>

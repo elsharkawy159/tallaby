@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Button } from "@workspace/ui/components/button";
+import { SellerButton } from "@/components/seller-ui";
 import { ConfirmActionDialog } from "@/components/layout/confirm-action-dialog.client";
+import { cn } from "@/lib/utils";
 
 /**
  * "Disconnect" for an app sheet. It asks first, because disconnecting drops
@@ -29,15 +30,14 @@ export function DisconnectAppButton({
 
   return (
     <>
-      <Button
-        type="button"
+      <SellerButton
         variant="outline"
-        className={className}
+        className={cn("border-destructive/35 text-destructive hover:border-destructive/60", className)}
         disabled={disabled || pending}
         onClick={() => setOpen(true)}
       >
         {t("disconnect")}
-      </Button>
+      </SellerButton>
       <ConfirmActionDialog
         open={open}
         onOpenChange={setOpen}

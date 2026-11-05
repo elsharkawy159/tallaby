@@ -5,7 +5,6 @@ import { storeUrl } from "@workspace/lib/storefront";
 import { loadStorePage } from "@/lib/stores/store-page.server";
 import { StoreCheckoutSettingsForm } from "./checkout-settings.client";
 import { StoreCrossSellSwitch } from "./cross-sell-switch.client";
-import { StoreMinOrderForm } from "./min-order.client";
 
 /** Store settings › Checkout (ROADMAP.md F-25, F-13b): minimum order, extra checkout fields and the thank-you page. */
 export default async function StoreCheckoutSettingsPage({ params }: { params: Promise<{ storeId: string }> }) {
@@ -15,16 +14,18 @@ export default async function StoreCheckoutSettingsPage({ params }: { params: Pr
   const readOnly = store.status !== "active";
 
   return (
-    <div className="space-y-5">
-      <StoreCrossSellSwitch storeId={store.id} initial={store.crossSellEnabled} readOnly={readOnly} />
-      <StoreMinOrderForm money={parseStoreCurrency(store.settings)} storeId={store.id} initial={parseStoreMinOrder(store.settings)} readOnly={readOnly} />
+    <div className="flex flex-col gap-4">
       <StoreCheckoutSettingsForm
         storeId={store.id}
         siteUrl={storeUrl(store.subdomain, null)}
+        money={parseStoreCurrency(store.settings)}
+        initialMinOrder={parseStoreMinOrder(store.settings)}
         initial={{ checkoutForm: parseStoreCheckoutForm(store.settings), thankYou: parseStoreThankYou(store.settings) }}
         hasWhatsapp={Boolean(contact.whatsapp || contact.phone)}
         readOnly={readOnly}
       />
+      {/* Saves at once, as it always did, so it stays outside the save bar's form. */}
+      <StoreCrossSellSwitch storeId={store.id} initial={store.crossSellEnabled} readOnly={readOnly} />
     </div>
   );
 }

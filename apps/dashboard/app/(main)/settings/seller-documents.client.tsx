@@ -17,19 +17,17 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 
-import { Badge } from '@workspace/ui/components/badge'
-import { Button } from '@workspace/ui/components/button'
+import { IconTile, Rows, SectionCard, SellerButton, Tag } from '@/components/seller-ui'
 import {
   SELLER_IMAGE_ACCEPT_ATTR,
   useSellerUpload,
 } from '@/components/inputs/use-seller-upload'
-import { cn, getPublicUrl } from '@/lib/utils'
+import { getPublicUrl } from '@/lib/utils'
 import { formatDate } from '@/lib/i18n/format'
 import { humanizeStatus } from '@/lib/i18n/status'
 
 import type { SellerDocument } from './seller-settings.types'
 import { handleUploadDocument } from './seller-settings.server'
-import { SMALL_BUTTON_CLASS, SectionCard } from './settings-ui'
 
 /**
  * Every document is optional (owner, 2026-10-21): sellers may upload the
@@ -68,33 +66,35 @@ export function DocumentsSection ({
   )
   const tag = uploaded.length === 0
     ? (
-      <Badge variant='muted' className='h-6 px-2.5'>
-        {t('tag.optional')}
-      </Badge>
+      <Tag>{t('tag.optional')}</Tag>
       )
     : uploaded.every((doc) => VERIFIED_STATUSES.has(doc.status ?? ''))
     ? (
-      <Badge variant='success' className='h-6 px-2.5'>
-        <CircleCheck />
+      <Tag tone='success'>
+        <CircleCheck aria-hidden />
         {t('tag.verified')}
-      </Badge>
+      </Tag>
       )
     : (
-      <Badge variant='info' className='h-6 px-2.5'>
-        <Clock />
+      <Tag tone='info'>
+        <Clock aria-hidden />
         {t('tag.review')}
-      </Badge>
+      </Tag>
       )
 
   return (
     <SectionCard
       id='docs'
       icon={FileCheck2}
-      title={t('title')}
+      title={
+        <>
+          {t('title')}
+          {tag}
+        </>
+      }
       description={t('description')}
-      tag={tag}
     >
-      <div className='flex flex-col gap-2.5'>
+      <Rows>
         {DOCUMENT_SLOTS.map((slot) => (
           <DocumentRow
             key={slot.type}
@@ -106,7 +106,7 @@ export function DocumentsSection ({
             }}
           />
         ))}
-      </div>
+      </Rows>
     </SectionCard>
   )
 }
@@ -149,31 +149,24 @@ function DocumentRow ({
     : null
   const statusVariant =
     status === 'rejected' || status === 'expired'
-      ? 'danger'
+      ? ('danger' as const)
       : status && VERIFIED_STATUSES.has(status)
-        ? 'success'
-        : 'info'
+        ? ('success' as const)
+        : ('info' as const)
 
   return (
-    <div className='flex flex-wrap items-center gap-3.5 rounded-xl border bg-card px-4 py-3.5 sm:flex-nowrap'>
-      <div
-        className={cn(
-          'grid size-10 shrink-0 place-items-center rounded-[10px]',
-          document ? 'bg-success-soft text-success' : 'bg-muted text-muted-foreground'
-        )}
-      >
-        <Icon className='size-[18px]' />
-      </div>
-      <div className='min-w-0 flex-1'>
-        <p className='flex flex-wrap items-center gap-2 text-sm font-semibold'>
+    <div className='flex flex-wrap items-center gap-3 px-3.5 py-3 transition-colors duration-150 hover:bg-(--s-tint) [&+&]:border-t [&+&]:border-(--s-line-soft)'>
+      <IconTile icon={Icon} tone={document ? 'success' : 'neutral'} />
+      <div className='min-w-0 flex-1 basis-[180px]'>
+        <b className='flex flex-wrap items-center gap-2 text-sm font-bold text-(--s-text)'>
           {t(`type.${type}`)}
           {document && statusLabel ? (
-            <Badge variant={statusVariant}>{statusLabel}</Badge>
+            <Tag tone={statusVariant}>{statusLabel}</Tag>
           ) : (
-            <Badge variant='muted'>{t('optional')}</Badge>
+            <Tag>{t('optional')}</Tag>
           )}
-        </p>
-        <p className='truncate text-xs text-muted-foreground'>
+        </b>
+        <small className='block truncate text-xs text-(--s-subtle)'>
           {document?.uploadedAt
             ? t('uploadedOn', { date: formatDate(document.uploadedAt, locale) })
             : type === 'general'
@@ -182,11 +175,11 @@ function DocumentRow ({
           {document?.expiryDate
             ? ` · ${t('expires', { date: formatDate(document.expiryDate, locale) })}`
             : null}
-        </p>
+        </small>
       </div>
-      <div className='flex w-full gap-1.5 sm:w-auto'>
+      <div className='ms-auto flex gap-1.5'>
         {document && (
-          <Button variant='neutral' className={cn(SMALL_BUTTON_CLASS, 'flex-1 sm:flex-none')} asChild>
+          <SellerButton variant='mini' size='xs' asChild>
             <a
               href={getPublicUrl(document.fileUrl, 'sellers')}
               target='_blank'
@@ -195,12 +188,11 @@ function DocumentRow ({
               <Eye />
               {t('view')}
             </a>
-          </Button>
+          </SellerButton>
         )}
-        <Button
-          type='button'
-          variant={document ? 'soft' : 'neutral'}
-          className={cn(SMALL_BUTTON_CLASS, 'flex-1 sm:flex-none')}
+        <SellerButton
+          variant={document ? 'mini' : 'solid'}
+          size='xs'
           disabled={busy}
           onClick={() => inputRef.current?.click()}
         >
@@ -212,7 +204,7 @@ function DocumentRow ({
             <Upload />
           )}
           {document ? t('replace') : t('upload')}
-        </Button>
+        </SellerButton>
         <input
           ref={inputRef}
           type='file'

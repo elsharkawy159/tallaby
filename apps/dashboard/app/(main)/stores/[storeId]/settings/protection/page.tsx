@@ -12,7 +12,7 @@ export default async function StoreOrderProtectionPage({ params }: { params: Pro
   const readOnly = store.status !== "active";
 
   return (
-    <div className="space-y-5">
+    <div className="flex flex-col gap-4">
       <OrderConfirmTemplateSettings
         storeId={store.id}
         storeName={store.name}

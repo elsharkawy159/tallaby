@@ -8,9 +8,9 @@ import { ExternalLink, LoaderCircle } from "lucide-react";
 
 import { isValidSpreadsheetId, spreadsheetUrl } from "@workspace/lib/integrations";
 import type { StoreIntegrationSummary } from "@workspace/lib/integrations/server";
-import { Button } from "@workspace/ui/components/button";
 import { SheetFooter } from "@workspace/ui/components/sheet";
-import { BUTTON_CLASS } from "@/components/form/form-ui";
+import { Note, SellerButton } from "@/components/seller-ui";
+import { APP_DRAWER_FOOTER_CLASS } from "./app-drawer.lib";
 import { disconnectStoreApp } from "./apps.server";
 import { DisconnectAppButton } from "./disconnect-button.client";
 import { createGoogleSheet, exportOrdersToGoogleSheet } from "./google-sheets.server";
@@ -81,21 +81,21 @@ export function GoogleSheetsPanel({
 
   return (
     <>
-      <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-4">
-        <p className="text-[13px] text-muted-foreground">{t("googleSheets.scopeNote")}</p>
+      <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-[18px]">
+        <p className="text-[13px] text-(--s-muted)">{t("googleSheets.scopeNote")}</p>
         {connected && sheetId && (
           <a
             href={spreadsheetUrl(sheetId)}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-sm font-medium text-primary underline-offset-4 hover:underline"
+            className="inline-flex min-h-10 items-center gap-1.5 text-sm font-bold text-(--s-link) underline-offset-4 hover:underline"
           >
             {current?.details.spreadsheetTitle ?? t("googleSheets.openSheet")}
             <ExternalLink className="size-3.5" aria-hidden />
           </a>
         )}
         {connected && current?.lastSyncedAt && (
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-(--s-subtle)">
             {t("googleSheets.lastSync", { date: new Date(current.lastSyncedAt).toLocaleString() })}
             {typeof current.details.exportedOrders === "number"
               ? ` · ${t("googleSheets.rows", { count: current.details.exportedOrders })}`
@@ -103,38 +103,37 @@ export function GoogleSheetsPanel({
           </p>
         )}
         {current?.status === "error" && current.lastError && (
-          <p className="rounded-xl bg-destructive/10 p-3 text-[13px] text-destructive" dir="auto">
-            {t("lastError")}: {current.lastError}
-          </p>
+          <Note tone="danger">
+            <span dir="auto">
+              {t("lastError")}: {current.lastError}
+            </span>
+          </Note>
         )}
-        {connected && <p className="text-xs text-faint">{t("googleSheets.dailyNote")}</p>}
+        {connected && <p className="text-xs text-(--s-faint)">{t("googleSheets.dailyNote")}</p>}
       </div>
-      <SheetFooter className="flex-row flex-wrap gap-2">
+      <SheetFooter className={APP_DRAWER_FOOTER_CLASS}>
         {!connected ? (
           readOnly ? (
-            <Button type="button" className={BUTTON_CLASS} disabled>
-              {t("googleSheets.connect")}
-            </Button>
+            <SellerButton disabled>{t("googleSheets.connect")}</SellerButton>
           ) : (
-            <Button asChild className={BUTTON_CLASS}>
+            <SellerButton asChild>
               {/* A full navigation: the OAuth route sets the nonce cookie and redirects to Google. */}
               <a href={`/api/integrations/google/start?storeId=${encodeURIComponent(storeId)}`}>{t("googleSheets.connect")}</a>
-            </Button>
+            </SellerButton>
           )
         ) : !sheetId ? (
-          <Button type="button" className={BUTTON_CLASS} disabled={isPending || readOnly} onClick={createSheet}>
+          <SellerButton disabled={isPending || readOnly} onClick={createSheet}>
             {isPending && <LoaderCircle className="animate-spin" aria-hidden />}
             {t("googleSheets.createSheet")}
-          </Button>
+          </SellerButton>
         ) : (
-          <Button type="button" className={BUTTON_CLASS} disabled={isPending} onClick={exportOrders}>
+          <SellerButton disabled={isPending} onClick={exportOrders}>
             {isPending && <LoaderCircle className="animate-spin" aria-hidden />}
             {t("googleSheets.export")}
-          </Button>
+          </SellerButton>
         )}
         {current && (
           <DisconnectAppButton
-            className={BUTTON_CLASS}
             pending={isPending}
             description={t("disconnectConfirm.googleSheets")}
             onConfirm={remove}

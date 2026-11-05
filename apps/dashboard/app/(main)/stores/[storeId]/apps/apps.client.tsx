@@ -3,17 +3,29 @@
 import { useEffect, useState, useTransition, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useFormatter, useTranslations } from "next-intl";
+import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import {
+  ArrowLeftRight,
+  BookOpen,
+  ChartLine,
   ChevronRight,
+  Clock,
+  CreditCard,
   Download,
   Info,
+  LayoutGrid,
   Lightbulb,
   LoaderCircle,
+  MessageSquare,
   Plug,
+  PlugZap,
   Search,
   ShieldAlert,
+  Sparkles,
+  Truck,
+  Wallet,
+  type LucideIcon,
 } from "lucide-react";
 
 import { isPaidAppPricing } from "@workspace/lib/billing/app-pricing";
@@ -33,16 +45,13 @@ import {
   type StoreAppGroup,
 } from "@workspace/lib/integrations";
 import type { StoreIntegrationSummary } from "@workspace/lib/integrations/server";
-import { Badge } from "@workspace/ui/components/badge";
-import { Button } from "@workspace/ui/components/button";
-import { Input } from "@workspace/ui/components/input";
-import { Label } from "@workspace/ui/components/label";
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@workspace/ui/components/sheet";
-import { cn } from "@workspace/ui/lib/utils";
-import { BUTTON_CLASS } from "@/components/form/form-ui";
+import { EmptyState, Field, IconTile, InputGroup, Note, PageHeader, PageTabs, SellerButton, SellerCard, StatusBadge, Tag, TextInput } from "@/components/seller-ui";
 import { StoreLogo } from "@/components/stores/store-logo.client";
 import { StoreSiteStatusNote } from "@/components/stores/store-site-status-note";
+import { cn } from "@/lib/utils";
 import { AppLogo } from "./app-logo";
+import { APP_DRAWER_CLASS, APP_DRAWER_FOOTER_CLASS } from "./app-drawer.lib";
 import { AppInstallDialog, useAppPriceLabel } from "./app-install.client";
 import { connectStoreApp, disconnectStoreApp, requestApp } from "./apps.server";
 import { DisconnectAppButton } from "./disconnect-button.client";
@@ -62,13 +71,26 @@ import { ShopifyImportPanel } from "./shopify-import.client";
 type View = "installed" | "explore";
 type Category = "all" | StoreAppGroup;
 
-const APP_GRID = "grid grid-cols-[repeat(auto-fill,minmax(min(100%,300px),1fr))] gap-3.5";
+const APP_GRID = "grid grid-cols-[repeat(auto-fill,minmax(min(100%,290px),1fr))] gap-3";
 
 /** Identifier apps get a short "how to connect" list in the sheet. */
 const STEP_KEYS = ["step1", "step2", "step3"] as const;
 
 /** Result of the Google OAuth round-trip, passed back as `?google=…` (P7-06). */
 const GOOGLE_RESULTS = new Set(["connected", "cancelled", "failed", "invalid", "rateLimited"]);
+
+/** Where a new store usually starts; hidden once installed. A fixed suggestion, not a statistic. */
+const SUGGESTED_KEYS = ["meta_pixel", "google_analytics", "bosta"];
+
+const GROUP_ICONS: Record<Category, LucideIcon> = {
+  all: LayoutGrid,
+  ai: Sparkles,
+  tracking: ChartLine,
+  shipping: Truck,
+  payments: CreditCard,
+  data: ArrowLeftRight,
+  messaging: MessageSquare,
+};
 
 export type AppsStore = {
   name: string;
@@ -89,6 +111,8 @@ export function StoreApps({
   requests,
   readOnly,
   googleSheetsEnabled,
+  usdLive,
+  feedsReady,
   categories,
   feeds,
 }: {
@@ -101,11 +125,16 @@ export function StoreApps({
   requests: { appKey: string; status: "requested" | "enabled" | "declined" }[];
   readOnly: boolean;
   googleSheetsEnabled: boolean;
+  /** The USD switch (0136): until it is on, the server refuses to install a paid app. */
+  usdLive: boolean;
+  /** How many feed addresses platforms can read now (none before the site is published). */
+  feedsReady: number;
   categories: AppCategoryOption[];
   /** Product feeds (F-11b): shown on the Installed tab, under the apps. */
   feeds?: ReactNode;
 }) {
   const t = useTranslations("storeApps");
+  const tSetup = useTranslations("storeSetup");
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -141,6 +170,8 @@ export function StoreApps({
   const hasInstallRow = (app: StoreApp) => Boolean(installOf(app));
   const isInstalled = (app: StoreApp) =>
     isAvailable(app) && (isStoreAppDefaultInstalled(app) || isConnected(app) || hasInstallRow(app));
+  // A paid app has nothing to buy it with until the wallet is in dollars; what is already bought stays manageable.
+  const isPaidLocked = (app: StoreApp) => isPaidAppPricing(storeAppPricing(app)) && !usdLive && !hasInstallRow(app);
 
   const available = apps.filter(isAvailable);
   const connectedCount = available.filter(isConnected).length;
@@ -156,11 +187,8 @@ export function StoreApps({
   };
   const exploreApps = sorted.filter((app) => category === "all" || app.group === category);
   const matches = (view === "installed" ? installedApps : exploreApps).filter(matchesQuery);
+  const suggested = apps.filter((app) => SUGGESTED_KEYS.includes(app.key) && isAvailable(app) && !isInstalled(app));
 
-  const views: { key: View; label: string; count: number }[] = [
-    { key: "installed", label: t("views.installed"), count: installedApps.length },
-    { key: "explore", label: t("views.explore"), count: apps.length },
-  ];
   const categoryTabs: { key: Category; label: string; count: number }[] = [
     { key: "all", label: t("tabs.all"), count: apps.length },
     ...STORE_APP_GROUPS.map((group) => ({
@@ -170,30 +198,14 @@ export function StoreApps({
     })),
   ];
 
-  const renderCard = (app: StoreApp) => {
+  const openApp = (app: StoreApp) => {
     const href = storeAppHref(storeId, app);
     const provider = storeAppProvider(app);
     // Connect flows stay as they are. Only an app with no panel, or a paid one not yet bought, goes through the engine.
     const viaEngine = (!href && !provider) || (isPaidAppPricing(storeAppPricing(app)) && !hasInstallRow(app));
-    return (
-      <AppCard
-        key={app.key}
-        app={app}
-        current={currentOf(app)}
-        available={isAvailable(app)}
-        installed={isInstalled(app)}
-        priceLabel={priceLabel(storeAppPricing(app))}
-        disabled={readOnly && !isConnected(app)}
-        requestStatus={requests.find((request) => request.appKey === app.key)?.status ?? null}
-        requesting={requesting === app.key}
-        onRequest={() => request(app)}
-        onOpen={() => {
-          if (viaEngine) setInstallTarget(app);
-          else if (href) router.push(href);
-          else if (provider) setEditing(provider);
-        }}
-      />
-    );
+    if (viaEngine) setInstallTarget(app);
+    else if (href) router.push(href);
+    else if (provider) setEditing(provider);
   };
 
   const request = (app: StoreApp) => {
@@ -210,125 +222,181 @@ export function StoreApps({
     });
   };
 
+  const renderCard = (app: StoreApp) => (
+    <AppCard
+      key={app.key}
+      app={app}
+      current={currentOf(app)}
+      available={isAvailable(app)}
+      installed={isInstalled(app)}
+      paidLocked={isPaidLocked(app)}
+      priceLabel={priceLabel(storeAppPricing(app))}
+      disabled={readOnly && !isConnected(app)}
+      requestStatus={requests.find((item) => item.appKey === app.key)?.status ?? null}
+      requesting={requesting === app.key}
+      onRequest={() => request(app)}
+      onOpen={() => openApp(app)}
+    />
+  );
+
   const noneInstalled = view === "installed" && !q;
 
   return (
-    <div className="space-y-7">
-      <section className="grid items-end gap-6 md:grid-cols-[minmax(0,1fr)_auto]">
-        <div className="min-w-0">
-          <div className="mb-3.5 inline-flex h-[30px] max-w-full items-center gap-2 overflow-hidden rounded-full border bg-card ps-1 pe-2.5 text-xs whitespace-nowrap text-muted-foreground">
-            <StoreLogo name={store.name} logoUrl={store.logoUrl} className="size-[22px] rounded-full" />
-            <b className="font-semibold text-foreground">{store.name}</b>
-            <span dir="ltr" className="truncate">
-              {store.hostname}
+    <>
+      <PageHeader
+        title={tSetup("appsTitle")}
+        description={t("description")}
+        actions={
+          <div className="flex min-w-0 max-w-full items-center gap-2.5 rounded-full border border-(--s-line) bg-(--s-surface) py-1 ps-1 pe-3.5">
+            <StoreLogo name={store.name} logoUrl={store.logoUrl} className="size-8 rounded-full" />
+            <span className="min-w-0 leading-tight">
+              <b className="block truncate text-[13px] font-bold text-(--s-ink)">
+                <bdi>{store.name}</bdi>
+              </b>
+              <bdi dir="ltr" className="block truncate font-montserrat text-[11.5px] text-(--s-subtle)">
+                {store.hostname}
+              </bdi>
             </span>
-            <StoreSiteStatusNote siteStatus={store.siteStatus} compact className="items-center" />
-            {readOnly && (
-              <Badge variant="outline" className="h-5">
-                {t("readOnlyBadge")}
-              </Badge>
-            )}
+            {readOnly && <Tag tone="warning">{t("readOnlyBadge")}</Tag>}
           </div>
-          <h1 className="text-[23px] leading-tight font-extrabold tracking-tight sm:text-[28px]">{t("heroTitle")}</h1>
-          <p className="mt-2 max-w-[520px] text-pretty text-muted-foreground">{t("description")}</p>
-        </div>
-        <div className="flex items-center justify-between gap-4 rounded-2xl border bg-card px-[18px] py-3.5 shadow-xs md:justify-start">
-          <div>
-            <div className="text-[28px] leading-none font-extrabold">
-              {connectedCount}
-              <span className="text-base font-semibold text-faint">/{available.length}</span>
-            </div>
-            <small className="mt-1 block text-xs whitespace-nowrap text-muted-foreground">{t("connectedCount")}</small>
-          </div>
-          <div className="flex ps-2" aria-hidden>
-            {available.map((app) =>
-              isConnected(app) ? (
-                <AppLogo key={app.key} app={app.key} className="-ms-2 size-[34px] rounded-[10px] ring-[3px] ring-card" />
-              ) : (
-                <span
-                  key={app.key}
-                  className="-ms-2 size-[34px] rounded-[10px] border-[1.5px] border-dashed bg-muted/50 ring-[3px] ring-card"
-                />
-              ),
-            )}
-          </div>
-        </div>
-      </section>
+        }
+      />
+      <StoreSiteStatusNote siteStatus={store.siteStatus} className="text-[13px]" />
 
       <div className="flex flex-wrap items-center gap-3">
-        <div role="tablist" className="flex w-full gap-1 overflow-x-auto rounded-xl border bg-card p-1 sm:w-auto">
-          {views.map(({ key, label, count }) => (
-            <button
-              key={key}
-              type="button"
-              role="tab"
-              aria-selected={view === key}
-              onClick={() => setView(key)}
-              className={cn(
-                "inline-flex h-[34px] items-center justify-center gap-1.5 rounded-[9px] px-3.5 max-sm:flex-1 text-[13px] font-semibold whitespace-nowrap text-muted-foreground transition-colors hover:text-foreground",
-                view === key && "bg-primary text-primary-foreground hover:text-primary-foreground",
-              )}
-            >
-              {label}
-              <span className="text-[11px] opacity-70">{count}</span>
-            </button>
-          ))}
-        </div>
-        <label className="flex h-[42px] w-full items-center gap-2 rounded-xl border bg-card px-3 text-faint focus-within:border-primary focus-within:ring-[3px] focus-within:ring-ring/30 sm:ms-auto sm:w-[260px]">
-          <Search className="size-4 shrink-0" aria-hidden />
-          <input
-            type="search"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder={t("find")}
-            aria-label={t("find")}
-            className="min-w-0 flex-1 bg-transparent text-foreground outline-none"
-          />
-        </label>
+        <PageTabs
+          sticky={false}
+          className="max-[720px]:w-full"
+          value={view}
+          onChange={(key) => setView(key as View)}
+          tabs={[
+            { key: "installed", icon: LayoutGrid, label: <TabLabel label={t("views.installed")} count={installedApps.length} /> },
+            { key: "explore", icon: BookOpen, label: <TabLabel label={t("views.explore")} count={apps.length} /> },
+          ]}
+        />
+        <InputGroup
+          type="search"
+          className="ms-auto min-w-[220px] flex-[0_1_280px] rounded-full max-[860px]:ms-0 max-[860px]:flex-[1_1_100%]"
+          start={<Search className="size-4" aria-hidden />}
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder={t("find")}
+          aria-label={t("find")}
+        />
       </div>
 
       {view === "installed" ? (
-        matches.length === 0 ? (
-          <AppsEmpty none={noneInstalled} />
-        ) : (
-          <div className={APP_GRID}>{matches.map(renderCard)}</div>
-        )
+        <div className="flex flex-col gap-[22px]">
+          {!q && (
+            <div className="grid grid-cols-3 gap-3 max-[720px]:grid-cols-1">
+              <SummaryCard icon={PlugZap} tone="success" label={t("connectedCount")} value={`${connectedCount}/${available.length}`} />
+              <SummaryCard icon={LayoutGrid} label={tSetup("installedCount")} value={installedApps.length} />
+              <SummaryCard icon={BookOpen} tone="accent" label={tSetup("feedsReadyCount")} value={feedsReady} />
+            </div>
+          )}
+
+          <section aria-labelledby="apps-yours">
+            <div className="mb-2.5 flex items-baseline gap-2.5">
+              <h2 id="apps-yours" className="text-base font-bold text-(--s-ink)">
+                {tSetup("yourApps")}
+              </h2>
+              <span className="font-montserrat text-[12.5px] text-(--s-faint)">{matches.length}</span>
+              <button
+                type="button"
+                onClick={() => setView("explore")}
+                className="ms-auto inline-flex min-h-6 cursor-pointer items-center text-[13px] font-bold text-(--s-link) hover:underline max-[600px]:min-h-10"
+              >
+                {tSetup("addApp")}
+              </button>
+            </div>
+            {matches.length === 0 ? (
+              <SellerCard>
+                <AppsEmpty none={noneInstalled} />
+              </SellerCard>
+            ) : (
+              <SellerCard className="flex flex-col overflow-hidden">
+                {matches.map((app) => (
+                  <InstalledRow
+                    key={app.key}
+                    app={app}
+                    current={currentOf(app)}
+                    priceLabel={priceLabel(storeAppPricing(app))}
+                    disabled={readOnly && !isConnected(app)}
+                    onOpen={() => openApp(app)}
+                  />
+                ))}
+              </SellerCard>
+            )}
+          </section>
+
+          {!q && feeds}
+
+          {!q && suggested.length > 0 && (
+            <section aria-labelledby="apps-suggested">
+              <h2 id="apps-suggested" className="mb-2.5 text-base font-bold text-(--s-ink)">
+                {tSetup("suggestedTitle")}
+              </h2>
+              <div className={APP_GRID}>{suggested.map(renderCard)}</div>
+            </section>
+          )}
+        </div>
       ) : (
-        <div className="grid gap-5 md:grid-cols-[200px_minmax(0,1fr)]">
-          {/* A row of tabs on mobile, a sidebar from md up. */}
+        <div className="grid grid-cols-[220px_minmax(0,1fr)] items-start gap-5 max-[1000px]:grid-cols-1">
+          {/* A row of pills on small screens, a sidebar from 1000px up. */}
           <nav
             aria-label={t("views.categories")}
-            className="flex gap-1 self-start overflow-x-auto rounded-xl border bg-card p-1 md:sticky md:top-4 md:flex-col md:overflow-visible"
+            className="sticky top-[88px] flex flex-col gap-0.5 rounded-[20px] border border-(--s-line) bg-(--s-surface) p-2 max-[1000px]:static max-[1000px]:flex-row max-[1000px]:overflow-x-auto max-[1000px]:rounded-full max-[1000px]:p-1 max-[1000px]:[scrollbar-width:none] max-[1000px]:[&::-webkit-scrollbar]:hidden"
           >
-            {categoryTabs.map(({ key, label, count }) => (
-              <button
-                key={key}
-                type="button"
-                aria-current={category === key ? "true" : undefined}
-                onClick={() => setCategory(key)}
-                className={cn(
-                  "inline-flex h-[34px] shrink-0 items-center justify-between gap-2 rounded-[9px] px-3 text-start text-[13px] font-semibold whitespace-nowrap text-muted-foreground transition-colors hover:text-foreground",
-                  category === key && "bg-primary text-primary-foreground hover:text-primary-foreground",
-                )}
-              >
-                {label}
-                <span className="text-[11px] opacity-70">{count}</span>
-              </button>
-            ))}
+            {categoryTabs.map(({ key, label, count }) => {
+              const Icon = GROUP_ICONS[key];
+              const active = category === key;
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => setCategory(key)}
+                  className={cn(
+                    "flex min-h-[38px] shrink-0 cursor-pointer items-center gap-2.5 rounded-xl px-3 text-start text-[13.5px] font-semibold whitespace-nowrap text-(--s-body) transition-colors duration-150 hover:bg-(--s-hover) max-[1000px]:min-h-10 max-[1000px]:rounded-full",
+                    active && "bg-(--s-solid) text-(--s-solid-fg) hover:bg-(--s-solid)",
+                  )}
+                >
+                  <Icon className={cn("size-4 shrink-0 text-(--s-subtle)", active && "text-current")} aria-hidden />
+                  <span className="flex-1">{label}</span>
+                  <em className={cn("font-montserrat text-[11px] font-semibold text-(--s-faint) not-italic max-[1000px]:hidden", active && "text-current")}>{count}</em>
+                </button>
+              );
+            })}
           </nav>
-          <div className="min-w-0 space-y-7">
+
+          <div className="flex min-w-0 flex-col gap-[22px]">
+            {category === "all" && !q && (
+              <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 rounded-[24px] bg-(--tallaby-teal-900) px-[22px] py-5 text-white max-[600px]:grid-cols-1">
+                <div className="min-w-0">
+                  <h3 className="text-lg font-bold">{tSetup("featuredTitle")}</h3>
+                  <p className="mt-1 max-w-[460px] text-pretty text-[13px] text-[#c6d8dc]">{tSetup("featuredBody")}</p>
+                </div>
+                <span aria-hidden className="flex">
+                  {(["paymob", "kashier", "bosta"] as const).map((key) => (
+                    <AppLogo key={key} app={key} className="-ms-2.5 size-[46px] rounded-[14px] ring-2 ring-(--tallaby-teal-900) first:ms-0" />
+                  ))}
+                </span>
+              </div>
+            )}
             {matches.length === 0 ? (
-              <AppsEmpty none={false} />
+              <SellerCard>
+                <AppsEmpty none={false} />
+              </SellerCard>
             ) : category === "all" && !q ? (
               STORE_APP_GROUPS.map((group) => {
                 const list = matches.filter((app) => app.group === group);
                 return (
                   <section key={group} aria-labelledby={`apps-${group}`}>
-                    <div className="mb-3 flex items-baseline gap-2.5">
-                      <h2 id={`apps-${group}`} className="text-[13px] font-bold tracking-wider whitespace-nowrap text-muted-foreground uppercase">
+                    <div className="mb-2.5 flex items-baseline gap-2.5">
+                      <h2 id={`apps-${group}`} className="text-base font-bold text-(--s-ink)">
                         {t(`groups.${group}`)}
                       </h2>
-                      <span className="text-xs text-faint">{t("groupCount", { count: list.length })}</span>
+                      <span className="text-[12.5px] text-(--s-faint)">{t("groupCount", { count: list.length })}</span>
                     </div>
                     <div className={APP_GRID}>{list.map(renderCard)}</div>
                   </section>
@@ -341,17 +409,15 @@ export function StoreApps({
         </div>
       )}
 
-      {view === "installed" && !q && feeds}
-
-      <div className="flex flex-wrap items-center gap-3.5 rounded-2xl border-[1.5px] border-dashed px-[18px] py-4 text-muted-foreground">
-        <Lightbulb className="size-[22px] shrink-0 text-accent" aria-hidden />
-        <div className="min-w-0 flex-1">
-          <b className="block text-foreground">{t("request.title")}</b>
-          <span className="text-[13px]">{t("request.body")}</span>
+      <div className="flex flex-wrap items-center gap-3.5 rounded-[22px] border-[1.5px] border-dashed border-(--s-field-strong) bg-(--s-tint) px-5 py-[18px]">
+        <Lightbulb className="size-6 shrink-0 text-(--tallaby-amber-700)" aria-hidden />
+        <div className="min-w-0 flex-1 basis-[200px]">
+          <b className="block text-sm font-bold text-(--s-ink)">{t("request.title")}</b>
+          <span className="text-[13px] text-(--s-muted)">{t("request.body")}</span>
         </div>
-        <Button asChild variant="outline" className="h-9 rounded-[10px] font-semibold">
+        <SellerButton variant="outline" size="sm" asChild>
           <Link href="/help">{t("request.cta")}</Link>
-        </Button>
+        </SellerButton>
       </div>
 
       <AppSheet
@@ -382,16 +448,94 @@ export function StoreApps({
         }
         onClose={() => setInstallTarget(null)}
       />
-    </div>
+    </>
+  );
+}
+
+function TabLabel({ label, count }: { label: string; count: number }) {
+  return (
+    <>
+      {label}
+      <em className="ms-1 grid h-5 min-w-[22px] place-items-center rounded-full bg-current/10 px-1.5 font-montserrat text-[11px] font-bold not-italic">{count}</em>
+    </>
+  );
+}
+
+function SummaryCard({ icon, tone, label, value }: { icon: LucideIcon; tone?: "success" | "accent"; label: string; value: string | number }) {
+  return (
+    <SellerCard className="flex items-center gap-3 px-[18px] py-4">
+      <IconTile icon={icon} tone={tone} />
+      <div className="min-w-0">
+        <small className="block text-xs text-(--s-subtle)">{label}</small>
+        <b dir="ltr" className="block text-start font-montserrat text-[22px] font-extrabold leading-tight text-(--s-ink) tabular-nums rtl:text-end">
+          {value}
+        </b>
+      </div>
+    </SellerCard>
   );
 }
 
 function AppsEmpty({ none }: { none: boolean }) {
   const t = useTranslations("storeApps");
   return (
-    <div className="rounded-2xl border-[1.5px] border-dashed px-5 py-12 text-center text-muted-foreground">
-      <b className="mb-1 block text-foreground">{none ? t("empty.noneTitle") : t("empty.noMatchTitle")}</b>
-      {none ? t("empty.noneBody") : t("empty.noMatchBody")}
+    <EmptyState
+      icon={Search}
+      title={none ? t("empty.noneTitle") : t("empty.noMatchTitle")}
+      description={none ? t("empty.noneBody") : t("empty.noMatchBody")}
+    />
+  );
+}
+
+/** One app on the Installed tab: its state, what it is connected to and Manage. */
+function InstalledRow({
+  app,
+  current,
+  priceLabel,
+  disabled,
+  onOpen,
+}: {
+  app: StoreApp;
+  current?: StoreIntegrationSummary;
+  priceLabel: string;
+  disabled: boolean;
+  onOpen: () => void;
+}) {
+  const t = useTranslations("storeApps");
+  const isImport = app.key === "shopify_import";
+  const connected = Boolean(current);
+  const failing = current?.status === "error";
+  const identifier = current?.identifier ?? current?.details.shopDomain;
+
+  return (
+    <div className="flex flex-wrap items-center gap-3.5 px-[18px] py-3.5 [&+&]:border-t [&+&]:border-(--s-line-soft)">
+      <AppLogo app={app.key} connected={connected && !failing} className="size-11 rounded-[14px]" />
+      <div className="min-w-0 flex-1 basis-[180px]">
+        <b className="flex flex-wrap items-center gap-2 text-[14.5px] font-bold text-(--s-ink)">
+          {t(`providers.${app.key}.name`)}
+          {failing ? (
+            <StatusBadge tone="danger">{t("error")}</StatusBadge>
+          ) : (
+            <StatusBadge tone="success">{connected ? (isImport ? t("imported") : t("connected")) : t("views.installed")}</StatusBadge>
+          )}
+        </b>
+        <small className="mt-px block text-xs text-(--s-subtle)">
+          {t(`groups.${app.group}`)} · {priceLabel}
+        </small>
+        {identifier && (
+          <bdi dir="ltr" className="mt-0.5 block truncate font-montserrat text-xs text-(--s-faint)">
+            {identifier}
+          </bdi>
+        )}
+        {current?.details.pickupLocationName && (
+          <small dir="auto" className="mt-0.5 block truncate text-xs text-(--s-faint)">
+            {current.details.pickupLocationName}
+          </small>
+        )}
+      </div>
+      <SellerButton variant="mini" size="xs" className="ms-auto" disabled={disabled} onClick={onOpen}>
+        {isImport ? t("view") : t("manage")}
+        <ChevronRight className="rtl:rotate-180" aria-hidden />
+      </SellerButton>
     </div>
   );
 }
@@ -401,6 +545,7 @@ function AppCard({
   current,
   available,
   installed,
+  paidLocked,
   priceLabel,
   disabled,
   requestStatus,
@@ -413,6 +558,8 @@ function AppCard({
   available: boolean;
   /** Default, connected or bought; `connected` below is only the integration kind. */
   installed: boolean;
+  /** Paid, and can't be bought before the USD switch. */
+  paidLocked: boolean;
   priceLabel: string;
   disabled: boolean;
   requestStatus: "requested" | "enabled" | "declined" | null;
@@ -421,43 +568,42 @@ function AppCard({
   onOpen: () => void;
 }) {
   const t = useTranslations("storeApps");
+  const tSetup = useTranslations("storeSetup");
   const isImport = app.key === "shopify_import";
   const connected = Boolean(current);
   const failing = current?.status === "error";
-  const interactive = available && !disabled;
+  const interactive = available && !disabled && !paidLocked;
   const requestable = isStoreAppRequestable(app);
 
-  const pill = requestStatus === "enabled" ? (
-    <span className="inline-flex h-6 items-center gap-1.5 rounded-full bg-success-soft px-2.5 text-xs font-semibold whitespace-nowrap">
-      {t("appRequest.enabled")}
-    </span>
-  ) : requestStatus === "requested" ? (
-    <span className="inline-flex h-6 items-center rounded-full border bg-muted/50 px-2.5 text-xs font-semibold whitespace-nowrap">
-      {t("appRequest.requested")}
-    </span>
-  ) : requestable ? (
-    <span className="inline-flex h-6 items-center rounded-full bg-accent-soft px-2.5 text-xs font-semibold whitespace-nowrap">
-      {t("soon")}
-    </span>
-  ) : !available ? (
-    <span className="inline-flex h-6 items-center rounded-full bg-accent-soft px-2.5 text-xs font-semibold whitespace-nowrap text-accent-ink">
-      {t("comingSoon")}
-    </span>
-  ) : failing ? (
-    <Badge variant="destructive">{t("error")}</Badge>
-  ) : connected ? (
-    <span className="inline-flex h-6 items-center gap-1.5 rounded-full bg-success-soft px-2.5 text-xs font-semibold whitespace-nowrap text-success before:size-1.5 before:rounded-full before:bg-current">
-      {isImport ? t("imported") : t("connected")}
-    </span>
-  ) : installed ? (
-    <span className="inline-flex h-6 items-center gap-1.5 rounded-full bg-success-soft px-2.5 text-xs font-semibold whitespace-nowrap text-success before:size-1.5 before:rounded-full before:bg-current">
-      {t("views.installed")}
-    </span>
-  ) : (
-    <span className="inline-flex h-6 items-center rounded-full border bg-muted/50 px-2.5 text-xs font-semibold whitespace-nowrap text-muted-foreground">
-      {t(`kinds.${app.kind}`)}
-    </span>
-  );
+  const pill =
+    requestStatus === "enabled" ? (
+      <StatusBadge tone="success">{t("appRequest.enabled")}</StatusBadge>
+    ) : requestStatus === "requested" ? (
+      <Tag tone="info">{t("appRequest.requested")}</Tag>
+    ) : requestable ? (
+      <Tag tone="warning">
+        <Clock aria-hidden />
+        {t("soon")}
+      </Tag>
+    ) : !available ? (
+      <Tag tone="warning">
+        <Clock aria-hidden />
+        {t("comingSoon")}
+      </Tag>
+    ) : paidLocked ? (
+      <Tag tone="warning" className="whitespace-normal">
+        <Wallet aria-hidden />
+        {tSetup("paidAfterSwitch")}
+      </Tag>
+    ) : failing ? (
+      <StatusBadge tone="danger">{t("error")}</StatusBadge>
+    ) : connected ? (
+      <StatusBadge tone="success">{isImport ? t("imported") : t("connected")}</StatusBadge>
+    ) : installed ? (
+      <StatusBadge tone="success">{t("views.installed")}</StatusBadge>
+    ) : (
+      <Tag>{t(`kinds.${app.kind}`)}</Tag>
+    );
 
   return (
     <div
@@ -476,57 +622,57 @@ function AppCard({
           : undefined
       }
       className={cn(
-        "relative flex flex-col gap-3.5 rounded-2xl border bg-card p-[18px] text-start shadow-xs transition-[transform,box-shadow,border-color] duration-200",
-        interactive &&
-          "cursor-pointer outline-none hover:-translate-y-0.5 hover:border-input hover:shadow-[0_10px_30px_-12px_rgba(20,81,99,0.25)] focus-visible:ring-[3px] focus-visible:ring-ring/40",
-        connected && "border-success/45",
+        "flex min-w-0 flex-col gap-3 rounded-[24px] border border-(--s-line) bg-(--s-glass) p-[18px] text-start shadow-(--s-shadow-card) transition-[transform,box-shadow,border-color] duration-200 max-[600px]:rounded-[20px]",
+        interactive && "cursor-pointer hover:-translate-y-[3px] hover:shadow-(--s-shadow-hover) motion-reduce:hover:translate-y-0",
+        connected && !failing && "border-success/35",
         !available && "[&_.app-logo]:opacity-80 [&_.app-logo]:grayscale-[.35]",
         available && disabled && "opacity-60",
       )}
     >
-      <div className="flex items-start gap-3.5">
-        <AppLogo app={app.key} connected={connected && !failing} className="app-logo" />
+      <div className="flex items-center gap-3">
+        <AppLogo app={app.key} connected={connected && !failing} className="app-logo size-[46px] rounded-[14px]" />
         <div className="min-w-0 flex-1">
-          <h3 className="text-[15px] leading-snug font-bold">{t(`providers.${app.key}.name`)}</h3>
-          <small className="mt-0.5 block text-xs text-faint">
+          <h3 className="text-[14.5px] leading-snug font-bold text-(--s-ink)">{t(`providers.${app.key}.name`)}</h3>
+          <small className="mt-px block text-xs text-(--s-faint)">
             {t(`providers.${app.key}.vendor`)} · {priceLabel}
           </small>
           {connected && (current?.identifier || current?.details.shopDomain) && (
-            <p dir="ltr" className="mt-1 truncate text-start font-mono text-xs text-faint rtl:text-end">
+            <bdi dir="ltr" className="mt-0.5 block truncate font-montserrat text-xs text-(--s-faint)">
               {current?.identifier ?? current?.details.shopDomain}
-            </p>
+            </bdi>
           )}
           {connected && current?.details.pickupLocationName && (
-            <p dir="auto" className="mt-1 truncate text-xs text-faint">
+            <small dir="auto" className="mt-0.5 block truncate text-xs text-(--s-faint)">
               {current.details.pickupLocationName}
-            </p>
+            </small>
           )}
         </div>
       </div>
-      <p className="flex-1 text-pretty text-[13px] leading-relaxed text-muted-foreground">
-        {t(`providers.${app.key}.description`)}
-      </p>
-      <div className="flex items-center justify-between gap-2.5 border-t pt-3.5">
+      <p className="flex-1 text-pretty text-[12.5px] leading-[1.7] text-(--s-muted)">{t(`providers.${app.key}.description`)}</p>
+      <div className="flex items-center justify-between gap-2">
         {pill}
         {requestable && !requestStatus && !disabled && (
-          <Button type="button" size="sm" disabled={requesting} onClick={onRequest}>
+          <SellerButton variant="solid" size="xs" disabled={requesting} onClick={onRequest}>
+            {requesting && <LoaderCircle className="animate-spin" aria-hidden />}
             {t("appRequest.request")}
-          </Button>
+          </SellerButton>
         )}
         {available &&
+          !paidLocked &&
+          // A label, not a second control: the whole card is the button.
           (installed ? (
-            <span className="inline-flex h-9 items-center gap-2 rounded-[10px] border px-3.5 text-[13px] font-semibold">
+            <span className="inline-flex h-[34px] shrink-0 items-center gap-1.5 rounded-full border-[1.5px] border-(--s-outline) bg-(--s-surface) px-3 text-[12.5px] font-bold text-(--s-ink) max-[600px]:h-10">
               {isImport ? t("view") : t("manage")}
-              <ChevronRight className="size-4 rtl:rotate-180" aria-hidden />
+              <ChevronRight className="size-[15px] rtl:rotate-180" aria-hidden />
             </span>
           ) : (
             <span
               className={cn(
-                "inline-flex h-9 items-center gap-2 rounded-[10px] bg-primary px-3.5 text-[13px] font-semibold text-primary-foreground",
+                "inline-flex h-[34px] shrink-0 items-center gap-1.5 rounded-full bg-(--s-solid) px-3 text-[12.5px] font-bold text-(--s-solid-fg) max-[600px]:h-10",
                 disabled && "opacity-45",
               )}
             >
-              {isImport ? <Download className="size-4" aria-hidden /> : <Plug className="size-4" aria-hidden />}
+              {isImport ? <Download className="size-[15px]" aria-hidden /> : <Plug className="size-[15px]" aria-hidden />}
               {isImport ? t("import") : t("connect")}
             </span>
           ))}
@@ -562,20 +708,21 @@ function AppSheet({
 }) {
   const t = useTranslations("storeApps");
   const format = useFormatter();
+  const locale = useLocale();
   const since = current?.connectedAt
     ? format.dateTime(new Date(current.connectedAt), { day: "numeric", month: "short" })
     : null;
 
   return (
     <Sheet open={provider !== null} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent className="flex w-full flex-col gap-0 sm:max-w-[460px]">
+      <SheetContent side={locale.startsWith("ar") ? "left" : "right"} className={APP_DRAWER_CLASS}>
         {provider && (
           <>
-            <SheetHeader className="flex-row items-center gap-3.5 border-b px-[22px] py-5">
-              <AppLogo app={provider} className="size-14 rounded-2xl" />
+            <SheetHeader className="flex-row items-center gap-3 border-b border-(--s-line-soft) px-[18px] py-4 pe-14">
+              <AppLogo app={provider} className="size-[52px] rounded-2xl" />
               <div className="min-w-0">
-                <SheetTitle className="text-lg font-extrabold">{t(`providers.${provider}.name`)}</SheetTitle>
-                <SheetDescription className="text-[13px]">
+                <SheetTitle className="text-[17px] font-bold text-(--s-ink)">{t(`providers.${provider}.name`)}</SheetTitle>
+                <SheetDescription className="text-[12.5px] text-(--s-subtle)">
                   {current && since
                     ? t("connectedSince", {
                         state: provider === "shopify_import" ? t("imported") : t("connected"),
@@ -585,7 +732,7 @@ function AppSheet({
                 </SheetDescription>
               </div>
             </SheetHeader>
-            <p className="px-4 pt-5 text-sm text-muted-foreground">{t(`providers.${provider}.description`)}</p>
+            <p className="px-[18px] pt-4 text-[13.5px] text-(--s-muted)">{t(`providers.${provider}.description`)}</p>
             {provider === "meta_capi" ? (
               <MetaCapiPanel
                 storeId={storeId}
@@ -699,28 +846,22 @@ function IdentifierPanel({
 
   return (
     <>
-      <div className="flex flex-1 flex-col gap-[22px] overflow-y-auto px-4 py-5">
+      <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-[18px]">
         {INTEGRATIONS[provider].warnsAboutSellerScripts && (
-          <p className="flex gap-2 rounded-xl bg-accent-soft p-3 text-[13px] text-accent-ink">
-            <ShieldAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
+          <Note tone="amber" icon={ShieldAlert}>
             {t("gtmWarning")}
-          </p>
+          </Note>
         )}
         {!current && (
           <div>
-            <p className="mb-2.5 text-xs font-bold tracking-wider text-faint uppercase">{t("howTo")}</p>
-            <ol className="flex flex-col">
+            <p className="mb-2.5 text-[12.5px] font-bold text-(--s-subtle)">{t("howTo")}</p>
+            <ol className="flex flex-col gap-2.5">
               {STEP_KEYS.map((step, index) => (
-                <li key={step} className="relative flex gap-3 pb-4 text-[13px] text-muted-foreground last:pb-0">
-                  <span className="grid size-6 shrink-0 place-items-center rounded-full bg-primary-soft text-xs font-bold text-primary-ink">
-                    {index + 1}
-                  </span>
-                  {index < STEP_KEYS.length - 1 && (
-                    <span className="absolute start-[11.5px] top-7 bottom-1 w-px bg-border" aria-hidden />
-                  )}
-                  <span className="pt-0.5">
+                <li key={step} className="flex gap-2.5 text-[12.5px] leading-[1.7] text-(--s-muted)">
+                  <span className="grid size-6 shrink-0 place-items-center rounded-full bg-primary-soft font-montserrat text-[11.5px] font-bold text-primary-ink">{index + 1}</span>
+                  <span className="min-w-0 pt-0.5">
                     {t.rich(`providers.${provider}.${step}`, {
-                      b: (chunks) => <b className="font-semibold text-foreground">{chunks}</b>,
+                      b: (chunks) => <b className="font-semibold text-(--s-text)">{chunks}</b>,
                     })}
                   </span>
                 </li>
@@ -728,19 +869,13 @@ function IdentifierPanel({
             </ol>
           </div>
         )}
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="app-id" className="flex justify-between gap-2">
-            {t(`providers.${provider}.idLabel`)}
-          </Label>
-          <Input
+        <Field label={t(`providers.${provider}.idLabel`)} htmlFor="app-id">
+          <TextInput
             id="app-id"
             dir="ltr"
             autoComplete="off"
             spellCheck={false}
-            className={cn(
-              "h-[46px] rounded-xl bg-muted/40 px-3.5 font-mono text-sm",
-              trimmed && !valid && "border-destructive",
-            )}
+            className="text-start font-montserrat"
             value={value}
             placeholder={t(`providers.${provider}.placeholder`)}
             aria-invalid={error || (trimmed && !valid) ? true : undefined}
@@ -750,20 +885,11 @@ function IdentifierPanel({
               setError(null);
             }}
           />
-          <p id="app-id-hint" className="min-h-[18px] text-xs text-faint">
-            {message ? (
-              <span className={error || !valid ? "text-destructive" : "text-success"}>{message}</span>
-            ) : (
-              t(`providers.${provider}.hint`)
-            )}
+          <p id="app-id-hint" className="min-h-[18px] text-xs text-(--s-faint)">
+            {message ? <span className={error || !valid ? "font-semibold text-destructive" : "font-semibold text-success"}>{message}</span> : t(`providers.${provider}.hint`)}
           </p>
-        </div>
-        {current && (
-          <p className="flex gap-2.5 rounded-xl bg-primary-soft px-3.5 py-3 text-xs leading-relaxed text-primary-ink">
-            <Info className="mt-px size-4 shrink-0" aria-hidden />
-            {t("eventsDelay", { vendor: t(`providers.${provider}.vendor`) })}
-          </p>
-        )}
+        </Field>
+        {current && <Note icon={Info}>{t("eventsDelay", { vendor: t(`providers.${provider}.vendor`) })}</Note>}
         {provider === "meta_pixel" && current && (
           <MetaEventsSettings
             storeId={storeId}
@@ -781,24 +907,20 @@ function IdentifierPanel({
             readOnly={readOnly}
           />
         )}
-        <p className="text-xs text-faint">{t("onlyThisStore")}</p>
+        <p className="text-xs text-(--s-faint)">{t("onlyThisStore")}</p>
       </div>
-      <SheetFooter className="flex-row justify-end gap-2.5 border-t px-[22px] py-4">
+      <SheetFooter className={APP_DRAWER_FOOTER_CLASS}>
         {current ? (
-          <DisconnectAppButton
-            className={cn(BUTTON_CLASS, "border-destructive/35 text-destructive hover:text-destructive")}
-            pending={isPending}
-            onConfirm={remove}
-          />
+          <DisconnectAppButton pending={isPending} onConfirm={remove} />
         ) : (
-          <Button type="button" variant="ghost" className={BUTTON_CLASS} disabled={isPending} onClick={onClose}>
+          <SellerButton variant="outline" disabled={isPending} onClick={onClose}>
             {t("cancel")}
-          </Button>
+          </SellerButton>
         )}
-        <Button type="button" className={BUTTON_CLASS} disabled={isPending || !valid} onClick={save}>
+        <SellerButton disabled={isPending || !valid} onClick={save}>
           {isPending ? <LoaderCircle className="animate-spin" aria-hidden /> : !current && <Plug aria-hidden />}
           {current ? t("save") : t("connect")}
-        </Button>
+        </SellerButton>
       </SheetFooter>
     </>
   );

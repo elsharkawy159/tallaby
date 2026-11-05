@@ -4,10 +4,8 @@ import { useCallback, useEffect, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { BellRing, LoaderCircle, Send } from "lucide-react";
-import { Button } from "@workspace/ui/components/button";
-import { Switch } from "@workspace/ui/components/switch";
+import { Note, Row, Rows, SectionCard, SellerButton, Tag, Toggle } from "@/components/seller-ui";
 import { PUSH_CATEGORIES, type PushCategory, type PushPrefs } from "@/lib/push/push-alerts.lib";
-import { SMALL_BUTTON_CLASS, SectionCard } from "./settings-ui";
 import {
   removePushSubscriptionAction,
   savePushPrefsAction,
@@ -156,66 +154,67 @@ export function PushAlertsSection({ publicKey, initialPrefs }: { publicKey: stri
   return (
     <SectionCard id="push-alerts" icon={BellRing} title={t("title")} description={t("description")}>
       {support === "checking" ? (
-        <p className="text-[13px] text-muted-foreground">{t("checking")}</p>
+        <p className="text-[13px] text-(--s-muted)">{t("checking")}</p>
       ) : support === "iosInstall" ? (
-        <p className="rounded-xl bg-muted/60 p-3 text-[13px] leading-relaxed text-muted-foreground">{t("iosHint")}</p>
+        <Note>{t("iosHint")}</Note>
       ) : support === "unsupported" ? (
-        <p className="text-[13px] text-muted-foreground">{t("unsupported")}</p>
+        <p className="text-[13px] text-(--s-muted)">{t("unsupported")}</p>
       ) : (
         <>
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-sm font-medium">{on ? t("statusOn") : t("statusOff")}</p>
+            <b className="text-sm font-bold text-(--s-text)">{on ? t("statusOn") : t("statusOff")}</b>
             <div className="flex flex-wrap gap-2">
               {on ? (
                 <>
-                  <Button variant="neutral" className={SMALL_BUTTON_CLASS} disabled={testing} onClick={sendTest}>
+                  <SellerButton variant="mini" size="xs" disabled={testing} onClick={sendTest}>
                     {testing ? <LoaderCircle className="animate-spin" /> : <Send className="rtl:-scale-x-100" />}
                     {t("sendTest")}
-                  </Button>
-                  <Button variant="neutral" className={SMALL_BUTTON_CLASS} disabled={busy} onClick={turnOff}>
+                  </SellerButton>
+                  <SellerButton variant="mini" size="xs" disabled={busy} onClick={turnOff}>
                     {busy ? <LoaderCircle className="animate-spin" /> : null}
                     {t("turnOff")}
-                  </Button>
+                  </SellerButton>
                 </>
               ) : (
-                <Button className={SMALL_BUTTON_CLASS} disabled={busy || permission === "denied"} onClick={turnOn}>
+                <SellerButton variant="solid" size="sm" disabled={busy || permission === "denied"} onClick={turnOn}>
                   {busy ? <LoaderCircle className="animate-spin" /> : <BellRing />}
                   {t("turnOn")}
-                </Button>
+                </SellerButton>
               )}
             </div>
           </div>
           {permission === "denied" ? (
             <p className="text-[13px] text-destructive">{t("blocked")}</p>
           ) : null}
-          <ul className="flex flex-col divide-y rounded-xl border">
+          <Rows>
             {PUSH_CATEGORIES.map((category) => {
               const soon = SOON.has(category);
               const id = `push-pref-${category}`;
               return (
-                <li key={category} className="flex items-center justify-between gap-3 px-3.5 py-3">
-                  <label htmlFor={id} className="min-w-0">
-                    <span className="block text-[13px] font-semibold">
+                <Row
+                  key={category}
+                  title={
+                    <>
                       {t(`types.${category}.title`)}
-                      {soon ? (
-                        <span className="ms-2 rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
-                          {t("soon")}
-                        </span>
-                      ) : null}
-                    </span>
-                    <span className="block text-xs text-muted-foreground">{t(`types.${category}.description`)}</span>
-                  </label>
-                  <Switch
-                    id={id}
-                    checked={prefs[category]}
-                    disabled={soon}
-                    onCheckedChange={(value) => setPref(category, value)}
-                  />
-                </li>
+                      {soon ? <Tag>{t("soon")}</Tag> : null}
+                    </>
+                  }
+                  description={t(`types.${category}.description`)}
+                  end={
+                    <Toggle
+className="max-[600px]:min-h-10"
+                      id={id}
+                      aria-label={t(`types.${category}.title`)}
+                      checked={prefs[category]}
+                      disabled={soon}
+                      onCheckedChange={(value) => setPref(category, value)}
+                    />
+                  }
+                />
               );
             })}
-          </ul>
-          <p className="text-xs text-muted-foreground">
+          </Rows>
+          <p className="text-pretty text-xs text-(--s-faint)">
             {t("allDevices")} {t("alwaysOn")}
           </p>
         </>

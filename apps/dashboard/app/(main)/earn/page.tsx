@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
+import { PageContainer } from "@/components/seller-ui";
 import { isAccessError, requireSeller } from "@/lib/auth/require-seller.server";
 import { EarnSection } from "./earn.data";
 
@@ -18,8 +19,8 @@ export default async function EarnPage() {
   if (seller instanceof Error) throw seller;
 
   return (
-    <div className="p-4 sm:p-6">
+    <PageContainer narrow>
       <EarnSection sellerId={seller.sellerId} />
-    </div>
+    </PageContainer>
   );
 }

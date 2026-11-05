@@ -17,19 +17,13 @@ import {
   LoaderCircle,
   ShieldCheck,
   TriangleAlert,
-  UserPlus,
-  UserRoundCheck,
 } from "lucide-react";
 
 import { DEFAULT_BOSTA_SETTINGS, type BostaSettings } from "@workspace/lib/integrations";
 import type { BostaOverview } from "@workspace/lib/integrations/server";
 import type { BostaPickupLocation } from "@workspace/lib/shipping/bosta";
-import { Button } from "@workspace/ui/components/button";
-import { ChoiceCard, ChoiceGroup } from "@workspace/ui/components/choice-card";
-import { Input } from "@workspace/ui/components/input";
-import { Label } from "@workspace/ui/components/label";
-import { cn } from "@workspace/ui/lib/utils";
-import { BUTTON_CLASS, FIELD_CLASS } from "@/components/form/form-ui";
+import { Field, IconButton, Note, OptionCard, OptionCards, SellerButton, SellerCard, TextInput } from "@/components/seller-ui";
+import { cn } from "@/lib/utils";
 import { BostaPreferences } from "./bosta-preferences.client";
 import { updateBostaSettings, verifyBostaKey } from "./bosta.server";
 
@@ -41,7 +35,7 @@ const STEPS = ["account", "key", "verify", "prefs"] as const;
 const KEY_STEPS = ["open", "otp", "create", "scope", "copy"] as const;
 const SIGNUP_STEPS = ["signup", "phone", "pickup"] as const;
 
-const b = (chunks: React.ReactNode) => <b className="font-semibold text-foreground">{chunks}</b>;
+const b = (chunks: React.ReactNode) => <b className="font-semibold text-(--s-text)">{chunks}</b>;
 
 /**
  * The 4-step Bosta connect wizard (BS-06): account → create a key → paste
@@ -92,7 +86,7 @@ export function BostaWizard({
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-4">
       <ol className="grid grid-cols-4 gap-1.5" aria-label={t("wizard.progress")}>
         {STEPS.map((key, index) => {
           const state = index < step ? "done" : index === step ? "current" : "todo";
@@ -104,20 +98,19 @@ export function BostaWizard({
                 disabled={!reachable}
                 aria-current={state === "current" ? "step" : undefined}
                 onClick={() => go(index)}
-                className="group flex w-full flex-col gap-2 text-start disabled:cursor-default"
+                className="group flex min-h-10 w-full flex-col gap-2 text-start disabled:cursor-default"
               >
                 <span
                   className={cn(
-                    "h-1.5 rounded-full bg-muted transition-colors",
-                    state !== "todo" && "bg-primary",
-                    state === "current" && "bg-primary/70",
+                    "h-1.5 rounded-full bg-(--s-fill) transition-colors",
+                    state !== "todo" && "bg-(--s-primary)",
                   )}
                 />
                 <span
                   className={cn(
-                    "flex items-center gap-1.5 truncate text-[12px] font-semibold text-faint sm:text-[13px]",
-                    state === "current" && "text-foreground",
-                    state === "done" && "text-primary group-enabled:group-hover:underline",
+                    "flex items-center gap-1.5 truncate text-[12px] font-semibold text-(--s-faint) sm:text-[13px]",
+                    state === "current" && "text-(--s-ink)",
+                    state === "done" && "text-(--s-link) group-enabled:group-hover:underline",
                   )}
                 >
                   {state === "done" ? <Check className="size-3.5 shrink-0" aria-hidden /> : <span className="shrink-0">{index + 1}.</span>}
@@ -129,35 +122,29 @@ export function BostaWizard({
         })}
       </ol>
 
-      <div className="rounded-2xl border bg-card p-4 shadow-xs sm:p-6">
+      <SellerCard className="p-6 max-[720px]:p-4">
         {step === 0 && (
           <StepShell title={t("account.title")} body={t("account.body")}>
-            <ChoiceGroup
-              stack
-              className="sm:grid-cols-2"
-              value={hasAccount}
-              onValueChange={(value) => setHasAccount(value === "yes" ? "yes" : "no")}
-              aria-label={t("account.title")}
-            >
-              <ChoiceCard size="lg" value="yes" indicator icon={<UserRoundCheck aria-hidden />} title={t("account.yes")} description={t("account.yesBody")} />
-              <ChoiceCard size="lg" value="no" indicator icon={<UserPlus aria-hidden />} title={t("account.no")} description={t("account.noBody")} />
-            </ChoiceGroup>
+            <OptionCards>
+              <OptionCard name="bosta-has-account" title={t("account.yes")} description={t("account.yesBody")} checked={hasAccount === "yes"} onChange={() => setHasAccount("yes")} />
+              <OptionCard name="bosta-has-account" title={t("account.no")} description={t("account.noBody")} checked={hasAccount === "no"} onChange={() => setHasAccount("no")} />
+            </OptionCards>
             {hasAccount === "no" && (
-              <div className="rounded-xl bg-muted/50 p-4">
+              <div className="rounded-2xl bg-(--s-tint) p-4">
                 <NumberedList keys={SIGNUP_STEPS} render={(key) => t.rich(`account.checklist.${key}`, { b })} />
-                <Button asChild variant="outline" className={cn(BUTTON_CLASS, "mt-4")}>
+                <SellerButton asChild variant="outline" className="mt-4">
                   <a href={BOSTA_SIGNUP_URL} target="_blank" rel="noopener noreferrer">
                     {t("account.openSignup")}
-                    <ExternalLink className="size-4" aria-hidden />
+                    <ExternalLink aria-hidden />
                   </a>
-                </Button>
+                </SellerButton>
               </div>
             )}
             <StepFooter>
-              <Button type="button" className={BUTTON_CLASS} disabled={!hasAccount} onClick={() => go(1)}>
+              <SellerButton disabled={!hasAccount} onClick={() => go(1)}>
                 {hasAccount === "no" ? t("account.doneContinue") : t("wizard.next")}
-                <ArrowRight className="size-4 rtl:rotate-180" aria-hidden />
-              </Button>
+                <ArrowRight className="rtl:rotate-180" aria-hidden />
+              </SellerButton>
             </StepFooter>
           </StepShell>
         )}
@@ -165,25 +152,21 @@ export function BostaWizard({
         {step === 1 && (
           <StepShell title={t("key.title")} body={t("key.body")}>
             <NumberedList keys={KEY_STEPS} render={(key) => t.rich(`key.steps.${key}`, { b })} />
-            <div className="flex gap-3 rounded-xl bg-primary-soft p-3.5 text-[13px] leading-relaxed text-primary-ink">
-              <ShieldCheck className="mt-0.5 size-4 shrink-0" aria-hidden />
-              <span>{t.rich("key.scopeNote", { b })}</span>
-            </div>
-            <div className="flex gap-3 rounded-xl bg-accent-soft p-3.5 text-[13px] leading-relaxed text-accent-ink">
-              <TriangleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
-              <span>{t("key.copyWarning")}</span>
-            </div>
+            <Note icon={ShieldCheck}>{t.rich("key.scopeNote", { b })}</Note>
+            <Note tone="amber" icon={TriangleAlert}>
+              {t("key.copyWarning")}
+            </Note>
             <StepFooter onBack={() => go(0)}>
-              <Button asChild variant="outline" className={BUTTON_CLASS}>
+              <SellerButton asChild variant="outline">
                 <a href={BOSTA_DASHBOARD_URL} target="_blank" rel="noopener noreferrer">
                   {t("key.openDashboard")}
-                  <ExternalLink className="size-4" aria-hidden />
+                  <ExternalLink aria-hidden />
                 </a>
-              </Button>
-              <Button type="button" className={BUTTON_CLASS} onClick={() => go(2)}>
+              </SellerButton>
+              <SellerButton onClick={() => go(2)}>
                 {t("key.haveKey")}
-                <ArrowRight className="size-4 rtl:rotate-180" aria-hidden />
-              </Button>
+                <ArrowRight className="rtl:rotate-180" aria-hidden />
+              </SellerButton>
             </StepFooter>
           </StepShell>
         )}
@@ -200,15 +183,8 @@ export function BostaWizard({
               }}
             />
             {locations && (
-              <div
-                role="status"
-                className={cn(
-                  "flex gap-3 rounded-xl p-3.5 text-[13px]",
-                  locations.length ? "bg-success-soft text-success" : "bg-accent-soft text-accent-ink",
-                )}
-              >
-                {locations.length ? <CircleCheck className="mt-0.5 size-4 shrink-0" aria-hidden /> : <TriangleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />}
-                <span>
+              <Note tone={locations.length ? "success" : "amber"} icon={locations.length ? CircleCheck : TriangleAlert}>
+                <span role="status">
                   {locations.length ? t("verify.ok", { count: locations.length }) : t("verify.noLocations")}
                   {!locations.length && (
                     <a href={BOSTA_DASHBOARD_URL} target="_blank" rel="noopener noreferrer" className="ms-1 font-semibold underline">
@@ -216,13 +192,13 @@ export function BostaWizard({
                     </a>
                   )}
                 </span>
-              </div>
+              </Note>
             )}
             <StepFooter onBack={() => go(1)}>
-              <Button type="button" className={BUTTON_CLASS} disabled={!locations?.length} onClick={() => go(3)}>
+              <SellerButton disabled={!locations?.length} onClick={() => go(3)}>
                 {t("wizard.next")}
-                <ArrowRight className="size-4 rtl:rotate-180" aria-hidden />
-              </Button>
+                <ArrowRight className="rtl:rotate-180" aria-hidden />
+              </SellerButton>
             </StepFooter>
           </StepShell>
         )}
@@ -237,18 +213,18 @@ export function BostaWizard({
               submitLabel={t("wizard.finish")}
               onSubmit={finish}
             />
-            <Button type="button" variant="ghost" className={cn(BUTTON_CLASS, "self-start")} onClick={() => go(2)}>
-              <ArrowLeft className="size-4 rtl:rotate-180" aria-hidden />
+            <SellerButton variant="mini" className="self-start" onClick={() => go(2)}>
+              <ArrowLeft className="rtl:rotate-180" aria-hidden />
               {t("wizard.back")}
-            </Button>
+            </SellerButton>
           </StepShell>
         )}
-      </div>
+      </SellerCard>
 
-      <p className="text-center text-xs text-faint">
+      <p className="text-center text-xs text-(--s-faint)">
         {t.rich("wizard.help", {
           link: (chunks) => (
-            <a href={BOSTA_API_KEY_GUIDE_URL} target="_blank" rel="noopener noreferrer" className="font-semibold text-primary underline">
+            <a href={BOSTA_API_KEY_GUIDE_URL} target="_blank" rel="noopener noreferrer" className="font-semibold text-(--s-link) underline max-[600px]:inline-flex max-[600px]:min-h-10 max-[600px]:items-center">
               {chunks}
             </a>
           ),
@@ -309,18 +285,17 @@ export function BostaKeyField({
   };
 
   return (
-    <div className="flex flex-col gap-1.5">
-      <Label htmlFor="bosta-key">{t("verify.label")}</Label>
-      <div className="flex flex-col gap-2 sm:flex-row">
+    <Field label={t("verify.label")} htmlFor="bosta-key">
+      <div className="flex flex-wrap gap-2">
         {/* The key is Latin text: the whole box is LTR, so the icon, the padding and the buttons line up in Arabic too. */}
-        <div dir="ltr" className="relative min-w-0 flex-1">
-          <KeyRound className="pointer-events-none absolute start-3.5 top-1/2 size-4 -translate-y-1/2 text-faint" aria-hidden />
-          <Input
+        <div dir="ltr" className="relative min-w-[220px] flex-1">
+          <KeyRound className="pointer-events-none absolute start-3.5 top-1/2 size-4 -translate-y-1/2 text-(--s-subtle)" aria-hidden />
+          <TextInput
             id="bosta-key"
             type={visible ? "text" : "password"}
             autoComplete="off"
             spellCheck={false}
-            className={cn(FIELD_CLASS, "ps-10 pe-20 font-mono", error && "border-destructive")}
+            className="ps-10 pe-24 font-montserrat"
             value={key}
             placeholder={saved ? t("verify.savedPlaceholder", { hint: saved }) : t("verify.placeholder")}
             aria-invalid={error ? true : undefined}
@@ -334,31 +309,24 @@ export function BostaKeyField({
               if (event.key === "Enter" && canVerify) verify();
             }}
           />
-          <div className="absolute end-1.5 top-1/2 flex -translate-y-1/2 gap-0.5">
-            <Button type="button" variant="ghost" size="icon" className="size-8" onClick={paste} disabled={disabled || isPending} aria-label={t("verify.paste")}>
-              <ClipboardPaste className="size-4" aria-hidden />
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="size-8"
-              onClick={() => setVisible((v) => !v)}
-              aria-label={visible ? t("verify.hide") : t("verify.show")}
-            >
-              {visible ? <EyeOff className="size-4" aria-hidden /> : <Eye className="size-4" aria-hidden />}
-            </Button>
+          <div className="absolute end-0.5 top-1/2 flex -translate-y-1/2">
+            <IconButton className="size-10 max-[600px]:size-10" onClick={paste} disabled={disabled || isPending} aria-label={t("verify.paste")}>
+              <ClipboardPaste aria-hidden />
+            </IconButton>
+            <IconButton className="size-10 max-[600px]:size-10" onClick={() => setVisible((v) => !v)} aria-label={visible ? t("verify.hide") : t("verify.show")}>
+              {visible ? <EyeOff aria-hidden /> : <Eye aria-hidden />}
+            </IconButton>
           </div>
         </div>
-        <Button type="button" className={BUTTON_CLASS} disabled={disabled || isPending || !canVerify} onClick={verify}>
-          {isPending ? <LoaderCircle className="animate-spin" aria-hidden /> : <ShieldCheck className="size-4" aria-hidden />}
+        <SellerButton variant="solid" className="h-[46px] max-[600px]:w-full" disabled={disabled || isPending || !canVerify} onClick={verify}>
+          {isPending ? <LoaderCircle className="animate-spin" aria-hidden /> : <ShieldCheck aria-hidden />}
           {isPending ? t("verify.checking") : t("verify.action")}
-        </Button>
+        </SellerButton>
       </div>
-      <p id="bosta-key-hint" className="text-xs text-muted-foreground">
-        {error ? <span className="text-destructive">{error}</span> : t("verify.hint")}
+      <p id="bosta-key-hint" className="text-xs text-(--s-faint)">
+        {error ? <span className="font-semibold text-destructive">{error}</span> : t("verify.hint")}
       </p>
-    </div>
+    </Field>
   );
 }
 
@@ -366,8 +334,8 @@ function StepShell({ title, body, children }: { title: string; body: string; chi
   return (
     <div className="flex flex-col gap-5">
       <div>
-        <h2 className="text-lg font-extrabold sm:text-xl">{title}</h2>
-        <p className="mt-1 text-pretty text-[13.5px] text-muted-foreground">{body}</p>
+        <h2 className="text-[16.5px] font-bold text-(--s-ink)">{title}</h2>
+        <p className="mt-0.5 text-pretty text-[13px] text-(--s-subtle)">{body}</p>
       </div>
       {children}
     </div>
@@ -377,12 +345,12 @@ function StepShell({ title, body, children }: { title: string; body: string; chi
 function StepFooter({ onBack, children }: { onBack?: () => void; children: React.ReactNode }) {
   const t = useTranslations("storeApps.bosta.wizard");
   return (
-    <div className="flex flex-col-reverse gap-2 border-t pt-5 sm:flex-row sm:items-center sm:justify-end">
+    <div className="flex flex-wrap items-center justify-end gap-2 border-t border-(--s-line-soft) pt-4">
       {onBack && (
-        <Button type="button" variant="ghost" className={cn(BUTTON_CLASS, "sm:me-auto")} onClick={onBack}>
-          <ArrowLeft className="size-4 rtl:rotate-180" aria-hidden />
+        <SellerButton variant="mini" className="me-auto" onClick={onBack}>
+          <ArrowLeft className="rtl:rotate-180" aria-hidden />
           {t("back")}
-        </Button>
+        </SellerButton>
       )}
       {children}
     </div>
@@ -393,11 +361,11 @@ function NumberedList<K extends string>({ keys, render }: { keys: readonly K[]; 
   return (
     <ol className="flex flex-col">
       {keys.map((key, index) => (
-        <li key={key} className="relative flex gap-3 pb-4 text-[13.5px] text-muted-foreground last:pb-0">
-          <span className="grid size-6 shrink-0 place-items-center rounded-full bg-primary-soft text-xs font-bold text-primary-ink">
+        <li key={key} className="relative flex gap-3 pb-4 text-[13px] text-(--s-muted) last:pb-0">
+          <span className="grid size-6 shrink-0 place-items-center rounded-full bg-primary-soft font-montserrat text-[11.5px] font-bold text-primary-ink">
             {index + 1}
           </span>
-          {index < keys.length - 1 && <span className="absolute start-[11.5px] top-7 bottom-1 w-px bg-border" aria-hidden />}
+          {index < keys.length - 1 && <span className="absolute start-[11.5px] top-7 bottom-1 w-px bg-(--s-line)" aria-hidden />}
           <span className="pt-0.5 leading-relaxed">{render(key)}</span>
         </li>
       ))}
@@ -408,25 +376,25 @@ function NumberedList<K extends string>({ keys, render }: { keys: readonly K[]; 
 function DoneScreen({ storeId, settings, onSettings }: { storeId: string; settings: BostaSettings; onSettings: () => void }) {
   const t = useTranslations("storeApps.bosta.done");
   return (
-    <div className="flex flex-col items-center gap-4 rounded-2xl border bg-card px-5 py-10 text-center shadow-xs">
+    <SellerCard className="flex flex-col items-center gap-4 px-5 py-10 text-center">
       <span className="grid size-16 place-items-center rounded-full bg-success-soft text-success">
         <CircleCheck className="size-9" aria-hidden />
       </span>
-      <h2 className="text-xl font-extrabold">{t("title")}</h2>
-      <p className="max-w-[440px] text-pretty text-muted-foreground">
+      <h2 className="text-xl font-bold text-(--s-ink)">{t("title")}</h2>
+      <p className="max-w-[440px] text-pretty text-[13.5px] text-(--s-muted)">
         {settings.autoShip === "on_confirm" ? t("bodyAuto") : t("bodyManual")}
       </p>
-      <div className="mt-2 flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
-        <Button asChild className={BUTTON_CLASS}>
+      <div className="mt-2 flex flex-wrap justify-center gap-2 max-[600px]:w-full max-[600px]:[&>*]:flex-1">
+        <SellerButton asChild>
           <Link href="/orders">{t("orders")}</Link>
-        </Button>
-        <Button asChild variant="outline" className={BUTTON_CLASS}>
+        </SellerButton>
+        <SellerButton asChild variant="outline">
           <Link href={`/stores/${storeId}/shipping`}>{t("shipping")}</Link>
-        </Button>
-        <Button type="button" variant="ghost" className={BUTTON_CLASS} onClick={onSettings}>
+        </SellerButton>
+        <SellerButton variant="mini" onClick={onSettings}>
           {t("settings")}
-        </Button>
+        </SellerButton>
       </div>
-    </div>
+    </SellerCard>
   );
 }

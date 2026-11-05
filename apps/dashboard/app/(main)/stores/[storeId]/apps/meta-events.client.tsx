@@ -14,10 +14,7 @@ import {
   type MetaTrackingSettings,
 } from "@workspace/lib/integrations";
 import type { StoreIntegrationSummary } from "@workspace/lib/integrations/server";
-import { Button } from "@workspace/ui/components/button";
-import { Label } from "@workspace/ui/components/label";
-import { RadioGroup, RadioGroupItem } from "@workspace/ui/components/radio-group";
-import { Switch } from "@workspace/ui/components/switch";
+import { Note, OptionCard, SellerButton, Toggle } from "@/components/seller-ui";
 import { saveMetaEvents } from "./meta-events.server";
 
 /**
@@ -62,20 +59,22 @@ export function MetaEventsSettings({
   };
 
   return (
-    <div className="flex flex-col gap-3 rounded-xl border p-3.5">
+    <div className="flex flex-col gap-3 rounded-2xl border border-(--s-line) p-3.5">
       <div>
-        <p className="text-sm font-bold">{t("title")}</p>
-        <p className="text-xs text-muted-foreground">{t("hint")}</p>
+        <p className="text-sm font-bold text-(--s-text)">{t("title")}</p>
+        <p className="text-xs text-(--s-subtle)">{t("hint")}</p>
       </div>
       <ul className="flex flex-col gap-2.5">
         {META_TRACKED_EVENTS.map((name) => (
           <li key={name} className="flex items-start justify-between gap-3">
-            <Label htmlFor={`meta-event-${name}`} className="flex min-w-0 flex-col items-start gap-0.5 font-normal">
-              <span className="text-[13px] font-semibold">{t(`events.${name}.name`)}</span>
-              <span className="text-xs text-muted-foreground">{t(`events.${name}.hint`)}</span>
-            </Label>
-            <Switch
+            <span className="flex min-w-0 flex-col items-start gap-0.5">
+              <b className="text-[13px] font-bold text-(--s-text)">{t(`events.${name}.name`)}</b>
+              <small className="text-xs text-(--s-subtle)">{t(`events.${name}.hint`)}</small>
+            </span>
+            <Toggle
+className="max-[600px]:min-h-10"
               id={`meta-event-${name}`}
+              aria-label={t(`events.${name}.name`)}
               checked={events[name]}
               disabled={readOnly || isPending}
               onCheckedChange={(on) => setEvents((list) => ({ ...list, [name]: on }))}
@@ -84,44 +83,39 @@ export function MetaEventsSettings({
         ))}
       </ul>
 
-      <div className="flex flex-col gap-2 border-t pt-3">
-        <p className="text-[13px] font-semibold">{t("purchaseOn.label")}</p>
-        <RadioGroup
-          value={purchaseOn}
-          onValueChange={(value) => setPurchaseOn(value === "delivered" ? "delivered" : "order")}
+      <div className="flex flex-col gap-2 border-t border-(--s-line-soft) pt-3">
+        <p className="text-[13px] font-bold text-(--s-text)">{t("purchaseOn.label")}</p>
+        <OptionCard
+          name="meta-purchase-on"
+          title={t("purchaseOn.order")}
+          description={t("purchaseOn.orderHint")}
+          checked={purchaseOn === "order"}
           disabled={readOnly || isPending || !events.Purchase}
-          className="gap-2"
-        >
-          <Label className="flex items-start gap-2.5 font-normal">
-            <RadioGroupItem value="order" className="mt-0.5" />
-            <span className="flex flex-col gap-0.5">
-              <span className="text-[13px] font-semibold">{t("purchaseOn.order")}</span>
-              <span className="text-xs text-muted-foreground">{t("purchaseOn.orderHint")}</span>
-            </span>
-          </Label>
-          <Label className="flex items-start gap-2.5 font-normal">
-            <RadioGroupItem value="delivered" className="mt-0.5" />
-            <span className="flex flex-col gap-0.5">
-              <span className="text-[13px] font-semibold">{t("purchaseOn.delivered")}</span>
-              <span className="text-xs text-muted-foreground">{t("purchaseOn.deliveredHint")}</span>
-            </span>
-          </Label>
-        </RadioGroup>
+          onChange={() => setPurchaseOn("order")}
+        />
+        <OptionCard
+          name="meta-purchase-on"
+          title={t("purchaseOn.delivered")}
+          description={t("purchaseOn.deliveredHint")}
+          checked={purchaseOn === "delivered"}
+          disabled={readOnly || isPending || !events.Purchase}
+          onChange={() => setPurchaseOn("delivered")}
+        />
         {purchaseOn === "delivered" && !capiConnected && (
-          <p className="rounded-xl bg-accent-soft p-2.5 text-xs text-accent-ink">{t("purchaseOn.needsCapi")}</p>
+          <Note tone="amber">{t("purchaseOn.needsCapi")}</Note>
         )}
       </div>
 
-      <Button
-        type="button"
-        variant="secondary"
-        className="h-9 self-start rounded-[10px] font-semibold"
+      <SellerButton
+        variant="solid"
+        size="sm"
+        className="self-start"
         disabled={readOnly || isPending || !dirty}
         onClick={save}
       >
         {isPending && <LoaderCircle className="animate-spin" aria-hidden />}
         {t("save")}
-      </Button>
+      </SellerButton>
     </div>
   );
 }

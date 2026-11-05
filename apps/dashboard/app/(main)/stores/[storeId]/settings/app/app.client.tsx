@@ -4,10 +4,10 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { ExternalLink, ImageIcon, Smartphone } from "lucide-react";
+import { Download, ExternalLink, ImageIcon, Pencil, Smartphone } from "lucide-react";
 
 import { appInitials, type StoreAppSettings as StoreAppSettingsValue } from "@workspace/lib/stores/app";
-import { Switch } from "@workspace/ui/components/switch";
+import { Note, Row, Rows, SectionCard, SellerButton, TextAction, Toggle } from "@/components/seller-ui";
 import { getPublicUrl } from "@/lib/utils";
 import { saveStoreAppSettings } from "./app.server";
 
@@ -37,6 +37,7 @@ export function StoreAppSettings({
   readOnly: boolean;
 }) {
   const t = useTranslations("storeApp");
+  const tSetup = useTranslations("storeSetup");
   const [show, setShow] = useState(initial.showDownloadButton);
   const [isPending, startTransition] = useTransition();
   const iconUrl = icon ? getPublicUrl(icon, "sellers") : null;
@@ -54,80 +55,72 @@ export function StoreAppSettings({
     });
   };
 
+  const tile = iconUrl ? (
+    // eslint-disable-next-line @next/next/no-img-element -- a small seller image preview
+    <img src={iconUrl} alt="" className="size-full rounded-[inherit] bg-white object-contain p-1" />
+  ) : (
+    <span className="font-montserrat text-[15px] font-extrabold">{appInitials(name)}</span>
+  );
+
   return (
-    <div className="space-y-5">
-      {readOnly && <p className="rounded-xl border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">{t("readOnly")}</p>}
+    <div className="flex flex-col gap-4">
+      {readOnly && <Note tone="amber">{t("readOnly")}</Note>}
 
-      <section className="space-y-4 rounded-xl border bg-card p-4 sm:p-5">
-        <div className="space-y-1">
-          <h2 className="flex items-center gap-2 font-semibold">
-            <Smartphone className="size-4" />
-            {t("title")}
-          </h2>
-          <p className="text-sm text-muted-foreground">{t("description")}</p>
-        </div>
-
-        <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
-          {/* A home-screen tile as the phone shows it. */}
-          <div className="flex w-fit flex-col items-center gap-2 rounded-2xl bg-gradient-to-b from-slate-700 to-slate-900 px-8 py-6">
-            {iconUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element -- a small seller image preview
-              <img src={iconUrl} alt="" className="size-16 rounded-[18px] bg-white object-contain p-1.5 shadow-lg" />
-            ) : (
-              <span className="grid size-16 place-items-center rounded-[18px] bg-gray-900 text-xl font-bold text-white shadow-lg ring-1 ring-white/20">
-                {appInitials(name)}
-              </span>
-            )}
-            <span className="max-w-24 truncate text-xs font-medium text-white">{shortName}</span>
+      <SectionCard icon={Smartphone} title={t("title")} description={t("description")}>
+        <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-5 max-[600px]:grid-cols-1">
+          {/* A home-screen tile as the phone shows it. Always dark, like a phone's wallpaper. */}
+          <div className="flex w-fit flex-col items-center gap-2 justify-self-center rounded-[22px] bg-gradient-to-b from-(--tallaby-teal-700) to-(--tallaby-teal-900) px-8 py-6">
+            <span className="grid size-16 place-items-center overflow-hidden rounded-[18px] bg-white text-(--tallaby-teal-900) shadow-[0_0_0_3px_var(--tallaby-amber-600)]">
+              {tile}
+            </span>
+            <span className="max-w-24 truncate text-xs font-semibold text-white">{shortName}</span>
           </div>
 
-          <dl className="min-w-0 flex-1 space-y-3 text-sm">
-            <div>
-              <dt className="text-muted-foreground">{t("appName")}</dt>
-              <dd className="font-medium">{name}</dd>
-            </div>
-            <div>
-              <dt className="text-muted-foreground">{t("appIcon")}</dt>
-              <dd className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                <span>{iconUrl ? (usesLogo ? t("iconFromLogo") : t("iconFromFavicon")) : t("iconInitials")}</span>
-                <Link
-                  href={`/stores/${storeId}/website/design`}
-                  className="inline-flex items-center gap-1 text-primary-ink underline-offset-4 hover:underline"
-                >
-                  <ImageIcon className="size-3.5" />
-                  {t("changeIcon")}
-                </Link>
-              </dd>
-            </div>
-            <p className="text-xs text-muted-foreground">{t("nameHint")}</p>
-          </dl>
+          <div className="flex min-w-0 flex-col gap-2">
+            <Rows>
+              <Row
+                title={iconUrl ? (usesLogo ? t("iconFromLogo") : t("iconFromFavicon")) : t("iconInitials")}
+                description={t("appIcon")}
+                end={
+                  <SellerButton variant="mini" size="xs" asChild>
+                    <Link href={`/stores/${storeId}/website/design`}>
+                      <ImageIcon aria-hidden />
+                      {t("changeIcon")}
+                    </Link>
+                  </SellerButton>
+                }
+              />
+              <Row
+                title={<bdi>{name}</bdi>}
+                description={t("appName")}
+                end={
+                  <SellerButton variant="mini" size="xs" asChild>
+                    <Link href={`/stores/${storeId}/settings`}>
+                      <Pencil aria-hidden />
+                      {tSetup("editName")}
+                    </Link>
+                  </SellerButton>
+                }
+              />
+            </Rows>
+            <p className="text-pretty text-xs text-(--s-faint)">{t("nameHint")}</p>
+          </div>
         </div>
-      </section>
+      </SectionCard>
 
-      <section className="flex items-start justify-between gap-4 rounded-xl border bg-card p-4 sm:p-5">
-        <div className="space-y-1">
-          <label htmlFor="store-app-button" className="font-semibold">
-            {t("buttonTitle")}
-          </label>
-          <p className="text-sm text-muted-foreground">{t("buttonDescription")}</p>
-          <a
-            href={siteUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-sm text-primary-ink underline-offset-4 hover:underline"
-          >
+      <SectionCard
+        icon={Download}
+        title={t("buttonTitle")}
+        description={t("buttonDescription")}
+        action={<Toggle className="max-[600px]:min-h-10" id="store-app-button" checked={show} disabled={readOnly || isPending} onCheckedChange={toggle} aria-label={t("buttonTitle")} />}
+      >
+        <TextAction asChild className="self-start max-[600px]:min-h-10">
+          <a href={siteUrl} target="_blank" rel="noopener noreferrer">
+            <ExternalLink aria-hidden />
             {t("viewStore")}
-            <ExternalLink className="size-3.5" />
           </a>
-        </div>
-        <Switch
-          id="store-app-button"
-          checked={show}
-          disabled={readOnly || isPending}
-          onCheckedChange={toggle}
-          aria-label={t("buttonTitle")}
-        />
-      </section>
+        </TextAction>
+      </SectionCard>
     </div>
   );
 }

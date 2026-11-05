@@ -27,18 +27,19 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 
-import { Card } from '@workspace/ui/components/card'
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@workspace/ui/components/form'
-import { Input } from '@workspace/ui/components/input'
-import { Button } from '@workspace/ui/components/button'
-import { Progress } from '@workspace/ui/components/progress'
+  Field,
+  FieldRow,
+  IconTile,
+  InputGroup,
+  PageContainer,
+  PageHeader,
+  SectionCard,
+  SellerButton,
+  SellerCard,
+  StatusBadge,
+  TextInput,
+} from '@/components/seller-ui'
 import { cn } from '@/lib/utils'
 import { useLocalizedResolver } from '@/lib/i18n/localized-resolver'
 
@@ -53,16 +54,6 @@ import { TALLABY_SERVICES_ENABLED } from '@workspace/lib/fulfillment'
 import { LegalDetailsSection, PayoutDetailsSection, StoreDetailsMovedCard } from './account-sections.client'
 import { DocumentsSection } from './seller-documents.client'
 import { PoliciesSection } from './policies.client'
-import {
-  FIELD_CLASS,
-  INPUT_GROUP_CLASS,
-  INPUT_IN_GROUP_CLASS,
-  ADDON_CLASS,
-  LabelNote,
-  SMALL_BUTTON_CLASS,
-  SectionCard,
-  SectionIcon,
-} from './settings-ui'
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 
@@ -105,6 +96,7 @@ export function SellerSettingsForm ({
   pushAlertsSection = null,
 }: SellerSettingsFormProps) {
   const t = useTranslations('settings')
+  const tSetup = useTranslations('storeSetup')
   const router = useRouter()
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('saved')
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -226,162 +218,100 @@ export function SellerSettingsForm ({
   }
 
   return (
-    <div className='w-full p-4 pb-20 sm:p-6 sm:pb-24'>
-      <div className='mb-6 flex flex-wrap items-end justify-between gap-4'>
-        <p className='min-w-0 flex-[1_1_320px] text-sm text-pretty text-muted-foreground'>
-          {t('subtitle')}
-        </p>
-        <div className='flex flex-wrap items-center gap-2'>
-          <AutosaveIndicator status={saveStatus} />
-          <Button variant='neutral' className={SMALL_BUTTON_CLASS} asChild>
-            <a href={storeHref} target='_blank' rel='noopener noreferrer'>
-              <ExternalLink className='rtl:-scale-x-100' />
-              {t('viewStore')}
-            </a>
-          </Button>
-        </div>
-      </div>
+    <PageContainer>
+      <PageHeader
+        title={tSetup('accountTitle')}
+        description={tSetup('accountDescription')}
+        actions={
+          <>
+            <AutosaveIndicator status={saveStatus} />
+            <SellerButton variant='mini' size='sm' asChild>
+              <a href={storeHref} target='_blank' rel='noopener noreferrer'>
+                <ExternalLink className='rtl:-scale-x-100' aria-hidden />
+                {t('viewStore')}
+              </a>
+            </SellerButton>
+          </>
+        }
+      />
 
-      <div className='grid grid-cols-1 items-start gap-0 md:grid-cols-[200px_minmax(0,1fr)] md:gap-5 xl:grid-cols-[240px_minmax(0,1fr)] xl:gap-7'>
+      <div className='grid grid-cols-[220px_minmax(0,1fr)] items-start gap-5 max-[860px]:grid-cols-1 max-[860px]:gap-3.5'>
         <SectionNav complete={complete} />
 
-        <div className='flex min-w-0 flex-col gap-5'>
-        <StoreDetailsMovedCard storeId={primaryStoreId} />
+        <div className='flex min-w-0 flex-col gap-4'>
+          <StoreDetailsMovedCard storeId={primaryStoreId} />
 
-        <Form {...form}>
-          <form
-            className='flex min-w-0 flex-col gap-5'
-            onSubmit={(e) => e.preventDefault()}
-          >
-
-            <SectionCard
-              id='info'
-              icon={Building2}
-              title={t('sections.info.title')}
-              description={t('sections.info.description')}
-            >
-              <FormField
-                control={form.control}
-                name='businessName'
-                render={({ field }) => (
-                  <FormItem className='gap-1.5'>
-                    <FormLabel className='justify-between text-[13px] font-semibold'>
-                      {t('fields.businessName')}
-                      <LabelNote>{t('fields.businessNameNote')}</LabelNote>
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        className={FIELD_CLASS}
-                        placeholder={t('fields.businessNamePlaceholder')}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+          <form className='flex min-w-0 flex-col gap-4' onSubmit={(e) => e.preventDefault()}>
+            <SectionCard id='info' icon={Building2} title={t('sections.info.title')} description={t('sections.info.description')}>
+              <Field
+                label={t('fields.businessName')}
+                hint={t('fields.businessNameNote')}
+                htmlFor='businessName'
+                error={form.formState.errors.businessName?.message}
+              >
+                <TextInput id='businessName' placeholder={t('fields.businessNamePlaceholder')} {...form.register('businessName')} />
+              </Field>
             </SectionCard>
 
-            <SectionCard
-              id='contact'
-              icon={Headphones}
-              title={t('sections.contact.title')}
-              description={t('sections.contact.description')}
-            >
-              <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5'>
-                <FormField
-                  control={form.control}
-                  name='supportEmail'
-                  render={({ field }) => (
-                    <FormItem className='gap-1.5'>
-                      <FormLabel className='text-[13px] font-semibold'>
-                        {t('fields.supportEmail')}
-                      </FormLabel>
-                      <div className={INPUT_GROUP_CLASS}>
-                        <span className={cn(ADDON_CLASS, 'border-e')}>
-                          <Mail className='size-4' />
-                        </span>
-                        <FormControl>
-                          <Input
-                            type='email'
-                            dir='ltr'
-                            className={cn(INPUT_IN_GROUP_CLASS, 'font-mono text-[13px]')}
-                            placeholder='support@example.com'
-                            {...field}
-                          />
-                        </FormControl>
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name='supportPhone'
-                  render={({ field }) => (
-                    <FormItem className='gap-1.5'>
-                      <FormLabel className='text-[13px] font-semibold'>
-                        {t('fields.supportPhone')}
-                      </FormLabel>
-                      <div className={INPUT_GROUP_CLASS}>
-                        <span className={cn(ADDON_CLASS, 'border-e')}>
-                          <Phone className='size-4' />
-                        </span>
-                        <FormControl>
-                          <Input
-                            type='tel'
-                            dir='ltr'
-                            className={cn(INPUT_IN_GROUP_CLASS, 'font-mono text-[13px]')}
-                            placeholder='+20 1XX XXX XXXX'
-                            {...field}
-                          />
-                        </FormControl>
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+            <SectionCard id='contact' icon={Headphones} title={t('sections.contact.title')} description={t('sections.contact.description')}>
+              <FieldRow>
+                <Field label={t('fields.supportEmail')} htmlFor='supportEmail' error={form.formState.errors.supportEmail?.message}>
+                  <InputGroup
+                    id='supportEmail'
+                    type='email'
+                    dir='ltr'
+                    start={<Mail className='size-4' aria-hidden />}
+                    inputClassName='font-montserrat text-[13px]'
+                    placeholder='support@example.com'
+                    {...form.register('supportEmail')}
+                  />
+                </Field>
+                <Field label={t('fields.supportPhone')} htmlFor='supportPhone' error={form.formState.errors.supportPhone?.message}>
+                  <InputGroup
+                    id='supportPhone'
+                    type='tel'
+                    dir='ltr'
+                    start={<Phone className='size-4' aria-hidden />}
+                    inputClassName='font-montserrat text-[13px]'
+                    placeholder='+20 1XX XXX XXXX'
+                    {...form.register('supportPhone')}
+                  />
+                </Field>
+              </FieldRow>
             </SectionCard>
-
           </form>
-        </Form>
 
-            <LegalDetailsSection account={account} />
-            <PayoutDetailsSection payout={account.payout} />
-            <PoliciesSection
-              returnPolicy={initialData.profile.returnPolicy}
-              shippingPolicy={initialData.profile.shippingPolicy}
-              privacyPolicy={initialData.profile.privacyPolicy}
-            />
+          <LegalDetailsSection account={account} />
+          <PayoutDetailsSection payout={account.payout} />
+          <PoliciesSection
+            returnPolicy={initialData.profile.returnPolicy}
+            shippingPolicy={initialData.profile.shippingPolicy}
+            privacyPolicy={initialData.profile.privacyPolicy}
+          />
 
-            <SectionCard
-              id='link'
-              icon={Globe}
-              title={t('sections.link.title')}
-              description={t('sections.link.description')}
-              tag={
-                <span className='inline-flex h-6 items-center gap-1 rounded-full bg-success-soft px-2.5 text-xs font-medium text-success'>
-                  <CircleCheck className='size-3.5' />
-                  {t('sections.link.active')}
-                </span>
-              }
-            >
-              {linkSection}
-            </SectionCard>
+          <SectionCard
+            id='link'
+            icon={Globe}
+            title={
+              <>
+                {t('sections.link.title')}
+                <StatusBadge tone='success'>{t('sections.link.active')}</StatusBadge>
+              </>
+            }
+            description={t('sections.link.description')}
+          >
+            {/* These two controls keep the shared kit; on phones their buttons still reach 40px. */}
+            <div className='flex flex-col gap-4 max-[600px]:[&_a[data-slot=button]]:min-h-10 max-[600px]:[&_button]:min-h-10'>{linkSection}</div>
+          </SectionCard>
 
-            {pushAlertsSection}
+          {pushAlertsSection}
 
+          <DocumentsSection initialDocuments={initialData.documents} onUploaded={() => router.refresh()} />
 
-            <DocumentsSection
-              initialDocuments={initialData.documents}
-              onUploaded={() => router.refresh()}
-            />
-
-            {TALLABY_SERVICES_ENABLED && <FulfillmentLinkCard />}
+          {TALLABY_SERVICES_ENABLED && <FulfillmentLinkCard />}
         </div>
       </div>
-    </div>
+    </PageContainer>
   )
 }
 
@@ -443,11 +373,11 @@ function SectionNav ({ complete }: { complete: Record<SectionId, boolean> }) {
   }
 
   return (
-    <aside className='sticky top-16 z-20 -mx-4 mb-5 flex flex-col gap-4 border-b bg-background px-4 py-2.5 sm:-mx-6 sm:px-6 md:top-[88px] md:mx-0 md:mb-0 md:border-0 md:bg-transparent md:p-0'>
+    <aside className='sticky top-[88px] z-20 flex min-w-0 flex-col gap-3 max-[1020px]:top-[72px] max-[600px]:top-[68px]'>
       <nav
         ref={listRef}
         aria-label={t('title')}
-        className='flex gap-1.5 overflow-x-auto [scrollbar-width:none] md:flex-col md:gap-0.5 md:overflow-visible [&::-webkit-scrollbar]:hidden'
+        className='flex flex-col gap-0.5 rounded-[20px] border border-(--s-line) bg-(--s-surface) p-2 max-[860px]:flex-row max-[860px]:gap-1 max-[860px]:overflow-x-auto max-[860px]:rounded-full max-[860px]:p-1 max-[860px]:shadow-[0_6px_18px_rgb(13_55_67/0.04)] max-[860px]:[scrollbar-width:none] max-[860px]:[&::-webkit-scrollbar]:hidden'
       >
         {SECTIONS.map(({ id, icon: Icon }) => (
           <a
@@ -457,48 +387,52 @@ function SectionNav ({ complete }: { complete: Record<SectionId, boolean> }) {
             aria-current={active === id ? 'location' : undefined}
             onClick={() => setActive(id)}
             className={cn(
-              'flex shrink-0 items-center gap-2.5 rounded-[10px] border bg-card px-3 py-[7px] text-sm whitespace-nowrap text-muted-foreground transition-colors hover:text-foreground md:border-transparent md:bg-transparent md:py-[9px] md:hover:bg-card',
-              active === id &&
-                'font-medium text-primary-ink md:border-border md:bg-card md:shadow-xs'
+              'flex min-h-[38px] shrink-0 items-center gap-2.5 rounded-xl px-3 text-[13.5px] font-semibold whitespace-nowrap text-(--s-body) no-underline transition-colors duration-150 hover:bg-(--s-hover) max-[860px]:min-h-10 max-[860px]:rounded-full',
+              active === id && 'bg-(--s-solid) text-(--s-solid-fg) hover:bg-(--s-solid)'
             )}
           >
-            <Icon className='size-[18px] shrink-0' />
+            <Icon className='size-4 shrink-0' aria-hidden />
             {t(`nav.${id}`)}
             {!complete[id] && (
               <span
                 aria-label={t('progress.incomplete')}
-                className='ms-auto hidden size-[7px] rounded-full bg-accent md:block'
+                className='ms-auto size-[7px] shrink-0 rounded-full bg-accent max-[860px]:hidden'
               />
             )}
           </a>
         ))}
       </nav>
 
-      <Card className='hidden gap-0 overflow-hidden rounded-[14px] p-0 md:flex dark:shadow-none'>
+      <SellerCard className='overflow-hidden rounded-[20px] max-[860px]:hidden'>
         <button
           type='button'
           onClick={goToFirstIncomplete}
           disabled={!firstIncomplete}
-          className='p-4 text-start transition-colors focus-visible:bg-muted/50 focus-visible:outline-none enabled:cursor-pointer enabled:hover:bg-muted/50'
+          className='block w-full p-4 text-start transition-colors duration-150 enabled:cursor-pointer enabled:hover:bg-(--s-tint)'
         >
-          <div className='flex items-baseline justify-between text-[13px] font-semibold'>
+          <div className='flex items-baseline justify-between text-[13px] font-bold text-(--s-text)'>
             {t('progress.title')}
-            <span dir='ltr' className='font-montserrat text-[15px] text-primary-ink'>
+            <span dir='ltr' className='font-montserrat text-[15px] font-bold text-(--s-link)'>
               {percent}%
             </span>
           </div>
-          <Progress
-            value={percent}
+          <span
+            role='progressbar'
             aria-label={t('progress.title')}
-            className='my-2.5 h-1.5 bg-border'
-          />
-          <p className='text-xs leading-relaxed text-muted-foreground'>
+            aria-valuenow={percent}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            className='my-2.5 block h-1.5 overflow-hidden rounded-full bg-(--s-fill)'
+          >
+            <i className='block h-full rounded-full bg-(--s-primary)' style={{ width: `${percent}%` }} />
+          </span>
+          <p className='text-xs leading-relaxed text-(--s-subtle)'>
             {missing.length
               ? t('progress.remaining', { sections: missing.join(t('progress.separator')) })
               : t('progress.complete')}
           </p>
         </button>
-      </Card>
+      </SellerCard>
     </aside>
   )
 }
@@ -510,19 +444,16 @@ function SectionNav ({ complete }: { complete: Record<SectionId, boolean> }) {
 function FulfillmentLinkCard () {
   const t = useTranslations('fulfillment')
   return (
-    <Card className='gap-0 rounded-2xl p-0 dark:shadow-none'>
-      <Link
-        href='/settings/fulfillment'
-        className='group flex items-center gap-3.5 rounded-2xl p-4 outline-none focus-visible:ring-[3px] focus-visible:ring-primary/20 sm:px-6 sm:py-5'
-      >
-        <SectionIcon icon={Warehouse} />
+    <SellerCard>
+      <Link href='/settings/fulfillment' className='group flex items-center gap-3.5 rounded-[inherit] px-6 py-[18px] max-[720px]:gap-2.5 max-[720px]:px-4'>
+        <IconTile icon={Warehouse} />
         <div className='min-w-0 flex-1'>
-          <h2 className='text-base font-bold'>{t('title')}</h2>
-          <p className='mt-0.5 text-[13px] text-muted-foreground'>{t('description')}</p>
+          <h2 className='text-[15.5px] font-bold text-(--s-ink)'>{t('title')}</h2>
+          <p className='mt-0.5 text-[13px] text-(--s-subtle)'>{t('description')}</p>
         </div>
-        <ChevronLeft className='size-[18px] shrink-0 text-faint transition-transform group-hover:-translate-x-[3px] group-hover:text-primary-ink ltr:rotate-180 ltr:group-hover:translate-x-[3px]' />
+        <ChevronLeft className='size-[18px] shrink-0 text-(--s-faint) ltr:rotate-180' aria-hidden />
       </Link>
-    </Card>
+    </SellerCard>
   )
 }
 
@@ -532,10 +463,10 @@ function AutosaveIndicator ({ status }: { status: SaveStatus }) {
   return (
     <span
       className={cn(
-        'inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-xs font-medium whitespace-nowrap',
+        'inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-xs font-semibold whitespace-nowrap max-[600px]:h-10',
         status === 'saved' && 'bg-success-soft text-success',
         status === 'error' && 'bg-destructive-soft text-destructive',
-        (status === 'saving' || status === 'idle') && 'bg-muted text-muted-foreground'
+        (status === 'saving' || status === 'idle') && 'bg-(--s-fill) text-(--s-muted)'
       )}
       aria-live='polite'
     >

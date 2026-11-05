@@ -2,18 +2,12 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Hand, LoaderCircle, MapPin, Zap } from "lucide-react";
+import { LoaderCircle } from "lucide-react";
 
 import { BOSTA_NOTE_MAX, type BostaSettings } from "@workspace/lib/integrations";
 import type { BostaPickupLocation } from "@workspace/lib/shipping/bosta";
-import { Button } from "@workspace/ui/components/button";
-import { ChoiceCard, ChoiceGroup } from "@workspace/ui/components/choice-card";
-import { Label } from "@workspace/ui/components/label";
-import { SegmentedControl, SegmentedControlItem } from "@workspace/ui/components/segmented-control";
 import { Skeleton } from "@workspace/ui/components/skeleton";
-import { Switch } from "@workspace/ui/components/switch";
-import { Textarea } from "@workspace/ui/components/textarea";
-import { BUTTON_CLASS, TEXTAREA_CLASS } from "@/components/form/form-ui";
+import { Field, Note, OptionCard, OptionCards, Segmented, SellerButton, Tag, TextArea, Toggle } from "@/components/seller-ui";
 import type { BostaSettingsForm } from "./bosta.server";
 
 /**
@@ -60,79 +54,71 @@ export function BostaPreferences({
     });
 
   return (
-    <div className="flex flex-col gap-7">
-      <fieldset className="flex flex-col gap-2.5">
-        <legend className="mb-1 text-[15px] font-bold">{t("pickupTitle")}</legend>
-        <p className="text-[13px] text-muted-foreground">{t("pickupHint")}</p>
+    <div className="flex flex-col gap-5">
+      <Field label={t("pickupTitle")} note={t("pickupHint")}>
         {locations === null ? (
           <div className="flex flex-col gap-2.5">
             <Skeleton className="h-[68px] rounded-xl" />
             <Skeleton className="h-[68px] rounded-xl" />
           </div>
         ) : !list ? (
-          <p className="rounded-xl border border-dashed p-3.5 text-[13px] text-muted-foreground">
-            {settings.pickupLocationName ? t("pickupSaved", { name: settings.pickupLocationName }) : t("pickupFailed")}
-          </p>
+          <Note>{settings.pickupLocationName ? t("pickupSaved", { name: settings.pickupLocationName }) : t("pickupFailed")}</Note>
         ) : list.length === 0 ? (
-          <p className="rounded-xl bg-accent-soft p-3.5 text-[13px] text-accent-ink">{t("pickupNone")}</p>
+          <Note tone="amber">{t("pickupNone")}</Note>
         ) : (
-          <ChoiceGroup stack value={pickupLocationId} onValueChange={setPickupLocationId} aria-label={t("pickupTitle")}>
+          <div className="flex flex-col gap-2">
             {list.map((location) => (
-              <ChoiceCard
+              <OptionCard
                 key={location._id}
-                value={location._id}
-                indicator
-                icon={<MapPin aria-hidden />}
-                badge={
-                  location.isDefault ? (
-                    <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-semibold text-muted-foreground">
-                      {t("pickupDefault")}
-                    </span>
-                  ) : undefined
+                name="bosta-pickup"
+                checked={pickupLocationId === location._id}
+                onChange={() => setPickupLocationId(location._id)}
+                title={
+                  <span className="flex flex-wrap items-center gap-2">
+                    <span dir="auto">{location.locationName}</span>
+                    {location.isDefault && <Tag>{t("pickupDefault")}</Tag>}
+                  </span>
                 }
-                title={<span dir="auto">{location.locationName}</span>}
                 description={location.addressLine ? <span dir="auto">{location.addressLine}</span> : undefined}
               />
             ))}
-          </ChoiceGroup>
+          </div>
         )}
-      </fieldset>
+      </Field>
 
-      <fieldset className="flex flex-col gap-2.5">
-        <legend className="mb-1 text-[15px] font-bold">{t("autoShipTitle")}</legend>
-        <ChoiceGroup
-          stack
-          columns={2}
-          className="sm:grid-cols-2"
-          value={autoShip}
-          onValueChange={(value) => setAutoShip(value === "on_confirm" ? "on_confirm" : "manual")}
-          aria-label={t("autoShipTitle")}
-        >
-          <ChoiceCard
-            value="manual"
-            indicator
-            icon={<Hand aria-hidden />}
-            badge={
-              <span className="rounded-full bg-primary-soft px-2 py-0.5 text-[11px] font-semibold text-primary-ink">
-                {t("recommended")}
+      <Field label={t("autoShipTitle")}>
+        <OptionCards>
+          <OptionCard
+            name="bosta-auto-ship"
+            checked={autoShip === "manual"}
+            onChange={() => setAutoShip("manual")}
+            title={
+              <span className="flex flex-wrap items-center gap-2">
+                {t("manualTitle")}
+                <Tag tone="info">{t("recommended")}</Tag>
               </span>
             }
-            title={t("manualTitle")}
             description={t("manualBody")}
           />
-          <ChoiceCard value="on_confirm" indicator icon={<Zap aria-hidden />} title={t("autoTitle")} description={t("autoBody")} />
-        </ChoiceGroup>
-      </fieldset>
+          <OptionCard
+            name="bosta-auto-ship"
+            checked={autoShip === "on_confirm"}
+            onChange={() => setAutoShip("on_confirm")}
+            title={t("autoTitle")}
+            description={t("autoBody")}
+          />
+        </OptionCards>
+      </Field>
 
-      <div className="flex flex-col gap-2.5">
-        <Label className="text-[15px] font-bold">{t("sizeTitle")}</Label>
-        <SegmentedControl value={size} onValueChange={(value) => setSize(value as typeof size)} aria-label={t("sizeTitle")}>
-          <SegmentedControlItem value="SMALL">{t("sizes.SMALL")}</SegmentedControlItem>
-          <SegmentedControlItem value="MEDIUM">{t("sizes.MEDIUM")}</SegmentedControlItem>
-          <SegmentedControlItem value="LARGE">{t("sizes.LARGE")}</SegmentedControlItem>
-        </SegmentedControl>
-        <p className="text-xs text-muted-foreground">{t("sizeHint")}</p>
-      </div>
+      <Field label={t("sizeTitle")} note={t("sizeHint")}>
+        <Segmented
+          label={t("sizeTitle")}
+          className="self-start max-[600px]:w-full"
+          value={size}
+          onChange={(value) => setSize(value)}
+          options={(["SMALL", "MEDIUM", "LARGE"] as const).map((value) => ({ value, label: t(`sizes.${value}`) }))}
+        />
+      </Field>
 
       <SwitchRow
         id="bosta-open"
@@ -142,30 +128,25 @@ export function BostaPreferences({
         body={t("openBody")}
       />
 
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="bosta-note" className="text-[15px] font-bold">
-          {t("noteTitle")}
-        </Label>
-        <Textarea
+      <Field label={t("noteTitle")} htmlFor="bosta-note" note={t("noteHint")}>
+        <TextArea
           id="bosta-note"
           dir="auto"
-          className={TEXTAREA_CLASS}
           maxLength={BOSTA_NOTE_MAX}
           value={note}
           placeholder={t("notePlaceholder")}
           onChange={(event) => setNote(event.target.value)}
         />
-        <p className="text-xs text-muted-foreground">{t("noteHint")}</p>
-      </div>
+      </Field>
 
       <SwitchRow id="bosta-cancel" checked={canCancel} onChange={setCanCancel} title={t("cancelTitle")} body={t("cancelBody")} />
 
-      <div className="flex flex-col items-stretch gap-2 border-t pt-5 sm:flex-row sm:items-center sm:justify-end">
-        {needsLocation && <p className="text-[13px] text-destructive sm:me-auto">{t("pickupRequired")}</p>}
-        <Button type="button" className={BUTTON_CLASS} disabled={pending || disabled || needsLocation} onClick={submit}>
+      <div className="flex flex-wrap items-center justify-end gap-2 border-t border-(--s-line-soft) pt-4">
+        {needsLocation && <p className="me-auto text-[13px] font-semibold text-destructive">{t("pickupRequired")}</p>}
+        <SellerButton disabled={pending || disabled || needsLocation} onClick={submit}>
           {pending && <LoaderCircle className="animate-spin" aria-hidden />}
           {submitLabel}
-        </Button>
+        </SellerButton>
       </div>
     </div>
   );
@@ -185,14 +166,12 @@ function SwitchRow({
   body: string;
 }) {
   return (
-    <div className="flex items-start justify-between gap-4 rounded-xl border p-3.5">
+    <div className="flex items-start justify-between gap-4 rounded-2xl border border-(--s-line) p-3.5">
       <div className="min-w-0">
-        <Label htmlFor={id} className="text-[14.5px] font-semibold">
-          {title}
-        </Label>
-        <p className="mt-1 text-[12.5px] leading-normal text-muted-foreground">{body}</p>
+        <b className="block text-[13.5px] font-bold text-(--s-text)">{title}</b>
+        <small className="mt-0.5 block text-xs leading-normal text-(--s-subtle)">{body}</small>
       </div>
-      <Switch id={id} checked={checked} onCheckedChange={onChange} className="mt-0.5" />
+      <Toggle id={id} aria-label={title} checked={checked} onCheckedChange={onChange} className="max-[600px]:min-h-10 mt-0.5" />
     </div>
   );
 }

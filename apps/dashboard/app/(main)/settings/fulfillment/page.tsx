@@ -3,9 +3,7 @@ import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { getUser } from "@/actions/auth";
-import { Alert, AlertDescription } from "@workspace/ui/components/alert";
-import { Badge } from "@workspace/ui/components/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@workspace/ui/components/card";
+import { Note, PageContainer, PageHeader, SectionCard, StatusBadge, Tag, type BadgeTone } from "@/components/seller-ui";
 import {
   FULFILLMENT_SERVICE_TYPES,
   TALLABY_SERVICES_ENABLED,
@@ -35,19 +33,19 @@ export const dynamic = "force-dynamic";
  */
 const SELLER_VISIBLE_AGREEMENTS: FulfillmentAgreementStatus[] = ["active", "accepted", "proposed"];
 
-const AGREEMENT_STATUS_CLASSES: Partial<Record<FulfillmentAgreementStatus, string>> = {
-  active: "bg-green-50 dark:bg-green-950/40 text-green-800 dark:text-green-300 border-green-200 dark:border-green-900/60",
-  accepted: "bg-blue-50 dark:bg-blue-950/40 text-blue-800 dark:text-blue-300 border-blue-200 dark:border-blue-900/60",
-  proposed: "bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-900/60",
+const AGREEMENT_TONES: Partial<Record<FulfillmentAgreementStatus, BadgeTone>> = {
+  active: "success",
+  accepted: "info",
+  proposed: "warning",
 };
 
-const STATUS_CLASSES: Record<FulfillmentServiceStatus, string> = {
-  requested: "bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-900/60",
-  under_review: "bg-blue-50 dark:bg-blue-950/40 text-blue-800 dark:text-blue-300 border-blue-200 dark:border-blue-900/60",
-  awaiting_agreement: "bg-violet-50 dark:bg-violet-950/40 text-violet-800 dark:text-violet-300 border-violet-200 dark:border-violet-900/60",
-  active: "bg-green-50 dark:bg-green-950/40 text-green-800 dark:text-green-300 border-green-200 dark:border-green-900/60",
-  paused: "bg-muted/50 text-foreground border-border",
-  rejected: "bg-red-50 dark:bg-red-950/40 text-red-800 dark:text-red-300 border-red-200 dark:border-red-900/60",
+const STATUS_TONES: Record<FulfillmentServiceStatus, BadgeTone> = {
+  requested: "warning",
+  under_review: "info",
+  awaiting_agreement: "info",
+  active: "success",
+  paused: "muted",
+  rejected: "danger",
 };
 
 export default async function FulfillmentSetupPage() {
@@ -100,26 +98,18 @@ export default async function FulfillmentSetupPage() {
   );
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
-      <div>
-        <p className="text-sm text-muted-foreground">{t("description")}</p>
-      </div>
+    <PageContainer narrow>
+      <PageHeader title={t("title")} description={t("description")} />
 
       {services.length === 0 ? (
-        <Alert>
-          <Info className="size-4" />
-          <AlertDescription>{t("noSetup")}</AlertDescription>
-        </Alert>
+        <Note icon={Info}>{t("noSetup")}</Note>
       ) : (
         <>
           {hasPending && (
-            <Alert>
-              <Clock className="size-4" />
-              <AlertDescription>{t("pendingNotice")}</AlertDescription>
-            </Alert>
+            <Note icon={Clock}>{t("pendingNotice")}</Note>
           )}
 
-          <div className="grid gap-4">
+          <div className="flex flex-col gap-4">
             {FULFILLMENT_SERVICE_TYPES.map((type) => {
               const row = services.find((s) => s.serviceType === type);
               if (!row) return null;
@@ -134,26 +124,21 @@ export default async function FulfillmentSetupPage() {
               const serviceAgreements = visibleAgreements.filter((a) => a.serviceType === type);
 
               return (
-                <Card key={type}>
-                  <CardHeader className="flex flex-row items-start justify-between gap-3 space-y-0">
-                    <div>
-                      <CardTitle className="text-base">{t(`service.${type}`)}</CardTitle>
-                      <CardDescription>
-                        {t("current")}: {describe(row.activeProvider, row.activePlanId, activeConfig)}
-                      </CardDescription>
-                    </div>
-                    <Badge
-                      variant="outline"
-                      className={STATUS_CLASSES[showRequest && row.status === "requested" ? "requested" : row.status]}
-                    >
+                <SectionCard
+                  key={type}
+                  title={t(`service.${type}`)}
+                  description={`${t("current")}: ${describe(row.activeProvider, row.activePlanId, activeConfig)}`}
+                  action={
+                    <StatusBadge tone={STATUS_TONES[showRequest && row.status === "requested" ? "requested" : row.status]}>
                       {showRequest && row.status === "requested" ? t("awaitingSetup") : t(`status.${row.status}`)}
-                    </Badge>
-                  </CardHeader>
+                    </StatusBadge>
+                  }
+                >
                   {(showRequest || serviceAgreements.length > 0) && (
-                    <CardContent className="space-y-3 pt-0">
+                    <div className="flex flex-col gap-3">
                       {showRequest && (
-                        <div className="rounded-md bg-muted/50 p-3 text-sm">
-                          <span className="text-muted-foreground">{t("requested")}: </span>
+                        <div className="rounded-[14px] bg-(--s-tint) p-3 text-[13px] text-(--s-body)">
+                          <span className="text-(--s-subtle)">{t("requested")}: </span>
                           {describe(row.requestedProvider, row.requestedPlanId, requestedConfig)}
                           {requestedPlan && <PlanPrice plan={requestedPlan} locale={locale} fallback={t("pricingDiscussed")} />}
                         </div>
@@ -171,19 +156,19 @@ export default async function FulfillmentSetupPage() {
                           locale={locale}
                         />
                       ))}
-                    </CardContent>
+                    </div>
                   )}
-                </Card>
+                </SectionCard>
               );
             })}
           </div>
 
-          <p className="text-sm text-muted-foreground">{t("changeNote")}</p>
+          <p className="text-[13px] text-(--s-muted)">{t("changeNote")}</p>
         </>
       )}
 
       <FulfillmentRequestForm plans={formPlans} initial={initialRequest} hasRequest={services.length > 0} />
-    </div>
+    </PageContainer>
   );
 }
 
@@ -197,7 +182,7 @@ function PlanPrice({
   fallback: string;
 }) {
   return (
-    <p className="mt-1 text-xs text-muted-foreground">
+    <p className="mt-1 text-xs text-(--s-subtle)">
       {getPlanPricingLabel(plan.pricing, locale) ?? fallback}
     </p>
   );
@@ -234,19 +219,17 @@ function AgreementCard({
     unit && t.has(`period.${unit}`) ? ` / ${t(`period.${unit}`)}` : "";
 
   return (
-    <div className="rounded-md border p-3 text-sm">
+    <div className="rounded-2xl border border-(--s-line) p-3 text-[13px] text-(--s-body)">
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
         <span className="flex items-center gap-1.5 font-medium">
-          <FileText className="size-4 text-muted-foreground" />
+          <FileText className="size-4 text-(--s-subtle)" aria-hidden />
           {t("agreementTitle")}
-          {planName && <span className="font-normal text-muted-foreground">· {planName}</span>}
+          {planName && <span className="font-normal text-(--s-subtle)">· {planName}</span>}
         </span>
-        <Badge variant="outline" className={AGREEMENT_STATUS_CLASSES[agreement.status]}>
-          {t(`agreementStatus.${agreement.status as "active" | "accepted" | "proposed"}`)}
-        </Badge>
+        <Tag tone={AGREEMENT_TONES[agreement.status]}>{t(`agreementStatus.${agreement.status as "active" | "accepted" | "proposed"}`)}</Tag>
       </div>
       {rates.length === 0 ? (
-        <p className="text-muted-foreground">{t("noRates")}</p>
+        <p className="text-(--s-subtle)">{t("noRates")}</p>
       ) : (
         <ul className="space-y-1">
           {rates.map((rate, index) => (
@@ -260,7 +243,7 @@ function AgreementCard({
           ))}
         </ul>
       )}
-      <p className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
+      <p className="mt-2 flex items-center gap-1.5 text-xs text-(--s-subtle)">
         <CalendarRange className="size-3.5" />
         {agreement.effectiveFrom ?? t("notStarted")} → {agreement.effectiveTo ?? t("openEnded")}
       </p>

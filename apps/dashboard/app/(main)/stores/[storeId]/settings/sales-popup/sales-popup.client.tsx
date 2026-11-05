@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { ExternalLink, ShoppingBag } from "lucide-react";
+import { BellRing, ExternalLink, Minus, Plus, Shield, ShoppingBag } from "lucide-react";
 
 import {
   SALES_FEED_DAYS,
@@ -13,18 +13,16 @@ import {
   type SalesPopupPage,
   type StoreSalesPopupSettings as Settings,
 } from "@workspace/lib/stores/sales-popup";
-import { Button } from "@workspace/ui/components/button";
-import { Checkbox } from "@workspace/ui/components/checkbox";
-import { Input } from "@workspace/ui/components/input";
-import { Label } from "@workspace/ui/components/label";
-import { Switch } from "@workspace/ui/components/switch";
+import { CheckRow, Field, IconTile, Note, SaveBar, SectionCard, TextAction, Toggle } from "@/components/seller-ui";
+import { cn } from "@/lib/utils";
 import { saveStoreSalesPopup } from "./sales-popup.server";
 
 /**
  * Store settings › Sales pop-up (ROADMAP.md F-22b). Small toasts with the
  * store's real recent orders ("Someone from Giza ordered …"), no names or
  * phones. The seller picks on/off, the delay and the pages; cart, checkout
- * and account pages never show it.
+ * and account pages never show it. The switch saves at once; the delay and
+ * pages use the save bar.
  */
 export function StoreSalesPopupSettings({
   storeId,
@@ -68,97 +66,118 @@ export function StoreSalesPopupSettings({
   const togglePage = (page: SalesPopupPage, on: boolean) =>
     setPages((current) => (on ? [...current, page] : current.filter((p) => p !== page)));
 
+  const step = (delta: 1 | -1) =>
+    setDelay((current) => String(Math.min(SALES_POPUP_DELAY.max, Math.max(SALES_POPUP_DELAY.min, (Number(current) || SALES_POPUP_DELAY.min) + delta))));
+
   const dirty =
     Number(delay) !== saved.delaySeconds ||
     pages.length !== saved.pages.length ||
     pages.some((p) => !saved.pages.includes(p));
   const disabled = readOnly || isPending;
+  const stepButton =
+    "grid h-full w-[42px] cursor-pointer place-items-center text-(--s-link) transition-colors duration-150 hover:bg-(--s-hover) disabled:pointer-events-none disabled:opacity-45 [&_svg]:size-4";
 
   return (
-    <div className="space-y-5">
-      {readOnly && <p className="rounded-xl border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">{t("readOnly")}</p>}
+    <SectionCard
+      icon={BellRing}
+      title={t("title")}
+      description={t("description")}
+      action={<Toggle className="max-[600px]:min-h-10" id="sales-popup-enabled" checked={enabled} disabled={disabled} onCheckedChange={toggle} aria-label={t("title")} />}
+    >
+      {readOnly && <Note tone="amber">{t("readOnly")}</Note>}
+      <Note icon={Shield}>{t("realOnly", { min: SALES_FEED_MIN_ORDERS, days: SALES_FEED_DAYS })}</Note>
 
-      <section className="flex items-start justify-between gap-4 rounded-xl border bg-card p-4 sm:p-5">
-        <div className="space-y-1">
-          <label htmlFor="sales-popup-enabled" className="flex items-center gap-2 font-semibold">
-            <ShoppingBag className="size-4" />
-            {t("title")}
-          </label>
-          <p className="text-sm text-muted-foreground">{t("description")}</p>
-          <p className="text-sm text-muted-foreground">{t("realOnly", { min: SALES_FEED_MIN_ORDERS, days: SALES_FEED_DAYS })}</p>
-          <a
-            href={siteUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-sm text-primary-ink underline-offset-4 hover:underline"
-          >
-            {t("viewStore")}
-            <ExternalLink className="size-3.5" />
-          </a>
-        </div>
-        <Switch id="sales-popup-enabled" checked={enabled} disabled={disabled} onCheckedChange={toggle} aria-label={t("title")} />
-      </section>
-
-      {/* An example of the toast, with made-up text clearly marked as a preview. */}
-      <section className="space-y-2 rounded-xl border bg-card p-4 sm:p-5">
-        <h2 className="font-semibold">{t("previewTitle")}</h2>
-        <div className="flex max-w-sm items-start gap-3 rounded-2xl border bg-background p-3 shadow-sm">
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary-ink">
-            <ShoppingBag className="size-5" aria-hidden />
-          </span>
-          <div className="min-w-0 text-sm leading-snug">
-            <p className="text-muted-foreground">{t("previewFrom")}</p>
-            <p className="font-semibold">{t("previewProduct")}</p>
-            <p className="text-xs text-muted-foreground">{t("previewAgo")}</p>
-          </div>
-        </div>
-        <p className="text-xs text-muted-foreground">{t("previewHint")}</p>
-      </section>
-
-      <section className="space-y-5 rounded-xl border bg-card p-4 sm:p-5">
-        <div className="space-y-2">
-          <Label htmlFor="sales-popup-delay" className="font-semibold">
-            {t("delayLabel")}
-          </Label>
-          <div className="flex items-center gap-2">
-            <Input
-              id="sales-popup-delay"
-              type="number"
-              inputMode="numeric"
-              min={SALES_POPUP_DELAY.min}
-              max={SALES_POPUP_DELAY.max}
-              value={delay}
-              disabled={disabled}
-              onChange={(e) => setDelay(e.target.value)}
-              className="w-24"
-            />
-            <span className="text-sm text-muted-foreground">{t("seconds")}</span>
-          </div>
-          <p className="text-xs text-muted-foreground">{t("delayHint", { min: SALES_POPUP_DELAY.min, max: SALES_POPUP_DELAY.max })}</p>
-        </div>
-
-        <fieldset className="space-y-2">
-          <legend className="font-semibold">{t("pagesLabel")}</legend>
-          {SALES_POPUP_PAGES.map((page) => (
-            <div key={page} className="flex items-center gap-2">
-              <Checkbox
-                id={`sales-popup-page-${page}`}
-                checked={pages.includes(page)}
-                disabled={disabled}
-                onCheckedChange={(value) => togglePage(page, value === true)}
-              />
-              <Label htmlFor={`sales-popup-page-${page}`} className="font-normal">
-                {t(`pages.${page}`)}
-              </Label>
+      <div className="grid grid-cols-2 items-start gap-4 max-[860px]:grid-cols-1">
+        {/* An example of the toast, with made-up text clearly marked as a preview. */}
+        <div className="flex flex-col gap-2">
+          <span className="text-[13.5px] font-bold text-(--s-text)">{t("previewTitle")}</span>
+          <div className="relative min-h-[220px] overflow-hidden rounded-[20px] border border-(--s-line) bg-(--s-tint)">
+            <div aria-hidden className="absolute inset-x-0 top-0 flex h-[34px] items-center gap-1.5 border-b border-(--s-line-soft) bg-(--s-surface) px-3">
+              <i className="size-2 rounded-full bg-(--s-field-strong)" />
+              <i className="size-2 rounded-full bg-(--s-field-strong)" />
+              <i className="size-2 rounded-full bg-(--s-field-strong)" />
             </div>
-          ))}
-          <p className="text-xs text-muted-foreground">{t("pagesHint")}</p>
-        </fieldset>
+            <div
+              className={cn(
+                "absolute start-3.5 bottom-3.5 flex max-w-[calc(100%-28px)] items-center gap-2.5 rounded-2xl bg-(--s-surface) p-2.5 pe-3.5 shadow-(--s-shadow-pop) transition-[opacity,filter] duration-300",
+                !enabled && "opacity-40 grayscale",
+              )}
+            >
+              <IconTile icon={ShoppingBag} size="lg" className="rounded-[11px]" />
+              <div className="min-w-0 leading-snug">
+                <small className="block text-[11.5px] text-(--s-subtle)">{t("previewFrom")}</small>
+                <b className="block text-[13px] font-bold text-(--s-text)">{t("previewProduct")}</b>
+                <small className="block text-[11px] text-(--s-faint)">{t("previewAgo")}</small>
+              </div>
+            </div>
+          </div>
+          <p className="text-pretty text-xs text-(--s-faint)">{t("previewHint")}</p>
+          <TextAction asChild className="self-start max-[600px]:min-h-10">
+            <a href={siteUrl} target="_blank" rel="noopener noreferrer">
+              <ExternalLink aria-hidden />
+              {t("viewStore")}
+            </a>
+          </TextAction>
+        </div>
 
-        <Button type="button" disabled={disabled || !dirty} onClick={() => save({ enabled, delaySeconds: delay, pages })}>
-          {t("save")}
-        </Button>
-      </section>
-    </div>
+        <div className="flex flex-col gap-4">
+          <Field
+            label={t("delayLabel")}
+            htmlFor="sales-popup-delay"
+            note={t("delayHint", { min: SALES_POPUP_DELAY.min, max: SALES_POPUP_DELAY.max })}
+          >
+            <div className="inline-flex items-center gap-2.5 text-[13px] text-(--s-muted)">
+              <span dir="ltr" className="inline-flex h-11 items-center overflow-hidden rounded-[14px] border-[1.5px] border-(--s-field) bg-(--s-surface)">
+                <button type="button" className={stepButton} disabled={disabled} aria-label={`−1 ${t("seconds")}`} onClick={() => step(-1)}>
+                  <Minus aria-hidden />
+                </button>
+                <input
+                  id="sales-popup-delay"
+                  type="number"
+                  inputMode="numeric"
+                  min={SALES_POPUP_DELAY.min}
+                  max={SALES_POPUP_DELAY.max}
+                  value={delay}
+                  disabled={disabled}
+                  onChange={(e) => setDelay(e.target.value)}
+                  className="h-full w-14 border-0 bg-transparent text-center font-montserrat text-[15px] font-bold text-(--s-ink) outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                />
+                <button type="button" className={stepButton} disabled={disabled} aria-label={`+1 ${t("seconds")}`} onClick={() => step(1)}>
+                  <Plus aria-hidden />
+                </button>
+              </span>
+              {t("seconds")}
+            </div>
+          </Field>
+
+          <Field label={t("pagesLabel")} note={t("pagesHint")}>
+            <div className="flex flex-col gap-2.5">
+              {SALES_POPUP_PAGES.map((page) => (
+                <CheckRow
+                  key={page}
+                  label={t(`pages.${page}`)}
+                  checked={pages.includes(page)}
+                  disabled={disabled}
+                  className="max-[600px]:min-h-10 max-[600px]:items-center"
+                  onChange={(e) => togglePage(page, e.target.checked)}
+                />
+              ))}
+            </div>
+          </Field>
+        </div>
+      </div>
+
+      {!readOnly && (
+        <SaveBar
+          dirty={dirty}
+          saving={isPending}
+          onSave={() => save({ enabled, delaySeconds: delay, pages })}
+          onDiscard={() => {
+            setDelay(String(saved.delaySeconds));
+            setPages(saved.pages);
+          }}
+        />
+      )}
+    </SectionCard>
   );
 }

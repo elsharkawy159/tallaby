@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Check, Clock, Copy, Info, MessageSquareText, ShieldCheck } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@workspace/ui/components/tabs";
-import { cn } from "@workspace/ui/lib/utils";
+import { Check, Clock, Copy, Link2, MessageSquareText, ShieldCheck } from "lucide-react";
+import { Note, PageTabs, SectionCard, SellerButton, TwoColumns } from "@/components/seller-ui";
+import { cn } from "@/lib/utils";
 import { AppPageHeader } from "../app-page-header";
 import {
   ASSISTANT_BRANDS,
@@ -46,24 +46,20 @@ function CopyBox({ value, multiline }: { value: string; multiline?: boolean }) {
     }
   };
   return (
-    <div className="flex items-start gap-2 rounded-xl border bg-muted/50 p-2 ps-3">
+    <div className="flex items-start gap-2 rounded-[14px] border-[1.5px] border-(--s-field) bg-(--s-surface-2) p-1.5 ps-3">
       <code
         dir="ltr"
         className={cn(
-          "min-w-0 flex-1 py-1.5 text-start font-mono text-[13px] select-all",
+          "min-w-0 flex-1 py-1.5 text-start font-mono text-[12.5px] text-(--s-body) select-all",
           multiline ? "whitespace-pre-wrap break-all" : "truncate",
         )}
       >
         {value}
       </code>
-      <button
-        type="button"
-        onClick={copy}
-        className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg border bg-card px-2.5 text-xs font-semibold hover:bg-muted"
-      >
-        {copied ? <Check className="size-3.5 text-success" aria-hidden /> : <Copy className="size-3.5" aria-hidden />}
+      <SellerButton variant="mini" size="xs" onClick={copy}>
+        {copied ? <Check className="text-success" aria-hidden /> : <Copy aria-hidden />}
         {copied ? t("copied") : t("copy")}
-      </button>
+      </SellerButton>
     </div>
   );
 }
@@ -81,9 +77,10 @@ export function AiAssistantsApp({
   live: boolean;
 }) {
   const t = useTranslations("storeApps.aiAssistants");
+  const [assistant, setAssistant] = useState<AssistantKey>("claude");
 
   return (
-    <div className="space-y-6">
+    <>
       <AppPageHeader
         storeId={storeId}
         app="ai_assistants"
@@ -93,94 +90,76 @@ export function AiAssistantsApp({
       />
 
       {!live && (
-        <div className="flex gap-3 rounded-2xl border border-accent/30 bg-accent-soft p-4 text-accent-ink">
-          <Clock className="mt-0.5 size-5 shrink-0" aria-hidden />
-          <div>
-            <b className="block text-sm">{t("soonTitle")}</b>
-            <p className="mt-0.5 text-[13px] leading-relaxed">{t("soonBody")}</p>
-          </div>
-        </div>
+        <Note tone="amber" icon={Clock}>
+          <b className="block font-bold">{t("soonTitle")}</b>
+          {t("soonBody")}
+        </Note>
       )}
 
-      <section className="space-y-2 rounded-2xl border bg-card p-4 sm:p-5">
-        <h2 className="text-sm font-bold">{t("urlLabel")}</h2>
+      <SectionCard icon={Link2} title={t("urlLabel")} description={t("urlHelp")}>
         <CopyBox value={mcpUrl} />
-        <p className="text-xs text-muted-foreground">{t("urlHelp")}</p>
-      </section>
+      </SectionCard>
 
-      <section className="space-y-3">
-        <h2 className="text-[13px] font-bold tracking-wider text-muted-foreground uppercase">{t("howTitle")}</h2>
-        <Tabs defaultValue="claude" className="gap-4">
-          <TabsList className="h-auto w-full justify-start gap-1 p-1 md:h-auto">
-            {ASSISTANTS.map((assistant) => (
-              <TabsTrigger key={assistant} value={assistant} className="h-10 flex-none gap-2 px-3 sm:flex-1">
-                <AssistantLogo assistant={assistant} />
-                {t(`tabs.${assistant}.name`)}
-              </TabsTrigger>
+      <section className="flex flex-col gap-3">
+        <h2 className="text-base font-bold text-(--s-ink)">{t("howTitle")}</h2>
+        <PageTabs
+          sticky={false}
+          value={assistant}
+          onChange={(key) => setAssistant(key as AssistantKey)}
+          tabs={ASSISTANTS.map((key) => ({
+            key,
+            label: (
+              <>
+                <AssistantLogo assistant={key} />
+                {t(`tabs.${key}.name`)}
+              </>
+            ),
+          }))}
+        />
+        <SectionCard
+          icon={MessageSquareText}
+          title={t(`tabs.${assistant}.name`)}
+        >
+          <ol className="flex flex-col gap-3.5">
+            {Array.from({ length: ASSISTANT_STEP_COUNT[assistant] }, (_, i) => String(i + 1)).map((n) => (
+              <li key={n} className="flex gap-3">
+                <span className="grid size-6 shrink-0 place-items-center rounded-full bg-primary-soft font-montserrat text-[11.5px] font-bold text-primary-ink">{n}</span>
+                <div className="flex min-w-0 flex-1 flex-col gap-2 pt-0.5">
+                  <p className="text-pretty text-[13.5px] leading-relaxed text-(--s-body)">{t(`tabs.${assistant}.steps.${n}`)}</p>
+                  {n === "1" && assistant === "claude_code" && <CopyBox value={claudeCodeCommand(mcpUrl)} multiline />}
+                  {n === "1" && assistant === "cursor" && <CopyBox value={cursorConfig(mcpUrl)} multiline />}
+                </div>
+              </li>
             ))}
-          </TabsList>
-
-          {ASSISTANTS.map((assistant) => (
-            <TabsContent key={assistant} value={assistant} className="rounded-2xl border bg-card p-4 sm:p-5">
-              <div className="mb-4 flex items-center gap-3">
-                <AssistantLogo assistant={assistant} className="size-10 rounded-xl" />
-                <h3 className="text-base font-bold">{t(`tabs.${assistant}.name`)}</h3>
-              </div>
-              <ol className="space-y-3.5">
-                {Array.from({ length: ASSISTANT_STEP_COUNT[assistant] }, (_, i) => String(i + 1)).map((n) => (
-                  <li key={n} className="flex gap-3">
-                    <span className="grid size-6 shrink-0 place-items-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
-                      {n}
-                    </span>
-                    <div className="min-w-0 flex-1 space-y-2 pt-0.5">
-                      <p className="text-sm leading-relaxed text-pretty">{t(`tabs.${assistant}.steps.${n}`)}</p>
-                      {n === "1" && assistant === "claude_code" && <CopyBox value={claudeCodeCommand(mcpUrl)} multiline />}
-                      {n === "1" && assistant === "cursor" && <CopyBox value={cursorConfig(mcpUrl)} multiline />}
-                    </div>
-                  </li>
-                ))}
-              </ol>
-              <p className="mt-5 flex gap-2 rounded-xl bg-muted/60 p-3 text-xs leading-relaxed text-muted-foreground">
-                <Info className="size-4 shrink-0" aria-hidden />
-                <span>
-                  <b className="text-foreground">{t("noteLabel")}: </b>
-                  {t(`tabs.${assistant}.note`)}
-                </span>
-              </p>
-            </TabsContent>
-          ))}
-        </Tabs>
+          </ol>
+          <Note>
+            <b className="font-bold text-(--s-text)">{t("noteLabel")}: </b>
+            {t(`tabs.${assistant}.note`)}
+          </Note>
+        </SectionCard>
       </section>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <section className="rounded-2xl border bg-card p-4 sm:p-5">
-          <h2 className="mb-3 flex items-center gap-2 text-sm font-bold">
-            <MessageSquareText className="size-4 text-muted-foreground" aria-hidden />
-            {t("examplesTitle")}
-          </h2>
-          <ul className="space-y-2">
+      <TwoColumns>
+        <SectionCard icon={MessageSquareText} title={t("examplesTitle")}>
+          <ul className="flex flex-col gap-2">
             {EXAMPLES.map((n) => (
-              <li key={n} className="rounded-xl bg-muted/50 px-3 py-2 text-[13px] leading-relaxed">
+              <li key={n} className="rounded-[14px] bg-(--s-tint) px-3 py-2 text-[13px] leading-relaxed text-(--s-body)">
                 “{t(`examples.${n}`)}”
               </li>
             ))}
           </ul>
-        </section>
-        <section className="rounded-2xl border bg-card p-4 sm:p-5">
-          <h2 className="mb-3 flex items-center gap-2 text-sm font-bold">
-            <ShieldCheck className="size-4 text-success" aria-hidden />
-            {t("safetyTitle")}
-          </h2>
-          <ul className="space-y-2.5">
+        </SectionCard>
+        <SectionCard icon={ShieldCheck} tone="success" title={t("safetyTitle")}>
+          <ul className="flex flex-col gap-2.5">
             {SAFETY.map((n) => (
-              <li key={n} className="flex gap-2 text-[13px] leading-relaxed text-muted-foreground">
+              <li key={n} className="flex gap-2 text-[13px] leading-relaxed text-(--s-muted)">
                 <Check className="mt-0.5 size-4 shrink-0 text-success" aria-hidden />
                 {t(`safety.${n}`)}
               </li>
             ))}
           </ul>
-        </section>
-      </div>
-    </div>
+        </SectionCard>
+      </TwoColumns>
+    </>
   );
 }

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import type { StoreAppKey } from "@workspace/lib/integrations";
+import { TextAction } from "@/components/seller-ui";
 import { AppLogo } from "./app-logo";
 
 /** The top of an app's own page (Bosta, Wassalha): back to Apps, logo, title and subtitle. */
@@ -18,21 +19,20 @@ export function AppPageHeader({
   subtitle: string;
 }) {
   return (
-    <div>
-      <Link
-        href={`/stores/${storeId}/apps`}
-        className="mb-4 inline-flex items-center gap-1 text-[13px] font-semibold text-muted-foreground hover:text-foreground"
-      >
-        <ChevronLeft className="size-4 rtl:rotate-180" aria-hidden />
-        {backLabel}
-      </Link>
+    <header className="flex flex-col items-start gap-3">
+      <TextAction asChild className="-ms-2.5 max-[600px]:min-h-10">
+        <Link href={`/stores/${storeId}/apps`}>
+          <ChevronLeft className="rtl:rotate-180" aria-hidden />
+          {backLabel}
+        </Link>
+      </TextAction>
       <div className="flex items-center gap-3.5">
-        <AppLogo app={app} className="size-14 rounded-2xl" />
+        <AppLogo app={app} className="size-[52px] rounded-2xl" />
         <div className="min-w-0">
-          <h1 className="text-[22px] leading-tight font-extrabold tracking-tight sm:text-[26px]">{title}</h1>
-          <p className="mt-0.5 text-[13px] text-muted-foreground">{subtitle}</p>
+          <h1 className="text-[clamp(22px,2.4vw,28px)] font-bold leading-[1.35] text-(--s-ink)">{title}</h1>
+          <p className="mt-0.5 text-pretty text-[14px] text-(--s-muted)">{subtitle}</p>
         </div>
       </div>
-    </div>
+    </header>
   );
 }

@@ -1,14 +1,11 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { LoaderCircle, MessageCircle, RotateCcw } from "lucide-react";
+import { MessageCircle, RotateCcw } from "lucide-react";
 
-import { Button } from "@workspace/ui/components/button";
-import { Label } from "@workspace/ui/components/label";
-import { Textarea } from "@workspace/ui/components/textarea";
-import { BUTTON_CLASS, SMALL_BUTTON_CLASS, TEXTAREA_CLASS } from "@/components/form/form-ui";
+import { Field, SaveBar, SectionCard, SellerButton, TextArea } from "@/components/seller-ui";
 import {
   ORDER_CONFIRM_DEFAULTS,
   ORDER_CONFIRM_PLACEHOLDERS,
@@ -40,6 +37,7 @@ export function OrderConfirmTemplateSettings({
   const [saved, setSaved] = useState(initial);
   const [value, setValue] = useState(initial ?? ORDER_CONFIRM_DEFAULTS[locale]);
   const [isPending, startTransition] = useTransition();
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const dirty = value.trim() !== (saved ?? ORDER_CONFIRM_DEFAULTS[locale]);
 
   const preview = renderOrderConfirmMessage(value.trim() || null, {
@@ -68,64 +66,83 @@ export function OrderConfirmTemplateSettings({
     });
   };
 
-  return (
-    <section className="space-y-4 rounded-xl border bg-card p-4 sm:p-5">
-      <div className="space-y-1">
-        <h2 className="flex items-center gap-2 font-semibold">
-          <MessageCircle className="size-4 text-[#25D366]" />
-          {t("confirmTitle")}
-        </h2>
-        <p className="text-sm text-muted-foreground">{t("confirmDescription")}</p>
-      </div>
+  /** Puts a placeholder where the cursor is, or at the end. */
+  const insert = (token: string) => {
+    const box = textareaRef.current;
+    const start = box?.selectionStart ?? value.length;
+    const end = box?.selectionEnd ?? value.length;
+    const next = `${value.slice(0, start)}${token}${value.slice(end)}`;
+    if (next.length > ORDER_CONFIRM_TEMPLATE_MAX) return;
+    setValue(next);
+    requestAnimationFrame(() => {
+      box?.focus();
+      box?.setSelectionRange(start + token.length, start + token.length);
+    });
+  };
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <div className="space-y-1.5">
-          <Label htmlFor="confirm-template">{t("template")}</Label>
-          <Textarea
+  return (
+    <SectionCard
+      icon={MessageCircle}
+      tone="success"
+      title={t("confirmTitle")}
+      description={t("confirmDescription")}
+      action={
+        saved ? (
+          <SellerButton variant="mini" size="xs" disabled={readOnly || isPending} onClick={() => save("")}>
+            <RotateCcw aria-hidden />
+            <span className="max-[600px]:sr-only">{t("useDefault")}</span>
+          </SellerButton>
+        ) : undefined
+      }
+    >
+      <div className="grid grid-cols-2 items-start gap-4 max-[860px]:grid-cols-1">
+        <Field label={t("template")} htmlFor="confirm-template">
+          <TextArea
+            ref={textareaRef}
             id="confirm-template"
             dir="auto"
             rows={9}
             maxLength={ORDER_CONFIRM_TEMPLATE_MAX}
             value={value}
             disabled={readOnly}
+            className="min-h-[220px]"
             onChange={(event) => setValue(event.target.value)}
-            className={TEXTAREA_CLASS}
           />
-          <p className="text-xs text-muted-foreground">
-            {t("placeholders")}{" "}
+          <div className="flex flex-wrap items-center gap-1.5 text-xs text-(--s-subtle)">
+            <span>{t("placeholders")}</span>
             {ORDER_CONFIRM_PLACEHOLDERS.map((key) => (
-              <code key={key} className="me-1 rounded bg-muted px-1 py-0.5 text-[11px]" dir="ltr">
+              <button
+                key={key}
+                type="button"
+                dir="ltr"
+                disabled={readOnly}
+                onClick={() => insert(`{${key}}`)}
+                className="h-7 cursor-pointer rounded-full border border-dashed border-(--s-field-strong) bg-(--s-surface) px-2.5 font-montserrat text-[11.5px] font-semibold text-(--s-link) transition-colors duration-150 hover:border-solid hover:border-(--s-primary) hover:bg-(--s-hover) disabled:pointer-events-none disabled:opacity-50 max-[600px]:h-10"
+              >
                 {`{${key}}`}
-              </code>
+              </button>
             ))}
-          </p>
-        </div>
-        <div className="space-y-1.5">
-          <span className="text-sm font-medium">{t("preview")}</span>
-          <div className="whitespace-pre-wrap rounded-xl bg-[#e7ffdb] p-3 text-sm text-[#111b21] dark:bg-[#005c4b] dark:text-[#e9edef]" dir="auto">
-            {preview}
+          </div>
+        </Field>
+        {/* A picture of WhatsApp, so it keeps WhatsApp's own colours in both themes. */}
+        <div className="flex flex-col gap-2">
+          <span className="text-[13.5px] font-bold text-(--s-text)">{t("preview")}</span>
+          <div className="flex min-h-[220px] flex-col gap-2 rounded-[20px] bg-[#efeae2] p-3.5 dark:bg-[#0b141a]">
+            <div className="flex items-center gap-2.5 rounded-xl bg-white px-2.5 py-2 dark:bg-[#202c33]">
+              <span aria-hidden className="grid size-8 shrink-0 place-items-center rounded-full bg-(--tallaby-teal-700) font-montserrat text-sm font-extrabold text-white">
+                {storeName.trim().charAt(0).toUpperCase()}
+              </span>
+              <b className="min-w-0 truncate text-[13px] font-bold text-[#1f2c2f] dark:text-[#e9edef]">
+                <bdi>{storeName}</bdi>
+              </b>
+            </div>
+            <div dir="auto" className="max-w-[92%] self-start rounded-xl rounded-ss-[3px] bg-[#d9fdd3] px-3 py-2.5 text-[13px] leading-[1.75] break-words whitespace-pre-wrap text-[#1f2c2f] dark:bg-[#005c4b] dark:text-[#e9edef]">
+              {preview}
+            </div>
           </div>
         </div>
       </div>
-
-      <div className="flex flex-wrap items-center gap-2">
-        <Button type="button" className={BUTTON_CLASS} disabled={readOnly || isPending || !dirty} onClick={() => save(value)}>
-          {isPending && <LoaderCircle className="size-4 animate-spin" />}
-          {t("save")}
-        </Button>
-        {saved && (
-          <Button
-            type="button"
-            variant="ghost"
-            className={SMALL_BUTTON_CLASS}
-            disabled={readOnly || isPending}
-            onClick={() => save("")}
-          >
-            <RotateCcw className="size-3.5" />
-            {t("useDefault")}
-          </Button>
-        )}
-      </div>
-    </section>
+      {!readOnly && <SaveBar dirty={dirty} saving={isPending} onSave={() => save(value)} onDiscard={() => setValue(saved ?? ORDER_CONFIRM_DEFAULTS[locale])} />}
+    </SectionCard>
   );
 }

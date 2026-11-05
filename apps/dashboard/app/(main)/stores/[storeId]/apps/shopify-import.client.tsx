@@ -14,17 +14,13 @@ import type {
   ShopifyPreview,
   StoreIntegrationSummary,
 } from "@workspace/lib/integrations/server";
-import { Button } from "@workspace/ui/components/button";
-import { Input } from "@workspace/ui/components/input";
-import { Label } from "@workspace/ui/components/label";
 import { SheetFooter } from "@workspace/ui/components/sheet";
-import { BUTTON_CLASS, FIELD_CLASS } from "@/components/form/form-ui";
+import { Field, NativeSelect, Note, SellerButton, TextInput } from "@/components/seller-ui";
+import { APP_DRAWER_FOOTER_CLASS } from "./app-drawer.lib";
 import { disconnectStoreApp } from "./apps.server";
 import { DisconnectAppButton } from "./disconnect-button.client";
 import type { AppCategoryOption } from "./apps.types";
 import { connectShopifyStore, importShopifyBatch, previewShopifyStore } from "./shopify-import.server";
-
-const SELECT_CLASS = `${FIELD_CLASS} w-full appearance-none bg-background`;
 
 /**
  * Shopify import panel (PLAN.md §9.2, P7-07): connect, preview, map product
@@ -141,18 +137,17 @@ export function ShopifyImportPanel({
 
   return (
     <>
-      <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-4">
+      <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-[18px]">
         {!connected ? (
           <>
             <p className="text-[13px] text-muted-foreground">{t("shopify.setupHint")}</p>
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="shop-domain">{t("shopify.domainLabel")}</Label>
-              <Input
+            <Field label={t("shopify.domainLabel")} htmlFor="shop-domain">
+              <TextInput
                 id="shop-domain"
                 dir="ltr"
                 autoComplete="off"
                 spellCheck={false}
-                className={FIELD_CLASS}
+                className="text-start font-montserrat"
                 value={shopDomain}
                 placeholder="my-shop.myshopify.com"
                 onChange={(event) => {
@@ -160,16 +155,15 @@ export function ShopifyImportPanel({
                   setError(null);
                 }}
               />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="shop-token">{t("shopify.tokenLabel")}</Label>
-              <Input
+            </Field>
+            <Field label={t("shopify.tokenLabel")} htmlFor="shop-token">
+              <TextInput
                 id="shop-token"
                 type="password"
                 dir="ltr"
                 autoComplete="off"
                 spellCheck={false}
-                className={FIELD_CLASS}
+                className="text-start font-montserrat"
                 value={token}
                 placeholder="shpat_…"
                 aria-describedby="shop-hint"
@@ -178,10 +172,10 @@ export function ShopifyImportPanel({
                   setError(null);
                 }}
               />
-              <p id="shop-hint" className="text-xs text-muted-foreground">
-                {error ? <span className="text-destructive">{error}</span> : t("shopify.tokenHint")}
+              <p id="shop-hint" className="text-xs text-(--s-faint)">
+                {error ? <span className="font-semibold text-destructive">{error}</span> : t("shopify.tokenHint")}
               </p>
-            </div>
+            </Field>
           </>
         ) : (
           <>
@@ -197,13 +191,15 @@ export function ShopifyImportPanel({
               </p>
             )}
             {current?.status === "error" && current.lastError && (
-              <p className="rounded-xl bg-destructive/10 p-3 text-[13px] text-destructive" dir="auto">
-                {t("lastError")}: {current.lastError}
-              </p>
+              <Note tone="danger">
+                <span dir="auto">
+                  {t("lastError")}: {current.lastError}
+                </span>
+              </Note>
             )}
 
             {preview && (
-              <div className="flex flex-col gap-3 rounded-xl border p-3">
+              <div className="flex flex-col gap-3 rounded-2xl border border-(--s-line) p-3.5">
                 <p className="text-sm font-medium">{t("shopify.previewCount", { count: preview.count })}</p>
                 {preview.currency !== (unit.currency ?? "EGP") && (
                   <p className="flex gap-2 text-[13px] text-accent-ink">
@@ -212,11 +208,9 @@ export function ShopifyImportPanel({
                   </p>
                 )}
                 <p className="text-xs text-muted-foreground">{t("shopify.draftNote")}</p>
-                <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="shop-default-cat">{t("shopify.defaultCategory")}</Label>
-                  <select
+                <Field label={t("shopify.defaultCategory")} htmlFor="shop-default-cat">
+                  <NativeSelect
                     id="shop-default-cat"
-                    className={SELECT_CLASS}
                     value={defaultCategory}
                     disabled={running}
                     onChange={(event) => {
@@ -230,8 +224,8 @@ export function ShopifyImportPanel({
                         {c.label}
                       </option>
                     ))}
-                  </select>
-                </div>
+                  </NativeSelect>
+                </Field>
                 {preview.productTypes.filter(Boolean).length > 0 && (
                   <div className="flex flex-col gap-2">
                     <p className="text-xs font-medium">{t("shopify.mapTypes")}</p>
@@ -240,9 +234,8 @@ export function ShopifyImportPanel({
                         <span className="truncate text-[13px]" dir="auto">
                           {type}
                         </span>
-                        <select
+                        <NativeSelect
                           aria-label={type}
-                          className={SELECT_CLASS}
                           value={typeMap[type] ?? ""}
                           disabled={running}
                           onChange={(event) => setTypeMap((map) => ({ ...map, [type]: event.target.value }))}
@@ -253,7 +246,7 @@ export function ShopifyImportPanel({
                               {c.label}
                             </option>
                           ))}
-                        </select>
+                        </NativeSelect>
                       </div>
                     ))}
                     {preview.typesTruncated && <p className="text-xs text-faint">{t("shopify.typesTruncated")}</p>}
@@ -264,7 +257,7 @@ export function ShopifyImportPanel({
             )}
 
             {items.length > 0 && (
-              <div className="flex flex-col gap-2 rounded-xl border p-3" aria-live="polite">
+              <div className="flex flex-col gap-2 rounded-2xl border border-(--s-line) p-3.5" aria-live="polite">
                 <p className="text-sm font-medium">
                   {t("shopify.progress", { created, skipped, total: preview?.count ?? items.length })}
                 </p>
@@ -285,29 +278,29 @@ export function ShopifyImportPanel({
           </>
         )}
       </div>
-      <SheetFooter className="flex-row flex-wrap gap-2">
+      <SheetFooter className={APP_DRAWER_FOOTER_CLASS}>
         {!connected ? (
-          <Button type="button" className={BUTTON_CLASS} disabled={isPending || readOnly} onClick={connect}>
+          <SellerButton disabled={isPending || readOnly} onClick={connect}>
             {isPending && <LoaderCircle className="animate-spin" aria-hidden />}
             {t("connect")}
-          </Button>
+          </SellerButton>
         ) : !preview ? (
-          <Button type="button" className={BUTTON_CLASS} disabled={isPending || readOnly} onClick={loadPreview}>
+          <SellerButton disabled={isPending || readOnly} onClick={loadPreview}>
             {isPending && <LoaderCircle className="animate-spin" aria-hidden />}
             {t("shopify.preview")}
-          </Button>
+          </SellerButton>
         ) : running ? (
-          <Button type="button" variant="secondary" className={BUTTON_CLASS} onClick={() => (stopRef.current = true)}>
+          <SellerButton variant="outline" onClick={() => (stopRef.current = true)}>
             <LoaderCircle className="animate-spin" aria-hidden />
             {t("shopify.stop")}
-          </Button>
+          </SellerButton>
         ) : (
-          <Button type="button" className={BUTTON_CLASS} disabled={readOnly || preview.count === 0} onClick={runImport}>
+          <SellerButton disabled={readOnly || preview.count === 0} onClick={runImport}>
             {t("shopify.start")}
-          </Button>
+          </SellerButton>
         )}
         {current && !running && (
-          <DisconnectAppButton className={BUTTON_CLASS} pending={isPending} onConfirm={remove} />
+          <DisconnectAppButton pending={isPending} onConfirm={remove} />
         )}
       </SheetFooter>
     </>

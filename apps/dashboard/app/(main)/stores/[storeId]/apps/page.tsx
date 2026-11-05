@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation";
 import { getLocale } from "next-intl/server";
 import { listStoreAppInstalls } from "@workspace/lib/billing/apps";
+import { getBillingState } from "@workspace/lib/billing/server";
+import { PageContainer } from "@/components/seller-ui";
 import { listStoreAppRequests, listStoreIntegrations } from "@workspace/lib/integrations/server";
 import { getAllCategories } from "@/actions/categories";
 import { loadStorePage } from "@/lib/stores/store-page.server";
@@ -10,7 +12,7 @@ import { findActiveCustomDomainForSubdomain } from "@workspace/lib/storefront/se
 import { parseStoreSeo } from "@workspace/lib/stores";
 import { StoreApps } from "./apps.client";
 import { ProductFeeds } from "./product-feeds.client";
-import { storeFeedUrls } from "./product-feeds.lib";
+import { FEED_PLATFORMS, storeFeedUrls } from "./product-feeds.lib";
 import type { AppCategoryOption } from "./apps.types";
 
 type CategoryNode = { id: string; name: string | null; nameAr: string | null; categories?: CategoryNode[] };
@@ -30,19 +32,20 @@ export default async function StoreAppsPage({ params }: { params: Promise<{ stor
   const integrations = await listStoreIntegrations(store.sellerId, store.id);
   if (!integrations) notFound();
 
-  const [locale, tree, customDomain, installs, requests] = await Promise.all([
+  const [locale, tree, customDomain, installs, requests, billing] = await Promise.all([
     getLocale(),
     getAllCategories(),
     findActiveCustomDomainForSubdomain(store.subdomain),
     listStoreAppInstalls(store.sellerId, store.id),
     listStoreAppRequests(store.sellerId, store.id),
+    getBillingState(),
   ]);
   const categories = tree.success ? categoryOptions((tree.data ?? []) as CategoryNode[], locale) : [];
   // Product feeds (F-11b) live on the store's own address: its active custom domain, else its subdomain.
   const feedUrls = storeFeedUrls(storeUrl(store.subdomain, customDomain), store.supportedLocales);
 
   return (
-    <section className="mx-auto w-full max-w-[1120px] px-3.5 pt-[22px] pb-20 sm:px-6 sm:pt-8 sm:pb-24">
+    <PageContainer>
       <StoreApps
         storeId={store.id}
         store={{
@@ -58,9 +61,11 @@ export default async function StoreAppsPage({ params }: { params: Promise<{ stor
         requests={requests}
         readOnly={store.status !== "active"}
         googleSheetsEnabled={isGoogleSheetsConfigured()}
+        usdLive={billing.usdLive}
+        feedsReady={store.siteStatus === "published" ? FEED_PLATFORMS.length : 0}
         categories={categories}
-        feeds={<ProductFeeds urls={feedUrls} published={store.siteStatus === "published"} />}
+        feeds={<ProductFeeds key="feeds" urls={feedUrls} published={store.siteStatus === "published"} />}
       />
-    </section>
+    </PageContainer>
   );
 }

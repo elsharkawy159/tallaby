@@ -8,11 +8,9 @@ import { CircleCheck, LoaderCircle, TriangleAlert } from "lucide-react";
 
 import { validateMetaCapiInput } from "@workspace/lib/integrations";
 import type { StoreIntegrationSummary } from "@workspace/lib/integrations/server";
-import { Button } from "@workspace/ui/components/button";
-import { Input } from "@workspace/ui/components/input";
-import { Label } from "@workspace/ui/components/label";
 import { SheetFooter } from "@workspace/ui/components/sheet";
-import { BUTTON_CLASS, FIELD_CLASS } from "@/components/form/form-ui";
+import { Field, Note, SellerButton, TextInput } from "@/components/seller-ui";
+import { APP_DRAWER_FOOTER_CLASS } from "./app-drawer.lib";
 import { disconnectStoreApp } from "./apps.server";
 import { DisconnectAppButton } from "./disconnect-button.client";
 import { saveMetaCapi, testMetaCapi } from "./meta-capi.server";
@@ -97,34 +95,34 @@ export function MetaCapiPanel({
 
   return (
     <>
-      <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-4">
+      <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-[18px]">
         {!pixelConnected && (
-          <p className="flex gap-2 rounded-xl bg-accent-soft p-3 text-[13px] text-accent-ink">
-            <TriangleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
+          <Note tone="amber" icon={TriangleAlert}>
             {t("errors.pixelRequired")}
-          </p>
+          </Note>
         )}
         {saved && (
           <p className="flex items-center gap-2 text-[13px]">
-            <CircleCheck className="size-4 text-primary" aria-hidden />
+            <CircleCheck className="size-4 text-success" aria-hidden />
             {t("metaCapi.tokenSaved")}
             {current?.details.testMode ? ` · ${t("metaCapi.testMode")}` : ""}
           </p>
         )}
         {current?.status === "error" && current.lastError && (
-          <p className="rounded-xl bg-destructive/10 p-3 text-[13px] text-destructive" dir="auto">
-            {t("lastError")}: {current.lastError}
-          </p>
+          <Note tone="danger">
+            <span dir="auto">
+              {t("lastError")}: {current.lastError}
+            </span>
+          </Note>
         )}
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="capi-token">{t("metaCapi.tokenLabel")}</Label>
-          <Input
+        <Field label={t("metaCapi.tokenLabel")} htmlFor="capi-token">
+          <TextInput
             id="capi-token"
             type="password"
             dir="ltr"
             autoComplete="off"
             spellCheck={false}
-            className={FIELD_CLASS}
+            className="text-start font-montserrat"
             value={token}
             placeholder={saved ? t("metaCapi.tokenKeep") : "EAA…"}
             aria-invalid={error ? true : undefined}
@@ -134,18 +132,17 @@ export function MetaCapiPanel({
               setError(null);
             }}
           />
-          <p id="capi-hint" className="text-xs text-muted-foreground">
-            {error ? <span className="text-destructive">{error}</span> : t("metaCapi.tokenHint")}
+          <p id="capi-hint" className="text-xs text-(--s-faint)">
+            {error ? <span className="font-semibold text-destructive">{error}</span> : t("metaCapi.tokenHint")}
           </p>
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="capi-test">{t("metaCapi.testCodeLabel")}</Label>
-          <Input
+        </Field>
+        <Field label={t("metaCapi.testCodeLabel")} htmlFor="capi-test" note={t("metaCapi.testCodeHint")}>
+          <TextInput
             id="capi-test"
             dir="ltr"
             autoComplete="off"
             spellCheck={false}
-            className={FIELD_CLASS}
+            className="text-start font-montserrat"
             value={testCode}
             placeholder="TEST12345"
             onChange={(event) => {
@@ -153,23 +150,21 @@ export function MetaCapiPanel({
               setError(null);
             }}
           />
-          <p className="text-xs text-muted-foreground">{t("metaCapi.testCodeHint")}</p>
-        </div>
-        <p className="text-xs text-faint">{t("metaCapi.consentNote")}</p>
+        </Field>
+        <p className="text-xs text-(--s-faint)">{t("metaCapi.consentNote")}</p>
       </div>
-      <SheetFooter className="flex-row flex-wrap gap-2">
-        <Button type="button" className={BUTTON_CLASS} disabled={isPending || !pixelConnected} onClick={save}>
+      <SheetFooter className={APP_DRAWER_FOOTER_CLASS}>
+        <SellerButton disabled={isPending || !pixelConnected} onClick={save}>
           {isPending && <LoaderCircle className="animate-spin" aria-hidden />}
           {t("save")}
-        </Button>
+        </SellerButton>
         {saved && (
-          <Button type="button" variant="secondary" className={BUTTON_CLASS} disabled={isPending} onClick={test}>
+          <SellerButton variant="outline" disabled={isPending} onClick={test}>
             {t("metaCapi.test")}
-          </Button>
+          </SellerButton>
         )}
         {current && (
           <DisconnectAppButton
-            className={BUTTON_CLASS}
             pending={isPending}
             description={t("disconnectConfirm.metaCapi")}
             onConfirm={remove}

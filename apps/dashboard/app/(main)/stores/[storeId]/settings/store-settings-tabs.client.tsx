@@ -1,45 +1,30 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { cn } from "@/lib/utils";
+import { BellRing, ClipboardCheck, CreditCard, FileCheck, ShieldCheck, Smartphone, Store } from "lucide-react";
+import { PageTabs } from "@/components/seller-ui";
 
-/** General (with the store catalog) · Payment methods · Order protection · App · Sales pop-up. */
+/**
+ * General (with the store catalog) · Payment methods · Checkout · Order protection · App · Sales pop-up.
+ * Policies and verification belong to the seller account, so the last tab goes to /settings.
+ */
 export function StoreSettingsTabs({ storeId }: { storeId: string }) {
   const t = useTranslations("nav");
-  const pathname = usePathname();
+  const tSetup = useTranslations("storeSetup");
   const base = `/stores/${storeId}/settings`;
-  const tabs = [
-    { href: base, label: t("general"), exact: true },
-    { href: `${base}/payments`, label: t("paymentMethods") },
-    { href: `${base}/checkout`, label: t("checkoutForm") },
-    { href: `${base}/protection`, label: t("orderProtection") },
-    { href: `${base}/app`, label: t("storeApp") },
-    { href: `${base}/sales-popup`, label: t("salesPopup") },
-  ];
 
   return (
-    <nav className="flex gap-1 overflow-x-auto border-b" aria-label={t("storeSettings")}>
-      {tabs.map((tab) => {
-        const active = tab.exact ? pathname === tab.href : pathname.startsWith(tab.href);
-        return (
-          <Link
-            key={tab.href}
-            href={tab.href}
-            aria-current={active ? "page" : undefined}
-            className={cn(
-              // Few tabs: they share the row on phones.
-              "shrink-0 border-b-2 px-3 py-2.5 text-center text-sm transition-colors max-sm:flex-1",
-              active
-                ? "border-primary font-medium text-primary-ink"
-                : "border-transparent text-muted-foreground hover:text-foreground",
-            )}
-          >
-            {tab.label}
-          </Link>
-        );
-      })}
-    </nav>
+    <PageTabs
+      label={t("storeSettings")}
+      tabs={[
+        { key: "general", href: base, label: t("general"), icon: Store },
+        { key: "payments", href: `${base}/payments`, label: t("paymentMethods"), icon: CreditCard },
+        { key: "checkout", href: `${base}/checkout`, label: t("checkoutForm"), icon: ClipboardCheck },
+        { key: "protection", href: `${base}/protection`, label: t("orderProtection"), icon: ShieldCheck },
+        { key: "app", href: `${base}/app`, label: t("storeApp"), icon: Smartphone },
+        { key: "popup", href: `${base}/sales-popup`, label: t("salesPopup"), icon: BellRing },
+        { key: "policies", href: "/settings#policies", label: tSetup("policiesTab"), icon: FileCheck },
+      ]}
+    />
   );
 }

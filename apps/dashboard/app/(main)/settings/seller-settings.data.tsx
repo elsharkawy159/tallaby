@@ -1,4 +1,3 @@
-import { Separator } from "@workspace/ui/components/separator";
 import { storeUrl } from "@workspace/lib/storefront";
 import { fetchSellerSettings } from "./seller-settings.server";
 import type { SellerSettingsInitialData } from "./seller-settings.types";
@@ -73,8 +72,7 @@ export async function SellerSettingsData() {
               customDomain={liveDomain}
               siteStatus={primaryStore.siteStatus}
             />
-            <Separator className="my-1" />
-            <CustomDomainSection storeId={primaryStore.id} initial={customDomain} />
+                        <CustomDomainSection storeId={primaryStore.id} initial={customDomain} />
             <DomainPageLink storeId={primaryStore.id} />
           </>
         ) : null

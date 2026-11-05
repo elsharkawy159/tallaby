@@ -4,14 +4,11 @@ import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useFormatter, useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { ExternalLink, KeyRound, LoaderCircle, MapPin, RefreshCw, TriangleAlert } from "lucide-react";
+import { ExternalLink, KeyRound, LoaderCircle, MapPin, RefreshCw, TriangleAlert, Truck } from "lucide-react";
 
 import type { BostaOverview } from "@workspace/lib/integrations/server";
 import type { BostaPickupLocation } from "@workspace/lib/shipping/bosta";
-import { Badge } from "@workspace/ui/components/badge";
-import { Button } from "@workspace/ui/components/button";
-import { cn } from "@workspace/ui/lib/utils";
-import { BUTTON_CLASS, SMALL_BUTTON_CLASS } from "@/components/form/form-ui";
+import { Note, SectionCard, SellerButton, SellerCard, StatusBadge } from "@/components/seller-ui";
 import { AppPageHeader } from "../app-page-header";
 import { disconnectStoreApp } from "../apps.server";
 import { DisconnectAppButton } from "../disconnect-button.client";
@@ -39,7 +36,7 @@ export function BostaApp({
   useEffect(() => setOverview(initial), [initial]);
 
   return (
-    <div className="flex flex-col gap-6">
+    <>
       <AppPageHeader
         storeId={storeId}
         app="bosta"
@@ -48,7 +45,7 @@ export function BostaApp({
         subtitle={t("subtitle", { store: storeName })}
       />
 
-      {readOnly && <p className="rounded-xl bg-muted p-3.5 text-[13px] text-muted-foreground">{t("readOnly")}</p>}
+      {readOnly && <Note tone="amber">{t("readOnly")}</Note>}
 
       {wizard ? (
         <BostaWizard
@@ -63,7 +60,7 @@ export function BostaApp({
       ) : overview ? (
         <BostaSettingsView storeId={storeId} overview={overview} readOnly={readOnly} onChange={setOverview} />
       ) : null}
-    </div>
+    </>
   );
 }
 
@@ -137,34 +134,28 @@ function BostaSettingsView({
     });
 
   return (
-    <div className="flex flex-col gap-5">
-      <section className="rounded-2xl border bg-card p-4 shadow-xs sm:p-5">
+    <div className="flex flex-col gap-4">
+      <SellerCard className="p-5 max-[600px]:p-4">
         <div className="flex flex-wrap items-start gap-3">
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
-              {failing ? (
-                <Badge variant="destructive">{tApps("error")}</Badge>
-              ) : (
-                <span className="inline-flex h-6 items-center gap-1.5 rounded-full bg-success-soft px-2.5 text-xs font-semibold text-success before:size-1.5 before:rounded-full before:bg-current">
-                  {tApps("connected")}
-                </span>
-              )}
+              {failing ? <StatusBadge tone="danger">{tApps("error")}</StatusBadge> : <StatusBadge tone="success">{tApps("connected")}</StatusBadge>}
               {summary.connectedAt && (
-                <span className="text-xs text-faint">
+                <span className="text-xs text-(--s-faint)">
                   {t("settings.since", { date: format.dateTime(new Date(summary.connectedAt), { day: "numeric", month: "short", year: "numeric" }) })}
                 </span>
               )}
             </div>
-            <dl className="mt-3 grid gap-2 text-[13px] sm:grid-cols-2">
+            <dl className="mt-3 grid grid-cols-2 gap-2 text-[13px] text-(--s-text) max-[600px]:grid-cols-1">
               <div className="flex items-center gap-2">
-                <KeyRound className="size-4 shrink-0 text-faint" aria-hidden />
+                <KeyRound className="size-4 shrink-0 text-(--s-subtle)" aria-hidden />
                 <dt className="sr-only">{t("settings.key")}</dt>
-                <dd dir="ltr" className="font-mono">
+                <dd dir="ltr" className="font-montserrat">
                   ••••{settings.keyHint ?? "????"}
                 </dd>
               </div>
               <div className="flex min-w-0 items-center gap-2">
-                <MapPin className="size-4 shrink-0 text-faint" aria-hidden />
+                <MapPin className="size-4 shrink-0 text-(--s-subtle)" aria-hidden />
                 <dt className="sr-only">{t("prefs.pickupTitle")}</dt>
                 <dd dir="auto" className="truncate">
                   {settings.pickupLocationName ?? "—"}
@@ -172,36 +163,34 @@ function BostaSettingsView({
               </div>
             </dl>
           </div>
-          <div className="flex w-full gap-2 sm:w-auto">
-            <Button type="button" variant="outline" className={cn(SMALL_BUTTON_CLASS, "max-sm:flex-1")} disabled={isTesting} onClick={test}>
-              {isTesting ? <LoaderCircle className="size-4 animate-spin" aria-hidden /> : <RefreshCw className="size-4" aria-hidden />}
+          <div className="flex gap-2 max-[600px]:w-full max-[600px]:[&>*]:flex-1">
+            <SellerButton variant="mini" size="xs" disabled={isTesting} onClick={test}>
+              {isTesting ? <LoaderCircle className="animate-spin" aria-hidden /> : <RefreshCw aria-hidden />}
               {t("settings.test")}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              className={cn(SMALL_BUTTON_CLASS, "max-sm:flex-1")}
+            </SellerButton>
+            <SellerButton
+              variant="mini"
+              size="xs"
               disabled={readOnly}
               aria-expanded={replacing}
               onClick={() => setReplacing((v) => !v)}
             >
-              <KeyRound className="size-4" aria-hidden />
+              <KeyRound aria-hidden />
               {t("settings.replaceKey")}
-            </Button>
+            </SellerButton>
           </div>
         </div>
 
         {failing && summary.lastError && (
-          <p className="mt-4 flex gap-2 rounded-xl bg-destructive/10 p-3 text-[13px] text-destructive">
-            <TriangleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
+          <Note tone="danger" icon={TriangleAlert} className="mt-4">
             <span dir="auto">
               {t("settings.errorHelp")} <span className="opacity-80">({summary.lastError})</span>
             </span>
-          </p>
+          </Note>
         )}
 
         {replacing && (
-          <div className="mt-4 border-t pt-4">
+          <div className="mt-4 border-t border-(--s-line-soft) pt-4">
             <BostaKeyField
               storeId={storeId}
               saved={null}
@@ -216,10 +205,9 @@ function BostaSettingsView({
             />
           </div>
         )}
-      </section>
+      </SellerCard>
 
-      <section className="rounded-2xl border bg-card p-4 shadow-xs sm:p-6">
-        <h2 className="mb-5 text-lg font-extrabold">{t("prefs.title")}</h2>
+      <SectionCard icon={Truck} title={t("prefs.title")}>
         <BostaPreferences
           key={formKey}
           settings={settings}
@@ -229,21 +217,20 @@ function BostaSettingsView({
           submitLabel={tApps("save")}
           onSubmit={save}
         />
-      </section>
+      </SectionCard>
 
-      <section className="flex flex-col gap-3 rounded-2xl border border-dashed p-4 sm:flex-row sm:items-center sm:p-5">
-        <div className="min-w-0 flex-1 text-[13px] text-muted-foreground">
-          <b className="block text-foreground">{t("settings.dangerTitle")}</b>
+      <section className="flex flex-wrap items-center gap-3 rounded-[22px] border-[1.5px] border-dashed border-(--s-field-strong) p-[18px]">
+        <div className="min-w-0 flex-1 basis-[220px] text-[13px] text-(--s-muted)">
+          <b className="block font-bold text-(--s-text)">{t("settings.dangerTitle")}</b>
           {t("settings.dangerBody")}
         </div>
-        <Button asChild variant="ghost" className={BUTTON_CLASS}>
+        <SellerButton asChild variant="mini">
           <a href={BOSTA_DASHBOARD_URL} target="_blank" rel="noopener noreferrer">
             {t("key.openDashboard")}
-            <ExternalLink className="size-4" aria-hidden />
+            <ExternalLink aria-hidden />
           </a>
-        </Button>
+        </SellerButton>
         <DisconnectAppButton
-          className={cn(BUTTON_CLASS, "border-destructive/35 text-destructive hover:text-destructive")}
           disabled={readOnly}
           pending={isPending}
           description={t("settings.disconnectConfirm")}

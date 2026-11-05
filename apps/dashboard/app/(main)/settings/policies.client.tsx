@@ -2,12 +2,9 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
-import { FileText } from "lucide-react";
+import { FileText, LoaderCircle } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@workspace/ui/components/button";
-import { Label } from "@workspace/ui/components/label";
-import { Textarea } from "@workspace/ui/components/textarea";
-import { SectionCard } from "./settings-ui";
+import { Field, Note, SectionCard, SellerButton, TextArea } from "@/components/seller-ui";
 import { savePolicies } from "./policies.server";
 
 /** Return, shipping and privacy text for every store on this account (F-46c). */
@@ -43,56 +40,35 @@ export function PoliciesSection({
       else setError(t(`errors.${result.error}`));
     });
 
+  const area = (key: keyof typeof values, label: string, note?: string) => (
+    <Field label={label} htmlFor={key} note={note}>
+      <TextArea
+        id={key}
+        rows={5}
+        maxLength={5000}
+        disabled={isPending}
+        value={values[key]}
+        onChange={(e) => setValues((v) => ({ ...v, [key]: e.target.value }))}
+      />
+    </Field>
+  );
+
   return (
     <div ref={sectionRef} className="scroll-mt-24">
       <SectionCard id="policies" icon={FileText} title={t("policies.title")} description={t("policies.description")}>
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="returnPolicy" className="text-[13px] font-semibold">
-              {t("policies.returns")}
-            </Label>
-            <Textarea
-              id="returnPolicy"
-              rows={5}
-              maxLength={5000}
-              disabled={isPending}
-              value={values.returnPolicy}
-              onChange={(e) => setValues((v) => ({ ...v, returnPolicy: e.target.value }))}
-            />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="shippingPolicy" className="text-[13px] font-semibold">
-              {t("policies.shipping")}
-            </Label>
-            <Textarea
-              id="shippingPolicy"
-              rows={5}
-              maxLength={5000}
-              disabled={isPending}
-              value={values.shippingPolicy}
-              onChange={(e) => setValues((v) => ({ ...v, shippingPolicy: e.target.value }))}
-            />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="privacyPolicy" className="text-[13px] font-semibold">
-              {t("policies.privacy")}
-            </Label>
-            <Textarea
-              id="privacyPolicy"
-              rows={5}
-              maxLength={5000}
-              disabled={isPending}
-              value={values.privacyPolicy}
-              onChange={(e) => setValues((v) => ({ ...v, privacyPolicy: e.target.value }))}
-            />
-            <p className="text-xs text-muted-foreground">{t("policies.privacyHint")}</p>
-          </div>
-          {error && <p className="text-sm text-destructive">{error}</p>}
-          <div>
-            <Button type="button" onClick={save} disabled={isPending}>
-              {t("save")}
-            </Button>
-          </div>
+        {area("returnPolicy", t("policies.returns"))}
+        {area("shippingPolicy", t("policies.shipping"))}
+        {area("privacyPolicy", t("policies.privacy"), t("policies.privacyHint"))}
+        {error && (
+          <Note tone="danger">
+            <span role="alert">{error}</span>
+          </Note>
+        )}
+        <div className="flex justify-end">
+          <SellerButton variant="solid" onClick={save} disabled={isPending}>
+            {isPending && <LoaderCircle className="animate-spin" aria-hidden />}
+            {t("save")}
+          </SellerButton>
         </div>
       </SectionCard>
     </div>

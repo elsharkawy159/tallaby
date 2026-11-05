@@ -3,7 +3,8 @@
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Switch } from "@workspace/ui/components/switch";
+import { ShoppingBag } from "lucide-react";
+import { SectionCard, Toggle } from "@/components/seller-ui";
 import { saveStoreCrossSell } from "./cross-sell-switch.server";
 
 export function StoreCrossSellSwitch({ storeId, initial, readOnly }: { storeId: string; initial: boolean; readOnly: boolean }) {
@@ -22,12 +23,11 @@ export function StoreCrossSellSwitch({ storeId, initial, readOnly }: { storeId: 
     });
 
   return (
-    <section className="flex items-start justify-between gap-4 rounded-2xl border bg-card p-4 sm:p-5">
-      <div className="min-w-0">
-        <h2 className="font-semibold">{t("title")}</h2>
-        <p className="mt-1 text-pretty text-sm text-muted-foreground">{t("description")}</p>
-      </div>
-      <Switch aria-label={t("title")} checked={enabled} disabled={readOnly || pending} onCheckedChange={change} />
-    </section>
+    <SectionCard
+      icon={ShoppingBag}
+      title={t("title")}
+      description={t("description")}
+      action={<Toggle className="max-[600px]:min-h-10" aria-label={t("title")} checked={enabled} disabled={readOnly || pending} onCheckedChange={change} />}
+    />
   );
 }

@@ -7,10 +7,7 @@ import { toast } from "sonner";
 import { LoaderCircle } from "lucide-react";
 
 import { FACEBOOK_DOMAIN_VERIFICATION_RE } from "@workspace/lib/stores";
-import { Button } from "@workspace/ui/components/button";
-import { Input } from "@workspace/ui/components/input";
-import { Label } from "@workspace/ui/components/label";
-import { cn } from "@workspace/ui/lib/utils";
+import { Field, Note, SellerButton, TextInput } from "@/components/seller-ui";
 import { saveMetaDomainVerification } from "./meta-domain.server";
 
 /** What Meta Business Manager shows; kept in code (not translated). */
@@ -69,24 +66,21 @@ export function MetaDomainVerification({
   };
 
   return (
-    <div className="flex flex-col gap-3 rounded-xl border p-3.5">
+    <div className="flex flex-col gap-3 rounded-2xl border border-(--s-line) p-3.5">
       <div>
-        <p className="text-sm font-bold">{t("title")}</p>
-        <p className="text-xs text-muted-foreground">{t("hint")}</p>
+        <p className="text-sm font-bold text-(--s-text)">{t("title")}</p>
+        <p className="text-xs text-(--s-subtle)">{t("hint")}</p>
       </div>
       {!hasCustomDomain && (
-        <p className="rounded-xl bg-accent-soft p-2.5 text-xs text-accent-ink">{t("needsDomain")}</p>
+        <Note tone="amber">{t("needsDomain")}</Note>
       )}
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="meta-domain-token" className="text-[13px] font-semibold">
-          {t("label")}
-        </Label>
-        <Input
+      <Field label={t("label")} htmlFor="meta-domain-token">
+        <TextInput
           id="meta-domain-token"
           dir="ltr"
           autoComplete="off"
           spellCheck={false}
-          className={cn("h-10 rounded-xl bg-muted/40 px-3 font-mono text-xs", !valid && "border-destructive")}
+          className="text-start font-mono text-xs"
           value={value}
           placeholder={PLACEHOLDER}
           disabled={readOnly || isPending}
@@ -96,22 +90,22 @@ export function MetaDomainVerification({
           onBlur={() => setValue(token)}
         />
         {!valid ? (
-          <p className="text-xs text-destructive">{t("invalid")}</p>
+          <p className="text-xs font-semibold text-destructive">{t("invalid")}</p>
         ) : (
           saved &&
           !dirty && <p className="text-xs text-success">{t("live")}</p>
         )}
-      </div>
-      <Button
-        type="button"
-        variant="secondary"
-        className="h-9 self-start rounded-[10px] font-semibold"
+      </Field>
+      <SellerButton
+        variant="solid"
+        size="sm"
+        className="self-start"
         disabled={readOnly || isPending || !dirty || !valid}
         onClick={save}
       >
         {isPending && <LoaderCircle className="animate-spin" aria-hidden />}
         {t("save")}
-      </Button>
+      </SellerButton>
     </div>
   );
 }

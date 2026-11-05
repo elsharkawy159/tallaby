@@ -8,7 +8,7 @@ export async function DomainPageLink({ storeId }: { storeId: string }) {
   return (
     <Link
       href={`/stores/${storeId}/website/domain`}
-      className="inline-flex items-center gap-1 self-start text-xs font-medium text-primary-ink hover:underline"
+      className="inline-flex items-center gap-1 self-start text-xs font-medium text-primary-ink hover:underline max-[600px]:min-h-10"
     >
       {t("settingsLink")}
       <ArrowRight className="size-3.5 rtl:-scale-x-100" aria-hidden />

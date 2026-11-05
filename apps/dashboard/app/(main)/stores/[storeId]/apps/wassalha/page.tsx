@@ -1,4 +1,5 @@
 import { getWassalhaOverview } from "@workspace/lib/integrations/server";
+import { PageContainer } from "@/components/seller-ui";
 import { loadStorePage } from "@/lib/stores/store-page.server";
 import { WassalhaApp } from "./wassalha.client";
 
@@ -9,8 +10,8 @@ export default async function StoreWassalhaPage({ params }: { params: Promise<{ 
   const overview = await getWassalhaOverview(store.sellerId, store.id);
 
   return (
-    <section className="mx-auto w-full max-w-[760px] px-3.5 pt-[22px] pb-20 sm:px-6 sm:pt-8 sm:pb-24">
+    <PageContainer className="max-w-[816px]">
       <WassalhaApp storeId={store.id} storeName={store.name} initial={overview} readOnly={store.status !== "active"} />
-    </section>
+    </PageContainer>
   );
 }

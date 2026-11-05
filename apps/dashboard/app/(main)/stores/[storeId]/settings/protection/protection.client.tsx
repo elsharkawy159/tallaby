@@ -7,12 +7,8 @@ import { Ban, LoaderCircle, ShieldCheck } from "lucide-react";
 
 import { BLOCKED_PHONE_REASON_MAX, normalizeBlockedPhone } from "@workspace/lib/stores/blocked-phones";
 import type { StoreBlockedPhone } from "@workspace/lib/stores/blocked-phones/server";
-import { Button } from "@workspace/ui/components/button";
-import { Input } from "@workspace/ui/components/input";
-import { Label } from "@workspace/ui/components/label";
-import { BUTTON_CLASS, FIELD_CLASS, SMALL_BUTTON_CLASS } from "@/components/form/form-ui";
+import { EmptyState, Field, Note, Row, Rows, SectionCard, SellerButton, TextInput } from "@/components/seller-ui";
 import { formatDateTime } from "@/lib/i18n/format";
-import { cn } from "@/lib/utils";
 import { blockCustomerPhone, unblockCustomerPhone } from "./protection.server";
 
 /**
@@ -71,91 +67,77 @@ export function BlockedCustomersSettings({
   };
 
   return (
-    <div className="space-y-5">
-      {readOnly && <p className="rounded-xl border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">{t("readOnly")}</p>}
+    <SectionCard icon={Ban} tone="danger" title={t("title")} description={t("description")}>
+      {readOnly && <Note tone="amber">{t("readOnly")}</Note>}
+      <form
+        className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_auto] items-end gap-2.5 max-[860px]:grid-cols-1"
+        onSubmit={(event) => {
+          event.preventDefault();
+          add();
+        }}
+      >
+        <Field label={t("phone")} htmlFor="blocked-phone">
+          <TextInput
+            id="blocked-phone"
+            inputMode="tel"
+            dir="ltr"
+            autoComplete="off"
+            placeholder="01XXXXXXXXX"
+            className="font-montserrat rtl:text-end"
+            value={phone}
+            disabled={readOnly}
+            aria-invalid={phoneInvalid || undefined}
+            onChange={(event) => setPhone(event.target.value)}
+          />
+        </Field>
+        <Field label={t("reason")} htmlFor="blocked-reason">
+          <TextInput
+            id="blocked-reason"
+            placeholder={t("reasonPlaceholder")}
+            maxLength={BLOCKED_PHONE_REASON_MAX}
+            value={reason}
+            disabled={readOnly}
+            onChange={(event) => setReason(event.target.value)}
+          />
+        </Field>
+        <SellerButton type="submit" variant="solid" className="h-[46px]" disabled={readOnly || isPending || !phone.trim()}>
+          {isPending && !busyId ? <LoaderCircle className="animate-spin" aria-hidden /> : <Ban aria-hidden />}
+          {t("block")}
+        </SellerButton>
+      </form>
+      <p className="text-pretty text-xs text-(--s-faint)">{t("hint")}</p>
 
-      <section className="space-y-4 rounded-xl border bg-card p-4 sm:p-5">
-        <div className="space-y-1">
-          <h2 className="font-semibold">{t("title")}</h2>
-          <p className="text-sm text-muted-foreground">{t("description")}</p>
-        </div>
-        <form
-          className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_auto] sm:items-end"
-          onSubmit={(event) => {
-            event.preventDefault();
-            add();
-          }}
-        >
-          <div className="space-y-1.5">
-            <Label htmlFor="blocked-phone">{t("phone")}</Label>
-            <Input
-              id="blocked-phone"
-              inputMode="tel"
-              dir="ltr"
-              autoComplete="off"
-              placeholder="01XXXXXXXXX"
-              value={phone}
-              disabled={readOnly}
-              aria-invalid={phoneInvalid || undefined}
-              onChange={(event) => setPhone(event.target.value)}
-              className={cn(FIELD_CLASS, phoneInvalid && "border-destructive")}
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="blocked-reason">{t("reason")}</Label>
-            <Input
-              id="blocked-reason"
-              placeholder={t("reasonPlaceholder")}
-              maxLength={BLOCKED_PHONE_REASON_MAX}
-              value={reason}
-              disabled={readOnly}
-              onChange={(event) => setReason(event.target.value)}
-              className={FIELD_CLASS}
-            />
-          </div>
-          <Button type="submit" className={BUTTON_CLASS} disabled={readOnly || isPending || !phone.trim()}>
-            {isPending && !busyId ? <LoaderCircle className="size-4 animate-spin" /> : <Ban className="size-4" />}
-            {t("block")}
-          </Button>
-        </form>
-        <p className="text-xs text-muted-foreground">{t("hint")}</p>
-      </section>
-
-      <section className="rounded-xl border bg-card">
-        <h3 className="border-b px-4 py-3 text-sm font-semibold sm:px-5">{t("listTitle", { count: rows.length })}</h3>
-        {rows.length === 0 ? (
-          <div className="flex flex-col items-center gap-2 px-4 py-10 text-center text-sm text-muted-foreground">
-            <ShieldCheck className="size-8 opacity-60" />
-            {t("empty")}
-          </div>
-        ) : (
-          <ul className="divide-y">
-            {rows.map((row) => (
-              <li key={row.id} className="flex items-center gap-3 px-4 py-3 sm:px-5">
-                <div className="min-w-0 flex-1">
-                  <p className="font-medium tabular-nums" dir="ltr">
+      <div className="flex flex-col gap-2">
+        <h3 className="text-[13.5px] font-bold text-(--s-text)">{t("listTitle", { count: rows.length })}</h3>
+        <Rows>
+          {rows.length === 0 ? (
+            <EmptyState icon={ShieldCheck} title={t("empty")} />
+          ) : (
+            rows.map((row) => (
+              <Row
+                key={row.id}
+                title={
+                  <bdi dir="ltr" className="font-montserrat tabular-nums">
                     {row.phone}
-                  </p>
-                  <p className="truncate text-xs text-muted-foreground">
+                  </bdi>
+                }
+                description={
+                  <span className="block truncate">
                     {row.reason ? `${row.reason} · ` : ""}
                     {formatDateTime(row.createdAt, locale)}
-                  </p>
-                </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className={SMALL_BUTTON_CLASS}
-                  disabled={readOnly || isPending}
-                  onClick={() => remove(row.id)}
-                >
-                  {busyId === row.id && <LoaderCircle className="size-3.5 animate-spin" />}
-                  {t("unblock")}
-                </Button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-    </div>
+                  </span>
+                }
+                end={
+                  <SellerButton variant="mini" size="xs" disabled={readOnly || isPending} onClick={() => remove(row.id)}>
+                    {busyId === row.id && <LoaderCircle className="animate-spin" aria-hidden />}
+                    {t("unblock")}
+                  </SellerButton>
+                }
+              />
+            ))
+          )}
+        </Rows>
+      </div>
+    </SectionCard>
   );
 }

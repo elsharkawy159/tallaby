@@ -4,19 +4,16 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Check, CircleDashed, Clock, KeyRound, LoaderCircle, Plug, ShieldCheck, Unplug } from "lucide-react";
+import { Check, CircleDashed, Clock, CreditCard, KeyRound, LoaderCircle, Plug, ShieldCheck, Unplug } from "lucide-react";
 
 import { isStoreAppLive, storeAppsInGroup, type StoreApp } from "@workspace/lib/integrations";
 import { isStoreGatewayProvider, type StoreGatewayProvider } from "@workspace/lib/payments/store-gateways";
 import type { StoreGatewayOverview } from "@workspace/lib/payments/store-gateways/server";
-import { Badge } from "@workspace/ui/components/badge";
-import { Button } from "@workspace/ui/components/button";
-import { Input } from "@workspace/ui/components/input";
-import { Label } from "@workspace/ui/components/label";
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@workspace/ui/components/sheet";
-import { BUTTON_CLASS, FIELD_CLASS, SMALL_BUTTON_CLASS } from "@/components/form/form-ui";
+import { Field, Note, OptionCard, OptionCards, Rows, SectionCard, SellerButton, Tag, TextInput } from "@/components/seller-ui";
 import { ConfirmActionDialog } from "@/components/layout/confirm-action-dialog.client";
 import { cn } from "@/lib/utils";
+import { APP_DRAWER_CLASS, APP_DRAWER_FOOTER_CLASS } from "../../apps/app-drawer.lib";
 import { AppLogo } from "../../apps/app-logo";
 import { connectGateway, disconnectGateway } from "./gateways.server";
 import { GATEWAY_FIELDS } from "./gateways.dto";
@@ -71,87 +68,76 @@ export function StoreGatewaysCard({
     const blocked = live && !!connected && !isConnected;
     const name = tApp(`${key}.name`);
     return (
-      <li key={key} className={cn("flex flex-wrap items-center gap-3.5 border-t px-4 py-4 first:border-t-0 sm:flex-nowrap sm:px-6", !live && "opacity-70")}>
-        <AppLogo app={key} connected={isConnected} className="size-11 rounded-xl" />
-        <div className="min-w-0 flex-1">
-          <p className="flex flex-wrap items-center gap-2 text-[15px] font-semibold">
+      <div
+        key={key}
+        className={cn(
+          "flex flex-wrap items-center gap-3 px-3.5 py-3 transition-colors duration-150 hover:bg-(--s-tint) [&+&]:border-t [&+&]:border-(--s-line-soft)",
+          !live && "[&_.app-logo]:opacity-70",
+        )}
+      >
+        <AppLogo app={key} connected={isConnected} className="app-logo size-10 rounded-xl" />
+        <div className="min-w-0 flex-1 basis-[180px]">
+          <b className="flex flex-wrap items-center gap-2 text-sm font-bold text-(--s-text)">
             {name}
-            {!live ? (
-              <Badge variant="outline" className="text-[10px] font-normal">
-                {t("soon")}
-              </Badge>
-            ) : isConnected ? (
-              <ConnectedTag verified={!!connected?.details.webhookVerifiedAt} />
-            ) : null}
-          </p>
-          <p className="text-[13px] leading-relaxed text-muted-foreground">{tApp(`${key}.description`)}</p>
+            {!live ? <Tag tone="warning">{t("soon")}</Tag> : isConnected ? <ConnectedTag verified={!!connected?.details.webhookVerifiedAt} /> : null}
+          </b>
+          <small className="block text-xs leading-relaxed text-(--s-subtle)">{tApp(`${key}.description`)}</small>
           {isConnected && connected && (
-            <p className="mt-0.5 flex flex-wrap items-center gap-1.5 text-[12.5px]">
-              <KeyRound className="size-3.5 text-faint" aria-hidden />
-              <bdi dir="ltr" className="font-mono">
+            <p className="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs text-(--s-muted)">
+              <KeyRound className="size-3.5 text-(--s-subtle)" aria-hidden />
+              <bdi dir="ltr" className="font-montserrat">
                 •••• {connected.details.keyHint}
               </bdi>
               · {t(connected.details.mode === "live" ? "modeLive" : "modeTest")}
             </p>
           )}
           {isConnected && connected?.details.mode === "test" && (
-            <p className="mt-1 rounded-lg border border-amber-500/40 bg-amber-500/10 px-2.5 py-1.5 text-[12.5px]">{t("testModeWarning")}</p>
+            <Note tone="amber" className="mt-1.5">
+              {t("testModeWarning")}
+            </Note>
           )}
-          {blocked && <p className="mt-0.5 text-[12.5px] text-muted-foreground">{t("oneAtATime")}</p>}
+          {blocked && <p className="mt-0.5 text-xs text-(--s-muted)">{t("oneAtATime")}</p>}
         </div>
         {live && (
-          <div className="flex w-full items-center justify-end gap-2 ps-[58px] sm:w-auto sm:ps-0">
+          <div className="ms-auto flex items-center gap-1.5">
             {isConnected ? (
               <>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className={cn(SMALL_BUTTON_CLASS, "text-muted-foreground hover:bg-muted hover:text-foreground")}
-                  disabled={readOnly || isPending}
-                  onClick={() => setEditing(provider)}
-                >
-                  <KeyRound />
+                <SellerButton variant="mini" size="xs" disabled={readOnly || isPending} onClick={() => setEditing(provider)}>
+                  <KeyRound aria-hidden />
                   {t("updateKeys")}
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className={cn(SMALL_BUTTON_CLASS, "text-destructive hover:bg-destructive/10 hover:text-destructive")}
+                </SellerButton>
+                <SellerButton
+                  variant="mini"
+                  size="xs"
+                  className="text-destructive [&_svg]:text-destructive"
                   disabled={readOnly || isPending}
                   onClick={() => setConfirming(provider)}
                 >
-                  <Unplug />
+                  <Unplug aria-hidden />
                   {t("disconnect")}
-                </Button>
+                </SellerButton>
               </>
             ) : (
-              <Button
-                type="button"
-                variant="accent"
-                className={SMALL_BUTTON_CLASS}
+              <SellerButton
+                variant="solid"
+                size="xs"
                 disabled={readOnly || isPending || blocked || !overview.webhooksReady}
                 onClick={() => setEditing(provider)}
               >
-                <Plug />
+                <Plug aria-hidden />
                 {t("connect")}
-              </Button>
+              </SellerButton>
             )}
           </div>
         )}
-      </li>
+      </div>
     );
   };
 
   return (
-    <section className="rounded-2xl border bg-card shadow-[0_1px_2px_rgba(20,81,99,0.05),0_1px_3px_rgba(20,81,99,0.04)] dark:shadow-none">
-      <div className="border-b px-4 py-[18px] sm:px-6">
-        <h2 className="text-base font-bold leading-normal">{t("title")}</h2>
-        <p className="text-[13px] text-muted-foreground">{t("description")}</p>
-      </div>
-      {!overview.webhooksReady && (
-        <p className="border-b bg-muted/40 px-4 py-3 text-[13px] text-muted-foreground sm:px-6">{t("errors.webhooksNotConfigured")}</p>
-      )}
-      <ul>{GATEWAYS.map(row)}</ul>
+    <SectionCard icon={CreditCard} title={t("title")} description={t("description")}>
+      {!overview.webhooksReady && <Note tone="amber">{t("errors.webhooksNotConfigured")}</Note>}
+      <Rows>{GATEWAYS.map(row)}</Rows>
       <ConfirmActionDialog
         open={!!confirming}
         onOpenChange={(open) => !open && setConfirming(null)}
@@ -179,22 +165,23 @@ export function StoreGatewaysCard({
           }}
         />
       )}
-    </section>
+    </SectionCard>
   );
 }
 
 function ConnectedTag({ verified }: { verified: boolean }) {
   const t = useTranslations("storePayments.gateways");
-  const base = "inline-flex h-[22px] items-center gap-1 whitespace-nowrap rounded-full px-2.5 text-[11.5px] font-medium";
   return verified ? (
-    <span className={cn(base, "bg-success-soft text-success")}>
-      <Check className="size-3" aria-hidden />
+    <Tag tone="success">
+      <Check aria-hidden />
       {t("status.connected")}
-    </span>
+    </Tag>
   ) : (
-    <span className={cn(base, "bg-accent-soft text-accent-ink")} title={t("status.waitingHelp")}>
-      <Clock className="size-3" aria-hidden />
-      {t("status.waiting")}
+    <span title={t("status.waitingHelp")}>
+      <Tag tone="warning">
+        <Clock aria-hidden />
+        {t("status.waiting")}
+      </Tag>
     </span>
   );
 }
@@ -238,92 +225,74 @@ function GatewaySheet({
 
   return (
     <Sheet open onOpenChange={(open) => !open && !pending && onClose()}>
-      <SheetContent side={locale.startsWith("ar") ? "left" : "right"} className="flex w-full flex-col gap-0 p-0 sm:max-w-[460px]">
-        <SheetHeader className="border-b px-5 py-[18px]">
+      <SheetContent side={locale.startsWith("ar") ? "left" : "right"} className={APP_DRAWER_CLASS}>
+        <SheetHeader className="border-b border-(--s-line-soft) px-[18px] py-4 pe-14">
           <div className="flex items-center gap-3">
-            <AppLogo app={provider} className="size-11 rounded-xl" />
+            <AppLogo app={provider} className="size-11 rounded-[14px]" />
             <div className="min-w-0">
-              <SheetTitle className="text-base font-bold">{t(isUpdate ? "updateTitle" : "connectTitle", { gateway: name })}</SheetTitle>
-              <SheetDescription className="text-xs">{t(`providers.${provider}.whereToFind`)}</SheetDescription>
+              <SheetTitle className="text-[17px] font-bold text-(--s-ink)">{t(isUpdate ? "updateTitle" : "connectTitle", { gateway: name })}</SheetTitle>
+              <SheetDescription className="text-[12.5px] text-(--s-subtle)">{t(`providers.${provider}.whereToFind`)}</SheetDescription>
             </div>
           </div>
         </SheetHeader>
 
-        <form id="gateway-form" onSubmit={submit} noValidate autoComplete="off" className="flex flex-1 flex-col gap-[18px] overflow-y-auto p-5">
+        <form id="gateway-form" onSubmit={submit} noValidate autoComplete="off" className="flex flex-1 flex-col gap-4 overflow-y-auto p-[18px]">
           {provider === "kashier" && (
-            <div className="grid gap-1.5">
-              <Label>{t("fields.mode")}</Label>
-              <div className="grid grid-cols-2 gap-2" role="radiogroup">
+            <Field label={t("fields.mode")}>
+              <OptionCards className="grid-cols-2">
                 {(["live", "test"] as const).map((m) => (
-                  <button
-                    key={m}
-                    type="button"
-                    role="radio"
-                    aria-checked={mode === m}
-                    onClick={() => setMode(m)}
-                    className={cn(
-                      "rounded-xl border px-3 py-2.5 text-sm font-medium",
-                      mode === m ? "border-primary bg-primary-soft text-primary-ink" : "text-muted-foreground",
-                    )}
-                  >
-                    {t(m === "live" ? "modeLive" : "modeTest")}
-                  </button>
+                  <OptionCard key={m} name="gateway-mode" title={t(m === "live" ? "modeLive" : "modeTest")} checked={mode === m} onChange={() => setMode(m)} />
                 ))}
-              </div>
-            </div>
+              </OptionCards>
+            </Field>
           )}
 
           {fields.map((field) => {
             const optional = "optional" in field && field.optional;
             return (
-              <div key={field.name} className="grid gap-1.5">
-                <Label htmlFor={`gw-${field.name}`} className="justify-between">
-                  {t(`fields.${field.name}`)}
-                  {optional && <span className="text-xs font-normal text-faint">{t("optional")}</span>}
-                </Label>
-                <Input
+              <Field key={field.name} label={t(`fields.${field.name}`)} hint={optional ? t("optional") : undefined} htmlFor={`gw-${field.name}`}>
+                {/* Secrets are write-only: the field starts empty and a saved key never comes back. */}
+                <TextInput
                   id={`gw-${field.name}`}
                   dir="ltr"
                   type={field.secret ? "password" : "text"}
                   inputMode={"numeric" in field && field.numeric ? "numeric" : undefined}
                   autoComplete="off"
                   spellCheck={false}
-                  className={cn(FIELD_CLASS, "text-start font-mono")}
+                  className="text-start font-montserrat"
                   placeholder={isUpdate && field.secret ? t("keepSaved") : field.placeholder}
                   value={values[field.name] ?? ""}
                   onChange={(ev) => setValues((v) => ({ ...v, [field.name]: ev.target.value }))}
                 />
-              </div>
+              </Field>
             );
           })}
 
-          {isUpdate && <p className="text-xs leading-relaxed text-muted-foreground">{t("blankKeepsSaved")}</p>}
+          {isUpdate && <p className="text-xs leading-relaxed text-(--s-faint)">{t("blankKeepsSaved")}</p>}
 
-          <div className="flex gap-2.5 rounded-xl border bg-muted/40 px-4 py-3.5 text-[13px] text-muted-foreground">
-            <ShieldCheck className="mt-0.5 size-4 shrink-0 text-primary-ink" aria-hidden />
-            <div className="space-y-1.5">
-              <p>{t("howItWorks.verify")}</p>
-              <p>{t("howItWorks.money")}</p>
-              <p>{t(feeKey)}</p>
-            </div>
-          </div>
+          <Note icon={ShieldCheck}>
+            <span className="flex flex-col gap-1.5">
+              <span>{t("howItWorks.verify")}</span>
+              <span>{t("howItWorks.money")}</span>
+              <span>{t(feeKey)}</span>
+            </span>
+          </Note>
 
           {error && (
-            <p role="alert" className="flex gap-2 rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2.5 text-sm text-destructive">
-              <CircleDashed className="mt-0.5 size-4 shrink-0" aria-hidden />
-              {error}
-            </p>
+            <Note tone="danger" icon={CircleDashed}>
+              <span role="alert">{error}</span>
+            </Note>
           )}
         </form>
 
-        <SheetFooter className="flex-row items-center gap-2 border-t px-5 py-3.5">
-          <Button type="submit" form="gateway-form" variant="accent" className={BUTTON_CLASS} disabled={pending}>
-            {pending ? <LoaderCircle className="animate-spin" /> : <Check />}
-            {pending ? t("verifying") : isUpdate ? t("saveKeys") : t("verifyAndConnect")}
-          </Button>
-          <Button type="button" variant="ghost" className={cn(BUTTON_CLASS, "text-muted-foreground")} onClick={onClose} disabled={pending}>
+        <SheetFooter className={APP_DRAWER_FOOTER_CLASS}>
+          <SellerButton variant="outline" onClick={onClose} disabled={pending}>
             {t("cancel")}
-          </Button>
+          </SellerButton>
+          <SellerButton type="submit" form="gateway-form" disabled={pending}>
+            {pending ? <LoaderCircle className="animate-spin" aria-hidden /> : <Check aria-hidden />}
+            {pending ? t("verifying") : isUpdate ? t("saveKeys") : t("verifyAndConnect")}
+          </SellerButton>
         </SheetFooter>
       </SheetContent>
     </Sheet>
