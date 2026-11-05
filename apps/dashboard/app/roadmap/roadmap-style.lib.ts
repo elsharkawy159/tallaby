@@ -1,25 +1,25 @@
 import { CalendarCheck, Hourglass, Rocket, Wrench, type LucideIcon } from "lucide-react";
 import type { RoadmapStatus } from "./roadmap.types";
 
-/** Colour + icon per roadmap column (Tallaby tokens; "planned" uses sky as the info tone). */
+/** Colour + icon per roadmap column (`.col.b`, `.col.a`, `.col.g`; waiting is the neutral one). */
 export const STATUS_STYLE: Record<RoadmapStatus, { icon: LucideIcon; tone: string; dot: string; bar: string }> = {
   waiting: {
     icon: Hourglass,
-    tone: "bg-accent-soft text-accent-ink",
-    dot: "bg-accent",
-    bar: "bg-accent",
+    tone: "bg-(--s-surface) text-(--s-muted)",
+    dot: "bg-(--s-subtle)",
+    bar: "bg-(--s-subtle)",
   },
   planned: {
     icon: CalendarCheck,
-    tone: "bg-sky-50 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300",
-    dot: "bg-sky-500",
-    bar: "bg-sky-500",
+    tone: "bg-(--s-info-soft) text-(--s-info)",
+    dot: "bg-(--s-info)",
+    bar: "bg-(--s-info)",
   },
   in_progress: {
     icon: Wrench,
-    tone: "bg-primary-soft text-primary-ink",
-    dot: "bg-primary",
-    bar: "bg-primary",
+    tone: "bg-accent-soft text-accent-ink",
+    dot: "bg-accent",
+    bar: "bg-accent",
   },
   launched: {
     icon: Rocket,

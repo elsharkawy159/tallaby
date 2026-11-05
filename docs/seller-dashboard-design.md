@@ -10,7 +10,7 @@ Live reference: the dashboard home, `apps/dashboard/app/(main)/page.tsx` and `_c
 
 ## How it switches on
 
-`.seller-shell` sits on the root of `app/(main)/layout.tsx`. Every rule in `app/globals.css` that restyles anything is scoped to it (`:root:has(.seller-shell)`, which also reaches portals). `(builder)`, the store preview, `/login`, `/signup` and `/roadmap` are untouched.
+`.seller-shell` sits on the root of `app/(main)/layout.tsx`. Every rule in `app/globals.css` that restyles anything is scoped to it (`:root:has(.seller-shell)`, which also reaches portals). `(builder)` and the store preview are untouched. `/login`, `/signup` and `/roadmap` sit outside `(main)`, so they add `seller-shell` to their own root wrappers.
 
 Unconverted pages already get: colours, the page wash, fonts, a bigger `--radius`, 24px `Card`s, pill `Tabs`, dark ink on amber `Button`s, table head colours, softer menus, 28px dialogs that become bottom sheets at 480px, and white pill toasts. Converting a page means replacing its layout with the primitives below.
 

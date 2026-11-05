@@ -1,14 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, Store } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
-import { CategoryChip, StatusPill, VoteButton } from "./roadmap-board.client";
+import { CategoryChip, StatusPill, VoteButton, YoursTag } from "./roadmap-board.client";
 import { formatRoadmapDate, STATUS_STYLE } from "./roadmap-style.lib";
 import { ROADMAP_STATUSES, type RoadmapItem, type RoadmapStatus } from "./roadmap.types";
 
-/** Asana-style list: one collapsible section per stage, one row per idea. */
+const ROW_GRID = "min-[721px]:grid-cols-[56px_minmax(0,1fr)_140px_130px_110px]";
+
+/** The list view, which the design doesn't have: one collapsible section per stage, one row per idea, in its row list look. */
 export function RoadmapList({
   items,
   filtered,
@@ -25,9 +27,14 @@ export function RoadmapList({
   const [collapsed, setCollapsed] = useState<Partial<Record<RoadmapStatus, boolean>>>({});
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-border bg-card">
-      {/* Column headings (desktop only; rows stack on phones). */}
-      <div className="hidden grid-cols-[56px_minmax(0,1fr)_140px_130px_110px] items-center gap-3 border-b border-border bg-muted/40 px-4 py-2.5 text-xs font-semibold text-muted-foreground md:grid">
+    <div className="overflow-hidden rounded-[20px] border border-(--s-line) bg-(--s-surface)">
+      {/* Column headings (wide screens only; rows stack on phones). */}
+      <div
+        className={cn(
+          "hidden items-center gap-3 border-b border-(--s-line) bg-(--s-surface-2) px-4 py-2.5 text-xs font-semibold text-(--s-subtle) min-[721px]:grid",
+          ROW_GRID,
+        )}
+      >
         <span className="text-center">{t("list.votes")}</span>
         <span>{t("list.title")}</span>
         <span>{t("list.category")}</span>
@@ -41,36 +48,34 @@ export function RoadmapList({
         const Icon = s.icon;
         const isCollapsed = collapsed[status] ?? false;
         return (
-          <section key={status} className="border-b border-border last:border-b-0">
+          <section key={status} className="border-b border-(--s-line) last:border-b-0">
             <button
               type="button"
               onClick={() => setCollapsed((c) => ({ ...c, [status]: !isCollapsed }))}
               aria-expanded={!isCollapsed}
-              className="flex w-full items-center gap-2.5 px-4 py-3 text-start transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-inset focus-visible:ring-ring/50"
+              className="flex min-h-12 w-full cursor-pointer items-center gap-2.5 px-4 py-2 text-start transition-colors duration-150 hover:bg-(--s-tint)"
             >
               <ChevronDown
                 className={cn(
-                  "size-4 text-muted-foreground transition-transform",
+                  "size-4 shrink-0 text-(--s-subtle) transition-transform duration-150",
                   isCollapsed && "-rotate-90 rtl:rotate-90",
                 )}
               />
-              <span className={cn("grid size-7 place-items-center rounded-lg", s.tone)}>
+              <span className={cn("grid size-7 shrink-0 place-items-center rounded-lg", s.tone, status === "waiting" && "bg-(--s-fill)")}>
                 <Icon className="size-3.5" />
               </span>
-              <span className="text-sm font-bold text-foreground">{t(`status.${status}`)}</span>
-              <span className="grid h-5 min-w-[22px] place-items-center rounded-full border border-border bg-background px-1.5 font-montserrat text-[11px] font-semibold tabular-nums">
+              <span className="text-sm font-bold text-(--s-ink)">{t(`status.${status}`)}</span>
+              <span className="rounded-full bg-(--s-fill) px-2 py-px font-montserrat text-[11px] font-bold tabular-nums text-(--s-muted)">
                 {list.length}
               </span>
-              <span className="hidden truncate text-xs text-muted-foreground sm:inline">
-                {t(`statusHint.${status}`)}
-              </span>
+              <span className="truncate text-xs text-(--s-subtle) max-[600px]:hidden">{t(`statusHint.${status}`)}</span>
             </button>
 
             {!isCollapsed &&
               (list.length ? (
                 <ul>
                   {list.map((item) => (
-                    <li key={item.id} className="border-t border-border/70">
+                    <li key={item.id} className="border-t border-(--s-line-soft)">
                       <div
                         role="button"
                         tabIndex={0}
@@ -82,34 +87,35 @@ export function RoadmapList({
                             onOpen(item);
                           }
                         }}
-                        className="grid cursor-pointer grid-cols-[48px_minmax(0,1fr)] items-center gap-3 px-4 py-2.5 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-inset focus-visible:ring-ring/50 md:grid-cols-[56px_minmax(0,1fr)_140px_130px_110px]"
+                        className={cn(
+                          "grid cursor-pointer grid-cols-[48px_minmax(0,1fr)] items-center gap-3 px-4 py-2.5 transition-colors duration-150 hover:bg-(--s-tint)",
+                          ROW_GRID,
+                        )}
                       >
                         <div className="flex justify-center">
                           <VoteButton item={item} onVote={onVote} size="sm" />
                         </div>
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-semibold text-foreground">{item.title}</p>
-                          <p className="flex items-center gap-1 truncate text-xs text-muted-foreground">
-                            <Store className="size-3 shrink-0" />
-                            <span className="truncate">{item.author ?? t("team")}</span>
-                            {item.mine && (
-                              <span className="ms-1 rounded-full bg-accent-soft px-2 text-[11px] font-medium text-accent-ink">
-                                {t("yours")}
-                              </span>
+                          <p className="truncate text-[13.5px] font-bold text-(--s-text)">{item.title}</p>
+                          <p className="flex items-center gap-1 truncate text-xs text-(--s-subtle)">
+                            {item.mine ? (
+                              <YoursTag className="text-[11px]" />
+                            ) : (
+                              <span className="truncate">{item.author === null ? t("team") : item.author}</span>
                             )}
                           </p>
-                          {/* Phone: category + status under the title. */}
-                          <div className="mt-1.5 flex flex-wrap gap-1.5 md:hidden">
+                          {/* Phone: the category under the title. */}
+                          <div className="mt-1.5 flex flex-wrap gap-1.5 min-[721px]:hidden">
                             <CategoryChip category={item.category} />
                           </div>
                         </div>
-                        <div className="hidden md:block">
+                        <div className="max-[720px]:hidden">
                           <CategoryChip category={item.category} />
                         </div>
-                        <div className="hidden md:block">
+                        <div className="max-[720px]:hidden">
                           <StatusPill status={item.status} />
                         </div>
-                        <span className="hidden font-montserrat text-xs tabular-nums text-muted-foreground md:block">
+                        <span className="font-montserrat text-xs tabular-nums text-(--s-subtle) max-[720px]:hidden">
                           {formatRoadmapDate(item.launchedAt ?? item.createdAt, locale)}
                         </span>
                       </div>
@@ -117,7 +123,7 @@ export function RoadmapList({
                   ))}
                 </ul>
               ) : (
-                <p className="border-t border-border/70 px-4 py-4 text-center text-[13px] text-muted-foreground">
+                <p className="border-t border-(--s-line-soft) px-4 py-4 text-center text-[13px] text-(--s-subtle)">
                   {filtered ? t("noResults") : t(`emptyColumn.${status}`)}
                 </p>
               ))}

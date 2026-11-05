@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
+  AlertCircle,
   ArrowRight,
   Loader2,
   LogOut,
@@ -16,7 +17,6 @@ import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { z } from "zod";
 
-import { Button } from "@workspace/ui/components/button";
 import {
   Form,
   FormField,
@@ -24,16 +24,19 @@ import {
   FormMessage,
 } from "@workspace/ui/components/form";
 
+import { Note, SellerButton } from "@/components/seller-ui";
 import { SubdomainField } from "@/components/stores/subdomain-field.client";
 import { logout, resendConfirmation } from "@/actions/auth";
 import { OTHER_INDUSTRY_ID, SIGNUP_INDUSTRIES } from "@/lib/stores/industries.lib";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/supabase/client";
 import { AuthField } from "../login/auth-field.client";
-import { AuthShell, AuthTabs } from "../login/auth-shell.client";
+import { AuthLegal, AuthShell, AuthTabs } from "../login/auth-shell.client";
 import {
-  AUTH_INPUT_BOX,
+  AUTH_DIVIDER,
+  AUTH_LINK,
   AuthHeading,
+  GOOGLE_BUTTON,
   OUTLINE_BUTTON,
   PRIMARY_BUTTON,
 } from "../login/auth-ui";
@@ -85,6 +88,8 @@ export function SignupForm({
   const [isSigningOut, setSigningOut] = useState(false);
   const [available, setAvailable] = useState(false);
   const [confirmEmail, setConfirmEmail] = useState<string | null>(null);
+  // Stays on the page beside the button, as well as the toast: some of these name no field.
+  const [formError, setFormError] = useState<SignupErrorKey | null>(null);
   const signedIn = signedInEmail !== null;
 
   useEffect(() => {
@@ -172,12 +177,13 @@ export function SignupForm({
     } else if (result.status === "error") {
       if (result.error === "emailTaken")
         form.setError("email", { message: t("errors.emailTaken") });
-      if (result.error === "subdomainTaken")
+      else if (result.error === "subdomainTaken")
         form.setError("subdomain", { message: t("errors.subdomainTaken") });
-      if (result.error === "phoneInvalid")
+      else if (result.error === "phoneInvalid")
         form.setError("phone", { message: t("errors.phoneInvalid") });
-      if (result.error === "industryRequired")
+      else if (result.error === "industryRequired")
         form.setError("industry", { message: t("errors.industryRequired") });
+      else setFormError(result.error);
       toast.error(t(`errors.${result.error}`));
     }
   };
@@ -187,6 +193,7 @@ export function SignupForm({
       form.setError("subdomain", { message: t("errors.invalidSubdomain") });
       return;
     }
+    setFormError(null);
     startTransition(async () => {
       const result = signedIn
         ? await createStoreForCurrentUser({
@@ -207,6 +214,7 @@ export function SignupForm({
   // One click: the store is set up after Google, in step 2.
   const onGoogle = async () => {
     setGooglePending(true);
+    setFormError(null);
     const result = await startGoogleSignup(initialSubdomain);
     if (result.status !== "ok") {
       setGooglePending(false);
@@ -252,20 +260,17 @@ export function SignupForm({
   if (confirmEmail !== null) {
     return (
       <AuthShell>
-        <div className="grid size-12 place-items-center rounded-full bg-primary-soft">
-          <MailCheck className="size-6 text-primary" />
-        </div>
+        <span className="mx-auto grid size-[60px] place-items-center rounded-full bg-success-soft text-success">
+          <MailCheck className="size-7" />
+        </span>
         <AuthHeading
-          eyebrow={tAuth("title")}
+          center
           title={t("confirmTitle")}
           subtitle={t("confirmDescription", { email: confirmEmail })}
         />
-        <p className="m-0 text-sm text-muted-foreground">
-          {t("confirmSpamHint")}
-        </p>
+        <Note>{t("confirmSpamHint")}</Note>
         <div className="flex flex-col gap-3">
-          <Button
-            type="button"
+          <SellerButton
             className={PRIMARY_BUTTON}
             onClick={onResend}
             disabled={isResending || resendCooldown > 0}
@@ -274,18 +279,17 @@ export function SignupForm({
             {resendCooldown > 0
               ? t("resendIn", { seconds: resendCooldown })
               : t("resend")}
-          </Button>
-          <Button
-            type="button"
+          </SellerButton>
+          <SellerButton
             variant="outline"
             className={OUTLINE_BUTTON}
             onClick={() => setConfirmEmail(null)}
           >
             {t("useDifferentEmail")}
-          </Button>
+          </SellerButton>
           <Link
             href="/login"
-            className="text-center text-sm font-semibold text-primary hover:underline"
+            className={`${AUTH_LINK} grid min-h-10 place-items-center text-[13.5px]`}
           >
             {t("signIn")}
           </Link>
@@ -302,14 +306,14 @@ export function SignupForm({
         subtitle={signedIn ? t("setupSubtitle") : t("subtitle")}
       />
       {signedIn ? (
-        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 rounded-xl bg-muted px-3.5 py-2.5 text-sm text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 rounded-[14px] border border-(--s-line) bg-(--s-tint) px-3.5 py-1 text-[13px] text-(--s-muted)">
           <UserRound className="size-4 shrink-0" />
-          {/* The whole email on one line: the LTR address inside Arabic text gets its own direction. */}
-          <span className="min-w-0 overflow-x-auto whitespace-nowrap">
+          {/* A long address wraps rather than hiding its start; it gets its own direction inside Arabic text. */}
+          <span className="min-w-0 flex-[1_1_70%] [overflow-wrap:anywhere]">
             {t.rich("signedInAs", {
               email: signedInEmail,
               b: (chunks) => (
-                <bdi dir="ltr" className="font-semibold text-foreground">
+                <bdi dir="ltr" className="font-semibold text-(--s-text)">
                   {chunks}
                 </bdi>
               ),
@@ -317,7 +321,7 @@ export function SignupForm({
           </span>
           <button
             type="button"
-            className="ms-auto inline-flex shrink-0 items-center gap-1.5 font-semibold text-primary hover:underline disabled:opacity-50"
+            className={`${AUTH_LINK} ms-auto inline-flex min-h-10 shrink-0 items-center gap-1.5 disabled:opacity-50`}
             onClick={() => {
               setSigningOut(true);
               void logout();
@@ -335,10 +339,9 @@ export function SignupForm({
       ) : (
         <>
           <AuthTabs active="signup" />
-          <Button
-            type="button"
+          <SellerButton
             variant="outline"
-            className="h-[50px] w-full gap-2 rounded-full border-input bg-white text-[15px] font-semibold text-foreground hover:bg-muted dark:bg-card"
+            className={GOOGLE_BUTTON}
             onClick={onGoogle}
             disabled={busy}
           >
@@ -348,21 +351,19 @@ export function SignupForm({
               <GoogleIcon />
             )}
             {t("continueWithGoogle")}
-          </Button>
-          <div className="flex items-center gap-3.5 text-[13px] text-muted-foreground before:h-px before:flex-1 before:bg-border after:h-px after:flex-1 after:bg-border">
-            {t("orWithEmail")}
-          </div>
+          </SellerButton>
+          <div className={AUTH_DIVIDER}>{t("orWithEmail")}</div>
         </>
       )}
 
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="flex flex-col gap-[22px]"
+          className="flex flex-col gap-3.5"
           noValidate
         >
           {signedIn ? (
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-3.5 [&_button[dir=ltr]]:min-h-10 [&_button[dir=ltr]]:px-3.5">
               <SubdomainField
                 form={form}
                 name="subdomain"
@@ -370,9 +371,9 @@ export function SignupForm({
                 onAvailabilityChange={setAvailable}
                 disabled={busy}
                 autoFocus
-                className={AUTH_INPUT_BOX}
-                inputClassName="px-3.5 text-[15px] md:text-[15px]"
-                labelClassName="text-sm font-semibold text-foreground"
+                className="h-[50px] rounded-[14px] border-[1.5px] border-(--s-field) bg-(--s-surface) shadow-none focus-within:border-(--s-primary) focus-within:shadow-[0_0_0_4px_var(--s-focus-soft)] focus-within:ring-0 aria-invalid:border-destructive max-[480px]:h-[52px]"
+                inputClassName="px-3.5 text-[15px] text-(--s-text) placeholder:text-(--s-placeholder) md:text-[15px]"
+                labelClassName="text-[13px] font-bold text-(--s-text)"
               />
               <FormField
                 control={form.control}
@@ -380,7 +381,7 @@ export function SignupForm({
                 render={({ field }) => (
                   <FormItem className="flex flex-col gap-2">
                     <p
-                      className="m-0 text-sm font-semibold text-foreground"
+                      className="text-[13px] font-bold text-(--s-text)"
                       id="signup-industry"
                     >
                       {t("industry")}
@@ -409,10 +410,9 @@ export function SignupForm({
                             })
                           }
                           className={cn(
-                            "rounded-full border px-3 py-1.5 text-[13px] transition-colors disabled:opacity-50",
-                            field.value === option.id
-                              ? "border-primary bg-primary/5 font-semibold text-primary"
-                              : "border-input hover:border-primary/40",
+                            "inline-flex h-9 cursor-pointer items-center rounded-full border border-(--s-field) bg-(--s-surface) px-3.5 text-[13px] font-semibold text-(--s-muted) transition-colors duration-150 hover:border-(--tallaby-teal-300) disabled:opacity-50 max-[600px]:h-10",
+                            field.value === option.id &&
+                              "border-(--s-solid) bg-(--s-solid) text-(--s-solid-fg)",
                           )}
                         >
                           {option.label}
@@ -464,6 +464,7 @@ export function SignupForm({
                 placeholder={t("passwordPlaceholder")}
                 autoComplete="new-password"
                 disabled={busy}
+                meter
               />
               <AuthField
                 form={form}
@@ -476,37 +477,32 @@ export function SignupForm({
               />
             </div>
           )}
-          <Button type="submit" className={PRIMARY_BUTTON} disabled={busy}>
+          {formError && (
+            <div role="alert">
+              <Note tone="danger" icon={AlertCircle}>
+                {t(`errors.${formError}`)}
+              </Note>
+            </div>
+          )}
+          <SellerButton type="submit" className={PRIMARY_BUTTON} disabled={busy}>
             {isPending && <Loader2 className="size-[18px] animate-spin" />}
             {signedIn ? t("submit") : t("createAccount")}
             {!isPending && (
               <ArrowRight className="size-[18px] rtl:rotate-180" />
             )}
-          </Button>
+          </SellerButton>
         </form>
       </Form>
 
       {!signedIn && (
         <>
-          <p className="m-0 text-center text-sm text-muted-foreground">
+          <p className="text-center text-[13.5px] text-(--s-muted)">
             {t("haveAccount")}{" "}
-            <Link
-              href="/login"
-              className="font-semibold text-primary hover:underline"
-            >
+            <Link href="/login" className={`${AUTH_LINK} inline-flex min-h-10 items-center`}>
               {t("signIn")}
             </Link>
           </p>
-          <p className="m-0 text-[12.5px] leading-relaxed text-muted-foreground">
-            {tAuth.rich("legal", {
-              terms: (chunks) => (
-                <span className="font-semibold text-primary">{chunks}</span>
-              ),
-              privacy: (chunks) => (
-                <span className="font-semibold text-primary">{chunks}</span>
-              ),
-            })}
-          </p>
+          <AuthLegal />
         </>
       )}
     </AuthShell>

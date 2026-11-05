@@ -165,7 +165,7 @@
  *
  * The raw brand scales are safe everywhere. Everything that restyles something
  * only applies while `.seller-shell` is on the page, which is the (main) layout
- * root: the builder, its store preview, /login, /signup and /roadmap keep the
+ * root (/login, /signup and /roadmap add the class themselves): the builder and its store preview keep the
  * palette above. `:root:has()` and not a wrapper rule because dialogs, menus
  * and toasts portal to <body>, outside the shell.
  * ─────────────────────────────────────────────────────────────────────────────
