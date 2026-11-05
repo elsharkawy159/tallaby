@@ -19,6 +19,7 @@ import {
 } from "@/actions/coupons";
 import { formatDate } from "@/lib/i18n/format";
 import { CurrencyInput } from "@/components/form/currency-input";
+import { toAsciiDigits } from "@/components/form/form-ui";
 import { MixedCurrencyNote, useAccountMoney } from "@/components/account-money.client";
 import { Field, FieldRow, OptionCard, OptionCards, Segmented, SellerButton, TextInput, Toggle } from "@/components/seller-ui";
 import { CouponProductPicker } from "./coupon-product-picker";
@@ -173,14 +174,11 @@ export function CouponEditor({ open, onOpenChange, coupon, onSaved }: Props) {
                   {isPercent ? (
                     <TextInput
                       id={`${ids}-value`}
-                      type="number"
                       inputMode="decimal"
-                      min={0}
-                      max={90}
-                      step="any"
                       dir="ltr"
                       value={form.discountValue}
-                      onChange={(e) => set("discountValue", e.target.value)}
+                      // Text, not type="number": Chrome drops Arabic-Indic digits from a number input.
+                      onChange={(e) => set("discountValue", toAsciiDigits(e.target.value).replace(/[^\d.]/g, ""))}
                       aria-invalid={!!errors.discountValue}
                     />
                   ) : (
@@ -336,13 +334,10 @@ export function CouponEditor({ open, onOpenChange, coupon, onSaved }: Props) {
                   <div className="flex flex-wrap items-center gap-2">
                     <TextInput
                       id={`${ids}-popup-duration`}
-                      type="number"
                       inputMode="numeric"
-                      min={1}
-                      step={1}
                       dir="ltr"
                       value={form.popupDuration}
-                      onChange={(e) => set("popupDuration", e.target.value)}
+                      onChange={(e) => set("popupDuration", toAsciiDigits(e.target.value).replace(/\D/g, ""))}
                       aria-invalid={!!errors.popupDuration}
                       className="w-28"
                     />
@@ -442,13 +437,10 @@ function NumberField({
       ) : (
         <TextInput
           id={id}
-          type="number"
           inputMode="numeric"
-          min={1}
-          step={1}
           dir="ltr"
           value={value}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={(e) => onChange(toAsciiDigits(e.target.value).replace(/\D/g, ""))}
           placeholder={placeholder}
         />
       )}

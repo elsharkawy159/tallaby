@@ -142,12 +142,14 @@ export function generateCode(name: string) {
   return `${prefix}${suffix}`;
 }
 
+/** Arabic-Indic and Persian digits typed on an Arabic keyboard count as digits. */
+const ascii = (raw: string) => raw.replace(/[٠-٩۰-۹]/g, (d) => String(d.charCodeAt(0) & 0xf));
 const toAmount = (raw: string) => {
-  const n = Number(raw.replace(",", "."));
+  const n = Number(ascii(raw).replace(",", "."));
   return raw.trim() && Number.isFinite(n) && n > 0 ? n : null;
 };
 const toCount = (raw: string) => {
-  const n = Number(raw);
+  const n = Number(ascii(raw));
   return raw.trim() && Number.isInteger(n) && n > 0 ? n : null;
 };
 
@@ -168,7 +170,7 @@ export function validateCouponForm(
   if (form.productScope === "selected" && form.productIds.length === 0) errors.productIds = "products";
   if (!form.startDate || !form.endDate) errors.dates = "dates";
   else if (form.endDate < form.startDate) errors.dates = "invalid_dates";
-  const popupMinutes = toCount(form.popupDuration) == null ? null : Number(form.popupDuration) * UNIT_MINUTES[form.popupUnit];
+  const popupMinutes = toCount(form.popupDuration) == null ? null : Number(ascii(form.popupDuration)) * UNIT_MINUTES[form.popupUnit];
   if (form.popupTrigger !== "off" && (popupMinutes == null || popupMinutes > COUPON_POPUP_MAX_MINUTES)) {
     errors.popupDuration = "popupDuration";
   }

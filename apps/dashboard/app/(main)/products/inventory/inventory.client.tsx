@@ -13,6 +13,7 @@ import { getPublicUrl } from "@/lib/utils";
 import { MAX_RESTOCK, stockLevel } from "./inventory.lib";
 import { restockAction } from "./inventory.server";
 import type { InventoryLine, ProductInventory, StockMovementRow } from "./inventory.types";
+import { toAsciiDigits } from "@/components/form/form-ui";
 
 /**
  * Products › Inventory: what is low or out of stock, a quick "+N" restock per
@@ -138,13 +139,12 @@ function LineRow({ line, showHistoryLink }: { line: InventoryLine; showHistoryLi
         }}
       >
         <TextInput
-          type="number"
           inputMode="numeric"
           min={1}
           max={MAX_RESTOCK}
           step={1}
           value={amount}
-          onChange={(e) => setAmount(e.target.value)}
+          onChange={(e) => setAmount(toAsciiDigits(e.target.value).replace(/\D/g, ""))}
           placeholder={t("addPlaceholder")}
           aria-label={t("addLabel", { title })}
           className="h-10 w-24 font-montserrat tabular-nums max-[720px]:flex-1"

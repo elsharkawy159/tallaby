@@ -10,6 +10,7 @@ import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import { Switch } from "@workspace/ui/components/switch";
 import { saveQuantityOffers, type QuantityOfferRow } from "./quantity-offers.server";
+import { toAsciiDigits } from "@/components/form/form-ui";
 
 type Draft = { key: number; minQuantity: string; discountType: "percent" | "fixed"; discountValue: string; isActive: boolean };
 
@@ -87,7 +88,7 @@ export function QuantityOffersSection({ productId, initial }: { productId: strin
                 inputMode="numeric"
                 dir="ltr"
                 value={tier.minQuantity}
-                onChange={(event) => patch(tier.key, { minQuantity: event.target.value })}
+                onChange={(event) => patch(tier.key, { minQuantity: toAsciiDigits(event.target.value) })}
               />
               <select
                 aria-label={t("discountType")}
@@ -103,7 +104,7 @@ export function QuantityOffersSection({ productId, initial }: { productId: strin
                 inputMode="decimal"
                 dir="ltr"
                 value={tier.discountValue}
-                onChange={(event) => patch(tier.key, { discountValue: event.target.value })}
+                onChange={(event) => patch(tier.key, { discountValue: toAsciiDigits(event.target.value) })}
               />
               <Switch aria-label={t("active")} checked={tier.isActive} onCheckedChange={(isActive) => patch(tier.key, { isActive })} />
               <Button

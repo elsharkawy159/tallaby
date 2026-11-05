@@ -22,6 +22,7 @@ import {
 import { ImageUpload } from "@/components/inputs/image-upload";
 import { RemoteImage } from "@/components/media/remote-image";
 import { FieldHint, NumberStepper } from "../form-kit";
+import { toAsciiDigits } from "@/components/form/form-ui";
 import { VariantPricingFields } from "../steps/variant-pricing-fields";
 import type { AddProductFormData, SupportedLocale, VariantOptionKind } from "../add-product.schema";
 import { MoneyField, useFieldError } from "./fields";
@@ -853,7 +854,7 @@ function CombinationsList({
                 dir="ltr"
                 inputMode="decimal"
                 value={bulkPrice}
-                onChange={(e) => setBulkPrice(e.target.value.replace(/[^\d.]/g, ""))}
+                onChange={(e) => setBulkPrice(toAsciiDigits(e.target.value).replace(/[^\d.]/g, ""))}
                 placeholder="0.00"
                 className="h-10 font-montserrat tabular-nums rtl:text-right"
               />
@@ -865,7 +866,7 @@ function CombinationsList({
                   dir="ltr"
                   inputMode="numeric"
                   value={bulkStock}
-                  onChange={(e) => setBulkStock(e.target.value.replace(/\D/g, ""))}
+                  onChange={(e) => setBulkStock(toAsciiDigits(e.target.value).replace(/\D/g, ""))}
                   placeholder="0"
                   className="h-10 font-montserrat tabular-nums rtl:text-right"
                 />

@@ -4,7 +4,7 @@ import { SAUDI_RIYAL_LABEL, currencyLabelText } from "@workspace/lib";
 import { RiyalSymbol } from "@/components/money";
 import { MIXED_CURRENCIES, isArabicPound, moneyLabel, type MoneyUnit } from "@/lib/i18n/format";
 import { cn } from "@/lib/utils";
-import { GroupInput, InputAddon, InputGroup } from "./form-ui";
+import { GroupInput, InputAddon, InputGroup, toAsciiDigits } from "./form-ui";
 
 function AddonLabel({ unit }: { unit: MoneyUnit }) {
   // Stores in different currencies share this amount: no label is the only honest one.
@@ -69,7 +69,8 @@ export function CurrencyInput({
         aria-invalid={invalid || undefined}
         value={value}
         onChange={(e) => {
-          let next = e.target.value.replace(decimals ? /[^\d.]/g : /\D/g, "");
+          // Arabic-Indic digits typed on an Arabic keyboard count as digits.
+          let next = toAsciiDigits(e.target.value).replace(decimals ? /[^\d.]/g : /\D/g, "");
           if (decimals) next = next.replace(/(\..*)\./g, "$1");
           onChange(next);
         }}

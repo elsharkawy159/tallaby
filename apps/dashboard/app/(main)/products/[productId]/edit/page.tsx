@@ -24,6 +24,8 @@ import type { CategoryOption } from "../../add/add-product.schema";
 
 export const dynamic = "force-dynamic";
 
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("meta.editProduct");
   return { title: t("title"), description: t("description") };
@@ -37,6 +39,8 @@ export default async function EditProductPage({
   params,
 }: EditProductPageProps) {
   const { productId } = await params;
+  // A mistyped or old link: show the 404 instead of a uuid cast error (500) from the queries below.
+  if (!UUID.test(productId)) notFound();
   const { sellerId } = await requireSeller();
   const [productResult, categoriesRes, sellerProfile, sellerTaxonomy, linkHost, socialProof, billing] =
     await Promise.all([

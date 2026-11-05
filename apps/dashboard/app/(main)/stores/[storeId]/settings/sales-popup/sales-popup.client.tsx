@@ -16,6 +16,7 @@ import {
 import { CheckRow, Field, IconTile, Note, SaveBar, SectionCard, TextAction, Toggle } from "@/components/seller-ui";
 import { cn } from "@/lib/utils";
 import { saveStoreSalesPopup } from "./sales-popup.server";
+import { toAsciiDigits } from "@/components/form/form-ui";
 
 /**
  * Store settings › Sales pop-up (ROADMAP.md F-22b). Small toasts with the
@@ -133,13 +134,12 @@ export function StoreSalesPopupSettings({
                 </button>
                 <input
                   id="sales-popup-delay"
-                  type="number"
                   inputMode="numeric"
                   min={SALES_POPUP_DELAY.min}
                   max={SALES_POPUP_DELAY.max}
                   value={delay}
                   disabled={disabled}
-                  onChange={(e) => setDelay(e.target.value)}
+                  onChange={(e) => setDelay(toAsciiDigits(e.target.value).replace(/\D/g, ""))}
                   className="h-full w-14 border-0 bg-transparent text-center font-montserrat text-[15px] font-bold text-(--s-ink) outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                 />
                 <button type="button" className={stepButton} disabled={disabled} aria-label={`+1 ${t("seconds")}`} onClick={() => step(1)}>

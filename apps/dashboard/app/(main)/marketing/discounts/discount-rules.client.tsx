@@ -35,6 +35,7 @@ import {
 import { ChipLink } from "../../orders/orders-ui";
 import { CouponProductPicker } from "../../coupons/_components/coupon-product-picker";
 import { deleteDiscountRule, saveDiscountRule, setDiscountRuleActive, type RuleResult } from "./discount-rules.server";
+import { toAsciiDigits } from "@/components/form/form-ui";
 
 const RULE_TYPES: DiscountRuleType[] = ["percent_off", "buy_x_get_y", "free_gift"];
 
@@ -211,11 +212,11 @@ export function DiscountRulesView({
 
             {draft.ruleType === "free_gift" ? (
               <Field label={t("minSubtotal", moneyParams(locale, money))} htmlFor="rule-min" note={t("minSubtotalHint")}>
-                <TextInput id="rule-min" inputMode="decimal" dir="ltr" value={draft.minSubtotal} onChange={(event) => setDraft({ ...draft, minSubtotal: event.target.value })} />
+                <TextInput id="rule-min" inputMode="decimal" dir="ltr" value={draft.minSubtotal} onChange={(event) => setDraft({ ...draft, minSubtotal: toAsciiDigits(event.target.value) })} />
               </Field>
             ) : (
               <Field label={t(draft.ruleType === "buy_x_get_y" ? "getPercent" : "percent")} htmlFor="rule-percent">
-                <TextInput id="rule-percent" inputMode="decimal" dir="ltr" value={draft.discountPercent} onChange={(event) => setDraft({ ...draft, discountPercent: event.target.value })} />
+                <TextInput id="rule-percent" inputMode="decimal" dir="ltr" value={draft.discountPercent} onChange={(event) => setDraft({ ...draft, discountPercent: toAsciiDigits(event.target.value) })} />
               </Field>
             )}
           </FieldRow>
@@ -229,10 +230,10 @@ export function DiscountRulesView({
           {draft.ruleType === "buy_x_get_y" && (
             <FieldRow>
               <Field label={t("buyQuantity")} htmlFor="rule-buy">
-                <TextInput id="rule-buy" inputMode="numeric" dir="ltr" value={draft.buyQuantity} onChange={(event) => setDraft({ ...draft, buyQuantity: event.target.value })} />
+                <TextInput id="rule-buy" inputMode="numeric" dir="ltr" value={draft.buyQuantity} onChange={(event) => setDraft({ ...draft, buyQuantity: toAsciiDigits(event.target.value) })} />
               </Field>
               <Field label={t("getQuantity")} htmlFor="rule-get">
-                <TextInput id="rule-get" inputMode="numeric" dir="ltr" value={draft.getQuantity} onChange={(event) => setDraft({ ...draft, getQuantity: event.target.value })} />
+                <TextInput id="rule-get" inputMode="numeric" dir="ltr" value={draft.getQuantity} onChange={(event) => setDraft({ ...draft, getQuantity: toAsciiDigits(event.target.value) })} />
               </Field>
             </FieldRow>
           )}

@@ -19,6 +19,7 @@ import { PlacePicker, useShippingLib, type ShippingLib } from "../place-picker.c
 import { saveShippingZone } from "../shipping.server";
 import { toZoneInput, type StoreShippingErrorKey, type ZoneFormValues } from "../shipping.dto";
 import { AI_ZONES_LIMITS, type AiZonesErrorCode, type AiZonesResponse, type ProposedZone } from "./ai-zones.dto";
+import { toAsciiDigits } from "@/components/form/form-ui";
 
 /**
  * "Describe your delivery areas" (ROADMAP.md F-45b): the seller writes, AI
@@ -364,7 +365,6 @@ function ProposalCard({
         <span className="text-sm font-medium">{t("fields.deliveryTime")}</span>
         <div className="flex flex-wrap items-center gap-2 text-sm">
           <Input
-            type="number"
             inputMode="numeric"
             min={0}
             max={60}
@@ -374,11 +374,10 @@ function ProposalCard({
             aria-invalid={invalid("deliveryDaysMin") || undefined}
             className={cn(FIELD_CLASS, "w-20 text-center", invalid("deliveryDaysMin") && "border-destructive")}
             value={values.deliveryDaysMin}
-            onChange={(e) => onChange({ deliveryDaysMin: e.target.value })}
+            onChange={(e) => onChange({ deliveryDaysMin: toAsciiDigits(e.target.value).replace(/\D/g, "") })}
           />
           <span>{t("fields.to")}</span>
           <Input
-            type="number"
             inputMode="numeric"
             min={0}
             max={60}
@@ -388,7 +387,7 @@ function ProposalCard({
             aria-invalid={invalid("deliveryDaysMax") || undefined}
             className={cn(FIELD_CLASS, "w-20 text-center", invalid("deliveryDaysMax") && "border-destructive")}
             value={values.deliveryDaysMax}
-            onChange={(e) => onChange({ deliveryDaysMax: e.target.value })}
+            onChange={(e) => onChange({ deliveryDaysMax: toAsciiDigits(e.target.value).replace(/\D/g, "") })}
           />
           <span>{t("fields.days")}</span>
         </div>

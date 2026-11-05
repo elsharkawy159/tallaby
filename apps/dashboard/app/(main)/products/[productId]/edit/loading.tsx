@@ -1,2 +1,24 @@
-// Edit uses the add-product form, so it shares the add page's skeleton.
-export { default } from "../../add/loading";
+import { Skeleton } from "@workspace/ui/components/skeleton";
+import { PageContainer } from "@/components/seller-ui";
+
+// The product form's shape. The add page's skeleton draws the AI/file/manual
+// choice, which the edit page never shows.
+export default function Loading() {
+  return (
+    <PageContainer>
+      <Skeleton className="h-10 w-64 rounded-full" />
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_280px] xl:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="flex flex-col gap-4">
+          {Array.from({ length: 3 }, (_, i) => (
+            <div key={i} className="flex flex-col gap-4 rounded-[24px] border border-(--s-line) bg-(--s-glass) p-[22px]">
+              <Skeleton className="h-6 w-48" />
+              <Skeleton className="h-[46px] w-full rounded-[14px]" />
+              <Skeleton className="h-24 w-full rounded-[14px]" />
+            </div>
+          ))}
+        </div>
+        <Skeleton className="hidden h-72 rounded-[24px] lg:block" />
+      </div>
+    </PageContainer>
+  );
+}

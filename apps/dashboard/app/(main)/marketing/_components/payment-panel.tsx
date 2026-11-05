@@ -12,6 +12,7 @@ import { createAdRequest, type AdPaymentMethod, type AdWallet } from "@/actions/
 import { cn } from "@/lib/utils";
 import { formatWalletMoney, moneyDir } from "@/lib/i18n/format";
 import { adWalletAmount, EGYPT_MOBILE_REGEX, VODAFONE_CASH_NUMBER, type AdPackage } from "@/lib/ad-packages";
+import { toAsciiDigits } from "@/components/form/form-ui";
 
 /** Vodafone's brand red, used only to mark this as the Vodafone Cash step. */
 const VODAFONE_RED = "#E60000";
@@ -234,7 +235,7 @@ export function PaymentPanel({ pkg, form }: { pkg: AdPackage; form: PaymentForm 
                 autoComplete="tel"
                 maxLength={11}
                 value={form.payerPhone}
-                onChange={(e) => form.setPayerPhone(e.target.value.replace(/\D/g, ""))}
+                onChange={(e) => form.setPayerPhone(toAsciiDigits(e.target.value).replace(/\D/g, ""))}
                 onBlur={() => form.setPhoneTouched(true)}
                 placeholder={t("payerPhonePlaceholder")}
                 aria-invalid={showPhoneError}

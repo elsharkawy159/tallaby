@@ -33,6 +33,7 @@ import {
 } from "@workspace/lib/store-wallet";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@workspace/ui/components/dialog";
 import { DropZone, Field, IconButton, Note, SellerButton, SellerCard, Tag, TextInput } from "@/components/seller-ui";
+import { toAsciiDigits } from "@/components/form/form-ui";
 import { uploadOwnFolderFile } from "@/components/inputs/use-seller-upload";
 import { PaymentMethodLogo } from "@/components/payments/payment-method-logo";
 import { cn } from "@/lib/utils";
@@ -319,7 +320,7 @@ export function TopUpPanel({
                 aria-describedby={`${ids}-amount-hint`}
                 className="w-[110px] min-w-0 flex-1 bg-transparent px-1.5 font-montserrat text-lg font-bold text-(--s-ink) tabular-nums outline-none"
                 value={groupDigits(amount)}
-                onChange={(e) => setAmount(e.target.value.replace(/\D/g, "").replace(/^0+/, ""))}
+                onChange={(e) => setAmount(toAsciiDigits(e.target.value).replace(/\D/g, "").replace(/^0+/, ""))}
               />
               {(
                 [

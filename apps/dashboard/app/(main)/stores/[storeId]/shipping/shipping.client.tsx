@@ -37,6 +37,7 @@ import { deleteShippingZone, saveShippingSettings } from "./shipping.server";
 import type { CoverageItem, TemplateOption, ZoneView } from "./shipping.dto";
 import { TemplatesSheet } from "./templates.client";
 import { formatEgp, ZoneSheet } from "./zone-sheet.client";
+import { toAsciiDigits } from "@/components/form/form-ui";
 
 type StoreMoney = { currency: StoreCurrency; label: CurrencyLabel };
 
@@ -525,14 +526,13 @@ function SettingsCard({ form, readOnly, money }: { form: SettingsForm; readOnly:
             </button>
             <input
               id="handling-days"
-              type="number"
               inputMode="numeric"
               min={0}
               max={HANDLING_DAYS_MAX}
               disabled={readOnly}
               className="w-12 bg-transparent text-center font-montserrat text-base font-bold text-(--s-ink) outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
               value={handlingDays}
-              onChange={(e) => setHandlingDays(e.target.value)}
+              onChange={(e) => setHandlingDays(toAsciiDigits(e.target.value).replace(/\D/g, ""))}
             />
             <button
               type="button"

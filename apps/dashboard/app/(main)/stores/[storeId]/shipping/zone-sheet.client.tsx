@@ -14,6 +14,7 @@ import { moneyUnitMarked, type MoneyUnit } from "@/lib/i18n/format";
 import { PlacePicker, useShippingLib, type ShippingLib } from "./place-picker.client";
 import { saveShippingZone } from "./shipping.server";
 import { toZoneInput, type ZoneFormValues } from "./shipping.dto";
+import { toAsciiDigits } from "@/components/form/form-ui";
 
 const EMPTY_ZONE: ZoneFormValues = {
   nameAr: "",
@@ -239,7 +240,6 @@ export function ZoneSheet({
           <div className="flex flex-wrap items-center gap-2 text-[13px] text-(--s-muted)">
             <TextInput
               id="zone-deliveryDaysMin"
-              type="number"
               inputMode="numeric"
               min={0}
               max={60}
@@ -249,12 +249,11 @@ export function ZoneSheet({
               aria-invalid={invalid("deliveryDaysMin") || undefined}
               className="w-20 text-center font-montserrat"
               value={values.deliveryDaysMin}
-              onChange={(e) => set("deliveryDaysMin", e.target.value)}
+              onChange={(e) => set("deliveryDaysMin", toAsciiDigits(e.target.value).replace(/\D/g, ""))}
             />
             <span>{t("fields.to")}</span>
             <TextInput
               id="zone-deliveryDaysMax"
-              type="number"
               inputMode="numeric"
               min={0}
               max={60}
@@ -264,7 +263,7 @@ export function ZoneSheet({
               aria-invalid={invalid("deliveryDaysMax") || undefined}
               className="w-20 text-center font-montserrat"
               value={values.deliveryDaysMax}
-              onChange={(e) => set("deliveryDaysMax", e.target.value)}
+              onChange={(e) => set("deliveryDaysMax", toAsciiDigits(e.target.value).replace(/\D/g, ""))}
             />
             <span>{t("fields.days")}</span>
           </div>

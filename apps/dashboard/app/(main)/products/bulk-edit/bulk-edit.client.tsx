@@ -36,6 +36,7 @@ import {
   type BulkPreviewRow,
 } from "./bulk-edit.dto";
 import { applyBulkEditAction, previewBulkEditAction, undoBulkEditAction } from "./bulk-edit.server";
+import { toAsciiDigits } from "@/components/form/form-ui";
 
 type Kind = BulkChangeInput["kind"];
 
@@ -388,13 +389,12 @@ export function BulkEditDialog({
               <Field label={t("value")}>
                 <div className="relative">
                   <Input
-                    type="number"
                     inputMode="decimal"
                     min={0}
                     step={form.kind === "stock" ? 1 : "any"}
                     dir="ltr"
                     value={form.value}
-                    onChange={(e) => set("value", e.target.value)}
+                    onChange={(e) => set("value", toAsciiDigits(e.target.value).replace(/[^\d.]/g, ""))}
                     className="bg-card pe-14"
                   />
                   <span className="pointer-events-none absolute inset-y-0 end-3 flex items-center text-xs text-muted-foreground">

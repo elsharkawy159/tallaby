@@ -11,6 +11,7 @@ import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import { Switch } from "@workspace/ui/components/switch";
 import { addCrossSell, removeCrossSell, setCrossSellActive, type CrossSellResult, type CrossSellRow } from "./cross-sell.server";
+import { toAsciiDigits } from "@/components/form/form-ui";
 
 /** "Frequently bought with": offers shown under this product on the seller's stores (ROADMAP.md F-32c). */
 export function CrossSellSection({ productId, initial }: { productId: string; initial: CrossSellRow[] }) {
@@ -147,7 +148,7 @@ export function CrossSellSection({ productId, initial }: { productId: string; in
           <option value="percent">{t("percent")}</option>
           <option value="fixed">{t("fixed", moneyParams(locale, unit))}</option>
         </select>
-        <Input aria-label={t("discountValue")} inputMode="decimal" dir="ltr" value={value} onChange={(event) => setValue(event.target.value)} />
+        <Input aria-label={t("discountValue")} inputMode="decimal" dir="ltr" value={value} onChange={(event) => setValue(toAsciiDigits(event.target.value))} />
         <Button type="button" disabled={!chosen || pending} onClick={add}>
           {t("add")}
         </Button>
