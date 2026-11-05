@@ -389,7 +389,7 @@ export function AiAutofillCard ({
     >
       <div className="mb-2 flex items-center gap-1.5 px-0.5">
         <Sparkles className="size-4 shrink-0 text-primary" aria-hidden />
-        <h2 id="sec-ai-title" className="text-[15px] font-bold text-(--s-ink)">
+        <h2 id="sec-ai-title" tabIndex={-1} className="text-[15px] font-bold text-(--s-ink) outline-none">
           {title}
         </h2>
         <AiHelp title={title} text={isEdit ? t("editDescription") : t("description")} />

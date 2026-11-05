@@ -43,6 +43,12 @@ function hasContent(values: Partial<AddProductFormData> | undefined) {
   );
 }
 
+/** A restorable draft is stored. Browser only. */
+export function hasStoredDraft() {
+  const draft = readDraft();
+  return Boolean(draft && hasContent(draft.values));
+}
+
 /**
  * Keeps the unpublished product in localStorage so a refresh, a crash or a
  * closed tab doesn't lose the seller's work. Restores once on mount.

@@ -24,7 +24,7 @@ export default async function FromFilePage() {
     <PageContainer narrow>
       <div className="flex flex-col gap-1">
         <TextAction asChild className="w-fit">
-          <Link href="/products/add">
+          <Link href="/products/add?method=choose">
             <ArrowRight className="ltr:rotate-180" aria-hidden />
             {t("back")}
           </Link>

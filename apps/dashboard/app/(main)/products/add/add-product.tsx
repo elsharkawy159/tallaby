@@ -11,7 +11,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { FileDown, LoaderCircle, Rocket, Save, Trash2 } from "lucide-react";
+import { ArrowRight, FileDown, LoaderCircle, Rocket, Save, Trash2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,7 +23,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@workspace/ui/components/alert-dialog";
-import { SellerButton } from "@/components/seller-ui";
+import { SellerButton, TextAction } from "@/components/seller-ui";
 import { Form } from "@workspace/ui/components/form";
 import { createProduct, updateProduct } from "@/actions/products";
 import { cn } from "@/lib/utils";
@@ -74,7 +74,9 @@ import {
 import { ProductLinkHostProvider } from "./product-link-host.client";
 import { AiAutofillCard } from "./ai/ai-autofill.client";
 import { markProductAiAssisted } from "./ai/ai-source.server";
-import { FromFileEntry } from "./from-file/from-file-entry.client";
+import { AddMethodChooser } from "./add-method-chooser.client";
+import { AddMethodSkeleton } from "./add-method-skeleton";
+import { useAddMethod } from "./use-add-method";
 import type { SellerTaxonomyOption } from "../categories-brands/categories-brands.dto";
 
 interface AddProductProps {
@@ -109,8 +111,26 @@ const LOCALE_LABELS: Record<SupportedLocale, string> = {
 export default function AddProduct(props: AddProductProps) {
   return (
     <SellerTaxonomyProvider value={props.sellerTaxonomy}>
-      <AddProductForm {...props} />
+      {props.edit ? <AddProductForm {...props} /> : <NewProduct {...props} />}
     </SellerTaxonomyProvider>
+  );
+}
+
+/** A new product starts at the choice of method; a stored draft goes straight to the form. */
+function NewProduct(props: AddProductProps) {
+  const { view, formOpened, pick, draftStored } = useAddMethod(props.aiEnabled ?? false);
+  return (
+    <>
+      {view === "pending" && <AddMethodSkeleton />}
+      {view === "choose" && (
+        <AddMethodChooser aiEnabled={props.aiEnabled ?? false} draftStored={draftStored} onPick={pick} />
+      )}
+      {formOpened && (
+        <div className={cn((view === "choose" || view === "pending") && "hidden")}>
+          <AddProductForm {...props} showAiBox={view === "ai"} onChangeMethod={() => pick("choose")} />
+        </div>
+      )}
+    </>
   );
 }
 
@@ -122,7 +142,14 @@ function AddProductForm({
   headerActions,
   aiEnabled = false,
   afterForm,
-}: AddProductProps) {
+  showAiBox = true,
+  onChangeMethod,
+}: AddProductProps & {
+  /** New products show the AI box only on the AI method; it stays mounted so a fill and its undo survive. */
+  showAiBox?: boolean;
+  /** "Change method" in the header, for a new product. */
+  onChangeMethod?: () => void;
+}) {
   const isEdit = Boolean(edit);
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -136,6 +163,7 @@ function AddProductForm({
   const tToast = useTranslations("toast");
   const t = useTranslations("productForm.page");
   const tForm = useTranslations("productForm");
+  const tMethod = useTranslations("productForm.method");
   const tBasic = useTranslations("productForm.sections.basic");
   const tTaxonomy = useTranslations("categoriesBrands.productForm");
   const tSocialProof = useTranslations("productForm.sections.socialProof");
@@ -428,7 +456,25 @@ function AddProductForm({
             className="sticky top-[68px] z-20 border-b border-(--s-line) bg-(--s-glass) backdrop-blur-md max-[600px]:top-[60px]"
           >
             <div className={cn(COLUMN, "flex flex-wrap items-center gap-x-4 gap-y-2.5 py-3.5 max-[600px]:py-2.5")}>
-              <h1 className="text-[20px] font-bold leading-[1.4] text-(--s-ink) max-[600px]:text-[17px]">
+              {onChangeMethod && (
+                <TextAction
+                  type="button"
+                  className="-ms-2.5 max-[600px]:min-h-10"
+                  onClick={() => {
+                    draft.saveNow();
+                    toast.dismiss(); // "Start over" on the restored-draft toast would act on a hidden form.
+                    onChangeMethod();
+                  }}
+                >
+                  <ArrowRight className="ltr:rotate-180" aria-hidden />
+                  {tMethod("change")}
+                </TextAction>
+              )}
+              <h1
+                id="add-product-title"
+                tabIndex={-1}
+                className="text-[20px] font-bold leading-[1.4] text-(--s-ink) outline-none max-[600px]:text-[17px]"
+              >
                 {isEdit ? t("editTitle") : t("newTitle")}
               </h1>
               {!isEdit && <SaveStatus status={draft.status} />}
@@ -440,7 +486,7 @@ function AddProductForm({
                   </SellerButton>
                 )}
                 {!isEdit && draft.hasDraft && (
-                  <ClearDraftButton className="hidden lg:inline-flex" disabled={isPending} onConfirm={clearDraft} />
+                  <ClearDraftButton className="inline-flex sm:max-lg:hidden" disabled={isPending} onConfirm={clearDraft} />
                 )}
                 {/* One scrolling line on phones: this bar is sticky, and two rows of buttons cost a quarter of the screen. */}
                 {headerActions && (
@@ -469,16 +515,17 @@ function AddProductForm({
                 className="flex min-w-0 flex-col gap-4"
               >
                 {aiEnabled && (
-                  <AiAutofillCard
-                    categories={categories}
-                    sellerPricing={sellerPricing}
-                    mode={isEdit ? "edit" : "add"}
-                    onAppliedChange={(delta) => {
-                      aiFills.current = Math.max(0, aiFills.current + delta);
-                    }}
-                  />
+                  <div className={cn(!showAiBox && "hidden")}>
+                    <AiAutofillCard
+                      categories={categories}
+                      sellerPricing={sellerPricing}
+                      mode={isEdit ? "edit" : "add"}
+                      onAppliedChange={(delta) => {
+                        aiFills.current = Math.max(0, aiFills.current + delta);
+                      }}
+                    />
+                  </div>
                 )}
-                {aiEnabled && !isEdit && <FromFileEntry />}
                 <BasicSection
                   categories={categories}
                   activeLocale={activeLocale}
