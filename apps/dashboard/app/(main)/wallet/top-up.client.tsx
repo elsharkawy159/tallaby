@@ -9,13 +9,12 @@ import {
   Check,
   Coins,
   Copy,
+  Hourglass,
   ImageUp,
   Infinity as InfinityIcon,
-  Info,
   LoaderCircle,
   Minus,
   Plus,
-  RefreshCw,
   Send,
   ShieldCheck,
   TrendingUp,
@@ -32,26 +31,14 @@ import {
   parseStoreTopUpAmount,
   type ManualTopUpMethod,
 } from "@workspace/lib/store-wallet";
-import { Button } from "@workspace/ui/components/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@workspace/ui/components/dialog";
-import { Input } from "@workspace/ui/components/input";
-import { Label } from "@workspace/ui/components/label";
-import { BUTTON_CLASS, FIELD_CLASS } from "@/components/form/form-ui";
+import { DropZone, Field, IconButton, Note, SellerButton, SellerCard, Tag, TextInput } from "@/components/seller-ui";
 import { uploadOwnFolderFile } from "@/components/inputs/use-seller-upload";
 import { PaymentMethodLogo } from "@/components/payments/payment-method-logo";
 import { cn } from "@/lib/utils";
 import { FREE_ORDER_FEE_USD_CENTS, minorToAmount, parseUsdTopUp, quoteTopUp, type BillingState } from "@workspace/lib/billing";
-import { DEFAULT_TOP_UP_USD, POPULAR_TOP_UP, POPULAR_TOP_UP_USD, TOP_UP_PRESETS, TOP_UP_PRESETS_USD, TOP_UP_STEP_EGP, TOP_UP_STEP_USD, ordersCovered, stepTopUpAmount, stepUsdTopUp, walletMoney, walletPoundLabel } from "./store-wallet.lib";
+import { DEFAULT_TOP_UP_USD, POPULAR_TOP_UP, POPULAR_TOP_UP_USD, TOP_UP_PRESETS, TOP_UP_PRESETS_USD, TOP_UP_STEP_EGP, TOP_UP_STEP_USD, orderCountValues, ordersCovered, stepTopUpAmount, stepUsdTopUp, walletMoney, walletPoundLabel } from "./store-wallet.lib";
 import { submitManualTopUp } from "./top-up.server";
-
-const STEPS = ["method", "transfer", "receipt"] as const;
-type Step = (typeof STEPS)[number] | "done";
-
-/** Brand colour per method, used only for the slip's edge and the chosen card. */
-const METHOD_COLOR: Record<ManualTopUpMethod, string> = {
-  instapay: "#3D1F73",
-  vodafone_cash: "#E60000",
-};
 
 /**
  * How a preset card sizes itself, by how many presets there are. The columns follow the space the
@@ -75,10 +62,11 @@ const groupDigits = (digits: string) => (digits ? Number(digits).toLocaleString(
 
 /**
  * Store wallet › Top up (owner request 2026-10-18; Claude Design "Seller
- * Wallet", 2026-10-26): the amount is chosen on the page, then the dialog asks
- * for the method, shows the transfer to Tallaby's number and takes the
- * receipt. Submitting records a pending request; the balance changes only
- * after an admin approves it.
+ * Wallet v3"): the amount and the method are chosen on the page, the summary
+ * sits beside them, and the dialog shows the transfer to Tallaby's number and
+ * takes the receipt. Submitting records a pending request; the balance changes
+ * only after an admin approves it. `below` and `side` are the page's other
+ * cards, placed here so one grid holds the sticky summary.
  */
 export function TopUpPanel({
   sellerId,
@@ -86,6 +74,8 @@ export function TopUpPanel({
   disabled,
   defaultOpen,
   billing,
+  below,
+  side,
 }: {
   /** Set once the wallet is in USD (0136): priced in dollars, paid in EGP. */
   billing?: BillingState | null;
@@ -95,17 +85,22 @@ export function TopUpPanel({
   disabled?: boolean;
   /** Opens on load: /wallet?topup=1 from the negative-balance pop-up. */
   defaultOpen?: boolean;
+  /** The column under the top-up card. */
+  below?: React.ReactNode;
+  /** Under the summary card. */
+  side?: React.ReactNode;
 }) {
   const t = useTranslations("storeWallet.manualTopUp");
   const tErrors = useTranslations("storeWallet.topUp.errors");
+  const tWallet = useTranslations("storeWallet");
+  const tCommon = useTranslations("common");
   const locale = useLocale();
   const router = useRouter();
   const ids = useId();
   const amountInput = useRef<HTMLInputElement>(null);
-  const fileInput = useRef<HTMLInputElement>(null);
 
   const [open, setOpen] = useState(Boolean(defaultOpen) && !disabled);
-  const [step, setStep] = useState<Step>("method");
+  const [done, setDone] = useState(false);
   const usd = Boolean(billing?.usdLive);
   const presets = usd ? TOP_UP_PRESETS_USD : TOP_UP_PRESETS;
   const [amount, setAmount] = useState(usd ? String(DEFAULT_TOP_UP_USD) : "250");
@@ -140,7 +135,7 @@ export function TopUpPanel({
   useEffect(() => () => void (preview && URL.revokeObjectURL(preview)), [preview]);
 
   const reset = () => {
-    setStep("method");
+    setDone(false);
     setSenderPhone("");
     setFile(null);
     setPreview(null);
@@ -151,7 +146,7 @@ export function TopUpPanel({
     if (isPending) return;
     setOpen(next);
     if (!next) {
-      if (step === "done") router.refresh();
+      if (done) router.refresh();
       reset();
     }
   };
@@ -187,7 +182,10 @@ export function TopUpPanel({
     setPreview(URL.createObjectURL(picked));
   };
 
-  const back = () => setStep(step === "receipt" ? "transfer" : "method");
+  const clearFile = () => {
+    setFile(null);
+    setPreview(null);
+  };
 
   const submit = () => {
     if (!parsed.success) return changeAmount();
@@ -208,101 +206,108 @@ export function TopUpPanel({
         toast.error(t(`errors.${result.error}`));
         return;
       }
-      setStep("done");
+      setDone(true);
     });
   };
 
-  const stepIndex = step === "done" ? STEPS.length : STEPS.indexOf(step);
   const total = parsed.success ? money : "—";
+  const afterBalance = parsed.success ? balance + Number(parsed.amount) : null;
+  const walletCurrency = usd ? "USD" : "EGP";
 
   return (
-    <>
-      <section
+    <div className="grid grid-cols-[minmax(0,1fr)_360px] grid-rows-[auto_1fr] items-start gap-x-5 gap-y-4 max-[1180px]:grid-cols-1 max-[1180px]:grid-rows-none">
+      <SellerCard
+        id="topup"
         aria-labelledby={`${ids}-title`}
-        className="grid overflow-hidden rounded-2xl border bg-card shadow-xs lg:grid-cols-[minmax(0,1fr)_320px]"
+        className="sui-rise flex scroll-mt-24 flex-col gap-[18px] px-6 pb-6 pt-[22px] [animation-delay:.05s] max-[720px]:gap-4 max-[720px]:px-4 max-[720px]:pb-5 max-[720px]:pt-[18px]"
       >
-        <div className="flex min-w-0 flex-col gap-5 p-4 sm:p-6">
-          <div>
-            <h2 id={`${ids}-title`} className="text-[17px] font-bold">
-              {t("panel.title")}
-            </h2>
-            <p className="text-[13px] text-muted-foreground">{t("panel.subtitle")}</p>
-          </div>
+        <div>
+          <h2 id={`${ids}-title`} className="text-[17px] font-bold leading-normal text-(--s-ink)">
+            {t("panel.title")}
+          </h2>
+          <p className="text-pretty text-[13px] text-(--s-subtle)">{t("panel.subtitle")}</p>
+        </div>
 
-          <fieldset disabled={disabled}>
-            <legend className="mb-2 text-[13px] font-semibold">{t("panel.presets")}</legend>
-            <div className="@container">
-              {/* gap-y-3 clears the popular badge, which sticks up 10px when its card wraps to a lower row. */}
-              <div className="flex flex-wrap gap-x-2 gap-y-3 pt-2 sm:gap-x-2.5">
-                {presets.map((preset) => {
-                  const selected = value === preset;
-                  // What the seller pays for this card, the same figure as the summary's total.
-                  const presetQuote = usd && billing ? quoteTopUp(preset * 100, billing) : null;
-                  return (
-                    <button
-                      key={preset}
-                      type="button"
-                      aria-pressed={selected}
-                      onClick={() => setAmount(String(preset))}
+        <fieldset disabled={disabled} className="flex min-w-0 flex-col gap-3">
+          <legend className="contents">
+            <span className="flex items-center gap-2.5 text-[13.5px] font-bold text-(--s-text)">
+              <StepNumber>1</StepNumber>
+              {t("panel.presets")}
+            </span>
+          </legend>
+          <div className="@container ps-10 max-[720px]:ps-0">
+            {/* gap-y-3 clears the popular badge, which sticks up 10px when its card wraps to a lower row. */}
+            <div className="flex flex-wrap gap-x-2 gap-y-3 pt-2 sm:gap-x-2.5">
+              {presets.map((preset) => {
+                const selected = value === preset;
+                // What the seller pays for this card, the same figure as the summary's total.
+                const presetQuote = usd && billing ? quoteTopUp(preset * 100, billing) : null;
+                return (
+                  <button
+                    key={preset}
+                    type="button"
+                    aria-pressed={selected}
+                    onClick={() => setAmount(String(preset))}
+                    className={cn(
+                      // pt-[22px] is the circle's top-1.5 + size-4, so the amount always starts below it.
+                      "relative flex flex-1 cursor-pointer flex-col items-center justify-center gap-0.5 rounded-[18px] border-[1.5px] border-(--s-field) bg-(--s-surface) px-0.5 pb-1.5 pt-[22px] text-center transition-[border-color,background-color,box-shadow,translate] duration-150 hover:-translate-y-0.5 hover:border-(--tallaby-teal-300) focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-(--s-focus) active:scale-[0.98] disabled:pointer-events-none disabled:opacity-60",
+                      PRESET_CARD_LAYOUT[presets.length],
+                      selected && "border-(--s-primary) bg-(--s-tint) shadow-[0_0_0_3px_var(--s-focus-soft)]",
+                    )}
+                  >
+                    {preset === (usd ? POPULAR_TOP_UP_USD : POPULAR_TOP_UP) && (
+                      // leading-4 ends the badge exactly where the circle starts, so the two never touch on a narrow card.
+                      <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-accent px-1 text-[10.5px] font-bold leading-4 text-accent-foreground @[290px]:px-2">
+                        {t("panel.popular")}
+                      </span>
+                    )}
+                    <span
                       className={cn(
-                        // pt-[22px] is the circle's top-1.5 + size-4, so the amount always starts below it.
-                        "relative flex flex-1 flex-col items-center justify-center gap-0.5 rounded-2xl border-[1.5px] bg-card px-0.5 pb-1.5 pt-[22px] text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 active:scale-[0.98] disabled:opacity-60",
-                        PRESET_CARD_LAYOUT[presets.length],
-                        selected ? "border-primary bg-primary-soft" : "hover:border-input hover:bg-muted/40",
+                        "absolute end-1.5 top-1.5 grid size-4 place-items-center rounded-full border-[1.5px] text-(--s-solid-fg) transition-colors duration-200 motion-reduce:transition-none",
+                        selected ? "border-(--s-primary) bg-(--s-primary)" : "border-(--s-field-strong) bg-(--s-surface)",
                       )}
                     >
-                      {preset === (usd ? POPULAR_TOP_UP_USD : POPULAR_TOP_UP) && (
-                        // leading-4 ends the badge exactly where the circle starts, so the two never touch on a narrow card.
-                        <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-accent px-1 text-[10.5px] @[290px]:px-2 font-bold leading-4 text-accent-foreground">
-                          {t("panel.popular")}
-                        </span>
-                      )}
-                      <span
+                      <Check
                         className={cn(
-                          "absolute end-1.5 top-1.5 grid size-4 place-items-center rounded-full border-[1.5px] text-primary-foreground transition-colors duration-200 motion-reduce:transition-none",
-                          selected ? "border-primary bg-primary" : "border-muted-foreground/40 bg-card",
+                          "size-3 stroke-3 transition-[opacity,scale] duration-200 motion-reduce:transition-none",
+                          selected ? "scale-100 opacity-100" : "scale-50 opacity-0",
                         )}
-                      >
-                        <Check
-                          className={cn(
-                            "size-3 stroke-3 transition-[opacity,scale] duration-200 motion-reduce:transition-none",
-                            selected ? "scale-100 opacity-100" : "scale-50 opacity-0",
-                          )}
-                          aria-hidden
-                        />
+                        aria-hidden
+                      />
+                    </span>
+                    <bdi dir="ltr" className="font-montserrat text-lg/6 font-extrabold text-(--s-ink) tabular-nums">
+                      {usd ? "$" : ""}{preset.toLocaleString("en-US")}
+                    </bdi>
+                    <span className="whitespace-nowrap text-[11.5px]/4 text-(--s-subtle)">
+                      {t("panel.approxOrders", orderCountValues(ordersCovered(preset, usd ? "USD" : "EGP"), locale))}
+                    </span>
+                    {presetQuote && (
+                      <span className="whitespace-nowrap text-[11.5px]/4 text-(--s-subtle)">
+                        ≈ <bdi className="tabular-nums">{walletMoney(presetQuote.totalPiastres / 100, "EGP", locale)}</bdi>
                       </span>
-                      <bdi dir="ltr" className={cn("text-lg/6 font-extrabold tabular-nums", selected && "text-primary-ink")}>
-                        {usd ? "$" : ""}{preset.toLocaleString("en-US")}
-                      </bdi>
-                      <span className="whitespace-nowrap text-[11.5px]/4 text-muted-foreground">
-                        {t("panel.approxOrders", { count: ordersCovered(preset, usd ? "USD" : "EGP") })}
-                      </span>
-                      {presetQuote && (
-                        <span className="whitespace-nowrap text-[11.5px]/4 text-muted-foreground">
-                          ≈ <bdi className="tabular-nums">{walletMoney(presetQuote.totalPiastres / 100, "EGP", locale)}</bdi>
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
+                    )}
+                  </button>
+                );
+              })}
             </div>
-          </fieldset>
+          </div>
+        </fieldset>
 
-          <div>
-            <Label htmlFor={`${ids}-amount`} className="mb-2 text-[13px] font-semibold">
-              {t("panel.custom")}
-            </Label>
+        <div className="flex min-w-0 flex-col gap-2 ps-10 max-[720px]:ps-0">
+          <label htmlFor={`${ids}-amount`} className="text-[13px] font-semibold text-(--s-text)">
+            {t("panel.custom")}
+          </label>
+          <div className="flex flex-wrap items-center gap-2.5">
             <div
               dir="ltr"
               className={cn(
-                "flex h-14 items-stretch overflow-hidden rounded-2xl border-[1.5px] bg-card transition-[border-color,box-shadow] focus-within:border-primary focus-within:ring-3 focus-within:ring-ring/25",
+                "flex h-12 max-w-full items-stretch overflow-hidden rounded-[14px] border-[1.5px] border-(--s-field) bg-(--s-surface) transition-[border-color,box-shadow] duration-150 focus-within:border-(--s-primary) focus-within:shadow-[0_0_0_4px_var(--s-focus-soft)]",
                 amountError && "border-destructive",
                 disabled && "opacity-60",
               )}
             >
-              <span className="flex items-center border-e bg-muted/40 px-4 font-mono text-sm font-semibold text-muted-foreground">
-                {usd ? "USD" : walletPoundLabel(locale)}
+              <span className="flex items-center ps-3.5 pe-1 font-montserrat text-[15px] font-bold text-(--s-subtle)">
+                {usd ? "$" : walletPoundLabel(locale)}
               </span>
               <input
                 ref={amountInput}
@@ -312,7 +317,7 @@ export function TopUpPanel({
                 disabled={disabled}
                 aria-invalid={amountError ? true : undefined}
                 aria-describedby={`${ids}-amount-hint`}
-                className="min-w-0 flex-1 bg-transparent px-4 text-[22px] font-bold tabular-nums outline-none"
+                className="w-[110px] min-w-0 flex-1 bg-transparent px-1.5 font-montserrat text-lg font-bold text-(--s-ink) tabular-nums outline-none"
                 value={groupDigits(amount)}
                 onChange={(e) => setAmount(e.target.value.replace(/\D/g, "").replace(/^0+/, ""))}
               />
@@ -328,58 +333,98 @@ export function TopUpPanel({
                   disabled={disabled}
                   aria-label={t(label)}
                   onClick={() => setAmount(String(usd ? stepUsdTopUp(value, delta) : stepTopUpAmount(value, delta)))}
-                  className="grid w-11 place-items-center border-s text-muted-foreground hover:bg-muted/40 hover:text-foreground"
+                  className="grid w-11 shrink-0 cursor-pointer place-items-center border-s border-(--s-line-soft) text-(--s-primary) transition-colors duration-150 hover:bg-(--s-hover)"
                 >
                   <Icon className="size-[18px]" aria-hidden />
                 </button>
               ))}
             </div>
-            <p id={`${ids}-amount-hint`} className={cn("mt-1.5 text-xs", amountError ? "text-destructive" : "text-muted-foreground")}>
+            <p
+              id={`${ids}-amount-hint`}
+              className={cn("min-w-0 flex-1 basis-40 text-pretty text-xs", amountError ? "font-semibold text-destructive" : "text-(--s-faint)")}
+            >
               {amountError ?? (usd ? t("limitsUsd") : t("limits"))}
             </p>
           </div>
-
-          <div className="flex flex-wrap items-center gap-2 text-[12.5px] text-muted-foreground">
-            <span>{t("panel.methods")}</span>
-            {MANUAL_TOP_UP_METHODS.map((m) => (
-              <span key={m} className="inline-flex items-center gap-1.5">
-                <PaymentMethodLogo method={m} label={t(`methods.${m}.name`)} className="size-[26px] rounded-md" />
-                {t(`methods.${m}.name`)}
-              </span>
-            ))}
-          </div>
         </div>
 
-        <aside className="flex flex-col gap-3 border-s bg-muted/30 p-6 max-lg:hidden">
+        <fieldset disabled={disabled} className="flex min-w-0 flex-col gap-3">
+          <legend className="contents">
+            <span className="flex items-center gap-2.5 text-[13.5px] font-bold text-(--s-text)">
+              <StepNumber>2</StepNumber>
+              {t("methodLabel")}
+            </span>
+          </legend>
+          <div className="grid grid-cols-2 gap-2.5 ps-10 max-[720px]:grid-cols-1 max-[720px]:ps-0">
+            {MANUAL_TOP_UP_METHODS.map((m) => (
+              <label
+                key={m}
+                className="relative flex cursor-pointer items-center gap-3 rounded-[18px] border-[1.5px] border-(--s-field) bg-(--s-surface) p-3.5 transition-[border-color,background-color,box-shadow] duration-150 hover:border-(--s-outline) has-checked:border-(--s-primary) has-checked:bg-(--s-tint) has-checked:shadow-[0_0_0_3px_var(--s-focus-soft)] has-focus-visible:outline-[3px] has-focus-visible:outline-offset-2 has-focus-visible:outline-(--s-focus) has-disabled:cursor-not-allowed has-disabled:opacity-60"
+              >
+                <input
+                  type="radio"
+                  name={`${ids}-method`}
+                  className="peer absolute size-px opacity-0"
+                  checked={method === m}
+                  onChange={() => setMethod(m)}
+                />
+                <PaymentMethodLogo method={m} label={t(`methods.${m}.name`)} className="size-[42px] rounded-[13px] border-(--s-line)" />
+                <span className="min-w-0 flex-1">
+                  <b className="block text-sm font-bold text-(--s-ink)">{t(`methods.${m}.name`)}</b>
+                  <small className="block text-xs text-(--s-subtle)">{t(`methods.${m}.hint`)}</small>
+                </span>
+                <span
+                  aria-hidden
+                  className="size-5 shrink-0 rounded-full border-2 border-(--s-field-strong) transition-all duration-150 peer-checked:border-[6px] peer-checked:border-(--s-primary)"
+                />
+              </label>
+            ))}
+            {!CARD_TOP_UPS_ENABLED && (
+              <div
+                aria-disabled="true"
+                className="flex items-center gap-3 rounded-[18px] border-[1.5px] border-dashed border-(--s-field) p-3.5 opacity-70"
+              >
+                <PaymentMethodLogo method="card" label={t("methods.card.name")} className="size-[42px] rounded-[13px] border-(--s-line)" />
+                <span className="min-w-0 flex-1">
+                  <b className="block text-sm font-bold text-(--s-ink)">{t("methods.card.name")}</b>
+                  <small className="block text-xs text-(--s-subtle)">{t("methods.card.hint")}</small>
+                </span>
+                <Tag>{t("methods.card.soon")}</Tag>
+              </div>
+            )}
+          </div>
+        </fieldset>
+      </SellerCard>
+
+      {/* Second in the DOM, so one column puts the summary and its button right under the amount. */}
+      <aside className="sui-rise sticky top-[88px] row-span-2 flex min-w-0 flex-col gap-3.5 [animation-delay:.08s] max-[1180px]:static max-[1180px]:row-span-1">
+        <SellerCard aria-labelledby={`${ids}-summary`} className="flex flex-col gap-3.5 p-[22px] max-[720px]:p-4">
+          <h3 id={`${ids}-summary`} className="text-[15.5px] font-bold text-(--s-ink)">
+            {t("panel.summary.title")}
+          </h3>
           <SummaryRow label={t("panel.summary.amount")} value={usd ? credited : total} />
-          {quote && (
-            <SummaryRow
-              label={t("panel.summary.rate")}
-              value={`$1 = ${walletMoney(quote.rate, "EGP", locale)}`}
-            />
-          )}
+          {quote && <SummaryRow label={t("panel.summary.rate")} value={`$1 = ${walletMoney(quote.rate, "EGP", locale)}`} />}
           {quote && quote.taxPiastres > 0 && (
             <SummaryRow label={t("panel.summary.tax")} value={walletMoney(quote.taxPiastres / 100, "EGP", locale)} />
           )}
           {!usd && <SummaryRow label={t("panel.summary.fee")} value={t("panel.summary.free")} />}
-          <div className="flex items-baseline justify-between gap-3 border-t border-dashed pt-3 font-semibold">
-            <span className="whitespace-nowrap">{t("panel.summary.total")}</span>
-            <bdi className="whitespace-nowrap text-[22px] font-extrabold tabular-nums">
-              {total}
-            </bdi>
+          <div className="flex items-baseline justify-between gap-3 rounded-[18px] border border-(--tallaby-amber-100) bg-accent-soft p-4 dark:border-transparent">
+            <span className="whitespace-nowrap text-[13.5px] font-bold text-accent-ink">{t("panel.summary.total")}</span>
+            <bdi className="whitespace-nowrap font-montserrat text-[26px] font-extrabold leading-none text-(--s-ink) tabular-nums">{total}</bdi>
           </div>
-          <p className="flex items-center gap-1.5 text-[12.5px] text-muted-foreground">
-            <TrendingUp className="size-[15px] shrink-0" aria-hidden />
-            {t("panel.summary.after")}
-            <bdi className="font-semibold text-success tabular-nums">
-              {parsed.success ? walletMoney(balance + Number(parsed.amount), usd ? "USD" : "EGP", locale) : "—"}
-            </bdi>
+          <p className="flex items-start gap-2 text-[12.5px] font-semibold text-success">
+            <TrendingUp className="mt-0.5 size-[15px] shrink-0" aria-hidden />
+            <span>
+              {t("panel.summary.after")}{" "}
+              <bdi className="font-montserrat tabular-nums">{afterBalance === null ? "—" : walletMoney(afterBalance, walletCurrency, locale)}</bdi>
+              {afterBalance !== null && <> · {tWallet("runway", orderCountValues(ordersCovered(afterBalance, walletCurrency), locale))}</>}
+            </span>
           </p>
-          <Button type="button" variant="accent" className="h-[50px] w-full rounded-[14px] text-[15px] font-semibold" disabled={!canStart} onClick={start}>
+          <SellerButton className="h-[52px] w-full text-[15px]" disabled={!canStart} onClick={start}>
             {t("panel.cta")}
             <ArrowLeft className="ltr:rotate-180" aria-hidden />
-          </Button>
-          <ul className="mt-1 flex flex-col gap-1.5 text-[12.5px] text-muted-foreground">
+          </SellerButton>
+          <ul className="flex flex-col gap-2 border-t border-(--s-line-soft) pt-3.5 text-[12.5px] text-(--s-muted)">
             <li className="flex items-center gap-2">
               <ShieldCheck className="size-[15px] shrink-0 text-success" aria-hidden />
               {t("panel.trust.review")}
@@ -395,354 +440,194 @@ export function TopUpPanel({
               </li>
             )}
           </ul>
-        </aside>
-      </section>
+        </SellerCard>
+        {side}
+      </aside>
 
-      {/* Phones and tablets: the summary column is hidden, so the action stays on screen.
-          mb-0 beats the parent's space-y margin, which would lift a fixed bar off the bottom. */}
-      <div className="fixed inset-x-0 bottom-0 z-30 mb-0 flex items-center gap-3 border-t bg-card px-4 py-3 shadow-[0_-6px_20px_rgba(20,81,99,0.08)] lg:hidden">
-        <div className="min-w-0 flex-1">
-          <p className="text-xs leading-snug text-muted-foreground">{t("panel.summary.amount")}</p>
-          <bdi className="text-[19px] font-extrabold tabular-nums">
-            {total}
-          </bdi>
-        </div>
-        <Button type="button" variant="accent" className="h-12 px-5 font-semibold" disabled={!canStart} onClick={start}>
-          {t("panel.cta")}
-          <ArrowLeft className="ltr:rotate-180" aria-hidden />
-        </Button>
-      </div>
+      <div className="flex min-w-0 flex-col gap-4">{below}</div>
 
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent
-          // Header and footer stay put; only the body scrolls, so Next/Submit is always on screen.
-          className="flex max-h-[calc(100dvh-2rem)] flex-col gap-0 overflow-hidden p-0 sm:max-w-[520px]"
+          closeLabel={tCommon("close")}
+          // Header and footer stay put; only the body scrolls, so the send button is always on screen.
+          className="flex max-h-[calc(100dvh-2rem)] flex-col gap-0 overflow-hidden p-0! sm:max-w-[480px]"
           onOpenAutoFocus={(event) => event.preventDefault()}
         >
-          <DialogHeader className="shrink-0 gap-1 border-b px-5 pb-3 pt-5 text-start">
-            <DialogTitle className="text-lg">{step === "done" ? t("done.title") : t("title")}</DialogTitle>
-            <DialogDescription>{step === "done" ? t("done.subtitle") : t("description")}</DialogDescription>
-            {step !== "done" && (
-              <ol className="mt-2 grid grid-cols-3 gap-2" aria-label={t("progress")}>
-                {STEPS.map((s, i) => (
-                  <li key={s} aria-current={i === stepIndex ? "step" : undefined} className="min-w-0">
-                    <span
-                      className={cn(
-                        "block h-1 rounded-full transition-colors duration-300",
-                        i <= stepIndex ? "bg-primary" : "bg-border",
-                      )}
-                    />
-                    <span
-                      className={cn(
-                        "mt-1.5 block truncate text-xs",
-                        i === stepIndex ? "font-semibold text-foreground" : "text-muted-foreground",
-                      )}
-                    >
-                      {t(`steps.${s}`)}
-                    </span>
-                  </li>
+          <DialogHeader className="shrink-0 gap-1 px-6 pe-12 pt-6 text-start max-[480px]:px-[18px] max-[480px]:pt-[18px]">
+            <DialogTitle className="text-lg font-bold text-(--s-ink)">
+              {done ? t("done.title") : t("dialogTitle", { amount: money })}
+            </DialogTitle>
+            <DialogDescription className="text-[12.5px] text-(--s-subtle)">
+              {done ? t("done.subtitle") : t("dialogDescription", { method: methodLabel })}
+            </DialogDescription>
+            {!done && (
+              <div className="-me-6 mt-2.5 flex gap-1.5" role="img" aria-label={t("progress")}>
+                {[true, true, Boolean(file)].map((on, i) => (
+                  <i
+                    key={i}
+                    className={cn("h-1 flex-1 rounded-full transition-colors duration-300", on ? "bg-(--s-primary)" : "bg-(--s-line-soft)")}
+                  />
                 ))}
-              </ol>
+              </div>
             )}
           </DialogHeader>
 
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-4">
-            {step === "method" && (
-              <div className="flex flex-col gap-4">
-                <div className="flex items-center justify-between gap-3 rounded-xl bg-primary-soft px-3.5 py-3 text-primary-ink">
-                  <div>
-                    <p className="text-xs opacity-85">{t("panel.summary.amount")}</p>
-                    <p className="text-start text-xl font-extrabold tabular-nums">
-                      <bdi>{money}</bdi>
-                    </p>
-                  </div>
-                  <button type="button" onClick={changeAmount} className="text-[12.5px] underline underline-offset-2">
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 py-4 max-[480px]:px-[18px]">
+            {done ? (
+              <div className="flex flex-col items-center gap-2.5 py-2 text-center">
+                <span className="grid size-16 place-items-center rounded-full bg-accent-soft text-accent-ink">
+                  <Hourglass className="size-[30px]" aria-hidden />
+                </span>
+                <p className="font-montserrat text-3xl font-bold text-(--s-ink) tabular-nums">
+                  <bdi>{money}</bdi>
+                </p>
+                <p className="max-w-[340px] text-pretty text-[13px] text-(--s-muted)">{t("done.body", { method: methodLabel })}</p>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-3.5">
+                <div className="flex flex-col gap-2">
+                  <CopyRow
+                    label={t("slip.sendExactly")}
+                    copyLabel={t("slip.copyAmount")}
+                    done={copied === "amount"}
+                    onCopy={() => parsed.success && copy(String(quote ? quote.totalPiastres / 100 : Number(parsed.amount)), "amount")}
+                  >
+                    <bdi>{money}</bdi>
+                  </CopyRow>
+                  <CopyRow
+                    label={t(`methods.${method}.to`)}
+                    note={t("slip.holder", { name: account.holder })}
+                    copyLabel={t("slip.copyNumber")}
+                    done={copied === "number"}
+                    onCopy={() => copy(account.number, "number")}
+                  >
+                    <bdi dir="ltr">{groupNumber(account.number)}</bdi>
+                  </CopyRow>
+                  <button
+                    type="button"
+                    onClick={changeAmount}
+                    className="w-fit cursor-pointer text-[12.5px] font-semibold text-(--s-link) underline underline-offset-2"
+                  >
                     {t("changeAmount")}
                   </button>
                 </div>
 
-                <fieldset className="flex flex-col gap-2">
-                  <legend className="mb-2 text-[13px] font-semibold">{t("methodLabel")}</legend>
-                  <div className="grid gap-2.5">
-                    {MANUAL_TOP_UP_METHODS.map((m) => {
-                      const selected = method === m;
-                      return (
-                        <label
-                          key={m}
-                          className={cn(
-                            "relative flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition-colors focus-within:ring-2 focus-within:ring-ring/40",
-                            selected ? "border-transparent bg-primary-soft/60" : "hover:bg-muted/40",
-                          )}
-                          style={selected ? { boxShadow: `inset 0 0 0 1.5px ${METHOD_COLOR[m]}` } : undefined}
-                        >
-                          <input
-                            type="radio"
-                            name={`${ids}-method`}
-                            className="sr-only"
-                            checked={selected}
-                            onChange={() => setMethod(m)}
-                          />
-                          <PaymentMethodLogo method={m} label={t(`methods.${m}.name`)} className="size-10" />
-                          <span className="min-w-0 flex-1">
-                            <span className="block text-sm font-semibold">{t(`methods.${m}.name`)}</span>
-                            <span className="block text-xs text-muted-foreground">{t(`methods.${m}.hint`)}</span>
-                          </span>
-                          {selected && <Check className="size-4 shrink-0" style={{ color: METHOD_COLOR[m] }} aria-hidden />}
-                        </label>
-                      );
-                    })}
-                    {!CARD_TOP_UPS_ENABLED && (
-                      <div className="flex items-center gap-3 rounded-xl border border-dashed p-3 opacity-70" aria-disabled="true">
-                        <PaymentMethodLogo method="card" label={t("methods.card.name")} className="size-10" />
-                        <span className="min-w-0 flex-1">
-                          <span className="block text-sm font-semibold">{t("methods.card.name")}</span>
-                          <span className="block text-xs text-muted-foreground">{t("methods.card.hint")}</span>
-                        </span>
-                        <span className="shrink-0 rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
-                          {t("methods.card.soon")}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </fieldset>
-              </div>
-            )}
-
-            {step === "transfer" && (
-              <div className="flex flex-col gap-4">
-                {/* The transfer slip: what to send, and where. */}
-                <div
-                  className="relative overflow-hidden rounded-2xl border bg-card"
-                  style={{ borderInlineStartWidth: 4, borderInlineStartColor: METHOD_COLOR[method] }}
-                >
-                  <div className="flex items-start justify-between gap-3 px-4 pb-3 pt-4">
-                    <div className="min-w-0">
-                      <p className="text-xs text-muted-foreground">{t("slip.sendExactly")}</p>
-                      <p className="mt-1 text-start text-[28px] font-bold leading-none tabular-nums">
-                        <bdi>{money}</bdi>
-                      </p>
-                    </div>
-                    <CopyButton
-                      label={t("slip.copyAmount")}
-                      done={copied === "amount"}
-                      onClick={() => parsed.success && copy(String(quote ? quote.totalPiastres / 100 : Number(parsed.amount)), "amount")}
-                    />
-                  </div>
-                  <div aria-hidden className="relative h-0 border-t border-dashed">
-                    <span className="absolute -start-2.5 -top-2.5 size-5 rounded-full border bg-background" />
-                    <span className="absolute -end-2.5 -top-2.5 size-5 rounded-full border bg-background" />
-                  </div>
-                  <div className="flex items-center justify-between gap-3 px-4 pb-4 pt-3">
-                    <div className="flex min-w-0 items-center gap-3">
-                      <PaymentMethodLogo method={method} label={methodLabel} className="size-10" />
-                      <div className="min-w-0">
-                        <p className="text-xs text-muted-foreground">{t(`methods.${method}.to`)}</p>
-                        <p dir="ltr" className="text-start font-mono text-xl font-semibold tracking-wide rtl:text-end">
-                          {groupNumber(account.number)}
-                        </p>
-                        <p className="text-xs text-muted-foreground">{t("slip.holder", { name: account.holder })}</p>
-                      </div>
-                    </div>
-                    <CopyButton label={t("slip.copyNumber")} done={copied === "number"} onClick={() => copy(account.number, "number")} />
-                  </div>
-                </div>
-
-                <ol className="flex flex-col gap-1.5 text-[13px] text-muted-foreground">
-                  {(["open", "send", "screenshot"] as const).map((key, i) => (
-                    <li key={key} className="flex gap-2.5">
-                      <span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-primary-soft text-[11px] font-bold text-primary-ink">
-                        {i + 1}
-                      </span>
-                      {t(`slip.how.${key}`, { method: methodLabel, amount: money })}
-                    </li>
-                  ))}
-                </ol>
-
-                <div className="flex flex-col gap-1.5">
-                  <Label htmlFor={`${ids}-sender`} className="justify-between text-[13px] font-semibold">
-                    {t(`methods.${method}.sender`)}
-                    <span className="text-xs font-normal text-muted-foreground">{t("optional")}</span>
-                  </Label>
-                  <Input
+                <Field label={t(`methods.${method}.sender`)} hint={t("optional")} note={t("senderHint")} htmlFor={`${ids}-sender`}>
+                  <TextInput
                     id={`${ids}-sender`}
                     dir="ltr"
                     inputMode="tel"
                     placeholder="01XXXXXXXXX"
-                    className={cn(FIELD_CLASS, "text-start font-mono")}
+                    className="text-start font-montserrat"
                     value={senderPhone}
                     onChange={(e) => setSenderPhone(e.target.value)}
                   />
-                  <p className="text-xs text-muted-foreground">{t("senderHint")}</p>
-                </div>
-              </div>
-            )}
+                </Field>
 
-            {step === "receipt" && (
-              <div className="flex flex-col gap-3">
-                <input
-                  ref={fileInput}
-                  type="file"
-                  accept={TOP_UP_PROOF_TYPES.join(",")}
-                  className="sr-only"
-                  tabIndex={-1}
-                  onChange={(e) => {
-                    pickFile(e.target.files?.[0]);
-                    e.target.value = "";
-                  }}
-                />
                 {preview && file ? (
-                  <div className="flex items-center gap-4 rounded-2xl border p-3">
+                  <div className="flex items-center gap-3 rounded-[18px] border-[1.5px] border-success/40 bg-success-soft/40 p-3">
                     {/* eslint-disable-next-line @next/next/no-img-element -- a local object URL */}
-                    <img src={preview} alt={t("receipt.previewAlt")} className="h-20 w-16 shrink-0 rounded-lg border object-cover" />
+                    <img src={preview} alt={t("receipt.previewAlt")} className="h-16 w-14 shrink-0 rounded-[10px] border border-(--s-line) object-cover" />
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium" dir="auto">
+                      <p className="truncate text-[13.5px] font-bold text-(--s-ink)" dir="auto">
                         {file.name}
                       </p>
-                      <p className="text-xs text-muted-foreground" dir="ltr">
+                      <p className="text-xs text-(--s-subtle)" dir="ltr">
                         {(file.size / 1024 / 1024).toFixed(1)} MB
                       </p>
-                      <div className="mt-2 flex gap-1.5">
-                        <Button type="button" size="sm" variant="outline" disabled={isPending} onClick={() => fileInput.current?.click()}>
-                          <RefreshCw aria-hidden />
-                          {t("receipt.replace")}
-                        </Button>
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="ghost"
-                          disabled={isPending}
-                          aria-label={t("receipt.remove")}
-                          onClick={() => {
-                            setFile(null);
-                            setPreview(null);
-                          }}
-                        >
-                          <X aria-hidden />
-                        </Button>
-                      </div>
                     </div>
+                    <IconButton aria-label={t("receipt.remove")} disabled={isPending} onClick={clearFile}>
+                      <X aria-hidden />
+                    </IconButton>
                   </div>
                 ) : (
-                  <button
-                    type="button"
-                    onClick={() => fileInput.current?.click()}
-                    onDragOver={(e) => e.preventDefault()}
-                    onDrop={(e) => {
-                      e.preventDefault();
-                      pickFile(e.dataTransfer.files?.[0]);
-                    }}
-                    className={cn(
-                      "flex flex-col items-center gap-2 rounded-2xl border-2 border-dashed bg-muted/30 px-6 py-7 text-center transition-colors hover:border-primary/50 hover:bg-primary-soft/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
-                      fileError && "border-destructive/60",
-                    )}
-                  >
-                    <span className="grid size-12 place-items-center rounded-2xl border bg-card text-primary-ink">
-                      <ImageUp className="size-5" aria-hidden />
-                    </span>
-                    <span className="text-sm font-semibold">{t("receipt.pick")}</span>
-                    <span className="text-xs text-muted-foreground">{t("receipt.pickHint")}</span>
-                  </button>
+                  <DropZone
+                    icon={ImageUp}
+                    title={t("receipt.pick")}
+                    hint={t("receipt.pickHint")}
+                    accept={TOP_UP_PROOF_TYPES.join(",")}
+                    onFiles={([picked]) => pickFile(picked)}
+                    className={cn("p-[22px]", fileError && "border-destructive/60")}
+                  />
                 )}
-                {fileError && <p className="text-xs text-destructive">{fileError}</p>}
-                <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 rounded-xl bg-muted/40 px-3.5 py-3 text-[13px]">
-                  <dt className="text-muted-foreground">{t("recap.amount")}</dt>
-                  <dd className="text-end font-semibold">
-                    <bdi>{money}</bdi>
-                  </dd>
-                  <dt className="text-muted-foreground">{t("recap.method")}</dt>
-                  <dd className="text-end font-semibold">{methodLabel}</dd>
-                  {senderPhone.trim() && (
-                    <>
-                      <dt className="text-muted-foreground">{t("recap.from")}</dt>
-                      <dd className="text-end font-semibold">
-                        <bdi dir="ltr">{senderPhone.trim()}</bdi>
-                      </dd>
-                    </>
-                  )}
-                </dl>
-                <p className="flex items-start gap-2 rounded-xl bg-accent-soft px-3 py-2.5 text-[12.5px] text-accent-ink">
-                  <Info className="mt-0.5 size-[15px] shrink-0" aria-hidden />
-                  {t("receipt.clarity")}
-                </p>
-              </div>
-            )}
-
-            {step === "done" && (
-              <div className="flex flex-col items-center gap-3 py-2 text-center">
-                <span className="grid size-16 place-items-center rounded-full bg-success-soft text-success">
-                  <Check className="size-7" aria-hidden />
-                </span>
-                <p className="text-3xl font-bold tabular-nums">
-                  <bdi>{money}</bdi>
-                </p>
-                <p className="max-w-sm text-pretty text-sm text-muted-foreground">{t("done.body", { method: methodLabel })}</p>
+                {fileError && <p className="text-xs font-medium text-destructive">{fileError}</p>}
+                <Note tone="amber">{t("receipt.clarity")}</Note>
               </div>
             )}
           </div>
 
-          <div className="flex shrink-0 items-center gap-2 border-t bg-muted/30 px-5 py-3">
-            {step === "done" ? (
-              <Button type="button" className={cn(BUTTON_CLASS, "w-full")} onClick={() => onOpenChange(false)}>
+          <div className="flex shrink-0 gap-2 px-6 pb-6 pt-1 max-[480px]:px-[18px] max-[480px]:pb-[calc(18px+env(safe-area-inset-bottom))]">
+            {done ? (
+              <SellerButton variant="solid" className="flex-1" onClick={() => onOpenChange(false)}>
                 {t("done.close")}
-              </Button>
+              </SellerButton>
             ) : (
               <>
-                {step === "method" ? (
-                  <Button type="button" variant="ghost" className={BUTTON_CLASS} onClick={() => onOpenChange(false)}>
-                    {t("cancel")}
-                  </Button>
-                ) : (
-                  <Button type="button" variant="ghost" className={BUTTON_CLASS} disabled={isPending} onClick={back}>
-                    <ArrowLeft className="rtl:rotate-180" aria-hidden />
-                    {t("back")}
-                  </Button>
-                )}
-                {step === "receipt" ? (
-                  <Button
-                    type="button"
-                    variant="accent"
-                    className={cn(BUTTON_CLASS, "ms-auto")}
-                    disabled={isPending || !file}
-                    onClick={submit}
-                  >
-                    {isPending ? <LoaderCircle className="animate-spin" aria-hidden /> : <Send className="rtl:-scale-x-100" aria-hidden />}
-                    {t("submit")}
-                  </Button>
-                ) : (
-                  <Button
-                    type="button"
-                    className={cn(BUTTON_CLASS, "ms-auto")}
-                    onClick={() => setStep(step === "method" ? "transfer" : "receipt")}
-                  >
-                    {step === "transfer" ? t("transferred") : t("next")}
-                    <ArrowLeft className="ltr:rotate-180" aria-hidden />
-                  </Button>
-                )}
+                <SellerButton variant="outline" className="flex-1" disabled={isPending} onClick={() => onOpenChange(false)}>
+                  {t("cancel")}
+                </SellerButton>
+                <SellerButton variant="solid" className="flex-1" disabled={isPending || !file} onClick={submit}>
+                  {isPending ? <LoaderCircle className="animate-spin" aria-hidden /> : <Send className="rtl:-scale-x-100" aria-hidden />}
+                  {t("submit")}
+                </SellerButton>
               </>
             )}
           </div>
         </DialogContent>
       </Dialog>
-    </>
+    </div>
+  );
+}
+
+function StepNumber({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="grid size-[30px] shrink-0 place-items-center rounded-full bg-(--s-solid) font-montserrat text-[13px] font-bold text-(--s-solid-fg)">
+      {children}
+    </span>
   );
 }
 
 function SummaryRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-baseline justify-between gap-3 text-[13.5px] text-muted-foreground">
+    <div className="flex items-center justify-between gap-3 text-[13px] text-(--s-muted)">
       <span className="whitespace-nowrap">{label}</span>
-      <bdi className="whitespace-nowrap font-semibold text-foreground tabular-nums">
-        {value}
-      </bdi>
+      <bdi className="whitespace-nowrap font-montserrat text-[13.5px] font-semibold text-(--s-text) tabular-nums">{value}</bdi>
     </div>
   );
 }
 
-function CopyButton({ label, done, onClick }: { label: string; done: boolean; onClick: () => void }) {
+function CopyRow({
+  label,
+  note,
+  copyLabel,
+  done,
+  onCopy,
+  children,
+}: {
+  label: string;
+  note?: string;
+  copyLabel: string;
+  done: boolean;
+  onCopy: () => void;
+  children: React.ReactNode;
+}) {
   return (
-    <Button type="button" size="sm" variant="outline" className="shrink-0 rounded-lg" onClick={onClick} aria-label={label}>
-      {done ? <Check className="text-success" aria-hidden /> : <Copy aria-hidden />}
-      <span className="hidden sm:inline">{label}</span>
-    </Button>
+    <div className="flex items-center gap-2.5 rounded-2xl border border-(--s-line) bg-(--s-tint) px-3.5 py-3">
+      <div className="min-w-0 flex-1">
+        <small className="block text-[11.5px] text-(--s-subtle)">{label}</small>
+        <b className="block font-montserrat text-base font-bold text-(--s-ink) tabular-nums">{children}</b>
+        {note && <small className="block text-[11.5px] text-(--s-subtle)">{note}</small>}
+      </div>
+      <SellerButton
+        variant="mini"
+        size="xs"
+        className={cn(done && "border-success/40 text-success [&_svg]:text-success")}
+        aria-label={copyLabel}
+        onClick={onCopy}
+      >
+        {done ? <Check aria-hidden /> : <Copy aria-hidden />}
+        <span className="max-[480px]:sr-only">{copyLabel}</span>
+      </SellerButton>
+    </div>
   );
 }

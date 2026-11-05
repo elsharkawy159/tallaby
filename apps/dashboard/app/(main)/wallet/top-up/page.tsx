@@ -4,8 +4,7 @@ import { CheckCircle2, Clock, XCircle } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { topUpCredit } from "@workspace/lib/store-wallet";
 import { getStoreTopUp } from "@workspace/lib/store-wallet/server";
-import { Button } from "@workspace/ui/components/button";
-import { Card, CardContent } from "@workspace/ui/components/card";
+import { IconTile, PageContainer, SellerButton, SellerCard } from "@/components/seller-ui";
 import { isAccessError, requireSeller } from "@/lib/auth/require-seller.server";
 import { walletMoney } from "../store-wallet.lib";
 
@@ -32,32 +31,32 @@ export default async function TopUpReturnPage({
   const state = row.status === "succeeded" ? "succeeded" : row.status === "failed" || row.status === "cancelled" ? "failed" : "processing";
   // What the wallet gets, not the EGP paid: the same until the USD switch.
   const credit = topUpCredit(row);
-  const Icon = state === "succeeded" ? CheckCircle2 : state === "failed" ? XCircle : Clock;
 
   return (
-    <div className="mx-auto w-full max-w-md p-4 sm:p-6">
-      <Card>
-        <CardContent className="flex flex-col items-center gap-3 py-8 text-center">
-          <Icon
-            className={state === "succeeded" ? "size-10 text-success" : state === "failed" ? "size-10 text-destructive" : "size-10 text-muted-foreground"}
-            aria-hidden
+    <PageContainer className="max-w-[480px]">
+      <SellerCard>
+        <div className="flex flex-col items-center gap-2.5 px-[22px] py-8 text-center">
+          <IconTile
+            icon={state === "succeeded" ? CheckCircle2 : state === "failed" ? XCircle : Clock}
+            tone={state === "succeeded" ? "success" : state === "failed" ? "danger" : "accent"}
+            size="lg"
           />
-          <h1 className="text-lg font-bold">{t(`result.${state}.title`)}</h1>
-          <p className="text-pretty text-sm text-muted-foreground">
+          <h1 className="text-lg font-bold text-(--s-ink)">{t(`result.${state}.title`)}</h1>
+          <p className="text-pretty text-[13px] text-(--s-muted)">
             {t(`result.${state}.description`, { amount: walletMoney(Number(credit.amount), credit.currency, locale) })}
           </p>
-          <div className="flex gap-2">
+          <div className="mt-1.5 flex flex-wrap justify-center gap-2">
             {state === "processing" && (
-              <Button asChild variant="outline">
+              <SellerButton asChild variant="outline">
                 <Link href={`/wallet/top-up?topUp=${row.id}`}>{t("refresh")}</Link>
-              </Button>
+              </SellerButton>
             )}
-            <Button asChild>
+            <SellerButton asChild variant="solid">
               <Link href="/wallet">{t("backToWallet")}</Link>
-            </Button>
+            </SellerButton>
           </div>
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+      </SellerCard>
+    </PageContainer>
   );
 }

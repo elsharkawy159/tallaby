@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { PageContainer } from "@/components/seller-ui";
 import { isAccessError, requireSeller } from "@/lib/auth/require-seller.server";
 import { StoreWalletSection } from "./store-wallet.data";
 import { parseEntryFilter } from "./store-wallet.server";
@@ -16,13 +17,13 @@ export default async function WalletPage({
   if (seller instanceof Error) throw seller;
 
   return (
-    <div className="p-4 sm:p-6">
+    <PageContainer>
       <StoreWalletSection
         sellerId={seller.sellerId}
         filter={parseEntryFilter(entries)}
         before={typeof before === "string" ? before : null}
         openTopUp={topup === "1"}
       />
-    </div>
+    </PageContainer>
   );
 }

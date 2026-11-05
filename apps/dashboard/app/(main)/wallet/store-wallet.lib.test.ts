@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { parseUsdTopUp } from "@workspace/lib/billing";
-import { DEFAULT_TOP_UP_USD, FEE_PER_ORDER_EGP, POPULAR_TOP_UP_USD, TOP_UP_PRESETS_USD, ordersCovered, stepTopUpAmount, walletMoney, walletPoundLabel } from "./store-wallet.lib";
+import { DEFAULT_TOP_UP_USD, FEE_PER_ORDER_EGP, POPULAR_TOP_UP_USD, TOP_UP_PRESETS_USD, orderCountValues, ordersCovered, stepTopUpAmount, walletMoney, walletPoundLabel } from "./store-wallet.lib";
 
 describe("walletMoney", () => {
   it("calls the pound جنيه in Arabic only", () => {
@@ -18,6 +18,13 @@ describe("walletMoney", () => {
 
   it("drops the left-to-right mark from a negative Arabic amount", () => {
     expect(walletMoney(-500, "EGP", "ar")).toBe("-500 جنيه");
+  });
+});
+
+describe("orderCountValues", () => {
+  it("groups thousands in both languages and keeps the number for the plural", () => {
+    expect(orderCountValues(16666, "ar")).toEqual({ count: 16666, formatted: "16,666" });
+    expect(orderCountValues(16666, "en")).toEqual({ count: 16666, formatted: "16,666" });
   });
 });
 

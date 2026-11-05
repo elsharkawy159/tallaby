@@ -1,33 +1,25 @@
 import Link from "next/link";
 import {
   AlertTriangle,
+  ArrowDownLeft,
+  ArrowUpRight,
+  ChevronDown,
   CircleCheck,
   CircleX,
   Clock,
   Gift,
   Info,
+  Plus,
+  ReceiptText,
   Wallet,
 } from "lucide-react";
 import { getWelcomeGiftStatus, listManualStoreTopUps } from "@workspace/lib/store-wallet/server";
 import { getLocale, getTranslations } from "next-intl/server";
+import { quoteTopUp } from "@workspace/lib/billing";
 import { getFeeTrialStatus } from "@workspace/lib/sellers";
-import { Badge } from "@workspace/ui/components/badge";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@workspace/ui/components/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@workspace/ui/components/table";
 import { cn } from "@workspace/ui/lib/utils";
 import { getBillingState } from "@workspace/lib/billing/server";
+import { EmptyState, IconTile, Note, Row, Rows, SellerButton, SellerCard, SellerCardHeader } from "@/components/seller-ui";
 import { formatDate } from "@/lib/i18n/format";
 import { translateStatus } from "@/lib/i18n/status";
 import {
@@ -38,7 +30,7 @@ import {
   listStoreWalletEntries,
   type EntryFilter,
 } from "./store-wallet.server";
-import { FEE_PER_ORDER_EGP, FEE_PER_ORDER_USD, ordersCovered, walletMoney } from "./store-wallet.lib";
+import { FEE_PER_ORDER_EGP, FEE_PER_ORDER_USD, orderCountValues, ordersCovered, walletMoney } from "./store-wallet.lib";
 import { TopUpPanel } from "./top-up.client";
 
 /** The runway bar is full at this many orders. */
@@ -48,17 +40,10 @@ const RUNWAY_FULL_ORDERS = 200;
 const NEGATIVE_ALERT_EGP = -500;
 const NEGATIVE_ALERT_USD = -10;
 
-const signedClass = (value: number) =>
-  value < 0
-    ? "text-destructive"
-    : value > 0
-      ? "text-success"
-      : "text-foreground";
-
 /**
- * Store wallet (PLAN.md §13.4, P6-06): signed balance, this month's sales and
- * fees, trial, how the fee works, and every ledger entry. The balance shown
- * is the wallet row; the ledger total beside it must always match.
+ * Store wallet (PLAN.md §13.4, P6-06): signed balance, trial, how the fee works,
+ * top-up and every ledger entry. The balance shown is the wallet row; the ledger
+ * total beside it must always match.
  */
 export async function StoreWalletSection({
   sellerId,
@@ -108,302 +93,277 @@ export async function StoreWalletSection({
     const query = search.toString();
     return query ? `/wallet?${query}` : "/wallet";
   };
+  // Only a rough figure for a positive USD balance: what it would cost at today's rate.
+  const balanceQuote = usd && balance > 0 ? quoteTopUp(Math.round(balance * 100), billing) : null;
 
   return (
-    <section
-      id="store-wallet"
-      aria-labelledby="store-wallet-title"
-      className="mx-auto space-y-5"
-    >
-      {/* No page title: the header's breadcrumb already names the page. */}
-      <p className="text-pretty text-muted-foreground">
-        {usd ? t("pageDescriptionUsd", { fee: money(FEE_PER_ORDER_USD) }) : t("pageDescription", { fee: FEE_PER_ORDER_EGP })}
-      </p>
-
-      <div className="grid gap-4 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
-          <CardContent className="flex flex-wrap items-center gap-4">
-            <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary-ink">
-              <Wallet className="size-5" aria-hidden />
-            </span>
-            <div className="min-w-0 flex-1">
-              <h2
-                id="store-wallet-title"
-                className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground"
-              >
-                {t("title")}
-                {overview.status !== "active" && (
-                  <Badge variant="outline">
-                    {t(`walletStatus.${overview.status}`)}
-                  </Badge>
-                )}
-              </h2>
-              <p
-                className={cn(
-                  "text-start text-3xl font-bold tabular-nums",
-                  signedClass(balance),
-                )}
-              >
-                <bdi>{money(balance)}</bdi>
-              </p>
-              {pendingTotal > 0 && (
-                <p className="mb-1 inline-flex items-center gap-1.5 rounded-full bg-accent-soft px-2.5 py-0.5 text-xs font-medium text-accent-ink">
-                  <Clock className="size-3.5" aria-hidden />
-                  {t("pendingTopUps", {
-                    amount: walletMoney(pendingTotal, "EGP", locale),
-                  })}
-                </p>
+    <>
+      <section
+        id="store-wallet"
+        aria-labelledby="store-wallet-title"
+        className="sui-rise relative grid grid-cols-[minmax(0,1fr)_auto] items-center gap-6 overflow-hidden rounded-[28px] bg-(--s-setup) px-7 py-[26px] text-white before:pointer-events-none before:absolute before:inset-x-[40%_-10%] before:-top-[70%] before:h-[170%] before:bg-[radial-gradient(50%_50%_at_50%_40%,rgb(253_173_40/0.22),transparent_70%)] max-[900px]:grid-cols-1 max-[720px]:rounded-[24px] max-[720px]:px-[18px] max-[720px]:py-[22px]"
+      >
+        <div className="relative flex min-w-0 flex-col gap-1.5">
+          <h1 id="store-wallet-title" className="flex flex-wrap items-center gap-1.5 text-[13px] font-normal text-white/70">
+            <Wallet className="size-[15px]" aria-hidden />
+            {t("title")}
+            {overview.status !== "active" && (
+              <span className="rounded-full bg-white/10 px-2.5 py-0.5 text-[11px] font-bold text-white">
+                {t(`walletStatus.${overview.status}`)}
+              </span>
+            )}
+          </h1>
+          <p className="flex flex-wrap items-baseline gap-3">
+            <bdi
+              className={cn(
+                "font-montserrat text-[clamp(40px,5vw,56px)] font-extrabold leading-[1.1] tracking-[-.02em] tabular-nums",
+                balance < 0 && "text-[#fca5a5]",
               )}
-            </div>
-          </CardContent>
-          {balance < 0 && (
-            <p className="mx-6 mb-6 flex gap-2 rounded-xl bg-destructive-soft p-3 text-[13px] text-destructive">
-              <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden />
-              {balance <= (usd ? NEGATIVE_ALERT_USD : NEGATIVE_ALERT_EGP)
-                ? t("negativeStrong")
-                : t("negative")}
+            >
+              {money(balance)}
+            </bdi>
+            {balanceQuote && (
+              <span className="text-sm text-white/70">
+                ≈ <bdi className="tabular-nums">{walletMoney(balanceQuote.basePiastres / 100, "EGP", locale)}</bdi>
+              </span>
+            )}
+          </p>
+          {pendingTotal > 0 && (
+            <p className="mt-1 inline-flex w-fit items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-xs font-semibold text-white">
+              <Clock className="size-3.5 text-accent" aria-hidden />
+              {t("pendingTopUps", {
+                amount: walletMoney(pendingTotal, "EGP", locale),
+              })}
             </p>
           )}
-        </Card>
+          <div className="mt-2.5 flex max-w-[520px] flex-col gap-2">
+            <div className="flex flex-wrap justify-between gap-x-4 text-[13px] text-white/75">
+              <span>{t("runway", orderCountValues(runway, locale))}</span>
+              <span>
+                {t("orderFee")}{" "}
+                <bdi className="font-montserrat font-bold text-white">{money(usd ? FEE_PER_ORDER_USD : FEE_PER_ORDER_EGP)}</bdi>
+              </span>
+            </div>
+            <span className="h-2 overflow-hidden rounded-full bg-white/12" aria-hidden>
+              <span
+                className="block h-full rounded-full bg-accent transition-[width] duration-500"
+                style={{ width: `${Math.min(100, (runway / RUNWAY_FULL_ORDERS) * 100)}%` }}
+              />
+            </span>
+          </div>
+        </div>
+        <div className="relative flex min-w-[240px] flex-col max-[900px]:min-w-0">
+          <SellerButton asChild className="h-[50px] text-[15px]">
+            <a href="#topup">
+              <Plus aria-hidden />
+              {t("manualTopUp.button")}
+            </a>
+          </SellerButton>
+        </div>
+      </section>
 
-        <Card>
-          <CardContent className="flex h-full flex-col gap-2 text-[13px]">
-            <p className="flex items-center gap-2 font-semibold">
-              <Info className="size-4 text-primary-ink" aria-hidden />
-              {t("howTitle")}
-            </p>
-            <p className="text-pretty text-muted-foreground">{usd ? t("howUsd", { fee: money(FEE_PER_ORDER_USD) }) : t("how")}</p>
+      {balance < 0 && (
+        <Note tone="danger" icon={AlertTriangle} className="text-[13px]">
+          {balance <= (usd ? NEGATIVE_ALERT_USD : NEGATIVE_ALERT_EGP) ? t("negativeStrong") : t("negative")}
+        </Note>
+      )}
+
+      <TopUpPanel
+        billing={usd ? billing : null}
+        sellerId={sellerId}
+        balance={balance}
+        disabled={overview.status !== "active"}
+        defaultOpen={openTopUp}
+        below={
+          <>
+            {topUps.length > 0 && (
+              <SellerCard aria-labelledby="top-up-requests-title">
+                <SellerCardHeader id="top-up-requests-title" title={t("requests.title")} />
+                <div className="p-4 pt-3.5">
+                  <Rows>
+                    {topUps.map((r) => {
+                      const state =
+                        r.status === "pending" ? "pending" : r.status === "succeeded" ? "approved" : "rejected";
+                      return (
+                        <Row
+                          key={r.id}
+                          start={
+                            <IconTile
+                              icon={state === "pending" ? Clock : state === "approved" ? CircleCheck : CircleX}
+                              tone={state === "pending" ? "accent" : state === "approved" ? "success" : "danger"}
+                            />
+                          }
+                          title={`${t(`requests.${state}`)} · ${t(`requests.methods.${r.method}`)}`}
+                          description={
+                            <>
+                              {formatDate(r.createdAt, locale)}
+                              {state === "rejected" && r.failureReason && <> · {r.failureReason}</>}
+                            </>
+                          }
+                          end={
+                            <bdi className="font-montserrat text-sm font-bold text-(--s-ink) tabular-nums">
+                              {walletMoney(Number(r.amount), "EGP", locale)}
+                            </bdi>
+                          }
+                        />
+                      );
+                    })}
+                  </Rows>
+                </div>
+              </SellerCard>
+            )}
+
+            <SellerCard aria-labelledby="wallet-entries-title">
+              <SellerCardHeader
+                id="wallet-entries-title"
+                title={t("entriesTitle")}
+                description={t("entriesDescription")}
+                className="flex-wrap items-center"
+                action={
+                  <nav aria-label={t("filterLabel")} className="flex flex-wrap gap-1.5">
+                    {ENTRY_FILTERS.map((key) => (
+                      <Link
+                        key={key}
+                        href={href({ entries: key === "all" ? null : key })}
+                        aria-current={filter === key ? "page" : undefined}
+                        className="inline-flex h-[34px] items-center whitespace-nowrap rounded-full border border-(--s-field) bg-(--s-surface) px-3.5 text-[12.5px] font-semibold text-(--s-muted) no-underline transition-colors duration-150 hover:border-(--tallaby-teal-300) aria-[current=page]:border-(--s-solid) aria-[current=page]:bg-(--s-solid) aria-[current=page]:text-(--s-solid-fg) max-[600px]:h-10"
+                      >
+                        {t(`filters.${key}`)}
+                      </Link>
+                    ))}
+                  </nav>
+                }
+              />
+              {entries.length === 0 ? (
+                <EmptyState icon={ReceiptText} title={t("empty")} />
+              ) : (
+                <ul className="flex flex-col px-3 pb-3.5 pt-2.5">
+                  {entries.map((entry) => {
+                    const amount = Number(entry.amount);
+                    const incoming = amount > 0;
+                    return (
+                      <li
+                        key={entry.id}
+                        className="grid grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3.5 rounded-2xl px-2.5 py-3 transition-colors duration-150 hover:bg-(--s-tint) [&+&]:border-t [&+&]:border-(--s-line-soft) max-[720px]:gap-2.5"
+                      >
+                        <IconTile
+                          icon={incoming ? ArrowDownLeft : ArrowUpRight}
+                          tone={incoming ? "success" : "danger"}
+                          className="size-10 rounded-[13px] max-[720px]:size-9"
+                        />
+                        <div className="min-w-0">
+                          <b className="block text-[13.5px] font-bold text-(--s-text)">
+                            {translateStatus(tStatus, "transaction", entry.type)}
+                          </b>
+                          {entry.description && (
+                            <small className="block text-xs text-(--s-subtle)">{entry.description}</small>
+                          )}
+                          <small className="block text-xs text-(--s-subtle)">
+                            {entry.storeName ?? t("accountLevel")}
+                            {entry.orderId && entry.orderNumber && (
+                              <>
+                                {" · "}
+                                <Link href={`/orders?order=${entry.orderId}`} className="text-(--s-link) underline-offset-2 hover:underline">
+                                  {entry.orderNumber}
+                                </Link>
+                              </>
+                            )}
+                            {" · "}
+                            {formatDate(entry.createdAt, locale)}
+                          </small>
+                        </div>
+                        <div className="text-end">
+                          {/* bdi keeps the number's own direction while the cell aligns with the row. */}
+                          <bdi
+                            className={cn(
+                              "block font-montserrat text-sm font-bold tabular-nums",
+                              amount < 0 ? "text-destructive" : amount > 0 ? "text-success" : "text-(--s-ink)",
+                            )}
+                          >
+                            {amount > 0 ? "+" : ""}
+                            {walletMoney(amount, entry.currency, locale)}
+                          </bdi>
+                          {entry.balanceAfter != null && (
+                            <small className="block text-xs text-(--s-subtle)">
+                              {t("columns.balance")}{" "}
+                              <bdi className="font-montserrat tabular-nums">
+                                {walletMoney(Number(entry.balanceAfter), entry.currency, locale)}
+                              </bdi>
+                            </small>
+                          )}
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+              {next && (
+                <div className="flex justify-center pb-[18px]">
+                  <SellerButton asChild variant="mini" size="xs">
+                    <Link
+                      href={href({
+                        entries: filter === "all" ? null : filter,
+                        before: next,
+                      })}
+                    >
+                      {t("older")}
+                    </Link>
+                  </SellerButton>
+                </div>
+              )}
+            </SellerCard>
+          </>
+        }
+        side={
+          <>
             {(trial.state === "active" || trial.state === "not_started") && (
-              <p className="flex gap-2 rounded-lg bg-success-soft p-2 text-success">
-                <Gift className="mt-0.5 size-4 shrink-0" aria-hidden />
+              <Note tone="success" icon={Gift}>
                 {trial.state === "active"
                   ? t("trialActive", {
                       days: trial.daysLeft,
                       date: formatDate(trial.endsAt, locale),
                     })
                   : t("trialNotStarted")}
-              </p>
+              </Note>
             )}
             {gift && !gift.expired && Number(gift.remaining) > 0 && (
-              <p className="flex gap-2 rounded-lg bg-success-soft p-2 text-success">
-                <Gift className="mt-0.5 size-4 shrink-0" aria-hidden />
+              <Note tone="success" icon={Gift}>
                 {t("welcomeGiftActive", {
                   amount: money(Number(gift.remaining)),
                   date: formatDate(gift.expiresAt, locale),
                 })}
-              </p>
+              </Note>
             )}
-            <div className="mt-auto flex items-center gap-2.5 pt-2 text-[12.5px] text-muted-foreground">
-              <span className="shrink-0">{t("runway", { count: runway })}</span>
-              <span
-                className="h-1.5 flex-1 overflow-hidden rounded-full bg-border"
-                aria-hidden
-              >
-                <span
-                  className="block h-full rounded-full bg-primary"
-                  style={{
-                    width: `${Math.min(100, (runway / RUNWAY_FULL_ORDERS) * 100)}%`,
-                  }}
+            <details className="group min-w-0 rounded-[24px] border border-(--s-line) bg-(--s-glass) px-5 py-[18px] shadow-(--s-shadow-card) max-[600px]:rounded-[20px]">
+              <summary className="flex cursor-pointer list-none items-center gap-2 text-sm font-bold text-(--s-ink) [&::-webkit-details-marker]:hidden">
+                <Info className="size-[17px] shrink-0 text-(--s-primary)" aria-hidden />
+                {t("howTitle")}
+                <ChevronDown
+                  className="ms-auto size-[17px] shrink-0 text-(--s-primary) transition-transform duration-[250ms] group-open:rotate-180"
+                  aria-hidden
                 />
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <TopUpPanel
-              billing={usd ? billing : null}
-        sellerId={sellerId}
-        balance={balance}
-        disabled={overview.status !== "active"}
-        defaultOpen={openTopUp}
-      />
-
-      {topUps.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>{t("requests.title")}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="divide-y">
-              {topUps.map((r) => {
-                const Icon =
-                  r.status === "pending"
-                    ? Clock
-                    : r.status === "succeeded"
-                      ? CircleCheck
-                      : CircleX;
-                const state =
-                  r.status === "pending"
-                    ? "pending"
-                    : r.status === "succeeded"
-                      ? "approved"
-                      : "rejected";
-                return (
-                  <li
-                    key={r.id}
-                    className="flex flex-wrap items-center gap-3 py-3 first:pt-0 last:pb-0"
-                  >
-                    <span
-                      className={cn(
-                        "grid size-9 shrink-0 place-items-center rounded-full",
-                        state === "pending" && "bg-accent-soft text-accent-ink",
-                        state === "approved" && "bg-success-soft text-success",
-                        state === "rejected" &&
-                          "bg-destructive-soft text-destructive",
-                      )}
-                    >
-                      <Icon className="size-4" aria-hidden />
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium">
-                        {t(`requests.${state}`)} ·{" "}
-                        {t(`requests.methods.${r.method}`)}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {formatDate(r.createdAt, locale)}
-                        {state === "rejected" && r.failureReason && (
-                          <> · {r.failureReason}</>
-                        )}
-                      </p>
-                    </div>
-                    <p className="font-semibold tabular-nums">
-                      <bdi>{walletMoney(Number(r.amount), "EGP", locale)}</bdi>
-                    </p>
+              </summary>
+              <p className="mt-2.5 text-pretty text-[12.5px] leading-[1.8] text-(--s-muted)">
+                {usd ? t("howUsd", { fee: money(FEE_PER_ORDER_USD) }) : t("how")}
+              </p>
+              {usd && (
+                <ul className="mt-2.5 flex flex-col gap-1.5 text-[12.5px] text-(--s-muted)">
+                  <li className="flex justify-between gap-3 rounded-xl bg-(--s-tint) px-3 py-2">
+                    <span>{t("howFree")}</span>
+                    <b className="text-(--s-ink)">
+                      <bdi className="font-montserrat">{money(FEE_PER_ORDER_USD)}</bdi> / {t("howPerOrder")}
+                    </b>
                   </li>
-                );
-              })}
-            </ul>
-          </CardContent>
-        </Card>
-      )}
-
-      <Card>
-        <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
-          <CardTitle>{t("entriesTitle")}</CardTitle>
-          <nav aria-label={t("filterLabel")} className="flex flex-wrap gap-1.5">
-            {ENTRY_FILTERS.map((key) => (
-              <Link
-                key={key}
-                href={href({ entries: key === "all" ? null : key })}
-                aria-current={filter === key ? "page" : undefined}
-                className={cn(
-                  "rounded-full border px-3 py-1 text-xs font-medium",
-                  filter === key
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : "text-muted-foreground",
-                )}
-              >
-                {t(`filters.${key}`)}
-              </Link>
-            ))}
-          </nav>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{t("columns.date")}</TableHead>
-                <TableHead>{t("columns.type")}</TableHead>
-                <TableHead className="max-sm:hidden">
-                  {t("columns.store")}
-                </TableHead>
-                <TableHead className="max-sm:hidden">
-                  {t("columns.order")}
-                </TableHead>
-                <TableHead className="text-end">
-                  {t("columns.amount")}
-                </TableHead>
-                <TableHead className="text-end">
-                  {t("columns.balance")}
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {entries.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={6}
-                    className="py-8 text-center text-muted-foreground"
-                  >
-                    {t("empty")}
-                  </TableCell>
-                </TableRow>
-              ) : (
-                entries.map((entry) => {
-                  const amount = Number(entry.amount);
-                  return (
-                    <TableRow key={entry.id}>
-                      <TableCell className="whitespace-nowrap">
-                        {formatDate(entry.createdAt, locale)}
-                      </TableCell>
-                      <TableCell>
-                        <span className="block">
-                          {translateStatus(tStatus, "transaction", entry.type)}
-                        </span>
-                        {entry.description && (
-                          <span className="block text-xs text-muted-foreground">
-                            {entry.description}
-                          </span>
-                        )}
-                      </TableCell>
-                      <TableCell className="max-sm:hidden">
-                        {entry.storeName ?? t("accountLevel")}
-                      </TableCell>
-                      <TableCell className="max-sm:hidden">
-                        {entry.orderId && entry.orderNumber ? (
-                          <Link
-                            href={`/orders?order=${entry.orderId}`}
-                            className="underline-offset-2 hover:underline"
-                          >
-                            {entry.orderNumber}
-                          </Link>
-                        ) : (
-                          "—"
-                        )}
-                      </TableCell>
-                      {/* bdi keeps the number's own direction while the cell aligns with its RTL/LTR header. */}
-                      <TableCell
-                        className={cn(
-                          "text-end font-semibold tabular-nums",
-                          signedClass(amount),
-                        )}
-                      >
-                        <bdi>
-                          {amount > 0 ? "+" : ""}
-                          {walletMoney(amount, entry.currency, locale)}
-                        </bdi>
-                      </TableCell>
-                      <TableCell className="text-end tabular-nums text-muted-foreground">
-                        {entry.balanceAfter == null ? (
-                          "—"
-                        ) : (
-                          <bdi>
-                            {walletMoney(Number(entry.balanceAfter), entry.currency, locale)}
-                          </bdi>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
+                  <li className="flex justify-between gap-3 rounded-xl bg-(--s-tint) px-3 py-2">
+                    <span>{t("howPro")}</span>
+                    <b className="text-(--s-ink)">{t("howProValue")}</b>
+                  </li>
+                </ul>
               )}
-            </TableBody>
-          </Table>
-          {next && (
-            <div className="mt-4 text-center">
-              <Link
-                href={href({
-                  entries: filter === "all" ? null : filter,
-                  before: next,
-                })}
-                className="text-sm font-medium text-primary-ink underline-offset-2 hover:underline"
-              >
-                {t("older")}
-              </Link>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </section>
+            </details>
+          </>
+        }
+      />
+    </>
   );
 }

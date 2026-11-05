@@ -6,8 +6,7 @@ import { Check, ChevronDown, LoaderCircle, Plus, Search, X } from "lucide-react"
 
 import type { Place } from "@workspace/lib/places";
 import { Checkbox } from "@workspace/ui/components/checkbox";
-import { Input } from "@workspace/ui/components/input";
-import { FIELD_CLASS } from "@/components/form/form-ui";
+import { TextInput } from "@/components/seller-ui";
 import { useDebounce } from "@/hooks/use-debounce";
 import { cn } from "@/lib/utils";
 
@@ -160,12 +159,12 @@ export function PlacePicker({
     <div className="space-y-2.5">
       <div className="relative">
         <Search className="pointer-events-none absolute start-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
-        <Input
+        <TextInput
           id={id}
           type="search"
           autoComplete="off"
           aria-invalid={invalid || undefined}
-          className={cn(FIELD_CLASS, "ps-10", invalid && "border-destructive")}
+          className="ps-10"
           placeholder={t("search")}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -204,12 +203,12 @@ export function PlacePicker({
           {value.map((key) => (
             <li
               key={key}
-              className="inline-flex max-w-full items-center gap-1 rounded-full bg-primary/10 py-1 ps-3 pe-1 text-[13px] text-primary"
+              className="inline-flex max-w-full items-center gap-1 rounded-full bg-primary-soft py-1 ps-3 pe-1 text-[13px] font-semibold text-primary-ink"
             >
               <span className="min-w-0 truncate">{label(key)}</span>
               <button
                 type="button"
-                className="grid size-5 shrink-0 place-items-center rounded-full hover:bg-primary/15"
+                className="relative grid size-5 shrink-0 cursor-pointer place-items-center rounded-full before:absolute before:-inset-2.5 hover:bg-primary/15"
                 aria-label={t("remove", { place: label(key) })}
                 onClick={() => onChange(value.filter((k) => k !== key))}
               >
@@ -223,7 +222,7 @@ export function PlacePicker({
       {country && <div>
         <button
           type="button"
-          className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+          className="inline-flex min-h-10 cursor-pointer items-center gap-1 text-[13px] font-semibold text-(--s-link) hover:underline"
           aria-expanded={browse}
           onClick={() => setBrowse((b) => !b)}
         >
@@ -247,7 +246,7 @@ export function PlacePicker({
                     <li key={g.key}>
                       <label
                         className={cn(
-                          "flex min-h-9 cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-sm hover:bg-muted/50",
+                          "flex min-h-10 cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-[13px] hover:bg-(--s-tint)",
                           blocked && "cursor-not-allowed opacity-60 hover:bg-transparent",
                         )}
                       >

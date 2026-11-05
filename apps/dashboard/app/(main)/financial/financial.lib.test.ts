@@ -48,6 +48,7 @@ describe("buildSalesSources", () => {
 describe("helpers", () => {
   it("normalizes payment methods", () => {
     expect(normalizePaymentMethod("cash")).toBe("cod");
+    expect(normalizePaymentMethod("'cash")).toBe("cod");
     expect(normalizePaymentMethod("wallet")).toBe("wallet");
     expect(normalizePaymentMethod("wallet_vodafone_cash")).toBe("wallet");
     expect(normalizePaymentMethod("vodafone_cash")).toBe("vodafone_cash");

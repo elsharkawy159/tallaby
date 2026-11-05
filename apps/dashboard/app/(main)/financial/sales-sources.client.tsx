@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { CreditCard, ShoppingBag, Store } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/components/card";
+import { CreditCard, ReceiptText, ShoppingBag, Store } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
+import { EmptyState, IconTile, Segmented, SellerCard, SellerCardHeader } from "@/components/seller-ui";
 import { formatMoney, formatNumber } from "@/lib/i18n/format";
 import { Money } from "@/components/money";
 import { humanizeStatus } from "@/lib/i18n/status";
@@ -24,68 +24,56 @@ export function SalesSourcesCard({ sources }: { sources: Record<Period, { curren
     t.has(`methods.${line.key}`) ? t(`methods.${line.key}`) : humanizeStatus(line.key);
 
   return (
-    <Card className="mb-8">
-      <CardHeader className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <CardTitle>{t("title")}</CardTitle>
-          <p className="mt-1 text-sm text-muted-foreground">{t("subtitle")}</p>
-        </div>
-        <div role="radiogroup" aria-label={t("periodLabel")} className="flex gap-1.5">
-          {(["month", "allTime"] as const).map((value) => (
-            <button
-              key={value}
-              type="button"
-              role="radio"
-              aria-checked={period === value}
-              onClick={() => setPeriod(value)}
-              className={
-                period === value
-                  ? "rounded-full border border-primary bg-primary-soft px-3 py-1 text-xs font-medium text-primary-ink"
-                  : "rounded-full border px-3 py-1 text-xs text-muted-foreground hover:text-foreground"
-              }
-            >
-              {t(`period.${value}`)}
-            </button>
+    <SellerCard aria-labelledby="sales-sources-title">
+      <SellerCardHeader
+        id="sales-sources-title"
+        title={t("title")}
+        description={t("subtitle")}
+        className="flex-wrap"
+        action={
+          <Segmented
+            label={t("periodLabel")}
+            value={period}
+            onChange={setPeriod}
+            options={(["month", "allTime"] as const).map((value) => ({ value, label: t(`period.${value}`) }))}
+          />
+        }
+      />
+      {blocks.length === 0 ? (
+        <EmptyState icon={ReceiptText} title={period === "month" ? t("emptyMonth") : t("empty")} />
+      ) : (
+        <div className="px-[22px] pb-[22px] pt-4 max-[600px]:px-4 max-[600px]:pb-4">
+          {blocks.map(({ currency, data }) => (
+            <div key={currency} className="not-first:mt-6 not-first:border-t not-first:border-(--s-line-soft) not-first:pt-5">
+              <p className="mb-4 text-[13px] text-(--s-muted)">
+                {t.rich("total", {
+                  amount: formatMoney(data.total, locale, { currency }),
+                  count: data.orders,
+                  strong: (chunks) => <span className="font-bold text-(--s-ink)">{chunks}</span>,
+                })}
+              </p>
+              <div className="grid grid-cols-2 gap-7 max-[860px]:grid-cols-1">
+                <SourceList
+                  title={t("byChannel")}
+                  currency={currency}
+                  lines={data.channels}
+                  label={channelLabel}
+                  hint={(line) => (line.key === MARKETPLACE_CHANNEL ? t("marketplaceHint") : t("storeHint"))}
+                  icon={(line) => (line.key === MARKETPLACE_CHANNEL ? ShoppingBag : Store)}
+                />
+                <SourceList
+                  title={t("byPaymentMethod")}
+                  currency={currency}
+                  lines={data.paymentMethods}
+                  label={methodLabel}
+                  icon={() => CreditCard}
+                />
+              </div>
+            </div>
           ))}
         </div>
-      </CardHeader>
-      <CardContent>
-        {blocks.length === 0 ? (
-          <p className="py-8 text-center text-sm text-muted-foreground">
-            {period === "month" ? t("emptyMonth") : t("empty")}
-          </p>
-        ) : (
-          blocks.map(({ currency, data }) => (
-          <div key={currency} className="not-first:mt-8 not-first:border-t not-first:pt-6">
-            <p className="mb-6 text-sm text-muted-foreground">
-              {t.rich("total", {
-                amount: formatMoney(data.total, locale, { currency }),
-                count: data.orders,
-                strong: (chunks) => <span className="font-semibold text-foreground">{chunks}</span>,
-              })}
-            </p>
-            <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-              <SourceList
-                title={t("byChannel")}
-                currency={currency}
-                lines={data.channels}
-                label={channelLabel}
-                hint={(line) => (line.key === MARKETPLACE_CHANNEL ? t("marketplaceHint") : t("storeHint"))}
-                icon={(line) => (line.key === MARKETPLACE_CHANNEL ? ShoppingBag : Store)}
-              />
-              <SourceList
-                title={t("byPaymentMethod")}
-                currency={currency}
-                lines={data.paymentMethods}
-                label={methodLabel}
-                icon={() => CreditCard}
-              />
-            </div>
-          </div>
-          ))
-        )}
-      </CardContent>
-    </Card>
+      )}
+    </SellerCard>
   );
 }
 
@@ -109,33 +97,32 @@ function SourceList({
 
   return (
     <section>
-      <h3 className="mb-3 text-sm font-medium text-foreground">{title}</h3>
-      <ul className="space-y-4">
+      <h3 className="mb-3 text-[13.5px] font-bold text-(--s-text)">{title}</h3>
+      <ul className="flex flex-col gap-3.5">
         {lines.map((line) => {
-          const Icon = icon(line);
           const share = formatNumber(line.share, locale, { maximumFractionDigits: 1 });
           return (
             <li key={line.key}>
               <div className="flex items-center justify-between gap-3">
-                <div className="flex min-w-0 items-center gap-2">
-                  <Icon className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
+                <div className="flex min-w-0 items-center gap-2.5">
+                  <IconTile icon={icon(line)} tone="neutral" />
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-foreground">{label(line)}</p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="truncate text-[13.5px] font-bold text-(--s-text)">{label(line)}</p>
+                    <p className="text-xs text-(--s-subtle)">
                       {hint ? `${hint(line)} · ` : ""}
                       {t("orders", { count: line.orders })}
                     </p>
                   </div>
                 </div>
                 <div className="shrink-0 text-end">
-                  <p className="text-sm font-semibold text-foreground" dir="ltr">
+                  <p className="font-montserrat text-[13.5px] font-bold text-(--s-ink) tabular-nums" dir="ltr">
                     <Money value={line.amount} locale={locale} unit={{ currency }} />
                   </p>
-                  <p className="text-xs text-muted-foreground">{t("share", { value: share })}</p>
+                  <p className="text-xs text-(--s-subtle)">{t("share", { value: share })}</p>
                 </div>
               </div>
-              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted" aria-hidden>
-                <div className="h-full rounded-full bg-primary" style={{ width: `${Math.max(line.share, 1)}%` }} />
+              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-(--s-fill)" aria-hidden>
+                <div className="h-full rounded-full bg-(--s-primary)" style={{ width: `${Math.max(line.share, 1)}%` }} />
               </div>
             </li>
           );

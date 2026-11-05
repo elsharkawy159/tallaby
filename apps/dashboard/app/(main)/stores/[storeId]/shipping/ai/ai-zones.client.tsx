@@ -244,7 +244,7 @@ export function DescribeZonesSheet({
 
 function Notice({ children }: { children: React.ReactNode }) {
   return (
-    <p className="flex items-start gap-2 rounded-lg border border-amber-300/60 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-500/30 dark:bg-amber-950/30 dark:text-amber-200">
+    <p className="flex items-start gap-2 rounded-[14px] bg-accent-soft px-3 py-2.5 text-[12.5px] leading-[1.7] text-accent-ink">
       <AlertTriangle className="mt-0.5 size-4 shrink-0" />
       <span className="min-w-0 break-words">{children}</span>
     </p>

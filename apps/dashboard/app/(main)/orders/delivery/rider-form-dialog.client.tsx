@@ -3,17 +3,7 @@
 import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-import { Button } from "@workspace/ui/components/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@workspace/ui/components/dialog";
-import { Input } from "@workspace/ui/components/input";
-import { Label } from "@workspace/ui/components/label";
+import { Field, Modal, SellerButton, TextInput } from "@/components/seller-ui";
 import { createSellerRider, updateSellerRider } from "@/actions/shipping";
 import type { SellerRider } from "@/lib/shipping/shipping.types";
 
@@ -56,62 +46,42 @@ export function RiderFormDialog({ open, rider, onClose }: Props) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={(o) => !o && !isPending && onClose()}>
-      <DialogContent className="sm:max-w-md">
-        <form onSubmit={submit} className="space-y-4">
-          <DialogHeader>
-            <DialogTitle>{editing ? t("editTitle") : t("addTitle")}</DialogTitle>
-            <DialogDescription>
-              {editing ? t("editDescription") : t("addDescription")}
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-2">
-            <Label htmlFor="rider-name">{t("fullName")}</Label>
-            <Input
-              id="rider-name"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              required
-              autoComplete="off"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="rider-email">{t("email")}</Label>
-            <Input
-              id="rider-email"
-              type="email"
-              dir="ltr"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              disabled={editing}
-              autoComplete="off"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="rider-phone">{t("phone")}</Label>
-            <Input
-              id="rider-phone"
-              type="tel"
-              dir="ltr"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              required
-              autoComplete="off"
-            />
-          </div>
-
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose} disabled={isPending}>
-              {t("cancel")}
-            </Button>
-            <Button type="submit" disabled={isPending}>
-              {isPending ? t("saving") : editing ? t("saveChanges") : t("add")}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+    <Modal
+      open={open}
+      onOpenChange={(o) => !o && !isPending && onClose()}
+      title={editing ? t("editTitle") : t("addTitle")}
+      description={editing ? t("editDescription") : t("addDescription")}
+      footer={
+        <>
+          <SellerButton variant="outline" onClick={onClose} disabled={isPending}>
+            {t("cancel")}
+          </SellerButton>
+          <SellerButton type="submit" form="rider-form" variant="solid" disabled={isPending}>
+            {isPending ? t("saving") : editing ? t("saveChanges") : t("add")}
+          </SellerButton>
+        </>
+      }
+    >
+      <form id="rider-form" onSubmit={submit} className="flex flex-col gap-3.5">
+        <Field label={t("fullName")} htmlFor="rider-name">
+          <TextInput id="rider-name" value={fullName} onChange={(e) => setFullName(e.target.value)} required autoComplete="off" />
+        </Field>
+        <Field label={t("email")} htmlFor="rider-email">
+          <TextInput
+            id="rider-email"
+            type="email"
+            dir="ltr"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            disabled={editing}
+            autoComplete="off"
+          />
+        </Field>
+        <Field label={t("phone")} htmlFor="rider-phone">
+          <TextInput id="rider-phone" type="tel" dir="ltr" value={phone} onChange={(e) => setPhone(e.target.value)} required autoComplete="off" />
+        </Field>
+      </form>
+    </Modal>
   );
 }

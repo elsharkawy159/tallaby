@@ -3,16 +3,6 @@
 import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-import { Button } from "@workspace/ui/components/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@workspace/ui/components/dialog";
-import { Label } from "@workspace/ui/components/label";
 import {
   Select,
   SelectContent,
@@ -20,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@workspace/ui/components/select";
+import { Field, Modal, SellerButton, fieldClass } from "@/components/seller-ui";
 import { assignRider } from "@/actions/shipping";
 import type { SellerRider } from "@/lib/shipping/shipping.types";
 
@@ -67,62 +58,55 @@ export function AssignRiderDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={(o) => !o && !isPending && onClose()}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>{t("title", { count: orderIds.length })}</DialogTitle>
-          <DialogDescription>{t("description")}</DialogDescription>
-        </DialogHeader>
-
-        {assignable.length === 0 ? (
-          <div className="rounded-md border border-dashed p-6 text-center text-sm text-muted-foreground">
-            {t("noActiveRiders")}
-            <div className="mt-3">
-              <Button
-                size="sm"
-                onClick={() => {
-                  onClose();
-                  onAddRider();
-                }}
-              >
-                {t("addFirstRider")}
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            <Label htmlFor="assign-rider">{t("rider")}</Label>
-            <Select value={riderId} onValueChange={setRiderId}>
-              <SelectTrigger id="assign-rider" className="w-full">
-                <SelectValue placeholder={t("choose")} />
-              </SelectTrigger>
-              <SelectContent>
-                {assignable.map((r) => (
-                  <SelectItem key={r.id} value={r.id}>
-                    {r.fullName ?? r.email}
-                    <span className="ms-2 text-xs text-muted-foreground">
-                      {t("activeCount", { count: r.activeDeliveries })}
-                      {!r.isAvailable ? ` · ${t("offDuty")}` : ""}
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        )}
-
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose} disabled={isPending}>
+    <Modal
+      open={open}
+      onOpenChange={(o) => !o && !isPending && onClose()}
+      title={t("title", { count: orderIds.length })}
+      description={t("description")}
+      footer={
+        <>
+          <SellerButton variant="outline" onClick={onClose} disabled={isPending}>
             {t("cancel")}
-          </Button>
-          <Button
-            onClick={submit}
-            disabled={isPending || !riderId || assignable.length === 0}
-          >
+          </SellerButton>
+          <SellerButton variant="solid" onClick={submit} disabled={isPending || !riderId || assignable.length === 0}>
             {isPending ? t("assigning") : t("assign")}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          </SellerButton>
+        </>
+      }
+    >
+      {assignable.length === 0 ? (
+        <div className="flex flex-col items-center gap-3 rounded-2xl border-[1.5px] border-dashed border-(--s-field-strong) p-5 text-center text-[13px] text-(--s-muted)">
+          {t("noActiveRiders")}
+          <SellerButton
+            size="sm"
+            onClick={() => {
+              onClose();
+              onAddRider();
+            }}
+          >
+            {t("addFirstRider")}
+          </SellerButton>
+        </div>
+      ) : (
+        <Field label={t("rider")} htmlFor="assign-rider">
+          <Select value={riderId} onValueChange={setRiderId}>
+            <SelectTrigger id="assign-rider" className={fieldClass}>
+              <SelectValue placeholder={t("choose")} />
+            </SelectTrigger>
+            <SelectContent>
+              {assignable.map((r) => (
+                <SelectItem key={r.id} value={r.id}>
+                  {r.fullName ?? r.email}
+                  <span className="ms-2 text-xs text-(--s-subtle)">
+                    {t("activeCount", { count: r.activeDeliveries })}
+                    {!r.isAvailable ? ` · ${t("offDuty")}` : ""}
+                  </span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </Field>
+      )}
+    </Modal>
   );
 }

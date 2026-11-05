@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { LayoutTemplate, LoaderCircle, MapPinned, Pencil, Plus, Save, Settings2, Sparkles, Trash2 } from "lucide-react";
+import { LayoutTemplate, Minus, Pencil, Plus, Sparkles, Trash2 } from "lucide-react";
 
 // Tallaby delivery UI is disabled (owner, 2026-10-21); these imports only served it. See SettingsCard.
 // import { TALLABY_SERVICES_ENABLED } from "@workspace/lib/fulfillment";
@@ -27,20 +27,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@workspace/ui/components/alert-dialog";
-import { Badge } from "@workspace/ui/components/badge";
-import { Button } from "@workspace/ui/components/button";
-import { ChoiceCard, ChoiceGroup } from "@workspace/ui/components/choice-card";
-import { Input } from "@workspace/ui/components/input";
-import { Label } from "@workspace/ui/components/label";
-import { BUTTON_CLASS, FIELD_CLASS, LabelNote, SectionCard, SMALL_BUTTON_CLASS } from "@/components/form/form-ui";
-import { PageActionBar } from "@/components/layout/page-action-bar";
+import { IconButton, Note, OptionCard, OptionCards, SaveBar, SellerButton, Tag } from "@/components/seller-ui";
 import { cn } from "@/lib/utils";
 import { ShippingCompaniesCard } from "./shipping-companies.client";
 import { ShippingCoverage } from "./shipping-coverage";
+import { StepCard } from "./shipping-ui";
 import { DescribeZonesSheet } from "./ai/ai-zones.client";
 import { deleteShippingZone, saveShippingSettings } from "./shipping.server";
 import type { CoverageItem, TemplateOption, ZoneView } from "./shipping.dto";
-import { ShippingTemplates, TemplatesSheet } from "./templates.client";
+import { TemplatesSheet } from "./templates.client";
 import { formatEgp, ZoneSheet } from "./zone-sheet.client";
 
 type StoreMoney = { currency: StoreCurrency; label: CurrencyLabel };
@@ -48,8 +43,15 @@ type StoreMoney = { currency: StoreCurrency; label: CurrencyLabel };
 /** Chips shown per zone before "+N". */
 const CHIP_LIMIT = 8;
 
-/** Small buttons stay easy to tap on a phone. */
-const TOUCH_TARGET_CLASS = "h-11 sm:h-[34px]";
+/** The bar at each zone's edge, from the design's palette. They only tell zones apart. */
+const ZONE_COLORS = [
+  "var(--tallaby-teal-700)",
+  "var(--tallaby-teal-300)",
+  "var(--tallaby-amber-600)",
+  "var(--tallaby-teal-500)",
+  "var(--tallaby-teal-100)",
+  "var(--tallaby-amber-700)",
+];
 
 export function StoreShippingSettings({
   storeId,
@@ -125,78 +127,70 @@ export function StoreShippingSettings({
 
   // The two ways to add an area, the same with or without zones.
   const addActions = (
-    <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
-      <Button type="button" className={cn(BUTTON_CLASS, "sm:flex-1")} disabled={disabled} onClick={() => setEditing("new")}>
-        <Plus />
+    <div className="flex flex-wrap gap-2 max-[600px]:flex-col">
+      <SellerButton variant="solid" className="flex-1 max-[600px]:flex-none" disabled={disabled} onClick={() => setEditing("new")}>
+        <Plus aria-hidden />
         {t("addZone")}
-      </Button>
+      </SellerButton>
       {/* AI zones only match Egyptian place names, so another currency would pay for an empty answer. */}
       {egyptian && (
-        <Button
-          type="button"
+        <SellerButton
           variant="outline"
-          className={cn(BUTTON_CLASS, "h-auto min-h-[42px] py-2 whitespace-normal sm:flex-1")}
+          className="h-auto min-h-[42px] flex-1 whitespace-normal py-2 max-[600px]:flex-none"
           disabled={disabled}
           onClick={() => setDescribing(true)}
         >
-          <Sparkles className="text-primary" aria-hidden />
+          <Sparkles className="text-(--tallaby-amber-700)" aria-hidden />
           {t("describe.button")}
-        </Button>
+        </SellerButton>
       )}
     </div>
   );
 
   return (
-    <div className="space-y-5">
-      <PageActionBar>
-        <SettingsSaveButton form={settingsForm} readOnly={readOnly} />
-      </PageActionBar>
-      {readOnly && <p className="rounded-lg border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">{t("readOnly")}</p>}
+    <>
+      {readOnly && <Note tone="amber">{t("readOnly")}</Note>}
 
-      <SectionCard
+      <StepCard
         id="shipping-zones"
-        icon={MapPinned}
+        step={1}
+        done={zones.length > 0}
         title={t("zonesTitle")}
         description={t("checkoutNotice")}
+        className="[animation-delay:.05s]"
         action={
           egyptian && (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className={cn(SMALL_BUTTON_CLASS, TOUCH_TARGET_CLASS)}
-              disabled={disabled}
-              onClick={() => setTemplatesOpen(true)}
-            >
-              <LayoutTemplate />
+            <SellerButton variant="mini" size="xs" disabled={disabled} onClick={() => setTemplatesOpen(true)}>
+              <LayoutTemplate aria-hidden />
               {zones.length > 0 ? t("templates.button") : t("templates.startTitle")}
-            </Button>
+            </SellerButton>
           )
         }
       >
         {zones.length === 0 ? (
-          <div className="space-y-4 rounded-xl border border-dashed p-4 sm:p-6">
-            <p className="text-center text-sm text-pretty text-muted-foreground">{t("noZones")}</p>
+          <div className="flex flex-col gap-3.5 rounded-[20px] border-[1.5px] border-dashed border-(--s-field-strong) bg-linear-[160deg,var(--s-tint),var(--s-surface)_70%] p-5 max-[720px]:p-4">
+            <p className="text-pretty text-[13px] text-(--s-muted)">{t("noZones")}</p>
             {addActions}
           </div>
         ) : (
-          <div className="space-y-4">
+          <>
             {addActions}
-            <ul className="divide-y border-t">
-              {zones.map((view) => (
+            <ul className="flex flex-col gap-2">
+              {zones.map((view, index) => (
                 <ZoneRow
                   key={view.zone.id}
                   view={view}
                   money={money}
+                  color={ZONE_COLORS[index % ZONE_COLORS.length]!}
                   disabled={disabled}
                   onEdit={() => setEditing(view)}
                   onDelete={() => setDeleting(view.zone)}
                 />
               ))}
             </ul>
-          </div>
+          </>
         )}
-      </SectionCard>
+      </StepCard>
 
       {zones.length > 0 && coverage.length > 0 && (
         <ShippingCoverage
@@ -211,6 +205,14 @@ export function StoreShippingSettings({
       <ShippingCompaniesCard storeId={storeId} bosta={bosta} wassalha={wassalha} readOnly={readOnly} />
 
       <SettingsCard form={settingsForm} readOnly={readOnly} money={money} />
+
+      <SaveBar
+        dirty={!readOnly && settingsForm.changed}
+        saving={settingsForm.isPending}
+        saveDisabled={!settingsForm.freeOverValid}
+        onSave={settingsForm.submit}
+        onDiscard={settingsForm.discard}
+      />
 
       {egyptian && <TemplatesSheet open={templatesOpen} onOpenChange={setTemplatesOpen} {...templateProps} />}
 
@@ -235,7 +237,7 @@ export function StoreShippingSettings({
         <DescribeZonesSheet storeId={storeId} existingZones={raw} onClose={() => setDescribing(false)} onChanged={() => router.refresh()} />
       )}
 
-      <AlertDialog open={!!deleting}onOpenChange={(open) => !open && setDeleting(null)}>
+      <AlertDialog open={!!deleting} onOpenChange={(open) => !open && setDeleting(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{t("deleteTitle", { name: deleting?.nameAr ?? "" })}</AlertDialogTitle>
@@ -255,19 +257,21 @@ export function StoreShippingSettings({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </>
   );
 }
 
 function ZoneRow({
   view,
   money,
+  color,
   disabled,
   onEdit,
   onDelete,
 }: {
   view: ZoneView;
   money: StoreMoney;
+  color: string;
   disabled: boolean;
   onEdit: () => void;
   onDelete: () => void;
@@ -286,29 +290,26 @@ function ZoneRow({
   ].filter(Boolean);
 
   return (
-    <li className={cn("grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 gap-y-2 py-4 last:pb-0 sm:grid-cols-[minmax(0,1fr)_auto_auto]", !zone.enabled && "opacity-70")}>
-      <p className="flex min-w-0 flex-wrap items-center gap-2 font-semibold">
-        <span className="min-w-0 break-words">{name}</span>
-        {!zone.enabled && (
-          <Badge variant="outline" className="text-[11px] font-normal">
-            {t("disabled")}
-          </Badge>
-        )}
-        {overrides && (
-          <Badge variant="outline" className="max-w-full text-[11px] font-normal text-muted-foreground">
-            <span className="truncate">{t("overrides", { zone: overrides })}</span>
-          </Badge>
-        )}
-      </p>
-      <p className="text-lg leading-tight font-bold whitespace-nowrap tabular-nums sm:col-start-2 sm:row-span-2 sm:row-start-1">
-        <MoneyText locale={locale}>
-          {zone.price === 0 ? t("free") : t("egp", { amount: formatEgp(locale, zone.price), unit: moneyUnitMarked(locale, money) })}
-        </MoneyText>
-      </p>
-      <div className="col-span-2 min-w-0 space-y-1.5 sm:col-span-1 sm:col-start-1 sm:row-start-2">
-        <ul className="flex flex-wrap gap-1.5">
+    <li
+      className={cn(
+        "grid grid-cols-[10px_minmax(0,1fr)_auto_auto] items-center gap-x-3.5 gap-y-2 rounded-[18px] border border-(--s-line) bg-(--s-surface) px-4 py-3.5 max-[720px]:grid-cols-[8px_minmax(0,1fr)_auto] max-[720px]:gap-x-2.5 max-[720px]:px-3",
+        !zone.enabled && "opacity-70",
+      )}
+    >
+      <i aria-hidden className="w-2.5 self-stretch rounded-[5px] max-[720px]:row-span-2 max-[720px]:w-2" style={{ background: color }} />
+      <div className="flex min-w-0 flex-col gap-1.5">
+        <b className="flex min-w-0 flex-wrap items-center gap-2 text-sm font-bold text-(--s-ink)">
+          <span className="min-w-0 wrap-break-word">{name}</span>
+          {!zone.enabled && <Tag>{t("disabled")}</Tag>}
+          {overrides && (
+            <Tag className="max-w-full">
+              <span className="truncate">{t("overrides", { zone: overrides })}</span>
+            </Tag>
+          )}
+        </b>
+        <ul className="flex flex-wrap gap-1">
           {visible.map((c) => (
-            <li key={c.key} className="max-w-full truncate rounded-full bg-muted px-2.5 py-0.5 text-xs">
+            <li key={c.key} className="max-w-full truncate rounded-full bg-(--s-fill) px-2.5 py-0.5 text-xs text-(--s-muted)">
               {c.label}
             </li>
           ))}
@@ -316,7 +317,7 @@ function ZoneRow({
             <li>
               <button
                 type="button"
-                className="inline-flex min-h-6 items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-primary outline-none hover:bg-muted/70 focus-visible:ring-2 focus-visible:ring-ring"
+                className="inline-flex min-h-6 cursor-pointer items-center rounded-full bg-(--s-fill) px-2.5 py-0.5 text-xs font-semibold text-(--s-link) outline-none hover:bg-(--s-hover) focus-visible:outline-[3px] focus-visible:outline-(--s-focus)"
                 aria-label={t("morePlacesLabel", { count: hidden })}
                 onClick={() => setShowAll(true)}
               >
@@ -325,26 +326,27 @@ function ZoneRow({
             </li>
           )}
         </ul>
-        <LabelNote>
+        <small className="block text-xs text-(--s-subtle)">
           <MoneyText locale={locale}>{meta.join(" · ")}</MoneyText>
-        </LabelNote>
+        </small>
       </div>
-      <div className="col-span-2 flex items-center justify-end gap-2 sm:col-span-1 sm:col-start-3 sm:row-span-2 sm:row-start-1 sm:items-start">
-        <Button type="button" variant="outline" size="sm" className={cn(SMALL_BUTTON_CLASS, TOUCH_TARGET_CLASS)} disabled={disabled} onClick={onEdit}>
-          <Pencil />
-          {t("edit")}
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className={cn(SMALL_BUTTON_CLASS, TOUCH_TARGET_CLASS, "w-11 text-destructive sm:w-auto")}
+      <p className="whitespace-nowrap rounded-xl border-[1.5px] border-(--s-field) px-3 py-2 font-montserrat text-sm font-bold leading-tight text-(--s-ink) tabular-nums max-[720px]:self-start max-[720px]:px-2.5">
+        <MoneyText locale={locale}>
+          {zone.price === 0 ? t("free") : t("egp", { amount: formatEgp(locale, zone.price), unit: moneyUnitMarked(locale, money) })}
+        </MoneyText>
+      </p>
+      <div className="flex items-center gap-0.5 max-[720px]:col-span-2 max-[720px]:col-start-2 max-[720px]:justify-end">
+        <IconButton disabled={disabled} aria-label={t("edit")} onClick={onEdit}>
+          <Pencil aria-hidden />
+        </IconButton>
+        <IconButton
+          className="hover:bg-destructive-soft hover:text-destructive"
           disabled={disabled}
-          onClick={onDelete}
           aria-label={t("deleteTitle", { name })}
+          onClick={onDelete}
         >
-          <Trash2 />
-        </Button>
+          <Trash2 aria-hidden />
+        </IconButton>
       </div>
     </li>
   );
@@ -384,7 +386,11 @@ function useSettingsForm(storeId: string, initial: Settings) {
     freeShippingOver: freeShippingOverFor(freeMode, freeOver),
     otherPlaces,
   };
-  const dirty = JSON.stringify(next) !== JSON.stringify(saved);
+  // Field by field, so the save bar opens only when the seller changed something they can see.
+  const changed =
+    next.handlingDays !== saved.handlingDays ||
+    next.otherPlaces !== saved.otherPlaces ||
+    next.freeShippingOver !== (saved.freeShippingOver ?? null);
 
   const submit = () =>
     startTransition(async () => {
@@ -397,6 +403,13 @@ function useSettingsForm(storeId: string, initial: Settings) {
         toast.error(t(`errors.${result.error}`));
       }
     });
+
+  const discard = () => {
+    setHandlingDays(String(saved.handlingDays));
+    setOtherPlaces(saved.otherPlaces);
+    setFreeMode(freeModeOf(saved.freeShippingOver));
+    setFreeOver(saved.freeShippingOver ? String(saved.freeShippingOver) : "");
+  };
 
   const freeOverValid = freeMode !== "over" || (next.freeShippingOver !== null && next.freeShippingOver > 0);
 
@@ -411,9 +424,10 @@ function useSettingsForm(storeId: string, initial: Settings) {
     freeOver,
     setFreeOver,
     freeOverValid,
-    dirty: dirty && freeOverValid,
+    changed,
     isPending,
     submit,
+    discard,
   };
 }
 
@@ -433,61 +447,50 @@ function freeShippingOverFor(mode: FreeMode, amount: string): number | null {
 
 type SettingsForm = ReturnType<typeof useSettingsForm>;
 
-/** The page's Save button, shown in its top action bar; it saves the settings card. */
-function SettingsSaveButton({ form, readOnly }: { form: SettingsForm; readOnly: boolean }) {
-  const t = useTranslations("storeShipping");
-  return (
-    <Button type="button" className={BUTTON_CLASS} disabled={readOnly || form.isPending || !form.dirty} onClick={form.submit}>
-      {form.isPending ? <LoaderCircle className="animate-spin" /> : <Save />}
-      {t("save")}
-    </Button>
-  );
-}
+/** The server accepts 0–30 days. */
+const HANDLING_DAYS_MAX = 30;
 
 function SettingsCard({ form, readOnly, money }: { form: SettingsForm; readOnly: boolean; money: StoreMoney }) {
   const t = useTranslations("storeShipping");
   const locale = useLocale();
   const { handlingDays, setHandlingDays, otherPlaces, setOtherPlaces, freeMode, setFreeMode, freeOver, setFreeOver, freeOverValid } = form;
+  const stepDays = (delta: number) =>
+    setHandlingDays(String(Math.min(HANDLING_DAYS_MAX, Math.max(0, (Number(handlingDays) || 0) + delta))));
 
   return (
-    <SectionCard id="shipping-settings" icon={Settings2} title={t("settingsTitle")} description={t("settingsDescription")}>
-      <div className="space-y-5">
-        {/* Tallaby delivery disabled (owner, 2026-10-21); see the comment above SettingsCard.
-        <ChoiceGroup value={method} onValueChange={(v) => setMethod(v as Settings["method"])} columns={2} stack disabled={readOnly}>
-          <ChoiceCard
-            value="tallaby"
-            indicator
-            title={t("tallabyTitle")}
-            description={
-              TALLABY_SERVICES_ENABLED
-                ? t("tallabyDescription")
-                : saved.method === "tallaby"
-                  ? t("tallabyLegacy")
-                  : t("tallabySoonDescription")
-            }
-            disabled={!TALLABY_SERVICES_ENABLED && saved.method !== "tallaby"}
-            badge={
-              !TALLABY_SERVICES_ENABLED && (
-                <span className="rounded-full bg-muted px-2.5 py-0.5 text-[11.5px] font-semibold text-muted-foreground">
-                  {t("soon")}
-                </span>
-              )
-            }
-          />
-          <ChoiceCard value="own" indicator title={t("ownTitle")} description={t("ownDescription")} />
-        </ChoiceGroup>
-        */}
+    <StepCard id="shipping-settings" step={3} title={t("rulesTitle")} description={t("rulesDescription")} className="[animation-delay:.15s]">
+      {/* Tallaby delivery disabled (owner, 2026-10-21); see the comment above useSettingsForm: the Tallaby/own
+          ChoiceGroup, the seller-funded free-over field and Tallaby's read-only rate table were here. The same
+          rates are now the "Tallaby's rates" shipping template. */}
 
-        <fieldset className="space-y-2">
-          <legend className="mb-1 text-sm font-medium">{t("freeDelivery.title")}</legend>
-          <ChoiceGroup value={freeMode} onValueChange={(v) => setFreeMode(v as FreeMode)} columns={3} stack disabled={readOnly}>
-            <ChoiceCard value="none" indicator title={t("freeDelivery.none")} description={t("freeDelivery.noneDescription")} />
-            <ChoiceCard value="over" indicator title={t("freeDelivery.over")} description={t("freeDelivery.overDescription")} />
-            <ChoiceCard value="all" indicator title={t("freeDelivery.all")} description={t("freeDelivery.allDescription")} />
-          </ChoiceGroup>
-          {freeMode === "over" && (
-            <div className="grid max-w-xs gap-1.5 pt-1">
-              <Label htmlFor="free-over">{t("freeDelivery.amount", moneyParams(locale, money))}</Label>
+      <fieldset className="flex min-w-0 flex-col gap-2.5">
+        <legend className="mb-2.5 text-[13.5px] font-bold text-(--s-text)">{t("freeDelivery.title")}</legend>
+        <OptionCards>
+          {(
+            [
+              ["none", "freeDelivery.none", "freeDelivery.noneDescription"],
+              ["over", "freeDelivery.over", "freeDelivery.overDescription"],
+              ["all", "freeDelivery.all", "freeDelivery.allDescription"],
+            ] as const
+          ).map(([value, title, description]) => (
+            <OptionCard
+              key={value}
+              name="free-delivery"
+              value={value}
+              checked={freeMode === value}
+              disabled={readOnly}
+              onChange={() => setFreeMode(value)}
+              title={t(title)}
+              description={t(description)}
+            />
+          ))}
+        </OptionCards>
+        {freeMode === "over" && (
+          <div className="flex flex-wrap items-center gap-2.5 rounded-[14px] border border-(--tallaby-amber-100) bg-accent-soft px-3.5 py-3 text-[13px] text-accent-ink dark:border-transparent">
+            <label htmlFor="free-over" className="font-semibold">
+              {t("freeDelivery.amount", moneyParams(locale, money))}
+            </label>
+            <div className="w-40 max-w-full">
               <CurrencyInput
                 {...money}
                 id="free-over"
@@ -498,105 +501,88 @@ function SettingsCard({ form, readOnly, money }: { form: SettingsForm; readOnly:
                 invalid={!freeOverValid}
               />
             </div>
-          )}
-          <LabelNote>{t("freeDelivery.note")}</LabelNote>
-        </fieldset>
+          </div>
+        )}
+        <p className="text-pretty text-xs text-(--s-faint)">{t("freeDelivery.note")}</p>
+      </fieldset>
 
-        <fieldset className="space-y-2">
-          <legend className="mb-1 text-sm font-medium">{t("otherPlaces.title")}</legend>
-          {money.currency === DEFAULT_CURRENCY ? (
-            <>
-              <ChoiceGroup
-                value={otherPlaces}
-                onValueChange={(v) => setOtherPlaces(v as Settings["otherPlaces"])}
-                columns={2}
-                stack
-                disabled={readOnly}
-              >
-                <ChoiceCard
-                  value="tallaby_rates"
-                  indicator
-                  title={t("otherPlaces.tallabyRates")}
-                  description={t("otherPlaces.tallabyRatesDescription")}
-                />
-                <ChoiceCard value="refuse" indicator title={t("otherPlaces.refuse")} description={t("otherPlaces.refuseDescription")} />
-              </ChoiceGroup>
-              <LabelNote>{t("otherPlaces.note")}</LabelNote>
-            </>
-          ) : (
-            // Tallaby's rates are Egyptian pounds; the saved choice is kept in case the store goes back to EGP.
-            <p className="rounded-xl border bg-muted/30 p-3 text-sm text-pretty">{t("otherPlaces.notCovered", { unit: moneyUnitText(locale, money) })}</p>
-          )}
-        </fieldset>
+      <div className="h-px bg-(--s-line-soft)" />
 
-        <div className="grid gap-1.5">
-          <Label htmlFor="handling-days">{t("handlingDays")}</Label>
-          <div className="flex flex-wrap items-center gap-2 text-sm">
-            <Input
+      <div className="flex flex-col gap-2.5">
+        <label htmlFor="handling-days" className="text-[13.5px] font-bold text-(--s-text)">
+          {t("handlingDays")}
+        </label>
+        <div className="flex flex-wrap items-center gap-3 text-[13px] text-(--s-muted)">
+          <div dir="ltr" className="inline-flex h-11 items-stretch overflow-hidden rounded-[14px] border-[1.5px] border-(--s-field) bg-(--s-surface) focus-within:border-(--s-primary)">
+            <button
+              type="button"
+              disabled={readOnly}
+              aria-label={t("handlingDaysLess")}
+              onClick={() => stepDays(-1)}
+              className="grid w-11 cursor-pointer place-items-center text-(--s-primary) transition-colors duration-150 hover:bg-(--s-hover) disabled:pointer-events-none disabled:opacity-40"
+            >
+              <Minus className="size-4" aria-hidden />
+            </button>
+            <input
               id="handling-days"
               type="number"
               inputMode="numeric"
               min={0}
-              max={30}
-              dir="ltr"
-              className={cn(FIELD_CLASS, "w-24 text-center")}
+              max={HANDLING_DAYS_MAX}
               disabled={readOnly}
+              className="w-12 bg-transparent text-center font-montserrat text-base font-bold text-(--s-ink) outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
               value={handlingDays}
               onChange={(e) => setHandlingDays(e.target.value)}
             />
-            <span className="text-muted-foreground">{t("handlingDaysUnit")}</span>
-          </div>
-          <LabelNote>{t("handlingDaysHelp")}</LabelNote>
-        </div>
-        {/* Tallaby delivery disabled (owner, 2026-10-21): seller-funded free delivery on Tallaby's rates.
-        {method === "tallaby" && (
-          <div className="grid gap-1.5">
-            <Label htmlFor="free-over">{t("freeOver")}</Label>
-            <CurrencyInput
-              id="free-over"
+            <button
+              type="button"
               disabled={readOnly}
-              placeholder={t("freeOverPlaceholder")}
-              value={freeOver}
-              onChange={setFreeOver}
-            />
-            <LabelNote>{t("freeOverHelp")}</LabelNote>
+              aria-label={t("handlingDaysMore")}
+              onClick={() => stepDays(1)}
+              className="grid w-11 cursor-pointer place-items-center text-(--s-primary) transition-colors duration-150 hover:bg-(--s-hover) disabled:pointer-events-none disabled:opacity-40"
+            >
+              <Plus className="size-4" aria-hidden />
+            </button>
           </div>
-        )}
-        */}
-
-        {/* Tallaby delivery disabled (owner, 2026-10-21): Tallaby's read-only rate table. The same rates are now
-            the "Tallaby's rates" shipping template.
-        {method === "tallaby" && (
-          <div>
-            <Button type="button" variant="link" className="h-auto p-0" onClick={() => setShowRates((s) => !s)}>
-              {showRates ? t("hideRates") : t("showRates")}
-            </Button>
-            {showRates && (
-              <div className="mt-3 overflow-hidden rounded-xl border">
-                <table className="w-full text-sm">
-                  <thead className="bg-muted/50 text-muted-foreground">
-                    <tr>
-                      <th className="px-3 py-2 text-start font-medium">{t("governorate")}</th>
-                      <th className="px-3 py-2 text-end font-medium">{t("fields.price")}</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y">
-                    {ZONE_GOVERNORATES.map((g) => (
-                      <tr key={g}>
-                        <td className="px-3 py-1.5">{getGovernorateLabel(g, locale)}</td>
-                        <td className="px-3 py-1.5 text-end tabular-nums">
-                          {t("egp", { amount: formatEgp(locale, applyShippingFeesAndRound(getBaseRateForGovernorate(g) ?? 0)) })}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        )}
-        */}
+          <span>{t("handlingDaysUnit")}</span>
+        </div>
+        <p className="text-pretty text-xs text-(--s-faint)">{t("handlingDaysHelp")}</p>
       </div>
-    </SectionCard>
+
+      <div className="h-px bg-(--s-line-soft)" />
+
+      {/* Quiet and last while the owner decides on "use Tallaby's rates": it still sets what customers pay in uncovered places. */}
+      <fieldset className="flex min-w-0 flex-col gap-2">
+        <legend className="mb-2 text-[13px] font-semibold text-(--s-muted)">{t("otherPlaces.title")}</legend>
+        {money.currency === DEFAULT_CURRENCY ? (
+          <>
+            <OptionCards>
+              <OptionCard
+                name="other-places"
+                value="tallaby_rates"
+                checked={otherPlaces === "tallaby_rates"}
+                disabled={readOnly}
+                onChange={() => setOtherPlaces("tallaby_rates")}
+                title={t("otherPlaces.tallabyRates")}
+                description={t("otherPlaces.tallabyRatesDescription")}
+              />
+              <OptionCard
+                name="other-places"
+                value="refuse"
+                checked={otherPlaces === "refuse"}
+                disabled={readOnly}
+                onChange={() => setOtherPlaces("refuse")}
+                title={t("otherPlaces.refuse")}
+                description={t("otherPlaces.refuseDescription")}
+              />
+            </OptionCards>
+            <p className="text-pretty text-xs text-(--s-faint)">{t("otherPlaces.note")}</p>
+          </>
+        ) : (
+          // Tallaby's rates are Egyptian pounds; the saved choice is kept in case the store goes back to EGP.
+          <Note>{t("otherPlaces.notCovered", { unit: moneyUnitText(locale, money) })}</Note>
+        )}
+      </fieldset>
+    </StepCard>
   );
 }

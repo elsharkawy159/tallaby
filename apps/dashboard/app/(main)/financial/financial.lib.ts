@@ -41,7 +41,8 @@ export function startOfMonth(now: Date = new Date()): Date {
 
 /** Folds the checkout's payment-method spellings into one key per method. */
 export function normalizePaymentMethod(method: string | null | undefined): string {
-  const value = (method ?? "").trim().toLowerCase();
+  // The orders column default is the mistyped `'cash` (older rows have it), so a stray quote never reaches the screen.
+  const value = (method ?? "").replace(/'/g, "").trim().toLowerCase();
   if (!value || value === "cash" || value === "cod" || value === "cash_on_delivery") return "cod";
   // Split checkouts are stored as `wallet_<method>`; the wallet paid first.
   if (value.startsWith("wallet")) return "wallet";

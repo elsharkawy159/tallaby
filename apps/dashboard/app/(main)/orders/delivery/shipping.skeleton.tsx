@@ -1,23 +1,20 @@
 import { Skeleton } from "@workspace/ui/components/skeleton";
+import { KpiGrid } from "@/components/seller-ui";
 
 export function ShippingSkeleton() {
   return (
-    <div className="space-y-6">
-      <div className="space-y-2">
+    <>
+      <div className="flex flex-col gap-2">
         <Skeleton className="h-8 w-64" />
         <Skeleton className="h-4 w-96 max-w-full" />
       </div>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <KpiGrid>
         {Array.from({ length: 4 }).map((_, i) => (
-          <Skeleton key={i} className="h-24 w-full rounded-xl" />
+          <Skeleton key={i} className="h-[132px] rounded-[24px]" />
         ))}
-      </div>
-      <Skeleton className="h-10 w-80 max-w-full" />
-      <div className="space-y-2 rounded-lg border p-4">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <Skeleton key={i} className="h-12 w-full" />
-        ))}
-      </div>
-    </div>
+      </KpiGrid>
+      <Skeleton className="h-12 w-80 max-w-full rounded-full" />
+      <Skeleton className="h-80 w-full rounded-[24px]" />
+    </>
   );
 }

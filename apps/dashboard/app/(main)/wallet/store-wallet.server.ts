@@ -36,7 +36,8 @@ export async function getStoreWalletOverview(sellerId: string): Promise<StoreWal
   const [row] = await db
     .select({
       balance: sql<string>`coalesce(${sellerWallet.balance}, 0)::text`,
-      currency: sql<string>`coalesce(${sellerWallet.currency}, 'EGP')`,
+      // A wallet row appears at the first ledger entry; until then it is what a new wallet would open in (0136), as on the dashboard home.
+      currency: sql<string>`coalesce(${sellerWallet.currency}, billing_wallet_currency())`,
       status: sql<string>`coalesce(${sellerWallet.status}::text, 'active')`,
       negativeLimit: sellerWallet.negativeLimit,
       trialEligible: sellers.feeTrialEligible,
@@ -139,7 +140,8 @@ export async function getStoreWalletBalance(sellerId: string): Promise<{ balance
   const [row] = await db
     .select({
       balance: sql<string>`coalesce(${sellerWallet.balance}, 0)::text`,
-      currency: sql<string>`coalesce(${sellerWallet.currency}, 'EGP')`,
+      // A wallet row appears at the first ledger entry; until then it is what a new wallet would open in (0136), as on the dashboard home.
+      currency: sql<string>`coalesce(${sellerWallet.currency}, billing_wallet_currency())`,
     })
     .from(sellers)
     .leftJoin(sellerWallet, eq(sellerWallet.sellerId, sellers.id))

@@ -2,8 +2,7 @@
 
 import { useLocale, useTranslations } from "next-intl";
 import { Plus } from "lucide-react";
-import { Button } from "@workspace/ui/components/button";
-import { SMALL_BUTTON_CLASS } from "@/components/form/form-ui";
+import { SellerButton, SellerCard } from "@/components/seller-ui";
 import { cn } from "@/lib/utils";
 import type { CoverageItem } from "./shipping.dto";
 import { formatEgp } from "./zone-sheet.client";
@@ -35,13 +34,13 @@ export function ShippingCoverage({
   const gaps = items.length - covered;
 
   return (
-    <section aria-labelledby="shipping-coverage-title" className="rounded-2xl border bg-card p-4 sm:p-6">
+    <SellerCard aria-labelledby="shipping-coverage-title" className="flex flex-col gap-3.5 p-[22px] max-[720px]:p-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
-        <div className="min-w-0">
-          <h2 id="shipping-coverage-title" className="text-base font-semibold text-balance">
+        <div className="min-w-0 flex-1 basis-60">
+          <h2 id="shipping-coverage-title" className="text-balance text-[15.5px] font-bold text-(--s-ink)">
             {countryName ? t("summaryCountry", { covered, total: items.length, country: countryName }) : t("summary", { covered, total: items.length })}
           </h2>
-          <p className="mt-1 text-sm text-pretty text-muted-foreground">
+          <p className="mt-0.5 text-pretty text-[13px] text-(--s-subtle)">
             {countryName
               ? gaps === 0
                 ? t("allCoveredCountry", { country: countryName })
@@ -54,14 +53,21 @@ export function ShippingCoverage({
           </p>
         </div>
         {gaps > 0 && (
-          <Button type="button" variant="outline" size="sm" className={cn(SMALL_BUTTON_CLASS, "h-11 sm:h-[34px]")} disabled={disabled} onClick={onAddZone}>
-            <Plus />
+          <SellerButton variant="mini" size="xs" disabled={disabled} onClick={onAddZone}>
+            <Plus aria-hidden />
             {t("closeGaps")}
-          </Button>
+          </SellerButton>
         )}
       </div>
 
-      <ul className="mt-4 grid grid-cols-2 gap-1.5 sm:grid-cols-3 lg:grid-cols-4">
+      <div className="h-2 overflow-hidden rounded-full bg-(--s-fill)" aria-hidden>
+        <div
+          className="h-full rounded-full bg-(--s-primary) transition-[width] duration-500"
+          style={{ width: `${items.length ? Math.max(2, (covered / items.length) * 100) : 0}%` }}
+        />
+      </div>
+
+      <ul className="grid grid-cols-4 gap-1.5 max-[1020px]:grid-cols-3 max-[600px]:grid-cols-2">
         {items.map((item) => {
           const hasPrice = item.price !== null;
           return (
@@ -69,12 +75,12 @@ export function ShippingCoverage({
               key={item.key}
               title={item.zoneName ?? undefined}
               className={cn(
-                "flex min-h-11 items-center justify-between gap-2 rounded-lg px-2.5 py-1.5 text-[13px]",
+                "flex min-h-11 items-center justify-between gap-2 rounded-xl px-2.5 py-1.5 text-[13px]",
                 hasPrice
                   ? "bg-primary-soft text-primary-ink"
                   : item.partial
                     ? "border border-dashed border-accent-ink/40 bg-accent-soft text-accent-ink"
-                    : "border border-dashed border-input text-muted-foreground",
+                    : "border border-dashed border-(--s-field-strong) text-(--s-subtle)",
               )}
             >
               <span className="min-w-0 truncate">{item.label}</span>
@@ -89,6 +95,6 @@ export function ShippingCoverage({
           );
         })}
       </ul>
-    </section>
+    </SellerCard>
   );
 }

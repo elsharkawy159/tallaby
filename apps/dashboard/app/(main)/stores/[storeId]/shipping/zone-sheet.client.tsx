@@ -3,20 +3,14 @@
 import { useMemo, useState, useTransition } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { LoaderCircle, Save } from "lucide-react";
+import { LoaderCircle } from "lucide-react";
 
 import type { StoreShippingZone } from "@workspace/lib/stores/server";
 import { DEFAULT_CURRENCY } from "@workspace/lib";
-import { Button } from "@workspace/ui/components/button";
-import { Input } from "@workspace/ui/components/input";
-import { Label } from "@workspace/ui/components/label";
-import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@workspace/ui/components/sheet";
-import { Switch } from "@workspace/ui/components/switch";
-import { BUTTON_CLASS, FIELD_CLASS, LabelNote } from "@/components/form/form-ui";
 import { CurrencyInput } from "@/components/form/currency-input";
 import { MoneyText } from "@/components/money";
+import { Field, FieldRow, Modal, Note, SellerButton, TextInput, Toggle } from "@/components/seller-ui";
 import { moneyUnitMarked, type MoneyUnit } from "@/lib/i18n/format";
-import { cn } from "@/lib/utils";
 import { PlacePicker, useShippingLib, type ShippingLib } from "./place-picker.client";
 import { saveShippingZone } from "./shipping.server";
 import { toZoneInput, type ZoneFormValues } from "./shipping.dto";
@@ -34,7 +28,7 @@ const EMPTY_ZONE: ZoneFormValues = {
 };
 
 export const formatEgp = (locale: string, egp: number) =>
-  new Intl.NumberFormat(locale.startsWith("ar") ? "ar-EG" : "en-EG", { maximumFractionDigits: 2 }).format(egp);
+  new Intl.NumberFormat(locale.startsWith("ar") ? "ar-EG" : "en-EG", { maximumFractionDigits: 2, numberingSystem: "latn" }).format(egp);
 
 /**
  * Tallaby's rate for a set of places: the highest governorate rate among them
@@ -156,58 +150,67 @@ export function ZoneSheet({
   const invalid = (key: string) => submitted && issues.has(key);
 
   return (
-    <Sheet open onOpenChange={(open) => !open && onClose()}>
-      <SheetContent side={locale.startsWith("ar") ? "left" : "right"} className="flex w-full flex-col gap-0 p-0 sm:max-w-lg">
-        <SheetHeader className="border-b px-5 py-4 sm:px-6">
-          <SheetTitle>{zone ? t("editZone") : t("addZone")}</SheetTitle>
-          <SheetDescription>{t("zoneSheetDescription")}</SheetDescription>
-        </SheetHeader>
-
-        <form id="zone-form" onSubmit={submit} noValidate className="min-w-0 flex-1 space-y-5 overflow-y-auto px-5 py-5 sm:px-6">
-          <div className="grid gap-1.5">
-            <Label htmlFor="zone-nameAr">{t("fields.nameAr")}</Label>
-            <Input
+    <Modal
+      open
+      onOpenChange={(open) => !open && !isPending && onClose()}
+      width={560}
+      className="max-h-[calc(100dvh-32px)] overflow-hidden"
+      title={zone ? t("editZone") : t("addZone")}
+      description={t("zoneSheetDescription")}
+      footer={
+        <>
+          <SellerButton variant="outline" onClick={onClose} disabled={isPending}>
+            {t("cancel")}
+          </SellerButton>
+          <SellerButton type="submit" form="zone-form" variant="solid" disabled={isPending || !lib}>
+            {(isPending || !lib) && <LoaderCircle className="animate-spin" aria-hidden />}
+            {t("saveZone")}
+          </SellerButton>
+        </>
+      }
+    >
+      <form id="zone-form" onSubmit={submit} noValidate className="-mx-1 flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overscroll-contain px-1 pb-1">
+        <FieldRow>
+          <Field label={t("fields.nameAr")} htmlFor="zone-nameAr">
+            <TextInput
               id="zone-nameAr"
               dir="rtl"
               maxLength={60}
-              className={cn(FIELD_CLASS, invalid("nameAr") && "border-destructive")}
               aria-invalid={invalid("nameAr") || undefined}
               value={values.nameAr}
               onChange={(e) => set("nameAr", e.target.value)}
             />
-          </div>
-          <div className="grid gap-1.5">
-            <Label htmlFor="zone-nameEn">{t("fields.nameEn")}</Label>
-            <Input
-              id="zone-nameEn"
-              dir="ltr"
-              maxLength={60}
-              className={FIELD_CLASS}
-              value={values.nameEn}
-              onChange={(e) => set("nameEn", e.target.value)}
-            />
-          </div>
+          </Field>
+          <Field label={t("fields.nameEn")} htmlFor="zone-nameEn">
+            <TextInput id="zone-nameEn" dir="ltr" maxLength={60} value={values.nameEn} onChange={(e) => set("nameEn", e.target.value)} />
+          </Field>
+        </FieldRow>
 
-          <div className="grid gap-1.5">
-            <Label htmlFor="zone-places">{t("fields.places")}</Label>
-            <PlacePicker
-              id="zone-places"
-              country={country}
-              lib={lib}
-              value={values.places}
-              onChange={setPlaces}
-              takenBy={takenBy}
-              blockTaken={values.enabled}
-              labels={labels}
-              invalid={invalid("places")}
-            />
-            <LabelNote>{t("fields.placesHelp")}</LabelNote>
-            {invalid("places") && <p className="text-sm text-destructive">{t("fieldErrors.places")}</p>}
-            {overlap && <p className="text-sm text-destructive">{t("errors.overlap")}</p>}
-          </div>
+        <Field
+          label={t("fields.places")}
+          htmlFor="zone-places"
+          note={t("fields.placesHelp")}
+          error={invalid("places") ? t("fieldErrors.places") : overlap ? t("errors.overlap") : undefined}
+        >
+          <PlacePicker
+            id="zone-places"
+            country={country}
+            lib={lib}
+            value={values.places}
+            onChange={setPlaces}
+            takenBy={takenBy}
+            blockTaken={values.enabled}
+            labels={labels}
+            invalid={invalid("places")}
+          />
+        </Field>
 
-          <div className="grid gap-1.5">
-            <Label htmlFor="zone-price">{t("fields.price")}</Label>
+        <FieldRow>
+          <Field
+            label={t("fields.price")}
+            htmlFor="zone-price"
+            note={suggested !== null ? t("fields.priceHelp", { amount: formatEgp(locale, suggested), unit }) : undefined}
+          >
             <CurrencyInput
               {...money}
               id="zone-price"
@@ -218,11 +221,8 @@ export function ZoneSheet({
                 set("price", v);
               }}
             />
-            {suggested !== null && <LabelNote>{t("fields.priceHelp", { amount: formatEgp(locale, suggested), unit })}</LabelNote>}
-          </div>
-
-          <div className="grid gap-1.5">
-            <Label htmlFor="zone-freeOver">{t("fields.freeOver")}</Label>
+          </Field>
+          <Field label={t("fields.freeOver")} htmlFor="zone-freeOver" note={t("fields.freeOverHelp")}>
             <CurrencyInput
               {...money}
               id="zone-freeOver"
@@ -231,89 +231,82 @@ export function ZoneSheet({
               value={values.freeOver}
               onChange={(v) => set("freeOver", v)}
             />
-            <LabelNote>{t("fields.freeOverHelp")}</LabelNote>
+          </Field>
+        </FieldRow>
+
+        <fieldset className="flex flex-col gap-2">
+          <legend className="mb-2 text-[13.5px] font-bold text-(--s-text)">{t("fields.deliveryTime")}</legend>
+          <div className="flex flex-wrap items-center gap-2 text-[13px] text-(--s-muted)">
+            <TextInput
+              id="zone-deliveryDaysMin"
+              type="number"
+              inputMode="numeric"
+              min={0}
+              max={60}
+              step={1}
+              dir="ltr"
+              aria-label={t("fields.deliveryDaysMin")}
+              aria-invalid={invalid("deliveryDaysMin") || undefined}
+              className="w-20 text-center font-montserrat"
+              value={values.deliveryDaysMin}
+              onChange={(e) => set("deliveryDaysMin", e.target.value)}
+            />
+            <span>{t("fields.to")}</span>
+            <TextInput
+              id="zone-deliveryDaysMax"
+              type="number"
+              inputMode="numeric"
+              min={0}
+              max={60}
+              step={1}
+              dir="ltr"
+              aria-label={t("fields.deliveryDaysMax")}
+              aria-invalid={invalid("deliveryDaysMax") || undefined}
+              className="w-20 text-center font-montserrat"
+              value={values.deliveryDaysMax}
+              onChange={(e) => set("deliveryDaysMax", e.target.value)}
+            />
+            <span>{t("fields.days")}</span>
           </div>
-
-          <fieldset className="grid gap-1.5">
-            <legend className="mb-1.5 text-sm font-medium">{t("fields.deliveryTime")}</legend>
-            <div className="flex flex-wrap items-center gap-2 text-sm">
-              <Input
-                id="zone-deliveryDaysMin"
-                type="number"
-                inputMode="numeric"
-                min={0}
-                max={60}
-                step={1}
-                dir="ltr"
-                aria-label={t("fields.deliveryDaysMin")}
-                aria-invalid={invalid("deliveryDaysMin") || undefined}
-                className={cn(FIELD_CLASS, "w-20 text-center", invalid("deliveryDaysMin") && "border-destructive")}
-                value={values.deliveryDaysMin}
-                onChange={(e) => set("deliveryDaysMin", e.target.value)}
-              />
-              <span>{t("fields.to")}</span>
-              <Input
-                id="zone-deliveryDaysMax"
-                type="number"
-                inputMode="numeric"
-                min={0}
-                max={60}
-                step={1}
-                dir="ltr"
-                aria-label={t("fields.deliveryDaysMax")}
-                aria-invalid={invalid("deliveryDaysMax") || undefined}
-                className={cn(FIELD_CLASS, "w-20 text-center", invalid("deliveryDaysMax") && "border-destructive")}
-                value={values.deliveryDaysMax}
-                onChange={(e) => set("deliveryDaysMax", e.target.value)}
-              />
-              <span>{t("fields.days")}</span>
-            </div>
-            {(invalid("deliveryDaysMin") || invalid("deliveryDaysMax")) && (
-              <p className="text-sm text-destructive">{t("fieldErrors.days")}</p>
-            )}
-          </fieldset>
-
-          {submitted && parsed && !parsed.success && !issues.has("places") && (
-            <p className="text-sm text-destructive">{t("fieldErrors.generic")}</p>
+          {(invalid("deliveryDaysMin") || invalid("deliveryDaysMax")) && (
+            <p className="text-xs font-medium text-destructive">{t("fieldErrors.days")}</p>
           )}
+        </fieldset>
 
-          <div className="space-y-3">
-            <label className="flex items-center justify-between gap-3 text-sm">
-              <span>{t("fields.codEnabled")}</span>
-              <Switch checked={values.codEnabled} onCheckedChange={(on) => set("codEnabled", on)} />
-            </label>
-            <label className="flex items-center justify-between gap-3 text-sm">
-              <span>{t("fields.enabled")}</span>
-              <Switch checked={values.enabled} onCheckedChange={(on) => set("enabled", on)} />
-            </label>
-          </div>
+        {submitted && parsed && !parsed.success && !issues.has("places") && (
+          <p className="text-xs font-medium text-destructive">{t("fieldErrors.generic")}</p>
+        )}
 
-          {example && (
-            <p className="rounded-xl border bg-muted/30 p-3 text-sm">
-              <MoneyText locale={locale}>
-                {t.rich("example", {
-                  ...example,
-                  b: (c) => (
-                    <b>
-                      <MoneyText locale={locale}>{c}</MoneyText>
-                    </b>
-                  ),
-                })}
-              </MoneyText>
-            </p>
-          )}
-        </form>
+        <div className="flex flex-col gap-3">
+          <Toggle
+            className="w-full flex-row-reverse justify-between text-[13.5px] text-(--s-text)"
+            label={t("fields.codEnabled")}
+            checked={values.codEnabled}
+            onCheckedChange={(on) => set("codEnabled", on)}
+          />
+          <Toggle
+            className="w-full flex-row-reverse justify-between text-[13.5px] text-(--s-text)"
+            label={t("fields.enabled")}
+            checked={values.enabled}
+            onCheckedChange={(on) => set("enabled", on)}
+          />
+        </div>
 
-        <SheetFooter className="flex-row justify-end gap-2 border-t px-5 py-4 sm:px-6">
-          <Button type="button" variant="outline" className={BUTTON_CLASS} onClick={onClose} disabled={isPending}>
-            {t("cancel")}
-          </Button>
-          <Button type="submit" form="zone-form" className={BUTTON_CLASS} disabled={isPending || !lib}>
-            {isPending || !lib ? <LoaderCircle className="animate-spin" /> : <Save />}
-            {t("saveZone")}
-          </Button>
-        </SheetFooter>
-      </SheetContent>
-    </Sheet>
+        {example && (
+          <Note>
+            <MoneyText locale={locale}>
+              {t.rich("example", {
+                ...example,
+                b: (c) => (
+                  <b>
+                    <MoneyText locale={locale}>{c}</MoneyText>
+                  </b>
+                ),
+              })}
+            </MoneyText>
+          </Note>
+        )}
+      </form>
+    </Modal>
   );
 }

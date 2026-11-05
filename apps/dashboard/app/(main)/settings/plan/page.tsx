@@ -8,11 +8,8 @@ import { getBillingState } from "@workspace/lib/billing/server";
 import { FEE_TRIAL_DAYS, STANDARD_FEE_MIN_PIASTRES } from "@workspace/lib/orders";
 import { getPlanLimits, resolvePlanId, type PlanFeatures } from "@workspace/lib/plans";
 import { getFeeTrialStatus, type FeeTrialStatus } from "@workspace/lib/sellers";
+import { PageContainer, PageHeader, Row, Rows, SectionCard, SellerButton, Tag } from "@/components/seller-ui";
 import { formatDate, formatMoney } from "@/lib/i18n/format";
-import { Badge } from "@workspace/ui/components/badge";
-import { Button } from "@workspace/ui/components/button";
-import { Progress } from "@workspace/ui/components/progress";
-import { SectionCard } from "@/components/form/form-ui";
 import { requireSeller } from "@/lib/auth/require-seller.server";
 import { getSellerStores } from "@/lib/stores/current-store.server";
 import { getStoreWalletBalance } from "../../wallet/store-wallet.server";
@@ -37,81 +34,97 @@ export default async function PlanPage() {
   const used = stores.length;
 
   return (
-    <section className="mx-auto w-full max-w-3xl space-y-5 p-4 sm:p-6">
-      <p className="text-sm text-muted-foreground">{t("description")}</p>
+    <PageContainer narrow>
+      <PageHeader title={t("title")} description={t("description")} />
 
       <SectionCard
         id="plan"
-        icon={<Gem />}
-        title={t("currentPlan")}
+        icon={Gem}
+        title={
+          <>
+            {t("currentPlan")}
+            <Tag tone="info">{t(`plans.${planId}`)}</Tag>
+          </>
+        }
         description={t("currentPlanDescription")}
-        tag={<Badge variant="secondary">{t(`plans.${planId}`)}</Badge>}
       >
-        <div className="space-y-2">
-          <div className="flex items-center justify-between text-sm">
-            <span className="flex items-center gap-2 font-semibold">
-              <Store className="size-4 text-muted-foreground" />
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-between text-[13.5px]">
+            <span className="flex items-center gap-2 font-bold text-(--s-text)">
+              <Store className="size-4 text-(--s-subtle)" aria-hidden />
               {t("stores")}
             </span>
-            <span className="tabular-nums text-muted-foreground">{t("storesUsage", { count: used, max: maxStores })}</span>
+            <span className="text-(--s-muted) tabular-nums">{t("storesUsage", { count: used, max: maxStores })}</span>
           </div>
-          <Progress value={(used / Math.max(maxStores, 1)) * 100} className="h-1.5" />
-          {used >= maxStores && <p className="text-xs text-muted-foreground">{t("storesFull")}</p>}
+          <div className="h-2 overflow-hidden rounded-full bg-(--s-fill)" aria-hidden>
+            <div className="h-full rounded-full bg-(--s-primary)" style={{ width: `${Math.min(100, (used / Math.max(maxStores, 1)) * 100)}%` }} />
+          </div>
+          {used >= maxStores && <p className="text-xs text-(--s-subtle)">{t("storesFull")}</p>}
         </div>
 
-        <ul className="divide-y rounded-xl border">
+        <Rows>
           {FEATURES.map((feature) => {
             const included = limits[feature];
             return (
-              <li key={feature} className="flex items-center gap-3 px-4 py-3 text-sm">
-                {included ? (
-                  <Check className="size-4 shrink-0 text-success" aria-hidden />
-                ) : (
-                  <Minus className="size-4 shrink-0 text-muted-foreground" aria-hidden />
-                )}
-                <span className="flex-1">{t(`features.${feature}`)}</span>
-                <span className={included ? "text-xs text-success" : "text-xs text-muted-foreground"}>
-                  {included ? t("included") : t("notOnPlan")}
-                </span>
-              </li>
+              <Row
+                key={feature}
+                start={
+                  included ? (
+                    <Check className="size-4 shrink-0 text-success" aria-hidden />
+                  ) : (
+                    <Minus className="size-4 shrink-0 text-(--s-subtle)" aria-hidden />
+                  )
+                }
+                title={<span className="font-semibold">{t(`features.${feature}`)}</span>}
+                end={<Tag tone={included ? "success" : "muted"}>{included ? t("included") : t("notOnPlan")}</Tag>}
+              />
             );
           })}
-        </ul>
+        </Rows>
 
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-muted/50 px-4 py-3 text-sm">
-          <span className="text-muted-foreground">{t("upgradesSoon")}</span>
-          <Button asChild variant="outline" size="sm">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-[14px] bg-(--s-tint) px-3.5 py-3 text-[13px] text-(--s-muted)">
+          <span>{t("upgradesSoon")}</span>
+          <SellerButton asChild variant="mini" size="xs">
             <Link href="/stores">{t("manageStores")}</Link>
-          </Button>
+          </SellerButton>
         </div>
       </SectionCard>
 
       {/* The seller's real cost today (PLAN.md §13): the per-order fee and the free trial. */}
-      <SectionCard id="fees" icon={<Receipt />} title={t("fees")} description={t("feesDescription")}>
-        <ul className="divide-y rounded-xl border text-sm">
-          <li className="flex items-center justify-between gap-3 px-4 py-3">
-            <span>{t("feeLine")}</span>
-            <span className="font-semibold tabular-nums">
-              <bdi dir="ltr">{formatMoney(STANDARD_FEE_MIN_PIASTRES / 100, locale)}</bdi>
-            </span>
-          </li>
-          {trial.state !== "none" && (
-            <li className="px-4 py-3 text-muted-foreground">
-              {trial.state === "active"
-                ? t("trialActive", { days: trial.daysLeft, date: formatDate(trial.endsAt, locale) })
-                : trial.state === "ended"
-                  ? t("trialEnded", { date: formatDate(trial.endsAt, locale) })
-                  : t("trialNotStarted", { days: FEE_TRIAL_DAYS })}
-            </li>
-          )}
-        </ul>
-        <div className="flex justify-end">
-          <Button asChild variant="outline" size="sm">
+      <SectionCard
+        id="fees"
+        icon={Receipt}
+        title={t("fees")}
+        description={t("feesDescription")}
+        action={
+          <SellerButton asChild variant="mini" size="xs">
             <Link href="/wallet">{t("viewWallet")}</Link>
-          </Button>
-        </div>
+          </SellerButton>
+        }
+      >
+        <Rows>
+          <Row
+            title={<span className="font-semibold">{t("feeLine")}</span>}
+            end={
+              <bdi dir="ltr" className="font-montserrat text-sm font-bold text-(--s-ink) tabular-nums">
+                {formatMoney(STANDARD_FEE_MIN_PIASTRES / 100, locale)}
+              </bdi>
+            }
+          />
+          {trial.state !== "none" && (
+            <Row
+              description={
+                trial.state === "active"
+                  ? t("trialActive", { days: trial.daysLeft, date: formatDate(trial.endsAt, locale) })
+                  : trial.state === "ended"
+                    ? t("trialEnded", { date: formatDate(trial.endsAt, locale) })
+                    : t("trialNotStarted", { days: FEE_TRIAL_DAYS })
+              }
+            />
+          )}
+        </Rows>
       </SectionCard>
-    </section>
+    </PageContainer>
   );
 }
 

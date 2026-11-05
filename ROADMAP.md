@@ -2272,3 +2272,7 @@ Newest first. One entry per finished task or decision: date, task, what changed,
 - Inventory of live seller features checked in code (`apps/dashboard/app/(main)/**`, `components/layout/dashboard-routes.lib.ts`, `store_integrations_provider_check` in `0106`, `packages/ai`).
 - Compared with Shopify (pricing page) and EasyOrders (easyorders.eg), 2026-10-28.
 - No migration yet: each feature writes its own when its task starts. Next free number: `0115`.
+
+### 2026-11-05 — Seller dashboard redesign: foundation and money batch (owner)
+
+Owner: "Update the Seller's dashboard design/content for all pages, follow the design system I made with claude design." Design system in `docs/seller-dashboard-design.md`; no migration. Foundation and home are in `1c48ef97`. This batch converts Wallet, Financial, Plan, store Shipping, Delivery and Riders. Checked on staging through the real UI: a top-up request to the review state with its receipt stored, and adding, editing and deleting a zone at phone width. Not checked: adding a rider (needs the service key) and Admin crediting. Also fixed: Arabic order counts now have thousands separators, Financial no longer shows a raw `cash'` (staging's `orders.payment_method` default is mistyped as `'cash`), and the header and home agree on the wallet currency when a seller has no wallet row (reads `billing_wallet_currency()`, so `0136` must be on production first). Products, Website and the remaining pages follow.

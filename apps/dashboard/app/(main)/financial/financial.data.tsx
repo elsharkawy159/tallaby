@@ -13,6 +13,7 @@ import { getSellerStores } from "@/lib/stores/current-store.server";
 import { FinancialDashboardContent } from "./financial.chunks";
 import { FinancialSkeleton } from "./financial.skeleton";
 import { loadAccountMoney } from "@/lib/stores/account-money.server";
+import { getStoreWalletBalance } from "../wallet/store-wallet.server";
 import { salesSourcesByCurrency, startOfMonth, type SalesSourceRow } from "./financial.lib";
 
 /**
@@ -58,7 +59,7 @@ async function getSalesSources() {
 
 export async function FinancialData() {
   const seller = await requireSeller();
-  const [walletRes, pendingRes, payoutsRes, statsRes, txRes, analyticsRes, sources, accountMoney] =
+  const [walletRes, pendingRes, payoutsRes, statsRes, txRes, analyticsRes, sources, accountMoney, storeWallet] =
     await Promise.all([
       getWalletBalance(),
       getPendingEarnings(),
@@ -71,11 +72,14 @@ export async function FinancialData() {
         return null;
       }),
       loadAccountMoney(seller.sellerId),
+      getStoreWalletBalance(seller.sellerId),
     ]);
+  const wallet = walletRes.success ? (walletRes.data ?? null) : null;
 
   return (
     <FinancialDashboardContent
-      wallet={walletRes.success ? (walletRes.data ?? null) : null}
+      // The same currency as the header: a seller with no wallet row yet is in what a new wallet opens in.
+      wallet={wallet && { ...wallet, walletCurrency: storeWallet?.currency ?? wallet.walletCurrency }}
       pending={pendingRes.success ? (pendingRes.data ?? null) : null}
       payouts={payoutsRes.success ? (payoutsRes.data ?? []) : []}
       stats={statsRes.success ? (statsRes.data ?? null) : null}

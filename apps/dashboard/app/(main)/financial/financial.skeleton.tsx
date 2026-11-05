@@ -1,16 +1,23 @@
+import { Skeleton } from "@workspace/ui/components/skeleton";
+import { KpiGrid, PageContainer, TwoColumns } from "@/components/seller-ui";
+
 export function FinancialSkeleton() {
   return (
-    <div className="p-4 sm:p-6 space-y-8">
-      <div className="h-10 w-64 bg-muted rounded animate-pulse" />
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <PageContainer>
+      <div>
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="mt-2 h-4 w-72 max-w-full" />
+      </div>
+      <KpiGrid>
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="h-28 bg-muted rounded-lg animate-pulse" />
+          <Skeleton key={i} className="h-[132px] rounded-[24px]" />
         ))}
-      </div>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="h-64 bg-muted rounded-lg animate-pulse" />
-        <div className="h-64 bg-muted rounded-lg animate-pulse" />
-      </div>
-    </div>
+      </KpiGrid>
+      <Skeleton className="h-64 rounded-[24px]" />
+      <TwoColumns className="gap-3.5">
+        <Skeleton className="h-64 rounded-[24px]" />
+        <Skeleton className="h-64 rounded-[24px]" />
+      </TwoColumns>
+    </PageContainer>
   );
 }

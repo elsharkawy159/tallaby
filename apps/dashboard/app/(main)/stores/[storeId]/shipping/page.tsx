@@ -9,9 +9,12 @@ import {
   type ShippingTemplate,
 } from "@workspace/lib/shipping/store-zones";
 import { getLocale, getTranslations } from "next-intl/server";
+import Link from "next/link";
 import { notFound } from "next/navigation";
+import { PageContainer, PageHeader, Tag } from "@/components/seller-ui";
+import { StoreSiteStatusNote } from "@/components/stores/store-site-status-note";
 import { loadStorePage } from "@/lib/stores/store-page.server";
-import { StorePageHeader } from "@/components/stores/store-page-header";
+import { cn } from "@/lib/utils";
 import { StoreShippingSettings } from "./shipping.client";
 import { currencyCountry, type CoverageItem, type TemplateOption, type ZoneView } from "./shipping.dto";
 
@@ -82,9 +85,41 @@ export default async function StoreShippingPage({ params }: { params: Promise<{ 
     };
   });
 
+  const t = await getTranslations("storeShipping");
+  const offline = store.siteStatus === "unpublished" || store.siteStatus === "draft";
+
   return (
-    <section className="mx-auto w-full max-w-4xl space-y-5 p-4 sm:p-6">
-      <StorePageHeader store={store} />
+    <PageContainer narrow>
+      <PageHeader
+        title={t("pageTitle")}
+        description={t("pageDescription")}
+        actions={
+          <Tag className="h-7 px-3 text-xs">
+            <bdi>{store.name}</bdi>
+          </Tag>
+        }
+      />
+      {offline && (
+        <div
+          className={cn(
+            "flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-[18px] border px-4 py-3",
+            store.siteStatus === "unpublished"
+              ? "border-destructive/25 bg-destructive-soft"
+              : "border-(--tallaby-amber-100) bg-accent-soft dark:border-transparent",
+          )}
+        >
+          <StoreSiteStatusNote siteStatus={store.siteStatus} className="text-[13px]" />
+          <Link
+            href={`/stores/${store.id}/website`}
+            className={cn(
+              "text-[13px] font-bold whitespace-nowrap underline-offset-2 hover:underline max-[600px]:inline-flex max-[600px]:min-h-10 max-[600px]:items-center",
+              store.siteStatus === "unpublished" ? "text-destructive" : "text-accent-ink",
+            )}
+          >
+            {t("manageSite")}
+          </Link>
+        </div>
+      )}
       <StoreShippingSettings
         storeId={store.id}
         settings={shipping.settings}
@@ -98,6 +133,6 @@ export default async function StoreShippingPage({ params }: { params: Promise<{ 
         wassalha={wassalha}
         readOnly={store.status !== "active"}
       />
-    </section>
+    </PageContainer>
   );
 }

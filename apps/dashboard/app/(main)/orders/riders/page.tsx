@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { currentOrderLock } from "@/lib/auth/require-seller.server";
 import { OrdersLocked } from "@/components/orders/orders-locked";
+import { PageContainer } from "@/components/seller-ui";
 import { ShippingData } from "../delivery/shipping.data";
 import { ShippingSkeleton } from "../delivery/shipping.skeleton";
 
@@ -12,10 +13,10 @@ export default async function RidersPage() {
   const lock = await currentOrderLock();
   if (lock.locked) return <OrdersLocked lock={lock} />;
   return (
-    <div className="min-h-screen p-4 sm:p-6">
+    <PageContainer>
       <Suspense fallback={<ShippingSkeleton />}>
         <ShippingData view="riders" />
       </Suspense>
-    </div>
+    </PageContainer>
   );
 }

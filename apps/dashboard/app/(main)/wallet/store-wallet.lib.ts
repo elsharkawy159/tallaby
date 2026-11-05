@@ -1,7 +1,7 @@
 import { FREE_ORDER_FEE_USD_CENTS, TOP_UP_MAX_USD_CENTS, TOP_UP_MIN_USD_CENTS } from "@workspace/lib/billing";
 import { STANDARD_FEE_MIN_PIASTRES } from "@workspace/lib/orders/platform-fee";
 import { STORE_TOP_UP_MAX_PIASTRES, STORE_TOP_UP_MIN_EGP } from "@workspace/lib/store-wallet";
-import { formatWalletMoney } from "@/lib/i18n/format";
+import { formatNumber, formatWalletMoney } from "@/lib/i18n/format";
 
 /** The flat platform fee per delivered order, in EGP (PLAN.md §13). */
 export const FEE_PER_ORDER_EGP = STANDARD_FEE_MIN_PIASTRES / 100;
@@ -44,6 +44,9 @@ export function ordersCovered(amount: number, currency: string = "EGP"): number 
     ? Math.floor((Math.round(amount * 100)) / FREE_ORDER_FEE_USD_CENTS)
     : Math.floor(amount / FEE_PER_ORDER_EGP);
 }
+
+/** The values of an order-count message: count picks the plural, formatted is what is shown ("16,666" in both languages). */
+export const orderCountValues = (count: number, locale: string) => ({ count, formatted: formatNumber(count, locale) });
 
 /** The amount after a +/- tap on a USD top-up, kept within the limits. */
 export function stepUsdTopUp(current: number, delta: number): number {

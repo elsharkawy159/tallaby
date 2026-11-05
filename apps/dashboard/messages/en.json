@@ -1344,6 +1344,8 @@
       "hint": "Product page views on your store websites, and how many of them became orders (not cancelled)."
     },
     "list": {
+      "pageTitle": "Products",
+      "pageSubtitle": "Add your products and edit their prices, stock and publishing.",
       "copied": "Copied!",
       "copy": "Copy",
       "sku": "SKU",
@@ -1451,6 +1453,11 @@
       "dropMore": "Drag and drop to add more images"
     },
     "importExport": {
+      "modalBody": "Choose what to do with your products file.",
+      "importBody": "Upload an Excel or CSV file with the template's columns.",
+      "exportBody": "Download the products in view as an Excel file.",
+      "updateBody": "Change prices and quantities in a file, then upload it.",
+      "templateBody": "An empty Excel file with the right columns.",
       "trigger": "Import / Export",
       "import": "Import Products",
       "export": "Export Products",
@@ -1844,6 +1851,7 @@
       }
     },
     "variants": {
+      "all": "All",
       "title": "Product Types and Sub-options",
       "description": "Add characteristics such as colors and sizes. Use the content language tabs above to enter English and Arabic labels.",
       "addType": "+ Add Sub-type",
@@ -1857,6 +1865,7 @@
       "addValue": "+ Add another value",
       "combinations": "Product Combinations",
       "columns": {
+        "sku": "SKU",
         "combination": "Combination",
         "images": "Images",
         "pricing": "Pricing",
@@ -1872,6 +1881,23 @@
       "emptyBody": "Add an option and we'll create every combination so you can set a price and quantity for each.",
       "addOption": "Add option",
       "addAnotherOption": "Add another option",
+      "suggestionsLabel": "Suggestions:",
+      "otherOption": "Another option",
+      "noValuesHint": "Add at least one value to see the combinations.",
+      "removedNote": "{count, plural, one {# combination is removed and won't show} other {# combinations are removed and won't show}} to customers.",
+      "allRemoved": "All combinations are removed. Restore the ones you need, or delete the options to sell the product without variants.",
+      "restore": "Restore",
+      "combinationsCount": "{count, plural, one {# combination} other {# combinations}}",
+      "tooMany": "{count} combinations is a lot. Use the filters above the list to edit one group at a time.",
+      "allOf": "All {option}",
+      "applyToAll": "Apply to all ({count})",
+      "applyToShown": "Apply to shown ({count})",
+      "bulkEmpty": "Enter a price or a quantity to apply.",
+      "bulkApplied": "{count, plural, one {# combination} other {# combinations}} updated",
+      "removeCombination": "Remove {name}",
+      "makeDefault": "Make default",
+      "defaultDiscountHint": "The default variant's discount is set in the Price section.",
+      "duplicateSku": "Another combination uses this SKU.",
       "addThisValue": "Add this value",
       "details": "Show photos, price and barcode",
       "optionName": "Option name",
@@ -2041,6 +2067,8 @@
         "quantity": "Available quantity",
         "decrease": "Decrease",
         "increase": "Increase",
+        "totalStock": "Total stock",
+        "totalStockHint": "The sum of {count, plural, one {# combination} other {# combinations}}. Edit each one's quantity below.",
         "defaultVariantStock": "This is the stock of the default variant",
         "trackStock": "Track stock",
         "trackStockOn": "Orders take from the quantity, and the product sells out when it reaches zero.",
@@ -2977,6 +3005,9 @@
   "shipping": {
     "title": "Shipping & Logistics",
     "subtitle": "Assign your riders, track every delivery and keep customers' orders moving.",
+    "pageTitle": "Delivery tracking",
+    "ridersTitle": "Your own riders",
+    "showMore": "Show more",
     "addRider": "Add rider",
     "addFirstRider": "Add your first rider",
     "noAddress": "No address",
@@ -3030,7 +3061,7 @@
       "saved": "Saved"
     },
     "actions": {
-      "handledByTallaby": "Handled by Tallaby",
+      "handledByTallaby": "Not managed from your account",
       "updateFailed": "Could not update the shipment",
       "marked": {
         "pending": "Marked ready to ship",
@@ -3168,6 +3199,7 @@
     "subtitle": "Track your earnings and financial performance",
     "thisMonthSales": "This Month Sales",
     "vsLastMonth": "{value} vs last month",
+    "vsLastMonthLabel": "vs last month",
     "totalPaidOut": "Total Paid Out",
     "payoutCount": "{count, plural, one {# payout} other {# payouts}}",
     "pendingEarnings": "Pending Earnings",
@@ -4059,6 +4091,7 @@
   },
   "planLive": {
     "yourPlanFree": "You're on Free.",
+    "title": "Plan & usage",
     "yourPlanPro": "You're on Pro.",
     "renewsOn": "Renews {date} from your wallet.",
     "endsOn": "Ends {date}, then you move to Free.",
@@ -4077,7 +4110,7 @@
     "current": "Your plan",
     "freePrice": "$0 a month",
     "proPrice": "{amount} a month",
-    "noFee": "no",
+    "noFee": "No",
     "feeLine": "{fee} order fee",
     "creditsLine": "{count, number} AI credits a month",
     "emailsLine": "{count, number} campaign emails a month",
@@ -4118,6 +4151,7 @@
   },
   "planUsage": {
     "description": "Your plan decides how many stores you can run and which tools you get.",
+    "title": "Plan & usage",
     "currentPlan": "Current plan",
     "currentPlanDescription": "Everyone starts on Free. Paid plans with more stores and tools are coming.",
     "plans": {
@@ -4429,6 +4463,13 @@
     "egp": "{unit} {amount}",
     "free": "Free",
     "zonesTitle": "Delivery areas",
+    "pageTitle": "Shipping settings",
+    "pageDescription": "Set where you deliver, for how much, and who delivers your orders. Customers see changes at checkout right away.",
+    "manageSite": "Manage website",
+    "rulesTitle": "Delivery rules",
+    "rulesDescription": "Free delivery, how long you need to prepare an order, and places your zones don't cover.",
+    "handlingDaysLess": "One day less",
+    "handlingDaysMore": "One day more",
     "defaultZoneName": "Delivery EGP {price}",
     "addZone": "Add delivery area",
     "editZone": "Edit zone",
@@ -4568,6 +4609,11 @@
       "title": "Shipping companies",
       "description": "Hand your orders to a shipping company instead of delivering them yourself.",
       "connectTitle": "Ship your orders with Bosta",
+      "whoTitle": "Who delivers your orders?",
+      "whoDescription": "Connect a shipping company to send orders in one tap, or deliver them yourself or with your own riders.",
+      "selfTitle": "I deliver myself or with my riders",
+      "selfBody": "Follow every delivery on the delivery tracking page.",
+      "selfActive": "On",
       "connectBody": "Link your Bosta account once. Then send any order to Bosta in one click, or automatically when you confirm it.",
       "connect": "Connect Bosta",
       "finishSetup": "Finish Bosta setup",
@@ -5327,7 +5373,7 @@
     },
     "title": "Store wallet",
     "pageDescription": "EGP {fee} is taken from your balance for every new order. Top up ahead so orders keep coming in.",
-    "runway": "Covers about {count, plural, one {# order} other {# orders}}",
+    "runway": "Covers about {count, plural, one {{formatted} order} other {{formatted} orders}}",
     "negative": "Your balance is below zero. New sales pay it back automatically, or you can top up at any time.",
     "negativeStrong": "Your balance is well below zero. Top up soon: until it recovers, ads and other paid services can't be paid from the wallet.",
     "howTitle": "How the platform fee works",
@@ -5336,6 +5382,12 @@
     "trialActive": "Free trial: {days, plural, one {# day} other {# days}} left, no fee on orders placed until {date}.",
     "trialNotStarted": "Your 7-day free trial starts when your first store is created.",
     "entriesTitle": "Wallet activity",
+    "entriesDescription": "Everything added to or taken from your balance",
+    "orderFee": "Order fee",
+    "howFree": "Free plan",
+    "howPerOrder": "order",
+    "howPro": "Pro plan",
+    "howProValue": "No order fees",
     "filterLabel": "Filter activity",
     "filters": {
       "all": "All",
@@ -5377,10 +5429,10 @@
       "description": "Transfer the amount from your wallet or bank, then upload a picture of the receipt.",
       "panel": {
         "title": "Top up wallet",
-        "subtitle": "Pick the amount, then choose how to transfer it in the next step.",
+        "subtitle": "Pick the amount and how to transfer it. You pay in EGP, and the balance is added after the receipt is reviewed.",
         "presets": "Pick an amount",
         "popular": "Most chosen",
-        "approxOrders": "≈ {count, plural, one {# order} other {# orders}}",
+        "approxOrders": "≈ {count, plural, one {{formatted} order} other {{formatted} orders}}",
         "custom": "Or type another amount",
         "decrease": "Decrease",
         "increase": "Increase",
@@ -5388,6 +5440,7 @@
         "summary": {
           "rate": "Rate",
           "tax": "Tax",
+          "title": "Top-up summary",
           "amount": "Top-up amount",
           "fee": "Top-up fee",
           "free": "Free",
@@ -5403,6 +5456,8 @@
         }
       },
       "changeAmount": "Change amount",
+      "dialogTitle": "Transfer {amount}",
+      "dialogDescription": "By {method}, then upload the receipt.",
       "cancel": "Cancel",
       "recap": {
         "amount": "Amount",
@@ -5513,6 +5568,100 @@
       "invalidInput": "One of the links isn't valid. Check it and try again.",
       "rateLimited": "Too many changes at once. Wait a moment and try again.",
       "generic": "Something went wrong. Try again."
+    }
+  },
+  "sellerWebsite": {
+    "common": {
+      "openOverview": "Open the website page"
+    },
+    "overview": {
+      "statusLabel": "Website status",
+      "connectDomain": "Connect your own domain",
+      "share": "Share your store",
+      "deviceLabel": "Preview size",
+      "deviceDesktop": "Desktop",
+      "deviceMobile": "Mobile",
+      "pagesBody": "Pages, the header menu and the footer",
+      "groups": {
+        "look": "Look and design",
+        "reach": "Content and reach"
+      }
+    },
+    "domain": {
+      "title": "Domain & SEO",
+      "description": "Your store's address, your own domain, and how your store appears on Google and when its link is shared."
+    },
+    "seo": {
+      "dropTitle": "Drag an image here or click to upload",
+      "dropTypes": "PNG, JPG or WebP up to 5 MB",
+      "uploading": "Uploading",
+      "removeImage": "Remove image"
+    },
+    "pages": {
+      "description": "Your website's pages and addresses, and your header and footer as they appear on your store.",
+      "sectionsLabel": "Sections",
+      "headerSection": "Header and pages",
+      "footerSection": "Footer",
+      "changeHeader": "Change the header in the editor",
+      "changeFooter": "Edit the footer in the editor",
+      "headerPreview": "Header preview",
+      "headerPreviewHint": "Your draft header as it appears above your store's pages. Its links are edited in the editor.",
+      "noHeader": "Your website draft has no header. Add one in the website editor.",
+      "allPages": "All pages",
+      "pageCount": "{count, plural, =1 {1 page} other {# pages}}",
+      "contentNote": "Each page's content and sections are added in the website editor.",
+      "openEditor": "Open the editor",
+      "footerPreview": "Footer preview",
+      "footerPreviewHint": "Your draft footer as it appears under your store's pages",
+      "noFooter": "Your website draft has no footer. Add one in the website editor.",
+      "socialTitle": "Social accounts",
+      "socialBody": "{count, plural, =0 {No accounts showing yet.} =1 {1 account showing on your store.} other {# accounts showing on your store.}}",
+      "contactTitle": "Contact details",
+      "contactBody": "The phone and email live in store settings.",
+      "newDescription": "Choose a common name or write your own, then add the page's content in the website editor.",
+      "presets": "Suggested name",
+      "blank": "Blank",
+      "presetNames": {
+        "about": "About us",
+        "returns": "Return policy",
+        "shipping": "Shipping policy",
+        "sizes": "Size guide",
+        "offers": "Offers"
+      }
+    },
+    "media": {
+      "upload": "Upload images",
+      "search": "Search by file name",
+      "select": "Select",
+      "selectOne": "Select {name}",
+      "noMatches": "No images with that name.",
+      "selectedCount": "{count, plural, =0 {None selected} =1 {1 selected} other {# selected}}",
+      "move": "Move",
+      "moved": "Images moved",
+      "clearSelection": "Clear selection",
+      "detailsTitle": "Image details",
+      "imageLink": "Image link",
+      "moveTitle": "{count, plural, =1 {Move 1 image} other {Move # images}}",
+      "deleteManyTitle": "{count, plural, =1 {Delete 1 image?} other {Delete # images?}}",
+      "deleteManyUsed": "{count, plural, =1 {1 of them is used} other {# of them are used}} on this store's website, and an empty image will show in its place."
+    },
+    "social": {
+      "accounts": "Your accounts",
+      "visibleCount": "{count, plural, =0 {None showing} =1 {1 showing} other {# showing}}",
+      "liveNote": "Links update on your store as soon as you save, with no publishing."
+    },
+    "templates": {
+      "currentLabel": "Your current template",
+      "applied": "Applied",
+      "search": "Search templates",
+      "noMatches": "No templates match your search.",
+      "showAll": "Show all templates",
+      "reapplyShort": "Apply again",
+      "keepsYours": "Your products and text stay as they are",
+      "editLater": "You can change colors and fonts after applying"
+    },
+    "forms": {
+      "description": "Your website's forms, and the messages and leads they bring in."
     }
   },
   "websiteOverview": {

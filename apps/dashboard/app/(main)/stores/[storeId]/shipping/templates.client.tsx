@@ -16,12 +16,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@workspace/ui/components/alert-dialog";
-import { Button } from "@workspace/ui/components/button";
-import { ChoiceCard, ChoiceGroup } from "@workspace/ui/components/choice-card";
-import { Label } from "@workspace/ui/components/label";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@workspace/ui/components/sheet";
 import { CurrencyInput } from "@/components/form/currency-input";
-import { LabelNote, SMALL_BUTTON_CLASS } from "@/components/form/form-ui";
+import { Field, OptionCard, OptionCards, SellerButton } from "@/components/seller-ui";
 import { moneyUnitText, type MoneyUnit } from "@/lib/i18n/format";
 import { applyShippingTemplate } from "./shipping.server";
 import type { TemplateOption } from "./shipping.dto";
@@ -123,22 +120,27 @@ export function ShippingTemplates({
 
   return (
     <div className="space-y-4">
-      <ChoiceGroup
-        value={choice}
-        onValueChange={(v) => setChoice(v as Choice)}
-        columns={2}
-        stack
-        disabled={disabled}
-        aria-label={t("templates.title")}
-      >
+      <OptionCards role="radiogroup" aria-label={t("templates.title")}>
         {([...templates.map((x) => x.id), "scratch"] as const).map((id) => (
-          <ChoiceCard key={id} value={id} indicator title={t(`templates.${KEY[id]}.title`)} description={description(id)} />
+          <OptionCard
+            key={id}
+            name="shipping-template"
+            value={id}
+            checked={choice === id}
+            disabled={disabled}
+            onChange={() => setChoice(id)}
+            title={t(`templates.${KEY[id]}.title`)}
+            description={description(id)}
+          />
         ))}
-      </ChoiceGroup>
+      </OptionCards>
 
       {choice === "egypt_flat" && (
-        <div className="grid gap-1.5">
-          <Label htmlFor="template-price">{t("templates.egyptFlat.priceLabel")}</Label>
+        <Field
+          label={t("templates.egyptFlat.priceLabel")}
+          htmlFor="template-price"
+          error={priceError && !flatValid ? t("templates.egyptFlat.priceError") : undefined}
+        >
           <CurrencyInput
             {...money}
             id="template-price"
@@ -150,16 +152,17 @@ export function ShippingTemplates({
               setPriceError(false);
             }}
           />
-          {priceError && !flatValid && <p className="text-sm text-destructive">{t("templates.egyptFlat.priceError")}</p>}
-        </div>
+        </Field>
       )}
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <LabelNote>{choice === "scratch" ? t("templates.scratchNote") : t("templates.note")}</LabelNote>
-        <Button type="button" size="sm" className={SMALL_BUTTON_CLASS} disabled={disabled || isPending} onClick={() => apply(false)}>
-          {isPending ? <LoaderCircle className="animate-spin" /> : choice === "scratch" ? <Plus /> : <Wand2 />}
+        <p className="min-w-0 flex-1 basis-40 text-pretty text-xs text-(--s-faint)">
+          {choice === "scratch" ? t("templates.scratchNote") : t("templates.note")}
+        </p>
+        <SellerButton variant="solid" size="sm" disabled={disabled || isPending} onClick={() => apply(false)}>
+          {isPending ? <LoaderCircle className="animate-spin" aria-hidden /> : choice === "scratch" ? <Plus aria-hidden /> : <Wand2 aria-hidden />}
           {choice === "scratch" ? t("addZone") : t("templates.apply")}
-        </Button>
+        </SellerButton>
       </div>
 
       <AlertDialog open={confirming} onOpenChange={(open) => !open && !isPending && setConfirming(false)}>
