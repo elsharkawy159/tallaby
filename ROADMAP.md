@@ -2327,3 +2327,7 @@ Removed the Add Product button from the dashboard home (the setup checklist's st
 ### 2026-11-05 — Add product: choose AI, file or manual (owner)
 
 `/products/add` now opens on a choice of AI, file or manual; no migration, no new server action. A stored draft skips the choice and opens the form, and "change method" keeps it. Import from link stays on the form; the edit page has no choice. Checked on staging through the real UI at phone width. Built from the owner's description: `Seller Add Product v4.html` could not be reached (Claude Design connection refused, file not local), so the layout still needs comparing with it (`add-method-chooser.client.tsx`). Not checked: the redirect after publishing, out-of-credits, and dark mode.
+
+### 2026-11-05 — Security: passwords could reach the URL on a slow login (found in QA)
+
+The login, signup and reset forms in the dashboard and Admin had no `method`, so a submit before the page hydrated sent `GET /login?email=…&password=…`, putting the password in the URL, browser history and request logs. Seen in a QA server log; also live. The forms now use POST (checked: the served HTML has `method="post"`, POST returns 200 and the password isn't logged). Not seen in a slow-browser run. Owner to check production request logs for `password=`. The ecommerce auth dialogs only open after hydration, so they aren't affected.

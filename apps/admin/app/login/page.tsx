@@ -170,6 +170,7 @@ export default function AuthPage() {
             ) : (
               <Form {...resetForm}>
                 <form
+                  method="post"
                   onSubmit={resetForm.handleSubmit(handleResetPassword)}
                   className="space-y-4"
                 >
@@ -236,6 +237,7 @@ export default function AuthPage() {
         <CardContent>
           <Form {...signInForm}>
             <form
+              method="post"
               onSubmit={signInForm.handleSubmit(handleSignIn)}
               className="space-y-4"
             >

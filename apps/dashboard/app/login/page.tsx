@@ -153,6 +153,7 @@ export default function AuthPage() {
         ) : (
           <Form {...resetForm}>
             <form
+              method="post"
               onSubmit={resetForm.handleSubmit(handleResetPassword)}
               className="flex flex-col gap-3.5"
               noValidate
@@ -211,6 +212,7 @@ export default function AuthPage() {
 
       <Form {...signInForm}>
         <form
+          method="post"
           onSubmit={signInForm.handleSubmit(handleSignIn)}
           className="flex flex-col gap-3.5"
           noValidate
