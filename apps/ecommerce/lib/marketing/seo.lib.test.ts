@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import ar from "@/messages/ar.json";
 import en from "@/messages/en.json";
+import { loadAllMessages } from "@/i18n/messages";
+import { FREE_ORDER_FEE_USD_CENTS, PRO_MONTHLY_USD_CENTS } from "@workspace/lib/billing";
 import { hreflangMap, localizedUrl, sitemapEntries, templateMetaDesc } from "./seo.lib";
 import { SITE_URL } from "./site.lib";
 import { breadcrumbSchema, serializeJsonLd, siteGraph, softwareApplicationSchema } from "./structured-data.lib";
@@ -62,13 +64,16 @@ describe("meta messages", () => {
   const pages = (meta: Record<string, unknown>) =>
     Object.entries(meta).filter((e): e is [string, { title: string; description: string }] => typeof e[1] === "object");
 
-  for (const [locale, meta, brand] of [
+  for (const [locale, base, brand] of [
     ["ar", ar.meta, "طلبي"],
     ["en", en.meta, "Tallaby"],
   ] as const) {
-    it(`${locale}: titles and descriptions fit search results and do not repeat the brand`, () => {
+    it(`${locale}: titles and descriptions fit search results and do not repeat the brand`, async () => {
+      // What tallaby.com really renders: the marketing groups win over the base strings.
+      const meta = { ...base, ...((await loadAllMessages(locale)).meta as Record<string, unknown>) };
       for (const [page, { title, description }] of pages(meta)) {
         if (page === "template") continue; // Filled in per template.
+        if (page.startsWith("compare")) continue; // "Tallaby vs X" names the brand on purpose (not public yet).
         const full = page === "home" ? title : `${title} | ${brand}`;
         expect(full.length, `${page} title`).toBeLessThanOrEqual(62);
         expect(description.length, `${page} description`).toBeGreaterThanOrEqual(50);
@@ -91,6 +96,15 @@ describe("structured data", () => {
     expect(graph).toContain("+201003272830");
     for (const json of [graph, app]) expect(json).not.toMatch(/aggregateRating|"review"/);
     expect(graph).not.toContain("SearchAction"); // tallaby.com has no site search.
+  });
+
+  it("offers both plans in USD from the billing module", () => {
+    const { offers } = softwareApplicationSchema({ url: SITE_URL, description: "d", inLanguage: "en" });
+    expect(offers.map((o) => [o.name, o.price, o.priceCurrency])).toEqual([
+      ["Free", "0", "USD"],
+      ["Pro", (PRO_MONTHLY_USD_CENTS / 100).toFixed(2), "USD"],
+    ]);
+    expect(offers[0]!.priceSpecification.price).toBe((FREE_ORDER_FEE_USD_CENTS / 100).toFixed(2));
   });
 
   it("numbers breadcrumbs from 1", () => {

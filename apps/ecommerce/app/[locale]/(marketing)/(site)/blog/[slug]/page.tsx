@@ -16,6 +16,7 @@ import { getMarketingPost, getMarketingPosts } from "@/lib/marketing/blog.server
 import { formatLongDate } from "@/lib/marketing/format.lib";
 import { localizedUrl, pageMetadata } from "@/lib/marketing/metadata.lib";
 import { breadcrumbSchema } from "@/lib/marketing/structured-data.lib";
+import { SITE_URL } from "@/lib/marketing/site.lib";
 
 type Props = { params: Promise<{ locale: string; slug: string }> };
 
@@ -85,7 +86,7 @@ export default async function BlogPostPage({ params }: Props) {
     dateModified: post.updatedAt ?? post.date,
     inLanguage: locale,
     author: post.authorName ? { "@type": "Person", name: post.authorName } : { "@type": "Organization", name: t("author") },
-    publisher: { "@type": "Organization", name: t("author"), logo: { "@type": "ImageObject", url: localizedUrl(routing.defaultLocale, "/logo-mark.png") } },
+    publisher: { "@type": "Organization", "@id": `${SITE_URL}/#organization`, name: t("author"), logo: { "@type": "ImageObject", url: localizedUrl(routing.defaultLocale, "/logo-mark.png") } },
     mainEntityOfPage: localizedUrl(locale, `/blog/${post.id}`),
   };
   const breadcrumbs = breadcrumbSchema([
@@ -127,7 +128,7 @@ export default async function BlogPostPage({ params }: Props) {
           <div className="relative h-[clamp(240px,40vw,480px)] overflow-hidden rounded-[20px] shadow-[0_24px_60px_rgba(13,55,67,0.14)] md:rounded-card-lg">
             <Image
               src={post.image}
-              alt=""
+              alt={title}
               fill
               priority
               unoptimized={!isOptimizableImage(post.image)}

@@ -3,7 +3,10 @@
  * never add ratings, reviews or user counts here unless they are real and
  * visible on the page.
  */
+import { FREE_ORDER_FEE_USD_CENTS, PRO_MONTHLY_USD_CENTS } from "@workspace/lib/billing";
 import { CONTACT, SITE_URL, SOCIAL_LINKS } from "./site.lib";
+
+const usd = (cents: number) => (cents / 100).toFixed(2);
 
 const ORGANIZATION_ID = `${SITE_URL}/#organization`;
 const WEBSITE_ID = `${SITE_URL}/#website`;
@@ -42,9 +45,9 @@ export function siteGraph() {
 }
 
 /**
- * The product itself, for the home and pricing pages. The offer is the free
- * plan only, with the fee in `description` (from the page's own meta text), so
- * a pricing change in the messages carries over.
+ * The product itself, for the home and pricing pages. Both plans, priced in
+ * USD from the billing module: Free has no monthly price and a per-order fee,
+ * Pro a monthly price and no order fee.
  */
 export function softwareApplicationSchema({
   url,
@@ -65,7 +68,32 @@ export function softwareApplicationSchema({
     applicationCategory: "BusinessApplication",
     operatingSystem: "Web",
     publisher: { "@id": ORGANIZATION_ID },
-    offers: { "@type": "Offer", price: "0", priceCurrency: "EGP", description },
+    offers: [
+      {
+        "@type": "Offer",
+        name: "Free",
+        price: "0",
+        priceCurrency: "USD",
+        priceSpecification: {
+          "@type": "UnitPriceSpecification",
+          price: usd(FREE_ORDER_FEE_USD_CENTS),
+          priceCurrency: "USD",
+          referenceQuantity: { "@type": "QuantitativeValue", value: 1, unitText: "order" },
+        },
+      },
+      {
+        "@type": "Offer",
+        name: "Pro",
+        price: usd(PRO_MONTHLY_USD_CENTS),
+        priceCurrency: "USD",
+        priceSpecification: {
+          "@type": "UnitPriceSpecification",
+          price: usd(PRO_MONTHLY_USD_CENTS),
+          priceCurrency: "USD",
+          billingDuration: "P1M",
+        },
+      },
+    ],
   };
 }
 

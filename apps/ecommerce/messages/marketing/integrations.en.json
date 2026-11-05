@@ -1,7 +1,7 @@
 {
   "meta": {
     "integrations": {
-      "title": "Tallaby integrations: shipping, payments and marketing",
+      "title": "Integrations: shipping, payments and marketing",
       "description": "Connect your Tallaby store to shipping companies, payment gateways, measurement tools and product feeds, without code."
     },
     "integration-meta-pixel": {

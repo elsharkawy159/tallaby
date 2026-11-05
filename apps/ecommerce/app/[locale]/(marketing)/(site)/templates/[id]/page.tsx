@@ -42,7 +42,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       desc: templateMetaDesc(entry.description?.trim() || t("detail.metaFallback", { name: entry.name })),
     },
   });
-  return entry.thumbnailUrl ? { ...meta, openGraph: { ...meta.openGraph, images: [{ url: entry.thumbnailUrl }] } } : meta;
+  return entry.thumbnailUrl
+    ? {
+        ...meta,
+        openGraph: { ...meta.openGraph, images: [{ url: entry.thumbnailUrl, alt: entry.name }] },
+        twitter: { ...meta.twitter, images: [entry.thumbnailUrl] },
+      }
+    : meta;
 }
 
 export default async function TemplatePage({ params }: Props) {

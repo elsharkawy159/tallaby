@@ -394,6 +394,11 @@ export function generateStaticPageMetadata({
     // Page titles in messages/*.json already end in "| Tallaby", so `absolute`
     // stops the root layout template appending the brand a second time.
     title: { absolute: title },
+    // These shared pages (shipping, returns, payment, cookies) are the old
+    // marketplace's boilerplate: on tallaby.com they contradict the SaaS site
+    // (Tallaby doesn't deliver), and on store hosts the same text repeats on
+    // every store. Keep them out of search; links still count.
+    robots: { index: false, follow: true },
     description,
     openGraph: {
       type: "website",
