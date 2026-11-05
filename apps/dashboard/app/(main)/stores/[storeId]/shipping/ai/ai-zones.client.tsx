@@ -7,7 +7,6 @@ import { AlertTriangle, ArrowRight, LoaderCircle, Save, Sparkles, Trash2 } from 
 
 import type { StoreShippingZone } from "@workspace/lib/stores/server";
 import { Button } from "@workspace/ui/components/button";
-import { AiCreditsNote } from "@/components/ai/ai-credits-note.client";
 import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@workspace/ui/components/sheet";
@@ -185,7 +184,6 @@ export function DescribeZonesSheet({
               <p className={cn("text-end text-xs tabular-nums text-muted-foreground", text.length >= AI_ZONES_LIMITS.maxTextLength && "text-destructive")}>
                 {text.length} / {AI_ZONES_LIMITS.maxTextLength}
               </p>
-              <AiCreditsNote refreshKey={remainingToday} />
             </div>
           ) : (
             <>

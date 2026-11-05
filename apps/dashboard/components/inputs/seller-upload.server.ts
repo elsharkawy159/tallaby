@@ -25,6 +25,45 @@ const limiter = createRateLimiter({ limit: 300, windowMs: 10 * 60_000 });
 
 export type SignedUploadResult = { success: true; token: string } | { success: false; error: "notAllowed" | "invalidPath" | "generic" };
 
+/** Public `sellers` bucket: logos, banners and document scans, each under `<folder>/<sellerId>/` (0152's policies). */
+// ("use server" files may export only async functions.)
+const SELLERS_BUCKET = "sellers";
+const SELLERS_BUCKET_FOLDERS = new Set(["logos", "banners", "documents"]);
+// `<Date.now()>-<slug>.<ext>`, the name `generateImageName` makes.
+const SELLERS_FILE_NAME_RE = /^\d{10,16}-[a-z0-9-]{0,200}\.[A-Za-z0-9]{1,16}$/;
+
+export type SellersBucketUploadResult =
+  | { success: true; token: string; path: string }
+  | { success: false; error: "notAllowed" | "invalidPath" | "generic" };
+
+/**
+ * Signs an upload into the session seller's own folder of the public
+ * `sellers` bucket. The server builds the path (`<folder>/<sellerId>/<file>`),
+ * so a browser can never write into another seller's folder, and the bucket
+ * no longer accepts anonymous uploads (0152).
+ */
+export async function createSellersBucketUploadUrl(folder: string, fileName: string): Promise<SellersBucketUploadResult> {
+  try {
+    const seller = await requireSeller({ forWrite: true });
+    if (!SELLERS_BUCKET_FOLDERS.has(String(folder)) || !SELLERS_FILE_NAME_RE.test(String(fileName))) {
+      return { success: false, error: "invalidPath" };
+    }
+    if (!limiter.check(`upload:${seller.sellerId}`)) return { success: false, error: "notAllowed" };
+
+    const path = `${folder}/${seller.sellerId.toLowerCase()}/${fileName}`;
+    const { data, error } = await getServiceClient().storage.from(SELLERS_BUCKET).createSignedUploadUrl(path);
+    if (error || !data) {
+      console.error("[seller-upload] sign failed", error?.message);
+      return { success: false, error: "generic" };
+    }
+    return { success: true, token: data.token, path };
+  } catch (error) {
+    if (isAccessError(error)) return { success: false, error: "notAllowed" };
+    console.error("[seller-upload] sign failed", (error as Error)?.message);
+    return { success: false, error: "generic" };
+  }
+}
+
 export async function createSellerUploadUrl(bucket: string, path: string): Promise<SignedUploadResult> {
   try {
     const seller = await requireSeller({ forWrite: true });

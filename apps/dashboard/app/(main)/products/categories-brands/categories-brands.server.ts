@@ -70,8 +70,8 @@ function tableFor(kind: TaxonomyKind) {
 const isKind = (kind: unknown): kind is TaxonomyKind => kind === "category" || kind === "brand";
 
 /** An image the client may set: none, or a file in the seller uploads folder. */
-const isAllowedImage = (image: string | null | undefined): boolean =>
-  image == null || isSellerTaxonomyImage(image, process.env.NEXT_PUBLIC_SUPABASE_URL);
+const isAllowedImage = (image: string | null | undefined, sellerId: string): boolean =>
+  image == null || isSellerTaxonomyImage(image, process.env.NEXT_PUBLIC_SUPABASE_URL, sellerId);
 
 /** Search the Tallaby pack (admin-curated categories or brands) as the seller types. */
 export async function searchTaxonomyPack(kind: TaxonomyKind, query: string): Promise<TaxonomyResult<PackSuggestion[]>> {
@@ -120,7 +120,7 @@ export async function addTaxonomyItem(kind: TaxonomyKind, input: unknown): Promi
     const seller = await requireSeller({ forWrite: true });
     const parsed = addTaxonomyItemSchema.safeParse(input);
     if (!isKind(kind) || !parsed.success) return { success: false, error: "invalidInput" };
-    if ("image" in parsed.data && !isAllowedImage(parsed.data.image)) return { success: false, error: "invalidImage" };
+    if ("image" in parsed.data && !isAllowedImage(parsed.data.image, seller.sellerId)) return { success: false, error: "invalidImage" };
     const { table } = tableFor(kind);
 
     const [{ total }] = await db.select({ total: count() }).from(table).where(eq(table.sellerId, seller.sellerId));
@@ -238,7 +238,7 @@ export async function updateTaxonomyItem(kind: TaxonomyKind, id: string, input: 
     const parsed = updateTaxonomyItemSchema.safeParse(input);
     if (!isKind(kind) || !parsed.success || typeof id !== "string") return { success: false, error: "invalidInput" };
     const { image } = parsed.data;
-    if (!isAllowedImage(image)) return { success: false, error: "invalidImage" };
+    if (!isAllowedImage(image, seller.sellerId)) return { success: false, error: "invalidImage" };
     const patch = {
       name: cleanTaxonomyName(parsed.data.name),
       nameAr: parsed.data.nameAr ? cleanTaxonomyName(parsed.data.nameAr) : null,

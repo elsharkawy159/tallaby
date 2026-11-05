@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl'
 
 import { createClient } from '@/supabase/client'
 import { generateImageName, getPublicUrl } from '@/lib/utils'
-import { createSellerUploadUrl } from './seller-upload.server'
+import { createSellerUploadUrl, createSellersBucketUploadUrl } from './seller-upload.server'
 
 const MAX_SIZE = 5 * 1024 * 1024
 
@@ -19,17 +19,17 @@ export const SELLER_IMAGE_ACCEPT = {
 export const SELLER_IMAGE_ACCEPT_ATTR = 'image/png,image/jpeg,image/webp'
 
 /**
- * Uploads one file from the browser with the seller's own session, so the
- * bucket's Storage policies apply (e.g. `store-media` only accepts paths
- * under '{auth.uid()}/'). Resolves to the stored path; throws on failure.
+ * Uploads one file into `<folder>/<sellerId>/` of the public `sellers` bucket
+ * through a signed upload URL: the server checks the session and builds the
+ * path. The bucket refuses anonymous writes (0152), and the browser has no
+ * readable session in production. Resolves to the stored path.
  */
-export async function uploadSellerFile (
-  file: File,
-  { bucket, path, cacheControl = '31536000' }: { bucket: string; path: string; cacheControl?: string }
-): Promise<string> {
+async function uploadToSellersBucket (file: File, folder: string, fileName: string): Promise<string> {
+  const signed = await createSellersBucketUploadUrl(folder, fileName)
+  if (!signed.success) throw new Error(`upload not signed: ${signed.error}`)
   const { data, error } = await createClient()
-    .storage.from(bucket)
-    .upload(path, file, { cacheControl, upsert: false, contentType: file.type || undefined })
+    .storage.from('sellers')
+    .uploadToSignedUrl(signed.path, signed.token, file, { cacheControl: '31536000', contentType: file.type || undefined })
   if (error) throw error
   return data.path
 }
@@ -55,18 +55,14 @@ export async function uploadOwnFolderFile (
 }
 
 /**
- * Validates and uploads one seller image (logo, banner, document scan) to
- * storage. Resolves to its public URL, or null after showing an error toast.
+ * Validates and uploads one seller image (logo, banner, document scan) to the
+ * seller's own folder of the `sellers` bucket (`<folder>/<sellerId>/<file>`).
+ * Resolves to its public URL, or null after showing an error toast.
  */
 export function useSellerUpload ({
   folder,
-  bucket = 'sellers',
-  subfolder,
 }: {
-  folder: 'logos' | 'banners' | 'documents' | 'blog'
-  bucket?: string
-  /** Extra folder under `folder`, e.g. the seller id for documents (the server checks it). */
-  subfolder?: string
+  folder: 'logos' | 'banners' | 'documents'
 }) {
   const t = useTranslations('inputs.sellerImage')
   const [isUploading, setIsUploading] = useState(false)
@@ -84,10 +80,9 @@ export function useSellerUpload ({
 
       setIsUploading(true)
       try {
-        const dir = subfolder ? `${folder}/${subfolder}` : folder
-        const fileName = `${dir}/${generateImageName(file).split('/').pop()}`
-        const path = await uploadSellerFile(file, { bucket, path: fileName })
-        return getPublicUrl(path, bucket)
+        const fileName = generateImageName(file).split('/').pop() ?? ''
+        const path = await uploadToSellersBucket(file, folder, fileName)
+        return getPublicUrl(path, 'sellers')
       } catch (error) {
         console.error('Seller image upload failed:', error)
         toast.error(t('uploadFailed'))
@@ -96,7 +91,7 @@ export function useSellerUpload ({
         setIsUploading(false)
       }
     },
-    [bucket, folder, subfolder, t]
+    [folder, t]
   )
 
   return { upload, isUploading }

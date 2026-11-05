@@ -11,17 +11,21 @@ export function checkSellerImage(file: File): SellerImageCheck {
 }
 
 /**
- * Uploads to the public `sellers` bucket and returns the public URL.
- * Paths follow the existing layout: `logos/logo-<ts>.<ext>`,
- * `banners/<ts>-banner.<ext>`.
+ * Uploads to the signed-in user's own folder of the public `sellers` bucket
+ * and returns the public URL: `logos/<userId>/logo-<ts>.<ext>`,
+ * `banners/<userId>/<ts>-banner.<ext>`. The bucket accepts writes only from
+ * a signed-in user into their own `<folder>/<auth.uid()>/` (0152).
  */
 export async function uploadSellerImage(file: File, kind: "logo" | "banner") {
   const supabase = createClient();
-  const ext = file.name.split(".").pop();
+  const { data: auth } = await supabase.auth.getUser();
+  const userId = auth.user?.id?.toLowerCase();
+  if (!userId) throw new Error("not signed in");
+  const ext = (file.name.split(".").pop() ?? "").replace(/[^A-Za-z0-9]/g, "").slice(0, 16) || "png";
   const path =
     kind === "logo"
-      ? `logos/logo-${Date.now()}.${ext}`
-      : `banners/${Date.now()}-banner.${ext}`;
+      ? `logos/${userId}/logo-${Date.now()}.${ext}`
+      : `banners/${userId}/${Date.now()}-banner.${ext}`;
 
   const { error } = await supabase.storage
     .from("sellers")

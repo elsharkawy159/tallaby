@@ -53,19 +53,23 @@ export const TAXONOMY_PAGE_HREF: Record<TaxonomyKind, string> = {
   brand: "/products/brands",
 };
 
-/** Bucket and folder seller uploads go to (useSellerUpload; the bucket's policies already allow it). */
+/** Bucket and folder seller uploads go to (useSellerUpload writes `logos/<sellerId>/<file>`). */
 export const TAXONOMY_UPLOAD_BUCKET = "sellers";
 export const TAXONOMY_UPLOAD_FOLDER = "logos";
 
 /**
  * Whether an image URL is a public file in the seller uploads folder of this
- * project's storage, so a client can't point an item at any other URL.
+ * project's storage, so a client can't point an item at any other URL: the
+ * seller's own `logos/<sellerId>/` folder, or a flat `logos/<file>` from
+ * before 0152 (an item keeps its older image when edited).
  */
-export function isSellerTaxonomyImage(url: string, supabaseUrl: string | undefined): boolean {
+export function isSellerTaxonomyImage(url: string, supabaseUrl: string | undefined, sellerId?: string): boolean {
   if (!supabaseUrl) return false;
   const prefix = `${supabaseUrl.replace(/\/+$/, "")}/storage/v1/object/public/${TAXONOMY_UPLOAD_BUCKET}/${TAXONOMY_UPLOAD_FOLDER}/`;
   if (!url.startsWith(prefix)) return false;
-  const file = url.slice(prefix.length);
+  let file = url.slice(prefix.length);
+  const own = sellerId ? `${sellerId.toLowerCase()}/` : null;
+  if (own && file.startsWith(own)) file = file.slice(own.length);
   return /^[\w%.-]+$/.test(file) && !file.startsWith(".") && !file.includes("..");
 }
 

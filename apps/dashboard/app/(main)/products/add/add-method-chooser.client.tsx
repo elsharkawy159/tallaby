@@ -4,7 +4,6 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { ArrowLeft, FileSpreadsheet, PencilLine, Sparkles, type LucideIcon } from "lucide-react";
-import { AiCreditsNote } from "@/components/ai/ai-credits-note.client";
 import { Note, SellerButton, Tag } from "@/components/seller-ui";
 import { cn } from "@/lib/utils";
 import { BULK_LIMITS } from "./from-file/from-file.dto";
@@ -128,7 +127,6 @@ export function AddMethodChooser({
             </button>
           </li>
         </ul>
-        {aiEnabled && <AiCreditsNote className="-mt-2 text-center" />}
       </div>
     </div>
   );

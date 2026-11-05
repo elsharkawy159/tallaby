@@ -92,6 +92,18 @@ describe("isSellerTaxonomyImage", () => {
     expect(isSellerTaxonomyImage(`${base}/storage/v1/object/public/sellers/logos/`, base)).toBe(false);
     expect(isSellerTaxonomyImage(ok, undefined)).toBe(false);
   });
+
+  it("accepts the seller's own logos/<sellerId>/ folder but not another seller's", () => {
+    const me = "11111111-1111-4111-8111-111111111111";
+    const other = "22222222-2222-4222-8222-222222222222";
+    const folder = `${base}/storage/v1/object/public/sellers/logos`;
+    expect(isSellerTaxonomyImage(`${folder}/${me}/1760000000000-shoes.png`, base, me)).toBe(true);
+    expect(isSellerTaxonomyImage(`${folder}/${me}/1760000000000-shoes.png`, base, me.toUpperCase())).toBe(true);
+    expect(isSellerTaxonomyImage(`${folder}/${other}/1760000000000-shoes.png`, base, me)).toBe(false);
+    expect(isSellerTaxonomyImage(`${folder}/${me}/1760000000000-shoes.png`, base)).toBe(false);
+    expect(isSellerTaxonomyImage(`${folder}/${me}/../x.png`, base, me)).toBe(false);
+    expect(isSellerTaxonomyImage(ok, base, me)).toBe(true);
+  });
 });
 
 describe("sortTaxonomyByLabel", () => {

@@ -78,7 +78,6 @@ import {
 } from "./categories-brands.dto";
 import {
   TAXONOMY_IMAGE_BUCKET,
-  TAXONOMY_UPLOAD_BUCKET,
   TAXONOMY_UPLOAD_FOLDER,
   sortTaxonomyByLabel,
   taxonomyLabel,
@@ -445,7 +444,7 @@ function ImageField({
 }) {
   const t = useTranslations("categoriesBrands");
   const inputRef = useRef<HTMLInputElement>(null);
-  const { upload, isUploading } = useSellerUpload({ folder: TAXONOMY_UPLOAD_FOLDER, bucket: TAXONOMY_UPLOAD_BUCKET });
+  const { upload, isUploading } = useSellerUpload({ folder: TAXONOMY_UPLOAD_FOLDER });
   const [preview, setPreview] = useState<string | null>(null);
 
   useEffect(() => onBusyChange(isUploading), [isUploading, onBusyChange]);
