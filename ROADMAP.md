@@ -2655,6 +2655,18 @@ Owner: "On the domains page, add recommended Domain providers links … with a b
 - **Order and EGP evidence (checked 2026-11-06):** Hostinger (hostinger.com/eg shows E£ prices; its Egypt refund policy lists Fawry as a payment method), EgyHosting (egyhosting.com: "Pay in Egyptian pounds", InstaPay, Meeza, Fawry; Egyptian, MCIT licence 11881), EngHosting (enghosting.com: EGP prices, Vodafone Cash, InstaPay, card, official invoice; Egyptian), then Namecheap, GoDaddy, Cloudflare Registrar, Porkbun (USD, no EGP evidence found). GoDaddy has no Egypt/EGP storefront that we could find. Competitor-owned domain services (e.g. Vondera VDomain) were left out.
 - **Not verified:** no browser run. Provider details change; re-check the EGP claims when editing the list.
 
+### 2026-11-06 — Production launch: everything on `main` live, USD switch on (owner)
+
+Owner: "integrate and merge everything to production live … update Supabase production … update current sellers wallet balance … one deployment".
+
+- **Pre-flight:** typecheck = only the 16 known `profile.chunks.tsx` errors; tests 12,089 passed (two 5 s timeouts under parallel load, both pass alone). Vercel env checked by name (CLI): all needed keys present except `SUPABASE_SERVICE_ROLE_KEY` on **tallaby-shipping**.
+- **Production DB (`sakwqw`), before the push:** 0136_billing_usd → 0151, 0154, 0155, 0156 applied in order (0140 `CONCURRENTLY`, lock_timeout 10 s); presence check all PRESENT; `usd_live` false.
+- **Deploy:** pushed `19f0897c..0ed4a779` (201 commits) to `main`; dashboard, ecommerce, admin and backend built Ready on Vercel; new code confirmed live (domain logos, bag mockups, `tel:+20…`, `/integrations` 200, Terms "move to US dollars", MCP 401).
+- **Right after:** 0152 and 0153 applied; all 16 `{public}` storage policies gone; existing images still 200; anonymous listing of `sellers/documents` returns nothing. Product image upload tested on production (signed upload into `products/<sellerId>/2026-11-06/`; form not saved, one unused test image left in storage).
+- **USD switch (owner approved the dry run):** rate 53.9007 (open.er-api.com, 2026-11-06). Dry run: 20 wallets, 10 positive, 0 negative, EGP 4,673.20 → $86.74; EGP 2,280 of it from old order money; 0 pending top-ups; 19 unclaimed welcome gifts end. `billing_switch_to_usd(53.9007)` at 15:07:17Z → 20 converted, 0 top-ups; checks: only USD wallets ($86.74), 0 ledger mismatches, 20 `usd_conversion` rows, 0 gift-eligible sellers; an exchange rate row exists (15:05Z). Dashboard wallet shows $70.10 and $0.03 per order.
+- **/roadmap:** `packages/db/scripts/roadmap-cards-2026-11-06.sql` run after a rolled-back dry run: 37 launched, 3 in progress, 11 waiting.
+- **Left:** shipping manual deploy once its `SUPABASE_SERVICE_ROLE_KEY` is set (rider avatar upload fails until then); Supabase push webhooks and VAPID env (push is daily only); the post-switch items in `docs/usd-switch-checklist.md` steps 10–12 (test order fee $0.03, Pro upgrade, AI credits, next-day crons, copy waiting on the owner); "Built, not deployed" statuses in §4 are now live and need their Status lines updated.
+
 ### 2026-11-06 — Public /roadmap cards from our updates and the EasyOrders roadmap (owner)
 
 Owner: update `/roadmap` with our latest work, and add what EasyOrders sellers vote for most that we don't have.
