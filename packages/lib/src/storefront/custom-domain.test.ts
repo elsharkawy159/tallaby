@@ -10,7 +10,21 @@ import {
   storeUrl,
   subdomainFromName,
   validateCustomDomain,
+  normalizeSubdomain,
+  validateSubdomain,
 } from "./index";
+
+describe("validateSubdomain reserved names", () => {
+  // `glow` is tallaby.com's demo store on the home page.
+  it.each(["glow", "GLOW", "Glow", " glow "])("rejects %j as reserved", (input) => {
+    expect(validateSubdomain(normalizeSubdomain(input))).toBe("reserved");
+  });
+
+  it("still accepts names that only contain it", () => {
+    expect(validateSubdomain("glow-beauty")).toBeNull();
+    expect(validateSubdomain("myglow")).toBeNull();
+  });
+});
 
 const ROOT = process.env.NEXT_PUBLIC_ROOT_DOMAIN;
 

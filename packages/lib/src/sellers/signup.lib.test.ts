@@ -30,4 +30,10 @@ describe("signupInputSchema", () => {
     expect(signupInputSchema.safeParse({ subdomain: "a", phone: "01012345678" }).success).toBe(false);
     expect(signupInputSchema.safeParse({ subdomain: "admin", phone: "01012345678" }).success).toBe(false);
   });
+
+  it("rejects the tallaby.com demo store address in any case", () => {
+    for (const subdomain of ["glow", "GLOW", "Glow"]) {
+      expect(signupInputSchema.safeParse({ subdomain, phone: "01012345678" }).success, subdomain).toBe(false);
+    }
+  });
 });

@@ -12,8 +12,13 @@ export const SUBDOMAIN_MAX_LENGTH = 32;
 /** Lowercase letters, digits and inner hyphens; 3–32 characters. */
 export const SUBDOMAIN_PATTERN = /^[a-z0-9](?:[a-z0-9-]{1,30}[a-z0-9])$/;
 
-/** Hosts Tallaby uses itself or may need later. Mirrored in `reserved_subdomains`. */
+/**
+ * Hosts Tallaby uses itself or may need later. Mirrored in the SQL function
+ * `is_reserved_subdomain` (0044), except entries marked "app only" below.
+ * `glow`: tallaby.com's home page shows `glow.tallaby.com` as its demo store.
+ */
 export const RESERVED_SUBDOMAINS = new Set([
+  "glow", // app only (not yet in is_reserved_subdomain)
   "www", "api", "app", "admin", "dashboard", "seller", "sellers", "shipping",
   "driver", "drivers", "store", "stores", "shop", "shops", "mail", "email",
   "smtp", "imap", "pop", "ftp", "cdn", "static", "assets", "media", "img",
