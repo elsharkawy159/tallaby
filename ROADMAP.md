@@ -1091,6 +1091,14 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 - **F-77b · P1 · deps: F-77a** Dashboard: banner, dialog with signed image upload, "My theme requests" list.
 - **F-77c · P1 · deps: F-77a** Admin: sidebar link with count, list with status filters, detail with status and reply; bell + push and the ready/declined email.
 
+### F-78 Where to buy a domain — P2 · owner request
+
+**Why:** A seller without a domain doesn't know why to get one or where to buy it (owner, 2026-11-06).
+**What:** Website › Domain & SEO › Domain (primary store) gets a "No domain yet? Buy one in minutes" card under Custom domain: six benefits (easier to remember and share, more trust, your brand, helps on Google, the address is yours, branded email) and seven registrar links (new tab, `noopener noreferrer`, no affiliate params, no prices). Registrars that let an Egyptian seller pay in جنيه come first with a «يقبل الجنيه» tag (Hostinger, EgyHosting, EngHosting), then Namecheap, GoDaddy, Cloudflare Registrar, Porkbun. One line says to come back, enter the domain and copy the DNS records. Open while the store has no custom domain, folded once one is added. List in `domain-providers.lib.ts` (typed, sort tested). No migration.
+**Status:** [Built, not deployed] 2026-11-06 (§7).
+
+- **F-78a · P2 · deps: none** Provider list + sort + benefits card on the Domain page, ar/en strings.
+
 ---
 
 ## 5. Owner feature requests (intake)
@@ -1099,6 +1107,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 | Date       | Request (owner's words)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Feature ID                                                                                       | Status                                                                                             |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| 2026-11-06 | "On the domains page, add recommended Domain providers links in a list for user who wants to buy a custom domain, with a benefits list of integrating your store with custom domain instead of subdomain (SEO, easy to remember, etc). Maybe we can add in the list Namecheap, Godaddy, Hostinger, etc, sort by most popular and recommended." Then: "prioritize the companies [that] accept EGP first." | F-78 | Built, not deployed (no migration) |
 | 2026-11-06 | "on the seller's dashboard templates page, add a button at the top says something like "Didn't find a theme suit your business? Request a theme now!" so on clicking the button opens a dialog and seller add the template info he wants (Template URL or upload image, or describe it, with a Note textarea) then the request sent to us and I can find it on the admin project to implement these templates ASAP and user will be notified later". Owner's answers: (1) a built theme goes to everyone, added to the normal code-only gallery; the request only tracks status and the admin's reply; (2) free, max 3 open requests per seller, images up to 3 × 5 MB JPEG/PNG/WebP; (3) notify on in progress / ready / declined by bell + push, email on ready or declined (seller locale), and a "My theme requests" list on the templates page | F-77 | Built, not deployed (0156 not applied) |
 | 2026-11-06 | Store access before activation: "keep it accessible to his IP only … top-up your wallet to activate your store … don't deduct the 0.03$ … once user top-up, remove any store access throttling". Owner's answers: (1) the seller's signed-in device, not IP: the dashboard's "View store" gives that browser a private pass; (2) everyone else sees the store-offline page, marketplace listings unchanged; (3) orders in this state are test orders, visible with a "Test" badge, no fee, no stock change, no buyer emails, out of all totals; (4) live with the USD switch only | F-76 | Built, not deployed (0155 not applied) |
 | 2026-11-06 | Launch plan (answer to the go-live check): "Turn USD on at launch": run the USD switch on production during the deploy so tallaby.com's $0.03/order and $29 Pro match real charges; needs the owner's go-ahead on the day | F-55…F-57 | Decided |
@@ -1445,6 +1454,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-77a Theme requests table, private image bucket, bells and limits (2026-11-06; uncommitted; 0156 not applied anywhere)
 - [x] F-77b Dashboard "Request a theme" banner, dialog and list (2026-11-06; uncommitted; no browser test)
 - [x] F-77c Admin › Theme requests, status/reply, seller bell + push + email (2026-11-06; uncommitted; no browser test)
+- [x] F-78a "Where to buy a domain" card with benefits and EGP-first registrars on the Domain page (2026-11-06; uncommitted; no browser test)
 
 ---
 
@@ -2561,3 +2571,10 @@ Owner: "add a button at the top … Request a theme now! … Template URL or upl
 - **Admin:** sidebar "Theme requests" with a count of `new` requests; `/theme-requests` (filters), `/theme-requests/[id]` (signed image links for 30 minutes, status + reply). Ready/declined call the backend `/api/emails/theme-request-update` after the commit; the backend sends `theme_request_ready` / `theme_request_declined` (policy "keep") once per request (`email_deliveries` claim), in the seller's language, with the seller email kit (`SellerThemeRequestEmail`).
 - **Not verified:** no browser run, no DB run (unit tests only). A reply edited without a status change is shown on the seller's list but sends nothing.
 
+### 2026-11-06 — F-78 Where to buy a domain (owner)
+
+Owner: "On the domains page, add recommended Domain providers links … with a benefits list … sort by most popular and recommended", then "prioritize the companies [that] accept EGP first."
+
+- **Dashboard:** `domain-buy-guide.client.tsx` under the Custom domain card on Website › Domain & SEO (primary store only, since only it can connect a domain): six benefits and seven registrar links (new tab, `noopener noreferrer`, no affiliate params, no prices). A `<details>` card, open with no custom domain, folded once one is added. List and sort in `domain-providers.lib.ts` (+ test); strings under `domainSeo.domain.buy` in ar/en. No migration.
+- **Order and EGP evidence (checked 2026-11-06):** Hostinger (hostinger.com/eg shows E£ prices; its Egypt refund policy lists Fawry as a payment method), EgyHosting (egyhosting.com: "Pay in Egyptian pounds", InstaPay, Meeza, Fawry; Egyptian, MCIT licence 11881), EngHosting (enghosting.com: EGP prices, Vodafone Cash, InstaPay, card, official invoice; Egyptian), then Namecheap, GoDaddy, Cloudflare Registrar, Porkbun (USD, no EGP evidence found). GoDaddy has no Egypt/EGP storefront that we could find. Competitor-owned domain services (e.g. Vondera VDomain) were left out.
+- **Not verified:** no browser run. Provider details change; re-check the EGP claims when editing the list.

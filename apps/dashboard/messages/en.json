@@ -5577,7 +5577,7 @@
       }
     },
     "manualTopUp": {
-    "limitsUsd": "From $5 to $1,000. You pay in EGP at the rate shown.",
+      "limitsUsd": "From $5 to $1,000. You pay in EGP at the rate shown.",
       "button": "Top up wallet",
       "title": "Top up wallet",
       "description": "Transfer the amount from your wallet or bank, then upload a picture of the receipt.",
@@ -5991,6 +5991,51 @@
         "description": "Visitors who open an old address are sent to your current one.",
         "empty": "No old addresses yet.",
         "since": "Since {date}"
+      },
+      "buy": {
+        "title": "No domain yet? Buy one in minutes",
+        "description": "A domain with your store's name, like yourstore.com. Buy it from any registrar and connect it here.",
+        "whyTitle": "Why use your own domain instead of a Tallaby address?",
+        "benefits": {
+          "remember": {
+            "title": "Easier to remember and share",
+            "body": "A short address with your name that customers remember and type easily, and you can print on ads and bags."
+          },
+          "trust": {
+            "title": "More customer trust",
+            "body": "Your own domain makes the store look professional, so customers feel safer ordering."
+          },
+          "brand": {
+            "title": "Your brand, not ours",
+            "body": "Customers see your store's name in the address, not the platform's."
+          },
+          "seo": {
+            "title": "Helps on Google",
+            "body": "A stable domain with your name builds a reputation over time and helps your store show up in search."
+          },
+          "keep": {
+            "title": "Your address is yours",
+            "body": "The domain is registered to you, so you keep it if you ever change platform."
+          },
+          "email": {
+            "title": "Email with your store's name",
+            "body": "You can set up an address like info@yourstore.com with your registrar or an email service."
+          }
+        },
+        "whereTitle": "Where to buy a domain",
+        "paysInEgp": "Pays in EGP",
+        "opensNewTab": "(opens in a new tab)",
+        "providers": {
+          "hostinger": "Prices in EGP on its Egypt site, and you can pay with Fawry.",
+          "egyhosting": "Egyptian company: pay in EGP with InstaPay, Meeza or Fawry.",
+          "enghosting": "Egyptian company: pay in EGP with Vodafone Cash or InstaPay, with an official invoice.",
+          "namecheap": "One of the most popular worldwide, with free owner privacy.",
+          "godaddy": "One of the best-known domain registrars worldwide.",
+          "cloudflare": "At cost, with no markup on renewals.",
+          "porkbun": "Fair renewal prices and free owner privacy."
+        },
+        "disclaimer": "Plain links, we earn no commission. Prices and payment methods change, so check them at checkout. Global registrars usually need an international card in USD.",
+        "afterBuying": "After you buy the domain, come back here, type it in the Custom domain box and press Connect domain. We'll show you the DNS records to add at your registrar."
       }
     },
     "seo": {

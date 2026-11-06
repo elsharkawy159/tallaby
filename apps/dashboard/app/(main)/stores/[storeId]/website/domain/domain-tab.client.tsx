@@ -7,6 +7,7 @@ import { storeHostname } from "@workspace/lib/storefront";
 import { EmptyState, IconTile, Note, Row, Rows, SectionCard, Tag } from "@/components/seller-ui";
 import type { CustomDomainView } from "@/actions/custom-domain";
 import { CustomDomainCard } from "./custom-domain-card.client";
+import { DomainBuyGuide } from "./domain-buy-guide.client";
 import { StoreAddressCard } from "./store-address-card.client";
 
 /**
@@ -39,7 +40,10 @@ export function DomainTab({
       </SectionCard>
 
       {store.isPrimary ? (
-        <CustomDomainCard storeId={store.id} initial={customDomain} readOnly={store.readOnly} />
+        <>
+          <CustomDomainCard storeId={store.id} initial={customDomain} readOnly={store.readOnly} />
+          <DomainBuyGuide hasDomain={Boolean(customDomain)} />
+        </>
       ) : (
         <SectionCard
           id="custom-domain"
