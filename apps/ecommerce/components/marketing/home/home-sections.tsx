@@ -46,6 +46,13 @@ export async function HomeHero() {
   return (
     <section id="top" aria-labelledby="home-h1" className="relative overflow-hidden pt-10 pb-24 min-[641px]:pt-16">
       <Container className="relative flex flex-col items-center text-center">
+        {/* First thing in the hero, above the title (owner, 2026-11-06; was after the call to action),
+            in a slot of fixed height so nothing moves when it changes. */}
+        {showLine ? (
+          <div className="mb-5 flex h-[38px] max-w-full justify-center min-[641px]:mb-6">
+            <LiveStoreLine stores={recent.stores} readAt={recent.readAt} />
+          </div>
+        ) : null}
         <h1
           id="home-h1"
           className="max-w-[900px] text-[clamp(34px,6.2vw,68px)] leading-[1.25] font-bold text-balance text-teal-900 en:leading-[1.08] en:tracking-[-0.02em] [&_em]:text-amber-700 [&_em]:not-italic"
@@ -62,12 +69,6 @@ export async function HomeHero() {
             </li>
           ))}
         </ul>
-        {/* After the main call to action (SEO audit 2026-11-05), in a slot of fixed height so nothing moves when it changes. */}
-        {showLine ? (
-          <div className="mt-5 flex h-[38px] max-w-full justify-center">
-            <LiveStoreLine stores={recent.stores} readAt={recent.readAt} />
-          </div>
-        ) : null}
       </Container>
 
       {/* The first copy is a real list (visible text for readers and search engines); the second only closes the loop.
