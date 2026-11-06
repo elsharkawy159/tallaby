@@ -1,55 +1,56 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import {
-  cancelAccountDeletionRequest,
-  createAccountDeletionRequest,
-  getSellerAccountDeletion,
-} from "@workspace/lib/account-deletion/server";
-import type { SellerAccountDeletionView } from "@workspace/lib/account-deletion";
+  applyInvalidation,
+  invalidateSeller,
+  invalidateSellerProducts,
+  invalidateStorefront,
+  mergeInvalidations,
+} from "@workspace/cache";
+import { closeSellerAccount } from "@workspace/lib/account-deletion/server";
+import { ACCOUNT_DELETION_PUBLIC_PATH } from "@workspace/lib/account-deletion";
 import { isAccessError, requireSeller } from "@/lib/auth/require-seller.server";
+import { createClient } from "@/supabase/server";
 
 /**
  * Settings › Delete my account (ROADMAP.md F-82, 0157). The user always comes
- * from the session. A request is handled by the Tallaby team within 30 days;
- * nothing is deleted here.
+ * from the session. The account closes at once (suspended, auth banned,
+ * storefronts offline, signed out everywhere); the data is purged by the
+ * account-deletions cron after 30 days. The wallet balance is lost (owner,
+ * 2026-11-06). On success this redirects to the public deletion page.
  */
 
-export type AccountDeletionActionResult =
-  | { success: true; request: SellerAccountDeletionView | null }
-  | { success: false; error: "invalidInput" | "alreadyPending" | "notFound" | "forbidden" | "generic" };
+export type CloseAccountActionResult = {
+  success: false;
+  error: "invalidInput" | "alreadyClosed" | "forbidden" | "generic";
+};
 
-async function current(userId: string): Promise<SellerAccountDeletionView | null> {
-  return getSellerAccountDeletion(userId).catch(() => null);
-}
-
-export async function requestAccountDeletionAction(input: { reason?: string; confirmed?: boolean }): Promise<AccountDeletionActionResult> {
+export async function closeAccountAction(input: { reason?: string; confirmed?: boolean }): Promise<CloseAccountActionResult> {
   try {
     const seller = await requireSeller();
-    const result = await createAccountDeletionRequest({
+    const result = await closeSellerAccount({
       userId: seller.userId,
       input: { reason: input?.reason, confirmed: input?.confirmed },
     });
-    if (!result.success) return { success: false, error: result.error === "already_pending" ? "alreadyPending" : "invalidInput" };
-    revalidatePath("/settings");
-    return { success: true, request: await current(seller.userId) };
-  } catch (error) {
-    if (isAccessError(error)) return { success: false, error: "forbidden" };
-    console.error("[account-deletion] request failed");
-    return { success: false, error: "generic" };
-  }
-}
+    if (!result.success) {
+      return { success: false, error: result.error === "already_closed" ? "alreadyClosed" : result.error === "no_seller" ? "forbidden" : "invalidInput" };
+    }
+    if (!result.banned) console.error("[account-deletion] auth ban failed; the suspended seller status still blocks the account");
 
-export async function cancelAccountDeletionAction(): Promise<AccountDeletionActionResult> {
-  try {
-    const seller = await requireSeller();
-    const result = await cancelAccountDeletionRequest(seller.userId);
-    if (!result.success) return { success: false, error: "notFound" };
-    revalidatePath("/settings");
-    return { success: true, request: await current(seller.userId) };
+    // Storefronts and product pages only resolve for an approved seller: drop their caches now.
+    await applyInvalidation(
+      mergeInvalidations(invalidateSeller(seller.userId), invalidateSellerProducts(seller.userId), invalidateStorefront(result.subdomains)),
+      { from: "dashboard", mode: "action" },
+    ).catch(() => console.error("[account-deletion] cache invalidation failed"));
+
+    // Every session on every device (the ban also blocks new sign-ins and refreshes).
+    const supabase = await createClient();
+    await supabase.auth.signOut({ scope: "global" }).catch(() => undefined);
   } catch (error) {
     if (isAccessError(error)) return { success: false, error: "forbidden" };
-    console.error("[account-deletion] cancel failed");
+    console.error("[account-deletion] close failed");
     return { success: false, error: "generic" };
   }
+  redirect(`${ACCOUNT_DELETION_PUBLIC_PATH}?closed=1`);
 }

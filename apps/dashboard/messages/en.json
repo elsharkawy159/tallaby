@@ -1019,7 +1019,8 @@
       "invalidEmail": "Please enter a valid email address",
       "rateLimited": "Too many requests. Please wait a moment before trying again",
       "accountNotFound": "No account found with this email address",
-      "generic": "Something went wrong. Please try again."
+      "generic": "Something went wrong. Please try again.",
+      "accountClosed": "This account was deleted. To get it back within 30 days, email {email}."
     },
     "showPassword": "Show password",
     "hidePassword": "Hide password",
@@ -7920,58 +7921,62 @@
   },
   "accountDeletion": {
     "title": "Delete my account",
-    "description": "Ask us to delete your Tallaby account and everything in it. We do it within {days} days, and you can cancel until then.",
-    "pendingBadge": "Requested",
-    "pendingNote": "You asked to delete your account on {date}. We'll delete it by {due}. Your stores keep working until then.",
-    "cancel": "Cancel the request",
-    "declinedNote": "Our team couldn't complete your last request:",
+    "description": "Close your Tallaby account now. We keep your data for {days} days in case you change your mind, then delete it for good.",
     "whatGoes": {
-      "stores": "All your stores, websites, products, orders, customers and settings are deleted.",
-      "data": "Your login, profile and uploaded files are deleted.",
-      "wallet": "Settle your store wallet and finish open orders first. Money left in the wallet can't be recovered after deletion.",
-      "final": "Deletion can't be undone."
+      "now": "You're signed out on every device right away, and you can't sign in again.",
+      "stores": "All your stores and websites go offline, and customers can't order.",
+      "wallet": "Any balance in your store wallet is lost. It isn't paid out or refunded.",
+      "restore": "Changed your mind? Email {email} within {days} days to get your account back as it was."
     },
     "reasonLabel": "Why are you leaving?",
     "reasonHint": "Optional",
     "reasonPlaceholder": "Your answer helps us improve Tallaby.",
-    "confirmLabel": "I understand that my account, stores and data will be deleted for good.",
-    "submit": "Request deletion",
+    "finalNote": "After {days} days your account, stores, products, orders, customers and files are deleted for good and can't be restored.",
+    "confirmLabel": "I understand: my account closes now, my wallet balance is lost, and my data is deleted after 30 days.",
+    "submit": "Delete my account",
     "keep": "Keep my account",
     "start": "Delete my account",
     "learnMore": "What gets deleted?",
-    "requested": "Request sent. We'll delete your account within 30 days.",
-    "cancelled": "Request cancelled. Your account stays.",
     "errors": {
       "invalidInput": "Tick the box to confirm, and keep the reason under 1000 characters.",
-      "alreadyPending": "You already have a request waiting.",
-      "notFound": "There's no request to cancel.",
+      "alreadyClosed": "This account is already closed.",
       "forbidden": "You can't do this from this account.",
       "generic": "Something went wrong. Try again."
     },
     "page": {
       "metaTitle": "Delete your Tallaby account",
-      "metaDescription": "How to ask Tallaby to delete your seller account and data, what is deleted and what is kept.",
+      "metaDescription": "How to delete your Tallaby seller account, what happens right away, and what is deleted after 30 days.",
+      "closedTitle": "Your account is closed",
+      "closedBody": "You've been signed out and your stores are offline. We'll delete your data for good in {days} days. Changed your mind? Email <mail>{email}</mail> before then.",
       "title": "Delete your Tallaby account",
-      "intro": "You can ask us to delete your Tallaby seller account and its data at any time. We delete it within {days} days of your request.",
+      "intro": "You can delete your Tallaby seller account at any time. It closes right away, and we delete its data for good {days} days later.",
       "how": {
-        "title": "How to ask",
+        "title": "How to delete it",
         "app": "Sign in to the Tallaby dashboard or the Tallaby Seller app, open Settings, then tap \"Delete my account\".",
         "appLink": "Open Settings",
-        "email": "Can't sign in? Email us from the address on your account:",
-        "cancel": "You can cancel the request from the same place any time before it's done ({days} days)."
+        "email": "Can't sign in? Email us from the address on your account:"
+      },
+      "now": {
+        "title": "What happens right away",
+        "signout": "You're signed out on every device and can't sign in again.",
+        "stores": "Your stores and websites go offline, and customers can't place orders.",
+        "wallet": "Any balance in your store wallet is lost. It isn't paid out or refunded."
       },
       "deleted": {
-        "title": "What we delete",
+        "title": "What we delete after {days} days",
         "account": "Your account: login, name, email, phone and profile.",
         "stores": "All your stores, websites, products, categories, coupons and settings.",
         "orders": "Your stores' orders, customers, reviews and messages.",
         "files": "Photos, logos and documents you uploaded."
       },
+      "restore": {
+        "title": "Changed your mind?",
+        "body": "Email <mail>{email}</mail> within {days} days from the address on your account. We'll restore it as it was: stores, products and orders. After {days} days it can't be restored."
+      },
       "kept": {
         "title": "What we keep",
         "request": "A short record of your request (email, date and status) to show it was done.",
-        "backups": "Copies in our backups are removed when those backups expire.",
-        "wallet": "Money left in a store wallet can't be paid out after deletion, so settle it first."
+        "backups": "Copies in our backups are removed when those backups expire."
       },
       "privacy": "Privacy policy"
     }

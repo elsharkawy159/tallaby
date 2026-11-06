@@ -67,7 +67,7 @@ export const getSidebarCounts = cache(async function getSidebarCounts(): Promise
         ) AS pending_store_top_ups,
         (SELECT count(*)::int FROM ${storeAppRequests} WHERE ${storeAppRequests.status} = 'requested') AS pending_app_requests,
         (SELECT count(*)::int FROM ${themeRequests} WHERE ${themeRequests.status} = 'new') AS new_theme_requests,
-        (SELECT count(*)::int FROM ${accountDeletionRequests} WHERE ${accountDeletionRequests.status} = 'pending') AS pending_account_deletions,
+        (SELECT count(*)::int FROM ${accountDeletionRequests} WHERE ${accountDeletionRequests.status} = 'scheduled') AS pending_account_deletions,
         (SELECT count(DISTINCT ${sellerFulfillmentServices.sellerId})::int FROM ${sellerFulfillmentServices}
           WHERE ${sellerFulfillmentServices.status} IN ('requested', 'under_review', 'awaiting_agreement')
         ) AS fulfillment_open_sellers,

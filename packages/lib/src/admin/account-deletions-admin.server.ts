@@ -1,18 +1,19 @@
-import { accountDeletionRequests, db, desc, eq, sql, users } from "@workspace/db";
+import { accountDeletionRequests, and, db, desc, eq, isNull, sellers, sql, stores, users } from "@workspace/db";
 import {
-  ACCOUNT_DELETION_DAYS,
-  accountDeletionUpdateSchema,
-  canAdminSetAccountDeletionStatus,
+  accountRestoreSchema,
+  canRestoreAccountDeletion,
+  restoredSellerStatus,
   type AccountDeletionSource,
   type AccountDeletionStatus,
 } from "../account-deletion/account-deletion.lib";
+import { setAuthUserBan } from "../account-deletion/account-deletion.server";
 import { AdminActorError, assertAdminActor, writeAdminAudit, type Queryable } from "./guard.server";
 
 /**
- * Admin › Account deletions (ROADMAP.md F-82, 0157). The team deletes the
- * user by hand (Supabase › Authentication › Users › Delete user, which
- * cascades per 0134) after checking the wallet and open orders shown here,
- * then marks the request completed. No money moves from this module.
+ * Admin › Account deletions (ROADMAP.md F-82, 0157). A seller's "Delete my
+ * account" closes the account at once; the dashboard cron purges it after 30
+ * days. Here the team sees each one and can restore an account before its
+ * purge (the seller emails support). No money moves from this module.
  */
 
 export type AccountDeletionFilter = AccountDeletionStatus | "all";
@@ -25,27 +26,24 @@ export type AdminAccountDeletionRow = {
   displayName: string | null;
   userId: string | null;
   createdAt: string;
+  purgeAfter: string;
   handledAt: string | null;
-  /** Still pending past the ACCOUNT_DELETION_DAYS promise (computed by the database clock). */
-  overdue: boolean;
 };
 
 export type AdminAccountDeletionDetail = AdminAccountDeletionRow & {
   reason: string | null;
   adminNote: string | null;
-  cancelledAt: string | null;
+  previousSellerStatus: string | null;
   handledByEmail: string | null;
-  /** Null once the user is deleted. */
+  /** Null once the user is purged. */
   account: {
     stores: number;
     walletBalance: string | null;
     walletCurrency: string | null;
-    /** Orders with this seller's items that are not finished yet. */
+    /** Orders with this seller's items that are not finished yet (they go with the purge). */
     openOrders: number;
   } | null;
 };
-
-const overdue = sql<boolean>`(${accountDeletionRequests.status} = 'pending' AND ${accountDeletionRequests.createdAt} < now() - make_interval(days => ${ACCOUNT_DELETION_DAYS}))`;
 
 export async function listAccountDeletionsForAdmin(filter: AccountDeletionFilter, q: Queryable = db): Promise<AdminAccountDeletionRow[]> {
   const rows = await q
@@ -57,8 +55,8 @@ export async function listAccountDeletionsForAdmin(filter: AccountDeletionFilter
       displayName: accountDeletionRequests.displayName,
       userId: accountDeletionRequests.userId,
       createdAt: accountDeletionRequests.createdAt,
+      purgeAfter: accountDeletionRequests.purgeAfter,
       handledAt: accountDeletionRequests.handledAt,
-      overdue,
     })
     .from(accountDeletionRequests)
     .where(filter === "all" ? undefined : eq(accountDeletionRequests.status, filter))
@@ -82,10 +80,10 @@ export async function getAccountDeletionForAdmin(requestId: string, q: Queryable
       userId: accountDeletionRequests.userId,
       reason: accountDeletionRequests.reason,
       adminNote: accountDeletionRequests.adminNote,
+      previousSellerStatus: accountDeletionRequests.previousSellerStatus,
       createdAt: accountDeletionRequests.createdAt,
+      purgeAfter: accountDeletionRequests.purgeAfter,
       handledAt: accountDeletionRequests.handledAt,
-      cancelledAt: accountDeletionRequests.cancelledAt,
-      overdue,
       handledByEmail: users.email,
     })
     .from(accountDeletionRequests)
@@ -96,10 +94,10 @@ export async function getAccountDeletionForAdmin(requestId: string, q: Queryable
 
   let account: AdminAccountDeletionDetail["account"] = null;
   if (row.userId) {
-    // sellers.id = users.id. Read-only counts for the admin's checks.
+    // sellers.id = users.id. Read-only counts for context.
     const [facts] = await q.execute<{ stores: number; wallet_balance: string | null; wallet_currency: string | null; open_orders: number }>(sql`
       SELECT
-        (SELECT count(*)::int FROM stores s WHERE s.seller_id = ${row.userId}) AS stores,
+        (SELECT count(*)::int FROM stores s WHERE s.seller_id = ${row.userId} AND s.deleted_at IS NULL) AS stores,
         (SELECT w.balance::text FROM seller_wallet w WHERE w.seller_id = ${row.userId} LIMIT 1) AS wallet_balance,
         (SELECT w.currency FROM seller_wallet w WHERE w.seller_id = ${row.userId} LIMIT 1) AS wallet_currency,
         (SELECT count(DISTINCT oi.order_id)::int
@@ -125,72 +123,82 @@ export async function getAccountDeletionForAdmin(requestId: string, q: Queryable
   };
 }
 
-export type UpdateAccountDeletionError = "not_admin" | "invalid_input" | "not_found" | "not_allowed" | "unchanged";
-export type UpdateAccountDeletionResult =
-  | { success: true; status: AccountDeletionStatus }
-  | { success: false; error: UpdateAccountDeletionError };
+export type RestoreAccountError = "not_admin" | "invalid_input" | "not_found" | "not_allowed" | "user_gone";
+export type RestoreAccountResult =
+  | { success: true; sellerId: string; subdomains: string[]; unbanned: boolean }
+  | { success: false; error: RestoreAccountError };
 
-class UpdateError extends Error {
-  constructor(readonly code: "not_found" | "not_allowed" | "unchanged") {
+class RestoreError extends Error {
+  constructor(readonly code: "not_found" | "not_allowed" | "user_gone") {
     super(code);
   }
 }
 
-/** Sets a request's status and note, with an audit row. Never deletes the user. */
-export async function updateAccountDeletionByAdmin(
-  actorId: string,
-  input: unknown,
-  q: Queryable = db,
-): Promise<UpdateAccountDeletionResult> {
-  const parsed = accountDeletionUpdateSchema.safeParse(input);
+/**
+ * Reopens a closed account before its purge: the seller status it had before,
+ * the auth ban lifted, the request marked restored. Nothing was deleted, so
+ * stores, products, orders and the wallet come back as they were.
+ */
+export async function restoreAccountByAdmin(actorId: string, input: unknown, q: Queryable = db): Promise<RestoreAccountResult> {
+  const parsed = accountRestoreSchema.safeParse(input);
   if (!parsed.success) return { success: false, error: "invalid_input" };
   const next = parsed.data;
 
+  let sellerId: string;
+  let subdomains: string[];
   try {
-    return await q.transaction(async (tx) => {
+    ({ sellerId, subdomains } = await q.transaction(async (tx) => {
       await assertAdminActor(tx, actorId);
       const [request] = await tx
         .select({
           id: accountDeletionRequests.id,
           userId: accountDeletionRequests.userId,
           status: accountDeletionRequests.status,
-          adminNote: accountDeletionRequests.adminNote,
+          previousSellerStatus: accountDeletionRequests.previousSellerStatus,
         })
         .from(accountDeletionRequests)
         .where(eq(accountDeletionRequests.id, next.requestId))
         .for("update");
-      if (!request) throw new UpdateError("not_found");
-      if (!canAdminSetAccountDeletionStatus(request.status, next.status)) throw new UpdateError("not_allowed");
-      if (request.status === next.status && (request.adminNote ?? null) === (next.note ?? null)) throw new UpdateError("unchanged");
+      if (!request) throw new RestoreError("not_found");
+      if (!canRestoreAccountDeletion(request.status)) throw new RestoreError("not_allowed");
+      if (!request.userId) throw new RestoreError("user_gone");
+
+      const status = restoredSellerStatus(request.previousSellerStatus);
+      const updated = await tx
+        .update(sellers)
+        .set({ status, updatedAt: sql`now()` })
+        .where(eq(sellers.id, request.userId))
+        .returning({ id: sellers.id });
+      if (updated.length === 0) throw new RestoreError("user_gone");
 
       await tx
         .update(accountDeletionRequests)
-        .set({
-          status: next.status,
-          adminNote: next.note,
-          handledBy: actorId,
-          handledAt: sql`now()`,
-          updatedAt: sql`now()`,
-        })
+        .set({ status: "restored", adminNote: next.note, handledBy: actorId, handledAt: sql`now()`, updatedAt: sql`now()` })
         .where(eq(accountDeletionRequests.id, request.id));
 
       await writeAdminAudit(tx, {
         actorId,
-        // The user may already be deleted; the request is then the target.
-        sellerId: null,
+        sellerId: request.userId,
         targetType: "account_deletion_request",
         targetId: request.id,
-        action: "update_account_deletion_request",
-        before: { status: request.status, hasNote: Boolean(request.adminNote), userId: request.userId },
-        after: { status: next.status, hasNote: Boolean(next.note) },
-        reason: `Account deletion request marked ${next.status}`,
+        action: "restore_closed_account",
+        before: { requestStatus: request.status, sellerStatus: "suspended" },
+        after: { requestStatus: "restored", sellerStatus: status },
+        reason: next.note ?? "Closed account restored before its purge",
       });
 
-      return { success: true as const, status: next.status };
-    });
+      const owned = await tx
+        .select({ subdomain: stores.subdomain })
+        .from(stores)
+        .where(and(eq(stores.sellerId, request.userId), isNull(stores.deletedAt)));
+      return { sellerId: request.userId, subdomains: owned.map((store) => store.subdomain) };
+    }));
   } catch (error) {
     if (error instanceof AdminActorError) return { success: false, error: "not_admin" };
-    if (error instanceof UpdateError) return { success: false, error: error.code };
+    if (error instanceof RestoreError) return { success: false, error: error.code };
     throw error;
   }
+
+  const unbanned = await setAuthUserBan(sellerId, "none").catch(() => false);
+  return { success: true, sellerId, subdomains, unbanned };
 }

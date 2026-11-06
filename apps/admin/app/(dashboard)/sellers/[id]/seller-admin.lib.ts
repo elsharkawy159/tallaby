@@ -63,7 +63,7 @@ export const AUDIT_ACTION_LABELS: Record<AdminAuditAction, string> = {
   enable_app_request: "App request enabled",
   decline_app_request: "App request declined",
   update_theme_request: "Theme request updated",
-  update_account_deletion_request: "Account deletion request updated",
+  restore_closed_account: "Closed account restored",
 };
 
 export function auditActionLabel(action: string): string {

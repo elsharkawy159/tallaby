@@ -5,18 +5,22 @@ import {
   ACCOUNT_DELETION_NOTE_MAX,
   ACCOUNT_DELETION_REASON_MAX,
   ACCOUNT_DELETION_STATUSES,
+  ACCOUNT_DELETION_SUPPORT_EMAIL,
   accountDeletionDueDate,
   accountDeletionRequestSchema,
-  accountDeletionUpdateSchema,
-  canAdminSetAccountDeletionStatus,
+  accountRestoreSchema,
+  canRestoreAccountDeletion,
   clipText,
   isAccountDeletionStatus,
+  isAuthUserMissingError,
+  restoredSellerStatus,
 } from "./account-deletion.lib";
 import { ADMIN_NOTIFICATION_TYPES, adminNotificationHref } from "../notifications/notifications.lib";
 import { ADMIN_AUDIT_ACTIONS } from "../admin/admin.lib";
 
 const REQ = "11111111-2222-4333-8444-555555555555";
-const migration = readFileSync(new URL("../../../db/migrations/0157_account_deletion_requests.sql", import.meta.url), "utf8");
+const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8");
+const migration = read("../../../db/migrations/0157_account_deletion_requests.sql");
 
 describe("accountDeletionRequestSchema", () => {
   it("needs the confirmation checkbox", () => {
@@ -37,33 +41,26 @@ describe("accountDeletionRequestSchema", () => {
   });
 });
 
-describe("accountDeletionUpdateSchema", () => {
-  it("accepts completed without a note and requires a note to decline", () => {
-    expect(accountDeletionUpdateSchema.safeParse({ requestId: REQ, status: "completed" }).success).toBe(true);
-    expect(accountDeletionUpdateSchema.safeParse({ requestId: REQ, status: "declined" }).success).toBe(false);
-    expect(accountDeletionUpdateSchema.safeParse({ requestId: REQ, status: "declined", note: "Open orders" }).success).toBe(true);
+describe("restore", () => {
+  it("accepts a request id with an optional note", () => {
+    expect(accountRestoreSchema.safeParse({ requestId: REQ }).success).toBe(true);
+    expect(accountRestoreSchema.parse({ requestId: REQ, note: "  asked by email  " }).note).toBe("asked by email");
+    expect(accountRestoreSchema.safeParse({ requestId: "nope" }).success).toBe(false);
+    expect(accountRestoreSchema.safeParse({ requestId: REQ, note: "a".repeat(ACCOUNT_DELETION_NOTE_MAX + 1) }).success).toBe(false);
   });
 
-  it("rejects cancelled (the seller's action), bad ids and long notes", () => {
-    expect(accountDeletionUpdateSchema.safeParse({ requestId: REQ, status: "cancelled" }).success).toBe(false);
-    expect(accountDeletionUpdateSchema.safeParse({ requestId: "nope", status: "completed" }).success).toBe(false);
-    expect(
-      accountDeletionUpdateSchema.safeParse({ requestId: REQ, status: "completed", note: "a".repeat(ACCOUNT_DELETION_NOTE_MAX + 1) }).success,
-    ).toBe(false);
+  it("only while the data still exists", () => {
+    expect(canRestoreAccountDeletion("scheduled")).toBe(true);
+    expect(canRestoreAccountDeletion("completed")).toBe(false);
+    expect(canRestoreAccountDeletion("restored")).toBe(false);
   });
-});
 
-describe("canAdminSetAccountDeletionStatus", () => {
-  it("never reopens a cancelled or completed request", () => {
-    expect(canAdminSetAccountDeletionStatus("cancelled", "pending")).toBe(false);
-    expect(canAdminSetAccountDeletionStatus("completed", "pending")).toBe(false);
-    expect(canAdminSetAccountDeletionStatus("completed", "declined")).toBe(false);
-  });
-  it("moves pending and declined requests", () => {
-    expect(canAdminSetAccountDeletionStatus("pending", "completed")).toBe(true);
-    expect(canAdminSetAccountDeletionStatus("pending", "declined")).toBe(true);
-    expect(canAdminSetAccountDeletionStatus("declined", "pending")).toBe(true);
-    expect(canAdminSetAccountDeletionStatus("pending", "cancelled")).toBe(false);
+  it("puts back the seller status the account had, approved when unknown", () => {
+    expect(restoredSellerStatus("restricted")).toBe("restricted");
+    expect(restoredSellerStatus("pending")).toBe("pending");
+    expect(restoredSellerStatus("suspended")).toBe("suspended");
+    expect(restoredSellerStatus(null)).toBe("approved");
+    expect(restoredSellerStatus("weird")).toBe("approved");
   });
 });
 
@@ -74,13 +71,23 @@ describe("helpers", () => {
     expect(clipText(null, 10)).toBeNull();
     expect(clipText("abcdef", 3)).toBe("abc");
   });
-  it("due date is ACCOUNT_DELETION_DAYS later", () => {
-    const due = accountDeletionDueDate("2026-11-01T00:00:00.000Z");
-    expect(due.toISOString()).toBe(new Date(Date.UTC(2026, 10, 1 + ACCOUNT_DELETION_DAYS)).toISOString());
+  it("the purge date is ACCOUNT_DELETION_DAYS later", () => {
+    expect(ACCOUNT_DELETION_DAYS).toBe(30);
+    expect(accountDeletionDueDate("2026-11-01T00:00:00.000Z").toISOString()).toBe("2026-12-01T00:00:00.000Z");
   });
-  it("isAccountDeletionStatus", () => {
-    expect(isAccountDeletionStatus("pending")).toBe(true);
-    expect(isAccountDeletionStatus("deleted")).toBe(false);
+  it("statuses", () => {
+    expect(isAccountDeletionStatus("scheduled")).toBe(true);
+    expect(isAccountDeletionStatus("pending")).toBe(false);
+  });
+  it("treats a missing auth user as already purged", () => {
+    expect(isAuthUserMissingError({ status: 404 })).toBe(true);
+    expect(isAuthUserMissingError({ code: "user_not_found" })).toBe(true);
+    expect(isAuthUserMissingError({ message: "User not found" })).toBe(true);
+    expect(isAuthUserMissingError({ message: "Database error deleting user", status: 500 })).toBe(false);
+    expect(isAuthUserMissingError(null)).toBe(false);
+  });
+  it("support email (owner, 2026-11-06)", () => {
+    expect(ACCOUNT_DELETION_SUPPORT_EMAIL).toBe("omar@tallaby.com");
   });
 });
 
@@ -91,18 +98,25 @@ describe("admin wiring", () => {
       `/account-deletions/${REQ}`,
     );
     expect(adminNotificationHref({ type: "account_deletion_requested", sellerId: null, storeId: null })).toBe("/account-deletions");
-    expect(ADMIN_AUDIT_ACTIONS).toContain("update_account_deletion_request");
+    expect(ADMIN_AUDIT_ACTIONS).toContain("restore_closed_account");
     expect("account_deletion_request").toMatch(/^[a-z][a-z_]{2,31}$/);
   });
 });
 
-describe("0157 migration matches the code", () => {
-  it("lists every status, the caps and the bell type", () => {
+describe("0157 migration and the jobs that read it", () => {
+  it("lists every status, the caps, the 30 days and the bell type", () => {
     for (const status of ACCOUNT_DELETION_STATUSES) expect(migration).toContain(`'${status}'`);
     expect(migration).toContain(`char_length(reason) <= ${ACCOUNT_DELETION_REASON_MAX}`);
     expect(migration).toContain(`char_length(admin_note) <= ${ACCOUNT_DELETION_NOTE_MAX}`);
+    expect(migration).toContain(`interval '${ACCOUNT_DELETION_DAYS} days'`);
     expect(migration).toContain("'account_deletion_requested'");
     expect(migration).toMatch(/ENABLE ROW LEVEL SECURITY/);
-    expect(migration).toMatch(/WHERE status = 'pending'/);
+    expect(migration).toMatch(/WHERE status = 'scheduled'/);
+  });
+
+  it("renewals never charge a closed account", () => {
+    for (const file of ["../billing/plan-billing.server.ts", "../billing/app-billing.server.ts"]) {
+      expect(read(file)).toMatch(/NOT EXISTS \(SELECT 1 FROM account_deletion_requests a WHERE a\.user_id = .* AND a\.status = 'scheduled'\)/);
+    }
   });
 });

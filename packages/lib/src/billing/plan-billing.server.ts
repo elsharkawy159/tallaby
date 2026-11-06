@@ -1,4 +1,4 @@
-import { and, db, eq, lte, sellerNotifications, sellers } from "@workspace/db";
+import { and, db, eq, lte, sellerNotifications, sellers, sql } from "@workspace/db";
 import {
   DuplicateStoreWalletEntryError,
   postStoreWalletEntry,
@@ -178,7 +178,14 @@ export async function renewDuePlans(now: Date = new Date()): Promise<Record<Rene
   const due = await db
     .select({ id: sellers.id })
     .from(sellers)
-    .where(and(eq(sellers.plan, "pro"), lte(sellers.planExpiresAt, now.toISOString())));
+    .where(
+      and(
+        eq(sellers.plan, "pro"),
+        lte(sellers.planExpiresAt, now.toISOString()),
+        // A closed account (F-82, 0157) is never charged while it waits for its purge.
+        sql`NOT EXISTS (SELECT 1 FROM account_deletion_requests a WHERE a.user_id = ${sellers.id} AND a.status = 'scheduled')`,
+      ),
+    );
   for (const { id } of due) {
     try {
       counts[await renewOnePlan(id, now)] += 1;

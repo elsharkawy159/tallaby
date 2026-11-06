@@ -1,25 +1,23 @@
 import type { AccountDeletionStatus } from "@workspace/lib/account-deletion";
 
 export const STATUS_LABELS: Record<AccountDeletionStatus, string> = {
-  pending: "Pending",
-  completed: "Completed",
-  cancelled: "Cancelled by seller",
-  declined: "Declined",
+  scheduled: "Closed · waiting for purge",
+  completed: "Deleted",
+  restored: "Restored",
 };
 
-export const FILTERS = ["pending", "completed", "declined", "cancelled", "all"] as const;
+export const FILTERS = ["scheduled", "completed", "restored", "all"] as const;
 export type AccountDeletionFilterKey = (typeof FILTERS)[number];
 
 export const FILTER_LABELS: Record<AccountDeletionFilterKey, string> = {
-  pending: "Pending",
-  completed: "Completed",
-  declined: "Declined",
-  cancelled: "Cancelled",
+  scheduled: "Waiting for purge",
+  completed: "Deleted",
+  restored: "Restored",
   all: "All (latest 100)",
 };
 
 export function parseFilter(value: string | undefined): AccountDeletionFilterKey {
-  return (FILTERS as readonly string[]).includes(value ?? "") ? (value as AccountDeletionFilterKey) : "pending";
+  return (FILTERS as readonly string[]).includes(value ?? "") ? (value as AccountDeletionFilterKey) : "scheduled";
 }
 
 export const formatWhen = (iso: string) =>

@@ -83,7 +83,7 @@ interface SellerSettingsFormProps {
   primaryStoreId: string | null
   /** Phone alerts card (F-06); null while push is not configured. */
   pushAlertsSection?: React.ReactNode
-  /** Delete my account card (F-82); null while 0157 is not applied. */
+  /** Delete my account card (F-82). */
   accountDeletionSection?: React.ReactNode
 }
 

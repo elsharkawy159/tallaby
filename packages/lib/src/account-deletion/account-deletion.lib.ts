@@ -1,26 +1,29 @@
 /**
- * Account deletion requests (ROADMAP.md F-82, migration 0157). Pure: statuses,
- * limits and input validation. Server functions are in `./server`.
+ * Account deletion (ROADMAP.md F-82, migration 0157). Pure: statuses, limits
+ * and input validation. Server functions are in `./server`.
  *
- * Google Play requires an app with sign-up to let people ask for their account
- * to be deleted, in the app and through a web link. A seller asks from
- * Settings; the team deletes the account within ACCOUNT_DELETION_DAYS and marks
- * the request completed in Admin.
+ * Owner's rules (2026-11-06): the account is deleted from the seller's point
+ * of view at once (closed: signed out, banned, storefronts offline) and the
+ * data is kept ACCOUNT_DELETION_DAYS days, then purged by the dashboard's
+ * account-deletions cron. The store wallet balance is lost (nothing is paid
+ * out). Within those days the team can restore the account from Admin.
  */
 import { z } from "zod";
 
-export const ACCOUNT_DELETION_STATUSES = ["pending", "completed", "cancelled", "declined"] as const;
+export const ACCOUNT_DELETION_STATUSES = ["scheduled", "completed", "restored"] as const;
 export type AccountDeletionStatus = (typeof ACCOUNT_DELETION_STATUSES)[number];
 
 export const ACCOUNT_DELETION_SOURCES = ["dashboard", "android_app"] as const;
 export type AccountDeletionSource = (typeof ACCOUNT_DELETION_SOURCES)[number];
 
-/** The promise on the public page and in the Play data-safety form. */
+/** Days the data is kept after the account is closed (public page, Play data-safety form, 0157 default). */
 export const ACCOUNT_DELETION_DAYS = 30;
-/** Where people without access to their account can ask (public page, Play listing). */
+/** Where people ask for help or a restore (public page, Play listing). Owner, 2026-11-06. */
 export const ACCOUNT_DELETION_SUPPORT_EMAIL = "omar@tallaby.com";
 /** Public page (no login) linked from the Play listing. */
 export const ACCOUNT_DELETION_PUBLIC_PATH = "/account-deletion";
+/** The auth ban that keeps a closed account signed out until the purge (Supabase `ban_duration`). */
+export const ACCOUNT_DELETION_BAN_DURATION = "876000h";
 
 /** Same caps as the 0157 CHECK constraints. */
 export const ACCOUNT_DELETION_REASON_MAX = 1000;
@@ -60,45 +63,38 @@ export const accountDeletionRequestSchema = z.object({
 });
 export type AccountDeletionRequestInput = z.input<typeof accountDeletionRequestSchema>;
 
-/** Statuses an admin can set. `cancelled` is the seller's own action. */
-export const ADMIN_ACCOUNT_DELETION_STATUSES = ["pending", "completed", "declined"] as const satisfies readonly AccountDeletionStatus[];
-
-/** What an admin sends from the detail view. A decline needs a note: the seller sees it in Settings. */
-export const accountDeletionUpdateSchema = z
-  .object({
-    requestId: z.string().regex(UUID_RE),
-    status: z.enum(ADMIN_ACCOUNT_DELETION_STATUSES),
-    note: optionalText(ACCOUNT_DELETION_NOTE_MAX),
-  })
-  .superRefine((value, ctx) => {
-    if (value.status === "declined" && !value.note) {
-      ctx.addIssue({ code: "custom", message: "note_required", path: ["note"] });
-    }
-  });
-export type AccountDeletionUpdateInput = z.input<typeof accountDeletionUpdateSchema>;
+/** What an admin sends to restore a closed account. */
+export const accountRestoreSchema = z.object({
+  requestId: z.string().regex(UUID_RE),
+  note: optionalText(ACCOUNT_DELETION_NOTE_MAX),
+});
+export type AccountRestoreInput = z.input<typeof accountRestoreSchema>;
 
 /**
- * Whether an admin may move a request from `current` to `next`. A cancelled
- * request is the seller's decision and stays cancelled; a completed one means
- * the user is gone, so it can't be reopened.
+ * The seller status to put back on restore. A closed account was suspended by
+ * the close itself, so only a status the seller really had before counts;
+ * anything unknown falls back to approved.
  */
-export function canAdminSetAccountDeletionStatus(current: string, next: AccountDeletionStatus): boolean {
-  if (current === "cancelled" || current === "completed") return false;
-  return (ADMIN_ACCOUNT_DELETION_STATUSES as readonly string[]).includes(next);
+export function restoredSellerStatus(previous: string | null | undefined): "pending" | "approved" | "suspended" | "restricted" {
+  return previous === "pending" || previous === "approved" || previous === "suspended" || previous === "restricted"
+    ? previous
+    : "approved";
 }
 
-/** The seller's latest request, as Settings shows it (pending, or the last decline with its note). */
-export type SellerAccountDeletionView = {
-  id: string;
-  status: AccountDeletionStatus;
-  reason: string | null;
-  adminNote: string | null;
-  createdAt: string;
-  handledAt: string | null;
-};
+/** A restore is possible only while the data still exists (scheduled, before the purge ran). */
+export function canRestoreAccountDeletion(status: string): boolean {
+  return status === "scheduled";
+}
 
-/** The date by which a request made at `createdAt` is handled. */
+/** The date the data is purged for a request made at `createdAt`. */
 export function accountDeletionDueDate(createdAt: string | Date): Date {
   const start = typeof createdAt === "string" ? new Date(createdAt) : createdAt;
   return new Date(start.getTime() + ACCOUNT_DELETION_DAYS * 24 * 60 * 60 * 1000);
+}
+
+/** Supabase auth errors that mean the user is already gone (the purge can mark the request completed). */
+export function isAuthUserMissingError(error: { message?: string; status?: number; code?: string } | null | undefined): boolean {
+  if (!error) return false;
+  if (error.status === 404 || error.code === "user_not_found") return true;
+  return /user not found/i.test(error.message ?? "");
 }

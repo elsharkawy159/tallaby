@@ -3206,7 +3206,7 @@ export const themeRequests = pgTable("theme_requests", {
 /** Account deletion requests (0157, ROADMAP.md F-82): server-only, RLS on, no policies. */
 export const accountDeletionRequests = pgTable("account_deletion_requests", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
-	/** Null once the user is deleted: the row stays as the record of a completed request. */
+	/** Null once the user is purged: the row stays as the record of the deletion. */
 	userId: uuid("user_id").references(() => users.id, { onDelete: "set null" }),
 	/** Snapshots taken when the request was made. */
 	email: text(),
@@ -3214,23 +3214,26 @@ export const accountDeletionRequests = pgTable("account_deletion_requests", {
 	reason: text(),
 	/** dashboard | android_app */
 	source: text().default('dashboard').notNull(),
-	/** pending | completed | cancelled | declined */
-	status: text().default('pending').notNull(),
+	/** scheduled (account closed, waiting for the purge) | completed (purged) | restored (reopened by admin) */
+	status: text().default('scheduled').notNull(),
+	/** When the purge cron may delete the user (request + 30 days). */
+	purgeAfter: timestamp("purge_after", { withTimezone: true, mode: 'string' }).default(sql`(now() + interval '30 days')`).notNull(),
+	/** sellers.status before the account was closed, put back on restore. */
+	previousSellerStatus: text("previous_seller_status"),
 	adminNote: text("admin_note"),
 	handledBy: uuid("handled_by").references(() => users.id, { onDelete: "set null" }),
 	handledAt: timestamp("handled_at", { withTimezone: true, mode: 'string' }),
-	cancelledAt: timestamp("cancelled_at", { withTimezone: true, mode: 'string' }),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
-	uniqueIndex("account_deletion_requests_one_pending_idx").using("btree", table.userId).where(sql`status = 'pending'`),
+	uniqueIndex("account_deletion_requests_one_scheduled_idx").using("btree", table.userId).where(sql`status = 'scheduled'`),
 	index("account_deletion_requests_status_created_idx").using("btree", table.status, table.createdAt.desc()),
-	index("account_deletion_requests_user_idx").using("btree", table.userId, table.createdAt.desc()).where(sql`user_id IS NOT NULL`),
+	index("account_deletion_requests_due_idx").using("btree", table.purgeAfter).where(sql`status = 'scheduled'`),
 	check("account_deletion_requests_email_check", sql`email IS NULL OR char_length(email) <= 320`),
 	check("account_deletion_requests_display_name_check", sql`display_name IS NULL OR char_length(display_name) <= 200`),
 	check("account_deletion_requests_reason_check", sql`reason IS NULL OR char_length(reason) <= 1000`),
 	check("account_deletion_requests_source_check", sql`source IN ('dashboard', 'android_app')`),
-	check("account_deletion_requests_status_check", sql`status IN ('pending', 'completed', 'cancelled', 'declined')`),
+	check("account_deletion_requests_status_check", sql`status IN ('scheduled', 'completed', 'restored')`),
 	check("account_deletion_requests_admin_note_check", sql`admin_note IS NULL OR char_length(admin_note) <= 1000`),
 ]);
 

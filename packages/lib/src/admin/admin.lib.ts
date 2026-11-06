@@ -97,7 +97,7 @@ export const ADMIN_AUDIT_ACTIONS = [
   // Admin › Theme requests (0156, F-77)
   "update_theme_request",
   // Admin › Account deletions (0157, F-82)
-  "update_account_deletion_request",
+  "restore_closed_account",
 ] as const;
 
 export type AdminAuditAction = (typeof ADMIN_AUDIT_ACTIONS)[number];

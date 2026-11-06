@@ -11,24 +11,18 @@ import { requireSeller } from "@/lib/auth/require-seller.server";
 import { DomainPageLink } from "./domain-page-link";
 import { PushAlertsSection } from "./push-alerts.client";
 import { getSellerPushPrefs, getVapidPublicKey } from "@/lib/push/push-alerts.server";
-import { getSellerAccountDeletion } from "@workspace/lib/account-deletion/server";
 import { AccountDeletionSection } from "./account-deletion.client";
 
 export async function SellerSettingsData() {
   const seller = await requireSeller();
   // Phone alerts (F-06) only when the VAPID keys are set.
   const vapidPublicKey = getVapidPublicKey();
-  const [{ profile, documents, error }, account, primaryStore, pushPrefs, deletion] = await Promise.all([
+  const [{ profile, documents, error }, account, primaryStore, pushPrefs] = await Promise.all([
     fetchSellerSettings(),
     getSellerAccountView(seller.sellerId),
     getPrimaryStore(seller.sellerId),
     // A failed read (e.g. 0124 not applied yet) hides the card, never the page.
     vapidPublicKey ? getSellerPushPrefs(seller.sellerId).catch(() => null) : Promise.resolve(null),
-    // Delete my account (F-82): a failed read (0157 not applied yet) hides the card, never the page.
-    getSellerAccountDeletion(seller.userId).then(
-      (request) => ({ ok: true as const, request }),
-      () => ({ ok: false as const, request: null }),
-    ),
   ]);
   // The primary store's domain; every store's lives on Website › Domain & SEO (P4-14).
   const customDomainRes = primaryStore ? await getCustomDomain(primaryStore.id) : null;
@@ -67,7 +61,7 @@ export async function SellerSettingsData() {
       storeHref={storeUrl(profile.subdomain, liveDomain)}
       account={account}
       primaryStoreId={primaryStore?.id ?? null}
-      accountDeletionSection={deletion.ok ? <AccountDeletionSection initial={deletion.request} /> : null}
+      accountDeletionSection={<AccountDeletionSection />}
       pushAlertsSection={
         vapidPublicKey && pushPrefs ? <PushAlertsSection publicKey={vapidPublicKey} initialPrefs={pushPrefs} /> : null
       }

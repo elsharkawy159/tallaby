@@ -135,7 +135,7 @@ export const sidebarSections: SidebarSection[] = [
         href: "/account-deletions",
         icon: UserX,
         countKey: "pendingAccountDeletions",
-        countLabel: "Account deletion requests waiting",
+        countLabel: "Closed accounts waiting for their purge",
       },
     ],
   },

@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { getAuthResult } from "@/lib/auth/session.server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
+import { ACCOUNT_DELETION_SUPPORT_EMAIL } from "@workspace/lib/account-deletion";
 
 /**
  * Auth actions return their error text instead of throwing it: in production
@@ -49,6 +50,10 @@ export const login = async (email: string, password: string): Promise<AuthAction
       return { error: t("emailNotConfirmed"), code: "emailNotConfirmed" };
     }
     if (/rate limit/i.test(error.message)) return { error: t("rateLimited") };
+    // A closed account (F-82) is banned until its purge.
+    if (error.code === "user_banned" || /banned/i.test(error.message)) {
+      return { error: t("accountClosed", { email: ACCOUNT_DELETION_SUPPORT_EMAIL }) };
+    }
     return { error: t("generic") };
   }
 

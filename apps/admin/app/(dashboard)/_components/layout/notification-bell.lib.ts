@@ -85,8 +85,8 @@ export function describeAdminNotification(n: Pick<NotificationItem, 'type' | 'da
       }
     case 'account_deletion_requested':
       return {
-        title: 'Account deletion requested',
-        body: seller || 'A seller asked for their account to be deleted.',
+        title: 'Account deleted by seller',
+        body: seller ? `${seller} closed their account (purged in 30 days).` : 'A seller closed their account (purged in 30 days).',
       }
     case 'theme_requested':
       return {

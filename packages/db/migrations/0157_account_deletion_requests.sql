@@ -1,26 +1,27 @@
 -- 0157_account_deletion_requests.sql (owner request 2026-11-06; ROADMAP.md F-82, docs/google-play-plan.md GP-02)
 --
--- Google Play requires an app with sign-up to let people ask for their
--- account to be deleted, in the app and through a web link. A seller asks
--- from Dashboard › Settings ("Delete my account"); the public page
--- dashboard.tallaby.com/account-deletion explains it. The Tallaby team handles
--- the request in Admin › Account deletions within 30 days.
+-- Google Play requires an app with sign-up to let people delete their account,
+-- in the app and through a web link. Owner's rules (2026-11-06):
+--   * "delete the account from the user's perspective but keep the data for
+--     30 days": on request the account CLOSES at once (seller suspended, auth
+--     user banned, signed out everywhere, storefronts stop resolving), and the
+--     data is purged 30 days later by the dashboard's account-deletions cron;
+--   * "he loses all wallet balance on delete": nothing is paid out; the
+--     wallet is frozen with the account and goes with the purge.
+-- Within the 30 days the team can restore the account from Admin (the seller
+-- emails support); restoring puts back the seller status saved here.
 --
---   * account_deletion_requests: server-only (RLS on, no policies).
---     At most one PENDING request per user (partial unique index).
---     `user_id` is SET NULL when the user is deleted, so the row stays as the
---     record that the request was completed; `email` and `display_name` are
---     snapshots taken when the request was made.
+--   * account_deletion_requests: server-only (RLS on, no policies). At most one
+--     SCHEDULED request per user (partial unique index). `user_id` is SET NULL
+--     when the user is purged, so the row stays as the record of the deletion;
+--     `email` and `display_name` are snapshots taken at the request.
 --   * admin bell: an AFTER INSERT trigger adds an `account_deletion_requested`
 --     row, like 0156's `theme_requested`. The type check is widened from its
 --     LIVE definition (as 0143 and 0156 do), so no other type is lost.
 --
--- Deleting the account itself stays a manual admin step (Supabase › Users ›
--- Delete user, which cascades per 0134) until the owner decides what happens
--- to a positive store wallet balance and open orders (CLAUDE.md rule 4).
---
--- Additive and idempotent. The dashboard Settings page and the Admin sidebar
--- read this table, so apply it on staging, then production, BEFORE deploying.
+-- Additive and idempotent. The dashboard (close account, purge cron, renewal
+-- jobs) and the Admin sidebar read this table, so apply it on staging, then
+-- production, BEFORE deploying.
 
 BEGIN;
 
@@ -36,23 +37,27 @@ CREATE TABLE IF NOT EXISTS public.account_deletion_requests (
   -- Where the request came from: the dashboard (web or the Play app).
   source text NOT NULL DEFAULT 'dashboard'
     CONSTRAINT account_deletion_requests_source_check CHECK (source IN ('dashboard', 'android_app')),
-  status text NOT NULL DEFAULT 'pending'
-    CONSTRAINT account_deletion_requests_status_check CHECK (status IN ('pending', 'completed', 'cancelled', 'declined')),
+  -- scheduled: account closed, data waiting for the purge; completed: purged; restored: reopened by admin.
+  status text NOT NULL DEFAULT 'scheduled'
+    CONSTRAINT account_deletion_requests_status_check CHECK (status IN ('scheduled', 'completed', 'restored')),
+  -- When the purge cron may delete the user (request time + 30 days).
+  purge_after timestamptz NOT NULL DEFAULT (now() + interval '30 days'),
+  -- sellers.status before the account was closed, put back on restore.
+  previous_seller_status text,
   admin_note text
     CONSTRAINT account_deletion_requests_admin_note_check CHECK (admin_note IS NULL OR char_length(admin_note) <= 1000),
   handled_by uuid REFERENCES public.users(id) ON DELETE SET NULL,
   handled_at timestamptz,
-  cancelled_at timestamptz,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE UNIQUE INDEX IF NOT EXISTS account_deletion_requests_one_pending_idx
-  ON public.account_deletion_requests (user_id) WHERE status = 'pending';
+CREATE UNIQUE INDEX IF NOT EXISTS account_deletion_requests_one_scheduled_idx
+  ON public.account_deletion_requests (user_id) WHERE status = 'scheduled';
 CREATE INDEX IF NOT EXISTS account_deletion_requests_status_created_idx
   ON public.account_deletion_requests (status, created_at DESC);
-CREATE INDEX IF NOT EXISTS account_deletion_requests_user_idx
-  ON public.account_deletion_requests (user_id, created_at DESC) WHERE user_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS account_deletion_requests_due_idx
+  ON public.account_deletion_requests (purge_after) WHERE status = 'scheduled';
 
 ALTER TABLE public.account_deletion_requests ENABLE ROW LEVEL SECURITY;
 

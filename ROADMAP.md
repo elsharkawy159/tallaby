@@ -1175,7 +1175,7 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 **Status:** [In progress] Repo side built on branch `claude/talabi-mobile-app-strategy-9i9xy1` (2026-11-06), not merged or deployed, 0157 not applied; waiting for owner review.
 
 - **F-82a · P1 · deps: none** Manifest icons (192, 512, maskable) and the env-driven Digital Asset Links route; `docs/android-app.md`.
-- **F-82b · P1 · deps: none** Account deletion requests: 0157, Settings › Delete my account, public `/account-deletion`, Admin › Account deletions (the user is still deleted by hand in Supabase until the owner decides on wallet balance and open orders).
+- **F-82b · P1 · deps: none** Account deletion (owner, 2026-11-06: closes at once, data kept 30 days then purged, wallet balance lost): 0157, Settings › Delete my account (suspend + auth ban + global sign-out), public `/account-deletion`, daily purge cron, Admin › Account deletions with Restore, renewals skip closed accounts.
 - **F-82c · P1 · deps: none** `apps/android/` Bubblewrap config + README, `docs/google-play/listing.md` (ar/en copy, data safety, content rating, reviewer notes), feature graphic, screenshot script.
 - **F-82d · P1 · deps: F-82a–c merged, 0157 applied** Owner: Play Console account, demo reviewer account, package with PWABuilder/Bubblewrap, set the two env vars with both fingerprints, internal test.
 - **F-82e · P1 · deps: F-82d** Owner: store listing, closed test if the account is personal, production release.
@@ -1188,6 +1188,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 | Date       | Request (owner's words)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Feature ID                                                                                       | Status                                                                                             |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| 2026-11-06 | "We can delete the account from user prespective but keep the data for 30 days. he loses all wallet balance on delete" | F-82b | Built: close at once, 30-day purge cron, Admin restore, wallet forfeited (branch `claude/talabi-mobile-app-strategy-9i9xy1`) |
 | 2026-11-06 | "You can decide the app name it's for u. support email is omar@tallaby.com" | F-82 | Done: Play title `طلبي للبائعين – Tallaby` / `Tallaby Seller`, support email `omar@tallaby.com` on the deletion page and listing |
 | 2026-11-06 | "make a full plan .md file and start work on it without pushing to live, just commit everything in one branch and I review later, make everything ready" | F-82 | Repo side built on `claude/talabi-mobile-app-strategy-9i9xy1`, waiting for owner review (`docs/google-play-plan.md`) |
 | 2026-11-06 | "I need the easiest way to make a mobile application for App Store and Google Play using my current dashboard code" Then: "How to do that? turn the PWA into a Google Play app with a Trusted Web Activity (PWABuilder or Bubblewrap) … No problem if we go with android google play application first" | F-82 | Repo side built, Play packaging is the owner's (`docs/android-app.md`) |
@@ -1549,7 +1550,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [ ] F-80b Reorder options and values in the product form
 - [ ] F-81a AI photo clean-up: cost study + design note (owner)
 - [x] F-82a Manifest icons + Digital Asset Links route + `docs/android-app.md` (2026-11-06; branch `claude/talabi-mobile-app-strategy-9i9xy1`)
-- [x] F-82b Account deletion requests: 0157 (not applied), Settings card, public page, Admin (2026-11-06; same branch; no browser test)
+- [x] F-82b Account deletion: close at once, 30-day purge cron, Admin restore, renewals skip closed accounts; 0157 not applied (2026-11-06; same branch; no browser test)
 - [x] F-82c `apps/android/` config, listing copy, feature graphic, screenshot script (2026-11-06; same branch)
 - [ ] F-82d Play account, package the TWA, set `ANDROID_APP_*` env, internal test (owner)
 - [ ] F-82e Play listing and production release (owner)
@@ -1557,6 +1558,17 @@ Add each new request here first, with the date and the owner's words, then turn 
 ---
 
 ## 7. Log
+
+### 2026-11-06 — F-82b account deletion rebuilt on the owner's rules
+
+- **Owner:** "delete the account from user perspective but keep the data for 30 days"; "he loses all wallet balance on delete".
+- **0157 rewritten** (never applied anywhere, so changed in place): statuses `scheduled | completed | restored`, `purge_after` (now() + 30 days), `previous_seller_status`; one scheduled row per user. Checked again on a throwaway Postgres 16: runs twice cleanly, 30-day purge date, a second close refused, a new close allowed after a restore, the row survives the purge.
+- **Close** (`closeSellerAccount`, Settings › Delete my account): one transaction saves the request, sets `sellers.status = 'suspended'` (dashboard refuses the seller, storefronts stop resolving) and deletes the seller's push devices; then the auth user is banned, seller/product/storefront caches dropped, every session signed out, redirect to `/account-deletion?closed=1`. No money moves; the wallet is frozen and goes with the purge.
+- **Login:** a banned user sees "This account was deleted. To get it back within 30 days, email omar@tallaby.com."
+- **Purge:** daily `/api/cron/account-deletions` (dashboard `vercel.json`, 05:50 UTC, `CRON_SECRET`) deletes the auth user of each closed account past `purge_after` (0134 cascades), marks it completed, counts a missing user as already purged. Storage files are not deleted (separate clean-up task).
+- **Admin:** Account deletions lists waiting / deleted / restored with the purge date and what the account holds; **Restore account** puts back the previous seller status, lifts the ban, drops the caches; audit action `restore_closed_account`.
+- **Renewals:** `renewDuePlans` and `renewDueApps` skip sellers with a scheduled deletion.
+- **Checks:** `@workspace/lib` 1,275 tests pass (account-deletion tests rewritten, plus a check that both renewal queries skip closed accounts); dashboard 981 tests pass; dashboard and admin typecheck; no lint errors in changed files; every new message rendered with next-intl in both languages. Not done: a browser run of close → restore (needs a database with 0157 and the service-role key).
 
 ### 2026-11-06 — F-82 owner answers: app name and support email
 

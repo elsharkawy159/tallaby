@@ -1,4 +1,4 @@
-import { and, db, eq, isNull, lte, or, sellerNotifications, storeAppInstalls, stores, walletTransactions } from "@workspace/db";
+import { and, db, eq, isNull, lte, or, sellerNotifications, sql, storeAppInstalls, stores, walletTransactions } from "@workspace/db";
 import {
   DuplicateStoreWalletEntryError,
   getStoreWalletSummary,
@@ -398,6 +398,8 @@ export async function renewDueApps(now: Date = new Date()): Promise<Record<AppRe
     .where(
       and(
         isNull(storeAppInstalls.uninstalledAt),
+        // A closed account (F-82, 0157) is never charged while it waits for its purge.
+        sql`NOT EXISTS (SELECT 1 FROM account_deletion_requests a WHERE a.user_id = ${storeAppInstalls.sellerId} AND a.status = 'scheduled')`,
         or(
           and(eq(storeAppInstalls.pricingModel, "monthly"), lte(storeAppInstalls.currentPeriodEnd, stamp)),
           lte(storeAppInstalls.graceUntil, stamp),
