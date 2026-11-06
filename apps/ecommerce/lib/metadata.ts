@@ -41,12 +41,34 @@ export function absoluteProductImageUrl(image: string): string {
  * a downscaled copy through Supabase image transformations.
  */
 export function socialShareImageUrl(image: string): string {
+  return socialShareImage(image).url;
+}
+
+/** The 1200×630 share card size every link preview (Facebook, WhatsApp, X, LinkedIn) lays out best. */
+export const SHARE_IMAGE_SIZE = { width: 1200, height: 630 } as const;
+
+const IMAGE_TYPES: Record<string, string> = { jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", webp: "image/webp" };
+
+/**
+ * The share image with what is known about it. A Supabase upload is served
+ * through image transformations cropped (`resize=cover`) to exactly 1200×630:
+ * `contain` returned a smaller copy (a square photo came back 630×630, a small
+ * thumbnail in WhatsApp). The type is the upload's own, which is what a
+ * crawler that doesn't ask for WebP (facebookexternalhit, WhatsApp) receives.
+ * Any other URL is passed through with no size, as its size is unknown.
+ */
+export function socialShareImage(image: string): { url: string; width?: number; height?: number; type?: string } {
   const url = absoluteProductImageUrl(image);
-  if (!url.includes(".supabase.co/storage/v1/object/public/")) return url;
-  return (
-    url.replace("/storage/v1/object/public/", "/storage/v1/render/image/public/") +
-    "?width=1200&height=630&resize=contain&quality=80"
-  );
+  if (!url.includes(".supabase.co/storage/v1/object/public/")) return { url };
+  const ext = /\.([a-z0-9]+)$/i.exec(url.split(/[?#]/)[0] ?? "")?.[1]?.toLowerCase();
+  const type = ext ? IMAGE_TYPES[ext] : undefined;
+  return {
+    url:
+      url.replace("/storage/v1/object/public/", "/storage/v1/render/image/public/") +
+      `?width=${SHARE_IMAGE_SIZE.width}&height=${SHARE_IMAGE_SIZE.height}&resize=cover&quality=80`,
+    ...SHARE_IMAGE_SIZE,
+    ...(type && { type }),
+  };
 }
 
 /** Parses a `?page=` search param; anything missing or invalid is page 1. */
@@ -181,7 +203,7 @@ export async function generateProductMetadata({
       title,
       description,
       images: [shareImage],
-      site: "@tallaby",
+      site: "@usetallaby",
     },
     alternates: {
       canonical: productUrl,
@@ -280,7 +302,7 @@ export async function generateCategoryMetadata({
       title,
       description,
       images: ["/og-image.jpg"],
-      site: "@tallaby",
+      site: "@usetallaby",
     },
     alternates: {
       canonical: categoryUrl,
@@ -351,7 +373,7 @@ export async function generateBrandMetadata({
       title,
       description,
       images: [image],
-      site: "@tallaby",
+      site: "@usetallaby",
     },
     alternates: {
       canonical: brandUrl,
@@ -414,7 +436,7 @@ export function generateStaticPageMetadata({
       title,
       description,
       images: ["/og-image.jpg"],
-      site: "@tallaby",
+      site: "@usetallaby",
     },
     alternates: {
       canonical: pageUrl,
@@ -478,7 +500,7 @@ export async function generateStoreMetadata({
       title,
       description,
       images: [image],
-      site: "@tallaby",
+      site: "@usetallaby",
     },
     alternates: {
       canonical: storeUrl,
@@ -534,7 +556,7 @@ export async function generateHomeMetadata(
     },
     twitter: {
       card: "summary_large_image",
-      site: "@tallaby",
+      site: "@usetallaby",
       title: t("twitterTitle"),
       description: t("twitterDescription", params),
       images: ["/og-image.jpg"],

@@ -6,7 +6,7 @@ import { ChevronLeft } from "lucide-react";
 import { storeUrl } from "@workspace/lib/storefront";
 import { productPageOf } from "@workspace/store-sections/config";
 import { cn } from "@workspace/ui/lib/utils";
-import { socialShareImageUrl } from "@/lib/metadata";
+import { socialShareImage } from "@/lib/metadata";
 import { getProductBySlug } from "@/actions/products";
 import { Link } from "@/i18n/navigation";
 import { getProductIdBySlug, getProductSlugForLocaleStrict, type ProductLocale } from "@/lib/product-translations";
@@ -94,8 +94,11 @@ export async function generateMetadata({
       paths: await storeProductPaths(store.id, product.id, slug, locale),
       title: seo?.metaTitle?.trim() || product.title,
       description: seo?.metaDescription?.trim() || product.description,
-      image: firstImage ? socialShareImageUrl(firstImage) : null,
+      // The first product photo, cropped to the 1200×630 share card; else the store's share image.
+      image: firstImage ? socialShareImage(firstImage) : null,
       imageAlt: firstImage ? product.title : undefined,
+      // The price shown on load (default variant, else the product), in the store's currency.
+      price: { amount: productPricing(product, getDefaultProductVariant(product.productVariants)).price, currency: store.currency },
     }),
     ...(keywords?.length ? { keywords } : {}),
   };

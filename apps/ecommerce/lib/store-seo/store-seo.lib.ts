@@ -30,7 +30,51 @@ export type StoreMetadataInput = {
   seo: StoreSeo;
   /** Store settings › Languages. A language the store doesn't offer gets no hreflang and no sitemap URL. */
   supportedLocales?: readonly string[] | null;
+  /** Enabled social links (Website › Social media); an X link gives the `twitter:site` handle. */
+  social?: readonly { platform: string; url: string }[] | null;
 };
+
+/** One Open Graph image; size and type only when they are known. */
+export type StoreShareImage = { url: string; width?: number; height?: number; type?: string; alt?: string };
+
+/**
+ * The last fallback share image (public/og-image.jpg, 1200×630). It is served
+ * on every store host too, so it resolves against the store's own address.
+ */
+export const DEFAULT_SHARE_IMAGE = { path: "/og-image.jpg", width: 1200, height: 630, type: "image/jpeg" } as const;
+
+/** Link previews show about this much; longer text is cut at a word. */
+export const SHARE_DESCRIPTION_MAX = 200;
+
+/** The description of a shared link: one line, at most SHARE_DESCRIPTION_MAX characters. */
+export function shareDescription(text: string | null | undefined): string | undefined {
+  const flat = text?.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+  if (!flat) return undefined;
+  if (flat.length <= SHARE_DESCRIPTION_MAX) return flat;
+  const cut = flat.slice(0, SHARE_DESCRIPTION_MAX - 1);
+  const space = cut.lastIndexOf(" ");
+  return `${(space > SHARE_DESCRIPTION_MAX * 0.6 ? cut.slice(0, space) : cut).trimEnd()}…`;
+}
+
+/** The store's X handle ("@name") from its saved X link, for `twitter:site`; never Tallaby's. */
+export function storeXHandle(social: StoreMetadataInput["social"]): string | undefined {
+  for (const link of social ?? []) {
+    if (link.platform !== "x") continue;
+    const match = /^https:\/\/(?:www\.)?(?:x|twitter)\.com\/([A-Za-z0-9_]{1,15})(?:[/?#]|$)/i.exec(link.url);
+    if (match && !["home", "intent", "share", "i"].includes(match[1]!.toLowerCase())) return `@${match[1]}`;
+  }
+  return undefined;
+}
+
+/**
+ * A large card (every store page has a share image) plus the store's own
+ * `twitter:site`. Next fills title, description and image from Open Graph,
+ * and this replaces the tallaby.com one of the (shop) layout whole.
+ */
+function storeTwitter(store: Pick<StoreMetadataInput, "social">): NonNullable<Metadata["twitter"]> {
+  const site = storeXHandle(store.social);
+  return { card: "summary_large_image", ...(site && { site }) };
+}
 
 export type StoreLocale = "ar" | "en";
 
@@ -63,10 +107,29 @@ export function storeAlternates(
   return { canonical, ...(Object.keys(urls).length > 1 && { languages: buildAlternates(urls) }) };
 }
 
-/** The share image of a page with none of its own. */
-function storeShareImage(store: Pick<StoreMetadataInput, "seo" | "bannerUrl" | "logoUrl">): string | undefined {
+/**
+ * The share image of a page with none of its own: the store's share image,
+ * banner or logo, else Tallaby's default card, so a shared link always shows
+ * a picture. Store uploads have unknown sizes, so only the default has them.
+ */
+function storeShareImage(store: Pick<StoreMetadataInput, "seo" | "bannerUrl" | "logoUrl" | "subdomain" | "customDomain">): StoreShareImage {
   const image = store.seo.shareImageUrl || store.bannerUrl || store.logoUrl;
-  return image ? getPublicUrl(image, "sellers") : undefined;
+  const url = image ? getPublicUrl(image, "sellers") : "";
+  if (/^https?:\/\//i.test(url)) return { url };
+  const { path, ...size } = DEFAULT_SHARE_IMAGE;
+  return { url: `${storeUrl(store.subdomain, store.customDomain)}${path}`, ...size };
+}
+
+/** A Next Open Graph image entry with only the keys that have a value. */
+function ogImage(image: StoreShareImage, alt?: string) {
+  const text = image.alt || alt;
+  return {
+    url: image.url,
+    ...(image.width && { width: image.width }),
+    ...(image.height && { height: image.height }),
+    ...(image.type && { type: image.type }),
+    ...(text && { alt: text }),
+  };
 }
 
 const ogLocale = (locale: string) => (locale === "ar" ? "ar_EG" : "en_US");
@@ -75,12 +138,19 @@ export type StorePageSeo = {
   paths: string | Partial<Record<StoreLocale, string>>;
   title: string;
   description?: string | null;
-  /** An absolute URL; the store's share image when there is none. */
-  image?: string | null;
+  /** An absolute URL, or one with its known size and type; the store's share image when there is none. */
+  image?: string | StoreShareImage | null;
   imageAlt?: string;
   article?: { publishedTime?: string | null; modifiedTime?: string | null; authors?: string[]; tags?: string[] };
+  /** A product page: `product:price:amount` / `product:price:currency` for Facebook and Pinterest. */
+  price?: { amount: number; currency: string } | null;
   noindex?: boolean;
 };
+
+/** "1250.5" with no thousands separator and at most two decimals, as Open Graph wants it. */
+function ogPriceAmount(amount: number): string {
+  return (Math.round(amount * 100) / 100).toFixed(2).replace(/\.00$/, "");
+}
 
 /**
  * The metadata of one store page, so every page names its own address, title
@@ -92,8 +162,13 @@ export type StorePageSeo = {
  */
 export function storePageMetadata(store: StoreMetadataInput, locale: string, page: StorePageSeo): Metadata {
   const alternates = storeAlternates(store, locale, page.paths);
-  const image = page.image || storeShareImage(store);
+  const image: StoreShareImage =
+    (typeof page.image === "string" ? (page.image ? { url: page.image } : null) : page.image) || storeShareImage(store);
   const article = page.article;
+  const description = shareDescription(page.description);
+  const price = page.price && Number.isFinite(page.price.amount) && page.price.amount > 0 && /^[A-Z]{3}$/.test(page.price.currency)
+    ? page.price
+    : null;
   return {
     title: page.title,
     ...(page.description && { description: page.description }),
@@ -112,11 +187,15 @@ export function storePageMetadata(store: StoreMetadataInput, locale: string, pag
       siteName: store.displayName,
       locale: ogLocale(locale),
       title: page.title,
-      ...(page.description && { description: page.description }),
-      ...(image && { images: [{ url: image, ...(page.imageAlt && { alt: page.imageAlt }) }] }),
+      ...(description && { description }),
+      images: [ogImage(image, page.imageAlt)],
     },
     // Next fills the rest from Open Graph.
-    twitter: { card: image ? "summary_large_image" : "summary" },
+    twitter: storeTwitter(store),
+    // Next has no product Open Graph type: these render as <meta name=…>, which Facebook and Pinterest read.
+    ...(price && {
+      other: { "product:price:amount": ogPriceAmount(price.amount), "product:price:currency": price.currency },
+    }),
     ...(page.noindex && { robots: STORE_NOINDEX }),
   };
 }
@@ -241,10 +320,10 @@ export function buildStoreMetadata(
       locale: ogLocale(locale),
       title,
       description,
-      ...(image && { images: [image] }),
+      images: [ogImage(image)],
     },
     // The (shop) layout above this one speaks for tallaby.com: nothing of it stays on a store.
-    twitter: { card: image ? "summary_large_image" : "summary" },
+    twitter: storeTwitter(store),
     keywords: null,
     authors: null,
     creator: null,
@@ -288,7 +367,7 @@ export function storeHomeMetadata(
   const defaults = storeHomeDefaults(store, locale, category);
   const title = seo.title || defaults.title;
   const description = seo.description || defaults.description;
-  const image = seo.ogImage ? getPublicUrl(seo.ogImage, "sellers") : storeShareImage(store);
+  const image: StoreShareImage = seo.ogImage ? { url: getPublicUrl(seo.ogImage, "sellers") } : storeShareImage(store);
   return {
     ...(seo.title && { title: seo.title.includes(store.displayName) ? { absolute: seo.title } : seo.title }),
     ...(seo.description && { description: seo.description }),
@@ -299,7 +378,7 @@ export function storeHomeMetadata(
       locale: ogLocale(locale),
       title,
       description,
-      ...(image && { images: [image] }),
+      images: [ogImage(image)],
     },
     ...(seo.noindex && { robots: STORE_NOINDEX }),
   };

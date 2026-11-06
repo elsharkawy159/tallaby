@@ -2,7 +2,10 @@ import { describe, expect, it } from "vitest";
 import { DEFAULT_STORE_SEO } from "@workspace/lib/stores";
 import {
   buildStoreMetadata,
+  SHARE_DESCRIPTION_MAX,
+  shareDescription,
   STORE_NOINDEX,
+  storeXHandle,
   storeAlternates,
   storeCatalogSeo,
   storeHomeMetadata,
@@ -178,12 +181,86 @@ describe("storePageMetadata", () => {
   });
 });
 
+describe("store product page share card", () => {
+  const product = (overrides: Partial<Parameters<typeof storePageMetadata>[2]> = {}) =>
+    storePageMetadata({ ...store({}), customDomain: null, subdomain: "sandy", displayName: "Sandy" }, "ar", {
+      paths: { ar: "/products/messi-wall-art", en: "/products/messi-wall-art-en" },
+      title: "لوحة ميسي",
+      description: "لوحة فنية",
+      image: { url: "https://x.supabase.co/storage/v1/render/image/public/products/a.jpg?width=1200&height=630&resize=cover&quality=80", width: 1200, height: 630, type: "image/jpeg" },
+      imageAlt: "لوحة ميسي",
+      price: { amount: 450, currency: "EGP" },
+      ...overrides,
+    });
+
+  it("names the store's own address as canonical and og:url, never tallaby.com", () => {
+    const meta = product();
+    expect(meta.alternates?.canonical).toBe("https://sandy.tallaby.com/products/messi-wall-art");
+    expect(meta.openGraph).toMatchObject({ url: "https://sandy.tallaby.com/products/messi-wall-art", siteName: "Sandy", locale: "ar_EG", type: "website" });
+    const onDomain = storePageMetadata({ ...store({}), displayName: "Sandy" }, "en", { paths: { en: "/products/x" }, title: "X" });
+    expect(onDomain.alternates?.canonical).toBe("https://shop.com/en/products/x");
+  });
+
+  it("gives the first product image with its size, type and alt, and the price in the store's currency", () => {
+    const meta = product();
+    expect(meta.openGraph?.images).toEqual([
+      { url: expect.stringContaining("resize=cover"), width: 1200, height: 630, type: "image/jpeg", alt: "لوحة ميسي" },
+    ]);
+    expect(meta.other).toEqual({ "product:price:amount": "450", "product:price:currency": "EGP" });
+    expect(product({ price: { amount: 99.5, currency: "SAR" } }).other).toEqual({ "product:price:amount": "99.50", "product:price:currency": "SAR" });
+    expect("other" in product({ price: { amount: 0, currency: "EGP" } })).toBe(false);
+    expect("other" in product({ price: { amount: 10, currency: "egp" } })).toBe(false);
+  });
+
+  it("falls back to the store's logo, then to Tallaby's default card", () => {
+    const logo = storePageMetadata({ ...store({}), logoUrl: "https://img/logo.png" }, "ar", { paths: "/products/x", title: "X", image: null });
+    expect(logo.openGraph?.images).toEqual([{ url: "https://img/logo.png" }]);
+    const none = product({ image: null, imageAlt: undefined });
+    expect(none.openGraph?.images).toEqual([{ url: "https://sandy.tallaby.com/og-image.jpg", width: 1200, height: 630, type: "image/jpeg" }]);
+    expect(product({ image: "", imageAlt: undefined }).openGraph?.images).toEqual(none.openGraph?.images);
+  });
+
+  it("uses the store's X handle as twitter:site, never Tallaby's", () => {
+    expect(product().twitter).toEqual({ card: "summary_large_image" });
+    const withX = storePageMetadata(
+      { ...store({}), social: [{ platform: "instagram", url: "https://instagram.com/sandy" }, { platform: "x", url: "https://x.com/SandyArt" }] },
+      "ar",
+      { paths: "/products/x", title: "X" },
+    );
+    expect(withX.twitter).toEqual({ card: "summary_large_image", site: "@SandyArt" });
+  });
+
+  it("keeps the share description to one short line", () => {
+    const long = `<p>${"كلمة ".repeat(80)}</p>`;
+    const description = product({ description: long }).openGraph?.description as string;
+    expect(description.length).toBeLessThanOrEqual(SHARE_DESCRIPTION_MAX);
+    expect(description.endsWith("…")).toBe(true);
+    expect(description).not.toContain("<");
+  });
+});
+
+describe("storeXHandle and shareDescription", () => {
+  it("reads only a real X profile link", () => {
+    expect(storeXHandle([{ platform: "x", url: "https://twitter.com/abc_1/" }])).toBe("@abc_1");
+    expect(storeXHandle([{ platform: "x", url: "https://x.com/intent/tweet" }])).toBeUndefined();
+    expect(storeXHandle([{ platform: "facebook", url: "https://x.com/abc" }])).toBeUndefined();
+    expect(storeXHandle(null)).toBeUndefined();
+  });
+
+  it("returns nothing for empty text", () => {
+    expect(shareDescription("  ")).toBeUndefined();
+    expect(shareDescription(" a \n b ")).toBe("a b");
+  });
+});
+
 describe("buildStoreMetadata", () => {
   it("clears what the Tallaby layout above it sets", () => {
     const meta = buildStoreMetadata(store({}), "ar", { indexable: true });
     expect(meta).toMatchObject({ keywords: null, authors: null, creator: null, publisher: null, category: null });
-    expect(meta.twitter).toEqual({ card: "summary" });
+    // Tallaby's default card is the last share image, so the card is large; no Tallaby handle.
+    expect(meta.twitter).toEqual({ card: "summary_large_image" });
     expect(JSON.stringify(meta.twitter)).not.toContain("tallaby");
+    expect(meta.openGraph?.images).toEqual([{ url: "https://shop.com/og-image.jpg", width: 1200, height: 630, type: "image/jpeg" }]);
   });
 
   it("gives /en its own Open Graph address, and adds no noindex to an indexable store", () => {
