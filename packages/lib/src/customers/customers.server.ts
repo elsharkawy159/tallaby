@@ -52,6 +52,7 @@ async function queryOrderRows(sellerId: string, where: SQL, q: Queryable, limit 
         LEFT JOIN user_addresses a ON a.id = o.shipping_address_id
         LEFT JOIN users u ON u.id = o.user_id
        WHERE ${where}
+         AND NOT o.is_test
        ORDER BY o.created_at DESC
        LIMIT ${Math.min(Math.max(limit, 1), CUSTOMER_ORDERS_MAX)}
     `),
@@ -130,6 +131,7 @@ const customersCte = (sellerId: string, storeId: string) => sql`
       LEFT JOIN user_addresses a ON a.id = o.shipping_address_id
       LEFT JOIN users u ON u.id = o.user_id
      WHERE o.store_id = ${storeId}
+       AND NOT o.is_test
   ),
   keyed AS (
     SELECT order_rows.*,

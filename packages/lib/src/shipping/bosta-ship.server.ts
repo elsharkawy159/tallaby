@@ -89,7 +89,8 @@ type LoadedOrder = NonNullable<Awaited<ReturnType<typeof loadOrder>>>;
 /** The order, only when it was placed on this store and every line is the store owner's. */
 async function loadOrder(storeId: string, sellerId: string, orderId: string) {
   const order = await db.query.orders.findFirst({
-    where: and(eq(orders.id, orderId), eq(orders.storeId, storeId)),
+    // A test order (0155, F-76) never goes to a carrier.
+    where: and(eq(orders.id, orderId), eq(orders.storeId, storeId), eq(orders.isTest, false)),
     columns: {
       id: true,
       orderNumber: true,

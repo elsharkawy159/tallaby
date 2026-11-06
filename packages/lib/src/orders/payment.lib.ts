@@ -13,7 +13,7 @@ export const MANUAL_PAYMENT_METHOD_VALUES = [
 export type ManualPaymentMethodValue =
   (typeof MANUAL_PAYMENT_METHOD_VALUES)[number]
 
-const WALLET_PARTIAL_PREFIX = 'wallet_'
+export const WALLET_PARTIAL_PREFIX = 'wallet_'
 
 /** Wallet must cover the full order total for a pure wallet checkout. */
 export function isWalletEligibleForTotal (

@@ -128,6 +128,16 @@ export async function requireOrdersSeller(options: AccessOptions = {}): Promise<
   return seller;
 }
 
+/**
+ * Reading the orders list: an activated seller sees every order; one who isn't
+ * activated sees only their test orders (ROADMAP.md F-76), placed from their own
+ * browser on their private store. Changing orders still needs requireOrdersSeller.
+ */
+export async function requireOrdersView(options: AccessOptions = {}): Promise<{ sellerId: string; testOnly: boolean }> {
+  const seller = await requireSeller(options);
+  return { sellerId: seller.sellerId, testOnly: (await loadOrderLock(seller.sellerId)).locked };
+}
+
 /** `requireStore` for anything that reads or changes orders. */
 export async function requireOrdersStore(
   storeId: string,

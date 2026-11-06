@@ -207,7 +207,7 @@ function StoreCard({ store, isSelected }: { store: StoreCardData; isSelected: bo
           <DropdownMenuContent align="end">
             {!archived && (
               <DropdownMenuItem asChild>
-                <a href={url} target="_blank" rel="noopener noreferrer">
+                <a href={`/api/stores/${store.id}/view`} target="_blank" rel="noopener noreferrer">
                   <ExternalLink className="size-4" />
                   {tNav("viewStore")}
                 </a>
@@ -264,7 +264,7 @@ function StoreCard({ store, isSelected }: { store: StoreCardData; isSelected: bo
             {t("manage")}
           </SellerButton>
           <IconButton asChild aria-label={tNav("viewStore")} className="size-[42px] border-[1.5px] border-(--s-outline)">
-            <a href={url} target="_blank" rel="noopener noreferrer">
+            <a href={`/api/stores/${store.id}/view`} target="_blank" rel="noopener noreferrer">
               <ExternalLink aria-hidden />
             </a>
           </IconButton>

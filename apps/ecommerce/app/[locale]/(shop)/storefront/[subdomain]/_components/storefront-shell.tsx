@@ -5,7 +5,7 @@ import { AuthDialogProvider } from "@/components/auth/auth-dialog-provider";
 import { CurrencyLabelProvider } from "@/lib/currency-label.client";
 import type { Storefront } from "@/lib/storefront.server";
 import { getStorefrontSite } from "@/lib/store-site/preview.server";
-import { isStoreOfflineForRequest } from "@/lib/store-site/offline.server";
+import { isStoreOfflineForRequest, isStoreOwnerPreviewForRequest } from "@/lib/store-site/offline.server";
 import { StorefrontHeader } from "./storefront-header";
 import { StorefrontFooter } from "./storefront-footer";
 import { MobileCartBar } from "./mobile-cart-bar.client";
@@ -16,6 +16,7 @@ import { StoreViewsTag } from "@/components/storefront/store-views-tag.client";
 import { readStoreViewsGtmId } from "@/lib/store-views.server";
 import { StoreSiteBottomNav, StoreSiteChrome } from "./store-site";
 import { StorePreviewBanner } from "./store-preview-banner";
+import { StoreOwnerPreviewBanner } from "./store-owner-preview-banner";
 import { pickStoreCouponOffer } from "@workspace/lib/orders/coupon-popup";
 import { StoreOfferProvider } from "@/components/storefront/store-offer.client";
 import { getCachedSellerPopupCoupons } from "@/lib/store-site/store-data.server";
@@ -67,6 +68,8 @@ export async function StorefrontShell({
     );
   }
 
+  // The seller's own browser on a store that isn't activated yet (F-76).
+  const ownerPreview = await isStoreOwnerPreviewForRequest(store);
   const storeViewsGtmId = readStoreViewsGtmId();
   // The seller's coupon pop-up (0114); a failed read only loses the pop-up.
   // Sales pop-up (F-22): real recent orders of this store. Not on shared pages
@@ -95,6 +98,7 @@ export async function StorefrontShell({
         {/* Dialogs, popovers and toasts render in <body>, outside the site root: give them the store's colors too. */}
         {site && <style dangerouslySetInnerHTML={{ __html: designSystemToCss(site.designSystem, "body").replace(/</g, "\\3c ") }} />}
         {preview && <StorePreviewBanner state={preview} />}
+        {ownerPreview && <StoreOwnerPreviewBanner />}
         {site ? <StoreSiteChrome store={store} site={site} locale={locale} part="header" /> : <StorefrontHeader store={store} />}
         <main className="flex-1">{children}</main>
         {site ? <StoreSiteChrome store={store} site={site} locale={locale} part="footer" /> : <StorefrontFooter store={store} />}

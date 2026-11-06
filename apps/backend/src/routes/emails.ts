@@ -10,6 +10,7 @@ import {
   resolveEmailLocale,
 } from "@workspace/emails";
 import { chargeOrderNotification, decideEmail } from "@workspace/lib/emails/policy";
+import { isTestOrder } from "@workspace/lib/orders/test-order";
 import {
   buildOrderConfirmation,
   sendAbandonedCart,
@@ -152,6 +153,8 @@ app.post("/order-confirmation", async (c) => {
     }
 
     const { orderId } = parsed.data;
+    // A test order (F-76): the buyer is the seller trying their store, so no customer mail.
+    if (await isTestOrder(orderId)) return c.json({ success: true, skipped: true, reason: "test_order" });
     const built = await buildOrderConfirmation(orderId);
 
     if (!built.ok) {
@@ -264,6 +267,8 @@ app.post("/order-event", async (c) => {
   }
   const { orderId, event, cancelledBy = "system" } = parsed.data;
   try {
+    // A test order (F-76) sends the buyer nothing; the seller's own mail still goes out.
+    const testOrder = event === "placed" ? false : await isTestOrder(orderId);
     switch (event) {
       case "placed": {
         const sellers = await sendSellerNewOrders(orderId);
@@ -271,11 +276,11 @@ app.post("/order-event", async (c) => {
         return c.json({ success: true, sellers, lowStock });
       }
       case "shipped":
-        return c.json({ success: true, customer: await sendOrderShipped(orderId) });
+        return c.json({ success: true, customer: testOrder ? null : await sendOrderShipped(orderId) });
       case "delivered":
-        return c.json({ success: true, customer: await sendOrderDelivered(orderId) });
+        return c.json({ success: true, customer: testOrder ? null : await sendOrderDelivered(orderId) });
       case "cancelled": {
-        const customer = await sendOrderCancelled(orderId, cancelledBy);
+        const customer = testOrder ? null : await sendOrderCancelled(orderId, cancelledBy);
         const sellers = await sendSellerOrderCancelled(orderId, cancelledBy);
         return c.json({ success: true, customer, sellers });
       }
@@ -298,6 +303,7 @@ app.post("/refund-issued", async (c) => {
     return c.json({ error: "Invalid request", details: parsed.error.flatten() }, 400);
   }
   try {
+    if (await isTestOrder(parsed.data.orderId)) return c.json({ success: true, skipped: true, reason: "test_order" });
     const result = await sendRefundIssued(parsed.data.orderId, {
       method: parsed.data.method,
       amount: parsed.data.amount ?? null,

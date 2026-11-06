@@ -52,7 +52,8 @@ export async function exportWassalhaOrders(sellerId: string, storeId: string, or
   if (!account) return { success: false, error: "not_set_up" };
 
   const found = await db.query.orders.findMany({
-    where: and(inArray(orders.id, ids), eq(orders.storeId, storeId)),
+    // A test order (0155, F-76) never goes to a carrier.
+    where: and(inArray(orders.id, ids), eq(orders.storeId, storeId), eq(orders.isTest, false)),
     with: {
       user: { columns: { fullName: true, phone: true } },
       userAddress_shippingAddressId: true,

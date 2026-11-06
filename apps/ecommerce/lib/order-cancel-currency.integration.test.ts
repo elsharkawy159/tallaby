@@ -28,6 +28,7 @@ vi.mock("@/lib/storefront.server", () => ({
   getCartScope: async () => null,
   getStorefrontCheckoutPayments: async () => null,
   isCartStoreOffline: async () => false,
+  getCartStoreCheckout: async () => ({ offline: false, testOrder: false }),
   activeCartWhere: () => undefined,
 }));
 vi.mock("@/actions/auth", () => ({ getUser: async () => ({ user: { id: session.userId } }) }));

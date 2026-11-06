@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { PRINT_MAX_ORDERS } from "@/app/print/orders/print-orders.lib";
-import { requireSeller } from "@/lib/auth/require-seller.server";
+import { requireOrdersView } from "@/lib/auth/require-seller.server";
 import {
   countOrdersByTab,
   listFilteredOrderIds,
@@ -21,7 +21,8 @@ export async function VendorOrdersData({
 }: {
   searchParams: Partial<Record<keyof OrdersListFilters | "order", string | string[] | undefined>>;
 }) {
-  const [{ sellerId }, cookieStore] = await Promise.all([requireSeller(), cookies()]);
+  // A seller who isn't activated sees only their test orders (F-76).
+  const [{ sellerId, testOnly }, cookieStore] = await Promise.all([requireOrdersView(), cookies()]);
   const context = await loadOrderRowContext(sellerId);
   const parsed = parseOrdersFilters(searchParams, cookieStore.get(ORDERS_PAGE_SIZE_COOKIE)?.value);
   const isStore = context.stores.some((s) => s.id === parsed.channel);
@@ -29,12 +30,12 @@ export async function VendorOrdersData({
   const channel = parsed.channel === "marketplace" || isStore ? parsed.channel : "all";
 
   const [counts, overview] = await Promise.all([
-    countOrdersByTab(sellerId, { ...parsed, channel }),
-    loadOrdersOverview(sellerId),
+    countOrdersByTab(sellerId, { ...parsed, channel, testOnly }),
+    loadOrdersOverview(sellerId, testOnly),
   ]);
   // A plain /orders opens on the new orders queue when there is one.
   const tab = parsed.tab ?? (counts.new > 0 ? "new" : "all");
-  const filters = { ...parsed, channel, tab };
+  const filters = { ...parsed, channel, tab, testOnly };
   const total = counts[tab];
   const pages = Math.max(1, Math.ceil(total / filters.size));
   // A deleted last row or an old link can point past the end.
@@ -57,9 +58,9 @@ export async function VendorOrdersData({
   const offPage = initialOrderId && !ids.includes(initialOrderId) ? [initialOrderId] : [];
 
   const [rows, linked, queue] = await Promise.all([
-    loadSellerOrders(sellerId, ids, context),
-    loadSellerOrders(sellerId, offPage, context),
-    loadOrderSummaries(sellerId, queueIds, context),
+    loadSellerOrders(sellerId, ids, context, { testOnly }),
+    loadSellerOrders(sellerId, offPage, context, { testOnly }),
+    loadOrderSummaries(sellerId, queueIds, context, testOnly),
   ]);
 
   return (
@@ -69,7 +70,7 @@ export async function VendorOrdersData({
       pages={pages}
       counts={counts}
       overview={overview}
-      filters={{ ...filters, page }}
+      filters={{ ...parsed, channel, tab, page }}
       printIds={printIds}
       shipQueue={{ orders: queue, bosta, wassalha }}
       initialOrderId={initialOrderId}

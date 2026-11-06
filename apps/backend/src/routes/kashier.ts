@@ -1,5 +1,7 @@
 import { Hono } from 'hono'
-import { db, orders, payments, eq, and, inArray, sql } from '@workspace/db'
+import { db, orders, payments, sellerWalletTopUps, eq, and, inArray, sql } from '@workspace/db'
+import { broadcastInvalidation } from '@workspace/cache/broadcast'
+import { invalidateSellerActivation } from '@workspace/cache/invalidate'
 import { chargeOrderPlacementFee } from '@workspace/db/wallet'
 import {
   parseKashierOrderReference,
@@ -71,6 +73,13 @@ app.post('/webhook', async (c) => {
         return c.json({ received: true, duplicate: true }, 409)
       }
       if (outcome === 'credited') {
+        // A top-up activates the seller: their stores go public now (F-76).
+        const [row] = await db
+          .select({ sellerId: sellerWalletTopUps.sellerId })
+          .from(sellerWalletTopUps)
+          .where(eq(sellerWalletTopUps.id, topUpId))
+          .limit(1)
+        if (row) await broadcastInvalidation(invalidateSellerActivation(row.sellerId), 'backend')
         await emailAfterCommit('store top-up', () => sendSellerWalletTopUp(topUpId))
       }
       return c.json({ received: true, outcome })

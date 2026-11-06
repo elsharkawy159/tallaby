@@ -29,7 +29,7 @@ export function DashboardHeader({
 }: {
   walletBalance: number | null;
   walletCurrency: string;
-  storeLink: { url: string; host: string } | null;
+  storeLink: { url: string; host: string; href: string } | null;
   /** The selected store's site is published. */
   siteLive: boolean;
 }) {
@@ -79,7 +79,7 @@ export function DashboardHeader({
         <b className="truncate text-[15px] font-bold text-(--s-ink)">{tNav(route.title)}</b>
         {storeLink && (
           <a
-            href={storeLink.url}
+            href={storeLink.href}
             target="_blank"
             rel="noopener noreferrer"
             title={siteLabel}

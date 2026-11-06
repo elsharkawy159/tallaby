@@ -18,7 +18,7 @@ export interface ScannedOrder {
   /** The existing "Mark returned" step (updateSellerOrder, action "return") is open right now. */
   canReturn: boolean;
   /** Why the seller cannot change this order (orders.errors.readOnly.*), if so. */
-  readOnly: "multi_seller" | "tallaby" | "digital" | null;
+  readOnly: "multi_seller" | "tallaby" | "digital" | "test" | null;
   /** Bosta moves this shipment itself. */
   carrierManaged: boolean;
 }

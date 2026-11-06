@@ -24,7 +24,7 @@ export async function HomeGreeting() {
       {t(hour < 12 ? "morning" : "evening", { name: snapshot?.displayName ?? "" })}
       {storeLink && (
         <a
-          href={storeLink.url}
+          href={storeLink.href}
           target="_blank"
           rel="noopener noreferrer"
           title={tHeader("openStore")}

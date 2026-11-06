@@ -27,7 +27,7 @@ export async function findOrderForReturnScan(code: unknown): Promise<ScanLookupR
           db.select({ id: orderItems.orderId }).from(orderItems).where(eq(orderItems.sellerId, sellerId)),
         ),
       ),
-      columns: { id: true, orderNumber: true, createdAt: true, status: true, paymentStatus: true, isDigitalOnly: true, currency: true },
+      columns: { id: true, orderNumber: true, createdAt: true, status: true, paymentStatus: true, isDigitalOnly: true, currency: true, isTest: true },
       with: {
         user: { columns: { fullName: true, phone: true } },
         userAddress_shippingAddressId: { columns: { fullName: true, phone: true } },
@@ -51,6 +51,7 @@ export async function findOrderForReturnScan(code: unknown): Promise<ScanLookupR
         : null,
       // Only changes whether "cancel" is offered; "return" does not depend on it.
       walletPaid: false,
+      isTest: order.isTest,
     });
 
     const address = order.userAddress_shippingAddressId;

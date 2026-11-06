@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { db, eq, orderItems, orders, sql } from "@workspace/db";
+import { and, db, eq, orderItems, orders, sql } from "@workspace/db";
 import {
   getWalletBalance,
   getPendingEarnings,
@@ -38,7 +38,8 @@ async function getSalesSources() {
     })
     .from(orderItems)
     .innerJoin(orders, eq(orderItems.orderId, orders.id))
-    .where(eq(orderItems.sellerId, seller.sellerId))
+    // Test orders (F-76) are never sales.
+    .where(and(eq(orderItems.sellerId, seller.sellerId), eq(orders.isTest, false)))
     .groupBy(orders.storeId, orders.paymentMethod, orders.currency);
 
   const pick = (earning: "monthEarning" | "allEarning", count: "monthOrders" | "allOrders") =>

@@ -204,6 +204,13 @@ export type SalesOverview = {
  * store id is a bound parameter.
  */
 function channelFilter(channel: HomeChannel) {
+  return sql`${channelOnly(channel)} ${NOT_TEST_ORDER}`;
+}
+
+/** Test orders (0155, ROADMAP.md F-76) never count in the home figures. */
+const NOT_TEST_ORDER = sql`AND NOT EXISTS (SELECT 1 FROM orders t WHERE t.id = oi.order_id AND t.is_test)`;
+
+function channelOnly(channel: HomeChannel) {
   if (channel === "all") return sql``;
   if (channel === "marketplace") {
     return sql`AND EXISTS (SELECT 1 FROM orders o WHERE o.id = oi.order_id AND o.store_id IS NULL)`;
@@ -480,6 +487,7 @@ export const getStoreFunnel = cache(async (range: HomeRange, channel: HomeChanne
       JOIN orders o ON o.id = oi.order_id, bounds b
       WHERE oi.seller_id = ${sellerId}
         AND o.store_id IN (${idList(storeIds)})
+        AND NOT o.is_test
         AND oi.status NOT IN ${NON_REVENUE}
         AND coalesce(oi.is_refunded, false) = false
         AND oi.created_at >= ((b.start_local - make_interval(days => ${range}::int)) AT TIME ZONE 'Africa/Cairo')

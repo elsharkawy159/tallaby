@@ -65,6 +65,7 @@ async function governorates(sellerId: string, storeId: string, start: string): P
           FROM orders o
           JOIN stores st ON st.id = o.store_id AND st.seller_id = ${sellerId}
          WHERE o.store_id = ${storeId}::uuid
+           AND NOT o.is_test
            AND o.created_at >= ${start}::timestamptz
       ) x
       LEFT JOIN user_addresses a ON a.id = x.shipping_address_id
@@ -98,6 +99,7 @@ async function sources(sellerId: string, storeId: string, start: string, currenc
        AND oi.status NOT IN ${NON_REVENUE}
        AND coalesce(oi.is_refunded, false) = false
        AND coalesce(o.currency, 'EGP') = ${currency}
+       AND NOT o.is_test
      GROUP BY 1
   `);
   return rowsOf(result).map((r) => ({
@@ -131,6 +133,7 @@ const soldCte = (sellerId: string, storeId: string, start: string, currency: str
       JOIN orders o ON o.id = oi.order_id
      WHERE oi.seller_id = ${sellerId}
        AND o.store_id = ${storeId}::uuid
+       AND NOT o.is_test
        AND coalesce(o.currency, 'EGP') = ${currency}
        AND oi.created_at >= ${start}::timestamptz
        AND oi.status NOT IN ${NON_REVENUE}

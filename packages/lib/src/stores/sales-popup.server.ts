@@ -41,6 +41,7 @@ export async function storeRecentOrderRows(sellerId: string, storeId: string, lo
              ) i ON true
         LEFT JOIN product_translations pt ON pt.product_id = i.product_id AND pt.locale = ${lang}
        WHERE o.store_id = ${storeId}
+         AND NOT o.is_test
          AND o.status::text IN (${list(SALES_FEED_ORDER_STATUSES)})
          AND o.created_at >= now() - make_interval(days => ${SALES_FEED_DAYS})
        ORDER BY o.created_at DESC

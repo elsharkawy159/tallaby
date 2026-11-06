@@ -19,11 +19,17 @@ import {
  * holds the two equal, so change them together.
  */
 
-export type OrdersScope = Pick<OrdersListFilters, "channel" | "q" | "attention">;
+export type OrdersScope = Pick<OrdersListFilters, "channel" | "q" | "attention"> & {
+  /** A seller who isn't activated sees only their test orders (F-76). Set by the server, never from the URL. */
+  testOnly?: boolean;
+};
 type OrdersQuery = OrdersScope & Pick<OrdersListFilters, "tab" | "sort">;
 
-const ownOrders = (sellerId: string) =>
-  inArray(orders.id, db.select({ id: orderItems.orderId }).from(orderItems).where(eq(orderItems.sellerId, sellerId)));
+const ownOrders = (sellerId: string, testOnly = false) =>
+  and(
+    inArray(orders.id, db.select({ id: orderItems.orderId }).from(orderItems).where(eq(orderItems.sellerId, sellerId))),
+    testOnly ? eq(orders.isTest, true) : undefined,
+  );
 
 /**
  * resolveSellerOrderStage() as SQL. An order has at most one shipment
@@ -105,7 +111,7 @@ function searchCondition(text: string): SQL | undefined {
 /** Store, search and the Bosta filter: what tab counts respect, as they always have. */
 function scopeConditions(sellerId: string, filters: OrdersScope): (SQL | undefined)[] {
   return [
-    ownOrders(sellerId),
+    ownOrders(sellerId, filters.testOnly),
     filters.channel === "all"
       ? undefined
       : filters.channel === "marketplace"
@@ -175,6 +181,8 @@ export async function countOrdersAwaitingPrep(sellerId: string, channel: OrdersC
     .where(
       and(
         ...scopeConditions(sellerId, { channel, q: "", attention: false }),
+        // A test order is never prepared (F-76).
+        eq(orders.isTest, false),
         inArray(sql`COALESCE(${orders.status}::text, 'pending')`, [...AWAITING_PREP_ORDER_STATUSES]),
         stagesCondition(AWAITING_PREP_STAGES),
       ),
@@ -183,14 +191,14 @@ export async function countOrdersAwaitingPrep(sellerId: string, channel: OrdersC
 }
 
 /** Facts about all the seller's orders, whatever the filters: any orders at all, and Bosta problems. */
-export async function loadOrdersOverview(sellerId: string): Promise<{ orders: number; attention: number }> {
+export async function loadOrdersOverview(sellerId: string, testOnly = false): Promise<{ orders: number; attention: number }> {
   const [row] = await db
     .select({
       orders: sql<number>`count(*)::int`,
       attention: sql<number>`(count(*) FILTER (WHERE ${needsAttentionSql(sellerId)}))::int`,
     })
     .from(orders)
-    .where(ownOrders(sellerId));
+    .where(ownOrders(sellerId, testOnly));
   return { orders: row?.orders ?? 0, attention: row?.attention ?? 0 };
 }
 

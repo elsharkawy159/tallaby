@@ -58,7 +58,7 @@ export const SELLER_ORDER_ACTIONS = [
 ] as const satisfies readonly SellerOrderAction[];
 
 /** Why an order is view-only for this seller. */
-export type ReadOnlyReason = "multi_seller" | "tallaby" | "digital";
+export type ReadOnlyReason = "multi_seller" | "tallaby" | "digital" | "test";
 
 export interface SellerOrderFlowInput {
   orderStatus: string | null;
@@ -76,6 +76,12 @@ export interface SellerOrderFlowInput {
   } | null;
   /** The customer already paid some of it from their Tallaby wallet. */
   walletPaid: boolean;
+  /**
+   * A test order (0155, ROADMAP.md F-76): placed by the seller on their store
+   * before it was activated. View-only for good: it took no stock and pays no
+   * fee, so it is never confirmed, shipped, sent to a carrier or restocked.
+   */
+  isTest: boolean | null;
 }
 
 export interface SellerOrderFlow {
@@ -157,6 +163,7 @@ export function isAwaitingPrep(orderStatus: string | null, stage: SellerOrderSta
 }
 
 function readOnlyReason(input: SellerOrderFlowInput): ReadOnlyReason | null {
+  if (input.isTest) return "test";
   if (input.isDigitalOnly) return "digital";
   if (!input.allLinesOwned) return "multi_seller";
   if (!input.sellerFulfilled) return "tallaby";

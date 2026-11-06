@@ -4,6 +4,7 @@ import type { db as dbType } from "../drizzle/database";
 import { logServerError } from "../log";
 import { orderItems, orders, sellerWallet, stores, walletTransactions } from "../drizzle/schema";
 import { postStoreWalletEntryOnce, STORE_WALLET_REFERENCE_TYPES } from "./store-wallet";
+import { orderPaysPlatformFee } from "./test-order.lib";
 
 type Tx = Parameters<Parameters<typeof dbType.transaction>[0]>[0];
 
@@ -66,10 +67,12 @@ async function postOrderFees(tx: Tx, orderId: string, moment: FeeMoment): Promis
   if (lines.length === 0) return;
 
   const [order] = await tx
-    .select({ metadata: orders.metadata, storeId: orders.storeId })
+    .select({ metadata: orders.metadata, storeId: orders.storeId, isTest: orders.isTest })
     .from(orders)
     .where(eq(orders.id, orderId));
   if (!order) return;
+  // A test order (0155, F-76) pays no fee at any moment: placed, paid or delivered.
+  if (!orderPaysPlatformFee(order)) return;
 
   // Storefront orders carry their store; entries keep it for per-store reports.
   const [store] = order.storeId

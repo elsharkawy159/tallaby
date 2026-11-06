@@ -185,7 +185,7 @@
   },
   "orderLock": {
     "title": "Kindly top up your wallet, starting from $5 only",
-    "body": "Customers can still order from your store as usual, but their orders stay hidden until you top up your wallet.",
+    "body": "Your store is private until you top up: only you can open it from your dashboard and place test orders. Top up to activate it so customers can see it and order.",
     "reviewTitle": "Your top-up is being reviewed",
     "reviewBody": "Your orders will open as soon as we approve it.",
     "topUp": "Top up",
@@ -2625,6 +2625,7 @@
   },
   "orders": {
     "pageTitle": "Orders",
+    "testBadge": "Test",
     "createOrder": "Create order",
     "subtitle": "Confirm new orders, send them out and mark them delivered. You handle the delivery.",
     "sort": {
@@ -2732,6 +2733,7 @@
     },
     "notes": {
       "readOnly": {
+        "test": "Test order. It doesn't count in your sales and can't be changed.",
         "multi_seller": "This order has items from other sellers too, so you can't change its delivery here.",
         "tallaby": "This order's delivery isn't managed from your account.",
         "digital": "Digital order. There's nothing to ship."
@@ -2747,6 +2749,7 @@
       "outOfStock": "Not enough stock to put this order back on its way. Add stock first.",
       "notAllowed": "This step isn't available for this order right now.",
       "readOnly": {
+        "test": "Test order. It doesn't count in your sales and can't be changed.",
         "multi_seller": "This order has items from other sellers, so you can't change it here.",
         "tallaby": "This order's delivery isn't managed from your account, so you can't change its status.",
         "digital": "Digital orders have no delivery to update."
@@ -2776,6 +2779,7 @@
       "summary": "Summary",
       "source": "Source",
       "sourceManual": "Entered by you",
+      "sourceTest": "Test order (placed by you before activation)",
       "paymentMethod": "Payment method",
       "paymentMethods": {
         "seller_collected": "Paid to you directly",

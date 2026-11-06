@@ -1,6 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { applyInvalidation, invalidateSellerActivation } from "@workspace/cache";
+import { db, eq, sellerWalletTopUps } from "@workspace/db";
 import { logServerError } from "@workspace/db/log";
 import { reviewManualStoreTopUp } from "@workspace/lib/admin/server";
 import { validateAdminAccess } from "@/lib/auth/admin-auth";
@@ -45,6 +47,13 @@ export async function reviewStoreTopUpAction(input: {
     revalidatePath("/store-top-ups");
     revalidatePath("/wallets", "layout");
     if (result.data.status === "approved") {
+      // The first approved top-up activates the seller: their stores go public now (F-76).
+      const [row] = await db
+        .select({ sellerId: sellerWalletTopUps.sellerId })
+        .from(sellerWalletTopUps)
+        .where(eq(sellerWalletTopUps.id, input.topUpId))
+        .limit(1);
+      if (row) await applyInvalidation(invalidateSellerActivation(row.sellerId), { from: "admin", mode: "action" });
       // Seller top-up receipt (best-effort; sent once per top-up).
       await sendStoreWalletTopUpEmail({ topUpId: input.topUpId, balanceAfter: result.data.balanceAfter });
     }

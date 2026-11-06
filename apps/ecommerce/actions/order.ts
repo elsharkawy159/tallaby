@@ -26,6 +26,7 @@ import {
   type StockLine,
 } from "@workspace/db/inventory";
 import { cancelPendingAffiliateCommission } from "@workspace/db/affiliates";
+import { orderMovesStock } from "@workspace/db/wallet";
 import { richTextToPlainText } from "@workspace/tiptap/plain-text";
 import {
   DuplicateWalletTransactionError,
@@ -42,7 +43,7 @@ import { getCurrentUserId } from "@/lib/get-current-user-id";
 import {
   getCartScope,
   getStorefrontCheckoutPayments,
-  isCartStoreOffline,
+  getCartStoreCheckout,
 } from "@/lib/storefront.server";
 import { hasStoreTrackingConsent, STORE_TRACKING_CONSENT_COOKIE } from "@/lib/storefront-consent";
 import { cookies } from "next/headers";
@@ -113,8 +114,11 @@ export async function createOrder(data: {
     }
 
 
-    // The seller took this store's website offline: it takes no orders.
-    if (await isCartStoreOffline(data.cartId)) {
+    // The seller took this store's website offline: it takes no orders. Nor does a
+    // store that isn't activated, except from the seller's own browser, whose
+    // orders are then test orders (ROADMAP.md F-76). Decided here, on the server.
+    const storeCheckout = await getCartStoreCheckout(data.cartId);
+    if (storeCheckout.offline) {
       return { success: false, error: "This store is temporarily unavailable" };
     }
 
@@ -235,6 +239,7 @@ export async function createOrder(data: {
       locale: "en",
       storefrontPayments: storefrontPayments ?? undefined,
       ...(notificationEmail && { orderMetadata: { notificationEmail } }),
+      testOrder: storeCheckout.testOrder,
     });
 
     if (!result.success) {
@@ -729,7 +734,10 @@ export async function cancelOrder(orderId: string, reason?: string, accessToken?
             ? { kind: "variant" as const, id: item.variantId, quantity: item.quantity }
             : { kind: "product" as const, id: item.productId, quantity: item.quantity }
         );
-        stockResults = await restoreStock(tx, stockLines, { reason: "cancel", orderId, actorId: userId ?? order.userId });
+        // A test order never took stock (F-76), so nothing goes back.
+        if (orderMovesStock(order)) {
+          stockResults = await restoreStock(tx, stockLines, { reason: "cancel", orderId, actorId: userId ?? order.userId });
+        }
 
         await cancelPendingAffiliateCommission(tx, orderId);
 

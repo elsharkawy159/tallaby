@@ -61,6 +61,11 @@ export const sellerTags = {
   subdomain: (subdomain: string) => `seller:subdomain:${subdomain}`,
   /** Which store a custom domain (faster-eg.com) serves. */
   customDomain: (domain: string) => `seller:domain:${domain}`,
+  /**
+   * Whether the seller is activated (ROADMAP.md F-68/F-76): a yes/no only, never a
+   * balance. Decides if their stores are public. Cleared on a top-up or admin credit.
+   */
+  activation: (sellerId: string) => `seller:activation:${sellerId}`,
 } as const;
 
 /**

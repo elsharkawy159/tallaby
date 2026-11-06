@@ -69,7 +69,7 @@ export const getOverviewTrend = cache(async function getOverviewTrend (
           coalesce(sum(o.total_amount) FILTER (WHERE o.status NOT IN ${EXCLUDED} AND coalesce(o.currency, 'EGP') = 'EGP'), 0) AS gmv,
           count(*) FILTER (WHERE o.status NOT IN ${EXCLUDED} AND coalesce(o.currency, 'EGP') = 'EGP') AS gmv_orders,
           count(*) FILTER (WHERE o.status = 'delivered') AS delivered
-        FROM orders o, w WHERE o.created_at >= w.start_at GROUP BY 1
+        FROM orders o, w WHERE NOT o.is_test AND o.created_at >= w.start_at GROUP BY 1
       ),
       f AS (
         SELECT ((t.created_at AT TIME ZONE 'Africa/Cairo')::date - w.start_local::date) AS i,
@@ -91,7 +91,7 @@ export const getOverviewTrend = cache(async function getOverviewTrend (
           count(DISTINCT o.store_id) FILTER (WHERE o.created_at >= w.mid_at)::int AS active_cur,
           count(DISTINCT o.store_id) FILTER (WHERE o.created_at < w.mid_at)::int AS active_prev
         FROM orders o, w
-        WHERE o.store_id IS NOT NULL AND o.created_at >= w.start_at AND o.status NOT IN ${EXCLUDED}
+        WHERE NOT o.is_test AND o.store_id IS NOT NULL AND o.created_at >= w.start_at AND o.status NOT IN ${EXCLUDED}
       )
       SELECT idx.i,
         to_char(w.start_local + idx.i * interval '1 day', 'YYYY-MM-DD') AS date,
@@ -151,11 +151,11 @@ export async function getOverviewMix (range: OverviewRange): Promise<OverviewMix
           'order', count(*) FILTER (WHERE EXISTS (SELECT 1 FROM order_items oi WHERE oi.seller_id = se.id))
         ) FROM sellers se, w WHERE se.created_at >= w.mid_at) AS funnel,
         (SELECT json_object_agg(status, n) FROM (
-          SELECT o.status, count(*)::int AS n FROM orders o, w WHERE o.created_at >= w.mid_at GROUP BY o.status
+          SELECT o.status, count(*)::int AS n FROM orders o, w WHERE NOT o.is_test AND o.created_at >= w.mid_at GROUP BY o.status
         ) x) AS outcomes,
         (SELECT json_object_agg(payment_method, n) FROM (
           SELECT o.payment_method, count(*)::int AS n FROM orders o, w
-          WHERE o.created_at >= w.mid_at AND o.status NOT IN ${EXCLUDED} GROUP BY o.payment_method
+          WHERE NOT o.is_test AND o.created_at >= w.mid_at AND o.status NOT IN ${EXCLUDED} GROUP BY o.payment_method
         ) x) AS payments
     `)
   ])
@@ -198,12 +198,12 @@ export async function getOverviewStores (range: OverviewRange): Promise<{
           coalesce(sum(o.total_amount) FILTER (WHERE o.status NOT IN ${EXCLUDED} AND coalesce(o.currency, 'EGP') = 'EGP'), 0) AS gmv,
           count(*) FILTER (WHERE o.status = 'delivered')::int AS delivered,
           count(*) FILTER (WHERE o.status = 'returned')::int AS returned
-        FROM orders o, w WHERE o.store_id IS NOT NULL AND o.created_at >= w.mid_at GROUP BY o.store_id
+        FROM orders o, w WHERE NOT o.is_test AND o.store_id IS NOT NULL AND o.created_at >= w.mid_at GROUP BY o.store_id
       ),
       prev AS (
         SELECT o.store_id, coalesce(sum(o.total_amount), 0) AS gmv
         FROM orders o, w
-        WHERE o.store_id IS NOT NULL AND o.created_at >= w.start_at AND o.created_at < w.mid_at
+        WHERE NOT o.is_test AND o.store_id IS NOT NULL AND o.created_at >= w.start_at AND o.created_at < w.mid_at
           AND o.status NOT IN ${EXCLUDED} AND coalesce(o.currency, 'EGP') = 'EGP'
         GROUP BY o.store_id
       )

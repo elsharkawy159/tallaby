@@ -74,7 +74,14 @@ export function OrderCard({
             </label>
           )}
           <div className="me-auto min-w-0">
-            <p className="font-montserrat text-sm font-bold text-(--s-ink)">#{order.orderNumber}</p>
+            <p className="flex flex-wrap items-center gap-1.5 font-montserrat text-sm font-bold text-(--s-ink)">
+              #{order.orderNumber}
+              {order.isTest && (
+                <span className="rounded-full bg-amber-100 px-2 py-0.5 font-sans text-[11px] font-semibold text-amber-900 dark:bg-amber-400/20 dark:text-amber-200">
+                  {t("testBadge")}
+                </span>
+              )}
+            </p>
             <p className="text-xs text-(--s-subtle)">{formatDateTime(order.createdAt, locale)}</p>
             <p className="break-words text-xs text-(--s-subtle)">{order.storeName ?? t("channel.marketplace")}</p>
           </div>

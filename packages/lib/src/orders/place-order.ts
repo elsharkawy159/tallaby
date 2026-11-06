@@ -61,6 +61,7 @@ import { detectFeeHolds } from './fee-hold.server'
 import { getBillingState } from '../billing/billing.server'
 import { storeCartDiscounts } from './line-discounts.server'
 import { isCodEligibleForShipping, parseWalletPartialPaymentMethod } from './payment.lib'
+import { isTestOrderPaymentAllowed } from './test-order.lib'
 import {
   isMethodAllowedForCurrency,
   isStorefrontCheckoutMethodAllowed,
@@ -178,6 +179,15 @@ export interface PlaceOrderFromCartInput {
    * nothing unless `orderSource` is 'manual', and no customer path passes it (0151).
    */
   allowBelowMinOrderQuantity?: boolean
+  /**
+   * A test order (0155, ROADMAP.md F-76): the seller trying their own store
+   * before it is activated. Only `createOrder` sets it, from the server's own
+   * activation check and the store's preview pass, never from the client. It
+   * takes no stock, claims no coupon use, earns no affiliate commission, pays no
+   * platform fee, and sends the buyer nothing. Paying from the customer wallet is
+   * refused: no ledger money moves for a test.
+   */
+  testOrder?: boolean
 }
 
 export interface PlaceOrderInventoryItem {
@@ -277,6 +287,7 @@ export async function placeOrderFromCart(
     orderMetadata,
     deferPlacementFee = false,
     allowBelowMinOrderQuantity,
+    testOrder = false,
   } = input
   // Manual orders follow the store's rules: blocklist, zones and catalog.
   const isStoreOrder = orderSource === 'storefront' || orderSource === 'manual'
@@ -885,15 +896,24 @@ export async function placeOrderFromCart(
   const resolvedPaymentStatus =
     paymentOverrides?.paymentStatus ?? 'pending'
 
+  // A test order moves no customer-wallet money (F-76).
+  if (testOrder && !isTestOrderPaymentAllowed(resolvedPaymentMethod)) {
+    return {
+      success: false,
+      error: 'This payment method is not available in this store',
+    }
+  }
+
   let newOrder: typeof orders.$inferSelect | undefined
   let createdOrderItems: (typeof orderItems.$inferSelect)[] = []
   let stockResults: Awaited<ReturnType<typeof decrementStock>> = []
 
   try {
     await db.transaction(async (tx) => {
-      stockResults = await decrementStock(tx, stockLines, stockContext)
+      // A test order takes no stock (F-76).
+      if (!testOrder) stockResults = await decrementStock(tx, stockLines, stockContext)
 
-      if (appliedCoupon) {
+      if (appliedCoupon && !testOrder) {
         const claimed = await claimCouponUsage(tx, appliedCoupon.id)
         if (!claimed) {
           throw new CouponClaimFailedError()
@@ -969,6 +989,7 @@ export async function placeOrderFromCart(
           orderSource,
           paidAt: paymentOverrides?.paidAt ?? null,
           metadata: insertMetadata,
+          isTest: testOrder,
         })
         .returning()
 
@@ -982,7 +1003,8 @@ export async function placeOrderFromCart(
         )
         .returning()
 
-      if (appliedCoupon) {
+      // A test order uses up no coupon and earns no affiliate commission (F-76).
+      if (appliedCoupon && !testOrder) {
         await tx.insert(couponUsage).values({
           couponId: appliedCoupon.id,
           userId,
@@ -1080,7 +1102,8 @@ export async function placeOrderFromCart(
 
       // Card orders still waiting for their payment are charged when the
       // payment webhook confirms them; an abandoned payment costs nothing.
-      if (newOrder!.status !== 'payment_processing' && !deferPlacementFee) {
+      // A test order pays no fee (F-76; postOrderFees refuses it too).
+      if (newOrder!.status !== 'payment_processing' && !deferPlacementFee && !testOrder) {
         await chargeOrderPlacementFee(tx, newOrder!.id)
       }
 
@@ -1125,16 +1148,20 @@ export async function placeOrderFromCart(
   // best-effort: it is never allowed to fail the order, and the backend
   // de-duplicates so a retried checkout cannot send a second email.
   if (sendConfirmationEmail) {
-    const emailResult = await sendOrderConfirmationEmail({
-      orderId: newOrder!.id,
-      locale,
-    })
-    if (!emailResult.success) {
-      console.error(
-        'placeOrderFromCart: order confirmation email not sent for',
-        newOrder!.orderNumber,
-        emailResult.error,
-      )
+    // A test order's buyer is the seller trying their store: no customer mail
+    // (F-76). The seller's own "new order" mail below still goes out.
+    if (!testOrder) {
+      const emailResult = await sendOrderConfirmationEmail({
+        orderId: newOrder!.id,
+        locale,
+      })
+      if (!emailResult.success) {
+        console.error(
+          'placeOrderFromCart: order confirmation email not sent for',
+          newOrder!.orderNumber,
+          emailResult.error,
+        )
+      }
     }
     // Seller "new order" + low-stock mail. Orders awaiting an online payment
     // are skipped by the backend; the payment webhook sends them on confirm.

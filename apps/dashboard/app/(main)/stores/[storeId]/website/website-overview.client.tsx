@@ -229,7 +229,7 @@ export function WebsiteOverview({ data }: { data: WebsiteOverviewData }) {
             <small className="text-[12.5px] text-(--s-subtle)">{t("liveUrl")}</small>
             <div className="flex min-w-0 items-center gap-1.5">
               <a
-                href={data.liveUrl}
+                href={`/api/stores/${data.storeId}/view`}
                 target="_blank"
                 rel="noopener noreferrer"
                 dir="ltr"
@@ -241,7 +241,7 @@ export function WebsiteOverview({ data }: { data: WebsiteOverviewData }) {
                 <Copy aria-hidden />
               </IconButton>
               <IconButton asChild aria-label={t("open")} title={t("open")}>
-                <a href={data.liveUrl} target="_blank" rel="noopener noreferrer">
+                <a href={`/api/stores/${data.storeId}/view`} target="_blank" rel="noopener noreferrer">
                   <ExternalLink aria-hidden className="rtl:-scale-x-100" />
                 </a>
               </IconButton>

@@ -27,6 +27,7 @@ export async function getPaymentsOverviewForAdmin(q: Queryable = db) {
              -- EGP orders only, so a total never adds two currencies (F-61).
              coalesce(sum(total_amount) FILTER (WHERE coalesce(currency, 'EGP') = 'EGP'), 0)::text AS amount
       FROM orders
+      WHERE NOT is_test
       GROUP BY 1, 2
     `),
     q.execute(sql`

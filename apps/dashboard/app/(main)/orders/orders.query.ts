@@ -48,9 +48,15 @@ export type OrderRowContext = {
   wassalhaStores: ReadonlySet<string>;
 };
 
-/** Only orders with at least one line of this seller, whatever ids were asked for. */
-const ownOrders = (sellerId: string) =>
-  inArray(orders.id, db.select({ id: orderItems.orderId }).from(orderItems).where(eq(orderItems.sellerId, sellerId)));
+/**
+ * Only orders with at least one line of this seller, whatever ids were asked for.
+ * `testOnly`: a seller who isn't activated sees only their test orders (F-76).
+ */
+const ownOrders = (sellerId: string, testOnly = false) =>
+  and(
+    inArray(orders.id, db.select({ id: orderItems.orderId }).from(orderItems).where(eq(orderItems.sellerId, sellerId))),
+    testOnly ? eq(orders.isTest, true) : undefined,
+  );
 
 const loadWalletPaid = async (ids: string[]) => {
   const rows = await db
@@ -75,6 +81,7 @@ function orderFlow(
     status: string | null;
     paymentStatus: string | null;
     isDigitalOnly: boolean | null;
+    isTest: boolean | null;
     orderItems: { sellerId: string; fulfillmentType: string | null }[];
     shipments: { status: string; sellerId: string | null; externalId: string | null }[];
   },
@@ -92,6 +99,7 @@ function orderFlow(
       ? { status: shipment.status, ownedBySeller: shipment.sellerId === sellerId, carrierManaged: Boolean(shipment.externalId) }
       : null,
     walletPaid: walletPaid.has(order.id),
+    isTest: order.isTest,
   });
 }
 
@@ -104,12 +112,14 @@ export async function loadOrderSummaries(
   sellerId: string,
   ids: string[],
   { bostaStores, wassalhaStores }: Pick<OrderRowContext, "bostaStores" | "wassalhaStores">,
+  /** A seller who isn't activated: only their test orders (F-76). */
+  testOnly = false,
 ): Promise<OrderSummary[]> {
   if (ids.length === 0) return [];
   const [list, walletPaid] = await Promise.all([
     db.query.orders.findMany({
-      where: and(inArray(orders.id, ids), ownOrders(sellerId)),
-      columns: { id: true, status: true, paymentStatus: true, isDigitalOnly: true, storeId: true },
+      where: and(inArray(orders.id, ids), ownOrders(sellerId, testOnly)),
+      columns: { id: true, status: true, paymentStatus: true, isDigitalOnly: true, storeId: true, isTest: true },
       with: {
         shipments: { columns: { status: true, sellerId: true, externalId: true, carrier: true, trackingNumber: true } },
         orderItems: { columns: { sellerId: true, fulfillmentType: true } },
@@ -151,11 +161,11 @@ export async function loadSellerOrders(
   ids: string[],
   { stores, bostaStores, wassalhaStores }: OrderRowContext,
   /** The export has no risk column, and risks are the costly part of a row. */
-  options: { withRisks?: boolean } = {},
+  options: { withRisks?: boolean; testOnly?: boolean } = {},
 ): Promise<SellerOrderRow[]> {
   if (ids.length === 0) return [];
   const found = await db.query.orders.findMany({
-    where: and(inArray(orders.id, ids), ownOrders(sellerId)),
+    where: and(inArray(orders.id, ids), ownOrders(sellerId, options.testOnly)),
     columns: {
       id: true,
       orderNumber: true,
@@ -171,6 +181,7 @@ export async function loadSellerOrders(
       isGift: true,
       giftMessage: true,
       isDigitalOnly: true,
+      isTest: true,
       storeId: true,
       metadata: true,
       orderSource: true,
@@ -402,9 +413,11 @@ export async function loadSellerOrders(
           : null,
       flow,
       isManual: o.orderSource === "manual",
+      isTest: o.isTest,
       canRestockReturn: canRestockReturn(flow.stage, o.metadata, Boolean(flow.readOnly)),
       confirmMessage:
-        store && confirm && customerPhone && flow.stage === "new"
+        // Never a WhatsApp message for a test order: its buyer is the seller (F-76).
+        store && confirm && customerPhone && flow.stage === "new" && !o.isTest
           ? renderOrderConfirmMessage(confirm.template, {
               order: {
                 customerName: resolveCustomerName(o, ""),

@@ -273,6 +273,7 @@ export function OrderDetailsDialog({
                   <PanelSection title={t("payment")}>
                     <div className={cn(BOX, "flex flex-col gap-2")}>
                       {order.isManual && <DetailRow label={t("source")} value={t("sourceManual")} />}
+                      {order.isTest && <DetailRow label={t("source")} value={t("sourceTest")} />}
                       <DetailRow
                         label={t("paymentMethod")}
                         value={

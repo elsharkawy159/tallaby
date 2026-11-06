@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { Check, ChevronsUpDown, ExternalLink, Plus, Store } from "lucide-react";
-import { storeHostname, storeUrl } from "@workspace/lib/storefront";
+import { storeHostname } from "@workspace/lib/storefront";
 import { AnchoredSheet, Tag } from "@/components/seller-ui";
 import { cn } from "@/lib/utils";
 import { StoreLogo } from "@/components/stores/store-logo.client";
@@ -151,7 +151,7 @@ export function StoreSwitcher({
       </div>
       <hr className="mx-3 border-(--s-line-soft)" />
       <div className="flex flex-col p-2 pt-1">
-        <a href={storeUrl(selected.subdomain)} target="_blank" rel="noopener noreferrer" className={ACTION} onClick={close}>
+        <a href={`/api/stores/${selected.id}/view`} target="_blank" rel="noopener noreferrer" className={ACTION} onClick={close}>
           <ExternalLink aria-hidden />
           {t("viewStore")}
         </a>

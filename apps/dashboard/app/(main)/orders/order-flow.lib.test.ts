@@ -17,9 +17,27 @@ const base: SellerOrderFlowInput = {
   sellerFulfilled: true,
   shipment: null,
   walletPaid: false,
+  isTest: false,
 };
 
 const flow = (patch: Partial<SellerOrderFlowInput>) => resolveSellerOrderFlow({ ...base, ...patch });
+
+describe("test orders (F-76)", () => {
+  it("are view-only at every stage: no confirm, ship, cancel or correction", () => {
+    for (const orderStatus of ["pending", "confirmed", "delivered", "cancelled", "returned"]) {
+      const result = flow({ orderStatus, isTest: true });
+      expect(result.readOnly).toBe("test");
+      expect(result.actions).toEqual([]);
+      expect(result.corrections).toEqual([]);
+      expect(result.primary).toBeNull();
+    }
+  });
+
+  it("leave real orders unchanged", () => {
+    expect(flow({ isTest: false }).readOnly).toBeNull();
+    expect(flow({ isTest: null }).actions).toContain("confirm");
+  });
+});
 
 describe("isAwaitingPrep", () => {
   const counts = (patch: Partial<SellerOrderFlowInput>) => {

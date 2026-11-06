@@ -1680,6 +1680,8 @@ export const orders = pgTable("orders", {
 	metadata: jsonb(),
 	hasDigitalItems: boolean("has_digital_items").default(false),
 	isDigitalOnly: boolean("is_digital_only").default(false),
+	/** A test order on a store that isn't activated yet (0155, F-76): no fee, no stock, no buyer messages, out of totals. */
+	isTest: boolean("is_test").default(false).notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 	processedAt: timestamp("processed_at", { withTimezone: true, mode: 'string' }),
@@ -1693,6 +1695,7 @@ export const orders = pgTable("orders", {
 	index("order_user_id_idx").using("btree", table.userId.asc().nullsLast().op("uuid_ops")),
 	index("orders_store_id_idx").using("btree", table.storeId.asc().nullsLast().op("uuid_ops")).where(sql`store_id IS NOT NULL`),
 	index("orders_store_created_idx").using("btree", table.storeId.asc().nullsLast().op("uuid_ops"), table.createdAt.desc().nullsFirst().op("timestamptz_ops")).where(sql`store_id IS NOT NULL`),
+	index("orders_is_test_idx").using("btree", table.storeId.asc().nullsLast().op("uuid_ops"), table.createdAt.desc().nullsFirst().op("timestamptz_ops")).where(sql`is_test`),
 	foreignKey({
 			columns: [table.storeId],
 			foreignColumns: [stores.id],
