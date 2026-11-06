@@ -130,7 +130,7 @@ export function DashboardHeader({
             <Link
               href="/wallet"
               title={t("walletBalance", { amount: formatWalletMoney(walletBalance, walletCurrency, locale) })}
-              className="inline-flex items-center gap-2 text-(--s-muted) no-underline hover:text-(--s-ink)"
+              className="inline-flex items-center gap-2 self-stretch text-(--s-muted) no-underline hover:text-(--s-ink)"
             >
               <span className="max-[1020px]:hidden">{t("walletLabel")}</span>
               <bdi dir={moneyDir(locale, { currency: walletCurrency })} className={cn("font-montserrat text-[13px] font-bold text-(--s-ink) tabular-nums", walletBalance < 0 && "text-destructive")}>

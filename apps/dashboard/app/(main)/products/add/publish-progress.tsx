@@ -148,7 +148,7 @@ export function SectionChips({
             scrollToSection(section.id);
           }}
           className={cn(
-            "flex h-8 shrink-0 items-center gap-1.5 rounded-full border px-3 text-xs font-semibold whitespace-nowrap",
+            "flex h-8 shrink-0 items-center gap-1.5 rounded-full border px-3 text-xs font-semibold whitespace-nowrap max-[600px]:h-10",
             activeId === section.id
               ? "border-(--s-solid) bg-(--s-solid) text-(--s-solid-fg)"
               : "border-(--s-field) bg-(--s-surface) text-(--s-text)"

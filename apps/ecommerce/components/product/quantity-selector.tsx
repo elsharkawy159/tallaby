@@ -12,7 +12,8 @@ import { cartItemFloor } from "@/lib/cart-min-order.lib";
 
 const sizeStyles = {
   sm: {
-    button: "h-7 w-7 text-xs",
+    // 40px tap targets on phones; the compact size from 640px up.
+    button: "size-10 text-xs sm:size-7",
     icon: "h-3 w-3",
     text: "px-2 min-w-[2rem] text-sm",
     loader: "h-4 w-4",

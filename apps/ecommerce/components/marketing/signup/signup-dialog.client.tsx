@@ -83,7 +83,8 @@ type Step = { kind: "form" } | { kind: "confirm"; email: string } | { kind: "don
 
 const inputBox =
   "flex h-12 items-center overflow-hidden rounded-[10px] border bg-white transition-[border-color,box-shadow] focus-within:border-teal-700 focus-within:ring-[3px] focus-within:ring-teal-700/12";
-const inputEl = "h-full min-w-0 flex-1 bg-transparent px-3.5 text-[15px] outline-none";
+// 16px on phones so iOS Safari does not zoom in when a field gets focus.
+const inputEl = "h-full min-w-0 flex-1 bg-transparent px-3.5 text-base outline-none sm:text-[15px]";
 
 function SignupForm({ initialSlug, initialError }: { initialSlug: string; initialError: SignupErrorKey | null }) {
   const t = useTranslations("signup");

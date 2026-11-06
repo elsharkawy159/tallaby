@@ -85,7 +85,7 @@ export function TextAction({ className, ...props }: React.ComponentProps<"button
   return (
     <ButtonOrChild
       className={cn(
-        "inline-flex shrink-0 cursor-pointer items-center gap-[5px] whitespace-nowrap rounded-[10px] px-2.5 py-1.5 text-[12.5px] font-bold text-(--s-link) transition-colors duration-150 hover:bg-(--s-hover) [&_svg]:size-[15px] [&_svg]:shrink-0",
+        "inline-flex shrink-0 cursor-pointer items-center gap-[5px] whitespace-nowrap rounded-[10px] px-2.5 py-1.5 text-[12.5px] max-[600px]:min-h-10 font-bold text-(--s-link) transition-colors duration-150 hover:bg-(--s-hover) [&_svg]:size-[15px] [&_svg]:shrink-0",
         className,
       )}
       {...props}

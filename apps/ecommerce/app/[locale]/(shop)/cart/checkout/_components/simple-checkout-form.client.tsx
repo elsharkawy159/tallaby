@@ -209,7 +209,9 @@ export function SimpleCheckoutForm({
             <Input
               id="checkout-address"
               autoComplete="street-address"
-              dir="auto"
+              // dir="auto" turns an empty field LTR, which puts the Arabic placeholder under
+              // the locate button; follow the page until the shopper types.
+              dir={values.address ? "auto" : undefined}
               maxLength={CHECKOUT_ADDRESS_MAX}
               placeholder={t(abroad ? "addressPlaceholderAbroad" : "addressPlaceholder")}
               className="pe-11"

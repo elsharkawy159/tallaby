@@ -63,6 +63,8 @@ export async function SiteFooter() {
   ];
 
   const link = "text-[#c6d6da] transition-colors duration-150 hover:text-amber-600 hover:no-underline";
+  // Phones: each link gets a 40px-tall row so it is easy to tap.
+  const tap = "max-[860px]:inline-flex max-[860px]:min-h-10 max-[860px]:items-center";
 
   return (
     <footer data-print="hide" className="text-sm text-[#c6d6da]">
@@ -71,20 +73,20 @@ export async function SiteFooter() {
           <div className="col-span-2 min-[861px]:col-span-1">
             <Image src="/logo-white.png" alt="طلبي" width={118} height={30} className="mb-[18px] block h-[30px] w-auto" />
             <p className="max-w-[330px] leading-[1.85] text-[#d5e2e5]">{t("about")}</p>
-            <ul className="mt-5 grid gap-3 [&_svg]:size-[17px] [&_svg]:flex-none [&_svg]:text-amber-600">
+            <ul className="mt-5 grid gap-3 max-[860px]:gap-0 [&_svg]:size-[17px] [&_svg]:flex-none [&_svg]:text-amber-600">
               <li className="flex items-center gap-2.5">
                 <MapPin aria-hidden />
                 <span>{t("location")}</span>
               </li>
               <li className="flex items-center gap-2.5">
                 <Mail aria-hidden />
-                <a href={`mailto:${CONTACT.email}`} dir="ltr" className={`font-latin ${link}`}>
+                <a href={`mailto:${CONTACT.email}`} dir="ltr" className={`font-latin ${link} ${tap}`}>
                   {CONTACT.email}
                 </a>
               </li>
               <li className="flex items-center gap-2.5">
                 <Phone aria-hidden />
-                <a href={`tel:${CONTACT.phone}`} dir="ltr" className={`font-latin tabular-nums ${link}`}>
+                <a href={`tel:${CONTACT.phone}`} dir="ltr" className={`font-latin tabular-nums ${link} ${tap}`}>
                   {CONTACT.phone}
                 </a>
               </li>
@@ -93,15 +95,15 @@ export async function SiteFooter() {
           {columns.map((col) => (
             <nav key={col.title} aria-label={col.title}>
               <h2 className="mb-4 text-base font-bold text-white">{col.title}</h2>
-              <ul className="grid gap-2.5">
+              <ul className="grid gap-2.5 max-[860px]:gap-0">
                 {col.links.map((item) => (
                   <li key={item.label}>
                     {item.external ? (
-                      <a href={item.href} className={link}>
+                      <a href={item.href} className={`${link} ${tap}`}>
                         {item.label}
                       </a>
                     ) : (
-                      <Link href={item.href} className={link}>
+                      <Link href={item.href} className={`${link} ${tap}`}>
                         {item.label}
                       </Link>
                     )}
@@ -115,20 +117,20 @@ export async function SiteFooter() {
 
       <div className="bg-footer-bar py-[22px]">
         <Container className="flex flex-col items-start justify-between gap-6 min-[861px]:flex-row min-[861px]:items-center">
-          <div className="flex flex-col gap-1.5 text-[13px]">
-            <div className="flex flex-wrap items-center gap-x-[22px] gap-y-1.5">
+          <div className="flex flex-col gap-1.5 text-[13px] max-[860px]:gap-0">
+            <div className="flex flex-wrap items-center gap-x-[22px] gap-y-1.5 max-[860px]:gap-y-0">
               <span className="font-latin">{t("rights", { year: new Date().getFullYear() })}</span>
-              <Link href="/terms" className={link}>
+              <Link href="/terms" className={`${link} ${tap}`}>
                 {t("terms")}
               </Link>
-              <Link href="/privacy" className={link}>
+              <Link href="/privacy" className={`${link} ${tap}`}>
                 {t("privacy")}
               </Link>
             </div>
-            <Link href="/privacy#cookies" className={link}>
+            <Link href="/privacy#cookies" className={`w-fit ${link} ${tap}`}>
               {t("cookies")}
             </Link>
-            <CookieSettingsButton className={link} />
+            <CookieSettingsButton className={`${link} ${tap}`} />
           </div>
           <div className="flex flex-col items-start gap-3.5 min-[861px]:items-end">
             <div className="flex flex-wrap gap-2" aria-label={t("social")} role="list">
@@ -140,7 +142,7 @@ export async function SiteFooter() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={s.label}
-                  className="grid size-[38px] place-items-center rounded-full border border-white/15 text-white transition-colors duration-150 hover:border-amber-600 hover:bg-amber-600 hover:text-teal-900"
+                  className="grid size-[38px] place-items-center max-[860px]:size-10 rounded-full border border-white/15 text-white transition-colors duration-150 hover:border-amber-600 hover:bg-amber-600 hover:text-teal-900"
                 >
                   <BrandIcon name={s.id} className="size-[17px]" />
                 </a>

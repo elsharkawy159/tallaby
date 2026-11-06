@@ -32,7 +32,7 @@ export async function OrdersLocked({ lock }: { lock: OrderLock }) {
           <Icon className="mx-auto mb-3 size-8 text-primary" aria-hidden />
           <h1 className="text-lg font-bold">{t(lock.pendingReview ? "reviewTitle" : "title")}</h1>
           <p className="mt-2 text-pretty text-sm text-muted-foreground">{t(lock.pendingReview ? "reviewBody" : "body")}</p>
-          <Button asChild className="mt-4">
+          <Button asChild className="mt-4 max-[600px]:h-10">
             <Link href="/wallet">{t(lock.pendingReview ? "viewWallet" : "topUp")}</Link>
           </Button>
         </div>
@@ -52,7 +52,7 @@ export async function OrdersLockedNotice({ lock }: { lock: OrderLock }) {
         <p className="font-semibold">{t(lock.pendingReview ? "reviewTitle" : "title")}</p>
         <p className="mt-0.5 text-pretty">{t(lock.pendingReview ? "reviewBody" : "body")}</p>
       </div>
-      <Button asChild size="sm">
+      <Button asChild size="sm" className="max-[600px]:h-10">
         <Link href="/wallet">{t(lock.pendingReview ? "viewWallet" : "topUp")}</Link>
       </Button>
     </div>
