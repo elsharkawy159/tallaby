@@ -61,7 +61,7 @@ export async function HomeHero() {
         </h1>
         <p className="mx-auto mt-4 mb-6 max-w-[640px] text-[clamp(16px,2vw,19px)] text-pretty text-[#56696e] min-[641px]:mt-5 min-[641px]:mb-8">{t("lead")}</p>
         <SignupTrigger className="h-[58px] px-10 text-[17px]">{t("cta")}</SignupTrigger>
-        <ul className="m-0 mt-[18px] flex list-none flex-wrap justify-center gap-x-3.5 gap-y-1.5 p-0 text-[13px] text-[#56696e] min-[641px]:gap-x-[22px] min-[641px]:gap-y-2 min-[641px]:text-sm">
+        <ul className="m-0 mt-7 flex list-none flex-wrap justify-center gap-x-3.5 gap-y-1.5 p-0 text-[13px] text-[#56696e] min-[641px]:gap-x-[22px] min-[641px]:gap-y-2 min-[641px]:text-sm">
           {checks.map((check) => (
             <li key={check} className="flex items-center gap-1.5">
               <Check className="size-4 text-[#16a34a]" aria-hidden />

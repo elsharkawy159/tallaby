@@ -213,7 +213,7 @@ function SignupForm({ initialSlug, initialError }: { initialSlug: string; initia
         type="button"
         onClick={onGoogle}
         disabled={busy}
-        className="flex h-[50px] w-full items-center justify-center gap-2.5 rounded-xl border border-neutral-200 text-[15px] font-semibold hover:bg-neutral-50 disabled:opacity-60"
+        className="flex h-[50px] w-full items-center justify-center gap-2.5 rounded-xl border border-neutral-200 text-[15px] font-semibold hover:bg-neutral-50 disabled:opacity-60 bg-white"
       >
         {googlePending ? (
           <Loader2 className="size-5 animate-spin" aria-hidden />

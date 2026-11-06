@@ -562,7 +562,7 @@ export function EditorCanvas({
         container.current = el;
         setDropRef(el);
       }}
-      className="ed-canvas relative flex h-full justify-center overflow-hidden p-5 max-lg:p-3 max-sm:p-0"
+      className="ed-canvas relative flex h-full justify-center overflow-hidden p-4 max-lg:p-3 max-sm:p-0"
       // While dragging the frame takes no pointer events, so the wheel still scrolls the page.
       onWheel={canvasDrag ? (event) => doc?.defaultView?.scrollBy(0, event.deltaY) : undefined}
     >
