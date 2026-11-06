@@ -110,7 +110,7 @@ export function ExplorePanel({
   const columns = [photos.filter((_, i) => i % 2 === 0), photos.filter((_, i) => i % 2 === 1)];
 
   return (
-    <div className="flex h-full min-h-0 flex-col">
+    <div className="flex min-h-0 flex-1 flex-col">
       <div className="space-y-2.5 border-b border-(--s-line-soft) px-3.5 pb-3">
         <div>
           <p className="text-xs text-(--s-subtle)">{categoryLabel ? t("forIndustry", { industry: categoryLabel }) : t("intro")}</p>

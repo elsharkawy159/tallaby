@@ -159,6 +159,10 @@ export const SECTION_COPY = {
   navShop: { ar: "المتجر", en: "Shop" },
   navCart: { ar: "السلة", en: "Cart" },
   navProfile: { ar: "حسابي", en: "Profile" },
+  navSearch: { ar: "البحث", en: "Search" },
+  navOrders: { ar: "طلباتي", en: "Orders" },
+  navWishlist: { ar: "المفضلة", en: "Wishlist" },
+  navBlog: { ar: "المدونة", en: "Blog" },
   bottomNav: { ar: "التنقل السريع", en: "Quick navigation" },
 } as const satisfies Record<string, Localized>;
 

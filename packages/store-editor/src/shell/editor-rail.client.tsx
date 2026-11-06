@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { ClipboardList, Compass, FileText, Image as ImageIcon, Keyboard, Layers, Palette, Plus } from "lucide-react";
+import { ClipboardList, FileText, Image as ImageIcon, Keyboard, Layers, Palette, Plus } from "lucide-react";
 import { useStore } from "zustand";
 import { cn } from "@workspace/ui/lib/utils";
 import { useEditorAdapter } from "../adapter.client";
@@ -12,7 +12,6 @@ const ITEMS = [
   ["add", Plus],
   ["layers", Layers],
   ["media", ImageIcon],
-  ["explore", Compass],
   ["forms", ClipboardList],
   ["pages", FileText],
   ["brand", Palette],
@@ -22,8 +21,7 @@ const ITEMS = [
 const PHONE_ORDER: Record<(typeof ITEMS)[number][0], string> = {
   layers: "max-md:order-1",
   media: "max-md:order-2",
-  explore: "max-md:order-3",
-  add: "max-md:order-4",
+  add: "max-md:order-3",
   forms: "max-md:order-5",
   pages: "max-md:order-6",
   brand: "max-md:order-7",
@@ -52,7 +50,7 @@ export function EditorRail({
     <nav
       aria-label={t("label")}
       className={cn(
-        "z-20 flex w-16 shrink-0 flex-col items-center gap-1 border-e border-(--s-field) bg-(--s-surface) py-2.5",
+        "z-20 flex w-16 shrink-0 flex-col max-2xl:w-14 items-center gap-1 border-e border-(--s-field) bg-(--s-surface) py-2.5",
         "max-md:fixed max-md:inset-x-0 max-md:bottom-0 max-md:z-40 max-md:h-[calc(62px+env(safe-area-inset-bottom))] max-md:w-full max-md:flex-row max-md:justify-around max-md:gap-0 max-md:border-e-0 max-md:border-t max-md:px-1 max-md:pt-1 max-md:pb-[env(safe-area-inset-bottom)]",
       )}
     >
@@ -63,9 +61,12 @@ export function EditorRail({
             key={key}
             type="button"
             aria-pressed={active}
+            title={t(key)}
             onClick={() => onToggle(key)}
             className={cn(
               "flex w-[52px] flex-col items-center gap-[3px] rounded-xl py-2 text-[10.5px] font-semibold text-(--s-subtle) transition-colors hover:bg-(--s-tint) hover:text-(--s-ink)",
+              // Laptops (768–1535px): icons only, the name as tooltip and for screen readers (owner, F-74).
+              "md:max-2xl:h-11 md:max-2xl:w-11 md:max-2xl:justify-center md:max-2xl:py-0",
               "max-md:h-[52px] max-md:w-auto max-md:min-w-0 max-md:flex-1 max-md:justify-center max-md:gap-0.5 max-md:py-1 max-md:text-[10px]",
               PHONE_ORDER[key],
               active && "bg-(--s-hover) text-(--s-ink) hover:bg-(--s-hover)",
@@ -79,7 +80,7 @@ export function EditorRail({
             )}
           >
             <Icon className={cn("size-[19px]", key === "add" && "max-md:size-[22px]")} aria-hidden />
-            <span className={cn("max-w-full truncate", key === "add" && "max-md:sr-only")}>{t(key)}</span>
+            <span className={cn("max-w-full truncate md:max-2xl:sr-only", key === "add" && "max-md:sr-only")}>{t(key)}</span>
           </button>
         );
       })}
@@ -87,10 +88,11 @@ export function EditorRail({
         <button
           type="button"
           onClick={onShowShortcuts}
-          className="mt-auto flex w-[52px] flex-col items-center gap-[3px] rounded-xl py-2 text-[10.5px] font-semibold text-(--s-subtle) transition-colors hover:bg-(--s-tint) hover:text-(--s-ink) max-md:hidden"
+          title={t("shortcuts")}
+          className="mt-auto flex w-[52px] md:max-2xl:h-11 md:max-2xl:w-11 md:max-2xl:justify-center md:max-2xl:py-0 flex-col items-center gap-[3px] rounded-xl py-2 text-[10.5px] font-semibold text-(--s-subtle) transition-colors hover:bg-(--s-tint) hover:text-(--s-ink) max-md:hidden"
         >
           <Keyboard className="size-[19px]" aria-hidden />
-          <span className="max-w-full truncate">{t("shortcuts")}</span>
+          <span className="max-w-full truncate md:max-2xl:sr-only">{t("shortcuts")}</span>
         </button>
       )}
     </nav>

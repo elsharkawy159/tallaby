@@ -34,11 +34,14 @@ export function BottomNavRuntime({ doc }: { doc?: Document | null } = {}) {
         nav.hidden = productPage || /\/checkout(\/|$)/.test(path);
         const links = [...nav.querySelectorAll<HTMLAnchorElement>("a[href]")];
         const paths = links.map((a) => trim(new URL(a.href, window.location.href).pathname));
-        // The longest match wins, so Home (a parent of every page) only marks itself.
+        // The longest match wins, so Home (a parent of every page) only marks itself. Home is found by
+        // its part, not its place: the seller can move it (F-74).
         let best = -1;
         paths.forEach((p, i) => {
           const exact = p === path;
-          const parent = i > 0 && path.startsWith(`${p}/`);
+          const part = links[i]!.dataset.part;
+          const home = part ? part === "bottom-nav-home" : i === 0;
+          const parent = !home && path.startsWith(`${p}/`);
           if ((exact || parent) && (best < 0 || p.length > paths[best]!.length)) best = i;
         });
         links.forEach((a, i) => (i === best ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current")));

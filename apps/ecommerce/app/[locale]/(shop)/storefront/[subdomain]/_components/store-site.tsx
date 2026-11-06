@@ -257,6 +257,8 @@ export function StoreSiteBottomNav({ site, locale }: { site: SiteConfig; locale:
         ),
         renderCartBadge: () => <StoreCartBadge />,
       }}
+      // The seller's page items (F-74) follow a renamed slug and drop a deleted page.
+      pages={site.pages.filter((page) => !page.isHome && page.kind !== "product").map((page) => ({ id: page.id, slug: page.slug, name: page.name }))}
     />
   );
 }

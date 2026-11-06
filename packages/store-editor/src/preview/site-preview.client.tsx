@@ -180,7 +180,7 @@ export function SitePreview({
   const chromeCtx = useMemo(() => ({ ...ctx, reveal: false }), [ctx]);
   // The header and footer as the storefront draws them: the store's logo and the tools the seller turned on.
   const hasLogo = Boolean(store.logoUrl);
-  const drawnHeader = useMemo(() => drawChrome(flushHeaderOnMobile(header), "header", { translated, hasLogo }), [header, translated, hasLogo]);
+  const drawnHeader = useMemo(() => drawChrome(flushHeaderOnMobile(header), "header", { translated, hasLogo, locale }), [header, translated, hasLogo, locale]);
   const drawnFooter = useMemo(() => drawChrome(footer, "footer", { translated, hasLogo, locale }), [footer, translated, hasLogo, locale]);
 
   return (

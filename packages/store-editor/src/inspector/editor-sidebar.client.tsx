@@ -73,6 +73,7 @@ export function EditorSidebar({
   const defaultLocale = useStore(store, (s) => s.defaultLocale);
   const device = useStore(store, (s) => s.device);
   const preferredTab = useStore(store, (s) => s.inspectorTab);
+  const chromeFocus = useStore(store, (s) => s.chromeFocus);
   // The style-only element the seller still chose Content for.
   const [contentFor, setContentFor] = useState<string | null>(null);
   const focusSelected = useStore(store, (s) => s.focusSelected);
@@ -198,11 +199,14 @@ export function EditorSidebar({
             key={instance.id}
             instance={instance}
             part={ref.target}
-            onChange={(update) => state.editSection(ref, update)}
+            onChange={(update, key) => state.editSection(ref, update, key)}
             storeId={storeId}
             readOnly={readOnly}
             translated={translated}
             hasLogo={hasLogo}
+            pages={pages}
+            locale={locale}
+            focus={chromeFocus}
           />
         )}
         {tab === "content" ? (

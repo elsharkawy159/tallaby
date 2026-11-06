@@ -8,6 +8,7 @@ import { RefreshCw } from "lucide-react";
 import { useStore } from "zustand";
 import type { DesignSystem, SectionInstance, SiteLocale } from "@workspace/store-sections";
 import {
+  BOTTOM_NAV_ATTR,
   CLASSIC_TOKENS,
   PageStyles,
   SITE_ROOT_CLASS,
@@ -19,6 +20,7 @@ import {
   drawChrome,
   siteMotionAttrs,
   storeSectionRegistry,
+  type BottomNavPage,
   type RenderContext,
 } from "@workspace/store-sections/render";
 import { replayReveal } from "@workspace/store-sections/client";
@@ -173,6 +175,7 @@ export function EditorCanvas({
   onQuickInsert,
   onFrameKeyDown,
   translated = false,
+  bottomNavPages,
 }: {
   ctx: RenderContext;
   sections: SectionInstance[];
@@ -191,6 +194,8 @@ export function EditorCanvas({
   onFrameKeyDown: (event: KeyboardEvent) => void;
   /** The store has more than one language: the header shows its language switcher (unless hidden). */
   translated?: boolean;
+  /** The site's pages now, so the bottom bar's page items follow renames (F-74). */
+  bottomNavPages?: readonly BottomNavPage[];
 }) {
   const frame = useRef<HTMLIFrameElement>(null);
   const container = useRef<HTMLDivElement>(null);
@@ -375,6 +380,12 @@ export function EditorCanvas({
       if (target?.closest("a, button, label")) event.preventDefault();
       if (target?.isContentEditable) return;
       setMenu(null);
+      // The phone burger and bottom bar are drawn, never saved: a click opens the header's Mobile menu or Bottom bar card (F-74).
+      const phoneChrome = target?.closest(`[${BOTTOM_NAV_ATTR}]`) ? "bottomNav" : target?.closest('[data-node-type="mobileMenu"]') ? "mobileMenu" : null;
+      if (phoneChrome && latest.current.header) {
+        store.getState().focusChrome(phoneChrome);
+        return;
+      }
       const hit = hitTest(target);
       if (hit) select(hit.selection);
     };
@@ -607,7 +618,7 @@ export function EditorCanvas({
             {/* The phone bottom navigation; a click selects the header, whose options turn it off. */}
             {header && (
               <div data-editor-chrome="header">
-                <SiteBottomNav header={header} ctx={ctx} />
+                <SiteBottomNav header={header} ctx={ctx} pages={bottomNavPages} />
               </div>
             )}
           </div>,

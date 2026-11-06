@@ -327,6 +327,8 @@ function PresetCard({
   const { setNodeRef, listeners, attributes, isDragging } = useDraggable({ id: `library:${preset.id}`, data, disabled: !draggable });
   const { onKeyDown: _keyboard, ...pointer } = listeners ?? {};
   void _keyboard;
+  // Header designs are short strips: a taller card centres them, and their action label always shows (owner, F-74).
+  const headerCard = presetChromePart(preset) === "header";
   return (
     <li className="group/card relative min-w-0">
       <button
@@ -343,9 +345,20 @@ function PresetCard({
           isDragging && "opacity-50",
         )}
       >
-        <span data-drag-preview className="relative block overflow-hidden rounded-md border bg-muted/30 transition-[border-color,box-shadow] group-hover/card:border-foreground/30 group-hover/card:shadow-sm">
+        <span
+          data-drag-preview
+          className={cn(
+            "relative block overflow-hidden rounded-md border bg-muted/30 transition-[border-color,box-shadow] group-hover/card:border-foreground/30 group-hover/card:shadow-sm",
+            headerCard && "flex min-h-[112px] flex-col justify-center pb-8 [&>*]:w-full",
+          )}
+        >
           {thumb}
-          <span className="pointer-events-none absolute inset-x-2 bottom-2 flex justify-center opacity-0 transition-opacity group-hover/card:opacity-100 group-focus-within/card:opacity-100 motion-reduce:transition-none">
+          <span
+            className={cn(
+              "pointer-events-none absolute inset-x-2 bottom-2 flex justify-center transition-opacity motion-reduce:transition-none",
+              !headerCard && "opacity-0 group-hover/card:opacity-100 group-focus-within/card:opacity-100",
+            )}
+          >
             <span className="inline-flex items-center gap-1 rounded-md bg-foreground px-2 py-1 text-[11px] font-medium text-background shadow-sm">
               <Plus className="size-3" aria-hidden />
               {actionLabel}

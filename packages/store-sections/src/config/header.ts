@@ -12,6 +12,7 @@
  * cart or search icons sat at different heights. A row that sets one keeps it.
  */
 import type { SectionInstance } from "./schema";
+import { applyMobileMenu, mobileMenuEntries, readMobileMenu, type MobileMenuConfig, type MobileMenuEntry } from "./mobile-menu";
 
 const FLUSH = { paddingTop: 0, paddingBottom: 0 };
 
@@ -482,16 +483,37 @@ function hiddenRowLinks(nodes: readonly Node[], path: readonly Node[], id: strin
   return [...own, ...links];
 }
 
-function withMobileMenu(tree: Node[], id: string, locale: string): Node[] {
-  if (contains(tree, (node) => node.type === "mobileMenu")) return tree;
+/** The burger sheet's links before the seller's changes: the header menus' links, then those of rows hidden on phones. */
+function sheetLinks(tree: Node[], id: string): Node[] {
   const own = menuLinks(tree, id);
-  let nodes = collapseMenus(tree);
+  const nodes = collapseMenus(tree);
   const path = pathTo(nodes, hasRole("logo"));
   const barAt = path?.findIndex((node) => node.type === "hFlex" || node.type === "grid") ?? -1;
   const extra = path && barAt >= 0 ? hiddenRowLinks(nodes, path.slice(0, barAt + 1), `${id}-x`) : [];
   const key = (link: Node) => `${String(link.props.href)}|${JSON.stringify(textsIn(link))}`;
   const seen = new Set(own.map(key));
-  const links = [...own, ...extra.filter((link) => !seen.has(key(link)))];
+  return [...own, ...extra.filter((link) => !seen.has(key(link)))];
+}
+
+/**
+ * The rows of a header's burger sheet for the builder's Mobile menu card
+ * (owner, F-74): the header's own links plus the seller's added ones, in the
+ * sheet's order, hidden ones included. Empty for a header that draws its own
+ * `mobileMenu` node.
+ */
+export function mobileMenuRows(header: SectionInstance | null | undefined, locale: string): MobileMenuEntry[] {
+  const tree = header?.componentTree;
+  if (!header || !tree?.length || contains(tree, (node) => node.type === "mobileMenu")) return [];
+  return mobileMenuEntries(sheetLinks(tree, header.id), readMobileMenu(header), locale, header.id);
+}
+
+function withMobileMenu(tree: Node[], id: string, locale: string, menu: MobileMenuConfig): Node[] {
+  if (contains(tree, (node) => node.type === "mobileMenu")) return tree;
+  // The seller's order, names, hidden rows and added pages (config/mobile-menu.ts).
+  const links = applyMobileMenu(sheetLinks(tree, id), menu, locale, id);
+  let nodes = collapseMenus(tree);
+  const path = pathTo(nodes, hasRole("logo"));
+  const barAt = path?.findIndex((node) => node.type === "hFlex" || node.type === "grid") ?? -1;
   const burger: Node = { id: `${id}-mobile-menu`, type: "mobileMenu", props: {}, children: links };
   if (path && barAt >= 0) {
     const old = path[barAt]!;
@@ -657,7 +679,7 @@ export function drawChrome(
     const row: Node = { id: `${instance.id}-tools`, type: "hFlex", props: {}, style: { gap: 8, alignItems: "center", marginTop: 16 }, children: tools };
     nodes = appendFooterTools(nodes, row);
   }
-  if (part === "header") nodes = withMobileMenu(nodes, instance.id, opts.locale ?? "ar");
+  if (part === "header") nodes = withMobileMenu(nodes, instance.id, opts.locale ?? "ar", readMobileMenu(instance));
   if (part === "footer") nodes = withTallabyCredit(nodes, instance.id, opts.locale ?? "ar");
   return nodes === tree ? instance : { ...instance, componentTree: nodes };
 }

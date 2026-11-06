@@ -188,10 +188,9 @@
       "label": "Editor tools",
       "add": "Add",
       "layers": "Layers",
-      "media": "Images",
+      "media": "Media",
       "pages": "Pages",
       "brand": "Brand",
-      "explore": "Explore",
       "templates": "Templates",
       "forms": "Forms",
       "shortcuts": "Keys"
@@ -308,6 +307,8 @@
     },
     "media": {
       "title": "Media library",
+      "tabsLabel": "Image sources",
+      "tabs": { "library": "Media", "explore": "Explore" },
       "intro": "Drag an image onto an image on the page to replace it, or between elements to add it. Double-click an image to use it on the selection."
     },
     "sidebar": {
@@ -350,7 +351,31 @@
           "languageSwitcher": "Lets visitors switch your website between Arabic and English.",
           "themeToggle": "A button that switches your website between light and dark. Visitors' choice is remembered.",
           "account": "Lets customers sign in, or open their account when they're signed in.",
-        "bottomNav": "A bar at the bottom of phone screens with Home, Shop, Cart and Profile. It steps aside at checkout and for the product page's buy buttons."
+        "bottomNav": "A bar at the bottom of phone screens (Home, Shop, Cart and Profile unless you change it below). It steps aside at checkout and for the product page's buy buttons."
+        }
+      },
+      "phone": {
+        "addItem": "Add an item",
+        "places": "Store places",
+        "pages": "Your pages",
+        "remove": "Remove {name}",
+        "moveUp": "Move {name} up",
+        "moveDown": "Move {name} down",
+        "changeIcon": "Change the icon of {name}",
+        "reset": "Back to the default",
+        "menu": {
+          "title": "Mobile menu",
+          "hint": "The menu that opens from the ☰ button on phones. Rename, hide or move a link, or add one of your pages.",
+          "empty": "Your header has no menu links yet, so phones list your pages. Add a link to choose what shows.",
+          "rename": "Name of {name}",
+          "hide": "Hide {name} on phones",
+          "show": "Show {name} on phones"
+        },
+        "bottomNav": {
+          "title": "Bottom bar on phones",
+          "hint": "Up to {max} items, each with a ready icon. Tap an icon to change it.",
+          "off": "The bottom bar is turned off in the header options above. Your items are kept.",
+          "full": "The bar is full ({max} items)"
         }
       },
       "emptyTitle": "Nothing selected",

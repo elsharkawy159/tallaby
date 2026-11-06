@@ -2,6 +2,8 @@ export * from "./schema";
 export * from "./migrate";
 export * from "./sanitize";
 export * from "./header";
+export * from "./bottom-nav";
+export * from "./mobile-menu";
 export * from "./validate";
 export { hasDangerousScheme, isHttpOrRelativeUrl } from "./url";
 export * from "./product-page.lib";

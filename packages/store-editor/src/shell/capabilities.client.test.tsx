@@ -5,7 +5,7 @@ import { EditorAdapterProvider } from "../adapter.client";
 import type { EditorAdapter, EditorCapabilities } from "../adapter.types";
 import en from "../messages/en.json";
 import { createEditorStore } from "../state/editor.store";
-import { addTabs, railEnabled } from "./capabilities.lib";
+import { addTabs, mediaTabs, railEnabled } from "./capabilities.lib";
 import { EditorRail } from "./editor-rail.client";
 
 const ALL: EditorCapabilities = {
@@ -50,20 +50,34 @@ function renderRail(capabilities: EditorCapabilities): string {
 describe("EditorRail capabilities", () => {
   it("shows every tab when the host supports everything", () => {
     const html = renderRail(ALL);
-    for (const key of ["add", "layers", "media", "explore", "forms", "pages", "brand"] as const) expect(html).toContain(`>${LABELS[key]}<`);
+    for (const key of ["add", "layers", "media", "forms", "pages", "brand"] as const) expect(html).toContain(`>${LABELS[key]}<`);
   });
 
   it("hides Pages and Forms when the host has neither", () => {
     const html = renderRail(SECTION_EDITING);
     expect(html).not.toContain(`>${LABELS.pages}<`);
     expect(html).not.toContain(`>${LABELS.forms}<`);
-    for (const key of ["add", "layers", "media", "explore", "brand"] as const) expect(html).toContain(`>${LABELS[key]}<`);
+    for (const key of ["add", "layers", "media", "brand"] as const) expect(html).toContain(`>${LABELS[key]}<`);
   });
 
   it("maps the other capabilities to their tabs", () => {
-    expect(railEnabled("explore", { ...ALL, explore: false })).toBe(false);
-    expect(railEnabled("media", { ...ALL, mediaLibrary: false })).toBe(false);
+    // Media holds the library and Explore: shown while the host has either.
+    expect(railEnabled("media", { ...ALL, explore: false })).toBe(true);
+    expect(railEnabled("media", { ...ALL, mediaLibrary: false })).toBe(true);
+    expect(railEnabled("media", { ...ALL, mediaLibrary: false, explore: false })).toBe(false);
     expect(railEnabled("brand", SECTION_EDITING)).toBe(true);
+  });
+});
+
+describe("Media panel tabs", () => {
+  it("offers the library and Explore, each where the host has it", () => {
+    expect(mediaTabs(ALL)).toEqual(["library", "explore"]);
+    expect(mediaTabs({ ...ALL, explore: false })).toEqual(["library"]);
+    expect(mediaTabs({ ...ALL, mediaLibrary: false })).toEqual(["explore"]);
+  });
+
+  it("has no separate Explore rail tab", () => {
+    expect(renderRail(ALL)).not.toContain(">Explore<");
   });
 });
 

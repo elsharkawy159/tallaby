@@ -51,7 +51,6 @@ import type { EditorAdapter } from "./adapter.types";
 import { createEditorStore, type EditorPage, type EditorStore, type Rail } from "./state/editor.store";
 import { AddPanel } from "./panels/add/add-panel.client";
 import { BrandPanel } from "./panels/brand-panel.client";
-import { ExplorePanel } from "./panels/explore-panel.client";
 import { FormsPanel } from "./panels/forms-panel.client";
 import { LayersPanel } from "./panels/layers-panel.client";
 import { MediaPanel } from "./panels/media-panel.client";
@@ -63,7 +62,7 @@ import { useEditorAutosave } from "./state/use-editor-autosave.client";
 import { useDraftWatch } from "./state/use-draft-watch.client";
 import { useEditorShortcuts } from "./state/use-editor-shortcuts.client";
 import { useStorePreview } from "./state/use-store-preview.client";
-import { useIsBelowLg } from "./state/use-media-query.client";
+import { useIsBelowLg, useIsBelowXl } from "./state/use-media-query.client";
 
 type Catalog = EditorCatalogSnapshot;
 
@@ -191,6 +190,8 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
   const [panelOpen, setPanelOpen] = useState(true);
   // Below lg (phones, small tablets) the panel and the inspector are bottom sheets.
   const compact = useIsBelowLg();
+  // Small laptops (1024–1279px): the panel floats over the canvas, so the page keeps its desktop width (owner, F-74).
+  const floatingPanel = useIsBelowXl() && !compact;
   const [inspectorOpen, setInspectorOpen] = useState(false);
   const [quickInsert, setQuickInsert] = useState<{ open: boolean; index: number | null }>({ open: false, index: null });
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
@@ -204,9 +205,9 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
 
   // The panel opens closed on small screens, so the canvas keeps the whole width.
   useEffect(() => {
-    if (compact) setPanelOpen(false);
-    else setInspectorOpen(false);
-  }, [compact]);
+    if (compact || floatingPanel) setPanelOpen(false);
+    if (!compact) setInspectorOpen(false);
+  }, [compact, floatingPanel]);
   // Small screens (Claude Design mobile): a selection shows the action bar, and its Edit button
   // opens the inspector sheet; clearing the selection closes the sheet.
   const panelSheetOpen = compact && panelOpen && railEnabled(rail, capabilities);
@@ -214,6 +215,8 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
     if (!compact) return;
     return store.subscribe((s, prev) => {
       if (s.selection !== prev.selection && !s.selection) setInspectorOpen(false);
+      // A tap on the burger or the bottom bar goes straight to its card.
+      if (s.chromeFocus && s.chromeFocus !== prev.chromeFocus) setInspectorOpen(true);
     });
   }, [store, compact]);
   // Small screens: a tap that inserts from a panel sheet closes the sheet.
@@ -266,6 +269,11 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
     return { ...plain, [selection.target]: next };
   }, [imagePreview, selection, page.content, header, footer, locale, defaultLocale]);
   const navPages = pages.filter((p) => !p.isHome && p.showInNav).length;
+  // The bottom bar's page items follow the pages' current slugs (F-74).
+  const bottomNavPages = useMemo(
+    () => pages.filter((p) => !p.isHome && p.kind !== "product").map((p) => ({ id: p.id, slug: p.slug, name: nameOf(p.name, locale) })),
+    [pages, locale],
+  );
   const counts = useMemo(
     () =>
       storeDataCounts({
@@ -386,11 +394,13 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
         const page = state.pages.find((p) => p.id === state.activePageId) ?? state.pages[0];
         if (!page) return;
         const instance = getInstance({ content: page.content, header: state.header, footer: state.footer }, refOf(selection));
-        if (!isImageSelection(instance, selection) || !capabilities.explore) return;
-        if (state.rail !== "explore") state.setRail("explore");
+        if (!isImageSelection(instance, selection) || !railEnabled("media", capabilities)) return;
+        // Media › Explore (stock photos) when the host has it, else the store library (owner, F-74).
+        if (state.rail !== "media") state.setRail("media");
+        state.setMediaTab(capabilities.explore ? "explore" : "library");
         setPanelOpen(true);
       }),
-    [store, capabilities.explore, compact],
+    [store, capabilities, compact],
   );
 
   const toggleRail = (next: Rail) => {
@@ -433,11 +443,10 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
           preview={{ ctx: baseCtx, catalog, posts: catalog.posts, designSystem, defaultLocale, fontClassName: initial.fontClassName, counts }}
         />
       )}
-      {rail === "explore" && (
-        <ExplorePanel storeId={initial.storeId} readOnly={initial.readOnly} category={initial.category} uiLocale={uiLocale} commands={panelCommands} />
-      )}
       {rail === "layers" && <LayersPanel store={store} commands={panelCommands} uiLocale={uiLocale} />}
-      {rail === "media" && <MediaPanel readOnly={initial.readOnly} commands={panelCommands} />}
+      {rail === "media" && (
+        <MediaPanel store={store} storeId={initial.storeId} readOnly={initial.readOnly} category={initial.category} uiLocale={uiLocale} commands={panelCommands} />
+      )}
       {rail === "pages" && (
         <div className="min-h-0 flex-1 overflow-y-auto px-3.5 pt-1 pb-4">
           <PagesPanel store={store} uiLocale={uiLocale} />
@@ -501,14 +510,16 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
       )}
 
       <EditorDndProvider store={store} commands={commands} readOnly={initial.readOnly}>
-      <div className="flex min-h-0 flex-1">
+      <div className="relative flex min-h-0 flex-1">
         <EditorRail store={store} panelOpen={panelOpen} onToggle={toggleRail} onShowShortcuts={() => setShortcutsOpen(true)} />
         {!compact && panelOpen && railEnabled(rail, capabilities) && (
           <aside
             aria-label={t(`rail.${rail}`)}
             className={cn(
               "flex shrink-0 flex-col border-e border-(--s-field) bg-(--s-surface) transition-[width] duration-200 ease-out max-lg:hidden motion-reduce:transition-none",
-              libraryWide ? "w-[min(560px,calc(100vw-30rem))]" : "w-[280px] max-[1280px]:w-[260px]",
+              // Narrower on laptops (1440px: 256px); below 1280px it floats over the canvas beside the rail (owner, F-74).
+              libraryWide ? "w-[min(560px,calc(100vw-30rem))]" : "w-[280px] max-2xl:w-[256px] max-xl:w-[264px]",
+              floatingPanel && "absolute inset-y-0 start-14 z-30 shadow-(--s-shadow-bar)",
             )}
           >
             <div className="flex shrink-0 items-center justify-between gap-2 px-3.5 pt-3 pb-1">
@@ -562,12 +573,20 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
               onQuickInsert={(index) => setQuickInsert({ open: true, index })}
               onFrameKeyDown={onFrameKeyDown}
               translated={new Set(initial.locales).size > 1}
+              bottomNavPages={bottomNavPages}
             />
           </div>
         </main>
 
-        {!compact && (
-          <aside aria-label={t("sidebar.label")} className="z-20 hidden w-[300px] shrink-0 border-s border-(--s-field) bg-(--s-surface) max-[1280px]:w-[280px] lg:block">
+        {/* Small laptops: the inspector floats over the canvas while something is selected, so the page keeps its desktop width (F-74). */}
+        {!compact && (!floatingPanel || hasSelection) && (
+          <aside
+            aria-label={t("sidebar.label")}
+            className={cn(
+              "z-20 hidden w-[300px] shrink-0 border-s border-(--s-field) bg-(--s-surface) max-2xl:w-[272px] max-xl:w-[264px] lg:block",
+              floatingPanel && "absolute inset-y-0 end-0 z-30 shadow-(--s-shadow-bar)",
+            )}
+          >
             {sidebar}
           </aside>
         )}

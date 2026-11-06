@@ -34,7 +34,10 @@ export type SectionRef = { target: "page"; sectionId: string } | { target: "head
  * custom section (`nodeId`).
  */
 export type Selection = (SectionRef & { part?: string; nodeId?: string }) | null;
-export type Rail = "add" | "layers" | "media" | "explore" | "forms" | "pages" | "brand";
+/** Rail tabs. Media holds the store library and Explore (stock photos) as its two tabs (owner, F-74). */
+export type Rail = "add" | "layers" | "media" | "forms" | "pages" | "brand";
+/** Media panel tabs: the store library and Explore (stock photos). */
+export type MediaTab = "library" | "explore";
 /** Add panel tabs; Templates opens by itself after a new page is created. */
 export type AddTab = "elements" | "sections" | "templates";
 export type Device = "desktop" | "tablet" | "mobile";
@@ -76,6 +79,8 @@ export type EditorState = {
   saveStatus: SaveStatus;
   rail: Rail;
   addTab: AddTab;
+  /** Media panel tab; selecting an image on the canvas opens Explore. */
+  mediaTab: MediaTab;
   /** Add › Sections is browsing a library category or search results; the panel widens to two columns. */
   libraryWide: boolean;
   inspectorTab: "content" | "style";
@@ -88,7 +93,11 @@ export type EditorState = {
   lastCommit: { key: string; at: number } | null;
   /** A picture hovered in Images/Explore, shown on the selection's image only (never saved, not in history). */
   imagePreview: string | null;
+  /** The header's phone card to open in its Content tab (a click on the canvas's burger or bottom bar; owner, F-74). */
+  chromeFocus: ChromeFocus | null;
 };
+
+export type ChromeFocus = "mobileMenu" | "bottomNav";
 
 /** Edits with the same key within this window are one undo step. */
 const COALESCE_MS = 1000;
@@ -102,6 +111,8 @@ export type EditorActions = {
   undo: () => void;
   redo: () => void;
   select: (selection: Selection) => void;
+  /** Selects the header and opens its Mobile menu or Bottom bar card. */
+  focusChrome: (focus: ChromeFocus) => void;
   setActivePage: (pageId: string) => void;
   setLocale: (locale: SiteLocale) => void;
   setDevice: (device: Device) => void;
@@ -109,6 +120,7 @@ export type EditorActions = {
   setIndustry: (industry: string | undefined) => void;
   setRail: (rail: Rail) => void;
   setAddTab: (tab: EditorState["addTab"]) => void;
+  setMediaTab: (tab: MediaTab) => void;
   setLibraryWide: (value: boolean) => void;
   setInspectorTab: (tab: EditorState["inspectorTab"]) => void;
   setFocusSelected: (value: boolean) => void;
@@ -189,6 +201,7 @@ export function createEditorStore(initial: Pick<EditorState, "pages" | "header" 
       saveStatus: "saved",
       rail: "add",
       addTab: "elements",
+      mediaTab: "library",
       libraryWide: false,
       inspectorTab: "content",
       focusSelected: false,
@@ -196,6 +209,7 @@ export function createEditorStore(initial: Pick<EditorState, "pages" | "header" 
       previewMotion: true,
       lastCommit: null,
       imagePreview: null,
+      chromeFocus: null,
 
       editPage: (pageId, update, coalesceKey) =>
         commit(
@@ -237,13 +251,15 @@ export function createEditorStore(initial: Pick<EditorState, "pages" | "header" 
         set({ ...restore(state, next), future: state.future.slice(1), past: [...state.past, snapshot(state)], lastCommit: null });
       },
 
-      select: (selection) => set({ selection, lastCommit: null, imagePreview: null }),
+      select: (selection) => set({ selection, lastCommit: null, imagePreview: null, chromeFocus: null }),
+      focusChrome: (chromeFocus) => set({ selection: { target: "header" }, lastCommit: null, imagePreview: null, chromeFocus, inspectorTab: "content" }),
       setActivePage: (pageId) => set({ activePageId: pageId, selection: null, imagePreview: null }),
       setLocale: (locale) => set({ locale }),
       setDevice: (device) => set({ device }),
       setIndustry: (industry) => set({ industry }),
       setRail: (rail) => set({ rail }),
       setAddTab: (addTab) => set({ addTab }),
+      setMediaTab: (mediaTab) => set({ mediaTab }),
       setLibraryWide: (libraryWide) => set({ libraryWide }),
       setInspectorTab: (inspectorTab) => set({ inspectorTab }),
       setFocusSelected: (focusSelected) => set({ focusSelected }),

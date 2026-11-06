@@ -1,11 +1,13 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import type { SectionInstance } from "@workspace/store-sections";
+import type { SectionInstance, SiteLocale } from "@workspace/store-sections";
 import { chromeOptionOn, setChromeOption, type ChromeOption, type ChromePart } from "@workspace/store-sections/render";
 import { Label } from "@workspace/ui/components/label";
 import { Switch } from "@workspace/ui/components/switch";
 import { useEditorLinks } from "../adapter.client";
+import type { ChromeFocus, EditorPage } from "../state/editor.store";
+import { BottomNavEditor, MobileMenuEditor } from "./phone-chrome.client";
 
 /**
  * Header and footer options in Content (owner, 2026-10-24): the store logo,
@@ -21,16 +23,25 @@ export function ChromeOptions({
   readOnly,
   translated,
   hasLogo,
+  pages = [],
+  locale = "ar",
+  focus = null,
 }: {
   instance: SectionInstance;
   part: ChromePart;
-  onChange: (update: (instance: SectionInstance) => SectionInstance) => void;
+  onChange: (update: (instance: SectionInstance) => SectionInstance, coalesceKey?: string) => void;
   storeId: string;
   readOnly: boolean;
   /** The store has more than one language. */
   translated: boolean;
   /** The store uploaded a logo (Website › Design). */
   hasLogo: boolean;
+  /** The site's pages (the phone menu and bottom bar can link them). */
+  pages?: readonly EditorPage[];
+  /** The language being edited (names in the phone menu). */
+  locale?: SiteLocale;
+  /** A phone card the seller opened from the canvas. */
+  focus?: ChromeFocus | null;
 }) {
   const t = useTranslations("storeEditor.sidebar.chrome");
   const designHref = useEditorLinks(storeId).design;
@@ -46,6 +57,7 @@ export function ChromeOptions({
   ];
 
   return (
+    <>
     <fieldset disabled={readOnly} className="mb-4 space-y-3 rounded-md border p-3">
       <legend className="px-1 text-xs font-medium text-muted-foreground">{t(part === "header" ? "header" : "footer")}</legend>
       {options.map(({ option, hint, disabled }) => {
@@ -78,5 +90,13 @@ export function ChromeOptions({
         );
       })}
     </fieldset>
+    {part === "header" && (
+      // The phone menu sheet and bottom bar (F-74); a click on either on the canvas opens its card.
+      <fieldset disabled={readOnly} className="contents">
+        <MobileMenuEditor instance={instance} onChange={onChange} pages={pages} locale={locale} focused={focus === "mobileMenu"} />
+        <BottomNavEditor instance={instance} onChange={onChange} pages={pages} locale={locale} focused={focus === "bottomNav"} enabled={on("bottomNav")} />
+      </fieldset>
+    )}
+    </>
   );
 }
