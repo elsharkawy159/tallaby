@@ -6,6 +6,7 @@ export * from "./seller-view.server";
 export * from "./top-ups.server";
 export * from "./app-requests-admin.server";
 export * from "./theme-requests-admin.server";
+export * from "./account-deletions-admin.server";
 export * from "./wallet-view.server";
 export * from "./billing-admin.server";
 export * from "./coupons-admin.server";

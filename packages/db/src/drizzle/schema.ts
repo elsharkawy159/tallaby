@@ -3203,6 +3203,37 @@ export const themeRequests = pgTable("theme_requests", {
 	check("theme_requests_content_check", sql`reference_url IS NOT NULL OR coalesce(cardinality(image_paths), 0) > 0 OR (description IS NOT NULL AND char_length(btrim(description)) > 0)`),
 ]);
 
+/** Account deletion requests (0157, ROADMAP.md F-82): server-only, RLS on, no policies. */
+export const accountDeletionRequests = pgTable("account_deletion_requests", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	/** Null once the user is deleted: the row stays as the record of a completed request. */
+	userId: uuid("user_id").references(() => users.id, { onDelete: "set null" }),
+	/** Snapshots taken when the request was made. */
+	email: text(),
+	displayName: text("display_name"),
+	reason: text(),
+	/** dashboard | android_app */
+	source: text().default('dashboard').notNull(),
+	/** pending | completed | cancelled | declined */
+	status: text().default('pending').notNull(),
+	adminNote: text("admin_note"),
+	handledBy: uuid("handled_by").references(() => users.id, { onDelete: "set null" }),
+	handledAt: timestamp("handled_at", { withTimezone: true, mode: 'string' }),
+	cancelledAt: timestamp("cancelled_at", { withTimezone: true, mode: 'string' }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex("account_deletion_requests_one_pending_idx").using("btree", table.userId).where(sql`status = 'pending'`),
+	index("account_deletion_requests_status_created_idx").using("btree", table.status, table.createdAt.desc()),
+	index("account_deletion_requests_user_idx").using("btree", table.userId, table.createdAt.desc()).where(sql`user_id IS NOT NULL`),
+	check("account_deletion_requests_email_check", sql`email IS NULL OR char_length(email) <= 320`),
+	check("account_deletion_requests_display_name_check", sql`display_name IS NULL OR char_length(display_name) <= 200`),
+	check("account_deletion_requests_reason_check", sql`reason IS NULL OR char_length(reason) <= 1000`),
+	check("account_deletion_requests_source_check", sql`source IN ('dashboard', 'android_app')`),
+	check("account_deletion_requests_status_check", sql`status IN ('pending', 'completed', 'cancelled', 'declined')`),
+	check("account_deletion_requests_admin_note_check", sql`admin_note IS NULL OR char_length(admin_note) <= 1000`),
+]);
+
 export const storeAppInstalls = pgTable("store_app_installs", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	sellerId: uuid("seller_id").notNull().references(() => sellers.id, { onDelete: "cascade" }),

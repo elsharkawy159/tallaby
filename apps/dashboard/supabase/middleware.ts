@@ -56,6 +56,8 @@ export async function updateSession(request: NextRequest) {
     path === "/signup" ||
     path.startsWith("/signup/") ||
     path === "/roadmap" ||
+    // How to delete an account (F-82): the Google Play listing links here, so it opens signed out.
+    path === "/account-deletion" ||
     path.startsWith("/.well-known/");
   if (!user && !isPublic) {
     const login = new URL("/login", request.url);

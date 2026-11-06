@@ -24,6 +24,8 @@ export const ADMIN_NOTIFICATION_TYPES = [
   "app_requested",
   // A seller asked for a theme from Website › Templates (0156, F-77)
   "theme_requested",
+  // A seller asked for their account to be deleted (0157, F-82)
+  "account_deletion_requested",
 ] as const;
 export type AdminNotificationType = (typeof ADMIN_NOTIFICATION_TYPES)[number];
 
@@ -142,6 +144,10 @@ export function adminNotificationHref(
     case "theme_requested": {
       const requestId = dataString(data, "requestId");
       return requestId ? `/theme-requests/${encodeURIComponent(requestId)}` : "/theme-requests";
+    }
+    case "account_deletion_requested": {
+      const requestId = dataString(data, "requestId");
+      return requestId ? `/account-deletions/${encodeURIComponent(requestId)}` : "/account-deletions";
     }
     default:
       return null;

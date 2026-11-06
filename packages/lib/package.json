@@ -222,6 +222,14 @@
       "types": "./src/push/server.ts",
       "default": "./src/push/server.ts"
     },
+    "./account-deletion": {
+      "types": "./src/account-deletion/index.ts",
+      "default": "./src/account-deletion/index.ts"
+    },
+    "./account-deletion/server": {
+      "types": "./src/account-deletion/server.ts",
+      "default": "./src/account-deletion/server.ts"
+    },
     "./theme-requests": {
       "types": "./src/theme-requests/index.ts",
       "default": "./src/theme-requests/index.ts"

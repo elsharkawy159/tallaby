@@ -7917,5 +7917,63 @@
       "save": "Save changes",
       "discard": "Discard"
     }
+  },
+  "accountDeletion": {
+    "title": "Delete my account",
+    "description": "Ask us to delete your Tallaby account and everything in it. We do it within {days} days, and you can cancel until then.",
+    "pendingBadge": "Requested",
+    "pendingNote": "You asked to delete your account on {date}. We'll delete it by {due}. Your stores keep working until then.",
+    "cancel": "Cancel the request",
+    "declinedNote": "Our team couldn't complete your last request:",
+    "whatGoes": {
+      "stores": "All your stores, websites, products, orders, customers and settings are deleted.",
+      "data": "Your login, profile and uploaded files are deleted.",
+      "wallet": "Settle your store wallet and finish open orders first. Money left in the wallet can't be recovered after deletion.",
+      "final": "Deletion can't be undone."
+    },
+    "reasonLabel": "Why are you leaving?",
+    "reasonHint": "Optional",
+    "reasonPlaceholder": "Your answer helps us improve Tallaby.",
+    "confirmLabel": "I understand that my account, stores and data will be deleted for good.",
+    "submit": "Request deletion",
+    "keep": "Keep my account",
+    "start": "Delete my account",
+    "learnMore": "What gets deleted?",
+    "requested": "Request sent. We'll delete your account within 30 days.",
+    "cancelled": "Request cancelled. Your account stays.",
+    "errors": {
+      "invalidInput": "Tick the box to confirm, and keep the reason under 1000 characters.",
+      "alreadyPending": "You already have a request waiting.",
+      "notFound": "There's no request to cancel.",
+      "forbidden": "You can't do this from this account.",
+      "generic": "Something went wrong. Try again."
+    },
+    "page": {
+      "metaTitle": "Delete your Tallaby account",
+      "metaDescription": "How to ask Tallaby to delete your seller account and data, what is deleted and what is kept.",
+      "title": "Delete your Tallaby account",
+      "intro": "You can ask us to delete your Tallaby seller account and its data at any time. We delete it within {days} days of your request.",
+      "how": {
+        "title": "How to ask",
+        "app": "Sign in to the Tallaby dashboard or the Tallaby Seller app, open Settings, then tap \"Delete my account\".",
+        "appLink": "Open Settings",
+        "email": "Can't sign in? Email us from the address on your account:",
+        "cancel": "You can cancel the request from the same place any time before it's done ({days} days)."
+      },
+      "deleted": {
+        "title": "What we delete",
+        "account": "Your account: login, name, email, phone and profile.",
+        "stores": "All your stores, websites, products, categories, coupons and settings.",
+        "orders": "Your stores' orders, customers, reviews and messages.",
+        "files": "Photos, logos and documents you uploaded."
+      },
+      "kept": {
+        "title": "What we keep",
+        "request": "A short record of your request (email, date and status) to show it was done.",
+        "backups": "Copies in our backups are removed when those backups expire.",
+        "wallet": "Money left in a store wallet can't be paid out after deletion, so settle it first."
+      },
+      "privacy": "Privacy policy"
+    }
   }
 }
