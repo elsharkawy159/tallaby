@@ -39,12 +39,28 @@ import { useDemoSteps, useTyped } from "./use-demo.client";
 /** idle, pick up, drag, drop, select hero and type, change colour, publish, hold. */
 const STEPS = [1000, 900, 700, 1400, 1900, 1300, 1200, 3200] as const;
 const FINAL = STEPS.length - 1;
-const COLORS = ["#2a2420", "#7a3b2e", "#1f3a5f", "#5b6b4a"];
+const COLORS = ["#1f3d3a", "#b4532a", "#2a2420", "#5b6b4a"];
+
+/** A Pexels photo (the host is allowed in next.config `images.remotePatterns`). */
+const pexels = (id: number, width: number) => `https://images.pexels.com/photos/${id}/pexels-photo-${id}.jpeg?auto=compress&cs=tinysrgb&w=${width}`;
+
+/**
+ * One home-decor store, nine different photos (no people, no logos), none
+ * shared with the hero or AI demos (they use the local /cosmetics.jpg and
+ * /accessories.jpg). Taken from the approved furniture templates.
+ */
+const HERO_IMAGE = pexels(2079246, 1200);
+const CATEGORIES = [
+  { name: "Living", image: pexels(17168851, 400), position: "center 60%" },
+  { name: "Lighting", image: pexels(16433482, 400), position: "center 45%" },
+  { name: "Chairs", image: pexels(29350087, 400), position: "center 60%" },
+  { name: "Decor", image: pexels(27180805, 400), position: "center 55%" },
+];
 const PRODUCTS = [
-  { position: "15% 30%", name: "Linen shirt", price: "890" },
-  { position: "60% 60%", name: "Wide trousers", price: "1,150" },
-  { position: "90% 40%", name: "Knit set", price: "1,400" },
-  { position: "40% 20%", name: "Overshirt", price: "990" },
+  { image: pexels(6053887, 500), position: "center 35%", name: "Brass table lamp", price: "2,600", was: "2,950" },
+  { image: pexels(33126633, 500), position: "center 60%", name: "Sand jug vases", price: "950" },
+  { image: pexels(32710106, 500), position: "35% 60%", name: "Walnut armchair", price: "11,500" },
+  { image: pexels(7607461, 500), position: "center 45%", name: "Oak coffee table", price: "5,900" },
 ];
 const LIBRARY = [
   { key: "hero", rows: [[1, 1], [2]] },
@@ -69,8 +85,8 @@ export function BuilderDemo() {
   const dropped = step >= 3;
   const heroSelected = step === 4 || step === 5;
   const accent = step >= 5 ? COLORS[1]! : COLORS[0]!;
-  const heading = useTyped("Summer linen edit", step < 4 ? "hidden" : step === 4 ? "typing" : "done", 70);
-  const headingText = heading || "The new season edit";
+  const heading = useTyped("Calm corners for home", step < 4 ? "hidden" : step === 4 ? "typing" : "done", 70);
+  const headingText = heading || "Made for living rooms";
   const saving = step === 3 || step === 5;
   const published = step >= 6;
 
@@ -97,7 +113,7 @@ export function BuilderDemo() {
             <ChevronsUpDown className="size-[13px] opacity-60" />
           </span>
           <span dir="ltr" className="hidden items-center gap-1 font-latin text-xs font-medium whitespace-nowrap text-[#808080] min-[1081px]:flex">
-            glow.tallaby.com <ExternalLink className="size-[13px]" />
+            dar.tallaby.com <ExternalLink className="size-[13px]" />
           </span>
         </div>
         <div className="hidden rounded-[11px] border border-[#e7e9e8] bg-[#f4f5f5] p-[3px] min-[641px]:flex">
@@ -195,50 +211,85 @@ export function BuilderDemo() {
         </aside>
 
         <div className="relative overflow-hidden bg-[#eef0ef] bg-[radial-gradient(#d9dedd_1px,transparent_1px)] bg-[length:14px_14px] p-3 min-[641px]:px-[18px] min-[641px]:pt-4 min-[641px]:pb-[18px]">
-          <div dir="ltr" className="mx-auto max-w-[600px] overflow-hidden rounded-[14px] bg-[#f4efe8] font-latin shadow-[0_10px_30px_rgba(13,55,67,0.1)]">
-            <div className="p-1.5 text-center text-[8.5px] font-semibold tracking-[0.08em] text-[#f4efe8] transition-colors duration-300" style={{ background: accent }}>
+          <div dir="ltr" className="mx-auto max-w-[600px] overflow-hidden rounded-[14px] bg-[#f7f3ee] font-latin text-[#2a2420] shadow-[0_10px_30px_rgba(13,55,67,0.1)]">
+            <div className="p-1.5 text-center text-[8.5px] font-semibold tracking-[0.08em] text-[#f7f3ee] transition-colors duration-300" style={{ background: accent }}>
               Free delivery across Egypt on orders over 1,500 EGP
             </div>
-            <div className="grid grid-cols-[1fr_auto_1fr] items-center border-b border-[#2a2420]/10 px-4 py-3 text-[#2a2420]">
-              <span className="flex gap-3 text-[9px] font-semibold tracking-[0.08em] uppercase"><span>New in</span><span>Women</span><span className="hidden min-[861px]:inline">Men</span></span>
-              <b className="text-[15px] font-extrabold tracking-[0.32em]">ATELIER</b>
-              <span className="flex justify-end gap-3 text-[9px] font-semibold tracking-[0.08em] uppercase"><span>Bag (0)</span></span>
+            <div className="grid grid-cols-[1fr_auto_1fr] items-center bg-white px-4 py-2.5">
+              <span className="flex gap-3 text-[9px] font-semibold tracking-[0.06em] text-[#2a2420]/75">
+                <span>Living</span>
+                <span>Lighting</span>
+                <span className="hidden min-[861px]:inline">Decor</span>
+              </span>
+              <b className="flex items-center gap-1.5 text-[14px] font-extrabold tracking-[0.28em]">
+                <i className="block size-2 rounded-full transition-colors duration-300" style={{ background: accent }} />
+                DAR
+              </b>
+              <span className="flex items-center justify-end gap-2.5 text-[9px] font-semibold">
+                <Search className="size-3 opacity-70" />
+                <span className="rounded-full bg-[#2a2420] px-2 py-[3px] text-white">Bag · 2</span>
+              </span>
             </div>
             <CanvasSection selected={heroSelected} label="Hero">
-              <div className="relative h-[190px] overflow-hidden min-[861px]:h-[230px]">
-                <Image src="/fashion.png" alt="" fill sizes="600px" className="object-cover" style={{ objectPosition: "center 30%" }} />
-                <div className="absolute inset-0 bg-gradient-to-r from-[#140e0a]/60 to-[#140e0a]/10" />
-                <div className="relative z-[1] flex h-full flex-col items-start justify-end gap-2 p-5 text-white">
-                  <small className="text-[8.5px] font-semibold tracking-[0.16em] uppercase opacity-85">SS26 · Made in Cairo</small>
-                  <b className="text-[26px] leading-[1.05] font-extrabold">{headingText}</b>
-                  <em className="bg-[#f4efe8] px-3.5 py-[7px] text-[9px] font-bold tracking-[0.08em] uppercase not-italic transition-colors duration-300" style={{ color: accent }}>
-                    Shop the collection
-                  </em>
+              <div className="px-3 pt-3">
+                <div className="relative h-[172px] overflow-hidden rounded-[10px] min-[861px]:h-[204px]">
+                  <Image src={HERO_IMAGE} alt="" fill sizes="(max-width: 640px) 100vw, 600px" className="object-cover" style={{ objectPosition: "center 55%" }} />
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#1b1410]/75 via-[#1b1410]/35 to-transparent" />
+                  <div className="relative z-[1] flex h-full max-w-[72%] flex-col items-start justify-end gap-1.5 p-4 text-white min-[861px]:p-5">
+                    <small className="rounded-full bg-white/15 px-2 py-[3px] text-[8px] font-semibold tracking-[0.14em] uppercase backdrop-blur-sm">New season · Made in Egypt</small>
+                    <b className="text-[21px] leading-[1.08] font-extrabold min-[861px]:text-[25px]">{headingText}</b>
+                    <span className="text-[9px] leading-[1.4] opacity-85">Lamps, chairs and handmade pieces for a calmer home.</span>
+                    <span className="mt-1 flex items-center gap-2.5">
+                      <em className="rounded-full bg-white px-3.5 py-[6px] text-[9px] font-bold not-italic transition-colors duration-300" style={{ color: accent }}>
+                        Shop the collection
+                      </em>
+                      <span className="text-[9px] font-semibold underline underline-offset-2">Our story</span>
+                    </span>
+                  </div>
                 </div>
               </div>
             </CanvasSection>
-            <div className="grid grid-cols-4 gap-2.5 p-4 text-[#2a2420]">
+            <div className="grid grid-cols-4 gap-2 px-3 pt-3.5">
+              <b className="col-span-full text-[11px] font-extrabold">Shop by room</b>
+              {CATEGORIES.map((c) => (
+                <span key={c.name} className="relative block h-[46px] overflow-hidden rounded-[8px] min-[861px]:h-[54px]">
+                  <Image src={c.image} alt="" fill sizes="140px" className="object-cover" style={{ objectPosition: c.position }} />
+                  <span className="absolute inset-0 bg-gradient-to-t from-[#1b1410]/65 to-transparent" />
+                  <span className="absolute start-2 bottom-1.5 text-[9px] font-bold text-white">{c.name}</span>
+                </span>
+              ))}
+            </div>
+            <div className="grid grid-cols-4 gap-2 px-3 pt-3.5 pb-3.5">
               <div className="col-span-full flex items-baseline justify-between">
-                <b className="text-xs font-extrabold tracking-[0.1em] uppercase">New arrivals</b>
-                <u className="text-[9px]">View all</u>
+                <b className="text-[11px] font-extrabold">New arrivals</b>
+                <span className="text-[9px] font-semibold opacity-70">View all →</span>
               </div>
               {PRODUCTS.map((p) => (
-                <div key={p.name} className="text-[9px] leading-[1.45] font-semibold">
-                  <span className="relative mb-1.5 block aspect-[3/4] overflow-hidden bg-[#e8e0d6]">
-                    <Image src="/fashion.png" alt="" fill sizes="130px" className="object-cover" style={{ objectPosition: p.position }} />
+                <div key={p.name} className="overflow-hidden rounded-[8px] bg-white text-[9px] leading-[1.4] shadow-[0_1px_2px_rgba(42,36,32,0.06)]">
+                  <span className="relative block aspect-[4/5] overflow-hidden bg-[#ebe4da]">
+                    <Image src={p.image} alt="" fill sizes="140px" className="object-cover" style={{ objectPosition: p.position }} />
+                    {p.was ? (
+                      <i className="absolute start-1.5 top-1.5 rounded-full px-1.5 py-px text-[7.5px] font-bold text-white not-italic transition-colors duration-300" style={{ background: accent }}>
+                        −12%
+                      </i>
+                    ) : null}
                   </span>
-                  {p.name}
-                  <br />
-                  <i className="font-medium not-italic opacity-70">{p.price} EGP</i>
+                  <span className="block px-1.5 pt-1 pb-1.5">
+                    <span className="block truncate font-semibold">{p.name}</span>
+                    <span className="flex items-baseline gap-1">
+                      <b className="font-extrabold">{p.price} EGP</b>
+                      {p.was ? <s className="hidden text-[8px] opacity-50 min-[861px]:inline">{p.was}</s> : null}
+                    </span>
+                  </span>
                 </div>
               ))}
             </div>
-            <div className={cn("mx-4 h-[3px] origin-center rounded-[3px] bg-amber-600 transition-transform duration-200", step === 2 ? "scale-x-100" : "scale-x-0")} />
+            <div className={cn("mx-3 h-[3px] origin-center rounded-[3px] bg-amber-600 transition-transform duration-200", step === 2 ? "scale-x-100" : "scale-x-0")} />
             {dropped ? (
               <CanvasSection selected={step === 3} label="Reviews">
-                <div className="grid grid-cols-3 gap-2 px-4 pt-1 pb-4">
-                  {["The linen is so soft, fits true to size.", "Arrived in two days to Alex.", "Beautiful packaging and cut."].map((text) => (
-                    <div key={text} className="border border-[#2a2420]/10 p-[9px] text-[8.5px] leading-[1.45] text-[#4a403a]">
+                <div className="grid grid-cols-3 gap-2 px-3 pt-1 pb-3.5">
+                  {["The lamp light is so warm, just like the photos.", "Arrived in two days to Alex, packed with care.", "The vases look even better in person."].map((text) => (
+                    <div key={text} className="rounded-[8px] bg-white p-[9px] text-[8.5px] leading-[1.45] text-[#4a403a] shadow-[0_1px_2px_rgba(42,36,32,0.06)]">
                       <b className="mb-[3px] block text-[9px] tracking-[0.1em] transition-colors duration-300" style={{ color: accent }}>★★★★★</b>
                       {text}
                     </div>
