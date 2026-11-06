@@ -27,7 +27,7 @@ export function siteGraph() {
           "@type": "ContactPoint",
           contactType: "customer support",
           email: CONTACT.email,
-          telephone: `+20${CONTACT.phone.replace(/^0/, "")}`,
+          telephone: CONTACT.phoneTel,
           areaServed: "EG",
           availableLanguage: ["ar", "en"],
         },

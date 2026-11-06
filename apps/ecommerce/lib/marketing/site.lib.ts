@@ -14,6 +14,8 @@ const SUPPORT_WHATSAPP_USERNAME = "tallaby";
 export const CONTACT = {
   email: "omar@tallaby.com",
   phone: "01003272830",
+  /** International form for tel: links, so the number also dials from a non-Egyptian SIM. */
+  phoneTel: "+201003272830",
   whatsapp: `https://wa.me/${hasWhatsAppNumber ? SUPPORT_WHATSAPP : SUPPORT_WHATSAPP_USERNAME}`,
   whatsappHandle: hasWhatsAppNumber
     ? `+${SUPPORT_WHATSAPP}`
@@ -90,7 +92,7 @@ export const SOCIAL_LINKS: Record<
     label: "Pinterest",
   },
   threads: {
-    href: "https://www.threads.net/@usetallaby",
+    href: "https://www.threads.com/@usetallaby",
     handle: "@usetallaby",
     label: "Threads",
   },

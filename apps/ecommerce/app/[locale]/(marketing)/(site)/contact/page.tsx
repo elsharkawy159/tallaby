@@ -24,7 +24,7 @@ export default async function ContactPage() {
       ? [{ href: CONTACT.whatsapp, icon: MessageCircle, title: t("whatsapp"), body: t("whatsappBody"), value: CONTACT.whatsappHandle, highlight: true, ltr: true }]
       : []),
     { href: `mailto:${CONTACT.email}`, icon: Mail, title: t("email"), body: t("emailBody"), value: CONTACT.email, highlight: !CONTACT.whatsapp, ltr: false },
-    { href: `tel:${CONTACT.phone}`, icon: Phone, title: t("phone"), body: t("phoneBody"), value: CONTACT.phone, highlight: false, ltr: true },
+    { href: `tel:${CONTACT.phoneTel}`, icon: Phone, title: t("phone"), body: t("phoneBody"), value: CONTACT.phone, highlight: false, ltr: true },
   ];
 
   return (

@@ -2,7 +2,7 @@ export const TALLABY_SOCIAL_LINKS = {
   facebook: "https://www.facebook.com/usetallaby",
   instagram: "https://www.instagram.com/usetallaby",
   x: "https://x.com/usetallaby",
-  threads: "https://www.threads.net/@usetallaby",
+  threads: "https://www.threads.com/@usetallaby",
   linkedin: "https://www.linkedin.com/company/tallaby",
   tiktok: "https://www.tiktok.com/@tallaby_",
   youtube: "https://www.youtube.com/@usetallaby",

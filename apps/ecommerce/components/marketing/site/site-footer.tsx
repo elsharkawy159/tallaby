@@ -86,7 +86,7 @@ export async function SiteFooter() {
               </li>
               <li className="flex items-center gap-2.5">
                 <Phone aria-hidden />
-                <a href={`tel:${CONTACT.phone}`} dir="ltr" className={`font-latin tabular-nums ${link} ${tap}`}>
+                <a href={`tel:${CONTACT.phoneTel}`} dir="ltr" className={`font-latin tabular-nums ${link} ${tap}`}>
                   {CONTACT.phone}
                 </a>
               </li>
