@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
-import { Bell, BellOff, BellRing, Check, CheckCheck, Settings2, X } from "lucide-react";
+import { Bell, BellOff, Check, CheckCheck, Settings2, X } from "lucide-react";
 import { AnchoredSheet, IconButton, IconTile } from "@/components/seller-ui";
 import {
   notificationText,
@@ -89,21 +89,8 @@ function useSellerNotificationFeed() {
 export function NotificationBell() {
   const t = useTranslations("notifications");
   const { feed, setFeed, refresh } = useSellerNotificationFeed();
-  const tPush = useTranslations("pushAlerts");
   const [open, setOpen] = useState(false);
   const unread = feed?.unreadCount ?? 0;
-  // Phone alerts prompt (F-06): only while this browser can push and was never asked.
-  const [canAskPush, setCanAskPush] = useState(false);
-  useEffect(() => {
-    if (!open) return;
-    setCanAskPush(
-      "serviceWorker" in navigator &&
-        "PushManager" in window &&
-        "Notification" in window &&
-        Notification.permission === "default",
-    );
-  }, [open]);
-
   const markRead = useCallback(
     async (ids?: string[]) => {
       // Optimistic: the list updates now, the refetch settles the count.
@@ -202,16 +189,6 @@ export function NotificationBell() {
           ))
         )}
       </div>
-      {canAskPush && (
-        <Link
-          href="/settings#push-alerts"
-          onClick={() => setOpen(false)}
-          className="flex shrink-0 items-center gap-2 border-t border-(--s-line-soft) bg-(--s-surface-2) px-[18px] py-2.5 text-xs font-bold text-(--s-link) no-underline transition-colors duration-150 hover:bg-(--s-hover)"
-        >
-          <BellRing aria-hidden className="size-3.5" />
-          {tPush("bellPrompt")}
-        </Link>
-      )}
     </AnchoredSheet>
   );
 }

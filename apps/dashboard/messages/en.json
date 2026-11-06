@@ -6580,7 +6580,6 @@
   "pushAlerts": {
     "title": "Phone alerts",
     "description": "Get a notification on this phone or computer for every new order and every update, even when the dashboard is closed.",
-    "bellPrompt": "Get your notifications on your phone",
     "checking": "Checking this browser…",
     "unsupported": "This browser can't show alerts. Try Chrome, Edge, Firefox or Safari, or install the dashboard as an app.",
     "iosHint": "On iPhone and iPad, alerts work only in the installed app (iOS 16.4 or later). In Safari tap Share, then \"Add to Home Screen\", open Tallaby from your home screen and turn alerts on there.",
