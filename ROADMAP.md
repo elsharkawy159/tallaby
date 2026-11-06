@@ -1171,12 +1171,14 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 ### F-82 Seller app on Google Play (Trusted Web Activity) — P1 · owner request
 
 **Why:** Sellers want a real app from Google Play to manage orders on their phone. A Trusted Web Activity wraps the live dashboard, so the app reuses all dashboard code and updates with every web deploy (owner, 2026-11-06: "No problem if we go with android google play application first").
-**What:** Real-size and maskable icons in the manifest, `/.well-known/assetlinks.json` filled from `ANDROID_APP_PACKAGE` and `ANDROID_APP_SHA256_FINGERPRINTS`, then a PWABuilder or Bubblewrap package `com.tallaby.seller` uploaded to Play. Steps in `docs/android-app.md`. iOS (Capacitor with native push) comes later.
-**Status:** [In progress] Repo side built (2026-11-06); packaging and the Play listing are the owner's.
+**What:** Full plan in `docs/google-play-plan.md`. Repo side: real-size and maskable manifest icons, `/.well-known/assetlinks.json` from `ANDROID_APP_PACKAGE` / `ANDROID_APP_SHA256_FINGERPRINTS`, account deletion requests (Google Play requires them for apps with sign-up: Settings card, public `/account-deletion` page, Admin › Account deletions, migration 0157), Bubblewrap config in `apps/android/`, listing copy and graphics in `docs/google-play/`, a screenshot script. Owner side: Play Console account, package `com.tallaby.seller`, env vars, listing, review. iOS (Capacitor with native push) comes later.
+**Status:** [In progress] Repo side built on branch `claude/talabi-mobile-app-strategy-9i9xy1` (2026-11-06), not merged or deployed, 0157 not applied; waiting for owner review.
 
 - **F-82a · P1 · deps: none** Manifest icons (192, 512, maskable) and the env-driven Digital Asset Links route; `docs/android-app.md`.
-- **F-82b · P1 · deps: F-82a deployed** Owner: Play Console account, package with PWABuilder/Bubblewrap, set the two env vars with both fingerprints, internal test.
-- **F-82c · P1 · deps: F-82b** Store listing (Arabic + English, screenshots, data safety, reviewer demo login), closed test if needed, production release.
+- **F-82b · P1 · deps: none** Account deletion requests: 0157, Settings › Delete my account, public `/account-deletion`, Admin › Account deletions (the user is still deleted by hand in Supabase until the owner decides on wallet balance and open orders).
+- **F-82c · P1 · deps: none** `apps/android/` Bubblewrap config + README, `docs/google-play/listing.md` (ar/en copy, data safety, content rating, reviewer notes), feature graphic, screenshot script.
+- **F-82d · P1 · deps: F-82a–c merged, 0157 applied** Owner: Play Console account, demo reviewer account, package with PWABuilder/Bubblewrap, set the two env vars with both fingerprints, internal test.
+- **F-82e · P1 · deps: F-82d** Owner: store listing, closed test if the account is personal, production release.
 
 ---
 
@@ -1186,6 +1188,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 | Date       | Request (owner's words)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Feature ID                                                                                       | Status                                                                                             |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| 2026-11-06 | "make a full plan .md file and start work on it without pushing to live, just commit everything in one branch and I review later, make everything ready" | F-82 | Repo side built on `claude/talabi-mobile-app-strategy-9i9xy1`, waiting for owner review (`docs/google-play-plan.md`) |
 | 2026-11-06 | "I need the easiest way to make a mobile application for App Store and Google Play using my current dashboard code" Then: "How to do that? turn the PWA into a Google Play app with a Trusted Web Activity (PWABuilder or Bubblewrap) … No problem if we go with android google play application first" | F-82 | Repo side built, Play packaging is the owner's (`docs/android-app.md`) |
 | 2026-11-06 | "Update /roadmap page with our latest updates and check this page https://roadmap.easyorders.ai/ar use as a reference to update our roadmap, check what's not on our website and that has many votes on the easyorders roadmap to include into our road map" | F-80, F-81, /roadmap cards | Cards prepared (`packages/db/scripts/roadmap-cards-2026-11-06.sql`), production write waits for owner approval |
 | 2026-11-06 | "I see the Dashboard pnpm build result all pages are Dynamic, which is not the best for the dashboard performance. Can you debug and search to see what is the shared component that makes all pages dynamic while it should be static by default?" Then: "just keep it in the ROADMAP.md and we'll work on it later to make all dashboard pages static with good revalidate" | F-79 | Planned (root-layout `getSiteData` move done) |
@@ -1545,12 +1548,24 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [ ] F-80b Reorder options and values in the product form
 - [ ] F-81a AI photo clean-up: cost study + design note (owner)
 - [x] F-82a Manifest icons + Digital Asset Links route + `docs/android-app.md` (2026-11-06; branch `claude/talabi-mobile-app-strategy-9i9xy1`)
-- [ ] F-82b Package the TWA, set `ANDROID_APP_*` env, internal test (owner)
-- [ ] F-82c Play listing and production release (owner)
+- [x] F-82b Account deletion requests: 0157 (not applied), Settings card, public page, Admin (2026-11-06; same branch; no browser test)
+- [x] F-82c `apps/android/` config, listing copy, feature graphic, screenshot script (2026-11-06; same branch)
+- [ ] F-82d Play account, package the TWA, set `ANDROID_APP_*` env, internal test (owner)
+- [ ] F-82e Play listing and production release (owner)
 
 ---
 
 ## 7. Log
+
+### 2026-11-06 — Google Play app: full plan and everything the repo needs (F-82b, F-82c, owner request, §5)
+
+- **Plan:** `docs/google-play-plan.md` (phases, owner steps, open questions: Play account type, app name, wallet balance and open orders on deletion, support email).
+- **0157** `account_deletion_requests` (**not applied anywhere**): server-only, `user_id` SET NULL so the record survives the deleted user, email/name snapshots, one pending request per user, admin bell `account_deletion_requested`. Checked on a throwaway Postgres 16: runs twice cleanly, the second pending insert is refused, the bell row is written, the row survives the user's delete.
+- **Dashboard:** Settings › "Delete my account" (reason, checkbox, cancel, shows the team's note on a decline; hidden if 0157 is missing) and the public `/account-deletion` page (allowed signed out in `supabase/middleware.ts`), strings in `ar.json`/`en.json`.
+- **Admin:** Account deletions list (pending count in the sidebar, Overdue badge after 30 days) and detail with stores, open orders and wallet balance to check first. Marking completed never deletes anything: the user is deleted by hand in Supabase (0134 cascades). Audit action `update_account_deletion_request`.
+- **`apps/android/`:** `twa-manifest.json` (passes `@bubblewrap/core` 1.27.0 validation), README with PWABuilder values, signing and version steps, `.gitignore` for keys and builds, `scripts/screenshots.mjs` (sign-in selectors checked on the live login page without submitting).
+- **`docs/google-play/`:** listing copy in Arabic and English (live features only, no prices), data safety and content rating answers, reviewer notes; `assets/icon-512.png` and `assets/feature-graphic-1024x500.png`.
+- **Checks:** `@workspace/lib` account-deletion tests (12) pass; dashboard and admin typecheck; no lint errors in the new files. Not done: a browser test of the Settings card, the public page and the Admin screens (needs a database with 0157), and an Android build (needs the owner's signing key).
 
 ### 2026-11-06 — Seller app on Google Play, repo side (F-82a, owner request, §5)
 

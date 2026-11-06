@@ -1,0 +1,21 @@
+# Never commit the signing key or its passwords (docs/google-play-plan.md step 8).
+*.keystore
+*.jks
+signing-key-info.txt
+# Bubblewrap output: the generated Android project and builds.
+app/
+build/
+gradle/
+.gradle/
+*.aab
+*.apk
+*.idsig
+gradle.properties
+gradlew
+gradlew.bat
+settings.gradle
+build.gradle
+local.properties
+manifest-checksum.txt
+# Screenshot output
+screenshots/

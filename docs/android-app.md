@@ -1,6 +1,7 @@
 # Tallaby Seller — Google Play app (Trusted Web Activity)
 
-ROADMAP.md F-82. The Android app is a thin shell: a **Trusted Web Activity
+ROADMAP.md F-82. **Step-by-step plan with owner tasks: [`docs/google-play-plan.md`](google-play-plan.md).**
+Build settings: [`apps/android/`](../apps/android/README.md). Listing copy and graphics: [`docs/google-play/`](google-play/listing.md). The Android app is a thin shell: a **Trusted Web Activity
 (TWA)** that opens `https://dashboard.tallaby.com` full screen in the phone's
 Chrome. Every web deploy updates the app at once; a new Play upload is only
 needed to change the icon, name, package or Android version.
@@ -13,7 +14,8 @@ What the repo already gives the app:
 | Icons 192, 512 and a maskable 512 | `apps/dashboard/public/app-icons/` |
 | Service worker (push alerts) | `apps/dashboard/public/sw.js` |
 | Digital Asset Links (removes the browser address bar) | `apps/dashboard/app/.well-known/assetlinks.json/route.ts`, filled from env |
-| Public path (not redirected to login) | `/.well-known/*` in `apps/dashboard/supabase/middleware.ts` |
+| Public path (not redirected to login) | `/.well-known/*` and `/account-deletion` in `apps/dashboard/supabase/middleware.ts` |
+| Account deletion (required by Play) | Settings › Delete my account, public `/account-deletion`, Admin › Account deletions (0157) |
 
 Web push (F-06) keeps working inside a TWA: Chrome shows the notifications
 under the app's name once the seller allows notifications.
@@ -80,7 +82,8 @@ Without this file the app works but shows a Chrome address bar on top, and Play 
 - Category **Business**; contact email; privacy policy URL.
 - **App access**: give reviewers a demo seller login (email + password) with a store that has orders. The dashboard needs a login, so without it the review fails.
 - **Data safety** form: account data (name, email, phone), store and order data, photos the seller uploads; data is encrypted in transit; sellers can delete their account (deleting the auth user deletes everything, migration 0134).
-  Play also asks for an **account deletion URL** for apps with sign-up.
+  Play also asks for an **account deletion URL** for apps with sign-up: `https://dashboard.tallaby.com/account-deletion`
+  (public page; sellers ask from Settings › Delete my account; Admin › Account deletions handles them, migration 0157).
 - Content rating questionnaire, target audience 18+, no ads.
 
 ## Release order

@@ -1,0 +1,56 @@
+{
+  "packageId": "com.tallaby.seller",
+  "host": "dashboard.tallaby.com",
+  "name": "Tallaby Seller",
+  "launcherName": "Tallaby",
+  "display": "standalone",
+  "themeColor": "#145163",
+  "themeColorDark": "#0f172a",
+  "navigationColor": "#145163",
+  "navigationColorDark": "#0f172a",
+  "navigationDividerColor": "#145163",
+  "navigationDividerColorDark": "#0f172a",
+  "backgroundColor": "#ffffff",
+  "enableNotifications": true,
+  "startUrl": "/",
+  "iconUrl": "https://dashboard.tallaby.com/app-icons/icon-512.png",
+  "maskableIconUrl": "https://dashboard.tallaby.com/app-icons/icon-maskable-512.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "./signing.keystore",
+    "alias": "tallaby-seller"
+  },
+  "appVersionName": "1.0.0",
+  "appVersionCode": 1,
+  "shortcuts": [
+    {
+      "name": "Orders",
+      "shortName": "Orders",
+      "url": "/orders",
+      "chosenIconUrl": "https://dashboard.tallaby.com/app-icons/icon-192.png"
+    },
+    {
+      "name": "Products",
+      "shortName": "Products",
+      "url": "/products",
+      "chosenIconUrl": "https://dashboard.tallaby.com/app-icons/icon-192.png"
+    }
+  ],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://dashboard.tallaby.com/manifest.webmanifest",
+  "fallbackType": "customtabs",
+  "features": {},
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "fullScopeUrl": "https://dashboard.tallaby.com/",
+  "minSdkVersion": 21,
+  "orientation": "default",
+  "fingerprints": [],
+  "additionalTrustedOrigins": [],
+  "retainedBundles": [],
+  "appVersion": "1.0.0"
+}
