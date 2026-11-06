@@ -9,14 +9,23 @@ const nextConfig = {
   experimental: {
     // app/global-not-found.tsx: the root layout sits under [locale].
     globalNotFound: true,
-    // Inline the (Tailwind) CSS in <head> instead of 4 render-blocking <link>s: PageSpeed 2026-10-30, est. 490 ms on mobile.
-    inlineCss: true,
+    // inlineCss stays off (2026-11-06). It put ~445 KB of CSS (341 KB Tailwind, 70 KB @font-face) in a
+    // <style> before every <meta> (React writes styles first), so a store product page's og:image sat at
+    // byte ~455,000, past where WhatsApp and other link previews stop reading; the same CSS was also
+    // repeated twice in the RSC payload (2.0 MB of HTML instead of ~0.7 MB). It was on for PageSpeed
+    // (2026-10-30, est. 490 ms on mobile); the stylesheets are cached <link>s again.
+    // inlineCss: true,
     staleTimes: {
       dynamic: 0,
       static: 30,
     },
   },
   poweredByHeader: false,
+  // Link-preview crawlers that read only the HTML get the metadata in <head> (not streamed into <body>).
+  // Next 16.3's default list (next/dist/shared/lib/router/utils/html-bots.js), which this replaces,
+  // plus TelegramBot, Facebot, meta-externalagent, Pinterest, Viber, Snapchat, Embedly, Iframely, Mastodon.
+  htmlLimitedBots:
+    /[\w-]+-Google|Google-[\w-]+|Chrome-Lighthouse|Slurp|DuckDuckBot|baiduspider|yandex|sogou|bitlybot|tumblr|vkShare|quora link preview|redditbot|ia_archiver|Bingbot|BingPreview|applebot|facebookexternalhit|facebookcatalog|Twitterbot|LinkedInBot|Slackbot|Discordbot|WhatsApp|SkypeUriPreview|Yeti|googleweblight|TelegramBot|Facebot|meta-externalagent|Pinterest|Viber|Snapchat|Embedly|Iframely|Mastodon/i,
   // Baseline headers for every host. No X-Frame-Options / frame-ancestors:
   // the dashboard editor and site preview embed storefronts in iframes.
   async headers() {
