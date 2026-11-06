@@ -4756,3 +4756,7 @@ Owner asked to keep only the current version of each template in `template_versi
 ### 2026-11-06 — Storefront LCP: first section loads early (SEO review item 3)
 
 - The page's first section (`SectionRenderer aboveFold`, index 0 in the page's section order) loads its images `eager` with `fetchPriority="high"` (carousels: slide 1 only) and skips reveal-on-scroll, so the hero paints before JS. Lower sections, header and footer are unchanged. No design or migration change. `store-sections` 9,091 tests and `store-editor` 172 pass. To check after a dev-server restart: `curl http://<store>.localhost:3000/ | grep -o '<img[^>]*>' | head -2`.
+
+### 2026-11-06 — 0154 and 0155 applied on staging
+
+- Owner approved. Applied `0154_reserve_glow_subdomain.sql` and `0155_orders_is_test.sql` on staging (`cxqjrwjianxskhzmrkla`), each in its own transaction. Checks: `is_reserved_subdomain('glow')` = true, `'glow-beauty'` = false; `orders.is_test` boolean NOT NULL default false; 85 orders, 0 test. Production: not applied; `0155` must go before the deploy that carries F-76.
