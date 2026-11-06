@@ -99,3 +99,18 @@ function graphemes(text: string): string[] {
   }
   return Array.from(text);
 }
+
+/**
+ * `step`, but changing `delay` ms later: the step whose action is on screen.
+ * The demo cursor heads for a step's target as soon as the step starts and
+ * takes 700ms to get there (DemoCursor), so actions read this instead of
+ * `step` to happen once the cursor has arrived, not before.
+ */
+export function useArrivedStep(step: number, delay = 700): number {
+  const [arrived, setArrived] = React.useState(step);
+  React.useEffect(() => {
+    const id = window.setTimeout(() => setArrived(step), delay);
+    return () => window.clearTimeout(id);
+  }, [step, delay]);
+  return arrived;
+}

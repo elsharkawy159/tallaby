@@ -35,10 +35,10 @@ import { useLocale, useTranslations } from "next-intl";
 import { cn } from "@workspace/ui/lib/utils";
 import { formatNumber } from "@/lib/marketing/pricing.lib";
 import { DemoCursor } from "./demo-cursor";
-import { useDemoSteps, useTyped } from "./use-demo.client";
+import { useArrivedStep, useDemoSteps, useTyped } from "./use-demo.client";
 
 /** idle, pick up, drag, drop, select hero and type, change colour, publish, hold. */
-const STEPS = [1000, 900, 700, 1400, 1900, 1300, 1200, 3200] as const;
+const STEPS = [1000, 1300, 1200, 1400, 2300, 1500, 1500, 3200] as const;
 const FINAL = STEPS.length - 1;
 const COLORS = ["#1f3d3a", "#b4532a", "#2a2420", "#5b6b4a"];
 
@@ -47,8 +47,7 @@ const pexels = (id: number, width: number) => `https://images.pexels.com/photos/
 
 /**
  * One home-decor store, nine different photos (no people, no logos), none
- * shared with the hero or AI demos (they use the local /cosmetics.jpg and
- * /accessories.jpg). Taken from the approved furniture templates.
+ * shared with the hero or AI demos (they show bags). Taken from the approved furniture templates.
  */
 const HERO_IMAGE = pexels(2079246, 1200);
 const CATEGORIES = [
@@ -88,17 +87,21 @@ export function BuilderDemo() {
   const locale = useLocale();
   const ar = locale === "ar";
   const { ref, step } = useDemoSteps<HTMLDivElement>(STEPS, FINAL);
+  // The cursor heads for each step's target when the step starts; what it does
+  // there (pick up, drop, select, recolour, publish) shows once it has arrived.
+  const act = useArrivedStep(step);
 
-  const dropped = step >= 3;
-  const heroSelected = step === 4 || step === 5;
-  const accent = step >= 5 ? COLORS[1]! : COLORS[0]!;
-  const heading = useTyped(s("typedHeading"), step < 4 ? "hidden" : step === 4 ? "typing" : "done", ar ? 85 : 70);
+  const dropped = act >= 3;
+  const heroSelected = act === 4 || act === 5;
+  const accent = act >= 5 ? COLORS[1]! : COLORS[0]!;
+  const heading = useTyped(s("typedHeading"), act < 4 ? "hidden" : act === 4 ? "typing" : "done", ar ? 85 : 70);
   const headingText = heading || s("heading");
   const price = (egp: number) => s("price", { amount: formatNumber(egp) });
   /** Letter spacing pulls Arabic letters apart, so the Latin-only tracking stays on English. */
   const track = (cls: string) => (ar ? "" : cls);
-  const saving = step === 3 || step === 5;
-  const published = step >= 6;
+  const saving = act === 3 || act === 5;
+  const published = act >= 6;
+  const dragging = act === 1 || act === 2;
 
   const rail = [
     { icon: Plus, label: t("rail.add"), on: true },
@@ -107,8 +110,11 @@ export function BuilderDemo() {
     { icon: ImageIcon, label: t("rail.media") },
     { icon: Palette, label: t("rail.brand") },
   ];
+  // Targets as % of the mockup, measured at desktop width (the only width that
+  // shows the cursor): the Reviews tile, the drop line under "New arrivals", the
+  // hero heading, the second button colour (lower in Arabic: taller labels above it), Publish.
   const cursor =
-    step <= 1 ? { x: 16, y: 30 } : step === 2 ? { x: 52, y: 88 } : step === 3 ? { x: 55, y: 70 } : step === 4 ? { x: 45, y: 40 } : step === 5 ? { x: 89, y: 60 } : { x: 95, y: 5 };
+    step === 0 ? { x: 34, y: 58 } : step === 1 ? { x: 18, y: 38 } : step <= 3 ? { x: 52, y: 95 } : step === 4 ? { x: 40, y: 36 } : step === 5 ? { x: 85.8, y: ar ? 48.9 : 42.3 } : { x: 94.5, y: 3.6 };
 
   return (
     <div ref={ref} aria-hidden className="relative mx-auto max-w-[1160px] overflow-hidden rounded-[18px] border border-[#e7e9e8] bg-white text-[12.5px] text-[#333] shadow-[0_16px_44px_rgba(13,55,67,0.08)] min-[641px]:rounded-[20px]">
@@ -202,7 +208,7 @@ export function BuilderDemo() {
                 key={item.key}
                 className={cn(
                   "w-[84px] flex-none rounded-[10px] border border-[#e7e9e8] bg-white p-1.5 text-center text-[11px] transition-[border-color,box-shadow] duration-200 min-[641px]:w-auto",
-                  item.key === "reviews" && (step === 1 || step === 2) && "border-teal-700 shadow-[0_0_0_2px_rgba(20,81,99,0.15)]",
+                  item.key === "reviews" && dragging && "border-teal-700 shadow-[0_0_0_2px_rgba(20,81,99,0.15)]",
                 )}
               >
                 <div className="mb-1 grid h-10 gap-[3px] rounded-md bg-[#f4f6f6] p-[5px]" style={{ gridTemplateRows: `repeat(${item.rows.length},1fr)` }}>
@@ -294,9 +300,9 @@ export function BuilderDemo() {
                 </div>
               ))}
             </div>
-            <div className={cn("mx-3 h-[3px] origin-center rounded-[3px] bg-amber-600 transition-transform duration-200", step === 2 ? "scale-x-100" : "scale-x-0")} />
+            <div className={cn("mx-3 h-[3px] origin-center rounded-[3px] bg-amber-600 transition-transform duration-200", act === 2 ? "scale-x-100" : "scale-x-0")} />
             {dropped ? (
-              <CanvasSection selected={step === 3} label={t("library.reviews")}>
+              <CanvasSection selected={act === 3} label={t("library.reviews")}>
                 <div className="grid grid-cols-3 gap-2 px-3 pt-1 pb-3.5">
                   {REVIEWS.map((key) => (
                     <div key={key} className="rounded-[8px] bg-white p-[9px] text-[8.5px] leading-[1.45] text-[#4a403a] shadow-[0_1px_2px_rgba(42,36,32,0.06)]">
@@ -309,15 +315,6 @@ export function BuilderDemo() {
               </CanvasSection>
             ) : null}
           </div>
-          {step === 1 || step === 2 ? (
-            <span
-              className="absolute z-[6] flex w-[150px] items-center gap-2 rounded-xl border-[1.5px] border-teal-700 bg-white px-2.5 py-2 text-xs font-bold text-teal-900 shadow-[0_18px_40px_rgba(13,55,67,0.22)] transition-[inset-inline-start,top] duration-700"
-              style={step === 1 ? { insetInlineStart: "2%", top: "20%" } : { insetInlineStart: "32%", top: "78%" }}
-            >
-              <GripVertical className="size-4 text-teal-700" />
-              {t("library.reviews")}
-            </span>
-          ) : null}
         </div>
 
         <aside className="hidden flex-col gap-2 border-s border-[#e7e9e8] min-[1081px]:flex">
@@ -340,7 +337,7 @@ export function BuilderDemo() {
                 ))}
               </div>
               <PropLabel>{t("props.heading")}</PropLabel>
-              <div className={cn("min-h-9 rounded-[10px] border border-[#e3ebed] bg-white px-2.5 py-2 text-start text-[12.5px] font-semibold text-[#1d2a2e]", !ar && "font-latin", step === 4 && "border-teal-700 shadow-[0_0_0_3px_rgba(20,81,99,0.1)]")}>
+              <div className={cn("min-h-9 rounded-[10px] border border-[#e3ebed] bg-white px-2.5 py-2 text-start text-[12.5px] font-semibold text-[#1d2a2e]", !ar && "font-latin", act === 4 && "border-teal-700 shadow-[0_0_0_3px_rgba(20,81,99,0.1)]")}>
                 {headingText}
               </div>
               <PropLabel>{t("props.button")}</PropLabel>
@@ -375,7 +372,18 @@ export function BuilderDemo() {
           )}
         </aside>
       </div>
-      <DemoCursor x={cursor.x} y={cursor.y} visible={step < 7} className="hidden min-[641px]:block" />
+      {/* The picked-up section, held by the cursor: its grip sits under the arrow's tip. */}
+      <span
+        className={cn(
+          "pointer-events-none absolute z-[6] hidden w-[150px] items-center gap-2 rounded-xl border-[1.5px] border-teal-700 bg-white px-2.5 py-2 text-xs font-bold text-teal-900 shadow-[0_18px_40px_rgba(13,55,67,0.22)] transition-[inset-inline-start,top,opacity] duration-700 ease-[cubic-bezier(.45,0,.2,1)] min-[1081px]:flex",
+          dragging ? "opacity-100" : "opacity-0",
+        )}
+        style={{ insetInlineStart: `calc(${cursor.x}% - 14px)`, top: `calc(${cursor.y}% - 16px)` }}
+      >
+        <GripVertical className="size-4 text-teal-700" />
+        {t("library.reviews")}
+      </span>
+      <DemoCursor x={cursor.x} y={cursor.y} visible={step < 7} className="hidden min-[1081px]:block" />
     </div>
   );
 }

@@ -260,7 +260,6 @@
         "greeting": "صباح الخير، نور",
         "newOrders": "{count, plural, one {لديك طلب جديد بانتظار المراجعة.} two {لديك طلبان جديدان بانتظار المراجعة.} few {لديك {count} طلبات جديدة بانتظار المراجعة.} other {لديك {count} طلبًا جديدًا بانتظار المراجعة.}}",
         "search": "ابحث عن طلب أو منتج أو عميل",
-        "allStores": "كل المتاجر",
         "latest": "أحدث الطلبات",
         "lastFive": "آخر 5 طلبات",
         "viewAll": "عرض كل الطلبات",
@@ -295,13 +294,6 @@
           "conversion": "معدل التحويل",
           "previous": "عن الأسبوع الماضي"
         },
-        "strip": {
-          "aov": "متوسط الطلب",
-          "newCustomers": "عملاء جدد",
-          "customersUnit": "عميل",
-          "wallet": "رصيد المحفظة",
-          "rating": "تقييم المتجر"
-        },
         "col": {
           "order": "الطلب",
           "customer": "العميل",
@@ -325,13 +317,13 @@
           "hr3": "منذ 3 ساعات"
         },
         "customers": ["مريم أحمد", "يوسف خالد", "هنا سامي", "عمر طارق"],
-        "products": ["عطر Oud Rose ‏50 مل", "سيروم فيتامين C", "ساعة Watch 6"],
+        "products": ["شنطة يد جلد أحمر", "شنطة توت وردي", "شنطة بارل مطبوعة"],
         "orders": [
-          { "customer": "يوسف خالد", "product": "سيروم فيتامين C", "when": "min6", "total": 890, "status": "pending" },
-          { "customer": "هنا سامي", "product": "طقم عناية بالبشرة", "when": "min18", "total": 2150, "status": "pending" },
-          { "customer": "عمر طارق", "product": "مرطب يومي", "when": "hr1", "total": 560, "status": "shipped" },
-          { "customer": "مريم أحمد", "product": "عطر Oud Rose ‏50 مل", "when": "hr2", "total": 1320, "status": "delivered" },
-          { "customer": "هنا سامي", "product": "تونر ورد", "when": "hr3", "total": 780, "status": "delivered" }
+          { "customer": "يوسف خالد", "product": "محفظة جلد رجالي", "when": "min6", "total": 500, "status": "pending" },
+          { "customer": "هنا سامي", "product": "شنطة توت وردي", "when": "min18", "total": 1340, "status": "pending" },
+          { "customer": "عمر طارق", "product": "شنطة يد جلد أحمر", "when": "hr1", "total": 1500, "status": "shipped" },
+          { "customer": "مريم أحمد", "product": "شنطة بارل مطبوعة", "when": "hr2", "total": 1030, "status": "delivered" },
+          { "customer": "سلمى عادل", "product": "شنطة ظهر جلد", "when": "hr3", "total": 1250, "status": "delivered" }
         ]
       },
       "mcp": {
@@ -346,18 +338,18 @@
         "creditsUnit": "رصيد",
         "credits": "100 رصيد AI شهريًا في الخطة المجانية، و2,000 رصيد في خطة Pro.",
         "generate": "إنشاء",
-        "input": "عطر عود روز 50 مل بسعر 1,240 جنيهًا",
+        "input": "شنطة كروس جلد بني بسعر 890 جنيه",
         "nameArLabel": "الاسم (عربي)",
         "nameEnLabel": "الاسم (English)",
-        "nameAr": "عطر عود روز ‏50 مل",
-        "nameEn": "Oud Rose Eau de Parfum 50ml",
+        "nameAr": "شنطة كروس جلد طبيعي بني",
+        "nameEn": "Brown Genuine Leather Crossbody Bag",
         "descLabel": "الوصف",
-        "desc": "عطر شرقي دافئ يجمع بين العود والورد الطائفي، بثبات يدوم طوال اليوم. مثالي للأمسيات والمناسبات.",
+        "desc": "شنطة كروس عملية من الجلد الطبيعي، بسوستة وجيب داخلي وحزام قابل للتعديل. تكفي الهاتف والمحفظة والمفاتيح للخروج اليومي.",
         "categoryLabel": "الفئة",
-        "category": "تجميل › عطور",
+        "category": "شنط › شنط كروس",
         "priceLabel": "السعر",
-        "seoTitle": "عطر عود روز 50 مل | glow",
-        "seoDesc": "عطر شرقي بالعود والورد الطائفي يدوم طوال اليوم. الدفع عند الاستلام."
+        "seoTitle": "شنطة كروس جلد طبيعي بني | glow",
+        "seoDesc": "شنطة كروس من الجلد الطبيعي بحزام قابل للتعديل. الدفع عند الاستلام."
       },
       "builder": {
         "home": "الرئيسية",

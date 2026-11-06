@@ -21,15 +21,11 @@ import {
   PanelRight,
   Percent,
   Plus,
-  Receipt,
   Search,
   Settings,
   ShoppingBag,
-  Star,
-  Store,
   TrendingUp,
   Truck,
-  UserPlus,
   Wallet,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -46,17 +42,23 @@ const FIRST_NEW_ORDER = 2481;
 const BASE_SALES = 48_320;
 const BASE_ORDERS = 38;
 const VISITS = 2940;
-const NEW_CUSTOMERS = 21;
 const SPARKS = [
   [12, 18, 15, 22, 19, 26, 23, 30, 27, 33, 31, 36],
   [8, 11, 10, 14, 12, 16, 15, 19, 17, 21, 20, 23],
   [40, 44, 42, 47, 45, 50, 48, 52, 51, 55, 54, 58],
   [1.1, 1.2, 1.1, 1.3, 1.2, 1.3, 1.2, 1.4, 1.3, 1.3, 1.4, 1.3],
 ];
+/** A Pexels photo (the host is allowed in next.config `images.remotePatterns`). */
+const pexels = (id: number) => `https://images.pexels.com/photos/${id}/pexels-photo-${id}.jpeg?auto=compress&cs=tinysrgb&w=500`;
+/**
+ * glow sells bags: product shots on a white background, not used by any other
+ * demo or template. The names are `home.demo.hero.products` in the same order,
+ * and the sample orders use these prices + shipping.
+ */
 const PRODUCTS = [
-  { price: 1240, image: "/cosmetics.jpg", position: "20% 50%" },
-  { price: 420, image: "/cosmetics.jpg", position: "60% 40%" },
-  { price: 1080, image: "/accessories.jpg", position: "50% 50%" },
+  { price: 1450, image: pexels(22434764), position: "center 55%" },
+  { price: 1290, image: pexels(22432987), position: "center 55%" },
+  { price: 980, image: pexels(22434773), position: "center 50%" },
 ];
 const BADGE = { pending: "bg-[#fff4dc] text-[#8a5a00]", shipped: "bg-[#e8f1fb] text-[#1d5fa8]", delivered: "bg-[#e5f6ea] text-[#15803d]" };
 
@@ -92,7 +94,9 @@ export function HeroDemo() {
   const product = PRODUCTS[index]!;
   const productName = products[index] ?? "";
   const view = step <= 1 ? 1 : step <= 3 ? 2 : 3;
-  const cursor = step === 1 || step === 3 ? { x: 50, y: 88 } : { x: 72, y: 42 };
+  // Moves onto each control a step before it is pressed (each press waits 700ms for it):
+  // Add to cart, then the cash-on-delivery choice, then Place order.
+  const cursor = step <= 1 ? { x: 50, y: 90 } : step === 2 ? { x: 16, y: 52 } : step === 3 ? { x: 50, y: 90 } : { x: 70, y: 40 };
   const fresh = make(added - 1);
 
   const groups = [
@@ -120,12 +124,6 @@ export function HeroDemo() {
     { label: t("kpi.orders"), icon: ShoppingBag, value: String(orderCount), unit: t("kpi.ordersUnit"), delta: "12.1%", spark: 1, bump: step === 5 },
     { label: t("kpi.visits"), icon: Eye, value: money(VISITS), unit: t("kpi.visitsUnit"), delta: "6.3%", spark: 2, extra: true },
     { label: t("kpi.conversion"), icon: Percent, value: ((orderCount / VISITS) * 100).toFixed(1), unit: "%", delta: "4.0%", spark: 3, extra: true },
-  ];
-  const strip = [
-    { icon: Receipt, label: t("strip.aov"), value: money(Math.round(sales / orderCount)), unit: egp },
-    { icon: UserPlus, label: t("strip.newCustomers"), value: String(NEW_CUSTOMERS), unit: t("strip.customersUnit") },
-    { icon: Wallet, label: t("strip.wallet"), value: "$12.40", latin: true },
-    { icon: Star, label: t("strip.rating"), value: "4.8", unit: "/ 5" },
   ];
 
   return (
@@ -212,11 +210,6 @@ export function HeroDemo() {
                   {t("last7")}
                   <ChevronDown className="size-[13px] text-[#808080]" />
                 </span>
-                <span className="hidden h-8 items-center gap-1.5 rounded-full border border-[#d9dddc] bg-white px-3 text-xs whitespace-nowrap min-[861px]:flex">
-                  <Store className="size-[13px] text-[#808080]" />
-                  {t("allStores")}
-                  <ChevronDown className="size-[13px] text-[#808080]" />
-                </span>
                 <span className="flex h-8 items-center gap-1.5 rounded-full bg-amber-600 px-3.5 text-xs font-bold whitespace-nowrap text-teal-900 shadow-[0_6px_14px_rgba(253,173,40,0.35)]">
                   <Plus className="size-3.5" />
                   {t("addProduct")}
@@ -253,23 +246,6 @@ export function HeroDemo() {
                   </div>
                 );
               })}
-            </div>
-
-            <div className="hidden grid-cols-4 divide-x divide-[#eef0ef] overflow-hidden rounded-[18px] border border-[#e7e9e8] bg-white min-[861px]:grid rtl:divide-x-reverse">
-              {strip.map((cell) => (
-                <div key={cell.label} className="flex items-center gap-2.5 px-3.5 py-3">
-                  <span className="grid size-9 flex-none place-items-center rounded-xl bg-[#fdf3e1] text-[#b7791f]">
-                    <cell.icon className="size-4" />
-                  </span>
-                  <div className="min-w-0">
-                    <small className="block truncate text-[11px] text-[#808080]">{cell.label}</small>
-                    <b className="text-[13.5px] font-bold text-[#171717]">
-                      <span dir={cell.latin ? "ltr" : undefined} className="font-latin">{cell.value}</span>
-                      {cell.unit ? <span className="ms-1 text-[11px] font-normal text-[#808080]">{cell.unit}</span> : null}
-                    </b>
-                  </div>
-                </div>
-              ))}
             </div>
 
             <section className="overflow-hidden rounded-[18px] border border-[#e7e9e8] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
@@ -339,9 +315,9 @@ export function HeroDemo() {
           </div>
           <div className="relative flex-1 overflow-hidden">
             <PhoneView on={view === 1}>
-              <div className="relative aspect-[1.15] overflow-hidden rounded-2xl bg-[#fbf1ef]">
+              <div className="relative aspect-[1.15] overflow-hidden rounded-2xl border border-[#f1f1f1] bg-white">
                 <Image src={product.image} alt="" fill sizes="230px" className="object-cover" style={{ objectPosition: product.position }} />
-                <span className="absolute start-2 top-2 rounded-full bg-white px-2 py-0.5 font-latin text-[10px] font-bold text-[#c8586b]">NEW</span>
+                <span className="absolute start-2 top-2 rounded-full bg-[#c8586b] px-2 py-0.5 font-latin text-[10px] font-bold text-white">NEW</span>
               </div>
               <p className="text-[11px] leading-[1.4] text-[#4a2c2a] min-[641px]:text-[15px]">{productName}</p>
               <div className="text-xs font-bold text-[#c8586b] min-[641px]:text-base">
@@ -359,8 +335,9 @@ export function HeroDemo() {
                   <span className="font-latin">{money(product.price + SHIPPING)}</span> {egp}
                 </b>
               </div>
-              <div className="flex items-center gap-2 rounded-xl border-[1.5px] border-[#c8586b] p-1.5 text-[10px] font-semibold text-[#4a2c2a] min-[641px]:p-2.5 min-[641px]:text-[12.5px]">
-                <i className="size-3.5 flex-none rounded-full border-4 border-[#c8586b]" />
+              {/* Picked by the cursor's click in step 2 (same delay as the buttons' press). */}
+              <div className={cn("flex items-center gap-2 rounded-xl border-[1.5px] p-1.5 text-[10px] font-semibold text-[#4a2c2a] transition-colors duration-150 min-[641px]:p-2.5 min-[641px]:text-[12.5px]", step >= 2 ? "border-[#c8586b] delay-700" : "border-[#eadcd9]")}>
+                <i className={cn("size-3.5 flex-none rounded-full transition-[border-width,border-color] duration-150", step >= 2 ? "border-4 border-[#c8586b] delay-700" : "border-2 border-[#d9c9c6]")} />
                 {t("cod")}
               </div>
               <PhoneButton pressed={step === 3}>{t("placeOrder")}</PhoneButton>
@@ -426,8 +403,8 @@ function PhoneButton({ pressed, children }: { pressed: boolean; children: React.
   return (
     <div
       className={cn(
-        "mt-auto grid h-8 place-items-center rounded-[10px] bg-[#c8586b] text-[11px] font-bold text-white transition-transform duration-150 min-[641px]:h-11 min-[641px]:rounded-[14px] min-[641px]:text-sm",
-        pressed && "scale-[0.97]",
+        "mt-auto grid h-8 place-items-center rounded-[10px] bg-[#c8586b] text-[11px] font-bold text-white transition-[transform,filter] duration-150 min-[641px]:h-11 min-[641px]:rounded-[14px] min-[641px]:text-sm",
+        pressed && "scale-[0.94] brightness-90 delay-700",
       )}
     >
       {children}

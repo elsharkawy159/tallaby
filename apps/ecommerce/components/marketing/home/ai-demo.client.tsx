@@ -9,8 +9,11 @@ import { DemoCursor } from "./demo-cursor";
 import { useDemoSteps, useTyped } from "./use-demo.client";
 
 /** idle, typing the input, click, photo and price, names, description, category, SEO, hold. */
-const STEPS = [900, 1900, 900, 900, 1500, 2000, 900, 2200, 4200] as const;
+const STEPS = [900, 1900, 1100, 900, 1500, 2000, 900, 2200, 4200] as const;
 const DONE = STEPS.length - 1;
+
+/** The product being added: a Pexels shot on white, not used by any other demo (the input text in home.demo.ai). */
+const PRODUCT_IMAGE = "https://images.pexels.com/photos/22432989/pexels-photo-22432989.jpeg?auto=compress&cs=tinysrgb&w=300";
 
 /** Which row of the list beside the demo is lit, per step. */
 const ROW_AT = [-1, -1, 0, 0, 1, 1, 2, 3, -1];
@@ -71,14 +74,14 @@ export function AiDemo({ children }: { children: React.ReactNode }) {
           <b className="text-base text-teal-900">{t("title")}</b>
           <span className="flex items-center gap-1 rounded-full border border-amber-100 bg-amber-50 px-2.5 py-[3px] text-xs font-bold text-[#8a5300]">
             <Zap className="size-[13px]" />
-            <span className="font-latin">{step >= 2 ? 99 : 100}</span> {t("creditsUnit")}
+            <span className="font-latin">{step >= 3 ? 99 : 100}</span> {t("creditsUnit")}
           </span>
         </div>
         <div className="flex h-[50px] items-center gap-2.5 rounded-[14px] border-[1.5px] border-[#dfe8ea] ps-3.5 pe-1.5 text-[#8aa0a6]">
           <Type className="size-4 flex-none" />
           <FileText className="size-4 flex-none" />
           <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-[#33464b]">{input}</span>
-          <span className={cn("flex h-[38px] flex-none items-center gap-1.5 rounded-[10px] bg-teal-900 px-3.5 text-[13px] font-bold text-white transition-transform duration-150", step === 2 && "scale-[0.94]")}>
+          <span className={cn("flex h-[38px] flex-none items-center gap-1.5 rounded-[10px] bg-teal-900 px-3.5 text-[13px] font-bold text-white transition-transform duration-150", step === 2 && "scale-[0.94] delay-700")}>
             <Sparkles className="size-[15px]" />
             {t("generate")}
           </span>
@@ -86,7 +89,7 @@ export function AiDemo({ children }: { children: React.ReactNode }) {
         <div className="flex flex-col gap-1.5">
           <div className="grid grid-cols-[76px_minmax(0,1fr)] items-start gap-3 min-[641px]:grid-cols-[96px_minmax(0,1fr)]">
             <span className="relative aspect-square overflow-hidden rounded-[14px] border border-[#e6eef0] bg-[#f1f5f6]">
-              {step >= 1 ? <Image src="/cosmetics.jpg" alt="" fill sizes="96px" className="object-cover" style={{ objectPosition: "20% 50%" }} /> : null}
+              {step >= 1 ? <Image src={PRODUCT_IMAGE} alt="" fill sizes="96px" className="object-cover" style={{ objectPosition: "center 60%" }} /> : null}
             </span>
             <div className="flex flex-col gap-1">
               <FieldLabel>{t("nameArLabel")}</FieldLabel>
@@ -109,7 +112,7 @@ export function AiDemo({ children }: { children: React.ReactNode }) {
             <div>
               <FieldLabel>{t("priceLabel")}</FieldLabel>
               <FieldValue loading={loading && step < 3} done={step >= 3}>
-                {step >= 3 ? <span dir="ltr" className="font-latin">1,240 EGP</span> : null}
+                {step >= 3 ? <span dir="ltr" className="font-latin">890 EGP</span> : null}
               </FieldValue>
             </div>
           </div>
@@ -119,7 +122,8 @@ export function AiDemo({ children }: { children: React.ReactNode }) {
             <p className="min-h-5 text-[12.5px] text-[#4d5156]">{seoDesc}</p>
           </div>
         </div>
-        <DemoCursor x={step === 1 ? 30 : step === 2 ? 86 : 60} y={step >= 1 && step <= 2 ? 16 : 85} visible={step <= 3} />
+        {/* On the input before typing starts, then on Generate before it is pressed (the press waits 700ms for it). */}
+        <DemoCursor x={step <= 1 ? 30 : step === 2 ? 86 : 60} y={step <= 2 ? 16 : 85} visible={step <= 3} />
       </div>
     </div>
   );

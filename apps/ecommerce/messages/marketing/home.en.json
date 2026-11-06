@@ -260,7 +260,6 @@
         "greeting": "Good morning, Nour",
         "newOrders": "{count, plural, one {You have 1 new order to review.} other {You have {count} new orders to review.}}",
         "search": "Search orders, products or customers",
-        "allStores": "All stores",
         "latest": "Latest orders",
         "lastFive": "Last 5 orders",
         "viewAll": "View all orders",
@@ -295,13 +294,6 @@
           "conversion": "Conversion",
           "previous": "vs last week"
         },
-        "strip": {
-          "aov": "Avg. order",
-          "newCustomers": "New customers",
-          "customersUnit": "customers",
-          "wallet": "Wallet balance",
-          "rating": "Store rating"
-        },
         "col": {
           "order": "Order",
           "customer": "Customer",
@@ -325,13 +317,13 @@
           "hr3": "3 hrs ago"
         },
         "customers": ["Mariam Ahmed", "Youssef Khaled", "Hana Samy", "Omar Tarek"],
-        "products": ["Oud Rose perfume 50ml", "Vitamin C serum", "Watch 6 smartwatch"],
+        "products": ["Red leather handbag", "Pink tote bag", "Printed barrel bag"],
         "orders": [
-          { "customer": "Youssef Khaled", "product": "Vitamin C serum", "when": "min6", "total": 890, "status": "pending" },
-          { "customer": "Hana Samy", "product": "Skincare set", "when": "min18", "total": 2150, "status": "pending" },
-          { "customer": "Omar Tarek", "product": "Daily moisturizer", "when": "hr1", "total": 560, "status": "shipped" },
-          { "customer": "Mariam Ahmed", "product": "Oud Rose perfume 50ml", "when": "hr2", "total": 1320, "status": "delivered" },
-          { "customer": "Hana Samy", "product": "Rose toner", "when": "hr3", "total": 780, "status": "delivered" }
+          { "customer": "Youssef Khaled", "product": "Men's leather wallet", "when": "min6", "total": 500, "status": "pending" },
+          { "customer": "Hana Samy", "product": "Pink tote bag", "when": "min18", "total": 1340, "status": "pending" },
+          { "customer": "Omar Tarek", "product": "Red leather handbag", "when": "hr1", "total": 1500, "status": "shipped" },
+          { "customer": "Mariam Ahmed", "product": "Printed barrel bag", "when": "hr2", "total": 1030, "status": "delivered" },
+          { "customer": "Salma Adel", "product": "Leather backpack", "when": "hr3", "total": 1250, "status": "delivered" }
         ]
       },
       "mcp": {
@@ -346,18 +338,18 @@
         "creditsUnit": "credits",
         "credits": "100 AI credits a month on the free plan, 2,000 on Pro.",
         "generate": "Generate",
-        "input": "Oud Rose perfume 50ml, 1,240 EGP",
+        "input": "Brown leather crossbody bag, 890 EGP",
         "nameArLabel": "Name (Arabic)",
         "nameEnLabel": "Name (English)",
-        "nameAr": "عطر عود روز ‏50 مل",
-        "nameEn": "Oud Rose Eau de Parfum 50ml",
+        "nameAr": "شنطة كروس جلد طبيعي بني",
+        "nameEn": "Brown Genuine Leather Crossbody Bag",
         "descLabel": "Description",
-        "desc": "A warm oriental scent blending oud and Taif rose that lasts all day. Made for evenings and occasions.",
+        "desc": "A practical genuine leather crossbody bag with a zip, an inside pocket and an adjustable strap. Fits a phone, wallet and keys for every day.",
         "categoryLabel": "Category",
-        "category": "Beauty › Perfume",
+        "category": "Bags › Crossbody bags",
         "priceLabel": "Price",
-        "seoTitle": "Oud Rose Eau de Parfum 50ml | glow",
-        "seoDesc": "Oriental oud and Taif rose, lasts all day. Cash on delivery."
+        "seoTitle": "Brown Genuine Leather Crossbody Bag | glow",
+        "seoDesc": "Genuine leather crossbody bag with an adjustable strap. Cash on delivery."
       },
       "builder": {
         "home": "Home",
