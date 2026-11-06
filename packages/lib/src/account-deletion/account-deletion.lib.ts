@@ -18,7 +18,7 @@ export type AccountDeletionSource = (typeof ACCOUNT_DELETION_SOURCES)[number];
 /** The promise on the public page and in the Play data-safety form. */
 export const ACCOUNT_DELETION_DAYS = 30;
 /** Where people without access to their account can ask (public page, Play listing). */
-export const ACCOUNT_DELETION_SUPPORT_EMAIL = "support@tallaby.com";
+export const ACCOUNT_DELETION_SUPPORT_EMAIL = "omar@tallaby.com";
 /** Public page (no login) linked from the Play listing. */
 export const ACCOUNT_DELETION_PUBLIC_PATH = "/account-deletion";
 

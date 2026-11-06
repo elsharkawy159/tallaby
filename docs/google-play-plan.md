@@ -98,9 +98,9 @@ Not done on purpose (needs the owner first, CLAUDE.md rule 4):
 ## Open questions for the owner
 
 1. Organization or personal Play account? (Decides the 14-day test.)
-2. App name on Play: `Tallaby Seller` / `طلبي للبائعين`, or `Tallaby — طلبي`?
+2. ~~App name~~ **Decided (owner left it to Claude, 2026-11-06):** Play title `طلبي للبائعين – Tallaby` (Arabic listing), `Tallaby Seller` (English listing and PWABuilder app name), launcher label `Tallaby`.
 3. Account deletion: what happens to a **positive store wallet balance** and **orders still being delivered**? Until decided, admin checks them by hand (the admin page shows both) and the public page promises deletion within 30 days.
-4. Support email to show on the deletion page and Play listing (now `support@tallaby.com`; change `ACCOUNT_DELETION_SUPPORT_EMAIL` in `packages/lib/src/account-deletion/account-deletion.lib.ts` if different).
+4. ~~Support email~~ **Decided (owner, 2026-11-06):** `omar@tallaby.com` on the deletion page (`ACCOUNT_DELETION_SUPPORT_EMAIL` in `packages/lib/src/account-deletion/account-deletion.lib.ts`) and the Play listing.
 
 ## Costs
 

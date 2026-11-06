@@ -1188,6 +1188,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 | Date       | Request (owner's words)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Feature ID                                                                                       | Status                                                                                             |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| 2026-11-06 | "You can decide the app name it's for u. support email is omar@tallaby.com" | F-82 | Done: Play title `طلبي للبائعين – Tallaby` / `Tallaby Seller`, support email `omar@tallaby.com` on the deletion page and listing |
 | 2026-11-06 | "make a full plan .md file and start work on it without pushing to live, just commit everything in one branch and I review later, make everything ready" | F-82 | Repo side built on `claude/talabi-mobile-app-strategy-9i9xy1`, waiting for owner review (`docs/google-play-plan.md`) |
 | 2026-11-06 | "I need the easiest way to make a mobile application for App Store and Google Play using my current dashboard code" Then: "How to do that? turn the PWA into a Google Play app with a Trusted Web Activity (PWABuilder or Bubblewrap) … No problem if we go with android google play application first" | F-82 | Repo side built, Play packaging is the owner's (`docs/android-app.md`) |
 | 2026-11-06 | "Update /roadmap page with our latest updates and check this page https://roadmap.easyorders.ai/ar use as a reference to update our roadmap, check what's not on our website and that has many votes on the easyorders roadmap to include into our road map" | F-80, F-81, /roadmap cards | Cards prepared (`packages/db/scripts/roadmap-cards-2026-11-06.sql`), production write waits for owner approval |
@@ -1556,6 +1557,11 @@ Add each new request here first, with the date and the owner's words, then turn 
 ---
 
 ## 7. Log
+
+### 2026-11-06 — F-82 owner answers: app name and support email
+
+- Owner left the app name to Claude: Play title `طلبي للبائعين – Tallaby` (Arabic), `Tallaby Seller` (English, PWABuilder app name), launcher label `Tallaby`.
+- Support email `omar@tallaby.com` (owner): `ACCOUNT_DELETION_SUPPORT_EMAIL`, `docs/google-play/listing.md`, `docs/google-play-plan.md`.
 
 ### 2026-11-06 — Google Play app: full plan and everything the repo needs (F-82b, F-82c, owner request, §5)
 

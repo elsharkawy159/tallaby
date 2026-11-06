@@ -16,13 +16,13 @@ Features named below are live today (ROADMAP.md §2.1, checked 2026-11-06). **No
 | Field | Value |
 | --- | --- |
 | Default language | Arabic – ar |
-| App name (≤ 30) | `طلبي للبائعين – Tallaby` (owner to confirm, `docs/google-play-plan.md` Q2) |
+| App name (≤ 30) | `طلبي للبائعين – Tallaby` (decided 2026-11-06) |
 | App name, English translation | `Tallaby Seller` |
 | App or game | App |
 | Free or paid | Free |
 | Category | Business |
 | Tags | Business, Productivity, Shopping |
-| Email | `support@tallaby.com` |
+| Email | `omar@tallaby.com` |
 | Website | `https://tallaby.com` |
 | Privacy policy | `https://tallaby.com/privacy` |
 | Account deletion URL | `https://dashboard.tallaby.com/account-deletion` |
@@ -199,4 +199,4 @@ Not collected: precise or approximate location, contacts, messages, audio, video
 ## Store settings
 
 - Countries: Egypt first (add others later).
-- Contact details: email `support@tallaby.com`, website `https://tallaby.com`, phone optional (the support WhatsApp number if you want it public).
+- Contact details: email `omar@tallaby.com`, website `https://tallaby.com`, phone optional (the support WhatsApp number if you want it public).
