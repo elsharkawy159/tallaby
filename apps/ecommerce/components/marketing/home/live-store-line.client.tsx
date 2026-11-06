@@ -83,7 +83,7 @@ export function LiveStoreLine({ stores, readAt }: { stores: RecentStore[]; readA
       ref={ref}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className={`${LINE_CLASS} inline-flex items-center gap-2.5 rounded-full border border-[#e3ebed] bg-white ps-3.5 pe-4 text-sm whitespace-nowrap text-[#3f5358] shadow-[0_2px_10px_rgba(20,81,99,0.06)]`}
+      className={`${LINE_CLASS} inline-flex items-center gap-2.5 rounded-full border border-[#e3ebed]/80 bg-white/80 backdrop-blur-sm ps-3.5 pe-4 text-sm whitespace-nowrap text-[#3f5358] shadow-[0_2px_10px_rgba(20,81,99,0.06)]`}
     >
       <i aria-hidden className={`size-[9px] flex-none rounded-full bg-[#16a34a] ${line.kind === "recent" ? "animate-pulse-ring" : ""}`} />
       {/* Only the industry shrinks on a narrow phone: every other run keeps its width (whitespace-pre). */}
