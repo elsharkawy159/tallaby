@@ -6,8 +6,6 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { NextIntlClientProvider } from "next-intl";
 import { Toaster } from "@workspace/ui/components/sonner";
 import { DirectionProvider } from "@workspace/ui/components/direction";
-import { getSiteData } from "@/actions/site-data";
-import { SiteDataProvider } from "@/providers/site-data";
 import { ZodLocale } from "@/lib/i18n/zod-locale.client";
 import { ThemeProvider } from "@/providers/theme";
 import QueryProvider from "@/providers/use-query";
@@ -79,19 +77,17 @@ export default async function RootLayout({
       >
         <MetaPixel />
         <DirectionProvider dir={direction}>
-          <SiteDataProvider promise={getSiteData()}>
-            <NextIntlClientProvider>
-              <ZodLocale />
-              <ThemeProvider
-                attribute="class"
-                defaultTheme="light"
-                disableTransitionOnChange
-              >
-                <QueryProvider>{children}</QueryProvider>
-                <Toaster />
-              </ThemeProvider>
-            </NextIntlClientProvider>
-          </SiteDataProvider>
+          <NextIntlClientProvider>
+            <ZodLocale />
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="light"
+              disableTransitionOnChange
+            >
+              <QueryProvider>{children}</QueryProvider>
+              <Toaster />
+            </ThemeProvider>
+          </NextIntlClientProvider>
         </DirectionProvider>
       </body>
     </html>

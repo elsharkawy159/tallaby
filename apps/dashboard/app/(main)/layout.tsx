@@ -18,6 +18,8 @@ import { loadAccountMoney } from "@/lib/stores/account-money.server";
 import { EGP_ACCOUNT } from "@/lib/stores/account-money.lib";
 import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
+import { getSiteData } from "@/actions/site-data";
+import { SiteDataProvider } from "@/providers/site-data";
 
 export default async function DashboardLayout({
   children,
@@ -43,7 +45,14 @@ export default async function DashboardLayout({
   }
 
   // sellers.id = users.id; the header shows the store wallet balance.
-  const [wallet, askHeardAboutUs, welcomeGift, storeLink, accountMoney, { selected }] = await Promise.all([
+  const [
+    wallet,
+    askHeardAboutUs,
+    welcomeGift,
+    storeLink,
+    accountMoney,
+    { selected },
+  ] = await Promise.all([
     user ? getStoreWalletBalance(user.id) : null,
     user ? needsHeardAboutUs(user.id) : false,
     user ? loadWelcomeGiftWatch(user.id) : ({ state: "none" } as const),
@@ -55,29 +64,44 @@ export default async function DashboardLayout({
 
   return (
     // .seller-shell switches on the design system (app/globals.css). Only this layout has it, so (builder) is untouched.
-    <div className="seller-shell flex min-h-screen w-full overflow-x-clip bg-background">
-      <SidebarData />
+    // Seller profile + store link for the sidebar, header and Help page (only used here, so not in the root layout).
+    <SiteDataProvider promise={getSiteData()}>
+      <div className="seller-shell flex min-h-screen w-full overflow-x-clip bg-background">
+        <SidebarData />
 
-      {/* Main Content Area */}
-      <MainContentWrapper>
-        <DashboardHeader walletBalance={walletBalance} walletCurrency={wallet?.currency ?? "EGP"} storeLink={storeLink} siteLive={selected?.siteStatus === "published"} />
-        {access.status === "restricted" && (
-          <div className="border-b border-(--s-line) bg-accent-soft px-7 py-3 text-sm text-accent-ink max-[1020px]:px-4">
-            <strong>{t("sellerStatus.restricted.title")}.</strong>{" "}
-            {t("sellerStatus.restricted.message")}
-          </div>
-        )}
-        <SetupPrompts />
-        <AccountMoneyProvider value={accountMoney}>
-          <main className="min-w-0 flex-1">{children}</main>
-        </AccountMoneyProvider>
-      </MainContentWrapper>
-      <NegativeWalletDialog balance={walletBalance} currency={wallet?.currency ?? "EGP"} />
-      {/* One pop-up at a time: a negative wallet is the more urgent one, then the welcome gift. */}
-      <HeardAboutUsDialog
-        show={askHeardAboutUs && !(walletBalance != null && walletBalance < 0) && welcomeGift.state !== "unseen"}
-      />
-      <WelcomeGiftDialog initial={welcomeGift} />
-    </div>
+        {/* Main Content Area */}
+        <MainContentWrapper>
+          <DashboardHeader
+            walletBalance={walletBalance}
+            walletCurrency={wallet?.currency ?? "EGP"}
+            storeLink={storeLink}
+            siteLive={selected?.siteStatus === "published"}
+          />
+          {access.status === "restricted" && (
+            <div className="border-b border-(--s-line) bg-accent-soft px-7 py-3 text-sm text-accent-ink max-[1020px]:px-4">
+              <strong>{t("sellerStatus.restricted.title")}.</strong>{" "}
+              {t("sellerStatus.restricted.message")}
+            </div>
+          )}
+          <SetupPrompts />
+          <AccountMoneyProvider value={accountMoney}>
+            <main className="min-w-0 flex-1">{children}</main>
+          </AccountMoneyProvider>
+        </MainContentWrapper>
+        <NegativeWalletDialog
+          balance={walletBalance}
+          currency={wallet?.currency ?? "EGP"}
+        />
+        {/* One pop-up at a time: a negative wallet is the more urgent one, then the welcome gift. */}
+        <HeardAboutUsDialog
+          show={
+            askHeardAboutUs &&
+            !(walletBalance != null && walletBalance < 0) &&
+            welcomeGift.state !== "unseen"
+          }
+        />
+        <WelcomeGiftDialog initial={welcomeGift} />
+      </div>
+    </SiteDataProvider>
   );
 }
