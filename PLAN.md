@@ -4760,3 +4760,7 @@ Owner asked to keep only the current version of each template in `template_versi
 ### 2026-11-06 — 0154 and 0155 applied on staging
 
 - Owner approved. Applied `0154_reserve_glow_subdomain.sql` and `0155_orders_is_test.sql` on staging (`cxqjrwjianxskhzmrkla`), each in its own transaction. Checks: `is_reserved_subdomain('glow')` = true, `'glow-beauty'` = false; `orders.is_test` boolean NOT NULL default false; 85 orders, 0 test. Production: not applied; `0155` must go before the deploy that carries F-76.
+
+### 2026-11-06 — 0156 applied on staging
+
+- Owner approved. Applied `0156_theme_requests.sql` (F-77) on staging (`cxqjrwjianxskhzmrkla`). Checks: `theme_requests` exists with RLS on; bucket `theme-request-images` is private; `admin_notifications_type_check` has `theme_requested` and `seller_notifications_type_check` has `theme_request_updated`. Production: not applied; it must go before the deploy that carries F-77.
