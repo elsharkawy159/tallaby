@@ -4743,3 +4743,8 @@ Owner asked to keep only the current version of each template in `template_versi
 ### 2026-11-05 — Add product v4: manual E2E (ROADMAP.md F-71)
 
 - Local dashboard against staging, QA seller, headless Chrome at 360 and 1280, Arabic and English: AI (three real calls, a failed send, undo, back) and File (one real import, two draft products left on staging). The QA seller got a fresh random password for this. Not run: a real phone, publishing from the new flow, a PDF file, out-of-credits.
+
+### 2026-11-06 — Migration 0154: reserve `glow` in SQL (not applied)
+
+- `0154_reserve_glow_subdomain.sql` adds `glow` (tallaby.com's home page demo store) to `is_reserved_subdomain()`, matching the app's `RESERVED_SUBDOMAINS` (`9f967de5`). Staging read-only check: the live function equals 0044's, both subdomain CHECKs are validated, and 0 sellers, stores or redirects use `glow`. `sql-tests/stores_invariants.sql` check 6 now also rejects `glow` (needs 0154).
+- Apply on staging, then production with owner approval; there is no deploy order. After both, drop the "app only" marker in `packages/lib/src/storefront/index.ts`.

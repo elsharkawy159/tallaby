@@ -81,6 +81,11 @@ BEGIN
   BEGIN INSERT INTO stores (seller_id, name, subdomain) VALUES (u_a, 'x', 'admin');
   EXCEPTION WHEN check_violation THEN failed := true; END;
   IF NOT failed THEN RAISE EXCEPTION '6: reserved subdomain accepted'; END IF;
+  -- 'glow' (tallaby.com's demo store) is reserved since 0154.
+  failed := false;
+  BEGIN INSERT INTO stores (seller_id, name, subdomain) VALUES (u_a, 'x', 'glow');
+  EXCEPTION WHEN check_violation THEN failed := true; END;
+  IF NOT failed THEN RAISE EXCEPTION '6: reserved subdomain glow accepted (is 0154 applied?)'; END IF;
   failed := false;
   BEGIN INSERT INTO stores (seller_id, name, subdomain) VALUES (u_b, 'x', 'inv-second-a2');
   EXCEPTION WHEN unique_violation THEN failed := true; END;
