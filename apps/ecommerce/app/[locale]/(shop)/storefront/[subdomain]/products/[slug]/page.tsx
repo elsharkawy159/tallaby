@@ -3,7 +3,6 @@ import { cacheProfiles, createCachedQuery, productTags } from "@workspace/cache"
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { ChevronLeft } from "lucide-react";
-import { storeUrl } from "@workspace/lib/storefront";
 import { productPageOf } from "@workspace/store-sections/config";
 import { cn } from "@workspace/ui/lib/utils";
 import { socialShareImage } from "@/lib/metadata";
@@ -126,7 +125,7 @@ export default async function StorefrontProductPage({ params }: StorefrontProduc
           product={product}
           locale={locale as ProductLocale}
           homeLabel={tBreadcrumb("home")}
-          store={{ url: storeUrl(store.subdomain, store.customDomain), name: store.displayName, currency: store.currency }}
+          store={store}
         />
         <MetaViewContent productId={product.id} value={price} />
         <ProductPageDeepLink />
@@ -141,7 +140,7 @@ export default async function StorefrontProductPage({ params }: StorefrontProduc
         product={product}
         locale={locale as ProductLocale}
         homeLabel={tBreadcrumb("home")}
-        store={{ url: storeUrl(store.subdomain, store.customDomain), name: store.displayName, currency: store.currency }}
+        store={store}
       />
       <div className={cn(s.wrap, "pt-6 pb-10")}>
         <Link

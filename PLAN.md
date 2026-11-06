@@ -4748,3 +4748,7 @@ Owner asked to keep only the current version of each template in `template_versi
 
 - `0154_reserve_glow_subdomain.sql` adds `glow` (tallaby.com's home page demo store) to `is_reserved_subdomain()`, matching the app's `RESERVED_SUBDOMAINS` (`9f967de5`). Staging read-only check: the live function equals 0044's, both subdomain CHECKs are validated, and 0 sellers, stores or redirects use `glow`. `sql-tests/stores_invariants.sql` check 6 now also rejects `glow` (needs 0154).
 - Apply on staging, then production with owner approval; there is no deploy order. After both, drop the "app only" marker in `packages/lib/src/storefront/index.ts`.
+
+### 2026-11-06 — Store product JSON-LD for Google (SEO review items 5–6)
+
+- Store product JSON-LD rates customer reviews only (seller-added reviews are left out; no rating when none), adds Google's strikethrough price, availability from real stock, the Home › store category › product breadcrumb, and `shippingDetails` from the store's own zones (only when one price covers the whole country; cached 10 minutes per seller). "Stock Count" removed. No migration. Skipped: `ProductGroup` variants and `hasMerchantReturnPolicy` (needs the owner). After deploy: Rich Results Test (Product snippets, Merchant listings) on a live product.
