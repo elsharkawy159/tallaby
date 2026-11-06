@@ -72,6 +72,8 @@ export function useTyped(text: string, phase: "hidden" | "typing" | "done", msPe
   const reduced = useReducedMotion();
   const [count, setCount] = React.useState(0);
   const typing = phase === "typing" && !reduced;
+  // Whole graphemes, so a letter and its marks (Arabic harakat, emoji) appear together.
+  const units = React.useMemo(() => graphemes(text), [text]);
 
   React.useEffect(() => {
     if (!typing) return;
@@ -79,14 +81,21 @@ export function useTyped(text: string, phase: "hidden" | "typing" | "done", msPe
     const id = window.setInterval(() => {
       i += 1;
       setCount(i);
-      if (i >= text.length) window.clearInterval(id);
+      if (i >= units.length) window.clearInterval(id);
     }, msPerChar);
     return () => {
       window.clearInterval(id);
       setCount(0);
     };
-  }, [typing, text, msPerChar]);
+  }, [typing, units, msPerChar]);
 
   if (phase === "hidden") return "";
-  return typing ? text.slice(0, count) : text;
+  return typing ? units.slice(0, count).join("") : text;
+}
+
+function graphemes(text: string): string[] {
+  if (typeof Intl !== "undefined" && "Segmenter" in Intl) {
+    return Array.from(new Intl.Segmenter(undefined, { granularity: "grapheme" }).segment(text), (part) => part.segment);
+  }
+  return Array.from(text);
 }

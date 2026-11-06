@@ -399,6 +399,53 @@
           "split": "Split",
           "image": "Image",
           "center": "Center"
+        },
+        "store": {
+          "name": "DAR",
+          "announcement": "Free delivery across Egypt on orders over 1,500 EGP",
+          "nav": {
+            "living": "Living",
+            "lighting": "Lighting",
+            "decor": "Decor"
+          },
+          "bag": "Bag · 2",
+          "kicker": "New season · Made in Egypt",
+          "heading": "Made for living rooms",
+          "typedHeading": "Calm corners for home",
+          "body": "Lamps, chairs and handmade pieces for a calmer home.",
+          "shop": "Shop the collection",
+          "story": "Our story",
+          "rooms": "Shop by room",
+          "arrivals": "New arrivals",
+          "viewAll": "View all →",
+          "badge": "−12%",
+          "price": "{amount} EGP",
+          "products": {
+            "lamp": "Brass table lamp",
+            "vases": "Sand jug vases",
+            "armchair": "Walnut armchair",
+            "table": "Oak coffee table"
+          },
+          "reviews": {
+            "r1": {
+              "text": "The lamp light is so warm, just like the photos.",
+              "name": "Mona"
+            },
+            "r2": {
+              "text": "Arrived in two days to Alex, packed with care.",
+              "name": "Karim"
+            },
+            "r3": {
+              "text": "The vases look even better in person.",
+              "name": "Salma"
+            }
+          },
+          "room": {
+            "living": "Living",
+            "lighting": "Lighting",
+            "chairs": "Chairs",
+            "decor": "Decor"
+          }
         }
       },
       "shipping": {

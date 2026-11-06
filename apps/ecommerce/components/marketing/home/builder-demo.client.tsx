@@ -31,8 +31,9 @@ import {
   Undo2,
   UploadCloud,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { cn } from "@workspace/ui/lib/utils";
+import { formatNumber } from "@/lib/marketing/pricing.lib";
 import { DemoCursor } from "./demo-cursor";
 import { useDemoSteps, useTyped } from "./use-demo.client";
 
@@ -51,17 +52,18 @@ const pexels = (id: number, width: number) => `https://images.pexels.com/photos/
  */
 const HERO_IMAGE = pexels(2079246, 1200);
 const CATEGORIES = [
-  { name: "Living", image: pexels(17168851, 400), position: "center 60%" },
-  { name: "Lighting", image: pexels(16433482, 400), position: "center 45%" },
-  { name: "Chairs", image: pexels(29350087, 400), position: "center 60%" },
-  { name: "Decor", image: pexels(27180805, 400), position: "center 55%" },
-];
+  { key: "living", image: pexels(17168851, 400), position: "center 60%" },
+  { key: "lighting", image: pexels(16433482, 400), position: "center 45%" },
+  { key: "chairs", image: pexels(29350087, 400), position: "center 60%" },
+  { key: "decor", image: pexels(27180805, 400), position: "center 55%" },
+] as const;
 const PRODUCTS = [
-  { image: pexels(6053887, 500), position: "center 35%", name: "Brass table lamp", price: "2,600", was: "2,950" },
-  { image: pexels(33126633, 500), position: "center 60%", name: "Sand jug vases", price: "950" },
-  { image: pexels(32710106, 500), position: "35% 60%", name: "Walnut armchair", price: "11,500" },
-  { image: pexels(7607461, 500), position: "center 45%", name: "Oak coffee table", price: "5,900" },
-];
+  { key: "lamp", image: pexels(6053887, 500), position: "center 35%", price: 2600, was: 2950 },
+  { key: "vases", image: pexels(33126633, 500), position: "center 60%", price: 950 },
+  { key: "armchair", image: pexels(32710106, 500), position: "35% 60%", price: 11500 },
+  { key: "table", image: pexels(7607461, 500), position: "center 45%", price: 5900 },
+] as const;
+const REVIEWS = ["r1", "r2", "r3"] as const;
 const LIBRARY = [
   { key: "hero", rows: [[1, 1], [2]] },
   { key: "announcement", rows: [[1]] },
@@ -75,18 +77,26 @@ const LIBRARY = [
  * The website editor with a sample store being edited, drawn after the
  * redesigned editor (Claude Design "Seller Editor v3", packages/store-editor
  * since 7950ccdb): rail on the start side with the Add panel open, canvas in
- * the middle, the inspector on the end side. The canvas stays in English, as
- * a store's demo copy does.
+ * the middle, the inspector on the end side. The demo store speaks the page's
+ * language: Arabic and RTL on /ar, English and LTR on /en. Everything inside
+ * it uses logical sides, and the cursor and drag chip are placed with
+ * `inset-inline-start`, so the whole mockup mirrors as one piece.
  */
 export function BuilderDemo() {
   const t = useTranslations("home.demo.builder");
+  const s = useTranslations("home.demo.builder.store");
+  const locale = useLocale();
+  const ar = locale === "ar";
   const { ref, step } = useDemoSteps<HTMLDivElement>(STEPS, FINAL);
 
   const dropped = step >= 3;
   const heroSelected = step === 4 || step === 5;
   const accent = step >= 5 ? COLORS[1]! : COLORS[0]!;
-  const heading = useTyped("Calm corners for home", step < 4 ? "hidden" : step === 4 ? "typing" : "done", 70);
-  const headingText = heading || "Made for living rooms";
+  const heading = useTyped(s("typedHeading"), step < 4 ? "hidden" : step === 4 ? "typing" : "done", ar ? 85 : 70);
+  const headingText = heading || s("heading");
+  const price = (egp: number) => s("price", { amount: formatNumber(egp) });
+  /** Letter spacing pulls Arabic letters apart, so the Latin-only tracking stays on English. */
+  const track = (cls: string) => (ar ? "" : cls);
   const saving = step === 3 || step === 5;
   const published = step >= 6;
 
@@ -211,74 +221,74 @@ export function BuilderDemo() {
         </aside>
 
         <div className="relative overflow-hidden bg-[#eef0ef] bg-[radial-gradient(#d9dedd_1px,transparent_1px)] bg-[length:14px_14px] p-3 min-[641px]:px-[18px] min-[641px]:pt-4 min-[641px]:pb-[18px]">
-          <div dir="ltr" className="mx-auto max-w-[600px] overflow-hidden rounded-[14px] bg-[#f7f3ee] font-latin text-[#2a2420] shadow-[0_10px_30px_rgba(13,55,67,0.1)]">
-            <div className="p-1.5 text-center text-[8.5px] font-semibold tracking-[0.08em] text-[#f7f3ee] transition-colors duration-300" style={{ background: accent }}>
-              Free delivery across Egypt on orders over 1,500 EGP
+          <div dir={ar ? "rtl" : "ltr"} lang={ar ? "ar" : "en"} className={cn("mx-auto max-w-[600px] overflow-hidden rounded-[14px] bg-[#f7f3ee] text-[#2a2420] shadow-[0_10px_30px_rgba(13,55,67,0.1)]", !ar && "font-latin")}>
+            <div className={cn("p-1.5 text-center text-[8.5px] font-semibold text-[#f7f3ee] transition-colors duration-300", track("tracking-[0.08em]"))} style={{ background: accent }}>
+              {s("announcement")}
             </div>
             <div className="grid grid-cols-[1fr_auto_1fr] items-center bg-white px-4 py-2.5">
-              <span className="flex gap-3 text-[9px] font-semibold tracking-[0.06em] text-[#2a2420]/75">
-                <span>Living</span>
-                <span>Lighting</span>
-                <span className="hidden min-[861px]:inline">Decor</span>
+              <span className={cn("flex gap-3 text-[9px] font-semibold text-[#2a2420]/75", track("tracking-[0.06em]"))}>
+                <span>{s("nav.living")}</span>
+                <span>{s("nav.lighting")}</span>
+                <span className="hidden min-[861px]:inline">{s("nav.decor")}</span>
               </span>
-              <b className="flex items-center gap-1.5 text-[14px] font-extrabold tracking-[0.28em]">
+              <b className={cn("flex items-center gap-1.5 text-[14px] font-extrabold", track("tracking-[0.28em]"))}>
                 <i className="block size-2 rounded-full transition-colors duration-300" style={{ background: accent }} />
-                DAR
+                {s("name")}
               </b>
               <span className="flex items-center justify-end gap-2.5 text-[9px] font-semibold">
                 <Search className="size-3 opacity-70" />
-                <span className="rounded-full bg-[#2a2420] px-2 py-[3px] text-white">Bag · 2</span>
+                <span className="rounded-full bg-[#2a2420] px-2 py-[3px] whitespace-nowrap text-white">{s("bag")}</span>
               </span>
             </div>
-            <CanvasSection selected={heroSelected} label="Hero">
+            <CanvasSection selected={heroSelected} label={t("library.hero")}>
               <div className="px-3 pt-3">
                 <div className="relative h-[172px] overflow-hidden rounded-[10px] min-[861px]:h-[204px]">
                   <Image src={HERO_IMAGE} alt="" fill sizes="(max-width: 640px) 100vw, 600px" className="object-cover" style={{ objectPosition: "center 55%" }} />
-                  <div className="absolute inset-0 bg-gradient-to-r from-[#1b1410]/75 via-[#1b1410]/35 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#1b1410]/75 via-[#1b1410]/35 to-transparent rtl:bg-gradient-to-l" />
                   <div className="relative z-[1] flex h-full max-w-[72%] flex-col items-start justify-end gap-1.5 p-4 text-white min-[861px]:p-5">
-                    <small className="rounded-full bg-white/15 px-2 py-[3px] text-[8px] font-semibold tracking-[0.14em] uppercase backdrop-blur-sm">New season · Made in Egypt</small>
-                    <b className="text-[21px] leading-[1.08] font-extrabold min-[861px]:text-[25px]">{headingText}</b>
-                    <span className="text-[9px] leading-[1.4] opacity-85">Lamps, chairs and handmade pieces for a calmer home.</span>
+                    <small className={cn("rounded-full bg-white/15 px-2 py-[3px] text-[8px] font-semibold backdrop-blur-sm", track("tracking-[0.14em] uppercase"))}>{s("kicker")}</small>
+                    <b className={cn("text-[21px] font-extrabold min-[861px]:text-[25px]", ar ? "leading-[1.3]" : "leading-[1.08]")}>{headingText}</b>
+                    <span className="text-[9px] leading-[1.4] opacity-85">{s("body")}</span>
                     <span className="mt-1 flex items-center gap-2.5">
                       <em className="rounded-full bg-white px-3.5 py-[6px] text-[9px] font-bold not-italic transition-colors duration-300" style={{ color: accent }}>
-                        Shop the collection
+                        {s("shop")}
                       </em>
-                      <span className="text-[9px] font-semibold underline underline-offset-2">Our story</span>
+                      <span className="text-[9px] font-semibold underline underline-offset-2">{s("story")}</span>
                     </span>
                   </div>
                 </div>
               </div>
             </CanvasSection>
             <div className="grid grid-cols-4 gap-2 px-3 pt-3.5">
-              <b className="col-span-full text-[11px] font-extrabold">Shop by room</b>
+              <b className="col-span-full text-[11px] font-extrabold">{s("rooms")}</b>
               {CATEGORIES.map((c) => (
-                <span key={c.name} className="relative block h-[46px] overflow-hidden rounded-[8px] min-[861px]:h-[54px]">
+                <span key={c.key} className="relative block h-[46px] overflow-hidden rounded-[8px] min-[861px]:h-[54px]">
                   <Image src={c.image} alt="" fill sizes="140px" className="object-cover" style={{ objectPosition: c.position }} />
                   <span className="absolute inset-0 bg-gradient-to-t from-[#1b1410]/65 to-transparent" />
-                  <span className="absolute start-2 bottom-1.5 text-[9px] font-bold text-white">{c.name}</span>
+                  <span className="absolute start-2 end-1 bottom-1.5 truncate text-[9px] font-bold text-white">{s(`room.${c.key}`)}</span>
                 </span>
               ))}
             </div>
             <div className="grid grid-cols-4 gap-2 px-3 pt-3.5 pb-3.5">
               <div className="col-span-full flex items-baseline justify-between">
-                <b className="text-[11px] font-extrabold">New arrivals</b>
-                <span className="text-[9px] font-semibold opacity-70">View all →</span>
+                <b className="text-[11px] font-extrabold">{s("arrivals")}</b>
+                <span className="text-[9px] font-semibold opacity-70">{s("viewAll")}</span>
               </div>
               {PRODUCTS.map((p) => (
-                <div key={p.name} className="overflow-hidden rounded-[8px] bg-white text-[9px] leading-[1.4] shadow-[0_1px_2px_rgba(42,36,32,0.06)]">
+                <div key={p.key} className="overflow-hidden rounded-[8px] bg-white text-[9px] leading-[1.4] shadow-[0_1px_2px_rgba(42,36,32,0.06)]">
                   <span className="relative block aspect-[4/5] overflow-hidden bg-[#ebe4da]">
                     <Image src={p.image} alt="" fill sizes="140px" className="object-cover" style={{ objectPosition: p.position }} />
-                    {p.was ? (
-                      <i className="absolute start-1.5 top-1.5 rounded-full px-1.5 py-px text-[7.5px] font-bold text-white not-italic transition-colors duration-300" style={{ background: accent }}>
-                        −12%
+                    {"was" in p ? (
+                      <i className="absolute start-1.5 top-1.5 rounded-full px-1.5 py-px text-[7.5px] font-bold whitespace-nowrap text-white not-italic transition-colors duration-300" style={{ background: accent }}>
+                        {s("badge")}
                       </i>
                     ) : null}
                   </span>
                   <span className="block px-1.5 pt-1 pb-1.5">
-                    <span className="block truncate font-semibold">{p.name}</span>
+                    <span className="block truncate font-semibold">{s(`products.${p.key}`)}</span>
                     <span className="flex items-baseline gap-1">
-                      <b className="font-extrabold">{p.price} EGP</b>
-                      {p.was ? <s className="hidden text-[8px] opacity-50 min-[861px]:inline">{p.was}</s> : null}
+                      <b className="font-extrabold whitespace-nowrap">{price(p.price)}</b>
+                      {"was" in p ? <s className="hidden text-[8px] opacity-50 min-[861px]:inline">{formatNumber(p.was)}</s> : null}
                     </span>
                   </span>
                 </div>
@@ -286,12 +296,13 @@ export function BuilderDemo() {
             </div>
             <div className={cn("mx-3 h-[3px] origin-center rounded-[3px] bg-amber-600 transition-transform duration-200", step === 2 ? "scale-x-100" : "scale-x-0")} />
             {dropped ? (
-              <CanvasSection selected={step === 3} label="Reviews">
+              <CanvasSection selected={step === 3} label={t("library.reviews")}>
                 <div className="grid grid-cols-3 gap-2 px-3 pt-1 pb-3.5">
-                  {["The lamp light is so warm, just like the photos.", "Arrived in two days to Alex, packed with care.", "The vases look even better in person."].map((text) => (
-                    <div key={text} className="rounded-[8px] bg-white p-[9px] text-[8.5px] leading-[1.45] text-[#4a403a] shadow-[0_1px_2px_rgba(42,36,32,0.06)]">
+                  {REVIEWS.map((key) => (
+                    <div key={key} className="rounded-[8px] bg-white p-[9px] text-[8.5px] leading-[1.45] text-[#4a403a] shadow-[0_1px_2px_rgba(42,36,32,0.06)]">
                       <b className="mb-[3px] block text-[9px] tracking-[0.1em] transition-colors duration-300" style={{ color: accent }}>★★★★★</b>
-                      {text}
+                      {s(`reviews.${key}.text`)}
+                      <b className="mt-1 block text-[8px] font-bold text-[#2a2420]">{s(`reviews.${key}.name`)}</b>
                     </div>
                   ))}
                 </div>
@@ -329,11 +340,11 @@ export function BuilderDemo() {
                 ))}
               </div>
               <PropLabel>{t("props.heading")}</PropLabel>
-              <div dir="ltr" className={cn("min-h-9 rounded-[10px] border border-[#e3ebed] bg-white px-2.5 py-2 text-start font-latin text-[12.5px] font-semibold text-[#1d2a2e]", step === 4 && "border-teal-700 shadow-[0_0_0_3px_rgba(20,81,99,0.1)]")}>
+              <div className={cn("min-h-9 rounded-[10px] border border-[#e3ebed] bg-white px-2.5 py-2 text-start text-[12.5px] font-semibold text-[#1d2a2e]", !ar && "font-latin", step === 4 && "border-teal-700 shadow-[0_0_0_3px_rgba(20,81,99,0.1)]")}>
                 {headingText}
               </div>
               <PropLabel>{t("props.button")}</PropLabel>
-              <div dir="ltr" className="min-h-9 rounded-[10px] border border-[#e3ebed] bg-white px-2.5 py-2 text-start font-latin text-[12.5px] font-semibold text-[#1d2a2e]">Shop the collection</div>
+              <div className={cn("min-h-9 rounded-[10px] border border-[#e3ebed] bg-white px-2.5 py-2 text-start text-[12.5px] font-semibold text-[#1d2a2e]", !ar && "font-latin")}>{s("shop")}</div>
               <PropLabel>{t("props.buttonColor")}</PropLabel>
               <div className="flex gap-2">
                 {COLORS.map((color) => (
@@ -377,8 +388,8 @@ function CanvasSection({ selected, label, children }: { selected: boolean; label
   const tools = [ChevronUp, ChevronDown, Copy, Trash2];
   return (
     <div className={cn("relative outline-2 -outline-offset-2 outline-transparent transition-[outline-color] duration-300", selected && "outline-[#145163]")}>
-      <span className={cn("absolute top-0 left-0 z-[2] rounded-ee-md bg-[#145163] px-2 py-0.5 text-[10px] font-bold text-white transition-opacity duration-300", selected ? "opacity-100" : "opacity-0")}>{label}</span>
-      <span className={cn("absolute top-1.5 right-1.5 z-[2] flex gap-0.5 rounded-lg border border-[#e7e9e8] bg-white p-0.5 shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-opacity duration-300", selected ? "opacity-100" : "opacity-0")}>
+      <span className={cn("absolute start-0 top-0 z-[2] rounded-ee-md bg-[#145163] px-2 py-0.5 text-[10px] font-bold text-white transition-opacity duration-300", selected ? "opacity-100" : "opacity-0")}>{label}</span>
+      <span className={cn("absolute end-1.5 top-1.5 z-[2] flex gap-0.5 rounded-lg border border-[#e7e9e8] bg-white p-0.5 shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-opacity duration-300", selected ? "opacity-100" : "opacity-0")}>
         {tools.map((Icon, i) => (
           <i key={i} className="grid size-5 place-items-center rounded-[5px] text-[#4a4a4a]">
             <Icon className="size-3" />
