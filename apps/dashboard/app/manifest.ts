@@ -13,16 +13,26 @@ export default function manifest(): MetadataRoute.Manifest {
     background_color: "#ffffff",
     theme_color: "#0f172a",
     orientation: "any",
+    // Real sizes, plus a full-bleed maskable icon: the Google Play app
+    // (Trusted Web Activity, docs/android-app.md) takes its icons from here.
     icons: [
       {
-        src: "/logo/logo.png",
+        src: "/app-icons/icon-192.png",
         sizes: "192x192",
         type: "image/png",
+        purpose: "any",
       },
       {
-        src: "/logo/logo.png",
+        src: "/app-icons/icon-512.png",
         sizes: "512x512",
         type: "image/png",
+        purpose: "any",
+      },
+      {
+        src: "/app-icons/icon-maskable-512.png",
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "maskable",
       },
     ],
     categories: ["business", "productivity"],

@@ -309,6 +309,7 @@ Priorities are the owner's (`Roadmap_new.md` §9). The order inside them is prop
 | 64  | F-79 | Static dashboard pages (locale segment + Cache Components) | P2                   | no              | Own branch; owner said later (2026-11-06)           |
 | 65  | F-80 | Reorder product options and values (EasyOrders: 29 votes) | P2                    | maybe           | —                                                   |
 | 66  | F-81 | Improve product photos with AI (white background)  | P3                          | no (expected)   | AI cost rules (docs/ai.md) first                    |
+| 67  | F-82 | Seller app on Google Play (Trusted Web Activity)   | P1                          | no              | Play Console account (owner)                        |
 
 ---
 
@@ -1167,12 +1168,25 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 ---
 
+### F-82 Seller app on Google Play (Trusted Web Activity) — P1 · owner request
+
+**Why:** Sellers want a real app from Google Play to manage orders on their phone. A Trusted Web Activity wraps the live dashboard, so the app reuses all dashboard code and updates with every web deploy (owner, 2026-11-06: "No problem if we go with android google play application first").
+**What:** Real-size and maskable icons in the manifest, `/.well-known/assetlinks.json` filled from `ANDROID_APP_PACKAGE` and `ANDROID_APP_SHA256_FINGERPRINTS`, then a PWABuilder or Bubblewrap package `com.tallaby.seller` uploaded to Play. Steps in `docs/android-app.md`. iOS (Capacitor with native push) comes later.
+**Status:** [In progress] Repo side built (2026-11-06); packaging and the Play listing are the owner's.
+
+- **F-82a · P1 · deps: none** Manifest icons (192, 512, maskable) and the env-driven Digital Asset Links route; `docs/android-app.md`.
+- **F-82b · P1 · deps: F-82a deployed** Owner: Play Console account, package with PWABuilder/Bubblewrap, set the two env vars with both fingerprints, internal test.
+- **F-82c · P1 · deps: F-82b** Store listing (Arabic + English, screenshots, data safety, reviewer demo login), closed test if needed, production release.
+
+---
+
 ## 5. Owner feature requests (intake)
 
 Add each new request here first, with the date and the owner's words, then turn it into a §4 feature and place it in §3.
 
 | Date       | Request (owner's words)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Feature ID                                                                                       | Status                                                                                             |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| 2026-11-06 | "I need the easiest way to make a mobile application for App Store and Google Play using my current dashboard code" Then: "How to do that? turn the PWA into a Google Play app with a Trusted Web Activity (PWABuilder or Bubblewrap) … No problem if we go with android google play application first" | F-82 | Repo side built, Play packaging is the owner's (`docs/android-app.md`) |
 | 2026-11-06 | "Update /roadmap page with our latest updates and check this page https://roadmap.easyorders.ai/ar use as a reference to update our roadmap, check what's not on our website and that has many votes on the easyorders roadmap to include into our road map" | F-80, F-81, /roadmap cards | Cards prepared (`packages/db/scripts/roadmap-cards-2026-11-06.sql`), production write waits for owner approval |
 | 2026-11-06 | "I see the Dashboard pnpm build result all pages are Dynamic, which is not the best for the dashboard performance. Can you debug and search to see what is the shared component that makes all pages dynamic while it should be static by default?" Then: "just keep it in the ROADMAP.md and we'll work on it later to make all dashboard pages static with good revalidate" | F-79 | Planned (root-layout `getSiteData` move done) |
 | 2026-11-06 | "On the domains page, add recommended Domain providers links in a list for user who wants to buy a custom domain, with a benefits list of integrating your store with custom domain instead of subdomain (SEO, easy to remember, etc). Maybe we can add in the list Namecheap, Godaddy, Hostinger, etc, sort by most popular and recommended." Then: "prioritize the companies [that] accept EGP first." | F-78 | Built, not deployed (no migration) |
@@ -1530,10 +1544,20 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [ ] F-80a Option order: storage check + design note
 - [ ] F-80b Reorder options and values in the product form
 - [ ] F-81a AI photo clean-up: cost study + design note (owner)
+- [x] F-82a Manifest icons + Digital Asset Links route + `docs/android-app.md` (2026-11-06; branch `claude/talabi-mobile-app-strategy-9i9xy1`)
+- [ ] F-82b Package the TWA, set `ANDROID_APP_*` env, internal test (owner)
+- [ ] F-82c Play listing and production release (owner)
 
 ---
 
 ## 7. Log
+
+### 2026-11-06 — Seller app on Google Play, repo side (F-82a, owner request, §5)
+
+- **Manifest:** icons now point at real sizes in `apps/dashboard/public/app-icons/` (192, 512, and a full-bleed maskable 512 on the logo teal; the "t" sits inside the safe zone). The old entries pointed both sizes at the 1622 px `logo.png`.
+- **Digital Asset Links:** `apps/dashboard/app/.well-known/assetlinks.json/route.ts` returns the statement for `ANDROID_APP_PACKAGE` and the comma-separated `ANDROID_APP_SHA256_FINGERPRINTS` (malformed values dropped; empty `[]` until set). `/.well-known/*` is already public in the session middleware. No migration.
+- **Guide:** `docs/android-app.md` (PWABuilder and Bubblewrap paths, fingerprints from Play App Signing, listing and data-safety checklist, personal-account 12-tester rule).
+- **Next (owner):** Play Console account, package `com.tallaby.seller`, set both env vars on the dashboard's production project, internal test.
 
 ### 2026-11-04 — No marketplace positioning on tallaby.com or store pages (owner request, §5)
 
