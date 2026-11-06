@@ -6,11 +6,9 @@ describe("domain providers", () => {
     expect(SORTED_DOMAIN_PROVIDERS.map((p) => p.id)).toEqual([
       "hostinger",
       "egyhosting",
-      "enghosting",
       "namecheap",
       "godaddy",
       "cloudflare",
-      "porkbun",
     ]);
   });
 
@@ -21,22 +19,23 @@ describe("domain providers", () => {
 
   it("sorts any list without changing it", () => {
     const list: DomainProvider[] = [
-      { id: "b", name: "B", url: "https://b.example/", paysInEgp: false, rank: 1 },
-      { id: "a", name: "A", url: "https://a.example/", paysInEgp: true, rank: 2 },
-      { id: "c", name: "C", url: "https://c.example/", paysInEgp: true, rank: 1 },
+      { id: "b", name: "B", url: "https://b.example/", logo: "/x.png", paysInEgp: false, rank: 1 },
+      { id: "a", name: "A", url: "https://a.example/", logo: "/x.png", paysInEgp: true, rank: 2 },
+      { id: "c", name: "C", url: "https://c.example/", logo: "/x.png", paysInEgp: true, rank: 1 },
     ];
     expect(sortDomainProviders(list).map((p) => p.id)).toEqual(["c", "a", "b"]);
     expect(list.map((p) => p.id)).toEqual(["b", "a", "c"]);
   });
 
-  it("keeps 6–8 providers with unique ids, https links and no tracking params", () => {
-    expect(DOMAIN_PROVIDERS.length).toBeGreaterThanOrEqual(6);
+  it("keeps 5–8 providers with unique ids, https links and no tracking params", () => {
+    expect(DOMAIN_PROVIDERS.length).toBeGreaterThanOrEqual(5);
     expect(DOMAIN_PROVIDERS.length).toBeLessThanOrEqual(8);
     expect(new Set(DOMAIN_PROVIDERS.map((p) => p.id)).size).toBe(DOMAIN_PROVIDERS.length);
     for (const p of DOMAIN_PROVIDERS) {
       const url = new URL(p.url);
       expect(url.protocol).toBe("https:");
       expect(url.search).toBe("");
+      expect(p.logo).toBe(`/domain-logos/${p.id}.png`);
     }
   });
 });

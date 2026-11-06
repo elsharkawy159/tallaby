@@ -14,18 +14,18 @@ export type DomainProvider = {
   url: string;
   /** Lets an Egyptian seller pay in جنيه (EGP prices, Fawry, InstaPay, Meeza or Vodafone Cash). */
   paysInEgp: boolean;
+  /** Logo in `public/domain-logos/`. */
+  logo: string;
   /** Popularity / recommendation order within its group; lower first. */
   rank: number;
 };
 
 export const DOMAIN_PROVIDERS: readonly DomainProvider[] = [
-  { id: "namecheap", name: "Namecheap", url: "https://www.namecheap.com/", paysInEgp: false, rank: 1 },
-  { id: "godaddy", name: "GoDaddy", url: "https://www.godaddy.com/", paysInEgp: false, rank: 2 },
-  { id: "hostinger", name: "Hostinger", url: "https://www.hostinger.com/eg/domain-name-search", paysInEgp: true, rank: 1 },
-  { id: "cloudflare", name: "Cloudflare Registrar", url: "https://www.cloudflare.com/products/registrar/", paysInEgp: false, rank: 3 },
-  { id: "egyhosting", name: "EgyHosting", url: "https://egyhosting.com/", paysInEgp: true, rank: 2 },
-  { id: "porkbun", name: "Porkbun", url: "https://porkbun.com/", paysInEgp: false, rank: 4 },
-  { id: "enghosting", name: "EngHosting", url: "https://www.enghosting.com/en/domain-registration/", paysInEgp: true, rank: 3 },
+  { id: "namecheap", name: "Namecheap", url: "https://www.namecheap.com/", paysInEgp: false, logo: "/domain-logos/namecheap.png", rank: 1 },
+  { id: "godaddy", name: "GoDaddy", url: "https://www.godaddy.com/", paysInEgp: false, logo: "/domain-logos/godaddy.png", rank: 2 },
+  { id: "hostinger", name: "Hostinger", url: "https://www.hostinger.com/eg/domain-name-search", paysInEgp: true, logo: "/domain-logos/hostinger.png", rank: 1 },
+  { id: "cloudflare", name: "Cloudflare Registrar", url: "https://www.cloudflare.com/products/registrar/", paysInEgp: false, logo: "/domain-logos/cloudflare.png", rank: 3 },
+  { id: "egyhosting", name: "EgyHosting", url: "https://egyhosting.com/", paysInEgp: true, logo: "/domain-logos/egyhosting.png", rank: 2 },
 ];
 
 /** EGP-paying providers first, then the rest; each group by `rank`. Does not mutate. */

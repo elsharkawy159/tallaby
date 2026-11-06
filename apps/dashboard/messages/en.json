@@ -6028,11 +6028,9 @@
         "providers": {
           "hostinger": "Prices in EGP on its Egypt site, and you can pay with Fawry.",
           "egyhosting": "Egyptian company: pay in EGP with InstaPay, Meeza or Fawry.",
-          "enghosting": "Egyptian company: pay in EGP with Vodafone Cash or InstaPay, with an official invoice.",
           "namecheap": "One of the most popular worldwide, with free owner privacy.",
           "godaddy": "One of the best-known domain registrars worldwide.",
-          "cloudflare": "At cost, with no markup on renewals.",
-          "porkbun": "Fair renewal prices and free owner privacy."
+          "cloudflare": "At cost, with no markup on renewals."
         },
         "disclaimer": "Plain links, we earn no commission. Prices and payment methods change, so check them at checkout. Global registrars usually need an international card in USD.",
         "afterBuying": "After you buy the domain, come back here, type it in the Custom domain box and press Connect domain. We'll show you the DNS records to add at your registrar."

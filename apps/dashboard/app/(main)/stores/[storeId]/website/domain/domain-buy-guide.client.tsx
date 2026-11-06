@@ -76,6 +76,15 @@ export function DomainBuyGuide({ hasDomain }: { hasDomain: boolean }) {
                   rel="noopener noreferrer"
                   className="flex min-h-12 items-center gap-3 px-3.5 py-2.5 transition-colors duration-150 hover:bg-(--s-tint) focus-visible:bg-(--s-tint) focus-visible:outline-none"
                 >
+                  {/* eslint-disable-next-line @next/next/no-img-element -- tiny static logo */}
+                  <img
+                    src={p.logo}
+                    alt=""
+                    width={32}
+                    height={32}
+                    loading="lazy"
+                    className="size-8 shrink-0 rounded-lg border border-(--s-line-soft) bg-white object-contain p-0.5"
+                  />
                   <span className="min-w-0 flex-1">
                     <span className="flex flex-wrap items-center gap-2 text-sm font-bold text-(--s-text)">
                       <bdi dir="ltr" className="font-montserrat">
