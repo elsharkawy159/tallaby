@@ -204,7 +204,7 @@ Add a product to the cart on Seller A's store as a guest, then open checkout.
 ## B3. Top-ups in USD
 
 - [ ] Limits say 5 to 1,000 dollars. `$4` and `$1,001` show errors.
-- [ ] The summary shows the rate, and "ستحوّل" in EGP.
+- [ ] The summary shows the rate, and "ستدفع" in EGP.
 - [ ] Admin shows the USD credit and the EGP paid. Approve: the balance rises by the exact USD amount, once.
 
 ## B4. $5 lock (Seller C, no top-up)
