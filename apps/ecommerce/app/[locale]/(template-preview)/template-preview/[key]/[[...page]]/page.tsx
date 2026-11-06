@@ -73,8 +73,8 @@ export default async function TemplatePreviewFrame({ params, searchParams }: Pro
       <PageStyles sections={all} />
       {header && <SectionRenderer instance={header} registry={storeSectionRegistry} ctx={chromeCtx} defaultLocale={site.settings.defaultLocale} />}
       <main className="flex-1">
-        {sections.map((instance) => (
-          <SectionRenderer key={instance.id} instance={instance} registry={storeSectionRegistry} ctx={ctx} defaultLocale={site.settings.defaultLocale} />
+        {sections.map((instance, index) => (
+          <SectionRenderer key={instance.id} instance={instance} registry={storeSectionRegistry} ctx={ctx} defaultLocale={site.settings.defaultLocale} aboveFold={index === 0} />
         ))}
       </main>
       {footer && <SectionRenderer instance={footer} registry={storeSectionRegistry} ctx={chromeCtx} defaultLocale={site.settings.defaultLocale} />}

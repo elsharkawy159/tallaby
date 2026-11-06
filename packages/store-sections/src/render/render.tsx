@@ -7,7 +7,7 @@ import { flushHeaderOnMobile } from "../config/header";
 import { resolveSectionForLocale } from "../core/locale";
 import { applyMigrations, resolveSectionProps, type SectionRegistry } from "../core/registry";
 import { SITE_ROOT_CLASS, SITE_THEME_INIT_SCRIPT, designSystemToCss, siteDarkCss, type ThemeInput } from "../core/theme";
-import { IMAGE_SIZES, imageSource, type RenderContext } from "../core/types";
+import { IMAGE_SIZES, imageLoading, imageSource, type RenderContext } from "../core/types";
 import { MOTION_CSS } from "../elements/motion";
 import { resolveAnimation } from "@workspace/motion/presets";
 import { shellLayout } from "../elements/shell";
@@ -18,11 +18,18 @@ export function SectionRenderer({
   registry,
   ctx,
   defaultLocale = "ar",
+  aboveFold = false,
 }: {
   instance: SectionInstance;
   registry: SectionRegistry;
   ctx: RenderContext;
   defaultLocale?: SiteLocale;
+  /**
+   * The page's first section (pass `index === 0` in the page's section
+   * order): its images load eagerly with high priority and it never reveals,
+   * so the first screen paints without waiting for script (LCP).
+   */
+  aboveFold?: boolean;
 }) {
   const definition = registry.get(instance.sectionId);
   // Unknown or retired sections are skipped, never an error page.
@@ -35,7 +42,13 @@ export function SectionRenderer({
   // The section's Animation (docs/section-rules.md §6.6): "none" turns its reveal off, Inherit takes
   // the site default, a preset is played by every reveal in the section.
   const preset = ctx.reveal ? resolveAnimation(shellStyle?.animation, { animationDefault: ctx.revealDefault }) : null;
-  const sectionCtx: RenderContext = !ctx.reveal ? ctx : preset ? { ...ctx, revealPreset: preset } : { ...ctx, reveal: false };
+  const revealCtx: RenderContext = !ctx.reveal ? ctx : preset ? { ...ctx, revealPreset: preset } : { ...ctx, reveal: false };
+  // The first section never hides behind a reveal (opacity 0 until the motion script runs).
+  const sectionCtx: RenderContext = aboveFold
+    ? { ...revealCtx, aboveFold: true, reveal: false }
+    : revealCtx.aboveFold
+      ? { ...revealCtx, aboveFold: false }
+      : revealCtx;
   const content = <Component instance={localizedInstance} props={props} ctx={sectionCtx} />;
   const shell = shellLayout(shellStyle, (src) => ctx.imageUrl(src));
   // No shell: the wrapper renders exactly as before the shell existed (P4B-05).
@@ -51,7 +64,7 @@ export function SectionRenderer({
       {shell.bgImage && (
         <>
           {/* eslint-disable-next-line @next/next/no-img-element -- shared by both apps; no next/image here */}
-          <img {...imageSource(ctx, shell.bgImage, IMAGE_SIZES.full)} alt="" aria-hidden className="pointer-events-none absolute inset-0 -z-10 size-full object-cover" loading="lazy" decoding="async" />
+          <img {...imageSource(ctx, shell.bgImage, IMAGE_SIZES.full)} alt="" aria-hidden className="pointer-events-none absolute inset-0 -z-10 size-full object-cover" {...imageLoading(aboveFold)} decoding="async" />
           {shell.overlay > 0 && <div aria-hidden className="absolute inset-0 -z-10" style={{ background: `rgb(0 0 0 / ${shell.overlay}%)` }} />}
         </>
       )}
@@ -81,8 +94,8 @@ export function PageRenderer({
     <>
       {header && <SectionRenderer instance={flushHeaderOnMobile(header)} registry={registry} ctx={chromeCtx} defaultLocale={defaultLocale} />}
       <main className="flex-1">
-        {content.sections.map((instance) => (
-          <SectionRenderer key={instance.id} instance={instance} registry={registry} ctx={ctx} defaultLocale={defaultLocale} />
+        {content.sections.map((instance, index) => (
+          <SectionRenderer key={instance.id} instance={instance} registry={registry} ctx={ctx} defaultLocale={defaultLocale} aboveFold={index === 0} />
         ))}
       </main>
       {footer && <SectionRenderer instance={footer} registry={registry} ctx={chromeCtx} defaultLocale={defaultLocale} />}

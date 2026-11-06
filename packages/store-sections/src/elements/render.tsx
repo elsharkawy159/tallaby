@@ -55,7 +55,7 @@ import {
 import { MOBILE_COLLAPSE, MOBILE_GROUP, MOBILE_SPLIT } from "../config/header";
 import type { ComponentNode } from "../config/schema";
 import { sectionText } from "../core/copy";
-import { IMAGE_SIZES, imageSource, type RenderContext } from "../core/types";
+import { IMAGE_SIZES, imageLoading, imageSource, type RenderContext } from "../core/types";
 import { DataEmpty } from "../sections/_data";
 import { CarouselElement, SlideElement } from "./render-carousel";
 import { FORM_SUBMIT_CLASS, FormFieldsView, formCopy } from "../sections/forms";
@@ -641,20 +641,23 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
       // A banner runs the full screen width: capped at the page width, the browser picked a file too small and it looked soft on wide screens.
       const sizes = isBannerPhoto(node) ? IMAGE_SIZES.full : typeof props.bind === "string" ? IMAGE_SIZES.card : IMAGE_SIZES.content;
       const secondUrl = typeof props.secondSrc === "string" ? ctx.imageUrl(props.secondSrc) : null;
+      // The page's first section (the hero, LCP) loads its photos at once; a list's records (product
+      // or category cards) load eagerly there too, but only the section's own photos get high priority.
+      const loading = ctx.aboveFold && scope ? ({ loading: "eager" } as const) : imageLoading(ctx.aboveFold);
       if (secondUrl) {
         // Both photos overlap; hovering the card fades the first one out to show the second.
         // `isolate` keeps the first photo's z-index inside this swap, so a sale badge placed over the photo stays on top.
         return (
           <span className="group/pc relative isolate block w-full">
             {/* eslint-disable-next-line @next/next/no-img-element -- shared by both apps; the host optimizes through ctx.optimizeImage */}
-            <img {...attrs} {...imageSource(ctx, url, sizes)} alt={str(props.alt, 160)} className="relative z-[1] block w-full transition-opacity duration-500 ease-in-out group-hover/pc:opacity-0 motion-reduce:transition-none" loading="lazy" decoding="async" />
+            <img {...attrs} {...imageSource(ctx, url, sizes)} alt={str(props.alt, 160)} className="relative z-[1] block w-full transition-opacity duration-500 ease-in-out group-hover/pc:opacity-0 motion-reduce:transition-none" {...loading} decoding="async" />
             {/* eslint-disable-next-line @next/next/no-img-element -- same as above */}
             <img {...attrs} {...imageSource(ctx, secondUrl, sizes)} alt="" aria-hidden className="absolute! inset-0 block size-full! object-cover" loading="lazy" decoding="async" />
           </span>
         );
       }
       // eslint-disable-next-line @next/next/no-img-element -- shared by both apps; the host optimizes through ctx.optimizeImage
-      return <img {...attrs} {...imageSource(ctx, url, sizes)} alt={str(props.alt, 160)} className="block w-full" loading="lazy" decoding="async" />;
+      return <img {...attrs} {...imageSource(ctx, url, sizes)} alt={str(props.alt, 160)} className="block w-full" {...loading} decoding="async" />;
     }
     case "video":
       return <VideoElement attrs={attrs} props={props} ctx={ctx} />;
@@ -666,7 +669,7 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
     case "carousel":
       return (
         <CarouselElement attrs={attrs} node={node} props={props} ctx={ctx}>
-          {kids()}
+          {ctx.aboveFold && node.children.length ? renderFirstSlideAboveFold(node, ctx, depth, scope, reveal.children) : kids()}
         </CarouselElement>
       );
     case "slide":
@@ -1043,6 +1046,18 @@ export function renderElementTree(
   if (!nodes?.length) return null;
   return nodes.map((node, index) => (
     <ElementFragment key={node.id} node={node} ctx={ctx} depth={depth} scope={scope} reveal={reveal === "items" ? index : reveal} />
+  ));
+}
+
+/**
+ * A carousel in the page's first section: only its first slide stays above
+ * the fold (eager, high-priority photos); the later slides load lazily.
+ */
+function renderFirstSlideAboveFold(node: ComponentNode, ctx: RenderContext, depth: number, scope: DataRecord | undefined, reveal: RevealOut): ReactNode {
+  const first = node.children.findIndex((child) => child.type === "slide");
+  const later: RenderContext = { ...ctx, aboveFold: false };
+  return node.children.map((child, index) => (
+    <ElementFragment key={child.id} node={child} ctx={index === first ? ctx : later} depth={depth + 1} scope={scope} reveal={reveal === "items" ? index : reveal} />
   ));
 }
 

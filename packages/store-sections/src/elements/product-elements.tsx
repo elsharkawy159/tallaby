@@ -146,6 +146,7 @@ function Gallery({ product, props, attrs, ctx }: StillProps) {
           {...imageSource(ctx, main, IMAGE_SIZES.content)}
           alt={product.title}
           className={cn("block aspect-square w-full object-contain", zoom && "cursor-zoom-in")}
+          {...(ctx.aboveFold && { fetchPriority: "high" as const })}
           decoding="async"
         />
       ) : (

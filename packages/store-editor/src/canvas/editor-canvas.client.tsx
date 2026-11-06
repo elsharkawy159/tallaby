@@ -606,8 +606,8 @@ export function EditorCanvas({
               </div>
             )}
             <main className="flex-1">
-              {sections.map((instance) => (
-                <SectionRenderer key={sectionKey(instance)} instance={instance} registry={storeSectionRegistry} ctx={pageCtx} defaultLocale={defaultLocale} />
+              {sections.map((instance, index) => (
+                <SectionRenderer key={sectionKey(instance)} instance={instance} registry={storeSectionRegistry} ctx={pageCtx} defaultLocale={defaultLocale} aboveFold={index === 0} />
               ))}
             </main>
             {drawnFooter && (

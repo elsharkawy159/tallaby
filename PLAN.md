@@ -4752,3 +4752,7 @@ Owner asked to keep only the current version of each template in `template_versi
 ### 2026-11-06 — Store product JSON-LD for Google (SEO review items 5–6)
 
 - Store product JSON-LD rates customer reviews only (seller-added reviews are left out; no rating when none), adds Google's strikethrough price, availability from real stock, the Home › store category › product breadcrumb, and `shippingDetails` from the store's own zones (only when one price covers the whole country; cached 10 minutes per seller). "Stock Count" removed. No migration. Skipped: `ProductGroup` variants and `hasMerchantReturnPolicy` (needs the owner). After deploy: Rich Results Test (Product snippets, Merchant listings) on a live product.
+
+### 2026-11-06 — Storefront LCP: first section loads early (SEO review item 3)
+
+- The page's first section (`SectionRenderer aboveFold`, index 0 in the page's section order) loads its images `eager` with `fetchPriority="high"` (carousels: slide 1 only) and skips reveal-on-scroll, so the hero paints before JS. Lower sections, header and footer are unchanged. No design or migration change. `store-sections` 9,091 tests and `store-editor` 172 pass. To check after a dev-server restart: `curl http://<store>.localhost:3000/ | grep -o '<img[^>]*>' | head -2`.

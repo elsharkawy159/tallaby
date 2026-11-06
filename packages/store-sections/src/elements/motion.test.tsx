@@ -124,8 +124,10 @@ describe("reveal on scroll (docs/section-rules.md §6)", () => {
 
   it("never reveals the header or footer", () => {
     const header = { ...custom([node("section", {}, [node("paragraph", { text: "Header" })])]), id: "h1" };
+    // The page's first section never reveals (above the fold, LCP); the second one does.
+    const hero = { ...custom([node("section", {}, [node("paragraph", { text: "Hero" })])]), id: "p0" };
     const page = { ...custom([node("section", {}, [node("paragraph", { text: "Body" })])]), id: "p1" };
-    const html = renderToStaticMarkup(<PageRenderer content={{ sections: [page] }} header={header} footer={null} registry={storeSectionRegistry} ctx={ctx()} />);
+    const html = renderToStaticMarkup(<PageRenderer content={{ sections: [hero, page] }} header={header} footer={null} registry={storeSectionRegistry} ctx={ctx()} />);
     expect(reveals(html)).toHaveLength(1);
     expect(html.indexOf("data-reveal")).toBeGreaterThan(html.indexOf("Header"));
   });

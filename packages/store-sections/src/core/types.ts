@@ -371,6 +371,11 @@ export function imageSource(ctx: Pick<RenderContext, "optimizeImage">, url: stri
   return ctx.optimizeImage?.(url, sizes) ?? { src: url };
 }
 
+/** `loading`/`fetchPriority` of an `<img>`: eager with high priority above the fold (the page's first section, LCP), else lazy. */
+export function imageLoading(aboveFold: boolean | undefined): { loading: "eager" | "lazy"; fetchPriority?: "high" } {
+  return aboveFold ? { loading: "eager", fetchPriority: "high" } : { loading: "lazy" };
+}
+
 export interface RenderContext {
   /** `edit` in the dashboard canvas, `public` on the storefront. */
   mode: "edit" | "public";
@@ -393,6 +398,13 @@ export interface RenderContext {
    * plays it (`stagger`: rising items one after another).
    */
   revealPreset?: AnimationDefault;
+  /**
+   * The section is the page's first one (the hero, LCP): its images load at
+   * once with high priority and nothing in it waits for a reveal. Set by the
+   * section renderer from its `aboveFold` prop, never by a caller; a carousel
+   * keeps it for its first slide only.
+   */
+  aboveFold?: boolean;
   /** The product a product page shows; seeds the `product` scope of its element trees. */
   product?: ProductDetail;
   /**

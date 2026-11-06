@@ -335,8 +335,8 @@ export async function StoreSitePage({
     <>
       {/* Section, part and element styles from the editor (P4B-01). */}
       <PageStyles sections={page.content.sections} />
-      {page.content.sections.map((instance) => (
-        <SectionRenderer key={instance.id} instance={instance} registry={storeSectionRegistry} ctx={ctx} defaultLocale={site.settings.defaultLocale} />
+      {page.content.sections.map((instance, index) => (
+        <SectionRenderer key={instance.id} instance={instance} registry={storeSectionRegistry} ctx={ctx} defaultLocale={site.settings.defaultLocale} aboveFold={index === 0} />
       ))}
     </>
   );

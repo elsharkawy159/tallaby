@@ -213,8 +213,8 @@ export function SitePreview({
             <style>{`.${SITE_ROOT_CLASS} :where(h1,h2,h3,h4){font-family:var(--sf-font-heading,var(--sf-font-body,var(--font-storefront))),system-ui,sans-serif}`}</style>
             {drawnHeader && <SectionRenderer instance={drawnHeader} registry={storeSectionRegistry} ctx={chromeCtx} defaultLocale={defaultLocale} />}
             <main className="flex-1">
-              {sections.map((section) => (
-                <SectionRenderer key={section.id} instance={section} registry={storeSectionRegistry} ctx={ctx} defaultLocale={defaultLocale} />
+              {sections.map((section, index) => (
+                <SectionRenderer key={section.id} instance={section} registry={storeSectionRegistry} ctx={ctx} defaultLocale={defaultLocale} aboveFold={index === 0} />
               ))}
             </main>
             {drawnFooter && <SectionRenderer instance={drawnFooter} registry={storeSectionRegistry} ctx={chromeCtx} defaultLocale={defaultLocale} />}
