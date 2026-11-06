@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { quoteTopUp } from "@workspace/lib/billing";
-import { estimatePlans, formatEgp, formatUsd, orderFee, PLAN_PRICES, proBreakEvenOrders, suggestedPrice, usdCentsToEgp } from "./pricing.lib";
+import { estimatePlans, formatEgp, formatUsd, orderFee, PLAN_PRICES, proBreakEvenOrders, proBreakEvenOrdersShown, suggestedPrice, usdCentsToEgp } from "./pricing.lib";
 
 describe("PLAN_PRICES", () => {
   it("matches the agreed prices", () => {
@@ -24,6 +24,9 @@ describe("formatUsd", () => {
 describe("proBreakEvenOrders", () => {
   it("is where the order fees reach Pro's price", () => {
     expect(proBreakEvenOrders()).toBe(967);
+  });
+  it("is shown rounded up to a clean hundred", () => {
+    expect(proBreakEvenOrdersShown()).toBe(1000);
   });
 });
 

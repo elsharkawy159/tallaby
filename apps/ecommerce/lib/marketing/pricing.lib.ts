@@ -56,6 +56,11 @@ export function proBreakEvenOrders(): number {
   return Math.ceil(PRO_MONTHLY_USD_CENTS / FREE_ORDER_FEE_USD_CENTS);
 }
 
+/** The break-even as marketing copy shows it: rounded up to a clean hundred (967 → 1,000). */
+export function proBreakEvenOrdersShown(): number {
+  return Math.ceil(proBreakEvenOrders() / 100) * 100;
+}
+
 export type PlanEstimateInput = { orders: number };
 
 export type PlanEstimate = {

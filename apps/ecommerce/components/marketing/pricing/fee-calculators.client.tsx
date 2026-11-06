@@ -5,7 +5,7 @@ import { Info } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Slider } from "@workspace/ui/components/slider";
 import { cn } from "@workspace/ui/lib/utils";
-import { PLAN_PRICES, estimatePlans, formatEgp, formatNumber, formatUsd, proBreakEvenOrders, usdCentsToEgp } from "@/lib/marketing/pricing.lib";
+import { PLAN_PRICES, estimatePlans, formatEgp, formatNumber, formatUsd, proBreakEvenOrdersShown, usdCentsToEgp } from "@/lib/marketing/pricing.lib";
 
 const MIN_ORDERS = 10;
 const MAX_ORDERS = 3000;
@@ -75,7 +75,7 @@ export function FeeEstimator({ rate }: { rate: number }) {
           </div>
           <p className="mt-auto flex items-start gap-2 rounded-card-sm bg-teal-50/70 p-3.5 text-[13.5px] text-pretty text-[#33464b]">
             <Info className="mt-0.5 size-4 flex-none text-teal-700" aria-hidden />
-            {t("breakEven", { orders: formatNumber(proBreakEvenOrders()), price: formatUsd(PLAN_PRICES.pro.monthlyCents) })}
+            {t("breakEven", { orders: formatNumber(proBreakEvenOrdersShown()), price: formatUsd(PLAN_PRICES.pro.monthlyCents) })}
           </p>
         </div>
 

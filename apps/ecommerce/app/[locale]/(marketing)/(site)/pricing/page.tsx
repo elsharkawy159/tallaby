@@ -13,7 +13,7 @@ import { FeeEstimator } from "@/components/marketing/pricing/fee-calculators.cli
 import { PlanCards } from "@/components/marketing/pricing/plan-cards";
 import { getMarketingEgpPerUsd } from "@/lib/marketing/exchange-rate.server";
 import { pageMetadata } from "@/lib/marketing/metadata.lib";
-import { PLAN_PRICES, formatNumber, formatUsd, proBreakEvenOrders } from "@/lib/marketing/pricing.lib";
+import { PLAN_PRICES, formatNumber, formatUsd, proBreakEvenOrdersShown } from "@/lib/marketing/pricing.lib";
 import { CONTACT } from "@/lib/marketing/site.lib";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -29,7 +29,7 @@ export default async function PricingPage() {
     orderFee: formatUsd(PLAN_PRICES.free.orderFeeCents),
     pro: formatUsd(PLAN_PRICES.pro.monthlyCents),
     proCredits: formatNumber(PLAN_PRICES.pro.aiCredits),
-    breakEven: formatNumber(proBreakEvenOrders()),
+    breakEven: formatNumber(proBreakEvenOrdersShown()),
   };
 
   const included = [

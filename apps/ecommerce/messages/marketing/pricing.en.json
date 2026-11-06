@@ -34,7 +34,7 @@
       "featureAll": "All store features",
       "featureEverything": "Everything in Free",
       "featureNoFee": "Zero platform fee on orders",
-      "fx": "EGP amounts are approximate, at 1 USD ≈ {rate} EGP, the same rate your dashboard wallet uses."
+      "fx": "EGP amounts are approximate, at 1 USD ≈ {rate} EGP."
     },
     "estimate": {
       "kicker": "Estimate",
