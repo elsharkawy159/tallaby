@@ -126,6 +126,35 @@ Sources: [Shopify pricing](https://www.shopify.com/pricing), [EasyOrders](https:
 
 ### 2.4 EasyOrders public roadmap — what their sellers ask for ([roadmap.easyorders.ai](https://roadmap.easyorders.ai/ar), read 2026-10-28)
 
+**Re-read 2026-11-06** (129 cards; top requests by votes, and where Tallaby stands now):
+
+| Their request (votes 2026-11-06)                       | Tallaby on 2026-11-06                                         | Card on our `/roadmap`            |
+| ------------------------------------------------------ | ------------------------------------------------------------- | --------------------------------- |
+| Deposit as a % of the order (64)                       | Missing; delayed by owner                                     | **new** F-21, waiting             |
+| Print invoice (36)                                     | Live                                                          | F-04 launched                     |
+| Abandoned cart reminders (35)                          | Live                                                          | F-03 launched                     |
+| Order of product options (29)                          | **Missing**                                                   | **new** F-80, waiting             |
+| Customer store credit & wallet (22)                    | Missing; delayed                                              | F-19 waiting                      |
+| Export products to Excel (21)                          | Live                                                          | **new** L-product-export launched |
+| Store in two languages (16)                            | Live                                                          | **new** L-bilingual-store launched |
+| Areas of a governorate as a dropdown (16)              | To check at checkout (zones have areas since 0093)            | —                                 |
+| Bulk change for a whole category (15)                  | Live (bulk edit)                                              | F-24 launched                     |
+| Newsletter pop-up design per theme (15)                | Pop-up designs in the library                                 | —                                 |
+| Coupons in cart + free gift choice (14)                | Built, not deployed (F-13c)                                   | F-13 in progress                  |
+| Purchase to Pixel on delivery (12)                     | Live                                                          | F-30 launched                     |
+| Wholesale and retail price (12)                        | Missing; delayed                                              | F-28 waiting                      |
+| WhatsApp (10)                                          | Delayed (needs a provider)                                    | F-14 waiting                      |
+| Edit product photos with AI (8)                        | **Missing**                                                   | **new** F-81, waiting             |
+| Fawry gateway (7), order tracking by customer (7)      | To check (Paymob/Kashier gateways; customer orders page)      | —                                 |
+| Block customer phones (6)                              | Live                                                          | F-02 in progress                  |
+| Loyalty program (5)                                    | Missing; delayed                                              | F-20 waiting                      |
+| Archive products instead of deleting (5)               | Live (trash)                                                  | F-35 launched                     |
+| Offer price in cart for "buy 2" (5)                    | Built, not deployed (F-07 quantity offers)                    | **new** F-07 in progress          |
+| Several countries and currencies (5)                   | Built, not deployed (F-61)                                    | **new** F-61 in progress          |
+| Egypt Post (5)                                         | Wassalha export built (F-12c)                                 | F-12 in progress                  |
+
+The table below is the first read.
+
 All 88 ideas read on 2026-10-28 (the 66 waitlist items expanded in the browser; 12 planned, 4 in progress, 6 done). Votes in brackets.
 
 | Their item (status)                                                               | Tallaby                                                                                                                           | Roadmap                    |
@@ -277,6 +306,9 @@ Priorities are the owner's (`Roadmap_new.md` §9). The order inside them is prop
 | 61  | F-65 | Hide campaign pages and store visits link           | P1                          | no              | Owner confirmed: no running ads                     |
 | 62  | F-66 | Email editor with live preview                      | P2                          | no              | —                                                   |
 | 63  | F-67 | Pending carts for sellers                           | P2                          | no (expected)   | Customer data: store's own carts only               |
+| 64  | F-79 | Static dashboard pages (locale segment + Cache Components) | P2                   | no              | Own branch; owner said later (2026-11-06)           |
+| 65  | F-80 | Reorder product options and values (EasyOrders: 29 votes) | P2                    | maybe           | —                                                   |
+| 66  | F-81 | Improve product photos with AI (white background)  | P3                          | no (expected)   | AI cost rules (docs/ai.md) first                    |
 
 ---
 
@@ -1094,10 +1126,44 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 ### F-78 Where to buy a domain — P2 · owner request
 
 **Why:** A seller without a domain doesn't know why to get one or where to buy it (owner, 2026-11-06).
-**What:** Website › Domain & SEO › Domain (primary store) gets a "No domain yet? Buy one in minutes" card under Custom domain: six benefits (easier to remember and share, more trust, your brand, helps on Google, the address is yours, branded email) and seven registrar links (new tab, `noopener noreferrer`, no affiliate params, no prices). Registrars that let an Egyptian seller pay in جنيه come first with a «يقبل الجنيه» tag (Hostinger, EgyHosting, EngHosting), then Namecheap, GoDaddy, Cloudflare Registrar, Porkbun. One line says to come back, enter the domain and copy the DNS records. Open while the store has no custom domain, folded once one is added. List in `domain-providers.lib.ts` (typed, sort tested). No migration.
+**What:** Website › Domain & SEO › Domain (primary store) gets a "No domain yet? Buy one in minutes" card under Custom domain: six benefits (easier to remember and share, more trust, your brand, helps on Google, the address is yours, branded email) and five registrar links, each with its logo (`public/domain-logos/`) (new tab, `noopener noreferrer`, no affiliate params, no prices). Registrars that let an Egyptian seller pay in جنيه come first with a «يقبل الجنيه» tag (Hostinger, EgyHosting), then Namecheap, GoDaddy, Cloudflare Registrar (EngHosting and Porkbun removed, owner 2026-11-06). One line says to come back, enter the domain and copy the DNS records. Open while the store has no custom domain, folded once one is added. List in `domain-providers.lib.ts` (typed, sort tested). No migration.
 **Status:** [Built, not deployed] 2026-11-06 (§7).
 
 - **F-78a · P2 · deps: none** Provider list + sort + benefits card on the Domain page, ar/en strings.
+
+### F-79 Static dashboard pages with good revalidation — P2 · owner request · later
+
+**Why:** `pnpm build` shows every dashboard page as Dynamic (ƒ); only `/_global-error`, `/favicon.ico`, `/manifest.webmanifest`, `/robots.txt` and `/sitemap.xml` are prerendered. The owner wants dashboard pages static by default, refreshed by revalidation (owner, 2026-11-06). Related: F-43 (dashboard performance).
+**Cause (checked 2026-11-06):**
+1. The root layout `apps/dashboard/app/layout.tsx` calls `getLocale()`; `i18n/request.tsx` reads the `locale` cookie with `cookies()`, so every route under the root layout renders per request. This is the main cause.
+2. The root layout also ran `getSiteData()` (seller profile = session cookie) for every page. **Fixed 2026-11-06:** `SiteDataProvider` moved into `app/(main)/layout.tsx`, its only users (sidebar, command palette, Help).
+3. Per page: `app/(main)/layout.tsx` reads the session, the seller access, wallet and stores; 51 files set `export const dynamic = "force-dynamic"`; `/signup` and `/roadmap` read the user and `searchParams`.
+**What:** The supported way in Next 16.3 (`node_modules/next/dist/docs/01-app/03-api-reference/04-functions/next-root-params.md`, `02-guides/internationalization.md`): a hidden `[locale]` root segment. Then Cache Components, so each page's shell is prerendered and the seller's data streams in.
+**Size (measured 2026-11-06):** ~640 files under `app/` move into `app/[locale]/`; 103 `revalidatePath("/…")` calls; 76 `@/app/(main)/…` imports in 43 files; 19 client files use `usePathname`.
+**Risks:** a missed `revalidatePath` fails silently (sellers see stale data after a save), so every call goes through one helper or switches to tags. `usePathname` must still return the visible path (check after the rewrite). Route handlers (`app/api`, `app/.well-known`), `manifest.ts`, `robots.ts`, `sitemap.ts` stay outside `[locale]`; `not-found.tsx` becomes `global-not-found.tsx`.
+**Status:** [Planned] (owner, 2026-11-06: keep for later). Work on its own branch, not on `main` (rule 19 exception to agree with the owner when it starts).
+
+- **F-79a · P2 · deps: none** Locale as a hidden root segment: move routes to `app/[locale]/`, `proxy.ts` rewrites `/x` → `/<cookie locale>/x` (visible URL unchanged), root layout reads `locale` from `next/root-params` with `generateStaticParams` for `ar`/`en`, `i18n/request.tsx` uses `requestLocale` instead of `cookies()`, language switch keeps working (`actions/locale.ts` + refresh). Fix the 76 `@/app/…` imports. Check: `/login` and not-found build as static (○).
+- **F-79b · P2 · deps: F-79a** Revalidation: replace the 103 `revalidatePath` calls with a locale-aware helper (or `revalidateTag` with seller-scoped tags from `packages/cache/src/tags.ts`, rule 8), plus a test that no raw `revalidatePath("/` remains in the dashboard.
+- **F-79c · P2 · deps: F-79b** Cache Components (`cacheComponents: true`), one route group at a time (follow the `next-cache-components-adoption` skill): remove `force-dynamic`, put session, wallet and store reads inside `<Suspense>` so the sidebar/header/skeleton shell is prerendered; never cache carts, orders, wallets, builder drafts or integration secrets (rule 8).
+- **F-79d · P2 · deps: F-79c** Check: `pnpm build` route table, navigation speed before/after on the main pages, every save still refreshes its page; record in §7.
+
+### F-80 Reorder product options and values — P2 · from the EasyOrders roadmap
+
+**Why:** The 4th most voted idea on the EasyOrders roadmap (29 votes, read 2026-11-06): sellers want to choose the order of a product's options (size, colour…) and of each option's values on the product page. Tallaby has no way to do it today (checked 2026-11-06: only columns, categories and brands can be reordered).
+**What:** Drag handles (and up/down buttons on phones) for option types and their values in the product form; the store's product page and variant pickers follow that order. Check first whether the order is already stored (variant type position) before adding a column.
+**Status:** [Planned] Waiting card on `/roadmap` (2026-11-06) to collect votes.
+
+- **F-80a · P2 · deps: none** Check how option types and values are stored and read; design note.
+- **F-80b · P2 · deps: F-80a** Reorder in the product form (keyboard and touch), saved order used by the store's product page.
+
+### F-81 Improve product photos with AI — P3 · from the EasyOrders roadmap
+
+**Why:** EasyOrders sellers ask to edit product photos with AI (8 votes, read 2026-11-06). Clean white-background photos make a store look professional.
+**What:** One click on a product photo: remove the background (white), even out the light, keep the product untouched. Must follow `docs/ai.md` (rule 20): cost measured first, daily cap, AI credits after the USD switch.
+**Status:** [Planned] Waiting card on `/roadmap` (2026-11-06) to collect votes.
+
+- **F-81a · P3 · deps: none** Cost study of providers (background removal vs. image model) and a design note for the owner.
 
 ---
 
@@ -1107,6 +1173,8 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 | Date       | Request (owner's words)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Feature ID                                                                                       | Status                                                                                             |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| 2026-11-06 | "Update /roadmap page with our latest updates and check this page https://roadmap.easyorders.ai/ar use as a reference to update our roadmap, check what's not on our website and that has many votes on the easyorders roadmap to include into our road map" | F-80, F-81, /roadmap cards | Cards prepared (`packages/db/scripts/roadmap-cards-2026-11-06.sql`), production write waits for owner approval |
+| 2026-11-06 | "I see the Dashboard pnpm build result all pages are Dynamic, which is not the best for the dashboard performance. Can you debug and search to see what is the shared component that makes all pages dynamic while it should be static by default?" Then: "just keep it in the ROADMAP.md and we'll work on it later to make all dashboard pages static with good revalidate" | F-79 | Planned (root-layout `getSiteData` move done) |
 | 2026-11-06 | "On the domains page, add recommended Domain providers links in a list for user who wants to buy a custom domain, with a benefits list of integrating your store with custom domain instead of subdomain (SEO, easy to remember, etc). Maybe we can add in the list Namecheap, Godaddy, Hostinger, etc, sort by most popular and recommended." Then: "prioritize the companies [that] accept EGP first." | F-78 | Built, not deployed (no migration) |
 | 2026-11-06 | "on the seller's dashboard templates page, add a button at the top says something like "Didn't find a theme suit your business? Request a theme now!" so on clicking the button opens a dialog and seller add the template info he wants (Template URL or upload image, or describe it, with a Note textarea) then the request sent to us and I can find it on the admin project to implement these templates ASAP and user will be notified later". Owner's answers: (1) a built theme goes to everyone, added to the normal code-only gallery; the request only tracks status and the admin's reply; (2) free, max 3 open requests per seller, images up to 3 × 5 MB JPEG/PNG/WebP; (3) notify on in progress / ready / declined by bell + push, email on ready or declined (seller locale), and a "My theme requests" list on the templates page | F-77 | Built, not deployed (0156 not applied) |
 | 2026-11-06 | Store access before activation: "keep it accessible to his IP only … top-up your wallet to activate your store … don't deduct the 0.03$ … once user top-up, remove any store access throttling". Owner's answers: (1) the seller's signed-in device, not IP: the dashboard's "View store" gives that browser a private pass; (2) everyone else sees the store-offline page, marketplace listings unchanged; (3) orders in this state are test orders, visible with a "Test" badge, no fee, no stock change, no buyer emails, out of all totals; (4) live with the USD switch only | F-76 | Built, not deployed (0155 not applied) |
@@ -1455,6 +1523,13 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-77b Dashboard "Request a theme" banner, dialog and list (2026-11-06; uncommitted; no browser test)
 - [x] F-77c Admin › Theme requests, status/reply, seller bell + push + email (2026-11-06; uncommitted; no browser test)
 - [x] F-78a "Where to buy a domain" card with benefits and EGP-first registrars on the Domain page (2026-11-06; uncommitted; no browser test)
+- [ ] F-79a Locale as a hidden `[locale]` root segment (proxy rewrite, `next/root-params`)
+- [ ] F-79b Locale-aware revalidation for the 103 `revalidatePath` calls (or seller-scoped tags)
+- [ ] F-79c Cache Components, one route group at a time
+- [ ] F-79d Build route table + speed and save-refresh check
+- [ ] F-80a Option order: storage check + design note
+- [ ] F-80b Reorder options and values in the product form
+- [ ] F-81a AI photo clean-up: cost study + design note (owner)
 
 ---
 
@@ -2572,9 +2647,31 @@ Owner: "add a button at the top … Request a theme now! … Template URL or upl
 - **Not verified:** no browser run, no DB run (unit tests only). A reply edited without a status change is shown on the seller's list but sends nothing.
 
 ### 2026-11-06 — F-78 Where to buy a domain (owner)
+- **Follow-up (owner, 2026-11-06):** removed EngHosting and Porkbun; each provider row now shows its logo (favicons saved to `apps/dashboard/public/domain-logos/`, EgyHosting cropped from its site logo).
 
 Owner: "On the domains page, add recommended Domain providers links … with a benefits list … sort by most popular and recommended", then "prioritize the companies [that] accept EGP first."
 
 - **Dashboard:** `domain-buy-guide.client.tsx` under the Custom domain card on Website › Domain & SEO (primary store only, since only it can connect a domain): six benefits and seven registrar links (new tab, `noopener noreferrer`, no affiliate params, no prices). A `<details>` card, open with no custom domain, folded once one is added. List and sort in `domain-providers.lib.ts` (+ test); strings under `domainSeo.domain.buy` in ar/en. No migration.
 - **Order and EGP evidence (checked 2026-11-06):** Hostinger (hostinger.com/eg shows E£ prices; its Egypt refund policy lists Fawry as a payment method), EgyHosting (egyhosting.com: "Pay in Egyptian pounds", InstaPay, Meeza, Fawry; Egyptian, MCIT licence 11881), EngHosting (enghosting.com: EGP prices, Vodafone Cash, InstaPay, card, official invoice; Egyptian), then Namecheap, GoDaddy, Cloudflare Registrar, Porkbun (USD, no EGP evidence found). GoDaddy has no Egypt/EGP storefront that we could find. Competitor-owned domain services (e.g. Vondera VDomain) were left out.
 - **Not verified:** no browser run. Provider details change; re-check the EGP claims when editing the list.
+
+### 2026-11-06 — Public /roadmap cards from our updates and the EasyOrders roadmap (owner)
+
+Owner: update `/roadmap` with our latest work, and add what EasyOrders sellers vote for most that we don't have.
+
+- **Read:** production `feature_requests` (40 team cards, no votes yet; read-only query) against this file's statuses and `origin/main` (deployed code stops at 2026-11-02, 194 local commits not deployed). EasyOrders roadmap re-read (129 cards, §2.4).
+- **Prepared, not run:** `packages/db/scripts/roadmap-cards-2026-11-06.sql`, one guarded transaction for **production only** (staging has no 0115):
+  - F-06 → launched (2026-10-30). F-05 and F-32 planned → in progress (built, not deployed). F-09 planned → waiting (delayed by the owner).
+  - New launched cards (live, asked on EasyOrders): Export products to Excel, Store in Arabic and English (no launch date).
+  - New in-progress cards (built, next deploy): F-07 quantity offers, F-72 minimum order quantity, F-64 one-page checkout, F-61 selling abroad, F-29 Claude/ChatGPT, F-77 request a theme.
+  - New waiting cards (open for votes): F-21 deposit (EasyOrders' top request, 64 votes), F-80 option order (29), F-81 AI photo clean-up (8).
+- **New features:** F-80 and F-81 (§4).
+- **Rule for later:** when a deploy ships an in-progress card, move it to launched with the date (Admin › Seller roadmap).
+
+### 2026-11-06 — F-79 Static dashboard pages (owner, planned)
+
+Owner: every page shows as Dynamic in `pnpm build`; find the shared cause, then "keep it in the ROADMAP.md and we'll work on it later".
+
+- **Found:** the root layout reads the `locale` cookie (`getLocale()` → `i18n/request.tsx` → `cookies()`), which makes every route dynamic; it also loaded the seller profile for every page.
+- **Done now:** `getSiteData()` + `SiteDataProvider` moved from `app/layout.tsx` to `app/(main)/layout.tsx` (only the sidebar, command palette and Help use it), so `/login`, `/signup`, `/roadmap`, `/print`, `/oauth` and the builder no longer load the session/profile in the root layout. Typecheck clean for the changed files; `/login` and `/signup` return 200 on the dev server. No route turns static yet (the locale cookie remains). Not browser-tested signed in.
+- **Left:** F-79a–d (§4), sized and with risks listed there.
