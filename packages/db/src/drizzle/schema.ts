@@ -3171,6 +3171,38 @@ export const storeAppRequests = pgTable("store_app_requests", {
 	check("store_app_requests_status_check", sql`status IN ('requested', 'enabled', 'declined')`),
 ]);
 
+/** "Request a theme" from Website › Templates (0156, ROADMAP.md F-77). Server-only. */
+export const themeRequests = pgTable("theme_requests", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	sellerId: uuid("seller_id").notNull().references(() => sellers.id, { onDelete: "cascade" }),
+	/** The store the seller was on when asking; kept (null) when that store is deleted. */
+	storeId: uuid("store_id").references(() => stores.id, { onDelete: "set null" }),
+	referenceUrl: text("reference_url"),
+	description: text(),
+	note: text(),
+	/** Paths in the private `theme-request-images` bucket (`<sellerId>/<uuid>.<ext>`), at most 3. */
+	imagePaths: text("image_paths").array().default([]).notNull(),
+	/** new | in_progress | ready | declined */
+	status: text().default('new').notNull(),
+	adminReply: text("admin_reply"),
+	requestedBy: uuid("requested_by").references(() => users.id, { onDelete: "set null" }),
+	handledBy: uuid("handled_by").references(() => users.id, { onDelete: "set null" }),
+	handledAt: timestamp("handled_at", { withTimezone: true, mode: 'string' }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("theme_requests_status_created_idx").using("btree", table.status, table.createdAt.desc()),
+	index("theme_requests_seller_idx").using("btree", table.sellerId, table.createdAt.desc()),
+	index("theme_requests_store_idx").using("btree", table.storeId).where(sql`store_id IS NOT NULL`),
+	check("theme_requests_status_check", sql`status IN ('new', 'in_progress', 'ready', 'declined')`),
+	check("theme_requests_reference_url_check", sql`reference_url IS NULL OR (reference_url ~ '^https://' AND char_length(reference_url) <= 500)`),
+	check("theme_requests_description_check", sql`description IS NULL OR char_length(description) <= 2000`),
+	check("theme_requests_note_check", sql`note IS NULL OR char_length(note) <= 1000`),
+	check("theme_requests_image_paths_check", sql`coalesce(cardinality(image_paths), 0) <= 3`),
+	check("theme_requests_admin_reply_check", sql`admin_reply IS NULL OR char_length(admin_reply) <= 2000`),
+	check("theme_requests_content_check", sql`reference_url IS NOT NULL OR coalesce(cardinality(image_paths), 0) > 0 OR (description IS NOT NULL AND char_length(btrim(description)) > 0)`),
+]);
+
 export const storeAppInstalls = pgTable("store_app_installs", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	sellerId: uuid("seller_id").notNull().references(() => sellers.id, { onDelete: "cascade" }),
@@ -3458,7 +3490,7 @@ export const sellerNotifications = pgTable("seller_notifications", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	sellerId: uuid("seller_id").notNull(),
 	storeId: uuid("store_id"),
-	/** order_created | top_up_approved | top_up_rejected | question_received | review_received | carrier_shipment_failed | carrier_needs_attention | referral_commission_earned | referral_payout_paid | referral_payout_rejected (0117) | welcome_gift_granted | welcome_gift_expiring | welcome_gift_expired (0119) | low_stock (0125) | admin_message (0131: `data` = { title, body, link? }, sent from Admin) | agent_connected (0133, F-29d) */
+	/** order_created | top_up_approved | top_up_rejected | question_received | review_received | carrier_shipment_failed | carrier_needs_attention | referral_commission_earned | referral_payout_paid | referral_payout_rejected (0117) | welcome_gift_granted | welcome_gift_expiring | welcome_gift_expired (0119) | low_stock (0125) | admin_message (0131: `data` = { title, body, link? }, sent from Admin) | agent_connected (0133, F-29d) | theme_request_updated (0156, F-77: `data` = { requestId, status, storeId? }) */
 	type: text().notNull(),
 	data: jsonb().$type<Record<string, unknown>>().default({}).notNull(),
 	dedupeKey: text("dedupe_key").notNull(),

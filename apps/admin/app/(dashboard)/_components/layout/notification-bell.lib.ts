@@ -83,6 +83,11 @@ export function describeAdminNotification(n: Pick<NotificationItem, 'type' | 'da
         body: [who(seller, store), subdomain && `(${subdomain})`].filter(Boolean).join(' ') ||
           'A seller turned their website off.',
       }
+    case 'theme_requested':
+      return {
+        title: 'Theme requested',
+        body: who(seller, store) || 'A seller asked for a new theme.',
+      }
     case 'app_requested':
       return {
         title: 'App requested',

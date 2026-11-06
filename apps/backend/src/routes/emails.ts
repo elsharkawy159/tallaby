@@ -24,6 +24,7 @@ import {
   sendSellerNewOrders,
   sendSellerOrderCancelled,
   sendSellerStoreCreated,
+  sendSellerThemeRequestUpdate,
   sendSellerWalletTopUp,
 } from "../lib/emails/seller-emails";
 import { sendFeeTrialReminder } from "../lib/fee-trial-reminder";
@@ -335,6 +336,22 @@ app.post("/store-wallet-top-up", async (c) => {
 });
 
 const storeSchema = z.object({ storeId: z.string().uuid() });
+
+const themeRequestSchema = z.object({ requestId: z.string().uuid() });
+
+/** A theme request is ready or declined (F-77): the seller's mail, once per outcome. */
+app.post("/theme-request-update", async (c) => {
+  const parsed = themeRequestSchema.safeParse(await c.req.json().catch(() => null));
+  if (!parsed.success) {
+    return c.json({ error: "Invalid request", details: parsed.error.flatten() }, 400);
+  }
+  try {
+    return c.json({ success: true, result: await sendSellerThemeRequestUpdate(parsed.data.requestId) });
+  } catch (error) {
+    console.error("Error sending theme request email:", error);
+    return c.json({ error: "Failed to send theme request email" }, 500);
+  }
+});
 
 app.post("/store-created", async (c) => {
   const parsed = storeSchema.safeParse(await c.req.json().catch(() => null));

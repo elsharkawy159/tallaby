@@ -106,3 +106,12 @@ export async function sendAbandonedCartEmail(cartId: string): Promise<EmailResul
 export async function sendBackInStockEmail(subscriptionId: string): Promise<EmailResult> {
   return postEmail('back-in-stock', { subscriptionId })
 }
+
+/**
+ * A theme request is ready or declined (ROADMAP.md F-77): the seller's mail.
+ * The backend reads the request's current status and claims one email per
+ * (status, request), so a repeat call sends nothing.
+ */
+export async function sendThemeRequestUpdateEmail(requestId: string): Promise<EmailResult> {
+  return postEmail('theme-request-update', { requestId })
+}

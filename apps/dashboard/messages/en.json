@@ -6522,6 +6522,10 @@
         "title": "Stock running low",
         "body": "{stock, plural, =0 {{name} is out of stock.} one {Only 1 left of {name}.} other {Only # left of {name}.}}"
       },
+      "theme_request_updated": {
+        "title": "Theme request update",
+        "body": "{status, select, in_progress {We started working on the theme you asked for.} ready {The theme you asked for is ready in the Templates gallery.} declined {We couldn't build the theme you asked for. Open it to see our reply.} other {Your theme request was updated.}}"
+      },
       "admin_message": {
         "from": "From the Tallaby team",
         "fallbackTitle": "Message from Tallaby"
@@ -6616,6 +6620,58 @@
     "later": "Later",
     "saved": "Thanks! Your answer is saved.",
     "error": "Your answer could not be saved. Try again."
+  },
+  "themeRequests": {
+    "bannerTitle": "Didn't find a theme for your business?",
+    "bannerBody": "Tell us what you have in mind. We'll build it, add it to the gallery and let you know when it's ready.",
+    "button": "Request a theme",
+    "dialogTitle": "Request a theme",
+    "dialogDescription": "Add a link, images or a description. One of them is enough.",
+    "urlLabel": "Reference website",
+    "urlPlaceholder": "https://example.com",
+    "optional": "Optional",
+    "urlInvalid": "Enter a full link that starts with https://",
+    "imagesLabel": "Images",
+    "imagesHint": "Up to 3 · JPEG, PNG or WebP · 5 MB each",
+    "dropTitle": "Choose images or drop them here",
+    "removeImage": "Remove image",
+    "uploading": "Uploading…",
+    "imageType": "Only JPEG, PNG or WebP images.",
+    "imageSize": "Each image must be 5 MB or less.",
+    "imageMax": "You can add up to 3 images.",
+    "uploadFailed": "The image couldn't be uploaded. Try again.",
+    "descriptionLabel": "Describe the theme",
+    "descriptionPlaceholder": "Colours, style, the sections you need, a store you like…",
+    "noteLabel": "Note",
+    "notePlaceholder": "Anything else we should know",
+    "empty": "Add a link, an image or a description.",
+    "submit": "Send request",
+    "cancel": "Cancel",
+    "sending": "Sending…",
+    "sent": "Your request was sent. We'll let you know when it's ready.",
+    "limitNote": "You can have up to {max} open requests at a time.",
+    "limitReached": "You have {max} open requests. You can send a new one when one of them is done.",
+    "listTitle": "My theme requests",
+    "sentOn": "Sent {date}",
+    "images": "{count, plural, one {1 image} other {# images}}",
+    "reply": "Reply from the Tallaby team",
+    "loadFailed": "Your requests couldn't be loaded.",
+    "retry": "Try again",
+    "status": {
+      "new": "Received",
+      "in_progress": "In progress",
+      "ready": "Ready",
+      "declined": "Declined"
+    },
+    "errors": {
+      "invalid": "Check the fields and try again.",
+      "invalidImage": "One of the images is not valid. Remove it and add it again.",
+      "tooManyOpen": "You have 3 open requests. You can send a new one when one of them is done.",
+      "rateLimited": "Too many tries. Wait a few minutes and try again.",
+      "readOnly": "This store is read-only, so you can't send requests now.",
+      "notFound": "Store not found.",
+      "generic": "Something went wrong. Try again."
+    }
   },
   "websiteTemplates": {
     "loading": "Loading templates…",

@@ -15,6 +15,8 @@ export interface SidebarCounts {
   pendingStoreTopUps: number;
   /** Apps sellers asked for, waiting for review (0143, F-62). */
   pendingAppRequests: number;
+  /** Theme requests sellers sent that nobody started yet (status `new`, 0156, F-77). */
+  newThemeRequests: number;
   /** Sellers with at least one fulfillment service requested, under review or awaiting agreement. */
   fulfillmentOpenSellers: number;
   /** Ad campaign requests in `pending`. */
@@ -48,6 +50,7 @@ export const EMPTY_SIDEBAR_COUNTS: SidebarCounts = {
   pendingSellers: 0,
   pendingStoreTopUps: 0,
   pendingAppRequests: 0,
+  newThemeRequests: 0,
   fulfillmentOpenSellers: 0,
   pendingAdRequests: 0,
   integrationErrors: 0,

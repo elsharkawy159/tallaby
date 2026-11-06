@@ -32,6 +32,9 @@ export const EMAIL_TYPES = {
   sellerWalletTopUp: "seller_wallet_top_up",
   /** reference_id = stores.id. */
   sellerStoreCreated: "seller_store_created",
+  /** reference_id = theme_requests.id: one per request and outcome (F-77, 0156). */
+  themeRequestReady: "theme_request_ready",
+  themeRequestDeclined: "theme_request_declined",
 } as const;
 
 export type EmailType = (typeof EMAIL_TYPES)[keyof typeof EMAIL_TYPES];

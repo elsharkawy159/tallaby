@@ -23,6 +23,9 @@ export const EMAIL_RULES = {
   refund_issued: "order_app",
   // "Your store is ready on Tallaby"
   seller_store_created: "keep",
+  // "Request a theme" outcome: ready or declined (F-77)
+  theme_request_ready: "keep",
+  theme_request_declined: "keep",
   // Campaigns a seller sends, and their test sends
   store_campaign: "manual",
   store_campaign_test: "manual",

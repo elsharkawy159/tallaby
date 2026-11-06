@@ -52,6 +52,7 @@ const PUSH_TYPE_CATEGORY: Readonly<Record<string, PushCategory>> = {
   app_renewed: "account",
   app_renewal_failed: "account",
   app_ended: "account",
+  theme_request_updated: "account",
 };
 
 /** Messages from the Tallaby team (Admin › Sellers, 0131): pushed to every device, no switch. */

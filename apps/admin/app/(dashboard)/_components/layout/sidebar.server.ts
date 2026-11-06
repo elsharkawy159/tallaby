@@ -15,6 +15,7 @@ import {
   cartItems,
   sellerWalletTopUps,
   storeAppRequests,
+  themeRequests,
   sellerFulfillmentServices,
   adCampaignRequests,
   storeIntegrations,
@@ -64,6 +65,7 @@ export const getSidebarCounts = cache(async function getSidebarCounts(): Promise
             AND ${sellerWalletTopUps.provider} IN ('instapay', 'vodafone_cash', 'e_cash', 'orange_cash', 'we_pay')
         ) AS pending_store_top_ups,
         (SELECT count(*)::int FROM ${storeAppRequests} WHERE ${storeAppRequests.status} = 'requested') AS pending_app_requests,
+        (SELECT count(*)::int FROM ${themeRequests} WHERE ${themeRequests.status} = 'new') AS new_theme_requests,
         (SELECT count(DISTINCT ${sellerFulfillmentServices.sellerId})::int FROM ${sellerFulfillmentServices}
           WHERE ${sellerFulfillmentServices.status} IN ('requested', 'under_review', 'awaiting_agreement')
         ) AS fulfillment_open_sellers,
@@ -86,6 +88,7 @@ export const getSidebarCounts = cache(async function getSidebarCounts(): Promise
       pendingSellers: Number(row.pending_sellers ?? 0),
       pendingStoreTopUps: Number(row.pending_store_top_ups ?? 0),
       pendingAppRequests: Number(row.pending_app_requests ?? 0),
+      newThemeRequests: Number(row.new_theme_requests ?? 0),
       fulfillmentOpenSellers: Number(row.fulfillment_open_sellers ?? 0),
       pendingAdRequests: Number(row.pending_ad_requests ?? 0),
       integrationErrors: Number(row.integration_errors ?? 0),

@@ -4,6 +4,7 @@ import { PageContainer } from "@/components/seller-ui";
 import { loadWebsiteStorePage } from "@/lib/stores/website-page.server";
 import { SiteOfflineNote } from "../_components/site-offline-note";
 import { storeFontVariables } from "../_components/store-fonts";
+import { ThemeRequests } from "./theme-requests.client";
 import { TemplateGallery } from "./templates.client";
 
 export const dynamic = "force-dynamic";
@@ -29,6 +30,8 @@ export default async function WebsiteTemplatesPage({ params }: { params: Promise
     <PageContainer>
       <TemplateGallery storeId={store.id} readOnly={store.status !== "active"} fontClassName={storeFontVariables}>
         <SiteOfflineNote storeId={store.id} siteStatus={store.siteStatus} />
+        {/* "Didn't find a theme?" (ROADMAP.md F-77): the request button and the seller's requests. */}
+        <ThemeRequests storeId={store.id} readOnly={store.status !== "active"} />
       </TemplateGallery>
     </PageContainer>
   );

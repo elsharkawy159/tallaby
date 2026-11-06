@@ -17,6 +17,7 @@ export {
   sendRefundIssuedEmail,
   sendStoreCreatedEmail,
   sendStoreWalletTopUpEmail,
+  sendThemeRequestUpdateEmail,
   type OrderCancelledBy,
   type OrderEmailEvent,
 } from './notify'

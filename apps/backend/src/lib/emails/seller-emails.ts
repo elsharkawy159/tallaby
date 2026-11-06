@@ -1,5 +1,5 @@
 import { createElement } from "react";
-import { and, db, eq, isNull, sellers, sellerWalletTopUps, stores, users } from "@workspace/db";
+import { and, db, eq, isNull, sellers, sellerWalletTopUps, stores, themeRequests, users } from "@workspace/db";
 import {
   getEmailMessages,
   interpolate,
@@ -8,6 +8,7 @@ import {
   SellerNewOrderEmail,
   SellerOrderCancelledEmail,
   SellerStoreCreatedEmail,
+  SellerThemeRequestEmail,
   SellerWalletTopUpEmail,
   type CancelledBy,
   type EmailLocale,
@@ -16,6 +17,7 @@ import {
 import { storeHostname, storeUrl } from "@workspace/lib/storefront";
 import { topUpCredit } from "@workspace/lib/store-wallet";
 import { findActiveCustomDomainForSubdomain } from "@workspace/lib/storefront/server";
+import { themeRequestsPath } from "@workspace/lib/theme-requests";
 import { EMAIL_TYPES } from "../email-delivery";
 import { addDays, DASHBOARD_URL, formatDate, formatDateTime, formatMoney, joinUrl, SITE_URL } from "./format";
 import { itemsBySeller, lineItem, loadOrderEmailContext, type OrderEmailContext } from "./order-context";
@@ -314,5 +316,56 @@ export async function sendSellerStoreCreated(storeId: string): Promise<SendOnceR
         help: joinUrl(SITE_URL, "/faq"),
       },
     }),
+  });
+}
+
+/**
+ * "Request a theme" outcome (ROADMAP.md F-77, 0156). Reads the request's
+ * CURRENT status: only ready or declined send, each once per request (the
+ * email_deliveries claim on (type, request id)), so saving the same status
+ * again, or a retry, sends nothing.
+ */
+export async function sendSellerThemeRequestUpdate(requestId: string): Promise<SendOnceResult> {
+  const [request] = await db
+    .select({
+      id: themeRequests.id,
+      sellerId: themeRequests.sellerId,
+      storeId: themeRequests.storeId,
+      status: themeRequests.status,
+      adminReply: themeRequests.adminReply,
+      description: themeRequests.description,
+      referenceUrl: themeRequests.referenceUrl,
+      createdAt: themeRequests.createdAt,
+    })
+    .from(themeRequests)
+    .where(eq(themeRequests.id, requestId))
+    .limit(1);
+  if (!request) return { status: "skipped", reason: "not_found" };
+  if (request.status !== "ready" && request.status !== "declined") return { status: "skipped", reason: "not_final" };
+
+  const seller = await loadSeller(request.sellerId, request.storeId);
+  if (!seller) return { status: "skipped", reason: "no_email" };
+
+  const status = request.status;
+  const copy = getEmailMessages(seller.locale).sellerThemeRequest[status];
+  const rawSummary = (request.description ?? request.referenceUrl ?? "").replace(/s+/g, " ").trim();
+  const summary = rawSummary.length > 140 ? `${rawSummary.slice(0, 139)}…` : rawSummary;
+
+  return sendOnce({
+    emailType: status === "ready" ? EMAIL_TYPES.themeRequestReady : EMAIL_TYPES.themeRequestDeclined,
+    referenceId: request.id,
+    recipient: seller.email,
+    subject: copy.subject,
+    content: createElement(SellerThemeRequestEmail, {
+      locale: seller.locale,
+      storeName: seller.storeName,
+      settingsUrl: SETTINGS_URL,
+      status,
+      reply: request.adminReply,
+      summary: summary || null,
+      requestedAt: formatDate(request.createdAt, seller.locale),
+      links: { templates: joinUrl(DASHBOARD_URL, themeRequestsPath(request.storeId)) },
+    }),
+    metadata: { status },
   });
 }

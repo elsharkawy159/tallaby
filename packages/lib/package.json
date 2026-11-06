@@ -222,6 +222,14 @@
       "types": "./src/push/server.ts",
       "default": "./src/push/server.ts"
     },
+    "./theme-requests": {
+      "types": "./src/theme-requests/index.ts",
+      "default": "./src/theme-requests/index.ts"
+    },
+    "./theme-requests/server": {
+      "types": "./src/theme-requests/server.ts",
+      "default": "./src/theme-requests/server.ts"
+    },
     "./notifications": {
       "types": "./src/notifications/index.ts",
       "default": "./src/notifications/index.ts"

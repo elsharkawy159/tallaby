@@ -25,6 +25,7 @@ These send only for a store subscribed to the app (catalog key `customer_notific
 | Email | Type | Why |
 | --- | --- | --- |
 | "Your store is ready on Tallaby" | `seller_store_created` | The one seller email the owner kept. Always sends. |
+| Theme request ready / declined | `theme_request_ready`, `theme_request_declined` | Owner, 2026-11-06 (ROADMAP.md F-77): the seller asked for it. Always sends, once per request and outcome. |
 
 ## Not automatic, unchanged
 

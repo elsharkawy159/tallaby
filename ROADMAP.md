@@ -1081,12 +1081,25 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 ---
 
+### F-77 Request a theme — P1 · owner request
+
+**Why:** A seller who doesn't find a theme for their business should be able to ask for one, and hear back when it's built (owner, 2026-11-06).
+**What:** Website › Templates has a banner at the top, «لم تجد قالبًا يناسب نشاطك؟ اطلب قالبًا الآن», that opens a dialog: reference URL (https only), up to 3 images (JPEG/PNG/WebP, 5 MB each), a description and a note; one of URL / image / description is required. Free, at most 3 open requests (new or in progress) per seller. Images go to the private `theme-request-images` bucket through a server-signed upload into `<sellerId>/`. Below the banner, "My theme requests" lists status, date and the team's reply. Admin › Theme requests (status filters, detail with signed image links, status + reply). A status change to in progress, ready or declined writes the seller bell (`theme_request_updated`, pushed like every type); ready and declined also email the seller (once per outcome). A built theme is added to the normal code-only gallery for everyone (rule 17); the request only tracks status and reply.
+**Status:** [Built, not deployed] 2026-11-06 (§7). Migration 0156 not applied anywhere.
+
+- **F-77a · P1 · deps: 0156** Table, private bucket, admin bell trigger, seller bell type; lib (validation, 3-open limit, notification plan).
+- **F-77b · P1 · deps: F-77a** Dashboard: banner, dialog with signed image upload, "My theme requests" list.
+- **F-77c · P1 · deps: F-77a** Admin: sidebar link with count, list with status filters, detail with status and reply; bell + push and the ready/declined email.
+
+---
+
 ## 5. Owner feature requests (intake)
 
 Add each new request here first, with the date and the owner's words, then turn it into a §4 feature and place it in §3.
 
 | Date       | Request (owner's words)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Feature ID                                                                                       | Status                                                                                             |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| 2026-11-06 | "on the seller's dashboard templates page, add a button at the top says something like "Didn't find a theme suit your business? Request a theme now!" so on clicking the button opens a dialog and seller add the template info he wants (Template URL or upload image, or describe it, with a Note textarea) then the request sent to us and I can find it on the admin project to implement these templates ASAP and user will be notified later". Owner's answers: (1) a built theme goes to everyone, added to the normal code-only gallery; the request only tracks status and the admin's reply; (2) free, max 3 open requests per seller, images up to 3 × 5 MB JPEG/PNG/WebP; (3) notify on in progress / ready / declined by bell + push, email on ready or declined (seller locale), and a "My theme requests" list on the templates page | F-77 | Built, not deployed (0156 not applied) |
 | 2026-11-06 | Store access before activation: "keep it accessible to his IP only … top-up your wallet to activate your store … don't deduct the 0.03$ … once user top-up, remove any store access throttling". Owner's answers: (1) the seller's signed-in device, not IP: the dashboard's "View store" gives that browser a private pass; (2) everyone else sees the store-offline page, marketplace listings unchanged; (3) orders in this state are test orders, visible with a "Test" badge, no fee, no stock change, no buyer emails, out of all totals; (4) live with the USD switch only | F-76 | Built, not deployed (0155 not applied) |
 | 2026-11-06 | Launch plan (answer to the go-live check): "Turn USD on at launch": run the USD switch on production during the deploy so tallaby.com's $0.03/order and $29 Pro match real charges; needs the owner's go-ahead on the day | F-55…F-57 | Decided |
 | 2026-11-06 | tallaby.com /pricing estimator: remove the "رسائل حملات في الشهر" range, keep only orders per month, and redesign the section so it has no big empty area | F-73 | Queued (after the audits) |
@@ -1429,6 +1442,9 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-76b Test orders: no fee, stock, coupon, wallet, buyer email or carrier (2026-11-06; uncommitted; 0155 not applied anywhere)
 - [x] F-76c Test orders on the dashboard, out of totals (2026-11-06; uncommitted)
 - [ ] F-76d Delete/archive test orders; no admin first-order bell for a test order (needs owner)
+- [x] F-77a Theme requests table, private image bucket, bells and limits (2026-11-06; uncommitted; 0156 not applied anywhere)
+- [x] F-77b Dashboard "Request a theme" banner, dialog and list (2026-11-06; uncommitted; no browser test)
+- [x] F-77c Admin › Theme requests, status/reply, seller bell + push + email (2026-11-06; uncommitted; no browser test)
 
 ---
 
@@ -2534,3 +2550,14 @@ Owner: "keep it accessible to his IP only … top-up your wallet to activate you
 - **Dashboard:** a locked seller with test orders sees the top-up message and only those orders (`requireOrdersView`, `testOnly` scoping); with none, the blurred page as before. "Test"/«تجريبي» badge and a detail row. `orderLock.body` now says the store is private and only the seller can open it.
 - **Migration 0155** (hand-written, idempotent, not applied anywhere): apply on staging, then production, BEFORE deploying this code (order queries select every column).
 - **Not done / to confirm:** test orders stay view-only for good (no delete yet, F-76d); the admin "first order received" bell still fires for a test order; the publish celebration link and the Website page preview iframe open the plain address (the iframe shows the offline page while locked); seller push for a test order is still dropped while locked (existing F-68 rule). Unit tests only; no browser or DB run.
+
+### 2026-11-06 — F-77 Request a theme (owner)
+
+Owner: "add a button at the top … Request a theme now! … Template URL or upload image, or describe it, with a Note textarea … I can find it on the admin project … user will be notified later", then three answers (built themes go to everyone in the code gallery; free, 3 open requests, 3 images × 5 MB; bell + push on each status change, email on ready/declined, a "My theme requests" list).
+
+- **Migration 0156** (hand-written, idempotent, not applied anywhere): server-only `theme_requests` (RLS on, no policies; seller CASCADE, store SET NULL, https-only capped URL, text caps, ≤3 image paths, status `new | in_progress | ready | declined`, at-least-one-field CHECK; indexes on (status, created_at) and (seller_id, created_at)); private `theme-request-images` bucket (5 MB, JPEG/PNG/WebP, no storage policies); `theme_requested` admin bell type and `theme_request_updated` seller bell type, both widened from the live check definition; AFTER INSERT trigger for the admin bell. Apply on staging, then production, BEFORE deploying (the Templates page and the Admin sidebar count read the table).
+- **Lib:** `packages/lib/src/theme-requests/` (pure validation, image paths, `planThemeRequestUpdate`, bell row builder; server create under a per-seller advisory lock with the 3-open check, list, count) and `admin/theme-requests-admin.server.ts` (list, detail, audited update that writes the seller bell row in the same transaction; dedupe key per request + status). Notification hrefs and the bell's `status` value in `notifications.lib.ts`.
+- **Dashboard:** banner + dialog + list on Website › Templates (`theme-requests.client.tsx`, `.server.ts`, `.dto.ts`); images signed by `createThemeRequestImageUploadUrl` (session seller, type/size checked, path built on the server). Bell icon, push category `account`, ar/en strings.
+- **Admin:** sidebar "Theme requests" with a count of `new` requests; `/theme-requests` (filters), `/theme-requests/[id]` (signed image links for 30 minutes, status + reply). Ready/declined call the backend `/api/emails/theme-request-update` after the commit; the backend sends `theme_request_ready` / `theme_request_declined` (policy "keep") once per request (`email_deliveries` claim), in the seller's language, with the seller email kit (`SellerThemeRequestEmail`).
+- **Not verified:** no browser run, no DB run (unit tests only). A reply edited without a status change is shown on the seller's list but sends nothing.
+

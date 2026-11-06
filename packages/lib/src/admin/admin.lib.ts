@@ -94,6 +94,8 @@ export const ADMIN_AUDIT_ACTIONS = [
   // Admin › App requests (0143, F-62)
   "enable_app_request",
   "decline_app_request",
+  // Admin › Theme requests (0156, F-77)
+  "update_theme_request",
 ] as const;
 
 export type AdminAuditAction = (typeof ADMIN_AUDIT_ACTIONS)[number];

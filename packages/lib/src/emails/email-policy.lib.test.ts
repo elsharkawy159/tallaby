@@ -10,7 +10,7 @@ describe("email policy", () => {
     expect(ofRule("order_app").sort()).toEqual(
       ["order_cancelled", "order_confirmation", "order_delivered", "order_shipped", "refund_issued"].sort(),
     );
-    expect(ofRule("keep")).toEqual(["seller_store_created"]);
+    expect(ofRule("keep").sort()).toEqual(["seller_store_created", "theme_request_declined", "theme_request_ready"]);
     expect(ofRule("manual").sort()).toEqual(["store_campaign", "store_campaign_test"]);
   });
 

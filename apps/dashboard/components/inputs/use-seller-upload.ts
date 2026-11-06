@@ -6,7 +6,8 @@ import { useTranslations } from 'next-intl'
 
 import { createClient } from '@/supabase/client'
 import { generateImageName, getPublicUrl } from '@/lib/utils'
-import { createProductImageUploadUrl, createSellerUploadUrl, createSellersBucketUploadUrl } from './seller-upload.server'
+import { THEME_REQUEST_BUCKET } from '@workspace/lib/theme-requests'
+import { createProductImageUploadUrl, createSellerUploadUrl, createSellersBucketUploadUrl, createThemeRequestImageUploadUrl } from './seller-upload.server'
 
 const MAX_SIZE = 5 * 1024 * 1024
 
@@ -112,4 +113,20 @@ export function useSellerUpload ({
   )
 
   return { upload, isUploading }
+}
+
+/**
+ * Uploads one "Request a theme" image (F-77) into the seller's own folder of
+ * the private `theme-request-images` bucket through a signed upload URL. The
+ * server checks the type and size and builds the path. Resolves to the stored
+ * path (what the request saves); throws on failure.
+ */
+export async function uploadThemeRequestImage (file: File): Promise<string> {
+  const signed = await createThemeRequestImageUploadUrl({ type: file.type, size: file.size })
+  if (!signed.success) throw new Error(`upload not signed: ${signed.error}`)
+  const { data, error } = await createClient()
+    .storage.from(THEME_REQUEST_BUCKET)
+    .uploadToSignedUrl(signed.path, signed.token, file, { contentType: file.type || undefined })
+  if (error) throw error
+  return data.path
 }

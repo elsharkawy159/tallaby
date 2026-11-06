@@ -600,3 +600,68 @@ export const SellerStoreCreatedEmail = ({ locale = "en", storeName, settingsUrl,
     </SellerShell>
   );
 };
+
+/* ----------------------------------------------------------------------- */
+
+export interface SellerThemeRequestEmailProps extends SellerEmailProps {
+  /** Only these two statuses send mail (F-77). */
+  status: "ready" | "declined";
+  /** The admin's reply, shown as written. */
+  reply?: string | null | undefined;
+  /** A short line of what the seller asked for (description or URL), already clipped. */
+  summary?: string | null | undefined;
+  /** Pre-formatted date the request was sent. */
+  requestedAt: string;
+  links: { templates: string };
+}
+
+/** "Request a theme" outcome (ROADMAP.md F-77): the theme is in the gallery, or it was declined. */
+export const SellerThemeRequestEmail = ({
+  locale = "en",
+  storeName,
+  settingsUrl,
+  status,
+  reply,
+  summary,
+  requestedAt,
+  links,
+}: SellerThemeRequestEmailProps) => {
+  const f = emailFrame(PLATFORM_BRAND, locale);
+  const messages = getEmailMessages(locale);
+  const all = messages.sellerThemeRequest;
+  const copy = all[status];
+  const kit = messages.kit;
+
+  return (
+    <SellerShell f={f} storeName={storeName} settingsUrl={settingsUrl} title={copy.subject} preview={copy.preview}>
+      <Block f={f} padding="36px 32px 8px">
+        <Pill f={f} tone={status === "ready" ? "success" : "warning"}>
+          {copy.pill}
+        </Pill>
+        <H1 f={f} flush>
+          {copy.heading}
+        </H1>
+        <Lead f={f}>{copy.lead}</Lead>
+        {reply ? (
+          <Callout f={f}>
+            <Strong>{all.replyTitle}</Strong>
+            <div style={{ whiteSpace: "pre-line" }}>{reply}</div>
+          </Callout>
+        ) : null}
+        <MetaGrid
+          f={f}
+          items={[
+            { label: all.requested, value: requestedAt },
+            ...(summary ? [{ label: all.requestTitle, value: summary }] : []),
+          ]}
+        />
+        <Cta f={f} href={links.templates} label={copy.cta} />
+      </Block>
+      <Block f={f} divider padding="0 32px 32px" last>
+        <HelpBlock f={f}>
+          {kit.replyOrWrite} <MailLink f={f} email={f.brand.supportEmail} />.
+        </HelpBlock>
+      </Block>
+    </SellerShell>
+  );
+};

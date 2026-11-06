@@ -3,6 +3,7 @@
  * `type` and `data`; each app renders the text, and these helpers decide where
  * a notification leads and validate what a client sends back.
  */
+import { themeRequestsPath } from "../theme-requests/theme-requests.lib";
 
 export const ADMIN_NOTIFICATION_TYPES = [
   "seller_created",
@@ -21,6 +22,8 @@ export const ADMIN_NOTIFICATION_TYPES = [
   "referral_payout_requested",
   // A seller asked for an app that isn't open yet (0143, F-62)
   "app_requested",
+  // A seller asked for a theme from Website › Templates (0156, F-77)
+  "theme_requested",
 ] as const;
 export type AdminNotificationType = (typeof ADMIN_NOTIFICATION_TYPES)[number];
 
@@ -53,6 +56,8 @@ export const SELLER_NOTIFICATION_TYPES = [
   "app_renewed",
   "app_renewal_failed",
   "app_ended",
+  // Admin changed a theme request's status (0156, F-77): `data` = { requestId, status, storeId? }
+  "theme_request_updated",
 ] as const;
 export type SellerNotificationType = (typeof SELLER_NOTIFICATION_TYPES)[number];
 
@@ -134,6 +139,10 @@ export function adminNotificationHref(
       return "/referrals";
     case "app_requested":
       return "/app-requests";
+    case "theme_requested": {
+      const requestId = dataString(data, "requestId");
+      return requestId ? `/theme-requests/${encodeURIComponent(requestId)}` : "/theme-requests";
+    }
     default:
       return null;
   }
@@ -175,6 +184,8 @@ export function sellerNotificationHref(n: Pick<NotificationItem, "type" | "data"
       const productId = dataString(n.data, "productId");
       return productId ? `/products/inventory?product=${encodeURIComponent(productId)}` : "/products/inventory";
     }
+    case "theme_request_updated":
+      return themeRequestsPath(dataString(n.data, "storeId"));
     case "admin_message": {
       const link = dataString(n.data, "link");
       return link && isDashboardPath(link) ? link : null;
@@ -216,6 +227,8 @@ export function sellerNotificationValues(
     // low_stock (0125): product name (+ variant) and the stock left.
     name: [notificationText(data, "name"), notificationText(data, "variantTitle")].filter(Boolean).join(" · "),
     stock: typeof data.stock === "number" ? data.stock : 0,
+    // theme_request_updated (0156): in_progress | ready | declined, for an ICU select.
+    status: notificationText(data, "status") || "other",
   };
 }
 

@@ -276,6 +276,15 @@ export interface TransactionalCopy {
     design: string;
     helpCenter: string;
   };
+  /** Website › Templates "Request a theme" (F-77): ready or declined. */
+  sellerThemeRequest: {
+    ready: { subject: string; preview: string; pill: string; heading: string; lead: string; cta: string };
+    declined: { subject: string; preview: string; pill: string; heading: string; lead: string; cta: string };
+    replyTitle: string;
+    requestTitle: string;
+    requested: string;
+    reference: string;
+  };
 }
 
 export const transactionalEn: TransactionalCopy = {
@@ -557,6 +566,28 @@ export const transactionalEn: TransactionalCopy = {
     design: "Customise your store design",
     helpCenter: "Help center",
   },
+  sellerThemeRequest: {
+    ready: {
+      subject: "Your requested theme is ready",
+      preview: "The theme you asked for is now in your Templates gallery.",
+      pill: "Theme ready",
+      heading: "Your theme is ready",
+      lead: "We added the theme you asked for to the Templates gallery. Open it, preview it and use it on your store.",
+      cta: "Open Templates",
+    },
+    declined: {
+      subject: "About your theme request",
+      preview: "We couldn't build the theme you asked for.",
+      pill: "Request closed",
+      heading: "We couldn't build this theme",
+      lead: "Thank you for your request. We couldn't add this theme to the gallery. You can send a new request any time.",
+      cta: "See your requests",
+    },
+    replyTitle: "Our reply",
+    requestTitle: "Your request",
+    requested: "Sent on",
+    reference: "Reference",
+  },
 };
 
 export const transactionalAr: TransactionalCopy = {
@@ -837,5 +868,27 @@ export const transactionalAr: TransactionalCopy = {
     addProduct: "أضف أول منتج",
     design: "خصّص تصميم المتجر",
     helpCenter: "مركز المساعدة",
+  },
+  sellerThemeRequest: {
+    ready: {
+      subject: "القالب الذي طلبته أصبح جاهزًا",
+      preview: "أضفنا القالب الذي طلبته إلى معرض القوالب.",
+      pill: "القالب جاهز",
+      heading: "قالبك جاهز",
+      lead: "أضفنا القالب الذي طلبته إلى معرض القوالب. افتحه واستعرضه ثم استخدمه في متجرك.",
+      cta: "افتح القوالب",
+    },
+    declined: {
+      subject: "بخصوص طلب القالب",
+      preview: "لم نتمكن من تنفيذ القالب الذي طلبته.",
+      pill: "تم إغلاق الطلب",
+      heading: "لم نتمكن من تنفيذ هذا القالب",
+      lead: "شكرًا لطلبك. لم نتمكن من إضافة هذا القالب إلى المعرض، ويمكنك إرسال طلب جديد في أي وقت.",
+      cta: "اعرض طلباتك",
+    },
+    replyTitle: "ردّنا",
+    requestTitle: "طلبك",
+    requested: "تاريخ الإرسال",
+    reference: "الرابط المرجعي",
   },
 };

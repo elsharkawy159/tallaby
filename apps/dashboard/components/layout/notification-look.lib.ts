@@ -4,6 +4,7 @@ import {
   Gem,
   Gift,
   HandCoins,
+  LayoutTemplate,
   MessageCircleQuestion,
   PackageX,
   ShoppingBag,
@@ -38,6 +39,7 @@ export const NOTIFICATION_LOOK: Record<SellerNotificationType, { icon: LucideIco
   app_renewed: { icon: AppWindow, tone: "success" },
   app_renewal_failed: { icon: AppWindow, tone: "danger" },
   app_ended: { icon: AppWindow, tone: "accent" },
+  theme_request_updated: { icon: LayoutTemplate, tone: "info" },
 };
 
 export type NotificationDay = "today" | "yesterday" | "older";

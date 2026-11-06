@@ -3,6 +3,8 @@
 import { getServiceClient } from "@workspace/db/supabase/service";
 import { MEDIA_BUCKET, parseMediaPath } from "@workspace/lib/media";
 import { TOP_UP_PROOF_BUCKET, isOwnTopUpProofPath } from "@workspace/lib/store-wallet";
+import { randomUUID } from "node:crypto";
+import { THEME_REQUEST_BUCKET, buildThemeRequestImagePath, themeRequestImageProblem } from "@workspace/lib/theme-requests";
 import { isAccessError, requireSeller } from "@/lib/auth/require-seller.server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
 
@@ -78,6 +80,35 @@ export async function createProductImageUploadUrl(fileName: string): Promise<Sel
 
     const path = `${seller.sellerId.toLowerCase()}/${new Date().toISOString().slice(0, 10)}/${fileName}`;
     const { data, error } = await getServiceClient().storage.from("products").createSignedUploadUrl(path);
+    if (error || !data) {
+      console.error("[seller-upload] sign failed", error?.message);
+      return { success: false, error: "generic" };
+    }
+    return { success: true, token: data.token, path };
+  } catch (error) {
+    if (isAccessError(error)) return { success: false, error: "notAllowed" };
+    console.error("[seller-upload] sign failed", (error as Error)?.message);
+    return { success: false, error: "generic" };
+  }
+}
+
+/**
+ * Signs one "Request a theme" image (ROADMAP.md F-77) into the session
+ * seller's own folder of the private `theme-request-images` bucket:
+ * `<sellerId>/<uuid>.<ext>`. Type and size are checked here and again by the
+ * bucket (0156: 5 MB, JPEG/PNG/WebP). The bucket has no storage policies, so
+ * the browser can only write the exact path signed here.
+ */
+export async function createThemeRequestImageUploadUrl(file: { type: string; size: number }): Promise<SellersBucketUploadResult> {
+  try {
+    const seller = await requireSeller({ forWrite: true });
+    const type = String(file?.type ?? "");
+    if (themeRequestImageProblem({ type, size: Number(file?.size) })) return { success: false, error: "invalidPath" };
+    if (!limiter.check(`upload:${seller.sellerId}`)) return { success: false, error: "notAllowed" };
+
+    const path = buildThemeRequestImagePath(seller.sellerId, randomUUID(), type);
+    if (!path) return { success: false, error: "invalidPath" };
+    const { data, error } = await getServiceClient().storage.from(THEME_REQUEST_BUCKET).createSignedUploadUrl(path);
     if (error || !data) {
       console.error("[seller-upload] sign failed", error?.message);
       return { success: false, error: "generic" };
