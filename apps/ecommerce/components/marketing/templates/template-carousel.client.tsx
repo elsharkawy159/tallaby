@@ -32,7 +32,7 @@ export function TemplateCarousel({ entries }: { entries: GalleryEntry[] }) {
   const [dragging, setDragging] = React.useState(false);
   const [seen, setSeen] = React.useState<ReadonlySet<number>>(() => new Set([start, wrapIndex(start - 1, n), wrapIndex(start + 1, n)]));
   const [stepPx, setStepPx] = React.useState(240);
-    const box = React.useRef<HTMLDivElement>(null);
+  const box = React.useRef<HTMLDivElement>(null);
   const card = React.useRef<HTMLElement>(null);
   const drag = React.useRef<{ x: number; from: number; moved: boolean; lastX: number; lastT: number; velocity: number } | null>(null);
   const suppressClick = React.useRef(false);
@@ -174,7 +174,8 @@ export function TemplateCarousel({ entries }: { entries: GalleryEntry[] }) {
                   <i key={`${c}-${color}`} className="size-4 rounded-full border-2 border-white shadow-[0_0_0_1px_#dfe8ea]" style={{ background: color }} />
                 ))}
               </div>
-              <div className={cn("mt-auto flex gap-2 px-[18px] pt-3.5 pb-[18px] transition-opacity duration-300", !on && "opacity-50")}>
+              {/* A side card is scaled down, so its buttons are no real targets: a tap on it brings it to the centre instead. */}
+              <div className={cn("mt-auto flex gap-2 px-[18px] pt-3.5 pb-[18px] transition-opacity duration-300", !on && "pointer-events-none opacity-50")} inert={!on}>
                 <SignupTrigger size="sm" tabIndex={on ? 0 : -1} className="h-11 flex-1 shadow-none!">
                   {t("use")}
                 </SignupTrigger>
@@ -191,7 +192,8 @@ export function TemplateCarousel({ entries }: { entries: GalleryEntry[] }) {
           <ChevronLeft className="size-5 ltr:rotate-180" aria-hidden />
         </button>
       </div>
-      <div className="relative z-[21] -mt-9 flex justify-center gap-1.5">
+      {/* Below the cards, never over them (owner, F-73). Each dot is a 24px target around an 8px pill. */}
+      <div className="relative z-[21] mt-3 flex flex-wrap justify-center px-4">
         {entries.map((entry, i) => (
           <button
             key={entry.id}
@@ -199,8 +201,10 @@ export function TemplateCarousel({ entries }: { entries: GalleryEntry[] }) {
             aria-label={entry.name}
             aria-current={i === active}
             onClick={() => go(i)}
-            className={cn("h-2 rounded-full transition-[width,background-color] duration-300", i === active ? "w-7 bg-teal-700" : "w-2 bg-[#cfdde1]")}
-          />
+            className="group grid h-6 min-w-6 place-items-center px-[3px]"
+          >
+            <span className={cn("block h-2 rounded-full transition-[width,background-color] duration-300", i === active ? "w-7 bg-teal-700" : "w-2 bg-[#cfdde1] group-hover:bg-[#9fb6bc]")} />
+          </button>
         ))}
       </div>
     </>

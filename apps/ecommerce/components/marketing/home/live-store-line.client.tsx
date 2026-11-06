@@ -9,7 +9,7 @@ import { useInView, useReducedMotion } from "./use-demo.client";
 const TICK_MS = 30_000;
 const ROTATE_MS = 6000;
 const FADE_MS = 350;
-const LINE_CLASS = "mb-[26px] h-[38px] max-w-full";
+const LINE_CLASS = "h-[38px] max-w-full";
 
 function subscribeClock(onChange: () => void) {
   const id = window.setInterval(onChange, TICK_MS);
@@ -17,7 +17,9 @@ function subscribeClock(onChange: () => void) {
 }
 
 /**
- * "New store: Glow, 4 minutes ago". The page may be a cached copy, so the
+ * "A new fashion store opened 4 minutes ago" (owner, F-73: the industry, never a
+ * store or seller name; a store whose category isn't one of the listed
+ * industries gets the generic line). The page may be a cached copy, so the
  * age comes from the store's real time and the visitor's clock. The first render
  * uses `readAt`, the same time the server used, so hydration always matches. If
  * the store ages out on an old copy of the page, the line keeps its space for that
@@ -65,10 +67,8 @@ export function LiveStoreLine({ stores, readAt }: { stores: RecentStore[]; readA
   const store: DatedStore = line.kind === "latest" ? line.store : (line.stores[reduced ? 0 : index % count] as DatedStore);
   const age = storeAge(store.publishedAtMs, now);
   const tags = {
-    name: store.name,
-    store: (chunks: React.ReactNode) => (
-      <bdi className="max-w-[240px] min-w-0 truncate font-bold text-teal-900">{chunks}</bdi>
-    ),
+    industry: store.industry ? t(`industries.${store.industry}`) : "",
+    kind: (chunks: React.ReactNode) => <b className="min-w-0 truncate font-bold text-teal-900">{chunks}</b>,
     age: () =>
       age.unit === "now"
         ? t("now")
@@ -86,9 +86,9 @@ export function LiveStoreLine({ stores, readAt }: { stores: RecentStore[]; readA
       className={`${LINE_CLASS} inline-flex items-center gap-2.5 rounded-full border border-[#e3ebed] bg-white ps-3.5 pe-4 text-sm whitespace-nowrap text-[#3f5358] shadow-[0_2px_10px_rgba(20,81,99,0.06)]`}
     >
       <i aria-hidden className={`size-[9px] flex-none rounded-full bg-[#16a34a] ${line.kind === "recent" ? "animate-pulse-ring" : ""}`} />
-      {/* Only the name shrinks on a narrow phone: every other run keeps its width (whitespace-pre). */}
+      {/* Only the industry shrinks on a narrow phone: every other run keeps its width (whitespace-pre). */}
       <span className={`flex min-w-0 items-baseline whitespace-pre transition-[opacity,transform] duration-[350ms] ${leaving && rotating ? "-translate-y-1.5 opacity-0" : ""}`}>
-        {t.rich(line.kind, tags)}
+        {t.rich(store.industry ? "industry" : "generic", tags)}
       </span>
     </p>
   );

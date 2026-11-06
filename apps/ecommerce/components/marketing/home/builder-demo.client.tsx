@@ -8,19 +8,19 @@ import {
   ChevronDown,
   ChevronsUpDown,
   ChevronUp,
-  ClipboardList,
-  Compass,
   Copy,
+  Ellipsis,
   ExternalLink,
   Eye,
   FileText,
-  Grid3x3,
   GripVertical,
   Image as ImageIcon,
+  Keyboard,
   Layers,
   LayoutPanelTop,
   LoaderCircle,
   Monitor,
+  MousePointerClick,
   Palette,
   Plus,
   Redo2,
@@ -55,7 +55,13 @@ const LIBRARY = [
   { key: "faq", rows: [[1], [1], [1]] },
 ] as const;
 
-/** The website builder's shell, with a sample store being edited. The canvas stays in English, as a store's demo copy does. */
+/**
+ * The website editor with a sample store being edited, drawn after the
+ * redesigned editor (Claude Design "Seller Editor v3", packages/store-editor
+ * since 7950ccdb): rail on the start side with the Add panel open, canvas in
+ * the middle, the inspector on the end side. The canvas stays in English, as
+ * a store's demo copy does.
+ */
 export function BuilderDemo() {
   const t = useTranslations("home.demo.builder");
   const { ref, step } = useDemoSteps<HTMLDivElement>(STEPS, FINAL);
@@ -71,23 +77,22 @@ export function BuilderDemo() {
   const rail = [
     { icon: Plus, label: t("rail.add"), on: true },
     { icon: Layers, label: t("rail.layers") },
-    { icon: ImageIcon, label: t("rail.images") },
-    { icon: Compass, label: t("rail.explore") },
-    { icon: ClipboardList, label: t("rail.forms") },
     { icon: FileText, label: t("rail.pages") },
+    { icon: ImageIcon, label: t("rail.media") },
     { icon: Palette, label: t("rail.brand") },
   ];
   const cursor =
-    step <= 1 ? { x: 16, y: 30 } : step === 2 ? { x: 55, y: 88 } : step === 3 ? { x: 58, y: 70 } : step === 4 ? { x: 48, y: 40 } : step === 5 ? { x: 90, y: 58 } : { x: 93, y: 5 };
+    step <= 1 ? { x: 16, y: 30 } : step === 2 ? { x: 52, y: 88 } : step === 3 ? { x: 55, y: 70 } : step === 4 ? { x: 45, y: 40 } : step === 5 ? { x: 89, y: 60 } : { x: 95, y: 5 };
 
   return (
     <div ref={ref} aria-hidden className="relative mx-auto max-w-[1160px] overflow-hidden rounded-[18px] border border-[#e7e9e8] bg-white text-[12.5px] text-[#333] shadow-[0_16px_44px_rgba(13,55,67,0.08)] min-[641px]:rounded-[20px]">
-      <div className="flex h-12 items-center gap-1.5 border-b border-[#e7e9e8] bg-white px-2">
-        <div className="flex min-w-0 flex-1 items-center gap-2.5">
+      <div className="flex h-12 items-center gap-1.5 border-b border-[#e7e9e8] bg-white px-2 min-[641px]:h-[52px] min-[641px]:px-2.5">
+        <div className="flex min-w-0 flex-1 items-center gap-2">
           <span className="hidden size-8 flex-none place-items-center text-[#808080] min-[641px]:grid">
             <ArrowRight className="size-4 ltr:rotate-180" />
           </span>
-          <span className="flex h-8 items-center gap-1.5 rounded-lg border border-[#d9dddc] px-2.5 font-semibold whitespace-nowrap text-[#171717]">
+          <span className="flex h-8 items-center gap-1.5 rounded-[10px] border border-[#e3e6e5] bg-white px-2.5 font-bold whitespace-nowrap text-[#171717]">
+            <FileText className="size-3.5 text-[#808080]" />
             {t("home")}
             <ChevronsUpDown className="size-[13px] opacity-60" />
           </span>
@@ -95,24 +100,24 @@ export function BuilderDemo() {
             glow.tallaby.com <ExternalLink className="size-[13px]" />
           </span>
         </div>
-        <div className="hidden rounded-[9px] border border-[#e7e9e8] bg-[#f7f7f7]/60 p-0.5 min-[641px]:flex">
+        <div className="hidden rounded-[11px] border border-[#e7e9e8] bg-[#f4f5f5] p-[3px] min-[641px]:flex">
           {[Monitor, Tablet, Smartphone].map((Icon, i) => (
-            <span key={i} className={cn("grid h-7 w-8 place-items-center rounded-[7px] text-[#808080]", i === 0 && "bg-white text-[#145163] shadow-[0_1px_3px_rgba(0,0,0,0.1)]")}>
+            <span key={i} className={cn("grid h-7 w-9 place-items-center rounded-[8px] text-[#808080]", i === 0 && "bg-white text-[#171717] shadow-[0_1px_3px_rgba(0,0,0,0.1)]")}>
               <Icon className="size-[15px]" />
             </span>
           ))}
         </div>
         <div className="flex min-w-0 flex-1 items-center justify-end gap-1">
           {[Undo2, Redo2].map((Icon, i) => (
-            <span key={i} className="hidden size-8 flex-none place-items-center text-[#808080] min-[641px]:grid">
+            <span key={i} className="hidden size-8 flex-none place-items-center text-[#a3a3a3] min-[641px]:grid">
               <Icon className="size-4" />
             </span>
           ))}
-          <span dir="ltr" className="hidden rounded-[7px] border border-[#e7e9e8] p-0.5 font-latin text-[10.5px] font-bold text-[#808080] uppercase min-[1081px]:flex">
-            <b className="rounded-[5px] bg-[#f7f7f7] px-1.5 py-0.5 text-[#171717]">ar</b>
-            <span className="px-1.5 py-0.5">en</span>
+          <span dir="ltr" className="hidden rounded-[9px] border border-[#e7e9e8] p-[3px] font-latin text-[10.5px] font-bold text-[#808080] min-[1081px]:flex">
+            <b className="rounded-[6px] bg-teal-900 px-1.5 py-0.5 text-white">AR</b>
+            <span className="px-1.5 py-0.5">EN</span>
           </span>
-          {[Grid3x3, Eye].map((Icon, i) => (
+          {[Eye, Ellipsis].map((Icon, i) => (
             <span key={i} className="hidden size-8 flex-none place-items-center text-[#808080] min-[1081px]:grid">
               <Icon className="size-4" />
             </span>
@@ -121,41 +126,59 @@ export function BuilderDemo() {
             {saving ? <LoaderCircle className="size-3 animate-spin" /> : <Check className="size-3" />}
             <span className="hidden min-[641px]:inline">{saving ? t("saving") : t("saved")}</span>
           </span>
-          <span className={cn("flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-xs font-bold whitespace-nowrap transition-colors duration-300", published ? "bg-[#e5f6ea] text-[#15803d]" : "bg-amber-600 text-teal-900")}>
-            {published ? <Check className="size-3.5" /> : <UploadCloud className="size-3.5" />}
+          <span
+            className={cn(
+              "flex h-9 items-center gap-1.5 rounded-full px-3.5 text-[12.5px] font-bold whitespace-nowrap transition-colors duration-300",
+              published ? "bg-[#e5f6ea] text-[#15803d]" : "bg-amber-600 text-teal-900 shadow-[0_6px_14px_rgba(253,173,40,0.35)]",
+            )}
+          >
+            {published ? <Check className="size-4" /> : <UploadCloud className="size-4" />}
             {published ? t("published") : t("publish")}
           </span>
         </div>
       </div>
 
-      <div className="grid min-h-0 min-[641px]:grid-cols-[64px_200px_minmax(0,1fr)] min-[641px]:min-h-[520px] min-[1081px]:grid-cols-[64px_200px_minmax(0,1fr)_220px]">
-        <nav className="hidden flex-col gap-1 border-e border-[#e7e9e8] p-1.5 min-[641px]:flex">
+      <div className="grid min-h-0 min-[641px]:min-h-[520px] min-[641px]:grid-cols-[66px_196px_minmax(0,1fr)] min-[1081px]:grid-cols-[66px_204px_minmax(0,1fr)_224px]">
+        <nav className="hidden flex-col items-stretch gap-1 border-e border-[#e7e9e8] p-1.5 min-[641px]:flex">
           {rail.map((item) => (
-            <span key={item.label} className={cn("grid justify-items-center gap-0.5 rounded-lg px-1 py-1.5 text-[10px] text-[#808080]", item.on && "bg-[#eef3f4] font-bold text-[#145163]")}>
-              <item.icon className="size-4" />
+            <span
+              key={item.label}
+              className={cn("grid justify-items-center gap-1 rounded-[12px] px-1 py-2 text-[10px] font-medium text-[#6b7577]", item.on && "bg-[#eef3f4] font-bold text-teal-900")}
+            >
+              <item.icon className="size-[18px]" />
               {item.label}
             </span>
           ))}
+          <span className="mt-auto grid justify-items-center gap-1 rounded-[12px] px-1 py-2 text-[10px] font-medium text-[#6b7577]">
+            <Keyboard className="size-[18px]" />
+            {t("rail.shortcuts")}
+          </span>
         </nav>
 
         <aside className="flex items-center overflow-x-auto border-b border-[#edf1f2] p-3 [scrollbar-width:none] min-[641px]:flex-col min-[641px]:items-stretch min-[641px]:gap-2.5 min-[641px]:overflow-visible min-[641px]:border-e min-[641px]:border-b-0">
           <div className="hidden flex-col gap-2 min-[641px]:flex">
-            <b className="text-[13px] text-[#171717]">{t("rail.add")}</b>
-            <div className="flex rounded-[9px] bg-[#f4f5f5] p-[3px] text-[11px] font-semibold text-[#808080]">
+            <b className="text-[14px] text-[#171717]">{t("rail.add")}</b>
+            <div className="flex rounded-[10px] bg-[#f4f5f5] p-[3px] text-[10.5px] font-semibold text-[#808080]">
               {[t("tabs.sections"), t("tabs.elements"), t("tabs.templates")].map((label, i) => (
-                <span key={label} className={cn("grid h-[26px] flex-1 place-items-center rounded-[7px]", i === 0 && "bg-white text-[#171717] shadow-[0_1px_2px_rgba(0,0,0,0.08)]")}>
+                <span key={label} className={cn("flex h-[26px] min-w-0 flex-1 items-center justify-center truncate rounded-[7px] px-1", i === 0 && "bg-white text-[#171717] shadow-[0_1px_2px_rgba(0,0,0,0.08)]")}>
                   {label}
                 </span>
               ))}
             </div>
-            <span className="flex h-8 items-center gap-1.5 rounded-lg border border-[#e7e9e8] px-2 text-[11.5px] text-[#808080]">
+            <span className="flex h-8 items-center gap-1.5 rounded-full border border-[#e7e9e8] px-2.5 text-[11.5px] text-[#9a9a9a]">
               <Search className="size-3.5" />
               {t("searchSections")}
             </span>
           </div>
           <div className="flex gap-2 min-[641px]:grid min-[641px]:grid-cols-2">
             {LIBRARY.map((item) => (
-              <div key={item.key} className={cn("w-[84px] flex-none rounded-lg border border-[#e7e9e8] p-1.5 text-center text-[11px] transition-[border-color,box-shadow] duration-200 min-[641px]:w-auto", item.key === "reviews" && (step === 1 || step === 2) && "border-teal-700 shadow-[0_0_0_2px_rgba(20,81,99,0.15)]")}>
+              <div
+                key={item.key}
+                className={cn(
+                  "w-[84px] flex-none rounded-[10px] border border-[#e7e9e8] bg-white p-1.5 text-center text-[11px] transition-[border-color,box-shadow] duration-200 min-[641px]:w-auto",
+                  item.key === "reviews" && (step === 1 || step === 2) && "border-teal-700 shadow-[0_0_0_2px_rgba(20,81,99,0.15)]",
+                )}
+              >
                 <div className="mb-1 grid h-10 gap-[3px] rounded-md bg-[#f4f6f6] p-[5px]" style={{ gridTemplateRows: `repeat(${item.rows.length},1fr)` }}>
                   {item.rows.map((row, r) => (
                     <div key={r} className="grid gap-[3px]" style={{ gridTemplateColumns: `repeat(${row.length},1fr)` }}>
@@ -165,17 +188,14 @@ export function BuilderDemo() {
                     </div>
                   ))}
                 </div>
-                {t(`library.${item.key}`)}
+                <span className="block truncate">{t(`library.${item.key}`)}</span>
               </div>
             ))}
           </div>
         </aside>
 
-        <div className="relative overflow-hidden bg-[#f1f3f3] bg-[radial-gradient(#dfe4e5_1px,transparent_1px)] bg-[length:14px_14px] p-3 min-[641px]:px-[18px] min-[641px]:pt-3.5 min-[641px]:pb-[18px]">
-          <div className="mb-2 flex justify-center">
-            <span dir="ltr" className="rounded-full border border-[#e7e9e8] bg-white px-2 py-px font-latin text-[10px] font-semibold text-[#808080]">1280px</span>
-          </div>
-          <div dir="ltr" className="mx-auto max-w-[600px] overflow-hidden rounded-[10px] bg-[#f4efe8] font-latin shadow-[0_6px_24px_rgba(13,55,67,0.08)]">
+        <div className="relative overflow-hidden bg-[#eef0ef] bg-[radial-gradient(#d9dedd_1px,transparent_1px)] bg-[length:14px_14px] p-3 min-[641px]:px-[18px] min-[641px]:pt-4 min-[641px]:pb-[18px]">
+          <div dir="ltr" className="mx-auto max-w-[600px] overflow-hidden rounded-[14px] bg-[#f4efe8] font-latin shadow-[0_10px_30px_rgba(13,55,67,0.1)]">
             <div className="p-1.5 text-center text-[8.5px] font-semibold tracking-[0.08em] text-[#f4efe8] transition-colors duration-300" style={{ background: accent }}>
               Free delivery across Egypt on orders over 1,500 EGP
             </div>
@@ -238,43 +258,59 @@ export function BuilderDemo() {
           ) : null}
         </div>
 
-        <aside className="hidden flex-col gap-2 border-s border-[#e7e9e8] p-3 min-[1081px]:flex">
-          <div className="flex rounded-[9px] bg-[#f4f5f5] p-[3px] text-[11px] font-semibold text-[#808080]">
-            {[t("props.content"), t("props.style")].map((label, i) => (
-              <span key={label} className={cn("grid h-[26px] flex-1 place-items-center rounded-[7px]", i === 0 && "bg-white text-[#171717] shadow-[0_1px_2px_rgba(0,0,0,0.08)]")}>
-                {label}
-              </span>
-            ))}
-          </div>
-          <div className="flex items-center gap-2.5 rounded-[10px] border border-[#e7e9e8] p-2">
-            <span className="grid size-[30px] place-items-center rounded-lg bg-[#eef3f4] text-[#145163]">
-              <LayoutPanelTop className="size-4" />
+        <aside className="hidden flex-col gap-2 border-s border-[#e7e9e8] min-[1081px]:flex">
+          <div className="flex items-center gap-2.5 border-b border-[#e7e9e8] p-3">
+            <span className="grid size-9 flex-none place-items-center rounded-[11px] bg-[#eef3f4] text-teal-900">
+              {heroSelected ? <LayoutPanelTop className="size-4" /> : <FileText className="size-4" />}
             </span>
-            <div>
-              <b className="block text-[12.5px] text-[#171717]">{t("library.hero")}</b>
-              <small className="text-[10.5px] text-[#808080]">{t("props.page")}</small>
+            <div className="min-w-0">
+              <b className="block truncate text-[13px] text-[#171717]">{heroSelected ? t("library.hero") : t("home")}</b>
+              <small dir="ltr" className="block text-start font-latin text-[10.5px] text-[#808080]">{heroSelected ? t("props.page") : "/"}</small>
             </div>
           </div>
-          <PropLabel>{t("props.heading")}</PropLabel>
-          <div dir="ltr" className={cn("min-h-9 rounded-[10px] border border-[#e3ebed] bg-white px-2.5 py-2 text-start font-latin text-[12.5px] font-semibold text-[#1d2a2e]", step === 4 && "border-teal-700 shadow-[0_0_0_3px_rgba(20,81,99,0.1)]")}>
-            {headingText}
-          </div>
-          <PropLabel>{t("props.button")}</PropLabel>
-          <div dir="ltr" className="min-h-9 rounded-[10px] border border-[#e3ebed] bg-white px-2.5 py-2 text-start font-latin text-[12.5px] font-semibold text-[#1d2a2e]">Shop the collection</div>
-          <PropLabel>{t("props.buttonColor")}</PropLabel>
-          <div className="flex gap-2">
-            {COLORS.map((color) => (
-              <i key={color} className={cn("size-[26px] rounded-full shadow-[0_0_0_2px_#fff,0_0_0_3px_transparent] transition-shadow duration-200", color === accent && "shadow-[0_0_0_2px_#fff,0_0_0_4px_#2c6e80]")} style={{ background: color }} />
-            ))}
-          </div>
-          <PropLabel>{t("props.layout")}</PropLabel>
-          <div className="flex rounded-[9px] bg-[#f4f5f5] p-[3px] text-[11px] font-semibold text-[#808080]">
-            {[t("props.split"), t("props.image"), t("props.center")].map((label, i) => (
-              <span key={label} className={cn("grid h-[26px] flex-1 place-items-center rounded-[7px]", i === 1 && "bg-white text-[#171717] shadow-[0_1px_2px_rgba(0,0,0,0.08)]")}>
-                {label}
+          {heroSelected ? (
+            <div className="flex flex-col gap-2 px-3 pb-3">
+              <div className="flex rounded-[10px] bg-[#f4f5f5] p-[3px] text-[11px] font-semibold text-[#808080]">
+                {[t("props.content"), t("props.style")].map((label, i) => (
+                  <span key={label} className={cn("grid h-[26px] flex-1 place-items-center rounded-[7px]", i === 0 && "bg-white text-[#171717] shadow-[0_1px_2px_rgba(0,0,0,0.08)]")}>
+                    {label}
+                  </span>
+                ))}
+              </div>
+              <PropLabel>{t("props.heading")}</PropLabel>
+              <div dir="ltr" className={cn("min-h-9 rounded-[10px] border border-[#e3ebed] bg-white px-2.5 py-2 text-start font-latin text-[12.5px] font-semibold text-[#1d2a2e]", step === 4 && "border-teal-700 shadow-[0_0_0_3px_rgba(20,81,99,0.1)]")}>
+                {headingText}
+              </div>
+              <PropLabel>{t("props.button")}</PropLabel>
+              <div dir="ltr" className="min-h-9 rounded-[10px] border border-[#e3ebed] bg-white px-2.5 py-2 text-start font-latin text-[12.5px] font-semibold text-[#1d2a2e]">Shop the collection</div>
+              <PropLabel>{t("props.buttonColor")}</PropLabel>
+              <div className="flex gap-2">
+                {COLORS.map((color) => (
+                  <i key={color} className={cn("size-[26px] rounded-full shadow-[0_0_0_2px_#fff,0_0_0_3px_transparent] transition-shadow duration-200", color === accent && "shadow-[0_0_0_2px_#fff,0_0_0_4px_#2c6e80]")} style={{ background: color }} />
+                ))}
+              </div>
+              <PropLabel>{t("props.layout")}</PropLabel>
+              <div className="flex rounded-[10px] bg-[#f4f5f5] p-[3px] text-[11px] font-semibold text-[#808080]">
+                {[t("props.split"), t("props.image"), t("props.center")].map((label, i) => (
+                  <span key={label} className={cn("grid h-[26px] flex-1 place-items-center rounded-[7px]", i === 1 && "bg-white text-[#171717] shadow-[0_1px_2px_rgba(0,0,0,0.08)]")}>
+                    {label}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-1 flex-col items-center justify-center gap-2.5 px-4 pb-6 text-center">
+              <span className="grid size-12 place-items-center rounded-2xl bg-[#eef3f4] text-teal-900">
+                <MousePointerClick className="size-5" />
               </span>
-            ))}
-          </div>
+              <b className="text-[13px] text-[#171717]">{t("empty.title")}</b>
+              <p className="text-[11.5px] leading-[1.6] text-[#808080]">{t("empty.body")}</p>
+              <span className="mt-1 flex h-8 items-center gap-1.5 rounded-full bg-teal-900 px-3.5 text-[11.5px] font-bold text-white">
+                <Plus className="size-3.5" />
+                {t("empty.add")}
+              </span>
+            </div>
+          )}
         </aside>
       </div>
       <DemoCursor x={cursor.x} y={cursor.y} visible={step < 7} className="hidden min-[641px]:block" />

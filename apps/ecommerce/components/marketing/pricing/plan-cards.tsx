@@ -4,17 +4,18 @@ import { cn } from "@workspace/ui/lib/utils";
 import { Num } from "@/components/marketing/site/layout-primitives";
 import { Reveal } from "@/components/marketing/site/reveal.client";
 import { SignupTrigger } from "@/components/marketing/signup/signup-trigger.client";
-import { APPROX_EGP_PER_USD, PLAN_PRICES, formatNumber, formatUsd } from "@/lib/marketing/pricing.lib";
+import { getMarketingEgpPerUsd } from "@/lib/marketing/exchange-rate.server";
+import { PLAN_PRICES, formatEgp, formatNumber, formatUsd, usdCentsToEgp } from "@/lib/marketing/pricing.lib";
 
 /**
  * The Free and Pro cards, on the home page and /pricing. Every number comes
- * from the code (`@workspace/lib/plans`, `@workspace/lib/billing`).
+ * from the code (`@workspace/lib/plans`, `@workspace/lib/billing`); the EGP
+ * figures use the dashboard wallet's live rate and rounding.
  */
 export async function PlanCards() {
-  const t = await getTranslations("pricing.plans");
+  const [t, rate] = await Promise.all([getTranslations("pricing.plans"), getMarketingEgpPerUsd()]);
   const { free, pro } = PLAN_PRICES;
-  const egp = (usdCents: number, digits = 0) =>
-    ((usdCents / 100) * APPROX_EGP_PER_USD).toLocaleString("en-US", { minimumFractionDigits: digits, maximumFractionDigits: digits });
+  const egp = (usdCents: number) => formatEgp(usdCentsToEgp(usdCents, rate));
 
   const cards = [
     {
@@ -23,7 +24,7 @@ export async function PlanCards() {
       tagline: t("freeTagline"),
       price: formatUsd(free.orderFeeCents),
       per: t("perOrder"),
-      approx: t("freeApprox", { egp: egp(free.orderFeeCents, 1) }),
+      approx: t("freeApprox", { egp: egp(free.orderFeeCents) }),
       cta: t("freeCta"),
       tone: "outline" as const,
       features: [
@@ -95,10 +96,7 @@ export async function PlanCards() {
           </Reveal>
         ))}
       </div>
-      <p className="mx-auto mt-6 max-w-[720px] text-center text-[13.5px] text-pretty text-[#56696e]">
-        {t("plainly", { topUp: formatUsd(PLAN_PRICES.topUp.minCents) })}
-      </p>
-      <p className="mt-2 text-center text-xs text-ink-400">{t("fx", { rate: APPROX_EGP_PER_USD })}</p>
+      <p className="mx-auto mt-6 max-w-[720px] text-center text-xs text-pretty text-ink-400">{t("fx", { rate: formatEgp(rate) })}</p>
     </>
   );
 }

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { estimatePlans, extraEmailsCents, formatUsd, orderFee, PLAN_PRICES, proBreakEvenOrders, suggestedPrice } from "./pricing.lib";
+import { quoteTopUp } from "@workspace/lib/billing";
+import { estimatePlans, formatEgp, formatUsd, orderFee, PLAN_PRICES, proBreakEvenOrders, suggestedPrice, usdCentsToEgp } from "./pricing.lib";
 
 describe("PLAN_PRICES", () => {
   it("matches the agreed prices", () => {
@@ -26,22 +27,32 @@ describe("proBreakEvenOrders", () => {
   });
 });
 
-describe("extraEmailsCents", () => {
-  it("is free inside the allowance", () => {
-    expect(extraEmailsCents(500, 500)).toBe(0);
-    expect(extraEmailsCents(0, 500)).toBe(0);
+describe("usdCentsToEgp", () => {
+  const billing = { marketRate: 49.8567, taxEnabled: false, taxRateBps: 1400 };
+
+  it("matches /wallet's top-up quote for whole dollars", () => {
+    for (const cents of [100, 500, 2900, 4321, 100_000]) {
+      expect(usdCentsToEgp(cents, billing.marketRate)).toBe(quoteTopUp(cents, billing)!.basePiastres / 100);
+    }
+    expect(usdCentsToEgp(2900, 49.8567)).toBe(1445);
   });
 
-  it("sells whole packs", () => {
-    expect(extraEmailsCents(501, 500)).toBe(150);
-    expect(extraEmailsCents(1500, 500)).toBe(150);
-    expect(extraEmailsCents(1501, 500)).toBe(300);
+  it("keeps the piastres under a dollar, rounded up", () => {
+    expect(usdCentsToEgp(3, 50)).toBe(1.5);
+    expect(usdCentsToEgp(3, 49.8567)).toBe(1.5);
+    expect(usdCentsToEgp(3, 47.12)).toBe(1.42);
+  });
+
+  it("formats like /wallet: Latin digits, up to two decimals", () => {
+    expect(formatEgp(1445)).toBe("1,445");
+    expect(formatEgp(49.8567)).toBe("49.86");
+    expect(formatEgp(1.5)).toBe("1.5");
   });
 });
 
 describe("estimatePlans", () => {
   it("charges Free per order and Pro a flat price", () => {
-    expect(estimatePlans({ orders: 100, emails: 0 })).toEqual({
+    expect(estimatePlans({ orders: 100 })).toEqual({
       freeCents: 300,
       proCents: 2900,
       cheaper: "free",
@@ -50,20 +61,18 @@ describe("estimatePlans", () => {
   });
 
   it("makes Pro cheaper past the break-even", () => {
-    const estimate = estimatePlans({ orders: 2000, emails: 0 });
+    const estimate = estimatePlans({ orders: 2000 });
     expect(estimate.cheaper).toBe("pro");
     expect(estimate.freeCents).toBe(6000);
     expect(estimate.savingCents).toBe(3100);
   });
 
-  it("uses each plan's own email allowance", () => {
-    const estimate = estimatePlans({ orders: 0, emails: 2000 });
-    expect(estimate.freeCents).toBe(300);
-    expect(estimate.proCents).toBe(2900);
+  it("counts only orders: emails and packs are not in the estimate", () => {
+    expect(estimatePlans({ orders: 0 })).toEqual({ freeCents: 0, proCents: 2900, cheaper: "free", savingCents: 2900 });
   });
 
   it("treats a negative order count as none", () => {
-    expect(estimatePlans({ orders: -5, emails: 0 }).freeCents).toBe(0);
+    expect(estimatePlans({ orders: -5 }).freeCents).toBe(0);
   });
 });
 

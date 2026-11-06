@@ -1,5 +1,6 @@
 import {
   adminTags,
+  billingTags,
   brandTags,
   categoryTags,
   couponTags,
@@ -338,6 +339,11 @@ export function invalidateMarketingBlog(): CacheInvalidation {
 /** A fulfillment plan was created, edited or toggled. */
 export function invalidateFulfillmentPlans(): CacheInvalidation {
   return inv([fulfillmentTags.plans()]);
+}
+
+/** The USD/EGP rate changed (the cron saved one, or the Admin set or cleared the override): tallaby.com's /pricing figures. */
+export function invalidateBillingRate(): CacheInvalidation {
+  return inv([billingTags.rate()]);
 }
 
 /** A store integration changed status (connect, error, admin disconnect): its storefront scripts and the admin summary. */

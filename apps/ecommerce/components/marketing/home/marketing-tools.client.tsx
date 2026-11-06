@@ -1,8 +1,10 @@
 "use client";
 
 import * as React from "react";
+import Autoplay from "embla-carousel-autoplay";
 import { Info, Mail, MessageCircle, Radar, ShoppingCart, TicketPercent } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from "@workspace/ui/components/carousel";
 import { cn } from "@workspace/ui/lib/utils";
 import { useInView, useReducedMotion } from "./use-demo.client";
 import styles from "./marketing-tools.module.css";
@@ -17,7 +19,6 @@ const TABS = [
 type TabId = (typeof TABS)[number]["id"];
 
 const ROTATE_MS = 6000;
-const IDLE_AFTER_INPUT_MS = 10_000;
 const EVENTS = ["PageView", "ViewContent", "AddToCart", "InitiateCheckout", "Purchase"];
 const COUNTDOWN_FROM = 2 * 3600 + 14 * 60 + 37;
 
@@ -25,99 +26,131 @@ function clock(seconds: number) {
   return [seconds / 3600, (seconds % 3600) / 60, seconds % 60].map((n) => String(Math.floor(n)).padStart(2, "0")).join(":");
 }
 
-/** Marketing tools: tabs on one side rotate through sample screens on the other. Rotation stops off screen and for a while after any input. */
+/**
+ * Marketing tools (owner, F-73): the list is a vertical shadcn Carousel moved by
+ * the Embla Autoplay plugin, and the centred tool's sample screen shows beside
+ * it (below it on phones). Autoplay pauses while the pointer or keyboard focus
+ * is anywhere on the block, stops off screen, and never runs under reduced motion.
+ */
 export function MarketingTools() {
   const t = useTranslations("home.marketing");
   const reduced = useReducedMotion();
   const [ref, inView] = useInView<HTMLDivElement>(0.3);
+  const [api, setApi] = React.useState<CarouselApi>();
   const [current, setCurrent] = React.useState(0);
-  const [held, setHeld] = React.useState(false);
-  const idle = React.useRef<number | undefined>(undefined);
-  const tabRefs = React.useRef<(HTMLButtonElement | null)[]>([]);
+  const [playing, setPlaying] = React.useState(false);
   const baseId = React.useId();
-  const running = inView && !held && !reduced;
 
-  const hold = () => {
-    setHeld(true);
-    window.clearTimeout(idle.current);
-    idle.current = window.setTimeout(() => setHeld(false), IDLE_AFTER_INPUT_MS);
-  };
-  React.useEffect(() => () => window.clearTimeout(idle.current), []);
+  // One plugin per mount; its pause on hover and focus listens on the whole block, not only the list.
+  const autoplay = React.useMemo(
+    () =>
+      Autoplay({
+        delay: ROTATE_MS,
+        playOnInit: false,
+        stopOnInteraction: false,
+        stopOnMouseEnter: true,
+        stopOnFocusIn: true,
+        rootNode: (emblaRoot) => emblaRoot.closest<HTMLElement>("[data-marketing-tools]"),
+      }),
+    [],
+  );
 
   React.useEffect(() => {
-    if (!running) return;
-    const id = window.setTimeout(() => setCurrent((c) => (c + 1) % TABS.length), ROTATE_MS);
-    return () => window.clearTimeout(id);
-  }, [running, current]);
+    if (!api) return;
+    const onSelect = () => setCurrent(api.selectedScrollSnap());
+    const onPlay = () => setPlaying(true);
+    const onStop = () => setPlaying(false);
+    onSelect();
+    api.on("select", onSelect).on("reInit", onSelect).on("autoplay:play", onPlay).on("autoplay:stop", onStop);
+    return () => {
+      api.off("select", onSelect).off("reInit", onSelect).off("autoplay:play", onPlay).off("autoplay:stop", onStop);
+    };
+  }, [api]);
 
-  const onKeyDown = (event: React.KeyboardEvent, index: number) => {
-    const rtl = document.documentElement.dir === "rtl";
-    const forward = rtl ? "ArrowLeft" : "ArrowRight";
-    const back = rtl ? "ArrowRight" : "ArrowLeft";
-    let next: number | null = null;
-    if (event.key === forward || event.key === "ArrowDown") next = (index + 1) % TABS.length;
-    if (event.key === back || event.key === "ArrowUp") next = (index - 1 + TABS.length) % TABS.length;
-    if (next === null) return;
+  React.useEffect(() => {
+    if (!api) return;
+    const sync = () => {
+      const plugin = api.plugins().autoplay;
+      // The plugin sets itself up only once the list overflows (more than one snap), so check again after each re-measure.
+      if (!plugin || api.scrollSnapList().length <= 1) return;
+      if (inView && !reduced) plugin.play();
+      else plugin.stop();
+    };
+    sync();
+    api.on("reInit", sync);
+    return () => {
+      api.off("reInit", sync);
+    };
+  }, [api, inView, reduced]);
+
+  const select = (index: number) => api?.scrollTo(index, reduced);
+  const onKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
     event.preventDefault();
-    hold();
-    setCurrent(next);
-    tabRefs.current[next]?.focus();
+    if (event.key === "ArrowDown") api?.scrollNext(reduced);
+    else api?.scrollPrev(reduced);
   };
 
   const active: TabId = TABS[current]!.id;
 
   return (
-    <div ref={ref} onPointerDown={hold} onWheel={hold} className="grid items-stretch gap-6 min-[1081px]:grid-cols-[340px_minmax(0,1fr)]">
-      <div role="tablist" aria-label={t("kicker")} className="no-scrollbar flex gap-1.5 overflow-x-auto p-0.5 min-[1081px]:flex-col min-[1081px]:overflow-visible">
-        {TABS.map((tab, i) => {
-          const selected = i === current;
-          return (
-            <button
-              key={tab.id}
-              ref={(el) => {
-                tabRefs.current[i] = el;
-              }}
-              id={`${baseId}-tab-${tab.id}`}
-              type="button"
-              role="tab"
-              aria-selected={selected}
-              aria-controls={`${baseId}-panel`}
-              tabIndex={selected ? 0 : -1}
-              onClick={() => setCurrent(i)}
-              onKeyDown={(event) => onKeyDown(event, i)}
-              className={cn(
-                "relative grid flex-none grid-cols-[44px_minmax(0,1fr)] items-center gap-3 rounded-[18px] border border-transparent px-3.5 py-3 text-start transition-colors duration-150 max-[1080px]:w-[250px] hover:bg-white/70",
-                selected && "border-line bg-white shadow-[0_10px_30px_rgba(13,55,67,0.07)] hover:bg-white",
-              )}
-            >
-              <span className={cn("grid size-11 place-items-center rounded-[14px] transition-colors duration-200 [&_svg]:size-5", selected ? "bg-teal-700 text-white" : "bg-teal-50 text-teal-700")}>
-                <tab.icon aria-hidden />
-              </span>
-              <span className="min-w-0">
-                <b className="block text-[15px] text-teal-900">{t(`tabs.${tab.id}.title`)}</b>
-                <small className="text-[13px] text-[#5f7277]">{t(`tabs.${tab.id}.body`)}</small>
-              </span>
-              {selected ? (
-                <span aria-hidden className="absolute inset-x-3.5 bottom-0 h-0.5 overflow-hidden rounded-sm bg-[#edf2f3]">
-                  <i key={current} className={cn(styles.progress, "block h-full origin-left bg-amber-600 rtl:origin-right", !running && "[animation-play-state:paused]")} style={{ animationDuration: `${ROTATE_MS}ms` }} />
-                </span>
-              ) : null}
-            </button>
-          );
-        })}
-      </div>
+    <div ref={ref} data-marketing-tools="" className="grid items-stretch gap-4 min-[1081px]:grid-cols-[340px_minmax(0,1fr)] min-[1081px]:gap-6">
+      <Carousel
+        orientation="vertical"
+        opts={{ loop: true, align: "center", duration: 30 }}
+        plugins={reduced ? [] : [autoplay]}
+        setApi={setApi}
+        aria-label={t("kicker")}
+        onKeyDown={onKeyDown}
+        className="[&_[data-slot=carousel-content]]:[mask-image:linear-gradient(180deg,transparent,#000_16%,#000_84%,transparent)] min-[1081px]:self-center min-[1081px]:[&_[data-slot=carousel-content]]:[mask-image:linear-gradient(180deg,transparent,#000_14%,#000_86%,transparent)]"
+      >
+        {/* Embla measures the list itself in a vertical carousel, so the height goes here (shadcn's vertical example). */}
+        <CarouselContent className="-mt-2 h-[212px] min-[1081px]:h-[340px]">
+          {TABS.map((tab, i) => {
+            const selected = i === current;
+            return (
+              <CarouselItem key={tab.id} className="basis-auto pt-2">
+                <button
+                  id={`${baseId}-tab-${tab.id}`}
+                  type="button"
+                  aria-current={selected ? "true" : undefined}
+                  aria-controls={`${baseId}-panel`}
+                  onClick={() => select(i)}
+                  className={cn(
+                    "relative grid w-full grid-cols-[44px_minmax(0,1fr)] items-center gap-3 rounded-[18px] border border-transparent px-3.5 py-3 text-start transition-[background-color,border-color,box-shadow,opacity] duration-200 hover:bg-white/70 focus-visible:shadow-[var(--ring-focus)] focus-visible:outline-none",
+                    selected ? "border-line bg-white opacity-100 shadow-[0_10px_30px_rgba(13,55,67,0.07)] hover:bg-white" : "opacity-70",
+                  )}
+                >
+                  <span className={cn("grid size-11 place-items-center rounded-[14px] transition-colors duration-200 [&_svg]:size-5", selected ? "bg-teal-700 text-white" : "bg-teal-50 text-teal-700")}>
+                    <tab.icon aria-hidden />
+                  </span>
+                  <span className="min-w-0">
+                    <b className="block text-[15px] text-teal-900">{t(`tabs.${tab.id}.title`)}</b>
+                    <small className="text-[13px] text-[#5f7277]">{t(`tabs.${tab.id}.body`)}</small>
+                  </span>
+                  {selected ? (
+                    <span aria-hidden className="absolute inset-x-3.5 bottom-0 h-0.5 overflow-hidden rounded-sm bg-[#edf2f3]">
+                      <i key={current} className={cn(styles.progress, "block h-full origin-left bg-amber-600 rtl:origin-right", !playing && "[animation-play-state:paused]")} style={{ animationDuration: `${ROTATE_MS}ms` }} />
+                    </span>
+                  ) : null}
+                </button>
+              </CarouselItem>
+            );
+          })}
+        </CarouselContent>
+      </Carousel>
       <div
         id={`${baseId}-panel`}
-        role="tabpanel"
+        role="group"
         aria-labelledby={`${baseId}-tab-${active}`}
         className="flex items-center justify-center rounded-[22px] border border-line bg-[linear-gradient(160deg,#f2f7f8,#fff_70%)] p-3.5 min-[641px]:min-h-[440px] min-[641px]:rounded-card-lg min-[641px]:p-7"
       >
         <div key={active} className="flex w-full max-w-[520px] flex-col gap-3.5 rounded-[18px] border border-[#e6eef0] bg-white p-3.5 shadow-[0_14px_36px_rgba(13,55,67,0.07)] min-[641px]:rounded-[26px] min-[641px]:p-5">
           {active === "email" ? <EmailPane /> : null}
           {active === "whatsapp" ? <WhatsAppPane /> : null}
-          {active === "carts" ? <CartsPane running={running} /> : null}
-          {active === "coupon" ? <CouponPane running={running} /> : null}
-          {active === "pixel" ? <PixelPane running={running} /> : null}
+          {active === "carts" ? <CartsPane running={playing} /> : null}
+          {active === "coupon" ? <CouponPane running={playing} /> : null}
+          {active === "pixel" ? <PixelPane running={playing} /> : null}
         </div>
       </div>
     </div>

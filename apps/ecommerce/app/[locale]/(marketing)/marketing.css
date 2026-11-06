@@ -269,6 +269,10 @@
   .store-marquee-track {
     animation: store-marquee var(--marquee-duration, 40s) linear infinite;
   }
+  /* Arabic pages: the row moves right, the way the page reads; English moves left (owner, F-73). */
+  .store-marquee[data-direction="rtl"] .store-marquee-track {
+    animation-direction: reverse;
+  }
   .store-marquee:hover .store-marquee-track,
   .store-marquee:focus-within .store-marquee-track {
     animation-play-state: paused;

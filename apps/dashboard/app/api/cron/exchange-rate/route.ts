@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { applyInvalidation, invalidateBillingRate } from "@workspace/cache";
 import { refreshExchangeRate } from "@workspace/lib/billing/server";
 
 export const dynamic = "force-dynamic";
@@ -12,6 +13,8 @@ async function run(request: Request) {
   }
   const result = await refreshExchangeRate();
   if (!result.ok) console.error("[billing] exchange rate fetch failed", result.reason);
+  // tallaby.com's /pricing shows the rate from a cached read; a new rate clears it (F-73).
+  else await applyInvalidation(invalidateBillingRate(), { from: "dashboard", mode: "route" });
   return NextResponse.json(result, { status: result.ok ? 200 : 502 });
 }
 

@@ -4,8 +4,9 @@
     "ai": "Tallaby AI",
     "marketing": "Marketing",
     "faq": "FAQ",
-    "cta": "Start free",
-    "ctaMobile": "Create your store free",
+    "cta": "Create your free store",
+    "ctaMobile": "Create your free store",
+    "login": "Log in",
     "closeMenu": "Close menu",
     "mobile": "Mobile menu"
   },

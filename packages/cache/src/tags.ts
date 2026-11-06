@@ -124,6 +124,15 @@ export const marketingStoreTags = {
   recent: () => "marketing-stores:recent",
 } as const;
 
+/**
+ * The public USD/EGP rate tallaby.com shows on /pricing (F-73). Only the rate:
+ * no wallet, balance or seller data. Cleared when the cron saves a rate or the
+ * Admin changes the override; top-ups and fees always read the rate fresh.
+ */
+export const billingTags = {
+  rate: () => "billing:rate",
+} as const;
+
 /** The Tallaby fulfillment plan catalog. No seller data; seller requests are never cached. */
 export const fulfillmentTags = {
   plans: () => "fulfillment:plans",

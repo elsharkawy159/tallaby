@@ -10,15 +10,15 @@ const isStaging = Boolean(TEST_DATABASE_URL?.includes(STAGING_REF));
 if (isStaging) process.env.DATABASE_URL = TEST_DATABASE_URL;
 
 describe.skipIf(!isStaging)("recent stores (integration)", { timeout: 60_000 }, () => {
-  it("reads only names and times, newest first, within the window", async () => {
+  it("reads only an industry and a time, newest first, within the window", async () => {
     const { readRecentStores } = await import("./stores.server");
-    const { selectStoreLine } = await import("./recent-stores.lib");
+    const { selectStoreLine, STORE_INDUSTRY_NAMES } = await import("./recent-stores.lib");
     const now = Date.now();
 
     const wide = await readRecentStores(3650);
     for (const store of wide) {
-      expect(Object.keys(store).sort()).toEqual(["name", "publishedAt"]);
-      expect(store.name.trim()).not.toBe("");
+      expect(Object.keys(store).sort()).toEqual(["industry", "publishedAt"]);
+      if (store.industry !== null) expect(Object.keys(STORE_INDUSTRY_NAMES)).toContain(store.industry);
       expect(Date.parse(store.publishedAt ?? "")).toBeLessThanOrEqual(now);
     }
     const times = wide.map((store) => Date.parse(store.publishedAt ?? ""));

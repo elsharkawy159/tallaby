@@ -34,15 +34,13 @@
       "featureAll": "All store features",
       "featureEverything": "Everything in Free",
       "featureNoFee": "Zero platform fee on orders",
-      "plainly": "On the free plan, you'll need a first {topUp} top-up before you can see orders and send campaigns. On both plans, customer order emails need the Order Notifications app, whose cost you see in your dashboard before you turn it on.",
-      "fx": "EGP amounts are approximate, at 1 USD ≈ {rate} EGP."
+      "fx": "EGP amounts are approximate, at 1 USD ≈ {rate} EGP, the same rate your dashboard wallet uses."
     },
     "estimate": {
       "kicker": "Estimate",
       "title": "What would a month cost you?",
-      "desc": "Move the sliders to match your store and compare both plans.",
+      "desc": "Move the slider to your monthly orders and compare both plans.",
       "orders": "Orders a month",
-      "emails": "Campaign emails a month",
       "monthly": "Estimated cost a month",
       "free": "Free",
       "cheaper": "Cheaper",
@@ -50,7 +48,10 @@
       "savingFree": "You save {amount} a month on the free plan.",
       "savingPro": "You save {amount} a month on Pro.",
       "breakEven": "From about {orders} orders a month, Pro at {price} costs less than order fees.",
-      "note": "Payment gateway fees, shipping and apps are separate and aren't included here."
+      "note": "Payment gateway fees, shipping, apps and extra packs are separate and aren't included here.",
+      "range": "{min} to {max} orders",
+      "perOrder": "{fee} per order",
+      "perMonth": "{price} a month, no order fee"
     },
     "extras": {
       "kicker": "Other costs",

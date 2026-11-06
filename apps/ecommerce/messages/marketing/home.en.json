@@ -8,33 +8,57 @@
   "home": {
     "hero": {
       "title": "Create your online store <em>in minutes.</em> Free.",
-      "lead": "Type a name and claim your link, and you have a real online store under your brand. Design it visually and publish whenever you're ready. No code.",
+      "lead": "Tallaby lets you create an online store under your own brand in minutes, with no code. Add your products, take orders with cash on delivery or your own payment gateway so the money comes straight to you, connect the shipping company you already use, and run stock and marketing from one dashboard.",
       "cta": "Create your store now",
       "check1": "Free plan, no card",
       "check2": "Signup in under a minute",
       "check3": "Cash on delivery built in",
-      "plainly": "You'll need a first $5 top-up before you can see orders and send campaigns. Customer order emails need the Order Notifications app, whose cost you see in your dashboard before you turn it on.",
       "sample": "Sample data from a demo store.",
+      "marqueeLabel": "Some of what Tallaby does",
       "live": {
-        "recent": "New store: <store>{name}</store>, <age></age>",
-        "latest": "Latest store: <store>{name}</store>, <age></age>",
+        "industry": "A new <kind>{industry}</kind> store opened <age></age>",
+        "generic": "A new store opened on Tallaby <age></age>",
         "now": "just now",
         "minutes": "{count, plural, one {a minute ago} other {<num>{count}</num> minutes ago}}",
         "hours": "{count, plural, one {an hour ago} other {<num>{count}</num> hours ago}}",
-        "days": "{count, plural, one {a day ago} other {<num>{count}</num> days ago}}"
+        "days": "{count, plural, one {a day ago} other {<num>{count}</num> days ago}}",
+        "industries": {
+          "fashion": "fashion",
+          "shoes-bags": "shoes and bags",
+          "electronics": "electronics",
+          "mobile-accessories": "phone accessories",
+          "beauty": "beauty",
+          "home": "home and furniture",
+          "kitchen": "kitchenware",
+          "food": "food",
+          "sweets": "sweets and coffee",
+          "kids": "kids",
+          "sports": "sports",
+          "jewelry": "jewelry and watches",
+          "books": "books and stationery",
+          "health": "health",
+          "pets": "pet supplies",
+          "auto": "car accessories",
+          "handmade": "handmade and gifts"
+        }
       },
       "marquee": [
+        "Drag & Drop builder",
+        "Tallaby AI writes your products",
+        "Run your store from Claude and ChatGPT",
+        "100+ ready templates",
+        "Cash on delivery",
+        "Paymob and Kashier",
+        "Ship with Bosta",
         "Email campaigns",
         "WhatsApp follow-up",
         "Unfinished orders",
-        "Conversions API",
-        "Discount codes",
-        "Sales pop-up",
         "Fake order protection",
+        "Discount codes",
+        "Meta Pixel and Conversions API",
         "Meta and Google catalogs",
-        "Cash on delivery",
-        "Tallaby AI",
-        "Your own domain"
+        "Your own domain",
+        "Import from Shopify"
       ]
     },
     "features": {
@@ -69,9 +93,9 @@
       }
     },
     "builder": {
-      "kicker": "Drag and drop builder",
+      "kicker": "Drag & Drop builder",
       "title": "Design your store the way you picture it",
-      "body": "Drag a section in, click any text or photo to change it, and preview on mobile before you publish."
+      "body": "Drag & Drop sections into place, click any text or photo to change it, and preview on mobile before you publish."
     },
     "templates": {
       "kicker": "Store templates",
@@ -229,14 +253,17 @@
     "demo": {
       "hero": {
         "egp": "EGP",
+        "title": "Dashboard",
+        "walletLabel": "Wallet balance",
+        "last7": "Last 7 days",
+        "addProduct": "Add product",
         "greeting": "Good morning, Nour",
         "newOrders": "{count, plural, one {You have 1 new order to review.} other {You have {count} new orders to review.}}",
-        "search": "Search",
+        "search": "Search orders, products or customers",
         "allStores": "All stores",
-        "last30": "Last 30 days",
         "latest": "Latest orders",
         "lastFive": "Last 5 orders",
-        "viewAll": "View all",
+        "viewAll": "View all orders",
         "newOrder": "New order",
         "addToCart": "Add to cart",
         "summary": "Order summary",
@@ -248,23 +275,32 @@
         "willCall": "We will call you to confirm",
         "nav": {
           "home": "Dashboard",
+          "groupSell": "Sell",
           "products": "Products",
           "orders": "Orders",
-          "shipping": "Shipping",
-          "finance": "Finance",
-          "website": "Website",
-          "marketing": "Marketing",
-          "apps": "Apps"
+          "shipping": "Shipping & delivery",
+          "wallet": "Wallet",
+          "groupStore": "Store",
+          "onlineStore": "Online store",
+          "offers": "Offers & discounts",
+          "apps": "Apps & integrations",
+          "settings": "Store settings"
         },
         "kpi": {
           "sales": "Sales",
           "orders": "Orders",
           "ordersUnit": "orders",
-          "visits": "Visits",
+          "visits": "Store visits",
           "visitsUnit": "visits",
           "conversion": "Conversion",
-          "previous": "vs previous period",
-          "perVisit": "Orders per visit"
+          "previous": "vs last week"
+        },
+        "strip": {
+          "aov": "Avg. order",
+          "newCustomers": "New customers",
+          "customersUnit": "customers",
+          "wallet": "Wallet balance",
+          "rating": "Store rating"
         },
         "col": {
           "order": "Order",
@@ -327,17 +363,21 @@
         "home": "Home",
         "saving": "Saving…",
         "saved": "Saved",
-        "publish": "Publish changes",
+        "publish": "Publish",
         "published": "Published",
         "searchSections": "Search sections",
         "rail": {
           "add": "Add",
           "layers": "Layers",
-          "images": "Images",
-          "explore": "Explore",
-          "forms": "Forms",
           "pages": "Pages",
-          "brand": "Brand"
+          "media": "Media",
+          "brand": "Brand",
+          "shortcuts": "Keys"
+        },
+        "empty": {
+          "title": "Click any element on the page",
+          "body": "One click selects it, two clicks edit the text in place. Drag & Drop sections in from Add.",
+          "add": "Add a section"
         },
         "tabs": { "sections": "Sections", "elements": "Elements", "templates": "Templates" },
         "library": {

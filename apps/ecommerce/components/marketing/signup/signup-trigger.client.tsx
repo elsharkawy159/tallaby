@@ -65,7 +65,7 @@ export function SlugClaimForm({
         className,
       )}
     >
-      <label dir="ltr" className="flex h-12 min-w-0 flex-1 cursor-text items-center px-3 text-[15px] text-neutral-600 sm:h-auto sm:ps-[18px] sm:pe-2">
+      <label dir="ltr" className="flex h-12 min-w-0 flex-1 cursor-text items-center px-3 text-base text-neutral-600 sm:h-auto sm:text-[15px] sm:ps-[18px] sm:pe-2">
         <span className="sr-only">{t("storeLink")}</span>
         <input
           id={inputId}

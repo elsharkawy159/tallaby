@@ -3,26 +3,33 @@
 import * as React from "react";
 import Image from "next/image";
 import {
-  AppWindow,
   ArrowLeft,
   Banknote,
   Bell,
-  ChartColumn,
+  Blocks,
+  CalendarDays,
   Check,
   ChevronDown,
   ChevronsUpDown,
-  Eye,
   ExternalLink,
+  Eye,
   Globe,
+  LayoutGrid,
   Megaphone,
   Menu,
   Package,
+  PanelRight,
   Percent,
+  Plus,
+  Receipt,
   Search,
+  Settings,
   ShoppingBag,
+  Star,
   Store,
   TrendingUp,
   Truck,
+  UserPlus,
   Wallet,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -35,11 +42,16 @@ import { useDemoSteps } from "./use-demo.client";
 const STEPS = [1300, 1150, 1600, 1150, 500, 2600, 2100] as const;
 const SHIPPING = 50;
 const FIRST_NEW_ORDER = 2481;
+/** Sample week: sales, orders and visits that agree with each other (average order and conversion are worked out). */
+const BASE_SALES = 48_320;
+const BASE_ORDERS = 38;
+const VISITS = 2940;
+const NEW_CUSTOMERS = 21;
 const SPARKS = [
   [12, 18, 15, 22, 19, 26, 23, 30, 27, 33, 31, 36],
   [8, 11, 10, 14, 12, 16, 15, 19, 17, 21, 20, 23],
   [40, 44, 42, 47, 45, 50, 48, 52, 51, 55, 54, 58],
-  [2.0, 2.1, 1.9, 2.2, 2.1, 2.3, 2.2, 2.4, 2.2, 2.3, 2.4, 2.3],
+  [1.1, 1.2, 1.1, 1.3, 1.2, 1.3, 1.2, 1.4, 1.3, 1.3, 1.4, 1.3],
 ];
 const PRODUCTS = [
   { price: 1240, image: "/cosmetics.jpg", position: "20% 50%" },
@@ -50,7 +62,11 @@ const BADGE = { pending: "bg-[#fff4dc] text-[#8a5a00]", shipped: "bg-[#e8f1fb] t
 
 const money = (n: number) => n.toLocaleString("en-US");
 
-/** The hero's stage: an order placed on the phone lands in the seller's dashboard. All sample data. */
+/**
+ * The hero's stage: an order placed on the phone lands in the seller's
+ * dashboard, drawn after the redesigned dashboard home (Claude Design "Seller
+ * Home v3"). All sample data, every pound amount in the page's own word for it.
+ */
 export function HeroDemo() {
   const t = useTranslations("home.demo.hero");
   const { ref, step, cycle } = useDemoSteps<HTMLDivElement>(STEPS, 0);
@@ -66,9 +82,11 @@ export function HeroDemo() {
   const landed = step >= 5;
   const added = cycle + (landed ? 1 : 0);
   const orders = ordersAfter(base, added, make, FIRST_NEW_ORDER);
-  let sales = 48320;
+  let sales = BASE_SALES;
   for (let i = Math.max(0, added - 50); i < added; i++) sales += make(i).total;
+  const orderCount = BASE_ORDERS + added;
   const pendingCount = orders.filter((o) => o.status === "pending").length;
+  const egp = t("egp");
 
   const index = wrapIndex(cycle, PRODUCTS.length);
   const product = PRODUCTS[index]!;
@@ -77,122 +95,156 @@ export function HeroDemo() {
   const cursor = step === 1 || step === 3 ? { x: 50, y: 88 } : { x: 72, y: 42 };
   const fresh = make(added - 1);
 
-  const nav = [
-    { icon: ChartColumn, label: t("nav.home"), on: true },
-    { icon: Package, label: t("nav.products"), chevron: true },
-    { icon: ShoppingBag, label: t("nav.orders"), count: pendingCount, chevron: true },
-    { icon: Truck, label: t("nav.shipping"), chevron: true },
-    { icon: Wallet, label: t("nav.finance"), chevron: true },
-    { sep: true },
-    { icon: Globe, label: t("nav.website"), chevron: true },
-    { icon: Megaphone, label: t("nav.marketing"), chevron: true },
-    { icon: AppWindow, label: t("nav.apps") },
+  const groups = [
+    {
+      label: t("nav.groupSell"),
+      items: [
+        { icon: Package, label: t("nav.products"), chevron: true },
+        { icon: ShoppingBag, label: t("nav.orders"), count: pendingCount, chevron: true },
+        { icon: Truck, label: t("nav.shipping"), chevron: true },
+        { icon: Wallet, label: t("nav.wallet") },
+      ],
+    },
+    {
+      label: t("nav.groupStore"),
+      items: [
+        { icon: Globe, label: t("nav.onlineStore"), chevron: true },
+        { icon: Megaphone, label: t("nav.offers") },
+        { icon: Blocks, label: t("nav.apps") },
+        { icon: Settings, label: t("nav.settings"), chevron: true },
+      ],
+    },
   ];
   const kpis = [
-    { label: t("kpi.sales"), icon: Banknote, value: money(sales), unit: t("egp"), delta: "18.4%", note: t("kpi.previous"), bump: step === 5 },
-    { label: t("kpi.orders"), icon: ShoppingBag, value: String(212 + added), unit: t("kpi.ordersUnit"), delta: "12.1%", note: t("kpi.previous"), bump: step === 5 },
-    { label: t("kpi.visits"), icon: Eye, value: "9,410", unit: t("kpi.visitsUnit"), delta: "6.3%", note: t("kpi.previous"), extra: true },
-    { label: t("kpi.conversion"), icon: Percent, value: "2.3", unit: "%", delta: "4.0%", note: t("kpi.perVisit"), extra: true },
+    { label: t("kpi.sales"), icon: Banknote, value: money(sales), unit: egp, delta: "18.4%", spark: 0, bump: step === 5 },
+    { label: t("kpi.orders"), icon: ShoppingBag, value: String(orderCount), unit: t("kpi.ordersUnit"), delta: "12.1%", spark: 1, bump: step === 5 },
+    { label: t("kpi.visits"), icon: Eye, value: money(VISITS), unit: t("kpi.visitsUnit"), delta: "6.3%", spark: 2, extra: true },
+    { label: t("kpi.conversion"), icon: Percent, value: ((orderCount / VISITS) * 100).toFixed(1), unit: "%", delta: "4.0%", spark: 3, extra: true },
+  ];
+  const strip = [
+    { icon: Receipt, label: t("strip.aov"), value: money(Math.round(sales / orderCount)), unit: egp },
+    { icon: UserPlus, label: t("strip.newCustomers"), value: String(NEW_CUSTOMERS), unit: t("strip.customersUnit") },
+    { icon: Wallet, label: t("strip.wallet"), value: "$12.40", latin: true },
+    { icon: Star, label: t("strip.rating"), value: "4.8", unit: "/ 5" },
   ];
 
   return (
     <div ref={ref} aria-hidden className="relative mx-auto mt-11 w-full max-w-[1060px] text-start min-[641px]:mt-16">
-      <div className="grid overflow-hidden rounded-2xl border border-[#e7e9e8] bg-[#fafaf8] text-[13px] text-[#333] shadow-[0_16px_44px_rgba(13,55,67,0.09),0_2px_8px_rgba(13,55,67,0.04)] min-[641px]:me-[110px] min-[641px]:rounded-[20px] min-[1081px]:me-[150px] min-[1081px]:grid-cols-[200px_minmax(0,1fr)]">
-        <aside className="hidden flex-col border-e border-[#e7e9e8] bg-white min-[1081px]:flex">
-          <div className="flex h-[52px] items-center border-b border-[#e7e9e8] px-3.5 font-latin text-base font-extrabold text-teal-900">tallaby</div>
-          <ul className="flex flex-1 flex-col gap-0.5 p-2.5">
-            {nav.map((item, i) =>
-              item.sep ? (
-                <li key={i} className="mx-2.5 my-1.5 border-t border-[#e7e9e8]" />
-              ) : (
-                <li
-                  key={item.label}
-                  className={cn(
-                    "flex items-center gap-2.5 rounded-[10px] px-2.5 py-[7px] text-[12.5px] whitespace-nowrap text-[#171717]",
-                    item.on && "bg-[#eef3f4] font-bold text-[#145163]",
-                  )}
-                >
-                  {item.icon ? <item.icon className={cn("size-4", item.on ? "text-[#145163]" : "text-[#808080]")} /> : null}
-                  <span className="min-w-0 flex-1 truncate">{item.label}</span>
-                  {item.count ? <b className="rounded-full bg-[#145163] px-[7px] py-px font-latin text-[10px] font-bold text-white">{item.count}</b> : null}
-                  {item.chevron ? <ChevronDown className="size-[13px] text-[#808080]" /> : null}
-                </li>
-              ),
-            )}
-          </ul>
-          <div className="flex items-center gap-[9px] border-t border-[#e7e9e8] px-3 py-2.5">
-            <span className="grid size-[30px] place-items-center rounded-[9px] bg-[#fbf1ef] font-latin text-sm font-extrabold text-[#c8586b]">g</span>
+      <div className="grid overflow-hidden rounded-2xl border border-[#e7e9e8] bg-[#f8f9f8] text-[13px] text-[#333] shadow-[0_16px_44px_rgba(13,55,67,0.09),0_2px_8px_rgba(13,55,67,0.04)] min-[641px]:me-[110px] min-[641px]:rounded-[20px] min-[1081px]:me-[150px] min-[1081px]:grid-cols-[208px_minmax(0,1fr)]">
+        <aside className="hidden flex-col gap-2 border-e border-[#e7e9e8] bg-white p-2.5 min-[1081px]:flex">
+          <div className="flex h-9 items-center justify-between px-1.5">
+            <b className="font-latin text-[19px] font-extrabold tracking-[-0.01em] text-teal-900">tallaby</b>
+            <PanelRight className="size-4 text-[#808080] rtl:-scale-x-100" />
+          </div>
+          <div className="flex items-center gap-2 rounded-xl border border-[#e7e9e8] p-2">
+            <span className="grid size-[30px] flex-none place-items-center rounded-[9px] bg-teal-900 font-latin text-sm font-extrabold text-white">g</span>
             <div className="min-w-0 flex-1">
               <b className="block font-latin text-[12.5px] font-bold text-[#171717]">glow</b>
               <small dir="ltr" className="block truncate text-start font-latin text-[10.5px] font-medium text-[#808080]">glow.tallaby.com</small>
             </div>
-            <ChevronsUpDown className="size-3.5 text-[#808080]" />
+            <ChevronsUpDown className="size-3.5 flex-none text-[#808080]" />
           </div>
+          <span className="flex items-center gap-2.5 rounded-xl bg-teal-900 px-2.5 py-2 text-[12.5px] font-bold text-white shadow-[0_6px_16px_rgba(20,81,99,0.22)]">
+            <LayoutGrid className="size-4" />
+            {t("nav.home")}
+          </span>
+          {groups.map((group) => (
+            <div key={group.label} className="flex flex-col gap-0.5">
+              <small className="px-2.5 pt-1.5 pb-0.5 text-[10.5px] font-semibold text-[#9aa7aa]">{group.label}</small>
+              {group.items.map((item) => (
+                <span key={item.label} className="flex items-center gap-2.5 rounded-[10px] px-2.5 py-[6px] text-[12.5px] whitespace-nowrap text-[#171717]">
+                  <item.icon className="size-4 flex-none text-[#808080]" />
+                  <span className="min-w-0 flex-1 truncate">{item.label}</span>
+                  {item.count ? <b className="grid h-[18px] min-w-[18px] place-items-center rounded-full bg-amber-600 px-1 font-latin text-[10px] font-bold text-teal-900">{item.count}</b> : null}
+                  {item.chevron ? <ChevronDown className="size-[13px] flex-none text-[#a0a0a0]" /> : null}
+                </span>
+              ))}
+            </div>
+          ))}
         </aside>
 
         <div className="flex min-w-0 flex-col">
-          <div className="flex h-[46px] items-center gap-1.5 border-b border-[#e7e9e8] bg-white/90 px-2.5 min-[641px]:h-[52px] min-[641px]:gap-2.5 min-[641px]:px-4">
+          <div className="flex h-[46px] items-center gap-1.5 border-b border-[#e7e9e8] bg-white/90 px-2.5 min-[641px]:h-[54px] min-[641px]:gap-2.5 min-[641px]:px-4">
             <span className="grid size-[30px] flex-none place-items-center text-[#808080] min-[1081px]:hidden">
               <Menu className="size-4" />
             </span>
-            <b className="flex-1 text-[13.5px] font-bold whitespace-nowrap text-[#171717] min-[641px]:flex-none">{t("nav.home")}</b>
-            <span dir="ltr" className="hidden items-center gap-1 font-latin text-[11.5px] font-medium whitespace-nowrap text-[#808080] min-[641px]:flex">
-              glow.tallaby.com <ExternalLink className="size-3" />
+            <b className="flex-1 text-[13.5px] font-bold whitespace-nowrap text-[#171717] min-[641px]:flex-none min-[641px]:text-[15px]">{t("title")}</b>
+            <span dir="ltr" className="hidden h-[30px] items-center gap-1.5 rounded-full border border-[#e7e9e8] px-2.5 font-latin text-[11px] font-medium whitespace-nowrap text-[#5f6b6e] min-[641px]:flex">
+              <i className="size-[7px] rounded-full bg-[#16a34a]" />
+              glow.tallaby.com
+              <ExternalLink className="size-3" />
             </span>
-            <span className="mx-auto hidden h-8 max-w-[240px] flex-1 items-center gap-2 rounded-[9px] border border-[#e7e9e8] bg-[#f7f7f7] px-2.5 text-xs text-[#808080] min-[641px]:flex">
-              <Search className="size-3.5" />
-              <span className="flex-1">{t("search")}</span>
+            <span className="mx-auto hidden h-[30px] max-w-[260px] flex-1 items-center gap-2 rounded-full border border-[#e7e9e8] bg-white px-3 text-[11.5px] text-[#9a9a9a] min-[861px]:flex">
+              <Search className="size-3.5 flex-none" />
+              <span className="min-w-0 flex-1 truncate">{t("search")}</span>
+              <kbd dir="ltr" className="rounded-[5px] border border-[#e7e9e8] bg-[#f7f7f7] px-1 font-latin text-[10px] text-[#808080]">Ctrl K</kbd>
+            </span>
+            <span className="flex h-[30px] flex-none items-center gap-1.5 rounded-full border border-[#e7e9e8] bg-white ps-2.5 pe-1 text-[11.5px] whitespace-nowrap text-[#5f6b6e]">
+              <span className="hidden min-[641px]:inline">{t("walletLabel")}</span>
+              <Wallet className="size-3.5 min-[641px]:hidden" />
+              <b dir="ltr" className="font-latin text-[12px] font-bold text-[#171717]">$12.40</b>
+              <span className="grid size-[22px] place-items-center rounded-full bg-[#eef3f4] text-teal-900">
+                <Plus className="size-3" />
+              </span>
             </span>
             <span className="relative grid size-[30px] flex-none place-items-center text-[#808080]">
               <Bell className="size-4" />
-              <i className={cn("absolute end-1.5 top-[5px] size-[7px] rounded-full bg-amber-600 shadow-[0_0_0_2px_#fff] transition-transform duration-200", step === 5 ? "scale-100" : "scale-0")} />
-            </span>
-            <span className="flex h-8 items-center gap-1.5 rounded-[9px] border border-[#e7e9e8] bg-[#f7f7f7] px-2 font-latin text-xs font-semibold whitespace-nowrap text-[#171717] min-[641px]:px-2.5">
-              <Wallet className="size-3.5 text-[#808080]" />
-              <span dir="ltr" className="hidden min-[641px]:inline">$12.40</span>
+              <i
+                className={cn(
+                  "absolute -end-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-amber-600 px-1 font-latin text-[9px] font-bold text-teal-900 not-italic shadow-[0_0_0_2px_#fff] transition-transform duration-200",
+                  step === 5 ? "scale-100" : "scale-0",
+                )}
+              >
+                1
+              </i>
             </span>
           </div>
 
           <div className="flex flex-col gap-2.5 p-3 pb-[120px] min-[641px]:gap-3.5 min-[641px]:p-[18px]">
             <div className="flex flex-wrap items-end justify-between gap-3">
               <div>
-                <b className="block text-[15px] font-bold text-[#171717] min-[641px]:text-lg">{t("greeting")}</b>
+                <b className="block text-[16px] font-bold text-[#171717] min-[641px]:text-xl">{t("greeting")}</b>
                 <small className="text-xs text-[#808080]">{t("newOrders", { count: pendingCount })}</small>
               </div>
-              <div className="hidden gap-1.5 min-[641px]:flex">
-                <span className="flex h-8 items-center gap-1.5 rounded-[9px] border border-[#d9dddc] bg-white px-2.5 text-xs whitespace-nowrap">
+              <div className="hidden items-center gap-1.5 min-[641px]:flex">
+                <span className="flex h-8 items-center gap-1.5 rounded-full border border-[#d9dddc] bg-white px-3 text-xs whitespace-nowrap">
+                  <CalendarDays className="size-[13px] text-[#808080]" />
+                  {t("last7")}
+                  <ChevronDown className="size-[13px] text-[#808080]" />
+                </span>
+                <span className="hidden h-8 items-center gap-1.5 rounded-full border border-[#d9dddc] bg-white px-3 text-xs whitespace-nowrap min-[861px]:flex">
                   <Store className="size-[13px] text-[#808080]" />
                   {t("allStores")}
                   <ChevronDown className="size-[13px] text-[#808080]" />
                 </span>
-                <span className="flex h-8 items-center gap-1.5 rounded-[9px] border border-[#d9dddc] bg-white px-2.5 text-xs whitespace-nowrap">
-                  {t("last30")}
-                  <ChevronDown className="size-[13px] text-[#808080]" />
+                <span className="flex h-8 items-center gap-1.5 rounded-full bg-amber-600 px-3.5 text-xs font-bold whitespace-nowrap text-teal-900 shadow-[0_6px_14px_rgba(253,173,40,0.35)]">
+                  <Plus className="size-3.5" />
+                  {t("addProduct")}
                 </span>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-2 min-[641px]:grid-cols-4 min-[641px]:gap-2.5">
-              {kpis.map((kpi, i) => {
-                const spark = sparkPaths(SPARKS[i]!);
+              {kpis.map((kpi) => {
+                const spark = sparkPaths(SPARKS[kpi.spark]!);
                 return (
-                  <div key={kpi.label} className={cn("min-w-0 flex-col gap-[7px] rounded-[14px] border border-[#e7e9e8] bg-white p-2.5 shadow-[0_1px_2px_rgba(0,0,0,0.04)] min-[641px]:rounded-2xl min-[641px]:px-3.5 min-[641px]:pt-3 min-[641px]:pb-2.5", kpi.extra ? "hidden min-[641px]:flex" : "flex")}>
-                    <div className="flex items-center justify-between text-xs text-[#808080]">
-                      <span>{kpi.label}</span>
-                      <span className="grid size-[30px] place-items-center rounded-[9px] bg-[#eef3f4] text-[#145163]">
+                  <div key={kpi.label} className={cn("min-w-0 flex-col gap-[7px] rounded-2xl border border-[#e7e9e8] bg-white p-2.5 shadow-[0_1px_2px_rgba(0,0,0,0.04)] min-[641px]:rounded-[18px] min-[641px]:px-3.5 min-[641px]:pt-3 min-[641px]:pb-2.5", kpi.extra ? "hidden min-[641px]:flex" : "flex")}>
+                    <div className="flex items-center justify-between gap-2 text-xs font-semibold text-[#3f4a4d]">
+                      <span className="truncate">{kpi.label}</span>
+                      <span className="grid size-[30px] flex-none place-items-center rounded-[10px] border border-[#e7eef0] bg-[#f6f9fa] text-[#145163]">
                         <kpi.icon className="size-[15px]" />
                       </span>
                     </div>
                     <div className="flex items-baseline gap-[5px]">
-                      <b className={cn("font-latin text-[17px] leading-none font-semibold text-[#171717] transition-colors duration-500 min-[641px]:text-[21px]", kpi.bump && "text-[#15803d]")}>{kpi.value}</b>
+                      <b className={cn("font-latin text-[17px] leading-none font-bold text-[#171717] transition-colors duration-500 min-[641px]:text-[22px]", kpi.bump && "text-[#15803d]")}>{kpi.value}</b>
                       <span className="text-[11.5px] text-[#808080]">{kpi.unit}</span>
                     </div>
                     <svg viewBox="0 0 200 34" preserveAspectRatio="none" className="block h-7 w-full rtl:-scale-x-100">
                       <path d={spark.area} className="fill-[#145163] opacity-[0.08]" />
                       <path d={spark.line} fill="none" stroke="#145163" strokeWidth="1.75" strokeLinejoin="round" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
                     </svg>
-                    <div className="flex min-h-5 items-center justify-end gap-1.5 text-[10.5px] text-[#808080] min-[641px]:justify-between">
-                      <span className="hidden truncate min-[641px]:inline">{kpi.note}</span>
+                    <div className="flex min-h-5 items-center justify-between gap-1.5 border-t border-dashed border-[#e7e9e8] pt-1.5 text-[10.5px] text-[#808080]">
+                      <span className="hidden truncate min-[1081px]:inline">{t("kpi.previous")}</span>
                       <span dir="ltr" className="inline-flex h-5 flex-none items-center gap-[3px] rounded-full bg-[#e5f6ea] px-[7px] font-latin text-[10px] font-bold text-[#15803d]">
                         <TrendingUp className="size-[11px]" />
                         {kpi.delta}
@@ -203,10 +255,27 @@ export function HeroDemo() {
               })}
             </div>
 
-            <section className="overflow-hidden rounded-2xl border border-[#e7e9e8] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+            <div className="hidden grid-cols-4 divide-x divide-[#eef0ef] overflow-hidden rounded-[18px] border border-[#e7e9e8] bg-white min-[861px]:grid rtl:divide-x-reverse">
+              {strip.map((cell) => (
+                <div key={cell.label} className="flex items-center gap-2.5 px-3.5 py-3">
+                  <span className="grid size-9 flex-none place-items-center rounded-xl bg-[#fdf3e1] text-[#b7791f]">
+                    <cell.icon className="size-4" />
+                  </span>
+                  <div className="min-w-0">
+                    <small className="block truncate text-[11px] text-[#808080]">{cell.label}</small>
+                    <b className="text-[13.5px] font-bold text-[#171717]">
+                      <span dir={cell.latin ? "ltr" : undefined} className="font-latin">{cell.value}</span>
+                      {cell.unit ? <span className="ms-1 text-[11px] font-normal text-[#808080]">{cell.unit}</span> : null}
+                    </b>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <section className="overflow-hidden rounded-[18px] border border-[#e7e9e8] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
               <div className="flex items-center justify-between px-3.5 pt-3 pb-2.5">
                 <div>
-                  <b className="block text-[13.5px] font-bold text-[#171717]">{t("latest")}</b>
+                  <b className="block text-[14px] font-bold text-[#171717]">{t("latest")}</b>
                   <small className="text-[11px] text-[#808080]">{t("lastFive")}</small>
                 </div>
                 <span className="flex items-center gap-1 rounded-lg px-2 py-1 text-[11.5px] font-semibold text-[#145163]">
@@ -225,7 +294,7 @@ export function HeroDemo() {
                       [t("col.total"), ""],
                       [t("col.status"), ""],
                     ].map(([label, cls]) => (
-                      <th key={label} className={cn("border-y border-[#e7e9e8] bg-[#f7f7f7] px-2.5 py-[7px] text-start text-[11px] font-medium whitespace-nowrap text-[#808080] min-[641px]:px-3.5", cls)}>
+                      <th key={label} className={cn("border-y border-[#e7e9e8] bg-[#f7f8f8] px-2.5 py-[7px] text-start text-[11px] font-medium whitespace-nowrap text-[#808080] min-[641px]:px-3.5", cls)}>
                         {label}
                       </th>
                     ))}
@@ -245,8 +314,8 @@ export function HeroDemo() {
                       </td>
                       <td className="hidden max-w-[140px] truncate px-3.5 py-2 min-[1081px]:table-cell">{o.product}</td>
                       <td className="hidden px-3.5 py-2 whitespace-nowrap text-[#808080] min-[1081px]:table-cell">{t(`when.${o.when}`)}</td>
-                      <td dir="ltr" className="px-2.5 py-2 text-start font-latin text-xs font-semibold whitespace-nowrap min-[641px]:px-3.5">
-                        {money(o.total)} EGP
+                      <td className="px-2.5 py-2 text-xs font-semibold whitespace-nowrap min-[641px]:px-3.5">
+                        <span className="font-latin">{money(o.total)}</span> {egp}
                       </td>
                       <td className="px-2.5 py-2 min-[641px]:px-3.5">
                         <span className={cn("inline-flex h-5 items-center gap-[5px] rounded-full px-2 text-[10.5px] font-medium whitespace-nowrap", BADGE[o.status])}>{t(`status.${o.status}`)}</span>
@@ -274,20 +343,20 @@ export function HeroDemo() {
                 <Image src={product.image} alt="" fill sizes="230px" className="object-cover" style={{ objectPosition: product.position }} />
                 <span className="absolute start-2 top-2 rounded-full bg-white px-2 py-0.5 font-latin text-[10px] font-bold text-[#c8586b]">NEW</span>
               </div>
-              <h4 className="text-[11px] leading-[1.4] text-[#4a2c2a] min-[641px]:text-[15px]">{productName}</h4>
-              <div className="font-latin text-xs font-bold text-[#c8586b] min-[641px]:text-base">
-                {money(product.price)} {t("egp")}
+              <p className="text-[11px] leading-[1.4] text-[#4a2c2a] min-[641px]:text-[15px]">{productName}</p>
+              <div className="text-xs font-bold text-[#c8586b] min-[641px]:text-base">
+                <span className="font-latin">{money(product.price)}</span> {egp}
               </div>
               <PhoneButton pressed={step === 1}>{t("addToCart")}</PhoneButton>
             </PhoneView>
             <PhoneView on={view === 2}>
-              <h4 className="text-[11px] leading-[1.4] text-[#4a2c2a] min-[641px]:text-[15px]">{t("summary")}</h4>
+              <p className="text-[11px] leading-[1.4] font-semibold text-[#4a2c2a] min-[641px]:text-[15px]">{t("summary")}</p>
               <SummaryRow label={productName} value={money(product.price)} />
               <SummaryRow label={t("shipping")} value={String(SHIPPING)} />
               <div className="flex justify-between gap-2 border-t border-dashed border-[#f0dcd8] pt-2.5 text-[10px] text-[#7a6461] min-[641px]:text-sm">
                 <span>{t("total")}</span>
-                <b className="font-latin text-[10.5px] font-bold text-[#c8586b] min-[641px]:text-[15px]">
-                  {money(product.price + SHIPPING)} {t("egp")}
+                <b className="text-[10.5px] font-bold text-[#c8586b] min-[641px]:text-[15px]">
+                  <span className="font-latin">{money(product.price + SHIPPING)}</span> {egp}
                 </b>
               </div>
               <div className="flex items-center gap-2 rounded-xl border-[1.5px] border-[#c8586b] p-1.5 text-[10px] font-semibold text-[#4a2c2a] min-[641px]:p-2.5 min-[641px]:text-[12.5px]">
@@ -322,7 +391,7 @@ export function HeroDemo() {
             {t("newOrder")} <span dir="ltr" className="font-latin">#{FIRST_NEW_ORDER + Math.max(added - 1, 0)}</span>
           </b>
           <small className="text-xs text-ink-400">
-            {fresh.customer} · <span className="font-latin">{money(fresh.total)}</span> {t("egp")}
+            {fresh.customer} · <span className="font-latin">{money(fresh.total)}</span> {egp}
           </small>
         </div>
       </div>

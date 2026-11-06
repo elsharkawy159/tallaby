@@ -1,7 +1,7 @@
 import { cache } from "react";
 import { createCachedQuery, marketingStoreTags } from "@workspace/cache";
 import { db, sql } from "@workspace/db";
-import { RECENT_STORES_LIMIT, type RecentStore } from "./recent-stores.lib";
+import { RECENT_STORES_LIMIT, storeIndustryId, type RecentStore } from "./recent-stores.lib";
 
 /** The line is optional: past this, the page renders without it rather than wait for the database. */
 const READ_TIMEOUT_MS = 3000;
@@ -10,31 +10,31 @@ const READ_TIMEOUT_MS = 3000;
  * The newest stores that are really open to visitors: published, active and not
  * deleted, of an approved seller, by first publish (a republish keeps that time,
  * and a draft has none). The schema doesn't mark test or demo stores, so any
- * store that passes these checks can show. Only the public name leaves this
- * function, and nothing about the seller.
+ * store that passes these checks can show. Only the store's industry (when it
+ * is one of the listed ones) and its time leave this function: no store name
+ * and nothing about the seller (owner, 2026-11-05, F-73).
  */
 export async function readRecentStores(windowDays = 7): Promise<RecentStore[]> {
   const result = await db.execute(sql`
-    SELECT st.name, st.first_published_at
+    SELECT st.store_category, st.store_category_ar, st.first_published_at
     FROM stores st
     JOIN sellers s ON s.id = st.seller_id
     WHERE st.status = 'active' AND st.site_status = 'published' AND st.deleted_at IS NULL
       AND s.status = 'approved'
-      AND btrim(st.name) <> ''
       AND st.first_published_at <= now()
       AND st.first_published_at >= now() - make_interval(days => ${windowDays})
     ORDER BY st.first_published_at DESC
     LIMIT ${RECENT_STORES_LIMIT}
   `);
   return ([...result] as Record<string, unknown>[]).map((row) => ({
-    name: String(row.name),
+    industry: storeIndustryId({ en: row.store_category as string | null, ar: row.store_category_ar as string | null }),
     publishedAt: row.first_published_at ? new Date(row.first_published_at as string | Date).toISOString() : null,
   }));
 }
 
-/** One short-lived read for every visitor. It holds no customer or seller data. */
+/** One short-lived read for every visitor. It holds no store name, customer or seller data. */
 const getCachedRecentStores = createCachedQuery({
-  name: "marketing:recent-stores:v1",
+  name: "marketing:recent-stores:v2",
   ttl: 60,
   tags: () => [marketingStoreTags.recent()],
   query: () => readRecentStores(),

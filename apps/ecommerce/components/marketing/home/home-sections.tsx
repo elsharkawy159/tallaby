@@ -15,6 +15,7 @@ import { CONTACT } from "@/lib/marketing/site.lib";
 import { getRecentStores } from "@/lib/marketing/stores.server";
 import { getTemplateGallery } from "@/lib/marketing/templates.server";
 import type { GalleryEntry } from "@/lib/marketing/templates.lib";
+import { ChatGptMark, ClaudeMark } from "./ai-brand-marks";
 import { AiDemo } from "./ai-demo.client";
 import { BuilderDemo } from "./builder-demo.client";
 import { HeroDemo } from "./hero-demo.client";
@@ -37,15 +38,14 @@ function SplitHeading({ id, kicker, title, body }: { id: string; kicker: string;
 }
 
 export async function HomeHero() {
-  const t = await getTranslations("home.hero");
+  const [t, locale, recent] = await Promise.all([getTranslations("home.hero"), getLocale(), getRecentStores()]);
   const features = t.raw("marquee") as string[];
   const checks = [t("check1"), t("check2"), t("check3")];
-  const recent = await getRecentStores();
+  const showLine = selectStoreLine(recent.stores, recent.readAt).kind !== "none";
 
   return (
     <section id="top" aria-labelledby="home-h1" className="relative overflow-hidden pt-10 pb-24 min-[641px]:pt-16">
       <Container className="relative flex flex-col items-center text-center">
-        {selectStoreLine(recent.stores, recent.readAt).kind === "none" ? null : <LiveStoreLine stores={recent.stores} readAt={recent.readAt} />}
         <h1
           id="home-h1"
           className="max-w-[900px] text-[clamp(34px,6.2vw,68px)] leading-[1.25] font-bold text-balance text-teal-900 en:leading-[1.08] en:tracking-[-0.02em] [&_em]:text-amber-700 [&_em]:not-italic"
@@ -62,20 +62,33 @@ export async function HomeHero() {
             </li>
           ))}
         </ul>
-        <p className="mt-3 max-w-[640px] text-[13px] text-pretty text-ink-500">{t("plainly")}</p>
+        {/* After the main call to action (SEO audit 2026-11-05), in a slot of fixed height so nothing moves when it changes. */}
+        {showLine ? (
+          <div className="mt-5 flex h-[38px] max-w-full justify-center">
+            <LiveStoreLine stores={recent.stores} readAt={recent.readAt} />
+          </div>
+        ) : null}
       </Container>
 
-      <div aria-hidden className="store-marquee mt-5 overflow-hidden min-[641px]:mt-7" dir="ltr">
+      {/* The first copy is a real list (visible text for readers and search engines); the second only closes the loop.
+          Arabic pages move right, English left (owner, F-73). */}
+      <div className="store-marquee mt-5 overflow-hidden min-[641px]:mt-7" dir="ltr" data-direction={locale === "ar" ? "rtl" : "ltr"}>
         <div className="store-marquee-track flex w-max">
           {[0, 1].map((copy) => (
-            <div key={copy} data-marquee-copy={copy === 1 ? "" : undefined} className="flex flex-none gap-2.5 pe-2.5">
+            <ul
+              key={copy}
+              aria-label={copy === 0 ? t("marqueeLabel") : undefined}
+              aria-hidden={copy === 1 ? true : undefined}
+              data-marquee-copy={copy === 1 ? "" : undefined}
+              className="m-0 flex flex-none list-none gap-2.5 p-0 pe-2.5"
+            >
               {features.map((label) => (
-                <span key={label} dir="auto" className="inline-flex h-[38px] items-center gap-2 rounded-full border border-line bg-white/75 px-4 text-[13.5px] font-semibold whitespace-nowrap text-[#33464b]">
-                  <i className="size-[7px] rounded-full bg-amber-600" />
+                <li key={label} dir={locale === "ar" ? "rtl" : "ltr"} className="inline-flex h-[38px] items-center gap-2 rounded-full border border-line bg-white/75 px-4 text-[13.5px] font-semibold whitespace-nowrap text-[#33464b]">
+                  <i aria-hidden className="size-[7px] rounded-full bg-amber-600" />
                   {label}
-                </span>
+                </li>
               ))}
-            </div>
+            </ul>
           ))}
         </div>
       </div>
@@ -108,7 +121,20 @@ export async function FeaturesSection() {
             <div className="flex flex-col items-start gap-2.5">
               <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-[11.5px] font-bold text-[#8a5300]">{t("mcpTag")}</span>
               <h3 className="text-[clamp(20px,2.4vw,26px)] leading-[1.4] font-bold text-teal-900">
-                {t.rich("mcpTitle", { claude: () => <Ltr className="font-latin">Claude</Ltr>, chatgpt: () => <Ltr className="font-latin">ChatGPT</Ltr> })}
+                {t.rich("mcpTitle", {
+                  claude: () => (
+                    <Ltr className="mx-0.5 inline-flex items-center gap-1.5 align-baseline font-latin">
+                      <ClaudeMark className="size-[0.9em] flex-none self-center" />
+                      Claude
+                    </Ltr>
+                  ),
+                  chatgpt: () => (
+                    <Ltr className="mx-0.5 inline-flex items-center gap-1.5 align-baseline font-latin">
+                      <ChatGptMark className="size-[0.9em] flex-none self-center text-[#0d0d0d]" />
+                      ChatGPT
+                    </Ltr>
+                  ),
+                })}
               </h3>
               <p className="text-[15px] text-pretty text-[#5f7277]">{t("mcpBody")}</p>
             </div>

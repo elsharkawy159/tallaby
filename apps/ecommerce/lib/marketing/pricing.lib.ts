@@ -7,6 +7,7 @@ import {
   PRO_MONTHLY_USD_CENTS,
   TOP_UP_MAX_USD_CENTS,
   TOP_UP_MIN_USD_CENTS,
+  usdCentsToPiastres,
 } from "@workspace/lib/billing";
 import { PLANS } from "@workspace/lib/plans";
 
@@ -16,8 +17,25 @@ import { PLANS } from "@workspace/lib/plans";
  * is computed in `@workspace/lib/orders/platform-fee` and `billing`.
  */
 
-/** Only for the "≈" EGP figures on the site. Top-ups use the live rate at the time. */
-export const APPROX_EGP_PER_USD = 50;
+/**
+ * Only when the live rate can't be read: the site's "≈" EGP figures use the
+ * dashboard's rate (`getMarketingEgpPerUsd`). Top-ups use the live rate at the time.
+ */
+export const FALLBACK_EGP_PER_USD = 50;
+
+/**
+ * A USD amount in EGP the way the dashboard's /wallet shows it (`quoteTopUp`):
+ * converted with the rate in 1/10000 EGP, rounded up to the piastre, then down
+ * to a whole pound. Under a dollar (the $0.03 order fee) whole pounds would
+ * hide the amount, so it keeps the piastres.
+ */
+export function usdCentsToEgp(usdCents: number, rate: number): number {
+  const piastres = usdCentsToPiastres(Math.max(0, usdCents), rate);
+  return usdCents < 100 ? piastres / 100 : Math.floor(piastres / 100);
+}
+
+/** "1.5", "1,445", "49.85": Latin digits, up to 2 decimals, like /wallet. */
+export const formatEgp = (egp: number) => egp.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 
 export const PLAN_PRICES = {
   free: { orderFeeCents: FREE_ORDER_FEE_USD_CENTS, aiCredits: PLANS.free.aiCreditsMonthly, emails: PLANS.free.emailsMonthly },
@@ -38,13 +56,7 @@ export function proBreakEvenOrders(): number {
   return Math.ceil(PRO_MONTHLY_USD_CENTS / FREE_ORDER_FEE_USD_CENTS);
 }
 
-/** What a campaign-email volume costs beyond the plan's allowance. Extra emails come in whole packs. */
-export function extraEmailsCents(emails: number, allowance: number): number {
-  const extra = Math.max(0, emails - allowance);
-  return Math.ceil(extra / EMAIL_PACK_EMAILS) * EMAIL_PACK_USD_CENTS;
-}
-
-export type PlanEstimateInput = { orders: number; emails: number };
+export type PlanEstimateInput = { orders: number };
 
 export type PlanEstimate = {
   freeCents: number;
@@ -54,11 +66,11 @@ export type PlanEstimate = {
   savingCents: number;
 };
 
-/** A month on each plan, before any apps: app prices live in the dashboard. */
-export function estimatePlans({ orders, emails }: PlanEstimateInput): PlanEstimate {
+/** A month on each plan from the orders alone, before any apps or extra packs: those prices live in the dashboard. */
+export function estimatePlans({ orders }: PlanEstimateInput): PlanEstimate {
   const count = Math.max(0, Math.floor(orders));
-  const freeCents = count * FREE_ORDER_FEE_USD_CENTS + extraEmailsCents(emails, PLANS.free.emailsMonthly);
-  const proCents = PRO_MONTHLY_USD_CENTS + extraEmailsCents(emails, PLANS.pro.emailsMonthly);
+  const freeCents = count * FREE_ORDER_FEE_USD_CENTS;
+  const proCents = PRO_MONTHLY_USD_CENTS;
   return {
     freeCents,
     proCents,

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   invalidateAllCategories,
+  invalidateBillingRate,
   invalidateFulfillmentPlans,
   invalidateMarketingBlog,
   invalidateSellerCoupons,
@@ -19,6 +20,7 @@ import {
 } from "./invalidate";
 import {
   adminTags,
+  billingTags,
   categoryTags,
   couponTags,
   fulfillmentTags,
@@ -381,6 +383,10 @@ describe("admin invalidations (docs/admin-saas.md §4.3)", () => {
   it("template catalog and fulfillment plans carry no seller data", () => {
     expect(invalidateTemplateCatalog().tags).toEqual([templateTags.catalog()]);
     expect(invalidateFulfillmentPlans().tags).toEqual([fulfillmentTags.plans()]);
+  });
+
+  it("the public exchange rate is one tag with no seller data", () => {
+    expect(invalidateBillingRate()).toEqual({ tags: [billingTags.rate()], paths: [] });
   });
 
   it("library sections are one platform catalog tag with no seller data", () => {

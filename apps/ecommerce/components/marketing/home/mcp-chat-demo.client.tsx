@@ -3,6 +3,7 @@
 import { CircleCheck, LoaderCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@workspace/ui/lib/utils";
+import { ChatGptMark, ClaudeMark } from "./ai-brand-marks";
 import { useDemoSteps } from "./use-demo.client";
 
 /**
@@ -59,7 +60,8 @@ export function McpChatDemo() {
       <div className="flex items-center gap-2 border-b border-[#f0f4f5] pb-2.5 text-[12.5px] text-ink-400">
         <span dir="ltr" className="flex gap-1">
           {["Claude", "ChatGPT"].map((name) => (
-            <span key={name} className={cn("rounded-full px-2 py-0.5 font-latin text-[11px] font-bold", name === assistant ? "bg-teal-900 text-white" : "bg-[#f1f5f6] text-[#3f5358]")}>
+            <span key={name} className={cn("inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-latin text-[11px] font-bold", name === assistant ? "bg-teal-900 text-white" : "bg-[#f1f5f6] text-[#3f5358]")}>
+              {name === "Claude" ? <ClaudeMark className="size-3" /> : <ChatGptMark className="size-3" />}
               {name}
             </span>
           ))}

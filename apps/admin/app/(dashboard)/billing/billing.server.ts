@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { applyInvalidation, invalidateBillingRate } from "@workspace/cache";
 import { logServerError } from "@workspace/db/log";
 import { updateBillingSettingsByAdmin } from "@workspace/lib/admin/server";
 import { validateAdminAccess } from "@/lib/auth/admin-auth";
@@ -25,6 +26,8 @@ export async function updateBillingSettingsAction(input: unknown): Promise<Actio
     const result = await updateBillingSettingsByAdmin(actorId, input);
     if (!result.success) return { success: false, error: ERRORS[result.error] ?? "Something went wrong." };
     revalidatePath("/billing");
+    // tallaby.com's /pricing shows the rate from a cached read (F-73).
+    await applyInvalidation(invalidateBillingRate(), { from: "admin", mode: "action" });
     return { success: true, message: "Saved and logged" };
   } catch (error) {
     logServerError("admin", "billing settings update failed", {}, error);
