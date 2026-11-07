@@ -111,7 +111,7 @@ export function DesignSystemEditor({
   const [conflict, setConflict] = useState(false);
   const [brand, setBrand] = useState(initial.brand);
   const [savedBrand, setSavedBrand] = useState(JSON.stringify(initial.brand));
-  const [device, setDevice] = useState<PreviewDevice>("desktop");
+  const [device, setDevice] = useState<PreviewDevice>("mobile");
   const [previewLocale, setPreviewLocale] = useState<SiteLocale>(defaultLocale);
   const [saving, startSaving] = useTransition();
   const [publishing, startPublishing] = useTransition();

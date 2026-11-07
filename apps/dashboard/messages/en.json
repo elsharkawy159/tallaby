@@ -184,13 +184,13 @@
     }
   },
   "orderLock": {
-    "title": "Kindly top up your wallet, starting from $5 only",
+    "title": "Kindly top up your wallet, starting from $5 only{egp, select, none {} other { (about EGP {egp})}}",
     "body": "Your store is private until you top up: only you can open it from your dashboard and place test orders. Top up to activate it so customers can see it and order.",
     "reviewTitle": "Your top-up is being reviewed",
     "reviewBody": "Your orders will open as soon as we approve it.",
     "topUp": "Top up",
     "viewWallet": "View wallet",
-    "sidebar": "Kindly top up your wallet, starting from $5 only, to see your orders"
+    "sidebar": "Kindly top up your wallet, starting from $5 only{egp, select, none {} other { (about EGP {egp})}}, to see your orders"
   },
   "bulkFileImport": {
     "stage": {

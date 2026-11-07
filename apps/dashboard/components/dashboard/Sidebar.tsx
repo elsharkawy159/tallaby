@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { ArrowUpLeft, ChevronDown, LogOut, PanelRightClose, PanelRightOpen, UserIcon, X } from "lucide-react";
 import { cn, getPublicUrl } from "@/lib/utils";
 import { usePathname } from "next/navigation";
@@ -32,12 +32,16 @@ import { WhatsAppIcon, useSupportWhatsAppUrl } from "./support-chat-link.client"
 interface SidebarProps {
   /** No first top-up yet: Orders shows a warning (F-68). */
   ordersLocked: boolean;
+  /** The $5 minimum top-up in EGP, shown in the warning's tooltip. Null when unknown. */
+  minTopUpEgp: number | null;
   counts: SidebarCounts;
   stores: SwitcherStore[];
   selectedStoreId: string | null;
   maxStores: number;
   features: Partial<Record<NavFeature, boolean>>;
 }
+
+const MinTopUpEgpContext = createContext<number | null>(null);
 
 /* The design's `.ni` and `.sub a`. */
 const NAV_ITEM =
@@ -49,7 +53,15 @@ const NAV_ICON = "size-[18px] shrink-0 text-(--s-subtle)";
 const groupActive = (activeHref: string | null, group: ResolvedGroup) =>
   group.items.some((item) => item.href === activeHref);
 
-export const Sidebar = ({ ordersLocked, counts, stores, selectedStoreId, maxStores, features }: SidebarProps) => {
+export const Sidebar = ({
+  ordersLocked,
+  minTopUpEgp,
+  counts,
+  stores,
+  selectedStoreId,
+  maxStores,
+  features,
+}: SidebarProps) => {
   const t = useTranslations();
   const { isCollapsed, toggleCollapse, isMobileOpen, setMobileOpen } = useSidebarStore();
   const pathname = usePathname();
@@ -84,7 +96,7 @@ export const Sidebar = ({ ordersLocked, counts, stores, selectedStoreId, maxStor
   const content = { ordersLocked, counts, entries, stores, selectedStoreId, maxStores };
 
   return (
-    <>
+    <MinTopUpEgpContext.Provider value={minTopUpEgp}>
       {/* Desktop: fixed beside the page, and it collapses to icons. */}
       <aside
         aria-label={t("nav.mainMenu")}
@@ -132,7 +144,7 @@ export const Sidebar = ({ ordersLocked, counts, stores, selectedStoreId, maxStor
         </div>
         <SidebarContent {...content} isCollapsed={false} showTools />
       </aside>
-    </>
+    </MinTopUpEgpContext.Provider>
   );
 };
 
@@ -395,14 +407,19 @@ function LogoutButton({ isCollapsed }: { isCollapsed: boolean }) {
   return isCollapsed ? <CollapsedTip label={t("logout")}>{button}</CollapsedTip> : button;
 }
 
-/** What a seller who isn't activated can't open yet, and the groups that hold it (ROADMAP.md F-68). */
-const LOCKED_HREFS = ["/orders", "/financial", "/reports"];
-const LOCKED_GROUPS = ["ordersGroup", "finance"];
+/**
+ * Where a seller who isn't activated sees the warning (ROADMAP.md F-68). Only
+ * Orders: Financial and Reports are locked too, but carry no ⚠️ (owner, 2026-11-07).
+ */
+const LOCKED_HREFS = ["/orders"];
+const LOCKED_GROUPS = ["ordersGroup"];
 
 function OrdersWarning() {
   const t = useTranslations("orderLock");
+  const egp = useContext(MinTopUpEgpContext);
+  const label = t("sidebar", { egp: egp == null ? "none" : String(egp) });
   return (
-    <span role="img" aria-label={t("sidebar")} title={t("sidebar")} className="shrink-0 text-sm leading-none">
+    <span role="img" aria-label={label} title={label} className="shrink-0 text-sm leading-none">
       ⚠️
     </span>
   );

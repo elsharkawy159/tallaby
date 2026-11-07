@@ -1535,6 +1535,13 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 ## 7. Log
 
+### 2026-11-07 — Top-up message shows EGP; ⚠️ only on Orders; Design preview opens on mobile (owner request)
+
+- **F-68 lock copy:** "top up from $5" (`orderLock.title`, `orderLock.sidebar`) now adds the $5 in whole pounds at today's rate ("(حوالي 270 جنيه)" / "(about EGP 270)") on /orders, /financial, /reports, the home notice and the sidebar tooltip, so sellers don't think they must pay in dollars. `getMinTopUpEgp` (`apps/dashboard/lib/billing/min-top-up-egp.server.ts`) uses `quoteTopUp(TOP_UP_MIN_USD_CENTS)`; with no rate the text shows $5 only.
+- **Sidebar:** the ⚠️ shows only on Orders (link and group); Financial and Reports stay locked but carry no ⚠️.
+- **Website › Design:** the preview opens on Mobile.
+- No migration. Checked: dashboard `tsc` clean, orders/financial/sidebar tests pass, both ICU messages render in ar/en.
+
 ### 2026-11-04 — No marketplace positioning on tallaby.com or store pages (owner request, §5)
 
 - **Owner:** "we shouldn't show anything says that we're a marketplace". Tallaby is a SaaS: sellers build their own store under their own name; it doesn't sell products, list products from many sellers, or deliver.
