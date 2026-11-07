@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { applyInvalidation, invalidateStorefront } from "@workspace/cache";
 import {
   connectStoreGateway,
   disconnectStoreGateway,
@@ -61,6 +62,8 @@ export async function connectGateway(
     const result = await connectStoreGateway(seller.sellerId, seller.userId, store.id, String(provider), clean);
     if (!result.success) return { success: false, error: ERRORS[result.error] ?? "generic" };
     revalidatePath(`/stores/${store.id}/settings/payments`);
+    // Website footers show the gateway's card logos (cached storefront profile).
+    await applyInvalidation(invalidateStorefront([store.subdomain]), { from: "dashboard", mode: "action" });
     return { success: true, data: result.data };
   } catch (error) {
     if (isAccessError(error)) return { success: false, error: error.code === "store_read_only" ? "readOnly" : "notFound" };
@@ -77,6 +80,7 @@ export async function disconnectGateway(storeId: string, provider: string): Prom
     const result = await disconnectStoreGateway(seller.sellerId, seller.userId, store.id, String(provider));
     if (!result.success) return { success: false, error: ERRORS[result.error] ?? "generic" };
     revalidatePath(`/stores/${store.id}/settings/payments`);
+    await applyInvalidation(invalidateStorefront([store.subdomain]), { from: "dashboard", mode: "action" });
     return { success: true, data: null };
   } catch (error) {
     if (isAccessError(error)) return { success: false, error: error.code === "store_read_only" ? "readOnly" : "notFound" };

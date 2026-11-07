@@ -5,22 +5,28 @@
  * really offers (dashboard: Store settings › Payment methods; cash on delivery
  * is on by default), each as a small logo card.
  */
-import { Banknote } from "lucide-react";
+import { Banknote, Smartphone } from "lucide-react";
 import type { PaymentMethodSummary, RenderContext } from "../core/types";
 
 /**
- * Checkout method keys (`storefrontCheckoutMethods` in @workspace/lib), their
- * names and logos. Logos are 96px-tall PNGs at the same path in both apps'
- * `public/icons/payments/` (storefront hosts and the dashboard builder canvas).
+ * Footer payment keys (`footerPaymentKeys` in @workspace/lib: the checkout
+ * methods, with a connected card gateway as its card and wallet logos), their
+ * names and logos. Logos sit at the same path in both apps'
+ * `public/icons/payments/` (storefront hosts and the dashboard builder canvas):
+ * 96px-tall PNGs, and the card brands as 120×80 card artwork (`card: true`).
  */
-const PAYMENTS: Record<string, { ar: string; en: string; logo?: string }> = {
+const PAYMENTS: Record<string, { ar: string; en: string; logo?: string; card?: boolean; icon?: "wallet" }> = {
   cash_on_delivery: { ar: "الدفع عند الاستلام", en: "Cash on delivery" },
+  visa: { ar: "فيزا", en: "Visa", logo: "/icons/payments/visa.svg", card: true },
+  mastercard: { ar: "ماستركارد", en: "Mastercard", logo: "/icons/payments/mastercard.svg", card: true },
+  meeza: { ar: "ميزة", en: "Meeza", logo: "/icons/payments/meeza.svg", card: true },
+  mobile_wallets: { ar: "المحافظ الإلكترونية", en: "Mobile wallets", icon: "wallet" },
   instapay: { ar: "إنستاباي", en: "InstaPay", logo: "/icons/payments/instapay.png" },
   vodafone_cash: { ar: "فودافون كاش", en: "Vodafone Cash", logo: "/icons/payments/vodafone-cash.png" },
   e_cash: { ar: "e& كاش", en: "e& Cash", logo: "/icons/payments/e-cash.png" },
 };
 
-export type StorePayment = { key: string; label: string; logo?: string };
+export type StorePayment = { key: string; label: string; logo?: string; card?: boolean; icon?: "wallet" };
 
 /** The store's payment methods; `undefined` when the host gave none (draw the row as authored). */
 export function storePayments(ctx: RenderContext): StorePayment[] | undefined {
@@ -30,7 +36,7 @@ export function storePayments(ctx: RenderContext): StorePayment[] | undefined {
   return methods.flatMap((m) => {
     const known = PAYMENTS[m.key];
     const label = known?.[locale] ?? m.label?.trim();
-    return label ? [{ key: m.key, label, logo: known?.logo }] : [];
+    return label ? [{ key: m.key, label, logo: known?.logo, card: known?.card, icon: known?.icon }] : [];
   });
 }
 
@@ -40,6 +46,19 @@ export function storePayments(ctx: RenderContext): StorePayment[] | undefined {
  * or dark, like card logos on checkout pages.
  */
 export function PaymentLogo({ payment }: { payment: StorePayment }) {
+  // Card brands are white card artwork already: the image is the whole card.
+  if (payment.logo && payment.card) {
+    return (
+      <span
+        title={payment.label}
+        data-payment={payment.key}
+        className="inline-flex h-8 shrink-0 overflow-hidden rounded-md bg-white ring-1 ring-black/10"
+      >
+        <img src={payment.logo} alt={payment.label} height={32} className="h-8 w-auto" loading="lazy" decoding="async" />
+      </span>
+    );
+  }
+  const Icon = payment.icon === "wallet" ? Smartphone : Banknote;
   return (
     <span
       title={payment.label}
@@ -50,7 +69,7 @@ export function PaymentLogo({ payment }: { payment: StorePayment }) {
         <img src={payment.logo} alt={payment.label} height={22} className="h-[22px] w-auto" loading="lazy" decoding="async" />
       ) : (
         <>
-          <Banknote aria-hidden className="size-4 text-emerald-700" />
+          <Icon aria-hidden className="size-4 text-emerald-700" />
           <span>{payment.label}</span>
         </>
       )}

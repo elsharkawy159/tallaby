@@ -1,4 +1,5 @@
 import { storeProfilePaymentMethods } from "@workspace/lib/payments/store-methods";
+import { getStorefrontGateway } from "@workspace/lib/payments/store-gateways/server";
 import { parseStoreCurrency } from "@workspace/lib";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
@@ -43,7 +44,7 @@ export default async function WebsitePagesPage({ params }: { params: Promise<{ s
           url: storeUrl(store.subdomain),
           contact: { phone: contact.phone ?? null, email: contact.email ?? null },
           social: publicStoreSocialLinks(store.contact),
-          paymentMethods: storeProfilePaymentMethods(store.settings),
+          paymentMethods: storeProfilePaymentMethods(store.settings, await getStorefrontGateway(store.id, store.sellerId).catch(() => null)),
           currency: parseStoreCurrency(store.settings).currency,
           policies: [],
         }}

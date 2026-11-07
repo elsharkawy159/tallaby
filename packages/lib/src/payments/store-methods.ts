@@ -395,12 +395,42 @@ export function maskPaymentDetails(details: unknown): Record<string, unknown> | 
   return out;
 }
 
+/** Footer-only logo keys a connected card gateway stands for (drawn by `PAYMENTS` in store-sections). */
+export type GatewayFooterKey = "visa" | "mastercard" | "meeza" | "mobile_wallets";
+export type FooterPaymentKey = Exclude<StorefrontCheckoutMethod, "online_payment"> | GatewayFooterKey;
+
 /**
- * The store's checkout methods for website footers (`StoreProfile.paymentMethods`
- * in @workspace/store-sections), from a stores.settings value: the same list
- * storefront checkout offers, cash on delivery alone by default.
+ * What each gateway's store checkout really takes, kept short (owner,
+ * 2026-11-07: a few logos, not every brand). Kashier sessions are created with
+ * `allowedMethods: "card,wallet"`; Paymob's wallet integration id is optional
+ * and sits in the encrypted secret, so its footer shows cards only.
  */
-export function storeProfilePaymentMethods(settings: unknown): { key: StorefrontCheckoutMethod }[] {
+const GATEWAY_FOOTER_KEYS: Record<OrderGatewayMeta["provider"], GatewayFooterKey[]> = {
+  kashier: ["visa", "mastercard", "meeza", "mobile_wallets"],
+  paymob: ["visa", "mastercard", "meeza"],
+};
+
+/**
+ * The checkout methods as footer logos: `online_payment` becomes the connected
+ * gateway's card (and wallet) logos, in its place. The generic wallets logo is
+ * left out when the seller already lists their own wallet numbers.
+ */
+export function footerPaymentKeys(checkout: StorefrontCheckoutPayments): FooterPaymentKey[] {
+  const ownWallet = checkout.methods.some((m) => (WALLET_KEYS as readonly string[]).includes(m));
+  return checkout.methods.flatMap((method): FooterPaymentKey[] => {
+    if (method !== "online_payment") return [method];
+    const keys = checkout.gateway ? GATEWAY_FOOTER_KEYS[checkout.gateway.provider] : [];
+    return ownWallet ? keys.filter((k) => k !== "mobile_wallets") : keys;
+  });
+}
+
+/**
+ * The store's payment logos for website footers (`StoreProfile.paymentMethods`
+ * in @workspace/store-sections), from a stores.settings value and the store's
+ * connected card gateway: what storefront checkout offers, cash on delivery
+ * alone by default.
+ */
+export function storeProfilePaymentMethods(settings: unknown, gateway: OrderGatewayMeta | null = null): { key: FooterPaymentKey }[] {
   const payments = settings && typeof settings === "object" ? (settings as Record<string, unknown>).payments : undefined;
-  return storefrontCheckoutMethods(parseStorePayments(payments), null, parseStoreCurrency(settings).currency).methods.map((key) => ({ key }));
+  return footerPaymentKeys(storefrontCheckoutMethods(parseStorePayments(payments), gateway, parseStoreCurrency(settings).currency)).map((key) => ({ key }));
 }

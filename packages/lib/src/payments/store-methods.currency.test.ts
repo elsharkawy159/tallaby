@@ -25,6 +25,24 @@ describe("payment methods by currency (F-61)", () => {
     expect(storeProfilePaymentMethods({ payments }).map((m) => m.key)).toContain("instapay");
   });
 
+  it("the footer shows the connected gateway as its card logos (and Kashier's wallets)", () => {
+    const cod = { cod: { enabled: true, fee: 0 } };
+    const kashier = { provider: "kashier", integrationId: "i1" } as never;
+    expect(storeProfilePaymentMethods({ payments: cod }, kashier).map((m) => m.key)).toEqual([
+      "cash_on_delivery",
+      "visa",
+      "mastercard",
+      "meeza",
+      "mobile_wallets",
+    ]);
+    expect(storeProfilePaymentMethods({ payments: cod }, gateway).map((m) => m.key)).toEqual(["cash_on_delivery", "visa", "mastercard", "meeza"]);
+    // The seller's own wallet number already shows; no generic wallets logo beside it.
+    expect(storeProfilePaymentMethods({ payments }, kashier).map((m) => m.key)).not.toContain("mobile_wallets");
+    // No gateway, or a non-EGP store: no card logos.
+    expect(storeProfilePaymentMethods({ payments: cod }).map((m) => m.key)).toEqual(["cash_on_delivery"]);
+    expect(storeProfilePaymentMethods({ payments: cod, currency: "SAR" }, gateway).map((m) => m.key)).toEqual(["cash_on_delivery"]);
+  });
+
   it("refuses anything else at placement", () => {
     for (const method of ["wallet", "wallet_instapay", "online_payment", "instapay", "vodafone_cash", "e_cash", "we_pay", "orange_cash"]) {
       expect(isMethodAllowedForCurrency("SAR", method)).toBe(false);

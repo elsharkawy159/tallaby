@@ -66,6 +66,14 @@ describe("store payment methods in footers", () => {
     expect(html.match(/data-payment="/g)).toHaveLength(4);
   });
 
+  it("draws a card gateway as card brand logos and a wallets chip", () => {
+    const keys = ["cash_on_delivery", "visa", "mastercard", "meeza", "mobile_wallets"];
+    const html = render([node("section", {}, [paymentsRow()])], ctx({ paymentMethods: keys.map((key) => ({ key })) }));
+    for (const file of ["visa", "mastercard", "meeza"]) expect(html).toContain(`/icons/payments/${file}.svg`);
+    expect(html).toMatch(/data-payment="mobile_wallets"[^>]*>.*المحافظ الإلكترونية/);
+    expect(html.match(/data-payment="/g)).toHaveLength(5);
+  });
+
   it("names the methods in the page's language", () => {
     const html = render([node("section", {}, [paymentsRow()])], ctx(COD_INSTAPAY, { locale: "en", dir: "ltr" }));
     expect(html).toContain("Cash on delivery");

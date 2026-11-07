@@ -48,6 +48,7 @@ import { parseStoreMinOrder } from "@workspace/lib/stores/min-order";
 import {
   parseStorePayments,
   storefrontCheckoutMethods,
+  storeProfilePaymentMethods,
   type StorefrontCheckoutPayments,
 } from "@workspace/lib/payments/store-methods";
 
@@ -215,7 +216,8 @@ export function getStorefrontBySubdomain(subdomain: string) {
         salesPopup: parseStoreSalesPopup(row.settings),
         /** Store settings › Checkout › Minimum order (ROADMAP.md F-13b), for the cart's "add X more". Checkout reads it fresh. */
         minOrder: parseStoreMinOrder(row.settings),
-        paymentMethods: storefrontCheckoutMethods(parseStorePayments((row.settings as Record<string, unknown> | null)?.payments), null, parseStoreCurrency(row.settings).currency).methods,
+        // + the connected card gateway's logos (Visa, Mastercard, Meeza…; ROADMAP.md F-39).
+        paymentMethods: storeProfilePaymentMethods(row.settings, await getStorefrontGateway(row.storeId, row.sellerId)).map((m) => m.key),
         /**
          * Builder site state: "draft" (never published), "published", or
          * "unpublished" (the seller took the website offline). Both "draft"
@@ -226,8 +228,8 @@ export function getStorefrontBySubdomain(subdomain: string) {
         supportedLocales: row.supportedLocales,
       };
     },
-    // v15: + currency. v14: + minOrder (F-13b). v13: + salesPopup (F-22). v12: + app (store app download button). v11: + paymentMethods (footer payment rows). v10: + supportedLocales (header language switcher). v9: + siteStatus (offline stores). v6: + seo (P4-14) and social links (P4-15). v4: resolves through stores (P5-00).
-    [`storefront-v15-${subdomain}`],
+    // v16: paymentMethods include the card gateway's logos. v15: + currency. v14: + minOrder (F-13b). v13: + salesPopup (F-22). v12: + app (store app download button). v11: + paymentMethods (footer payment rows). v10: + supportedLocales (header language switcher). v9: + siteStatus (offline stores). v6: + seo (P4-14) and social links (P4-15). v4: resolves through stores (P5-00).
+    [`storefront-v16-${subdomain}`],
     { tags: ["sellers", sellerTags.subdomain(subdomain)], revalidate: 3600 },
   )();
 }
