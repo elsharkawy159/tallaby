@@ -267,15 +267,44 @@ export function validateMethodChange(
 }
 
 /**
+ * The currencies each seller card gateway charges in (ROADMAP.md F-39, F-61).
+ * Kashier takes international currencies on its hosted page; Tallaby talks to
+ * Paymob Egypt only, which is EGP. To add a gateway or a currency, edit this
+ * map: checkout, order placing and the footer logos all read it.
+ */
+export const GATEWAY_CURRENCIES: Record<OrderGatewayMeta["provider"], readonly string[] | "any"> = {
+  kashier: "any",
+  paymob: ["EGP"],
+};
+
+export function gatewaySupportsCurrency(provider: string | null | undefined, currency: string): boolean {
+  if (!provider || !Object.hasOwn(GATEWAY_CURRENCIES, provider)) return false;
+  const list = GATEWAY_CURRENCIES[provider as OrderGatewayMeta["provider"]];
+  return list === "any" || list.includes(currency);
+}
+
+/**
  * What may pay an order in a currency other than EGP (ROADMAP.md F-61): cash on
- * delivery, and on a manual order what the seller already holds. Egyptian
- * transfers and card gateways are off until tested abroad, and the customer
- * wallet is EGP only.
+ * delivery, on a manual order what the seller already holds, and card payment
+ * through a connected gateway that charges in that currency. Egyptian
+ * transfers and wallets and the customer wallet are EGP only.
  */
 const NON_EGP_ORDER_METHODS: readonly string[] = ["cash_on_delivery", "seller_collected"];
 
-export function isMethodAllowedForCurrency(currency: string, method: string): boolean {
-  return currency === "EGP" || NON_EGP_ORDER_METHODS.includes(method);
+/**
+ * Seller transfers a store abroad may still offer, for its customers in Egypt
+ * (owner, 2026-11-07): InstaPay. The customer sends the total in EGP and the
+ * seller confirms it, as for every manual transfer. Mobile wallets stay EGP stores only.
+ */
+export const ANY_CURRENCY_TRANSFERS: readonly string[] = ["instapay"];
+
+export function isTransferAllowedForCurrency(method: string, currency: string): boolean {
+  return currency === "EGP" || ANY_CURRENCY_TRANSFERS.includes(method);
+}
+
+export function isMethodAllowedForCurrency(currency: string, method: string, gatewayProvider?: string | null): boolean {
+  if (currency === "EGP" || NON_EGP_ORDER_METHODS.includes(method) || ANY_CURRENCY_TRANSFERS.includes(method)) return true;
+  return method === "online_payment" && gatewaySupportsCurrency(gatewayProvider, currency);
 }
 
 /** Checkout values (orders.payment_method) a storefront may offer. */
@@ -329,6 +358,8 @@ export type StorefrontCheckoutPayments = {
    * set, `online_payment` is offered and the order is paid to the seller.
    */
   gateway?: OrderGatewayMeta | null;
+  /** The store's currency the methods were picked for (gateway logos depend on it). */
+  currency?: string;
   /** COD is refused for order totals above this (EGP). */
   codMaxOrder: number | null;
   codNote: string | null;
@@ -353,10 +384,10 @@ export function storefrontCheckoutMethods(
 ): StorefrontCheckoutPayments {
   const methods: StorefrontCheckoutMethod[] = [];
   const transfers: StorefrontCheckoutPayments["transfers"] = {};
-  const egp = currency === "EGP";
+  const offeredGateway = gateway && gatewaySupportsCurrency(gateway.provider, currency) ? gateway : null;
   if (payments.cod?.enabled) methods.push("cash_on_delivery");
-  if (gateway && egp) methods.push("online_payment");
-  for (const method of egp ? SELLER_TRANSFER_METHODS : []) {
+  if (offeredGateway) methods.push("online_payment");
+  for (const method of SELLER_TRANSFER_METHODS.filter((m) => isTransferAllowedForCurrency(m, currency))) {
     const entry = payments[method];
     // Enabling requires details (storePaymentsSchema), so this always has them.
     if (!entry?.enabled || !entry.details) continue;
@@ -371,7 +402,8 @@ export function storefrontCheckoutMethods(
   return {
     methods,
     defaultMethod: payments.defaultMethod && methods.includes(payments.defaultMethod) ? payments.defaultMethod : null,
-    gateway: egp ? gateway : null,
+    gateway: offeredGateway,
+    currency,
     codMaxOrder: payments.cod?.enabled ? (payments.cod.maxOrder ?? null) : null,
     codNote: payments.cod?.enabled ? (payments.cod.note ?? null) : null,
     transfers,
@@ -448,7 +480,9 @@ export function footerPaymentKeys(checkout: StorefrontCheckoutPayments): FooterP
   const ownWallet = checkout.methods.some((m) => (WALLET_KEYS as readonly string[]).includes(m));
   return checkout.methods.flatMap((method): FooterPaymentKey[] => {
     if (method !== "online_payment") return [method];
-    const keys = checkout.gateway ? GATEWAY_FOOTER_KEYS[checkout.gateway.provider] : [];
+    let keys = checkout.gateway ? GATEWAY_FOOTER_KEYS[checkout.gateway.provider] : [];
+    // Meeza and Egyptian mobile wallets are EGP only; abroad the gateway takes cards.
+    if (checkout.currency && checkout.currency !== "EGP") keys = keys.filter((k) => k === "visa" || k === "mastercard");
     return ownWallet ? keys.filter((k) => k !== "mobile_wallets") : keys;
   });
 }

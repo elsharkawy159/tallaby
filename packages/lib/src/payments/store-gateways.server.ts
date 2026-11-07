@@ -497,7 +497,8 @@ export async function createStoreGatewayCheckout(input: {
 
     const secret = account.secret as KashierSecret;
     const session = await createKashierSession(
-      { ...secret, mode: account.config.mode, webhookUrl, allowedMethods: "card,wallet" },
+      // Egyptian mobile wallets charge EGP only; another currency pays by card.
+      { ...secret, mode: account.config.mode, webhookUrl, allowedMethods: currency === "EGP" ? "card,wallet" : "card" },
       {
         orderReference: reference,
         amount: order.totalAmount,

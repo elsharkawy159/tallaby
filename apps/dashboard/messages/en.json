@@ -4334,7 +4334,7 @@
     "viewWallet": "View store wallet"
   },
   "storePayments": {
-    "currencyNotice": "This store sells in {unit}. Egyptian wallets, InstaPay and card payment only work in EGP, so they're off for this store. Tallaby's default delivery rates don't apply either, so the store needs its own zones on the Shipping page.",
+    "currencyNotice": "This store sells in {unit}. Egyptian mobile wallets only work in EGP, so they're off for this store. Card payment works through Kashier, in {unit}, and InstaPay stays on for your customers in Egypt (they send the total in EGP and you confirm it). Tallaby's default delivery rates don't apply either, so the store needs its own zones on the Shipping page.",
     "receiveBy": {
       "label": "Customers send the money to",
       "ipa": "InstaPay address (email)",
@@ -4490,6 +4490,7 @@
       "connected": "Gateway connected. Card payment now shows at your store's checkout.",
       "disconnected": "Gateway disconnected. Card payment no longer shows at checkout.",
       "oneAtATime": "You can connect one gateway at a time. Disconnect the current one first.",
+      "notInCurrency": "This gateway can't charge in {currency}, so it doesn't show at checkout in this store.",
       "modeLive": "Live",
       "modeTest": "Test mode",
       "optional": "Optional",

@@ -802,7 +802,7 @@ export async function placeOrderFromCart(
 
   // Wallets and Egyptian payment methods are EGP only (ROADMAP.md F-61), whatever
   // the client sent.
-  if (!isMethodAllowedForCurrency(orderCurrency, resolvedPaymentMethod)) {
+  if (!isMethodAllowedForCurrency(orderCurrency, resolvedPaymentMethod, storefrontPayments?.gateway?.provider)) {
     return { success: false, error: 'storePaymentNotInCurrency' }
   }
 

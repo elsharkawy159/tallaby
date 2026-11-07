@@ -402,6 +402,7 @@
       },
       "sent": "I've sent the payment",
       "storeWillConfirm": "The store will check your transfer and confirm your order.",
+      "foreignCurrencyHint": "Send the equivalent of this amount in Egyptian pounds. The store will confirm the amount it received.",
       "proof": {
         "title": "Screenshot of the transfer",
         "optional": "(optional)",

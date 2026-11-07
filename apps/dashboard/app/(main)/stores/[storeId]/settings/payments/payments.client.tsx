@@ -21,6 +21,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@workspace/ui/components/sheet";
 import { Field, Note, Rows, SectionCard, SellerButton, Tag, TextArea, TextInput, Toggle, fieldClass } from "@/components/seller-ui";
 import { DEFAULT_CURRENCY } from "@workspace/lib";
+import { gatewaySupportsCurrency, isTransferAllowedForCurrency } from "@workspace/lib/payments/store-methods";
 import { CurrencyInput } from "@/components/form/currency-input";
 import { moneyUnitText, type MoneyUnit } from "@/lib/i18n/format";
 import { PaymentMethodLogo } from "@/components/payments/payment-method-logo";
@@ -116,7 +117,7 @@ export function StorePaymentsSettings({
   const isSetUp = (key: LiveKey) => key === "cod" || !!entry(key)?.details;
   // Egyptian wallets, InstaPay and card payment work only in pounds. The saved settings stay, in case the store goes back to EGP.
   const egyptian = (money.currency ?? DEFAULT_CURRENCY) === DEFAULT_CURRENCY;
-  const egyptOnly = (key: LiveKey) => !egyptian && key !== "cod";
+  const egyptOnly = (key: LiveKey) => !egyptian && key !== "cod" && !isTransferAllowedForCurrency(key, money.currency ?? DEFAULT_CURRENCY);
   const enabledKeys = LIVE.map((m) => m.key as LiveKey).filter((key) => entry(key)?.enabled && !egyptOnly(key));
   const enabledCount = enabledKeys.length;
 
@@ -194,7 +195,7 @@ export function StorePaymentsSettings({
   // The customer's list in checkout order (cash, card, then transfers), as checkout values.
   const previewMethods: { value: string; label: string; logo?: string }[] = [
     ...(enabledKeys.includes("cod") ? [{ value: "cash_on_delivery", label: t("methods.cod.name"), logo: "cod" }] : []),
-    ...(connectedGateway && egyptian ? [{ value: "online_payment", label: tApp(`${connectedGateway}.name`), logo: "card" }] : []),
+    ...(connectedGateway && gatewaySupportsCurrency(connectedGateway, money.currency ?? DEFAULT_CURRENCY) ? [{ value: "online_payment", label: tApp(`${connectedGateway}.name`), logo: "card" }] : []),
     ...enabledKeys.filter((key) => key !== "cod").map((key) => ({ value: key, label: t(`methods.${key}.name`), logo: key })),
   ];
   // As checkout: the seller's pick while it is offered, else the first method.
@@ -236,7 +237,7 @@ export function StorePaymentsSettings({
           <Rows>{WALLETS.map(row)}</Rows>
         </SectionCard>
 
-        <StoreGatewaysCard storeId={storeId} initial={gateways} readOnly={readOnly || !egyptian} usdLive={usdLive} />
+        <StoreGatewaysCard storeId={storeId} initial={gateways} readOnly={readOnly} usdLive={usdLive} currency={money.currency ?? DEFAULT_CURRENCY} />
 
         <SectionCard icon={Clock} tone="accent" title={t("soonTitle")} description={t("soonDescription")}>
           <ul className="flex flex-wrap gap-1.5">

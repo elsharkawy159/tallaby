@@ -8,6 +8,7 @@ import { Check, CircleDashed, Clock, CreditCard, KeyRound, LoaderCircle, Plug, S
 
 import { isStoreAppLive, storeAppsInGroup, type StoreApp } from "@workspace/lib/integrations";
 import { isStoreGatewayProvider, type StoreGatewayProvider } from "@workspace/lib/payments/store-gateways";
+import { gatewaySupportsCurrency } from "@workspace/lib/payments/store-methods";
 import type { StoreGatewayOverview } from "@workspace/lib/payments/store-gateways/server";
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@workspace/ui/components/sheet";
 import { Field, Note, OptionCard, OptionCards, Rows, SectionCard, SellerButton, Tag, TextInput } from "@/components/seller-ui";
@@ -31,11 +32,14 @@ export function StoreGatewaysCard({
   initial,
   readOnly,
   usdLive,
+  currency,
 }: {
   storeId: string;
   initial: StoreGatewayOverview;
   readOnly: boolean;
   usdLive: boolean;
+  /** The store's currency: a gateway that can't charge in it can't be connected or used. */
+  currency: string;
 }) {
   const t = useTranslations("storePayments.gateways");
   const tApp = useTranslations("storeApps.providers");
@@ -66,6 +70,7 @@ export function StoreGatewaysCard({
     const provider = key as StoreGatewayProvider;
     const isConnected = live && connected?.provider === provider;
     const blocked = live && !!connected && !isConnected;
+    const wrongCurrency = live && !gatewaySupportsCurrency(provider, currency);
     const name = tApp(`${key}.name`);
     return (
       <div
@@ -97,6 +102,11 @@ export function StoreGatewaysCard({
             </Note>
           )}
           {blocked && <p className="mt-0.5 text-xs text-(--s-muted)">{t("oneAtATime")}</p>}
+          {wrongCurrency && (
+            <Note tone="amber" className="mt-1.5">
+              {t("notInCurrency", { currency })}
+            </Note>
+          )}
         </div>
         {live && (
           <div className="ms-auto flex items-center gap-1.5">
@@ -121,7 +131,7 @@ export function StoreGatewaysCard({
               <SellerButton
                 variant="solid"
                 size="xs"
-                disabled={readOnly || isPending || blocked || !overview.webhooksReady}
+                disabled={readOnly || isPending || blocked || wrongCurrency || !overview.webhooksReady}
                 onClick={() => setEditing(provider)}
               >
                 <Plug aria-hidden />

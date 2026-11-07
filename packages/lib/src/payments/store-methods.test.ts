@@ -23,6 +23,7 @@ describe("storefrontCheckoutMethods", () => {
       methods: ["cash_on_delivery"],
       defaultMethod: null,
       gateway: null,
+      currency: "EGP",
       codMaxOrder: null,
       codNote: null,
       transfers: {},

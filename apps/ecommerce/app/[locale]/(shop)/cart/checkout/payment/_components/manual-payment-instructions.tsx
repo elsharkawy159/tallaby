@@ -128,6 +128,7 @@ export function ManualPaymentInstructions({
               className="text-xl md:text-2xl font-bold text-primary"
               dangerouslySetInnerHTML={{ __html: formatPrice(Number(amount), locale, "lg", currencyDefaultLabel(currency)) }}
             />
+            {currency !== "EGP" && <p className="mt-1 text-xs leading-relaxed text-gray-600">{tr("foreignCurrencyHint")}</p>}
           </div>
           {orderNumber && (
             <div className="rounded-xl border border-gray-200 bg-gray-50 p-3.5">
