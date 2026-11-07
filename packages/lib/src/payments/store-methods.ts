@@ -293,10 +293,11 @@ const NON_EGP_ORDER_METHODS: readonly string[] = ["cash_on_delivery", "seller_co
 
 /**
  * Seller transfers a store abroad may still offer, for its customers in Egypt
- * (owner, 2026-11-07): InstaPay. The customer sends the total in EGP and the
- * seller confirms it, as for every manual transfer. Mobile wallets stay EGP stores only.
+ * (owner, 2026-11-07): InstaPay and the mobile wallets, whatever the store
+ * currency. The customer sends the total in EGP and the seller confirms it, as
+ * for every manual transfer.
  */
-export const ANY_CURRENCY_TRANSFERS: readonly string[] = ["instapay"];
+export const ANY_CURRENCY_TRANSFERS: readonly string[] = ["instapay", "vodafone_cash", "e_cash", "we_pay", "orange_cash"];
 
 export function isTransferAllowedForCurrency(method: string, currency: string): boolean {
   return currency === "EGP" || ANY_CURRENCY_TRANSFERS.includes(method);

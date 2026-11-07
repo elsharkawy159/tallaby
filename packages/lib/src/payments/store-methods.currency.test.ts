@@ -23,16 +23,16 @@ describe("payment methods by currency (F-61)", () => {
 
   it("offers cash on delivery and InstaPay (for customers in Egypt) in another currency, never Egyptian wallets or Paymob", () => {
     const offered = storefrontCheckoutMethods(payments, gateway, "SAR");
-    expect(offered).toMatchObject({ methods: ["cash_on_delivery", "instapay"], gateway: null, codMaxOrder: 500 });
-    expect(Object.keys(offered.transfers)).toEqual(["instapay"]);
+    expect(offered).toMatchObject({ methods: ["cash_on_delivery", "instapay", "vodafone_cash"], gateway: null, codMaxOrder: 500 });
+    expect(Object.keys(offered.transfers)).toEqual(["instapay", "vodafone_cash"]);
     expect(isMethodAllowedForCurrency("SAR", "instapay")).toBe(true);
-    expect(isMethodAllowedForCurrency("SAR", "vodafone_cash")).toBe(false);
+    expect(isMethodAllowedForCurrency("SAR", "vodafone_cash")).toBe(true);
   });
 
   it("offers a gateway in every currency it charges in (Kashier abroad, Paymob EGP only)", () => {
     const kashier = { provider: "kashier", integrationId: "i1" } as never;
     const offered = storefrontCheckoutMethods(payments, kashier, "SAR");
-    expect(offered).toMatchObject({ methods: ["cash_on_delivery", "online_payment", "instapay"], gateway: kashier });
+    expect(offered).toMatchObject({ methods: ["cash_on_delivery", "online_payment", "instapay", "vodafone_cash"], gateway: kashier });
     expect(storefrontCheckoutMethods(payments, kashier, "USD").methods).toContain("online_payment");
     expect(isMethodAllowedForCurrency("SAR", "online_payment", "kashier")).toBe(true);
     expect(isMethodAllowedForCurrency("SAR", "online_payment", "paymob")).toBe(false);
@@ -46,7 +46,7 @@ describe("payment methods by currency (F-61)", () => {
   });
 
   it("the footer shows the same list", () => {
-    expect(storeProfilePaymentMethods({ payments, currency: "SAR" })).toEqual([{ key: "cash_on_delivery" }, { key: "instapay" }]);
+    expect(storeProfilePaymentMethods({ payments, currency: "SAR" })).toEqual([{ key: "cash_on_delivery" }, { key: "instapay" }, { key: "vodafone_cash" }]);
     expect(storeProfilePaymentMethods({ payments }).map((m) => m.key)).toContain("instapay");
   });
 
@@ -72,7 +72,7 @@ describe("payment methods by currency (F-61)", () => {
     expect(storefrontCheckoutMethods({ ...payments, defaultMethod: "online_payment" }, gateway).defaultMethod).toBe("online_payment");
     expect(storefrontCheckoutMethods({ ...payments, defaultMethod: "online_payment" }).defaultMethod).toBeNull();
     expect(storefrontCheckoutMethods(payments, gateway).defaultMethod).toBeNull();
-    expect(storefrontCheckoutMethods({ ...payments, defaultMethod: "vodafone_cash" }, null, "SAR").defaultMethod).toBeNull();
+    expect(storefrontCheckoutMethods({ ...payments, defaultMethod: "vodafone_cash" }, null, "SAR").defaultMethod).toBe("vodafone_cash");
   });
 
   it("the default can be set only to an offered method, and cleared", () => {
@@ -85,7 +85,7 @@ describe("payment methods by currency (F-61)", () => {
   });
 
   it("refuses anything else at placement", () => {
-    for (const method of ["wallet", "wallet_instapay", "online_payment", "vodafone_cash", "e_cash", "we_pay", "orange_cash"]) {
+    for (const method of ["wallet", "wallet_instapay", "online_payment"]) {
       expect(isMethodAllowedForCurrency("SAR", method)).toBe(false);
       expect(isMethodAllowedForCurrency("EGP", method)).toBe(true);
     }

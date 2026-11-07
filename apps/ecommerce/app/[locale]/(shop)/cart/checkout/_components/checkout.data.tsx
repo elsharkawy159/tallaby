@@ -258,7 +258,9 @@ export const CheckoutData = ({
 
   // The address is checked and saved when the button is pressed, so its errors show then.
   // The same check as `noMethodInCurrency` below, before the shipping rules are worked out.
-  const noMethodInCurrencyEarly = !codAllowed || (isZoneShipping && storeShipping?.codEnabled !== true);
+  // Only a store that offers nothing but cash on delivery is stuck when COD can't be used.
+  const offersOtherThanCod = Boolean(storePayments?.methods.some((m) => m !== "cash_on_delivery"));
+  const noMethodInCurrencyEarly = !offersOtherThanCod && (!codAllowed || (isZoneShipping && storeShipping?.codEnabled !== true));
   // Under a product's minimum (0151): named here, and refused again by the order.
   const minOrderIssues = cartMinOrderIssues(cartLines, checkoutData.crossSellLineIds ?? []);
   const canPlaceOrder = Boolean(
@@ -344,8 +346,8 @@ export const CheckoutData = ({
     storePayments?.codMaxOrder == null ||
     (summary.totalAfterDiscount ?? summary.total) <= storePayments.codMaxOrder;
   const isCodEligible = isCodEligibleShipping && isCodWithinStoreMax;
-  // In another currency only cash on delivery can pay (ROADMAP.md F-61).
-  const noMethodInCurrency = isForeignCurrency && (!codAllowed || !isCodEligible);
+  // In another currency the store's own methods pay (card gateway, transfers); stuck only with COD alone and unusable.
+  const noMethodInCurrency = isForeignCurrency && !offersOtherThanCod && (!codAllowed || !isCodEligible);
 
   const walletAvailableBalance =
     checkoutData.walletAvailableBalance != null
