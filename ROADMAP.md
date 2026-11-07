@@ -2619,6 +2619,10 @@ No migration. Checked on a private staging dev server, Arabic and English, 360/3
 - **/pricing:** the $5 note removed. EGP figures use the real rate `getBillingState().marketRate` through a cached read (`lib/marketing/exchange-rate.server.ts`, new tag `billingTags.rate()`, cleared by the dashboard rate cron and the Admin billing save, 3 h expiry, 50 only as a fallback), rounded like the /wallet quote (`usdCentsToEgp`); the $0.03 fee keeps piastres (≈ 1.67 جنيه). Staging check: 55.3706 → "1 دولار ≈ 55.37 جنيه", Pro ≈ 1,605 جنيه. The estimator has only the orders slider with quick picks (100/500/1,000/2,000) and Free vs Pro side by side on desktop, stacked on phones; emails left the estimate.
 - **Not verified:** the cron/Admin cache clear live (needs the real cron and cross-app broadcast); the builder mockup's tab labels at 1440 English after the last tweak. The Arabic hero subtitle runs 6 lines at 360 px (owner may want it shorter). The $5 first top-up is still stated in the pricing FAQ and "other costs" cards (only the two named notes were removed).
 
+### 2026-11-07 — F-73 store line follows the last created store (owner)
+
+No migration. The hero's «تم إنشاء متجر … جديد قبل …» line now reads the newest stores by `stores.created_at`, whatever the store status (active/pending), site status (draft/unpublished/published) or seller status; only deleted stores are left out (`readRecentStores` in `apps/ecommerce/lib/marketing/stores.server.ts`, cache key `v3`, still 60 s). The 1-hour "recent" rotation and 7-day cut-off are unchanged. Tests: marketing + live-line pass; tsc only the known `profile.chunks.tsx` errors.
+
 ### 2026-11-06 — F-74 website builder feedback (owner)
 
 No migration; both new settings live in the header's props (draft until Publish). Stores without them render exactly as before (tests check the bar's links and part names).

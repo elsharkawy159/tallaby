@@ -7,34 +7,31 @@ import { RECENT_STORES_LIMIT, storeIndustryId, type RecentStore } from "./recent
 const READ_TIMEOUT_MS = 3000;
 
 /**
- * The newest stores that are really open to visitors: published, active and not
- * deleted, of an approved seller, by first publish (a republish keeps that time,
- * and a draft has none). The schema doesn't mark test or demo stores, so any
- * store that passes these checks can show. Only the store's industry (when it
- * is one of the listed ones) and its time leave this function: no store name
- * and nothing about the seller (owner, 2026-11-05, F-73).
+ * The newest created stores, by `created_at`, whatever their status: active or
+ * pending, draft, unpublished or published, and whatever the seller's status
+ * (owner, 2026-11-07). Only deleted stores are left out. Only the store's
+ * industry (when it is one of the listed ones) and its creation time leave this
+ * function: no store name and nothing about the seller (owner, 2026-11-05, F-73).
  */
 export async function readRecentStores(windowDays = 7): Promise<RecentStore[]> {
   const result = await db.execute(sql`
-    SELECT st.store_category, st.store_category_ar, st.first_published_at
+    SELECT st.store_category, st.store_category_ar, st.created_at
     FROM stores st
-    JOIN sellers s ON s.id = st.seller_id
-    WHERE st.status = 'active' AND st.site_status = 'published' AND st.deleted_at IS NULL
-      AND s.status = 'approved'
-      AND st.first_published_at <= now()
-      AND st.first_published_at >= now() - make_interval(days => ${windowDays})
-    ORDER BY st.first_published_at DESC
+    WHERE st.deleted_at IS NULL
+      AND st.created_at <= now()
+      AND st.created_at >= now() - make_interval(days => ${windowDays})
+    ORDER BY st.created_at DESC
     LIMIT ${RECENT_STORES_LIMIT}
   `);
   return ([...result] as Record<string, unknown>[]).map((row) => ({
     industry: storeIndustryId({ en: row.store_category as string | null, ar: row.store_category_ar as string | null }),
-    publishedAt: row.first_published_at ? new Date(row.first_published_at as string | Date).toISOString() : null,
+    publishedAt: row.created_at ? new Date(row.created_at as string | Date).toISOString() : null,
   }));
 }
 
 /** One short-lived read for every visitor. It holds no store name, customer or seller data. */
 const getCachedRecentStores = createCachedQuery({
-  name: "marketing:recent-stores:v2",
+  name: "marketing:recent-stores:v3",
   ttl: 60,
   tags: () => [marketingStoreTags.recent()],
   query: () => readRecentStores(),
