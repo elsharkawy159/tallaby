@@ -324,6 +324,8 @@ export async function verifyGatewayKeys(
               allowedMethods: "card",
               merchantRedirect: "https://tallaby.com",
               display: "en",
+              // Kashier rejects a session without customer.reference (400 "customer" is required).
+              customer: { reference: "tallaby_check" },
             }),
           }),
     );
@@ -501,7 +503,8 @@ export async function createStoreGatewayCheckout(input: {
         amount: order.totalAmount,
         currency,
         customerEmail: order.user?.email,
-        customerReference: order.userId,
+        // Kashier requires customer.reference; fall back to the order if there is no user.
+        customerReference: order.userId || order.id,
         merchantRedirect: returnUrl,
         display: input.locale === "ar" ? "ar" : "en",
         description,
