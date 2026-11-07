@@ -1148,7 +1148,7 @@
       "tasks": {
         "template": {
           "title": "Choose your template",
-          "description": "Pick a design for your website. You need one to go live.",
+          "description": "Pick a design for your website. Your store goes live as soon as you choose it.",
           "cta": "Choose"
         },
         "brand": {
@@ -1161,13 +1161,8 @@
           "description": "Photos, price and stock",
           "cta": "Add product"
         },
-        "publish": {
-          "title": "Publish your store",
-          "description": "Go live so customers can visit and order",
-          "cta": "Publish now"
-        },
         "shipping": {
-          "title": "Set up shipping",
+          "title": "Set up product shipping",
           "description": "You can set this up later, before your first delivery",
           "cta": "Set up"
         }

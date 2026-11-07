@@ -76,6 +76,7 @@ async function loadOwnStore(q: Queryable, sellerId: string, storeId: string, loc
       sharedHeader: stores.sharedHeader,
       sharedFooter: stores.sharedFooter,
       chromeVersion: stores.chromeVersion,
+      siteStatus: stores.siteStatus,
       sellerStatus: sellers.status,
     })
     .from(stores)
@@ -220,7 +221,13 @@ async function buildDraftSiteConfig(
   };
 }
 
-export type PublishError = "not_found" | "store_read_only" | "publish_blocked" | "invalid_site" | "template_not_chosen";
+export type PublishError =
+  | "not_found"
+  | "store_read_only"
+  | "publish_blocked"
+  | "invalid_site"
+  | "template_not_chosen"
+  | "already_published";
 
 export type PublishOptions = BuilderOptions & {
   /**
@@ -229,6 +236,13 @@ export type PublishOptions = BuilderOptions & {
    * true; a store that was ever published always passes the check.
    */
   requireTemplateChoice?: boolean;
+  /**
+   * Publish only a store that was never published (`site_status = 'draft'`),
+   * checked under the row lock; anything else returns `already_published`.
+   * Choosing a template publishes a new store this way (owner, 2026-11-07),
+   * so a site the seller switched off is never put back online.
+   */
+  onlyIfNeverPublished?: boolean;
 };
 
 /**
@@ -251,6 +265,7 @@ export async function publishStoreSite(
       if (!store) throw new SiteError("not_found");
       if (store.status !== "active") throw new SiteError("store_read_only");
       if (store.sellerStatus !== "approved") throw new SiteError("publish_blocked");
+      if (options.onlyIfNeverPublished && store.siteStatus !== "draft") throw new SiteError("already_published");
       if (options.requireTemplateChoice && !(await storeTemplateChosen(tx, store.id))) throw new SiteError("template_not_chosen");
 
       const raw = await buildDraftSiteConfig(tx, store);

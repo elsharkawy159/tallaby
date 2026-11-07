@@ -3,8 +3,6 @@ import {
   buildSetupTasks,
   isGuideDone,
   isSetupDone,
-  publishLockReason,
-  publishReady,
   type SetupFlags,
 } from "./setup-checklist.lib";
 
@@ -14,7 +12,7 @@ const all: SetupFlags = { template: true, brand: true, product: true, publish: t
 
 describe("buildSetupTasks", () => {
   it("orders the steps template, brand, product, publish, then shipping (owner 2026-11-01)", () => {
-    expect(buildSetupTasks(none, STORE).map((t) => t.key)).toEqual(["template", "brand", "product", "publish", "shipping"]);
+    expect(buildSetupTasks(none, STORE).map((t) => t.key)).toEqual(["template", "brand", "product", "shipping"]);
   });
 
   it("links store steps to the selected store", () => {
@@ -22,7 +20,6 @@ describe("buildSetupTasks", () => {
     expect(tasks.template).toBe(`/stores/${STORE}/website/templates`);
     expect(tasks.brand).toBe(`/stores/${STORE}/website/design`);
     expect(tasks.product).toBe("/products/add");
-    expect(tasks.publish).toBe(`/stores/${STORE}/website`);
     expect(tasks.shipping).toBe(`/stores/${STORE}/shipping`);
   });
 
@@ -43,7 +40,8 @@ describe("isSetupDone", () => {
     expect(isSetupDone(all, STORE)).toBe(true);
     expect(isSetupDone({ ...all, template: false }, STORE)).toBe(false);
     expect(isSetupDone({ ...all, brand: false }, STORE)).toBe(false);
-    expect(isSetupDone({ ...all, publish: false }, STORE)).toBe(false);
+    // Publishing is no longer a step: choosing a template publishes (owner, 2026-11-07).
+    expect(isSetupDone({ ...all, publish: false }, STORE)).toBe(true);
   });
 
   it("does not wait for shipping", () => {
@@ -59,24 +57,5 @@ describe("isGuideDone", () => {
   it("keeps the guide until shipping is set up too", () => {
     expect(isGuideDone({ ...all, shipping: false }, STORE)).toBe(false);
     expect(isGuideDone(all, STORE)).toBe(true);
-  });
-});
-
-describe("publishReady", () => {
-  it("needs an active product and a chosen template, not brand or shipping", () => {
-    expect(publishReady({ ...none, product: true, template: true })).toBe(true);
-    expect(publishReady({ ...all, product: false })).toBe(false);
-  });
-
-  it("stays locked on the placeholder Classic drafts until a template is chosen (owner 2026-10-27)", () => {
-    expect(publishReady({ ...none, product: true })).toBe(false);
-  });
-});
-
-describe("publishLockReason", () => {
-  it("names the first missing step in the new order", () => {
-    expect(publishLockReason(none)).toBe("lockedTemplate");
-    expect(publishLockReason({ ...none, template: true })).toBe("locked");
-    expect(publishLockReason({ ...none, product: true, template: true })).toBeNull();
   });
 });

@@ -59,8 +59,8 @@ describe("recordCompletedSteps", () => {
 });
 
 describe("nextPromptStep", () => {
-  it("follows the owner's order: template, brand, product, publish, shipping", () => {
-    const keys = ["template", "brand", "product", "publish", "shipping"] as const;
+  it("follows the owner's order: template, brand, product, shipping", () => {
+    const keys = ["template", "brand", "product", "shipping"] as const;
     const order = keys.map((_, i) => {
       const flags = { ...none };
       for (const key of keys.slice(0, i)) flags[key] = true;

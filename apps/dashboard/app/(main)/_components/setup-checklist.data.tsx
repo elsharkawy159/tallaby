@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
-import { ArrowLeft, Check, FileText, Globe, LayoutTemplate, Package, Palette, Truck } from "lucide-react";
+import { ArrowLeft, Check, FileText, LayoutTemplate, Package, Palette, Truck } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { SellerButton } from "@/components/seller-ui";
@@ -8,17 +8,15 @@ import { cn } from "@workspace/ui/lib/utils";
 import { getHomeSnapshot, type HomeSnapshot } from "./home.queries";
 import { SETUP_DISMISS_COOKIE } from "./home.shared";
 import { SetupDismissible } from "./setup-dismiss.client";
-import { SetupPublishButton } from "./setup-publish.client";
 import { SetupStepsToggle } from "./setup-steps-toggle.client";
 
-import { buildSetupTasks, isGuideDone, isSetupDone, publishLockReason, publishReady, type SetupKey } from "./setup-checklist.lib";
+import { buildSetupTasks, isGuideDone, isSetupDone, type SetupKey } from "./setup-checklist.lib";
 
-const ICONS: Record<SetupKey, LucideIcon> = {
+const ICONS: Record<Exclude<SetupKey, "publish">, LucideIcon> = {
   template: LayoutTemplate,
   brand: Palette,
   product: Package,
   shipping: Truck,
-  publish: Globe,
 };
 
 /** Length of the progress ring's circle (r = 36). */
@@ -46,15 +44,13 @@ export async function SetupChecklistData() {
 
   const TASKS = buildSetupTasks(snapshot.setup, snapshot.setupStoreId).map((task) => ({
     ...task,
-    icon: ICONS[task.key],
+    icon: ICONS[task.key as Exclude<SetupKey, "publish">],
   }));
   const required = TASKS.filter((task) => !task.optional);
   const doneCount = required.filter((task) => task.done).length;
   // The first open step in the recommended order is the one to do next
   // (the optional one only once every required step is done).
   const nextKey = (required.find((task) => !task.done) ?? TASKS.find((task) => !task.done))?.key;
-  const canPublish = publishReady(snapshot.setup);
-  const lockReason = publishLockReason(snapshot.setup);
 
   return (
     <SetupDismissible>
@@ -163,9 +159,7 @@ export async function SetupChecklistData() {
                     {done && <span className="sr-only"> — {t("done")}</span>}
                   </b>
                   <small className={cn("text-pretty text-xs leading-[1.6] text-[#a9c3c9]", next && "text-(--s-muted)")}>
-                    {!done && task.key === "publish" && lockReason
-                      ? t(`publish.${lockReason}`)
-                      : t(`tasks.${task.key}.description`)}
+                    {t(`tasks.${task.key}.description`)}
                   </small>
                   <div className="mt-auto pt-1">
                     {done ? (
@@ -173,13 +167,6 @@ export async function SetupChecklistData() {
                         <Check className="size-3.5" aria-hidden />
                         {t("stepDone")}
                       </span>
-                    ) : task.key === "publish" && snapshot.setupStoreId ? (
-                      <SetupPublishButton
-                        storeId={snapshot.setupStoreId}
-                        ready={canPublish}
-                        lockedLabel={lockReason ? t(`publish.${lockReason}`) : undefined}
-                        next={next}
-                      />
                     ) : next ? (
                       <SellerButton asChild size="sm">
                         <Link href={task.href}>

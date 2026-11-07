@@ -174,9 +174,10 @@ export function TemplateGallery({
         toast.error(t(`errors.${result.error}`));
         return;
       }
-      toast.success(t("applied", { name: text(template.name) }));
+      // A never-published store goes live when its template is chosen (owner, 2026-11-07).
+      toast.success(t(result.data.published ? "appliedPublished" : "applied", { name: text(template.name) }));
       void queryClient.invalidateQueries({ queryKey: templatesKey(storeId) });
-      // Next step is publishing: Website › Overview, where the publish button draws the eye.
+      // Website › Overview shows the live link (or the publish button for later changes).
       router.push(`/stores/${storeId}/website`);
     });
 

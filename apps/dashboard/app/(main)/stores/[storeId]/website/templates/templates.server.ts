@@ -3,7 +3,16 @@
 import { revalidatePath } from "next/cache";
 import { getTranslations } from "next-intl/server";
 import { buildTemplateForm, getFormTemplate } from "@workspace/lib/store-forms";
-import { applyStoreTemplate, getStoreTemplateConfig, getTemplateMeta, listStoreTemplates, undoStoreTemplate } from "@workspace/lib/store-sites/server";
+import { applyInvalidation, invalidateStoreSite } from "@workspace/cache";
+import {
+  applyStoreTemplate,
+  getStoreTemplateConfig,
+  getTemplateMeta,
+  listStoreTemplates,
+  publishStoreSite,
+  undoStoreTemplate,
+} from "@workspace/lib/store-sites/server";
+import { grantWelcomeGiftSafely } from "@workspace/lib/store-wallet/server";
 import { getStore } from "@workspace/lib/stores/server";
 import { contentOverrideKeys, storeSectionRegistry } from "@workspace/store-sections/render";
 import { storeBuilderEnabled } from "@/components/dashboard/sidebar.config";
@@ -61,15 +70,42 @@ async function withStore<T>(storeId: string, run: (access: Access) => Promise<Te
 }
 
 export async function applyTemplate(storeId: string, templateKey: string) {
-  return withStore<{ pagesUpdated: number; pagesCreated: number }>(storeId, async ({ seller, store }) => {
+  return withStore<{ pagesUpdated: number; pagesCreated: number; published: boolean }>(storeId, async ({ seller, store }) => {
     const result = await applyStoreTemplate(seller.sellerId, store.id, String(templateKey), seller.userId, {
       allowedSections: ALLOWED,
       overrideKeys: OVERRIDE_KEYS,
       formInput: templateFormInput,
     });
     if (!result.success) return { success: false, error: TEMPLATE_ERRORS[result.error] ?? "generic" };
-    return { success: true, data: { pagesUpdated: result.data.pagesUpdated, pagesCreated: result.data.pagesCreated } };
+    const published = await publishNewStoreSafely(seller.sellerId, store.id, store.subdomain, seller.userId);
+    return { success: true, data: { pagesUpdated: result.data.pagesUpdated, pagesCreated: result.data.pagesCreated, published } };
   });
+}
+
+/**
+ * Choosing a template publishes a store that was never published (owner,
+ * 2026-11-07: no separate "Publish your store" step). A seller who is not
+ * activated yet still sees the site only in their own browser (F-76). A store
+ * the seller switched off stays off. Never fails the template apply.
+ */
+async function publishNewStoreSafely(sellerId: string, storeId: string, subdomain: string, userId: string): Promise<boolean> {
+  try {
+    const result = await publishStoreSite(sellerId, storeId, userId, {
+      allowedSections: ALLOWED,
+      requireTemplateChoice: true,
+      onlyIfNeverPublished: true,
+    });
+    if (!result.success) {
+      if (result.error !== "already_published") console.error("[website-templates] auto-publish skipped", result.error);
+      return false;
+    }
+    await grantWelcomeGiftSafely(sellerId);
+    await applyInvalidation(invalidateStoreSite(sellerId, storeId, subdomain), { from: "dashboard", mode: "action" });
+    return true;
+  } catch (error) {
+    console.error("[website-templates] auto-publish failed", (error as Error)?.message);
+    return false;
+  }
 }
 
 /**
