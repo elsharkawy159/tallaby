@@ -27,11 +27,13 @@ import {
 import {
   maskPaymentDetails,
   parseStorePayments,
+  validateDefaultMethodChange,
   validateMethodChange,
   type MethodChange,
   type MethodChangeError,
   type StorePayments,
 } from "../payments/store-methods";
+import type { OrderGatewayMeta } from "../payments/store-gateways.lib";
 import { emptyHomeContent } from "@workspace/store-sections/templates";
 import { seedStarterSite } from "./starter-site.server";
 import { toShippingZone, type StoreShippingZone } from "./shipping-context.server";
@@ -624,6 +626,56 @@ export async function updateStorePaymentMethod(
         section: "payments",
         action,
         changes: { method: key, ...rest, ...(details !== undefined && { details: maskPaymentDetails(details) }) },
+      });
+      return result.data;
+    });
+    return { success: true, data };
+  } catch (error) {
+    if (error instanceof StoreActionError) return { success: false, error: error.code as StorePaymentsError };
+    throw error;
+  }
+}
+
+/**
+ * The method storefront checkout selects first (null clears it). The caller
+ * passes the store's connected gateway (read with the same seller and store),
+ * so "online payment" can be picked only while a gateway is connected.
+ */
+export async function setStoreDefaultPaymentMethod(
+  sellerId: string,
+  actorId: string,
+  storeId: string,
+  method: string | null,
+  gateway: OrderGatewayMeta | null,
+  q: Queryable = db,
+): Promise<StoreResult<StorePayments, StorePaymentsError>> {
+  if (!UUID_RE.test(storeId)) return { success: false, error: "not_found" };
+  try {
+    const data = await q.transaction(async (tx) => {
+      const [store] = await tx
+        .select({ settings: stores.settings, status: stores.status })
+        .from(stores)
+        .where(ownStore(sellerId, storeId))
+        .for("update");
+      if (!store) throw new StoreActionError("not_found");
+      if (store.status !== "active") throw new StoreActionError("store_read_only");
+
+      const settings = (store.settings ?? {}) as Record<string, unknown>;
+      const current = parseStorePayments(settings.payments);
+      const result = validateDefaultMethodChange(current, method, gateway);
+      if (!result.success) throw new StoreActionError(result.error);
+
+      await tx
+        .update(stores)
+        .set({ settings: { ...settings, payments: result.data }, updatedAt: sql`now()` })
+        .where(ownStore(sellerId, storeId));
+      await tx.insert(storeSettingsAudit).values({
+        storeId,
+        sellerId,
+        actorId,
+        section: "payments",
+        action: "updated",
+        changes: { defaultMethod: result.data.defaultMethod ?? null },
       });
       return result.data;
     });

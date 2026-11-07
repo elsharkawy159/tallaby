@@ -25,7 +25,7 @@ import { CurrencyInput } from "@/components/form/currency-input";
 import { moneyUnitText, type MoneyUnit } from "@/lib/i18n/format";
 import { PaymentMethodLogo } from "@/components/payments/payment-method-logo";
 import { cn } from "@/lib/utils";
-import { saveStorePaymentMethod } from "./payments.server";
+import { saveDefaultPaymentMethod, saveStorePaymentMethod } from "./payments.server";
 import { toDetails, type PaymentDetailsFormValues } from "./payments.dto";
 import type { StoreGatewayOverview } from "@workspace/lib/payments/store-gateways/server";
 import { APP_DRAWER_CLASS, APP_DRAWER_FOOTER_CLASS } from "../../apps/app-drawer.lib";
@@ -191,6 +191,27 @@ export function StorePaymentsSettings({
   const connectedGateway = gateways.connected?.provider;
   const codFee = entry("cod")?.fee;
 
+  // The customer's list in checkout order (cash, card, then transfers), as checkout values.
+  const previewMethods: { value: string; label: string; logo?: string }[] = [
+    ...(enabledKeys.includes("cod") ? [{ value: "cash_on_delivery", label: t("methods.cod.name"), logo: "cod" }] : []),
+    ...(connectedGateway && egyptian ? [{ value: "online_payment", label: tApp(`${connectedGateway}.name`), logo: "card" }] : []),
+    ...enabledKeys.filter((key) => key !== "cod").map((key) => ({ value: key, label: t(`methods.${key}.name`), logo: key })),
+  ];
+  // As checkout: the seller's pick while it is offered, else the first method.
+  const effectiveDefault = previewMethods.some((m) => m.value === payments.defaultMethod) ? payments.defaultMethod : previewMethods[0]?.value;
+
+  const chooseDefault = (method: string) =>
+    startTransition(async () => {
+      const result = await saveDefaultPaymentMethod(storeId, method);
+      if (result.success) {
+        setPayments(result.data);
+        toast.success(t("defaultMethodSaved"));
+        router.refresh();
+      } else {
+        toast.error(t(`errors.${result.error}`));
+      }
+    });
+
   return (
     <div className="grid grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] items-start gap-4 max-[860px]:grid-cols-1">
       <div className="flex min-w-0 flex-col gap-4">
@@ -233,31 +254,41 @@ export function StorePaymentsSettings({
         </SectionCard>
       </div>
 
-      {/* Follows every save; the store's real checkout list, with no sample amounts. */}
+      {/* Follows every save; the store's real checkout list, with no sample amounts. Tapping a method makes it the one checkout selects first. */}
       <SectionCard
         icon={Eye}
         title={tSetup("customerSeesTitle")}
-        description={tSetup("customerSeesDescription")}
+        description={t("defaultMethodHint")}
         className="sticky top-[140px] max-[860px]:static"
       >
-        <div aria-hidden className="flex flex-col gap-2 rounded-[18px] border border-(--s-line) bg-(--s-tint) p-3.5">
+        <div role="radiogroup" aria-label={t("defaultMethodLabel")} className="flex flex-col gap-2 rounded-[18px] border border-(--s-line) bg-(--s-tint) p-3.5">
           <b className="text-sm font-bold text-(--s-ink)">{tSetup("customerSeesHeading")}</b>
-          {enabledKeys.map((key, index) => (
-            <div key={key} className={cn("flex items-center gap-2.5 rounded-[14px] border-[1.5px] border-(--s-line) bg-(--s-surface) px-3 py-2.5", index === 0 && "border-(--s-primary)")}>
-              <span className={cn("size-4 shrink-0 rounded-full border-2 border-(--s-field-strong)", index === 0 && "border-[5px] border-(--s-primary)")} />
-              <PaymentMethodLogo method={key} label="" className="size-7 rounded-lg border-(--s-line) text-[9px]" />
-              <span className="min-w-0 flex-1 truncate text-[13px] font-semibold text-(--s-text)">{t(`methods.${key}.name`)}</span>
-              {key === "cod" && codFee ? (
-                <small className="text-[11.5px] whitespace-nowrap text-(--s-subtle)">{t("codFeeLine", { fee: codFee, currency: moneyUnitText(locale, money) })}</small>
-              ) : null}
-            </div>
-          ))}
-          {connectedGateway && (
-            <div className="flex items-center gap-2.5 rounded-[14px] border-[1.5px] border-(--s-line) bg-(--s-surface) px-3 py-2.5">
-              <span className="size-4 shrink-0 rounded-full border-2 border-(--s-field-strong)" />
-              <span className="min-w-0 flex-1 truncate text-[13px] font-semibold text-(--s-text)">{tApp(`${connectedGateway}.name`)}</span>
-            </div>
-          )}
+          {previewMethods.map((method) => {
+            const selected = method.value === effectiveDefault;
+            return (
+              <button
+                key={method.value}
+                type="button"
+                role="radio"
+                aria-checked={selected}
+                disabled={readOnly || isPending}
+                onClick={() => !selected && chooseDefault(method.value)}
+                className={cn(
+                  "flex min-h-11 w-full items-center gap-2.5 rounded-[14px] border-[1.5px] border-(--s-line) bg-(--s-surface) px-3 py-2.5 text-start transition-colors duration-150 enabled:hover:border-(--s-field-strong) disabled:cursor-default",
+                  selected && "border-(--s-primary) enabled:hover:border-(--s-primary)",
+                )}
+              >
+                <span className={cn("size-4 shrink-0 rounded-full border-2 border-(--s-field-strong)", selected && "border-[5px] border-(--s-primary)")} />
+                {method.logo && <PaymentMethodLogo method={method.logo} label="" className="size-7 rounded-lg border-(--s-line) text-[9px]" />}
+                <span className="min-w-0 flex-1 truncate text-[13px] font-semibold text-(--s-text)">{method.label}</span>
+                {selected ? (
+                  <Tag tone="success">{t("defaultMethodTag")}</Tag>
+                ) : method.value === "cash_on_delivery" && codFee ? (
+                  <small className="text-[11.5px] whitespace-nowrap text-(--s-subtle)">{t("codFeeLine", { fee: codFee, currency: moneyUnitText(locale, money) })}</small>
+                ) : null}
+              </button>
+            );
+          })}
         </div>
       </SectionCard>
 

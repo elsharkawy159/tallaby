@@ -158,8 +158,24 @@ export const codSettingsSchema = z
 const walletEntry = z.object({ enabled: z.boolean(), details: walletDetailsSchema.optional() }).strict();
 const instapayEntry = z.object({ enabled: z.boolean(), details: instapayDetailsSchema.optional() }).strict();
 
+/** Every checkout value a storefront can offer (`StorefrontCheckoutMethod`). */
+export const STOREFRONT_CHECKOUT_METHODS = [
+  "cash_on_delivery",
+  "online_payment",
+  "instapay",
+  "vodafone_cash",
+  "e_cash",
+  "we_pay",
+  "orange_cash",
+] as const;
+
 export const storePaymentsSchema = z
   .object({
+    /**
+     * The method storefront checkout selects first (owner, 2026-11-07). Used only
+     * while the store offers it; otherwise checkout starts as before.
+     */
+    defaultMethod: z.enum(STOREFRONT_CHECKOUT_METHODS).optional(),
     cod: codSettingsSchema.optional(),
     vodafone_cash: walletEntry.optional(),
     e_cash: walletEntry.optional(),
@@ -263,14 +279,24 @@ export function isMethodAllowedForCurrency(currency: string, method: string): bo
 }
 
 /** Checkout values (orders.payment_method) a storefront may offer. */
-export type StorefrontCheckoutMethod =
-  | "cash_on_delivery"
-  | "instapay"
-  | "vodafone_cash"
-  | "e_cash"
-  | "we_pay"
-  | "orange_cash"
-  | "online_payment";
+export type StorefrontCheckoutMethod = (typeof STOREFRONT_CHECKOUT_METHODS)[number];
+
+/**
+ * Sets (or with null clears) the method checkout selects first. Only a method
+ * the store offers now can be picked; the saved choice is kept if that method
+ * is later switched off, and simply not used while it is off.
+ */
+export function validateDefaultMethodChange(
+  current: StorePayments,
+  method: string | null,
+  gateway: OrderGatewayMeta | null,
+): { success: true; data: StorePayments } | { success: false; error: "not_available" } {
+  const { defaultMethod: _previous, ...rest } = current;
+  if (method === null) return { success: true, data: rest };
+  const offered = storefrontCheckoutMethods(current, gateway).methods as string[];
+  if (!offered.includes(method)) return { success: false, error: "not_available" };
+  return { success: true, data: { ...rest, defaultMethod: method as StorefrontCheckoutMethod } };
+}
 
 /**
  * Storefront manual transfers, paid to the seller's own details. WE Pay and
@@ -308,6 +334,8 @@ export type StorefrontCheckoutPayments = {
   codNote: string | null;
   /** The seller's receiving details for each offered manual transfer. */
   transfers: Partial<Record<SellerTransferMethod, SellerPaymentDetails>>;
+  /** The method checkout selects first: the seller's pick while it is offered, else null (cash on delivery first, as before). */
+  defaultMethod?: StorefrontCheckoutMethod | null;
 };
 
 /**
@@ -342,6 +370,7 @@ export function storefrontCheckoutMethods(
   }
   return {
     methods,
+    defaultMethod: payments.defaultMethod && methods.includes(payments.defaultMethod) ? payments.defaultMethod : null,
     gateway: egp ? gateway : null,
     codMaxOrder: payments.cod?.enabled ? (payments.cod.maxOrder ?? null) : null,
     codNote: payments.cod?.enabled ? (payments.cod.note ?? null) : null,

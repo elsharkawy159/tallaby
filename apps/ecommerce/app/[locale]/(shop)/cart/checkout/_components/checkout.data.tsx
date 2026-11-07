@@ -40,7 +40,7 @@ import { updateCartItem } from "@/actions/cart";
 import { SimpleCheckoutForm } from "./simple-checkout-form.client";
 import { useCheckoutAddress, type CheckoutCountries, type SavedCheckoutAddress } from "./use-checkout-address.client";
 import { isAddressInCountries } from "@workspace/lib/shipping/store-quote";
-import { CreditCard, ArrowLeft } from "lucide-react";
+import { CreditCard, ArrowLeft, Banknote } from "lucide-react";
 import { OrderSummary } from "@/components/order-summary";
 import { Button } from "@workspace/ui/components/button";
 import { Label } from "@workspace/ui/components/label";
@@ -73,6 +73,13 @@ import {
 import { StoreCheckoutFields, type StoreCheckoutAnswers } from "./store-checkout-fields.client";
 import { checkMinOrder, itemsSubtotalPiastres, type StoreMinOrder } from "@workspace/lib/stores/min-order";
 import { useCurrencyLabel } from "@/lib/currency-label.client";
+
+/** Card brands beside "Pay by card" (120×80 card artwork in public/icons/payments). */
+const CARD_LOGOS = [
+  { src: "/icons/payments/visa.svg", alt: "Visa", card: true },
+  { src: "/icons/payments/mastercard.svg", alt: "Mastercard", card: true },
+  { src: "/icons/payments/meeza.svg", alt: "Meeza", card: true },
+];
 
 export const CheckoutData = ({
   checkoutData,
@@ -155,9 +162,14 @@ export const CheckoutData = ({
         : MANUAL_PAYMENT_METHODS,
     [storePayments],
   );
+  // The seller's default (Store settings › Payment methods), while the store offers it.
+  const sellerDefault = storePayments?.defaultMethod ?? null;
   const defaultManualMethod: string = storePayments
-    ? (manualMethods[0]?.value ?? "")
+    ? (manualMethods.find((m) => m.value === sellerDefault)?.value ?? manualMethods[0]?.value ?? "")
     : DEFAULT_MANUAL_PAYMENT_METHOD;
+  // What to fall back to when cash on delivery can't be used: a transfer, else the card.
+  const nonCodFallback: string =
+    defaultManualMethod || (checkoutData.onlineCardPaymentEnabled ? "online_payment" : "");
 
   // Storefront: the store's checkout form (F-25a). Null keeps today's
   // checkout exactly: the optional order notes box and nothing else.
@@ -181,7 +193,7 @@ export const CheckoutData = ({
     defaultValues: {
       ...checkoutFormDefaults,
       shippingAddressId: activeAddress?.id || "",
-      paymentMethod: codAllowed ? "cash_on_delivery" : defaultManualMethod,
+      paymentMethod: sellerDefault ?? (codAllowed ? "cash_on_delivery" : nonCodFallback),
       couponCode: initialSummary.appliedCoupon?.code ?? "",
     },
   });
@@ -347,12 +359,12 @@ export const CheckoutData = ({
 
   useEffect(() => {
     if (!isCodEligible && form.getValues("paymentMethod") === "cash_on_delivery") {
-      form.setValue("paymentMethod", defaultManualMethod, {
+      form.setValue("paymentMethod", nonCodFallback, {
         shouldValidate: true,
         shouldDirty: true,
       });
     }
-  }, [isCodEligible, defaultManualMethod, form]);
+  }, [isCodEligible, nonCodFallback, form]);
 
   useEffect(() => {
     const current = form.getValues("paymentMethod");
@@ -394,7 +406,17 @@ export const CheckoutData = ({
       : "";
 
   const paymentGroups = useMemo(() => {
-    const groups = [
+    const groups: {
+      id: string;
+      value: string;
+      title: string;
+      description: string;
+      enabled: boolean;
+      disabledLabel?: string;
+      /** Brand logos beside the title: card brands, or the store's transfer methods. */
+      logos?: { src: string; alt: string; card?: boolean }[];
+      cash?: boolean;
+    }[] = [
       ...(codAllowed
         ? [
             {
@@ -411,6 +433,7 @@ export const CheckoutData = ({
                 : !isCodWithinStoreMax
                   ? t("codUnavailableAboveMax")
                   : undefined,
+              cash: true,
             },
           ]
         : []),
@@ -422,6 +445,7 @@ export const CheckoutData = ({
               title: t("payByCard"),
               description: t("payByCardDescription"),
               enabled: true,
+              logos: CARD_LOGOS,
             },
           ]
         : []),
@@ -435,6 +459,7 @@ export const CheckoutData = ({
                 ? manualMethods.map((m) => t(m.titleKey as any)).join(" · ")
                 : t("onlinePaymentDescription"),
               enabled: true,
+              logos: manualMethods.map((m) => ({ src: m.logo, alt: t(m.titleKey as any) })),
             },
           ]
         : []),
@@ -722,6 +747,23 @@ export const CheckoutData = ({
                                         {method.description}
                                       </FieldDescription>
                                     </FieldContent>
+                                    {method.logos && method.logos.length > 0 ? (
+                                      <span dir="ltr" className="flex max-w-[45%] shrink-0 flex-wrap items-center justify-end gap-1 self-center">
+                                        {method.logos.map((logo) => (
+                                          <Image
+                                            key={logo.src}
+                                            src={logo.src}
+                                            alt={logo.alt}
+                                            title={logo.alt}
+                                            width={logo.card ? 36 : 24}
+                                            height={24}
+                                            className={logo.card ? "h-6 w-9 rounded-[3px] ring-1 ring-black/10" : "h-6 w-6 object-contain"}
+                                          />
+                                        ))}
+                                      </span>
+                                    ) : method.cash ? (
+                                      <Banknote aria-hidden className="size-6 shrink-0 self-center text-emerald-700" />
+                                    ) : null}
                                   </Field>
                                 </FieldLabel>
 

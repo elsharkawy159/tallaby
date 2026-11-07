@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { applyInvalidation, invalidateStorefront } from "@workspace/cache";
 import type { StorePayments } from "@workspace/lib/payments/store-methods";
-import { updateStorePaymentMethod } from "@workspace/lib/stores/server";
+import { getStorefrontGateway } from "@workspace/lib/payments/store-gateways/server";
+import { setStoreDefaultPaymentMethod, updateStorePaymentMethod } from "@workspace/lib/stores/server";
 import { isAccessError, requireStore } from "@/lib/auth/require-seller.server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
 import type { StorePaymentsErrorKey, StorePaymentsResult } from "./payments.dto";
@@ -51,6 +52,32 @@ export async function saveStorePaymentMethod(
       return { success: false, error: error.code === "store_read_only" ? "readOnly" : "notFound" };
     }
     console.error("[store-payments] save failed", (error as Error)?.message);
+    return { success: false, error: "generic" };
+  }
+}
+
+/** The method storefront checkout selects first; null clears it. */
+export async function saveDefaultPaymentMethod(storeId: string, method: string | null): Promise<StorePaymentsResult<StorePayments>> {
+  try {
+    const { seller, store } = await requireStore(String(storeId), { forWrite: true });
+    if (!saveLimiter.check(`payments:${seller.sellerId}`)) return { success: false, error: "rateLimited" };
+    // The gateway is read on the server, for this seller's store only.
+    const gateway = await getStorefrontGateway(store.id, seller.sellerId);
+    const result = await setStoreDefaultPaymentMethod(
+      seller.sellerId,
+      seller.userId,
+      store.id,
+      typeof method === "string" ? method : null,
+      gateway,
+    );
+    if (!result.success) return { success: false, error: ERRORS[result.error] ?? "generic" };
+    revalidatePath(`/stores/${store.id}/settings/payments`);
+    return { success: true, data: result.data };
+  } catch (error) {
+    if (isAccessError(error)) {
+      return { success: false, error: error.code === "store_read_only" ? "readOnly" : "notFound" };
+    }
+    console.error("[store-payments] default save failed", (error as Error)?.name);
     return { success: false, error: "generic" };
   }
 }

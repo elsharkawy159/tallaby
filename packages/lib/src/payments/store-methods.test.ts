@@ -21,6 +21,7 @@ describe("storefrontCheckoutMethods", () => {
   it("offers only COD for a COD-only store", () => {
     expect(storefrontCheckoutMethods(defaultStorePayments())).toEqual({
       methods: ["cash_on_delivery"],
+      defaultMethod: null,
       gateway: null,
       codMaxOrder: null,
       codNote: null,

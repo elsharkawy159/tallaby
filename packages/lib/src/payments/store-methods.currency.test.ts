@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { isMethodAllowedForCurrency, storefrontCheckoutMethods, storeProfilePaymentMethods } from "./store-methods";
+import {
+  isMethodAllowedForCurrency,
+  parseStorePayments,
+  storefrontCheckoutMethods,
+  storeProfilePaymentMethods,
+  validateDefaultMethodChange,
+} from "./store-methods";
 
 const payments = {
   cod: { enabled: true, fee: 0, maxOrder: 500 },
@@ -41,6 +47,22 @@ describe("payment methods by currency (F-61)", () => {
     // No gateway, or a non-EGP store: no card logos.
     expect(storeProfilePaymentMethods({ payments: cod }).map((m) => m.key)).toEqual(["cash_on_delivery"]);
     expect(storeProfilePaymentMethods({ payments: cod, currency: "SAR" }, gateway).map((m) => m.key)).toEqual(["cash_on_delivery"]);
+  });
+
+  it("checkout starts on the seller's default only while the store offers it", () => {
+    expect(storefrontCheckoutMethods({ ...payments, defaultMethod: "online_payment" }, gateway).defaultMethod).toBe("online_payment");
+    expect(storefrontCheckoutMethods({ ...payments, defaultMethod: "online_payment" }).defaultMethod).toBeNull();
+    expect(storefrontCheckoutMethods(payments, gateway).defaultMethod).toBeNull();
+    expect(storefrontCheckoutMethods({ ...payments, defaultMethod: "instapay" }, null, "SAR").defaultMethod).toBeNull();
+  });
+
+  it("the default can be set only to an offered method, and cleared", () => {
+    expect(validateDefaultMethodChange(payments, "online_payment", gateway)).toEqual({ success: true, data: { ...payments, defaultMethod: "online_payment" } });
+    expect(validateDefaultMethodChange(payments, "online_payment", null)).toEqual({ success: false, error: "not_available" });
+    expect(validateDefaultMethodChange(payments, "e_cash", gateway)).toEqual({ success: false, error: "not_available" });
+    expect(validateDefaultMethodChange({ ...payments, defaultMethod: "instapay" }, null, null)).toEqual({ success: true, data: payments });
+    // A saved default survives other method changes and parsing.
+    expect(parseStorePayments({ ...payments, defaultMethod: "instapay" }).defaultMethod).toBe("instapay");
   });
 
   it("refuses anything else at placement", () => {
