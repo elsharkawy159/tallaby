@@ -86,9 +86,11 @@ export async function createKashierSession(
   }
 
   const payload = body?.data ?? body
-  if (!payload?.sessionUrl || !payload?.sessionId) {
+  // Kashier v3 returns the session id as `_id` (checked live 2026-11-07); older docs say `sessionId`.
+  const sessionId = payload?.sessionId ?? payload?._id
+  if (!payload?.sessionUrl || !sessionId) {
     throw new Error('Kashier session response missing sessionUrl/sessionId')
   }
 
-  return { sessionId: payload.sessionId, sessionUrl: payload.sessionUrl }
+  return { sessionId: String(sessionId), sessionUrl: payload.sessionUrl }
 }
