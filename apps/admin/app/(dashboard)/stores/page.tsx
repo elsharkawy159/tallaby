@@ -29,6 +29,7 @@ import { AdminPager, buildHref } from "../_components/admin-pager";
 import { KpiCard, KpiGrid, percentOf } from "../_components/cards/kpi-card";
 import { AdminTable, type AdminTableColumn } from "../_components/admin-table/admin-table";
 import { SORT_PARAM, parseSortParam } from "../_components/admin-table/admin-table.lib";
+import { AiStoreBadge } from "../_components/entity/ai-store-badge";
 import { SiteStatusBadge, StoreStatusBadge, formatAdminDate } from "./stores.lib";
 
 export const dynamic = "force-dynamic";
@@ -182,9 +183,12 @@ async function StoresTable({
               cells: {
                 name: (
                   <>
-                    <Link href={`/stores/${row.id}`} className="font-medium after:absolute after:inset-0 hover:underline">
-                      {row.name}
-                    </Link>
+                    <span className="inline-flex items-center gap-1.5">
+                      <Link href={`/stores/${row.id}`} className="font-medium after:absolute after:inset-0 hover:underline">
+                        {row.name}
+                      </Link>
+                      <AiStoreBadge build={row.aiBuild} />
+                    </span>
                     <div className="flex gap-1 pt-0.5">
                       <StoreStatusBadge status={row.status} />
                       {row.isPrimary && <Badge variant="outline" className="font-normal">Primary</Badge>}

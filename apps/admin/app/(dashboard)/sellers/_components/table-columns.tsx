@@ -141,7 +141,7 @@ export function getSellersColumns(
         }
         return (
           <div className="space-y-0.5">
-            <StoreSiteLink store={store} domain={store.domain} industry={store.industry} />
+            <StoreSiteLink store={store} domain={store.domain} industry={store.industry} aiBuild={store.aiBuild} />
             {more.length > 0 && (
               <Link
                 href={`/stores?seller=${seller.id}`}

@@ -42,6 +42,7 @@ import {
   publicIntegrationConfig,
   type SaasAdminError,
 } from "./saas.lib";
+import { parseAiStoreBuild } from "./ai-build.lib";
 
 export interface AdminStoreListInput {
   q: string | null;
@@ -68,6 +69,26 @@ const STORE_SORT_COLUMNS: Record<(typeof STORE_SORT_IDS)[number], SQL> = {
   lastPublishedAt: sql`st.last_published_at`,
 };
 
+/**
+ * The latest AI Store Builder build that built this store, as one json object
+ * ({ source, publishedAt, createdAt }) or NULL; read it with `parseAiStoreBuild`.
+ * v1 and v2 both set `store_builds.store_id` once the run works on a store
+ * (builder-run.server.ts); a v2 build is also bound up front by
+ * `target_store_id`, which counts only once it is building or in review (a
+ * conversation abandoned before building made nothing). Scoped by seller so
+ * the `store_builds_seller_idx` index serves it.
+ */
+export function aiStoreBuildSql(storeId: SQL, sellerId: SQL): SQL {
+  return sql`(
+    SELECT json_build_object('source', b.source, 'publishedAt', b.published_at, 'createdAt', b.created_at)
+    FROM store_builds b
+    WHERE b.seller_id = ${sellerId}
+      AND (b.store_id = ${storeId} OR (b.target_store_id = ${storeId} AND b.status IN ('building', 'review')))
+    ORDER BY b.created_at DESC
+    LIMIT 1
+  )`;
+}
+
 /** All stores (not deleted) with seller, host, domain, site and catalog facts. One round trip. */
 export async function listStoresForAdmin(input: AdminStoreListInput, q: Queryable = db) {
   const conditions: SQL[] = [sql`st.deleted_at IS NULL`];
@@ -93,6 +114,7 @@ export async function listStoresForAdmin(input: AdminStoreListInput, q: Queryabl
         THEN (SELECT count(*) FROM store_products sp WHERE sp.store_id = st.id)
         ELSE (SELECT count(*) FROM products p WHERE p.seller_id = st.seller_id AND p.status = 'active')
       END::int AS product_count,
+      ${aiStoreBuildSql(sql`st.id`, sql`st.seller_id`)} AS ai_build,
       count(*) OVER ()::int AS total_count
     FROM stores st
     JOIN sellers s ON s.id = st.seller_id
@@ -124,6 +146,7 @@ export async function listStoresForAdmin(input: AdminStoreListInput, q: Queryabl
       domain: (row.domain as string | null) ?? null,
       domainStatus: (row.domain_status as string | null) ?? null,
       productCount: Number(row.product_count ?? 0),
+      aiBuild: parseAiStoreBuild(row.ai_build),
     })),
     total: Number(raw[0]?.total_count ?? 0),
   };

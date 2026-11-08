@@ -35,7 +35,8 @@ import {
   mergeInvalidations,
   type CacheInvalidation,
 } from "@workspace/cache";
-import { applySellerOverride } from "@workspace/lib/admin/server";
+import { parseAiStoreBuild } from "@workspace/lib/admin";
+import { aiStoreBuildSql, applySellerOverride } from "@workspace/lib/admin/server";
 import { listStores } from "@workspace/lib/stores/server";
 import {
   sellerStatusUpdateSchema,
@@ -242,6 +243,7 @@ async function loadSellerStores(sellerIds: string[]) {
         WHERE cd.store_id = ${stores.id} AND cd.status = 'active'
         ORDER BY cd.created_at LIMIT 1
       )`}`,
+      aiBuild: sql<unknown>`${aiStoreBuildSql(sql`${stores.id}`, sql`${stores.sellerId}`)}`,
     })
     .from(stores)
     .where(and(inArray(stores.sellerId, sellerIds), sql`${stores.deletedAt} IS NULL`))
@@ -257,6 +259,7 @@ async function loadSellerStores(sellerIds: string[]) {
       // The admin is in English: the English industry, else the Arabic one.
       industry: row.storeCategory?.trim() || row.storeCategoryAr?.trim() || null,
       domain: row.domain ?? null,
+      aiBuild: parseAiStoreBuild(row.aiBuild),
     });
     bySeller.set(row.sellerId, list);
   }

@@ -1,3 +1,4 @@
+import type { AiStoreBuild } from "@workspace/lib/admin";
 import type { HeardAboutUsSource } from "@workspace/lib/sellers";
 
 export type SellerStatus = "pending" | "approved" | "suspended" | "restricted";
@@ -14,6 +15,8 @@ export interface SellerStoreSummary {
   industry: string | null;
   /** Active custom domain, if any. */
   domain: string | null;
+  /** The latest AI Store Builder build that made this store; null = not made with AI. */
+  aiBuild: AiStoreBuild | null;
 }
 
 export interface HeardAboutUsCount {

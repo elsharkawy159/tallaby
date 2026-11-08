@@ -2,6 +2,8 @@ import Link from "next/link";
 import { ExternalLink } from "lucide-react";
 import { cn } from "@workspace/ui/lib/utils";
 import { storeHostname, storeUrl } from "@workspace/lib/storefront";
+import type { AiStoreBuild } from "@workspace/lib/admin";
+import { AiStoreBadge } from "./ai-store-badge";
 import { storeHref } from "./entity-href.lib";
 
 const SITE_LABELS: Record<string, string> = {
@@ -37,10 +39,12 @@ interface StoreSiteLinkProps {
   showHost?: boolean;
   /** The store's industry, shown in gray after the name, e.g. "(Fashion)". */
   industry?: string | null;
+  /** The AI Store Builder build that made the store; shows the AI mark beside the name. */
+  aiBuild?: AiStoreBuild | null;
 }
 
 /** Store name (to the admin store page) with its website status and storefront link. */
-export function StoreSiteLink({ store, domain, showHost = true, industry }: StoreSiteLinkProps) {
+export function StoreSiteLink({ store, domain, showHost = true, industry, aiBuild }: StoreSiteLinkProps) {
   return (
     <div className="min-w-0">
       <div className="flex items-center gap-2">
@@ -52,6 +56,7 @@ export function StoreSiteLink({ store, domain, showHost = true, industry }: Stor
         >
           {store.name}
         </Link>
+        <AiStoreBadge build={aiBuild} className="-ms-1" />
         {industry && (
           <span className="max-w-32 shrink-0 truncate text-xs text-muted-foreground" title={industry}>
             ({industry})
