@@ -1573,19 +1573,19 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [ ] F-81a AI photo clean-up: cost study + design note (owner)
 - [x] F-82 design note (2026-11-08; `docs/superpowers/specs/2026-11-08-ai-store-builder-v2-design.md`)
 - [x] F-82a Owner decisions D1–D13 (2026-11-08)
-- [ ] F-82b v1 builder fixes
-- [ ] F-82c Migration 0157 (intakes, bucket, build columns)
-- [ ] F-82d Hero composer, intake, signup carry-through
-- [ ] F-82e Intake call, question cards, new step machine
-- [ ] F-82f Products from a file in the build
-- [ ] F-82g Palette from primary colour, logo colours
-- [ ] F-82h Template style tags, shortlist v2, brand previews
-- [ ] F-82i Chat UI v2
-- [ ] F-82j Build v2 items, quality gates, publish
+- [x] F-82b v1 builder fixes (2026-11-08; `c9b0a577`)
+- [x] F-82c Migration 0157 (2026-11-08; `c9b0a577`; staging only)
+- [x] F-82d Hero composer, intake, signup carry-through (2026-11-09; `0bde7f7f`; behind STORE_BUILDER_AI_ENABLED; no browser run)
+- [x] F-82e Intake call, question cards, new step machine (2026-11-09; `924e0b0a`)
+- [x] F-82f Products from a file in the build (2026-11-09; `924e0b0a`)
+- [x] F-82g Palette from primary colour, logo colours (2026-11-08; `cc9ec77a`)
+- [~] F-82h Template style tags, shortlist v2 (2026-11-08; `cc9ec77a`); brand-wearing preview token left
+- [x] F-82i Chat UI v2, Lovable-style (2026-11-09; signed-in E2E left)
+- [x] F-82j Build v2 items, quality gates, publish (2026-11-09; `924e0b0a`)
 - [ ] F-82k Admin labels and funnel
 - [ ] F-82l Live test and E2E
 - [ ] F-82m Switch on (owner)
-- [ ] F-83a Agent core + builder skills
+- [x] F-83a Agent core + 4 skills, DB persistence 0158 (2026-11-09; `9236adb1`, `c63da4c9`; builder not yet moved onto the core)
 - [ ] F-83b Shipping and Products page agents
 - [ ] F-83c Design agent in the editor
 - [ ] F-83d Global assistant, router, Help, Insights
@@ -1596,6 +1596,13 @@ Add each new request here first, with the date and the owner's words, then turn 
 ---
 
 ## 7. Log
+
+### 2026-11-09 — F-82i AI Store Builder chat page v2 (no migration)
+
+- **What:** `/ai-builder` moved to the full-screen `(builder)` group (same seller gate, no sidebar): Lovable-style two panes, chat on the LEFT and the store preview on the RIGHT in Arabic too (owner layout), resizable chat (360–640 px, saved in localStorage), top bar (store, status, device toggle, Open store, Edit in builder, back). Chat: assistant text beside the طلبي mark with a short reveal (off with reduced motion), seller bubbles, activity rows with details, question cards (chips with "recommended", Other, Skip, colour picker with logo colours/swatches/hex, template choice synced with the preview), inline file fix table, summary card, live build checklist, done card (confetti once, owner-pass Open store, WhatsApp share, to-do list, activation step, Request a custom design). Phone: chat full screen + "شاهد متجرك" sheet. Preview: 3 template live thumbnails side by side, then the signed draft preview while building (re-signed after template, brand, copy, product steps) and `/api/stores/<id>/view` once published. Code in `apps/dashboard/app/(builder)/ai-builder/`; strings under `aiBuilder.ws`.
+- **Security:** the hero intake file is no longer parsed on the server (SheetJS 0.18.5): `state.intakeFilePending`, then the browser gets a 2-minute signed link to the intake's own file (`intakeFileLink`, build and intake checked against the session seller), parses it with the importer's browser parser and sends rows through `attachFile` (server re-validates, caps 150). The page uses `requireSeller({ forWrite: true })` when it starts a build from `?intake=`.
+- **v1:** builds saved before v2 still render the old screens; the minimal v2 card client (`builder-v2.client.tsx`) is removed.
+- **Left:** signed-in E2E on staging (auth blocked headless screenshots of the real route; checked with a temporary harness, since deleted); brand-wearing template previews wait for F-82h's signed token (plain previews for now).
 
 ### 2026-11-09 — F-83a agent core: durable pending actions, read cap and tool-call log (migration 0158)
 

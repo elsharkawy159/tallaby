@@ -248,6 +248,13 @@ export const builderStateSchema = z.object({
   // ── v2 (F-82e, F-82f) ─────────────────────────────────────────────────────
   /** The hero intake this build came from. */
   intakeId: z.string().nullable().default(null),
+  /**
+   * The intake has a product file the browser hasn't read yet (F-82i): the
+   * client fetches a short-lived signed link (`intakeFileLink`), reads it with
+   * the importer's browser parser and sends the rows (`attachFile`). The
+   * server never parses an untrusted spreadsheet.
+   */
+  intakeFilePending: z.boolean().default(false),
   source: z.enum(["hero", "dashboard"]).default("dashboard"),
   /** The intake reading ran (or there was nothing to read): the cards start. */
   intakeDone: z.boolean().default(false),

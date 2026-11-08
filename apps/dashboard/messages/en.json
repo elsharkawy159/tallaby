@@ -4120,7 +4120,8 @@
         "summary": "Everything is ready. Shall I build your store and publish it?"
       },
       "activity": {
-        "readFile": "I read your file: {count} products, {missingPrice} without a price and {missingStock} without stock."
+        "readFile": "I read your file: {count} products, {missingPrice} without a price and {missingStock} without stock.",
+        "fileUnreadable": "I couldn't read the file you sent. Upload it again, or add your products another way."
       },
       "questions": {
         "describe": "About your store",
@@ -4184,6 +4185,166 @@
         "publishedPrivate": "Your store is ready and published. Only you can see it until you activate your account with a top-up.",
         "notPublished": "Your store is ready but isn't published yet. Publish it from the website editor.",
         "open": "Open your store"
+      }
+    },
+    "ws": {
+      "back": "Back to the dashboard",
+      "untitled": "Your new store",
+      "openStore": "Open store",
+      "editInBuilder": "Edit in builder",
+      "phonePill": "See your store",
+      "resize": "Resize the chat",
+      "status": {
+        "new": "New",
+        "collecting": "Chatting",
+        "building": "Building",
+        "published": "Published",
+        "ready": "Ready"
+      },
+      "device": {
+        "label": "Preview size",
+        "phone": "Phone",
+        "tablet": "Tablet",
+        "desktop": "Desktop"
+      },
+      "rounds": {
+        "describe": "About your store",
+        "brand": "Your brand",
+        "design": "Design",
+        "products": "Products",
+        "selling": "Delivery and returns",
+        "summary": "Summary"
+      },
+      "empty": {
+        "title": "Build your store in minutes",
+        "body": "Tell me about your store: what you sell and who it is for. I will ask a few questions, then build the whole store in Arabic and English and publish it while you watch.",
+        "welcome": "Welcome to Tallaby! Tell me about your store and I will build and publish it while you watch.",
+        "start": "Let's start"
+      },
+      "chat": {
+        "title": "Chat with Tallaby",
+        "log": "Conversation",
+        "showDetails": "Details",
+        "hideDetails": "Hide",
+        "readingFile": "Reading your file…",
+        "pickedTemplates": "I picked {count} designs that suit your store",
+        "sameNumber": "Same number",
+        "fileFound": "Rows with data: {count}",
+        "fileKept": "Products to add: {count}",
+        "fileDropped": "Rows left out (no name or repeated): {count}",
+        "fileTruncated": "Rows over the limit, add them from the file upload page: {count}",
+        "mapping": {
+          "template": "Columns read from Tallaby's template.",
+          "dictionary": "Columns recognised by their names.",
+          "ai": "Columns recognised with AI.",
+          "fallback": "Columns read by best guess; check the products after the build."
+        }
+      },
+      "card": {
+        "other": "Something else…",
+        "otherPlaceholder": "Type here",
+        "optional": "Optional",
+        "missing": "Answer {count} more to continue",
+        "swatches": "Ready colours",
+        "pickColor": "Pick a colour",
+        "hex": "Colour code",
+        "preview": "Preview",
+        "previewTemplate": "Preview the {name} design"
+      },
+      "fix": {
+        "pricePlaceholder": "EGP",
+        "priceFor": "Price of {name} in EGP",
+        "stockFor": "Stock of {name}",
+        "unlimited": "Unlimited",
+        "ok": "Set",
+        "invalid": "That number is not valid"
+      },
+      "products": {
+        "drop": "Drop your product file here or choose it",
+        "fileHint": "Excel or CSV, up to 2 MB and 500 products"
+      },
+      "summary": {
+        "title": "Your store at a glance",
+        "name": "Name",
+        "design": "Design",
+        "color": "Colour",
+        "products": "Products",
+        "shipping": "Delivery",
+        "returns": "Returns",
+        "productsCount": "{count} products",
+        "noProducts": "No products for now",
+        "templateColors": "The design's colours",
+        "notSet": "You will set it later",
+        "flat": "EGP {price} for all of Egypt",
+        "consent": "When you press it, I will build your store and publish it with its complete products. Only you can see it until you activate your account."
+      },
+      "progress": {
+        "title": "Building your store",
+        "count": "{done} of {total}",
+        "phases": {
+          "store": "Store details",
+          "design": "Design and brand colours",
+          "copy": "Website text and photos",
+          "products": "Products",
+          "selling": "Delivery and returns",
+          "checks": "Final check",
+          "publish": "Publishing"
+        },
+        "status": {
+          "done": "done",
+          "running": "in progress",
+          "pending": "waiting"
+        }
+      },
+      "done": {
+        "title": "Your store is ready and published 🎉",
+        "titleNotPublished": "Your store is ready",
+        "copy": "Copy link",
+        "copied": "Copied",
+        "share": "Share on WhatsApp",
+        "shareText": "Check out my new store: {url}",
+        "todo": "{count} things left to finish",
+        "activateTitle": "Activate your account so people can see your store",
+        "activateBody": "Your store is published, but only you can see it. Top up your wallet once and it opens to every customer.",
+        "activate": "Top up the wallet",
+        "customDesign": "Want a design made just for you? Request one"
+      },
+      "composer": {
+        "label": "Your message to Tallaby",
+        "attach": "Attach",
+        "attachFile": "Product file (Excel or CSV)",
+        "attachLogo": "Logo",
+        "attachPhotos": "Products by photos",
+        "color": "Brand colour",
+        "hex": "Colour code",
+        "useColor": "Use it",
+        "send": "Send",
+        "counter": "{count} / {max}",
+        "building": "Building your store… follow along in the preview",
+        "done": "Your store is ready. Change anything in the editor",
+        "hint": "Enter to send, Shift+Enter for a new line"
+      },
+      "preview": {
+        "title": "Your store preview",
+        "sheetHint": "A live preview of your store",
+        "address": "Store address",
+        "noAddress": "yourstore.tallaby.com",
+        "refresh": "Refresh the preview",
+        "newTab": "Open in a new tab",
+        "emptyTitle": "Your store will appear here",
+        "emptyBody": "Tell me about your store in the chat and watch it being built here, step by step.",
+        "buildingSoon": "The preview appears as soon as I apply the design…",
+        "pickTitle": "Pick a design",
+        "pickBody": "Click any design to see it large.",
+        "openTemplate": "See the {name} design large",
+        "templateLabel": "Preview of the {name} design",
+        "storeFrame": "Your store preview",
+        "backToPicks": "All designs",
+        "chooseThis": "Choose this design",
+        "chosen": "Chosen",
+        "recommended": "Recommended",
+        "loading": "Loading the preview…",
+        "updating": "Updating your store…"
       }
     }
   },

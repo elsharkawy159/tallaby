@@ -8,7 +8,7 @@ import { Progress } from "@workspace/ui/components/progress";
 import { CheckRow, EmptyState, IconButton, Note, PageHeader, SellerButton, SellerCard, Tag, TextAction, TextArea, TextInput } from "@/components/seller-ui";
 import { STORE_INDUSTRIES } from "@/lib/stores/industries.lib";
 import { BuilderReviewPanel } from "./builder-review.client";
-import { BuilderV2Chat } from "./builder-v2.client";
+import { useRouter } from "next/navigation";
 import { syncField, type SyncedField } from "./builder-row.lib";
 import {
   BUILDER_LIMITS,
@@ -35,7 +35,7 @@ const STEPS_WITH_TEXT = new Set(["name", "about", "contact", "social", "brief", 
 const MAX_SIDE = 1536;
 
 /** A smaller JPEG for the upload (the route refuses over 1.5 MB, and every pixel is billed when read). */
-async function shrinkImage(file: File): Promise<Blob> {
+export async function shrinkImage(file: File): Promise<Blob> {
   const url = URL.createObjectURL(file);
   try {
     const image = await new Promise<HTMLImageElement>((resolve, reject) => {
@@ -59,7 +59,7 @@ async function shrinkImage(file: File): Promise<Blob> {
   }
 }
 
-async function post<T>(url: string, init: RequestInit): Promise<T | { ok: false; error: BuilderErrorCode }> {
+export async function post<T>(url: string, init: RequestInit): Promise<T | { ok: false; error: BuilderErrorCode }> {
   try {
     return (await (await fetch(url, init)).json()) as T;
   } catch {
@@ -67,7 +67,7 @@ async function post<T>(url: string, init: RequestInit): Promise<T | { ok: false;
   }
 }
 
-const postJson = <T,>(url: string, body: unknown) => post<T>(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
+export const postJson = <T,>(url: string, body: unknown) => post<T>(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
 
 export function BuilderChat({
   initialView,
@@ -274,32 +274,8 @@ export function BuilderChat({
     );
   }
 
-  if (view.flow === "v2") {
-    return (
-      <BuilderV2Chat
-        view={view}
-        busy={busy}
-        error={error}
-        send={send}
-        setView={setView}
-        onUploadLogo={(file) => upload(file, "logo")}
-        onRestart={() => void send({ action: "restart" })}
-        templatesBaseUrl={templatesBaseUrl}
-        products={
-          <ProductsEditor
-            products={view.state.products}
-            photoUrls={view.photoUrls}
-            busy={busy}
-            onSave={(product) => request({ action: "saveProduct", product }, true)}
-            onRemove={(productId) => void send({ action: "removeProduct", productId })}
-            onRemovePhoto={(productId, path) => void send({ action: "removePhoto", productId, path })}
-            onUpload={(file, productId) => void upload(file, "product", productId)}
-            onDone={() => void send({ action: "answers", answers: { productsDone: { choice: "done" } } })}
-          />
-        }
-      />
-    );
-  }
+  // A new conversation is v2 (F-82e): the page shows it in the two-pane chat (F-82i).
+  if (view.flow === "v2") return <V2Handoff />;
 
   const { state, step } = view;
   const textMax = step === "shipping" ? BUILDER_LIMITS.shippingTextMax : BUILDER_LIMITS.textMax;
@@ -528,7 +504,7 @@ const num = (value: string) => {
   return value.trim() !== "" && Number.isFinite(parsed) ? parsed : null;
 };
 
-function ProductsEditor({
+export function ProductsEditor({
   products,
   photoUrls,
   busy,
@@ -685,4 +661,11 @@ function ProductRow({
       </div>
     </div>
   );
+}
+
+/** A v1 page that started a v2 conversation (restart, another build): the server page renders the v2 chat. */
+function V2Handoff() {
+  const router = useRouter();
+  useEffect(() => router.refresh(), [router]);
+  return <Loader2 className="mx-auto size-5 animate-spin" aria-hidden />;
 }

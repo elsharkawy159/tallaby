@@ -3,7 +3,7 @@ import { aiConfigured, aiErrorKind, generateStructured } from "@workspace/ai";
 import { and, db, desc, eq, storeBuildIntakes, storeBuilds, users } from "@workspace/db";
 import { getServiceClient } from "@workspace/db/supabase/service";
 import { getBillingState } from "@workspace/lib/billing/server";
-import { INTAKE_LIMITS, STORE_BUILD_INTAKE_BUCKET, bytesMatchType, intakeTypeFromName, isIntakeFileType, isIntakeId } from "@workspace/lib/store-builds";
+import { INTAKE_LIMITS, STORE_BUILD_INTAKE_BUCKET, intakeTypeFromName, isIntakeFileType, isIntakeId } from "@workspace/lib/store-builds";
 import { scoreTemplates, nextTemplates } from "@workspace/store-editor/lib/template-shortlist.lib";
 import { formatPhone } from "@workspace/store-sections/social";
 import { TEMPLATE_STYLES, type TemplateStyle } from "@workspace/store-sections/templates";
@@ -50,7 +50,6 @@ import {
  */
 
 const RESULT_CACHE_MS = 10 * 60_000;
-const SHEET_ROW_READ_LIMIT = 600;
 
 const gateError = (gate: Extract<ModelGate, { ok: false }>): BuilderErrorCode =>
   gate.reason === "budget" ? "budget" : gate.reason === "noCredits" ? "noCredits" : gate.reason === "dailyLimit" ? "dailyLimit" : "failed";
@@ -120,34 +119,6 @@ const withActivity = (state: BuilderState, key: string, params: Record<string, s
   ...state,
   messages: [...state.messages, { role: "assistant" as const, key, params }].slice(-200),
 });
-
-/**
- * A spreadsheet's bytes as rows of text, the importer's way (first sheet with
- * data, values not formulas, CSV kept as text). Server-side SheetJS: the file
- * was already checked by type and size at the intake, and the read is capped.
- */
-async function readSheetBytes(bytes: Uint8Array, type: "csv" | "xlsx" | "xls"): Promise<SheetModel | null> {
-  const XLSX = await import("xlsx");
-  const text = () => {
-    try {
-      return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
-    } catch {
-      return new TextDecoder("windows-1256").decode(bytes);
-    }
-  };
-  const workbook =
-    type === "csv"
-      ? XLSX.read(text(), { type: "string", raw: true, sheetRows: SHEET_ROW_READ_LIMIT })
-      : XLSX.read(bytes, { type: "array", cellFormula: false, cellHTML: false, cellStyles: false, sheetRows: SHEET_ROW_READ_LIMIT });
-  for (const name of workbook.SheetNames) {
-    const sheet = workbook.Sheets[name];
-    if (!sheet?.["!ref"]) continue;
-    const rows = XLSX.utils.sheet_to_json<unknown[]>(sheet, { header: 1, raw: false, defval: "", blankrows: true });
-    const model = buildSheetModel(rows, XLSX.utils.decode_range(sheet["!ref"]).s.r);
-    if (model.rows.length) return model;
-  }
-  return null;
-}
 
 // ── The intake reading (one call) ───────────────────────────────────────────
 
@@ -219,6 +190,43 @@ export async function startDashboardBuild(sellerId: string): Promise<StartResult
 
 const intakeFolderOk = (path: string, sellerId: string, intakeId: string) =>
   !path.includes("..") && (path.startsWith(`${sellerId}/${intakeId}/`) || path.startsWith(`guest/${intakeId}/`));
+
+/** The intake's product file path when it is a spreadsheet in this intake's own folder; else null. */
+export function intakeFilePath(path: string | null, sellerId: string, intakeId: string): string | null {
+  if (!path || !intakeFolderOk(path, sellerId, intakeId)) return null;
+  return isIntakeFileType(intakeTypeFromName(path)) ? path : null;
+}
+
+/**
+ * A 2-minute signed download link for the intake file of this seller's open v2
+ * build (F-82i), so the browser reads it with the importer's parser. The build
+ * is looked up by the session's seller, and the intake by that seller too; the
+ * path must be the intake's own file. Nothing from the client names a path.
+ */
+export async function signIntakeFile(sellerId: string, buildId: string): Promise<{ ok: true; url: string; name: string } | { ok: false; error: BuilderErrorCode }> {
+  const build = await loadBuild(sellerId, buildId);
+  if (!build || build.status !== "collecting" || build.state.flow !== "v2" || !build.state.intakeFilePending || !build.intakeId) return { ok: false, error: "notBuilding" };
+  const [intake] = await db
+    .select({ filePath: storeBuildIntakes.filePath, expiresAt: storeBuildIntakes.expiresAt })
+    .from(storeBuildIntakes)
+    .where(and(eq(storeBuildIntakes.id, build.intakeId), eq(storeBuildIntakes.sellerId, sellerId)))
+    .limit(1);
+  const path = intake ? intakeFilePath(intake.filePath, sellerId, build.intakeId) : null;
+  if (!path) return { ok: false, error: "badFile" };
+  const { data, error } = await getServiceClient().storage.from(STORE_BUILD_INTAKE_BUCKET).createSignedUrl(path, 120);
+  if (error || !data?.signedUrl) return { ok: false, error: "failed" };
+  return { ok: true, url: data.signedUrl, name: `products.${intakeTypeFromName(path)}` };
+}
+
+/** The browser couldn't read the intake file: the products round asks again. Says so in the chat. */
+export async function dropIntakeFile(sellerId: string, buildId: string): Promise<{ ok: true; build: BuildRow } | { ok: false; error: BuilderErrorCode }> {
+  const build = await loadBuild(sellerId, buildId);
+  if (!build || build.status !== "collecting" || build.state.flow !== "v2") return { ok: false, error: "notBuilding" };
+  if (!build.state.intakeFilePending) return { ok: true, build };
+  const state = settle(withActivity({ ...build.state, intakeFilePending: false }, "v2.activity.fileUnreadable", {}), build.id);
+  await saveBuild(sellerId, build.id, { state });
+  return { ok: true, build: { ...build, state } };
+}
 
 async function downloadIntake(path: string): Promise<Uint8Array | null> {
   const { data, error } = await getServiceClient().storage.from(STORE_BUILD_INTAKE_BUCKET).download(path);
@@ -299,20 +307,9 @@ export async function startBuildFromIntake(sellerId: string, intakeId: string): 
     }
   }
 
-  if (intake.filePath && intakeFolderOk(intake.filePath, sellerId, intakeId)) {
-    const type = intakeTypeFromName(intake.filePath);
-    const bytes = isIntakeFileType(type) ? await downloadIntake(intake.filePath).catch(() => null) : null;
-    if (bytes && isIntakeFileType(type) && bytes.byteLength <= INTAKE_LIMITS.fileBytes && bytesMatchType(type, bytes)) {
-      const model = await readSheetBytes(bytes, type).catch((error: unknown) => {
-        console.error("[ai-builder] intake file unreadable", error instanceof Error ? error.message : error);
-        return null;
-      });
-      if (model) {
-        extras.model = model;
-        extras.guess = readFileColumns(model);
-      }
-    }
-  }
+  // The product file is read in the seller's browser, never here (SheetJS 0.18.5 advisories, as the
+  // file importer): the client asks for a signed link to this intake's own file (`intakeFileLink`).
+  if (intakeFilePath(intake.filePath, sellerId, intakeId)) state = { ...state, intakeFilePending: true };
 
   const read = await runIntakeReading(build, state, extras);
   const next = settle(read.state, build.id);
@@ -438,7 +435,9 @@ export async function attachFile(ctx: ChatContext, build: BuildRow, input: { hea
     const mapped = await mapColumns(ctx.sellerId, { fileBytes: 0, totalRows: sheet.rows.length, columns: columnSamples(sheet) });
     if (mapped.ok) ({ mapping, source } = mapped);
   }
-  let state = fileState(build.state, build.id, sheet, mapping, source);
+  // The hero file read late (F-82i): a shortlist made before it is scored again with the products in.
+  const before = build.state.intakeFilePending && !build.state.templateKey ? { ...build.state, shortlist: [], templatesShown: [] } : build.state;
+  let state = fileState({ ...before, intakeFilePending: false }, build.id, sheet, mapping, source);
   if (!state.fileRows.length) return { view: toView(build), error: "badFile" };
   state = settle(state, build.id);
   await saveBuild(ctx.sellerId, build.id, { state });
