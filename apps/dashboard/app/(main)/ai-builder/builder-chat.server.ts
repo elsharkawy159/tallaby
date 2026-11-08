@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { aiConfigured, aiErrorKind, generateStructured } from "@workspace/ai";
+import { getBillingState } from "@workspace/lib/billing/server";
 import { getCodeTemplate, templateMeta, CODE_TEMPLATES } from "@workspace/store-sections/templates";
 import { builderPhotoUrl } from "./builder-upload.lib";
 import {
@@ -69,6 +70,7 @@ async function readText(build: BuildRow, state: BuilderState, text: string): Pro
     const { object, cached } = await generateStructured({
       feature: BUILDER_FEATURES.chat,
       sellerId: build.sellerId,
+      refId: build.id,
       tier: "fast",
       schema: builderChatOutputSchema,
       system: CHAT_SYSTEM_RULES,
@@ -95,6 +97,7 @@ async function writeBrief(build: BuildRow, state: BuilderState): Promise<{ state
     const { object, cached } = await generateStructured({
       feature: BUILDER_FEATURES.brief,
       sellerId: build.sellerId,
+      refId: build.id,
       tier: "fast",
       schema: builderBriefOutputSchema,
       system: BRIEF_SYSTEM_RULES,
@@ -111,7 +114,8 @@ async function writeBrief(build: BuildRow, state: BuilderState): Promise<{ state
         briefRuns: state.briefRuns + 1,
         briefNote: null,
         brief: {
-          nameEn: clean(object.nameEn, 40),
+          // The seller's own Latin name wins over the model's transliteration.
+          nameEn: clean(state.nameEn ?? object.nameEn, 40),
           taglineAr: clean(object.taglineAr, 70),
           taglineEn: clean(object.taglineEn, 70),
           audience: clean(object.audience, 80),
@@ -178,8 +182,12 @@ async function confirmBrief(ctx: ChatContext, build: BuildRow): Promise<ChatResu
   if (!paid && !free) {
     const claim = await claimFreeBuild({ sellerId: ctx.sellerId, buildId: build.id, phone: build.state.contact.phone, ip: ctx.ip });
     if (claim === "phoneUsed" || claim === "ipLimit" || claim === "platformBusy") return { view: toView(build), error: claim };
-    if (claim === "already") paid = true;
-    else free = true;
+    if (claim === "already") {
+      // The free build was used: this one runs on credits, so credits must be on (as startBuild checks).
+      const billing = await getBillingState().catch(() => null);
+      if (!billing?.usdLive) return { view: toView(build), error: "creditsNotLive" };
+      paid = true;
+    } else free = true;
   }
   const state = withNextQuestion(withShortlist(withSellerMessage({ ...build.state, paid, briefConfirmed: true }, "chip:confirm"), build.id));
   await saveBuild(ctx.sellerId, build.id, { state });

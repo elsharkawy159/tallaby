@@ -15,6 +15,8 @@ export type AiUsageRow = {
   costMicroUsd?: number
   latencyMs?: number
   errorCode?: string
+  /** What the call was for, e.g. a store build id (ai_usage_logs.ref_id, 0157). */
+  refId?: string | null
 }
 
 /** Never throws: a failed log must not fail the seller's request. */
@@ -31,6 +33,7 @@ export async function logAiUsage(row: AiUsageRow): Promise<void> {
       costMicroUsd: row.costMicroUsd ?? 0,
       latencyMs: row.latencyMs ?? null,
       errorCode: row.errorCode?.slice(0, 120) ?? null,
+      refId: row.refId ?? null,
     })
   } catch (error) {
     console.error("[ai] usage log failed", error instanceof Error ? error.message : error)

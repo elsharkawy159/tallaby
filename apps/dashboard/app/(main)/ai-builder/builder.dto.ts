@@ -110,6 +110,8 @@ export const builderStateSchema = z.object({
   /** True when the account's free build was used before this one: it runs on credits. */
   paid: z.boolean().default(false),
   name: z.string().nullable().default(null),
+  /** The store's Latin name, kept only when the seller wrote it (mergeReading). */
+  nameEn: z.string().nullable().default(null),
   about: z.string().nullable().default(null),
   industryId: z.string().nullable().default(null),
   industrySuggestion: z.string().nullable().default(null),

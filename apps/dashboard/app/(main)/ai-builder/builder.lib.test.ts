@@ -6,6 +6,7 @@ import {
   buildProgress,
   canSpend,
   currentStep,
+  latinNameInText,
   matchIndustry,
   mergeReading,
   nextBuildItem,
@@ -20,6 +21,7 @@ import {
   subdomainBase,
   withNextQuestion,
 } from "./builder.lib";
+import { syncField } from "./builder-row.lib";
 
 const state = (patch: Partial<BuilderState> = {}): BuilderState => ({ ...parseBuilderState({}), ...patch });
 const product = (patch: Partial<BuilderProduct> = {}): BuilderProduct => ({
@@ -212,6 +214,22 @@ describe("what the model may fill in", () => {
   });
 });
 
+describe("the store's Latin name from a reading", () => {
+  it("is kept only when the seller wrote it", () => {
+    expect(mergeReading(state(), output({ nameEn: "Noor Candles" }), "my store is called noor  candles", newId).nameEn).toBe("Noor Candles");
+    expect(mergeReading(state(), output({ nameEn: "Nour" }), "اسم المتجر نور", newId).nameEn).toBeNull();
+  });
+
+  it("never replaces one already kept, and refuses odd values", () => {
+    expect(mergeReading(state({ nameEn: "Noor" }), output({ nameEn: "Other" }), "Other", newId).nameEn).toBe("Noor");
+    expect(latinNameInText("<b>x</b>", "<b>x</b>")).toBeNull();
+    expect(latinNameInText("a".repeat(41), "a".repeat(41))).toBeNull();
+    expect(latinNameInText("123", "123")).toBeNull();
+    expect(latinNameInText(null, "anything")).toBeNull();
+    expect(latinNameInText("Dar El-Noor", "Dar El-Noor shop")).toBe("Dar El-Noor");
+  });
+});
+
 describe("answers read in code", () => {
   it("reads contact details with no model", () => {
     expect(readContact("٠١٠١٢٣٤٥٦٧٨")).toMatchObject({ phone: "01012345678" });
@@ -337,5 +355,20 @@ describe("review", () => {
   it("doesn't ask for shipping the seller skipped", () => {
     const issues = reviewIssues({ ...base, state: { ...base.state, shipping: { mode: "skip" } }, items: done, zoneCount: 0 });
     expect(issues.map((issue) => issue.code)).not.toContain("shippingNotSet");
+  });
+});
+
+describe("a product row following the server", () => {
+  it("shows a new server value when the seller hasn't typed", () => {
+    expect(syncField({ value: "", synced: "" }, "250")).toEqual({ value: "250", synced: "250" });
+  });
+
+  it("keeps what the seller is typing", () => {
+    expect(syncField({ value: "30", synced: "" }, "250")).toEqual({ value: "30", synced: "250" });
+  });
+
+  it("changes nothing when the server value is the same", () => {
+    const field = { value: "3", synced: "2" };
+    expect(syncField(field, "2")).toBe(field);
   });
 });

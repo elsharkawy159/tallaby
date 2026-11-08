@@ -4063,6 +4063,7 @@
       "failed": "Some steps were skipped because of a problem. What's missing is listed below.",
       "store_limit": "You've reached your plan's store limit, so we couldn't create a new store.",
       "no_store": "We couldn't reach the store.",
+      "store_published": "This build's store is already live, so we stopped before changing it.",
       "other": "Some steps were skipped. What's missing is listed below."
     },
     "issues": {

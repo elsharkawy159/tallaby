@@ -29,7 +29,7 @@ export async function autofillProduct(
   sellerId: string,
   input: AutofillInput,
   /** Its own usage-log name when another feature calls this (the AI Store Builder). */
-  options: { feature?: string } = {},
+  options: { feature?: string; refId?: string } = {},
 ): Promise<AutofillRun> {
   const today = cairoToday()
   const taxonomy = await loadSellerTaxonomyOptions(sellerId)
@@ -49,6 +49,7 @@ export async function autofillProduct(
 
   const { object, cached } = await generateStructured({
     feature: options.feature ?? AUTOFILL_FEATURE,
+    refId: options.refId,
     sellerId,
     tier: "fast",
     schema: productAutofillOutputSchema,

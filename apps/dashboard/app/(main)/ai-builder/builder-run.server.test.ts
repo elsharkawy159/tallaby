@@ -6,6 +6,8 @@ const mocks = vi.hoisted(() => ({
   agentCreateProduct: vi.fn(),
   agentSetProductStatus: vi.fn(),
   existingSku: [] as { id: string }[],
+  storeRows: [] as { firstPublishedAt: string | null; siteStatus: string }[],
+  storesTable: { table: "stores" },
   items: new Map<string, unknown>(),
   saveBuild: vi.fn(),
   saveItem: vi.fn(),
@@ -30,9 +32,17 @@ vi.mock("@workspace/db", () => ({
   products: { id: "id", sellerId: "s", sku: "k" },
   sellers: {},
   storePages: {},
-  stores: {},
-  templateInstalls: {},
-  db: { select: () => ({ from: () => ({ where: () => ({ limit: async () => mocks.existingSku }) }) }) },
+  stores: mocks.storesTable,
+  db: {
+    select: () => ({
+      from: (table: unknown) => ({
+        where: () => ({
+          limit: async () => (table === mocks.storesTable ? mocks.storeRows : mocks.existingSku),
+          orderBy: async () => [],
+        }),
+      }),
+    }),
+  },
 }));
 vi.mock("@workspace/lib/store-forms", () => ({ buildTemplateForm: vi.fn(), getFormTemplate: vi.fn() }));
 vi.mock("@workspace/lib/orders", () => ({ sendStoreCreatedEmail: vi.fn() }));
@@ -82,7 +92,8 @@ const product = { id: "abc123", name: "Vanilla candle", details: "soy wax", pric
 const build = () => ({
   id: "55555555-5555-4555-8555-555555555555",
   sellerId: CTX.sellerId,
-  storeId: STORE,
+  storeId: STORE as string | null,
+  targetStoreId: null as string | null,
   status: "building" as const,
   free: true,
   state: { ...parseBuilderState({}), name: "Noor", industryId: "handmade", products: [product] },
@@ -125,6 +136,7 @@ const doneBefore = ["store", "settings", "template", "site_copy"];
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.existingSku = [];
+  mocks.storeRows = [];
   mocks.items = new Map(doneBefore.map((key) => [key, { key, status: "done", attempts: 0, data: {}, productId: null }]));
   mocks.checkModelCall.mockResolvedValue({ ok: true, creditReference: null });
   mocks.getStore.mockResolvedValue({ id: STORE, name: "Noor", subdomain: "noor", defaultLocale: "ar" });
@@ -136,7 +148,7 @@ beforeEach(() => {
 describe("building a product", () => {
   it("writes copy under its own feature name, and creates a draft with the seller's figures", async () => {
     await runBuildStep(CTX, build());
-    expect(mocks.autofillProduct.mock.calls[0]![2]).toEqual({ feature: "store_builder_product" });
+    expect(mocks.autofillProduct.mock.calls[0]![2]).toEqual({ feature: "store_builder_product", refId: build().id });
     expect(mocks.checkModelCall).toHaveBeenCalledWith(expect.anything(), "store_builder_product");
 
     const [context, input] = mocks.agentCreateProduct.mock.calls[0]!;
@@ -210,5 +222,64 @@ describe("the end of a build", () => {
     const result = await runBuildStep(CTX, { ...build(), storeId: null });
     expect(result.finished).toBe(true);
     expect(result.build).toMatchObject({ status: "review", stopReason: "store_limit" });
+  });
+});
+
+describe("the build's store", () => {
+  const NEW_STORE = "66666666-6666-4666-8666-666666666666";
+  const atStoreStep = async () => {
+    mocks.items = new Map();
+    const { checkStoreSubdomain } = await import("@workspace/lib/stores/server");
+    vi.mocked(checkStoreSubdomain).mockResolvedValue({ status: "available", subdomain: "noor", suggestions: [] });
+  };
+
+  it("uses the bound store when it is this seller's and never published", async () => {
+    await atStoreStep();
+    mocks.storeRows = [{ firstPublishedAt: null, siteStatus: "draft" }];
+    const b = { ...build(), storeId: null, targetStoreId: STORE };
+    await runBuildStep(CTX, b);
+    expect(mocks.createStore).not.toHaveBeenCalled();
+    expect(mocks.saveBuild).toHaveBeenCalledWith(CTX.sellerId, b.id, { storeId: STORE, targetStoreId: STORE });
+    expect(mocks.items.get("store")).toMatchObject({ status: "done" });
+  });
+
+  it("stops, and never writes, when the bound store was published meanwhile", async () => {
+    await atStoreStep();
+    mocks.storeRows = [{ firstPublishedAt: "2026-11-07T00:00:00Z", siteStatus: "published" }];
+    const result = await runBuildStep(CTX, { ...build(), storeId: null, targetStoreId: STORE });
+    expect(mocks.createStore).not.toHaveBeenCalled();
+    expect(result.build).toMatchObject({ status: "review", stopReason: "store_published" });
+  });
+
+  it("stops when the bound store isn't this seller's (or is gone)", async () => {
+    await atStoreStep();
+    mocks.storeRows = [];
+    const result = await runBuildStep(CTX, { ...build(), storeId: null, targetStoreId: STORE });
+    expect(mocks.createStore).not.toHaveBeenCalled();
+    expect(result.build).toMatchObject({ stopReason: "no_store" });
+  });
+
+  it("without a bound store makes a new one and binds it at once, never reusing another empty store", async () => {
+    await atStoreStep();
+    mocks.listStores.mockResolvedValue([{ id: STORE, status: "active", siteStatus: "draft" }]);
+    mocks.createStore.mockResolvedValue({ success: true, data: { id: NEW_STORE } });
+    const b = { ...build(), storeId: null };
+    await runBuildStep(CTX, b);
+    expect(mocks.createStore).toHaveBeenCalledTimes(1);
+    expect(mocks.saveBuild).toHaveBeenNthCalledWith(1, CTX.sellerId, b.id, { targetStoreId: NEW_STORE });
+    expect(mocks.saveBuild).toHaveBeenCalledWith(CTX.sellerId, b.id, { storeId: NEW_STORE, targetStoreId: NEW_STORE });
+  });
+});
+
+describe("site copy", () => {
+  it("doesn't count a run when there were no slots and no model call", async () => {
+    mocks.items = new Map(["store", "settings", "template"].map((key) => [key, { key, status: "done", attempts: 0, data: {}, productId: null }]));
+    const { generateStructured } = await import("@workspace/ai");
+    const b = build();
+    await runBuildStep(CTX, b);
+    expect(generateStructured).not.toHaveBeenCalled();
+    expect(mocks.saveBuild).not.toHaveBeenCalledWith(CTX.sellerId, b.id, expect.objectContaining({ siteCopyRuns: expect.any(Number) }));
+    expect(b.siteCopyRuns).toBe(0);
+    expect(mocks.items.get("site_copy")).toMatchObject({ status: "done" });
   });
 });

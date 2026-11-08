@@ -25,6 +25,11 @@ export type GenerateStructuredOptions<TSchema extends z.ZodType> = {
   feature: string
   /** From the session, never from the client or the model. */
   sellerId: string
+  /**
+   * Written to ai_usage_logs.ref_id, e.g. the store build id, so spend can be
+   * summed per build. Not part of the result-cache key.
+   */
+  refId?: string | null
   tier: ModelTier
   schema: TSchema
   system: string
@@ -131,6 +136,7 @@ async function callOnce<TSchema extends z.ZodType>(
     await logAiUsage({
       sellerId: options.sellerId,
       feature: options.feature,
+      refId: options.refId ?? null,
       model: modelId,
       status: "ok",
       ...usage,
@@ -142,6 +148,7 @@ async function callOnce<TSchema extends z.ZodType>(
     await logAiUsage({
       sellerId: options.sellerId,
       feature: options.feature,
+      refId: options.refId ?? null,
       model: modelId,
       status: "error",
       latencyMs: Date.now() - started,

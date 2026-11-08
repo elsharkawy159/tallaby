@@ -54,6 +54,18 @@ describe("generateStructured", () => {
     })
   })
 
+  it("writes the refId on every usage row, ok or error", async () => {
+    const ok = new MockLanguageModelV4({ doGenerate: result('{"title":"Red mug"}') })
+    await generateStructured({ ...base, tier: "fast", refId: "build-1", model: () => ok })
+    expect(logs.at(-1)).toMatchObject({ status: "ok", refId: "build-1" })
+    const bad = new MockLanguageModelV4({ doGenerate: result('{"nope":1}') })
+    await expect(generateStructured({ ...base, tier: "fast", refId: "build-1", model: () => bad, content: [{ type: "text", text: "other" }] })).rejects.toThrow()
+    expect(logs.every((row) => row.refId === "build-1")).toBe(true)
+    logs.length = 0
+    await generateStructured({ ...base, tier: "fast", model: () => ok, content: [{ type: "text", text: "no ref" }] })
+    expect(logs[0]).toMatchObject({ refId: null })
+  })
+
   it("logs an error and rethrows when the output does not match the schema", async () => {
     const model = new MockLanguageModelV4({ doGenerate: result('{"nope":1}') })
     await expect(generateStructured({ ...base, tier: "fast", model: () => model })).rejects.toThrow()

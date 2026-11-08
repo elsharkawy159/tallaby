@@ -15,10 +15,11 @@ export async function proposeZones(
   sellerId: string,
   text: string,
   /** Its own usage-log name when another feature calls this (the AI Store Builder). */
-  options: { feature?: string } = {},
+  options: { feature?: string; refId?: string } = {},
 ): Promise<{ zones: ProposedZone[]; cached: boolean }> {
   const { object, cached } = await generateStructured({
     feature: options.feature ?? AI_ZONES_FEATURE,
+    refId: options.refId,
     sellerId,
     tier: "fast",
     schema: aiZonesOutputSchema,

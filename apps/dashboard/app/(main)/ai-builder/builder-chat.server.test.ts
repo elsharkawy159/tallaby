@@ -7,7 +7,9 @@ const mocks = vi.hoisted(() => ({
   claimFreeBuild: vi.fn(),
   saveBuild: vi.fn(),
   giveCreditBack: vi.fn(),
+  getBillingState: vi.fn(),
 }));
+vi.mock("@workspace/lib/billing/server", () => ({ getBillingState: mocks.getBillingState }));
 
 vi.mock("@workspace/ai", () => ({ aiConfigured: () => true, aiErrorKind: () => "busy", generateStructured: mocks.generateStructured }));
 vi.mock("@workspace/store-sections/templates", () => ({ CODE_TEMPLATES: [], getCodeTemplate: () => undefined, templateMeta: () => ({ palette: [] }) }));
@@ -25,6 +27,7 @@ const build = (state: Partial<BuilderState>, patch: Record<string, unknown> = {}
   id: "11111111-1111-4111-8111-111111111111",
   sellerId: CTX.sellerId,
   storeId: null,
+  targetStoreId: null,
   status: "collecting" as const,
   free: false,
   state: { ...parseBuilderState({}), ...state },
@@ -43,6 +46,7 @@ const reading = (patch = {}) => ({ object: { nameEn: null, industryHint: null, p
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.checkModelCall.mockResolvedValue({ ok: true, creditReference: null });
+  mocks.getBillingState.mockResolvedValue({ usdLive: true });
 });
 
 describe("the chat", () => {
@@ -137,6 +141,39 @@ describe("the brief", () => {
     const unconfirmed = await answerQuestion({ ...CTX, emailConfirmed: false }, build({ ...atBrief, brief: BRIEF }), { type: "chip", value: "confirm" });
     expect(unconfirmed.error).toBe("emailNotConfirmed");
     expect(mocks.claimFreeBuild).not.toHaveBeenCalled();
+  });
+
+  it("tags every model call with the build id", async () => {
+    mocks.generateStructured.mockResolvedValueOnce(reading()).mockResolvedValueOnce({ object: BRIEF });
+    const b = build({ name: "Noor" });
+    await answerQuestion(CTX, b, { type: "text", text: "I sell candles" });
+    await refreshBrief(CTX, build(atBrief));
+    for (const [call] of mocks.generateStructured.mock.calls) expect(call.refId).toBe(b.id);
+  });
+
+  it("keeps the seller's own Latin name and gives it to the brief", async () => {
+    mocks.generateStructured.mockResolvedValue(reading({ nameEn: "Noor Candles" }));
+    const { view } = await answerQuestion(CTX, build({ name: "نور" }), { type: "text", text: "اسم المتجر بالإنجليزي Noor Candles" });
+    expect(view.state.nameEn).toBe("Noor Candles");
+
+    mocks.generateStructured.mockResolvedValue({ object: { ...BRIEF, nameEn: "Nour" } });
+    const brief = await refreshBrief(CTX, build({ ...atBrief, nameEn: "Noor Candles" }));
+    expect(brief.view.state.brief?.nameEn).toBe("Noor Candles");
+    expect(mocks.generateStructured.mock.calls.at(-1)![0].content[0].text).toContain("Noor Candles");
+  });
+
+  it("stays on the card when the claim was used and credits aren't live yet", async () => {
+    mocks.claimFreeBuild.mockResolvedValue("already");
+    mocks.getBillingState.mockResolvedValue({ usdLive: false });
+    const { view, error } = await answerQuestion(CTX, build({ ...atBrief, brief: BRIEF }), { type: "chip", value: "confirm" });
+    expect(error).toBe("creditsNotLive");
+    expect(view.state.paid).toBe(false);
+    expect(view.state.briefConfirmed).toBe(false);
+    expect(mocks.saveBuild).not.toHaveBeenCalled();
+
+    mocks.getBillingState.mockRejectedValue(new Error("down"));
+    const failed = await answerQuestion(CTX, build({ ...atBrief, brief: BRIEF }), { type: "chip", value: "confirm" });
+    expect(failed.error).toBe("creditsNotLive");
   });
 
   it("runs on credits when the claim was already used", async () => {

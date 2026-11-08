@@ -187,6 +187,13 @@ export function numbersInText(value: string): number[] {
 
 const stated = (value: number | null, numbers: readonly number[]) => (value !== null && numbers.includes(value) ? value : null);
 
+/** The model's Latin store name, kept only when the seller wrote it (letters, digits, spaces, & . ' -; at most 40). */
+export function latinNameInText(nameEn: string | null, sellerText: string): string | null {
+  const name = (nameEn ?? "").replace(/\s+/g, " ").trim();
+  if (!name || name.length > 40 || !/^[A-Za-z0-9][A-Za-z0-9 &.'-]*$/.test(name) || !/[A-Za-z]/.test(name)) return null;
+  return sellerText.toLowerCase().replace(/\s+/g, " ").includes(name.toLowerCase()) ? name : null;
+}
+
 /**
  * The model's answer → the state. Defence on top of the prompt: a phone,
  * price or stock count is kept only when that number is in the seller's text,
@@ -228,6 +235,7 @@ export function mergeReading(state: BuilderState, output: BuilderChatOutput, sel
 
   return {
     ...state,
+    nameEn: state.nameEn ?? latinNameInText(output.nameEn, sellerText),
     industrySuggestion: state.industryId ? state.industrySuggestion : (matchIndustry(`${output.industryHint ?? ""} ${state.about ?? ""}`) ?? state.industrySuggestion),
     contact: {
       phone: state.contact.phone ?? inText(output.phone),

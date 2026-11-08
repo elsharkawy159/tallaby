@@ -212,8 +212,8 @@ describe.skipIf(!TEST_DATABASE_URL)("AI Store Builder (integration)", { timeout:
 
     // Spend comes from the usage rows.
     await db.insert(aiUsageLogs).values({ sellerId, feature: "store_builder_product", model: "mock", status: "ok", costMicroUsd: 1234 });
-    await expect(buildSpendMicroUsd(sellerId, done!.createdAt)).resolves.toBeGreaterThanOrEqual(1234);
+    await expect(buildSpendMicroUsd(sellerId, done!)).resolves.toBeGreaterThanOrEqual(1234);
     await db.insert(aiUsageLogs).values({ sellerId, feature: "product_autofill", model: "mock", status: "ok", costMicroUsd: 1_000_000 });
-    await expect(buildSpendMicroUsd(sellerId, done!.createdAt)).resolves.toBeLessThan(1_000_000);
+    await expect(buildSpendMicroUsd(sellerId, done!)).resolves.toBeLessThan(1_000_000);
   });
 });

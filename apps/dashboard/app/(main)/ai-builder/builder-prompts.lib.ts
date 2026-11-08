@@ -55,7 +55,7 @@ export const chatRequestText = (state: BuilderState, text: string) => `${stateSu
 export function briefRequestText(state: BuilderState): string {
   return [
     `INDUSTRY: ${state.industryId ?? "unknown"}`,
-    sellerInput(`Store name: ${state.name ?? ""}\nAbout: ${state.about ?? ""}`),
+    sellerInput(`Store name: ${state.name ?? ""}${state.nameEn ? `\nStore name in English (the seller's own): ${state.nameEn}` : ""}\nAbout: ${state.about ?? ""}`),
     state.briefNote ? `The seller asked to change the last brief:\n${sellerInput(state.briefNote, 400)}` : "",
   ]
     .filter(Boolean)

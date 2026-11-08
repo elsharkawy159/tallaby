@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { generateStructured } from "@workspace/ai";
 import { applyInvalidation, invalidateStorefront } from "@workspace/cache";
-import { and, asc, db, eq, inArray, isNull, or, products, sellers, sql, storePages, stores, templateInstalls } from "@workspace/db";
+import { and, asc, db, eq, inArray, isNull, or, products, sellers, sql, storePages, stores } from "@workspace/db";
 import { buildTemplateForm, getFormTemplate } from "@workspace/lib/store-forms";
 import { sendStoreCreatedEmail } from "@workspace/lib/orders";
 import { agentCreateProductSchema } from "@workspace/lib/products/agent";
@@ -72,38 +72,46 @@ const refresh = (subdomain: string) => applyInvalidation(invalidateStorefront([s
 
 // ── Store ───────────────────────────────────────────────────────────────────
 
-/** A store nothing has been done with: draft, never published, no template chosen. Used before making another. */
-async function findPristineStore(sellerId: string): Promise<string | null> {
-  for (const store of await listStores(sellerId)) {
-    if (store.status !== "active" || store.siteStatus !== "draft") continue;
-    const [installed] = await db
-      .select({ id: templateInstalls.id })
-      .from(templateInstalls)
-      .where(and(eq(templateInstalls.storeId, store.id), isNull(templateInstalls.undoneAt)))
-      .limit(1);
-    const [row] = await db.select({ firstPublishedAt: stores.firstPublishedAt }).from(stores).where(and(eq(stores.id, store.id), eq(stores.sellerId, sellerId))).limit(1);
-    if (!installed && !row?.firstPublishedAt) return store.id;
-  }
-  return null;
+/** The bound store, if it is still this seller's and was never published. The build only ever writes to such a store. */
+async function boundStore(sellerId: string, storeId: string): Promise<"ok" | "published" | "missing"> {
+  const [row] = await db
+    .select({ firstPublishedAt: stores.firstPublishedAt, siteStatus: stores.siteStatus })
+    .from(stores)
+    .where(and(eq(stores.id, storeId), eq(stores.sellerId, sellerId), isNull(stores.deletedAt)))
+    .limit(1);
+  if (!row) return "missing";
+  return row.firstPublishedAt || row.siteStatus !== "draft" ? "published" : "ok";
 }
 
 async function freeSubdomain(sellerId: string, state: BuilderState): Promise<string> {
-  const base = subdomainBase(state.brief?.nameEn, state.name) || `store-${randomUUID().slice(0, 6)}`;
+  const base = subdomainBase(state.brief?.nameEn || state.nameEn, state.name) || `store-${randomUUID().slice(0, 6)}`;
   const check = await checkStoreSubdomain(sellerId, base);
   if (check.status === "available") return check.subdomain;
   if (check.suggestions[0]) return check.suggestions[0];
   return `store-${randomUUID().slice(0, 8)}`;
 }
 
-async function ensureStore(ctx: RunContext, build: BuildRow): Promise<string> {
+/**
+ * The build's store: the one it is bound to (target_store_id, set at signup for a
+ * hero build or by an earlier attempt of this step), or a new one within the plan
+ * limit. Never another store of the seller's, guessed (v1 could overwrite one).
+ */
+export async function ensureStore(ctx: RunContext, build: BuildRow): Promise<string> {
   if (build.storeId) return build.storeId;
-  const pristine = await findPristineStore(ctx.sellerId);
-  if (pristine) return pristine;
+  if (build.targetStoreId) {
+    const bound = await boundStore(ctx.sellerId, build.targetStoreId);
+    if (bound === "published") throw new FatalBuildError("store_published");
+    if (bound === "missing") throw new FatalBuildError("no_store");
+    return build.targetStoreId;
+  }
   const created = await createStore(ctx.sellerId, { name: build.state.name ?? "", subdomain: await freeSubdomain(ctx.sellerId, build.state) });
   if (!created.success) {
     if (created.error === "limit_reached") throw new FatalBuildError("store_limit");
     throw new Error(`store_${created.error}`);
   }
+  // Bound at once, so a retry after a crash reuses this store instead of making another.
+  await saveBuild(ctx.sellerId, build.id, { targetStoreId: created.data.id });
+  build.targetStoreId = created.data.id;
   await sendStoreCreatedEmail(created.data.id);
   return created.data.id;
 }
@@ -188,14 +196,15 @@ async function draftPages(storeId: string): Promise<DraftPage[]> {
 
 const storeLocale = (store: { defaultLocale: string }) => (store.defaultLocale === "en" ? "en" : "ar");
 
-async function generateSiteCopy(ctx: RunContext, build: BuildRow): Promise<{ value: BuilderSiteCopyOutput; cached?: boolean }> {
+async function generateSiteCopy(ctx: RunContext, build: BuildRow): Promise<{ value: BuilderSiteCopyOutput; cached?: boolean; noCall?: boolean }> {
   const store = await requireStoreOf(ctx, build);
   const slots = collectCopySlots(await draftPages(store.id), storeLocale(store));
   // Nothing to write, so no call: treated like a cached answer, and no credit is kept.
-  if (!slots.length) return { value: { values: [] }, cached: true };
+  if (!slots.length) return { value: { values: [] }, cached: true, noCall: true };
   const { object, cached } = await generateStructured({
     feature: BUILDER_FEATURES.siteCopy,
     sellerId: ctx.sellerId,
+    refId: build.id,
     tier: "fast",
     schema: builderSiteCopyOutputSchema,
     system: SITE_COPY_SYSTEM_RULES,
@@ -230,9 +239,9 @@ async function photoBytes(sellerId: string, path: string) {
   return data.byteLength <= BUILDER_LIMITS.maxImageBytes ? { mediaType, size: data.byteLength, data } : null;
 }
 
-async function generateProduct(ctx: RunContext, product: BuilderProduct) {
+async function generateProduct(ctx: RunContext, build: BuildRow, product: BuilderProduct) {
   const images = (await Promise.all(product.photos.slice(0, BUILDER_LIMITS.photosPerProduct).map((path) => photoBytes(ctx.sellerId, path)))).filter((image) => image !== null);
-  const { output, cached } = await autofillProduct(ctx.sellerId, { text: productRequestText(product), images, pdf: null, current: null }, { feature: BUILDER_FEATURES.product });
+  const { output, cached } = await autofillProduct(ctx.sellerId, { text: productRequestText(product), images, pdf: null, current: null }, { feature: BUILDER_FEATURES.product, refId: build.id });
   return { value: output as unknown, cached };
 }
 
@@ -404,8 +413,9 @@ async function specFor(ctx: RunContext, build: BuildRow, key: string, items: Rea
       feature: null,
       apply: async () => {
         const storeId = await ensureStore(ctx, build);
-        await saveBuild(ctx.sellerId, build.id, { storeId });
+        await saveBuild(ctx.sellerId, build.id, { storeId, targetStoreId: storeId });
         build.storeId = storeId;
+        build.targetStoreId = storeId;
         return { data: { storeId } };
       },
     };
@@ -417,9 +427,12 @@ async function specFor(ctx: RunContext, build: BuildRow, key: string, items: Rea
       feature: BUILDER_FEATURES.siteCopy,
       generate: async () => {
         const generated = await generateSiteCopy(ctx, build);
-        await saveBuild(ctx.sellerId, build.id, { siteCopyRuns: build.siteCopyRuns + 1 });
-        build.siteCopyRuns += 1;
-        return generated;
+        // No slots means no call was made: that isn't a run of the seller's allowance.
+        if (!generated.noCall) {
+          await saveBuild(ctx.sellerId, build.id, { siteCopyRuns: build.siteCopyRuns + 1 });
+          build.siteCopyRuns += 1;
+        }
+        return { value: generated.value, cached: generated.cached };
       },
       apply: (generated) => applySiteCopy(ctx, build, generated as BuilderSiteCopyOutput),
     };
@@ -429,7 +442,7 @@ async function specFor(ctx: RunContext, build: BuildRow, key: string, items: Rea
     if (!product) return { feature: null, apply: async () => ({ status: "failed" }) };
     return {
       feature: BUILDER_FEATURES.product,
-      generate: () => generateProduct(ctx, product),
+      generate: () => generateProduct(ctx, build, product),
       apply: (generated) => applyProduct(ctx, build, product, generated as ProductAutofillOutput),
     };
   }
@@ -440,7 +453,7 @@ async function specFor(ctx: RunContext, build: BuildRow, key: string, items: Rea
       return {
         feature: BUILDER_FEATURES.shipping,
         generate: async () => {
-          const { zones, cached } = await proposeZones(ctx.sellerId, text, { feature: BUILDER_FEATURES.shipping });
+          const { zones, cached } = await proposeZones(ctx.sellerId, text, { feature: BUILDER_FEATURES.shipping, refId: build.id });
           return { value: zones, cached };
         },
         apply: async (generated) => saveZones(ctx, (await requireStoreOf(ctx, build)).id, generated as ProposedZone[]),
@@ -458,6 +471,7 @@ async function specFor(ctx: RunContext, build: BuildRow, key: string, items: Rea
         const { object, cached } = await generateStructured({
           feature: BUILDER_FEATURES.policies,
           sellerId: ctx.sellerId,
+          refId: build.id,
           tier: "fast",
           schema: builderPolicyOutputSchema,
           system: POLICY_SYSTEM_RULES,
@@ -479,6 +493,7 @@ async function specFor(ctx: RunContext, build: BuildRow, key: string, items: Rea
       const { object, cached } = await generateStructured({
         feature: BUILDER_FEATURES.review,
         sellerId: ctx.sellerId,
+        refId: build.id,
         tier: "fast",
         schema: builderReviewOutputSchema,
         system: REVIEW_SYSTEM_RULES,
@@ -584,7 +599,7 @@ export async function loadReview(ctx: RunContext, build: BuildRow): Promise<Buil
     draftProducts: list.filter((row) => row.status === "draft" && row.hasPhoto).length,
     regenerationsLeft: Math.max(0, 1 + BUILDER_LIMITS.siteCopyRegenerations - build.siteCopyRuns),
     otherStoresShowAll: allMode.length,
-    spentMicroUsd: await buildSpendMicroUsd(ctx.sellerId, build.createdAt),
+    spentMicroUsd: await buildSpendMicroUsd(ctx.sellerId, build),
   };
 }
 

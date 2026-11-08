@@ -8,6 +8,7 @@ import { Progress } from "@workspace/ui/components/progress";
 import { CheckRow, EmptyState, IconButton, Note, PageHeader, SellerButton, SellerCard, Tag, TextAction, TextArea, TextInput } from "@/components/seller-ui";
 import { STORE_INDUSTRIES } from "@/lib/stores/industries.lib";
 import { BuilderReviewPanel } from "./builder-review.client";
+import { syncField, type SyncedField } from "./builder-row.lib";
 import {
   BUILDER_LIMITS,
   OTHER_INDUSTRY,
@@ -551,6 +552,15 @@ function ProductsEditor({
   );
 }
 
+/** Local state for one field that follows the server's value, keeping what the seller is typing (syncField). */
+function useServerField<T>(server: T): [T, (value: T) => void] {
+  const [field, setField] = useState<SyncedField<T>>({ value: server, synced: server });
+  // Adjusting state while rendering when a prop changes (React's documented pattern): no extra render with stale values.
+  const next = syncField(field, server);
+  if (next !== field) setField(next);
+  return [next.value, (value) => setField((current) => ({ ...current, value }))];
+}
+
 function ProductRow({
   product,
   photoUrls,
@@ -569,11 +579,11 @@ function ProductRow({
   onUpload: (file: File, productId: string) => void;
 }) {
   const t = useTranslations("aiBuilder");
-  const [name, setName] = useState(product.name);
-  const [details, setDetails] = useState(product.details);
-  const [price, setPrice] = useState(product.price?.toString() ?? "");
-  const [stock, setStock] = useState(product.stock?.toString() ?? "");
-  const [unlimited, setUnlimited] = useState(product.unlimited);
+  const [name, setName] = useServerField(product.name);
+  const [details, setDetails] = useServerField(product.details);
+  const [price, setPrice] = useServerField(product.price?.toString() ?? "");
+  const [stock, setStock] = useServerField(product.stock?.toString() ?? "");
+  const [unlimited, setUnlimited] = useServerField(product.unlimited);
   const fileInput = useRef<HTMLInputElement>(null);
 
   const save = (patch: Partial<{ price: string; stock: string; unlimited: boolean }> = {}) => {

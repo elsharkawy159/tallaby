@@ -2650,6 +2650,8 @@ export const stores = pgTable("stores", {
 	schemaVersion: integer("schema_version").default(1).notNull(),
 	sharedHeader: jsonb("shared_header"),
 	sharedFooter: jsonb("shared_footer"),
+	/** The store's brand memory for the agent system (0157, F-83): voice, audience, style words, tagline, photo keywords. */
+	agentProfile: jsonb("agent_profile"),
 	/** Optimistic-concurrency counter for shared_header/shared_footer (0085). */
 	chromeVersion: integer("chrome_version").default(1).notNull(),
 	/** Set when an admin saves this store's site drafts (0085). */
@@ -3552,9 +3554,12 @@ export const aiUsageLogs = pgTable("ai_usage_logs", {
 	/** ok | error | blocked */
 	status: text().notNull(),
 	errorCode: text("error_code"),
+	/** What the call was for, e.g. the store build id (0157), so spend is summed per build. */
+	refId: uuid("ref_id"),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
 	index("ai_usage_logs_seller_feature_created_idx").using("btree", table.sellerId, table.feature, table.createdAt.desc()),
+	index("ai_usage_logs_ref_idx").using("btree", table.refId).where(sql`ref_id IS NOT NULL`),
 	foreignKey({
 			columns: [table.sellerId],
 			foreignColumns: [sellers.id],
@@ -4251,6 +4256,35 @@ export const agentRateWindows = pgTable("agent_rate_windows", {
 	check("agent_rate_windows_count_check", sql`count >= 0`),
 ]);
 
+/** A guest's hero-composer input kept 48 h before signup (0157, ROADMAP.md F-82). Server-only. */
+export const storeBuildIntakes = pgTable("store_build_intakes", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tokenHash: text("token_hash").notNull(),
+	prompt: text().default("").notNull(),
+	primaryColor: text("primary_color"),
+	logoPath: text("logo_path"),
+	filePath: text("file_path"),
+	fileSummary: jsonb("file_summary").default({}).notNull(),
+	/** ar | en */
+	locale: text().default("ar").notNull(),
+	ipHash: text("ip_hash"),
+	sellerId: uuid("seller_id"),
+	storeId: uuid("store_id"),
+	claimedAt: timestamp("claimed_at", { withTimezone: true, mode: 'string' }),
+	expiresAt: timestamp("expires_at", { withTimezone: true, mode: 'string' }).default(sql`(now() + interval '48 hours')`).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	unique("store_build_intakes_token_hash_key").on(table.tokenHash),
+	index("store_build_intakes_expires_idx").using("btree", table.expiresAt),
+	index("store_build_intakes_seller_idx").using("btree", table.sellerId),
+	index("store_build_intakes_ip_idx").using("btree", table.ipHash, table.createdAt),
+	foreignKey({ columns: [table.sellerId], foreignColumns: [sellers.id], name: "store_build_intakes_seller_id_fkey" }).onDelete("cascade"),
+	foreignKey({ columns: [table.storeId], foreignColumns: [stores.id], name: "store_build_intakes_store_id_fkey" }).onDelete("set null"),
+	check("store_build_intakes_prompt_check", sql`char_length(prompt) <= 1000`),
+	check("store_build_intakes_primary_color_check", sql`primary_color IS NULL OR primary_color ~ '^#[0-9a-fA-F]{6}$'`),
+	check("store_build_intakes_locale_check", sql`locale IN ('ar', 'en')`),
+]);
+
 /** The AI Store Builder's conversation and build (0141, ROADMAP.md F-54). Server-only. */
 export const storeBuilds = pgTable("store_builds", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
@@ -4264,6 +4298,13 @@ export const storeBuilds = pgTable("store_builds", {
 	siteCopyRuns: integer("site_copy_runs").default(0).notNull(),
 	stopReason: text("stop_reason"),
 	lockUntil: timestamp("lock_until", { withTimezone: true, mode: 'string' }),
+	/** The hero intake this build came from (0157). */
+	intakeId: uuid("intake_id"),
+	/** The store this build is bound to (0157); replaces the v1 pristine-store guess. */
+	targetStoreId: uuid("target_store_id"),
+	/** hero | dashboard (0157) */
+	source: text().default("dashboard").notNull(),
+	publishedAt: timestamp("published_at", { withTimezone: true, mode: 'string' }),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
@@ -4271,6 +4312,9 @@ export const storeBuilds = pgTable("store_builds", {
 	uniqueIndex("store_builds_one_open_idx").using("btree", table.sellerId).where(sql`status IN ('collecting', 'building')`),
 	foreignKey({ columns: [table.sellerId], foreignColumns: [sellers.id], name: "store_builds_seller_id_fkey" }).onDelete("cascade"),
 	foreignKey({ columns: [table.storeId], foreignColumns: [stores.id], name: "store_builds_store_id_fkey" }).onDelete("set null"),
+	foreignKey({ columns: [table.intakeId], foreignColumns: [storeBuildIntakes.id], name: "store_builds_intake_id_fkey" }).onDelete("set null"),
+	foreignKey({ columns: [table.targetStoreId], foreignColumns: [stores.id], name: "store_builds_target_store_id_fkey" }).onDelete("set null"),
+	check("store_builds_source_check", sql`source IN ('hero', 'dashboard')`),
 	check("store_builds_status_check", sql`status IN ('collecting', 'building', 'review', 'abandoned')`),
 	check("store_builds_chat_turns_check", sql`chat_turns >= 0`),
 	check("store_builds_site_copy_runs_check", sql`site_copy_runs >= 0`),

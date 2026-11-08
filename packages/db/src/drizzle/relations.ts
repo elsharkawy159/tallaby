@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { productCrossSells, productQuantityOffers, storeDiscountRules, storeBuilds, storeBuildItems, storeBuildClaims } from "./schema";
+import { productCrossSells, productQuantityOffers, storeDiscountRules, storeBuilds, storeBuildItems, storeBuildClaims, storeBuildIntakes } from "./schema";
 import { sellerCategoryProductPositions, oauthClients, agentGrants, oauthAuthCodes, agentTokens, agentToolCalls, agentRateWindows } from "./schema";
 import { stores, storeBlockedPhones, storeProducts, storeDesignSystems, storePages, storeSiteRevisions, templateInstalls, mediaFolders, mediaAssets, savedBlocks, storeForms, storeFormSubmissions, cmsCollections, cmsItems, cmsItemRevisions, storeIntegrations, storeShippingZones, storeSettingsAudit, sellerWalletTopUps, adminAuditLog, platformBlogPosts, sellerProductCategories, sellerProductBrands, adminNotifications, sellerNotifications, shipmentCarrierEvents, aiUsageLogs, featureRequests, featureRequestVotes, referralCommissions, referralPayouts, sellerWelcomeGifts, storeCheckoutLeads, storeCustomerNotes, sellerPushSubscriptions, sellerPushSettings, adminPushSubscriptions, stockMovements, storeStockSubscriptions, storeEmailCampaigns, storeEmailCampaignRecipients, storeEmailUnsubscribes, storeWinbackSends, storeAppRequests, storeAppInstalls, themeRequests } from "./schema";
 import { users, deliveries, shipments, orders, payments, paymentMethods, carts, categories, sellers, coupons, notifications, contacts, userAddresses, products, productVariants, refunds, returns, orderItems, shipmentItems, productQuestions, shippingAddresses, couponUsage, cartItems, reviews, returnItems, reviewVotes, searchLogs, sellerDocuments, sellerPayoutItems, sellerPayouts, reviewComments, userDevices, wishlistItems, wishlists, brands, productAnswers, userRewards, productTranslations, digitalProducts, digitalOrders, sellerCategories, sellerWallet, walletTransactions, digitalFiles, licenseKeys, digitalBundleItems, digitalAccessLogs, shippingProviders, shipmentBatches, shipmentBatchItems, userWallets, userWalletTransactions, walletTopUps, walletPayoutRequests, affiliates, affiliateCommissions } from "./schema";
@@ -1393,9 +1393,31 @@ export const storeBuildsRelations = relations(storeBuilds, ({one, many}) => ({
 	}),
 	store: one(stores, {
 		fields: [storeBuilds.storeId],
-		references: [stores.id]
+		references: [stores.id],
+		relationName: "storeBuilds_storeId_stores_id"
+	}),
+	targetStore: one(stores, {
+		fields: [storeBuilds.targetStoreId],
+		references: [stores.id],
+		relationName: "storeBuilds_targetStoreId_stores_id"
+	}),
+	intake: one(storeBuildIntakes, {
+		fields: [storeBuilds.intakeId],
+		references: [storeBuildIntakes.id]
 	}),
 	items: many(storeBuildItems),
+}));
+
+export const storeBuildIntakesRelations = relations(storeBuildIntakes, ({one, many}) => ({
+	seller: one(sellers, {
+		fields: [storeBuildIntakes.sellerId],
+		references: [sellers.id]
+	}),
+	store: one(stores, {
+		fields: [storeBuildIntakes.storeId],
+		references: [stores.id]
+	}),
+	builds: many(storeBuilds),
 }));
 
 export const storeBuildItemsRelations = relations(storeBuildItems, ({one}) => ({

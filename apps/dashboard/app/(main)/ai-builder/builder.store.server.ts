@@ -16,6 +16,8 @@ export type BuildRow = {
   id: string;
   sellerId: string;
   storeId: string | null;
+  /** The store this build is bound to (0157): set before the build writes to it, never guessed. */
+  targetStoreId: string | null;
   status: BuilderStatus;
   free: boolean;
   state: BuilderState;
@@ -29,6 +31,7 @@ const toRow = (row: typeof storeBuilds.$inferSelect): BuildRow => ({
   id: row.id,
   sellerId: row.sellerId,
   storeId: row.storeId,
+  targetStoreId: row.targetStoreId,
   status: row.status as BuilderStatus,
   free: row.free,
   state: parseBuilderState(row.state),
@@ -125,7 +128,7 @@ export async function startBuild(sellerId: string, initial: (state: BuilderState
 export async function saveBuild(
   sellerId: string,
   buildId: string,
-  patch: Partial<Pick<BuildRow, "state" | "status" | "chatTurns" | "siteCopyRuns" | "stopReason" | "storeId" | "free">>,
+  patch: Partial<Pick<BuildRow, "state" | "status" | "chatTurns" | "siteCopyRuns" | "stopReason" | "storeId" | "targetStoreId" | "free">>,
 ): Promise<void> {
   await db
     .update(storeBuilds)
@@ -193,12 +196,18 @@ export async function saveItem(buildId: string, item: BuildItem): Promise<void> 
 // Written out, so the planner can use the partial index from 0141.
 const BUILDER_ROWS = sql`${aiUsageLogs.feature} LIKE 'store_builder_%'`;
 
-/** Spent on this build: one open build per seller makes "since it started" exact. */
-export async function buildSpendMicroUsd(sellerId: string, since: string): Promise<number> {
+/**
+ * Spent on this build: every builder call writes the build id as ref_id (0157),
+ * so two builds never mix. Untagged rows (written before 0157's code) still
+ * count from the build's start, as before.
+ */
+export async function buildSpendMicroUsd(sellerId: string, build: Pick<BuildRow, "id" | "createdAt">): Promise<number> {
   const [row] = await db
-    .select({ value: sql<string>`coalesce(sum(${aiUsageLogs.costMicroUsd}), 0)` })
+    .select({
+      value: sql<string>`coalesce(sum(${aiUsageLogs.costMicroUsd}) FILTER (WHERE ${aiUsageLogs.refId} = ${build.id} OR ${aiUsageLogs.refId} IS NULL), 0)`,
+    })
     .from(aiUsageLogs)
-    .where(and(eq(aiUsageLogs.sellerId, sellerId), BUILDER_ROWS, gte(aiUsageLogs.createdAt, since)));
+    .where(and(eq(aiUsageLogs.sellerId, sellerId), BUILDER_ROWS, gte(aiUsageLogs.createdAt, build.createdAt)));
   return Number(row?.value ?? 0);
 }
 
@@ -211,6 +220,16 @@ async function platformSpendTodayMicroUsd(now = new Date()): Promise<number> {
   return Number(row?.value ?? 0);
 }
 
+/** True while the platform's free-build spend in the last 24 h is under its budget. False if it can't be read (fails closed). */
+export async function platformBudgetLeft(now = new Date()): Promise<boolean> {
+  try {
+    return (await platformSpendTodayMicroUsd(now)) < platformBudgetMicroUsd(process.env.AI_STORE_BUILDER_DAILY_BUDGET_USD);
+  } catch (error) {
+    console.error("[ai-builder] platform budget check failed", error instanceof Error ? error.message : error);
+    return false;
+  }
+}
+
 export type ModelGate = { ok: true; creditReference: string | null } | { ok: false; reason: "budget" | "dailyLimit" | "noCredits" | "failed" };
 
 /**
@@ -218,12 +237,15 @@ export type ModelGate = { ok: true; creditReference: string | null } | { ok: fal
  * cap, then a credit on a paid build (chat turns are free, capped). Fails closed:
  * if a check can't run, the call doesn't either.
  */
-export async function checkModelCall(build: Pick<BuildRow, "sellerId" | "createdAt" | "state">, feature: BuilderFeature): Promise<ModelGate> {
+export async function checkModelCall(build: Pick<BuildRow, "id" | "sellerId" | "createdAt" | "state">, feature: BuilderFeature): Promise<ModelGate> {
   const { sellerId } = build;
   const blocked = (reason: "budget" | "dailyLimit" | "noCredits") =>
-    logAiUsage({ sellerId, feature, model: modelIdForTier("fast"), status: "blocked", errorCode: reason }).then(() => ({ ok: false, reason }) as const);
+    logAiUsage({ sellerId, feature, model: modelIdForTier("fast"), status: "blocked", errorCode: reason, refId: build.id }).then(() => ({ ok: false, reason }) as const);
   try {
-    if (!canSpend(await buildSpendMicroUsd(sellerId, build.createdAt))) return blocked("budget");
+    if (!canSpend(await buildSpendMicroUsd(sellerId, build))) return blocked("budget");
+    // A build not paid by credits (the free build, and every call before the claim) spends the
+    // platform's money: its daily budget is checked on every call, not only at the claim.
+    if (!build.state.paid && !(await platformBudgetLeft())) return blocked("budget");
     const cap = await checkDailyCap(sellerId, feature, BUILDER_DAILY_CAPS[feature]);
     if (!cap.allowed) return blocked("dailyLimit");
     if (!build.state.paid || feature === "store_builder_chat") return { ok: true, creditReference: null };
@@ -253,13 +275,7 @@ export type FreeClaim = "claimed" | "already" | "phoneUsed" | "ipLimit" | "platf
  * budget new free builds wait, and if the budget can't be read they wait too.
  */
 export async function claimFreeBuild(input: { sellerId: string; buildId: string; phone: string | null; ip: string | null }, now = new Date()): Promise<FreeClaim> {
-  let budgetOk = false;
-  try {
-    budgetOk = (await platformSpendTodayMicroUsd(now)) < platformBudgetMicroUsd(process.env.AI_STORE_BUILDER_DAILY_BUDGET_USD);
-  } catch (error) {
-    console.error("[ai-builder] platform budget check failed", error instanceof Error ? error.message : error);
-  }
-  if (!budgetOk) return "platformBusy";
+  if (!(await platformBudgetLeft(now))) return "platformBusy";
 
   const ipHash = input.ip ? hashIp(input.ip) : null;
   const since = new Date(now.getTime() - 24 * 60 * 60_000).toISOString();
