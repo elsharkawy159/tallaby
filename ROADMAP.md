@@ -1171,7 +1171,7 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 **Why:** A visitor should go from one sentence (or a sentence plus a product file, logo and colour) on the tallaby.com homepage to a published, branded store with their products, in minutes.
 **What:** Design in `docs/superpowers/specs/2026-11-08-ai-store-builder-v2-design.md`. A Claude/ChatGPT-style composer in the hero (prompt, file, logo, colour); input kept for 48 h through signup with no model call; one intake call reads everything; question cards (≤ 3 per round, choices with a recommended option) ask only for what is missing; 3 different templates shown already wearing the brand; palette from the primary colour (code); products through the file importer (`products/add/from-file`); quality gates; the site and complete products are **published** at the end (replaces F-54's "only the seller publishes", decision D1). Estimated $0.03–0.06 per store (v1 estimate $0.12). Builds on F-54 and on the agent core (F-83).
-**Status:** [Planned] 2026-11-08, design written, waiting for owner decisions D1–D9.
+**Status:** [Planned] 2026-11-08, design written. **Owner approved (2026-11-08):** D1 the main agent publishes the website and products directly (the store is visible to its owner only until activation, F-76), D2 the flow, D3 publish even with 0 products, D5 limits, D9 hero composer, D13 a Lovable-style dashboard page (chat on the left, website preview on the right). Still open: D4 (photo-less products live?), D6–D8, D10–D12.
 
 - **F-82a · P1 · deps: —** Owner approves the design and decisions D1–D9.
 - **F-82b · P1 · deps: —** v1 fixes: bound target store (no `findPristineStore` guess), stale product rows, keep `nameEn`, spend by build id, credit check on `already`, platform budget per call, no regeneration count without a call.
@@ -1181,7 +1181,7 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 - **F-82f · P1 · deps: F-82e** Products from a file inside the build (reuse `from-file`), inline fix table.
 - **F-82g · P1 · deps: —** `derivePaletteFromPrimary` with a contrast guard; logo colours read in the browser.
 - **F-82h · P1 · deps: F-82g** Template style tags and `needs` for all templates, shortlist v2, brand-wearing previews (signed token).
-- **F-82i · P1 · deps: F-82e** Chat UI v2: two panes with live preview, composer, activity rows, question cards, phone layout, done card.
+- **F-82i · P1 · deps: F-82e** Chat UI v2, Lovable-style (owner): chat on the left, live website preview on the right, composer, activity rows, question cards, phone layout, done card.
 - **F-82j · P1 · deps: F-82f, F-82h** Build v2 items (`brand`, `categories`, `products_file`, `checks`, `publish`) and quality gates.
 - **F-82k · P2 · deps: F-82j** Admin AI usage labels and funnel counts.
 - **F-82l · P1 · deps: F-82j** Live test (3 stores), cost per store, fast vs smart copy test, phone E2E; log in `PLAN.md` §23.
@@ -1603,6 +1603,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 - **Found in the code:** the hero has no prompt input; nothing can hold guest input through signup; the marketing Google signup drops the intent; the old spreadsheet import splits image URLs on `.` and knows only English headers (the `from-file` importer has neither problem, so the plan uses it); templates have no style tags; nothing derives a palette from one colour or a logo; v1's `findPristineStore` can overwrite another empty store; builder spend is summed by time, not by build.
 - **Plan:** hero composer → 48 h intake (no model call before signup) → one intake call → at most 4 rounds of question cards → 3 brand-wearing templates → build with palette, products from the file, quality gates → site and complete products published (F-76 private until activation still applies). Estimated $0.03–0.06 per store. F-83: one agent core with skills, each also a page agent, sharing its tools with MCP.
 - **Waiting for the owner:** decisions D1–D12 (spec §12). Migration `0157` is planned, not written.
+- **Owner answers (2026-11-08, same day):** D1 approved ("publish products and website directly from the main AI Agent as the website will be accessible by the owner only so it's okay, even if it has 0 products"), so D3 publishes with 0 products too; D5 "it's okay"; D9 "Yes"; the flow agreed (D2); new D13: "a page on the dashboard … like Lovable design UI, best UX, chat on the left and the website preview on the right" (spec §10). Open: D4, D6–D8, D10–D12.
 
 ### 2026-11-08 — F-63d order confirmation email in every plan (owner request)
 

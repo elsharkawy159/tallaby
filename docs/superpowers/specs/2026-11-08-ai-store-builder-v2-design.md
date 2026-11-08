@@ -84,7 +84,7 @@ Code builds at most **3 questions per card**, only for missing or low-confidence
 |---|---|---|
 | 1. About the brand | something is missing | Store name (3 AI ideas + "Other"), category (code's top 3 industries, recommended first), style (chips from `styleWords` + template style tags: فخم، عصري، دافئ، بسيط، مرح), colour (logo colours / "use the template's colours" / picker) |
 | 2. Design | always | The 3 templates (§5), shown already wearing the brand |
-| 3. Products | no file and no products yet | "Upload a file" (recommended), "Add by photos" (v1's photo form, up to 25), "Type a few now", "Start without products" (see decision D3). If the file has problems: an inline table card for rows missing a price or stock ("3 products have no price") |
+| 3. Products | no file and no products yet | "Upload a file" (recommended), "Add by photos" (v1's photo form, up to 25), "Type a few now", "Start without products" (allowed, D3: the store is still published). If the file has problems: an inline table card for rows missing a price or stock ("3 products have no price") |
 | 4. Selling | always, one card | Shipping (chips `tallaby_rates` recommended, `cairo_giza`, `egypt_flat` + price, or describe it), returns (14 days recommended, 7, 3, none, or describe), WhatsApp number if different from the signup phone |
 
 Then a short summary card with **"ابنِ وانشر متجري"**. Pressing it is the seller's consent to publish (decision D1).
@@ -154,7 +154,7 @@ Before `publish` (code, no cost):
 - Contrast check from §6.1.
 - Every link points inside the store.
 
-**A product goes live** only if it has a price, a stock answer (or unlimited, F-51), at least one photo, and a strong category match (existing `matchCategory` / `nextProductStatus` rules). Others stay drafts and appear in the to-do list with an inline fix (add a photo, add a price). Live products also show on the marketplace, as every live product does (no product approval, owner 2026-10-19).
+**Products are published directly by the agent (D1, owner 2026-11-08).** A product with no price stays draft, since it can't be sold. Whether a product with no photo goes live is open (D4; today `nextProductStatus` keeps it draft). A weak category match doesn't block publishing; it goes on the to-do list. Every draft appears in the to-do list with an inline fix (add a price, add a photo). **Zero products is fine (D3):** the site is published, product sections with nothing to show are hidden, and "Add your first product" leads the to-do list. Live products also show on the marketplace, as every live product does (no product approval, owner 2026-10-19).
 
 **Not-yet-activated seller (F-76):** the site is published, but only the seller's browser sees it, through the owner pass. The done card says so and shows the activation step (top up). Everyone else sees the store-offline page until then. Nothing about F-76 changes.
 
@@ -170,7 +170,9 @@ Before `publish` (code, no cost):
 
 Route `dashboard /ai-builder` (full-screen, outside the dashboard sidebar), Arabic first, RTL.
 
-- **Layout, desktop:** conversation column (about 460 px) + **live preview pane** (the store's draft preview iframe; phone / desktop toggle; "Open in new tab"). Before the template is chosen, the pane shows the 3 brand previews.
+**Owner, 2026-11-08: designed like Lovable, chat on the left and the website preview on the right, best UX.** The two panes keep these sides in Arabic too (the owner's layout); the text inside each pane is RTL as usual.
+
+- **Layout, desktop (Lovable-style):** a slim top bar (store name, build status, device toggle, "Open store", "Edit in builder"); **chat on the left** (about 420–480 px, resizable with a drag handle); **live preview on the right** filling the rest (the store's preview iframe in a browser-like frame with the store address; phone / tablet / desktop toggle; refresh; "Open in new tab"). Before the template is chosen, the right pane shows the 3 brand previews side by side; clicking one fills the pane. While building, the preview reloads after each step with a soft shimmer over the parts being written.
 - **Layout, phone:** chat full screen; a floating "شاهد متجرك" pill opens the preview as a sheet.
 - **Messages:** the seller's in a soft bubble; the assistant's as plain text with the طلبي mark, no bubble. Assistant text appears with a short reveal animation (client-side; off with `prefers-reduced-motion`). True token streaming isn't needed: model output is structured and never shown raw.
 - **Activity rows** (like Claude's tool steps): "قرأت ملفك: 42 منتج" ✓, "اخترت 3 تصاميم تناسب عطورك" ✓, "كتبت نصوص الموقع" ✓, "أضفت 30 من 42 منتج…" with a live count. Collapsible details.
@@ -204,15 +206,16 @@ v1's typical store was estimated at $0.12. The saving comes from the file import
 
 | # | Decision | Recommendation |
 |---|---|---|
-| D1 | The builder publishes the site and complete products at the end. This replaces v1's "only the seller publishes". The "Build and publish" button is the seller's consent | **Yes**, only for the build's own store and only if it was never published (`onlyIfNeverPublished`) |
-| D2 | Guest input is stored for 48 h before signup, with no model call | **Yes** |
-| D3 | A store with zero products | Ask once with "Upload a file" recommended; if the seller insists, publish with product sections hidden and "Add your first product" as the top to-do. Never show demo products |
-| D4 | Products missing a photo, price or stock stay drafts | **Yes** (existing rule), fixed inline from the to-do list |
-| D5 | Free limits v2 (§11) | 150 file products, 25 photo products, $0.40 stop |
+| D1 | The main agent publishes the site and the products directly at the end. This replaces v1's "only the seller publishes". The "Build and publish" button is the seller's consent | **Approved (owner, 2026-11-08):** "publish products and website directly from the main AI Agent, as the website will be accessible by the owner only" (F-76 keeps it private until activation). Only for the build's own store, only if it was never published (`onlyIfNeverPublished`) |
+| D2 | Guest input is stored for 48 h before signup, with no model call | **Approved** (owner agreed to the flow, 2026-11-08) |
+| D3 | A store with zero products | **Approved (owner, 2026-11-08): publish it anyway.** Product sections with nothing to show are hidden (never demo products), and "Add your first product" is the top to-do |
+| D4 | Products without a photo (the existing `nextProductStatus` rule keeps them draft) | **Open.** D1 publishes products directly; a product with no price can't be sold and stays draft. Ask the owner whether photo-less products also go live from the builder |
+| D5 | Free limits v2 (§11) | **Approved (owner, 2026-11-08):** 150 file products, 25 photo products, $0.40 stop |
 | D6 | Site copy model | `fast` unless the blind test (F-82l) shows `smart` is clearly better |
 | D7 | Hero and about photos | Phase 1: the template's photos. Phase 2: Pexels from `photoKeywordsEn` (free, `searchStockPhotos`), the seller can swap |
 | D8 | Default returns choice | 14 days recommended (check against Egypt's consumer law before launch) |
-| D9 | Hero composer replaces the hero signup button | **Yes**; keep "or create your store yourself" as a small link |
+| D9 | Hero composer replaces the hero signup button | **Approved (owner, 2026-11-08)**; keep "or create your store yourself" as a small link |
+| D13 | Builder page design | **Owner, 2026-11-08:** a dashboard page designed like Lovable: chat on the left, live website preview on the right, best UX (§10) |
 | D10 | The agent system (§14): one core with skills, each also a page agent | **Yes**; build the core first with the builder's skills, then page agents |
 | D11 | Credits for page agents | 0 for questions and reading (capped), 1 per confirmed write action |
 | D12 | Actions the agent may never do | Wallet, top-ups, payouts, plan changes, deleting a store or account, handling secrets |
