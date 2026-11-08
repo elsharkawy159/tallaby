@@ -154,7 +154,7 @@ Before `publish` (code, no cost):
 - Contrast check from §6.1.
 - Every link points inside the store.
 
-**Products are published directly by the agent (D1, owner 2026-11-08).** A product with no price stays draft, since it can't be sold. Whether a product with no photo goes live is open (D4; today `nextProductStatus` keeps it draft). A weak category match doesn't block publishing; it goes on the to-do list. Every draft appears in the to-do list with an inline fix (add a price, add a photo). **Zero products is fine (D3):** the site is published, product sections with nothing to show are hidden, and "Add your first product" leads the to-do list. Live products also show on the marketplace, as every live product does (no product approval, owner 2026-10-19).
+**Products are published directly by the agent (D1, owner 2026-11-08).** A product with no price stays draft, since it can't be sold. A product missing a photo or a stock answer also stays draft until the seller fills it in (D4, owner 2026-11-08). A weak category match doesn't block publishing; it goes on the to-do list. Every draft appears in the to-do list with an inline fix (add a price, add a photo). **Zero products is fine (D3):** the site is published, product sections with nothing to show are hidden, and "Add your first product" leads the to-do list. Live products also show on the marketplace, as every live product does (no product approval, owner 2026-10-19).
 
 **Not-yet-activated seller (F-76):** the site is published, but only the seller's browser sees it, through the owner pass. The done card says so and shows the activation step (top up). Everyone else sees the store-offline page until then. Nothing about F-76 changes.
 
@@ -209,16 +209,18 @@ v1's typical store was estimated at $0.12. The saving comes from the file import
 | D1 | The main agent publishes the site and the products directly at the end. This replaces v1's "only the seller publishes". The "Build and publish" button is the seller's consent | **Approved (owner, 2026-11-08):** "publish products and website directly from the main AI Agent, as the website will be accessible by the owner only" (F-76 keeps it private until activation). Only for the build's own store, only if it was never published (`onlyIfNeverPublished`) |
 | D2 | Guest input is stored for 48 h before signup, with no model call | **Approved** (owner agreed to the flow, 2026-11-08) |
 | D3 | A store with zero products | **Approved (owner, 2026-11-08): publish it anyway.** Product sections with nothing to show are hidden (never demo products), and "Add your first product" is the top to-do |
-| D4 | Products without a photo (the existing `nextProductStatus` rule keeps them draft) | **Open.** D1 publishes products directly; a product with no price can't be sold and stays draft. Ask the owner whether photo-less products also go live from the builder |
+| D4 | Products missing required data | **Approved (owner, 2026-11-08): keep them draft until the seller fills the required product data** (price, stock answer, photo: the existing `nextProductStatus` rule). Each one is on the to-do list with an inline fix; it goes live once complete |
 | D5 | Free limits v2 (§11) | **Approved (owner, 2026-11-08):** 150 file products, 25 photo products, $0.40 stop |
-| D6 | Site copy model | `fast` unless the blind test (F-82l) shows `smart` is clearly better |
-| D7 | Hero and about photos | Phase 1: the template's photos. Phase 2: Pexels from `photoKeywordsEn` (free, `searchStockPhotos`), the seller can swap |
-| D8 | Default returns choice | 14 days recommended (check against Egypt's consumer law before launch) |
+| D6 | Site copy model | **Approved (owner, 2026-11-08): the cheaper `fast` model.** F-82l still logs its cost and quality |
+| D7 | Hero and about photos | **Approved (owner, 2026-11-08): use Pexels photos** from `photoKeywordsEn` (free, `searchStockPhotos`), no people or body-part photos (template rule), the seller can swap; the template's photo stays if no good match |
+| D8 | Default returns choice | **Approved (owner, 2026-11-08): 14 days recommended** (check the wording against Egypt's consumer law before launch) |
 | D9 | Hero composer replaces the hero signup button | **Approved (owner, 2026-11-08)**; keep "or create your store yourself" as a small link |
 | D13 | Builder page design | **Owner, 2026-11-08:** a dashboard page designed like Lovable: chat on the left, live website preview on the right, best UX (§10) |
-| D10 | The agent system (§14): one core with skills, each also a page agent | **Yes**; build the core first with the builder's skills, then page agents |
-| D11 | Credits for page agents | 0 for questions and reading (capped), 1 per confirmed write action |
-| D12 | Actions the agent may never do | Wallet, top-ups, payouts, plan changes, deleting a store or account, handling secrets |
+| D10 | The agent system (§14): one core with skills, each also a page agent | **Approved (owner, 2026-11-08)**: build the core first with the builder's skills, then page agents |
+| D11 | Credits for page agents | **Approved (owner, 2026-11-08)**: 0 for questions and reading (capped), 1 per confirmed write action |
+| D12 | Actions the agent may never do | **Approved (owner, 2026-11-08)**: wallet, top-ups, payouts, plan changes, deleting a store or account, handling secrets |
+
+**All decisions D1–D13 are made (2026-11-08).** F-82a is done; building can start with F-82b, F-82g and F-83a.
 
 ## 13. Tasks (ROADMAP.md F-82)
 
