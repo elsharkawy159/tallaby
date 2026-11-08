@@ -38,6 +38,12 @@ describe("signup intent token", () => {
     }
   });
 
+  it("carries the hero intake (F-82d) when both parts are there", () => {
+    const withIntake = { ...intent, intakeId: "4b6f2a1e-8c3d-4e5f-9a0b-1c2d3e4f5a6b", intakeToken: "A".repeat(43) };
+    expect(verifySignupIntent(signSignupIntent(withIntake, SECRET, NOW), SECRET, NOW)).toEqual(withIntake);
+    expect(verifySignupIntent(signSignupIntent({ ...intent, intakeId: "x" }, SECRET, NOW), SECRET, NOW)).toEqual(intent);
+  });
+
   it("refuses to sign or verify with a short secret", () => {
     expect(() => signSignupIntent(intent, "short", NOW)).toThrow();
     expect(verifySignupIntent("a.b", "short", NOW)).toBeNull();

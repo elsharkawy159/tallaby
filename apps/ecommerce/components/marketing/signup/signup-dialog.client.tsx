@@ -13,9 +13,10 @@ import { trackSignupComplete } from "@/lib/meta/meta.client";
 import { createClient } from "@/supabase/client";
 import { useSlugCheck, type SlugState } from "./slug-check.client";
 import { resendSignupConfirmation, signUpWithEmail, startGoogleSignup } from "./signup.server";
-import { EGYPT_MOBILE, type SignupErrorKey, type SignupResult } from "./signup.dto";
+import { EGYPT_MOBILE, type SignupErrorKey, type SignupIntakeRef, type SignupResult } from "./signup.dto";
 
-type SignupContextValue = { openSignup: (slug?: string) => void };
+/** `intake`: the hero composer's saved brief (F-82d), claimed by the new account. */
+type SignupContextValue = { openSignup: (slug?: string, intake?: SignupIntakeRef | null) => void };
 
 const SignupContext = React.createContext<SignupContextValue | null>(null);
 
@@ -37,10 +38,12 @@ export function SignupProvider({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = React.useState(false);
   const [initialSlug, setInitialSlug] = React.useState("");
   const [initialError, setInitialError] = React.useState<SignupErrorKey | null>(null);
+  const [intake, setIntake] = React.useState<SignupIntakeRef | null>(null);
   const [session, setSession] = React.useState(0);
 
-  const openSignup = React.useCallback((slug?: string) => {
+  const openSignup = React.useCallback((slug?: string, nextIntake?: SignupIntakeRef | null) => {
     setInitialSlug(slug ? slugify(slug) : "");
+    setIntake(nextIntake ?? null);
     setInitialError(null);
     setSession((n) => n + 1);
     setOpen(true);
@@ -72,21 +75,29 @@ export function SignupProvider({ children }: { children: React.ReactNode }) {
       {children}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent closeLabel={t("close")} className="max-h-[calc(100vh-32px)] overflow-auto rounded-[20px] p-[26px] sm:max-w-[440px] sm:p-8">
-          {open ? <SignupForm key={session} initialSlug={initialSlug} initialError={initialError} /> : null}
+          {open ? <SignupForm key={session} initialSlug={initialSlug} initialError={initialError} intake={intake} /> : null}
         </DialogContent>
       </Dialog>
     </SignupContext.Provider>
   );
 }
 
-type Step = { kind: "form" } | { kind: "confirm"; email: string } | { kind: "done"; subdomain: string };
+type Step = { kind: "form" } | { kind: "confirm"; email: string } | { kind: "done"; subdomain: string; builderUrl?: string };
 
 const inputBox =
   "flex h-12 items-center overflow-hidden rounded-[10px] border bg-white transition-[border-color,box-shadow] focus-within:border-teal-700 focus-within:ring-[3px] focus-within:ring-teal-700/12";
 // 16px on phones so iOS Safari does not zoom in when a field gets focus.
 const inputEl = "h-full min-w-0 flex-1 bg-transparent px-3.5 text-base outline-none sm:text-[15px]";
 
-function SignupForm({ initialSlug, initialError }: { initialSlug: string; initialError: SignupErrorKey | null }) {
+function SignupForm({
+  initialSlug,
+  initialError,
+  intake,
+}: {
+  initialSlug: string;
+  initialError: SignupErrorKey | null;
+  intake: SignupIntakeRef | null;
+}) {
   const t = useTranslations("signup");
   const [step, setStep] = React.useState<Step>({ kind: "form" });
   const [slug, setSlug] = React.useState(initialSlug);
@@ -135,7 +146,7 @@ function SignupForm({ initialSlug, initialError }: { initialSlug: string; initia
       if (result.signupEvent) {
         trackSignupComplete(result.signupEvent.id, result.signupEvent.method);
       }
-      setStep({ kind: "done", subdomain: result.subdomain });
+      setStep({ kind: "done", subdomain: result.subdomain, builderUrl: result.builderUrl });
     }
     else if (result.status === "confirm_email") setStep({ kind: "confirm", email: email.trim() });
     else if (result.status === "error") setFormError(result.error);
@@ -147,15 +158,29 @@ function SignupForm({ initialSlug, initialError }: { initialSlug: string; initia
     setFormError(null);
     if (!formValid()) return;
     startTransition(async () => {
-      handleResult(await signUpWithEmail({ subdomain: slug, phone, email: email.trim(), password }));
+      handleResult(await signUpWithEmail({ subdomain: slug, phone, email: email.trim(), password }, intake));
     });
   };
 
-  // Google signs in only; the callback sends the user to the dashboard to create the store.
+  // With a valid address and phone typed, the callback creates the store with
+  // them (else the dashboard asks); a hero intake (F-82d) needs both first.
   const onGoogle = async () => {
     setFormError(null);
+    if (intake) {
+      setTouched(true);
+      if (!slug) setSlugState({ kind: "local", message: "required" });
+      const firstBad = [
+        [Boolean(slug) && slugOk, slugRef],
+        [phoneOk, phoneRef],
+      ].find(([ok]) => !ok) as [boolean, React.RefObject<HTMLInputElement | null>] | undefined;
+      if (firstBad) {
+        firstBad[1].current?.focus();
+        setFormError("googleNeedsStore");
+        return;
+      }
+    }
     setGooglePending(true);
-    const result = await startGoogleSignup();
+    const result = await startGoogleSignup(slug && slugOk && phoneOk ? { subdomain: slug, phone } : null, intake);
     if (result.status !== "ok") {
       setGooglePending(false);
       handleResult(result);
@@ -187,9 +212,15 @@ function SignupForm({ initialSlug, initialError }: { initialSlug: string; initia
           </span>
         </DialogDescription>
         <div className="grid gap-2">
-          <CtaButton asChild className="w-full rounded-xl">
-            <a href={`${DASHBOARD_URL}products/add`}>{t("addProduct")}</a>
-          </CtaButton>
+          {step.builderUrl ? (
+            <CtaButton asChild className="w-full rounded-xl">
+              <a href={step.builderUrl}>{t("continueBuilder")}</a>
+            </CtaButton>
+          ) : (
+            <CtaButton asChild className="w-full rounded-xl">
+              <a href={`${DASHBOARD_URL}products/add`}>{t("addProduct")}</a>
+            </CtaButton>
+          )}
           <CtaButton asChild tone="outline" className="w-full rounded-xl">
             <a href={`${DASHBOARD_URL}?welcome=1`}>{t("goDashboard")}</a>
           </CtaButton>

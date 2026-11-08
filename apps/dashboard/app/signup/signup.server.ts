@@ -97,7 +97,7 @@ export async function signUpWithEmail(input: EmailSignupInput, next?: string | n
     email: parsed.data.email,
     password: parsed.data.password,
     options: {
-      emailRedirectTo: `${siteUrl(origin)}/api/auth/callback?next=${afterSignupPath(next) ?? "/"}`,
+      emailRedirectTo: `${siteUrl(origin)}/api/auth/callback?next=${encodeURIComponent(afterSignupPath(next) ?? "/")}`,
       // Pre-fills step 2 even when the email is confirmed in another browser.
       data: Object.keys(meta).length ? meta : undefined,
     },

@@ -5,12 +5,21 @@ import { signupEventId } from "@workspace/lib/integrations";
 import { REFERRAL_COOKIE, normalizeReferralCode } from "@workspace/lib/referrals";
 import { signupInputSchema } from "@workspace/lib/sellers";
 import { checkStoreSubdomain } from "@workspace/lib/stores/server";
+import { isStoreBuildIntakeOpen } from "@workspace/lib/store-builds/server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
 import { SITE_URL } from "@/lib/marketing/site.lib";
 import { createClient } from "@/supabase/server";
-import { completeSignup } from "./signup-complete.server";
+import { builderUrlFor, completeSignup } from "./signup-complete.server";
 import { clearSignupIntentCookie, setSignupIntentCookie } from "./signup-intent.server";
-import { emailSignupSchema, type EmailSignupInput, type SignupErrorKey, type SignupResult, type StoreChoiceInput } from "./signup.dto";
+import type { SignupIntent } from "./signup-intent.lib";
+import {
+  emailSignupSchema,
+  type EmailSignupInput,
+  type SignupErrorKey,
+  type SignupIntakeRef,
+  type SignupResult,
+  type StoreChoiceInput,
+} from "./signup.dto";
 
 /**
  * Seller signup from the marketing site (PLAN.md §6). Same flow and checks as
@@ -42,14 +51,25 @@ async function checkChoice(input: StoreChoiceInput) {
   return { ok: true as const, intent: parsed.data };
 }
 
+/**
+ * The hero composer intake (F-82d) joins the signup only when its token opens
+ * an unclaimed, unexpired intake; a bad one is dropped, never an error.
+ */
+async function withIntake(intent: StoreChoiceInput, intake: SignupIntakeRef | null | undefined): Promise<SignupIntent> {
+  if (!intake) return intent;
+  const open = await isStoreBuildIntakeOpen(intake).catch(() => false);
+  return open ? { ...intent, intakeId: intake.intakeId, intakeToken: intake.token } : intent;
+}
+
 /** Email + password. Creates the store now if Supabase returns a session, else after confirmation. */
-export async function signUpWithEmail(input: EmailSignupInput): Promise<SignupResult> {
+export async function signUpWithEmail(input: EmailSignupInput, intake?: SignupIntakeRef | null): Promise<SignupResult> {
   if (!signupLimiter.check(await clientKey())) return fail("rateLimited");
   const parsed = emailSignupSchema.safeParse(input);
   if (!parsed.success) return fail("invalidInput");
 
   const choice = await checkChoice(parsed.data);
   if (!choice.ok) return fail(choice.error);
+  const intent = await withIntake(choice.intent, intake);
 
   const supabase = await createClient();
   // Keeps the affiliate link (F-37) when the email is confirmed in another browser.
@@ -60,7 +80,13 @@ export async function signUpWithEmail(input: EmailSignupInput): Promise<SignupRe
     options: {
       // This site handles the confirmation link (it holds the intent cookie).
       emailRedirectTo: `${(await headers()).get("origin") ?? SITE_URL}/api/auth/signup-callback`,
-      data: { signup_subdomain: choice.intent.subdomain, phone: choice.intent.phone, ...(ref ? { signup_ref: ref } : {}) },
+      data: {
+        signup_subdomain: intent.subdomain,
+        phone: intent.phone,
+        ...(ref ? { signup_ref: ref } : {}),
+        // Confirmation may happen in another browser, without the cookie.
+        ...(intent.intakeId ? { store_build_intake: { id: intent.intakeId, token: intent.intakeToken } } : {}),
+      },
     },
   });
   if (error) {
@@ -73,19 +99,20 @@ export async function signUpWithEmail(input: EmailSignupInput): Promise<SignupRe
   if (data.user && data.user.identities?.length === 0) return fail("emailTaken");
 
   try {
-    await setSignupIntentCookie(choice.intent);
+    await setSignupIntentCookie(intent);
   } catch (e) {
     console.error("[marketing signup] cannot sign intent cookie (SIGNUP_INTENT_SECRET?)", e);
   }
 
   if (!data.session || !data.user) return { status: "confirm_email" };
-  const done = await completeSignup(data.user, choice.intent);
+  const done = await completeSignup(data.user, intent);
   if (!done.success) return fail(done.error === "taken" ? "subdomainTaken" : "generic");
   return {
     status: "done",
     storeUrl: done.storeUrl!,
     subdomain: done.data.subdomain,
     signupEvent: done.signup ? { id: signupEventId(data.user.id), method: done.signup } : undefined,
+    builderUrl: done.intakeId ? builderUrlFor(done.intakeId) : undefined,
   };
 }
 
@@ -112,12 +139,32 @@ export async function resendSignupConfirmation(email: string): Promise<{ error: 
 }
 
 /**
- * Google only signs the user in; the store is chosen afterwards in the
- * dashboard signup (the callback finds no intent and sends the user there).
- * Clears any intent left by an earlier email attempt so it isn't reused.
+ * Before the Google redirect. When the dialog already holds a valid store
+ * address and phone, they (and the hero intake, F-82d) go into the signed
+ * intent cookie, so the callback creates the store and claims the intake.
+ * Before F-82d this always cleared the cookie and lost both. With nothing
+ * typed, any older intent is cleared and the dashboard signup asks for the
+ * store, as before. A hero intake needs the address and phone first, so it
+ * can't be lost on the way.
  */
-export async function startGoogleSignup(): Promise<SignupResult> {
+export async function startGoogleSignup(
+  choice?: Partial<StoreChoiceInput> | null,
+  intake?: SignupIntakeRef | null,
+): Promise<SignupResult> {
   if (!signupLimiter.check(await clientKey())) return fail("rateLimited");
-  await clearSignupIntentCookie();
+  const typed = Boolean(choice?.subdomain || choice?.phone || intake);
+  const checked = typed
+    ? await checkChoice({ subdomain: String(choice?.subdomain ?? ""), phone: String(choice?.phone ?? "") })
+    : null;
+  if (!checked?.ok) {
+    if (intake && checked) return fail(checked.error);
+    await clearSignupIntentCookie();
+    return { status: "ok" };
+  }
+  try {
+    await setSignupIntentCookie(await withIntake(checked.intent, intake));
+  } catch (e) {
+    console.error("[marketing signup] cannot sign intent cookie (SIGNUP_INTENT_SECRET?)", e);
+  }
   return { status: "ok" };
 }

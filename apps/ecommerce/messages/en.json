@@ -2178,6 +2178,7 @@
     "creating": "Creating…",
     "doneTitle": "Your store is created",
     "addProduct": "Add your first product",
+    "continueBuilder": "Continue building your store",
     "goDashboard": "Go to dashboard",
     "confirmTitle": "Check your email",
     "confirmBody": "We sent a confirmation link to <b>{email}</b>. Open it to finish creating your store.",
@@ -2194,6 +2195,7 @@
       "subdomainTaken": "This link was just taken. Pick another one.",
       "emailTaken": "This email already has an account. <login>Log in</login> instead.",
       "rateLimited": "Too many attempts. Wait a few minutes and try again.",
+      "googleNeedsStore": "Enter your store link and phone first, then continue with Google.",
       "generic": "Something went wrong. Please try again."
     }
   },

@@ -18,6 +18,7 @@ import type { GalleryEntry } from "@/lib/marketing/templates.lib";
 import { ChatGptMark, ClaudeMark } from "./ai-brand-marks";
 import { AiDemo } from "./ai-demo.client";
 import { BuilderDemo } from "./builder-demo.client";
+import { HeroComposer } from "./hero-composer.client";
 import { HeroDemo } from "./hero-demo.client";
 import { LiveStoreLine } from "./live-store-line.client";
 import { MarketingTools } from "./marketing-tools.client";
@@ -42,6 +43,8 @@ export async function HomeHero() {
   const features = t.raw("marquee") as string[];
   const checks = [t("check1"), t("check2"), t("check3")];
   const showLine = selectStoreLine(recent.stores, recent.readAt).kind !== "none";
+  // The hero composer replaces the signup button once the AI Store Builder is on (F-82d, D9).
+  const composer = process.env.STORE_BUILDER_AI_ENABLED === "1";
 
   return (
     <section id="top" aria-labelledby="home-h1" className="relative overflow-hidden pt-10 pb-24 min-[641px]:pt-16">
@@ -60,7 +63,11 @@ export async function HomeHero() {
           {t.rich("title", richTags)}
         </h1>
         <p className="mx-auto mt-4 mb-6 max-w-[640px] text-[clamp(16px,2vw,19px)] text-pretty text-[#56696e] min-[641px]:mt-5 min-[641px]:mb-8">{t("lead")}</p>
-        <SignupTrigger className="h-[58px] px-10 text-[17px]">{t("cta")}</SignupTrigger>
+        {composer ? (
+          <HeroComposer className="max-w-[720px]" />
+        ) : (
+          <SignupTrigger className="h-[58px] px-10 text-[17px]">{t("cta")}</SignupTrigger>
+        )}
         <ul className="m-0 mt-7 flex list-none flex-wrap justify-center gap-x-3.5 gap-y-1.5 p-0 text-[13px] text-[#56696e] min-[641px]:gap-x-[22px] min-[641px]:gap-y-2 min-[641px]:text-sm">
           {checks.map((check) => (
             <li key={check} className="flex items-center gap-1.5">

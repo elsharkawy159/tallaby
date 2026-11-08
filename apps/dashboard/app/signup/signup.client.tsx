@@ -28,6 +28,7 @@ import { Note, SellerButton } from "@/components/seller-ui";
 import { SubdomainField } from "@/components/stores/subdomain-field.client";
 import { logout, resendConfirmation } from "@/actions/auth";
 import { OTHER_INDUSTRY_ID, SIGNUP_INDUSTRIES } from "@/lib/stores/industries.lib";
+import { withQuery } from "@/lib/auth/after-signup.lib";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/supabase/client";
 import { AuthField } from "../login/auth-field.client";
@@ -167,7 +168,7 @@ export function SignupForm({
       toast.success(
         t("created", { url: result.storeUrl.replace(/^https?:\/\//, "") }),
       );
-      router.replace(`${afterSignup ?? "/"}?welcome=1${result.signup ? `&signup=${result.signup}` : ""}`);
+      router.replace(withQuery(afterSignup ?? "/", { welcome: "1", signup: result.signup }));
       router.refresh();
     } else if (result.status === "account_created") {
       // Signed in now: the server page renders step 2.
@@ -224,7 +225,7 @@ export function SignupForm({
     const { error } = await createClient().auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/api/auth/callback?next=${afterSignup ?? "/"}`,
+        redirectTo: `${window.location.origin}/api/auth/callback?next=${encodeURIComponent(afterSignup ?? "/")}`,
       },
     });
     if (error) {

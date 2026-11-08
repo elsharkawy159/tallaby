@@ -1,8 +1,14 @@
 import { type NextRequest, NextResponse } from "next/server";
 import type { User } from "@supabase/supabase-js";
 import { db, eq, sellers } from "@workspace/db";
-import { completeSignup, signupIntentFromMetadata } from "@/components/marketing/signup/signup-complete.server";
-import { readSignupIntentCookie } from "@/components/marketing/signup/signup-intent.server";
+import {
+  builderUrlFor,
+  claimSignupIntake,
+  completeSignup,
+  intakeFromMetadata,
+  signupIntentFromMetadata,
+} from "@/components/marketing/signup/signup-complete.server";
+import { clearSignupIntentCookie, readSignupIntentCookie } from "@/components/marketing/signup/signup-intent.server";
 import { DASHBOARD_URL } from "@/lib/marketing/site.lib";
 import { createClient } from "@/supabase/server";
 
@@ -16,10 +22,17 @@ import { createClient } from "@/supabase/server";
 async function finish(origin: string, user: User | null) {
   if (!user) return NextResponse.redirect(`${origin}/#signup`);
 
+  const cookieIntent = await readSignupIntentCookie();
   const [seller] = await db.select({ id: sellers.id }).from(sellers).where(eq(sellers.id, user.id)).limit(1);
-  if (seller) return NextResponse.redirect(DASHBOARD_URL);
+  if (seller) {
+    // Already a seller (Google with an existing account): a hero intake (F-82d)
+    // is still theirs, with no store bound; the builder creates or picks one.
+    const intakeId = await claimSignupIntake(seller.id, cookieIntent ?? intakeFromMetadata(user.user_metadata), null);
+    if (cookieIntent) await clearSignupIntentCookie();
+    return NextResponse.redirect(intakeId ? builderUrlFor(intakeId) : DASHBOARD_URL);
+  }
 
-  const intent = (await readSignupIntentCookie()) ?? signupIntentFromMetadata(user);
+  const intent = cookieIntent ?? signupIntentFromMetadata(user);
   // Signed in but no pending choice: the dashboard signup asks for the store.
   if (!intent) return NextResponse.redirect(`${DASHBOARD_URL}signup`);
 
@@ -28,8 +41,11 @@ async function finish(origin: string, user: User | null) {
     const error = result.error === "taken" ? "subdomainTaken" : "generic";
     return NextResponse.redirect(`${DASHBOARD_URL}signup?error=${error}`);
   }
-  // `signup` only for a new account: the welcome page fires Meta's CompleteRegistration once.
-  return NextResponse.redirect(`${DASHBOARD_URL}?welcome=1${result.signup ? `&signup=${result.signup}` : ""}`);
+  // `signup` only for a new account: the welcome page (or the builder, after a
+  // hero intake) fires Meta's CompleteRegistration once.
+  const signup = result.signup ? `&signup=${result.signup}` : "";
+  if (result.intakeId) return NextResponse.redirect(`${builderUrlFor(result.intakeId)}&welcome=1${signup}`);
+  return NextResponse.redirect(`${DASHBOARD_URL}?welcome=1${signup}`);
 }
 
 export async function GET(request: NextRequest) {

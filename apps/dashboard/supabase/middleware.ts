@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { afterSignupPath } from "@/lib/auth/after-signup.lib";
 
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({
@@ -62,7 +63,8 @@ export async function updateSession(request: NextRequest) {
     // MCP consent (F-29b): come back to the same authorize request after signing in.
     if (path === "/oauth/authorize") login.searchParams.set("next", `${path}${url.search}`);
     // The AI Store Builder's link (F-54): back to the chat after signing in.
-    if (path === "/ai-builder") login.searchParams.set("next", path);
+    // A hero intake (F-82d) keeps its id; anything else in the query is dropped.
+    if (path === "/ai-builder") login.searchParams.set("next", afterSignupPath(`${path}${url.search}`) ?? path);
     return NextResponse.redirect(login);
   }
 

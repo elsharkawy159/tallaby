@@ -1,4 +1,5 @@
-// Copied from apps/dashboard/app/signup (P2-03). Keep both in sync.
+// Copied from apps/dashboard/app/signup (P2-03). Keep both in sync, except the
+// optional hero intake (F-82d), which only the marketing site carries.
 import { createHmac, timingSafeEqual } from "node:crypto";
 
 /**
@@ -9,7 +10,13 @@ import { createHmac, timingSafeEqual } from "node:crypto";
  * the cookie came from us.
  */
 
-export type SignupIntent = { subdomain: string; phone: string };
+export type SignupIntent = {
+  subdomain: string;
+  phone: string;
+  /** The hero composer intake (F-82d): claimed for the new seller at signup. */
+  intakeId?: string;
+  intakeToken?: string;
+};
 
 export const SIGNUP_INTENT_TTL_MS = 15 * 60 * 1000;
 const MIN_SECRET_LENGTH = 32;
@@ -23,7 +30,12 @@ function sign(payload: string, secret: string): string {
 
 export function signSignupIntent(intent: SignupIntent, secret: string, now = Date.now()): string {
   if (secret.length < MIN_SECRET_LENGTH) throw new Error("SIGNUP_INTENT_SECRET is missing or too short");
-  const payload: Payload = { subdomain: intent.subdomain, phone: intent.phone, exp: now + SIGNUP_INTENT_TTL_MS };
+  const payload: Payload = {
+    subdomain: intent.subdomain,
+    phone: intent.phone,
+    ...(intent.intakeId && intent.intakeToken ? { intakeId: intent.intakeId, intakeToken: intent.intakeToken } : {}),
+    exp: now + SIGNUP_INTENT_TTL_MS,
+  };
   const encoded = Buffer.from(JSON.stringify(payload)).toString("base64url");
   return `${encoded}.${sign(encoded, secret)}`;
 }
@@ -42,7 +54,11 @@ export function verifySignupIntent(token: string, secret: string, now = Date.now
     const payload = JSON.parse(Buffer.from(encoded, "base64url").toString("utf8")) as Partial<Payload>;
     if (typeof payload.exp !== "number" || payload.exp < now) return null;
     if (typeof payload.subdomain !== "string" || typeof payload.phone !== "string") return null;
-    return { subdomain: payload.subdomain, phone: payload.phone };
+    const intake =
+      typeof payload.intakeId === "string" && typeof payload.intakeToken === "string"
+        ? { intakeId: payload.intakeId, intakeToken: payload.intakeToken }
+        : {};
+    return { subdomain: payload.subdomain, phone: payload.phone, ...intake };
   } catch {
     return null;
   }
