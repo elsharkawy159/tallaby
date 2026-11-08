@@ -15,6 +15,7 @@ import {
   type BuilderView,
 } from "./builder.dto";
 import { applyAnswer, currentStep, mergeReading, shortlistTemplates, withNextQuestion, withSellerMessage } from "./builder.lib";
+import { MAX_TEMPLATES_SHOWN, fileProblems, nextCard } from "./builder-questions.lib";
 import { BRIEF_SYSTEM_RULES, CHAT_SYSTEM_RULES, briefRequestText, chatRequestText } from "./builder-prompts.lib";
 import { checkModelCall, claimFreeBuild, giveCreditBack, saveBuild, type BuildRow, type ModelGate } from "./builder.store.server";
 
@@ -38,7 +39,10 @@ export type ChatResult = { view: BuilderView; error?: BuilderErrorCode };
 
 export function toView(build: BuildRow, notice: BuilderErrorCode | null = null): BuilderView {
   const paths = [...build.state.products.flatMap((product) => product.photos), ...(build.state.logo ? [build.state.logo] : [])];
-  
+  const v2 = build.state.flow === "v2";
+  // Built fresh from the state, so it is always the card the code would accept (applyCardAnswers).
+  const card = v2 && build.status === "collecting" ? nextCard(build.state) : null;
+
   const templates: BuilderTemplateChoice[] = build.state.shortlist.flatMap((key) => {
     const template = getCodeTemplate(key);
     return template ? [{ key, name: template.name, description: template.description, palette: templateMeta(template).palette }] : [];
@@ -54,6 +58,12 @@ export function toView(build: BuildRow, notice: BuilderErrorCode | null = null):
     photoUrls: Object.fromEntries(paths.map((path) => [path, builderPhotoUrl(path)])),
     templates,
     notice,
+    flow: v2 ? "v2" : "v1",
+    round: card?.round ?? null,
+    card,
+    logoUrl: build.state.logo ? builderPhotoUrl(build.state.logo) : null,
+    fileProblems: v2 ? fileProblems(build.state).slice(0, 50) : [],
+    moreTemplates: v2 && card?.round === "design" && build.state.templatesShown.length < MAX_TEMPLATES_SHOWN,
   };
 }
 

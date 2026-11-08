@@ -3,7 +3,7 @@ import { checkDailyCap, logAiUsage, modelIdForTier } from "@workspace/ai";
 import { aiUsageLogs, and, count, db, desc, eq, gte, inArray, ne, sql, storeBuildClaims, storeBuildItems, storeBuilds } from "@workspace/db";
 import { claimAiCredit, refundAiCredit } from "@workspace/lib/billing/credits";
 import { getBillingState } from "@workspace/lib/billing/server";
-import { BUILDER_DAILY_CAPS, BUILDER_LIMITS, parseBuilderState, type BuilderErrorCode, type BuilderFeature, type BuilderState, type BuilderStatus } from "./builder.dto";
+import { BUILDER_DAILY_CAPS, BUILDER_FREE_FEATURES, BUILDER_LIMITS, parseBuilderState, type BuilderErrorCode, type BuilderFeature, type BuilderState, type BuilderStatus } from "./builder.dto";
 import { canSpend, platformBudgetMicroUsd, type BuildItem } from "./builder.lib";
 
 /**
@@ -18,6 +18,11 @@ export type BuildRow = {
   storeId: string | null;
   /** The store this build is bound to (0157): set before the build writes to it, never guessed. */
   targetStoreId: string | null;
+  /** The hero intake (0157), when the build came from tallaby.com. */
+  intakeId: string | null;
+  source: "hero" | "dashboard";
+  /** When the build published the site (D1). */
+  publishedAt: string | null;
   status: BuilderStatus;
   free: boolean;
   state: BuilderState;
@@ -32,6 +37,9 @@ const toRow = (row: typeof storeBuilds.$inferSelect): BuildRow => ({
   sellerId: row.sellerId,
   storeId: row.storeId,
   targetStoreId: row.targetStoreId,
+  intakeId: row.intakeId,
+  source: row.source === "hero" ? "hero" : "dashboard",
+  publishedAt: row.publishedAt,
   status: row.status as BuilderStatus,
   free: row.free,
   state: parseBuilderState(row.state),
@@ -95,7 +103,9 @@ export type StartBuild = { ok: true; build: BuildRow } | { ok: false; error: Bui
  * Opens a conversation, or returns the one already open. A seller who has used
  * the free build runs on credits, so it can't start until credits are on.
  */
-export async function startBuild(sellerId: string, initial: (state: BuilderState) => BuilderState): Promise<StartBuild> {
+export type StartOptions = { source?: "hero" | "dashboard"; intakeId?: string | null; targetStoreId?: string | null };
+
+export async function startBuild(sellerId: string, initial: (state: BuilderState) => BuilderState, options: StartOptions = {}): Promise<StartBuild> {
   const open = await loadOpenBuild(sellerId);
   if (open) return { ok: true, build: open };
 
@@ -115,7 +125,15 @@ export async function startBuild(sellerId: string, initial: (state: BuilderState
   }
 
   const state = initial(parseBuilderState({ paid }));
-  const [created] = await db.insert(storeBuilds).values({ sellerId, state, free: carried }).onConflictDoNothing().returning();
+  const [created] = await db.insert(storeBuilds).values({
+      sellerId,
+      state,
+      free: carried,
+      source: options.source ?? "dashboard",
+      intakeId: options.intakeId ?? null,
+      // Checked by the caller: this seller's own store, never published.
+      targetStoreId: options.targetStoreId ?? null,
+    }).onConflictDoNothing().returning();
   if (created) {
     if (carried) await db.update(storeBuildClaims).set({ buildId: created.id }).where(eq(storeBuildClaims.sellerId, sellerId));
     return { ok: true, build: toRow(created) };
@@ -128,7 +146,7 @@ export async function startBuild(sellerId: string, initial: (state: BuilderState
 export async function saveBuild(
   sellerId: string,
   buildId: string,
-  patch: Partial<Pick<BuildRow, "state" | "status" | "chatTurns" | "siteCopyRuns" | "stopReason" | "storeId" | "targetStoreId" | "free">>,
+  patch: Partial<Pick<BuildRow, "state" | "status" | "chatTurns" | "siteCopyRuns" | "stopReason" | "storeId" | "targetStoreId" | "free" | "publishedAt">>,
 ): Promise<void> {
   await db
     .update(storeBuilds)
@@ -193,8 +211,9 @@ export async function saveItem(buildId: string, item: BuildItem): Promise<void> 
 
 // ── Spend ───────────────────────────────────────────────────────────────────
 
-// Written out, so the planner can use the partial index from 0141.
-const BUILDER_ROWS = sql`${aiUsageLogs.feature} LIKE 'store_builder_%'`;
+// Written out, so the planner can use the partial index from 0141. A file batch inside a build logs the
+// importer's own feature (product_bulk_copy) with the build id as ref_id (F-82f): it counts too.
+const BUILDER_ROWS = sql`(${aiUsageLogs.feature} LIKE 'store_builder_%' OR (${aiUsageLogs.feature} = 'product_bulk_copy' AND ${aiUsageLogs.refId} IS NOT NULL))`;
 
 /**
  * Spent on this build: every builder call writes the build id as ref_id (0157),
@@ -204,7 +223,7 @@ const BUILDER_ROWS = sql`${aiUsageLogs.feature} LIKE 'store_builder_%'`;
 export async function buildSpendMicroUsd(sellerId: string, build: Pick<BuildRow, "id" | "createdAt">): Promise<number> {
   const [row] = await db
     .select({
-      value: sql<string>`coalesce(sum(${aiUsageLogs.costMicroUsd}) FILTER (WHERE ${aiUsageLogs.refId} = ${build.id} OR ${aiUsageLogs.refId} IS NULL), 0)`,
+      value: sql<string>`coalesce(sum(${aiUsageLogs.costMicroUsd}) FILTER (WHERE ${aiUsageLogs.refId} = ${build.id} OR (${aiUsageLogs.refId} IS NULL AND ${aiUsageLogs.feature} LIKE 'store_builder_%')), 0)`,
     })
     .from(aiUsageLogs)
     .where(and(eq(aiUsageLogs.sellerId, sellerId), BUILDER_ROWS, gte(aiUsageLogs.createdAt, build.createdAt)));
@@ -248,7 +267,7 @@ export async function checkModelCall(build: Pick<BuildRow, "id" | "sellerId" | "
     if (!build.state.paid && !(await platformBudgetLeft())) return blocked("budget");
     const cap = await checkDailyCap(sellerId, feature, BUILDER_DAILY_CAPS[feature]);
     if (!cap.allowed) return blocked("dailyLimit");
-    if (!build.state.paid || feature === "store_builder_chat") return { ok: true, creditReference: null };
+    if (!build.state.paid || BUILDER_FREE_FEATURES.has(feature)) return { ok: true, creditReference: null };
     const billing = await getBillingState();
     if (!billing.usdLive) return blocked("noCredits");
     const claim = await claimAiCredit(sellerId, feature);
@@ -256,6 +275,21 @@ export async function checkModelCall(build: Pick<BuildRow, "id" | "sellerId" | "
   } catch (error) {
     console.error("[ai-builder] limit check failed", error instanceof Error ? error.message : error);
     return { ok: false, reason: "failed" };
+  }
+}
+
+/**
+ * The spend checks alone (the hard stop, and the platform budget for a build
+ * not paid by credits), for a step whose own code claims credits and checks its
+ * daily cap: a file batch through the importer (F-82f). Fails closed.
+ */
+export async function checkBuildSpend(build: Pick<BuildRow, "id" | "sellerId" | "createdAt" | "state">): Promise<boolean> {
+  try {
+    if (!canSpend(await buildSpendMicroUsd(build.sellerId, build))) return false;
+    return build.state.paid || (await platformBudgetLeft());
+  } catch (error) {
+    console.error("[ai-builder] spend check failed", error instanceof Error ? error.message : error);
+    return false;
   }
 }
 

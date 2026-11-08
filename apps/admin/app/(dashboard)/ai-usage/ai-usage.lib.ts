@@ -37,6 +37,7 @@ export const AI_FEATURE_LABELS: Record<string, string> = {
   store_builder_shipping: "Store builder: shipping",
   store_builder_policies: "Store builder: policies",
   store_builder_review: "Store builder: final check",
+  store_builder_intake: "Store builder: intake reading",
 };
 
 export function aiFeatureLabel(feature: string): string {

@@ -199,17 +199,28 @@ export function latinNameInText(nameEn: string | null, sellerText: string): stri
  * price or stock count is kept only when that number is in the seller's text,
  * a link only when that link is, and existing answers are never replaced.
  */
-export function mergeReading(state: BuilderState, output: BuilderChatOutput, sellerText: string, newId: () => string): BuilderState {
-  const numbers = numbersInText(sellerText);
+/**
+ * The model's phone, WhatsApp, email and links, each kept only when it is in
+ * the seller's own text (shared by the chat reading and the v2 intake reading).
+ */
+export function verifiedContact(
+  output: Pick<BuilderChatOutput, "phone" | "whatsapp" | "email" | "socialLinks">,
+  sellerText: string,
+): { contact: BuilderState["contact"]; links: BuilderState["social"] } {
   const lowered = sellerText.toLowerCase();
   const digits = toLatinDigits(sellerText).replace(/\D/g, "");
   const inText = (phone: string | null) => {
     const found = phone ? toLatinDigits(phone).replace(/\D/g, "") : "";
     return found.length >= 8 && digits.includes(found.replace(/^(20|0)/, "")) ? formatPhone(phone!) : null;
   };
-
   const email = output.email && lowered.includes(output.email.toLowerCase()) && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(output.email) ? output.email : null;
   const links = readSocialLinks(output.socialLinks.filter((link) => lowered.includes(link.toLowerCase())).join(" "));
+  return { contact: { phone: inText(output.phone), whatsapp: inText(output.whatsapp), email }, links };
+}
+
+export function mergeReading(state: BuilderState, output: BuilderChatOutput, sellerText: string, newId: () => string): BuilderState {
+  const numbers = numbersInText(sellerText);
+  const { contact: found, links } = verifiedContact(output, sellerText);
 
   const free = Math.max(0, BUILDER_LIMITS.products - state.products.length);
   const known = new Set(state.products.map((product) => product.name.toLowerCase()));
@@ -238,9 +249,9 @@ export function mergeReading(state: BuilderState, output: BuilderChatOutput, sel
     nameEn: state.nameEn ?? latinNameInText(output.nameEn, sellerText),
     industrySuggestion: state.industryId ? state.industrySuggestion : (matchIndustry(`${output.industryHint ?? ""} ${state.about ?? ""}`) ?? state.industrySuggestion),
     contact: {
-      phone: state.contact.phone ?? inText(output.phone),
-      whatsapp: state.contact.whatsapp ?? inText(output.whatsapp),
-      email: state.contact.email ?? email,
+      phone: state.contact.phone ?? found.phone,
+      whatsapp: state.contact.whatsapp ?? found.whatsapp,
+      email: state.contact.email ?? found.email,
     },
     social: mergeSocial(state.social, links),
     socialDone: state.socialDone || links.length > 0,
@@ -302,15 +313,29 @@ const tokens = (value: string) =>
 
 /** The store industry a text is closest to, matched in code (docs/ai.md: no catalogs in prompts). Null when nothing fits. */
 export function matchIndustry(value: string): string | null {
+  return rankIndustries(value)[0]?.id ?? null;
+}
+
+/**
+ * Every industry the text matches, best first (a name word counts 3, a search
+ * word 1). Ties keep the list's order, so `matchIndustry` picks as before.
+ */
+export function rankIndustries(value: string): { id: string; score: number }[] {
   const words = new Set(tokens(value));
-  let best: { id: string; score: number } | null = null;
-  for (const industry of STORE_INDUSTRIES) {
+  const scored: { id: string; score: number; index: number }[] = [];
+  STORE_INDUSTRIES.forEach((industry, index) => {
     const score =
       tokens(`${industry.en} ${industry.ar}`).filter((word) => words.has(word)).length * 3 +
       tokens(industry.queries.join(" ")).filter((word) => words.has(word)).length;
-    if (score > 0 && (!best || score > best.score)) best = { id: industry.id, score };
-  }
-  return best?.id ?? null;
+    if (score > 0) scored.push({ id: industry.id, score, index });
+  });
+  return scored.sort((a, b) => b.score - a.score || a.index - b.index).map(({ id, score }) => ({ id, score }));
+}
+
+/** Sure enough to skip the question: a name word matched and nothing else scores as high. */
+export function industryIsConfident(ranked: readonly { score: number }[]): boolean {
+  const [top, second] = ranked;
+  return Boolean(top && top.score >= 3 && (!second || top.score > second.score));
 }
 
 /** A small stable hash, so a seller's shortlist doesn't reorder on resume. */
@@ -373,8 +398,21 @@ export type BuildItem = { key: string; status: BuilderItemStatus; attempts: numb
 export const MAX_ITEM_ATTEMPTS = 2;
 
 /** Every step of a build, in order. Finishing them all makes the store ready for review. */
-export function buildItemKeys(state: Pick<BuilderState, "products">): string[] {
-  return ["store", "settings", "template", "site_copy", ...state.products.map((product) => `product:${product.id}`), "catalog", "shipping", "policy", "notes"];
+export function buildItemKeys(state: Pick<BuilderState, "products"> & Partial<Pick<BuilderState, "flow" | "fileRows">>): string[] {
+  const products = state.products.map((product) => `product:${product.id}`);
+  if (state.flow !== "v2") return ["store", "settings", "template", "site_copy", ...products, "catalog", "shipping", "policy", "notes"];
+  const batches = Array.from({ length: Math.ceil(fileRowsToAdd(state.fileRows ?? []).length / BUILDER_LIMITS.fileBatch) }, (_, n) => `products_file:${n}`);
+  return ["store", "settings", "template", "brand", "categories", "site_copy", "hero_photos", ...batches, ...products, "catalog", "shipping", "policy", "checks", "publish"];
+}
+
+/** The file rows a build adds: those with a price (a row without one waits for the seller's fix, D4), in file order. */
+export function fileRowsToAdd<T extends { price: number | null }>(rows: readonly T[]): T[] {
+  return rows.filter((row) => row.price !== null && row.price > 0).slice(0, BUILDER_LIMITS.fileProducts);
+}
+
+/** The rows of one `products_file:<n>` step. */
+export function fileBatchRows<T extends { price: number | null }>(rows: readonly T[], batch: number): T[] {
+  return fileRowsToAdd(rows).slice(batch * BUILDER_LIMITS.fileBatch, (batch + 1) * BUILDER_LIMITS.fileBatch);
 }
 
 export const isFinished = (status: BuilderItemStatus | undefined) => status === "done" || status === "failed" || status === "skipped";
@@ -422,6 +460,63 @@ export function reviewIssues(snapshot: ReviewSnapshot): BuilderIssue[] {
   if (state.shipping?.mode !== "skip" && shipping?.status !== "done") issues.push({ code: "shippingNotSet", href: `${store}/shipping` });
   else if (state.shipping?.mode !== "skip" && !snapshot.zoneCount) issues.push({ code: "shippingNotSet", href: `${store}/shipping` });
 
+  if (!snapshot.returnPolicy?.trim()) issues.push({ code: "noReturnPolicy", href: "/settings" });
+  return issues;
+}
+
+// ── Review, v2 (F-82j) ──────────────────────────────────────────────────────
+
+/** Why a product the build made stayed a draft (D4): its photo, its stock answer, or a name to check. */
+export type DraftReason = "photo" | "stock" | "name";
+
+export type ReviewSnapshotV2 = ReviewSnapshot & {
+  state: Pick<BuilderState, "products" | "logo" | "returns" | "shipping" | "fileRows">;
+  /** Every product the build made, live or not. */
+  built: { id: string; live: boolean; missing: DraftReason[] }[];
+  published: boolean;
+  publishError: string | null;
+  activationLocked: boolean;
+  /** Code-gate findings of the `checks` step. */
+  flags: { code: string; count: number }[];
+  /** File rows a batch could not add (failed, or left when spending stopped). */
+  fileNotAdded: number;
+};
+
+/**
+ * The to-do list of a v2 build, code only, most important first: the account
+ * step, the site, then products (zero products leads, D3), then the rest.
+ */
+export function reviewIssuesV2(snapshot: ReviewSnapshotV2): BuilderIssue[] {
+  const { storeId, state, items, built } = snapshot;
+  if (!storeId) return [{ code: "noStore", href: "/stores" }];
+  const store = `/stores/${storeId}`;
+  const issues: BuilderIssue[] = [];
+
+  if (snapshot.activationLocked) issues.push({ code: "activationNeeded", href: "/wallet/top-up" });
+  if (!snapshot.published) issues.push({ code: "publishFailed", href: `${store}/website` });
+
+  const noPrice = state.fileRows.filter((row) => row.price === null).length;
+  if (!built.length && !noPrice) issues.push({ code: "addFirstProduct", href: "/products/add" });
+  if (noPrice) issues.push({ code: "fileRowsNoPrice", params: { count: noPrice }, href: "/products/add" });
+  if (snapshot.fileNotAdded) issues.push({ code: "fileProductsNotAdded", params: { count: snapshot.fileNotAdded }, href: "/products/add/from-file" });
+  for (const product of state.products) {
+    if (items.get(`product:${product.id}`)?.status !== "done") issues.push({ code: "productNotBuilt", params: { name: product.name }, href: "/products/add" });
+  }
+  const drafts = built.filter((product) => !product.live);
+  const count = (reason: DraftReason) => drafts.filter((product) => product.missing.includes(reason)).length;
+  if (count("photo")) issues.push({ code: "productsWithoutPhoto", params: { count: count("photo") }, href: "/products" });
+  if (count("stock")) issues.push({ code: "productsWithoutStock", params: { count: count("stock") }, href: "/products" });
+  if (count("name")) issues.push({ code: "productsToCheck", params: { count: count("name") }, href: "/products" });
+
+  if (items.get("site_copy")?.status !== "done") issues.push({ code: "siteCopyMissing", href: `${store}/editor` });
+  if (snapshot.invalidPages) issues.push({ code: "pagesInvalid", params: { count: snapshot.invalidPages }, href: `${store}/editor` });
+  for (const flag of snapshot.flags) if (flag.count > 0) issues.push({ code: flag.code, params: { count: flag.count }, href: `${store}/editor` });
+  if (!state.logo) issues.push({ code: "noLogo", href: `${store}/settings` });
+
+  const shipping = items.get("shipping");
+  const unmatched = (shipping?.data.unmatched as string[] | undefined) ?? [];
+  if (unmatched.length) issues.push({ code: "placesNotRecognised", params: { places: unmatched.slice(0, 5).join("، ") }, href: `${store}/shipping` });
+  if (state.shipping?.mode !== "skip" && (shipping?.status !== "done" || !snapshot.zoneCount)) issues.push({ code: "shippingNotSet", href: `${store}/shipping` });
   if (!snapshot.returnPolicy?.trim()) issues.push({ code: "noReturnPolicy", href: "/settings" });
   return issues;
 }

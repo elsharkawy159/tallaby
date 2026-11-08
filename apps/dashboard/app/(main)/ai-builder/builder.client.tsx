@@ -8,6 +8,7 @@ import { Progress } from "@workspace/ui/components/progress";
 import { CheckRow, EmptyState, IconButton, Note, PageHeader, SellerButton, SellerCard, Tag, TextAction, TextArea, TextInput } from "@/components/seller-ui";
 import { STORE_INDUSTRIES } from "@/lib/stores/industries.lib";
 import { BuilderReviewPanel } from "./builder-review.client";
+import { BuilderV2Chat } from "./builder-v2.client";
 import { syncField, type SyncedField } from "./builder-row.lib";
 import {
   BUILDER_LIMITS,
@@ -270,6 +271,33 @@ export function BuilderChat({
           {error && <Note tone="danger">{t(`errors.${error}`)}</Note>}
         </SellerCard>
       </>
+    );
+  }
+
+  if (view.flow === "v2") {
+    return (
+      <BuilderV2Chat
+        view={view}
+        busy={busy}
+        error={error}
+        send={send}
+        setView={setView}
+        onUploadLogo={(file) => upload(file, "logo")}
+        onRestart={() => void send({ action: "restart" })}
+        templatesBaseUrl={templatesBaseUrl}
+        products={
+          <ProductsEditor
+            products={view.state.products}
+            photoUrls={view.photoUrls}
+            busy={busy}
+            onSave={(product) => request({ action: "saveProduct", product }, true)}
+            onRemove={(productId) => void send({ action: "removeProduct", productId })}
+            onRemovePhoto={(productId, path) => void send({ action: "removePhoto", productId, path })}
+            onUpload={(file, productId) => void upload(file, "product", productId)}
+            onDone={() => void send({ action: "answers", answers: { productsDone: { choice: "done" } } })}
+          />
+        }
+      />
     );
   }
 

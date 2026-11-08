@@ -37,6 +37,20 @@ export function BuilderReviewPanel({
         description={review.storeName ? t("review.subtitle", { name: review.storeName, address: review.subdomain ?? "" }) : undefined}
       />
 
+      {review.flow === "v2" && (
+        <Note tone={review.published ? "success" : "amber"}>
+          {review.published ? (review.activationLocked ? t("v2.done.publishedPrivate") : t("v2.done.published")) : t("v2.done.notPublished")}
+          {review.viewUrl && (
+            <>
+              {" "}
+              <a className="font-semibold underline" href={review.viewUrl} target="_blank" rel="noreferrer">
+                {t("v2.done.open")}
+              </a>
+            </>
+          )}
+        </Note>
+      )}
+
       {review.stopReason && <Note tone="amber">{t.has(`stops.${review.stopReason}`) ? t(`stops.${review.stopReason}` as never) : t("stops.other")}</Note>}
 
       <SectionCard icon={ClipboardCheck} title={review.issues.length ? t("review.missing", { count: review.issues.length }) : t("review.nothingMissing")}>

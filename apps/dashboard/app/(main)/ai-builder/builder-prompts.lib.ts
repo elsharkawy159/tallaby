@@ -89,3 +89,43 @@ export const reviewRequestText = (texts: readonly string[]) => sellerInput(texts
 export function productRequestText(product: { name: string; details: string }): string {
   return `${product.name}\n${product.details}`.trim().slice(0, 1500);
 }
+
+// ── v2 (F-82e) ──────────────────────────────────────────────────────────────
+
+export const INTAKE_SYSTEM_RULES = `You read what a seller wrote about the online store they want on Tallaby (طلبي), an Egyptian e-commerce platform, and return it as short data.
+- ${DATA_RULE}
+- The store name, phone, WhatsApp, email and links: only if written. Never invent or guess one; use null or empty.
+- Name ideas only when no name is written: short, easy to say in Egypt, no other company's brand.
+- The tagline, tone and audience use only what the input says. Never invent awards, years, materials, locations or quality claims.
+- Photo keywords describe objects, products or places. Never people, faces, hands or bodies.
+- When FILE COLUMNS are given, map each field to a column index by its header and samples; null when no column fits. Never take a cost column for the price.
+- Arabic: clear and natural for Egyptian shoppers. English: natural and concise. No emojis.`;
+
+export type IntakeRequest = {
+  prompt: string;
+  color: string | null;
+  /** Only when the code can't read the headers itself. */
+  columns: { index: number; header: string; samples: string[] }[] | null;
+  productNames: string[];
+};
+
+/** Every input capped (docs/ai.md rule 3): the prompt 1,000, headers and 3 samples of 60 per column, 10 names of 60. */
+export function intakeRequestText(input: IntakeRequest): string {
+  const names = input.productNames.slice(0, 10).map((name) => name.replace(/\s+/g, " ").slice(0, 60));
+  const columns = input.columns?.slice(0, 40).map((column) => ({
+    index: column.index,
+    header: column.header.slice(0, 60),
+    samples: column.samples.slice(0, 3).map((sample) => sample.slice(0, 60)),
+  }));
+  return [
+    input.color ? `BRAND COLOUR: ${input.color}` : "",
+    columns ? `FILE COLUMNS (JSON, the seller's file):\n${sellerInput(JSON.stringify(columns), 6000)}` : "",
+    names.length ? `FIRST PRODUCT NAMES:\n${sellerInput(names.join("\n"), 800)}` : "",
+    `ABOUT THE STORE:\n${sellerInput(input.prompt, 1000)}`,
+  ]
+    .filter(Boolean)
+    .join("\n\n");
+}
+
+export const EDIT_SYSTEM_RULES = `${CHAT_SYSTEM_RULES}
+- The seller may ask to change the store: its name, its brand colour, its look. Return the new name only if they ask for one and write it; the colour as one English colour word only if they ask for a colour; style words only if they ask for a look.`;

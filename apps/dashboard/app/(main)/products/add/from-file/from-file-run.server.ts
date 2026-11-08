@@ -396,7 +396,24 @@ const isSkuClash = (message: string | undefined) => /\bSKU\b/.test(message ?? ""
  * (seller, SKU) stops two runs at the same moment (see `importSku`). A row that
  * fails gets its credit back. Each product saved stays saved, whatever happens next.
  */
-export async function runBulkBatch(sellerId: string, input: AddBatchInput): Promise<AddBatchResult> {
+/**
+ * How the AI Store Builder runs a batch inside a build (ROADMAP.md F-82f). The
+ * file importer's page passes none of these.
+ */
+export type BulkBatchOptions = {
+  /** Written to ai_usage_logs.ref_id (the build id), so the build's spend stop counts this call. */
+  refId?: string | null;
+  /** False: no credits are claimed (the account's free build). */
+  credits?: boolean;
+  /** False: no model call (the build's spend stop); rows that need copy are left as "remaining". */
+  ai?: boolean;
+  /** Every product is saved hidden; the build sets the complete ones live when it publishes (D1, D4). */
+  keepDraft?: boolean;
+  /** Sheet rows the seller marked as always in stock: saved without stock tracking. */
+  unlimitedRows?: ReadonlySet<number>;
+};
+
+export async function runBulkBatch(sellerId: string, input: AddBatchInput, options: BulkBatchOptions = {}): Promise<AddBatchResult> {
   const results: BulkRowResult[] = [];
 
   // Every row is checked again here: the browser's confirm screen proves nothing.
@@ -437,9 +454,10 @@ export async function runBulkBatch(sellerId: string, input: AddBatchInput): Prom
   };
 
   if (aiRows.length > 0) {
-    const billing = aiConfigured() ? await loadBilling(sellerId) : null;
+    const aiOn = aiConfigured() && options.ai !== false;
+    const billing = aiOn ? await loadBilling(sellerId) : null;
     const cap = billing ? await capFor(sellerId, BULK_FEATURES.copy, COPY_DAILY_LIMIT(), billing) : null;
-    if (!aiConfigured()) {
+    if (!aiOn) {
       stop = "disabled";
       markRows(aiRows, "remaining");
     } else if (!billing || !cap) {
@@ -451,7 +469,7 @@ export async function runBulkBatch(sellerId: string, input: AddBatchInput): Prom
       markRows(aiRows, "remaining");
     } else {
       let writable = aiRows;
-      if (billing.usdLive) {
+      if (billing.usdLive && options.credits !== false) {
         const claimed = await claimRows(sellerId, aiRows);
         for (const [row, claim] of claimed.claims) claims.set(row, claim);
         writable = aiRows.filter((row) => claimed.claims.has(row.row));
@@ -470,6 +488,7 @@ export async function runBulkBatch(sellerId: string, input: AddBatchInput): Prom
           const { object, cached } = await generateStructured({
             feature: BULK_FEATURES.copy,
             sellerId,
+            refId: options.refId ?? null,
             tier: "fast",
             schema: bulkCopyOutputSchema,
             system: BULK_COPY_RULES,
@@ -546,7 +565,8 @@ export async function runBulkBatch(sellerId: string, input: AddBatchInput): Prom
       const notes: BulkNote[] = [...row.notes];
       if (photos.failed) notes.push("imageFailed");
       if (photos.paths.length === 0) notes.push("noImage");
-      if (row.stock === null) notes.push("noStock");
+      const unlimited = options.unlimitedRows?.has(row.row) === true;
+      if (row.stock === null && !unlimited) notes.push("noStock");
       if (!strongCategory) notes.push("checkCategory");
       if (borrowed.has(row.row)) notes.push("checkName");
       if (buildPlainVariants(row, sku).ignored) notes.push("variantsIgnored");
@@ -557,8 +577,9 @@ export async function runBulkBatch(sellerId: string, input: AddBatchInput): Prom
       ]);
 
       try {
+        const payload = buildProductPayload(row, copy, { sku, categoryId, sellerCategoryId, sellerBrandId, imagePaths: photos.paths, aiWritten: Boolean(ai), now });
         const created = await createProduct(
-          buildProductPayload(row, copy, { sku, categoryId, sellerCategoryId, sellerBrandId, imagePaths: photos.paths, aiWritten: Boolean(ai), now }) as unknown as Parameters<typeof createProduct>[0],
+          (unlimited ? { ...payload, trackStock: false } : payload) as unknown as Parameters<typeof createProduct>[0],
           { stockReason: "import" },
         );
         if (!created.success || !created.data) {
@@ -574,15 +595,14 @@ export async function runBulkBatch(sellerId: string, input: AddBatchInput): Prom
         }
 
         // A product that isn't ready to sell stays hidden; createProduct only knows about photos.
-        const holdBack = row.stock === null || !strongCategory || nameInDoubt;
+        const holdBack = options.keepDraft === true || (row.stock === null && !unlimited) || !strongCategory || nameInDoubt;
         let status = created.data.status;
         if (status === "active" && holdBack) {
           const hidden = await setProductPublished(created.data.id, false);
           if (hidden.success) status = "draft";
         }
         const live = status === "active";
-        if (!live && photos.paths.length > 0 && !holdBack) notes.push("accountRestricted");
-        results.push({ row: row.row, outcome: live ? "live" : "draft", sku, title: copy.ar.title || copy.en.title, notes, productId: created.data.id, categoryName: names.get(categoryId) ?? undefined });
+        if (!live && photos.paths.length > 0 && !holdBack) notes.push("accountRestricted");        results.push({ row: row.row, outcome: live ? "live" : "draft", sku, title: copy.ar.title || copy.en.title, notes, productId: created.data.id, categoryName: names.get(categoryId) ?? undefined });
       } catch (error) {
         logError("bulk product save failed", error);
         await giveUp();

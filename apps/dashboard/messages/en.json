@@ -3935,7 +3935,7 @@
   "aiBuilder": {
     "title": "Build your store with AI",
     "entry": "Build a store with AI",
-    "intro": "We'll ask a few questions about your business and products, then set up a complete store in Arabic and English. Nothing goes live until you review and publish it yourself.",
+    "intro": "We'll read what you tell us, ask a few questions, then build your whole store in Arabic and English and publish it. Only you can see it until your account is activated.",
     "limits": "Your first store is free with no credits, once per account: up to {products} products and {photos} photos.",
     "start": "Start",
     "restart": "Start over",
@@ -4022,7 +4022,13 @@
       "catalog": "Organizing the store's products…",
       "shipping": "Setting up delivery…",
       "policy": "Writing the return policy…",
-      "notes": "A final check…"
+      "notes": "A final check…",
+      "brand": "Applying your brand colours…",
+      "categories": "Creating your categories…",
+      "hero_photos": "Picking photos for the home page…",
+      "products_file": "Adding your products from the file…",
+      "checks": "Checking everything…",
+      "publish": "Publishing your store…"
     },
     "errors": {
       "unauthorized": "Please sign in first.",
@@ -4075,7 +4081,16 @@
       "noLogo": "No logo. The store name shows in its place.",
       "placesNotRecognised": "We couldn't identify these areas: {places}. Add them on the delivery page.",
       "shippingNotSet": "Delivery areas aren't set up.",
-      "noReturnPolicy": "No return policy."
+      "noReturnPolicy": "No return policy.",
+      "activationNeeded": "Your account isn't activated yet: only you can see the store. Top up your wallet to open it to everyone.",
+      "publishFailed": "The site wasn't published. Publish it from the website page.",
+      "addFirstProduct": "Add your first product.",
+      "fileRowsNoPrice": "{count} products from your file weren't added because they have no price.",
+      "fileProductsNotAdded": "{count} products from your file weren't added. Add them from the file import page.",
+      "productsWithoutStock": "{count} products have no stock. They stay drafts until you add it.",
+      "productsToCheck": "{count} products need their name checked. They stay drafts until you check them.",
+      "demoTextLeft": "{count} texts are still the design's sample text. Edit them in the editor.",
+      "sectionsHidden": "{count} sections were hidden because there are no products to show yet."
     },
     "review": {
       "title": "Your store is ready to review",
@@ -4094,6 +4109,82 @@
       "regenerate": "Rewrite the website's text ({count})",
       "another": "Start another store",
       "publishNote": "A rewrite also replaces website text you've edited. The site goes live when you press Publish in the editor, not before."
+    },
+    "v2": {
+      "cards": {
+        "describe": "Tell me about your store: what you sell, who it's for, and its name if you have one.",
+        "brand": "A few things about your brand, so the store looks like you.",
+        "design": "I picked 3 designs that suit your store. Pick one; you can change everything later.",
+        "products": "Now your products.",
+        "selling": "Last step: delivery and returns.",
+        "summary": "Everything is ready. Shall I build your store and publish it?"
+      },
+      "activity": {
+        "readFile": "I read your file: {count} products, {missingPrice} without a price and {missingStock} without stock."
+      },
+      "questions": {
+        "describe": "About your store",
+        "storeName": "Store name",
+        "industry": "Which field is your store closest to?",
+        "color": "Your brand colour",
+        "style": "The look you want",
+        "template": "Pick a design",
+        "products": "How will you add your products?",
+        "productsDone": "When you're done, carry on",
+        "fileFix": "Some products are missing a price or stock",
+        "shipping": "Delivery",
+        "returns": "Returns and exchanges",
+        "whatsapp": "WhatsApp number for customers",
+        "build": "Build and publish"
+      },
+      "options": {
+        "industryOther": "Another field",
+        "logoColor": "Logo colour",
+        "templateColors": "Use the design's colours",
+        "style_luxe": "Luxurious",
+        "style_bold": "Modern",
+        "style_warm": "Warm",
+        "style_minimal": "Simple",
+        "style_playful": "Playful",
+        "style_classic": "Classic",
+        "productsFile": "Upload a file (Excel or CSV)",
+        "productsPhotos": "Add them with photos",
+        "productsType": "Type a few now",
+        "productsNone": "Start without products",
+        "productsDoneNow": "Done, carry on",
+        "productsBack": "Choose another way",
+        "fileContinue": "Carry on, I'll finish them later",
+        "shippingTallaby": "Default rates for all governorates",
+        "shippingCairoGiza": "Cairo and Giza only",
+        "shippingFlat": "One price for all of Egypt",
+        "returnsDays": "Within {days} days",
+        "returnsNone": "No returns",
+        "whatsappSame": "Same number ({phone})",
+        "buildNow": "Build and publish my store"
+      },
+      "placeholders": {
+        "describe": "For example: a men's perfume store in Cairo called Oud",
+        "storeName": "Or type a name",
+        "industry": "Or describe it",
+        "color": "#1e5bb8",
+        "shipping": "The price for all of Egypt, or describe your areas and prices",
+        "returns": "Or describe your policy",
+        "whatsapp": "For example: 01012345678",
+        "edit": "Want to change something? For example: make the colour green"
+      },
+      "answered": "Answered",
+      "uploadFile": "Choose the file",
+      "fileUnreadable": "We couldn't read this file. Use an Excel or CSV file with a header row.",
+      "fixRows": "{count} products need a price or stock. Add them here, or later from the products page.",
+      "sendCard": "Continue",
+      "buildAndPublish": "Build and publish my store",
+      "moreTemplates": "Show 3 more",
+      "done": {
+        "published": "Your store is ready and published.",
+        "publishedPrivate": "Your store is ready and published. Only you can see it until you activate your account with a top-up.",
+        "notPublished": "Your store is ready but isn't published yet. Publish it from the website editor.",
+        "open": "Open your store"
+      }
     }
   },
   "stores": {

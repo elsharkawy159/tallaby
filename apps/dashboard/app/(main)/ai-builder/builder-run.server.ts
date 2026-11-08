@@ -46,6 +46,7 @@ import {
   type BuilderState,
 } from "./builder.dto";
 import { applyCopyValues, collectCopySlots } from "./builder-copy.lib";
+import { originalTexts } from "./builder-checks.lib";
 import { buildItemKeys, buildProgress, isFinished, reviewIssues, shippingZoneNames, subdomainBase, type BuildItem } from "./builder.lib";
 import { POLICY_SYSTEM_RULES, REVIEW_SYSTEM_RULES, SITE_COPY_SYSTEM_RULES, policyRequestText, productRequestText, reviewRequestText, siteCopyRequestText } from "./builder-prompts.lib";
 import { FatalBuildError, runNextStep, type BuildRunner, type StepSpec } from "./builder-run.lib";
@@ -60,7 +61,7 @@ import { buildSpendMicroUsd, checkModelCall, giveCreditBack, loadItems, saveBuil
  * until the seller acts on the review screen. Cost rules: docs/ai.md.
  */
 
-const ALLOWED = storeSectionRegistry.allowedSections();
+export const ALLOWED = storeSectionRegistry.allowedSections();
 const OVERRIDE_KEYS = contentOverrideKeys(storeSectionRegistry);
 
 /** The same input again within this window is free. */
@@ -68,12 +69,12 @@ const RESULT_CACHE_MS = 10 * 60_000;
 
 export type RunContext = { sellerId: string; userId: string; sellerStatus: string };
 
-const refresh = (subdomain: string) => applyInvalidation(invalidateStorefront([subdomain]), { from: "dashboard", mode: "route" });
+export const refresh = (subdomain: string) => applyInvalidation(invalidateStorefront([subdomain]), { from: "dashboard", mode: "route" });
 
 // ── Store ───────────────────────────────────────────────────────────────────
 
 /** The bound store, if it is still this seller's and was never published. The build only ever writes to such a store. */
-async function boundStore(sellerId: string, storeId: string): Promise<"ok" | "published" | "missing"> {
+export async function boundStore(sellerId: string, storeId: string): Promise<"ok" | "published" | "missing"> {
   const [row] = await db
     .select({ firstPublishedAt: stores.firstPublishedAt, siteStatus: stores.siteStatus })
     .from(stores)
@@ -116,7 +117,7 @@ export async function ensureStore(ctx: RunContext, build: BuildRow): Promise<str
   return created.data.id;
 }
 
-async function requireStoreOf(ctx: RunContext, build: BuildRow) {
+export async function requireStoreOf(ctx: RunContext, build: BuildRow) {
   const store = build.storeId ? await getStore(ctx.sellerId, build.storeId) : null;
   if (!store) throw new FatalBuildError("no_store");
   return store;
@@ -154,6 +155,8 @@ async function applySettings(ctx: RunContext, build: BuildRow) {
     googleSiteVerification: null,
   });
   if (!seo.success) throw new Error(`seo_${seo.error}`);
+  // v2 (F-82e): the brief becomes the store's agent profile, the brand memory every agent skill reads (F-83).
+  if (state.flow === "v2") await (await import("./builder-items.server")).writeAgentProfile(ctx.sellerId, store.id, state);
   await refresh(store.subdomain);
   return {};
 }
@@ -179,22 +182,22 @@ async function applyTemplate(ctx: RunContext, build: BuildRow) {
 
 // ── Site copy ───────────────────────────────────────────────────────────────
 
-type DraftPage = { id: string; draftVersion: number; content: PageContent };
+export type DraftPage = { id: string; slug: string; isHome: boolean; draftVersion: number; content: PageContent };
 
-async function draftPages(storeId: string): Promise<DraftPage[]> {
+export async function draftPages(storeId: string): Promise<DraftPage[]> {
   const rows = await db
-    .select({ id: storePages.id, kind: storePages.kind, draftVersion: storePages.draftVersion, draftContent: storePages.draftContent })
+    .select({ id: storePages.id, slug: storePages.slug, isHome: storePages.isHome, kind: storePages.kind, draftVersion: storePages.draftVersion, draftContent: storePages.draftContent })
     .from(storePages)
     .where(eq(storePages.storeId, storeId))
     .orderBy(asc(storePages.orderIndex), asc(storePages.createdAt));
   return rows.flatMap((row) => {
     if (row.kind === "product") return [];
     const content = pageContentSchema.safeParse(row.draftContent);
-    return content.success ? [{ id: row.id, draftVersion: row.draftVersion, content: content.data }] : [];
+    return content.success ? [{ id: row.id, slug: row.slug, isHome: row.isHome, draftVersion: row.draftVersion, content: content.data }] : [];
   });
 }
 
-const storeLocale = (store: { defaultLocale: string }) => (store.defaultLocale === "en" ? "en" : "ar");
+export const storeLocale = (store: { defaultLocale: string }) => (store.defaultLocale === "en" ? "en" : "ar");
 
 async function generateSiteCopy(ctx: RunContext, build: BuildRow): Promise<{ value: BuilderSiteCopyOutput; cached?: boolean; noCall?: boolean }> {
   const store = await requireStoreOf(ctx, build);
@@ -219,13 +222,15 @@ async function generateSiteCopy(ctx: RunContext, build: BuildRow): Promise<{ val
 async function applySiteCopy(ctx: RunContext, build: BuildRow, output: BuilderSiteCopyOutput) {
   const store = await requireStoreOf(ctx, build);
   const pages = await draftPages(store.id);
+  // The template's own texts, for the v2 check that none is left (F-82j); only what the first run saw.
+  const originals = build.state.flow === "v2" ? originalTexts(pages, storeLocale(store)) : [];
   const { pages: next, applied } = applyCopyValues(pages, output, storeLocale(store));
   for (const page of next) {
     // Through the editor's own save: validated, and refused if the seller edited this page meanwhile.
     const saved = await saveStorePageDraft(ctx.sellerId, store.id, page.id, page.content, page.draftVersion, { allowedSections: ALLOWED });
     if (!saved.success) throw new Error(`page_${saved.error}`);
   }
-  return { data: { applied } };
+  return { data: { applied, ...(originals.length && { originals }) } };
 }
 
 // ── Products ────────────────────────────────────────────────────────────────
@@ -317,7 +322,8 @@ async function applyProduct(ctx: RunContext, build: BuildRow, product: BuilderPr
   try {
     const created = await agentCreateProduct(agentContext, input, upload);
     await applyInvalidation(created.invalidation, { from: "dashboard", mode: "route" });
-    return { productId: created.productId, data: { title: title.ar } };
+    // v2: why it stays a draft until the seller fills it in (D4). Price and stock are always set on this path.
+    return { productId: created.productId, data: { title: title.ar, missing: input.images.length ? [] : ["photo"] } };
   } catch (error) {
     if (error instanceof AgentProductError && (error.code === "category_required" || error.code === "invalid_category")) {
       return { status: "failed" as const, data: { reason: error.code } };
@@ -326,12 +332,22 @@ async function applyProduct(ctx: RunContext, build: BuildRow, product: BuilderPr
   }
 }
 
+/** Every product the build made: one per photo or typed product, and the products of each file batch (F-82f). */
+export function builtProductIds(items: ReadonlyMap<string, BuildItem>): string[] {
+  const ids = [...items.values()].flatMap((item) => {
+    if (item.status !== "done") return [];
+    const fromFile = Array.isArray(item.data.productIds) ? (item.data.productIds as unknown[]).filter((id): id is string => typeof id === "string") : [];
+    return [...(item.productId ? [item.productId] : []), ...fromFile];
+  });
+  return [...new Set(ids)];
+}
+
 /** Products belong to the account. A further store shows only what this build made, not the seller's other products. */
 async function applyCatalog(ctx: RunContext, build: BuildRow, items: ReadonlyMap<string, BuildItem>) {
   const store = await requireStoreOf(ctx, build);
   const others = (await listStores(ctx.sellerId)).filter((row) => row.id !== store.id);
   if (!others.length) return { data: { mode: "all" } };
-  const productIds = [...items.values()].flatMap((item) => (item.status === "done" && item.productId ? [item.productId] : []));
+  const productIds = builtProductIds(items);
   if (!productIds.length) return { data: { mode: "unchanged" } };
   const result = await setStoreCatalog(ctx.sellerId, store.id, { mode: "selected", productIds });
   if (!result.success) throw new Error(`catalog_${result.error}`);
@@ -384,7 +400,7 @@ async function applyShippingTemplate(ctx: RunContext, build: BuildRow) {
   return { data: { saved: result.success ? result.data.length : 0, kept: !result.success } };
 }
 
-async function currentPolicy(sellerId: string) {
+export async function currentPolicy(sellerId: string) {
   const [row] = await db.select({ returnPolicy: sellers.returnPolicy, subdomain: sellers.subdomain }).from(sellers).where(eq(sellers.id, sellerId)).limit(1);
   return row ?? null;
 }
@@ -421,6 +437,10 @@ async function specFor(ctx: RunContext, build: BuildRow, key: string, items: Rea
     };
   }
   if (key === "settings") return { feature: null, apply: () => applySettings(ctx, build) };
+  if (state.flow === "v2") {
+    const v2 = await (await import("./builder-items.server")).v2SpecFor(ctx, build, key, items);
+    if (v2) return v2;
+  }
   if (key === "template") return { feature: null, apply: () => applyTemplate(ctx, build) };
   if (key === "site_copy") {
     return {
@@ -551,6 +571,7 @@ export async function runBuildStep(ctx: RunContext, build: BuildRow): Promise<Bu
 
 /** The review screen, from what is really there now, so a fix shows up on reload. */
 export async function loadReview(ctx: RunContext, build: BuildRow): Promise<BuilderReview> {
+  if (build.state.flow === "v2") return (await import("./builder-items.server")).loadReviewV2(ctx, build);
   const items = await loadItems(build.id);
   const store = build.storeId ? await getStore(ctx.sellerId, build.storeId) : null;
   const productIds = [...items.values()].flatMap((item) => (item.status === "done" && item.productId ? [item.productId] : []));
@@ -581,6 +602,10 @@ export async function loadReview(ctx: RunContext, build: BuildRow): Promise<Buil
     : [];
 
   return {
+    flow: "v1",
+    published: false,
+    viewUrl: null,
+    activationLocked: false,
     storeId: store?.id ?? null,
     storeName: store?.name ?? null,
     subdomain: store?.subdomain ?? null,
@@ -603,7 +628,7 @@ export async function loadReview(ctx: RunContext, build: BuildRow): Promise<Buil
   };
 }
 
-const draftRows = (storeId: string) =>
+export const draftRows = (storeId: string) =>
   db.select({ draftContent: storePages.draftContent, kind: storePages.kind }).from(storePages).where(eq(storePages.storeId, storeId));
 
 /** Writes the site copy again. Only on the seller's request, within the limit. Overwrites the same text slots, nothing else. */
@@ -630,10 +655,9 @@ export async function activateProducts(ctx: RunContext, build: BuildRow): Promis
   const items = await loadItems(build.id);
   const agentContext: AgentProductContext = { sellerId: ctx.sellerId, userId: ctx.userId, sellerStatus: ctx.sellerStatus, storeId: store.id };
   let live = 0;
-  for (const item of items.values()) {
-    if (item.status !== "done" || !item.productId) continue;
+  for (const productId of builtProductIds(items)) {
     try {
-      const result = await agentSetProductStatus(agentContext, item.productId, "active");
+      const result = await agentSetProductStatus(agentContext, productId, "active");
       if (result.changed) await applyInvalidation(result.invalidation, { from: "dashboard", mode: "route" });
       if (result.status === "active") live++;
     } catch (error) {

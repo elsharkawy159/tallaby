@@ -6,8 +6,17 @@ import { createRateLimiter } from "@/lib/rate-limit.lib";
 import { builderEnabled } from "@/app/(main)/ai-builder/builder-access.server";
 import { answerQuestion, refreshBrief, toView, type ChatResult } from "@/app/(main)/ai-builder/builder-chat.server";
 import { BUILDER_LIMITS, builderChatBodySchema, type BuilderChatResponse, type BuilderErrorCode } from "@/app/(main)/ai-builder/builder.dto";
-import { withNextQuestion } from "@/app/(main)/ai-builder/builder.lib";
-import { abandonBuild, loadOpenBuild, saveBuild, startBuild, type BuildRow } from "@/app/(main)/ai-builder/builder.store.server";
+import { abandonBuild, loadOpenBuild, saveBuild, type BuildRow } from "@/app/(main)/ai-builder/builder.store.server";
+import { withCard } from "@/app/(main)/ai-builder/builder-questions.lib";
+import {
+  answerCard,
+  attachFile,
+  editText,
+  moreTemplates,
+  refreshV2,
+  setLogoColors,
+  startDashboardBuild,
+} from "@/app/(main)/ai-builder/builder-chat-v2.server";
 
 /**
  * The AI Store Builder's conversation (ROADMAP.md F-54c). The seller comes from
@@ -43,7 +52,8 @@ const answer = (result: ChatResult) =>
 
 export async function POST(request: NextRequest) {
   if (!builderEnabled()) return fail("disabled");
-  if (Number(request.headers.get("content-length") ?? 0) > BUILDER_LIMITS.textMax * 8 + 2048) return fail("tooLong");
+  // A product file read in the browser (attachFile, at most 500 rows) is the largest body.
+  if (Number(request.headers.get("content-length") ?? 0) > 900 * 1024) return fail("tooLong");
 
   let sellerId: string;
   try {
@@ -69,13 +79,26 @@ export async function POST(request: NextRequest) {
         if (open?.status === "building") return fail("notBuilding");
         if (open) await abandonBuild(sellerId, open.id);
       }
-      const started = await startBuild(sellerId, withNextQuestion);
+      const open = body.action === "start" ? await loadOpenBuild(sellerId) : null;
+      // A v1 conversation saved before v2 carries on as it was; every new one is v2 (F-82e).
+      if (open && open.state.flow !== "v2") return answer(await refreshBrief(ctx, open));
+      if (open) return answer(await refreshV2(ctx, open));
+      const started = await startDashboardBuild(sellerId);
       if (!started.ok) return fail(started.error);
-      return answer(await refreshBrief(ctx, started.build));
+      return answer(await refreshV2(ctx, started.build));
     }
 
     const build = await loadOpenBuild(sellerId);
     if (!build || build.status !== "collecting") return fail("notBuilding");
+
+    if (build.state.flow === "v2") {
+      if (body.action === "answers") return answer(await answerCard(ctx, build, body.answers));
+      if (body.action === "edit") return answer(await editText(ctx, build, body.text));
+      if (body.action === "answer") return body.answer.type === "text" ? answer(await editText(ctx, build, body.answer.text)) : fail("badInput");
+      if (body.action === "moreTemplates") return answer(await moreTemplates(ctx, build));
+      if (body.action === "logoColors") return answer(await setLogoColors(ctx, build, body.colors));
+      if (body.action === "attachFile") return answer(await attachFile(ctx, build, body));
+    } else if (body.action !== "answer" && body.action !== "saveProduct" && body.action !== "removeProduct" && body.action !== "removePhoto") return fail("badInput");
 
     if (body.action === "answer") return answer(await answerQuestion(ctx, build, body.answer));
     if (body.action === "saveProduct") return answer(await saveProduct(build, body.product));
@@ -106,14 +129,19 @@ async function saveProduct(build: BuildRow, input: ProductInput) {
     photos: existing?.photos ?? [],
   };
   const state = { ...build.state, products: existing ? products.map((p) => (p.id === product.id ? product : p)) : [...products, product] };
+  return saveV2(build, state);
+}
+
+/** A form edit saved; a v2 conversation's card follows the new products. */
+async function saveV2(build: BuildRow, raw: BuildRow["state"]) {
+  const state = raw.flow === "v2" ? withCard(raw) : raw;
   await saveBuild(build.sellerId, build.id, { state });
   return { view: toView({ ...build, state }) };
 }
 
 async function removeProduct(build: BuildRow, productId: string) {
   const state = { ...build.state, products: build.state.products.filter((product) => product.id !== productId) };
-  await saveBuild(build.sellerId, build.id, { state });
-  return { view: toView({ ...build, state }) };
+  return saveV2(build, state);
 }
 
 async function removePhoto(build: BuildRow, productId: string, path: string) {
@@ -121,6 +149,5 @@ async function removePhoto(build: BuildRow, productId: string, path: string) {
     ...build.state,
     products: build.state.products.map((product) => (product.id === productId ? { ...product, photos: product.photos.filter((photo) => photo !== path) } : product)),
   };
-  await saveBuild(build.sellerId, build.id, { state });
-  return { view: toView({ ...build, state }) };
+  return saveV2(build, state);
 }

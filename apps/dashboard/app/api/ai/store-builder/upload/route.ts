@@ -8,6 +8,7 @@ import { toView, withShortlist } from "@/app/(main)/ai-builder/builder-chat.serv
 import { BUILDER_IMAGE_TYPES, BUILDER_LIMITS, type BuilderChatResponse, type BuilderErrorCode } from "@/app/(main)/ai-builder/builder.dto";
 import { imageTypeOf } from "@/app/(main)/ai-builder/builder-upload.lib";
 import { withNextQuestion } from "@/app/(main)/ai-builder/builder.lib";
+import { withCard } from "@/app/(main)/ai-builder/builder-questions.lib";
 import { loadOpenBuild, saveBuild } from "@/app/(main)/ai-builder/builder.store.server";
 
 /**
@@ -50,7 +51,8 @@ export async function POST(request: NextRequest) {
 
   const build = await loadOpenBuild(sellerId);
   if (!build || build.status !== "collecting") return fail("notBuilding");
-  if (!build.state.briefConfirmed) return fail("uploadsLocked");
+  // v1: after the brief card; v2: once the intake was read (the free claim comes at "Build and publish").
+  if (build.state.flow === "v2" ? !build.state.intakeDone : !build.state.briefConfirmed) return fail("uploadsLocked");
 
   const form = await request.formData().catch(() => null);
   const file = form?.get("file");
@@ -79,7 +81,9 @@ export async function POST(request: NextRequest) {
   }
 
   const state =
-    target === "logo"
+    target === "logo" && build.state.flow === "v2"
+      ? withCard({ ...build.state, logo: path, logoDone: true })
+      : target === "logo"
       ? withNextQuestion(withShortlist({ ...build.state, logo: path, logoDone: true, messages: [...build.state.messages, { role: "seller" as const, text: "chip:logo" }] }, build.id))
       : {
           ...build.state,
