@@ -11,6 +11,7 @@ import * as XLSX from "xlsx";
 import { getCurrentAdminUser } from "@/lib/auth/admin-auth";
 import type { RawSearchParams } from "../_components/data-table/search-params";
 import { buildSellerWelcomeMessage, getStatusLabel } from "./sellers.lib";
+import { getSellerWhatsAppMessages } from "./seller-message.server";
 import { parseSellersParams } from "./sellers.params";
 import { buildSellersWhere } from "./sellers.query";
 import { SELLER_EXPORT_SCOPES, type SellerExportScope } from "./sellers-export.lib";
@@ -190,6 +191,9 @@ export async function exportSellers(params: RawSearchParams, scopeInput: string)
       storesBySeller.set(store.sellerId, list);
     }
 
+    // Same step-aware text as the sellers list button (seller-message.server.ts).
+    const whatsAppMessages = await getSellerWhatsAppMessages(sellerIds);
+
     const requestHeaders = await headers();
     const host = requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host");
     const proto = requestHeaders.get("x-forwarded-proto") ?? "https";
@@ -203,7 +207,10 @@ export async function exportSellers(params: RawSearchParams, scopeInput: string)
         (value) => toWhatsAppNumber(value) !== null
       ) ?? seller.ownerPhone ?? seller.supportPhone ?? null;
       const whatsAppNumber = toWhatsAppNumber(phone);
-      const whatsAppUrl = buildWhatsAppUrl(phone, buildSellerWelcomeMessage(seller, seller.ownerName));
+      const whatsAppUrl = buildWhatsAppUrl(
+        phone,
+        whatsAppMessages.get(seller.id) ?? buildSellerWelcomeMessage(seller, seller.ownerName)
+      );
       const heard = seller.heardAboutUs
         ? isHeardAboutUsSource(seller.heardAboutUs)
           ? HEARD_ABOUT_US_LABELS[seller.heardAboutUs] +

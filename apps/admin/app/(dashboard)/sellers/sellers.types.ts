@@ -35,6 +35,8 @@ export interface Seller {
   heardAboutUsOther?: string | null;
   /** Last time an admin opened WhatsApp from the sellers table (0113); null = never. */
   adminContactedAt?: string | null;
+  /** The WhatsApp message for this seller's setup step, built on the server (seller-message.server.ts); missing = the plain welcome. */
+  whatsAppMessage?: string | null;
   /** The owner's user account (sellers.id = users.id). */
   ownerName?: string | null;
   ownerEmail?: string | null;

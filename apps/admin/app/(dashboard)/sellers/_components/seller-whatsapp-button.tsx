@@ -28,7 +28,11 @@ export function SellerWhatsAppButton({ seller }: { seller: Seller }) {
   const phone = [seller.ownerPhone, seller.supportPhone].find(
     (value) => toWhatsAppNumber(value) !== null
   );
-  const url = buildWhatsAppUrl(phone, buildSellerWelcomeMessage(seller, seller.ownerName));
+  // Built on the server for the seller's setup step; the plain welcome if that failed.
+  const url = buildWhatsAppUrl(
+    phone,
+    seller.whatsAppMessage || buildSellerWelcomeMessage(seller, seller.ownerName)
+  );
 
   if (!url) {
     return (

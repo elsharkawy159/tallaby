@@ -42,6 +42,7 @@ import {
   sellerUpdateSchema,
 } from "./sellers.dto";
 import { buildSellersWhere } from "./sellers.query";
+import { getSellerWhatsAppMessages } from "./seller-message.server";
 import type {
   HeardAboutUsCount,
   Seller,
@@ -177,6 +178,8 @@ export async function getSellers(query: SellersQuery = {}) {
       .where(whereClause);
 
     const storesBySeller = await loadSellerStores(sellersData.map((seller) => seller.id));
+    // One rate read per page; the button opens WhatsApp synchronously, so the text is built here.
+    const whatsAppMessages = await getSellerWhatsAppMessages(sellersData.map((seller) => seller.id));
 
     // Cast the JSON fields to proper types
     const typedSellersData = sellersData.map((seller) => ({
@@ -205,6 +208,7 @@ export async function getSellers(query: SellersQuery = {}) {
       updatedAt: seller.updatedAt ?? new Date().toISOString(),
       storeCount: Number(seller.storeCount ?? 0),
       stores: storesBySeller.get(seller.id) ?? [],
+      whatsAppMessage: whatsAppMessages.get(seller.id) ?? null,
     }));
 
     return {

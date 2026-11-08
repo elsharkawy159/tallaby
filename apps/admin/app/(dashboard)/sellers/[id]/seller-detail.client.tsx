@@ -83,6 +83,7 @@ function EmptyRow({ children }: { children: React.ReactNode }) {
 export function SellerDetailContent({
   detail,
   account,
+  whatsAppMessage,
 }: {
   detail: SellerDetail;
   /**
@@ -90,6 +91,8 @@ export function SellerDetailContent({
    * shows the identity header, so only the contact actions are drawn here.
    */
   account?: AccountRelations | null;
+  /** The step-aware WhatsApp text (seller-message.server.ts); missing = the plain welcome. */
+  whatsAppMessage?: string | null;
 }) {
   const embedded = account !== undefined;
   const {
@@ -130,7 +133,7 @@ export function SellerDetailContent({
           {whatsAppPhone ? (
             <WhatsAppButton
               phone={whatsAppPhone}
-              text={buildSellerWelcomeMessage(seller, owner?.fullName)}
+              text={whatsAppMessage || buildSellerWelcomeMessage(seller, owner?.fullName)}
               label="Contact on WhatsApp"
               size="default"
             />
@@ -202,7 +205,7 @@ export function SellerDetailContent({
                 {whatsAppPhone ? (
                   <WhatsAppButton
                     phone={whatsAppPhone}
-                    text={buildSellerWelcomeMessage(seller, owner?.fullName)}
+                    text={whatsAppMessage || buildSellerWelcomeMessage(seller, owner?.fullName)}
                     label="Contact on WhatsApp"
                     size="default"
                   />

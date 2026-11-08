@@ -19,6 +19,7 @@ import { ScopedCouponsData } from "../../coupons/seller-coupons.data";
 import { getSellerFulfillment } from "../../fulfillment/fulfillment.server";
 import { IntegrationsTable } from "../../integrations/integrations-table";
 import { getSellerDetail } from "../sellers.server";
+import { getSellerWhatsAppMessages } from "../seller-message.server";
 import { SellerAccountPanel } from "./seller-account.client";
 import { SellerAuditCard } from "./seller-admin.chunks";
 import { getSellerAccountTab, getSellerAuditTab, getSellerStoresTab, getSellerWalletTab } from "./seller-admin.data";
@@ -108,6 +109,7 @@ async function SellerTabContent({
     case "overview": {
       const [detail, account] = await Promise.all([getSellerDetail(sellerId), getSellerAccountTab(sellerId)]);
       if (!detail.success || !detail.data) notFound();
+      const whatsAppMessage = (await getSellerWhatsAppMessages([sellerId])).get(sellerId) ?? null;
       return (
         <div className="space-y-6">
           {account ? (
@@ -115,7 +117,7 @@ async function SellerTabContent({
           ) : (
             <Unavailable what="Plan, trial and fee settings" />
           )}
-          <SellerDetailContent detail={detail.data} account={relations} />
+          <SellerDetailContent detail={detail.data} account={relations} whatsAppMessage={whatsAppMessage} />
         </div>
       );
     }
