@@ -358,7 +358,7 @@ export function TemplateGallery({
               const name = text(template.name);
               return (
                 <li key={template.key} className="group flex min-w-0 flex-col gap-3">
-                  {/* Card 1c "Gallery tile": the preview fills the tile; actions appear on hover or keyboard focus. */}
+                  {/* Gallery tile: the preview fills the tile; Use / Preview buttons sit below it, always visible (owner, 2026-11-07). */}
                   <div className={cn("relative overflow-hidden rounded-2xl border border-(--s-line) bg-(--s-surface) shadow-(--s-shadow-card) transition-shadow duration-200 group-hover:shadow-(--s-shadow-hover)", current && "outline-2 outline-offset-2 outline-(--s-primary)")}>
                     <button type="button" className="block w-full cursor-pointer text-start" onClick={() => setPreviewing(template)} aria-label={t("preview.open", { name })}>
                       {template.thumbnailUrl ? (
@@ -385,20 +385,6 @@ export function TemplateGallery({
                         )}
                       </span>
                     )}
-                    <div className="pointer-events-none absolute inset-0 z-[1] flex flex-col items-center justify-center gap-2.5 bg-[rgb(13_55_67/0.62)] opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100 has-[:focus-visible]:opacity-100 [@media(hover:none)]:hidden">
-                      <SellerButton
-                        className="pointer-events-auto w-[190px] whitespace-normal"
-                        disabled={readOnly || isPending || template.isPremium}
-                        onClick={() => setConfirming(template)}
-                      >
-                        {current ? <RotateCcw aria-hidden /> : <Sparkles aria-hidden />}
-                        {current ? tw("reapplyShort") : t("use")}
-                      </SellerButton>
-                      <SellerButton variant="outline" className="pointer-events-auto w-[190px]" onClick={() => setPreviewing(template)}>
-                        <Eye aria-hidden />
-                        {t("preview.action")}
-                      </SellerButton>
-                    </div>
                   </div>
                   <div className="flex items-start justify-between gap-3 px-0.5">
                     <div className="min-w-0">
@@ -411,6 +397,21 @@ export function TemplateGallery({
                       </p>
                     </div>
                     <Swatches colors={template.palette} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <SellerButton
+                      size="sm"
+                      className="whitespace-normal"
+                      disabled={readOnly || isPending || template.isPremium}
+                      onClick={() => setConfirming(template)}
+                    >
+                      {current ? <RotateCcw aria-hidden /> : <Sparkles aria-hidden />}
+                      {current ? tw("reapplyShort") : t("use")}
+                    </SellerButton>
+                    <SellerButton size="sm" variant="outline" onClick={() => setPreviewing(template)}>
+                      <Eye aria-hidden />
+                      {t("preview.action")}
+                    </SellerButton>
                   </div>
                 </li>
               );

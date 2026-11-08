@@ -4,7 +4,6 @@ import { PageContainer } from "@/components/seller-ui";
 import { loadWebsiteStorePage } from "@/lib/stores/website-page.server";
 import { SiteOfflineNote } from "../_components/site-offline-note";
 import { storeFontVariables } from "../_components/store-fonts";
-import { ThemeRequests } from "./theme-requests.client";
 import { TemplateGallery } from "./templates.client";
 
 export const dynamic = "force-dynamic";
@@ -30,8 +29,9 @@ export default async function WebsiteTemplatesPage({ params }: { params: Promise
     <PageContainer>
       <TemplateGallery storeId={store.id} readOnly={store.status !== "active"} fontClassName={storeFontVariables}>
         <SiteOfflineNote storeId={store.id} siteStatus={store.siteStatus} />
-        {/* "Didn't find a theme?" (ROADMAP.md F-77): the request button and the seller's requests. */}
-        <ThemeRequests storeId={store.id} readOnly={store.status !== "active"} />
+        {/* "Didn't find a theme?" (ROADMAP.md F-77) is hidden for now (owner, 2026-11-07: most sellers clicked it
+            instead of picking a template). To bring it back, render
+            <ThemeRequests storeId={store.id} readOnly={store.status !== "active"} /> from "./theme-requests.client" here. */}
       </TemplateGallery>
     </PageContainer>
   );

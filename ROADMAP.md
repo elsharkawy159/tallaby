@@ -1117,7 +1117,7 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 **Why:** A seller who doesn't find a theme for their business should be able to ask for one, and hear back when it's built (owner, 2026-11-06).
 **What:** Website › Templates has a banner at the top, «لم تجد قالبًا يناسب نشاطك؟ اطلب قالبًا الآن», that opens a dialog: reference URL (https only), up to 3 images (JPEG/PNG/WebP, 5 MB each), a description and a note; one of URL / image / description is required. Free, at most 3 open requests (new or in progress) per seller. Images go to the private `theme-request-images` bucket through a server-signed upload into `<sellerId>/`. Below the banner, "My theme requests" lists status, date and the team's reply. Admin › Theme requests (status filters, detail with signed image links, status + reply). A status change to in progress, ready or declined writes the seller bell (`theme_request_updated`, pushed like every type); ready and declined also email the seller (once per outcome). A built theme is added to the normal code-only gallery for everyone (rule 17); the request only tracks status and reply.
-**Status:** [Built, not deployed] 2026-11-06 (§7). Migration 0156 not applied anywhere.
+**Status:** [Built, not deployed] 2026-11-06 (§7). Migration 0156 not applied anywhere. **Hidden 2026-11-07 (owner):** the dashboard no longer renders the banner or "My theme requests" (most sellers clicked it instead of picking a template); the code stays, see `website/templates/page.tsx`.
 
 - **F-77a · P1 · deps: 0156** Table, private bucket, admin bell trigger, seller bell type; lib (validation, 3-open limit, notification plan).
 - **F-77b · P1 · deps: F-77a** Dashboard: banner, dialog with signed image upload, "My theme requests" list.
@@ -1534,6 +1534,12 @@ Add each new request here first, with the date and the owner's words, then turn 
 ---
 
 ## 7. Log
+
+### 2026-11-07 — Templates page: "Request a theme" hidden; card buttons always visible (owner request)
+
+- **F-77 hidden:** Website › Templates no longer renders `ThemeRequests` (banner + "My theme requests"), since most sellers clicked it. Server actions, admin screens and 0156 are untouched; re-add the one line in `page.tsx` to bring it back.
+- **Template cards:** the hover overlay is gone; "Use template" and "Preview" sit side by side under the name, always visible (phones included). Clicking the thumbnail still opens the preview.
+- No migration. Checked: dashboard `tsc` and eslint on the templates folder clean.
 
 ### 2026-11-07 — Top-up message shows EGP; ⚠️ only on Orders; Design preview opens on mobile (owner request)
 
