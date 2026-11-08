@@ -194,6 +194,7 @@ export const WARD = libraryTemplate({
     "Everyday beauty: a banner carousel, the five, how refills work and questions. Four ready pages.",
   ),
   category: "beauty",
+  style: ["classic", "warm"],
   sortOrder: 1030,
   palette: ["#fbf8f6", "#f2e9e6", "#f1c6c9", "#9b3d5a"],
   colors: {

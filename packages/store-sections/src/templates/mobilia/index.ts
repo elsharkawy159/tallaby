@@ -206,6 +206,7 @@ export const MOBILIA = libraryTemplate({
     "Modern, simple furniture: rooms, best sellers, pay over 24 months and delivery times. Four ready pages.",
   ),
   category: "home",
+  style: ["minimal"],
   sortOrder: 760,
   palette: ["#f7f7f5", "#ececea", "#e9d8b4", "#2f2f2f"],
   colors: {

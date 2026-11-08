@@ -171,6 +171,7 @@ export const PACE = libraryTemplate({
     "Fitness gear: home gym, coach picks and the sport watch’s features. Four ready pages.",
   ),
   category: "sports",
+  style: ["bold"],
   sortOrder: 320,
   palette: ["#f4f5f0", "#e2e6dc", "#e8410f", "#111315"],
   colors: {

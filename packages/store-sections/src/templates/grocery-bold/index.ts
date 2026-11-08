@@ -234,6 +234,7 @@ export const GROCERY_BOLD = libraryTemplate({
     "A fast grocery store in market colours: a three-slide hero, category cards and quick-add rows. For quick-delivery stores and online supermarkets.",
   ),
   category: "food",
+  style: ["bold"],
   sortOrder: 1360,
   palette: ["#ffffff", "#eef7ea", "#1d7a3a", "#ff5a36"],
   colors: {

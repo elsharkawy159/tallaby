@@ -247,6 +247,7 @@ export const JEWELRY_LUXE = libraryTemplate({
     "Quiet luxury jewelry: a gold video, white studio photos and four category rows. For fine gold and diamond houses.",
   ),
   category: "jewelry",
+  style: ["luxe"],
   sortOrder: 1410,
   palette: ["#faf8f4", "#efebe4", "#1c1b19", "#b4935c"],
   colors: {

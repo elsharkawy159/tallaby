@@ -243,6 +243,7 @@ export const SPORTS_LUXE = libraryTemplate({
     "Quiet, premium sports: a dumbbell-rack video, captioned category photos and four category rows. For curated equipment stores.",
   ),
   category: "sports",
+  style: ["luxe"],
   sortOrder: 1470,
   palette: ["#f5f4f0", "#e8e6df", "#1c2a26", "#a8874a"],
   colors: {

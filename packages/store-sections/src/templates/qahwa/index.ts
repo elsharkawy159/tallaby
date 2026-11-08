@@ -152,6 +152,7 @@ export const QAHWA = libraryTemplate({
     "Coffee gear at home: the big word and gifts for coffee people. Four ready pages.",
   ),
   category: "kitchen",
+  style: ["warm", "bold"],
   sortOrder: 690,
   palette: ["#f6f2ec", "#e9e0d4", "#e3a857", "#3b2a20"],
   colors: {

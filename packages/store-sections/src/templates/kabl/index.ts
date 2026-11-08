@@ -171,6 +171,7 @@ export const KABL = libraryTemplate({
     "Chargers and cables: search by model or watts, best sellers and pick by place. Four ready pages.",
   ),
   category: "mobile-accessories",
+  style: ["minimal"],
   sortOrder: 550,
   palette: ["#f6f7f9", "#e7ebf0", "#fde68a", "#2563eb"],
   colors: {

@@ -204,6 +204,7 @@ export const ZAHRA = libraryTemplate({
     "Everyday gold-plated jewellery: a bento hero, story rings, gifts by budget and reviews. Four ready pages.",
   ),
   category: "jewelry",
+  style: ["warm"],
   sortOrder: 810,
   palette: ["#fffaf3", "#f8ecd9", "#fbd38d", "#b7791f"],
   colors: {

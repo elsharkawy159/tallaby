@@ -180,6 +180,7 @@ export const CORE = libraryTemplate({
     "Strength equipment: a featured product, the numbers and the most ordered. Four ready pages.",
   ),
   category: "sports",
+  style: ["bold", "minimal"],
   sortOrder: 340,
   palette: ["#f4f4f2", "#e6e6e2", "#ff4d4d", "#101010"],
   colors: {

@@ -223,6 +223,7 @@ export const DAR = libraryTemplate({
     "Family furniture house: since 1982, most ordered, installment calculator, designer home visit, our story and journey, how we work and showrooms. Four ready pages.",
   ),
   category: "home",
+  style: ["classic", "warm"],
   sortOrder: 430,
   palette: ["#f5f1ea", "#e8e0d3", "#d8c3a5", "#5a4632"],
   colors: {

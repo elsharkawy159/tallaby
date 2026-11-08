@@ -155,6 +155,7 @@ export const VOLT = libraryTemplate({
     "Mobile accessories: a big-word launch, quick-buy rows and a comparison. Four ready pages.",
   ),
   category: "mobile-accessories",
+  style: ["bold"],
   sortOrder: 60,
   palette: ["#ffffff", "#c6ff3d", "#2d5bff", "#0d1631"],
   colors: {

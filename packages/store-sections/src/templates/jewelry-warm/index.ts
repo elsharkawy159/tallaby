@@ -261,6 +261,7 @@ export const JEWELRY_WARM = libraryTemplate({
     "Warm, editorial jewelry: gold on wood, categories with piece counts and the workshop story. For handmade and everyday-gold stores.",
   ),
   category: "jewelry",
+  style: ["warm"],
   sortOrder: 1430,
   palette: ["#f6efe4", "#ece1d0", "#8a5a2b", "#c99a4b"],
   colors: {

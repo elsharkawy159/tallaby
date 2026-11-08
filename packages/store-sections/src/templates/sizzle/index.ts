@@ -238,6 +238,7 @@ export const SIZZLE = libraryTemplate({
     "Burgers, shawarma and pizza: food in the headline, how we cook and regulars. Four ready pages.",
   ),
   category: "food",
+  style: ["bold"],
   sortOrder: 170,
   palette: ["#fff7ee", "#ffe3c4", "#ffb703", "#c8281e"],
   colors: {

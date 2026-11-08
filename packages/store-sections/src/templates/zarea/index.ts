@@ -207,6 +207,7 @@ export const ZAREA = libraryTemplate({
     "Plants and pots: a 30-day guarantee, choose by light, care in steps and customers’ green corners. Four ready pages.",
   ),
   category: "home",
+  style: ["warm"],
   sortOrder: 770,
   palette: ["#f4f6ef", "#e2e9d8", "#d8f3dc", "#2d6a4f"],
   colors: {

@@ -235,6 +235,7 @@ export const SPORTS_BOLD = libraryTemplate({
     "High-energy sports: a carousel of tracks and courts, big-type categories and four category rows. For gear shops and clubs.",
   ),
   category: "sports",
+  style: ["bold"],
   sortOrder: 1480,
   palette: ["#ffffff", "#eef1f6", "#1d3fd6", "#c8f031"],
   colors: {

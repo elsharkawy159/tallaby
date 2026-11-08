@@ -185,6 +185,7 @@ export const PURE = libraryTemplate({
     "Calm skincare: clear ingredients, a four-step routine and ratings. Four ready pages.",
   ),
   category: "beauty",
+  style: ["minimal"],
   sortOrder: 90,
   palette: ["#faf8f3", "#e9ede4", "#4f6146", "#26302a"],
   colors: {

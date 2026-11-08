@@ -172,6 +172,7 @@ export const DRIVE = libraryTemplate({
     "Car tech and care: search first, departments, spend-tier codes and driver questions. Four ready pages.",
   ),
   category: "auto",
+  style: ["minimal"],
   sortOrder: 370,
   palette: ["#f5f7fa", "#e8eef6", "#2a6df4", "#0f2340"],
   colors: {

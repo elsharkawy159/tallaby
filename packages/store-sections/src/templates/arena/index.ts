@@ -199,6 +199,7 @@ export const ARENA = libraryTemplate({
     "Gaming gear in dark mode: a full-bleed hero, players' picks, brands and a shop-the-setup video. Four ready pages.",
   ),
   category: "electronics",
+  style: ["bold"],
   sortOrder: 80,
   palette: ["#0f1117", "#1e2230", "#c6ff4d", "#7c5cff"],
   colors: {

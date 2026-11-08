@@ -214,6 +214,7 @@ export const STREETWEAR = libraryTemplate({
     "Bold urban fashion: black, white and acid lime, square corners and heavy type. Four ready pages.",
   ),
   category: "fashion",
+  style: ["bold"],
   sortOrder: 30,
   palette: ["#ffffff", "#e9e9e9", "#d7ff3a", "#0b0b0b"],
   colors: {

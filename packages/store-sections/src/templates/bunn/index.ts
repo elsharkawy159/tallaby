@@ -171,6 +171,7 @@ export const BUNN = libraryTemplate({
     "Specialty coffee subscription: the big ROAST word, start here, a brewing guide and morning messages. Four ready pages.",
   ),
   category: "sweets",
+  style: ["bold"],
   sortOrder: 750,
   palette: ["#f4f1ec", "#e6e0d6", "#ffd8a8", "#d9480f"],
   colors: {

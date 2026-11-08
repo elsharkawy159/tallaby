@@ -212,6 +212,7 @@ export const FURNITURE_LUXE = libraryTemplate({
     "Quiet luxury furniture: a marble living-room video, large room photos and four category rows. For premium furniture showrooms.",
   ),
   category: "home",
+  style: ["luxe"],
   sortOrder: 1200,
   palette: ["#f7f4ee", "#ece6db", "#2b2622", "#b08d57"],
   colors: {

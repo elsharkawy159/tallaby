@@ -156,6 +156,7 @@ export const TYRE = libraryTemplate({
     "Tyres and fitting: search by size, home fitting, booking, instalments and help with sizes. Four ready pages.",
   ),
   category: "auto",
+  style: ["bold"],
   sortOrder: 960,
   palette: ["#f4f4f4", "#e4e4e4", "#fde68a", "#f59e0b"],
   colors: {

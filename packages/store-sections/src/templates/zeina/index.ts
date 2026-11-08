@@ -200,6 +200,7 @@ export const ZEINA = libraryTemplate({
     "Car interior styling: shop by area and reviews. Four ready pages.",
   ),
   category: "auto",
+  style: ["playful"],
   sortOrder: 970,
   palette: ["#faf8f6", "#efe9e3", "#f0abfc", "#7c3aed"],
   colors: {

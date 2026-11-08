@@ -251,6 +251,7 @@ export const GROCERY_WARM = libraryTemplate({
     "A warm farm-to-table grocer: a big field photo, harvest day and the bakery story. For home-food and natural produce stores.",
   ),
   category: "food",
+  style: ["warm"],
   sortOrder: 1370,
   palette: ["#f6efe2", "#ebe0cb", "#8a4a2b", "#6b7a3a"],
   colors: {

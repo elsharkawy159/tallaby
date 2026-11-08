@@ -183,6 +183,7 @@ export const BAMBINO = libraryTemplate({
     "Baby essentials: a soft opening, a registry in four steps and safety promises. Four ready pages.",
   ),
   category: "kids",
+  style: ["playful", "warm"],
   sortOrder: 290,
   palette: ["#fbf8f4", "#eef2f6", "#f6c9b8", "#30425a"],
   colors: {

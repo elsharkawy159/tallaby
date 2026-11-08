@@ -207,6 +207,7 @@ export const PITSTOP = libraryTemplate({
     "Mobile car care: prices, a kit between visits, coverage areas and drivers' reviews. Four ready pages.",
   ),
   category: "auto",
+  style: ["minimal"],
   sortOrder: 470,
   palette: ["#f3f5f7", "#e1e7ec", "#ffb000", "#0a4d8c"],
   colors: {

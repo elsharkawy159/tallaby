@@ -190,6 +190,7 @@ export const BASHRA = libraryTemplate({
     "Skincare by concern: find your routine, our pick and customer reviews. Four ready pages.",
   ),
   category: "beauty",
+  style: ["warm"],
   sortOrder: 400,
   palette: ["#fbf6f2", "#f3e4dc", "#f6c9b8", "#9c3d54"],
   colors: {

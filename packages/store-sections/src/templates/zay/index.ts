@@ -172,6 +172,7 @@ export const ZAY = libraryTemplate({
     "Men’s essentials: the weekday kit, categories, this week’s shelf, a comparison, the reorders and WhatsApp reviews. Four ready pages.",
   ),
   category: "fashion",
+  style: ["minimal", "classic"],
   sortOrder: 500,
   palette: ["#f3f4f6", "#e5e7eb", "#c7d2fe", "#1f3a5f"],
   colors: {

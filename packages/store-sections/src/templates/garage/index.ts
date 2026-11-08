@@ -163,6 +163,7 @@ export const GARAGE = libraryTemplate({
     "Car accessories: a season poster, drivers’ picks, a comparison and WhatsApp messages. Four ready pages.",
   ),
   category: "auto",
+  style: ["bold"],
   sortOrder: 360,
   palette: ["#f2f2f0", "#e4e4e0", "#f2b705", "#121417"],
   colors: {

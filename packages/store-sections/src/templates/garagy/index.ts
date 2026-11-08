@@ -180,6 +180,7 @@ export const GARAGY = libraryTemplate({
     "Car care subscription: monthly plans, how a wash works and support. Four ready pages.",
   ),
   category: "auto",
+  style: ["minimal"],
   sortOrder: 1000,
   palette: ["#f6f7fb", "#e6e9f3", "#c7d2fe", "#4338ca"],
   colors: {

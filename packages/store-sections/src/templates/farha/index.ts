@@ -199,6 +199,7 @@ export const FARHA = libraryTemplate({
     "Toy store: banner carousel, shop by age, top kits, safe to play and parents’ reviews. Four ready pages.",
   ),
   category: "kids",
+  style: ["playful"],
   sortOrder: 1080,
   palette: ["#fffaf2", "#fdeed6", "#ffc83d", "#c8432f"],
   colors: {

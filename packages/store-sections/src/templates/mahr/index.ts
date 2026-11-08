@@ -193,6 +193,7 @@ export const MAHR = libraryTemplate({
     "Gold by the gram: most bought, today’s rate, instalments, the shops and questions. Four ready pages.",
   ),
   category: "jewelry",
+  style: ["classic"],
   sortOrder: 850,
   palette: ["#fffdf7", "#f7f0dc", "#f2d16b", "#8a6d1d"],
   colors: {

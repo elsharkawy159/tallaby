@@ -160,6 +160,7 @@ export const KOORA = libraryTemplate({
     "Football gear for teams: team orders, quantity pricing, coach picks and notes from captains. Four ready pages.",
   ),
   category: "sports",
+  style: ["bold"],
   sortOrder: 920,
   palette: ["#f4f7f4", "#e2ebe3", "#facc15", "#15803d"],
   colors: {

@@ -14,6 +14,7 @@ import { fromLibrary } from "./_library";
 import type { Lib } from "./_pages";
 import { PRODUCT_PAGE_NAME, productPage, productSitePage, type ProductPageSpec } from "./_product-page";
 import { isDiscountDesign } from "./no-discounts";
+import type { TemplateStyle } from "./traits";
 import type { TemplateDefinition, TemplateDemo } from "./types";
 
 export type LibraryTemplatePage = {
@@ -30,6 +31,8 @@ export type LibraryTemplateSpec = {
   description: Localized;
   /** A store industry id (`templates.category`). */
   category: string;
+  /** Its look, main one first (1–2). */
+  style: readonly TemplateStyle[];
   sortOrder: number;
   palette: readonly string[];
   colors: SiteConfig["designSystem"]["colors"];
@@ -93,6 +96,7 @@ export function libraryTemplate(input: LibraryTemplateSpec): TemplateDefinition 
     name: spec.name,
     description: spec.description,
     category: spec.category,
+    style: spec.style,
     sortOrder: spec.sortOrder,
     changelog:
       spec.changelog ??

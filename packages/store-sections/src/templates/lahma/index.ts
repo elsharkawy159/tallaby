@@ -185,6 +185,7 @@ export const LAHMA = libraryTemplate({
     "Butcher and meat boxes: Eid box poster, this week’s cuts, cold-chain delivery and open before you pay. Four ready pages.",
   ),
   category: "food",
+  style: ["bold"],
   sortOrder: 710,
   palette: ["#faf7f3", "#efe6dc", "#f4c95d", "#9b1c1c"],
   colors: {

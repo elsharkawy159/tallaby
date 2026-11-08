@@ -183,6 +183,7 @@ export const ROAST = libraryTemplate({
     "Coffee roaster: a full-bleed roaster hero, this week’s roast, roast-day promises and bean to cup. Four ready pages.",
   ),
   category: "food",
+  style: ["warm"],
   sortOrder: 200,
   palette: ["#f7efe4", "#ecdcc6", "#e39a4b", "#2a1a12"],
   colors: {

@@ -161,6 +161,7 @@ export const BOXING = libraryTemplate({
     "Boxing and combat with a dark homepage: most used and Lakma in numbers. Four ready pages.",
   ),
   category: "sports",
+  style: ["bold"],
   sortOrder: 950,
   palette: ["#111111", "#1c1c1c", "#facc15", "#dc2626"],
   colors: {

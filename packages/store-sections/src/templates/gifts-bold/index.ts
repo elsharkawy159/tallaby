@@ -253,6 +253,7 @@ export const GIFTS_BOLD = libraryTemplate({
     "Joyful, colourful gifts: a three-slide hero, round categories and four product rows. For gift and party stores that want energy.",
   ),
   category: "handmade",
+  style: ["bold", "playful"],
   sortOrder: 1450,
   palette: ["#ffffff", "#fdeef4", "#c2185b", "#ffc93c"],
   colors: {

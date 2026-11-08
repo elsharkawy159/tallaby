@@ -212,6 +212,7 @@ export const ZAKI = libraryTemplate({
     "Smart home and TV with installation: devices we install, installation prices and extended warranty. Four ready pages.",
   ),
   category: "electronics",
+  style: ["minimal"],
   sortOrder: 570,
   palette: ["#f5f7f6", "#e3ebe7", "#fcd34d", "#0f766e"],
   colors: {

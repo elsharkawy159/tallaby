@@ -182,6 +182,7 @@ export const ATARA = libraryTemplate({
     "Spices and herbs: ground fresh, the most reordered and the neighbours’ reviews. Four ready pages.",
   ),
   category: "food",
+  style: ["warm"],
   sortOrder: 730,
   palette: ["#fbf7ef", "#f3e6cf", "#e9b949", "#a63d10"],
   colors: {

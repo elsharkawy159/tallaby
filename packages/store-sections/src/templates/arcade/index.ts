@@ -185,6 +185,7 @@ export const ARCADE = libraryTemplate({
     "Gaming and audio in dark mode: a bold slideshow, a best-seller leaderboard, numbers and new drops. Four ready pages.",
   ),
   category: "electronics",
+  style: ["bold"],
   sortOrder: 70,
   palette: ["#0f1117", "#1e222c", "#b6ff3b", "#7c5cff"],
   colors: {

@@ -172,6 +172,7 @@ export const DARRAGA = libraryTemplate({
     "Bikes and a workshop: first-ride essentials, workshop prices and where to find us. Four ready pages.",
   ),
   category: "sports",
+  style: ["bold"],
   sortOrder: 930,
   palette: ["#f5f6f2", "#e6e8df", "#a3e635", "#c2410c"],
   colors: {

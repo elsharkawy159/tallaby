@@ -187,6 +187,7 @@ export const SABAHA = libraryTemplate({
     "Swim and beach: a full-width pool, categories, the shelf, delivery to the beach and summer reviews. Four ready pages.",
   ),
   category: "sports",
+  style: ["playful"],
   sortOrder: 940,
   palette: ["#f4fbfc", "#dff3f6", "#fde68a", "#0e7490"],
   colors: {

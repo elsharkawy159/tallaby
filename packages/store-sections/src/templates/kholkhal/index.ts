@@ -231,6 +231,7 @@ export const KHOLKHAL = libraryTemplate({
     "Gold-plated jewellery: banner carousel, story rings, gifts by budget and reviews. Four ready pages.",
   ),
   category: "jewelry",
+  style: ["classic", "luxe"],
   sortOrder: 1070,
   palette: ["#fbf9f5", "#f1ebe1", "#e6c77f", "#7a5a2e"],
   colors: {

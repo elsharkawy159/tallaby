@@ -7,6 +7,7 @@ export * from "./essentials";
 export * from "./library-order";
 export * from "./no-discounts";
 export * from "./catalog";
+export * from "./traits";
 export * from "./meta";
 export * from "./demo-catalog";
 export * from "./demo-product";

@@ -226,6 +226,7 @@ export const FURNITURE_BOLD = libraryTemplate({
     "Bold, colourful furniture: a three-slide hero, round categories and four product rows. For stores that want energy and fast sales.",
   ),
   category: "home",
+  style: ["bold"],
   sortOrder: 1210,
   palette: ["#ffffff", "#fff1ea", "#e2552f", "#ffd23f"],
   colors: {

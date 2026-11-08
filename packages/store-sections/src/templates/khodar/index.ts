@@ -156,6 +156,7 @@ export const KHODAR = libraryTemplate({
     "Fresh produce: free-delivery goal, quick search, the weekly box, a 3 pm cut-off and order tracking. Four ready pages.",
   ),
   category: "food",
+  style: ["minimal"],
   sortOrder: 700,
   palette: ["#ffffff", "#eef7ec", "#ffd43b", "#16803c"],
   colors: {

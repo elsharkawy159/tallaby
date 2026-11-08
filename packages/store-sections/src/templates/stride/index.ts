@@ -173,6 +173,7 @@ export const STRIDE = libraryTemplate({
     "Running and recovery: ticket slides, bento aisles and customer messages. Four ready pages.",
   ),
   category: "sports",
+  style: ["bold"],
   sortOrder: 330,
   palette: ["#f6f8f6", "#e3ece8", "#c8f26b", "#14303b"],
   colors: {

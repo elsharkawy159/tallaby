@@ -267,6 +267,7 @@ export const NASIG = libraryTemplate({
     "Calm editorial cotton basics: a thin message strip, a large photo, three category tiles, product rows, the brand story with its impact figures and a photo strip. For basics and cotton clothing stores.",
   ),
   category: "fashion",
+  style: ["minimal", "warm"],
   sortOrder: 1610,
   palette: ["#f6f3ee", "#ece7df", "#1f1d1a", "#9a5b41"],
   colors: {

@@ -172,6 +172,7 @@ export const BARBER = libraryTemplate({
     "Men's grooming: chair prices, booking, the beard kit, the barbers and regulars' reviews. Four ready pages.",
   ),
   category: "beauty",
+  style: ["classic"],
   sortOrder: 640,
   palette: ["#f2f0eb", "#e2ddd3", "#c9a227", "#1f3d36"],
   colors: {

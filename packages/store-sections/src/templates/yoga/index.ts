@@ -206,6 +206,7 @@ export const YOGA = libraryTemplate({
     "Yoga and pilates: studio favourites, the teachers and book a class. Four ready pages.",
   ),
   category: "sports",
+  style: ["minimal", "warm"],
   sortOrder: 910,
   palette: ["#f7f5f1", "#ebe6dd", "#e8d8c3", "#6b8f71"],
   colors: {

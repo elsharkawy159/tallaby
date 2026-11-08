@@ -220,6 +220,7 @@ export const PERFUMES_BOLD = libraryTemplate({
     "Bold, high-energy fragrances: a video hero, round categories and four product rows. For stores that sell fast and in volume.",
   ),
   category: "beauty",
+  style: ["bold"],
   sortOrder: 1390,
   palette: ["#ffffff", "#f7ecee", "#8c1230", "#d9a425"],
   colors: {

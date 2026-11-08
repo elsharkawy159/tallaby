@@ -126,6 +126,7 @@ export const CLASSIC: TemplateDefinition = {
     en: "The default template: simple and modern, with calm colours and rounded cards. Six ready pages for any kind of store.",
   },
   category: "general",
+  style: ["classic", "minimal"],
   sortOrder: 0,
   changelog: "Tallaby Classic v6: template rules (hero carousel, standard home order, rise on scroll, Powered by in the footer)",
   palette: ["#f7f6f2", "#eef3f3", "#fdad28", "#145163"],

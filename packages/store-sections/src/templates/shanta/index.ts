@@ -182,6 +182,7 @@ export const SHANTA = libraryTemplate({
     "Leather bags: a bento hero, carried most, a bag-and-wallet set, top five gifts, the founder's note and questions. Four ready pages.",
   ),
   category: "shoes-bags",
+  style: ["warm"],
   sortOrder: 520,
   palette: ["#f6f1ea", "#eadfce", "#f0c9a0", "#8a4b24"],
   colors: {

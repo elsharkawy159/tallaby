@@ -187,6 +187,7 @@ export const VELLA = libraryTemplate({
     "Clean women's fashion: a sliding black message strip, a full-width video, tall collection photos and a product row per category. For women's clothing stores.",
   ),
   category: "fashion",
+  style: ["minimal"],
   sortOrder: 1600,
   palette: ["#ffffff", "#f4f4f5", "#131316", "#d22b2e"],
   colors: {

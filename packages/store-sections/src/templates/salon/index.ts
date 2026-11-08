@@ -203,6 +203,7 @@ export const SALON = libraryTemplate({
     "Living room furniture: banner carousel, rooms, best sellers, pay over 24 months and questions. Four ready pages.",
   ),
   category: "home",
+  style: ["classic", "luxe"],
   sortOrder: 1060,
   palette: ["#f6f4f0", "#ebe7e0", "#d9b98c", "#5a4636"],
   colors: {

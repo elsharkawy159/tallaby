@@ -220,6 +220,7 @@ export const PERFUMES_LUXE = libraryTemplate({
     "A calm, luxurious perfume house: a split hero, the atelier’s pick and four category rows. For niche and premium perfume stores.",
   ),
   category: "beauty",
+  style: ["luxe"],
   sortOrder: 1380,
   palette: ["#f7f6f2", "#ecebe6", "#1d2533", "#a8874e"],
   colors: {

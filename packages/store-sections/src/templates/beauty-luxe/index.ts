@@ -248,6 +248,7 @@ export const BEAUTY_LUXE = libraryTemplate({
     "Quiet, clinical skincare: a white-bottle video, a ruled category index and four rows of tall cards. For premium skincare brands.",
   ),
   category: "beauty",
+  style: ["luxe", "minimal"],
   sortOrder: 1320,
   palette: ["#fbfaf8", "#f1eee9", "#2a2527", "#a8876b"],
   colors: {

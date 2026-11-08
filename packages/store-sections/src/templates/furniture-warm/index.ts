@@ -221,6 +221,7 @@ export const FURNITURE_WARM = libraryTemplate({
     "Warm, editorial wood furniture: one big photo, categories with piece counts and the workshop story. For natural and handmade furniture stores.",
   ),
   category: "home",
+  style: ["warm"],
   sortOrder: 1220,
   palette: ["#f4ede4", "#e9dfd2", "#7a4b2e", "#c9a27a"],
   colors: {

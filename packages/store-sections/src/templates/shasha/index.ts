@@ -176,6 +176,7 @@ export const SHASHA = libraryTemplate({
     "Electronics megastore: a banner carousel, best sellers, warranty, open before you pay and order tracking. Four ready pages.",
   ),
   category: "electronics",
+  style: ["classic"],
   sortOrder: 1020,
   palette: ["#f5f7fa", "#e8ecf2", "#facc15", "#1d4ed8"],
   colors: {

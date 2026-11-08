@@ -162,6 +162,7 @@ export const HEKAYA = libraryTemplate({
     "Children’s books: new this month, pick your reader’s age, why Hekaya and publishers. Four ready pages.",
   ),
   category: "books",
+  style: ["playful"],
   sortOrder: 310,
   palette: ["#fffaf1", "#fde8c9", "#ffc94d", "#1f3a5f"],
   colors: {

@@ -222,6 +222,7 @@ export const BOTANICA = libraryTemplate({
     "Natural hair and body care: farm to bottle, refills, reviews and the founder's letter. Four ready pages.",
   ),
   category: "beauty",
+  style: ["warm", "minimal"],
   sortOrder: 120,
   palette: ["#f6f1e3", "#e9e0c8", "#d9b45a", "#2d3a22"],
   colors: {

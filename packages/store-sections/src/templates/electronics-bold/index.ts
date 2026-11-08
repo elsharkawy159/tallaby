@@ -240,6 +240,7 @@ export const ELECTRONICS_BOLD = libraryTemplate({
     "High-energy gadgets: a three-slide hero, categories in huge type and four product rows. For accessory and gaming stores that want fast sales.",
   ),
   category: "electronics",
+  style: ["bold"],
   sortOrder: 1270,
   palette: ["#ffffff", "#eef0ff", "#3b2bd9", "#c6ff3d"],
   colors: {

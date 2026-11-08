@@ -201,6 +201,7 @@ export const MAWSEM = libraryTemplate({
     "Everyday fashion: a banner carousel, shop by piece, best sellers and reviews. Four ready pages.",
   ),
   category: "fashion",
+  style: ["classic"],
   sortOrder: 1010,
   palette: ["#f7f5f1", "#ebe6de", "#e8b04a", "#2f4a3a"],
   colors: {

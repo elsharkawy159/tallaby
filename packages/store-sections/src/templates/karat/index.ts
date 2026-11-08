@@ -177,6 +177,7 @@ export const KARAT = libraryTemplate({
     "Everyday accessories: a poster, story rings and customer photos. Four ready pages.",
   ),
   category: "jewelry",
+  style: ["bold", "playful"],
   sortOrder: 260,
   palette: ["#fff8f2", "#f7e6da", "#e2b450", "#2a1e2c"],
   colors: {

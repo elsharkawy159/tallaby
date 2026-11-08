@@ -234,6 +234,7 @@ export const GIFTS_LUXE = libraryTemplate({
     "Atelier-style gifts and candles: a candlelit video, ruled categories and four category rows. For premium gift and handmade stores.",
   ),
   category: "handmade",
+  style: ["luxe"],
   sortOrder: 1440,
   palette: ["#faf6f0", "#efe8de", "#2a2522", "#a8844f"],
   colors: {

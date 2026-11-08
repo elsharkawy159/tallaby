@@ -236,6 +236,7 @@ export const KIDS_BOLD = libraryTemplate({
     "Loud, colourful toys: a three-slide hero, round categories, a best-seller bento and four product rows. For toy shops that want energy and fast sales.",
   ),
   category: "kids",
+  style: ["bold", "playful"],
   sortOrder: 1300,
   palette: ["#ffffff", "#fff4d6", "#1f5fd1", "#ffc83d"],
   colors: {

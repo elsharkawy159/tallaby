@@ -186,6 +186,7 @@ export const FOKHAR = libraryTemplate({
     "Handmade ceramics: this week’s firing, clay to table, the potters and double-boxed delivery. Four ready pages.",
   ),
   category: "handmade",
+  style: ["warm"],
   sortOrder: 660,
   palette: ["#f7f1ea", "#ecdfd0", "#e8b98a", "#a4502a"],
   colors: {

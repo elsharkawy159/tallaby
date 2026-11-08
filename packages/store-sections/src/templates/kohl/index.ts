@@ -167,6 +167,7 @@ export const KOHL = libraryTemplate({
     "Bold makeup: a big word hero, story rings and customer reviews. Four ready pages.",
   ),
   category: "beauty",
+  style: ["bold"],
   sortOrder: 610,
   palette: ["#fff5f3", "#ffe1db", "#ffd166", "#c2185b"],
   colors: {

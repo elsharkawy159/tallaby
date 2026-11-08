@@ -181,6 +181,7 @@ export const TECHHUB = libraryTemplate({
     "Modern electronics: search first, departments, flagship devices and brands. Four ready pages.",
   ),
   category: "electronics",
+  style: ["minimal"],
   sortOrder: 50,
   palette: ["#f6f7f9", "#ffd23f", "#1f5cff", "#14171c"],
   colors: {

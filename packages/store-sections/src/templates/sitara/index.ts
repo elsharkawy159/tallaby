@@ -194,6 +194,7 @@ export const SITARA = libraryTemplate({
     "Modest womenswear: season slides, category rings, most loved, gift cards, ways to pay and reviews. Four ready pages.",
   ),
   category: "fashion",
+  style: ["classic", "warm"],
   sortOrder: 510,
   palette: ["#faf7f4", "#efe7df", "#e9c9b3", "#6d3b47"],
   colors: {

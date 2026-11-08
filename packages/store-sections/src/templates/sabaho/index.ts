@@ -176,6 +176,7 @@ export const SABAHO = libraryTemplate({
     "Breakfast and pantry delivery: most reordered, delivery areas and cut-offs, and order tracking. Four ready pages.",
   ),
   category: "food",
+  style: ["warm"],
   sortOrder: 420,
   palette: ["#fffdf6", "#fdf0cf", "#ffd23f", "#1f7a3a"],
   colors: {

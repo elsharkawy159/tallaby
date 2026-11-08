@@ -193,6 +193,7 @@ export const HALAWA = libraryTemplate({
     "Oriental sweets: seasonal campaigns, what are you craving, gifts for every visit, the most ordered and fifty years of trays. Four ready pages.",
   ),
   category: "sweets",
+  style: ["classic", "warm"],
   sortOrder: 720,
   palette: ["#fff9f0", "#fbe9cf", "#f9c74f", "#b45309"],
   colors: {

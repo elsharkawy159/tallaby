@@ -255,6 +255,7 @@ export const KASR = libraryTemplate({
     "Editorial fashion: a campaign slideshow, a lookbook, a video and product reviews, with classic type and square corners. Four ready pages.",
   ),
   category: "fashion",
+  style: ["luxe", "classic"],
   sortOrder: 40,
   palette: ["#f4f1ec", "#e8e2d8", "#a3472b", "#1c1b19"],
   colors: {

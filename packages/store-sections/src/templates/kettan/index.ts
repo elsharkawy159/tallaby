@@ -195,6 +195,7 @@ export const KETTAN = libraryTemplate({
     "Linen basics: a split hero, shop by piece, just in, our promises, best sellers and reviews. Four ready pages.",
   ),
   category: "fashion",
+  style: ["minimal"],
   sortOrder: 490,
   palette: ["#f7f5f0", "#ebe6dc", "#d9cfb8", "#3f4a3c"],
   colors: {

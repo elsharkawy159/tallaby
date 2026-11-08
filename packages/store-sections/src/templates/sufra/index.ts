@@ -145,6 +145,7 @@ export const SUFRA = libraryTemplate({
     "Tableware led by delivery and payment: tomorrow delivery, feast season, the Friday set, shop by budget, ways to pay, open before you pay and a kitchen kit. Four ready pages.",
   ),
   category: "kitchen",
+  style: ["classic", "warm"],
   sortOrder: 410,
   palette: ["#f8f4ec", "#ece3d2", "#f0c987", "#2f5d50"],
   colors: {

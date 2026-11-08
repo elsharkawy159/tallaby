@@ -178,6 +178,7 @@ export const SAKAN = libraryTemplate({
     "Living and bedroom furniture: showroom slides, shop by room, pick the fabric and the delivery timeline. Four ready pages.",
   ),
   category: "home",
+  style: ["luxe", "classic"],
   sortOrder: 240,
   palette: ["#f3f0ea", "#e3ddd2", "#c7b79a", "#26302e"],
   colors: {

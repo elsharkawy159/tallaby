@@ -3,6 +3,7 @@ import type { SiteConfig } from "../config/schema";
 import type { Localized } from "../core/types";
 import type { Design } from "../designs/builder";
 import type { ProductPageSpec } from "./_product-page";
+import type { TemplateStyle } from "./traits";
 
 /**
  * A preview catalog: what the templates gallery shows instead of the
@@ -41,6 +42,13 @@ export type TemplateDefinition = {
   description: Localized;
   /** `templates.category` (a store industry id). */
   category: string;
+  /**
+   * Its look, main one first (1–2; AI store builder v2 §5): what the
+   * builder's suggestions match a seller's style words against, and keep
+   * apart (no two suggestions share a main style). Tone and home needs are
+   * computed (`./traits.ts`), never written by hand.
+   */
+  style: readonly TemplateStyle[];
   sortOrder: number;
   /** What the version changes, for `template_versions.changelog`. */
   changelog: string;

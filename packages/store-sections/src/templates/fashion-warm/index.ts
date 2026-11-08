@@ -260,6 +260,7 @@ export const FASHION_WARM = libraryTemplate({
     "Warm, editorial fashion: a large hero photo, a campaign panel and four category rows. For cotton, linen and handmade labels.",
   ),
   category: "fashion",
+  style: ["warm"],
   sortOrder: 1250,
   palette: ["#f5efe6", "#ebe1d3", "#9a4a2c", "#c79a6b"],
   colors: {

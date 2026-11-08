@@ -173,6 +173,7 @@ export const ROKN = libraryTemplate({
     "Decor and gifts: gifts by person, by budget, given most and a gift card. Four ready pages.",
   ),
   category: "home",
+  style: ["warm", "classic"],
   sortOrder: 800,
   palette: ["#faf6f1", "#f0e7dc", "#f2cc8f", "#7f5539"],
   colors: {

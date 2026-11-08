@@ -186,6 +186,7 @@ export const FADDA = libraryTemplate({
     "Sterling silver studio: a one-ring hero, new in, press quotes, materials and care and the silversmith’s letter. Four ready pages.",
   ),
   category: "jewelry",
+  style: ["luxe", "minimal"],
   sortOrder: 270,
   palette: ["#f2f2f0", "#e4e4e1", "#c9ccd2", "#1d1f22"],
   colors: {

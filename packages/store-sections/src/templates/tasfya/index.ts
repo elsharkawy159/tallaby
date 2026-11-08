@@ -180,6 +180,7 @@ export const TASFYA = libraryTemplate({
     "Fashion outlet: the rails, just dropped, shop by budget, selling fast, open before you pay and shopper reviews. Four ready pages.",
   ),
   category: "fashion",
+  style: ["bold"],
   sortOrder: 530,
   palette: ["#ffffff", "#f1f1ee", "#ffe15d", "#d7263d"],
   colors: {

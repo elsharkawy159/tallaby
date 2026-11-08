@@ -183,6 +183,7 @@ export const KAHRABA = libraryTemplate({
     "EV charging: home chargers, how installation works, survey booking and questions. Four ready pages.",
   ),
   category: "auto",
+  style: ["minimal"],
   sortOrder: 980,
   palette: ["#f5f8fa", "#e3ecf2", "#a5f3fc", "#0891b2"],
   colors: {

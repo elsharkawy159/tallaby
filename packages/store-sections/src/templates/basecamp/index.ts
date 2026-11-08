@@ -186,6 +186,7 @@ export const BASECAMP = libraryTemplate({
     "Camping and trips: a desert season poster, why campers come back, the brands and how renting works. Four ready pages.",
   ),
   category: "sports",
+  style: ["warm"],
   sortOrder: 350,
   palette: ["#efeadf", "#ded6c4", "#e0922f", "#1f2b24"],
   colors: {

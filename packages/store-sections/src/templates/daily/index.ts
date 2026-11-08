@@ -177,6 +177,7 @@ export const DAILY = libraryTemplate({
     "Kitchen and everyday essentials: clear categories and daily basics. Four ready pages.",
   ),
   category: "kitchen",
+  style: ["minimal"],
   sortOrder: 140,
   palette: ["#fffaf0", "#ffe2b8", "#2f9e5b", "#1f2a22"],
   colors: {

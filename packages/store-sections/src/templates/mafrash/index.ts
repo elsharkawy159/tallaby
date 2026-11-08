@@ -179,6 +179,7 @@ export const MAFRASH = libraryTemplate({
     "Bedding and textiles: a 30-night trial, the bed set, Egyptian cotton, new colours and share a good night. Four ready pages.",
   ),
   category: "home",
+  style: ["warm"],
   sortOrder: 790,
   palette: ["#fbfaf8", "#efece6", "#dbe7f5", "#4a6fa5"],
   colors: {

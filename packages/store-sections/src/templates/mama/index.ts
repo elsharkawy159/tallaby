@@ -165,6 +165,7 @@ export const MAMA = libraryTemplate({
     "Calm baby essentials: shop by the baby’s age, a hospital bag, our promise and a gift card for a new mum. Four ready pages.",
   ),
   category: "kids",
+  style: ["warm", "minimal"],
   sortOrder: 870,
   palette: ["#fcfaf7", "#f1ede7", "#f6d6c8", "#7a9e9f"],
   colors: {

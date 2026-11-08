@@ -230,6 +230,7 @@ export const ELECTRONICS_LUXE = libraryTemplate({
     "Quiet, premium electronics: a headphone-stand video, category circles and four product rows. For premium audio and gadget stores.",
   ),
   category: "electronics",
+  style: ["luxe", "minimal"],
   sortOrder: 1260,
   palette: ["#f6f7f9", "#eceef2", "#1c1f24", "#5b6b82"],
   colors: {

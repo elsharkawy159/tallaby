@@ -251,6 +251,7 @@ export const ELECTRONICS_WARM = libraryTemplate({
     "Warm, editorial gadgets: a split hero, the first category as a big photo and the founders’ story. For desk-setup and accessory stores.",
   ),
   category: "electronics",
+  style: ["warm"],
   sortOrder: 1280,
   palette: ["#f5efe6", "#ebe1d3", "#8a4b22", "#d99a4e"],
   colors: {

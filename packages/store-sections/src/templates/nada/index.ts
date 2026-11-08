@@ -178,6 +178,7 @@ export const NADA = libraryTemplate({
     "Clean, minimal skincare: a five-product routine and how refills work. Four ready pages.",
   ),
   category: "beauty",
+  style: ["minimal"],
   sortOrder: 600,
   palette: ["#fbfbf9", "#eef1ec", "#dfe9d5", "#3e6b57"],
   colors: {

@@ -162,6 +162,7 @@ export const HARVEST = libraryTemplate({
     "Online grocery: quick search, aisles and everyday essentials. Four ready pages.",
   ),
   category: "food",
+  style: ["minimal"],
   sortOrder: 180,
   palette: ["#ffffff", "#eef6ea", "#ffcf3d", "#1e7a44"],
   colors: {

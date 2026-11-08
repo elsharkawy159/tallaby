@@ -240,6 +240,7 @@ export const FASHION_LUXE = libraryTemplate({
     "Quiet luxury fashion: a video of the season's rail, a ruled category index and four rows of tall photos. For premium clothing boutiques.",
   ),
   category: "fashion",
+  style: ["luxe"],
   sortOrder: 1230,
   palette: ["#f7f6f3", "#ecebe6", "#161616", "#a08c72"],
   colors: {

@@ -198,6 +198,7 @@ export const LOAF = libraryTemplate({
     "Sourdough bakery and subscriptions: a big word, today’s shelf and a weekly loaf. Four ready pages.",
   ),
   category: "food",
+  style: ["warm", "bold"],
   sortOrder: 190,
   palette: ["#fff6ea", "#f4e3c8", "#f2b44a", "#3b2416"],
   colors: {

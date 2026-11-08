@@ -197,6 +197,7 @@ export const SOUQ = libraryTemplate({
     "Online supermarket: a banner carousel, aisles, today's shelf, 45-minute zones and support. Four ready pages.",
   ),
   category: "food",
+  style: ["bold"],
   sortOrder: 1050,
   palette: ["#f7f8f2", "#e9eddc", "#ffcc33", "#2f7d32"],
   colors: {

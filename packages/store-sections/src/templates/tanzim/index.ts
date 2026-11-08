@@ -179,6 +179,7 @@ export const TANZIM = libraryTemplate({
     "Home organisation: most reordered and delivery days. Four ready pages.",
   ),
   category: "kitchen",
+  style: ["minimal"],
   sortOrder: 680,
   palette: ["#fafafa", "#eef0f3", "#bae6fd", "#0ea5e9"],
   colors: {

@@ -207,6 +207,7 @@ export const GHORZA = libraryTemplate({
     "Ready-to-wear with a tailoring studio: categories, new in, alteration prices, most ordered, our promises and reviews. Four ready pages.",
   ),
   category: "fashion",
+  style: ["classic", "luxe"],
   sortOrder: 480,
   palette: ["#f6f3ef", "#e9e2d9", "#e8c9a0", "#3d2c5c"],
   colors: {

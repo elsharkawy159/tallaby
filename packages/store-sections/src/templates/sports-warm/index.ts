@@ -243,6 +243,7 @@ export const SPORTS_WARM = libraryTemplate({
     "Warm weekend sport: a padel court at sunrise, category cards and four category rows. For sport and outdoor shops.",
   ),
   category: "sports",
+  style: ["warm"],
   sortOrder: 1490,
   palette: ["#f6efe4", "#ece0cd", "#a4471f", "#d9a441"],
   colors: {

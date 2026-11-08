@@ -252,6 +252,7 @@ export const JEWELRY_BOLD = libraryTemplate({
     "Bold jewelry: a three-slide hero of gold on dark grounds, big-type categories and four product rows. For stores that want shine and fast sales.",
   ),
   category: "jewelry",
+  style: ["bold"],
   sortOrder: 1420,
   palette: ["#ffffff", "#f6edf0", "#9b1b3a", "#e8b931"],
   colors: {

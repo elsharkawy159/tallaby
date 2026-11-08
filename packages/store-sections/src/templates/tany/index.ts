@@ -191,6 +191,7 @@ export const TANY = libraryTemplate({
     "Refurbished electronics: how we renew a device, warranty, open before you pay and order tracking. Four ready pages.",
   ),
   category: "electronics",
+  style: ["classic"],
   sortOrder: 590,
   palette: ["#f4f7f2", "#e2ead9", "#c5f07a", "#2f7d32"],
   colors: {

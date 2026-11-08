@@ -234,6 +234,7 @@ export const BEAUTY_BOLD = libraryTemplate({
     "Bold-colour makeup: a colour-pop slider, big-type categories, tabbed products and rounded category rows. For makeup and beauty stores.",
   ),
   category: "beauty",
+  style: ["bold"],
   sortOrder: 1330,
   palette: ["#fff6f9", "#fde3ee", "#c2185b", "#5e1f8c"],
   colors: {

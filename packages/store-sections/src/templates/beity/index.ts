@@ -187,6 +187,7 @@ export const BEITY = libraryTemplate({
     "Home and kitchen store: a banner carousel, departments, this week's shelf, our promises and kitchen news. Four ready pages.",
   ),
   category: "kitchen",
+  style: ["classic"],
   sortOrder: 1040,
   palette: ["#f8f6f2", "#ede8df", "#f2c14e", "#b4532a"],
   colors: {

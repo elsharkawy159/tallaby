@@ -185,6 +185,7 @@ export const SAAT = libraryTemplate({
     "Classic watches: a split hero, analogue or smart, instalments, service prices and the shops. Four ready pages.",
   ),
   category: "jewelry",
+  style: ["classic", "luxe"],
   sortOrder: 840,
   palette: ["#f6f5f2", "#e9e6df", "#d9b56c", "#14532d"],
   colors: {

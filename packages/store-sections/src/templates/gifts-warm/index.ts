@@ -264,6 +264,7 @@ export const GIFTS_WARM = libraryTemplate({
     "Warm handmade gifts with a workshop feel: one big photo, categories with counts and the makers’ story. For handmade and natural gift stores.",
   ),
   category: "handmade",
+  style: ["warm"],
   sortOrder: 1460,
   palette: ["#f6efe4", "#ebdfcc", "#9a4a2c", "#7d8a5c"],
   colors: {

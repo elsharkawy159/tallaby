@@ -175,6 +175,7 @@ export const NASHAT = libraryTemplate({
     "Home fitness: banner carousel, best sellers and messages from captains. Four ready pages.",
   ),
   category: "sports",
+  style: ["bold"],
   sortOrder: 1090,
   palette: ["#f4f5f2", "#e5e8e1", "#c6f432", "#111111"],
   colors: {

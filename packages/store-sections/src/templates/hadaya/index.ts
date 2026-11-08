@@ -200,6 +200,7 @@ export const HADAYA = libraryTemplate({
     "Kids’ gift shop: the right gift in two minutes, by age, by budget and parents’ reviews. Four ready pages.",
   ),
   category: "kids",
+  style: ["playful"],
   sortOrder: 450,
   palette: ["#fff7f0", "#ffe4d1", "#ffcc4d", "#3b4cca"],
   colors: {

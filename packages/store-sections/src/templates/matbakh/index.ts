@@ -189,6 +189,7 @@ export const MATBAKH = libraryTemplate({
     "Modern kitchen basics: quick search, departments, this week's shelf, a budget shelf and open before you pay. Four ready pages.",
   ),
   category: "kitchen",
+  style: ["bold"],
   sortOrder: 650,
   palette: ["#ffffff", "#f1f4f2", "#ffd166", "#e85d04"],
   colors: {

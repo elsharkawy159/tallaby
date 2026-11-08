@@ -241,6 +241,7 @@ export const FASHION_BOLD = libraryTemplate({
     "Bold, colourful fashion: a three-slide hero, big-type categories and four product rows. For young brands that want energy.",
   ),
   category: "fashion",
+  style: ["bold"],
   sortOrder: 1240,
   palette: ["#ffffff", "#f0f2ff", "#2340d8", "#d8f24a"],
   colors: {

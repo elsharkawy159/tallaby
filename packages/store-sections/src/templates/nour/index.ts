@@ -147,6 +147,7 @@ export const NOUR = libraryTemplate({
     "Lighting shop with a dark home page: one big word, most lit, installation services and instalments. Four ready pages.",
   ),
   category: "home",
+  style: ["luxe", "bold"],
   sortOrder: 780,
   palette: ["#1a1714", "#24201c", "#f5d38a", "#e0a33c"],
   colors: {

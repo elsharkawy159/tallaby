@@ -194,6 +194,7 @@ export const REP = libraryTemplate({
     "Home training club: shop by goal, the coaches, the numbers and members’ messages. Four ready pages.",
   ),
   category: "sports",
+  style: ["bold"],
   sortOrder: 460,
   palette: ["#f2f3f1", "#e2e5df", "#c6f432", "#111111"],
   colors: {

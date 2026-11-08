@@ -169,6 +169,7 @@ export const SAA = libraryTemplate({
     "Smartwatches: a week on one charge, most worn, why buy from us, installments and WhatsApp messages. Four ready pages.",
   ),
   category: "electronics",
+  style: ["bold"],
   sortOrder: 580,
   palette: ["#f7f7f5", "#ebebe6", "#fde047", "#e11d48"],
   colors: {

@@ -55,6 +55,14 @@
       "types": "./src/core/low-stock.ts",
       "default": "./src/core/low-stock.ts"
     },
+    "./palette": {
+      "types": "./src/core/palette.ts",
+      "default": "./src/core/palette.ts"
+    },
+    "./logo-colors": {
+      "types": "./src/core/logo-colors.ts",
+      "default": "./src/core/logo-colors.ts"
+    },
     "./social": {
       "types": "./src/social/platforms.ts",
       "default": "./src/social/platforms.ts"

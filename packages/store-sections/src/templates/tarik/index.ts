@@ -211,6 +211,7 @@ export const TARIK = libraryTemplate({
     "Car accessories: banner carousel, shop by area and reviews. Four ready pages.",
   ),
   category: "auto",
+  style: ["classic"],
   sortOrder: 1100,
   palette: ["#f3f4f5", "#e3e6e9", "#fbbf24", "#c2410c"],
   colors: {

@@ -195,6 +195,7 @@ export const MOTO = libraryTemplate({
     "Motorcycle riding gear: certified helmets, riders' picks and trusted brands. Four ready pages.",
   ),
   category: "auto",
+  style: ["bold"],
   sortOrder: 380,
   palette: ["#f1f0ee", "#e2e0dc", "#e23d28", "#141414"],
   colors: {

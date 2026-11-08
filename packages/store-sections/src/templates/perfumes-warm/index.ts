@@ -252,6 +252,7 @@ export const PERFUMES_WARM = libraryTemplate({
     "A warm, editorial attar house: a three-slide hero, categories beside one large photo and the shop’s story. For attar, oud and bakhoor stores.",
   ),
   category: "beauty",
+  style: ["warm"],
   sortOrder: 1400,
   palette: ["#faf4ee", "#efe1d6", "#5b2333", "#b07d2b"],
   colors: {

@@ -181,6 +181,7 @@ export const LULU = libraryTemplate({
     "Freshwater pearls: a split hero, how we choose, new pieces, a viewing booking, the founder's note and reviews. Four ready pages.",
   ),
   category: "jewelry",
+  style: ["luxe"],
   sortOrder: 830,
   palette: ["#fbf9f6", "#f1ece5", "#e7dfd2", "#5e6b7c"],
   colors: {
