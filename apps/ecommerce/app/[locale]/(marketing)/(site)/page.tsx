@@ -12,6 +12,7 @@ import {
   PricingTeaser,
   ShippingSection,
   TemplatesSection,
+  WhatIsTallabySection,
 } from "@/components/marketing/home/home-sections";
 import { StickyCta } from "@/components/marketing/home/sticky-cta.client";
 import { ProductJsonLd } from "@/components/marketing/site/json-ld";
@@ -30,6 +31,7 @@ export default function HomePage() {
     <>
       <ProductJsonLd page="home" path="/" />
       <HomeHero />
+      <WhatIsTallabySection />
       <FeaturesSection />
       <AiSection />
       <BuilderSection />

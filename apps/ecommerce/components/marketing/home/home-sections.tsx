@@ -1,5 +1,5 @@
 import * as React from "react";
-import { BellRing, Bike, BookOpen, Check, ChartNoAxesCombined, FileUp, ShieldCheck, Sparkles, Star, Timer, Palette, Rocket, Truck, Users } from "lucide-react";
+import { BellRing, Bike, BookOpen, Check, ChartNoAxesCombined, FileUp, ShieldCheck, Sparkles, Star, Store, Timer, Palette, Rocket, Truck, Users, Wallet } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { CtaBand } from "@/components/marketing/site/cta-band";
 import { FaqAccordion, type FaqEntry } from "@/components/marketing/site/faq-accordion";
@@ -99,6 +99,50 @@ export async function HomeHero() {
         <p className="mt-[76px] text-center text-xs text-ink-400 min-[641px]:mt-16">{t("sample")}</p>
       </Container>
     </section>
+  );
+}
+
+/** "What is Tallaby?" right after the hero: one plain sentence, who it is for, and four facts (owner, 2026-11-08). */
+export async function WhatIsTallabySection() {
+  const t = await getTranslations("home.what");
+  const points = [
+    { key: "store", icon: Store },
+    { key: "money", icon: Wallet },
+    { key: "shipping", icon: Truck },
+    { key: "free", icon: Rocket },
+  ] as const;
+
+  return (
+    <Section id="what-is-tallaby" aria-labelledby="what-is-tallaby-title">
+      <Container className="grid items-center gap-8 min-[1081px]:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] min-[1081px]:gap-14">
+        <Reveal className="flex flex-col items-start gap-[18px]">
+          <SplitHeading id="what-is-tallaby-title" kicker={t("kicker")} title={t("title")} body={t("lead")} />
+          <p className="flex max-w-[620px] items-start gap-2.5 rounded-2xl border border-[#e6eef0] bg-white/80 px-4 py-3 text-[15px] text-pretty text-[#33464b]">
+            <Users className="mt-0.5 size-[18px] flex-none text-teal-700" aria-hidden />
+            {t("who")}
+          </p>
+        </Reveal>
+        <ul className="m-0 grid list-none gap-3 p-0 min-[641px]:grid-cols-2 min-[641px]:gap-4">
+          {points.map((point) => (
+            <Reveal
+              as="li"
+              key={point.key}
+              className="grid grid-cols-[38px_minmax(0,1fr)] content-start gap-x-3 gap-y-0.5 rounded-[26px] border border-[#e6eef0] bg-white/85 px-4 py-3.5 min-[641px]:flex min-[641px]:flex-col min-[641px]:gap-2.5 min-[641px]:p-[26px]"
+            >
+              <IconTile className="row-span-2 size-[38px] rounded-xl min-[641px]:mb-1.5 min-[641px]:size-11 min-[641px]:rounded-[14px]">
+                <point.icon aria-hidden />
+              </IconTile>
+              <h3 className="text-[15.5px] leading-normal font-bold text-teal-900 min-[641px]:text-[17px]">{t(`points.${point.key}.title`)}</h3>
+              <p className="text-sm text-pretty text-[#5f7277]">
+                {t.rich(`points.${point.key}.body`, {
+                  domain: (chunks) => <Ltr className="font-latin font-semibold text-[#33464b]">{chunks}</Ltr>,
+                })}
+              </p>
+            </Reveal>
+          ))}
+        </ul>
+      </Container>
+    </Section>
   );
 }
 
