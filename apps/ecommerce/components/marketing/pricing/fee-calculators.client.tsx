@@ -5,7 +5,9 @@ import { Info } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Slider } from "@workspace/ui/components/slider";
 import { cn } from "@workspace/ui/lib/utils";
-import { PLAN_PRICES, estimatePlans, formatEgp, formatNumber, formatUsd, proBreakEvenOrdersShown, usdCentsToEgp } from "@/lib/marketing/pricing.lib";
+import { type LocalCurrency, formatLocalAmount, formatLocalMoneyText } from "@/lib/marketing/local-currency.lib";
+import { PLAN_PRICES, estimatePlans, formatNumber, formatUsd, proBreakEvenOrdersShown } from "@/lib/marketing/pricing.lib";
+import { useVisitorCurrency } from "@/lib/marketing/visitor-currency.client";
 
 const MIN_ORDERS = 10;
 const MAX_ORDERS = 3000;
@@ -16,18 +18,24 @@ const lightSlider =
 
 /**
  * "What would a month cost you?": orders a month only (owner, 2026-11-06),
- * with Free and Pro side by side on wide screens and stacked on phones. The
- * EGP figures use the dashboard wallet's rate and rounding, passed from the server.
+ * with Free and Pro side by side on wide screens and stacked on phones.
+ * Amounts show in the visitor's currency with USD under or beside them, like
+ * the plan cards (owner, 2026-11-08): EGP on the server render (the wallet's
+ * rate and rounding), USD only for a country we don't map. `rates` are USD→X
+ * by ISO code from the server, EGP always among them.
  */
-export function FeeEstimator({ rate }: { rate: number }) {
+export function FeeEstimator({ rates }: { rates: Record<string, number> }) {
   const t = useTranslations("pricing.estimate");
+  const tc = useTranslations("pricing.plans.currency");
   const [orders, setOrders] = React.useState(300);
   const estimate = estimatePlans({ orders });
 
-  const egp = (cents: number) => formatEgp(usdCentsToEgp(cents, rate));
+  const currency = useVisitorCurrency((code) => Boolean(rates[code]));
+  const local: LocalCurrency = currency ? { currency, rate: rates[currency]!, label: tc(currency as "EGP") } : null;
+  const money = (cents: number) => formatLocalMoneyText(cents, local);
   const plans = [
-    { id: "free" as const, name: t("free"), cents: estimate.freeCents, detail: t("perOrder", { fee: formatUsd(PLAN_PRICES.free.orderFeeCents) }) },
-    { id: "pro" as const, name: "Pro", cents: estimate.proCents, detail: t("perMonth", { price: formatUsd(PLAN_PRICES.pro.monthlyCents) }) },
+    { id: "free" as const, name: t("free"), cents: estimate.freeCents, detail: t("perOrder", { fee: money(PLAN_PRICES.free.orderFeeCents) }) },
+    { id: "pro" as const, name: "Pro", cents: estimate.proCents, detail: t("perMonth", { price: money(PLAN_PRICES.pro.monthlyCents) }) },
   ];
 
   return (
@@ -75,7 +83,7 @@ export function FeeEstimator({ rate }: { rate: number }) {
           </div>
           <p className="mt-auto flex items-start gap-2 rounded-card-sm bg-teal-50/70 p-3.5 text-[13.5px] text-pretty text-[#33464b]">
             <Info className="mt-0.5 size-4 flex-none text-teal-700" aria-hidden />
-            {t("breakEven", { orders: formatNumber(proBreakEvenOrdersShown()), price: formatUsd(PLAN_PRICES.pro.monthlyCents) })}
+            {t("breakEven", { orders: formatNumber(proBreakEvenOrdersShown()), price: money(PLAN_PRICES.pro.monthlyCents) })}
           </p>
         </div>
 
@@ -93,16 +101,24 @@ export function FeeEstimator({ rate }: { rate: number }) {
                     </span>
                     <small className="text-xs text-[#6b5a3a]">{plan.detail}</small>
                   </span>
-                  <span className="text-end">
-                    <b dir="ltr" className="block font-latin text-[28px] leading-none font-extrabold text-teal-900 tabular-nums">{formatUsd(plan.cents)}</b>
-                    <small className="text-xs text-[#6b5a3a]">{t("approx", { egp: egp(plan.cents) })}</small>
+                  <span className="flex flex-col items-end gap-1">
+                    <span className="flex items-baseline gap-1.5">
+                      <b dir="ltr" className="font-latin text-[28px] leading-none font-extrabold text-teal-900 tabular-nums">
+                        {local ? formatLocalAmount(plan.cents, local.currency, local.rate) : formatUsd(plan.cents)}
+                      </b>
+                      {local ? <span className="text-[15px] leading-none font-bold text-teal-900">{local.label}</span> : null}
+                    </span>
+                    {/* Kept (hidden) while USD only shows, so the rows keep their height. */}
+                    <small dir="ltr" className={cn("font-latin text-xs text-[#6b5a3a] tabular-nums", !local && "invisible")} aria-hidden={local ? undefined : true}>
+                      {formatUsd(plan.cents)}
+                    </small>
                   </span>
                 </div>
               );
             })}
             {estimate.savingCents > 0 ? (
               <p className="text-sm font-semibold text-[#5b4a2c]">
-                {t(estimate.cheaper === "pro" ? "savingPro" : "savingFree", { amount: formatUsd(estimate.savingCents) })}
+                {t(estimate.cheaper === "pro" ? "savingPro" : "savingFree", { amount: money(estimate.savingCents) })}
               </p>
             ) : null}
           </div>

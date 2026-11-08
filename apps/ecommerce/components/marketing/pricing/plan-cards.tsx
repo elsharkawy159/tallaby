@@ -1,30 +1,46 @@
 import { Check } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { cn } from "@workspace/ui/lib/utils";
-import { Num } from "@/components/marketing/site/layout-primitives";
 import { Reveal } from "@/components/marketing/site/reveal.client";
 import { SignupTrigger } from "@/components/marketing/signup/signup-trigger.client";
-import { getMarketingEgpPerUsd } from "@/lib/marketing/exchange-rate.server";
-import { PLAN_PRICES, formatEgp, formatNumber, formatUsd, usdCentsToEgp } from "@/lib/marketing/pricing.lib";
+import { getMarketingUsdRates } from "@/lib/marketing/exchange-rate.server";
+import { LOCAL_CURRENCIES, formatLocalAmount, formatRate } from "@/lib/marketing/local-currency.lib";
+import { PLAN_PRICES, formatNumber, formatUsd } from "@/lib/marketing/pricing.lib";
+import { LocalCurrencyProvider, PlanFxNote, PlanPrice, type LocalPrice, type PlanKey } from "./plan-price.client";
 
 /**
  * The Free and Pro cards, on the home page and /pricing. Every number comes
- * from the code (`@workspace/lib/plans`, `@workspace/lib/billing`); the EGP
- * figures use the dashboard wallet's live rate and rounding.
+ * from the code (`@workspace/lib/plans`, `@workspace/lib/billing`). The price
+ * shows in the visitor's currency with USD under it (owner, 2026-11-08): EGP
+ * on the server render, with the dashboard wallet's live rate and rounding,
+ * then the client swaps it by the visitor's country. The pages stay static.
  */
 export async function PlanCards() {
-  const [t, rate] = await Promise.all([getTranslations("pricing.plans"), getMarketingEgpPerUsd()]);
+  const [t, rates] = await Promise.all([getTranslations("pricing.plans"), getMarketingUsdRates()]);
   const { free, pro } = PLAN_PRICES;
-  const egp = (usdCents: number) => formatEgp(usdCentsToEgp(usdCents, rate));
+  const cents: Record<PlanKey, number> = { free: free.orderFeeCents, pro: pro.monthlyCents };
+
+  const prices: Record<string, LocalPrice> = {};
+  for (const code of LOCAL_CURRENCIES) {
+    const rate = rates[code];
+    if (!rate) continue;
+    const label = t(`currency.${code}` as "currency.EGP");
+    prices[code] = {
+      label,
+      fx: t("fx", { rate: formatRate(rate), currency: label }),
+      amounts: { free: formatLocalAmount(cents.free, code, rate), pro: formatLocalAmount(cents.pro, code, rate) },
+    };
+  }
 
   const cards = [
     {
+      plan: "free" as const,
       name: t("freeName"),
       latinName: false,
       tagline: t("freeTagline"),
       price: formatUsd(free.orderFeeCents),
       per: t("perOrder"),
-      approx: t("freeApprox", { egp: egp(free.orderFeeCents) }),
+      note: t("freeNote"),
       cta: t("freeCta"),
       tone: "outline" as const,
       features: [
@@ -33,16 +49,18 @@ export async function PlanCards() {
         t("featureCredits", { count: formatNumber(free.aiCredits) }),
         t("featureEmails", { count: formatNumber(free.emails) }),
         t("featureShared"),
+        t("featureOrderEmail"),
         t("featureAll"),
       ],
     },
     {
+      plan: "pro" as const,
       name: "Pro",
       latinName: true,
       tagline: t("proTagline"),
       price: formatUsd(pro.monthlyCents),
       per: t("perMonth"),
-      approx: t("proApprox", { egp: egp(pro.monthlyCents) }),
+      note: t("proNote"),
       cta: t("proCta"),
       tone: "amber" as const,
       ribbon: t("proRibbon"),
@@ -57,7 +75,7 @@ export async function PlanCards() {
   ];
 
   return (
-    <>
+    <LocalCurrencyProvider prices={prices}>
       <div className="mx-auto grid max-w-[520px] gap-5 min-[861px]:max-w-[880px] min-[861px]:grid-cols-2">
         {cards.map((card) => (
           <Reveal
@@ -75,13 +93,7 @@ export async function PlanCards() {
               <h3 className={cn("text-[22px] font-bold text-teal-900", card.latinName && "font-latin")}>{card.name}</h3>
               <p className="text-sm text-[#5f7277]">{card.tagline}</p>
             </div>
-            <div className="flex flex-wrap items-baseline gap-2">
-              <Num dir="ltr" className="text-[44px] leading-none font-extrabold text-teal-900 min-[641px]:text-[54px]">
-                {card.price}
-              </Num>
-              <span className="text-[15px] font-semibold text-ink-500">{card.per}</span>
-            </div>
-            <p className="text-[13px] text-ink-500">{card.approx}</p>
+            <PlanPrice plan={card.plan} usd={card.price} per={card.per} note={card.note} />
             <SignupTrigger tone={card.tone} className="w-full">
               {card.cta}
             </SignupTrigger>
@@ -96,7 +108,7 @@ export async function PlanCards() {
           </Reveal>
         ))}
       </div>
-      <p className="mx-auto mt-6 max-w-[720px] text-center text-xs text-pretty text-ink-400">{t("fx", { rate: formatEgp(rate) })}</p>
-    </>
+      <PlanFxNote className="mx-auto mt-6 max-w-[720px] text-center text-xs text-pretty text-ink-400" />
+    </LocalCurrencyProvider>
   );
 }

@@ -11,7 +11,7 @@ import { IconTile, SiteCard } from "@/components/marketing/site/site-card";
 import { SlugClaimForm } from "@/components/marketing/signup/signup-trigger.client";
 import { FeeEstimator } from "@/components/marketing/pricing/fee-calculators.client";
 import { PlanCards } from "@/components/marketing/pricing/plan-cards";
-import { getMarketingEgpPerUsd } from "@/lib/marketing/exchange-rate.server";
+import { getMarketingUsdRates } from "@/lib/marketing/exchange-rate.server";
 import { pageMetadata } from "@/lib/marketing/metadata.lib";
 import { PLAN_PRICES, formatNumber, formatUsd, proBreakEvenOrdersShown } from "@/lib/marketing/pricing.lib";
 import { CONTACT } from "@/lib/marketing/site.lib";
@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 }
 
 export default async function PricingPage() {
-  const [t, rate] = await Promise.all([getTranslations("pricing"), getMarketingEgpPerUsd()]);
+  const [t, rates] = await Promise.all([getTranslations("pricing"), getMarketingUsdRates()]);
   const prices = {
     topUpMin: formatUsd(PLAN_PRICES.topUp.minCents),
     topUpMax: formatUsd(PLAN_PRICES.topUp.maxCents),
@@ -77,7 +77,7 @@ export default async function PricingPage() {
             <SectionHeading kicker={t("estimate.kicker")} title={t("estimate.title")} description={t("estimate.desc")} centered />
           </Reveal>
           <Reveal>
-            <FeeEstimator rate={rate} />
+            <FeeEstimator rates={rates} />
           </Reveal>
         </Container>
       </Section>

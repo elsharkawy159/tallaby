@@ -30,6 +30,7 @@ export const MARKETING_CLIENT_NAMESPACES = [
   "legal",
   "nav",
   "pricing.estimate",
+  "pricing.plans.currency",
   "product",
   "signup",
   "site",

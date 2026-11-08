@@ -101,6 +101,27 @@ export function egpRateFromResponse(body: unknown): number | null {
   return data?.result === "success" && isPlausibleRate(rate) ? rate : null;
 }
 
+/**
+ * USD→X rates for the given ISO codes from either endpoint's response (both
+ * list every currency), keeping only the ones that pass a loose sanity check
+ * (finite, 0.1 to 100,000 per dollar: KWD ≈ 0.3, IQD ≈ 1,300). An unusable
+ * answer gives {}. For tallaby.com's local-currency prices only; the billing
+ * rate stays `egpRateFromResponse`.
+ */
+export function usdRatesFromResponse(body: unknown, codes: readonly string[]): Record<string, number> {
+  const data = body as { result?: string; rates?: unknown; conversion_rates?: unknown } | null;
+  if (data?.result !== "success") return {};
+  const table = (data.conversion_rates ?? data.rates) as Record<string, unknown> | null | undefined;
+  if (!table || typeof table !== "object") return {};
+  const out: Record<string, number> = {};
+  for (const code of codes) {
+    const value = table[code];
+    const rate = typeof value === "number" || typeof value === "string" ? Number(value) : Number.NaN;
+    if (Number.isFinite(rate) && rate >= 0.1 && rate <= 100_000) out[code] = rate;
+  }
+  return out;
+}
+
 export function isPlausibleRate(rate: number): boolean {
   return Number.isFinite(rate) && rate >= 10 && rate <= 500;
 }

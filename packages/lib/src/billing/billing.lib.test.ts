@@ -11,6 +11,7 @@ import {
   piastresToUsdCents,
   quoteTopUp,
   usdCentsToPiastres,
+  usdRatesFromResponse,
 } from "./billing.lib";
 
 const state = { marketRate: 50, taxEnabled: false, taxRateBps: 1400 };
@@ -124,5 +125,17 @@ describe("exchange rate source", () => {
     expect(egpRateFromResponse({ result: "error", rates: { EGP: 50 } })).toBeNull();
     expect(egpRateFromResponse({ result: "success", rates: { EGP: 0 } })).toBeNull();
     expect(egpRateFromResponse(null)).toBeNull();
+  });
+
+  it("reads the asked-for USD rates from either shape and drops bad ones", () => {
+    const codes = ["SAR", "KWD", "IQD", "EUR", "XYZ"];
+    expect(
+      usdRatesFromResponse({ result: "success", rates: { SAR: 3.75, KWD: 0.307, IQD: 1310, EUR: "0.92", GBP: 0.78 } }, codes),
+    ).toEqual({ SAR: 3.75, KWD: 0.307, IQD: 1310, EUR: 0.92 });
+    expect(usdRatesFromResponse({ result: "success", conversion_rates: { SAR: 3.75 } }, codes)).toEqual({ SAR: 3.75 });
+    expect(usdRatesFromResponse({ result: "success", rates: { SAR: 0, KWD: -1, IQD: 1e9, EUR: null } }, codes)).toEqual({});
+    expect(usdRatesFromResponse({ result: "error", rates: { SAR: 3.75 } }, codes)).toEqual({});
+    expect(usdRatesFromResponse(null, codes)).toEqual({});
+    expect(usdRatesFromResponse({ result: "success", rates: "nope" }, codes)).toEqual({});
   });
 });
