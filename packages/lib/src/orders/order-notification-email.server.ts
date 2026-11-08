@@ -1,5 +1,4 @@
 import { and, db, desc, eq, isNotNull, orders, sql, users } from "@workspace/db";
-import { isOrderNotificationsSubscribed } from "../emails/email-policy.server";
 import { orderEmailFieldVisible, parseOptionalOrderEmail } from "./order-notification-email.lib";
 
 export type OrderEmailField = { show: boolean; lastEmail: string | null };
@@ -10,15 +9,12 @@ export type OrderEmailField = { show: boolean; lastEmail: string | null };
  * the last email is read from this user's own orders at this store only.
  */
 export async function getOrderEmailField(userId: string, storeId: string): Promise<OrderEmailField> {
-  const subscribed = await isOrderNotificationsSubscribed(storeId);
-  if (!subscribed) return { show: false, lastEmail: null };
   const [user] = await db
     .select({ email: users.email, isGuest: users.isGuest })
     .from(users)
     .where(eq(users.id, userId))
     .limit(1);
   const show = orderEmailFieldVisible({
-    subscribed,
     isGuest: user?.isGuest === true,
     accountEmail: user?.email,
   });

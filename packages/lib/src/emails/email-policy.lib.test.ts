@@ -8,8 +8,9 @@ const ofRule = (rule: string) => types.filter((type) => EMAIL_RULES[type] === ru
 describe("email policy", () => {
   it("keeps the agreed list in each state", () => {
     expect(ofRule("order_app").sort()).toEqual(
-      ["order_cancelled", "order_confirmation", "order_delivered", "order_shipped", "refund_issued"].sort(),
+      ["order_cancelled", "order_delivered", "order_shipped", "refund_issued"].sort(),
     );
+    expect(ofRule("store_order")).toEqual(["order_confirmation"]);
     expect(ofRule("keep").sort()).toEqual(["seller_store_created", "theme_request_declined", "theme_request_ready"]);
     expect(ofRule("manual").sort()).toEqual(["store_campaign", "store_campaign_test"]);
   });
@@ -25,6 +26,15 @@ describe("email policy", () => {
       action: "skip",
       reason: "not_subscribed",
     });
+  });
+
+  it("sends a store order's confirmation on every plan, charging only a subscribed store", () => {
+    expect(emailDecision({ ...live, type: "order_confirmation", subscribed: false })).toEqual({ action: "send", charge: false });
+    expect(emailDecision({ ...live, type: "order_confirmation", subscribed: true })).toEqual({ action: "send", charge: true });
+  });
+
+  it("skips the confirmation of an order with no store after the switch", () => {
+    expect(emailDecision({ ...live, type: "order_confirmation", storeId: null })).toEqual({ action: "skip", reason: "paused" });
   });
 
   it("skips an order email with no store once paused", () => {

@@ -5058,7 +5058,7 @@
       "customer_notifications": {
         "name": "Order notifications",
         "vendor": "Tallaby",
-        "description": "Emails your customer about their order under your store's name: confirmation, shipped, delivered, cancelled and refund. SMS is coming later. Without this app, your customers don't get these emails."
+        "description": "Emails your customer about their order under your store's name: shipped, delivered, cancelled and refund. The order confirmation email goes out in every plan, with or without this app. SMS is coming later. Without this app, your customers don't get these update emails."
       },
       "sms": {
         "name": "SMS",

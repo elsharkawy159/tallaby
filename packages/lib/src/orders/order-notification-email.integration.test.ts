@@ -98,10 +98,11 @@ describe.skipIf(!TEST_DATABASE_URL)('order notification email (integration)', { 
     await client.end()
   })
 
-  it('asks nobody on a store that is not subscribed, and ignores a sent address there', async () => {
+  it('asks a guest on a store that is not subscribed too (the confirmation is in every plan)', async () => {
     await unsubscribe()
-    expect(await lib.getOrderEmailField(guest, w.a.a1)).toEqual({ show: false, lastEmail: null })
-    expect(await lib.resolveOrderNotificationEmail(guest, w.a.a1, 'sara@example.com')).toEqual({ ok: true, email: null })
+    expect(await lib.getOrderEmailField(guest, w.a.a1)).toEqual({ show: true, lastEmail: null })
+    expect(await lib.resolveOrderNotificationEmail(guest, w.a.a1, 'sara@example.com')).toEqual({ ok: true, email: 'sara@example.com' })
+    expect((await lib.getOrderEmailField(account, w.a.a1)).show).toBe(false)
   })
 
   it('asks a guest on a subscribed store, but not a customer with a real email', async () => {

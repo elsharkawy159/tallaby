@@ -325,7 +325,7 @@ export async function getCheckoutData() {
     const storeCheckoutForm = storePayments ? await getStorefrontCheckoutForm() : null;
     // Store websites: the store's minimum order (F-13b); createOrder checks it again.
     const storeMinOrder = storePayments ? await getStorefrontMinOrder() : null;
-    // Store websites on Order notifications: an optional email (F-64), unless the
+    // Store websites: an optional email for the order's mail (F-64; every store since 2026-11-08), unless the
     // store's own checkout form already asks for one.
     const emailField = storePayments && scope ? await getOrderEmailField(userId, scope.storeId) : null;
     const formAsksEmail = storeCheckoutForm ? visibleCheckoutFields(storeCheckoutForm).some((f) => f.key === "email") : false;

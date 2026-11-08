@@ -7,6 +7,12 @@
 export type EmailRule =
   /** Sends only for a store subscribed to the Order notifications app; 1 cent per order. */
   | "order_app"
+  /**
+   * Sends for every store order, on every plan (owner, 2026-11-08); charged only
+   * to a store subscribed to Order notifications, as before.
+   * An order with no store doesn't send.
+   */
+  | "store_order"
   /** Always sends. */
   | "keep"
   /** Not automatic: a seller chose to send it. Always sends. */
@@ -15,8 +21,8 @@ export type EmailRule =
   | "paused";
 
 export const EMAIL_RULES = {
-  // Customer order emails
-  order_confirmation: "order_app",
+  // Customer order emails. The confirmation is in every plan (owner, 2026-11-08).
+  order_confirmation: "store_order",
   order_shipped: "order_app",
   order_delivered: "order_app",
   order_cancelled: "order_app",
@@ -76,6 +82,8 @@ export function emailDecision(input: {
   const rule = emailRule(input.type);
   if (rule === "keep" || rule === "manual" || !input.usdLive) return { action: "send", charge: false };
   if (rule === "paused" || !input.storeId) return { action: "skip", reason: "paused" };
+  // Free for an unsubscribed store; a subscribed one still pays its order cent here, as before.
+  if (rule === "store_order") return { action: "send", charge: input.subscribed };
   if (!input.subscribed) return { action: "skip", reason: "not_subscribed" };
   return { action: "send", charge: true };
 }

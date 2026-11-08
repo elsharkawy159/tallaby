@@ -8,15 +8,15 @@ import {
 } from "./order-notification-email.lib";
 
 describe("checkout email field", () => {
-  it("shows only on a subscribed store", () => {
-    expect(orderEmailFieldVisible({ subscribed: false, isGuest: true, accountEmail: null })).toBe(false);
-    expect(orderEmailFieldVisible({ subscribed: true, isGuest: true, accountEmail: "g-1@temp.local" })).toBe(true);
+  it("asks a guest on every store", () => {
+    expect(orderEmailFieldVisible({ isGuest: true, accountEmail: null })).toBe(true);
+    expect(orderEmailFieldVisible({ isGuest: true, accountEmail: "g-1@temp.local" })).toBe(true);
   });
 
   it("doesn't ask a signed-in customer who has an email", () => {
-    expect(orderEmailFieldVisible({ subscribed: true, isGuest: false, accountEmail: "sara@example.com" })).toBe(false);
-    expect(orderEmailFieldVisible({ subscribed: true, isGuest: false, accountEmail: null })).toBe(true);
-    expect(orderEmailFieldVisible({ subscribed: true, isGuest: false, accountEmail: "x@temp.local" })).toBe(true);
+    expect(orderEmailFieldVisible({ isGuest: false, accountEmail: "sara@example.com" })).toBe(false);
+    expect(orderEmailFieldVisible({ isGuest: false, accountEmail: null })).toBe(true);
+    expect(orderEmailFieldVisible({ isGuest: false, accountEmail: "x@temp.local" })).toBe(true);
   });
 });
 

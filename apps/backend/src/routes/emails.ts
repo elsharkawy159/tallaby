@@ -164,7 +164,7 @@ app.post("/order-confirmation", async (c) => {
       return c.json({ success: false, skipped: true, reason: built.error }, status);
     }
 
-    // Order notifications app (F-63): after the USD switch, a store must subscribe.
+    // Every store order gets it, on every plan (owner, 2026-11-08), charged only to a subscribed store; an order with no store doesn't.
     const storeId = built.ctx.order.storeId ?? null;
     const decision = await decideEmail(EMAIL_TYPES.orderConfirmation, storeId);
     if (decision.action === "skip") {

@@ -1,7 +1,7 @@
 /**
  * The optional email on the simple checkout (ROADMAP.md F-64). A customer with no
- * real account email can give one for this order's updates, only on a store
- * subscribed to Order notifications. It lives on the order
+ * real account email can give one for this order's updates, on every store (the
+ * confirmation is in every plan since 2026-11-08). It lives on the order
  * (`orders.metadata.notificationEmail`), never on the user: a typed address proves
  * nothing, so it must not take over an account or change who a user is. Campaigns
  * and customer lists read `users.email`, so it never reaches marketing.
@@ -17,12 +17,14 @@ export function isRealEmail(email: string | null | undefined): email is string {
   return Boolean(value) && !value!.includes("@temp.local");
 }
 
+/**
+ * Every store asks, since every store order gets its confirmation email (owner,
+ * 2026-11-08); the other order emails still need Order notifications.
+ */
 export function orderEmailFieldVisible(input: {
-  subscribed: boolean;
   isGuest: boolean;
   accountEmail: string | null | undefined;
 }): boolean {
-  if (!input.subscribed) return false;
   return input.isGuest || !isRealEmail(input.accountEmail);
 }
 

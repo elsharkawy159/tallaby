@@ -37,12 +37,23 @@ export async function isOrderNotificationsSubscribed(storeId: string): Promise<b
 }
 
 /**
- * Asks before any send. "keep" and "manual" read nothing, so they can't fail. Any
- * other email doesn't send if the check throws.
+ * Asks before any send. "keep" and "manual" read nothing, so they can't fail, and
+ * "store_order" always sends. Any other email doesn't send if the check throws.
  */
 export async function decideEmail(type: AutomaticEmailType, storeId: string | null): Promise<EmailDecision> {
   const rule = emailRule(type);
   if (rule === "keep" || rule === "manual") return emailDecision({ type, storeId, usdLive: false, subscribed: false });
+  // A store order's confirmation always sends; only the charge depends on the subscription,
+  // and a failed check sends it uncharged rather than dropping it.
+  if (rule === "store_order" && storeId) {
+    let subscribed = false;
+    try {
+      subscribed = (await getBillingState()).usdLive && (await isOrderNotificationsSubscribed(storeId));
+    } catch (error) {
+      logServerError("email", "email policy check failed", { type, storeId }, error);
+    }
+    return emailDecision({ type, storeId, usdLive: true, subscribed });
+  }
   try {
     const { usdLive } = await getBillingState();
     let subscribed = false;

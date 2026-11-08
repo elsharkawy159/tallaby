@@ -8,13 +8,20 @@ Every email leaves through the backend (`apps/backend`). The states live in one 
 
 **Skipped means:** a `skipped` result, no delivery claim and no failed caller. Bell and push notifications are separate and don't change.
 
-## Order notifications app
+## Every store order (`store_order`)
 
-These send only for a store subscribed to the app (catalog key `customer_notifications`). An order with no store doesn't send. A card order waiting for its payment isn't charged, so an abandoned payment costs nothing. The order pays 1 cent once, on the first email that really goes out.
+Owner, 2026-11-08: the order confirmation is in every plan. It sends for every store order with a customer email, subscribed or not; it is free for a store not subscribed to Order notifications (a subscribed store still pays its 1 cent per order on it, as before) and never counts against the campaign email allowance. An order with no store doesn't send; a test order (F-76) doesn't either. Checkout's optional email field (F-64) shows on every store, for a guest or a customer with no real email.
 
 | Email | Type | Trigger |
 | --- | --- | --- |
 | Order confirmation | `order_confirmation` | Order placed |
+
+## Order notifications app
+
+These send only for a store subscribed to the app (catalog key `customer_notifications`). An order with no store doesn't send. A card order waiting for its payment isn't charged, so an abandoned payment costs nothing. The order pays 1 cent once, on the first order email that really goes out (usually the confirmation).
+
+| Email | Type | Trigger |
+| --- | --- | --- |
 | Order shipped | `order_shipped` | Order event |
 | Order delivered | `order_delivered` | Order event |
 | Order cancelled | `order_cancelled` | Order event |

@@ -40,7 +40,7 @@ export function SimpleCheckoutForm({
 }: {
   address: ReturnType<typeof useCheckoutAddress>;
   saved: SavedCheckoutAddress[];
-  /** Only on a store subscribed to Order notifications, for a customer with no real email. */
+  /** Store websites, for a customer with no real email: the order's confirmation goes there. */
   email?: { value: string; invalid: boolean; onChange: (value: string) => void } | null;
   children?: ReactNode;
 }) {
