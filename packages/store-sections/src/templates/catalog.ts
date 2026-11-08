@@ -129,6 +129,7 @@ import { SPORTS_LUXE } from "./sports-luxe";
 import { SPORTS_WARM } from "./sports-warm";
 import { WASLA } from "./wasla";
 import { VELLA } from "./vella";
+import { NASIG } from "./nasig";
 import { templateRefConfig } from "./ref-config";
 import type { TemplateDefinition, TemplateDemo } from "./types";
 
@@ -152,6 +153,8 @@ export const LIBRARY_TEMPLATES: readonly TemplateDefinition[] = [STREETWEAR, KAS
   WASLA,
   // After the Void Fashion store on EasyOrders (2026-10-30).
   VELLA,
+  // After the layout of kotn.com (2026-11-08).
+  NASIG,
 ];
 
 export const CODE_TEMPLATES: readonly TemplateDefinition[] = [CLASSIC, ...LIBRARY_TEMPLATES];

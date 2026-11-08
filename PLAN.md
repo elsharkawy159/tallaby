@@ -4764,3 +4764,9 @@ Owner asked to keep only the current version of each template in `template_versi
 ### 2026-11-06 — 0156 applied on staging
 
 - Owner approved. Applied `0156_theme_requests.sql` (F-77) on staging (`cxqjrwjianxskhzmrkla`). Checks: `theme_requests` exists with RLS on; bucket `theme-request-images` is private; `admin_notifications_type_check` has `theme_requested` and `seller_notifications_type_check` has `theme_request_updated`. Production: not applied; it must go before the deploy that carries F-77.
+
+### 2026-11-08 — Nasig template (owner)
+
+- Owner asked to clone kotn.com (organic cotton basics) as a seller template. Rebuilt as our own tree sections after its section order and mood; no code, copy, name, logo or photos taken from it. New template `nasig` (نسيج, Fashion, sortOrder 1610): paper #F6F3EE, ink #1F1D1A, clay accent #9A5B41 on the strip only, Almarai, 2px corners, 1320px container. No new designs: `header-announcement-strip`, `hero-fullbleed`, `categories-portrait-labels`, two `products-carousel` rows (knitwear, newest), `about-wide` (feature photo + link), `about-fullbleed` (story), `team-numbers` (impact figures), `about-overlap` (wide photo), `gallery-social-strip`, `footer-columns-signup`.
+- Differences from the source: categories come right after the hero (template rule), the newsletter is in the footer (9-section home limit), promotions aren't allowed so the banner is `about-wide`, the tiles are portrait (no square category design), no colour swatches on cards, no separate Legal column. Photos: 44 Pexels IDs, no people or hands, checked on contact sheets by the subagent; 4 rejected for lettering (listed in the file header). Camel trench moved to Women on review. Photo 6909817 is both the Men tile and the sand overshirt.
+- Checks: store-sections 9139 tests and typecheck pass. Browser QA of `/template-preview/nasig` not done yet.
