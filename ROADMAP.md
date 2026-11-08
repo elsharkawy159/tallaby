@@ -309,6 +309,8 @@ Priorities are the owner's (`Roadmap_new.md` §9). The order inside them is prop
 | 64  | F-79 | Static dashboard pages (locale segment + Cache Components) | P2                   | no              | Own branch; owner said later (2026-11-06)           |
 | 65  | F-80 | Reorder product options and values (EasyOrders: 29 votes) | P2                    | maybe           | —                                                   |
 | 66  | F-81 | Improve product photos with AI (white background)  | P3                          | no (expected)   | AI cost rules (docs/ai.md) first                    |
+| 67  | F-82 | AI Store Builder v2: live store from the tallaby.com hero | P1                   | yes (0157)      | **Needs approval** (D1 auto-publish, D2–D9)         |
+| 68  | F-83 | Tallaby agent system: one core, skills, page agents | P1                         | yes (expected)  | **Needs approval** (D10–D12)                        |
 
 ---
 
@@ -926,7 +928,7 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 **Why:** A new seller should get a complete, professional store from one conversation.
 **What:** A chat on tallaby.com that collects business details, logo, social links, contact details, products, photos, prices, stock, shipping and policies; asks for what's missing; writes copy in both languages; sets the brand, theme, shipping and policies; validates the result; and presents it for the seller's review. **Only the seller publishes.** Extends `PLAN.md` AI-5 (`docs/AI_AGENT_PLAN_PROMPT.md`) and follows `docs/ai.md` and CLAUDE.md rules 17 and 20. Stores are made from existing templates and sections; the AI never generates code.
-**Status:** [Built, off] 2026-11-03: off until `STORE_BUILDER_AI_ENABLED` is set after a live cost measurement (§7).
+**Status:** [Built, off] 2026-11-03: off until `STORE_BUILDER_AI_ENABLED` is set after a live cost measurement (§7). **Upgraded by F-82 (2026-11-08 plan):** hero start, file products, brand palette, auto-publish; switch on with F-82 instead.
 
 - **F-54a · P2 · deps: —** **Cost study before any build (owner requirement):** models and task routing, tokens, image processing and generation, prompts, context, caching, one step or several, and quality against cost. Output: estimated cost per completed store with its assumptions, and the proposed per-account limit. Don't reduce store quality just to lower cost.
 - **F-54b · P2 · deps: F-54a, owner approval** Design note: conversation flow, how a guest becomes an account (proposed: an account is required before uploads or costly steps), abuse limits, and how a free first store is tracked.
@@ -1165,6 +1167,40 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 - **F-81a · P3 · deps: none** Cost study of providers (background removal vs. image model) and a design note for the owner.
 
+### F-82 AI Store Builder v2: a live store from the tallaby.com hero — P1 · owner request · Needs approval
+
+**Why:** A visitor should go from one sentence (or a sentence plus a product file, logo and colour) on the tallaby.com homepage to a published, branded store with their products, in minutes.
+**What:** Design in `docs/superpowers/specs/2026-11-08-ai-store-builder-v2-design.md`. A Claude/ChatGPT-style composer in the hero (prompt, file, logo, colour); input kept for 48 h through signup with no model call; one intake call reads everything; question cards (≤ 3 per round, choices with a recommended option) ask only for what is missing; 3 different templates shown already wearing the brand; palette from the primary colour (code); products through the file importer (`products/add/from-file`); quality gates; the site and complete products are **published** at the end (replaces F-54's "only the seller publishes", decision D1). Estimated $0.03–0.06 per store (v1 estimate $0.12). Builds on F-54 and on the agent core (F-83).
+**Status:** [Planned] 2026-11-08, design written, waiting for owner decisions D1–D9.
+
+- **F-82a · P1 · deps: —** Owner approves the design and decisions D1–D9.
+- **F-82b · P1 · deps: —** v1 fixes: bound target store (no `findPristineStore` guess), stale product rows, keep `nameEn`, spend by build id, credit check on `already`, platform budget per call, no regeneration count without a call.
+- **F-82c · P1 · deps: F-82a** Migration `0157`: `store_build_intakes`, private bucket `store-build-intake`, new `store_builds` columns, build id on builder usage rows.
+- **F-82d · P1 · deps: F-82c** Hero composer, intake route, rate limits; signup carry-through (cookie, metadata, Google fix, signed-in path); claim in `completeSignup`; 48 h cleanup.
+- **F-82e · P1 · deps: F-82c, F-83a** Intake call `store_builder_intake`, missing-slot logic, question bank and cards, new step machine.
+- **F-82f · P1 · deps: F-82e** Products from a file inside the build (reuse `from-file`), inline fix table.
+- **F-82g · P1 · deps: —** `derivePaletteFromPrimary` with a contrast guard; logo colours read in the browser.
+- **F-82h · P1 · deps: F-82g** Template style tags and `needs` for all templates, shortlist v2, brand-wearing previews (signed token).
+- **F-82i · P1 · deps: F-82e** Chat UI v2: two panes with live preview, composer, activity rows, question cards, phone layout, done card.
+- **F-82j · P1 · deps: F-82f, F-82h** Build v2 items (`brand`, `categories`, `products_file`, `checks`, `publish`) and quality gates.
+- **F-82k · P2 · deps: F-82j** Admin AI usage labels and funnel counts.
+- **F-82l · P1 · deps: F-82j** Live test (3 stores), cost per store, fast vs smart copy test, phone E2E; log in `PLAN.md` §23.
+- **F-82m · P1 · deps: F-82l, owner** Switch on: staging, then production after `0157` (owner approval).
+
+### F-83 Tallaby agent system: one core, skills, page agents — P1 · owner request · Needs approval
+
+**Why:** The owner wants an advanced, ready agent with every skill a seller needs (website design, shipping, products, integrations, apps …), reusable in parts: the shipping skill becomes the shipping agent on the Shipping page, and so on.
+**What:** Design in the same spec, §14. `packages/agent`: router, guided flows, a capped tool loop, plan-then-confirm cards, credits (0 to read, 1 per confirmed write), run logging. Skills: store builder (orchestrator), design, products, shipping, orders, marketing, integrations, apps, settings and policies, insights, help. One tool layer shared by the in-app agent, the builder and MCP (F-29). A shared store agent profile keeps the brand voice. Never: wallet, top-ups, payouts, plan changes, deleting a store or account, secrets. Extends `PLAN.md` AI-5.
+**Status:** [Planned] 2026-11-08, waiting for owner decisions D10–D12.
+
+- **F-83a · P1 · deps: F-82a** Agent core: runtime, skill contract, confirm cards, credits, logging (extend `agent_tool_calls`); the builder's skills (products, shipping, design, settings and policies) on it.
+- **F-83b · P1 · deps: F-83a** Page agents: Shipping and Products pages.
+- **F-83c · P1 · deps: F-83a** Design agent in the website editor (`AgentDock`): palette, fonts, section copy, add or reorder sections from `DESIGNS`, drafts only.
+- **F-83d · P2 · deps: F-83b** Global assistant (⌘K) with router, Help and Insights skills.
+- **F-83e · P2 · deps: F-83d** Marketing, Integrations (secure secret form), Apps, Orders skills.
+- **F-83f · P2 · deps: F-83a** MCP server moved onto the shared tools.
+- **F-83g · P1 · deps: each skill** Eval set and prompt-injection tests per skill; live cost run before each skill turns on.
+
 ---
 
 ## 5. Owner feature requests (intake)
@@ -1173,6 +1209,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 | Date       | Request (owner's words)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Feature ID                                                                                       | Status                                                                                             |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| 2026-11-08 | "check the 'Creating Full ready E-commerce website with AI Agent from tallaby.com homepage hero section input' plan … upgrade the plan … Output should be full ready website with applied template and design system and products … simple prompt and product csv file or written with uploaded brand logo and primary color … agent can ask seller for any missing data … in question and Choices way … suggest 3 templates … everything is published … low cost AI, professional AI experience (like Claude or ChatGPT)"; then: "make the AI agent advanced with all skills … (Website design builder, shipping, products, integrations, apps, etc) … a reusable big assistant agent and use each part of it as separated agents for the related part … the shipping agent on the shipping page" | F-82, F-83 | Planned (design 2026-11-08), needs owner decisions |
 | 2026-11-08 | "Allow Order Confirmation Email to customers, and add it in the pricing plans as a plan feature" | F-63 (F-63d) | Done (§7 2026-11-08) |
 | 2026-11-08 | "Improve the Whatsapp message that we send to sellers from /sellers page on admin project, make it dynamic depends on the step that seller stopped on … Egyptian friendly like human … top-up wallet amount in EGP … KSA Accent and with Riyals price … our platform commission on the message in the user's currency" | Admin sellers WhatsApp message | Done (§7 2026-11-08) |
 | 2026-11-08 | "Add a section after the hero section on homepage, with topic of What is Tallaby? as I got many users asks what is tallaby!" Also: remove "؛ لأن نجاحك لا يحتاج إلى تعقيد" from the hero | tallaby.com home | Done (§7 2026-11-08) |
@@ -1534,10 +1571,38 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [ ] F-80a Option order: storage check + design note
 - [ ] F-80b Reorder options and values in the product form
 - [ ] F-81a AI photo clean-up: cost study + design note (owner)
+- [x] F-82 design note (2026-11-08; `docs/superpowers/specs/2026-11-08-ai-store-builder-v2-design.md`)
+- [ ] F-82a Owner decisions D1–D9
+- [ ] F-82b v1 builder fixes
+- [ ] F-82c Migration 0157 (intakes, bucket, build columns)
+- [ ] F-82d Hero composer, intake, signup carry-through
+- [ ] F-82e Intake call, question cards, new step machine
+- [ ] F-82f Products from a file in the build
+- [ ] F-82g Palette from primary colour, logo colours
+- [ ] F-82h Template style tags, shortlist v2, brand previews
+- [ ] F-82i Chat UI v2
+- [ ] F-82j Build v2 items, quality gates, publish
+- [ ] F-82k Admin labels and funnel
+- [ ] F-82l Live test and E2E
+- [ ] F-82m Switch on (owner)
+- [ ] F-83a Agent core + builder skills
+- [ ] F-83b Shipping and Products page agents
+- [ ] F-83c Design agent in the editor
+- [ ] F-83d Global assistant, router, Help, Insights
+- [ ] F-83e Marketing, Integrations, Apps, Orders skills
+- [ ] F-83f MCP on shared tools
+- [ ] F-83g Evals and injection tests per skill
 
 ---
 
 ## 7. Log
+
+### 2026-11-08 — F-82 / F-83 AI Store Builder v2 and the agent system: plan (owner request)
+
+- **What:** planning only, no code. New design `docs/superpowers/specs/2026-11-08-ai-store-builder-v2-design.md`, based on a check of the F-54 code (builder chat, run items, shortlist, review) and of the hero, signup, file importer, design system, templates and publishing.
+- **Found in the code:** the hero has no prompt input; nothing can hold guest input through signup; the marketing Google signup drops the intent; the old spreadsheet import splits image URLs on `.` and knows only English headers (the `from-file` importer has neither problem, so the plan uses it); templates have no style tags; nothing derives a palette from one colour or a logo; v1's `findPristineStore` can overwrite another empty store; builder spend is summed by time, not by build.
+- **Plan:** hero composer → 48 h intake (no model call before signup) → one intake call → at most 4 rounds of question cards → 3 brand-wearing templates → build with palette, products from the file, quality gates → site and complete products published (F-76 private until activation still applies). Estimated $0.03–0.06 per store. F-83: one agent core with skills, each also a page agent, sharing its tools with MCP.
+- **Waiting for the owner:** decisions D1–D12 (spec §12). Migration `0157` is planned, not written.
 
 ### 2026-11-08 — F-63d order confirmation email in every plan (owner request)
 
