@@ -5,7 +5,7 @@
  */
 
 type Col = { __col: true; table: string; name: string };
-type Cond = { op: "eq"; col: Col; val: unknown } | { op: "isNull"; col: Col } | { op: "and"; conds: Array<Cond | undefined> } | { op: "sql" };
+type Cond = { op: "eq"; col: Col; val: unknown } | { op: "isNull"; col: Col } | { op: "and"; conds: Array<Cond | undefined> } | { op: "in"; col: Col; vals: unknown[] } | { op: "sql" };
 
 export const tables: Record<string, Array<Record<string, unknown>>> = {};
 
@@ -24,6 +24,7 @@ const matches = (row: Record<string, unknown>, cond: Cond | undefined): boolean 
   if (cond.op === "eq") return row[cond.col.name] === cond.val;
   if (cond.op === "isNull") return row[cond.col.name] === null || row[cond.col.name] === undefined;
   if (cond.op === "and") return cond.conds.every((c) => matches(row, c));
+  if (cond.op === "in") return cond.vals.includes(row[cond.col.name]);
   return true;
 };
 
@@ -72,14 +73,37 @@ function updateQuery(t: { __table: string }) {
   return q;
 }
 
+/** Inserts store plain rows (sql values are dropped); conflicts are not checked. */
+function insertQuery(t: { __table: string }) {
+  let inserted: Array<Record<string, unknown>> = [];
+  const q = {
+    values(v: Record<string, unknown> | Array<Record<string, unknown>>) {
+      const rows = (Array.isArray(v) ? v : [v]).map((row) =>
+        Object.fromEntries(Object.entries(row).filter(([, value]) => !(typeof value === "object" && value && "op" in value))),
+      );
+      (tables[t.__table] ??= []).push(...rows);
+      inserted = rows;
+      return q;
+    },
+    onConflictDoNothing: () => q,
+    onConflictDoUpdate: () => q,
+    async returning(fields?: Record<string, Col>) {
+      return inserted.map((row) => project(row, fields));
+    },
+    then: (resolve: (v: unknown) => unknown, reject?: (e: unknown) => unknown) => Promise.resolve(undefined).then(resolve, reject),
+  };
+  return q;
+}
+
 export const fakeDbModule = {
   db: {
     select: (fields?: Record<string, Col>) => selectQuery(fields),
     update: (t: { __table: string }) => updateQuery(t),
-    insert: () => ({ values: () => ({ onConflictDoNothing: () => ({ returning: async () => [] }) }) }),
+    insert: (t: { __table: string }) => insertQuery(t),
   },
   eq: (col: Col, val: unknown): Cond => ({ op: "eq", col, val }),
   isNull: (col: Col): Cond => ({ op: "isNull", col }),
+  inArray: (col: Col, vals: unknown[]): Cond => ({ op: "in", col, vals }),
   and: (...conds: Array<Cond | undefined>): Cond => ({ op: "and", conds }),
   sql: Object.assign(() => ({ op: "sql" }), { raw: () => ({ op: "sql" }) }),
   count: () => ({ op: "sql" }),
@@ -91,4 +115,6 @@ export const fakeDbModule = {
   aiCreditLedger: table("aiCreditLedger"),
   sellerAiCredits: table("sellerAiCredits"),
   agentToolCalls: table("agentToolCalls"),
+  agentPendingActions: table("agentPendingActions"),
+  agentReadCounts: table("agentReadCounts"),
 };

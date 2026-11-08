@@ -7,19 +7,30 @@ import type { AgentSource, ConfirmCard } from "./types";
  * was made for, for a short time. `claim` moves pending → running once, so a
  * double click runs the tool once.
  *
- * The in-memory store is for tests and a single process. Serverless needs the
- * DB-backed store (a server-only `agent_pending_actions` table: id, seller_id,
- * store_id, tool, input jsonb, card jsonb, status, result jsonb, expires_at),
- * planned with the agent log migration (a follow-up to
- * F-83a; no table exists yet).
+ * The in-memory store is for tests and a single process. The runtime's
+ * default is the DB-backed store (`dbPendingStore` in pending.server.ts, the
+ * server-only `agent_pending_actions` table from 0158).
  */
 
-export type PendingStatus = "pending" | "running" | "done" | "failed";
+export type PendingStatus = "pending" | "running" | "done" | "failed" | "cancelled" | "expired";
+
+/** How an open (pending or running) action ends. A finished action is never changed again. */
+export type PendingOutcome = (
+  | { status: "done"; result: unknown }
+  | { status: "failed"; errorCode: string }
+  | { status: "cancelled" }
+  | { status: "expired" }
+) & {
+  /** The AI credit claim reference(s) of the run, comma separated. */
+  creditClaimId?: string | null;
+};
 
 export type PendingAction = {
   id: string;
   sellerId: string;
   storeId: string;
+  /** The user who proposed it (owner or staff). */
+  userId?: string;
   source: AgentSource;
   tool: string;
   /** Already validated by the tool's schema. */
@@ -40,7 +51,7 @@ export interface PendingStore {
   claim(id: string): Promise<PendingAction | null>;
   /** running → pending (e.g. no credits), so the seller can confirm again. */
   release(id: string): Promise<void>;
-  finish(id: string, outcome: { status: "done"; result: unknown } | { status: "failed"; errorCode: string }): Promise<void>;
+  finish(id: string, outcome: PendingOutcome): Promise<void>;
 }
 
 export const PENDING_TTL_MS = 10 * 60_000;
@@ -75,12 +86,12 @@ export class InMemoryPendingStore implements PendingStore {
     if (row?.status === "running") row.status = "pending";
   }
 
-  async finish(id: string, outcome: { status: "done"; result: unknown } | { status: "failed"; errorCode: string }) {
+  async finish(id: string, outcome: PendingOutcome) {
     const row = this.rows.get(id);
-    if (!row) return;
+    if (!row || (row.status !== "pending" && row.status !== "running")) return;
     row.status = outcome.status;
     if (outcome.status === "done") row.result = outcome.result;
-    else row.errorCode = outcome.errorCode;
+    if (outcome.status === "failed") row.errorCode = outcome.errorCode;
   }
 
   /** Test helper. */

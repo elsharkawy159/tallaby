@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { z } from "zod";
 import { saveStoreShippingZone } from "@workspace/lib/stores/server";
 import { createAgentRegistry, createRegistry } from "./registry";
+import { InMemoryPendingStore } from "./pending";
 import { createAgentRuntime } from "./runtime";
 import { InMemoryReadCap, type CreditGateway, type ToolCallLogger } from "./services.server";
 import { resetTables, tables } from "./test/fake-db";
@@ -60,6 +61,7 @@ function harness(run: AnyAgentTool["run"] = async (_ctx, input) => ({ data: { sa
     registry: createRegistry([{ id: "settings", pages: [], rules: "r", tools: [write, read] }]),
     credits,
     logger,
+    pending: new InMemoryPendingStore(),
     readCap: new InMemoryReadCap(),
     readsPerDay: 2,
     now: () => clock,
@@ -190,6 +192,8 @@ describe("ownership", () => {
       registry: createAgentRegistry(),
       credits: { claim: async () => ({ ok: true, reference: "r" }), refund: async () => undefined },
       logger: { record: async () => undefined },
+    pending: new InMemoryPendingStore(),
+    readCap: new InMemoryReadCap(),
     });
     const { actionId, card } = await runtime.proposeAction(ctx, "save_shipping_zone", {
       nameAr: "القاهرة والجيزة",

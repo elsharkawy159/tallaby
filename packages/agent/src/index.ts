@@ -16,10 +16,15 @@ export {
   type CreditPolicy,
   type ProposedAction,
 } from "./runtime";
-export { InMemoryPendingStore, PENDING_TTL_MS, type PendingAction, type PendingStatus, type PendingStore } from "./pending";
+export { InMemoryPendingStore, PENDING_TTL_MS, type PendingAction, type PendingOutcome, type PendingStatus, type PendingStore } from "./pending";
+export { dbPendingStore } from "./pending.server";
 export {
   aiCreditGateway,
+  cairoDay,
+  DbReadCap,
+  dbReadCap,
   dbToolCallLogger,
+  incrementAgentReadCount,
   InMemoryReadCap,
   type CreditClaim,
   type CreditGateway,

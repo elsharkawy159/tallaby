@@ -1,11 +1,12 @@
 import type { CacheInvalidation } from "@workspace/cache/invalidate";
 import { requireOwnedStore } from "./guards.server";
-import { ACTION_ID_RE, InMemoryPendingStore, newActionId, PENDING_TTL_MS, type PendingAction, type PendingStore } from "./pending";
+import { ACTION_ID_RE, newActionId, PENDING_TTL_MS, type PendingAction, type PendingStore } from "./pending";
+import { dbPendingStore } from "./pending.server";
 import type { AgentRegistry } from "./registry";
 import {
   aiCreditGateway,
+  dbReadCap,
   dbToolCallLogger,
-  InMemoryReadCap,
   type CreditGateway,
   type ReadCap,
   type ToolCallLogger,
@@ -28,9 +29,12 @@ export type CreditPolicy = "charge" | "free";
 
 export type AgentRuntimeOptions = {
   registry: AgentRegistry;
+  /** Defaults to the DB (agent_pending_actions, 0158); tests pass an InMemoryPendingStore. */
   pending?: PendingStore;
   credits?: CreditGateway;
+  /** Defaults to agent_tool_calls with the context's source. */
   logger?: ToolCallLogger;
+  /** Defaults to the DB (agent_read_counts, 0158); tests pass an InMemoryReadCap. */
   readCap?: ReadCap;
   readsPerDay?: number;
   /** Applies a tool's cache invalidation (the app picks the mode: action, route or backend broadcast). */
@@ -80,10 +84,10 @@ export function parseToolInput(tool: AnyAgentTool, input: unknown): unknown {
 
 export function createAgentRuntime(options: AgentRuntimeOptions): AgentRuntime {
   const { registry } = options;
-  const pending = options.pending ?? new InMemoryPendingStore();
+  const pending = options.pending ?? dbPendingStore;
   const credits = options.credits ?? aiCreditGateway;
   const logger = options.logger ?? dbToolCallLogger;
-  const readCap = options.readCap ?? new InMemoryReadCap();
+  const readCap = options.readCap ?? dbReadCap;
   const readsPerDay = options.readsPerDay ?? AGENT_READS_PER_DAY;
   const ttlMs = options.ttlMs ?? PENDING_TTL_MS;
   const now = options.now ?? Date.now;
@@ -130,6 +134,7 @@ export function createAgentRuntime(options: AgentRuntimeOptions): AgentRuntime {
         id: newActionId(),
         sellerId: ctx.sellerId,
         storeId: ctx.storeId,
+        userId: ctx.userId ?? ctx.sellerId,
         source: ctx.source,
         tool: tool.name,
         input: parsed,
@@ -155,7 +160,12 @@ export function createAgentRuntime(options: AgentRuntimeOptions): AgentRuntime {
       if (found.status === "done") return replay(found);
       if (found.status === "running") throw new AgentError("already_running", "This change is already running.");
       if (found.status === "failed") throw new AgentError("tool_failed", "This change failed; ask again.", { reason: found.errorCode });
-      if (found.expiresAt <= now()) throw new AgentError("expired", "This proposal expired; ask again.");
+      if (found.status === "cancelled") throw new AgentError("tool_failed", "This change was cancelled; ask again.", { reason: "cancelled" });
+      if (found.status === "expired") throw new AgentError("expired", "This proposal expired; ask again.");
+      if (found.expiresAt <= now()) {
+        await pending.finish(actionId, { status: "expired" });
+        throw new AgentError("expired", "This proposal expired; ask again.");
+      }
 
       const action = await pending.claim(actionId);
       if (!action) {
@@ -183,20 +193,20 @@ export function createAgentRuntime(options: AgentRuntimeOptions): AgentRuntime {
         await Promise.all(claimed.map((reference) => credits.refund(ctx.sellerId, reference).catch(() => undefined)));
         // Not run: keep it confirmable (e.g. after buying credits) unless the store is gone.
         if (error instanceof AgentError && error.code === "no_credits") await pending.release(actionId);
-        else await pending.finish(actionId, { status: "failed", errorCode: errorCodeOf(error) });
+        else await pending.finish(actionId, { status: "failed", errorCode: errorCodeOf(error), creditClaimId: claimed.join(",") || null });
         await log(ctx, tool, { status: "denied", errorCode: errorCodeOf(error), durationMs: now() - started });
         throw error;
       }
 
       try {
         const outcome = await tool.run(ctx, action.input);
-        await pending.finish(actionId, { status: "done", result: outcome.data });
+        await pending.finish(actionId, { status: "done", result: outcome.data, creditClaimId: claimed.join(",") || null });
         await invalidate(outcome.invalidation);
         await log(ctx, tool, { status: "ok", resultRef: outcome.resultRef ?? null, credits: claimed.length, durationMs: now() - started });
         return { actionId, tool: tool.name, result: outcome.data, creditsCharged: claimed.length, replayed: false };
       } catch (error) {
         await Promise.all(claimed.map((reference) => credits.refund(ctx.sellerId, reference).catch(() => undefined)));
-        await pending.finish(actionId, { status: "failed", errorCode: errorCodeOf(error) });
+        await pending.finish(actionId, { status: "failed", errorCode: errorCodeOf(error), creditClaimId: claimed.join(",") || null });
         await log(ctx, tool, { status: "error", errorCode: errorCodeOf(error), durationMs: now() - started });
         throw error instanceof AgentError ? error : new AgentError("tool_failed", "The change failed.", { reason: errorCodeOf(error) });
       }
@@ -204,7 +214,7 @@ export function createAgentRuntime(options: AgentRuntimeOptions): AgentRuntime {
 
     async cancelAction(ctx, actionId) {
       const action = await ownAction(ctx, actionId);
-      if (action.status === "pending") await pending.finish(actionId, { status: "failed", errorCode: "cancelled" });
+      if (action.status === "pending") await pending.finish(actionId, { status: "cancelled" });
     },
 
     async runRead(ctx, toolName, input) {

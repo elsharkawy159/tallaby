@@ -34,8 +34,13 @@ export async function hitAgentRateLimits(grantId: string, buckets: readonly Rate
 
 export type ToolCallStatus = "ok" | "error" | "denied" | "rate_limited";
 
+export type ToolCallSource = "mcp" | "in_app" | "builder";
+
 export type ToolCallRecord = {
-  grantId: string;
+  /** Required for MCP rows (0158 check); null for in-app and builder runs. */
+  grantId: string | null;
+  /** Who ran the tool; defaults to "mcp" (0158). */
+  source?: ToolCallSource;
   sellerId: string;
   storeId?: string | null;
   tool: string;
@@ -53,12 +58,19 @@ export type ToolCallRecord = {
  * (the caller then returns the stored result instead).
  */
 export async function recordAgentToolCall(call: ToolCallRecord): Promise<boolean> {
-  const key = isIdempotencyKey(call.idempotencyKey) ? call.idempotencyKey : null;
+  const source = call.source ?? "mcp";
+  // Idempotency keys are per grant; a row without a grant never claims one.
+  const key = call.grantId && isIdempotencyKey(call.idempotencyKey) ? call.idempotencyKey : null;
+  if (source === "mcp" && !call.grantId) {
+    logServerError("integration", "mcp tool call without a grant", { tool: call.tool }, new Error("missing grant"));
+    return true;
+  }
   try {
     const rows = await db
       .insert(agentToolCalls)
       .values({
         grantId: call.grantId,
+        source,
         sellerId: call.sellerId,
         storeId: call.storeId ?? null,
         tool: call.tool.slice(0, 100),
@@ -73,7 +85,7 @@ export async function recordAgentToolCall(call: ToolCallRecord): Promise<boolean
       .returning({ id: agentToolCalls.id });
     return rows.length > 0;
   } catch (error) {
-    logServerError("integration", "mcp tool call log failed", { tool: call.tool, grantId: call.grantId }, error);
+    logServerError("integration", "agent tool call log failed", { tool: call.tool, source, grantId: call.grantId }, error);
     return true;
   }
 }

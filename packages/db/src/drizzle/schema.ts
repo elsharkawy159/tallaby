@@ -4216,9 +4216,12 @@ export const agentTokens = pgTable("agent_tokens", {
 /** MCP activity log + idempotency store (0133, F-29b/c). Kept 90 days. Server-only. */
 export const agentToolCalls = pgTable("agent_tool_calls", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
-	grantId: uuid("grant_id").notNull(),
+	/** Null for in-app and builder runs (0158); MCP rows always have it. */
+	grantId: uuid("grant_id"),
 	sellerId: uuid("seller_id").notNull(),
 	storeId: uuid("store_id"),
+	/** 'mcp' | 'in_app' | 'builder' (0158) */
+	source: text().default("mcp").notNull(),
 	tool: text().notNull(),
 	argsSummary: jsonb("args_summary").$type<Record<string, unknown>>().default({}).notNull(),
 	/** 'ok' | 'error' | 'denied' | 'rate_limited' */
@@ -4240,6 +4243,8 @@ export const agentToolCalls = pgTable("agent_tool_calls", {
 	check("agent_tool_calls_error_code_length", sql`error_code IS NULL OR char_length(error_code) <= 100`),
 	check("agent_tool_calls_idempotency_key_length", sql`idempotency_key IS NULL OR char_length(idempotency_key) BETWEEN 1 AND 200`),
 	check("agent_tool_calls_duration_check", sql`duration_ms IS NULL OR duration_ms >= 0`),
+	check("agent_tool_calls_source_check", sql`source IN ('mcp', 'in_app', 'builder')`),
+	check("agent_tool_calls_mcp_grant_check", sql`source <> 'mcp' OR grant_id IS NOT NULL`),
 ]);
 
 /** Durable per-grant MCP rate-limit counters (0133, F-29c). Server-only. */
@@ -4254,6 +4259,54 @@ export const agentRateWindows = pgTable("agent_rate_windows", {
 	foreignKey({ columns: [table.grantId], foreignColumns: [agentGrants.id], name: "agent_rate_windows_grant_id_fkey" }).onDelete("cascade"),
 	check("agent_rate_windows_bucket_length", sql`char_length(bucket) BETWEEN 1 AND 50`),
 	check("agent_rate_windows_count_check", sql`count >= 0`),
+]);
+
+/** A proposed agent write waiting for the seller's Confirm (0158, F-83a). Server-only. */
+export const agentPendingActions = pgTable("agent_pending_actions", {
+	/** Opaque `act_…` id. */
+	id: text().primaryKey().notNull(),
+	sellerId: uuid("seller_id").notNull(),
+	storeId: uuid("store_id").notNull(),
+	userId: uuid("user_id"),
+	/** 'mcp' | 'in_app' | 'builder' */
+	source: text().notNull(),
+	tool: text().notNull(),
+	input: jsonb().default({}).notNull(),
+	card: jsonb().default({}).notNull(),
+	credits: integer().default(0).notNull(),
+	/** pending | running | done | failed | cancelled | expired */
+	status: text().default("pending").notNull(),
+	result: jsonb(),
+	errorCode: text("error_code"),
+	creditClaimId: text("credit_claim_id"),
+	expiresAt: timestamp("expires_at", { withTimezone: true, mode: 'string' }).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("agent_pending_actions_seller_created_idx").using("btree", table.sellerId, table.createdAt.desc()),
+	index("agent_pending_actions_expires_idx").using("btree", table.expiresAt),
+	foreignKey({ columns: [table.sellerId], foreignColumns: [sellers.id], name: "agent_pending_actions_seller_id_fkey" }).onDelete("cascade"),
+	foreignKey({ columns: [table.storeId], foreignColumns: [stores.id], name: "agent_pending_actions_store_id_fkey" }).onDelete("cascade"),
+	foreignKey({ columns: [table.userId], foreignColumns: [users.id], name: "agent_pending_actions_user_id_fkey" }).onDelete("set null"),
+	check("agent_pending_actions_id_check", sql`id ~ '^act_[A-Za-z0-9_-]{24}$'`),
+	check("agent_pending_actions_status_check", sql`status IN ('pending', 'running', 'done', 'failed', 'cancelled', 'expired')`),
+	check("agent_pending_actions_source_check", sql`source IN ('mcp', 'in_app', 'builder')`),
+	check("agent_pending_actions_tool_length", sql`char_length(tool) BETWEEN 1 AND 100`),
+	check("agent_pending_actions_credits_check", sql`credits BETWEEN 0 AND 100`),
+	check("agent_pending_actions_error_code_length", sql`error_code IS NULL OR char_length(error_code) <= 100`),
+	check("agent_pending_actions_credit_claim_length", sql`credit_claim_id IS NULL OR char_length(credit_claim_id) <= 2000`),
+]);
+
+/** Direct agent reads per seller per Cairo day (0158, F-83a read cap). Server-only. */
+export const agentReadCounts = pgTable("agent_read_counts", {
+	sellerId: uuid("seller_id").notNull(),
+	day: date().notNull(),
+	count: integer().default(0).notNull(),
+}, (table) => [
+	primaryKey({ columns: [table.sellerId, table.day], name: "agent_read_counts_pkey" }),
+	index("agent_read_counts_day_idx").using("btree", table.day),
+	foreignKey({ columns: [table.sellerId], foreignColumns: [sellers.id], name: "agent_read_counts_seller_id_fkey" }).onDelete("cascade"),
+	check("agent_read_counts_count_check", sql`count >= 0`),
 ]);
 
 /** A guest's hero-composer input kept 48 h before signup (0157, ROADMAP.md F-82). Server-only. */

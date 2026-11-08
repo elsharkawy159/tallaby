@@ -1597,6 +1597,12 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 ## 7. Log
 
+### 2026-11-09 — F-83a agent core: durable pending actions, read cap and tool-call log (migration 0158)
+
+- **What:** the agent runtime's state moves from process memory to the DB, so it works across serverless instances. Migration `0158_agent_runtime.sql` (**applied on staging only 2026-11-09**, run twice, checked; production BEFORE deploying any code from `main` after it): `agent_tool_calls.grant_id` nullable + `source` (`mcp | in_app | builder`, default `mcp`) + check that MCP rows keep their grant; server-only `agent_pending_actions` and `agent_read_counts` (RLS on, no policies).
+- **Code:** `packages/agent` defaults to `dbPendingStore` (claim = `UPDATE … WHERE status = 'pending'`, so a double confirm runs once and the second replays the stored result; cancel and expiry are stored), `dbReadCap` (one upsert per read, per Cairo day) and `dbToolCallLogger` (every in-app and builder run written to `agent_tool_calls` with its source and no grant). The in-memory stores stay for tests. `recordAgentToolCall` (packages/lib) takes `source` and a nullable grant; the MCP writer in apps/backend is unchanged (default `mcp`).
+- **Left:** no cleanup cron yet for old `agent_pending_actions` / `agent_read_counts` rows; a row left `running` by a crashed instance stays `running`.
+
 ### 2026-11-08 — F-82 / F-83 AI Store Builder v2 and the agent system: plan (owner request)
 
 - **What:** planning only, no code. New design `docs/superpowers/specs/2026-11-08-ai-store-builder-v2-design.md`, based on a check of the F-54 code (builder chat, run items, shortlist, review) and of the hero, signup, file importer, design system, templates and publishing.

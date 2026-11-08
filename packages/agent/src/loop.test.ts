@@ -5,7 +5,9 @@ import { agentCreateProduct, agentSearchProducts, agentSetProductStatus, agentUp
 import { runAgentTurn } from "./loop";
 import { sanitizeSellerText } from "./prompt.lib";
 import { createAgentRegistry } from "./registry";
+import { InMemoryPendingStore } from "./pending";
 import { createAgentRuntime } from "./runtime";
+import { InMemoryReadCap } from "./services.server";
 import { resetTables } from "./test/fake-db";
 import type { AgentContext } from "./types";
 
@@ -51,6 +53,8 @@ const runtime = () =>
     registry: createAgentRegistry(),
     credits: { claim: async () => ({ ok: true, reference: "r" }), refund: async () => undefined },
     logger: { record: async () => undefined },
+    pending: new InMemoryPendingStore(),
+    readCap: new InMemoryReadCap(),
   });
 
 beforeEach(() => {

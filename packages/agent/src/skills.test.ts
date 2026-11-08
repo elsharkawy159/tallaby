@@ -4,7 +4,9 @@ import { agentCreateProduct } from "@workspace/lib/products/agent/server";
 import { saveStoreDesignSystem } from "@workspace/lib/store-sites/server";
 import { matchPlaceNames } from "./places.lib";
 import { createAgentRegistry } from "./registry";
+import { InMemoryPendingStore } from "./pending";
 import { createAgentRuntime } from "./runtime";
+import { InMemoryReadCap } from "./services.server";
 import { resetTables, tables } from "./test/fake-db";
 import type { AgentContext } from "./types";
 
@@ -17,6 +19,8 @@ const runtime = () =>
     registry: createAgentRegistry(),
     credits: { claim: async () => ({ ok: true, reference: "r" }), refund: async () => undefined },
     logger: { record: async () => undefined },
+    pending: new InMemoryPendingStore(),
+    readCap: new InMemoryReadCap(),
   });
 
 const confirm = async (tool: string, input: unknown, c: AgentContext = ctx) => {
