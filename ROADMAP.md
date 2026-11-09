@@ -1205,7 +1205,7 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 **Why:** A new Free seller should get real orders from day one and see that the store works before paying, then top up to keep seeing new orders (owner, 2026-11-09).
 **What:** Every published store is public and takes real orders (normal checkout, the $0.03 Free fee from the store wallet, stock, buyer emails), activated or not; the F-76 private store, owner pass and test-order checkout are gone (`orders.is_test` and the existing test rows stay). A seller who isn't activated has a grace window from `max(sellers.created_at, 2026-11-09 00:00 Cairo)` (`ORDER_GRACE_START_FLOOR`) that ends at the earlier of 14 days (`ORDER_GRACE_DAYS`) or their second real order since then (not a test order, not an unpaid online payment, not a manual order; cancelled ones count). During grace orders, totals and order pages work normally, with a "X days left to top up" banner (then "Top up to keep seeing new orders" after the first order). After it: today's locked screens, except the first order, which stays visible in full on /orders and can still be worked on (status changes, return restock, payment proof). A top-up, a balance ever above zero or Pro activates for good, as before. AI (20 a month) and campaign / win-back emails still wait for activation, not for the grace window: `getOrderLock` returns `activated` and `ordersLocked` separately. The first real order of an unactivated seller writes a `first_order_top_up` bell row (0159 trigger), pushed by the seller push dispatcher, linking to the wallet top-up. Nothing changes while `usdLive` is false.
-**Status:** [Built, not deployed] 2026-11-09 (§7). 0159 not applied anywhere.
+**Status:** [Built] 2026-11-09 (§7). 0159 applied on staging and production 2026-11-09 (before the deploy); deploying with the 2026-11-09 push.
 
 - **F-84a · P1 · deps: —** Lock split (`activated` / `ordersLocked` / `firstOrderId` / `grace`) in `order-lock.lib.ts` with unit tests; every caller moved to the flag it means.
 - **F-84b · P1 · deps: F-84a** Public stores again: owner pass, store-owner-pass route, owner banner, cached activation lock and its invalidations removed; "View store" is a plain redirect.
@@ -1614,6 +1614,11 @@ Add each new request here first, with the date and the owner's words, then turn 
 ---
 
 ## 7. Log
+
+### 2026-11-09 — Production: 0159 applied; main pushed for one deploy (owner: "merge everything to main… one deployment")
+
+- `0159_first_order_top_up.sql` applied on staging, rolled-back dry run on production, then applied on production (checked: `first_order_top_up` in `seller_notifications_type_check`, both triggers present). 0157/0158 were already on both.
+- `main` pushed with the tallaby.com audit fixes, ≈ EGP / visitor-currency prices, English by default, the F-84 grace copy, F-84 code and SEO_PLAN.md. Owner to do in Vercel: tallaby.com redirect 307 → 308 and production `NEXT_PUBLIC_SITE_URL=https://www.tallaby.com` before this build (S-01).
 
 ### 2026-11-09 — Prices in ≈ EGP / visitor currency; English for non-Arabic browsers (owner; no migration)
 
