@@ -16,17 +16,18 @@
       "sample": "Sample data from a demo store.",
       "composer": {
         "label": "Describe your store",
-        "placeholder": "Tell us about your store: what you sell, who it's for and your brand name",
+        "placeholder": "Describe your store: what you sell, who it's for and your brand name",
         "keyboardHelp": "Press Enter to send and Shift+Enter for a new line.",
         "counter": "{count}/{max}",
         "examplesLabel": "Examples to start from",
         "examples": [
-          "A luxury oriental perfume store for men called Oud House",
-          "Cotton kids' clothes for ages 1 to 8",
-          "Homemade desserts and custom cakes in Cairo",
-          "Affordable phone accessories for young people",
-          "Handmade genuine leather bags for women",
-          "Natural skin and hair care products"
+          "Create a store for my men's fashion brand: cotton T-shirts and shirts",
+          "Create a store for luxury oriental perfumes for men and women",
+          "Create a store for cotton kids' clothes, ages 1 to 8",
+          "Create a store for handmade genuine leather bags for women",
+          "Create a store for natural skin and hair care products",
+          "Create a store for phone accessories and wireless earbuds",
+          "Create a store for homemade desserts and custom cakes"
         ],
         "attachments": "Attachments",
         "attach": "Attach a product file or your logo",
