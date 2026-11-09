@@ -1,7 +1,6 @@
 import { Banknote, Eye, Percent, Receipt, ShoppingBag, Star, UserPlus, Wallet } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
-import { formatNumber, formatWalletMoney, moneyUnitMarked, walletMoneyDir } from "@/lib/i18n/format";
-import { getEgpPerUsd } from "@/lib/billing/egp-rate.server";
+import { formatNumber, formatWalletMoney, moneyUnitMarked } from "@/lib/i18n/format";
 import { MoneyLines, MoneyText } from "@/components/money";
 import { KpiCard, KpiGrid, StatItem, StatStrip } from "@/components/seller-ui";
 import {
@@ -86,7 +85,7 @@ export async function HomeKpisData({ range, channel = "all" }: { range: HomeRang
 
 /** The store wallet and rating items of the strip. Neither follows from orders. */
 async function WalletAndRatingItems() {
-  const [snapshot, t, locale, egpRate] = await Promise.all([getHomeSnapshot(), getTranslations("home.kpis"), getLocale(), getEgpPerUsd()]);
+  const [snapshot, t, locale] = await Promise.all([getHomeSnapshot(), getTranslations("home.kpis"), getLocale()]);
   const num = (value: number, digits = 0) => formatNumber(value, locale, { maximumFractionDigits: digits });
   const wallet = snapshot?.walletBalance ?? 0;
   const walletState = walletKpiState(wallet);
@@ -102,7 +101,7 @@ async function WalletAndRatingItems() {
         icon={Wallet}
         tone={walletState === "negative" ? "danger" : "accent"}
         label={t("storeWallet")}
-        value={usdWallet ? <bdi dir={walletMoneyDir(locale, "USD", egpRate)}>{formatWalletMoney(wallet, "USD", locale, egpRate)}</bdi> : num(wallet, 2)}
+        value={usdWallet ? <bdi dir="ltr">{formatWalletMoney(wallet, "USD", locale)}</bdi> : num(wallet, 2)}
         unit={usdWallet ? undefined : t("currency")}
         note={walletState === "negative" ? t("walletNegative") : undefined}
         noteTone={walletState === "negative" ? "danger" : undefined}

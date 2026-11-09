@@ -7,8 +7,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { ChevronRight, ExternalLink, Menu, Plus, Search } from "lucide-react";
 import { IconButton } from "@/components/seller-ui";
 import { cn } from "@/lib/utils";
-import { formatWalletMoney, walletMoneyDir } from "@/lib/i18n/format";
-import { useEgpRate } from "@/components/egp-rate.client";
+import { formatWalletMoney, moneyDir } from "@/lib/i18n/format";
 import { useSidebarStore } from "@/stores";
 import { CommandPalette } from "./command-palette.client";
 import { resolveDashboardRoute } from "./dashboard-routes.lib";
@@ -36,7 +35,6 @@ export function DashboardHeader({
 }) {
   const t = useTranslations("header");
   const locale = useLocale();
-  const egpRate = useEgpRate();
   const tNav = useTranslations("nav");
   const pathname = usePathname();
   const route = resolveDashboardRoute(pathname);
@@ -131,12 +129,12 @@ export function DashboardHeader({
           >
             <Link
               href="/wallet"
-              title={t("walletBalance", { amount: formatWalletMoney(walletBalance, walletCurrency, locale, egpRate) })}
+              title={t("walletBalance", { amount: formatWalletMoney(walletBalance, walletCurrency, locale) })}
               className="inline-flex items-center gap-2 self-stretch text-(--s-muted) no-underline hover:text-(--s-ink)"
             >
               <span className="max-[1020px]:hidden">{t("walletLabel")}</span>
-              <bdi dir={walletMoneyDir(locale, walletCurrency, egpRate)} className={cn("font-montserrat text-[13px] font-bold text-(--s-ink) tabular-nums", walletBalance < 0 && "text-destructive")}>
-                {formatWalletMoney(walletBalance, walletCurrency, locale, egpRate)}
+              <bdi dir={moneyDir(locale, { currency: walletCurrency })} className={cn("font-montserrat text-[13px] font-bold text-(--s-ink) tabular-nums", walletBalance < 0 && "text-destructive")}>
+                {formatWalletMoney(walletBalance, walletCurrency, locale)}
               </bdi>
             </Link>
             <Link

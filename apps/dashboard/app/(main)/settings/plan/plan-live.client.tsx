@@ -163,7 +163,7 @@ export function PlanLive(props: PlanLiveProps) {
                     <p className="mt-2 text-xs text-(--s-subtle)">
                       {t("needBalance", {
                         amount: usd(PRO_MONTHLY_USD_CENTS),
-                        balance: formatWalletMoney(walletBalance, "USD", locale, egpRate),
+                        balance: formatWalletMoney(walletBalance, "USD", locale),
                       })}
                     </p>
                   </>

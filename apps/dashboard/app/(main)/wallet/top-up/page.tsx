@@ -7,8 +7,6 @@ import { getStoreTopUp } from "@workspace/lib/store-wallet/server";
 import { IconTile, PageContainer, SellerButton, SellerCard } from "@/components/seller-ui";
 import { isAccessError, requireSeller } from "@/lib/auth/require-seller.server";
 import { walletMoney } from "../store-wallet.lib";
-import { isApproxWalletMoney } from "@/lib/i18n/format";
-import { getEgpPerUsd } from "@/lib/billing/egp-rate.server";
 
 export const dynamic = "force-dynamic";
 
@@ -29,14 +27,12 @@ export default async function TopUpReturnPage({
   const row = typeof topUp === "string" ? await getStoreTopUp(seller.sellerId, topUp) : null;
   if (!row) redirect("/wallet");
 
-  const [t, locale, egpRate] = await Promise.all([getTranslations("storeWallet.topUp"), getLocale(), getEgpPerUsd()]);
+  const [t, locale] = await Promise.all([getTranslations("storeWallet.topUp"), getLocale()]);
   const state = row.status === "succeeded" ? "succeeded" : row.status === "failed" || row.status === "cancelled" ? "failed" : "processing";
   // What the wallet gets, not the EGP paid: the same until the USD switch.
   const credit = topUpCredit(row);
-  // A USD credit reads in EGP, with the exact dollars recorded beside it (owner, 2026-11-09).
-  const creditText = isApproxWalletMoney(credit.currency, egpRate)
-    ? `${walletMoney(Number(credit.amount), credit.currency, locale, egpRate)} (\u2066${walletMoney(Number(credit.amount), credit.currency, locale)}\u2069)`
-    : walletMoney(Number(credit.amount), credit.currency, locale);
+  // What the wallet was credited, in its own currency: dollars on a USD wallet (owner, 2026-11-09).
+  const creditText = walletMoney(Number(credit.amount), credit.currency, locale);
 
   return (
     <PageContainer className="max-w-[480px]">

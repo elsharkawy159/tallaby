@@ -12,8 +12,7 @@ import {
   StatusBadge,
   TwoColumns,
 } from "@/components/seller-ui";
-import { formatDate, formatMoney, formatNumber, formatWalletMoney, moneyUnitMarked, splitHeadline, moneyDir, walletMoneyDir } from "@/lib/i18n/format";
-import { WalletAmount } from "@/components/wallet-amount";
+import { formatDate, formatMoney, formatNumber, formatSignedWalletMoney, formatWalletMoney, moneyUnitMarked, splitHeadline, moneyDir } from "@/lib/i18n/format";
 import { MoneyLines, MoneyText } from "@/components/money";
 import { humanizeStatus, translateStatus } from "@/lib/i18n/status";
 import { cn } from "@/lib/utils";
@@ -62,8 +61,6 @@ interface FinancialDashboardContentProps {
   /** One row per currency. */
   analytics: { currency: string; thisMonthSales: number; lastMonthSales: number }[] | null;
   sources: Record<"month" | "allTime", { currency: string; data: SalesSources }[]> | null;
-  /** EGP per USD: a USD wallet amount shows in EGP (owner, 2026-11-09). */
-  egpRate?: number | null;
   /** What an empty card is in: the seller's one currency, or EGP. */
   fallbackCurrency: string;
 }
@@ -77,7 +74,6 @@ export function FinancialDashboardContent({
   analytics,
   sources,
   fallbackCurrency,
-  egpRate = null,
 }: FinancialDashboardContentProps) {
   const t = useTranslations("financial");
   const tStatus = useTranslations("status");
@@ -135,7 +131,7 @@ export function FinancialDashboardContent({
           href="/wallet"
           label={t("walletBalance")}
           icon={Wallet}
-          value={<bdi dir={walletMoneyDir(locale, wallet?.walletCurrency, egpRate)}>{formatWalletMoney(walletBalance, wallet?.walletCurrency, locale, egpRate)}</bdi>}
+          value={<bdi dir={moneyDir(locale, { currency: wallet?.walletCurrency })}>{formatWalletMoney(walletBalance, wallet?.walletCurrency, locale)}</bdi>}
           footer={<span className="text-(--s-link)">{t("viewStoreWallet")}</span>}
         />
       </KpiGrid>
@@ -170,19 +166,17 @@ export function FinancialDashboardContent({
                   header: t("columns.amount"),
                   phone: "end",
                   // Fees and refunds are negative: colour by sign, not always green.
-                  // A USD row reads in EGP, with the exact dollars the ledger recorded under it.
+                  // A USD row stays in dollars, as the wallet deducts them (owner, 2026-11-09).
                   cell: (tx) => (
-                    <WalletAmount
-                      value={tx.amount}
-                      currency={tx.currency}
-                      locale={locale}
-                      rate={egpRate}
-                      signed
+                    <bdi
+                      dir={moneyDir(locale, { currency: tx.currency })}
                       className={cn(
                         "whitespace-nowrap font-montserrat font-semibold tabular-nums",
                         Number(tx.amount) < 0 ? "text-destructive" : "text-success",
                       )}
-                    />
+                    >
+                      {formatSignedWalletMoney(tx.amount, tx.currency, locale)}
+                    </bdi>
                   ),
                 },
                 {

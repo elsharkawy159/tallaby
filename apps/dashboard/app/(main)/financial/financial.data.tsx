@@ -14,7 +14,6 @@ import { FinancialDashboardContent } from "./financial.chunks";
 import { FinancialSkeleton } from "./financial.skeleton";
 import { loadAccountMoney } from "@/lib/stores/account-money.server";
 import { getStoreWalletBalance } from "../wallet/store-wallet.server";
-import { getEgpPerUsd } from "@/lib/billing/egp-rate.server";
 import { salesSourcesByCurrency, startOfMonth, type SalesSourceRow } from "./financial.lib";
 
 /**
@@ -61,7 +60,7 @@ async function getSalesSources() {
 
 export async function FinancialData() {
   const seller = await requireSeller();
-  const [walletRes, pendingRes, payoutsRes, statsRes, txRes, analyticsRes, sources, accountMoney, storeWallet, egpRate] =
+  const [walletRes, pendingRes, payoutsRes, statsRes, txRes, analyticsRes, sources, accountMoney, storeWallet] =
     await Promise.all([
       getWalletBalance(),
       getPendingEarnings(),
@@ -75,7 +74,6 @@ export async function FinancialData() {
       }),
       loadAccountMoney(seller.sellerId),
       getStoreWalletBalance(seller.sellerId),
-      getEgpPerUsd(),
     ]);
   const wallet = walletRes.success ? (walletRes.data ?? null) : null;
 
@@ -89,7 +87,6 @@ export async function FinancialData() {
       transactions={txRes.success ? (txRes.data ?? []) : []}
       analytics={analyticsRes.success ? (analyticsRes.data?.sales ?? null) : null}
       sources={sources}
-      egpRate={egpRate}
       fallbackCurrency={accountMoney.mixed ? "EGP" : (accountMoney.unit.currency ?? "EGP")}
     />
   );

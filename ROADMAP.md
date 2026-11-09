@@ -1615,6 +1615,10 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 ## 7. Log
 
+### 2026-11-09 — Seller wallet back in USD (owner; no migration)
+
+- Owner: "keep showing the seller wallet in USD currency only as it was… the transactions on /wallet to be in $ as we deduct $ not EGP". Partly reverts `28e4dd08`: the store-wallet balance and its entries show exact dollars again in the header, the `/wallet` banner and ledger (amount and balance after), the Financial wallet card and recent activity, the home KPI, the negative-wallet pop-up, the plan page's "your balance", the top-up "balance after" line and the top-up result. No ≈ EGP next to the balance. Prices (fees, plans, top-up limits and the EGP you pay) stay ≈ جنيه. `components/wallet-amount.tsx` removed (no longer used).
+
 ### 2026-11-09 — Readable /sitemap.xml in the browser (owner; no migration; `4415b739`)
 
 - tallaby.com's `/sitemap.xml` moved from the `app/sitemap.ts` metadata route to the route handler `app/sitemap.xml/route.ts` (entries in `lib/marketing/sitemap.server.ts`, XML in `serializeMarketingSitemap`, tested against Next's own output plus the stylesheet line). Same static caching and headers; crawlers get the same XML.

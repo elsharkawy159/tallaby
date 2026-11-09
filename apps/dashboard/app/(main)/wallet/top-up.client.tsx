@@ -438,7 +438,7 @@ export function TopUpPanel({
             <TrendingUp className="mt-0.5 size-[15px] shrink-0" aria-hidden />
             <span>
               {t("panel.summary.after")}{" "}
-              <bdi className="font-montserrat tabular-nums">{afterBalance === null ? "—" : walletMoney(afterBalance, walletCurrency, locale, rate)}</bdi>
+              <bdi className="font-montserrat tabular-nums">{afterBalance === null ? "—" : walletMoney(afterBalance, walletCurrency, locale)}</bdi>
               {afterBalance !== null && <> · {tWallet("runway", orderCountValues(ordersCovered(afterBalance, walletCurrency), locale))}</>}
             </span>
           </p>
