@@ -108,6 +108,7 @@ describe("isArabicMarketingPath", () => {
     "/_next/static/chunk.js",
     "/robots.txt",
     "/sitemap.xml",
+    "/sitemap.xsl",
     "/blog/cover.png",
     "/cart",
     "/auth/login",
@@ -195,7 +196,7 @@ describe("englishLandingRedirect", () => {
   });
 
   it("ignores non-marketing paths and English or file paths", () => {
-    for (const pathname of ["/en", "/en/pricing", "/cart", "/auth/login", "/api/x", "/robots.txt", "/sitemap.xml"]) {
+    for (const pathname of ["/en", "/en/pricing", "/cart", "/auth/login", "/api/x", "/robots.txt", "/sitemap.xml", "/sitemap.xsl"]) {
       expect(request({ pathname })).toBeNull();
     }
   });

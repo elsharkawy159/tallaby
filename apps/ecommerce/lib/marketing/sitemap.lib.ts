@@ -1,3 +1,6 @@
+import { escapeXml, SITEMAP_STYLESHEET_PATH } from "@/lib/sitemap/sitemap.lib";
+import type { MarketingSitemapEntry } from "./seo.lib";
+
 /**
  * Sitemap `lastModified` dates for tallaby.com's own pages (not blog posts,
  * which carry their own). Each is the day the page's code or copy last really
@@ -25,4 +28,26 @@ export const CONTENT_PAGES_LASTMOD = "2026-11-06";
 /** A page's sitemap date: its own entry, else the content pages' date. */
 export function pageLastModified(path: string): string {
   return STATIC_PAGE_LASTMOD[path] ?? CONTENT_PAGES_LASTMOD;
+}
+
+/**
+ * tallaby.com's /sitemap.xml text: the same XML Next's `sitemap.ts` metadata
+ * route wrote (urlset, `xhtml:link` alternates, lastmod), plus the stylesheet
+ * instruction that renders it as a readable page in a browser (crawlers ignore
+ * it) and XML escaping of every value.
+ */
+export function serializeMarketingSitemap(entries: readonly MarketingSitemapEntry[]): string {
+  // Next's rule: the namespace whenever any entry has an `alternates` object.
+  const hasAlternates = entries.some((e) => Object.keys(e.alternates ?? {}).length > 0);
+  let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<?xml-stylesheet type="text/xsl" href="${SITEMAP_STYLESHEET_PATH}"?>\n`;
+  xml += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"${hasAlternates ? ' xmlns:xhtml="http://www.w3.org/1999/xhtml"' : ""}>\n`;
+  for (const entry of entries) {
+    xml += `<url>\n<loc>${escapeXml(entry.url)}</loc>\n`;
+    for (const [lang, href] of Object.entries(entry.alternates?.languages ?? {})) {
+      xml += `<xhtml:link rel="alternate" hreflang="${escapeXml(lang)}" href="${escapeXml(href)}" />\n`;
+    }
+    if (entry.lastModified) xml += `<lastmod>${escapeXml(entry.lastModified)}</lastmod>\n`;
+    xml += "</url>\n";
+  }
+  return `${xml}</urlset>\n`;
 }

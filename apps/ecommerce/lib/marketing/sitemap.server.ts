@@ -1,21 +1,20 @@
-import type { MetadataRoute } from "next";
 import { routing } from "@/i18n/routing";
 import { getMarketingPosts } from "@/lib/marketing/blog.server";
 import { contentPagePaths } from "@/lib/marketing/content-routes.lib";
-import { sitemapEntries } from "@/lib/marketing/seo.lib";
+import { type MarketingSitemapEntry, sitemapEntries } from "@/lib/marketing/seo.lib";
 import { pageLastModified, STATIC_PAGE_LASTMOD } from "@/lib/marketing/sitemap.lib";
 import { getTemplateGallery } from "@/lib/marketing/templates.server";
 
 const STATIC_PATHS = Object.keys(STATIC_PAGE_LASTMOD);
 
 /**
- * tallaby.com pages, templates (from the gallery) and blog posts. Blog posts
- * can be limited to one locale (`lang:xx` tags), so each post lists only the
- * locales it is published in; noindex posts are left out. Pages carry the dates
- * in lib/marketing/sitemap.lib.ts; templates have no change date in the code
- * catalog, so they carry none.
+ * The entries of tallaby.com's /sitemap.xml (app/sitemap.xml/route.ts): pages,
+ * templates (from the gallery) and blog posts. Blog posts can be limited to one
+ * locale (`lang:xx` tags), so each post lists only the locales it is published
+ * in; noindex posts are left out. Pages carry the dates in sitemap.lib.ts;
+ * templates have no change date in the code catalog, so they carry none.
  */
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+export async function getMarketingSitemapEntries(): Promise<MarketingSitemapEntry[]> {
   const [gallery, ...postsByLocale] = await Promise.all([
     getTemplateGallery(routing.defaultLocale),
     ...routing.locales.map((locale) => getMarketingPosts(locale)),
