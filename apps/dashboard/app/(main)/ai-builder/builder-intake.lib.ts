@@ -184,7 +184,6 @@ export type IntakeReading = {
   social: BuilderState["social"];
 };
 
-const NAME_IDEA = /^[\p{L}\p{N}][\p{L}\p{N} &.'-]*$/u;
 
 /**
  * The model's answer, kept only where the seller's text backs it: a store
@@ -200,9 +199,8 @@ export function cleanIntakeReading(output: BuilderIntakeOutput, prompt: string):
   };
   const nameEn = latinNameInText(output.storeNameEn, prompt);
   const name = stated(output.storeNameAr) ?? nameEn;
-  const ideas = name
-    ? []
-    : [...new Set(output.nameIdeas.map((idea) => line(idea, 30)).filter((idea) => idea.length >= 2 && NAME_IDEA.test(idea)))].slice(0, 3);
+  // No name ideas: the seller always types their own brand name (owner, 2026-11-09).
+  const ideas: string[] = [];
   const verified = verifiedContact(output, prompt);
   const typed = readContact(prompt);
   const links = readSocialLinks(prompt);

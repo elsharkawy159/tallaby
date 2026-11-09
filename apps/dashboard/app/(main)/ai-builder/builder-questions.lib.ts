@@ -83,7 +83,8 @@ const productsReady = (state: BuilderState) => (state.fileRows.length ? state.fi
 function brandQuestions(state: BuilderState): BuilderQuestion[] {
   const out: BuilderQuestion[] = [];
   if (!state.name) {
-    out.push(question("storeName", "single", markFirst(state.nameIdeas.map((idea) => ({ value: idea, label: idea }))), { allowOther: true }));
+    // Always the seller's own name: Tallaby never suggests brand names (owner, 2026-11-09).
+    out.push(question("storeName", "text", []));
   }
   if (!state.industryId) {
     const known = new Set(STORE_INDUSTRIES.map((industry) => industry.id));
@@ -222,7 +223,7 @@ function applyOne(state: BuilderState, id: QuestionId, answer: BuilderAnswerValu
     case "describe":
       return text.length >= 3 ? { describe: text } : bad;
     case "storeName": {
-      const name = choice && state.nameIdeas.includes(choice) ? choice : text;
+      const name = text;
       return name.length >= 2 && name.length <= 80 ? { state: { ...state, name } } : bad;
     }
     case "industry": {

@@ -4141,7 +4141,7 @@
       "options": {
         "industryOther": "Another field",
         "logoColor": "Logo colour",
-        "templateColors": "Use the design's colours",
+        "templateColors": "Let AI decide",
         "style_luxe": "Luxurious",
         "style_bold": "Modern",
         "style_warm": "Warm",
@@ -4165,7 +4165,7 @@
       },
       "placeholders": {
         "describe": "For example: a men's perfume store in Cairo called Oud",
-        "storeName": "Or type a name",
+        "storeName": "Type your store name",
         "industry": "Or describe it",
         "color": "#1e5bb8",
         "shipping": "The price for all of Egypt, or describe your areas and prices",
@@ -4273,7 +4273,7 @@
         "returns": "Returns",
         "productsCount": "{count} products",
         "noProducts": "No products for now",
-        "templateColors": "The design's colours",
+        "templateColors": "Chosen by AI",
         "notSet": "You will set it later",
         "flat": "EGP {price} for all of Egypt",
         "consent": "When you press it, I will build your store and publish it with its complete products. Only you can see it until you activate your account."

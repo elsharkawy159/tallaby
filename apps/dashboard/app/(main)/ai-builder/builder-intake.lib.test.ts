@@ -6,7 +6,6 @@ import { applyEditReading, applyIntakeReading, cleanIntakeReading, colorFromText
 const output = (patch: Partial<BuilderIntakeOutput> = {}): BuilderIntakeOutput => ({
   storeNameAr: null,
   storeNameEn: null,
-  nameIdeas: [],
   industryHint: null,
   audience: null,
   tone: null,
@@ -34,7 +33,6 @@ describe("the intake reading, cleaned", () => {
         whatsapp: "01012345678",
         email: "made@up.com",
         socialLinks: ["instagram.com/fake"],
-        nameIdeas: ["فكرة"],
       }),
       prompt,
     );
@@ -49,10 +47,10 @@ describe("the intake reading, cleaned", () => {
     expect(reading.nameIdeas).toEqual([]);
   });
 
-  it("gives name ideas only when no name was written, clipped and cleaned", () => {
-    const reading = cleanIntakeReading(output({ storeNameAr: "مسك الليل", nameIdeas: ["<b>Oud</b>", "مسك", "مسك", "Very long name that goes on and on forever"] }), "عطور رجالي");
+  it("never suggests store names: the seller types their own", () => {
+    const reading = cleanIntakeReading(output({ storeNameAr: "مسك الليل" }), "عطور رجالي");
     expect(reading.name).toBeNull();
-    expect(reading.nameIdeas).toEqual(["Oud", "مسك", "Very long name that goes on an"]);
+    expect(reading.nameIdeas).toEqual([]);
   });
 
   it("keeps photo keywords as plain English words, at most 5", () => {

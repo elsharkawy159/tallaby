@@ -49,20 +49,19 @@ describe("the question bank", () => {
     expect(ids(state)).toEqual(["describe"]);
   });
 
-  it("shape A: the brand card first (name with 3 ideas, industry top 3, colour), then the style, design, products, selling", () => {
+  it("shape A: the brand card first (name typed by the seller, industry top 3, colour), then the style, design, products, selling", () => {
     let state = shapeA();
     const card = nextCard(state);
     expect(card.round).toBe("brand");
     expect(card.questions.map((q) => q.id)).toEqual(["storeName", "industry", "color"]);
     const name = card.questions[0]!;
-    expect(name.options.map((o) => o.value)).toEqual(["عود", "Oud House", "مسك"]);
-    expect(name.options[0]!.recommended).toBe(true);
-    expect(name.allowOther).toBe(true);
+    expect(name.kind).toBe("text");
+    expect(name.options).toEqual([]);
     const industry = card.questions[1]!;
     expect(industry.options.map((o) => o.value)).toEqual(["beauty", "handmade", "other"]);
     expect(card.questions[2]!.options.at(-1)).toMatchObject({ value: "template" });
 
-    const first = applyCardAnswers(state, { storeName: { choice: "عود" }, industry: { choice: "beauty" }, color: { text: "#1E5BB8" } });
+    const first = applyCardAnswers(state, { storeName: { text: "عود" }, industry: { choice: "beauty" }, color: { text: "#1E5BB8" } });
     expect(first.kind).toBe("ok");
     state = (first as { state: BuilderState }).state;
     expect(state).toMatchObject({ name: "عود", industryId: "beauty", primaryColor: "#1e5bb8", colorDone: true });

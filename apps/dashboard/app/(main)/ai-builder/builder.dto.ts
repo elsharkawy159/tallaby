@@ -343,7 +343,6 @@ export type BuilderEditOutput = z.output<typeof builderEditOutputSchema>;
 const intakeFields = {
   storeNameAr: z.string().nullable().describe("The store's name exactly as the seller wrote it, only if stated. Else null."),
   storeNameEn: z.string().nullable().describe("The store's name in Latin letters, only if the seller wrote one. Else null."),
-  nameIdeas: z.array(z.string()).describe("Only when no name is stated: 3 short store name ideas, at most 30 characters each. Else empty."),
   industryHint: z.string().nullable().describe("What the store sells, in plain English, 1 to 4 words. Null if unclear."),
   audience: z.string().nullable().describe("Who the store is for, in Arabic, at most 80 characters, from the input only. Null if unclear."),
   tone: z.string().nullable().describe("The store's tone of voice, in Arabic, at most 60 characters."),
