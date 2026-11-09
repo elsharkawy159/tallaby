@@ -1597,6 +1597,12 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 ## 7. Log
 
+### 2026-11-09 — Production: 0157 + 0158 applied, F-82/F-83a merged (owner: "make everything ready to production and merge it")
+
+- **Migrations:** `0157_store_build_intakes.sql` and `0158_agent_runtime.sql` applied on production (`sakwqw…`), each in its own transaction, before the deploy. Checked: `store_build_intakes`, `agent_pending_actions`, `agent_read_counts` exist with RLS on; the 4 `store_builds` columns, `ai_usage_logs.ref_id`, `stores.agent_profile`, `agent_tool_calls.grant_id` nullable + `source`; private `store-build-intake` bucket.
+- **SEO:** tallaby.com home title and description now say AI (ar: «منشئ متاجر إلكترونية بالذكاء الاصطناعي»; en: "Free AI online store builder"), worded around what is live (AI writes products in Arabic and English).
+- **Deploy:** `main` pushed to `origin/main` and `stage`. The AI Store Builder stays **off** in production until `STORE_BUILDER_AI_ENABLED=1` is set on the ecommerce and dashboard projects (with `SUPABASE_SERVICE_ROLE_KEY`, Gemini, Pexels envs), after the live cost test (F-82l) and a signed-in E2E. Admin AI icon (`7290a9a8`) is live with this deploy.
+
 ### 2026-11-09 — F-82i AI Store Builder chat page v2 (no migration)
 
 - **What:** `/ai-builder` moved to the full-screen `(builder)` group (same seller gate, no sidebar): Lovable-style two panes, chat on the LEFT and the store preview on the RIGHT in Arabic too (owner layout), resizable chat (360–640 px, saved in localStorage), top bar (store, status, device toggle, Open store, Edit in builder, back). Chat: assistant text beside the طلبي mark with a short reveal (off with reduced motion), seller bubbles, activity rows with details, question cards (chips with "recommended", Other, Skip, colour picker with logo colours/swatches/hex, template choice synced with the preview), inline file fix table, summary card, live build checklist, done card (confetti once, owner-pass Open store, WhatsApp share, to-do list, activation step, Request a custom design). Phone: chat full screen + "شاهد متجرك" sheet. Preview: 3 template live thumbnails side by side, then the signed draft preview while building (re-signed after template, brand, copy, product steps) and `/api/stores/<id>/view` once published. Code in `apps/dashboard/app/(builder)/ai-builder/`; strings under `aiBuilder.ws`.
