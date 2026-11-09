@@ -31,6 +31,8 @@ export type WebsitePageSeo = {
   description?: string;
   ogImage?: string;
   noindex?: boolean;
+  /** `<meta name="keywords">` of the page (Website › SEO); none = the store's. */
+  keywords?: string[];
 };
 
 export type WebsitePageRow = {

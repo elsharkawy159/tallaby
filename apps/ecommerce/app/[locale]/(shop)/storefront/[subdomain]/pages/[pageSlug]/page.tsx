@@ -67,6 +67,8 @@ export async function generateMetadata({ params }: StorePageProps): Promise<Meta
     image: page.seo.ogImage ? getPublicUrl(page.seo.ogImage, "sellers") : null,
     // Only ever adds a noindex, so the layout's store-wide one (P5-04) stays. Previews are never indexed (P4-08).
     noindex: Boolean(preview) || page.seo.noindex,
+    // Its own keywords; without them the store keywords of the layout stay.
+    keywords: page.seo.keywords,
   });
 }
 

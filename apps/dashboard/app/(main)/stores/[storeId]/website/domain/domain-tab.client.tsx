@@ -11,7 +11,7 @@ import { DomainBuyGuide } from "./domain-buy-guide.client";
 import { StoreAddressCard } from "./store-address-card.client";
 
 /**
- * Website › Domain & SEO › Domain (P4-14): the store's Tallaby address (any
+ * Website › Domain (P4-14): the store's Tallaby address (any
  * store can change it), its custom domain (primary store only until P3-03b),
  * and the old addresses that still redirect here.
  */

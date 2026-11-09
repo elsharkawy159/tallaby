@@ -20,6 +20,7 @@ import {
   FileText,
   Files,
   Globe,
+  SearchCheck,
   Images,
   Instagram,
   LayoutTemplate,
@@ -74,6 +75,7 @@ const LINK_GROUPS: { group: "look" | "reach"; links: ManageLink[] }[] = [
     group: "reach",
     links: [
       { key: "domain", path: "website/domain", icon: Globe },
+      { key: "seo", path: "website/seo", icon: SearchCheck },
       { key: "social", path: "website/social", icon: Share2 },
       { key: "blog", path: "website/blog", icon: Newspaper },
       { key: "forms", path: "website/forms", icon: ClipboardList },

@@ -5,16 +5,16 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Activity, Copy, ExternalLink, FileCode, Lightbulb } from "lucide-react";
 import { Field, Note, SectionCard, SellerButton, StatusBadge, TextInput } from "@/components/seller-ui";
-import type { CrawlStatus, NoindexReason } from "../domain-seo.data";
+import type { CrawlStatus, NoindexReason } from "./seo.data";
 
 /** Where the seller fixes each reason. */
 function reasonHref(storeId: string, reason: NoindexReason): string {
-  if (reason === "indexingOff") return `/stores/${storeId}/website/domain#seo`;
+  if (reason === "indexingOff") return `/stores/${storeId}/website/seo#store`;
   if (reason === "noProducts") return `/stores/${storeId}/settings#catalog-mode`;
   return "/stores";
 }
 
-/** Website › Domain & SEO › Sitemap & indexing section (P4-14): read-only URLs and status. */
+/** Website › SEO › Sitemap & indexing section (P4-14): read-only URLs and status. */
 export function CrawlStatusView({ storeId, status }: { storeId: string; status: CrawlStatus }) {
   const t = useTranslations("domainSeo.sitemap");
   const indexed = status.reasons.length === 0;

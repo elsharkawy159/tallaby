@@ -30,6 +30,7 @@ const L = {
   payments: { nav: "paymentMethods", href: "/stores/[storeId]/settings/payments" },
   builder: { nav: "websiteBuilder", href: "/stores/[storeId]/editor", builder: true },
   domain: { nav: "domainSeo", href: "/stores/[storeId]/website/domain", builder: true },
+  seo: { nav: "seo", href: "/stores/[storeId]/website/seo", builder: true },
   coupons: { nav: "coupons", href: "/coupons" },
 } satisfies Record<string, HelpLink>;
 
@@ -74,6 +75,7 @@ export const HELP_TOPICS: HelpTopic[] = [
     faqs: [
       { key: "builder", link: L.builder },
       { key: "domain", link: L.domain },
+      { key: "seo", link: L.seo },
     ],
   },
 ];

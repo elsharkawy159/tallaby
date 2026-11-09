@@ -137,6 +137,8 @@ export const SIDEBAR_CONFIG: NavEntry[] = [
       { key: "templates", href: "/stores/[storeId]/website/templates", status: "live" },
       { key: "designSystem", href: "/stores/[storeId]/website/design", status: "live" },
       { key: "domainSeo", href: "/stores/[storeId]/website/domain", status: "live" },
+      // Store and page SEO, keywords and the sitemap (owner, 2026-11-09).
+      { key: "seo", href: "/stores/[storeId]/website/seo", status: "live" },
       { key: "socialMedia", href: "/stores/[storeId]/website/social", status: "live" },
       { key: "pages", href: "/stores/[storeId]/website/pages", status: "live" },
       { key: "blog", href: "/stores/[storeId]/website/blog", status: "live" },

@@ -32,12 +32,15 @@ export function checkSlug(slug: string, pages: Pick<WebsitePageRow, "id" | "slug
 }
 
 /** Drops empty fields so the server's SEO schema (URL check etc.) only sees real values. */
-export function cleanSeo(seo: { title: string; description: string; ogImage: string; noindex: boolean }): WebsitePageSeo {
+export function cleanSeo(seo: { title: string; description: string; ogImage: string; noindex: boolean; keywords?: readonly string[] }): WebsitePageSeo {
   const out: WebsitePageSeo = {};
   if (seo.title.trim()) out.title = seo.title.trim();
   if (seo.description.trim()) out.description = seo.description.trim();
   if (seo.ogImage.trim()) out.ogImage = seo.ogImage.trim();
   if (seo.noindex) out.noindex = true;
+  // The server replaces the whole SEO object: keywords must travel with every save.
+  const keywords = (seo.keywords ?? []).map((k) => k.trim()).filter(Boolean);
+  if (keywords.length) out.keywords = keywords;
   return out;
 }
 

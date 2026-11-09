@@ -256,7 +256,8 @@ describe("storeXHandle and shareDescription", () => {
 describe("buildStoreMetadata", () => {
   it("clears what the Tallaby layout above it sets", () => {
     const meta = buildStoreMetadata(store({}), "ar", { indexable: true });
-    expect(meta).toMatchObject({ keywords: null, authors: null, creator: null, publisher: null, category: null });
+    // Tallaby's keywords never stay: the store's own (here its name, the default) replace them.
+    expect(meta).toMatchObject({ keywords: ["Shop"], authors: null, creator: null, publisher: null, category: null });
     // Tallaby's default card is the last share image, so the card is large; no Tallaby handle.
     expect(meta.twitter).toEqual({ card: "summary_large_image" });
     expect(JSON.stringify(meta.twitter)).not.toContain("tallaby");
@@ -325,5 +326,25 @@ describe("storeStructuredData", () => {
     expect(organization?.sameAs).toEqual(["https://instagram.com/shop"]);
     expect(website).toMatchObject({ "@type": "WebSite", name: "Shop", url: "https://shop.com", inLanguage: "ar" });
     expect(JSON.stringify([organization, website]).toLowerCase()).not.toContain("tallaby");
+  });
+});
+
+describe("store and page keywords (Website › SEO)", () => {
+  it("renders the store's saved keywords, else its name and category", () => {
+    expect(buildStoreMetadata(store({ keywords: ["bags", "wallets"] }), "ar", { indexable: true }).keywords).toEqual(["bags", "wallets"]);
+    const withCategory = { ...store({}), storeCategory: "Bags", storeCategoryAr: "حقائب" };
+    expect(buildStoreMetadata(withCategory, "en", { indexable: true }).keywords).toEqual(["Shop", "حقائب", "Bags"]);
+  });
+
+  it("gives a page its own keywords, and leaves the store's in place when it has none", () => {
+    expect(storePageMetadata(store({}), "ar", { paths: "/about", title: "About", keywords: ["about us"] }).keywords).toEqual(["about us"]);
+    expect(storePageMetadata(store({}), "ar", { paths: "/about", title: "About", keywords: [] })).not.toHaveProperty("keywords");
+    expect(storePageMetadata(store({}), "ar", { paths: "/about", title: "About" })).not.toHaveProperty("keywords");
+  });
+
+  it("adds the home page's own keywords even when it has no other SEO text", () => {
+    expect(storeHomeMetadata(store({}), "ar", { keywords: ["home kw"] })).toEqual({ keywords: ["home kw"] });
+    expect(storeHomeMetadata(store({}), "ar", { title: "Hi", keywords: ["k"] }).keywords).toEqual(["k"]);
+    expect(storeHomeMetadata(store({}), "ar", {})).toEqual({});
   });
 });

@@ -15,6 +15,10 @@
       "types": "./src/config/index.ts",
       "default": "./src/config/index.ts"
     },
+    "./seo-keywords": {
+      "types": "./src/config/seo-keywords.ts",
+      "default": "./src/config/seo-keywords.ts"
+    },
     "./render": {
       "types": "./src/render/index.ts",
       "default": "./src/render/index.ts"

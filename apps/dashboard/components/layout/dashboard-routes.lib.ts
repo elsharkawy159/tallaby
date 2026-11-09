@@ -24,6 +24,7 @@ import {
   Boxes,
   Gem,
   Globe,
+  SearchCheck,
   Gift,
   Percent,
   HandCoins,
@@ -83,6 +84,7 @@ export type NavKey =
   | "designSystem"
   | "pages"
   | "domainSeo"
+  | "seo"
   | "socialMedia"
   | "blog"
   | "forms"
@@ -170,6 +172,7 @@ export const DASHBOARD_ROUTES: DashboardRoute[] = [
   { href: "/stores/[storeId]/website/templates", title: "templates", parent: "websiteContent", icon: LayoutGrid },
   { href: "/stores/[storeId]/website/design", title: "designSystem", parent: "websiteContent", icon: Palette },
   { href: "/stores/[storeId]/website/domain", title: "domainSeo", parent: "websiteContent", icon: Globe },
+  { href: "/stores/[storeId]/website/seo", title: "seo", parent: "websiteContent", icon: SearchCheck },
   { href: "/stores/[storeId]/website/social", title: "socialMedia", parent: "websiteContent", icon: Share2 },
   { href: "/stores/[storeId]/website/pages", title: "pages", parent: "websiteContent", icon: FileText },
   { href: "/stores/[storeId]/website/blog", title: "blog", parent: "websiteContent", icon: Newspaper },

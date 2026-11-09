@@ -5,7 +5,7 @@ import { listFormSubmissions, listStoreFormDefinitions, listStoreForms } from "@
 import { PageHeader } from "@/components/seller-ui";
 import { loadStorePage } from "@/lib/stores/store-page.server";
 import { SiteOfflineNote } from "../_components/site-offline-note";
-import { InPageNav } from "../domain/section-group";
+import { InPageNav } from "../_components/section-group";
 import { INBOX_STATUSES, type InboxFilter } from "./forms.dto";
 import { FormsList } from "./forms-list.client";
 import { SubmissionsInbox } from "./submissions/submissions.client";

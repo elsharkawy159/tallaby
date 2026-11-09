@@ -8,7 +8,10 @@ import { appIconVersion, appShortName } from "@workspace/lib/stores/app";
 import {
   FACEBOOK_DOMAIN_VERIFICATION_RE,
   GOOGLE_SITE_VERIFICATION_RE,
-  TITLE_TEMPLATE_TOKEN,
+  effectiveTitleTemplate,
+  readSeoKeywords,
+  storeDefaultKeywords,
+  storeSeoFallback,
   type StoreSeo,
 } from "@workspace/lib/stores";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
@@ -32,7 +35,20 @@ export type StoreMetadataInput = {
   supportedLocales?: readonly string[] | null;
   /** Enabled social links (Website › Social media); an X link gives the `twitter:site` handle. */
   social?: readonly { platform: string; url: string }[] | null;
+  /** The store's category (Store settings), for the default keywords. */
+  storeCategory?: string | null;
+  storeCategoryAr?: string | null;
 };
+
+/**
+ * The store's `<meta name="keywords">`: what the seller saved in Website ›
+ * SEO, else its name and category (storeDefaultKeywords, the same default the
+ * dashboard shows).
+ */
+export function storeKeywords(store: Pick<StoreMetadataInput, "displayName" | "seo" | "storeCategory" | "storeCategoryAr">): string[] {
+  if (store.seo.keywords?.length) return store.seo.keywords;
+  return storeDefaultKeywords({ name: store.displayName, storeCategory: store.storeCategory, storeCategoryAr: store.storeCategoryAr });
+}
 
 /** One Open Graph image; size and type only when they are known. */
 export type StoreShareImage = { url: string; width?: number; height?: number; type?: string; alt?: string };
@@ -145,6 +161,8 @@ export type StorePageSeo = {
   /** A product page: `product:price:amount` / `product:price:currency` for Facebook and Pinterest. */
   price?: { amount: number; currency: string } | null;
   noindex?: boolean;
+  /** The page's own keywords (Website › SEO); without them the layout's store keywords stay. */
+  keywords?: readonly string[] | null;
 };
 
 /** "1250.5" with no thousands separator and at most two decimals, as Open Graph wants it. */
@@ -197,7 +215,14 @@ export function storePageMetadata(store: StoreMetadataInput, locale: string, pag
       other: { "product:price:amount": ogPriceAmount(price.amount), "product:price:currency": price.currency },
     }),
     ...(page.noindex && { robots: STORE_NOINDEX }),
+    ...(pageKeywords(page.keywords) && { keywords: pageKeywords(page.keywords) }),
   };
+}
+
+/** Saved page keywords re-checked for rendering, or undefined (inherit the store's). */
+function pageKeywords(raw: unknown): string[] | undefined {
+  const list = readSeoKeywords(raw);
+  return list.length ? list : undefined;
 }
 
 /**
@@ -254,34 +279,11 @@ export function storeStructuredData(
  * lost its single "%s" (only possible in hand-edited data) is not used.
  */
 export function storeTitleTemplate(seo: StoreSeo, displayName: string): string {
-  const template = seo.titleTemplate;
-  if (template && template.split(TITLE_TEMPLATE_TOKEN).length === 2) return template;
-  return `${TITLE_TEMPLATE_TOKEN} | ${displayName}`;
+  return effectiveTitleTemplate(seo.titleTemplate, displayName);
 }
 
-/**
- * The store's title and description when the seller wrote none (ROADMAP.md
- * F-48a). Built at render time, so existing stores get it too: their saved
- * template copies never change. `category` is the store's category label in
- * the visitor's language, when it has one.
- */
-export function storeSeoFallback(name: string, category: string | null | undefined, locale: string): { title: string; description: string } {
-  const label = category?.trim() || null;
-  if (locale === "ar") {
-    return {
-      title: label ? `اشتري ${label} من ${name} الآن | طلبي` : `تسوّق من ${name} الآن | طلبي`,
-      description: label
-        ? `تصفح ${label} من ${name} واطلب أونلاين بخطوات بسيطة.`
-        : `تصفح منتجات ${name} واطلب أونلاين بخطوات بسيطة.`,
-    };
-  }
-  return {
-    title: label ? `Buy ${label} from ${name} now | Tallaby` : `Shop from ${name} now | Tallaby`,
-    description: label
-      ? `Browse ${label} from ${name} and order online in a few simple steps.`
-      : `Browse ${name}'s products and order online in a few simple steps.`,
-  };
-}
+/** The F-48a title and description fallback, shared with the dashboard's SEO page. */
+export { storeSeoFallback } from "@workspace/lib/stores";
 
 /**
  * Layout-level metadata for a store host. Builder pages and product pages
@@ -324,7 +326,8 @@ export function buildStoreMetadata(
     },
     // The (shop) layout above this one speaks for tallaby.com: nothing of it stays on a store.
     twitter: storeTwitter(store),
-    keywords: null,
+    // The store's own keywords; tallaby.com's from the (shop) layout never show on a store.
+    keywords: storeKeywords(store),
     authors: null,
     creator: null,
     publisher: null,
@@ -360,10 +363,11 @@ function storeHomeDefaults(store: StoreMetadataInput, locale: string, category: 
 export function storeHomeMetadata(
   store: StoreMetadataInput,
   locale: string,
-  seo: { title?: string; description?: string; ogImage?: string; noindex?: boolean } | null | undefined,
+  seo: { title?: string; description?: string; ogImage?: string; noindex?: boolean; keywords?: readonly string[] } | null | undefined,
   category?: string | null,
 ): Metadata {
-  if (!seo?.title && !seo?.description && !seo?.ogImage && !seo?.noindex) return {};
+  const keywords = pageKeywords(seo?.keywords);
+  if (!seo?.title && !seo?.description && !seo?.ogImage && !seo?.noindex) return keywords ? { keywords } : {};
   const defaults = storeHomeDefaults(store, locale, category);
   const title = seo.title || defaults.title;
   const description = seo.description || defaults.description;
@@ -381,6 +385,7 @@ export function storeHomeMetadata(
       images: [ogImage(image)],
     },
     ...(seo.noindex && { robots: STORE_NOINDEX }),
+    ...(keywords && { keywords }),
   };
 }
 

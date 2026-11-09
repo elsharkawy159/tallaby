@@ -24,6 +24,11 @@ describe("website pages helpers", () => {
     expect(checkSlug("contact-us", pages)).toBeNull();
   });
 
+  it("keeps the page keywords, which the server saves with the rest", () => {
+    expect(cleanSeo({ title: "", description: "", ogImage: "", noindex: false, keywords: [" a ", "", "b"] })).toEqual({ keywords: ["a", "b"] });
+    expect(cleanSeo({ title: "", description: "", ogImage: "", noindex: false, keywords: [] })).toEqual({});
+  });
+
   it("drops empty SEO fields", () => {
     expect(cleanSeo({ title: " ", description: "", ogImage: "", noindex: false })).toEqual({});
     expect(cleanSeo({ title: " Hi ", description: "d", ogImage: "https://x.test/a.png", noindex: true })).toEqual({

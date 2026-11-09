@@ -28,9 +28,14 @@ export function isInternalStorefrontPath(pathname: string): boolean {
   return pattern.test(pathname);
 }
 
-/** robots.txt, sitemap.xml and its chunk files: answered per host (P5-04). */
+/** robots.txt, sitemap.xml, its stylesheet and its chunk files: answered per host (P5-04). */
 export function isCrawlFilePath(pathname: string): boolean {
-  return pathname === "/robots.txt" || pathname === "/sitemap.xml" || /^\/sitemaps\/[^/]+$/.test(pathname);
+  return (
+    pathname === "/robots.txt" ||
+    pathname === "/sitemap.xml" ||
+    pathname === "/sitemap.xsl" ||
+    /^\/sitemaps\/[^/]+$/.test(pathname)
+  );
 }
 
 /**
@@ -53,7 +58,11 @@ export function routeStoreCrawlFile(request: NextRequest, subdomain: string): Ne
  * segments (`/-/storefront/-/sitemap.xml`), so on Vercel the rewrite matched
  * nothing and every store sitemap was a 500.
  */
-const STORE_CRAWL_ROUTES: Record<string, string> = { "/sitemap.xml": "/sitemap-index" };
+const STORE_CRAWL_ROUTES: Record<string, string> = {
+  "/sitemap.xml": "/sitemap-index",
+  // The readable sitemap page, titled with the store's name (2026-11-09).
+  "/sitemap.xsl": "/sitemap-xsl",
+};
 
 /** Paths that keep their normal app behaviour on a store host. */
 const PASS_THROUGH = [

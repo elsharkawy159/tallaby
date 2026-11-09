@@ -69,6 +69,8 @@ type FormState = {
   seoDescription: string;
   ogImage: string;
   noindex: boolean;
+  /** Edited on Website › SEO; carried here so saving this form keeps them. */
+  keywords: string[];
   showInNav: boolean;
 };
 
@@ -80,6 +82,7 @@ const EMPTY_FORM: FormState = {
   seoDescription: "",
   ogImage: "",
   noindex: false,
+  keywords: [],
   showInNav: true,
 };
 
@@ -94,6 +97,7 @@ function toForm(page: WebsitePageRow): FormState {
     seoDescription: page.seo.description ?? "",
     ogImage: page.seo.ogImage ?? "",
     noindex: Boolean(page.seo.noindex),
+    keywords: page.seo.keywords ?? [],
     showInNav: page.showInNav,
   };
 }
@@ -492,7 +496,7 @@ function PageForm({
       if (problem) return;
     }
     const name = { ar: form.nameAr.trim() || undefined, en: form.nameEn.trim() || undefined };
-    const seo = cleanSeo({ title: form.seoTitle, description: form.seoDescription, ogImage: form.ogImage, noindex: form.noindex });
+    const seo = cleanSeo({ title: form.seoTitle, description: form.seoDescription, ogImage: form.ogImage, noindex: form.noindex, keywords: form.keywords });
 
     startSaving(async () => {
       try {
@@ -612,7 +616,12 @@ function PageForm({
       <CheckRow label={t("showInNav")} checked={isHome || form.showInNav} disabled={fixedSlug} onChange={(e) => set("showInNav", e.target.checked)} />
 
       <div className="flex flex-col gap-3.5 border-t border-(--s-line-soft) pt-4">
-        <b className="text-[13.5px] font-bold text-(--s-ink)">{t("seo")}</b>
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <b className="text-[13.5px] font-bold text-(--s-ink)">{t("seo")}</b>
+          <Link href={`/stores/${storeId}/website/seo#pages`} className="text-[12.5px] font-semibold text-(--s-link)">
+            {t("seoAdvanced")}
+          </Link>
+        </div>
         <Field label={t("seoTitle")} htmlFor="page-seo-title">
           <TextInput id="page-seo-title" value={form.seoTitle} maxLength={120} onChange={(e) => set("seoTitle", e.target.value)} />
         </Field>

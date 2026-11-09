@@ -11,6 +11,7 @@ import { z } from "zod";
 import { animationDefaultSchema, animationSpeedSchema } from "@workspace/motion/presets";
 import { isHttpOrRelativeUrl } from "./url";
 import { PAGE_KINDS, PRODUCT_PAGE_SLUG } from "./product-page.lib";
+import { seoKeywordsSchema } from "./seo-keywords";
 
 export const SITE_CONFIG_VERSION = 1 as const;
 
@@ -254,6 +255,8 @@ export const pageSeoSchema = z.object({
   description: z.string().trim().max(320).optional(),
   ogImage: safeImageUrl.optional(),
   noindex: z.boolean().optional(),
+  /** `<meta name="keywords">` of this page; without them the page uses the store's. */
+  keywords: seoKeywordsSchema.optional(),
 });
 
 export const sitePageSchema = z.object({

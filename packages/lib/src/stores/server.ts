@@ -510,6 +510,7 @@ export async function updateStoreSeo(
 
   const next: Record<string, unknown> = { ...(store.seo as Record<string, unknown>) };
   for (const [key, value] of Object.entries(parsed.data)) {
+    if (value === undefined) continue;
     if (value === null) delete next[key];
     else next[key] = value;
   }

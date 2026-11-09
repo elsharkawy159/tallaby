@@ -6,6 +6,17 @@ import { z } from "zod";
 import { CURRENCY_LABELS, STORE_CURRENCY_CODES, isCurrencyLabelFor } from "../utils/formatPrice";
 import { SOCIAL_PLATFORM_KEYS, SOCIAL_VALUE_MAX, formatPhone, normalizeSocialLink } from "@workspace/store-sections/social";
 import { SUBDOMAIN_MAX_LENGTH, normalizeSubdomain, validateSubdomain, type SubdomainProblem } from "../storefront";
+import { readSeoKeywords, seoKeywordsSchema } from "@workspace/store-sections/seo-keywords";
+import { TITLE_TEMPLATE_TOKEN } from "./seo-defaults.lib";
+
+export * from "./seo-defaults.lib";
+export {
+  SEO_KEYWORDS_MAX,
+  SEO_KEYWORD_MAX_LENGTH,
+  normalizeSeoKeywords,
+  readSeoKeywords,
+  seoKeywordsSchema,
+} from "@workspace/store-sections/seo-keywords";
 
 export const STORE_STATUSES = ["active", "archived", "suspended"] as const;
 export type StoreStatus = (typeof STORE_STATUSES)[number];
@@ -193,8 +204,6 @@ export const GOOGLE_SITE_VERIFICATION_RE = /^[A-Za-z0-9_-]{10,100}$/;
  * way, only as the content of `<meta name="facebook-domain-verification">`.
  */
 export const FACEBOOK_DOMAIN_VERIFICATION_RE = /^[A-Za-z0-9]{10,100}$/;
-/** Where the page title goes in a store title template: "%s | My store". */
-export const TITLE_TEMPLATE_TOKEN = "%s";
 
 const blankToNull = (v: unknown) => (typeof v === "string" && v.trim() === "" ? null : v);
 
@@ -227,6 +236,14 @@ export const storeSeoSchema = z
     /** false = ask search engines not to index the store (noindex, no sitemap). */
     indexing: z.boolean(),
     googleSiteVerification: z.preprocess(blankToNull, googleSiteVerification.nullable()),
+    /**
+     * `<meta name="keywords">` of the store (Website › SEO). Optional, so a
+     * caller that doesn't send it keeps the saved list; an empty list removes it.
+     */
+    keywords: seoKeywordsSchema
+      .nullable()
+      .optional()
+      .transform((list) => (list === undefined ? undefined : list?.length ? list : null)),
   })
   .strict();
 export type StoreSeoInput = z.input<typeof storeSeoSchema>;
@@ -239,6 +256,8 @@ export type StoreSeo = {
   googleSiteVerification: string | null;
   /** Not part of the SEO form (Apps › Meta Pixel saves it); the form keeps it. */
   facebookDomainVerification: string | null;
+  /** Cleaned and capped; empty = the storefront uses storeDefaultKeywords. */
+  keywords: string[];
 };
 
 export const DEFAULT_STORE_SEO: StoreSeo = {
@@ -248,6 +267,7 @@ export const DEFAULT_STORE_SEO: StoreSeo = {
   indexing: true,
   googleSiteVerification: null,
   facebookDomainVerification: null,
+  keywords: [],
 };
 
 /**
@@ -268,5 +288,6 @@ export function parseStoreSeo(raw: unknown): StoreSeo {
     indexing: value.indexing !== false,
     googleSiteVerification: pick(googleSiteVerification, value.googleSiteVerification),
     facebookDomainVerification: pick(facebookDomainVerification, value.facebookDomainVerification),
+    keywords: readSeoKeywords(value.keywords),
   };
 }

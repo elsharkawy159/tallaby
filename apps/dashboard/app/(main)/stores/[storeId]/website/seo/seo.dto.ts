@@ -1,6 +1,6 @@
 import { GOOGLE_SITE_VERIFICATION_RE, type StoreSeo, type StoreSeoInput } from "@workspace/lib/stores";
 
-/** Error keys live under `domainSeo.errors`. */
+/** Website › SEO form values and helpers. Error keys live under `domainSeo.errors`. */
 export type DomainSeoErrorKey = "invalidInput" | "readOnly" | "notFound" | "generic";
 
 export type DomainSeoResult = { success: true } | { success: false; error: DomainSeoErrorKey };
@@ -12,6 +12,7 @@ export type StoreSeoFormValues = {
   shareImageUrl: string;
   indexing: boolean;
   googleSiteVerification: string;
+  keywords: string[];
 };
 
 export function toSeoFormValues(seo: StoreSeo): StoreSeoFormValues {
@@ -21,6 +22,7 @@ export function toSeoFormValues(seo: StoreSeo): StoreSeoFormValues {
     shareImageUrl: seo.shareImageUrl ?? "",
     indexing: seo.indexing,
     googleSiteVerification: seo.googleSiteVerification ?? "",
+    keywords: [...seo.keywords],
   };
 }
 
@@ -48,5 +50,6 @@ export function toSeoPatch(v: StoreSeoFormValues): StoreSeoInput {
     shareImageUrl: v.shareImageUrl.trim(),
     indexing: v.indexing,
     googleSiteVerification: extractVerificationToken(v.googleSiteVerification),
+    keywords: v.keywords,
   };
 }

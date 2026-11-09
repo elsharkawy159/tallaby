@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 
-/** Old Sitemap tab URL: Sitemap & indexing is now a section of the single Domain & SEO page. */
-export default async function StoreSitemapPage({ params }: { params: Promise<{ storeId: string }> }) {
+/** Old Sitemap URL: Sitemap & indexing is a section of Website › SEO since 2026-11-09. */
+export default async function StoreSitemapRedirect({ params }: { params: Promise<{ storeId: string }> }) {
   const { storeId } = await params;
-  redirect(`/stores/${encodeURIComponent(storeId)}/website/domain#sitemap`);
+  redirect(`/stores/${encodeURIComponent(storeId)}/website/seo#sitemap`);
 }

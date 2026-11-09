@@ -429,7 +429,7 @@
     "templates": "Templates",
     "designSystem": "Design system",
     "pages": "Pages",
-    "domainSeo": "Domain & SEO",
+    "domainSeo": "Domain",
     "socialMedia": "Social media",
     "blog": "Blog",
     "forms": "Forms",
@@ -481,7 +481,8 @@
     "helpCardTitle": "WhatsApp support",
     "helpCardHint": "Need help? Talk to us",
     "storeLive": "Live",
-    "manageStores": "Manage my stores"
+    "manageStores": "Manage my stores",
+    "seo": "SEO"
   },
   "errorPages": {
     "notFoundTitle": "This page doesn't exist",
@@ -3648,7 +3649,11 @@
       },
       "domain": {
         "question": "Can I use my own domain?",
-        "answer": "Yes. Connect it in Domain & SEO. Until then, your store works on its free Tallaby address."
+        "answer": "Yes. Connect it in Online Store › Domain. Until then, your store works on its free Tallaby address."
+      },
+      "seo": {
+        "question": "How do I show up better on Google?",
+        "answer": "Open Online Store › SEO. Each field shows the default your store already uses. Add your own title, description and keywords for the store and each page, or let AI write them for 1 credit."
       }
     },
     "shortcutsTitle": "Go to",
@@ -5996,8 +6001,8 @@
       }
     },
     "domain": {
-      "title": "Domain & SEO",
-      "description": "Your store's address, your own domain, and how your store appears on Google and when its link is shared."
+      "title": "Domain",
+      "description": "Your store's Tallaby address and your own custom domain."
     },
     "seo": {
       "dropTitle": "Drag an image here or click to upload",
@@ -6070,6 +6075,10 @@
     },
     "forms": {
       "description": "Your website's forms, and the messages and leads they bring in."
+    },
+    "seoPage": {
+      "title": "SEO",
+      "description": "How your store and its pages appear on Google and when their links are shared. Every field already has a good default, and you can improve it in a few clicks."
     }
   },
   "websiteOverview": {
@@ -6128,8 +6137,8 @@
         "body": "Add, rename and order pages, with SEO"
       },
       "domain": {
-        "title": "Domain & SEO",
-        "body": "Your address, own domain and search settings"
+        "title": "Domain",
+        "body": "Your store address and own domain"
       },
       "social": {
         "title": "Social media",
@@ -6150,6 +6159,10 @@
       "templates": {
         "title": "Templates",
         "body": "Start from a ready-made design"
+      },
+      "seo": {
+        "title": "SEO",
+        "body": "Titles, descriptions and keywords for Google"
       }
     },
     "revisions": "Version history",
@@ -6208,19 +6221,20 @@
     "saved": "Page saved",
     "cancel": "Cancel",
     "productBadge": "Product page",
-    "productSlug": "The product page shows every product at its own address (/products/…), so its address is fixed and it never shows in the menu."
+    "productSlug": "The product page shows every product at its own address (/products/…), so its address is fixed and it never shows in the menu.",
+    "seoAdvanced": "Keywords and advanced SEO"
   },
   "domainSeo": {
     "settingsLink": "Store address and domain moved to Website › Domain & SEO",
     "sections": {
       "label": "On this page",
-      "domain": {
-        "title": "Domain",
-        "description": "Your store's Tallaby address, your own custom domain and the old addresses that still redirect here."
+      "store": {
+        "title": "Store SEO",
+        "description": "Your store's description, keywords, share image and search settings."
       },
-      "seo": {
-        "title": "Search engine (SEO)",
-        "description": "How your store looks in Google results and when its links are shared."
+      "pages": {
+        "title": "Pages SEO",
+        "description": "The title, description and keywords of each page of your website."
       },
       "sitemap": {
         "title": "Sitemap & indexing",
@@ -6313,8 +6327,8 @@
       },
       "preview": {
         "label": "Search preview",
-        "pageTitle": "Home",
-        "noDescription": "Add a description to control the text shown here."
+        "noDescription": "No description of your own yet: the default is shown.",
+        "examplePage": "About us"
       },
       "share": {
         "title": "Sharing",
@@ -6358,7 +6372,7 @@
       },
       "fix": {
         "storeInactive": "Open My stores",
-        "indexingOff": "Change in SEO",
+        "indexingOff": "Change in Store SEO",
         "noProducts": "Choose products"
       },
       "files": {
@@ -6374,6 +6388,90 @@
       "copy": "Copy",
       "copied": "Copied",
       "copyFailed": "Couldn't copy"
+    },
+    "fields": {
+      "removeKeyword": "Remove {keyword}",
+      "keywordsFull": "Up to {max} keywords",
+      "addKeyword": "Add another",
+      "usingDefault": "Using default:",
+      "useSuggestion": "Use suggestion",
+      "example": "Example:",
+      "keywords": "Keywords",
+      "keywordsHint": "Words shoppers type on Google to find you. Press Enter or a comma after each one.",
+      "keywordsPlaceholder": "e.g. leather bags",
+      "addSuggested": "Add {count, plural, one {# suggested keyword} other {# suggested keywords}}",
+      "pageTitle": "Page title",
+      "description": "Description",
+      "pageKeywordsHint": "Used on this page instead of the store's keywords.",
+      "shareImage": "Share image link",
+      "shareImageHint": "Shown when this page's link is shared. Without one, the store's share image is used.",
+      "noindex": "Hide this page from search engines",
+      "noindexHint": "The page stays on your website, but Google is asked not to list it.",
+      "preview": "Search preview",
+      "resultTitle": "Shown in search as: {title}",
+      "length": {
+        "short": "Too short",
+        "good": "Good length",
+        "long": "Too long"
+      }
+    },
+    "checks": {
+      "heading": "SEO checklist",
+      "done": "Done",
+      "todo": "To do",
+      "title": {
+        "ok": "Your own title, good length",
+        "todo": "Write your own title (30–60 characters)"
+      },
+      "description": {
+        "ok": "Your own description, good length",
+        "todo": "Write your own description (70–160 characters)"
+      },
+      "keywords": {
+        "ok": "Keywords added",
+        "todo": "Add at least 3 keywords"
+      },
+      "image": {
+        "ok": "Share image added",
+        "todo": "Add a share image"
+      },
+      "indexing": {
+        "ok": "Visible to search engines",
+        "todo": "Hidden from search engines"
+      }
+    },
+    "pages": {
+      "title": "Your pages",
+      "count": "{count, plural, one {# page} other {# pages}}",
+      "description": "Page SEO is part of your website draft, so it goes live when you publish.",
+      "publishLink": "Publish the website",
+      "hidden": "Hidden from search",
+      "edit": "Edit SEO",
+      "editTitle": "SEO of {page}",
+      "draftNote": "Empty fields use the default shown under them.",
+      "saved": "Page SEO saved. Publish the website to make it live.",
+      "cancel": "Cancel",
+      "save": "Save page SEO"
+    },
+    "ai": {
+      "button": "Write with AI",
+      "cost": "{count, plural, one {# credit} other {# credits}}",
+      "hint": "AI writes the title, description and keywords. You review them before saving.",
+      "writing": "Writing…",
+      "done": "AI filled the fields. Review them, then save.",
+      "doneCredits": "AI filled the fields. {count, plural, one {# credit} other {# credits}} left.",
+      "review": "Written by AI: check the text, change what you like, then save.",
+      "errors": {
+        "notFound": "This store or page wasn't found. Reload the page.",
+        "readOnly": "This store is archived or suspended, so it can't be changed.",
+        "disabled": "AI writing isn't available right now.",
+        "rateLimited": "Too many requests. Wait a minute and try again.",
+        "dailyLimit": "You reached today's limit for AI SEO writing. Try again tomorrow.",
+        "noCredits": "You ran out of AI credits. Get more from Plan & usage.",
+        "busy": "AI is busy right now. Try again in a moment. No credit was used.",
+        "timeout": "AI took too long. Try again. No credit was used.",
+        "failed": "AI couldn't write this. Try again. No credit was used."
+      }
     }
   },
   "storeForms": {

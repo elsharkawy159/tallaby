@@ -101,7 +101,9 @@ describe("store crawl files (P5-04)", () => {
     expect(crawlRewrite("/robots.txt")).toMatch(/\/ar\/storefront\/sara\/robots\.txt$/);
     expect(crawlRewrite("/sitemaps/2.xml")).toMatch(/\/ar\/storefront\/sara\/sitemaps\/2\.xml$/);
     expect(crawlRewrite("/about")).toBeUndefined();
-    // One shared stylesheet (app/sitemap.xsl, outside the proxy matcher) on every host.
-    expect(crawlRewrite("/sitemap.xsl")).toBeUndefined();
+  });
+
+  it("serves the sitemap stylesheet per store, so its page carries the store's name", () => {
+    expect(crawlRewrite("/sitemap.xsl")).toMatch(/\/ar\/storefront\/sara\/sitemap-xsl$/);
   });
 });

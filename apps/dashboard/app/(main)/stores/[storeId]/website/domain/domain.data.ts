@@ -1,15 +1,8 @@
-import { parseStoreSeo } from "@workspace/lib/stores";
-import {
-  getPrimaryStore,
-  listStoreRedirects,
-  storeHasVisibleProducts,
-  type StoreRow,
-} from "@workspace/lib/stores/server";
-import { storeUrl } from "@workspace/lib/storefront";
+import { getPrimaryStore, listStoreRedirects, type StoreRow } from "@workspace/lib/stores/server";
 import { getCustomDomain, type CustomDomainView } from "@/actions/custom-domain";
 
 /**
- * Data for the Domain & SEO pages (P4-14). Every read takes a store already
+ * Data for Website › Domain (P4-14; SEO moved to Website › SEO, 2026-11-09). Every read takes a store already
  * loaded through loadStorePage (ownership checked) and stays scoped to it.
  */
 
@@ -41,31 +34,4 @@ export async function loadDomainTab(store: StoreRow): Promise<DomainTabData> {
 export async function loadLiveDomain(store: StoreRow): Promise<string | null> {
   const res = await getCustomDomain(store.id);
   return res.success && res.domain?.status === "active" ? res.domain.domain : null;
-}
-
-/** Why a store is kept out of search; empty = indexable. */
-export type NoindexReason = "storeInactive" | "indexingOff" | "noProducts";
-
-export type CrawlStatus = {
-  baseUrl: string;
-  sitemapUrl: string;
-  robotsUrl: string;
-  reasons: NoindexReason[];
-};
-
-/**
- * Mirrors the storefront rule (apps/ecommerce isStorefrontIndexable): a live
- * store is indexed when indexing is on and it shows at least one product.
- */
-export async function loadCrawlStatus(store: StoreRow): Promise<CrawlStatus> {
-  const [live, hasProducts] = await Promise.all([
-    loadLiveDomain(store),
-    storeHasVisibleProducts(store.sellerId, store.id),
-  ]);
-  const baseUrl = storeUrl(store.subdomain, live);
-  const reasons: NoindexReason[] = [];
-  if (store.status !== "active") reasons.push("storeInactive");
-  if (!parseStoreSeo(store.seo).indexing) reasons.push("indexingOff");
-  if (!hasProducts) reasons.push("noProducts");
-  return { baseUrl, sitemapUrl: `${baseUrl}/sitemap.xml`, robotsUrl: `${baseUrl}/robots.txt`, reasons };
 }
