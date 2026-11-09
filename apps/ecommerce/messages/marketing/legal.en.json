@@ -8,7 +8,7 @@
         },
         {
           "title": "Fees are simple",
-          "body": "Free plan at $0.03 per order, or Pro at $29 a month. No percentage of sales."
+          "body": "Free plan at {orderFee} per order, or Pro at {pro} a month. No percentage of sales."
         },
         {
           "title": "Leave anytime",
@@ -61,7 +61,7 @@
           "clauses": [
             {
               "title": "Plans",
-              "body": "Tallaby has two plans. Free costs nothing each month and has an order fee of $0.03 per new order. Pro costs $29 a month and has no order fee. Each account can have up to 3 stores, on either plan. Prices are in US dollars and may change; we will tell you before a change applies to you."
+              "body": "Tallaby has two plans. Free costs nothing each month and has an order fee of {orderFee} per new order. Pro costs {pro} a month and has no order fee. Each account can have up to 3 stores, on either plan. Prices are set in US dollars and shown approximately in Egyptian pounds or your local currency at the current exchange rate; top-ups are paid in Egyptian pounds. Prices may change; we will tell you before a change applies to you."
             },
             {
               "title": "Your wallet",
@@ -73,7 +73,7 @@
             },
             {
               "title": "Activating your account",
-              "body": "On the Free plan, your store is public and takes orders from day one. You can see your orders for 14 days, or until your second order arrives, whichever comes first; after that you need an approved top-up, starting from $5, or a wallet balance above zero to see new orders, and your first order stays visible. Sending campaigns needs the same top-up, and until then AI features are limited to 20 requests a month. Orders keep arriving the whole time, and the order fee applies to them. Once your account is activated, none of this applies."
+              "body": "On the Free plan, your store is public and takes orders from day one. You can see your orders for 14 days, or until your second order arrives, whichever comes first; after that you need an approved top-up, starting from {topUpMin}, or a wallet balance above zero to see new orders, and your first order stays visible. Sending campaigns needs the same top-up, and until then AI features are limited to 20 requests a month. Orders keep arriving the whole time, and the order fee applies to them. Once your account is activated, none of this applies."
             },
             {
               "title": "Order fees",

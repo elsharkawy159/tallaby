@@ -33,7 +33,8 @@ interface SidebarProps {
   /** No first top-up yet: Orders shows a warning (F-68). */
   ordersLocked: boolean;
   /** The $5 minimum top-up in EGP, shown in the warning's tooltip. Null when unknown. */
-  minTopUpEgp: number | null;
+  /** The smallest top-up as shown ("≈ 269 جنيه"), or null with no rate. */
+  minTopUp: string | null;
   counts: SidebarCounts;
   stores: SwitcherStore[];
   selectedStoreId: string | null;
@@ -41,7 +42,7 @@ interface SidebarProps {
   features: Partial<Record<NavFeature, boolean>>;
 }
 
-const MinTopUpEgpContext = createContext<number | null>(null);
+const MinTopUpContext = createContext<string | null>(null);
 
 /* The design's `.ni` and `.sub a`. */
 const NAV_ITEM =
@@ -55,7 +56,7 @@ const groupActive = (activeHref: string | null, group: ResolvedGroup) =>
 
 export const Sidebar = ({
   ordersLocked,
-  minTopUpEgp,
+  minTopUp,
   counts,
   stores,
   selectedStoreId,
@@ -96,7 +97,7 @@ export const Sidebar = ({
   const content = { ordersLocked, counts, entries, stores, selectedStoreId, maxStores };
 
   return (
-    <MinTopUpEgpContext.Provider value={minTopUpEgp}>
+    <MinTopUpContext.Provider value={minTopUp}>
       {/* Desktop: fixed beside the page, and it collapses to icons. */}
       <aside
         aria-label={t("nav.mainMenu")}
@@ -144,7 +145,7 @@ export const Sidebar = ({
         </div>
         <SidebarContent {...content} isCollapsed={false} showTools />
       </aside>
-    </MinTopUpEgpContext.Provider>
+    </MinTopUpContext.Provider>
   );
 };
 
@@ -416,8 +417,8 @@ const LOCKED_GROUPS = ["ordersGroup"];
 
 function OrdersWarning() {
   const t = useTranslations("orderLock");
-  const egp = useContext(MinTopUpEgpContext);
-  const label = t("sidebar", { egp: egp == null ? "none" : String(egp) });
+  const amount = useContext(MinTopUpContext);
+  const label = t("sidebar", { amount: amount ?? "none" });
   return (
     <span role="img" aria-label={label} title={label} className="shrink-0 text-sm leading-none">
       ⚠️

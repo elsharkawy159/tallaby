@@ -14,7 +14,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@workspace/ui/components/dialog";
-import { formatWalletMoney, moneyDir } from "@/lib/i18n/format";
+import { formatWalletMoney, walletMoneyDir } from "@/lib/i18n/format";
+import { useEgpRate } from "@/components/egp-rate.client";
 
 /** Per browser session: closing the pop-up hides it until the next session. */
 const DISMISSED_KEY = "tallaby:negative-wallet-dialog";
@@ -27,6 +28,7 @@ const DISMISSED_KEY = "tallaby:negative-wallet-dialog";
 export function NegativeWalletDialog({ balance, currency }: { balance: number | null; currency: string }) {
   const t = useTranslations("negativeWalletDialog");
   const locale = useLocale();
+  const egpRate = useEgpRate();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
@@ -68,8 +70,8 @@ export function NegativeWalletDialog({ balance, currency }: { balance: number | 
         </DialogHeader>
         <p className="text-center text-sm text-muted-foreground">
           {t("balanceLabel")}{" "}
-          <bdi dir={moneyDir(locale, { currency })} className="text-lg font-bold tabular-nums text-destructive">
-            {formatWalletMoney(balance ?? 0, currency, locale)}
+          <bdi dir={walletMoneyDir(locale, currency, egpRate)} className="text-lg font-bold tabular-nums text-destructive">
+            {formatWalletMoney(balance ?? 0, currency, locale, egpRate)}
           </bdi>
         </p>
         <DialogFooter className="gap-2 sm:justify-center">

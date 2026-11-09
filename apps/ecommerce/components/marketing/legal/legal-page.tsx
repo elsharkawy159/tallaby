@@ -7,6 +7,7 @@ import { ReadingProgress } from "@/components/marketing/blog/article-tools.clien
 import { Container, Eyebrow } from "@/components/marketing/site/layout-primitives";
 import { formatLongDate } from "@/lib/marketing/format.lib";
 import { CONTACT } from "@/lib/marketing/site.lib";
+import { withPrices } from "@/components/marketing/pricing/with-prices";
 import { publishedClauses, type LegalClause } from "./legal.lib";
 import { LegalToc } from "./legal-toc.client";
 
@@ -104,7 +105,7 @@ export async function LegalPage({
                   <Icon className="size-[18px]" />
                 </span>
                 <b className="text-[15px] text-teal-900">{item.title}</b>
-                <span className="text-sm text-slate-ink">{item.body}</span>
+                <span className="text-sm text-slate-ink">{withPrices(item.body)}</span>
               </div>
             );
           })}
@@ -123,7 +124,7 @@ export async function LegalPage({
                   {s.paragraphs?.map((p) => <p key={p}>{p}</p>)}
                   {publishedClauses(s.clauses ?? [], switchDate).map((c) => (
                     <p key={c.title}>
-                      <b className="font-bold text-teal-900">{c.title}.</b> {c.body}
+                      <b className="font-bold text-teal-900">{c.title}.</b> {withPrices(c.body)}
                     </p>
                   ))}
                 </div>

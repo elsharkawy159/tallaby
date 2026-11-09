@@ -15,6 +15,7 @@ import { Reveal } from "@/components/marketing/site/reveal.client";
 import { richTags } from "@/components/marketing/site/rich-text";
 import { IconTile, SiteCard } from "@/components/marketing/site/site-card";
 import { findIndustry, STORE_KIND_LINKS } from "@/lib/marketing/industries.lib";
+import { withPrices } from "@/components/marketing/pricing/with-prices";
 import { ROOT_DOMAIN } from "@/lib/marketing/site.lib";
 import type { Solution } from "@/lib/marketing/solutions.lib";
 import { getTemplateGallery } from "@/lib/marketing/templates.server";
@@ -72,6 +73,8 @@ export async function SolutionPageView({ solution }: { solution: Solution }) {
   const shared = await getTranslations("solutionPages.shared");
   const path = `/solutions/${solution.slug}`;
 
+  // Price tokens stay in the copy; `withPrices` shows them in the visitor's currency.
+  const bidi = (part: string) => <BidiText text={part} />;
   const trust = t.raw("trust") as string[];
   const intro = t.raw("intro") as string[];
   const steps = t.raw("steps") as Titled[];
@@ -163,7 +166,7 @@ export async function SolutionPageView({ solution }: { solution: Solution }) {
                   <IconTile className="size-10 rounded-xl">
                     <Icon aria-hidden />
                   </IconTile>
-                  <BidiText text={item} />
+                  {withPrices(item, bidi)}
                 </li>
               );
             })}
@@ -266,7 +269,7 @@ export async function SolutionPageView({ solution }: { solution: Solution }) {
               <div key={row.label} className="contents">
                 <div className="col-span-2 border-t border-[#edf1f2] px-4 pt-3.5 pb-0.5 text-[15px] font-semibold text-ink-700 min-[761px]:col-span-1 min-[761px]:border-[#f0f3f4] min-[761px]:px-[22px] min-[761px]:py-[15px]">{row.label}</div>
                 <div className="bg-[rgba(20,81,99,0.05)] px-4 pt-1 pb-3.5 text-[15px] font-semibold text-teal-900 min-[761px]:border-t min-[761px]:border-[#f0f3f4] min-[761px]:px-[22px] min-[761px]:py-[15px]">
-                  <BidiText text={row.tallaby} />
+                  {withPrices(row.tallaby, bidi)}
                 </div>
                 <div className="px-4 pt-1 pb-3.5 text-[15px] text-[#4a5c61] min-[761px]:border-t min-[761px]:border-[#f0f3f4] min-[761px]:px-[22px] min-[761px]:py-[15px]">{row.other}</div>
               </div>

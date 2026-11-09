@@ -15,13 +15,14 @@ import {
 } from "lucide-react";
 import { getWelcomeGiftStatus, listManualStoreTopUps } from "@workspace/lib/store-wallet/server";
 import { getLocale, getTranslations } from "next-intl/server";
-import { quoteTopUp } from "@workspace/lib/billing";
+
 import { getFeeTrialStatus } from "@workspace/lib/sellers";
 import { cn } from "@workspace/ui/lib/utils";
 import { getBillingState } from "@workspace/lib/billing/server";
 import { EmptyState, IconTile, Note, Row, Rows, SellerButton, SellerCard, SellerCardHeader } from "@/components/seller-ui";
 import { loadOrderLock } from "@/lib/auth/require-seller.server";
-import { formatDate } from "@/lib/i18n/format";
+import { formatDate, isApproxWalletMoney, walletMoneyDir } from "@/lib/i18n/format";
+import { WalletAmount } from "@/components/wallet-amount";
 import { translateStatus } from "@/lib/i18n/status";
 import {
   ENTRIES_PAGE_SIZE,
@@ -71,7 +72,9 @@ export async function StoreWalletSection({
   ]);
   if (!overview) return null;
   const usd = overview.currency === "USD";
-  const money = (value: string | number) => walletMoney(value, overview.currency, locale);
+  // A USD wallet reads in EGP at the live rate (owner, 2026-11-09); the ledger rows keep the exact dollars too.
+  const rate = usd ? billing.marketRate : null;
+  const money = (value: string | number) => walletMoney(value, overview.currency, locale, rate);
 
   const balance = Number(overview.balance);
   const trial = getFeeTrialStatus({
@@ -95,8 +98,6 @@ export async function StoreWalletSection({
     const query = search.toString();
     return query ? `/wallet?${query}` : "/wallet";
   };
-  // Only a rough figure for a positive USD balance: what it would cost at today's rate.
-  const balanceQuote = usd && balance > 0 ? quoteTopUp(Math.round(balance * 100), billing) : null;
 
   return (
     <>
@@ -124,11 +125,6 @@ export async function StoreWalletSection({
             >
               {money(balance)}
             </bdi>
-            {balanceQuote && (
-              <span className="text-sm text-white/70">
-                ≈ <bdi className="tabular-nums">{walletMoney(balanceQuote.basePiastres / 100, "EGP", locale)}</bdi>
-              </span>
-            )}
           </p>
           {pendingTotal > 0 && (
             <p className="mt-1 inline-flex w-fit items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-xs font-semibold text-white">
@@ -276,21 +272,32 @@ export async function StoreWalletSection({
                         </div>
                         <div className="text-end">
                           {/* bdi keeps the number's own direction while the cell aligns with the row. */}
-                          <bdi
+                          {/* A USD entry reads in EGP, with the exact dollars the ledger recorded under it. */}
+                          <WalletAmount
+                            value={amount}
+                            currency={entry.currency}
+                            locale={locale}
+                            rate={rate}
+                            signed
                             className={cn(
                               "block font-montserrat text-sm font-bold tabular-nums",
                               amount < 0 ? "text-destructive" : amount > 0 ? "text-success" : "text-(--s-ink)",
                             )}
-                          >
-                            {amount > 0 ? "+" : ""}
-                            {walletMoney(amount, entry.currency, locale)}
-                          </bdi>
+                          />
                           {entry.balanceAfter != null && (
                             <small className="block text-xs text-(--s-subtle)">
                               {t("columns.balance")}{" "}
-                              <bdi className="font-montserrat tabular-nums">
-                                {walletMoney(Number(entry.balanceAfter), entry.currency, locale)}
+                              <bdi dir={walletMoneyDir(locale, entry.currency, rate)} className="font-montserrat tabular-nums">
+                                {walletMoney(Number(entry.balanceAfter), entry.currency, locale, rate)}
                               </bdi>
+                              {isApproxWalletMoney(entry.currency, rate) && (
+                                <>
+                                  {" · "}
+                                  <bdi dir="ltr" className="font-montserrat tabular-nums">
+                                    {walletMoney(Number(entry.balanceAfter), entry.currency, locale)}
+                                  </bdi>
+                                </>
+                              )}
                             </small>
                           )}
                         </div>

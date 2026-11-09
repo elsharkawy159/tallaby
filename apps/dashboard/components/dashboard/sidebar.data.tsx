@@ -1,6 +1,7 @@
 import { loadOrderLock, requireSeller } from "@/lib/auth/require-seller.server";
 import { getSellerStores } from "@/lib/stores/current-store.server";
-import { getMinTopUpEgp } from "@/lib/billing/min-top-up-egp.server";
+import { getLocale } from "next-intl/server";
+import { getMinTopUpText } from "@/lib/billing/min-top-up-egp.server";
 import { Sidebar } from "./Sidebar";
 import { storeBuilderEnabled } from "./sidebar.config";
 import { getSidebarCounts } from "./sidebar.server";
@@ -14,12 +15,12 @@ export async function SidebarData() {
   ]);
 
   const ordersLocked = (await loadOrderLock(seller.sellerId)).ordersLocked;
-  const minTopUpEgp = ordersLocked ? await getMinTopUpEgp() : null;
+  const minTopUp = ordersLocked ? await getMinTopUpText(await getLocale()) : null;
 
   return (
     <Sidebar
       ordersLocked={ordersLocked}
-      minTopUpEgp={minTopUpEgp}
+      minTopUp={minTopUp}
       counts={counts}
       stores={stores.map(({ id, name, subdomain, isPrimary, status, logoUrl, siteStatus }) => ({
         id,

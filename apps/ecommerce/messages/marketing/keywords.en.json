@@ -66,7 +66,7 @@
           ["#2479", "Salma", "310 EGP", "Delivered"]
         ]
       },
-      "trust": ["No monthly subscription on Free", "$0.03 per order", "No developer needed", "A store in Arabic and English"],
+      "trust": ["No monthly subscription on Free", "{orderFee} per order", "No developer needed", "A store in Arabic and English"],
       "introTitle": "What is an online store, and why do you need one?",
       "intro": [
         "An online store is a website that shows your products with their photos and prices, and takes orders from your customers at any time. A customer picks a product, adds it to the cart and pays on delivery or by card, and the order reaches you with the customer's details and address.",
@@ -93,9 +93,9 @@
       "costTitle": "How much does it cost to create an online store?",
       "cost": [
         { "label": "Setup cost", "tallaby": "EGP 0", "other": "The developer's fee, which varies by project" },
-        { "label": "Monthly subscription", "tallaby": "None on Free, $29 on Pro", "other": "Depends on the platform" },
+        { "label": "Monthly subscription", "tallaby": "None on Free, {pro} a month on Pro", "other": "Depends on the platform" },
         { "label": "Hosting", "tallaby": "Included", "other": "Paid to your hosting provider" },
-        { "label": "Order fees", "tallaby": "$0.03 per order on Free, none on Pro", "other": "Depends on the platform" },
+        { "label": "Order fees", "tallaby": "{orderFee} per order on Free, none on Pro", "other": "Depends on the platform" },
         { "label": "Maintenance and updates", "tallaby": "Included", "other": "At your cost, with your developer" },
         { "label": "Time to launch", "tallaby": "You can publish the same day", "other": "Weeks to months" },
         { "label": "Payment and shipping", "tallaby": "Ready to connect from your dashboard", "other": "Each connection needs development" }
@@ -103,7 +103,7 @@
       "faqTitle": "Questions about creating an online store",
       "faq": [
         { "q": "How long does it take to create an online store on Tallaby?", "a": "You can sign up, pick a template and add your products in a day, then publish when you're ready." },
-        { "q": "Is creating a store free?", "a": "Creating a store is free. The Free plan has no monthly subscription, you don't need a credit card to sign up, and you pay $0.03 per order. To see orders and send campaigns, you need a first wallet top-up of $5. Order emails to your customers need the Order Notifications app, whose cost you see in your dashboard before you turn it on." },
+        { "q": "Is creating a store free?", "a": "Creating a store is free. The Free plan has no monthly subscription, you don't need a credit card to sign up, and you pay {orderFee} per order. To see orders and send campaigns, you need a first wallet top-up of {topUpMin}. Order emails to your customers need the Order Notifications app, whose cost you see in your dashboard before you turn it on." },
         { "q": "Do I need a developer or technical experience?", "a": "No. Every step happens visually in your dashboard, from picking a template to connecting payment and shipping." },
         { "q": "Can I use my own domain?", "a": "Yes. Your store starts on a free link like yourbrand.tallaby.com, and you can connect a domain you own to your main store by adding its DNS records." },
         { "q": "How can my customers pay?", "a": "Cash on delivery is on from the start. You can connect Paymob or Kashier for cards and wallets, and take InstaPay and wallet transfers straight to your account." },

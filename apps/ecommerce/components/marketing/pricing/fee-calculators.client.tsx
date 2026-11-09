@@ -2,12 +2,12 @@
 
 import * as React from "react";
 import { Info } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Slider } from "@workspace/ui/components/slider";
 import { cn } from "@workspace/ui/lib/utils";
-import { type LocalCurrency, formatLocalAmount, formatLocalMoneyText } from "@/lib/marketing/local-currency.lib";
-import { PLAN_PRICES, estimatePlans, formatNumber, formatUsd, proBreakEvenOrdersShown } from "@/lib/marketing/pricing.lib";
-import { useVisitorCurrency } from "@/lib/marketing/visitor-currency.client";
+import { formatLocalAmount, formatLocalApprox } from "@/lib/marketing/local-currency.lib";
+import { FALLBACK_EGP_PER_USD, PLAN_PRICES, estimatePlans, formatNumber, proBreakEvenOrdersShown } from "@/lib/marketing/pricing.lib";
+import { useVisitorPrices } from "./visitor-prices.client";
 
 const MIN_ORDERS = 10;
 const MAX_ORDERS = 3000;
@@ -19,20 +19,24 @@ const lightSlider =
 /**
  * "What would a month cost you?": orders a month only (owner, 2026-11-06),
  * with Free and Pro side by side on wide screens and stacked on phones.
- * Amounts show in the visitor's currency with USD under or beside them, like
- * the plan cards (owner, 2026-11-08): EGP on the server render (the wallet's
- * rate and rounding), USD only for a country we don't map. `rates` are USD→X
- * by ISO code from the server, EGP always among them.
+ * Amounts show with "≈" in the visitor's currency like the plan cards (owner,
+ * 2026-11-09: no "$" amount): EGP on the server render and for Egypt, at the
+ * wallet's rate and rounding, else the visitor's own currency. `rates` are
+ * USD→X by ISO code from the server, EGP always among them.
  */
 export function FeeEstimator({ rates }: { rates: Record<string, number> }) {
   const t = useTranslations("pricing.estimate");
   const tc = useTranslations("pricing.plans.currency");
+  const locale = useLocale();
+  const egpRate = rates.EGP ?? FALLBACK_EGP_PER_USD;
   const [orders, setOrders] = React.useState(300);
   const estimate = estimatePlans({ orders });
 
-  const currency = useVisitorCurrency((code) => Boolean(rates[code]));
-  const local: LocalCurrency = currency ? { currency, rate: rates[currency]!, label: tc(currency as "EGP") } : null;
-  const money = (cents: number) => formatLocalMoneyText(cents, local);
+  const visitor = useVisitorPrices()?.currency ?? "EGP";
+  const currency = visitor !== "EGP" && rates[visitor] ? visitor : "EGP";
+  const rate = currency === "EGP" ? egpRate : rates[currency]!;
+  const label = tc(currency as "EGP");
+  const money = (cents: number) => formatLocalApprox(cents, currency, rate, locale, label);
   const plans = [
     { id: "free" as const, name: t("free"), cents: estimate.freeCents, detail: t("perOrder", { fee: money(PLAN_PRICES.free.orderFeeCents) }) },
     { id: "pro" as const, name: "Pro", cents: estimate.proCents, detail: t("perMonth", { price: money(PLAN_PRICES.pro.monthlyCents) }) },
@@ -103,15 +107,12 @@ export function FeeEstimator({ rates }: { rates: Record<string, number> }) {
                   </span>
                   <span className="flex flex-col items-end gap-1">
                     <span className="flex items-baseline gap-1.5">
+                      <span className="text-[18px] leading-none font-bold text-teal-900">≈</span>
                       <b dir="ltr" className="font-latin text-[28px] leading-none font-extrabold text-teal-900 tabular-nums">
-                        {local ? formatLocalAmount(plan.cents, local.currency, local.rate) : formatUsd(plan.cents)}
+                        {formatLocalAmount(plan.cents, currency, rate)}
                       </b>
-                      {local ? <span className="text-[15px] leading-none font-bold text-teal-900">{local.label}</span> : null}
+                      <span className="text-[15px] leading-none font-bold text-teal-900">{label}</span>
                     </span>
-                    {/* Kept (hidden) while USD only shows, so the rows keep their height. */}
-                    <small dir="ltr" className={cn("font-latin text-xs text-[#6b5a3a] tabular-nums", !local && "invisible")} aria-hidden={local ? undefined : true}>
-                      {formatUsd(plan.cents)}
-                    </small>
                   </span>
                 </div>
               );

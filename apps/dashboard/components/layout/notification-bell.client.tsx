@@ -15,6 +15,7 @@ import {
 } from "@workspace/lib/notifications";
 import { getSellerNotificationFeed, markSellerNotificationsReadAction } from "@/actions/notifications";
 import { formatRelativeTime, formatWalletMoney } from "@/lib/i18n/format";
+import { useEgpRate } from "@/components/egp-rate.client";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/supabase/client";
 import { NOTIFICATION_LOOK, notificationDay } from "./notification-look.lib";
@@ -205,7 +206,8 @@ function NotificationRow({
   const t = useTranslations("notifications.types");
   const tBell = useTranslations("notifications");
   const locale = useLocale();
-  const values = sellerNotificationValues(item.data, (amount, currency) => formatWalletMoney(amount, currency, locale));
+  const egpRate = useEgpRate();
+  const values = sellerNotificationValues(item.data, (amount, currency) => formatWalletMoney(amount, currency, locale, egpRate));
   const href = sellerNotificationHref(item);
   // A message from the Tallaby team (0131) carries the admin's own title and text.
   const isMessage = item.type === "admin_message";

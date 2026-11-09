@@ -12,12 +12,14 @@ import {
   EMAIL_PACK_USD_CENTS,
   FREE_ORDER_FEE_USD_CENTS,
   PRO_MONTHLY_USD_CENTS,
+  TOP_UP_MIN_USD_CENTS,
 } from "@workspace/lib/billing";
 import type { AiCreditStatus } from "@workspace/lib/billing/credits";
 import { AI_CREDITS_MONTHLY_NOT_ACTIVATED, PLANS } from "@workspace/lib/plans";
 import { ConfirmActionDialog } from "@/components/layout/confirm-action-dialog.client";
 import { Note, PageContainer, PageHeader, SellerButton, SellerCard, Tag, TwoColumns } from "@/components/seller-ui";
-import { formatDate, formatNumber, formatWalletMoney } from "@/lib/i18n/format";
+import { formatDate, formatNumber, formatUsdPrice, formatWalletMoney } from "@/lib/i18n/format";
+import { useEgpRate } from "@/components/egp-rate.client";
 import { cn } from "@/lib/utils";
 import { buyCreditPacksAction, setPlanCancelAction, upgradeToProAction, type PlanActionState } from "./plan.server";
 
@@ -33,7 +35,7 @@ export type PlanLiveProps = {
   ordersLast30Days: number | null;
 };
 
-const usd = (cents: number) => formatWalletMoney(cents / 100, "USD", "en");
+
 
 /**
  * Plan & usage once the new pricing is live (ROADMAP.md F-55e). The page answers
@@ -44,6 +46,9 @@ export function PlanLive(props: PlanLiveProps) {
   const { isPro, periodEnd, cancelAtPeriodEnd, graceUntil, adminGranted, credits, walletBalance, ordersLast30Days } = props;
   const t = useTranslations("planLive");
   const locale = useLocale();
+  // Every price here shows in EGP at the live rate (owner, 2026-11-09); the plan prices stay in USD.
+  const egpRate = useEgpRate();
+  const usd = (cents: number) => formatUsdPrice(cents, locale, egpRate);
   const [isPending, startTransition] = useTransition();
   const [confirm, setConfirm] = useState<"upgrade" | "cancel" | null>(null);
   const [packs, setPacks] = useState(1);
@@ -158,7 +163,7 @@ export function PlanLive(props: PlanLiveProps) {
                     <p className="mt-2 text-xs text-(--s-subtle)">
                       {t("needBalance", {
                         amount: usd(PRO_MONTHLY_USD_CENTS),
-                        balance: formatWalletMoney(walletBalance, "USD", locale),
+                        balance: formatWalletMoney(walletBalance, "USD", locale, egpRate),
                       })}
                     </p>
                   </>
@@ -213,7 +218,7 @@ export function PlanLive(props: PlanLiveProps) {
         </p>
         {credits.notActivated && (
           <Note tone="amber" className="mt-3">
-            {t("creditsNotActivated", { locked: AI_CREDITS_MONTHLY_NOT_ACTIVATED, full: PLANS.free.aiCreditsMonthly })}{" "}
+            {t("creditsNotActivated", { locked: AI_CREDITS_MONTHLY_NOT_ACTIVATED, full: PLANS.free.aiCreditsMonthly, min: usd(TOP_UP_MIN_USD_CENTS) })}{" "}
             <Link href="/wallet" className="underline underline-offset-2">
               {t("topUpFirst")}
             </Link>

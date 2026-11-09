@@ -27,10 +27,8 @@
           "plan": "Your Tallaby plan",
           "planFree": "Free",
           "planPro": "Pro",
-          "planFreeNote": "Free plan: $0.03 per order, taken from your store wallet.",
-          "planProNote": "Pro plan: $29 a month with no order fee, so it doesn't count against a single order.",
-          "rate": "USD rate",
-          "rateHint": "change it to today's rate",
+          "planFreeNote": "Free plan: {orderFee} per order at today's exchange rate, taken from your store wallet.",
+          "planProNote": "Pro plan: {pro} a month with no order fee, so it doesn't count against a single order.",
           "sell": "Selling price",
           "sellHint": "what the customer pays"
         },
@@ -83,7 +81,7 @@
         "buy": "Purchase price",
         "ship": "Shipping cost",
         "ad": "Ad cost per order",
-        "fee": "Tallaby fee ($0.03, with the dollar at EGP {rate})",
+        "fee": "Tallaby fee ({orderFee} per order at today's exchange rate)",
         "cost": "Total costs",
         "sell": "Selling price",
         "profit": "Net profit ({sell} − {cost})",
@@ -112,13 +110,13 @@
           "a": "Only on your device, so they're there when you come back. Nothing is sent to a server. Press Reset to go back to the example figures."
         },
         "fee": {
-          "q": "Why is the Tallaby fee in dollars?",
-          "a": "The Free plan's fee is $0.03 per order, taken from your store wallet in dollars, while your orders and prices stay in pounds. The example starts with the dollar at EGP {rate}, which makes EGP {fee} per order, and you can change the rate. Pro costs $29 a month with no order fee."
+          "q": "How does the calculator count the Tallaby fee?",
+          "a": "The Free plan's fee is {orderFee} per order at today's exchange rate, taken from your store wallet, while your orders and prices stay in pounds. So the calculator counts {fee} EGP per order. Pro costs {pro} a month with no order fee, so it doesn't count against a single order."
         }
       },
       "closing": {
         "title": "Turn your numbers into a store that sells",
-        "body": "No monthly subscription on the Free plan, and $0.03 per order."
+        "body": "No monthly subscription on the Free plan, and {orderFee} per order."
       }
     }
   }

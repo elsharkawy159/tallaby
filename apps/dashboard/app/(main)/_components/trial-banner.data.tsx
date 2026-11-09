@@ -3,6 +3,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { getFeeTrialStatus } from "@workspace/lib/sellers";
 import { FEE_PER_ORDER_USD } from "../wallet/store-wallet.lib";
 import { formatDate, formatWalletMoney } from "@/lib/i18n/format";
+import { getEgpPerUsd } from "@/lib/billing/egp-rate.server";
 import { getHomeSnapshot } from "./home.queries";
 import { IconTile, SellerCard } from "@/components/seller-ui";
 
@@ -11,10 +12,11 @@ import { IconTile, SellerCard } from "@/components/seller-ui";
  * it starts for new sellers. Nothing for old sellers or after it ended.
  */
 export async function TrialBannerData() {
-  const [snapshot, t, locale] = await Promise.all([
+  const [snapshot, t, locale, egpRate] = await Promise.all([
     getHomeSnapshot(),
     getTranslations("home.trial"),
     getLocale(),
+    getEgpPerUsd(),
   ]);
   if (!snapshot) return null;
 
@@ -35,7 +37,7 @@ export async function TrialBannerData() {
           {!active
             ? t("notStarted")
             : snapshot.walletCurrency === "USD"
-              ? t("activeUsd", { date: formatDate(status.endsAt, locale), fee: formatWalletMoney(FEE_PER_ORDER_USD, "USD", locale) })
+              ? t("activeUsd", { date: formatDate(status.endsAt, locale), fee: formatWalletMoney(FEE_PER_ORDER_USD, "USD", locale, egpRate) })
               : t("active", { date: formatDate(status.endsAt, locale) })}
         </p>
       </div>

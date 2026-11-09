@@ -9,6 +9,9 @@ import { CtaButton } from "@/components/marketing/site/cta-button";
 import { FaqAccordion } from "@/components/marketing/site/faq-accordion";
 import { JsonLd } from "@/components/marketing/site/json-ld";
 import { Container, Section, SectionHeading } from "@/components/marketing/site/layout-primitives";
+import { withPrices } from "@/components/marketing/pricing/with-prices";
+import { getMarketingPriceVars } from "@/lib/marketing/exchange-rate.server";
+import { PRICE_TOKENS, fillPriceTokens, stripBidiIsolates } from "@/lib/marketing/pricing.lib";
 import { localizedUrl } from "@/lib/marketing/seo.lib";
 import { CONTACT } from "@/lib/marketing/site.lib";
 import { breadcrumbSchema } from "@/lib/marketing/structured-data.lib";
@@ -58,27 +61,30 @@ export async function PageTrail({ items, path, className }: { items: BreadcrumbI
 
 export type FaqItem = { q: string; a: string };
 
-export function faqSchema(items: FaqItem[]) {
+/** FAQPage data; price tokens are filled with `prices` (EGP, so the data has one currency). */
+export function faqSchema(items: FaqItem[], prices: Record<string, string> = {}) {
+  const plain = (text: string) => stripBidiIsolates(fillPriceTokens(text, prices));
   return {
     "@context": "https://schema.org",
     "@type": "FAQPage",
     mainEntity: items.map((item) => ({
       "@type": "Question",
-      name: item.q,
-      acceptedAnswer: { "@type": "Answer", text: item.a },
+      name: plain(item.q),
+      acceptedAnswer: { "@type": "Answer", text: plain(item.a) },
     })),
   };
 }
 
 /** Heading on the start side, questions beside it, plus the FAQPage data for the same answers. */
 export async function FaqBlock({ items, title }: { items: FaqItem[]; title?: string }) {
-  const t = await getTranslations("contentPages");
+  const [t, prices] = await Promise.all([getTranslations("contentPages"), getLocale().then((locale) => getMarketingPriceVars(locale, { isolate: false }))]);
+  const bidi = (part: string) => <BidiText text={part} />;
   return (
     <Section id="faq">
-      <JsonLd data={faqSchema(items)} />
+      <JsonLd data={faqSchema(items, prices)} />
       <Container className="grid items-start gap-5 min-[961px]:grid-cols-[minmax(0,320px)_minmax(0,1fr)] min-[961px]:gap-12">
         <SectionHeading kicker={t("faqKicker")} title={title ?? t("faqTitle")} description={t("faqLead")} className="mb-0" />
-        <FaqAccordion items={items.map((item) => ({ q: <BidiText text={item.q} />, a: <BidiText text={item.a} /> }))} />
+        <FaqAccordion items={items.map((item) => ({ q: withPrices(item.q, bidi), a: withPrices(item.a, bidi) }))} />
       </Container>
     </Section>
   );
@@ -90,7 +96,7 @@ export async function FaqBlock({ items, title }: { items: FaqItem[]; title?: str
  */
 export async function FreeTermsNote({ className }: { className?: string }) {
   const t = await getTranslations("contentPages");
-  return <p className={cn("text-[13.5px] text-pretty text-ink-500", className)}>{t("freeTerms")}</p>;
+  return <p className={cn("text-[13.5px] text-pretty text-ink-500", className)}>{withPrices(t("freeTerms", PRICE_TOKENS))}</p>;
 }
 
 /** The closing band: "create your store" and either WhatsApp or the pricing page. */
@@ -110,7 +116,7 @@ export async function ClosingCta({
       body={
         <>
           <span className="block">{body ?? t("closingBody")}</span>
-          <span className="mt-2 block max-w-[640px] text-[13.5px] text-pretty opacity-85">{t("freeTerms")}</span>
+          <span className="mt-2 block max-w-[640px] text-[13.5px] text-pretty opacity-85">{withPrices(t("freeTerms", PRICE_TOKENS))}</span>
         </>
       }
       action={

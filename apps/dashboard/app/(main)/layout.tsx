@@ -20,6 +20,8 @@ import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 import { getSiteData } from "@/actions/site-data";
 import { SiteDataProvider } from "@/providers/site-data";
+import { EgpRateProvider } from "@/components/egp-rate.client";
+import { getEgpPerUsd } from "@/lib/billing/egp-rate.server";
 
 export default async function DashboardLayout({
   children,
@@ -52,6 +54,7 @@ export default async function DashboardLayout({
     storeLink,
     accountMoney,
     { selected },
+    egpRate,
   ] = await Promise.all([
     user ? getStoreWalletBalance(user.id) : null,
     user ? needsHeardAboutUs(user.id) : false,
@@ -59,6 +62,7 @@ export default async function DashboardLayout({
     getSelectedStoreLink().catch(() => null),
     user ? loadAccountMoney(user.id).catch(() => EGP_ACCOUNT) : EGP_ACCOUNT,
     getSellerStores(),
+    getEgpPerUsd(),
   ]);
   const walletBalance = wallet?.balance ?? null;
 
@@ -66,6 +70,8 @@ export default async function DashboardLayout({
     // .seller-shell switches on the design system (app/globals.css). Only this layout has it, so (builder) is untouched.
     // Seller profile + store link for the sidebar, header and Help page (only used here, so not in the root layout).
     <SiteDataProvider promise={getSiteData()}>
+      {/* USD wallet amounts and prices are shown in EGP at this rate (owner, 2026-11-09). */}
+      <EgpRateProvider rate={egpRate}>
       <div className="seller-shell flex min-h-screen w-full overflow-x-clip bg-background">
         <SidebarData />
 
@@ -102,6 +108,7 @@ export default async function DashboardLayout({
         />
         <WelcomeGiftDialog initial={welcomeGift} />
       </div>
+      </EgpRateProvider>
     </SiteDataProvider>
   );
 }

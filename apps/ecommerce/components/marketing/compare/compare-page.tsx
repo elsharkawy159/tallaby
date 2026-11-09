@@ -8,7 +8,9 @@ import { ForwardArrow } from "@/components/marketing/site/direction-icons";
 import { Container, Num, Section } from "@/components/marketing/site/layout-primitives";
 import { Reveal } from "@/components/marketing/site/reveal.client";
 import { comparisonTable, compareSlug, publishableCompetitors, type CellStatus, type Competitor } from "@/lib/marketing/compare.lib";
+import { withPrices } from "@/components/marketing/pricing/with-prices";
 import { formatLongDate } from "@/lib/marketing/format.lib";
+import { PRICE_TOKENS } from "@/lib/marketing/pricing.lib";
 import { CONTACT } from "@/lib/marketing/site.lib";
 import { cn } from "@workspace/ui/lib/utils";
 
@@ -48,6 +50,9 @@ function CompetitorChip({ name, small }: { name: string; small?: boolean }) {
 /** One comparison. Everything about the competitor comes from its verified facts; a missing fact is left out. */
 export async function ComparePageView({ competitor }: { competitor: Competitor }) {
   const [locale, t, c] = await Promise.all([getLocale(), getTranslations("comparePage"), getTranslations(`competitors.${competitor.id}`)]);
+  // Prices stay tokens here; `withPrices` shows them in the visitor's currency.
+  const prices = PRICE_TOKENS;
+  const bidi = (part: string) => <BidiText text={part} />;
   const name = c("name");
   const path = `/compare/${compareSlug(competitor)}`;
   const groups = comparisonTable(competitor);
@@ -61,8 +66,8 @@ export async function ComparePageView({ competitor }: { competitor: Competitor }
   const steps = t.raw("steps") as { title: string; body: string; link: string }[];
 
   const faq: FaqItem[] = [
-    { q: t("faq.price.q", { name }), a: `${t("faq.price.a")} ${c("priceNote")}` },
-    ...(["move", "domain", "try", "methods"] as const).map((key) => ({ q: t(`faq.${key}.q`, { name }), a: t(`faq.${key}.a`) })),
+    { q: t("faq.price.q", { name }), a: `${t("faq.price.a", prices)} ${c("priceNote", prices)}` },
+    ...(["move", "domain", "try", "methods"] as const).map((key) => ({ q: t(`faq.${key}.q`, { name }), a: t(`faq.${key}.a`, prices) })),
     { q: t("faq.how.q"), a: t("faq.how.a", { name, email: CONTACT.email }) },
   ];
 
@@ -115,7 +120,7 @@ export async function ComparePageView({ competitor }: { competitor: Competitor }
                       <li key={item} className="grid grid-cols-[22px_1fr] gap-2.5 text-[15px] text-pretty text-[#3d5055]">
                         <CircleCheck className={cn("mt-1 size-5", column.tallaby ? "text-teal-700" : "text-[#7d8a8d]")} aria-hidden />
                         <span>
-                          <BidiText text={item} />
+                          {withPrices(item, bidi)}
                         </span>
                       </li>
                     ))}
@@ -164,13 +169,13 @@ export async function ComparePageView({ competitor }: { competitor: Competitor }
                     <div className="flex flex-col items-start gap-1.5 bg-[rgba(20,81,99,0.045)] px-3 pt-1.5 pb-3.5 text-[13.5px] text-pretty text-[#4a5c61] min-[761px]:flex-row min-[761px]:gap-2.5 min-[761px]:px-5 min-[761px]:py-[13px] min-[761px]:text-[14.5px]">
                       <StatusIcon status={row.tallaby} label={statusLabel(row.tallaby)} />
                       <span>
-                        <BidiText text={t(`rows.${row.id}.tallaby`)} />
+                        {withPrices(t(`rows.${row.id}.tallaby`, prices), bidi)}
                       </span>
                     </div>
                     <div className="flex flex-col items-start gap-1.5 px-3 pt-1.5 pb-3.5 text-[13.5px] text-pretty text-[#4a5c61] min-[761px]:flex-row min-[761px]:gap-2.5 min-[761px]:px-5 min-[761px]:py-[13px] min-[761px]:text-[14.5px]">
                       <StatusIcon status={row.competitor} label={statusLabel(row.competitor)} />
                       <span>
-                        <BidiText text={c(`cells.${row.id}`)} />
+                        {withPrices(c(`cells.${row.id}`, prices), bidi)}
                       </span>
                     </div>
                   </div>
@@ -205,7 +210,7 @@ export async function ComparePageView({ competitor }: { competitor: Competitor }
                         <BidiText text={item.title} />
                       </b>
                       <p className="text-[14.5px] text-pretty text-ink-500">
-                        <BidiText text={item.body} />
+                        {withPrices(item.body, bidi)}
                       </p>
                     </li>
                   ))}

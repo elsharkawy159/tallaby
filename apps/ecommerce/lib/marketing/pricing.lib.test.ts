@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { quoteTopUp } from "@workspace/lib/billing";
-import { estimatePlans, formatEgp, formatUsd, orderFee, PLAN_PRICES, proBreakEvenOrders, proBreakEvenOrdersShown, suggestedPrice, usdCentsToEgp } from "./pricing.lib";
+import { estimatePlans, fillPriceTokens, formatEgp, formatUsd, marketingPriceVars, PRICE_TOKENS, stripBidiIsolates, orderFee, PLAN_PRICES, proBreakEvenOrders, proBreakEvenOrdersShown, suggestedPrice, usdCentsToEgp } from "./pricing.lib";
 
 describe("PLAN_PRICES", () => {
   it("matches the agreed prices", () => {
@@ -18,6 +18,25 @@ describe("formatUsd", () => {
     expect(formatUsd(150)).toBe("$1.50");
     expect(formatUsd(2900)).toBe("$29");
     expect(formatUsd(100_000)).toBe("$1,000");
+  });
+});
+
+describe("marketingPriceVars", () => {
+  it("fills every price token in EGP with the billing module's format (number then EGP)", () => {
+    const vars = marketingPriceVars(50, "en");
+    expect(vars).toMatchObject({ orderFee: "≈ 1.50 EGP", pro: "≈ 1,450 EGP", topUpMin: "≈ 250 EGP", topUpMax: "≈ 50,000 EGP" });
+    for (const value of Object.values(marketingPriceVars(50, "ar"))) expect(value).not.toMatch(/[$]|USD|دولار/);
+  });
+
+  it("writes جنيه in Arabic with the number isolated, or plain for meta text", () => {
+    expect(marketingPriceVars(53.9007, "ar").pro).toBe("≈ \u20661,563\u2069 جنيه");
+    expect(marketingPriceVars(53.9007, "ar", { isolate: false }).pro).toBe("≈ 1,563 جنيه");
+    expect(stripBidiIsolates("a\u2066b\u2069")).toBe("ab");
+  });
+
+  it("keeps tokens through PRICE_TOKENS and leaves unknown tokens in place", () => {
+    expect(PRICE_TOKENS.orderFee).toBe("{orderFee}");
+    expect(fillPriceTokens("{orderFee} · {other}", { orderFee: "≈ 1.50 EGP" })).toBe("≈ 1.50 EGP · {other}");
   });
 });
 

@@ -91,20 +91,21 @@ describe("meta messages", () => {
 describe("structured data", () => {
   it("names the brand in both languages and invents no ratings or reviews", () => {
     const graph = JSON.stringify(siteGraph());
-    const app = JSON.stringify(softwareApplicationSchema({ url: SITE_URL, description: "d", inLanguage: "ar" }));
+    const app = JSON.stringify(softwareApplicationSchema({ url: SITE_URL, description: "d", inLanguage: "ar", egpPerUsd: 50 }));
     expect(graph).toContain("طلبي");
     expect(graph).toContain("+201003272830");
     for (const json of [graph, app]) expect(json).not.toMatch(/aggregateRating|"review"/);
     expect(graph).not.toContain("SearchAction"); // tallaby.com has no site search.
   });
 
-  it("offers both plans in USD from the billing module", () => {
-    const { offers } = softwareApplicationSchema({ url: SITE_URL, description: "d", inLanguage: "en" });
+  it("offers both plans in EGP at the given rate, from the billing module's USD prices", () => {
+    const { offers } = softwareApplicationSchema({ url: SITE_URL, description: "d", inLanguage: "en", egpPerUsd: 50 });
     expect(offers.map((o) => [o.name, o.price, o.priceCurrency])).toEqual([
-      ["Free", "0", "USD"],
-      ["Pro", (PRO_MONTHLY_USD_CENTS / 100).toFixed(2), "USD"],
+      ["Free", "0", "EGP"],
+      ["Pro", ((PRO_MONTHLY_USD_CENTS / 100) * 50).toFixed(2), "EGP"],
     ]);
-    expect(offers[0]!.priceSpecification.price).toBe((FREE_ORDER_FEE_USD_CENTS / 100).toFixed(2));
+    expect(offers[0]!.priceSpecification.price).toBe(((FREE_ORDER_FEE_USD_CENTS / 100) * 50).toFixed(2));
+    expect(offers[0]!.priceSpecification.priceCurrency).toBe("EGP");
   });
 
   it("numbers breadcrumbs from 1", () => {

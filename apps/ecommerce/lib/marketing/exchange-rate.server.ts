@@ -2,8 +2,9 @@ import { cache } from "react";
 import { billingTags, createCachedQuery } from "@workspace/cache";
 import { exchangeRateSource, usdRatesFromResponse } from "@workspace/lib/billing";
 import { getBillingState } from "@workspace/lib/billing/server";
-import { FEED_CURRENCIES } from "./local-currency.lib";
-import { FALLBACK_EGP_PER_USD } from "./pricing.lib";
+import { getTranslations } from "next-intl/server";
+import { FEED_CURRENCIES, LOCAL_CURRENCIES, localPriceVars } from "./local-currency.lib";
+import { FALLBACK_EGP_PER_USD, type MarketingPriceVars, marketingPriceVars } from "./pricing.lib";
 
 /** The rate is optional on the page: past this, it shows the fallback rather than wait for the database. */
 const READ_TIMEOUT_MS = 3000;
@@ -85,3 +86,23 @@ export const getMarketingUsdRates = cache(async (): Promise<Record<string, numbe
   ]);
   return { ...feed, EGP: egp };
 });
+
+/** `{orderFee}`, `{pro}`, `{topUpMin}`, … as "≈ … جنيه" / "≈ EGP …" at the live rate (owner, 2026-11-09). */
+export async function getMarketingPriceVars(locale: string, options?: { isolate?: boolean }): Promise<MarketingPriceVars> {
+  return marketingPriceVars(await getMarketingEgpPerUsd(), locale, options);
+}
+
+/**
+ * Every price token in each currency tallaby.com can show (EGP always, the
+ * others when the feed has a rate), for `VisitorPricesProvider`: the server
+ * HTML shows EGP and the browser swaps to the visitor's currency.
+ */
+export async function getMarketingPriceTable(locale: string): Promise<Record<string, MarketingPriceVars>> {
+  const [rates, t] = await Promise.all([getMarketingUsdRates(), getTranslations({ locale, namespace: "pricing.plans.currency" })]);
+  const table: Record<string, MarketingPriceVars> = {};
+  for (const code of LOCAL_CURRENCIES) {
+    const rate = code === "EGP" ? (rates.EGP ?? FALLBACK_EGP_PER_USD) : rates[code];
+    if (rate) table[code] = localPriceVars(code, rate, locale, t(code as "EGP"));
+  }
+  return table;
+}

@@ -4,9 +4,8 @@
  * visible on the page.
  */
 import { FREE_ORDER_FEE_USD_CENTS, PRO_MONTHLY_USD_CENTS } from "@workspace/lib/billing";
+import { usdCentsToEgp } from "./pricing.lib";
 import { CONTACT, SITE_URL, SOCIAL_LINKS } from "./site.lib";
-
-const usd = (cents: number) => (cents / 100).toFixed(2);
 
 const ORGANIZATION_ID = `${SITE_URL}/#organization`;
 const WEBSITE_ID = `${SITE_URL}/#website`;
@@ -53,11 +52,15 @@ export function softwareApplicationSchema({
   url,
   description,
   inLanguage,
+  egpPerUsd,
 }: {
   url: string;
   description: string;
   inLanguage: string;
+  /** The live rate: offers are in EGP, as the site shows them (owner, 2026-11-09); billing stays in USD. */
+  egpPerUsd: number;
 }) {
+  const egp = (cents: number) => usdCentsToEgp(cents, egpPerUsd).toFixed(2);
   return {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
@@ -73,23 +76,23 @@ export function softwareApplicationSchema({
         "@type": "Offer",
         name: "Free",
         price: "0",
-        priceCurrency: "USD",
+        priceCurrency: "EGP",
         priceSpecification: {
           "@type": "UnitPriceSpecification",
-          price: usd(FREE_ORDER_FEE_USD_CENTS),
-          priceCurrency: "USD",
+          price: egp(FREE_ORDER_FEE_USD_CENTS),
+          priceCurrency: "EGP",
           referenceQuantity: { "@type": "QuantitativeValue", value: 1, unitText: "order" },
         },
       },
       {
         "@type": "Offer",
         name: "Pro",
-        price: usd(PRO_MONTHLY_USD_CENTS),
-        priceCurrency: "USD",
+        price: egp(PRO_MONTHLY_USD_CENTS),
+        priceCurrency: "EGP",
         priceSpecification: {
           "@type": "UnitPriceSpecification",
-          price: usd(PRO_MONTHLY_USD_CENTS),
-          priceCurrency: "USD",
+          price: egp(PRO_MONTHLY_USD_CENTS),
+          priceCurrency: "EGP",
           billingDuration: "P1M",
         },
       },

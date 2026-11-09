@@ -1,5 +1,6 @@
 import {
   CREDIT_PACK_CREDITS,
+  formatEgpApprox,
   CREDIT_PACK_USD_CENTS,
   EMAIL_PACK_EMAILS,
   EMAIL_PACK_USD_CENTS,
@@ -45,7 +46,69 @@ export const PLAN_PRICES = {
   topUp: { minCents: TOP_UP_MIN_USD_CENTS, maxCents: TOP_UP_MAX_USD_CENTS },
 } as const;
 
-/** $0.03, $29, $1.50, $1,000: cents only when there are any. */
+/** Bidi isolates (around prices in Arabic) belong on the page, not in meta descriptions or JSON-LD. */
+export const stripBidiIsolates = (text: string) => text.replace(/[\u2066-\u2069]/g, "");
+
+/** Competitors' list prices as we checked them (USD cents), for the comparison pages. */
+export const COMPETITOR_PRICES = {
+  easyOrdersOrderFeeCents: 4,
+  easyOrdersProCents: 10_000,
+  shopifyMinCents: 500,
+  shopifyMaxCents: 39_900,
+} as const;
+
+/** The ICU values every tallaby.com string with a price takes: `{orderFee}`, `{pro}`, `{topUpMin}`, … */
+export type MarketingPriceVars = {
+  orderFee: string;
+  pro: string;
+  topUpMin: string;
+  topUpMax: string;
+  eoOrderFee: string;
+  eoPro: string;
+  shopifyMin: string;
+  shopifyMax: string;
+};
+
+/** The names of the price tokens copy can use. */
+export const PRICE_NAMES = ["orderFee", "pro", "topUpMin", "topUpMax", "eoOrderFee", "eoPro", "shopifyMin", "shopifyMax"] as const satisfies readonly (keyof MarketingPriceVars)[];
+export type PriceName = (typeof PRICE_NAMES)[number];
+
+/** Every price token, each formatted by `format` (USD cents in). */
+export function priceVarsWith(format: (usdCents: number) => string): MarketingPriceVars {
+  return {
+    orderFee: format(FREE_ORDER_FEE_USD_CENTS),
+    pro: format(PRO_MONTHLY_USD_CENTS),
+    topUpMin: format(TOP_UP_MIN_USD_CENTS),
+    topUpMax: format(TOP_UP_MAX_USD_CENTS),
+    eoOrderFee: format(COMPETITOR_PRICES.easyOrdersOrderFeeCents),
+    eoPro: format(COMPETITOR_PRICES.easyOrdersProCents),
+    shopifyMin: format(COMPETITOR_PRICES.shopifyMinCents),
+    shopifyMax: format(COMPETITOR_PRICES.shopifyMaxCents),
+  };
+}
+
+/**
+ * The price tokens in EGP ("≈ 1.62 جنيه" / "≈ 1.62 EGP", `formatEgpApprox` from
+ * the billing module, as in the dashboard). For metadata, JSON-LD and the EGP
+ * calculators; visible copy follows the visitor's currency (`VisitorPricesProvider`).
+ * `isolate: false` drops the bidi isolates for meta descriptions and structured data.
+ */
+export function marketingPriceVars(rate: number, locale: string, { isolate = true }: { isolate?: boolean } = {}): MarketingPriceVars {
+  return priceVarsWith((cents) => {
+    const text = formatEgpApprox(cents, rate, locale);
+    return isolate ? text : stripBidiIsolates(text);
+  });
+}
+
+/** Each token as itself: pass to `t()` so the formatted string keeps `{orderFee}` for `withPrices` to fill on the page. */
+export const PRICE_TOKENS: MarketingPriceVars = Object.fromEntries(PRICE_NAMES.map((name) => [name, `{${name}}`])) as MarketingPriceVars;
+
+/** Fills `{orderFee}`-style tokens in a string read with `t.raw` (FAQ arrays and the like); unknown tokens stay. */
+export function fillPriceTokens(text: string, values: Record<string, string>): string {
+  return text.replace(/\{(\w+)\}/g, (match, key: string) => values[key] ?? match);
+}
+
+/** $0.03, $29, $1.50, $1,000: cents only when there are any. Internal maths and tests only, never shown (owner, 2026-11-09). */
 export function formatUsd(cents: number): string {
   const whole = cents % 100 === 0;
   return `$${(cents / 100).toLocaleString("en-US", { minimumFractionDigits: whole ? 0 : 2, maximumFractionDigits: 2 })}`;

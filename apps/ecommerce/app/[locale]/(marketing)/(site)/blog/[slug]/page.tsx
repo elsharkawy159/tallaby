@@ -13,6 +13,9 @@ import { SignupTrigger } from "@/components/marketing/signup/signup-trigger.clie
 import { ArticleHtml } from "@/components/marketing/blog/article-html";
 import { isOptimizableImage } from "@/lib/marketing/blog.lib";
 import { getMarketingPost, getMarketingPosts } from "@/lib/marketing/blog.server";
+import { getMarketingEgpPerUsd, getMarketingPriceVars } from "@/lib/marketing/exchange-rate.server";
+import { PLAN_PRICES, PRICE_TOKENS, usdCentsToEgp } from "@/lib/marketing/pricing.lib";
+import { withPrices } from "@/components/marketing/pricing/with-prices";
 import { formatLongDate } from "@/lib/marketing/format.lib";
 import { localizedUrl, pageMetadata } from "@/lib/marketing/metadata.lib";
 import { breadcrumbSchema } from "@/lib/marketing/structured-data.lib";
@@ -142,12 +145,12 @@ export default async function BlogPostPage({ params }: Props) {
       <Container className="grid gap-14 py-14 pb-20 md:grid-cols-[minmax(0,1fr)_220px] lg:grid-cols-[200px_minmax(0,700px)_1fr]">
         <ShareBar title={title} />
         <article id="article" className="order-first text-[17px] leading-[1.95] text-[#2a3a3f] md:text-lg en:leading-[1.75] lg:order-none">
-          {staticArticle ? <PricingArticle /> : post.html ? <ArticleHtml html={post.html} /> : <p>{post.excerpt}</p>}
+          {staticArticle ? <PricingArticle locale={locale} /> : post.html ? <ArticleHtml html={post.html} /> : <p>{post.excerpt}</p>}
           <div className="mt-12 flex flex-wrap items-center gap-5 rounded-card border border-line bg-white p-6 leading-normal shadow-soft">
             <Image src="/logo-mark.png" alt="" width={56} height={56} className="size-14 rounded-[14px]" />
             <div className="min-w-[200px] flex-1">
               <b className="block text-[17px] text-teal-900">{t("post.ctaTitle")}</b>
-              <span className="text-sm text-slate-ink">{t("post.ctaBody")}</span>
+              <span className="text-sm text-slate-ink">{withPrices(t("post.ctaBody", PRICE_TOKENS))}</span>
             </div>
             <SignupTrigger />
           </div>
@@ -178,8 +181,8 @@ export default async function BlogPostPage({ params }: Props) {
 }
 
 /** "How to price your products for online sales". */
-async function PricingArticle() {
-  const t = await getTranslations("blog.article");
+async function PricingArticle({ locale }: { locale: string }) {
+  const [t, prices, rate] = await Promise.all([getTranslations("blog.article"), getMarketingPriceVars(locale), getMarketingEgpPerUsd()]);
   const h2 = "mt-12 mb-4 scroll-mt-[100px] text-[28px] leading-[1.35] font-bold text-teal-900 en:leading-[1.2] en:tracking-[-0.02em]";
 
   return (
@@ -196,10 +199,11 @@ async function PricingArticle() {
       </h2>
       <ul className="mb-[22px] grid list-disc gap-2 ps-[22px]">
         {(t.raw("s2List") as string[]).map((item) => (
-          <li key={item}>{item}</li>
+          <li key={item}>{withPrices(item)}</li>
         ))}
       </ul>
-      <PriceCalculator />
+      {/* The calculator works in pounds, so its note quotes the fee in pounds too. */}
+      <PriceCalculator feeEgp={usdCentsToEgp(PLAN_PRICES.free.orderFeeCents, rate)} body={t("toolBody", prices)} />
       <h2 id="s3" className={h2}>
         {t("s3")}
       </h2>

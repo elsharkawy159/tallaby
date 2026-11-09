@@ -2,7 +2,7 @@
   "meta": {
     "pricing": {
       "title": "Pricing | Two simple plans, no percentage of sales",
-      "description": "Two simple plans. Start free and pay $0.03 per order, or go Pro for $29 a month with no order fee."
+      "description": "Two simple plans. Start free and pay {orderFee} per order, or go Pro for {pro} a month with no order fee."
     }
   },
   "pricing": {
@@ -20,7 +20,7 @@
       "freeTagline": "For starting out and growing.",
       "perOrder": "per order",
       "freeNote": "no monthly fee",
-      "freeActivation": "Your store takes orders from day one. After {days} days or your second order, whichever comes first, a first top-up of {usd} (≈ {egp} EGP) keeps new orders visible. It is also needed to send campaigns.",
+      "freeActivation": "Your store takes orders from day one. After {days} days or your second order, whichever comes first, a first top-up of {topUpMin} keeps new orders visible. It is also needed to send campaigns.",
       "freeCta": "Start free",
       "proTagline": "For stores with steady orders.",
       "perMonth": "per month",
@@ -36,7 +36,7 @@
       "featureEverything": "Everything in Free",
       "featureOrderEmail": "Order confirmation email to every customer, under your store name",
       "featureNoFee": "Zero platform fee on orders",
-      "fx": "Local-currency amounts are approximate, at 1 USD ≈ {rate} {currency}. Fees are charged in USD.",
+      "fx": "Amounts are approximate, converted at today's exchange rate, and may move slightly with it. You top up your wallet in Egyptian pounds.",
       "currency": {
         "EGP": "EGP",
         "SAR": "SAR",
@@ -77,7 +77,7 @@
     "extras": {
       "kicker": "Other costs",
       "title": "Everything you might pay, plainly",
-      "desc": "These come out of your store wallet in dollars, and you top it up in Egyptian pounds.",
+      "desc": "These come out of your store wallet, which you top up in Egyptian pounds.",
       "topUpTitle": "Wallet top-ups",
       "topUpBody": "From {topUpMin} to {topUpMax}, paid in EGP. On the free plan, a first {topUpMin} top-up is needed before you can see orders and send campaigns.",
       "appsTitle": "Apps",
@@ -117,8 +117,8 @@
           "a": "Each AI action, like preparing a product from photos or text, uses one credit. Credits are shared across your whole account, not per team member."
         },
         {
-          "q": "How do I pay in dollars from Egypt?",
-          "a": "You choose a top-up in dollars, from {topUpMin} to {topUpMax}, and pay it in Egyptian pounds. You see the EGP amount before you pay."
+          "q": "How do I top up my wallet from Egypt?",
+          "a": "You choose a top-up from {topUpMin} to {topUpMax} and pay it in Egyptian pounds. You see the exact EGP amount before you pay."
         }
       ]
     },

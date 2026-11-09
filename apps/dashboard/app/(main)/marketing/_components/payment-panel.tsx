@@ -10,7 +10,8 @@ import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
 import { createAdRequest, type AdPaymentMethod, type AdWallet } from "@/actions/ads";
 import { cn } from "@/lib/utils";
-import { formatWalletMoney, moneyDir } from "@/lib/i18n/format";
+import { formatWalletMoney, walletMoneyDir } from "@/lib/i18n/format";
+import { useEgpRate } from "@/components/egp-rate.client";
 import { adWalletAmount, EGYPT_MOBILE_REGEX, VODAFONE_CASH_NUMBER, type AdPackage } from "@/lib/ad-packages";
 import { toAsciiDigits } from "@/components/form/form-ui";
 
@@ -111,12 +112,15 @@ export function PaymentPanel({ pkg, form }: { pkg: AdPackage; form: PaymentForm 
   const wallet = form.wallet;
   const canPay = walletCanPay(wallet, pkg.price);
   const usdWallet = wallet?.currency === "USD";
+  const fallbackRate = useEgpRate();
   const walletPrice = Number(adWalletAmount(pkg.price, wallet?.usdRate ?? null));
   const after = (wallet?.balance ?? 0) - walletPrice;
   const locale = useLocale();
+  // A USD wallet shows its amounts in EGP at the live rate (owner, 2026-11-09).
+  const rate = wallet?.usdRate ?? fallbackRate;
   const walletFigure = (value: number) =>
-    usdWallet ? formatWalletMoney(value, "USD", locale) : `${value.toLocaleString()} ${tPackage("currency")}`;
-  const figureDir = moneyDir(locale, { currency: usdWallet ? "USD" : "EGP" });
+    usdWallet ? formatWalletMoney(value, "USD", locale, rate) : `${value.toLocaleString()} ${tPackage("currency")}`;
+  const figureDir = walletMoneyDir(locale, usdWallet ? "USD" : "EGP", rate);
 
   const copy = async (value: string, message: string) => {
     try {

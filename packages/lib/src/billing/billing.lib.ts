@@ -63,6 +63,34 @@ export function quoteTopUp(
   return { usdCents, rate, basePiastres, taxPiastres, totalPiastres: basePiastres + taxPiastres };
 }
 
+/**
+ * A USD amount in whole EGP for display, the way /wallet's top-up quote prices it
+ * (`quoteTopUp`, before tax): rounded up to the piastre, then down to a whole
+ * pound. Under a dollar (the $0.03 order fee) whole pounds would hide the amount,
+ * so it keeps the piastres. Display only: nothing is charged from this figure.
+ */
+export function usdCentsToApproxEgp(usdCents: number, rate: number): number {
+  const cents = Math.abs(Math.round(usdCents));
+  const piastres = usdCentsToPiastres(cents, rate);
+  const egp = cents < 100 ? piastres / 100 : Math.floor(piastres / 100);
+  return usdCents < 0 && egp !== 0 ? -egp : egp;
+}
+
+/**
+ * Every price a seller sees is in EGP (owner, 2026-11-09, for Paymob): a USD
+ * amount at the live rate, with "≈" in front. "≈ 1.62 جنيه", "≈ 1,563 EGP".
+ * Latin digits, en-US grouping, 2 decimals under a dollar. In Arabic only the
+ * number sits in a left-to-right isolate, so a minus or a decimal never flips
+ * and "≈" stays to the right of the number. Zero is "0 جنيه", with no "≈".
+ */
+export function formatEgpApprox(usdCents: number, rate: number, locale: string): string {
+  const egp = usdCentsToApproxEgp(usdCents, rate);
+  const small = Math.abs(Math.round(usdCents)) < 100 && egp !== 0;
+  const number = egp.toLocaleString("en-US", { minimumFractionDigits: small ? 2 : 0, maximumFractionDigits: small ? 2 : 0 });
+  const approx = egp === 0 ? "" : "≈ ";
+  return locale.startsWith("ar") ? `${approx}\u2066${number}\u2069 جنيه` : `${approx}${number} EGP`;
+}
+
 export type UsdAmountResult =
   | { success: true; usdCents: number }
   | { success: false; error: "invalid" | "too_small" | "too_large" };

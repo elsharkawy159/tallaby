@@ -1,3 +1,5 @@
+import { fillPriceTokens } from "@/lib/marketing/pricing.lib";
+
 /** A titled paragraph in a legal section ("Plans. Tallaby has two plans…"). */
 export type LegalClause = {
   title: string;
@@ -8,11 +10,14 @@ export type LegalClause = {
 
 /**
  * The clauses to publish. A clause that needs the switch date is left out until
- * the date is set, so a placeholder can never reach the page.
+ * the date is set, so a placeholder can never reach the page. Price tokens
+ * (`{orderFee}`, `{pro}`, `{topUpMin}`) are filled from `prices` when given; the page
+ * leaves them for `withPrices`, which shows them in the visitor's currency.
  */
-export function publishedClauses(clauses: LegalClause[], switchDate: string | null): LegalClause[] {
+export function publishedClauses(clauses: LegalClause[], switchDate: string | null, prices: Record<string, string> = {}): LegalClause[] {
   return clauses.flatMap((clause) => {
-    if (!clause.needsSwitchDate) return [clause];
-    return switchDate ? [{ ...clause, body: clause.body.replaceAll("{date}", switchDate) }] : [];
+    const body = fillPriceTokens(clause.body, prices);
+    if (!clause.needsSwitchDate) return [{ ...clause, body }];
+    return switchDate ? [{ ...clause, body: body.replaceAll("{date}", switchDate) }] : [];
   });
 }

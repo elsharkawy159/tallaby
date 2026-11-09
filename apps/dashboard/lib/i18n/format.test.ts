@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { PRICE_SYMBOL_MARK, SAUDI_RIYAL_LABEL } from "@workspace/lib";
-import { MIXED_CURRENCIES, formatMoney, formatMoneyMarked, formatWalletMoney, isArabicPound, moneyDir, moneyLabel, moneyParams, moneyUnitMarked, moneyUnitText, splitHeadline, totalsByCurrency } from "./format";
+import { MIXED_CURRENCIES, formatMoney, formatMoneyMarked, formatSignedWalletMoney, formatUsdPrice, formatWalletMoney, isApproxWalletMoney, walletMoneyDir, isArabicPound, moneyDir, moneyLabel, moneyParams, moneyUnitMarked, moneyUnitText, splitHeadline, totalsByCurrency } from "./format";
 
 describe("formatMoney", () => {
   it("reads EGP in English and جنيه in Arabic with no currency, a null one and EGP", () => {
@@ -29,6 +29,31 @@ describe("formatMoney", () => {
     expect(formatWalletMoney(277, null, "ar")).toBe("277 جنيه");
     expect(formatWalletMoney(277, "EGP", "en")).toBe("277 EGP");
     expect(formatWalletMoney(5, "USD", "ar")).toBe("$5.00");
+  });
+
+  it("shows a USD wallet amount in EGP at the live rate, with ≈", () => {
+    expect(formatWalletMoney(5, "USD", "en", 53.9007)).toBe("≈ 269 EGP");
+    expect(formatWalletMoney("0.03", "USD", "ar", 54.2)).toBe("≈ \u20661.63\u2069 جنيه");
+    expect(formatWalletMoney(-12.5, "USD", "en", 50)).toBe("≈ -625 EGP");
+    expect(formatWalletMoney(277, "EGP", "en", 50)).toBe("277 EGP");
+    expect(formatWalletMoney(5, "USD", "en", null)).toBe("$5.00");
+    expect(formatUsdPrice(2900, "en", 54.2)).toBe("≈ 1,571 EGP");
+  });
+
+  it("puts a credit's + inside the number", () => {
+    expect(formatSignedWalletMoney(5, "USD", "en", 50)).toBe("≈ +250 EGP");
+    expect(formatSignedWalletMoney(5, "USD", "ar", 50)).toBe("≈ \u2066+250\u2069 جنيه");
+    expect(formatSignedWalletMoney(-5, "USD", "en", 50)).toBe("≈ -250 EGP");
+    expect(formatSignedWalletMoney(5, "USD", "en")).toBe("+$5.00");
+    expect(formatSignedWalletMoney(277, "EGP", "ar")).toBe("+277 جنيه");
+  });
+
+  it("reads an amount shown in EGP like EGP", () => {
+    expect(walletMoneyDir("ar", "USD", 50)).toBeUndefined();
+    expect(walletMoneyDir("ar", "USD", null)).toBe("ltr");
+    expect(walletMoneyDir("en", "USD", 50)).toBe("ltr");
+    expect(isApproxWalletMoney("USD", 50)).toBe(true);
+    expect(isApproxWalletMoney("EGP", 50)).toBe(false);
   });
 
   it("keeps a mixed amount a bare number", () => {

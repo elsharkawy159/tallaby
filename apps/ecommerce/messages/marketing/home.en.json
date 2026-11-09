@@ -303,7 +303,7 @@
         },
         {
           "q": "When is Pro worth it?",
-          "a": "From about 1,000 orders a month, the flat $29 costs less than per-order fees. Pro also gives you 2,000 AI credits."
+          "a": "From about 1,000 orders a month, the flat {pro} costs less than per-order fees. Pro also gives you 2,000 AI credits."
         },
         {
           "q": "What is an AI credit?",
@@ -332,7 +332,7 @@
         "egp": "EGP",
         "title": "Dashboard",
         "walletLabel": "Wallet balance",
-        "walletApprox": "≈ EGP {amount}",
+        "walletApprox": "≈ {amount} EGP",
         "last7": "Last 7 days",
         "addProduct": "Add product",
         "greeting": "Good morning, Nour",

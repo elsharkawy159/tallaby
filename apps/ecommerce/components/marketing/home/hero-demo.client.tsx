@@ -28,11 +28,10 @@ import {
   Truck,
   Wallet,
 } from "lucide-react";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { cn } from "@workspace/ui/lib/utils";
 import { DemoCursor } from "./demo-cursor";
-import { formatUsd } from "@/lib/marketing/pricing.lib";
-import { HERO_DEMO_WALLET_USD_CENTS, ordersAfter, sparkPaths, wrapIndex, type DemoOrder } from "./home-demo.lib";
+import { ordersAfter, sparkPaths, wrapIndex, type DemoOrder } from "./home-demo.lib";
 import { useDemoSteps } from "./use-demo.client";
 
 /** product, cursor to add, summary, cursor to place, confirmed, order lands, toast gone. */
@@ -70,9 +69,8 @@ const money = (n: number) => n.toLocaleString("en-US");
  * dashboard, drawn after the redesigned dashboard home (Claude Design "Seller
  * Home v3"). All sample data, every pound amount in the page's own word for it.
  */
-export function HeroDemo({ walletEgp }: { walletEgp?: string }) {
+export function HeroDemo({ walletEgp }: { walletEgp: string }) {
   const t = useTranslations("home.demo.hero");
-  const ar = useLocale() === "ar";
   const { ref, step, cycle } = useDemoSteps<HTMLDivElement>(STEPS, 0);
 
   const customers = t.raw("customers") as string[];
@@ -182,9 +180,8 @@ export function HeroDemo({ walletEgp }: { walletEgp?: string }) {
             <span className="flex h-[30px] flex-none items-center gap-1.5 rounded-full border border-[#e7e9e8] bg-white ps-2.5 pe-1 text-[11.5px] whitespace-nowrap text-[#5f6b6e]">
               <span className="hidden min-[641px]:inline">{t("walletLabel")}</span>
               <Wallet className="size-3.5 min-[641px]:hidden" />
-              <b dir="ltr" className="font-latin text-[12px] font-bold text-[#171717]">{formatUsd(HERO_DEMO_WALLET_USD_CENTS)}</b>
-              {/* Arabic also shows it in pounds at the live rate; not on narrow screens, where the pill has no room. */}
-              {ar && walletEgp ? <span className="hidden text-[11px] text-[#808080] min-[861px]:inline">{t("walletApprox", { amount: walletEgp })}</span> : null}
+              {/* In pounds at the live rate, like every price on tallaby.com (owner, 2026-11-09). */}
+              <b className="text-[12px] font-bold text-[#171717]">{t("walletApprox", { amount: walletEgp })}</b>
               <span className="grid size-[22px] place-items-center rounded-full bg-[#eef3f4] text-teal-900">
                 <Plus className="size-3" />
               </span>

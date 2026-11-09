@@ -15,6 +15,12 @@ export interface FeeTrialReminderEmailProps {
   locale?: EmailLocale;
   /** After the USD switch (0136): the fee line names the new fee. */
   usdLive?: boolean;
+  /**
+   * After the switch: the order fee in EGP at the live rate, already formatted
+   * (`formatEgpApprox(FREE_ORDER_FEE_USD_CENTS, rate, locale)` from @workspace/lib/billing).
+   * Without it the fee line names no amount, never a dollar price (owner, 2026-11-09).
+   */
+  orderFeeEgp?: string;
 }
 
 /** Seller reminder 7 days and 1 day before the fee trial ends (PLAN.md §13.5, P6-07). */
@@ -25,6 +31,7 @@ export const FeeTrialReminderEmail = ({
   dashboardUrl = "https://dashboard.tallaby.com/",
   locale = "en",
   usdLive = false,
+  orderFeeEgp,
 }: FeeTrialReminderEmailProps) => {
   const copy = getEmailMessages(locale).feeTrialReminder;
   const date = new Date(endsAt).toLocaleDateString(emailDateLocale(locale), {
@@ -46,7 +53,7 @@ export const FeeTrialReminderEmail = ({
         <Text className="m-0 mb-4 text-[16px] leading-[1.6] text-[#555555]">
           {interpolate(t1 ? copy.bodyT1 : copy.bodyT7, { date })}
         </Text>
-        <Text className="m-0 text-[14px] leading-[1.6] text-secondary">{usdLive ? copy.feeNoteUsd : copy.feeNote}</Text>
+        <Text className="m-0 text-[14px] leading-[1.6] text-secondary">{usdLive ? (orderFeeEgp ? interpolate(copy.feeNoteUsd, { fee: orderFeeEgp }) : copy.feeNoteUsdNoAmount) : copy.feeNote}</Text>
       </Section>
 
       <Section className="email-pad px-6 py-6">

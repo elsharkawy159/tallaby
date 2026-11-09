@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
+import { marketingPriceVars } from "@/lib/marketing/pricing.lib";
 import { publishedClauses, type LegalClause } from "./legal.lib";
 
 const clauses: LegalClause[] = [
@@ -31,9 +32,11 @@ describe("legal messages", () => {
     expect(legal.privacy?.sections.map((s) => s.id)).toContain("cookies");
     const fees = legal.terms?.sections.find((s) => s.id === "fees");
     expect(fees?.clauses).toHaveLength(13);
-    const published = publishedClauses(fees?.clauses ?? [], null)
+    const published = publishedClauses(fees?.clauses ?? [], null, marketingPriceVars(50, locale))
       .map((c) => c.body)
       .join(" ");
     expect(published).not.toMatch(/[[{]/);
+    // Prices show in EGP (owner, 2026-11-09): no "$" amount in the terms.
+    expect(published).not.toMatch(/[$][0-9]/);
   });
 });

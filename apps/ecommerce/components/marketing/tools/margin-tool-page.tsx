@@ -5,6 +5,9 @@ import { SignupTrigger } from "@/components/marketing/signup/signup-trigger.clie
 import { JsonLd } from "@/components/marketing/site/json-ld";
 import { Container, Eyebrow, Num, Section, SectionHeading } from "@/components/marketing/site/layout-primitives";
 import { richTags } from "@/components/marketing/site/rich-text";
+import { withPrices } from "@/components/marketing/pricing/with-prices";
+import { getMarketingEgpPerUsd, getMarketingPriceVars } from "@/lib/marketing/exchange-rate.server";
+import { PRICE_TOKENS } from "@/lib/marketing/pricing.lib";
 import { calculateMargin, DEFAULT_MARGIN_INPUT, markupPct, TARGET_MARGIN } from "@/lib/marketing/margin-calculator.lib";
 import { localizedUrl } from "@/lib/marketing/seo.lib";
 import { cn } from "@workspace/ui/lib/utils";
@@ -19,10 +22,13 @@ const percent = (value: number) => `${value.toFixed(1)}%`;
 
 /** The page's worked example comes from the same function as the calculator, so the two can't disagree. */
 export async function MarginToolPage() {
-  const [locale, t] = await Promise.all([getLocale(), getTranslations(`toolPages.${SLUG}`)]);
+  const [locale, t, egpPerUsd] = await Promise.all([getLocale(), getTranslations(`toolPages.${SLUG}`), getMarketingEgpPerUsd()]);
+  // The calculator works in pounds, so its fee notes and worked example quote EGP.
+  const prices = await getMarketingPriceVars(locale);
   const path = `/tools/${SLUG}`;
 
-  const example = DEFAULT_MARGIN_INPUT;
+  // The fee at the live rate (owner, 2026-11-09: prices show in EGP).
+  const example = { ...DEFAULT_MARGIN_INPUT, egpPerUsd };
   const result = calculateMargin(example);
   const margin = result.marginPct ?? 0;
   const values = {
@@ -30,7 +36,7 @@ export async function MarginToolPage() {
     margin: percent(margin),
     markup: percent(markupPct(result.profit, result.cost)),
     fee: money(result.fee),
-    rate: money(example.egpPerUsd),
+    ...prices,
   };
 
   const faq: FaqItem[] = FAQ_KEYS.map((key) => ({ q: t(`faq.${key}.q`), a: t(`faq.${key}.a`, values) }));
@@ -41,7 +47,7 @@ export async function MarginToolPage() {
     { label: t("example.buy"), value: money(example.buy), currency: true },
     { label: t("example.ship"), value: money(example.ship), currency: true },
     { label: t("example.ad"), value: money(example.ad), currency: true },
-    { label: t("example.fee", { rate: values.rate }), value: money(result.fee), currency: true },
+    { label: t("example.fee", prices), value: money(result.fee), currency: true },
     { label: t("example.cost"), value: money(result.cost), currency: true, tone: "sub" },
     { label: t("example.sell"), value: money(example.sell), currency: true },
     { label: t("example.profit", { sell: money(example.sell), cost: money(result.cost) }), value: money(result.profit), currency: true, tone: "result" },
@@ -80,7 +86,7 @@ export async function MarginToolPage() {
 
       <section className="pb-14">
         <Container>
-          <MarginCalculator />
+          <MarginCalculator egpPerUsd={egpPerUsd} prices={prices} />
           <div className="mt-[18px] flex flex-wrap items-center justify-between gap-4 rounded-[22px] border border-dashed border-teal-300 bg-white p-4 sm:px-[22px] sm:py-[18px]">
             <div className="min-w-0 flex-1 basis-[320px]">
               <b className="text-base text-teal-900">{t("soft.title")}</b>
@@ -158,7 +164,7 @@ export async function MarginToolPage() {
 
       <FaqBlock items={faq} />
 
-      <ClosingCta title={t("closing.title")} body={t("closing.body")} secondary="pricing" />
+      <ClosingCta title={t("closing.title")} body={withPrices(t("closing.body", PRICE_TOKENS))} secondary="pricing" />
     </>
   );
 }

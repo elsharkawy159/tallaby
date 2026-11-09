@@ -11,15 +11,16 @@ import { IconTile, SiteCard } from "@/components/marketing/site/site-card";
 import { SlugClaimForm } from "@/components/marketing/signup/signup-trigger.client";
 import { FeeEstimator } from "@/components/marketing/pricing/fee-calculators.client";
 import { PlanCards } from "@/components/marketing/pricing/plan-cards";
-import { getMarketingUsdRates } from "@/lib/marketing/exchange-rate.server";
+import { getMarketingPriceVars, getMarketingUsdRates } from "@/lib/marketing/exchange-rate.server";
 import { localizedUrl, pageMetadata } from "@/lib/marketing/metadata.lib";
-import { PLAN_PRICES, formatNumber, formatUsd, proBreakEvenOrdersShown } from "@/lib/marketing/pricing.lib";
+import { PLAN_PRICES, PRICE_TOKENS, fillPriceTokens, formatNumber, proBreakEvenOrdersShown } from "@/lib/marketing/pricing.lib";
+import { withPrices } from "@/components/marketing/pricing/with-prices";
 import { CONTACT } from "@/lib/marketing/site.lib";
 import { breadcrumbSchema } from "@/lib/marketing/structured-data.lib";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
-  return pageMetadata({ locale, page: "pricing", path: "/pricing" });
+  return pageMetadata({ locale, page: "pricing", path: "/pricing", values: await getMarketingPriceVars(locale, { isolate: false }) });
 }
 
 export default async function PricingPage({ params }: { params: Promise<{ locale: string }> }) {
@@ -30,10 +31,7 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
     { name: tFooter("pricing"), url: localizedUrl(locale, "/pricing") },
   ]);
   const prices = {
-    topUpMin: formatUsd(PLAN_PRICES.topUp.minCents),
-    topUpMax: formatUsd(PLAN_PRICES.topUp.maxCents),
-    orderFee: formatUsd(PLAN_PRICES.free.orderFeeCents),
-    pro: formatUsd(PLAN_PRICES.pro.monthlyCents),
+    ...PRICE_TOKENS,
     proCredits: formatNumber(PLAN_PRICES.pro.aiCredits),
     breakEven: formatNumber(proBreakEvenOrdersShown()),
   };
@@ -44,7 +42,7 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
     { icon: Percent, label: t("hero.noPercent") },
   ];
   const extras = [
-    { icon: Wallet, title: t("extras.topUpTitle"), body: t("extras.topUpBody", prices) },
+    { icon: Wallet, title: t("extras.topUpTitle"), body: withPrices(t("extras.topUpBody", prices)) },
     { icon: Blocks, title: t("extras.appsTitle"), body: t("extras.appsBody") },
     { icon: Mail, title: t("extras.emailsTitle"), body: t("extras.emailsBody", prices) },
     { icon: Sparkles, title: t("extras.creditsTitle"), body: t("extras.creditsBody", prices) },
@@ -55,7 +53,8 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
   ];
   const faq = (t.raw("faq.items") as FaqEntry[]).map((item) => ({
     q: item.q,
-    a: replaceTokens(String(item.a), prices),
+    // Plan facts filled here, prices left as tokens for the visitor's currency.
+    a: withPrices(fillPriceTokens(String(item.a), prices)),
   }));
 
   return (
@@ -147,9 +146,4 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
       <CtaBand title={t("final.title")} body={t("final.body")} action={<SlugClaimForm className="w-full sm:w-[420px]" />} />
     </>
   );
-}
-
-/** FAQ answers are read raw (an array), so their prices are filled in here. */
-function replaceTokens(text: string, values: Record<string, string>): string {
-  return text.replace(/\{(\w+)\}/g, (match, key: string) => values[key] ?? match);
 }

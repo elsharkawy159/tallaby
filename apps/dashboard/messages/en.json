@@ -184,18 +184,18 @@
     }
   },
   "orderLock": {
-    "title": "Kindly top up your wallet, starting from $5 only{egp, select, none {} other { (about EGP {egp})}}",
+    "title": "Kindly top up your wallet{amount, select, none {} other {, starting from {amount} only}}",
     "bodyDays": "Your 14 days to see orders without a top-up are over. Your store keeps selling and your orders are waiting: top up your wallet to see them.",
     "bodySecondOrder": "Your second order has arrived. Your first order stays visible; top up your wallet to see the new ones.",
     "graceTitle": "{days, plural, one {# day left} other {# days left}} to top up your wallet",
-    "graceBody": "Your store is live and takes orders, and you can see them for now. After 14 days, or once your second order arrives, top up your wallet, starting from $5 only, to keep seeing your orders.",
+    "graceBody": "Your store is live and takes orders, and you can see them for now. After 14 days, or once your second order arrives, top up your wallet{amount, select, none {} other {, starting from {amount} only,}} to keep seeing your orders.",
     "graceFirstOrderTitle": "You got your first order! Top up to keep seeing new orders",
-    "graceFirstOrderBody": "Your next order stays hidden until you top up your wallet, starting from $5 only ({days, plural, one {# day left} other {# days left}} at most). This first order always stays visible.",
+    "graceFirstOrderBody": "Your next order stays hidden until you top up your wallet{amount, select, none {} other {, starting from {amount} only}} ({days, plural, one {# day left} other {# days left}} at most). This first order always stays visible.",
     "reviewTitle": "Your top-up is being reviewed",
     "reviewBody": "Your orders will open as soon as we approve it.",
     "topUp": "Top up",
     "viewWallet": "View wallet",
-    "sidebar": "Kindly top up your wallet, starting from $5 only{egp, select, none {} other { (about EGP {egp})}}, to see your orders"
+    "sidebar": "Kindly top up your wallet{amount, select, none {} other {, starting from {amount} only}}, to see your orders"
   },
   "bulkFileImport": {
     "stage": {
@@ -3602,7 +3602,7 @@
       },
       "fees": {
         "question": "What does Tallaby charge?",
-        "answerUsd": "On the Free plan, $0.03 per new order, taken from your store wallet when the order is placed. An order that looks like a test or a duplicate (same customer and same products within 2 hours) is charged only if it is delivered. The Pro plan is $29 a month with no order fee. See Plan & usage.",
+        "answerUsd": "On the Free plan, {fee} per new order, taken from your store wallet when the order is placed. An order that looks like a test or a duplicate (same customer and same products within 2 hours) is charged only if it is delivered. The Pro plan is {pro} a month with no order fee. See Plan & usage.",
         "answer": "A flat EGP 5 per new order, taken from your store wallet when the order is placed. An order that looks like a test or a duplicate (same customer and same products within 2 hours) is charged only if it is delivered. New sellers get EGP 100 in their wallet when they finish their store (choose a template, add a product and publish), valid for 30 days."
       },
       "plan": {
@@ -3635,7 +3635,7 @@
       },
       "topUp": {
         "question": "How do I top up my wallet?",
-        "answerUsd": "Open Balance & top-ups and choose Top up. Pick an amount from $5 to $1,000; you see the total in EGP before you pay. Send it by Vodafone Cash or InstaPay and upload the transfer receipt. Your balance is credited once our team confirms the transfer. Card top-ups are coming soon.",
+        "answerUsd": "Open Balance & top-ups and choose Top up. Pick an amount from {min} to {max}; you see the total in EGP before you pay. Send it by Vodafone Cash or InstaPay and upload the transfer receipt. Your balance is credited once our team confirms the transfer. Card top-ups are coming soon.",
         "answer": "Open Balance & top-ups and choose Top up. Send between EGP 100 and EGP 20,000 by Vodafone Cash or InstaPay, then upload the transfer receipt. Your balance updates once our team confirms the transfer."
       },
       "paymentMethods": {
@@ -4516,7 +4516,7 @@
       "pro": "Pro"
     },
     "current": "Your plan",
-    "freePrice": "$0 a month",
+    "freePrice": "0 EGP a month",
     "proPrice": "{amount} a month",
     "noFee": "No",
     "feeLine": "{fee} order fee",
@@ -4538,7 +4538,7 @@
     "monthlyLeft": "{left, number} of {total, number} monthly credits left.",
     "purchasedLeft": "Plus {count, number} bought credits, which don't expire.",
     "resetsFree": "Monthly credits reset on the 1st.",
-    "creditsNotActivated": "You have {locked, number} AI requests a month until you top up your wallet, starting from $5 only. Then you have {full, number} a month.",
+    "creditsNotActivated": "You have {locked, number} AI requests a month until you top up your wallet, starting from {min} only. Then you have {full, number} a month.",
     "fewerPacks": "Fewer credits",
     "morePacks": "More credits",
     "creditsCount": "{count, number} credits",
@@ -5750,14 +5750,14 @@
       "button": "Top up",
       "title": "Top up your store wallet",
       "amount": "Amount",
-      "limits": "From $5 to $1,000 (≈ {minEgp} to {maxEgp} EGP at today's rate).",
+      "limits": "From {min} to {max} at today's rate.",
       "continue": "Continue to payment",
       "refresh": "Check again",
       "backToWallet": "Back to wallet",
       "errors": {
         "invalid": "Enter an amount in dollars, for example 10.",
-        "too_small": "The minimum top-up is $5.",
-        "too_large": "The maximum top-up is $1,000.",
+        "too_small": "The minimum top-up is {min}.",
+        "too_large": "The maximum top-up is {max}.",
         "not_configured": "Online payment isn't available right now. Try again later.",
         "provider_error": "We couldn't open the payment page. Try again.",
         "rateLimited": "Too many attempts. Try again in a few minutes.",
@@ -5830,7 +5830,7 @@
       }
     },
     "manualTopUp": {
-      "limitsUsd": "From $5 to $1,000. You pay in EGP at the rate shown.",
+      "limitsUsd": "Type the wallet amount in US dollars, {minUsd} to {maxUsd} (from {min} to {max} at today's rate). You pay in EGP.",
       "button": "Top up wallet",
       "title": "Top up wallet",
       "description": "Transfer the amount from your wallet or bank, then upload a picture of the receipt.",
@@ -5852,14 +5852,15 @@
           "fee": "Top-up fee",
           "free": "Free",
           "total": "You transfer",
-          "after": "Balance after top-up:"
+          "after": "Balance after top-up:",
+          "rateUsd": "Dollar rate today"
         },
         "cta": "Top up now",
         "trust": {
           "review": "Added once we check the receipt",
           "noExpiry": "Lifetime balance, it never expires",
           "noExpiryEgp": "Your balance never expires",
-          "feeUsd": "Only {cents} cents per order"
+          "feeUsd": "Only {fee} per order"
         }
       },
       "changeAmount": "Change amount",
@@ -7771,7 +7772,7 @@
   "emailCampaigns": {
     "allowance": {
       "left": "{left} campaign emails left. Your plan includes {monthly} a month.",
-      "locked": "Kindly top up your wallet, starting from $5 only, to send campaign emails.",
+      "locked": "Kindly top up your wallet, starting from {min} only, to send campaign emails.",
       "pending": "Your top-up is being reviewed. You can send emails once it's approved.",
       "topUp": "Top up",
       "buy": "Buy {emails} more for {price}",
@@ -7953,7 +7954,7 @@
       "storeOffline": "Publish your website before sending a campaign.",
       "dailyLimit": "You can send one campaign every 24 hours, and you already did. Try again tomorrow.",
       "monthlyLimit": "You've used this month's campaign emails. Buy more, or wait until the 1st.",
-      "activationRequired": "Kindly top up your wallet, starting from $5 only, to send campaign emails.",
+      "activationRequired": "Kindly top up your wallet to send campaign emails.",
       "insufficientBalance": "Your wallet doesn't have enough balance. Top up and try again.",
       "noRecipients": "Nobody to send to in this audience. Pick another audience.",
       "subjectRequired": "Write a subject first.",

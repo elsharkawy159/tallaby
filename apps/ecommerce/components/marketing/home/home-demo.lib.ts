@@ -1,6 +1,6 @@
 /** Pure maths behind the home page's product demos. */
 
-/** The hero dashboard's sample wallet balance ($12.40); the hero server part converts it for the Arabic "≈ جنيه". */
+/** The hero dashboard's sample wallet balance in USD cents; the hero server part shows it as "≈ … جنيه" at the live rate. */
 export const HERO_DEMO_WALLET_USD_CENTS = 1240;
 
 /** An SVG line and its filled area for a small sparkline. */

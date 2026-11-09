@@ -12,8 +12,9 @@ import { IconTile, SiteCard } from "@/components/marketing/site/site-card";
 import { SignupTrigger, SlugClaimForm } from "@/components/marketing/signup/signup-trigger.client";
 import { PlanCards } from "@/components/marketing/pricing/plan-cards";
 import { TemplateCarousel } from "@/components/marketing/templates/template-carousel.client";
+import { withPrices } from "@/components/marketing/pricing/with-prices";
 import { getMarketingEgpPerUsd } from "@/lib/marketing/exchange-rate.server";
-import { PLAN_PRICES, formatEgp, formatUsd, usdCentsToEgp } from "@/lib/marketing/pricing.lib";
+import { PRICE_TOKENS, formatEgp, usdCentsToEgp } from "@/lib/marketing/pricing.lib";
 import { selectStoreLine } from "@/lib/marketing/recent-stores.lib";
 import { CONTACT } from "@/lib/marketing/site.lib";
 import { getRecentStores } from "@/lib/marketing/stores.server";
@@ -31,29 +32,12 @@ import { McpChatDemo } from "./mcp-chat-demo.client";
 import { PaymentDemo, ShippingDemo } from "./shipping-payment-demos.client";
 
 /**
- * The prices the home copy fills in: USD from the billing module, and the
- * Arabic "≈ … جنيه" at the dashboard wallet's live rate, rounded the way
- * /wallet shows it (the same maths as the plan cards).
+ * The hero demo's wallet in pounds at the dashboard wallet's live rate, as the
+ * dashboard shows it (the dashboard stays EGP). Prices in the home copy are
+ * `{orderFee}`-style tokens that `withPrices` shows in the visitor's currency.
  */
-async function homePrices() {
-  const rate = await getMarketingEgpPerUsd();
-  const egp = (cents: number) => formatEgp(usdCentsToEgp(cents, rate));
-  // LRI...PDI isolates "$29" so Arabic text never flips it to "29$" (seen at a line wrap).
-  const usd = (cents: number) => `\u2066${formatUsd(cents)}\u2069`;
-  return {
-    orderFee: usd(PLAN_PRICES.free.orderFeeCents),
-    orderFeeEgp: egp(PLAN_PRICES.free.orderFeeCents),
-    pro: usd(PLAN_PRICES.pro.monthlyCents),
-    proEgp: egp(PLAN_PRICES.pro.monthlyCents),
-    topUpMin: usd(PLAN_PRICES.topUp.minCents),
-    topUpMinEgp: egp(PLAN_PRICES.topUp.minCents),
-    walletEgp: egp(HERO_DEMO_WALLET_USD_CENTS),
-  };
-}
-
-/** FAQ answers are read raw (an array), so their prices are filled in here, as on /pricing. */
-function replaceTokens(text: string, values: Record<string, string>): string {
-  return text.replace(/\{(\w+)\}/g, (match, key: string) => values[key] ?? match);
+async function heroWalletEgp() {
+  return formatEgp(usdCentsToEgp(HERO_DEMO_WALLET_USD_CENTS, await getMarketingEgpPerUsd()));
 }
 
 /** A small text link from a home section to its deeper page. */
@@ -79,7 +63,7 @@ function SplitHeading({ id, kicker, title, body }: { id: string; kicker: string;
 }
 
 export async function HomeHero() {
-  const [t, locale, recent, prices] = await Promise.all([getTranslations("home.hero"), getLocale(), getRecentStores(), homePrices()]);
+  const [t, locale, recent, walletEgp] = await Promise.all([getTranslations("home.hero"), getLocale(), getRecentStores(), heroWalletEgp()]);
   const features = t.raw("marquee") as string[];
   const checks = [t("check1"), t("check2"), t("check3")];
   const showLine = selectStoreLine(recent.stores, recent.readAt).kind !== "none";
@@ -118,7 +102,7 @@ export async function HomeHero() {
         </ul>
         {/* One muted line with both plans' prices, to the pricing section below (English shows USD only, like its other copy). */}
         <a href="#pricing" className="mt-3 max-w-[560px] text-[13px] text-balance text-ink-500 underline-offset-2 hover:text-teal-700 hover:underline min-[641px]:text-sm">
-          {t("priceLine", prices)}
+          {withPrices(t("priceLine", PRICE_TOKENS))}
         </a>
       </Container>
 
@@ -146,7 +130,7 @@ export async function HomeHero() {
       </div>
 
       <Container>
-        <HeroDemo walletEgp={prices.walletEgp} />
+        <HeroDemo walletEgp={walletEgp} />
         <p className="mt-[76px] text-center text-xs text-ink-400 min-[641px]:mt-16">{t("sample")}</p>
       </Container>
     </section>
@@ -428,11 +412,11 @@ export async function PricingTeaser() {
 }
 
 export async function HowItWorks() {
-  const [t, prices] = await Promise.all([getTranslations("home.how"), homePrices()]);
+  const t = await getTranslations("home.how");
   const steps = [
     { title: t("s1Title"), body: t("s1Body"), tag: t("s1Tag"), icon: Timer },
     { title: t("s2Title"), body: t("s2Body"), tag: t("s2Tag"), icon: Palette },
-    { title: t("s3Title"), body: t("s3Body", prices), tag: t("s3Tag"), icon: Rocket },
+    { title: t("s3Title"), body: withPrices(t("s3Body", PRICE_TOKENS)), tag: t("s3Tag"), icon: Rocket },
   ];
   return (
     <Section id="how" aria-labelledby="how-title">
@@ -461,8 +445,8 @@ export async function HowItWorks() {
 }
 
 export async function HomeFaq() {
-  const [t, prices] = await Promise.all([getTranslations("home.faq"), homePrices()]);
-  const items = (t.raw("items") as FaqEntry[]).map((item) => ({ q: item.q, a: replaceTokens(String(item.a), prices) }));
+  const t = await getTranslations("home.faq");
+  const items = (t.raw("items") as FaqEntry[]).map((item) => ({ q: item.q, a: withPrices(String(item.a)) }));
   return (
     <Section id="faq" aria-labelledby="faq-title">
       <Container className="grid gap-7 min-[1081px]:grid-cols-[minmax(0,0.7fr)_minmax(0,1.3fr)] min-[1081px]:gap-14">

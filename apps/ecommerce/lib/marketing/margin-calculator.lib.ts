@@ -3,7 +3,7 @@ import { FREE_ORDER_FEE_USD_CENTS } from "@workspace/lib/billing";
 /**
  * The /tools/profit-margin-calculator maths. Pure, and in integer piastres so a
  * result never shows float noise. Money stays in EGP because orders and prices do;
- * the plan's order fee is in USD, so it's converted at a rate the visitor can edit.
+ * the plan's order fee is in USD, so it's converted at the live rate the page passes in.
  */
 
 export type MarginPlan = "free" | "pro";
@@ -12,8 +12,8 @@ export type MarginPlan = "free" | "pro";
 export const TARGET_MARGIN = 0.3;
 
 /**
- * Starting value of the visitor-editable "USD rate" field. It's only an input
- * for this sum, never the rate a seller is charged (Admin sets that per top-up).
+ * The rate in `DEFAULT_MARGIN_INPUT` (tests and the fallback); the page uses the
+ * live rate. Only an input for this sum, never the rate a seller is charged.
  */
 export const DEFAULT_EGP_PER_USD = 50;
 

@@ -20,6 +20,7 @@ import { sendWebPushes, type WebPushJob } from "@workspace/lib/push/server";
 import arMessages from "@/messages/ar.json";
 import enMessages from "@/messages/en.json";
 import { formatMoney, formatWalletMoney } from "@/lib/i18n/format";
+import { getEgpPerUsd } from "@/lib/billing/egp-rate.server";
 import type { PushSubscriptionInput } from "./push-alerts.dto";
 import {
   BELL_TEXT_PUSH_TYPES,
@@ -297,7 +298,8 @@ export async function dispatchSellerPushes(limit: number = PUSH_CLAIM_LIMIT): Pr
   const deliveries = planPushDeliveries(rows, prefs, devices, new Date());
   if (deliveries.length === 0) return { enabled: true, ...empty, expired, claimed: claimed.length };
 
-  const amounts = await loadOrderAmounts(deliveries.map((d) => d.row));
+  // A USD wallet amount in a bell row is pushed in EGP at the live rate (owner, 2026-11-09).
+  const [amounts, egpRate] = await Promise.all([loadOrderAmounts(deliveries.map((d) => d.row)), getEgpPerUsd()]);
   const jobs = deliveries.map(({ row, category, device }) => {
     const orderId = typeof row.data.orderId === "string" ? row.data.orderId : null;
     const order = orderId ? amounts.get(orderId) : undefined;
@@ -306,7 +308,7 @@ export async function dispatchSellerPushes(limit: number = PUSH_CLAIM_LIMIT): Pr
     const bell = BELL_TEXT_TYPES.has(row.type)
       ? {
           t: BELL_TRANSLATORS[device.locale],
-          values: sellerNotificationValues(row.data, (value, currency) => formatWalletMoney(value, currency, device.locale)),
+          values: sellerNotificationValues(row.data, (value, currency) => formatWalletMoney(value, currency, device.locale, egpRate)),
         }
       : undefined;
     return {

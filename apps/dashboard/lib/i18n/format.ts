@@ -10,6 +10,7 @@ import {
   isStoreCurrency,
   type CurrencyLabel,
 } from "@workspace/lib";
+import { formatEgpApprox } from "@workspace/lib/billing";
 
 // Dashboard-wide formatting. Arabic uses Western (latn) digits so numbers,
 // SKUs, and order numbers read the same as what sellers type into inputs.
@@ -159,19 +160,56 @@ export function totalsByCurrency<T>(
     .map(([currency, total]) => ({ currency, total: total / 100 }));
 }
 
-/** A store-wallet amount in the wallet's own currency (EGP until the USD switch, 0136). */
+/**
+ * A store-wallet amount. An EGP wallet shows it as it is. A USD wallet (0136) shows
+ * it in EGP at the live `rate` with "≈" (owner, 2026-11-09: every price a seller
+ * sees is in EGP); with no rate it falls back to the exact dollars, which is also
+ * what a statement shows beside the EGP. Display only.
+ */
 export function formatWalletMoney(
   value: string | number | null | undefined,
   currency: string | null | undefined,
   locale: string,
+  rate?: number | null,
 ) {
   if (currency !== "USD") return formatMoney(value, locale);
   const num = value == null ? 0 : Number(value);
+  if (rate && rate > 0) return formatEgpApprox(Math.round((Number.isFinite(num) ? num : 0) * 100), rate, locale);
   const amount = new Intl.NumberFormat("en-US", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(Math.abs(Number.isFinite(num) ? num : 0));
   return `${num < 0 ? "-" : ""}$${amount}`;
+}
+
+/** `formatWalletMoney` with a "+" on a credit, kept inside the number: "≈ +269 EGP", "+277 جنيه". */
+export function formatSignedWalletMoney(
+  value: string | number | null | undefined,
+  currency: string | null | undefined,
+  locale: string,
+  rate?: number | null,
+) {
+  const num = value == null ? 0 : Number(value);
+  const text = formatWalletMoney(num, currency, locale, rate);
+  if (!(num > 0)) return text;
+  if (text.includes("\u2066")) return text.replace("\u2066", "\u2066+");
+  if (text.startsWith("≈ ")) return text.replace("≈ ", "≈ +");
+  return `+${text}`;
+}
+
+/** Whether `formatWalletMoney` shows this amount in EGP at a rate, so a statement adds the exact dollars beside it. */
+export function isApproxWalletMoney(currency: string | null | undefined, rate?: number | null) {
+  return currency === "USD" && Boolean(rate && rate > 0);
+}
+
+/** The direction for an element holding `formatWalletMoney`'s text: an amount shown in EGP reads like EGP. */
+export function walletMoneyDir(locale: string, currency: string | null | undefined, rate?: number | null) {
+  return moneyDir(locale, { currency: currency === "USD" && !(rate && rate > 0) ? "USD" : DEFAULT_CURRENCY });
+}
+
+/** A USD price in cents as the seller sees it: "≈ 1.62 جنيه"; the exact dollars only when there is no rate yet. */
+export function formatUsdPrice(usdCents: number, locale: string, rate: number | null | undefined) {
+  return formatWalletMoney(usdCents / 100, "USD", locale, rate);
 }
 
 export function formatNumber(

@@ -2,20 +2,24 @@
 
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { useFormatter, useTranslations } from "next-intl";
+import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 import { isPaidAppPricing, type AppPricing } from "@workspace/lib/billing/app-pricing";
 import { ConfirmActionDialog } from "@/components/layout/confirm-action-dialog.client";
+import { useEgpRate } from "@/components/egp-rate.client";
+import { formatUsdPrice } from "@/lib/i18n/format";
 import { installApp, uninstallApp } from "./apps.server";
 
 /** The price line on an app's card (F-47). */
 export function useAppPriceLabel() {
   const t = useTranslations("storeApps.price");
-  const format = useFormatter();
+  const locale = useLocale();
+  const egpRate = useEgpRate();
   return (pricing: AppPricing): string => {
     if (!isPaidAppPricing(pricing)) return t("free");
-    const price = format.number(pricing.usdCents / 100, { style: "currency", currency: "USD" });
+    // In EGP at the live rate (owner, 2026-11-09); the app is still charged in USD.
+    const price = formatUsdPrice(pricing.usdCents, locale, egpRate);
     return pricing.model === "usage" ? t(`usage.${pricing.unit}`, { price }) : t(pricing.model, { price });
   };
 }

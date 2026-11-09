@@ -9,7 +9,7 @@
     },
     "post": {
       "breadcrumb": "Breadcrumb",
-      "ctaBody": "Create your store free and add your first product in minutes. The Free plan costs $0.03 per order, and you need a first $5 top-up before you can see orders.",
+      "ctaBody": "Create your store free and add your first product in minutes. The Free plan costs {orderFee} per order, and you need a first {topUpMin} top-up before you can see orders.",
       "copy": "Copy link",
       "keepReading": "Keep reading",
       "ctaTitle": "Ready to put a price on it?"
@@ -18,10 +18,10 @@
       "s2List": [
         "Shipping, if you offer free delivery.",
         "Payment processing for online payments.",
-        "Platform fee: $0.03 per order on the Tallaby Free plan, or none on Pro.",
+        "Platform fee: {orderFee} per order on the Tallaby Free plan, or none on Pro.",
         "A small buffer for returns and damaged items."
       ],
-      "toolBody": "Enter your numbers in EGP. The suggested price already includes the Tallaby Free plan fee of $0.03, about 1.5 EGP.",
+      "toolBody": "Enter your numbers in EGP. The suggested price already includes the Tallaby Free plan fee of {orderFee} per order.",
       "fee": "Tallaby fee, about",
       "lede": "Pricing is the decision most new sellers get wrong, usually by charging too little. A low price feels safe, but it leaves no room for shipping surprises, returns or a discount code when you need one. Here's a simple way to get it right.",
       "s1": "1. Start from your real cost",

@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   egpRateFromResponse,
   exchangeRateSource,
+  formatEgpApprox,
+  usdCentsToApproxEgp,
   addOneMonth,
   cairoMonthKey,
   isPlausibleRate,
@@ -29,6 +31,34 @@ describe("rates", () => {
     expect(isPlausibleRate(50)).toBe(true);
     expect(isPlausibleRate(0.02)).toBe(false);
     expect(isPlausibleRate(Number.NaN)).toBe(false);
+  });
+});
+
+describe("EGP display of USD prices", () => {
+  it("matches the top-up quote for whole dollars and keeps piastres under a dollar", () => {
+    for (const cents of [100, 500, 2900, 4321, 100_000]) {
+      expect(usdCentsToApproxEgp(cents, 53.9007)).toBe(quoteTopUp(cents, { ...state, marketRate: 53.9007 })!.basePiastres / 100);
+    }
+    expect(usdCentsToApproxEgp(2900, 53.9007)).toBe(1563);
+    expect(usdCentsToApproxEgp(3, 53.9007)).toBe(1.62);
+    expect(usdCentsToApproxEgp(3, 54.2)).toBe(1.63);
+    expect(usdCentsToApproxEgp(-500, 50)).toBe(-250);
+    expect(usdCentsToApproxEgp(0, 50)).toBe(0);
+  });
+
+  it("formats with ≈, Latin digits and en-US grouping", () => {
+    expect(formatEgpApprox(3, 54.2, "en")).toBe("≈ 1.63 EGP");
+    expect(formatEgpApprox(2900, 54.2, "en")).toBe("≈ 1,571 EGP");
+    expect(formatEgpApprox(50, 50, "en")).toBe("≈ 25.00 EGP");
+    expect(formatEgpApprox(-500, 50, "en")).toBe("≈ -250 EGP");
+    expect(formatEgpApprox(0, 50, "en")).toBe("0 EGP");
+  });
+
+  it("isolates only the number in Arabic, so ≈ stays to its right", () => {
+    expect(formatEgpApprox(3, 54.2, "ar")).toBe("≈ \u20661.63\u2069 جنيه");
+    expect(formatEgpApprox(100_000, 50, "ar")).toBe("≈ \u206650,000\u2069 جنيه");
+    expect(formatEgpApprox(-3, 50, "ar")).toBe("≈ \u2066-1.50\u2069 جنيه");
+    expect(formatEgpApprox(0, 50, "ar")).toBe("\u20660\u2069 جنيه");
   });
 });
 

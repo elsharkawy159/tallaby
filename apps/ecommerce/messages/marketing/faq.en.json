@@ -31,15 +31,15 @@
         "items": [
           {
             "q": "How much does Tallaby cost?",
-            "a": "There are two plans. Free has no monthly fee and costs $0.03 per order, with 100 AI credits and 500 campaign emails a month. Pro costs $29 a month with no order fee, 2,000 AI credits and 10,000 campaign emails a month."
+            "a": "There are two plans. Free has no monthly fee and costs {orderFee} per order, with 100 AI credits and 500 campaign emails a month. Pro costs {pro} a month with no order fee, 2,000 AI credits and 10,000 campaign emails a month."
           },
           {
             "q": "What do I need to pay before I can start?",
-            "a": "Creating and publishing a store costs nothing. On the Free plan, you need a first top-up of $5 before you can see orders and send campaigns. Orders still arrive while you wait, and the first approved top-up unlocks them for good."
+            "a": "Creating and publishing a store costs nothing. On the Free plan, you need a first top-up of {topUpMin} before you can see orders and send campaigns. Orders still arrive while you wait, and the first approved top-up unlocks them for good."
           },
           {
             "q": "How do wallet top-ups work?",
-            "a": "Your Tallaby wallet is held in US dollars. Choose an amount from $5 to $1,000 and pay the equivalent in Egyptian pounds. You see the exchange rate and the total before you pay. Pay by Vodafone Cash or InstaPay and upload the receipt, and we credit the wallet once we confirm the transfer. Wallet money is for Tallaby services only and can't be withdrawn."
+            "a": "Top up your Tallaby wallet with {topUpMin} to {topUpMax}, paid in Egyptian pounds. You see the exact amount and the total before you pay. Pay by Vodafone Cash or InstaPay and upload the receipt, and we credit the wallet once we confirm the transfer. Wallet money is for Tallaby services only and can't be withdrawn."
           },
           {
             "q": "Does the fee change with order value?",
@@ -139,7 +139,7 @@
       },
       {
         "q": "How much does Tallaby cost?",
-        "a": "Free has no monthly fee and costs $0.03 per order. Pro costs $29 a month with no order fee. You need a first $5 top-up before you can see orders on Free, and customer order emails need the Order Notifications app, whose cost you see in your dashboard before you turn it on."
+        "a": "Free has no monthly fee and costs {orderFee} per order. Pro costs {pro} a month with no order fee. You need a first {topUpMin} top-up before you can see orders on Free, and customer order emails need the Order Notifications app, whose cost you see in your dashboard before you turn it on."
       },
       {
         "q": "Does the fee change with the order value?",
@@ -147,7 +147,7 @@
       },
       {
         "q": "How is the fee collected?",
-        "a": "Your account has one wallet, held in US dollars. On Free, $0.03 comes out when a new order is placed. The fee can take your balance below zero, and you settle it by topping up."
+        "a": "Your account has one wallet. On Free, {orderFee} comes out when a new order is placed. The fee can take your balance below zero, and you settle it by topping up."
       },
       {
         "q": "Can I use my own couriers?",

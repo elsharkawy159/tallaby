@@ -1,4 +1,5 @@
 import { getLocale, getTranslations } from "next-intl/server";
+import { getMarketingEgpPerUsd, getMarketingPriceVars } from "@/lib/marketing/exchange-rate.server";
 import { localizedUrl } from "@/lib/marketing/seo.lib";
 import { serializeJsonLd, softwareApplicationSchema } from "@/lib/marketing/structured-data.lib";
 
@@ -9,13 +10,15 @@ export function JsonLd({ data }: { data: unknown }) {
 
 /** The product's SoftwareApplication data on the home and pricing pages. */
 export async function ProductJsonLd({ page, path }: { page: "home" | "pricing"; path: string }) {
-  const [locale, t] = await Promise.all([getLocale(), getTranslations("meta")]);
+  const [locale, t, egpPerUsd] = await Promise.all([getLocale(), getTranslations("meta"), getMarketingEgpPerUsd()]);
+  const prices = await getMarketingPriceVars(locale, { isolate: false });
   return (
     <JsonLd
       data={softwareApplicationSchema({
         url: localizedUrl(locale, path),
-        description: t(`${page}.description`),
+        description: t(`${page}.description`, prices),
         inLanguage: locale,
+        egpPerUsd,
       })}
     />
   );

@@ -1,4 +1,5 @@
-import { formatEgp, formatUsd, usdCentsToEgp } from "./pricing.lib";
+import { formatEgpApprox } from "@workspace/lib/billing";
+import { type MarketingPriceVars, formatEgp, priceVarsWith, usdCentsToEgp } from "./pricing.lib";
 
 /**
  * tallaby.com's plan prices in the visitor's own currency (owner, 2026-11-08).
@@ -78,14 +79,21 @@ export function formatLocalAmount(usdCents: number, currency: string, rate: numb
 export type LocalCurrency = { currency: string; rate: number; label: string } | null;
 
 /**
- * A price inside a sentence: "0.12 ريال ($0.03)", or "$0.03" with no local
- * currency. The USD sits in a left-to-right isolate so the brackets stay put
- * in Arabic text.
+ * A price as tallaby.com shows it, in the visitor's currency with "≈" (owner,
+ * 2026-11-09): EGP through the billing module's `formatEgpApprox` ("≈ 1.62 جنيه",
+ * "≈ 1.62 EGP"); another currency the same way, "≈ 0.11 ريال" / "≈ 0.11 SAR".
+ * In Arabic only the number sits in a left-to-right isolate. `label` is the
+ * currency's word (Arabic) or code (English).
  */
-export function formatLocalMoneyText(usdCents: number, local: LocalCurrency): string {
-  const usd = formatUsd(usdCents);
-  if (!local) return usd;
-  return `${formatLocalAmount(usdCents, local.currency, local.rate)} ${local.label} (⁦${usd}⁩)`;
+export function formatLocalApprox(usdCents: number, currency: string, rate: number, locale: string, label: string): string {
+  if (currency === "EGP") return formatEgpApprox(usdCents, rate, locale);
+  const amount = formatLocalAmount(usdCents, currency, rate);
+  return locale === "en" ? `≈ ${amount} ${label}` : `≈ \u2066${amount}\u2069 ${label}`;
+}
+
+/** Every price token in one currency. */
+export function localPriceVars(currency: string, rate: number, locale: string, label: string): MarketingPriceVars {
+  return priceVarsWith((cents) => formatLocalApprox(cents, currency, rate, locale, label));
 }
 
 /** The rate in the footnote: 53.9, 3.75, 0.3071. */

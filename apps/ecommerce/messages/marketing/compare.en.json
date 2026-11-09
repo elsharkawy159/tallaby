@@ -46,7 +46,7 @@
     "chooseCompetitor": "Choose {name} if...",
     "verdictTallaby": [
       "You sell in Egypt and need cash on delivery, Bosta and Paymob or Kashier in one dashboard.",
-      "You want to start with no monthly subscription and pay $0.03 per order.",
+      "You want to start with no monthly subscription and pay {orderFee} per order.",
       "You want a store under your own name, with ready-made Arabic and English templates and no code."
     ],
     "tableTitle": "Tallaby and {name} in detail",
@@ -63,8 +63,8 @@
       "language": "Language and currency"
     },
     "rows": {
-      "freePlan": { "label": "Free plan", "tallaby": "No monthly subscription, and $0.03 per order. You need a first $5 wallet top-up to see orders." },
-      "monthly": { "label": "Monthly subscription", "tallaby": "Pro at $29 a month, with no order fee" },
+      "freePlan": { "label": "Free plan", "tallaby": "No monthly subscription, and {orderFee} per order. You need a first {topUpMin} wallet top-up to see orders." },
+      "monthly": { "label": "Monthly subscription", "tallaby": "Pro at {pro} a month, with no order fee" },
       "salesShare": { "label": "Share of sales", "tallaby": "We take no share of the order value" },
       "limits": { "label": "Product and order limits", "tallaby": "No limit on either plan, and up to 3 stores" },
       "signup": { "label": "Sign-up", "tallaby": "With email or a Google account" },
@@ -92,7 +92,7 @@
     "strengthsOfTallaby": "What Tallaby does well",
     "strengthsOfCompetitor": "What {name} does well",
     "strengthsTallaby": [
-      { "title": "Start without a subscription", "body": "The Free plan has no monthly fee. You pay $0.03 per order, with no share of your sales." },
+      { "title": "Start without a subscription", "body": "The Free plan has no monthly fee. You pay {orderFee} per order, with no share of your sales." },
       { "title": "Built for selling in Egypt", "body": "Cash on delivery, Paymob, Kashier and InstaPay, with Bosta and your own riders in one dashboard." },
       { "title": "A store under your name", "body": "Ready-made templates and your own domain, and you can change template any time without losing your products." },
       { "title": "Support close to you", "body": "Reach the support team on WhatsApp and by email." }
@@ -105,10 +105,10 @@
       { "title": "Connect payments and shipping, then publish", "body": "Cash on delivery is on, and you can connect Paymob or Kashier and Bosta, then connect your domain and publish.", "link": "How do I connect my domain?" }
     ],
     "faq": {
-      "price": { "q": "Is Tallaby cheaper than {name}?", "a": "On Tallaby you start on the Free plan with no monthly subscription and pay $0.03 per order, or choose Pro at $29 a month with no order fee." },
+      "price": { "q": "Is Tallaby cheaper than {name}?", "a": "On Tallaby you start on the Free plan with no monthly subscription and pay {orderFee} per order, or choose Pro at {pro} a month with no order fee." },
       "move": { "q": "Can I move my products from {name} to Tallaby?", "a": "Yes. You can import from an Excel file or a product link, and Shopify stores have a direct import." },
       "domain": { "q": "Will I lose my domain if I move?", "a": "No. You can connect a domain you own to your main Tallaby store and update its DNS records. The domain stays yours." },
-      "try": { "q": "Can I try Tallaby before closing my current store?", "a": "Yes. You can set up and test your store on Tallaby with no monthly subscription, then move when you're ready. To see orders, you need a first $5 wallet top-up." },
+      "try": { "q": "Can I try Tallaby before closing my current store?", "a": "Yes. You can set up and test your store on Tallaby with no monthly subscription, then move when you're ready. To see orders, you need a first {topUpMin} wallet top-up." },
       "methods": { "q": "What payment and shipping options does Tallaby have?", "a": "Cash on delivery is on from the start. You can connect Paymob or Kashier for cards and wallets, and take InstaPay and wallet transfers straight to your account. For shipping, connect your Bosta account, download the Wassalha sheet or use your own riders." },
       "how": { "q": "How did you put this comparison together?", "a": "We used information published up to the date shown, and we only show what we could verify. If you find something wrong about {name}, email {email} and we'll correct it." }
     },
@@ -119,7 +119,7 @@
   "competitors": {
     "easyorders": {
       "name": "EasyOrders",
-      "priceNote": "When we checked, EasyOrders advertised a free plan at $0.04 per order and a Pro plan at $100 a month. Compare the cost for your monthly order count.",
+      "priceNote": "When we checked, EasyOrders advertised a free plan at {eoOrderFee} per order and a Pro plan at {eoPro} a month (priced in dollars, converted at today's rate). Compare the cost for your monthly order count.",
       "verdict": [
         "You need many shipping companies: it advertises more than 100.",
         "You sell outside Egypt: it advertises more than 10 countries.",
@@ -131,8 +131,8 @@
         { "title": "Selling in several countries", "body": "It advertises support for more than 10 countries." }
       ],
       "cells": {
-        "freePlan": "A free plan at $0.04 per order",
-        "monthly": "A Pro plan at $100 a month",
+        "freePlan": "A free plan at {eoOrderFee} per order",
+        "monthly": "A Pro plan at {eoPro} a month",
         "noCode": "Advertises a store in under 10 minutes, with no code",
         "cards": "Advertises more than 15 payment gateways",
         "carriers": "Advertises more than 100 shipping companies",
@@ -142,7 +142,7 @@
     },
     "shopify": {
       "name": "Shopify",
-      "priceNote": "When we checked, Shopify's plans ran from $5 to $399 a month, and transaction fees and paid apps can come on top. Compare the cost for your monthly order count.",
+      "priceNote": "When we checked, Shopify's plans ran from {shopifyMin} to {shopifyMax} a month (priced in dollars, converted at today's rate), and transaction fees and paid apps can come on top. Compare the cost for your monthly order count.",
       "verdict": [
         "You sell in more than one market and need more than one currency.",
         "You need many apps from a large app store.",
@@ -154,7 +154,7 @@
         { "title": "Email campaigns and catalogs", "body": "Email and product feeds are available on the platform." }
       ],
       "cells": {
-        "monthly": "Plans from $5 to $399 a month",
+        "monthly": "Plans from {shopifyMin} to {shopifyMax} a month",
         "salesShare": "Transaction fees can apply, depending on the plan",
         "email": "Available",
         "feeds": "Available",

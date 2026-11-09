@@ -5,7 +5,8 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { EMAIL_PACK_EMAILS, EMAIL_PACK_USD_CENTS } from "@workspace/lib/billing";
+import { EMAIL_PACK_EMAILS, EMAIL_PACK_USD_CENTS, TOP_UP_MIN_USD_CENTS } from "@workspace/lib/billing";
+import { useEgpRate } from "@/components/egp-rate.client";
 import type { EmailAllowance } from "@workspace/lib/email-campaigns/server";
 import { ConfirmActionDialog } from "@/components/layout/confirm-action-dialog.client";
 import { ArrowLeft, Ban, Eye, LoaderCircle, Mail, Pencil, Plus, Send, SendHorizonal, Trash2, Undo2, Users } from "lucide-react";
@@ -65,7 +66,7 @@ import type {
   StoreCampaign,
   WinbackOverview,
 } from "@workspace/lib/email-campaigns/server";
-import { formatDateTime, formatNumber } from "@/lib/i18n/format";
+import { formatDateTime, formatNumber, formatUsdPrice } from "@/lib/i18n/format";
 import { useWholeNumberInput } from "@/components/form/whole-number.client";
 import type { WholeNumberRange } from "@/components/form/whole-number.lib";
 import {
@@ -143,6 +144,7 @@ const toContent = (d: Draft) => ({
 export function EmailCampaignsView({ stores, storeId, storeLive, limits, allowance, winbackPaused, data }: Props) {
   const t = useTranslations("emailCampaigns");
   const locale = useLocale();
+  const egpRate = useEgpRate();
   const pathname = usePathname();
   const router = useRouter();
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -215,7 +217,7 @@ export function EmailCampaignsView({ stores, storeId, storeLive, limits, allowan
 
       {allowance.locked ? (
         <Note tone="amber">
-          {t(allowance.pendingReview ? "allowance.pending" : "allowance.locked")}{" "}
+          {allowance.pendingReview ? t("allowance.pending") : t("allowance.locked", { min: formatUsdPrice(TOP_UP_MIN_USD_CENTS, locale, egpRate) })}{" "}
           {!allowance.pendingReview && (
             <Link href="/wallet" className="-my-2 inline-block py-2 underline underline-offset-2">
               {t("allowance.topUp")}
@@ -1009,13 +1011,15 @@ function EmptyCard({ title, body }: { title: string; body: string }) {
 function EmailAllowanceLine({ allowance }: { allowance: EmailAllowance }) {
   const t = useTranslations("emailCampaigns.allowance");
   const tErrors = useTranslations("emailCampaigns.errors");
+  const egpRate = useEgpRate();
   const locale = useLocale();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
   const values = {
     emails: new Intl.NumberFormat(locale).format(EMAIL_PACK_EMAILS),
-    price: new Intl.NumberFormat(locale, { style: "currency", currency: "USD" }).format(EMAIL_PACK_USD_CENTS / 100),
+    // In EGP at the live rate (owner, 2026-11-09); the pack is still charged in USD.
+    price: formatUsdPrice(EMAIL_PACK_USD_CENTS, locale, egpRate),
   };
   const buy = () =>
     startTransition(async () => {

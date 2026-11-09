@@ -7,6 +7,8 @@ import { Container } from "@/components/marketing/site/layout-primitives";
 import { PageHero } from "@/components/marketing/site/page-hero";
 import { Reveal } from "@/components/marketing/site/reveal.client";
 import { richTags } from "@/components/marketing/site/rich-text";
+import { getMarketingPriceVars } from "@/lib/marketing/exchange-rate.server";
+import { fillPriceTokens } from "@/lib/marketing/pricing.lib";
 import { CONTACT } from "@/lib/marketing/site.lib";
 import { pageMetadata } from "@/lib/marketing/metadata.lib";
 
@@ -15,10 +17,14 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return pageMetadata({ locale, page: "faq", path: "/faq" });
 }
 
+type Props = { params: Promise<{ locale: string }> };
+
 const GROUP_IDS = ["start", "pricing", "payments", "shipping", "design", "domain"];
 
-export default async function FaqPage() {
-  const t = await getTranslations("faq");
+export default async function FaqPage({ params }: Props) {
+  const { locale } = await params;
+  // Structured data in EGP (one currency); the page shows the visitor's currency.
+  const [t, plainPrices] = await Promise.all([getTranslations("faq"), getMarketingPriceVars(locale, { isolate: false })]);
 
   // FAQPage structured data from the same answers shown on the page.
   const jsonLd = {
@@ -28,7 +34,7 @@ export default async function FaqPage() {
       (t.raw(`groups.${id}.items`) as { q: string; a: string }[]).map((x) => ({
         "@type": "Question",
         name: x.q,
-        acceptedAnswer: { "@type": "Answer", text: x.a },
+        acceptedAnswer: { "@type": "Answer", text: fillPriceTokens(x.a, plainPrices) },
       })),
     ),
   };

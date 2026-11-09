@@ -8,6 +8,13 @@ describe("suggestedProductPrice", () => {
     expect(result).toEqual({ price: 389, cost: 240, fee: FREE_PLAN_FEE_EGP, profit: 147.5 });
   });
 
+  it("uses the fee it is given (EGP at the live rate)", () => {
+    const result = suggestedProductPrice({ unitCost: 180, packaging: 15, shipping: 45, marginPct: 60, feeEgp: 1.62 });
+    expect(result.fee).toBe(1.62);
+    expect(result.price).toBe(389);
+    expect(result.profit).toBeCloseTo(147.38);
+  });
+
   it("suggests nothing when no costs are entered", () => {
     expect(suggestedProductPrice({ unitCost: 0, packaging: 0, shipping: 0, marginPct: 60 })).toEqual({ price: 0, cost: 0, fee: 0, profit: 0 });
   });

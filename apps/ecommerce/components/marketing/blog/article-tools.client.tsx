@@ -93,7 +93,7 @@ export function ShareBar({ title }: { title: string }) {
 }
 
 /** "Try it: price calculator" box inside the pricing article. */
-export function PriceCalculator() {
+export function PriceCalculator({ feeEgp, body }: { feeEgp: number; body: string }) {
   const t = useTranslations("blog.article");
   const tc = useTranslations("common");
   const [values, setValues] = React.useState({ unitCost: "180", packaging: "15", shipping: "45", marginPct: "60" });
@@ -103,6 +103,7 @@ export function PriceCalculator() {
     packaging: n(values.packaging),
     shipping: n(values.shipping),
     marginPct: n(values.marginPct),
+    feeEgp,
   });
 
   const fields = [
@@ -118,7 +119,7 @@ export function PriceCalculator() {
         <Calculator className="size-[18px] text-amber-600" aria-hidden />
         {t("toolTitle")}
       </h3>
-      <p className="mb-5 text-haze">{t("toolBody")}</p>
+      <p className="mb-5 text-haze">{body}</p>
       <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4">
         {fields.map((f) => (
           <label key={f.key} className="grid gap-1.5 text-xs font-semibold text-mist">

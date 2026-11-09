@@ -6,6 +6,8 @@ import { useTranslations } from "next-intl";
 import { cn } from "@workspace/ui/lib/utils";
 import { FaqAccordion } from "@/components/marketing/site/faq-accordion";
 import { useScrollSpy } from "@/components/marketing/site/use-scroll-spy.client";
+import { useVisitorPrices } from "@/components/marketing/pricing/visitor-prices.client";
+import { fillPriceTokens } from "@/lib/marketing/pricing.lib";
 
 const GROUPS = [
   { id: "start", icon: Rocket },
@@ -111,12 +113,14 @@ export function HelpSearch() {
 /** Category tiles (overlapping the hero), table of contents and the grouped questions. */
 export function HelpResults({ still }: { still: React.ReactNode }) {
   const t = useTranslations("faq");
+  // `{orderFee}`-style tokens in the answers, in the visitor's currency.
+  const prices = useVisitorPrices()?.vars ?? {};
   const { query, group, setGroup } = React.useContext(HelpQuery);
   const q = query.trim();
   const active = useScrollSpy(GROUPS.map((g) => g.id), 120);
 
   const groups = GROUPS.filter((g) => !group || g.id === group).map((g) => {
-    const items = (t.raw(`groups.${g.id}.items`) as QA[]).filter(
+    const items = (t.raw(`groups.${g.id}.items`) as QA[]).map((x) => ({ ...x, a: fillPriceTokens(x.a, prices) })).filter(
       (x) => !q || `${x.q} ${x.a}`.toLowerCase().includes(q.toLowerCase()),
     );
     return { ...g, items };

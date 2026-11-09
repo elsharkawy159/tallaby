@@ -1,15 +1,18 @@
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
+import { VisitorPricesProvider } from "@/components/marketing/pricing/visitor-prices.client";
 import { SignupProvider } from "@/components/marketing/signup/signup-dialog.client";
 import { JsonLd } from "@/components/marketing/site/json-ld";
 import { SiteFooter } from "@/components/marketing/site/site-footer";
 import { SiteHeader } from "@/components/marketing/site/site-header.client";
 import { WhatsAppButton } from "@/components/marketing/site/whatsapp-button";
+import { getMarketingPriceTable } from "@/lib/marketing/exchange-rate.server";
 import { siteGraph } from "@/lib/marketing/structured-data.lib";
 
-/** Header, footer and the signup dialog shared by every marketing page. */
+/** Header, footer, the signup dialog and the visitor-currency prices shared by every marketing page. */
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
-  const t = await getTranslations("nav");
+  const [t, priceTable] = await Promise.all([getTranslations("nav"), getLocale().then(getMarketingPriceTable)]);
   return (
+    <VisitorPricesProvider table={priceTable}>
     <SignupProvider>
       <JsonLd data={siteGraph()} />
       <a
@@ -25,5 +28,6 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       <SiteFooter />
       <WhatsAppButton label={t("whatsapp")} />
     </SignupProvider>
+    </VisitorPricesProvider>
   );
 }

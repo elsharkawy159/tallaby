@@ -4,7 +4,8 @@ import {
   LOCAL_CURRENCIES,
   currencyForCountry,
   formatLocalAmount,
-  formatLocalMoneyText,
+  formatLocalApprox,
+  localPriceVars,
   formatRate,
   minorDigits,
 } from "./local-currency.lib";
@@ -63,14 +64,25 @@ describe("formatLocalAmount", () => {
   });
 });
 
-describe("formatLocalMoneyText", () => {
-  it("puts the local amount first and the USD in brackets", () => {
-    expect(formatLocalMoneyText(2000, { currency: "SAR", rate: 3.75, label: "ريال" })).toBe("75 ريال (⁦$20⁩)");
-    expect(formatLocalMoneyText(3, { currency: "EGP", rate: 53.9007, label: "EGP" })).toBe("1.62 EGP (⁦$0.03⁩)");
+describe("formatLocalApprox", () => {
+  it("shows the visitor's currency as the price, with ≈, number then currency", () => {
+    expect(formatLocalApprox(2000, "SAR", 3.75, "ar", "ريال")).toBe("≈ \u206675\u2069 ريال");
+    expect(formatLocalApprox(3, "SAR", 3.75, "en", "SAR")).toBe("≈ 0.11 SAR");
   });
 
-  it("is the USD price alone without a local currency", () => {
-    expect(formatLocalMoneyText(2900, null)).toBe("$29");
+  it("uses the billing module's EGP format for Egypt, never a dollar sign", () => {
+    expect(formatLocalApprox(3, "EGP", 53.9007, "en", "EGP")).toBe("≈ 1.62 EGP");
+    expect(formatLocalApprox(2900, "EGP", 53.9007, "ar", "جنيه")).toBe("≈ \u20661,563\u2069 جنيه");
+    expect(formatLocalApprox(2900, "EGP", 53.9007, "en", "EGP")).not.toContain("$");
+  });
+});
+
+describe("localPriceVars", () => {
+  it("fills every token in one currency", () => {
+    const vars = localPriceVars("SAR", 3.75, "en", "SAR");
+    expect(vars.orderFee).toBe("≈ 0.11 SAR");
+    expect(vars.pro).toBe("≈ 109 SAR");
+    expect(vars.topUpMin).toBe("≈ 18.75 SAR");
   });
 });
 

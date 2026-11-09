@@ -18,7 +18,7 @@ import { cn } from "@workspace/ui/lib/utils";
 
 const STORAGE_KEY = "tb_tool_margin";
 
-type FieldId = "buy" | "ship" | "ad" | "egpPerUsd" | "sell";
+type FieldId = "buy" | "ship" | "ad" | "sell";
 type Draft = Record<FieldId, string> & { plan: MarginPlan };
 
 const SEGMENT_COLORS: Record<MarginSegment["id"], string> = {
@@ -33,16 +33,15 @@ const defaultDraft = (): Draft => ({
   buy: String(DEFAULT_MARGIN_INPUT.buy),
   ship: String(DEFAULT_MARGIN_INPUT.ship),
   ad: String(DEFAULT_MARGIN_INPUT.ad),
-  egpPerUsd: String(DEFAULT_MARGIN_INPUT.egpPerUsd),
   sell: String(DEFAULT_MARGIN_INPUT.sell),
   plan: DEFAULT_MARGIN_INPUT.plan,
 });
 
-const toInput = (draft: Draft): MarginInput => ({
+const toInput = (draft: Draft, egpPerUsd: number): MarginInput => ({
   buy: parseAmount(draft.buy),
   ship: parseAmount(draft.ship),
   ad: parseAmount(draft.ad),
-  egpPerUsd: parseAmount(draft.egpPerUsd),
+  egpPerUsd,
   sell: parseAmount(draft.sell),
   plan: draft.plan,
 });
@@ -105,7 +104,11 @@ function AmountField({
 }
 
 /** The live calculator. Figures stay in this browser: saved locally, never sent anywhere. */
-export function MarginCalculator() {
+/**
+ * `egpPerUsd` is the live rate (the dashboard wallet's), so the fee matches what
+ * tallaby.com shows; `prices` fills the plan notes ("≈ … جنيه", owner, 2026-11-09).
+ */
+export function MarginCalculator({ egpPerUsd, prices }: { egpPerUsd: number; prices: Record<string, string> }) {
   const t = useTranslations("toolPages.profit-margin-calculator.calculator");
   const [draft, setDraft] = React.useState<Draft>(defaultDraft);
   const loaded = React.useRef(false);
@@ -131,7 +134,7 @@ export function MarginCalculator() {
   }, [draft]);
 
   const setField = (id: FieldId, value: string) => setDraft((current) => ({ ...current, [id]: value }));
-  const input = toInput(draft);
+  const input = toInput(draft, egpPerUsd);
   const result = calculateMargin(input);
   const segments = marginSegments(input, result);
   const unit = t("currency");
@@ -194,12 +197,8 @@ export function MarginCalculator() {
                 {t("fields.planPro")}
               </Chip>
             </div>
-            <p className="text-[12.5px] text-ink-400">{draft.plan === "pro" ? t("fields.planProNote") : t("fields.planFreeNote")}</p>
+            <p className="text-[12.5px] text-ink-400">{draft.plan === "pro" ? t("fields.planProNote", prices) : t("fields.planFreeNote", prices)}</p>
           </div>
-
-          {draft.plan === "free" ? (
-            <AmountField id="egpPerUsd" label={t("fields.rate")} hint={t("fields.rateHint")} unit={unit} value={draft.egpPerUsd} onChange={setField} wide />
-          ) : null}
 
           <AmountField id="sell" label={t("fields.sell")} hint={t("fields.sellHint")} unit={unit} value={draft.sell} onChange={setField} large wide />
         </div>

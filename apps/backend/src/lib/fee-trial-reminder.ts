@@ -1,5 +1,6 @@
 import { db, eq, sellers, users } from "@workspace/db";
 import { logServerError } from "@workspace/db/log";
+import { FREE_ORDER_FEE_USD_CENTS, formatEgpApprox } from "@workspace/lib/billing";
 import { getBillingState } from "@workspace/lib/billing/server";
 import { decideEmail } from "@workspace/lib/emails/policy";
 import { feeTrialReminderStage, type FeeTrialReminderStage } from "@workspace/lib/sellers";
@@ -66,7 +67,7 @@ export async function sendFeeTrialReminder(
   try {
     const locale = resolveEmailLocale(row.preferredLanguage);
     const copy = getEmailMessages(locale).feeTrialReminder;
-    const { usdLive } = await getBillingState();
+    const { usdLive, marketRate } = await getBillingState();
     const { id } = await sendEmail({
       decision,
       to: recipient,
@@ -78,6 +79,8 @@ export async function sendFeeTrialReminder(
         dashboardUrl: DASHBOARD_URL,
         locale,
         usdLive,
+        // Sellers see prices in EGP (owner, 2026-11-09); without a rate the email names no amount.
+        orderFeeEgp: marketRate ? formatEgpApprox(FREE_ORDER_FEE_USD_CENTS, marketRate, locale) : undefined,
       }),
       idempotencyKey: `fee-trial-reminder:${stage}:${sellerId}`,
     });

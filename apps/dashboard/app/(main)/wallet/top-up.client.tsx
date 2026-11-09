@@ -29,6 +29,7 @@ import {
   TOP_UP_PROOF_TYPES,
   buildTopUpProofPath,
   parseStoreTopUpAmount,
+  STORE_TOP_UP_MIN_EGP,
   type ManualTopUpMethod,
 } from "@workspace/lib/store-wallet";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@workspace/ui/components/dialog";
@@ -37,8 +38,9 @@ import { toAsciiDigits } from "@/components/form/form-ui";
 import { uploadOwnFolderFile } from "@/components/inputs/use-seller-upload";
 import { PaymentMethodLogo } from "@/components/payments/payment-method-logo";
 import { cn } from "@/lib/utils";
-import { FREE_ORDER_FEE_USD_CENTS, minorToAmount, parseUsdTopUp, quoteTopUp, type BillingState } from "@workspace/lib/billing";
-import { DEFAULT_TOP_UP_USD, POPULAR_TOP_UP, POPULAR_TOP_UP_USD, TOP_UP_PRESETS, TOP_UP_PRESETS_USD, TOP_UP_STEP_EGP, TOP_UP_STEP_USD, orderCountValues, ordersCovered, stepTopUpAmount, stepUsdTopUp, walletMoney, walletPoundLabel } from "./store-wallet.lib";
+import { FREE_ORDER_FEE_USD_CENTS, TOP_UP_MAX_USD_CENTS, TOP_UP_MIN_USD_CENTS, minorToAmount, parseUsdTopUp, quoteTopUp, type BillingState } from "@workspace/lib/billing";
+import { formatUsdPrice } from "@/lib/i18n/format";
+import { DEFAULT_TOP_UP_USD, POPULAR_TOP_UP, POPULAR_TOP_UP_USD, TOP_UP_PRESETS, TOP_UP_PRESETS_USD, TOP_UP_STEP_EGP, TOP_UP_STEP_USD, orderCountValues, ordersCovered, stepTopUpAmount, stepUsdTopUp, TOP_UP_MAX_EGP, walletMoney, walletPoundLabel } from "./store-wallet.lib";
 import { submitManualTopUp } from "./top-up.server";
 
 /**
@@ -113,6 +115,17 @@ export function TopUpPanel({
   const [copied, setCopied] = useState<"number" | "amount" | null>(null);
   const [isPending, startTransition] = useTransition();
 
+  // Prices show in EGP at this rate (owner, 2026-11-09). The amount typed stays in dollars:
+  // that is what the wallet is credited and what the quote below prices, unchanged.
+  const rate = usd ? (billing?.marketRate ?? null) : null;
+  const limitValues = usd
+    ? {
+        min: formatUsdPrice(TOP_UP_MIN_USD_CENTS, locale, rate),
+        max: formatUsdPrice(TOP_UP_MAX_USD_CENTS, locale, rate),
+        minUsd: (TOP_UP_MIN_USD_CENTS / 100).toLocaleString("en-US"),
+        maxUsd: (TOP_UP_MAX_USD_CENTS / 100).toLocaleString("en-US"),
+      }
+    : { min: walletMoney(STORE_TOP_UP_MIN_EGP, "EGP", locale), max: walletMoney(TOP_UP_MAX_EGP, "EGP", locale), minUsd: "", maxUsd: "" };
   const usdParsed = usd ? parseUsdTopUp(amount) : null;
   const quote = usdParsed?.success && billing ? quoteTopUp(usdParsed.usdCents, billing) : null;
   // Whichever mode: `parsed.amount` is what the seller typed, `money` is the EGP to send.
@@ -125,12 +138,13 @@ export function TopUpPanel({
       : { success: false, error: usdParsed?.error ?? "invalid" };
   const value = Number(amount) || 0;
   const money = !parsed.success ? "" : walletMoney(quote ? quote.totalPiastres / 100 : parsed.amount, "EGP", locale);
-  const credited = parsed.success ? walletMoney(parsed.amount, usd ? "USD" : "EGP", locale) : "—";
+  // The top-up before tax in EGP: the quote's own whole pounds, so amount + tax = total.
+  const credited = !parsed.success ? "—" : quote ? walletMoney(quote.basePiastres / 100, "EGP", locale) : walletMoney(parsed.amount, usd ? "USD" : "EGP", locale, rate);
   const account = TALLABY_TOP_UP_ACCOUNTS[method];
   const methodLabel = t(`methods.${method}.name`);
   // Only a typed amount gets an error; an empty field just shows the limits.
   // The shared errors name EGP limits; in USD mode the limits line says it right.
-  const amountError = !parsed.success && value > 0 && parsed.error !== "invalid" ? (usd ? t("limitsUsd") : tErrors(parsed.error)) : null;
+  const amountError = !parsed.success && value > 0 && parsed.error !== "invalid" ? (usd ? t("limitsUsd", limitValues) : tErrors(parsed.error, limitValues)) : null;
   const canStart = parsed.success && !disabled;
 
   useEffect(() => () => void (preview && URL.revokeObjectURL(preview)), [preview]);
@@ -276,17 +290,24 @@ export function TopUpPanel({
                         aria-hidden
                       />
                     </span>
-                    <bdi dir="ltr" className="font-montserrat text-lg/6 font-extrabold text-(--s-ink) tabular-nums">
-                      {usd ? "$" : ""}{preset.toLocaleString("en-US")}
-                    </bdi>
+                    {presetQuote ? (
+                      // USD wallet: the EGP the seller transfers leads; the dollars credited (the typed amount) are small.
+                      <>
+                        <bdi className="whitespace-nowrap font-montserrat text-[15px]/6 font-extrabold text-(--s-ink) tabular-nums">
+                          {walletMoney(presetQuote.totalPiastres / 100, "EGP", locale)}
+                        </bdi>
+                        <bdi dir="ltr" className="font-montserrat text-[11.5px]/4 text-(--s-subtle) tabular-nums">
+                          ${preset.toLocaleString("en-US")}
+                        </bdi>
+                      </>
+                    ) : (
+                      <bdi dir="ltr" className="font-montserrat text-lg/6 font-extrabold text-(--s-ink) tabular-nums">
+                        {usd ? "$" : ""}{preset.toLocaleString("en-US")}
+                      </bdi>
+                    )}
                     <span className="whitespace-nowrap text-[11.5px]/4 text-(--s-subtle)">
                       {t("panel.approxOrders", orderCountValues(ordersCovered(preset, usd ? "USD" : "EGP"), locale))}
                     </span>
-                    {presetQuote && (
-                      <span className="whitespace-nowrap text-[11.5px]/4 text-(--s-subtle)">
-                        ≈ <bdi className="tabular-nums">{walletMoney(presetQuote.totalPiastres / 100, "EGP", locale)}</bdi>
-                      </span>
-                    )}
                   </button>
                 );
               })}
@@ -344,7 +365,7 @@ export function TopUpPanel({
               id={`${ids}-amount-hint`}
               className={cn("min-w-0 flex-1 basis-40 text-pretty text-xs", amountError ? "font-semibold text-destructive" : "text-(--s-faint)")}
             >
-              {amountError ?? (usd ? t("limitsUsd") : t("limits"))}
+              {amountError ?? (usd ? t("limitsUsd", limitValues) : t("limits"))}
             </p>
           </div>
         </div>
@@ -404,7 +425,7 @@ export function TopUpPanel({
             {t("panel.summary.title")}
           </h3>
           <SummaryRow label={t("panel.summary.amount")} value={usd ? credited : total} />
-          {quote && <SummaryRow label={t("panel.summary.rate")} value={`$1 = ${walletMoney(quote.rate, "EGP", locale)}`} />}
+          {quote && <SummaryRow label={t("panel.summary.rateUsd")} value={walletMoney(quote.rate, "EGP", locale)} />}
           {quote && quote.taxPiastres > 0 && (
             <SummaryRow label={t("panel.summary.tax")} value={walletMoney(quote.taxPiastres / 100, "EGP", locale)} />
           )}
@@ -417,7 +438,7 @@ export function TopUpPanel({
             <TrendingUp className="mt-0.5 size-[15px] shrink-0" aria-hidden />
             <span>
               {t("panel.summary.after")}{" "}
-              <bdi className="font-montserrat tabular-nums">{afterBalance === null ? "—" : walletMoney(afterBalance, walletCurrency, locale)}</bdi>
+              <bdi className="font-montserrat tabular-nums">{afterBalance === null ? "—" : walletMoney(afterBalance, walletCurrency, locale, rate)}</bdi>
               {afterBalance !== null && <> · {tWallet("runway", orderCountValues(ordersCovered(afterBalance, walletCurrency), locale))}</>}
             </span>
           </p>
@@ -437,7 +458,7 @@ export function TopUpPanel({
             {usd && (
               <li className="flex items-center gap-2">
                 <Coins className="size-[15px] shrink-0 text-success" aria-hidden />
-                {t("panel.trust.feeUsd", { cents: FREE_ORDER_FEE_USD_CENTS })}
+                {t("panel.trust.feeUsd", { fee: formatUsdPrice(FREE_ORDER_FEE_USD_CENTS, locale, rate) })}
               </li>
             )}
           </ul>

@@ -8,6 +8,9 @@ import { Container, Eyebrow, Kicker, Ltr, Section, SectionHeading } from "@/comp
 import { Reveal } from "@/components/marketing/site/reveal.client";
 import { richTags } from "@/components/marketing/site/rich-text";
 import { SiteCard } from "@/components/marketing/site/site-card";
+import { Price } from "@/components/marketing/pricing/visitor-prices.client";
+import { withPrices } from "@/components/marketing/pricing/with-prices";
+import { PRICE_TOKENS } from "@/lib/marketing/pricing.lib";
 import { pageMetadata } from "@/lib/marketing/metadata.lib";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -20,11 +23,11 @@ const MOSAIC = ["/accessories.jpg", "/cosmetics.jpg", "/fashion.png"];
 
 export default async function AboutPage() {
   const t = await getTranslations("about");
-  const principles = [1, 2, 3, 4].map((n) => ({ title: t(`p${n}`), body: t(`p${n}Body`) }));
-  const facts = [
+  const principles = [1, 2, 3, 4].map((n) => ({ title: t(`p${n}`), body: withPrices(t(`p${n}Body`, PRICE_TOKENS)) }));
+  const facts: { value: ReactNode; label: string; latin?: boolean }[] = [
     { value: "2026", label: t("f1"), latin: true },
     { value: t("f2Value"), label: t("f2") },
-    { value: "$0.03", label: t("f3"), latin: true },
+    { value: <Price name="orderFee" />, label: t("f3") },
     { value: "2", label: t("f4"), latin: true },
   ];
 
