@@ -510,6 +510,10 @@
       "types": "./src/billing/order-lock.server.ts",
       "default": "./src/billing/order-lock.server.ts"
     },
+    "./billing/order-grace": {
+      "types": "./src/billing/order-lock.lib.ts",
+      "default": "./src/billing/order-lock.lib.ts"
+    },
     "./billing/apps": {
       "types": "./src/billing/app-billing.server.ts",
       "default": "./src/billing/app-billing.server.ts"

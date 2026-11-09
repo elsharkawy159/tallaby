@@ -9,7 +9,7 @@
     },
     "post": {
       "breadcrumb": "Breadcrumb",
-      "ctaBody": "Create your store free and add your first product in minutes. The Free plan costs {orderFee} per order, and you need a first {topUpMin} top-up before you can see orders.",
+      "ctaBody": "Create your store free and add your first product in minutes. The Free plan costs {orderFee} per order, and your store takes orders from day one. Make a first top-up from {topUpMin} within {days} days or when your first order arrives, whichever comes first, to keep seeing new orders.",
       "copy": "Copy link",
       "keepReading": "Keep reading",
       "ctaTitle": "Ready to put a price on it?"

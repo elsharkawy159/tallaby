@@ -63,7 +63,7 @@
       "language": "Language and currency"
     },
     "rows": {
-      "freePlan": { "label": "Free plan", "tallaby": "No monthly subscription, and {orderFee} per order. You need a first {topUpMin} wallet top-up to see orders." },
+      "freePlan": { "label": "Free plan", "tallaby": "No monthly subscription, and {orderFee} per order. Orders from day one; a first top-up from {topUpMin} within {days} days or at your first order, whichever comes first, keeps new orders visible." },
       "monthly": { "label": "Monthly subscription", "tallaby": "Pro at {pro} a month, with no order fee" },
       "salesShare": { "label": "Share of sales", "tallaby": "We take no share of the order value" },
       "limits": { "label": "Product and order limits", "tallaby": "No limit on either plan, and up to 3 stores" },
@@ -108,7 +108,7 @@
       "price": { "q": "Is Tallaby cheaper than {name}?", "a": "On Tallaby you start on the Free plan with no monthly subscription and pay {orderFee} per order, or choose Pro at {pro} a month with no order fee." },
       "move": { "q": "Can I move my products from {name} to Tallaby?", "a": "Yes. You can import from an Excel file or a product link, and Shopify stores have a direct import." },
       "domain": { "q": "Will I lose my domain if I move?", "a": "No. You can connect a domain you own to your main Tallaby store and update its DNS records. The domain stays yours." },
-      "try": { "q": "Can I try Tallaby before closing my current store?", "a": "Yes. You can set up and test your store on Tallaby with no monthly subscription, then move when you're ready. To see orders, you need a first {topUpMin} wallet top-up." },
+      "try": { "q": "Can I try Tallaby before closing my current store?", "a": "Yes. You can set up and test your store on Tallaby with no monthly subscription, then move when you're ready. Your store takes orders from day one; make a first top-up from {topUpMin} within {days} days or when your first order arrives, whichever comes first, to keep seeing new orders." },
       "methods": { "q": "What payment and shipping options does Tallaby have?", "a": "Cash on delivery is on from the start. You can connect Paymob or Kashier for cards and wallets, and take InstaPay and wallet transfers straight to your account. For shipping, connect your Bosta account, download the Wassalha sheet or use your own riders." },
       "how": { "q": "How did you put this comparison together?", "a": "We used information published up to the date shown, and we only show what we could verify. If you find something wrong about {name}, email {email} and we'll correct it." }
     },

@@ -10,6 +10,7 @@ import {
   TOP_UP_MIN_USD_CENTS,
   usdCentsToPiastres,
 } from "@workspace/lib/billing";
+import { ORDER_GRACE_DAYS } from "@workspace/lib/billing/order-grace";
 import { PLANS } from "@workspace/lib/plans";
 
 /**
@@ -67,7 +68,15 @@ export type MarketingPriceVars = {
   eoPro: string;
   shopifyMin: string;
   shopifyMax: string;
+  /** Not a price: the days a Free seller has for a first top-up before new orders hide (F-84, `ORDER_GRACE_DAYS`). */
+  days: string;
 };
+
+/**
+ * Non-price values the copy can use, filled wherever price tokens are:
+ * `{days}` is the grace window (`ORDER_GRACE_DAYS`), never written in the copy.
+ */
+export const COPY_VARS = { days: String(ORDER_GRACE_DAYS) } as const;
 
 /** The names of the price tokens copy can use. */
 export const PRICE_NAMES = ["orderFee", "pro", "topUpMin", "topUpMax", "eoOrderFee", "eoPro", "shopifyMin", "shopifyMax"] as const satisfies readonly (keyof MarketingPriceVars)[];
@@ -84,6 +93,7 @@ export function priceVarsWith(format: (usdCents: number) => string): MarketingPr
     eoPro: format(COMPETITOR_PRICES.easyOrdersProCents),
     shopifyMin: format(COMPETITOR_PRICES.shopifyMinCents),
     shopifyMax: format(COMPETITOR_PRICES.shopifyMaxCents),
+    ...COPY_VARS,
   };
 }
 
@@ -101,11 +111,21 @@ export function marketingPriceVars(rate: number, locale: string, { isolate = tru
 }
 
 /** Each token as itself: pass to `t()` so the formatted string keeps `{orderFee}` for `withPrices` to fill on the page. */
-export const PRICE_TOKENS: MarketingPriceVars = Object.fromEntries(PRICE_NAMES.map((name) => [name, `{${name}}`])) as MarketingPriceVars;
+export const PRICE_TOKENS: MarketingPriceVars = {
+  ...(Object.fromEntries(PRICE_NAMES.map((name) => [name, `{${name}}`])) as Omit<MarketingPriceVars, "days">),
+  // `{days}` is not a price: filled with its value right away.
+  ...COPY_VARS,
+};
 
-/** Fills `{orderFee}`-style tokens in a string read with `t.raw` (FAQ arrays and the like); unknown tokens stay. */
+/** Fills `{orderFee}`-style tokens in a string read with `t.raw` (FAQ arrays and the like), and `{days}` (`COPY_VARS`) always; unknown tokens stay. */
 export function fillPriceTokens(text: string, values: Record<string, string>): string {
-  return text.replace(/\{(\w+)\}/g, (match, key: string) => values[key] ?? match);
+  const copy: Record<string, string> = COPY_VARS;
+  return text.replace(/\{(\w+)\}/g, (match, key: string) => values[key] ?? copy[key] ?? match);
+}
+
+/** Fills only the non-price tokens (`{days}`), leaving price tokens for `withPrices`. */
+export function fillCopyTokens(text: string): string {
+  return fillPriceTokens(text, {});
 }
 
 /** $0.03, $29, $1.50, $1,000: cents only when there are any. Internal maths and tests only, never shown (owner, 2026-11-09). */

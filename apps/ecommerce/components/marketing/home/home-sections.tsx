@@ -14,7 +14,7 @@ import { PlanCards } from "@/components/marketing/pricing/plan-cards";
 import { TemplateCarousel } from "@/components/marketing/templates/template-carousel.client";
 import { withPrices } from "@/components/marketing/pricing/with-prices";
 import { getMarketingEgpPerUsd } from "@/lib/marketing/exchange-rate.server";
-import { PRICE_TOKENS, formatEgp, usdCentsToEgp } from "@/lib/marketing/pricing.lib";
+import { COPY_VARS, PRICE_TOKENS, formatEgp, usdCentsToEgp } from "@/lib/marketing/pricing.lib";
 import { selectStoreLine } from "@/lib/marketing/recent-stores.lib";
 import { CONTACT } from "@/lib/marketing/site.lib";
 import { getRecentStores } from "@/lib/marketing/stores.server";
@@ -170,6 +170,7 @@ export async function WhatIsTallabySection() {
               <h3 className="text-[15.5px] leading-normal font-bold text-teal-900 min-[641px]:text-[17px]">{t(`points.${point.key}.title`)}</h3>
               <p className="text-sm text-pretty text-ink-500">
                 {t.rich(`points.${point.key}.body`, {
+                  ...COPY_VARS,
                   domain: (chunks) => <Ltr className="font-latin font-semibold text-ink-700">{chunks}</Ltr>,
                 })}
               </p>

@@ -132,7 +132,7 @@
         },
         "free": {
           "title": "Start free",
-          "body": "Open your store with no subscription and no card, then top up your wallet once to see your orders. Move to Pro's fixed monthly price whenever you like."
+          "body": "Open your store with no subscription and no card, and take orders from day one. Then make a first top-up within {days} days or when your first order arrives, whichever comes first, to keep seeing new orders. Move to Pro's fixed monthly price whenever you like."
         }
       }
     },
@@ -289,7 +289,7 @@
       "s2Body": "Choose a template, add your logo, colors and products, and arrange sections with the visual editor.",
       "s2Tag": "No code",
       "s3Title": "Start selling",
-      "s3Body": "Publish with one click, share your link, and take orders from day one. Then top up your wallet from {topUpMin} to keep seeing new orders after the grace period.",
+      "s3Body": "Publish with one click, share your link, and take orders from day one. Then make a first top-up from {topUpMin} within {days} days or when your first order arrives, whichever comes first, to keep seeing new orders.",
       "s3Tag": "One-click publish"
     },
     "faq": {
@@ -299,7 +299,7 @@
       "items": [
         {
           "q": "What does an order cost on the free plan?",
-          "a": "{orderFee} per created order, whatever its value. No monthly fee and no percentage. Your store takes orders from day one; after the grace period, a first {topUpMin} top-up keeps new orders visible and lets you send campaigns."
+          "a": "{orderFee} per created order, whatever its value. No monthly fee and no percentage. Your store takes orders from day one; make a first top-up from {topUpMin} within {days} days or when your first order arrives, whichever comes first, to keep seeing new orders and send campaigns."
         },
         {
           "q": "When is Pro worth it?",

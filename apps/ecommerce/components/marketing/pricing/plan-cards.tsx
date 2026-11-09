@@ -1,6 +1,5 @@
 import { Check, Info } from "lucide-react";
 import { getTranslations } from "next-intl/server";
-import { ORDER_GRACE_DAYS } from "@workspace/lib/billing/order-lock";
 import { cn } from "@workspace/ui/lib/utils";
 import { Reveal } from "@/components/marketing/site/reveal.client";
 import { SignupTrigger } from "@/components/marketing/signup/signup-trigger.client";
@@ -32,7 +31,8 @@ export async function PlanCards() {
 
   // F-84: stores take orders from day one; the first top-up keeps new orders
   // visible after the grace window and unlocks campaigns. EGP at the live rate.
-  const activation = withPrices(t("freeActivation", { ...PRICE_TOKENS, days: ORDER_GRACE_DAYS }));
+  // `{days}` (ORDER_GRACE_DAYS) comes with PRICE_TOKENS.
+  const activation = withPrices(t("freeActivation", PRICE_TOKENS));
 
   const cards = [
     {

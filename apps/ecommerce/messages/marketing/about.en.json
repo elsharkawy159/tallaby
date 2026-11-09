@@ -2,7 +2,7 @@
   "about": {
     "lead": "We build the tools that let small brands sell online like big ones: their own link, their own look, their own customers. No code, and a free plan to start.",
     "story2": "We built a store builder that fits how they actually work: Arabic first, mobile first, cash and online payments, local shipping, and a free plan that only charges when orders come in.",
-    "p2Body": "The Free plan has no subscription and no setup fee, and you pay {orderFee} per order. You need a first {topUpMin} top-up before you can see orders and send campaigns, and customer order emails need the Order Notifications app, whose cost you see in your dashboard before you turn it on.",
+    "p2Body": "The Free plan has no subscription and no setup fee, and you pay {orderFee} per order. Your store takes orders from day one; make a first top-up from {topUpMin} within {days} days or when your first order arrives, whichever comes first, to keep seeing new orders and send campaigns. Customer order emails need the Order Notifications app, whose cost you see in your dashboard before you turn it on.",
     "p3Body": "Arabic interface, prices in EGP for your customers, local payment methods and couriers, support on WhatsApp.",
     "f3": "per order on the Free plan, never a percentage",
     "hiring": "Work with us",

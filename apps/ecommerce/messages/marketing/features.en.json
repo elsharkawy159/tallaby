@@ -19,7 +19,7 @@
     "stepsKicker": "Step by step",
     "requirementsLead": "Have these ready before you start.",
     "closingBody": "Start with no monthly subscription and no credit card.",
-    "freeTerms": "The Free plan has no monthly subscription, and you pay {orderFee} per order. To see orders and send campaigns, you need a first wallet top-up of {topUpMin}. Order emails to your customers need the Order Notifications app, whose cost you see in your dashboard before you turn it on.",
+    "freeTerms": "The Free plan has no monthly subscription, and you pay {orderFee} per order. Your store takes orders from day one; make a first top-up from {topUpMin} within {days} days or when your first order arrives, whichever comes first, to keep seeing new orders and send campaigns. Order emails to your customers need the Order Notifications app, whose cost you see in your dashboard before you turn it on.",
     "dashMock": {
       "home": "Home",
       "products": "Products",

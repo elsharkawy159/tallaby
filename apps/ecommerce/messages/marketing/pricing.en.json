@@ -20,7 +20,7 @@
       "freeTagline": "For starting out and growing.",
       "perOrder": "per order",
       "freeNote": "no monthly fee",
-      "freeActivation": "Your store takes orders from day one. After {days} days or your second order, whichever comes first, a first top-up of {topUpMin} keeps new orders visible. It is also needed to send campaigns.",
+      "freeActivation": "Your store takes orders from day one. Make a first top-up from {topUpMin} within {days} days or when your first order arrives, whichever comes first, to keep seeing new orders and send campaigns.",
       "freeCta": "Start free",
       "proTagline": "For stores with steady orders.",
       "perMonth": "per month",
@@ -79,7 +79,7 @@
       "title": "Everything you might pay, plainly",
       "desc": "These come out of your store wallet, which you top up in Egyptian pounds.",
       "topUpTitle": "Wallet top-ups",
-      "topUpBody": "From {topUpMin} to {topUpMax}, paid in EGP. On the free plan, a first {topUpMin} top-up is needed before you can see orders and send campaigns.",
+      "topUpBody": "From {topUpMin} to {topUpMax}, paid in EGP. On the Free plan, make your first top-up within {days} days or when your first order arrives, whichever comes first, to keep seeing new orders and send campaigns.",
       "appsTitle": "Apps",
       "appsBody": "Some apps have a small cost, shown in your dashboard before you turn them on. One is Order Notifications, which sends customer order emails. It's optional and set per store.",
       "emailsTitle": "Extra campaign emails",
@@ -102,7 +102,7 @@
         },
         {
           "q": "Is the free plan completely free?",
-          "a": "There's no subscription and no card to start. You do need a first {topUpMin} top-up before you can see orders and send campaigns, and {orderFee} per order comes out of your wallet."
+          "a": "There's no subscription and no card to start, and your store takes orders from day one. Make a first top-up from {topUpMin} within {days} days or when your first order arrives, whichever comes first, to keep seeing new orders and send campaigns; then {orderFee} per order comes out of your wallet."
         },
         {
           "q": "When is Pro worth it?",
