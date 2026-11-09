@@ -15,6 +15,7 @@ import {
   type IntakeLogoType,
 } from "@workspace/lib/store-builds";
 import { useSignup } from "@/components/marketing/signup/signup-dialog.client";
+import { SignupTrigger } from "@/components/marketing/signup/signup-trigger.client";
 import type { SignupIntakeRef } from "@/components/marketing/signup/signup.dto";
 import { createClient } from "@/supabase/client";
 import { normalizeHex, suggestSubdomain, type SheetReading } from "./hero-composer.lib";
@@ -50,8 +51,11 @@ type Phase = "idle" | "saving" | "uploading";
 const PRESETS = ["#0f766e", "#145163", "#1d4ed8", "#7c3aed", "#db2777", "#dc2626", "#ea580c", "#ca8a04", "#16a34a", "#111827"];
 const ACCEPT = ".csv,.xlsx,.xls,image/png,image/jpeg,image/webp";
 const MAX_TEXTAREA_PX = 220;
-const ROTATE_MS = 7000;
-const SHOWN_EXAMPLES = 3;
+// Typed placeholder: example prompts typed and erased in the empty box.
+const TYPE_MS = 45;
+const ERASE_MS = 18;
+const HOLD_MS = 2200;
+const STATIC_MS = 4000;
 
 const iconButton =
   "grid size-11 flex-none place-items-center rounded-full text-[#33464b] transition-colors outline-none hover:bg-teal-50 hover:text-teal-900 focus-visible:ring-[3px] focus-visible:ring-teal-700/30 disabled:opacity-50";
@@ -77,7 +81,9 @@ export function HeroComposer({ className }: { className?: string }) {
   const locale = useLocale();
   const { openSignup } = useSignup();
   const reduced = useReducedMotion();
-  const examples = t.raw("examples") as string[];
+  // A stable list, so the typing effect does not restart on every render.
+  const examplesKey = (t.raw("examples") as string[]).join("\u0000");
+  const examples = React.useMemo(() => examplesKey.split("\u0000").filter(Boolean), [examplesKey]);
 
   const [prompt, setPrompt] = React.useState("");
   const [file, setFile] = React.useState<AttachedFile | null>(null);
@@ -87,8 +93,7 @@ export function HeroComposer({ className }: { className?: string }) {
   const [colorOpen, setColorOpen] = React.useState(false);
   const [phase, setPhase] = React.useState<Phase>("idle");
   const [error, setError] = React.useState<ErrorKey | null>(null);
-  const [exampleStart, setExampleStart] = React.useState(0);
-  const [paused, setPaused] = React.useState(false);
+  const [typed, setTyped] = React.useState("");
   // The intake saved for exactly these inputs: reopening the dialog reuses it.
   const saved = React.useRef<{ key: string; ref: SignupIntakeRef } | null>(null);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
@@ -98,13 +103,49 @@ export function HeroComposer({ className }: { className?: string }) {
   const busy = phase !== "idle";
   const reading = file?.status === "reading";
 
-  // Rotating example prompts, paused on hover or focus and off with reduced motion.
+  // Example prompts typed into the empty box as its placeholder, then erased
+  // for the next one. Stops while the seller types; with reduced motion the
+  // examples swap without typing.
   React.useEffect(() => {
-    if (reduced || paused || examples.length <= SHOWN_EXAMPLES) return;
-    const timer = window.setInterval(() => setExampleStart((n) => (n + SHOWN_EXAMPLES) % examples.length), ROTATE_MS);
-    return () => window.clearInterval(timer);
-  }, [reduced, paused, examples.length]);
-  const shownExamples = Array.from({ length: Math.min(SHOWN_EXAMPLES, examples.length) }, (_, i) => examples[(exampleStart + i) % examples.length]!);
+    if (prompt || examples.length === 0) return;
+    let index = 0;
+    let chars = 0;
+    let erasing = false;
+    let timer = 0;
+    if (reduced) {
+      setTyped(examples[0]!);
+      timer = window.setInterval(() => {
+        index = (index + 1) % examples.length;
+        setTyped(examples[index]!);
+      }, STATIC_MS);
+      return () => window.clearInterval(timer);
+    }
+    const tick = () => {
+      const text = examples[index]!;
+      if (!erasing) {
+        chars += 1;
+        setTyped(text.slice(0, chars));
+        if (chars >= text.length) {
+          erasing = true;
+          timer = window.setTimeout(tick, HOLD_MS);
+          return;
+        }
+        timer = window.setTimeout(tick, TYPE_MS);
+      } else {
+        chars -= 1;
+        setTyped(text.slice(0, Math.max(chars, 0)));
+        if (chars <= 0) {
+          erasing = false;
+          index = (index + 1) % examples.length;
+          timer = window.setTimeout(tick, TYPE_MS * 6);
+          return;
+        }
+        timer = window.setTimeout(tick, ERASE_MS);
+      }
+    };
+    timer = window.setTimeout(tick, TYPE_MS * 6);
+    return () => window.clearTimeout(timer);
+  }, [prompt, reduced, examples]);
 
   const previewUrl = logo?.previewUrl;
   React.useEffect(() => () => {
@@ -258,7 +299,7 @@ export function HeroComposer({ className }: { className?: string }) {
           onKeyDown={onKeyDown}
           rows={2}
           maxLength={INTAKE_LIMITS.promptChars}
-          placeholder={t("placeholder")}
+          placeholder={typed || t("placeholder")}
           aria-describedby={`${ids}-help ${ids}-count`}
           aria-invalid={error === "empty" || undefined}
           disabled={busy}
@@ -419,40 +460,10 @@ export function HeroComposer({ className }: { className?: string }) {
         {error ? t(`errors.${error}`) : null}
       </p>
 
-      <div
-        className="flex flex-wrap items-center justify-center gap-2"
-        onMouseEnter={() => setPaused(true)}
-        onMouseLeave={() => setPaused(false)}
-        onFocus={() => setPaused(true)}
-        onBlur={() => setPaused(false)}
-      >
-        <span className="sr-only">{t("examplesLabel")}</span>
-        {shownExamples.map((example) => (
-          <button
-            key={example}
-            type="button"
-            disabled={busy}
-            onClick={() => {
-              setPrompt(example.slice(0, INTAKE_LIMITS.promptChars));
-              setError(null);
-              textareaRef.current?.focus();
-            }}
-            className="inline-flex min-h-11 max-w-full items-center rounded-full border border-line bg-white/75 px-4 py-2 text-[13.5px] text-[#33464b] outline-none transition-colors hover:border-teal-700 hover:text-teal-900 focus-visible:ring-[3px] focus-visible:ring-teal-700/30"
-          >
-            <span className="truncate">{example}</span>
-          </button>
-        ))}
-      </div>
 
-      <p className="mt-3 text-center text-sm text-[#56696e]">
-        <button
-          type="button"
-          onClick={() => openSignup()}
-          className="min-h-11 px-2 font-semibold text-teal-700 underline-offset-4 outline-none hover:underline focus-visible:ring-[3px] focus-visible:ring-teal-700/30 rounded-md"
-        >
-          {t("manual")}
-        </button>
-      </p>
+      <div className="mt-4 flex justify-center">
+        <SignupTrigger disabled={busy}>{t("manual")}</SignupTrigger>
+      </div>
     </div>
   );
 }
