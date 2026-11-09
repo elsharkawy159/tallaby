@@ -10,7 +10,8 @@ import { createRateLimiter } from "@/lib/rate-limit.lib";
 import { SITE_URL } from "@/lib/marketing/site.lib";
 import { createClient } from "@/supabase/server";
 import { builderUrlFor, completeSignup } from "./signup-complete.server";
-import { clearSignupIntentCookie, setSignupIntentCookie } from "./signup-intent.server";
+import { clearSignupIntentCookie, setSignupHintCookie, setSignupIntentCookie } from "./signup-intent.server";
+import { cleanPlanHint } from "./signup-hint.lib";
 import type { SignupIntent } from "./signup-intent.lib";
 import {
   emailSignupSchema,
@@ -61,8 +62,15 @@ async function withIntake(intent: StoreChoiceInput, intake: SignupIntakeRef | nu
   return open ? { ...intent, intakeId: intake.intakeId, intakeToken: intake.token } : intent;
 }
 
-/** Email + password. Creates the store now if Supabase returns a session, else after confirmation. */
-export async function signUpWithEmail(input: EmailSignupInput, intake?: SignupIntakeRef | null): Promise<SignupResult> {
+/**
+ * Email + password. Creates the store now if Supabase returns a session, else after confirmation.
+ * `plan`: the Pro button's hint, only where the seller lands afterwards (the Plans page).
+ */
+export async function signUpWithEmail(
+  input: EmailSignupInput,
+  intake?: SignupIntakeRef | null,
+  plan?: unknown,
+): Promise<SignupResult> {
   if (!signupLimiter.check(await clientKey())) return fail("rateLimited");
   const parsed = emailSignupSchema.safeParse(input);
   if (!parsed.success) return fail("invalidInput");
@@ -70,6 +78,7 @@ export async function signUpWithEmail(input: EmailSignupInput, intake?: SignupIn
   const choice = await checkChoice(parsed.data);
   if (!choice.ok) return fail(choice.error);
   const intent = await withIntake(choice.intent, intake);
+  const planHint = cleanPlanHint(plan);
 
   const supabase = await createClient();
   // Keeps the affiliate link (F-37) when the email is confirmed in another browser.
@@ -84,6 +93,8 @@ export async function signUpWithEmail(input: EmailSignupInput, intake?: SignupIn
         signup_subdomain: intent.subdomain,
         phone: intent.phone,
         ...(ref ? { signup_ref: ref } : {}),
+        // Only a landing hint for the confirmation callback (another browser has no cookie).
+        ...(planHint ? { signup_plan: planHint } : {}),
         // Confirmation may happen in another browser, without the cookie.
         ...(intent.intakeId ? { store_build_intake: { id: intent.intakeId, token: intent.intakeToken } } : {}),
       },
@@ -103,6 +114,7 @@ export async function signUpWithEmail(input: EmailSignupInput, intake?: SignupIn
   } catch (e) {
     console.error("[marketing signup] cannot sign intent cookie (SIGNUP_INTENT_SECRET?)", e);
   }
+  await setSignupHintCookie(planHint ? { plan: planHint } : null);
 
   if (!data.session || !data.user) return { status: "confirm_email" };
   const done = await completeSignup(data.user, intent);
@@ -145,13 +157,18 @@ export async function resendSignupConfirmation(email: string): Promise<{ error: 
  * Before F-82d this always cleared the cookie and lost both. With nothing
  * typed, any older intent is cleared and the dashboard signup asks for the
  * store, as before. A hero intake needs the address and phone first, so it
- * can't be lost on the way.
+ * can't be lost on the way. An address typed without a valid phone is kept
+ * in the hint cookie and pre-filled on the dashboard's store step (checked
+ * there again like a typed one), and `plan: "pro"` sends the new seller to
+ * the Plans page.
  */
 export async function startGoogleSignup(
   choice?: Partial<StoreChoiceInput> | null,
   intake?: SignupIntakeRef | null,
+  plan?: unknown,
 ): Promise<SignupResult> {
   if (!signupLimiter.check(await clientKey())) return fail("rateLimited");
+  const planHint = cleanPlanHint(plan);
   const typed = Boolean(choice?.subdomain || choice?.phone || intake);
   const checked = typed
     ? await checkChoice({ subdomain: String(choice?.subdomain ?? ""), phone: String(choice?.phone ?? "") })
@@ -159,6 +176,7 @@ export async function startGoogleSignup(
   if (!checked?.ok) {
     if (intake && checked) return fail(checked.error);
     await clearSignupIntentCookie();
+    await setSignupHintCookie({ subdomain: choice?.subdomain, plan: planHint });
     return { status: "ok" };
   }
   try {
@@ -166,5 +184,6 @@ export async function startGoogleSignup(
   } catch (e) {
     console.error("[marketing signup] cannot sign intent cookie (SIGNUP_INTENT_SECRET?)", e);
   }
+  await setSignupHintCookie(planHint ? { plan: planHint } : null);
   return { status: "ok" };
 }

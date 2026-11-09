@@ -1,11 +1,12 @@
-import { Check } from "lucide-react";
+import { Check, Info } from "lucide-react";
 import { getTranslations } from "next-intl/server";
+import { ORDER_GRACE_DAYS } from "@workspace/lib/billing/order-lock";
 import { cn } from "@workspace/ui/lib/utils";
 import { Reveal } from "@/components/marketing/site/reveal.client";
 import { SignupTrigger } from "@/components/marketing/signup/signup-trigger.client";
 import { getMarketingUsdRates } from "@/lib/marketing/exchange-rate.server";
 import { LOCAL_CURRENCIES, formatLocalAmount, formatRate } from "@/lib/marketing/local-currency.lib";
-import { PLAN_PRICES, formatNumber, formatUsd } from "@/lib/marketing/pricing.lib";
+import { FALLBACK_EGP_PER_USD, PLAN_PRICES, formatNumber, formatUsd } from "@/lib/marketing/pricing.lib";
 import { LocalCurrencyProvider, PlanFxNote, PlanPrice, type LocalPrice, type PlanKey } from "./plan-price.client";
 
 /**
@@ -32,6 +33,15 @@ export async function PlanCards() {
     };
   }
 
+  // F-84: stores take orders from day one; the first top-up keeps new orders
+  // visible after the grace window and unlocks campaigns. EGP at the live rate.
+  const activation = t("freeActivation", {
+    days: ORDER_GRACE_DAYS,
+    // In a left-to-right isolate, so "$5" keeps its order in Arabic text.
+    usd: `⁦${formatUsd(PLAN_PRICES.topUp.minCents)}⁩`,
+    egp: formatLocalAmount(PLAN_PRICES.topUp.minCents, "EGP", rates.EGP ?? FALLBACK_EGP_PER_USD),
+  });
+
   const cards = [
     {
       plan: "free" as const,
@@ -41,6 +51,7 @@ export async function PlanCards() {
       price: formatUsd(free.orderFeeCents),
       per: t("perOrder"),
       note: t("freeNote"),
+      activation,
       cta: t("freeCta"),
       tone: "outline" as const,
       features: [
@@ -61,6 +72,7 @@ export async function PlanCards() {
       price: formatUsd(pro.monthlyCents),
       per: t("perMonth"),
       note: t("proNote"),
+      activation: null,
       cta: t("proCta"),
       tone: "amber" as const,
       ribbon: t("proRibbon"),
@@ -94,7 +106,13 @@ export async function PlanCards() {
               <p className="text-sm text-[#5f7277]">{card.tagline}</p>
             </div>
             <PlanPrice plan={card.plan} usd={card.price} per={card.per} note={card.note} />
-            <SignupTrigger tone={card.tone} className="w-full">
+            {card.activation ? (
+              <p className="m-0 flex items-start gap-1.5 text-[12.5px] leading-relaxed text-pretty text-ink-500">
+                <Info className="mt-0.5 size-3.5 flex-none" aria-hidden />
+                <span>{card.activation}</span>
+              </p>
+            ) : null}
+            <SignupTrigger tone={card.tone} plan={card.plan === "pro" ? "pro" : undefined} className="w-full">
               {card.cta}
             </SignupTrigger>
             <ul className="m-0 mt-1 flex list-none flex-col gap-2.5 p-0 text-[14.5px] text-[#33464b]">

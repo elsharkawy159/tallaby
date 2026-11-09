@@ -6,11 +6,21 @@ import { cn } from "@workspace/ui/lib/utils";
 import { CtaButton } from "@/components/marketing/site/cta-button";
 import { ROOT_DOMAIN, slugify } from "@/lib/marketing/site.lib";
 import { useSignup } from "./signup-dialog.client";
+import type { SignupPlanHint } from "./signup-hint.lib";
 
 type CtaButtonProps = React.ComponentProps<typeof CtaButton>;
 
-/** Any "Create your store" button: opens the signup dialog. */
-export function SignupTrigger({ children, onClick, ...props }: Omit<CtaButtonProps, "asChild">) {
+/**
+ * Any "Create your store" button: opens the signup dialog. `plan="pro"` (the
+ * Pro card) sends the new seller to the dashboard's Plans page after signup;
+ * it never picks a plan on the server.
+ */
+export function SignupTrigger({
+  children,
+  onClick,
+  plan,
+  ...props
+}: Omit<CtaButtonProps, "asChild"> & { plan?: SignupPlanHint }) {
   const t = useTranslations("common");
   const { openSignup } = useSignup();
   return (
@@ -18,7 +28,7 @@ export function SignupTrigger({ children, onClick, ...props }: Omit<CtaButtonPro
       type="button"
       onClick={(e) => {
         onClick?.(e);
-        openSignup();
+        openSignup(undefined, null, plan ? { plan } : undefined);
       }}
       {...props}
     >

@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Check, Gem, Minus, Receipt, Store } from "lucide-react";
@@ -13,6 +14,7 @@ import { formatDate, formatMoney, moneyDir } from "@/lib/i18n/format";
 import { loadOrderLock, requireSeller } from "@/lib/auth/require-seller.server";
 import { getSellerStores } from "@/lib/stores/current-store.server";
 import { getStoreWalletBalance } from "../../wallet/store-wallet.server";
+import { SignupPixelData } from "../../_components/signup-pixel.data";
 import { PlanLive } from "./plan-live.client";
 
 const FEATURES: (keyof PlanFeatures)[] = ["customDomain", "ai", "advancedSettings", "removeTallabyBadge"];
@@ -21,8 +23,25 @@ const FEATURES: (keyof PlanFeatures)[] = ["customDomain", "ai", "advancedSetting
  * Plan & usage (PLAN.md §7.3, P3-05). Everyone is on Free for now; limits come
  * from the plans module (@workspace/lib/plans). No prices until paid plans exist.
  */
-export default async function PlanPage() {
-  if ((await getBillingState()).usdLive) return <LivePlanPage />;
+export default async function PlanPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ welcome?: string | string[]; signup?: string | string[] }>;
+}) {
+  const { welcome, signup } = await searchParams;
+  if ((await getBillingState()).usdLive) {
+    return (
+      <>
+        <LivePlanPage />
+        {/* Signup from tallaby.com's Pro button lands here (/settings/plan?welcome=1&signup=…), not on home. */}
+        {welcome === "1" && signup && (
+          <Suspense fallback={null}>
+            <SignupPixelData signup={signup} />
+          </Suspense>
+        )}
+      </>
+    );
+  }
   const [seller, { stores, maxStores }, t] = await Promise.all([
     requireSeller(),
     getSellerStores(),

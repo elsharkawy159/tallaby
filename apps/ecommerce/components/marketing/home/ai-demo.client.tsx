@@ -89,7 +89,7 @@ export function AiDemo({ children }: { children: React.ReactNode }) {
         <div className="flex flex-col gap-1.5">
           <div className="grid grid-cols-[76px_minmax(0,1fr)] items-start gap-3 min-[641px]:grid-cols-[96px_minmax(0,1fr)]">
             <span className="relative aspect-square overflow-hidden rounded-[14px] border border-[#e6eef0] bg-[#f1f5f6]">
-              {step >= 1 ? <Image src={PRODUCT_IMAGE} alt="" fill sizes="96px" className="object-cover" style={{ objectPosition: "center 60%" }} /> : null}
+              {step >= 1 ? <Image src={PRODUCT_IMAGE} alt={t("imageAlt")} fill sizes="96px" className="object-cover" style={{ objectPosition: "center 60%" }} /> : null}
             </span>
             <div className="flex flex-col gap-1">
               <FieldLabel>{t("nameArLabel")}</FieldLabel>
@@ -112,7 +112,11 @@ export function AiDemo({ children }: { children: React.ReactNode }) {
             <div>
               <FieldLabel>{t("priceLabel")}</FieldLabel>
               <FieldValue loading={loading && step < 3} done={step >= 3}>
-                {step >= 3 ? <span dir="ltr" className="font-latin">890 EGP</span> : null}
+                {step >= 3 ? (
+                  <span>
+                    <span className="font-latin">890</span> {t("egp")}
+                  </span>
+                ) : null}
               </FieldValue>
             </div>
           </div>

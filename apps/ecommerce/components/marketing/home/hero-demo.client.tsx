@@ -28,10 +28,11 @@ import {
   Truck,
   Wallet,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { cn } from "@workspace/ui/lib/utils";
 import { DemoCursor } from "./demo-cursor";
-import { ordersAfter, sparkPaths, wrapIndex, type DemoOrder } from "./home-demo.lib";
+import { formatUsd } from "@/lib/marketing/pricing.lib";
+import { HERO_DEMO_WALLET_USD_CENTS, ordersAfter, sparkPaths, wrapIndex, type DemoOrder } from "./home-demo.lib";
 import { useDemoSteps } from "./use-demo.client";
 
 /** product, cursor to add, summary, cursor to place, confirmed, order lands, toast gone. */
@@ -69,8 +70,9 @@ const money = (n: number) => n.toLocaleString("en-US");
  * dashboard, drawn after the redesigned dashboard home (Claude Design "Seller
  * Home v3"). All sample data, every pound amount in the page's own word for it.
  */
-export function HeroDemo() {
+export function HeroDemo({ walletEgp }: { walletEgp?: string }) {
   const t = useTranslations("home.demo.hero");
+  const ar = useLocale() === "ar";
   const { ref, step, cycle } = useDemoSteps<HTMLDivElement>(STEPS, 0);
 
   const customers = t.raw("customers") as string[];
@@ -180,7 +182,9 @@ export function HeroDemo() {
             <span className="flex h-[30px] flex-none items-center gap-1.5 rounded-full border border-[#e7e9e8] bg-white ps-2.5 pe-1 text-[11.5px] whitespace-nowrap text-[#5f6b6e]">
               <span className="hidden min-[641px]:inline">{t("walletLabel")}</span>
               <Wallet className="size-3.5 min-[641px]:hidden" />
-              <b dir="ltr" className="font-latin text-[12px] font-bold text-[#171717]">$12.40</b>
+              <b dir="ltr" className="font-latin text-[12px] font-bold text-[#171717]">{formatUsd(HERO_DEMO_WALLET_USD_CENTS)}</b>
+              {/* Arabic also shows it in pounds at the live rate; not on narrow screens, where the pill has no room. */}
+              {ar && walletEgp ? <span className="hidden text-[11px] text-[#808080] min-[861px]:inline">{t("walletApprox", { amount: walletEgp })}</span> : null}
               <span className="grid size-[22px] place-items-center rounded-full bg-[#eef3f4] text-teal-900">
                 <Plus className="size-3" />
               </span>
@@ -316,7 +320,7 @@ export function HeroDemo() {
           <div className="relative flex-1 overflow-hidden">
             <PhoneView on={view === 1}>
               <div className="relative aspect-[1.15] overflow-hidden rounded-2xl border border-[#f1f1f1] bg-white">
-                <Image src={product.image} alt="" fill sizes="230px" className="object-cover" style={{ objectPosition: product.position }} />
+                <Image src={product.image} alt={productName} fill sizes="230px" className="object-cover" style={{ objectPosition: product.position }} />
                 <span className="absolute start-2 top-2 rounded-full bg-[#c8586b] px-2 py-0.5 font-latin text-[10px] font-bold text-white">NEW</span>
               </div>
               <p className="text-[11px] leading-[1.4] text-[#4a2c2a] min-[641px]:text-[15px]">{productName}</p>

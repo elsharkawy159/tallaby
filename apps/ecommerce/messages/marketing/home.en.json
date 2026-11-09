@@ -13,6 +13,7 @@
       "check1": "Free plan, no card",
       "check2": "Signup in under a minute",
       "check3": "Cash on delivery built in",
+      "priceLine": "{orderFee} per order · or Pro at {pro}/month · no cut of your sales",
       "sample": "Sample data from a demo store.",
       "composer": {
         "label": "Describe your store",
@@ -174,7 +175,8 @@
     "templates": {
       "kicker": "Store templates",
       "title": "Start from a design made for what you sell",
-      "body": "Swipe through one template per category, out of {count, plural, one {{count} template} other {{count} templates}}. Switch any time without losing your products."
+      "body": "Swipe through one template per category, out of {count, plural, one {{count} template} other {{count} templates}}. Switch any time without losing your products.",
+      "industryLink": "Templates and tips for clothing stores"
     },
     "marketing": {
       "kicker": "Marketing tools",
@@ -265,6 +267,7 @@
       "body": "Cash on delivery works from day one. You can take InstaPay and wallet transfers, or connect your Paymob or Kashier account to accept cards.",
       "cod": "Cash on delivery",
       "note": "Payments go straight to your own accounts, and Tallaby takes no percentage of your sales. Your payment gateway charges its own fees.",
+      "solutionLink": "How to create an online store with cash on delivery",
       "groups": {
         "cod": "On delivery",
         "transfer": "Instant transfer and wallets",
@@ -273,20 +276,20 @@
     },
     "pricing": {
       "kicker": "Pricing",
-      "title": "Two simple plans. Switch any time.",
+      "title": "Two simple plans, switch any time",
       "body": "Start free and pay a few cents per order, or go Pro for a flat monthly price."
     },
     "how": {
       "kicker": "How it works",
       "title": "Three steps from idea to first order",
       "s1Title": "Create your account",
-      "s1Body": "Pick your store link, add your email and a password, or continue with Google. That's all signup asks for.",
+      "s1Body": "Pick your store link, add your email, phone number and a password, or continue with Google.",
       "s1Tag": "Under a minute",
       "s2Title": "Customize your store",
       "s2Body": "Choose a template, add your logo, colors and products, and arrange sections with the visual editor.",
       "s2Tag": "No code",
       "s3Title": "Start selling",
-      "s3Body": "Publish with one click, share your link, and top up your wallet from $5 to follow your orders in the dashboard.",
+      "s3Body": "Publish with one click, share your link, and take orders from day one. Then top up your wallet from {topUpMin} to keep seeing new orders after the grace period.",
       "s3Tag": "One-click publish"
     },
     "faq": {
@@ -296,7 +299,7 @@
       "items": [
         {
           "q": "What does an order cost on the free plan?",
-          "a": "$0.03 per created order, whatever its value. No monthly fee and no percentage. You'll need a first $5 top-up before you can see orders and send campaigns."
+          "a": "{orderFee} per created order, whatever its value. No monthly fee and no percentage. Your store takes orders from day one; after the grace period, a first {topUpMin} top-up keeps new orders visible and lets you send campaigns."
         },
         {
           "q": "When is Pro worth it?",
@@ -329,6 +332,7 @@
         "egp": "EGP",
         "title": "Dashboard",
         "walletLabel": "Wallet balance",
+        "walletApprox": "≈ EGP {amount}",
         "last7": "Last 7 days",
         "addProduct": "Add product",
         "greeting": "Good morning, Nour",
@@ -413,6 +417,8 @@
         "credits": "100 AI credits a month on the free plan, 2,000 on Pro.",
         "generate": "Generate",
         "input": "Brown leather crossbody bag, 890 EGP",
+        "egp": "EGP",
+        "imageAlt": "Photo of a brown leather crossbody bag",
         "nameArLabel": "Name (Arabic)",
         "nameEnLabel": "Name (English)",
         "nameAr": "شنطة كروس جلد طبيعي بني",
@@ -468,6 +474,7 @@
         },
         "store": {
           "name": "DAR",
+          "heroAlt": "Banner photo of a furniture and home decor store",
           "announcement": "Free delivery across Egypt on orders over 1,500 EGP",
           "nav": {
             "living": "Living",

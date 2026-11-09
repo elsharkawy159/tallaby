@@ -2,6 +2,7 @@ import { storeBuilderEnabled } from "@/lib/store-build/intake-request.server";
 import * as React from "react";
 import { BellRing, Bike, BookOpen, Check, ChartNoAxesCombined, FileUp, ShieldCheck, Sparkles, Star, Store, Timer, Palette, Rocket, Truck, Users, Wallet } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
+import { Link } from "@/i18n/navigation";
 import { CtaBand } from "@/components/marketing/site/cta-band";
 import { FaqAccordion, type FaqEntry } from "@/components/marketing/site/faq-accordion";
 import { Container, Kicker, Ltr, Section, SectionHeading } from "@/components/marketing/site/layout-primitives";
@@ -11,6 +12,8 @@ import { IconTile, SiteCard } from "@/components/marketing/site/site-card";
 import { SignupTrigger, SlugClaimForm } from "@/components/marketing/signup/signup-trigger.client";
 import { PlanCards } from "@/components/marketing/pricing/plan-cards";
 import { TemplateCarousel } from "@/components/marketing/templates/template-carousel.client";
+import { getMarketingEgpPerUsd } from "@/lib/marketing/exchange-rate.server";
+import { PLAN_PRICES, formatEgp, formatUsd, usdCentsToEgp } from "@/lib/marketing/pricing.lib";
 import { selectStoreLine } from "@/lib/marketing/recent-stores.lib";
 import { CONTACT } from "@/lib/marketing/site.lib";
 import { getRecentStores } from "@/lib/marketing/stores.server";
@@ -21,10 +24,44 @@ import { AiDemo } from "./ai-demo.client";
 import { BuilderDemo } from "./builder-demo.client";
 import { HeroComposer } from "./hero-composer.client";
 import { HeroDemo } from "./hero-demo.client";
+import { HERO_DEMO_WALLET_USD_CENTS } from "./home-demo.lib";
 import { LiveStoreLine } from "./live-store-line.client";
 import { MarketingTools } from "./marketing-tools.client";
 import { McpChatDemo } from "./mcp-chat-demo.client";
 import { PaymentDemo, ShippingDemo } from "./shipping-payment-demos.client";
+
+/**
+ * The prices the home copy fills in: USD from the billing module, and the
+ * Arabic "≈ … جنيه" at the dashboard wallet's live rate, rounded the way
+ * /wallet shows it (the same maths as the plan cards).
+ */
+async function homePrices() {
+  const rate = await getMarketingEgpPerUsd();
+  const egp = (cents: number) => formatEgp(usdCentsToEgp(cents, rate));
+  return {
+    orderFee: formatUsd(PLAN_PRICES.free.orderFeeCents),
+    orderFeeEgp: egp(PLAN_PRICES.free.orderFeeCents),
+    pro: formatUsd(PLAN_PRICES.pro.monthlyCents),
+    proEgp: egp(PLAN_PRICES.pro.monthlyCents),
+    topUpMin: formatUsd(PLAN_PRICES.topUp.minCents),
+    topUpMinEgp: egp(PLAN_PRICES.topUp.minCents),
+    walletEgp: egp(HERO_DEMO_WALLET_USD_CENTS),
+  };
+}
+
+/** FAQ answers are read raw (an array), so their prices are filled in here, as on /pricing. */
+function replaceTokens(text: string, values: Record<string, string>): string {
+  return text.replace(/\{(\w+)\}/g, (match, key: string) => values[key] ?? match);
+}
+
+/** A small text link from a home section to its deeper page. */
+function SectionLink({ href, children, className }: { href: string; children: React.ReactNode; className?: string }) {
+  return (
+    <Link href={href} className={className ?? "text-sm font-bold text-teal-700 underline-offset-2 hover:underline"}>
+      {children}
+    </Link>
+  );
+}
 
 /** A heading plus the small lead used in the home page's split sections. */
 function SplitHeading({ id, kicker, title, body }: { id: string; kicker: string; title: string; body: string }) {
@@ -40,7 +77,7 @@ function SplitHeading({ id, kicker, title, body }: { id: string; kicker: string;
 }
 
 export async function HomeHero() {
-  const [t, locale, recent] = await Promise.all([getTranslations("home.hero"), getLocale(), getRecentStores()]);
+  const [t, locale, recent, prices] = await Promise.all([getTranslations("home.hero"), getLocale(), getRecentStores(), homePrices()]);
   const features = t.raw("marquee") as string[];
   const checks = [t("check1"), t("check2"), t("check3")];
   const showLine = selectStoreLine(recent.stores, recent.readAt).kind !== "none";
@@ -77,6 +114,10 @@ export async function HomeHero() {
             </li>
           ))}
         </ul>
+        {/* One muted line with both plans' prices, to the pricing section below (English shows USD only, like its other copy). */}
+        <a href="#pricing" className="mt-3 max-w-[560px] text-[13px] text-balance text-[#56696e] underline-offset-2 hover:text-teal-700 hover:underline min-[641px]:text-sm">
+          {t("priceLine", prices)}
+        </a>
       </Container>
 
       {/* The first copy is a real list (visible text for readers and search engines); the second only closes the loop.
@@ -103,7 +144,7 @@ export async function HomeHero() {
       </div>
 
       <Container>
-        <HeroDemo />
+        <HeroDemo walletEgp={prices.walletEgp} />
         <p className="mt-[76px] text-center text-xs text-ink-400 min-[641px]:mt-16">{t("sample")}</p>
       </Container>
     </section>
@@ -263,6 +304,9 @@ export async function TemplatesSection() {
         </Reveal>
       </Container>
       <TemplateCarousel entries={onePerCategory(entries)} />
+      <Container className="mt-6 text-center">
+        <SectionLink href="/industries/clothing-store">{t("industryLink")}</SectionLink>
+      </Container>
     </section>
   );
 }
@@ -360,6 +404,7 @@ export async function PaymentsSection() {
             ))}
           </div>
           <p className="text-[13px] text-pretty text-ink-500">{t("note")}</p>
+          <SectionLink href="/solutions/create-online-store">{t("solutionLink")}</SectionLink>
         </Reveal>
       </Container>
     </Section>
@@ -381,11 +426,11 @@ export async function PricingTeaser() {
 }
 
 export async function HowItWorks() {
-  const t = await getTranslations("home.how");
+  const [t, prices] = await Promise.all([getTranslations("home.how"), homePrices()]);
   const steps = [
     { title: t("s1Title"), body: t("s1Body"), tag: t("s1Tag"), icon: Timer },
     { title: t("s2Title"), body: t("s2Body"), tag: t("s2Tag"), icon: Palette },
-    { title: t("s3Title"), body: t("s3Body"), tag: t("s3Tag"), icon: Rocket },
+    { title: t("s3Title"), body: t("s3Body", prices), tag: t("s3Tag"), icon: Rocket },
   ];
   return (
     <Section id="how" aria-labelledby="how-title">
@@ -414,7 +459,8 @@ export async function HowItWorks() {
 }
 
 export async function HomeFaq() {
-  const t = await getTranslations("home.faq");
+  const [t, prices] = await Promise.all([getTranslations("home.faq"), homePrices()]);
+  const items = (t.raw("items") as FaqEntry[]).map((item) => ({ q: item.q, a: replaceTokens(String(item.a), prices) }));
   return (
     <Section id="faq" aria-labelledby="faq-title">
       <Container className="grid gap-7 min-[1081px]:grid-cols-[minmax(0,0.7fr)_minmax(0,1.3fr)] min-[1081px]:gap-14">
@@ -422,7 +468,7 @@ export async function HomeFaq() {
           <SectionHeading id="faq-title" kicker={t("kicker")} title={t("title")} className="mb-0" description={t.rich("desc", { link: (chunks) => <a href={CONTACT.whatsapp} target="_blank" rel="noopener noreferrer" className="font-semibold text-teal-700 underline-offset-2 hover:underline">{chunks}</a> })} />
         </Reveal>
         <Reveal>
-          <FaqAccordion items={t.raw("items") as FaqEntry[]} />
+          <FaqAccordion items={items} />
         </Reveal>
       </Container>
     </Section>

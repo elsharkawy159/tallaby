@@ -14,9 +14,15 @@ import { createClient } from "@/supabase/client";
 import { useSlugCheck, type SlugState } from "./slug-check.client";
 import { resendSignupConfirmation, signUpWithEmail, startGoogleSignup } from "./signup.server";
 import { EGYPT_MOBILE, type SignupErrorKey, type SignupIntakeRef, type SignupResult } from "./signup.dto";
+import { PRO_PLAN_PATH, type SignupPlanHint } from "./signup-hint.lib";
 
-/** `intake`: the hero composer's saved brief (F-82d), claimed by the new account. */
-type SignupContextValue = { openSignup: (slug?: string, intake?: SignupIntakeRef | null) => void };
+/**
+ * `intake`: the hero composer's saved brief (F-82d), claimed by the new account.
+ * `plan: "pro"`: the Pro button. Only where the new seller lands (the dashboard's
+ * Plans page); the upgrade itself is their own click there.
+ */
+type SignupOptions = { plan?: SignupPlanHint };
+type SignupContextValue = { openSignup: (slug?: string, intake?: SignupIntakeRef | null, options?: SignupOptions) => void };
 
 const SignupContext = React.createContext<SignupContextValue | null>(null);
 
@@ -39,11 +45,13 @@ export function SignupProvider({ children }: { children: React.ReactNode }) {
   const [initialSlug, setInitialSlug] = React.useState("");
   const [initialError, setInitialError] = React.useState<SignupErrorKey | null>(null);
   const [intake, setIntake] = React.useState<SignupIntakeRef | null>(null);
+  const [plan, setPlan] = React.useState<SignupPlanHint | undefined>(undefined);
   const [session, setSession] = React.useState(0);
 
-  const openSignup = React.useCallback((slug?: string, nextIntake?: SignupIntakeRef | null) => {
+  const openSignup = React.useCallback((slug?: string, nextIntake?: SignupIntakeRef | null, options?: SignupOptions) => {
     setInitialSlug(slug ? slugify(slug) : "");
     setIntake(nextIntake ?? null);
+    setPlan(options?.plan);
     setInitialError(null);
     setSession((n) => n + 1);
     setOpen(true);
@@ -75,7 +83,7 @@ export function SignupProvider({ children }: { children: React.ReactNode }) {
       {children}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent closeLabel={t("close")} className="max-h-[calc(100vh-32px)] overflow-auto rounded-[20px] p-[26px] sm:max-w-[440px] sm:p-8">
-          {open ? <SignupForm key={session} initialSlug={initialSlug} initialError={initialError} intake={intake} /> : null}
+          {open ? <SignupForm key={session} initialSlug={initialSlug} initialError={initialError} intake={intake} plan={plan} /> : null}
         </DialogContent>
       </Dialog>
     </SignupContext.Provider>
@@ -93,10 +101,12 @@ function SignupForm({
   initialSlug,
   initialError,
   intake,
+  plan,
 }: {
   initialSlug: string;
   initialError: SignupErrorKey | null;
   intake: SignupIntakeRef | null;
+  plan?: SignupPlanHint;
 }) {
   const t = useTranslations("signup");
   const [step, setStep] = React.useState<Step>({ kind: "form" });
@@ -158,12 +168,13 @@ function SignupForm({
     setFormError(null);
     if (!formValid()) return;
     startTransition(async () => {
-      handleResult(await signUpWithEmail({ subdomain: slug, phone, email: email.trim(), password }, intake));
+      handleResult(await signUpWithEmail({ subdomain: slug, phone, email: email.trim(), password }, intake, plan));
     });
   };
 
   // With a valid address and phone typed, the callback creates the store with
-  // them (else the dashboard asks); a hero intake (F-82d) needs both first.
+  // them; else the dashboard asks, with the typed address pre-filled. A hero
+  // intake (F-82d) needs both first.
   const onGoogle = async () => {
     setFormError(null);
     if (intake) {
@@ -180,7 +191,8 @@ function SignupForm({
       }
     }
     setGooglePending(true);
-    const result = await startGoogleSignup(slug && slugOk && phoneOk ? { subdomain: slug, phone } : null, intake);
+    // The server checks both again; an address alone only pre-fills the dashboard's store step.
+    const result = await startGoogleSignup(slug ? { subdomain: slug, phone: phoneOk ? phone : "" } : null, intake, plan);
     if (result.status !== "ok") {
       setGooglePending(false);
       handleResult(result);
@@ -215,6 +227,11 @@ function SignupForm({
           {step.builderUrl ? (
             <CtaButton asChild className="w-full rounded-xl">
               <a href={step.builderUrl}>{t("continueBuilder")}</a>
+            </CtaButton>
+          ) : plan === "pro" ? (
+            // The Pro button: the dashboard's Plans page; the upgrade is the seller's own click there.
+            <CtaButton asChild className="w-full rounded-xl">
+              <a href={`${DASHBOARD_URL}${PRO_PLAN_PATH.slice(1)}`}>{t("continuePro")}</a>
             </CtaButton>
           ) : (
             <CtaButton asChild className="w-full rounded-xl">

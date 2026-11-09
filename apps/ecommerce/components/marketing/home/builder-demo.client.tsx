@@ -249,7 +249,7 @@ export function BuilderDemo() {
             <CanvasSection selected={heroSelected} label={t("library.hero")}>
               <div className="px-3 pt-3">
                 <div className="relative h-[172px] overflow-hidden rounded-[10px] min-[861px]:h-[204px]">
-                  <Image src={HERO_IMAGE} alt="" fill sizes="(max-width: 640px) 100vw, 600px" className="object-cover" style={{ objectPosition: "center 55%" }} />
+                  <Image src={HERO_IMAGE} alt={s("heroAlt")} fill sizes="(max-width: 640px) 100vw, 600px" className="object-cover" style={{ objectPosition: "center 55%" }} />
                   <div className="absolute inset-0 bg-gradient-to-r from-[#1b1410]/75 via-[#1b1410]/35 to-transparent rtl:bg-gradient-to-l" />
                   <div className="relative z-[1] flex h-full max-w-[72%] flex-col items-start justify-end gap-1.5 p-4 text-white min-[861px]:p-5">
                     <small className={cn("rounded-full bg-white/15 px-2 py-[3px] text-[8px] font-semibold backdrop-blur-sm", track("tracking-[0.14em] uppercase"))}>{s("kicker")}</small>
@@ -269,7 +269,7 @@ export function BuilderDemo() {
               <b className="col-span-full text-[11px] font-extrabold">{s("rooms")}</b>
               {CATEGORIES.map((c) => (
                 <span key={c.key} className="relative block h-[46px] overflow-hidden rounded-[8px] min-[861px]:h-[54px]">
-                  <Image src={c.image} alt="" fill sizes="140px" className="object-cover" style={{ objectPosition: c.position }} />
+                  <Image src={c.image} alt={s(`room.${c.key}`)} fill sizes="140px" className="object-cover" style={{ objectPosition: c.position }} />
                   <span className="absolute inset-0 bg-gradient-to-t from-[#1b1410]/65 to-transparent" />
                   <span className="absolute start-2 end-1 bottom-1.5 truncate text-[9px] font-bold text-white">{s(`room.${c.key}`)}</span>
                 </span>
@@ -283,7 +283,7 @@ export function BuilderDemo() {
               {PRODUCTS.map((p) => (
                 <div key={p.key} className="overflow-hidden rounded-[8px] bg-white text-[9px] leading-[1.4] shadow-[0_1px_2px_rgba(42,36,32,0.06)]">
                   <span className="relative block aspect-[4/5] overflow-hidden bg-[#ebe4da]">
-                    <Image src={p.image} alt="" fill sizes="140px" className="object-cover" style={{ objectPosition: p.position }} />
+                    <Image src={p.image} alt={s(`products.${p.key}`)} fill sizes="140px" className="object-cover" style={{ objectPosition: p.position }} />
                     {"was" in p ? (
                       <i className="absolute start-1.5 top-1.5 rounded-full px-1.5 py-px text-[7.5px] font-bold whitespace-nowrap text-white not-italic transition-colors duration-300" style={{ background: accent }}>
                         {s("badge")}

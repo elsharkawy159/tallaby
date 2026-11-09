@@ -8,7 +8,7 @@
   "pricing": {
     "hero": {
       "eyebrow": "Pricing",
-      "title": "Two simple plans. Switch any time.",
+      "title": "Two simple plans, switch any time",
       "lead": "Start free and pay a few cents per order, or go Pro for a flat monthly price.",
       "noCard": "No card to start",
       "switch": "Switch plans any time",
@@ -20,6 +20,7 @@
       "freeTagline": "For starting out and growing.",
       "perOrder": "per order",
       "freeNote": "no monthly fee",
+      "freeActivation": "Your store takes orders from day one. After {days} days or your second order, whichever comes first, a first top-up of {usd} (≈ {egp} EGP) keeps new orders visible. It is also needed to send campaigns.",
       "freeCta": "Start free",
       "proTagline": "For stores with steady orders.",
       "perMonth": "per month",

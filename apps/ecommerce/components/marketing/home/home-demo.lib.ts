@@ -1,5 +1,8 @@
 /** Pure maths behind the home page's product demos. */
 
+/** The hero dashboard's sample wallet balance ($12.40); the hero server part converts it for the Arabic "≈ جنيه". */
+export const HERO_DEMO_WALLET_USD_CENTS = 1240;
+
 /** An SVG line and its filled area for a small sparkline. */
 export function sparkPaths(values: readonly number[], width = 200, height = 34): { line: string; area: string } {
   if (!values.length) return { line: "", area: "" };
