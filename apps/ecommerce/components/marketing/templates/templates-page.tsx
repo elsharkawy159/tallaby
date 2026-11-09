@@ -53,14 +53,14 @@ export async function TemplatesPageContent({ entries, leadKeys = [] }: { entries
           <h1 id="templates-h1" className="max-w-[900px] text-[clamp(34px,6.2vw,68px)] leading-[1.25] font-bold text-balance text-teal-900 en:leading-[1.08] en:tracking-[-0.02em] [&_em]:text-amber-700 [&_em]:not-italic">
             {t.rich("hero.title", richTags)}
           </h1>
-          <p className="mx-auto mt-4 mb-6 max-w-[640px] text-[clamp(16px,2vw,19px)] text-pretty text-[#56696e] min-[641px]:mt-5 min-[641px]:mb-8">{t("hero.lead")}</p>
+          <p className="mx-auto mt-4 mb-6 max-w-[640px] text-[clamp(16px,2vw,19px)] text-pretty text-ink-500 min-[641px]:mt-5 min-[641px]:mb-8">{t("hero.lead")}</p>
           <div className="flex flex-wrap justify-center gap-2.5">
             <SignupTrigger>{t("hero.cta")}</SignupTrigger>
             <CtaButton asChild tone="outline">
               <a href="#gallery">{t("hero.browse", { count: entries.length })}</a>
             </CtaButton>
           </div>
-          <ul className="m-0 mt-[18px] flex list-none flex-wrap justify-center gap-x-3.5 gap-y-1.5 p-0 text-[13px] text-[#56696e] min-[641px]:gap-x-[22px] min-[641px]:gap-y-2 min-[641px]:text-sm">
+          <ul className="m-0 mt-[18px] flex list-none flex-wrap justify-center gap-x-3.5 gap-y-1.5 p-0 text-[13px] text-ink-500 min-[641px]:gap-x-[22px] min-[641px]:gap-y-2 min-[641px]:text-sm">
             {checks.map((check) => (
               <li key={check} className="flex items-center gap-1.5">
                 <Check className="size-4 text-[#16a34a]" aria-hidden />
@@ -107,7 +107,7 @@ export async function TemplatesPageContent({ entries, leadKeys = [] }: { entries
                     <item.icon aria-hidden />
                   </IconTile>
                   <h3 className="text-[17px] leading-normal font-bold text-teal-900">{item.title}</h3>
-                  <p className="text-sm text-pretty text-[#5f7277]">{item.body}</p>
+                  <p className="text-sm text-pretty text-ink-500">{item.body}</p>
                 </SiteCard>
               </Reveal>
             ))}

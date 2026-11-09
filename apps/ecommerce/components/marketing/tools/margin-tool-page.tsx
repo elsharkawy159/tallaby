@@ -75,7 +75,7 @@ export async function MarginToolPage() {
         <h1 className="text-[clamp(28px,4.4vw,48px)] leading-[1.3] font-bold text-balance text-teal-900 en:leading-[1.15] en:tracking-[-0.01em]">
           {t.rich("title", richTags)}
         </h1>
-        <p className="mt-3 text-[clamp(16px,1.8vw,18px)] text-pretty text-[#56696e]">{t("lead")}</p>
+        <p className="mt-3 text-[clamp(16px,1.8vw,18px)] text-pretty text-ink-500">{t("lead")}</p>
       </Container>
 
       <section className="pb-14">
@@ -100,7 +100,7 @@ export async function MarginToolPage() {
               <article key={step.title} className="rounded-card border border-line bg-white p-6">
                 <Num className="mb-3.5 grid size-[38px] place-items-center rounded-full bg-amber-600 text-[15px] font-bold text-teal-900">{i + 1}</Num>
                 <h3 className="mb-1.5 text-[17px] font-bold text-teal-900">{step.title}</h3>
-                <p className="text-[14.5px] text-pretty text-[#56696e]">{step.body}</p>
+                <p className="text-[14.5px] text-pretty text-ink-500">{step.body}</p>
               </article>
             ))}
           </div>

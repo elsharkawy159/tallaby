@@ -47,7 +47,7 @@ export function PageHero({
         </h1>
       ) : null}
       {lead ? (
-        <p className={cn("mt-5 max-w-[600px] text-[clamp(16px,2vw,19px)] text-pretty", dark ? "text-mist" : "text-[#56696e]")}>{lead}</p>
+        <p className={cn("mt-5 max-w-[600px] text-[clamp(16px,2vw,19px)] text-pretty", dark ? "text-mist" : "text-ink-500")}>{lead}</p>
       ) : null}
       {children}
     </div>

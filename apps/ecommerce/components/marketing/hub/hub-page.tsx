@@ -43,7 +43,7 @@ export async function HubPageFrame({
           <h1 className="text-[clamp(34px,5.6vw,60px)] leading-[1.25] font-bold text-balance text-teal-900 en:leading-[1.1] en:tracking-[-0.02em]">
             {t.rich("title", richTags)}
           </h1>
-          <p className="mx-auto mt-5 max-w-[640px] text-[clamp(16px,2vw,19px)] text-pretty text-[#56696e]">
+          <p className="mx-auto mt-5 max-w-[640px] text-[clamp(16px,2vw,19px)] text-pretty text-ink-500">
             <BidiText text={t("lead")} />
           </p>
           {children}

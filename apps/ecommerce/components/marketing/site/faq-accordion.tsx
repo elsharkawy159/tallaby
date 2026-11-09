@@ -36,7 +36,7 @@ export function FaqAccordion({
               <Plus className="size-[18px]" aria-hidden />
             </span>
           </AccordionTrigger>
-          <AccordionContent className="px-[22px] pb-5 text-[15px] text-pretty text-[#56696e]">{item.a}</AccordionContent>
+          <AccordionContent className="px-[22px] pb-5 text-[15px] text-pretty text-ink-500">{item.a}</AccordionContent>
         </AccordionItem>
       ))}
     </Accordion>

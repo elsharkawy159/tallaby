@@ -68,7 +68,7 @@ export async function LegalPage({
         <Container>
           <Eyebrow>{t("eyebrow")}</Eyebrow>
           <h1 className="text-[clamp(34px,5.6vw,60px)] leading-[1.25] font-bold text-balance text-teal-900 en:leading-[1.1] en:tracking-[-0.02em]">{t(`${doc}.title`)}</h1>
-          <p className="mt-5 max-w-[600px] text-[clamp(16px,2vw,19px)] text-pretty text-[#56696e]">{t(`${doc}.lead`)}</p>
+          <p className="mt-5 max-w-[600px] text-[clamp(16px,2vw,19px)] text-pretty text-ink-500">{t(`${doc}.lead`)}</p>
           <div className="mt-[22px] flex flex-wrap gap-[18px] text-sm text-ink-400">
             <span className="flex items-center gap-1.5">
               <Calendar className="size-[15px] text-teal-500" aria-hidden />
@@ -119,7 +119,7 @@ export async function LegalPage({
                   <span className="font-latin text-[15px] font-extrabold text-amber-700">{String(i + 1).padStart(2, "0")}</span>
                   {s.title}
                 </h2>
-                <div className="space-y-3 text-base leading-[1.85] text-[#33454a] en:leading-[1.7]">
+                <div className="space-y-3 text-base leading-[1.85] text-ink-700 en:leading-[1.7]">
                   {s.paragraphs?.map((p) => <p key={p}>{p}</p>)}
                   {publishedClauses(s.clauses ?? [], switchDate).map((c) => (
                     <p key={c.title}>
@@ -128,7 +128,7 @@ export async function LegalPage({
                   ))}
                 </div>
                 {s.list ? (
-                  <ul className="mt-3 grid list-disc gap-1.5 ps-5 text-base leading-[1.85] text-[#33454a] en:leading-[1.7]">
+                  <ul className="mt-3 grid list-disc gap-1.5 ps-5 text-base leading-[1.85] text-ink-700 en:leading-[1.7]">
                     {s.list.map((li) => (
                       <li key={li}>{li}</li>
                     ))}
@@ -143,7 +143,7 @@ export async function LegalPage({
                   </div>
                 ) : null}
                 {s.contact !== undefined ? (
-                  <p className="mt-3 text-base text-[#33454a]">
+                  <p className="mt-3 text-base text-ink-700">
                     {s.contact ? `${s.contact} ` : null}
                     <a href={`mailto:${CONTACT.email}`} className="font-latin text-teal-700">
                       {CONTACT.email}
@@ -178,7 +178,7 @@ async function PrivacyTable() {
           {rows.map((row) => (
             <tr key={row[0]}>
               {row.map((cell, i) => (
-                <td key={i} className={cn("border-t border-neutral-200 px-3.5 py-3 align-top leading-[1.6] text-[#33454a]", i === 0 && "font-semibold text-teal-900")}>
+                <td key={i} className={cn("border-t border-neutral-200 px-3.5 py-3 align-top leading-[1.6] text-ink-700", i === 0 && "font-semibold text-teal-900")}>
                   {cell}
                 </td>
               ))}
@@ -198,7 +198,7 @@ async function RightsGrid() {
       {rights.map((r, i) => {
         const Icon = RIGHT_ICONS[i] ?? Info;
         return (
-          <div key={r.title} className="flex items-start gap-3 rounded-[14px] border border-neutral-200 px-4 py-3.5 text-sm text-[#33454a]">
+          <div key={r.title} className="flex items-start gap-3 rounded-[14px] border border-neutral-200 px-4 py-3.5 text-sm text-ink-700">
             <Icon className="mt-[3px] size-[18px] flex-none text-teal-500" aria-hidden />
             <div>
               <b className="block text-[15px] text-teal-900">{r.title}</b>

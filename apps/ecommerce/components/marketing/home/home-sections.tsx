@@ -38,12 +38,14 @@ import { PaymentDemo, ShippingDemo } from "./shipping-payment-demos.client";
 async function homePrices() {
   const rate = await getMarketingEgpPerUsd();
   const egp = (cents: number) => formatEgp(usdCentsToEgp(cents, rate));
+  // LRI...PDI isolates "$29" so Arabic text never flips it to "29$" (seen at a line wrap).
+  const usd = (cents: number) => `\u2066${formatUsd(cents)}\u2069`;
   return {
-    orderFee: formatUsd(PLAN_PRICES.free.orderFeeCents),
+    orderFee: usd(PLAN_PRICES.free.orderFeeCents),
     orderFeeEgp: egp(PLAN_PRICES.free.orderFeeCents),
-    pro: formatUsd(PLAN_PRICES.pro.monthlyCents),
+    pro: usd(PLAN_PRICES.pro.monthlyCents),
     proEgp: egp(PLAN_PRICES.pro.monthlyCents),
-    topUpMin: formatUsd(PLAN_PRICES.topUp.minCents),
+    topUpMin: usd(PLAN_PRICES.topUp.minCents),
     topUpMinEgp: egp(PLAN_PRICES.topUp.minCents),
     walletEgp: egp(HERO_DEMO_WALLET_USD_CENTS),
   };
@@ -71,7 +73,7 @@ function SplitHeading({ id, kicker, title, body }: { id: string; kicker: string;
       <h2 id={id} className="text-[clamp(28px,4vw,44px)] leading-[1.3] font-bold text-balance text-teal-900 en:leading-[1.15] en:tracking-[-0.01em]">
         {title}
       </h2>
-      <p className="max-w-[620px] text-[17px] text-pretty text-[#5a6d72]">{body}</p>
+      <p className="max-w-[620px] text-[17px] text-pretty text-ink-500">{body}</p>
     </>
   );
 }
@@ -100,13 +102,13 @@ export async function HomeHero() {
         >
           {t.rich("title", richTags)}
         </h1>
-        <p className="mx-auto mt-4 mb-6 max-w-[640px] text-[clamp(16px,2vw,19px)] text-pretty text-[#56696e] min-[641px]:mt-5 min-[641px]:mb-8">{t("lead")}</p>
+        <p className="mx-auto mt-4 mb-6 max-w-[640px] text-[clamp(16px,2vw,19px)] text-pretty text-ink-500 min-[641px]:mt-5 min-[641px]:mb-8">{t("lead")}</p>
         {composer ? (
           <HeroComposer className="max-w-[720px]" />
         ) : (
           <SignupTrigger className="h-[58px] px-10 text-[17px]">{t("cta")}</SignupTrigger>
         )}
-        <ul className="m-0 mt-7 flex list-none flex-wrap justify-center gap-x-3.5 gap-y-1.5 p-0 text-[13px] text-[#56696e] min-[641px]:gap-x-[22px] min-[641px]:gap-y-2 min-[641px]:text-sm">
+        <ul className="m-0 mt-7 flex list-none flex-wrap justify-center gap-x-3.5 gap-y-1.5 p-0 text-[13px] text-ink-500 min-[641px]:gap-x-[22px] min-[641px]:gap-y-2 min-[641px]:text-sm">
           {checks.map((check) => (
             <li key={check} className="flex items-center gap-1.5">
               <Check className="size-4 text-[#16a34a]" aria-hidden />
@@ -115,7 +117,7 @@ export async function HomeHero() {
           ))}
         </ul>
         {/* One muted line with both plans' prices, to the pricing section below (English shows USD only, like its other copy). */}
-        <a href="#pricing" className="mt-3 max-w-[560px] text-[13px] text-balance text-[#56696e] underline-offset-2 hover:text-teal-700 hover:underline min-[641px]:text-sm">
+        <a href="#pricing" className="mt-3 max-w-[560px] text-[13px] text-balance text-ink-500 underline-offset-2 hover:text-teal-700 hover:underline min-[641px]:text-sm">
           {t("priceLine", prices)}
         </a>
       </Container>
@@ -133,7 +135,7 @@ export async function HomeHero() {
               className="m-0 flex flex-none list-none gap-2.5 p-0 pe-2.5"
             >
               {features.map((label) => (
-                <li key={label} dir={locale === "ar" ? "rtl" : "ltr"} className="inline-flex h-[38px] items-center gap-2 rounded-full border border-line bg-white/75 px-4 text-[13.5px] font-semibold whitespace-nowrap text-[#33464b]">
+                <li key={label} dir={locale === "ar" ? "rtl" : "ltr"} className="inline-flex h-[38px] items-center gap-2 rounded-full border border-line bg-white/75 px-4 text-[13.5px] font-semibold whitespace-nowrap text-ink-700">
                   <i aria-hidden className="size-[7px] rounded-full bg-amber-600" />
                   {label}
                 </li>
@@ -166,7 +168,7 @@ export async function WhatIsTallabySection() {
       <Container className="grid items-center gap-8 min-[1081px]:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] min-[1081px]:gap-14">
         <Reveal className="flex flex-col items-start gap-[18px]">
           <SplitHeading id="what-is-tallaby-title" kicker={t("kicker")} title={t("title")} body={t("lead")} />
-          <p className="flex max-w-[620px] items-start gap-2.5 rounded-2xl border border-[#e6eef0] bg-white/80 px-4 py-3 text-[15px] text-pretty text-[#33464b]">
+          <p className="flex max-w-[620px] items-start gap-2.5 rounded-2xl border border-[#e6eef0] bg-white/80 px-4 py-3 text-[15px] text-pretty text-ink-700">
             <Users className="mt-0.5 size-[18px] flex-none text-teal-700" aria-hidden />
             {t("who")}
           </p>
@@ -182,9 +184,9 @@ export async function WhatIsTallabySection() {
                 <point.icon aria-hidden />
               </IconTile>
               <h3 className="text-[15.5px] leading-normal font-bold text-teal-900 min-[641px]:text-[17px]">{t(`points.${point.key}.title`)}</h3>
-              <p className="text-sm text-pretty text-[#5f7277]">
+              <p className="text-sm text-pretty text-ink-500">
                 {t.rich(`points.${point.key}.body`, {
-                  domain: (chunks) => <Ltr className="font-latin font-semibold text-[#33464b]">{chunks}</Ltr>,
+                  domain: (chunks) => <Ltr className="font-latin font-semibold text-ink-700">{chunks}</Ltr>,
                 })}
               </p>
             </Reveal>
@@ -230,7 +232,7 @@ export async function FeaturesSection() {
                   ),
                 })}
               </h3>
-              <p className="text-[15px] text-pretty text-[#5f7277]">{t("mcpBody")}</p>
+              <p className="text-[15px] text-pretty text-ink-500">{t("mcpBody")}</p>
             </div>
             <McpChatDemo />
           </Reveal>
@@ -240,7 +242,7 @@ export async function FeaturesSection() {
                 <card.icon aria-hidden />
               </IconTile>
               <h3 className="text-[15.5px] leading-normal font-bold text-teal-900 min-[641px]:text-[17px]">{card.title}</h3>
-              <p className="text-sm text-pretty text-[#5f7277]">{card.body}</p>
+              <p className="text-sm text-pretty text-ink-500">{card.body}</p>
               {card.link ? (
                 <a href={card.link.href} className="mt-1 text-sm font-bold text-teal-700 min-[641px]:mt-auto">
                   {card.link.label}
@@ -331,7 +333,7 @@ export async function MarketingSection() {
         </Reveal>
         <Reveal className="mt-7 flex flex-wrap justify-center gap-2.5">
           {extras.map((extra) => (
-            <span key={extra.label} className="inline-flex h-[42px] items-center gap-2 rounded-full border border-line bg-white/80 px-4 text-sm font-semibold text-[#33464b]">
+            <span key={extra.label} className="inline-flex h-[42px] items-center gap-2 rounded-full border border-line bg-white/80 px-4 text-sm font-semibold text-ink-700">
               <extra.icon className="size-4 text-teal-700" aria-hidden />
               {extra.label}
             </span>
@@ -361,7 +363,7 @@ export async function ShippingSection() {
                   {carrier.icon ? <carrier.icon className="size-4 text-teal-700" aria-hidden /> : <span className="size-2.5 flex-none rounded-[3px]" style={{ background: carrier.dot }} />}
                   <b className={carrier.latin ? "font-latin text-[15px] font-extrabold text-[#26393e]" : "text-[13.5px] font-bold text-[#26393e]"}>{carrier.name}</b>
                 </span>
-                <small className="text-xs text-[#5f7277]">{carrier.note}</small>
+                <small className="text-xs text-ink-500">{carrier.note}</small>
               </div>
             ))}
           </div>
@@ -444,7 +446,7 @@ export async function HowItWorks() {
               <SiteCard className="flex h-full flex-col items-start gap-2.5 p-[26px]">
                 <span className="grid size-11 place-items-center rounded-[14px] bg-teal-900 font-latin text-lg font-extrabold text-white">{i + 1}</span>
                 <h3 className="text-[19px] font-bold text-teal-900">{step.title}</h3>
-                <p className="text-[15px] text-pretty text-[#5f7277]">{step.body}</p>
+                <p className="text-[15px] text-pretty text-ink-500">{step.body}</p>
                 <span className="mt-auto inline-flex items-center gap-1.5 rounded-full bg-teal-50 px-3 py-1 text-[13px] font-semibold text-teal-700">
                   <step.icon className="size-3.5" aria-hidden />
                   {step.tag}

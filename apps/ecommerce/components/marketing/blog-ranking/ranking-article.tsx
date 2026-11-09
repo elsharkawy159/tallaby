@@ -90,7 +90,7 @@ async function ItemCard({ item, rank }: { item: RankingItem; rank: number }) {
                 <ThumbsUp className="size-4" aria-hidden />
                 {t("pros")}
               </h4>
-              <ul className="grid gap-2 text-[14.5px] leading-[1.6] text-[#33464b]">
+              <ul className="grid gap-2 text-[14.5px] leading-[1.6] text-ink-700">
                 {item.pros.map((pro) => (
                   <li key={pro} className="grid grid-cols-[18px_1fr] gap-2">
                     <Check className="mt-1 size-4 stroke-[2.4] text-[#16a34a]" aria-hidden />
@@ -108,7 +108,7 @@ async function ItemCard({ item, rank }: { item: RankingItem; rank: number }) {
                 <ThumbsDown className="size-4" aria-hidden />
                 {t("cons")}
               </h4>
-              <ul className="grid gap-2 text-[14.5px] leading-[1.6] text-[#33464b]">
+              <ul className="grid gap-2 text-[14.5px] leading-[1.6] text-ink-700">
                 {item.cons.map((con) => (
                   <li key={con} className="grid grid-cols-[18px_1fr] gap-2">
                     <X className="mt-1 size-4 stroke-[2.4] text-[#dc2626]" aria-hidden />
@@ -172,7 +172,7 @@ export async function RankingArticleView({ article }: { article: RankingArticle 
       <JsonLd data={faqSchema(article.faq)} />
       <ReadingProgress articleId="ranking-article" />
 
-      <div className="pt-10 text-[#33464b]">
+      <div className="pt-10 text-ink-700">
         <Container>
           <Breadcrumb items={[{ label: t("crumb"), href: "/blog" }, { label: article.title }]} className="mb-[26px]" />
           <h1 className="max-w-[900px] text-[clamp(30px,4.4vw,52px)] leading-[1.35] font-bold text-balance text-teal-900 en:leading-[1.15]">{article.title}</h1>
@@ -218,7 +218,7 @@ export async function RankingArticleView({ article }: { article: RankingArticle 
             </summary>
             <nav className="grid px-[18px] pb-3.5 text-[14.5px] leading-normal">
               {toc.map((entry) => (
-                <a key={entry.id} href={`#${entry.id}`} className={cn("border-t border-[#f0f3f4] py-2 text-[#33464b]", "rank" in entry && "ps-4 text-[13.5px] text-[#56696e]")}>
+                <a key={entry.id} href={`#${entry.id}`} className={cn("border-t border-[#f0f3f4] py-2 text-ink-700", "rank" in entry && "ps-4 text-[13.5px] text-ink-500")}>
                   {entry.title}
                 </a>
               ))}
@@ -236,7 +236,7 @@ export async function RankingArticleView({ article }: { article: RankingArticle 
           <div className="mb-3 overflow-x-auto rounded-[22px] border border-[#e3ebed] bg-white shadow-[0_14px_36px_rgba(13,55,67,0.05)]">
             <table className="w-full border-collapse text-[13.5px] leading-[1.6] sm:text-[14.5px]">
               <thead>
-                <tr className="bg-[#f6fafb] text-[13px] font-semibold whitespace-nowrap text-[#5a6d72] [&_th]:p-2.5 [&_th]:text-start sm:[&_th]:px-3.5 sm:[&_th]:py-3">
+                <tr className="bg-[#f6fafb] text-[13px] font-semibold whitespace-nowrap text-ink-500 [&_th]:p-2.5 [&_th]:text-start sm:[&_th]:px-3.5 sm:[&_th]:py-3">
                   <th>{t("columns.rank")}</th>
                   <th>{t("columns.platform")}</th>
                   {hasBestFor ? <th className="hidden min-[821px]:table-cell">{t("columns.bestFor")}</th> : null}
@@ -271,7 +271,7 @@ export async function RankingArticleView({ article }: { article: RankingArticle 
             </p>
             <ul className="grid grid-cols-2 gap-2.5 min-[601px]:grid-cols-3 min-[1101px]:grid-cols-5">
               {article.criteria.map(({ icon: Icon, title, body }) => (
-                <li key={title} className="grid justify-items-start gap-2 rounded-2xl bg-white px-3 py-3.5 text-sm leading-normal text-[#33464b]">
+                <li key={title} className="grid justify-items-start gap-2 rounded-2xl bg-white px-3 py-3.5 text-sm leading-normal text-ink-700">
                   <span className="grid size-9 place-items-center rounded-[11px] bg-teal-700 text-white">
                     <Icon className="size-[17px]" aria-hidden />
                   </span>
@@ -313,7 +313,7 @@ export async function RankingArticleView({ article }: { article: RankingArticle 
                   <input type="checkbox" className="mt-1 size-5 accent-teal-700" />
                   <div>
                     <b className="block text-teal-900">{item.title}</b>
-                    <span className="text-[15px] text-[#56696e]">
+                    <span className="text-[15px] text-ink-500">
                       <BidiText text={item.body} />
                     </span>
                   </div>

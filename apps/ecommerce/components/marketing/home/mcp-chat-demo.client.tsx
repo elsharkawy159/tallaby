@@ -60,7 +60,7 @@ export function McpChatDemo() {
       <div className="flex items-center gap-2 border-b border-[#f0f4f5] pb-2.5 text-[12.5px] text-ink-400">
         <span dir="ltr" className="flex gap-1">
           {["Claude", "ChatGPT"].map((name) => (
-            <span key={name} className={cn("inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-latin text-[11px] font-bold", name === assistant ? "bg-teal-900 text-white" : "bg-[#f1f5f6] text-[#3f5358]")}>
+            <span key={name} className={cn("inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-latin text-[11px] font-bold", name === assistant ? "bg-teal-900 text-white" : "bg-[#f1f5f6] text-ink-600")}>
               {name === "Claude" ? <ClaudeMark className="size-3" /> : <ChatGptMark className="size-3" />}
               {name}
             </span>
@@ -81,7 +81,7 @@ export function McpChatDemo() {
         if (line.kind === "tool") {
           const Icon = line.done ? CircleCheck : LoaderCircle;
           return (
-            <div key={line.key} dir="ltr" className="flex items-center gap-2 self-end rounded-[10px] border border-dashed border-[#cfdde1] bg-white px-2.5 py-1.5 font-latin text-xs font-semibold whitespace-nowrap text-[#3f5358]">
+            <div key={line.key} dir="ltr" className="flex items-center gap-2 self-end rounded-[10px] border border-dashed border-[#cfdde1] bg-white px-2.5 py-1.5 font-latin text-xs font-semibold whitespace-nowrap text-ink-600">
               <Icon className={cn("size-3.5", line.done ? "text-[#16a34a]" : "animate-spin text-teal-700")} />
               {line.text}
             </div>
@@ -92,7 +92,7 @@ export function McpChatDemo() {
             key={line.key}
             className={cn(
               "max-w-[88%] rounded-2xl px-3.5 py-2.5 text-[13.5px] leading-[1.65]",
-              line.kind === "user" ? "self-start rounded-es-[4px] bg-teal-700 text-white" : "self-end rounded-ee-[4px] bg-[#f4f7f8] text-[#2d4146]",
+              line.kind === "user" ? "self-start rounded-es-[4px] bg-teal-700 text-white" : "self-end rounded-ee-[4px] bg-[#f4f7f8] text-ink-700",
             )}
           >
             {line.text}

@@ -58,7 +58,7 @@ const HOLD_MS = 2200;
 const STATIC_MS = 4000;
 
 const iconButton =
-  "grid size-11 flex-none place-items-center rounded-full text-[#33464b] transition-colors outline-none hover:bg-teal-50 hover:text-teal-900 focus-visible:ring-[3px] focus-visible:ring-teal-700/30 disabled:opacity-50";
+  "grid size-11 flex-none place-items-center rounded-full text-ink-700 transition-colors outline-none hover:bg-teal-50 hover:text-teal-900 focus-visible:ring-[3px] focus-visible:ring-teal-700/30 disabled:opacity-50";
 
 type IntakeResponse =
   | { ok: true; intakeId: string; token: string; uploads: { kind: "file" | "logo"; path: string; token: string; contentType: string }[] }
@@ -303,7 +303,7 @@ export function HeroComposer({ className }: { className?: string }) {
           aria-describedby={`${ids}-help ${ids}-count`}
           aria-invalid={error === "empty" || undefined}
           disabled={busy}
-          className="block max-h-[220px] min-h-[64px] w-full resize-none bg-transparent px-3 pt-2.5 text-base leading-relaxed text-teal-900 outline-none placeholder:text-[#7a8b90] disabled:opacity-70 sm:text-[17px]"
+          className="block max-h-[220px] min-h-[64px] w-full resize-none bg-transparent px-3 pt-2.5 text-base leading-relaxed text-teal-900 outline-none placeholder:text-ink-400 disabled:opacity-70 sm:text-[17px]"
         />
         <p id={`${ids}-help`} className="sr-only">
           {t("keyboardHelp")}
@@ -346,7 +346,7 @@ export function HeroComposer({ className }: { className?: string }) {
         ) : null}
 
         {logo && logo.colors.length ? (
-          <div className="flex flex-wrap items-center gap-2 px-2 pt-1.5 text-[13px] text-[#56696e]">
+          <div className="flex flex-wrap items-center gap-2 px-2 pt-1.5 text-[13px] text-ink-500">
             <span>{t("logoColors")}</span>
             {logo.colors.map((hex) => (
               <button
@@ -411,7 +411,7 @@ export function HeroComposer({ className }: { className?: string }) {
                   </button>
                 ))}
               </div>
-              <label htmlFor={`${ids}-hex`} className="mt-3 mb-1.5 block text-[13px] font-semibold text-[#33464b]">
+              <label htmlFor={`${ids}-hex`} className="mt-3 mb-1.5 block text-[13px] font-semibold text-ink-700">
                 {t("colorHex")}
               </label>
               <div className="flex gap-2" dir="ltr">
@@ -441,7 +441,7 @@ export function HeroComposer({ className }: { className?: string }) {
             </PopoverContent>
           </Popover>
 
-          <span id={`${ids}-count`} className="ms-auto px-2 font-latin text-xs text-[#7a8b90] tabular-nums" aria-live="off">
+          <span id={`${ids}-count`} className="ms-auto px-2 font-latin text-xs text-ink-400 tabular-nums" aria-live="off">
             {t("counter", { count: prompt.length, max: INTAKE_LIMITS.promptChars })}
           </span>
           <button
@@ -488,7 +488,7 @@ function AttachmentChip({
       {icon}
       <span className="flex min-w-0 flex-col leading-tight">
         <span className="truncate text-[13px] font-semibold text-teal-900">{title}</span>
-        <span className="truncate text-xs text-[#56696e]" aria-live="polite">
+        <span className="truncate text-xs text-ink-500" aria-live="polite">
           {detail}
         </span>
       </span>
@@ -497,7 +497,7 @@ function AttachmentChip({
         onClick={onRemove}
         disabled={disabled}
         aria-label={removeLabel}
-        className="grid size-11 flex-none place-items-center rounded-full text-[#56696e] outline-none hover:bg-white hover:text-teal-900 focus-visible:ring-[3px] focus-visible:ring-teal-700/30"
+        className="grid size-11 flex-none place-items-center rounded-full text-ink-500 outline-none hover:bg-white hover:text-teal-900 focus-visible:ring-[3px] focus-visible:ring-teal-700/30"
       >
         <X className="size-4" aria-hidden />
       </button>

@@ -68,7 +68,7 @@ export async function DetailPageView({ page }: { page: DetailPage }) {
             <h1 className="text-[clamp(30px,4vw,48px)] leading-[1.3] font-bold text-balance text-teal-900 en:leading-[1.15] en:tracking-[-0.01em]">
               <BidiText text={t("title")} />
             </h1>
-            <p className="text-lg text-pretty text-[#56696e]">
+            <p className="text-lg text-pretty text-ink-500">
               <BidiText text={t("lead")} />
             </p>
             <div className="flex w-full flex-col gap-2.5 sm:w-auto sm:flex-row sm:flex-wrap">
@@ -127,7 +127,7 @@ export async function DetailPageView({ page }: { page: DetailPage }) {
               <div className="mt-5 flex flex-wrap items-center justify-center gap-2 text-sm text-ink-500">
                 <span>{t("eventsLabel")}</span>
                 {page.events.map((name) => (
-                  <span key={name} className="inline-flex h-[38px] items-center gap-2 rounded-full border border-[#e3ebed] bg-white px-3.5 font-semibold text-[#33464b]">
+                  <span key={name} className="inline-flex h-[38px] items-center gap-2 rounded-full border border-[#e3ebed] bg-white px-3.5 font-semibold text-ink-700">
                     <b dir="ltr" className="font-latin text-[12.5px] text-teal-700">
                       {name}
                     </b>
@@ -147,7 +147,7 @@ export async function DetailPageView({ page }: { page: DetailPage }) {
             <Reveal className="grid items-start gap-4 rounded-card-lg border border-[#dbe8eb] bg-teal-50 p-5 sm:p-7 min-[1081px]:grid-cols-[minmax(0,0.7fr)_minmax(0,1.3fr)] min-[1081px]:gap-8">
               <div>
                 <h2 className="text-[clamp(24px,3vw,32px)] leading-[1.35] font-bold text-teal-900">{t("requirementsTitle")}</h2>
-                <p className="mt-2 text-[15px] text-[#56696e]">{shared("requirementsLead")}</p>
+                <p className="mt-2 text-[15px] text-ink-500">{shared("requirementsLead")}</p>
               </div>
               <ul className="grid gap-2.5 min-[761px]:grid-cols-2">
                 {requirements.map((item) => (
@@ -184,7 +184,7 @@ export async function DetailPageView({ page }: { page: DetailPage }) {
                   <h3 className="mb-1.5 text-lg leading-normal font-bold text-teal-900">
                     <BidiText text={step.title} />
                   </h3>
-                  <p className="text-[15px] text-pretty text-[#56696e]">
+                  <p className="text-[15px] text-pretty text-ink-500">
                     <BidiText text={step.body} />
                   </p>
                 </div>

@@ -80,7 +80,7 @@ export async function ComparePageView({ competitor }: { competitor: Competitor }
             <CompetitorChip name={name} />
           </div>
           <h1 className="mx-auto max-w-[860px] text-[clamp(28px,4.6vw,50px)] leading-[1.35] font-bold text-balance text-teal-900 en:leading-[1.15] en:tracking-[-0.01em]">{t("title", { name })}</h1>
-          <div className="mt-[22px] flex flex-wrap items-center justify-center gap-x-[22px] gap-y-2.5 text-sm text-[#5a6d72]">
+          <div className="mt-[22px] flex flex-wrap items-center justify-center gap-x-[22px] gap-y-2.5 text-sm text-ink-500">
             <span className="flex items-center gap-2">
               <Calendar className="size-4 text-teal-500" aria-hidden />
               {t("checkedOn", { date: formatLongDate(competitor.factsCheckedOn, locale) })}
@@ -130,7 +130,7 @@ export async function ComparePageView({ competitor }: { competitor: Competitor }
       <section className="py-10">
         <Container>
           <h2 className={H2}>{t("tableTitle", { name })}</h2>
-          <div className="mb-4 flex flex-wrap gap-x-5 gap-y-2 text-[13.5px] text-[#5a6d72]">
+          <div className="mb-4 flex flex-wrap gap-x-5 gap-y-2 text-[13.5px] text-ink-500">
             {(["y", "p", "n"] as const).map((status) => (
               <span key={status} className="flex items-center gap-2">
                 <StatusIcon status={status} label="" />
@@ -160,7 +160,7 @@ export async function ComparePageView({ competitor }: { competitor: Competitor }
                 </div>
                 {group.rows.map((row) => (
                   <div key={row.id} className="grid grid-cols-2 border-t border-[#edf1f2] min-[761px]:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)_minmax(0,1fr)] min-[761px]:border-[#f0f3f4]">
-                    <div className="col-span-2 px-3.5 pt-3 pb-1 text-sm font-semibold text-[#33464b] min-[761px]:col-span-1 min-[761px]:px-5 min-[761px]:py-[13px] min-[761px]:text-[15px]">{t(`rows.${row.id}.label`)}</div>
+                    <div className="col-span-2 px-3.5 pt-3 pb-1 text-sm font-semibold text-ink-700 min-[761px]:col-span-1 min-[761px]:px-5 min-[761px]:py-[13px] min-[761px]:text-[15px]">{t(`rows.${row.id}.label`)}</div>
                     <div className="flex flex-col items-start gap-1.5 bg-[rgba(20,81,99,0.045)] px-3 pt-1.5 pb-3.5 text-[13.5px] text-pretty text-[#4a5c61] min-[761px]:flex-row min-[761px]:gap-2.5 min-[761px]:px-5 min-[761px]:py-[13px] min-[761px]:text-[14.5px]">
                       <StatusIcon status={row.tallaby} label={statusLabel(row.tallaby)} />
                       <span>
@@ -204,7 +204,7 @@ export async function ComparePageView({ competitor }: { competitor: Competitor }
                       <b className="block text-[15.5px] text-teal-900">
                         <BidiText text={item.title} />
                       </b>
-                      <p className="text-[14.5px] text-pretty text-[#56696e]">
+                      <p className="text-[14.5px] text-pretty text-ink-500">
                         <BidiText text={item.body} />
                       </p>
                     </li>
@@ -224,7 +224,7 @@ export async function ComparePageView({ competitor }: { competitor: Competitor }
               <Reveal key={step.title} className="rounded-card border border-[#e3ebed] bg-white p-[26px]">
                 <Num className="mb-4 grid size-10 place-items-center rounded-full bg-amber-600 text-[15px] font-bold text-teal-900">{i + 1}</Num>
                 <h3 className="mb-1.5 text-lg font-bold text-teal-900">{i === 1 ? t("moveProducts", { name }) : step.title}</h3>
-                <p className="text-[14.5px] text-pretty text-[#56696e]">
+                <p className="text-[14.5px] text-pretty text-ink-500">
                   <BidiText text={step.body} />
                 </p>
                 <StepLink target={stepLinks[i]!} label={step.link} />

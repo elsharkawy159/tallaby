@@ -69,12 +69,12 @@ export async function SiteFooter() {
     ...(CONTACT.whatsapp ? [{ id: "whatsapp" as const, href: CONTACT.whatsapp, label: "WhatsApp" }] : []),
   ];
 
-  const link = "text-[#c6d6da] transition-colors duration-150 hover:text-amber-600 hover:no-underline";
+  const link = "text-ink-on-dark transition-colors duration-150 hover:text-amber-600 hover:no-underline";
   // Phones: each link gets a 40px-tall row so it is easy to tap.
   const tap = "max-[860px]:inline-flex max-[860px]:min-h-10 max-[860px]:items-center";
 
   return (
-    <footer data-print="hide" className="text-sm text-[#c6d6da]">
+    <footer data-print="hide" className="text-sm text-ink-on-dark">
       <div className="bg-footer-top pt-14 pb-12">
         <Container className="grid grid-cols-2 gap-x-6 gap-y-8 min-[861px]:grid-cols-[1.3fr_1fr_1.15fr_1fr_1fr] min-[861px]:gap-10">
           <div className="col-span-2 min-[861px]:col-span-1">

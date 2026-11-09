@@ -43,7 +43,7 @@ export function FeeEstimator({ rates }: { rates: Record<string, number> }) {
       <div className="grid min-[861px]:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <div className="flex flex-col gap-5 p-6 min-[641px]:p-9">
           <div className="flex items-end justify-between gap-3">
-            <span className="text-[15px] font-semibold text-[#33454a]">
+            <span className="text-[15px] font-semibold text-ink-700">
               {t("orders")}
             </span>
             <b className="font-latin text-[40px] leading-none font-extrabold text-teal-900 tabular-nums min-[641px]:text-[48px]">{formatNumber(orders)}</b>
@@ -74,14 +74,14 @@ export function FeeEstimator({ rates }: { rates: Record<string, number> }) {
                 onClick={() => setOrders(preset)}
                 className={cn(
                   "h-10 min-w-[64px] rounded-full border px-4 font-latin text-sm font-semibold transition-colors duration-150 focus-visible:shadow-[var(--ring-focus)] focus-visible:outline-none",
-                  orders === preset ? "border-teal-900 bg-teal-900 text-white" : "border-line-strong bg-white text-[#33454a] hover:border-teal-700",
+                  orders === preset ? "border-teal-900 bg-teal-900 text-white" : "border-line-strong bg-white text-ink-700 hover:border-teal-700",
                 )}
               >
                 {formatNumber(preset)}
               </button>
             ))}
           </div>
-          <p className="mt-auto flex items-start gap-2 rounded-card-sm bg-teal-50/70 p-3.5 text-[13.5px] text-pretty text-[#33464b]">
+          <p className="mt-auto flex items-start gap-2 rounded-card-sm bg-teal-50/70 p-3.5 text-[13.5px] text-pretty text-ink-700">
             <Info className="mt-0.5 size-4 flex-none text-teal-700" aria-hidden />
             {t("breakEven", { orders: formatNumber(proBreakEvenOrdersShown()), price: money(PLAN_PRICES.pro.monthlyCents) })}
           </p>

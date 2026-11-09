@@ -58,7 +58,7 @@ export function AiDemo({ children }: { children: React.ReactNode }) {
             </span>
             <div>
               <b className="block text-[15.5px] text-teal-900">{ts(`${service.key}Title`)}</b>
-              <small className="text-[13.5px] text-[#5f7277]">{ts(`${service.key}Body`)}</small>
+              <small className="text-[13.5px] text-ink-500">{ts(`${service.key}Body`)}</small>
             </div>
           </li>
         ))}
@@ -80,7 +80,7 @@ export function AiDemo({ children }: { children: React.ReactNode }) {
         <div className="flex h-[50px] items-center gap-2.5 rounded-[14px] border-[1.5px] border-[#dfe8ea] ps-3.5 pe-1.5 text-[#8aa0a6]">
           <Type className="size-4 flex-none" />
           <FileText className="size-4 flex-none" />
-          <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-[#33464b]">{input}</span>
+          <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-ink-700">{input}</span>
           <span className={cn("flex h-[38px] flex-none items-center gap-1.5 rounded-[10px] bg-teal-900 px-3.5 text-[13px] font-bold text-white transition-transform duration-150", step === 2 && "scale-[0.94] delay-700")}>
             <Sparkles className="size-[15px]" />
             {t("generate")}
@@ -141,7 +141,7 @@ function FieldValue({ loading, done, className, children }: { loading?: boolean;
   return (
     <div
       className={cn(
-        "relative min-h-10 overflow-hidden rounded-xl border border-[#e6eef0] bg-[#fbfcfd] px-3 py-2 text-start text-[13.5px] text-[#2d4146] transition-colors duration-300",
+        "relative min-h-10 overflow-hidden rounded-xl border border-[#e6eef0] bg-[#fbfcfd] px-3 py-2 text-start text-[13.5px] text-ink-700 transition-colors duration-300",
         done && "border-[#cfe6d6] bg-white",
         loading && "animate-pulse bg-[#eef4f5]",
         className,

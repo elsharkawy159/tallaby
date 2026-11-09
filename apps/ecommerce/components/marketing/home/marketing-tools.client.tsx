@@ -126,7 +126,7 @@ export function MarketingTools() {
                   </span>
                   <span className="min-w-0">
                     <b className="block text-[15px] text-teal-900">{t(`tabs.${tab.id}.title`)}</b>
-                    <small className="text-[13px] text-[#5f7277]">{t(`tabs.${tab.id}.body`)}</small>
+                    <small className="text-[13px] text-ink-500">{t(`tabs.${tab.id}.body`)}</small>
                   </span>
                   {selected ? (
                     <span aria-hidden className="absolute inset-x-3.5 bottom-0 h-0.5 overflow-hidden rounded-sm bg-[#edf2f3]">
@@ -225,7 +225,7 @@ function WhatsAppPane() {
           <small className="block text-end font-latin text-[10.5px] text-[#8a979a]">10:25</small>
         </div>
       </div>
-      <p className="flex items-start gap-2 text-[12.5px] text-[#5f7277]">
+      <p className="flex items-start gap-2 text-[12.5px] text-ink-500">
         <Info className="mt-[3px] size-[15px] flex-none text-teal-700" aria-hidden />
         {t("note")}
       </p>
@@ -261,7 +261,7 @@ function CartsPane({ running }: { running: boolean }) {
           </li>
         ))}
       </ul>
-      <p className="flex items-start gap-2 text-[12.5px] text-[#5f7277]">
+      <p className="flex items-start gap-2 text-[12.5px] text-ink-500">
         <Info className="mt-[3px] size-[15px] flex-none text-teal-700" aria-hidden />
         {t("note")}
       </p>
@@ -286,7 +286,7 @@ function CouponPane({ running }: { running: boolean }) {
         <div className="flex flex-col gap-1 bg-amber-50 p-4">
           <small className="text-xs text-[#8a5300]">{t("codeLabel")}</small>
           <b dir="ltr" className="text-start font-latin text-2xl font-extrabold text-teal-900">WELCOME15</b>
-          <span className="text-[13px] text-[#33464b]">{t("offer")}</span>
+          <span className="text-[13px] text-ink-700">{t("offer")}</span>
         </div>
         <div className="flex flex-col gap-2 px-4 py-3">
           {[
@@ -304,7 +304,7 @@ function CouponPane({ running }: { running: boolean }) {
       <div className="relative -mt-1.5 flex w-[250px] max-w-full flex-col gap-1.5 self-center rounded-[18px] border border-[#edf1f2] bg-white p-[18px] text-center shadow-[0_18px_40px_rgba(13,55,67,0.16)]">
         <span aria-hidden className="absolute end-3 top-2 text-[#9aabb0]">×</span>
         <b className="text-[15px] text-teal-900">{t("popupTitle")}</b>
-        <p className="text-[13px] text-[#5f7277]">
+        <p className="text-[13px] text-ink-500">
           {t("popupBody")} <span className="font-latin font-bold text-[#b42318]">{clock(seconds)}</span>
         </p>
         <em className="mt-1 rounded-[10px] bg-amber-600 px-3 py-[7px] text-[13px] font-bold text-teal-900 not-italic">{t("popupButton")}</em>

@@ -106,7 +106,7 @@ export function TemplateGallery({ entries }: { entries: GalleryEntry[] }) {
             <Plus aria-hidden />
           </IconTile>
           <b className="text-[17px] text-teal-900">{t("blankTitle")}</b>
-          <p className="max-w-[260px] text-sm text-[#5f7277]">{t("blankBody")}</p>
+          <p className="max-w-[260px] text-sm text-ink-500">{t("blankBody")}</p>
           <SignupTrigger tone="outline" size="sm">
             {t("blankCta")}
           </SignupTrigger>

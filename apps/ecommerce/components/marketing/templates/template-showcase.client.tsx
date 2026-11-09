@@ -69,7 +69,7 @@ export function TemplateShowcase({ entries }: { entries: ShowcaseEntry[] }) {
             }}
             className={cn(
               "flex h-9 flex-none items-center gap-2 rounded-full px-3 font-latin text-[13px] font-semibold whitespace-nowrap transition-colors duration-150 min-[641px]:h-10 min-[641px]:px-4 min-[641px]:text-sm",
-              i === current ? "bg-teal-900 text-white" : "text-[#43575c] hover:bg-[#f3f7f8]",
+              i === current ? "bg-teal-900 text-white" : "text-ink-600 hover:bg-[#f3f7f8]",
             )}
           >
             {item.palette[0] ? <i className="size-2.5 flex-none rounded-full shadow-[0_0_0_1px_rgba(0,0,0,0.08)]" style={{ background: item.palette[0] }} /> : null}
@@ -78,7 +78,7 @@ export function TemplateShowcase({ entries }: { entries: ShowcaseEntry[] }) {
         ))}
       </div>
 
-      <div className="mt-[18px] flex flex-wrap items-center justify-center gap-[18px] text-sm text-[#5a6d72]">
+      <div className="mt-[18px] flex flex-wrap items-center justify-center gap-[18px] text-sm text-ink-500">
         {entry.description ? <p className="max-w-[520px] text-center text-pretty">{entry.description}</p> : null}
         {entry.palette.length ? (
           <div className="flex items-center gap-2 text-[13px] text-ink-400">

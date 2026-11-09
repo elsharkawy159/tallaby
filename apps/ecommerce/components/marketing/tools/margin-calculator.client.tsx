@@ -211,7 +211,7 @@ export function MarginCalculator() {
         className="flex flex-col gap-[18px] border-t border-line bg-gradient-to-b from-[#f1f7f8] to-[#f8fbfb] p-[18px] py-[22px] sm:px-8 sm:py-[30px] min-[961px]:border-s min-[961px]:border-t-0"
       >
         <div>
-          <span className="text-sm font-semibold text-[#56696e]">{t("results.profit")}</span>
+          <span className="text-sm font-semibold text-ink-500">{t("results.profit")}</span>
           <div className="mt-1 flex flex-wrap items-baseline gap-2.5">
             <b
               dir="ltr"
@@ -222,7 +222,7 @@ export function MarginCalculator() {
             >
               {format(result.profit)}
             </b>
-            <span className="text-lg font-bold text-[#56696e]">{unit}</span>
+            <span className="text-lg font-bold text-ink-500">{unit}</span>
           </div>
           <p className="mt-2 text-[13px] text-ink-500">
             {t("results.feeLine")} <Num>{format(result.fee)}</Num> {unit}
@@ -231,7 +231,7 @@ export function MarginCalculator() {
 
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="rounded-[18px] border border-line bg-white p-4">
-            <span className="text-sm font-semibold text-[#56696e]">{t("results.margin")}</span>
+            <span className="text-sm font-semibold text-ink-500">{t("results.margin")}</span>
             <b
               dir="ltr"
               className={cn(
@@ -244,7 +244,7 @@ export function MarginCalculator() {
             <small className="mt-1 block text-[12.5px] text-ink-400">{t("results.marginHint")}</small>
           </div>
           <div className="rounded-[18px] border border-line bg-white p-4">
-            <span className="text-sm font-semibold text-[#56696e]">{t("results.suggested")}</span>
+            <span className="text-sm font-semibold text-ink-500">{t("results.suggested")}</span>
             <b dir="ltr" className="mt-1.5 block font-latin text-[26px] leading-[1.1] font-extrabold text-teal-700 tabular-nums sm:text-3xl rtl:text-right">
               {result.suggestedPrice === null ? "—" : format(result.suggestedPrice)}
             </b>

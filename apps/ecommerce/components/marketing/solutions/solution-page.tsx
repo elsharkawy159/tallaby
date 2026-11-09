@@ -115,7 +115,7 @@ export async function SolutionPageView({ solution }: { solution: Solution }) {
     <React.Fragment key="c">
       <div className="flex flex-wrap gap-1.5">
         {(shared.raw("publishTags") as string[]).map((tag) => (
-          <span key={tag} className="inline-flex h-7 items-center gap-1.5 rounded-full border border-[#e3ebed] bg-white px-2.5 text-xs font-semibold text-[#33464b]">
+          <span key={tag} className="inline-flex h-7 items-center gap-1.5 rounded-full border border-[#e3ebed] bg-white px-2.5 text-xs font-semibold text-ink-700">
             <i className="size-[7px] rounded-full bg-[#16a34a]" />
             <bdi>{tag}</bdi>
           </span>
@@ -135,7 +135,7 @@ export async function SolutionPageView({ solution }: { solution: Solution }) {
       <section className="pt-8 pb-10 text-center sm:pt-11">
         <Container>
           <h1 className="mx-auto max-w-[900px] text-[clamp(34px,5.6vw,60px)] leading-[1.25] font-bold text-balance text-teal-900 en:leading-[1.1] en:tracking-[-0.02em] [&_em]:text-amber-700">{t.rich("title", richTags)}</h1>
-          <p className="mx-auto mt-5 max-w-[640px] text-[clamp(16px,2vw,19px)] text-pretty text-[#56696e]">
+          <p className="mx-auto mt-5 max-w-[640px] text-[clamp(16px,2vw,19px)] text-pretty text-ink-500">
             <BidiText text={t("lead")} />
           </p>
           <div className="mt-7 flex flex-col justify-center gap-2.5 sm:flex-row sm:flex-wrap">
@@ -264,7 +264,7 @@ export async function SolutionPageView({ solution }: { solution: Solution }) {
             </div>
             {cost.map((row) => (
               <div key={row.label} className="contents">
-                <div className="col-span-2 border-t border-[#edf1f2] px-4 pt-3.5 pb-0.5 text-[15px] font-semibold text-[#33464b] min-[761px]:col-span-1 min-[761px]:border-[#f0f3f4] min-[761px]:px-[22px] min-[761px]:py-[15px]">{row.label}</div>
+                <div className="col-span-2 border-t border-[#edf1f2] px-4 pt-3.5 pb-0.5 text-[15px] font-semibold text-ink-700 min-[761px]:col-span-1 min-[761px]:border-[#f0f3f4] min-[761px]:px-[22px] min-[761px]:py-[15px]">{row.label}</div>
                 <div className="bg-[rgba(20,81,99,0.05)] px-4 pt-1 pb-3.5 text-[15px] font-semibold text-teal-900 min-[761px]:border-t min-[761px]:border-[#f0f3f4] min-[761px]:px-[22px] min-[761px]:py-[15px]">
                   <BidiText text={row.tallaby} />
                 </div>

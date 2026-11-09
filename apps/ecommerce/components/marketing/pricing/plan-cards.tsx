@@ -103,7 +103,7 @@ export async function PlanCards() {
             ) : null}
             <div>
               <h3 className={cn("text-[22px] font-bold text-teal-900", card.latinName && "font-latin")}>{card.name}</h3>
-              <p className="text-sm text-[#5f7277]">{card.tagline}</p>
+              <p className="text-sm text-ink-500">{card.tagline}</p>
             </div>
             <PlanPrice plan={card.plan} usd={card.price} per={card.per} note={card.note} />
             {card.activation ? (
@@ -115,7 +115,7 @@ export async function PlanCards() {
             <SignupTrigger tone={card.tone} plan={card.plan === "pro" ? "pro" : undefined} className="w-full">
               {card.cta}
             </SignupTrigger>
-            <ul className="m-0 mt-1 flex list-none flex-col gap-2.5 p-0 text-[14.5px] text-[#33464b]">
+            <ul className="m-0 mt-1 flex list-none flex-col gap-2.5 p-0 text-[14.5px] text-ink-700">
               {card.features.map((feature) => (
                 <li key={feature} className="flex items-start gap-2.5">
                   <Check className="mt-1 size-4 flex-none text-[#16a34a]" aria-hidden />

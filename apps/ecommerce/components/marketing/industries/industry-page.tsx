@@ -46,7 +46,7 @@ function NeedVisual({ visual, need, store, labels }: { visual: IndustryNeedVisua
             <span
               key={size}
               className={cn(
-                "grid h-[34px] min-w-[38px] place-items-center rounded-[10px] border-[1.5px] border-line-strong bg-white px-2.5 font-latin text-[13px] font-bold text-[#33464b]",
+                "grid h-[34px] min-w-[38px] place-items-center rounded-[10px] border-[1.5px] border-line-strong bg-white px-2.5 font-latin text-[13px] font-bold text-ink-700",
                 i === store.selectedSize && "border-teal-700 bg-teal-700 text-white",
               )}
             >
@@ -145,7 +145,7 @@ export async function IndustryPageView({ industry }: { industry: Industry }) {
               {t("tag")}
             </span>
             <h1 className="text-[clamp(32px,4.8vw,56px)] leading-[1.3] font-bold text-balance text-teal-900 en:leading-[1.12] en:tracking-[-0.015em] [&_em]:text-amber-700">{t.rich("title", richTags)}</h1>
-            <p className="max-w-[600px] text-[clamp(16px,2vw,19px)] text-pretty text-[#56696e]">
+            <p className="max-w-[600px] text-[clamp(16px,2vw,19px)] text-pretty text-ink-500">
               <BidiText text={t("lead")} />
             </p>
             <div className="flex w-full flex-col gap-2.5 sm:w-auto sm:flex-row sm:flex-wrap">
@@ -154,7 +154,7 @@ export async function IndustryPageView({ industry }: { industry: Industry }) {
                 <Link href="/templates">{shared("browseTemplates")}</Link>
               </CtaButton>
             </div>
-            <ul className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm text-[#56696e] min-[1081px]:justify-start">
+            <ul className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm text-ink-500 min-[1081px]:justify-start">
               {checks.map((item) => (
                 <li key={item} className="flex items-center gap-1.5">
                   <Check className="size-4 text-[#16a34a]" aria-hidden />
@@ -200,7 +200,7 @@ export async function IndustryPageView({ industry }: { industry: Industry }) {
                       </span>
                     </h3>
                     <p className="mb-2 text-sm text-pretty text-ink-500">{need.pain}</p>
-                    <p className="flex gap-2 text-[15px] text-pretty text-[#33464b]">
+                    <p className="flex gap-2 text-[15px] text-pretty text-ink-700">
                       <CircleCheck className="mt-[5px] size-[17px] flex-none text-[#16a34a]" aria-hidden />
                       <span>
                         <BidiText text={need.solution} />
