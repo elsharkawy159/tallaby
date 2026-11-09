@@ -3,12 +3,14 @@ import createMiddleware from "next-intl/middleware";
 import {
   hostnameOf,
   isLocalHost,
+  isMarketplaceHost,
   isPlatformHost,
   storeSubdomainFromHost,
 } from "@workspace/lib/storefront";
 import { STORE_PREVIEW_COOKIE } from "@workspace/lib/store-sites/preview";
 import { REFERRAL_COOKIE, referralCookieOptions, referralCookieToSet } from "@workspace/lib/referrals";
-import { routing } from "@/i18n/routing";
+import { LOCALE_COOKIE, routing } from "@/i18n/routing";
+import { englishLandingRedirect, LOCALE_LANDING_REDIRECT_HEADERS } from "@/lib/marketing/locale-landing.lib";
 import {
   isCrawlFilePath,
   isInternalStorefrontPath,
@@ -71,6 +73,26 @@ export async function proxy(request: NextRequest) {
     // The marketplace robots.txt / sitemap files, exactly as before this
     // proxy started matching them (no locale routing, no session).
     return NextResponse.next();
+  }
+
+  // tallaby.com only (never a storefront host, even when a storefront path
+  // falls through to here): a browser that doesn't prefer Arabic, landing on an
+  // Arabic marketing page with no language chosen yet, gets the English page.
+  // The full rule and its exclusions are in locale-landing.lib.ts.
+  if (isMarketplaceHost(host)) {
+    const english = englishLandingRedirect({
+      method: request.method,
+      pathname: request.nextUrl.pathname,
+      search: request.nextUrl.search,
+      host,
+      headers: request.headers,
+      localeCookie: request.cookies.get(LOCALE_COOKIE)?.value ?? null,
+    });
+    if (english) {
+      const redirect = NextResponse.redirect(new URL(english, request.url), 307);
+      for (const [key, value] of Object.entries(LOCALE_LANDING_REDIRECT_HEADERS)) redirect.headers.set(key, value);
+      return redirect;
+    }
   }
 
   const response = handleI18nRouting(request);
