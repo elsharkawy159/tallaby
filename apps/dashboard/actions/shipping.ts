@@ -59,7 +59,7 @@ async function requireSellerId(): Promise<string> {
   const id = session?.user?.id;
   if (!id) throw new ShippingError("unauthorized");
   // Shipments carry customer names and addresses: hidden until the first top-up (F-68).
-  if ((await getOrderLock(id)).locked) throw new ShippingError("unauthorized");
+  if ((await getOrderLock(id)).ordersLocked) throw new ShippingError("unauthorized");
   return id;
 }
 

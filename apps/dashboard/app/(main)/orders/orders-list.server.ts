@@ -18,10 +18,10 @@ const SELECT_ALL_MAX = 5000;
 /** Most orders one export call returns; the browser asks in chunks. */
 const EXPORT_CHUNK_MAX = 200;
 
-/** `testOnly` comes from the server (F-76: a seller who isn't activated sees only test orders), never the client. */
-const parseFilters = (filters: unknown, testOnly: boolean) => ({
+/** `onlyOrderId` comes from the server (F-84: locked orders show only the first one), never the client. */
+const parseFilters = (filters: unknown, onlyOrderId: string | null) => ({
   ...parseOrdersFilters((filters ?? {}) as Parameters<typeof parseOrdersFilters>[0]),
-  testOnly,
+  onlyOrderId,
 });
 
 const failure = (error: unknown, label: string) => {
@@ -34,8 +34,8 @@ export async function listFilteredOrderIdsAction(
   filters: unknown,
 ): Promise<{ success: true; ids: string[] } | { success: false }> {
   try {
-    const { sellerId, testOnly } = await requireOrdersView();
-    return { success: true, ids: await listFilteredOrderIds(sellerId, parseFilters(filters, testOnly)) };
+    const { sellerId, onlyOrderId } = await requireOrdersView();
+    return { success: true, ids: await listFilteredOrderIds(sellerId, parseFilters(filters, onlyOrderId)) };
   } catch (error) {
     return failure(error, "list ids");
   }
@@ -46,12 +46,12 @@ export async function selectFilteredOrdersAction(
   filters: unknown,
 ): Promise<{ success: true; orders: OrderSummary[]; capped: boolean } | { success: false }> {
   try {
-    const { sellerId, testOnly } = await requireOrdersView();
-    const ids = await listFilteredOrderIds(sellerId, parseFilters(filters, testOnly), SELECT_ALL_MAX + 1);
+    const { sellerId, onlyOrderId } = await requireOrdersView();
+    const ids = await listFilteredOrderIds(sellerId, parseFilters(filters, onlyOrderId), SELECT_ALL_MAX + 1);
     const context = await loadOrderRowContext(sellerId);
     return {
       success: true,
-      orders: await loadOrderSummaries(sellerId, ids.slice(0, SELECT_ALL_MAX), context, testOnly),
+      orders: await loadOrderSummaries(sellerId, ids.slice(0, SELECT_ALL_MAX), context, onlyOrderId),
       capped: ids.length > SELECT_ALL_MAX,
     };
   } catch (error) {
@@ -64,10 +64,10 @@ export async function loadOrdersForExportAction(
   ids: unknown,
 ): Promise<{ success: true; orders: SellerOrderRow[] } | { success: false }> {
   try {
-    const { sellerId, testOnly } = await requireOrdersView();
+    const { sellerId, onlyOrderId } = await requireOrdersView();
     const wanted = Array.isArray(ids) ? ids.filter(isOrderId).slice(0, EXPORT_CHUNK_MAX) : [];
     const context = await loadOrderRowContext(sellerId);
-    return { success: true, orders: await loadSellerOrders(sellerId, wanted, context, { withRisks: false, testOnly }) };
+    return { success: true, orders: await loadSellerOrders(sellerId, wanted, context, { withRisks: false, onlyOrderId }) };
   } catch (error) {
     return failure(error, "export");
   }
@@ -80,8 +80,8 @@ export async function loadOrdersForExportAction(
 export async function loadOrderRowAction(id: unknown): Promise<SellerOrderRow | null> {
   try {
     if (!isOrderId(id)) return null;
-    const { sellerId, testOnly } = await requireOrdersView();
-    const [row] = await loadSellerOrders(sellerId, [id], await loadOrderRowContext(sellerId), { testOnly });
+    const { sellerId, onlyOrderId } = await requireOrdersView();
+    const [row] = await loadSellerOrders(sellerId, [id], await loadOrderRowContext(sellerId), { onlyOrderId });
     return row ?? null;
   } catch (error) {
     failure(error, "load order");

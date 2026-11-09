@@ -40,7 +40,6 @@ vi.mock("@workspace/db", () => ({
   stores: {},
   db: { select: () => chain(), update: () => ({ set: () => ({ where: async () => [] }) }) },
 }));
-vi.mock("@workspace/lib/billing/store-activation", () => ({ isSellerActivationLocked: async () => false }));
 vi.mock("@workspace/lib/products/agent/server", () => ({ AgentProductError: class extends Error {}, agentSetProductStatus: mocks.agentSetProductStatus }));
 vi.mock("@workspace/lib/store-sites/server", () => ({
   publishStoreSite: mocks.publishStoreSite,

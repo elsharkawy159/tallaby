@@ -166,7 +166,7 @@ export async function getSellerCouponsPage(): Promise<SellerCouponsPage> {
   if (!sellerId) return { coupons: [], storeHost: null };
 
   // A coupon's uses and discount follow from orders: hidden until activation (ROADMAP.md F-68).
-  const { locked } = await loadOrderLock(sellerId);
+  const { ordersLocked: locked } = await loadOrderLock(sellerId);
   const [couponRows, discountRows, seller] = await Promise.all([
     db.query.coupons.findMany({
       where: eq(coupons.sellerId, sellerId),

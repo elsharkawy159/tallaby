@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 const state = vi.hoisted(() => ({ locked: true, dataRendered: false }));
 
 vi.mock("@/lib/auth/require-seller.server", () => ({
-  currentOrderLock: async () => ({ locked: state.locked, pendingReview: false }),
+  currentOrderLock: async () => ({ activated: !state.locked, ordersLocked: state.locked, firstOrderId: null, pendingReview: false, grace: null }),
 }));
 vi.mock("@/components/orders/orders-locked", () => ({ OrdersLocked: () => null }));
 vi.mock("./cross-sell-report.data", () => ({

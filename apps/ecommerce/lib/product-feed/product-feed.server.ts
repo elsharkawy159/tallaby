@@ -15,7 +15,6 @@ import { categories, products, productTranslations, productVariants, brands, sel
 import { cacheProfiles, categoryTags, createCachedQuery, productTags, sellerTags, storeTags } from "@workspace/cache";
 import { parseStoreCurrency } from "@workspace/lib";
 import { storeUrl } from "@workspace/lib/storefront";
-import { isSellerActivationLocked } from "@workspace/lib/billing/store-activation";
 import { richTextToPlainText } from "@workspace/tiptap/plain-text";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
 import {
@@ -51,8 +50,6 @@ export async function getRequestFeedStore(): Promise<{ subdomain: string; feed: 
   if (!subdomain) return null;
   const store = await getStorefrontBySubdomain(subdomain);
   if (!store || isStorefrontOffline(store)) return { subdomain, feed: null };
-  // A store that isn't activated yet is private (F-76): no public feed.
-  if (await isSellerActivationLocked(store.id)) return { subdomain, feed: null };
   return {
     subdomain,
     feed: {

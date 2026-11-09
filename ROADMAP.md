@@ -1065,7 +1065,7 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 **Why:** A seller should know that they need money in the wallet, starting from $5, before orders work for them.
 **What:** A simple message on the dashboard home, a ⚠️ on Orders in the sidebar, and the Orders page blurred with a message to top up. Orders still arrive and checkout doesn't change. A seller is activated for good by an approved top-up or by ever having a wallet balance above zero (a gift or admin credit), even after it runs out. Until then: no orders on screen, no campaign or win-back emails, and 20 AI requests a month instead of 100. Pro is exempt.
-**Status:** [Built, off until the USD switch] 2026-11-04 (§7).
+**Status:** [Built, off until the USD switch] 2026-11-04 (§7). **Changed 2026-11-09 by F-84:** orders are hidden only after a 14-day grace window (or the second order), and the first order stays visible; AI and emails still wait for activation.
 
 - **F-68a · P1 · deps: —** The rule, the message, the sidebar warning and the blurred Orders page, enforced on the server.
 - **F-68b · P1 · deps: F-68a** A positive balance activates, new message wording, 20 AI requests a month while locked, and emails off end to end, cron included.
@@ -1106,7 +1106,7 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 **Why:** A Free seller who isn't activated (F-68, `orderLockState`) shouldn't have a store anyone can visit, but must be able to try it and place test orders (owner, 2026-11-06).
 **What:** While the USD switch is on and the seller isn't activated, a published store shows the store-offline page (noindex) to everyone except the seller's own browser, which holds a 30-day pass given by the dashboard's "View store" link (`/api/stores/<id>/view` → the store's `/api/store-owner-pass`, HMAC with `STORE_PREVIEW_SECRET`, bound to store + seller). That browser sees the store with a small "only you" banner and a top-up link. Its orders are test orders (`orders.is_test`, 0155): no fee, no stock change, no coupon use or affiliate commission, no customer-wallet payment, no buyer email, never sent to a carrier, out of home, reports, sales, customers, sales pop-up and admin figures, view-only for good, shown with a "Test" badge (the only orders a locked seller sees). Activation (top-up approved, Kashier top-up, admin credit or plan change) clears the 30 s cached lock, so the store is public at once.
-**Status:** [Built, not deployed] 2026-11-06 (§7). Nothing changes while `usdLive` is false.
+**Status:** **[Replaced] 2026-11-09 by F-84** (owner): stores are public from day one and take real orders; the owner pass, private storefront and test-order checkout are removed. `orders.is_test` and the test orders already placed stay (badge, view-only, out of totals). Was: [Built] 2026-11-06 (§7).
 
 - **F-76a · P1 · deps: F-68** Owner pass (sign, verify, store-host route, dashboard view route) and the storefront gate (pages, checkout, feed, sitemap) with the banner.
 - **F-76b · P1 · deps: F-76a, 0155** Test orders: `orders.is_test`, set by `createOrder` from the fresh lock and the pass; fee, stock, coupons, wallet, buyer emails and carriers skipped.
@@ -1201,6 +1201,18 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 - **F-83f · P2 · deps: F-83a** MCP server moved onto the shared tools.
 - **F-83g · P1 · deps: each skill** Eval set and prompt-injection tests per skill; live cost run before each skill turns on.
 
+### F-84 Grace period before top-up — P1 · owner request · Replaces F-76 and part of F-68
+
+**Why:** A new Free seller should get real orders from day one and see that the store works before paying, then top up to keep seeing new orders (owner, 2026-11-09).
+**What:** Every published store is public and takes real orders (normal checkout, the $0.03 Free fee from the store wallet, stock, buyer emails), activated or not; the F-76 private store, owner pass and test-order checkout are gone (`orders.is_test` and the existing test rows stay). A seller who isn't activated has a grace window from `max(sellers.created_at, 2026-11-09 00:00 Cairo)` (`ORDER_GRACE_START_FLOOR`) that ends at the earlier of 14 days (`ORDER_GRACE_DAYS`) or their second real order since then (not a test order, not an unpaid online payment, not a manual order; cancelled ones count). During grace orders, totals and order pages work normally, with a "X days left to top up" banner (then "Top up to keep seeing new orders" after the first order). After it: today's locked screens, except the first order, which stays visible in full on /orders and can still be worked on (status changes, return restock, payment proof). A top-up, a balance ever above zero or Pro activates for good, as before. AI (20 a month) and campaign / win-back emails still wait for activation, not for the grace window: `getOrderLock` returns `activated` and `ordersLocked` separately. The first real order of an unactivated seller writes a `first_order_top_up` bell row (0159 trigger), pushed by the seller push dispatcher, linking to the wallet top-up. Nothing changes while `usdLive` is false.
+**Status:** [Built, not deployed] 2026-11-09 (§7). 0159 not applied anywhere.
+
+- **F-84a · P1 · deps: —** Lock split (`activated` / `ordersLocked` / `firstOrderId` / `grace`) in `order-lock.lib.ts` with unit tests; every caller moved to the flag it means.
+- **F-84b · P1 · deps: F-84a** Public stores again: owner pass, store-owner-pass route, owner banner, cached activation lock and its invalidations removed; "View store" is a plain redirect.
+- **F-84c · P1 · deps: F-84a** Dashboard: first order only once locked (list, panel, actions), grace banner on home and Orders, lock copy says why (14 days or second order).
+- **F-84d · P1 · deps: F-84a** Migration 0159: `first_order_top_up` seller bell type and trigger; bell link, icon and push category.
+- **F-84e · P2 · deps: owner** Open: a "3 days left" reminder (needs a cron); the Admin WhatsApp seller message still says the store is private (`apps/admin/app/(dashboard)/sellers/seller-message.lib.ts`, five dialects, owner copy).
+
 ---
 
 ## 5. Owner feature requests (intake)
@@ -1209,6 +1221,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 | Date       | Request (owner's words)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Feature ID                                                                                       | Status                                                                                             |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| 2026-11-09 | Public store from day one with real orders; grace period: orders visible until the second order or 14 days (from 2026-11-09 for existing sellers), the first order stays visible, then top up to see new ones; first-order bell + push "top up to keep seeing new orders"; AI and emails still need a top-up | F-84 (replaces F-76, changes F-68) | Done (uncommitted, 0159 not applied) |
 | 2026-11-08 | "check the 'Creating Full ready E-commerce website with AI Agent from tallaby.com homepage hero section input' plan … upgrade the plan … Output should be full ready website with applied template and design system and products … simple prompt and product csv file or written with uploaded brand logo and primary color … agent can ask seller for any missing data … in question and Choices way … suggest 3 templates … everything is published … low cost AI, professional AI experience (like Claude or ChatGPT)"; then: "make the AI agent advanced with all skills … (Website design builder, shipping, products, integrations, apps, etc) … a reusable big assistant agent and use each part of it as separated agents for the related part … the shipping agent on the shipping page" | F-82, F-83 | Planned (design 2026-11-08), needs owner decisions |
 | 2026-11-08 | "Allow Order Confirmation Email to customers, and add it in the pricing plans as a plan feature" | F-63 (F-63d) | Done (§7 2026-11-08) |
 | 2026-11-08 | "Improve the Whatsapp message that we send to sellers from /sellers page on admin project, make it dynamic depends on the step that seller stopped on … Egyptian friendly like human … top-up wallet amount in EGP … KSA Accent and with Riyals price … our platform commission on the message in the user's currency" | Admin sellers WhatsApp message | Done (§7 2026-11-08) |
@@ -1592,10 +1605,22 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [ ] F-83e Marketing, Integrations, Apps, Orders skills
 - [ ] F-83f MCP on shared tools
 - [ ] F-83g Evals and injection tests per skill
+- [x] F-84a Lock split: activated vs orders locked, grace window, unit tests (2026-11-09; uncommitted)
+- [x] F-84b Public stores again, owner pass and test-order checkout removed (2026-11-09; uncommitted)
+- [x] F-84c Dashboard: first order only once locked, grace banner, lock reason copy (2026-11-09; uncommitted; not seen in a browser)
+- [x] F-84d 0159 first-order bell + push (2026-11-09; uncommitted; 0159 not applied anywhere)
+- [ ] F-84e "3 days left" reminder (cron) and the Admin WhatsApp message copy (owner)
 
 ---
 
 ## 7. Log
+
+### 2026-11-09 — F-84 Grace period before top-up; F-76 private store removed (owner)
+
+- **Owner decision:** a published store is public from day one and takes real orders, activated or not. A Free seller who isn't activated sees their orders until the earlier of 14 days after `max(sellers.created_at, 2026-11-09 00:00 Cairo)` or their second real order; after that only the first order stays visible until a top-up. AI (20 a month) and campaign / win-back emails still need activation. Sellers not activated today get 14 days from 2026-11-09.
+- **Code:** `packages/lib/src/billing/order-lock.lib.ts` (`isActivated`, `orderLockState`, `orderGraceStart`, `graceDaysLeft`) and `order-lock.server.ts` (one more query, only for an unactivated seller: the first two real orders since the grace start). `OrderLock` is now `{ activated, ordersLocked, firstOrderId, pendingReview, grace }`; AI credits, campaign/win-back holds read `activated`, every order/sales/customer gate reads `ordersLocked`. `requireOrdersView` returns `onlyOrderId` (replaces F-76 `testOnly`), `requireOrderSeller(orderId)` lets the first order's own actions through. Removed: `store-access.lib`, `store-activation.server` (and the `seller:activation` cache tag and its Admin/backend invalidations), `store-sites/owner-pass`, the ecommerce `/api/store-owner-pass` route, the owner banner and the AI builder's activation step and "only you can see it" copy. `createOrder` no longer passes `testOrder` (the `placeOrder` option stays, unused). Terms › "تفعيل حسابك" reworded for the grace window (please confirm with the owner).
+- **Migration:** `0159_first_order_top_up.sql` — **staging only after the owner applies it; additive; apply before deploying** (the dashboard bell and push know the type; without it the trigger simply isn't there, but apply it first so the first bell is never missed). Widens `seller_notifications_type_check` from its live definition with `first_order_top_up` (guarded), and adds AFTER triggers on `order_items` INSERT and on `orders` leaving `payment_processing` that write one row per seller (`dedupe_key` `first_order_top_up:<seller>`) for the first real order of an unactivated seller after the switch. Errors never block the order.
+- **Not done:** no browser or DB run; the "3 days left" reminder (no cron for it) and the Admin WhatsApp seller message, which still says the store is private (F-84e).
 
 ### 2026-11-09 — Production: 0157 + 0158 applied, F-82/F-83a merged (owner: "make everything ready to production and merge it")
 

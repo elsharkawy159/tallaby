@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowUpRight, Brush, Check, Copy, ExternalLink, Loader2, Lock, PenLine, RefreshCw, TriangleAlert, Wallet } from "lucide-react";
+import { ArrowUpRight, Brush, Check, Copy, ExternalLink, Loader2, PenLine, RefreshCw, TriangleAlert } from "lucide-react";
 import Link from "next/link";
 import { useState, useSyncExternalStore } from "react";
 import { useTranslations } from "next-intl";
@@ -11,9 +11,9 @@ import { whatsappShare } from "./workspace.lib";
 
 /**
  * The end of a v2 build (spec §10): confetti once, "your store is ready and
- * published", the address, Open store (the F-76 owner pass), Edit in the
- * builder, Share on WhatsApp, the to-do list with its fix links, the
- * activation step for a locked account and "Request a custom design" (F-77).
+ * published", the address, Open store, Edit in the builder, Share on
+ * WhatsApp, the to-do list with its fix links and "Request a custom design"
+ * (F-77). The store is public from day one (F-84), activated or not.
  */
 
 const CONFETTI_KEY = (buildId: string) => `tallaby.aiBuilder.confetti.${buildId}`;
@@ -65,7 +65,7 @@ export function DoneCard({
   const shown = address ?? (review.subdomain ? `${review.subdomain}.tallaby.com` : null);
   const url = shown ? `https://${shown}` : null;
   const editor = review.storeId ? `/stores/${review.storeId}/editor` : null;
-  const issues = review.issues.filter((issue) => issue.code !== "activationNeeded");
+  const issues = review.issues;
 
   const copy = async () => {
     if (!url) return;
@@ -87,7 +87,7 @@ export function DoneCard({
             {review.published ? t("ws.done.title") : t("ws.done.titleNotPublished")}
           </h2>
           <p className="text-[13px] leading-[1.7] text-(--s-muted)">
-            {review.published ? (review.activationLocked ? t("v2.done.publishedPrivate") : t("v2.done.published")) : t("v2.done.notPublished")}
+            {review.published ? t("v2.done.published") : t("v2.done.notPublished")}
           </p>
         </div>
 
@@ -124,7 +124,7 @@ export function DoneCard({
               </Link>
             </SellerButton>
           )}
-          {url && review.published && !review.activationLocked && (
+          {url && review.published && (
             <SellerButton variant="whatsapp" asChild>
               <a href={whatsappShare(t("ws.done.shareText", { url }))} target="_blank" rel="noreferrer">
                 {t("ws.done.share")}
@@ -132,22 +132,6 @@ export function DoneCard({
             </SellerButton>
           )}
         </div>
-
-        {review.activationLocked && (
-          <div className="flex items-start gap-3 rounded-2xl bg-accent-soft p-3.5">
-            <Lock className="mt-0.5 size-4 shrink-0 text-accent-ink" aria-hidden />
-            <div className="flex min-w-0 flex-1 flex-col gap-2">
-              <p className="text-[13px] font-bold text-accent-ink">{t("ws.done.activateTitle")}</p>
-              <p className="text-[12.5px] leading-[1.7] text-accent-ink">{t("ws.done.activateBody")}</p>
-              <SellerButton size="sm" className="self-start" asChild>
-                <Link href="/wallet/top-up">
-                  <Wallet aria-hidden />
-                  {t("ws.done.activate")}
-                </Link>
-              </SellerButton>
-            </div>
-          </div>
-        )}
 
         {review.stopReason && (
           <p className="rounded-xl bg-accent-soft px-3 py-2 text-[12.5px] text-accent-ink">

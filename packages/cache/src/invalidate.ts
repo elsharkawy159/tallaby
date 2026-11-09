@@ -341,11 +341,6 @@ export function invalidateFulfillmentPlans(): CacheInvalidation {
   return inv([fulfillmentTags.plans()]);
 }
 
-/** The seller was activated (top-up, admin credit, Pro): their stores go public (F-76). */
-export function invalidateSellerActivation(sellerId: string): CacheInvalidation {
-  return inv([sellerTags.activation(sellerId)]);
-}
-
 /** The USD/EGP rate changed (the cron saved one, or the Admin set or cleared the override): tallaby.com's /pricing figures. */
 export function invalidateBillingRate(): CacheInvalidation {
   return inv([billingTags.rate()]);

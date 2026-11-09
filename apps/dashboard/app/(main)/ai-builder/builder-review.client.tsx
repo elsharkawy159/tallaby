@@ -39,7 +39,7 @@ export function BuilderReviewPanel({
 
       {review.flow === "v2" && (
         <Note tone={review.published ? "success" : "amber"}>
-          {review.published ? (review.activationLocked ? t("v2.done.publishedPrivate") : t("v2.done.published")) : t("v2.done.notPublished")}
+          {review.published ? t("v2.done.published") : t("v2.done.notPublished")}
           {review.viewUrl && (
             <>
               {" "}

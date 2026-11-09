@@ -4,7 +4,7 @@ import { AI_CREDITS_MONTHLY_NOT_ACTIVATED, getPlanLimits } from "../plans";
 export function aiCreditAllowance(input: {
   isPro: boolean;
   planExpiresAt: string | null;
-  /** From getOrderLock; always false before the USD switch. */
+  /** Not activated: `!getOrderLock().activated`, never the grace window (F-84); always false before the USD switch. */
   locked: boolean;
   month: string;
 }): { plan: "free" | "pro"; allowance: number; period: string; notActivated: boolean } {

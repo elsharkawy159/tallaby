@@ -77,7 +77,7 @@ function parseContent(input: unknown): { ok: true; value: CampaignContent } | { 
 export async function createCampaign(input: { storeId: string }): Promise<CampaignActionResult<{ id: string }>> {
   try {
     const { seller, store } = await requireStore(String(input?.storeId ?? ""), { forWrite: true });
-    if ((await getOrderLock(seller.sellerId)).locked) return fail("activationRequired");
+    if (!(await getOrderLock(seller.sellerId)).activated) return fail("activationRequired");
     const id = await createCampaignDraft(seller.sellerId, store.id, seller.userId);
     if (!id) return fail("notFound");
     revalidatePath(PATH);
@@ -90,7 +90,7 @@ export async function createCampaign(input: { storeId: string }): Promise<Campai
 export async function saveCampaign(input: { storeId: string; campaignId: string; content: unknown }): Promise<CampaignActionResult> {
   try {
     const { seller, store } = await requireStore(String(input?.storeId ?? ""), { forWrite: true });
-    if ((await getOrderLock(seller.sellerId)).locked) return fail("activationRequired");
+    if (!(await getOrderLock(seller.sellerId)).activated) return fail("activationRequired");
     const content = parseContent(input?.content);
     if (!content.ok) return fail(content.error);
     const saved = await saveCampaignDraft(seller.sellerId, store.id, String(input?.campaignId ?? ""), content.value);
@@ -123,7 +123,7 @@ export async function previewAudience(input: {
   try {
     const { seller, store } = await requireStore(String(input?.storeId ?? ""));
     // The count is this store's customers, which follows from orders (ROADMAP.md F-68).
-    if ((await getOrderLock(seller.sellerId)).locked) return fail("activationRequired");
+    if (!(await getOrderLock(seller.sellerId)).activated) return fail("activationRequired");
     const audience = parseCampaignAudience(input?.audience);
     const allowance = await getEmailAllowance(seller.sellerId);
     const preview = await previewCampaignAudience(seller.sellerId, store.id, audience, {
@@ -214,7 +214,7 @@ export async function cancelCampaignAction(input: { storeId: string; campaignId:
 export async function sendCampaignTest(input: { storeId: string; campaignId: string; content: unknown }): Promise<CampaignActionResult> {
   try {
     const { seller, store } = await requireStore(String(input?.storeId ?? ""), { forWrite: true });
-    if ((await getOrderLock(seller.sellerId)).locked) return fail("activationRequired");
+    if (!(await getOrderLock(seller.sellerId)).activated) return fail("activationRequired");
     const campaignId = String(input?.campaignId ?? "");
     const content = parseContent(input?.content);
     if (!content.ok) return fail(content.error);
@@ -271,7 +271,7 @@ export async function saveWinback(input: { storeId: string; settings: unknown })
     const parsed = parseWinbackInput(input?.settings);
     if (!parsed.ok) return fail(parsed.error);
     // Turning it off stays possible; turning it on waits for activation.
-    if (parsed.value.enabled && (await getOrderLock(seller.sellerId)).locked) return fail("activationRequired");
+    if (parsed.value.enabled && !(await getOrderLock(seller.sellerId)).activated) return fail("activationRequired");
     if (!(await saveStoreWinback(seller.sellerId, store.id, parsed.value))) return fail("notFound");
     revalidatePath(PATH);
     return { success: true, data: null };
@@ -283,7 +283,7 @@ export async function saveWinback(input: { storeId: string; settings: unknown })
 export async function sendWinbackTest(input: { storeId: string; settings: unknown }): Promise<CampaignActionResult> {
   try {
     const { seller, store } = await requireStore(String(input?.storeId ?? ""), { forWrite: true });
-    if ((await getOrderLock(seller.sellerId)).locked) return fail("activationRequired");
+    if (!(await getOrderLock(seller.sellerId)).activated) return fail("activationRequired");
     const parsed = parseWinbackInput(input?.settings);
     if (!parsed.ok) return fail(parsed.error);
     const res = await sendCampaignTestEmail({

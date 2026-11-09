@@ -50,12 +50,12 @@ export type OrderRowContext = {
 
 /**
  * Only orders with at least one line of this seller, whatever ids were asked for.
- * `testOnly`: a seller who isn't activated sees only their test orders (F-76).
+ * `onlyOrderId`: orders are locked after the grace window (F-84), so only the seller's first order.
  */
-const ownOrders = (sellerId: string, testOnly = false) =>
+const ownOrders = (sellerId: string, onlyOrderId: string | null = null) =>
   and(
     inArray(orders.id, db.select({ id: orderItems.orderId }).from(orderItems).where(eq(orderItems.sellerId, sellerId))),
-    testOnly ? eq(orders.isTest, true) : undefined,
+    onlyOrderId ? eq(orders.id, onlyOrderId) : undefined,
   );
 
 const loadWalletPaid = async (ids: string[]) => {
@@ -112,13 +112,13 @@ export async function loadOrderSummaries(
   sellerId: string,
   ids: string[],
   { bostaStores, wassalhaStores }: Pick<OrderRowContext, "bostaStores" | "wassalhaStores">,
-  /** A seller who isn't activated: only their test orders (F-76). */
-  testOnly = false,
+  /** Orders locked after the grace window: only the seller's first order (F-84). */
+  onlyOrderId: string | null = null,
 ): Promise<OrderSummary[]> {
   if (ids.length === 0) return [];
   const [list, walletPaid] = await Promise.all([
     db.query.orders.findMany({
-      where: and(inArray(orders.id, ids), ownOrders(sellerId, testOnly)),
+      where: and(inArray(orders.id, ids), ownOrders(sellerId, onlyOrderId)),
       columns: { id: true, status: true, paymentStatus: true, isDigitalOnly: true, storeId: true, isTest: true },
       with: {
         shipments: { columns: { status: true, sellerId: true, externalId: true, carrier: true, trackingNumber: true } },
@@ -161,11 +161,11 @@ export async function loadSellerOrders(
   ids: string[],
   { stores, bostaStores, wassalhaStores }: OrderRowContext,
   /** The export has no risk column, and risks are the costly part of a row. */
-  options: { withRisks?: boolean; testOnly?: boolean } = {},
+  options: { withRisks?: boolean; onlyOrderId?: string | null } = {},
 ): Promise<SellerOrderRow[]> {
   if (ids.length === 0) return [];
   const found = await db.query.orders.findMany({
-    where: and(inArray(orders.id, ids), ownOrders(sellerId, options.testOnly)),
+    where: and(inArray(orders.id, ids), ownOrders(sellerId, options.onlyOrderId)),
     columns: {
       id: true,
       orderNumber: true,

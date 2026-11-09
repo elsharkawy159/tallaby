@@ -42,7 +42,7 @@ const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
 export async function RecentOrdersData() {
   // Names and totals stay hidden until the first top-up (F-68).
-  if ((await currentOrderLock()).locked) return null;
+  if ((await currentOrderLock()).ordersLocked) return null;
   const locale = await getLocale();
   const [orders, t, tStatus, now] = await Promise.all([
     getRecentOrders(locale),

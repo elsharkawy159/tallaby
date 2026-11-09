@@ -11,7 +11,7 @@ import { ORDER_LOCKED_TYPES } from "@/lib/push/push-alerts.lib";
 /** The header bell's feed for the signed-in seller (seller id from the session only). */
 export async function getSellerNotificationFeed() {
   const { sellerId } = await requireSeller();
-  const { locked } = await loadOrderLock(sellerId);
+  const { ordersLocked: locked } = await loadOrderLock(sellerId);
   return listSellerNotifications(sellerId, undefined, locked ? ORDER_LOCKED_TYPES : []);
 }
 

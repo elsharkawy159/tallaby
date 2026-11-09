@@ -12,7 +12,7 @@ type Params = Partial<Record<"store" | "page" | "size", string | string[]>>;
 /** Orders › Pending carts: customers with items in the cart of a store (ROADMAP.md F-67). */
 export default async function PendingCartsPage({ searchParams }: { searchParams: Promise<Params> }) {
   const lock = await currentOrderLock();
-  if (lock.locked) return <OrdersLocked lock={lock} />;
+  if (lock.ordersLocked) return <OrdersLocked lock={lock} />;
   const params = await searchParams;
   return (
     <OrdersPageFrame>

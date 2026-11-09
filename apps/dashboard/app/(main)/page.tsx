@@ -9,7 +9,7 @@ import { TrafficSourcesData } from "./_components/traffic-sources.data";
 import { ChannelSelect, HomeRangeProvider, RangePending, RangeSelect } from "./_components/home-range.client";
 import { parseHomeChannel, parseHomeRange, resolveHomeChannel } from "./_components/home.shared";
 import { currentOrderLock } from "@/lib/auth/require-seller.server";
-import { OrdersLockedNotice } from "@/components/orders/orders-locked";
+import { OrdersGraceNotice, OrdersLockedNotice } from "@/components/orders/orders-locked";
 import { getSellerStores } from "@/lib/stores/current-store.server";
 import {
   ChartSkeleton,
@@ -76,6 +76,7 @@ export default async function VendorDashboardPage({
   const setup = (
     <>
       <OrdersLockedNotice lock={orderLock} />
+      <OrdersGraceNotice lock={orderLock} />
       {welcome === "1" && <WelcomeBanner />}
       {welcome === "1" && signup && (
         <Suspense fallback={null}>
@@ -108,8 +109,8 @@ export default async function VendorDashboardPage({
     </Suspense>
   );
 
-  // Not activated: the sales sections aren't rendered, so their queries never run (ROADMAP.md F-68).
-  if (orderLock.locked) {
+  // Orders locked (not activated, grace over): the sales sections aren't rendered, so their queries never run (ROADMAP.md F-68, F-84).
+  if (orderLock.ordersLocked) {
     return (
       <HomeRangeProvider range={range} channel={channel}>
         <HomeLockedLayout

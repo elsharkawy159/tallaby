@@ -625,7 +625,6 @@ export async function loadReview(ctx: RunContext, build: BuildRow): Promise<Buil
     flow: "v1",
     published: false,
     viewUrl: null,
-    activationLocked: false,
     storeId: store?.id ?? null,
     storeName: store?.name ?? null,
     subdomain: store?.subdomain ?? null,

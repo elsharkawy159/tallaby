@@ -482,7 +482,6 @@ export type ReviewSnapshotV2 = ReviewSnapshot & {
   built: { id: string; live: boolean; missing: DraftReason[] }[];
   published: boolean;
   publishError: string | null;
-  activationLocked: boolean;
   /** Code-gate findings of the `checks` step. */
   flags: { code: string; count: number }[];
   /** File rows a batch could not add (failed, or left when spending stopped). */
@@ -499,7 +498,6 @@ export function reviewIssuesV2(snapshot: ReviewSnapshotV2): BuilderIssue[] {
   const store = `/stores/${storeId}`;
   const issues: BuilderIssue[] = [];
 
-  if (snapshot.activationLocked) issues.push({ code: "activationNeeded", href: "/wallet/top-up" });
   if (!snapshot.published) issues.push({ code: "publishFailed", href: `${store}/website` });
 
   const noPrice = state.fileRows.filter((row) => row.price === null).length;

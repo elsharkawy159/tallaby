@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 /** Orders › Create order (ROADMAP.md F-05). The store comes from the URL, never a cookie. */
 export default async function NewManualOrderPage({ searchParams }: { searchParams: Promise<{ store?: string | string[] }> }) {
   const lock = await currentOrderLock();
-  if (lock.locked) return <OrdersLocked lock={lock} />;
+  if (lock.ordersLocked) return <OrdersLocked lock={lock} />;
 
   const [seller, { store: storeParam }, { stores }, t] = await Promise.all([
     requireSeller(),

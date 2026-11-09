@@ -40,6 +40,7 @@ export const NOTIFICATION_LOOK: Record<SellerNotificationType, { icon: LucideIco
   app_renewal_failed: { icon: AppWindow, tone: "danger" },
   app_ended: { icon: AppWindow, tone: "accent" },
   theme_request_updated: { icon: LayoutTemplate, tone: "info" },
+  first_order_top_up: { icon: Wallet, tone: "accent" },
 };
 
 export type NotificationDay = "today" | "yesterday" | "older";

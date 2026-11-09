@@ -43,7 +43,7 @@ export async function HomeGreeting() {
 /** One line on what needs doing first. */
 export async function HomeSubtitle({ channel }: { channel: HomeChannel }) {
   // A seller who isn't activated gets no line that follows from orders (ROADMAP.md F-68).
-  const { locked } = await currentOrderLock();
+  const { ordersLocked: locked } = await currentOrderLock();
   const [snapshot, pending, t] = await Promise.all([
     getHomeSnapshot(),
     locked ? 0 : getPendingOrdersCount(channel),

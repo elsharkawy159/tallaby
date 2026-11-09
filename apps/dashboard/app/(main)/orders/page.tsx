@@ -1,7 +1,6 @@
 import { Suspense } from "react";
-import { currentOrderLock, requireSeller } from "@/lib/auth/require-seller.server";
-import { OrdersLocked, OrdersLockedNotice } from "@/components/orders/orders-locked";
-import { loadOrdersOverview } from "./orders-list.query";
+import { currentOrderLock } from "@/lib/auth/require-seller.server";
+import { OrdersGraceNotice, OrdersLocked, OrdersLockedNotice } from "@/components/orders/orders-locked";
 import { PageContainer } from "@/components/seller-ui";
 import { VendorOrdersData } from "./vendor-orders.data";
 import { ListPageSkeleton } from "./orders-page-frame";
@@ -17,19 +16,22 @@ export default async function OrdersPage({
   searchParams: Promise<Partial<Record<keyof OrdersListFilters | "order", string | string[] | undefined>>>;
 }) {
   const lock = await currentOrderLock();
-  if (lock.locked) {
-    // Not activated: only the seller's own test orders show (F-76), under the top-up message.
-    const { sellerId } = await requireSeller();
-    if ((await loadOrdersOverview(sellerId, true)).orders === 0) return <OrdersLocked lock={lock} />;
-  }
+  // Locked after the grace window: only the first order shows, under the top-up message (F-84).
+  if (lock.ordersLocked && !lock.firstOrderId) return <OrdersLocked lock={lock} />;
   const params = await searchParams;
 
   return (
     <PageContainer>
-      {lock.locked && (
+      {lock.ordersLocked ? (
         <div className="mb-4">
           <OrdersLockedNotice lock={lock} />
         </div>
+      ) : (
+        lock.grace && (
+          <div className="mb-4">
+            <OrdersGraceNotice lock={lock} />
+          </div>
+        )
       )}
       <Suspense fallback={<ListPageSkeleton />}>
         <VendorOrdersData searchParams={params} />

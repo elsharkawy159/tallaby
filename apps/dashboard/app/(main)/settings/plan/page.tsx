@@ -133,7 +133,7 @@ async function LivePlanPage() {
   const seller = await requireSeller();
   const since = new Date(Date.now() - 30 * 86_400_000).toISOString();
   // A seller who isn't activated doesn't see order numbers (ROADMAP.md F-68), so this one isn't even read.
-  const { locked } = await loadOrderLock(seller.sellerId);
+  const { ordersLocked: locked } = await loadOrderLock(seller.sellerId);
   const [[row], credits, wallet, orderCount] = await Promise.all([
     db
       .select({

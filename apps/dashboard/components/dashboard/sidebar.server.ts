@@ -27,7 +27,7 @@ export async function getSidebarCounts(): Promise<SidebarCounts> {
 
     const sellerId = session.user.id;
     // A seller who isn't activated gets no count that follows from orders (ROADMAP.md F-68).
-    const locked = (await loadOrderLock(sellerId)).locked;
+    const locked = (await loadOrderLock(sellerId)).ordersLocked;
     const hidden = [{ count: 0 }];
 
     const [

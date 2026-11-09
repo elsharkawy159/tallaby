@@ -58,6 +58,8 @@ export const SELLER_NOTIFICATION_TYPES = [
   "app_ended",
   // Admin changed a theme request's status (0156, F-77): `data` = { requestId, status, storeId? }
   "theme_request_updated",
+  // The first real order of a seller who isn't activated (0159, F-84): `data` = { orderId, orderNumber }
+  "first_order_top_up",
 ] as const;
 export type SellerNotificationType = (typeof SELLER_NOTIFICATION_TYPES)[number];
 
@@ -157,6 +159,8 @@ export function sellerNotificationHref(n: Pick<NotificationItem, "type" | "data"
       const orderId = dataString(n.data, "orderId");
       return orderId ? `/orders?order=${encodeURIComponent(orderId)}` : "/orders";
     }
+    case "first_order_top_up":
+      return "/wallet/top-up";
     case "top_up_approved":
     case "top_up_rejected":
     case "welcome_gift_granted":

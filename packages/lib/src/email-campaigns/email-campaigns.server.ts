@@ -440,7 +440,8 @@ export async function getEmailAllowance(sellerId: string, q: Queryable = db): Pr
     monthly,
     remaining: emailsRemaining(monthly, used) + purchased,
     purchased,
-    locked: lock.locked,
+    // Campaigns wait for activation (a top-up), not the grace window (F-84).
+    locked: !lock.activated,
     pendingReview: lock.pendingReview,
   };
 }
@@ -603,7 +604,7 @@ const notFromSellers = (column: ReturnType<typeof sql.raw>, sellerIds: readonly 
   sellerIds.length ? sql`AND ${column} <> ALL(${uuidArray(sellerIds)})` : sql``;
 
 /**
- * Sellers the cron must not send for: not activated now (the order lock, one
+ * Sellers the cron must not send for: not activated now (`getOrderLock().activated`, one
  * definition, F-68). Their queued campaigns and win-back emails wait untouched and
  * go out after activation. No queries beyond the switch before the USD switch, and
  * an error locks nobody, as with the orders.
@@ -628,7 +629,7 @@ export async function lockedEmailSellers(q: Queryable = db): Promise<string[]> {
       const batch = sellerIds.slice(i, i + 10);
       const locks = await Promise.all(batch.map((id) => getOrderLock(id)));
       batch.forEach((id, index) => {
-        if (locks[index]!.locked) locked.push(id);
+        if (!locks[index]!.activated) locked.push(id);
       });
     }
     return locked;

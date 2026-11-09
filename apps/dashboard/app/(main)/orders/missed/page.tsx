@@ -16,7 +16,7 @@ export default async function MissedOrdersPage({
   searchParams: Promise<{ store?: string; range?: string; status?: string }>;
 }) {
   const lock = await currentOrderLock();
-  if (lock.locked) return <OrdersLocked lock={lock} />;
+  if (lock.ordersLocked) return <OrdersLocked lock={lock} />;
   const params = await searchParams;
   return (
     <PageContainer>

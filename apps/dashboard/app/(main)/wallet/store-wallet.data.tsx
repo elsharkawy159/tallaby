@@ -57,7 +57,7 @@ export async function StoreWalletSection({
   before: string | null;
   openTopUp?: boolean;
 }) {
-  const { locked } = await loadOrderLock(sellerId);
+  const { ordersLocked: locked } = await loadOrderLock(sellerId);
   const [overview, rows, topUps, gift, t, tStatus, locale, billing] = await Promise.all([
     getStoreWalletOverview(sellerId),
     listStoreWalletEntries(sellerId, { filter, before, hideSales: locked }),

@@ -5,7 +5,6 @@ import {
   applyInvalidation,
   invalidateCustomDomain,
   invalidateSeller,
-  invalidateSellerActivation,
   invalidateStoreIntegrations,
   invalidateStoreSite,
   mergeInvalidations,
@@ -61,9 +60,6 @@ export async function sellerOverrideAction(input: unknown): Promise<ActionResult
   try {
     const result = await applySellerOverride(actorId, input);
     if (!result.success) return { success: false, error: adminErrorMessage(result.error) };
-    // A plan change can activate or lock the seller's stores (F-76).
-    if (sellerId) await applyInvalidation(invalidateSellerActivation(sellerId), { from: "admin", mode: "action" });
-
     if (sellerId && (input as { action?: string }).action === "set_commission_exempt") {
       await applyInvalidation(invalidateSeller(sellerId), { from: "admin", mode: "action" });
     }
@@ -120,8 +116,6 @@ export async function walletAdjustmentAction(input: unknown): Promise<ActionResu
   try {
     const result = await adjustStoreWalletByAdmin(actorId, input);
     if (!result.success) return { success: false, error: adminErrorMessage(result.error) };
-    // A credit above zero activates the seller: their stores go public now (F-76).
-    if (sellerId) await applyInvalidation(invalidateSellerActivation(sellerId), { from: "admin", mode: "action" });
     refreshSellerPages(sellerId);
     return {
       success: true,

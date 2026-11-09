@@ -51,21 +51,21 @@ describe.skipIf(!TEST_DATABASE_URL)("order lock (integration)", { timeout: 90_00
 
   it("locks, shows review while a manual top-up waits, and unlocks on approval", async () => {
     const { getOrderLock, db, sql } = await load();
-    expect(await getOrderLock(sellerId)).toEqual({ locked: true, pendingReview: false });
+    expect(await getOrderLock(sellerId)).toMatchObject({ activated: false, pendingReview: false });
 
     // A card attempt waiting at the gateway isn't in review.
     const card = await topUp("kashier", "pending");
-    expect(await getOrderLock(sellerId)).toEqual({ locked: true, pendingReview: false });
+    expect(await getOrderLock(sellerId)).toMatchObject({ activated: false, pendingReview: false });
     await db.execute(sql`DELETE FROM seller_wallet_top_ups WHERE id = ${card}`);
 
     const manual = await topUp("instapay", "pending");
-    expect(await getOrderLock(sellerId)).toEqual({ locked: true, pendingReview: true });
+    expect(await getOrderLock(sellerId)).toMatchObject({ activated: false, pendingReview: true });
 
     await db.execute(sql`UPDATE seller_wallet_top_ups SET status = 'failed' WHERE id = ${manual}`);
-    expect((await getOrderLock(sellerId)).locked).toBe(true);
+    expect((await getOrderLock(sellerId)).activated).toBe(false);
 
     await topUp("vodafone_cash", "succeeded");
-    expect(await getOrderLock(sellerId)).toEqual({ locked: false, pendingReview: false });
+    expect(await getOrderLock(sellerId)).toMatchObject({ activated: true, pendingReview: false });
     await db.execute(sql`DELETE FROM seller_wallet_top_ups WHERE seller_id = ${sellerId}`);
   });
 
@@ -105,7 +105,7 @@ describe.skipIf(!TEST_DATABASE_URL)("order lock (integration)", { timeout: 90_00
         }),
       );
     };
-    const locked = async (id: string) => (await (await load()).getOrderLock(id)).locked;
+    const locked = async (id: string) => !(await (await load()).getOrderLock(id)).activated;
 
     it("activates for good, even at zero or below", async () => {
       const id = await walletSeller("USD");
@@ -233,10 +233,10 @@ describe.skipIf(!TEST_DATABASE_URL)("order lock (integration)", { timeout: 90_00
     const { getOrderLock } = await load();
     const other = randomUUID();
     live.usdLive = false;
-    expect((await getOrderLock(other)).locked).toBe(false);
+    expect(await getOrderLock(other)).toMatchObject({ activated: true, ordersLocked: false });
     live.usdLive = true;
     live.fail = true;
-    expect((await getOrderLock(other)).locked).toBe(false);
+    expect(await getOrderLock(other)).toMatchObject({ activated: true, ordersLocked: false });
     live.fail = false;
   });
 });

@@ -38,7 +38,7 @@ export async function searchDashboard(
 
     const pattern = likePattern(trimmed);
     const locale = await getLocale();
-    const ordersLocked = (await getOrderLock(sellerId)).locked;
+    const ordersLocked = (await getOrderLock(sellerId)).ordersLocked;
 
     const [productRows, orderRows] = await Promise.all([
       // One row per translation, so over-fetch and collapse to one per product.

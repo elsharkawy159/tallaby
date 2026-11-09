@@ -8,6 +8,6 @@ export const dynamic = "force-dynamic";
 export default async function FinancialPage() {
   // Sales totals wait for activation like the orders behind them (ROADMAP.md F-68).
   const lock = await currentOrderLock();
-  if (lock.locked) return <OrdersLocked lock={lock} />;
+  if (lock.ordersLocked) return <OrdersLocked lock={lock} />;
   return <FinancialSection />;
 }

@@ -21,8 +21,8 @@ export async function VendorOrdersData({
 }: {
   searchParams: Partial<Record<keyof OrdersListFilters | "order", string | string[] | undefined>>;
 }) {
-  // A seller who isn't activated sees only their test orders (F-76).
-  const [{ sellerId, testOnly }, cookieStore] = await Promise.all([requireOrdersView(), cookies()]);
+  // Orders locked after the grace window: only the seller's first order (F-84).
+  const [{ sellerId, onlyOrderId }, cookieStore] = await Promise.all([requireOrdersView(), cookies()]);
   const context = await loadOrderRowContext(sellerId);
   const parsed = parseOrdersFilters(searchParams, cookieStore.get(ORDERS_PAGE_SIZE_COOKIE)?.value);
   const isStore = context.stores.some((s) => s.id === parsed.channel);
@@ -30,12 +30,12 @@ export async function VendorOrdersData({
   const channel = parsed.channel === "marketplace" || isStore ? parsed.channel : "all";
 
   const [counts, overview] = await Promise.all([
-    countOrdersByTab(sellerId, { ...parsed, channel, testOnly }),
-    loadOrdersOverview(sellerId, testOnly),
+    countOrdersByTab(sellerId, { ...parsed, channel, onlyOrderId }),
+    loadOrdersOverview(sellerId, onlyOrderId),
   ]);
   // A plain /orders opens on the new orders queue when there is one.
   const tab = parsed.tab ?? (counts.new > 0 ? "new" : "all");
-  const filters = { ...parsed, channel, tab, testOnly };
+  const filters = { ...parsed, channel, tab, onlyOrderId };
   const total = counts[tab];
   const pages = Math.max(1, Math.ceil(total / filters.size));
   // A deleted last row or an old link can point past the end.
@@ -58,9 +58,9 @@ export async function VendorOrdersData({
   const offPage = initialOrderId && !ids.includes(initialOrderId) ? [initialOrderId] : [];
 
   const [rows, linked, queue] = await Promise.all([
-    loadSellerOrders(sellerId, ids, context, { testOnly }),
-    loadSellerOrders(sellerId, offPage, context, { testOnly }),
-    loadOrderSummaries(sellerId, queueIds, context, testOnly),
+    loadSellerOrders(sellerId, ids, context, { onlyOrderId }),
+    loadSellerOrders(sellerId, offPage, context, { onlyOrderId }),
+    loadOrderSummaries(sellerId, queueIds, context, onlyOrderId),
   ]);
 
   return (

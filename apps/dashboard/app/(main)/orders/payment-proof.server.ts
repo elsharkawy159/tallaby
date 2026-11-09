@@ -3,7 +3,7 @@
 import { and, db, eq, inArray, orderItems, orders } from "@workspace/db";
 import { getServiceClient } from "@workspace/db/supabase/service";
 import { PAYMENT_PROOF_BUCKET, PAYMENT_PROOF_URL_TTL, readPaymentProof } from "@workspace/lib/orders/payment-proof";
-import { isAccessError, requireOrdersSeller } from "@/lib/auth/require-seller.server";
+import { isAccessError, requireOrderSeller } from "@/lib/auth/require-seller.server";
 
 export type PaymentProofView = { url: string; uploadedAt: string } | null;
 
@@ -14,7 +14,7 @@ export type PaymentProofView = { url: string; uploadedAt: string } | null;
  */
 export async function getOrderPaymentProof(orderId: string): Promise<PaymentProofView> {
   try {
-    const { sellerId } = await requireOrdersSeller();
+    const { sellerId } = await requireOrderSeller(String(orderId));
     const [order] = await db
       .select({ id: orders.id, metadata: orders.metadata })
       .from(orders)

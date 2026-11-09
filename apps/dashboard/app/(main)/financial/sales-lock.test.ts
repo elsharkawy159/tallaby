@@ -9,8 +9,8 @@ const touchDb = () => {
 };
 
 vi.mock("@/lib/auth/require-seller.server", () => ({
-  currentOrderLock: async () => ({ locked: state.locked, pendingReview: false }),
-  loadOrderLock: async () => ({ locked: state.locked, pendingReview: false }),
+  currentOrderLock: async () => ({ activated: !state.locked, ordersLocked: state.locked, firstOrderId: null, pendingReview: false, grace: null }),
+  loadOrderLock: async () => ({ activated: !state.locked, ordersLocked: state.locked, firstOrderId: null, pendingReview: false, grace: null }),
 }));
 vi.mock("@/components/orders/orders-locked", () => ({ OrdersLocked: () => null }));
 vi.mock("./financial.data", () => ({ FinancialSection: () => null }));

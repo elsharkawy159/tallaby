@@ -15,7 +15,7 @@ export async function getSellerOrders(params?: {
 }) {
   try {
     const session = await getUser();
-    if (!session?.user?.id || (await getOrderLock(session.user.id)).locked) {
+    if (!session?.user?.id || (await getOrderLock(session.user.id)).ordersLocked) {
       throw new Error("Unauthorized");
     }
 
@@ -108,7 +108,7 @@ export async function getSellerOrders(params?: {
 export async function getOrderDetails(orderId: string) {
   try {
     const session = await getUser();
-    if (!session?.user?.id || (await getOrderLock(session.user.id)).locked) {
+    if (!session?.user?.id || (await getOrderLock(session.user.id)).ordersLocked) {
       throw new Error("Unauthorized");
     }
 
@@ -171,7 +171,7 @@ export async function updateOrderItemStatus(
 ) {
   try {
     const session = await getUser();
-    if (!session?.user?.id || (await getOrderLock(session.user.id)).locked) {
+    if (!session?.user?.id || (await getOrderLock(session.user.id)).ordersLocked) {
       throw new Error("Unauthorized");
     }
 
@@ -215,7 +215,7 @@ export async function updateOrderItemStatus(
 export async function getOrderStats() {
   try {
     const session = await getUser();
-    if (!session?.user?.id || (await getOrderLock(session.user.id)).locked) {
+    if (!session?.user?.id || (await getOrderLock(session.user.id)).ordersLocked) {
       throw new Error("Unauthorized");
     }
 
@@ -266,7 +266,7 @@ export async function processRefund(data: {
 }) {
   try {
     const session = await getUser();
-    if (!session?.user?.id || (await getOrderLock(session.user.id)).locked) {
+    if (!session?.user?.id || (await getOrderLock(session.user.id)).ordersLocked) {
       throw new Error("Unauthorized");
     }
 

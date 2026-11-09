@@ -11,7 +11,7 @@ export type AccessCode =
   | "not_found"         // missing, deleted or someone else's store (never reveal which)
   | "store_read_only"   // archived or admin-suspended store
   | "publish_blocked"   // restricted seller trying to publish (A5)
-  | "orders_locked";    // no first top-up yet, so orders stay hidden (F-68)
+  | "orders_locked";    // not activated and the grace window is over, so orders stay hidden (F-68, F-84)
 
 export type AccessResult = { ok: true } | { ok: false; code: AccessCode };
 

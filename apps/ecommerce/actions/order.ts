@@ -43,7 +43,7 @@ import { getCurrentUserId } from "@/lib/get-current-user-id";
 import {
   getCartScope,
   getStorefrontCheckoutPayments,
-  getCartStoreCheckout,
+  isCartStoreOffline,
 } from "@/lib/storefront.server";
 import { hasStoreTrackingConsent, STORE_TRACKING_CONSENT_COOKIE } from "@/lib/storefront-consent";
 import { cookies } from "next/headers";
@@ -114,11 +114,9 @@ export async function createOrder(data: {
     }
 
 
-    // The seller took this store's website offline: it takes no orders. Nor does a
-    // store that isn't activated, except from the seller's own browser, whose
-    // orders are then test orders (ROADMAP.md F-76). Decided here, on the server.
-    const storeCheckout = await getCartStoreCheckout(data.cartId);
-    if (storeCheckout.offline) {
+    // The seller took this store's website offline: it takes no orders. A seller who
+    // isn't activated yet still takes real orders (ROADMAP.md F-84).
+    if (await isCartStoreOffline(data.cartId)) {
       return { success: false, error: "This store is temporarily unavailable" };
     }
 
@@ -239,7 +237,6 @@ export async function createOrder(data: {
       locale: "en",
       storefrontPayments: storefrontPayments ?? undefined,
       ...(notificationEmail && { orderMetadata: { notificationEmail } }),
-      testOrder: storeCheckout.testOrder,
     });
 
     if (!result.success) {

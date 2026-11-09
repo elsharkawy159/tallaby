@@ -14,7 +14,7 @@ if (TEST_DATABASE_URL) process.env.DATABASE_URL = TEST_DATABASE_URL;
 const session = vi.hoisted(() => ({ userId: "", locked: false }));
 vi.mock("@/lib/auth/session.server", () => ({ getSessionUser: async () => ({ id: session.userId }) }));
 vi.mock("@workspace/lib/billing/order-lock", () => ({
-  getOrderLock: async () => ({ locked: session.locked, pendingReview: false }),
+  getOrderLock: async () => ({ activated: !session.locked, ordersLocked: session.locked, firstOrderId: null, pendingReview: false, grace: null }),
 }));
 
 describe.skipIf(!TEST_DATABASE_URL)("pending carts (integration)", { timeout: 120_000 }, () => {

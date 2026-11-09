@@ -123,7 +123,7 @@ export async function getProductInventory(
   if (!owned) return null;
 
   // Stock taken or returned by an order waits for activation, like the order (ROADMAP.md F-68).
-  const { locked } = await loadOrderLock(sellerId);
+  const { ordersLocked: locked } = await loadOrderLock(sellerId);
   const hideOrders = locked ? sql`AND m.order_id IS NULL AND m.reason NOT IN ('order', 'cancel', 'return')` : sql``;
 
   // Scoped twice: the movement's own seller_id and the product id checked above.

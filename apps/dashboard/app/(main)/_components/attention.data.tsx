@@ -26,7 +26,7 @@ const ITEMS: Item[] = [
 /** Open tasks the seller should act on, each linking to where it gets done. */
 export async function AttentionData({ channel }: { channel: HomeChannel }) {
   // A seller who isn't activated doesn't see the orders line (ROADMAP.md F-68).
-  const { locked } = await currentOrderLock();
+  const { ordersLocked: locked } = await currentOrderLock();
   const [snapshot, pendingOrders, t, locale] = await Promise.all([
     getHomeSnapshot(),
     locked ? 0 : getPendingOrdersCount(channel),

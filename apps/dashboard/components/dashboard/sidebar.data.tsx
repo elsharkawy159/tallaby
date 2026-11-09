@@ -13,7 +13,7 @@ export async function SidebarData() {
     getSellerStores(),
   ]);
 
-  const ordersLocked = (await loadOrderLock(seller.sellerId)).locked;
+  const ordersLocked = (await loadOrderLock(seller.sellerId)).ordersLocked;
   const minTopUpEgp = ordersLocked ? await getMinTopUpEgp() : null;
 
   return (

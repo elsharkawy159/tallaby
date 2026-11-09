@@ -1,7 +1,6 @@
 import { generateStructured } from "@workspace/ai";
 import { applyInvalidation, invalidateStoreSite } from "@workspace/cache";
 import { and, count, db, eq, gte, inArray, isNull, notInArray, products, storeDesignSystems, stores } from "@workspace/db";
-import { isSellerActivationLocked } from "@workspace/lib/billing/store-activation";
 import { AgentProductError, agentSetProductStatus, type AgentProductContext } from "@workspace/lib/products/agent/server";
 import { publishStoreSite, saveStoreDesignSystem, saveStorePageDraft } from "@workspace/lib/store-sites/server";
 import { grantWelcomeGiftSafely } from "@workspace/lib/store-wallet/server";
@@ -384,7 +383,6 @@ export async function loadReviewV2(ctx: RunContext, build: BuildRow): Promise<Bu
   const checks = items.get("checks");
   const flags = ((checks?.data.flags as { code: string; count: number }[] | undefined) ?? []).filter((flag) => typeof flag?.code === "string" && typeof flag.count === "number");
   const published = Boolean(build.publishedAt) || store?.siteStatus === "published";
-  const activationLocked = await isSellerActivationLocked(ctx.sellerId);
   const fileNotAdded = [...items.values()]
     .filter((item) => item.key.startsWith("products_file:"))
     .reduce((sum, item) => sum + (item.status === "done" ? Number(item.data.notAdded ?? 0) : fileBatchRows(build.state.fileRows, Number(item.key.split(":")[1])).length), 0);
@@ -406,7 +404,6 @@ export async function loadReviewV2(ctx: RunContext, build: BuildRow): Promise<Bu
       built: built.map((product) => ({ id: product.id, live: status.get(product.id)?.status === "active", missing: product.missing })),
       published,
       publishError: (publishItem?.data.publishError as string | null | undefined) ?? null,
-      activationLocked,
       flags,
       fileNotAdded,
     }),
@@ -418,6 +415,5 @@ export async function loadReviewV2(ctx: RunContext, build: BuildRow): Promise<Bu
     spentMicroUsd: await buildSpendMicroUsd(ctx.sellerId, build),
     published,
     viewUrl: store ? `/api/stores/${store.id}/view` : null,
-    activationLocked,
   };
 }

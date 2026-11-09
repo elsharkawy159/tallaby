@@ -13,7 +13,7 @@ type Params = Record<"store" | "q" | "filter" | "sort" | "tag" | "page" | "size"
 /** Orders › Customers: one row per customer of a store, from its orders (ROADMAP.md F-01). */
 export default async function CustomersPage({ searchParams }: { searchParams: Promise<Partial<Params>> }) {
   const lock = await currentOrderLock();
-  if (lock.locked) return <OrdersLocked lock={lock} />;
+  if (lock.ordersLocked) return <OrdersLocked lock={lock} />;
   const params = await searchParams;
   return (
     <PageContainer>

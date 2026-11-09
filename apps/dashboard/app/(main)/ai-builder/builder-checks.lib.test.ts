@@ -115,7 +115,6 @@ describe("v2 build steps", () => {
     built: [],
     published: true,
     publishError: null,
-    activationLocked: false,
     flags: [],
     fileNotAdded: 0,
     ...patch,
@@ -125,10 +124,9 @@ describe("v2 build steps", () => {
     expect(reviewIssuesV2(snapshot()).map((issue) => issue.code)).toEqual(["addFirstProduct"]);
   });
 
-  it("lists drafts by what they miss (D4), the activation step first, and a failed publish", () => {
+  it("lists drafts by what they miss (D4), and a failed publish first", () => {
     const codes = reviewIssuesV2(
       snapshot({
-        activationLocked: true,
         published: false,
         built: [
           { id: "a", live: true, missing: [] },
@@ -138,7 +136,7 @@ describe("v2 build steps", () => {
         flags: [{ code: "sectionsHidden", count: 2 }, { code: "demoTextLeft", count: 0 }],
       }),
     );
-    expect(codes.map((issue) => issue.code)).toEqual(["activationNeeded", "publishFailed", "productsWithoutPhoto", "productsWithoutStock", "sectionsHidden"]);
+    expect(codes.map((issue) => issue.code)).toEqual(["publishFailed", "productsWithoutPhoto", "productsWithoutStock", "sectionsHidden"]);
     expect(codes.find((issue) => issue.code === "productsWithoutPhoto")?.params).toEqual({ count: 2 });
   });
 });

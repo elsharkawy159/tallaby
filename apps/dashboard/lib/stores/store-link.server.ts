@@ -3,7 +3,7 @@ import { storeHostname, storeUrl } from "@workspace/lib/storefront";
 import { findActiveCustomDomainForSubdomain } from "@workspace/lib/storefront/server";
 import { getSellerStores } from "./current-store.server";
 
-/** `href` opens the store through /api/stores/<id>/view (the owner pass while not activated, F-76); `url` is the address to show or copy. */
+/** `href` opens the store through /api/stores/<id>/view (a redirect to its address); `url` is the address to show or copy. */
 export type StoreLink = { url: string; host: string; href: string };
 
 /**

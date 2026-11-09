@@ -14,7 +14,7 @@ export async function getSellerPayouts(params?: {
 }) {
   try {
     const session = await getUser();
-    if (!session?.user?.id || (await loadOrderLock(session.user.id)).locked) {
+    if (!session?.user?.id || (await loadOrderLock(session.user.id)).ordersLocked) {
       throw new Error("Unauthorized");
     }
 
@@ -53,7 +53,7 @@ export async function getSellerPayouts(params?: {
 export async function getPayoutDetails(payoutId: string) {
   try {
     const session = await getUser();
-    if (!session?.user?.id || (await loadOrderLock(session.user.id)).locked) {
+    if (!session?.user?.id || (await loadOrderLock(session.user.id)).ordersLocked) {
       throw new Error("Unauthorized");
     }
 
@@ -99,7 +99,7 @@ export async function getPayoutDetails(payoutId: string) {
 export async function getPendingEarnings() {
   try {
     const session = await getUser();
-    if (!session?.user?.id || (await loadOrderLock(session.user.id)).locked) {
+    if (!session?.user?.id || (await loadOrderLock(session.user.id)).ordersLocked) {
       throw new Error("Unauthorized");
     }
 
@@ -140,7 +140,7 @@ export async function getPendingEarnings() {
 export async function getWalletBalance() {
   try {
     const session = await getUser();
-    if (!session?.user?.id || (await loadOrderLock(session.user.id)).locked) {
+    if (!session?.user?.id || (await loadOrderLock(session.user.id)).ordersLocked) {
       throw new Error("Unauthorized");
     }
 
@@ -170,7 +170,7 @@ export async function getWalletBalance() {
 export async function getWalletTransactions(params?: { limit?: number }) {
   try {
     const session = await getUser();
-    if (!session?.user?.id || (await loadOrderLock(session.user.id)).locked) {
+    if (!session?.user?.id || (await loadOrderLock(session.user.id)).ordersLocked) {
       throw new Error("Unauthorized");
     }
 
@@ -208,7 +208,7 @@ export async function getWalletTransactions(params?: { limit?: number }) {
 export async function getPayoutStats(year?: number) {
   try {
     const session = await getUser();
-    if (!session?.user?.id || (await loadOrderLock(session.user.id)).locked) {
+    if (!session?.user?.id || (await loadOrderLock(session.user.id)).ordersLocked) {
       throw new Error("Unauthorized");
     }
 
@@ -267,7 +267,7 @@ export async function getPayoutStats(year?: number) {
 export async function getDashboardAnalytics() {
   try {
      const session = await getUser();
-    if (!session?.user?.id || (await loadOrderLock(session.user.id)).locked) {
+    if (!session?.user?.id || (await loadOrderLock(session.user.id)).ordersLocked) {
       throw new Error("Unauthorized");
     }
 
@@ -310,7 +310,7 @@ export async function getDashboardAnalytics() {
 export async function getRevenueAnalytics(period: 'daily' | 'weekly' | 'monthly' | 'yearly' = 'monthly') {
   try {
     const session = await getUser();
-    if (!session?.user?.id || (await loadOrderLock(session.user.id)).locked) {
+    if (!session?.user?.id || (await loadOrderLock(session.user.id)).ordersLocked) {
       throw new Error("Unauthorized");
     }
 

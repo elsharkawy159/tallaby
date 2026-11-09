@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 
 export default async function ShippingPage() {
   const lock = await currentOrderLock();
-  if (lock.locked) return <OrdersLocked lock={lock} />;
+  if (lock.ordersLocked) return <OrdersLocked lock={lock} />;
   return (
     <PageContainer>
       <Suspense fallback={<ShippingSkeleton />}>

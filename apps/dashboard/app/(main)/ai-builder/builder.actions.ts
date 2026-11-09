@@ -94,7 +94,7 @@ export type BuilderPreviewResult =
       /** The store's address, for the preview's address bar ("oud.tallaby.com"). */
       address: string;
       storeName: string;
-      /** What the preview pane shows: the signed draft preview while building, the owner-pass view link once published. Null: nothing to show yet. */
+      /** What the preview pane shows: the signed draft preview while building, the store's view link once published. Null: nothing to show yet. */
       src: string | null;
       published: boolean;
     }
@@ -103,8 +103,7 @@ export type BuilderPreviewResult =
 /**
  * The preview pane's link for this seller's build (F-82i). The store is the
  * build's own (or the one it is bound to), looked up by the session's seller.
- * Published: `/api/stores/<id>/view` (the F-76 owner pass for a locked
- * account). Not yet: a 15-minute signed "Preview on my store" link to the
+ * Published: `/api/stores/<id>/view` (the store's own address). Not yet: a 15-minute signed "Preview on my store" link to the
  * current drafts, only once the build has written them (`withDraft`), so
  * opening the page never makes a site scaffold the build hasn't asked for.
  */

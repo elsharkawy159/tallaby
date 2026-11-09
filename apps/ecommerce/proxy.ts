@@ -7,7 +7,6 @@ import {
   storeSubdomainFromHost,
 } from "@workspace/lib/storefront";
 import { STORE_PREVIEW_COOKIE } from "@workspace/lib/store-sites/preview";
-import { STORE_OWNER_PASS_COOKIE } from "@workspace/lib/store-sites/owner-pass";
 import { REFERRAL_COOKIE, referralCookieOptions, referralCookieToSet } from "@workspace/lib/referrals";
 import { routing } from "@/i18n/routing";
 import {
@@ -28,11 +27,9 @@ const handleI18nRouting = createMiddleware(routing);
  * A browser in "Preview on my store" (P4-08) may be shown drafts: never let a
  * shared cache keep that response, and never let it be indexed. The draft
  * itself is only rendered after the token is verified for this host's store.
- * The same for the seller's owner pass (F-76): a store that isn't activated
- * yet, rendered for its seller only.
  */
 function markStorePreview(request: NextRequest, response: NextResponse): NextResponse {
-  if (request.cookies.has(STORE_PREVIEW_COOKIE) || request.cookies.has(STORE_OWNER_PASS_COOKIE)) {
+  if (request.cookies.has(STORE_PREVIEW_COOKIE)) {
     response.headers.set("Cache-Control", "private, no-store");
     response.headers.set("X-Robots-Tag", "noindex, nofollow");
   }

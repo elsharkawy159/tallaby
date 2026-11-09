@@ -31,7 +31,7 @@ import {
 import { WALLET_REFERENCE_TYPES } from "@workspace/db/wallet";
 import { sendOrderEventEmail } from "@workspace/lib/orders";
 import { autoShipOrderWithBosta } from "@workspace/lib/shipping/bosta-ship";
-import { AccessError, requireOrdersSeller } from "@/lib/auth/require-seller.server";
+import { AccessError, requireOrderSeller, requireOrdersSeller } from "@/lib/auth/require-seller.server";
 import { applySellerShipmentStatus } from "@/lib/shipping/apply-seller-shipment";
 import { isShippingStatus, type ShippingStatus } from "@/lib/shipping/shipping-status";
 import {
@@ -525,8 +525,9 @@ async function loadStockShortage(orderId: string, sellerId: string): Promise<Sto
 export async function updateSellerOrder(input: unknown): Promise<ActionResult> {
   const t = await getTranslations("orders.errors");
   try {
-    const { sellerId } = await requireOrdersSeller();
     const { orderId, action, reason, restock, addMissingStock } = inputSchema.parse(input);
+    // Locked orders (F-84): the first order can still be worked on, and no other.
+    const { sellerId } = await requireOrderSeller(orderId);
     try {
       await runSellerOrderAction(sellerId, orderId, action, reason, {
         allowCorrections: true,
@@ -559,8 +560,8 @@ export async function updateSellerOrder(input: unknown): Promise<ActionResult> {
 export async function restockReturnedOrder(input: unknown): Promise<ActionResult> {
   const t = await getTranslations("orders.errors");
   try {
-    const { sellerId } = await requireOrdersSeller();
     const { orderId } = z.object({ orderId: z.uuid() }).parse(input);
+    const { sellerId } = await requireOrderSeller(orderId);
     const loaded = await loadOrder(orderId, sellerId);
     const { order, flow } = loaded;
     if (flow.readOnly) throw new OrderActionError(`readOnly.${flow.readOnly}`);

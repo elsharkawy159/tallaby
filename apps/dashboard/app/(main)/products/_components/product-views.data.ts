@@ -36,7 +36,7 @@ export async function loadProductViewStats(productIds?: string[]): Promise<Produ
       ? sql`AND oi.product_id IN (${sql.join(productIds.map((id) => sql`${id}::uuid`), sql`, `)})`
       : sql``;
     // Orders per product wait for activation (ROADMAP.md F-68); views don't.
-    const { locked } = await loadOrderLock(sellerId);
+    const { ordersLocked: locked } = await loadOrderLock(sellerId);
     const [slugRows, orderResult] = await Promise.all([
       db
         .select({

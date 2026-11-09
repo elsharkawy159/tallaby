@@ -12,7 +12,7 @@ type Params = Partial<Record<"store" | "days" | "page" | "size", string | string
 /** Orders › Cross-sell report: what each offer of a store sold (ROADMAP.md F-32f). */
 export default async function CrossSellReportPage({ searchParams }: { searchParams: Promise<Params> }) {
   const lock = await currentOrderLock();
-  if (lock.locked) return <OrdersLocked lock={lock} />;
+  if (lock.ordersLocked) return <OrdersLocked lock={lock} />;
   const params = await searchParams;
   return (
     <OrdersPageFrame>

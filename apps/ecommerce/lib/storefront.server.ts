@@ -38,8 +38,6 @@ import { normalizeGovernorate } from "@workspace/lib/shipping";
 import { publicStoreSocialLinks } from "@workspace/lib/stores";
 import { parseStoreSeo } from "@workspace/lib/stores";
 import { storeHasVisibleProducts } from "@workspace/lib/stores/server";
-import { isSellerActivationLocked } from "@workspace/lib/billing/store-activation";
-import { getCartActivationAccess, getStoreActivationAccess } from "@/lib/store-site/activation.server";
 import { getStorefrontGateway } from "@workspace/lib/payments/store-gateways/server";
 import { storeCategoryGroups, type StoreCategoryFilter } from "@workspace/lib/store-sites/catalog-data";
 import { parseStoreApp } from "@workspace/lib/stores/app";
@@ -280,26 +278,13 @@ export async function getCartStoreSellerId(): Promise<string | null> {
  * orders whatever host the request comes from. Read fresh, never cached.
  */
 export async function isCartStoreOffline(cartId: string): Promise<boolean> {
-  return (await getCartStoreCheckout(cartId)).offline;
-}
-
-/**
- * Checkout on a cart's store: offline (never published, switched off, or its
- * seller isn't activated and this browser has no owner pass: F-76), or open, and
- * then whether the order is a test order (the seller's own pass on a store that
- * isn't activated). Read fresh, never cached; decided here, never by the client.
- */
-export async function getCartStoreCheckout(cartId: string): Promise<{ offline: boolean; testOrder: boolean }> {
   const [row] = await db
     .select({ siteStatus: stores.siteStatus })
     .from(carts)
     .innerJoin(stores, eq(stores.id, carts.storeId))
     .where(eq(carts.id, cartId))
     .limit(1);
-  if (!row) return { offline: false, testOrder: false };
-  if (isStorefrontOffline({ siteStatus: row.siteStatus as StoreSiteStatus })) return { offline: true, testOrder: false };
-  const access = await getCartActivationAccess(cartId);
-  return { offline: access === "private", testOrder: access === "owner_preview" };
+  return row ? isStorefrontOffline({ siteStatus: row.siteStatus as StoreSiteStatus }) : false;
 }
 
 /**
@@ -310,10 +295,7 @@ export async function isRequestStoreOffline(): Promise<boolean> {
   const subdomain = await getRequestStoreSubdomain();
   if (!subdomain) return false;
   const store = await getStorefrontBySubdomain(subdomain);
-  if (!store) return false;
-  if (isStorefrontOffline(store)) return true;
-  // A seller who isn't activated: only their own browser may check out (F-76).
-  return (await getStoreActivationAccess(store.id, store.storeId)) === "private";
+  return store ? isStorefrontOffline(store) : false;
 }
 
 /**
@@ -428,8 +410,6 @@ export async function isStorefrontIndexable(
   store: Pick<Storefront, "id" | "storeId" | "seo" | "siteStatus">,
 ): Promise<boolean> {
   if (isStorefrontOffline(store)) return false;
-  // A store that isn't activated is private (F-76): never indexed.
-  if (await isSellerActivationLocked(store.id)) return false;
   return store.seo.indexing && (await storeHasProducts(store));
 }
 

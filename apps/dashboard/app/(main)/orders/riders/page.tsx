@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 /** Riders (PLAN.md §7.2, P3-06): the delivery workspace opened on its riders view. */
 export default async function RidersPage() {
   const lock = await currentOrderLock();
-  if (lock.locked) return <OrdersLocked lock={lock} />;
+  if (lock.ordersLocked) return <OrdersLocked lock={lock} />;
   return (
     <PageContainer>
       <Suspense fallback={<ShippingSkeleton />}>

@@ -504,10 +504,8 @@ export type BuilderReview = {
   spentMicroUsd: number;
   /** v2: the build published the site (D1). */
   published: boolean;
-  /** v2: the owner-pass preview (F-76) the seller can always open: `/api/stores/<id>/view`. */
+  /** v2: the store's "View store" link: `/api/stores/<id>/view`. */
   viewUrl: string | null;
-  /** v2: the account isn't activated yet (F-76): only the seller sees the store until a top-up. */
-  activationLocked: boolean;
 };
 
 export type BuilderChatResponse = { ok: true; view: BuilderView } | { ok: false; error: BuilderErrorCode; view?: BuilderView };

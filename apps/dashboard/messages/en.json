@@ -185,7 +185,12 @@
   },
   "orderLock": {
     "title": "Kindly top up your wallet, starting from $5 only{egp, select, none {} other { (about EGP {egp})}}",
-    "body": "Your store is private until you top up: only you can open it from your dashboard and place test orders. Top up to activate it so customers can see it and order.",
+    "bodyDays": "Your 14 days to see orders without a top-up are over. Your store keeps selling and your orders are waiting: top up your wallet to see them.",
+    "bodySecondOrder": "Your second order has arrived. Your first order stays visible; top up your wallet to see the new ones.",
+    "graceTitle": "{days, plural, one {# day left} other {# days left}} to top up your wallet",
+    "graceBody": "Your store is live and takes orders, and you can see them for now. After 14 days, or once your second order arrives, top up your wallet, starting from $5 only, to keep seeing your orders.",
+    "graceFirstOrderTitle": "You got your first order! Top up to keep seeing new orders",
+    "graceFirstOrderBody": "Your next order stays hidden until you top up your wallet, starting from $5 only ({days, plural, one {# day left} other {# days left}} at most). This first order always stays visible.",
     "reviewTitle": "Your top-up is being reviewed",
     "reviewBody": "Your orders will open as soon as we approve it.",
     "topUp": "Top up",
@@ -3935,7 +3940,7 @@
   "aiBuilder": {
     "title": "Build your store with AI",
     "entry": "Build a store with AI",
-    "intro": "We'll read what you tell us, ask a few questions, then build your whole store in Arabic and English and publish it. Only you can see it until your account is activated.",
+    "intro": "We'll read what you tell us, ask a few questions, then build your whole store in Arabic and English and publish it.",
     "limits": "Your first store is free with no credits, once per account: up to {products} products and {photos} photos.",
     "start": "Start",
     "restart": "Start over",
@@ -4082,7 +4087,6 @@
       "placesNotRecognised": "We couldn't identify these areas: {places}. Add them on the delivery page.",
       "shippingNotSet": "Delivery areas aren't set up.",
       "noReturnPolicy": "No return policy.",
-      "activationNeeded": "Your account isn't activated yet: only you can see the store. Top up your wallet to open it to everyone.",
       "publishFailed": "The site wasn't published. Publish it from the website page.",
       "addFirstProduct": "Add your first product.",
       "fileRowsNoPrice": "{count} products from your file weren't added because they have no price.",
@@ -4182,7 +4186,6 @@
       "moreTemplates": "Show 3 more",
       "done": {
         "published": "Your store is ready and published.",
-        "publishedPrivate": "Your store is ready and published. Only you can see it until you activate your account with a top-up.",
         "notPublished": "Your store is ready but isn't published yet. Publish it from the website editor.",
         "open": "Open your store"
       }
@@ -4276,7 +4279,7 @@
         "templateColors": "Chosen by AI",
         "notSet": "You will set it later",
         "flat": "EGP {price} for all of Egypt",
-        "consent": "When you press it, I will build your store and publish it with its complete products. Only you can see it until you activate your account."
+        "consent": "When you press it, I will build your store and publish it with its complete products. Customers can see it and order right away."
       },
       "progress": {
         "title": "Building your store",
@@ -4304,9 +4307,6 @@
         "share": "Share on WhatsApp",
         "shareText": "Check out my new store: {url}",
         "todo": "{count} things left to finish",
-        "activateTitle": "Activate your account so people can see your store",
-        "activateBody": "Your store is published, but only you can see it. Top up your wallet once and it opens to every customer.",
-        "activate": "Top up the wallet",
         "customDesign": "Want a design made just for you? Request one"
       },
       "composer": {
@@ -6825,6 +6825,10 @@
       "admin_message": {
         "from": "From the Tallaby team",
         "fallbackTitle": "Message from Tallaby"
+      },
+      "first_order_top_up": {
+        "title": "You got your first order!",
+        "body": "Order #{orderNumber} arrived. Top up your wallet to keep seeing new orders."
       }
     }
   },

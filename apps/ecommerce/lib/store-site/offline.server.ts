@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { isStorefrontOffline, resolveStorefront, type Storefront } from "@/lib/storefront.server";
-import { getStoreActivationAccess } from "./activation.server";
 import { getStorefrontSite } from "./preview.server";
 
 /**
@@ -11,9 +10,8 @@ import { getStorefrontSite } from "./preview.server";
  * session (P4-08) still sees the draft, so the seller can keep building while
  * the store is offline.
  *
- * Also offline: a published store whose seller isn't activated yet (ROADMAP.md
- * F-76), for everyone but the seller's own browser with the store's owner pass
- * (activation.server.ts). The pass never opens a draft or switched-off store.
+ * A published store is public for everyone, whether or not its seller is
+ * activated (ROADMAP.md F-84, owner 2026-11-09; the private store of F-76 is gone).
  */
 
 /** Robots for an offline store: kept out of search entirely. */
@@ -26,17 +24,9 @@ export const STORE_OFFLINE_METADATA: Metadata = { robots: STORE_OFFLINE_ROBOTS }
 export async function isStoreOfflineForRequest(
   store: Pick<Storefront, "id" | "storeId" | "subdomain" | "siteStatus">,
 ): Promise<boolean> {
-  if (!isStorefrontOffline(store)) return (await getStoreActivationAccess(store.id, store.storeId)) === "private";
+  if (!isStorefrontOffline(store)) return false;
   const { preview } = await getStorefrontSite(store.id, store.storeId, store.subdomain);
   return preview !== "active";
-}
-
-/** The seller's own browser on their not-yet-activated published store: show the "only you" banner (F-76). */
-export async function isStoreOwnerPreviewForRequest(
-  store: Pick<Storefront, "id" | "storeId" | "siteStatus">,
-): Promise<boolean> {
-  if (isStorefrontOffline(store)) return false;
-  return (await getStoreActivationAccess(store.id, store.storeId)) === "owner_preview";
 }
 
 /**

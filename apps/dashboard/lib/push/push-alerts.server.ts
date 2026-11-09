@@ -166,7 +166,7 @@ async function loadPrefs(sellerIds: string[]): Promise<Map<string, PushPrefs>> {
 async function loadLockedSellers(rows: PushCandidate[]): Promise<Set<string>> {
   const ids = sellersWithOrderRows(rows);
   const locks = await Promise.all(ids.map((id) => getOrderLock(id)));
-  return new Set(ids.filter((_, index) => locks[index]!.locked));
+  return new Set(ids.filter((_, index) => locks[index]!.ordersLocked));
 }
 
 /** Store order totals by order id (the caller checks the order is the notified store's). */

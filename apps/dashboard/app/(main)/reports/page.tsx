@@ -28,7 +28,7 @@ export default async function ReportsPage({
 }) {
   // Sales totals wait for activation like the orders behind them (ROADMAP.md F-68).
   const lock = await currentOrderLock();
-  if (lock.locked) return <OrdersLocked lock={lock} />;
+  if (lock.ordersLocked) return <OrdersLocked lock={lock} />;
 
   const [params, { stores, selected }, t] = await Promise.all([
     searchParams,

@@ -2039,10 +2039,6 @@
     "sellOnTallaby": "Create your store",
     "helpCenter": "Help center"
   },
-  "storeOwnerPreview": {
-    "body": "Your store is visible on your device only. Top up your wallet to activate your store so everyone can see it.",
-    "cta": "Top up wallet"
-  },
   "storePreview": {
     "active": "Preview — not live. Only you can see these unpublished changes.",
     "invalid": "This preview has expired or your website changed since it was opened. Open a new preview from your dashboard.",

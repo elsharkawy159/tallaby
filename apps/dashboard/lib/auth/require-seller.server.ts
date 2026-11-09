@@ -112,10 +112,14 @@ export async function requireStore(
   return { seller, store };
 }
 
-/** This seller's first top-up state, once per request (ROADMAP.md F-68). Never cached across requests. */
+/**
+ * This seller's activation and grace window, once per request (ROADMAP.md F-68,
+ * F-84). `ordersLocked` hides orders; `activated` gates AI and campaign emails.
+ * Never cached across requests.
+ */
 export const loadOrderLock = cache((sellerId: string) => getOrderLock(sellerId));
 
-/** The session seller's first top-up state, for a page deciding what to show. */
+/** The session seller's lock, for a page deciding what to show. */
 export async function currentOrderLock(): Promise<OrderLock> {
   const { sellerId } = await requireSeller();
   return loadOrderLock(sellerId);
@@ -124,18 +128,34 @@ export async function currentOrderLock(): Promise<OrderLock> {
 /** `requireSeller` for anything that reads or changes orders: hiding a page isn't authorization. */
 export async function requireOrdersSeller(options: AccessOptions = {}): Promise<SellerContext> {
   const seller = await requireSeller(options);
-  if ((await loadOrderLock(seller.sellerId)).locked) throw new AccessError("orders_locked");
+  if ((await loadOrderLock(seller.sellerId)).ordersLocked) throw new AccessError("orders_locked");
   return seller;
 }
 
 /**
- * Reading the orders list: an activated seller sees every order; one who isn't
- * activated sees only their test orders (ROADMAP.md F-76), placed from their own
- * browser on their private store. Changing orders still needs requireOrdersSeller.
+ * `requireOrdersSeller` for one order: once orders are locked (F-84), the
+ * seller's first order still opens and can be worked on, and no other.
  */
-export async function requireOrdersView(options: AccessOptions = {}): Promise<{ sellerId: string; testOnly: boolean }> {
+export async function requireOrderSeller(orderId: string, options: AccessOptions = {}): Promise<SellerContext> {
   const seller = await requireSeller(options);
-  return { sellerId: seller.sellerId, testOnly: (await loadOrderLock(seller.sellerId)).locked };
+  const lock = await loadOrderLock(seller.sellerId);
+  if (lock.ordersLocked && (!lock.firstOrderId || lock.firstOrderId !== orderId)) throw new AccessError("orders_locked");
+  return seller;
+}
+
+/**
+ * Reading the orders list: a seller whose orders are open sees every order; once
+ * they are locked (not activated and the grace window is over, F-84) only the
+ * first order shows (`onlyOrderId`, set here from the server, never the client).
+ * With no first order there is nothing to read. Changing orders still needs
+ * requireOrdersSeller or requireOrderSeller.
+ */
+export async function requireOrdersView(options: AccessOptions = {}): Promise<{ sellerId: string; onlyOrderId: string | null }> {
+  const seller = await requireSeller(options);
+  const lock = await loadOrderLock(seller.sellerId);
+  if (!lock.ordersLocked) return { sellerId: seller.sellerId, onlyOrderId: null };
+  if (!lock.firstOrderId) throw new AccessError("orders_locked");
+  return { sellerId: seller.sellerId, onlyOrderId: lock.firstOrderId };
 }
 
 /** `requireStore` for anything that reads or changes orders. */
@@ -144,7 +164,7 @@ export async function requireOrdersStore(
   options: AccessOptions = {},
 ): Promise<{ seller: SellerContext; store: StoreContext }> {
   const result = await requireStore(storeId, options);
-  if ((await loadOrderLock(result.seller.sellerId)).locked) throw new AccessError("orders_locked");
+  if ((await loadOrderLock(result.seller.sellerId)).ordersLocked) throw new AccessError("orders_locked");
   return result;
 }
 

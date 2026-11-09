@@ -84,9 +84,8 @@ export async function applyTemplate(storeId: string, templateKey: string) {
 
 /**
  * Choosing a template publishes a store that was never published (owner,
- * 2026-11-07: no separate "Publish your store" step). A seller who is not
- * activated yet still sees the site only in their own browser (F-76). A store
- * the seller switched off stays off. Never fails the template apply.
+ * 2026-11-07: no separate "Publish your store" step). It is public for
+ * everyone, activated or not (F-84). A store the seller switched off stays off. Never fails the template apply.
  */
 async function publishNewStoreSafely(sellerId: string, storeId: string, subdomain: string, userId: string): Promise<boolean> {
   try {

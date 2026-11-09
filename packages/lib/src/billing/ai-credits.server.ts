@@ -93,7 +93,8 @@ async function usedSinceFirstGrant(tx: Tx, sellerId: string, period: string): Pr
 }
 
 export async function getAiCreditStatus(sellerId: string): Promise<AiCreditStatus> {
-  const { locked } = await getOrderLock(sellerId);
+  // Activation, not the grace window: new accounts keep the small allowance until a top-up (F-84).
+  const locked = !(await getOrderLock(sellerId)).activated;
   return db.transaction(async (tx) => {
     const { plan, allowance, notActivated } = await ensureCurrentPeriod(tx, sellerId, locked);
     const [row] = await tx.select().from(sellerAiCredits).where(eq(sellerAiCredits.sellerId, sellerId));
@@ -114,7 +115,8 @@ export type AiCreditClaim = { ok: true; reference: string } | { ok: false; error
 
 /** Takes 1 credit before an AI call. Give it back with refundAiCredit if the call doesn't complete. */
 export async function claimAiCredit(sellerId: string, feature: string): Promise<AiCreditClaim> {
-  const { locked } = await getOrderLock(sellerId);
+  // Activation, not the grace window: new accounts keep the small allowance until a top-up (F-84).
+  const locked = !(await getOrderLock(sellerId)).activated;
   return db.transaction(async (tx) => {
     await ensureCurrentPeriod(tx, sellerId, locked);
     const monthly = await tx

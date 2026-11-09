@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
   const summary = { stores: targets.length, ok: 0, errors: 0, appended: 0 };
   for (const { sellerId, storeId } of targets) {
     // Hidden until the first top-up (F-68). A later run appends what this one skipped.
-    if ((await getOrderLock(sellerId)).locked) continue;
+    if ((await getOrderLock(sellerId)).ordersLocked) continue;
     const result = await exportStoreOrdersToSheet(sellerId, storeId, client).catch(() => null);
     if (result?.success) {
       summary.ok++;
