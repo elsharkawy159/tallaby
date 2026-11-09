@@ -1619,6 +1619,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 - tallaby.com's `/sitemap.xml` moved from the `app/sitemap.ts` metadata route to the route handler `app/sitemap.xml/route.ts` (entries in `lib/marketing/sitemap.server.ts`, XML in `serializeMarketingSitemap`, tested against Next's own output plus the stylesheet line). Same static caching and headers; crawlers get the same XML.
 - `app/sitemap.xsl` renders it (and store `/sitemap.xml`, `/sitemaps/[n].xml`) as a simple page: URL count, section chips (Pages, Templates, Blog, Solutions, Categories, Products), one table per section with alternate-language links and last-modified date; rows stack on phones. Checked locally (276 URLs). Chrome is phasing out XSLT and shows a warning banner on it; Firefox and Safari keep it; search engines are unaffected.
+- **S-01 done (owner, 2026-11-09):** `tallaby.com` now 308s to `www`; checked live after deploy `dpl_B6mtbCNPbbBJRanoT5byDcVhUpux`: sitemap `<loc>`s, hreflang and robots `Host:`/`Sitemap:` all on `https://www.tallaby.com`. Next: resubmit `https://www.tallaby.com/sitemap.xml` in Search Console.
 
 ### 2026-11-09 — Production: 0159 applied; main pushed for one deploy (owner: "merge everything to main… one deployment")
 
