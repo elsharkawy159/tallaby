@@ -1615,6 +1615,11 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 ## 7. Log
 
+### 2026-11-09 — Readable /sitemap.xml in the browser (owner; no migration; `4415b739`)
+
+- tallaby.com's `/sitemap.xml` moved from the `app/sitemap.ts` metadata route to the route handler `app/sitemap.xml/route.ts` (entries in `lib/marketing/sitemap.server.ts`, XML in `serializeMarketingSitemap`, tested against Next's own output plus the stylesheet line). Same static caching and headers; crawlers get the same XML.
+- `app/sitemap.xsl` renders it (and store `/sitemap.xml`, `/sitemaps/[n].xml`) as a simple page: URL count, section chips (Pages, Templates, Blog, Solutions, Categories, Products), one table per section with alternate-language links and last-modified date; rows stack on phones. Checked locally (276 URLs). Chrome is phasing out XSLT and shows a warning banner on it; Firefox and Safari keep it; search engines are unaffected.
+
 ### 2026-11-09 — Production: 0159 applied; main pushed for one deploy (owner: "merge everything to main… one deployment")
 
 - `0159_first_order_top_up.sql` applied on staging, rolled-back dry run on production, then applied on production (checked: `first_order_top_up` in `seller_notifications_type_check`, both triggers present). 0157/0158 were already on both.

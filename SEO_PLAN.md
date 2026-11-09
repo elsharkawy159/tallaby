@@ -2526,7 +2526,7 @@ Also: Google says it **doesn't need or use `llms.txt`** ([updates, 2026-06-15](h
 ### 12.1 How pages enter the sitemap (exact mechanics)
 
 1. **Content pages** enter **only** through `contentPagePaths()` (`lib/marketing/content-routes.lib.ts`). Extend it in this order: hubs (`/solutions`, `/features`, `/industries`, `/tools`, `/integrations`), then features, integrations, tools, industries and solutions, then `...(comparePublic ? ["/compare", ...compare entries, "/alternatives", ...alternatives entries] : [])`.
-2. **Static pages** come from `STATIC_PAGE_LASTMOD` keys (`STATIC_PATHS` in `app/sitemap.ts`).
+2. **Static pages** come from `STATIC_PAGE_LASTMOD` keys (`STATIC_PATHS` in `lib/marketing/sitemap.server.ts`; `/sitemap.xml` is the route handler `app/sitemap.xml/route.ts` so it can carry the `/sitemap.xsl` stylesheet).
 3. **Templates** come from `getTemplateGallery()`, with no lastmod.
 4. **Blog posts** are included only if `hasArticle && !seo.noindex`, with `lastmod = updatedAt ?? date`, per locale.
 5. **Ranking article(s)** (code) are added only when `COMPARE_PUBLIC`.
