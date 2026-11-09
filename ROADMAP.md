@@ -845,7 +845,7 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 **Why:** New sellers should be led one step at a time, without blocking their work.
 **What:** Add prompts on top of the live checklist (`_components/setup-checklist.lib.ts`) and keep its order: choose a template → brand → first product → publish → shipping (later). On the first dashboard visit, a top Sonner notification appears after 5 seconds for the first step. When a step is done, the next one appears as a top banner 5 seconds later.
-**Status:** [Built, not deployed] 2026-11-03 (§7).
+**Status:** [Live] deployed 2026-11-06 (`0ed4a779`); built 2026-11-03 (§7).
 
 - **F-44a · P1 · deps: —** Progress: step completion stays derived from real data (`home.queries.ts`). Save per seller which prompts were shown or dismissed, so it survives refreshes, new sessions and other devices. Migration only if no existing field fits.
 - **F-44b · P1 · deps: F-44a** Toast and banner UI, in both languages. Never shown inside the builder or while a form is in progress, and completed steps never return.
@@ -883,7 +883,7 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 **Why:** A store with no SEO text should still have a good title and description.
 **What:** When the seller hasn't written them, build them at render time from the store's name and industry, for example "Buy Fashion from {store_name} now | Tallaby", with an Arabic version. Rendering it this way also covers existing stores, whose saved template copies don't change (CLAUDE.md rule 17). The seller's own text always wins.
-**Status:** [Built, not deployed] 2026-11-03 (§7).
+**Status:** [Live] deployed 2026-11-06 (`0ed4a779`); built 2026-11-03 (§7).
 
 - **F-48a · P1 · deps: —** Fallback helper with tests, in both languages, used by the store home and pages. Each template can supply its own default wording.
 
@@ -997,7 +997,7 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 **Why:** Stores can only sell inside Egypt in EGP today. The owner wants a store to sell in any country and currency, and to detect the shopper's country and currency.
 **What:** Every currency, every country on the Shipping page, and the store detects the shopper's country and currency, which the shopper can change. Today's limits, checked in code 2026-11-04: shipping place keys start at `EG`, phones are validated as Egyptian mobiles, and orders, prices and customer wallets are EGP. The USD work (F-56) kept those in EGP on purpose.
-**Status:** [Built, not deployed] 2026-11-04 (§7): F-61b, F-61d and F-61e, so a seller in Egypt can run a store that sells in KSA. F-61c stays delayed.
+**Status:** [Live] deployed 2026-11-06 (`0ed4a779`; 0150 on production); built 2026-11-04 (§7): F-61b, F-61d and F-61e, so a seller in Egypt can run a store that sells in KSA. F-61c stays delayed.
 **Decided (owner, 2026-11-04):** the store's currency is the default on the shipping page, in carts and on the dashboard. Top-ups stay in EGP against USD. SAR shows the Saudi Riyal symbol.
 **Our calls, 2026-11-04:** one currency per store, and amounts are never converted, so no exchange rates and no shopper switcher. The server sets the order's currency from the store when the order is placed. Tallaby's fee, the store wallet, plans and top-ups don't follow the store's currency. Customer wallets stay EGP, so they are unavailable on a non-EGP store. Egyptian payment methods and card payment stay off on a non-EGP store until tested with a real gateway account.
 
@@ -1119,7 +1119,7 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 **Why:** A seller who doesn't find a theme for their business should be able to ask for one, and hear back when it's built (owner, 2026-11-06).
 **What:** Website › Templates has a banner at the top, «لم تجد قالبًا يناسب نشاطك؟ اطلب قالبًا الآن», that opens a dialog: reference URL (https only), up to 3 images (JPEG/PNG/WebP, 5 MB each), a description and a note; one of URL / image / description is required. Free, at most 3 open requests (new or in progress) per seller. Images go to the private `theme-request-images` bucket through a server-signed upload into `<sellerId>/`. Below the banner, "My theme requests" lists status, date and the team's reply. Admin › Theme requests (status filters, detail with signed image links, status + reply). A status change to in progress, ready or declined writes the seller bell (`theme_request_updated`, pushed like every type); ready and declined also email the seller (once per outcome). A built theme is added to the normal code-only gallery for everyone (rule 17); the request only tracks status and reply.
-**Status:** [Built, not deployed] 2026-11-06 (§7). Migration 0156 not applied anywhere. **Hidden 2026-11-07 (owner):** the dashboard no longer renders the banner or "My theme requests" (most sellers clicked it instead of picking a template); the code stays, see `website/templates/page.tsx`.
+**Status:** [Live] deployed 2026-11-06 (`0ed4a779`; 0156 applied on staging and production before the deploy); built 2026-11-06 (§7). **Hidden 2026-11-07 (owner):** the dashboard no longer renders the banner or "My theme requests" (most sellers clicked it instead of picking a template); the code stays, see `website/templates/page.tsx`.
 
 - **F-77a · P1 · deps: 0156** Table, private bucket, admin bell trigger, seller bell type; lib (validation, 3-open limit, notification plan).
 - **F-77b · P1 · deps: F-77a** Dashboard: banner, dialog with signed image upload, "My theme requests" list.
@@ -1129,7 +1129,7 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 **Why:** A seller without a domain doesn't know why to get one or where to buy it (owner, 2026-11-06).
 **What:** Website › Domain & SEO › Domain (primary store) gets a "No domain yet? Buy one in minutes" card under Custom domain: six benefits (easier to remember and share, more trust, your brand, helps on Google, the address is yours, branded email) and five registrar links, each with its logo (`public/domain-logos/`) (new tab, `noopener noreferrer`, no affiliate params, no prices). Registrars that let an Egyptian seller pay in جنيه come first with a «يقبل الجنيه» tag (Hostinger, EgyHosting), then Namecheap, GoDaddy, Cloudflare Registrar (EngHosting and Porkbun removed, owner 2026-11-06). One line says to come back, enter the domain and copy the DNS records. Open while the store has no custom domain, folded once one is added. List in `domain-providers.lib.ts` (typed, sort tested). No migration.
-**Status:** [Built, not deployed] 2026-11-06 (§7).
+**Status:** [Live] deployed 2026-11-06 (`0ed4a779`); built 2026-11-06 (§7).
 
 - **F-78a · P2 · deps: none** Provider list + sort + benefits card on the Domain page, ar/en strings.
 
@@ -1614,6 +1614,14 @@ Add each new request here first, with the date and the owner's words, then turn 
 ---
 
 ## 7. Log
+
+### 2026-11-09 — tallaby.com audit fixes (main @ 41cdcef7 audit, owner brief; no migration)
+
+- **Copy and UI (`f9dbfb93`, `18d204ba`):** hero price line ($0.03 · Pro $29 · no cut of sales, ≈ جنيه from the live rate, links to #pricing); Free card activation line rewritten for F-84 (orders from day one, first $5 top-up after the grace window, campaigns need it); Pro button passes a `plan=pro` redirect hint (cookie + `user_metadata.signup_plan`) so a new seller lands on `/settings/plan`, never a plan change; Google signup keeps the typed store link in the `tallaby_signup_hint` cookie and pre-fills the dashboard store step (`?subdomain=`, checked again there); signup step mentions the phone number; جنيه in Arabic demos and ≈ جنيه on the hero wallet; home FAQ and step 3 use rate variables and follow F-84; no trailing period in the two plan titles; alt text on informative home images; compact cookie banner at ≤640px (Accept/Decline equal); 44px tap areas on template carousel dots and chips; dashboard `storeWallet.topUp.*` strings in USD ($5–$1,000; `CARD_TOP_UPS_ENABLED` untouched).
+- **SEO:** footer "Solutions" column built from SOLUTIONS / INDUSTRIES / FEATURE_PAGES / TOOL_SLUGS (3 each); home links to `/solutions/create-online-store` and `/industries/clothing-store`; every /templates card is a plain link in server HTML; language switch links Arabic without `/ar`; sitemap `lastModified` from `lib/marketing/sitemap.lib.ts` (hand-kept dates, bump when a page changes; templates have no date in the code catalog); pricing BreadcrumbList JSON-LD.
+- **ROADMAP:** F-44, F-48, F-61, F-77, F-78 Status set to Live (deploy `0ed4a779`); F-76 left as Replaced by F-84.
+- **Not done (waiting on the owner):** S-01 host redirect, S-06 compare pages, S-07 AI crawlers, A6/A7, card top-ups, MCP F-29c/d, S-02 analytics. Other pages still say a top-up is needed "before you can see orders" (faq, about, blog, pricing topUpBody/FAQ) — needs an F-84 copy sweep.
+- **Checks:** ecommerce lint 0 errors, tests 492 pass; dashboard tests 1062 pass; ecommerce typecheck has 16 pre-existing errors in `profile.chunks.tsx` (untouched since Oct 24). Signup paths (email in dialog, email confirm, Google) not run end to end.
 
 ### 2026-11-09 — F-84 Grace period before top-up; F-76 private store removed (owner)
 
