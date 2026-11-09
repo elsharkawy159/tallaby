@@ -20,6 +20,7 @@ import {
   updateStoreSeo,
   updateStoreSettings,
   updateStoreSocialLinks,
+  updateStoreSubdomain,
 } from "@workspace/lib/stores/server";
 import { pageContentSchema, validatePageContent, type PageContent } from "@workspace/store-sections/config";
 import { contentOverrideKeys, storeSectionRegistry } from "@workspace/store-sections/render";
@@ -47,7 +48,7 @@ import {
 } from "./builder.dto";
 import { applyCopyValues, collectCopySlots } from "./builder-copy.lib";
 import { originalTexts } from "./builder-checks.lib";
-import { buildItemKeys, buildProgress, isFinished, reviewIssues, shippingZoneNames, subdomainBase, type BuildItem } from "./builder.lib";
+import { buildItemKeys, buildProgress, isAutoSubdomain, isFinished, reviewIssues, shippingZoneNames, subdomainBase, type BuildItem } from "./builder.lib";
 import { POLICY_SYSTEM_RULES, REVIEW_SYSTEM_RULES, SITE_COPY_SYSTEM_RULES, policyRequestText, productRequestText, reviewRequestText, siteCopyRequestText } from "./builder-prompts.lib";
 import { FatalBuildError, runNextStep, type BuildRunner, type StepSpec } from "./builder-run.lib";
 import { builderPhotoUrl, isOwnBuilderPath } from "./builder-upload.lib";
@@ -84,12 +85,30 @@ export async function boundStore(sellerId: string, storeId: string): Promise<"ok
   return row.firstPublishedAt || row.siteStatus !== "draft" ? "published" : "ok";
 }
 
-async function freeSubdomain(sellerId: string, state: BuilderState): Promise<string> {
-  const base = subdomainBase(state.brief?.nameEn || state.nameEn, state.name) || `store-${randomUUID().slice(0, 6)}`;
-  const check = await checkStoreSubdomain(sellerId, base);
+/** A free address made from the store's name (base, then base-store, base-shop, …); null when the name gives none. */
+async function nameSubdomain(sellerId: string, state: BuilderState, storeId?: string): Promise<string | null> {
+  const base = subdomainBase(state.brief?.nameEn || state.nameEn, state.name);
+  if (!base) return null;
+  const check = await checkStoreSubdomain(sellerId, base, storeId ? { storeId } : {});
   if (check.status === "available") return check.subdomain;
-  if (check.suggestions[0]) return check.suggestions[0];
-  return `store-${randomUUID().slice(0, 8)}`;
+  return check.suggestions[0] ?? null;
+}
+
+async function freeSubdomain(sellerId: string, state: BuilderState): Promise<string> {
+  return (await nameSubdomain(sellerId, state)) ?? `store-${randomUUID().slice(0, 8)}`;
+}
+
+/**
+ * A store that still has a random address (store-1a2b3c) moves to one made from
+ * its name (owner, 2026-11-09). updateStoreSubdomain keeps the old address as a
+ * redirect, so links already shared keep working. Never fails the build.
+ */
+async function nameTheAddress(sellerId: string, store: { id: string; subdomain: string }, state: BuilderState): Promise<void> {
+  if (!isAutoSubdomain(store.subdomain)) return;
+  const next = await nameSubdomain(sellerId, state, store.id).catch(() => null);
+  if (!next || isAutoSubdomain(next)) return;
+  const moved = await updateStoreSubdomain(sellerId, store.id, next).catch(() => null);
+  if (moved?.success) await refresh(store.subdomain);
 }
 
 /**
@@ -128,6 +147,7 @@ const seoTitleTemplate = (name: string) => `%s | ${name.replace(/%/g, "")}`.slic
 async function applySettings(ctx: RunContext, build: BuildRow) {
   const store = await requireStoreOf(ctx, build);
   const { state } = build;
+  await nameTheAddress(ctx.sellerId, store, state);
   const industry = STORE_INDUSTRIES.find((i) => i.id === state.industryId);
   const description = (state.about ?? "").slice(0, 2000);
   const settings = await updateStoreSettings(ctx.sellerId, store.id, {

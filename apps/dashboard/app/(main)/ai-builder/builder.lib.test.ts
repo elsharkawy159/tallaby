@@ -19,6 +19,7 @@ import {
   shippingZoneNames,
   shortlistTemplates,
   subdomainBase,
+  isAutoSubdomain,
   withNextQuestion,
 } from "./builder.lib";
 import { syncField } from "./builder-row.lib";
@@ -251,7 +252,10 @@ describe("answers read in code", () => {
 
   it("makes a subdomain from Latin letters only", () => {
     expect(subdomainBase("Noor Candles!", "نور")).toBe("noor-candles");
-    expect(subdomainBase(null, "نور")).toBe("");
+    expect(subdomainBase(null, "نور")).toBe("nwr");
+    expect(subdomainBase(null, "!!")).toBe("");
+    expect(isAutoSubdomain("store-346a68")).toBe(true);
+    expect(isAutoSubdomain("oud-house")).toBe(false);
   });
 
   it("names every shipping group", () => {

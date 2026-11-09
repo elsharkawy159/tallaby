@@ -66,6 +66,7 @@ vi.mock("@workspace/lib/stores/server", () => ({
   updateStoreSeo: vi.fn(),
   updateStoreSettings: vi.fn(),
   updateStoreSocialLinks: vi.fn(),
+  updateStoreSubdomain: vi.fn(),
 }));
 vi.mock("@workspace/store-sections/config", () => ({ pageContentSchema: { safeParse: () => ({ success: false }) }, validatePageContent: () => ({ success: true }) }));
 vi.mock("@workspace/store-sections/render", () => ({ contentOverrideKeys: () => ({}), storeSectionRegistry: { allowedSections: () => ({}) } }));

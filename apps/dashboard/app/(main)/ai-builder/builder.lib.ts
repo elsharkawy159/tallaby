@@ -1,3 +1,4 @@
+import { subdomainFromName } from "@workspace/lib/storefront";
 import { STORE_INDUSTRIES, templatesForIndustry } from "@workspace/store-editor/lib/industries.lib";
 import { SOCIAL_PLATFORM_KEYS, formatPhone, normalizeSocialLink, toLatinDigits } from "@workspace/store-sections/social";
 import {
@@ -364,8 +365,14 @@ export function subdomainBase(nameEn: string | null | undefined, name: string | 
     const slug = (value ?? "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40).replace(/-+$/, "");
     if (slug.length >= 3) return slug;
   }
-  return "";
+  // An Arabic name still gives its own address ("عود الملوك" → "aod-almlok"),
+  // never a random store-xxxx (owner, 2026-11-09).
+  const fromName = subdomainFromName(name ?? "");
+  return fromName.length >= 3 ? fromName : "";
 }
+
+/** The random fallback address (store-1a2b3c), which a named store should not keep. */
+export const isAutoSubdomain = (subdomain: string) => /^store-[0-9a-f]{6,8}$/.test(subdomain);
 
 const SHIPPING_GROUP_NAMES = {
   egypt_flat: [{ nameAr: "كل مصر", nameEn: "All Egypt" }],
