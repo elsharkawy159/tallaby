@@ -12,6 +12,11 @@ import { carouselCardStyle, carouselOffset, wrapIndex } from "@/components/marke
 import { templateFrameSrc, type GalleryEntry } from "@/lib/marketing/templates.lib";
 import { TemplateLiveThumb } from "./template-live-thumb.client";
 
+/** A 44px tap area centred on a smaller control, drawn by an invisible pseudo-element; the control looks the same. */
+const TAP_44 = "relative before:absolute before:top-1/2 before:left-1/2 before:size-11 before:-translate-x-1/2 before:-translate-y-1/2 before:content-['']";
+/** A 40px chip in a row with 2px padding: 2px more above and below makes 44px, still inside the scrolling row. */
+const TAP_44_CHIP = "relative before:absolute before:inset-x-0 before:-inset-y-0.5 before:content-['']";
+
 /** Fraction of a card's width one step moves. */
 const STEP_WIDE = 0.72;
 const STEP_PHONE = 0.8;
@@ -101,7 +106,7 @@ export function TemplateCarousel({ entries }: { entries: GalleryEntry[] }) {
     <>
       <ChipRow role="tablist" aria-label={t("categoriesLabel")} className="mx-auto mb-9 max-w-[1200px] px-4 min-[641px]:flex-wrap min-[641px]:justify-center">
         {entries.map((entry, i) => (
-          <Chip key={entry.id} role="tab" aria-pressed={undefined} aria-selected={i === active} onClick={() => go(i)}>
+          <Chip key={entry.id} role="tab" aria-pressed={undefined} aria-selected={i === active} onClick={() => go(i)} className={TAP_44_CHIP}>
             {t(`categories.${entry.category}`)}
           </Chip>
         ))}
@@ -192,7 +197,7 @@ export function TemplateCarousel({ entries }: { entries: GalleryEntry[] }) {
           <ChevronLeft className="size-5 ltr:rotate-180" aria-hidden />
         </button>
       </div>
-      {/* Below the cards, never over them (owner, F-73). Each dot is a 24px target around an 8px pill. */}
+      {/* Below the cards, never over them (owner, F-73). Each dot looks the same (an 8px pill in a 24px box) but takes taps in 44px around it. */}
       <div className="relative z-[21] mt-3 flex flex-wrap justify-center px-4">
         {entries.map((entry, i) => (
           <button
@@ -201,7 +206,7 @@ export function TemplateCarousel({ entries }: { entries: GalleryEntry[] }) {
             aria-label={entry.name}
             aria-current={i === active}
             onClick={() => go(i)}
-            className="group grid h-6 min-w-6 place-items-center px-[3px]"
+            className={cn("group grid h-6 min-w-6 place-items-center px-[3px]", TAP_44)}
           >
             <span className={cn("block h-2 rounded-full transition-[width,background-color] duration-300", i === active ? "w-7 bg-teal-700" : "w-2 bg-[#cfdde1] group-hover:bg-[#9fb6bc]")} />
           </button>

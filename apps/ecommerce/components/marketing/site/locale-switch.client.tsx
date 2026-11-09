@@ -3,10 +3,16 @@
 import { Languages } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useTransition } from "react";
-import { Link, usePathname, useRouter } from "@/i18n/navigation";
+import { usePathname, useRouter } from "@/i18n/navigation";
 import { cn } from "@workspace/ui/lib/utils";
+import { localeSwitchHref } from "./locale-switch.lib";
 
-/** Toggles between Arabic and English on the same page. A real link, so crawlers can reach the other language. */
+/**
+ * Toggles between Arabic and English on the same page. A real link, so crawlers
+ * can reach the other language; a plain <a>, because next-intl's Link would
+ * write the Arabic URL as /ar/... A click still goes through router.replace,
+ * which keeps the hash and query and sets the locale cookie.
+ */
 export function LocaleSwitch({ className }: { className?: string }) {
   const t = useTranslations("nav");
   const locale = useLocale();
@@ -17,10 +23,9 @@ export function LocaleSwitch({ className }: { className?: string }) {
   const next = locale === "ar" ? "en" : "ar";
 
   return (
-    <Link
-      href={pathname}
-      locale={next}
-      prefetch={false}
+    <a
+      href={localeSwitchHref(pathname, next)}
+      hrefLang={next}
       aria-label={t("switchAria")}
       aria-disabled={pending}
       onClick={(event) => {
@@ -38,6 +43,6 @@ export function LocaleSwitch({ className }: { className?: string }) {
     >
       <Languages className="size-4" aria-hidden />
       <span>{t("switchLabel")}</span>
-    </Link>
+    </a>
   );
 }

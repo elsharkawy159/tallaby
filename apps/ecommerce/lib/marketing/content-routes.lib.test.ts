@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { compareRobots, comparisonTable, COMPARE_PUBLIC, COMPETITORS, findCompetitorBySlug, MIN_VERIFIED_FACTS, publishableCompetitors, type Competitor } from "./compare.lib";
-import { contentPagePaths } from "./content-routes.lib";
+import { contentPagePaths, footerSolutionLinks } from "./content-routes.lib";
+import { loadAllMessages } from "@/i18n/messages";
 import { filterHubItems, hubCategoryCounts } from "./hub.lib";
 import { integrationHref, INTEGRATION_ITEMS } from "./integrations-hub.lib";
 
@@ -75,5 +76,27 @@ describe("hub filtering", () => {
 
   it("counts per category", () => {
     expect(hubCategoryCounts(items)).toEqual({ ship: 1, pay: 1 });
+  });
+});
+
+describe("footerSolutionLinks", () => {
+  it("lists each kind of page, capped per kind, with its meta key", () => {
+    const links = footerSolutionLinks();
+    expect(links).toEqual(
+      expect.arrayContaining([
+        { href: "/solutions/create-online-store", metaKey: "solution-create-online-store" },
+        { href: "/industries/clothing-store", metaKey: "industry-clothing-store" },
+        { href: "/features/custom-domain", metaKey: "feature-custom-domain" },
+        { href: "/tools/profit-margin-calculator", metaKey: "tool-profit-margin-calculator" },
+      ]),
+    );
+    expect(footerSolutionLinks(0)).toEqual([]);
+  });
+
+  it("has a meta title for every link in both languages", async () => {
+    for (const locale of ["ar", "en"]) {
+      const meta = (await loadAllMessages(locale)).meta as Record<string, { title?: string }>;
+      for (const link of footerSolutionLinks(Infinity)) expect(meta[link.metaKey]?.title, `${locale} ${link.metaKey}`).toBeTruthy();
+    }
   });
 });

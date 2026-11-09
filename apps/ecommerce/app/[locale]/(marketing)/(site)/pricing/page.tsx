@@ -3,7 +3,7 @@ import { Blocks, CreditCard, Mail, Percent, Repeat, Sparkles, Truck, Wallet, Wal
 import { getTranslations } from "next-intl/server";
 import { CtaBand } from "@/components/marketing/site/cta-band";
 import { FaqAccordion, type FaqEntry } from "@/components/marketing/site/faq-accordion";
-import { ProductJsonLd } from "@/components/marketing/site/json-ld";
+import { JsonLd, ProductJsonLd } from "@/components/marketing/site/json-ld";
 import { Container, Section, SectionHeading } from "@/components/marketing/site/layout-primitives";
 import { PageHero } from "@/components/marketing/site/page-hero";
 import { Reveal } from "@/components/marketing/site/reveal.client";
@@ -12,17 +12,23 @@ import { SlugClaimForm } from "@/components/marketing/signup/signup-trigger.clie
 import { FeeEstimator } from "@/components/marketing/pricing/fee-calculators.client";
 import { PlanCards } from "@/components/marketing/pricing/plan-cards";
 import { getMarketingUsdRates } from "@/lib/marketing/exchange-rate.server";
-import { pageMetadata } from "@/lib/marketing/metadata.lib";
+import { localizedUrl, pageMetadata } from "@/lib/marketing/metadata.lib";
 import { PLAN_PRICES, formatNumber, formatUsd, proBreakEvenOrdersShown } from "@/lib/marketing/pricing.lib";
 import { CONTACT } from "@/lib/marketing/site.lib";
+import { breadcrumbSchema } from "@/lib/marketing/structured-data.lib";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   return pageMetadata({ locale, page: "pricing", path: "/pricing" });
 }
 
-export default async function PricingPage() {
-  const [t, rates] = await Promise.all([getTranslations("pricing"), getMarketingUsdRates()]);
+export default async function PricingPage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  const [t, tSite, tFooter, rates] = await Promise.all([getTranslations("pricing"), getTranslations("site"), getTranslations("siteFooter"), getMarketingUsdRates()]);
+  const breadcrumbs = breadcrumbSchema([
+    { name: tSite("home"), url: localizedUrl(locale, "/") },
+    { name: tFooter("pricing"), url: localizedUrl(locale, "/pricing") },
+  ]);
   const prices = {
     topUpMin: formatUsd(PLAN_PRICES.topUp.minCents),
     topUpMax: formatUsd(PLAN_PRICES.topUp.maxCents),
@@ -55,6 +61,7 @@ export default async function PricingPage() {
   return (
     <>
       <ProductJsonLd page="pricing" path="/pricing" />
+      <JsonLd data={breadcrumbs} />
       <div id="plans">
         <PageHero eyebrow={t("hero.eyebrow")} title={t("hero.title")} lead={t("hero.lead")} centered className="pb-10 sm:pb-12" />
         <Container className="pb-14 min-[861px]:pb-[72px]">

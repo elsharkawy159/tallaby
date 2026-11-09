@@ -16,3 +16,23 @@ export function contentPagePaths(comparePublic: boolean = COMPARE_PUBLIC): strin
     ...(comparePublic ? ["/compare", ...publishableCompetitors().map((competitor) => `/compare/${compareSlug(competitor)}`)] : []),
   ];
 }
+
+/** How many pages of each kind the footer's Solutions column lists. */
+export const FOOTER_SOLUTIONS_PER_SOURCE = 3;
+
+/**
+ * The footer's "Solutions" links, read from the page lists so a new page shows
+ * up by itself: solutions, then industries, features and tools, at most
+ * `perSource` of each. `metaKey` is the page's key under `meta` (its title is
+ * the link text).
+ */
+export function footerSolutionLinks(perSource: number = FOOTER_SOLUTIONS_PER_SOURCE): { href: string; metaKey: string }[] {
+  const take = <T,>(items: readonly T[], href: (item: T) => string, key: (item: T) => string) =>
+    items.slice(0, perSource).map((item) => ({ href: href(item), metaKey: key(item) }));
+  return [
+    ...take(SOLUTIONS, (s) => `/solutions/${s.slug}`, (s) => `solution-${s.slug}`),
+    ...take(INDUSTRIES, (i) => `/industries/${i.slug}`, (i) => `industry-${i.slug}`),
+    ...take(FEATURE_PAGES, (f) => `/features/${f.slug}`, (f) => `feature-${f.slug}`),
+    ...take(TOOL_SLUGS, (slug) => `/tools/${slug}`, (slug) => `tool-${slug}`),
+  ];
+}

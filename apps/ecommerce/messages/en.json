@@ -2175,6 +2175,7 @@
     "doneTitle": "Your store is created",
     "addProduct": "Add your first product",
     "continueBuilder": "Continue building your store",
+    "continuePro": "Continue to the Pro plan",
     "goDashboard": "Go to dashboard",
     "confirmTitle": "Check your email",
     "confirmBody": "We sent a confirmation link to <b>{email}</b>. Open it to finish creating your store.",
@@ -3169,6 +3170,8 @@
     "label": "Cookie choice",
     "text": "We use essential cookies to run this site. If you accept, we also use Google Analytics and the Meta Pixel to measure visits and ads.",
     "learnMore": "Learn more",
+    "textShort": "We use cookies to measure visits.",
+    "details": "Details",
     "accept": "Accept",
     "decline": "Decline",
     "settings": "Cookie settings"

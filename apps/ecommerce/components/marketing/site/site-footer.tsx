@@ -6,6 +6,7 @@ import { Link } from "@/i18n/navigation";
 import { type PaymentMethod, PaymentMethodIcons } from "@/components/layout/payment-method-icons";
 import { CookieSettingsButton } from "@/components/layout/tracking-consent-banner.client";
 import { COMPARE_PUBLIC } from "@/lib/marketing/compare.lib";
+import { footerSolutionLinks } from "@/lib/marketing/content-routes.lib";
 import { CONTACT, DASHBOARD_URL, LOGIN_URL, SOCIAL_LINKS } from "@/lib/marketing/site.lib";
 import { BrandIcon, type BrandIconName } from "./brand-icon";
 import { Container } from "./layout-primitives";
@@ -19,7 +20,7 @@ type FooterLink = { href: string; label: string; external?: boolean };
  * buttons and payment marks.
  */
 export async function SiteFooter() {
-  const t = await getTranslations("siteFooter");
+  const [t, tm] = await Promise.all([getTranslations("siteFooter"), getTranslations("meta")]);
 
   const columns: { title: string; links: FooterLink[] }[] = [
     {
@@ -36,6 +37,11 @@ export async function SiteFooter() {
         { href: "/affiliates", label: t("affiliates") },
         { href: "/faq", label: t("faq") },
       ],
+    },
+    // Built from the page lists, so a new solution, industry, feature or tool page appears here by itself.
+    {
+      title: t("solutions"),
+      links: footerSolutionLinks().map((page) => ({ href: page.href, label: tm(`${page.metaKey}.title`) })),
     },
     {
       title: t("company"),
@@ -70,7 +76,7 @@ export async function SiteFooter() {
   return (
     <footer data-print="hide" className="text-sm text-[#c6d6da]">
       <div className="bg-footer-top pt-14 pb-12">
-        <Container className="grid grid-cols-2 gap-x-6 gap-y-8 min-[861px]:grid-cols-[1.4fr_1fr_1fr_1fr] min-[861px]:gap-10">
+        <Container className="grid grid-cols-2 gap-x-6 gap-y-8 min-[861px]:grid-cols-[1.3fr_1fr_1.15fr_1fr_1fr] min-[861px]:gap-10">
           <div className="col-span-2 min-[861px]:col-span-1">
             <Image src="/logo-white.png" alt="طلبي" width={118} height={30} className="mb-[18px] block h-[30px] w-auto" />
             <p className="max-w-[330px] leading-[1.85] text-[#d5e2e5]">{t("about")}</p>

@@ -38,7 +38,11 @@ export function TemplateGallery({ entries }: { entries: GalleryEntry[] }) {
 
   const matching = entries.filter((tpl) => category === "all" || tpl.category === category);
   // A page at a time: over 100 templates made the phone page tens of thousands of px tall.
+  // Every card is still in the server HTML (a plain link to /templates/<id>), so all of
+  // them can be crawled; the rest are hidden. A hidden card has no width, so its live
+  // preview frame never mounts until "Show more" or a filter reveals it.
   const visible = matching.slice(0, shown);
+  const visibleIds = new Set(visible.map((tpl) => tpl.id));
   const used = new Set(entries.map((e) => e.category));
 
   return (
@@ -62,8 +66,8 @@ export function TemplateGallery({ entries }: { entries: GalleryEntry[] }) {
       </div>
 
       <div className="grid gap-5 min-[641px]:grid-cols-2 min-[1081px]:grid-cols-3">
-        {visible.map((tpl) => (
-          <article key={tpl.id} className="flex flex-col overflow-hidden rounded-card-lg border border-line bg-white shadow-soft transition-[transform,box-shadow] duration-200 hover:-translate-y-1 hover:shadow-raise">
+        {entries.map((tpl) => (
+          <article key={tpl.id} hidden={!visibleIds.has(tpl.id)} className="flex flex-col [&[hidden]]:hidden overflow-hidden rounded-card-lg border border-line bg-white shadow-soft transition-[transform,box-shadow] duration-200 hover:-translate-y-1 hover:shadow-raise">
             <div className="flex items-center justify-between gap-2.5 px-[18px] pt-4 pb-3">
               <div className="min-w-0">
                 <h3 className="truncate font-latin text-base font-bold text-teal-900">{tpl.name}</h3>

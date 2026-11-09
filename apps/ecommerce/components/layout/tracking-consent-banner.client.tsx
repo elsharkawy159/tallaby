@@ -26,8 +26,10 @@ const POSITION =
   "md:right-auto md:bottom-5 md:left-5 md:w-[440px] " +
   "[body[data-scroll-locked]_&]:hidden print:hidden";
 
+// Phones (≤ 640px) get the compact banner: one line, two small buttons, under 96px in all.
+// Accept and Decline always share one style and size: neither is pushed.
 const BUTTON =
-  "h-[42px] min-w-0 flex-1 rounded-full border-[1.5px] border-[#dfe8ea] bg-white px-4 text-sm font-bold text-[#0d3743] " +
+  "h-[42px] max-[640px]:h-9 max-[640px]:text-[13px] min-w-0 flex-1 rounded-full border-[1.5px] border-[#dfe8ea] bg-white px-4 text-sm font-bold text-[#0d3743] " +
   "transition-colors duration-150 hover:border-[#0d3743] aria-pressed:border-[#0d3743] " +
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0d3743]";
 
@@ -78,15 +80,21 @@ export function TrackingConsentBanner() {
       onKeyDown={(event) => {
         if (event.key === "Escape" && settingsOpen && consent !== "unset") closeSettings();
       }}
-      className={`${POSITION} rounded-[18px] border border-[#e3ebed] bg-white p-4 text-[13px] leading-[1.7] text-[#43575c] shadow-[0_10px_28px_rgba(13,55,67,0.12)]`}
+      className={`${POSITION} rounded-[18px] border border-[#e3ebed] bg-white p-4 text-[13px] leading-[1.7] text-[#43575c] shadow-[0_10px_28px_rgba(13,55,67,0.12)] max-[640px]:p-3`}
     >
-      <p className="text-pretty">
+      <p className="flex items-center gap-2 min-[641px]:hidden">
+        <span className="min-w-0 truncate">{t("textShort")}</span>
+        <Link href="/privacy#cookies" className="flex-none font-semibold whitespace-nowrap text-[#0d3743] underline underline-offset-2">
+          {t("details")}
+        </Link>
+      </p>
+      <p className="text-pretty max-[640px]:hidden">
         {t("text")}{" "}
         <Link href="/privacy#cookies" className="font-semibold whitespace-nowrap text-[#0d3743] underline underline-offset-2">
           {t("learnMore")}
         </Link>
       </p>
-      <div className="mt-3 flex gap-2">
+      <div className="mt-3 flex gap-2 max-[640px]:mt-2">
         <button
           ref={firstButton}
           type="button"
