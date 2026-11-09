@@ -3,10 +3,10 @@ import { createRateLimiter } from "@/lib/rate-limit.lib";
 
 /**
  * Shared by the hero composer's intake routes (ROADMAP.md F-82d). The AI Store
- * Builder is behind `STORE_BUILDER_AI_ENABLED=1` (F-82m); while it is off the
+ * Builder is on by default (owner, 2026-11-09); `STORE_BUILDER_AI_ENABLED=0` turns it off and the
  * routes answer 404 and the hero keeps its signup button.
  */
-export const storeBuilderEnabled = () => process.env.STORE_BUILDER_AI_ENABLED === "1";
+export const storeBuilderEnabled = () => process.env.STORE_BUILDER_AI_ENABLED !== "0";
 
 /** The visitor's address as Vercel forwards it (only ever hashed). */
 export function clientIp(headers: Headers): string {

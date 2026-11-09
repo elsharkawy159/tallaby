@@ -4,4 +4,5 @@
  * until 0141 is applied there and the live cost measurement has run (docs/ai.md
  * rule 12; design note §2, §9).
  */
-export const builderEnabled = () => process.env.STORE_BUILDER_AI_ENABLED === "1";
+// On by default (owner, 2026-11-09); STORE_BUILDER_AI_ENABLED=0 is the kill switch.
+export const builderEnabled = () => process.env.STORE_BUILDER_AI_ENABLED !== "0";

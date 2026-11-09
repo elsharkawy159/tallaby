@@ -1,3 +1,4 @@
+import { storeBuilderEnabled } from "@/lib/store-build/intake-request.server";
 import Image from "next/image";
 import { Mail, MapPin, Phone } from "lucide-react";
 import { getTranslations } from "next-intl/server";
@@ -31,7 +32,7 @@ export async function SiteFooter() {
         // Off until the owner decides about naming competitors (lib/marketing/compare.lib.ts).
         ...(COMPARE_PUBLIC ? [{ href: "/compare", label: t("compare") }] : []),
         // The AI Store Builder's entry (F-54): signup, then the chat. Hidden behind its switch.
-        ...(process.env.STORE_BUILDER_AI_ENABLED === "1" ? [{ href: `${DASHBOARD_URL}signup?next=/ai-builder`, label: t("aiBuilder"), external: true }] : []),
+        ...(storeBuilderEnabled() ? [{ href: `${DASHBOARD_URL}signup?next=/ai-builder`, label: t("aiBuilder"), external: true }] : []),
         { href: "/affiliates", label: t("affiliates") },
         { href: "/faq", label: t("faq") },
       ],

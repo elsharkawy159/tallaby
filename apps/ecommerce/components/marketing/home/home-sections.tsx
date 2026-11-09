@@ -1,3 +1,4 @@
+import { storeBuilderEnabled } from "@/lib/store-build/intake-request.server";
 import * as React from "react";
 import { BellRing, Bike, BookOpen, Check, ChartNoAxesCombined, FileUp, ShieldCheck, Sparkles, Star, Store, Timer, Palette, Rocket, Truck, Users, Wallet } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -43,8 +44,8 @@ export async function HomeHero() {
   const features = t.raw("marquee") as string[];
   const checks = [t("check1"), t("check2"), t("check3")];
   const showLine = selectStoreLine(recent.stores, recent.readAt).kind !== "none";
-  // The hero composer replaces the signup button once the AI Store Builder is on (F-82d, D9).
-  const composer = process.env.STORE_BUILDER_AI_ENABLED === "1";
+  // The hero composer replaces the signup button while the AI Store Builder is on (F-82d, D9; on by default).
+  const composer = storeBuilderEnabled();
 
   return (
     <section id="top" aria-labelledby="home-h1" className="relative overflow-hidden pt-10 pb-24 min-[641px]:pt-16">
