@@ -326,7 +326,7 @@ export function HeroComposer({ className }: { className?: string }) {
         ) : null}
 
         <div className="flex items-center gap-1 pt-1">
-          <input ref={fileInputRef} type="file" accept={ACCEPT} multiple onChange={onPick} className="sr-only" tabIndex={-1} aria-hidden />
+          <input ref={fileInputRef} type="file" accept={ACCEPT} multiple onChange={onPick} className="hidden" tabIndex={-1} aria-hidden />
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}

@@ -25,6 +25,7 @@ export const MARKETING_CLIENT_NAMESPACES = [
   "faq",
   "home.ai.services",
   "home.demo",
+  "home.hero.composer",
   "home.hero.live",
   "home.marketing",
   "legal",
