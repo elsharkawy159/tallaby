@@ -26,6 +26,7 @@ const message = (over: Partial<SellerMessageInput>) =>
     dialect: "eg",
     ownerName: "Painto Ali",
     storeName: "Painteg",
+    storeLink: "https://painteg.tallaby.com",
     plan: "free",
     step: "ready",
     activation: "needed",
@@ -118,16 +119,21 @@ describe("buildSellerWhatsAppMessage", () => {
       expect(text).not.toMatch(/جنية|الحياه|توصيل/);
       expect(text.includes("«القوالب»")).toBe(step === "template");
       expect(text.includes("«نشر المنتج»")).toBe(step === "product");
-      expect(text.includes("270 جنيه على الأقل")).toBe(activation === "needed");
+      expect(text.includes("270 جنيه في أي وقت")).toBe(activation === "needed");
       expect(text.includes("«الرصيد وشحن المحفظة»")).toBe(activation === "needed");
       expect(text.includes("نطمّن")).toBe(activation === "active");
+      // Shared once the store is published; the template step can't have a link yet.
+      expect(text.includes("https://painteg.tallaby.com")).toBe(step !== "template");
+      expect(text.includes("متاح أونلاين لعملائك")).toBe(true);
+      // Owner: no grace window, no "at least", no private-store wording.
+      expect(text).not.toMatch(/14|يوم|على الأقل|ظاهر لحضرتك بس/);
     });
 
     it(`SA ${step}/${activation}`, () => {
       const text = message({ step, activation, dialect: "sa", money: messageMoney("SAR", RATES) });
       expect(text.startsWith("هلا Painto، معك عمر من منصة طلبي.")).toBe(true);
       expect(text).not.toContain("جنيه");
-      expect(text.includes("19 ريال (5 دولار) على الأقل")).toBe(activation === "needed");
+      expect(text.includes("19 ريال (5 دولار) في أي وقت")).toBe(activation === "needed");
       expect(text.includes("«استخدام القالب»")).toBe(step === "template");
     });
 
@@ -135,8 +141,8 @@ describe("buildSellerWhatsAppMessage", () => {
       const text = message({ step, activation, dialect: "msa", money: messageMoney("USD", RATES) });
       expect(text.startsWith("مرحباً Painto، معك عمر من منصة طلبي.")).toBe(true);
       expect(text).not.toContain("جنيه");
-      expect(text.includes("5 دولار على الأقل")).toBe(activation === "needed");
-      expect(text.includes("0.03 دولار فقط")).toBe(activation === "needed" || step === "ready");
+      expect(text.includes("5 دولار في أي وقت")).toBe(activation === "needed");
+      expect(text.includes("0.03 دولار")).toBe(activation === "needed" || step === "ready");
     });
   }
 
@@ -144,28 +150,28 @@ describe("buildSellerWhatsAppMessage", () => {
     expect(message({})).toMatchInlineSnapshot(`
       "مرحباً Painto، مع حضرتك عمر من منصة طلبي.
       شكراً لفتح متجرك «Painteg» على طلبي (Tallaby.com).
-      إحنا هنا لمساعدتك في أي استفسار أو مشكلة تواجهك.
 
-      حابين نوضّح لحضرتك إن المتجر حالياً ظاهر لحضرتك بس، ومش ظاهر لعملائك.
-      عشان المتجر يظهر لعملائك وتبدأ تستقبل طلبات، اشحن محفظة طلبي بـ 270 جنيه على الأقل.
-      المبلغ ده بيفضل رصيد في محفظتك، رصيد دائم مدى الحياة، وبنخصم منه 1.62 جنيه بس على كل طلب.
-      ومرة شحن واحدة كفاية، المتجر بيفضل مفعّل على طول.
+      متجرك دلوقتي متاح أونلاين لعملائك، شارك لينك متجرك على صفحات البراند بتاعك على السوشيال ميديا:
+      https://painteg.tallaby.com
 
-      *خطوات الشحن:*
-      1. من القائمة افتح «المحفظة» ثم «الرصيد وشحن المحفظة».
-      2. اختار المبلغ، واختار طريقة التحويل (فودافون كاش أو إنستاباي).
-      3. اضغط «اشحن الآن»، حوّل المبلغ وارفع صورة الإيصال، وبعدين اضغط «إرسال للمراجعة».
-      أول ما نراجع الإيصال الرصيد بيتضاف، والمتجر بيبقى متاح لأي حد وتقدر تستقبل طلباتك.
+      تقدر تشحن محفظتك بـ 270 جنيه في أي وقت، والرصيد بيفضل في محفظة طلبي على طول، وكل طلب جديد بيتخصم منه 1.62 جنيه تلقائي.
+      الشحن من «المحفظة» ثم «الرصيد وشحن المحفظة».
 
       لو عندك أي استفسار ابعتلنا وإحنا تحت أمرك.
       فريق طلبي"
     `);
   });
 
+  it("leaves the link out when the website isn't published", () => {
+    const text = message({ storeLink: null });
+    expect(text).not.toContain("https://");
+    expect(text).not.toContain("متاح أونلاين");
+  });
+
   it("says a pending top-up is being reviewed instead of asking again", () => {
     const text = message({ activation: "pending" });
     expect(text).toContain("بنراجع الإيصال");
-    expect(text).not.toContain("على الأقل");
+    expect(text).not.toContain("في أي وقت");
   });
 
   it("tells a Pro seller there is no per-order fee", () => {

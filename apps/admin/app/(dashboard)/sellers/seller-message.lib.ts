@@ -221,7 +221,6 @@ export const firstName = (name: string | null | undefined): string | null => nam
 type Copy = {
   hello: (name: string | null) => string;
   thanks: (store: string) => string;
-  help: string;
   /** Before the template and product steps. */
   stepsIntro: string;
   templateTitle: string;
@@ -230,21 +229,16 @@ type Copy = {
   productSteps: string[];
   /** One line after the template steps: products come next. */
   productNext: string;
-  /** The store is published but only the seller sees it (F-76). */
-  privateNow: string;
-  /** Not published yet (no template chosen). */
-  notLiveYet: string;
-  topUpTitle: string;
-  topUpAsk: (amount: string) => string;
-  /** The balance is spend-only and never expires; the Free fee comes out of it. */
-  balanceNote: (fee: string | null) => string;
-  /** One approved top-up activates for good. */
-  onceIsEnough: string;
-  topUpStepsTitle: string;
-  topUpSteps: string[];
-  afterReview: string;
+  /** Template step: choosing one publishes the store (F-84: public from day one). */
+  liveSoon: string;
+  /** The store is published and public: share its link. */
+  liveNow: (link: string) => string;
+  /** Top up any time; the balance stays; the Free fee comes out of it automatically. */
+  topUp: (amount: string, fee: string | null) => string;
+  /** Where the top-up is in the dashboard. */
+  topUpWhere: string;
   pending: string;
-  checkIn: string[];
+  checkIn: string;
   feeReminder: (fee: string) => string;
   proNoFee: string;
   closing: string;
@@ -258,13 +252,12 @@ const PRODUCT_PATH = "«المنتجات» ثم «إضافة منتج»";
 const EG: Copy = {
   hello: (name) => `مرحباً${name ? ` ${name}` : ""}، مع حضرتك ${SELLER_MESSAGE_SENDER} من منصة طلبي.`,
   thanks: (store) => `شكراً لفتح متجرك «${store}» على طلبي (Tallaby.com).`,
-  help: "إحنا هنا لمساعدتك في أي استفسار أو مشكلة تواجهك.",
   stepsIntro: "عشان تكمّل متجرك فاضل خطوات بسيطة:",
   templateTitle: "*اختيار قالب لمتجرك:*",
   templateSteps: [
     `من القائمة افتح ${TEMPLATE_PATH}.`,
     "اتفرّج على التصميمات، وتقدر تضغط «معاينة» على أي قالب تشوفه الأول.",
-    "اضغط «استخدام القالب» على اللي يعجبك، ومتجرك هيتنشر على طول.",
+    "اضغط «استخدام القالب» على اللي يعجبك.",
   ],
   productTitle: "*إضافة أول منتج:*",
   productSteps: [
@@ -273,29 +266,17 @@ const EG: Copy = {
     "اكتب الاسم والسعر وارفع الصور، وبعدين اضغط «نشر المنتج».",
   ],
   productNext: `وبعد كده ضيف منتجاتك من ${PRODUCT_PATH}.`,
-  privateNow: "حابين نوضّح لحضرتك إن المتجر حالياً ظاهر لحضرتك بس، ومش ظاهر لعملائك.",
-  notLiveYet: "المتجر لسه مش ظاهر لعملائك.",
-  topUpTitle: "*تفعيل المتجر لعملائك:*",
-  topUpAsk: (amount) =>
-    `عشان المتجر يظهر لعملائك وتبدأ تستقبل طلبات، اشحن محفظة طلبي بـ ${amount} على الأقل.`,
-  balanceNote: (fee) =>
-    fee
-      ? `المبلغ ده بيفضل رصيد في محفظتك، رصيد دائم مدى الحياة، وبنخصم منه ${fee} بس على كل طلب.`
-      : "المبلغ ده بيفضل رصيد في محفظتك، رصيد دائم مدى الحياة.",
-  onceIsEnough: "ومرة شحن واحدة كفاية، المتجر بيفضل مفعّل على طول.",
-  topUpStepsTitle: "*خطوات الشحن:*",
-  topUpSteps: [
-    `من القائمة افتح ${WALLET_PATH}.`,
-    "اختار المبلغ، واختار طريقة التحويل (فودافون كاش أو إنستاباي).",
-    "اضغط «اشحن الآن»، حوّل المبلغ وارفع صورة الإيصال، وبعدين اضغط «إرسال للمراجعة».",
-  ],
-  afterReview: "أول ما نراجع الإيصال الرصيد بيتضاف، والمتجر بيبقى متاح لأي حد وتقدر تستقبل طلباتك.",
-  pending: "طلب شحن المحفظة بتاعك وصلنا وبنراجع الإيصال، وأول ما يتأكد المتجر هيبقى متاح لعملائك وتقدر تستقبل طلباتك.",
-  checkIn: [
-    "حبينا نطمّن على متجرك وإن كل حاجة ماشية معاك تمام.",
-    "لو محتاج مساعدة في أي حاجة، أو عندك اقتراح أو ملاحظة على المنصة، يسعدنا جداً نسمع منك.",
-  ],
-  feeReminder: (fee) => `للتذكير: بنخصم ${fee} بس على كل طلب من رصيد محفظتك.`,
+  liveSoon: "وأول ما تختار القالب، متجرك هيبقى متاح أونلاين لعملائك.",
+  liveNow: (link) =>
+    `متجرك دلوقتي متاح أونلاين لعملائك، شارك لينك متجرك على صفحات البراند بتاعك على السوشيال ميديا:\n${link}`,
+  topUp: (amount, fee) =>
+    `تقدر تشحن محفظتك بـ ${amount} في أي وقت، والرصيد بيفضل في محفظة طلبي على طول${
+      fee ? `، وكل طلب جديد بيتخصم منه ${fee} تلقائي.` : "."
+    }`,
+  topUpWhere: `الشحن من ${WALLET_PATH}.`,
+  pending: "طلب شحن محفظتك وصلنا وبنراجع الإيصال، والرصيد هيتضاف أول ما يتأكد.",
+  checkIn: "حبينا نطمّن على متجرك وإن كل حاجة ماشية معاك تمام.",
+  feeReminder: (fee) => `للتذكير: بيتخصم ${fee} بس على كل طلب من رصيد محفظتك.`,
   proNoFee: "وعلى باقة Pro مفيش أي رسوم على طلباتك.",
   closing: "لو عندك أي استفسار ابعتلنا وإحنا تحت أمرك.",
   team: "فريق طلبي",
@@ -304,13 +285,12 @@ const EG: Copy = {
 const SA: Copy = {
   hello: (name) => `هلا${name ? ` ${name}` : ""}، معك ${SELLER_MESSAGE_SENDER} من منصة طلبي.`,
   thanks: (store) => `نشكرك إنك فتحت متجرك «${store}» على طلبي (Tallaby.com).`,
-  help: "حنا موجودين نساعدك في أي استفسار أو مشكلة تواجهك.",
   stepsIntro: "عشان تكمّل متجرك باقي لك خطوات بسيطة:",
   templateTitle: "*اختيار قالب لمتجرك:*",
   templateSteps: [
     `من القائمة افتح ${TEMPLATE_PATH}.`,
     "تصفّح التصاميم، وتقدر تضغط «معاينة» على أي قالب تشوفه قبل.",
-    "اضغط «استخدام القالب» على اللي يعجبك، ومتجرك ينتشر على طول.",
+    "اضغط «استخدام القالب» على اللي يعجبك.",
   ],
   productTitle: "*إضافة أول منتج:*",
   productSteps: [
@@ -319,28 +299,17 @@ const SA: Copy = {
     "اكتب الاسم والسعر وارفع الصور، وبعدها اضغط «نشر المنتج».",
   ],
   productNext: `وبعدها ضيف منتجاتك من ${PRODUCT_PATH}.`,
-  privateNow: "حبينا نوضح لك إن المتجر حالياً يظهر لك أنت بس، وما يظهر لعملائك.",
-  notLiveYet: "المتجر للحين ما يظهر لعملائك.",
-  topUpTitle: "*تفعيل المتجر لعملائك:*",
-  topUpAsk: (amount) => `عشان يظهر المتجر لعملائك وتبدأ تستقبل طلبات، اشحن محفظة طلبي بـ ${amount} على الأقل.`,
-  balanceNote: (fee) =>
-    fee
-      ? `المبلغ يبقى رصيد في محفظتك وما تنتهي صلاحيته أبد، ونخصم منه ${fee} بس على كل طلب.`
-      : "المبلغ يبقى رصيد في محفظتك وما تنتهي صلاحيته أبد.",
-  onceIsEnough: "وشحنة وحدة تكفي، المتجر يظل مفعّل على طول.",
-  topUpStepsTitle: "*خطوات الشحن:*",
-  topUpSteps: [
-    `من القائمة افتح ${WALLET_PATH}.`,
-    "اختر المبلغ وطريقة التحويل.",
-    "اضغط «اشحن الآن»، حوّل المبلغ وارفع صورة الإيصال، وبعدها اضغط «إرسال للمراجعة».",
-  ],
-  afterReview: "وأول ما نراجع الإيصال ينضاف الرصيد، ويصير متجرك متاح للكل وتقدر تستقبل طلباتك.",
-  pending: "وصلنا طلب شحن محفظتك وقاعدين نراجع الإيصال، وأول ما يتأكد يصير متجرك متاح لعملائك وتقدر تستقبل طلباتك.",
-  checkIn: [
-    "حبينا نطمّن على متجرك وإن أمورك كلها طيبة.",
-    "إذا تحتاج مساعدة في أي شي، أو عندك اقتراح أو ملاحظة على المنصة، يسعدنا نسمع منك.",
-  ],
-  feeReminder: (fee) => `للتذكير: نخصم ${fee} بس على كل طلب من رصيد محفظتك.`,
+  liveSoon: "وأول ما تختار القالب، يصير متجرك متاح أونلاين لعملائك.",
+  liveNow: (link) =>
+    `متجرك الحين متاح أونلاين لعملائك، شارك رابط متجرك في حسابات علامتك التجارية على السوشيال ميديا:\n${link}`,
+  topUp: (amount, fee) =>
+    `تقدر تشحن محفظتك بـ ${amount} في أي وقت، والرصيد يبقى في محفظة طلبي على طول${
+      fee ? `، وكل طلب جديد ينخصم منه ${fee} تلقائياً.` : "."
+    }`,
+  topUpWhere: `الشحن من ${WALLET_PATH}.`,
+  pending: "وصلنا طلب شحن محفظتك وقاعدين نراجع الإيصال، والرصيد ينضاف أول ما يتأكد.",
+  checkIn: "حبينا نطمّن على متجرك وإن أمورك كلها طيبة.",
+  feeReminder: (fee) => `للتذكير: ينخصم ${fee} بس على كل طلب من رصيد محفظتك.`,
   proNoFee: "وعلى باقة Pro ما فيه أي رسوم على طلباتك.",
   closing: "إذا عندك أي استفسار راسلنا، وحنا بالخدمة.",
   team: "فريق طلبي",
@@ -350,7 +319,6 @@ const SA: Copy = {
 const GULF: Copy = {
   ...SA,
   hello: (name) => `مرحبا${name ? ` ${name}` : ""}، معك ${SELLER_MESSAGE_SENDER} من منصة طلبي.`,
-  help: "إحنا موجودين نساعدك في أي استفسار أو مشكلة تواجهك.",
   closing: "إذا عندك أي استفسار راسلنا، وإحنا في الخدمة.",
 };
 
@@ -358,13 +326,12 @@ const GULF: Copy = {
 const LEVANT: Copy = {
   hello: (name) => `مرحبا${name ? ` ${name}` : ""}، معك ${SELLER_MESSAGE_SENDER} من منصة طلبي.`,
   thanks: (store) => `شكراً إنك فتحت متجرك «${store}» على طلبي (Tallaby.com).`,
-  help: "نحنا هون لنساعدك بأي استفسار أو مشكلة بتواجهك.",
   stepsIntro: "لتكمّل متجرك ضايل كم خطوة بسيطة:",
   templateTitle: "*اختيار قالب لمتجرك:*",
   templateSteps: [
     `من القائمة افتح ${TEMPLATE_PATH}.`,
     "تفرّج على التصاميم، وفيك تكبس «معاينة» على أي قالب لتشوفه أول.",
-    "اكبس «استخدام القالب» على يلي بيعجبك، ومتجرك بينتشر دغري.",
+    "اكبس «استخدام القالب» على يلي بيعجبك.",
   ],
   productTitle: "*إضافة أول منتج:*",
   productSteps: [
@@ -373,28 +340,17 @@ const LEVANT: Copy = {
     "اكتب الاسم والسعر وارفع الصور، وبعدين اكبس «نشر المنتج».",
   ],
   productNext: `وبعدها ضيف منتجاتك من ${PRODUCT_PATH}.`,
-  privateNow: "حابين نوضحلك إنو المتجر هلأ ظاهر إلك بس، ومش ظاهر لزباينك.",
-  notLiveYet: "المتجر لسا مش ظاهر لزباينك.",
-  topUpTitle: "*تفعيل المتجر لزباينك:*",
-  topUpAsk: (amount) => `لحتى يظهر المتجر لزباينك وتبلّش تستقبل طلبات، اشحن محفظة طلبي بـ ${amount} على الأقل.`,
-  balanceNote: (fee) =>
-    fee
-      ? `المبلغ بيضل رصيد بمحفظتك وما بتنتهي صلاحيته أبداً، ومنخصم منه ${fee} بس على كل طلب.`
-      : "المبلغ بيضل رصيد بمحفظتك وما بتنتهي صلاحيته أبداً.",
-  onceIsEnough: "وشحنة وحدة بتكفي، المتجر بيضل مفعّل على طول.",
-  topUpStepsTitle: "*خطوات الشحن:*",
-  topUpSteps: [
-    `من القائمة افتح ${WALLET_PATH}.`,
-    "اختار المبلغ وطريقة التحويل.",
-    "اكبس «اشحن الآن»، حوّل المبلغ وارفع صورة الإيصال، وبعدين اكبس «إرسال للمراجعة».",
-  ],
-  afterReview: "وأول ما نراجع الإيصال بينضاف الرصيد، وبيصير متجرك متاح للكل وفيك تستقبل طلباتك.",
-  pending: "وصلنا طلب شحن محفظتك وعم نراجع الإيصال، وأول ما يتأكد بيصير متجرك متاح لزباينك وفيك تستقبل طلباتك.",
-  checkIn: [
-    "حبينا نطمّن على متجرك وإنو كل شي ماشي معك تمام.",
-    "إذا بدك مساعدة بأي شي، أو عندك اقتراح أو ملاحظة على المنصة، بيسعدنا نسمع منك.",
-  ],
-  feeReminder: (fee) => `للتذكير: منخصم ${fee} بس على كل طلب من رصيد محفظتك.`,
+  liveSoon: "وأول ما تختار القالب، متجرك بيصير متاح أونلاين لزباينك.",
+  liveNow: (link) =>
+    `متجرك هلأ متاح أونلاين لزباينك، شارك رابط متجرك على صفحات البراند تبعك على السوشيال ميديا:\n${link}`,
+  topUp: (amount, fee) =>
+    `فيك تشحن محفظتك بـ ${amount} بأي وقت، والرصيد بيضل بمحفظة طلبي على طول${
+      fee ? `، وكل طلب جديد بينخصم منه ${fee} تلقائياً.` : "."
+    }`,
+  topUpWhere: `الشحن من ${WALLET_PATH}.`,
+  pending: "وصلنا طلب شحن محفظتك وعم نراجع الإيصال، والرصيد بينضاف أول ما يتأكد.",
+  checkIn: "حبينا نطمّن على متجرك وإنو كل شي ماشي معك تمام.",
+  feeReminder: (fee) => `للتذكير: بينخصم ${fee} بس على كل طلب من رصيد محفظتك.`,
   proNoFee: "وعلى باقة Pro ما في أي رسوم على طلباتك.",
   closing: "إذا عندك أي استفسار راسلنا، ونحنا بالخدمة.",
   team: "فريق طلبي",
@@ -404,13 +360,12 @@ const LEVANT: Copy = {
 const MSA: Copy = {
   hello: (name) => `مرحباً${name ? ` ${name}` : ""}، معك ${SELLER_MESSAGE_SENDER} من منصة طلبي.`,
   thanks: (store) => `نشكرك على فتح متجرك «${store}» على طلبي (Tallaby.com).`,
-  help: "نحن هنا لمساعدتك في أي استفسار أو مشكلة تواجهك.",
   stepsIntro: "بقيت خطوات بسيطة لإكمال متجرك:",
   templateTitle: "*اختيار قالب لمتجرك:*",
   templateSteps: [
     `من القائمة افتح ${TEMPLATE_PATH}.`,
     "تصفّح التصميمات، ويمكنك الضغط على «معاينة» لرؤية أي قالب أولاً.",
-    "اضغط «استخدام القالب» على القالب الذي يعجبك، وسيُنشر متجرك فوراً.",
+    "اضغط «استخدام القالب» على القالب الذي يعجبك.",
   ],
   productTitle: "*إضافة أول منتج:*",
   productSteps: [
@@ -419,28 +374,17 @@ const MSA: Copy = {
     "اكتب الاسم والسعر وارفع الصور، ثم اضغط «نشر المنتج».",
   ],
   productNext: `بعد ذلك أضف منتجاتك من ${PRODUCT_PATH}.`,
-  privateNow: "نودّ أن نوضح لك أن المتجر يظهر لك وحدك حالياً، ولا يظهر لعملائك.",
-  notLiveYet: "المتجر لا يظهر لعملائك بعد.",
-  topUpTitle: "*تفعيل المتجر لعملائك:*",
-  topUpAsk: (amount) => `ليظهر المتجر لعملائك وتبدأ في استقبال الطلبات، اشحن محفظة طلبي بمبلغ ${amount} على الأقل.`,
-  balanceNote: (fee) =>
-    fee
-      ? `يبقى المبلغ رصيداً في محفظتك ولا تنتهي صلاحيته، ونخصم منه ${fee} فقط عن كل طلب.`
-      : "يبقى المبلغ رصيداً في محفظتك ولا تنتهي صلاحيته.",
-  onceIsEnough: "ويكفي شحن واحد ليبقى المتجر مفعّلاً دائماً.",
-  topUpStepsTitle: "*خطوات الشحن:*",
-  topUpSteps: [
-    `من القائمة افتح ${WALLET_PATH}.`,
-    "اختر المبلغ وطريقة التحويل.",
-    "اضغط «اشحن الآن»، وحوّل المبلغ وارفع صورة الإيصال، ثم اضغط «إرسال للمراجعة».",
-  ],
-  afterReview: "بعد مراجعة الإيصال يُضاف الرصيد، ويصبح متجرك متاحاً للجميع وتستطيع استقبال طلباتك.",
-  pending: "وصلنا طلب شحن محفظتك ونراجع الإيصال الآن، وبعد تأكيده يصبح متجرك متاحاً لعملائك وتستطيع استقبال طلباتك.",
-  checkIn: [
-    "أردنا أن نطمئن على متجرك وأن كل شيء يسير معك على ما يرام.",
-    "إن احتجت مساعدة في أي شيء، أو لديك اقتراح أو ملاحظة على المنصة، يسعدنا أن نسمع منك.",
-  ],
-  feeReminder: (fee) => `للتذكير: نخصم ${fee} فقط عن كل طلب من رصيد محفظتك.`,
+  liveSoon: "وبمجرد اختيار القالب يصبح متجرك متاحاً على الإنترنت لعملائك.",
+  liveNow: (link) =>
+    `متجرك متاح الآن على الإنترنت لعملائك، شارك رابط متجرك على حسابات علامتك التجارية في وسائل التواصل الاجتماعي:\n${link}`,
+  topUp: (amount, fee) =>
+    `يمكنك شحن محفظتك بمبلغ ${amount} في أي وقت، ويبقى الرصيد في محفظة طلبي دائماً${
+      fee ? `، ويُخصم منه ${fee} تلقائياً عن كل طلب جديد.` : "."
+    }`,
+  topUpWhere: `الشحن من ${WALLET_PATH}.`,
+  pending: "وصلنا طلب شحن محفظتك ونراجع الإيصال الآن، وسيُضاف الرصيد بعد تأكيده.",
+  checkIn: "أردنا أن نطمئن على متجرك وأن كل شيء يسير معك على ما يرام.",
+  feeReminder: (fee) => `للتذكير: يُخصم ${fee} فقط عن كل طلب من رصيد محفظتك.`,
   proNoFee: "وعلى باقة Pro لا توجد أي رسوم على طلباتك.",
   closing: "إن كان لديك أي استفسار راسلنا، ونحن في خدمتك.",
   team: "فريق طلبي",
@@ -454,6 +398,8 @@ export type SellerMessageInput = {
   ownerName: string | null;
   /** The primary store's name, else the business name. */
   storeName: string;
+  /** The primary store's public URL when its website is published, else null. */
+  storeLink: string | null;
   plan: "free" | "pro";
   step: SellerMessageStep;
   activation: SellerActivation;
@@ -462,28 +408,31 @@ export type SellerMessageInput = {
 
 const numbered = (lines: string[]) => lines.map((line, i) => `${i + 1}. ${line}`).join("\n");
 
-/** The full message. Paragraphs are separated by a blank line. */
+/**
+ * The full message. Paragraphs are separated by a blank line. Since F-84
+ * (2026-11-09) a published store is public from day one, so the message
+ * shares its link and offers the top-up as something to do any time (owner:
+ * short, and no mention of the 14-day grace window).
+ */
 export function buildSellerWhatsAppMessage(input: SellerMessageInput): string {
   const c = COPY[input.dialect];
   const fee = input.plan === "pro" ? null : input.money.fee;
-  const head = [c.hello(firstName(input.ownerName)), c.thanks(input.storeName), c.help].join("\n");
-  const blocks: string[] = [head];
+  const blocks: string[] = [[c.hello(firstName(input.ownerName)), c.thanks(input.storeName)].join("\n")];
+  const link = input.step === "template" ? null : input.storeLink;
 
   if (input.step === "ready" && input.activation === "active") {
-    blocks.push([...c.checkIn, fee ? c.feeReminder(fee) : c.proNoFee].join("\n"));
+    blocks.push(c.checkIn);
+    if (link) blocks.push(c.liveNow(link));
+    blocks.push(fee ? c.feeReminder(fee) : c.proNoFee);
   } else {
-    if (input.step !== "ready") {
-      blocks.push(c.stepsIntro);
-      if (input.step === "template") {
-        blocks.push(`${c.templateTitle}\n${numbered(c.templateSteps)}\n${c.productNext}`);
-      } else {
-        blocks.push(`${c.productTitle}\n${numbered(c.productSteps)}`);
-      }
+    if (input.step === "template") {
+      blocks.push(`${c.stepsIntro}\n${c.templateTitle}\n${numbered(c.templateSteps)}\n${c.liveSoon}\n${c.productNext}`);
+    } else if (input.step === "product") {
+      blocks.push(`${c.stepsIntro}\n${c.productTitle}\n${numbered(c.productSteps)}`);
     }
+    if (link) blocks.push(c.liveNow(link));
     if (input.activation === "needed") {
-      const intro = input.step === "template" ? `${c.topUpTitle}\n${c.notLiveYet}` : c.privateNow;
-      blocks.push([intro, c.topUpAsk(input.money.topUp), c.balanceNote(fee), c.onceIsEnough].join("\n"));
-      blocks.push(`${c.topUpStepsTitle}\n${numbered(c.topUpSteps)}\n${c.afterReview}`);
+      blocks.push(`${c.topUp(input.money.topUp, fee)}\n${c.topUpWhere}`);
     } else if (input.activation === "pending") {
       blocks.push(c.pending);
     }

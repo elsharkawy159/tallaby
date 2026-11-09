@@ -1211,7 +1211,7 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 - **F-84b · P1 · deps: F-84a** Public stores again: owner pass, store-owner-pass route, owner banner, cached activation lock and its invalidations removed; "View store" is a plain redirect.
 - **F-84c · P1 · deps: F-84a** Dashboard: first order only once locked (list, panel, actions), grace banner on home and Orders, lock copy says why (14 days or second order).
 - **F-84d · P1 · deps: F-84a** Migration 0159: `first_order_top_up` seller bell type and trigger; bell link, icon and push category.
-- **F-84e · P2 · deps: owner** Open: a "3 days left" reminder (needs a cron); the Admin WhatsApp seller message still says the store is private (`apps/admin/app/(dashboard)/sellers/seller-message.lib.ts`, five dialects, owner copy).
+- **F-84e · P2 · deps: owner** Open: a "3 days left" reminder (needs a cron). Done 2026-11-09 (owner copy): the Admin WhatsApp seller message (`apps/admin/app/(dashboard)/sellers/seller-message.lib.ts`, five dialects) now says the store is online, shares the published store's link for the brand's social pages, and offers the top-up any time (balance stays, the fee comes out per order automatically); no grace-window mention, top-up steps cut to one line.
 
 ---
 

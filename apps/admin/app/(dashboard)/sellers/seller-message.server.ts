@@ -2,6 +2,7 @@ import { billingTags, createCachedQuery } from "@workspace/cache";
 import { db, sql } from "@workspace/db";
 import { exchangeRateSource, isProActive } from "@workspace/lib/billing";
 import { getBillingState } from "@workspace/lib/billing/server";
+import { storeUrl } from "@workspace/lib/storefront";
 import {
   FEED_MESSAGE_CURRENCIES,
   buildSellerWhatsAppMessage,
@@ -37,6 +38,9 @@ type FactsRow = {
   plan_grace_until: string | null;
   store_name: string | null;
   store_currency: string | null;
+  store_subdomain: string | null;
+  store_site_status: string | null;
+  store_custom_domain: string | null;
   template_chosen: boolean;
   has_active_product: boolean;
   has_top_up: boolean;
@@ -63,6 +67,10 @@ async function loadFacts(sellerIds: string[]): Promise<FactsRow[]> {
       s.plan_grace_until::text AS plan_grace_until,
       ps.name AS store_name,
       ps.settings->>'currency' AS store_currency,
+      ps.subdomain AS store_subdomain,
+      ps.site_status AS store_site_status,
+      (SELECT d.domain FROM seller_custom_domains d
+        WHERE d.store_id = ps.id AND d.status = 'active' LIMIT 1) AS store_custom_domain,
       EXISTS (
         SELECT 1 FROM stores st
         WHERE st.seller_id = s.id AND st.deleted_at IS NULL
@@ -87,7 +95,7 @@ async function loadFacts(sellerIds: string[]): Promise<FactsRow[]> {
     FROM sellers s
     LEFT JOIN users u ON u.id = s.id
     LEFT JOIN LATERAL (
-      SELECT st.name, st.settings FROM stores st
+      SELECT st.id, st.name, st.settings, st.subdomain, st.site_status FROM stores st
       WHERE st.seller_id = s.id AND st.deleted_at IS NULL
       ORDER BY st.is_primary DESC, st.created_at ASC
       LIMIT 1
@@ -169,6 +177,11 @@ export async function getSellerWhatsAppMessages(sellerIds: string[]): Promise<Ma
           dialect: dialectFor(country),
           ownerName: row.owner_name,
           storeName: row.store_name?.trim() || row.business_name,
+          // Only a published website is public (an unpublished one shows the offline page).
+          storeLink:
+            row.store_site_status === "published" && row.store_subdomain
+              ? storeUrl(row.store_subdomain, row.store_custom_domain)
+              : null,
           plan: isPro ? "pro" : "free",
           step: sellerMessageStep({ templateChosen: row.template_chosen, hasActiveProduct: row.has_active_product }),
           activation: sellerMessageActivation({
