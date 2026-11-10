@@ -5,6 +5,7 @@ import { beforeAll, describe, expect, it, vi } from "vitest";
 import { DetailPageView } from "@/components/marketing/features/detail-page";
 import IntegrationsPage from "@/app/[locale]/(marketing)/(site)/integrations/page";
 import CompareHub from "@/app/[locale]/(marketing)/(site)/compare/page";
+import IndustriesHub from "@/app/[locale]/(marketing)/(site)/industries/page";
 import { ComparePageView } from "@/components/marketing/compare/compare-page";
 import { MarginToolPage } from "@/components/marketing/tools/margin-tool-page";
 import { IndustryPageView } from "@/components/marketing/industries/industry-page";
@@ -128,13 +129,26 @@ describe.each(["ar", "en"])("content pages render (%s)", (locale) => {
     expect(out).toContain("143.5");
   });
 
-  it("industry pages, with templates from the catalog", async () => {
+  it("industry pages, with templates from the catalog and a linked hub crumb", async () => {
     for (const industry of INDUSTRIES) {
       const out = await html(<IndustryPageView industry={industry} />);
       check(out);
-      expect(out).toContain("Fashion one");
+      // Only the industry's own templates: the category for clothing, the niche's keys elsewhere.
+      if (industry.slug === "clothing-store") expect(out).toContain("Fashion one");
+      else expect(out, industry.slug).not.toContain("Fashion one");
       expect(out).not.toContain("Beauty one");
+      // Home › Industries › page, in the trail and in BreadcrumbList.
+      expect(out, industry.slug).toContain('href="/industries"');
+      expect(out.match(/"@type":"ListItem"/g)?.length, industry.slug).toBe(3);
+      // Never a clothing mock on another industry's page.
+      if (industry.slug !== "clothing-store") expect(out, industry.slug).not.toContain("nomad");
     }
+  });
+
+  it("the industries hub, linking every industry page", async () => {
+    const out = await html(await IndustriesHub());
+    check(out);
+    for (const industry of INDUSTRIES) expect(out, industry.slug).toContain(`href="/industries/${industry.slug}"`);
   });
 
   it("solution pages", async () => {

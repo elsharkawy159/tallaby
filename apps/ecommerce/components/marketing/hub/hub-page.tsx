@@ -23,13 +23,18 @@ export function HubMarkView({ mark }: { mark: HubMark }) {
   );
 }
 
-/** The frame shared by both hubs: trail, centred header, listing, explainer and closing band. */
+/**
+ * The frame every hub shares (/integrations, /compare, /industries, and later
+ * /solutions, /features, /tools): trail, centred header, listing, explainer and
+ * closing band. `namespace` is a `<name>Hub` message block with crumb, eyebrow,
+ * title, lead, explainerTitle, explainer, closingTitle and closingBody.
+ */
 export async function HubPageFrame({
   namespace,
   path,
   children,
 }: {
-  namespace: "integrationsHub" | "compareHub";
+  namespace: `${string}Hub`;
   path: string;
   children: React.ReactNode;
 }) {

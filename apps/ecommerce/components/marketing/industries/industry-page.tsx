@@ -1,6 +1,6 @@
 import * as React from "react";
 import Image from "next/image";
-import { Check, CircleCheck, ShoppingBag } from "lucide-react";
+import { Bell, Check, CircleCheck, ShoppingBag, Sparkles, Star } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { BidiText, ClosingCta, FaqBlock, PageTrail, type FaqItem } from "@/components/marketing/pages/content-blocks";
@@ -14,29 +14,67 @@ import { Container, Num, Section, SectionHeading } from "@/components/marketing/
 import { Reveal } from "@/components/marketing/site/reveal.client";
 import { richTags } from "@/components/marketing/site/rich-text";
 import { IconTile } from "@/components/marketing/site/site-card";
-import { STORE_KIND_LINKS, type Industry, type IndustryNeedVisual } from "@/lib/marketing/industries.lib";
+import { industryTemplates, STORE_KIND_LINKS, type Industry, type IndustryNeedVisual } from "@/lib/marketing/industries.lib";
 import { getTemplateGallery } from "@/lib/marketing/templates.server";
 import { cn } from "@workspace/ui/lib/utils";
 import { CountdownBoxes, IndustryShowcase } from "./industry-showcase.client";
 
-type StoreMessages = Omit<MockStore, "photo" | "products"> & { products: Pick<MockStoreProduct, "name" | "price" | "was">[] };
-type NeedMessages = { title: string; pain: string; solution: string; offer?: string; handle?: string; tag?: string; viewProducts?: string; lead?: string; stock?: string; sizeLabel?: string; colorLabel?: string };
+type StoreMessages = Omit<MockStore, "photo" | "products" | "heroCover"> & { products: Pick<MockStoreProduct, "name" | "price" | "was" | "note">[] };
+/** One need's words; the optional fields feed its picture. */
+export type NeedMessages = {
+  title: string;
+  pain: string;
+  solution: string;
+  stock?: string;
+  offer?: string;
+  lead?: string;
+  handle?: string;
+  tag?: string;
+  viewProducts?: string;
+  /** sizes, specs, offers, notes, alert, restock: the picture's small heading. */
+  label?: string;
+  /** sizes: each option and its price. */
+  options?: { label: string; price: string }[];
+  /** specs and zones: label and value rows. */
+  rows?: { k: string; v: string }[];
+  /** zones, reviews, notes: a line under the picture. */
+  note?: string;
+  /** offers: quantity tiers. */
+  tiers?: { qty: string; price: string; save?: string }[];
+  /** reviews: product reviews as the store shows them. */
+  reviews?: { name: string; text: string }[];
+  /** notes: what a customer wrote. */
+  text?: string;
+  /** alert: the phone notification. */
+  app?: string;
+  time?: string;
+  body?: string;
+  /** restock: the sold-out form. */
+  button?: string;
+  placeholder?: string;
+};
 
 /** Builds the mock store from the page's words and the entry's photo and swatches. */
-export function buildMockStore(words: StoreMessages, industry: Pick<Industry, "photo" | "productFocus" | "productColors">): MockStore {
+export function buildMockStore(words: StoreMessages, industry: Pick<Industry, "photo" | "productFocus" | "productColors" | "productPhotos" | "heroCover">): MockStore {
   return {
     ...words,
     photo: industry.photo,
+    heroCover: industry.heroCover,
     products: words.products.map((product, i) => ({
       ...product,
       focus: industry.productFocus[i] ?? "50% 50%",
       colors: industry.productColors[i] ?? [],
+      ...(industry.productPhotos?.[i] ? { image: industry.productPhotos[i] } : {}),
     })),
   };
 }
 
+const ROW = "flex items-center justify-between gap-3 rounded-[10px] bg-white px-3 py-2 text-[13px] shadow-[0_0_0_1px_#e6eef0]";
+
 function NeedVisual({ visual, need, store, labels }: { visual: IndustryNeedVisual; need: NeedMessages; store: MockStore; labels: { hours: string; minutes: string; seconds: string } }) {
   const product = store.products[0]!;
+  // The first demo product with colours (the clothing page's first; others have them on the second).
+  const swatches = store.products.find((item) => item.colors.length)?.colors ?? [];
   const views: Record<IndustryNeedVisual, () => React.ReactNode> = {
     variants: () => (
       <>
@@ -54,9 +92,9 @@ function NeedVisual({ visual, need, store, labels }: { visual: IndustryNeedVisua
             </span>
           ))}
         </div>
-        <span className="text-xs font-semibold text-ink-400">{store.colorLabel}</span>
+        {swatches.length ? <span className="text-xs font-semibold text-ink-400">{store.colorLabel}</span> : null}
         <div className="flex gap-2">
-          {product.colors.map((color, i) => (
+          {swatches.map((color, i) => (
             <i key={color} className={cn("block size-6 rounded-full", i === 0 ? "shadow-[0_0_0_2px_#fff,0_0_0_4px_var(--color-teal-700)]" : "shadow-[0_0_0_2px_#fff,0_0_0_3px_#dfe8ea]")} style={{ backgroundColor: color }} />
           ))}
         </div>
@@ -70,7 +108,7 @@ function NeedVisual({ visual, need, store, labels }: { visual: IndustryNeedVisua
       <div className="grid h-[170px] grid-cols-[2fr_1fr] grid-rows-3 gap-1.5">
         {store.products.map((item, i) => (
           <div key={item.name} className={cn("relative overflow-hidden rounded-[10px] bg-[#e8e1d6]", i === 0 && "row-span-3", i === 1 && "shadow-[0_0_0_2px_var(--color-teal-700)]")}>
-            <Image src={store.photo} alt="" fill sizes="160px" className="object-cover" style={{ objectPosition: item.focus }} />
+            <Image src={item.image ?? store.photo} alt="" fill sizes="160px" className="object-cover" style={{ objectPosition: item.focus }} />
           </div>
         ))}
       </div>
@@ -91,7 +129,7 @@ function NeedVisual({ visual, need, store, labels }: { visual: IndustryNeedVisua
           {need.handle}
         </div>
         <div className="relative h-24 overflow-hidden bg-[#e8e1d6]">
-          <Image src={store.photo} alt="" fill sizes="240px" className="object-cover" style={{ objectPosition: "60% 45%" }} />
+          <Image src={product.image ?? store.photo} alt="" fill sizes="240px" className="object-cover" style={{ objectPosition: product.image ? "50% 50%" : "60% 45%" }} />
           <span dir="auto" className="absolute start-2.5 bottom-2.5 z-[1] rounded-lg bg-white/95 px-2 py-1 text-[11.5px] font-bold text-[#1f2326]">
             {need.tag}
           </span>
@@ -102,6 +140,122 @@ function NeedVisual({ visual, need, store, labels }: { visual: IndustryNeedVisua
         </div>
       </div>
     ),
+    sizes: () => (
+      <>
+        <span className="text-xs font-semibold text-ink-400">{need.label}</span>
+        <div className="grid grid-cols-3 gap-1.5">
+          {need.options?.map((option, i) => (
+            <span key={option.label} className={cn("rounded-[10px] border-[1.5px] border-line-strong bg-white px-1.5 py-2 text-center text-ink-700", i === 1 && "border-teal-700 bg-teal-700 text-white")}>
+              <b className="block text-[13px]">{option.label}</b>
+              <small className="text-[11.5px] opacity-80">
+                {option.price} {store.currency}
+              </small>
+            </span>
+          ))}
+        </div>
+      </>
+    ),
+    specs: () => (
+      <>
+        {need.label ? (
+          <span className="inline-flex items-center gap-1.5 self-start rounded-full bg-amber-100 px-2.5 py-0.5 text-[11.5px] font-bold text-[#7a4a00]">
+            <Sparkles className="size-3" />
+            {need.label}
+          </span>
+        ) : null}
+        <dl className="grid gap-1">
+          {need.rows?.map((row) => (
+            <div key={row.k} className={ROW}>
+              <dt className="text-ink-400">{row.k}</dt>
+              <dd className="font-semibold text-teal-900">{row.v}</dd>
+            </div>
+          ))}
+        </dl>
+      </>
+    ),
+    zones: () => (
+      <>
+        <div className="grid gap-1">
+          {need.rows?.map((row) => (
+            <div key={row.k} className={ROW}>
+              <span className="text-ink-700">{row.k}</span>
+              <b className="text-teal-900">
+                {row.v} {store.currency}
+              </b>
+            </div>
+          ))}
+        </div>
+        {need.note ? <span className="text-center text-xs font-semibold text-[#15803d]">{need.note}</span> : null}
+      </>
+    ),
+    offers: () => (
+      <>
+        <span className="text-xs font-semibold text-ink-400">{need.label}</span>
+        <div className="grid gap-1.5">
+          {need.tiers?.map((tier, i) => (
+            <div key={tier.qty} className={cn(ROW, i === 1 && "shadow-[0_0_0_2px_var(--color-teal-700)]")}>
+              <span className="flex items-center gap-2 font-semibold text-teal-900">
+                <i className={cn("block size-3.5 rounded-full border-2 border-line-strong", i === 1 && "border-[4px] border-teal-700")} />
+                {tier.qty}
+              </span>
+              <span className="flex items-center gap-1.5">
+                {tier.save ? <small className="rounded-full bg-amber-100 px-2 text-[11px] font-bold text-[#7a4a00]">{tier.save}</small> : null}
+                <b className="text-teal-900">
+                  {tier.price} {store.currency}
+                </b>
+              </span>
+            </div>
+          ))}
+        </div>
+      </>
+    ),
+    reviews: () => (
+      <>
+        {need.reviews?.map((review) => (
+          <div key={review.name} className="rounded-[12px] bg-white p-3 shadow-[0_0_0_1px_#e6eef0]">
+            <div className="mb-1 flex items-center justify-between gap-2">
+              <b className="text-[13px] text-teal-900">{review.name}</b>
+              <span className="flex text-amber-600">
+                {[0, 1, 2, 3, 4].map((i) => (
+                  <Star key={i} className="size-3 fill-current" />
+                ))}
+              </span>
+            </div>
+            <p className="text-[12.5px] text-ink-500">{review.text}</p>
+          </div>
+        ))}
+        {need.note ? <span className="text-center text-xs font-semibold text-ink-400">{need.note}</span> : null}
+      </>
+    ),
+    notes: () => (
+      <>
+        <span className="text-xs font-semibold text-ink-400">{need.label}</span>
+        <div className="min-h-[76px] rounded-[12px] border-[1.5px] border-teal-700 bg-white p-3 text-[13px] text-ink-700">{need.text}</div>
+        {need.note ? <span className="text-xs font-semibold text-[#15803d]">{need.note}</span> : null}
+      </>
+    ),
+    alert: () => (
+      <div className="rounded-[16px] bg-white p-3 shadow-[0_10px_26px_rgba(13,55,67,0.12)]">
+        <div className="mb-1 flex items-center justify-between gap-2 text-[11.5px] text-ink-400">
+          <span className="flex items-center gap-1.5 font-semibold">
+            <span className="grid size-5 place-items-center rounded-md bg-teal-900 text-amber-600">
+              <Bell className="size-3" />
+            </span>
+            {need.app}
+          </span>
+          {need.time}
+        </div>
+        <b className="block text-[14px] text-teal-900">{need.label}</b>
+        <span className="text-[13px] text-ink-500">{need.body}</span>
+      </div>
+    ),
+    restock: () => (
+      <>
+        <span className="self-start rounded-full bg-[#fde8e4] px-2.5 py-0.5 text-[11.5px] font-bold text-[#b4412f]">{need.label}</span>
+        <span className="rounded-[10px] border-[1.5px] border-line-strong bg-white px-3 py-2 text-[13px] text-ink-400">{need.placeholder}</span>
+        <span className="rounded-[10px] bg-teal-900 py-2 text-center text-[13px] font-bold text-white">{need.button}</span>
+      </>
+    ),
   };
   return (
     <div aria-hidden className="flex min-h-[190px] min-w-0 flex-col justify-center gap-2.5 rounded-[20px] border border-[#edf1f2] bg-gradient-to-b from-[#f2f7f8] to-white p-4">
@@ -109,6 +263,14 @@ function NeedVisual({ visual, need, store, labels }: { visual: IndustryNeedVisua
     </div>
   );
 }
+
+/** Pages every industry page links to (SEO_PLAN.md §13.1): the hub, the how-to, the templates and pricing. */
+const RELATED_LINKS = [
+  { key: "hub", href: "/industries" },
+  { key: "create", href: "/solutions/create-online-store" },
+  { key: "templates", href: "/templates" },
+  { key: "pricing", href: "/pricing" },
+] as const;
 
 /** One "store for X" page. Template cards come from the real catalog; everything else is an illustration. */
 export async function IndustryPageView({ industry }: { industry: Industry }) {
@@ -126,14 +288,13 @@ export async function IndustryPageView({ industry }: { industry: Industry }) {
   const checks = t.raw("checks") as string[];
   const floats = t.raw("floats") as string[];
   const callouts = t.raw("callouts") as { title: string; body: string }[];
-  const gallery = await getTemplateGallery(locale);
-  const templates = gallery.filter((entry) => entry.category === industry.templateCategory).slice(0, 3);
+  const templates = industryTemplates(industry, await getTemplateGallery(locale));
   const others = STORE_KIND_LINKS.filter((kind) => kind.href !== path);
   const Tag = industry.icon;
 
   return (
     <>
-      <PageTrail path={path} items={[{ label: shared("crumbHub") }, { label: t("crumb") }]} />
+      <PageTrail path={path} items={[{ label: shared("crumbHub"), href: "/industries" }, { label: t("crumb") }]} />
 
       <section className="overflow-hidden pt-7 pb-14 sm:pt-10 sm:pb-20">
         <Container className="grid items-center gap-12 min-[1081px]:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
@@ -281,6 +442,13 @@ export async function IndustryPageView({ industry }: { industry: Industry }) {
               </Link>
             ))}
           </div>
+          <nav aria-label={shared("relatedLabel")} className="mx-auto mt-8 flex max-w-[900px] flex-wrap justify-center gap-x-6 gap-y-1 text-[15px] font-semibold">
+            {RELATED_LINKS.map(({ key, href }) => (
+              <Link key={key} href={href} className="inline-flex min-h-11 items-center text-teal-700 underline-offset-4 hover:underline">
+                {shared(`related.${key}`)}
+              </Link>
+            ))}
+          </nav>
         </Container>
       </Section>
 

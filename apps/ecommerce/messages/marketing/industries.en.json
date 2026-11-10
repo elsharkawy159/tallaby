@@ -1,20 +1,66 @@
 {
   "meta": {
+    "industries": {
+      "title": "Online stores for every kind of business",
+      "description": "Pick what you sell, from clothing and perfume to electronics and furniture, and start with a ready template and the tools that fit it."
+    },
     "industry-clothing-store": {
       "title": "Create a professional online clothing store",
-      "description": "Create an online clothing store with sizes and colours, several photos per product, countdown offers and a catalog for Instagram, with no monthly subscription."
+      "description": "Open an online clothing store with sizes and colours per item, photo galleries, sale countdowns and a Facebook and Instagram catalog."
+    },
+    "industry-beauty-store": {
+      "title": "Create an online beauty and cosmetics store",
+      "description": "A beauty and skincare store with elegant templates: photo galleries, quantity offers, back-in-stock alerts and real customer reviews."
+    },
+    "industry-perfume-store": {
+      "title": "Create an online perfume store",
+      "description": "A perfume store with sizes and prices per scent, quantity offers and premium templates in Arabic and English, with no monthly fee."
+    },
+    "industry-electronics-store": {
+      "title": "Create an online electronics store",
+      "description": "An electronics store with clear specs per product, storage and colour variants, card payments into your account and cash on delivery."
+    },
+    "industry-home-furniture-store": {
+      "title": "Create an online furniture and home store",
+      "description": "A furniture and homeware store with large photos, sizes and materials per piece, delivery zones by governorate and cash on delivery."
+    },
+    "industry-jewelry-accessories-store": {
+      "title": "Create an online jewelry and accessories store",
+      "description": "A jewelry and accessories store with close-up photos, size and colour options, coupon pop-ups and elegant templates in two languages."
+    },
+    "industry-food-store": {
+      "title": "Create an online food and sweets store",
+      "description": "Sell food, sweets and groceries online: delivery prices by area, your own riders and every new order alerted on your phone."
+    },
+    "industry-kids-store": {
+      "title": "Create an online kids' clothing and toys store",
+      "description": "A kids' clothing and toys store with playful templates, sizes by age, quantity offers and cash on delivery across Egypt."
+    },
+    "industry-car-accessories-store": {
+      "title": "Create an online car accessories store",
+      "description": "A car accessories and parts store with specs per product, quick search, card payments into your account and Bosta shipping."
+    },
+    "industry-handmade-store": {
+      "title": "Create an online handmade and gifts store",
+      "description": "Show your handmade products and gifts with templates that tell your story, custom requests in the order notes and cash or card payments."
+    },
+    "industry-sports-store": {
+      "title": "Create an online sportswear store",
+      "description": "A sportswear and gear store with sizes and colours, quantity offers and a product feed for your Meta and TikTok catalogs."
     }
   },
   "storeKinds": {
     "clothing": "Clothing store",
-    "beauty": "Perfume and beauty store",
+    "beauty": "Beauty store",
+    "perfume": "Perfume store",
     "electronics": "Electronics store",
-    "home": "Homeware store",
-    "food": "Food store",
-    "jewelry": "Jewellery store",
+    "home": "Furniture and home store",
+    "jewelry": "Jewelry and accessories store",
+    "food": "Food and sweets store",
     "kids": "Kids' store",
-    "shoes": "Shoes and bags store",
-    "gifts": "Gift store"
+    "car": "Car accessories store",
+    "handmade": "Handmade and gifts store",
+    "sports": "Sports store"
   },
   "industryPages": {
     "shared": {
@@ -32,14 +78,25 @@
       "othersTitle": "Other kinds of store",
       "hours": "hours",
       "minutes": "min",
-      "seconds": "sec"
+      "seconds": "sec",
+      "relatedLabel": "Related pages",
+      "related": {
+        "hub": "All industries",
+        "create": "How to create an online store",
+        "templates": "Store templates",
+        "pricing": "Tallaby pricing"
+      }
     },
     "clothing-store": {
       "crumb": "Clothing store",
       "tag": "For clothing and fashion stores",
       "title": "Create a <em>professional</em> online clothing store",
       "lead": "Show your collection in every size and colour, take orders with cash on delivery, and connect your products to a Meta catalog, with no developer.",
-      "checks": ["Sizes and colours per product", "Cash on delivery", "A catalog for Instagram and Facebook"],
+      "checks": [
+        "Sizes and colours per product",
+        "Cash on delivery",
+        "A catalog for Instagram and Facebook"
+      ],
       "floats": ["Size L · Navy", "20% off for a limited time"],
       "store": {
         "brand": "NOMAD",
@@ -48,12 +105,33 @@
         "heroSmall": "Winter collection",
         "hero": "Everyday style, made to last",
         "cta": "Shop now",
-        "categories": ["All", "Shirts", "T-shirts", "Trousers", "Jackets", "Shoes"],
+        "categories": [
+          "All",
+          "Shirts",
+          "T-shirts",
+          "Trousers",
+          "Jackets",
+          "Shoes"
+        ],
         "products": [
-          { "name": "Oxford shirt", "price": "650", "was": "820" },
-          { "name": "Denim jacket", "price": "1,250" },
-          { "name": "Chinos", "price": "780" },
-          { "name": "Cotton T-shirt", "price": "320", "was": "400" }
+          {
+            "name": "Oxford shirt",
+            "price": "650",
+            "was": "820"
+          },
+          {
+            "name": "Denim jacket",
+            "price": "1,250"
+          },
+          {
+            "name": "Chinos",
+            "price": "780"
+          },
+          {
+            "name": "Cotton T-shirt",
+            "price": "320",
+            "was": "400"
+          }
         ],
         "currency": "EGP",
         "sale": "SALE",
@@ -96,29 +174,1886 @@
       "showTitle": "What a clothing store on Tallaby can look like",
       "showUrl": "nomad.tallaby.com",
       "callouts": [
-        { "title": "Offers bar", "body": "Announce a discount or free shipping at the top of every page." },
-        { "title": "Collection banner", "body": "A large photo and a clear button for your latest collection." },
-        { "title": "Browse by category", "body": "Shirts, trousers and jackets, each category with its own page." },
-        { "title": "Price before and after", "body": "The original price is crossed out beside the offer price." },
-        { "title": "Available colours", "body": "Colour dots on the product card, before it's opened." }
+        {
+          "title": "Offers bar",
+          "body": "Announce a discount or free shipping at the top of every page."
+        },
+        {
+          "title": "Collection banner",
+          "body": "A large photo and a clear button for your latest collection."
+        },
+        {
+          "title": "Browse by category",
+          "body": "Shirts, trousers and jackets, each category with its own page."
+        },
+        {
+          "title": "Price before and after",
+          "body": "The original price is crossed out beside the offer price."
+        },
+        {
+          "title": "Available colours",
+          "body": "Colour dots on the product card, before it's opened."
+        }
       ],
       "stepsTitle": "Launching your clothing store",
       "steps": [
-        { "title": "Create your store and pick a fashion template", "body": "Sign up with email or a Google account, and choose a template made for clothing stores." },
-        { "title": "Add your products with sizes and colours", "body": "Upload photos, and set the sizes, colours and quantity for each choice." },
-        { "title": "Turn on payment and shipping", "body": "Cash on delivery is on, and you can connect Paymob or Kashier and Bosta whenever you like." },
-        { "title": "Connect your ads", "body": "Add your product feed to a Meta catalog, and connect Meta Pixel to measure your ads." }
+        {
+          "title": "Create your store and pick a fashion template",
+          "body": "Sign up with email or a Google account, and choose a template made for clothing stores."
+        },
+        {
+          "title": "Add your products with sizes and colours",
+          "body": "Upload photos, and set the sizes, colours and quantity for each choice."
+        },
+        {
+          "title": "Turn on payment and shipping",
+          "body": "Cash on delivery is on, and you can connect Paymob or Kashier and Bosta whenever you like."
+        },
+        {
+          "title": "Connect your ads",
+          "body": "Add your product feed to a Meta catalog, and connect Meta Pixel to measure your ads."
+        }
       ],
       "faqTitle": "Clothing store questions",
       "faq": [
-        { "q": "How do I add sizes and colours to one product?", "a": "On the product page, add sizes and colours as options, and set a price and quantity for each choice." },
-        { "q": "Can customers pay on delivery?", "a": "Yes. Cash on delivery is on from the start. You can also connect Paymob or Kashier for cards and wallets, and take InstaPay straight to your account." },
-        { "q": "How do I handle exchanges and returns?", "a": "Write your returns and exchange policy in your store settings so customers can see it, and change an order's status to returned from the Orders page." },
-        { "q": "Can I show my products on Instagram and Facebook?", "a": "Yes. Copy your product feed link from the Apps and integrations page and add it in Meta's Commerce Manager, then connect Meta Pixel to measure sales." },
-        { "q": "Can I run seasonal discounts?", "a": "Yes. Create discount codes and offers with an end date, and the offer shows in your store with a countdown." },
-        { "q": "I only sell on a Facebook page. Can I bring my products over?", "a": "Yes. Import your products from an Excel file or a product link, and message us on WhatsApp if you need a hand." }
+        {
+          "q": "How do I add sizes and colours to one product?",
+          "a": "On the product page, add sizes and colours as options, and set a price and quantity for each choice."
+        },
+        {
+          "q": "Can customers pay on delivery?",
+          "a": "Yes. Cash on delivery is on from the start. You can also connect Paymob or Kashier for cards and wallets, and take InstaPay straight to your account."
+        },
+        {
+          "q": "How do I handle exchanges and returns?",
+          "a": "Write your returns and exchange policy in your store settings so customers can see it, and change an order's status to returned from the Orders page."
+        },
+        {
+          "q": "Can I show my products on Instagram and Facebook?",
+          "a": "Yes. Copy your product feed link from the Apps and integrations page and add it in Meta's Commerce Manager, then connect Meta Pixel to measure sales."
+        },
+        {
+          "q": "Can I run seasonal discounts?",
+          "a": "Yes. Create discount codes and offers with an end date, and the offer shows in your store with a countdown."
+        },
+        {
+          "q": "I only sell on a Facebook page. Can I bring my products over?",
+          "a": "Yes. Import your products from an Excel file or a product link, and message us on WhatsApp if you need a hand."
+        }
       ],
       "closingTitle": "Launch your clothing store today"
+    },
+    "beauty-store": {
+      "crumb": "Beauty store",
+      "tag": "For beauty and skincare stores",
+      "title": "A beauty store that <em>suits</em> your products",
+      "lead": "Create an online beauty store that shows each product clearly, sells two bottles for a better price and tells customers when an item is back, with no developer.",
+      "checks": [
+        "Several photos per product",
+        "Quantity offers",
+        "Customer reviews"
+      ],
+      "floats": ["Buy 2, save 10%", "Back in stock"],
+      "store": {
+        "currency": "EGP",
+        "sale": "SALE",
+        "addToCart": "Add to cart",
+        "sizeLabel": "Size",
+        "colorLabel": "Type",
+        "brand": "SAFA",
+        "announcement": "Delivery across Egypt, cash on delivery",
+        "nav": ["New", "Skincare", "Hair", "Sets"],
+        "heroSmall": "Morning routine",
+        "hero": "Daily care you can feel",
+        "cta": "Shop now",
+        "categories": [
+          "All",
+          "Serums",
+          "Moisturisers",
+          "Cleansers",
+          "Sunscreen",
+          "Sets"
+        ],
+        "products": [
+          {
+            "name": "Hyaluronic serum",
+            "price": "690",
+            "was": "820"
+          },
+          {
+            "name": "Vitamin C serum",
+            "price": "780"
+          },
+          {
+            "name": "Oat cleanser",
+            "price": "450"
+          },
+          {
+            "name": "Hydrating cream",
+            "price": "720",
+            "was": "850"
+          }
+        ],
+        "sizes": ["15 ml", "30 ml", "50 ml"],
+        "selectedSize": 1
+      },
+      "needsTitle": "What a beauty store needs",
+      "needs": [
+        {
+          "title": "Several photos per product",
+          "pain": "Customers want to see the bottle and the texture before they buy.",
+          "solution": "Upload several photos for each product, and one for each size or type, so the bottle, texture and ingredients are clear."
+        },
+        {
+          "title": "Quantity offers",
+          "pain": "Skincare runs out, yet most customers buy one bottle at a time.",
+          "solution": "Add quantity offers to a product, such as a discount for two or three, and the discount is applied at checkout.",
+          "label": "Choose an offer",
+          "tiers": [
+            {
+              "qty": "1 bottle",
+              "price": "690"
+            },
+            {
+              "qty": "2 bottles",
+              "price": "1,240",
+              "save": "Save 10%"
+            },
+            {
+              "qty": "3 bottles",
+              "price": "1,760",
+              "save": "Save 15%"
+            }
+          ]
+        },
+        {
+          "title": "Back-in-stock alerts",
+          "pain": "Your best seller sells out, and the customer buys elsewhere.",
+          "solution": "When a product sells out, customers leave their email and get a message when it's back in stock.",
+          "label": "Sold out",
+          "placeholder": "Your email",
+          "button": "Tell me when it's back"
+        },
+        {
+          "title": "Real reviews on every product",
+          "pain": "With skincare, customers trust other people's experience more than the description.",
+          "solution": "Customer reviews show on the product page, and you can add reviews customers sent you on WhatsApp or Instagram.",
+          "reviews": [
+            {
+              "name": "Mona",
+              "text": "Light texture and it sinks in fast."
+            },
+            {
+              "name": "Sara",
+              "text": "Arrived in two days, well packed."
+            }
+          ]
+        }
+      ],
+      "templatesTitle": "Templates for beauty and skincare stores",
+      "showTitle": "What a beauty store on Tallaby can look like",
+      "showUrl": "safa.tallaby.com",
+      "callouts": [
+        {
+          "title": "Delivery and payment bar",
+          "body": "Tell customers about delivery and cash on delivery at the top of every page."
+        },
+        {
+          "title": "Routine banner",
+          "body": "A large photo of a set or routine, with a button straight to the products."
+        },
+        {
+          "title": "Categories by use",
+          "body": "Serums, moisturisers and cleansers, so customers find what they need fast."
+        },
+        {
+          "title": "Offer price",
+          "body": "The original price is crossed out beside the offer price."
+        },
+        {
+          "title": "Product types",
+          "body": "Dots show the types or shades available before the product is opened."
+        }
+      ],
+      "stepsTitle": "Launching your beauty store",
+      "steps": [
+        {
+          "title": "Create your store and pick a template",
+          "body": "Sign up with email or a Google account, and choose a template made for beauty stores."
+        },
+        {
+          "title": "Add your products and photos",
+          "body": "Upload photos, add sizes and types, and write the description in Arabic and English, or let AI write it from a product photo."
+        },
+        {
+          "title": "Turn on payment and shipping",
+          "body": "Cash on delivery is on. Set a delivery price for each governorate, and connect Paymob or Kashier and Bosta whenever you like."
+        },
+        {
+          "title": "Launch your offers",
+          "body": "Add quantity offers and discount codes, and connect Meta Pixel to measure your ads."
+        }
+      ],
+      "faqTitle": "Beauty store questions",
+      "faq": [
+        {
+          "q": "How do I open an online beauty store in Egypt?",
+          "a": "Sign up to Tallaby, pick one of the beauty templates, then add your products and set delivery prices for each governorate. Cash on delivery is on from the start."
+        },
+        {
+          "q": "Can I sell the same product in more than one size?",
+          "a": "Yes. Add the sizes as options on the product, and set a price and quantity for each one."
+        },
+        {
+          "q": "How do I run a \"buy 2 and save\" offer?",
+          "a": "On the product page, add quantity offers and set the discount for each number of items. Customers see the offer on the product page, and the discount is applied at checkout."
+        },
+        {
+          "q": "What happens when a product sells out?",
+          "a": "It shows as sold out, and customers can leave their email to get a message when it's back in stock."
+        },
+        {
+          "q": "Can I show my customers' reviews?",
+          "a": "Yes. Reviews show on the product page, and you can add real reviews customers sent you yourself, from the product page."
+        },
+        {
+          "q": "What's a good name for a beauty store?",
+          "a": "Pick a short name that's easy to write and say in Arabic and English. You can change the store name later and connect your own domain whenever you like."
+        }
+      ],
+      "closingTitle": "Launch your beauty store today"
+    },
+    "perfume-store": {
+      "crumb": "Perfume store",
+      "tag": "For perfume and fragrance stores",
+      "title": "A perfume store with a <em>premium feel</em>",
+      "lead": "Create an online perfume store where each scent comes in several sizes and prices, with offers for buying more than one bottle, on a premium template that suits your products.",
+      "checks": [
+        "A size and price per scent",
+        "Quantity offers",
+        "Premium templates"
+      ],
+      "floats": ["100 ml · EGP 3,400", "15% off the second"],
+      "store": {
+        "currency": "EGP",
+        "sale": "SALE",
+        "addToCart": "Add to cart",
+        "sizeLabel": "Size",
+        "colorLabel": "Strength",
+        "brand": "NAFHA",
+        "announcement": "Delivery in 48 hours in Cairo and Giza",
+        "nav": ["New", "Women", "Men", "Sets"],
+        "heroSmall": "Winter collection",
+        "hero": "Scents that stay with you",
+        "cta": "Discover",
+        "categories": [
+          "All",
+          "Women",
+          "Men",
+          "Musk and oud",
+          "Samples",
+          "Gifts"
+        ],
+        "products": [
+          {
+            "name": "Neroli",
+            "price": "2,350",
+            "was": "2,700"
+          },
+          {
+            "name": "Rose Quartz",
+            "price": "1,650"
+          },
+          {
+            "name": "Blush Musk",
+            "price": "2,150"
+          },
+          {
+            "name": "Fig Leaf",
+            "price": "1,950",
+            "was": "2,200"
+          }
+        ],
+        "sizes": ["30 ml", "50 ml", "100 ml"],
+        "selectedSize": 1
+      },
+      "needsTitle": "What a perfume store needs",
+      "needs": [
+        {
+          "title": "A size and a price for each scent",
+          "pain": "The same scent sells in several sizes, and customers ask the price of each.",
+          "solution": "Add the sizes as options on the perfume, with a price and quantity for each, so customers pick and order straight away.",
+          "label": "Choose a size",
+          "options": [
+            {
+              "label": "30 ml",
+              "price": "1,650"
+            },
+            {
+              "label": "50 ml",
+              "price": "2,350"
+            },
+            {
+              "label": "100 ml",
+              "price": "3,400"
+            }
+          ]
+        },
+        {
+          "title": "Quantity offers",
+          "pain": "Perfume is bought for yourself and as a gift, but customers hesitate over a second bottle.",
+          "solution": "Add quantity offers, such as a discount on the second bottle, and the discount is applied at checkout.",
+          "label": "Choose an offer",
+          "tiers": [
+            {
+              "qty": "1 bottle",
+              "price": "2,350"
+            },
+            {
+              "qty": "2 bottles",
+              "price": "4,000",
+              "save": "Save 15%"
+            },
+            {
+              "qty": "3 bottles",
+              "price": "5,640",
+              "save": "Save 20%"
+            }
+          ]
+        },
+        {
+          "title": "Photos that do the bottle justice",
+          "pain": "Nobody can smell a perfume online, so the photos and description do the selling.",
+          "solution": "Upload several photos of each bottle and its box, and write the notes and ingredients in Arabic and English."
+        },
+        {
+          "title": "Reviews on how long it lasts",
+          "pain": "The first question about any perfume: does it last?",
+          "solution": "Customer reviews show on the perfume's page, and you can add feedback customers sent you on WhatsApp.",
+          "reviews": [
+            {
+              "name": "Ahmed",
+              "text": "Lasts all day, and the box is lovely."
+            },
+            {
+              "name": "Noha",
+              "text": "Smells exactly as described."
+            }
+          ]
+        }
+      ],
+      "templatesTitle": "Templates for perfume stores",
+      "showTitle": "What a perfume store on Tallaby can look like",
+      "showUrl": "nafha.tallaby.com",
+      "callouts": [
+        {
+          "title": "Delivery bar",
+          "body": "Announce delivery times or the season's offer at the top of every page."
+        },
+        {
+          "title": "Collection banner",
+          "body": "A large photo of the latest collection, with a button straight to the scents."
+        },
+        {
+          "title": "Categories by type",
+          "body": "Women, men, musk and oud, each with its own page."
+        },
+        {
+          "title": "Offer price",
+          "body": "The original price is crossed out beside the offer price."
+        },
+        {
+          "title": "Available versions",
+          "body": "Dots show the versions of a scent before it's opened."
+        }
+      ],
+      "stepsTitle": "Launching your perfume store",
+      "steps": [
+        {
+          "title": "Create your store and pick a premium template",
+          "body": "Sign up with email or a Google account, and choose one of the perfume templates."
+        },
+        {
+          "title": "Add your scents and their sizes",
+          "body": "Upload photos, add sizes with a price and quantity for each, and write the notes in the description."
+        },
+        {
+          "title": "Turn on payment and shipping",
+          "body": "Cash on delivery is on. Connect Paymob or Kashier for cards and Bosta for shipping."
+        },
+        {
+          "title": "Promote your scents",
+          "body": "Add quantity offers and discount codes, and add your product feed to a Meta catalog for your ads."
+        }
+      ],
+      "faqTitle": "Perfume store questions",
+      "faq": [
+        {
+          "q": "How do I create an online perfume store?",
+          "a": "Sign up to Tallaby, pick one of the perfume templates, then add your scents with their sizes and prices. You can start with no monthly fee."
+        },
+        {
+          "q": "Can I sell a perfume in more than one size?",
+          "a": "Yes. Add the sizes as options, such as 30, 50 and 100 ml, and set a price and quantity for each."
+        },
+        {
+          "q": "Can I sell samples and gift sets?",
+          "a": "Yes. Add a sample or a set as its own product with its price, or as one of a perfume's sizes, and give it its own category."
+        },
+        {
+          "q": "How do I get customers to buy more than one bottle?",
+          "a": "Add quantity offers on the perfume's page, such as a discount on the second bottle. The discount is applied at checkout."
+        },
+        {
+          "q": "Can perfume buyers pay on delivery or by card?",
+          "a": "Yes. Cash on delivery is on from the start, and you can connect Paymob or Kashier to take cards and wallets into your own account."
+        },
+        {
+          "q": "How do I choose a name for a perfume store?",
+          "a": "Pick a short name that fits the feel of your scents and is easy to write in Arabic and English. You can change it later and connect your own domain."
+        }
+      ],
+      "closingTitle": "Launch your perfume store today"
+    },
+    "electronics-store": {
+      "crumb": "Electronics store",
+      "tag": "For electronics and phone accessory stores",
+      "title": "A clear, <em>well-organised</em> electronics store",
+      "lead": "Create an online electronics store that shows each product's specs clearly, with a storage, colour and price for every option, and lets customers pay by card into your account or on delivery.",
+      "checks": [
+        "Specs for every product",
+        "Storage and colour options",
+        "Card or cash on delivery"
+      ],
+      "floats": ["256GB · Black", "Paid by card"],
+      "store": {
+        "currency": "EGP",
+        "sale": "SALE",
+        "addToCart": "Add to cart",
+        "sizeLabel": "Storage",
+        "colorLabel": "Colour",
+        "brand": "ATHEER",
+        "announcement": "One-year warranty on every device",
+        "nav": ["New", "Audio", "Phones", "Watches"],
+        "heroSmall": "Wireless sound",
+        "hero": "Tech that fits your day",
+        "cta": "Shop now",
+        "categories": [
+          "All",
+          "Audio",
+          "Phones",
+          "Laptops",
+          "Watches",
+          "Chargers"
+        ],
+        "products": [
+          {
+            "name": "Pulse Pro buds",
+            "price": "2,450",
+            "was": "2,890"
+          },
+          {
+            "name": "Arc X14 phone",
+            "price": "18,999"
+          },
+          {
+            "name": "Kite Air laptop",
+            "price": "38,500"
+          },
+          {
+            "name": "Lumen 5 watch",
+            "price": "6,750"
+          }
+        ],
+        "sizes": ["128GB", "256GB", "512GB"],
+        "selectedSize": 1
+      },
+      "needsTitle": "What an electronics store needs",
+      "needs": [
+        {
+          "title": "Clear specs for every product",
+          "pain": "Electronics buyers compare specs before they buy, and ask about every detail.",
+          "solution": "Write the specs in the description in Arabic and English, or upload a product photo or PDF and let AI write them for you.",
+          "label": "Written by AI",
+          "rows": [
+            {
+              "k": "Battery",
+              "v": "Up to 30 hours"
+            },
+            {
+              "k": "Connection",
+              "v": "Bluetooth 5.3"
+            },
+            {
+              "k": "Noise cancelling",
+              "v": "Yes"
+            }
+          ]
+        },
+        {
+          "title": "Storage, colour and price per option",
+          "pain": "The same phone comes in several storage sizes and colours, each with its own price.",
+          "solution": "Add storage and colour as options, and set a price and quantity for each.",
+          "stock": "In stock: 7 devices"
+        },
+        {
+          "title": "Back-in-stock alerts",
+          "pain": "New devices sell out fast, and customers don't come back to check.",
+          "solution": "When a product sells out, customers leave their email and get a message when it's back in stock.",
+          "label": "Sold out",
+          "placeholder": "Your email",
+          "button": "Tell me when it's back"
+        },
+        {
+          "title": "Card or cash on delivery",
+          "pain": "Devices are expensive: some customers prefer a card, others prefer to pay on delivery.",
+          "solution": "Connect your own Paymob or Kashier account so card payments reach you directly, and set cash on delivery and a delivery price for each area.",
+          "rows": [
+            {
+              "k": "Cairo",
+              "v": "60"
+            },
+            {
+              "k": "Alexandria",
+              "v": "75"
+            },
+            {
+              "k": "Assiut",
+              "v": "90"
+            }
+          ],
+          "note": "Cash on delivery in every area"
+        }
+      ],
+      "templatesTitle": "Templates for electronics stores",
+      "showTitle": "What an electronics store on Tallaby can look like",
+      "showUrl": "atheer.tallaby.com",
+      "callouts": [
+        {
+          "title": "Warranty bar",
+          "body": "Announce your warranty or delivery at the top of every page."
+        },
+        {
+          "title": "New product banner",
+          "body": "A large photo of the latest device, with a button straight to it."
+        },
+        {
+          "title": "Clear categories",
+          "body": "Audio, phones and laptops, each with its own page, plus search."
+        },
+        {
+          "title": "Offer price",
+          "body": "The original price is crossed out beside the offer price."
+        },
+        {
+          "title": "Available colours",
+          "body": "Colour dots on the product card, before it's opened."
+        }
+      ],
+      "stepsTitle": "Launching your electronics store",
+      "steps": [
+        {
+          "title": "Create your store and pick a template",
+          "body": "Sign up with email or a Google account, and choose one of the electronics templates."
+        },
+        {
+          "title": "Add your devices and specs",
+          "body": "Upload photos and add storage and colour for each device, or import your products from an Excel file."
+        },
+        {
+          "title": "Turn on card payments",
+          "body": "Connect your Paymob or Kashier account. Cash on delivery is on, and you can connect Bosta for shipping."
+        },
+        {
+          "title": "Connect your ads",
+          "body": "Add your product feed to a Meta or Google catalog, and connect Meta Pixel to measure sales."
+        }
+      ],
+      "faqTitle": "Electronics store questions",
+      "faq": [
+        {
+          "q": "How do I open an online electronics store in Egypt?",
+          "a": "Sign up to Tallaby, pick one of the electronics templates, then add your devices with their specs and set your delivery prices. Cash on delivery is on from the start."
+        },
+        {
+          "q": "Can I sell phone and computer accessories?",
+          "a": "Yes. Add headphones, chargers, cables and cases as products, and group them in their own categories."
+        },
+        {
+          "q": "Do card payments go into my own account?",
+          "a": "Yes. You connect your own Paymob or Kashier account, so payments reach you from them directly, and the gateway sets its own fees."
+        },
+        {
+          "q": "How do I add storage and colour to one device?",
+          "a": "On the product page, add storage and colour as options, and set a price and quantity for each."
+        },
+        {
+          "q": "Can AI write the specs?",
+          "a": "Yes. Upload a product photo, a PDF or some text, and AI writes the name and description in Arabic and English for you to check before saving."
+        },
+        {
+          "q": "How do I ship orders?",
+          "a": "Connect your Bosta account to create waybills from the dashboard, or assign orders to your own riders. Tallaby doesn't deliver orders itself."
+        }
+      ],
+      "closingTitle": "Launch your electronics store today"
+    },
+    "home-furniture-store": {
+      "crumb": "Furniture store",
+      "tag": "For furniture and homeware stores",
+      "title": "A furniture store that shows <em>each piece well</em>",
+      "lead": "Create an online furniture store that shows every piece with large photos and clear sizes and materials, with a delivery price for each area and cash on delivery.",
+      "checks": [
+        "Large photos of each piece",
+        "Sizes and materials",
+        "A delivery price per area"
+      ],
+      "floats": ["Linen · Beige", "Delivery to New Cairo: EGP 250"],
+      "store": {
+        "currency": "EGP",
+        "sale": "SALE",
+        "addToCart": "Add to cart",
+        "sizeLabel": "Size",
+        "colorLabel": "Finish",
+        "brand": "MARMAR",
+        "announcement": "Delivery and assembly across Greater Cairo",
+        "nav": ["New", "Sofas", "Bedrooms", "Dining"],
+        "heroSmall": "The living room edit",
+        "hero": "Pieces that last for years",
+        "cta": "Shop the edit",
+        "categories": [
+          "All",
+          "Sofas",
+          "Armchairs",
+          "Beds",
+          "Nightstands",
+          "Chairs"
+        ],
+        "products": [
+          {
+            "name": "Reading armchair",
+            "price": "8,900",
+            "was": "9,800"
+          },
+          {
+            "name": "Oak bed frame",
+            "price": "18,900"
+          },
+          {
+            "name": "Nightstand",
+            "price": "3,200"
+          },
+          {
+            "name": "Dining chair",
+            "price": "2,900"
+          }
+        ],
+        "sizes": ["160×200", "180×200", "200×200"],
+        "selectedSize": 1
+      },
+      "needsTitle": "What a furniture store needs",
+      "needs": [
+        {
+          "title": "Large photos of each piece",
+          "pain": "Furniture is a big decision, and customers want to see it from every angle.",
+          "solution": "Upload several large photos of each piece, and one for each colour or material, so the details show as they are."
+        },
+        {
+          "title": "Sizes and materials for each piece",
+          "pain": "The first question: will it fit my room?",
+          "solution": "Write the sizes and materials in the description, and add sizes as options with a price for each.",
+          "rows": [
+            {
+              "k": "Width",
+              "v": "86 cm"
+            },
+            {
+              "k": "Depth",
+              "v": "78 cm"
+            },
+            {
+              "k": "Material",
+              "v": "Linen and beech"
+            }
+          ]
+        },
+        {
+          "title": "A delivery price for each area",
+          "pain": "Delivering furniture costs very different amounts from one area to another.",
+          "solution": "Set your delivery zones and a price for each, down to the district, and choose where you take cash on delivery.",
+          "rows": [
+            {
+              "k": "Nasr City",
+              "v": "200"
+            },
+            {
+              "k": "New Cairo",
+              "v": "250"
+            },
+            {
+              "k": "6th of October",
+              "v": "300"
+            }
+          ],
+          "note": "Cash on delivery available"
+        },
+        {
+          "title": "Customer notes with the order",
+          "pain": "Customers want to tell you the floor or the best time to deliver.",
+          "solution": "Customers write in the order notes field, and you see it with the order details.",
+          "label": "Order notes",
+          "text": "Fourth floor, no lift. Please deliver after 5 pm."
+        }
+      ],
+      "templatesTitle": "Templates for furniture and home stores",
+      "showTitle": "What a furniture store on Tallaby can look like",
+      "showUrl": "marmar.tallaby.com",
+      "callouts": [
+        {
+          "title": "Delivery bar",
+          "body": "Announce delivery areas or assembly at the top of every page."
+        },
+        {
+          "title": "Collection banner",
+          "body": "A large photo of a room or set, with a button straight to the pieces."
+        },
+        {
+          "title": "Categories by room",
+          "body": "Sofas, beds and chairs, each with its own page."
+        },
+        {
+          "title": "Offer price",
+          "body": "The original price is crossed out beside the offer price."
+        },
+        {
+          "title": "Available finishes",
+          "body": "Dots show the colours or materials before a piece is opened."
+        }
+      ],
+      "stepsTitle": "Launching your furniture store",
+      "steps": [
+        {
+          "title": "Create your store and pick a template",
+          "body": "Sign up with email or a Google account, and choose one of the furniture and home templates."
+        },
+        {
+          "title": "Add your pieces with their sizes",
+          "body": "Upload photos, write the sizes and materials, and add sizes and colours as options."
+        },
+        {
+          "title": "Set your delivery zones",
+          "body": "A price for each area, free delivery over an amount you choose, and your riders or Bosta to deliver."
+        },
+        {
+          "title": "Promote your collection",
+          "body": "Add your product feed to a Meta catalog, and connect Meta Pixel to measure your ads."
+        }
+      ],
+      "faqTitle": "Furniture store questions",
+      "faq": [
+        {
+          "q": "How do I open an online furniture store?",
+          "a": "Sign up to Tallaby, pick one of the furniture templates, then add your pieces with photos and sizes, and set your delivery zones and prices."
+        },
+        {
+          "q": "Can I charge a different delivery price for each area?",
+          "a": "Yes. Create shipping zones with a price for each, down to the district, set an amount for free delivery, and choose where you take cash on delivery."
+        },
+        {
+          "q": "Can I sell homeware and kitchen items too?",
+          "a": "Yes. Add them as products in their own categories, next to your furniture in the same store."
+        },
+        {
+          "q": "How do I show different sizes of the same piece?",
+          "a": "Add the sizes as options on the product, and set a price and quantity for each."
+        },
+        {
+          "q": "Who delivers the furniture?",
+          "a": "You choose: your own riders, or a shipping company such as Bosta. Tallaby doesn't deliver orders itself."
+        },
+        {
+          "q": "How do I see the customer's delivery notes?",
+          "a": "Customers write them in the order notes field at checkout, and you see them in the order details."
+        }
+      ],
+      "closingTitle": "Launch your furniture store today"
+    },
+    "jewelry-accessories-store": {
+      "crumb": "Jewelry and accessories store",
+      "tag": "For jewelry, accessories and bag stores",
+      "title": "An <em>elegant</em> jewelry and accessories store",
+      "lead": "Create an online jewelry and accessories store with close-up photos of every piece, a size and colour for each option, and a coupon that appears at the right moment, on an elegant template in Arabic and English.",
+      "checks": [
+        "Close-up photos",
+        "A size and colour per option",
+        "Coupon pop-ups"
+      ],
+      "floats": ["Gold · Size 7", "Code: LUNA10"],
+      "store": {
+        "currency": "EGP",
+        "sale": "SALE",
+        "addToCart": "Add to cart",
+        "sizeLabel": "Size",
+        "colorLabel": "Colour",
+        "brand": "MASA",
+        "announcement": "Free gift wrapping with every order",
+        "nav": ["New", "Earrings", "Bracelets", "Bags"],
+        "heroSmall": "The gold edit",
+        "hero": "Small details that stand out",
+        "cta": "Discover",
+        "categories": [
+          "All",
+          "Earrings",
+          "Bracelets",
+          "Rings",
+          "Necklaces",
+          "Bags"
+        ],
+        "products": [
+          {
+            "name": "Chain bracelet",
+            "price": "450",
+            "was": "560"
+          },
+          {
+            "name": "Stack rings",
+            "price": "520"
+          },
+          {
+            "name": "Layered necklaces",
+            "price": "560"
+          },
+          {
+            "name": "Shoulder bag",
+            "price": "1,600"
+          }
+        ],
+        "sizes": ["6", "7", "8", "9"],
+        "selectedSize": 1
+      },
+      "needsTitle": "What an accessories store needs",
+      "needs": [
+        {
+          "title": "Close-up photos of each piece",
+          "pain": "The pieces are small, and their details are what sell them.",
+          "solution": "Upload several close-up photos of each piece, and one per colour, so customers see the shine and the details."
+        },
+        {
+          "title": "A size and colour for each option",
+          "pain": "Rings come in sizes, and bracelets in gold, silver and rose.",
+          "solution": "Add sizes and colours as options, and set a price and quantity for each.",
+          "stock": "In stock: 5 pieces"
+        },
+        {
+          "title": "Coupon pop-ups",
+          "pain": "Many visitors browse and leave without ordering.",
+          "solution": "Create a coupon that pops up on arrival or before leaving, with a countdown that encourages the order.",
+          "offer": "10% off",
+          "lead": "Coupon ends in"
+        },
+        {
+          "title": "Gift notes with the order",
+          "pain": "Many pieces are bought as gifts, and the customer wants to add a message.",
+          "solution": "Customers write the message or a special request in the order notes, and you see it with the order.",
+          "label": "Order notes",
+          "text": "It's a birthday gift. Please write \"Happy birthday, Nour\"."
+        }
+      ],
+      "templatesTitle": "Templates for jewelry and accessories stores",
+      "showTitle": "What an accessories store on Tallaby can look like",
+      "showUrl": "masa.tallaby.com",
+      "callouts": [
+        {
+          "title": "Offers bar",
+          "body": "Announce gift wrapping or the season's offer at the top of every page."
+        },
+        {
+          "title": "Collection banner",
+          "body": "A large photo of the latest collection, with a clear button."
+        },
+        {
+          "title": "Categories by piece",
+          "body": "Earrings, bracelets, rings and bags, each with its own page."
+        },
+        {
+          "title": "Price before and after",
+          "body": "The original price is crossed out beside the offer price."
+        },
+        {
+          "title": "Available colours",
+          "body": "Gold, silver and rose on the product card, before it's opened."
+        }
+      ],
+      "stepsTitle": "Launching your accessories store",
+      "steps": [
+        {
+          "title": "Create your store and pick an elegant template",
+          "body": "Sign up with email or a Google account, and choose one of the jewelry templates."
+        },
+        {
+          "title": "Add your pieces with sizes and colours",
+          "body": "Upload close-up photos, and add the sizes, colours and quantity for each option."
+        },
+        {
+          "title": "Turn on payment and shipping",
+          "body": "Cash on delivery is on, and you can connect Paymob or Kashier and Bosta whenever you like."
+        },
+        {
+          "title": "Launch your coupon",
+          "body": "Create a pop-up coupon with a countdown, and connect Meta Pixel to measure your ads."
+        }
+      ],
+      "faqTitle": "Jewelry and accessories store questions",
+      "faq": [
+        {
+          "q": "How do I open an online accessories store?",
+          "a": "Sign up to Tallaby, pick one of the jewelry and accessories templates, then add your pieces with their photos, sizes and colours."
+        },
+        {
+          "q": "Can I sell women's accessories and bags in the same store?",
+          "a": "Yes. Add earrings, bracelets and bags as products, and give each kind its own category."
+        },
+        {
+          "q": "How do I add ring sizes and colours?",
+          "a": "On the product page, add size and colour as options, and set a price and quantity for each."
+        },
+        {
+          "q": "How does the coupon pop-up work?",
+          "a": "Create a coupon and choose when it appears: on arrival, before leaving or at a random moment, with a time limit shown as a countdown."
+        },
+        {
+          "q": "Can customers add a gift message?",
+          "a": "Yes. Customers write it in the order notes, and you see it in the order details."
+        },
+        {
+          "q": "What's a good name for an accessories store?",
+          "a": "Pick a short, elegant name that's easy to write in Arabic and English. You can change it later and connect your own domain."
+        }
+      ],
+      "closingTitle": "Launch your accessories store today"
+    },
+    "food-store": {
+      "crumb": "Food and sweets store",
+      "tag": "For food, sweets and grocery stores",
+      "title": "A food store that <em>delivers nearby</em>",
+      "lead": "Create an online food store where you set where you deliver and for how much, sell by weight or by the box, and get a phone alert for every new order so you can prepare it right away.",
+      "checks": [
+        "A delivery price per area",
+        "An alert for every new order",
+        "Cash on delivery"
+      ],
+      "floats": ["New order: kahk box", "Delivery to Nasr City: EGP 40"],
+      "store": {
+        "currency": "EGP",
+        "sale": "SALE",
+        "addToCart": "Add to cart",
+        "brand": "HALAWA",
+        "announcement": "Order before 2 pm for same-day delivery",
+        "nav": ["New", "Oriental", "Baked", "Gift boxes"],
+        "heroSmall": "Eid boxes",
+        "hero": "Fresh sweets, every day",
+        "cta": "Order now",
+        "categories": [
+          "All",
+          "Basbousa",
+          "Konafa",
+          "Kahk",
+          "Biscuits",
+          "Boxes"
+        ],
+        "products": [
+          {
+            "name": "Pistachio basbousa",
+            "price": "280",
+            "was": "320"
+          },
+          {
+            "name": "Ghorayeba, 500 g",
+            "price": "190",
+            "note": "Only 4 left"
+          },
+          {
+            "name": "Konafa with cream",
+            "price": "340"
+          },
+          {
+            "name": "Kahk and maamoul, 1 kg",
+            "price": "320"
+          }
+        ],
+        "sizeLabel": "Weight",
+        "colorLabel": "Type",
+        "sizes": ["250 g", "500 g", "1 kg"],
+        "selectedSize": 1
+      },
+      "needsTitle": "What an online food store needs",
+      "needs": [
+        {
+          "title": "A delivery price for each area",
+          "pain": "Food travels short distances, and the price changes from one district to the next.",
+          "solution": "Set the areas you deliver to and a price for each, down to the district, plus an amount for free delivery.",
+          "rows": [
+            {
+              "k": "Nasr City",
+              "v": "40"
+            },
+            {
+              "k": "Heliopolis",
+              "v": "45"
+            },
+            {
+              "k": "Maadi",
+              "v": "60"
+            }
+          ],
+          "note": "Free delivery over EGP 600"
+        },
+        {
+          "title": "An instant alert for every order",
+          "pain": "Food is made fresh, and seeing an order late means delivering it late.",
+          "solution": "Install the dashboard on your phone and turn on notifications to get an alert for every new order, then assign it to a rider.",
+          "app": "Tallaby",
+          "time": "now",
+          "label": "New order #1048",
+          "body": "2 kahk boxes · Nasr City · Cash on delivery"
+        },
+        {
+          "title": "Sell by weight or by the box",
+          "pain": "Customers order 250 g or a kilo, and each weight has its price.",
+          "solution": "Add weights or box sizes as options on the product, with a price and quantity for each.",
+          "label": "Choose a weight",
+          "options": [
+            {
+              "label": "250 g",
+              "price": "95"
+            },
+            {
+              "label": "500 g",
+              "price": "190"
+            },
+            {
+              "label": "1 kg",
+              "price": "360"
+            }
+          ]
+        },
+        {
+          "title": "Special requests in the order notes",
+          "pain": "One customer wants writing on a cake, another wants delivery at a set time.",
+          "solution": "Customers write their request in the order notes, and you see it with the order before you prepare it.",
+          "label": "Order notes",
+          "text": "Please deliver before 7, and no nuts in one of the boxes."
+        }
+      ],
+      "templatesTitle": "Templates for food and sweets stores",
+      "showTitle": "What a sweets store on Tallaby can look like",
+      "showUrl": "halawa.tallaby.com",
+      "callouts": [
+        {
+          "title": "Delivery time bar",
+          "body": "Tell customers the last order time for same-day delivery."
+        },
+        {
+          "title": "Season banner",
+          "body": "A large photo of your Eid or Ramadan boxes, with a button straight to them."
+        },
+        {
+          "title": "Categories by item",
+          "body": "Basbousa, konafa and kahk, each with its own page."
+        },
+        {
+          "title": "Offer price",
+          "body": "The original price is crossed out beside the offer price."
+        },
+        {
+          "title": "Low stock",
+          "body": "An \"Only 4 left\" note shows when stock runs low."
+        }
+      ],
+      "stepsTitle": "Launching your food store",
+      "steps": [
+        {
+          "title": "Create your store and pick a template",
+          "body": "Sign up with email or a Google account, and choose one of the food and sweets templates."
+        },
+        {
+          "title": "Add your items by weight",
+          "body": "Upload photos and add weights or box sizes with a price for each."
+        },
+        {
+          "title": "Set your delivery zones and riders",
+          "body": "A price for each area, an amount for free delivery, and your riders to assign orders to."
+        },
+        {
+          "title": "Turn on order alerts",
+          "body": "Install the dashboard on your phone to get an alert for every new order."
+        }
+      ],
+      "faqTitle": "Food and sweets store questions",
+      "faq": [
+        {
+          "q": "How do I start selling food online?",
+          "a": "Sign up to Tallaby, pick one of the food templates, then add your items and set your delivery zones and prices. Cash on delivery is on from the start."
+        },
+        {
+          "q": "Can I deliver with my own riders?",
+          "a": "Yes. Add your riders in the dashboard, assign orders to them and follow each order's status. Tallaby doesn't deliver orders itself."
+        },
+        {
+          "q": "Can I open a sweets or grocery store?",
+          "a": "Yes. Add sweets or grocery items as products sold by weight or by the box, and group them in categories."
+        },
+        {
+          "q": "How do I hear about a new order right away?",
+          "a": "Install the dashboard on your phone and turn on notifications to get an alert for every new order."
+        },
+        {
+          "q": "Can I set a minimum quantity per order?",
+          "a": "Yes. Set a minimum quantity for each product, such as two boxes, and smaller orders aren't accepted."
+        },
+        {
+          "q": "How do customers add a special request?",
+          "a": "They write it in the order notes at checkout, and you see it in the order details."
+        }
+      ],
+      "closingTitle": "Launch your food store today"
+    },
+    "kids-store": {
+      "crumb": "Kids' store",
+      "tag": "For kids' clothing and toy stores",
+      "title": "A <em>cheerful</em>, tidy kids' store",
+      "lead": "Create an online kids' clothing and toys store with sizes by age, offers for buying more than one piece, and delivery with cash on delivery in every governorate.",
+      "checks": ["Sizes by age", "Quantity offers", "Cash on delivery"],
+      "floats": ["Size 2–3 years", "Third piece discounted"],
+      "store": {
+        "currency": "EGP",
+        "sale": "SALE",
+        "addToCart": "Add to cart",
+        "brand": "TOOT",
+        "announcement": "Delivery across Egypt, cash on delivery",
+        "nav": ["New", "Clothes", "Toys", "Gifts"],
+        "heroSmall": "Wooden toys",
+        "hero": "Play that grows with them",
+        "cta": "Shop now",
+        "categories": [
+          "All",
+          "Newborn",
+          "Clothes",
+          "Wooden toys",
+          "Teddies",
+          "Gifts"
+        ],
+        "products": [
+          {
+            "name": "Newborn cotton set",
+            "price": "690",
+            "was": "790"
+          },
+          {
+            "name": "Rainbow xylophone",
+            "price": "640"
+          },
+          {
+            "name": "Rocking horse",
+            "price": "3,450"
+          },
+          {
+            "name": "Cream teddy",
+            "price": "590"
+          }
+        ],
+        "sizeLabel": "Age",
+        "colorLabel": "Colour",
+        "sizes": ["0-3m", "3-6m", "1-2y", "2-3y"],
+        "selectedSize": 2
+      },
+      "needsTitle": "What a kids' clothing store needs",
+      "needs": [
+        {
+          "title": "Sizes by age",
+          "pain": "Parents ask which size fits a two-year-old.",
+          "solution": "Add sizes by age and colours as options, and set a price and quantity for each.",
+          "stock": "In stock: 9 pieces"
+        },
+        {
+          "title": "Quantity offers",
+          "pain": "Children grow fast, and parents buy several pieces at a time.",
+          "solution": "Add quantity offers, such as a discount on 3 pieces, and the discount is applied at checkout.",
+          "label": "Choose an offer",
+          "tiers": [
+            {
+              "qty": "1 piece",
+              "price": "690"
+            },
+            {
+              "qty": "2 pieces",
+              "price": "1,310",
+              "save": "Save 5%"
+            },
+            {
+              "qty": "3 pieces",
+              "price": "1,860",
+              "save": "Save 10%"
+            }
+          ]
+        },
+        {
+          "title": "An alert when a size is back",
+          "pain": "The size they need sells out, and they don't know when it's coming back.",
+          "solution": "When a product sells out, customers leave their email and get a message when it's back in stock.",
+          "label": "Sold out",
+          "placeholder": "Your email",
+          "button": "Tell me when it's back"
+        },
+        {
+          "title": "Delivery to every governorate",
+          "pain": "Your customers are everywhere, and delivery costs differ between governorates.",
+          "solution": "Set a delivery price for each governorate, choose where you take cash on delivery, and ship with Bosta or your riders.",
+          "rows": [
+            {
+              "k": "Cairo",
+              "v": "50"
+            },
+            {
+              "k": "Alexandria",
+              "v": "65"
+            },
+            {
+              "k": "Mansoura",
+              "v": "70"
+            }
+          ],
+          "note": "Cash on delivery in every governorate"
+        }
+      ],
+      "templatesTitle": "Templates for kids' stores",
+      "showTitle": "What a kids' store on Tallaby can look like",
+      "showUrl": "toot.tallaby.com",
+      "callouts": [
+        {
+          "title": "Delivery bar",
+          "body": "Tell customers about delivery and cash on delivery at the top of every page."
+        },
+        {
+          "title": "Collection banner",
+          "body": "A large photo of your latest toys or clothes, with a clear button."
+        },
+        {
+          "title": "Categories by age and type",
+          "body": "Newborn, clothes and toys, each with its own page."
+        },
+        {
+          "title": "Price before and after",
+          "body": "The original price is crossed out beside the offer price."
+        },
+        {
+          "title": "Available colours",
+          "body": "Colour dots on the product card, before it's opened."
+        }
+      ],
+      "stepsTitle": "Launching your kids' store",
+      "steps": [
+        {
+          "title": "Create your store and pick a playful template",
+          "body": "Sign up with email or a Google account, and choose one of the kids' templates."
+        },
+        {
+          "title": "Add your products with sizes",
+          "body": "Upload photos, and add sizes by age, colours and the quantity for each option."
+        },
+        {
+          "title": "Turn on payment and shipping",
+          "body": "Cash on delivery is on. Set a delivery price for each governorate, and connect Bosta whenever you like."
+        },
+        {
+          "title": "Launch your offers",
+          "body": "Add quantity offers and discount codes, and connect Meta Pixel to measure your ads."
+        }
+      ],
+      "faqTitle": "Kids' store questions",
+      "faq": [
+        {
+          "q": "How do I open an online kids' clothing store?",
+          "a": "Sign up to Tallaby, pick one of the kids' templates, then add your products with sizes by age and set your delivery prices."
+        },
+        {
+          "q": "Can I sell toys in the same store?",
+          "a": "Yes. Add toys, clothes and gifts as products, and give each kind its own category."
+        },
+        {
+          "q": "How do I add sizes by age?",
+          "a": "On the product page, add sizes as options, such as 0–3 months and 1–2 years, and set a price and quantity for each."
+        },
+        {
+          "q": "How do I run an offer on buying several pieces?",
+          "a": "Add quantity offers on the product page and set the discount for each number of pieces. The discount is applied at checkout."
+        },
+        {
+          "q": "Can parents pay on delivery in any governorate?",
+          "a": "Yes. Cash on delivery is on from the start, and you can connect Paymob or Kashier for cards and wallets."
+        },
+        {
+          "q": "What happens when a size sells out?",
+          "a": "The product shows as sold out, and customers can leave their email to get a message when it's back."
+        }
+      ],
+      "closingTitle": "Launch your kids' store today"
+    },
+    "car-accessories-store": {
+      "crumb": "Car accessories store",
+      "tag": "For car accessories and parts stores",
+      "title": "A car store where buyers find <em>the right part</em>",
+      "lead": "Create an online car accessories store where you write each product's specs and the cars it fits, buyers search quickly, and your orders ship with Bosta.",
+      "checks": ["Specs for every product", "Store search", "Bosta shipping"],
+      "floats": ["Fits phones up to 6.7 in", "Bosta waybill ready"],
+      "store": {
+        "currency": "EGP",
+        "sale": "SALE",
+        "addToCart": "Add to cart",
+        "brand": "GARAGE",
+        "announcement": "Shipping across Egypt in 3 days",
+        "nav": ["New", "Interior", "Electronics", "Emergency"],
+        "heroSmall": "Seat covers",
+        "hero": "Your car, the way you like it",
+        "cta": "Shop now",
+        "categories": [
+          "All",
+          "Mounts",
+          "Covers",
+          "Steering",
+          "Emergency",
+          "Chargers"
+        ],
+        "products": [
+          {
+            "name": "Dash mount with charger",
+            "price": "650",
+            "was": "790"
+          },
+          {
+            "name": "Steering wheel cover",
+            "price": "320"
+          },
+          {
+            "name": "Jumper cables",
+            "price": "420"
+          },
+          {
+            "name": "Car USB hub",
+            "price": "380"
+          }
+        ],
+        "sizeLabel": "Size",
+        "colorLabel": "Colour",
+        "sizes": ["S", "M", "L"],
+        "selectedSize": 1
+      },
+      "needsTitle": "What a car accessories store needs",
+      "needs": [
+        {
+          "title": "Specs and fit for every product",
+          "pain": "The first question from every buyer: will it fit my car?",
+          "solution": "Write the specs and the cars it fits in the description in Arabic and English, or let AI write them from a product photo.",
+          "label": "Written by AI",
+          "rows": [
+            {
+              "k": "Charging",
+              "v": "15 W wireless"
+            },
+            {
+              "k": "Mounting",
+              "v": "Dash or vent"
+            },
+            {
+              "k": "Fits",
+              "v": "Phones up to 6.7 in"
+            }
+          ]
+        },
+        {
+          "title": "Your products in Meta and Google ads",
+          "pain": "Buyers see a product in an ad and want to order it in one tap.",
+          "solution": "Copy your product feed link and add it to a Meta catalog or Google Merchant Center, to show your products and prices in your ads.",
+          "handle": "garage.eg",
+          "tag": "Dash mount · EGP 650",
+          "viewProducts": "View products"
+        },
+        {
+          "title": "Shipping to every governorate",
+          "pain": "Car parts are ordered from everywhere, and shipping costs vary.",
+          "solution": "Set a shipping price for each governorate, and connect your Bosta account to create waybills and tracking numbers from the dashboard.",
+          "rows": [
+            {
+              "k": "Cairo",
+              "v": "55"
+            },
+            {
+              "k": "Tanta",
+              "v": "65"
+            },
+            {
+              "k": "Aswan",
+              "v": "95"
+            }
+          ],
+          "note": "Cash on delivery or card"
+        },
+        {
+          "title": "Reviews from drivers who tried it",
+          "pain": "Buyers want to hear from someone who fitted it before them.",
+          "solution": "Customer reviews show on the product page, and you can add feedback customers sent you yourself.",
+          "reviews": [
+            {
+              "name": "Karim",
+              "text": "Stays put even over speed bumps. Easy to fit."
+            },
+            {
+              "name": "Mohamed",
+              "text": "Fits the steering wheel perfectly."
+            }
+          ]
+        }
+      ],
+      "templatesTitle": "Templates for car stores",
+      "showTitle": "What a car accessories store on Tallaby can look like",
+      "showUrl": "garage.tallaby.com",
+      "callouts": [
+        {
+          "title": "Shipping bar",
+          "body": "Tell buyers how long shipping takes at the top of every page."
+        },
+        {
+          "title": "Product banner",
+          "body": "A large photo of your key product, with a button straight to it."
+        },
+        {
+          "title": "Clear categories",
+          "body": "Mounts, covers and chargers, each with its own page, plus search."
+        },
+        {
+          "title": "Offer price",
+          "body": "The original price is crossed out beside the offer price."
+        },
+        {
+          "title": "Available colours",
+          "body": "Colour dots on the product card, before it's opened."
+        }
+      ],
+      "stepsTitle": "Launching your car accessories store",
+      "steps": [
+        {
+          "title": "Create your store and pick a template",
+          "body": "Sign up with email or a Google account, and choose one of the car templates."
+        },
+        {
+          "title": "Add your products and specs",
+          "body": "Upload photos and write the specs and fit, or import your products from an Excel file."
+        },
+        {
+          "title": "Connect shipping and payment",
+          "body": "Set a shipping price for each governorate, and connect Bosta and Paymob or Kashier with your own accounts."
+        },
+        {
+          "title": "Show your products in ads",
+          "body": "Add your product feed to a Meta or Google catalog, and connect Meta Pixel to measure sales."
+        }
+      ],
+      "faqTitle": "Car accessories store questions",
+      "faq": [
+        {
+          "q": "How do I open an online car accessories store?",
+          "a": "Sign up to Tallaby, pick one of the car templates, then add your products with their specs and set your shipping prices."
+        },
+        {
+          "q": "Can I sell car spare parts online?",
+          "a": "Yes. Add parts as products, write the models they fit in the description, and group them in categories so buyers find them by search."
+        },
+        {
+          "q": "How do I ship orders to other governorates?",
+          "a": "Connect your Bosta account to create waybills and tracking numbers from the dashboard, at your own Bosta rates."
+        },
+        {
+          "q": "Can buyers pay by card?",
+          "a": "Yes. Connect your Paymob or Kashier account so payments reach you directly. Cash on delivery is available too."
+        },
+        {
+          "q": "How do I show my products in Meta and Google ads?",
+          "a": "Copy your product feed link from the Apps and integrations page, and add it to a Meta catalog or Google Merchant Center."
+        },
+        {
+          "q": "Can AI write the product description?",
+          "a": "Yes. Upload a product photo or some text, and AI writes the name and description in Arabic and English for you to check before saving."
+        }
+      ],
+      "closingTitle": "Launch your car accessories store today"
+    },
+    "handmade-store": {
+      "crumb": "Handmade store",
+      "tag": "For handmade and gift stores",
+      "title": "A store that <em>tells your</em> handmade story",
+      "lead": "Create an online handmade store that shows every piece in photos, tells the story of how it's made and takes custom requests in the order notes, with cash on delivery or card.",
+      "checks": [
+        "A page for your story",
+        "Custom requests with the order",
+        "Cash on delivery"
+      ],
+      "floats": ["Made by hand", "Name on the mug, please"],
+      "store": {
+        "currency": "EGP",
+        "sale": "SALE",
+        "addToCart": "Add to cart",
+        "brand": "FOKHAR",
+        "announcement": "Every piece is handmade and a little different",
+        "nav": ["New", "Mugs", "Plates", "Candles"],
+        "heroSmall": "From the studio",
+        "hero": "Pieces made with care",
+        "cta": "Shop the pieces",
+        "categories": ["All", "Mugs", "Plates", "Vases", "Candles", "Gifts"],
+        "products": [
+          {
+            "name": "Painted mug pair",
+            "price": "420",
+            "was": "480"
+          },
+          {
+            "name": "4 clay cups",
+            "price": "380"
+          },
+          {
+            "name": "Bowl and vase",
+            "price": "890"
+          },
+          {
+            "name": "Glass candle",
+            "price": "850"
+          }
+        ],
+        "sizeLabel": "Size",
+        "colorLabel": "Colour",
+        "sizes": ["Small", "Medium", "Large"],
+        "selectedSize": 1
+      },
+      "needsTitle": "What a handmade store needs",
+      "needs": [
+        {
+          "title": "Custom requests with every order",
+          "pain": "Customers want a name on the mug or a different colour, and send it on WhatsApp where it gets lost.",
+          "solution": "Customers write their request in the order notes, and you see it with the order. Message them on WhatsApp from the order page if you need to.",
+          "label": "Order notes",
+          "text": "Please write \"Laila\" on the blue mug in Arabic script.",
+          "note": "Shown with the order details"
+        },
+        {
+          "title": "Photos that tell the piece",
+          "pain": "A handmade piece is worth its details, and one photo isn't enough.",
+          "solution": "Upload several photos of each piece from different angles, write its story in the description, and add an About page that tells your studio's story."
+        },
+        {
+          "title": "An alert when new pieces are made",
+          "pain": "Handmade pieces come in small batches and sell out fast.",
+          "solution": "When a piece sells out, customers leave their email and get a message when it's back in stock.",
+          "label": "Sold out",
+          "placeholder": "Your email",
+          "button": "Tell me when it's back"
+        },
+        {
+          "title": "Cash on delivery or card",
+          "pain": "Some customers pay on delivery, others prefer a card.",
+          "solution": "Cash on delivery is on, and you can connect your own Paymob or Kashier account and set a delivery price for each governorate.",
+          "rows": [
+            {
+              "k": "Cairo",
+              "v": "50"
+            },
+            {
+              "k": "Giza",
+              "v": "55"
+            },
+            {
+              "k": "Alexandria",
+              "v": "70"
+            }
+          ],
+          "note": "Cash on delivery or card"
+        }
+      ],
+      "templatesTitle": "Templates for handmade and gift stores",
+      "showTitle": "What a handmade store on Tallaby can look like",
+      "showUrl": "fokhar.tallaby.com",
+      "callouts": [
+        {
+          "title": "Story bar",
+          "body": "A line that tells customers every piece is made by hand."
+        },
+        {
+          "title": "Studio banner",
+          "body": "A large photo of your latest pieces, with a clear button."
+        },
+        {
+          "title": "Categories by piece",
+          "body": "Mugs, plates and candles, each with its own page."
+        },
+        {
+          "title": "Price before and after",
+          "body": "The original price is crossed out beside the offer price."
+        },
+        {
+          "title": "Available colours",
+          "body": "Colour dots on the product card, before it's opened."
+        }
+      ],
+      "stepsTitle": "Launching your handmade store",
+      "steps": [
+        {
+          "title": "Create your store and pick a template",
+          "body": "Sign up with email or a Google account, and choose one of the handmade and gift templates."
+        },
+        {
+          "title": "Add your pieces and their story",
+          "body": "Upload photos of each piece, write its story, and edit the About page to tell your studio's story."
+        },
+        {
+          "title": "Turn on payment and delivery",
+          "body": "Cash on delivery is on. Connect Paymob or Kashier, and set a delivery price for each governorate."
+        },
+        {
+          "title": "Share your store",
+          "body": "Share your store link on Instagram and Facebook, and connect Meta Pixel to measure your ads."
+        }
+      ],
+      "faqTitle": "Handmade store questions",
+      "faq": [
+        {
+          "q": "How do I open an online handmade store?",
+          "a": "Sign up to Tallaby, pick one of the handmade and gift templates, then add your pieces with photos and their story, and set your delivery prices."
+        },
+        {
+          "q": "Can I sell gifts and handmade products together?",
+          "a": "Yes. Add each kind as products in its own category, such as candles, pottery and gift boxes."
+        },
+        {
+          "q": "How do I take custom orders?",
+          "a": "Customers write their request in the order notes, you see it in the order details, and you can message them on WhatsApp from the order page."
+        },
+        {
+          "q": "Can I sell pieces in small quantities?",
+          "a": "Yes. Set the quantity available for each piece. When it sells out, customers can leave their email to hear when it's back."
+        },
+        {
+          "q": "Can I show my studio's story?",
+          "a": "Yes. Add an About page to your store in the store editor, with text and photos."
+        },
+        {
+          "q": "Can custom pieces be paid for on delivery?",
+          "a": "Yes. Cash on delivery is on from the start, and you can connect Paymob or Kashier for cards and wallets."
+        }
+      ],
+      "closingTitle": "Launch your handmade store today"
+    },
+    "sports-store": {
+      "crumb": "Sportswear store",
+      "tag": "For sportswear and fitness gear stores",
+      "title": "A sports store <em>ready for the season</em>",
+      "lead": "Create an online sportswear and fitness gear store with sizes and colours for every product, offers for buying more than one, and a product feed that shows in your ads.",
+      "checks": [
+        "Sizes and colours",
+        "Quantity offers",
+        "A product feed for your ads"
+      ],
+      "floats": ["Size 42 · White", "Season offer ends soon"],
+      "store": {
+        "currency": "EGP",
+        "sale": "SALE",
+        "addToCart": "Add to cart",
+        "brand": "MADAR",
+        "announcement": "Start-of-season offer on all shoes",
+        "nav": ["New", "Shoes", "Gear", "Apparel"],
+        "heroSmall": "Running season",
+        "hero": "Train every day",
+        "cta": "Shop now",
+        "categories": ["All", "Shoes", "Dumbbells", "Mats", "Bands", "Watches"],
+        "products": [
+          {
+            "name": "Hex dumbbell pair",
+            "price": "1,890",
+            "was": "2,150"
+          },
+          {
+            "name": "Yoga mat",
+            "price": "690"
+          },
+          {
+            "name": "Resistance band set",
+            "price": "390"
+          },
+          {
+            "name": "Sport watch",
+            "price": "1,450"
+          }
+        ],
+        "sizeLabel": "Size",
+        "colorLabel": "Colour",
+        "sizes": ["40", "41", "42", "43", "44"],
+        "selectedSize": 2
+      },
+      "needsTitle": "What a sportswear store needs",
+      "needs": [
+        {
+          "title": "Sizes and colours for every product",
+          "pain": "Trainers and sports tops come in sizes and colours, and customers ask what's available.",
+          "solution": "Add sizes and colours as options, and set a price and quantity for each.",
+          "stock": "In stock: 6 pairs"
+        },
+        {
+          "title": "Quantity offers",
+          "pain": "Gym gear is bought together: dumbbells, bands and a mat.",
+          "solution": "Add quantity offers, such as a discount on two pairs, and the discount is applied at checkout.",
+          "label": "Choose an offer",
+          "tiers": [
+            {
+              "qty": "1 pair",
+              "price": "1,890"
+            },
+            {
+              "qty": "2 pairs",
+              "price": "3,590",
+              "save": "Save 5%"
+            },
+            {
+              "qty": "3 pairs",
+              "price": "5,100",
+              "save": "Save 10%"
+            }
+          ]
+        },
+        {
+          "title": "A product feed for Meta and TikTok ads",
+          "pain": "Sports buyers find products in ads and short videos.",
+          "solution": "Copy your product feed link and add it to a Meta or TikTok catalog, to show your products and prices in your ads.",
+          "handle": "madar.eg",
+          "tag": "Dumbbell pair · EGP 1,890",
+          "viewProducts": "View products"
+        },
+        {
+          "title": "Season offers with a countdown",
+          "pain": "The start of the season and back-to-gym weeks are short selling windows.",
+          "solution": "Create discount codes and offers with a clear end date, shown in your store with a countdown.",
+          "offer": "15% off",
+          "lead": "Offer ends in"
+        }
+      ],
+      "templatesTitle": "Templates for sports stores",
+      "showTitle": "What a sports store on Tallaby can look like",
+      "showUrl": "madar.tallaby.com",
+      "callouts": [
+        {
+          "title": "Offers bar",
+          "body": "Announce the season's offer at the top of every page."
+        },
+        {
+          "title": "Season banner",
+          "body": "A large photo of your key products, with a clear button."
+        },
+        {
+          "title": "Categories by sport",
+          "body": "Shoes, dumbbells and mats, each with its own page."
+        },
+        {
+          "title": "Offer price",
+          "body": "The original price is crossed out beside the offer price."
+        },
+        {
+          "title": "Available colours",
+          "body": "Colour dots on the product card, before it's opened."
+        }
+      ],
+      "stepsTitle": "Launching your sportswear store",
+      "steps": [
+        {
+          "title": "Create your store and pick a template",
+          "body": "Sign up with email or a Google account, and choose one of the sports templates."
+        },
+        {
+          "title": "Add your products with sizes",
+          "body": "Upload photos and add sizes, colours and the quantity for each option, or import your products from Excel."
+        },
+        {
+          "title": "Turn on payment and shipping",
+          "body": "Cash on delivery is on, and you can connect Paymob or Kashier and Bosta whenever you like."
+        },
+        {
+          "title": "Connect your ads",
+          "body": "Add your product feed to a Meta or TikTok catalog, and connect Meta Pixel to measure sales."
+        }
+      ],
+      "faqTitle": "Sportswear store questions",
+      "faq": [
+        {
+          "q": "How do I open an online sportswear store?",
+          "a": "Sign up to Tallaby, pick one of the sports templates, then add your products with their sizes and colours and set your delivery prices."
+        },
+        {
+          "q": "Can I sell trainers and gym gear together?",
+          "a": "Yes. Add shoes, apparel and training gear as products, and give each kind its own category."
+        },
+        {
+          "q": "How do I add shoe and clothing sizes?",
+          "a": "On the product page, add sizes and colours as options, and set a price and quantity for each."
+        },
+        {
+          "q": "How do I show my products in TikTok and Meta ads?",
+          "a": "Copy your product feed link from the Apps and integrations page, and add it to a Meta or TikTok catalog."
+        },
+        {
+          "q": "Can I run seasonal offers?",
+          "a": "Yes. Create discount codes and offers with an end date, and add quantity offers to your products."
+        },
+        {
+          "q": "Can customers pay for gym gear on delivery?",
+          "a": "Yes. Cash on delivery is on from the start, and you can connect Paymob or Kashier for cards and wallets."
+        }
+      ],
+      "closingTitle": "Launch your sports store today"
+    }
+  },
+  "industriesHub": {
+    "crumb": "Industries",
+    "eyebrow": "By what you sell",
+    "title": "A store that fits <em>what you sell</em>",
+    "lead": "Pick your field, from clothing and perfume to electronics and furniture, and start with a template made for it and the tools that fit what you sell.",
+    "search": "Search",
+    "searchPlaceholder": "Search for an industry, e.g. perfume",
+    "categoriesLabel": "Industries",
+    "categories": {
+      "all": "All",
+      "fashion": "Fashion and sports",
+      "beauty": "Beauty and perfume",
+      "home": "Home, kids and gifts",
+      "tech": "Electronics and cars",
+      "food": "Food and sweets"
+    },
+    "soon": "Soon",
+    "featured": "Most popular",
+    "featuredCta": "See the industry",
+    "count": "{count} industries",
+    "noneTitle": "No results",
+    "noneBody": "Try another word or pick a different category.",
+    "explainerTitle": "How to choose an online store for your kind of business",
+    "explainer": "Every kind of business needs something different from its online store. A clothing store needs sizes and colours for each product, a perfume store needs a price for each size, a food store needs a delivery price for each area and an instant alert for every order, and a furniture store needs large photos and clear sizes. Each page here shows what your field needs, the Tallaby features live today that cover it, and real templates made for that field that you can preview before signing up. Every store works in Arabic and English, with cash on delivery from the start.",
+    "closingTitle": "Start your store in your field today",
+    "closingBody": "Pick a template made for your field, add your products and start taking orders.",
+    "items": {
+      "clothing-store": "Sizes and colours for each product, photo galleries and offers with a countdown.",
+      "beauty-store": "Several photos per product, quantity offers and an email alert when a product is back.",
+      "perfume-store": "A size and a price for each scent, quantity offers and premium templates in two languages.",
+      "electronics-store": "Clear specs for every product, storage and colour options, and card or cash on delivery payments.",
+      "home-furniture-store": "Large photos, sizes and materials for each piece, and a delivery price for each area.",
+      "jewelry-accessories-store": "Close-up photos, a size and colour for each piece, and coupon pop-ups with a countdown.",
+      "food-store": "A delivery price per area, your own riders and a phone alert for every order.",
+      "kids-store": "Sizes by age, quantity offers and an alert when a product is back.",
+      "car-accessories-store": "Specs and fit for every product, store search and Bosta shipping.",
+      "handmade-store": "Templates that tell your story, custom requests in the order notes and photos of every piece.",
+      "sports-store": "Sizes and colours, quantity offers and a product feed for your ads."
     }
   }
 }

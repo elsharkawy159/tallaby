@@ -2654,6 +2654,8 @@ Effort is in **dev-days for one developer** who knows the codebase, including me
 | Deploy F-84 code + `0159` before (or with) the marketing deploy | F-84 | No page says "orders from day one" while production still hides them |
 | Index hygiene: check old marketplace URLs and test stores (§2.2 #6) | S-01 | Removals requested where needed |
 
+**Progress (2026-11-10, F-53c):** the `/industries` hub is built on `HubPageFrame`, whose namespace is now any `<name>Hub` message block, so the /solutions, /features and /tools hubs need only an item list and messages. Industry pages link the hub in the trail and BreadcrumbList. `CONTENT_PAGE_LASTMOD` added (industry pages so far) with tests in `industries.lib.test.ts`. Industry visuals: 8 new `IndustryNeedVisual` mocks (sizes, specs, zones, offers, reviews, notes, alert, restock).
+
 ### Phase 1: P0 core pages · 6–7 dev-days
 S1 free-online-store, S2 online-store-egypt, S3 retarget (title, H1, steps block), F1 ai-online-store, home and FAQ title de-conflict (§7), header "الحلول" link, footer order. **Components:** generalised `SolutionPageView`, `DetailPageView` image shot (AI autofill screenshots in both locales). **Research needed:** none beyond §6. **Acceptance:** §16.1 and §16.4 checklists; each page in the sitemap with its own lastmod; Search Console shows the pages as "Indexed" within 4 weeks.
 
@@ -2665,6 +2667,8 @@ S4 cash-on-delivery-store, F4 fake-order-protection, F5 abandoned-checkouts, F6 
 
 ### Phase 4: industries and long tail · 10–12 dev-days
 Industries N2–N11 (product-only photos needed for each), features F2, F3 copy, F7–F14, integrations I4 (after verifying F-21p), I5–I9, tools T3 (no AI calls), T5, T6 (legal review of template text), S5, blog B3, B4, B6, B7 and the bodies for the B10–B14 stubs (Admin), template detail intros + industry links. **Acceptance:** §16.5–16.6; each industry page has ≥ 3 templates in its category.
+
+**Progress (2026-11-10, ROADMAP.md F-53c):** industries N2–N11 built and N1 refreshed (meta, linked crumb, 3-level BreadcrumbList, chips). Templates per page come from `CODE_TEMPLATES` via `industryTemplates()` (each niche's own template keys, 3 shown; clothing by category `fa`), test-checked ≥3. Product-only photos are the templates' own Pexels photos (not `public/industries/<slug>.webp`), checked by eye. Sitemap dates via the new `CONTENT_PAGE_LASTMOD`. Open: per-page OG images (D8), sportswear apparel photos without people, a footer "All industries" link, and template detail pages linking back to their industry.
 
 ### Phase 5: measure and iterate · ongoing, ~1 dev-day a month
 Search Console review at 4, 8 and 12 weeks: retitle pages with high impressions and low CTR, merge pages that compete for the same query (per §7), noindex zero-impression template pages, refresh compare facts every 90 days (test-enforced), and add the F-82 AI builder section to F1 when the owner switches it on.

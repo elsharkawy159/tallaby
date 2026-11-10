@@ -25,9 +25,29 @@ export const STATIC_PAGE_LASTMOD: Record<string, string> = {
 /** The content pages (features, integrations, tools, industries, solutions, compare) unless one is listed in STATIC_PAGE_LASTMOD. */
 export const CONTENT_PAGES_LASTMOD = "2026-11-06";
 
+/**
+ * Content pages (from `contentPagePaths()`) whose copy changed after
+ * CONTENT_PAGES_LASTMOD. Never put a static page here: STATIC_PAGE_LASTMOD's
+ * keys are also the static path list, so it would be listed twice.
+ */
+export const CONTENT_PAGE_LASTMOD: Record<string, string> = {
+  "/industries": "2026-11-10",
+  "/industries/clothing-store": "2026-11-10",
+  "/industries/beauty-store": "2026-11-10",
+  "/industries/perfume-store": "2026-11-10",
+  "/industries/electronics-store": "2026-11-10",
+  "/industries/home-furniture-store": "2026-11-10",
+  "/industries/jewelry-accessories-store": "2026-11-10",
+  "/industries/food-store": "2026-11-10",
+  "/industries/kids-store": "2026-11-10",
+  "/industries/car-accessories-store": "2026-11-10",
+  "/industries/handmade-store": "2026-11-10",
+  "/industries/sports-store": "2026-11-10",
+};
+
 /** A page's sitemap date: its own entry, else the content pages' date. */
 export function pageLastModified(path: string): string {
-  return STATIC_PAGE_LASTMOD[path] ?? CONTENT_PAGES_LASTMOD;
+  return STATIC_PAGE_LASTMOD[path] ?? CONTENT_PAGE_LASTMOD[path] ?? CONTENT_PAGES_LASTMOD;
 }
 
 /**

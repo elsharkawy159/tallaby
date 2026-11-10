@@ -8,6 +8,7 @@ import { TOOL_SLUGS } from "./tools.lib";
 export function contentPagePaths(comparePublic: boolean = COMPARE_PUBLIC): string[] {
   return [
     "/integrations",
+    "/industries",
     ...FEATURE_PAGES.map((page) => `/features/${page.slug}`),
     ...INTEGRATION_PAGES.map((page) => `/integrations/${page.slug}`),
     ...TOOL_SLUGS.map((slug) => `/tools/${slug}`),

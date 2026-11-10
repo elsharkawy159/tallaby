@@ -5,11 +5,23 @@ import Image from "next/image";
 import { Heart, Menu, Search, ShoppingBag } from "lucide-react";
 import { cn } from "@workspace/ui/lib/utils";
 
-export type MockStoreProduct = { name: string; price: string; was?: string; focus: string; colors: readonly string[] };
+export type MockStoreProduct = {
+  name: string;
+  price: string;
+  was?: string;
+  focus: string;
+  colors: readonly string[];
+  /** Its own photo; unset: a crop (`focus`) of the store's photo. */
+  image?: string;
+  /** A short line under the price when there are no colours (e.g. "3 left"). */
+  note?: string;
+};
 
 export type MockStore = {
   brand: string;
   photo: string;
+  /** Fill the banner with the photo (a real photo) instead of showing a cut-out whole. */
+  heroCover?: boolean;
   announcement: string;
   nav: string[];
   heroSmall: string;
@@ -98,7 +110,13 @@ export function StoreMock({ store, pin }: { store: MockStore; pin?: (index: numb
           </span>
         </div>
         <div className="relative h-[24em] overflow-hidden bg-[#3d4a48]">
-          <Image src={store.photo} alt="" fill sizes="(min-width: 1080px) 640px, 100vw" className="object-contain object-[right_30%] rtl:object-[left_30%] rtl:-scale-x-100" />
+          <Image
+            src={store.photo}
+            alt=""
+            fill
+            sizes="(min-width: 1080px) 640px, 100vw"
+            className={store.heroCover ? "object-cover" : "object-contain object-[right_30%] rtl:object-[left_30%] rtl:-scale-x-100"}
+          />
           <div className="absolute inset-0 bg-gradient-to-l from-[rgba(20,18,16,0.6)] to-[rgba(20,18,16,0.05)] to-65% ltr:bg-gradient-to-r" />
           <div className="absolute inset-y-0 start-0 flex max-w-[52%] flex-col items-start justify-center gap-[0.7em] p-[2.4em] text-white">
             <small className="text-[0.85em] font-semibold opacity-85">{store.heroSmall}</small>
@@ -122,7 +140,7 @@ export function StoreMock({ store, pin }: { store: MockStore; pin?: (index: numb
             <div key={product.name} className="text-[0.95em]">
               <div className="relative mb-[0.6em] aspect-[3/4] overflow-hidden bg-[#e8e1d6]">
                 {product.was ? <span className="absolute start-[0.6em] top-[0.6em] z-[1] bg-[#b4412f] px-[0.6em] py-[0.15em] font-latin text-[0.8em] font-bold text-white">{store.sale}</span> : null}
-                <Image src={store.photo} alt="" fill sizes="160px" className="object-cover" style={{ objectPosition: product.focus }} />
+                <Image src={product.image ?? store.photo} alt="" fill sizes="160px" className="object-cover" style={{ objectPosition: product.focus }} />
               </div>
               <b className="block font-semibold">{product.name}</b>
               <span dir="ltr" className="inline-block font-latin font-bold">
@@ -138,6 +156,7 @@ export function StoreMock({ store, pin }: { store: MockStore; pin?: (index: numb
                 {product.colors.map((color) => (
                   <i key={color} className="block size-[0.9em] rounded-full shadow-[0_0_0_1px_#1f232633]" style={{ backgroundColor: color }} />
                 ))}
+                {!product.colors.length && product.note ? <span className="text-[0.8em] font-semibold text-[#b4412f]">{product.note}</span> : null}
                 {i === 1 ? pin?.(4) : null}
               </div>
             </div>
@@ -160,7 +179,7 @@ export function ProductMock({ store }: { store: MockStore }) {
           <ShoppingBag />
         </div>
         <div className="relative aspect-[1/1.05] flex-none overflow-hidden bg-[#e8e1d6]">
-          <Image src={store.photo} alt="" fill sizes="200px" className="object-cover" style={{ objectPosition: product.focus }} />
+          <Image src={product.image ?? store.photo} alt="" fill sizes="200px" className="object-cover" style={{ objectPosition: product.focus }} />
         </div>
         <div className="flex flex-1 flex-col gap-[0.5em] px-[0.9em] py-[0.7em]">
           <b className="text-[1.05em]">{product.name}</b>
@@ -175,7 +194,7 @@ export function ProductMock({ store }: { store: MockStore }) {
               </span>
             ))}
           </div>
-          <span className="text-[0.75em] font-semibold text-[#6d6862]">{store.colorLabel}</span>
+          {product.colors.length ? <span className="text-[0.75em] font-semibold text-[#6d6862]">{store.colorLabel}</span> : null}
           <div className="flex gap-[0.45em]">
             {product.colors.map((color, i) => (
               <i
