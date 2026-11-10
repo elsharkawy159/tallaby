@@ -1675,7 +1675,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-86b Setup-only home and four-step checklist card (2026-11-10; not seen in a browser)
 - [x] F-87a Switches, primary-store helper, store guards, tenant-isolation suite (2026-11-10; uncommitted; DB suite written, not run: no `TEST_DATABASE_URL`)
 - [x] F-87b 0160 + dry-run report for the owner (2026-11-10; 0160 applied on staging and production 2026-11-10, owner-approved; dry-run totals in §7)
-- [~] F-87c Products per store (route move, storefront, dashboard, caches, checkout), dark (slice 1 of 6 built 2026-11-10, uncommitted; slices in `docs/plans/stores-separation-f87c-slices.md`)
+- [~] F-87c Products per store (route move, storefront, dashboard, caches, checkout), dark (slice 1 of 6 built and committed 2026-11-10, 31b21e5f; slices in `docs/plans/stores-separation-f87c-slices.md`)
 - [ ] F-87d Seller categories and brands per store
 - [ ] F-87e MCP tools and AI Store Builder per store
 - [ ] F-87f Store wallet per store (`postStoreWalletEntry` + callers)
