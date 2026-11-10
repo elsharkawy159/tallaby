@@ -1,4 +1,4 @@
-import { Calendar, CircleCheck, ReceiptText, Scale } from "lucide-react";
+import { Calculator, Calendar, CircleCheck, ReceiptText, Scale } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { BidiText, ClosingCta, FaqBlock, PageTrail, type FaqItem } from "@/components/marketing/pages/content-blocks";
@@ -7,7 +7,7 @@ import { ForwardArrow } from "@/components/marketing/site/direction-icons";
 import { Container, Num, Section } from "@/components/marketing/site/layout-primitives";
 import { Reveal } from "@/components/marketing/site/reveal.client";
 import { withPrices } from "@/components/marketing/pricing/with-prices";
-import { alternativesPath, compareLinkTargets, compareSlug, factsCheckedOn, type Competitor } from "@/lib/marketing/compare.lib";
+import { alternativesPath, compareLinkTargets, compareSlug, factsCheckedOn, hasCostExample, type Competitor } from "@/lib/marketing/compare.lib";
 import { formatLongDate } from "@/lib/marketing/format.lib";
 import { PRICE_TOKENS } from "@/lib/marketing/pricing.lib";
 import { CONTACT } from "@/lib/marketing/site.lib";
@@ -107,6 +107,20 @@ export async function ComparePageView({ competitor }: { competitor: Competitor }
               {withPrices(c("priceNote", prices), bidi)}
             </p>
           </div>
+          {hasCostExample(competitor) ? (
+            <div id="cost" className="mt-5 rounded-card border border-[#e3ebed] bg-white px-5 py-5 sm:px-7">
+              <h2 className="mb-1.5 flex items-center gap-2.5 text-[19px] font-bold text-teal-900">
+                <Calculator className="size-5 text-amber-700" aria-hidden />
+                {t("costTitle", prices)}
+              </h2>
+              <p className="mb-3 text-[14px] text-pretty text-ink-500">{t("costLead")}</p>
+              <ul className="grid gap-2 text-[15px] text-pretty text-[#3d5055]">
+                <li>{withPrices(t("costTallaby", prices), bidi)}</li>
+                <li>{withPrices(c("cost", prices), bidi)}</li>
+              </ul>
+              <p className="mt-3 text-[13px] text-pretty text-ink-500">{t("costNote")}</p>
+            </div>
+          ) : null}
         </Container>
       </section>
 

@@ -1,4 +1,5 @@
 import { escapeXml, SITEMAP_STYLESHEET_PATH } from "@/lib/sitemap/sitemap.lib";
+import { compareLastModified } from "./compare.lib";
 import type { MarketingSitemapEntry } from "./seo.lib";
 
 /**
@@ -61,9 +62,9 @@ export const CONTENT_PAGE_LASTMOD: Record<string, string> = {
   "/tools/profit-margin-calculator": "2026-11-10",
 };
 
-/** A page's sitemap date: its own entry, else the content pages' date. */
+/** A page's sitemap date: its own entry, a compare page's facts date, else the content pages' date. */
 export function pageLastModified(path: string): string {
-  return STATIC_PAGE_LASTMOD[path] ?? CONTENT_PAGE_LASTMOD[path] ?? CONTENT_PAGES_LASTMOD;
+  return STATIC_PAGE_LASTMOD[path] ?? CONTENT_PAGE_LASTMOD[path] ?? compareLastModified(path) ?? CONTENT_PAGES_LASTMOD;
 }
 
 /**

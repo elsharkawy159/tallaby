@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { HubListing, type HubCardItem } from "@/components/marketing/hub/hub-listing.client";
 import { HubPageFrame } from "@/components/marketing/hub/hub-page";
-import { COMPARE_CATEGORIES, compareLinkTargets, compareRobots, compareSlug } from "@/lib/marketing/compare.lib";
+import { Link } from "@/i18n/navigation";
+import { ForwardArrow } from "@/components/marketing/site/direction-icons";
+import { alternativesLinkTargets, COMPARE_CATEGORIES, compareLinkTargets, compareRobots, compareSlug } from "@/lib/marketing/compare.lib";
 import { pageMetadata } from "@/lib/marketing/metadata.lib";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -58,6 +60,12 @@ export default async function CompareHubPage() {
           noneBody: t("noneBody"),
         }}
       />
+      {alternativesLinkTargets().length ? (
+        <Link href="/alternatives" className="mt-8 inline-flex min-h-11 items-center gap-1.5 text-[15px] font-bold text-teal-700">
+          {t("alternativesLink")}
+          <ForwardArrow />
+        </Link>
+      ) : null}
     </HubPageFrame>
   );
 }

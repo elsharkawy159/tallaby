@@ -47,7 +47,7 @@ export async function AlternativesPageView({ competitor }: { competitor: Competi
 
   return (
     <>
-      <PageTrail path={path} items={[{ label: t("crumb"), href: "/compare" }, { label: t("crumbEntry", { name }) }]} />
+      <PageTrail path={path} items={[{ label: t("crumb"), href: "/alternatives" }, { label: t("crumbEntry", { name }) }]} />
 
       <section className="pt-8 pb-8 text-center sm:pt-12 sm:pb-10">
         <Container>

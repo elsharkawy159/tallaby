@@ -22,7 +22,7 @@ import {
   worksInEgypt,
   type Competitor,
 } from "./compare.lib";
-import { COMPETITOR_PRICES, competitorPriceUsdCents, formatNativeCompetitorPrice, marketingPriceVars, PRICE_NAMES, PRICE_TOKENS } from "./pricing.lib";
+import { COMPETITOR_PRICES, COPY_VARS, competitorPriceUsdCents, formatNativeCompetitorPrice, marketingPriceVars, PRICE_NAMES, PRICE_TOKENS } from "./pricing.lib";
 
 const ISO = /^\d{4}-\d{2}-\d{2}$/;
 const ROW_IDS = new Set(COMPARE_GROUPS.flatMap((group) => group.rows.map((row) => row.id)));
@@ -98,14 +98,17 @@ describe("gating", () => {
     expect(findCompetitorBySlug("tallaby-vs-x")).toBeUndefined();
   });
 
-  it("keeps everything noindex and unlinked from public pages while the switch is off", () => {
-    expect(COMPARE_PUBLIC).toBe(false);
-    expect(publicCompetitors()).toEqual([]);
-    expect(compareRobots()).toEqual({ index: false, follow: false });
+  it("keeps everything unpublic with the switch off", () => {
+    expect(publicCompetitors(false)).toEqual([]);
+    for (const competitor of publishableCompetitors()) expect(isComparePublic(competitor, false)).toBe(false);
+  });
+
+  it("makes a page noindex exactly when it isn't public under the current switch", () => {
     for (const competitor of publishableCompetitors()) {
-      expect(isComparePublic(competitor)).toBe(false);
-      expect(compareRobots(competitor)).toEqual({ index: false, follow: false });
+      const open = isComparePublic(competitor, COMPARE_PUBLIC);
+      expect(compareRobots(competitor), competitor.id).toEqual(open ? undefined : { index: false, follow: false });
     }
+    expect(compareRobots()).toEqual(publicCompetitors(COMPARE_PUBLIC).length ? undefined : { index: false, follow: false });
   });
 
   it("releases only competitors with publish on when the switch flips", () => {
@@ -113,8 +116,9 @@ describe("gating", () => {
     for (const competitor of publishableCompetitors()) expect(released.includes(competitor.id), competitor.id).toBe(competitor.publish);
   });
 
-  it("lets a preview page link every built comparison", () => {
-    expect(compareLinkTargets()).toEqual(publishableCompetitors());
+  it("links only public comparisons from a public hub, and every built one from a preview hub", () => {
+    const hubOpen = publicCompetitors(COMPARE_PUBLIC).length > 0;
+    expect(compareLinkTargets()).toEqual(hubOpen ? publicCompetitors() : publishableCompetitors());
   });
 });
 
@@ -189,7 +193,7 @@ describe("compare copy", () => {
 
   it.each(["ar", "en"])("%s: uses only price tokens that exist", (locale) => {
     const tokens = JSON.stringify(load(locale)).match(/\{([a-zA-Z]+)\}/g) ?? [];
-    const allowed = new Set([...PRICE_NAMES, "days", "name", "date", "email", "n", "count"]);
+    const allowed = new Set([...PRICE_NAMES, ...Object.keys(COPY_VARS), "name", "date", "email", "n", "count"]);
     for (const token of tokens) expect(allowed.has(token.slice(1, -1) as never), token).toBe(true);
   });
 });

@@ -104,22 +104,43 @@ export type CompetitorPriceKey = keyof typeof COMPETITOR_PRICES;
 
 const TALLABY_PRICE_NAMES = ["orderFee", "pro", "topUpMin", "topUpMax"] as const;
 
-export type PriceName = (typeof TALLABY_PRICE_NAMES)[number] | CompetitorPriceKey;
+/** The monthly order count of the compare pages' cost example (copy uses `{costOrders}`, never the number). */
+export const COST_EXAMPLE_ORDERS = 500;
 
-/** The names of the price tokens copy can use: ours, then every competitor price. */
-export const PRICE_NAMES: readonly PriceName[] = [...TALLABY_PRICE_NAMES, ...(Object.keys(COMPETITOR_PRICES) as CompetitorPriceKey[])];
+/**
+ * Prices computed from the ones above for the compare pages' cost example:
+ * a month of `COST_EXAMPLE_ORDERS` orders on a per-order plan. USD cents, so
+ * they show in the visitor's currency like every other price.
+ */
+export const VOLUME_PRICE_CENTS = {
+  freeAtVolume: COST_EXAMPLE_ORDERS * FREE_ORDER_FEE_USD_CENTS,
+  eoAtVolume: COST_EXAMPLE_ORDERS * COMPETITOR_PRICES.eoOrderFee.minor,
+} as const;
+
+type VolumePriceName = keyof typeof VOLUME_PRICE_CENTS;
+
+export type PriceName = (typeof TALLABY_PRICE_NAMES)[number] | VolumePriceName | CompetitorPriceKey;
+
+/** The names of the price tokens copy can use: ours, the cost example's, then every competitor price. */
+export const PRICE_NAMES: readonly PriceName[] = [
+  ...TALLABY_PRICE_NAMES,
+  ...(Object.keys(VOLUME_PRICE_CENTS) as VolumePriceName[]),
+  ...(Object.keys(COMPETITOR_PRICES) as CompetitorPriceKey[]),
+];
 
 /** The ICU values every tallaby.com string with a price takes: `{orderFee}`, `{pro}`, `{topUpMin}`, … */
 export type MarketingPriceVars = Record<PriceName, string> & {
   /** Not a price: the days a Free seller has for a first top-up before new orders hide (F-84, `ORDER_GRACE_DAYS`). */
   days: string;
+  /** Not a price: the cost example's orders a month (`COST_EXAMPLE_ORDERS`). */
+  costOrders: string;
 };
 
 /**
  * Non-price values the copy can use, filled wherever price tokens are:
  * `{days}` is the grace window (`ORDER_GRACE_DAYS`), never written in the copy.
  */
-export const COPY_VARS = { days: String(ORDER_GRACE_DAYS) } as const;
+export const COPY_VARS = { days: String(ORDER_GRACE_DAYS), costOrders: COST_EXAMPLE_ORDERS.toLocaleString("en-US") } as const;
 
 /** A competitor price in USD cents for the visitor-currency formatter, or null when it shows as published (EGP, percent). */
 export function competitorPriceUsdCents(price: Pick<CompetitorPrice, "minor" | "currency">): number | null {
@@ -159,6 +180,8 @@ export function priceVarsWith(format: (usdCents: number) => string, locale = "ar
     pro: format(PRO_MONTHLY_USD_CENTS),
     topUpMin: format(TOP_UP_MIN_USD_CENTS),
     topUpMax: format(TOP_UP_MAX_USD_CENTS),
+    freeAtVolume: format(VOLUME_PRICE_CENTS.freeAtVolume),
+    eoAtVolume: format(VOLUME_PRICE_CENTS.eoAtVolume),
     ...competitors,
     ...COPY_VARS,
   };

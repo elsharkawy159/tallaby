@@ -28,6 +28,7 @@ function comparePaths(comparePublic: boolean): string[] {
   return [
     "/compare",
     ...open.map((competitor) => `/compare/${compareSlug(competitor)}`),
+    ...(open.some((competitor) => competitor.alternative) ? ["/alternatives"] : []),
     ...open.filter((competitor) => competitor.alternative).map((competitor) => `/alternatives/${competitor.id}`),
   ];
 }

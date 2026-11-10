@@ -6,6 +6,7 @@ import {
   Megaphone,
   Palette,
   Rocket,
+  Smartphone,
   Sparkles,
   Truck,
   type LucideIcon,
@@ -15,12 +16,14 @@ import { COMPETITOR_PRICES, type CompetitorPriceKey } from "./pricing.lib";
 /**
  * /compare, /compare/[slug] and /alternatives/[id] (`SEO_PLAN.md` §4.2, §9.2–9.3, S-06).
  *
- * THE SWITCH: the owner hasn't decided about naming competitors. While this is
- * false, these pages are noindex, stay out of the sitemap and aren't linked
- * from the header or footer. Set it to true to make the pages of every
- * competitor with `publish: true` public; nothing else needs to change.
+ * THE SWITCH: on since 2026-11-10 (the owner approved S-06 on 2026-11-10). Facts come from
+ * `docs/seo-research/04-compare-2026-11-10.md`, and the 16 deeper rows plus the
+ * cost example from `docs/seo-research/05-compare-deep-2026-11-10.md`. Every competitor
+ * with `publish: true` and enough official facts is indexable, in the sitemap
+ * (lastmod = its facts date) and linked from the footer and hubs. Set it back to
+ * false and they are all noindex and unlinked again; nothing else changes.
  */
-export const COMPARE_PUBLIC = false;
+export const COMPARE_PUBLIC = true;
 
 /** y = yes, n = no, p = partly. An unverified fact has no value at all: its row isn't shown. */
 export type CellStatus = "y" | "n" | "p";
@@ -38,6 +41,9 @@ export type CompareRowId =
   | "orderFee"
   | "salesShare"
   | "activation"
+  | "yearly"
+  | "trial"
+  | "gatewayFees"
   | "limits"
   | "signup"
   | "noCode"
@@ -45,6 +51,9 @@ export type CompareRowId =
   | "import"
   | "domain"
   | "arabicAdmin"
+  | "multiStore"
+  | "staff"
+  | "export"
   | "templates"
   | "changeTemplate"
   | "bilingual"
@@ -52,8 +61,11 @@ export type CompareRowId =
   | "fakeOrders"
   | "egyptGateways"
   | "transfer"
+  | "wallets"
+  | "fawry"
   | "installments"
   | "egyptCarriers"
+  | "bosta"
   | "riders"
   | "zones"
   | "abandoned"
@@ -62,7 +74,14 @@ export type CompareRowId =
   | "landingPages"
   | "apps"
   | "aiProductCopy"
+  | "aiTranslate"
+  | "aiImages"
+  | "aiAssistant"
+  | "mcp"
+  | "aiLimits"
   | "aiStoreBuilder"
+  | "pos"
+  | "mobileApp"
   | "support"
   | "language"
   | "currencies"
@@ -84,6 +103,9 @@ export const COMPARE_GROUPS: readonly { id: string; icon: LucideIcon; rows: read
       { id: "orderFee", tallaby: "y" }, // Free pays per order, Pro doesn't
       { id: "salesShare", tallaby: "y" }, // flat fee, no % of the order value
       { id: "activation", tallaby: "p" }, // F-84 grace window, ORDER_GRACE_DAYS + TOP_UP_MIN
+      { id: "yearly", tallaby: "n" }, // Pro is billed monthly from the wallet only (PRO_MONTHLY_USD_CENTS)
+      { id: "trial", tallaby: "n" }, // no trial since 0119; Free itself has no monthly fee
+      { id: "gatewayFees", tallaby: "y" }, // the seller's own Paymob/Kashier (F-39): no Tallaby fee on top
       { id: "limits", tallaby: "y" }, // PLANS.*.maxStores
     ],
   },
@@ -97,6 +119,9 @@ export const COMPARE_GROUPS: readonly { id: string; icon: LucideIcon; rows: read
       { id: "import", tallaby: "y" }, // Excel, URL and Shopify import
       { id: "domain", tallaby: "y" }, // PLANS.*.customDomain
       { id: "arabicAdmin", tallaby: "y" }, // dashboard default locale ar
+      { id: "multiStore", tallaby: "y" }, // PLANS.*.maxStores = 3
+      { id: "staff", tallaby: "n" }, // F-09 delayed (owner, 2026-11-04)
+      { id: "export", tallaby: "y" }, // products, orders (F-04b) and customers (F-01d) to Excel
     ],
   },
   {
@@ -116,6 +141,8 @@ export const COMPARE_GROUPS: readonly { id: string; icon: LucideIcon; rows: read
       { id: "fakeOrders", tallaby: "y" }, // F-02 blocklist + WhatsApp confirm
       { id: "egyptGateways", tallaby: "y" }, // seller's own Paymob / Kashier (F-39)
       { id: "transfer", tallaby: "y" }, // F-21p
+      { id: "wallets", tallaby: "y" }, // payments/store-methods.ts: Vodafone Cash, e& Cash, WE Pay, Orange Cash, paid to the seller
+      { id: "fawry", tallaby: "n" }, // payments/store-methods.ts: fawry is "soon"
       { id: "installments", tallaby: "n" },
     ],
   },
@@ -124,6 +151,7 @@ export const COMPARE_GROUPS: readonly { id: string; icon: LucideIcon; rows: read
     icon: Truck,
     rows: [
       { id: "egyptCarriers", tallaby: "y" }, // Bosta, Wassalha sheet
+      { id: "bosta", tallaby: "y" }, // per-store Bosta (0106): waybills and tracking from the dashboard
       { id: "riders", tallaby: "y" },
       { id: "zones", tallaby: "y" },
     ],
@@ -143,8 +171,21 @@ export const COMPARE_GROUPS: readonly { id: string; icon: LucideIcon; rows: read
     id: "ai",
     icon: Sparkles,
     rows: [
-      { id: "aiProductCopy", tallaby: "y" }, // PLANS.*.aiCreditsMonthly
+      { id: "aiProductCopy", tallaby: "y" }, // AI-1 autofill, every plan
+      { id: "aiTranslate", tallaby: "p" }, // autofill writes Arabic and English at once; no translate button for existing copy
+      { id: "aiImages", tallaby: "n" }, // photos are read as input, never generated or edited
+      { id: "aiAssistant", tallaby: "n" }, // no chat assistant inside the dashboard yet
+      { id: "mcp", tallaby: "y" }, // F-29 OAuth + /mcp product tools (Claude, ChatGPT)
+      { id: "aiLimits", tallaby: "y" }, // PLANS.*.aiCreditsMonthly (100 / 2,000), stated on /pricing
       { id: "aiStoreBuilder", tallaby: "n" }, // F-82 off (STORE_BUILDER_AI_ENABLED)
+    ],
+  },
+  {
+    id: "channels",
+    icon: Smartphone,
+    rows: [
+      { id: "pos", tallaby: "n" },
+      { id: "mobileApp", tallaby: "p" }, // no app-store app; the dashboard installs as a PWA with push alerts (F-06)
     ],
   },
   { id: "support", icon: Headset, rows: [{ id: "support", tallaby: "y" }] },
@@ -191,7 +232,15 @@ export type Competitor = {
   alternative?: boolean;
   /** Drives the "How to move" step 2: Shopify has a direct import; the others go through Excel or a product link. */
   moveSteps: "shopify-import" | "excel-import";
+  /**
+   * False skips the page's "what {costOrders} orders cost" block, for a competitor
+   * with no meaningful price (a Facebook page). Otherwise `competitors.<id>.cost` must exist.
+   */
+  costExample?: boolean;
 };
+
+/** True when the page shows the cost example, so `competitors.<id>.cost` is read. */
+export const hasCostExample = (competitor: Pick<Competitor, "costExample">) => competitor.costExample !== false;
 
 /** Below this many official facts a comparison isn't worth a page. */
 export const MIN_VERIFIED_FACTS = 4;
@@ -216,6 +265,17 @@ const EO = {
   themes: "https://www.easyorders.eg/themes.md",
   roadmap: "https://roadmap.easyorders.ai/ar",
   api: "https://public-api-docs.easy-orders.net",
+  // Deep rows (05 doc):
+  blogVsLightFunnels: "https://www.easyorders.eg/blog/لايت-فانلز-أم-ايزي-اوردرز-افضل-لإنشاء-م/",
+  blogVsShopify: "https://www.easyorders.eg/blog/الفرق-بين-ايزي-اوردرز-وشوبيفاي/",
+  blogShipping: "https://www.easyorders.eg/blog/أفضل-شركات-الشحن-الداخلي-في-مصر/",
+  blogShater: "https://www.easyorders.eg/blog/افضل-شات-بوت-للمتاجر-الإلكترونية-شاطر/",
+  roadmapExport: "https://roadmap.easyorders.ai/ar/features/cmw8n0sgi02jsm0jk8uoz95f8",
+  roadmapFawry: "https://roadmap.easyorders.ai/ar/features/cmvs2dkgu00ijm0jknxgonecf",
+  roadmapTranslate: "https://roadmap.easyorders.ai/ar/features/cmw3k010501wfm0jk16rqnewz",
+  roadmapMcp: "https://roadmap.easyorders.ai/ar/features/cmvl4ugpm005im0lkokkcvzld",
+  roadmapPos: "https://roadmap.easyorders.ai/ar/features/cmvr731f700fim0jkfhdk5er2",
+  playApp: "https://play.google.com/store/apps/details?id=com.myeasyorders.seller",
 };
 
 const SHOPIFY = {
@@ -226,6 +286,19 @@ const SHOPIFY = {
   storeLanguages: "https://help.shopify.com/en/manual/international/languages/requirements",
   themes: "https://themes.shopify.com/themes?price%5B%5D=free",
   manualPayments: "https://help.shopify.com/en/manual/payments/manual-payments",
+  freeTrial: "https://help.shopify.com/en/manual/intro-to-shopify/pricing-plans/free-trial",
+  thirdPartyFees: "https://help.shopify.com/en/manual/your-account/manage-billing/billing-charges/types-of-charges/third-party-charges/third-party-transaction-fees",
+  expansionStores: "https://help.shopify.com/en/manual/organization-settings/expansion-stores",
+  users: "https://help.shopify.com/en/manual/your-account/users/manage-users",
+  exportOrders: "https://help.shopify.com/en/manual/fulfillment/managing-orders/exporting-orders",
+  kashierApp: "https://apps.shopify.com/kashier-online-payments",
+  autoTranslate: "https://help.shopify.com/en/manual/international/languages/translate-adapt-app/automatic-translation",
+  mediaGeneration: "https://help.shopify.com/en/manual/ai-powered-tools/media-generation",
+  sidekick: "https://www.shopify.com/eg/sidekick",
+  claudeConnector: "https://help.shopify.com/en/manual/ai-powered-tools/connecting-ai-tools/shopify-connector-for-claude",
+  aiGenerate: "https://help.shopify.com/en/manual/ai-powered-tools/sidekick/generate-content",
+  cardReaders: "https://help.shopify.com/en/manual/sell-in-person/hardware/card-readers/choosing-card-reader",
+  app: "https://help.shopify.com/en/manual/shopify-admin/shopify-app",
   fraud: "https://help.shopify.com/en/manual/fulfillment/managing-orders/protecting-orders/fraud-analysis",
   paymentsCountries: "https://help.shopify.com/en/manual/payments/shopify-payments/supported-countries",
   paymobDocs: "https://developers.paymob.com/paymob-docs/integration-paths/plugins/shopify",
@@ -259,12 +332,25 @@ const WOO = {
   aiBeta: "https://developer.woocommerce.com/2026/05/25/improve-product-listings/",
   wpcomAi: "https://wordpress.com/blog/2026/10/31/changelog-site-store-ai/",
   support: "https://woocommerce.com/support-policy/",
+  refund: "https://woocommerce.com/refund-policy/",
+  subscriptions: "https://woocommerce.com/document/managing-woocommerce-com-subscriptions/activate-and-manage-your-subscriptions/",
+  roles: "https://woocommerce.com/document/roles-capabilities/",
+  fawrySearch: "https://wordpress.org/plugins/search/fawry/",
+  weglot: "https://woocommerce.com/products/weglot-translate-woocommerce/",
+  aiImageEnhancer: "https://woocommerce.com/products/ai-image-enhancer/",
+  wooAi: "https://woocommerce.com/products/woocommerce-ai/",
+  mcp: "https://developer.woocommerce.com/docs/features/mcp/",
+  pos: "https://woocommerce.com/document/woo-mobile-app-point-of-sale-mode/",
+  mobile: "https://woocommerce.com/mobile/",
 };
 
 const EC = {
   pricing: "https://expandcart.com/ar/الاسعار/",
   home: "https://expandcart.com/ar/",
   egypt: "https://expandcart.com/ar/ultimate-plan-eg/",
+  fawaterak: "https://expandcart.com/ar/partnership-between-fawaterak-and-al-ahli-bank/",
+  bosta: "https://expandcart.com/ar/expandcart_bosta/",
+  pos: "https://expandcart.com/ar/نظام-نقاط-البیع/",
 };
 
 const SALLA = {
@@ -278,6 +364,17 @@ const SALLA = {
   marketing: "https://salla.com/marketing",
   landingPages: "https://help.salla.sa/article/صفحات-الهبوط-بوابتك-لتحويل-النقرات-إلى-مبيعات/gn0ej4ydhbabd1m9qwnv9pvv",
   chatgpt: "https://help.salla.sa/article/ربط-متجرك-مع-chatgpt/ptsfc31snxw704refay9v2ry",
+  terms: "https://salla.com/terms",
+  storeList: "https://help.salla.sa/article/إدارة-قائمة-المتاجر-المرتبطة/t9z4bp7g0vo1rcdvq4h4k9b3",
+  staff: "https://help.salla.sa/article/-موظفو-المتجر/omuml4pu7pz3o82os6cifozx",
+  exportOrders: "https://help.salla.sa/article/-تصدير-الطلبات/euirzajvhdhdk6b2e0r4tcj8",
+  bosta: "https://help.salla.sa/article/الربط-مع-بوسطة-للشحن-والتوصيل/bxseyrqxghbqhxex998hoqza",
+  translation: "https://help.salla.sa/article/1878085895",
+  sowarApp: "https://apps.salla.sa/en/app/182060168",
+  mushammir: "https://help.salla.sa/article/مشمر-من-سلة-داخل-لوحة-التحكم/yk5eshal37rwrkfne80sith7",
+  mushammirDesign: "https://help.salla.sa/article/مساعد-من-سلة-لتصميم-المتجر/uth70rasojmmwkvuiz2yocys",
+  point: "https://help.salla.sa/article/الإعداد-الذاتي-الجديدة-لسلة-بوينت-كاشير-مجاني-لمتجرك/q53eim0csvel80xzzyfpe9o7",
+  iosApp: "https://apps.apple.com/sa/app/سلة/id1148458340?l=ar",
 };
 
 const ZID = {
@@ -291,6 +388,13 @@ const ZID = {
   languages: "https://help.zid.sa/ar/settings/languages-currencies",
   abandoned: "https://help.zid.sa/ar/communications/abandoned-carts",
   ai: "https://help.zid.sa/ar/getting-started/ai-assistant",
+  navigation: "https://help.zid.sa/ar/getting-started/navigation",
+  team: "https://help.zid.sa/ar/store-settings/team",
+  importExport: "https://help.zid.sa/ar/products/import-export",
+  zidAi: "https://help.zid.sa/ar/apps/zid-ai",
+  mcp: "https://help.zid.sa/ar/apps/mcp",
+  posPlans: "https://help.zid.sa/ar/pos/plans",
+  iosApp: "https://apps.apple.com/eg/app/id6443907047?l=ar",
 };
 
 /**
@@ -316,25 +420,39 @@ export const COMPETITORS: readonly Competitor[] = [
       orderFee: official("y", EO.pricing),
       salesShare: official("y", EO.ai),
       activation: official("p", EO.ai),
+      trial: official("p", EO.ai),
+      gatewayFees: official("y", EO.blogVsLightFunnels),
       limits: official("y", EO.pricing),
       noCode: official("y", EO.index),
       dragDrop: official("y", EO.index),
       domain: official("p", EO.pricing),
       arabicAdmin: official("y", EO.ai),
+      staff: official("y", EO.blogVsShopify),
+      // Product export is a merchant request on the roadmap; merchants there mention an orders sheet.
+      export: official("p", EO.roadmapExport),
       templates: official("y", EO.themes),
       // Its public roadmap lists these as merchant requests, not built yet.
       bilingual: official("n", EO.roadmap),
       cod: official("y", EO.pricing),
       fakeOrders: official("y", EO.index),
       egyptGateways: official("p", EO.index),
+      wallets: official("p", EO.pricing),
+      fawry: official("n", EO.roadmapFawry),
       egyptCarriers: official("p", EO.index),
+      bosta: official("p", EO.blogShipping),
       zones: official("y", EO.api),
       abandoned: official("n", EO.roadmap),
       feeds: official("y", EO.index),
       landingPages: official("y", EO.index),
       apps: official("n", EO.roadmap),
       aiProductCopy: official("y", EO.ai),
+      aiTranslate: official("n", EO.roadmapTranslate),
+      aiImages: official("y", EO.ai),
+      mcp: official("n", EO.roadmapMcp),
+      aiLimits: official("p", EO.blogShater),
       aiStoreBuilder: official("p", EO.ai),
+      pos: official("n", EO.roadmapPos),
+      mobileApp: official("y", EO.playApp),
       support: official("y", EO.index),
       currencies: official("y", EO.index),
       egpPricing: official("n", EO.pricing),
@@ -356,21 +474,30 @@ export const COMPETITORS: readonly Competitor[] = [
       monthly: official("y", SHOPIFY.pricing),
       orderFee: official("n", SHOPIFY.pricing),
       salesShare: official("p", SHOPIFY.pricing),
+      yearly: official("y", SHOPIFY.pricing),
+      trial: official("y", SHOPIFY.freeTrial),
+      gatewayFees: official("n", SHOPIFY.thirdPartyFees),
       limits: official("y", SHOPIFY.pricing),
       noCode: official("y", SHOPIFY.builder),
       dragDrop: official("y", SHOPIFY.builder),
       import: official("y", SHOPIFY.import),
       domain: official("y", SHOPIFY.pricing),
       arabicAdmin: official("y", SHOPIFY.adminLanguages),
+      multiStore: official("p", SHOPIFY.expansionStores),
+      staff: official("p", SHOPIFY.users),
+      export: official("y", SHOPIFY.exportOrders),
       templates: official("y", SHOPIFY.themes),
       bilingual: official("y", SHOPIFY.storeLanguages),
       cod: official("y", SHOPIFY.manualPayments),
       fakeOrders: official("p", SHOPIFY.fraud),
       egyptGateways: official("p", SHOPIFY.paymentsCountries),
       transfer: official("p", SHOPIFY.manualPayments),
+      // Kashier's own listing says "wallets" without naming them: shown, not counted.
+      wallets: thirdParty("p", SHOPIFY.kashierApp),
       // From Paymob's own Shopify docs, not Shopify's: shown, not counted.
       installments: thirdParty("p", SHOPIFY.paymobDocs),
       egyptCarriers: official("p", SHOPIFY.bostaApp),
+      bosta: official("p", SHOPIFY.bostaApp),
       zones: official("y", SHOPIFY.zones),
       abandoned: official("y", SHOPIFY.email),
       email: official("y", SHOPIFY.email),
@@ -378,7 +505,14 @@ export const COMPETITORS: readonly Competitor[] = [
       landingPages: official("p", SHOPIFY.builder),
       apps: official("y", SHOPIFY.apps),
       aiProductCopy: official("y", SHOPIFY.magic),
+      aiTranslate: official("p", SHOPIFY.autoTranslate),
+      aiImages: official("y", SHOPIFY.mediaGeneration),
+      aiAssistant: official("y", SHOPIFY.sidekick),
+      mcp: official("y", SHOPIFY.claudeConnector),
+      aiLimits: official("p", SHOPIFY.aiGenerate),
       aiStoreBuilder: official("y", SHOPIFY.builder),
+      pos: official("p", SHOPIFY.cardReaders),
+      mobileApp: official("y", SHOPIFY.app),
       support: official("y", SHOPIFY.pricing),
       egpPricing: official("n", SHOPIFY.pricing),
       availableInEgypt: official("y", SHOPIFY.paymentsCountries),
@@ -397,12 +531,18 @@ export const COMPETITORS: readonly Competitor[] = [
       monthly: official("p", WOO.pricing),
       orderFee: official("n", WOO.pricing),
       salesShare: official("y", WOO.pricing),
+      yearly: official("p", WOO.pricing),
+      trial: official("p", WOO.refund),
+      gatewayFees: official("y", WOO.pricing),
       limits: official("y", WOO.vsShopify),
       noCode: official("p", WOO.siteEditor),
       dragDrop: official("p", WOO.siteEditor),
       import: official("y", WOO.csv),
       domain: official("p", WOO.wpcomPricing),
       arabicAdmin: official("y", WOO.translation),
+      multiStore: official("p", WOO.subscriptions),
+      staff: official("y", WOO.roles),
+      export: official("p", WOO.csv),
       templates: official("y", WOO.themes),
       bilingual: official("p", WOO.polylang),
       cod: official("y", WOO.gateways),
@@ -410,7 +550,11 @@ export const COMPETITORS: readonly Competitor[] = [
       egyptGateways: official("y", WOO.paymob),
       transfer: official("p", WOO.paymob),
       installments: official("y", WOO.paymob),
+      // Plugins by Paymob, XPay and Bosta, not by WooCommerce: shown, not counted.
+      wallets: thirdParty("p", WOO.paymob),
+      fawry: thirdParty("p", WOO.fawrySearch),
       egyptCarriers: official("p", WOO.bosta),
+      bosta: thirdParty("p", WOO.bosta),
       zones: official("y", WOO.zones),
       abandoned: official("p", WOO.automateWoo),
       email: official("p", WOO.mailpoet),
@@ -418,7 +562,16 @@ export const COMPETITORS: readonly Competitor[] = [
       apps: official("y", WOO.marketplace),
       landingPages: official("y", WOO.siteEditor),
       aiProductCopy: official("p", WOO.aiBeta),
+      // Marketplace extensions by Weglot and PerfectProduct.ai: shown, not counted.
+      aiTranslate: thirdParty("p", WOO.weglot),
+      aiImages: thirdParty("p", WOO.aiImageEnhancer),
+      // WooCommerce AI is a beta for US stores in English only; POS mode's country list has no Egypt.
+      aiAssistant: official("n", WOO.wooAi),
+      mcp: official("p", WOO.mcp),
+      aiLimits: official("n", WOO.wooAi),
       aiStoreBuilder: official("p", WOO.wpcomAi),
+      pos: official("n", WOO.pos),
+      mobileApp: official("y", WOO.mobile),
       support: official("p", WOO.support),
       egpPricing: official("n", WOO.pricing),
       availableInEgypt: official("y", WOO.wooPaymentsCountries),
@@ -437,20 +590,29 @@ export const COMPETITORS: readonly Competitor[] = [
       monthly: official("y", EC.pricing),
       orderFee: official("n", EC.pricing),
       salesShare: official("y", EC.pricing),
+      yearly: official("y", EC.pricing),
+      trial: official("y", EC.home),
+      gatewayFees: official("y", EC.pricing),
       limits: official("p", EC.pricing),
       noCode: official("y", EC.home),
       import: official("p", EC.pricing),
       domain: official("y", EC.pricing),
+      staff: official("p", EC.pricing),
+      export: official("p", EC.pricing),
       templates: official("p", EC.pricing),
       bilingual: official("y", EC.pricing),
       // Paymob, Fawry, Bosta and Mylerz appear only as logos on its 2021 Egypt page (modified 2022).
       egyptGateways: official("p", EC.pricing),
+      // Fawry only through Fawaterak (a 2022 page); Bosta from a 2020 page (modified 2021).
+      fawry: official("p", EC.fawaterak),
       egyptCarriers: official("p", EC.egypt),
+      bosta: official("y", EC.bosta),
       abandoned: official("p", EC.pricing),
       email: official("p", EC.pricing),
       feeds: official("p", EC.pricing),
       landingPages: official("p", EC.pricing),
       apps: official("y", EC.home),
+      pos: official("y", EC.pos),
       support: official("p", EC.pricing),
       egpPricing: official("y", EC.pricing),
       availableInEgypt: official("y", EC.egypt),
@@ -469,24 +631,41 @@ export const COMPETITORS: readonly Competitor[] = [
       monthly: official("y", SALLA.planPrices),
       orderFee: official("n", SALLA.planHelp),
       salesShare: official("p", SALLA.paymentsHelp),
+      yearly: official("y", SALLA.plans),
+      // Stopped for new stores on 2026-08-16 (its terms); the free Basic plan stays.
+      trial: official("n", SALLA.terms),
+      gatewayFees: official("p", SALLA.planHelp),
       limits: official("y", SALLA.plans),
       noCode: official("y", SALLA.plans),
       import: official("y", SALLA.import),
       domain: official("p", SALLA.plans),
       arabicAdmin: official("y", SALLA.aiInfo),
+      multiStore: official("y", SALLA.storeList),
+      staff: official("p", SALLA.staff),
+      export: official("y", SALLA.exportOrders),
       templates: official("p", SALLA.aiInfo),
       bilingual: official("y", SALLA.aiInfo),
       cod: official("y", SALLA.paymentsHelp),
       fakeOrders: official("p", SALLA.payments),
       egyptGateways: official("n", SALLA.payments),
       transfer: official("p", SALLA.paymentsHelp),
+      wallets: official("n", SALLA.payments),
       installments: official("p", SALLA.payments),
+      bosta: official("p", SALLA.bosta),
       abandoned: official("y", SALLA.marketing),
       email: official("y", SALLA.marketing),
       feeds: official("y", SALLA.marketing),
       landingPages: official("y", SALLA.landingPages),
       apps: official("y", SALLA.aiInfo),
       aiProductCopy: official("p", SALLA.chatgpt),
+      aiTranslate: official("p", SALLA.translation),
+      // A third-party app (by HumanEcho) in Salla's app market: shown, not counted.
+      aiImages: thirdParty("p", SALLA.sowarApp),
+      aiAssistant: official("y", SALLA.mushammir),
+      mcp: official("y", SALLA.chatgpt),
+      aiLimits: official("p", SALLA.mushammirDesign),
+      pos: official("y", SALLA.point),
+      mobileApp: official("y", SALLA.iosApp),
       support: official("y", SALLA.aiInfo),
       egpPricing: official("n", SALLA.plans),
       availableInEgypt: official("n", SALLA.plans),
@@ -505,12 +684,17 @@ export const COMPETITORS: readonly Competitor[] = [
       monthly: official("y", ZID.pricing),
       orderFee: official("n", ZID.pricing),
       salesShare: official("p", ZID.saudiPricing),
+      yearly: official("y", ZID.pricing),
+      gatewayFees: official("p", ZID.saudiPricing),
       limits: official("y", ZID.pricing),
       noCode: official("y", ZID.home),
       dragDrop: official("y", ZID.themeEditor),
       import: official("y", ZID.move),
       domain: official("p", ZID.faq),
       arabicAdmin: official("y", ZID.help),
+      multiStore: official("y", ZID.navigation),
+      staff: official("p", ZID.team),
+      export: official("y", ZID.importExport),
       templates: official("y", ZID.home),
       bilingual: official("y", ZID.languages),
       cod: official("y", ZID.pricing),
@@ -519,13 +703,22 @@ export const COMPETITORS: readonly Competitor[] = [
       transfer: official("p", ZID.pricing),
       installments: official("p", ZID.home),
       egyptCarriers: official("p", ZID.home),
+      // A Bosta logo among its Egyptian partners on zid.eg, with no setup guide.
+      bosta: official("p", ZID.home),
       abandoned: official("p", ZID.abandoned),
       email: official("p", ZID.help),
       feeds: official("p", ZID.faq),
       landingPages: official("p", ZID.pricing),
       apps: official("y", ZID.home),
       aiProductCopy: official("p", ZID.ai),
+      aiTranslate: official("p", ZID.languages),
+      aiImages: official("y", ZID.zidAi),
+      aiAssistant: official("y", ZID.ai),
+      mcp: official("y", ZID.mcp),
+      aiLimits: official("p", ZID.themeEditor),
       aiStoreBuilder: official("p", ZID.themeEditor),
+      pos: official("p", ZID.posPlans),
+      mobileApp: official("y", ZID.iosApp),
       support: official("p", ZID.home),
       egpPricing: official("y", ZID.pricing),
       availableInEgypt: official("y", ZID.home),
@@ -539,6 +732,8 @@ export const COMPETITORS: readonly Competitor[] = [
     publish: false,
     moveSteps: "excel-import",
     prices: [],
+    // A Page costs nothing to make; its real cost is time, which has no published price.
+    costExample: false,
     // Only "a Page is free" is on Meta's own page; the rest is what a Page plainly is,
     // so this stays below MIN_VERIFIED_FACTS (no page) until Meta's own pages back more of it.
     facts: {
@@ -657,4 +852,27 @@ export function alternativesShortlist(competitor: Competitor, max = 4): Competit
     .filter((other) => other.id !== competitor.id && worksInEgypt(other) && other.category !== "other")
     .sort((a, b) => order[a.category] - order[b.category])
     .slice(0, max);
+}
+
+/** True when the /alternatives hub is public: at least one released competitor has an alternatives page. */
+export const isAlternativesHubPublic = (comparePublic: boolean = COMPARE_PUBLIC) => publicCompetitors(comparePublic).some((competitor) => competitor.alternative);
+
+/** The alternatives pages a page may link: public ones from a public page, every built one in preview. */
+export function alternativesLinkTargets(): Competitor[] {
+  const linkable = new Set(compareLinkTargets());
+  return alternativeCompetitors().filter((competitor) => linkable.has(competitor));
+}
+
+/**
+ * The sitemap date of a compare or alternatives page: the day its facts were
+ * read (`factsCheckedOn`), and for the two hubs the newest of their pages.
+ * Undefined for any other path.
+ */
+export function compareLastModified(path: string, comparePublic: boolean = COMPARE_PUBLIC): string | undefined {
+  const open = publicCompetitors(comparePublic);
+  const newest = (list: Competitor[]) => list.map(factsCheckedOn).sort().at(-1);
+  if (path === "/compare") return newest(open);
+  if (path === "/alternatives") return newest(open.filter((competitor) => competitor.alternative));
+  const competitor = open.find((other) => path === `/compare/${compareSlug(other)}` || (other.alternative && path === `/alternatives/${other.id}`));
+  return competitor ? factsCheckedOn(competitor) : undefined;
 }
