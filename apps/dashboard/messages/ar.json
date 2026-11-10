@@ -403,6 +403,7 @@
     "openMenu": "فتح القائمة",
     "expandSidebar": "توسيع الشريط الجانبي",
     "collapseSidebar": "طي الشريط الجانبي",
+    "toggleGroup": "إظهار أو إخفاء صفحات {name}",
     "vendor": "التاجر",
     "logoAlt": "شعار {name}",
     "myStore": "متجري",

@@ -403,6 +403,7 @@
     "openMenu": "Open menu",
     "expandSidebar": "Expand sidebar",
     "collapseSidebar": "Collapse sidebar",
+    "toggleGroup": "Show or hide {name} pages",
     "vendor": "Seller",
     "logoAlt": "{name} logo",
     "myStore": "My store",
